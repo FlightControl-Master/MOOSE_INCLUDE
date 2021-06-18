@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-13T08:59:46.0000000Z-8d8070bbd725d031ff842dc84204c259fa19f91f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-18T10:00:15.0000000Z-77a3c7369d7ec062f078c43aee058451fce0d3f5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -43792,7 +43792,7 @@ ActiveGroups={},
 lid="",
 DefendHarms=true,
 DefendMavs=true,
-DefenseLowProb=70,
+DefenseLowProb=75,
 DefenseHighProb=90,
 UseEmOnOff=false,
 }
