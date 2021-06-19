@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-18T10:12:54.0000000Z-bf33e4ed4fea8ee73da71a02f8be7aa49e28d0de ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-19T20:28:30.0000000Z-cfd0e4ba85ec97ddeda1896e7298ad604ad680b9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44504,7 +44504,7 @@ ActiveGroups={},
 lid="",
 DefendHarms=true,
 DefendMavs=true,
-DefenseLowProb=70,
+DefenseLowProb=75,
 DefenseHighProb=90,
 UseEmOnOff=false,
 }
@@ -54641,7 +54641,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.5"
+ATIS.version="0.9.6"
 function ATIS:New(airbasename,frequency,modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=airbasename
@@ -54861,6 +54861,7 @@ self.msrs:SetGender(Gender)
 self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
 self.msrs:SetPort(Port)
+self.msrs:SetCoalition(self:GetCoalition())
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
 end
@@ -54868,6 +54869,10 @@ return self
 end
 function ATIS:SetQueueUpdateTime(TimeInterval)
 self.dTQueueCheck=TimeInterval or 5
+end
+function ATIS:GetCoalition()
+local coal=self.airbase and self.airbase:GetCoalition()or nil
+return coal
 end
 function ATIS:onafterStart(From,Event,To)
 if self.airbase:GetAirbaseCategory()~=Airbase.Category.AIRDROME then
@@ -54890,6 +54895,7 @@ self.radioqueue:SetDigit(7,ATIS.Sound.N7.filename,ATIS.Sound.N7.duration,self.so
 self.radioqueue:SetDigit(8,ATIS.Sound.N8.filename,ATIS.Sound.N8.duration,self.soundpath)
 self.radioqueue:SetDigit(9,ATIS.Sound.N9.filename,ATIS.Sound.N9.duration,self.soundpath)
 self.radioqueue:Start(1,0.1)
+self:HandleEvent(EVENTS.BaseCaptured)
 self:__Status(-2)
 self:__CheckQueue(-3)
 end
@@ -55650,6 +55656,17 @@ local text=string.gsub(text,"m/s","meters per second")
 local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
 self.msrs:PlayText(text)
+end
+end
+function ATIS:OnEventBaseCaptured(EventData)
+if EventData and EventData.Place then
+local airbase=EventData.Place
+if EventData.PlaceName==self.airbasename then
+local NewCoalitionAirbase=airbase:GetCoalition()
+if self.useSRS and self.msrs and self.msrs.coalition~=NewCoalitionAirbase then
+self.msrs:SetCoalition(NewCoalitionAirbase)
+end
+end
 end
 end
 function ATIS:UpdateMarker(information,runact,wind,altimeter,temperature)
@@ -76360,6 +76377,7 @@ self:SetPort()
 self:SetFrequencies(Frequency)
 self:SetModulations(Modulation)
 self:SetGender()
+self:SetCoalition()
 return self
 end
 function MSRS:SetPath(Path)
@@ -76384,6 +76402,12 @@ self.port=Port or 5002
 end
 function MSRS:GetPort()
 return self.port
+end
+function MSRS:SetCoalition(Coalition)
+self.coalition=Coalition or 0
+end
+function MSRS:GetCoalition()
+return self.coalition
 end
 function MSRS:SetFrequencies(Frequencies)
 if type(Frequencies)~="table"then
