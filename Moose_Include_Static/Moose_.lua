@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-22T16:24:36.0000000Z-b84c0aba593eb366dcb4a67320f610a14f718ff7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-22T16:26:44.0000000Z-5021a1e1f3d1a833f2b97ed921b0ec2f0671ed71 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65938,6 +65938,8 @@ bluemash={},
 smokecolor=4,
 rescues=0,
 rescuedpilots=0,
+limitmaxdownedpilots=true,
+maxdownedpilots=10,
 }
 CSAR.SkipFrequencies={
 214,274,291.5,295,297.5,
@@ -65962,7 +65964,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.3r4"
+CSAR.version="0.1.4r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66043,6 +66045,8 @@ self.template=Template or"generic"
 self.mashprefix={"MASH"}
 self.bluemash=SET_GROUP:New():FilterCoalitions(self.coalition):FilterPrefixes(self.mashprefix):FilterOnce()
 self.autosmoke=false
+self.limitmaxdownedpilots=true
+self.maxdownedpilots=25
 self.useSRS=false
 self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -66266,6 +66270,9 @@ self:T(self.lid.." Pilot has not taken off, ignore")
 return
 end
 if self:_DoubleEjection(_unitname)then
+return
+end
+if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
 return
 end
 local _freq=self:_GenerateADFFrequency()
@@ -66977,6 +66984,28 @@ self:_AddBeaconToGroup(group,frequency)
 end
 end
 end
+function CSAR:_CountActiveDownedPilots()
+self:T(self.lid.." _CountActiveDownedPilots")
+local PilotsInFieldN=0
+for _,_unitName in pairs(self.downedPilots)do
+self:T({_unitName})
+if _unitName.name~=nil then
+PilotsInFieldN=PilotsInFieldN+1
+end
+end
+return PilotsInFieldN
+end
+function CSAR:_ReachedPilotLimit()
+self:T(self.lid.." _ReachedPilotLimit")
+local limit=self.maxdownedpilots
+local islimited=self.limitmaxdownedpilots
+local count=self:_CountActiveDownedPilots()
+if islimited and(count>=limit)then
+return true
+else
+return false
+end
+end
 function CSAR:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started.")
@@ -67020,13 +67049,7 @@ local NumberOfSARPilots=0
 for _,_unitName in pairs(self.csarUnits)do
 NumberOfSARPilots=NumberOfSARPilots+1
 end
-local PilotsInFieldN=0
-for _,_unitName in pairs(self.downedPilots)do
-self:T({_unitName})
-if _unitName.name~=nil then
-PilotsInFieldN=PilotsInFieldN+1
-end
-end
+local PilotsInFieldN=self:_CountActiveDownedPilots()
 local PilotsBoarded=0
 for _,_unitName in pairs(self.inTransitGroups)do
 for _,_units in pairs(_unitName)do
@@ -67034,8 +67057,8 @@ PilotsBoarded=PilotsBoarded+1
 end
 end
 if self.verbose>0 then
-local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",
-self.lid,NumberOfSARPilots,PilotsInFieldN,PilotsBoarded,self.rescues,self.rescuedpilots)
+local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d (max %d) | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",
+self.lid,NumberOfSARPilots,PilotsInFieldN,self.maxdownedpilots,PilotsBoarded,self.rescues,self.rescuedpilots)
 self:T(text)
 if self.verbose<2 then
 self:I(text)
@@ -67160,7 +67183,7 @@ end
 do
 CTLD={
 ClassName="CTLD",
-verbose=2,
+verbose=0,
 lid="",
 coalition=1,
 coalitiontxt="blue",
