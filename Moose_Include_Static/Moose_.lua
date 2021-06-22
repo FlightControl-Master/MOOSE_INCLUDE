@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-19T20:28:30.0000000Z-cfd0e4ba85ec97ddeda1896e7298ad604ad680b9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-22T11:11:12.0000000Z-0cd1cd97a67eee08e266944a64029e1d9ff0100f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65940,15 +65940,18 @@ rescues=0,
 rescuedpilots=0,
 }
 CSAR.SkipFrequencies={
-745,381,384,300.50,312.5,1175,342,735,300.50,353.00,
-440,795,525,520,690,625,291.5,300.50,
-435,309.50,920,1065,274,312.50,
-580,602,297.50,750,485,950,214,
-1025,730,995,455,307,670,329,395,770,
-380,705,300.5,507,740,1030,515,330,309.5,348,462,905,352,1210,942,435,
-324,320,420,311,389,396,862,680,297.5,920,662,866,907,309.5,822,515,470,342,1182,309.5,720,528,
-337,312.5,830,740,309.5,641,312,722,682,1050,
-1116,935,1000,430,577,540,550,560,570,
+214,274,291.5,295,297.5,
+300.5,304,307,309.5,311,312,312.5,316,
+320,324,328,329,330,336,337,
+342,343,348,351,352,353,358,
+363,365,368,372.5,374,
+380,381,384,389,395,396,
+414,420,430,432,435,440,450,455,462,470,485,
+507,515,520,525,528,540,550,560,570,577,580,602,625,641,662,670,680,682,690,
+705,720,722,730,735,740,745,750,770,795,
+822,830,862,866,
+905,907,920,935,942,950,995,
+1000,1025,1030,1050,1065,1116,1175,1182,1210
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -65959,7 +65962,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.3r3"
+CSAR.version="0.1.3r4"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66019,9 +66022,9 @@ self.downedPilots={}
 self.downedpilotcounter=1
 self.rescues=0
 self.rescuedpilots=0
-self.csarOncrash=true
+self.csarOncrash=false
 self.allowDownedPilotCAcontrol=false
-self.enableForAI=true
+self.enableForAI=false
 self.smokecolor=4
 self.coordtype=2
 self.immortalcrew=true
@@ -66415,7 +66418,7 @@ if _maxUnits==nil then
 _maxUnits=self.max_units
 end
 if _unitsInHelicopter+1>_maxUnits then
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s, %s. We're already crammed with %d guys! Sorry!",_pilotName,_heliName,_unitsInHelicopter,_unitsInHelicopter),self.messageTime)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s, %s. We\'re already crammed with %d guys! Sorry!",_pilotName,_heliName,_unitsInHelicopter,_unitsInHelicopter),self.messageTime)
 return true
 end
 local found,downedgrouptable=self:_CheckNameInDownedPilots(_woundedGroupName)
@@ -66430,7 +66433,7 @@ player=grouptable.player,
 }
 _woundedGroup:Destroy()
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I'm in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
 self:__Boarded(5,_heliName,_woundedGroupName)
 return true
 end
@@ -66462,9 +66465,9 @@ end
 if(_distance<500)then
 if self.heliCloseMessage[_lookupKeyHeli]==nil then
 if self.autosmoke==true then
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You're close now! Land or hover at the smoke.",_heliName,_pilotName),self.messageTime,true,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land or hover at the smoke.",_heliName,_pilotName),self.messageTime,true,true)
 else
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You're close now! Land in a safe place, I will go there ",_heliName,_pilotName),self.messageTime,true,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land in a safe place, I will go there ",_heliName,_pilotName),self.messageTime,true,true)
 end
 self.heliCloseMessage[_lookupKeyHeli]=true
 end
@@ -66514,7 +66517,7 @@ _time=self.hoverStatus[_lookupKeyHeli]-10
 self.hoverStatus[_lookupKeyHeli]=_time
 end
 if _time>0 then
-self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you're too far away!",self.messageTime,true)
+self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",self.messageTime,true)
 else
 self.hoverStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
@@ -66902,7 +66905,7 @@ end
 _start=_start+10000
 end
 _start=850000
-while _start<=1250000 do
+while _start<=999000 do
 local _found=false
 for _,value in pairs(_skipFrequencies)do
 if value*1000==_start then
