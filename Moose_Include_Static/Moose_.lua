@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-23T12:09:09.0000000Z-d4cdfcc48c6d05a79c7a48558631c751a7be6d48 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-24T06:34:14.0000000Z-3b44aba34173931d4ecd1f47e09d0b6391d0a777 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65964,7 +65964,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.4r1"
+CSAR.version="0.1.4r3"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66978,7 +66978,7 @@ local PilotTable=self.downedPilots
 for _,_pilot in pairs(PilotTable)do
 local pilot=_pilot
 local group=pilot.group
-local frequency=pilot.frequency
+local frequency=pilot.frequency or 0
 if frequency and frequency>0 then
 self:_AddBeaconToGroup(group,frequency)
 end
