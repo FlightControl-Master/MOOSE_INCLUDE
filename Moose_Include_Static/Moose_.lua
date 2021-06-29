@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-29T06:50:46.0000000Z-5a022a2246a76a6b8186f540ec5c29ef06d376e0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-29T15:49:42.0000000Z-3289ad281794f15089caf43d2ff3a7f0aa4f93e9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67225,6 +67225,7 @@ CTLD.UnitTypes={
 ["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0},
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
+["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
 CTLD.SkipFrequencies={
 214,274,291.5,295,297.5,
@@ -67307,7 +67308,7 @@ self.CargoCounter=0
 self.CrateCounter=0
 self.TroopCounter=0
 self.CrateDistance=30
-self.prefixes=Prefixes or{"cargoheli"}
+self.prefixes=Prefixes or{"Cargoheli"}
 self.useprefix=true
 self.maximumHoverHeight=15
 self.minimumHoverHeight=4
@@ -67316,6 +67317,9 @@ self.hoverautoloading=true
 self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
+self.enableHercules=true
+self.HercMinAngels=165
+self.HercMaxAngels=2000
 for i=1,100 do
 math.random()
 end
@@ -67444,6 +67448,10 @@ local _group=event.IniGroup
 if _unit:IsHelicopter()or _group:IsHelicopter()then
 self:_RefreshF10Menus()
 end
+self:I(_unit:GetTypeName())
+if _unit:GetTypeName()=="Hercules"and self.enableHercules then
+self:_RefreshF10Menus()
+end
 return
 elseif event.id==EVENTS.PlayerLeaveUnit then
 local unitname=event.IniUnitName or"none"
@@ -67519,6 +67527,7 @@ if numbernearby>=canloadcratesno and not drop then
 local m=MESSAGE:New("There are enough crates nearby already! Take care of those first!",15,"CTLD"):ToGroup(Group)
 return self
 end
+local IsHerc=self:IsHercules(Unit)
 local cargotype=Cargo
 local number=number or cargotype:GetCratesNeeded()
 local cratesneeded=cargotype:GetCratesNeeded()
@@ -67532,8 +67541,13 @@ local droppedcargo={}
 for i=1,number do
 local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
 local cratedistance=i*4+6
+if IsHerc then
+cratedistance=i*4+12
+end
 local rheading=math.floor(math.random(90,270)*heading+1/360)
-local rheading=rheading+180
+if not IsHerc then
+rheading=rheading+180
+end
 if rheading>360 then rheading=rheading-360 end
 local cratecoord=position:Translate(cratedistance,rheading)
 local cratevec2=cratecoord:GetVec2()
@@ -67745,6 +67759,13 @@ local m=MESSAGE:New(string.format("Nothing loaded!\nTroop limit: %d | Crate limi
 end
 return self
 end
+function CTLD:IsHercules(Unit)
+if Unit:GetTypeName()=="Hercules"then
+return true
+else
+return false
+end
+end
 function CTLD:_UnloadTroops(Group,Unit)
 self:T(self.lid.." _UnloadTroops")
 local droppingatbase=false
@@ -67753,6 +67774,10 @@ if inzone then
 droppingatbase=true
 end
 local hoverunload=self:IsCorrectHover(Unit)
+local IsHerc=self:IsHercules(Unit)
+if IsHerc then
+hoverunload=self:IsCorrectFlightParameters(Unit)
+end
 local grounded=not self:IsUnitInAir(Unit)
 local unitname=Unit:GetName()
 if self.Loaded_Cargo[unitname]and(grounded or hoverunload)then
@@ -67766,8 +67791,14 @@ if type==CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
 local name=cargo:GetName()or"none"
 local temptable=cargo:GetTemplates()or{}
 local position=Group:GetCoordinate()
-local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
-local randomcoord=zone:GetRandomCoordinate(10,30):GetVec2()
+local zoneradius=100
+local factor=1
+if IsHerc then
+factor=cargo:GetCratesNeeded()or 1
+zoneradius=Unit:GetVelocityMPS()or 100
+end
+local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,zoneradius*factor)
+local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
@@ -67805,7 +67836,11 @@ end
 self.Loaded_Cargo[unitname]=nil
 self.Loaded_Cargo[unitname]=loaded
 else
+if IsHerc then
+local m=MESSAGE:New("Nothing loaded or not within airdrop parameters!",10,"CTLD"):ToGroup(Group)
+else
 local m=MESSAGE:New("Nothing loaded or not hovering within parameters!",10,"CTLD"):ToGroup(Group)
+end
 end
 return self
 end
@@ -67819,6 +67854,10 @@ return self
 end
 end
 local hoverunload=self:IsCorrectHover(Unit)
+local IsHerc=self:IsHercules(Unit)
+if IsHerc then
+hoverunload=self:IsCorrectFlightParameters(Unit)
+end
 local grounded=not self:IsUnitInAir(Unit)
 local unitname=Unit:GetName()
 if self.Loaded_Cargo[unitname]and(grounded or hoverunload)then
@@ -67849,7 +67888,11 @@ end
 self.Loaded_Cargo[unitname]=nil
 self.Loaded_Cargo[unitname]=loaded
 else
+if IsHerc then
+local m=MESSAGE:New("Nothing loaded or not within airdrop parameters!",10,"CTLD"):ToGroup(Group)
+else
 local m=MESSAGE:New("Nothing loaded or not hovering within parameters!",10,"CTLD"):ToGroup(Group)
+end
 end
 return self
 end
@@ -68008,7 +68051,7 @@ self.Spawned_Cargo=newexcrates
 return self
 end
 function CTLD:_RefreshF10Menus()
-self:T(self.lid.." _RefreshF10Menus")
+self:I(self.lid.." _RefreshF10Menus")
 local PlayerSet=self.PilotGroups
 local PlayerTable=PlayerSet:GetSetObjects()
 local _UnitList={}
@@ -68063,7 +68106,11 @@ end
 local unloadmenu1=MENU_GROUP_COMMAND:New(_group,"Drop troops",toptroops,self._UnloadTroops,self,_group,_unit):Refresh()
 end
 local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
+if unittype=="Hercules"then
+local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show flight parameters",topmenu,self._ShowFlightParams,self,_group,_unit):Refresh()
+else
 local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show hover parameters",topmenu,self._ShowHoverParams,self,_group,_unit):Refresh()
+end
 self.MenusDone[_unitName]=true
 end
 end
@@ -68234,7 +68281,7 @@ end
 return self
 end
 function CTLD:_RefreshRadioBeacons()
-self:I(self.lid.." _RefreshRadioBeacons")
+self:T(self.lid.." _RefreshRadioBeacons")
 local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
 for i=1,3 do
 for index,cargozone in pairs(zones[i])do
@@ -68368,7 +68415,26 @@ local maxh=self.maximumHoverHeight
 local minh=self.minimumHoverHeight
 local mspeed=2
 self:T(string.format("%s Unit parameters: at %dm AGL with %dmps",self.lid,aheight,uspeed))
-if(uspeed<=maxh)and(aheight<=maxh)and(aheight>=minh)then
+if(uspeed<=mspeed)and(aheight<=maxh)and(aheight>=minh)then
+outcome=true
+end
+end
+return outcome
+end
+function CTLD:IsCorrectFlightParameters(Unit)
+self:T(self.lid.." IsCorrectFlightParameters")
+local outcome=false
+if self:IsUnitInAir(Unit)then
+local uspeed=Unit:GetVelocityMPS()
+local uheight=Unit:GetHeight()
+local ucoord=Unit:GetCoordinate()
+local gheight=ucoord:GetLandHeight()
+local aheight=uheight-gheight
+local maxh=self.HercMinAngels
+local minh=self.HercMaxAngels
+local mspeed=2
+self:T(string.format("%s Unit parameters: at %dm AGL with %dmps",self.lid,aheight,uspeed))
+if(aheight<=maxh)and(aheight>=minh)then
 outcome=true
 end
 end
@@ -68378,21 +68444,36 @@ function CTLD:_ShowHoverParams(Group,Unit)
 local inhover=self:IsCorrectHover(Unit)
 local htxt="true"
 if not inhover then htxt="false"end
-local text=string.format("Hover parameter (autoload):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s",self.minimumHoverHeight,self.maximumHoverHeight,htxt)
+local text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s",self.minimumHoverHeight,self.maximumHoverHeight,htxt)
+local m=MESSAGE:New(text,10,"CTLD",false):ToGroup(Group)
+return self
+end
+function CTLD:_ShowFlightParams(Group,Unit)
+local inhover=self:IsCorrectFlightParameters(Unit)
+local htxt="true"
+if not inhover then htxt="false"end
+local minheight=UTILS.MetersToFeet(self.HercMinAngels)
+local maxheight=UTILS.MetersToFeet(self.HercMaxAngels)
+local text=string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s",minheight,maxheight,htxt)
 local m=MESSAGE:New(text,10,"CTLD",false):ToGroup(Group)
 return self
 end
 function CTLD:CanHoverLoad(Unit)
 self:T(self.lid.." CanHoverLoad")
+if self:IsHercules(Unit)then return false end
 local outcome=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)and self:IsCorrectHover(Unit)
 return outcome
 end
 function CTLD:IsUnitInAir(Unit)
+local minheight=self.minimumHoverHeight
+if self.enableHercules and Unit:GetTypeName()=="Hercules"then
+minheight=5.1
+end
 local uheight=Unit:GetHeight()
 local ucoord=Unit:GetCoordinate()
 local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
-if aheight>=self.minimumHoverHeight then
+if aheight>=minheight then
 return true
 else
 return false
@@ -68433,7 +68514,13 @@ end
 function CTLD:onafterStart(From,Event,To)
 self:I({From,Event,To})
 if self.useprefix then
-self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.prefixes):FilterCategoryHelicopter():FilterStart()
+local prefix=self.prefixes
+self:I({prefix=prefix})
+if self.enableHercules then
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterStart()
+else
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterCategoryHelicopter():FilterStart()
+end
 else
 self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
