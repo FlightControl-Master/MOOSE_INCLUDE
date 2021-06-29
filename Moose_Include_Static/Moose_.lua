@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-25T10:39:02.0000000Z-2ff128f184b7a83b4834c6ee68c4003d8d696e40 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-29T06:50:46.0000000Z-5a022a2246a76a6b8186f540ec5c29ef06d376e0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65964,7 +65964,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.4r4"
+CSAR.version="0.1.5r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66146,7 +66146,7 @@ local template=self.template
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point)
 local _typeName=_typeName or"PoW"
 if not noMessage then
-local m=MESSAGE:New("MAYDAY MAYDAY! ".._typeName.." is down. ",10,"INFO"):ToCoalition(self.coalition)
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,10)
 end
 if not _freq then
 _freq=self:_GenerateADFFrequency()
@@ -66246,7 +66246,7 @@ if self.takenOff[_event.IniUnitName]==true or _group:IsAirborne()then
 if self:_DoubleEjection(_unitname)then
 return
 end
-local m=MESSAGE:New("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",10,"Info"):ToCoalition(self.coalition)
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,10)
 else
 self:T(self.lid.." Pilot has not taken off, ignore")
 end
