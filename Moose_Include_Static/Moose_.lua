@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-01T21:54:24.0000000Z-c80cebb82485a1f7f8ee79f8e2faaaad9f50b45f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-01T21:54:57.0000000Z-26801cf2068e6e55a0841c478208b6cbfd62eb0f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -52093,8 +52093,12 @@ end
 function AIRBOSS:_MarshalCallRecoveryStart(case)
 local radial=self:GetRadial(case,true,true,false)
 local text=string.format("Starting aircraft recovery Case %d ops.",case)
-if case>1 then
-text=text..string.format(" Marshal radial %03d°.",radial)
+if case==1 then
+text=text..string.format(" BRC %03d°.",self:GetBRC())
+elseif case==2 then
+text=text..string.format(" Marshal radial %03d°. BRC %03d°.",radial,self:GetBRC())
+elseif case==3 then
+text=text..string.format(" Marshal radial %03d°. Final heading %03d°.",radial,self:GetFinalBearing(false))
 end
 self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.STARTINGRECOVERY,"AIRBOSS",text,self.Tmessage,"99")
