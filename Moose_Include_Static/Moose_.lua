@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-06-30T15:59:43.0000000Z-dca626bbcbabf1edf7e9bbd622b6e700416dd70e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-01T07:07:01.0000000Z-76a53ab1543c70c89026bf73a4f0571ed65b01bb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65964,7 +65964,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.5r2"
+CSAR.version="0.1.5r3"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66073,6 +66073,7 @@ PilotTable[counter]=DownedPilot
 self:T({Table=PilotTable})
 self.downedPilots=PilotTable
 self.downedpilotcounter=self.downedpilotcounter+1
+return self
 end
 function CSAR:_PilotsOnboard(_heliName)
 self:T(self.lid.." _PilotsOnboard")
@@ -66138,6 +66139,7 @@ group:SetCommand(_setInvisible)
 end
 group:OptionAlarmStateGreen()
 group:OptionROEHoldFire()
+return self
 end
 function CSAR:_AddCsar(_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description)
 self:T(self.lid.." _AddCsar")
@@ -66168,6 +66170,7 @@ self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName)
 self:_InitSARForPilot(_spawnedGroup,_GroupName,_freq,noMessage)
+return self
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage)
 self:T(self.lid.." _SpawnCsarAtZone")
@@ -66194,6 +66197,7 @@ else
 _country=country.id.UN_PEACEKEEPERS
 end
 self:_AddCsar(_coalition,_country,pos,"PoW","Unknown",nil,freq,_nomessage,_description)
+return self
 end
 function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
 self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
@@ -66311,6 +66315,7 @@ end
 end
 return true
 end
+return self
 end
 function CSAR:_InitSARForPilot(_downedGroup,_GroupName,_freq,_nomessage)
 self:T(self.lid.." _InitSARForPilot")
@@ -66327,6 +66332,7 @@ for _,_heliName in pairs(self.csarUnits)do
 self:_CheckWoundedGroupStatus(_heliName,_groupName)
 end
 self:__PilotDown(2,_downedGroup,_freqk,_leadername,_coordinatesText)
+return self
 end
 function CSAR:_CheckNameInDownedPilots(name)
 local PilotTable=self.downedPilots
@@ -66404,6 +66410,7 @@ else
 self:T("...Downed Pilot KIA?!")
 self:_RemoveNameFromDownedPilots(_downedpilot.name)
 end
+return self
 end
 function CSAR:_PopSmokeForGroup(_woundedGroupName,_woundedLeader)
 self:T(self.lid.." _PopSmokeForGroup")
@@ -66414,6 +66421,7 @@ local _smokecoord=_woundedLeader:GetCoordinate()
 _smokecoord:Smoke(_smokecolor)
 self.smokeMarkers[_woundedGroupName]=timer.getTime()+300
 end
+return self
 end
 function CSAR:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
 self:T(self.lid.." _PickupUnit")
@@ -66454,6 +66462,7 @@ local group=_leader
 local coordinate=_destination:GetVec2()
 group:SetAIOn()
 group:RouteToVec2(coordinate,5)
+return self
 end
 function CSAR:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)
 self:T(self.lid.." _CheckCloseWoundedGroup")
@@ -66590,6 +66599,7 @@ self:_RescuePilots(_heliUnit)
 return
 end
 self:__Returning(-5,heliname,_woundedGroupName)
+return self
 end
 function CSAR:_RescuePilots(_heliUnit)
 self:T(self.lid.." _RescuePilots")
@@ -66603,6 +66613,7 @@ self.inTransitGroups[_heliName]=nil
 local _txt=string.format("%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!",_heliName,PilotsSaved)
 self:_DisplayMessageToSAR(_heliUnit,_txt,self.messageTime)
 self:__Rescued(-1,_heliUnit,_heliName,PilotsSaved)
+return self
 end
 function CSAR:_GetSARHeli(_unitName)
 self:T(self.lid.." _GetSARHeli")
@@ -66627,6 +66638,7 @@ local channel=self.SRSchannel
 local msrs=MSRS:New(path,channel,modulation)
 msrs:PlaySoundText(srstext,2)
 end
+return self
 end
 function CSAR:_GetPositionOfWounded(_woundedGroup)
 self:T(self.lid.." _GetPositionOfWounded")
@@ -66688,6 +66700,7 @@ for _,_line in pairs(_csarList)do
 _msg=_msg.."\n".._line.msg
 end
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime*2)
+return self
 end
 function CSAR:_GetClosestDownedPilot(_heli)
 self:T(self.lid.." _GetClosestDownedPilot")
@@ -66739,6 +66752,7 @@ disttext="8km"
 end
 self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
 end
+return self
 end
 function CSAR:_DisplayToAllSAR(_message,_side,_messagetime)
 self:T(self.lid.." _DisplayToAllSAR")
@@ -66750,6 +66764,7 @@ self:_DisplayMessageToSAR(_unit,_message,_messagetime)
 end
 end
 end
+return self
 end
 function CSAR:_Reqsmoke(_unitName)
 self:T(self.lid.." _Reqsmoke")
@@ -66778,6 +66793,7 @@ disttext="8km"
 end
 self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
 end
+return self
 end
 function CSAR:_GetClosestMASH(_heli)
 self:T(self.lid.." _GetClosestMASH")
@@ -66837,6 +66853,7 @@ _text=_text.."\n".._onboard.desc
 end
 self:_DisplayMessageToSAR(_unit,_text,self.messageTime*2)
 end
+return self
 end
 function CSAR:_AddMedevacMenuItem()
 self:T(self.lid.." _AddMedevacMenuItem")
@@ -66871,7 +66888,7 @@ end
 end
 end
 end
-return
+return self
 end
 function CSAR:_GetDistance(_point1,_point2)
 self:T(self.lid.." _GetDistance")
@@ -66930,6 +66947,7 @@ end
 _start=_start+50000
 end
 self.FreeVHFFrequencies=FreeVHFFrequencies
+return self
 end
 function CSAR:_GenerateADFFrequency()
 self:T(self.lid.." _GenerateADFFrequency")
@@ -66975,18 +66993,22 @@ local Frequency=_freq
 local Sound="l10n/DEFAULT/"..self.radioSound
 trigger.action.radioTransmission(Sound,_radioUnit:GetPositionVec3(),0,false,Frequency,1000)
 end
+return self
 end
 function CSAR:_RefreshRadioBeacons()
 self:T(self.lid.." _RefreshRadioBeacons")
+if self:_CountActiveDownedPilots()>0 then
 local PilotTable=self.downedPilots
 for _,_pilot in pairs(PilotTable)do
 local pilot=_pilot
 local group=pilot.group
-local frequency=pilot.frequency or 0
-if frequency and frequency>0 then
+local frequency=pilot.frequency or 0.0
+if group:IsAlive()and frequency>0.0 then
 self:_AddBeaconToGroup(group,frequency)
 end
 end
+end
+return self
 end
 function CSAR:_CountActiveDownedPilots()
 self:T(self.lid.." _CountActiveDownedPilots")
