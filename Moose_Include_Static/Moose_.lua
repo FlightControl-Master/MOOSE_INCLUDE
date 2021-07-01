@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-01T07:07:01.0000000Z-76a53ab1543c70c89026bf73a4f0571ed65b01bb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-01T21:54:24.0000000Z-c80cebb82485a1f7f8ee79f8e2faaaad9f50b45f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12230,8 +12230,12 @@ if Railroad==true then
 roadtype="railroads"
 end
 local x,y=land.getClosestPointOnRoads(roadtype,self.x,self.z)
+local coord=nil
+if x and y then
 local vec2={x=x,y=y}
-return COORDINATE:NewFromVec2(vec2)
+coord=COORDINATE:NewFromVec2(vec2)
+end
+return coord
 end
 function COORDINATE:GetPathOnRoad(ToCoord,IncludeEndpoints,Railroad,MarkPath,SmokePath)
 local RoadType="roads"
@@ -41396,23 +41400,24 @@ return group
 end
 return nil
 end
-function WAREHOUSE:_SpawnAssetAircraft(alias,asset,request,parking,uncontrolled,hotstart)
+function WAREHOUSE:_SpawnAssetAircraft(alias,asset,request,parking,uncontrolled)
 if asset and asset.category==Group.Category.AIRPLANE or asset.category==Group.Category.HELICOPTER then
 local template=self:_SpawnAssetPrepareTemplate(asset,alias)
+local _type=COORDINATE.WaypointType.TakeOffParking
+local _action=COORDINATE.WaypointAction.FromParkingArea
+if asset.takeoffType and asset.takeoffType==COORDINATE.WaypointType.TakeOffParkingHot then
+_type=COORDINATE.WaypointType.TakeOffParkingHot
+_action=COORDINATE.WaypointAction.FromParkingAreaHot
+uncontrolled=false
+end
 if request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
 if request.toself then
-local wp=self.airbase:GetCoordinate():WaypointAir("RADIO",COORDINATE.WaypointType.TakeOffParking,COORDINATE.WaypointAction.FromParkingArea,0,false,self.airbase,{},"Parking")
+local wp=self.airbase:GetCoordinate():WaypointAir("RADIO",_type,_action,0,false,self.airbase,{},"Parking")
 template.route.points={wp}
 else
 template.route.points=self:_GetFlightplan(asset,self.airbase,request.warehouse.airbase)
 end
 else
-local _type=COORDINATE.WaypointType.TakeOffParking
-local _action=COORDINATE.WaypointAction.FromParkingArea
-if hotstart then
-_type=COORDINATE.WaypointType.TakeOffParkingHot
-_action=COORDINATE.WaypointAction.FromParkingAreaHot
-end
 template.route.points[1]=self.airbase:GetCoordinate():WaypointAir("BARO",_type,_action,0,true,self.airbase,nil,"Spawnpoint")
 end
 local AirbaseID=self.airbase:GetID()
@@ -43139,8 +43144,17 @@ d_cruise=100
 end
 local wp={}
 local c={}
+local _type=COORDINATE.WaypointType.TakeOffParking
+local _action=COORDINATE.WaypointAction.FromParkingArea
+if asset.takeoffType and asset.takeoffType==COORDINATE.WaypointType.TakeOffParkingHot then
+env.info("FF hot")
+_type=COORDINATE.WaypointType.TakeOffParkingHot
+_action=COORDINATE.WaypointAction.FromParkingAreaHot
+else
+env.info("FF cold")
+end
 c[#c+1]=Pdeparture
-wp[#wp+1]=Pdeparture:WaypointAir("RADIO",COORDINATE.WaypointType.TakeOffParking,COORDINATE.WaypointAction.FromParkingArea,VxClimb*3.6,true,departure,nil,"Departure")
+wp[#wp+1]=Pdeparture:WaypointAir("RADIO",_type,_action,VxClimb*3.6,true,departure,nil,"Departure")
 local Pcruise=Pdeparture:Translate(d_climb,heading)
 Pcruise.y=FLcruise
 c[#c+1]=Pcruise
@@ -63780,7 +63794,7 @@ tankerSystem=nil,
 refuelSystem=nil,
 tacanChannel={},
 }
-SQUADRON.version="0.5.0"
+SQUADRON.version="0.5.2"
 function SQUADRON:New(TemplateGroupName,Ngroups,SquadronName)
 local self=BASE:Inherit(self,FSM:New())
 self.templatename=TemplateGroupName
@@ -63838,6 +63852,25 @@ function SQUADRON:SetGrouping(nunits)
 self.ngrouping=nunits or 2
 if self.ngrouping<1 then self.ngrouping=1 end
 if self.ngrouping>4 then self.ngrouping=4 end
+return self
+end
+function SQUADRON:SetTakeoffType(TakeoffType)
+TakeoffType=TakeoffType or"Cold"
+if TakeoffType:lower()=="hot"then
+self.takeoffType=COORDINATE.WaypointType.TakeOffParkingHot
+elseif TakeoffType:lower()=="cold"then
+self.takeoffType=COORDINATE.WaypointType.TakeOffParking
+else
+self.takeoffType=COORDINATE.WaypointType.TakeOffParking
+end
+return self
+end
+function SQUADRON:SetTakeoffCold()
+self:SetTakeoffType("Cold")
+return self
+end
+function SQUADRON:SetTakeoffHot()
+self:SetTakeoffType("Hot")
 return self
 end
 function SQUADRON:AddMissionCapability(MissionTypes,Performance)
@@ -64235,7 +64268,7 @@ pointsAWACS={},
 wingcommander=nil,
 markpoints=false,
 }
-AIRWING.version="0.5.1"
+AIRWING.version="0.5.2"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,WAREHOUSE:New(warehousename,airwingname))
 if not self then
@@ -64921,6 +64954,7 @@ end
 end
 asset.nunits=squad.ngrouping
 end
+asset.takeoffType=squad.takeoffType
 squad:GetCallsign(asset)
 squad:GetModex(asset)
 asset.spawngroupname=string.format("%s_AID-%d",squad.name,asset.uid)
@@ -64943,11 +64977,12 @@ Asset.Treturned=timer.getAbsTime()
 end
 function AIRWING:onafterAssetSpawned(From,Event,To,group,asset,request)
 self:GetParent(self).onafterAssetSpawned(self,From,Event,To,group,asset,request)
+local squadron=self:GetSquadronOfAsset(asset)
+if squadron then
 local flightgroup=self:_CreateFlightGroup(asset)
 asset.flightgroup=flightgroup
 asset.requested=nil
 asset.Treturned=nil
-local squadron=self:GetSquadronOfAsset(asset)
 local Tacan=squadron:FetchTacan()
 if Tacan then
 asset.tacan=Tacan
@@ -64976,6 +65011,7 @@ end
 end
 if self.wingcommander and self.wingcommander.chief then
 self.wingcommander.chief.detectionset:AddGroup(asset.flightgroup.group)
+end
 end
 end
 function AIRWING:onafterAssetDead(From,Event,To,asset,request)
