@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T06:52:07.0000000Z-28c6810878cdf2e7794979f69603543d15539518 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T15:52:58.0000000Z-299e08f53d713482e251fd538c04a5b6b3d8c782 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66003,7 +66003,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.5r3"
+CSAR.version="0.1.6r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66029,7 +66029,7 @@ else
 self.alias="Red Cross"
 if self.coalition then
 if self.coalition==coalition.side.RED then
-self.alias="Спасение"
+self.alias="Ã�Â¡Ã�Â¿Ã�Â°Ã‘ï¿½Ã�ÂµÃ�Â½Ã�Â¸Ã�Âµ"
 elseif self.coalition==coalition.side.BLUE then
 self.alias="CSAR"
 end
@@ -66135,13 +66135,15 @@ end
 self.lastCrash[_unitname]=timer.getTime()
 return false
 end
-function CSAR:_SpawnPilotInField(country,point)
-self:T({country,point})
+function CSAR:_SpawnPilotInField(country,point,frequency)
+self:T({country,point,frequency})
+local freq=frequency or 1000
+local freq=freq/1000
 for i=1,10 do
 math.random(i,10000)
 end
 local template=self.template
-local alias=string.format("Downed Pilot-%d",math.random(1,10000))
+local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,10000))
 local coalition=self.coalition
 local pilotcacontrol=self.allowDownedPilotCAcontrol
 local _spawnedGroup=SPAWN
@@ -66184,14 +66186,14 @@ function CSAR:_AddCsar(_coalition,_country,_point,_typeName,_unitName,_playerNam
 self:T(self.lid.." _AddCsar")
 self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description})
 local template=self.template
-local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point)
+if not _freq then
+_freq=self:_GenerateADFFrequency()
+if not _freq then _freq="333250"end
+end
+local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"PoW"
 if not noMessage then
 self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,10)
-end
-if not _freq then
-_freq=self:_GenerateADFFrequency()
-if not _freq then _freq="333.25"end
 end
 if _freq then
 self:_AddBeaconToGroup(_spawnedGroup,_freq)
@@ -66903,7 +66905,7 @@ local _UnitList={}
 for _key,_group in pairs(_allHeliGroups)do
 local _unit=_group:GetUnit(1)
 if _unit then
-if _unit:IsAlive()then
+if _unit:IsAlive()and _unit:IsPlayer()then
 local unitName=_unit:GetName()
 _UnitList[unitName]=unitName
 end
@@ -67039,10 +67041,11 @@ self:T(self.lid.." _RefreshRadioBeacons")
 if self:_CountActiveDownedPilots()>0 then
 local PilotTable=self.downedPilots
 for _,_pilot in pairs(PilotTable)do
+self:T({_pilot})
 local pilot=_pilot
 local group=pilot.group
 local frequency=pilot.frequency or 0.0
-if group:IsAlive()and frequency>0.0 then
+if group and group:IsAlive()and frequency>0.0 then
 self:_AddBeaconToGroup(group,frequency)
 end
 end
@@ -67302,7 +67305,7 @@ CTLD.SkipFrequencies={
 905,907,920,935,942,950,995,
 1000,1025,1030,1050,1065,1116,1175,1182,1210
 }
-CTLD.version="0.1.2b1"
+CTLD.version="0.1.3r1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67390,6 +67393,21 @@ self:_GenerateVHFrequencies()
 self:_GenerateUHFrequencies()
 self:_GenerateFMFrequencies()
 return self
+end
+function CTLD:_GetUnitCapabilities(Unit)
+self:T(self.lid.." _GetUnitCapabilities")
+local _unit=Unit
+local unittype=_unit:GetTypeName()
+local capabilities=self.UnitTypes[unittype]
+if not capabilities or capabilities=={}then
+capabilities={}
+capabilities.troops=false
+capabilities.crates=false
+capabilities.cratelimit=0
+capabilities.trooplimit=0
+capabilities.type="generic"
+end
+return capabilities
 end
 function CTLD:_GenerateUHFrequencies()
 self:T(self.lid.." _GenerateUHFrequencies")
@@ -67546,7 +67564,7 @@ local unitname=unit:GetName()
 local cargotype=Cargotype
 local cratename=cargotype:GetName()
 local unittype=unit:GetTypeName()
-local capabilities=self.UnitTypes[unittype]
+local capabilities=self:_GetUnitCapabilities(Unit)
 local cantroops=capabilities.troops
 local trooplimit=capabilities.trooplimit
 local troopsize=cargotype:GetCratesNeeded()
@@ -67576,17 +67594,18 @@ end
 function CTLD:_GetCrates(Group,Unit,Cargo,number,drop)
 self:T(self.lid.." _GetCrates")
 local cgoname=Cargo:GetName()
-local inzone=true
-if drop then
-local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
+local inzone=false
+local drop=drop or false
+if not drop then
+inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 else
-local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
 end
 if not inzone then
 self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
 if not self.debug then return self end
 end
-local capabilities=self.UnitTypes[Unit:GetTypeName()]
+local capabilities=self:_GetUnitCapabilities(Unit)
 local canloadcratesno=capabilities.cratelimit
 local loaddist=self.CrateDistance or 30
 local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist)
@@ -67705,7 +67724,7 @@ local group=Group
 local unit=Unit
 local unitname=unit:GetName()
 local unittype=unit:GetTypeName()
-local capabilities=self.UnitTypes[unittype]
+local capabilities=self:_GetUnitCapabilities(Unit)
 local cancrates=capabilities.crates
 local cratelimit=capabilities.cratelimit
 local grounded=not self:IsUnitInAir(Unit)
@@ -67779,7 +67798,7 @@ function CTLD:_ListCargo(Group,Unit)
 self:T(self.lid.." _ListCargo")
 local unitname=Unit:GetName()
 local unittype=Unit:GetTypeName()
-local capabilities=self.UnitTypes[unittype]
+local capabilities=self:_GetUnitCapabilities(Unit)
 local trooplimit=capabilities.trooplimit
 local cratelimit=capabilities.cratelimit
 local loadedcargo=self.Loaded_Cargo[unitname]or{}
@@ -68114,9 +68133,11 @@ local _UnitList={}
 for _key,_group in pairs(PlayerTable)do
 local _unit=_group:GetUnit(1)
 if _unit then
-if _unit:IsAlive()then
+if _unit:IsAlive()and _unit:IsPlayer()then
+if _unit:IsHelicopter()or(_unit:GetTypeName()=="Hercules"and self.enableHercules)then
 local unitName=_unit:GetName()
 _UnitList[unitName]=unitName
+end
 end
 end
 end
@@ -68130,7 +68151,7 @@ if _unit then
 local _group=_unit:GetGroup()
 if _group then
 local unittype=_unit:GetTypeName()
-local capabilities=self.UnitTypes[unittype]
+local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
@@ -68532,7 +68553,7 @@ self:T(self.lid.." AutoHoverLoad")
 local unittype=Unit:GetTypeName()
 local unitname=Unit:GetName()
 local Group=Unit:GetGroup()
-local capabilities=self.UnitTypes[unittype]
+local capabilities=self:_GetUnitCapabilities(Unit)
 local cancrates=capabilities.crates
 local cratelimit=capabilities.cratelimit
 if cancrates then
@@ -68561,15 +68582,15 @@ return self
 end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
-if self.useprefix then
+if self.useprefix or self.enableHercules then
 local prefix=self.prefixes
 if self.enableHercules then
 self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterStart()
 else
-self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterCategoryHelicopter():FilterStart()
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterCategories("helicopter"):FilterStart()
 end
 else
-self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategories("helicopter"):FilterStart()
 end
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
