@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T18:15:12.0000000Z-39c46dcab0803d8464140a5e25d2565827d08cc3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T18:22:43.0000000Z-9591c6217525b43b8f7dc37c3fbe06726a4ed935 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66188,7 +66188,7 @@ self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessa
 local template=self.template
 if not _freq then
 _freq=self:_GenerateADFFrequency()
-if not _freq then _freq="333250"end
+if not _freq then _freq=333250 end
 end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"PoW"
@@ -66325,7 +66325,7 @@ if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
 return
 end
 local _freq=self:_GenerateADFFrequency()
-self:_AddCsar(_coalition,_unit:GetCountry(),_unit:GetCoordinate(),_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,0)
+self:_AddCsar(_coalition,_unit:GetCountry(),_unit:GetCoordinate(),_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
 return true
 elseif _event.id==EVENTS.Land then
 self:T(self.lid.." Landing")
