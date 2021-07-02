@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-01T21:54:57.0000000Z-26801cf2068e6e55a0841c478208b6cbfd62eb0f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T06:52:07.0000000Z-28c6810878cdf2e7794979f69603543d15539518 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21701,7 +21701,7 @@ AIRBASE.Syria={
 ["Pinarbashi"]="Pinarbashi",
 ["Paphos"]="Paphos",
 ["Kingsfield"]="Kingsfield",
-["Tha'lah"]="Tha'lah",
+["Thalah"]="Tha'lah",
 ["Haifa"]="Haifa",
 ["Khalkhalah"]="Khalkhalah",
 ["Megiddo"]="Megiddo",
@@ -21713,7 +21713,6 @@ AIRBASE.Syria={
 ["Akrotiri"]="Akrotiri",
 ["Naqoura"]="Naqoura",
 ["Gaziantep"]="Gaziantep",
-["CVN_71"]="CVN-71",
 ["Sayqal"]="Sayqal",
 ["Tiyas"]="Tiyas",
 ["Shayrat"]="Shayrat",
@@ -21736,12 +21735,12 @@ AIRBASE.Syria={
 ["Abu_al_Duhur"]="Abu al-Duhur",
 }
 AIRBASE.MarianaIslands={
-["Rota_International_Airport"]="Rota International Airport",
-["Andersen"]="Andersen",
-["Northwest_Field"]="Northwest_Field",
-["Antonio_B_Won_Pat_International_Airport"]="Antonio B. Won Pat International Airport",
-["Saipan_International_Airport"]="Saipan International Airport",
-["Tinian_International_Airport"]="Tinian International Airport",
+["Rota_Intl"]="Rota Intl",
+["Andersen_AFB"]="Andersen AFB",
+["Antonio_B_Won_Pat_Intl"]="Antonio B. Won Pat Intl",
+["Saipan_Intl"]="Saipan Intl",
+["Tinian_Intl"]="Tinian Intl",
+["Olf_Orote"]="Olf Orote",
 }
 AIRBASE.TerminalType={
 Runway=16,
