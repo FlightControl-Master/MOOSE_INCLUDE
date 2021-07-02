@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T15:52:58.0000000Z-299e08f53d713482e251fd538c04a5b6b3d8c782 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T18:15:12.0000000Z-39c46dcab0803d8464140a5e25d2565827d08cc3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66029,7 +66029,7 @@ else
 self.alias="Red Cross"
 if self.coalition then
 if self.coalition==coalition.side.RED then
-self.alias="Ã�Â¡Ã�Â¿Ã�Â°Ã‘ï¿½Ã�ÂµÃ�Â½Ã�Â¸Ã�Âµ"
+self.alias="IFRC"
 elseif self.coalition==coalition.side.BLUE then
 self.alias="CSAR"
 end
@@ -66143,7 +66143,7 @@ for i=1,10 do
 math.random(i,10000)
 end
 local template=self.template
-local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,10000))
+local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
 local coalition=self.coalition
 local pilotcacontrol=self.allowDownedPilotCAcontrol
 local _spawnedGroup=SPAWN
@@ -67044,8 +67044,8 @@ for _,_pilot in pairs(PilotTable)do
 self:T({_pilot})
 local pilot=_pilot
 local group=pilot.group
-local frequency=pilot.frequency or 0.0
-if group and group:IsAlive()and frequency>0.0 then
+local frequency=pilot.frequency or 0
+if group and group:IsAlive()and frequency>0 then
 self:_AddBeaconToGroup(group,frequency)
 end
 end
