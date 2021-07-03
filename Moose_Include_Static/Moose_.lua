@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T18:22:43.0000000Z-9591c6217525b43b8f7dc37c3fbe06726a4ed935 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-03T07:30:04.0000000Z-e14d655447d2d1a2b39028ac578c2f9abe2f6472 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66003,7 +66003,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.6r1"
+CSAR.version="0.1.6r2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66086,8 +66086,9 @@ self.mash=SET_GROUP:New():FilterCoalitions(self.coalition):FilterPrefixes(self.m
 self.autosmoke=false
 self.limitmaxdownedpilots=true
 self.maxdownedpilots=25
+self:_GenerateVHFrequencies()
 self.useSRS=false
-self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone\\"
+self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
 return self
@@ -66188,7 +66189,7 @@ self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessa
 local template=self.template
 if not _freq then
 _freq=self:_GenerateADFFrequency()
-if not _freq then _freq=333250 end
+if not _freq then _freq=333000 end
 end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"PoW"
@@ -67083,7 +67084,6 @@ self:HandleEvent(EVENTS.Ejection,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
-self:_GenerateVHFrequencies()
 if self.useprefix then
 local prefixes=self.csarPrefix or{}
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterCategoryHelicopter():FilterStart()
