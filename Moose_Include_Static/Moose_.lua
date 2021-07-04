@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-04T16:04:27.0000000Z-48aa841adddf1bdd2924a519263ad853f50f688e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-04T16:10:35.0000000Z-00b3e9b3719da86922136c9f473de3630e8a253d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22611,7 +22611,7 @@ end
 function MARKER:OnEventMarkRemoved(EventData)
 if EventData and EventData.MarkID then
 local MarkID=EventData.MarkID
-self:T3(self.lid..string.format("Captured event MarkAdded for Mark ID=%s",tostring(MarkID)))
+self:T3(self.lid..string.format("Captured event MarkRemoved for Mark ID=%s",tostring(MarkID)))
 if MarkID==self.mid then
 self.shown=false
 self:Removed(EventData)
@@ -22623,8 +22623,8 @@ if EventData and EventData.MarkID then
 local MarkID=EventData.MarkID
 self:T3(self.lid..string.format("Captured event MarkChange for Mark ID=%s",tostring(MarkID)))
 if MarkID==self.mid then
+self.text=tostring(EventData.MarkText)
 self:Changed(EventData)
-self:TextChanged(tostring(EventData.MarkText))
 end
 end
 end
