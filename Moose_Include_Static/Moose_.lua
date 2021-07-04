@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-03T07:30:04.0000000Z-e14d655447d2d1a2b39028ac578c2f9abe2f6472 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-04T16:04:08.0000000Z-4ba52212a9fc7480180258952a156b26e956d820 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67305,7 +67305,7 @@ CTLD.SkipFrequencies={
 905,907,920,935,942,950,995,
 1000,1025,1030,1050,1065,1116,1175,1182,1210
 }
-CTLD.version="0.1.3r1"
+CTLD.version="0.1.4r1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67527,6 +67527,8 @@ end
 local _unit=event.IniUnit
 local _group=event.IniGroup
 if _unit:IsHelicopter()or _group:IsHelicopter()then
+local unitname=event.IniUnitName or"none"
+self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 if _unit:GetTypeName()=="Hercules"and self.enableHercules then
@@ -67536,6 +67538,7 @@ return
 elseif event.id==EVENTS.PlayerLeaveUnit then
 local unitname=event.IniUnitName or"none"
 self.CtldUnits[unitname]=nil
+self.Loaded_Cargo[unitname]=nil
 end
 return self
 end
