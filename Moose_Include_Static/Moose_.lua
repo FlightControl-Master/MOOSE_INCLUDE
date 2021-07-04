@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-04T16:04:08.0000000Z-4ba52212a9fc7480180258952a156b26e956d820 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-04T16:04:27.0000000Z-48aa841adddf1bdd2924a519263ad853f50f688e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55144,6 +55144,27 @@ precepitation=1
 else
 precepitation=3
 end
+elseif cloudspreset:find("RainyPreset1")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset2")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset3")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
 end
 local CLOUDBASE=string.format("%d",UTILS.MetersToFeet(cloudbase))
 local CLOUDCEIL=string.format("%d",UTILS.MetersToFeet(cloudceil))
@@ -66003,7 +66024,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.6r2"
+CSAR.version="0.1.7r2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66084,6 +66105,7 @@ self.template=Template or"generic"
 self.mashprefix={"MASH"}
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalition):FilterPrefixes(self.mashprefix):FilterOnce()
 self.autosmoke=false
+self.autosmokedistance=1000
 self.limitmaxdownedpilots=true
 self.maxdownedpilots=25
 self:_GenerateVHFrequencies()
@@ -66443,7 +66465,7 @@ if self:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_wou
 _downedpilot.timestamp=timer.getAbsTime()
 self:__Approach(-5,heliname,woundedgroupname)
 end
-else
+elseif _distance>=3000 and _distance<5000 then
 self.heliVisibleMessage[_lookupKeyHeli]=nil
 _downedpilot.timestamp=timer.getAbsTime()
 self:__Approach(-10,heliname,woundedgroupname)
@@ -66513,7 +66535,7 @@ local _lookupKeyHeli=_heliUnit:GetName().."_".._woundedGroupName
 local _found,_pilotable=self:_CheckNameInDownedPilots(_woundedGroupName)
 local _pilotName=_pilotable.desc
 local _reset=true
-if(self.autosmoke==true)and(_distance<500)then
+if(self.autosmoke==true)and(_distance<self.autosmokedistance)then
 self:_PopSmokeForGroup(_woundedGroupName,_woundedLeader)
 end
 if self.heliVisibleMessage[_lookupKeyHeli]==nil then
