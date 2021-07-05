@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-04T16:10:35.0000000Z-00b3e9b3719da86922136c9f473de3630e8a253d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-05T12:44:02.0000000Z-04ef32420b1266f6d6801929eb7784cdb9ef00ac ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24195,6 +24195,20 @@ self.Players[PlayerName].UnitType=UnitTypeName
 self.Players[PlayerName].UNIT=UnitData
 self.Players[PlayerName].ThreatLevel=UnitThreatLevel
 self.Players[PlayerName].ThreatType=UnitThreatType
+if self.Players[PlayerName].Penalty>self.Fratricide*0.50 then
+if self.Players[PlayerName].PenaltyWarning<1 then
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."': WARNING! If you continue to commit FRATRICIDE and have a PENALTY score higher than "..self.Fratricide..", you will be COURT MARTIALED and DISMISSED from this mission! \nYour total penalty is: "..self.Players[PlayerName].Penalty,
+MESSAGE.Type.Information
+):ToAll()
+self.Players[PlayerName].PenaltyWarning=self.Players[PlayerName].PenaltyWarning+1
+end
+end
+if self.Players[PlayerName].Penalty>self.Fratricide then
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' committed FRATRICIDE, he will be COURT MARTIALED and is DISMISSED from this mission!",
+MESSAGE.Type.Information
+):ToAll()
+UnitData:GetGroup():Destroy()
+end
 end
 end
 function SCORING:AddGoalScorePlayer(PlayerName,GoalTag,Text,Score)
@@ -26569,7 +26583,11 @@ self.Airbases=Airbases
 self.AirbaseList=AirbaseList
 self.SetClient=SET_CLIENT:New():FilterCategories("plane"):FilterStart()
 for AirbaseID,Airbase in pairs(self.Airbases)do
+if Airbase.ZoneBoundary then
+Airbase.ZoneBoundary=ZONE_POLYGON_BASE:New("Boundary "..AirbaseID,Airbase.ZoneBoundary)
+else
 Airbase.ZoneBoundary=_DATABASE:FindAirbase(AirbaseID):GetZone()
+end
 Airbase.ZoneRunways={}
 for PointsRunwayID,PointsRunway in pairs(Airbase.PointsRunways)do
 Airbase.ZoneRunways[PointsRunwayID]=ZONE_POLYGON_BASE:New("Runway "..PointsRunwayID,PointsRunway)
@@ -28194,6 +28212,153 @@ self:SetMaximumKickSpeedKmph(150)
 return self
 end
 function ATC_GROUND_PERSIANGULF:Start(RepeatScanSeconds)
+RepeatScanSeconds=RepeatScanSeconds or 0.05
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+end
+ATC_GROUND_MARIANAISLANDS={
+ClassName="ATC_GROUND_MARIANAISLANDS",
+Airbases={
+[AIRBASE.MarianaIslands.Andersen_AFB]={
+ZoneBoundary={
+[1]={["y"]=16534.138036037,["x"]=11357.42159178,},
+[2]={["y"]=16193.406442738,["x"]=12080.012957533,},
+[3]={["y"]=13846.966851869,["x"]=12017.348398727,},
+[4]={["y"]=13085.815989171,["x"]=11686.317876875,},
+[5]={["y"]=13157.991797443,["x"]=11307.826209991,},
+[6]={["y"]=12055.725179065,["x"]=10795.955695916,},
+[7]={["y"]=12762.455491112,["x"]=8890.9830441032,},
+[8]={["y"]=15955.829493693,["x"]=10333.527220132,},
+[9]={["y"]=16537.500532414,["x"]=11302.009499603,},
+},
+PointsRunways={
+[1]={
+[1]={["y"]=12586.683049611,["x"]=10224.374497932,},
+[2]={["y"]=16191.720475696,["x"]=11791.299100017,},
+[3]={["y"]=16126.93956642,["x"]=11938.855615591,},
+[4]={["y"]=12520.758127164,["x"]=10385.177131701,},
+[5]={["y"]=12584.654720512,["x"]=10227.416991581,},
+},
+[2]={
+[1]={["y"]=12663.030391743,["x"]=9661.9623015306,},
+[2]={["y"]=16478.347303358,["x"]=11328.665745976,},
+[3]={["y"]=16405.4731048,["x"]=11479.11570429,},
+[4]={["y"]=12597.277684174,["x"]=9817.9733769647,},
+[5]={["y"]=12661.894752524,["x"]=9674.4462086962,},
+},
+},
+},
+[AIRBASE.MarianaIslands.Antonio_B_Won_Pat_Intl]={
+ZoneBoundary={
+[1]={["y"]=2288.5182403943,["x"]=1469.0170841716,},
+[2]={["y"]=1126.2025877996,["x"]=1174.37135631,},
+[3]={["y"]=-2015.6461924287,["x"]=-484.62000718931,},
+[4]={["y"]=-2102.1292389114,["x"]=-988.03393750566,},
+[5]={["y"]=476.03853524366,["x"]=-1220.1783269883,},
+[6]={["y"]=2059.2220058047,["x"]=78.889693514402,},
+[7]={["y"]=1898.1396965104,["x"]=705.67531284795,},
+[8]={["y"]=2760.1768681934,["x"]=1026.0681119777,},
+[9]={["y"]=2317.2278959994,["x"]=1460.8143254273,},
+},
+PointsRunways={
+[1]={
+[1]={["y"]=-1872.6620108821,["x"]=-924.3572605835,},
+[2]={["y"]=1763.4754603305,["x"]=735.35988877983,},
+[3]={["y"]=1700.6941677961,["x"]=866.32615476157,},
+[4]={["y"]=-1934.0078007732,["x"]=-779.8149298453,},
+[5]={["y"]=-1875.0113982627,["x"]=-914.95971106094,},
+},
+[2]={
+[1]={["y"]=-1512.9403660377,["x"]=-1005.5903386188,},
+[2]={["y"]=1577.9055714735,["x"]=413.22750176368,},
+[3]={["y"]=1523.1182807849,["x"]=543.89726442232,},
+[4]={["y"]=-1572.5102998047,["x"]=-867.04004322806,},
+[5]={["y"]=-1514.2790162347,["x"]=-1003.5823633233,},
+},
+},
+},
+[AIRBASE.MarianaIslands.Rota_Intl]={
+ZoneBoundary={
+[1]={["y"]=47237.615412849,["x"]=76048.890408862,},
+[2]={["y"]=49938.030053628,["x"]=75921.721582932,},
+[3]={["y"]=49931.24873272,["x"]=75735.184004851,},
+[4]={["y"]=49295.999227075,["x"]=75754.716414519,},
+[5]={["y"]=49286.963307515,["x"]=75510.037806569,},
+[6]={["y"]=48774.280745707,["x"]=75513.331990155,},
+[7]={["y"]=48785.021396773,["x"]=75795.691662161,},
+[8]={["y"]=47232.749278491,["x"]=75839.239059146,},
+[9]={["y"]=47236.687866223,["x"]=76042.706764692,},
+},
+PointsRunways={
+[1]={
+[1]={["y"]=49741.295228062,["x"]=75901.50955922,},
+[2]={["y"]=49739.033213305,["x"]=75768.333440425,},
+[3]={["y"]=47448.460520408,["x"]=75857.400271466,},
+[4]={["y"]=47452.270177742,["x"]=75999.965448133,},
+[5]={["y"]=49738.502011054,["x"]=75905.338915708,},
+},
+},
+},
+[AIRBASE.MarianaIslands.Saipan_Intl]={
+ZoneBoundary={
+[1]={["y"]=100489.08491445,["x"]=179799.05158855,},
+[2]={["y"]=100869.73415313,["x"]=179948.98719903,},
+[3]={["y"]=101364.78967515,["x"]=180831.98517043,},
+[4]={["y"]=101563.85713359,["x"]=180885.21496237,},
+[5]={["y"]=101733.92591034,["x"]=180457.73296886,},
+[6]={["y"]=103340.30228775,["x"]=180990.08362622,},
+[7]={["y"]=103459.55080438,["x"]=180453.77747027,},
+[8]={["y"]=100406.63048095,["x"]=179266.60983762,},
+[9]={["y"]=100225.55027532,["x"]=179423.9380961,},
+[10]={["y"]=100477.48558937,["x"]=179791.9827288,},
+},
+PointsRunways={
+[1]={
+[1]={["y"]=103170.38882002,["x"]=180654.56630524,},
+[2]={["y"]=103235.37868835,["x"]=180497.25368418,},
+[3]={["y"]=100564.72969504,["x"]=179435.41443498,},
+[4]={["y"]=100509.30718722,["x"]=179584.65394733,},
+[5]={["y"]=103163.53918905,["x"]=180651.82645285,},
+},
+[2]={
+[1]={["y"]=103048.83223261,["x"]=180819.94107128,},
+[2]={["y"]=103087.60579257,["x"]=180720.06315265,},
+[3]={["y"]=101037.52694966,["x"]=179899.50061624,},
+[4]={["y"]=100994.61708907,["x"]=180009.33151758,},
+[5]={["y"]=103043.26643227,["x"]=180820.40488798,},
+},
+},
+},
+[AIRBASE.MarianaIslands.Tinian_Intl]={
+ZoneBoundary={
+[1]={["y"]=88393.477575413,["x"]=166704.16076438,},
+[2]={["y"]=91581.732441809,["x"]=167402.54409276,},
+[3]={["y"]=91533.451647402,["x"]=166826.23670062,},
+[4]={["y"]=90827.604136952,["x"]=166699.75590414,},
+[5]={["y"]=90894.853975623,["x"]=166375.37836304,},
+[6]={["y"]=89995.027922869,["x"]=166224.92495935,},
+[7]={["y"]=88937.62899352,["x"]=166244.48573911,},
+[8]={["y"]=88408.916178231,["x"]=166480.39896864,},
+[9]={["y"]=88387.745481732,["x"]=166685.82715656,},
+},
+PointsRunways={
+[1]={
+[1]={["y"]=91329.480937912,["x"]=167204.44064529,},
+[2]={["y"]=91363.95475433,["x"]=167038.15603429,},
+[3]={["y"]=88585.849307337,["x"]=166520.3807647,},
+[4]={["y"]=88554.422227212,["x"]=166686.49505251,},
+[5]={["y"]=91318.8152578,["x"]=167203.31794212,},
+},
+},
+},
+},
+}
+function ATC_GROUND_MARIANAISLANDS:New(AirbaseNames)
+local self=BASE:Inherit(self,ATC_GROUND:New(self.Airbases,AirbaseNames))
+self:SetKickSpeedKmph(50)
+self:SetMaximumKickSpeedKmph(150)
+return self
+end
+function ATC_GROUND_MARIANAISLANDS:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
 self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
 end
