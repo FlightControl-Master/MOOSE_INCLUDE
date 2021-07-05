@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-05T12:44:02.0000000Z-04ef32420b1266f6d6801929eb7784cdb9ef00ac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-05T16:54:45.0000000Z-b7bc3cfbcf7d558580d70bdcadc7c2bcbc8ecdcf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67492,7 +67492,7 @@ CTLD.SkipFrequencies={
 905,907,920,935,942,950,995,
 1000,1025,1030,1050,1065,1116,1175,1182,1210
 }
-CTLD.version="0.1.4r1"
+CTLD.version="0.1.4r2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67815,9 +67815,12 @@ local height=Unit:GetHeight()
 local droppedcargo={}
 for i=1,number do
 local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
-local cratedistance=i*4+6
+local cratedistance=i*4+8
 if IsHerc then
 cratedistance=i*4+12
+end
+for i=1,50 do
+math.random(90,270)
 end
 local rheading=math.floor(math.random(90,270)*heading+1/360)
 if not IsHerc then
@@ -68198,11 +68201,11 @@ buildables[name]=object
 foundbuilds=true
 else
 buildables[name].Found=buildables[name].Found+1
+foundbuilds=true
+end
 if buildables[name].Found>=buildables[name].Required then
 buildables[name].CanBuild=true
 canbuild=true
-end
-foundbuilds=true
 end
 end
 end
@@ -68248,7 +68251,7 @@ local canmove=false
 if type==CTLD_CARGO.Enum.VEHICLE then canmove=true end
 local temptable=Build.Template or{}
 local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
-local randomcoord=zone:GetRandomCoordinate(20,50):GetVec2()
+local randomcoord=zone:GetRandomCoordinate(35):GetVec2()
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
