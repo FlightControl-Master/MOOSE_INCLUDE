@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-05T16:54:45.0000000Z-b7bc3cfbcf7d558580d70bdcadc7c2bcbc8ecdcf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-06T18:24:35.0000000Z-5d3ea57d4dae037dfd628aa7e1ec10d3f1ac9bca ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66409,7 +66409,7 @@ if _triggerZone==nil then
 self:E(self.lid.."ERROR: Can\'t find zone called ".._zone,10)
 return
 end
-local _description=_description or"none"
+local _description=_description or"Unknown"
 local pos={}
 if _randomPoint then
 local _pos=_triggerZone:GetRandomPointVec3()
@@ -66425,7 +66425,7 @@ _country=country.id.RUSSIA
 else
 _country=country.id.UN_PEACEKEEPERS
 end
-self:_AddCsar(_coalition,_country,pos,"PoW","Unknown",nil,freq,_nomessage,_description)
+self:_AddCsar(_coalition,_country,pos,"PoW",_description,nil,freq,_nomessage,_description)
 return self
 end
 function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
@@ -67375,10 +67375,10 @@ Positionable=nil,
 HasBeenDropped=false,
 }
 CTLD_CARGO.Enum={
-VEHICLE="Vehicle",
-TROOPS="Troops",
-FOB="FOB",
-CRATE="CRATE",
+["VEHICLE"]="Vehicle",
+["TROOPS"]="Troops",
+["FOB"]="FOB",
+["CRATE"]="Crate",
 }
 function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped)
 local self=BASE:Inherit(self,BASE:New())
@@ -67492,7 +67492,7 @@ CTLD.SkipFrequencies={
 905,907,920,935,942,950,995,
 1000,1025,1030,1050,1065,1116,1175,1182,1210
 }
-CTLD.version="0.1.4r2"
+CTLD.version="0.1.3r2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67773,8 +67773,11 @@ if troopsize+numberonboard>trooplimit then
 self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
 return
 else
+self.CargoCounter=self.CargoCounter+1
+local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded)
+self:T({cargotype=loadcargotype})
 loaded.Troopsloaded=loaded.Troopsloaded+troopsize
-table.insert(loaded.Cargo,Cargotype)
+table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
 self:_SendMessage("Troops boarded!",10,false,Group)
 self:__TroopsPickedUp(1,Group,Unit,Cargotype)
@@ -68207,6 +68210,7 @@ if buildables[name].Found>=buildables[name].Required then
 buildables[name].CanBuild=true
 canbuild=true
 end
+self:T({buildables=buildables})
 end
 end
 local report=REPORT:New("Checklist Buildable Crates")
