@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-02T06:51:51.0000000Z-353d6dfec0ed1d574945c537ca6c3e7b87e9f3ea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-06T19:49:51.0000000Z-89308f7d06804f84492366467052e4ebe3822b81 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21668,7 +21668,7 @@ name==AIRBASE.PersianGulf.Abu_Dhabi_International_Airport or
 name==AIRBASE.PersianGulf.Dubai_Intl or
 name==AIRBASE.PersianGulf.Shiraz_International_Airport or
 name==AIRBASE.PersianGulf.Kish_International_Airport or
-name==AIRBASE.MarianaIslands.Andersen then
+name==AIRBASE.MarianaIslands.Andersen_AFB then
 exception=1
 elseif UTILS.GetDCSMap()==DCSMAP.Syria and N>=2 and
 name~=AIRBASE.Syria.Minakh and
