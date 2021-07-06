@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-06T18:26:20.0000000Z-65bd7909e105a9ff4011b86f6aa870dadbd5b5a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-06T19:56:15.0000000Z-97668e5413aaa6323938fa85ff823ee7179b1a86 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62106,7 +62106,7 @@ self.fuellow=true
 local airbase=self.destbase or self.homebase
 if self.airwing then
 local tanker=self.airwing:GetTankerForFlight(self)
-if tanker then
+if tanker and self.fuellowrefuel then
 self:I(self.lid..string.format("Send to refuel at tanker %s",tanker.flightgroup:GetName()))
 local coordinate=self:GetCoordinate():GetIntermediateCoordinate(tanker.flightgroup:GetCoordinate(),0.75)
 self:Refuel(coordinate)
