@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-06T19:57:08.0000000Z-51acd33d19715c9157182a4bd5a3f2ee480548e7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-10T14:56:35.0000000Z-a69865b8c95a8f342260f67adc26990cfa51cc38 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66189,7 +66189,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.7r2"
+CSAR.version="0.1.8r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66274,6 +66274,9 @@ self.autosmokedistance=1000
 self.limitmaxdownedpilots=true
 self.maxdownedpilots=25
 self:_GenerateVHFrequencies()
+self.approachdist_far=5000
+self.approachdist_near=3000
+self.pilotmustopendoors=false
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -66625,12 +66628,12 @@ end
 local _heliCoord=_heliUnit:GetCoordinate()
 local _leaderCoord=_woundedGroup:GetCoordinate()
 local _distance=self:_GetDistance(_heliCoord,_leaderCoord)
-if _distance<3000 and _distance>0 then
+if _distance<self.approachdist_near and _distance>0 then
 if self:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)==true then
 _downedpilot.timestamp=timer.getAbsTime()
 self:__Approach(-5,heliname,woundedgroupname)
 end
-elseif _distance>=3000 and _distance<5000 then
+elseif _distance>=self.approachdist_near and _distance<self.approachdist_far then
 self.heliVisibleMessage[_lookupKeyHeli]=nil
 _downedpilot.timestamp=timer.getAbsTime()
 self:__Approach(-10,heliname,woundedgroupname)
@@ -66693,6 +66696,35 @@ group:SetAIOn()
 group:RouteToVec2(coordinate,5)
 return self
 end
+function CSAR:_IsLoadingDoorOpen(unit_name)
+self:T(self.lid.." _IsLoadingDoorOpen")
+local ret_val=false
+local unit=Unit.getByName(unit_name)
+if unit~=nil then
+local type_name=unit:getTypeName()
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+self:I(unit_name.." Cargo doors are open or cargo door not present")
+ret_val=true
+end
+if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
+self:I(unit_name.." a side door is open")
+ret_val=true
+end
+if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
+self:I(unit_name.." a side door is open ")
+ret_val=true
+end
+if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
+self:I(unit_name.." front door(s) are open")
+ret_val=true
+end
+if ret_val==false then
+self:I(unit_name.." all doors are closed")
+end
+return ret_val
+end
+return false
+end
 function CSAR:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)
 self:T(self.lid.." _CheckCloseWoundedGroup")
 local _woundedLeader=_woundedGroup
@@ -66734,15 +66766,25 @@ _time=self.landedStatus[_lookupKeyHeli]-10
 self.landedStatus[_lookupKeyHeli]=_time
 end
 if _time<=0 or _distance<self.loadDistance then
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, bugger!",self.messageTime,true)
+return true
+else
 self.landedStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
 return false
 end
 end
+end
 else
 if(_distance<self.loadDistance)then
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, honk!",self.messageTime,true)
+return true
+else
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
 return false
+end
 end
 end
 else
@@ -66768,9 +66810,14 @@ end
 if _time>0 then
 self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",self.messageTime,true)
 else
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, noob!",self.messageTime,true)
+return true
+else
 self.hoverStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
 return false
+end
 end
 _reset=false
 else
