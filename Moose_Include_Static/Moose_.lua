@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-06T19:49:51.0000000Z-89308f7d06804f84492366467052e4ebe3822b81 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-10T15:11:00.0000000Z-18b45c9621b17243f18b1af779b5320e16c39ab6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -54951,6 +54951,2773 @@ local S=UTILS.Split(string.format("%.1f",N),".")
 local t=S[1]
 local h=S[2]
 return t,h
+end
+do
+CTLD_CARGO={
+ClassName="CTLD_CARGO",
+ID=0,
+Name="none",
+Templates={},
+CargoType="none",
+HasBeenMoved=false,
+LoadDirectly=false,
+CratesNeeded=0,
+Positionable=nil,
+HasBeenDropped=false,
+}
+CTLD_CARGO.Enum={
+["VEHICLE"]="Vehicle",
+["TROOPS"]="Troops",
+["FOB"]="FOB",
+["CRATE"]="Crate",
+}
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped)
+local self=BASE:Inherit(self,BASE:New())
+self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
+self.ID=ID or math.random(100000,1000000)
+self.Name=Name or"none"
+self.Templates=Templates or{}
+self.CargoType=Sorte or"type"
+self.HasBeenMoved=HasBeenMoved or false
+self.LoadDirectly=LoadDirectly or false
+self.CratesNeeded=CratesNeeded or 0
+self.Positionable=Positionable or nil
+self.HasBeenDropped=Dropped or false
+return self
+end
+function CTLD_CARGO:GetID()
+return self.ID
+end
+function CTLD_CARGO:GetName()
+return self.Name
+end
+function CTLD_CARGO:GetTemplates()
+return self.Templates
+end
+function CTLD_CARGO:HasMoved()
+return self.HasBeenMoved
+end
+function CTLD_CARGO:WasDropped()
+return self.HasBeenDropped
+end
+function CTLD_CARGO:CanLoadDirectly()
+return self.LoadDirectly
+end
+function CTLD_CARGO:GetCratesNeeded()
+return self.CratesNeeded
+end
+function CTLD_CARGO:GetType()
+return self.CargoType
+end
+function CTLD_CARGO:GetPositionable()
+return self.Positionable
+end
+function CTLD_CARGO:SetHasMoved(moved)
+self.HasBeenMoved=moved or false
+end
+function CTLD_CARGO:Isloaded()
+if self.HasBeenMoved and not self.WasDropped()then
+return true
+else
+return false
+end
+end
+function CTLD_CARGO:SetWasDropped(dropped)
+self.HasBeenDropped=dropped or false
+end
+end
+do
+CTLD={
+ClassName="CTLD",
+verbose=0,
+lid="",
+coalition=1,
+coalitiontxt="blue",
+PilotGroups={},
+CtldUnits={},
+FreeVHFFrequencies={},
+FreeUHFFrequencies={},
+FreeFMFrequencies={},
+CargoCounter=0,
+dropOffZones={},
+wpZones={},
+Cargo_Troops={},
+Cargo_Crates={},
+Loaded_Cargo={},
+Spawned_Crates={},
+Spawned_Cargo={},
+CrateDistance=30,
+debug=false,
+wpZones={},
+pickupZones={},
+dropOffZones={},
+}
+CTLD.CargoZoneType={
+LOAD="load",
+DROP="drop",
+MOVE="move",
+}
+CTLD.UnitTypes={
+["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4},
+["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2},
+["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4},
+["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2},
+["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8},
+["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12},
+["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0},
+["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8},
+["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
+["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
+}
+CTLD.SkipFrequencies={
+214,274,291.5,295,297.5,
+300.5,304,307,309.5,311,312,312.5,316,
+320,324,328,329,330,336,337,
+342,343,348,351,352,353,358,
+363,365,368,372.5,374,
+380,381,384,389,395,396,
+414,420,430,432,435,440,450,455,462,470,485,
+507,515,520,525,528,540,550,560,570,577,580,602,625,641,662,670,680,682,690,
+705,720,722,730,735,740,745,750,770,795,
+822,830,862,866,
+905,907,920,935,942,950,995,
+1000,1025,1030,1050,1065,1116,1175,1182,1210
+}
+CTLD.version="0.1.3r2"
+function CTLD:New(Coalition,Prefixes,Alias)
+local self=BASE:Inherit(self,FSM:New())
+BASE:T({Coalition,Prefixes,Alias})
+if Coalition and type(Coalition)=="string"then
+if Coalition=="blue"then
+self.coalition=coalition.side.BLUE
+self.coalitiontxt=Coalition
+elseif Coalition=="red"then
+self.coalition=coalition.side.RED
+self.coalitiontxt=Coalition
+elseif Coalition=="neutral"then
+self.coalition=coalition.side.NEUTRAL
+self.coalitiontxt=Coalition
+else
+self:E("ERROR: Unknown coalition in CTLD!")
+end
+else
+self.coalition=Coalition
+self.coalitiontxt=string.lower(UTILS.GetCoalitionName(self.coalition))
+end
+if Alias then
+self.alias=tostring(Alias)
+else
+self.alias="UNHCR"
+if self.coalition then
+if self.coalition==coalition.side.RED then
+self.alias="Red CTLD"
+elseif self.coalition==coalition.side.BLUE then
+self.alias="Blue CTLD"
+end
+end
+end
+self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","TroopsPickedUp","*")
+self:AddTransition("*","CratesPickedUp","*")
+self:AddTransition("*","TroopsDeployed","*")
+self:AddTransition("*","TroopsRTB","*")
+self:AddTransition("*","CratesDropped","*")
+self:AddTransition("*","CratesBuild","*")
+self:AddTransition("*","Stop","Stopped")
+self.PilotGroups={}
+self.CtldUnits={}
+self.FreeVHFFrequencies={}
+self.FreeUHFFrequencies={}
+self.FreeFMFrequencies={}
+self.UsedVHFFrequencies={}
+self.UsedUHFFrequencies={}
+self.UsedFMFrequencies={}
+self.RadioSound="beacon.ogg"
+self.pickupZones={}
+self.dropOffZones={}
+self.wpZones={}
+self.Cargo_Crates={}
+self.Cargo_Troops={}
+self.Loaded_Cargo={}
+self.Spawned_Crates={}
+self.Spawned_Cargo={}
+self.MenusDone={}
+self.DroppedTroops={}
+self.DroppedCrates={}
+self.CargoCounter=0
+self.CrateCounter=0
+self.TroopCounter=0
+self.CrateDistance=30
+self.prefixes=Prefixes or{"Cargoheli"}
+self.useprefix=true
+self.maximumHoverHeight=15
+self.minimumHoverHeight=4
+self.forcehoverload=true
+self.hoverautoloading=true
+self.smokedistance=2000
+self.movetroopstowpzone=true
+self.movetroopsdistance=5000
+self.enableHercules=false
+self.HercMinAngels=165
+self.HercMaxAngels=2000
+self.suppressmessages=false
+for i=1,100 do
+math.random()
+end
+self:_GenerateVHFrequencies()
+self:_GenerateUHFrequencies()
+self:_GenerateFMFrequencies()
+return self
+end
+function CTLD:_GetUnitCapabilities(Unit)
+self:T(self.lid.." _GetUnitCapabilities")
+local _unit=Unit
+local unittype=_unit:GetTypeName()
+local capabilities=self.UnitTypes[unittype]
+if not capabilities or capabilities=={}then
+capabilities={}
+capabilities.troops=false
+capabilities.crates=false
+capabilities.cratelimit=0
+capabilities.trooplimit=0
+capabilities.type="generic"
+end
+return capabilities
+end
+function CTLD:_GenerateUHFrequencies()
+self:T(self.lid.." _GenerateUHFrequencies")
+self.FreeUHFFrequencies={}
+local _start=220000000
+while _start<399000000 do
+table.insert(self.FreeUHFFrequencies,_start)
+_start=_start+500000
+end
+return self
+end
+function CTLD:_GenerateFMFrequencies()
+self:T(self.lid.." _GenerateFMrequencies")
+self.FreeFMFrequencies={}
+local _start=220000000
+while _start<399000000 do
+_start=_start+500000
+end
+for _first=3,7 do
+for _second=0,5 do
+for _third=0,9 do
+local _frequency=((100*_first)+(10*_second)+_third)*100000
+table.insert(self.FreeFMFrequencies,_frequency)
+end
+end
+end
+return self
+end
+function CTLD:_GenerateVHFrequencies()
+self:T(self.lid.." _GenerateVHFrequencies")
+local _skipFrequencies=self.SkipFrequencies
+self.FreeVHFFrequencies={}
+self.UsedVHFFrequencies={}
+local _start=200000
+while _start<400000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(self.FreeVHFFrequencies,_start)
+end
+_start=_start+10000
+end
+_start=400000
+while _start<850000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(self.FreeVHFFrequencies,_start)
+end
+_start=_start+10000
+end
+_start=850000
+while _start<=999000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(self.FreeVHFFrequencies,_start)
+end
+_start=_start+50000
+end
+return self
+end
+function CTLD:_GenerateLaserCodes()
+self:T(self.lid.." _GenerateLaserCodes")
+self.jtacGeneratedLaserCodes={}
+local _code=1111
+local _count=1
+while _code<1777 and _count<30 do
+while true do
+_code=_code+1
+if not self:_ContainsDigit(_code,8)
+and not self:_ContainsDigit(_code,9)
+and not self:_ContainsDigit(_code,0)then
+table.insert(self.jtacGeneratedLaserCodes,_code)
+break
+end
+end
+_count=_count+1
+end
+end
+function CTLD:_ContainsDigit(_number,_numberToFind)
+self:T(self.lid.." _ContainsDigit")
+local _thisNumber=_number
+local _thisDigit=0
+while _thisNumber~=0 do
+_thisDigit=_thisNumber%10
+_thisNumber=math.floor(_thisNumber/10)
+if _thisDigit==_numberToFind then
+return true
+end
+end
+return false
+end
+function CTLD:_EventHandler(EventData)
+self:T(string.format("%s Event = %d",self.lid,EventData.id))
+local event=EventData
+if event.id==EVENTS.PlayerEnterAircraft or event.id==EVENTS.PlayerEnterUnit then
+local _coalition=event.IniCoalition
+if _coalition~=self.coalition then
+return
+end
+local _unit=event.IniUnit
+local _group=event.IniGroup
+if _unit:IsHelicopter()or _group:IsHelicopter()then
+local unitname=event.IniUnitName or"none"
+self.Loaded_Cargo[unitname]=nil
+self:_RefreshF10Menus()
+end
+if _unit:GetTypeName()=="Hercules"and self.enableHercules then
+self:_RefreshF10Menus()
+end
+return
+elseif event.id==EVENTS.PlayerLeaveUnit then
+local unitname=event.IniUnitName or"none"
+self.CtldUnits[unitname]=nil
+self.Loaded_Cargo[unitname]=nil
+end
+return self
+end
+function CTLD:_SendMessage(Text,Time,Clearscreen,Group)
+self:T(self.lid.." _SendMessage")
+if not self.suppressmessages then
+local m=MESSAGE:New(Text,Time,"CTLD",Clearscreen):ToGroup(Group)
+end
+return self
+end
+function CTLD:_LoadTroops(Group,Unit,Cargotype)
+self:T(self.lid.." _LoadTroops")
+local grounded=not self:IsUnitInAir(Unit)
+local hoverload=self:CanHoverLoad(Unit)
+local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+if not inzone then
+self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
+if not self.debug then return self end
+elseif not grounded and not hoverload then
+self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
+if not self.debug then return self end
+end
+local group=Group
+local unit=Unit
+local unitname=unit:GetName()
+local cargotype=Cargotype
+local cratename=cargotype:GetName()
+local unittype=unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(Unit)
+local cantroops=capabilities.troops
+local trooplimit=capabilities.trooplimit
+local troopsize=cargotype:GetCratesNeeded()
+local numberonboard=0
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+numberonboard=loaded.Troopsloaded or 0
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+end
+if troopsize+numberonboard>trooplimit then
+self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
+return
+else
+self.CargoCounter=self.CargoCounter+1
+local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded)
+self:T({cargotype=loadcargotype})
+loaded.Troopsloaded=loaded.Troopsloaded+troopsize
+table.insert(loaded.Cargo,loadcargotype)
+self.Loaded_Cargo[unitname]=loaded
+self:_SendMessage("Troops boarded!",10,false,Group)
+self:__TroopsPickedUp(1,Group,Unit,Cargotype)
+end
+return self
+end
+function CTLD:_GetCrates(Group,Unit,Cargo,number,drop)
+self:T(self.lid.." _GetCrates")
+local cgoname=Cargo:GetName()
+local inzone=false
+local drop=drop or false
+if not drop then
+inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+else
+inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
+end
+if not inzone then
+self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
+if not self.debug then return self end
+end
+local capabilities=self:_GetUnitCapabilities(Unit)
+local canloadcratesno=capabilities.cratelimit
+local loaddist=self.CrateDistance or 30
+local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist)
+if numbernearby>=canloadcratesno and not drop then
+self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
+return self
+end
+local IsHerc=self:IsHercules(Unit)
+local cargotype=Cargo
+local number=number or cargotype:GetCratesNeeded()
+local cratesneeded=cargotype:GetCratesNeeded()
+local cratename=cargotype:GetName()
+local cratetemplate="Container"
+local position=Unit:GetCoordinate()
+local heading=Unit:GetHeading()+1
+local height=Unit:GetHeight()
+local droppedcargo={}
+for i=1,number do
+local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
+local cratedistance=i*4+8
+if IsHerc then
+cratedistance=i*4+12
+end
+for i=1,50 do
+math.random(90,270)
+end
+local rheading=math.floor(math.random(90,270)*heading+1/360)
+if not IsHerc then
+rheading=rheading+180
+end
+if rheading>360 then rheading=rheading-360 end
+local cratecoord=position:Translate(cratedistance,rheading)
+local cratevec2=cratecoord:GetVec2()
+self.CrateCounter=self.CrateCounter+1
+self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType("container_cargo","Cargos",country.id.GERMANY)
+:InitCoordinate(cratecoord)
+:Spawn(270,cratealias)
+local templ=cargotype:GetTemplates()
+local sorte=cargotype:GetType()
+self.CargoCounter=self.CargoCounter+1
+local realcargo=nil
+if drop then
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true)
+table.insert(droppedcargo,realcargo)
+else
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter])
+end
+table.insert(self.Spawned_Cargo,realcargo)
+end
+local text=string.format("Crates for %s have been positioned near you!",cratename)
+if drop then
+text=string.format("Crates for %s have been dropped!",cratename)
+self:__CratesDropped(1,Group,Unit,droppedcargo)
+end
+self:_SendMessage(text,10,false,Group)
+return self
+end
+function CTLD:_ListCratesNearby(_group,_unit)
+self:T(self.lid.." _ListCratesNearby")
+local finddist=self.CrateDistance or 30
+local crates,number=self:_FindCratesNearby(_group,_unit,finddist)
+if number>0 then
+local text=REPORT:New("Crates Found Nearby:")
+text:Add("------------------------------------------------------------")
+for _,_entry in pairs(crates)do
+local entry=_entry
+local name=entry:GetName()
+local dropped=entry:WasDropped()
+if dropped then
+text:Add(string.format("Dropped crate for %s",name))
+else
+text:Add(string.format("Crate for %s",name))
+end
+end
+if text:GetCount()==1 then
+text:Add("--------- N O N E ------------")
+end
+text:Add("------------------------------------------------------------")
+self:_SendMessage(text:Text(),30,true,_group)
+else
+self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist),10,false,_group)
+end
+return self
+end
+function CTLD:_GetDistance(_point1,_point2)
+self:T(self.lid.." _GetDistance")
+if _point1 and _point2 then
+local distance=_point1:DistanceFromPointVec2(_point2)
+return distance
+else
+return-1
+end
+end
+function CTLD:_FindCratesNearby(_group,_unit,_dist)
+self:T(self.lid.." _FindCratesNearby")
+local finddist=_dist
+local location=_group:GetCoordinate()
+local existingcrates=self.Spawned_Cargo
+local index=0
+local found={}
+for _,_cargoobject in pairs(existingcrates)do
+local cargo=_cargoobject
+local static=cargo:GetPositionable()
+local staticid=cargo:GetID()
+if static and static:IsAlive()then
+local staticpos=static:GetCoordinate()
+local distance=self:_GetDistance(location,staticpos)
+if distance<=finddist and static then
+index=index+1
+table.insert(found,staticid,cargo)
+end
+end
+end
+return found,index
+end
+function CTLD:_LoadCratesNearby(Group,Unit)
+self:T(self.lid.." _LoadCratesNearby")
+local group=Group
+local unit=Unit
+local unitname=unit:GetName()
+local unittype=unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(Unit)
+local cancrates=capabilities.crates
+local cratelimit=capabilities.cratelimit
+local grounded=not self:IsUnitInAir(Unit)
+local canhoverload=self:CanHoverLoad(Unit)
+if not cancrates then
+self:_SendMessage("Sorry this chopper cannot carry crates!",10,false,Group)
+elseif self.forcehoverload and not canhoverload then
+self:_SendMessage("Hover over the crates to pick them up!",10,false,Group)
+elseif not grounded and not canhoverload then
+self:_SendMessage("Land or hover over the crates to pick them up!",10,false,Group)
+else
+local numberonboard=0
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+numberonboard=loaded.Cratesloaded or 0
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+end
+local finddist=self.CrateDistance or 30
+local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
+if number==0 or numberonboard==cratelimit then
+self:_SendMessage("Sorry no loadable crates nearby or fully loaded!",10,false,Group)
+return
+else
+local capacity=cratelimit-numberonboard
+local crateidsloaded={}
+local loops=0
+while loaded.Cratesloaded<cratelimit and loops<number do
+loops=loops+1
+local crateind=0
+for _ind,_crate in pairs(nearcrates)do
+if not _crate:HasMoved()and not _crate:WasDropped()and _crate:GetID()>crateind then
+crateind=_crate:GetID()
+end
+end
+if crateind>0 then
+local crate=nearcrates[crateind]
+loaded.Cratesloaded=loaded.Cratesloaded+1
+crate:SetHasMoved(true)
+table.insert(loaded.Cargo,crate)
+table.insert(crateidsloaded,crate:GetID())
+crate:GetPositionable():Destroy()
+crate.Positionable=nil
+self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
+self:__CratesPickedUp(1,Group,Unit,crate)
+end
+end
+self.Loaded_Cargo[unitname]=loaded
+local existingcrates=self.Spawned_Cargo
+local newexcrates={}
+for _,_crate in pairs(existingcrates)do
+local excrate=_crate
+local ID=excrate:GetID()
+for _,_ID in pairs(crateidsloaded)do
+if ID~=_ID then
+table.insert(newexcrates,_crate)
+end
+end
+end
+self.Spawned_Cargo=nil
+self.Spawned_Cargo=newexcrates
+end
+end
+return self
+end
+function CTLD:_ListCargo(Group,Unit)
+self:T(self.lid.." _ListCargo")
+local unitname=Unit:GetName()
+local unittype=Unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(Unit)
+local trooplimit=capabilities.trooplimit
+local cratelimit=capabilities.cratelimit
+local loadedcargo=self.Loaded_Cargo[unitname]or{}
+if self.Loaded_Cargo[unitname]then
+local no_troops=loadedcargo.Troopsloaded or 0
+local no_crates=loadedcargo.Cratesloaded or 0
+local cargotable=loadedcargo.Cargo or{}
+local report=REPORT:New("Transport Checkout Sheet")
+report:Add("------------------------------------------------------------")
+report:Add(string.format("Troops: %d(%d), Crates: %d(%d)",no_troops,trooplimit,no_crates,cratelimit))
+report:Add("------------------------------------------------------------")
+report:Add("-- TROOPS --")
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+if type==CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
+report:Add(string.format("Troop: %s size %d",cargo:GetName(),cargo:GetCratesNeeded()))
+end
+end
+if report:GetCount()==4 then
+report:Add("--------- N O N E ------------")
+end
+report:Add("------------------------------------------------------------")
+report:Add("-- CRATES --")
+local cratecount=0
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+if type~=CTLD_CARGO.Enum.TROOPS then
+report:Add(string.format("Crate: %s size 1",cargo:GetName()))
+cratecount=cratecount+1
+end
+end
+if cratecount==0 then
+report:Add("--------- N O N E ------------")
+end
+report:Add("------------------------------------------------------------")
+local text=report:Text()
+self:_SendMessage(text,30,true,Group)
+else
+self:_SendMessage(string.format("Nothing loaded!\nTroop limit: %d | Crate limit %d",trooplimit,cratelimit),10,false,Group)
+end
+return self
+end
+function CTLD:IsHercules(Unit)
+if Unit:GetTypeName()=="Hercules"then
+return true
+else
+return false
+end
+end
+function CTLD:_UnloadTroops(Group,Unit)
+self:T(self.lid.." _UnloadTroops")
+local droppingatbase=false
+local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+if inzone then
+droppingatbase=true
+end
+local hoverunload=self:IsCorrectHover(Unit)
+local IsHerc=self:IsHercules(Unit)
+if IsHerc then
+hoverunload=self:IsCorrectFlightParameters(Unit)
+end
+local grounded=not self:IsUnitInAir(Unit)
+local unitname=Unit:GetName()
+if self.Loaded_Cargo[unitname]and(grounded or hoverunload)then
+if not droppingatbase or self.debug then
+local loadedcargo=self.Loaded_Cargo[unitname]or{}
+local cargotable=loadedcargo.Cargo
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+if type==CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
+local name=cargo:GetName()or"none"
+local temptable=cargo:GetTemplates()or{}
+local position=Group:GetCoordinate()
+local zoneradius=100
+local factor=1
+if IsHerc then
+factor=cargo:GetCratesNeeded()or 1
+zoneradius=Unit:GetVelocityMPS()or 100
+end
+local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,zoneradius*factor)
+local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
+for _,_template in pairs(temptable)do
+self.TroopCounter=self.TroopCounter+1
+local alias=string.format("%s-%d",_template,math.random(1,100000))
+self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
+:InitRandomizeUnits(true,20,2)
+:InitDelayOff()
+:SpawnFromVec2(randomcoord)
+if self.movetroopstowpzone then
+self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
+end
+end
+cargo:SetWasDropped(true)
+self:_SendMessage(string.format("Dropped Troops %s into action!",name),10,false,Group)
+self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+end
+end
+else
+self:_SendMessage("Troops have returned to base!",10,false,Group)
+self:__TroopsRTB(1,Group,Unit)
+end
+local loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+local loadedcargo=self.Loaded_Cargo[unitname]or{}
+local cargotable=loadedcargo.Cargo or{}
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+local dropped=cargo:WasDropped()
+if type~=CTLD_CARGO.Enum.TROOP and not dropped then
+table.insert(loaded.Cargo,_cargo)
+loaded.Cratesloaded=loaded.Cratesloaded+1
+end
+end
+self.Loaded_Cargo[unitname]=nil
+self.Loaded_Cargo[unitname]=loaded
+else
+if IsHerc then
+self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
+else
+self:_SendMessage("Nothing loaded or not hovering within parameters!",10,false,Group)
+end
+end
+return self
+end
+function CTLD:_UnloadCrates(Group,Unit)
+self:T(self.lid.." _UnloadCrates")
+local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
+if not inzone then
+self:_SendMessage("You are not close enough to a drop zone!",10,false,Group)
+if not self.debug then
+return self
+end
+end
+local hoverunload=self:IsCorrectHover(Unit)
+local IsHerc=self:IsHercules(Unit)
+if IsHerc then
+hoverunload=self:IsCorrectFlightParameters(Unit)
+end
+local grounded=not self:IsUnitInAir(Unit)
+local unitname=Unit:GetName()
+if self.Loaded_Cargo[unitname]and(grounded or hoverunload)then
+local loadedcargo=self.Loaded_Cargo[unitname]or{}
+local cargotable=loadedcargo.Cargo
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+if type~=CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
+self:_GetCrates(Group,Unit,cargo,1,true)
+cargo:SetWasDropped(true)
+cargo:SetHasMoved(true)
+end
+end
+local loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+local size=cargo:GetCratesNeeded()
+if type==CTLD_CARGO.Enum.TROOP then
+table.insert(loaded.Cargo,_cargo)
+loaded.Cratesloaded=loaded.Troopsloaded+size
+end
+end
+self.Loaded_Cargo[unitname]=nil
+self.Loaded_Cargo[unitname]=loaded
+else
+if IsHerc then
+self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
+else
+self:_SendMessage("Nothing loaded or not hovering within parameters!",10,false,Group)
+end
+end
+return self
+end
+function CTLD:_BuildCrates(Group,Unit)
+self:T(self.lid.." _BuildCrates")
+local finddist=self.CrateDistance or 30
+local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
+local buildables={}
+local foundbuilds=false
+local canbuild=false
+if number>0 then
+for _,_crate in pairs(crates)do
+local Crate=_crate
+if Crate:WasDropped()then
+local name=Crate:GetName()
+local required=Crate:GetCratesNeeded()
+local template=Crate:GetTemplates()
+local ctype=Crate:GetType()
+if not buildables[name]then
+local object={}
+object.Name=name
+object.Required=required
+object.Found=1
+object.Template=template
+object.CanBuild=false
+object.Type=ctype
+buildables[name]=object
+foundbuilds=true
+else
+buildables[name].Found=buildables[name].Found+1
+foundbuilds=true
+end
+if buildables[name].Found>=buildables[name].Required then
+buildables[name].CanBuild=true
+canbuild=true
+end
+self:T({buildables=buildables})
+end
+end
+local report=REPORT:New("Checklist Buildable Crates")
+report:Add("------------------------------------------------------------")
+for _,_build in pairs(buildables)do
+local build=_build
+local name=build.Name
+local needed=build.Required
+local found=build.Found
+local txtok="NO"
+if build.CanBuild then
+txtok="YES"
+end
+local text=string.format("Type: %s | Required %d | Found %d | Can Build %s",name,needed,found,txtok)
+report:Add(text)
+end
+if not foundbuilds then report:Add("     --- None Found ---")end
+report:Add("------------------------------------------------------------")
+local text=report:Text()
+self:_SendMessage(text,30,true,Group)
+if canbuild then
+for _,_build in pairs(buildables)do
+local build=_build
+if build.CanBuild then
+self:_CleanUpCrates(crates,build,number)
+self:_BuildObjectFromCrates(Group,Unit,build)
+end
+end
+end
+else
+self:_SendMessage(string.format("No crates within %d meters!",finddist),10,false,Group)
+end
+return self
+end
+function CTLD:_BuildObjectFromCrates(Group,Unit,Build)
+self:T(self.lid.." _BuildObjectFromCrates")
+local position=Unit:GetCoordinate()or Group:GetCoordinate()
+local unitname=Unit:GetName()or Group:GetName()
+local name=Build.Name
+local type=Build.Type
+local canmove=false
+if type==CTLD_CARGO.Enum.VEHICLE then canmove=true end
+local temptable=Build.Template or{}
+local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
+local randomcoord=zone:GetRandomCoordinate(35):GetVec2()
+for _,_template in pairs(temptable)do
+self.TroopCounter=self.TroopCounter+1
+local alias=string.format("%s-%d",_template,math.random(1,100000))
+self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
+:InitRandomizeUnits(true,20,2)
+:InitDelayOff()
+:SpawnFromVec2(randomcoord)
+if self.movetroopstowpzone and canmove then
+self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
+end
+self:__CratesBuild(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+end
+return self
+end
+function CTLD:_MoveGroupToZone(Group)
+self:T(self.lid.." _MoveGroupToZone")
+local groupname=Group:GetName()or"none"
+local groupcoord=Group:GetCoordinate()
+local outcome,name,zone,distance=self:IsUnitInZone(Group,CTLD.CargoZoneType.MOVE)
+if(distance<=self.movetroopsdistance)and zone then
+local groupname=Group:GetName()
+local zonecoord=zone:GetRandomCoordinate(20,125)
+local coordinate=zonecoord:GetVec2()
+Group:SetAIOn()
+Group:OptionAlarmStateAuto()
+Group:OptionDisperseOnAttack(30)
+Group:OptionROEOpenFirePossible()
+Group:RouteToVec2(coordinate,5)
+end
+return self
+end
+function CTLD:_CleanUpCrates(Crates,Build,Number)
+self:T(self.lid.." _CleanUpCrates")
+local build=Build
+local existingcrates=self.Spawned_Cargo
+local newexcrates={}
+local numberdest=Build.Required
+local nametype=Build.Name
+local found=0
+local rounds=Number
+local destIDs={}
+for _,_crate in pairs(Crates)do
+local nowcrate=_crate
+local name=nowcrate:GetName()
+local thisID=nowcrate:GetID()
+if name==nametype then
+table.insert(destIDs,thisID)
+found=found+1
+nowcrate:GetPositionable():Destroy()
+nowcrate.Positionable=nil
+end
+if found==numberdest then break end
+end
+for _,_crate in pairs(existingcrates)do
+local excrate=_crate
+local ID=excrate:GetID()
+for _,_ID in pairs(destIDs)do
+if ID~=_ID then
+table.insert(newexcrates,_crate)
+end
+end
+end
+self.Spawned_Cargo=nil
+self.Spawned_Cargo=newexcrates
+return self
+end
+function CTLD:_RefreshF10Menus()
+self:T(self.lid.." _RefreshF10Menus")
+local PlayerSet=self.PilotGroups
+local PlayerTable=PlayerSet:GetSetObjects()
+local _UnitList={}
+for _key,_group in pairs(PlayerTable)do
+local _unit=_group:GetUnit(1)
+if _unit then
+if _unit:IsAlive()and _unit:IsPlayer()then
+if _unit:IsHelicopter()or(_unit:GetTypeName()=="Hercules"and self.enableHercules)then
+local unitName=_unit:GetName()
+_UnitList[unitName]=unitName
+end
+end
+end
+end
+self.CtldUnits=_UnitList
+local menucount=0
+local menus={}
+for _,_unitName in pairs(self.CtldUnits)do
+if not self.MenusDone[_unitName]then
+local _unit=UNIT:FindByName(_unitName)
+if _unit then
+local _group=_unit:GetGroup()
+if _group then
+local unittype=_unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(_unit)
+local cantroops=capabilities.troops
+local cancrates=capabilities.crates
+local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
+local topcrates=MENU_GROUP:New(_group,"Manage Crates",topmenu)
+local toptroops=MENU_GROUP:New(_group,"Manage Troops",topmenu)
+local listmenu=MENU_GROUP_COMMAND:New(_group,"List boarded cargo",topmenu,self._ListCargo,self,_group,_unit)
+local smokemenu=MENU_GROUP_COMMAND:New(_group,"Smoke zones nearby",topmenu,self.SmokeZoneNearBy,self,_unit,false)
+local smokemenu=MENU_GROUP_COMMAND:New(_group,"Flare zones nearby",topmenu,self.SmokeZoneNearBy,self,_unit,true):Refresh()
+if cancrates then
+local loadmenu=MENU_GROUP_COMMAND:New(_group,"Load crates",topcrates,self._LoadCratesNearby,self,_group,_unit)
+local cratesmenu=MENU_GROUP:New(_group,"Get Crates",topcrates)
+for _,_entry in pairs(self.Cargo_Crates)do
+local entry=_entry
+menucount=menucount+1
+local menutext=string.format("Get crate for %s",entry.Name)
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
+end
+listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
+local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
+local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit):Refresh()
+end
+if cantroops then
+local troopsmenu=MENU_GROUP:New(_group,"Load troops",toptroops)
+for _,_entry in pairs(self.Cargo_Troops)do
+local entry=_entry
+menucount=menucount+1
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
+end
+local unloadmenu1=MENU_GROUP_COMMAND:New(_group,"Drop troops",toptroops,self._UnloadTroops,self,_group,_unit):Refresh()
+end
+local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
+if unittype=="Hercules"then
+local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show flight parameters",topmenu,self._ShowFlightParams,self,_group,_unit):Refresh()
+else
+local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show hover parameters",topmenu,self._ShowHoverParams,self,_group,_unit):Refresh()
+end
+self.MenusDone[_unitName]=true
+end
+end
+else
+self:T(self.lid.." Menus already done for this group!")
+end
+end
+return self
+end
+function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops)
+self:T(self.lid.." AddTroopsCargo")
+self.CargoCounter=self.CargoCounter+1
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops)
+table.insert(self.Cargo_Troops,cargo)
+return self
+end
+function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates)
+self:T(self.lid.." AddCratesCargo")
+self.CargoCounter=self.CargoCounter+1
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates)
+table.insert(self.Cargo_Crates,cargo)
+return self
+end
+function CTLD:AddZone(Zone)
+self:T(self.lid.." AddZone")
+local zone=Zone
+if zone.type==CTLD.CargoZoneType.LOAD then
+table.insert(self.pickupZones,zone)
+elseif zone.type==CTLD.CargoZoneType.DROP then
+table.insert(self.dropOffZones,zone)
+else
+table.insert(self.wpZones,zone)
+end
+return self
+end
+function CTLD:ActivateZone(Name,ZoneType,NewState)
+self:T(self.lid.." AddZone")
+local newstate=true
+if not NewState or NewState==false then
+newstate=false
+end
+local zone=ZoneType
+local table={}
+if zone.type==CTLD.CargoZoneType.LOAD then
+table=self.pickupZones
+elseif zone.type==CTLD.CargoZoneType.DROP then
+table=self.dropOffZones
+else
+table=self.wpZones
+end
+for _,_zone in pairs(table)do
+local thiszone=_zone
+if thiszone.name==Name then
+thiszone.active=newstate
+break
+end
+end
+return self
+end
+function CTLD:DeactivateZone(Name,ZoneType)
+self:T(self.lid.." AddZone")
+self:ActivateZone(Name,ZoneType,false)
+return self
+end
+function CTLD:_GetFMBeacon(Name)
+self:T(self.lid.." _GetFMBeacon")
+local beacon={}
+if#self.FreeFMFrequencies<=1 then
+self.FreeFMFrequencies=self.UsedFMFrequencies
+self.UsedFMFrequencies={}
+end
+local FM=table.remove(self.FreeFMFrequencies,math.random(#self.FreeFMFrequencies))
+table.insert(self.UsedFMFrequencies,FM)
+beacon.name=Name
+beacon.frequency=FM/1000000
+beacon.modulation=radio.modulation.FM
+return beacon
+end
+function CTLD:_GetUHFBeacon(Name)
+self:T(self.lid.." _GetUHFBeacon")
+local beacon={}
+if#self.FreeUHFFrequencies<=1 then
+self.FreeUHFFrequencies=self.UsedUHFFrequencies
+self.UsedUHFFrequencies={}
+end
+local UHF=table.remove(self.FreeUHFFrequencies,math.random(#self.FreeUHFFrequencies))
+table.insert(self.UsedUHFFrequencies,UHF)
+beacon.name=Name
+beacon.frequency=UHF/1000000
+beacon.modulation=radio.modulation.AM
+return beacon
+end
+function CTLD:_GetVHFBeacon(Name)
+self:T(self.lid.." _GetVHFBeacon")
+local beacon={}
+if#self.FreeVHFFrequencies<=3 then
+self.FreeVHFFrequencies=self.UsedVHFFrequencies
+self.UsedVHFFrequencies={}
+end
+local VHF=table.remove(self.FreeVHFFrequencies,math.random(#self.FreeVHFFrequencies))
+table.insert(self.UsedVHFFrequencies,VHF)
+beacon.name=Name
+beacon.frequency=VHF/1000000
+beacon.modulation=radio.modulation.FM
+return beacon
+end
+function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon)
+self:T(self.lid.." AddCTLDZone")
+local ctldzone={}
+ctldzone.active=Active or false
+ctldzone.color=Color or SMOKECOLOR.Red
+ctldzone.name=Name or"NONE"
+ctldzone.type=Type or CTLD.CargoZoneType.MOVE
+ctldzone.hasbeacon=HasBeacon or false
+if HasBeacon then
+ctldzone.fmbeacon=self:_GetFMBeacon(Name)
+ctldzone.uhfbeacon=self:_GetUHFBeacon(Name)
+ctldzone.vhfbeacon=self:_GetVHFBeacon(Name)
+else
+ctldzone.fmbeacon=nil
+ctldzone.uhfbeacon=nil
+ctldzone.vhfbeacon=nil
+end
+self:AddZone(ctldzone)
+return self
+end
+function CTLD:_ListRadioBeacons(Group,Unit)
+self:T(self.lid.." _ListRadioBeacons")
+local report=REPORT:New("Active Zone Beacons")
+report:Add("------------------------------------------------------------")
+local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
+for i=1,3 do
+for index,cargozone in pairs(zones[i])do
+local czone=cargozone
+if czone.active and czone.hasbeacon then
+local FMbeacon=czone.fmbeacon
+local VHFbeacon=czone.vhfbeacon
+local UHFbeacon=czone.uhfbeacon
+local Name=czone.name
+local FM=FMbeacon.frequency
+local VHF=VHFbeacon.frequency*1000
+local UHF=UHFbeacon.frequency
+report:AddIndent(string.format(" %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",Name,FM,VHF,UHF),"|")
+end
+end
+end
+if report:GetCount()==1 then
+report:Add("--------- N O N E ------------")
+end
+report:Add("------------------------------------------------------------")
+self:_SendMessage(report:Text(),30,true,Group)
+return self
+end
+function CTLD:_AddRadioBeacon(Name,Sound,Mhz,Modulation)
+self:T(self.lid.." _AddRadioBeacon")
+local Zone=ZONE:FindByName(Name)
+local Sound=Sound or"beacon.ogg"
+if Zone then
+local ZoneCoord=Zone:GetCoordinate()
+local ZoneVec3=ZoneCoord:GetVec3()
+local Frequency=Mhz*1000000
+local Sound="l10n/DEFAULT/"..Sound
+trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,Frequency,1000)
+end
+return self
+end
+function CTLD:_RefreshRadioBeacons()
+self:T(self.lid.." _RefreshRadioBeacons")
+local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
+for i=1,3 do
+for index,cargozone in pairs(zones[i])do
+local czone=cargozone
+local Sound=self.RadioSound
+if czone.active and czone.hasbeacon then
+local FMbeacon=czone.fmbeacon
+local VHFbeacon=czone.vhfbeacon
+local UHFbeacon=czone.uhfbeacon
+local Name=czone.name
+local FM=FMbeacon.frequency
+local VHF=VHFbeacon.frequency
+local UHF=UHFbeacon.frequency
+self:_AddRadioBeacon(Name,Sound,FM,radio.modulation.FM)
+self:_AddRadioBeacon(Name,Sound,VHF,radio.modulation.FM)
+self:_AddRadioBeacon(Name,Sound,UHF,radio.modulation.AM)
+end
+end
+end
+return self
+end
+function CTLD:IsUnitInZone(Unit,Zonetype)
+self:T(self.lid.." IsUnitInZone")
+local unitname=Unit:GetName()
+local zonetable={}
+local outcome=false
+if Zonetype==CTLD.CargoZoneType.LOAD then
+zonetable=self.pickupZones
+elseif Zonetype==CTLD.CargoZoneType.DROP then
+zonetable=self.dropOffZones
+else
+zonetable=self.wpZones
+end
+local zonecoord=nil
+local colorret=nil
+local maxdist=1000000
+local zoneret=nil
+local zonenameret=nil
+for _,_cargozone in pairs(zonetable)do
+local czone=_cargozone
+local unitcoord=Unit:GetCoordinate()
+local zonename=czone.name
+local zone=ZONE:FindByName(zonename)
+zonecoord=zone:GetCoordinate()
+local active=czone.active
+local color=czone.color
+local zoneradius=zone:GetRadius()
+local distance=self:_GetDistance(zonecoord,unitcoord)
+if distance<=zoneradius and active then
+outcome=true
+end
+if maxdist>distance then
+maxdist=distance
+zoneret=zone
+zonenameret=zonename
+colorret=color
+end
+end
+return outcome,zonenameret,zoneret,maxdist
+end
+function CTLD:SmokeZoneNearBy(Unit,Flare)
+self:T(self.lid.." SmokeZoneNearBy")
+local unitcoord=Unit:GetCoordinate()
+local Group=Unit:GetGroup()
+local smokedistance=self.smokedistance
+local smoked=false
+local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
+for i=1,3 do
+for index,cargozone in pairs(zones[i])do
+local CZone=cargozone
+local zonename=CZone.name
+local zone=ZONE:FindByName(zonename)
+local zonecoord=zone:GetCoordinate()
+local active=CZone.active
+local color=CZone.color
+local distance=self:_GetDistance(zonecoord,unitcoord)
+if distance<smokedistance and active then
+if not Flare then
+zonecoord:Smoke(color or SMOKECOLOR.White)
+else
+if color==SMOKECOLOR.Blue then color=FLARECOLOR.White end
+zonecoord:Flare(color or FLARECOLOR.White)
+end
+local txt="smoking"
+if Flare then txt="flaring"end
+self:_SendMessage(string.format("Roger, %s zone %s!",txt,zonename),10,false,Group)
+smoked=true
+end
+end
+end
+if not smoked then
+local distance=UTILS.MetersToNM(self.smokedistance)
+self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone!",distance),10,false,Group)
+end
+return self
+end
+function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit)
+self:T(self.lid.." UnitCapabilities")
+local unittype=nil
+local unit=nil
+if type(Unittype)=="string"then
+unittype=Unittype
+elseif type(Unittype)=="table"then
+unit=UNIT:FindByName(Unittype)
+unittype=unit:GetTypeName()
+else
+return self
+end
+local capabilities={}
+capabilities.type=unittype
+capabilities.crates=Cancrates or false
+capabilities.troops=Cantroops or false
+capabilities.cratelimit=Cratelimit or 0
+capabilities.trooplimit=Trooplimit or 0
+self.UnitTypes[unittype]=capabilities
+return self
+end
+function CTLD:IsCorrectHover(Unit)
+self:T(self.lid.." IsCorrectHover")
+local outcome=false
+if self:IsUnitInAir(Unit)then
+local uspeed=Unit:GetVelocityMPS()
+local uheight=Unit:GetHeight()
+local ucoord=Unit:GetCoordinate()
+local gheight=ucoord:GetLandHeight()
+local aheight=uheight-gheight
+local maxh=self.maximumHoverHeight
+local minh=self.minimumHoverHeight
+local mspeed=2
+if(uspeed<=mspeed)and(aheight<=maxh)and(aheight>=minh)then
+outcome=true
+end
+end
+return outcome
+end
+function CTLD:IsCorrectFlightParameters(Unit)
+self:T(self.lid.." IsCorrectFlightParameters")
+local outcome=false
+if self:IsUnitInAir(Unit)then
+local uspeed=Unit:GetVelocityMPS()
+local uheight=Unit:GetHeight()
+local ucoord=Unit:GetCoordinate()
+local gheight=ucoord:GetLandHeight()
+local aheight=uheight-gheight
+local maxh=self.HercMinAngels
+local minh=self.HercMaxAngels
+local mspeed=2
+if(aheight<=maxh)and(aheight>=minh)then
+outcome=true
+end
+end
+return outcome
+end
+function CTLD:_ShowHoverParams(Group,Unit)
+local inhover=self:IsCorrectHover(Unit)
+local htxt="true"
+if not inhover then htxt="false"end
+local text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s",self.minimumHoverHeight,self.maximumHoverHeight,htxt)
+self:_SendMessage(text,10,false,Group)
+return self
+end
+function CTLD:_ShowFlightParams(Group,Unit)
+local inhover=self:IsCorrectFlightParameters(Unit)
+local htxt="true"
+if not inhover then htxt="false"end
+local minheight=UTILS.MetersToFeet(self.HercMinAngels)
+local maxheight=UTILS.MetersToFeet(self.HercMaxAngels)
+local text=string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s",minheight,maxheight,htxt)
+self:_SendMessage(text,10,false,Group)
+return self
+end
+function CTLD:CanHoverLoad(Unit)
+self:T(self.lid.." CanHoverLoad")
+if self:IsHercules(Unit)then return false end
+local outcome=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)and self:IsCorrectHover(Unit)
+return outcome
+end
+function CTLD:IsUnitInAir(Unit)
+local minheight=self.minimumHoverHeight
+if self.enableHercules and Unit:GetTypeName()=="Hercules"then
+minheight=5.1
+end
+local uheight=Unit:GetHeight()
+local ucoord=Unit:GetCoordinate()
+local gheight=ucoord:GetLandHeight()
+local aheight=uheight-gheight
+if aheight>=minheight then
+return true
+else
+return false
+end
+end
+function CTLD:AutoHoverLoad(Unit)
+self:T(self.lid.." AutoHoverLoad")
+local unittype=Unit:GetTypeName()
+local unitname=Unit:GetName()
+local Group=Unit:GetGroup()
+local capabilities=self:_GetUnitCapabilities(Unit)
+local cancrates=capabilities.crates
+local cratelimit=capabilities.cratelimit
+if cancrates then
+local numberonboard=0
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+numberonboard=loaded.Cratesloaded or 0
+end
+local load=cratelimit-numberonboard
+local canload=self:CanHoverLoad(Unit)
+if canload and load>0 then
+self:_LoadCratesNearby(Group,Unit)
+end
+end
+return self
+end
+function CTLD:CheckAutoHoverload()
+if self.hoverautoloading then
+for _,_pilot in pairs(self.CtldUnits)do
+local Unit=UNIT:FindByName(_pilot)
+self:AutoHoverLoad(Unit)
+end
+end
+return self
+end
+function CTLD:onafterStart(From,Event,To)
+self:T({From,Event,To})
+if self.useprefix or self.enableHercules then
+local prefix=self.prefixes
+if self.enableHercules then
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterStart()
+else
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterCategories("helicopter"):FilterStart()
+end
+else
+self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategories("helicopter"):FilterStart()
+end
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
+self:__Status(-5)
+return self
+end
+function CTLD:onbeforeStatus(From,Event,To)
+self:T({From,Event,To})
+self:_RefreshF10Menus()
+self:_RefreshRadioBeacons()
+self:CheckAutoHoverload()
+return self
+end
+function CTLD:onafterStatus(From,Event,To)
+self:T({From,Event,To})
+local pilots=0
+for _,_pilot in pairs(self.CtldUnits)do
+pilots=pilots+1
+end
+local boxes=0
+for _,_pilot in pairs(self.Spawned_Cargo)do
+boxes=boxes+1
+end
+local cc=self.CargoCounter
+local tc=self.TroopCounter
+if self.debug or self.verbose>0 then
+local text=string.format("%s Pilots %d | Live Crates %d |\nCargo Counter %d | Troop Counter %d",self.lid,pilots,boxes,cc,tc)
+local m=MESSAGE:New(text,10,"CTLD"):ToAll()
+end
+self:__Status(-30)
+return self
+end
+function CTLD:onafterStop(From,Event,To)
+self:T({From,Event,To})
+self:UnhandleEvent(EVENTS.PlayerEnterAircraft)
+self:UnhandleEvent(EVENTS.PlayerEnterUnit)
+self:UnhandleEvent(EVENTS.PlayerLeaveUnit)
+return self
+end
+function CTLD:onbeforeTroopsPickedUp(From,Event,To,Group,Unit,Cargo)
+self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeCratesPickedUp(From,Event,To,Group,Unit,Cargo)
+self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeTroopsDeployed(From,Event,To,Group,Unit,Troops)
+self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeCratesDropped(From,Event,To,Group,Unit,Cargotable)
+self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeCratesBuild(From,Event,To,Group,Unit,Vehicle)
+self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeTroopsRTB(From,Event,To,Group,Unit)
+self:T({From,Event,To})
+return self
+end
+end
+CSAR={
+ClassName="CSAR",
+verbose=0,
+lid="",
+coalition=1,
+coalitiontxt="blue",
+FreeVHFFrequencies={},
+UsedVHFFrequencies={},
+takenOff={},
+csarUnits={},
+downedPilots={},
+woundedGroups={},
+landedStatus={},
+addedTo={},
+woundedGroups={},
+inTransitGroups={},
+smokeMarkers={},
+heliVisibleMessage={},
+heliCloseMessage={},
+max_units=6,
+hoverStatus={},
+pilotDisabled={},
+pilotLives={},
+useprefix=true,
+csarPrefix={},
+template=nil,
+mash={},
+smokecolor=4,
+rescues=0,
+rescuedpilots=0,
+limitmaxdownedpilots=true,
+maxdownedpilots=10,
+}
+CSAR.SkipFrequencies={
+214,274,291.5,295,297.5,
+300.5,304,307,309.5,311,312,312.5,316,
+320,324,328,329,330,336,337,
+342,343,348,351,352,353,358,
+363,365,368,372.5,374,
+380,381,384,389,395,396,
+414,420,430,432,435,440,450,455,462,470,485,
+507,515,520,525,528,540,550,560,570,577,580,602,625,641,662,670,680,682,690,
+705,720,722,730,735,740,745,750,770,795,
+822,830,862,866,
+905,907,920,935,942,950,995,
+1000,1025,1030,1050,1065,1116,1175,1182,1210
+}
+CSAR.AircraftType={}
+CSAR.AircraftType["SA342Mistral"]=2
+CSAR.AircraftType["SA342Minigun"]=2
+CSAR.AircraftType["SA342L"]=4
+CSAR.AircraftType["SA342M"]=4
+CSAR.AircraftType["UH-1H"]=8
+CSAR.AircraftType["Mi-8MTV2"]=12
+CSAR.AircraftType["Mi-24P"]=8
+CSAR.AircraftType["Mi-24V"]=8
+CSAR.version="0.1.8r1"
+function CSAR:New(Coalition,Template,Alias)
+local self=BASE:Inherit(self,FSM:New())
+if Coalition and type(Coalition)=="string"then
+if Coalition=="blue"then
+self.coalition=coalition.side.BLUE
+self.coalitiontxt=Coalition
+elseif Coalition=="red"then
+self.coalition=coalition.side.RED
+self.coalitiontxt=Coalition
+elseif Coalition=="neutral"then
+self.coalition=coalition.side.NEUTRAL
+self.coalitiontxt=Coalition
+else
+self:E("ERROR: Unknown coalition in CSAR!")
+end
+else
+self.coalition=Coalition
+self.coalitiontxt=string.lower(UTILS.GetCoalitionName(self.coalition))
+end
+if Alias then
+self.alias=tostring(Alias)
+else
+self.alias="Red Cross"
+if self.coalition then
+if self.coalition==coalition.side.RED then
+self.alias="IFRC"
+elseif self.coalition==coalition.side.BLUE then
+self.alias="CSAR"
+end
+end
+end
+self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","PilotDown","*")
+self:AddTransition("*","Approach","*")
+self:AddTransition("*","Boarded","*")
+self:AddTransition("*","Returning","*")
+self:AddTransition("*","Rescued","*")
+self:AddTransition("*","Stop","Stopped")
+self.addedTo={}
+self.allheligroupset={}
+self.csarUnits={}
+self.FreeVHFFrequencies={}
+self.heliVisibleMessage={}
+self.heliCloseMessage={}
+self.hoverStatus={}
+self.inTransitGroups={}
+self.landedStatus={}
+self.lastCrash={}
+self.takenOff={}
+self.smokeMarkers={}
+self.UsedVHFFrequencies={}
+self.woundedGroups={}
+self.downedPilots={}
+self.downedpilotcounter=1
+self.rescues=0
+self.rescuedpilots=0
+self.csarOncrash=false
+self.allowDownedPilotCAcontrol=false
+self.enableForAI=false
+self.smokecolor=4
+self.coordtype=2
+self.immortalcrew=true
+self.invisiblecrew=false
+self.messageTime=15
+self.pilotRuntoExtractPoint=true
+self.loadDistance=75
+self.extractDistance=500
+self.loadtimemax=135
+self.radioSound="beacon.ogg"
+self.allowFARPRescue=true
+self.max_units=6
+self.useprefix=true
+self.csarPrefix={"helicargo","MEDEVAC"}
+self.template=Template or"generic"
+self.mashprefix={"MASH"}
+self.mash=SET_GROUP:New():FilterCoalitions(self.coalition):FilterPrefixes(self.mashprefix):FilterOnce()
+self.autosmoke=false
+self.autosmokedistance=1000
+self.limitmaxdownedpilots=true
+self.maxdownedpilots=25
+self:_GenerateVHFrequencies()
+self.approachdist_far=5000
+self.approachdist_near=3000
+self.pilotmustopendoors=false
+self.useSRS=false
+self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
+self.SRSchannel=300
+self.SRSModulation=radio.modulation.AM
+return self
+end
+function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername)
+self:T({"_CreateDownedPilotTrack",Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername})
+local DownedPilot={}
+DownedPilot.desc=Description or""
+DownedPilot.frequency=Frequency or 0
+DownedPilot.index=self.downedpilotcounter
+DownedPilot.name=Groupname or""
+DownedPilot.originalUnit=OriginalUnit or""
+DownedPilot.player=Playername or""
+DownedPilot.side=Side or 0
+DownedPilot.typename=Typename or""
+DownedPilot.group=Group
+DownedPilot.timestamp=0
+local PilotTable=self.downedPilots
+local counter=self.downedpilotcounter
+PilotTable[counter]={}
+PilotTable[counter]=DownedPilot
+self:T({Table=PilotTable})
+self.downedPilots=PilotTable
+self.downedpilotcounter=self.downedpilotcounter+1
+return self
+end
+function CSAR:_PilotsOnboard(_heliName)
+self:T(self.lid.." _PilotsOnboard")
+local count=0
+if self.inTransitGroups[_heliName]then
+for _,_group in pairs(self.inTransitGroups[_heliName])do
+count=count+1
+end
+end
+return count
+end
+function CSAR:_DoubleEjection(_unitname)
+if self.lastCrash[_unitname]then
+local _time=self.lastCrash[_unitname]
+if timer.getTime()-_time<10 then
+self:E(self.lid.."Caught double ejection!")
+return true
+end
+end
+self.lastCrash[_unitname]=timer.getTime()
+return false
+end
+function CSAR:_SpawnPilotInField(country,point,frequency)
+self:T({country,point,frequency})
+local freq=frequency or 1000
+local freq=freq/1000
+for i=1,10 do
+math.random(i,10000)
+end
+local template=self.template
+local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
+local coalition=self.coalition
+local pilotcacontrol=self.allowDownedPilotCAcontrol
+local _spawnedGroup=SPAWN
+:NewWithAlias(template,alias)
+:InitCoalition(coalition)
+:InitCountry(country)
+:InitAIOnOff(pilotcacontrol)
+:InitDelayOff()
+:SpawnFromCoordinate(point)
+return _spawnedGroup,alias
+end
+function CSAR:_AddSpecialOptions(group)
+self:T(self.lid.." _AddSpecialOptions")
+self:T({group})
+local immortalcrew=self.immortalcrew
+local invisiblecrew=self.invisiblecrew
+if immortalcrew then
+local _setImmortal={
+id='SetImmortal',
+params={
+value=true
+}
+}
+group:SetCommand(_setImmortal)
+end
+if invisiblecrew then
+local _setInvisible={
+id='SetInvisible',
+params={
+value=true
+}
+}
+group:SetCommand(_setInvisible)
+end
+group:OptionAlarmStateGreen()
+group:OptionROEHoldFire()
+return self
+end
+function CSAR:_AddCsar(_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description)
+self:T(self.lid.." _AddCsar")
+self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description})
+local template=self.template
+if not _freq then
+_freq=self:_GenerateADFFrequency()
+if not _freq then _freq=333000 end
+end
+local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
+local _typeName=_typeName or"PoW"
+if not noMessage then
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,10)
+end
+if _freq then
+self:_AddBeaconToGroup(_spawnedGroup,_freq)
+end
+self:_AddSpecialOptions(_spawnedGroup)
+local _text=" "
+if _playerName~=nil then
+_text="Pilot ".._playerName.." of ".._unitName.." - ".._typeName
+elseif _typeName~=nil then
+_text="AI Pilot of ".._unitName.." - ".._typeName
+else
+_text=_description
+end
+self:T({_spawnedGroup,_alias})
+local _GroupName=_spawnedGroup:GetName()or _alias
+self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName)
+self:_InitSARForPilot(_spawnedGroup,_GroupName,_freq,noMessage)
+return self
+end
+function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage)
+self:T(self.lid.." _SpawnCsarAtZone")
+local freq=self:_GenerateADFFrequency()
+local _triggerZone=ZONE:New(_zone)
+if _triggerZone==nil then
+self:E(self.lid.."ERROR: Can\'t find zone called ".._zone,10)
+return
+end
+local _description=_description or"Unknown"
+local pos={}
+if _randomPoint then
+local _pos=_triggerZone:GetRandomPointVec3()
+pos=COORDINATE:NewFromVec3(_pos)
+else
+pos=_triggerZone:GetCoordinate()
+end
+local _country=0
+if _coalition==coalition.side.BLUE then
+_country=country.id.USA
+elseif _coalition==coalition.side.RED then
+_country=country.id.RUSSIA
+else
+_country=country.id.UN_PEACEKEEPERS
+end
+self:_AddCsar(_coalition,_country,pos,"PoW",_description,nil,freq,_nomessage,_description)
+return self
+end
+function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
+self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
+return self
+end
+function CSAR:_EventHandler(EventData)
+self:T(self.lid.." _EventHandler")
+self:T({Event=EventData.id})
+local _event=EventData
+if _event==nil or _event.initiator==nil then
+return false
+elseif _event.id==EVENTS.Takeoff then
+self:T(self.lid.." Event unit - Takeoff")
+local _coalition=_event.IniCoalition
+if _coalition~=self.coalition then
+return
+end
+if _event.IniGroupName then
+self.takenOff[_event.IniUnitName]=true
+end
+return true
+elseif _event.id==EVENTS.PlayerEnterAircraft or _event.id==EVENTS.PlayerEnterUnit then
+self:T(self.lid.." Event unit - Player Enter")
+local _coalition=_event.IniCoalition
+if _coalition~=self.coalition then
+return
+end
+if _event.IniPlayerName then
+self.takenOff[_event.IniPlayerName]=nil
+end
+local _unit=_event.IniUnit
+local _group=_event.IniGroup
+if _unit:IsHelicopter()or _group:IsHelicopter()then
+self:_AddMedevacMenuItem()
+end
+return true
+elseif(_event.id==EVENTS.PilotDead and self.csarOncrash==false)then
+self:T(self.lid.." Event unit - Pilot Dead")
+local _unit=_event.IniUnit
+local _unitname=_event.IniUnitName
+local _group=_event.IniGroup
+if _unit==nil then
+return
+end
+local _coalition=_event.IniCoalition
+if _coalition~=self.coalition then
+return
+end
+if self.takenOff[_event.IniUnitName]==true or _group:IsAirborne()then
+if self:_DoubleEjection(_unitname)then
+return
+end
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,10)
+else
+self:T(self.lid.." Pilot has not taken off, ignore")
+end
+return
+elseif _event.id==EVENTS.PilotDead or _event.id==EVENTS.Ejection then
+if _event.id==EVENTS.PilotDead and self.csarOncrash==false then
+return
+end
+self:T(self.lid.." Event unit - Pilot Ejected")
+local _unit=_event.IniUnit
+local _unitname=_event.IniUnitName
+local _group=_event.IniGroup
+if _unit==nil then
+return
+end
+local _coalition=_unit:GetCoalition()
+if _coalition~=self.coalition then
+return
+end
+if self.enableForAI==false and _event.IniPlayerName==nil then
+return
+end
+if not self.takenOff[_event.IniUnitName]and not _group:IsAirborne()then
+self:T(self.lid.." Pilot has not taken off, ignore")
+return
+end
+if self:_DoubleEjection(_unitname)then
+return
+end
+if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
+return
+end
+local _freq=self:_GenerateADFFrequency()
+self:_AddCsar(_coalition,_unit:GetCountry(),_unit:GetCoordinate(),_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
+return true
+elseif _event.id==EVENTS.Land then
+self:T(self.lid.." Landing")
+if _event.IniUnitName then
+self.takenOff[_event.IniUnitName]=nil
+end
+if self.allowFARPRescue then
+local _unit=_event.IniUnit
+if _unit==nil then
+self:T(self.lid.." Unit nil on landing")
+return
+end
+local _coalition=_event.IniCoalition
+if _coalition~=self.coalition then
+return
+end
+self.takenOff[_event.IniUnitName]=nil
+local _place=_event.Place
+if _place==nil then
+self:T(self.lid.." Landing Place Nil")
+return
+end
+if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
+self:_RescuePilots(_unit)
+else
+self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
+end
+end
+return true
+end
+return self
+end
+function CSAR:_InitSARForPilot(_downedGroup,_GroupName,_freq,_nomessage)
+self:T(self.lid.." _InitSARForPilot")
+local _leader=_downedGroup:GetUnit(1)
+local _groupName=_GroupName
+local _freqk=_freq/1000
+local _coordinatesText=self:_GetPositionOfWounded(_downedGroup)
+local _leadername=_leader:GetName()
+if not _nomessage then
+local _text=string.format("%s requests SAR at %s, beacon at %.2f KHz",_leadername,_coordinatesText,_freqk)
+self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
+end
+for _,_heliName in pairs(self.csarUnits)do
+self:_CheckWoundedGroupStatus(_heliName,_groupName)
+end
+self:__PilotDown(2,_downedGroup,_freqk,_leadername,_coordinatesText)
+return self
+end
+function CSAR:_CheckNameInDownedPilots(name)
+local PilotTable=self.downedPilots
+local found=false
+local table=nil
+for _,_pilot in pairs(PilotTable)do
+if _pilot.name==name then
+found=true
+table=_pilot
+break
+end
+end
+return found,table
+end
+function CSAR:_RemoveNameFromDownedPilots(name,force)
+local PilotTable=self.downedPilots
+local found=false
+for _,_pilot in pairs(PilotTable)do
+if _pilot.name==name then
+local group=_pilot.group
+if group then
+if(not group:IsAlive())or(force==true)then
+found=true
+_pilot.desc=nil
+_pilot.frequency=nil
+_pilot.index=nil
+_pilot.name=nil
+_pilot.originalUnit=nil
+_pilot.player=nil
+_pilot.side=nil
+_pilot.typename=nil
+_pilot.group=nil
+_pilot.timestamp=nil
+end
+end
+end
+end
+return found
+end
+function CSAR:_CheckWoundedGroupStatus(heliname,woundedgroupname)
+self:T(self.lid.." _CheckWoundedGroupStatus")
+local _heliName=heliname
+local _woundedGroupName=woundedgroupname
+self:T({Heli=_heliName,Downed=_woundedGroupName})
+local _found,_downedpilot=self:_CheckNameInDownedPilots(_woundedGroupName)
+if not _found then
+self:T("...not found in list!")
+return
+end
+local _woundedGroup=_downedpilot.group
+if _woundedGroup~=nil then
+local _heliUnit=self:_GetSARHeli(_heliName)
+local _lookupKeyHeli=_heliName.."_".._woundedGroupName
+if _heliUnit==nil then
+self.heliVisibleMessage[_lookupKeyHeli]=nil
+self.heliCloseMessage[_lookupKeyHeli]=nil
+self.landedStatus[_lookupKeyHeli]=nil
+self:T("...helinunit nil!")
+return
+end
+local _heliCoord=_heliUnit:GetCoordinate()
+local _leaderCoord=_woundedGroup:GetCoordinate()
+local _distance=self:_GetDistance(_heliCoord,_leaderCoord)
+if _distance<self.approachdist_near and _distance>0 then
+if self:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)==true then
+_downedpilot.timestamp=timer.getAbsTime()
+self:__Approach(-5,heliname,woundedgroupname)
+end
+elseif _distance>=self.approachdist_near and _distance<self.approachdist_far then
+self.heliVisibleMessage[_lookupKeyHeli]=nil
+_downedpilot.timestamp=timer.getAbsTime()
+self:__Approach(-10,heliname,woundedgroupname)
+end
+else
+self:T("...Downed Pilot KIA?!")
+self:_RemoveNameFromDownedPilots(_downedpilot.name)
+end
+return self
+end
+function CSAR:_PopSmokeForGroup(_woundedGroupName,_woundedLeader)
+self:T(self.lid.." _PopSmokeForGroup")
+local _lastSmoke=self.smokeMarkers[_woundedGroupName]
+if _lastSmoke==nil or timer.getTime()>_lastSmoke then
+local _smokecolor=self.smokecolor
+local _smokecoord=_woundedLeader:GetCoordinate()
+_smokecoord:Smoke(_smokecolor)
+self.smokeMarkers[_woundedGroupName]=timer.getTime()+300
+end
+return self
+end
+function CSAR:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
+self:T(self.lid.." _PickupUnit")
+local _heliName=_heliUnit:GetName()
+local _groups=self.inTransitGroups[_heliName]
+local _unitsInHelicopter=self:_PilotsOnboard(_heliName)
+if not _groups then
+self.inTransitGroups[_heliName]={}
+_groups=self.inTransitGroups[_heliName]
+end
+local _maxUnits=self.AircraftType[_heliUnit:GetTypeName()]
+if _maxUnits==nil then
+_maxUnits=self.max_units
+end
+if _unitsInHelicopter+1>_maxUnits then
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s, %s. We\'re already crammed with %d guys! Sorry!",_pilotName,_heliName,_unitsInHelicopter,_unitsInHelicopter),self.messageTime)
+return true
+end
+local found,downedgrouptable=self:_CheckNameInDownedPilots(_woundedGroupName)
+local grouptable=downedgrouptable
+self.inTransitGroups[_heliName][_woundedGroupName]=
+{
+originalUnit=grouptable.originalUnit,
+woundedGroup=_woundedGroupName,
+side=self.coalition,
+desc=grouptable.desc,
+player=grouptable.player,
+}
+_woundedGroup:Destroy()
+self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
+self:__Boarded(5,_heliName,_woundedGroupName)
+return true
+end
+function CSAR:_OrderGroupToMoveToPoint(_leader,_destination)
+self:T(self.lid.." _OrderGroupToMoveToPoint")
+local group=_leader
+local coordinate=_destination:GetVec2()
+group:SetAIOn()
+group:RouteToVec2(coordinate,5)
+return self
+end
+function CSAR:_IsLoadingDoorOpen(unit_name)
+self:T(self.lid.." _IsLoadingDoorOpen")
+local ret_val=false
+local unit=Unit.getByName(unit_name)
+if unit~=nil then
+local type_name=unit:getTypeName()
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+self:I(unit_name.." Cargo doors are open or cargo door not present")
+ret_val=true
+end
+if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
+self:I(unit_name.." a side door is open")
+ret_val=true
+end
+if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
+self:I(unit_name.." a side door is open ")
+ret_val=true
+end
+if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
+self:I(unit_name.." front door(s) are open")
+ret_val=true
+end
+if ret_val==false then
+self:I(unit_name.." all doors are closed")
+end
+return ret_val
+end
+return false
+end
+function CSAR:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)
+self:T(self.lid.." _CheckCloseWoundedGroup")
+local _woundedLeader=_woundedGroup
+local _lookupKeyHeli=_heliUnit:GetName().."_".._woundedGroupName
+local _found,_pilotable=self:_CheckNameInDownedPilots(_woundedGroupName)
+local _pilotName=_pilotable.desc
+local _reset=true
+if(self.autosmoke==true)and(_distance<self.autosmokedistance)then
+self:_PopSmokeForGroup(_woundedGroupName,_woundedLeader)
+end
+if self.heliVisibleMessage[_lookupKeyHeli]==nil then
+if self.autosmoke==true then
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Damn, that thing is loud! Land or hover by the smoke.",_heliName,_pilotName),self.messageTime,true,true)
+else
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Damn, that thing is loud! Request a Flare or Smoke if you need",_heliName,_pilotName),self.messageTime,true,true)
+end
+self.heliVisibleMessage[_lookupKeyHeli]=true
+end
+if(_distance<500)then
+if self.heliCloseMessage[_lookupKeyHeli]==nil then
+if self.autosmoke==true then
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land or hover at the smoke.",_heliName,_pilotName),self.messageTime,true,true)
+else
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land in a safe place, I will go there ",_heliName,_pilotName),self.messageTime,true,true)
+end
+self.heliCloseMessage[_lookupKeyHeli]=true
+end
+if not _heliUnit:InAir()then
+if self.pilotRuntoExtractPoint==true then
+if(_distance<self.extractDistance)then
+local _time=self.landedStatus[_lookupKeyHeli]
+if _time==nil then
+self.landedStatus[_lookupKeyHeli]=math.floor((_distance-self.loadDistance)/3.6)
+_time=self.landedStatus[_lookupKeyHeli]
+self:_OrderGroupToMoveToPoint(_woundedGroup,_heliUnit:GetCoordinate())
+self:_DisplayMessageToSAR(_heliUnit,"Wait till ".._pilotName.." gets in. \nETA ".._time.." more seconds.",self.messageTime,true)
+else
+_time=self.landedStatus[_lookupKeyHeli]-10
+self.landedStatus[_lookupKeyHeli]=_time
+end
+if _time<=0 or _distance<self.loadDistance then
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, bugger!",self.messageTime,true)
+return true
+else
+self.landedStatus[_lookupKeyHeli]=nil
+self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
+return false
+end
+end
+end
+else
+if(_distance<self.loadDistance)then
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, honk!",self.messageTime,true)
+return true
+else
+self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
+return false
+end
+end
+end
+else
+local _unitsInHelicopter=self:_PilotsOnboard(_heliName)
+local _maxUnits=self.AircraftType[_heliUnit:GetTypeName()]
+if _maxUnits==nil then
+_maxUnits=self.max_units
+end
+if _heliUnit:InAir()and _unitsInHelicopter+1<=_maxUnits then
+if _distance<8.0 then
+local leaderheight=_woundedLeader:GetHeight()
+if leaderheight<0 then leaderheight=0 end
+local _height=_heliUnit:GetHeight()-leaderheight
+if _height<=20.0 then
+local _time=self.hoverStatus[_lookupKeyHeli]
+if _time==nil then
+self.hoverStatus[_lookupKeyHeli]=10
+_time=10
+else
+_time=self.hoverStatus[_lookupKeyHeli]-10
+self.hoverStatus[_lookupKeyHeli]=_time
+end
+if _time>0 then
+self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",self.messageTime,true)
+else
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, noob!",self.messageTime,true)
+return true
+else
+self.hoverStatus[_lookupKeyHeli]=nil
+self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
+return false
+end
+end
+_reset=false
+else
+self:_DisplayMessageToSAR(_heliUnit,"Too high to winch ".._pilotName.." \nReduce height and hover for 10 seconds!",self.messageTime,true,true)
+end
+end
+end
+end
+end
+if _reset then
+self.hoverStatus[_lookupKeyHeli]=nil
+end
+if _distance<500 then
+return true
+else
+return false
+end
+end
+function CSAR:_CheckGroupNotKIA(_woundedGroup,_woundedGroupName,_heliUnit,_heliName)
+self:T(self.lid.." _CheckGroupNotKIA")
+local inTransit=false
+if _woundedGroup and _heliUnit then
+for _currentHeli,_groups in pairs(self.inTransitGroups)do
+if _groups[_woundedGroupName]then
+inTransit=true
+self:_DisplayToAllSAR(string.format("%s has been picked up by %s",_woundedGroupName,_currentHeli),self.coalition,self.messageTime)
+break
+end
+end
+if not inTransit then
+self:_DisplayToAllSAR(string.format("%s is KIA ",_woundedGroupName),self.coalition,self.messageTime)
+end
+self:_RemoveNameFromDownedPilots(_woundedGroupName)
+end
+return inTransit
+end
+function CSAR:_ScheduledSARFlight(heliname,groupname)
+self:T(self.lid.." _ScheduledSARFlight")
+self:T({heliname,groupname})
+local _heliUnit=self:_GetSARHeli(heliname)
+local _woundedGroupName=groupname
+if(_heliUnit==nil)then
+self.inTransitGroups[heliname]=nil
+return
+end
+if self.inTransitGroups[heliname]==nil or self.inTransitGroups[heliname][_woundedGroupName]==nil then
+return
+end
+local _dist=self:_GetClosestMASH(_heliUnit)
+if _dist==-1 then
+return
+end
+if _dist<200 and _heliUnit:InAir()==false then
+self:_RescuePilots(_heliUnit)
+return
+end
+self:__Returning(-5,heliname,_woundedGroupName)
+return self
+end
+function CSAR:_RescuePilots(_heliUnit)
+self:T(self.lid.." _RescuePilots")
+local _heliName=_heliUnit:GetName()
+local _rescuedGroups=self.inTransitGroups[_heliName]
+if _rescuedGroups==nil then
+return
+end
+local PilotsSaved=self:_PilotsOnboard(_heliName)
+self.inTransitGroups[_heliName]=nil
+local _txt=string.format("%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!",_heliName,PilotsSaved)
+self:_DisplayMessageToSAR(_heliUnit,_txt,self.messageTime)
+self:__Rescued(-1,_heliUnit,_heliName,PilotsSaved)
+return self
+end
+function CSAR:_GetSARHeli(_unitName)
+self:T(self.lid.." _GetSARHeli")
+local unit=UNIT:FindByName(_unitName)
+if unit and unit:IsAlive()then
+return unit
+else
+return nil
+end
+end
+function CSAR:_DisplayMessageToSAR(_unit,_text,_time,_clear,_speak)
+self:T(self.lid.." _DisplayMessageToSAR")
+local group=_unit:GetGroup()
+local _clear=_clear or nil
+local _time=_time or self.messageTime
+local m=MESSAGE:New(_text,_time,"Info",_clear):ToGroup(group)
+if _speak and self.useSRS then
+local srstext=SOUNDTEXT:New(_text)
+local path=self.SRSPath
+local modulation=self.SRSModulation
+local channel=self.SRSchannel
+local msrs=MSRS:New(path,channel,modulation)
+msrs:PlaySoundText(srstext,2)
+end
+return self
+end
+function CSAR:_GetPositionOfWounded(_woundedGroup)
+self:T(self.lid.." _GetPositionOfWounded")
+local _coordinate=_woundedGroup:GetCoordinate()
+local _coordinatesText="None"
+if _coordinate then
+if self.coordtype==0 then
+_coordinatesText=_coordinate:ToStringLLDDM()
+elseif self.coordtype==1 then
+_coordinatesText=_coordinate:ToStringLLDMS()
+elseif self.coordtype==2 then
+_coordinatesText=_coordinate:ToStringMGRS()
+elseif self.coordtype==3 then
+local Settings=_SETTINGS:SetImperial()
+_coordinatesText=_coordinate:ToStringBULLS(self.coalition,Settings)
+else
+local Settings=_SETTINGS:SetMetric()
+_coordinatesText=_coordinate:ToStringBULLS(self.coalition,Settings)
+end
+end
+return _coordinatesText
+end
+function CSAR:_DisplayActiveSAR(_unitName)
+self:T(self.lid.." _DisplayActiveSAR")
+local _msg="Active MEDEVAC/SAR:"
+local _heli=self:_GetSARHeli(_unitName)
+if _heli==nil then
+return
+end
+local _heliSide=self.coalition
+local _csarList={}
+local _DownedPilotTable=self.downedPilots
+self:T({Table=_DownedPilotTable})
+for _,_value in pairs(_DownedPilotTable)do
+local _groupName=_value.name
+self:T(string.format("Display Active Pilot: %s",tostring(_groupName)))
+self:T({Table=_value})
+local _woundedGroup=_value.group
+if _woundedGroup then
+local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup)
+local _helicoord=_heli:GetCoordinate()
+local _woundcoord=_woundedGroup:GetCoordinate()
+local _distance=self:_GetDistance(_helicoord,_woundcoord)
+self:T({_distance=_distance})
+local distancetext=""
+if self.coordtype<4 then
+distancetext=string.format("%.3fnm",UTILS.MetersToNM(_distance))
+else
+distancetext=string.format("%.3fkm",_distance/1000.0)
+end
+table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %.2f KHz ADF - %s ",_value.desc,_coordinatesText,_value.frequency/1000,distancetext)})
+end
+end
+local function sortDistance(a,b)
+return a.dist<b.dist
+end
+table.sort(_csarList,sortDistance)
+for _,_line in pairs(_csarList)do
+_msg=_msg.."\n".._line.msg
+end
+self:_DisplayMessageToSAR(_heli,_msg,self.messageTime*2)
+return self
+end
+function CSAR:_GetClosestDownedPilot(_heli)
+self:T(self.lid.." _GetClosestDownedPilot")
+local _side=self.coalition
+local _closestGroup=nil
+local _shortestDistance=-1
+local _distance=0
+local _closestGroupInfo=nil
+local _heliCoord=_heli:GetCoordinate()
+local DownedPilotsTable=self.downedPilots
+for _,_groupInfo in pairs(DownedPilotsTable)do
+local _woundedName=_groupInfo.name
+local _tempWounded=_groupInfo.group
+if _tempWounded then
+local _tempCoord=_tempWounded:GetCoordinate()
+_distance=self:_GetDistance(_heliCoord,_tempCoord)
+if _distance~=nil and(_shortestDistance==-1 or _distance<_shortestDistance)then
+_shortestDistance=_distance
+_closestGroup=_tempWounded
+_closestGroupInfo=_groupInfo
+end
+end
+end
+return{pilot=_closestGroup,distance=_shortestDistance,groupInfo=_closestGroupInfo}
+end
+function CSAR:_SignalFlare(_unitName)
+self:T(self.lid.." _SignalFlare")
+local _heli=self:_GetSARHeli(_unitName)
+if _heli==nil then
+return
+end
+local _closest=self:_GetClosestDownedPilot(_heli)
+if _closest~=nil and _closest.pilot~=nil and _closest.distance<8000.0 then
+local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
+local _distance=0
+if self.coordtype<4 then
+_distance=string.format("%.3fnm",UTILS.MetersToNM(_closest.distance))
+else
+_distance=string.format("%.3fkm",_closest.distance)
+end
+local _msg=string.format("%s - Popping signal flare at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
+self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
+local _coord=_closest.pilot:GetCoordinate()
+_coord:FlareRed(_clockDir)
+else
+local disttext="4.3nm"
+if self.coordtype==4 then
+disttext="8km"
+end
+self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
+end
+return self
+end
+function CSAR:_DisplayToAllSAR(_message,_side,_messagetime)
+self:T(self.lid.." _DisplayToAllSAR")
+for _,_unitName in pairs(self.csarUnits)do
+local _unit=self:_GetSARHeli(_unitName)
+if _unit then
+if not _messagetime then
+self:_DisplayMessageToSAR(_unit,_message,_messagetime)
+end
+end
+end
+return self
+end
+function CSAR:_Reqsmoke(_unitName)
+self:T(self.lid.." _Reqsmoke")
+local _heli=self:_GetSARHeli(_unitName)
+if _heli==nil then
+return
+end
+local _closest=self:_GetClosestDownedPilot(_heli)
+if _closest~=nil and _closest.pilot~=nil and _closest.distance<8000.0 then
+local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
+local _distance=0
+if self.coordtype<4 then
+_distance=string.format("%.3fnm",UTILS.MetersToNM(_closest.distance))
+else
+_distance=string.format("%.3fkm",_closest.distance)
+end
+local _msg=string.format("%s - Popping signal smoke at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
+self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
+local _coord=_closest.pilot:GetCoordinate()
+local color=self.smokecolor
+_coord:Smoke(color)
+else
+local disttext="4.3nm"
+if self.coordtype==4 then
+disttext="8km"
+end
+self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
+end
+return self
+end
+function CSAR:_GetClosestMASH(_heli)
+self:T(self.lid.." _GetClosestMASH")
+local _mashset=self.mash
+local _mashes=_mashset:GetSetObjects()
+local _shortestDistance=-1
+local _distance=0
+local _helicoord=_heli:GetCoordinate()
+local function GetCloseAirbase(coordinate,Coalition,Category)
+local a=coordinate:GetVec3()
+local distmin=math.huge
+local airbase=nil
+for DCSairbaseID,DCSairbase in pairs(world.getAirbases(Coalition))do
+local b=DCSairbase:getPoint()
+local c=UTILS.VecSubstract(a,b)
+local dist=UTILS.VecNorm(c)
+if dist<distmin and(Category==nil or Category==DCSairbase:getDesc().category)then
+distmin=dist
+airbase=DCSairbase
+end
+end
+return distmin
+end
+if self.allowFARPRescue then
+local position=_heli:GetCoordinate()
+local afb,distance=position:GetClosestAirbase2(nil,self.coalition)
+_shortestDistance=distance
+end
+for _,_mashUnit in pairs(_mashes)do
+if _mashUnit and _mashUnit:IsAlive()then
+local _mashcoord=_mashUnit:GetCoordinate()
+_distance=self:_GetDistance(_helicoord,_mashcoord)
+if _distance~=nil and(_shortestDistance==-1 or _distance<_shortestDistance)then
+_shortestDistance=_distance
+end
+end
+end
+if _shortestDistance~=-1 then
+return _shortestDistance
+else
+return-1
+end
+end
+function CSAR:_CheckOnboard(_unitName)
+self:T(self.lid.." _CheckOnboard")
+local _unit=self:_GetSARHeli(_unitName)
+if _unit==nil then
+return
+end
+local _inTransit=self.inTransitGroups[_unitName]
+if _inTransit==nil then
+self:_DisplayMessageToSAR(_unit,"No Rescued Pilots onboard",self.messageTime)
+else
+local _text="Onboard - RTB to FARP/Airfield or MASH: "
+for _,_onboard in pairs(self.inTransitGroups[_unitName])do
+_text=_text.."\n".._onboard.desc
+end
+self:_DisplayMessageToSAR(_unit,_text,self.messageTime*2)
+end
+return self
+end
+function CSAR:_AddMedevacMenuItem()
+self:T(self.lid.." _AddMedevacMenuItem")
+local coalition=self.coalition
+local allheligroupset=self.allheligroupset
+local _allHeliGroups=allheligroupset:GetSetObjects()
+local _UnitList={}
+for _key,_group in pairs(_allHeliGroups)do
+local _unit=_group:GetUnit(1)
+if _unit then
+if _unit:IsAlive()and _unit:IsPlayer()then
+local unitName=_unit:GetName()
+_UnitList[unitName]=unitName
+end
+end
+end
+self.csarUnits=_UnitList
+for _,_unitName in pairs(self.csarUnits)do
+local _unit=self:_GetSARHeli(_unitName)
+if _unit then
+local _group=_unit:GetGroup()
+if _group then
+local groupname=_group:GetName()
+if self.addedTo[groupname]==nil then
+self.addedTo[groupname]=true
+local _rootPath=MENU_GROUP:New(_group,"CSAR")
+local _rootMenu1=MENU_GROUP_COMMAND:New(_group,"List Active CSAR",_rootPath,self._DisplayActiveSAR,self,_unitName)
+local _rootMenu2=MENU_GROUP_COMMAND:New(_group,"Check Onboard",_rootPath,self._CheckOnboard,self,_unitName)
+local _rootMenu3=MENU_GROUP_COMMAND:New(_group,"Request Signal Flare",_rootPath,self._SignalFlare,self,_unitName)
+local _rootMenu4=MENU_GROUP_COMMAND:New(_group,"Request Smoke",_rootPath,self._Reqsmoke,self,_unitName):Refresh()
+end
+end
+end
+end
+return self
+end
+function CSAR:_GetDistance(_point1,_point2)
+self:T(self.lid.." _GetDistance")
+if _point1 and _point2 then
+local distance=_point1:DistanceFromPointVec2(_point2)
+return distance
+else
+return-1
+end
+end
+function CSAR:_GenerateVHFrequencies()
+self:T(self.lid.." _GenerateVHFrequencies")
+local _skipFrequencies=self.SkipFrequencies
+local FreeVHFFrequencies={}
+local UsedVHFFrequencies={}
+local _start=200000
+while _start<400000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(FreeVHFFrequencies,_start)
+end
+_start=_start+10000
+end
+_start=400000
+while _start<850000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(FreeVHFFrequencies,_start)
+end
+_start=_start+10000
+end
+_start=850000
+while _start<=999000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(FreeVHFFrequencies,_start)
+end
+_start=_start+50000
+end
+self.FreeVHFFrequencies=FreeVHFFrequencies
+return self
+end
+function CSAR:_GenerateADFFrequency()
+self:T(self.lid.." _GenerateADFFrequency")
+if#self.FreeVHFFrequencies<=3 then
+self.FreeVHFFrequencies=self.UsedVHFFrequencies
+self.UsedVHFFrequencies={}
+end
+local _vhf=table.remove(self.FreeVHFFrequencies,math.random(#self.FreeVHFFrequencies))
+return _vhf
+end
+function CSAR:_GetClockDirection(_heli,_group)
+self:T(self.lid.." _GetClockDirection")
+local _playerPosition=_heli:GetCoordinate()
+local _targetpostions=_group:GetCoordinate()
+local _heading=_heli:GetHeading()
+local DirectionVec3=_playerPosition:GetDirectionVec3(_targetpostions)
+local Angle=_playerPosition:GetAngleDegrees(DirectionVec3)
+self:T(self.lid.." _GetClockDirection"..tostring(Angle).." "..tostring(_heading))
+local clock=12
+if _heading then
+local Aspect=Angle-_heading
+if Aspect==0 then Aspect=360 end
+clock=math.floor(Aspect/30)
+if clock==0 then clock=12 end
+end
+return clock
+end
+function CSAR:_AddBeaconToGroup(_group,_freq)
+self:T(self.lid.." _AddBeaconToGroup")
+local _group=_group
+if _group==nil then
+for _i,_current in ipairs(self.UsedVHFFrequencies)do
+if _current==_freq then
+table.insert(self.FreeVHFFrequencies,_freq)
+table.remove(self.UsedVHFFrequencies,_i)
+end
+end
+return
+end
+if _group:IsAlive()then
+local _radioUnit=_group:GetUnit(1)
+local Frequency=_freq
+local Sound="l10n/DEFAULT/"..self.radioSound
+trigger.action.radioTransmission(Sound,_radioUnit:GetPositionVec3(),0,false,Frequency,1000)
+end
+return self
+end
+function CSAR:_RefreshRadioBeacons()
+self:T(self.lid.." _RefreshRadioBeacons")
+if self:_CountActiveDownedPilots()>0 then
+local PilotTable=self.downedPilots
+for _,_pilot in pairs(PilotTable)do
+self:T({_pilot})
+local pilot=_pilot
+local group=pilot.group
+local frequency=pilot.frequency or 0
+if group and group:IsAlive()and frequency>0 then
+self:_AddBeaconToGroup(group,frequency)
+end
+end
+end
+return self
+end
+function CSAR:_CountActiveDownedPilots()
+self:T(self.lid.." _CountActiveDownedPilots")
+local PilotsInFieldN=0
+for _,_unitName in pairs(self.downedPilots)do
+self:T({_unitName})
+if _unitName.name~=nil then
+PilotsInFieldN=PilotsInFieldN+1
+end
+end
+return PilotsInFieldN
+end
+function CSAR:_ReachedPilotLimit()
+self:T(self.lid.." _ReachedPilotLimit")
+local limit=self.maxdownedpilots
+local islimited=self.limitmaxdownedpilots
+local count=self:_CountActiveDownedPilots()
+if islimited and(count>=limit)then
+return true
+else
+return false
+end
+end
+function CSAR:onafterStart(From,Event,To)
+self:T({From,Event,To})
+self:I(self.lid.."Started.")
+self:HandleEvent(EVENTS.Takeoff,self._EventHandler)
+self:HandleEvent(EVENTS.Land,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
+self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
+if self.useprefix then
+local prefixes=self.csarPrefix or{}
+self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterCategoryHelicopter():FilterStart()
+else
+self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
+end
+self:__Status(-10)
+return self
+end
+function CSAR:onbeforeStatus(From,Event,To)
+self:T({From,Event,To})
+self:_AddMedevacMenuItem()
+self:_RefreshRadioBeacons()
+for _,_sar in pairs(self.csarUnits)do
+local PilotTable=self.downedPilots
+for _,_entry in pairs(PilotTable)do
+local entry=_entry
+local name=entry.name
+local timestamp=entry.timestamp or 0
+local now=timer.getAbsTime()
+if now-timestamp>17 then
+self:_CheckWoundedGroupStatus(_sar,name)
+end
+end
+end
+return self
+end
+function CSAR:onafterStatus(From,Event,To)
+self:T({From,Event,To})
+local NumberOfSARPilots=0
+for _,_unitName in pairs(self.csarUnits)do
+NumberOfSARPilots=NumberOfSARPilots+1
+end
+local PilotsInFieldN=self:_CountActiveDownedPilots()
+local PilotsBoarded=0
+for _,_unitName in pairs(self.inTransitGroups)do
+for _,_units in pairs(_unitName)do
+PilotsBoarded=PilotsBoarded+1
+end
+end
+if self.verbose>0 then
+local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d (max %d) | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",
+self.lid,NumberOfSARPilots,PilotsInFieldN,self.maxdownedpilots,PilotsBoarded,self.rescues,self.rescuedpilots)
+self:T(text)
+if self.verbose<2 then
+self:I(text)
+elseif self.verbose>1 then
+self:I(text)
+local m=MESSAGE:New(text,"10","Status",true):ToCoalition(self.coalition)
+end
+end
+self:__Status(-20)
+return self
+end
+function CSAR:onafterStop(From,Event,To)
+self:T({From,Event,To})
+self:UnHandleEvent(EVENTS.Takeoff)
+self:UnHandleEvent(EVENTS.Land)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.PlayerEnterUnit)
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+self:UnHandleEvent(EVENTS.PilotDead)
+self:T(self.lid.."Stopped.")
+return self
+end
+function CSAR:onbeforeApproach(From,Event,To,Heliname,Woundedgroupname)
+self:T({From,Event,To,Heliname,Woundedgroupname})
+self:_CheckWoundedGroupStatus(Heliname,Woundedgroupname)
+return self
+end
+function CSAR:onbeforeBoarded(From,Event,To,Heliname,Woundedgroupname)
+self:T({From,Event,To,Heliname,Woundedgroupname})
+self:_ScheduledSARFlight(Heliname,Woundedgroupname)
+return self
+end
+function CSAR:onbeforeReturning(From,Event,To,Heliname,Woundedgroupname)
+self:T({From,Event,To,Heliname,Woundedgroupname})
+self:_ScheduledSARFlight(Heliname,Woundedgroupname)
+return self
+end
+function CSAR:onbeforeRescued(From,Event,To,HeliUnit,HeliName,PilotsSaved)
+self:T({From,Event,To,HeliName,HeliUnit})
+self.rescues=self.rescues+1
+self.rescuedpilots=self.rescuedpilots+PilotsSaved
+return self
+end
+function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText)
+self:T({From,Event,To,Group,Frequency,Leadername,CoordinatesText})
+return self
 end
 AI_BALANCER={
 ClassName="AI_BALANCER",
