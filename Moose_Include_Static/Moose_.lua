@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-10T14:56:35.0000000Z-a69865b8c95a8f342260f67adc26990cfa51cc38 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-11T16:31:17.0000000Z-52e2ac7174f11310ac74f193cf179bb7a48200f9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2979,6 +2979,34 @@ TempTable[i]=t[r]
 table.remove(t,r)
 end
 return TempTable
+end
+function UTILS.IsLoadingDoorOpen(unit_name)
+local ret_val=false
+local unit=Unit.getByName(unit_name)
+if unit~=nil then
+local type_name=unit:getTypeName()
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+BASE:T(unit_name.." Cargo doors are open or cargo door not present")
+ret_val=true
+end
+if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
+BASE:T(unit_name.." a side door is open")
+ret_val=true
+end
+if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
+BASE:T(unit_name.." a side door is open ")
+ret_val=true
+end
+if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
+BASE:T(unit_name.." front door(s) are open")
+ret_val=true
+end
+if ret_val==false then
+BASE:T(unit_name.." all doors are closed")
+end
+return ret_val
+end
+return nil
 end
 PROFILER={
 ClassName="PROFILER",
