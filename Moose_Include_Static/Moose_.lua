@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-10T15:11:00.0000000Z-18b45c9621b17243f18b1af779b5320e16c39ab6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-11T16:37:46.0000000Z-29210f670c4a7da4c7d97d653829f75d3ac21f79 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2939,6 +2939,50 @@ end
 function UTILS.GetOSTime()
 if os then
 return os.clock()
+end
+return nil
+end
+function UTILS.ShuffleTable(t)
+if t==nil or type(t)~="table"then
+BASE:I("Error in ShuffleTable: Missing or wrong tyÃ¥e of Argument")
+return
+end
+math.random()
+math.random()
+math.random()
+local TempTable={}
+for i=1,#t do
+local r=math.random(1,#t)
+TempTable[i]=t[r]
+table.remove(t,r)
+end
+return TempTable
+end
+function UTILS.IsLoadingDoorOpen(unit_name)
+local ret_val=false
+local unit=Unit.getByName(unit_name)
+if unit~=nil then
+local type_name=unit:getTypeName()
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+BASE:T(unit_name.." Cargo doors are open or cargo door not present")
+ret_val=true
+end
+if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
+BASE:T(unit_name.." a side door is open")
+ret_val=true
+end
+if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
+BASE:T(unit_name.." a side door is open ")
+ret_val=true
+end
+if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
+BASE:T(unit_name.." front door(s) are open")
+ret_val=true
+end
+if ret_val==false then
+BASE:T(unit_name.." all doors are closed")
+end
+return ret_val
 end
 return nil
 end
