@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-12T16:10:12.0000000Z-c0f4eef896ecd28d95c0cb5577de0bc21955375d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-12T16:16:22.0000000Z-86fedbfaae4235c3e0b231c8df0d17e282e71d6f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44237,7 +44237,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.4.1"
+self.version="0.4.2"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 return self
 end
@@ -44741,7 +44741,7 @@ SHORAD.Mavs={
 }
 function SHORAD:New(Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition,UseEmOnOff)
 local self=BASE:Inherit(self,BASE:New())
-self:I({Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition})
+self:T({Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition})
 local GroupSet=SET_GROUP:New():FilterPrefixes(ShoradPrefix):FilterCoalitions(Coalition):FilterCategoryGround():FilterStart()
 self.name=Name or"MyShorad"
 self.Prefixes=ShoradPrefix or"SAM SHORAD"
@@ -44763,10 +44763,10 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 return self
 end
 function SHORAD:_InitState()
-self:I(self.lid.." _InitState")
+self:T(self.lid.." _InitState")
 local table={}
 local set=self.Groupset
-self:I({set=set})
+self:T({set=set})
 local aliveset=set:GetAliveSet()
 for _,_group in pairs(aliveset)do
 if self.UseEmOnOff then
@@ -44783,7 +44783,7 @@ end
 return self
 end
 function SHORAD:SwitchDebug(onoff)
-self:I({onoff})
+self:T({onoff})
 if onoff then
 self:SwitchDebugOn()
 else
@@ -44803,19 +44803,19 @@ BASE:TraceOff()
 return self
 end
 function SHORAD:SwitchHARMDefense(onoff)
-self:I({onoff})
+self:T({onoff})
 local onoff=onoff or true
 self.DefendHarms=onoff
 return self
 end
 function SHORAD:SwitchAGMDefense(onoff)
-self:I({onoff})
+self:T({onoff})
 local onoff=onoff or true
 self.DefendMavs=onoff
 return self
 end
 function SHORAD:SetDefenseLimits(low,high)
-self:I({low,high})
+self:T({low,high})
 local low=low or 70
 local high=high or 90
 if(low<0)or(low>100)or(low>high)then
@@ -44829,7 +44829,7 @@ self.DefenseHighProb=high
 return self
 end
 function SHORAD:SetActiveTimer(seconds)
-self:I(self.lid.." SetActiveTimer")
+self:T(self.lid.." SetActiveTimer")
 local timer=seconds or 600
 if timer<0 then
 timer=600
@@ -44838,7 +44838,7 @@ self.ActiveTimer=timer
 return self
 end
 function SHORAD:SetDefenseRadius(meters)
-self:I(self.lid.." SetDefenseRadius")
+self:T(self.lid.." SetDefenseRadius")
 local radius=meters or 20000
 if radius<0 then
 radius=20000
@@ -44847,13 +44847,13 @@ self.Radius=radius
 return self
 end
 function SHORAD:SetUsingEmOnOff(switch)
-self:I(self.lid.." SetUsingEmOnOff")
+self:T(self.lid.." SetUsingEmOnOff")
 self.UseEmOnOff=switch or false
 return self
 end
 function SHORAD:_CheckHarms(WeaponName)
-self:I(self.lid.." _CheckHarms")
-self:I({WeaponName})
+self:T(self.lid.." _CheckHarms")
+self:T({WeaponName})
 local hit=false
 if self.DefendHarms then
 for _,_name in pairs(SHORAD.Harms)do
@@ -44863,8 +44863,8 @@ end
 return hit
 end
 function SHORAD:_CheckMavs(WeaponName)
-self:I(self.lid.." _CheckMavs")
-self:I({WeaponName})
+self:T(self.lid.." _CheckMavs")
+self:T({WeaponName})
 local hit=false
 if self.DefendMavs then
 for _,_name in pairs(SHORAD.Mavs)do
@@ -44874,7 +44874,7 @@ end
 return hit
 end
 function SHORAD:_CheckCoalition(Coalition)
-self:I(self.lid.." _CheckCoalition")
+self:T(self.lid.." _CheckCoalition")
 local owncoalition=self.Coalition
 local othercoalition=""
 if Coalition==0 then
@@ -44884,7 +44884,7 @@ othercoalition="red"
 else
 othercoalition="blue"
 end
-self:I({owncoalition=owncoalition,othercoalition=othercoalition})
+self:T({owncoalition=owncoalition,othercoalition=othercoalition})
 if owncoalition~=othercoalition then
 return true
 else
@@ -44892,7 +44892,7 @@ return false
 end
 end
 function SHORAD:_CheckShotAtShorad(TargetGroupName)
-self:I(self.lid.." _CheckShotAtShorad")
+self:T(self.lid.." _CheckShotAtShorad")
 local tgtgrp=TargetGroupName
 local shorad=self.Groupset
 local shoradset=shorad:GetAliveSet()
@@ -44906,7 +44906,7 @@ end
 return returnname
 end
 function SHORAD:_CheckShotAtSams(TargetGroupName)
-self:I(self.lid.." _CheckShotAtSams")
+self:T(self.lid.." _CheckShotAtSams")
 local tgtgrp=TargetGroupName
 local shorad=self.Samset
 local shoradset=shorad:GetSet()
@@ -44920,7 +44920,7 @@ end
 return returnname
 end
 function SHORAD:_ShotIsDetected()
-self:I(self.lid.." _ShotIsDetected")
+self:T(self.lid.." _ShotIsDetected")
 local IsDetected=false
 local DetectionProb=math.random(self.DefenseLowProb,self.DefenseHighProb)
 local ActualDetection=math.random(1,100)
@@ -44930,8 +44930,8 @@ end
 return IsDetected
 end
 function SHORAD:WakeUpShorad(TargetGroup,Radius,ActiveTimer,TargetCat)
-self:I(self.lid.." WakeUpShorad")
-self:I({TargetGroup,Radius,ActiveTimer,TargetCat})
+self:T(self.lid.." WakeUpShorad")
+self:T({TargetGroup,Radius,ActiveTimer,TargetCat})
 local targetcat=TargetCat or Object.Category.UNIT
 local targetgroup=TargetGroup
 local targetvec2=nil
@@ -44956,13 +44956,13 @@ else
 group:OptionAlarmStateGreen()
 end
 local text=string.format("Sleeping SHORAD %s",group:GetName())
-self:I(text)
+self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
 end
 for _,_group in pairs(shoradset)do
 if _group:IsAnyInZone(targetzone)then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
-self:I(text)
+self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
 if self.UseEmOnOff then
 _group:EnableEmission(true)
@@ -44979,8 +44979,8 @@ end
 return self
 end
 function SHORAD:HandleEventShot(EventData)
-self:I({EventData})
-self:I(self.lid.." HandleEventShot")
+self:T({EventData})
+self:T(self.lid.." HandleEventShot")
 local ShootingWeapon=EventData.Weapon
 local ShootingWeaponName=EventData.WeaponName
 local weaponcoalition=EventData.IniGroup:GetCoalition()
@@ -44991,12 +44991,12 @@ if IsDetected then
 DetectedText="true"
 end
 local text=string.format("%s Missile Launched = %s | Detected probability state is %s",self.lid,ShootingWeaponName,DetectedText)
-self:I(text)
+self:T(text)
 local m=MESSAGE:New(text,10,"Info"):ToAllIf(self.debug)
 if(self:_CheckHarms(ShootingWeaponName)or self:_CheckMavs(ShootingWeaponName))and IsDetected then
 local targetdata=EventData.Weapon:getTarget()
 local targetcat=targetdata:getCategory()
-self:I(string.format("Target Category (3=STATIC, 1=UNIT)= %s",tostring(targetcat)))
+self:T(string.format("Target Category (3=STATIC, 1=UNIT)= %s",tostring(targetcat)))
 local targetunit=nil
 if targetcat==Object.Category.UNIT then
 targetunit=UNIT:Find(targetdata)
@@ -45015,12 +45015,12 @@ targetgroup=targetunit
 targetgroupname=targetunitname
 end
 local text=string.format("%s Missile Target = %s",self.lid,tostring(targetgroupname))
-self:I(text)
+self:T(text)
 local m=MESSAGE:New(text,10,"Info"):ToAllIf(self.debug)
 local shotatus=self:_CheckShotAtShorad(targetgroupname)
 local shotatsams=self:_CheckShotAtSams(targetgroupname)
 if shotatsams or shotatus then
-self:I({shotatsams=shotatsams,shotatus=shotatus})
+self:T({shotatsams=shotatsams,shotatus=shotatus})
 self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat)
 end
 end
