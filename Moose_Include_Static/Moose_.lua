@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-12T16:16:22.0000000Z-86fedbfaae4235c3e0b231c8df0d17e282e71d6f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-12T17:17:39.0000000Z-e33de03522d7bdb4bfb4f2dc6306477bac159f33 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3007,6 +3007,118 @@ end
 return ret_val
 end
 return nil
+end
+function UTILS.GenerateFMFrequencies()
+local FreeFMFrequencies={}
+for _first=3,7 do
+for _second=0,5 do
+for _third=0,9 do
+local _frequency=((100*_first)+(10*_second)+_third)*100000
+table.insert(FreeFMFrequencies,_frequency)
+end
+end
+end
+return FreeFMFrequencies
+end
+function UTILS.GenerateVHFrequencies()
+local _skipFrequencies={
+214,274,291.5,295,297.5,
+300.5,304,307,309.5,311,312,312.5,316,
+320,324,328,329,330,336,337,
+342,343,348,351,352,353,358,
+363,365,368,372.5,374,
+380,381,384,389,395,396,
+414,420,430,432,435,440,450,455,462,470,485,
+507,515,520,525,528,540,550,560,570,577,580,
+602,625,641,662,670,680,682,690,
+705,720,722,730,735,740,745,750,770,795,
+822,830,862,866,
+905,907,920,935,942,950,995,
+1000,1025,1030,1050,1065,1116,1175,1182,1210
+}
+local FreeVHFFrequencies={}
+local _start=200000
+while _start<400000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(FreeVHFFrequencies,_start)
+end
+_start=_start+10000
+end
+_start=400000
+while _start<850000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(FreeVHFFrequencies,_start)
+end
+_start=_start+10000
+end
+_start=850000
+while _start<=999000 do
+local _found=false
+for _,value in pairs(_skipFrequencies)do
+if value*1000==_start then
+_found=true
+break
+end
+end
+if _found==false then
+table.insert(FreeVHFFrequencies,_start)
+end
+_start=_start+50000
+end
+return FreeVHFFrequencies
+end
+function UTILS.GenerateUHFrequencies()
+local FreeUHFFrequencies={}
+local _start=220000000
+while _start<399000000 do
+table.insert(FreeUHFFrequencies,_start)
+_start=_start+500000
+end
+return FreeUHFFrequencies
+end
+function UTILS.GenerateLaserCodes()
+local jtacGeneratedLaserCodes={}
+local function ContainsDigit(_number,_numberToFind)
+local _thisNumber=_number
+local _thisDigit=0
+while _thisNumber~=0 do
+_thisDigit=_thisNumber%10
+_thisNumber=math.floor(_thisNumber/10)
+if _thisDigit==_numberToFind then
+return true
+end
+end
+return false
+end
+local _code=1111
+local _count=1
+while _code<1777 and _count<30 do
+while true do
+_code=_code+1
+if not self:_ContainsDigit(_code,8)
+and not ContainsDigit(_code,9)
+and not ContainsDigit(_code,0)then
+table.insert(jtacGeneratedLaserCodes,_code)
+break
+end
+end
+_count=_count+1
+end
+return jtacGeneratedLaserCodes
 end
 PROFILER={
 ClassName="PROFILER",
@@ -66985,12 +67097,8 @@ elseif self.coordtype==1 then
 _coordinatesText=_coordinate:ToStringLLDMS()
 elseif self.coordtype==2 then
 _coordinatesText=_coordinate:ToStringMGRS()
-elseif self.coordtype==3 then
-local Settings=_SETTINGS:SetImperial()
-_coordinatesText=_coordinate:ToStringBULLS(self.coalition,Settings)
 else
-local Settings=_SETTINGS:SetMetric()
-_coordinatesText=_coordinate:ToStringBULLS(self.coalition,Settings)
+_coordinatesText=_coordinate:ToStringBULLS(self.coalition)
 end
 end
 return _coordinatesText
@@ -67018,10 +67126,10 @@ local _woundcoord=_woundedGroup:GetCoordinate()
 local _distance=self:_GetDistance(_helicoord,_woundcoord)
 self:T({_distance=_distance})
 local distancetext=""
-if self.coordtype<4 then
-distancetext=string.format("%.3fnm",UTILS.MetersToNM(_distance))
+if _SETTINGS:IsImperial()then
+distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
-distancetext=string.format("%.3fkm",_distance/1000.0)
+distancetext=string.format("%.1fkm",_distance/1000.0)
 end
 table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %.2f KHz ADF - %s ",_value.desc,_coordinatesText,_value.frequency/1000,distancetext)})
 end
@@ -67070,10 +67178,10 @@ local _closest=self:_GetClosestDownedPilot(_heli)
 if _closest~=nil and _closest.pilot~=nil and _closest.distance<8000.0 then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
-if self.coordtype<4 then
-_distance=string.format("%.3fnm",UTILS.MetersToNM(_closest.distance))
+if _SETTINGS:IsImperial()then
+_distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
-_distance=string.format("%.3fkm",_closest.distance)
+_distance=string.format("%.1fkm",_closest.distance)
 end
 local _msg=string.format("%s - Popping signal flare at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
@@ -67081,7 +67189,7 @@ local _coord=_closest.pilot:GetCoordinate()
 _coord:FlareRed(_clockDir)
 else
 local disttext="4.3nm"
-if self.coordtype==4 then
+if _SETTINGS:IsMetric()then
 disttext="8km"
 end
 self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
@@ -67110,10 +67218,10 @@ local _closest=self:_GetClosestDownedPilot(_heli)
 if _closest~=nil and _closest.pilot~=nil and _closest.distance<8000.0 then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
-if self.coordtype<4 then
-_distance=string.format("%.3fnm",UTILS.MetersToNM(_closest.distance))
+if _SETTINGS:IsImperial()then
+_distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
-_distance=string.format("%.3fkm",_closest.distance)
+_distance=string.format("%.1fkm",_closest.distance)
 end
 local _msg=string.format("%s - Popping signal smoke at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
@@ -67122,7 +67230,7 @@ local color=self.smokecolor
 _coord:Smoke(color)
 else
 local disttext="4.3nm"
-if self.coordtype==4 then
+if _SETTINGS:IsMetric()then
 disttext="8km"
 end
 self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
@@ -67714,10 +67822,6 @@ end
 function CTLD:_GenerateFMFrequencies()
 self:T(self.lid.." _GenerateFMrequencies")
 self.FreeFMFrequencies={}
-local _start=220000000
-while _start<399000000 do
-_start=_start+500000
-end
 for _first=3,7 do
 for _second=0,5 do
 for _third=0,9 do
