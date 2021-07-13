@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-12T17:17:39.0000000Z-e33de03522d7bdb4bfb4f2dc6306477bac159f33 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-13T15:50:44.0000000Z-433d1bbf57c7e2a384f472f11d3e6883c7598539 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44292,6 +44292,13 @@ ShoradLink=false,
 ShoradTime=600,
 ShoradActDistance=15000,
 UseEmOnOff=false,
+TimeStamp=0,
+state2flag=false,
+}
+MANTIS.AdvancedState={
+GREEN=0,
+AMBER=1,
+RED=2,
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff)
@@ -44320,6 +44327,9 @@ self.Shorad=nil
 self.ShoradLink=false
 self.ShoradTime=600
 self.ShoradActDistance=15000
+self.TimeStamp=timer.getAbsTime()
+self.relointerval=math.random(1800,3600)
+self.state2flag=false
 if EmOnOff then
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -44332,7 +44342,7 @@ self.advAwacs=true
 else
 self.advAwacs=false
 end
-local self=BASE:Inherit(self,BASE:New())
+local self=BASE:Inherit(self,FSM:New())
 self.lid=string.format("MANTIS %s | ",self.name)
 if self.debug then
 BASE:TraceOnOff(true)
@@ -44349,37 +44359,57 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.4.2"
+self.version="0.5.1"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","Relocating","*")
+self:AddTransition("*","GreenState","*")
+self:AddTransition("*","RedState","*")
+self:AddTransition("*","AdvStateChange","*")
+self:AddTransition("*","ShoradActivated","*")
+self:AddTransition("*","Stop","Stopped")
 return self
 end
 function MANTIS:_GetSAMTable()
+self:T(self.lid.."GetSAMTable")
 return self.SAM_Table
 end
 function MANTIS:_SetSAMTable(table)
+self:T(self.lid.."SetSAMTable")
 self.SAM_Table=table
 return self
 end
 function MANTIS:SetEWRGrouping(radius)
+self:T(self.lid.."SetEWRGrouping")
 local radius=radius or 5000
 self.grouping=radius
+return self
 end
 function MANTIS:SetEWRRange(radius)
+self:T(self.lid.."SetEWRRange")
 local radius=radius or 80000
 self.acceptrange=radius
+return self
 end
 function MANTIS:SetSAMRadius(radius)
+self:T(self.lid.."SetSAMRadius")
 local radius=radius or 25000
 self.checkradius=radius
+return self
 end
 function MANTIS:SetSAMRange(range)
+self:T(self.lid.."SetSAMRange")
 local range=range or 75
 if range<0 or range>100 then
 range=75
 end
 self.engagerange=range
+return self
 end
 function MANTIS:SetNewSAMRangeWhileRunning(range)
+self:T(self.lid.."SetNewSAMRangeWhileRunning")
 local range=range or 75
 if range<0 or range>100 then
 range=75
@@ -44387,12 +44417,23 @@ end
 self.engagerange=range
 self:_RefreshSAMTable()
 self.mysead.EngagementRange=range
+return self
 end
 function MANTIS:Debug(onoff)
+self:T(self.lid.."SetDebug")
 local onoff=onoff or false
 self.debug=onoff
+if onoff then
+BASE:TraceOn()
+BASE:TraceClass("MANTIS")
+BASE:TraceLevel(1)
+else
+BASE:TraceOff()
+end
+return self
 end
 function MANTIS:GetCommandCenter()
+self:T(self.lid.."GetCommandCenter")
 if self.HQ_CC then
 return self.HQ_CC
 else
@@ -44400,18 +44441,23 @@ return nil
 end
 end
 function MANTIS:SetAwacs(prefix)
+self:T(self.lid.."SetAwacs")
 if prefix~=nil then
 if type(prefix)=="string"then
 self.AWACS_Prefix=prefix
 self.advAwacs=true
 end
 end
+return self
 end
 function MANTIS:SetAwacsRange(range)
+self:T(self.lid.."SetAwacsRange")
 local range=range or 250000
 self.awacsrange=range
+return self
 end
 function MANTIS:SetCommandCenter(group)
+self:T(self.lid.."SetCommandCenter")
 local group=group or nil
 if group~=nil then
 if type(group)=="string"then
@@ -44422,13 +44468,17 @@ self.HQ_CC=group
 self.HQ_Template_CC=group:GetName()
 end
 end
+return self
 end
 function MANTIS:SetDetectInterval(interval)
+self:T(self.lid.."SetDetectInterval")
 local interval=interval or 30
 self.detectinterval=interval
+return self
 end
 function MANTIS:SetAdvancedMode(onoff,ratio)
-self:F({onoff,ratio})
+self:T(self.lid.."SetAdvancedMode")
+self:T({onoff,ratio})
 local onoff=onoff or false
 local ratio=ratio or 100
 if(type(self.HQ_Template_CC)=="string")and onoff and self.dynamic then
@@ -44436,40 +44486,45 @@ self.adv_ratio=ratio
 self.advanced=true
 self.adv_state=0
 self.Adv_EWR_Group=SET_GROUP:New():FilterPrefixes(self.EWR_Templates_Prefix):FilterCoalitions(self.Coalition):FilterStart()
-env.info(string.format("***** Starting Advanced Mode MANTIS Version %s *****",self.version))
+self:I(string.format("***** Starting Advanced Mode MANTIS Version %s *****",self.version))
 else
 local text=self.lid.." Advanced Mode requires a HQ and dynamic to be set. Revisit your MANTIS:New() statement to add both."
 local m=MESSAGE:New(text,10,"MANTIS",true):ToAll()
-BASE:E(text)
+self:E(text)
 end
+return self
 end
 function MANTIS:SetUsingEmOnOff(switch)
+self:T(self.lid.."SetUsingEmOnOff")
 self.UseEmOnOff=switch or false
+return self
 end
 function MANTIS:_CheckHQState()
+self:T(self.lid.."CheckHQState")
 local text=self.lid.." Checking HQ State"
-self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(text)end
+if self.verbose then self:I(text)end
 if self.advanced then
 local hq=self.HQ_Template_CC
 local hqgrp=GROUP:FindByName(hq)
 if hqgrp then
 if hqgrp:IsAlive()then
-env.info(self.lid.." HQ is alive!")
+self:T(self.lid.." HQ is alive!")
 return true
 else
-env.info(self.lid.." HQ is dead!")
+self:T(self.lid.." HQ is dead!")
 return false
 end
 end
 end
+return self
 end
 function MANTIS:_CheckEWRState()
+self:T(self.lid.."CheckEWRState")
 local text=self.lid.." Checking EWR State"
-self:F(text)
+self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(text)end
+if self.verbose then self:I(text)end
 if self.advanced then
 local EWR_Group=self.Adv_EWR_Group
 local nalive=EWR_Group:CountAlive()
@@ -44481,19 +44536,21 @@ nalive=nalive+1
 end
 end
 end
-env.info(self.lid..string.format(" No of EWR alive is %d",nalive))
+self:T(self.lid..string.format(" No of EWR alive is %d",nalive))
 if nalive>0 then
 return true
 else
 return false
 end
 end
+return self
 end
-function MANTIS:_CheckAdvState()
-local text=self.lid.." Checking Advanced State"
-self:F(text)
+function MANTIS:_CalcAdvState()
+self:T(self.lid.."CalcAdvState")
+local text=self.lid.." Calculating Advanced State"
+self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(text)end
+if self.verbose then self:I(text)end
 local currstate=self.adv_state
 local EWR_State=self:_CheckEWRState()
 local HQ_State=self:_CheckHQState()
@@ -44509,13 +44566,14 @@ local ratio=self.adv_ratio/100
 ratio=ratio*self.adv_state
 local newinterval=interval+(interval*ratio)
 local text=self.lid..string.format(" Calculated OldState/NewState/Interval: %d / %d / %d",currstate,self.adv_state,newinterval)
-self:F(text)
+self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(text)end
+if self.verbose then self:I(text)end
 return newinterval,currstate
 end
 function MANTIS:SetAutoRelocate(hq,ewr)
-self:F({hq,ewr})
+self:T(self.lid.."SetAutoRelocate")
+self:T({hq,ewr})
 local hqrel=hq or false
 local ewrel=ewr or false
 if hqrel or ewrel then
@@ -44523,37 +44581,39 @@ self.autorelocate=true
 self.autorelocateunits={HQ=hqrel,EWR=ewrel}
 self:T({self.autorelocate,self.autorelocateunits})
 end
+return self
 end
 function MANTIS:_RelocateGroups()
-self:T(self.lid.." Relocating Groups")
+self:T(self.lid.."RelocateGroups")
 local text=self.lid.." Relocating Groups"
 local m=MESSAGE:New(text,10,"MANTIS",true):ToAllIf(self.debug)
-if self.verbose then env.info(text)end
+if self.verbose then self:I(text)end
 if self.autorelocate then
-if self.autorelocateunits.HQ and self.HQ_CC then
+local HQGroup=self.HQ_CC
+if self.autorelocateunits.HQ and self.HQ_CC and HQGroup:IsAlive()then
 local _hqgrp=self.HQ_CC
 self:T(self.lid.." Relocating HQ")
 local text=self.lid.." Relocating HQ"
-local m=MESSAGE:New(text,10,"MANTIS"):ToAll()
 _hqgrp:RelocateGroundRandomInRadius(20,500,true,true)
 end
 if self.autorelocateunits.EWR then
 local EWR_GRP=SET_GROUP:New():FilterPrefixes(self.EWR_Templates_Prefix):FilterCoalitions(self.Coalition):FilterOnce()
 local EWR_Grps=EWR_GRP.Set
 for _,_grp in pairs(EWR_Grps)do
-if _grp:IsGround()then
+if _grp:IsAlive()and _grp:IsGround()then
 self:T(self.lid.." Relocating EWR ".._grp:GetName())
 local text=self.lid.." Relocating EWR ".._grp:GetName()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(text)end
+if self.verbose then self:I(text)end
 _grp:RelocateGroundRandomInRadius(20,500,true,true)
 end
 end
 end
 end
+return self
 end
 function MANTIS:CheckObjectInZone(dectset,samcoordinate)
-self:F(self.lid.."CheckObjectInZone Called")
+self:T(self.lid.."CheckObjectInZone")
 local radius=self.checkradius
 local set=dectset
 for _,_coord in pairs(set)do
@@ -44563,7 +44623,7 @@ local samstring=samcoordinate:ToStringLLDMS()
 local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
 local text=string.format("Checking SAM at % s - Distance %d m - Target %s",samstring,targetdistance,dectstring)
 local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
-if self.verbose then env.info(self.lid..text)end
+if self.verbose then self:I(self.lid..text)end
 if targetdistance<=radius then
 return true,targetdistance
 end
@@ -44571,17 +44631,17 @@ end
 return false,0
 end
 function MANTIS:StartDetection()
-self:F(self.lid.."Starting Detection")
+self:T(self.lid.."Starting Detection")
 local groupset=self.EWR_Group
 local grouping=self.grouping or 5000
 local acceptrange=self.acceptrange or 80000
 local interval=self.detectinterval or 60
-_MANTISdetection=DETECTION_AREAS:New(groupset,grouping)
-_MANTISdetection:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
-_MANTISdetection:SetAcceptRange(acceptrange)
-_MANTISdetection:SetRefreshTimeInterval(interval)
-_MANTISdetection:Start()
-function _MANTISdetection:OnAfterDetectedItem(From,Event,To,DetectedItem)
+local MANTISdetection=DETECTION_AREAS:New(groupset,grouping)
+MANTISdetection:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
+MANTISdetection:SetAcceptRange(acceptrange)
+MANTISdetection:SetRefreshTimeInterval(interval)
+MANTISdetection:Start()
+function MANTISdetection:OnAfterDetectedItem(From,Event,To,DetectedItem)
 local debug=false
 if DetectedItem.IsDetected and debug then
 local Coordinate=DetectedItem.Coordinate
@@ -44589,20 +44649,20 @@ local text="MANTIS: Detection at "..Coordinate:ToStringLLDMS()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 end
 end
-return _MANTISdetection
+return MANTISdetection
 end
 function MANTIS:StartAwacsDetection()
-self:F(self.lid.."Starting Awacs Detection")
+self:T(self.lid.."Starting Awacs Detection")
 local group=self.AWACS_Prefix
 local groupset=SET_GROUP:New():FilterPrefixes(group):FilterCoalitions(self.Coalition):FilterStart()
 local grouping=self.grouping or 5000
 local interval=self.detectinterval or 60
-_MANTISAwacs=DETECTION_AREAS:New(groupset,grouping)
-_MANTISAwacs:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
-_MANTISAwacs:SetAcceptRange(self.awacsrange)
-_MANTISAwacs:SetRefreshTimeInterval(interval)
-_MANTISAwacs:Start()
-function _MANTISAwacs:OnAfterDetectedItem(From,Event,To,DetectedItem)
+local MANTISAwacs=DETECTION_AREAS:New(groupset,grouping)
+MANTISAwacs:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
+MANTISAwacs:SetAcceptRange(self.awacsrange)
+MANTISAwacs:SetRefreshTimeInterval(interval)
+MANTISAwacs:Start()
+function MANTISAwacs:OnAfterDetectedItem(From,Event,To,DetectedItem)
 local debug=false
 if DetectedItem.IsDetected and debug then
 local Coordinate=DetectedItem.Coordinate
@@ -44610,10 +44670,10 @@ local text="Awacs Detection at "..Coordinate:ToStringLLDMS()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 end
 end
-return _MANTISAwacs
+return MANTISAwacs
 end
 function MANTIS:SetSAMStartState()
-self:F(self.lid.."Setting SAM Start States")
+self:T(self.lid.."Setting SAM Start States")
 local SAM_SET=self.SAM_Group
 local SAM_Grps=SAM_SET.Set
 local SAM_Tbl={}
@@ -44641,7 +44701,7 @@ self.mysead=mysead
 return self
 end
 function MANTIS:_RefreshSAMTable()
-self:F(self.lid.."Setting SAM Start States")
+self:T(self.lid.."RefreshSAMTable")
 local SAM_SET=self.SAM_Group
 local SAM_Grps=SAM_SET.Set
 local SAM_Tbl={}
@@ -44665,6 +44725,7 @@ end
 return self
 end
 function MANTIS:AddShorad(Shorad,Shoradtime)
+self:T(self.lid.."AddShorad")
 local Shorad=Shorad or nil
 local ShoradTime=Shoradtime or 600
 local ShoradLink=true
@@ -44673,20 +44734,17 @@ self.ShoradLink=ShoradLink
 self.Shorad=Shorad
 self.ShoradTime=Shoradtime
 end
+return self
 end
 function MANTIS:RemoveShorad()
+self:T(self.lid.."RemoveShorad")
 self.ShoradLink=false
+return self
 end
-function MANTIS:Start()
-self:F(self.lid.."Starting MANTIS")
-self:SetSAMStartState()
-self.Detection=self:StartDetection()
-if self.advAwacs then
-self.AWACS_Detection=self:StartAwacsDetection()
-end
-local function check(detection)
+function MANTIS:_Check(detection)
+self:T(self.lid.."Check")
 local detset=detection:GetDetectedItemCoordinates()
-self:F("Check:",{detset})
+self:T("Check:",{detset})
 local rand=math.random(1,100)
 if rand>65 then
 self:_RefreshSAMTable()
@@ -44703,46 +44761,48 @@ if self.UseEmOnOff then
 samgroup:EnableEmission(true)
 end
 samgroup:OptionAlarmStateRed()
+self:__RedState(1,samgroup)
 if self.ShoradLink and Distance<self.ShoradActDistance then
 local Shorad=self.Shorad
 local radius=self.checkradius
 local ontime=self.ShoradTime
 Shorad:WakeUpShorad(name,radius,ontime)
+self:__ShoradActivated(1,name,radius,ontime)
 end
 local text=string.format("SAM %s switched to alarm state RED!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(self.lid..text)end
+if self.verbose then self:I(self.lid..text)end
 end
 else
 if samgroup:IsAlive()then
 if self.UseEmOnOff then
 samgroup:EnableEmission(false)
+self:__GreenState(1,samgroup)
 else
 samgroup:OptionAlarmStateGreen()
+self:__GreenState(1,samgroup)
 end
 local text=string.format("SAM %s switched to alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then env.info(self.lid..text)end
+if self.verbose then self:I(self.lid..text)end
 end
 end
 end
+return self
 end
-local function relocate()
+function MANTIS:_Relocate()
+self:T(self.lid.."Relocate")
 self:_RelocateGroups()
+return self
 end
-local function checkadvstate()
-local interval,oldstate=self:_CheckAdvState()
+function MANTIS:_CheckAdvState()
+self:T(self.lid.."CheckAdvSate")
+local interval,oldstate=self:_CalcAdvState()
 local newstate=self.adv_state
 if newstate~=oldstate then
+self:__AdvStateChange(1,oldstate,newstate,interval)
 if newstate==2 then
-if self.MantisTimer.isrunning then
-self.MantisTimer:Stop()
-self.MantisTimer.isrunning=false
-end
-if self.MantisATimer.isrunning then
-self.MantisATimer:Stop()
-self.MantisATimer.isrunning=false
-end
+self.state2flag=true
 local samset=self:_GetSAMTable()
 for _,_data in pairs(samset)do
 local name=_data[1]
@@ -44755,58 +44815,75 @@ samgroup:OptionAlarmStateRed()
 end
 end
 elseif newstate<=1 then
-if self.MantisTimer.isrunning then
-self.MantisTimer:Stop()
-self.MantisTimer.isrunning=false
+self.detectinterval=interval
+self.state2flag=false
 end
-if self.MantisATimer.isrunning then
-self.MantisATimer:Stop()
-self.MantisATimer.isrunning=false
-end
-self.MantisTimer=TIMER:New(check,self.Detection)
-self.MantisTimer:Start(5,interval,nil)
-self.MantisTimer.isrunning=true
-if self.advAwacs then
-self.MantisATimer=TIMER:New(check,self.AWACS_Detection)
-self.MantisATimer:Start(15,interval,nil)
-self.MantisATimer.isrunning=true
-end
-end
-end
-end
-local interval=self.detectinterval
-self.MantisTimer=TIMER:New(check,self.Detection)
-self.MantisTimer:Start(5,interval,nil)
-self.MantisTimer.isrunning=true
-if self.advAwacs then
-self.MantisATimer=TIMER:New(check,self.AWACS_Detection)
-self.MantisATimer:Start(15,interval,nil)
-self.MantisATimer.isrunning=true
-end
-if self.autorelocate then
-local relointerval=math.random(1800,3600)
-self.MantisReloTimer=TIMER:New(relocate)
-self.MantisReloTimer:Start(relointerval,relointerval,nil)
-end
-if self.advanced then
-self.MantisAdvTimer=TIMER:New(checkadvstate)
-self.MantisAdvTimer:Start(30,interval*5,nil)
 end
 return self
 end
-function MANTIS:Stop()
-if self.MantisTimer.isrunning then
-self.MantisTimer:Stop()
+function MANTIS:onafterStart(From,Event,To)
+self:T({From,Event,To})
+self:T(self.lid.."Starting MANTIS")
+self:SetSAMStartState()
+self.Detection=self:StartDetection()
+if self.advAwacs then
+self.AWACS_Detection=self:StartAwacsDetection()
 end
-if self.MantisATimer.isrunning then
-self.MantisATimer:Stop()
+self:__Status(self.detectinterval)
+return self
+end
+function MANTIS:onbeforeStatus(From,Event,To)
+self:T({From,Event,To})
+if not self.state2flag then
+self:_Check(self.Detection)
+end
+if self.advAwacs and not self.state2flag then
+self:_Check(self.AWACS_Detection)
 end
 if self.autorelocate then
-self.MantisReloTimer:Stop()
+local relointerval=self.relointerval
+local thistime=timer.getAbsTime()
+local timepassed=thistime-self.TimeStamp
+local halfintv=math.floor(timepassed/relointerval)
+if halfintv>=1 then
+self.TimeStamp=timer.getAbsTime()
+self:_Relocate()
+self:__Relocating(1)
+end
 end
 if self.advanced then
-self.MantisAdvTimer:Stop()
+self:_CheckAdvState()
 end
+return self
+end
+function MANTIS:onafterStatus(From,Event,To)
+self:T({From,Event,To})
+local interval=self.detectinterval*-1
+self:__Status(interval)
+return self
+end
+function MANTIS:onafterStop(From,Event,To)
+self:T({From,Event,To})
+return self
+end
+function MANTIS:onafterRelocating(From,Event,To)
+self:T({From,Event,To})
+return self
+end
+function MANTIS:onafterGreenState(From,Event,To,Group)
+self:T({From,Event,To,Group})
+return self
+end
+function MANTIS:onafterRedState(From,Event,To,Group)
+self:T({From,Event,To,Group})
+return self
+end
+function MANTIS:onafterAdvStateChange(From,Event,To,Oldstate,Newstate,Interval)
+self:T({From,Event,To,Oldstate,Newstate,Interval})
+return self
+end
+function MANTIS:onafterShoradActivated(From,Event,To,Name,Radius,Ontime)
+self:T({From,Event,To,Name,Radius,Ontime})
 return self
 end
 end
@@ -66574,7 +66651,7 @@ self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text
 self:_InitSARForPilot(_spawnedGroup,_GroupName,_freq,noMessage)
 return self
 end
-function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage)
+function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename)
 self:T(self.lid.." _SpawnCsarAtZone")
 local freq=self:_GenerateADFFrequency()
 local _triggerZone=ZONE:New(_zone)
@@ -66582,7 +66659,9 @@ if _triggerZone==nil then
 self:E(self.lid.."ERROR: Can\'t find zone called ".._zone,10)
 return
 end
-local _description=_description or"Unknown"
+local _description=_description or"PoW"
+local unitname=unitname or"Old Rusty"
+local typename=typename or"Phantom II"
 local pos={}
 if _randomPoint then
 local _pos=_triggerZone:GetRandomPointVec3()
@@ -66598,11 +66677,11 @@ _country=country.id.RUSSIA
 else
 _country=country.id.UN_PEACEKEEPERS
 end
-self:_AddCsar(_coalition,_country,pos,"PoW",_description,nil,freq,_nomessage,_description)
+self:_AddCsar(_coalition,_country,pos,typename,unitname,_description,freq,_nomessage,_description)
 return self
 end
-function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
-self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage)
+function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename)
+self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename)
 return self
 end
 function CSAR:_EventHandler(EventData)
@@ -66937,7 +67016,7 @@ self.landedStatus[_lookupKeyHeli]=_time
 end
 if _time<=0 or _distance<self.loadDistance then
 if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
-self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, bugger!",self.messageTime,true)
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true)
 return true
 else
 self.landedStatus[_lookupKeyHeli]=nil
@@ -66949,7 +67028,7 @@ end
 else
 if(_distance<self.loadDistance)then
 if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
-self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, honk!",self.messageTime,true)
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true)
 return true
 else
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
@@ -66981,7 +67060,7 @@ if _time>0 then
 self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",self.messageTime,true)
 else
 if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
-self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in, noob!",self.messageTime,true)
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true)
 return true
 else
 self.hoverStatus[_lookupKeyHeli]=nil
@@ -67785,6 +67864,7 @@ self.movetroopsdistance=5000
 self.enableHercules=false
 self.HercMinAngels=165
 self.HercMaxAngels=2000
+self.HercMaxSpeed=77
 self.suppressmessages=false
 for i=1,100 do
 math.random()
@@ -68908,8 +68988,11 @@ local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
 local maxh=self.HercMinAngels
 local minh=self.HercMaxAngels
-local mspeed=2
-if(aheight<=maxh)and(aheight>=minh)then
+local maxspeed=self.HercMaxSpeed
+local kmspeed=uspeed*3.6
+local knspeed=kmspeed/1.86
+self:T(string.format("%s Unit parameters: at %dm AGL with %dmps | %dkph | %dkn",self.lid,aheight,uspeed,kmspeed,knspeed))
+if(aheight<=maxh)and(aheight>=minh)and(uspeed<=maxspeed)then
 outcome=true
 end
 end
@@ -68919,7 +69002,14 @@ function CTLD:_ShowHoverParams(Group,Unit)
 local inhover=self:IsCorrectHover(Unit)
 local htxt="true"
 if not inhover then htxt="false"end
-local text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s",self.minimumHoverHeight,self.maximumHoverHeight,htxt)
+local text=""
+if _SETTINGS:IsMetric()then
+text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s",self.minimumHoverHeight,self.maximumHoverHeight,htxt)
+else
+local minheight=UTILS.MetersToFeet(self.minimumHoverHeight)
+local maxheight=UTILS.MetersToFeet(self.maximumHoverHeight)
+text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 6fts \n - In parameter: %s",minheight,maxheight,htxt)
+end
 self:_SendMessage(text,10,false,Group)
 return self
 end
@@ -68927,9 +69017,16 @@ function CTLD:_ShowFlightParams(Group,Unit)
 local inhover=self:IsCorrectFlightParameters(Unit)
 local htxt="true"
 if not inhover then htxt="false"end
+local text=""
+if _SETTINGS:IsImperial()then
 local minheight=UTILS.MetersToFeet(self.HercMinAngels)
 local maxheight=UTILS.MetersToFeet(self.HercMaxAngels)
-local text=string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s",minheight,maxheight,htxt)
+text=string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s",minheight,maxheight,htxt)
+else
+local minheight=self.HercMinAngels
+local maxheight=self.HercMaxAngels
+text=string.format("Flight parameters (airdrop):\n - Min height %dm \n - Max height %dm \n - In parameter: %s",minheight,maxheight,htxt)
+end
 self:_SendMessage(text,10,false,Group)
 return self
 end
