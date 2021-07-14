@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-13T15:50:44.0000000Z-433d1bbf57c7e2a384f472f11d3e6883c7598539 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-14T06:39:54.0000000Z-1ac40684defbc1f6a65b21a575017bc74c64a10b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66620,7 +66620,7 @@ group:OptionAlarmStateGreen()
 group:OptionROEHoldFire()
 return self
 end
-function CSAR:_AddCsar(_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description)
+function CSAR:_AddCsar(_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description,forcedesc)
 self:T(self.lid.." _AddCsar")
 self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description})
 local template=self.template
@@ -66629,7 +66629,7 @@ _freq=self:_GenerateADFFrequency()
 if not _freq then _freq=333000 end
 end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
-local _typeName=_typeName or"PoW"
+local _typeName=_typeName or"Pilot"
 if not noMessage then
 self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,10)
 end
@@ -66637,13 +66637,13 @@ if _freq then
 self:_AddBeaconToGroup(_spawnedGroup,_freq)
 end
 self:_AddSpecialOptions(_spawnedGroup)
-local _text=" "
+local _text=_description
+if not forcedesc then
 if _playerName~=nil then
-_text="Pilot ".._playerName.." of ".._unitName.." - ".._typeName
-elseif _typeName~=nil then
-_text="AI Pilot of ".._unitName.." - ".._typeName
-else
-_text=_description
+_text="Pilot ".._playerName
+elseif _unitName~=nil then
+_text="AI Pilot of ".._unitName
+end
 end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
@@ -66651,7 +66651,7 @@ self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text
 self:_InitSARForPilot(_spawnedGroup,_GroupName,_freq,noMessage)
 return self
 end
-function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename)
+function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
 self:T(self.lid.." _SpawnCsarAtZone")
 local freq=self:_GenerateADFFrequency()
 local _triggerZone=ZONE:New(_zone)
@@ -66677,11 +66677,11 @@ _country=country.id.RUSSIA
 else
 _country=country.id.UN_PEACEKEEPERS
 end
-self:_AddCsar(_coalition,_country,pos,typename,unitname,_description,freq,_nomessage,_description)
+self:_AddCsar(_coalition,_country,pos,typename,unitname,_description,freq,_nomessage,_description,forcedesc)
 return self
 end
-function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename)
-self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename)
+function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename,Forcedesc)
+self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename,Forcedesc)
 return self
 end
 function CSAR:_EventHandler(EventData)
