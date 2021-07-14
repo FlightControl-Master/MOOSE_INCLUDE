@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-14T06:44:55.0000000Z-bbfc2e9ed705adcd48e8a0b6b881d10b2755b092 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-14T13:37:47.0000000Z-b4707bb3ebdd28d8e96d98b39005b23904598839 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -43419,6 +43419,7 @@ ShoradActDistance=15000,
 UseEmOnOff=false,
 TimeStamp=0,
 state2flag=false,
+SamStateTracker={},
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -43455,6 +43456,7 @@ self.ShoradActDistance=15000
 self.TimeStamp=timer.getAbsTime()
 self.relointerval=math.random(1800,3600)
 self.state2flag=false
+self.SamStateTracker={}
 if EmOnOff then
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -43484,7 +43486,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.5.1"
+self.version="0.5.2"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -43812,11 +43814,12 @@ else
 group:OptionAlarmStateGreen()
 end
 group:SetOption(AI.Option.Ground.id.AC_ENGAGEMENT_RANGE_RESTRICTION,engagerange)
-if group:IsGround()then
+if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 table.insert(SAM_Tbl,{grpname,grpcoord})
 table.insert(SEAD_Grps,grpname)
+self.SamStateTracker[grpname]="GREEN"
 end
 end
 self.SAM_Table=SAM_Tbl
@@ -43835,7 +43838,7 @@ local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
 local group=_group
 group:SetOption(AI.Option.Ground.id.AC_ENGAGEMENT_RANGE_RESTRICTION,engagerange)
-if group:IsGround()then
+if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 table.insert(SAM_Tbl,{grpname,grpcoord})
@@ -43886,7 +43889,10 @@ if self.UseEmOnOff then
 samgroup:EnableEmission(true)
 end
 samgroup:OptionAlarmStateRed()
+if self.SamStateTracker[name]~="RED"then
 self:__RedState(1,samgroup)
+self.SamStateTracker[name]="RED"
+end
 if self.ShoradLink and Distance<self.ShoradActDistance then
 local Shorad=self.Shorad
 local radius=self.checkradius
@@ -43902,10 +43908,11 @@ else
 if samgroup:IsAlive()then
 if self.UseEmOnOff then
 samgroup:EnableEmission(false)
-self:__GreenState(1,samgroup)
-else
+end
 samgroup:OptionAlarmStateGreen()
+if self.SamStateTracker[name]~="GREEN"then
 self:__GreenState(1,samgroup)
+self.SamStateTracker[name]="GREEN"
 end
 local text=string.format("SAM %s switched to alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
