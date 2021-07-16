@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-14T13:37:47.0000000Z-b4707bb3ebdd28d8e96d98b39005b23904598839 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-16T12:00:21.0000000Z-0db35a0e9fa575f757dbbb59aa62540afad04a14 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55339,21 +55339,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
-CTLD.SkipFrequencies={
-214,274,291.5,295,297.5,
-300.5,304,307,309.5,311,312,312.5,316,
-320,324,328,329,330,336,337,
-342,343,348,351,352,353,358,
-363,365,368,372.5,374,
-380,381,384,389,395,396,
-414,420,430,432,435,440,450,455,462,470,485,
-507,515,520,525,528,540,550,560,570,577,580,602,625,641,662,670,680,682,690,
-705,720,722,730,735,740,745,750,770,795,
-822,830,862,866,
-905,907,920,935,942,950,995,
-1000,1025,1030,1050,1065,1116,1175,1182,1210
-}
-CTLD.version="0.1.3r2"
+CTLD.version="0.1.4r1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -55427,6 +55413,7 @@ self.maximumHoverHeight=15
 self.minimumHoverHeight=4
 self.forcehoverload=true
 self.hoverautoloading=true
+self.dropcratesanywhere=false
 self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
@@ -55461,105 +55448,21 @@ end
 function CTLD:_GenerateUHFrequencies()
 self:T(self.lid.." _GenerateUHFrequencies")
 self.FreeUHFFrequencies={}
-local _start=220000000
-while _start<399000000 do
-table.insert(self.FreeUHFFrequencies,_start)
-_start=_start+500000
-end
+self.FreeUHFFrequencies=UTILS.GenerateUHFrequencies()
 return self
 end
 function CTLD:_GenerateFMFrequencies()
 self:T(self.lid.." _GenerateFMrequencies")
 self.FreeFMFrequencies={}
-for _first=3,7 do
-for _second=0,5 do
-for _third=0,9 do
-local _frequency=((100*_first)+(10*_second)+_third)*100000
-table.insert(self.FreeFMFrequencies,_frequency)
-end
-end
-end
+self.FreeFMFrequencies=UTILS.GenerateFMFrequencies()
 return self
 end
 function CTLD:_GenerateVHFrequencies()
 self:T(self.lid.." _GenerateVHFrequencies")
-local _skipFrequencies=self.SkipFrequencies
 self.FreeVHFFrequencies={}
 self.UsedVHFFrequencies={}
-local _start=200000
-while _start<400000 do
-local _found=false
-for _,value in pairs(_skipFrequencies)do
-if value*1000==_start then
-_found=true
-break
-end
-end
-if _found==false then
-table.insert(self.FreeVHFFrequencies,_start)
-end
-_start=_start+10000
-end
-_start=400000
-while _start<850000 do
-local _found=false
-for _,value in pairs(_skipFrequencies)do
-if value*1000==_start then
-_found=true
-break
-end
-end
-if _found==false then
-table.insert(self.FreeVHFFrequencies,_start)
-end
-_start=_start+10000
-end
-_start=850000
-while _start<=999000 do
-local _found=false
-for _,value in pairs(_skipFrequencies)do
-if value*1000==_start then
-_found=true
-break
-end
-end
-if _found==false then
-table.insert(self.FreeVHFFrequencies,_start)
-end
-_start=_start+50000
-end
+self.FreeVHFFrequencies=UTILS.GenerateVHFrequencies()
 return self
-end
-function CTLD:_GenerateLaserCodes()
-self:T(self.lid.." _GenerateLaserCodes")
-self.jtacGeneratedLaserCodes={}
-local _code=1111
-local _count=1
-while _code<1777 and _count<30 do
-while true do
-_code=_code+1
-if not self:_ContainsDigit(_code,8)
-and not self:_ContainsDigit(_code,9)
-and not self:_ContainsDigit(_code,0)then
-table.insert(self.jtacGeneratedLaserCodes,_code)
-break
-end
-end
-_count=_count+1
-end
-end
-function CTLD:_ContainsDigit(_number,_numberToFind)
-self:T(self.lid.." _ContainsDigit")
-local _thisNumber=_number
-local _thisDigit=0
-while _thisNumber~=0 do
-_thisDigit=_thisNumber%10
-_thisNumber=math.floor(_thisNumber/10)
-if _thisDigit==_numberToFind then
-return true
-end
-end
-return false
 end
 function CTLD:_EventHandler(EventData)
 self:T(string.format("%s Event = %d",self.lid,EventData.id))
@@ -55650,7 +55553,11 @@ local drop=drop or false
 if not drop then
 inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 else
+if self.dropcratesanywhere then
+inzone=true
+else
 inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
+end
 end
 if not inzone then
 self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
@@ -55732,7 +55639,7 @@ text:Add(string.format("Crate for %s",name))
 end
 end
 if text:GetCount()==1 then
-text:Add("--------- N O N E ------------")
+text:Add("        N O N E")
 end
 text:Add("------------------------------------------------------------")
 self:_SendMessage(text:Text(),30,true,_group)
@@ -55864,7 +55771,7 @@ local report=REPORT:New("Transport Checkout Sheet")
 report:Add("------------------------------------------------------------")
 report:Add(string.format("Troops: %d(%d), Crates: %d(%d)",no_troops,trooplimit,no_crates,cratelimit))
 report:Add("------------------------------------------------------------")
-report:Add("-- TROOPS --")
+report:Add("        -- TROOPS --")
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
@@ -55873,10 +55780,10 @@ report:Add(string.format("Troop: %s size %d",cargo:GetName(),cargo:GetCratesNeed
 end
 end
 if report:GetCount()==4 then
-report:Add("--------- N O N E ------------")
+report:Add("        N O N E")
 end
 report:Add("------------------------------------------------------------")
-report:Add("-- CRATES --")
+report:Add("       -- CRATES --")
 local cratecount=0
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
@@ -55887,7 +55794,7 @@ cratecount=cratecount+1
 end
 end
 if cratecount==0 then
-report:Add("--------- N O N E ------------")
+report:Add("        N O N E")
 end
 report:Add("------------------------------------------------------------")
 local text=report:Text()
@@ -55985,11 +55892,13 @@ return self
 end
 function CTLD:_UnloadCrates(Group,Unit)
 self:T(self.lid.." _UnloadCrates")
+if not self.dropcratesanywhere then
 local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
 if not inzone then
 self:_SendMessage("You are not close enough to a drop zone!",10,false,Group)
 if not self.debug then
 return self
+end
 end
 end
 local hoverunload=self:IsCorrectHover(Unit)
@@ -56390,7 +56299,7 @@ end
 end
 end
 if report:GetCount()==1 then
-report:Add("--------- N O N E ------------")
+report:Add("        N O N E")
 end
 report:Add("------------------------------------------------------------")
 self:_SendMessage(report:Text(),30,true,Group)
@@ -56654,6 +56563,7 @@ return self
 end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
+self:I(self.lid.."Started.")
 if self.useprefix or self.enableHercules then
 local prefix=self.prefixes
 if self.enableHercules then
@@ -56761,20 +56671,6 @@ rescuedpilots=0,
 limitmaxdownedpilots=true,
 maxdownedpilots=10,
 }
-CSAR.SkipFrequencies={
-214,274,291.5,295,297.5,
-300.5,304,307,309.5,311,312,312.5,316,
-320,324,328,329,330,336,337,
-342,343,348,351,352,353,358,
-363,365,368,372.5,374,
-380,381,384,389,395,396,
-414,420,430,432,435,440,450,455,462,470,485,
-507,515,520,525,528,540,550,560,570,577,580,602,625,641,662,670,680,682,690,
-705,720,722,730,735,740,745,750,770,795,
-822,830,862,866,
-905,907,920,935,942,950,995,
-1000,1025,1030,1050,1065,1116,1175,1182,1210
-}
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
 CSAR.AircraftType["SA342Minigun"]=2
@@ -56784,7 +56680,7 @@ CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.8r1"
+CSAR.version="0.1.8r2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -57137,7 +57033,11 @@ self:T(self.lid.." Landing Place Nil")
 return
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_event.IniUnitName)then
+self:_DisplayMessageToSAR(_unit,"Open the door to let me out!",self.messageTime,true)
+else
 self:_RescuePilots(_unit)
+end
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
@@ -57300,23 +57200,23 @@ local unit=Unit.getByName(unit_name)
 if unit~=nil then
 local type_name=unit:getTypeName()
 if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
-self:I(unit_name.." Cargo doors are open or cargo door not present")
+self:T(unit_name.." Cargo doors are open or cargo door not present")
 ret_val=true
 end
 if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
-self:I(unit_name.." a side door is open")
+self:T(unit_name.." a side door is open")
 ret_val=true
 end
 if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
-self:I(unit_name.." a side door is open ")
+self:T(unit_name.." a side door is open ")
 ret_val=true
 end
 if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
-self:I(unit_name.." front door(s) are open")
+self:T(unit_name.." front door(s) are open")
 ret_val=true
 end
 if ret_val==false then
-self:I(unit_name.." all doors are closed")
+self:T(unit_name.." all doors are closed")
 end
 return ret_val
 end
@@ -57468,8 +57368,12 @@ if _dist==-1 then
 return
 end
 if _dist<200 and _heliUnit:InAir()==false then
+if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(heliname)then
+self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me out!",self.messageTime,true)
+else
 self:_RescuePilots(_heliUnit)
 return
+end
 end
 self:__Returning(-5,heliname,_woundedGroupName)
 return self
@@ -57770,51 +57674,8 @@ end
 end
 function CSAR:_GenerateVHFrequencies()
 self:T(self.lid.." _GenerateVHFrequencies")
-local _skipFrequencies=self.SkipFrequencies
 local FreeVHFFrequencies={}
-local UsedVHFFrequencies={}
-local _start=200000
-while _start<400000 do
-local _found=false
-for _,value in pairs(_skipFrequencies)do
-if value*1000==_start then
-_found=true
-break
-end
-end
-if _found==false then
-table.insert(FreeVHFFrequencies,_start)
-end
-_start=_start+10000
-end
-_start=400000
-while _start<850000 do
-local _found=false
-for _,value in pairs(_skipFrequencies)do
-if value*1000==_start then
-_found=true
-break
-end
-end
-if _found==false then
-table.insert(FreeVHFFrequencies,_start)
-end
-_start=_start+10000
-end
-_start=850000
-while _start<=999000 do
-local _found=false
-for _,value in pairs(_skipFrequencies)do
-if value*1000==_start then
-_found=true
-break
-end
-end
-if _found==false then
-table.insert(FreeVHFFrequencies,_start)
-end
-_start=_start+50000
-end
+FreeVHFFrequencies=UTILS.GenerateVHFrequencies()
 self.FreeVHFFrequencies=FreeVHFFrequencies
 return self
 end
