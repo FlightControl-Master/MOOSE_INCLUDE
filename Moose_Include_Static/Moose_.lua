@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-16T12:00:21.0000000Z-0db35a0e9fa575f757dbbb59aa62540afad04a14 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-17T13:58:11.0000000Z-8cc1c24b64123991d4ce6fe38100c45520eef62c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56678,9 +56678,10 @@ CSAR.AircraftType["SA342L"]=4
 CSAR.AircraftType["SA342M"]=4
 CSAR.AircraftType["UH-1H"]=8
 CSAR.AircraftType["Mi-8MTV2"]=12
+CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.8r2"
+CSAR.version="0.1.8r3"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -56721,6 +56722,7 @@ self:AddTransition("*","Approach","*")
 self:AddTransition("*","Boarded","*")
 self:AddTransition("*","Returning","*")
 self:AddTransition("*","Rescued","*")
+self:AddTransition("*","KIA","*")
 self:AddTransition("*","Stop","Stopped")
 self.addedTo={}
 self.allheligroupset={}
@@ -56787,6 +56789,7 @@ DownedPilot.side=Side or 0
 DownedPilot.typename=Typename or""
 DownedPilot.group=Group
 DownedPilot.timestamp=0
+DownedPilot.alive=true
 local PilotTable=self.downedPilots
 local counter=self.downedpilotcounter
 PilotTable[counter]={}
@@ -57068,7 +57071,7 @@ local PilotTable=self.downedPilots
 local found=false
 local table=nil
 for _,_pilot in pairs(PilotTable)do
-if _pilot.name==name then
+if _pilot.name==name and _pilot.alive==true then
 found=true
 table=_pilot
 break
@@ -57079,24 +57082,9 @@ end
 function CSAR:_RemoveNameFromDownedPilots(name,force)
 local PilotTable=self.downedPilots
 local found=false
-for _,_pilot in pairs(PilotTable)do
+for _index,_pilot in pairs(PilotTable)do
 if _pilot.name==name then
-local group=_pilot.group
-if group then
-if(not group:IsAlive())or(force==true)then
-found=true
-_pilot.desc=nil
-_pilot.frequency=nil
-_pilot.index=nil
-_pilot.name=nil
-_pilot.originalUnit=nil
-_pilot.player=nil
-_pilot.side=nil
-_pilot.typename=nil
-_pilot.group=nil
-_pilot.timestamp=nil
-end
-end
+self.downedPilots[_index].alive=false
 end
 end
 return found
@@ -57112,7 +57100,7 @@ self:T("...not found in list!")
 return
 end
 local _woundedGroup=_downedpilot.group
-if _woundedGroup~=nil then
+if _woundedGroup~=nil and _woundedGroup:IsAlive()then
 local _heliUnit=self:_GetSARHeli(_heliName)
 local _lookupKeyHeli=_heliName.."_".._woundedGroupName
 if _heliUnit==nil then
@@ -57137,7 +57125,9 @@ self:__Approach(-10,heliname,woundedgroupname)
 end
 else
 self:T("...Downed Pilot KIA?!")
-self:_RemoveNameFromDownedPilots(_downedpilot.name)
+if not _downedpilot.alive then
+self:_RemoveNameFromDownedPilots(_downedpilot.name,true)
+end
 end
 return self
 end
@@ -57333,24 +57323,6 @@ else
 return false
 end
 end
-function CSAR:_CheckGroupNotKIA(_woundedGroup,_woundedGroupName,_heliUnit,_heliName)
-self:T(self.lid.." _CheckGroupNotKIA")
-local inTransit=false
-if _woundedGroup and _heliUnit then
-for _currentHeli,_groups in pairs(self.inTransitGroups)do
-if _groups[_woundedGroupName]then
-inTransit=true
-self:_DisplayToAllSAR(string.format("%s has been picked up by %s",_woundedGroupName,_currentHeli),self.coalition,self.messageTime)
-break
-end
-end
-if not inTransit then
-self:_DisplayToAllSAR(string.format("%s is KIA ",_woundedGroupName),self.coalition,self.messageTime)
-end
-self:_RemoveNameFromDownedPilots(_woundedGroupName)
-end
-return inTransit
-end
 function CSAR:_ScheduledSARFlight(heliname,groupname)
 self:T(self.lid.." _ScheduledSARFlight")
 self:T({heliname,groupname})
@@ -57450,7 +57422,7 @@ local _groupName=_value.name
 self:T(string.format("Display Active Pilot: %s",tostring(_groupName)))
 self:T({Table=_value})
 local _woundedGroup=_value.group
-if _woundedGroup then
+if _woundedGroup and _value.alive then
 local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup)
 local _helicoord=_heli:GetCoordinate()
 local _woundcoord=_woundedGroup:GetCoordinate()
@@ -57745,8 +57717,8 @@ function CSAR:_CountActiveDownedPilots()
 self:T(self.lid.." _CountActiveDownedPilots")
 local PilotsInFieldN=0
 for _,_unitName in pairs(self.downedPilots)do
-self:T({_unitName})
-if _unitName.name~=nil then
+self:T({_unitName.desc})
+if _unitName.alive==true then
 PilotsInFieldN=PilotsInFieldN+1
 end
 end
@@ -57781,19 +57753,39 @@ end
 self:__Status(-10)
 return self
 end
+function CSAR:_CheckDownedPilotTable()
+local pilots=self.downedPilots
+for _,_entry in pairs(pilots)do
+self:T("Checking for ".._entry.name)
+self:T({entry=_entry})
+local group=_entry.group
+if not group:IsAlive()then
+self:T("Group is dead")
+if _entry.alive==true then
+self:T("Switching .alive to false")
+self:__KIA(1,_entry.desc)
+self:_RemoveNameFromDownedPilots(_entry.name,true)
+end
+end
+end
+return self
+end
 function CSAR:onbeforeStatus(From,Event,To)
 self:T({From,Event,To})
 self:_AddMedevacMenuItem()
 self:_RefreshRadioBeacons()
+self:_CheckDownedPilotTable()
 for _,_sar in pairs(self.csarUnits)do
 local PilotTable=self.downedPilots
 for _,_entry in pairs(PilotTable)do
+if _entry.alive then
 local entry=_entry
 local name=entry.name
 local timestamp=entry.timestamp or 0
 local now=timer.getAbsTime()
 if now-timestamp>17 then
 self:_CheckWoundedGroupStatus(_sar,name)
+end
 end
 end
 end
