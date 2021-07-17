@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-17T13:58:11.0000000Z-8cc1c24b64123991d4ce6fe38100c45520eef62c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-17T14:00:40.0000000Z-22826b4cd129ec3ec77b60ef31a32dd0116c7695 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55334,6 +55334,7 @@ CTLD.UnitTypes={
 ["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2},
 ["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8},
 ["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12},
+["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12},
 ["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0},
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
