@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-18T11:01:45.0000000Z-09785ef451fecb771bd6415d22be4385db042ca7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-18T12:53:00.0000000Z-96d1d3cb660b786c6ea8e73ada70c933a600d6a5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67727,7 +67727,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
-CTLD.version="0.1.4r1"
+CTLD.version="0.1.4r2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67869,6 +67869,7 @@ self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 if _unit:GetTypeName()=="Hercules"and self.enableHercules then
+self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 return
