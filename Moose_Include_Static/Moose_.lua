@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-17T13:48:18.0000000Z-25e118f3dc7a1925b64b408a00332295d2550af7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-18T11:01:45.0000000Z-09785ef451fecb771bd6415d22be4385db042ca7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67765,6 +67765,7 @@ self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
 self:AddTransition("*","TroopsPickedUp","*")
+self:AddTransition("*","TroopsExtracted","*")
 self:AddTransition("*","CratesPickedUp","*")
 self:AddTransition("*","TroopsDeployed","*")
 self:AddTransition("*","TroopsRTB","*")
@@ -67930,6 +67931,77 @@ table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
 self:_SendMessage("Troops boarded!",10,false,Group)
 self:__TroopsPickedUp(1,Group,Unit,Cargotype)
+end
+return self
+end
+function CTLD:_ExtractTroops(Group,Unit)
+self:T(self.lid.." _ExtractTroops")
+local grounded=not self:IsUnitInAir(Unit)
+local hoverload=self:CanHoverLoad(Unit)
+if not grounded and not hoverload then
+self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
+if not self.debug then return self end
+end
+local unit=Unit
+local unitname=unit:GetName()
+local unittype=unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(Unit)
+local cantroops=capabilities.troops
+local trooplimit=capabilities.trooplimit
+local unitcoord=unit:GetCoordinate()
+local nearestGroup=nil
+local nearestGroupIndex=-1
+local nearestDistance=10000000
+for k,v in pairs(self.DroppedTroops)do
+local distance=self:_GetDistance(v:GetCoordinate(),unitcoord)
+if distance<nearestDistance then
+nearestGroup=v
+nearestGroupIndex=k
+nearestDistance=distance
+end
+end
+if nearestGroup==nil or nearestDistance>self.CrateDistance then
+self:_SendMessage("No units close enough to extract!",10,false,Group)
+return self
+end
+local groupType=string.match(nearestGroup:GetName(),"(.+)-(.+)$")
+local Cargotype=nil
+for k,v in pairs(self.Cargo_Troops)do
+if v.Name==groupType then
+Cargotype=v
+break
+end
+end
+if Cargotype==nil then
+self:_SendMessage("Can't find a matching cargo type for "..groupType,10,false,Group)
+return self
+end
+local troopsize=Cargotype:GetCratesNeeded()
+local numberonboard=0
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+numberonboard=loaded.Troopsloaded or 0
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+end
+if troopsize+numberonboard>trooplimit then
+self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
+return
+else
+self.CargoCounter=self.CargoCounter+1
+local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded)
+self:T({cargotype=loadcargotype})
+loaded.Troopsloaded=loaded.Troopsloaded+troopsize
+table.insert(loaded.Cargo,loadcargotype)
+self.Loaded_Cargo[unitname]=loaded
+self:_SendMessage("Troops boarded!",10,false,Group)
+self:__TroopsExtracted(1,Group,Unit,nearestGroup)
+table.remove(self.DroppedTroops,nearestGroupIndex)
+nearestGroup:Destroy()
 end
 return self
 end
@@ -68533,6 +68605,7 @@ menucount=menucount+1
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
 end
 local unloadmenu1=MENU_GROUP_COMMAND:New(_group,"Drop troops",toptroops,self._UnloadTroops,self,_group,_unit):Refresh()
+local extractMenu1=MENU_GROUP_COMMAND:New(_group,"Extract troops",toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
 end
 local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
 if unittype=="Hercules"then
@@ -69006,6 +69079,10 @@ self:T({From,Event,To})
 return self
 end
 function CTLD:onbeforeCratesPickedUp(From,Event,To,Group,Unit,Cargo)
+self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops)
 self:T({From,Event,To})
 return self
 end
