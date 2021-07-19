@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-18T12:53:00.0000000Z-96d1d3cb660b786c6ea8e73ada70c933a600d6a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-19T05:16:21.0000000Z-6690f70b05b28cb8df047df66462dd5b03a844ba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68652,14 +68652,13 @@ end
 function CTLD:ActivateZone(Name,ZoneType,NewState)
 self:T(self.lid.." AddZone")
 local newstate=true
-if not NewState or NewState==false then
-newstate=false
+if NewState~=nil then
+newstate=NewState
 end
-local zone=ZoneType
 local table={}
-if zone.type==CTLD.CargoZoneType.LOAD then
+if ZoneType==CTLD.CargoZoneType.LOAD then
 table=self.pickupZones
-elseif zone.type==CTLD.CargoZoneType.DROP then
+elseif ZoneType==CTLD.CargoZoneType.DROP then
 table=self.dropOffZones
 else
 table=self.wpZones
