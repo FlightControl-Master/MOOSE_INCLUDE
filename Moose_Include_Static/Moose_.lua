@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-19T05:16:21.0000000Z-6690f70b05b28cb8df047df66462dd5b03a844ba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-20T16:30:11.0000000Z-8a539982517777f57e2fc95392350f6c8558ac0f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44836,7 +44836,7 @@ self.Detection=self:StartDetection()
 if self.advAwacs then
 self.AWACS_Detection=self:StartAwacsDetection()
 end
-self:__Status(self.detectinterval)
+self:__Status(-math.random(1,10))
 return self
 end
 function MANTIS:onbeforeStatus(From,Event,To)
@@ -65771,7 +65771,7 @@ clusteranalysis=true,
 clustermarkers=false,
 prediction=300,
 }
-INTEL.version="0.2.2"
+INTEL.version="0.2.5"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -65804,6 +65804,12 @@ self.alias="CIA"
 end
 end
 end
+self.DetectVisual=true
+self.DetectOptical=true
+self.DetectRadar=true
+self.DetectIRST=true
+self.DetectRWR=true
+self.DetectDLINK=true
 self.lid=string.format("INTEL %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -65896,6 +65902,21 @@ local radius=radius or 15
 self.clusterradius=radius
 return self
 end
+function INTEL:SetDetectionTypes(DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
+self.DetectVisual=DetectVisual and true
+self.DetectOptical=DetectOptical and true
+self.DetectRadar=DetectRadar and true
+self.DetectIRST=DetectIRST and true
+self.DetectRWR=DetectRWR and true
+self.DetectDLINK=DetectDLINK and true
+return self
+end
+function INTEL:GetContactTable()
+return self.Contacts
+end
+function INTEL:GetClusterTable()
+return self.Clusters
+end
 function INTEL:onafterStart(From,Event,To)
 local text=string.format("Starting INTEL v%s",self.version)
 self:I(self.lid..text)
@@ -65920,7 +65941,7 @@ local dT=timer.getAbsTime()-contact.Tdetected
 text=text..string.format("\n- %s (%s): %s, units=%d, T=%d sec",contact.categoryname,contact.attribute,contact.groupname,contact.group:CountAliveUnits(),dT)
 if contact.mission then
 local mission=contact.mission
-text=text..string.format(" mission name=%s type=%s target=%s",mission.name,mission.type,mission:GetTargetName()or"unkown")
+text=text..string.format(" mission name=%s type=%s target=%s",mission.name,mission.type,mission:GetTargetName()or"unknown")
 end
 end
 self:I(self.lid..text)
@@ -65935,7 +65956,7 @@ local group=_group
 if group and group:IsAlive()then
 for _,_recce in pairs(group:GetUnits())do
 local recce=_recce
-self:GetDetectedUnits(recce,DetectedUnits,RecceDetecting)
+self:GetDetectedUnits(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
 end
 end
 end
@@ -66027,7 +66048,7 @@ item.position=group:GetCoordinate()
 item.velocity=group:GetVelocityVec3()
 item.speed=group:GetVelocityMPS()
 item.recce=RecceDetecting[groupname]
-self:T(string.format("%s group detect by %s/%s",groupname,RecceDetecting[groupname]or"unknonw",item.recce or"unknown"))
+self:T(string.format("%s group detect by %s/%s",groupname,RecceDetecting[groupname]or"unknown",item.recce or"unknown"))
 self:AddContact(item)
 self:NewContact(item)
 end
@@ -66071,7 +66092,7 @@ function INTEL:onafterLostCluster(From,Event,To,Cluster,Mission)
 local text=self.lid..string.format("LOST cluster %d",Cluster.index)
 if Mission then
 local mission=Mission
-text=text..string.format(" mission name=%s type=%s target=%s",mission.name,mission.type,mission:GetTargetName()or"unkown")
+text=text..string.format(" mission name=%s type=%s target=%s",mission.name,mission.type,mission:GetTargetName()or"unknown")
 end
 self:T(text)
 end
