@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-20T16:30:11.0000000Z-8a539982517777f57e2fc95392350f6c8558ac0f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-21T16:22:46.0000000Z-684c4ea113840606c4e3f97b4912be2249a248aa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44295,6 +44295,8 @@ UseEmOnOff=false,
 TimeStamp=0,
 state2flag=false,
 SamStateTracker={},
+DLink=false,
+DLTimeStamp=0,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -44332,6 +44334,7 @@ self.TimeStamp=timer.getAbsTime()
 self.relointerval=math.random(1800,3600)
 self.state2flag=false
 self.SamStateTracker={}
+self.DLink=false
 if EmOnOff then
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -44361,7 +44364,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.5.2"
+self.version="0.6.2"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -44480,7 +44483,6 @@ return self
 end
 function MANTIS:SetAdvancedMode(onoff,ratio)
 self:T(self.lid.."SetAdvancedMode")
-self:T({onoff,ratio})
 local onoff=onoff or false
 local ratio=ratio or 100
 if(type(self.HQ_Template_CC)=="string")and onoff and self.dynamic then
@@ -44501,6 +44503,13 @@ self:T(self.lid.."SetUsingEmOnOff")
 self.UseEmOnOff=switch or false
 return self
 end
+function MANTIS:SetUsingDLink(DLink)
+self:T(self.lid.."SetUsingDLink")
+self.DLink=true
+self.Detection=DLink
+self.DLTimeStamp=timer.getAbsTime()
+return self
+end
 function MANTIS:_CheckHQState()
 self:T(self.lid.."CheckHQState")
 local text=self.lid.." Checking HQ State"
@@ -44511,10 +44520,8 @@ local hq=self.HQ_Template_CC
 local hqgrp=GROUP:FindByName(hq)
 if hqgrp then
 if hqgrp:IsAlive()then
-self:T(self.lid.." HQ is alive!")
 return true
 else
-self:T(self.lid.." HQ is dead!")
 return false
 end
 end
@@ -44524,7 +44531,6 @@ end
 function MANTIS:_CheckEWRState()
 self:T(self.lid.."CheckEWRState")
 local text=self.lid.." Checking EWR State"
-self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
 if self.advanced then
@@ -44538,7 +44544,6 @@ nalive=nalive+1
 end
 end
 end
-self:T(self.lid..string.format(" No of EWR alive is %d",nalive))
 if nalive>0 then
 return true
 else
@@ -44549,10 +44554,8 @@ return self
 end
 function MANTIS:_CalcAdvState()
 self:T(self.lid.."CalcAdvState")
-local text=self.lid.." Calculating Advanced State"
-self:T(text)
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then self:I(text)end
+local m=MESSAGE:New(self.lid.." Calculating Advanced State",10,"MANTIS"):ToAllIf(self.debug)
+if self.verbose then self:I(self.lid.." Calculating Advanced State")end
 local currstate=self.adv_state
 local EWR_State=self:_CheckEWRState()
 local HQ_State=self:_CheckHQState()
@@ -44567,21 +44570,20 @@ local interval=self.detectinterval
 local ratio=self.adv_ratio/100
 ratio=ratio*self.adv_state
 local newinterval=interval+(interval*ratio)
+if self.debug or self.verbose then
 local text=self.lid..string.format(" Calculated OldState/NewState/Interval: %d / %d / %d",currstate,self.adv_state,newinterval)
-self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
+end
 return newinterval,currstate
 end
 function MANTIS:SetAutoRelocate(hq,ewr)
 self:T(self.lid.."SetAutoRelocate")
-self:T({hq,ewr})
 local hqrel=hq or false
 local ewrel=ewr or false
 if hqrel or ewrel then
 self.autorelocate=true
 self.autorelocateunits={HQ=hqrel,EWR=ewrel}
-self:T({self.autorelocate,self.autorelocateunits})
 end
 return self
 end
@@ -44594,7 +44596,6 @@ if self.autorelocate then
 local HQGroup=self.HQ_CC
 if self.autorelocateunits.HQ and self.HQ_CC and HQGroup:IsAlive()then
 local _hqgrp=self.HQ_CC
-self:T(self.lid.." Relocating HQ")
 local text=self.lid.." Relocating HQ"
 _hqgrp:RelocateGroundRandomInRadius(20,500,true,true)
 end
@@ -44603,7 +44604,6 @@ local EWR_GRP=SET_GROUP:New():FilterPrefixes(self.EWR_Templates_Prefix):FilterCo
 local EWR_Grps=EWR_GRP.Set
 for _,_grp in pairs(EWR_Grps)do
 if _grp:IsAlive()and _grp:IsGround()then
-self:T(self.lid.." Relocating EWR ".._grp:GetName())
 local text=self.lid.." Relocating EWR ".._grp:GetName()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
@@ -44620,12 +44620,14 @@ local radius=self.checkradius
 local set=dectset
 for _,_coord in pairs(set)do
 local coord=_coord
+local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
+if self.verbose or self.debug then
 local dectstring=coord:ToStringLLDMS()
 local samstring=samcoordinate:ToStringLLDMS()
-local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
 local text=string.format("Checking SAM at % s - Distance %d m - Target %s",samstring,targetdistance,dectstring)
 local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
-if self.verbose then self:I(self.lid..text)end
+self:I(self.lid..text)
+end
 if targetdistance<=radius then
 return true,targetdistance
 end
@@ -44775,9 +44777,11 @@ local ontime=self.ShoradTime
 Shorad:WakeUpShorad(name,radius,ontime)
 self:__ShoradActivated(1,name,radius,ontime)
 end
+if self.debug or self.verbose then
 local text=string.format("SAM %s switched to alarm state RED!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
+end
 end
 else
 if samgroup:IsAlive()then
@@ -44789,9 +44793,11 @@ if self.SamStateTracker[name]~="GREEN"then
 self:__GreenState(1,samgroup)
 self.SamStateTracker[name]="GREEN"
 end
+if self.debug or self.verbose then
 local text=string.format("SAM %s switched to alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
+end
 end
 end
 end
@@ -44828,11 +44834,23 @@ end
 end
 return self
 end
+function MANTIS:_CheckDLinkState()
+self:T(self.lid.."_CheckDLinkState")
+local dlink=self.Detection
+local TS=timer.getAbsTime()
+if not dlink:Is("Running")and(TS-self.DLTimeStamp>29)then
+self.DLink=false
+self.Detection=self:StartDetection()
+self:I(self.lid.."Intel DLink not running - switching back to single detection!")
+end
+end
 function MANTIS:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:T(self.lid.."Starting MANTIS")
 self:SetSAMStartState()
+if not self.DLink then
 self.Detection=self:StartDetection()
+end
 if self.advAwacs then
 self.AWACS_Detection=self:StartAwacsDetection()
 end
@@ -44860,6 +44878,9 @@ end
 end
 if self.advanced then
 self:_CheckAdvState()
+end
+if self.DLink then
+self:_CheckDLinkState()
 end
 return self
 end
@@ -65771,7 +65792,7 @@ clusteranalysis=true,
 clustermarkers=false,
 prediction=300,
 }
-INTEL.version="0.2.5"
+INTEL.version="0.2.6"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -65819,6 +65840,7 @@ self:AddTransition("*","NewContact","*")
 self:AddTransition("*","LostContact","*")
 self:AddTransition("*","NewCluster","*")
 self:AddTransition("*","LostCluster","*")
+self:AddTransition("*","Stop","Stopped")
 self:SetForgetTime()
 self:SetAcceptZones()
 self:SetRejectZones()
@@ -65912,10 +65934,18 @@ self.DetectDLINK=DetectDLINK and true
 return self
 end
 function INTEL:GetContactTable()
+if self:Is("Running")then
 return self.Contacts
+else
+return nil
+end
 end
 function INTEL:GetClusterTable()
+if self:Is("Running")and self.clusteranalysis then
 return self.Clusters
+else
+return nil
+end
 end
 function INTEL:onafterStart(From,Event,To)
 local text=string.format("Starting INTEL v%s",self.version)
@@ -66413,6 +66443,127 @@ cluster.marker:Refresh()
 end
 end
 return self
+end
+INTEL_DLINK={
+ClassName="INTEL_DLINK",
+verbose=0,
+lid=nil,
+alias=nil,
+cachetime=300,
+interval=20,
+contacts={},
+clusters={},
+contactcoords={},
+}
+INTEL_DLINK.version="0.0.1"
+function INTEL_DLINK:New(Intels,Alias,Interval,Cachetime)
+local self=BASE:Inherit(self,FSM:New())
+self.intels=Intels or{}
+self.contacts={}
+self.clusters={}
+self.contactcoords={}
+if Alias then
+self.alias=tostring(Alias)
+else
+self.alias="SPECTRE"
+end
+self.cachetime=Cachetime or 300
+self.interval=Interval or 20
+self.lid=string.format("INTEL_DLINK %s | ",self.alias)
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Collect","*")
+self:AddTransition("*","Collected","*")
+self:AddTransition("*","Stop","Stopped")
+return self
+end
+function INTEL_DLINK:AddIntel(Intel)
+self:T(self.lid.."AddIntel")
+if Intel then
+table.insert(self.intels,Intel)
+end
+return self
+end
+function INTEL_DLINK:onafterStart(From,Event,To)
+self:T({From,Event,To})
+local text=string.format("Version %s started.",self.version)
+self:I(self.lid..text)
+self:__Collect(-math.random(1,10))
+return self
+end
+function INTEL_DLINK:onbeforeCollect(From,Event,To)
+self:T({From,Event,To})
+self:T("Contacts Data Gathering")
+local newcontacts={}
+local intels=self.intels
+for _,_intel in pairs(intels)do
+_intel=_intel
+if _intel:Is("Running")then
+local ctable=_intel:GetContactTable()or{}
+for _,_contact in pairs(ctable)do
+local _ID=string.format("%s-%d",_contact.groupname,_contact.Tdetected)
+self:T(string.format("Adding %s",_ID))
+newcontacts[_ID]=_contact
+end
+end
+end
+self:T("Cleanup")
+local contacttable={}
+local coordtable={}
+local TNow=timer.getAbsTime()
+local Tcache=self.cachetime
+for _ind,_contact in pairs(newcontacts)do
+if TNow-_contact.Tdetected<Tcache then
+if(not contacttable[_contact.groupname])or(contacttable[_contact.groupname]and contacttable[_contact.groupname].Tdetected<_contact.Tdetected)then
+self:T(string.format("Adding %s",_contact.groupname))
+contacttable[_contact.groupname]=_contact
+table.insert(coordtable,_contact.position)
+end
+end
+end
+self:T("Clusters Data Gathering")
+local newclusters={}
+local intels=self.intels
+for _,_intel in pairs(intels)do
+_intel=_intel
+if _intel:Is("Running")then
+local ctable=_intel:GetClusterTable()or{}
+for _,_cluster in pairs(ctable)do
+local _ID=string.format("%s-%d",_intel.alias,_cluster.index)
+self:T(string.format("Adding %s",_ID))
+table.insert(newclusters,_cluster)
+end
+end
+end
+self.contacts=contacttable
+self.contactcoords=coordtable
+self.clusters=newclusters
+self:__Collected(1,contacttable,newclusters)
+local interv=self.interval*-1
+self:__Collect(interv)
+return self
+end
+function INTEL_DLINK:onbeforeCollected(From,Event,To,Contacts,Clusters)
+self:T({From,Event,To})
+return self
+end
+function INTEL_DLINK:onafterStop(From,Event,To)
+self:T({From,Event,To})
+local text=string.format("Version %s stopped.",self.version)
+self:I(self.lid..text)
+return self
+end
+function INTEL_DLINK:GetContactTable()
+self:T(self.lid.."GetContactTable")
+return self.contacts
+end
+function INTEL_DLINK:GetClusterTable()
+self:T(self.lid.."GetClusterTable")
+return self.clusters
+end
+function INTEL_DLINK:GetDetectedItemCoordinates()
+self:T(self.lid.."GetDetectedItemCoordinates")
+return self.contactcoords
 end
 CSAR={
 ClassName="CSAR",
