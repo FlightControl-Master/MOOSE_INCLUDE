@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-21T16:47:40.0000000Z-1e8d99a591ce423754a0aed8d09e958ea34afb48 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-21T16:47:52.0000000Z-2ab7f784c93e54ab631b115501be0ff60bed6d7b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67899,7 +67899,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
-CTLD.version="0.1.4r2"
+CTLD.version="0.1.4r3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68127,7 +68127,7 @@ local nearestGroupIndex=-1
 local nearestDistance=10000000
 for k,v in pairs(self.DroppedTroops)do
 local distance=self:_GetDistance(v:GetCoordinate(),unitcoord)
-if distance<nearestDistance then
+if distance<nearestDistance and distance~=-1 then
 nearestGroup=v
 nearestGroupIndex=k
 nearestDistance=distance
@@ -69194,6 +69194,17 @@ end
 end
 return self
 end
+function CTLD:CleanDroppedTroops()
+local troops=self.DroppedTroops
+local newtable={}
+for _index,_group in pairs(troops)do
+if _group and _group:IsAlive()then
+newtable[_index]=_group
+end
+end
+self.DroppedTroops=newtable
+return self
+end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started.")
@@ -69215,6 +69226,7 @@ return self
 end
 function CTLD:onbeforeStatus(From,Event,To)
 self:T({From,Event,To})
+self:CleanDroppedTroops()
 self:_RefreshF10Menus()
 self:_RefreshRadioBeacons()
 self:CheckAutoHoverload()
