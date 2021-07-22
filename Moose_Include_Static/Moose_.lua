@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-21T16:47:52.0000000Z-2ab7f784c93e54ab631b115501be0ff60bed6d7b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-22T06:03:32.0000000Z-83fd48e2f4b2d9c86a19835d28348ae53834f5a2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -50584,7 +50584,7 @@ local xc=self.carrier:GetOrientationX()
 local zc=self.carrier:GetOrientationZ()
 xc=UTILS.Rotate2D(xc,-self.carrierparam.rwyangle)
 zc=UTILS.Rotate2D(zc,-self.carrierparam.rwyangle)
-local vw=cv:GetWindWithTurbulenceVec3(alt or 50)
+local vw=cv:GetWindWithTurbulenceVec3(alt or 15)
 local vT=UTILS.VecSubstract(vw,vc)
 local vpa=UTILS.VecDot(vT,xc)
 local vpp=UTILS.VecDot(vT,zc)
