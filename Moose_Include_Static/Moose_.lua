@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-22T09:37:51.0000000Z-7b254a08fb641d0cd44a1eadfbd8b811ff3e9627 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-22T18:17:40.0000000Z-49397df90b8f2fab3f11bc178fae5b3cff3ee100 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67799,6 +67799,7 @@ CTLD_CARGO.Enum={
 ["TROOPS"]="Troops",
 ["FOB"]="FOB",
 ["CRATE"]="Crate",
+["REPAIR"]="Repair",
 }
 function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped)
 local self=BASE:Inherit(self,BASE:New())
@@ -67853,6 +67854,13 @@ end
 end
 function CTLD_CARGO:SetWasDropped(dropped)
 self.HasBeenDropped=dropped or false
+end
+function CTLD_CARGO:IsRepair()
+if self.CargoType=="Repair"then
+return true
+else
+return false
+end
 end
 end
 do
@@ -67943,6 +67951,7 @@ self:AddTransition("*","TroopsDeployed","*")
 self:AddTransition("*","TroopsRTB","*")
 self:AddTransition("*","CratesDropped","*")
 self:AddTransition("*","CratesBuild","*")
+self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","Stop","Stopped")
 self.PilotGroups={}
 self.CtldUnits={}
@@ -67983,6 +67992,7 @@ self.HercMinAngels=165
 self.HercMaxAngels=2000
 self.HercMaxSpeed=77
 self.suppressmessages=false
+self.repairtime=300
 for i=1,100 do
 math.random()
 end
@@ -68104,6 +68114,83 @@ table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
 self:_SendMessage("Troops boarded!",10,false,Group)
 self:__TroopsPickedUp(1,Group,Unit,Cargotype)
+end
+return self
+end
+function CTLD:_FindRepairNearby(Group,Unit,Repairtype)
+self:T(self.lid.." _FindRepairNearby")
+local unitcoord=Unit:GetCoordinate()
+local nearestGroup=nil
+local nearestGroupIndex=-1
+local nearestDistance=10000000
+for k,v in pairs(self.DroppedTroops)do
+local distance=self:_GetDistance(v:GetCoordinate(),unitcoord)
+if distance<nearestDistance and distance~=-1 then
+nearestGroup=v
+nearestGroupIndex=k
+nearestDistance=distance
+end
+end
+if nearestGroup==nil or nearestDistance>1000 then
+self:_SendMessage("No unit close enough to repair!",10,false,Group)
+return nil,nil
+end
+local groupname=nearestGroup:GetName()
+local function matchstring(String,Table)
+local match=false
+if type(Table)=="table"then
+for _,_name in pairs(Table)do
+if string.find(String,_name)then
+match=true
+break
+end
+end
+else
+if type(String)=="string"then
+if string.find(String,Table)then match=true end
+end
+end
+return match
+end
+local Cargotype=nil
+for k,v in pairs(self.Cargo_Crates)do
+if matchstring(groupname,v.Templates)and matchstring(groupname,Repairtype)then
+Cargotype=v
+break
+end
+end
+if Cargotype==nil then
+return nil,nil
+else
+return nearestGroup,Cargotype
+end
+end
+function CTLD:_RepairObjectFromCrates(Group,Unit,Crates,Build,Number)
+self:T(self.lid.." _RepairObjectFromCrates")
+local build=Build
+local Repairtype=build.Template
+local NearestGroup,CargoType=self:_FindRepairNearby(Group,Unit,Repairtype)
+if NearestGroup~=nil then
+if self.repairtime<2 then self.repairtime=30 end
+self:_SendMessage(string.format("Repair started using %s taking %d secs",build.Name,self.repairtime),10,false,Group)
+local name=CargoType:GetName()
+local required=CargoType:GetCratesNeeded()
+local template=CargoType:GetTemplates()
+local ctype=CargoType:GetType()
+local object={}
+object.Name=CargoType:GetName()
+object.Required=required
+object.Found=required
+object.Template=template
+object.CanBuild=true
+object.Type=ctype
+self:_CleanUpCrates(Crates,Build,Number)
+local desttimer=TIMER:New(function()NearestGroup:Destroy(false)end,self)
+desttimer:Start(self.repairtime-1)
+local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,object,true)
+buildtimer:Start(self.repairtime)
+else
+self:_SendMessage("Can't repair this unit with "..build.Name,10,false,Group)
 end
 return self
 end
@@ -68587,7 +68674,7 @@ local canbuild=false
 if number>0 then
 for _,_crate in pairs(crates)do
 local Crate=_crate
-if Crate:WasDropped()then
+if Crate:WasDropped()and not Crate:IsRepair()then
 local name=Crate:GetName()
 local required=Crate:GetCratesNeeded()
 local template=Crate:GetTemplates()
@@ -68645,7 +68732,74 @@ self:_SendMessage(string.format("No crates within %d meters!",finddist),10,false
 end
 return self
 end
-function CTLD:_BuildObjectFromCrates(Group,Unit,Build)
+function CTLD:_RepairCrates(Group,Unit)
+self:T(self.lid.." _RepairCrates")
+local finddist=self.CrateDistance or 30
+local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
+local buildables={}
+local foundbuilds=false
+local canbuild=false
+if number>0 then
+for _,_crate in pairs(crates)do
+local Crate=_crate
+if Crate:WasDropped()and Crate:IsRepair()then
+local name=Crate:GetName()
+local required=Crate:GetCratesNeeded()
+local template=Crate:GetTemplates()
+local ctype=Crate:GetType()
+if not buildables[name]then
+local object={}
+object.Name=name
+object.Required=required
+object.Found=1
+object.Template=template
+object.CanBuild=false
+object.Type=ctype
+buildables[name]=object
+foundbuilds=true
+else
+buildables[name].Found=buildables[name].Found+1
+foundbuilds=true
+end
+if buildables[name].Found>=buildables[name].Required then
+buildables[name].CanBuild=true
+canbuild=true
+end
+self:T({repair=buildables})
+end
+end
+local report=REPORT:New("Checklist Repairs")
+report:Add("------------------------------------------------------------")
+for _,_build in pairs(buildables)do
+local build=_build
+local name=build.Name
+local needed=build.Required
+local found=build.Found
+local txtok="NO"
+if build.CanBuild then
+txtok="YES"
+end
+local text=string.format("Type: %s | Required %d | Found %d | Can Repair %s",name,needed,found,txtok)
+report:Add(text)
+end
+if not foundbuilds then report:Add("     --- None Found ---")end
+report:Add("------------------------------------------------------------")
+local text=report:Text()
+self:_SendMessage(text,30,true,Group)
+if canbuild then
+for _,_build in pairs(buildables)do
+local build=_build
+if build.CanBuild then
+self:_RepairObjectFromCrates(Group,Unit,crates,build,number)
+end
+end
+end
+else
+self:_SendMessage(string.format("No crates within %d meters!",finddist),10,false,Group)
+end
+return self
+end
+function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair)
 self:T(self.lid.." _BuildObjectFromCrates")
 local position=Unit:GetCoordinate()or Group:GetCoordinate()
 local unitname=Unit:GetName()or Group:GetName()
@@ -68658,15 +68812,25 @@ local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
 local randomcoord=zone:GetRandomCoordinate(35):GetVec2()
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
+if canmove then
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
+else
+self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
+:InitDelayOff()
+:SpawnFromVec2(randomcoord)
+end
 if self.movetroopstowpzone and canmove then
 self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
 end
+if Repair then
+self:__CratesRepaired(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+else
 self:__CratesBuild(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+end
 end
 return self
 end
@@ -68768,7 +68932,8 @@ menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrat
 end
 listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
 local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
-local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit):Refresh()
+local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit)
+local repairmenu=MENU_GROUP_COMMAND:New(_group,"Repair",topcrates,self._RepairCrates,self,_group,_unit):Refresh()
 end
 if cantroops then
 local troopsmenu=MENU_GROUP:New(_group,"Load troops",toptroops)
@@ -68806,6 +68971,13 @@ function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates)
 self:T(self.lid.." AddCratesCargo")
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates)
+table.insert(self.Cargo_Crates,cargo)
+return self
+end
+function CTLD:AddCratesRepair(Name,Template,Type,NoCrates)
+self:T(self.lid.." AddCratesRepair")
+self.CargoCounter=self.CargoCounter+1
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
