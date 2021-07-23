@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-22T18:17:40.0000000Z-49397df90b8f2fab3f11bc178fae5b3cff3ee100 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-23T09:19:53.0000000Z-61481e6e9a1756959542d3ed9095fed820e84f1b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67047,6 +67047,8 @@ self:__Approach(-5,heliname,woundedgroupname)
 end
 elseif _distance>=self.approachdist_near and _distance<self.approachdist_far then
 self.heliVisibleMessage[_lookupKeyHeli]=nil
+self.heliCloseMessage[_lookupKeyHeli]=nil
+self.landedStatus[_lookupKeyHeli]=nil
 _downedpilot.timestamp=timer.getAbsTime()
 self:__Approach(-10,heliname,woundedgroupname)
 end
@@ -67405,7 +67407,9 @@ if _heli==nil then
 return
 end
 local _closest=self:_GetClosestDownedPilot(_heli)
-if _closest~=nil and _closest.pilot~=nil and _closest.distance<8000.0 then
+local smokedist=8000
+if self.approachdist_far>smokedist then smokedist=self.approachdist_far end
+if _closest~=nil and _closest.pilot~=nil and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
 if _SETTINGS:IsImperial()then
@@ -67418,11 +67422,13 @@ self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
 local _coord=_closest.pilot:GetCoordinate()
 _coord:FlareRed(_clockDir)
 else
-local disttext="4.3nm"
-if _SETTINGS:IsMetric()then
-disttext="8km"
+local _distance=smokedist
+if _SETTINGS:IsImperial()then
+_distance=string.format("%.1fnm",UTILS.MetersToNM(smokedist))
+else
+_distance=string.format("%.1fkm",smokedist/1000)
 end
-self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
+self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",_distance),self.messageTime)
 end
 return self
 end
@@ -67444,8 +67450,10 @@ local _heli=self:_GetSARHeli(_unitName)
 if _heli==nil then
 return
 end
+local smokedist=8000
+if smokedist<self.approachdist_far then smokedist=self.approachdist_far end
 local _closest=self:_GetClosestDownedPilot(_heli)
-if _closest~=nil and _closest.pilot~=nil and _closest.distance<8000.0 then
+if _closest~=nil and _closest.pilot~=nil and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
 if _SETTINGS:IsImperial()then
@@ -67459,11 +67467,13 @@ local _coord=_closest.pilot:GetCoordinate()
 local color=self.smokecolor
 _coord:Smoke(color)
 else
-local disttext="4.3nm"
-if _SETTINGS:IsMetric()then
-disttext="8km"
+local _distance=0
+if _SETTINGS:IsImperial()then
+_distance=string.format("%.1fnm",UTILS.MetersToNM(smokedist))
+else
+_distance=string.format("%.1fkm",smokedist/1000)
 end
-self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",disttext),self.messageTime)
+self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",_distance),self.messageTime)
 end
 return self
 end
