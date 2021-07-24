@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-24T13:04:49.0000000Z-5439e600781482328fc763e298b06d9108c418ea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-24T13:53:20.0000000Z-4db0ea616dab5a0210fcc06e4ba6486ad22e0e89 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66967,6 +66967,9 @@ self.takenOff[_event.IniUnitName]=nil
 local _place=_event.Place
 if _place==nil then
 self:T(self.lid.." Landing Place Nil")
+return
+end
+if self.inTransitGroups[_event.IniUnitName]==nil then
 return
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
