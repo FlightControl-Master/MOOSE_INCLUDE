@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-23T14:29:56.0000000Z-8f698e3e623c141059ac69494f4ce6db57fb1f6e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-24T13:04:49.0000000Z-5439e600781482328fc763e298b06d9108c418ea ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20909,6 +20909,13 @@ local UnitAmmo=DCSUnit:getAmmo()
 return UnitAmmo
 end
 return nil
+end
+function UNIT:SetUnitInternalCargo(mass)
+local DCSUnit=self:GetDCSObject()
+if DCSUnit then
+trigger.action.setUnitInternalCargo(DCSUnit:getName(),mass)
+end
+return self
 end
 function UNIT:GetAmmunition()
 local nammo=0
@@ -67809,6 +67816,7 @@ LoadDirectly=false,
 CratesNeeded=0,
 Positionable=nil,
 HasBeenDropped=false,
+PerCrateMass=0
 }
 CTLD_CARGO.Enum={
 ["VEHICLE"]="Vehicle",
@@ -67817,7 +67825,7 @@ CTLD_CARGO.Enum={
 ["CRATE"]="Crate",
 ["REPAIR"]="Repair",
 }
-function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped)
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass)
 local self=BASE:Inherit(self,BASE:New())
 self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
 self.ID=ID or math.random(100000,1000000)
@@ -67829,6 +67837,7 @@ self.LoadDirectly=LoadDirectly or false
 self.CratesNeeded=CratesNeeded or 0
 self.Positionable=Positionable or nil
 self.HasBeenDropped=Dropped or false
+self.PerCrateMass=PerCrateMass or 0
 return self
 end
 function CTLD_CARGO:GetID()
@@ -68123,13 +68132,14 @@ self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
 return
 else
 self.CargoCounter=self.CargoCounter+1
-local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded)
+local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
 self:T({cargotype=loadcargotype})
 loaded.Troopsloaded=loaded.Troopsloaded+troopsize
 table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
 self:_SendMessage("Troops boarded!",10,false,Group)
 self:__TroopsPickedUp(1,Group,Unit,Cargotype)
+self:_UpdateUnitCargoMass(Unit)
 end
 return self
 end
@@ -68203,7 +68213,7 @@ object.Type=ctype
 self:_CleanUpCrates(Crates,Build,Number)
 local desttimer=TIMER:New(function()NearestGroup:Destroy(false)end,self)
 desttimer:Start(self.repairtime-1)
-local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,object,true)
+local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,object,true,NearestGroup:GetCoordinate())
 buildtimer:Start(self.repairtime)
 else
 self:_SendMessage("Can't repair this unit with "..build.Name,10,false,Group)
@@ -68269,12 +68279,13 @@ self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
 return
 else
 self.CargoCounter=self.CargoCounter+1
-local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded)
+local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,CTLD_CARGO.Enum.TROOPS,true,true,Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
 self:T({cargotype=loadcargotype})
 loaded.Troopsloaded=loaded.Troopsloaded+troopsize
 table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
 self:_SendMessage("Troops boarded!",10,false,Group)
+self:_UpdateUnitCargoMass(Unit)
 self:__TroopsExtracted(1,Group,Unit,nearestGroup)
 table.remove(self.DroppedTroops,nearestGroupIndex)
 nearestGroup:Destroy()
@@ -68342,10 +68353,10 @@ local sorte=cargotype:GetType()
 self.CargoCounter=self.CargoCounter+1
 local realcargo=nil
 if drop then
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true)
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass)
 table.insert(droppedcargo,realcargo)
 else
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter])
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],nil,cargotype.PerCrateMass)
 end
 table.insert(self.Spawned_Cargo,realcargo)
 end
@@ -68371,7 +68382,7 @@ local dropped=entry:WasDropped()
 if dropped then
 text:Add(string.format("Dropped crate for %s",name))
 else
-text:Add(string.format("Crate for %s",name))
+text:Add(string.format("Crate for %s, %d Kg",name,entry.PerCrateMass))
 end
 end
 if text:GetCount()==1 then
@@ -68434,6 +68445,7 @@ elseif not grounded and not canhoverload then
 self:_SendMessage("Land or hover over the crates to pick them up!",10,false,Group)
 else
 local numberonboard=0
+local massonboard=0
 local loaded={}
 if self.Loaded_Cargo[unitname]then
 loaded=self.Loaded_Cargo[unitname]
@@ -68470,6 +68482,7 @@ table.insert(crateidsloaded,crate:GetID())
 crate:GetPositionable():Destroy()
 crate.Positionable=nil
 self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
+self:_UpdateUnitCargoMass(Unit)
 self:__CratesPickedUp(1,Group,Unit,crate)
 end
 end
@@ -68491,6 +68504,34 @@ end
 end
 return self
 end
+function CTLD:_GetUnitCargoMass(Unit)
+self:T(self.lid.." _GetUnitCargoMass")
+local unitname=Unit:GetName()
+local loadedcargo=self.Loaded_Cargo[unitname]or{}
+local loadedmass=0
+if self.Loaded_Cargo[unitname]then
+local cargotable=loadedcargo.Cargo or{}
+for _,_cargo in pairs(cargotable)do
+local cargo=_cargo
+local type=cargo:GetType()
+if type==CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
+loadedmass=loadedmass+(cargo.PerCrateMass*cargo:GetCratesNeeded())
+end
+if type~=CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
+loadedmass=loadedmass+cargo.PerCrateMass
+end
+end
+end
+return loadedmass
+end
+function CTLD:_UpdateUnitCargoMass(Unit)
+self:T(self.lid.." _UpdateUnitCargoMass")
+local calculatedMass=self:_GetUnitCargoMass(Unit)
+Unit:SetUnitInternalCargo(calculatedMass)
+local report=REPORT:New("Loadmaster report")
+report:Add("Carrying "..calculatedMass.."Kg")
+self:_SendMessage(report:Text(),10,false,Unit:GetGroup())
+end
 function CTLD:_ListCargo(Group,Unit)
 self:T(self.lid.." _ListCargo")
 local unitname=Unit:GetName()
@@ -68499,6 +68540,7 @@ local capabilities=self:_GetUnitCapabilities(Unit)
 local trooplimit=capabilities.trooplimit
 local cratelimit=capabilities.cratelimit
 local loadedcargo=self.Loaded_Cargo[unitname]or{}
+local loadedmass=self:_GetUnitCargoMass(Unit)
 if self.Loaded_Cargo[unitname]then
 local no_troops=loadedcargo.Troopsloaded or 0
 local no_crates=loadedcargo.Cratesloaded or 0
@@ -68524,7 +68566,7 @@ local cratecount=0
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
-if type~=CTLD_CARGO.Enum.TROOPS then
+if type~=CTLD_CARGO.Enum.TROOPS and not cargo:WasDropped()then
 report:Add(string.format("Crate: %s size 1",cargo:GetName()))
 cratecount=cratecount+1
 end
@@ -68533,6 +68575,7 @@ if cratecount==0 then
 report:Add("        N O N E")
 end
 report:Add("------------------------------------------------------------")
+report:Add("Total Mass: "..loadedmass.." kg")
 local text=report:Text()
 self:_SendMessage(text,30,true,Group)
 else
@@ -68617,6 +68660,7 @@ end
 end
 self.Loaded_Cargo[unitname]=nil
 self.Loaded_Cargo[unitname]=loaded
+self:_UpdateUnitCargoMass(Unit)
 else
 if IsHerc then
 self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
@@ -68671,6 +68715,7 @@ end
 end
 self.Loaded_Cargo[unitname]=nil
 self.Loaded_Cargo[unitname]=loaded
+self:_UpdateUnitCargoMass(Unit)
 else
 if IsHerc then
 self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
@@ -68815,7 +68860,7 @@ self:_SendMessage(string.format("No crates within %d meters!",finddist),10,false
 end
 return self
 end
-function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair)
+function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair,RepairLocation)
 self:T(self.lid.." _BuildObjectFromCrates")
 local position=Unit:GetCoordinate()or Group:GetCoordinate()
 local unitname=Unit:GetName()or Group:GetName()
@@ -68826,6 +68871,9 @@ if type==CTLD_CARGO.Enum.VEHICLE then canmove=true end
 local temptable=Build.Template or{}
 local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
 local randomcoord=zone:GetRandomCoordinate(35):GetVec2()
+if Repair then
+randomcoord=RepairLocation:GetVec2()
+end
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 if canmove then
@@ -68976,24 +69024,24 @@ end
 end
 return self
 end
-function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops)
+function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass)
 self:T(self.lid.." AddTroopsCargo")
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass)
 table.insert(self.Cargo_Troops,cargo)
 return self
 end
-function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates)
+function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass)
 self:T(self.lid.." AddCratesCargo")
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
-function CTLD:AddCratesRepair(Name,Template,Type,NoCrates)
+function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass)
 self:T(self.lid.." AddCratesRepair")
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
