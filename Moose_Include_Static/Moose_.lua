@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-24T13:50:10.0000000Z-7ca7caea7501002ad297db0caa023c50f33fba32 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-24T13:57:15.0000000Z-b52272e18ebbaa6b37acba140dbb68d6ca0c08e9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -54923,15 +54923,15 @@ end
 alltext=alltext..";\n"..subtitle
 if self.TDegF then
 if temperature<0 then
-subtitle=string.format("Temperature -%s Â°F",TEMPERATURE)
+subtitle=string.format("Temperature -%s °F",TEMPERATURE)
 else
-subtitle=string.format("Temperature %s Â°F",TEMPERATURE)
+subtitle=string.format("Temperature %s °F",TEMPERATURE)
 end
 else
 if temperature<0 then
-subtitle=string.format("Temperature -%s Â°C",TEMPERATURE)
+subtitle=string.format("Temperature -%s °C",TEMPERATURE)
 else
-subtitle=string.format("Temperature %s Â°C",TEMPERATURE)
+subtitle=string.format("Temperature %s °C",TEMPERATURE)
 end
 end
 local _TEMPERATURE=subtitle
@@ -54950,15 +54950,15 @@ end
 alltext=alltext..";\n"..subtitle
 if self.TDegF then
 if dewpoint<0 then
-subtitle=string.format("Dew point -%s Â°F",DEWPOINT)
+subtitle=string.format("Dew point -%s °F",DEWPOINT)
 else
-subtitle=string.format("Dew point %s Â°F",DEWPOINT)
+subtitle=string.format("Dew point %s °F",DEWPOINT)
 end
 else
 if dewpoint<0 then
-subtitle=string.format("Dew point -%s Â°C",DEWPOINT)
+subtitle=string.format("Dew point -%s °C",DEWPOINT)
 else
-subtitle=string.format("Dew point %s Â°C",DEWPOINT)
+subtitle=string.format("Dew point %s °C",DEWPOINT)
 end
 end
 local _DEWPOINT=subtitle
@@ -55236,8 +55236,8 @@ self:T(self.lid..string.format("Report:\n%s",Text))
 if self.useSRS and self.msrs then
 local text=string.gsub(Text,"[\r\n]","")
 local text=string.gsub(text,"SM","statute miles")
-local text=string.gsub(text,"Â°C","degrees Celsius")
-local text=string.gsub(text,"Â°F","degrees Fahrenheit")
+local text=string.gsub(text,"°C","degrees Celsius")
+local text=string.gsub(text,"°F","degrees Fahrenheit")
 local text=string.gsub(text,"inHg","inches of Mercury")
 local text=string.gsub(text,"mmHg","millimeters of Mercury")
 local text=string.gsub(text,"hPa","hecto Pascals")
