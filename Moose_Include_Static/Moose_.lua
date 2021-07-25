@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-24T13:53:20.0000000Z-4db0ea616dab5a0210fcc06e4ba6486ad22e0e89 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-25T07:06:16.0000000Z-52d494f5735ea7c58ee5ff05f3379fd0386a9ea1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68656,7 +68656,7 @@ for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
 local dropped=cargo:WasDropped()
-if type~=CTLD_CARGO.Enum.TROOP and not dropped then
+if type~=CTLD_CARGO.Enum.TROOPS and not dropped then
 table.insert(loaded.Cargo,_cargo)
 loaded.Cratesloaded=loaded.Cratesloaded+1
 end
@@ -68711,9 +68711,9 @@ for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
 local size=cargo:GetCratesNeeded()
-if type==CTLD_CARGO.Enum.TROOP then
+if type==CTLD_CARGO.Enum.TROOPS then
 table.insert(loaded.Cargo,_cargo)
-loaded.Cratesloaded=loaded.Troopsloaded+size
+loaded.Troopsloaded=loaded.Troopsloaded+size
 end
 end
 self.Loaded_Cargo[unitname]=nil
