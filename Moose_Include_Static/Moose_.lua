@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-25T07:06:16.0000000Z-52d494f5735ea7c58ee5ff05f3379fd0386a9ea1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-26T07:24:52.0000000Z-d245a73d7ffd4d77568567b29665c1be1349d6b7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67125,7 +67125,7 @@ side=self.coalition,
 desc=grouptable.desc,
 player=grouptable.player,
 }
-_woundedGroup:Destroy()
+_woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
 self:__Boarded(5,_heliName,_woundedGroupName)
@@ -68005,6 +68005,7 @@ self.CargoCounter=0
 self.CrateCounter=0
 self.TroopCounter=0
 self.CrateDistance=30
+self.ExtractFactor=3.33
 self.prefixes=Prefixes or{"Cargoheli"}
 self.useprefix=true
 self.maximumHoverHeight=15
@@ -68249,7 +68250,8 @@ nearestGroupIndex=k
 nearestDistance=distance
 end
 end
-if nearestGroup==nil or nearestDistance>self.CrateDistance then
+local extractdistance=self.CrateDistance*self.ExtractFactor
+if nearestGroup==nil or nearestDistance>extractdistance then
 self:_SendMessage("No units close enough to extract!",10,false,Group)
 return self
 end
@@ -68291,7 +68293,7 @@ self:_SendMessage("Troops boarded!",10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
 self:__TroopsExtracted(1,Group,Unit,nearestGroup)
 table.remove(self.DroppedTroops,nearestGroupIndex)
-nearestGroup:Destroy()
+nearestGroup:Destroy(false)
 end
 return self
 end
@@ -68461,8 +68463,13 @@ loaded.Cargo={}
 end
 local finddist=self.CrateDistance or 30
 local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
-if number==0 or numberonboard==cratelimit then
-self:_SendMessage("Sorry no loadable crates nearby or fully loaded!",10,false,Group)
+if number==0 and self.hoverautoloading then
+return
+elseif number==0 then
+self:_SendMessage("Sorry no loadable crates nearby!",10,false,Group)
+return
+elseif numberonboard==cratelimit then
+self:_SendMessage("Sorry no fully loaded!",10,false,Group)
 return
 else
 local capacity=cratelimit-numberonboard
@@ -68482,7 +68489,7 @@ loaded.Cratesloaded=loaded.Cratesloaded+1
 crate:SetHasMoved(true)
 table.insert(loaded.Cargo,crate)
 table.insert(crateidsloaded,crate:GetID())
-crate:GetPositionable():Destroy()
+crate:GetPositionable():Destroy(false)
 crate.Positionable=nil
 self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
@@ -68935,7 +68942,7 @@ local thisID=nowcrate:GetID()
 if name==nametype then
 table.insert(destIDs,thisID)
 found=found+1
-nowcrate:GetPositionable():Destroy()
+nowcrate:GetPositionable():Destroy(false)
 nowcrate.Positionable=nil
 end
 if found==numberdest then break end
@@ -69428,7 +69435,7 @@ function CTLD:CheckAutoHoverload()
 if self.hoverautoloading then
 for _,_pilot in pairs(self.CtldUnits)do
 local Unit=UNIT:FindByName(_pilot)
-self:AutoHoverLoad(Unit)
+if self:CanHoverLoad(Unit)then self:AutoHoverLoad(Unit)end
 end
 end
 return self
