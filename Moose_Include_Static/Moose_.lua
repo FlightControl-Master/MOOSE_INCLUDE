@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-26T07:24:52.0000000Z-d245a73d7ffd4d77568567b29665c1be1349d6b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-27T12:10:10.0000000Z-82432686aa592384dd18f84cacb8edbddb303391 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66615,7 +66615,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.8r3"
+CSAR.version="0.1.9r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66704,6 +66704,7 @@ self:_GenerateVHFrequencies()
 self.approachdist_far=5000
 self.approachdist_near=3000
 self.pilotmustopendoors=false
+self.suppressmessages=false
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -66812,7 +66813,7 @@ end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"Pilot"
 if not noMessage then
-self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,10)
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,self.messageTime)
 end
 if _freq then
 self:_AddBeaconToGroup(_spawnedGroup,_freq)
@@ -66912,7 +66913,7 @@ if self.takenOff[_event.IniUnitName]==true or _group:IsAirborne()then
 if self:_DoubleEjection(_unitname)then
 return
 end
-self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,10)
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,self.messageTime)
 else
 self:T(self.lid.." Pilot has not taken off, ignore")
 end
@@ -67323,7 +67324,9 @@ self:T(self.lid.." _DisplayMessageToSAR")
 local group=_unit:GetGroup()
 local _clear=_clear or nil
 local _time=_time or self.messageTime
+if not self.suppressmessages then
 local m=MESSAGE:New(_text,_time,"Info",_clear):ToGroup(group)
+end
 if _speak and self.useSRS then
 local srstext=SOUNDTEXT:New(_text)
 local path=self.SRSPath
@@ -67450,12 +67453,11 @@ return self
 end
 function CSAR:_DisplayToAllSAR(_message,_side,_messagetime)
 self:T(self.lid.." _DisplayToAllSAR")
+local messagetime=_messagetime or self.messageTime
 for _,_unitName in pairs(self.csarUnits)do
 local _unit=self:_GetSARHeli(_unitName)
-if _unit then
-if not _messagetime then
+if _unit and not self.suppressmessages then
 self:_DisplayMessageToSAR(_unit,_message,_messagetime)
-end
 end
 end
 return self
@@ -76557,6 +76559,8 @@ end,Helicopter
 end
 )
 self:SetCarrier(Helicopter)
+self.landingspeed=15
+self.landingheight=5.5
 return self
 end
 function AI_CARGO_HELICOPTER:SetCarrier(Helicopter)
@@ -76585,19 +76589,26 @@ self.Coalition=self.Helicopter:GetCoalition()
 self:SetControllable(Helicopter)
 return self
 end
+function AI_CARGO_HELICOPTER:SetLandingSpeedAndHeight(speed,height)
+local _speed=speed or 15
+local _height=height or 5.5
+self.landingheight=_height
+self.landingspeed=_speed
+return self
+end
 function AI_CARGO_HELICOPTER:onafterLanded(Helicopter,From,Event,To)
 self:F({From,Event,To})
 Helicopter:F({Name=Helicopter:GetName()})
 if Helicopter and Helicopter:IsAlive()then
-self:F({Helicopter:GetName(),Height=Helicopter:GetHeight(true),Velocity=Helicopter:GetVelocityKMH()})
+self:T({Helicopter:GetName(),Height=Helicopter:GetHeight(true),Velocity=Helicopter:GetVelocityKMH()})
 if self.RoutePickup==true then
-if Helicopter:GetHeight(true)<=5.5 and Helicopter:GetVelocityKMH()<15 then
+if Helicopter:GetHeight(true)<=self.landingheight and Helicopter:GetVelocityKMH()<self.landingspeed then
 self:Load(self.PickupZone)
 self.RoutePickup=false
 end
 end
 if self.RouteDeploy==true then
-if Helicopter:GetHeight(true)<=5.5 and Helicopter:GetVelocityKMH()<15 then
+if Helicopter:GetHeight(true)<=self.landingheight and Helicopter:GetVelocityKMH()<self.landingspeed then
 self:Unload(self.DeployZone)
 self.RouteDeploy=false
 end
