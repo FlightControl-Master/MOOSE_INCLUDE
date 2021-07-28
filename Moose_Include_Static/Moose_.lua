@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-27T12:10:10.0000000Z-82432686aa592384dd18f84cacb8edbddb303391 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-28T16:31:39.0000000Z-061032e3d742f57a49c8b31025e03bd09c4f49d9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -76031,17 +76031,17 @@ local self=BASE:Inherit(self,FSM_CONTROLLABLE:New(Carrier))
 self.CargoSet=CargoSet
 self.CargoCarrier=Carrier
 self:SetStartState("Unloaded")
-self:AddTransition("Unloaded","Pickup","*")
+self:AddTransition("Unloaded","Pickup","Unloaded")
+self:AddTransition("*","Load","*")
+self:AddTransition("*","Reload","*")
+self:AddTransition("*","Board","*")
+self:AddTransition("*","Loaded","Loaded")
+self:AddTransition("Loaded","PickedUp","Loaded")
 self:AddTransition("Loaded","Deploy","*")
-self:AddTransition("*","Load","Boarding")
-self:AddTransition("Boarding","Board","Boarding")
-self:AddTransition("Loaded","Board","Loaded")
-self:AddTransition("Boarding","Loaded","Boarding")
-self:AddTransition("Boarding","PickedUp","Loaded")
-self:AddTransition("Loaded","Unload","Unboarding")
-self:AddTransition("Unboarding","Unboard","Unboarding")
-self:AddTransition("Unboarding","Unloaded","Unboarding")
-self:AddTransition("Unboarding","Deployed","Unloaded")
+self:AddTransition("*","Unload","*")
+self:AddTransition("*","Unboard","*")
+self:AddTransition("*","Unloaded","Unloaded")
+self:AddTransition("Unloaded","Deployed","Unloaded")
 for _,CarrierUnit in pairs(Carrier:GetUnits())do
 local CarrierUnit=CarrierUnit
 CarrierUnit:SetCargoBayWeightLimit()
@@ -76532,18 +76532,19 @@ function AI_CARGO_HELICOPTER:New(Helicopter,CargoSet)
 local self=BASE:Inherit(self,AI_CARGO:New(Helicopter,CargoSet))
 self.Zone=ZONE_GROUP:New(Helicopter:GetName(),Helicopter,300)
 self:SetStartState("Unloaded")
-self:AddTransition("Unloaded","Pickup","*")
-self:AddTransition("Loaded","Deploy","*")
-self:AddTransition("*","Loaded","Loaded")
-self:AddTransition("Unboarding","Pickup","Unloaded")
-self:AddTransition("Unloaded","Unboard","Unloaded")
-self:AddTransition("Unloaded","Unloaded","Unloaded")
-self:AddTransition("*","PickedUp","*")
+self:AddTransition("Unloaded","Pickup","Unloaded")
 self:AddTransition("*","Landed","*")
+self:AddTransition("*","Load","*")
+self:AddTransition("*","Loaded","Loaded")
+self:AddTransition("Loaded","PickedUp","Loaded")
+self:AddTransition("Loaded","Deploy","*")
 self:AddTransition("*","Queue","*")
 self:AddTransition("*","Orbit","*")
+self:AddTransition("*","Destroyed","*")
+self:AddTransition("*","Unload","*")
+self:AddTransition("*","Unloaded","Unloaded")
+self:AddTransition("Unloaded","Deployed","Unloaded")
 self:AddTransition("*","Home","*")
-self:AddTransition("*","Destroyed","Destroyed")
 Helicopter:HandleEvent(EVENTS.Crash,
 function(Helicopter,EventData)
 AI_CARGO_QUEUE[Helicopter]=nil
@@ -76602,13 +76603,13 @@ Helicopter:F({Name=Helicopter:GetName()})
 if Helicopter and Helicopter:IsAlive()then
 self:T({Helicopter:GetName(),Height=Helicopter:GetHeight(true),Velocity=Helicopter:GetVelocityKMH()})
 if self.RoutePickup==true then
-if Helicopter:GetHeight(true)<=self.landingheight and Helicopter:GetVelocityKMH()<self.landingspeed then
+if Helicopter:GetHeight(true)<=self.landingheight then
 self:Load(self.PickupZone)
 self.RoutePickup=false
 end
 end
 if self.RouteDeploy==true then
-if Helicopter:GetHeight(true)<=self.landingheight and Helicopter:GetVelocityKMH()<self.landingspeed then
+if Helicopter:GetHeight(true)<=self.landingheight then
 self:Unload(self.DeployZone)
 self.RouteDeploy=false
 end
@@ -77412,14 +77413,16 @@ function AI_CARGO_DISPATCHER_HELICOPTER:New(HelicopterSet,CargoSet,PickupZoneSet
 local self=BASE:Inherit(self,AI_CARGO_DISPATCHER:New(HelicopterSet,CargoSet,PickupZoneSet,DeployZoneSet))
 self:SetPickupSpeed(350,150)
 self:SetDeploySpeed(350,150)
-self:SetPickupRadius(0,0)
-self:SetDeployRadius(0,0)
+self:SetPickupRadius(40,12)
+self:SetDeployRadius(40,12)
 self:SetPickupHeight(500,200)
 self:SetDeployHeight(500,200)
 return self
 end
 function AI_CARGO_DISPATCHER_HELICOPTER:AICargo(Helicopter,CargoSet)
-return AI_CARGO_HELICOPTER:New(Helicopter,CargoSet)
+local dispatcher=AI_CARGO_HELICOPTER:New(Helicopter,CargoSet)
+dispatcher:SetLandingSpeedAndHeight(27,6)
+return dispatcher
 end
 AI_CARGO_DISPATCHER_AIRPLANE={
 ClassName="AI_CARGO_DISPATCHER_AIRPLANE",
