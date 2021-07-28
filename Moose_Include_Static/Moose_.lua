@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-25T11:26:07.0000000Z-33d761503d34f92beb6dbb7471bedbece3d89582 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-28T17:47:48.0000000Z-05b6f19a871f28d49da4277eda056126cce32205 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57136,7 +57136,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.8r3"
+CSAR.version="0.1.9r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -57225,6 +57225,7 @@ self:_GenerateVHFrequencies()
 self.approachdist_far=5000
 self.approachdist_near=3000
 self.pilotmustopendoors=false
+self.suppressmessages=false
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -57333,7 +57334,7 @@ end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"Pilot"
 if not noMessage then
-self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,10)
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,self.messageTime)
 end
 if _freq then
 self:_AddBeaconToGroup(_spawnedGroup,_freq)
@@ -57433,7 +57434,7 @@ if self.takenOff[_event.IniUnitName]==true or _group:IsAirborne()then
 if self:_DoubleEjection(_unitname)then
 return
 end
-self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,10)
+self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,self.messageTime)
 else
 self:T(self.lid.." Pilot has not taken off, ignore")
 end
@@ -57646,7 +57647,7 @@ side=self.coalition,
 desc=grouptable.desc,
 player=grouptable.player,
 }
-_woundedGroup:Destroy()
+_woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
 self:__Boarded(5,_heliName,_woundedGroupName)
@@ -57844,7 +57845,9 @@ self:T(self.lid.." _DisplayMessageToSAR")
 local group=_unit:GetGroup()
 local _clear=_clear or nil
 local _time=_time or self.messageTime
+if not self.suppressmessages then
 local m=MESSAGE:New(_text,_time,"Info",_clear):ToGroup(group)
+end
 if _speak and self.useSRS then
 local srstext=SOUNDTEXT:New(_text)
 local path=self.SRSPath
@@ -57971,12 +57974,11 @@ return self
 end
 function CSAR:_DisplayToAllSAR(_message,_side,_messagetime)
 self:T(self.lid.." _DisplayToAllSAR")
+local messagetime=_messagetime or self.messageTime
 for _,_unitName in pairs(self.csarUnits)do
 local _unit=self:_GetSARHeli(_unitName)
-if _unit then
-if not _messagetime then
+if _unit and not self.suppressmessages then
 self:_DisplayMessageToSAR(_unit,_message,_messagetime)
-end
 end
 end
 return self
