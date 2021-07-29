@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-28T17:47:48.0000000Z-05b6f19a871f28d49da4277eda056126cce32205 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-29T10:46:16.0000000Z-de0436970322d90f93d8b75f991c154c2a8dacd5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55572,6 +55572,7 @@ self.CargoCounter=0
 self.CrateCounter=0
 self.TroopCounter=0
 self.CrateDistance=30
+self.ExtractFactor=3.33
 self.prefixes=Prefixes or{"Cargoheli"}
 self.useprefix=true
 self.maximumHoverHeight=15
@@ -55816,7 +55817,8 @@ nearestGroupIndex=k
 nearestDistance=distance
 end
 end
-if nearestGroup==nil or nearestDistance>self.CrateDistance then
+local extractdistance=self.CrateDistance*self.ExtractFactor
+if nearestGroup==nil or nearestDistance>extractdistance then
 self:_SendMessage("No units close enough to extract!",10,false,Group)
 return self
 end
@@ -55858,7 +55860,7 @@ self:_SendMessage("Troops boarded!",10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
 self:__TroopsExtracted(1,Group,Unit,nearestGroup)
 table.remove(self.DroppedTroops,nearestGroupIndex)
-nearestGroup:Destroy()
+nearestGroup:Destroy(false)
 end
 return self
 end
@@ -56028,8 +56030,13 @@ loaded.Cargo={}
 end
 local finddist=self.CrateDistance or 30
 local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
-if number==0 or numberonboard==cratelimit then
-self:_SendMessage("Sorry no loadable crates nearby or fully loaded!",10,false,Group)
+if number==0 and self.hoverautoloading then
+return
+elseif number==0 then
+self:_SendMessage("Sorry no loadable crates nearby!",10,false,Group)
+return
+elseif numberonboard==cratelimit then
+self:_SendMessage("Sorry no fully loaded!",10,false,Group)
 return
 else
 local capacity=cratelimit-numberonboard
@@ -56049,7 +56056,7 @@ loaded.Cratesloaded=loaded.Cratesloaded+1
 crate:SetHasMoved(true)
 table.insert(loaded.Cargo,crate)
 table.insert(crateidsloaded,crate:GetID())
-crate:GetPositionable():Destroy()
+crate:GetPositionable():Destroy(false)
 crate.Positionable=nil
 self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
@@ -56502,7 +56509,7 @@ local thisID=nowcrate:GetID()
 if name==nametype then
 table.insert(destIDs,thisID)
 found=found+1
-nowcrate:GetPositionable():Destroy()
+nowcrate:GetPositionable():Destroy(false)
 nowcrate.Positionable=nil
 end
 if found==numberdest then break end
@@ -56995,7 +57002,7 @@ function CTLD:CheckAutoHoverload()
 if self.hoverautoloading then
 for _,_pilot in pairs(self.CtldUnits)do
 local Unit=UNIT:FindByName(_pilot)
-self:AutoHoverLoad(Unit)
+if self:CanHoverLoad(Unit)then self:AutoHoverLoad(Unit)end
 end
 end
 return self
@@ -57663,32 +57670,7 @@ return self
 end
 function CSAR:_IsLoadingDoorOpen(unit_name)
 self:T(self.lid.." _IsLoadingDoorOpen")
-local ret_val=false
-local unit=Unit.getByName(unit_name)
-if unit~=nil then
-local type_name=unit:getTypeName()
-if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
-self:T(unit_name.." Cargo doors are open or cargo door not present")
-ret_val=true
-end
-if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
-self:T(unit_name.." a side door is open")
-ret_val=true
-end
-if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
-self:T(unit_name.." a side door is open ")
-ret_val=true
-end
-if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
-self:T(unit_name.." front door(s) are open")
-ret_val=true
-end
-if ret_val==false then
-self:T(unit_name.." all doors are closed")
-end
-return ret_val
-end
-return false
+return UTILS.IsLoadingDoorOpen(unit_name)
 end
 function CSAR:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)
 self:T(self.lid.." _CheckCloseWoundedGroup")
@@ -64791,17 +64773,17 @@ local self=BASE:Inherit(self,FSM_CONTROLLABLE:New(Carrier))
 self.CargoSet=CargoSet
 self.CargoCarrier=Carrier
 self:SetStartState("Unloaded")
-self:AddTransition("Unloaded","Pickup","*")
+self:AddTransition("Unloaded","Pickup","Unloaded")
+self:AddTransition("*","Load","*")
+self:AddTransition("*","Reload","*")
+self:AddTransition("*","Board","*")
+self:AddTransition("*","Loaded","Loaded")
+self:AddTransition("Loaded","PickedUp","Loaded")
 self:AddTransition("Loaded","Deploy","*")
-self:AddTransition("*","Load","Boarding")
-self:AddTransition("Boarding","Board","Boarding")
-self:AddTransition("Loaded","Board","Loaded")
-self:AddTransition("Boarding","Loaded","Boarding")
-self:AddTransition("Boarding","PickedUp","Loaded")
-self:AddTransition("Loaded","Unload","Unboarding")
-self:AddTransition("Unboarding","Unboard","Unboarding")
-self:AddTransition("Unboarding","Unloaded","Unboarding")
-self:AddTransition("Unboarding","Deployed","Unloaded")
+self:AddTransition("*","Unload","*")
+self:AddTransition("*","Unboard","*")
+self:AddTransition("*","Unloaded","Unloaded")
+self:AddTransition("Unloaded","Deployed","Unloaded")
 for _,CarrierUnit in pairs(Carrier:GetUnits())do
 local CarrierUnit=CarrierUnit
 CarrierUnit:SetCargoBayWeightLimit()
@@ -64923,7 +64905,7 @@ return Boarding
 end
 function AI_CARGO:onafterBoard(Carrier,From,Event,To,Cargo,CarrierUnit,PickupZone)
 self:F({Carrier,From,Event,To,Cargo,CarrierUnit:GetName()})
-if Carrier and Carrier:IsAlive()and From=="Boarding"then
+if Carrier and Carrier:IsAlive()then
 self:F({IsLoaded=Cargo:IsLoaded(),Cargo:GetName(),Carrier:GetName()})
 if not Cargo:IsLoaded()and not Cargo:IsDestroyed()then
 self:__Board(-10,Cargo,CarrierUnit,PickupZone)
@@ -64988,7 +64970,7 @@ end
 end
 function AI_CARGO:onafterUnboard(Carrier,From,Event,To,Cargo,CarrierUnit,DeployZone,Defend)
 self:F({Carrier,From,Event,To,Cargo:GetName(),DeployZone=DeployZone,Defend=Defend})
-if Carrier and Carrier:IsAlive()and From=="Unboarding"then
+if Carrier and Carrier:IsAlive()then
 if not Cargo:IsUnLoaded()then
 self:__Unboard(10,Cargo,CarrierUnit,DeployZone,Defend)
 return
@@ -65039,6 +65021,8 @@ self:AddTransition("*","Follow","Following")
 self:AddTransition("*","Guard","Unloaded")
 self:AddTransition("*","Home","*")
 self:AddTransition("*","Reload","Boarding")
+self:AddTransition("*","Deployed","*")
+self:AddTransition("*","PickedUp","*")
 self:AddTransition("*","Destroyed","Destroyed")
 self:SetCombatRadius(CombatRadius)
 self:SetCarrier(APC)
@@ -65292,18 +65276,19 @@ function AI_CARGO_HELICOPTER:New(Helicopter,CargoSet)
 local self=BASE:Inherit(self,AI_CARGO:New(Helicopter,CargoSet))
 self.Zone=ZONE_GROUP:New(Helicopter:GetName(),Helicopter,300)
 self:SetStartState("Unloaded")
-self:AddTransition("Unloaded","Pickup","*")
-self:AddTransition("Loaded","Deploy","*")
-self:AddTransition("*","Loaded","Loaded")
-self:AddTransition("Unboarding","Pickup","Unloaded")
-self:AddTransition("Unloaded","Unboard","Unloaded")
-self:AddTransition("Unloaded","Unloaded","Unloaded")
-self:AddTransition("*","PickedUp","*")
+self:AddTransition("Unloaded","Pickup","Unloaded")
 self:AddTransition("*","Landed","*")
+self:AddTransition("*","Load","*")
+self:AddTransition("*","Loaded","Loaded")
+self:AddTransition("Loaded","PickedUp","Loaded")
+self:AddTransition("Loaded","Deploy","*")
 self:AddTransition("*","Queue","*")
 self:AddTransition("*","Orbit","*")
+self:AddTransition("*","Destroyed","*")
+self:AddTransition("*","Unload","*")
+self:AddTransition("*","Unloaded","Unloaded")
+self:AddTransition("Unloaded","Deployed","Unloaded")
 self:AddTransition("*","Home","*")
-self:AddTransition("*","Destroyed","Destroyed")
 Helicopter:HandleEvent(EVENTS.Crash,
 function(Helicopter,EventData)
 AI_CARGO_QUEUE[Helicopter]=nil
@@ -65319,6 +65304,8 @@ end,Helicopter
 end
 )
 self:SetCarrier(Helicopter)
+self.landingspeed=15
+self.landingheight=5.5
 return self
 end
 function AI_CARGO_HELICOPTER:SetCarrier(Helicopter)
@@ -65347,19 +65334,26 @@ self.Coalition=self.Helicopter:GetCoalition()
 self:SetControllable(Helicopter)
 return self
 end
+function AI_CARGO_HELICOPTER:SetLandingSpeedAndHeight(speed,height)
+local _speed=speed or 15
+local _height=height or 5.5
+self.landingheight=_height
+self.landingspeed=_speed
+return self
+end
 function AI_CARGO_HELICOPTER:onafterLanded(Helicopter,From,Event,To)
 self:F({From,Event,To})
 Helicopter:F({Name=Helicopter:GetName()})
 if Helicopter and Helicopter:IsAlive()then
-self:F({Helicopter:GetName(),Height=Helicopter:GetHeight(true),Velocity=Helicopter:GetVelocityKMH()})
+self:T({Helicopter:GetName(),Height=Helicopter:GetHeight(true),Velocity=Helicopter:GetVelocityKMH()})
 if self.RoutePickup==true then
-if Helicopter:GetHeight(true)<=5.5 and Helicopter:GetVelocityKMH()<15 then
+if Helicopter:GetHeight(true)<=self.landingheight then
 self:Load(self.PickupZone)
 self.RoutePickup=false
 end
 end
 if self.RouteDeploy==true then
-if Helicopter:GetHeight(true)<=5.5 and Helicopter:GetVelocityKMH()<15 then
+if Helicopter:GetHeight(true)<=self.landingheight then
 self:Unload(self.DeployZone)
 self.RouteDeploy=false
 end
