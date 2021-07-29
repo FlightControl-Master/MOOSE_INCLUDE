@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-28T16:31:39.0000000Z-061032e3d742f57a49c8b31025e03bd09c4f49d9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-29T10:41:27.0000000Z-8b45067226979f07481e071ee1a41815376d6485 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2985,8 +2985,8 @@ local ret_val=false
 local unit=Unit.getByName(unit_name)
 if unit~=nil then
 local type_name=unit:getTypeName()
-if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
-BASE:T(unit_name.." Cargo doors are open or cargo door not present")
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+self:T(unit_name.." Cargo doors are open or cargo door not present")
 ret_val=true
 end
 if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
@@ -67142,32 +67142,7 @@ return self
 end
 function CSAR:_IsLoadingDoorOpen(unit_name)
 self:T(self.lid.." _IsLoadingDoorOpen")
-local ret_val=false
-local unit=Unit.getByName(unit_name)
-if unit~=nil then
-local type_name=unit:getTypeName()
-if type_name=="Mi-8MT"and unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
-self:T(unit_name.." Cargo doors are open or cargo door not present")
-ret_val=true
-end
-if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
-self:T(unit_name.." a side door is open")
-ret_val=true
-end
-if type_name=="UH-1H"and unit:getDrawArgumentValue(43)==1 or unit:getDrawArgumentValue(44)==1 then
-self:T(unit_name.." a side door is open ")
-ret_val=true
-end
-if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
-self:T(unit_name.." front door(s) are open")
-ret_val=true
-end
-if ret_val==false then
-self:T(unit_name.." all doors are closed")
-end
-return ret_val
-end
-return false
+return UTILS.IsLoadingDoorOpen(unit_name)
 end
 function CSAR:_CheckCloseWoundedGroup(_distance,_heliUnit,_heliName,_woundedGroup,_woundedGroupName)
 self:T(self.lid.." _CheckCloseWoundedGroup")
@@ -76163,7 +76138,7 @@ return Boarding
 end
 function AI_CARGO:onafterBoard(Carrier,From,Event,To,Cargo,CarrierUnit,PickupZone)
 self:F({Carrier,From,Event,To,Cargo,CarrierUnit:GetName()})
-if Carrier and Carrier:IsAlive()and From=="Boarding"then
+if Carrier and Carrier:IsAlive()then
 self:F({IsLoaded=Cargo:IsLoaded(),Cargo:GetName(),Carrier:GetName()})
 if not Cargo:IsLoaded()and not Cargo:IsDestroyed()then
 self:__Board(-10,Cargo,CarrierUnit,PickupZone)
@@ -76228,7 +76203,7 @@ end
 end
 function AI_CARGO:onafterUnboard(Carrier,From,Event,To,Cargo,CarrierUnit,DeployZone,Defend)
 self:F({Carrier,From,Event,To,Cargo:GetName(),DeployZone=DeployZone,Defend=Defend})
-if Carrier and Carrier:IsAlive()and From=="Unboarding"then
+if Carrier and Carrier:IsAlive()then
 if not Cargo:IsUnLoaded()then
 self:__Unboard(10,Cargo,CarrierUnit,DeployZone,Defend)
 return
@@ -76279,6 +76254,8 @@ self:AddTransition("*","Follow","Following")
 self:AddTransition("*","Guard","Unloaded")
 self:AddTransition("*","Home","*")
 self:AddTransition("*","Reload","Boarding")
+self:AddTransition("*","Deployed","*")
+self:AddTransition("*","PickedUp","*")
 self:AddTransition("*","Destroyed","Destroyed")
 self:SetCombatRadius(CombatRadius)
 self:SetCarrier(APC)
