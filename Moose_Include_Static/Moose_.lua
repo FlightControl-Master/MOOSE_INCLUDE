@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-29T10:41:27.0000000Z-8b45067226979f07481e071ee1a41815376d6485 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-30T15:30:32.0000000Z-63431bb54be18cc429bb402ba76447ab13c6911d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66615,7 +66615,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.9r1"
+CSAR.version="0.1.10r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -67377,9 +67377,13 @@ local _closestGroup=nil
 local _shortestDistance=-1
 local _distance=0
 local _closestGroupInfo=nil
-local _heliCoord=_heli:GetCoordinate()
+local _heliCoord=_heli:GetCoordinate()or _heli:GetCoordinate()
+if _heliCoord==nil then
+self:E("****Error obtaining coordinate!")
+return nil
+end
 local DownedPilotsTable=self.downedPilots
-for _,_groupInfo in pairs(DownedPilotsTable)do
+for _,_groupInfo in UTILS.spairs(DownedPilotsTable)do
 local _woundedName=_groupInfo.name
 local _tempWounded=_groupInfo.group
 if _tempWounded then
@@ -67568,9 +67572,21 @@ end
 function CSAR:_GetDistance(_point1,_point2)
 self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
-local distance=_point1:DistanceFromPointVec2(_point2)
-return distance
+local distance1=_point1:Get2DDistance(_point2)
+local distance2=_point1:DistanceFromPointVec2(_point2)
+self:I({dist1=distance1,dist2=distance2})
+if distance1 and type(distance1)=="number"then
+return distance1
+elseif distance2 and type(distance2)=="number"then
+return distance2
 else
+self:E("*****Cannot calculate distance!")
+self:E({_point1,_point2})
+return-1
+end
+else
+self:E("******Cannot calculate distance!")
+self:E({_point1,_point2})
 return-1
 end
 end
@@ -67685,19 +67701,18 @@ return self
 end
 function CSAR:_CheckDownedPilotTable()
 local pilots=self.downedPilots
-for _,_entry in pairs(pilots)do
-self:T("Checking for ".._entry.name)
-self:T({entry=_entry})
-local group=_entry.group
-if not group:IsAlive()then
-self:T("Group is dead")
-if _entry.alive==true then
-self:T("Switching .alive to false")
+local npilots={}
+for _ind,_entry in pairs(pilots)do
+local _group=_entry.group
+if _group:IsAlive()then
+npilots[_ind]=_entry
+else
+if _entry.alive then
 self:__KIA(1,_entry.desc)
-self:_RemoveNameFromDownedPilots(_entry.name,true)
 end
 end
 end
+self.downedPilots=npilots
 return self
 end
 function CSAR:onbeforeStatus(From,Event,To)
