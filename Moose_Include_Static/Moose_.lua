@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-31T11:05:51.0000000Z-642cc0e98fc92144ab9d9524d2dabba4347a865c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-31T13:50:50.0000000Z-1b414b840e79e62e2b36037300bb400de6f368c7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66690,7 +66690,7 @@ self.extractDistance=500
 self.loadtimemax=135
 self.radioSound="beacon.ogg"
 self.allowFARPRescue=true
-self.FARPRescueDistance=250
+self.FARPRescueDistance=1000
 self.max_units=6
 self.useprefix=true
 self.csarPrefix={"helicargo","MEDEVAC"}
@@ -66975,7 +66975,7 @@ if self.inTransitGroups[_event.IniUnitName]==nil then
 return
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
-self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName)
+self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true)
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
@@ -67241,7 +67241,7 @@ else
 return false
 end
 end
-function CSAR:_ScheduledSARFlight(heliname,groupname)
+function CSAR:_ScheduledSARFlight(heliname,groupname,isairport)
 self:T(self.lid.." _ScheduledSARFlight")
 self:T({heliname,groupname})
 local _heliUnit=self:_GetSARHeli(heliname)
@@ -67257,7 +67257,7 @@ local _dist=self:_GetClosestMASH(_heliUnit)
 if _dist==-1 then
 return
 end
-if _dist<self.FARPRescueDistance and _heliUnit:InAir()==false then
+if(_dist<self.FARPRescueDistance or isairport)and _heliUnit:InAir()==false then
 if self.pilotmustopendoors and self:_IsLoadingDoorOpen(heliname)==false then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me out!",self.messageTime,true)
 else
