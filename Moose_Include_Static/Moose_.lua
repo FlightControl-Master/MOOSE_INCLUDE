@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-07-31T13:50:50.0000000Z-1b414b840e79e62e2b36037300bb400de6f368c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-04T06:04:21.0000000Z-6b36421bce17ca0579a5c2d6bda62478ff4dc983 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66696,7 +66696,6 @@ self.useprefix=true
 self.csarPrefix={"helicargo","MEDEVAC"}
 self.template=Template or"generic"
 self.mashprefix={"MASH"}
-self.mash=SET_GROUP:New():FilterCoalitions(self.coalition):FilterPrefixes(self.mashprefix):FilterOnce()
 self.autosmoke=false
 self.autosmokedistance=2000
 self.limitmaxdownedpilots=true
@@ -67693,6 +67692,7 @@ self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterP
 else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
+self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
 self:__Status(-10)
 return self
 end
