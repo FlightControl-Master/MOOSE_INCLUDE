@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-04T06:04:21.0000000Z-6b36421bce17ca0579a5c2d6bda62478ff4dc983 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-04T09:07:47.0000000Z-2201b2addae6c7261ad74566c4c0001a89a3f24f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2986,7 +2986,7 @@ local unit=Unit.getByName(unit_name)
 if unit~=nil then
 local type_name=unit:getTypeName()
 if type_name=="Mi-8MT"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
-self:T(unit_name.." Cargo doors are open or cargo door not present")
+BASE:T(unit_name.." Cargo doors are open or cargo door not present")
 ret_val=true
 end
 if type_name=="Mi-24P"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 then
