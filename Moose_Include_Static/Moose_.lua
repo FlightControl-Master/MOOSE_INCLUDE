@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-04T09:07:47.0000000Z-2201b2addae6c7261ad74566c4c0001a89a3f24f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-09T07:18:51.0000000Z-9a05f5bc933ec2403f49c30816e1ad3d54adf119 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66997,7 +66997,7 @@ end
 for _,_heliName in pairs(self.csarUnits)do
 self:_CheckWoundedGroupStatus(_heliName,_groupName)
 end
-self:__PilotDown(2,_downedGroup,_freqk,_leadername,_coordinatesText)
+self:__PilotDown(2,_downedGroup,_freqk,_groupName,_coordinatesText)
 return self
 end
 function CSAR:_CheckNameInDownedPilots(name)
