@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T09:36:33.0000000Z-1a7fb3c13e62ab46a706fbad85286d3ec53649cf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T09:47:25.0000000Z-e91090cfff739d7b7653428aafbc32474d3c833c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2944,7 +2944,7 @@ return nil
 end
 function UTILS.ShuffleTable(t)
 if t==nil or type(t)~="table"then
-BASE:I("Error in ShuffleTable: Missing or wrong tyÃ¥e of Argument")
+BASE:I("Error in ShuffleTable: Missing or wrong type of Argument")
 return
 end
 math.random()
