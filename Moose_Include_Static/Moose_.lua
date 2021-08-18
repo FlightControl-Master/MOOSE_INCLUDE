@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-02T20:02:21.0000000Z-4797665939f06aed93111f9808f9deba106079f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T07:29:58.0000000Z-59857ed79d596afdfa1e1b68b66fcc0f8abcab81 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57143,7 +57143,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.9r1"
+CSAR.version="0.1.10r3"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -57218,6 +57218,7 @@ self.extractDistance=500
 self.loadtimemax=135
 self.radioSound="beacon.ogg"
 self.allowFARPRescue=true
+self.FARPRescueDistance=1000
 self.max_units=6
 self.useprefix=true
 self.csarPrefix={"helicargo","MEDEVAC"}
@@ -57502,11 +57503,7 @@ if self.inTransitGroups[_event.IniUnitName]==nil then
 return
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
-if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_event.IniUnitName)then
-self:_DisplayMessageToSAR(_unit,"Open the door to let me out!",self.messageTime,true)
-else
-self:_RescuePilots(_unit)
-end
+self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true)
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
@@ -57772,7 +57769,7 @@ else
 return false
 end
 end
-function CSAR:_ScheduledSARFlight(heliname,groupname)
+function CSAR:_ScheduledSARFlight(heliname,groupname,isairport)
 self:T(self.lid.." _ScheduledSARFlight")
 self:T({heliname,groupname})
 local _heliUnit=self:_GetSARHeli(heliname)
@@ -57788,15 +57785,15 @@ local _dist=self:_GetClosestMASH(_heliUnit)
 if _dist==-1 then
 return
 end
-if _dist<200 and _heliUnit:InAir()==false then
-if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(heliname)then
+if(_dist<self.FARPRescueDistance or isairport)and _heliUnit:InAir()==false then
+if self.pilotmustopendoors and self:_IsLoadingDoorOpen(heliname)==false then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me out!",self.messageTime,true)
 else
 self:_RescuePilots(_heliUnit)
 return
 end
 end
-self:__Returning(-5,heliname,_woundedGroupName)
+self:__Returning(-5,heliname,_woundedGroupName,isairport)
 return self
 end
 function CSAR:_RescuePilots(_heliUnit)
@@ -57905,9 +57902,13 @@ local _closestGroup=nil
 local _shortestDistance=-1
 local _distance=0
 local _closestGroupInfo=nil
-local _heliCoord=_heli:GetCoordinate()
+local _heliCoord=_heli:GetCoordinate()or _heli:GetCoordinate()
+if _heliCoord==nil then
+self:E("****Error obtaining coordinate!")
+return nil
+end
 local DownedPilotsTable=self.downedPilots
-for _,_groupInfo in pairs(DownedPilotsTable)do
+for _,_groupInfo in UTILS.spairs(DownedPilotsTable)do
 local _woundedName=_groupInfo.name
 local _tempWounded=_groupInfo.group
 if _tempWounded then
@@ -58096,9 +58097,21 @@ end
 function CSAR:_GetDistance(_point1,_point2)
 self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
-local distance=_point1:DistanceFromPointVec2(_point2)
-return distance
+local distance1=_point1:Get2DDistance(_point2)
+local distance2=_point1:DistanceFromPointVec2(_point2)
+self:I({dist1=distance1,dist2=distance2})
+if distance1 and type(distance1)=="number"then
+return distance1
+elseif distance2 and type(distance2)=="number"then
+return distance2
 else
+self:E("*****Cannot calculate distance!")
+self:E({_point1,_point2})
+return-1
+end
+else
+self:E("******Cannot calculate distance!")
+self:E({_point1,_point2})
 return-1
 end
 end
@@ -58213,19 +58226,18 @@ return self
 end
 function CSAR:_CheckDownedPilotTable()
 local pilots=self.downedPilots
-for _,_entry in pairs(pilots)do
-self:T("Checking for ".._entry.name)
-self:T({entry=_entry})
-local group=_entry.group
-if not group:IsAlive()then
-self:T("Group is dead")
-if _entry.alive==true then
-self:T("Switching .alive to false")
+local npilots={}
+for _ind,_entry in pairs(pilots)do
+local _group=_entry.group
+if _group:IsAlive()then
+npilots[_ind]=_entry
+else
+if _entry.alive then
 self:__KIA(1,_entry.desc)
-self:_RemoveNameFromDownedPilots(_entry.name,true)
 end
 end
 end
+self.downedPilots=npilots
 return self
 end
 function CSAR:onbeforeStatus(From,Event,To)
@@ -58297,9 +58309,9 @@ self:T({From,Event,To,Heliname,Woundedgroupname})
 self:_ScheduledSARFlight(Heliname,Woundedgroupname)
 return self
 end
-function CSAR:onbeforeReturning(From,Event,To,Heliname,Woundedgroupname)
+function CSAR:onbeforeReturning(From,Event,To,Heliname,Woundedgroupname,IsAirPort)
 self:T({From,Event,To,Heliname,Woundedgroupname})
-self:_ScheduledSARFlight(Heliname,Woundedgroupname)
+self:_ScheduledSARFlight(Heliname,Woundedgroupname,IsAirPort)
 return self
 end
 function CSAR:onbeforeRescued(From,Event,To,HeliUnit,HeliName,PilotsSaved)
