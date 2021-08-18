@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T13:01:14.0000000Z-20f28b3d2c972d0aa40bf44a1fc4586b818b0e3f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T16:01:04.0000000Z-c7ea45e5fd7d053074cd135d1e7657618b10f659 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2348,8 +2348,8 @@ else
 local width=3+acc
 secFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d�',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '
-..string.format('%03d�',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
+return string.format('%03d°',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '
+..string.format('%03d°',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
 else
 latMin=UTILS.Round(latMin,acc)
 lonMin=UTILS.Round(lonMin,acc)
@@ -2368,8 +2368,8 @@ else
 local width=3+acc
 minFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d�',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
-..string.format('%03d�',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
+return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
+..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
 end
 end
 UTILS.tostringMGRS=function(MGRS,acc)
@@ -11946,9 +11946,9 @@ local DegreesCelcius=self:GetTemperature(height)
 local Settings=Settings or _SETTINGS
 if DegreesCelcius then
 if Settings:IsMetric()then
-return string.format(" %-2.2f �C",DegreesCelcius)
+return string.format(" %-2.2f °C",DegreesCelcius)
 else
-return string.format(" %-2.2f �F",UTILS.CelciusToFarenheit(DegreesCelcius))
+return string.format(" %-2.2f °F",UTILS.CelciusToFarenheit(DegreesCelcius))
 end
 else
 return" no temperature"
@@ -12012,9 +12012,9 @@ local Direction,Strength=self:GetWind(height)
 local Settings=Settings or _SETTINGS
 if Direction and Strength then
 if Settings:IsMetric()then
-return string.format(" %d � at %3.2f mps",Direction,UTILS.MpsToKmph(Strength))
+return string.format(" %d ° at %3.2f mps",Direction,UTILS.MpsToKmph(Strength))
 else
-return string.format(" %d � at %3.2f kps",Direction,UTILS.MpsToKnots(Strength))
+return string.format(" %d ° at %3.2f kps",Direction,UTILS.MpsToKnots(Strength))
 end
 else
 return" no wind"
@@ -12029,7 +12029,7 @@ end
 function COORDINATE:GetBearingText(AngleRadians,Precision,Settings,Language)
 local Settings=Settings or _SETTINGS
 local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
-local s=string.format('%03d�',AngleDegrees)
+local s=string.format('%03d°',AngleDegrees)
 return s
 end
 function COORDINATE:GetDistanceText(Distance,Settings,Language)
@@ -12089,7 +12089,7 @@ end
 function COORDINATE:GetHeadingText(Settings)
 local Heading=self:GetHeading()
 if Heading then
-return string.format(" bearing %3d�",Heading)
+return string.format(" bearing %3d°",Heading)
 else
 return" bearing unknown"
 end
@@ -34136,7 +34136,7 @@ local targetname=nil
 if#self.bombingTargets>1 then
 local targetname=result.name
 end
-local text=string.format("%s, impact %03d� for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
+local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
 if targetname then
 text=text..string.format(" from bulls of target %s.")
 else
@@ -34329,9 +34329,9 @@ table.sort(_results,_sort)
 local _bestMsg=""
 for i,_result in pairs(_results)do
 local result=_result
-_message=_message.."\n"..string.format("[%d] %d m %03d� - %s - %s - %s hit",i,result.distance,result.radial,result.name,result.weapon,result.quality)
+_message=_message.."\n"..string.format("[%d] %d m %03d° - %s - %s - %s hit",i,result.distance,result.radial,result.name,result.weapon,result.quality)
 if _bestMsg==""then
-_bestMsg=string.format("%d m %03d� - %s - %s - %s hit",result.distance,result.radial,result.name,result.weapon,result.quality)
+_bestMsg=string.format("%d m %03d° - %s - %s - %s hit",result.distance,result.radial,result.name,result.weapon,result.quality)
 end
 if i==self.ndisplayresult then
 break
@@ -34387,7 +34387,7 @@ local rangealt=position:GetLandHeight()
 local vec3=coord:GetDirectionVec3(position)
 local angle=coord:GetAngleDegrees(vec3)
 local range=coord:Get2DDistance(position)
-local Bs=string.format('%03d�',angle)
+local Bs=string.format('%03d°',angle)
 local texthit
 if self.PlayerSettings[playername].flaredirecthits then
 texthit=string.format("Flare direct hits: ON (flare color %s)\n",self:_flarecolor2text(self.PlayerSettings[playername].flarecolor))
@@ -34471,7 +34471,7 @@ else
 heading=heading+180
 end
 local mycoord=coord:ToStringA2G(_unit,_settings)
-_text=_text..string.format("\n- %s: heading %03d�\n%s",_strafepit.name,heading,mycoord)
+_text=_text..string.format("\n- %s: heading %03d°\n%s",_strafepit.name,heading,mycoord)
 end
 self:_DisplayMessageToGroup(_unit,_text,nil,true,true)
 end
@@ -34488,12 +34488,12 @@ local T=position:GetTemperature()
 local P=position:GetPressure()
 local Wd,Ws=position:GetWind()
 local Bn,Bd=UTILS.BeaufortScale(Ws)
-local WD=string.format('%03d�',Wd)
-local Ts=string.format("%d�C",T)
+local WD=string.format('%03d°',Wd)
+local Ts=string.format("%d°C",T)
 local hPa2inHg=0.0295299830714
 local hPa2mmHg=0.7500615613030
 local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
-local tT=string.format("%d�C",T)
+local tT=string.format("%d°C",T)
 local tW=string.format("%.1f m/s",Ws)
 local tP=string.format("%.1f mmHg",P*hPa2mmHg)
 if settings:IsImperial()then
@@ -39041,14 +39041,14 @@ end
 text=text..string.format("QFE %.1f hPa = %s.\n",Pqfe,_Pqfe)
 text=text..string.format("QNH %.1f hPa = %s.\n",Pqnh,_Pqnh)
 local T=position:GetTemperature()
-local _T=string.format('%d�F',UTILS.CelciusToFarenheit(T))
+local _T=string.format('%d°F',UTILS.CelciusToFarenheit(T))
 if settings:IsMetric()then
-_T=string.format('%d�C',T)
+_T=string.format('%d°C',T)
 end
 local text=text..string.format("Temperature %s\n",_T)
 local Dir,Vel=position:GetWind()
 local Bn,Bd=UTILS.BeaufortScale(Vel)
-local Ds=string.format('%03d�',Dir)
+local Ds=string.format('%03d°',Dir)
 local Vs=string.format("%.1f knots",UTILS.MpsToKnots(Vel))
 if settings:IsMetric()then
 Vs=string.format('%.1f m/s',Vel)
@@ -39062,7 +39062,7 @@ local unit=self.group[GID].player[UID].unit
 local coord=unit:GetCoordinate()
 local angle=coord:HeadingTo(position)
 local range=coord:Get2DDistance(position)
-local Bs=string.format('%03d�',angle)
+local Bs=string.format('%03d°',angle)
 local settings=_DATABASE:GetPlayerSettings(self.group[GID].player[UID].playername)or _SETTINGS
 local Rs=string.format("%.1f NM",UTILS.MetersToNM(range))
 if settings:IsMetric()then
@@ -42874,7 +42874,7 @@ local distance=playerUnit:GetCoordinate():Get3DDistance(missile.shotCoord)
 local bearing=playerUnit:GetCoordinate():HeadingTo(missile.shotCoord)
 if player.launchalert then
 if(missile.targetPlayer and player.unitname==missile.targetPlayer.unitname)or(distance<missile.missileRange)then
-local text=string.format("Missile launch detected! Distance %.1f NM, bearing %03d�.",UTILS.MetersToNM(distance),bearing)
+local text=string.format("Missile launch detected! Distance %.1f NM, bearing %03d°.",UTILS.MetersToNM(distance),bearing)
 BASE:ScheduleOnce(5,FOX._SayNotchingHeadings,self,player,missile.weapon)
 MESSAGE:New(text,5,"ALERT"):ToClient(player.client)
 end
@@ -42964,7 +42964,7 @@ end
 if self.Debug then
 local bearing=targetCoord:HeadingTo(missileCoord)
 local eta=distance/missileVelocity
-self:I(self.lid..string.format("Missile %s Target %s: Distance = %.1f m, v=%.1f m/s, bearing=%03d�, ETA=%.1f sec",missile.missileType,target:GetName(),distance,missileVelocity,bearing,eta))
+self:I(self.lid..string.format("Missile %s Target %s: Distance = %.1f m, v=%.1f m/s, bearing=%03d°, ETA=%.1f sec",missile.missileType,target:GetName(),distance,missileVelocity,bearing,eta))
 end
 local destroymissile=distance<=self.explosiondist
 if self.explosiondist2 and distance<=self.explosiondist2 and not destroymissile then
@@ -43335,7 +43335,7 @@ function FOX:_SayNotchingHeadings(playerData,weapon)
 if playerData and playerData.unit and playerData.unit:IsAlive()then
 local nr,nl=self:_GetNotchingHeadings(weapon)
 if nr and nl then
-local text=string.format("Notching heading %03d� or %03d�",nr,nl)
+local text=string.format("Notching heading %03d° or %03d°",nr,nl)
 MESSAGE:New(text,5,"FOX"):ToClient(playerData.client)
 end
 end
@@ -45471,7 +45471,7 @@ end
 if not nextwindow.UTURN then
 uturn=false
 end
-self:T(self.lid..string.format("Heading=%03d�, Wind=%03d� %.1f kts, Delta=%03d� ==> U-turn=%s",hdg,wind,UTILS.MpsToKnots(vwind),delta,tostring(uturn)))
+self:T(self.lid..string.format("Heading=%03d°, Wind=%03d° %.1f kts, Delta=%03d° ==> U-turn=%s",hdg,wind,UTILS.MpsToKnots(vwind),delta,tostring(uturn)))
 local t=math.max(nextwindow.STOP-nextwindow.START+self.dTturn,60*60*24)
 local v=UTILS.KnotsToMps(nextwindow.SPEED)
 local vmax=self.carrier:GetSpeedMax()/3.6
@@ -47391,7 +47391,7 @@ local radial=self:GetRadial(flight.case,true,true,true)
 if flight.case==1 then
 radial=self:GetBRC()
 end
-local text=string.format("Select TACAN %03d�, channel %d%s (%s)",radial,self.TACANchannel,self.TACANmode,self.TACANmorse)
+local text=string.format("Select TACAN %03d°, channel %d%s (%s)",radial,self.TACANchannel,self.TACANmode,self.TACANmorse)
 self:MessageToPlayer(flight,text,nil,"")
 end
 end
@@ -48617,7 +48617,7 @@ if playerData.showhints then
 local hint=string.format("Initial")
 if playerData.difficulty==AIRBOSS.Difficulty.EASY and playerData.actype~=AIRBOSS.AircraftCarrier.AV8B then
 if playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B then
-hint=hint.." - Hook down, SAS on, Wing Sweep 68�!"
+hint=hint.." - Hook down, SAS on, Wing Sweep 68°!"
 else
 hint=hint.." - Hook down!"
 end
@@ -49539,13 +49539,13 @@ rwy=true
 end
 local relhead=self:_GetRelativeHeading(playerData.unit,rwy)
 local text=string.format("Pattern step: %s",step)
-text=text..string.format("\nAoA=%.1f� = %.1f Units | |V|=%.1f knots",aoa,self:_AoADeg2Units(playerData,aoa),UTILS.MpsToKnots(vabs))
+text=text..string.format("\nAoA=%.1f° = %.1f Units | |V|=%.1f knots",aoa,self:_AoADeg2Units(playerData,aoa),UTILS.MpsToKnots(vabs))
 if self.Debug then
 text=text..string.format("\nVx=%.1f Vy=%.1f Vz=%.1f m/s",velo.x,velo.y,velo.z)
 text=text..string.format("\nWind Vx=%.1f Vy=%.1f Vz=%.1f m/s",wind.x,wind.y,wind.z)
 end
-text=text..string.format("\nPitch=%.1f� | Roll=%.1f� | Yaw=%.1f�",pitch,roll,yaw)
-text=text..string.format("\nClimb Angle=%.1f� | Rate=%d ft/min",unit:GetClimbAngle(),velo.y*196.85)
+text=text..string.format("\nPitch=%.1f° | Roll=%.1f° | Yaw=%.1f°",pitch,roll,yaw)
+text=text..string.format("\nClimb Angle=%.1f° | Rate=%d ft/min",unit:GetClimbAngle(),velo.y*196.85)
 local dist=self:_GetOptLandingCoordinate():Get3DDistance(playerData.unit)
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
@@ -49562,14 +49562,14 @@ playerData.step==AIRBOSS.PatternStep.GROOVE_LC or
 playerData.step==AIRBOSS.PatternStep.GROOVE_IW then
 local lue=self:_Lineup(playerData.unit,true)
 local gle=self:_Glideslope(playerData.unit)
-text=text..string.format("\nGamma=%.1f� | Rho=%.1f�",relhead,phi)
-text=text..string.format("\nLineUp=%.2f� | GlideSlope=%.2f� | AoA=%.1f Units",lue,gle,self:_AoADeg2Units(playerData,aoa))
+text=text..string.format("\nGamma=%.1f° | Rho=%.1f°",relhead,phi)
+text=text..string.format("\nLineUp=%.2f° | GlideSlope=%.2f° | AoA=%.1f Units",lue,gle,self:_AoADeg2Units(playerData,aoa))
 local grade,points,analysis=self:_LSOgrade(playerData)
 text=text..string.format("\nTgroove=%.1f sec",self:_GetTimeInGroove(playerData))
 text=text..string.format("\nGrade: %s %.1f PT - %s",grade,points,analysis)
 else
 text=text..string.format("\nR=%.2f NM | X=%d Z=%d m",UTILS.MetersToNM(rho),dx,dz)
-text=text..string.format("\nGamma=%.1f� | Rho=%.1f�",relhead,phi)
+text=text..string.format("\nGamma=%.1f° | Rho=%.1f°",relhead,phi)
 end
 MESSAGE:New(text,1,nil,true):ToClient(playerData.client)
 end
@@ -50296,13 +50296,13 @@ local turn="right"
 if self.holdingoffset<0 then
 turn="left"
 end
-hint=hint..string.format("\nTurn %s and select TACAN %03d�.",turn,radial)
+hint=hint..string.format("\nTurn %s and select TACAN %03d°.",turn,radial)
 end
 end
 if playerData.step==AIRBOSS.PatternStep.DIRTYUP then
 if playerData.difficulty==AIRBOSS.Difficulty.EASY then
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
-hint=hint.."\nFAF! Checks completed. Nozzles 50�."
+hint=hint.."\nFAF! Checks completed. Nozzles 50°."
 else
 hint=hint.."\nDirty up! Hook, gear and flaps down."
 end
@@ -50341,12 +50341,12 @@ hint=hint..string.format("\nDistance to the boat %.1f NM",UTILS.MetersToNM(dist)
 end
 if step==AIRBOSS.PatternStep.LATEBREAK then
 if playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B then
-hint=hint.."\nWing Sweep 20�, Gear DOWN < 280 KIAS."
+hint=hint.."\nWing Sweep 20°, Gear DOWN < 280 KIAS."
 end
 end
 if step==AIRBOSS.PatternStep.ABEAM then
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
-hint=hint.."\nNozzles 50�-60�. Antiskid OFF. Lights OFF."
+hint=hint.."\nNozzles 50°-60°. Antiskid OFF. Lights OFF."
 elseif playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B then
 hint=hint.."\nSlats/Flaps EXTENDED < 225 KIAS. DLC SELECTED. Auto Throttle IF DESIRED."
 else
@@ -50565,7 +50565,7 @@ local zone=self:_GetZoneBullseye(playerData.case)
 heading=playerData.unit:GetCoordinate():HeadingTo(zone:GetCoordinate())
 distance=playerData.unit:GetCoordinate():Get2DDistance(zone:GetCoordinate())
 end
-local text=string.format("fly heading %03d� for %d NM to re-enter the pattern.",heading,UTILS.MetersToNM(distance))
+local text=string.format("fly heading %03d° for %d NM to re-enter the pattern.",heading,UTILS.MetersToNM(distance))
 self:MessageToPlayer(playerData,text,"LSO",nil,nil,false,5)
 else
 self:E(self.lid..string.format("ERROR: Player unit not alive!"))
@@ -50643,9 +50643,9 @@ d=d+dx
 end
 local text=""
 if clear then
-text=string.format("Path into direction %03d� is clear for the next %.1f NM.",direction,UTILS.MetersToNM(d))
+text=string.format("Path into direction %03d° is clear for the next %.1f NM.",direction,UTILS.MetersToNM(d))
 else
-text=string.format("Detected obstacle at distance %.1f NM into direction %03d�.",UTILS.MetersToNM(d),direction)
+text=string.format("Detected obstacle at distance %.1f NM into direction %03d°.",UTILS.MetersToNM(d),direction)
 end
 self:T2(self.lid..text)
 return not clear,d
@@ -50668,7 +50668,7 @@ local distance=500
 while distance<=dfree do
 local fromcoord=cv:Translate(distance,direction)
 local collision=self:_CheckFreePathToNextWP(fromcoord)
-self:T2(self.lid..string.format("Pathfinder d=%.1f m, direction=%03d�, collision=%s",distance,direction,tostring(collision)))
+self:T2(self.lid..string.format("Pathfinder d=%.1f m, direction=%03d°, collision=%s",distance,direction,tostring(collision)))
 if not collision then
 self:CarrierDetour(fromcoord)
 return
@@ -50845,7 +50845,7 @@ vNew.y=0;vOld.y=0
 local deltaHeading=math.deg(math.acos(UTILS.VecDot(vNew,vOld)/UTILS.VecNorm(vNew)/UTILS.VecNorm(vOld)))
 local Hchange=false
 if math.abs(deltaHeading)>=Hupdate then
-self:T(self.lid..string.format("Carrier heading changed by %d�.",deltaHeading))
+self:T(self.lid..string.format("Carrier heading changed by %d°.",deltaHeading))
 Hchange=true
 end
 local pos=self:GetCoordinate()
@@ -51613,7 +51613,7 @@ local call=self:_NewRadioCall(self.MarshalCall.RESUMERECOVERY,"AIRBOSS",nil,self
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,true)
 end
 function AIRBOSS:_MarshalCallNewFinalBearing(FB)
-local text=string.format("new final bearing %03d�.",FB)
+local text=string.format("new final bearing %03d°.",FB)
 self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.NEWFB,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
@@ -51621,7 +51621,7 @@ self:_Number2Radio(self.MarshalRadio,string.format("%03d",FB),nil,0.2)
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES,nil,nil,nil,true)
 end
 function AIRBOSS:_MarshalCallCarrierTurnTo(hdg)
-local text=string.format("carrier is now starting turn to heading %03d�.",hdg)
+local text=string.format("carrier is now starting turn to heading %03d°.",hdg)
 self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CARRIERTURNTOHEADING,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
@@ -51645,11 +51645,11 @@ function AIRBOSS:_MarshalCallRecoveryStart(case)
 local radial=self:GetRadial(case,true,true,false)
 local text=string.format("Starting aircraft recovery Case %d ops.",case)
 if case==1 then
-text=text..string.format(" BRC %03d�.",self:GetBRC())
+text=text..string.format(" BRC %03d°.",self:GetBRC())
 elseif case==2 then
-text=text..string.format(" Marshal radial %03d�. BRC %03d�.",radial,self:GetBRC())
+text=text..string.format(" Marshal radial %03d°. BRC %03d°.",radial,self:GetBRC())
 elseif case==3 then
-text=text..string.format(" Marshal radial %03d�. Final heading %03d�.",radial,self:GetFinalBearing(false))
+text=text..string.format(" Marshal radial %03d°. Final heading %03d°.",radial,self:GetFinalBearing(false))
 end
 self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.STARTINGRECOVERY,"AIRBOSS",text,self.Tmessage,"99")
@@ -51668,7 +51668,7 @@ local angels=self:_GetAngels(altitude)
 local QFE=UTILS.Split(string.format("%.2f",qfe),".")
 local clock=UTILS.Split(charlie,"+")
 local CT=UTILS.Split(clock[1],":")
-local text=string.format("Case %d, expected BRC %03d�, hold at angels %d. Expected Charlie Time %s. Altimeter %.2f. Report see me.",case,brc,angels,charlie,qfe)
+local text=string.format("Case %d, expected BRC %03d°, hold at angels %d. Expected Charlie Time %s. Altimeter %.2f. Report see me.",case,brc,angels,charlie,qfe)
 self:I(self.lid..text)
 local casecall=self:_NewRadioCall(self.MarshalCall.CASE,"MARSHAL",text,self.Tmessage,modex)
 self:RadioTransmission(self.MarshalRadio,casecall)
@@ -51759,11 +51759,11 @@ missionCommands.addCommandForGroup(gid,"45 min",_menusetrtime,self._SkipperRecov
 missionCommands.addCommandForGroup(gid,"60 min",_menusetrtime,self._SkipperRecoveryTime,self,_unitName,60)
 missionCommands.addCommandForGroup(gid,"90 min",_menusetrtime,self._SkipperRecoveryTime,self,_unitName,90)
 local _menusetrtime=missionCommands.addSubMenuForGroup(gid,"Set Marshal Radial",_skipperPath)
-missionCommands.addCommandForGroup(gid,"+30�",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,30)
-missionCommands.addCommandForGroup(gid,"+15�",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,15)
-missionCommands.addCommandForGroup(gid,"0�",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,0)
-missionCommands.addCommandForGroup(gid,"-15�",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,-15)
-missionCommands.addCommandForGroup(gid,"-30�",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,-30)
+missionCommands.addCommandForGroup(gid,"+30°",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,30)
+missionCommands.addCommandForGroup(gid,"+15°",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,15)
+missionCommands.addCommandForGroup(gid,"0°",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,0)
+missionCommands.addCommandForGroup(gid,"-15°",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,-15)
+missionCommands.addCommandForGroup(gid,"-30°",_menusetrtime,self._SkipperRecoveryOffset,self,_unitName,-30)
 missionCommands.addCommandForGroup(gid,"U-turn On/Off",_skipperPath,self._SkipperRecoveryUturn,self,_unitName)
 missionCommands.addCommandForGroup(gid,"Start CASE I",_skipperPath,self._SkipperStartRecovery,self,_unitName,1)
 missionCommands.addCommandForGroup(gid,"Start CASE II",_skipperPath,self._SkipperStartRecovery,self,_unitName,2)
@@ -51797,7 +51797,7 @@ local playerData=self.players[_playername]
 if playerData then
 local text=string.format("affirm, Case %d recovery will start in 5 min for %d min. Wind on deck %d knots. U-turn=%s.",case,self.skipperTime,self.skipperSpeed,tostring(self.skipperUturn))
 if case>1 then
-text=text..string.format(" Marshal radial %d�.",self.skipperOffset)
+text=text..string.format(" Marshal radial %d°.",self.skipperOffset)
 end
 if self:IsRecovering()then
 text="negative, carrier is already recovering."
@@ -51834,7 +51834,7 @@ local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _playername then
 local playerData=self.players[_playername]
 if playerData then
-local text=string.format("roger, relative CASE II/III Marshal radial set to %d�.",offset)
+local text=string.format("roger, relative CASE II/III Marshal radial set to %d°.",offset)
 self:MessageToPlayer(playerData,text,"AIRBOSS")
 self.skipperOffset=offset
 end
@@ -52051,7 +52051,7 @@ local radial=self:GetRadial(playerData.case,true,true,true)
 if playerData.case==1 then
 radial=self:GetBRC()
 end
-text=text..string.format("\nSelect TACAN %03d�, Channel %d%s (%s).\n",radial,self.TACANchannel,self.TACANmode,self.TACANmorse)
+text=text..string.format("\nSelect TACAN %03d°, Channel %d%s (%s).\n",radial,self.TACANchannel,self.TACANmode,self.TACANmorse)
 end
 for _,flight in pairs(playerData.section)do
 flight.case=playerData.case
@@ -52395,7 +52395,7 @@ local rw=0
 for _,_recovery in pairs(self.recoverytimes)do
 local recovery=_recovery
 if Tabs<recovery.STOP then
-recoverytext=recoverytext..string.format("\n* %s - %s: Case %d (%d�)",UTILS.SecondsToClock(recovery.START),UTILS.SecondsToClock(recovery.STOP),recovery.CASE,recovery.OFFSET)
+recoverytext=recoverytext..string.format("\n* %s - %s: Case %d (%d°)",UTILS.SecondsToClock(recovery.START),UTILS.SecondsToClock(recovery.STOP),recovery.CASE,recovery.OFFSET)
 if recovery.WIND then
 recoverytext=recoverytext..string.format(" @ %.1f kts wind",recovery.SPEED)
 end
@@ -52429,9 +52429,9 @@ if self.case==1 then
 text=text..string.format("Case %d recovery ops\n",self.case)
 else
 local radial=self:GetRadial(self.case,true,true,false)
-text=text..string.format("Case %d recovery ops\nMarshal radial %03d�\n",self.case,radial)
+text=text..string.format("Case %d recovery ops\nMarshal radial %03d°\n",self.case,radial)
 end
-text=text..string.format("BRC %03d� - FB %03d�\n",self:GetBRC(),self:GetFinalBearing(true))
+text=text..string.format("BRC %03d° - FB %03d°\n",self:GetBRC(),self:GetFinalBearing(true))
 text=text..string.format("Speed %.1f kts - Wind on deck %.1f kts\n",carrierspeed,wind)
 text=text..string.format("Tower frequency %.3f MHz\n",self.TowerFreq)
 text=text..string.format("Marshal radio %.3f MHz\n",self.MarshalFreq)
@@ -52466,9 +52466,9 @@ local Bn,Bd=UTILS.BeaufortScale(Ws)
 local WodPA,WodPP=self:GetWindOnDeck()
 local WodPA=UTILS.MpsToKnots(WodPA)
 local WodPP=UTILS.MpsToKnots(WodPP)
-local WD=string.format('%03d�',Wd)
-local Ts=string.format("%d�C",T)
-local tT=string.format("%d�C",T)
+local WD=string.format('%03d°',Wd)
+local Ts=string.format("%d°C",T)
+local tT=string.format("%d°C",T)
 local tW=string.format("%.1f knots",UTILS.MpsToKnots(Ws))
 local tP=string.format("%.2f inHg",UTILS.hPa2inHg(P))
 text=text..string.format("Weather Report at Carrier %s:\n",self.alias)
@@ -52609,7 +52609,7 @@ local angels=self:_GetAngels(stackalt)
 stacktext=string.format("Marshal Stack %d, Angels %d\n",stack,angels)
 if playerData.step==AIRBOSS.PatternStep.HOLDING and playerData.case>1 then
 local radial=self:GetRadial(playerData.case,true,true,true)
-stacktext=stacktext..string.format("Select TACAN %03d�, %d DME\n",radial,angels+15)
+stacktext=stacktext..string.format("Select TACAN %03d°, %d DME\n",radial,angels+15)
 end
 end
 local fuel=playerData.unit:GetFuel()*100
@@ -52637,13 +52637,13 @@ local zoneinitial=self:GetCoordinate():Translate(UTILS.NMToMeters(3.5),self:GetR
 local flyhdg=playerData.unit:GetCoordinate():HeadingTo(zoneinitial)
 local flydist=UTILS.MetersToNM(playerData.unit:GetCoordinate():Get2DDistance(zoneinitial))
 local brc=self:GetBRC()
-text=text..string.format("\nTo Initial: Fly heading %03d� for %.1f NM and turn to BRC %03d�",flyhdg,flydist,brc)
+text=text..string.format("\nTo Initial: Fly heading %03d° for %.1f NM and turn to BRC %03d°",flyhdg,flydist,brc)
 elseif playerData.step==AIRBOSS.PatternStep.PLATFORM then
 local zoneplatform=self:_GetZonePlatform(playerData.case):GetCoordinate()
 local flyhdg=playerData.unit:GetCoordinate():HeadingTo(zoneplatform)
 local flydist=UTILS.MetersToNM(playerData.unit:GetCoordinate():Get2DDistance(zoneplatform))
 local hdg=self:GetRadial(playerData.case,true,true,true)
-text=text..string.format("\nTo Platform: Fly heading %03d� for %.1f NM and turn to %03d�",flyhdg,flydist,hdg)
+text=text..string.format("\nTo Platform: Fly heading %03d° for %.1f NM and turn to %03d°",flyhdg,flydist,hdg)
 end
 self:MessageToPlayer(playerData,text,nil,"",30,true)
 else
@@ -54924,15 +54924,15 @@ end
 alltext=alltext..";\n"..subtitle
 if self.TDegF then
 if temperature<0 then
-subtitle=string.format("Temperature -%s �F",TEMPERATURE)
+subtitle=string.format("Temperature -%s °F",TEMPERATURE)
 else
-subtitle=string.format("Temperature %s �F",TEMPERATURE)
+subtitle=string.format("Temperature %s °F",TEMPERATURE)
 end
 else
 if temperature<0 then
-subtitle=string.format("Temperature -%s �C",TEMPERATURE)
+subtitle=string.format("Temperature -%s °C",TEMPERATURE)
 else
-subtitle=string.format("Temperature %s �C",TEMPERATURE)
+subtitle=string.format("Temperature %s °C",TEMPERATURE)
 end
 end
 local _TEMPERATURE=subtitle
@@ -54951,15 +54951,15 @@ end
 alltext=alltext..";\n"..subtitle
 if self.TDegF then
 if dewpoint<0 then
-subtitle=string.format("Dew point -%s �F",DEWPOINT)
+subtitle=string.format("Dew point -%s °F",DEWPOINT)
 else
-subtitle=string.format("Dew point %s �F",DEWPOINT)
+subtitle=string.format("Dew point %s °F",DEWPOINT)
 end
 else
 if dewpoint<0 then
-subtitle=string.format("Dew point -%s �C",DEWPOINT)
+subtitle=string.format("Dew point -%s °C",DEWPOINT)
 else
-subtitle=string.format("Dew point %s �C",DEWPOINT)
+subtitle=string.format("Dew point %s °C",DEWPOINT)
 end
 end
 local _DEWPOINT=subtitle
@@ -55237,8 +55237,8 @@ self:T(self.lid..string.format("Report:\n%s",Text))
 if self.useSRS and self.msrs then
 local text=string.gsub(Text,"[\r\n]","")
 local text=string.gsub(text,"SM","statute miles")
-local text=string.gsub(text,"�C","degrees Celsius")
-local text=string.gsub(text,"�F","degrees Fahrenheit")
+local text=string.gsub(text,"°C","degrees Celsius")
+local text=string.gsub(text,"°F","degrees Fahrenheit")
 local text=string.gsub(text,"inHg","inches of Mercury")
 local text=string.gsub(text,"mmHg","millimeters of Mercury")
 local text=string.gsub(text,"hPa","hecto Pascals")
@@ -67439,29 +67439,29 @@ RADIOSPEECH.Vocabulary.RU={
 ["7000"]={"7000",0.77},
 ["8000"]={"8000",0.92},
 ["9000"]={"9000",0.87},
-["Ñ�Ñ‚ÐµÐ¿ÐµÐ½Ð¸"]={"degrees",0.5},
-["ÐºÐ¸Ð»Ð¾Ð¼ÐµÑ‚Ñ€Ð¾Ð²"]={"kilometers",0.65},
+["градусы"]={"degrees",0.5},
+["километры"]={"kilometers",0.65},
 ["km"]={"kilometers",0.65},
-["Ð¼Ð¸Ð»ÑŒ"]={"miles",0.45},
+["мили"]={"miles",0.45},
 ["mi"]={"miles",0.45},
-["Ð¼ÐµÑ‚Ñ€Ñ‹"]={"meters",0.41},
+["метров"]={"meters",0.41},
 ["m"]={"meters",0.41},
-["Ð½Ð¾Ð³Ð¸"]={"feet",0.37},
+["ноги"]={"feet",0.37},
 ["br"]={"br",1.1},
 ["bra"]={"bra",0.3},
-["Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°Ñ�Ñ�ÑŒ Ð½Ð° Ð±Ð°Ð·Ñƒ"]={"returning_to_base",1.40},
-["Ð½Ð° Ð¿ÑƒÑ‚Ð¸ Ðº Ð½Ð°Ð·ÐµÐ¼Ð½Ð¾Ð¹ Ñ†ÐµÐ»Ð¸"]={"on_route_to_ground_target",1.45},
-["Ð¿ÐµÑ€ÐµÑ…Ð²Ð°Ñ‚ Ñ�Ð°Ð¼Ð¾Ð»ÐµÑ‚Ð¾Ð²"]={"intercepting_bogeys",1.22},
-["Ð¿Ð¾Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ Ð½Ð°Ð·ÐµÐ¼Ð½Ð¾Ð¹ Ñ†ÐµÐ»Ð¸"]={"engaging_ground_target",1.53},
-["Ð·Ð°Ñ…Ð²Ð°Ñ‚Ñ‹Ð²Ð°ÑŽÑ‰Ð¸Ðµ Ñ�Ð°Ð¼Ð¾Ð»ÐµÑ‚Ñ‹"]={"engaging_bogeys",1.68},
-["ÐºÐ¾Ð»ÐµÑ�Ð° Ð²Ð²ÐµÑ€Ñ…"]={"wheels_up",0.92},
-["Ð¿Ð¾Ñ�Ð°Ð´ÐºÐ° Ð½Ð° Ð±Ð°Ð·Ñƒ"]={"landing at base",1.04},
-["Ð¿Ð°Ñ‚Ñ€ÑƒÐ»Ð¸Ñ€ÑƒÑŽÑ‰Ð¸Ð¹"]={"patrolling",0.96},
-["Ð·Ð°"]={"for",0.27},
-["Ð¸"]={"and",0.17},
-["Ð²"]={"at",0.19},
-["dot"]={"dot",0.51},
-["defender"]={"defender",0.45},
+["возвращение на базу"]={"returning_to_base",1.40},
+["на пути к наземной цели"]={"on_route_to_ground_target",1.45},
+["перехват боги"]={"intercepting_bogeys",1.22},
+["поражение наземной цели"]={"engaging_ground_target",1.53},
+["привлечение болотных птиц"]={"engaging_bogeys",1.68},
+["колёса вверх..."]={"wheels_up",0.92},
+["посадка на базу"]={"landing at base",1.04},
+["патрулирование"]={"patrolling",0.96},
+["для"]={"for",0.27},
+["и"]={"and",0.17},
+["на сайте"]={"at",0.19},
+["точка"]={"dot",0.51},
+["защитник"]={"defender",0.45},
 }
 function RADIOSPEECH:New(frequency,modulation)
 local self=BASE:Inherit(self,RADIOQUEUE:New(frequency,modulation))
@@ -69597,7 +69597,7 @@ self:F({Message=Message})
 if self.CC then
 self.CC:MessageToCoalition(Message)
 end
-Message=Message:gsub("�"," degrees ")
+Message=Message:gsub("°"," degrees ")
 Message=Message:gsub("(%d)%.(%d)","%1 dot %2")
 local RadioQueue=Squadron.RadioQueue
 if RadioQueue then
