@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T07:28:34.0000000Z-30623f7d38895a7cde70593a8bd90427f02b1f28 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T09:51:41.0000000Z-c55b8d29f7fc6d77772b914a74585277ae23dda3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2360,8 +2360,8 @@ else
 local width=3+acc
 secFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d°',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '
-..string.format('%03d°',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
+return string.format('%03d�',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '
+..string.format('%03d�',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
 else
 latMin=UTILS.Round(latMin,acc)
 lonMin=UTILS.Round(lonMin,acc)
@@ -2380,8 +2380,8 @@ else
 local width=3+acc
 minFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
-..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
+return string.format('%03d�',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
+..string.format('%03d�',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
 end
 end
 UTILS.tostringMGRS=function(MGRS,acc)
@@ -2966,7 +2966,7 @@ return nil
 end
 function UTILS.ShuffleTable(t)
 if t==nil or type(t)~="table"then
-BASE:I("Error in ShuffleTable: Missing or wrong tyåe of Argument")
+BASE:I("Error in ShuffleTable: Missing or wrong type of Argument")
 return
 end
 math.random()
@@ -34881,7 +34881,7 @@ local targetname=nil
 if#self.bombingTargets>1 then
 local targetname=result.name
 end
-local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
+local text=string.format("%s, impact %03d� for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
 if targetname then
 text=text..string.format(" from bulls of target %s.")
 else
@@ -35074,9 +35074,9 @@ table.sort(_results,_sort)
 local _bestMsg=""
 for i,_result in pairs(_results)do
 local result=_result
-_message=_message.."\n"..string.format("[%d] %d m %03d° - %s - %s - %s hit",i,result.distance,result.radial,result.name,result.weapon,result.quality)
+_message=_message.."\n"..string.format("[%d] %d m %03d� - %s - %s - %s hit",i,result.distance,result.radial,result.name,result.weapon,result.quality)
 if _bestMsg==""then
-_bestMsg=string.format("%d m %03d° - %s - %s - %s hit",result.distance,result.radial,result.name,result.weapon,result.quality)
+_bestMsg=string.format("%d m %03d� - %s - %s - %s hit",result.distance,result.radial,result.name,result.weapon,result.quality)
 end
 if i==self.ndisplayresult then
 break
@@ -35132,7 +35132,7 @@ local rangealt=position:GetLandHeight()
 local vec3=coord:GetDirectionVec3(position)
 local angle=coord:GetAngleDegrees(vec3)
 local range=coord:Get2DDistance(position)
-local Bs=string.format('%03d°',angle)
+local Bs=string.format('%03d�',angle)
 local texthit
 if self.PlayerSettings[playername].flaredirecthits then
 texthit=string.format("Flare direct hits: ON (flare color %s)\n",self:_flarecolor2text(self.PlayerSettings[playername].flarecolor))
@@ -35216,7 +35216,7 @@ else
 heading=heading+180
 end
 local mycoord=coord:ToStringA2G(_unit,_settings)
-_text=_text..string.format("\n- %s: heading %03d°\n%s",_strafepit.name,heading,mycoord)
+_text=_text..string.format("\n- %s: heading %03d�\n%s",_strafepit.name,heading,mycoord)
 end
 self:_DisplayMessageToGroup(_unit,_text,nil,true,true)
 end
@@ -35233,12 +35233,12 @@ local T=position:GetTemperature()
 local P=position:GetPressure()
 local Wd,Ws=position:GetWind()
 local Bn,Bd=UTILS.BeaufortScale(Ws)
-local WD=string.format('%03d°',Wd)
-local Ts=string.format("%d°C",T)
+local WD=string.format('%03d�',Wd)
+local Ts=string.format("%d�C",T)
 local hPa2inHg=0.0295299830714
 local hPa2mmHg=0.7500615613030
 local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
-local tT=string.format("%d°C",T)
+local tT=string.format("%d�C",T)
 local tW=string.format("%.1f m/s",Ws)
 local tP=string.format("%.1f mmHg",P*hPa2mmHg)
 if settings:IsImperial()then
@@ -39788,14 +39788,14 @@ end
 text=text..string.format("QFE %.1f hPa = %s.\n",Pqfe,_Pqfe)
 text=text..string.format("QNH %.1f hPa = %s.\n",Pqnh,_Pqnh)
 local T=position:GetTemperature()
-local _T=string.format('%d°F',UTILS.CelciusToFarenheit(T))
+local _T=string.format('%d�F',UTILS.CelciusToFarenheit(T))
 if settings:IsMetric()then
-_T=string.format('%d°C',T)
+_T=string.format('%d�C',T)
 end
 local text=text..string.format("Temperature %s\n",_T)
 local Dir,Vel=position:GetWind()
 local Bn,Bd=UTILS.BeaufortScale(Vel)
-local Ds=string.format('%03d°',Dir)
+local Ds=string.format('%03d�',Dir)
 local Vs=string.format("%.1f knots",UTILS.MpsToKnots(Vel))
 if settings:IsMetric()then
 Vs=string.format('%.1f m/s',Vel)
@@ -39809,7 +39809,7 @@ local unit=self.group[GID].player[UID].unit
 local coord=unit:GetCoordinate()
 local angle=coord:HeadingTo(position)
 local range=coord:Get2DDistance(position)
-local Bs=string.format('%03d°',angle)
+local Bs=string.format('%03d�',angle)
 local settings=_DATABASE:GetPlayerSettings(self.group[GID].player[UID].playername)or _SETTINGS
 local Rs=string.format("%.1f NM",UTILS.MetersToNM(range))
 if settings:IsMetric()then
@@ -43748,7 +43748,7 @@ local distance=playerUnit:GetCoordinate():Get3DDistance(missile.shotCoord)
 local bearing=playerUnit:GetCoordinate():HeadingTo(missile.shotCoord)
 if player.launchalert then
 if(missile.targetPlayer and player.unitname==missile.targetPlayer.unitname)or(distance<missile.missileRange)then
-local text=string.format("Missile launch detected! Distance %.1f NM, bearing %03d°.",UTILS.MetersToNM(distance),bearing)
+local text=string.format("Missile launch detected! Distance %.1f NM, bearing %03d�.",UTILS.MetersToNM(distance),bearing)
 BASE:ScheduleOnce(5,FOX._SayNotchingHeadings,self,player,missile.weapon)
 MESSAGE:New(text,5,"ALERT"):ToClient(player.client)
 end
@@ -43838,7 +43838,7 @@ end
 if self.Debug then
 local bearing=targetCoord:HeadingTo(missileCoord)
 local eta=distance/missileVelocity
-self:I(self.lid..string.format("Missile %s Target %s: Distance = %.1f m, v=%.1f m/s, bearing=%03d°, ETA=%.1f sec",missile.missileType,target:GetName(),distance,missileVelocity,bearing,eta))
+self:I(self.lid..string.format("Missile %s Target %s: Distance = %.1f m, v=%.1f m/s, bearing=%03d�, ETA=%.1f sec",missile.missileType,target:GetName(),distance,missileVelocity,bearing,eta))
 end
 local destroymissile=distance<=self.explosiondist
 if self.explosiondist2 and distance<=self.explosiondist2 and not destroymissile then
@@ -44209,7 +44209,7 @@ function FOX:_SayNotchingHeadings(playerData,weapon)
 if playerData and playerData.unit and playerData.unit:IsAlive()then
 local nr,nl=self:_GetNotchingHeadings(weapon)
 if nr and nl then
-local text=string.format("Notching heading %03d° or %03d°",nr,nl)
+local text=string.format("Notching heading %03d� or %03d�",nr,nl)
 MESSAGE:New(text,5,"FOX"):ToClient(playerData.client)
 end
 end
@@ -80831,7 +80831,7 @@ self:F({Message=Message})
 if self.CC then
 self.CC:MessageToCoalition(Message)
 end
-Message=Message:gsub("°"," degrees ")
+Message=Message:gsub("�"," degrees ")
 Message=Message:gsub("(%d)%.(%d)","%1 dot %2")
 local RadioQueue=Squadron.RadioQueue
 if RadioQueue then
