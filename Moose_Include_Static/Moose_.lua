@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T09:51:41.0000000Z-c55b8d29f7fc6d77772b914a74585277ae23dda3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-18T12:59:58.0000000Z-8ae04944fe5cdc1a26cc16b6074ba1d29fa22b13 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25531,11 +25531,11 @@ else
 self.SEADGroupPrefixes[SEADGroupPrefixes]=SEADGroupPrefixes
 end
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.2.8")
+self:I("*** SEAD - Started Version 0.2.9")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
-self:F(SEADGroupPrefixes)
+self:T(SEADGroupPrefixes)
 if type(SEADGroupPrefixes)=='table'then
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(SEADGroupPrefixes)do
 self.SEADGroupPrefixes[SEADGroupPrefix]=SEADGroupPrefix
@@ -25546,7 +25546,7 @@ end
 return self
 end
 function SEAD:SetEngagementRange(range)
-self:F({range})
+self:T({range})
 range=range or 75
 if range<0 or range>100 then
 range=75
@@ -25556,7 +25556,7 @@ self:T(string.format("*** SEAD - Engagement range set to %s",range))
 return self
 end
 function SEAD:_CheckHarms(WeaponName)
-self:F({WeaponName})
+self:T({WeaponName})
 local hit=false
 for _,_name in pairs(SEAD.Harms)do
 if string.find(WeaponName,_name,1)then hit=true end
@@ -25579,12 +25579,13 @@ local _targetMim=EventData.Weapon:getTarget()
 local _targetUnit=UNIT:Find(_targetMim)
 if _targetUnit and _targetUnit:IsAlive()then
 local _targetMimgroup=_targetUnit:GetGroup()
-local _targetMimgroupName=_targetMimgroup:GetName()
+_targetMimgroupName=_targetMimgroup:GetName()
 self:T(self.SEADGroupPrefixes)
 self:T(_targetMimgroupName)
 end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
+self:T(SEADGroupPrefix)
 if string.find(_targetMimgroupName,SEADGroupPrefix,1,true)then
 SEADGroupFound=true
 self:T('*** SEAD - Group Found')
