@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-22T06:32:18.0000000Z-34e4825cd093b78c4b81480382af50815a08f890 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-22T09:57:49.0000000Z-755903a08e286f23a006c4fb2594ec5c53bb87f5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35190,7 +35190,7 @@ local coord=self:_GetBombTargetCoordinate(bombtarget)
 if coord then
 local elevation=coord:GetLandHeight()
 local eltxt=string.format("%d m",elevation)
-if _settings:IsImperial()then
+if not _settings:IsMetric()then
 elevation=UTILS.MetersToFeet(elevation)
 eltxt=string.format("%d ft",elevation)
 end
