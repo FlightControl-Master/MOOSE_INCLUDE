@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-20T10:33:10.0000000Z-94167152e547aa794efc9eb03eb5cf2b9feaf09e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-22T06:32:18.0000000Z-34e4825cd093b78c4b81480382af50815a08f890 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68506,11 +68506,11 @@ table.insert(crateidsloaded,crate:GetID())
 crate:GetPositionable():Destroy(false)
 crate.Positionable=nil
 self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
-self:_UpdateUnitCargoMass(Unit)
 self:__CratesPickedUp(1,Group,Unit,crate)
 end
 end
 self.Loaded_Cargo[unitname]=loaded
+self:_UpdateUnitCargoMass(Unit)
 local existingcrates=self.Spawned_Cargo
 local newexcrates={}
 for _,_crate in pairs(existingcrates)do
@@ -68901,8 +68901,8 @@ randomcoord=RepairLocation:GetVec2()
 end
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
-if canmove then
 local alias=string.format("%s-%d",_template,math.random(1,100000))
+if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
 :InitDelayOff()
