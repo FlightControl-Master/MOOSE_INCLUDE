@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-22T09:57:49.0000000Z-755903a08e286f23a006c4fb2594ec5c53bb87f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-24T12:16:11.0000000Z-8fb113a04e957197d535cd0091089e5151bcc4b8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67818,7 +67818,7 @@ CTLD_CARGO.Enum={
 ["CRATE"]="Crate",
 ["REPAIR"]="Repair",
 }
-function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass)
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock)
 local self=BASE:Inherit(self,BASE:New())
 self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
 self.ID=ID or math.random(100000,1000000)
@@ -67831,6 +67831,7 @@ self.CratesNeeded=CratesNeeded or 0
 self.Positionable=Positionable or nil
 self.HasBeenDropped=Dropped or false
 self.PerCrateMass=PerCrateMass or 0
+self.Stock=Stock or nil
 return self
 end
 function CTLD_CARGO:GetID()
@@ -67872,6 +67873,28 @@ end
 end
 function CTLD_CARGO:SetWasDropped(dropped)
 self.HasBeenDropped=dropped or false
+end
+function CTLD_CARGO:GetStock()
+if self.Stock then
+return self.Stock
+else
+return-1
+end
+end
+function CTLD_CARGO:AddStock(Number)
+if self.Stock then
+local number=Number or 1
+self.Stock=self.Stock+number
+end
+return self
+end
+function CTLD_CARGO:RemoveStock(Number)
+if self.Stock then
+local number=Number or 1
+self.Stock=self.Stock-number
+if self.Stock<0 then self.Stock=0 end
+end
+return self
 end
 function CTLD_CARGO:IsRepair()
 if self.CargoType=="Repair"then
@@ -67926,7 +67949,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
-CTLD.version="0.1.5a1"
+CTLD.version="0.1.6a1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68092,6 +68115,14 @@ return self
 end
 function CTLD:_LoadTroops(Group,Unit,Cargotype)
 self:T(self.lid.." _LoadTroops")
+local instock=Cargotype:GetStock()
+local cgoname=Cargotype:GetName()
+if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
+self:_SendMessage(string.format("Sorry, all %s are gone!",cgoname),10,false,Group)
+return self
+else
+Cargotype:RemoveStock()
+end
 local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
 local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
@@ -68294,7 +68325,16 @@ return self
 end
 function CTLD:_GetCrates(Group,Unit,Cargo,number,drop)
 self:T(self.lid.." _GetCrates")
+if not drop then
 local cgoname=Cargo:GetName()
+local instock=Cargo:GetStock()
+if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
+self:_SendMessage(string.format("Sorry, we ran out of %s",cgoname),10,false,Group)
+return self
+else
+Cargo:RemoveStock()
+end
+end
 local inzone=false
 local drop=drop or false
 local ship=nil
@@ -68681,6 +68721,17 @@ local dropped=cargo:WasDropped()
 if type~=CTLD_CARGO.Enum.TROOPS and not dropped then
 table.insert(loaded.Cargo,_cargo)
 loaded.Cratesloaded=loaded.Cratesloaded+1
+else
+if type==CTLD_CARGO.Enum.TROOPS and droppingatbase then
+local name=cargo:GetName()
+local gentroops=self.Cargo_Troops
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+local stock=_troop:GetStock()
+if stock and tonumber(stock)>=0 then _troop:AddStock()end
+end
+end
+end
 end
 end
 self.Loaded_Cargo[unitname]=nil
@@ -68752,6 +68803,14 @@ return self
 end
 function CTLD:_BuildCrates(Group,Unit)
 self:T(self.lid.." _BuildCrates")
+local type=Unit:GetTypeName()
+if type=="Hercules"and self.enableHercules then
+local speed=Unit:GetVelocityKMH()
+if speed>1 then
+self:_SendMessage("You need to land / stop to build something, Pilot!",10,false,Group)
+return self
+end
+end
 local finddist=self.CrateDistance or 30
 local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
 local buildables={}
@@ -69049,24 +69108,24 @@ end
 end
 return self
 end
-function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass)
+function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass,Stock)
 self:T(self.lid.." AddTroopsCargo")
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass,Stock)
 table.insert(self.Cargo_Troops,cargo)
 return self
 end
-function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass)
+function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesCargo")
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
-function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass)
+function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesRepair")
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
@@ -69498,6 +69557,47 @@ end
 self.DroppedTroops=newtable
 return self
 end
+function CTLD:AddStockTroops(Name,Number)
+local name=Name or"none"
+local number=Number or 1
+local gentroops=self.Cargo_Troops
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:AddStock(number)
+end
+end
+end
+function CTLD:AddStockCrates(Name,Number)
+local name=Name or"none"
+local number=Number or 1
+local gentroops=self.Cargo_Crates
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:AddStock(number)
+end
+end
+end
+function CTLD:RemoveStockTroops(Name,Number)
+local name=Name or"none"
+local number=Number or 1
+local gentroops=self.Cargo_Troops
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:RemoveStock(number)
+end
+end
+end
+function CTLD:RemoveStockCrates(Name,Number)
+local name=Name or"none"
+local number=Number or 1
+local gentroops=self.Cargo_Crates
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:RemoveStock(number)
+end
+end
+return self
+end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started ("..self.version..")")
@@ -69540,6 +69640,17 @@ local tc=self.TroopCounter
 if self.debug or self.verbose>0 then
 local text=string.format("%s Pilots %d | Live Crates %d |\nCargo Counter %d | Troop Counter %d",self.lid,pilots,boxes,cc,tc)
 local m=MESSAGE:New(text,10,"CTLD"):ToAll()
+self:I(self.lid.."Cargo and Troops in Stock:")
+for _,_troop in pairs(self.Cargo_Crates)do
+local name=_troop:GetName()
+local stock=_troop:GetStock()
+self:I(string.format("-- %s \t\t\t %d",name,stock))
+end
+for _,_troop in pairs(self.Cargo_Troops)do
+local name=_troop:GetName()
+local stock=_troop:GetStock()
+self:I(string.format("-- %s \t\t %d",name,stock))
+end
 end
 self:__Status(-30)
 return self
