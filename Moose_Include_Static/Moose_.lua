@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-26T06:22:11.0000000Z-5172619cb1b190bc3cb2f55bd071c6580f7facaf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-27T12:56:16.0000000Z-7f18ea0e7a37d8303c621929bd4b0c2a393817db ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18729,7 +18729,7 @@ return self
 end
 return nil
 end
-function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut)
+function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation)
 self:F2({self.ControllableName})
 local _coord=self:GetCoordinate()
 local _radius=radius or 500
@@ -18739,11 +18739,12 @@ local _onroad=onroad or true
 local _grptsk={}
 local _candoroad=false
 local _shortcut=shortcut or false
+local _formation=formation or"Off Road"
 if onroad then
-_grptsk,_candoroad=self:TaskGroundOnRoad(_tocoord,_speed,"Off Road",_shortcut)
+_grptsk,_candoroad=self:TaskGroundOnRoad(_tocoord,_speed,_formation,_shortcut)
 self:Route(_grptsk,5)
 else
-self:TaskRouteToVec2(_tocoord:GetVec2(),_speed,"Off Road")
+self:TaskRouteToVec2(_tocoord:GetVec2(),_speed,_formation)
 end
 return self
 end
@@ -20114,6 +20115,13 @@ local SetInvisible={id='SetImmortal',params={value=true}}
 self:SetCommand(SetInvisible)
 return self
 end
+function GROUP:GetSkill()
+self:F2(self.GroupName)
+local unit=self:GetUnit(1)
+local name=unit:GetName()
+local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
+return skill
+end
 UNIT={
 ClassName="UNIT",
 UnitName=nil,
@@ -20790,6 +20798,12 @@ if DCSUnit then
 DCSUnit:enableEmission(switch)
 end
 return self
+end
+function UNIT:GetSkill()
+self:F2(self.UnitName)
+local name=self.UnitName
+local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
+return skill
 end
 CLIENT={
 ClassName="CLIENT",
@@ -24917,13 +24931,26 @@ SEAD.Harms={
 ["AGM_122"]="AGM_122",
 ["AGM_84"]="AGM_84",
 ["AGM_45"]="AGM_45",
-["ALARN"]="ALARM",
+["ALARM"]="ALARM",
 ["LD-10"]="LD-10",
 ["X_58"]="X_58",
 ["X_28"]="X_28",
 ["X_25"]="X_25",
 ["X_31"]="X_31",
 ["Kh25"]="Kh25",
+}
+SEAD.HarmData={
+["AGM_88"]={150,3},
+["AGM_45"]={12,2},
+["AGM_122"]={16.5,2.3},
+["AGM_84"]={280,0.85},
+["ALARM"]={45,2},
+["LD-10"]={60,4},
+["X_58"]={70,4},
+["X_28"]={80,2.5},
+["X_25"]={25,0.76},
+["X_31"]={150,3},
+["Kh25"]={25,0.8},
 }
 function SEAD:New(SEADGroupPrefixes)
 local self=BASE:Inherit(self,BASE:New())
@@ -24936,7 +24963,7 @@ else
 self.SEADGroupPrefixes[SEADGroupPrefixes]=SEADGroupPrefixes
 end
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.2.9")
+self:I("*** SEAD - Started Version 0.2.10")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -24963,13 +24990,41 @@ end
 function SEAD:_CheckHarms(WeaponName)
 self:T({WeaponName})
 local hit=false
+local name=""
 for _,_name in pairs(SEAD.Harms)do
-if string.find(WeaponName,_name,1)then hit=true end
+if string.find(WeaponName,_name,1)then
+hit=true
+name=_name
+break
 end
-return hit
+end
+return hit,name
+end
+function SEAD:_GetDistance(_point1,_point2)
+self:T("_GetDistance")
+if _point1 and _point2 then
+local distance1=_point1:Get2DDistance(_point2)
+local distance2=_point1:DistanceFromPointVec2(_point2)
+self:I({dist1=distance1,dist2=distance2})
+if distance1 and type(distance1)=="number"then
+return distance1
+elseif distance2 and type(distance2)=="number"then
+return distance2
+else
+self:E("*****Cannot calculate distance!")
+self:E({_point1,_point2})
+return-1
+end
+else
+self:E("******Cannot calculate distance!")
+self:E({_point1,_point2})
+return-1
+end
 end
 function SEAD:HandleEventShot(EventData)
 self:T({EventData})
+local SEADPlane=EventData.IniUnit
+local SEADPlanePos=SEADPlane:GetCoordinate()
 local SEADUnit=EventData.IniDCSUnit
 local SEADUnitName=EventData.IniDCSUnitName
 local SEADWeapon=EventData.Weapon
@@ -24982,9 +25037,13 @@ local _targetMimgroupName="none"
 local _evade=math.random(1,100)
 local _targetMim=EventData.Weapon:getTarget()
 local _targetUnit=UNIT:Find(_targetMim)
+local _targetMimgroup=nil
 if _targetUnit and _targetUnit:IsAlive()then
-local _targetMimgroup=_targetUnit:GetGroup()
+_targetMimgroup=_targetUnit:GetGroup()
 _targetMimgroupName=_targetMimgroup:GetName()
+local _targetUnitName=_targetUnit:GetName()
+_targetUnit:GetSkill()
+_targetskill=_targetUnit:GetSkill()
 self:T(self.SEADGroupPrefixes)
 self:T(_targetMimgroupName)
 end
@@ -25005,29 +25064,51 @@ end
 self:T(_targetskill)
 if self.TargetSkill[_targetskill]then
 if(_evade>self.TargetSkill[_targetskill].Evade)then
-self:T(string.format("*** SEAD - Evading, target skill  "..string.format(_targetskill)))
-local _targetMimgroup=Unit.getGroup(Weapon.getTarget(SEADWeapon))
-local _targetMimcont=_targetMimgroup:getController()
-routines.groupRandomDistSelf(_targetMimgroup,300,'Diamond',250,20)
+local _targetpos=_targetMimgroup:GetCoordinate()
+local _distance=self:_GetDistance(SEADPlanePos,_targetpos)
+local hit,data=self:_CheckHarms(SEADWeaponName)
+local wpnpeed=666
+local reach=10
+if hit then
+local wpndata=SEAD.HarmData[data]
+reach=wpndata[1]*1,1
+local mach=wpndata[2]
+wpnpeed=math.floor(mach*340.29)
+end
+local _tti=math.floor(_distance/wpnpeed)
+if _distance>0 then
+_distance=math.floor(_distance/1000)
+else
+_distance=0
+end
+self:T(string.format("*** SEAD - target skill %s, distance %dkm, reach %dkm, tti %dsec",_targetskill,_distance,reach,_tti))
+local _targetMimgroup1=Unit.getGroup(Weapon.getTarget(SEADWeapon))
+local _targetMimcont1=_targetMimgroup1:getController()
+if reach>=_distance then
+self:T("*** SEAD - Relocating")
+_targetMimgroup:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
 local id={
-groupName=_targetMimgroup,
-ctrl=_targetMimcont
+groupName=_targetMimgroup1,
+ctrl=_targetMimcont1
 }
 local function SuppressionEnd(id)
 local range=self.EngagementRange
-self:T(string.format("*** SEAD - Engagement Range is %d",range))
+self:T("*** SEAD - Radar On")
 id.ctrl:setOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.RED)
 id.ctrl:setOption(AI.Option.Ground.id.AC_ENGAGEMENT_RANGE_RESTRICTION,range)
 self.SuppressedGroups[id.groupName]=nil
 end
 local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSkill[_targetskill].DelayOn[2])
+if delay<_tti then delay=_tti*1,1 end
 local SuppressionEndTime=timer.getTime()+delay
 if self.SuppressedGroups[id.groupName]==nil then
 self.SuppressedGroups[id.groupName]={
 SuppressionEndTime=delay
 }
-Controller.setOption(_targetMimcont,AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
+self:T(string.format("*** SEAD - Radar Off for %dsecs",delay))
+Controller.setOption(_targetMimcont1,AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
 timer.scheduleFunction(SuppressionEnd,id,SuppressionEndTime)
+end
 end
 end
 end
@@ -44052,7 +44133,7 @@ SHORAD.Harms={
 ["AGM_122"]="AGM_122",
 ["AGM_84"]="AGM_84",
 ["AGM_45"]="AGM_45",
-["ALARN"]="ALARM",
+["ALARM"]="ALARM",
 ["LD-10"]="LD-10",
 ["X_58"]="X_58",
 ["X_28"]="X_28",
