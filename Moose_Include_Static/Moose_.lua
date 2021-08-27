@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-27T12:56:50.0000000Z-cea7320a9bb860356d28cdb30bf208b70fda65d7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-27T16:51:54.0000000Z-05c560be3b8bbb47f92d81042d30f98d77a72d1e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25558,7 +25558,7 @@ else
 self.SEADGroupPrefixes[SEADGroupPrefixes]=SEADGroupPrefixes
 end
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.2.10")
+self:I("*** SEAD - Started Version 0.3.1")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -25600,7 +25600,6 @@ self:T("_GetDistance")
 if _point1 and _point2 then
 local distance1=_point1:Get2DDistance(_point2)
 local distance2=_point1:DistanceFromPointVec2(_point2)
-self:I({dist1=distance1,dist2=distance2})
 if distance1 and type(distance1)=="number"then
 return distance1
 elseif distance2 and type(distance2)=="number"then
@@ -25617,7 +25616,7 @@ return-1
 end
 end
 function SEAD:HandleEventShot(EventData)
-self:T({EventData})
+self:T({EventData.id})
 local SEADPlane=EventData.IniUnit
 local SEADPlanePos=SEADPlane:GetCoordinate()
 local SEADUnit=EventData.IniDCSUnit
@@ -25625,29 +25624,26 @@ local SEADUnitName=EventData.IniDCSUnitName
 local SEADWeapon=EventData.Weapon
 local SEADWeaponName=EventData.WeaponName
 self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
-self:T({SEADWeapon})
 if self:_CheckHarms(SEADWeaponName)then
+self:T('*** SEAD - Weapon Match')
 local _targetskill="Random"
-local _targetMimgroupName="none"
-local _evade=math.random(1,100)
-local _targetMim=EventData.Weapon:getTarget()
-local _targetUnit=UNIT:Find(_targetMim)
-local _targetMimgroup=nil
+local _targetgroupname="none"
+local _target=EventData.Weapon:getTarget()
+local _targetUnit=UNIT:Find(_target)
+local _targetgroup=nil
 if _targetUnit and _targetUnit:IsAlive()then
-_targetMimgroup=_targetUnit:GetGroup()
-_targetMimgroupName=_targetMimgroup:GetName()
+_targetgroup=_targetUnit:GetGroup()
+_targetgroupname=_targetgroup:GetName()
 local _targetUnitName=_targetUnit:GetName()
 _targetUnit:GetSkill()
 _targetskill=_targetUnit:GetSkill()
-self:T(self.SEADGroupPrefixes)
-self:T(_targetMimgroupName)
 end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
 self:T(SEADGroupPrefix)
-if string.find(_targetMimgroupName,SEADGroupPrefix,1,true)then
+if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
 SEADGroupFound=true
-self:T('*** SEAD - Group Found')
+self:T('*** SEAD - Group Match Found')
 break
 end
 end
@@ -25656,53 +25652,53 @@ if _targetskill=="Random"then
 local Skills={"Average","Good","High","Excellent"}
 _targetskill=Skills[math.random(1,4)]
 end
-self:T(_targetskill)
 if self.TargetSkill[_targetskill]then
+local _evade=math.random(1,100)
 if(_evade>self.TargetSkill[_targetskill].Evade)then
-local _targetpos=_targetMimgroup:GetCoordinate()
+self:T("*** SEAD - Evading")
+local _targetpos=_targetgroup:GetCoordinate()
 local _distance=self:_GetDistance(SEADPlanePos,_targetpos)
 local hit,data=self:_CheckHarms(SEADWeaponName)
-local wpnpeed=666
+local wpnspeed=666
 local reach=10
 if hit then
 local wpndata=SEAD.HarmData[data]
 reach=wpndata[1]*1,1
 local mach=wpndata[2]
-wpnpeed=math.floor(mach*340.29)
+wpnspeed=math.floor(mach*340.29)
 end
-local _tti=math.floor(_distance/wpnpeed)
+local _tti=math.floor(_distance/wpnspeed)
 if _distance>0 then
 _distance=math.floor(_distance/1000)
 else
 _distance=0
 end
 self:T(string.format("*** SEAD - target skill %s, distance %dkm, reach %dkm, tti %dsec",_targetskill,_distance,reach,_tti))
-local _targetMimgroup1=Unit.getGroup(Weapon.getTarget(SEADWeapon))
-local _targetMimcont1=_targetMimgroup1:getController()
 if reach>=_distance then
-self:T("*** SEAD - Relocating")
-_targetMimgroup:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
-local id={
-groupName=_targetMimgroup1,
-ctrl=_targetMimcont1
-}
-local function SuppressionEnd(id)
-local range=self.EngagementRange
-self:T("*** SEAD - Radar On")
-id.ctrl:setOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.RED)
-id.ctrl:setOption(AI.Option.Ground.id.AC_ENGAGEMENT_RANGE_RESTRICTION,range)
-self.SuppressedGroups[id.groupName]=nil
+self:T("*** SEAD - Shot in Reach")
+local function SuppressionStart(args)
+self:T(string.format("*** SEAD - %s Radar Off & Relocating",args[2]))
+local grp=args[1]
+grp:OptionAlarmStateGreen()
+grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
+end
+local function SuppressionStop(args)
+self:T(string.format("*** SEAD - %s Radar On",args[2]))
+local grp=args[1]
+grp:OptionAlarmStateRed()
+grp:OptionEngageRange(self.EngagementRange)
+self.SuppressedGroups[args[2]]=false
 end
 local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSkill[_targetskill].DelayOn[2])
-if delay<_tti then delay=_tti*1,1 end
-local SuppressionEndTime=timer.getTime()+delay
-if self.SuppressedGroups[id.groupName]==nil then
-self.SuppressedGroups[id.groupName]={
-SuppressionEndTime=delay
-}
-self:T(string.format("*** SEAD - Radar Off for %dsecs",delay))
-Controller.setOption(_targetMimcont1,AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
-timer.scheduleFunction(SuppressionEnd,id,SuppressionEndTime)
+if delay>_tti then delay=delay/2 end
+if _tti>(3*delay)then delay=(_tti/2)*0.9 end
+local SuppressionStartTime=timer.getTime()+delay
+local SuppressionEndTime=timer.getTime()+_tti+10
+if not self.SuppressedGroups[_targetgroupname]then
+self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_targetgroupname,_tti,delay))
+timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname},SuppressionStartTime)
+timer.scheduleFunction(SuppressionStop,{_targetgroup,_targetgroupname},SuppressionEndTime)
+self.SuppressedGroups[_targetgroupname]=true
 end
 end
 end
@@ -67652,7 +67648,6 @@ self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
 local distance1=_point1:Get2DDistance(_point2)
 local distance2=_point1:DistanceFromPointVec2(_point2)
-self:I({dist1=distance1,dist2=distance2})
 if distance1 and type(distance1)=="number"then
 return distance1
 elseif distance2 and type(distance2)=="number"then
@@ -67889,7 +67884,7 @@ HeliGroup=nil,
 HeliUnit=nil,
 State="",
 }
-CTLD_ENGINEERING.Version="0.0.1"
+CTLD_ENGINEERING.Version="0.0.2"
 function CTLD_ENGINEERING:New(Name,GroupName,HeliGroup,HeliUnit)
 local self=BASE:Inherit(self,BASE:New())
 BASE:I({Name,GroupName,HeliGroup:GetName(),HeliUnit:GetName()})
@@ -67901,6 +67896,7 @@ self.HeliUnit=HeliUnit
 self.currwpt=nil
 self.lid=string.format("%s (%s) | ",self.Name,self.Version)
 self.State="Stopped"
+self.marktimer=300
 self:Start()
 local parent=self:GetParent(self)
 return self
@@ -67935,6 +67931,8 @@ return self
 end
 function CTLD_ENGINEERING:Done()
 self:T(self.lid.."Done")
+local grp=self.Group
+grp:RelocateGroundRandomInRadius(7,100,false,false,"Diamond")
 self:SetStatus("Running")
 return self
 end
@@ -67948,8 +67946,29 @@ local ind=0
 if number>0 then
 for _,_cargo in pairs(crates)do
 if _cargo:WasDropped()then
+local ok=false
+local chalk=_cargo:GetMark()
+if chalk==nil then
+ok=true
+else
+local tag=chalk.tag or"none"
+local timestamp=chalk.timestamp or 0
+self:I({chalk})
+local gone=timer.getAbsTime()-timestamp
+self:I({time=gone})
+if gone>=self.marktimer then
+ok=true
+_cargo:WipeMark()
+end
+end
+if ok then
+local chalk={}
+chalk.tag="Engineers"
+chalk.timestamp=timer.getAbsTime()
+_cargo:AddMark(chalk)
 ind=ind+1
 table.insert(ctable,ind,_cargo)
+end
 end
 end
 end
@@ -67996,9 +68015,20 @@ end
 function CTLD_ENGINEERING:_GetDistance(_point1,_point2)
 self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
-local distance=_point1:DistanceFromPointVec2(_point2)
-return distance
+local distance1=_point1:Get2DDistance(_point2)
+local distance2=_point1:DistanceFromPointVec2(_point2)
+if distance1 and type(distance1)=="number"then
+return distance1
+elseif distance2 and type(distance2)=="number"then
+return distance2
 else
+self:E("*****Cannot calculate distance!")
+self:E({_point1,_point2})
+return-1
+end
+else
+self:E("******Cannot calculate distance!")
+self:E({_point1,_point2})
 return-1
 end
 end
@@ -68015,6 +68045,7 @@ Positionable=nil,
 HasBeenDropped=false,
 PerCrateMass=0,
 Stock=nil,
+Mark=nil,
 }
 CTLD_CARGO.Enum={
 ["VEHICLE"]="Vehicle",
@@ -68038,6 +68069,7 @@ self.Positionable=Positionable or nil
 self.HasBeenDropped=Dropped or false
 self.PerCrateMass=PerCrateMass or 0
 self.Stock=Stock or nil
+self.Mark=nil
 return self
 end
 function CTLD_CARGO:GetID()
@@ -68109,6 +68141,17 @@ else
 return false
 end
 end
+function CTLD_CARGO:AddMark(Mark)
+self.Mark=Mark
+return self
+end
+function CTLD_CARGO:GetMark(Mark)
+return self.Mark
+end
+function CTLD_CARGO:WipeMark()
+self.Mark=nil
+return self
+end
 end
 do
 CTLD={
@@ -68155,7 +68198,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
-CTLD.version="0.1.7a1"
+CTLD.version="0.1.7a2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68700,9 +68743,20 @@ end
 function CTLD:_GetDistance(_point1,_point2)
 self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
-local distance=_point1:DistanceFromPointVec2(_point2)
-return distance
+local distance1=_point1:Get2DDistance(_point2)
+local distance2=_point1:DistanceFromPointVec2(_point2)
+if distance1 and type(distance1)=="number"then
+return distance1
+elseif distance2 and type(distance2)=="number"then
+return distance2
 else
+self:E("*****Cannot calculate distance!")
+self:E({_point1,_point2})
+return-1
+end
+else
+self:E("******Cannot calculate distance!")
+self:E({_point1,_point2})
 return-1
 end
 end
