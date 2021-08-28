@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-28T08:52:12.0000000Z-4c5c320073f45f76db55d30ff2955a6f0e001410 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-28T12:01:37.0000000Z-393fa0bfbbf53a3ee98db59fdad49b8bf7af1512 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24923,7 +24923,8 @@ Excellent={Evade=10,DelayOn={10,30}}
 },
 SEADGroupPrefixes={},
 SuppressedGroups={},
-EngagementRange=75
+EngagementRange=75,
+Padding=10,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
@@ -24952,7 +24953,7 @@ SEAD.HarmData={
 ["X_31"]={150,3},
 ["Kh25"]={25,0.8},
 }
-function SEAD:New(SEADGroupPrefixes)
+function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,BASE:New())
 self:F(SEADGroupPrefixes)
 if type(SEADGroupPrefixes)=='table'then
@@ -24962,6 +24963,9 @@ end
 else
 self.SEADGroupPrefixes[SEADGroupPrefixes]=SEADGroupPrefixes
 end
+local padding=Padding or 10
+if padding<10 then padding=10 end
+self.Padding=padding
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:I("*** SEAD - Started Version 0.3.1")
 return self
@@ -24985,6 +24989,13 @@ range=75
 end
 self.EngagementRange=range
 self:T(string.format("*** SEAD - Engagement range set to %s",range))
+return self
+end
+function SEAD:SetPadding(Padding)
+self:T({Padding})
+local padding=Padding or 10
+if padding<10 then padding=10 end
+self.Padding=padding
 return self
 end
 function SEAD:_CheckHarms(WeaponName)
@@ -25098,7 +25109,7 @@ local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSki
 if delay>_tti then delay=delay/2 end
 if _tti>(3*delay)then delay=(_tti/2)*0.9 end
 local SuppressionStartTime=timer.getTime()+delay
-local SuppressionEndTime=timer.getTime()+_tti+10
+local SuppressionEndTime=timer.getTime()+_tti+self.Padding
 if not self.SuppressedGroups[_targetgroupname]then
 self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_targetgroupname,_tti,delay))
 timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname},SuppressionStartTime)
@@ -43505,6 +43516,9 @@ UseEmOnOff=false,
 TimeStamp=0,
 state2flag=false,
 SamStateTracker={},
+DLink=false,
+DLTimeStamp=0,
+Padding=10,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -43512,7 +43526,7 @@ AMBER=1,
 RED=2,
 }
 do
-function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff)
+function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
 self.name=name or"mymantis"
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
@@ -43542,6 +43556,8 @@ self.TimeStamp=timer.getAbsTime()
 self.relointerval=math.random(1800,3600)
 self.state2flag=false
 self.SamStateTracker={}
+self.DLink=false
+self.Padding=Padding or 10
 if EmOnOff then
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -43571,7 +43587,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.5.2"
+self.version="0.6.2"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -43690,7 +43706,6 @@ return self
 end
 function MANTIS:SetAdvancedMode(onoff,ratio)
 self:T(self.lid.."SetAdvancedMode")
-self:T({onoff,ratio})
 local onoff=onoff or false
 local ratio=ratio or 100
 if(type(self.HQ_Template_CC)=="string")and onoff and self.dynamic then
@@ -43711,6 +43726,13 @@ self:T(self.lid.."SetUsingEmOnOff")
 self.UseEmOnOff=switch or false
 return self
 end
+function MANTIS:SetUsingDLink(DLink)
+self:T(self.lid.."SetUsingDLink")
+self.DLink=true
+self.Detection=DLink
+self.DLTimeStamp=timer.getAbsTime()
+return self
+end
 function MANTIS:_CheckHQState()
 self:T(self.lid.."CheckHQState")
 local text=self.lid.." Checking HQ State"
@@ -43721,10 +43743,8 @@ local hq=self.HQ_Template_CC
 local hqgrp=GROUP:FindByName(hq)
 if hqgrp then
 if hqgrp:IsAlive()then
-self:T(self.lid.." HQ is alive!")
 return true
 else
-self:T(self.lid.." HQ is dead!")
 return false
 end
 end
@@ -43734,7 +43754,6 @@ end
 function MANTIS:_CheckEWRState()
 self:T(self.lid.."CheckEWRState")
 local text=self.lid.." Checking EWR State"
-self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
 if self.advanced then
@@ -43748,7 +43767,6 @@ nalive=nalive+1
 end
 end
 end
-self:T(self.lid..string.format(" No of EWR alive is %d",nalive))
 if nalive>0 then
 return true
 else
@@ -43759,10 +43777,8 @@ return self
 end
 function MANTIS:_CalcAdvState()
 self:T(self.lid.."CalcAdvState")
-local text=self.lid.." Calculating Advanced State"
-self:T(text)
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-if self.verbose then self:I(text)end
+local m=MESSAGE:New(self.lid.." Calculating Advanced State",10,"MANTIS"):ToAllIf(self.debug)
+if self.verbose then self:I(self.lid.." Calculating Advanced State")end
 local currstate=self.adv_state
 local EWR_State=self:_CheckEWRState()
 local HQ_State=self:_CheckHQState()
@@ -43777,21 +43793,20 @@ local interval=self.detectinterval
 local ratio=self.adv_ratio/100
 ratio=ratio*self.adv_state
 local newinterval=interval+(interval*ratio)
+if self.debug or self.verbose then
 local text=self.lid..string.format(" Calculated OldState/NewState/Interval: %d / %d / %d",currstate,self.adv_state,newinterval)
-self:T(text)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
+end
 return newinterval,currstate
 end
 function MANTIS:SetAutoRelocate(hq,ewr)
 self:T(self.lid.."SetAutoRelocate")
-self:T({hq,ewr})
 local hqrel=hq or false
 local ewrel=ewr or false
 if hqrel or ewrel then
 self.autorelocate=true
 self.autorelocateunits={HQ=hqrel,EWR=ewrel}
-self:T({self.autorelocate,self.autorelocateunits})
 end
 return self
 end
@@ -43804,7 +43819,6 @@ if self.autorelocate then
 local HQGroup=self.HQ_CC
 if self.autorelocateunits.HQ and self.HQ_CC and HQGroup:IsAlive()then
 local _hqgrp=self.HQ_CC
-self:T(self.lid.." Relocating HQ")
 local text=self.lid.." Relocating HQ"
 _hqgrp:RelocateGroundRandomInRadius(20,500,true,true)
 end
@@ -43813,7 +43827,6 @@ local EWR_GRP=SET_GROUP:New():FilterPrefixes(self.EWR_Templates_Prefix):FilterCo
 local EWR_Grps=EWR_GRP.Set
 for _,_grp in pairs(EWR_Grps)do
 if _grp:IsAlive()and _grp:IsGround()then
-self:T(self.lid.." Relocating EWR ".._grp:GetName())
 local text=self.lid.." Relocating EWR ".._grp:GetName()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
@@ -43830,12 +43843,14 @@ local radius=self.checkradius
 local set=dectset
 for _,_coord in pairs(set)do
 local coord=_coord
+local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
+if self.verbose or self.debug then
 local dectstring=coord:ToStringLLDMS()
 local samstring=samcoordinate:ToStringLLDMS()
-local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
 local text=string.format("Checking SAM at % s - Distance %d m - Target %s",samstring,targetdistance,dectstring)
 local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
-if self.verbose then self:I(self.lid..text)end
+self:I(self.lid..text)
+end
 if targetdistance<=radius then
 return true,targetdistance
 end
@@ -43908,7 +43923,7 @@ self.SamStateTracker[grpname]="GREEN"
 end
 end
 self.SAM_Table=SAM_Tbl
-local mysead=SEAD:New(SEAD_Grps)
+local mysead=SEAD:New(SEAD_Grps,self.Padding)
 mysead:SetEngagementRange(engagerange)
 self.mysead=mysead
 return self
@@ -43985,9 +44000,11 @@ local ontime=self.ShoradTime
 Shorad:WakeUpShorad(name,radius,ontime)
 self:__ShoradActivated(1,name,radius,ontime)
 end
+if self.debug or self.verbose then
 local text=string.format("SAM %s switched to alarm state RED!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
+end
 end
 else
 if samgroup:IsAlive()then
@@ -43999,9 +44016,11 @@ if self.SamStateTracker[name]~="GREEN"then
 self:__GreenState(1,samgroup)
 self.SamStateTracker[name]="GREEN"
 end
+if self.debug or self.verbose then
 local text=string.format("SAM %s switched to alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
+end
 end
 end
 end
@@ -44038,15 +44057,27 @@ end
 end
 return self
 end
+function MANTIS:_CheckDLinkState()
+self:T(self.lid.."_CheckDLinkState")
+local dlink=self.Detection
+local TS=timer.getAbsTime()
+if not dlink:Is("Running")and(TS-self.DLTimeStamp>29)then
+self.DLink=false
+self.Detection=self:StartDetection()
+self:I(self.lid.."Intel DLink not running - switching back to single detection!")
+end
+end
 function MANTIS:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:T(self.lid.."Starting MANTIS")
 self:SetSAMStartState()
+if not self.DLink then
 self.Detection=self:StartDetection()
+end
 if self.advAwacs then
 self.AWACS_Detection=self:StartAwacsDetection()
 end
-self:__Status(self.detectinterval)
+self:__Status(-math.random(1,10))
 return self
 end
 function MANTIS:onbeforeStatus(From,Event,To)
@@ -44071,10 +44102,19 @@ end
 if self.advanced then
 self:_CheckAdvState()
 end
+if self.DLink then
+self:_CheckDLinkState()
+end
 return self
 end
 function MANTIS:onafterStatus(From,Event,To)
 self:T({From,Event,To})
+if self.debug then
+self:I(self.lid.."Status Report")
+for _name,_state in pairs(self.SamStateTracker)do
+self:I(string.format("Site %s\tStatus %s",_name,_state))
+end
+end
 local interval=self.detectinterval*-1
 self:__Status(interval)
 return self
