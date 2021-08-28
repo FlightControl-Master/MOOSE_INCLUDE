@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-27T16:51:54.0000000Z-05c560be3b8bbb47f92d81042d30f98d77a72d1e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-28T11:58:06.0000000Z-19a93f00263eabee3b330f392f007d0776e6ddfe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25518,7 +25518,8 @@ Excellent={Evade=10,DelayOn={10,30}}
 },
 SEADGroupPrefixes={},
 SuppressedGroups={},
-EngagementRange=75
+EngagementRange=75,
+Padding=10,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
@@ -25547,7 +25548,7 @@ SEAD.HarmData={
 ["X_31"]={150,3},
 ["Kh25"]={25,0.8},
 }
-function SEAD:New(SEADGroupPrefixes)
+function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,BASE:New())
 self:F(SEADGroupPrefixes)
 if type(SEADGroupPrefixes)=='table'then
@@ -25557,6 +25558,9 @@ end
 else
 self.SEADGroupPrefixes[SEADGroupPrefixes]=SEADGroupPrefixes
 end
+local padding=Padding or 10
+if padding<10 then padding=10 end
+self.Padding=padding
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:I("*** SEAD - Started Version 0.3.1")
 return self
@@ -25580,6 +25584,13 @@ range=75
 end
 self.EngagementRange=range
 self:T(string.format("*** SEAD - Engagement range set to %s",range))
+return self
+end
+function SEAD:SetPadding(Padding)
+self:T({Padding})
+local padding=Padding or 10
+if padding<10 then padding=10 end
+self.Padding=padding
 return self
 end
 function SEAD:_CheckHarms(WeaponName)
@@ -25693,7 +25704,7 @@ local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSki
 if delay>_tti then delay=delay/2 end
 if _tti>(3*delay)then delay=(_tti/2)*0.9 end
 local SuppressionStartTime=timer.getTime()+delay
-local SuppressionEndTime=timer.getTime()+_tti+10
+local SuppressionEndTime=timer.getTime()+_tti+self.Padding
 if not self.SuppressedGroups[_targetgroupname]then
 self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_targetgroupname,_tti,delay))
 timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname},SuppressionStartTime)
@@ -44382,6 +44393,7 @@ state2flag=false,
 SamStateTracker={},
 DLink=false,
 DLTimeStamp=0,
+Padding=10,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -44389,7 +44401,7 @@ AMBER=1,
 RED=2,
 }
 do
-function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff)
+function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
 self.name=name or"mymantis"
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
@@ -44420,6 +44432,7 @@ self.relointerval=math.random(1800,3600)
 self.state2flag=false
 self.SamStateTracker={}
 self.DLink=false
+self.Padding=Padding or 10
 if EmOnOff then
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -44785,7 +44798,7 @@ self.SamStateTracker[grpname]="GREEN"
 end
 end
 self.SAM_Table=SAM_Tbl
-local mysead=SEAD:New(SEAD_Grps)
+local mysead=SEAD:New(SEAD_Grps,self.Padding)
 mysead:SetEngagementRange(engagerange)
 self.mysead=mysead
 return self
