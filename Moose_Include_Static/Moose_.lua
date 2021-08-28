@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-27T16:47:13.0000000Z-f6ed592f926ea5c7e3e50793878a19159a42512a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-28T08:52:12.0000000Z-4c5c320073f45f76db55d30ff2955a6f0e001410 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45992,6 +45992,7 @@ self.LSOCall.COMELEFT.duration=0.60
 self.LSOCall.DEPARTANDREENTER.duration=1.10
 self.LSOCall.EXPECTHEAVYWAVEOFF.duration=1.30
 self.LSOCall.EXPECTSPOT75.duration=1.85
+self.LSOCall.EXPECTSPOT5.duration=1.3
 self.LSOCall.FAST.duration=0.75
 self.LSOCall.FOULDECK.duration=0.75
 self.LSOCall.HIGH.duration=0.65
@@ -46037,6 +46038,7 @@ self.LSOCall.COMELEFT.duration=0.60
 self.LSOCall.DEPARTANDREENTER.duration=1.10
 self.LSOCall.EXPECTHEAVYWAVEOFF.duration=1.20
 self.LSOCall.EXPECTSPOT75.duration=2.00
+self.LSOCall.EXPECTSPOT5.duration=1.3
 self.LSOCall.FAST.duration=0.70
 self.LSOCall.FOULDECK.duration=0.62
 self.LSOCall.HIGH.duration=0.65
@@ -46283,6 +46285,14 @@ suffix="ogg",
 loud=false,
 subtitle="Expect spot 7.5",
 duration=2.0,
+subduration=5,
+},
+EXPECTSPOT5={
+file="LSO-ExpectSpot5",
+suffix="ogg",
+loud=false,
+subtitle="Expect spot 5",
+duration=1.3,
 subduration=5,
 },
 STABILIZED={
@@ -46908,8 +46918,8 @@ aoa.Slow=13.0
 aoa.OnSpeedMax=12.0
 aoa.OnSpeed=11.0
 aoa.OnSpeedMin=10.0
-aoa.Fast=9.0
-aoa.FAST=8.0
+aoa.Fast=8.0
+aoa.FAST=7.5
 end
 return aoa
 end
@@ -48832,7 +48842,9 @@ local inzone=playerData.unit:IsInZone(self:_GetZoneBullseye(playerData.case))
 local relheading=self:_GetRelativeHeading(playerData.unit,true)
 if inzone and math.abs(relheading)<60 then
 self:_PlayerHint(playerData)
-if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT5,nil,nil,nil,true)
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT75,nil,nil,nil,true)
 end
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.GROOVE_XX)
@@ -48928,7 +48940,9 @@ return
 end
 if self:_CheckLimits(X,Z,self.Abeam)then
 self:RadioTransmission(self.LSORadio,self.LSOCall.PADDLESCONTACT,nil,nil,nil,true)
-if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT5,false,5,nil,true)
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT75,false,5,nil,true)
 end
 self:_PlayerHint(playerData,3)
