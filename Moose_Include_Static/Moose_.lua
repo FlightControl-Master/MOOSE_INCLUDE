@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-08-28T11:58:06.0000000Z-19a93f00263eabee3b330f392f007d0776e6ddfe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-01T11:33:43.0000000Z-7433a7144c2ca343c538db550351dd562fa814aa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67897,10 +67897,9 @@ HeliGroup=nil,
 HeliUnit=nil,
 State="",
 }
-CTLD_ENGINEERING.Version="0.0.2"
+CTLD_ENGINEERING.Version="0.0.3"
 function CTLD_ENGINEERING:New(Name,GroupName,HeliGroup,HeliUnit)
 local self=BASE:Inherit(self,BASE:New())
-BASE:I({Name,GroupName,HeliGroup:GetName(),HeliUnit:GetName()})
 self.Name=Name or"Engineer Squad"
 self.Group=GROUP:FindByName(GroupName)
 self.Unit=self.Group:GetUnit(1)
@@ -67966,9 +67965,7 @@ ok=true
 else
 local tag=chalk.tag or"none"
 local timestamp=chalk.timestamp or 0
-self:I({chalk})
 local gone=timer.getAbsTime()-timestamp
-self:I({time=gone})
 if gone>=self.marktimer then
 ok=true
 _cargo:WipeMark()
@@ -68211,7 +68208,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
 }
-CTLD.version="0.1.7a2"
+CTLD.version="0.1.7a3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -69013,7 +69010,7 @@ cargo:SetWasDropped(true)
 if type==CTLD_CARGO.Enum.ENGINEERS then
 self.Engineers=self.Engineers+1
 local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
-self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname,Group,Unit)
+self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
 self:_SendMessage(string.format("Dropped Engineers %s into action!",name),10,false,Group)
 else
 self:_SendMessage(string.format("Dropped Troops %s into action!",name),10,false,Group)
@@ -69962,6 +69959,42 @@ engineers:Done()
 end
 else
 engineers:Stop()
+end
+end
+return self
+end
+function CTLD:InjectTroops(Zone,Cargo)
+self:T(self.lid.." InjectTroops")
+local cargo=Cargo
+self.CargoCounter=self.CargoCounter+1
+cargo.ID=self.CargoCounter
+table.insert(self.Cargo_Troops,cargo)
+local type=cargo:GetType()
+if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
+local name=cargo:GetName()or"none"
+local temptable=cargo:GetTemplates()or{}
+local factor=1.5
+local zone=Zone
+local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
+for _,_template in pairs(temptable)do
+self.TroopCounter=self.TroopCounter+1
+local alias=string.format("%s-%d",_template,math.random(1,100000))
+self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
+:InitRandomizeUnits(true,20,2)
+:InitDelayOff()
+:SpawnFromVec2(randomcoord)
+if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
+self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
+end
+end
+cargo:SetWasDropped(true)
+if type==CTLD_CARGO.Enum.ENGINEERS then
+self.Engineers=self.Engineers+1
+local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
+self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
+self:I(string.format("%s Injected Engineers %s into action!",self.lid,name))
+else
+self:I(string.format("%s Injected Troops %s into action!",self.lid,name))
 end
 end
 return self
