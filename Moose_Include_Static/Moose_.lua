@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-01T11:33:43.0000000Z-7433a7144c2ca343c538db550351dd562fa814aa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-02T16:04:39.0000000Z-8235b51a144e76a188bc05a1e5c5611948e61054 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3109,7 +3109,7 @@ local _count=1
 while _code<1777 and _count<30 do
 while true do
 _code=_code+1
-if not self:_ContainsDigit(_code,8)
+if not ContainsDigit(_code,8)
 and not ContainsDigit(_code,9)
 and not ContainsDigit(_code,0)then
 table.insert(jtacGeneratedLaserCodes,_code)
@@ -35427,6 +35427,7 @@ local shots=_result.ammo-_ammo
 local accur=0
 if shots>0 then
 accur=_result.hits/shots*100
+if accur>100 then accur=100 end
 end
 local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_result.zone.name,_result.hits)
 if shots and accur then
