@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-02T16:04:39.0000000Z-8235b51a144e76a188bc05a1e5c5611948e61054 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-03T12:16:30.0000000Z-cd6631049bda045b8d7a62218353ca85ee72fb79 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66707,7 +66707,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.10r3"
+CSAR.version="0.1.10r4"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -67005,7 +67005,6 @@ if self.takenOff[_event.IniUnitName]==true or _group:IsAirborne()then
 if self:_DoubleEjection(_unitname)then
 return
 end
-self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._unit:GetTypeName().." shot down. No Chute!",self.coalition,self.messageTime)
 else
 self:T(self.lid.." Pilot has not taken off, ignore")
 end
@@ -68197,19 +68196,19 @@ MOVE="move",
 SHIP="ship",
 }
 CTLD.UnitTypes={
-["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4},
-["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2},
-["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4},
-["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2},
-["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8},
-["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12},
-["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12},
-["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0},
-["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8},
-["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8},
-["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64},
+["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12},
+["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12},
+["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12},
+["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12},
+["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8,length=15},
+["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=22},
+["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=22},
+["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15},
+["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
+["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
+["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=28},
 }
-CTLD.version="0.1.7a3"
+CTLD.version="0.1.7a4"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68282,7 +68281,7 @@ self.TroopCounter=0
 self.Engineers=0
 self.EngineersInField={}
 self.EngineerSearch=2000
-self.CrateDistance=30
+self.CrateDistance=35
 self.ExtractFactor=3.33
 self.prefixes=Prefixes or{"Cargoheli"}
 self.useprefix=true
@@ -68320,6 +68319,7 @@ capabilities.crates=false
 capabilities.cratelimit=0
 capabilities.trooplimit=0
 capabilities.type="generic"
+capabilities.length=20
 end
 return capabilities
 end
@@ -68672,19 +68672,15 @@ local height=Unit:GetHeight()
 local droppedcargo={}
 for i=1,number do
 local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
-local cratedistance=i*4+8
+local cratedistance=(i-1)*2.5+capabilities.length
+if cratedistance>self.CrateDistance then cratedistance=self.CrateDistance end
+local addon=0
 if IsHerc then
-cratedistance=i*4+12
+addon=180
 end
-for i=1,50 do
-math.random(90,270)
-end
-local rheading=math.floor(((math.random(90,270)*heading)+1)/360)
-if not IsHerc then
-rheading=rheading+180
-end
-if rheading>360 then rheading=rheading-360 end
-local cratecoord=position:Translate(cratedistance,rheading)
+local randomheading=UTILS.RandomGaussian(0,30,-90,90,100)
+randomheading=math.fmod((heading+randomheading+addon),360)
+local cratecoord=position:Translate(cratedistance,randomheading)
 local cratevec2=cratecoord:GetVec2()
 self.CrateCounter=self.CrateCounter+1
 if type(ship)=="string"then
@@ -69726,7 +69722,7 @@ self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone
 end
 return self
 end
-function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit)
+function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length)
 self:T(self.lid.." UnitCapabilities")
 local unittype=nil
 local unit=nil
@@ -69744,6 +69740,7 @@ capabilities.crates=Cancrates or false
 capabilities.troops=Cantroops or false
 capabilities.cratelimit=Cratelimit or 0
 capabilities.trooplimit=Trooplimit or 0
+capabilities.length=Length or 20
 self.UnitTypes[unittype]=capabilities
 return self
 end
