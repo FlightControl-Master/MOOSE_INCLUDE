@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-03T16:38:51.0000000Z-76c08095ab6398e9bec6f5ec3c70ccef36d05361 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-05T16:05:08.0000000Z-08a81709907e4984a995205a8aaebcd7f0256d71 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69568,8 +69568,8 @@ function CTLD:_ListRadioBeacons(Group,Unit)
 self:T(self.lid.." _ListRadioBeacons")
 local report=REPORT:New("Active Zone Beacons")
 report:Add("------------------------------------------------------------")
-local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
-for i=1,3 do
+local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones,[4]=self.shipZones}
+for i=1,4 do
 for index,cargozone in pairs(zones[i])do
 local czone=cargozone
 if czone.active and czone.hasbeacon then
@@ -69591,9 +69591,14 @@ report:Add("------------------------------------------------------------")
 self:_SendMessage(report:Text(),30,true,Group)
 return self
 end
-function CTLD:_AddRadioBeacon(Name,Sound,Mhz,Modulation)
+function CTLD:_AddRadioBeacon(Name,Sound,Mhz,Modulation,IsShip)
 self:T(self.lid.." _AddRadioBeacon")
-local Zone=ZONE:FindByName(Name)
+local Zone=nil
+if IsShip then
+Zone=UNIT:FindByName(Name)
+else
+Zone=ZONE:FindByName(Name)
+end
 local Sound=Sound or"beacon.ogg"
 if Zone then
 local ZoneCoord=Zone:GetCoordinate()
@@ -69606,8 +69611,10 @@ return self
 end
 function CTLD:_RefreshRadioBeacons()
 self:T(self.lid.." _RefreshRadioBeacons")
-local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
-for i=1,3 do
+local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones,[4]=self.shipZones}
+for i=1,4 do
+local IsShip=false
+if i==4 then IsShip=true end
 for index,cargozone in pairs(zones[i])do
 local czone=cargozone
 local Sound=self.RadioSound
@@ -69619,9 +69626,9 @@ local Name=czone.name
 local FM=FMbeacon.frequency
 local VHF=VHFbeacon.frequency
 local UHF=UHFbeacon.frequency
-self:_AddRadioBeacon(Name,Sound,FM,radio.modulation.FM)
-self:_AddRadioBeacon(Name,Sound,VHF,radio.modulation.FM)
-self:_AddRadioBeacon(Name,Sound,UHF,radio.modulation.AM)
+self:_AddRadioBeacon(Name,Sound,FM,radio.modulation.FM,IsShip)
+self:_AddRadioBeacon(Name,Sound,VHF,radio.modulation.FM,IsShip)
+self:_AddRadioBeacon(Name,Sound,UHF,radio.modulation.AM,IsShip)
 end
 end
 end
@@ -69693,12 +69700,17 @@ local unitcoord=Unit:GetCoordinate()
 local Group=Unit:GetGroup()
 local smokedistance=self.smokedistance
 local smoked=false
-local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones}
-for i=1,3 do
+local zones={[1]=self.pickupZones,[2]=self.wpZones,[3]=self.dropOffZones,[4]=self.shipZones}
+for i=1,4 do
 for index,cargozone in pairs(zones[i])do
 local CZone=cargozone
 local zonename=CZone.name
-local zone=ZONE:FindByName(zonename)
+local zone=nil
+if i==4 then
+zone=UNIT:FindByName(zonename)
+else
+zone=ZONE:FindByName(zonename)
+end
 local zonecoord=zone:GetCoordinate()
 local active=CZone.active
 local color=CZone.color
