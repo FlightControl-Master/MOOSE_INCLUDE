@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-04T13:20:03.0000000Z-e4a51951b0eb44a89084f348c067449c13fc6efe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-06T05:12:20.0000000Z-a49f4eaa212c6e2498ef05d0ea7c74a2a3612fd5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -50064,9 +50064,11 @@ elseif t<19 then
 grade="OK Groove"
 elseif t<=24 then
 grade="(LIG)"
-elseif t<90 and aircrafttype~=AIRBOSS.AircraftCarrier.AV8B then
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<55 then
+grade="FAST V/STOL Groove"
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<90 then
 grade="OK V/STOL Groove"
-elseif t>=91 and aircrafttype~=AIRBOSS.AircraftCarrier.AV8B then
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t>=91 then
 grade="SLOW V/STOL Groove"
 else
 grade="LIG"
@@ -50074,7 +50076,7 @@ end
 if t>=16.4 and t<=16.6 then
 grade="_OK_"
 end
-if aircrafttype~=AIRBOSS.AircraftCarrier.AV8B and(t>=65.0 and t<=75.0)then
+if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and(t>=65.0 and t<=75.0)then
 grade="_OK_ V/STOL"
 end
 return grade
@@ -50094,7 +50096,7 @@ local nS=count(G,'%(')
 local nN=N-nS-nL
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
-local TgrooveVstolUnicorn=Tgroove and(Tgroove>=65.0 and Tgroove<=75.0)and aircrafttype~=AIRBOSS.AircraftCarrier.AV8B or false
+local TgrooveVstolUnicorn=Tgroove and(Tgroove>=65.0 and Tgroove<=70.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
 local grade
 local points
 if N==0 and(TgrooveUnicorn or TgrooveVstolUnicorn)then
@@ -50102,20 +50104,16 @@ grade="_OK_"
 points=5.0
 G="Unicorn"
 else
-if nL>0 then
+if nL>3 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+grade="--"
+points=2.0
+elseif nN>2 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+grade="(OK)"
+points=3.0
+elseif nL>0 then
 grade="--"
 points=2.0
 elseif nN>0 then
-grade="(OK)"
-points=3.0
-else
-grade="OK"
-points=4.0
-end
-if nL>3 and aircrafttype~=AIRBOSS.AircraftCarrier.AV8B then
-grade="--"
-points=2.0
-elseif nN>3 and aircrafttype~=AIRBOSS.AircraftCarrier.AV8B then
 grade="(OK)"
 points=3.0
 else
