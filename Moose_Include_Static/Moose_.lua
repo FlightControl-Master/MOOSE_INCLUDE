@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-05T16:05:08.0000000Z-08a81709907e4984a995205a8aaebcd7f0256d71 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-07T17:53:05.0000000Z-9516ec3cd2693553778fbcf126e080addf83e067 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66707,7 +66707,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.10r4"
+CSAR.version="0.1.10r5"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
