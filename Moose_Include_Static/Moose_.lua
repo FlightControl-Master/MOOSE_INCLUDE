@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-07T17:52:14.0000000Z-8873504daf8f829fe9024c9a13d9d1e1950bbf6f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-11T08:03:49.0000000Z-136bd19f1911a2d9b48230995757ff587cdf99d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -11064,7 +11064,7 @@ end
 end
 function SET_AIRBASE:OnEventDead(EventData)
 local airbaseName,airbase=self:FindInDatabase(EventData)
-if airbase and airbase:IsShip()or airbase:IsHelipad()then
+if airbase and(airbase:IsShip()or airbase:IsHelipad())then
 self:RemoveAirbasesByName(airbaseName)
 end
 end
