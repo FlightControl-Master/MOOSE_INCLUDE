@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-11T08:03:49.0000000Z-136bd19f1911a2d9b48230995757ff587cdf99d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-11T13:20:20.0000000Z-05ce7e4513abc503bda74886671218d0a59c5141 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55911,7 +55911,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.1.7a5"
+CTLD.version="0.1.8a1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56002,7 +56002,11 @@ self.HercMaxAngels=2000
 self.HercMaxSpeed=77
 self.suppressmessages=false
 self.repairtime=300
+self.placeCratesAhead=false
 self.cratecountry=country.id.GERMANY
+if self.coalition==coalition.side.RED then
+self.cratecountry=country.id.RUSSIA
+end
 for i=1,100 do
 math.random()
 end
@@ -56374,17 +56378,39 @@ local position=Unit:GetCoordinate()
 local heading=Unit:GetHeading()+1
 local height=Unit:GetHeight()
 local droppedcargo={}
-for i=1,number do
-local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
-local cratedistance=(i-1)*2.5+capabilities.length
-if cratedistance>self.CrateDistance then cratedistance=self.CrateDistance end
+local cratedistance=0
+local rheading=0
+local angleOffNose=0
 local addon=0
 if IsHerc then
 addon=180
 end
-local randomheading=UTILS.RandomGaussian(0,30,-90,90,100)
-randomheading=math.fmod((heading+randomheading+addon),360)
-local cratecoord=position:Translate(cratedistance,randomheading)
+for i=1,number do
+local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
+if not self.placeCratesAhead then
+cratedistance=(i-1)*2.5+capabilities.length
+if cratedistance>self.CrateDistance then cratedistance=self.CrateDistance end
+rheading=UTILS.RandomGaussian(0,25,-90,90,100)
+rheading=math.fmod((heading+rheading+addon),360)
+else
+local initialSpacing=IsHerc and 16 or 12
+local crateSpacing=4
+local lateralSpacing=4
+local nrSideBySideCrates=3
+if cratesneeded==1 then
+cratedistance=initialSpacing
+rheading=heading
+else
+if(i-1)%nrSideBySideCrates==0 then
+cratedistance=i==1 and initialSpacing or cratedistance+crateSpacing
+angleOffNose=math.ceil(math.deg(math.atan(lateralSpacing/cratedistance)))
+rheading=heading-angleOffNose
+else
+rheading=rheading+angleOffNose
+end
+end
+end
+local cratecoord=position:Translate(cratedistance,rheading)
 local cratevec2=cratecoord:GetVec2()
 self.CrateCounter=self.CrateCounter+1
 if type(ship)=="string"then
@@ -56650,6 +56676,72 @@ local text=report:Text()
 self:_SendMessage(text,30,true,Group)
 else
 self:_SendMessage(string.format("Nothing loaded!\nTroop limit: %d | Crate limit %d",trooplimit,cratelimit),10,false,Group)
+end
+return self
+end
+function CTLD:_ListInventory(Group,Unit)
+self:T(self.lid.." _ListInventory")
+local unitname=Unit:GetName()
+local unittype=Unit:GetTypeName()
+local cgotypes=self.Cargo_Crates
+local trptypes=self.Cargo_Troops
+local function countcargo(cgotable)
+local counter=0
+for _,_cgo in pairs(cgotable)do
+counter=counter+1
+end
+return counter
+end
+local crateno=countcargo(cgotypes)
+local troopno=countcargo(trptypes)
+if(crateno>0 or troopno>0)then
+local report=REPORT:New("Inventory Sheet")
+report:Add("------------------------------------------------------------")
+report:Add(string.format("Troops: %d, Cratetypes: %d",troopno,crateno))
+report:Add("------------------------------------------------------------")
+report:Add("        -- TROOPS --")
+for _,_cargo in pairs(trptypes)do
+local cargo=_cargo
+local type=cargo:GetType()
+if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
+local stockn=cargo:GetStock()
+local stock="none"
+if stockn==-1 then
+stock="unlimited"
+elseif stockn>0 then
+stock=tostring(stockn)
+end
+report:Add(string.format("Unit: %s size: %d stock: %s",cargo:GetName(),cargo:GetCratesNeeded(),stock))
+end
+end
+if report:GetCount()==4 then
+report:Add("        N O N E")
+end
+report:Add("------------------------------------------------------------")
+report:Add("       -- CRATES --")
+local cratecount=0
+for _,_cargo in pairs(cgotypes)do
+local cargo=_cargo
+local type=cargo:GetType()
+if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
+local stockn=cargo:GetStock()
+local stock="none"
+if stockn==-1 then
+stock="unlimited"
+elseif stockn>0 then
+stock=tostring(stockn)
+end
+report:Add(string.format("Type: %s crates: %d stock: %s",cargo:GetName(),cargo:GetCratesNeeded(),stock))
+cratecount=cratecount+1
+end
+end
+if cratecount==0 then
+report:Add("        N O N E")
+end
+local text=report:Text()
+self:_SendMessage(text,30,true,Group)
+else
+self:_SendMessage(string.format("Nothing in stock!"),10,false,Group)
 end
 return self
 end
@@ -57094,6 +57186,8 @@ local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
 local topcrates=MENU_GROUP:New(_group,"Manage Crates",topmenu)
 local toptroops=MENU_GROUP:New(_group,"Manage Troops",topmenu)
 local listmenu=MENU_GROUP_COMMAND:New(_group,"List boarded cargo",topmenu,self._ListCargo,self,_group,_unit)
+local invtry=MENU_GROUP_COMMAND:New(_group,"Inventory",topmenu,self._ListInventory,self,_group,_unit)
+local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
 local smokemenu=MENU_GROUP_COMMAND:New(_group,"Smoke zones nearby",topmenu,self.SmokeZoneNearBy,self,_unit,false)
 local smokemenu=MENU_GROUP_COMMAND:New(_group,"Flare zones nearby",topmenu,self.SmokeZoneNearBy,self,_unit,true):Refresh()
 if cancrates then
@@ -57120,7 +57214,6 @@ end
 local unloadmenu1=MENU_GROUP_COMMAND:New(_group,"Drop troops",toptroops,self._UnloadTroops,self,_group,_unit):Refresh()
 local extractMenu1=MENU_GROUP_COMMAND:New(_group,"Extract troops",toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
 end
-local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
 if unittype=="Hercules"then
 local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show flight parameters",topmenu,self._ShowFlightParams,self,_group,_unit):Refresh()
 else
@@ -57680,9 +57773,24 @@ end
 function CTLD:InjectTroops(Zone,Cargo)
 self:T(self.lid.." InjectTroops")
 local cargo=Cargo
+local function IsTroopsMatch(cargo)
+local match=false
+local cgotbl=self.Cargo_Troops
+local name=cargo:GetName()
+for _,_cgo in pairs(cgotbl)do
+local cname=_cgo:GetName()
+if name==cname then
+match=true
+break
+end
+end
+return match
+end
+if not IsTroopsMatch(cargo)then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 table.insert(self.Cargo_Troops,cargo)
+end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
 local name=cargo:GetName()or"none"
