@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-11T13:20:36.0000000Z-cd9006d29bbd4a11b05216eba5a85b5f8fb69713 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-12T15:37:21.0000000Z-c50a9bd318b7e572e83c1320e863e206f0ddd0f0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68208,7 +68208,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.1.8a1"
+CTLD.version="0.1.8a2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68389,8 +68389,6 @@ local cgotype=Cargotype:GetType()
 if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
 self:_SendMessage(string.format("Sorry, all %s are gone!",cgoname),10,false,Group)
 return self
-else
-Cargotype:RemoveStock()
 end
 local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
@@ -68439,6 +68437,7 @@ self.Loaded_Cargo[unitname]=loaded
 self:_SendMessage("Troops boarded!",10,false,Group)
 self:__TroopsPickedUp(1,Group,Unit,Cargotype)
 self:_UpdateUnitCargoMass(Unit)
+Cargotype:RemoveStock()
 end
 return self
 end
@@ -68633,8 +68632,6 @@ local instock=Cargo:GetStock()
 if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
 self:_SendMessage(string.format("Sorry, we ran out of %s",cgoname),10,false,Group)
 return self
-else
-Cargo:RemoveStock()
 end
 end
 local inzone=false
@@ -68736,6 +68733,7 @@ realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,crat
 table.insert(droppedcargo,realcargo)
 else
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],nil,cargotype.PerCrateMass)
+Cargo:RemoveStock()
 end
 table.insert(self.Spawned_Cargo,realcargo)
 end
