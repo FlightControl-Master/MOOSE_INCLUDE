@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-12T15:37:32.0000000Z-6cae3e62cf7e128976fd99712509dad0d8557921 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-20T12:27:45.0000000Z-2b22d5288c94be25e25607b593c1e65937b8e432 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6867,8 +6867,8 @@ function ZONE_BASE:IsCoordinateInZone(Coordinate)
 local InZone=self:IsVec2InZone(Coordinate:GetVec2())
 return InZone
 end
-function ZONE_BASE:IsPointVec2InZone(PointVec2)
-local InZone=self:IsVec2InZone(PointVec2:GetVec2())
+function ZONE_BASE:IsPointVec2InZone(Coordinate)
+local InZone=self:IsVec2InZone(Coordinate:GetVec2())
 return InZone
 end
 function ZONE_BASE:IsPointVec3InZone(PointVec3)
@@ -16334,6 +16334,19 @@ return IsShip
 end
 return nil
 end
+function POSITIONABLE:IsSubmarine()
+self:F2()
+local DCSUnit=self:GetDCSObject()
+if DCSUnit then
+local UnitDescriptor=DCSUnit:getDesc()
+if UnitDescriptor.attributes["Submarines"]==true then
+return true
+else
+return false
+end
+end
+return nil
+end
 function POSITIONABLE:InAir()
 self:F2(self.PositionableName)
 return nil
@@ -16763,6 +16776,7 @@ local Weights={
 ["Ural-4320 APA-5D"]=10,
 ["Ural-4320T"]=14,
 ["ZBD04A"]=7,
+["VAB_Mephisto"]=8,
 }
 local CargoBayWeightLimit=(Weights[Desc.typeName]or 0)*95
 self.__.CargoBayWeightLimit=CargoBayWeightLimit
@@ -55911,7 +55925,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.1.8a2"
+CTLD.version="0.2.1a2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -55956,6 +55970,8 @@ self:AddTransition("*","TroopsRTB","*")
 self:AddTransition("*","CratesDropped","*")
 self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
+self:AddTransition("*","Load","*")
+self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
 self.PilotGroups={}
 self.CtldUnits={}
@@ -56007,6 +56023,12 @@ self.cratecountry=country.id.GERMANY
 if self.coalition==coalition.side.RED then
 self.cratecountry=country.id.RUSSIA
 end
+self.enableLoadSave=false
+self.filepath=nil
+self.saveinterval=600
+self.eventoninject=true
+local AliaS=string.gsub(self.alias," ","_")
+self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 for i=1,100 do
 math.random()
 end
@@ -57787,10 +57809,11 @@ end
 if not IsTroopsMatch(cargo)then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
+cargo.Stock=1
 table.insert(self.Cargo_Troops,cargo)
 end
 local type=cargo:GetType()
-if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
+if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)then
 local name=cargo:GetName()or"none"
 local temptable=cargo:GetTemplates()or{}
 local factor=1.5
@@ -57812,9 +57835,65 @@ if type==CTLD_CARGO.Enum.ENGINEERS then
 self.Engineers=self.Engineers+1
 local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
 self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
-self:I(string.format("%s Injected Engineers %s into action!",self.lid,name))
 else
-self:I(string.format("%s Injected Troops %s into action!",self.lid,name))
+end
+if self.eventoninject then
+self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter])
+end
+end
+return self
+end
+function CTLD:InjectVehicles(Zone,Cargo)
+self:T(self.lid.." InjectVehicles")
+local cargo=Cargo
+local function IsVehicMatch(cargo)
+local match=false
+local cgotbl=self.Cargo_Crates
+local name=cargo:GetName()
+for _,_cgo in pairs(cgotbl)do
+local cname=_cgo:GetName()
+if name==cname then
+match=true
+break
+end
+end
+return match
+end
+if not IsVehicMatch(cargo)then
+self.CargoCounter=self.CargoCounter+1
+cargo.ID=self.CargoCounter
+cargo.Stock=1
+table.insert(self.Cargo_Crates,cargo)
+end
+local type=cargo:GetType()
+if(type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
+local name=cargo:GetName()or"none"
+local temptable=cargo:GetTemplates()or{}
+local factor=1.5
+local zone=Zone
+local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
+cargo:SetWasDropped(true)
+local canmove=false
+if type==CTLD_CARGO.Enum.VEHICLE then canmove=true end
+for _,_template in pairs(temptable)do
+self.TroopCounter=self.TroopCounter+1
+local alias=string.format("%s-%d",_template,math.random(1,100000))
+if canmove then
+self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
+:InitRandomizeUnits(true,20,2)
+:InitDelayOff()
+:SpawnFromVec2(randomcoord)
+else
+self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
+:InitDelayOff()
+:SpawnFromVec2(randomcoord)
+end
+if self.movetroopstowpzone and canmove then
+self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
+end
+if self.eventoninject then
+self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
+end
 end
 end
 return self
@@ -57836,6 +57915,12 @@ self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
 self:__Status(-5)
+if self.enableLoadSave then
+local interval=self.saveinterval
+local filename=self.filename
+local filepath=self.filepath
+self:__Save(interval,filepath,filename)
+end
 return self
 end
 function CTLD:onbeforeStatus(From,Event,To)
@@ -57912,6 +57997,193 @@ return self
 end
 function CTLD:onbeforeTroopsRTB(From,Event,To,Group,Unit)
 self:T({From,Event,To})
+return self
+end
+function CTLD:onbeforeSave(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+if not io then
+self:E(self.lid.."ERROR: io not desanitized. Can't save current state.")
+return false
+end
+if path==nil and not lfs then
+self:E(self.lid.."WARNING: lfs not desanitized. State will be saved in DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+return true
+end
+function CTLD:onafterSave(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+local function _savefile(filename,data)
+local f=assert(io.open(filename,"wb"))
+f:write(data)
+f:close()
+end
+if lfs then
+path=self.filepath or lfs.writedir()
+end
+filename=filename or self.filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local grouptable=self.DroppedTroops
+local cgovehic=self.Cargo_Crates
+local cgotable=self.Cargo_Troops
+local function FindCargoType(name,table)
+local match=false
+local cargo=nil
+for _ind,_cargo in pairs(table)do
+local thiscargo=_cargo
+local template=thiscargo:GetTemplates()
+if type(template)=="string"then
+template={template}
+end
+for _,_name in pairs(template)do
+if string.find(name,_name)then
+match=true
+cargo=thiscargo
+end
+end
+if match then break end
+end
+return match,cargo
+end
+local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass\n"
+local n=0
+for _,_grp in pairs(grouptable)do
+local group=_grp
+if group and group:IsAlive()then
+local name=group:GetName()
+local template=string.gsub(name,"-(.+)$","")
+if string.find(template,"#")then
+template=string.gsub(name,"#(%d+)$","")
+end
+local match,cargo=FindCargoType(template,cgotable)
+if not match then
+match,cargo=FindCargoType(template,cgovehic)
+end
+if match then
+n=n+1
+local cargo=cargo
+local cgoname=cargo.Name
+local cgotemp=cargo.Templates
+local cgotype=cargo.CargoType
+local cgoneed=cargo.CratesNeeded
+local cgomass=cargo.PerCrateMass
+local templates="{"
+for _,_tmpl in pairs(cgotemp)do
+templates=templates.._tmpl..";"
+end
+templates=templates.."}"
+local location=group:GetVec3()
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d\n"
+,template,location.x,location.y,location.z,cgoname,templates,cgotype,cgoneed,cgomass)
+data=data..txt
+end
+end
+end
+_savefile(filename,data)
+if self.enableLoadSave then
+local interval=self.saveinterval
+local filename=self.filename
+local filepath=self.filepath
+self:__Save(interval,filepath,filename)
+end
+return self
+end
+function CTLD:onbeforeLoad(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+local function _fileexists(name)
+local f=io.open(name,"r")
+if f~=nil then
+io.close(f)
+return true
+else
+return false
+end
+end
+if not io then
+self:E(self.lid.."WARNING: io not desanitized. Cannot load file.")
+return false
+end
+if path==nil and not lfs then
+self:E(self.lid.."WARNING: lfs not desanitized. State will be saved in DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+if lfs then
+path=path or lfs.writedir()
+end
+filename=filename or self.filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local exists=_fileexists(filename)
+if exists then
+return true
+else
+self:E(self.lid..string.format("WARNING: State file %s does not exist.",filename))
+return false
+end
+end
+function CTLD:onafterLoad(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+local function _loadfile(filename)
+local f=assert(io.open(filename,"rb"))
+local data=f:read("*all")
+f:close()
+return data
+end
+if lfs then
+path=path or lfs.writedir()
+end
+filename=filename or self.filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local text=string.format("Loading CTLD state from file %s",filename)
+MESSAGE:New(text,10):ToAllIf(self.Debug)
+self:I(self.lid..text)
+local file=assert(io.open(filename,"rb"))
+local loadeddata={}
+for line in file:lines()do
+loadeddata[#loadeddata+1]=line
+end
+file:close()
+table.remove(loadeddata,1)
+for _id,_entry in pairs(loadeddata)do
+local dataset=UTILS.Split(_entry,",")
+local groupname=dataset[1]
+local vec2={}
+vec2.x=dataset[2]
+vec2.y=dataset[4]
+local cargoname=dataset[5]
+if type(cargoname)=="string"then
+local cargotemplates=dataset[6]
+cargotemplates=string.gsub(cargotemplates,"{","")
+cargotemplates=string.gsub(cargotemplates,"}","")
+cargotemplates=UTILS.Split(cargotemplates,";")
+local cargotype=dataset[7]
+local size=dataset[8]
+local mass=dataset[9]
+local dropzone=ZONE_RADIUS:New("DropZone",vec2,100)
+if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
+local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,false,mass)
+self:InjectVehicles(dropzone,injectvehicle)
+elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
+local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,false,mass)
+self:InjectTroops(dropzone,injecttroops)
+end
+end
+end
 return self
 end
 end
