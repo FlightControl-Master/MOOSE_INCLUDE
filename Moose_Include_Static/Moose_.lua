@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-16T13:09:51.0000000Z-dc14b60fcc9dd85439d75217018d5d4ed60fb894 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-20T12:20:09.0000000Z-e9377e93f1fe67a3e558f737a091476715e4198c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -17303,6 +17303,7 @@ local Weights={
 ["Ural-4320 APA-5D"]=10,
 ["Ural-4320T"]=14,
 ["ZBD04A"]=7,
+["VAB_Mephisto"]=8,
 }
 local CargoBayWeightLimit=(Weights[Desc.typeName]or 0)*95
 self.__.CargoBayWeightLimit=CargoBayWeightLimit
@@ -68208,7 +68209,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.1a1"
+CTLD.version="0.2.1a2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68309,6 +68310,7 @@ end
 self.enableLoadSave=false
 self.filepath=nil
 self.saveinterval=600
+self.eventoninject=true
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 for i=1,100 do
@@ -70119,6 +70121,9 @@ local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
 self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
 else
 end
+if self.eventoninject then
+self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter])
+end
 end
 return self
 end
@@ -70169,6 +70174,9 @@ self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 end
 if self.movetroopstowpzone and canmove then
 self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
+end
+if self.eventoninject then
+self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
 end
 end
 end
@@ -70442,6 +70450,7 @@ local vec2={}
 vec2.x=dataset[2]
 vec2.y=dataset[4]
 local cargoname=dataset[5]
+if type(cargoname)=="string"then
 local cargotemplates=dataset[6]
 cargotemplates=string.gsub(cargotemplates,"{","")
 cargotemplates=string.gsub(cargotemplates,"}","")
@@ -70456,6 +70465,7 @@ self:InjectVehicles(dropzone,injectvehicle)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,false,mass)
 self:InjectTroops(dropzone,injecttroops)
+end
 end
 end
 return self
