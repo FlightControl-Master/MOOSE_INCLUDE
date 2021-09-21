@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-20T12:27:45.0000000Z-2b22d5288c94be25e25607b593c1e65937b8e432 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-21T05:48:09.0000000Z-663cd34aa3a475cdc831879f97d8fbab170428d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10653,6 +10653,16 @@ return false
 end
 end,{ZoneObject})
 return self
+end
+function SET_CLIENT:CountAlive()
+local Set=self:GetSet()
+local CountU=0
+for UnitID,UnitData in pairs(Set)do
+if UnitData and UnitData:IsAlive()then
+CountU=CountU+1
+end
+end
+return CountU
 end
 function SET_CLIENT:IsIncludeObject(MClient)
 self:F2(MClient)
@@ -55925,7 +55935,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.1a2"
+CTLD.version="0.2.1a3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -58109,6 +58119,8 @@ else
 return false
 end
 end
+filename=filename or self.filename
+path=path or self.filepath
 if not io then
 self:E(self.lid.."WARNING: io not desanitized. Cannot load file.")
 return false
@@ -58119,7 +58131,6 @@ end
 if lfs then
 path=path or lfs.writedir()
 end
-filename=filename or self.filename
 if path~=nil then
 filename=path.."\\"..filename
 end
@@ -58127,7 +58138,7 @@ local exists=_fileexists(filename)
 if exists then
 return true
 else
-self:E(self.lid..string.format("WARNING: State file %s does not exist.",filename))
+self:E(self.lid..string.format("WARNING: State file %s might not exist.",filename))
 return false
 end
 end
@@ -58142,10 +58153,11 @@ local data=f:read("*all")
 f:close()
 return data
 end
+filename=filename or self.filename
+path=path or self.filepath
 if lfs then
 path=path or lfs.writedir()
 end
-filename=filename or self.filename
 if path~=nil then
 filename=path.."\\"..filename
 end
