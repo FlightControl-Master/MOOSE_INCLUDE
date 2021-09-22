@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-21T05:46:21.0000000Z-021c907d16a7905891e2c1a53c337d60ed656308 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-22T13:55:10.0000000Z-19e2ebcd034f468c32eb2ec6bf919da1c290c30e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67968,7 +67968,8 @@ local ctable={}
 local ind=0
 if number>0 then
 for _,_cargo in pairs(crates)do
-if _cargo:WasDropped()then
+local cgotype=_cargo:GetType()
+if _cargo:WasDropped()and cgotype~=CTLD_CARGO.Enum.STATIC then
 local ok=false
 local chalk=_cargo:GetMark()
 if chalk==nil then
@@ -68075,6 +68076,7 @@ CTLD_CARGO.Enum={
 ["CRATE"]="Crate",
 ["REPAIR"]="Repair",
 ["ENGINEERS"]="Engineers",
+["STATIC"]="Static",
 }
 function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock)
 local self=BASE:Inherit(self,BASE:New())
@@ -68162,6 +68164,13 @@ else
 return false
 end
 end
+function CTLD_CARGO:IsStatic()
+if self.CargoType=="Static"then
+return true
+else
+return false
+end
+end
 function CTLD_CARGO:AddMark(Mark)
 self.Mark=Mark
 return self
@@ -68194,7 +68203,7 @@ Cargo_Crates={},
 Loaded_Cargo={},
 Spawned_Crates={},
 Spawned_Cargo={},
-CrateDistance=30,
+CrateDistance=35,
 debug=false,
 wpZones={},
 pickupZones={},
@@ -68219,7 +68228,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.1a3"
+CTLD.version="0.2.2a1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68282,6 +68291,7 @@ self.wpZones={}
 self.shipZones={}
 self.Cargo_Crates={}
 self.Cargo_Troops={}
+self.Cargo_Statics={}
 self.Loaded_Cargo={}
 self.Spawned_Crates={}
 self.Spawned_Cargo={}
@@ -68323,6 +68333,7 @@ self.saveinterval=600
 self.eventoninject=true
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
+self.allowcratepickupagain=true
 for i=1,100 do
 math.random()
 end
@@ -68675,7 +68686,7 @@ if not self.debug then return self end
 end
 local capabilities=self:_GetUnitCapabilities(Unit)
 local canloadcratesno=capabilities.cratelimit
-local loaddist=self.CrateDistance or 30
+local loaddist=self.CrateDistance or 35
 local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist)
 if numbernearby>=canloadcratesno and not drop then
 self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
@@ -68687,6 +68698,12 @@ local number=number or cargotype:GetCratesNeeded()
 local cratesneeded=cargotype:GetCratesNeeded()
 local cratename=cargotype:GetName()
 local cratetemplate="Container"
+local cgotype=cargotype:GetType()
+local isstatic=false
+if cgotype==CTLD_CARGO.Enum.STATIC then
+cratetemplate=cargotype:GetTemplates()
+isstatic=true
+end
 local position=Unit:GetCoordinate()
 local heading=Unit:GetHeading()+1
 local height=Unit:GetHeight()
@@ -68703,7 +68720,7 @@ local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
 if not self.placeCratesAhead then
 cratedistance=(i-1)*2.5+capabilities.length
 if cratedistance>self.CrateDistance then cratedistance=self.CrateDistance end
-rheading=UTILS.RandomGaussian(0,25,-90,90,100)
+rheading=UTILS.RandomGaussian(0,30,-90,90,100)
 rheading=math.fmod((heading+rheading+addon),360)
 else
 local initialSpacing=IsHerc and 16 or 12
@@ -68726,6 +68743,10 @@ end
 local cratecoord=position:Translate(cratedistance,rheading)
 local cratevec2=cratecoord:GetVec2()
 self.CrateCounter=self.CrateCounter+1
+local basetype="container_cargo"
+if isstatic then
+basetype=cratetemplate
+end
 if type(ship)=="string"then
 self:T("Spawning on ship "..ship)
 local Ship=UNIT:FindByName(ship)
@@ -68735,11 +68756,11 @@ local dist=shipcoord:Get2DDistance(unitcoord)
 dist=dist-(20+math.random(1,10))
 local width=width/2
 local Offy=math.random(-width,width)
-self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType("container_cargo","Cargos",self.cratecountry)
+self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
 :InitLinkToUnit(Ship,dist,Offy,0)
 :Spawn(270,cratealias)
 else
-self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType("container_cargo","Cargos",self.cratecountry)
+self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
 :InitCoordinate(cratecoord)
 :Spawn(270,cratealias)
 end
@@ -68751,7 +68772,7 @@ if drop then
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass)
 table.insert(droppedcargo,realcargo)
 else
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],nil,cargotype.PerCrateMass)
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass)
 Cargo:RemoveStock()
 end
 table.insert(self.Spawned_Cargo,realcargo)
@@ -68764,9 +68785,42 @@ end
 self:_SendMessage(text,10,false,Group)
 return self
 end
+function CTLD:InjectStatics(Zone,Cargo)
+self:T(self.lid.." InjectStatics")
+local cratecoord=Zone:GetCoordinate()
+local surface=cratecoord:GetSurfaceType()
+if surface==land.SurfaceType.WATER then
+return self
+end
+local cargotype=Cargo
+local cratesneeded=cargotype:GetCratesNeeded()
+local cratetemplate="Container"
+local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
+local cratename=cargotype:GetName()
+local cgotype=cargotype:GetType()
+local isstatic=false
+if cgotype==CTLD_CARGO.Enum.STATIC then
+cratetemplate=cargotype:GetTemplates()
+isstatic=true
+end
+local basetype="container_cargo"
+if isstatic then
+basetype=cratetemplate
+end
+self.CrateCounter=self.CrateCounter+1
+self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
+:InitCoordinate(cratecoord)
+:Spawn(270,cratealias)
+local templ=cargotype:GetTemplates()
+local sorte=cargotype:GetType()
+self.CargoCounter=self.CargoCounter+1
+cargotype.Positionable=self.Spawned_Crates[self.CrateCounter]
+table.insert(self.Spawned_Cargo,cargotype)
+return self
+end
 function CTLD:_ListCratesNearby(_group,_unit)
 self:T(self.lid.." _ListCratesNearby")
-local finddist=self.CrateDistance or 30
+local finddist=self.CrateDistance or 35
 local crates,number=self:_FindCratesNearby(_group,_unit,finddist)
 if number>0 then
 local text=REPORT:New("Crates Found Nearby:")
@@ -68863,16 +68917,16 @@ loaded.Troopsloaded=0
 loaded.Cratesloaded=0
 loaded.Cargo={}
 end
-local finddist=self.CrateDistance or 30
+local finddist=self.CrateDistance or 35
 local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
 if number==0 and self.hoverautoloading then
-return
+return self
 elseif number==0 then
 self:_SendMessage("Sorry no loadable crates nearby!",10,false,Group)
-return
+return self
 elseif numberonboard==cratelimit then
 self:_SendMessage("Sorry no fully loaded!",10,false,Group)
-return
+return self
 else
 local capacity=cratelimit-numberonboard
 local crateidsloaded={}
@@ -68881,19 +68935,27 @@ while loaded.Cratesloaded<cratelimit and loops<number do
 loops=loops+1
 local crateind=0
 for _ind,_crate in pairs(nearcrates)do
-if not _crate:HasMoved()and not _crate:WasDropped()and _crate:GetID()>crateind then
+if self.allowcratepickupagain then
+if _crate:GetID()>crateind and _crate.Positionable~=nil then
 crateind=_crate:GetID()
+end
+else
+if not _crate:HasMoved()and _crate:WasDropped()and _crate:GetID()>crateind then
+crateind=_crate:GetID()
+end
 end
 end
 if crateind>0 then
 local crate=nearcrates[crateind]
 loaded.Cratesloaded=loaded.Cratesloaded+1
 crate:SetHasMoved(true)
+crate:SetWasDropped(false)
 table.insert(loaded.Cargo,crate)
 table.insert(crateidsloaded,crate:GetID())
 crate:GetPositionable():Destroy(false)
 crate.Positionable=nil
 self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
+table.remove(nearcrates,crate:GetID())
 self:__CratesPickedUp(1,Group,Unit,crate)
 end
 end
@@ -68963,7 +69025,7 @@ report:Add("        -- TROOPS --")
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
-if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
+if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and(not cargo:WasDropped()or self.allowcratepickupagain)then
 report:Add(string.format("Troop: %s size %d",cargo:GetName(),cargo:GetCratesNeeded()))
 end
 end
@@ -68976,7 +69038,7 @@ local cratecount=0
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
-if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
+if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS)and(not cargo:WasDropped()or self.allowcratepickupagain)then
 report:Add(string.format("Crate: %s size 1",cargo:GetName()))
 cratecount=cratecount+1
 end
@@ -68999,6 +69061,7 @@ local unitname=Unit:GetName()
 local unittype=Unit:GetTypeName()
 local cgotypes=self.Cargo_Crates
 local trptypes=self.Cargo_Troops
+local stctypes=self.Cargo_Statics
 local function countcargo(cgotable)
 local counter=0
 for _,_cgo in pairs(cgotable)do
@@ -69008,10 +69071,11 @@ return counter
 end
 local crateno=countcargo(cgotypes)
 local troopno=countcargo(trptypes)
+local staticno=countcargo(stctypes)
 if(crateno>0 or troopno>0)then
 local report=REPORT:New("Inventory Sheet")
 report:Add("------------------------------------------------------------")
-report:Add(string.format("Troops: %d, Cratetypes: %d",troopno,crateno))
+report:Add(string.format("Troops: %d, Cratetypes: %d",troopno,crateno+staticno))
 report:Add("------------------------------------------------------------")
 report:Add("        -- TROOPS --")
 for _,_cargo in pairs(trptypes)do
@@ -69025,7 +69089,7 @@ stock="unlimited"
 elseif stockn>0 then
 stock=tostring(stockn)
 end
-report:Add(string.format("Unit: %s size: %d stock: %s",cargo:GetName(),cargo:GetCratesNeeded(),stock))
+report:Add(string.format("Unit: %s | Soldiers: %d | Stock: %s",cargo:GetName(),cargo:GetCratesNeeded(),stock))
 end
 end
 if report:GetCount()==4 then
@@ -69045,7 +69109,22 @@ stock="unlimited"
 elseif stockn>0 then
 stock=tostring(stockn)
 end
-report:Add(string.format("Type: %s crates: %d stock: %s",cargo:GetName(),cargo:GetCratesNeeded(),stock))
+report:Add(string.format("Type: %s | Crates per Set: %d | Stock: %s",cargo:GetName(),cargo:GetCratesNeeded(),stock))
+cratecount=cratecount+1
+end
+end
+for _,_cargo in pairs(stctypes)do
+local cargo=_cargo
+local type=cargo:GetType()
+if(type==CTLD_CARGO.Enum.STATIC)and not cargo:WasDropped()then
+local stockn=cargo:GetStock()
+local stock="none"
+if stockn==-1 then
+stock="unlimited"
+elseif stockn>0 then
+stock=tostring(stockn)
+end
+report:Add(string.format("Type: %s | Stock: %s",cargo:GetName(),stock))
 cratecount=cratecount+1
 end
 end
@@ -69191,7 +69270,7 @@ local cargotable=loadedcargo.Cargo
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
-if type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and not cargo:WasDropped()then
+if type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and(not cargo:WasDropped()or self.allowcratepickupagain)then
 self:_GetCrates(Group,Unit,cargo,1,true)
 cargo:SetWasDropped(true)
 cargo:SetHasMoved(true)
@@ -69232,7 +69311,7 @@ self:_SendMessage("You need to land / stop to build something, Pilot!",10,false,
 return self
 end
 end
-local finddist=self.CrateDistance or 30
+local finddist=self.CrateDistance or 35
 local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
 local buildables={}
 local foundbuilds=false
@@ -69240,7 +69319,7 @@ local canbuild=false
 if number>0 then
 for _,_crate in pairs(crates)do
 local Crate=_crate
-if Crate:WasDropped()and not Crate:IsRepair()then
+if Crate:WasDropped()and not Crate:IsRepair()and not Crate:IsStatic()then
 local name=Crate:GetName()
 local required=Crate:GetCratesNeeded()
 local template=Crate:GetTemplates()
@@ -69304,7 +69383,7 @@ return self
 end
 function CTLD:_RepairCrates(Group,Unit,Engineering)
 self:T(self.lid.." _RepairCrates")
-local finddist=self.CrateDistance or 30
+local finddist=self.CrateDistance or 35
 local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
 local buildables={}
 local foundbuilds=false
@@ -69312,7 +69391,7 @@ local canbuild=false
 if number>0 then
 for _,_crate in pairs(crates)do
 local Crate=_crate
-if Crate:WasDropped()and Crate:IsRepair()then
+if Crate:WasDropped()and Crate:IsRepair()and not Crate:IsStatic()then
 local name=Crate:GetName()
 local required=Crate:GetCratesNeeded()
 local template=Crate:GetTemplates()
@@ -69379,10 +69458,16 @@ if Group and Group:IsAlive()then
 local position=Unit:GetCoordinate()or Group:GetCoordinate()
 local unitname=Unit:GetName()or Group:GetName()
 local name=Build.Name
-local type=Build.Type
+local ctype=Build.Type
 local canmove=false
-if type==CTLD_CARGO.Enum.VEHICLE then canmove=true end
+if ctype==CTLD_CARGO.Enum.VEHICLE then canmove=true end
+if ctype==CTLD_CARGO.Enum.STATIC then
+return self
+end
 local temptable=Build.Template or{}
+if type(temptable)=="string"then
+temptable={temptable}
+end
 local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
 local randomcoord=zone:GetRandomCoordinate(35):GetVec2()
 if Repair then
@@ -69451,6 +69536,7 @@ table.insert(destIDs,thisID)
 found=found+1
 nowcrate:GetPositionable():Destroy(false)
 nowcrate.Positionable=nil
+nowcrate.HasBeenDropped=false
 end
 if found==numberdest then break end
 end
@@ -69513,6 +69599,12 @@ menucount=menucount+1
 local menutext=string.format("Get crate for %s",entry.Name)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
+for _,_entry in pairs(self.Cargo_Statics)do
+local entry=_entry
+menucount=menucount+1
+local menutext=string.format("Get crate for %s",entry.Name)
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
+end
 listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
 local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
 local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit)
@@ -69555,6 +69647,15 @@ self:T(self.lid.." AddCratesCargo")
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
+return self
+end
+function CTLD:AddStaticsCargo(Name,Mass,Stock)
+self:T(self.lid.." AddStaticsCargo")
+self.CargoCounter=self.CargoCounter+1
+local type=CTLD_CARGO.Enum.STATIC
+local template=STATIC:FindByName(Name,true):GetTypeName()
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock)
+table.insert(self.Cargo_Statics,cargo)
 return self
 end
 function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock)
@@ -70248,6 +70349,11 @@ local name=_troop:GetName()
 local stock=_troop:GetStock()
 self:I(string.format("-- %s \t\t\t %d",name,stock))
 end
+for _,_troop in pairs(self.Cargo_Statics)do
+local name=_troop:GetName()
+local stock=_troop:GetStock()
+self:I(string.format("-- %s \t\t\t %d",name,stock))
+end
 for _,_troop in pairs(self.Cargo_Troops)do
 local name=_troop:GetName()
 local stock=_troop:GetStock()
@@ -70327,6 +70433,18 @@ end
 local grouptable=self.DroppedTroops
 local cgovehic=self.Cargo_Crates
 local cgotable=self.Cargo_Troops
+local stcstable=self.Spawned_Cargo
+local statics=nil
+local statics={}
+self:I(self.lid.."Bulding Statics Table for Saving")
+for _,_cargo in pairs(stcstable)do
+local cargo=_cargo
+local object=cargo:GetPositionable()
+if object and object:IsAlive()and cargo:WasDropped()then
+self:I({_cargo})
+statics[#statics+1]=cargo
+end
+end
 local function FindCargoType(name,table)
 local match=false
 local cargo=nil
@@ -70337,7 +70455,7 @@ if type(template)=="string"then
 template={template}
 end
 for _,_name in pairs(template)do
-if string.find(name,_name)then
+if string.find(name,_name)and _cargo:GetType()~=CTLD_CARGO.Enum.REPAIR then
 match=true
 cargo=thiscargo
 end
@@ -70368,17 +70486,41 @@ local cgotemp=cargo.Templates
 local cgotype=cargo.CargoType
 local cgoneed=cargo.CratesNeeded
 local cgomass=cargo.PerCrateMass
+if type(cgotemp)=="table"then
 local templates="{"
 for _,_tmpl in pairs(cgotemp)do
 templates=templates.._tmpl..";"
 end
 templates=templates.."}"
+cgotemp=templates
+end
 local location=group:GetVec3()
 local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d\n"
-,template,location.x,location.y,location.z,cgoname,templates,cgotype,cgoneed,cgomass)
+,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass)
 data=data..txt
 end
 end
+end
+for _,_cgo in pairs(statics)do
+local object=_cgo
+local cgoname=object.Name
+local cgotemp=object.Templates
+if type(cgotemp)=="table"then
+local templates="{"
+for _,_tmpl in pairs(cgotemp)do
+templates=templates.._tmpl..";"
+end
+templates=templates.."}"
+cgotemp=templates
+end
+local cgotype=object.CargoType
+local cgoneed=object.CratesNeeded
+local cgomass=object.PerCrateMass
+local crateobj=object.Positionable
+local location=crateobj:GetVec3()
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d\n"
+,"STATIC",location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass)
+data=data..txt
 end
 _savefile(filename,data)
 if self.enableLoadSave then
@@ -70459,24 +70601,41 @@ for _id,_entry in pairs(loadeddata)do
 local dataset=UTILS.Split(_entry,",")
 local groupname=dataset[1]
 local vec2={}
-vec2.x=dataset[2]
-vec2.y=dataset[4]
+vec2.x=tonumber(dataset[2])
+vec2.y=tonumber(dataset[4])
 local cargoname=dataset[5]
-if type(cargoname)=="string"then
+local cargotype=dataset[7]
+if type(groupname)=="string"and groupname~="STATIC"then
 local cargotemplates=dataset[6]
 cargotemplates=string.gsub(cargotemplates,"{","")
 cargotemplates=string.gsub(cargotemplates,"}","")
 cargotemplates=UTILS.Split(cargotemplates,";")
-local cargotype=dataset[7]
-local size=dataset[8]
-local mass=dataset[9]
-local dropzone=ZONE_RADIUS:New("DropZone",vec2,100)
+local size=tonumber(dataset[8])
+local mass=tonumber(dataset[9])
+local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
-local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,false,mass)
+local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 self:InjectVehicles(dropzone,injectvehicle)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
-local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,false,mass)
+local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 self:InjectTroops(dropzone,injecttroops)
+end
+elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
+local cargotemplates=dataset[6]
+local size=tonumber(dataset[8])
+local mass=tonumber(dataset[9])
+local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
+local injectstatic=nil
+if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
+cargotemplates=string.gsub(cargotemplates,"{","")
+cargotemplates=string.gsub(cargotemplates,"}","")
+cargotemplates=UTILS.Split(cargotemplates,";")
+injectstatic=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
+elseif cargotype==CTLD_CARGO.Enum.STATIC or cargotype==CTLD_CARGO.Enum.REPAIR then
+injectstatic=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
+end
+if injectstatic then
+self:InjectStatics(dropzone,injectstatic)
 end
 end
 end
