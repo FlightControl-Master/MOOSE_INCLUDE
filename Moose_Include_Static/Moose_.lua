@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-22T13:55:10.0000000Z-19e2ebcd034f468c32eb2ec6bf919da1c290c30e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-23T10:43:28.0000000Z-649136f98f894766d7b1e02cf5d73851ca7335f8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68196,7 +68196,6 @@ FreeVHFFrequencies={},
 FreeUHFFrequencies={},
 FreeFMFrequencies={},
 CargoCounter=0,
-dropOffZones={},
 wpZones={},
 Cargo_Troops={},
 Cargo_Crates={},
@@ -68206,8 +68205,8 @@ Spawned_Cargo={},
 CrateDistance=35,
 debug=false,
 wpZones={},
-pickupZones={},
 dropOffZones={},
+pickupZones={},
 }
 CTLD.CargoZoneType={
 LOAD="load",
@@ -68228,7 +68227,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.2a1"
+CTLD.version="0.2.2a3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -69072,7 +69071,7 @@ end
 local crateno=countcargo(cgotypes)
 local troopno=countcargo(trptypes)
 local staticno=countcargo(stctypes)
-if(crateno>0 or troopno>0)then
+if(crateno>0 or troopno>0 or staticno>0)then
 local report=REPORT:New("Inventory Sheet")
 report:Add("------------------------------------------------------------")
 report:Add(string.format("Troops: %d, Cratetypes: %d",troopno,crateno+staticno))
