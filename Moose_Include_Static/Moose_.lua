@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-24T09:06:54.0000000Z-8e64d8e334eef39ad70d3b87ddaef31a4f9e37a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-24T16:38:58.0000000Z-3e10f9f4513ccc819167c42783df815b2134760e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22225,6 +22225,7 @@ self:E(_text)
 end
 end
 function AIRBASE:FindFreeParkingSpotForAircraft(group,terminaltype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nspots,parkingdata)
+if group and group:IsAlive()then
 scanradius=scanradius or 50
 if scanunits==nil then
 scanunits=true
@@ -22338,6 +22339,9 @@ end
 end
 end
 return validspots
+else
+return{}
+end
 end
 function AIRBASE:_CheckParkingLists(TerminalID)
 if self.parkingBlacklist and#self.parkingBlacklist>0 then
