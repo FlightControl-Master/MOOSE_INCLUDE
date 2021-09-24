@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-22T13:54:37.0000000Z-69449430d144d37503339443c6ec96c8c6d70ba6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-24T09:04:54.0000000Z-1c97eb6f3c75d7e380d279c654bcd1b2d7cce3c3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15619,7 +15619,10 @@ if self.InitDead~=nil then
 Template.dead=self.InitDead
 end
 if self.InitCargo~=nil then
-Template.isCargo=self.InitCargo
+Template.canCargo=self.InitCargo
+end
+if self.InitCargoMass~=nil then
+Template.mass=self.InitCargoMass
 end
 if self.InitLinkUnit then
 Template.linkUnit=self.InitLinkUnit:GetID()
