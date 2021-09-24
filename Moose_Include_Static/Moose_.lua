@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-24T09:08:23.0000000Z-50c74d0852cda18af9ed65599f54fff7fef7f8f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-24T16:37:13.0000000Z-06dc9a732ecb0bf54a7711b452afa9d52e8e5fa4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21419,7 +21419,14 @@ self:_InitParkingSpots()
 local vec2=self:GetVec2()
 self:GetCoordinate()
 if vec2 then
+if self.isShip then
+local unit=UNIT:FindByName(AirbaseName)
+if unit then
+self.AirbaseZone=ZONE_UNIT:New(AirbaseName,unit,2500)
+end
+else
 self.AirbaseZone=ZONE_RADIUS:New(AirbaseName,vec2,2500)
+end
 else
 self:E(string.format("ERROR: Cound not get position Vec2 of airbase %s",AirbaseName))
 end
@@ -21634,9 +21641,13 @@ local spots={}
 for _,_spot in pairs(parkingdata)do
 if AIRBASE._CheckTerminalType(_spot.Term_Type,termtype)then
 local spot=self:_GetParkingSpotByID(_spot.Term_Index)
+if spot then
 spot.Free=_isfree(_spot)
 spot.TOAC=_spot.TO_AC
 table.insert(spots,spot)
+else
+self:E(string.format("ERROR: Parking spot %s is nil!",tostring(_spot.Term_Index)))
+end
 end
 end
 return spots
@@ -21687,6 +21698,7 @@ self:E(_text)
 end
 end
 function AIRBASE:FindFreeParkingSpotForAircraft(group,terminaltype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nspots,parkingdata)
+if group and group:IsAlive()then
 scanradius=scanradius or 50
 if scanunits==nil then
 scanunits=true
@@ -21800,6 +21812,9 @@ end
 end
 end
 return validspots
+else
+return{}
+end
 end
 function AIRBASE:_CheckParkingLists(TerminalID)
 if self.parkingBlacklist and#self.parkingBlacklist>0 then
