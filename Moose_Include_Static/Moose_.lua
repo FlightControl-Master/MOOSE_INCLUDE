@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-24T16:37:13.0000000Z-06dc9a732ecb0bf54a7711b452afa9d52e8e5fa4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-26T07:51:14.0000000Z-ff8766669c9de5001fa2e985de60b70d05556656 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21685,7 +21685,7 @@ mark=true
 end
 local parkingdata=self:GetParkingSpotsTable(termtype)
 local airbasename=self:GetName()
-self:E(string.format("Parking spots at %s for termial type %s:",airbasename,tostring(termtype)))
+self:E(string.format("Parking spots at %s for terminal type %s:",airbasename,tostring(termtype)))
 for _,_spot in pairs(parkingdata)do
 local _text=string.format("Term Index=%d, Term Type=%d, Free=%s, TOAC=%s, Term ID0=%d, Dist2Rwy=%.1f m",
 _spot.TerminalID,_spot.TerminalType,tostring(_spot.Free),tostring(_spot.TOAC),_spot.TerminalID0,_spot.DistToRwy)
@@ -21698,7 +21698,6 @@ self:E(_text)
 end
 end
 function AIRBASE:FindFreeParkingSpotForAircraft(group,terminaltype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nspots,parkingdata)
-if group and group:IsAlive()then
 scanradius=scanradius or 50
 if scanunits==nil then
 scanunits=true
@@ -21728,10 +21727,18 @@ end
 end
 local airport=self:GetName()
 parkingdata=parkingdata or self:GetParkingSpotsTable(terminaltype)
+local _aircraftsize,ax,ay,az
+if group and group.ClassName=="GROUP"then
 local aircraft=group:GetUnit(1)
-local _aircraftsize,ax,ay,az=aircraft:GetObjectSize()
+_aircraftsize,ax,ay,az=aircraft:GetObjectSize()
+else
+_aircraftsize=23
+ax=23
+ay=7
+az=17
+end
 local _nspots=nspots or group:GetSize()
-self:E(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at termial type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
+self:E(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
 local validspots={}
 local nvalid=0
 local _test=false
@@ -21812,9 +21819,6 @@ end
 end
 end
 return validspots
-else
-return{}
-end
 end
 function AIRBASE:_CheckParkingLists(TerminalID)
 if self.parkingBlacklist and#self.parkingBlacklist>0 then
