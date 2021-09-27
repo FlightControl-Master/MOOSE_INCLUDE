@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-26T07:51:02.0000000Z-8bf073c0c6236744e86e8d469cfb174fae57684e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-27T13:49:03.0000000Z-a1c7ec2ac9094e81dd4d43057f945a6c05d9e211 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22254,9 +22254,10 @@ end
 end
 local airport=self:GetName()
 parkingdata=parkingdata or self:GetParkingSpotsTable(terminaltype)
+local aircraft=nil
 local _aircraftsize,ax,ay,az
 if group and group.ClassName=="GROUP"then
-local aircraft=group:GetUnit(1)
+aircraft=group:GetUnit(1)
 _aircraftsize,ax,ay,az=aircraft:GetObjectSize()
 else
 _aircraftsize=23
