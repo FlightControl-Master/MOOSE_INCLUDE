@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-27T13:48:45.0000000Z-db516a20776ffff4992ea97dfb715663b29a1a42 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-28T14:53:53.0000000Z-c311c40b7224156a37f6546308024b9bedd15eae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19357,17 +19357,19 @@ local Ntot=0
 local Nshells=0
 local Nrockets=0
 local Nmissiles=0
+local Nbombs=0
 if DCSControllable then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
-local ntot,nshells,nrockets,nmissiles=Unit:GetAmmunition()
+local ntot,nshells,nrockets,nbombs,nmissiles=Unit:GetAmmunition()
 Ntot=Ntot+ntot
 Nshells=Nshells+nshells
 Nrockets=Nrockets+nrockets
 Nmissiles=Nmissiles+nmissiles
+Nbombs=Nbombs+nbombs
 end
 end
-return Ntot,Nshells,Nrockets,Nmissiles
+return Ntot,Nshells,Nrockets,Nbombs,Nmissiles
 end
 do
 function GROUP:IsInZone(Zone)
