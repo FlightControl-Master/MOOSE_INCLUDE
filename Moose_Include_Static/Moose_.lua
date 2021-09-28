@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-27T13:49:03.0000000Z-a1c7ec2ac9094e81dd4d43057f945a6c05d9e211 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-28T14:52:18.0000000Z-58c496eacd4b9b47b50b39cb9d7dc4cff415d7ae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19884,17 +19884,19 @@ local Ntot=0
 local Nshells=0
 local Nrockets=0
 local Nmissiles=0
+local Nbombs=0
 if DCSControllable then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
-local ntot,nshells,nrockets,nmissiles=Unit:GetAmmunition()
+local ntot,nshells,nrockets,nbombs,nmissiles=Unit:GetAmmunition()
 Ntot=Ntot+ntot
 Nshells=Nshells+nshells
 Nrockets=Nrockets+nrockets
 Nmissiles=Nmissiles+nmissiles
+Nbombs=Nbombs+nbombs
 end
 end
-return Ntot,Nshells,Nrockets,Nmissiles
+return Ntot,Nshells,Nrockets,Nbombs,Nmissiles
 end
 do
 function GROUP:IsInZone(Zone)
@@ -25674,8 +25676,8 @@ _targetskill=_targetUnit:GetSkill()
 end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
-self:T(SEADGroupPrefix)
-if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
+self:T(_targetgroupname,SEADGroupPrefix)
+if string.find(_targetgroupname,SEADGroupPrefix)then
 SEADGroupFound=true
 self:T('*** SEAD - Group Match Found')
 break
@@ -25739,6 +25741,7 @@ end
 end
 end
 end
+return self
 end
 ESCORT={
 ClassName="ESCORT",
