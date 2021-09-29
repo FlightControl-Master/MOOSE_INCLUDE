@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-29T07:34:37.0000000Z-b72e2b6bf982ab768f8faaf1bba2b6c261b778db ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-29T14:57:45.0000000Z-3377459df56d1eb135e92b27ea5754de079ef347 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -83969,15 +83969,16 @@ self.CSAR[CSARTaskName].DeployZones=CSARDeployZones
 end
 return self
 end
-function TASK_CARGO_DISPATCHER:AddTransportTask(TaskPrefix,SetCargo,Briefing)
+function TASK_CARGO_DISPATCHER:AddTransportTask(TaskPrefix,SetCargo,Briefing,Silent)
 self.TransportCount=self.TransportCount+1
+local verbose=Silent and true
 local TaskName=string.format((TaskPrefix or"Transport")..".%03d",self.TransportCount)
 self.Transport[TaskName]={}
 self.Transport[TaskName].SetCargo=SetCargo
 self.Transport[TaskName].Briefing=Briefing
 self.Transport[TaskName].Task=nil
 self.Transport[TaskName].TaskPrefix=TaskPrefix
-self:ManageTasks()
+self:ManageTasks(verbose)
 return self.Transport[TaskName]and self.Transport[TaskName].Task
 end
 function TASK_CARGO_DISPATCHER:SetTransportDeployZone(Task,TransportDeployZone)
@@ -84005,8 +84006,9 @@ SetCargo:AddCargosByName(CSARUnit:GetName())
 SetCargo:Flush(self)
 return SetCargo
 end
-function TASK_CARGO_DISPATCHER:ManageTasks()
+function TASK_CARGO_DISPATCHER:ManageTasks(Silent)
 self:F()
+local verbose=Silent and true
 local AreaMsg={}
 local TaskMsg={}
 local ChangeMsg={}
@@ -84072,7 +84074,7 @@ end
 Mission:GetCommandCenter():SetMenu()
 local TaskText=TaskReport:Text(", ")
 for TaskGroupID,TaskGroup in pairs(self.SetGroup:GetSet())do
-if(not Mission:IsGroupAssigned(TaskGroup))and TaskText~=""then
+if(not Mission:IsGroupAssigned(TaskGroup))and TaskText~=""and not verbose then
 Mission:GetCommandCenter():MessageToGroup(string.format("%s has tasks %s. Subscribe to a task using the radio menu.",Mission:GetShortText(),TaskText),TaskGroup)
 end
 end
