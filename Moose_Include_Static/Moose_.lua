@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-28T14:53:53.0000000Z-c311c40b7224156a37f6546308024b9bedd15eae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-29T07:22:41.0000000Z-147eeb05f6b72c8e9909e9d105c2cbfc1685a437 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7968,7 +7968,6 @@ self:_RegisterTemplates()
 self:_RegisterGroupsAndUnits()
 self:_RegisterClients()
 self:_RegisterStatics()
-self:_RegisterAirbases()
 self.UNITS_Position=0
 return self
 end
@@ -21414,6 +21413,12 @@ elseif self.category==Airbase.Category.HELIPAD then
 self.isHelipad=true
 elseif self.category==Airbase.Category.SHIP then
 self.isShip=true
+if self.descriptors.typeName=="Oil rig"or self.descriptors.typeName=="Ga"then
+self.isHelipad=true
+self.isShip=false
+self.category=Airbase.Category.HELIPAD
+_DATABASE:AddStatic(AirbaseName)
+end
 else
 self:E("ERROR: Unknown airbase category!")
 end
@@ -73177,6 +73182,7 @@ _SETTINGS=SETTINGS:Set()
 _SETTINGS:SetPlayerMenuOn()
 _DATABASE:_RegisterCargos()
 _DATABASE:_RegisterZones()
+_DATABASE:_RegisterAirbases()
 BASE:I("Checking de-sanitization of os, io and lfs:")
 local __na=false
 if os then
