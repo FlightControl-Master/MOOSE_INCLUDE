@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-29T07:25:26.0000000Z-50f6d98b490135b19dfb49896945ab80133926da ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-30T06:07:34.0000000Z-f8c05c99d0f81340fffa8b8cef151fc5b129101b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68190,7 +68190,6 @@ end
 function RADIO:SetFrequency(Frequency)
 self:F2(Frequency)
 if type(Frequency)=="number"then
-if(Frequency>=30 and Frequency<=87.995)or(Frequency>=108 and Frequency<=173.995)or(Frequency>=225 and Frequency<=399.975)then
 self.Frequency=Frequency*1000000
 if self.Positionable.ClassName=="UNIT"or self.Positionable.ClassName=="GROUP"then
 local commandSetFrequency={
@@ -68205,8 +68204,7 @@ self.Positionable:SetCommand(commandSetFrequency)
 end
 return self
 end
-end
-self:E({"Frequency is outside of DCS Frequency ranges (30-80, 108-152, 225-400). Frequency unchanged.",Frequency})
+self:E({"Frequency is not a number. Frequency unchanged.",Frequency})
 return self
 end
 function RADIO:SetModulation(Modulation)
