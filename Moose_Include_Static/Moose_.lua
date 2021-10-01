@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-09-30T06:07:34.0000000Z-f8c05c99d0f81340fffa8b8cef151fc5b129101b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T08:43:17.0000000Z-edd6594953df48298ccf40658b02ac44d7fe0dd8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55976,7 +55976,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.2a4"
+CTLD.version="0.2.3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56539,9 +56539,12 @@ end
 self:_SendMessage(text,10,false,Group)
 return self
 end
-function CTLD:InjectStatics(Zone,Cargo)
+function CTLD:InjectStatics(Zone,Cargo,RandomCoord)
 self:T(self.lid.." InjectStatics")
 local cratecoord=Zone:GetCoordinate()
+if RandomCoord then
+cratecoord=Zone:GetRandomCoordinate(5,20)
+end
 local surface=cratecoord:GetSurfaceType()
 if surface==land.SurfaceType.WATER then
 return self
@@ -56573,6 +56576,12 @@ local sorte=cargotype:GetType()
 self.CargoCounter=self.CargoCounter+1
 cargotype.Positionable=self.Spawned_Crates[self.CrateCounter]
 table.insert(self.Spawned_Cargo,cargotype)
+return self
+end
+function CTLD:InjectStaticFromTemplate(Zone,Template,Mass)
+self:T(self.lid.." InjectStaticFromTemplate")
+local cargotype=self:GetStaticsCargoFromTemplate(Template,Mass)
+self:InjectStatics(Zone,cargotype,true)
 return self
 end
 function CTLD:_ListCratesNearby(_group,_unit)
@@ -57414,6 +57423,14 @@ local template=STATIC:FindByName(Name,true):GetTypeName()
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock)
 table.insert(self.Cargo_Statics,cargo)
 return self
+end
+function CTLD:GetStaticsCargoFromTemplate(Name,Mass)
+self:T(self.lid.." GetStaticsCargoFromTemplate")
+self.CargoCounter=self.CargoCounter+1
+local type=CTLD_CARGO.Enum.STATIC
+local template=STATIC:FindByName(Name,true):GetTypeName()
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+return cargo
 end
 function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesRepair")
