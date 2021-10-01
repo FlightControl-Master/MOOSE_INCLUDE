@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T08:44:25.0000000Z-17ba35e23791adc9679dd35ab05bd594c9fabef3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T12:52:25.0000000Z-b76486ef5fe0166218f2fb9a5ce130ce5bd7a575 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2985,7 +2985,7 @@ local ret_val=false
 local unit=Unit.getByName(unit_name)
 if unit~=nil then
 local type_name=unit:getTypeName()
-if type_name=="Mi-8MT"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)<0 then
 BASE:T(unit_name.." Cargo doors are open or cargo door not present")
 ret_val=true
 end
@@ -66837,7 +66837,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.10r5"
+CSAR.version="0.1.11r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -66927,6 +66927,8 @@ self.approachdist_far=5000
 self.approachdist_near=3000
 self.pilotmustopendoors=false
 self.suppressmessages=false
+self.rescuehoverheight=20
+self.rescuehoverdistance=10
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -67419,11 +67421,11 @@ if _maxUnits==nil then
 _maxUnits=self.max_units
 end
 if _heliUnit:InAir()and _unitsInHelicopter+1<=_maxUnits then
-if _distance<8.0 then
+if _distance<self.rescuehoverdistance then
 local leaderheight=_woundedLeader:GetHeight()
 if leaderheight<0 then leaderheight=0 end
 local _height=_heliUnit:GetHeight()-leaderheight
-if _height<=20.0 then
+if _height<=self.rescuehoverheight then
 local _time=self.hoverStatus[_lookupKeyHeli]
 if _time==nil then
 self.hoverStatus[_lookupKeyHeli]=10
