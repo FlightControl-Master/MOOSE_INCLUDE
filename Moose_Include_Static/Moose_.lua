@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T12:52:25.0000000Z-b76486ef5fe0166218f2fb9a5ce130ce5bd7a575 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T15:29:22.0000000Z-4c3a97e2b2fa1e4a62a86d2740d2cea12dfa2503 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45381,6 +45381,354 @@ end
 end
 end
 end
+end
+AUTOLASE={
+ClassName="AUTOLASE",
+lid="",
+verbose=2,
+alias="",
+debug=false,
+}
+AUTOLASE.version="0.0.1"
+function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
+BASE:T({RecceSet,Coalition,Alias,PilotSet})
+local self=BASE:Inherit(self,BASE:New())
+if Coalition and type(Coalition)=="string"then
+if Coalition=="blue"then
+self.coalition=coalition.side.BLUE
+elseif Coalition=="red"then
+self.coalition=coalition.side.RED
+elseif Coalition=="neutral"then
+self.coalition=coalition.side.NEUTRAL
+else
+self:E("ERROR: Unknown coalition in AUTOLASE!")
+end
+end
+if Alias then
+self.alias=tostring(Alias)
+else
+self.alias="Lion"
+if self.coalition then
+if self.coalition==coalition.side.RED then
+self.alias="Wolf"
+elseif self.coalition==coalition.side.BLUE then
+self.alias="Fox"
+end
+end
+end
+local self=BASE:Inherit(self,INTEL:New(RecceSet,Coalition,Alias))
+self.DetectVisual=true
+self.DetectOptical=true
+self.DetectRadar=false
+self.DetectIRST=true
+self.DetectRWR=false
+self.DetectDLINK=true
+self.LaserCodes=UTILS.GenerateLaserCodes()
+self.LaseDistance=4000
+self.LaseDuration=120
+self.GroupsByThreat={}
+self.UnitsByThreat={}
+self.RecceNames={}
+self.RecceLaserCode={}
+self.RecceUnitNames={}
+self.maxlasing=4
+self.CurrentLasing={}
+self.lasingindex=0
+self.deadunitnotes={}
+self.usepilotset=false
+self.reporttimeshort=10
+self.reporttimelong=30
+self.smoketargets=false
+self.smokecolor=SMOKECOLOR.Red
+self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
+self:AddTransition("*","Monitor","*")
+self:AddTransition("*","Lasing","*")
+self:AddTransition("*","TargetLost","*")
+self:AddTransition("*","TargetDestroyed","*")
+self:AddTransition("*","RecceKIA","*")
+self:AddTransition("*","LaserTimeout","*")
+if not PilotSet then
+self.Menu=MENU_COALITION_COMMAND:New(self.coalition,"Autolase",nil,self.ShowStatus,self)
+else
+self.usepilotset=true
+self.pilotset=PilotSet
+self:HandleEvent(EVENTS.PlayerEnterAircraft)
+self:SetPilotMenu()
+end
+self:SetClusterAnalysis(false,false)
+self:__Start(2)
+self:__Monitor(-5)
+return self
+end
+function AUTOLASE:SetPilotMenu()
+local pilottable=self.pilotset:GetSetObjects()or{}
+for _,_unit in pairs(pilottable)do
+local Unit=_unit
+if Unit and Unit:IsAlive()then
+local Group=Unit:GetGroup()
+local lasemenu=MENU_GROUP_COMMAND:New(Group,"Autolase",nil,self.ShowStatus,self,Group)
+lasemenu:Refresh()
+end
+end
+return self
+end
+function AUTOLASE:OnEventPlayerEnterAircraft(EventData)
+self:SetPilotMenu()
+return self
+end
+function AUTOLASE:GetLaserCode(RecceName)
+local code=1688
+if self.RecceLaserCode[RecceName]==nil then
+code=self.LaserCodes[math.random(#self.LaserCodes)]
+self.RecceLaserCode[RecceName]=code
+else
+code=self.RecceLaserCode[RecceName]
+end
+return code
+end
+function AUTOLASE:SetMaxLasingTargets(Number)
+self.maxlasing=Number or 4
+return self
+end
+function AUTOLASE:SetRecceLaserCode(RecceName,Code)
+local code=Code or 1688
+self.RecceLaserCode[RecceName]=code
+return self
+end
+function AUTOLASE:SetReportingTimes(long,short)
+self.reporttimeshort=short or 10
+self.reporttimelong=long or 30
+return self
+end
+function AUTOLASE:SetLasingParameters(Distance,Duration)
+self.LaseDistance=distance or 4000
+self.LaseDuration=duration or 120
+return self
+end
+function AUTOLASE:SetSmokeTargets(OnOff,Color)
+self.smoketargets=OnOff
+self.smokecolor=Color or SMOKECOLOR.Red
+return self
+end
+function AUTOLASE:CleanCurrentLasing()
+local lasingtable=self.CurrentLasing
+local newtable={}
+local lasing=0
+for _ind,_entry in pairs(lasingtable)do
+local entry=_entry
+local valid=0
+local reccedead=false
+local unitdead=false
+local lostsight=false
+local Tnow=timer.getAbsTime()
+local recce=entry.lasingunit
+if recce and recce:IsAlive()then
+valid=valid+1
+else
+reccedead=true
+self:__RecceKIA(2,entry.reccename)
+end
+local unit=entry.lasedunit
+if unit and unit:IsAlive()==true then
+valid=valid+1
+else
+unitdead=true
+if not self.deadunitnotes[entry.unitname]then
+self.deadunitnotes[entry.unitname]=true
+self:__TargetDestroyed(2,entry.unitname,entry.reccename)
+end
+end
+if not reccedead and not unitdead then
+local coord=unit:GetCoordinate()
+local coord2=recce:GetCoordinate()
+local dist=coord2:Get2DDistance(coord)
+if dist<=self.LaseDistance then
+valid=valid+1
+else
+lostsight=true
+entry.laserspot:LaseOff()
+self:__TargetLost(2,entry.unitname,entry.reccename)
+end
+end
+local timestamp=entry.timestamp
+if Tnow-timestamp<self.LaseDuration then
+valid=valid+1
+else
+lostsight=true
+entry.laserspot:LaseOff()
+self:__LaserTimeout(2,entry.unitname,entry.reccename)
+end
+if valid==4 then
+self.lasingindex=self.lasingindex+1
+newtable[self.lasingindex]=entry
+lasing=lasing+1
+end
+end
+self.CurrentLasing=newtable
+return lasing
+end
+function AUTOLASE:ShowStatus(Group)
+local report=REPORT:New("Autolase")
+local lines=0
+for _ind,_entry in pairs(self.CurrentLasing)do
+local entry=_entry
+local reccename=entry.reccename
+local typename=entry.unittype
+local code=entry.lasercode
+local locationstring=entry.location
+local text=string.format("%s lasing %s code %d\nat %s",reccename,typename,code,locationstring)
+report:AddIndent(text,"|")
+lines=lines+1
+end
+if lines==0 then
+report:AddIndent("No targets!","|")
+end
+local reporttime=self.reporttimelong
+if lines==0 then reporttime=self.reporttimeshort end
+if Group and Group:IsAlive()then
+local m=MESSAGE:New(report:Text(),reporttime,"Info"):ToGroup(Group)
+else
+local m=MESSAGE:New(report:Text(),reporttime,"Info"):ToCoalition(self.coalition)
+end
+return self
+end
+function AUTOLASE:onafterMonitor(From,Event,To)
+self:T({From,Event,To})
+local countlases=self:CleanCurrentLasing()
+local detecteditems=self.Contacts or{}
+local groupsbythreat={}
+local report=REPORT:New("Detections")
+local lines=0
+for _,_contact in pairs(detecteditems)do
+local contact=_contact
+local grp=contact.group
+local coord=contact.position
+local reccename=contact.recce
+local reccegrp=UNIT:FindByName(reccename)
+local reccecoord=reccegrp:GetCoordinate()
+local distance=math.floor(reccecoord:Get2DDistance(coord))
+local text=string.format("%s of %s | Distance %d km | Threatlevel %d",contact.attribute,contact.groupname,distance/1000,contact.threatlevel)
+report:Add(text)
+self:T(text)
+lines=lines+1
+if distance<=self.LaseDistance then
+table.insert(groupsbythreat,{contact.group,contact.threatlevel})
+self.RecceNames[contact.groupname]=contact.recce
+end
+end
+self.GroupsByThreat=groupsbythreat
+if self.verbose>2 and lines>0 then
+local m=MESSAGE:New(report:Text(),self.reporttimeshort,"Autolase"):ToAll()
+end
+table.sort(self.GroupsByThreat,function(a,b)
+local aNum=a[2]
+local bNum=b[2]
+return aNum>bNum
+end)
+local unitsbythreat={}
+for _,_entry in ipairs(self.GroupsByThreat)do
+local group=_entry[1]
+if group and group:IsAlive()then
+local units=group:GetUnits()
+local reccename=self.RecceNames[group:GetName()]
+for _,_unit in pairs(units)do
+local unit=_unit
+if unit and unit:IsAlive()then
+local threat=unit:GetThreatLevel()
+if threat>0 then
+local unitname=unit:GetName()
+table.insert(unitsbythreat,{unit,threat})
+self.RecceUnitNames[unitname]=reccename
+end
+end
+end
+end
+end
+self.UnitsByThreat=unitsbythreat
+table.sort(self.UnitsByThreat,function(a,b)
+local aNum=a[2]
+local bNum=b[2]
+return aNum>bNum
+end)
+local unitreport=REPORT:New("Detected Units")
+local lines=0
+for _,_entry in ipairs(self.UnitsByThreat)do
+local threat=_entry[2]
+local unit=_entry[1]
+local unitname=unit:GetName()
+local text=string.format("Unit %s | Threatlevel %d | Detected by %s",unitname,threat,self.RecceUnitNames[unitname])
+unitreport:Add(text)
+lines=lines+1
+self:T(text)
+end
+if self.verbose>2 and lines>0 then
+local m=MESSAGE:New(unitreport:Text(),self.reporttimeshort,"Autolase"):ToAll()
+end
+local targets=countlases or 0
+for _,_entry in pairs(self.UnitsByThreat)do
+local unit=_entry[1]
+local unitname=unit:GetName()
+local reccename=self.RecceUnitNames[unitname]
+local recce=UNIT:FindByName(reccename)
+if targets<self.maxlasing and unit:IsAlive()==true then
+targets=targets+1
+local code=self:GetLaserCode(reccename)
+local spot=SPOT:New(recce)
+spot:LaseOn(unit,code,self.LaseDuration)
+local locationstring=unit:GetCoordinate():ToStringLLDDM()
+local laserspot={
+laserspot=spot,
+lasedunit=unit,
+lasingunit=recce,
+lasercode=code,
+location=locationstring,
+timestamp=timer.getAbsTime(),
+unitname=unitname,
+reccename=reccename,
+unittype=unit:GetTypeName(),
+}
+if self.smoketargets then
+local coord=unit:GetCoordinate()
+coord:Smoke(self.smokecolor)
+end
+self.lasingindex=self.lasingindex+1
+self.CurrentLasing[self.lasingindex]=laserspot
+self:__Lasing(2,laserspot)
+end
+end
+self:__Monitor(-20)
+return self
+end
+function AUTOLASE:onbeforeRecceKIA(From,Event,To,RecceName)
+self:T({From,Event,To,RecceName})
+local text=string.format("Recce %s KIA!",RecceName)
+local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+return self
+end
+function AUTOLASE:onbeforeTargetDestroyed(From,Event,To,UnitName,RecceName)
+self:T({From,Event,To,UnitName,RecceName})
+local text=string.format("Unit %s destroyed! Good job!",UnitName)
+local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+return self
+end
+function AUTOLASE:onbeforeTargetLost(From,Event,To,UnitName,RecceName)
+self:T({From,Event,To,UnitName,RecceName})
+local text=string.format("%s lost sight of unit %s.",RecceName,UnitName)
+local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+return self
+end
+function AUTOLASE:onbeforeLaserTimeout(From,Event,To,UnitName,RecceName)
+self:T({From,Event,To,UnitName,RecceName})
+local text=string.format("%s laser timeout on unit %s.",RecceName,UnitName)
+local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+return self
+end
+function AUTOLASE:onbeforeLasing(From,Event,To,LaserSpot)
+self:T({From,Event,To,LaserSpot.unittype})
+local laserspot=LaserSpot
+local text=string.format("%s is lasing %s code %d\nat %s",laserspot.reccename,laserspot.unittype,laserspot.lasercode,laserspot.location)
+local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+return self
 end
 AIRBOSS={
 ClassName="AIRBOSS",
