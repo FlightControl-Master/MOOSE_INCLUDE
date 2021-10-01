@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T08:43:17.0000000Z-edd6594953df48298ccf40658b02ac44d7fe0dd8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T12:54:31.0000000Z-3c477b872af532c6c04a2c58d6b88f63cbca164f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2256,14 +2256,26 @@ end
 UTILS.MetersToNM=function(meters)
 return meters/1852
 end
+UTILS.KiloMetersToNM=function(kilometers)
+return kilometers/1852*1000
+end
 UTILS.MetersToSM=function(meters)
 return meters/1609.34
+end
+UTILS.KiloMetersToSM=function(kilometers)
+return kilometers/1609.34*1000
 end
 UTILS.MetersToFeet=function(meters)
 return meters/0.3048
 end
+UTILS.KiloMetersToFeet=function(kilometers)
+return kilometers/0.3048*1000
+end
 UTILS.NMToMeters=function(NM)
 return NM*1852
+end
+UTILS.NMToKiloMeters=function(NM)
+return NM*1852/1000
 end
 UTILS.FeetToMeters=function(feet)
 return feet*0.3048
@@ -2637,6 +2649,16 @@ end
 function UTILS.VecNorm(a)
 return math.sqrt(UTILS.VecDot(a,a))
 end
+function UTILS.VecDist2D(a,b)
+local c={x=b.x-a.x,y=b.y-a.y}
+local d=math.sqrt(c.x*c.x+c.y*c.y)
+return d
+end
+function UTILS.VecDist3D(a,b)
+local c={x=b.x-a.x,y=b.y-a.y,z=b.z-a.z}
+local d=math.sqrt(UTILS.VecDot(c,c))
+return d
+end
 function UTILS.VecCross(a,b)
 return{x=a.y*b.z-a.z*b.y,y=a.z*b.x-a.x*b.z,z=a.x*b.y-a.y*b.x}
 end
@@ -2963,7 +2985,7 @@ local ret_val=false
 local unit=Unit.getByName(unit_name)
 if unit~=nil then
 local type_name=unit:getTypeName()
-if type_name=="Mi-8MT"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)==1 then
+if type_name=="Mi-8MT"and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(86)==1 or unit:getDrawArgumentValue(250)<0 then
 BASE:T(unit_name.." Cargo doors are open or cargo door not present")
 ret_val=true
 end
@@ -3002,10 +3024,10 @@ function UTILS.GenerateVHFrequencies()
 local _skipFrequencies={
 214,274,291.5,295,297.5,
 300.5,304,307,309.5,311,312,312.5,316,
-320,324,328,329,330,336,337,
+320,324,328,329,330,332,336,337,
 342,343,348,351,352,353,358,
 363,365,368,372.5,374,
-380,381,384,389,395,396,
+380,381,384,385,389,395,396,
 414,420,430,432,435,440,450,455,462,470,485,
 507,515,520,525,528,540,550,560,570,577,580,
 602,625,641,662,670,680,682,690,
@@ -58459,7 +58481,7 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.10r5"
+CSAR.version="0.1.11r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -58549,6 +58571,8 @@ self.approachdist_far=5000
 self.approachdist_near=3000
 self.pilotmustopendoors=false
 self.suppressmessages=false
+self.rescuehoverheight=20
+self.rescuehoverdistance=10
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -59041,11 +59065,11 @@ if _maxUnits==nil then
 _maxUnits=self.max_units
 end
 if _heliUnit:InAir()and _unitsInHelicopter+1<=_maxUnits then
-if _distance<8.0 then
+if _distance<self.rescuehoverdistance then
 local leaderheight=_woundedLeader:GetHeight()
 if leaderheight<0 then leaderheight=0 end
 local _height=_heliUnit:GetHeight()-leaderheight
-if _height<=20.0 then
+if _height<=self.rescuehoverheight then
 local _time=self.hoverStatus[_lookupKeyHeli]
 if _time==nil then
 self.hoverStatus[_lookupKeyHeli]=10
