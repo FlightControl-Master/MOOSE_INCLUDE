@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-01T15:29:22.0000000Z-4c3a97e2b2fa1e4a62a86d2740d2cea12dfa2503 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-02T12:45:37.0000000Z-cd79c57a271ce87b8a976880aacd5884a493d995 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45385,11 +45385,11 @@ end
 AUTOLASE={
 ClassName="AUTOLASE",
 lid="",
-verbose=2,
+verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.1"
+AUTOLASE.version="0.0.2"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45440,6 +45440,7 @@ self.reporttimeshort=10
 self.reporttimelong=30
 self.smoketargets=false
 self.smokecolor=SMOKECOLOR.Red
+self.notifypilots=true
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -45447,6 +45448,7 @@ self:AddTransition("*","TargetLost","*")
 self:AddTransition("*","TargetDestroyed","*")
 self:AddTransition("*","RecceKIA","*")
 self:AddTransition("*","LaserTimeout","*")
+self:AddTransition("*","Cancel","*")
 if not PilotSet then
 self.Menu=MENU_COALITION_COMMAND:New(self.coalition,"Autolase",nil,self.ShowStatus,self)
 else
@@ -45457,7 +45459,7 @@ self:SetPilotMenu()
 end
 self:SetClusterAnalysis(false,false)
 self:__Start(2)
-self:__Monitor(-5)
+self:__Monitor(math.random(5,10))
 return self
 end
 function AUTOLASE:SetPilotMenu()
@@ -45466,7 +45468,7 @@ for _,_unit in pairs(pilottable)do
 local Unit=_unit
 if Unit and Unit:IsAlive()then
 local Group=Unit:GetGroup()
-local lasemenu=MENU_GROUP_COMMAND:New(Group,"Autolase",nil,self.ShowStatus,self,Group)
+local lasemenu=MENU_GROUP_COMMAND:New(Group,"Autolase Status",nil,self.ShowStatus,self,Group)
 lasemenu:Refresh()
 end
 end
@@ -45488,6 +45490,10 @@ return code
 end
 function AUTOLASE:SetMaxLasingTargets(Number)
 self.maxlasing=Number or 4
+return self
+end
+function AUTOLASE:SetNotifyPilots(OnOff)
+self.notifypilots=OnOff and true
 return self
 end
 function AUTOLASE:SetRecceLaserCode(RecceName,Code)
@@ -45592,9 +45598,27 @@ local m=MESSAGE:New(report:Text(),reporttime,"Info"):ToCoalition(self.coalition)
 end
 return self
 end
+function AUTOLASE:NotifyPilots(Message,Duration)
+if self.usepilotset then
+local pilotset=self.pilotset:GetSetObjects()
+for _,_pilot in pairs(pilotset)do
+local pilot=_pilot
+if pilot and pilot:IsAlive()then
+local Group=pilot:GetGroup()
+local m=MESSAGE:New(Message,Duration,"Autolase"):ToGroup(Group)
+end
+end
+elseif not self.debug then
+local m=MESSAGE:New(Message,Duration,"Autolase"):ToCoalition(self.coalition)
+else
+local m=MESSAGE:New(Message,Duration,"Autolase"):ToAll()
+end
+return self
+end
 function AUTOLASE:onafterMonitor(From,Event,To)
 self:T({From,Event,To})
 local countlases=self:CleanCurrentLasing()
+self:SetPilotMenu()
 local detecteditems=self.Contacts or{}
 local groupsbythreat={}
 local report=REPORT:New("Detections")
@@ -45696,38 +45720,53 @@ self.CurrentLasing[self.lasingindex]=laserspot
 self:__Lasing(2,laserspot)
 end
 end
-self:__Monitor(-20)
+self:__Monitor(-30)
 return self
 end
 function AUTOLASE:onbeforeRecceKIA(From,Event,To,RecceName)
 self:T({From,Event,To,RecceName})
+if self.notifypilots or self.debug then
 local text=string.format("Recce %s KIA!",RecceName)
-local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+self:NotifyPilots(text,self.reporttimeshort)
+end
 return self
 end
 function AUTOLASE:onbeforeTargetDestroyed(From,Event,To,UnitName,RecceName)
 self:T({From,Event,To,UnitName,RecceName})
+if self.notifypilots or self.debug then
 local text=string.format("Unit %s destroyed! Good job!",UnitName)
-local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+self:NotifyPilots(text,self.reporttimeshort)
+end
 return self
 end
 function AUTOLASE:onbeforeTargetLost(From,Event,To,UnitName,RecceName)
 self:T({From,Event,To,UnitName,RecceName})
+if self.notifypilots or self.debug then
 local text=string.format("%s lost sight of unit %s.",RecceName,UnitName)
-local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+self:NotifyPilots(text,self.reporttimeshort)
+end
 return self
 end
 function AUTOLASE:onbeforeLaserTimeout(From,Event,To,UnitName,RecceName)
 self:T({From,Event,To,UnitName,RecceName})
+if self.notifypilots or self.debug then
 local text=string.format("%s laser timeout on unit %s.",RecceName,UnitName)
-local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+self:NotifyPilots(text,self.reporttimeshort)
+end
 return self
 end
 function AUTOLASE:onbeforeLasing(From,Event,To,LaserSpot)
 self:T({From,Event,To,LaserSpot.unittype})
+if self.notifypilots or self.debug then
 local laserspot=LaserSpot
 local text=string.format("%s is lasing %s code %d\nat %s",laserspot.reccename,laserspot.unittype,laserspot.lasercode,laserspot.location)
-local m=MESSAGE:New(text,self.reporttimeshort,"Autolase"):ToAllIf(self.debug)
+self:NotifyPilots(text,self.reporttimeshort)
+end
+return self
+end
+function AUTOLASE:onbeforeCancel(From,Event,To)
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+self:__Stop(2)
 return self
 end
 AIRBOSS={
