@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-02T08:18:13.0000000Z-968d1783174d678f740f8aacfac48951accaea74 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-05T17:10:21.0000000Z-2cecc526fb66238c3076bbe1e920857e7918bbf2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35418,11 +35418,13 @@ end
 function ZONE_CAPTURE_COALITION:OnEventHit(EventData)
 if self.HitsOn then
 local UnitHit=EventData.TgtUnit
+if UnitHit.ClassName~="SCENERY"then
 if UnitHit and UnitHit:IsInZone(self)and UnitHit:GetCoalition()==self.Coalition then
 self.HitTimeLast=timer.getTime()
 if self:GetState()~="Attacked"then
 self:F2("Hit ==> Attack")
 self:Attack()
+end
 end
 end
 end
@@ -35505,12 +35507,14 @@ nBlue=nBlue+1
 end
 end
 end
+if false then
 local text=string.format("CAPTURE ZONE %s: Owner=%s (Previous=%s): #blue=%d, #red=%d, Status %s",self:GetZoneName(),self:GetCoalitionName(),UTILS.GetCoalitionName(self:GetPreviousCoalition()),nBlue,nRed,State)
 local NewState=self:GetState()
 if NewState~=State then
 text=text..string.format(" --> %s",NewState)
 end
 self:I(text)
+end
 end
 function ZONE_CAPTURE_COALITION:Mark()
 if self.MarkOn then
