@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-02T12:45:37.0000000Z-cd79c57a271ce87b8a976880aacd5884a493d995 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-05T17:07:59.0000000Z-f7e7e2e41c829fd7e68cbf263b6417f842c45f45 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -36120,11 +36120,13 @@ end
 function ZONE_CAPTURE_COALITION:OnEventHit(EventData)
 if self.HitsOn then
 local UnitHit=EventData.TgtUnit
+if UnitHit.ClassName~="SCENERY"then
 if UnitHit and UnitHit:IsInZone(self)and UnitHit:GetCoalition()==self.Coalition then
 self.HitTimeLast=timer.getTime()
 if self:GetState()~="Attacked"then
 self:F2("Hit ==> Attack")
 self:Attack()
+end
 end
 end
 end
@@ -45389,7 +45391,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.2"
+AUTOLASE.version="0.0.3"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45419,13 +45421,13 @@ end
 local self=BASE:Inherit(self,INTEL:New(RecceSet,Coalition,Alias))
 self.DetectVisual=true
 self.DetectOptical=true
-self.DetectRadar=false
+self.DetectRadar=true
 self.DetectIRST=true
-self.DetectRWR=false
+self.DetectRWR=true
 self.DetectDLINK=true
 self.LaserCodes=UTILS.GenerateLaserCodes()
-self.LaseDistance=4000
-self.LaseDuration=120
+self.LaseDistance=5000
+self.LaseDuration=300
 self.GroupsByThreat={}
 self.UnitsByThreat={}
 self.RecceNames={}
