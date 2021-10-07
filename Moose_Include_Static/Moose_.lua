@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-05T17:07:59.0000000Z-f7e7e2e41c829fd7e68cbf263b6417f842c45f45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-07T07:49:06.0000000Z-d112ffaf6a6a9bd69286015df26f6bd76303bf0d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45391,7 +45391,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.3"
+AUTOLASE.version="0.0.4"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45443,6 +45443,7 @@ self.reporttimelong=30
 self.smoketargets=false
 self.smokecolor=SMOKECOLOR.Red
 self.notifypilots=true
+self.targetsperrecce={}
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -45509,8 +45510,8 @@ self.reporttimelong=long or 30
 return self
 end
 function AUTOLASE:SetLasingParameters(Distance,Duration)
-self.LaseDistance=distance or 4000
-self.LaseDuration=duration or 120
+self.LaseDistance=Distance or 5000
+self.LaseDuration=Duration or 300
 return self
 end
 function AUTOLASE:SetSmokeTargets(OnOff,Color)
@@ -45518,10 +45519,29 @@ self.smoketargets=OnOff
 self.smokecolor=Color or SMOKECOLOR.Red
 return self
 end
+function AUTOLASE:GetLosFromUnit(Unit)
+local lasedistance=self.LaseDistance
+local unitheight=Unit:GetHeight()
+local coord=Unit:GetCoordinate()
+local landheight=coord:GetLandHeight()
+local asl=unitheight-landheight
+if asl>100 then
+local absquare=lasedistance^2+asl^2
+lasedistance=math.sqrt(absquare)
+end
+return lasedistance
+end
 function AUTOLASE:CleanCurrentLasing()
 local lasingtable=self.CurrentLasing
 local newtable={}
+local newreccecount={}
 local lasing=0
+for _ind,_entry in pairs(lasingtable)do
+local entry=_entry
+if not newreccecount[entry.reccename]then
+newreccecount[entry.reccename]=0
+end
+end
 for _ind,_entry in pairs(lasingtable)do
 local entry=_entry
 local valid=0
@@ -45549,8 +45569,9 @@ end
 if not reccedead and not unitdead then
 local coord=unit:GetCoordinate()
 local coord2=recce:GetCoordinate()
-local dist=coord2:Get2DDistance(coord)
-if dist<=self.LaseDistance then
+local dist=coord2:Get3DDistance(coord)
+local lasedistance=self:GetLosFromUnit(recce)
+if dist<=lasedistance then
 valid=valid+1
 else
 lostsight=true
@@ -45569,10 +45590,12 @@ end
 if valid==4 then
 self.lasingindex=self.lasingindex+1
 newtable[self.lasingindex]=entry
+newreccecount[entry.reccename]=newreccecount[entry.reccename]+1
 lasing=lasing+1
 end
 end
 self.CurrentLasing=newtable
+self.targetsperrecce=newreccecount
 return lasing
 end
 function AUTOLASE:ShowStatus(Group)
@@ -45615,6 +45638,23 @@ local m=MESSAGE:New(Message,Duration,"Autolase"):ToCoalition(self.coalition)
 else
 local m=MESSAGE:New(Message,Duration,"Autolase"):ToAll()
 end
+if self.debug then self:I(Message)end
+return self
+end
+function AUTOLASE:CheckIsLased(unitname)
+local outcome=false
+for _,_laserspot in pairs(self.CurrentLasing)do
+local spot=_laserspot
+if spot.unitname==unitname then
+outcome=true
+break
+end
+end
+return outcome
+end
+function AUTOLASE:onbeforeMonitor(From,Event,To)
+self:T({From,Event,To})
+self:UpdateIntel()
 return self
 end
 function AUTOLASE:onafterMonitor(From,Event,To)
@@ -45632,12 +45672,14 @@ local coord=contact.position
 local reccename=contact.recce
 local reccegrp=UNIT:FindByName(reccename)
 local reccecoord=reccegrp:GetCoordinate()
-local distance=math.floor(reccecoord:Get2DDistance(coord))
-local text=string.format("%s of %s | Distance %d km | Threatlevel %d",contact.attribute,contact.groupname,distance/1000,contact.threatlevel)
+local distance=math.floor(reccecoord:Get3DDistance(coord))
+local text=string.format("%s of %s | Distance %d km | Threatlevel %d",contact.attribute,contact.groupname,math.floor(distance/1000),contact.threatlevel)
 report:Add(text)
 self:T(text)
+if self.debug then self:I(text)end
 lines=lines+1
-if distance<=self.LaseDistance then
+local lasedistance=self:GetLosFromUnit(reccegrp)
+if grp:IsGround()and lasedistance>=distance then
 table.insert(groupsbythreat,{contact.group,contact.threatlevel})
 self.RecceNames[contact.groupname]=contact.recce
 end
@@ -45652,7 +45694,7 @@ local bNum=b[2]
 return aNum>bNum
 end)
 local unitsbythreat={}
-for _,_entry in ipairs(self.GroupsByThreat)do
+for _,_entry in pairs(self.GroupsByThreat)do
 local group=_entry[1]
 if group and group:IsAlive()then
 local units=group:GetUnits()
@@ -45661,6 +45703,7 @@ for _,_unit in pairs(units)do
 local unit=_unit
 if unit and unit:IsAlive()then
 local threat=unit:GetThreatLevel()
+local coord=unit:GetCoordinate()
 if threat>0 then
 local unitname=unit:GetName()
 table.insert(unitsbythreat,{unit,threat})
@@ -45678,7 +45721,7 @@ return aNum>bNum
 end)
 local unitreport=REPORT:New("Detected Units")
 local lines=0
-for _,_entry in ipairs(self.UnitsByThreat)do
+for _,_entry in pairs(self.UnitsByThreat)do
 local threat=_entry[2]
 local unit=_entry[1]
 local unitname=unit:GetName()
@@ -45686,6 +45729,7 @@ local text=string.format("Unit %s | Threatlevel %d | Detected by %s",unitname,th
 unitreport:Add(text)
 lines=lines+1
 self:T(text)
+if self.debug then self:I(text)end
 end
 if self.verbose>2 and lines>0 then
 local m=MESSAGE:New(unitreport:Text(),self.reporttimeshort,"Autolase"):ToAll()
@@ -45696,8 +45740,10 @@ local unit=_entry[1]
 local unitname=unit:GetName()
 local reccename=self.RecceUnitNames[unitname]
 local recce=UNIT:FindByName(reccename)
-if targets<self.maxlasing and unit:IsAlive()==true then
+local reccecount=self.targetsperrecce[reccename]or 0
+if(targets<self.maxlasing or reccecount<targets)and not self:CheckIsLased(unitname)and unit:IsAlive()==true then
 targets=targets+1
+self.targetsperrecce[reccename]=reccecount+1
 local code=self:GetLaserCode(reccename)
 local spot=SPOT:New(recce)
 spot:LaseOn(unit,code,self.LaseDuration)
@@ -66408,7 +66454,7 @@ clusteranalysis=true,
 clustermarkers=false,
 prediction=300,
 }
-INTEL.version="0.2.6"
+INTEL.version="0.2.7"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -66447,6 +66493,7 @@ self.DetectRadar=true
 self.DetectIRST=true
 self.DetectRWR=true
 self.DetectDLINK=true
+self.statusupdate=-60
 self.lid=string.format("INTEL %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -66592,7 +66639,7 @@ end
 end
 self:I(self.lid..text)
 end
-self:__Status(-60)
+self:__Status(self.statusupdate)
 end
 function INTEL:UpdateIntel()
 local DetectedUnits={}
