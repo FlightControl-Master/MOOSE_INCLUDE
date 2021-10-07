@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-07T07:49:06.0000000Z-d112ffaf6a6a9bd69286015df26f6bd76303bf0d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-07T16:16:40.0000000Z-3b1c8c3deb0f098756932d458c204364f27b7ec7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2999,6 +2999,18 @@ ret_val=true
 end
 if string.find(type_name,"SA342")and unit:getDrawArgumentValue(34)==1 or unit:getDrawArgumentValue(38)==1 then
 BASE:T(unit_name.." front door(s) are open")
+ret_val=true
+end
+if string.find(type_name,"Hercules")and unit:getDrawArgumentValue(1215)==1 and unit:getDrawArgumentValue(1216)==1 then
+BASE:T(unit_name.." rear doors are open")
+ret_val=true
+end
+if string.find(type_name,"Hercules")and(unit:getDrawArgumentValue(1220)==1 or unit:getDrawArgumentValue(1221)==1)then
+BASE:T(unit_name.." para door(s) are open")
+ret_val=true
+end
+if string.find(type_name,"Hercules")and unit:getDrawArgumentValue(1217)==1 then
+BASE:T(unit_name.." side door is open")
 ret_val=true
 end
 if ret_val==false then
@@ -45391,7 +45403,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.4"
+AUTOLASE.version="0.0.6"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45419,6 +45431,7 @@ end
 end
 end
 local self=BASE:Inherit(self,INTEL:New(RecceSet,Coalition,Alias))
+self.RecceSet=RecceSet
 self.DetectVisual=true
 self.DetectOptical=true
 self.DetectRadar=true
@@ -45444,6 +45457,9 @@ self.smoketargets=false
 self.smokecolor=SMOKECOLOR.Red
 self.notifypilots=true
 self.targetsperrecce={}
+self.RecceUnits={}
+self.forcecooldown=true
+self.cooldowntime=60
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -45504,6 +45520,11 @@ local code=Code or 1688
 self.RecceLaserCode[RecceName]=code
 return self
 end
+function AUTOLASE:SetLaserCoolDown(OnOff,Seconds)
+self.forcecooldown=OnOff and true
+self.cooldowntime=Seconds or 60
+return self
+end
 function AUTOLASE:SetReportingTimes(long,short)
 self.reporttimeshort=short or 10
 self.reporttimelong=long or 30
@@ -45542,12 +45563,23 @@ if not newreccecount[entry.reccename]then
 newreccecount[entry.reccename]=0
 end
 end
+for _,_recce in pairs(self.RecceSet:GetSetObjects())do
+local recce=_recce
+if recce and recce:IsAlive()then
+local unit=recce:GetUnit(1)
+local name=unit:GetName()
+if not self.RecceUnits[name]then
+self.RecceUnits[name]={name=name,unit=unit,cooldown=false,timestamp=timer.getAbsTime()}
+end
+end
+end
 for _ind,_entry in pairs(lasingtable)do
 local entry=_entry
 local valid=0
 local reccedead=false
 local unitdead=false
 local lostsight=false
+local timeout=false
 local Tnow=timer.getAbsTime()
 local recce=entry.lasingunit
 if recce and recce:IsAlive()then
@@ -45567,11 +45599,7 @@ self:__TargetDestroyed(2,entry.unitname,entry.reccename)
 end
 end
 if not reccedead and not unitdead then
-local coord=unit:GetCoordinate()
-local coord2=recce:GetCoordinate()
-local dist=coord2:Get3DDistance(coord)
-local lasedistance=self:GetLosFromUnit(recce)
-if dist<=lasedistance then
+if self:CanLase(recce,unit)then
 valid=valid+1
 else
 lostsight=true
@@ -45580,12 +45608,16 @@ self:__TargetLost(2,entry.unitname,entry.reccename)
 end
 end
 local timestamp=entry.timestamp
-if Tnow-timestamp<self.LaseDuration then
+if Tnow-timestamp<self.LaseDuration and not lostsight then
 valid=valid+1
 else
-lostsight=true
+timeout=true
 entry.laserspot:LaseOff()
+self.RecceUnits[entry.reccename].cooldown=true
+self.RecceUnits[entry.reccename].timestamp=timer.getAbsTime()
+if not lostsight then
 self:__LaserTimeout(2,entry.unitname,entry.reccename)
+end
 end
 if valid==4 then
 self.lasingindex=self.lasingindex+1
@@ -45651,6 +45683,28 @@ break
 end
 end
 return outcome
+end
+function AUTOLASE:CanLase(Recce,Unit)
+local canlase=false
+local name=Recce:GetName()
+local cooldown=self.RecceUnits[name].cooldown and self.forcecooldown
+if cooldown then
+local Tdiff=timer.getAbsTime()-self.RecceUnits[name].timestamp
+if Tdiff<self.cooldowntime then
+return false
+else
+self.RecceUnits[name].cooldown=false
+end
+end
+local reccecoord=Recce:GetCoordinate()
+local unitcoord=Unit:GetCoordinate()
+local islos=reccecoord:IsLOS(unitcoord,2.5)
+local distance=math.floor(reccecoord:Get3DDistance(unitcoord))
+local lasedistance=self:GetLosFromUnit(Recce)
+if distance<=lasedistance and islos then
+canlase=true
+end
+return canlase
 end
 function AUTOLASE:onbeforeMonitor(From,Event,To)
 self:T({From,Event,To})
@@ -45734,16 +45788,17 @@ end
 if self.verbose>2 and lines>0 then
 local m=MESSAGE:New(unitreport:Text(),self.reporttimeshort,"Autolase"):ToAll()
 end
-local targets=countlases or 0
+for _,_detectingunit in pairs(self.RecceUnits)do
+local reccename=_detectingunit.name
+local recce=_detectingunit.unit
+local reccecount=self.targetsperrecce[reccename]or 0
+local targets=0
 for _,_entry in pairs(self.UnitsByThreat)do
 local unit=_entry[1]
 local unitname=unit:GetName()
-local reccename=self.RecceUnitNames[unitname]
-local recce=UNIT:FindByName(reccename)
-local reccecount=self.targetsperrecce[reccename]or 0
-if(targets<self.maxlasing or reccecount<targets)and not self:CheckIsLased(unitname)and unit:IsAlive()==true then
+local canlase=self:CanLase(recce,unit)
+if targets+reccecount<self.maxlasing and not self:CheckIsLased(unitname)and unit:IsAlive()and canlase then
 targets=targets+1
-self.targetsperrecce[reccename]=reccecount+1
 local code=self:GetLaserCode(reccename)
 local spot=SPOT:New(recce)
 spot:LaseOn(unit,code,self.LaseDuration)
@@ -45766,6 +45821,7 @@ end
 self.lasingindex=self.lasingindex+1
 self.CurrentLasing[self.lasingindex]=laserspot
 self:__Lasing(2,laserspot)
+end
 end
 end
 self:__Monitor(-30)
@@ -67422,6 +67478,7 @@ local freq=freq/1000
 for i=1,10 do
 math.random(i,10000)
 end
+if point:IsSurfaceTypeWater()then point.y=0 end
 local template=self.template
 local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
 local coalition=self.coalition
@@ -68787,7 +68844,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.3"
+CTLD.version="0.2.4"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68883,6 +68940,7 @@ self.suppressmessages=false
 self.repairtime=300
 self.placeCratesAhead=false
 self.cratecountry=country.id.GERMANY
+self.pilotmustopendoors=false
 if self.coalition==coalition.side.RED then
 self.cratecountry=country.id.RUSSIA
 end
@@ -68982,6 +69040,7 @@ return self
 end
 local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
+local dooropen=UTILS.IsLoadingDoorOpen(Unit:GetName())and self.pilotmustopendoors
 local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
@@ -68991,6 +69050,9 @@ self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group
 if not self.debug then return self end
 elseif not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
+if not self.debug then return self end
+elseif not dooropen then
+self:_SendMessage("You need to open the door(s) to load troops!",10,false,Group)
 if not self.debug then return self end
 end
 local group=Group
@@ -69122,6 +69184,10 @@ local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
 if not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
+if not self.debug then return self end
+end
+if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to extract troops!",10,false,Group)
 if not self.debug then return self end
 end
 local unit=Unit
@@ -69725,6 +69791,11 @@ end
 function CTLD:_UnloadTroops(Group,Unit)
 self:T(self.lid.." _UnloadTroops")
 local droppingatbase=false
+local canunload=true
+if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to unload troops!",10,false,Group)
+if not self.debug then return self end
+end
 local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
