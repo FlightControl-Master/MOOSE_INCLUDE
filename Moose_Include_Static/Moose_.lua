@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-07T16:16:40.0000000Z-3b1c8c3deb0f098756932d458c204364f27b7ec7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-08T10:33:33.0000000Z-921024035cf4f5bfdca3319833ab8b7c05878b0f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45403,7 +45403,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.6"
+AUTOLASE.version="0.0.7"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45460,6 +45460,10 @@ self.targetsperrecce={}
 self.RecceUnits={}
 self.forcecooldown=true
 self.cooldowntime=60
+self.useSRS=false
+self.SRSPath=""
+self.SRSFreq=251
+self.SRSMod=radio.modulation.AM
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -45506,6 +45510,13 @@ else
 code=self.RecceLaserCode[RecceName]
 end
 return code
+end
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation)
+self.useSRS=OnOff or true
+self.SRSPath=Path or"E:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSFreq=Frequency or 271
+self.SRSMod=Modulation or radio.modulation.AM
+return self
 end
 function AUTOLASE:SetMaxLasingTargets(Number)
 self.maxlasing=Number or 4
@@ -45612,7 +45623,7 @@ if Tnow-timestamp<self.LaseDuration and not lostsight then
 valid=valid+1
 else
 timeout=true
-entry.laserspot:LaseOff()
+entry.laserspot:LaseOff()()
 self.RecceUnits[entry.reccename].cooldown=true
 self.RecceUnits[entry.reccename].timestamp=timer.getAbsTime()
 if not lostsight then
@@ -45669,6 +45680,23 @@ elseif not self.debug then
 local m=MESSAGE:New(Message,Duration,"Autolase"):ToCoalition(self.coalition)
 else
 local m=MESSAGE:New(Message,Duration,"Autolase"):ToAll()
+end
+if self.debug then self:I(Message)end
+return self
+end
+function AUTOLASE:NotifyPilotsWithSRS(Message)
+if self.useSRS then
+if self.debug then
+BASE:TraceOn()
+BASE:TraceClass("SOUNDTEXT")
+BASE:TraceClass("MSRS")
+end
+local path=self.SRSPath or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+local freq=self.SRSFreq or 271
+local mod=self.SRSMod or radio.modulation.AM
+local text=SOUNDTEXT:New(Message)
+local msrs=MSRS:New(path,freq,mod)
+msrs:PlaySoundText(text,2)
 end
 if self.debug then self:I(Message)end
 return self
@@ -45864,7 +45892,7 @@ self:T({From,Event,To,LaserSpot.unittype})
 if self.notifypilots or self.debug then
 local laserspot=LaserSpot
 local text=string.format("%s is lasing %s code %d\nat %s",laserspot.reccename,laserspot.unittype,laserspot.lasercode,laserspot.location)
-self:NotifyPilots(text,self.reporttimeshort)
+self:NotifyPilots(text,self.reporttimeshort+5)
 end
 return self
 end
