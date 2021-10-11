@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-11T12:11:58.0000000Z-d06db9909cc9d0270c8d5b98503eb912579c3e7f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-11T16:47:39.0000000Z-1b752fcaf6fe1c0d6e9b2b3fc3e6ef5d2937e5cc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69077,7 +69077,6 @@ return self
 end
 local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
-local dooropen=UTILS.IsLoadingDoorOpen(Unit:GetName())and self.pilotmustopendoors
 local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
@@ -69088,7 +69087,7 @@ if not self.debug then return self end
 elseif not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
 if not self.debug then return self end
-elseif not dooropen then
+elseif self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
 self:_SendMessage("You need to open the door(s) to load troops!",10,false,Group)
 if not self.debug then return self end
 end
