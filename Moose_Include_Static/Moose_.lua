@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-08T10:33:33.0000000Z-921024035cf4f5bfdca3319833ab8b7c05878b0f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-11T12:11:58.0000000Z-d06db9909cc9d0270c8d5b98503eb912579c3e7f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45403,7 +45403,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.7"
+AUTOLASE.version="0.0.8"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45623,7 +45623,7 @@ if Tnow-timestamp<self.LaseDuration and not lostsight then
 valid=valid+1
 else
 timeout=true
-entry.laserspot:LaseOff()()
+entry.laserspot:LaseOff()
 self.RecceUnits[entry.reccename].cooldown=true
 self.RecceUnits[entry.reccename].timestamp=timer.getAbsTime()
 if not lostsight then
@@ -45643,6 +45643,15 @@ return lasing
 end
 function AUTOLASE:ShowStatus(Group)
 local report=REPORT:New("Autolase")
+local reccetable=self.RecceSet:GetSetObjects()
+for _,_recce in pairs(reccetable)do
+if _recce and _recce:IsAlive()then
+local unit=_recce:GetUnit(1)
+local name=unit:GetName()
+local code=self:GetLaserCode(name)
+report:Add(string.format("Recce %s has code %d",name,code))
+end
+end
 local lines=0
 for _ind,_entry in pairs(self.CurrentLasing)do
 local entry=_entry
@@ -45651,11 +45660,11 @@ local typename=entry.unittype
 local code=entry.lasercode
 local locationstring=entry.location
 local text=string.format("%s lasing %s code %d\nat %s",reccename,typename,code,locationstring)
-report:AddIndent(text,"|")
+report:Add(text)
 lines=lines+1
 end
 if lines==0 then
-report:AddIndent("No targets!","|")
+report:Add("No targets!")
 end
 local reporttime=self.reporttimelong
 if lines==0 then reporttime=self.reporttimeshort end
