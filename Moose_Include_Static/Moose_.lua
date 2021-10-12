@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-12T06:32:34.0000000Z-8b9143d3f180099fe5c772c4c2d8af6732d304d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-12T20:16:18.0000000Z-67f847dd16c1467af77c01458fd537b05ceca64c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20165,16 +20165,20 @@ return self
 end
 function GROUP:SetCommandInvisible(switch)
 self:F2(self.GroupName)
-local switch=switch or false
-local SetInvisible={id='SetInvisible',params={value=true}}
+if switch==nil then
+switch=false
+end
+local SetInvisible={id='SetInvisible',params={value=switch}}
 self:SetCommand(SetInvisible)
 return self
 end
 function GROUP:SetCommandImmortal(switch)
 self:F2(self.GroupName)
-local switch=switch or false
-local SetInvisible={id='SetImmortal',params={value=true}}
-self:SetCommand(SetInvisible)
+if switch==nil then
+switch=false
+end
+local SetImmortal={id='SetImmortal',params={value=switch}}
+self:SetCommand(SetImmortal)
 return self
 end
 function GROUP:GetSkill()
