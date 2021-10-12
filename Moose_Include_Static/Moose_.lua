@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-07T16:14:29.0000000Z-de9b173d9bcef905426b8539276662cb295e05a0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-12T06:32:34.0000000Z-8b9143d3f180099fe5c772c4c2d8af6732d304d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56014,7 +56014,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.3"
+CTLD.version="0.2.4"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56110,6 +56110,7 @@ self.suppressmessages=false
 self.repairtime=300
 self.placeCratesAhead=false
 self.cratecountry=country.id.GERMANY
+self.pilotmustopendoors=false
 if self.coalition==coalition.side.RED then
 self.cratecountry=country.id.RUSSIA
 end
@@ -56218,6 +56219,9 @@ self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group
 if not self.debug then return self end
 elseif not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
+if not self.debug then return self end
+elseif self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to load troops!",10,false,Group)
 if not self.debug then return self end
 end
 local group=Group
@@ -56349,6 +56353,10 @@ local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
 if not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
+if not self.debug then return self end
+end
+if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to extract troops!",10,false,Group)
 if not self.debug then return self end
 end
 local unit=Unit
@@ -56952,6 +56960,11 @@ end
 function CTLD:_UnloadTroops(Group,Unit)
 self:T(self.lid.." _UnloadTroops")
 local droppingatbase=false
+local canunload=true
+if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to unload troops!",10,false,Group)
+if not self.debug then return self end
+end
 local inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
@@ -58589,6 +58602,9 @@ self.pilotmustopendoors=false
 self.suppressmessages=false
 self.rescuehoverheight=20
 self.rescuehoverdistance=10
+self.countryblue=country.id.USA
+self.countryred=country.id.RUSSIA
+self.countryneutral=country.id.UN_PEACEKEEPERS
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -58646,6 +58662,7 @@ local freq=freq/1000
 for i=1,10 do
 math.random(i,10000)
 end
+if point:IsSurfaceTypeWater()then point.y=0 end
 local template=self.template
 local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
 local coalition=self.coalition
@@ -58737,11 +58754,11 @@ pos=_triggerZone:GetCoordinate()
 end
 local _country=0
 if _coalition==coalition.side.BLUE then
-_country=country.id.USA
+_country=self.countryblue
 elseif _coalition==coalition.side.RED then
-_country=country.id.RUSSIA
+_country=self.countryred
 else
-_country=country.id.UN_PEACEKEEPERS
+_country=self.countryneutral
 end
 self:_AddCsar(_coalition,_country,pos,typename,unitname,_description,freq,_nomessage,_description,forcedesc)
 return self
