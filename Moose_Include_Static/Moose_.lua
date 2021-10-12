@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-12T06:30:44.0000000Z-c48128d92e5c4f2aa139babee7e15efac49865e4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-12T20:18:43.0000000Z-b1298223aa2f51ae9267d99ce7176900da84adb8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3006,7 +3006,7 @@ BASE:T(unit_name.." rear doors are open")
 ret_val=true
 end
 if string.find(type_name,"Hercules")and(unit:getDrawArgumentValue(1220)==1 or unit:getDrawArgumentValue(1221)==1)then
-BASE:T(unit_name.." para door(s) are open")
+BASE:T(unit_name.." para doors are open")
 ret_val=true
 end
 if string.find(type_name,"Hercules")and unit:getDrawArgumentValue(1217)==1 then
@@ -20671,16 +20671,20 @@ return self
 end
 function GROUP:SetCommandInvisible(switch)
 self:F2(self.GroupName)
-local switch=switch or false
-local SetInvisible={id='SetInvisible',params={value=true}}
+if switch==nil then
+switch=false
+end
+local SetInvisible={id='SetInvisible',params={value=switch}}
 self:SetCommand(SetInvisible)
 return self
 end
 function GROUP:SetCommandImmortal(switch)
 self:F2(self.GroupName)
-local switch=switch or false
-local SetInvisible={id='SetImmortal',params={value=true}}
-self:SetCommand(SetInvisible)
+if switch==nil then
+switch=false
+end
+local SetImmortal={id='SetImmortal',params={value=switch}}
+self:SetCommand(SetImmortal)
 return self
 end
 function GROUP:GetSkill()
