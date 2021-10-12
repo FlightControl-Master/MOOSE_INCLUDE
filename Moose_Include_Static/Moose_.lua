@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-11T16:47:39.0000000Z-1b752fcaf6fe1c0d6e9b2b3fc3e6ef5d2937e5cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-12T06:30:44.0000000Z-c48128d92e5c4f2aa139babee7e15efac49865e4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67458,6 +67458,9 @@ self.pilotmustopendoors=false
 self.suppressmessages=false
 self.rescuehoverheight=20
 self.rescuehoverdistance=10
+self.countryblue=country.id.USA
+self.countryred=country.id.RUSSIA
+self.countryneutral=country.id.UN_PEACEKEEPERS
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -67607,11 +67610,11 @@ pos=_triggerZone:GetCoordinate()
 end
 local _country=0
 if _coalition==coalition.side.BLUE then
-_country=country.id.USA
+_country=self.countryblue
 elseif _coalition==coalition.side.RED then
-_country=country.id.RUSSIA
+_country=self.countryred
 else
-_country=country.id.UN_PEACEKEEPERS
+_country=self.countryneutral
 end
 self:_AddCsar(_coalition,_country,pos,typename,unitname,_description,freq,_nomessage,_description,forcedesc)
 return self
