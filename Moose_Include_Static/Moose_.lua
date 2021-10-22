@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-20T17:55:19.0000000Z-36cb189512e020c5dd13864678bde8f4d0360c0d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-22T15:04:23.0000000Z-fe3079caad397cbf93e291f978d4e0d46b33b974 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3011,6 +3011,10 @@ ret_val=true
 end
 if string.find(type_name,"Hercules")and unit:getDrawArgumentValue(1217)==1 then
 BASE:T(unit_name.." side door is open")
+ret_val=true
+end
+if string.find(type_name,"Bell-47")then
+BASE:T(unit_name.." door is open")
 ret_val=true
 end
 if ret_val==false then
@@ -58530,7 +58534,8 @@ CSAR.AircraftType["Mi-8MTV2"]=12
 CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
-CSAR.version="0.1.11r1"
+CSAR.AircraftType["Bell-47"]=2
+CSAR.version="0.1.11r2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
