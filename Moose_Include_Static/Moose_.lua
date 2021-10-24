@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-22T15:04:23.0000000Z-fe3079caad397cbf93e291f978d4e0d46b33b974 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-24T12:35:55.0000000Z-8af3f89c143582cdb00872ee89c41eed2b048410 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45949,10 +45949,10 @@ self.carrierparam.totwidthstarboard=35
 self.carrierparam.rwyangle=-9.1359
 self.carrierparam.rwylength=212
 self.carrierparam.rwywidth=25
-self.carrierparam.wire1=42
-self.carrierparam.wire2=51.5
-self.carrierparam.wire3=62
-self.carrierparam.wire4=72.5
+self.carrierparam.wire1=44
+self.carrierparam.wire2=54
+self.carrierparam.wire3=64
+self.carrierparam.wire4=74
 end
 function AIRBOSS:_InitTarawa()
 self:_InitStennis()
