@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-24T07:14:10.0000000Z-07754cdf5fea5964e83f7ec6d91d0a6e8201ab8a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-25T14:29:14.0000000Z-3e1005aef124f4b3a3f81d5491a9e2c7f1ad5971 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45411,7 +45411,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.8"
+AUTOLASE.version="0.0.9"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45453,6 +45453,7 @@ self.GroupsByThreat={}
 self.UnitsByThreat={}
 self.RecceNames={}
 self.RecceLaserCode={}
+self.RecceSmokeColor={}
 self.RecceUnitNames={}
 self.maxlasing=4
 self.CurrentLasing={}
@@ -45519,6 +45520,15 @@ code=self.RecceLaserCode[RecceName]
 end
 return code
 end
+function AUTOLASE:GetSmokeColor(RecceName)
+local color=self.smokecolor
+if self.RecceSmokeColor[RecceName]==nil then
+self.RecceSmokeColor[RecceName]=color
+else
+color=self.RecceLaserCode[RecceName]
+end
+return color
+end
 function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation)
 self.useSRS=OnOff or true
 self.SRSPath=Path or"E:\\Program Files\\DCS-SimpleRadio-Standalone"
@@ -45537,6 +45547,11 @@ end
 function AUTOLASE:SetRecceLaserCode(RecceName,Code)
 local code=Code or 1688
 self.RecceLaserCode[RecceName]=code
+return self
+end
+function AUTOLASE:SetRecceSmokeColor(RecceName,Color)
+local color=Color or self.smokecolor
+self.RecceSmokeColor[RecceName]=color
 return self
 end
 function AUTOLASE:SetLaserCoolDown(OnOff,Seconds)
@@ -45861,7 +45876,8 @@ unittype=unit:GetTypeName(),
 }
 if self.smoketargets then
 local coord=unit:GetCoordinate()
-coord:Smoke(self.smokecolor)
+local color=self:GetSmokeColor(reccename)
+coord:Smoke(color)
 end
 self.lasingindex=self.lasingindex+1
 self.CurrentLasing[self.lasingindex]=laserspot
@@ -80911,7 +80927,6 @@ local CommandCenterMenu=MENU_GROUP:New(EventGroup,self:GetText())
 local MenuReporting=MENU_GROUP:New(EventGroup,"Missions Reports",CommandCenterMenu)
 local MenuMissionsSummary=MENU_GROUP_COMMAND:New(EventGroup,"Missions Status Report",MenuReporting,self.ReportSummary,self,EventGroup)
 local MenuMissionsDetails=MENU_GROUP_COMMAND:New(EventGroup,"Missions Players Report",MenuReporting,self.ReportMissionsPlayers,self,EventGroup)
-self:ReportSummary(EventGroup)
 local PlayerUnit=EventData.IniUnit
 for MissionID,Mission in pairs(self:GetMissions())do
 local Mission=Mission
@@ -84561,7 +84576,7 @@ return self
 end
 function TASK_CARGO_DISPATCHER:AddTransportTask(TaskPrefix,SetCargo,Briefing,Silent)
 self.TransportCount=self.TransportCount+1
-local verbose=Silent and true
+local verbose=Silent or false
 local TaskName=string.format((TaskPrefix or"Transport")..".%03d",self.TransportCount)
 self.Transport[TaskName]={}
 self.Transport[TaskName].SetCargo=SetCargo
