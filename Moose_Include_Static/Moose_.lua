@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-28T08:18:43.0000000Z-2e4fd72781dd4c4b460a3e8984b8aa12cd294fa9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-29T16:32:13.0000000Z-98c6c88391e524d6ceca4b827156feaff1e20fdf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8894,14 +8894,12 @@ end
 return intersection
 end
 function SET_BASE:GetSetComplement(SetB)
-local complement=SET_BASE:New()
-local union=self:GetSetUnion(SetA,SetB)
-for _,Object in pairs(union.Set)do
-if SetA:IsIncludeObject(Object)and SetB:IsIncludeObject(Object)then
-intersection:Add(intersection)
+local complement=self:GetSetUnion(SetB)
+local intersection=self:GetSetIntersection(SetB)
+for _,Object in pairs(intersection.Set)do
+complement:Remove(Object.ObjectName,true)
 end
-end
-return intersection
+return complement
 end
 function SET_BASE:CompareSets(SetA,SetB)
 for _,ObjectB in pairs(SetB.Set)do
