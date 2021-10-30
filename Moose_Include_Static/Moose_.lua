@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-29T16:32:13.0000000Z-98c6c88391e524d6ceca4b827156feaff1e20fdf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-30T14:33:18.0000000Z-45dbce3677a9add302a6237baac9ee9bbbb165e4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19053,11 +19053,11 @@ self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local Units=self:GetUnits()
-local speedmax=nil
+local speedmax=0
 for _,unit in pairs(Units)do
 local unit=unit
 local speed=unit:GetSpeedMax()
-if speedmax==nil then
+if speedmax==0 then
 speedmax=speed
 elseif speed<speedmax then
 speedmax=speed
@@ -20368,7 +20368,7 @@ if Desc then
 local SpeedMax=Desc.speedMax
 return SpeedMax*3.6
 end
-return nil
+return 0
 end
 function UNIT:GetRange()
 self:F2(self.UnitName)
