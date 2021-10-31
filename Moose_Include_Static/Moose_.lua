@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T07:15:25.0000000Z-18c3d990fc2dfaeeae6db2567a8ccbccf9f6da78 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T10:51:31.0000000Z-ab6cd2b751c990a28c12f693d2089dfd0c4c7de9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56817,21 +56817,33 @@ end
 end
 self.Loaded_Cargo[unitname]=loaded
 self:_UpdateUnitCargoMass(Unit)
+self:_CleanupTrackedCrates(crateidsloaded)
+end
+end
+return self
+end
+function CTLD:_CleanupTrackedCrates(crateIdsToRemove)
 local existingcrates=self.Spawned_Cargo
 local newexcrates={}
 for _,_crate in pairs(existingcrates)do
 local excrate=_crate
 local ID=excrate:GetID()
-for _,_ID in pairs(crateidsloaded)do
-if ID~=_ID then
-table.insert(newexcrates,_crate)
+local keep=true
+for _,_ID in pairs(crateIdsToRemove)do
+if ID==_ID then
+keep=false
 end
+end
+local static=_crate:GetPositionable()
+if not static or not static:IsAlive()then
+keep=false
+end
+if keep then
+table.insert(newexcrates,_crate)
 end
 end
 self.Spawned_Cargo=nil
 self.Spawned_Cargo=newexcrates
-end
-end
 return self
 end
 function CTLD:_GetUnitCargoMass(Unit)
@@ -57401,17 +57413,7 @@ nowcrate.HasBeenDropped=false
 end
 if found==numberdest then break end
 end
-for _,_crate in pairs(existingcrates)do
-local excrate=_crate
-local ID=excrate:GetID()
-for _,_ID in pairs(destIDs)do
-if ID~=_ID then
-table.insert(newexcrates,_crate)
-end
-end
-end
-self.Spawned_Cargo=nil
-self.Spawned_Cargo=newexcrates
+self:_CleanupTrackedCrates(destIDs)
 return self
 end
 function CTLD:_RefreshF10Menus()
