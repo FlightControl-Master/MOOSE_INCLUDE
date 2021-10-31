@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-30T20:05:21.0000000Z-2b56a78255ed57547b659d3271adcdeffff0875d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T07:15:25.0000000Z-18c3d990fc2dfaeeae6db2567a8ccbccf9f6da78 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69212,7 +69212,7 @@ local lat,lon,alt=self:_GetLatLongAlt(self.coordinate)
 command=command..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
 end
 if self.google then
-command=command..string.format(' -G "%s"',self.google)
+command=command..string.format(' --ssml -G "%s"',self.google)
 end
 self:T("MSRS command="..command)
 return command
