@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T10:31:19.0000000Z-037357efe95b8b30a23bee4b5123717ee4834a43 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T10:53:53.0000000Z-6fe2422bc98109c67403714bb4a26c4c9c62fa20 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -46078,6 +46078,7 @@ VINSON="VINSON",
 TARAWA="LHA_Tarawa",
 AMERICA="USS America LHA-6",
 JCARLOS="L61",
+CANBERRA="L02",
 KUZNETSOV="KUZNECOW",
 }
 AIRBOSS.PatternStep={
@@ -46128,7 +46129,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.2.0"
+AIRBOSS.version="1.2.1"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -46211,6 +46212,8 @@ elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
 self:_InitAmerica()
 elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
 self:_InitJcarlos()
+elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self:_InitJcarlos()
 elseif self.carriertype==AIRBOSS.CarrierType.KUZNETSOV then
 self:_InitStennis()
 else
@@ -46258,7 +46261,7 @@ local r2=stern:Translate(self.carrierparam.rwywidth*0.5,FB-90,true)
 rwy:FlareRed()
 local cR=stern:Translate(self.carrierparam.totwidthstarboard,hdg+90,true)
 local cL=stern:Translate(self.carrierparam.totwidthport,hdg-90,true)
-if self.carrier:GetTypeName()~=AIRBOSS.CarrierType.TARAWA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.AMERICA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.JCARLOS then
+if self.carrier:GetTypeName()~=AIRBOSS.CarrierType.TARAWA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.AMERICA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.JCARLOS or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.CANBERRA then
 local w1=stern:Translate(self.carrierparam.wire1,FB,true)
 local w2=stern:Translate(self.carrierparam.wire2,FB,true)
 local w3=stern:Translate(self.carrierparam.wire3,FB,true)
@@ -48968,7 +48971,7 @@ angels0=2
 local hdg=self.carrier:GetHeading()
 p1=Carrier
 p2=Carrier:Translate(UTILS.NMToMeters(1.5),hdg)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 p1=Carrier:Translate(UTILS.NMToMeters(1.0),hdg+90)
 p2=p1:Translate(2.5,hdg)
 end
@@ -49398,6 +49401,8 @@ playerData.waveoff=false
 playerData.wofd=false
 playerData.owo=false
 playerData.boltered=false
+playerData.hover=false
+playerData.stable=false
 playerData.landed=false
 playerData.Tlso=timer.getTime()
 playerData.Tgroove=nil
@@ -49885,7 +49890,7 @@ self:_SetTimeInGroove(playerData)
 local text=string.format("Player %s AC type %s landed at dist=%.1f m. Tgroove=%.1f sec.",playerData.name,playerData.actype,dist,self:_GetTimeInGroove(playerData))
 text=text..string.format(" X=%.1f m, Z=%.1f m, rho=%.1f m.",X,Z,rho)
 self:T(self.lid..text)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self:RadioTransmission(self.LSORadio,self.LSOCall.IDLE,false,1,nil,true)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.DEBRIEF)
 else
@@ -49899,7 +49904,7 @@ self:E(self.lid..string.format("Player %s did not land in carrier box zone. Mayb
 end
 end
 else
-if self.carriertype~=AIRBOSS.CarrierType.TARAWA or self.carriertype~=AIRBOSS.CarrierType.AMERICA or self.carriertype~=AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype~=AIRBOSS.CarrierType.TARAWA or self.carriertype~=AIRBOSS.CarrierType.AMERICA or self.carriertype~=AIRBOSS.CarrierType.JCARLOS or self.carriertype~=AIRBOSS.CarrierType.CANBERRA then
 local coord=EventData.IniUnit:GetCoordinate()
 local dist=coord:Get2DDistance(self:GetCoordinate())
 local wire=self:_GetWire(coord,0)
@@ -50356,6 +50361,8 @@ if inzone and math.abs(relheading)<60 then
 self:_PlayerHint(playerData)
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and self.carriertype==AIRBOSS.CarrierType.JCARLOS then
 self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT5,nil,nil,nil,true)
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT5,nil,nil,nil,true)
 elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT75,nil,nil,nil,true)
 end
@@ -50432,7 +50439,7 @@ end
 function AIRBOSS:_CheckForLongDownwind(playerData)
 local X,Z=self:_GetDistances(playerData.unit)
 local limit=UTILS.NMToMeters(-1.6)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 limit=UTILS.NMToMeters(-2.0)
 end
 if X<limit then
@@ -50454,6 +50461,8 @@ if self:_CheckLimits(X,Z,self.Abeam)then
 self:RadioTransmission(self.LSORadio,self.LSOCall.PADDLESCONTACT,nil,nil,nil,true)
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and self.carriertype==AIRBOSS.CarrierType.JCARLOS then
 self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT5,false,5,nil,true)
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT5,false,5,nil,true)
 elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 self:RadioTransmission(self.LSORadio,self.LSOCall.EXPECTSPOT75,false,5,nil,true)
 end
@@ -50470,7 +50479,7 @@ end
 local relheading=self:_GetRelativeHeading(playerData.unit,false)
 if relheading<=90 then
 self:_PlayerHint(playerData)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.FINAL)
 else
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.WAKE)
@@ -50591,10 +50600,12 @@ local ZoneALS=self:_GetZoneAbeamLandingSpot()
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
-local stable=dv<10
+local stable=dv<20
 if playerData.unit:IsInZone(ZoneALS)and stable then
 self:RadioTransmission(self.LSORadio,self.LSOCall.CLEAREDTOLAND,nil,nil,nil,true)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.GROOVE_LC)
+playerData.stable=true
+playerData.hover=true
 end
 elseif rho<=RAR and playerData.step==AIRBOSS.PatternStep.GROOVE_LC then
 playerData.groove.LC=UTILS.DeepCopy(groovedata)
@@ -50602,9 +50613,10 @@ local ZoneLS=self:_GetZoneLandingSpot()
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
-local stable=dv<7.5
-if playerData.unit:IsInZone(ZoneLS)and stable and playerData.warning==false then
-self:RadioTransmission(self.LSORadio,self.LSOCall.STABILIZED,nil,nil,nil,true)
+local stable=dv<10
+if playerData.unit:IsInZone(ZoneLS)and stable and playerData.stable==true then
+self:RadioTransmission(self.LSORadio,self.LSOCall.STABILIZED,nil,nil,nil,false)
+playerData.stable=false
 playerData.warning=true
 end
 end
@@ -50698,10 +50710,9 @@ local glMax=1.8
 local glMin=-1.2
 local luAbs=3.0
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
-glMax=4.0
-glMin=-3.0
-luAbs=5.0
-return false
+glMax=2.6
+glMin=-2.0
+luAbs=4.1
 end
 if glideslopeError>glMax then
 local text=string.format("\n- Waveoff due to glideslope error %.2f > %.1f degrees!",glideslopeError,glMax)
@@ -50720,7 +50731,7 @@ self:T(self.lid..string.format("%s: %s",playerData.name,text))
 self:_AddToDebrief(playerData,text)
 waveoff=true
 end
-if playerData.difficulty==AIRBOSS.Difficulty.HARD then
+if playerData.difficulty==AIRBOSS.Difficulty.HARD and playerData.actype~=AIRBOSS.AircraftCarrier.AV8B then
 local aoaac=self:_GetAircraftAoA(playerData)
 if AoA<aoaac.FAST then
 local text=string.format("\n- Waveoff due to AoA %.1f < %.1f!",AoA,aoaac.FAST)
@@ -50803,7 +50814,7 @@ function AIRBOSS:_GetSternCoord()
 local hdg=self.carrier:GetHeading()
 local FB=self:GetFinalBearing()
 self.sterncoord:UpdateFromCoordinate(self:GetCoordinate())
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(8,FB-90,true,true)
 elseif self.carriertype==AIRBOSS.CarrierType.STENNIS then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(7,FB+90,true,true)
@@ -51085,8 +51096,8 @@ local S=self:_GetOptLandingCoordinate()
 local FB=self:GetFinalBearing(false)
 local p={}
 p[1]=S:Translate(15,FB):Translate(15,FB+90)
-p[2]=S:Translate(-15,FB):Translate(15,FB+90)
-p[3]=S:Translate(-15,FB):Translate(15,FB-90)
+p[2]=S:Translate(-45,FB):Translate(15,FB+90)
+p[3]=S:Translate(-45,FB):Translate(15,FB-90)
 p[4]=S:Translate(15,FB):Translate(15,FB-90)
 local vec2={}
 for _,coord in ipairs(p)do
@@ -51123,7 +51134,7 @@ local hdg=self:GetHeading()
 local D=UTILS.NMToMeters(2.5)
 local Post=self:GetCoordinate():Translate(D,hdg+270)
 self.zoneHolding=ZONE_RADIUS:New("CASE I Holding Zone",Post:GetVec2(),self.marshalradius)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self.zoneHolding=ZONE_RADIUS:New("CASE I Holding Zone",self.carrier:GetVec2(),UTILS.NMToMeters(5))
 end
 else
@@ -51145,7 +51156,7 @@ local hdg=self:GetHeading()
 local D=UTILS.NMToMeters(4.75)
 local R=UTILS.NMToMeters(1)
 local Three=self:GetCoordinate():Translate(D,hdg+275)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 local Dx=UTILS.NMToMeters(2.25)
 local Dz=UTILS.NMToMeters(2.25)
 R=UTILS.NMToMeters(1)
@@ -51304,7 +51315,10 @@ elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
 self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
 self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
 elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-100,true,true)
+self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
+self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
+elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
 self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
 else
 if self.carrierparam.wire3 then
@@ -51324,6 +51338,9 @@ elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
 local hdg=self:GetHeading()
 self.landingspotcoord:Translate(59,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
 elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+local hdg=self:GetHeading()
+self.landingspotcoord:Translate(89,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
+elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 local hdg=self:GetHeading()
 self.landingspotcoord:Translate(89,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
 end
@@ -51539,9 +51556,9 @@ elseif t<=24 then
 grade="(LIG)"
 elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<55 then
 grade="FAST V/STOL Groove"
-elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<90 then
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<75 then
 grade="OK V/STOL Groove"
-elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t>=91 then
+elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t>=76 then
 grade="SLOW V/STOL Groove"
 else
 grade="LIG"
@@ -51549,7 +51566,7 @@ end
 if t>=16.4 and t<=16.6 then
 grade="_OK_"
 end
-if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and(t>=65.0 and t<=75.0)then
+if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and(t>=60.0 and t<=65.0)then
 grade="_OK_ V/STOL"
 end
 return grade
@@ -51569,7 +51586,7 @@ local nS=count(G,'%(')
 local nN=N-nS-nL
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
-local TgrooveVstolUnicorn=Tgroove and(Tgroove>=65.0 and Tgroove<=70.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
+local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
 local grade
 local points
 if N==0 and(TgrooveUnicorn or TgrooveVstolUnicorn)then
@@ -51640,6 +51657,11 @@ end
 elseif playerData.boltered then
 grade="-- (BOLTER)"
 points=2.5
+elseif not playerData.hover and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if playerData.landed then
+grade="CUT"
+points=0.0
+end
 end
 return grade,points,G
 end
@@ -51816,7 +51838,7 @@ gp=AIRBOSS.GroovePos.AR
 if n==-1 then
 gp=AIRBOSS.GroovePos.IC
 elseif n==1 then
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 gp=AIRBOSS.GroovePos.AL
 else
 gp=AIRBOSS.GroovePos.IW
@@ -52711,13 +52733,13 @@ end
 function AIRBOSS:_IsCarrierAircraft(unit)
 local aircrafttype=unit:GetTypeName()
 if aircrafttype==AIRBOSS.AircraftCarrier.AV8B then
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 return true
 else
 return false
 end
 end
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 if aircrafttype~=AIRBOSS.AircraftCarrier.AV8B then
 return false
 end
@@ -54408,7 +54430,7 @@ if case==3 then
 text=text.."\n* bullseye with GREEN flares"
 self:_GetZoneBullseye(case):FlareZone(FLARECOLOR.Green,45)
 end
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS then
+if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 text=text.."\n* abeam landing stop with RED flares"
 local ALSPT=self:_GetZoneAbeamLandingSpot()
 ALSPT:FlareZone(FLARECOLOR.Red,5,nil,UTILS.FeetToMeters(110))
@@ -80887,7 +80909,7 @@ local lat,lon,alt=self:_GetLatLongAlt(self.coordinate)
 command=command..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
 end
 if self.google then
-command=command..string.format(' -G "%s"',self.google)
+command=command..string.format(' --ssml -G "%s"',self.google)
 end
 self:T("MSRS command="..command)
 return command
