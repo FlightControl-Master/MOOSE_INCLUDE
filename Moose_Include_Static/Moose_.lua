@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T10:53:53.0000000Z-6fe2422bc98109c67403714bb4a26c4c9c62fa20 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-01T18:46:56.0000000Z-e7e218476033b35d95d55a74e0a7c9853d60f49b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45409,7 +45409,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.9"
+AUTOLASE.version="0.0.10"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -45493,6 +45493,7 @@ self:__Monitor(math.random(5,10))
 return self
 end
 function AUTOLASE:SetPilotMenu()
+if self.usepilotset then
 local pilottable=self.pilotset:GetSetObjects()or{}
 for _,_unit in pairs(pilottable)do
 local Unit=_unit
@@ -45500,6 +45501,7 @@ if Unit and Unit:IsAlive()then
 local Group=Unit:GetGroup()
 local lasemenu=MENU_GROUP_COMMAND:New(Group,"Autolase Status",nil,self.ShowStatus,self,Group)
 lasemenu:Refresh()
+end
 end
 end
 return self
