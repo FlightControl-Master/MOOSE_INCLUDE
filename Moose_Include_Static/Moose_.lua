@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-10-31T10:51:31.0000000Z-ab6cd2b751c990a28c12f693d2089dfd0c4c7de9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-06T14:30:15.0000000Z-65c92be09e37808e6fe3f81ad19918fb7a743d2e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58557,7 +58557,7 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="0.1.11r2"
+CSAR.version="0.1.12r2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -58652,6 +58652,7 @@ self.rescuehoverdistance=10
 self.countryblue=country.id.USA
 self.countryred=country.id.RUSSIA
 self.countryneutral=country.id.UN_PEACEKEEPERS
+self.csarUsePara=true
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -58761,24 +58762,36 @@ end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"Pilot"
 if not noMessage then
+if _freq~=0 then
 self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,self.messageTime)
+else
+self:_DisplayToAllSAR("Troops In Contact. ".._typeName.." requests CASEVAC. ",self.coalition,self.messageTime)
 end
-if _freq then
+end
+if(_freq and _freq~=0)then
 self:_AddBeaconToGroup(_spawnedGroup,_freq)
 end
 self:_AddSpecialOptions(_spawnedGroup)
 local _text=_description
 if not forcedesc then
 if _playerName~=nil then
+if _freq~=0 then
 _text="Pilot ".._playerName
+else
+_text="TIC - ".._playerName
+end
 elseif _unitName~=nil then
+if _freq~=0 then
 _text="AI Pilot of ".._unitName
+else
+_text="TIC - ".._unitName
+end
 end
 end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName)
-self:_InitSARForPilot(_spawnedGroup,_GroupName,_freq,noMessage)
+self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage)
 return self
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
@@ -58812,6 +58825,28 @@ return self
 end
 function CSAR:SpawnCSARAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename,Forcedesc)
 self:_SpawnCsarAtZone(Zone,Coalition,Description,RandomPoint,Nomessage,Unitname,Typename,Forcedesc)
+return self
+end
+function CSAR:_SpawnCASEVAC(_Point,_coalition,_description,_nomessage,unitname,typename,forcedesc)
+self:T(self.lid.." _SpawnCASEVAC")
+local _description=_description or"CASEVAC"
+local unitname=unitname or"CASEVAC"
+local typename=typename or"Ground Commander"
+local pos={}
+pos=_Point
+local _country=0
+if _coalition==coalition.side.BLUE then
+_country=self.countryblue
+elseif _coalition==coalition.side.RED then
+_country=self.countryred
+else
+_country=self.countryneutral
+end
+self:_AddCsar(_coalition,_country,pos,typename,unitname,_description,0,_nomessage,_description,forcedesc)
+return self
+end
+function CSAR:SpawnCASEVAC(Point,Coalition,Description,Nomessage,Unitname,Typename,Forcedesc)
+self:_SpawnCASEVAC(Point,Coalition,Description,Nomessage,Unitname,Typename,Forcedesc)
 return self
 end
 function CSAR:_EventHandler(EventData)
@@ -58893,8 +58928,22 @@ end
 if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
 return
 end
+if self.csarUsePara==false then
 local _freq=self:_GenerateADFFrequency()
 self:_AddCsar(_coalition,_unit:GetCountry(),_unit:GetCoordinate(),_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
+return true
+end
+elseif(_event.id==EVENTS.LandingAfterEjection and self.csarUsePara==true)then
+self:I({EVENT=_event})
+local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
+local _unitname="Aircraft"
+local _typename="Ejected Pilot"
+local _country=_event.initiator:getCountry()
+local _coalition=coalition.getCountryCoalition(_country)
+local _freq=self:_GenerateADFFrequency()
+self:I({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
+self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,false,"none")
+Unit.destroy(_event.initiator)
 return true
 elseif _event.id==EVENTS.Land then
 self:T(self.lid.." Landing")
@@ -58938,8 +58987,13 @@ local _freqk=_freq/1000
 local _coordinatesText=self:_GetPositionOfWounded(_downedGroup)
 local _leadername=_leader:GetName()
 if not _nomessage then
-local _text=string.format("%s requests SAR at %s, beacon at %.2f KHz",_leadername,_coordinatesText,_freqk)
+if _freq~=0 then
+local _text=string.format("%s requests SAR at %s, beacon at %.2f KHz",_groupName,_coordinatesText,_freqk)
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
+else
+local _text=string.format("Pickup Zone at %s.",_coordinatesText)
+self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
+end
 end
 for _,_heliName in pairs(self.csarUnits)do
 self:_CheckWoundedGroupStatus(_heliName,_groupName)
@@ -59036,7 +59090,7 @@ self:T(self.lid.." _PopSmokeForGroup")
 local _lastSmoke=self.smokeMarkers[_woundedGroupName]
 if _lastSmoke==nil or timer.getTime()>_lastSmoke then
 local _smokecolor=self.smokecolor
-local _smokecoord=_woundedLeader:GetCoordinate()
+local _smokecoord=_woundedLeader:GetCoordinate():Translate(6,math.random(1,360))
 _smokecoord:Smoke(_smokecolor)
 self.smokeMarkers[_woundedGroupName]=timer.getTime()+300
 end
@@ -59300,7 +59354,11 @@ distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
 end
+if _value.frequency==0 then
+table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %s ",_value.desc,_coordinatesText,distancetext)})
+else
 table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %.2f KHz ADF - %s ",_value.desc,_coordinatesText,_value.frequency/1000,distancetext)})
+end
 end
 end
 local function sortDistance(a,b)
@@ -59629,6 +59687,7 @@ self:I(self.lid.."Started.")
 self:HandleEvent(EVENTS.Takeoff,self._EventHandler)
 self:HandleEvent(EVENTS.Land,self._EventHandler)
 self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.LandingAfterEjection,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
@@ -59711,6 +59770,7 @@ self:T({From,Event,To})
 self:UnHandleEvent(EVENTS.Takeoff)
 self:UnHandleEvent(EVENTS.Land)
 self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.LandingAfterEjection)
 self:UnHandleEvent(EVENTS.PlayerEnterUnit)
 self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
 self:UnHandleEvent(EVENTS.PilotDead)
