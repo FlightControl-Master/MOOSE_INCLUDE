@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-06T17:07:42.0000000Z-eeeab869526f79cc0218ca89d8c0e4832513bfa5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-07T15:08:11.0000000Z-21a93652cd411f62703d8451370b0e31c8b8a0f3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60445,7 +60445,8 @@ local formation=nil
 if self.isGround and mission.optionFormation then
 formation=mission.optionFormation
 end
-local waypoint=self:AddWaypoint(waypointcoord,SpeedToMission,nil,formation,false)
+local uid=self:GetWaypointCurrent().uid
+local waypoint=self:AddWaypoint(waypointcoord,SpeedToMission,uid,formation,false)
 local waypointtask=self:AddTaskWaypoint(mission.DCStask,waypoint,mission.name,mission.prio,mission.duration)
 mission:SetGroupWaypointTask(self,waypointtask)
 mission:SetGroupWaypointIndex(self,waypoint.uid)
