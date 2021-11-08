@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-08T12:11:58.0000000Z-a7588e517da2a253723611146036962bc4145083 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-08T14:21:20.0000000Z-273a473db13561c82023c46062b49d7a8635d5fc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25768,9 +25768,8 @@ local grp=args[1]
 local name=args[2]
 if self.UseEmissionsOnOff then
 grp:EnableEmission(false)
-else
-grp:OptionAlarmStateGreen()
 end
+grp:OptionAlarmStateGreen()
 grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
 if self.UseCallBack then
 local object=self.CallBack
@@ -25783,9 +25782,8 @@ local grp=args[1]
 local name=args[2]
 if self.UseEmissionsOnOff then
 grp:EnableEmission(true)
-else
-grp:OptionAlarmStateRed()
 end
+grp:OptionAlarmStateAuto()
 grp:OptionEngageRange(self.EngagementRange)
 self.SuppressedGroups[name]=false
 if self.UseCallBack then
