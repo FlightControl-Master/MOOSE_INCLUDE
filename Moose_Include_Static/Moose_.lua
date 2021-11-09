@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-08T14:21:20.0000000Z-273a473db13561c82023c46062b49d7a8635d5fc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-09T08:53:23.0000000Z-ce935bafc12a6325085732398492010648414ebf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3135,6 +3135,89 @@ end
 _count=_count+1
 end
 return jtacGeneratedLaserCodes
+end
+function UTILS.SaveToFile(Path,Filename,Data)
+if not io then
+BASE:E("ERROR: io not desanitized. Can't save current file.")
+return false
+end
+if Path==nil and not lfs then
+BASE:E("WARNING: lfs not desanitized. File will be saved in DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+local path=nil
+if lfs then
+path=Path or lfs.writedir()
+end
+local filename=Filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local f=assert(io.open(filename,"wb"))
+f:write(Data)
+f:close()
+return true
+end
+function UTILS.LoadFromFile(Path,Filename)
+if not io then
+BASE:E("ERROR: io not desanitized. Can't save current state.")
+return false
+end
+if Path==nil and not lfs then
+BASE:E("WARNING: lfs not desanitized. Loading will look into your DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+local path=nil
+if lfs then
+path=Path or lfs.writedir()
+end
+local filename=Filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local exists=UTILS.CheckFileExists(Path,Filename)
+if not exists then
+BASE:E(string.format("ERROR: File %s does not exist!",filename))
+return false
+end
+local file=assert(io.open(filename,"rb"))
+local loadeddata={}
+for line in file:lines()do
+loadeddata[#loadeddata+1]=line
+end
+file:close()
+return true,loadeddata
+end
+function UTILS.CheckFileExists(Path,Filename)
+local function _fileexists(name)
+local f=io.open(name,"r")
+if f~=nil then
+io.close(f)
+return true
+else
+return false
+end
+end
+if not io then
+BASE:E("ERROR: io not desanitized. Can't save current state.")
+return false
+end
+if Path==nil and not lfs then
+BASE:E("WARNING: lfs not desanitized. Loading will look into your DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+local path=nil
+if lfs then
+path=Path or lfs.writedir()
+end
+local filename=Filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local exists=_fileexists(filename)
+if not exists then
+BASE:E(string.format("ERROR: File %s does not exist!",filename))
+return false
+else
+return true
+end
 end
 PROFILER={
 ClassName="PROFILER",
@@ -25626,7 +25709,7 @@ self.UseEmissionsOnOff=false
 self.CallBack=nil
 self.UseCallBack=false
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.3.2")
+self:I("*** SEAD - Started Version 0.3.3")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -25727,7 +25810,7 @@ end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
 self:T(_targetgroupname,SEADGroupPrefix)
-if string.find(_targetgroupname,SEADGroupPrefix)then
+if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
 SEADGroupFound=true
 self:T('*** SEAD - Group Match Found')
 break
