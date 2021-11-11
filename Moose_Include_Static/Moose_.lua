@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T15:03:52.0000000Z-c5dece0e593e1e1d5d65090fe257857f64c4e715 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T16:22:21.0000000Z-a6beecf51089deffab4cfbec34ebc0b6b2da1b4a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44583,9 +44583,35 @@ GREEN=0,
 AMBER=1,
 RED=2,
 }
+MANTIS.SamType={
+SHORT="Short",
+MEDIUM="Medium",
+LONG="Long",
+}
+MANTIS.SamData={
+["Hawk"]={Range=44,Blindspot=0,Height=9,Type="Medium"},
+["NASAMS"]={Range=14,Blindspot=0,Height=3,Type="Short"},
+["Patriot"]={Range=99,Blindspot=0,Height=9,Type="Long"},
+["Rapier"]={Range=6,Blindspot=0,Height=3,Type="Short"},
+["SA-5"]={Range=250,Blindspot=7,Height=40,Type="Long"},
+["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium"},
+["SA-3"]={Range=18,Blindspot=0,Height=18,Type="Short"},
+["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium"},
+["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium"},
+["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long"},
+["Roland"]={Range=8,Blindspot=0,Height=3,Type="Short"},
+["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short"},
+["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short"},
+["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short"},
+["SA-19"]={Range=8,Blindspot=0,Height=3,Type="Short"},
+["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Short"},
+["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Short"},
+["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short"},
+["Chaparrel"]={Range=8,Blindspot=0,Height=3,Type="Short"},
+["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short"},
+}
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
-self.name=name or"mymantis"
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
@@ -44636,17 +44662,30 @@ BASE:TraceOnOff(true)
 BASE:TraceClass(self.ClassName)
 BASE:TraceLevel(1)
 end
+local ewr_templates={}
+if type(samprefix)~="table"then
+self.SAM_Templates_Prefix={samprefix}
+end
+if type(ewrprefix)~="table"then
+self.EWR_Templates_Prefix={ewrprefix}
+end
+for _,_group in pairs(self.SAM_Templates_Prefix)do
+table.insert(ewr_templates,_group)
+end
+for _,_group in pairs(self.EWR_Templates_Prefix)do
+table.insert(ewr_templates,_group)
+end
 if self.dynamic then
 self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition):FilterStart()
-self.EWR_Group=SET_GROUP:New():FilterPrefixes({self.SAM_Templates_Prefix,self.EWR_Templates_Prefix}):FilterCoalitions(self.Coalition):FilterStart()
+self.EWR_Group=SET_GROUP:New():FilterPrefixes(ewr_templates):FilterCoalitions(self.Coalition):FilterStart()
 else
 self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition):FilterOnce()
-self.EWR_Group=SET_GROUP:New():FilterPrefixes({self.SAM_Templates_Prefix,self.EWR_Templates_Prefix}):FilterCoalitions(self.Coalition):FilterOnce()
+self.EWR_Group=SET_GROUP:New():FilterPrefixes(ewr_templates):FilterCoalitions(self.Coalition):FilterOnce()
 end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.7.1"
+self.version="0.8.1"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
