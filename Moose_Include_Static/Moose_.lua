@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T16:22:21.0000000Z-a6beecf51089deffab4cfbec34ebc0b6b2da1b4a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T16:45:25.0000000Z-a38abc2f7f1c5f87a8efe8a9bf9dda23b19705fb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44548,6 +44548,9 @@ Adv_EWR_Group=nil,
 HQ_Template_CC="",
 HQ_CC=nil,
 SAM_Table={},
+SAM_Table_Long={},
+SAM_Table_Medium={},
+SAM_Table_Short={},
 lid="",
 Detection=nil,
 AWACS_Detection=nil,
@@ -44589,26 +44592,26 @@ MEDIUM="Medium",
 LONG="Long",
 }
 MANTIS.SamData={
-["Hawk"]={Range=44,Blindspot=0,Height=9,Type="Medium"},
-["NASAMS"]={Range=14,Blindspot=0,Height=3,Type="Short"},
-["Patriot"]={Range=99,Blindspot=0,Height=9,Type="Long"},
-["Rapier"]={Range=6,Blindspot=0,Height=3,Type="Short"},
-["SA-5"]={Range=250,Blindspot=7,Height=40,Type="Long"},
-["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium"},
-["SA-3"]={Range=18,Blindspot=0,Height=18,Type="Short"},
-["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium"},
-["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium"},
-["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long"},
-["Roland"]={Range=8,Blindspot=0,Height=3,Type="Short"},
-["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short"},
-["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short"},
-["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short"},
-["SA-19"]={Range=8,Blindspot=0,Height=3,Type="Short"},
-["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Short"},
-["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Short"},
-["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short"},
-["Chaparrel"]={Range=8,Blindspot=0,Height=3,Type="Short"},
-["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short"},
+["Hawk"]={Range=44,Blindspot=0,Height=9,Type="Medium",Radar="Hawk"},
+["NASAMS"]={Range=14,Blindspot=0,Height=3,Type="Short",Radar="NSAMS"},
+["Patriot"]={Range=99,Blindspot=0,Height=9,Type="Long",Radar="Patriot"},
+["Rapier"]={Range=6,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
+["SA-5"]={Range=250,Blindspot=7,Height=40,Type="Long",Radar="5N62V"},
+["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
+["SA-3"]={Range=18,Blindspot=0,Height=18,Type="Short",Radar="s-125"},
+["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="SNR_75V"},
+["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
+["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS"},
+["Roland"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Roland"},
+["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
+["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
+["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
+["SA-19"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Tunguska"},
+["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Short",Radar="Tor 9A331"},
+["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
+["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Avenger"},
+["Chaparrel"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
+["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Linebacker"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
@@ -44617,12 +44620,15 @@ self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
 self.Coalition=coaltion or"red"
 self.SAM_Table={}
+self.SAM_Table_Long={}
+self.SAM_Table_Medium={}
+self.SAM_Table_Short={}
 self.dynamic=dynamic or false
 self.checkradius=25000
 self.grouping=5000
 self.acceptrange=80000
 self.detectinterval=30
-self.engagerange=75
+self.engagerange=85
 self.autorelocate=false
 self.autorelocateunits={HQ=false,EWR=false}
 self.advanced=false
@@ -44643,12 +44649,19 @@ self.SamStateTracker={}
 self.DLink=false
 self.Padding=Padding or 10
 self.SuppressedGroups={}
-if EmOnOff then
+self.automode=true
+self.radiusscale=0.9
+self.SAMCheckRanges={}
+self.usezones=false
+self.AcceptZones={}
+self.RejectZones={}
+self.maxlongrange=1
+self.maxmidrange=2
+self.maxshortrange=2
+self.maxclassic=6
+self.UseEmOnOff=true
 if EmOnOff==false then
 self.UseEmOnOff=false
-else
-self.UseEmOnOff=true
-end
 end
 if type(awacs)=="string"then
 self.advAwacs=true
@@ -44662,7 +44675,7 @@ BASE:TraceOnOff(true)
 BASE:TraceClass(self.ClassName)
 BASE:TraceLevel(1)
 end
-local ewr_templates={}
+self.ewr_templates={}
 if type(samprefix)~="table"then
 self.SAM_Templates_Prefix={samprefix}
 end
@@ -44670,17 +44683,21 @@ if type(ewrprefix)~="table"then
 self.EWR_Templates_Prefix={ewrprefix}
 end
 for _,_group in pairs(self.SAM_Templates_Prefix)do
-table.insert(ewr_templates,_group)
+table.insert(self.ewr_templates,_group)
 end
 for _,_group in pairs(self.EWR_Templates_Prefix)do
-table.insert(ewr_templates,_group)
+table.insert(self.ewr_templates,_group)
 end
+if self.advAwacs then
+table.insert(self.ewr_templates,awacs)
+end
+self:T({self.ewr_templates})
 if self.dynamic then
 self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition):FilterStart()
-self.EWR_Group=SET_GROUP:New():FilterPrefixes(ewr_templates):FilterCoalitions(self.Coalition):FilterStart()
+self.EWR_Group=SET_GROUP:New():FilterPrefixes(self.ewr_templates):FilterCoalitions(self.Coalition):FilterStart()
 else
 self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition):FilterOnce()
-self.EWR_Group=SET_GROUP:New():FilterPrefixes(ewr_templates):FilterCoalitions(self.Coalition):FilterOnce()
+self.EWR_Group=SET_GROUP:New():FilterPrefixes(self.ewr_templates):FilterCoalitions(self.Coalition):FilterOnce()
 end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
@@ -44716,10 +44733,17 @@ local radius=radius or 5000
 self.grouping=radius
 return self
 end
+function MANTIS:AddZones(AcceptZones,RejectZones)
+self:T(self.lid.."AddZones")
+self.AcceptZones=AcceptZones or{}
+self.RejectZones=RejectZones or{}
+if#AcceptZones>0 or#RejectZones>0 then
+self.usezones=true
+end
+return self
+end
 function MANTIS:SetEWRRange(radius)
 self:T(self.lid.."SetEWRRange")
-local radius=radius or 80000
-self.acceptrange=radius
 return self
 end
 function MANTIS:SetSAMRadius(radius)
@@ -44730,11 +44754,19 @@ return self
 end
 function MANTIS:SetSAMRange(range)
 self:T(self.lid.."SetSAMRange")
-local range=range or 75
+local range=range or 85
 if range<0 or range>100 then
-range=75
+range=85
 end
 self.engagerange=range
+return self
+end
+function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic)
+self:T(self.lid.."SetMaxActiveSAMs")
+self.maxclassic=Classic or 6
+self.maxlongrange=Long or 1
+self.maxmidrange=Mid or 2
+self.maxshortrange=Short or 2
 return self
 end
 function MANTIS:SetNewSAMRangeWhileRunning(range)
@@ -44938,21 +44970,77 @@ end
 end
 return self
 end
-function MANTIS:CheckObjectInZone(dectset,samcoordinate)
-self:T(self.lid.."CheckObjectInZone")
-local radius=self.checkradius
+function MANTIS:_CheckCoordinateInZones(coord)
+self:T(self.lid.."_CheckCoordinateInZones")
+local inzone=false
+if#self.AcceptZones>0 then
+for _,_zone in pairs(self.AcceptZones)do
+local zone=_zone
+if zone:IsCoordinateInZone(coord)then
+inzone=true
+self:T(self.lid.."Target coord in Accept Zone!")
+break
+end
+end
+end
+if#self.RejectZones>0 and inzone then
+for _,_zone in pairs(self.RejectZones)do
+local zone=_zone
+if zone:IsCoordinateInZone(coord)then
+inzone=false
+self:T(self.lid.."Target coord in Reject Zone!")
+break
+end
+end
+end
+return inzone
+end
+function MANTIS:_PreFilterHeight(height)
+self:T(self.lid.."_PreFilterHeight")
+local set={}
+local dlink=self.Detection
+local detectedgroups=dlink:GetContactTable()
+for _,_contact in pairs(detectedgroups)do
+local contact=_contact
+local grp=contact.group
+if grp:IsAlive()then
+if grp:GetHeight(true)<height then
+local coord=grp:GetCoordinate()
+table.insert(set,coord)
+end
+end
+end
+return set
+end
+function MANTIS:_CheckObjectInZone(dectset,samcoordinate,radius,height,dlink)
+self:T(self.lid.."_CheckObjectInZone")
+local rad=radius or self.checkradius
 local set=dectset
+if dlink then
+set=self:_PreFilterHeight(height)
+end
 for _,_coord in pairs(set)do
 local coord=_coord
 local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
-if self.verbose or self.debug then
+if not targetdistance then
+targetdistance=samcoordinate:Get2DDistance(coord)
+end
+local zonecheck=true
+if self.usezones then
+zonecheck=self:_CheckCoordinateInZones(coord)
+end
+if self.verbose and self.debug then
 local dectstring=coord:ToStringLLDMS()
 local samstring=samcoordinate:ToStringLLDMS()
-local text=string.format("Checking SAM at % s - Distance %d m - Target %s",samstring,targetdistance,dectstring)
-local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
-self:I(self.lid..text)
+local inrange="false"
+if targetdistance<=rad then
+inrange="true"
 end
-if targetdistance<=radius then
+local text=string.format("Checking SAM at %s | Targetdist %d | Rad %d | Inrange %s",samstring,targetdistance,rad,inrange)
+local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
+self:T(self.lid..text)
+end
+if targetdistance<=rad and zonecheck then
 return true,targetdistance
 end
 end
@@ -44962,22 +45050,28 @@ function MANTIS:StartDetection()
 self:T(self.lid.."Starting Detection")
 local groupset=self.EWR_Group
 local grouping=self.grouping or 5000
-local acceptrange=self.acceptrange or 80000
-local interval=self.detectinterval or 60
+local interval=self.detectinterval or 20
 local MANTISdetection=DETECTION_AREAS:New(groupset,grouping)
 MANTISdetection:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
-MANTISdetection:SetAcceptRange(acceptrange)
 MANTISdetection:SetRefreshTimeInterval(interval)
-MANTISdetection:Start()
-function MANTISdetection:OnAfterDetectedItem(From,Event,To,DetectedItem)
-local debug=false
-if DetectedItem.IsDetected and debug then
-local Coordinate=DetectedItem.Coordinate
-local text="MANTIS: Detection at "..Coordinate:ToStringLLDMS()
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-end
-end
+MANTISdetection:__Start(2)
 return MANTISdetection
+end
+function MANTIS:StartIntelDetection()
+self:T(self.lid.."Starting Intel Detection")
+local groupset=self.EWR_Group
+local samset=self.SAM_Group
+self.intelset={}
+local IntelOne=INTEL:New(groupset,self.Coalition,self.name.." IntelOne")
+IntelOne:Start()
+local IntelTwo=INTEL:New(samset,self.Coalition,self.name.." IntelTwo")
+IntelTwo:Start()
+local IntelDlink=INTEL_DLINK:New({IntelOne,IntelTwo},self.name.." DLINK",22,300)
+IntelDlink:__Start(1)
+self:SetUsingDLink(IntelDlink)
+table.insert(self.intelset,IntelOne)
+table.insert(self.intelset,IntelTwo)
+return IntelDlink
 end
 function MANTIS:StartAwacsDetection()
 self:T(self.lid.."Starting Awacs Detection")
@@ -44990,24 +45084,72 @@ MANTISAwacs:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
 MANTISAwacs:SetAcceptRange(self.awacsrange)
 MANTISAwacs:SetRefreshTimeInterval(interval)
 MANTISAwacs:Start()
-function MANTISAwacs:OnAfterDetectedItem(From,Event,To,DetectedItem)
-local debug=false
-if DetectedItem.IsDetected and debug then
-local Coordinate=DetectedItem.Coordinate
-local text="Awacs Detection at "..Coordinate:ToStringLLDMS()
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
-end
-end
 return MANTISAwacs
+end
+function MANTIS:_GetSAMDataFromUnits(grpname)
+self:T(self.lid.."_GetSAMRange")
+local found=false
+local range=self.checkradius
+local height=3000
+local type=MANTIS.SamType.MEDIUM
+local group=GROUP:FindByName(grpname)
+local units=group:GetUnits()
+for _,_unit in pairs(units)do
+local unit=_unit
+local type=string.lower(unit:GetTypeName())
+for idx,entry in pairs(self.SamData)do
+local _entry=entry
+local _radar=string.lower(_entry.Radar)
+if string.find(type,_radar,1,true)then
+range=_entry.Range*1000*self.radiusscale
+height=_entry.Height*1000
+type=_entry.Type
+found=true
+break
+end
+end
+if found then break end
+end
+if not found then
+self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
+end
+return range,height,type
+end
+function MANTIS:_GetSAMRange(grpname)
+self:T(self.lid.."_GetSAMRange")
+local range=self.checkradius
+local height=3000
+local type=MANTIS.SamType.MEDIUM
+local found=false
+if self.automode then
+for idx,entry in pairs(self.SamData)do
+if string.find(grpname,idx,1,true)then
+local _entry=entry
+range=_entry.Range*1000*self.radiusscale
+height=_entry.Height*1000
+type=_entry.Type
+found=true
+break
+end
+end
+end
+if not found and self.automode then
+range,height,type=self:_GetSAMDataFromUnits(grpname)
+end
+return range,height,type
 end
 function MANTIS:SetSAMStartState()
 self:T(self.lid.."Setting SAM Start States")
 local SAM_SET=self.SAM_Group
 local SAM_Grps=SAM_SET.Set
 local SAM_Tbl={}
+local SAM_Tbl_lg={}
+local SAM_Tbl_md={}
+local SAM_Tbl_sh={}
 local SEAD_Grps={}
 local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
+if _group:IsGround()and _group:IsAlive()then
 local group=_group
 if self.UseEmOnOff then
 group:OptionAlarmStateRed()
@@ -45015,16 +45157,26 @@ group:EnableEmission(false)
 else
 group:OptionAlarmStateGreen()
 end
-group:SetOption(AI.Option.Ground.id.AC_ENGAGEMENT_RANGE_RESTRICTION,engagerange)
-if group:IsGround()and group:IsAlive()then
+group:OptionEngageRange(engagerange)
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
-table.insert(SAM_Tbl,{grpname,grpcoord})
+local grprange,grpheight,type=self:_GetSAMRange(grpname)
+table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight})
 table.insert(SEAD_Grps,grpname)
+if type==MANTIS.SamType.LONG then
+table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight})
+elseif type==MANTIS.SamType.MEDIUM then
+table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight})
+elseif type==MANTIS.SamType.SHORT then
+table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight})
+end
 self.SamStateTracker[grpname]="GREEN"
 end
 end
 self.SAM_Table=SAM_Tbl
+self.SAM_Table_Long=SAM_Tbl_lg
+self.SAM_Table_Medium=SAM_Tbl_md
+self.SAM_Table_Short=SAM_Tbl_sh
 local mysead=SEAD:New(SEAD_Grps,self.Padding)
 mysead:SetEngagementRange(engagerange)
 mysead:AddCallBack(self)
@@ -45039,19 +45191,33 @@ self:T(self.lid.."RefreshSAMTable")
 local SAM_SET=self.SAM_Group
 local SAM_Grps=SAM_SET.Set
 local SAM_Tbl={}
+local SAM_Tbl_lg={}
+local SAM_Tbl_md={}
+local SAM_Tbl_sh={}
 local SEAD_Grps={}
 local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
 local group=_group
-group:SetOption(AI.Option.Ground.id.AC_ENGAGEMENT_RANGE_RESTRICTION,engagerange)
+group:OptionEngageRange(engagerange)
 if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
-table.insert(SAM_Tbl,{grpname,grpcoord})
+local grprange,grpheight,type=self:_GetSAMRange(grpname)
+table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight})
 table.insert(SEAD_Grps,grpname)
+if type==MANTIS.SamType.LONG then
+table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight})
+elseif type==MANTIS.SamType.MEDIUM then
+table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight})
+elseif type==MANTIS.SamType.SHORT then
+table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight})
+end
 end
 end
 self.SAM_Table=SAM_Tbl
+self.SAM_Table_Long=SAM_Tbl_lg
+self.SAM_Table_Medium=SAM_Tbl_md
+self.SAM_Table_Short=SAM_Tbl_sh
 if self.mysead~=nil then
 local mysead=self.mysead
 mysead:UpdateSet(SEAD_Grps)
@@ -45075,29 +45241,30 @@ self:T(self.lid.."RemoveShorad")
 self.ShoradLink=false
 return self
 end
-function MANTIS:_Check(detection)
-self:T(self.lid.."Check")
-local detset=detection:GetDetectedItemCoordinates()
-self:T("Check:",{detset})
-local rand=math.random(1,100)
-if rand>65 then
-self:_RefreshSAMTable()
-end
-local samset=self:_GetSAMTable()
+function MANTIS:_CheckLoop(samset,detset,dlink,limit)
+self:T(self.lid.."CheckLoop "..#detset.." Coordinates")
+local switchedon=0
 for _,_data in pairs(samset)do
 local samcoordinate=_data[2]
 local name=_data[1]
+local radius=_data[3]
+local height=_data[4]
 local samgroup=GROUP:FindByName(name)
-local IsInZone,Distance=self:CheckObjectInZone(detset,samcoordinate)
+local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
-if IsInZone then
+if IsInZone and not suppressed then
 if samgroup:IsAlive()then
-if self.UseEmOnOff and not suppressed then
+local switch=false
+if self.UseEmOnOff and switchedon<limit then
 samgroup:EnableEmission(true)
-elseif not self.UseEmOnOff and not suppressed then
+switchedon=switchedon+1
+switch=true
+elseif(not self.UseEmOnOff)and switchedon<limit then
 samgroup:OptionAlarmStateRed()
+switchedon=switchedon+1
+switch=true
 end
-if self.SamStateTracker[name]~="RED"and not suppressed then
+if self.SamStateTracker[name]~="RED"and switch then
 self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
 end
@@ -45108,30 +45275,50 @@ local ontime=self.ShoradTime
 Shorad:WakeUpShorad(name,radius,ontime)
 self:__ShoradActivated(1,name,radius,ontime)
 end
-if self.debug or self.verbose and not suppressed then
+if(self.debug or self.verbose)and switch then
 local text=string.format("SAM %s switched to alarm state RED!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
 else
-if samgroup:IsAlive()then
-if self.UseEmOnOff and not suppressed then
+if samgroup:IsAlive()and not suppressed then
+if self.UseEmOnOff then
 samgroup:EnableEmission(false)
-elseif not self.UseEmOnOff and not suppressed then
+else
 samgroup:OptionAlarmStateGreen()
 end
-if self.SamStateTracker[name]~="GREEN"and not suppressed then
+if self.SamStateTracker[name]~="GREEN"then
 self:__GreenState(1,samgroup)
 self.SamStateTracker[name]="GREEN"
 end
-if self.debug or self.verbose and not suppressed then
+if self.debug or self.verbose then
 local text=string.format("SAM %s switched to alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
 end
+end
+return self
+end
+function MANTIS:_Check(detection,dlink)
+self:T(self.lid.."Check")
+local detset=detection:GetDetectedItemCoordinates()
+local rand=math.random(1,100)
+if rand>65 then
+self:_RefreshSAMTable()
+end
+if self.automode then
+local samset=self.SAM_Table_Long
+self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
+local samset=self.SAM_Table_Medium
+self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
+local samset=self.SAM_Table_Long
+self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+else
+local samset=self:_GetSAMTable()
+self:_CheckLoop(samset,detset,dlink,self.maxclassic)
 end
 return self
 end
@@ -45155,8 +45342,9 @@ local samgroup=GROUP:FindByName(name)
 if samgroup:IsAlive()then
 if self.UseEmOnOff then
 samgroup:EnableEmission(true)
-end
+else
 samgroup:OptionAlarmStateRed()
+end
 end
 end
 elseif newstate<=1 then
@@ -45180,11 +45368,10 @@ function MANTIS:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:T(self.lid.."Starting MANTIS")
 self:SetSAMStartState()
-if not self.DLink then
+if not INTEL then
 self.Detection=self:StartDetection()
-end
-if self.advAwacs then
-self.AWACS_Detection=self:StartAwacsDetection()
+else
+self.Detection=self:StartIntelDetection()
 end
 self:__Status(-math.random(1,10))
 return self
@@ -45192,10 +45379,7 @@ end
 function MANTIS:onbeforeStatus(From,Event,To)
 self:T({From,Event,To})
 if not self.state2flag then
-self:_Check(self.Detection)
-end
-if self.advAwacs and not self.state2flag then
-self:_Check(self.AWACS_Detection)
+self:_Check(self.Detection,self.DLink)
 end
 if self.autorelocate then
 local relointerval=self.relointerval
@@ -45218,7 +45402,7 @@ return self
 end
 function MANTIS:onafterStatus(From,Event,To)
 self:T({From,Event,To})
-if self.debug then
+if self.debug and self.verbose then
 self:I(self.lid.."Status Report")
 for _name,_state in pairs(self.SamStateTracker)do
 self:I(string.format("Site %s\tStatus %s",_name,_state))
@@ -45237,11 +45421,11 @@ self:T({From,Event,To})
 return self
 end
 function MANTIS:onafterGreenState(From,Event,To,Group)
-self:T({From,Event,To,Group})
+self:T({From,Event,To,Group:GetName()})
 return self
 end
 function MANTIS:onafterRedState(From,Event,To,Group)
-self:T({From,Event,To,Group})
+self:T({From,Event,To,Group:GetName()})
 return self
 end
 function MANTIS:onafterAdvStateChange(From,Event,To,Oldstate,Newstate,Interval)
@@ -45255,6 +45439,13 @@ end
 function MANTIS:onafterSeadSuppressionStart(From,Event,To,Group,Name)
 self:T({From,Event,To,Name})
 self.SuppressedGroups[Name]=true
+if self.ShoradLink then
+local Shorad=self.Shorad
+local radius=self.checkradius
+local ontime=self.ShoradTime
+Shorad:WakeUpShorad(Name,radius,ontime)
+self:__ShoradActivated(1,Name,radius,ontime)
+end
 return self
 end
 function MANTIS:onafterSeadSuppressionEnd(From,Event,To,Group,Name)
