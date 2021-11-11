@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-09T08:53:23.0000000Z-ce935bafc12a6325085732398492010648414ebf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T15:03:52.0000000Z-c5dece0e593e1e1d5d65090fe257857f64c4e715 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25694,7 +25694,7 @@ SEAD.HarmData={
 }
 function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,BASE:New())
-self:F(SEADGroupPrefixes)
+self:T(SEADGroupPrefixes)
 if type(SEADGroupPrefixes)=='table'then
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(SEADGroupPrefixes)do
 self.SEADGroupPrefixes[SEADGroupPrefix]=SEADGroupPrefix
@@ -25705,11 +25705,11 @@ end
 local padding=Padding or 10
 if padding<10 then padding=10 end
 self.Padding=padding
-self.UseEmissionsOnOff=false
+self.UseEmissionsOnOff=true
 self.CallBack=nil
 self.UseCallBack=false
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.3.3")
+self:I("*** SEAD - Started Version 0.3.4")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -25756,7 +25756,7 @@ self:T({WeaponName})
 local hit=false
 local name=""
 for _,_name in pairs(SEAD.Harms)do
-if string.find(WeaponName,_name,1)then
+if string.find(WeaponName,_name,1,true)then
 hit=true
 name=_name
 break
@@ -25809,7 +25809,7 @@ _targetskill=_targetUnit:GetSkill()
 end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
-self:T(_targetgroupname,SEADGroupPrefix)
+self:T("Target = ".._targetgroupname.." | Prefix = "..SEADGroupPrefix)
 if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
 SEADGroupFound=true
 self:T('*** SEAD - Group Match Found')
@@ -25866,7 +25866,7 @@ local name=args[2]
 if self.UseEmissionsOnOff then
 grp:EnableEmission(true)
 end
-grp:OptionAlarmStateAuto()
+grp:OptionAlarmStateRed()
 grp:OptionEngageRange(self.EngagementRange)
 self.SuppressedGroups[name]=false
 if self.UseCallBack then
