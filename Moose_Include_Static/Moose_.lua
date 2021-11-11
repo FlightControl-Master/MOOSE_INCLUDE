@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-06T14:30:15.0000000Z-65c92be09e37808e6fe3f81ad19918fb7a743d2e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T15:02:13.0000000Z-0e9076efa33ddb615d3cb928af85665f3bebf593 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25019,6 +25019,8 @@ SEADGroupPrefixes={},
 SuppressedGroups={},
 EngagementRange=75,
 Padding=10,
+CallBack=nil,
+UseCallBack=false,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
@@ -25060,8 +25062,11 @@ end
 local padding=Padding or 10
 if padding<10 then padding=10 end
 self.Padding=padding
+self.UseEmissionsOnOff=false
+self.CallBack=nil
+self.UseCallBack=false
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.3.1")
+self:I("*** SEAD - Started Version 0.3.3")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -25090,6 +25095,17 @@ self:T({Padding})
 local padding=Padding or 10
 if padding<10 then padding=10 end
 self.Padding=padding
+return self
+end
+function SEAD:SwitchEmissions(Switch)
+self:T({Switch})
+self.UseEmissionsOnOff=Switch
+return self
+end
+function SEAD:AddCallBack(Object)
+self:T({Class=Object.ClassName})
+self.CallBack=Object
+self.UseCallBack=true
 return self
 end
 function SEAD:_CheckHarms(WeaponName)
@@ -25150,7 +25166,7 @@ _targetskill=_targetUnit:GetSkill()
 end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
-self:T(SEADGroupPrefix)
+self:T(_targetgroupname,SEADGroupPrefix)
 if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
 SEADGroupFound=true
 self:T('*** SEAD - Group Match Found')
@@ -25189,15 +25205,31 @@ self:T("*** SEAD - Shot in Reach")
 local function SuppressionStart(args)
 self:T(string.format("*** SEAD - %s Radar Off & Relocating",args[2]))
 local grp=args[1]
+local name=args[2]
+if self.UseEmissionsOnOff then
+grp:EnableEmission(false)
+end
 grp:OptionAlarmStateGreen()
 grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
+if self.UseCallBack then
+local object=self.CallBack
+object:SeadSuppressionStart(grp,name)
+end
 end
 local function SuppressionStop(args)
 self:T(string.format("*** SEAD - %s Radar On",args[2]))
 local grp=args[1]
-grp:OptionAlarmStateRed()
+local name=args[2]
+if self.UseEmissionsOnOff then
+grp:EnableEmission(true)
+end
+grp:OptionAlarmStateAuto()
 grp:OptionEngageRange(self.EngagementRange)
-self.SuppressedGroups[args[2]]=false
+self.SuppressedGroups[name]=false
+if self.UseCallBack then
+local object=self.CallBack
+object:SeadSuppressionEnd(grp,name)
+end
 end
 local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSkill[_targetskill].DelayOn[2])
 if delay>_tti then delay=delay/2 end
@@ -25209,12 +25241,17 @@ self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_t
 timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname},SuppressionStartTime)
 timer.scheduleFunction(SuppressionStop,{_targetgroup,_targetgroupname},SuppressionEndTime)
 self.SuppressedGroups[_targetgroupname]=true
+if self.UseCallBack then
+local object=self.CallBack
+object:SeadSuppressionPlanned(_targetgroup,_targetgroupname,SuppressionStartTime,SuppressionEndTime)
 end
 end
 end
 end
 end
 end
+end
+return self
 end
 ESCORT={
 ClassName="ESCORT",
@@ -43618,6 +43655,7 @@ SamStateTracker={},
 DLink=false,
 DLTimeStamp=0,
 Padding=10,
+SuppressedGroups={},
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -43657,6 +43695,7 @@ self.state2flag=false
 self.SamStateTracker={}
 self.DLink=false
 self.Padding=Padding or 10
+self.SuppressedGroups={}
 if EmOnOff then
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -43686,7 +43725,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.6.2"
+self.version="0.7.1"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -43696,6 +43735,9 @@ self:AddTransition("*","GreenState","*")
 self:AddTransition("*","RedState","*")
 self:AddTransition("*","AdvStateChange","*")
 self:AddTransition("*","ShoradActivated","*")
+self:AddTransition("*","SeadSuppressionStart","*")
+self:AddTransition("*","SeadSuppressionEnd","*")
+self:AddTransition("*","SeadSuppressionPlanned","*")
 self:AddTransition("*","Stop","Stopped")
 return self
 end
@@ -44008,6 +44050,7 @@ local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
 local group=_group
 if self.UseEmOnOff then
+group:OptionAlarmStateRed()
 group:EnableEmission(false)
 else
 group:OptionAlarmStateGreen()
@@ -44024,6 +44067,10 @@ end
 self.SAM_Table=SAM_Tbl
 local mysead=SEAD:New(SEAD_Grps,self.Padding)
 mysead:SetEngagementRange(engagerange)
+mysead:AddCallBack(self)
+if self.UseEmOnOff then
+mysead:SwitchEmissions(true)
+end
 self.mysead=mysead
 return self
 end
@@ -44082,24 +44129,26 @@ local samcoordinate=_data[2]
 local name=_data[1]
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:CheckObjectInZone(detset,samcoordinate)
+local suppressed=self.SuppressedGroups[name]or false
 if IsInZone then
 if samgroup:IsAlive()then
-if self.UseEmOnOff then
+if self.UseEmOnOff and not suppressed then
 samgroup:EnableEmission(true)
-end
+elseif not self.UseEmOnOff and not suppressed then
 samgroup:OptionAlarmStateRed()
-if self.SamStateTracker[name]~="RED"then
+end
+if self.SamStateTracker[name]~="RED"and not suppressed then
 self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
 end
-if self.ShoradLink and Distance<self.ShoradActDistance then
+if self.ShoradLink and(Distance<self.ShoradActDistance or suppressed)then
 local Shorad=self.Shorad
 local radius=self.checkradius
 local ontime=self.ShoradTime
 Shorad:WakeUpShorad(name,radius,ontime)
 self:__ShoradActivated(1,name,radius,ontime)
 end
-if self.debug or self.verbose then
+if self.debug or self.verbose and not suppressed then
 local text=string.format("SAM %s switched to alarm state RED!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
@@ -44107,15 +44156,16 @@ end
 end
 else
 if samgroup:IsAlive()then
-if self.UseEmOnOff then
+if self.UseEmOnOff and not suppressed then
 samgroup:EnableEmission(false)
-end
+elseif not self.UseEmOnOff and not suppressed then
 samgroup:OptionAlarmStateGreen()
-if self.SamStateTracker[name]~="GREEN"then
+end
+if self.SamStateTracker[name]~="GREEN"and not suppressed then
 self:__GreenState(1,samgroup)
 self.SamStateTracker[name]="GREEN"
 end
-if self.debug or self.verbose then
+if self.debug or self.verbose and not suppressed then
 local text=string.format("SAM %s switched to alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
@@ -44240,6 +44290,20 @@ return self
 end
 function MANTIS:onafterShoradActivated(From,Event,To,Name,Radius,Ontime)
 self:T({From,Event,To,Name,Radius,Ontime})
+return self
+end
+function MANTIS:onafterSeadSuppressionStart(From,Event,To,Group,Name)
+self:T({From,Event,To,Name})
+self.SuppressedGroups[Name]=true
+return self
+end
+function MANTIS:onafterSeadSuppressionEnd(From,Event,To,Group,Name)
+self:T({From,Event,To,Name})
+self.SuppressedGroups[Name]=false
+return self
+end
+function MANTIS:onafterSeadSuppressionPlanned(From,Event,To,Group,Name,SuppressionStartTime,SuppressionEndTime)
+self:T({From,Event,To,Name})
 return self
 end
 end
