@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-11T17:34:06.0000000Z-a0323aef196a529e1c90b063d269621b3efeddea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-12T14:27:05.0000000Z-c1f22aa556d04752b805f141930d72c298edf2d2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44596,12 +44596,12 @@ MANTIS.SamData={
 ["NASAMS"]={Range=14,Blindspot=0,Height=3,Type="Short",Radar="NSAMS"},
 ["Patriot"]={Range=99,Blindspot=0,Height=9,Type="Long",Radar="Patriot"},
 ["Rapier"]={Range=6,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
+["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="S_75M_Volhov"},
+["SA-3"]={Range=18,Blindspot=6,Height=18,Type="Short",Radar="5p73 s-125 ln"},
 ["SA-5"]={Range=250,Blindspot=7,Height=40,Type="Long",Radar="5N62V"},
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
-["SA-3"]={Range=18,Blindspot=0,Height=18,Type="Short",Radar="s-125"},
-["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="SNR_75V"},
+["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS"},
 ["Roland"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Roland"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
 ["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
@@ -44612,6 +44612,22 @@ MANTIS.SamData={
 ["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Avenger"},
 ["Chaparrel"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
 ["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Linebacker"},
+["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
+["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
+["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
+["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
+["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
+}
+MANTIS.SamDataHDS={
+["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
+["SA-3 HDS"]={Range=20,Blindspot=6,Height=30,Type="Short",Radar="V-601P"},
+["SA-10C HDS 2"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85DE ln"},
+["SA-10C HDS 1"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85CE ln"},
+["SA-12 HDS 2"]={Range=100,Blindspot=10,Height=25,Type="Long",Radar="S-300V 9A82 l"},
+["SA-12 HDS 1"]={Range=75,Blindspot=1,Height=25,Type="Long",Radar="S-300V 9A83 l"},
+["SA-23 HDS 2"]={Range=200,Blindspot=5,Height=37,Type="Long",Radar="S-300VM 9A82ME"},
+["SA-23 HDS 1"]={Range=100,Blindspot=1,Height=50,Type="Long",Radar="S-300VM 9A83ME"},
+["HQ-2 HDS"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
@@ -44702,7 +44718,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.1"
+self.version="0.8.2"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -45086,24 +45102,31 @@ MANTISAwacs:SetRefreshTimeInterval(interval)
 MANTISAwacs:Start()
 return MANTISAwacs
 end
-function MANTIS:_GetSAMDataFromUnits(grpname)
-self:T(self.lid.."_GetSAMRange")
+function MANTIS:_GetSAMDataFromUnits(grpname,mod)
+self:T(self.lid.."_GetSAMRangeFromUnits")
 local found=false
 local range=self.checkradius
 local height=3000
 local type=MANTIS.SamType.MEDIUM
+local blind=0
 local group=GROUP:FindByName(grpname)
 local units=group:GetUnits()
+local SAMData=self.SamData
+if mod then
+SAMData=self.SamDataHDS
+end
 for _,_unit in pairs(units)do
 local unit=_unit
 local type=string.lower(unit:GetTypeName())
-for idx,entry in pairs(self.SamData)do
+self:I(string.format("Matching typename: %s",type))
+for idx,entry in pairs(SAMData)do
 local _entry=entry
 local _radar=string.lower(_entry.Radar)
 if string.find(type,_radar,1,true)then
 range=_entry.Range*1000*self.radiusscale
 height=_entry.Height*1000
 type=_entry.Type
+blind=_entry.Blindspot*100
 found=true
 break
 end
@@ -45113,14 +45136,19 @@ end
 if not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
-return range,height,type
+return range,height,type,blind
 end
 function MANTIS:_GetSAMRange(grpname)
 self:T(self.lid.."_GetSAMRange")
 local range=self.checkradius
 local height=3000
 local type=MANTIS.SamType.MEDIUM
+local blind=0
 local found=false
+local HDSmod=false
+if string.find(grpname,"HDS",1,true)then
+HDSmod=true
+end
 if self.automode then
 for idx,entry in pairs(self.SamData)do
 if string.find(grpname,idx,1,true)then
@@ -45128,15 +45156,18 @@ local _entry=entry
 range=_entry.Range*1000*self.radiusscale
 height=_entry.Height*1000
 type=_entry.Type
+blind=_entry.Blindspot
 found=true
 break
 end
 end
 end
-if not found and self.automode then
-range,height,type=self:_GetSAMDataFromUnits(grpname)
+if(not found and self.automode)or HDSmod then
+range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod)
+elseif not found then
+self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
-return range,height,type
+return range,height,type,blind
 end
 function MANTIS:SetSAMStartState()
 self:T(self.lid.."Setting SAM Start States")
@@ -45160,15 +45191,15 @@ end
 group:OptionEngageRange(engagerange)
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
-local grprange,grpheight,type=self:_GetSAMRange(grpname)
-table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight})
+local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
+table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind})
 table.insert(SEAD_Grps,grpname)
 if type==MANTIS.SamType.LONG then
-table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight})
+table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind})
 elseif type==MANTIS.SamType.MEDIUM then
-table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight})
+table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind})
 elseif type==MANTIS.SamType.SHORT then
-table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight})
+table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind})
 end
 self.SamStateTracker[grpname]="GREEN"
 end
@@ -45202,15 +45233,15 @@ group:OptionEngageRange(engagerange)
 if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
-local grprange,grpheight,type=self:_GetSAMRange(grpname)
-table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight})
+local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
+table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind})
 table.insert(SEAD_Grps,grpname)
 if type==MANTIS.SamType.LONG then
-table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight})
+table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind})
 elseif type==MANTIS.SamType.MEDIUM then
-table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight})
+table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind})
 elseif type==MANTIS.SamType.SHORT then
-table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight})
+table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind})
 end
 end
 end
@@ -45249,6 +45280,7 @@ local samcoordinate=_data[2]
 local name=_data[1]
 local radius=_data[3]
 local height=_data[4]
+local blind=_data[5]*1.25+1
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
@@ -45268,7 +45300,7 @@ if self.SamStateTracker[name]~="RED"and switch then
 self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
 end
-if self.ShoradLink and(Distance<self.ShoradActDistance or suppressed)then
+if self.ShoradLink and(Distance<self.ShoradActDistance or Distance<blind)then
 local Shorad=self.Shorad
 local radius=self.checkradius
 local ontime=self.ShoradTime
