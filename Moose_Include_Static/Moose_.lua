@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-12T14:27:05.0000000Z-c1f22aa556d04752b805f141930d72c298edf2d2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-13T18:11:25.0000000Z-e7fdcf0db4e30d1a7a7fd131693df39562ea052b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25853,7 +25853,7 @@ if self.UseEmissionsOnOff then
 grp:EnableEmission(false)
 end
 grp:OptionAlarmStateGreen()
-grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
+grp:RelocateGroundRandomInRadius(20,500,false,false,"Diamond")
 if self.UseCallBack then
 local object=self.CallBack
 object:SeadSuppressionStart(grp,name)
