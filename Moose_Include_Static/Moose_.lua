@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-14T12:00:35.0000000Z-e7b7e3ac96243a9032a5d54d6754de7196de01b3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-14T12:13:41.0000000Z-4bc3dbbf6c57250b9b477bea9cf10ae8272dd6ec ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44582,6 +44582,9 @@ DLink=false,
 DLTimeStamp=0,
 Padding=10,
 SuppressedGroups={},
+automode=true,
+autoshorad=true,
+ShoradGroupSet=nil,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -44677,6 +44680,8 @@ self.maxlongrange=1
 self.maxmidrange=2
 self.maxshortrange=2
 self.maxclassic=6
+self.autoshorad=true
+self.ShoradGroupSet=SET_GROUP:New()
 self.UseEmOnOff=true
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -44720,7 +44725,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.2"
+self.version="0.8.5"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -45195,13 +45200,18 @@ local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
 table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind})
-table.insert(SEAD_Grps,grpname)
 if type==MANTIS.SamType.LONG then
 table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SEAD_Grps,grpname)
 elseif type==MANTIS.SamType.MEDIUM then
 table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SEAD_Grps,grpname)
 elseif type==MANTIS.SamType.SHORT then
 table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind})
+self.ShoradGroupSet:Add(grpname,group)
+if not self.autoshorad then
+table.insert(SEAD_Grps,grpname)
+end
 end
 self.SamStateTracker[grpname]="GREEN"
 end
@@ -45244,6 +45254,10 @@ elseif type==MANTIS.SamType.MEDIUM then
 table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind})
 elseif type==MANTIS.SamType.SHORT then
 table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind})
+self.ShoradGroupSet:Add(grpname,group)
+if self.autoshorad then
+self.Shorad.Groupset=self.ShoradGroupSet
+end
 end
 end
 end
@@ -45286,7 +45300,8 @@ local blind=_data[5]*1.25+1
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
-if IsInZone and not suppressed then
+local activeshorad=self.Shorad.ActiveGroups[name]or false
+if IsInZone and not suppressed and not activeshorad then
 if samgroup:IsAlive()then
 local switch=false
 if self.UseEmOnOff and switchedon<limit then
@@ -45310,13 +45325,13 @@ Shorad:WakeUpShorad(name,radius,ontime)
 self:__ShoradActivated(1,name,radius,ontime)
 end
 if(self.debug or self.verbose)and switch then
-local text=string.format("SAM %s switched to alarm state RED!",name)
+local text=string.format("SAM %s in alarm state RED!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
 else
-if samgroup:IsAlive()and not suppressed then
+if samgroup:IsAlive()and not suppressed and not activeshorad then
 if self.UseEmOnOff then
 samgroup:EnableEmission(false)
 else
@@ -45327,7 +45342,7 @@ self:__GreenState(1,samgroup)
 self.SamStateTracker[name]="GREEN"
 end
 if self.debug or self.verbose then
-local text=string.format("SAM %s switched to alarm state GREEN!",name)
+local text=string.format("SAM %s in alarm state GREEN!",name)
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
@@ -45348,7 +45363,7 @@ local samset=self.SAM_Table_Long
 self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
 local samset=self.SAM_Table_Medium
 self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
-local samset=self.SAM_Table_Long
+local samset=self.SAM_Table_Short
 self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
 else
 local samset=self:_GetSAMTable()
@@ -45406,6 +45421,12 @@ if not INTEL then
 self.Detection=self:StartDetection()
 else
 self.Detection=self:StartIntelDetection()
+end
+if self.autoshorad then
+self.Shorad=SHORAD:New(self.name.."-SHORAD",self.name.."-SHORAD",self.SAM_Group,25000,600,self.coalition,self.UseEmOnOff)
+self.Shorad:SetDefenseLimits(80,95)
+self.ShoradLink=true
+self.Shorad.Groupset=self.ShoradGroupSet
 end
 self:__Status(-math.random(1,10))
 return self
