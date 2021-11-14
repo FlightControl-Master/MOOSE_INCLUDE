@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-14T12:13:41.0000000Z-4bc3dbbf6c57250b9b477bea9cf10ae8272dd6ec ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-14T12:33:31.0000000Z-b367f9320b9a6a4595d59d88f8153e0035144b42 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67871,7 +67871,7 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="0.1.12r2"
+CSAR.version="0.1.12r3"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -67966,7 +67966,7 @@ self.rescuehoverdistance=10
 self.countryblue=country.id.USA
 self.countryred=country.id.RUSSIA
 self.countryneutral=country.id.UN_PEACEKEEPERS
-self.csarUsePara=true
+self.csarUsePara=false
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
@@ -68167,6 +68167,9 @@ function CSAR:_EventHandler(EventData)
 self:T(self.lid.." _EventHandler")
 self:T({Event=EventData.id})
 local _event=EventData
+if self.enableForAI==false and _event.IniPlayerName==nil then
+return
+end
 if _event==nil or _event.initiator==nil then
 return false
 elseif _event.id==EVENTS.Takeoff then
@@ -68229,9 +68232,6 @@ local _coalition=_unit:GetCoalition()
 if _coalition~=self.coalition then
 return
 end
-if self.enableForAI==false and _event.IniPlayerName==nil then
-return
-end
 if not self.takenOff[_event.IniUnitName]and not _group:IsAirborne()then
 self:T(self.lid.." Pilot has not taken off, ignore")
 return
@@ -68254,10 +68254,12 @@ local _unitname="Aircraft"
 local _typename="Ejected Pilot"
 local _country=_event.initiator:getCountry()
 local _coalition=coalition.getCountryCoalition(_country)
+if _coalition==self.coalition then
 local _freq=self:_GenerateADFFrequency()
 self:I({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
 self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,false,"none")
 Unit.destroy(_event.initiator)
+end
 return true
 elseif _event.id==EVENTS.Land then
 self:T(self.lid.." Landing")
