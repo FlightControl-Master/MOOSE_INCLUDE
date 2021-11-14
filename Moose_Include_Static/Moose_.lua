@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-13T18:11:25.0000000Z-e7fdcf0db4e30d1a7a7fd131693df39562ea052b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-14T12:00:35.0000000Z-e7b7e3ac96243a9032a5d54d6754de7196de01b3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21055,8 +21055,6 @@ local weapons=#ammotable
 for w=1,weapons do
 local Nammo=ammotable[w]["count"]
 local Tammo=ammotable[w]["desc"]["typeName"]
-local _weaponString=UTILS.Split(Tammo,"%.")
-local _weaponName=_weaponString[#_weaponString]
 local Category=ammotable[w].desc.category
 local MissileCategory=nil
 if Category==Weapon.Category.MISSILE then
@@ -21076,6 +21074,10 @@ nmissiles=nmissiles+Nammo
 elseif MissileCategory==Weapon.MissileCategory.BM then
 nmissiles=nmissiles+Nammo
 elseif MissileCategory==Weapon.MissileCategory.OTHER then
+nmissiles=nmissiles+Nammo
+elseif MissileCategory==Weapon.MissileCategory.SAM then
+nmissiles=nmissiles+Nammo
+elseif MissileCategory==Weapon.MissileCategory.CRUISE then
 nmissiles=nmissiles+Nammo
 end
 end
