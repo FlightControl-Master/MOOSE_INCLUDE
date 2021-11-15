@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-14T22:31:03.0000000Z-3df494cacd6cf2481c07e442d8a289185f1b9a45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-15T09:22:35.0000000Z-82c24cee7e8761b2ab933d8056360ffba6781d28 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4226,7 +4226,7 @@ self:F3({"ScheduleOnce: ",ObjectName,Start})
 if not self.Scheduler then
 self.Scheduler=SCHEDULER:New(self)
 end
-local ScheduleID=self.Scheduler:Schedule(nil,SchedulerFunction,{...},Start,nil,nil,nil)
+local ScheduleID=self.Scheduler:Schedule(self,SchedulerFunction,{...},Start,nil,nil,nil)
 self._.Schedules[#self._.Schedules+1]=ScheduleID
 return self._.Schedules[#self._.Schedules]
 end
@@ -4887,7 +4887,7 @@ local function Timer()
 if ShowTrace then
 SchedulerObject:T(Prefix..Name..":"..Line.." ("..Source..")")
 end
-return ScheduleFunction(SchedulerObject,unpack(ScheduleArguments))
+return ScheduleFunction(unpack(ScheduleArguments))
 end
 Status,Result=xpcall(Timer,ErrorHandler)
 else
@@ -89215,9 +89215,9 @@ end
 function COMMANDCENTER:SetAutoAssignTasks(AutoAssign)
 self.AutoAssignTasks=AutoAssign or false
 if self.AutoAssignTasks==true then
-self:ScheduleRepeat(10,30,0,nil,self.AssignTasks,self)
+self.autoAssignTasksScheduleID=self:ScheduleRepeat(10,30,0,nil,self.AssignTasks,self)
 else
-self:ScheduleStop(self.AssignTasks)
+self:ScheduleStop()
 end
 end
 function COMMANDCENTER:SetAutoAcceptTasks(AutoAccept)
