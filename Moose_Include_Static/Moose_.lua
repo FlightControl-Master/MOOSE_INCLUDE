@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-15T09:22:35.0000000Z-82c24cee7e8761b2ab933d8056360ffba6781d28 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-15T15:18:21.0000000Z-31a8c4b0b9edbca393d27eb66adee50a4dcf82e5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26100,12 +26100,14 @@ SEAD.Harms={
 ["X_25"]="X_25",
 ["X_31"]="X_31",
 ["Kh25"]="Kh25",
+["BGM_109"]="BGM_109",
+["AGM_154"]="AGM_154",
 }
 SEAD.HarmData={
 ["AGM_88"]={150,3},
 ["AGM_45"]={12,2},
 ["AGM_122"]={16.5,2.3},
-["AGM_84"]={280,0.85},
+["AGM_84"]={280,0.8},
 ["ALARM"]={45,2},
 ["LD-10"]={60,4},
 ["X_58"]={70,4},
@@ -26113,6 +26115,8 @@ SEAD.HarmData={
 ["X_25"]={25,0.76},
 ["X_31"]={150,3},
 ["Kh25"]={25,0.8},
+["BGM_109"]={460,0.77},
+["AGM_154"]={130,0.6},
 }
 function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,BASE:New())
@@ -26131,7 +26135,7 @@ self.UseEmissionsOnOff=true
 self.CallBack=nil
 self.UseCallBack=false
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.3.4")
+self:I("*** SEAD - Started Version 0.3.5")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -26209,6 +26213,7 @@ end
 function SEAD:HandleEventShot(EventData)
 self:T({EventData.id})
 local SEADPlane=EventData.IniUnit
+local SEADGroup=EventData.IniGroup
 local SEADPlanePos=SEADPlane:GetCoordinate()
 local SEADUnit=EventData.IniDCSUnit
 local SEADUnitName=EventData.IniDCSUnitName
@@ -26220,14 +26225,31 @@ self:T('*** SEAD - Weapon Match')
 local _targetskill="Random"
 local _targetgroupname="none"
 local _target=EventData.Weapon:getTarget()
-local _targetUnit=UNIT:Find(_target)
+local targetcat=_target:getCategory()
+local _targetUnit=nil
 local _targetgroup=nil
+self:T(string.format("*** Targetcat = %d",targetcat))
+if targetcat==Object.Category.UNIT then
+self:T("*** Target Category UNIT")
+_targetUnit=UNIT:Find(_target)
 if _targetUnit and _targetUnit:IsAlive()then
 _targetgroup=_targetUnit:GetGroup()
 _targetgroupname=_targetgroup:GetName()
 local _targetUnitName=_targetUnit:GetName()
 _targetUnit:GetSkill()
 _targetskill=_targetUnit:GetSkill()
+end
+elseif targetcat==Object.Category.STATIC then
+self:T("*** Target Category STATIC")
+local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterOnce()
+local tgtcoord=COORDINATE:NewFromVec3(_target:getPoint())
+local tgtgrp=seadset:FindNearestGroupFromPointVec2(tgtcoord)
+if tgtgrp and tgtgrp:IsAlive()then
+_targetgroup=tgtgrp
+_targetgroupname=tgtgrp:GetName()
+_targetskill=tgtgrp:GetUnit(1):GetSkill()
+self:T("*** Found Target = ".._targetgroupname)
+end
 end
 local SEADGroupFound=false
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
@@ -26271,14 +26293,15 @@ local function SuppressionStart(args)
 self:T(string.format("*** SEAD - %s Radar Off & Relocating",args[2]))
 local grp=args[1]
 local name=args[2]
+local attacker=args[3]
 if self.UseEmissionsOnOff then
 grp:EnableEmission(false)
 end
 grp:OptionAlarmStateGreen()
-grp:RelocateGroundRandomInRadius(20,500,false,false,"Diamond")
+grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
 if self.UseCallBack then
 local object=self.CallBack
-object:SeadSuppressionStart(grp,name)
+object:SeadSuppressionStart(grp,name,attacker)
 end
 end
 local function SuppressionStop(args)
@@ -26303,12 +26326,12 @@ local SuppressionStartTime=timer.getTime()+delay
 local SuppressionEndTime=timer.getTime()+_tti+self.Padding
 if not self.SuppressedGroups[_targetgroupname]then
 self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_targetgroupname,_tti,delay))
-timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname},SuppressionStartTime)
+timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname,SEADGroup},SuppressionStartTime)
 timer.scheduleFunction(SuppressionStop,{_targetgroup,_targetgroupname},SuppressionEndTime)
 self.SuppressedGroups[_targetgroupname]=true
 if self.UseCallBack then
 local object=self.CallBack
-object:SeadSuppressionPlanned(_targetgroup,_targetgroupname,SuppressionStartTime,SuppressionEndTime)
+object:SeadSuppressionPlanned(_targetgroup,_targetgroupname,SuppressionStartTime,SuppressionEndTime,SEADGroup)
 end
 end
 end
@@ -45194,7 +45217,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.5"
+self.version="0.8.6"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -45960,7 +45983,7 @@ function MANTIS:onafterShoradActivated(From,Event,To,Name,Radius,Ontime)
 self:T({From,Event,To,Name,Radius,Ontime})
 return self
 end
-function MANTIS:onafterSeadSuppressionStart(From,Event,To,Group,Name)
+function MANTIS:onafterSeadSuppressionStart(From,Event,To,Group,Name,Attacker)
 self:T({From,Event,To,Name})
 self.SuppressedGroups[Name]=true
 if self.ShoradLink then
@@ -45977,7 +46000,7 @@ self:T({From,Event,To,Name})
 self.SuppressedGroups[Name]=false
 return self
 end
-function MANTIS:onafterSeadSuppressionPlanned(From,Event,To,Group,Name,SuppressionStartTime,SuppressionEndTime)
+function MANTIS:onafterSeadSuppressionPlanned(From,Event,To,Group,Name,SuppressionStartTime,SuppressionEndTime,Attacker)
 self:T({From,Event,To,Name})
 return self
 end
@@ -46040,7 +46063,7 @@ self.DefendMavs=true
 self.DefenseLowProb=70
 self.DefenseHighProb=90
 self.UseEmOnOff=UseEmOnOff or false
-self:I("*** SHORAD - Started Version 0.2.8")
+self:I("*** SHORAD - Started Version 0.2.9")
 self.lid=string.format("SHORAD %s | ",self.name)
 self:_InitState()
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
@@ -46141,7 +46164,7 @@ self:T({WeaponName})
 local hit=false
 if self.DefendHarms then
 for _,_name in pairs(SHORAD.Harms)do
-if string.find(WeaponName,_name,1)then hit=true end
+if string.find(WeaponName,_name,1,true)then hit=true end
 end
 end
 return hit
@@ -46152,7 +46175,7 @@ self:T({WeaponName})
 local hit=false
 if self.DefendMavs then
 for _,_name in pairs(SHORAD.Mavs)do
-if string.find(WeaponName,_name,1)then hit=true end
+if string.find(WeaponName,_name,1,true)then hit=true end
 end
 end
 return hit
@@ -46183,7 +46206,7 @@ local shoradset=shorad:GetAliveSet()
 local returnname=false
 for _,_groups in pairs(shoradset)do
 local groupname=_groups:GetName()
-if string.find(groupname,tgtgrp,1)then
+if string.find(groupname,tgtgrp,1,true)then
 returnname=true
 end
 end
@@ -46197,7 +46220,7 @@ local shoradset=shorad:GetSet()
 local returnname=false
 for _,_groups in pairs(shoradset)do
 local groupname=_groups:GetName()
-if string.find(groupname,tgtgrp,1)then
+if string.find(groupname,tgtgrp,1,true)then
 returnname=true
 end
 end
@@ -46281,18 +46304,36 @@ if(self:_CheckHarms(ShootingWeaponName)or self:_CheckMavs(ShootingWeaponName))an
 local targetdata=EventData.Weapon:getTarget()
 local targetcat=targetdata:getCategory()
 self:T(string.format("Target Category (3=STATIC, 1=UNIT)= %s",tostring(targetcat)))
+self:T({targetdata})
 local targetunit=nil
 if targetcat==Object.Category.UNIT then
 targetunit=UNIT:Find(targetdata)
 elseif targetcat==Object.Category.STATIC then
-targetunit=STATIC:Find(targetdata)
+local tgtcoord=COORDINATE:NewFromVec3(targetdata:getPoint())
+local tgtgrp1=self.Samset:FindNearestGroupFromPointVec2(tgtcoord)
+local tgtcoord1=tgtgrp1:GetCoordinate()
+local tgtgrp2=self.Groupset:FindNearestGroupFromPointVec2(tgtcoord)
+local tgtcoord2=tgtgrp2:GetCoordinate()
+local dist1=tgtcoord:Get2DDistance(tgtcoord1)
+local dist2=tgtcoord:Get2DDistance(tgtcoord2)
+if dist1<dist2 then
+targetunit=tgtgrp1
+targetcat=Object.Category.UNIT
+else
+targetunit=tgtgrp2
+targetcat=Object.Category.UNIT
+end
 end
 if targetunit and targetunit:IsAlive()then
 local targetunitname=targetunit:GetName()
 local targetgroup=nil
 local targetgroupname="none"
 if targetcat==Object.Category.UNIT then
+if targetunit.ClassName=="UNIT"then
 targetgroup=targetunit:GetGroup()
+elseif targetunit.ClassName=="GROUP"then
+targetgroup=targetunit
+end
 targetgroupname=targetgroup:GetName()
 elseif targetcat==Object.Category.STATIC then
 targetgroup=targetunit
