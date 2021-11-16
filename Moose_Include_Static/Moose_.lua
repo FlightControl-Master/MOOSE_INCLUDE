@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T14:48:00.0000000Z-781d421e1c5c5cf4fbf9024f26b27c7832930e29 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T21:08:00.0000000Z-e73545d296b3d2466e17d8da1fa8953d007a8d7c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -78884,7 +78884,7 @@ end
 function CHIEF:GetDefcon(Defcon)
 return self.Defcon
 end
-function CHIEF:SetStragety(Strategy)
+function CHIEF:SetStrategy(Strategy)
 if Strategy~=self.strategy then
 self:StrategyChange(Strategy)
 end
@@ -78956,7 +78956,7 @@ end
 end
 return self
 end
-function CHIEF:AddStrateticZone(OpsZone,Priority,Importance)
+function CHIEF:AddStrategicZone(OpsZone,Priority,Importance)
 local stratzone={}
 stratzone.opszone=OpsZone
 stratzone.prio=Priority or 50
