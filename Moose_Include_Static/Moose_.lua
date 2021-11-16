@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T09:34:12.0000000Z-ac936f565092f9967ec7c8c76c9a7b6ae1b1e893 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T09:34:42.0000000Z-a3a7464a29368f0ad0b6b3a8900eea7e759ff2d9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45926,7 +45926,7 @@ else
 self.Detection=self:StartIntelDetection()
 end
 if self.autoshorad then
-self.Shorad=SHORAD:New(self.name.."-SHORAD",self.name.."-SHORAD",self.SAM_Group,25000,600,self.coalition,self.UseEmOnOff)
+self.Shorad=SHORAD:New(self.name.."-SHORAD",self.name.."-SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.coalition,self.UseEmOnOff)
 self.Shorad:SetDefenseLimits(80,95)
 self.ShoradLink=true
 self.Shorad.Groupset=self.ShoradGroupSet
