@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T08:26:05.0000000Z-31c113180e4539a62ccf42799e2316ee6724ad98 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T09:34:12.0000000Z-ac936f565092f9967ec7c8c76c9a7b6ae1b1e893 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4226,7 +4226,7 @@ self:F3({"ScheduleOnce: ",ObjectName,Start})
 if not self.Scheduler then
 self.Scheduler=SCHEDULER:New(self)
 end
-local ScheduleID=self.Scheduler:Schedule(self,SchedulerFunction,{...},Start,nil,nil,nil)
+local ScheduleID=self.Scheduler:Schedule(nil,SchedulerFunction,{...},Start)
 self._.Schedules[#self._.Schedules+1]=ScheduleID
 return self._.Schedules[#self._.Schedules]
 end
@@ -4240,7 +4240,7 @@ if not self.Scheduler then
 self.Scheduler=SCHEDULER:New(self)
 end
 local ScheduleID=self.Scheduler:Schedule(
-self,
+nil,
 SchedulerFunction,
 {...},
 Start,
@@ -4887,7 +4887,7 @@ local function Timer()
 if ShowTrace then
 SchedulerObject:T(Prefix..Name..":"..Line.." ("..Source..")")
 end
-return ScheduleFunction(unpack(ScheduleArguments))
+return ScheduleFunction(SchedulerObject,unpack(ScheduleArguments))
 end
 Status,Result=xpcall(Timer,ErrorHandler)
 else
