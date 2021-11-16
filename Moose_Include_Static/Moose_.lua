@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T09:34:42.0000000Z-a3a7464a29368f0ad0b6b3a8900eea7e759ff2d9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T14:48:00.0000000Z-781d421e1c5c5cf4fbf9024f26b27c7832930e29 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74280,7 +74280,7 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="0.1.12r3"
+CSAR.version="0.1.12r4"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -74791,9 +74791,9 @@ if _SETTINGS:IsImperial()then
 local dist=UTILS.MetersToNM(self.autosmokedistance)
 disttext=string.format("%.0fnm",dist)
 end
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Damn, that thing is loud!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.",_heliName,_pilotName,disttext),self.messageTime,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Finally, that is music in my ears!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.",_heliName,_pilotName,disttext),self.messageTime,false,true)
 else
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Damn, that thing is loud!\nRequest a flare or smoke if you need.",_heliName,_pilotName),self.messageTime,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Finally, that is music in my ears!\nRequest a flare or smoke if you need.",_heliName,_pilotName),self.messageTime,false,true)
 end
 self.heliVisibleMessage[_lookupKeyHeli]=true
 end
