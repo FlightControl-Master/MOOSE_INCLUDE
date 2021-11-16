@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-15T15:18:21.0000000Z-31a8c4b0b9edbca393d27eb66adee50a4dcf82e5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T08:26:05.0000000Z-31c113180e4539a62ccf42799e2316ee6724ad98 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26115,8 +26115,8 @@ SEAD.HarmData={
 ["X_25"]={25,0.76},
 ["X_31"]={150,3},
 ["Kh25"]={25,0.8},
-["BGM_109"]={460,0.77},
-["AGM_154"]={130,0.6},
+["BGM_109"]={460,0.705},
+["AGM_154"]={130,0.61},
 }
 function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,BASE:New())
@@ -26135,7 +26135,7 @@ self.UseEmissionsOnOff=true
 self.CallBack=nil
 self.UseCallBack=false
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.3.5")
+self:I("*** SEAD - Started Version 0.3.6")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -26321,7 +26321,7 @@ end
 end
 local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSkill[_targetskill].DelayOn[2])
 if delay>_tti then delay=delay/2 end
-if _tti>(3*delay)then delay=(_tti/2)*0.9 end
+if _tti>600 then delay=_tti-90 end
 local SuppressionStartTime=timer.getTime()+delay
 local SuppressionEndTime=timer.getTime()+_tti+self.Padding
 if not self.SuppressedGroups[_targetgroupname]then
@@ -45168,6 +45168,7 @@ self.SAMCheckRanges={}
 self.usezones=false
 self.AcceptZones={}
 self.RejectZones={}
+self.ConflictZones={}
 self.maxlongrange=1
 self.maxmidrange=2
 self.maxshortrange=2
@@ -45217,7 +45218,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.6"
+self.version="0.8.7"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -45248,11 +45249,12 @@ local radius=radius or 5000
 self.grouping=radius
 return self
 end
-function MANTIS:AddZones(AcceptZones,RejectZones)
+function MANTIS:AddZones(AcceptZones,RejectZones,ConflictZones)
 self:T(self.lid.."AddZones")
 self.AcceptZones=AcceptZones or{}
 self.RejectZones=RejectZones or{}
-if#AcceptZones>0 or#RejectZones>0 then
+self.ConflictZones=ConflictZones or{}
+if#AcceptZones>0 or#RejectZones>0 or#ConflictZones>0 then
 self.usezones=true
 end
 return self
@@ -45508,6 +45510,16 @@ break
 end
 end
 end
+if#self.ConflictZones>0 and not inzone then
+for _,_zone in pairs(self.ConflictZones)do
+local zone=_zone
+if zone:IsCoordinateInZone(coord)then
+inzone=true
+self:T(self.lid.."Target coord in Conflict Zone!")
+break
+end
+end
+end
 return inzone
 end
 function MANTIS:_PreFilterHeight(height)
@@ -45617,7 +45629,6 @@ end
 for _,_unit in pairs(units)do
 local unit=_unit
 local type=string.lower(unit:GetTypeName())
-self:I(string.format("Matching typename: %s",type))
 for idx,entry in pairs(SAMData)do
 local _entry=entry
 local _radar=string.lower(_entry.Radar)
