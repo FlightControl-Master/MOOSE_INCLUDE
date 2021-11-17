@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-17T15:42:58.0000000Z-1fc1016148f9421ce5838fc1c3855d84c95f80b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-17T16:17:11.0000000Z-925c645821dd6a9fc305786bd8a4c342f26d6b20 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62922,7 +62922,7 @@ end
 for _,task in pairs(mission.enrouteTasks)do
 self:AddTaskEnroute(task)
 end
-local SpeedToMission=UTILS.KmphToKnots(self.speedCruise)
+local SpeedToMission=mission.missionSpeed and UTILS.KmphToKnots(mission.missionSpeed)or self:GetSpeedCruise()
 if mission.type==AUFTRAG.Type.TROOPTRANSPORT then
 mission.DCStask=mission:GetDCSMissionTask(self.group)
 for _,_group in pairs(mission.transportGroupSet.Set)do
@@ -62979,9 +62979,9 @@ mission:SetGroupEgressWaypointUID(self,Ewaypoint.uid)
 end
 self:_SetMissionOptions(mission)
 if self:IsArmygroup()then
-self:Cruise(mission.missionSpeed and UTILS.KmphToKnots(mission.missionSpeed)or self:GetSpeedCruise())
+self:Cruise(SpeedToMission)
 elseif self:IsNavygroup()then
-self:Cruise(mission.missionSpeed and UTILS.KmphToKnots(mission.missionSpeed)or self:GetSpeedCruise())
+self:Cruise(SpeedToMission)
 elseif self:IsFlightgroup()then
 self:UpdateRoute()
 end
@@ -71546,7 +71546,7 @@ point.marker:UpdateText(text,1)
 end
 end
 function AIRWING:NewPatrolPoint(Type,Coordinate,Altitude,Speed,Heading,LegLength,RefuelSystem)
-if Coordinate:IsInstanceOf("ZONE_BASE")then
+if Coordinate and Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
 local patrolpoint={}
@@ -71640,7 +71640,13 @@ end
 return self:NewPatrolPoint()
 end
 function AIRWING:CheckCAP()
-local Ncap=self:CountMissionsInQueue({AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT})
+local Ncap=0
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+if mission:IsNotOver()and mission.type==AUFTRAG.Type.GCICAP and mission.patroldata then
+Ncap=Ncap+1
+end
+end
 for i=1,self.nflightsCAP-Ncap do
 local patrol=self:_GetPatrolData(self.pointsCAP)
 local altitude=patrol.altitude+1000*patrol.noccupied
@@ -71686,7 +71692,13 @@ end
 return self
 end
 function AIRWING:CheckAWACS()
-local N=self:CountMissionsInQueue({AUFTRAG.Type.AWACS})
+local N=0
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+if mission:IsNotOver()and mission.type==AUFTRAG.Type.AWACS and mission.patroldata then
+N=N+1
+end
+end
 for i=1,self.nflightsAWACS-N do
 local patrol=self:_GetPatrolData(self.pointsAWACS)
 local altitude=patrol.altitude+1000*patrol.noccupied
@@ -72785,6 +72797,7 @@ transportqueue={},
 rearmingZones={},
 refuellingZones={},
 capZones={},
+gcicapZones={},
 awacsZones={},
 tankerZones={},
 }
@@ -72880,7 +72893,6 @@ function COMMANDER:AddRearmingZone(RearmingZone)
 local rearmingzone={}
 rearmingzone.zone=RearmingZone
 rearmingzone.mission=nil
-rearmingzone.marker=MARKER:New(rearmingzone.zone:GetCoordinate(),"Rearming Zone"):ToCoalition(self:GetCoalition())
 table.insert(self.rearmingZones,rearmingzone)
 return rearmingzone
 end
@@ -72888,7 +72900,6 @@ function COMMANDER:AddRefuellingZone(RefuellingZone)
 local rearmingzone={}
 rearmingzone.zone=RefuellingZone
 rearmingzone.mission=nil
-rearmingzone.marker=MARKER:New(rearmingzone.zone:GetCoordinate(),"Refuelling Zone"):ToCoalition(self:GetCoalition())
 table.insert(self.refuellingZones,rearmingzone)
 return rearmingzone
 end
@@ -72900,8 +72911,18 @@ patrolzone.heading=Heading or 270
 patrolzone.speed=UTILS.KnotsToAltKIAS(Speed or 350,patrolzone.altitude)
 patrolzone.leg=Leg or 30
 patrolzone.mission=nil
-patrolzone.marker=MARKER:New(patrolzone.zone:GetCoordinate(),"AWACS Zone"):ToCoalition(self:GetCoalition())
 table.insert(self.capZones,patrolzone)
+return patrolzone
+end
+function COMMANDER:AddGciCapZone(Zone,Altitude,Speed,Heading,Leg)
+local patrolzone={}
+patrolzone.zone=Zone
+patrolzone.altitude=Altitude or 12000
+patrolzone.heading=Heading or 270
+patrolzone.speed=UTILS.KnotsToAltKIAS(Speed or 350,patrolzone.altitude)
+patrolzone.leg=Leg or 30
+patrolzone.mission=nil
+table.insert(self.gcicapZones,patrolzone)
 return patrolzone
 end
 function COMMANDER:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
@@ -72912,7 +72933,6 @@ awacszone.heading=Heading or 270
 awacszone.speed=UTILS.KnotsToAltKIAS(Speed or 350,awacszone.altitude)
 awacszone.leg=Leg or 30
 awacszone.mission=nil
-awacszone.marker=MARKER:New(awacszone.zone:GetCoordinate(),"AWACS Zone"):ToCoalition(self:GetCoalition())
 table.insert(self.awacsZones,awacszone)
 return awacszone
 end
@@ -72976,6 +72996,14 @@ local patrolzone=_patrolzone
 if(not patrolzone.mission)or patrolzone.mission:IsOver()then
 local Coordinate=patrolzone.zone:GetCoordinate()
 patrolzone.mission=AUFTRAG:NewCAP(patrolzone.zone,patrolzone.altitude,patrolzone.speed,Coordinate,patrolzone.heading,patrolzone.leg)
+self:AddMission(patrolzone.mission)
+end
+end
+for _,_patrolzone in pairs(self.gcicapZones)do
+local patrolzone=_patrolzone
+if(not patrolzone.mission)or patrolzone.mission:IsOver()then
+local Coordinate=patrolzone.zone:GetCoordinate()
+patrolzone.mission=AUFTRAG:NewGCICAP(Coordinate,patrolzone.altitude,patrolzone.speed,patrolzone.heading,patrolzone.leg)
 self:AddMission(patrolzone.mission)
 end
 end
