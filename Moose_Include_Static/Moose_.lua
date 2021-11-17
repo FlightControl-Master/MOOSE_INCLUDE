@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-16T21:08:00.0000000Z-e73545d296b3d2466e17d8da1fa8953d007a8d7c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-17T15:42:58.0000000Z-1fc1016148f9421ce5838fc1c3855d84c95f80b6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58219,6 +58219,7 @@ end
 Coordinate.y=mission.orbitAltitude
 mission:_TargetFromObject(Coordinate)
 mission.orbitSpeed=UTILS.KnotsToMps(Speed or 350)
+mission.missionSpeed=UTILS.KnotsToMps(Speed or 350)
 if Heading and Leg then
 mission.orbitHeading=Heading
 mission.orbitLeg=UTILS.NMToMeters(Leg)
