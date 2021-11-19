@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-19T14:47:18.0000000Z-ebf7f76d485e9698c5035ae92fd6f9a38498751b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-19T14:48:28.0000000Z-1f035301d90302dbc2dcc4b9d3f3b9d8baf27247 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -46958,6 +46958,8 @@ Nmaxmarshal=nil,
 NmaxSection=nil,
 NmaxStack=nil,
 handleai=nil,
+xtVoiceOvers=nil,
+xtVoiceOversAI=nil,
 tanker=nil,
 Corientation=nil,
 Corientlast=nil,
@@ -47129,6 +47131,8 @@ self:SetMaxMarshalStacks()
 self:SetMaxSectionSize()
 self:SetMaxFlightsPerStack()
 self:SetHandleAION()
+self:SetExtraVoiceOvers(false)
+self:SetExtraVoiceOversAI(false)
 self:SetAirbossNiceGuy()
 self:SetEmergencyLandings()
 self:SetDespawnOnEngineShutdown(false)
@@ -47678,6 +47682,14 @@ return self
 end
 function AIRBOSS:SetHandleAION()
 self.handleai=true
+return self
+end
+function AIRBOSS:SetExtraVoiceOvers(status)
+self.xtVoiceOvers=status
+return self
+end
+function AIRBOSS:SetExtraVoiceOversAI(status)
+self.xtVoiceOversAI=status
 return self
 end
 function AIRBOSS:SetHandleAIOFF()
@@ -49040,6 +49052,48 @@ loud=false,
 subtitle="",
 duration=1.95,
 },
+MARSHAL={
+file="PILOT-Marshal",
+suffix="ogg",
+loud=false,
+subtitle="",
+duration=0.50,
+},
+MARKINGMOMS={
+file="PILOT-MarkingMoms",
+suffix="ogg",
+loud=false,
+subtitle="",
+duration=0.90,
+},
+FOR={
+file="PILOT-For",
+suffix="ogg",
+loud=false,
+subtitle="",
+duration=0.29,
+},
+ANGELS={
+file="PILOT-Angels",
+suffix="ogg",
+loud=false,
+subtitle="",
+duration=0.50,
+},
+STATE={
+file="PILOT-State",
+suffix="ogg",
+loud=false,
+subtitle="",
+duration=0.40,
+},
+COMMENCING={
+file="PILOT-Commencing",
+suffix="ogg",
+loud=false,
+subtitle="",
+duration=0.45,
+},
 }
 self.MarshalCall={
 AFFIRMATIVE={
@@ -49642,6 +49696,10 @@ if flight.ai then
 self:_RemoveFlightFromMarshalQueue(flight,false)
 self:_LandAI(flight)
 self:_MarshalCallClearedForRecovery(flight.onboard,flight.case)
+if self.xtVoiceOversAI then
+local leader=flight.group:GetUnits()[1]
+self:_CommencingCall(leader,flight.onboard)
+end
 else
 if flight.step~=AIRBOSS.PatternStep.COMMENCING then
 self:_MarshalCallClearedForRecovery(flight.onboard,flight.case)
@@ -49802,6 +49860,10 @@ self:E(self.lid.."ERROR: cannot get coordinate of flight group.")
 return
 end
 if not self:_InQueue(self.Qmarshal,flight.group)then
+if self.xtVoiceOversAI then
+local leader=flight.group:GetUnits()[1]
+self:_MarshallInboundCall(leader,flight.onboard)
+end
 self:_AddMarshalGroup(flight,nstack)
 end
 local case=flight.case
@@ -54223,6 +54285,40 @@ wait=wait+call.duration
 end
 return wait
 end
+function AIRBOSS:_MarshallInboundCall(unit,modex)
+local vectorCarrier=self:GetCoordinate():GetDirectionVec3(unit:GetCoordinate())
+local bearing=UTILS.Round(unit:GetCoordinate():GetAngleDegrees(vectorCarrier),0)
+local distance=UTILS.Round(UTILS.MetersToNM(unit:GetCoordinate():Get2DDistance(self:GetCoordinate())),0)
+local angels=UTILS.Round(UTILS.MetersToFeet(unit:GetHeight()/1000),0)
+local state=UTILS.Round(self:_GetFuelState(unit)/1000,1)
+local text=string.format("Marshal, %s, marking mom's %d for %d, angels %d, state %.1f",modex,bearing,distance,angels,state)
+self:I(self.lid..text)
+local FS=UTILS.Split(string.format("%.1f",state),".")
+local inboundcall=self:_NewRadioCall(self.MarshalCall.CLICK,unit.UnitName:upper(),text,self.Tmessage,nil,unit.UnitName:upper())
+self:RadioTransmission(self.MarshalRadio,inboundcall)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.MARSHAL,nil,nil,nil,nil,true)
+self:_Number2Radio(self.MarshalRadio,modex,nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.MARKINGMOMS,nil,nil,nil,nil,true)
+self:_Number2Radio(self.MarshalRadio,tostring(bearing),nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.FOR,nil,nil,nil,nil,true)
+self:_Number2Radio(self.MarshalRadio,tostring(distance),nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.ANGELS,nil,nil,nil,nil,true)
+self:_Number2Radio(self.MarshalRadio,tostring(angels),nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.STATE,nil,nil,nil,nil,true)
+self:_Number2Radio(self.MarshalRadio,FS[1],nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.POINT,nil,nil,nil,nil,true)
+self:_Number2Radio(self.MarshalRadio,FS[2],nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.MarshalRadio.CLICK,nil,nil,nil,nil,true)
+end
+function AIRBOSS:_CommencingCall(unit,modex)
+local text=string.format("%s, commencing",modex)
+self:I(self.lid..text)
+local commencingCall=self:_NewRadioCall(self.MarshalCall.CLICK,unit.UnitName:upper(),text,self.Tmessage,nil,unit.UnitName:upper())
+self:RadioTransmission(self.MarshalRadio,commencingCall)
+self:_Number2Radio(self.MarshalRadio,modex,nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.PilotCall.COMMENCING,nil,nil,nil,nil,true)
+self:RadioTransmission(self.MarshalRadio,self.MarshalRadio.CLICK,nil,nil,nil,nil,true)
+end
 function AIRBOSS:_LSOCallAircraftBall(modex,nickname,fuelstate)
 local text=string.format("%s Ball, %.1f.",nickname,fuelstate)
 self:I(self.lid..text)
@@ -54570,6 +54666,9 @@ local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _playername then
 local playerData=self.players[_playername]
 if playerData then
+if self.xtVoiceOvers then
+self:_MarshallInboundCall(_unit,playerData.onboard)
+end
 local inCCA=playerData.unit:IsInZone(self.zoneCCA)
 if inCCA then
 if self:_InQueue(self.Qmarshal,playerData.group)then
@@ -54690,6 +54789,9 @@ local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _playername then
 local playerData=self.players[_playername]
 if playerData then
+if self.xtVoiceOvers then
+self:_CommencingCall(_unit,playerData.onboard)
+end
 local text=""
 local cleared=false
 if _unit:IsInZone(self.zoneCCA)then
