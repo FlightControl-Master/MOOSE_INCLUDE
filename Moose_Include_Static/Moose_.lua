@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-18T09:58:42.0000000Z-16c5307fc20b299d8d3395fd7429169c2caf5fa8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-19T14:47:18.0000000Z-ebf7f76d485e9698c5035ae92fd6f9a38498751b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -78351,6 +78351,7 @@ Nred=0,
 Nblu=0,
 Nnut=0,
 chiefs={},
+Missions={},
 }
 OPSZONE.version="0.2.0"
 function OPSZONE:New(Zone,CoalitionOwner)
@@ -78386,6 +78387,7 @@ self.lid=string.format("OPSZONE %s | ",Zone:GetName())
 self.zone=Zone
 self.zoneName=Zone:GetName()
 self.zoneRadius=Zone:GetRadius()
+self.Missions={}
 self.ownerCurrent=CoalitionOwner or coalition.side.NEUTRAL
 self.ownerPrevious=CoalitionOwner or coalition.side.NEUTRAL
 self.isContested=false
@@ -78586,6 +78588,7 @@ self.zone:UndrawZone()
 local color={1,204/255,204/255}
 self.zone:DrawZone(nil,color,1.0,color,0.5)
 end
+self:_CleanMissionTable()
 end
 function OPSZONE:onenterEmpty(From,Event,To)
 self:T(self.lid..string.format("Zone is empty now"))
@@ -78822,6 +78825,40 @@ return text
 end
 function OPSZONE:_AddChief(Chief)
 table.insert(self.chiefs,Chief)
+end
+function OPSZONE:_AddMission(Coalition,Type,Auftrag)
+local entry={}
+entry.Coalition=Coalition or coalition.side.NEUTRAL
+entry.Type=Type or""
+entry.Mission=Auftrag or nil
+table.insert(self.Missions,entry)
+return self
+end
+function OPSZONE:_GetMissions()
+return self.Missions
+end
+function OPSZONE:_FindMissions(Coalition,Type)
+local foundmissions={}
+local found=false
+for _,_entry in pairs(self.Missions)do
+local entry=_entry
+if entry.Coalition==Coalition and entry.Type==Type and entry.Mission and entry.Mission:IsNotOver()then
+table.insert(foundmissions,entry.Mission)
+found=true
+end
+end
+return found,foundmissions
+end
+function OPSZONE:_CleanMissionTable()
+local missions={}
+for _,_entry in pairs(self.Missions)do
+local entry=_entry
+if entry.Mission and entry.Mission:IsNotOver()then
+table.insert(missions,entry)
+end
+end
+self.Missions=missions
+return self
 end
 CHIEF={
 ClassName="CHIEF",
