@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-20T16:50:36.0000000Z-7a483abec2c108b1f7dadbc115e6c68ab027a675 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-20T21:38:38.0000000Z-0ac00efda6a59f81295d9c8a327bc0c5bd10223f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58553,7 +58553,7 @@ mission.engageTargetTypes=TargetTypes or{"Air"}
 mission.missionTask=ENUMS.MissionTask.ESCORT
 mission.missionFraction=0.1
 mission.missionAltitude=1000
-mission.optionROE=ENUMS.ROE.OpenFireWeaponFree
+mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -58584,6 +58584,7 @@ end
 mission:_TargetFromObject(mission.transportGroupSet)
 mission.transportPickup=PickupCoordinate or mission:GetTargetCoordinate()
 mission.transportDropoff=DropoffCoordinate
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.TROOPTRANSPORT)
 mission.transportPickup:MarkToAll("Pickup")
 mission.transportDropoff:MarkToAll("Drop off")
 mission.optionROE=ENUMS.ROE.ReturnFire
@@ -58630,6 +58631,7 @@ if type(Zone)=="string"then
 Zone=ZONE:New(Zone)
 end
 mission:_TargetFromObject(Zone)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.PATROLZONE)
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.optionAlarm=ENUMS.AlarmState.Auto
@@ -58643,6 +58645,7 @@ end
 function AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly)
 local mission=AUFTRAG:New(AUFTRAG.Type.RECON)
 mission:_TargetFromObject(ZoneSet)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.RECON)
 mission.optionROE=ENUMS.ROE.WeaponHold
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.optionAlarm=ENUMS.AlarmState.Auto
@@ -60223,7 +60226,11 @@ elseif MissionType==AUFTRAG.Type.BOMBRUNWAY then
 mtask=ENUMS.MissionTask.RUNWAYATTACK
 elseif MissionType==AUFTRAG.Type.CAP then
 mtask=ENUMS.MissionTask.CAP
+elseif MissionType==AUFTRAG.Type.GCICAP then
+mtask=ENUMS.MissionTask.CAP
 elseif MissionType==AUFTRAG.Type.CAS then
+mtask=ENUMS.MissionTask.CAS
+elseif MissionType==AUFTRAG.Type.PATROLZONE then
 mtask=ENUMS.MissionTask.CAS
 elseif MissionType==AUFTRAG.Type.ESCORT then
 mtask=ENUMS.MissionTask.ESCORT
@@ -60666,6 +60673,48 @@ local N=0
 for _,_target in pairs(self.targets)do
 local Target=_target
 N=N+self:GetTargetLife(Target)
+end
+return N
+end
+function TARGET:GetTargetThreatLevelMax(Target)
+if Target.Type==TARGET.ObjectType.GROUP then
+local group=Target.Object
+if group and group:IsAlive()then
+local tl=group:GetThreatLevel()
+return tl
+else
+return 0
+end
+elseif Target.Type==TARGET.ObjectType.UNIT then
+local unit=Target.Object
+if unit and unit:IsAlive()then
+local life=unit:GetThreatLevel()
+return life
+else
+return 0
+end
+elseif Target.Type==TARGET.ObjectType.STATIC then
+return 0
+elseif Target.Type==TARGET.ObjectType.SCENERY then
+return 0
+elseif Target.Type==TARGET.ObjectType.AIRBASE then
+return 0
+elseif Target.Type==TARGET.ObjectType.COORDINATE then
+return 0
+elseif Target.Type==TARGET.ObjectType.ZONE then
+return 0
+else
+self:E("ERROR: unknown target object type in GetTargetThreatLevel!")
+end
+end
+function TARGET:GetThreatLevelMax()
+local N=0
+for _,_target in pairs(self.targets)do
+local Target=_target
+local n=self:GetTargetThreatLevelMax(Target)
+if n>N then
+N=n
+end
 end
 return N
 end
@@ -67339,13 +67388,13 @@ self:T(self.lid..string.format("Check FLIGHTGROUP [state=%s] done in %.3f second
 self:ScheduleOnce(delay,FLIGHTGROUP._CheckGroupDone,self)
 else
 self:T(self.lid..string.format("Check FLIGHTGROUP [state=%s] done? (t=%.4f)",fsmstate,timer.getTime()))
+if self:IsEngaging()then
+self:T(self.lid.."Engaging! Group NOT done...")
+return
+end
 if self.missionpaused then
 self:T(self.lid..string.format("Found paused mission %s [%s]. Unpausing mission...",self.missionpaused.name,self.missionpaused.type))
 self:UnpauseMission()
-return
-end
-if self:IsEngaging()then
-self:T(self.lid.."Engaging! Group NOT done...")
 return
 end
 if self.isLandingAtAirbase then
@@ -79169,6 +79218,10 @@ function CHIEF:AddCapZone(Zone,Altitude,Speed,Heading,Leg)
 local zone=self.commander:AddCapZone(Zone,Altitude,Speed,Heading,Leg)
 return zone
 end
+function CHIEF:AddGciCapZone(Zone,Altitude,Speed,Heading,Leg)
+local zone=self.commander:AddGciCapZone(Zone,Altitude,Speed,Heading,Leg)
+return zone
+end
 function CHIEF:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
 local zone=self.commander:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
 return zone
@@ -79421,7 +79474,8 @@ for _,_target in pairs(self.targetqueue)do
 local target=_target
 local isAlive=target:IsAlive()
 local isImportant=(target.importance==nil or target.importance<=vip)
-local isThreat=target.threatlevel0>=self.threatLevelMin and target.threatlevel0<=self.threatLevelMax
+local threatlevel=target:GetThreatLevelMax()
+local isThreat=threatlevel>=self.threatLevelMin and threatlevel<=self.threatLevelMax
 if target.category==TARGET.Category.AIRBASE or target.category==TARGET.Category.ZONE or target.Category==TARGET.Category.COORDINATE then
 isThreat=true
 end
@@ -79456,18 +79510,16 @@ elseif self.strategy==CHIEF.Strategy.TOTALWAR then
 valid=true
 end
 if valid then
-self:I(self.lid..string.format("Got valid target %s: category=%s, threatlevel=%d",target:GetName(),target.category,target.threatlevel0))
+self:I(self.lid..string.format("Got valid target %s: category=%s, threatlevel=%d",target:GetName(),target.category,threatlevel))
 local MissionPerformances=self:_GetMissionPerformanceFromTarget(target)
 local mission=nil
 local Legions=nil
 if#MissionPerformances>0 then
 local NassetsMin=1
 local NassetsMax=1
-local threat=target.threatlevel0/target.N0
-local NoUnits=target.N0
-if threat>=8 and NoUnits>=10 then
+if threatlevel>=8 and target.N0>=10 then
 NassetsMax=3
-elseif threat>=5 then
+elseif threatlevel>=5 then
 NassetsMax=2
 else
 NassetsMax=1
@@ -79528,7 +79580,7 @@ for _,_startzone in pairs(self.zonequeue)do
 local stratzone=_startzone
 local ownercoalition=stratzone.opszone:GetOwner()
 if ownercoalition~=self.coalition and(stratzone.importance==nil or stratzone.importance<=vip)then
-local hasMissionPatrol=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.PATROLZONE)
+local hasMissionPatrol=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ONGUARD)
 local hasMissionCAS=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.CAS)
 local hasMissionARTY=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARTY)
 self:T(self.lid..string.format("Zone %s [%s] is owned by coalition %d",stratzone.opszone.zone:GetName(),stratzone.opszone:GetState(),ownercoalition))
