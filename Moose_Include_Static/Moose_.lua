@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-20T16:49:30.0000000Z-35e6b6faf48d7fac1ea29ac72a40f994f906a2ae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-20T16:50:36.0000000Z-7a483abec2c108b1f7dadbc115e6c68ab027a675 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69029,7 +69029,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="0.7.0"
+ARMYGROUP.version="0.7.1"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -69193,7 +69193,7 @@ cargo=cargo+element.weightCargo
 end
 local text=string.format("%s [ROE-AS=%d-%d T/M=%d/%d]: Wp=%d/%d-->%d (final %s), Life=%.1f, Speed=%.1f (%d), Heading=%03d, Ammo=%d, Cargo=%.1f",
 fsmstate,roe,alarm,nTaskTot,nMissions,self.currentwp,#self.waypoints,self:GetWaypointIndexNext(),tostring(self.passedfinalwp),self.life or 0,speed,speedEx,self.heading or 0,ammo.Total,cargo)
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 else
 if self.verbose>=1 then
@@ -69217,12 +69217,12 @@ end
 if#self.elements==0 then
 text=text.." none!"
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 if self:IsCruising()and self.detectionOn and self.engagedetectedOn then
 local targetgroup,targetdist=self:_GetDetectedTarget()
 if targetgroup then
-self:I(self.lid..string.format("Engaging target group %s at distance %d meters",targetgroup:GetName(),targetdist))
+self:T(self.lid..string.format("Engaging target group %s at distance %d meters",targetgroup:GetName(),targetdist))
 self:EngageTarget(targetgroup)
 end
 end
@@ -69312,6 +69312,7 @@ local waypoints={}
 local formationlast=nil
 for i=n,#self.waypoints do
 local wp=UTILS.DeepCopy(self.waypoints[i])
+self:T({wp})
 if Speed then
 wp.speed=UTILS.KnotsToMps(Speed)
 else
@@ -69335,12 +69336,22 @@ end
 local wp=waypoints[1]
 self.option.Formation=wp.action
 self.speedWp=wp.speed
-local formation0=wp.action==ENUMS.Formation.Vehicle.OnRoad and ENUMS.Formation.Vehicle.OffRoad or wp.action
+local formation0=wp.action==ENUMS.Formation.Vehicle.OnRoad and ENUMS.Formation.Vehicle.OnRoad or wp.action
 local current=self:GetCoordinate():WaypointGround(UTILS.MpsToKmph(self.speedWp),formation0)
 table.insert(waypoints,1,current)
-if wp.action==ENUMS.Formation.Vehicle.OnRoad then
-local current=self:GetClosestRoad():WaypointGround(UTILS.MpsToKmph(self.speedWp),ENUMS.Formation.Vehicle.OnRoad)
-table.insert(waypoints,2,current)
+if wp.action==ENUMS.Formation.Vehicle.OnRoad and(wp.coordinate or wp.roadcoord)then
+local wptable,length,valid=self:GetCoordinate():GetPathOnRoad(wp.coordinate or wp.roadcoord,true,false,false,false)or{}
+local count=2
+if valid then
+for _,_coord in ipairs(wptable)do
+local current=_coord:WaypointGround(UTILS.MpsToKmph(self.speedWp),ENUMS.Formation.Vehicle.OnRoad)
+table.insert(waypoints,count,current)
+count=count+1
+end
+else
+current=self:GetClosestRoad():WaypointGround(UTILS.MpsToKmph(self.speedWp),ENUMS.Formation.Vehicle.OnRoad)
+table.insert(waypoints,count,current)
+end
 end
 if self.verbose>=10 then
 for i,_wp in pairs(waypoints)do
@@ -69383,11 +69394,11 @@ wp.detour=0
 end
 end
 function ARMYGROUP:onafterOutOfAmmo(From,Event,To)
-self:I(self.lid..string.format("Group is out of ammo at t=%.3f",timer.getTime()))
+self:T(self.lid..string.format("Group is out of ammo at t=%.3f",timer.getTime()))
 local task=self:GetTaskCurrent()
 if task then
 if task.dcstask.id=="FireAtPoint"or task.dcstask.id==AUFTRAG.SpecialTask.BARRAGE then
-self:I(self.lid..string.format("Cancelling current %s task because out of ammo!",task.dcstask.id))
+self:T(self.lid..string.format("Cancelling current %s task because out of ammo!",task.dcstask.id))
 self:TaskCancel(task)
 end
 end
@@ -69431,13 +69442,13 @@ end
 return allowed
 end
 function ARMYGROUP:onafterRearm(From,Event,To,Coordinate,Formation)
-self:I(self.lid..string.format("Group send to rearm"))
+self:T(self.lid..string.format("Group send to rearm"))
 local uid=self:GetWaypointCurrent().uid
 local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
 wp.detour=0
 end
 function ARMYGROUP:onafterRearmed(From,Event,To)
-self:I(self.lid.."Group rearmed")
+self:T(self.lid.."Group rearmed")
 self:_CheckGroupDone(1)
 end
 function ARMYGROUP:onafterRTZ(From,Event,To,Zone,Formation)
@@ -69447,7 +69458,7 @@ if zone then
 if self:IsInZone(zone)then
 self:Returned()
 else
-self:I(self.lid..string.format("RTZ to Zone %s",zone:GetName()))
+self:T(self.lid..string.format("RTZ to Zone %s",zone:GetName()))
 local Coordinate=zone:GetRandomCoordinate()
 local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
 wp.detour=0
@@ -69578,9 +69589,19 @@ self.dTwait=nil
 self:__UpdateRoute(-0.1,nil,nil,Speed,Formation)
 end
 function ARMYGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Formation,Updateroute)
+self:T(self.lid..string.format("AddWaypoint Formation = %s",tostring(Formation)or"none"))
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
 Speed=Speed or self:GetSpeedCruise()
+if not Formation then
+if self.formationPerma then
+Formation=self.formationPerma
+elseif self.option.Formation then
+Formation=self.option.Formation
+else
+Formation="On Road"
+end
+end
 local wp=coordinate:WaypointGround(UTILS.KnotsToKmph(Speed),Formation)
 local waypoint=self:_CreateWaypoint(wp)
 self:_AddWaypoint(waypoint,wpnumber)
