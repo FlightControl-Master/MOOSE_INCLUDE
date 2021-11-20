@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-20T16:47:43.0000000Z-1066b58fb6a8dc19d35f8cb00b7bec7d9964a3e7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-20T16:49:30.0000000Z-35e6b6faf48d7fac1ea29ac72a40f994f906a2ae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -78984,7 +78984,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.0.1"
+CHIEF.version="0.0.2"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 local self=BASE:Inherit(self,INTEL:New(AgentSet,Coalition,Alias))
@@ -79442,9 +79442,11 @@ local Legions=nil
 if#MissionPerformances>0 then
 local NassetsMin=1
 local NassetsMax=1
-if target.threatlevel0>=8 then
+local threat=target.threatlevel0/target.N0
+local NoUnits=target.N0
+if threat>=8 and NoUnits>=10 then
 NassetsMax=3
-elseif target.threatlevel0>=5 then
+elseif threat>=5 then
 NassetsMax=2
 else
 NassetsMax=1
@@ -79505,13 +79507,14 @@ for _,_startzone in pairs(self.zonequeue)do
 local stratzone=_startzone
 local ownercoalition=stratzone.opszone:GetOwner()
 if ownercoalition~=self.coalition and(stratzone.importance==nil or stratzone.importance<=vip)then
-local hasMissionPatrol=stratzone.missionPatrol and stratzone.missionPatrol:IsNotOver()or false
-local hasMissionCAS=stratzone.missionCAS and stratzone.missionCAS:IsNotOver()or false
+local hasMissionPatrol=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.PATROLZONE)
+local hasMissionCAS=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.CAS)
+local hasMissionARTY=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARTY)
 self:T(self.lid..string.format("Zone %s [%s] is owned by coalition %d",stratzone.opszone.zone:GetName(),stratzone.opszone:GetState(),ownercoalition))
 if stratzone.opszone:IsEmpty()then
 if not hasMissionPatrol then
 self:T3(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets"))
-local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ONGUARD,1,3,{Group.Category.GROUND},{GROUP.Attribute.GROUND_INFANTRY})
+local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ONGUARD,1,3,{Group.Category.GROUND},{GROUP.Attribute.GROUND_INFANTRY,GROUP.Attribute.GROUND_TANK})
 self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets=%s",tostring(recruited)))
 end
 else
@@ -79520,16 +79523,29 @@ self:T3(self.lid..string.format("Zone is NOT empty ==> Recruit CAS assets"))
 local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.CAS,1,1)
 self:T(self.lid..string.format("Zone is NOT empty ==> Recruit CAS assets=%s",tostring(recruited)))
 end
+if not hasMissionARTY then
+self:T3(self.lid..string.format("Zone is NOT empty ==> Recruit ARTY assets"))
+local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ARTY,1,1)
+self:T(self.lid..string.format("Zone is NOT empty ==> Recruit ARTY assets=%s",tostring(recruited)))
+end
 end
 end
 end
 for _,_startzone in pairs(self.zonequeue)do
 local stratzone=_startzone
 local ownercoalition=stratzone.opszone:GetOwner()
-local hasMissionPatrol=stratzone.missionPatrol and stratzone.missionPatrol:IsNotOver()or false
-local hasMissionCAS=stratzone.missionCAS and stratzone.missionCAS:IsNotOver()or false
+local hasMissionPATROL=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.PATROLZONE)
+local hasMissionCAS,CASMissions=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.CAS)
+local hasMissionARTY,ARTYMissions=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARTY)
 if ownercoalition==self.coalition and stratzone.opszone:IsEmpty()and hasMissionCAS then
-stratzone.missionCAS:Cancel()
+for _,_auftrag in pairs(CASMissions)do
+_auftrag:Cancel()
+end
+end
+if ownercoalition==self.coalition and hasMissionARTY then
+for _,_auftrag in pairs(ARTYMissions)do
+_auftrag:Cancel()
+end
 end
 end
 end
@@ -79595,7 +79611,7 @@ elseif category==Group.Category.GROUND or category==Group.Category.TRAIN then
 if attribute==GROUP.Attribute.GROUND_SAM then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.SEAD,100))
 elseif attribute==GROUP.Attribute.GROUND_EWR then
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.SEAD,100))
 elseif attribute==GROUP.Attribute.GROUND_AAA then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 elseif attribute==GROUP.Attribute.GROUND_ARTILLERY then
@@ -79703,20 +79719,35 @@ mission:AddAsset(asset)
 end
 mission.opstransport=transport
 self:MissionAssign(mission,legions)
-StratZone.missionPatrol=mission
+StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
 return true
 else
 LEGION.UnRecruitAssets(assets)
 return false
 end
 elseif MissionType==AUFTRAG.Type.CAS then
-local mission=AUFTRAG:NewPATROLZONE(StratZone.opszone.zone)
+local caszone=StratZone.opszone.zone
+local coord=caszone:GetCoordinate()
+local height=UTILS.MetersToFeet(coord:GetLandHeight())+2000
+local mission=AUFTRAG:NewPATROLZONE(caszone)
 mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
+mission:SetWeaponExpend(AI.Task.WeaponExpend.ALL)
 for _,asset in pairs(assets)do
 mission:AddAsset(asset)
 end
 self:MissionAssign(mission,legions)
-StratZone.missionCAS=mission
+StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
+return true
+elseif MissionType==AUFTRAG.Type.ARTY then
+local TargetZone=StratZone.opszone.zone
+local Target=TargetZone:GetCoordinate()
+local Radius=TargetZone:GetRadius()
+local mission=AUFTRAG:NewARTY(Target,120,Radius)
+for _,asset in pairs(assets)do
+mission:AddAsset(asset)
+end
+self:MissionAssign(mission,legions)
+StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
 return true
 end
 end
