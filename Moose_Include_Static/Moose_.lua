@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-21T17:40:04.0000000Z-ab4411e5bb365d6c9e4e134f623d1baf06895b53 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-22T10:37:10.0000000Z-aec6dd1246a2597d77efa376e7f6e465a17b2b04 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26136,11 +26136,11 @@ self.UseEmissionsOnOff=true
 self.debug=false
 self.CallBack=nil
 self.UseCallBack=false
-self:AddTransition("*","ManageEvasion","*")
-self:AddTransition("*","CalculateHitZone","*")
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
-self:I("*** SEAD - Started Version 0.4.1")
+self:AddTransition("*","ManageEvasion","*")
+self:AddTransition("*","CalculateHitZone","*")
+self:I("*** SEAD - Started Version 0.4.2")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -26239,11 +26239,13 @@ Ropt=Ropt*0.87
 elseif height<=12500 then
 Ropt=Ropt*0.98
 end
-local predpos=pos0:Translate(Ropt,wph)
+for n=1,3 do
+local dist=Ropt-((n-1)*20000)
+local predpos=pos0:Translate(dist,wph)
 if predpos then
 local targetzone=ZONE_RADIUS:New("Target Zone",predpos:GetVec2(),20000)
 if self.debug then
-predpos:MarkToAll(string.format("height=%dm | heading=%d | velocity=%d | Ropt=%dm",mheight,wph,mveloc,Ropt),false)
+predpos:MarkToAll(string.format("height=%dm | heading=%d | velocity=%ddeg | Ropt=%dm",mheight,wph,mveloc,Ropt),false)
 targetzone:DrawZone(coalition.side.BLUE,{0,0,1},0.2,nil,nil,3,true)
 end
 local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterOnce()
@@ -26258,6 +26260,7 @@ _targetgroupname=tgtgrp:GetName()
 _targetskill=tgtgrp:GetUnit(1):GetSkill()
 self:T("*** Found Target = ".._targetgroupname)
 self:ManageEvasion(_targetskill,_targetgroup,pos0,"AGM_88",SEADGroup,20)
+end
 end
 end
 end
@@ -26359,8 +26362,9 @@ self:T('*** SEAD - Weapon Match')
 local _targetskill="Random"
 local _targetgroupname="none"
 local _target=EventData.Weapon:getTarget()
-if not _target then
+if not _target or self.debug then
 if string.find(SEADWeaponName,"AGM_88",1,true)then
+self:I("**** Tracking AGM-88 with no target data.")
 local pos0=SEADPlane:GetCoordinate()
 local fheight=SEADPlane:GetHeight()
 self:__CalculateHitZone(20,SEADWeapon,pos0,fheight,SEADGroup)
@@ -46125,7 +46129,7 @@ SHORAD.Mavs={
 ["Kh66"]="Kh66",
 }
 function SHORAD:New(Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition,UseEmOnOff)
-local self=BASE:Inherit(self,BASE:New())
+local self=BASE:Inherit(self,FSM:New())
 self:T({Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition})
 local GroupSet=SET_GROUP:New():FilterPrefixes(ShoradPrefix):FilterCoalitions(Coalition):FilterCategoryGround():FilterStart()
 self.name=Name or"MyShorad"
@@ -46141,10 +46145,13 @@ self.DefendMavs=true
 self.DefenseLowProb=70
 self.DefenseHighProb=90
 self.UseEmOnOff=UseEmOnOff or false
-self:I("*** SHORAD - Started Version 0.2.10")
+self:I("*** SHORAD - Started Version 0.3.1")
 self.lid=string.format("SHORAD %s | ",self.name)
 self:_InitState()
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
+self:SetStartState("Running")
+self:AddTransition("*","WakeUpShorad","*")
+self:AddTransition("*","CalculateHitZone","*")
 return self
 end
 function SHORAD:_InitState()
@@ -46306,6 +46313,7 @@ return returnname
 end
 function SHORAD:_ShotIsDetected()
 self:T(self.lid.." _ShotIsDetected")
+if self.debug then return true end
 local IsDetected=false
 local DetectionProb=math.random(self.DefenseLowProb,self.DefenseHighProb)
 local ActualDetection=math.random(1,100)
@@ -46314,7 +46322,7 @@ IsDetected=true
 end
 return IsDetected
 end
-function SHORAD:WakeUpShorad(TargetGroup,Radius,ActiveTimer,TargetCat)
+function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat)
 self:T(self.lid.." WakeUpShorad")
 self:T({TargetGroup,Radius,ActiveTimer,TargetCat})
 local targetcat=TargetCat or Object.Category.UNIT
@@ -46363,6 +46371,57 @@ end
 end
 return self
 end
+function SHORAD:onafterCalculateHitZone(From,Event,To,SEADWeapon,pos0,height,SEADGroup)
+self:T("**** Calculating hit zone")
+if SEADWeapon and SEADWeapon:isExist()then
+local position=SEADWeapon:getPosition()
+local mheight=height
+local wph=math.atan2(position.x.z,position.x.x)
+if wph<0 then
+wph=wph+2*math.pi
+end
+wph=math.deg(wph)
+local wpndata=SEAD.HarmData["AGM_88"]
+local mveloc=math.floor(wpndata[2]*340.29)
+local c1=(2*mheight*9.81)/(mveloc^2)
+local c2=(mveloc^2)/9.81
+local Ropt=c2*math.sqrt(c1+1)
+if height<=5000 then
+Ropt=Ropt*0.72
+elseif height<=7500 then
+Ropt=Ropt*0.82
+elseif height<=10000 then
+Ropt=Ropt*0.87
+elseif height<=12500 then
+Ropt=Ropt*0.98
+end
+for n=1,3 do
+local dist=Ropt-((n-1)*20000)
+local predpos=pos0:Translate(dist,wph)
+if predpos then
+local targetzone=ZONE_RADIUS:New("Target Zone",predpos:GetVec2(),20000)
+if self.debug then
+predpos:MarkToAll(string.format("height=%dm | heading=%d | velocity=%ddeg | Ropt=%dm",mheight,wph,mveloc,Ropt),false)
+targetzone:DrawZone(coalition.side.BLUE,{0,0,1},0.2,nil,nil,3,true)
+end
+local seadset=self.Groupset
+local tgtcoord=targetzone:GetRandomPointVec2()
+local tgtgrp=seadset:FindNearestGroupFromPointVec2(tgtcoord)
+local _targetgroup=nil
+local _targetgroupname="none"
+local _targetskill="Random"
+if tgtgrp and tgtgrp:IsAlive()then
+_targetgroup=tgtgrp
+_targetgroupname=tgtgrp:GetName()
+_targetskill=tgtgrp:GetUnit(1):GetSkill()
+self:T("*** Found Target = ".._targetgroupname)
+self:WakeUpShorad(_targetgroupname,self.Radius,self.ActiveTimer,Object.Category.UNIT)
+end
+end
+end
+end
+return self
+end
 function SHORAD:HandleEventShot(EventData)
 self:T({EventData})
 self:T(self.lid.." HandleEventShot")
@@ -46380,7 +46439,15 @@ self:T(text)
 local m=MESSAGE:New(text,10,"Info"):ToAllIf(self.debug)
 if(self:_CheckHarms(ShootingWeaponName)or self:_CheckMavs(ShootingWeaponName))and IsDetected then
 local targetdata=EventData.Weapon:getTarget()
-if not targetdata then return end
+if not targetdata or self.debug then
+if string.find(ShootingWeaponName,"AGM_88",1,true)then
+self:I("**** Tracking AGM-88 with no target data.")
+local pos0=EventData.IniUnit:GetCoordinate()
+local fheight=EventData.IniUnit:GetHeight()
+self:__CalculateHitZone(20,ShootingWeapon,pos0,fheight,EventData.IniGroup)
+end
+return self
+end
 local targetcat=targetdata:getCategory()
 self:T(string.format("Target Category (3=STATIC, 1=UNIT)= %s",tostring(targetcat)))
 self:T({targetdata})
@@ -46430,6 +46497,7 @@ end
 end
 end
 end
+return self
 end
 end
 AUTOLASE={
