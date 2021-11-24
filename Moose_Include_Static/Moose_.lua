@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-24T12:17:13.0000000Z-06fa585f6939a5dc55e803f6b95aeaeebc636908 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-24T12:17:45.0000000Z-56473642939e643029a34bfc7dc9b731b726bfd7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62797,7 +62797,7 @@ local Altitude=param.altitude or 500
 local Alpha=param.angle or math.random(45,85)
 local distance=Altitude/math.tan(math.rad(Alpha))
 local tvec2=UTILS.Vec2Translate(vec2,distance,heading)
-self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%d°, heading=%03d°, distance=%d m",tostring(param.shots),Altitude,Alpha,heading,distance))
+self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%dÂ°, heading=%03dÂ°, distance=%d m",tostring(param.shots),Altitude,Alpha,heading,distance))
 DCSTask=CONTROLLABLE.TaskFireAtPoint(nil,tvec2,param.radius,param.shots,param.weaponType,Altitude)
 else
 DCSTask=Task.dcstask
@@ -63227,13 +63227,21 @@ surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD}
 elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
-if mission.type==AUFTRAG.Type.PATROLZONE or mission.type==AUFTRAG.Type.BARRAGE or mission.type==AUFTRAG.Type.AMMOSUPPLY or mission.type.FUELSUPPLY then
+if mission.type==AUFTRAG.Type.PATROLZONE or mission.type==AUFTRAG.Type.BARRAGE or mission.type==AUFTRAG.Type.AMMOSUPPLY
+or mission.type.FUELSUPPLY then
 local zone=mission.engageTarget:GetObject()
 waypointcoord=zone:GetRandomCoordinate(nil,nil,surfacetypes)
 elseif mission.type==AUFTRAG.Type.ONGUARD then
 waypointcoord=mission:GetMissionWaypointCoord(self.group,nil,surfacetypes)
 else
 waypointcoord=mission:GetMissionWaypointCoord(self.group,randomradius,surfacetypes)
+end
+local armorwaypointcoord=nil
+if mission.type==AUFTRAG.Type.ARMORATTACK then
+local target=mission.engageTarget:GetObject()
+local zone=ZONE_RADIUS:New("AttackZone",target:GetVec2(),1000)
+waypointcoord=zone:GetRandomCoordinate(0,100,surfacetypes)
+armorwaypointcoord=zone:GetRandomCoordinate(1000,500,surfacetypes)
 end
 for _,task in pairs(mission.enrouteTasks)do
 self:AddTaskEnroute(task)
@@ -63271,7 +63279,13 @@ local waypoint=nil
 if self:IsFlightgroup()then
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
+if mission.type==AUFTRAG.Type.ARMORATTACK then
+waypoint=ARMYGROUP.AddWaypoint(self,armorwaypointcoord,SpeedToMission,uid,mission.optionFormation,false)
+local attackformation=mission.optionAttackFormation or"Vee"
+waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,nil,attackformation,false)
+else
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,mission.optionFormation,false)
+end
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,mission.missionAltitude or self.altitudeCruise,false)
 end
