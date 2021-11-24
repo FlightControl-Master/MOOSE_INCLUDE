@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-24T12:17:45.0000000Z-56473642939e643029a34bfc7dc9b731b726bfd7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-24T12:38:25.0000000Z-035e6913b5ba1d3c7003eafea8c2198d27b71d9e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79870,8 +79870,13 @@ elseif attribute==GROUP.Attribute.GROUND_ARTILLERY then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBING,70))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,75))
 elseif attribute==GROUP.Attribute.GROUND_INFANTRY then
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+elseif attribute==GROUP.Attribute.GROUND_TANK then
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,75))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.CAS,100))
 else
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 end
