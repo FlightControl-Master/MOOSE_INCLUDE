@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-22T10:37:10.0000000Z-aec6dd1246a2597d77efa376e7f6e465a17b2b04 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-24T12:17:13.0000000Z-06fa585f6939a5dc55e803f6b95aeaeebc636908 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58341,6 +58341,7 @@ FUELSUPPLY="Fuel Supply",
 ALERT5="Alert5",
 ONGUARD="On Guard",
 BARRAGE="Barrage",
+ARMORATTACK="Armor Attack",
 }
 AUFTRAG.SpecialTask={
 PATROLZONE="PatrolZone",
@@ -58350,6 +58351,7 @@ FUELSUPPLY="Fuel Supply",
 ALERT5="Alert5",
 ONGUARD="On Guard",
 BARRAGE="Barrage",
+ARMORATTACK="AmorAttack",
 }
 AUFTRAG.Status={
 PLANNED="planned",
@@ -58778,6 +58780,20 @@ mission.categories={AUFTRAG.Category.ALL}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
+function AUFTRAG:NewARMORATTACK(Target,Speed,Formation)
+local mission=AUFTRAG:New(AUFTRAG.Type.ARMORATTACK)
+mission:_TargetFromObject(Target)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.ARMORATTACK)
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionAlarm=ENUMS.AlarmState.Auto
+mission.optionFormation="On Road"
+mission.optionAttackFormation=Formation or"Wedge"
+mission.missionFraction=1.0
+mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or 20
+mission.categories={AUFTRAG.Category.GROUND}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
 function AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly)
 local mission=AUFTRAG:New(AUFTRAG.Type.RECON)
 mission:_TargetFromObject(ZoneSet)
@@ -58856,6 +58872,8 @@ elseif MissionType==AUFTRAG.Type.SEAD then
 mission=self:NewSEAD(Target,Altitude)
 elseif MissionType==AUFTRAG.Type.STRIKE then
 mission=self:NewSTRIKE(Target,Altitude)
+elseif MissionType==AUFTRAG.Type.ARMORATTACK then
+mission=self:NewARMORATTACK(Target,Speed)
 else
 return nil
 end
@@ -60284,6 +60302,15 @@ param.altitude=self.missionAltitude
 param.speed=self.missionSpeed
 DCStask.params=param
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.ARMORATTACK then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.ARMORATTACK
+local param={}
+param.zone=self:GetObjective()
+param.action="Wedge"
+param.speed=self.missionSpeed
+DCStask.params=param
+table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.AMMOSUPPLY then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.AMMOSUPPLY
@@ -60386,6 +60413,8 @@ elseif MissionType==AUFTRAG.Type.TANKER then
 mtask=ENUMS.MissionTask.REFUELING
 elseif MissionType==AUFTRAG.Type.TROOPTRANSPORT then
 mtask=ENUMS.MissionTask.TRANSPORT
+elseif MissionType==AUFTRAG.Type.ARMORATTACK then
+mtask=ENUMS.MissionTask.NOTHING
 end
 return mtask
 end
