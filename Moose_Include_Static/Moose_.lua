@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-26T14:36:46.0000000Z-7280ceac32316e1d4cb9048d139c1c54fefb5e31 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-27T16:27:58.0000000Z-c7ddd6ec3519ec5003e3af340b05f3cafbc9bc19 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75714,7 +75714,7 @@ end
 local _closest=self:_GetClosestDownedPilot(_heli)
 local smokedist=8000
 if self.approachdist_far>smokedist then smokedist=self.approachdist_far end
-if _closest~=nil and _closest.pilot~=nil and _closest.distance<smokedist then
+if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
 if _SETTINGS:IsImperial()then
@@ -75757,7 +75757,7 @@ end
 local smokedist=8000
 if smokedist<self.approachdist_far then smokedist=self.approachdist_far end
 local _closest=self:_GetClosestDownedPilot(_heli)
-if _closest~=nil and _closest.pilot~=nil and _closest.distance<smokedist then
+if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
 if _SETTINGS:IsImperial()then
@@ -75765,7 +75765,7 @@ _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
 _distance=string.format("%.1fkm",_closest.distance)
 end
-local _msg=string.format("%s - Popping signal smoke at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
+local _msg=string.format("%s - Popping smoke at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
 local _coord=_closest.pilot:GetCoordinate()
 local color=self.smokecolor
