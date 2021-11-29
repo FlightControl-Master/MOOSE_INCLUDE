@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-27T16:27:58.0000000Z-c7ddd6ec3519ec5003e3af340b05f3cafbc9bc19 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-11-29T07:03:58.0000000Z-5631e2c09f762b69af36f26060f332a45ab3be36 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21200,36 +21200,36 @@ local aircraftcarrier=self:HasAttribute("Aircraft Carriers")
 local warship=self:HasAttribute("Heavy armed ships")
 local armedship=self:HasAttribute("Armed ships")
 local unarmedship=self:HasAttribute("Unarmed ships")
-if transportplane then
-attribute=GROUP.Attribute.AIR_TRANSPORTPLANE
-elseif awacs then
-attribute=GROUP.Attribute.AIR_AWACS
-elseif fighter then
+if fighter then
 attribute=GROUP.Attribute.AIR_FIGHTER
 elseif bomber then
 attribute=GROUP.Attribute.AIR_BOMBER
+elseif awacs then
+attribute=GROUP.Attribute.AIR_AWACS
+elseif transportplane then
+attribute=GROUP.Attribute.AIR_TRANSPORTPLANE
 elseif tanker then
 attribute=GROUP.Attribute.AIR_TANKER
-elseif transporthelo then
-attribute=GROUP.Attribute.AIR_TRANSPORTHELO
 elseif attackhelicopter then
 attribute=GROUP.Attribute.AIR_ATTACKHELO
+elseif transporthelo then
+attribute=GROUP.Attribute.AIR_TRANSPORTHELO
 elseif uav then
 attribute=GROUP.Attribute.AIR_UAV
-elseif apc then
-attribute=GROUP.Attribute.GROUND_APC
-elseif infantry then
-attribute=GROUP.Attribute.GROUND_INFANTRY
-elseif artillery then
-attribute=GROUP.Attribute.GROUND_ARTILLERY
-elseif tank then
-attribute=GROUP.Attribute.GROUND_TANK
-elseif aaa then
-attribute=GROUP.Attribute.GROUND_AAA
 elseif ewr then
 attribute=GROUP.Attribute.GROUND_EWR
 elseif sam then
 attribute=GROUP.Attribute.GROUND_SAM
+elseif aaa then
+attribute=GROUP.Attribute.GROUND_AAA
+elseif artillery then
+attribute=GROUP.Attribute.GROUND_ARTILLERY
+elseif tank then
+attribute=GROUP.Attribute.GROUND_TANK
+elseif apc then
+attribute=GROUP.Attribute.GROUND_APC
+elseif infantry then
+attribute=GROUP.Attribute.GROUND_INFANTRY
 elseif truck then
 attribute=GROUP.Attribute.GROUND_TRUCK
 elseif train then
