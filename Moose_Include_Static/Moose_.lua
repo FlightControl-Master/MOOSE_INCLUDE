@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-01T08:17:46.0000000Z-82b2c84f1388a2a49501b4e2fa9a9e3f2c2cf97c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-01T10:54:56.0000000Z-46c37ff06aa97fe2c2191e80feffdc09e49d3a4d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64087,7 +64087,7 @@ local PlayersNearBy=self.Detection:GetPlayersNearBy(DetectedItem)
 local PlayerTypes={}
 local PlayersCount=0
 if PlayersNearBy then
-local DetectedTreatLevel=DetectedSet:CalculateThreatLevelA2G()
+local DetectedThreatLevel=DetectedSet:CalculateThreatLevelA2G()
 for PlayerUnitName,PlayerUnitData in pairs(PlayersNearBy)do
 local PlayerUnit=PlayerUnitData
 local PlayerName=PlayerUnit:GetPlayerName()
@@ -64096,7 +64096,7 @@ local FriendlyUnitThreatLevel=PlayerUnit:GetThreatLevel()
 PlayersCount=PlayersCount+1
 local PlayerType=PlayerUnit:GetTypeName()
 PlayerTypes[PlayerName]=PlayerType
-if DetectedTreatLevel<FriendlyUnitThreatLevel+2 then
+if DetectedThreatLevel<FriendlyUnitThreatLevel+2 then
 end
 end
 end
@@ -64117,7 +64117,7 @@ local FriendlyUnitsNearBy=self.Detection:GetFriendliesNearBy(DetectedItem)
 local FriendlyTypes={}
 local FriendliesCount=0
 if FriendlyUnitsNearBy then
-local DetectedTreatLevel=DetectedSet:CalculateThreatLevelA2G()
+local DetectedThreatLevel=DetectedSet:CalculateThreatLevelA2G()
 for FriendlyUnitName,FriendlyUnitData in pairs(FriendlyUnitsNearBy)do
 local FriendlyUnit=FriendlyUnitData
 if FriendlyUnit:IsAirPlane()then
@@ -64125,7 +64125,7 @@ local FriendlyUnitThreatLevel=FriendlyUnit:GetThreatLevel()
 FriendliesCount=FriendliesCount+1
 local FriendlyType=FriendlyUnit:GetTypeName()
 FriendlyTypes[FriendlyType]=FriendlyTypes[FriendlyType]and(FriendlyTypes[FriendlyType]+1)or 1
-if DetectedTreatLevel<FriendlyUnitThreatLevel+2 then
+if DetectedThreatLevel<FriendlyUnitThreatLevel+2 then
 end
 end
 end
