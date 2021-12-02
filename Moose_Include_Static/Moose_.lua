@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-01T10:54:56.0000000Z-46c37ff06aa97fe2c2191e80feffdc09e49d3a4d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-02T18:25:42.0000000Z-2ba52150360bdb8273ddee990381e24d35def399 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -33875,7 +33875,6 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
-goodhitrange=25,
 foulline=610,
 }
 RANGE.TargetType={
@@ -34219,7 +34218,7 @@ end
 if heading<0 then
 heading=heading+360
 end
-if heading>360 then
+if heading>=360 then
 heading=heading-360
 end
 goodpass=goodpass or RANGE.Defaults.goodpass
@@ -35583,7 +35582,6 @@ function RANGE:_myname(unitname)
 self:F2(unitname)
 local unit=UNIT:FindByName(unitname)
 local pname=unit:GetPlayerName()
-local csign=unit:GetCallsign()
 return string.format("%s",pname)
 end
 do
