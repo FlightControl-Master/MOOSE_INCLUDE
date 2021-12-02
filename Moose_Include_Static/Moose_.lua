@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-02T09:13:38.0000000Z-37d2c729451a1a3ad8133c3a5a508adc69c1bbd3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-02T11:17:48.0000000Z-7819a30c57c5126aa100852c4ccad15f915ef166 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72460,7 +72460,7 @@ local supplyzone={}
 supplyzone.zone=RefuellingZone
 supplyzone.mission=nil
 supplyzone.marker=MARKER:New(supplyzone.zone:GetCoordinate(),"Refuelling Zone"):ToCoalition(self:GetCoalition())
-table.insert(self.rearmingZones,supplyzone)
+table.insert(self.refuellingZones,supplyzone)
 return supplyzone
 end
 function BRIGADE:GetPlatoon(PlatoonName)
