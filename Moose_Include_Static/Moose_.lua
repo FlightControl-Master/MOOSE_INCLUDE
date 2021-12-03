@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-03T13:27:03.0000000Z-897df1b8fa374e121dd96e7340a16c3a97f632b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-03T15:51:06.0000000Z-1c5c2056144fc9c898d7bb0c7deb599b280e466f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62969,7 +62969,7 @@ elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
 local Coordinate=zone:GetRandomCoordinate(nil,nil,surfacetypes)
-local Speed=UTILS.KmphToKnots(Task.dcstask.params.speed or self.speedCruise)
+local Speed=UTILS.MpsToKnots(Task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=Task.dcstask.params.altitude and UTILS.MetersToFeet(Task.dcstask.params.altitude)or nil
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
@@ -62987,7 +62987,7 @@ self.lastindex=1
 local object=target.targets[1]
 local zone=object.Object
 local Coordinate=zone:GetRandomCoordinate()
-local Speed=UTILS.KmphToKnots(Task.dcstask.params.speed or self.speedCruise)
+local Speed=UTILS.MpsToKnots(Task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=Task.dcstask.params.altitude and UTILS.MetersToFeet(Task.dcstask.params.altitude)or nil
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
@@ -63629,7 +63629,7 @@ elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
 local Coordinate=zone:GetRandomCoordinate(nil,nil,surfacetypes)
-local Speed=UTILS.KmphToKnots(task.dcstask.params.speed or self.speedCruise)
+local Speed=UTILS.MpsToKnots(task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=UTILS.MetersToFeet(task.dcstask.params.altitude or self.altitudeCruise)
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
@@ -63648,7 +63648,7 @@ if n<=#target.targets then
 local object=target.targets[n]
 local zone=object.Object
 local Coordinate=zone:GetRandomCoordinate()
-local Speed=UTILS.KmphToKnots(task.dcstask.params.speed or self.speedCruise)
+local Speed=UTILS.MpsToKnots(task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=task.dcstask.params.altitude and UTILS.MetersToFeet(task.dcstask.params.altitude)or nil
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
