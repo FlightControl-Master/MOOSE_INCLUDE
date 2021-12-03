@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-02T15:07:34.0000000Z-3fb22b7c552807dd882764eefd0b3e7a148886f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-03T13:27:03.0000000Z-897df1b8fa374e121dd96e7340a16c3a97f632b6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79455,7 +79455,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.0.2"
+CHIEF.version="0.0.3"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -79474,6 +79474,7 @@ self:SetAttackZones()
 self:SetThreatLevelRange()
 self.Defcon=CHIEF.DEFCON.GREEN
 self.strategy=CHIEF.Strategy.DEFENSIVE
+self.TransportCategories={Group.Category.HELICOPTER}
 self.commander=COMMANDER:New(Coalition)
 self:AddTransition("*","MissionAssign","*")
 self:AddTransition("*","MissionCancel","*")
@@ -79662,6 +79663,14 @@ return self
 end
 function CHIEF:AddAttackZone(Zone)
 self.engagezoneset:AddZone(Zone)
+return self
+end
+function CHIEF:AllowGroundTransport()
+self.TransportCategories={Group.Category.GROUND,Group.Category.HELICOPTER}
+return self
+end
+function CHIEF:ForbidGroundTransport()
+self.TransportCategories={Group.Category.HELICOPTER}
 return self
 end
 function CHIEF:IsPassive()
@@ -80195,7 +80204,7 @@ self:T2(self.lid..string.format("Recruited %d assets from for PATROL mission",#a
 local recruitedTrans=true
 local transport=nil
 if Attributes and Attributes[1]==GROUP.Attribute.GROUND_INFANTRY then
-local Categories={Group.Category.HELICOPTER}
+local Categories={self.TransportCategories}
 recruitedTrans,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,assets,1,1,StratZone.opszone.zone,nil,Categories)
 end
 if recruitedTrans then
@@ -80227,6 +80236,10 @@ mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
 mission:SetWeaponExpend(AI.Task.WeaponExpend.ALL)
 for _,asset in pairs(assets)do
 mission:AddAsset(asset)
+if asset.speedmax then
+local speed=UTILS.KmphToKnots(asset.speedmax*0.7)or 100
+mission:SetMissionSpeed(speed)
+end
 end
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
