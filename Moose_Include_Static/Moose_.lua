@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-04T15:24:45.0000000Z-c34dc9f946b792220ebc998943f495d4868759af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-04T17:40:14.0000000Z-9c0ac0ff5744a49955c247138dc4e4e690656072 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -80271,7 +80271,7 @@ return true
 elseif MissionType==AUFTRAG.Type.ARMOREDGUARD then
 local TargetZone=StratZone.opszone.zone
 local Target=TargetZone:GetCoordinate()
-local mission=AUFTRAG:NewARMOREDGUARD(Target,"Vee")
+local mission=AUFTRAG:NewARMOREDGUARD(Target)
 for _,asset in pairs(assets)do
 mission:AddAsset(asset)
 end
