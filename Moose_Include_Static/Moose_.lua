@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-03T15:51:06.0000000Z-1c5c2056144fc9c898d7bb0c7deb599b280e466f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-04T15:24:45.0000000Z-c34dc9f946b792220ebc998943f495d4868759af ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59014,8 +59014,13 @@ mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or UTILS.FeetToMeters(2000)
 mission.categories={AUFTRAG.Category.ALL}
 mission.DCStask=mission:GetDCSMissionTask()
-mission.DCStask.params.adinfitum=Adinfinitum
+mission.DCStask.params.adinfinitum=Adinfinitum
 mission.DCStask.params.randomly=Randomly
+if Randomly then
+local targets=mission.DCStask.params.target.targets
+local shuffled=UTILS.ShuffleTable(targets)
+mission.DCStask.params.target.targets=shuffled
+end
 return mission
 end
 function AUFTRAG:NewAMMOSUPPLY(Zone)
@@ -63145,6 +63150,7 @@ Mission:SetGroupStatus(self,AUFTRAG.GroupStatus.SCHEDULED)
 Mission:Scheduled()
 Mission.Nelements=Mission.Nelements+#self.elements
 table.insert(self.missionqueue,Mission)
+self.adinfinitum=Mission.DCStask.params.adinfinitum and Mission.DCStask.params.adinfinitum or false
 local text=string.format("Added %s mission %s starting at %s, stopping at %s",
 tostring(Mission.type),tostring(Mission.name),UTILS.SecondsToClock(Mission.Tstart,true),Mission.Tstop and UTILS.SecondsToClock(Mission.Tstop,true)or"INF")
 self:T(self.lid..text)
@@ -63661,6 +63667,9 @@ wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
 wp.missionUID=mission and mission.auftragsnummer or nil
 self.lastindex=self.lastindex+1
+if self.adinfinitum and n==#target.targets then
+self.lastindex=1
+end
 else
 local wpindex=self:GetWaypointIndex(Waypoint.uid)
 if wpindex==nil or wpindex==#self.waypoints then
@@ -80230,16 +80239,20 @@ end
 elseif MissionType==AUFTRAG.Type.CAS then
 local caszone=StratZone.opszone.zone
 local coord=caszone:GetCoordinate()
-local height=UTILS.MetersToFeet(coord:GetLandHeight())+2000
-local mission=AUFTRAG:NewPATROLZONE(caszone)
+local height=UTILS.MetersToFeet(coord:GetLandHeight())+2500
+local Speed=200
+if assets[1]then
+if assets[1].speedmax then
+Speed=UTILS.KmphToKnots(assets[1].speedmax*0.7)or 200
+end
+end
+local Leg=caszone:GetRadius()<=10000 and 5 or UTILS.MetersToNM(caszone:GetRadius())
+local mission=AUFTRAG:NewCAS(caszone,height,Speed,coord,math.random(0,359),Leg)
 mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
 mission:SetWeaponExpend(AI.Task.WeaponExpend.ALL)
+mission:SetMissionSpeed(Speed)
 for _,asset in pairs(assets)do
 mission:AddAsset(asset)
-if asset.speedmax then
-local speed=UTILS.KmphToKnots(asset.speedmax*0.7)or 100
-mission:SetMissionSpeed(speed)
-end
 end
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
@@ -80258,7 +80271,7 @@ return true
 elseif MissionType==AUFTRAG.Type.ARMOREDGUARD then
 local TargetZone=StratZone.opszone.zone
 local Target=TargetZone:GetCoordinate()
-local mission=AUFTRAG:NewARMOREDGUARD(Target)
+local mission=AUFTRAG:NewARMOREDGUARD(Target,"Vee")
 for _,asset in pairs(assets)do
 mission:AddAsset(asset)
 end
