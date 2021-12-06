@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T13:56:42.0000000Z-8213b51bd67955f40dcd0ebfbc3ed8829670fe21 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T14:15:46.0000000Z-8d009d6366a0717324c2a4d60caf7b6d3ed8fb77 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3316,7 +3316,8 @@ local outcome=UTILS.SaveToFile(Path,Filename,data)
 return outcome
 end
 function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce)
-local reduce=Reduce==false and false or true
+local reduce=true
+if Reduce==false then reduce=false end
 local filename=Filename or"StateListofGroups"
 local datatable={}
 if UTILS.CheckFileExists(Path,filename)then
@@ -3352,7 +3353,9 @@ end
 return datatable
 end
 function UTILS.LoadSetOfGroups(Path,Filename,Spawn)
-local spawn=Spawn==false and false or true
+local spawn=true
+if Spawn==false then spawn=false end
+BASE:I("Spawn = "..tostring(spawn))
 local filename=Filename or"SetOfGroups"
 local setdata=SET_GROUP:New()
 local datatable={}
@@ -3421,7 +3424,8 @@ end
 return datatable
 end
 function UTILS.LoadStationaryListOfStatics(Path,Filename,Reduce)
-local reduce=Reduce==false and false or true
+local reduce=true
+if Reduce==false then reduce=false end
 local filename=Filename or"StateListofStatics"
 local datatable={}
 if UTILS.CheckFileExists(Path,filename)then
@@ -9208,7 +9212,8 @@ return Objects
 end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
 self:F2({ObjectName=ObjectName})
-local TriggerEvent=NoTriggerEvent==nil and true or(not NoTriggerEvent)
+local TriggerEvent=true
+if NoTriggerEvent==false then TriggerEvent=false end
 local Object=self.Set[ObjectName]
 if Object then
 for Index,Key in ipairs(self.Index)do
