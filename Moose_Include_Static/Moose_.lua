@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T09:26:01.0000000Z-a18fc2080d71c22231dde4bb804e61d850e843b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T13:56:42.0000000Z-8213b51bd67955f40dcd0ebfbc3ed8829670fe21 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3352,7 +3352,7 @@ end
 return datatable
 end
 function UTILS.LoadSetOfGroups(Path,Filename,Spawn)
-local spawn=SPAWN==false and false or true
+local spawn=Spawn==false and false or true
 local filename=Filename or"SetOfGroups"
 local setdata=SET_GROUP:New()
 local datatable={}
