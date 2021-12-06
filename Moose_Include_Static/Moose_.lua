@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T09:26:32.0000000Z-389adab9b864edf4ccc56bf16c6d9ac86dde19b5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T13:57:36.0000000Z-493b090534c4b67b185c0701f0ca4e2505dfacb4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -33793,7 +33793,7 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
-foulline=610,
+foulline=610
 }
 RANGE.TargetType={
 UNIT="Unit",
@@ -33844,7 +33844,7 @@ IR9={filename="IR-9.ogg",duration=0.55},
 IRDecimal={filename="IR-Decimal.ogg",duration=0.54},
 IRMegaHertz={filename="IR-MegaHertz.ogg",duration=0.87},
 IREnterRange={filename="IR-EnterRange.ogg",duration=4.83},
-IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
+IRExitRange={filename="IR-ExitRange.ogg",duration=3.10}
 }
 RANGE.Names={}
 RANGE.MenuF10={}
@@ -34457,8 +34457,7 @@ local playerData=self.PlayerSettings[_playername]
 self:T(self.id..string.format("RANGE %s: Tracking %s - %s.",self.rangename,_weapon,EventData.weapon:getName()))
 local _lastBombPos={x=0,y=0,z=0}
 local function trackBomb(_ordnance)
-local _status,_bombPos=pcall(
-function()
+local _status,_bombPos=pcall(function()
 return _ordnance:getPoint()
 end)
 self:T2(self.id..string.format("Range %s: Bomb still in air: %s",self.rangename,tostring(_status)))
@@ -34583,13 +34582,9 @@ self.instructor:NewTransmission(RANGE.Sound.IRExitRange.filename,RANGE.Sound.IRE
 end
 end
 function RANGE:onafterImpact(From,Event,To,result,player)
-local targetname=nil
+local text=string.format("%s, impact %03d° for %d m (%d ft)",player.playername,result.radial,result.distance,UTILS.MetersToFeet(result.distance))
 if#self.bombingTargets>1 then
-local targetname=result.name
-end
-local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
-if targetname then
-text=text..string.format(" from bulls of target %s.")
+text=text..string.format(" from bulls of target %s.",result.name)
 else
 text=text.."."
 end
@@ -34718,7 +34713,9 @@ local _results=self.strafePlayerResults[_playername]
 if _results==nil then
 _message=string.format("%s: No Score yet.",_playername)
 else
-local _sort=function(a,b)return a.hits>b.hits end
+local _sort=function(a,b)
+return a.hits>b.hits
+end
 table.sort(_results,_sort)
 local _bestMsg=""
 local _count=1
@@ -34755,7 +34752,9 @@ local text=string.format("%s: Hits %i - %s - %s",_playerName,_best.hits,_best.zo
 table.insert(_playerResults,{msg=text,hits=_best.hits})
 end
 end
-local _sort=function(a,b)return a.hits>b.hits end
+local _sort=function(a,b)
+return a.hits>b.hits
+end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -34775,7 +34774,9 @@ local _results=self.bombPlayerResults[_playername]
 if _results==nil then
 _message=_playername..": No Score yet."
 else
-local _sort=function(a,b)return a.distance<b.distance end
+local _sort=function(a,b)
+return a.distance<b.distance
+end
 table.sort(_results,_sort)
 local _bestMsg=""
 for i,_result in pairs(_results)do
@@ -34811,7 +34812,9 @@ local bestres=string.format("%s: %d m - %s - %s - %s hit",_playerName,_best.dist
 table.insert(_playerResults,{msg=bestres,distance=_best.distance})
 end
 end
-local _sort=function(a,b)return a.distance<b.distance end
+local _sort=function(a,b)
+return a.distance<b.distance
+end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -34838,7 +34841,7 @@ local rangealt=position:GetLandHeight()
 local vec3=coord:GetDirectionVec3(position)
 local angle=coord:GetAngleDegrees(vec3)
 local range=coord:Get2DDistance(position)
-local Bs=string.format('%03d°',angle)
+local Bs=string.format("%03d°",angle)
 local texthit
 if self.PlayerSettings[playername].flaredirecthits then
 texthit=string.format("Flare direct hits: ON (flare color %s)\n",self:_flarecolor2text(self.PlayerSettings[playername].flarecolor))
@@ -34939,7 +34942,7 @@ local T=position:GetTemperature()
 local P=position:GetPressure()
 local Wd,Ws=position:GetWind()
 local Bn,Bd=UTILS.BeaufortScale(Ws)
-local WD=string.format('%03d°',Wd)
+local WD=string.format("%03d°",Wd)
 local Ts=string.format("%d°C",T)
 local hPa2inHg=0.0295299830714
 local hPa2mmHg=0.7500615613030
@@ -35044,7 +35047,9 @@ local shots=_result.ammo-_ammo
 local accur=0
 if shots>0 then
 accur=_result.hits/shots*100
-if accur>100 then accur=100 end
+if accur>100 then
+accur=100
+end
 end
 local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_result.zone.name,_result.hits)
 if shots and accur then
