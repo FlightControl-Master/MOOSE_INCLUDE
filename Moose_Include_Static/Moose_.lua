@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-07T15:09:02.0000000Z-23ea5d9d0676a9775a19e0aec0afb07e15e67e8f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-07T16:35:56.0000000Z-abc69bc838c20d665ab00a6ab9f1f66b80de957c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -70840,6 +70840,7 @@ Mission:Queued()
 Mission:SetLegionStatus(self,AUFTRAG.Status.QUEUED)
 Mission:AddLegion(self)
 if Mission.type==AUFTRAG.Type.ALERT5 then
+Mission:_TargetFromObject(self:GetCoordinate())
 end
 table.insert(self.missionqueue,Mission)
 local text=string.format("Added mission %s (type=%s). Starting at %s. Stopping at %s",
@@ -71011,9 +71012,6 @@ end
 if currM and currM.type==AUFTRAG.Type.ALERT5 then
 asset.flightgroup:MissionCancel(currM)
 end
-if currM and currM.type==AUFTRAG.Type.ONGUARD then
-asset.flightgroup:MissionCancel(currM)
-end
 self:__OpsOnMission(5,asset.flightgroup,Mission)
 else
 self:E(self.lid.."ERROR: flight group for asset does NOT exist!")
@@ -71032,12 +71030,12 @@ if Mission.missionTask then
 asset.missionTask=Mission.missionTask
 end
 end
-local coordinate=nil
+local specialcoordinate=nil
 if Mission.specialCoordinate then
-coordinate=Mission.specialCoordinate
+specialcoordinate=Mission.specialCoordinate
 end
 local assignment=string.format("Mission-%d",Mission.auftragsnummer)
-self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,nil,nil,Mission.prio,assignment,coordinate)
+self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,nil,nil,Mission.prio,assignment,specialcoordinate)
 Mission.requestID[self.alias]=self.queueid
 local request=self:GetRequestByID(self.queueid)
 if request then
