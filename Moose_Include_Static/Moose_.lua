@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-06T14:15:46.0000000Z-8d009d6366a0717324c2a4d60caf7b6d3ed8fb77 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-07T15:09:02.0000000Z-23ea5d9d0676a9775a19e0aec0afb07e15e67e8f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3372,7 +3372,7 @@ local posy=tonumber(dataset[5])
 local posz=tonumber(dataset[6])
 local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
 local group=nil
-local data={groupname=groupname,size=size,coordinate=coordinate}
+local data={groupname=groupname,template=template,size=size,coordinate=coordinate}
 table.insert(datatable,data)
 if spawn then
 local group=SPAWN:New(groupname)
@@ -41018,7 +41018,7 @@ Assets={},
 WarehouseID=0,
 Warehouses={}
 }
-WAREHOUSE.version="1.0.2"
+WAREHOUSE.version="1.0.3"
 function WAREHOUSE:New(warehouse,alias)
 local self=BASE:Inherit(self,FSM:New())
 if type(warehouse)=="string"then
@@ -41983,7 +41983,7 @@ end
 function WAREHOUSE:onafterNewAsset(From,Event,To,asset,assignment)
 self:T(self.lid..string.format("New asset %s id=%d with assignment %s.",tostring(asset.templatename),asset.uid,tostring(assignment)))
 end
-function WAREHOUSE:onbeforeAddRequest(From,Event,To,warehouse,AssetDescriptor,AssetDescriptorValue,nAsset,TransportType,nTransport,Assignment,Prio)
+function WAREHOUSE:onbeforeAddRequest(From,Event,To,warehouse,AssetDescriptor,AssetDescriptorValue,nAsset,TransportType,nTransport,Assignment,Prio,SpawnCoordinate)
 local okay=true
 if AssetDescriptor==WAREHOUSE.Descriptor.ATTRIBUTE then
 local gotit=false
@@ -42041,7 +42041,7 @@ okay=false
 end
 return okay
 end
-function WAREHOUSE:onafterAddRequest(From,Event,To,warehouse,AssetDescriptor,AssetDescriptorValue,nAsset,TransportType,nTransport,Prio,Assignment)
+function WAREHOUSE:onafterAddRequest(From,Event,To,warehouse,AssetDescriptor,AssetDescriptorValue,nAsset,TransportType,nTransport,Prio,Assignment,SpawnCoordinate)
 nAsset=nAsset or 1
 TransportType=TransportType or WAREHOUSE.TransportType.SELFPROPELLED
 Prio=Prio or 50
@@ -42073,6 +42073,7 @@ ndelivered=0,
 ntransporthome=0,
 assets={},
 toself=toself,
+spawncoordinate=SpawnCoordinate,
 }
 table.insert(self.queue,request)
 local text=string.format("Warehouse %s: New request from warehouse %s.\nDescriptor %s=%s, #assets=%s; Transport=%s, #transports =%s.",
@@ -42737,6 +42738,9 @@ if asset and(asset.category==Group.Category.GROUND or asset.category==Group.Cate
 local template=self:_SpawnAssetPrepareTemplate(asset,alias)
 template.route.points[1]={}
 local coord=spawnzone:GetRandomCoordinate()
+if request.spawncoordinate then
+coord=request.spawncoordinate
+end
 if asset.category==Group.Category.TRAIN then
 coord=self.rail
 end
@@ -70836,7 +70840,6 @@ Mission:Queued()
 Mission:SetLegionStatus(self,AUFTRAG.Status.QUEUED)
 Mission:AddLegion(self)
 if Mission.type==AUFTRAG.Type.ALERT5 then
-Mission:_TargetFromObject(self:GetCoordinate())
 end
 table.insert(self.missionqueue,Mission)
 local text=string.format("Added mission %s (type=%s). Starting at %s. Stopping at %s",
@@ -71008,6 +71011,9 @@ end
 if currM and currM.type==AUFTRAG.Type.ALERT5 then
 asset.flightgroup:MissionCancel(currM)
 end
+if currM and currM.type==AUFTRAG.Type.ONGUARD then
+asset.flightgroup:MissionCancel(currM)
+end
 self:__OpsOnMission(5,asset.flightgroup,Mission)
 else
 self:E(self.lid.."ERROR: flight group for asset does NOT exist!")
@@ -71026,8 +71032,12 @@ if Mission.missionTask then
 asset.missionTask=Mission.missionTask
 end
 end
+local coordinate=nil
+if Mission.specialCoordinate then
+coordinate=Mission.specialCoordinate
+end
 local assignment=string.format("Mission-%d",Mission.auftragsnummer)
-self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,nil,nil,Mission.prio,assignment)
+self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,nil,nil,Mission.prio,assignment,coordinate)
 Mission.requestID[self.alias]=self.queueid
 local request=self:GetRequestByID(self.queueid)
 if request then
