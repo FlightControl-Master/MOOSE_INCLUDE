@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-07T17:13:13.0000000Z-d42bdb250538a0ddb98a91afc405735537365395 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-08T18:27:22.0000000Z-706cf641b33b1eb910b85c4b12aa82c8e68d87b0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7199,6 +7199,7 @@ function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
 self:F(ZoneName)
 self.ZoneName=ZoneName
+_DATABASE:AddZone(ZoneName,self)
 return self
 end
 function ZONE_BASE:GetName()
@@ -69805,6 +69806,12 @@ local current=self:GetCoordinate():WaypointGround(UTILS.MpsToKmph(self.speedWp),
 table.insert(waypoints,1,current)
 if wp.action==ENUMS.Formation.Vehicle.OnRoad and(wp.coordinate or wp.roadcoord)then
 local wptable,length,valid=self:GetCoordinate():GetPathOnRoad(wp.coordinate or wp.roadcoord,true,false,false,false)or{}
+local lenghtdirect=self:GetCoordinate():Get2DDistance(wp.coordinate)or 100000
+if valid and length then
+if length>lenghtdirect*8 then
+valid=false
+end
+end
 local count=2
 if valid then
 for _,_coord in ipairs(wptable)do
@@ -70534,6 +70541,7 @@ end
 return N
 end
 function COHORT:RecruitAssets(MissionType,Npayloads)
+self:T("RecruitAssets for "..MissionType.." with "..Npayloads)
 self:T3(self.lid..string.format("Recruiting asset for Mission type=%s",MissionType))
 local assets={}
 for _,_asset in pairs(self.assets)do
@@ -70581,7 +70589,18 @@ end
 if flightgroup:IsCargo()or flightgroup:IsBoarding()or flightgroup:IsAwaitingLift()then
 combatready=false
 end
+if flightgroup:IsArmygroup()then
+if asset.attribute==WAREHOUSE.Attribute.GROUND_ARTILLERY or
+asset.attribute==WAREHOUSE.Attribute.GROUND_TANK or
+asset.attribute==WAREHOUSE.Attribute.GROUND_INFANTRY or
+asset.attribute==WAREHOUSE.Attribute.GROUND_AAA or
+asset.attribute==WAREHOUSE.Attribute.GROUND_SAM
+then
+combatready=true
+end
+else
 combatready=false
+end
 if combatready then
 self:T(self.lid.."Adding SPAWNED asset to ANOTHER mission as it is COMBATREADY")
 table.insert(assets,asset)
@@ -71008,6 +71027,11 @@ end
 if currM and currM.type==AUFTRAG.Type.ALERT5 then
 asset.flightgroup:MissionCancel(currM)
 end
+if asset.flightgroup:IsArmygroup()then
+if currM and(currM.type==AUFTRAG.Type.ONGUARD or currM.type==AUFTRAG.Type.ARMOREDGUARD)then
+asset.flightgroup:MissionCancel(currM)
+end
+end
 self:__OpsOnMission(5,asset.flightgroup,Mission)
 else
 self:E(self.lid.."ERROR: flight group for asset does NOT exist!")
@@ -71172,6 +71196,7 @@ end
 Asset.Treturned=timer.getAbsTime()
 end
 function LEGION:onafterAssetSpawned(From,Event,To,group,asset,request)
+self:T({From,Event,To,group:GetName(),asset.assignment,request.assignment})
 self:GetParent(self,LEGION).onafterAssetSpawned(self,From,Event,To,group,asset,request)
 local cohort=self:_GetCohortOfAsset(asset)
 if cohort then
@@ -74897,7 +74922,7 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="0.1.12r4"
+CSAR.version="0.1.12r5"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -75799,7 +75824,7 @@ local _distance=0
 if _SETTINGS:IsImperial()then
 _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
-_distance=string.format("%.1fkm",_closest.distance)
+_distance=string.format("%.1fkm",_closest.distance/1000)
 end
 local _msg=string.format("%s - Popping smoke at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true)
