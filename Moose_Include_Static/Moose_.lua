@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-07T17:13:51.0000000Z-a57b9a90810dbcb0dad9259b633513f38bca5d84 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-08T18:52:29.0000000Z-a4ca4bdc996bfd26d35e42b52e8077fe03673eae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -1974,7 +1974,7 @@ Normandy="Normandy",
 PersianGulf="PersianGulf",
 TheChannel="TheChannel",
 Syria="Syria",
-MarianaIslands="MarianaIslands"
+MarianaIslands="MarianaIslands",
 }
 CALLSIGN={
 Aircraft={
@@ -2209,8 +2209,8 @@ end
 UTILS.KnotsToMps=function(knots)
 return knots/1.94384
 end
-UTILS.CelciusToFarenheit=function(Celcius)
-return Celcius*9/5+32
+UTILS.CelsiusToFahrenheit=function(Celsius)
+return Celsius*9/5+32
 end
 UTILS.hPa2inHg=function(hPa)
 return hPa*0.0295299830714
@@ -2265,8 +2265,7 @@ else
 local width=3+acc
 secFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d°',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '
-..string.format('%03d°',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
+return string.format('%03d°',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '..string.format('%03d°',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
 else
 latMin=UTILS.Round(latMin,acc)
 lonMin=UTILS.Round(lonMin,acc)
@@ -2285,8 +2284,7 @@ else
 local width=3+acc
 minFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
-..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
+return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
 end
 end
 UTILS.tostringMGRS=function(MGRS,acc)
@@ -2297,8 +2295,12 @@ local Easting=tostring(MGRS.Easting)
 local Northing=tostring(MGRS.Northing)
 local nE=5-string.len(Easting)
 local nN=5-string.len(Northing)
-for i=1,nE do Easting="0"..Easting end
-for i=1,nN do Northing="0"..Northing end
+for i=1,nE do
+Easting="0"..Easting
+end
+for i=1,nN do
+Northing="0"..Northing
+end
 return string.format("%s %s %s %s",MGRS.UTMZone,MGRS.MGRSDigraph,string.sub(Easting,1,acc),string.sub(Northing,1,acc))
 end
 end
@@ -2316,9 +2318,13 @@ end
 end
 function UTILS.spairs(t,order)
 local keys={}
-for k in pairs(t)do keys[#keys+1]=k end
+for k in pairs(t)do
+keys[#keys+1]=k
+end
 if order then
-table.sort(keys,function(a,b)return order(t,a,b)end)
+table.sort(keys,function(a,b)
+return order(t,a,b)
+end)
 else
 table.sort(keys)
 end
@@ -2333,9 +2339,14 @@ end
 function UTILS.kpairs(t,getkey,order)
 local keys={}
 local keyso={}
-for k,o in pairs(t)do keys[#keys+1]=k keyso[#keyso+1]=getkey(o)end
+for k,o in pairs(t)do
+keys[#keys+1]=k
+keyso[#keyso+1]=getkey(o)
+end
 if order then
-table.sort(keys,function(a,b)return order(t,a,b)end)
+table.sort(keys,function(a,b)
+return order(t,a,b)
+end)
 else
 table.sort(keys)
 end
@@ -2349,7 +2360,9 @@ end
 end
 function UTILS.rpairs(t)
 local keys={}
-for k in pairs(t)do keys[#keys+1]=k end
+for k in pairs(t)do
+keys[#keys+1]=k
+end
 local random={}
 local j=#keys
 for i=1,j do
@@ -2832,13 +2845,27 @@ Tlocal=Tlocal or 0
 local rad=math.rad
 local deg=math.deg
 local floor=math.floor
-local frac=function(n)return n-floor(n)end
-local cos=function(d)return math.cos(rad(d))end
-local acos=function(d)return deg(math.acos(d))end
-local sin=function(d)return math.sin(rad(d))end
-local asin=function(d)return deg(math.asin(d))end
-local tan=function(d)return math.tan(rad(d))end
-local atan=function(d)return deg(math.atan(d))end
+local frac=function(n)
+return n-floor(n)
+end
+local cos=function(d)
+return math.cos(rad(d))
+end
+local acos=function(d)
+return deg(math.acos(d))
+end
+local sin=function(d)
+return math.sin(rad(d))
+end
+local asin=function(d)
+return deg(math.asin(d))
+end
+local tan=function(d)
+return math.tan(rad(d))
+end
+local atan=function(d)
+return deg(math.atan(d))
+end
 local function fit_into_range(val,min,max)
 local range=max-min
 local count
@@ -3060,9 +3087,7 @@ local _count=1
 while _code<1777 and _count<30 do
 while true do
 _code=_code+1
-if not ContainsDigit(_code,8)
-and not ContainsDigit(_code,9)
-and not ContainsDigit(_code,0)then
+if not ContainsDigit(_code,8)and not ContainsDigit(_code,9)and not ContainsDigit(_code,0)then
 table.insert(jtacGeneratedLaserCodes,_code)
 break
 end
@@ -3222,7 +3247,9 @@ return outcome
 end
 function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce)
 local reduce=true
-if Reduce==false then reduce=false end
+if Reduce==false then
+reduce=false
+end
 local filename=Filename or"StateListofGroups"
 local datatable={}
 if UTILS.CheckFileExists(Path,filename)then
@@ -3259,7 +3286,9 @@ return datatable
 end
 function UTILS.LoadSetOfGroups(Path,Filename,Spawn)
 local spawn=true
-if Spawn==false then spawn=false end
+if Spawn==false then
+spawn=false
+end
 BASE:I("Spawn = "..tostring(spawn))
 local filename=Filename or"SetOfGroups"
 local setdata=SET_GROUP:New()
@@ -3280,10 +3309,7 @@ local group=nil
 local data={groupname=groupname,size=size,coordinate=coordinate}
 table.insert(datatable,data)
 if spawn then
-local group=SPAWN:New(groupname)
-:InitDelayOff()
-:OnSpawnGroup(
-function(spwndgrp)
+local group=SPAWN:New(groupname):InitDelayOff():OnSpawnGroup(function(spwndgrp)
 setdata:AddObject(spwndgrp)
 local actualsize=spwndgrp:CountAliveUnits()
 if actualsize>size then
@@ -3294,9 +3320,7 @@ for i=1,reduction do
 units2[i]:Destroy(false)
 end
 end
-end
-)
-:SpawnFromCoordinate(coordinate)
+end):SpawnFromCoordinate(coordinate)
 end
 end
 else
@@ -3330,7 +3354,9 @@ return datatable
 end
 function UTILS.LoadStationaryListOfStatics(Path,Filename,Reduce)
 local reduce=true
-if Reduce==false then reduce=false end
+if Reduce==false then
+reduce=false
+end
 local filename=Filename or"StateListofStatics"
 local datatable={}
 if UTILS.CheckFileExists(Path,filename)then
@@ -12007,7 +12033,7 @@ local SphereSearch={
 id=world.VolumeType.SPHERE,
 params={
 point=self:GetVec3(),
-radius=radius,
+radius=radius
 }
 }
 radius=radius or 100
@@ -12216,13 +12242,13 @@ local T,P=atmosphere.getTemperatureAndPressure(point)
 return T-273.15
 end
 function COORDINATE:GetTemperatureText(height,Settings)
-local DegreesCelcius=self:GetTemperature(height)
+local DegreesCelsius=self:GetTemperature(height)
 local Settings=Settings or _SETTINGS
-if DegreesCelcius then
+if DegreesCelsius then
 if Settings:IsMetric()then
-return string.format(" %-2.2f °C",DegreesCelcius)
+return string.format(" %-2.2f °C",DegreesCelsius)
 else
-return string.format(" %-2.2f °F",UTILS.CelciusToFarenheit(DegreesCelcius))
+return string.format(" %-2.2f °F",UTILS.CelsiusToFahrenheit(DegreesCelsius))
 end
 else
 return" no temperature"
@@ -13379,7 +13405,7 @@ self.z=self.z+y
 return self
 end
 function POINT_VEC2:AddAlt(Altitude)
-self.y=land.getHeight({x=self.x,y=self.z})+Altitude or 0
+self.y=land.getHeight({x=self.x,y=self.z})+(Altitude or 0)
 return self
 end
 function POINT_VEC2:GetRandomPointVec2InRadius(OuterRadius,InnerRadius)
@@ -33785,7 +33811,7 @@ instructorfreq=nil,
 instructor=nil,
 rangecontrolfreq=nil,
 rangecontrol=nil,
-soundpath="Range Soundfiles/"
+soundpath="Range Soundfiles/",
 }
 RANGE.Defaults={
 goodhitrange=25,
@@ -33798,7 +33824,7 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
-foulline=610
+foulline=610,
 }
 RANGE.TargetType={
 UNIT="Unit",
@@ -33849,7 +33875,7 @@ IR9={filename="IR-9.ogg",duration=0.55},
 IRDecimal={filename="IR-Decimal.ogg",duration=0.54},
 IRMegaHertz={filename="IR-MegaHertz.ogg",duration=0.87},
 IREnterRange={filename="IR-EnterRange.ogg",duration=4.83},
-IRExitRange={filename="IR-ExitRange.ogg",duration=3.10}
+IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 }
 RANGE.Names={}
 RANGE.MenuF10={}
@@ -39506,7 +39532,7 @@ end
 text=text..string.format("QFE %.1f hPa = %s.\n",Pqfe,_Pqfe)
 text=text..string.format("QNH %.1f hPa = %s.\n",Pqnh,_Pqnh)
 local T=position:GetTemperature()
-local _T=string.format('%d°F',UTILS.CelciusToFarenheit(T))
+local _T=string.format('%d°F',UTILS.CelsiusToFahrenheit(T))
 if settings:IsMetric()then
 _T=string.format('%d°C',T)
 end
@@ -55248,8 +55274,8 @@ end
 local temperature=coord:GetTemperature(height+5)
 local dewpoint=temperature-(100-self.relHumidity)/5
 if self.TDegF then
-temperature=UTILS.CelciusToFarenheit(temperature)
-dewpoint=UTILS.CelciusToFarenheit(dewpoint)
+temperature=UTILS.CelsiusToFahrenheit(temperature)
+dewpoint=UTILS.CelsiusToFahrenheit(dewpoint)
 end
 local TEMPERATURE=string.format("%d",math.abs(temperature))
 local DEWPOINT=string.format("%d",math.abs(dewpoint))
@@ -55896,7 +55922,7 @@ local text=string.gsub(text,"°C","degrees Celsius")
 local text=string.gsub(text,"°F","degrees Fahrenheit")
 local text=string.gsub(text,"inHg","inches of Mercury")
 local text=string.gsub(text,"mmHg","millimeters of Mercury")
-local text=string.gsub(text,"hPa","hecto Pascals")
+local text=string.gsub(text,"hPa","hectopascals")
 local text=string.gsub(text,"m/s","meters per second")
 local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
