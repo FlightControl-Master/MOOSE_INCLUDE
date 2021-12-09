@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-08T18:27:22.0000000Z-706cf641b33b1eb910b85c4b12aa82c8e68d87b0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-09T06:16:29.0000000Z-72999cc7b05b36767bf82f902240033bf001034c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7199,7 +7199,6 @@ function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
 self:F(ZoneName)
 self.ZoneName=ZoneName
-_DATABASE:AddZone(ZoneName,self)
 return self
 end
 function ZONE_BASE:GetName()
