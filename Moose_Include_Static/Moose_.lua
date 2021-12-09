@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-08T18:52:29.0000000Z-a4ca4bdc996bfd26d35e42b52e8077fe03673eae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-09T16:51:38.0000000Z-a59343b987c8dbf76b8b95783bbac767da79fdc7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9098,7 +9098,9 @@ end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
 self:F2({ObjectName=ObjectName})
 local TriggerEvent=true
-if NoTriggerEvent==false then TriggerEvent=false end
+if NoTriggerEvent==false then
+TriggerEvent=false
+end
 local Object=self.Set[ObjectName]
 if Object then
 for Index,Key in ipairs(self.Index)do
@@ -11645,13 +11647,12 @@ end
 end
 do
 SET_ZONE={
-ClassName="SET_ZONE",
+lassName="SET_ZONE",
 Zones={},
 Filter={
 Prefixes=nil,
 },
-FilterMeta={
-},
+FilterMeta={},
 }
 function SET_ZONE:New()
 local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.ZONES))
@@ -11800,8 +11801,7 @@ Zones={},
 Filter={
 Prefixes=nil,
 },
-FilterMeta={
-},
+FilterMeta={},
 }
 function SET_ZONE_GOAL:New()
 local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.ZONES_GOAL))
@@ -12033,8 +12033,8 @@ local SphereSearch={
 id=world.VolumeType.SPHERE,
 params={
 point=self:GetVec3(),
-radius=radius
-}
+radius=radius,
+},
 }
 radius=radius or 100
 if scanunits==nil then
@@ -54811,7 +54811,7 @@ Normandy=true,
 PersianGulf=true,
 TheChannel=true,
 Syria=true,
-MarianaIslands=true,
+MarianaIslands=true
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
@@ -55160,8 +55160,7 @@ end
 end
 local text=string.format("State %s: Freq=%.3f MHz %s",fsmstate,self.frequency,UTILS.GetModulationName(self.modulation))
 if self.useSRS then
-text=text..string.format(", SRS path=%s (%s), gender=%s, culture=%s, voice=%s",
-tostring(self.msrs.path),tostring(self.msrs.port),tostring(self.msrs.gender),tostring(self.msrs.culture),tostring(self.msrs.voice))
+text=text..string.format(", SRS path=%s (%s), gender=%s, culture=%s, voice=%s",tostring(self.msrs.path),tostring(self.msrs.port),tostring(self.msrs.gender),tostring(self.msrs.culture),tostring(self.msrs.voice))
 else
 text=text..string.format(", Relay unit=%s (alive=%s)",tostring(self.relayunitname),relayunitstatus)
 end
@@ -72003,7 +72002,7 @@ ClassName="TASK_A2A_DISPATCHER",
 Mission=nil,
 Detection=nil,
 Tasks={},
-SweepZones={}
+SweepZones={},
 }
 function TASK_A2A_DISPATCHER:New(Mission,SetGroup,Detection)
 local self=BASE:Inherit(self,DETECTION_MANAGER:New(SetGroup,Detection))
