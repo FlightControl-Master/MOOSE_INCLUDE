@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-09T06:16:29.0000000Z-72999cc7b05b36767bf82f902240033bf001034c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-09T16:44:44.0000000Z-72550d6d84f76fde049fb49230a0b3e41a80b4de ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60235,8 +60235,11 @@ function AUFTRAG:_TargetFromObject(Object)
 if not self.engageTarget then
 if Object and Object:IsInstanceOf("TARGET")then
 self.engageTarget=Object
-else
+elseif Object then
 self.engageTarget=TARGET:New(Object)
+end
+if self.type==AUFTRAG.Type.ALERT5 then
+self.alert5Target=self.engageTarget
 end
 else
 end
@@ -60305,6 +60308,9 @@ if self.transportPickup then
 return self.transportPickup
 elseif self.engageTarget then
 local coord=self.engageTarget:GetCoordinate()
+return coord
+elseif self.alert5Target then
+local coord=self.alert5Target:GetCoordinate()
 return coord
 else
 self:E(self.lid.."ERROR: Cannot get target coordinate!")
@@ -71617,11 +71623,11 @@ table.insert(Assets,asset)
 end
 end
 end
-LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,false)
+LEGION._OptimizeAssetSelection(Assets,MissionTypeRecruit,TargetVec2,false)
 for _,_asset in pairs(Assets)do
 local asset=_asset
 if asset.legion:IsAirwing()and not asset.payload then
-asset.payload=asset.legion:FetchPayloadFromStock(asset.unittype,MissionTypeOpt,Payloads)
+asset.payload=asset.legion:FetchPayloadFromStock(asset.unittype,MissionTypeRecruit,Payloads)
 end
 end
 for i=#Assets,1,-1 do
@@ -71630,7 +71636,7 @@ if asset.legion:IsAirwing()and not asset.payload then
 table.remove(Assets,i)
 end
 end
-LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,true)
+LEGION._OptimizeAssetSelection(Assets,MissionTypeRecruit,TargetVec2,true)
 local Nassets=math.min(#Assets,NreqMax)
 if#Assets>=NreqMin then
 for i=1,Nassets do
