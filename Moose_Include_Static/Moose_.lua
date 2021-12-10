@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-10T09:38:34.0000000Z-421ac6c427606ef8be9301d3f57ed346f424d055 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-10T11:09:04.0000000Z-823c94caceefd34536ea3ab493563aa7f4869a80 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72445,7 +72445,7 @@ verbose=0,
 rearmingZones={},
 refuellingZones={},
 }
-BRIGADE.version="0.1.0"
+BRIGADE.version="0.1.1"
 function BRIGADE:New(WarehouseName,BrigadeName)
 local self=BASE:Inherit(self,LEGION:New(WarehouseName,BrigadeName))
 if not self then
@@ -72521,6 +72521,71 @@ local platoon=self:GetPlatoonOfAsset(Asset)
 if platoon then
 platoon:DelAsset(Asset)
 end
+end
+function BRIGADE:LoadBackAssetInPosition(Templatename,Position)
+self:T(self.lid.."LoadBackAssetInPosition: "..tostring(Templatename))
+local nametbl=UTILS.Split(Templatename,"_")
+local name=nametbl[1]
+self:T(string.format("*** Target Platoon = %s ***",name))
+local cohorts=self.cohorts or{}
+local thisasset=nil
+local found=false
+for _,_cohort in pairs(cohorts)do
+local asset=_cohort:GetName()
+self:T(string.format("*** Looking at Platoon = %s ***",asset))
+if asset==name then
+self:T("**** Found Platoon ****")
+local cohassets=_cohort.assets or{}
+for _,_zug in pairs(cohassets)do
+local zug=_zug
+if zug.assignment==name and zug.requested==false then
+self:T("**** Found Asset ****")
+found=true
+thisasset=zug
+break
+end
+end
+end
+end
+if found then
+thisasset.rid=thisasset.uid
+thisasset.requested=false
+thisasset.score=100
+thisasset.missionTask="CAS"
+thisasset.spawned=true
+local template=thisasset.templatename
+local alias=thisasset.spawngroupname
+local spawnasset=SPAWN:NewWithAlias(template,alias)
+:InitDelayOff()
+:SpawnFromCoordinate(Position)
+local request={}
+request.assignment=name
+request.warehouse=self
+request.assets={thisasset}
+request.ntransporthome=0
+request.ndelivered=0
+request.ntransport=0
+request.cargoattribute=thisasset.attribute
+request.category=thisasset.category
+request.cargoassets={thisasset}
+request.assetdesc=WAREHOUSE.Descriptor.ASSETLIST
+request.cargocategory=thisasset.category
+request.toself=true
+request.transporttype=WAREHOUSE.TransportType.SELFPROPELLED
+request.assetproblem={}
+request.born=true
+request.prio=50
+request.uid=thisasset.uid
+request.airbase=nil
+request.timestamp=timer.getAbsTime()
+request.assetdescval={thisasset}
+request.nasset=1
+request.cargogroupset=SET_GROUP:New()
+request.cargogroupset:AddGroup(spawnasset)
+request.iscargo=true
+self:__AssetSpawned(2,spawnasset,thisasset,request)
+end
+return self
 end
 function BRIGADE:onafterStart(From,Event,To)
 self:GetParent(self,BRIGADE).onafterStart(self,From,Event,To)
