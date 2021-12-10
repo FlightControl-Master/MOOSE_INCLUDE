@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-10T11:09:04.0000000Z-823c94caceefd34536ea3ab493563aa7f4869a80 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-10T15:02:50.0000000Z-3f92f8d2aafb8491a29dc9a59684147548e332ea ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9510,6 +9510,7 @@ Coalitions=nil,
 Categories=nil,
 Countries=nil,
 GroupPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -9609,6 +9610,25 @@ end
 end
 end
 return NearestGroup
+end
+function SET_GROUP:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
+return self
 end
 function SET_GROUP:FilterCoalitions(Coalitions)
 if not self.Filter.Coalitions then
@@ -9941,6 +9961,16 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupPrefix
 end
+if self.Filter.Zones then
+local MGroupZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+if MGroup:IsInZone(Zone)then
+MGroupZone=true
+end
+end
+MGroupInclude=MGroupInclude and MGroupZone
+end
 self:T2(MGroupInclude)
 return MGroupInclude
 end
@@ -9963,6 +9993,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 UnitPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -10064,6 +10095,25 @@ Prefixes={Prefixes}
 end
 for PrefixID,Prefix in pairs(Prefixes)do
 self.Filter.UnitPrefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_UNIT:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
 end
 return self
 end
@@ -10512,6 +10562,16 @@ end
 MUnitInclude=MUnitInclude and MUnitSEAD
 end
 end
+if self.Filter.Zones then
+local MGroupZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+if MUnit:IsInZone(Zone)then
+MGroupZone=true
+end
+end
+MUnitInclude=MUnitInclude and MGroupZone
+end
 self:T2(MUnitInclude)
 return MUnitInclude
 end
@@ -10931,6 +10991,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 ClientPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -11033,6 +11094,25 @@ end
 function SET_CLIENT:FilterActive(Active)
 Active=Active or not(Active==false)
 self.Filter.Active=Active
+return self
+end
+function SET_CLIENT:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
 return self
 end
 function SET_CLIENT:FilterStart()
@@ -11162,6 +11242,17 @@ self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
 end
+if self.Filter.Zones then
+local MClientZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+local unit=MClient:GetClientGroupUnit()
+if unit and unit:IsInZone(Zone)then
+MClientZone=true
+end
+end
+MClientInclude=MClientInclude and MClientZone
+end
 self:T2(MClientInclude)
 return MClientInclude
 end
@@ -11176,6 +11267,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 ClientPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -11223,6 +11315,25 @@ Coalitions={Coalitions}
 end
 for CoalitionID,Coalition in pairs(Coalitions)do
 self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_PLAYER:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
 end
 return self
 end
@@ -11383,6 +11494,17 @@ end
 self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
+end
+if self.Filter.Zones then
+local MClientZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+local unit=MClient:GetClientGroupUnit()
+if unit and unit:IsInZone(Zone)then
+MClientZone=true
+end
+end
+MClientInclude=MClientInclude and MClientZone
 end
 self:T2(MClientInclude)
 return MClientInclude
