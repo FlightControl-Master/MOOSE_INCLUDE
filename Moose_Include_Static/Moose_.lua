@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-10T11:02:50.0000000Z-2138a332921e9e00655a509781c015ea7f0d23c0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T13:14:44.0000000Z-ef4dc48ea174a6e9d542fa8a3be46805e7412a67 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56388,7 +56388,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="0.2.4"
+CTLD.version="1.0.0"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56496,6 +56496,8 @@ local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
 self.enableslingload=false
+self.SmokeColor=SMOKECOLOR.Red
+self.FlareColor=FLARECOLOR.Red
 for i=1,100 do
 math.random()
 end
@@ -57781,8 +57783,11 @@ local topcrates=MENU_GROUP:New(_group,"Manage Crates",topmenu)
 local listmenu=MENU_GROUP_COMMAND:New(_group,"List boarded cargo",topmenu,self._ListCargo,self,_group,_unit)
 local invtry=MENU_GROUP_COMMAND:New(_group,"Inventory",topmenu,self._ListInventory,self,_group,_unit)
 local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
-local smokemenu=MENU_GROUP_COMMAND:New(_group,"Smoke zones nearby",topmenu,self.SmokeZoneNearBy,self,_unit,false)
-local smokemenu=MENU_GROUP_COMMAND:New(_group,"Flare zones nearby",topmenu,self.SmokeZoneNearBy,self,_unit,true):Refresh()
+local smoketopmenu=MENU_GROUP:New(_group,"Smokes & Flares",topmenu)
+local smokemenu=MENU_GROUP_COMMAND:New(_group,"Smoke zones nearby",smoketopmenu,self.SmokeZoneNearBy,self,_unit,false)
+local smokeself=MENU_GROUP_COMMAND:New(_group,"Drop smoke now",smoketopmenu,self.SmokePositionNow,self,_unit,false)
+local flaremenu=MENU_GROUP_COMMAND:New(_group,"Flare zones nearby",smoketopmenu,self.SmokeZoneNearBy,self,_unit,true)
+local flareself=MENU_GROUP_COMMAND:New(_group,"Fire flare now",smoketopmenu,self.SmokePositionNow,self,_unit,true):Refresh()
 if cantroops then
 local troopsmenu=MENU_GROUP:New(_group,"Load troops",toptroops)
 for _,_entry in pairs(self.Cargo_Troops)do
@@ -58105,6 +58110,19 @@ return outcome,zonenameret,zoneret,maxdist,zonewret
 else
 return outcome,zonenameret,zoneret,maxdist
 end
+end
+function CTLD:SmokePositionNow(Unit,Flare)
+self:T(self.lid.." SmokePositionNow")
+local SmokeColor=self.SmokeColor or SMOKECOLOR.Red
+local FlareColor=self.FlareColor or FLARECOLOR.Red
+local unitcoord=Unit:GetCoordinate()
+local Group=Unit:GetGroup()
+if Flare then
+unitcoord:Flare(FlareColor,90)
+else
+unitcoord:Smoke(SmokeColor)
+end
+return self
 end
 function CTLD:SmokeZoneNearBy(Unit,Flare)
 self:T(self.lid.." SmokeZoneNearBy")
