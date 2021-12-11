@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T13:13:43.0000000Z-80b03dd1947d186c2b0c86aeadfd43c22d385840 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T13:24:07.0000000Z-9629b0e1a3d6cdf0e5cd49625223f60f3083f244 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10606,6 +10606,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 StaticPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -10659,6 +10660,25 @@ Coalitions={Coalitions}
 end
 for CoalitionID,Coalition in pairs(Coalitions)do
 self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_STATIC:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
 end
 return self
 end
@@ -10962,6 +10982,16 @@ MStaticPrefix=true
 end
 end
 MStaticInclude=MStaticInclude and MStaticPrefix
+end
+if self.Filter.Zones then
+local MStaticZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+if MStatic and MStatic:IsInZone(Zone)then
+MStaticZone=true
+end
+end
+MStaticInclude=MStaticInclude and MStaticZone
 end
 self:T2(MStaticInclude)
 return MStaticInclude
