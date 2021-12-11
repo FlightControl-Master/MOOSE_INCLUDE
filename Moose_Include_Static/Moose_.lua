@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T13:14:44.0000000Z-ef4dc48ea174a6e9d542fa8a3be46805e7412a67 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T13:24:20.0000000Z-848e2f1294b5b04617f4618451509b3586a5a5b8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9098,9 +9098,7 @@ end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
 self:F2({ObjectName=ObjectName})
 local TriggerEvent=true
-if NoTriggerEvent==false then
-TriggerEvent=false
-end
+if NoTriggerEvent==false then TriggerEvent=false end
 local Object=self.Set[ObjectName]
 if Object then
 for Index,Key in ipairs(self.Index)do
@@ -9116,7 +9114,7 @@ end
 end
 end
 function SET_BASE:Add(ObjectName,Object)
-self:F2({ObjectName=ObjectName,Object=Object})
+self:T({ObjectName=ObjectName,Object=Object})
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
@@ -9129,6 +9127,18 @@ self:F2(Object.ObjectName)
 self:T(Object.UnitName)
 self:T(Object.ObjectName)
 self:Add(Object.ObjectName,Object)
+end
+function SET_BASE:SortByName()
+local function sort(a,b)
+return a<b
+end
+table.sort(self.Index)
+end
+function SET_BASE:AddSet(SetToAdd)
+for _,ObjectB in pairs(SetToAdd.Set)do
+self:AddObject(ObjectB)
+end
+return self
 end
 function SET_BASE:GetSetUnion(SetB)
 local union=SET_BASE:New()
@@ -9385,6 +9395,7 @@ Coalitions=nil,
 Categories=nil,
 Countries=nil,
 GroupPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -9484,6 +9495,25 @@ end
 end
 end
 return NearestGroup
+end
+function SET_GROUP:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
+return self
 end
 function SET_GROUP:FilterCoalitions(Coalitions)
 if not self.Filter.Coalitions then
@@ -9611,6 +9641,16 @@ end
 function SET_GROUP:ForSomeGroupAlive(IteratorFunction,...)
 self:F2(arg)
 self:ForSome(IteratorFunction,arg,self:GetAliveSet())
+return self
+end
+function SET_GROUP:Activate(Delay)
+local Set=self:GetSet()
+for GroupID,GroupData in pairs(Set)do
+local group=GroupData
+if group and group:IsAlive()==false then
+group:Activate(Delay)
+end
+end
 return self
 end
 function SET_GROUP:ForEachGroupCompletelyInZone(ZoneObject,IteratorFunction,...)
@@ -9806,6 +9846,16 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupPrefix
 end
+if self.Filter.Zones then
+local MGroupZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+if MGroup:IsInZone(Zone)then
+MGroupZone=true
+end
+end
+MGroupInclude=MGroupInclude and MGroupZone
+end
 self:T2(MGroupInclude)
 return MGroupInclude
 end
@@ -9828,6 +9878,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 UnitPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -9929,6 +9980,25 @@ Prefixes={Prefixes}
 end
 for PrefixID,Prefix in pairs(Prefixes)do
 self.Filter.UnitPrefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_UNIT:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
 end
 return self
 end
@@ -10377,6 +10447,16 @@ end
 MUnitInclude=MUnitInclude and MUnitSEAD
 end
 end
+if self.Filter.Zones then
+local MGroupZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+if MUnit:IsInZone(Zone)then
+MGroupZone=true
+end
+end
+MUnitInclude=MUnitInclude and MGroupZone
+end
 self:T2(MUnitInclude)
 return MUnitInclude
 end
@@ -10411,6 +10491,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 StaticPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -10464,6 +10545,25 @@ Coalitions={Coalitions}
 end
 for CoalitionID,Coalition in pairs(Coalitions)do
 self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_STATIC:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
 end
 return self
 end
@@ -10768,6 +10868,16 @@ end
 end
 MStaticInclude=MStaticInclude and MStaticPrefix
 end
+if self.Filter.Zones then
+local MStaticZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+if MStatic and MStatic:IsInZone(Zone)then
+MStaticZone=true
+end
+end
+MStaticInclude=MStaticInclude and MStaticZone
+end
 self:T2(MStaticInclude)
 return MStaticInclude
 end
@@ -10796,6 +10906,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 ClientPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -10898,6 +11009,25 @@ end
 function SET_CLIENT:FilterActive(Active)
 Active=Active or not(Active==false)
 self.Filter.Active=Active
+return self
+end
+function SET_CLIENT:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
 return self
 end
 function SET_CLIENT:FilterStart()
@@ -11027,6 +11157,17 @@ self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
 end
+if self.Filter.Zones then
+local MClientZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+local unit=MClient:GetClientGroupUnit()
+if unit and unit:IsInZone(Zone)then
+MClientZone=true
+end
+end
+MClientInclude=MClientInclude and MClientZone
+end
 self:T2(MClientInclude)
 return MClientInclude
 end
@@ -11041,6 +11182,7 @@ Categories=nil,
 Types=nil,
 Countries=nil,
 ClientPrefixes=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -11088,6 +11230,25 @@ Coalitions={Coalitions}
 end
 for CoalitionID,Coalition in pairs(Coalitions)do
 self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_PLAYER:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
 end
 return self
 end
@@ -11248,6 +11409,17 @@ end
 self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
+end
+if self.Filter.Zones then
+local MClientZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:T3("Zone:",ZoneName)
+local unit=MClient:GetClientGroupUnit()
+if unit and unit:IsInZone(Zone)then
+MClientZone=true
+end
+end
+MClientInclude=MClientInclude and MClientZone
 end
 self:T2(MClientInclude)
 return MClientInclude
@@ -11647,12 +11819,13 @@ end
 end
 do
 SET_ZONE={
-lassName="SET_ZONE",
+ClassName="SET_ZONE",
 Zones={},
 Filter={
 Prefixes=nil,
 },
-FilterMeta={},
+FilterMeta={
+},
 }
 function SET_ZONE:New()
 local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.ZONES))
@@ -11801,7 +11974,8 @@ Zones={},
 Filter={
 Prefixes=nil,
 },
-FilterMeta={},
+FilterMeta={
+},
 }
 function SET_ZONE_GOAL:New()
 local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.ZONES_GOAL))
@@ -11903,11 +12077,11 @@ self:T2(MZoneInclude)
 return MZoneInclude
 end
 function SET_ZONE_GOAL:OnEventNewZoneGoal(EventData)
-self:I({"New Zone Capture Coalition",EventData})
-self:I({"Zone Capture Coalition",EventData.ZoneGoal})
+self:T({"New Zone Capture Coalition",EventData})
+self:T({"Zone Capture Coalition",EventData.ZoneGoal})
 if EventData.ZoneGoal then
 if EventData.ZoneGoal and self:IsIncludeObject(EventData.ZoneGoal)then
-self:I({"Adding Zone Capture Coalition",EventData.ZoneGoal.ZoneName,EventData.ZoneGoal})
+self:T({"Adding Zone Capture Coalition",EventData.ZoneGoal.ZoneName,EventData.ZoneGoal})
 self:Add(EventData.ZoneGoal.ZoneName,EventData.ZoneGoal)
 end
 end
@@ -11933,6 +12107,274 @@ return Zone
 end
 end
 return nil
+end
+end
+do
+SET_OPSGROUP={
+ClassName="SET_OPSGROUP",
+Filter={
+Coalitions=nil,
+Categories=nil,
+Countries=nil,
+GroupPrefixes=nil,
+},
+FilterMeta={
+Coalitions={
+red=coalition.side.RED,
+blue=coalition.side.BLUE,
+neutral=coalition.side.NEUTRAL,
+},
+Categories={
+plane=Group.Category.AIRPLANE,
+helicopter=Group.Category.HELICOPTER,
+ground=Group.Category.GROUND,
+ship=Group.Category.SHIP,
+},
+},
+}
+function SET_OPSGROUP:New()
+local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.GROUPS))
+self:FilterActive(false)
+return self
+end
+function SET_OPSGROUP:GetAliveSet()
+local AliveSet=SET_OPSGROUP:New()
+for GroupName,GroupObject in pairs(self.Set)do
+local GroupObject=GroupObject
+if GroupObject and GroupObject:IsAlive()then
+AliveSet:Add(GroupName,GroupObject)
+end
+end
+return AliveSet.Set or{}
+end
+function SET_OPSGROUP:Add(ObjectName,Object)
+self:T({ObjectName=ObjectName,Object=Object})
+if self.Set[ObjectName]then
+self:Remove(ObjectName,true)
+end
+local object=nil
+if Object:IsInstanceOf("GROUP")then
+object=_DATABASE:FindOpsGroup(ObjectName)
+if not object then
+if Object:IsShip()then
+object=NAVYGROUP:New(Object)
+elseif Object:IsGround()then
+object=ARMYGROUP:New(Object)
+elseif Object:IsAir()then
+object=FLIGHTGROUP:New(Object)
+else
+env.error("ERROR: Unknown category of group object!")
+end
+end
+elseif Object:IsInstanceOf("OPSGROUP")then
+object=Object
+else
+env.error("ERROR: Object must be a GROUP or OPSGROUP!")
+end
+self.Set[ObjectName]=object
+table.insert(self.Index,ObjectName)
+self:Added(ObjectName,object)
+end
+function SET_OPSGROUP:AddGroup(group)
+local groupname=group:GetName()
+self:Add(groupname,group)
+return self
+end
+function SET_OPSGROUP:AddGroupsByName(AddGroupNames)
+local AddGroupNamesArray=(type(AddGroupNames)=="table")and AddGroupNames or{AddGroupNames}
+for AddGroupID,AddGroupName in pairs(AddGroupNamesArray)do
+self:Add(AddGroupName,GROUP:FindByName(AddGroupName))
+end
+return self
+end
+function SET_OPSGROUP:RemoveGroupsByName(RemoveGroupNames)
+local RemoveGroupNamesArray=(type(RemoveGroupNames)=="table")and RemoveGroupNames or{RemoveGroupNames}
+for RemoveGroupID,RemoveGroupName in pairs(RemoveGroupNamesArray)do
+self:Remove(RemoveGroupName)
+end
+return self
+end
+function SET_OPSGROUP:FindGroup(GroupName)
+local GroupFound=self.Set[GroupName]
+return GroupFound
+end
+function SET_OPSGROUP:FindFlightGroup(GroupName)
+local GroupFound=self:FindGroup(GroupName)
+return GroupFound
+end
+function SET_OPSGROUP:FindArmyGroup(GroupName)
+local GroupFound=self:FindGroup(GroupName)
+return GroupFound
+end
+function SET_OPSGROUP:FindNavyGroup(GroupName)
+local GroupFound=self:FindGroup(GroupName)
+return GroupFound
+end
+function SET_OPSGROUP:FilterCoalitions(Coalitions)
+if not self.Filter.Coalitions then
+self.Filter.Coalitions={}
+end
+if type(Coalitions)~="table"then
+Coalitions={Coalitions}
+end
+for CoalitionID,Coalition in pairs(Coalitions)do
+self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_OPSGROUP:FilterCategories(Categories)
+if not self.Filter.Categories then
+self.Filter.Categories={}
+end
+if type(Categories)~="table"then
+Categories={Categories}
+end
+for CategoryID,Category in pairs(Categories)do
+self.Filter.Categories[Category]=Category
+end
+return self
+end
+function SET_OPSGROUP:FilterCategoryGround()
+self:FilterCategories("ground")
+return self
+end
+function SET_OPSGROUP:FilterCategoryAirplane()
+self:FilterCategories("plane")
+return self
+end
+function SET_OPSGROUP:FilterCategoryAircraft()
+self:FilterCategories({"plane","helicopter"})
+return self
+end
+function SET_OPSGROUP:FilterCategoryHelicopter()
+self:FilterCategories("helicopter")
+return self
+end
+function SET_OPSGROUP:FilterCategoryShip()
+self:FilterCategories("ship")
+return self
+end
+function SET_OPSGROUP:FilterCountries(Countries)
+if not self.Filter.Countries then
+self.Filter.Countries={}
+end
+if type(Countries)~="table"then
+Countries={Countries}
+end
+for CountryID,Country in pairs(Countries)do
+self.Filter.Countries[Country]=Country
+end
+return self
+end
+function SET_OPSGROUP:FilterPrefixes(Prefixes)
+if not self.Filter.GroupPrefixes then
+self.Filter.GroupPrefixes={}
+end
+if type(Prefixes)~="table"then
+Prefixes={Prefixes}
+end
+for PrefixID,Prefix in pairs(Prefixes)do
+self.Filter.GroupPrefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_OPSGROUP:FilterActive(Active)
+Active=Active or not(Active==false)
+self.Filter.Active=Active
+return self
+end
+function SET_OPSGROUP:FilterStart()
+if _DATABASE then
+self:_FilterStart()
+self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
+self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
+end
+return self
+end
+function SET_OPSGROUP:Activate(Delay)
+local Set=self:GetSet()
+for GroupID,GroupData in pairs(Set)do
+local group=GroupData
+if group and group:IsAlive()==false then
+group:Activate(Delay)
+end
+end
+return self
+end
+function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
+self:F({Event})
+if Event.IniDCSUnit then
+local ObjectName,Object=self:FindInDatabase(Event)
+if ObjectName then
+if Event.IniDCSGroup:getSize()==1 then
+self:Remove(ObjectName)
+end
+end
+end
+end
+function SET_OPSGROUP:AddInDatabase(Event)
+if Event.IniObjectCategory==1 then
+if not self.Database[Event.IniDCSGroupName]then
+self.Database[Event.IniDCSGroupName]=GROUP:Register(Event.IniDCSGroupName)
+end
+end
+return Event.IniDCSGroupName,self.Database[Event.IniDCSGroupName]
+end
+function SET_OPSGROUP:FindInDatabase(Event)
+return Event.IniDCSGroupName,self.Database[Event.IniDCSGroupName]
+end
+function SET_OPSGROUP:ForEachGroup(IteratorFunction,...)
+self:ForEach(IteratorFunction,arg,self:GetSet())
+return self
+end
+function SET_OPSGROUP:IsIncludeObject(MGroup)
+local MGroupInclude=true
+if self.Filter.Active~=nil then
+local MGroupActive=false
+if self.Filter.Active==false or(self.Filter.Active==true and MGroup:IsActive()==true)then
+MGroupActive=true
+end
+MGroupInclude=MGroupInclude and MGroupActive
+end
+if self.Filter.Coalitions then
+local MGroupCoalition=false
+for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
+if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==MGroup:GetCoalition()then
+MGroupCoalition=true
+end
+end
+MGroupInclude=MGroupInclude and MGroupCoalition
+end
+if self.Filter.Categories then
+local MGroupCategory=false
+for CategoryID,CategoryName in pairs(self.Filter.Categories)do
+if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==MGroup:GetCategory()then
+MGroupCategory=true
+end
+end
+MGroupInclude=MGroupInclude and MGroupCategory
+end
+if self.Filter.Countries then
+local MGroupCountry=false
+for CountryID,CountryName in pairs(self.Filter.Countries)do
+if country.id[CountryName]==MGroup:GetCountry()then
+MGroupCountry=true
+end
+end
+MGroupInclude=MGroupInclude and MGroupCountry
+end
+if self.Filter.GroupPrefixes then
+local MGroupPrefix=false
+for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
+if string.find(MGroup:GetName(),GroupPrefix:gsub("-","%%-"),1)then
+MGroupPrefix=true
+end
+end
+MGroupInclude=MGroupInclude and MGroupPrefix
+end
+return MGroupInclude
 end
 end
 do
