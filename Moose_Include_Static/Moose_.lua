@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T18:41:02.0000000Z-a3cab7097a6088f583751c5168d1fbf22755c8c9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-12T12:53:04.0000000Z-456fcd38d05d609a02ae1cde1574b78c27dacb80 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9098,7 +9098,9 @@ end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
 self:F2({ObjectName=ObjectName})
 local TriggerEvent=true
-if NoTriggerEvent==false then TriggerEvent=false end
+if NoTriggerEvent==false then
+TriggerEvent=false
+end
 local Object=self.Set[ObjectName]
 if Object then
 for Index,Key in ipairs(self.Index)do
@@ -11824,8 +11826,7 @@ Zones={},
 Filter={
 Prefixes=nil,
 },
-FilterMeta={
-},
+FilterMeta={},
 }
 function SET_ZONE:New()
 local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.ZONES))
@@ -12563,11 +12564,11 @@ local Distance=((PointVec2Reference.x-self.x)^2+(PointVec2Reference.z-self.z)^2)
 self:T2(Distance)
 return Distance
 end
-function COORDINATE:Translate(Distance,Angle,Keepalt,Overwrite)
+function COORDINATE:Translate(Distance,Angle,KeepAltitude,Overwrite)
 local alpha=math.rad((Angle or 0))
 local x=Distance*math.cos(alpha)+self.x
 local z=Distance*math.sin(alpha)+self.z
-local y=Keepalt and self.y or land.getHeight({x=x,y=z})
+local y=KeepAltitude and self.y or land.getHeight({x=x,y=z})
 if Overwrite then
 self.x=x
 self.y=y
@@ -13162,50 +13163,50 @@ function COORDINATE:SmokeBlue()
 self:F2()
 self:Smoke(SMOKECOLOR.Blue)
 end
-function COORDINATE:BigSmokeAndFire(preset,density)
-self:F2({preset=preset,density=density})
-density=density or 0.5
-trigger.action.effectSmokeBig(self:GetVec3(),preset,density)
+function COORDINATE:BigSmokeAndFire(Preset,Density)
+self:F2({Preset=Preset,Density=Density})
+Density=Density or 0.5
+trigger.action.effectSmokeBig(self:GetVec3(),Preset,Density)
 end
-function COORDINATE:BigSmokeAndFireSmall(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density)
+function COORDINATE:BigSmokeAndFireSmall(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,Density)
 end
-function COORDINATE:BigSmokeAndFireMedium(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density)
+function COORDINATE:BigSmokeAndFireMedium(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,Density)
 end
-function COORDINATE:BigSmokeAndFireLarge(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density)
+function COORDINATE:BigSmokeAndFireLarge(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,Density)
 end
-function COORDINATE:BigSmokeAndFireHuge(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density)
+function COORDINATE:BigSmokeAndFireHuge(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,Density)
 end
-function COORDINATE:BigSmokeSmall(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density)
+function COORDINATE:BigSmokeSmall(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,Density)
 end
-function COORDINATE:BigSmokeMedium(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density)
+function COORDINATE:BigSmokeMedium(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,Density)
 end
-function COORDINATE:BigSmokeLarge(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density)
+function COORDINATE:BigSmokeLarge(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,Density)
 end
-function COORDINATE:BigSmokeHuge(density)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density)
+function COORDINATE:BigSmokeHuge(Density)
+self:F2({Density=Density})
+Density=Density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,Density)
 end
 function COORDINATE:Flare(FlareColor,Azimuth)
 self:F2({FlareColor})
@@ -16982,10 +16983,10 @@ return math.max(x,z),x,y,z
 end
 return 0,0,0,0
 end
-function POSITIONABLE:GetBoundingRadius(mindist)
+function POSITIONABLE:GetBoundingRadius(MinDist)
 self:F2()
 local Box=self:GetBoundingBox()
-local boxmin=mindist or 0
+local boxmin=MinDist or 0
 if Box then
 local X=Box.max.x-Box.min.x
 local Z=Box.max.z-Box.min.z
@@ -17121,10 +17122,10 @@ end
 BASE:E({"Cannot GetVelocityVec3",Positionable=self,Alive=self:IsAlive()})
 return nil
 end
-function POSITIONABLE:GetRelativeVelocity(positionable)
+function POSITIONABLE:GetRelativeVelocity(Positionable)
 self:F2(self.PositionableName)
 local v1=self:GetVelocityVec3()
-local v2=positionable:GetVelocityVec3()
+local v2=Positionable:GetVelocityVec3()
 local vtot=UTILS.VecAdd(v1,v2)
 return UTILS.VecNorm(vtot)
 end
