@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-11T18:41:21.0000000Z-abfe5ffc452f91679f99aa59fa5631f654d10849 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-12T18:30:00.0000000Z-ee4e562874e720bc133b10366b83aa45c08fe83a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -76724,7 +76724,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="1.0.0"
+CTLD.version="1.0.1"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -78456,6 +78456,8 @@ local Group=Unit:GetGroup()
 if Flare then
 unitcoord:Flare(FlareColor,90)
 else
+local height=unitcoord:GetLandHeight()+2
+unitcoord.y=height
 unitcoord:Smoke(SmokeColor)
 end
 return self
