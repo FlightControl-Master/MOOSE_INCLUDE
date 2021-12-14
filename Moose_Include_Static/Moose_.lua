@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T12:40:16.0000000Z-d7801b59e78678ef0e291716074af5bd8a0075ba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T16:28:16.0000000Z-ab9386636677fc4f5a261173e218f670102aedba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59298,7 +59298,7 @@ end
 elseif category==Group.Category.SHIP then
 auftrag=AUFTRAG.Type.ANTISHIP
 else
-self:E(self.lid.."ERROR: Unknown Group category!")
+self:T(self.lid.."ERROR: Unknown Group category!")
 end
 elseif airbase then
 auftrag=AUFTRAG.Type.BOMBRUNWAY
@@ -59896,7 +59896,7 @@ end
 end
 local fsmstate=self:GetState()
 if fsmstate~=self.status then
-self:E(self.lid..string.format("ERROR: FSM state %s != %s mission status!",fsmstate,self.status))
+self:T(self.lid..string.format("ERROR: FSM state %s != %s mission status!",fsmstate,self.status))
 end
 if self.verbose>=1 then
 local Cstart=UTILS.SecondsToClock(self.Tstart,true)
@@ -60010,7 +60010,7 @@ local groupdata=self:GetGroupData(opsgroup)
 if groupdata then
 groupdata.status=status
 else
-self:E(self.lid.."WARNING: Could not SET flight data for flight group. Setting status to DONE")
+self:T(self.lid.."WARNING: Could not SET flight data for flight group. Setting status to DONE")
 end
 end
 local isNotOver=self:IsNotOver()
@@ -60030,7 +60030,7 @@ local groupdata=self:GetGroupData(opsgroup)
 if groupdata then
 return groupdata.status
 else
-self:E(self.lid..string.format("WARNING: Could not GET groupdata for opsgroup %s. Returning status DONE.",opsgroup and opsgroup.groupname or"nil"))
+self:T(self.lid..string.format("WARNING: Could not GET groupdata for opsgroup %s. Returning status DONE.",opsgroup and opsgroup.groupname or"nil"))
 return AUFTRAG.GroupStatus.DONE
 end
 end
@@ -60048,7 +60048,7 @@ table.remove(self.legions,i)
 return self
 end
 end
-self:E(self.lid..string.format("ERROR: Legion %s not found and could not be removed!",Legion.alias))
+self:T(self.lid..string.format("ERROR: Legion %s not found and could not be removed!",Legion.alias))
 return self
 end
 function AUFTRAG:SetLegionStatus(Legion,Status)
@@ -60467,7 +60467,7 @@ elseif self.alert5Target then
 local coord=self.alert5Target:GetCoordinate()
 return coord
 else
-self:E(self.lid.."ERROR: Cannot get target coordinate!")
+self:T(self.lid.."ERROR: Cannot get target coordinate!")
 end
 return nil
 end
@@ -60483,7 +60483,7 @@ local TargetCoord=self:GetTargetCoordinate()
 if TargetCoord and FromCoord then
 return TargetCoord:Get2DDistance(FromCoord)
 else
-self:E(self.lid.."ERROR: TargetCoord or FromCoord does not exist in AUFTRAG:GetTargetDistance() function! Returning 0")
+self:T(self.lid.."ERROR: TargetCoord or FromCoord does not exist in AUFTRAG:GetTargetDistance() function! Returning 0")
 end
 return 0
 end
@@ -60731,7 +60731,7 @@ param.coordinate=self:GetObjective()
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 else
-self:E(self.lid..string.format("ERROR: Unknown mission task!"))
+self:T(self.lid..string.format("ERROR: Unknown mission task!"))
 return nil
 end
 if self.type==AUFTRAG.Type.ORBIT or
@@ -61635,7 +61635,7 @@ end
 self.lid=string.format("OPSGROUP %s | ",tostring(self.groupname))
 if self.group then
 if not self:IsExist()then
-self:E(self.lid.."ERROR: GROUP does not exist! Returning nil")
+self:T(self.lid.."ERROR: GROUP does not exist! Returning nil")
 return nil
 end
 end
@@ -62055,7 +62055,7 @@ else
 return self.coordinate
 end
 else
-self:E(self.lid.."WARNING: Cannot get coordinate!")
+self:T(self.lid.."WARNING: Cannot get coordinate!")
 end
 return nil
 end
@@ -62072,10 +62072,10 @@ local velvec3=unit:getVelocity()
 local vel=UTILS.VecNorm(velvec3)
 return vel
 else
-self:E(self.lid.."WARNING: Unit does not exist. Cannot get velocity!")
+self:T(self.lid.."WARNING: Unit does not exist. Cannot get velocity!")
 end
 else
-self:E(self.lid.."WARNING: Group does not exist. Cannot get velocity!")
+self:T(self.lid.."WARNING: Group does not exist. Cannot get velocity!")
 end
 return nil
 end
@@ -62097,7 +62097,7 @@ heading=math.deg(heading)
 return heading
 end
 else
-self:E(self.lid.."WARNING: Group does not exist. Cannot get heading!")
+self:T(self.lid.."WARNING: Group does not exist. Cannot get heading!")
 end
 return nil
 end
@@ -62114,7 +62114,7 @@ local pos=unit:getPosition()
 return pos.x,pos.y,pos.z
 end
 else
-self:E(self.lid.."WARNING: Group does not exist. Cannot get orientation!")
+self:T(self.lid.."WARNING: Group does not exist. Cannot get orientation!")
 end
 return nil
 end
@@ -62227,9 +62227,9 @@ self:T(self.lid.."Activating late activated group")
 self.group:Activate()
 self.isLateActivated=false
 elseif self:IsAlive()==true then
-self:E(self.lid.."WARNING: Activating group that is already activated")
+self:T(self.lid.."WARNING: Activating group that is already activated")
 else
-self:E(self.lid.."ERROR: Activating group that is does not exist!")
+self:T(self.lid.."ERROR: Activating group that is does not exist!")
 end
 end
 return self
@@ -62759,11 +62759,11 @@ local wp=self:GetWaypoint(wpindex)
 local istemp=wp.temp or wp.detour or wp.astar or wp.missionUID
 local N=#self.waypoints
 if N==1 then
-self:E(self.lid..string.format("ERROR: Cannot remove waypoint with index=%d! It is the only waypoint and a group needs at least ONE waypoint",wpindex))
+self:T(self.lid..string.format("ERROR: Cannot remove waypoint with index=%d! It is the only waypoint and a group needs at least ONE waypoint",wpindex))
 return self
 end
 if wpindex>N then
-self:E(self.lid..string.format("ERROR: Cannot remove waypoint with index=%d as there are only N=%d waypoints!",wpindex,N))
+self:T(self.lid..string.format("ERROR: Cannot remove waypoint with index=%d as there are only N=%d waypoints!",wpindex,N))
 return self
 end
 if wp and wp.marker then
@@ -62920,7 +62920,7 @@ end
 function OPSGROUP:ClearTasks()
 local hastask=self:HasTaskController()
 if self:IsAlive()and self.controller and self:HasTaskController()then
-self:I(self.lid..string.format("CLEARING Tasks"))
+self:T(self.lid..string.format("CLEARING Tasks"))
 self.controller:resetTask()
 end
 return self
@@ -63210,7 +63210,7 @@ local TaskFinal=self.group:TaskCombo({TaskControlled,TaskDone})
 self:PushTask(TaskFinal)
 elseif Task.type==OPSGROUP.TaskType.WAYPOINT then
 else
-self:E(self.lid.."ERROR: Unknown task type: ")
+self:T(self.lid.."ERROR: Unknown task type: ")
 end
 end
 if Mission then
@@ -63254,7 +63254,7 @@ self:TaskDone(Task)
 end
 else
 local text=string.format("WARNING: No (current) task to cancel!")
-self:E(self.lid..text)
+self:T(self.lid..text)
 end
 end
 function OPSGROUP:onbeforeTaskDone(From,Event,To,Task)
@@ -63509,7 +63509,7 @@ self:MissionStart(mission)
 end
 self.missionpaused=nil
 else
-self:E(self.lid.."ERROR: No mission to unpause!")
+self:T(self.lid.."ERROR: No mission to unpause!")
 end
 end
 function OPSGROUP:onafterMissionCancel(From,Event,To,Mission)
@@ -63970,7 +63970,7 @@ end
 if Target then
 self:SetLaserTarget(Target)
 else
-self:E(self.lid.."ERROR: No target provided for LASER!")
+self:T(self.lid.."ERROR: No target provided for LASER!")
 return false
 end
 local element=self:GetElementAlive()
@@ -63992,7 +63992,7 @@ return false
 end
 end
 else
-self:E(self.lid.."ERROR: No element alive for lasing")
+self:T(self.lid.."ERROR: No element alive for lasing")
 return false
 end
 return true
@@ -64105,14 +64105,14 @@ else
 self.spot.offsetTarget={x=0,2,z=0}
 end
 else
-self:E("WARNING: LASER target is not alive!")
+self:T("WARNING: LASER target is not alive!")
 return
 end
 elseif Target:IsInstanceOf("COORDINATE")then
 self.spot.TargetType=0
 self.spot.offsetTarget={x=0,y=0,z=0}
 else
-self:E(self.lid.."ERROR: LASER target should be a POSITIONABLE (GROUP, UNIT or STATIC) or a COORDINATE object!")
+self:T(self.lid.."ERROR: LASER target should be a POSITIONABLE (GROUP, UNIT or STATIC) or a COORDINATE object!")
 return
 end
 self.spot.vec3=UTILS.VecAdd(Target:GetVec3(),self.spot.offsetTarget)
@@ -64227,7 +64227,7 @@ end
 end
 end
 function OPSGROUP:onafterRespawn(From,Event,To,Template)
-self:I(self.lid.."Respawning group!")
+self:T(self.lid.."Respawning group!")
 local template=UTILS.DeepCopy(Template or self.template)
 template.lateActivation=false
 self:_Respawn(0,template)
@@ -64330,7 +64330,7 @@ end
 end
 function OPSGROUP:onbeforeStop(From,Event,To)
 if self:IsAlive()then
-self:E(self.lid..string.format("WARNING: Group is still alive! Will not stop the FSM. Use :Despawn() instead"))
+self:T(self.lid..string.format("WARNING: Group is still alive! Will not stop the FSM. Use :Despawn() instead"))
 return false
 end
 return true
@@ -64369,7 +64369,7 @@ if self:IsAlive()and not(self:IsDead()or self:IsStopped())then
 local life,life0=self:GetLifePoints()
 local state=self:GetState()
 local text=string.format("WARNING: Group is still alive! Current state=%s. Life points=%d/%d. Use OPSGROUP:Destroy() or OPSGROUP:Despawn() for a clean stop",state,life,life0)
-self:E(self.lid..text)
+self:T(self.lid..text)
 end
 _DATABASE.FLIGHTGROUPS[self.groupname]=nil
 self:I(self.lid.."STOPPED! Unhandled events, cleared scheduler and removed from _DATABASE")
@@ -64391,7 +64391,7 @@ end
 if text==""then
 text=" empty"
 end
-self:I(self.lid.."Cargo bay:"..text)
+self:T(self.lid.."Cargo bay:"..text)
 end
 if self.verbose>=3 then
 local text=""
@@ -64414,7 +64414,7 @@ text=text..string.format("\n  (%d) %s [%s]: %s, carrier=%s(%s), delivered=%s",j,
 end
 end
 if text~=""then
-self:I(self.lid.."Cargo queue:"..text)
+self:T(self.lid.."Cargo queue:"..text)
 end
 end
 if self.cargoTransport and self.cargoTransport:GetCarrierTransportStatus(self)==OPSTRANSPORT.Status.DELIVERED then
@@ -64588,7 +64588,7 @@ self:RedWeightCargo(CarrierElement.name,weight)
 end
 return true
 end
-self:E(self.lid.."ERROR: Group is not in cargo bay. Cannot remove it!")
+self:T(self.lid.."ERROR: Group is not in cargo bay. Cannot remove it!")
 return false
 end
 function OPSGROUP:_GetNextCargoTransport()
@@ -64752,7 +64752,7 @@ end
 end
 self:T3(self.lid..string.format("Unit=%s (reserved=%s): weight=%d, gewicht=%d",tostring(UnitName),tostring(IncludeReserved),weight,gewicht))
 if IncludeReserved==false and gewicht~=weight then
-self:E(self.lid..string.format("ERROR: FF weight!=gewicht: weight=%.1f, gewicht=%.1f",weight,gewicht))
+self:T(self.lid..string.format("ERROR: FF weight!=gewicht: weight=%.1f, gewicht=%.1f",weight,gewicht))
 end
 return gewicht
 end
@@ -64909,14 +64909,14 @@ end
 elseif self.isHelo then
 local waypoint=FLIGHTGROUP.AddWaypoint(self,Coordinate,nil,uid,UTILS.MetersToFeet(self.altitudeCruise),false);waypoint.detour=1
 else
-self:E(self.lid.."ERROR: Transportcarrier aircraft cannot land in Pickup zone! Specify a ZONE_AIRBASE as pickup zone")
+self:T(self.lid.."ERROR: Transportcarrier aircraft cannot land in Pickup zone! Specify a ZONE_AIRBASE as pickup zone")
 end
 if self.isHelo and self:IsLandedAt()then
 local Task=self:GetTaskCurrent()
 if Task then
 self:TaskCancel(Task)
 else
-self:E(self.lid.."ERROR: No current task but landed at?!")
+self:T(self.lid.."ERROR: No current task but landed at?!")
 end
 end
 if self:IsWaiting()then
@@ -65017,7 +65017,7 @@ else
 self:T(self.lid..string.format("WARNING: Loaded cargo but no current OPSTRANSPORT assignment!"))
 end
 else
-self:E(self.lid.."ERROR: Cargo has no carrier on Load event!")
+self:T(self.lid.."ERROR: Cargo has no carrier on Load event!")
 end
 end
 function OPSGROUP:onafterLoadingDone(From,Event,To)
@@ -65085,14 +65085,14 @@ end
 elseif self.isHelo then
 local waypoint=FLIGHTGROUP.AddWaypoint(self,Coordinate,nil,self:GetWaypointCurrent().uid,UTILS.MetersToFeet(self.altitudeCruise),false);waypoint.detour=1
 else
-self:E(self.lid.."ERROR: Aircraft (cargo carrier) cannot land in Deploy zone! Specify a ZONE_AIRBASE as deploy zone")
+self:T(self.lid.."ERROR: Aircraft (cargo carrier) cannot land in Deploy zone! Specify a ZONE_AIRBASE as deploy zone")
 end
 if self.isHelo and self:IsLandedAt()then
 local Task=self:GetTaskCurrent()
 if Task then
 self:TaskCancel(Task)
 else
-self:E(self.lid.."ERROR: No current task but landed at?!")
+self:T(self.lid.."ERROR: No current task but landed at?!")
 end
 end
 elseif self:IsArmygroup()then
@@ -65153,7 +65153,7 @@ self.cargoTransport.Ndelivered=self.cargoTransport.Ndelivered+1
 if carrier and carrierGroup then
 self:_TransferCargo(cargo.opsgroup,carrierGroup,carrier)
 elseif zone and zone:IsInstanceOf("ZONE_AIRBASE")and zone:GetAirbase():IsShip()then
-self:E(self.lid.."ERROR: Deploy/disembark zone is a ZONE_AIRBASE of a ship! Where to put the cargo? Dumping into the sea, sorry!")
+self:T(self.lid.."ERROR: Deploy/disembark zone is a ZONE_AIRBASE of a ship! Where to put the cargo? Dumping into the sea, sorry!")
 self:Unload(cargo.opsgroup)
 else
 if self.cargoTransport:GetDisembarkInUtero(self.cargoTZC)then
@@ -65234,7 +65234,7 @@ self:Unloaded(OpsGroup)
 OpsGroup:_RemoveMyCarrier()
 end
 function OPSGROUP:onafterUnloaded(From,Event,To,OpsGroupCargo)
-self:I(self.lid..string.format("Unloaded OPSGROUP %s",OpsGroupCargo:GetName()))
+self:T(self.lid..string.format("Unloaded OPSGROUP %s",OpsGroupCargo:GetName()))
 end
 function OPSGROUP:onafterUnloadingDone(From,Event,To)
 self:T(self.lid.."Cargo unloading done..")
@@ -65246,14 +65246,14 @@ local delivered=self:_CheckGoPickup(self.cargoTransport)
 if not delivered then
 self.cargoTZC=self.cargoTransport:_GetTransportZoneCombo(self)
 if self.cargoTZC then
-self:I(self.lid.."Unloaded: Still cargo left ==> Pickup")
+self:T(self.lid.."Unloaded: Still cargo left ==> Pickup")
 self:Pickup()
 else
-self:I(self.lid..string.format("WARNING: Not all cargo was delivered but could not get a transport zone combo ==> setting carrier state to NOT CARRIER"))
+self:T(self.lid..string.format("WARNING: Not all cargo was delivered but could not get a transport zone combo ==> setting carrier state to NOT CARRIER"))
 self:_NewCarrierStatus(OPSGROUP.CarrierStatus.NOTCARRIER)
 end
 else
-self:I(self.lid.."Unloaded: ALL cargo unloaded ==> Delivered (current)")
+self:T(self.lid.."Unloaded: ALL cargo unloaded ==> Delivered (current)")
 self:Delivered(self.cargoTransport)
 end
 end
@@ -65334,14 +65334,14 @@ end
 end
 function OPSGROUP:onbeforeBoard(From,Event,To,CarrierGroup,Carrier)
 if self:IsDead()then
-self:I(self.lid.."Group DEAD ==> Deny Board transition!")
+self:T(self.lid.."Group DEAD ==> Deny Board transition!")
 return false
 elseif CarrierGroup:IsDead()then
-self:I(self.lid.."Carrier Group DEAD ==> Deny Board transition!")
+self:T(self.lid.."Carrier Group DEAD ==> Deny Board transition!")
 self:_NewCargoStatus(OPSGROUP.CargoStatus.NOTCARGO)
 return false
 elseif Carrier.status==OPSGROUP.ElementStatus.DEAD then
-self:I(self.lid.."Carrier Element DEAD ==> Deny Board transition!")
+self:T(self.lid.."Carrier Element DEAD ==> Deny Board transition!")
 self:_NewCargoStatus(OPSGROUP.CargoStatus.NOTCARGO)
 return false
 end
@@ -65516,7 +65516,7 @@ local speed=self:GetSpeedToWaypoint(i)
 self:Cruise(speed)
 self:T(self.lid..string.format("Adinfinitum=TRUE ==> Goto WP index=%d at speed=%d knots",i,speed))
 else
-self:E(self.lid..string.format("WARNING: No waypoints left! Commanding a Full Stop"))
+self:T(self.lid..string.format("WARNING: No waypoints left! Commanding a Full Stop"))
 self:__FullStop(-1)
 end
 else
@@ -65533,7 +65533,7 @@ if#self.waypoints>0 then
 self:T(self.lid..string.format("NOT Passed final WP, #WP>0 ==> Update Route"))
 self:Cruise()
 else
-self:E(self.lid..string.format("WARNING: No waypoints left! Commanding a Full Stop"))
+self:T(self.lid..string.format("WARNING: No waypoints left! Commanding a Full Stop"))
 self:__FullStop(-1)
 end
 end
@@ -65560,17 +65560,17 @@ end
 if self.stuckTimestamp then
 local holdtime=Tnow-self.stuckTimestamp
 if holdtime>=5*60 and holdtime<10*60 then
-self:E(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
+self:T(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
 if self:IsReturning()then
 self:__RTZ(1)
 else
 self:__Cruise(1)
 end
 elseif holdtime>=10*60 and holdtime<30*60 then
-self:E(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
+self:T(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
 local mission=self:GetMissionCurrent()
 if mission then
-self:E(self.lid..string.format("WARNING: Cancelling mission %s [%s] due to being stuck",mission:GetName(),mission:GetType()))
+self:T(self.lid..string.format("WARNING: Cancelling mission %s [%s] due to being stuck",mission:GetName(),mission:GetType()))
 self:MissionCancel(mission)
 else
 if self:IsReturning()then
@@ -65580,7 +65580,7 @@ self:__Cruise(1)
 end
 end
 elseif holdtime>=30*60 then
-self:E(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
+self:T(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
 end
 end
 end
@@ -65809,7 +65809,7 @@ if#self.waypoints==1 then
 self:_PassedFinalWaypoint(true,"_InitWaypoints: #self.waypoints==1")
 end
 else
-self:E(self.lid.."WARNING: No waypoints initialized. Number of waypoints is 0!")
+self:T(self.lid.."WARNING: No waypoints initialized. Number of waypoints is 0!")
 end
 return self
 end
@@ -65827,7 +65827,7 @@ route={points=waypoints},
 }
 self:SetTask(DCSTask)
 else
-self:E(self.lid.."ERROR: Group is not alive! Cannot route group.")
+self:T(self.lid.."ERROR: Group is not alive! Cannot route group.")
 end
 end
 return self
@@ -65982,7 +65982,7 @@ self.group:OptionROE(self.option.ROE)
 self:T(self.lid..string.format("Setting current ROE=%d (%s)",self.option.ROE,self:_GetROEName(self.option.ROE)))
 end
 else
-self:E(self.lid.."WARNING: Cannot switch ROE! Group is not alive")
+self:T(self.lid.."WARNING: Cannot switch ROE! Group is not alive")
 end
 return self
 end
@@ -66019,7 +66019,7 @@ self.group:OptionROT(self.option.ROT)
 self:T(self.lid..string.format("Setting current ROT=%d (0=NoReaction, 1=Passive, 2=Evade, 3=ByPass, 4=AllowAbort)",self.option.ROT))
 end
 else
-self:E(self.lid.."WARNING: Cannot switch ROT! Group is not alive")
+self:T(self.lid.."WARNING: Cannot switch ROT! Group is not alive")
 end
 end
 return self
@@ -66045,7 +66045,7 @@ self.group:OptionAlarmStateGreen()
 elseif self.option.Alarm==2 then
 self.group:OptionAlarmStateRed()
 else
-self:E("ERROR: Unknown Alarm State! Setting to AUTO")
+self:T("ERROR: Unknown Alarm State! Setting to AUTO")
 self.group:OptionAlarmStateAuto()
 self.option.Alarm=0
 end
@@ -66053,7 +66053,7 @@ self:T(self.lid..string.format("Setting current Alarm State=%d (0=Auto, 1=Green,
 end
 end
 else
-self:E(self.lid.."WARNING: Cannot switch Alarm State! Group is not alive.")
+self:T(self.lid.."WARNING: Cannot switch Alarm State! Group is not alive.")
 end
 return self
 end
@@ -66082,7 +66082,7 @@ self.group:CommandEPLRS(self.option.EPLRS)
 self:T(self.lid..string.format("Setting current EPLRS=%s",tostring(self.option.EPLRS)))
 end
 else
-self:E(self.lid.."WARNING: Cannot switch Alarm State! Group is not alive")
+self:T(self.lid.."WARNING: Cannot switch Alarm State! Group is not alive")
 end
 return self
 end
@@ -66156,10 +66156,10 @@ self.tacan.BeaconUnit=unit
 self.tacan.On=true
 self:T(self.lid..string.format("Switching TACAN to Channel %d%s Morse %s on unit %s",self.tacan.Channel,self.tacan.Band,tostring(self.tacan.Morse),self.tacan.BeaconName))
 else
-self:E(self.lid.."ERROR: Cound not set TACAN! Unit is not alive")
+self:T(self.lid.."ERROR: Cound not set TACAN! Unit is not alive")
 end
 else
-self:E(self.lid.."ERROR: Cound not set TACAN! Group is not alive and not in utero any more")
+self:T(self.lid.."ERROR: Cound not set TACAN! Group is not alive and not in utero any more")
 end
 return self
 end
@@ -66229,7 +66229,7 @@ self.icls.BeaconUnit=unit
 self.icls.On=true
 self:T(self.lid..string.format("Switching ICLS to Channel %d Morse %s on unit %s",self.icls.Channel,tostring(self.icls.Morse),self.icls.BeaconName))
 else
-self:E(self.lid.."ERROR: Cound not set ICLS! Unit is not alive.")
+self:T(self.lid.."ERROR: Cound not set ICLS! Unit is not alive.")
 end
 end
 return self
@@ -66271,7 +66271,7 @@ self.radio.Modu=Modulation
 self.radio.On=true
 self:T(self.lid..string.format("Switching radio to frequency %.3f MHz %s",self.radio.Freq,UTILS.GetModulationName(self.radio.Modu)))
 else
-self:E(self.lid.."ERROR: Cound not set Radio! Group is not alive or not in utero any more")
+self:T(self.lid.."ERROR: Cound not set Radio! Group is not alive or not in utero any more")
 end
 return self
 end
@@ -66282,7 +66282,7 @@ self.group:SetOption(AI.Option.Air.id.SILENCE,true)
 self.radio.On=false
 self:T(self.lid..string.format("Switching radio OFF"))
 else
-self:E(self.lid.."ERROR: Radio can only be turned off for aircraft!")
+self:T(self.lid.."ERROR: Radio can only be turned off for aircraft!")
 end
 end
 return self
@@ -66298,7 +66298,7 @@ if self:IsFlightgroup()then
 self.group:SetOption(AI.Option.Air.id.FORMATION,Formation)
 elseif self.isArmygroup then
 else
-self:E(self.lid.."ERROR: Formation can only be set for aircraft or ground units!")
+self:T(self.lid.."ERROR: Formation can only be set for aircraft or ground units!")
 return self
 end
 self.option.Formation=Formation
@@ -66332,7 +66332,7 @@ element.callsign=element.unit:GetCallsign()
 end
 end
 else
-self:E(self.lid.."ERROR: Group is not alive and not in utero! Cannot switch callsign")
+self:T(self.lid.."ERROR: Group is not alive and not in utero! Cannot switch callsign")
 end
 return self
 end
@@ -66810,11 +66810,11 @@ self:T(self.lid.."WARNING: Coordinate is not a COORDINATE but a POSITIONABLE or 
 local coord=Object:GetCoordinate()
 return coord
 else
-self:E(self.lid.."ERROR: Coordinate is neither a COORDINATE nor any POSITIONABLE or ZONE!")
+self:T(self.lid.."ERROR: Coordinate is neither a COORDINATE nor any POSITIONABLE or ZONE!")
 end
 end
 else
-self:E(self.lid.."ERROR: Object passed is nil!")
+self:T(self.lid.."ERROR: Object passed is nil!")
 end
 return nil
 end
@@ -66941,7 +66941,7 @@ else
 return self.template
 end
 else
-self:E(self.lid..string.format("ERROR: No template was set yet!"))
+self:T(self.lid..string.format("ERROR: No template was set yet!"))
 end
 return nil
 end
@@ -78999,7 +78999,7 @@ local cgotable=self.Cargo_Troops
 local stcstable=self.Spawned_Cargo
 local statics=nil
 local statics={}
-self:I(self.lid.."Bulding Statics Table for Saving")
+self:T(self.lid.."Bulding Statics Table for Saving")
 for _,_cargo in pairs(stcstable)do
 local cargo=_cargo
 local object=cargo:GetPositionable()
