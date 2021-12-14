@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T08:50:13.0000000Z-ea926f173a5e245d79492fe28888f8f6f5d8b27b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T12:40:16.0000000Z-d7801b59e78678ef0e291716074af5bd8a0075ba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59905,7 +59905,7 @@ local targetname=self:GetTargetName()or"unknown"
 local Nlegions=#self.legions
 local commander=self.commander and self.statusCommander or"N/A"
 local chief=self.chief and self.statusChief or"N/A"
-self:I(self.lid..string.format("Status %s: Target=%s, T=%s-%s, assets=%d, groups=%d, targets=%d, legions=%d, commander=%s, chief=%s",
+self:T(self.lid..string.format("Status %s: Target=%s, T=%s-%s, assets=%d, groups=%d, targets=%d, legions=%d, commander=%s, chief=%s",
 self.status,targetname,Cstart,Cstop,#self.assets,Ngroups,Ntargets,Nlegions,commander,chief))
 end
 if self.verbose>=2 then
@@ -59960,6 +59960,7 @@ failed=true
 elseif successCondition then
 failed=false
 end
+if self.verbose>0 then
 local text=string.format("Evaluating mission:\n")
 text=text..string.format("Own casualties = %d/%d\n",self.Ncasualties,self.Nelements)
 text=text..string.format("Own losses     = %.1f %%\n",owndamage)
@@ -59975,6 +59976,7 @@ text=text..string.format("--------------------------\n")
 text=text..string.format("Final Success  = %s\n",tostring(not failed))
 text=text..string.format("=========================")
 self:I(self.lid..text)
+end
 if failed then
 self:Failed()
 else
@@ -60161,7 +60163,7 @@ local unitname=EventData.IniUnitName
 for _,_groupdata in pairs(self.groupdata)do
 local groupdata=_groupdata
 if groupdata and groupdata.opsgroup and groupdata.opsgroup.groupname==EventData.IniGroupName then
-self:I(self.lid..string.format("UNIT LOST event for opsgroup %s unit %s",groupdata.opsgroup.groupname,EventData.IniUnitName))
+self:T(self.lid..string.format("UNIT LOST event for opsgroup %s unit %s",groupdata.opsgroup.groupname,EventData.IniUnitName))
 end
 end
 end
@@ -60207,7 +60209,7 @@ end
 end
 function AUFTRAG:onafterAssetDead(From,Event,To,Asset)
 local N=self:CountOpsGroups()
-self:I(self.lid..string.format("Asset %s dead! Number of ops groups remaining %d",tostring(Asset.spawngroupname),N))
+self:T(self.lid..string.format("Asset %s dead! Number of ops groups remaining %d",tostring(Asset.spawngroupname),N))
 if N==0 then
 if self:IsNotOver()then
 self:Cancel()
@@ -60218,7 +60220,7 @@ self:DelAsset(Asset)
 end
 function AUFTRAG:onafterCancel(From,Event,To)
 local Ngroups=self:CountOpsGroups()
-self:I(self.lid..string.format("CANCELLING mission in status %s. Will wait for %d groups to report mission DONE before evaluation",self.status,Ngroups))
+self:T(self.lid..string.format("CANCELLING mission in status %s. Will wait for %d groups to report mission DONE before evaluation",self.status,Ngroups))
 self.Tover=timer.getAbsTime()
 self.Nrepeat=self.repeated
 self.NrepeatFailure=self.repeatedFailure
@@ -60273,10 +60275,10 @@ local repeatme=self.repeatedSuccess<self.NrepeatSuccess or self.repeated<self.Nr
 if repeatme then
 self.repeatedSuccess=self.repeatedSuccess+1
 local N=math.max(self.NrepeatSuccess,self.Nrepeat)
-self:I(self.lid..string.format("Mission SUCCESS! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
+self:T(self.lid..string.format("Mission SUCCESS! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
 self:Repeat()
 else
-self:I(self.lid..string.format("Mission SUCCESS! Number of max repeats %d reached  ==> Stopping mission!",self.repeated+1))
+self:T(self.lid..string.format("Mission SUCCESS! Number of max repeats %d reached  ==> Stopping mission!",self.repeated+1))
 self:Stop()
 end
 end
@@ -60293,10 +60295,10 @@ local repeatme=self.repeatedFailure<self.NrepeatFailure or self.repeated<self.Nr
 if repeatme then
 self.repeatedFailure=self.repeatedFailure+1
 local N=math.max(self.NrepeatFailure,self.Nrepeat)
-self:I(self.lid..string.format("Mission FAILED! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
+self:T(self.lid..string.format("Mission FAILED! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
 self:Repeat()
 else
-self:I(self.lid..string.format("Mission FAILED! Number of max repeats %d reached ==> Stopping mission!",self.repeated+1))
+self:T(self.lid..string.format("Mission FAILED! Number of max repeats %d reached ==> Stopping mission!",self.repeated+1))
 self:Stop()
 end
 end
@@ -60362,7 +60364,7 @@ self.DCStask=self:GetDCSMissionTask()
 self:__Status(-30)
 end
 function AUFTRAG:onafterStop(From,Event,To)
-self:I(self.lid..string.format("STOPPED mission in status=%s. Removing missions from queues. Stopping CallScheduler!",self.status))
+self:T(self.lid..string.format("STOPPED mission in status=%s. Removing missions from queues. Stopping CallScheduler!",self.status))
 if self.chief then
 self.chief:RemoveMission(self)
 end
@@ -67284,7 +67286,7 @@ self:T(self.lid.."Starting uncontrolled group")
 self.group:StartUncontrolled(_delay)
 self.isUncontrolled=false
 else
-self:E(self.lid.."ERROR: Could not start uncontrolled group as it is NOT alive!")
+self:T(self.lid.."ERROR: Could not start uncontrolled group as it is NOT alive!")
 end
 end
 return self
@@ -67335,7 +67337,7 @@ end
 if isdead then
 local text=string.format("Element %s is dead at t=%.3f but has status %s! Maybe despawned without notice or landed at a too small airbase. Calling ElementDead in 60 sec to give other events a chance",
 tostring(element.name),timer.getTime(),tostring(element.status))
-self:E(self.lid..text)
+self:T(self.lid..text)
 self:__ElementDead(60,element)
 end
 end
@@ -67436,7 +67438,7 @@ end
 self:T3(self.lid..string.format("Fuel consumption %s F=%.1f: dF=%.3f  dF/min=%.3f ==> Tfuel=%.1f min",element.name,fuel*100,dFrel*100,dFreldt*100*60,Tfuel/60))
 element.fuelrel=fuel
 end
-self:I(self.lid..string.format("Travelled ds=%.1f km dt=%.1f s ==> v=%.1f knots. Fuel left for %.1f min",self.traveldist/1000,dt,UTILS.MpsToKnots(v),TmaxFuel/60))
+self:T(self.lid..string.format("Travelled ds=%.1f km dt=%.1f s ==> v=%.1f knots. Fuel left for %.1f min",self.traveldist/1000,dt,UTILS.MpsToKnots(v),TmaxFuel/60))
 end
 if alive and self.group:IsAirborne(true)then
 local fuelmin=self:GetFuelMin()
@@ -67849,10 +67851,10 @@ local trepeat=nil
 if self:IsAlive()then
 self:T3(self.lid.."Update route possible. Group is ALIVE")
 elseif self:IsDead()then
-self:E(self.lid.."Update route denied. Group is DEAD!")
+self:T(self.lid.."Update route denied. Group is DEAD!")
 allowed=false
 elseif self:IsInUtero()then
-self:E(self.lid.."Update route denied. Group is INUTERO!")
+self:T(self.lid.."Update route denied. Group is INUTERO!")
 allowed=false
 else
 self:T(self.lid.."Update route denied ==> checking back in 5 sec")
@@ -67870,16 +67872,16 @@ end
 allowed=false
 end
 if n and n<1 then
-self:E(self.lid.."Update route denied because waypoint n<1!")
+self:T(self.lid.."Update route denied because waypoint n<1!")
 allowed=false
 end
 if not self.currentwp then
-self:E(self.lid.."Update route denied because self.currentwp=nil!")
+self:T(self.lid.."Update route denied because self.currentwp=nil!")
 allowed=false
 end
 local Nn=n or self.currentwp+1
 if not Nn or Nn<1 then
-self:E(self.lid.."Update route denied because N=nil or N<1")
+self:T(self.lid.."Update route denied because N=nil or N<1")
 trepeat=-5
 allowed=false
 end
@@ -67894,7 +67896,7 @@ elseif task.description and task.description=="Task_Land_At"then
 self:T2(self.lid.."Allowing update route for Task: Task_Land_At")
 else
 local taskname=task and task.description or"No description"
-self:E(self.lid..string.format("WARNING: Update route denied because taskcurrent=%d>0! Task description = %s",self.taskcurrent,tostring(taskname)))
+self:T(self.lid..string.format("WARNING: Update route denied because taskcurrent=%d>0! Task description = %s",self.taskcurrent,tostring(taskname)))
 allowed=false
 end
 else
@@ -68024,19 +68026,19 @@ if self:IsAlive()then
 local allowed=true
 local Tsuspend=nil
 if airbase==nil then
-self:E(self.lid.."ERROR: Airbase is nil in RTB() call!")
+self:T(self.lid.."ERROR: Airbase is nil in RTB() call!")
 allowed=false
 end
 if airbase and airbase:GetCoalition()~=self.group:GetCoalition()and airbase:GetCoalition()>0 then
-self:E(self.lid..string.format("ERROR: Wrong airbase coalition %d in RTB() call! We allow only same as group %d or neutral airbases 0",airbase:GetCoalition(),self.group:GetCoalition()))
+self:T(self.lid..string.format("ERROR: Wrong airbase coalition %d in RTB() call! We allow only same as group %d or neutral airbases 0",airbase:GetCoalition(),self.group:GetCoalition()))
 return false
 end
 if self.currbase and self.currbase:GetName()==airbase:GetName()then
-self:E(self.lid.."WARNING: Currbase is already same as RTB airbase. RTB canceled!")
+self:T(self.lid.."WARNING: Currbase is already same as RTB airbase. RTB canceled!")
 return false
 end
 if self:IsLanded()then
-self:E(self.lid.."WARNING: Flight has already landed. RTB canceled!")
+self:T(self.lid.."WARNING: Flight has already landed. RTB canceled!")
 return false
 end
 if not self.group:IsAirborne(true)then
@@ -68048,7 +68050,7 @@ if groupspeed<=1 and not self:IsParking()then
 self.RTBRecallCount=self.RTBRecallCount+1
 end
 if self.RTBRecallCount>6 then
-self:I(self.lid..string.format("WARNING: Group [%s] is not moving and was called RTB %d times. Assuming a problem and despawning!",self:GetState(),self.RTBRecallCount))
+self:T(self.lid..string.format("WARNING: Group [%s] is not moving and was called RTB %d times. Assuming a problem and despawning!",self:GetState(),self.RTBRecallCount))
 self.RTBRecallCount=0
 self:Despawn(5)
 return
@@ -68057,22 +68059,22 @@ end
 if self:IsFuelGood()then
 local Ntot,Nsched,Nwp=self:CountRemainingTasks()
 if self.taskcurrent>0 then
-self:I(self.lid..string.format("WARNING: Got current task ==> RTB event is suspended for 10 sec"))
+self:T(self.lid..string.format("WARNING: Got current task ==> RTB event is suspended for 10 sec"))
 Tsuspend=-10
 allowed=false
 end
 if Nsched>0 then
-self:I(self.lid..string.format("WARNING: Still got %d SCHEDULED tasks in the queue ==> RTB event is suspended for 10 sec",Nsched))
+self:T(self.lid..string.format("WARNING: Still got %d SCHEDULED tasks in the queue ==> RTB event is suspended for 10 sec",Nsched))
 Tsuspend=-10
 allowed=false
 end
 if Nwp>0 then
-self:I(self.lid..string.format("WARNING: Still got %d WAYPOINT tasks in the queue ==> RTB event is suspended for 10 sec",Nwp))
+self:T(self.lid..string.format("WARNING: Still got %d WAYPOINT tasks in the queue ==> RTB event is suspended for 10 sec",Nwp))
 Tsuspend=-10
 allowed=false
 end
 if self.Twaiting and self.dTwait then
-self:I(self.lid..string.format("WARNING: Group is Waiting for a specific duration ==> RTB event is canceled",Nwp))
+self:T(self.lid..string.format("WARNING: Group is Waiting for a specific duration ==> RTB event is canceled",Nwp))
 allowed=false
 end
 end
@@ -68081,7 +68083,7 @@ self:__RTB(Tsuspend,airbase,SpeedTo,SpeedHold)
 end
 return allowed
 else
-self:E(self.lid.."WARNING: Group is not alive! RTB call not allowed.")
+self:T(self.lid.."WARNING: Group is not alive! RTB call not allowed.")
 return false
 end
 end
@@ -68104,36 +68106,36 @@ if self:IsAlive()then
 local allowed=true
 local Tsuspend=nil
 if airbase==nil then
-self:E(self.lid.."ERROR: Airbase is nil in LandAtAirase() call!")
+self:T(self.lid.."ERROR: Airbase is nil in LandAtAirase() call!")
 allowed=false
 end
 if airbase and airbase:GetCoalition()~=self.group:GetCoalition()and airbase:GetCoalition()>0 then
-self:E(self.lid..string.format("ERROR: Wrong airbase coalition %d in LandAtAirbase() call! We allow only same as group %d or neutral airbases 0",airbase:GetCoalition(),self.group:GetCoalition()))
+self:T(self.lid..string.format("ERROR: Wrong airbase coalition %d in LandAtAirbase() call! We allow only same as group %d or neutral airbases 0",airbase:GetCoalition(),self.group:GetCoalition()))
 return false
 end
 if self.currbase and self.currbase:GetName()==airbase:GetName()then
-self:E(self.lid.."WARNING: Currbase is already same as LandAtAirbase airbase. LandAtAirbase canceled!")
+self:T(self.lid.."WARNING: Currbase is already same as LandAtAirbase airbase. LandAtAirbase canceled!")
 return false
 end
 if self:IsLanded()then
-self:E(self.lid.."WARNING: Flight has already landed. LandAtAirbase canceled!")
+self:T(self.lid.."WARNING: Flight has already landed. LandAtAirbase canceled!")
 return false
 end
 if self:IsParking()then
 allowed=false
 Tsuspend=-30
-self:E(self.lid.."WARNING: Flight is parking. LandAtAirbase call delayed by 30 sec")
+self:T(self.lid.."WARNING: Flight is parking. LandAtAirbase call delayed by 30 sec")
 elseif self:IsTaxiing()then
 allowed=false
 Tsuspend=-1
-self:E(self.lid.."WARNING: Flight is parking. LandAtAirbase call delayed by 1 sec")
+self:T(self.lid.."WARNING: Flight is parking. LandAtAirbase call delayed by 1 sec")
 end
 if Tsuspend and not allowed then
 self:__LandAtAirbase(Tsuspend,airbase)
 end
 return allowed
 else
-self:E(self.lid.."WARNING: Group is not alive! LandAtAirbase call not allowed")
+self:T(self.lid.."WARNING: Group is not alive! LandAtAirbase call not allowed")
 return false
 end
 end
@@ -68208,7 +68210,7 @@ function FLIGHTGROUP:onbeforeWait(From,Event,To,Duration,Altitude,Speed)
 local allowed=true
 local Tsuspend=nil
 if self.taskcurrent>0 and not self:IsLandedAt()then
-self:I(self.lid..string.format("WARNING: Got current task ==> WAIT event is suspended for 30 sec!"))
+self:T(self.lid..string.format("WARNING: Got current task ==> WAIT event is suspended for 30 sec!"))
 Tsuspend=-30
 allowed=false
 end
@@ -68313,7 +68315,7 @@ table.insert(DCSTasks)
 end
 DCStask=self:GetGroup():TaskCombo(DCSTasks)
 else
-self:E("ERROR: unknown Target in EngageTarget! Needs to be a UNIT, STATIC, GROUP, SET_UNIT or SET_GROUP")
+self:T("ERROR: unknown Target in EngageTarget! Needs to be a UNIT, STATIC, GROUP, SET_UNIT or SET_GROUP")
 return
 end
 local Task=self:NewTaskScheduled(DCStask,1,"Engage_Target",0)
@@ -68429,7 +68431,7 @@ local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
 if#units~=size0 then
-self:E(self.lid..string.format("ERROR: Got #units=%d but group consists of %d units!",#units,size0))
+self:T(self.lid..string.format("ERROR: Got #units=%d but group consists of %d units!",#units,size0))
 end
 for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
@@ -68836,7 +68838,7 @@ end
 end
 end
 if not gotit then
-self:E(self.lid..string.format("WARNING: No free parking spot for element %s",element.name))
+self:T(self.lid..string.format("WARNING: No free parking spot for element %s",element.name))
 return nil
 end
 end
@@ -69907,16 +69909,16 @@ end
 end
 function ARMYGROUP:onbeforeUpdateRoute(From,Event,To,n,N,Speed,Formation)
 if self:IsWaiting()then
-self:E(self.lid.."Update route denied. Group is WAIRING!")
+self:T(self.lid.."Update route denied. Group is WAIRING!")
 return false
 elseif self:IsInUtero()then
-self:E(self.lid.."Update route denied. Group is INUTERO!")
+self:T(self.lid.."Update route denied. Group is INUTERO!")
 return false
 elseif self:IsDead()then
-self:E(self.lid.."Update route denied. Group is DEAD!")
+self:T(self.lid.."Update route denied. Group is DEAD!")
 return false
 elseif self:IsStopped()then
-self:E(self.lid.."Update route denied. Group is STOPPED!")
+self:T(self.lid.."Update route denied. Group is STOPPED!")
 return false
 elseif self:IsHolding()then
 self:T(self.lid.."Update route denied. Group is holding position!")
@@ -69994,7 +69996,7 @@ self:T(self.lid..string.format("Updateing route: WP %d-->%d (%d/%d), Speed=%.1f 
 self.currentwp,n,#waypoints,#self.waypoints,UTILS.MpsToKnots(self.speedWp),tostring(self.option.Formation)))
 self:Route(waypoints)
 else
-self:E(self.lid..string.format("WARNING: Passed final WP when UpdateRoute() ==> Full Stop!"))
+self:T(self.lid..string.format("WARNING: Passed final WP when UpdateRoute() ==> Full Stop!"))
 self:FullStop()
 end
 end
@@ -70092,7 +70094,7 @@ local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
 wp.detour=0
 end
 else
-self:E(self.lid.."ERROR: No RTZ zone given!")
+self:T(self.lid.."ERROR: No RTZ zone given!")
 end
 end
 function ARMYGROUP:onafterReturned(From,Event,To)
@@ -70144,7 +70146,7 @@ local dt=nil
 local allowed=true
 local ammo=self:GetAmmoTot()
 if ammo.Total==0 then
-self:E(self.lid.."WARNING: Cannot engage TARGET because no ammo left!")
+self:T(self.lid.."WARNING: Cannot engage TARGET because no ammo left!")
 return false
 end
 if self.currentmission and self.currentmission>0 then
@@ -70268,7 +70270,7 @@ local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
 if#units~=size0 then
-self:E(self.lid..string.format("ERROR: Got #units=%d but group consists of %d units!",#units,size0))
+self:T(self.lid..string.format("ERROR: Got #units=%d but group consists of %d units!",#units,size0))
 end
 for _,unit in pairs(units)do
 local unitname=unit:GetName()
@@ -70279,14 +70281,14 @@ return self
 end
 function ARMYGROUP:SwitchFormation(Formation,Permanently,NoRouteUpdate)
 if self:IsAlive()or self:IsInUtero()then
-Formation=Formation or self.optionDefault.Formation
+Formation=Formation or(self.optionDefault.Formation or"Off road")
 Permanently=Permanently or false
 if Permanently then
 self.formationPerma=Formation
 else
 self.formationPerma=nil
 end
-self.option.Formation=Formation
+self.option.Formation=Formation or"Off road"
 if self:IsInUtero()then
 self:T(self.lid..string.format("Will switch formation to %s (permanently=%s) when group is spawned",self.option.Formation,tostring(Permanently)))
 else
