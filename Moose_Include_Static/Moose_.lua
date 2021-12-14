@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-13T15:52:01.0000000Z-058c750bc6987890b47e5b556f1b893dea003f23 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T08:50:34.0000000Z-78fab9ab0c75e5c4a04d58eae8aefcf637f3f611 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58710,7 +58710,7 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="0.1.12r6"
+CSAR.version="1.0.1r1"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -58784,6 +58784,7 @@ self.loadDistance=75
 self.extractDistance=500
 self.loadtimemax=135
 self.radioSound="beacon.ogg"
+self.beaconRefresher=29
 self.allowFARPRescue=true
 self.FARPRescueDistance=1000
 self.max_units=6
@@ -59875,7 +59876,10 @@ end
 function CSAR:onbeforeStatus(From,Event,To)
 self:T({From,Event,To})
 self:_AddMedevacMenuItem()
-self:_RefreshRadioBeacons()
+if not self.BeaconTimer or(self.BeaconTimer and not self.BeaconTimer:IsRunning())then
+self.BeaconTimer=TIMER:New(self._RefreshRadioBeacons,self)
+self.BeaconTimer:Start(2,self.beaconRefresher)
+end
 self:_CheckDownedPilotTable()
 for _,_sar in pairs(self.csarUnits)do
 local PilotTable=self.downedPilots
