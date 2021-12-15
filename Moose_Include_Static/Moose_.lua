@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T16:28:16.0000000Z-ab9386636677fc4f5a261173e218f670102aedba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-15T12:46:33.0000000Z-07e00a8fafbb4ea33df66e80408a6332333c587a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2302,7 +2302,11 @@ UTILS.MpsToKnots=function(mps)
 return mps*1.94384
 end
 UTILS.KnotsToMps=function(knots)
+if type(knots)=="number"then
 return knots/1.94384
+else
+return 0
+end
 end
 UTILS.CelciusToFarenheit=function(Celcius)
 return Celcius*9/5+32
@@ -57130,7 +57134,7 @@ local unitname=tostring(EventData.IniUnitName)
 if EventData.IniGroupName~=self.helo:GetName()then
 local text=string.format("Unit %s crashed or ejected.",unitname)
 MESSAGE:New(text,10,"DEBUG"):ToAllIf(self.Debug)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local coord=unit:GetCoordinate()
 if coord and self.rescuezone:IsCoordinateInZone(coord)then
 if self.Debug then
@@ -69927,7 +69931,7 @@ end
 return true
 end
 function ARMYGROUP:onafterUpdateRoute(From,Event,To,n,N,Speed,Formation)
-local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%s, Formation=%s",self:GetState(),tostring(n),tostring(N),tostring(Speed),tostring(Formation))
+local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%d, Formation=%s",self:GetState(),tostring(n),tostring(N),tonumber(Speed),tostring(Formation))
 self:T(self.lid..text)
 n=n or self:GetWaypointIndexNext(self.adinfinitum)
 N=N or#self.waypoints
@@ -69938,7 +69942,7 @@ for i=n,#self.waypoints do
 local wp=UTILS.DeepCopy(self.waypoints[i])
 self:T({wp})
 if Speed then
-wp.speed=UTILS.KnotsToMps(Speed)
+wp.speed=UTILS.KnotsToMps(tonumber(Speed))
 else
 if wp.speed<0.1 then
 wp.speed=UTILS.KmphToMps(self.speedCruise)
@@ -80870,7 +80874,7 @@ end
 function AI_AIR:onafterRTB(AIGroup,From,Event,To)
 self:F({AIGroup,From,Event,To})
 if AIGroup and AIGroup:IsAlive()then
-self:I("Group "..AIGroup:GetName().." ... RTB! ( "..self:GetState().." )")
+self:T("Group "..AIGroup:GetName().." ... RTB! ( "..self:GetState().." )")
 self:ClearTargetDistance()
 local EngageRoute={}
 local FromCoord=AIGroup:GetCoordinate()
