@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-14T08:50:34.0000000Z-78fab9ab0c75e5c4a04d58eae8aefcf637f3f611 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-15T12:46:07.0000000Z-9c5561921bebed89194997bb327fb63eb97437fa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2207,7 +2207,11 @@ UTILS.MpsToKnots=function(mps)
 return mps*1.94384
 end
 UTILS.KnotsToMps=function(knots)
+if type(knots)=="number"then
 return knots/1.94384
+else
+return 0
+end
 end
 UTILS.CelsiusToFahrenheit=function(Celsius)
 return Celsius*9/5+32
@@ -54337,7 +54341,7 @@ local unitname=tostring(EventData.IniUnitName)
 if EventData.IniGroupName~=self.helo:GetName()then
 local text=string.format("Unit %s crashed or ejected.",unitname)
 MESSAGE:New(text,10,"DEBUG"):ToAllIf(self.Debug)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local coord=unit:GetCoordinate()
 if coord and self.rescuezone:IsCoordinateInZone(coord)then
 if self.Debug then
@@ -60270,7 +60274,7 @@ end
 function AI_AIR:onafterRTB(AIGroup,From,Event,To)
 self:F({AIGroup,From,Event,To})
 if AIGroup and AIGroup:IsAlive()then
-self:I("Group "..AIGroup:GetName().." ... RTB! ( "..self:GetState().." )")
+self:T("Group "..AIGroup:GetName().." ... RTB! ( "..self:GetState().." )")
 self:ClearTargetDistance()
 local EngageRoute={}
 local FromCoord=AIGroup:GetCoordinate()
