@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T08:07:24.0000000Z-2694321256dbe14c0e0b3bf3211493a5641064eb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T08:07:32.0000000Z-607c52c0b773a1e8b8adcededacd4230501dabc1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58927,7 +58927,9 @@ local freq=freq/1000
 for i=1,10 do
 math.random(i,10000)
 end
-if point:IsSurfaceTypeWater()then point.y=0 end
+if point:IsSurfaceTypeWater()then
+point.y=0
+end
 local template=self.template
 local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
 local coalition=self.coalition
@@ -58950,8 +58952,8 @@ if immortalcrew then
 local _setImmortal={
 id='SetImmortal',
 params={
-value=true
-}
+value=true,
+},
 }
 group:SetCommand(_setImmortal)
 end
@@ -58959,8 +58961,8 @@ if invisiblecrew then
 local _setInvisible={
 id='SetInvisible',
 params={
-value=true
-}
+value=true,
+},
 }
 group:SetCommand(_setInvisible)
 end
@@ -58974,7 +58976,9 @@ self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessa
 local template=self.template
 if not _freq then
 _freq=self:_GenerateADFFrequency()
-if not _freq then _freq=333000 end
+if not _freq then
+_freq=333000
+end
 end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"Pilot"
@@ -59334,14 +59338,7 @@ return true
 end
 local found,downedgrouptable=self:_CheckNameInDownedPilots(_woundedGroupName)
 local grouptable=downedgrouptable
-self.inTransitGroups[_heliName][_woundedGroupName]=
-{
-originalUnit=grouptable.originalUnit,
-woundedGroup=_woundedGroupName,
-side=self.coalition,
-desc=grouptable.desc,
-player=grouptable.player,
-}
+self.inTransitGroups[_heliName][_woundedGroupName]={originalUnit=grouptable.originalUnit,woundedGroup=_woundedGroupName,side=self.coalition,desc=grouptable.desc,player=grouptable.player}
 _woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
@@ -59420,7 +59417,9 @@ end
 if _heliUnit:InAir()and _unitsInHelicopter+1<=_maxUnits then
 if _distance<self.rescuehoverdistance then
 local leaderheight=_woundedLeader:GetHeight()
-if leaderheight<0 then leaderheight=0 end
+if leaderheight<0 then
+leaderheight=0
+end
 local _height=_heliUnit:GetHeight()-leaderheight
 if _height<=self.rescuehoverheight then
 local _time=self.hoverStatus[_lookupKeyHeli]
@@ -59626,7 +59625,9 @@ return
 end
 local _closest=self:_GetClosestDownedPilot(_heli)
 local smokedist=8000
-if self.approachdist_far>smokedist then smokedist=self.approachdist_far end
+if self.approachdist_far>smokedist then
+smokedist=self.approachdist_far
+end
 if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
@@ -59668,7 +59669,9 @@ if _heli==nil then
 return
 end
 local smokedist=8000
-if smokedist<self.approachdist_far then smokedist=self.approachdist_far end
+if smokedist<self.approachdist_far then
+smokedist=self.approachdist_far
+end
 local _closest=self:_GetClosestDownedPilot(_heli)
 if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
@@ -59836,9 +59839,13 @@ self:T(self.lid.." _GetClockDirection"..tostring(Angle).." "..tostring(_heading)
 local clock=12
 if _heading then
 local Aspect=Angle-_heading
-if Aspect==0 then Aspect=360 end
+if Aspect==0 then
+Aspect=360
+end
 clock=math.abs(UTILS.Round((Aspect/30),0))
-if clock==0 then clock=12 end
+if clock==0 then
+clock=12
+end
 end
 return clock
 end
@@ -59974,8 +59981,7 @@ PilotsBoarded=PilotsBoarded+1
 end
 end
 if self.verbose>0 then
-local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d (max %d) | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",
-self.lid,NumberOfSARPilots,PilotsInFieldN,self.maxdownedpilots,PilotsBoarded,self.rescues,self.rescuedpilots)
+local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d (max %d) | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",self.lid,NumberOfSARPilots,PilotsInFieldN,self.maxdownedpilots,PilotsBoarded,self.rescues,self.rescuedpilots)
 self:T(text)
 if self.verbose<2 then
 self:I(text)
