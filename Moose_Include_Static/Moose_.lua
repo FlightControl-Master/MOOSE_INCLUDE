@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-15T12:46:07.0000000Z-9c5561921bebed89194997bb327fb63eb97437fa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T08:07:13.0000000Z-e8e790102af422b4c8f000431a750058d24913c0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4168,11 +4168,11 @@ Scheduler=nil,
 }
 BASE.__={}
 BASE._={
-Schedules={}
+Schedules={},
 }
 FORMATION={
 Cone="Cone",
-Vee="Vee"
+Vee="Vee",
 }
 function BASE:New()
 local self=routines.utils.deepCopy(self)
@@ -4286,7 +4286,7 @@ time=EventTime,
 initiator=Initiator,
 IniUnitName=IniUnitName,
 place=place,
-subplace=subplace
+subplace=subplace,
 }
 world.onEvent(Event)
 end
@@ -4331,7 +4331,7 @@ self:F({PlayerUnit})
 local Event={
 id=EVENTS.PlayerEnterAircraft,
 time=timer.getTime(),
-initiator=PlayerUnit:GetDCSObject()
+initiator=PlayerUnit:GetDCSObject(),
 }
 world.onEvent(Event)
 end
