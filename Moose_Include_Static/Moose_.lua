@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T13:15:08.0000000Z-5bae790dd86a4362d193f508826b407ccf7087d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T13:31:06.0000000Z-f4cd28cdb9ab47c78ba448e11fd646698a589420 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3338,9 +3338,8 @@ local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
 local data={groupname=groupname,size=size,coordinate=coordinate,group=GROUP:FindByName(groupname)}
 if reduce then
 local actualgroup=GROUP:FindByName(groupname)
-local actualsize=actualgroup:CountAliveUnits()
-if actualsize>size then
-local reduction=actualsize-size
+if actualgroup and actualgroup:IsAlive()and actualgroup:CountAliveUnits()>size then
+local reduction=actualgroup:CountAliveUnits()-size
 BASE:I("Reducing groupsize by "..reduction.." units!")
 local units=actualgroup:GetUnits()
 local units2=UTILS.ShuffleTable(units)
