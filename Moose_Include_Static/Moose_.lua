@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T12:29:08.0000000Z-d1d43c38cd81d456cbe38411e91cc89f3cd97bfb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T13:15:08.0000000Z-5bae790dd86a4362d193f508826b407ccf7087d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26610,9 +26610,9 @@ if self.debug then
 predpos:MarkToAll(string.format("height=%dm | heading=%d | velocity=%ddeg | Ropt=%dm",mheight,wph,mveloc,Ropt),false)
 targetzone:DrawZone(coalition.side.BLUE,{0,0,1},0.2,nil,nil,3,true)
 end
-local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterOnce()
+local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterZones({targetzone}):FilterOnce()
 local tgtcoord=targetzone:GetRandomPointVec2()
-local tgtgrp=seadset:FindNearestGroupFromPointVec2(tgtcoord)
+local tgtgrp=seadset:GetRandom()
 local _targetgroup=nil
 local _targetgroupname="none"
 local _targetskill="Random"
