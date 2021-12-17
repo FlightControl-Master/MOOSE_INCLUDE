@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-15T12:46:33.0000000Z-07e00a8fafbb4ea33df66e80408a6332333c587a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T12:29:08.0000000Z-d1d43c38cd81d456cbe38411e91cc89f3cd97bfb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60396,9 +60396,6 @@ self.engageTarget=Object
 else
 self.engageTarget=TARGET:New(Object)
 end
-if self.type==AUFTRAG.Type.ALERT5 then
-self.alert5Target=self.engageTarget
-end
 else
 end
 return self
@@ -60467,9 +60464,8 @@ return self.transportPickup
 elseif self.engageTarget then
 local coord=self.engageTarget:GetCoordinate()
 return coord
-elseif self.alert5Target then
-local coord=self.alert5Target:GetCoordinate()
-return coord
+elseif self.type==AUFTRAG.Type.ALERT5 then
+return nil
 else
 self:T(self.lid.."ERROR: Cannot get target coordinate!")
 end
@@ -66086,12 +66082,41 @@ self.group:CommandEPLRS(self.option.EPLRS)
 self:T(self.lid..string.format("Setting current EPLRS=%s",tostring(self.option.EPLRS)))
 end
 else
-self:T(self.lid.."WARNING: Cannot switch Alarm State! Group is not alive")
+self:E(self.lid.."WARNING: Cannot switch EPLRS! Group is not alive")
 end
 return self
 end
 function OPSGROUP:GetEPLRS()
 return self.option.EPLRS or self.optionDefault.EPLRS
+end
+function OPSGROUP:SetDefaultEmission(OnOffSwitch)
+if OnOffSwitch==nil then
+self.optionDefault.Emission=true
+else
+self.optionDefault.EPLRS=OnOffSwitch
+end
+return self
+end
+function OPSGROUP:SwitchEmission(OnOffSwitch)
+if self:IsAlive()or self:IsInUtero()then
+if OnOffSwitch==nil then
+self.option.Emission=self.optionDefault.Emission
+else
+self.option.Emission=OnOffSwitch
+end
+if self:IsInUtero()then
+self:T2(self.lid..string.format("Setting current EMISSION=%s when GROUP is SPAWNED",tostring(self.option.Emission)))
+else
+self.group:EnableEmission(self.option.Emission)
+self:T(self.lid..string.format("Setting current EMISSION=%s",tostring(self.option.Emission)))
+end
+else
+self:E(self.lid.."WARNING: Cannot switch Emission! Group is not alive")
+end
+return self
+end
+function OPSGROUP:GetEmission()
+return self.option.Emission or self.optionDefault.Emission
 end
 function OPSGROUP:SetDefaultTACAN(Channel,Morse,UnitName,Band,OffSwitch)
 self.tacanDefault={}
@@ -66306,7 +66331,7 @@ self:T(self.lid.."ERROR: Formation can only be set for aircraft or ground units!
 return self
 end
 self.option.Formation=Formation
-self:T(self.lid..string.format("Switching formation to %d",self.option.Formation))
+self:T(self.lid..string.format("Switching formation to %s",tostring(self.option.Formation)))
 end
 return self
 end
@@ -68966,6 +68991,7 @@ self.lid=string.format("NAVYGROUP %s | ",self.groupname)
 self:SetDefaultROE()
 self:SetDefaultAlarmstate()
 self:SetDefaultEPLRS(self.isEPLRS)
+self:SetDefaultEmission()
 self:SetDetection()
 self:SetPatrolAdInfinitum(true)
 self:SetPathfinding(false)
@@ -69669,6 +69695,7 @@ self.lid=string.format("ARMYGROUP %s | ",self.groupname)
 self:SetDefaultROE()
 self:SetDefaultAlarmstate()
 self:SetDefaultEPLRS(self.isEPLRS)
+self:SetDefaultEmission()
 self:SetDetection()
 self:SetPatrolAdInfinitum(false)
 self:SetRetreatZones()
@@ -70294,13 +70321,13 @@ self.formationPerma=nil
 end
 self.option.Formation=Formation or"Off road"
 if self:IsInUtero()then
-self:T(self.lid..string.format("Will switch formation to %s (permanently=%s) when group is spawned",self.option.Formation,tostring(Permanently)))
+self:T(self.lid..string.format("Will switch formation to %s (permanently=%s) when group is spawned",tostring(self.option.Formation),tostring(Permanently)))
 else
 if NoRouteUpdate then
 else
 self:__UpdateRoute(-1,nil,nil,Formation)
 end
-self:T(self.lid..string.format("Switching formation to %s (permanently=%s)",self.option.Formation,tostring(Permanently)))
+self:T(self.lid..string.format("Switching formation to %s (permanently=%s)",tostring(self.option.Formation),tostring(Permanently)))
 end
 end
 return self
@@ -80298,10 +80325,10 @@ self:T(self.lid..string.format("Zone %s [%s] is owned by coalition %d",stratzone
 if stratzone.opszone:IsEmpty()then
 if not hasMissionPatrol then
 self:T3(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets"))
-local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ONGUARD,1,3,{Group.Category.GROUND},{GROUP.Attribute.GROUND_INFANTRY,GROUP.Attribute.GROUND_TANK})
-local recruited1=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ARMOREDGUARD,1,1,{Group.Category.GROUND},{GROUP.Attribute.GROUND_TANK})
-self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets=%s",tostring(recruited)))
-self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone armored assets=%s",tostring(recruited1)))
+local recruitedI=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ONGUARD,1,3,{Group.Category.GROUND},{GROUP.Attribute.GROUND_INFANTRY})
+local recruitedT=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ARMOREDGUARD,1,1,{Group.Category.GROUND},{GROUP.Attribute.GROUND_TANK})
+self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets=%s",tostring(recruitedI)))
+self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone armored assets=%s",tostring(recruitedT)))
 end
 else
 if not hasMissionCAS then
@@ -80491,12 +80518,13 @@ RangeMax=UTILS.NMToMeters(50)
 end
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,Categories,Attributes)
 if recruited then
+self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zone %s",#assets,MissionType,tostring(StratZone.opszone.zoneName)))
 if MissionType==AUFTRAG.Type.PATROLZONE or MissionType==AUFTRAG.Type.ONGUARD then
-self:T2(self.lid..string.format("Recruited %d assets from for PATROL mission",#assets))
+self:T2(self.lid..string.format("Recruited %d assets for PATROL mission",#assets))
 local recruitedTrans=true
 local transport=nil
 if Attributes and Attributes[1]==GROUP.Attribute.GROUND_INFANTRY then
-local Categories={self.TransportCategories}
+local Categories=self.TransportCategories
 recruitedTrans,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,assets,1,1,StratZone.opszone.zone,nil,Categories)
 end
 if recruitedTrans then
@@ -80563,6 +80591,7 @@ StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
 return true
 end
 end
+self:T2(self.lid..string.format("Could NOT recruit assets for %s mission of STRATEGIC zone %s",MissionType,tostring(StratZone.opszone.zoneName)))
 return false
 end
 AI_BALANCER={
