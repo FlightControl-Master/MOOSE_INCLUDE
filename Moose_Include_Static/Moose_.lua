@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T13:31:06.0000000Z-f4cd28cdb9ab47c78ba448e11fd646698a589420 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T14:57:28.0000000Z-854a1e572370296a9933ec18fb80dd153be3c190 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69957,7 +69957,7 @@ end
 return true
 end
 function ARMYGROUP:onafterUpdateRoute(From,Event,To,n,N,Speed,Formation)
-local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%d, Formation=%s",self:GetState(),tostring(n),tostring(N),tonumber(Speed),tostring(Formation))
+local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%s, Formation=%s",self:GetState(),tostring(n),tostring(N),tostring(Speed),tostring(Formation))
 self:T(self.lid..text)
 n=n or self:GetWaypointIndexNext(self.adinfinitum)
 N=N or#self.waypoints
