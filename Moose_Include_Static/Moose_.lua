@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T08:07:32.0000000Z-607c52c0b773a1e8b8adcededacd4230501dabc1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-19T07:47:07.0000000Z-55cee46a8da3e170e1efd7f560148e94b3b9c3cf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4663,7 +4663,7 @@ self.name=Positionable:GetName()
 self:I(string.format("New BEACON %s",tostring(self.name)))
 return self
 end
-self:E({"The passed positionable is invalid, no BEACON created",Positionable})
+self:E({"The passed POSITIONABLE is invalid, no BEACON created",Positionable})
 return nil
 end
 function BEACON:ActivateTACAN(Channel,Mode,Message,Bearing,Duration)
@@ -4679,7 +4679,7 @@ local AA=self.Positionable:IsAir()
 if AA then
 System=5
 if Mode~="Y"then
-self:E({"WARNING: The POSITIONABLE you want to attach the AA Tacan Beacon is an aircraft: Mode should Y !The BEACON is not emitting.",self.Positionable})
+self:E({"WARNING: The POSITIONABLE you want to attach the AA TACAN Beacon is an aircraft: Mode should Y! The BEACON is not emitting.",self.Positionable})
 end
 end
 local UnitID=self.Positionable:GetID()
@@ -4704,7 +4704,7 @@ function BEACON:AATACAN(TACANChannel,Message,Bearing,BeaconDuration)
 self:F({TACANChannel,Message,Bearing,BeaconDuration})
 local IsValid=true
 if not self.Positionable:IsAir()then
-self:E({"The POSITIONABLE you want to attach the AA Tacan Beacon is not an aircraft ! The BEACON is not emitting",self.Positionable})
+self:E({"The POSITIONABLE you want to attach the AA TACAN Beacon is not an aircraft! The BEACON is not emitting",self.Positionable})
 IsValid=false
 end
 local Frequency=self:_TACANToFrequency(TACANChannel,"Y")
@@ -4727,11 +4727,10 @@ type=4,
 system=System,
 callsign=Message,
 frequency=Frequency,
-}
+},
 })
 if BeaconDuration then
-SCHEDULER:New(nil,
-function()
+SCHEDULER:New(nil,function()
 self:StopAATACAN()
 end,{},BeaconDuration)
 end
@@ -4741,12 +4740,11 @@ end
 function BEACON:StopAATACAN()
 self:F()
 if not self.Positionable then
-self:E({"Start the beacon first before stoping it !"})
+self:E({"Start the beacon first before stopping it!"})
 else
 self.Positionable:SetCommand({
 id='DeactivateBeacon',
-params={
-}
+params={},
 })
 end
 end
@@ -4762,7 +4760,7 @@ IsValid=true
 end
 end
 if not IsValid then
-self:E({"File name invalid. Maybe something wrong with the extension ? ",FileName})
+self:E({"File name invalid. Maybe something wrong with the extension? ",FileName})
 end
 if type(Frequency)~="number"and IsValid then
 self:E({"Frequency invalid. ",Frequency})
@@ -4782,8 +4780,7 @@ if IsValid then
 self:T2({"Activating Beacon on ",Frequency,Modulation})
 trigger.action.radioTransmission(FileName,self.Positionable:GetPositionVec3(),Modulation,true,Frequency,Power,tostring(self.ID))
 if BeaconDuration then
-SCHEDULER:New(nil,
-function()
+SCHEDULER:New(nil,function()
 self:StopRadioBeacon()
 end,{},BeaconDuration)
 end
@@ -5612,7 +5609,7 @@ self:F({PlayerUnit})
 local Event={
 id=EVENTS.PlayerEnterUnit,
 time=timer.getTime(),
-initiator=PlayerUnit:GetDCSObject()
+initiator=PlayerUnit:GetDCSObject(),
 }
 world.onEvent(Event)
 end
@@ -5621,7 +5618,7 @@ self:F({PlayerUnit})
 local Event={
 id=EVENTS.PlayerEnterAircraft,
 time=timer.getTime(),
-initiator=PlayerUnit:GetDCSObject()
+initiator=PlayerUnit:GetDCSObject(),
 }
 world.onEvent(Event)
 end
@@ -5828,8 +5825,7 @@ if EventData.EventFunction then
 if Event.IniObjectCategory~=3 then
 self:F({"Calling EventFunction for UNIT ",EventClass:GetClassNameAndID(),", Unit ",Event.IniUnitName,EventPriority})
 end
-local Result,Value=xpcall(
-function()
+local Result,Value=xpcall(function()
 return EventData.EventFunction(EventClass,Event)
 end,ErrorHandler)
 else
@@ -5838,8 +5834,7 @@ if EventFunction and type(EventFunction)=="function"then
 if Event.IniObjectCategory~=3 then
 self:F({"Calling "..EventMeta.Event.." for Class ",EventClass:GetClassNameAndID(),EventPriority})
 end
-local Result,Value=xpcall(
-function()
+local Result,Value=xpcall(function()
 return EventFunction(EventClass,Event)
 end,ErrorHandler)
 end
@@ -5862,8 +5857,7 @@ if EventData.EventFunction then
 if Event.IniObjectCategory~=3 then
 self:F({"Calling EventFunction for GROUP ",EventClass:GetClassNameAndID(),", Unit ",Event.IniUnitName,EventPriority})
 end
-local Result,Value=xpcall(
-function()
+local Result,Value=xpcall(function()
 return EventData.EventFunction(EventClass,Event,unpack(EventData.Params))
 end,ErrorHandler)
 else
@@ -5872,8 +5866,7 @@ if EventFunction and type(EventFunction)=="function"then
 if Event.IniObjectCategory~=3 then
 self:F({"Calling "..EventMeta.Event.." for GROUP ",EventClass:GetClassNameAndID(),EventPriority})
 end
-local Result,Value=xpcall(
-function()
+local Result,Value=xpcall(function()
 return EventFunction(EventClass,Event,unpack(EventData.Params))
 end,ErrorHandler)
 end
@@ -5887,8 +5880,7 @@ if EventData.EventFunction then
 if Event.IniObjectCategory~=3 then
 self:F2({"Calling EventFunction for Class ",EventClass:GetClassNameAndID(),EventPriority})
 end
-local Result,Value=xpcall(
-function()
+local Result,Value=xpcall(function()
 return EventData.EventFunction(EventClass,Event)
 end,ErrorHandler)
 else
@@ -5897,8 +5889,7 @@ if EventFunction and type(EventFunction)=="function"then
 if Event.IniObjectCategory~=3 then
 self:F2({"Calling "..EventMeta.Event.." for Class ",EventClass:GetClassNameAndID(),EventPriority})
 end
-local Result,Value=xpcall(
-function()
+local Result,Value=xpcall(function()
 local Result,Value=EventFunction(EventClass,Event)
 return Result,Value
 end,ErrorHandler)
@@ -8232,14 +8223,12 @@ WAREHOUSES={},
 FLIGHTGROUPS={},
 FLIGHTCONTROLS={},
 }
-local _DATABASECoalition=
-{
+local _DATABASECoalition={
 [1]="Red",
 [2]="Blue",
 [3]="Neutral",
 }
-local _DATABASECategory=
-{
+local _DATABASECategory={
 ["plane"]=Unit.Category.AIRPLANE,
 ["helicopter"]=Unit.Category.HELICOPTER,
 ["vehicle"]=Unit.Category.GROUND_UNIT,
@@ -8551,9 +8540,8 @@ self:T({Group=self.Templates.Groups[GroupTemplateName].GroupName,
 Coalition=self.Templates.Groups[GroupTemplateName].CoalitionID,
 Category=self.Templates.Groups[GroupTemplateName].CategoryID,
 Country=self.Templates.Groups[GroupTemplateName].CountryID,
-Units=UnitNames
-}
-)
+Units=UnitNames,
+})
 end
 function DATABASE:GetGroupTemplate(GroupName)
 local GroupTemplate=self.Templates.Groups[GroupName].Template
@@ -8578,9 +8566,8 @@ self.Templates.Statics[StaticTemplateName].CountryID=CountryID
 self:T({Static=self.Templates.Statics[StaticTemplateName].StaticName,
 Coalition=self.Templates.Statics[StaticTemplateName].CoalitionID,
 Category=self.Templates.Statics[StaticTemplateName].CategoryID,
-Country=self.Templates.Statics[StaticTemplateName].CountryID
-}
-)
+Country=self.Templates.Statics[StaticTemplateName].CountryID,
+})
 self:AddStatic(StaticTemplateName)
 return self
 end
