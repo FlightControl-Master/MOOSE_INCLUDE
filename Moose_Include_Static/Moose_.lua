@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-19T07:47:07.0000000Z-55cee46a8da3e170e1efd7f560148e94b3b9c3cf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-20T11:59:56.0000000Z-4a406604bd4bd17cdb6176963f9c8abfe1b8d470 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4907,8 +4907,7 @@ ObjectName=MasterObject.ClassName..MasterObject.ClassID
 end
 self:F3({"Schedule :",ObjectName,tostring(MasterObject),Start,Repeat,RandomizeFactor,Stop})
 self.MasterObject=MasterObject
-local ScheduleID=_SCHEDULEDISPATCHER:AddSchedule(
-self,
+local ScheduleID=_SCHEDULEDISPATCHER:AddSchedule(self,
 SchedulerFunction,
 SchedulerArguments,
 Start,
@@ -5077,7 +5076,7 @@ if not Schedule.ScheduleID then
 local Tnow=timer.getTime()
 Schedule.StartTime=Tnow
 Schedule.ScheduleID=timer.scheduleFunction(Schedule.CallHandler,{CallID=CallID,Info=Info},Tnow+Schedule.Start)
-self:T(string.format("Starting scheduledispatcher Call ID=%s ==> Schedule ID=%s",tostring(CallID),tostring(Schedule.ScheduleID)))
+self:T(string.format("Starting SCHEDULEDISPATCHER Call ID=%s ==> Schedule ID=%s",tostring(CallID),tostring(Schedule.ScheduleID)))
 end
 else
 for CallID,Schedule in pairs(self.Schedule[Scheduler]or{})do
@@ -5090,7 +5089,7 @@ self:F2({Stop=CallID,Scheduler=Scheduler})
 if CallID then
 local Schedule=self.Schedule[Scheduler][CallID]
 if Schedule.ScheduleID then
-self:T(string.format("scheduledispatcher stopping scheduler CallID=%s, ScheduleID=%s",tostring(CallID),tostring(Schedule.ScheduleID)))
+self:T(string.format("SCHEDULEDISPATCHER stopping scheduler CallID=%s, ScheduleID=%s",tostring(CallID),tostring(Schedule.ScheduleID)))
 timer.removeFunction(Schedule.ScheduleID)
 Schedule.ScheduleID=nil
 else
@@ -6576,7 +6575,7 @@ MENU_BASE={
 ClassName="MENU_BASE",
 MenuPath=nil,
 MenuText="",
-MenuParentPath=nil
+MenuParentPath=nil,
 }
 function MENU_BASE:New(MenuText,ParentMenu)
 local MenuParentPath={}
@@ -6674,7 +6673,7 @@ end
 end
 do
 MENU_MISSION={
-ClassName="MENU_MISSION"
+ClassName="MENU_MISSION",
 }
 function MENU_MISSION:New(MenuText,ParentMenu)
 MENU_INDEX:PrepareMission()
@@ -6727,7 +6726,7 @@ end
 end
 do
 MENU_MISSION_COMMAND={
-ClassName="MENU_MISSION_COMMAND"
+ClassName="MENU_MISSION_COMMAND",
 }
 function MENU_MISSION_COMMAND:New(MenuText,ParentMenu,CommandMenuFunction,...)
 MENU_INDEX:PrepareMission()
@@ -6775,7 +6774,7 @@ end
 end
 do
 MENU_COALITION={
-ClassName="MENU_COALITION"
+ClassName="MENU_COALITION",
 }
 function MENU_COALITION:New(Coalition,MenuText,ParentMenu)
 MENU_INDEX:PrepareCoalition(Coalition)
@@ -6829,7 +6828,7 @@ end
 end
 do
 MENU_COALITION_COMMAND={
-ClassName="MENU_COALITION_COMMAND"
+ClassName="MENU_COALITION_COMMAND",
 }
 function MENU_COALITION_COMMAND:New(Coalition,MenuText,ParentMenu,CommandMenuFunction,...)
 MENU_INDEX:PrepareCoalition(Coalition)
@@ -6879,7 +6878,7 @@ end
 do
 local _MENUGROUPS={}
 MENU_GROUP={
-ClassName="MENU_GROUP"
+ClassName="MENU_GROUP",
 }
 function MENU_GROUP:New(Group,MenuText,ParentMenu)
 MENU_INDEX:PrepareGroup(Group)
@@ -6936,7 +6935,7 @@ end
 return self
 end
 MENU_GROUP_COMMAND={
-ClassName="MENU_GROUP_COMMAND"
+ClassName="MENU_GROUP_COMMAND",
 }
 function MENU_GROUP_COMMAND:New(Group,MenuText,ParentMenu,CommandMenuFunction,...)
 MENU_INDEX:PrepareGroup(Group)
@@ -6986,7 +6985,7 @@ end
 end
 do
 MENU_GROUP_DELAYED={
-ClassName="MENU_GROUP_DELAYED"
+ClassName="MENU_GROUP_DELAYED",
 }
 function MENU_GROUP_DELAYED:New(Group,MenuText,ParentMenu)
 MENU_INDEX:PrepareGroup(Group)
@@ -7059,7 +7058,7 @@ end
 return self
 end
 MENU_GROUP_COMMAND_DELAYED={
-ClassName="MENU_GROUP_COMMAND_DELAYED"
+ClassName="MENU_GROUP_COMMAND_DELAYED",
 }
 function MENU_GROUP_COMMAND_DELAYED:New(Group,MenuText,ParentMenu,CommandMenuFunction,...)
 MENU_INDEX:PrepareGroup(Group)
@@ -13939,7 +13938,7 @@ Update="Update",
 Information="Information",
 Briefing="Briefing Report",
 Overview="Overview Report",
-Detailed="Detailed Report"
+Detailed="Detailed Report",
 }
 function MESSAGE:New(MessageText,MessageDuration,MessageCategory,ClearScreen)
 local self=BASE:Inherit(self,BASE:New())
@@ -14204,7 +14203,9 @@ env.info(BASE.Debug.traceback())
 end
 return errmsg
 end
-local Result,Value=xpcall(function()return self[handler](self,unpack(params))end,ErrorHandler)
+local Result,Value=xpcall(function()
+return self[handler](self,unpack(params))
+end,ErrorHandler)
 return Value
 end
 end
@@ -14316,7 +14317,9 @@ self:T2({CallID=CallID})
 end
 end
 function FSM:_create_transition(EventName)
-return function(self,...)return self._handler(self,EventName,...)end
+return function(self,...)
+return self._handler(self,EventName,...)
+end
 end
 function FSM:_gosub(ParentFrom,ParentEvent)
 local fsmtable={}
@@ -14405,15 +14408,15 @@ end
 if self[handler]then
 self:T("*** FSM ***    "..step.." *** "..params[1].." --> "..params[2].." --> "..params[3].." *** TaskUnit: "..self.Controllable:GetName())
 self._EventSchedules[EventName]=nil
-local Result,Value=xpcall(function()return self[handler](self,self.Controllable,unpack(params))end,ErrorHandler)
+local Result,Value=xpcall(function()
+return self[handler](self,self.Controllable,unpack(params))
+end,ErrorHandler)
 return Value
 end
 end
 end
 do
-FSM_PROCESS={
-ClassName="FSM_PROCESS",
-}
+FSM_PROCESS={ClassName="FSM_PROCESS"}
 function FSM_PROCESS:New(Controllable,Task)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 self:Assign(Controllable,Task)
@@ -14438,7 +14441,9 @@ end
 self._EventSchedules[EventName]=nil
 local Result,Value
 if self.Controllable and self.Controllable:IsAlive()==true then
-Result,Value=xpcall(function()return self[handler](self,self.Controllable,self.Task,unpack(params))end,ErrorHandler)
+Result,Value=xpcall(function()
+return self[handler](self,self.Controllable,self.Task,unpack(params))
+end,ErrorHandler)
 end
 return Value
 end
@@ -14545,7 +14550,9 @@ end
 if self[handler]then
 self:T("*** FSM ***    "..step.." *** "..params[1].." --> "..params[2].." --> "..params[3].." *** Task: "..self.TaskName)
 self._EventSchedules[EventName]=nil
-local Result,Value=xpcall(function()return self[handler](self,unpack(params))end,ErrorHandler)
+local Result,Value=xpcall(function()
+return self[handler](self,unpack(params))
+end,ErrorHandler)
 return Value
 end
 end
@@ -16031,20 +16038,16 @@ function SPAWN:_TranslateRotate(SpawnIndex,SpawnRootX,SpawnRootY,SpawnX,SpawnY,S
 self:F({self.SpawnTemplatePrefix,SpawnIndex,SpawnRootX,SpawnRootY,SpawnX,SpawnY,SpawnAngle})
 local TranslatedX=SpawnX
 local TranslatedY=SpawnY
-local RotatedX=-TranslatedX*math.cos(math.rad(SpawnAngle))
-+TranslatedY*math.sin(math.rad(SpawnAngle))
-local RotatedY=TranslatedX*math.sin(math.rad(SpawnAngle))
-+TranslatedY*math.cos(math.rad(SpawnAngle))
+local RotatedX=-TranslatedX*math.cos(math.rad(SpawnAngle))+TranslatedY*math.sin(math.rad(SpawnAngle))
+local RotatedY=TranslatedX*math.sin(math.rad(SpawnAngle))+TranslatedY*math.cos(math.rad(SpawnAngle))
 self.SpawnGroups[SpawnIndex].SpawnTemplate.x=SpawnRootX-RotatedX
 self.SpawnGroups[SpawnIndex].SpawnTemplate.y=SpawnRootY+RotatedY
 local SpawnUnitCount=table.getn(self.SpawnGroups[SpawnIndex].SpawnTemplate.units)
 for u=1,SpawnUnitCount do
 local TranslatedX=SpawnX
 local TranslatedY=SpawnY-10*(u-1)
-local RotatedX=-TranslatedX*math.cos(math.rad(SpawnAngle))
-+TranslatedY*math.sin(math.rad(SpawnAngle))
-local RotatedY=TranslatedX*math.sin(math.rad(SpawnAngle))
-+TranslatedY*math.cos(math.rad(SpawnAngle))
+local RotatedX=-TranslatedX*math.cos(math.rad(SpawnAngle))+TranslatedY*math.sin(math.rad(SpawnAngle))
+local RotatedY=TranslatedX*math.sin(math.rad(SpawnAngle))+TranslatedY*math.cos(math.rad(SpawnAngle))
 self.SpawnGroups[SpawnIndex].SpawnTemplate.units[u].x=SpawnRootX-RotatedX
 self.SpawnGroups[SpawnIndex].SpawnTemplate.units[u].y=SpawnRootY+RotatedY
 self.SpawnGroups[SpawnIndex].SpawnTemplate.units[u].heading=self.SpawnGroups[SpawnIndex].SpawnTemplate.units[u].heading+math.rad(SpawnAngle)
