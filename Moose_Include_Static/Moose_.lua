@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-17T14:57:28.0000000Z-854a1e572370296a9933ec18fb80dd153be3c190 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-21T10:57:09.0000000Z-485e2e18bfa0d780ba4352cfb4843415e0fc41ac ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60446,8 +60446,17 @@ local objective=self:GetTargetData():GetObject()
 return objective
 end
 function AUFTRAG:GetTargetType()
-local ttype=self:GetTargetData().Type
-return ttype
+local target=self.engageTarget
+if target then
+local to=target:GetObjective()
+if to then
+return to.Type
+else
+return"Unknown"
+end
+else
+return"Unknown"
+end
 end
 function AUFTRAG:GetTargetVec2()
 local coord=self:GetTargetCoordinate()
@@ -71016,7 +71025,7 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.1.0"
+LEGION.version="0.2.0"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -71107,6 +71116,17 @@ for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
 if mission:IsNotOver()and mission:IsReadyToCancel()then
 mission:Cancel()
+end
+end
+if self:IsAirwing()then
+if self:IsRunwayOperational()then
+return nil
+end
+local airboss=self.airboss
+if airboss then
+if not airboss:IsIdle()then
+return nil
+end
 end
 end
 local function _sort(a,b)
@@ -72013,10 +72033,8 @@ distance=UTILS.MetersToNM(UTILS.VecDist2D(OrigVec2,TargetVec2))
 distance=UTILS.Round(distance/10,0)
 end
 score=score-distance
-if MissionType==AUFTRAG.Type.INTERCEPT then
 if asset.spawned then
 score=score+25
-end
 end
 if MissionType==AUFTRAG.Type.OPSTRANSPORT then
 score=score+UTILS.Round(asset.cargobaymax/10,0)
@@ -72146,12 +72164,7 @@ payload.uid=self.payloadcounter
 payload.unitname=Unit:GetName()
 payload.aircrafttype=Unit:GetTypeName()
 payload.pylons=Unit:GetTemplatePayload()
-payload.unlimited=Npayloads<0
-if payload.unlimited then
-payload.navail=1
-else
-payload.navail=Npayloads or 99
-end
+self:SetPayloadAmount(payload,Npayloads)
 payload.capabilities={}
 for _,missiontype in pairs(MissionTypes)do
 local capability={}
@@ -72173,6 +72186,18 @@ return payload
 end
 self:E(self.lid.."ERROR: No UNIT found to create PAYLOAD!")
 return nil
+end
+function AIRWING:SetPayloadAmount(Payload,Navailable)
+Navailable=Navailable or 99
+if Payload then
+Payload.unlimited=Navailable<0
+if Payload.unlimited then
+Payload.navail=1
+else
+Payload.navail=Navailable
+end
+end
+return self
 end
 function AIRWING:AddPayloadCapability(Payload,MissionTypes,Performance)
 if MissionTypes and type(MissionTypes)~="table"then
@@ -72379,6 +72404,10 @@ end
 function AIRWING:AddPatrolPointAWACS(Coordinate,Altitude,Speed,Heading,LegLength)
 local patrolpoint=self:NewPatrolPoint("AWACS",Coordinate,Altitude,Speed,Heading,LegLength)
 table.insert(self.pointsAWACS,patrolpoint)
+return self
+end
+function AIRWING:SetAirboss(airboss)
+self.airboss=airboss
 return self
 end
 function AIRWING:onafterStart(From,Event,To)
@@ -79773,7 +79802,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.0.3"
+CHIEF.version="0.1.0"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -80401,6 +80430,7 @@ function CHIEF:_GetMissionPerformanceFromTarget(Target)
 local group=nil
 local airbase=nil
 local scenery=nil
+local static=nil
 local coordinate=nil
 local target=Target:GetObject()
 if target:IsInstanceOf("GROUP")then
@@ -80409,6 +80439,8 @@ elseif target:IsInstanceOf("UNIT")then
 group=target:GetGroup()
 elseif target:IsInstanceOf("AIRBASE")then
 airbase=target
+elseif target:IsInstanceOf("STATIC")then
+static=target
 elseif target:IsInstanceOf("SCENERY")then
 scenery=target
 end
@@ -80447,6 +80479,11 @@ self:E(self.lid.."ERROR: Unknown Group category!")
 end
 elseif airbase then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBRUNWAY,100))
+elseif static then
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBING,70))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBCARPET,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
 elseif scenery then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.STRIKE,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBING,70))
