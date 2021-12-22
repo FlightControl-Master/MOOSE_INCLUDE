@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-21T10:57:09.0000000Z-485e2e18bfa0d780ba4352cfb4843415e0fc41ac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-22T10:48:42.0000000Z-472a4883f0a24698ffc69a0f93f74d7144f3246f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7694,7 +7694,7 @@ return false
 end
 local point=_getpoint()
 if surfacetypes then
-local N=1;local Nmax=1000;local gotit=false
+local N=1;local Nmax=100;local gotit=false
 while gotit==false and N<=Nmax do
 gotit=_checkSurface(point)
 if gotit then
@@ -70408,6 +70408,8 @@ elseif self.category==Group.Category.SHIP then
 self:SetMissionRange(100)
 elseif self.category==Group.Category.TRAIN then
 self:SetMissionRange(100)
+else
+self:SetMissionRange(150)
 end
 local units=self.templategroup:GetUnits()
 self.weightAsset=0
