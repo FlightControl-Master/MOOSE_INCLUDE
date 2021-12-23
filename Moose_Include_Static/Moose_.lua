@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-22T10:48:42.0000000Z-472a4883f0a24698ffc69a0f93f74d7144f3246f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-23T18:55:27.0000000Z-77f2cf5089e4d3915bf8205a1de5aa8c38ae605e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69151,6 +69151,28 @@ else
 return false
 end
 end
+function NAVYGROUP:IsRecovering()
+if self.intowind then
+if self.intowind.Recovery==true then
+return true
+else
+return false
+end
+else
+return false
+end
+end
+function NAVYGROUP:IsLaunching()
+if self.intowind then
+if self.intowind.Recovery==false then
+return true
+else
+return false
+end
+else
+return false
+end
+end
 function NAVYGROUP:Status(From,Event,To)
 local fsmstate=self:GetState()
 local alive=self:IsAlive()
@@ -71121,7 +71143,7 @@ mission:Cancel()
 end
 end
 if self:IsAirwing()then
-if self:IsRunwayOperational()then
+if self:IsRunwayOperational()==false then
 return nil
 end
 local airboss=self.airboss
