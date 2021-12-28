@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T07:25:31.0000000Z-f62e3391e12377fd8ed12fb3e9cb5661c43fc3cb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T10:01:05.0000000Z-00d1aec210225ec2b69e50792cb1cfe1aafe5e6d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7124,7 +7124,7 @@ ClassName="ZONE_BASE",
 ZoneName="",
 ZoneProbability=1,
 DrawID=nil,
-Color={}
+Color={},
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -7423,7 +7423,7 @@ id=world.VolumeType.SPHERE,
 params={
 point=ZoneCoord:GetVec3(),
 radius=ZoneRadius,
-}
+},
 }
 local function EvaluateZone(ZoneObject)
 if ZoneObject then
@@ -7561,7 +7561,7 @@ id=world.VolumeType.SPHERE,
 params={
 point=ZoneCoord:GetVec3(),
 radius=ZoneRadius/2,
-}
+},
 }
 local function EvaluateZone(ZoneDCSUnit)
 local ZoneUnit=UNIT:Find(ZoneDCSUnit)
@@ -7933,8 +7933,7 @@ Prev=#self._.Polygon
 while Next<=#self._.Polygon do
 self:T({Next,Prev,self._.Polygon[Next],self._.Polygon[Prev]})
 if(((self._.Polygon[Next].y>Vec2.y)~=(self._.Polygon[Prev].y>Vec2.y))and
-(Vec2.x<(self._.Polygon[Prev].x-self._.Polygon[Next].x)*(Vec2.y-self._.Polygon[Next].y)/(self._.Polygon[Prev].y-self._.Polygon[Next].y)+self._.Polygon[Next].x)
-)then
+(Vec2.x<(self._.Polygon[Prev].x-self._.Polygon[Next].x)*(Vec2.y-self._.Polygon[Next].y)/(self._.Polygon[Prev].y-self._.Polygon[Next].y)+self._.Polygon[Next].x))then
 InPolygon=not InPolygon
 end
 self:T2({InPolygon=InPolygon})
@@ -17770,8 +17769,8 @@ local DCSTaskControlled={
 id='ControlledTask',
 params={
 task=DCSTask,
-stopCondition=DCSStopCondition
-}
+stopCondition=DCSStopCondition,
+},
 }
 return DCSTaskControlled
 end
@@ -17779,8 +17778,8 @@ function CONTROLLABLE:TaskCombo(DCSTasks)
 local DCSTaskCombo={
 id='ComboTask',
 params={
-tasks=DCSTasks
-}
+tasks=DCSTasks,
+},
 }
 return DCSTaskCombo
 end
@@ -17857,7 +17856,7 @@ params={
 ["AA"]=AA,
 ["callsign"]=Callsign,
 ["bearing"]=Bearing,
-}
+},
 }
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandActivateBeacon,{self,Type,System,Frequency,UnitID,Channel,ModeChannel,AA,Callsign,Bearing},Delay)
@@ -17874,7 +17873,7 @@ params={
 ["channel"]=Channel,
 ["unitId"]=UnitID,
 ["callsign"]=Callsign,
-}
+},
 }
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandActivateICLS,{self},Delay)
@@ -17918,8 +17917,8 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=self:GetID()
-}
+groupId=self:GetID(),
+},
 }
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandEPLRS,{self,SwitchOnOff},Delay)
@@ -17935,7 +17934,7 @@ id='SetFrequency',
 params={
 frequency=Frequency*1000000,
 modulation=Modulation or radio.modulation.AM,
-}
+},
 }
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation},Delay)
@@ -17952,8 +17951,8 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=self:GetID()
-}
+groupId=self:GetID(),
+},
 }
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
@@ -17988,7 +17987,7 @@ altitude=Altitude,
 attackQtyLimit=AttackQty and true or false,
 attackQty=AttackQty,
 weaponType=WeaponType or 1073741822,
-}
+},
 }
 return DCSTask
 end
@@ -18050,7 +18049,7 @@ directionEnabled=Direction and true or false,
 direction=Direction and math.rad(Direction)or 0,
 altitudeEnabled=Altitude and true or false,
 altitude=Altitude,
-}
+},
 }
 return DCSTask
 end
@@ -18061,8 +18060,8 @@ params={
 groupId=FollowControllable:GetID(),
 pos=Vec3,
 lastWptIndexFlag=LastWaypointIndex and true or false,
-lastWptIndex=LastWaypointIndex
-}
+lastWptIndex=LastWaypointIndex,
+},
 }
 return DCSTask
 end
@@ -18089,7 +18088,7 @@ durationFlag=Duration and true or false,
 duration=Duration,
 distributionFlag=Distribution and true or false,
 distribution=Distribution,
-}
+},
 }
 return DCSTask
 end
@@ -18101,7 +18100,7 @@ x=Coordinate.x,
 y=Coordinate.z,
 zoneRadius=Radius or 200,
 selectedType=UnitType,
-}
+},
 }
 return EmbarkToTransport
 end
@@ -18122,7 +18121,7 @@ params={
 x=Coordinate.x,
 y=Coordinate.z,
 groupsForEmbarking=g4e,
-}
+},
 }
 return Disembarking
 end
@@ -18134,8 +18133,8 @@ params={
 pattern=AI.Task.OrbitPattern.CIRCLE,
 point=Point,
 speed=Speed,
-altitude=Altitude+land.getHeight(Point)
-}
+altitude=Altitude+land.getHeight(Point),
+},
 }
 return DCSTask
 end
@@ -18155,7 +18154,7 @@ point=P1,
 point2=P2,
 speed=Speed or UTILS.KnotsToMps(250),
 altitude=Altitude or Coord.y,
-}
+},
 }
 return Task
 end
@@ -18189,7 +18188,7 @@ end
 function CONTROLLABLE:TaskRefueling()
 local DCSTask={
 id='Refueling',
-params={}
+params={},
 }
 return DCSTask
 end
@@ -18225,7 +18224,7 @@ pos=Vec3,
 lastWptIndexFlag=LastWaypointIndexFlag,
 lastWptIndex=LastWaypointIndex,
 lastWptIndexFlagChangedManually=lastWptIndexFlagChangedManually,
-}
+},
 }
 self:T3({DCSTask})
 return DCSTask
@@ -18256,8 +18255,8 @@ zoneRadius=Radius,
 radius=Radius,
 expendQty=100,
 expendQtyEnabled=false,
-alt_type=ASL and 0 or 1
-}
+alt_type=ASL and 0 or 1,
+},
 }
 if AmmoCount then
 DCSTask.params.expendQty=AmmoCount
@@ -18287,7 +18286,7 @@ frequency=(Frequency or 133)*1000000,
 modulation=Modulation or radio.modulation.AM,
 callname=CallsignName,
 number=CallsignNumber,
-}
+},
 }
 return DCSTask
 end
@@ -18299,7 +18298,7 @@ maxDistEnabled=Distance and true or false,
 maxDist=Distance,
 targetTypes=TargetTypes or{"Air"},
 priority=Priority or 0,
-}
+},
 }
 return DCSTask
 end
@@ -18311,7 +18310,7 @@ point=Vec2,
 zoneRadius=Radius,
 targetTypes=TargetTypes or{"Air"},
 priority=Priority or 0
-}
+},
 }
 return DCSTask
 end
@@ -18383,7 +18382,7 @@ weaponType=WeaponType or"Auto",
 designation=Designation,
 datalink=Datalink and Datalink or false,
 priority=Priority or 0,
-}
+},
 }
 return DCSTask
 end
@@ -18414,7 +18413,9 @@ end
 function CONTROLLABLE:TaskMission(TaskMission)
 local DCSTask={
 id='Mission',
-params={TaskMission,},
+params={
+TaskMission,
+},
 }
 return DCSTask
 end
@@ -22845,7 +22846,7 @@ if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MARKER.ToAll,self)
 else
 self.toall=true
-self.tocoaliton=nil
+self.tocoalition=nil
 self.coalition=nil
 self.togroup=nil
 self.groupname=nil
@@ -22863,7 +22864,7 @@ if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MARKER.ToCoalition,self,Coalition)
 else
 self.coalition=Coalition
-self.tocoaliton=true
+self.tocoalition=true
 self.toall=false
 self.togroup=false
 self.groupname=nil
@@ -22897,7 +22898,7 @@ self.groupid=Group:GetID()
 if self.groupid then
 self.groupname=Group:GetName()
 self.togroup=true
-self.tocoaliton=nil
+self.tocoalition=nil
 self.coalition=nil
 self.toall=nil
 if self.shown then
@@ -22937,7 +22938,7 @@ self:ScheduleOnce(Delay,MARKER.Refresh,self)
 else
 if self.toall then
 self:ToAll()
-elseif self.tocoaliton then
+elseif self.tocoalition then
 self:ToCoalition(self.coalition)
 elseif self.togroup then
 local group=GROUP:FindByName(self.groupname)
@@ -36079,14 +36080,14 @@ do
 ZONE_GOAL_COALITION={
 ClassName="ZONE_GOAL_COALITION",
 Coalition=nil,
-PreviousCoaliton=nil,
+PreviousCoalition=nil,
 UnitCategories=nil,
 ObjectCategories=nil,
 }
 ZONE_GOAL_COALITION.States={}
 function ZONE_GOAL_COALITION:New(Zone,Coalition,UnitCategories)
 if not Zone then
-BASE:E("ERROR: No Zone specified in ZONE_GOAL_COALITON!")
+BASE:E("ERROR: No Zone specified in ZONE_GOAL_COALITION!")
 return nil
 end
 local self=BASE:Inherit(self,ZONE_GOAL:New(Zone))
@@ -40672,7 +40673,7 @@ return nil
 end
 function WAREHOUSE:onafterStart(From,Event,To)
 local text=string.format("Starting warehouse %s alias %s:\n",self.warehouse:GetName(),self.alias)
-text=text..string.format("Coaliton = %s\n",self:GetCoalitionName())
+text=text..string.format("Coalition = %s\n",self:GetCoalitionName())
 text=text..string.format("Country  = %s\n",self:GetCountryName())
 text=text..string.format("Airbase  = %s (category=%d)\n",self:GetAirbaseName(),self:GetAirbaseCategory())
 env.info(text)
@@ -61043,8 +61044,7 @@ local Squadron=self:GetSquadronFromDefender(Defender)
 if Squadron then
 self:F({SquadronName=Squadron.Name})
 local LandingMethod=self:GetSquadronLanding(Squadron.Name)
-if LandingMethod==AI_A2A_DISPATCHER.Landing.AtEngineShutdown and
-not DefenderUnit:InAir()then
+if LandingMethod==AI_A2A_DISPATCHER.Landing.AtEngineShutdown and not DefenderUnit:InAir()then
 local DefenderSize=Defender:GetSize()
 if DefenderSize==1 then
 self:RemoveDefenderFromSquadron(Squadron,Defender)
@@ -61987,7 +61987,9 @@ local ChangeMsg={}
 local TaskReport=REPORT:New()
 local Report=REPORT:New("Tactical Overview:")
 local DefenderGroupCount=0
-for DetectedItemID,DetectedItem in UTILS.spairs(Detection:GetDetectedItems(),function(t,a,b)return self:Order(t[a])<self:Order(t[b])end)do
+for DetectedItemID,DetectedItem in UTILS.spairs(Detection:GetDetectedItems(),function(t,a,b)
+return self:Order(t[a])<self:Order(t[b])
+end)do
 local DetectedItem=DetectedItem
 local DetectedSet=DetectedItem.Set
 local DetectedCount=DetectedSet:Count()
@@ -62081,7 +62083,9 @@ end
 end
 local Report=REPORT:New("Tactical Overviews")
 local DefenderGroupCount=0
-for DetectedItemID,DetectedItem in UTILS.spairs(Detection:GetDetectedItems(),function(t,a,b)return self:Order(t[a])<self:Order(t[b])end)do
+for DetectedItemID,DetectedItem in UTILS.spairs(Detection:GetDetectedItems(),function(t,a,b)
+return self:Order(t[a])<self:Order(t[b])
+end)do
 local DetectedItem=DetectedItem
 local DetectedSet=DetectedItem.Set
 local DetectedCount=DetectedSet:Count()
@@ -62199,10 +62203,7 @@ if Airbase:GetCoalition()==EWRCoalition then
 table.insert(AirbaseNames,AirbaseName)
 end
 end
-self.Templates=SET_GROUP
-:New()
-:FilterPrefixes(TemplatePrefixes)
-:FilterOnce()
+self.Templates=SET_GROUP:New():FilterPrefixes(TemplatePrefixes):FilterOnce()
 self:I({Airbases=AirbaseNames})
 self:I("Defining Templates for Airbases ...")
 for AirbaseID,AirbaseName in pairs(AirbaseNames)do
