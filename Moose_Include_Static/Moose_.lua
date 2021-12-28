@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T10:01:05.0000000Z-00d1aec210225ec2b69e50792cb1cfe1aafe5e6d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T10:01:44.0000000Z-d6cfaa505065314f8693d8350a0a53d5fed867a1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24370,13 +24370,11 @@ ClassName="SCORING",
 ClassID=0,
 Players={},
 }
-local _SCORINGCoalition=
-{
+local _SCORINGCoalition={
 [1]="Red",
 [2]="Blue",
 }
-local _SCORINGCategory=
-{
+local _SCORINGCategory={
 [Unit.Category.AIRPLANE]="Plane",
 [Unit.Category.HELICOPTER]="Helicopter",
 [Unit.Category.GROUND_UNIT]="Vehicle",
@@ -24409,14 +24407,12 @@ self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Hit,self._EventOnHit)
 self:HandleEvent(EVENTS.Birth)
 self:HandleEvent(EVENTS.PlayerLeaveUnit)
-self.ScoringPlayerScan=BASE:ScheduleOnce(1,
-function()
+self.ScoringPlayerScan=BASE:ScheduleOnce(1,function()
 for PlayerName,PlayerUnit in pairs(_DATABASE:GetPlayerUnits())do
 self:_AddPlayerFromUnit(PlayerUnit)
 self:SetScoringMenu(PlayerUnit:GetGroup())
 end
-end
-)
+end)
 self:OpenCSV(GameName)
 return self
 end
@@ -24567,12 +24563,11 @@ else
 if self.Players[PlayerName].UnitCoalition~=UnitCoalition and self.penaltyoncoalitionchange then
 self.Players[PlayerName].Penalty=self.Players[PlayerName].Penalty+self.CoalitionChangePenalty or 50
 self.Players[PlayerName].PenaltyCoalition=self.Players[PlayerName].PenaltyCoalition+1
-MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' changed coalition from ".._SCORINGCoalition[self.Players[PlayerName].UnitCoalition].." to ".._SCORINGCoalition[UnitCoalition]..
-"(changed "..self.Players[PlayerName].PenaltyCoalition.." times the coalition). "..self.CoalitionChangePenalty.."Penalty points added.",
-MESSAGE.Type.Information
-):ToAll()
-self:ScoreCSV(PlayerName,"","COALITION_PENALTY",1,-1*self.CoalitionChangePenalty,self.Players[PlayerName].UnitName,_SCORINGCoalition[self.Players[PlayerName].UnitCoalition],_SCORINGCategory[self.Players[PlayerName].UnitCategory],self.Players[PlayerName].UnitType,
-UnitName,_SCORINGCoalition[UnitCoalition],_SCORINGCategory[UnitCategory],UnitData:GetTypeName())
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' changed coalition from ".._SCORINGCoalition[self.Players[PlayerName].UnitCoalition].." to ".._SCORINGCoalition[UnitCoalition].."(changed "..self.Players[PlayerName].PenaltyCoalition.." times the coalition). "..
+self.CoalitionChangePenalty.."Penalty points added.",
+MESSAGE.Type.Information)
+:ToAll()
+self:ScoreCSV(PlayerName,"","COALITION_PENALTY",1,-1*self.CoalitionChangePenalty,self.Players[PlayerName].UnitName,_SCORINGCoalition[self.Players[PlayerName].UnitCoalition],_SCORINGCategory[self.Players[PlayerName].UnitCategory],self.Players[PlayerName].UnitType,UnitName,_SCORINGCoalition[UnitCoalition],_SCORINGCategory[UnitCategory],UnitData:GetTypeName())
 end
 end
 self.Players[PlayerName].UnitName=UnitName
@@ -24585,15 +24580,15 @@ self.Players[PlayerName].ThreatType=UnitThreatType
 if self.Players[PlayerName].Penalty>self.Fratricide*0.50 and self.penaltyonfratricide then
 if self.Players[PlayerName].PenaltyWarning<1 then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."': WARNING! If you continue to commit FRATRICIDE and have a PENALTY score higher than "..self.Fratricide..", you will be COURT MARTIALED and DISMISSED from this mission! \nYour total penalty is: "..self.Players[PlayerName].Penalty,
-MESSAGE.Type.Information
-):ToAll()
+MESSAGE.Type.Information)
+:ToAll()
 self.Players[PlayerName].PenaltyWarning=self.Players[PlayerName].PenaltyWarning+1
 end
 end
 if self.Players[PlayerName].Penalty>self.Fratricide and self.penaltyonfratricide then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' committed FRATRICIDE, he will be COURT MARTIALED and is DISMISSED from this mission!",
-MESSAGE.Type.Information
-):ToAll()
+MESSAGE.Type.Information)
+:ToAll()
 UnitData:GetGroup():Destroy()
 end
 end
@@ -24605,7 +24600,9 @@ local PlayerData=self.Players[PlayerName]
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
-MESSAGE:NewType(self.DisplayMessagePrefix..Text,MESSAGE.Type.Information):ToAll()
+MESSAGE:NewType(self.DisplayMessagePrefix..Text,
+MESSAGE.Type.Information)
+:ToAll()
 self:ScoreCSV(PlayerName,"","GOAL_"..string.upper(GoalTag),1,Score,nil)
 end
 end
@@ -24617,7 +24614,9 @@ local PlayerData=self.Players[PlayerName]
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
-MESSAGE:NewType(self.DisplayMessagePrefix..Text,MESSAGE.Type.Information):ToAll()
+MESSAGE:NewType(self.DisplayMessagePrefix..Text,
+MESSAGE.Type.Information)
+:ToAll()
 self:ScoreCSV(PlayerName,"","GOAL_"..string.upper(GoalTag),1,Score,PlayerUnit:GetName())
 end
 end
@@ -24636,7 +24635,9 @@ self:T(PlayerName)
 self:T(PlayerData.Mission[MissionName])
 PlayerData.Score=self.Players[PlayerName].Score+Score
 PlayerData.Mission[MissionName].ScoreTask=self.Players[PlayerName].Mission[MissionName].ScoreTask+Score
-MESSAGE:NewType(self.DisplayMessagePrefix..Mission:GetText().." : "..Text.." Score: "..Score,MESSAGE.Type.Information):ToAll()
+MESSAGE:NewType(self.DisplayMessagePrefix..Mission:GetText().." : "..Text.." Score: "..Score,
+MESSAGE.Type.Information)
+:ToAll()
 self:ScoreCSV(PlayerName,"","TASK_"..MissionName:gsub(' ','_'),1,Score,PlayerUnit:GetName())
 end
 end
@@ -24667,9 +24668,9 @@ self:F(PlayerData)
 if PlayerData.Mission[MissionName]then
 PlayerData.Score=PlayerData.Score+Score
 PlayerData.Mission[MissionName].ScoreMission=PlayerData.Mission[MissionName].ScoreMission+Score
-MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' has "..Text.." in "..Mission:GetText()..". "..
-Score.." mission score!",
-MESSAGE.Type.Information):ToAll()
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' has "..Text.." in "..Mission:GetText()..". "..Score.." mission score!",
+MESSAGE.Type.Information)
+:ToAll()
 self:ScoreCSV(PlayerName,"","MISSION_"..MissionName:gsub(' ','_'),1,Score)
 end
 end
@@ -24779,21 +24780,15 @@ Player.Penalty=Player.Penalty+10
 PlayerHit.Penalty=PlayerHit.Penalty+10
 PlayerHit.PenaltyHit=PlayerHit.PenaltyHit+1
 if TargetPlayerName~=nil then
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit friendly player '"..TargetPlayerName.."' "..
-TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.PenaltyHit.." times. "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit friendly player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.PenaltyHit.." times. "..
 "Penalty: -"..PlayerHit.Penalty..".  Score Total:"..Player.Score-Player.Penalty,
-MESSAGE.Type.Update
-)
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 else
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit friendly target "..
-TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.PenaltyHit.." times. "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit friendly target "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.PenaltyHit.." times. "..
 "Penalty: -"..PlayerHit.Penalty..".  Score Total:"..Player.Score-Player.Penalty,
-MESSAGE.Type.Update
-)
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 end
@@ -24803,31 +24798,23 @@ Player.Score=Player.Score+1
 PlayerHit.Score=PlayerHit.Score+1
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 if TargetPlayerName~=nil then
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy player '"..TargetPlayerName.."' "..
-TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
 "Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
-MESSAGE.Type.Update
-)
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 else
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy target "..
-TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
 "Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
-MESSAGE.Type.Update
-)
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 end
 self:ScoreCSV(InitPlayerName,TargetPlayerName,"HIT_SCORE",1,1,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 end
 else
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit scenery object.",
-MESSAGE.Type.Update
-)
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit scenery object.",
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(InitPlayerName,"","HIT_SCORE",1,0,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,"","Scenery",TargetUnitType)
@@ -24864,12 +24851,9 @@ if InitCoalition==TargetCoalition then
 Player.Penalty=Player.Penalty+10
 PlayerHit.Penalty=PlayerHit.Penalty+10
 PlayerHit.PenaltyHit=PlayerHit.PenaltyHit+1*self.ScaleDestroyPenalty
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit friendly target "..
-TargetUnitCategory.." ( "..TargetType.." ) "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit friendly target "..TargetUnitCategory.." ( "..TargetType.." ) "..
 "Penalty: -"..PlayerHit.Penalty.." = "..Player.Score-Player.Penalty,
-MESSAGE.Type.Update
-)
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(Event.WeaponCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(Event.WeaponPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,Event.WeaponName,Event.WeaponCoalition,Event.WeaponCategory,Event.WeaponTypeName,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
@@ -24877,21 +24861,16 @@ else
 Player.Score=Player.Score+1
 PlayerHit.Score=PlayerHit.Score+1
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit enemy target "..
-TargetUnitCategory.." ( "..TargetType.." ) "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..
 "Score: +"..PlayerHit.Score.." = "..Player.Score-Player.Penalty,
-MESSAGE.Type.Update
-)
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(Event.WeaponCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(Event.WeaponPlayerName,TargetPlayerName,"HIT_SCORE",1,1,Event.WeaponName,Event.WeaponCoalition,Event.WeaponCategory,Event.WeaponTypeName,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 end
 else
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit scenery object.",
-MESSAGE.Type.Update
-)
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit scenery object.",
+MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(Event.WeaponPlayerName,"","HIT_SCORE",1,0,Event.WeaponName,Event.WeaponCoalition,Event.WeaponCategory,Event.WeaponTypeName,TargetUnitName,"","Scenery",TargetUnitType)
@@ -24960,26 +24939,20 @@ Player.Penalty=Player.Penalty+ThreatPenalty
 TargetDestroy.Penalty=TargetDestroy.Penalty+ThreatPenalty
 TargetDestroy.PenaltyDestroy=TargetDestroy.PenaltyDestroy+1
 if Player.HitPlayers[TargetPlayerName]then
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly player '"..TargetPlayerName.."' "..
-TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Penalty: -"..TargetDestroy.Penalty.." = "..Player.Score-Player.Penalty,
-MESSAGE.Type.Information
-)
+MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly target "..
-TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly target "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Penalty: -"..TargetDestroy.Penalty.." = "..Player.Score-Player.Penalty,
-MESSAGE.Type.Information
-)
+MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 end
-Destroyed=true
 self:ScoreCSV(PlayerName,TargetPlayerName,"DESTROY_PENALTY",1,ThreatPenalty,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
+Destroyed=true
 else
 local ThreatLevelTarget=TargetThreatLevel
 local ThreatTypeTarget=TargetThreatType
@@ -24990,36 +24963,28 @@ Player.Score=Player.Score+ThreatScore
 TargetDestroy.Score=TargetDestroy.Score+ThreatScore
 TargetDestroy.ScoreDestroy=TargetDestroy.ScoreDestroy+1
 if Player.HitPlayers[TargetPlayerName]then
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy player '"..TargetPlayerName.."' "..
-TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Score: +"..TargetDestroy.Score.." = "..Player.Score-Player.Penalty,
-MESSAGE.Type.Information
-)
+MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy "..
-TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Score: +"..TargetDestroy.Score.." = "..Player.Score-Player.Penalty,
-MESSAGE.Type.Information
-)
+MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 end
-Destroyed=true
 self:ScoreCSV(PlayerName,TargetPlayerName,"DESTROY_SCORE",1,ThreatScore,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
+Destroyed=true
 local UnitName=TargetUnit:GetName()
 local Score=self.ScoringObjects[UnitName]
 if Score then
 Player.Score=Player.Score+Score
 TargetDestroy.Score=TargetDestroy.Score+Score
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Special target '"..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) ".." destroyed! "..
+MESSAGE:NewType(self.DisplayMessagePrefix.."Special target '"..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) ".." destroyed! "..
 "Player '"..PlayerName.."' receives an extra "..Score.." points! Total: "..Player.Score-Player.Penalty,
-MESSAGE.Type.Information
-)
+MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesScore()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesScore()and self:IfMessagesToCoalition())
 self:ScoreCSV(PlayerName,TargetPlayerName,"DESTROY_SCORE",1,Score,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
@@ -25032,10 +24997,8 @@ local Score=ScoreZoneData.Score
 if ScoreZone:IsVec2InZone(TargetUnit:GetVec2())then
 Player.Score=Player.Score+Score
 TargetDestroy.Score=TargetDestroy.Score+Score
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Target destroyed in zone '"..ScoreZone:GetName().."'."..
-"Player '"..PlayerName.."' receives an extra "..Score.." points! "..
-"Total: "..Player.Score-Player.Penalty,
+MESSAGE:NewType(self.DisplayMessagePrefix.."Target destroyed in zone '"..ScoreZone:GetName().."'."..
+"Player '"..PlayerName.."' receives an extra "..Score.." points! ".."Total: "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesZone()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesZone()and self:IfMessagesToCoalition())
@@ -25052,16 +25015,13 @@ local Score=ScoreZoneData.Score
 if ScoreZone:IsVec2InZone(TargetUnit:GetVec2())then
 Player.Score=Player.Score+Score
 TargetDestroy.Score=TargetDestroy.Score+Score
-MESSAGE
-:NewType(self.DisplayMessagePrefix.."Scenery destroyed in zone '"..ScoreZone:GetName().."'."..
-"Player '"..PlayerName.."' receives an extra "..Score.." points! "..
-"Total: "..Player.Score-Player.Penalty,
-MESSAGE.Type.Information
-)
+MESSAGE:NewType(self.DisplayMessagePrefix.."Scenery destroyed in zone '"..ScoreZone:GetName().."'."..
+"Player '"..PlayerName.."' receives an extra "..Score.." points! ".."Total: "..Player.Score-Player.Penalty,
+MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesZone()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesZone()and self:IfMessagesToCoalition())
-Destroyed=true
 self:ScoreCSV(PlayerName,"","DESTROY_SCORE",1,Score,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,"","Scenery",TargetUnitType)
+Destroyed=true
 end
 end
 end
@@ -25252,8 +25212,7 @@ ReportMissions=ReportMissions~=""and"\n- "..ReportMissions or ReportMissions
 self:F({ReportMissions,ScoreMissions,PenaltyMissions})
 local PlayerScore=ScoreHits+ScoreDestroys+ScoreCoalitionChanges+ScoreGoals+ScoreMissions
 local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+PenaltyGoals+PenaltyMissions
-PlayerMessage=
-string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )",
+PlayerMessage=string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )",
 PlayerName,
 PlayerScore-PlayerPenalty,
 PlayerScore,
@@ -25288,8 +25247,7 @@ ReportMissions=ReportMissions~=""and"\n- "..ReportMissions or ReportMissions
 self:F({ReportMissions,ScoreMissions,PenaltyMissions})
 local PlayerScore=ScoreHits+ScoreDestroys+ScoreCoalitionChanges+ScoreGoals+ScoreMissions
 local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+ScoreGoals+PenaltyMissions
-PlayerMessage=
-string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )%s%s%s%s%s",
+PlayerMessage=string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )%s%s%s%s%s",
 PlayerName,
 PlayerScore-PlayerPenalty,
 PlayerScore,
@@ -25327,8 +25285,7 @@ ReportMissions=ReportMissions~=""and"\n- "..ReportMissions or ReportMissions
 self:F({ReportMissions,ScoreMissions,PenaltyMissions})
 local PlayerScore=ScoreHits+ScoreDestroys+ScoreCoalitionChanges+ScoreGoals+ScoreMissions
 local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+ScoreGoals+PenaltyMissions
-PlayerMessage=
-string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )",
+PlayerMessage=string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )",
 PlayerName,
 PlayerScore-PlayerPenalty,
 PlayerScore,
@@ -25359,7 +25316,7 @@ self.CSVFile,self.err=io.open(fdir,"w+")
 if not self.CSVFile then
 error("Error: Cannot open CSV file in "..lfs.writedir())
 end
-self.CSVFile:write('"GameName","RunTime","Time","PlayerName","TargetPlayerName","ScoreType","PlayerUnitCoaltion","PlayerUnitCategory","PlayerUnitType","PlayerUnitName","TargetUnitCoalition","TargetUnitCategory","TargetUnitType","TargetUnitName","Times","Score"\n')
+self.CSVFile:write('"GameName","RunTime","Time","PlayerName","TargetPlayerName","ScoreType","PlayerUnitCoalition","PlayerUnitCategory","PlayerUnitType","PlayerUnitName","TargetUnitCoalition","TargetUnitCategory","TargetUnitType","TargetUnitName","Times","Score"\n')
 self.RunTime=os.date("%y-%m-%d_%H-%M-%S")
 else
 error("A string containing the CSV file name must be given.")
