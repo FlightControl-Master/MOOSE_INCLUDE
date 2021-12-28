@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-20T11:59:56.0000000Z-4a406604bd4bd17cdb6176963f9c8abfe1b8d470 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T07:25:31.0000000Z-f62e3391e12377fd8ed12fb3e9cb5661c43fc3cb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24399,7 +24399,9 @@ self:SetMessagesZone(true)
 self:SetScaleDestroyScore(10)
 self:SetScaleDestroyPenalty(30)
 self:SetFratricide(self.ScaleDestroyPenalty*3)
+self.penaltyonfratricide=true
 self:SetCoalitionChangePenalty(self.ScaleDestroyPenalty)
+self.penaltyoncoalitionchange=true
 self:SetDisplayMessagePrefix()
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
@@ -24515,6 +24517,14 @@ function SCORING:SetFratricide(Fratricide)
 self.Fratricide=Fratricide
 return self
 end
+function SCORING:SwitchFratricide(OnOff)
+self.penaltyonfratricide=OnOff
+return self
+end
+function SCORING:SwitchTreason(OnOff)
+self.penaltyoncoalitionchange=OnOff
+return self
+end
 function SCORING:SetCoalitionChangePenalty(CoalitionChangePenalty)
 self.CoalitionChangePenalty=CoalitionChangePenalty
 return self
@@ -24553,14 +24563,14 @@ end
 if not self.Players[PlayerName].UnitCoalition then
 self.Players[PlayerName].UnitCoalition=UnitCoalition
 else
-if self.Players[PlayerName].UnitCoalition~=UnitCoalition then
-self.Players[PlayerName].Penalty=self.Players[PlayerName].Penalty+50
+if self.Players[PlayerName].UnitCoalition~=UnitCoalition and self.penaltyoncoalitionchange then
+self.Players[PlayerName].Penalty=self.Players[PlayerName].Penalty+self.CoalitionChangePenalty or 50
 self.Players[PlayerName].PenaltyCoalition=self.Players[PlayerName].PenaltyCoalition+1
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' changed coalition from ".._SCORINGCoalition[self.Players[PlayerName].UnitCoalition].." to ".._SCORINGCoalition[UnitCoalition]..
-"(changed "..self.Players[PlayerName].PenaltyCoalition.." times the coalition). 50 Penalty points added.",
+"(changed "..self.Players[PlayerName].PenaltyCoalition.." times the coalition). "..self.CoalitionChangePenalty.."Penalty points added.",
 MESSAGE.Type.Information
 ):ToAll()
-self:ScoreCSV(PlayerName,"","COALITION_PENALTY",1,-50,self.Players[PlayerName].UnitName,_SCORINGCoalition[self.Players[PlayerName].UnitCoalition],_SCORINGCategory[self.Players[PlayerName].UnitCategory],self.Players[PlayerName].UnitType,
+self:ScoreCSV(PlayerName,"","COALITION_PENALTY",1,-1*self.CoalitionChangePenalty,self.Players[PlayerName].UnitName,_SCORINGCoalition[self.Players[PlayerName].UnitCoalition],_SCORINGCategory[self.Players[PlayerName].UnitCategory],self.Players[PlayerName].UnitType,
 UnitName,_SCORINGCoalition[UnitCoalition],_SCORINGCategory[UnitCategory],UnitData:GetTypeName())
 end
 end
@@ -24571,6 +24581,20 @@ self.Players[PlayerName].UnitType=UnitTypeName
 self.Players[PlayerName].UNIT=UnitData
 self.Players[PlayerName].ThreatLevel=UnitThreatLevel
 self.Players[PlayerName].ThreatType=UnitThreatType
+if self.Players[PlayerName].Penalty>self.Fratricide*0.50 and self.penaltyonfratricide then
+if self.Players[PlayerName].PenaltyWarning<1 then
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."': WARNING! If you continue to commit FRATRICIDE and have a PENALTY score higher than "..self.Fratricide..", you will be COURT MARTIALED and DISMISSED from this mission! \nYour total penalty is: "..self.Players[PlayerName].Penalty,
+MESSAGE.Type.Information
+):ToAll()
+self.Players[PlayerName].PenaltyWarning=self.Players[PlayerName].PenaltyWarning+1
+end
+end
+if self.Players[PlayerName].Penalty>self.Fratricide and self.penaltyonfratricide then
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' committed FRATRICIDE, he will be COURT MARTIALED and is DISMISSED from this mission!",
+MESSAGE.Type.Information
+):ToAll()
+UnitData:GetGroup():Destroy()
+end
 end
 end
 function SCORING:AddGoalScorePlayer(PlayerName,GoalTag,Text,Score)
@@ -24838,7 +24862,7 @@ if InitCoalition then
 if InitCoalition==TargetCoalition then
 Player.Penalty=Player.Penalty+10
 PlayerHit.Penalty=PlayerHit.Penalty+10
-PlayerHit.PenaltyHit=PlayerHit.PenaltyHit+1
+PlayerHit.PenaltyHit=PlayerHit.PenaltyHit+1*self.ScaleDestroyPenalty
 MESSAGE
 :NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit friendly target "..
 TargetUnitCategory.." ( "..TargetType.." ) "..
