@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-23T18:55:27.0000000Z-77f2cf5089e4d3915bf8205a1de5aa8c38ae605e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T07:28:19.0000000Z-300092d07d08918d61263b23171ef395768b070d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26749,7 +26749,8 @@ end
 elseif targetcat==Object.Category.STATIC then
 self:T("*** Target Category STATIC")
 local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterOnce()
-local tgtcoord=COORDINATE:NewFromVec3(_target:getPoint())
+local targetpoint=_target:getPoint()or{x=0,y=0,z=0}
+local tgtcoord=COORDINATE:NewFromVec3(targetpoint)
 local tgtgrp=seadset:FindNearestGroupFromPointVec2(tgtcoord)
 if tgtgrp and tgtgrp:IsAlive()then
 _targetgroup=tgtgrp
