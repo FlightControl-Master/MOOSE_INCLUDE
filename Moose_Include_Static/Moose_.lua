@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T07:28:19.0000000Z-300092d07d08918d61263b23171ef395768b070d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-29T14:41:48.0000000Z-e97e24762dfcc13dc0ebddceca752430f1a17fb1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35232,6 +35232,7 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
+goodhitrange=25,
 foulline=610,
 }
 RANGE.TargetType={
@@ -35239,6 +35240,12 @@ UNIT="Unit",
 STATIC="Static",
 COORD="Coordinate",
 }
+hypemanStrafeRollIn="nil"
+StrafeAircraftType="strafeAircraftTypeNotSet"
+Straferesult={}
+clientRollingIn=false
+clientStrafed=false
+invalidStrafe=false
 RANGE.Sound={
 RC0={filename="RC-0.ogg",duration=0.60},
 RC1={filename="RC-1.ogg",duration=0.47},
@@ -35844,6 +35851,7 @@ local text=string.format("%s, Invalid hit!\nYou already passed foul line distanc
 self:_DisplayMessageToGroup(_unit,text)
 self:T2(self.id..text)
 _currentTarget.pastfoulline=true
+invalidStrafe=true
 end
 end
 end
@@ -35930,7 +35938,9 @@ if _distance==nil or _temp<_distance then
 _distance=_temp
 _closetTarget=_bombtarget
 _closeCoord=targetcoord
-if _distance<=0.5*_bombtarget.goodhitrange then
+if _distance<=1.53 then
+_hitquality="SHACK"
+elseif _distance<=0.5*_bombtarget.goodhitrange then
 _hitquality="EXCELLENT"
 elseif _distance<=_bombtarget.goodhitrange then
 _hitquality="GOOD"
@@ -35956,6 +35966,9 @@ result.quality=_hitquality
 result.player=playerData.playername
 result.time=timer.getAbsTime()
 result.airframe=playerData.airframe
+result.roundsFired=0
+result.roundsHit=0
+result.roundsQuality="N/A"
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
@@ -35974,6 +35987,48 @@ end
 self:T(self.id..string.format("Range %s, player %s: Tracking of weapon starts in 0.1 seconds.",self.rangename,_playername))
 timer.scheduleFunction(trackBomb,EventData.weapon,timer.getTime()+0.1)
 end
+end
+function RANGE:_SaveTargetSheet(_playername,result)
+local function _savefile(filename,data)
+local f=io.open(filename,"wb")
+if f then
+f:write(data)
+f:close()
+else
+env.info("RANGEBOSS EDIT - could not save target sheet to file")
+end
+end
+local path=lfs.writedir()..[[Logs\]]
+local filename=nil
+for i=1,9999 do
+local name=UTILS.ReplaceIllegalCharacters(_playername,"_")
+filename=string.format("RANGERESULTS-%s_Targetsheet-%s-%04d.csv",self.rangename,name,i)
+if path~=nil then
+filename=path.."\\"..filename
+end
+local _exists=UTILS.FileExists(filename)
+if not _exists then
+break
+end
+end
+local data="Name,Target,Distance,Radial,Quality,Rounds Fired,Rounds Hit,Rounds Quality,Attack Heading,Weapon,Airframe,Mission Time,OS Time\n"
+local distance=result.distance
+local weapon=result.weapon
+local target=result.name
+local radial=result.radial
+local quality=result.quality
+local time=UTILS.SecondsToClock(result.time)
+local airframe=result.airframe
+local date="n/a"
+local roundsFired=result.roundsFired
+local roundsHit=result.roundsHit
+local strafeResult=result.roundsQuality
+local attackHeading=result.heading
+if os then
+date=os.date()
+end
+data=data..string.format("%s,%s,%.2f,%03d,%s,%03d,%03d,%s,%03d,%s,%s,%s,%s",_playername,target,distance,radial,quality,roundsFired,roundsHit,strafeResult,attackHeading,weapon,airframe,time,date)
+_savefile(filename,data)
 end
 function RANGE:onafterStatus(From,Event,To)
 if self.verbose>0 then
@@ -36427,10 +36482,12 @@ end
 function RANGE:_CheckInZone(_unitName)
 self:F2(_unitName)
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local unitheading=0
 if _unit and _playername then
 local function checkme(targetheading,_zone)
 local zone=_zone
 local unitheading=_unit:GetHeading()
+unitheadingStrafe=_unit:GetHeading()
 local pitheading=targetheading-180
 local deltaheading=unitheading-pitheading
 local towardspit=math.abs(deltaheading)<=90 or math.abs(deltaheading-360)<=90
@@ -36452,6 +36509,7 @@ if _currentStrafeRun then
 local zone=_currentStrafeRun.zone.polygon
 local unitinzone=checkme(_currentStrafeRun.zone.heading,zone)
 if unitinzone then
+StrafeAircraftType=_unit:GetTypeName()
 _currentStrafeRun.time=_currentStrafeRun.time+1
 else
 _currentStrafeRun.time=_currentStrafeRun.time+1
@@ -36466,31 +36524,67 @@ else
 local _ammo=self:_GetAmmo(_unitName)
 local _result=self.strafeStatus[_unitID]
 local _sound=nil
-if _result.hits>=_result.zone.goodPass*2 then
-_result.text="EXCELLENT PASS"
-_sound=RANGE.Sound.RCExcellentPass
-elseif _result.hits>=_result.zone.goodPass then
-_result.text="GOOD PASS"
-_sound=RANGE.Sound.RCGoodPass
-elseif _result.hits>=_result.zone.goodPass/2 then
-_result.text="INEFFECTIVE PASS"
-_sound=RANGE.Sound.RCIneffectivePass
-else
-_result.text="POOR PASS"
-_sound=RANGE.Sound.RCPoorPass
-end
 local shots=_result.ammo-_ammo
 local accur=0
 if shots>0 then
 accur=_result.hits/shots*100
 if accur>100 then accur=100 end
 end
+if invalidStrafe==true then
+_result.text="* INVALID - PASSED FOUL LINE *"
+_sound=RANGE.Sound.RCPoorPass
+else
+if accur>=90 then
+_result.text="DEADEYE PASS"
+_sound=RANGE.Sound.RCExcellentPass
+elseif accur>=75 then
+_result.text="EXCELLENT PASS"
+_sound=RANGE.Sound.RCExcellentPass
+elseif accur>=50 then
+_result.text="GOOD PASS"
+_sound=RANGE.Sound.RCGoodPass
+elseif accur>=25 then
+_result.text="INEFFECTIVE PASS"
+_sound=RANGE.Sound.RCIneffectivePass
+else
+_result.text="POOR PASS"
+_sound=RANGE.Sound.RCPoorPass
+end
+end
+clientStrafed=true
 local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_result.zone.name,_result.hits)
 if shots and accur then
 _text=_text..string.format("\nTotal rounds fired %d. Accuracy %.1f %%.",shots,accur)
 end
 _text=_text..string.format("\n%s",_result.text)
 self:_DisplayMessageToGroup(_unit,_text)
+local result={}
+result.name=_result.zone.name or"unknown"
+result.distance=0
+result.radial=0
+result.weapon="N/A"
+result.quality="N/A"
+result.player=_playernamee
+result.time=timer.getAbsTime()
+result.airframe=StrafeAircraftType
+result.roundsFired=shots
+result.roundsHit=_result.hits
+result.roundsQuality=_result.text
+result.strafeAccuracy=accur
+result.heading=unitheadingStrafe
+Straferesult.name=_result.zone.name or"unknown"
+Straferesult.distance=0
+Straferesult.radial=0
+Straferesult.weapon="N/A"
+Straferesult.quality="N/A"
+Straferesult.player=_playername
+Straferesult.time=timer.getAbsTime()
+Straferesult.airframe=StrafeAircraftType
+Straferesult.roundsFired=shots
+Straferesult.roundsHit=_result.hits
+Straferesult.roundsQuality=_result.text
+Straferesult.strafeAccuracy=accur
+self:_SaveTargetSheet(_playername,result)
 if self.rangecontrol then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCHitsOnTarget.filename,RANGE.Sound.RCHitsOnTarget.duration,self.soundpath)
 self.rangecontrol:Number2Transmission(string.format("%d",_result.hits))
@@ -36520,7 +36614,9 @@ local _msg=string.format("%s, rolling in on strafe pit %s.",self:_myname(_unitNa
 if self.rangecontrol then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCRollingInOnStrafeTarget.filename,RANGE.Sound.RCRollingInOnStrafeTarget.duration,self.soundpath)
 end
+clientRollingIn=true
 self:_DisplayMessageToGroup(_unit,_msg,10,true)
+hypemanStrafeRollIn=_msg
 break
 end
 end
