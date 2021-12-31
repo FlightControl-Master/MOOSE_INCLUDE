@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-28T10:01:44.0000000Z-d6cfaa505065314f8693d8350a0a53d5fed867a1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-31T16:44:01.0000000Z-a4b600b97dfaf882a265807a70f688fc0705819a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21972,23 +21972,23 @@ AIRBASE.Caucasus={
 ["Beslan"]="Beslan",
 }
 AIRBASE.Nevada={
-["Creech_AFB"]="Creech AFB",
-["Groom_Lake_AFB"]="Groom Lake AFB",
-["McCarran_International_Airport"]="McCarran International Airport",
-["Nellis_AFB"]="Nellis AFB",
-["Beatty_Airport"]="Beatty Airport",
-["Boulder_City_Airport"]="Boulder City Airport",
+["Creech_AFB"]="Creech",
+["Groom_Lake_AFB"]="Groom Lake",
+["McCarran_International_Airport"]="McCarran International",
+["Nellis_AFB"]="Nellis",
+["Beatty_Airport"]="Beatty",
+["Boulder_City_Airport"]="Boulder City",
 ["Echo_Bay"]="Echo Bay",
-["Henderson_Executive_Airport"]="Henderson Executive Airport",
-["Jean_Airport"]="Jean Airport",
-["Laughlin_Airport"]="Laughlin Airport",
+["Henderson_Executive_Airport"]="Henderson Executive",
+["Jean_Airport"]="Jean",
+["Laughlin_Airport"]="Laughlin",
 ["Lincoln_County"]="Lincoln County",
 ["Mesquite"]="Mesquite",
-["Mina_Airport_3Q0"]="Mina Airport 3Q0",
+["Mina_Airport"]="Mina",
 ["North_Las_Vegas"]="North Las Vegas",
-["Pahute_Mesa_Airstrip"]="Pahute Mesa Airstrip",
-["Tonopah_Airport"]="Tonopah Airport",
-["Tonopah_Test_Range_Airfield"]="Tonopah Test Range Airfield",
+["Pahute_Mesa_Airstrip"]="Pahute Mesa",
+["Tonopah_Airport"]="Tonopah",
+["Tonopah_Test_Range_Airfield"]="Tonopah Test Range",
 }
 AIRBASE.Normandy={
 ["Saint_Pierre_du_Mont"]="Saint Pierre du Mont",
