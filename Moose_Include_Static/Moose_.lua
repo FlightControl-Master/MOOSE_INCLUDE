@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-30T06:46:14.0000000Z-9686e74feb1e378c9e61276d3351feb7ce971277 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-31T14:36:35.0000000Z-4ce09a3845f1fa2fe90cab59a0f9eb4bb400c178 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47494,6 +47494,307 @@ end
 function AUTOLASE:onbeforeCancel(From,Event,To)
 self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
 self:__Stop(2)
+return self
+end
+AICSAR={
+ClassName="AICSAR",
+version="0.0.1",
+lid="",
+coalition=coalition.side.BLUE,
+template="",
+helotemplate="",
+alias="",
+farp=nil,
+farpzone=nil,
+maxdistance=UTILS.NMToMeters(50),
+pilotqueue={},
+pilotindex=0,
+helos={},
+verbose=true,
+rescuezoneradius=200,
+rescued={},
+autoonoff=true,
+playerset=nil,
+}
+function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone)
+local self=BASE:Inherit(self,FSM:New())
+if Coalition and type(Coalition)=="string"then
+if Coalition=="blue"then
+self.coalition=coalition.side.BLUE
+self.coalitiontxt=Coalition
+elseif Coalition=="red"then
+self.coalition=coalition.side.RED
+self.coalitiontxt=Coalition
+elseif Coalition=="neutral"then
+self.coalition=coalition.side.NEUTRAL
+self.coalitiontxt=Coalition
+else
+self:E("ERROR: Unknown coalition in CSAR!")
+end
+else
+self.coalition=Coalition
+self.coalitiontxt=string.lower(UTILS.GetCoalitionName(self.coalition))
+end
+if Alias then
+self.alias=tostring(Alias)
+else
+self.alias="Red Cross"
+if self.coalition then
+if self.coalition==coalition.side.RED then
+self.alias="IFRC"
+elseif self.coalition==coalition.side.BLUE then
+self.alias="CSAR"
+end
+end
+end
+self.template=Pilottemplate
+self.helotemplate=Helotemplate
+self.farp=FARP
+self.farpzone=MASHZone
+self.playerset=SET_CLIENT:New():FilterActive(true):FilterCategories("helicopter"):FilterStart()
+self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","PilotDown","*")
+self:AddTransition("*","PilotPickedUp","*")
+self:AddTransition("*","PilotRescued","*")
+self:AddTransition("*","PilotKIA","*")
+self:AddTransition("*","HeloDown","*")
+self:AddTransition("*","Stop","Stopped")
+self:HandleEvent(EVENTS.LandingAfterEjection)
+self:__Start(math.random(2,5))
+self:I(self.lid.." AI CSAR Starting")
+return self
+end
+function AICSAR:OnEventLandingAfterEjection(EventData)
+self:T(self.lid.."OnEventLandingAfterEjection ID="..EventData.id)
+if self.autoonoff then
+if self.playerset:CountAlive()>0 then
+return self
+end
+end
+local _event=EventData
+local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
+local _country=_event.initiator:getCountry()
+local _coalition=coalition.getCountryCoalition(_country)
+local distancetofarp=_LandingPos:Get2DDistance(self.farp:GetCoordinate())
+if _coalition==self.coalition and distancetofarp<=self.maxdistance then
+self:T(self.lid.."Spawning new Pilot")
+self.pilotindex=self.pilotindex+1
+local newpilot=SPAWN:NewWithAlias(self.template,string.format("%s-AICSAR-%d",self.template,self.pilotindex))
+newpilot:InitDelayOff()
+newpilot:OnSpawnGroup(
+function(grp)
+self.pilotqueue[self.pilotindex]=grp
+end
+)
+newpilot:SpawnFromCoordinate(_LandingPos)
+Unit.destroy(_event.initiator)
+self:__PilotDown(2,_LandingPos,true)
+if self.verbose then
+local text="Roger, Pilot, we hear you. Stay where you are, a helo is on the way!"
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+elseif _coalition==self.coalition and distancetofarp>self.maxdistance then
+self:T(self.lid.."Pilot out of reach")
+self:__PilotDown(2,_LandingPos,false)
+if self.verbose then
+local text="Sorry, Pilot. You're behind maximum operational distance! Good Luck!"
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+end
+return self
+end
+function AICSAR:_GetFlight()
+self:T(self.lid.."_GetFlight")
+local newhelo=SPAWN:NewWithAlias(self.helotemplate,self.helotemplate..math.random(1,10000))
+:InitDelayOff()
+:InitUnControlled(true)
+:Spawn()
+local nhelo=FLIGHTGROUP:New(newhelo)
+nhelo:SetHomebase(self.farp)
+nhelo:Activate()
+return nhelo
+end
+function AICSAR:_InitMission(Pilot,Index)
+self:T(self.lid.."_InitMission")
+local pickupzone=ZONE_GROUP:New(Pilot:GetName(),Pilot,self.rescuezoneradius)
+local opstransport=OPSTRANSPORT:New(Pilot,pickupzone,self.farpzone)
+local helo=self:_GetFlight()
+helo.AICSARReserved=true
+helo:AddOpsTransport(opstransport)
+local function AICPickedUp(Helo,Cargo,Index)
+self:__PilotPickedUp(2,Helo,Cargo,Index)
+end
+local function AICHeloDead(Helo,Index)
+self:__HeloDown(2,Helo,Index)
+end
+function helo:OnAfterLoadingDone(From,Event,To)
+AICPickedUp(helo,helo:GetCargoGroups(),Index)
+end
+function helo:OnAfterDead(From,Event,To)
+AICHeloDead(helo,Index)
+end
+self.helos[Index]=helo
+return self
+end
+function AICSAR:_CheckInMashZone(Pilot)
+self:T(self.lid.."_CheckQueue")
+if Pilot:IsInZone(self.farpzone)then
+return true
+else
+return false
+end
+end
+function AICSAR:_CheckHelos()
+self:T(self.lid.."_CheckHelos")
+for _index,_helo in pairs(self.helos)do
+local helo=_helo
+if helo and helo.ClassName=="FLIGHTGROUP"then
+local state=helo:GetState()
+local name=helo:GetName()
+self:T("Helo group "..name.." in state "..state)
+if state=="Arrived"then
+helo:__Stop(1)
+self.helos[_index]=nil
+end
+else
+self.helos[_index]=nil
+end
+end
+return self
+end
+function AICSAR:_CheckQueue()
+self:T(self.lid.."_CheckQueue")
+for _index,_pilot in pairs(self.pilotqueue)do
+local classname=_pilot.ClassName and _pilot.ClassName or"NONE"
+local name=_pilot.GroupName and _pilot.GroupName or"NONE"
+if _pilot and _pilot.ClassName and _pilot.ClassName=="GROUP"then
+if not _pilot.AICSAR then
+_pilot.AICSAR={}
+_pilot.AICSAR.Status="Initiated"
+_pilot.AICSAR.Boarded=false
+self:_InitMission(_pilot,_index)
+break
+else
+local flightgroup=self.helos[_index]
+if flightgroup then
+local state=flightgroup:GetState()
+_pilot.AICSAR.Status=state
+end
+if self:_CheckInMashZone(_pilot)then
+self:T("Pilot".._pilot.GroupName.." rescued!")
+_pilot:Destroy(false)
+self.pilotqueue[_index]=nil
+self.rescued[_index]=true
+self:__PilotRescued(2)
+flightgroup.AICSARReserved=false
+end
+end
+end
+end
+return self
+end
+function AICSAR:onafterStart(From,Event,To)
+self:T({From,Event,To})
+self:__Status(3)
+return self
+end
+function AICSAR:onafterStatus(From,Event,To)
+self:T({From,Event,To})
+self:_CheckQueue()
+self:_CheckHelos()
+self:__Status(30)
+return self
+end
+function AICSAR:onafterStop(From,Event,To)
+self:T({From,Event,To})
+self:UnHandleEvent(EVENTS.LandingAfterEjection)
+return self
+end
+function AICSAR:onafterPilotDown(From,Event,To,Coordinate,InReach)
+self:T({From,Event,To})
+local CoordinateText=Coordinate:ToStringMGRS()
+local inreach=tostring(InReach)
+local text=string.format("Pilot down at %s. In reach = %s",CoordinateText,inreach)
+self:T(text)
+if self.verbose then
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+return self
+end
+function AICSAR:onafterPilotKIA(From,Event,To)
+self:T({From,Event,To})
+if self.verbose then
+MESSAGE:New("Pilot KIA!",15,"AICSAR"):ToCoalition(self.coalition)
+end
+return self
+end
+function AICSAR:onafterHeloDown(From,Event,To,Helo,Index)
+self:T({From,Event,To})
+if self.verbose then
+MESSAGE:New("CSAR Helo Down!",15,"AICSAR"):ToCoalition(self.coalition)
+end
+local findex=0
+local fhname=Helo:GetName()
+if Index and Index>0 then
+findex=Index
+else
+for _index,_helo in pairs(self.helos)do
+local helo=_helo
+local hname=helo:GetName()
+if fhname==hname then
+findex=_index
+break
+end
+end
+end
+if findex>0 and not self.rescued[findex]then
+local pilot=self.pilotqueue[findex]
+self.helos[findex]=nil
+if pilot.AICSAR.Boarded then
+self:T("Helo Down: Found DEAD Pilot ID "..findex.." with name "..pilot:GetName())
+self:__PilotKIA(2)
+self.pilotqueue[findex]=nil
+else
+self:T("Helo Down: Found ALIVE Pilot ID "..findex.." with name "..pilot:GetName())
+self:_InitMission(pilot,findex)
+end
+end
+return self
+end
+function AICSAR:onafterPilotRescued(From,Event,To)
+self:T({From,Event,To})
+if self.verbose then
+MESSAGE:New("Pilot rescued!",15,"AICSAR"):ToCoalition(self.coalition)
+end
+return self
+end
+function AICSAR:onafterPilotPickedUp(From,Event,To,Helo,CargoTable,Index)
+self:T({From,Event,To})
+if self.verbose then
+MESSAGE:New("Pilot picked up!",15,"AICSAR"):ToCoalition(self.coalition)
+end
+local findex=0
+local fhname=Helo:GetName()
+if Index and Index>0 then
+findex=Index
+else
+for _index,_helo in pairs(self.helos)do
+local helo=_helo
+local hname=helo:GetName()
+if fhname==hname then
+findex=_index
+break
+end
+end
+end
+if findex>0 then
+local pilot=self.pilotqueue[findex]
+self:T("Boarded: Found Pilot ID "..findex.." with name "..pilot:GetName())
+pilot.AICSAR.Boarded=true
+end
 return self
 end
 AIRBOSS={
