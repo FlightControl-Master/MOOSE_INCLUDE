@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2021-12-31T16:51:48.0000000Z-ec935356aacde40a287059e067adfdab8e0edf84 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-01T13:57:40.0000000Z-a94098494aa9ebf6505230eeb04b2677bb24673a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47656,7 +47656,7 @@ local state=helo:GetState()
 local name=helo:GetName()
 self:T("Helo group "..name.." in state "..state)
 if state=="Arrived"then
-helo:__Stop(1)
+helo:__Stop(5)
 self.helos[_index]=nil
 end
 else
