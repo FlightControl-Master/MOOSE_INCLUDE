@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-01T13:57:40.0000000Z-a94098494aa9ebf6505230eeb04b2677bb24673a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-04T14:09:47.0000000Z-65abbf9563dc66d8a6ae52921f0e91a31f7e5891 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47498,7 +47498,7 @@ return self
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.0.1",
+version="0.0.2",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -47515,6 +47515,40 @@ rescuezoneradius=200,
 rescued={},
 autoonoff=true,
 playerset=nil,
+Messages={},
+SRS=nil,
+SRSRadio=false,
+SRSFrequency=243,
+SRSPath="\\",
+SRSModulation=radio.modulation.AM,
+SRSSoundPath=nil,
+}
+AICSAR.Messages={
+INITIALOK="Roger, Pilot, we hear you. Stay where you are, a helo is on the way!",
+INITIALNOTOK="Sorry, Pilot. You're behind maximum operational distance! Good Luck!",
+PILOTDOWN="Pilot down at %s!",
+PILOTKIA="Pilot KIA!",
+HELODOWN="CSAR Helo Down!",
+PILOTRESCUED="Pilot rescued!",
+PILOTINHELO="Pilot picked up!",
+}
+AICSAR.RadioMessages={
+INITIALOK="initialok.ogg",
+INITIALNOTOK="initialnotok.ogg",
+PILOTDOWN="pilotdown.ogg",
+PILOTKIA="pilotkia.ogg",
+HELODOWN="helodown.ogg",
+PILOTRESCUED="pilotrescued.ogg",
+PILOTINHELO="pilotinhelo.ogg",
+}
+AICSAR.RadioLength={
+INITIALOK=4.1,
+INITIALNOTOK=4.6,
+PILOTDOWN=2.6,
+PILOTKIA=1.1,
+HELODOWN=2.1,
+PILOTRESCUED=3.5,
+PILOTINHELO=2.6,
 }
 function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone)
 local self=BASE:Inherit(self,FSM:New())
@@ -47552,6 +47586,12 @@ self.helotemplate=Helotemplate
 self.farp=FARP
 self.farpzone=MASHZone
 self.playerset=SET_CLIENT:New():FilterActive(true):FilterCategories("helicopter"):FilterStart()
+self.SRS=nil
+self.SRSRadio=false
+self.SRSFrequency=243
+self.SRSPath="\\"
+self.SRSModulation=radio.modulation.AM
+self.SRSSoundPath=nil
 self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -47565,6 +47605,18 @@ self:AddTransition("*","Stop","Stopped")
 self:HandleEvent(EVENTS.LandingAfterEjection)
 self:__Start(math.random(2,5))
 self:I(self.lid.." AI CSAR Starting")
+return self
+end
+function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath)
+self:T(self.lid.."SetSRSRadio to "..tostring(OnOff))
+self.SRSRadio=OnOff or true
+self.SRSFrequency=Frequency or 243
+self.SRSPath=Path or"c:\\"
+self.SRSModulation=Modulation or radio.modulation.AM
+self.SRSSoundPath=SoundPath or nil
+if OnOff then
+self.SRS=MSRS:New(Path,Frequency,Modulation)
+end
 return self
 end
 function AICSAR:OnEventLandingAfterEjection(EventData)
@@ -47593,15 +47645,23 @@ newpilot:SpawnFromCoordinate(_LandingPos)
 Unit.destroy(_event.initiator)
 self:__PilotDown(2,_LandingPos,true)
 if self.verbose then
-local text="Roger, Pilot, we hear you. Stay where you are, a helo is on the way!"
+local text=AICSAR.Messages.INITIALOK
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALOK,nil,AICSAR.RadioLength.INITIALOK)
+self.SRS:PlaySoundFile(sound,2)
 end
 elseif _coalition==self.coalition and distancetofarp>self.maxdistance then
 self:T(self.lid.."Pilot out of reach")
 self:__PilotDown(2,_LandingPos,false)
 if self.verbose then
-local text="Sorry, Pilot. You're behind maximum operational distance! Good Luck!"
+local text=AICSAR.Messages.INITIALNOTOK
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALNOTOK,nil,AICSAR.RadioLength.INITIALNOTOK)
+self.SRS:PlaySoundFile(sound,2)
 end
 end
 return self
@@ -47717,24 +47777,36 @@ function AICSAR:onafterPilotDown(From,Event,To,Coordinate,InReach)
 self:T({From,Event,To})
 local CoordinateText=Coordinate:ToStringMGRS()
 local inreach=tostring(InReach)
-local text=string.format("Pilot down at %s. In reach = %s",CoordinateText,inreach)
+local text=string.format(AICSAR.Messages.PILOTDOWN,CoordinateText)
 self:T(text)
 if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTDOWN,nil,AICSAR.RadioLength.PILOTDOWN)
+self.SRS:PlaySoundFile(sound,2)
 end
 return self
 end
 function AICSAR:onafterPilotKIA(From,Event,To)
 self:T({From,Event,To})
 if self.verbose then
-MESSAGE:New("Pilot KIA!",15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(AICSAR.Messages.PILOTKIA,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTKIA,nil,AICSAR.RadioLength.PILOTKIA)
+self.SRS:PlaySoundFile(sound,2)
 end
 return self
 end
 function AICSAR:onafterHeloDown(From,Event,To,Helo,Index)
 self:T({From,Event,To})
 if self.verbose then
-MESSAGE:New("CSAR Helo Down!",15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(AICSAR.Messages.HELODOWN,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.HELODOWN,nil,AICSAR.RadioLength.HELODOWN)
+self.SRS:PlaySoundFile(sound,2)
 end
 local findex=0
 local fhname=Helo:GetName()
@@ -47767,14 +47839,22 @@ end
 function AICSAR:onafterPilotRescued(From,Event,To)
 self:T({From,Event,To})
 if self.verbose then
-MESSAGE:New("Pilot rescued!",15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(AICSAR.Messages.PILOTRESCUED,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTRESCUED,nil,AICSAR.RadioLength.PILOTRESCUED)
+self.SRS:PlaySoundFile(sound,2)
 end
 return self
 end
 function AICSAR:onafterPilotPickedUp(From,Event,To,Helo,CargoTable,Index)
 self:T({From,Event,To})
 if self.verbose then
-MESSAGE:New("Pilot picked up!",15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(AICSAR.Messages.PILOTINHELO,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTINHELO,nil,AICSAR.RadioLength.PILOTINHELO)
+self.SRS:PlaySoundFile(sound,2)
 end
 local findex=0
 local fhname=Helo:GetName()
