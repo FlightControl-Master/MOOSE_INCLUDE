@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-04T14:09:47.0000000Z-65abbf9563dc66d8a6ae52921f0e91a31f7e5891 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-06T12:47:47.0000000Z-de71213eed8abc08f4a42a5030e1c3a8fccb9bb1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47498,7 +47498,7 @@ return self
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.0.2",
+version="0.0.3",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -47522,11 +47522,15 @@ SRSFrequency=243,
 SRSPath="\\",
 SRSModulation=radio.modulation.AM,
 SRSSoundPath=nil,
+DCSRadio=false,
+DCSFrequency=243,
+DCSModulation=radio.modulation.AM,
+DCSRadioGroup=nil,
 }
 AICSAR.Messages={
 INITIALOK="Roger, Pilot, we hear you. Stay where you are, a helo is on the way!",
 INITIALNOTOK="Sorry, Pilot. You're behind maximum operational distance! Good Luck!",
-PILOTDOWN="Pilot down at %s!",
+PILOTDOWN="Pilot down at ",
 PILOTKIA="Pilot KIA!",
 HELODOWN="CSAR Helo Down!",
 PILOTRESCUED="Pilot rescued!",
@@ -47563,7 +47567,7 @@ elseif Coalition=="neutral"then
 self.coalition=coalition.side.NEUTRAL
 self.coalitiontxt=Coalition
 else
-self:E("ERROR: Unknown coalition in CSAR!")
+self:E("ERROR: Unknown coalition in AICSAR!")
 end
 else
 self.coalition=Coalition
@@ -47592,6 +47596,12 @@ self.SRSFrequency=243
 self.SRSPath="\\"
 self.SRSModulation=radio.modulation.AM
 self.SRSSoundPath=nil
+self.DCSRadio=false
+self.DCSFrequency=243
+self.DCSModulation=radio.modulation.AM
+self.DCSRadioGroup=nil
+self.DCSRadioQueue=nil
+self.MGRS_Accuracy=2
 self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -47608,8 +47618,9 @@ self:I(self.lid.." AI CSAR Starting")
 return self
 end
 function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath)
+self:T(self.lid.."SetSRSRadio")
 self:T(self.lid.."SetSRSRadio to "..tostring(OnOff))
-self.SRSRadio=OnOff or true
+self.SRSRadio=OnOff and true
 self.SRSFrequency=Frequency or 243
 self.SRSPath=Path or"c:\\"
 self.SRSModulation=Modulation or radio.modulation.AM
@@ -47617,6 +47628,31 @@ self.SRSSoundPath=SoundPath or nil
 if OnOff then
 self.SRS=MSRS:New(Path,Frequency,Modulation)
 end
+return self
+end
+function AICSAR:SetDCSRadio(OnOff,Frequency,Modulation,Group)
+self:T(self.lid.."SetDCSRadio")
+self:T(self.lid.."SetDCSRadio to "..tostring(OnOff))
+self.DCSRadio=OnOff and true
+self.DCSFrequency=Frequency or 243
+self.DCSModulation=Modulation or radio.modulation.AM
+self.DCSRadioGroup=Group
+if self.DCSRadio then
+self.DCSRadioQueue=RADIOQUEUE:New(Frequency,Modulation,"AI-CSAR")
+self.DCSRadioQueue:Start(5,5)
+self.DCSRadioQueue:SetRadioPower(1000)
+self.DCSRadioQueue:SetSenderCoordinate(Group:GetCoordinate())
+else
+if self.DCSRadioQueue then
+self.DCSRadioQueue:Stop()
+end
+end
+return self
+end
+function AICSAR:DCSRadioBroadcast(Soundfile,Duration,Subtitle)
+self:T(self.lid.."DCSRadioBroadcast")
+local radioqueue=self.DCSRadioQueue
+radioqueue:NewTransmission(Soundfile,Duration,nil,2,nil,Subtitle,10)
 return self
 end
 function AICSAR:OnEventLandingAfterEjection(EventData)
@@ -47631,6 +47667,21 @@ local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
 local _country=_event.initiator:getCountry()
 local _coalition=coalition.getCountryCoalition(_country)
 local distancetofarp=_LandingPos:Get2DDistance(self.farp:GetCoordinate())
+if _coalition==self.coalition then
+if self.verbose then
+local setting={}
+setting.MGRS_Accuracy=self.MGRS_Accuracy
+local location=_LandingPos:ToStringMGRS(setting)
+local text=AICSAR.Messages.PILOTDOWN..location.."!"
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTDOWN,nil,AICSAR.RadioLength.PILOTDOWN)
+self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTDOWN,AICSAR.RadioLength.PILOTDOWN,AICSAR.Messages.PILOTDOWN)
+end
+end
 if _coalition==self.coalition and distancetofarp<=self.maxdistance then
 self:T(self.lid.."Spawning new Pilot")
 self.pilotindex=self.pilotindex+1
@@ -47644,25 +47695,9 @@ end
 newpilot:SpawnFromCoordinate(_LandingPos)
 Unit.destroy(_event.initiator)
 self:__PilotDown(2,_LandingPos,true)
-if self.verbose then
-local text=AICSAR.Messages.INITIALOK
-MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
-end
-if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALOK,nil,AICSAR.RadioLength.INITIALOK)
-self.SRS:PlaySoundFile(sound,2)
-end
 elseif _coalition==self.coalition and distancetofarp>self.maxdistance then
 self:T(self.lid.."Pilot out of reach")
 self:__PilotDown(2,_LandingPos,false)
-if self.verbose then
-local text=AICSAR.Messages.INITIALNOTOK
-MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
-end
-if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALNOTOK,nil,AICSAR.RadioLength.INITIALNOTOK)
-self.SRS:PlaySoundFile(sound,2)
-end
 end
 return self
 end
@@ -47771,20 +47806,39 @@ end
 function AICSAR:onafterStop(From,Event,To)
 self:T({From,Event,To})
 self:UnHandleEvent(EVENTS.LandingAfterEjection)
+if self.DCSRadioQueue then
+self.DCSRadioQueue:Stop()
+end
 return self
 end
 function AICSAR:onafterPilotDown(From,Event,To,Coordinate,InReach)
 self:T({From,Event,To})
 local CoordinateText=Coordinate:ToStringMGRS()
 local inreach=tostring(InReach)
-local text=string.format(AICSAR.Messages.PILOTDOWN,CoordinateText)
+if InReach then
+local text=AICSAR.Messages.INITIALOK
 self:T(text)
 if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTDOWN,nil,AICSAR.RadioLength.PILOTDOWN)
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALOK,nil,AICSAR.RadioLength.INITIALOK)
 self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.INITIALOK,AICSAR.RadioLength.INITIALOK,AICSAR.Messages.INITIALOK)
+end
+else
+local text=AICSAR.Messages.INITIALNOTOK
+self:T(text)
+if self.verbose then
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALNOTOK,nil,AICSAR.RadioLength.INITIALNOTOK)
+self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.INITIALNOTOK,AICSAR.RadioLength.INITIALNOTOK,AICSAR.Messages.INITIALNOTOK)
+end
 end
 return self
 end
@@ -47796,6 +47850,8 @@ end
 if self.SRSRadio then
 local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTKIA,nil,AICSAR.RadioLength.PILOTKIA)
 self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTKIA,AICSAR.RadioLength.PILOTKIA,AICSAR.Messages.PILOTKIA)
 end
 return self
 end
@@ -47807,6 +47863,8 @@ end
 if self.SRSRadio then
 local sound=SOUNDFILE:New(AICSAR.RadioMessages.HELODOWN,nil,AICSAR.RadioLength.HELODOWN)
 self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.HELODOWN,AICSAR.RadioLength.HELODOWN,AICSAR.Messages.HELODOWN)
 end
 local findex=0
 local fhname=Helo:GetName()
@@ -47844,6 +47902,8 @@ end
 if self.SRSRadio then
 local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTRESCUED,nil,AICSAR.RadioLength.PILOTRESCUED)
 self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTRESCUED,AICSAR.RadioLength.PILOTRESCUED,AICSAR.Messages.PILOTRESCUED)
 end
 return self
 end
@@ -47855,6 +47915,8 @@ end
 if self.SRSRadio then
 local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTINHELO,nil,AICSAR.RadioLength.PILOTINHELO)
 self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTINHELO,AICSAR.RadioLength.PILOTINHELO,AICSAR.Messages.PILOTINHELO)
 end
 local findex=0
 local fhname=Helo:GetName()
