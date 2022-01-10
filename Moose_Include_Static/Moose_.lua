@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-06T12:47:47.0000000Z-de71213eed8abc08f4a42a5030e1c3a8fccb9bb1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-10T14:10:49.0000000Z-9721c19e485e467c68fddbe9ed25f12202bddfb6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35969,6 +35969,7 @@ result.airframe=playerData.airframe
 result.roundsFired=0
 result.roundsHit=0
 result.roundsQuality="N/A"
+result.rangename=self.rangename
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
@@ -36584,6 +36585,7 @@ Straferesult.roundsFired=shots
 Straferesult.roundsHit=_result.hits
 Straferesult.roundsQuality=_result.text
 Straferesult.strafeAccuracy=accur
+Straferesult.rangename=self.rangename
 self:_SaveTargetSheet(_playername,result)
 if self.rangecontrol then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCHitsOnTarget.filename,RANGE.Sound.RCHitsOnTarget.duration,self.soundpath)
