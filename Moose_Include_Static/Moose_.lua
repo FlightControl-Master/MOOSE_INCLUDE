@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-04T14:10:25.0000000Z-70d922fad65de1da8794d61c95e9c649bf167bf6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-10T14:10:30.0000000Z-c2ecd86bb4dd3e725ca9ad790a14494e265dd828 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22437,13 +22437,11 @@ local parkingdata=self:GetParkingSpotsTable(termtype)
 local airbasename=self:GetName()
 self:E(string.format("Parking spots at %s for terminal type %s:",airbasename,tostring(termtype)))
 for _,_spot in pairs(parkingdata)do
-local _text=string.format("Term Index=%d, Term Type=%d, Free=%s, TOAC=%s, Term ID0=%d, Dist2Rwy=%.1f m",
-_spot.TerminalID,_spot.TerminalType,tostring(_spot.Free),tostring(_spot.TOAC),_spot.TerminalID0,_spot.DistToRwy)
+local _text=string.format("Term Index=%d, Term Type=%d, Free=%s, TOAC=%s, Term ID0=%d, Dist2Rwy=%.1f m",_spot.TerminalID,_spot.TerminalType,tostring(_spot.Free),tostring(_spot.TOAC),_spot.TerminalID0,_spot.DistToRwy)
 if mark then
 _spot.Coordinate:MarkToAll(_text)
 end
-local _text=string.format("%s, Term Index=%3d, Term Type=%03d, Free=%5s, TOAC=%5s, Term ID0=%3d, Dist2Rwy=%.1f m",
-airbasename,_spot.TerminalID,_spot.TerminalType,tostring(_spot.Free),tostring(_spot.TOAC),_spot.TerminalID0,_spot.DistToRwy)
+local _text=string.format("%s, Term Index=%3d, Term Type=%03d, Free=%5s, TOAC=%5s, Term ID0=%3d, Dist2Rwy=%.1f m",airbasename,_spot.TerminalID,_spot.TerminalType,tostring(_spot.Free),tostring(_spot.TOAC),_spot.TerminalID0,_spot.DistToRwy)
 self:E(_text)
 end
 end
@@ -61089,7 +61087,7 @@ local Target=DefenderTask.Target
 local Message="Clearing ("..DefenderTask.Type..") "
 Message=Message..Defender:GetName()
 if Target then
-Message=Message..(Target and(" from "..Target.Index.." ["..Target.Set:Count().."]"))or""
+Message=Message..((Target and(" from "..Target.Index.." ["..Target.Set:Count().."]"))or"")
 end
 self:F({Target=Message})
 end
@@ -61112,7 +61110,7 @@ end
 function AI_A2A_DISPATCHER:SetDefenderTaskTarget(Defender,AttackerDetection)
 local Message="("..self.DefenderTasks[Defender].Type..") "
 Message=Message..Defender:GetName()
-Message=Message..(AttackerDetection and(" target "..AttackerDetection.Index.." ["..AttackerDetection.Set:Count().."]"))or""
+Message=Message..((AttackerDetection and(" target "..AttackerDetection.Index.." ["..AttackerDetection.Set:Count().."]"))or"")
 self:F({AttackerDetection=Message})
 if AttackerDetection then
 self.DefenderTasks[Defender].Target=AttackerDetection
