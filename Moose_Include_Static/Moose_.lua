@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-10T14:10:49.0000000Z-9721c19e485e467c68fddbe9ed25f12202bddfb6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-15T10:32:51.0000000Z-3263ba14400d10a3f16d92d94ce9c3fded6ece7e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -77355,7 +77355,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
 }
-CTLD.version="1.0.1"
+CTLD.version="1.0.2"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -77463,6 +77463,7 @@ local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
 self.enableslingload=false
+self.basetype="container_cargo"
 self.SmokeColor=SMOKECOLOR.Red
 self.FlareColor=FLARECOLOR.Red
 for i=1,100 do
@@ -77882,7 +77883,7 @@ end
 local cratecoord=position:Translate(cratedistance,rheading)
 local cratevec2=cratecoord:GetVec2()
 self.CrateCounter=self.CrateCounter+1
-local basetype="container_cargo"
+local basetype=self.basetype or"container_cargo"
 if isstatic then
 basetype=cratetemplate
 end
@@ -77950,7 +77951,7 @@ if cgotype==CTLD_CARGO.Enum.STATIC then
 cratetemplate=cargotype:GetTemplates()
 isstatic=true
 end
-local basetype="container_cargo"
+local basetype=self.basetype or"container_cargo"
 if isstatic then
 basetype=cratetemplate
 end
