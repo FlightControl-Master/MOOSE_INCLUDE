@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-15T10:32:51.0000000Z-3263ba14400d10a3f16d92d94ce9c3fded6ece7e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-16T10:39:37.0000000Z-36a5e919cd93e54391e23e9e278e9df7146119b2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75771,7 +75771,8 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="1.0.1r1"
+CSAR.AircraftType["UH-60L"]=10
+CSAR.version="1.0.2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -77354,8 +77355,9 @@ CTLD.UnitTypes={
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
+["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16},
 }
-CTLD.version="1.0.2"
+CTLD.version="1.0.3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
