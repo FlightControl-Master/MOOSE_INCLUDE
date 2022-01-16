@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-15T10:34:23.0000000Z-964831becf0054c6a3a34f10cc5eab4b01f68676 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-16T10:39:19.0000000Z-41c9c15ae50c39a7425f84cbbce573e4fd853413 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56164,8 +56164,9 @@ CTLD.UnitTypes={
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
+["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16},
 }
-CTLD.version="1.0.2"
+CTLD.version="1.0.3"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -58685,7 +58686,8 @@ CSAR.AircraftType["Mi-8MT"]=12
 CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
-CSAR.version="1.0.1r1"
+CSAR.AircraftType["UH-60L"]=10
+CSAR.version="1.0.2"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -58839,9 +58841,7 @@ local freq=freq/1000
 for i=1,10 do
 math.random(i,10000)
 end
-if point:IsSurfaceTypeWater()then
-point.y=0
-end
+if point:IsSurfaceTypeWater()then point.y=0 end
 local template=self.template
 local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
 local coalition=self.coalition
@@ -58864,8 +58864,8 @@ if immortalcrew then
 local _setImmortal={
 id='SetImmortal',
 params={
-value=true,
-},
+value=true
+}
 }
 group:SetCommand(_setImmortal)
 end
@@ -58873,8 +58873,8 @@ if invisiblecrew then
 local _setInvisible={
 id='SetInvisible',
 params={
-value=true,
-},
+value=true
+}
 }
 group:SetCommand(_setInvisible)
 end
@@ -58888,9 +58888,7 @@ self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessa
 local template=self.template
 if not _freq then
 _freq=self:_GenerateADFFrequency()
-if not _freq then
-_freq=333000
-end
+if not _freq then _freq=333000 end
 end
 local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
 local _typeName=_typeName or"Pilot"
@@ -59250,7 +59248,14 @@ return true
 end
 local found,downedgrouptable=self:_CheckNameInDownedPilots(_woundedGroupName)
 local grouptable=downedgrouptable
-self.inTransitGroups[_heliName][_woundedGroupName]={originalUnit=grouptable.originalUnit,woundedGroup=_woundedGroupName,side=self.coalition,desc=grouptable.desc,player=grouptable.player}
+self.inTransitGroups[_heliName][_woundedGroupName]=
+{
+originalUnit=grouptable.originalUnit,
+woundedGroup=_woundedGroupName,
+side=self.coalition,
+desc=grouptable.desc,
+player=grouptable.player,
+}
 _woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
@@ -59329,9 +59334,7 @@ end
 if _heliUnit:InAir()and _unitsInHelicopter+1<=_maxUnits then
 if _distance<self.rescuehoverdistance then
 local leaderheight=_woundedLeader:GetHeight()
-if leaderheight<0 then
-leaderheight=0
-end
+if leaderheight<0 then leaderheight=0 end
 local _height=_heliUnit:GetHeight()-leaderheight
 if _height<=self.rescuehoverheight then
 local _time=self.hoverStatus[_lookupKeyHeli]
@@ -59537,9 +59540,7 @@ return
 end
 local _closest=self:_GetClosestDownedPilot(_heli)
 local smokedist=8000
-if self.approachdist_far>smokedist then
-smokedist=self.approachdist_far
-end
+if self.approachdist_far>smokedist then smokedist=self.approachdist_far end
 if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
 local _distance=0
@@ -59581,9 +59582,7 @@ if _heli==nil then
 return
 end
 local smokedist=8000
-if smokedist<self.approachdist_far then
-smokedist=self.approachdist_far
-end
+if smokedist<self.approachdist_far then smokedist=self.approachdist_far end
 local _closest=self:_GetClosestDownedPilot(_heli)
 if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
@@ -59751,13 +59750,9 @@ self:T(self.lid.." _GetClockDirection"..tostring(Angle).." "..tostring(_heading)
 local clock=12
 if _heading then
 local Aspect=Angle-_heading
-if Aspect==0 then
-Aspect=360
-end
+if Aspect==0 then Aspect=360 end
 clock=math.abs(UTILS.Round((Aspect/30),0))
-if clock==0 then
-clock=12
-end
+if clock==0 then clock=12 end
 end
 return clock
 end
@@ -59893,7 +59888,8 @@ PilotsBoarded=PilotsBoarded+1
 end
 end
 if self.verbose>0 then
-local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d (max %d) | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",self.lid,NumberOfSARPilots,PilotsInFieldN,self.maxdownedpilots,PilotsBoarded,self.rescues,self.rescuedpilots)
+local text=string.format("%s Active SAR: %d | Downed Pilots in field: %d (max %d) | Pilots boarded: %d | Landings: %d | Pilots rescued: %d",
+self.lid,NumberOfSARPilots,PilotsInFieldN,self.maxdownedpilots,PilotsBoarded,self.rescues,self.rescuedpilots)
 self:T(text)
 if self.verbose<2 then
 self:I(text)
