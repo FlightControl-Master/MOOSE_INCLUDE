@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-16T16:07:32.0000000Z-55ca34cad3b17987a9ecbc72b3576ab6cd5cabfb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-19T06:51:43.0000000Z-90dbfb31a6f3ff46b34e0782600aca311afd3678 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29811,7 +29811,7 @@ end
 if self.RejectZones then
 for RejectZoneID,RejectZone in pairs(self.RejectZones)do
 local RejectZone=RejectZone
-if RejectZone:IsPointVec2InZone(DetectedObjectVec2)==true then
+if RejectZone:IsVec2InZone(DetectedObjectVec2)==true then
 DetectionAccepted=false
 end
 end
@@ -29844,7 +29844,7 @@ self:F({ZoneData})
 local ZoneObject=ZoneData[1]
 local ZoneProbability=ZoneData[2]
 ZoneProbability=ZoneProbability*30/300
-if ZoneObject:IsPointVec2InZone(DetectedObjectVec2)==true then
+if ZoneObject:IsVec2InZone(DetectedObjectVec2)==true then
 local Probability=math.random()
 if Probability>ZoneProbability then
 DetectionAccepted=false
