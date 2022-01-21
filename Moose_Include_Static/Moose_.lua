@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-19T06:51:43.0000000Z-90dbfb31a6f3ff46b34e0782600aca311afd3678 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-21T09:09:12.0000000Z-d4bd57ee7006ea866322785b32162aa72da91c20 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -46981,7 +46981,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.10"
+AUTOLASE.version="0.0.11"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -47355,8 +47355,9 @@ for _,_contact in pairs(detecteditems)do
 local contact=_contact
 local grp=contact.group
 local coord=contact.position
-local reccename=contact.recce
+local reccename=contact.recce or"none"
 local reccegrp=UNIT:FindByName(reccename)
+if reccegrp then
 local reccecoord=reccegrp:GetCoordinate()
 local distance=math.floor(reccecoord:Get3DDistance(coord))
 local text=string.format("%s of %s | Distance %d km | Threatlevel %d",contact.attribute,contact.groupname,math.floor(distance/1000),contact.threatlevel)
@@ -47368,6 +47369,7 @@ local lasedistance=self:GetLosFromUnit(reccegrp)
 if grp:IsGround()and lasedistance>=distance then
 table.insert(groupsbythreat,{contact.group,contact.threatlevel})
 self.RecceNames[contact.groupname]=contact.recce
+end
 end
 end
 self.GroupsByThreat=groupsbythreat
