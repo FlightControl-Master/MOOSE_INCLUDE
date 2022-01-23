@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-19T06:52:59.0000000Z-7bfa05f47d3bd67a9f85f69bab5dccddc455d332 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-23T10:21:59.0000000Z-d7a44a639d8c1221b226a212d0a5b62b11270221 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28735,12 +28735,10 @@ self.DetectedObjects[DetectionObjectName].Distance=10000000
 end
 self.DetectionCount=self:CountAliveRecce()
 local DetectionInterval=self.DetectionCount/(self.RefreshTimeInterval-1)
-self:ForEachAliveRecce(
-function(DetectionGroup)
+self:ForEachAliveRecce(function(DetectionGroup)
 self:__Detection(DetectDelay,DetectionGroup,DetectionTimeStamp)
 DetectDelay=DetectDelay+DetectionInterval
-end
-)
+end)
 self:__Detect(-self.RefreshTimeInterval)
 end
 function DETECTION_BASE:CountAliveRecce()
@@ -28799,8 +28797,7 @@ local DetectionGroupVec3=Detection:GetVec3()
 local DetectionGroupVec2={x=DetectionGroupVec3.x,y=DetectionGroupVec3.z}
 local Distance=((DetectedObjectVec3.x-DetectionGroupVec3.x)^2+
 (DetectedObjectVec3.y-DetectionGroupVec3.y)^2+
-(DetectedObjectVec3.z-DetectionGroupVec3.z)^2
-)^0.5/1000
+(DetectedObjectVec3.z-DetectionGroupVec3.z)^2)^0.5/1000
 local DetectedUnitCategory=DetectedObject:getDesc().category
 DetectionAccepted=self._.FilterCategories[DetectedUnitCategory]~=nil and DetectionAccepted or false
 if self.AcceptRange and Distance*1000>self.AcceptRange then
@@ -29195,8 +29192,7 @@ DetectedItem.FriendliesDistance[Distance]=PlayerUnit
 end
 end
 end
-end
-)
+end)
 end
 self:F({Friendlies=DetectedItem.FriendliesNearBy,Players=DetectedItem.PlayersNearBy})
 end
@@ -30002,8 +29998,7 @@ if DETECTION_AREAS._SmokeDetectedUnits or self._SmokeDetectedUnits then
 DetectedUnit:SmokeGreen()
 end
 end
-end
-)
+end)
 if DETECTION_AREAS._FlareDetectedZones or self._FlareDetectedZones then
 DetectedZone:FlareZone(SMOKECOLOR.White,30,math.random(0,90))
 end
