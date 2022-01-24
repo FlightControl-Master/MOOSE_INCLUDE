@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-23T10:37:53.0000000Z-98d55faf4eab292c65fcbbf2953502f1ddf6f52a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-24T08:54:30.0000000Z-4ff32342e3230073d800ea708ee3cd6212d6e9f3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -83473,6 +83473,20 @@ end
 function AI_A2A_DISPATCHER:SchedulerCAP(SquadronName)
 self:CAP(SquadronName)
 end
+function AI_A2A_DISPATCHER:AddToSquadron(Squadron,Amount)
+local Squadron=self:GetSquadron(Squadron)
+if Squadron.ResourceCount then
+Squadron.ResourceCount=Squadron.ResourceCount+Amount
+end
+self:T({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
+end
+function AI_A2A_DISPATCHER:RemoveFromSquadron(Squadron,Amount)
+local Squadron=self:GetSquadron(Squadron)
+if Squadron.ResourceCount then
+Squadron.ResourceCount=Squadron.ResourceCount-Amount
+end
+self:T({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
+end
 end
 do
 AI_A2A_GCICAP={
@@ -85333,6 +85347,20 @@ end
 function AI_A2G_DISPATCHER:SetSendMessages(onoff)
 self.SetSendPlayerMessages=onoff
 end
+end
+function AI_A2G_DISPATCHER:AddToSquadron(Squadron,Amount)
+local Squadron=self:GetSquadron(Squadron)
+if Squadron.ResourceCount then
+Squadron.ResourceCount=Squadron.ResourceCount+Amount
+end
+self:T({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
+end
+function AI_A2G_DISPATCHER:RemoveFromSquadron(Squadron,Amount)
+local Squadron=self:GetSquadron(Squadron)
+if Squadron.ResourceCount then
+Squadron.ResourceCount=Squadron.ResourceCount-Amount
+end
+self:T({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
 end
 AI_PATROL_ZONE={
 ClassName="AI_PATROL_ZONE",
