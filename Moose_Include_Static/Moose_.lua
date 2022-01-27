@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-24T08:54:30.0000000Z-4ff32342e3230073d800ea708ee3cd6212d6e9f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-27T14:56:10.0000000Z-af79f63870861e3fb583d48d06ea2ff05f51ba4b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -77597,6 +77597,7 @@ self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 if _unit:GetTypeName()=="Hercules"and self.enableHercules then
+local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
