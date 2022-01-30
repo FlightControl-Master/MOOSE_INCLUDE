@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-24T08:54:16.0000000Z-2aeebf280b1550b05d86b19851310627426ff746 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-30T08:47:11.0000000Z-b7adc6add60a64fc4d6f51cead63d8b065082873 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12445,6 +12445,8 @@ TurningPoint="Turning Point",
 FlyoverPoint="Fly Over Point",
 FromParkingArea="From Parking Area",
 FromParkingAreaHot="From Parking Area Hot",
+FromGroundAreaHot="From Ground Area Hot",
+FromGroundArea="From Ground Area",
 FromRunway="From Runway",
 Landing="Landing",
 LandingReFuAr="LandingReFuAr",
@@ -12453,6 +12455,8 @@ COORDINATE.WaypointType={
 TakeOffParking="TakeOffParking",
 TakeOffParkingHot="TakeOffParkingHot",
 TakeOff="TakeOffParkingHot",
+TakeOffGroundHot="TakeOffGroundHot",
+TakeOffGround="TakeOffGround",
 TurningPoint="Turning Point",
 Land="Land",
 LandingReFuAr="LandingReFuAr",
@@ -12476,12 +12480,18 @@ local LandHeight=land.getHeight(Vec2)
 LandHeightAdd=LandHeightAdd or 0
 LandHeight=LandHeight+LandHeightAdd
 local self=self:New(Vec2.x,LandHeight,Vec2.y)
-self:F2(self)
 return self
 end
 function COORDINATE:NewFromVec3(Vec3)
 local self=self:New(Vec3.x,Vec3.y,Vec3.z)
 self:F2(self)
+return self
+end
+function COORDINATE:NewFromWaypoint(Waypoint)
+local self=self:New(Waypoint.x,Waypoint.alt,Waypoint.y)
+return self
+end
+function COORDINATE:GetCoordinate()
 return self
 end
 function COORDINATE:GetVec3()
@@ -12531,7 +12541,7 @@ id=world.VolumeType.SPHERE,
 params={
 point=self:GetVec3(),
 radius=radius,
-},
+}
 }
 radius=radius or 100
 if scanunits==nil then
@@ -12585,7 +12595,6 @@ _DATABASE:AddStatic(static:getName())
 end
 for _,scenery in pairs(Scenery)do
 self:T(string.format("Scan found scenery %s typename=%s",scenery:getName(),scenery:getTypeName()))
-SCENERY:Register(scenery:getName(),scenery)
 end
 return gotunits,gotstatics,gotscenery,Units,Statics,Scenery
 end
@@ -12612,17 +12621,43 @@ end
 end
 return umin
 end
+function COORDINATE:ScanScenery(radius)
+local _,_,_,_,_,scenerys=self:ScanObjects(radius,false,false,true)
+local set={}
+for _,_scenery in pairs(scenerys)do
+local scenery=_scenery
+local name=scenery:getName()
+local s=SCENERY:Register(name,scenery)
+table.insert(set,s)
+end
+return set
+end
+function COORDINATE:FindClosestScenery(radius)
+local sceneries=self:ScanScenery(radius)
+local umin=nil
+local dmin=math.huge
+for _,_scenery in pairs(sceneries)do
+local scenery=_scenery
+local coordinate=scenery:GetCoordinate()
+local d=self:Get2DDistance(coordinate)
+if d<dmin then
+dmin=d
+umin=scenery
+end
+end
+return umin
+end
 function COORDINATE:DistanceFromPointVec2(PointVec2Reference)
 self:F2(PointVec2Reference)
 local Distance=((PointVec2Reference.x-self.x)^2+(PointVec2Reference.z-self.z)^2)^0.5
 self:T2(Distance)
 return Distance
 end
-function COORDINATE:Translate(Distance,Angle,KeepAltitude,Overwrite)
+function COORDINATE:Translate(Distance,Angle,Keepalt,Overwrite)
 local alpha=math.rad((Angle or 0))
 local x=Distance*math.cos(alpha)+self.x
 local z=Distance*math.sin(alpha)+self.z
-local y=KeepAltitude and self.y or land.getHeight({x=x,y=z})
+local y=Keepalt and self.y or land.getHeight({x=x,y=z})
 if Overwrite then
 self.x=x
 self.y=y
@@ -12642,7 +12677,8 @@ local X=self.z
 local Y=self.x
 local x=X*math.cos(phi)-Y*math.sin(phi)
 local y=X*math.sin(phi)+Y*math.cos(phi)
-return COORDINATE:NewFromVec3({x=y,y=self.y,z=x})
+local coord=COORDINATE:NewFromVec3({x=y,y=self.y,z=x})
+return coord
 end
 function COORDINATE:GetRandomVec2InRadius(OuterRadius,InnerRadius)
 self:F2({OuterRadius,InnerRadius})
@@ -12667,7 +12703,8 @@ return RandomVec2
 end
 function COORDINATE:GetRandomCoordinateInRadius(OuterRadius,InnerRadius)
 self:F2({OuterRadius,InnerRadius})
-return COORDINATE:NewFromVec2(self:GetRandomVec2InRadius(OuterRadius,InnerRadius))
+local coord=COORDINATE:NewFromVec2(self:GetRandomVec2InRadius(OuterRadius,InnerRadius))
+return coord
 end
 function COORDINATE:GetRandomVec3InRadius(OuterRadius,InnerRadius)
 local RandomVec2=self:GetRandomVec2InRadius(OuterRadius,InnerRadius)
@@ -12691,6 +12728,10 @@ end
 function COORDINATE:GetVelocity()
 local Velocity=self.Velocity
 return Velocity or 0
+end
+function COORDINATE:GetName()
+local name=self:ToStringMGRS()
+return name
 end
 function COORDINATE:GetMovingText(Settings)
 return self:GetVelocityText(Settings)..", "..self:GetHeadingText(Settings)
@@ -12728,8 +12769,8 @@ return coord
 end
 function COORDINATE:Get2DDistance(TargetCoordinate)
 local a={x=TargetCoordinate.x-self.x,y=0,z=TargetCoordinate.z-self.z}
-local d=UTILS.VecNorm(a)
-return d
+local norm=UTILS.VecNorm(a)
+return norm
 end
 function COORDINATE:GetTemperature(height)
 self:F2(height)
@@ -12739,13 +12780,13 @@ local T,P=atmosphere.getTemperatureAndPressure(point)
 return T-273.15
 end
 function COORDINATE:GetTemperatureText(height,Settings)
-local DegreesCelsius=self:GetTemperature(height)
+local DegreesCelcius=self:GetTemperature(height)
 local Settings=Settings or _SETTINGS
-if DegreesCelsius then
+if DegreesCelcius then
 if Settings:IsMetric()then
-return string.format(" %-2.2f °C",DegreesCelsius)
+return string.format(" %-2.2f °C",DegreesCelcius)
 else
-return string.format(" %-2.2f °F",UTILS.CelsiusToFahrenheit(DegreesCelsius))
+return string.format(" %-2.2f °F",UTILS.CelciusToFarenheit(DegreesCelcius))
 end
 else
 return" no temperature"
@@ -13105,8 +13146,12 @@ if Railroad==true then
 roadtype="railroads"
 end
 local x,y=land.getClosestPointOnRoads(roadtype,self.x,self.z)
+local coord=nil
+if x and y then
 local vec2={x=x,y=y}
-return COORDINATE:NewFromVec2(vec2)
+coord=COORDINATE:NewFromVec2(vec2)
+end
+return coord
 end
 function COORDINATE:GetPathOnRoad(ToCoord,IncludeEndpoints,Railroad,MarkPath,SmokePath)
 local RoadType="roads"
@@ -13180,18 +13225,22 @@ function COORDINATE:IsSurfaceTypeWater()
 return self:GetSurfaceType()==land.SurfaceType.WATER
 end
 function COORDINATE:Explosion(ExplosionIntensity,Delay)
-self:F2({ExplosionIntensity})
 ExplosionIntensity=ExplosionIntensity or 100
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.Explosion,{self,ExplosionIntensity},Delay)
+self:ScheduleOnce(Delay,self.Explosion,self,ExplosionIntensity)
 else
 trigger.action.explosion(self:GetVec3(),ExplosionIntensity)
 end
 return self
 end
-function COORDINATE:IlluminationBomb(power)
-self:F2()
-trigger.action.illuminationBomb(self:GetVec3(),power)
+function COORDINATE:IlluminationBomb(Power,Delay)
+Power=Power or 1000
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.IlluminationBomb,self,Power)
+else
+trigger.action.illuminationBomb(self:GetVec3(),Power)
+end
+return self
 end
 function COORDINATE:Smoke(SmokeColor)
 self:F2({SmokeColor})
@@ -13217,50 +13266,56 @@ function COORDINATE:SmokeBlue()
 self:F2()
 self:Smoke(SMOKECOLOR.Blue)
 end
-function COORDINATE:BigSmokeAndFire(Preset,Density)
-self:F2({Preset=Preset,Density=Density})
-Density=Density or 0.5
-trigger.action.effectSmokeBig(self:GetVec3(),Preset,Density)
+function COORDINATE:BigSmokeAndFire(preset,density,name)
+self:F2({preset=preset,density=density})
+density=density or 0.5
+self.firename=name or"Fire-"..math.random(1,10000)
+trigger.action.effectSmokeBig(self:GetVec3(),preset,density,self.firename)
 end
-function COORDINATE:BigSmokeAndFireSmall(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,Density)
+function COORDINATE:StopBigSmokeAndFire(name)
+self:F2({name=name})
+name=name or self.firename
+trigger.action.effectSmokeStop(name)
 end
-function COORDINATE:BigSmokeAndFireMedium(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,Density)
+function COORDINATE:BigSmokeAndFireSmall(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeAndFireLarge(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,Density)
+function COORDINATE:BigSmokeAndFireMedium(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeAndFireHuge(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,Density)
+function COORDINATE:BigSmokeAndFireLarge(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeSmall(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,Density)
+function COORDINATE:BigSmokeAndFireHuge(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeMedium(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,Density)
+function COORDINATE:BigSmokeSmall(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density,name)
 end
-function COORDINATE:BigSmokeLarge(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,Density)
+function COORDINATE:BigSmokeMedium(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density,name)
 end
-function COORDINATE:BigSmokeHuge(Density)
-self:F2({Density=Density})
-Density=Density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,Density)
+function COORDINATE:BigSmokeLarge(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density,name)
+end
+function COORDINATE:BigSmokeHuge(density,name)
+self:F2({density=density})
+density=density or 0.5
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density,name)
 end
 function COORDINATE:Flare(FlareColor,Azimuth)
 self:F2({FlareColor})
@@ -13407,7 +13462,7 @@ trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],Co
 elseif#vecs==5 then
 trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],Color,FillColor,LineType,ReadOnly,Text or"")
 elseif#vecs==6 then
-trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],Color,FillColor,LineType,Text or"")
+trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],Color,FillColor,LineType,ReadOnly,Text or"")
 elseif#vecs==7 then
 trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],Color,FillColor,LineType,ReadOnly,Text or"")
 elseif#vecs==8 then
@@ -13902,7 +13957,7 @@ self.z=self.z+y
 return self
 end
 function POINT_VEC2:AddAlt(Altitude)
-self.y=land.getHeight({x=self.x,y=self.z})+(Altitude or 0)
+self.y=land.getHeight({x=self.x,y=self.z})+Altitude or 0
 return self
 end
 function POINT_VEC2:GetRandomPointVec2InRadius(OuterRadius,InnerRadius)
