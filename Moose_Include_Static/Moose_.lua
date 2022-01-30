@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-27T14:56:10.0000000Z-af79f63870861e3fb583d48d06ea2ff05f51ba4b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-30T08:39:03.0000000Z-e21bc8a930f5b65b6856e649cc5c66791261fd7a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13393,50 +13393,56 @@ function COORDINATE:SmokeBlue()
 self:F2()
 self:Smoke(SMOKECOLOR.Blue)
 end
-function COORDINATE:BigSmokeAndFire(preset,density)
+function COORDINATE:BigSmokeAndFire(preset,density,name)
 self:F2({preset=preset,density=density})
 density=density or 0.5
-trigger.action.effectSmokeBig(self:GetVec3(),preset,density)
+self.firename=name or"Fire-"..math.random(1,10000)
+trigger.action.effectSmokeBig(self:GetVec3(),preset,density,self.firename)
 end
-function COORDINATE:BigSmokeAndFireSmall(density)
+function COORDINATE:StopBigSmokeAndFire(name)
+self:F2({name=name})
+name=name or self.firename
+trigger.action.effectSmokeStop(name)
+end
+function COORDINATE:BigSmokeAndFireSmall(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeAndFireMedium(density)
+function COORDINATE:BigSmokeAndFireMedium(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeAndFireLarge(density)
+function COORDINATE:BigSmokeAndFireLarge(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeAndFireHuge(density)
+function COORDINATE:BigSmokeAndFireHuge(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density,name)
 end
-function COORDINATE:BigSmokeSmall(density)
+function COORDINATE:BigSmokeSmall(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density,name)
 end
-function COORDINATE:BigSmokeMedium(density)
+function COORDINATE:BigSmokeMedium(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density,name)
 end
-function COORDINATE:BigSmokeLarge(density)
+function COORDINATE:BigSmokeLarge(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density,name)
 end
-function COORDINATE:BigSmokeHuge(density)
+function COORDINATE:BigSmokeHuge(density,name)
 self:F2({density=density})
 density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density,name)
 end
 function COORDINATE:Flare(FlareColor,Azimuth)
 self:F2({FlareColor})
