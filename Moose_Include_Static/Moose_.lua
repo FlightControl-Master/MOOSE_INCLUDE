@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-30T08:49:42.0000000Z-5d949de0eee6909a255662355059ee70cee0d132 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-31T10:15:24.0000000Z-d2f629d100eb51e17d52efce84c960bdc3c8fbcf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -77417,20 +77417,20 @@ SHIP="ship",
 BEACON="beacon",
 }
 CTLD.UnitTypes={
-["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12},
-["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12},
-["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12},
-["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12},
-["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8,length=15},
-["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15},
-["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15},
-["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15},
-["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
-["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
-["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
-["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16},
+["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12,cargoweightlimit=400},
+["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12,cargoweightlimit=400},
+["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12,cargoweightlimit=400},
+["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12,cargoweightlimit=400},
+["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8,length=15,cargoweightlimit=700},
+["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
+["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
+["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15,cargoweightlimit=0},
+["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
+["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
+["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
+["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.4"
+CTLD.version="1.0.5"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -77565,6 +77565,7 @@ capabilities.cratelimit=0
 capabilities.trooplimit=0
 capabilities.type="generic"
 capabilities.length=20
+capabilities.cargoweightlimit=0
 end
 return capabilities
 end
@@ -78107,16 +78108,25 @@ local location=_group:GetCoordinate()
 local existingcrates=self.Spawned_Cargo
 local index=0
 local found={}
+local loadedmass=self:_GetUnitCargoMass(_unit)
+local unittype=_unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(_unit)
+local maxmass=capabilities.cargoweightlimit
+local maxloadable=maxmass-loadedmass
+self:T(self.lid.." Max loadable mass: "..maxloadable)
 for _,_cargoobject in pairs(existingcrates)do
 local cargo=_cargoobject
 local static=cargo:GetPositionable()
 local staticid=cargo:GetID()
+local weight=cargo:GetMass()
+self:T(self.lid.." Found cargo mass: "..weight)
 if static and static:IsAlive()then
 local staticpos=static:GetCoordinate()
 local distance=self:_GetDistance(location,staticpos)
-if distance<=finddist and static then
+if distance<=finddist and static and weight<=maxloadable then
 index=index+1
 table.insert(found,staticid,cargo)
+maxloadable=maxloadable-weight
 end
 end
 end
@@ -78146,6 +78156,7 @@ local loaded={}
 if self.Loaded_Cargo[unitname]then
 loaded=self.Loaded_Cargo[unitname]
 numberonboard=loaded.Cratesloaded or 0
+massonboard=self:_GetUnitCargoMass(Unit)
 else
 loaded={}
 loaded.Troopsloaded=0
@@ -78154,10 +78165,11 @@ loaded.Cargo={}
 end
 local finddist=self.CrateDistance or 35
 local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
+self:T(self.lid.." Crates found: "..number)
 if number==0 and self.hoverautoloading then
 return self
 elseif number==0 then
-self:_SendMessage("Sorry no loadable crates nearby!",10,false,Group)
+self:_SendMessage("Sorry no loadable crates nearby or max cargo weight reached!",10,false,Group)
 return self
 elseif numberonboard==cratelimit then
 self:_SendMessage("Sorry no fully loaded!",10,false,Group)
@@ -78885,9 +78897,27 @@ end
 end
 return self
 end
+function CTLD:_CheckTemplates(temptable)
+self:T(self.lid.." _CheckTemplates")
+local outcome=true
+if type(temptable)~="table"then
+temptable={temptable}
+end
+for _,_name in pairs(temptable)do
+if not _DATABASE.Templates.Groups[_name]then
+outcome=false
+self:E(self.lid.."ERROR: Template name ".._name.." is missing!")
+end
+end
+return outcome
+end
 function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass,Stock)
 self:T(self.lid.." AddTroopsCargo")
 self:T({Name,Templates,Type,NoTroops,PerTroopMass,Stock})
+if not self:_CheckTemplates(Templates)then
+self:E(self.lid.."Troops Cargo for "..Name.." has missing template(s)!")
+return self
+end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass,Stock)
 table.insert(self.Cargo_Troops,cargo)
@@ -78895,6 +78925,10 @@ return self
 end
 function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesCargo")
+if not self:_CheckTemplates(Templates)then
+self:E(self.lid.."Crates Cargo for "..Name.." has missing template(s)!")
+return self
+end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
@@ -78919,6 +78953,10 @@ return cargo
 end
 function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesRepair")
+if not self:_CheckTemplates(Template)then
+self:E(self.lid.."Repair Cargo for "..Name.." has a missing template!")
+return self
+end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
@@ -79280,7 +79318,7 @@ self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone
 end
 return self
 end
-function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length)
+function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
 self:T(self.lid.." UnitCapabilities")
 local unittype=nil
 local unit=nil
@@ -79299,6 +79337,7 @@ capabilities.troops=Cantroops or false
 capabilities.cratelimit=Cratelimit or 0
 capabilities.trooplimit=Trooplimit or 0
 capabilities.length=Length or 20
+capabilities.cargoweightlimit=Maxcargoweight or 0
 self.UnitTypes[unittype]=capabilities
 return self
 end
