@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-01-31T10:36:20.0000000Z-7bd7071ec57d56e0e084dccbf6f491ba7d28ae19 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-01T07:03:02.0000000Z-60a728d5211593d40d4a990524ce33e2e4e08559 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9337,7 +9337,7 @@ local intersection=SET_BASE:New()
 local union=self:GetSetUnion(SetB)
 for _,Object in pairs(union.Set)do
 if self:IsIncludeObject(Object)and SetB:IsIncludeObject(Object)then
-intersection:AddObject(intersection)
+intersection:AddObject(Object)
 end
 end
 return intersection
