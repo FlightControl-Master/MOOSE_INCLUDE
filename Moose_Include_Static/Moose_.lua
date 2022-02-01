@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-01T07:03:02.0000000Z-60a728d5211593d40d4a990524ce33e2e4e08559 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-01T10:47:36.0000000Z-c3689aee9374abf1456be4d00e9bbf440a183520 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47616,7 +47616,7 @@ return self
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.0.3",
+version="0.0.4",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -47644,6 +47644,8 @@ DCSRadio=false,
 DCSFrequency=243,
 DCSModulation=radio.modulation.AM,
 DCSRadioGroup=nil,
+limithelos=true,
+helonumber=3,
 }
 AICSAR.Messages={
 INITIALOK="Roger, Pilot, we hear you. Stay where you are, a helo is on the way!",
@@ -47720,6 +47722,8 @@ self.DCSModulation=radio.modulation.AM
 self.DCSRadioGroup=nil
 self.DCSRadioQueue=nil
 self.MGRS_Accuracy=2
+self.limithelos=true
+self.helonumber=3
 self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -47732,7 +47736,8 @@ self:AddTransition("*","HeloDown","*")
 self:AddTransition("*","Stop","Stopped")
 self:HandleEvent(EVENTS.LandingAfterEjection)
 self:__Start(math.random(2,5))
-self:I(self.lid.." AI CSAR Starting")
+local text=string.format("%sAICSAR Version %s Starting",self.lid,self.version)
+self:I(text)
 return self
 end
 function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath)
@@ -47878,31 +47883,45 @@ end
 end
 return self
 end
+function AICSAR:_CountHelos()
+self:T(self.lid.."_CountHelos")
+local count=0
+for _index,_helo in pairs(self.helos)do
+count=count+1
+end
+return count
+end
 function AICSAR:_CheckQueue()
 self:T(self.lid.."_CheckQueue")
 for _index,_pilot in pairs(self.pilotqueue)do
 local classname=_pilot.ClassName and _pilot.ClassName or"NONE"
 local name=_pilot.GroupName and _pilot.GroupName or"NONE"
+local helocount=self:_CountHelos()
 if _pilot and _pilot.ClassName and _pilot.ClassName=="GROUP"then
-if not _pilot.AICSAR then
-_pilot.AICSAR={}
-_pilot.AICSAR.Status="Initiated"
-_pilot.AICSAR.Boarded=false
-self:_InitMission(_pilot,_index)
-break
-else
 local flightgroup=self.helos[_index]
-if flightgroup then
-local state=flightgroup:GetState()
-_pilot.AICSAR.Status=state
-end
 if self:_CheckInMashZone(_pilot)then
 self:T("Pilot".._pilot.GroupName.." rescued!")
 _pilot:Destroy(false)
 self.pilotqueue[_index]=nil
 self.rescued[_index]=true
 self:__PilotRescued(2)
+if flightgroup then
 flightgroup.AICSARReserved=false
+end
+end
+if not _pilot.AICSAR then
+if self.limithelos and helocount>=self.helonumber then
+break
+end
+_pilot.AICSAR={}
+_pilot.AICSAR.Status="Initiated"
+_pilot.AICSAR.Boarded=false
+self:_InitMission(_pilot,_index)
+break
+else
+if flightgroup then
+local state=flightgroup:GetState()
+_pilot.AICSAR.Status=state
 end
 end
 end
