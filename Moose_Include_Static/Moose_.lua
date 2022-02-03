@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-03T09:00:19.0000000Z-28eb7a678c918afef5bed4353c59181d9b440a99 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-03T09:01:48.0000000Z-63cbc0c55bcd385b0fcf60a5119a19ac418a9126 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -34344,6 +34344,9 @@ instructor=nil,
 rangecontrolfreq=nil,
 rangecontrol=nil,
 soundpath="Range Soundfiles/",
+targetsheet=nil,
+targetpath=nil,
+targetprefix=nil,
 }
 RANGE.Defaults={
 goodhitrange=25,
@@ -34356,6 +34359,7 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
+goodhitrange=25,
 foulline=610,
 }
 RANGE.TargetType={
@@ -34363,6 +34367,12 @@ UNIT="Unit",
 STATIC="Static",
 COORD="Coordinate",
 }
+hypemanStrafeRollIn="nil"
+StrafeAircraftType="strafeAircraftTypeNotSet"
+Straferesult={}
+clientRollingIn=false
+clientStrafed=false
+invalidStrafe=false
 RANGE.Sound={
 RC0={filename="RC-0.ogg",duration=0.60},
 RC1={filename="RC-1.ogg",duration=0.47},
@@ -34546,6 +34556,16 @@ function RANGE:SetAutosaveOff()
 self.autosave=false
 return self
 end
+function RANGE:SetTargetSheet(path,prefix)
+if io then
+self.targetsheet=true
+self.targetpath=path
+self.targetprefix=prefix
+else
+self:E(self.lid.."ERROR: io is not desanitized. Cannot save target sheet.")
+end
+return self
+end
 function RANGE:SetMessageToExaminer(examinergroupname,exclusively)
 self.examinergroupname=examinergroupname
 self.examinerexclusive=exclusively
@@ -34560,7 +34580,7 @@ self.rangeradius=radius*1000 or RANGE.Defaults.rangeradius
 return self
 end
 function RANGE:SetDefaultPlayerSmokeBomb(switch)
-if switch==nil or switch==true then
+if switch==true or switch==nil then
 self.defaultsmokebomb=true
 else
 self.defaultsmokebomb=false
@@ -34699,7 +34719,7 @@ end
 if heading<0 then
 heading=heading+360
 end
-if heading>=360 then
+if heading>360 then
 heading=heading-360
 end
 goodpass=goodpass or RANGE.Defaults.goodpass
@@ -34968,6 +34988,7 @@ local text=string.format("%s, Invalid hit!\nYou already passed foul line distanc
 self:_DisplayMessageToGroup(_unit,text)
 self:T2(self.id..text)
 _currentTarget.pastfoulline=true
+invalidStrafe=true
 end
 end
 end
@@ -35020,7 +35041,8 @@ local playerData=self.PlayerSettings[_playername]
 self:T(self.id..string.format("RANGE %s: Tracking %s - %s.",self.rangename,_weapon,EventData.weapon:getName()))
 local _lastBombPos={x=0,y=0,z=0}
 local function trackBomb(_ordnance)
-local _status,_bombPos=pcall(function()
+local _status,_bombPos=pcall(
+function()
 return _ordnance:getPoint()
 end)
 self:T2(self.id..string.format("Range %s: Bomb still in air: %s",self.rangename,tostring(_status)))
@@ -35053,7 +35075,9 @@ if _distance==nil or _temp<_distance then
 _distance=_temp
 _closetTarget=_bombtarget
 _closeCoord=targetcoord
-if _distance<=0.5*_bombtarget.goodhitrange then
+if _distance<=1.53 then
+_hitquality="SHACK"
+elseif _distance<=0.5*_bombtarget.goodhitrange then
 _hitquality="EXCELLENT"
 elseif _distance<=_bombtarget.goodhitrange then
 _hitquality="GOOD"
@@ -35079,6 +35103,10 @@ result.quality=_hitquality
 result.player=playerData.playername
 result.time=timer.getAbsTime()
 result.airframe=playerData.airframe
+result.roundsFired=0
+result.roundsHit=0
+result.roundsQuality="N/A"
+result.rangename=self.rangename
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
@@ -35097,6 +35125,55 @@ end
 self:T(self.id..string.format("Range %s, player %s: Tracking of weapon starts in 0.1 seconds.",self.rangename,_playername))
 timer.scheduleFunction(trackBomb,EventData.weapon,timer.getTime()+0.1)
 end
+end
+function RANGE:_SaveTargetSheet(_playername,result)
+local function _savefile(filename,data)
+local f=io.open(filename,"wb")
+if f then
+f:write(data)
+f:close()
+else
+env.info("RANGEBOSS EDIT - could not save target sheet to file")
+end
+end
+local path=self.targetpath
+if lfs then
+path=path or lfs.writedir()..[[Logs\]]
+end
+local filename=nil
+for i=1,9999 do
+if self.targetprefix then
+filename=string.format("%s_%s-%04d.csv",self.targetprefix,playerData.actype,i)
+else
+local name=UTILS.ReplaceIllegalCharacters(_playername,"_")
+filename=string.format("RANGERESULTS-%s_Targetsheet-%s-%04d.csv",self.rangename,name,i)
+end
+if path~=nil then
+filename=path.."\\"..filename
+end
+local _exists=UTILS.FileExists(filename)
+if not _exists then
+break
+end
+end
+local data="Name,Target,Distance,Radial,Quality,Rounds Fired,Rounds Hit,Rounds Quality,Attack Heading,Weapon,Airframe,Mission Time,OS Time\n"
+local distance=result.distance
+local weapon=result.weapon
+local target=result.name
+local radial=result.radial
+local quality=result.quality
+local time=UTILS.SecondsToClock(result.time)
+local airframe=result.airframe
+local date="n/a"
+local roundsFired=result.roundsFired
+local roundsHit=result.roundsHit
+local strafeResult=result.roundsQuality
+local attackHeading=result.heading
+if os then
+date=os.date()
+end
+data=data..string.format("%s,%s,%.2f,%03d,%s,%03d,%03d,%s,%03d,%s,%s,%s,%s",_playername,target,distance,radial,quality,roundsFired,roundsHit,strafeResult,attackHeading,weapon,airframe,time,date)
+_savefile(filename,data)
 end
 function RANGE:onafterStatus(From,Event,To)
 if self.verbose>0 then
@@ -35145,9 +35222,13 @@ self.instructor:NewTransmission(RANGE.Sound.IRExitRange.filename,RANGE.Sound.IRE
 end
 end
 function RANGE:onafterImpact(From,Event,To,result,player)
-local text=string.format("%s, impact %03d° for %d m (%d ft)",player.playername,result.radial,result.distance,UTILS.MetersToFeet(result.distance))
+local targetname=nil
 if#self.bombingTargets>1 then
-text=text..string.format(" from bulls of target %s.",result.name)
+local targetname=result.name
+end
+local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
+if targetname then
+text=text..string.format(" from bulls of target %s.")
 else
 text=text.."."
 end
@@ -35276,9 +35357,7 @@ local _results=self.strafePlayerResults[_playername]
 if _results==nil then
 _message=string.format("%s: No Score yet.",_playername)
 else
-local _sort=function(a,b)
-return a.hits>b.hits
-end
+local _sort=function(a,b)return a.hits>b.hits end
 table.sort(_results,_sort)
 local _bestMsg=""
 local _count=1
@@ -35315,9 +35394,7 @@ local text=string.format("%s: Hits %i - %s - %s",_playerName,_best.hits,_best.zo
 table.insert(_playerResults,{msg=text,hits=_best.hits})
 end
 end
-local _sort=function(a,b)
-return a.hits>b.hits
-end
+local _sort=function(a,b)return a.hits>b.hits end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -35337,9 +35414,7 @@ local _results=self.bombPlayerResults[_playername]
 if _results==nil then
 _message=_playername..": No Score yet."
 else
-local _sort=function(a,b)
-return a.distance<b.distance
-end
+local _sort=function(a,b)return a.distance<b.distance end
 table.sort(_results,_sort)
 local _bestMsg=""
 for i,_result in pairs(_results)do
@@ -35375,9 +35450,7 @@ local bestres=string.format("%s: %d m - %s - %s - %s hit",_playerName,_best.dist
 table.insert(_playerResults,{msg=bestres,distance=_best.distance})
 end
 end
-local _sort=function(a,b)
-return a.distance<b.distance
-end
+local _sort=function(a,b)return a.distance<b.distance end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -35404,7 +35477,7 @@ local rangealt=position:GetLandHeight()
 local vec3=coord:GetDirectionVec3(position)
 local angle=coord:GetAngleDegrees(vec3)
 local range=coord:Get2DDistance(position)
-local Bs=string.format("%03d°",angle)
+local Bs=string.format('%03d°',angle)
 local texthit
 if self.PlayerSettings[playername].flaredirecthits then
 texthit=string.format("Flare direct hits: ON (flare color %s)\n",self:_flarecolor2text(self.PlayerSettings[playername].flarecolor))
@@ -35469,7 +35542,7 @@ local ca2g=coord:ToStringA2G(_unit,_settings)
 _text=_text..string.format("\n- %s:\n%s @ %s",bombtarget.name or"unknown",ca2g,eltxt)
 end
 end
-self:_DisplayMessageToGroup(_unit,_text,60,true,true)
+self:_DisplayMessageToGroup(_unit,_text,120,true,true)
 end
 end
 function RANGE:_DisplayStrafePits(_unitname)
@@ -35505,7 +35578,7 @@ local T=position:GetTemperature()
 local P=position:GetPressure()
 local Wd,Ws=position:GetWind()
 local Bn,Bd=UTILS.BeaufortScale(Ws)
-local WD=string.format("%03d°",Wd)
+local WD=string.format('%03d°',Wd)
 local Ts=string.format("%d°C",T)
 local hPa2inHg=0.0295299830714
 local hPa2mmHg=0.7500615613030
@@ -35554,10 +35627,12 @@ end
 function RANGE:_CheckInZone(_unitName)
 self:F2(_unitName)
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local unitheading=0
 if _unit and _playername then
 local function checkme(targetheading,_zone)
 local zone=_zone
 local unitheading=_unit:GetHeading()
+unitheadingStrafe=_unit:GetHeading()
 local pitheading=targetheading-180
 local deltaheading=unitheading-pitheading
 local towardspit=math.abs(deltaheading)<=90 or math.abs(deltaheading-360)<=90
@@ -35579,6 +35654,7 @@ if _currentStrafeRun then
 local zone=_currentStrafeRun.zone.polygon
 local unitinzone=checkme(_currentStrafeRun.zone.heading,zone)
 if unitinzone then
+StrafeAircraftType=_unit:GetTypeName()
 _currentStrafeRun.time=_currentStrafeRun.time+1
 else
 _currentStrafeRun.time=_currentStrafeRun.time+1
@@ -35593,33 +35669,70 @@ else
 local _ammo=self:_GetAmmo(_unitName)
 local _result=self.strafeStatus[_unitID]
 local _sound=nil
-if _result.hits>=_result.zone.goodPass*2 then
+local shots=_result.ammo-_ammo
+local accur=0
+if shots>0 then
+accur=_result.hits/shots*100
+if accur>100 then accur=100 end
+end
+if invalidStrafe==true then
+_result.text="* INVALID - PASSED FOUL LINE *"
+_sound=RANGE.Sound.RCPoorPass
+else
+if accur>=90 then
+_result.text="DEADEYE PASS"
+_sound=RANGE.Sound.RCExcellentPass
+elseif accur>=75 then
 _result.text="EXCELLENT PASS"
 _sound=RANGE.Sound.RCExcellentPass
-elseif _result.hits>=_result.zone.goodPass then
+elseif accur>=50 then
 _result.text="GOOD PASS"
 _sound=RANGE.Sound.RCGoodPass
-elseif _result.hits>=_result.zone.goodPass/2 then
+elseif accur>=25 then
 _result.text="INEFFECTIVE PASS"
 _sound=RANGE.Sound.RCIneffectivePass
 else
 _result.text="POOR PASS"
 _sound=RANGE.Sound.RCPoorPass
 end
-local shots=_result.ammo-_ammo
-local accur=0
-if shots>0 then
-accur=_result.hits/shots*100
-if accur>100 then
-accur=100
 end
-end
+clientStrafed=true
 local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_result.zone.name,_result.hits)
 if shots and accur then
 _text=_text..string.format("\nTotal rounds fired %d. Accuracy %.1f %%.",shots,accur)
 end
 _text=_text..string.format("\n%s",_result.text)
 self:_DisplayMessageToGroup(_unit,_text)
+local result={}
+result.name=_result.zone.name or"unknown"
+result.distance=0
+result.radial=0
+result.weapon="N/A"
+result.quality="N/A"
+result.player=_playernamee
+result.time=timer.getAbsTime()
+result.airframe=StrafeAircraftType
+result.roundsFired=shots
+result.roundsHit=_result.hits
+result.roundsQuality=_result.text
+result.strafeAccuracy=accur
+result.heading=unitheadingStrafe
+Straferesult.name=_result.zone.name or"unknown"
+Straferesult.distance=0
+Straferesult.radial=0
+Straferesult.weapon="N/A"
+Straferesult.quality="N/A"
+Straferesult.player=_playername
+Straferesult.time=timer.getAbsTime()
+Straferesult.airframe=StrafeAircraftType
+Straferesult.roundsFired=shots
+Straferesult.roundsHit=_result.hits
+Straferesult.roundsQuality=_result.text
+Straferesult.strafeAccuracy=accur
+Straferesult.rangename=self.rangename
+if playerData.targeton and self.targetsheet then
+self:_SaveTargetSheet(_playername,result)
+end
 if self.rangecontrol then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCHitsOnTarget.filename,RANGE.Sound.RCHitsOnTarget.duration,self.soundpath)
 self.rangecontrol:Number2Transmission(string.format("%d",_result.hits))
@@ -35649,7 +35762,9 @@ local _msg=string.format("%s, rolling in on strafe pit %s.",self:_myname(_unitNa
 if self.rangecontrol then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCRollingInOnStrafeTarget.filename,RANGE.Sound.RCRollingInOnStrafeTarget.duration,self.soundpath)
 end
+clientRollingIn=true
 self:_DisplayMessageToGroup(_unit,_msg,10,true)
+hypemanStrafeRollIn=_msg
 break
 end
 end
@@ -35667,46 +35782,47 @@ if not self.MenuAddedTo[_gid]then
 self.MenuAddedTo[_gid]=true
 local _rangePath=nil
 if RANGE.MenuF10Root then
-_rangePath=missionCommands.addSubMenuForGroup(_gid,self.rangename,RANGE.MenuF10Root)
+_rangePath=MENU_GROUP:New(group,"On the Range")
 else
 if RANGE.MenuF10[_gid]==nil then
-RANGE.MenuF10[_gid]=missionCommands.addSubMenuForGroup(_gid,"On the Range")
+RANGE.MenuF10[_gid]=MENU_GROUP:New(group,"On the Range")
 end
-_rangePath=missionCommands.addSubMenuForGroup(_gid,self.rangename,RANGE.MenuF10[_gid])
+_rangePath=MENU_GROUP:New(group,self.rangename,RANGE.MenuF10[_gid])
 end
-local _statsPath=missionCommands.addSubMenuForGroup(_gid,"Statistics",_rangePath)
-local _markPath=missionCommands.addSubMenuForGroup(_gid,"Mark Targets",_rangePath)
-local _settingsPath=missionCommands.addSubMenuForGroup(_gid,"My Settings",_rangePath)
-local _infoPath=missionCommands.addSubMenuForGroup(_gid,"Range Info",_rangePath)
-local _mysmokePath=missionCommands.addSubMenuForGroup(_gid,"Smoke Color",_settingsPath)
-local _myflarePath=missionCommands.addSubMenuForGroup(_gid,"Flare Color",_settingsPath)
-missionCommands.addCommandForGroup(_gid,"Mark On Map",_markPath,self._MarkTargetsOnMap,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Illuminate Range",_markPath,self._IlluminateBombTargets,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Smoke Strafe Pits",_markPath,self._SmokeStrafeTargetBoxes,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Smoke Strafe Tgts",_markPath,self._SmokeStrafeTargets,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Smoke Bomb Tgts",_markPath,self._SmokeBombTargets,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"All Strafe Results",_statsPath,self._DisplayStrafePitResults,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"All Bombing Results",_statsPath,self._DisplayBombingResults,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"My Strafe Results",_statsPath,self._DisplayMyStrafePitResults,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"My Bomb Results",_statsPath,self._DisplayMyBombingResults,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Reset All Stats",_statsPath,self._ResetRangeStats,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Blue Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Blue)
-missionCommands.addCommandForGroup(_gid,"Green Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Green)
-missionCommands.addCommandForGroup(_gid,"Orange Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Orange)
-missionCommands.addCommandForGroup(_gid,"Red Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Red)
-missionCommands.addCommandForGroup(_gid,"White Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.White)
-missionCommands.addCommandForGroup(_gid,"Green Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.Green)
-missionCommands.addCommandForGroup(_gid,"Red Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.Red)
-missionCommands.addCommandForGroup(_gid,"White Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.White)
-missionCommands.addCommandForGroup(_gid,"Yellow Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.Yellow)
-missionCommands.addCommandForGroup(_gid,"Smoke Delay On/Off",_settingsPath,self._SmokeBombDelayOnOff,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Smoke Impact On/Off",_settingsPath,self._SmokeBombImpactOnOff,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Flare Hits On/Off",_settingsPath,self._FlareDirectHitsOnOff,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"All Messages On/Off",_settingsPath,self._MessagesToPlayerOnOff,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"General Info",_infoPath,self._DisplayRangeInfo,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Weather Report",_infoPath,self._DisplayRangeWeather,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Bombing Targets",_infoPath,self._DisplayBombTargets,self,_unitName)
-missionCommands.addCommandForGroup(_gid,"Strafe Pits",_infoPath,self._DisplayStrafePits,self,_unitName)
+local _statsPath=MENU_GROUP:New(group,"Statistics",_rangePath)
+local _markPath=MENU_GROUP:New(group,"Mark Targets",_rangePath)
+local _settingsPath=MENU_GROUP:New(group,"My Settings",_rangePath)
+local _infoPath=MENU_GROUP:New(group,"Range Info",_rangePath)
+local _mysmokePath=MENU_GROUP:New(group,"Smoke Color",_settingsPath)
+local _myflarePath=MENU_GROUP:New(group,"Flare Color",_settingsPath)
+local _MoMap=MENU_GROUP_COMMAND:New(group,"Mark On Map",_markPath,self._MarkTargetsOnMap,self,_unitName)
+local _IllRng=MENU_GROUP_COMMAND:New(group,"Illuminate Range",_markPath,self._IlluminateBombTargets,self,_unitName)
+local _SSpit=MENU_GROUP_COMMAND:New(group,"Smoke Strafe Pits",_markPath,self._SmokeStrafeTargetBoxes,self,_unitName)
+local _SStgts=MENU_GROUP_COMMAND:New(group,"Smoke Strafe Tgts",_markPath,self._SmokeStrafeTargets,self,_unitName)
+local _SBtgts=MENU_GROUP_COMMAND:New(group,"Smoke Bomb Tgts",_markPath,self._SmokeBombTargets,self,_unitName)
+local _AllSR=MENU_GROUP_COMMAND:New(group,"All Strafe Results",_statsPath,self._DisplayStrafePitResults,self,_unitName)
+local _AllBR=MENU_GROUP_COMMAND:New(group,"All Bombing Results",_statsPath,self._DisplayBombingResults,self,_unitName)
+local _MySR=MENU_GROUP_COMMAND:New(group,"My Strafe Results",_statsPath,self._DisplayMyStrafePitResults,self,_unitName)
+local _MyBR=MENU_GROUP_COMMAND:New(group,"My Bomb Results",_statsPath,self._DisplayMyBombingResults,self,_unitName)
+local _ResetST=MENU_GROUP_COMMAND:New(group,"Reset All Stats",_statsPath,self._ResetRangeStats,self,_unitName)
+local _BlueSM=MENU_GROUP_COMMAND:New(group,"Blue Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Blue)
+local _GrSM=MENU_GROUP_COMMAND:New(group,"Green Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Green)
+local _OrSM=MENU_GROUP_COMMAND:New(group,"Orange Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Orange)
+local _ReSM=MENU_GROUP_COMMAND:New(group,"Red Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.Red)
+local _WhSm=MENU_GROUP_COMMAND:New(group,"White Smoke",_mysmokePath,self._playersmokecolor,self,_unitName,SMOKECOLOR.White)
+local _GrFl=MENU_GROUP_COMMAND:New(group,"Green Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.Green)
+local _ReFl=MENU_GROUP_COMMAND:New(group,"Red Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.Red)
+local _WhFl=MENU_GROUP_COMMAND:New(group,"White Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.White)
+local _YeFl=MENU_GROUP_COMMAND:New(group,"Yellow Flares",_myflarePath,self._playerflarecolor,self,_unitName,FLARECOLOR.Yellow)
+local _SmDe=MENU_GROUP_COMMAND:New(group,"Smoke Delay On/Off",_settingsPath,self._SmokeBombDelayOnOff,self,_unitName)
+local _SmIm=MENU_GROUP_COMMAND:New(group,"Smoke Impact On/Off",_settingsPath,self._SmokeBombImpactOnOff,self,_unitName)
+local _FlHi=MENU_GROUP_COMMAND:New(group,"Flare Hits On/Off",_settingsPath,self._FlareDirectHitsOnOff,self,_unitName)
+local _AlMeA=MENU_GROUP_COMMAND:New(group,"All Messages On/Off",_settingsPath,self._MessagesToPlayerOnOff,self,_unitName)
+local _TrpSh=MENU_GROUP_COMMAND:New(group,"Targetsheet On/Off",_settingsPath,self._TargetsheetOnOff,self,_unitName)
+local _WeIn=MENU_GROUP_COMMAND:New(group,"General Info",_infoPath,self._DisplayRangeInfo,self,_unitName)
+local _WeRe=MENU_GROUP_COMMAND:New(group,"Weather Report",_infoPath,self._DisplayRangeWeather,self,_unitName)
+local _BoTgtgs=MENU_GROUP_COMMAND:New(group,"Bombing Targets",_infoPath,self._DisplayBombTargets,self,_unitName)
+local _StrPits=MENU_GROUP_COMMAND:New(group,"Strafe Pits",_infoPath,self._DisplayStrafePits,self,_unitName):Refresh()
 end
 else
 self:E(self.id.."Could not find group or group ID in AddF10Menu() function. Unit name: ".._unitName)
@@ -35911,6 +36027,27 @@ self:_DisplayMessageToGroup(unit,text,5,false,true)
 self.PlayerSettings[playername].messages=not self.PlayerSettings[playername].messages
 end
 end
+function RANGE:_TargetsheetOnOff(_unitname)
+self:F2(_unitname)
+local unit,playername=self:_GetPlayerUnitAndName(_unitname)
+if unit and playername then
+local playerData=self.PlayerSettings[playername]
+if playerData then
+local text=""
+if self.targetsheet then
+playerData.targeton=not playerData.targeton
+if playerData.targeton==true then
+text=string.format("roger, your targetsheets are now SAVED.")
+else
+text=string.format("affirm, your targetsheets are NOT SAVED.")
+end
+else
+text="negative, target sheet data recorder is broken on this range."
+end
+self:_DisplayMessageToGroup(unit,text,5,false,false)
+end
+end
+end
 function RANGE:_FlareDirectHitsOnOff(unitname)
 self:F(unitname)
 local unit,playername=self:_GetPlayerUnitAndName(unitname)
@@ -36068,6 +36205,7 @@ function RANGE:_myname(unitname)
 self:F2(unitname)
 local unit=UNIT:FindByName(unitname)
 local pname=unit:GetPlayerName()
+local csign=unit:GetCallsign()
 return string.format("%s",pname)
 end
 do
