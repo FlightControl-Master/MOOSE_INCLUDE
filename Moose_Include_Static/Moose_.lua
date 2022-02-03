@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-01T07:02:51.0000000Z-a95c49915a89393ae3f9b8e1bc0d3bccf072047b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-03T09:00:19.0000000Z-28eb7a678c918afef5bed4353c59181d9b440a99 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56268,20 +56268,20 @@ SHIP="ship",
 BEACON="beacon",
 }
 CTLD.UnitTypes={
-["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12},
-["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12},
-["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12},
-["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12},
-["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8,length=15},
-["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15},
-["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15},
-["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15},
-["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
-["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18},
-["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25},
-["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16},
+["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12,cargoweightlimit=400},
+["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12,cargoweightlimit=400},
+["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12,cargoweightlimit=400},
+["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12,cargoweightlimit=400},
+["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8,length=15,cargoweightlimit=700},
+["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
+["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
+["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15,cargoweightlimit=0},
+["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
+["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
+["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
+["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.4"
+CTLD.version="1.0.5"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56416,6 +56416,7 @@ capabilities.cratelimit=0
 capabilities.trooplimit=0
 capabilities.type="generic"
 capabilities.length=20
+capabilities.cargoweightlimit=0
 end
 return capabilities
 end
@@ -56454,6 +56455,7 @@ self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 if _unit:GetTypeName()=="Hercules"and self.enableHercules then
+local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
@@ -56957,16 +56959,25 @@ local location=_group:GetCoordinate()
 local existingcrates=self.Spawned_Cargo
 local index=0
 local found={}
+local loadedmass=self:_GetUnitCargoMass(_unit)
+local unittype=_unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(_unit)
+local maxmass=capabilities.cargoweightlimit
+local maxloadable=maxmass-loadedmass
+self:T(self.lid.." Max loadable mass: "..maxloadable)
 for _,_cargoobject in pairs(existingcrates)do
 local cargo=_cargoobject
 local static=cargo:GetPositionable()
 local staticid=cargo:GetID()
+local weight=cargo:GetMass()
+self:T(self.lid.." Found cargo mass: "..weight)
 if static and static:IsAlive()then
 local staticpos=static:GetCoordinate()
 local distance=self:_GetDistance(location,staticpos)
-if distance<=finddist and static then
+if distance<=finddist and static and weight<=maxloadable then
 index=index+1
 table.insert(found,staticid,cargo)
+maxloadable=maxloadable-weight
 end
 end
 end
@@ -56996,6 +57007,7 @@ local loaded={}
 if self.Loaded_Cargo[unitname]then
 loaded=self.Loaded_Cargo[unitname]
 numberonboard=loaded.Cratesloaded or 0
+massonboard=self:_GetUnitCargoMass(Unit)
 else
 loaded={}
 loaded.Troopsloaded=0
@@ -57004,10 +57016,11 @@ loaded.Cargo={}
 end
 local finddist=self.CrateDistance or 35
 local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
+self:T(self.lid.." Crates found: "..number)
 if number==0 and self.hoverautoloading then
 return self
 elseif number==0 then
-self:_SendMessage("Sorry no loadable crates nearby!",10,false,Group)
+self:_SendMessage("Sorry no loadable crates nearby or max cargo weight reached!",10,false,Group)
 return self
 elseif numberonboard==cratelimit then
 self:_SendMessage("Sorry no fully loaded!",10,false,Group)
@@ -57735,9 +57748,27 @@ end
 end
 return self
 end
+function CTLD:_CheckTemplates(temptable)
+self:T(self.lid.." _CheckTemplates")
+local outcome=true
+if type(temptable)~="table"then
+temptable={temptable}
+end
+for _,_name in pairs(temptable)do
+if not _DATABASE.Templates.Groups[_name]then
+outcome=false
+self:E(self.lid.."ERROR: Template name ".._name.." is missing!")
+end
+end
+return outcome
+end
 function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass,Stock)
 self:T(self.lid.." AddTroopsCargo")
 self:T({Name,Templates,Type,NoTroops,PerTroopMass,Stock})
+if not self:_CheckTemplates(Templates)then
+self:E(self.lid.."Troops Cargo for "..Name.." has missing template(s)!")
+return self
+end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass,Stock)
 table.insert(self.Cargo_Troops,cargo)
@@ -57745,6 +57776,10 @@ return self
 end
 function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesCargo")
+if not self:_CheckTemplates(Templates)then
+self:E(self.lid.."Crates Cargo for "..Name.." has missing template(s)!")
+return self
+end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
@@ -57769,6 +57804,10 @@ return cargo
 end
 function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock)
 self:T(self.lid.." AddCratesRepair")
+if not self:_CheckTemplates(Template)then
+self:E(self.lid.."Repair Cargo for "..Name.." has a missing template!")
+return self
+end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
 table.insert(self.Cargo_Crates,cargo)
@@ -58130,7 +58169,7 @@ self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone
 end
 return self
 end
-function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length)
+function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
 self:T(self.lid.." UnitCapabilities")
 local unittype=nil
 local unit=nil
@@ -58149,6 +58188,7 @@ capabilities.troops=Cantroops or false
 capabilities.cratelimit=Cratelimit or 0
 capabilities.trooplimit=Trooplimit or 0
 capabilities.length=Length or 20
+capabilities.cargoweightlimit=Maxcargoweight or 0
 self.UnitTypes[unittype]=capabilities
 return self
 end
@@ -58824,6 +58864,402 @@ self:InjectStatics(dropzone,injectstatic)
 end
 end
 end
+return self
+end
+end
+do
+CTLD_HERCULES={
+ClassName="CTLD_HERCULES",
+lid="",
+Name="",
+Version="0.0.1",
+}
+CTLD_HERCULES.Types={
+["ATGM M1045 HMMWV TOW Air [7183lb]"]={['name']="M1045 HMMWV TOW",['container']=true},
+["ATGM M1045 HMMWV TOW Skid [7073lb]"]={['name']="M1045 HMMWV TOW",['container']=false},
+["APC M1043 HMMWV Armament Air [7023lb]"]={['name']="M1043 HMMWV Armament",['container']=true},
+["APC M1043 HMMWV Armament Skid [6912lb]"]={['name']="M1043 HMMWV Armament",['container']=false},
+["SAM Avenger M1097 Air [7200lb]"]={['name']="M1097 Avenger",['container']=true},
+["SAM Avenger M1097 Skid [7090lb]"]={['name']="M1097 Avenger",['container']=false},
+["APC Cobra Air [10912lb]"]={['name']="Cobra",['container']=true},
+["APC Cobra Skid [10802lb]"]={['name']="Cobra",['container']=false},
+["APC M113 Air [21624lb]"]={['name']="M-113",['container']=true},
+["APC M113 Skid [21494lb]"]={['name']="M-113",['container']=false},
+["Tanker M978 HEMTT [34000lb]"]={['name']="M978 HEMTT Tanker",['container']=false},
+["HEMTT TFFT [34400lb]"]={['name']="HEMTT TFFT",['container']=false},
+["SPG M1128 Stryker MGS [33036lb]"]={['name']="M1128 Stryker MGS",['container']=false},
+["AAA Vulcan M163 Air [21666lb]"]={['name']="Vulcan",['container']=true},
+["AAA Vulcan M163 Skid [21577lb]"]={['name']="Vulcan",['container']=false},
+["APC M1126 Stryker ICV [29542lb]"]={['name']="M1126 Stryker ICV",['container']=false},
+["ATGM M1134 Stryker [30337lb]"]={['name']="M1134 Stryker ATGM",['container']=false},
+["APC LAV-25 Air [22520lb]"]={['name']="LAV-25",['container']=true},
+["APC LAV-25 Skid [22514lb]"]={['name']="LAV-25",['container']=false},
+["M1025 HMMWV Air [6160lb]"]={['name']="Hummer",['container']=true},
+["M1025 HMMWV Skid [6050lb]"]={['name']="Hummer",['container']=false},
+["IFV M2A2 Bradley [34720lb]"]={['name']="M-2 Bradley",['container']=false},
+["IFV MCV-80 [34720lb]"]={['name']="MCV-80",['container']=false},
+["IFV BMP-1 [23232lb]"]={['name']="BMP-1",['container']=false},
+["IFV BMP-2 [25168lb]"]={['name']="BMP-2",['container']=false},
+["IFV BMP-3 [32912lb]"]={['name']="BMP-3",['container']=false},
+["ARV BRDM-2 Air [12320lb]"]={['name']="BRDM-2",['container']=true},
+["ARV BRDM-2 Skid [12210lb]"]={['name']="BRDM-2",['container']=false},
+["APC BTR-80 Air [23936lb]"]={['name']="BTR-80",['container']=true},
+["APC BTR-80 Skid [23826lb]"]={['name']="BTR-80",['container']=false},
+["APC BTR-82A Air [24998lb]"]={['name']="BTR-82A",['container']=true},
+["APC BTR-82A Skid [24888lb]"]={['name']="BTR-82A",['container']=false},
+["SAM ROLAND ADS [34720lb]"]={['name']="Roland Radar",['container']=false},
+["SAM ROLAND LN [34720b]"]={['name']="Roland ADS",['container']=false},
+["SAM SA-13 STRELA [21624lb]"]={['name']="Strela-10M3",['container']=false},
+["AAA ZSU-23-4 Shilka [32912lb]"]={['name']="ZSU-23-4 Shilka",['container']=false},
+["SAM SA-19 Tunguska 2S6 [34720lb]"]={['name']="2S6 Tunguska",['container']=false},
+["Transport UAZ-469 Air [3747lb]"]={['name']="UAZ-469",['container']=true},
+["Transport UAZ-469 Skid [3630lb]"]={['name']="UAZ-469",['container']=false},
+["AAA GEPARD [34720lb]"]={['name']="Gepard",['container']=false},
+["SAM CHAPARRAL Air [21624lb]"]={['name']="M48 Chaparral",['container']=true},
+["SAM CHAPARRAL Skid [21516lb]"]={['name']="M48 Chaparral",['container']=false},
+["SAM LINEBACKER [34720lb]"]={['name']="M6 Linebacker",['container']=false},
+["Transport URAL-375 [14815lb]"]={['name']="Ural-375",['container']=false},
+["Transport M818 [16000lb]"]={['name']="M 818",['container']=false},
+["IFV MARDER [34720lb]"]={['name']="Marder",['container']=false},
+["Transport Tigr Air [15900lb]"]={['name']="Tigr_233036",['container']=true},
+["Transport Tigr Skid [15730lb]"]={['name']="Tigr_233036",['container']=false},
+["IFV TPZ FUCH [33440lb]"]={['name']="TPZ",['container']=false},
+["IFV BMD-1 Air [18040lb]"]={['name']="BMD-1",['container']=true},
+["IFV BMD-1 Skid [17930lb]"]={['name']="BMD-1",['container']=false},
+["IFV BTR-D Air [18040lb]"]={['name']="BTR_D",['container']=true},
+["IFV BTR-D Skid [17930lb]"]={['name']="BTR_D",['container']=false},
+["EWR SBORKA Air [21624lb]"]={['name']="Dog Ear radar",['container']=true},
+["EWR SBORKA Skid [21624lb]"]={['name']="Dog Ear radar",['container']=false},
+["ART 2S9 NONA Air [19140lb]"]={['name']="SAU 2-C9",['container']=true},
+["ART 2S9 NONA Skid [19030lb]"]={['name']="SAU 2-C9",['container']=false},
+["ART GVOZDIKA [34720lb]"]={['name']="SAU Gvozdika",['container']=false},
+["APC MTLB Air [26400lb]"]={['name']="MTLB",['container']=true},
+["APC MTLB Skid [26290lb]"]={['name']="MTLB",['container']=false},
+["Generic Crate [20000lb]"]={['name']="Hercules_Container_Parachute",['container']=true}
+}
+function CTLD_HERCULES:New(Coalition,Alias,CtldObject)
+local self=BASE:Inherit(self,FSM:New())
+if Coalition and type(Coalition)=="string"then
+if Coalition=="blue"then
+self.coalition=coalition.side.BLUE
+self.coalitiontxt=Coalition
+elseif Coalition=="red"then
+self.coalition=coalition.side.RED
+self.coalitiontxt=Coalition
+elseif Coalition=="neutral"then
+self.coalition=coalition.side.NEUTRAL
+self.coalitiontxt=Coalition
+else
+self:E("ERROR: Unknown coalition in CTLD!")
+end
+else
+self.coalition=Coalition
+self.coalitiontxt=string.lower(UTILS.GetCoalitionName(self.coalition))
+end
+if Alias then
+self.alias=tostring(Alias)
+else
+self.alias="UNHCR"
+if self.coalition then
+if self.coalition==coalition.side.RED then
+self.alias="Red CTLD Hercules"
+elseif self.coalition==coalition.side.BLUE then
+self.alias="Blue CTLD Hercules"
+end
+end
+end
+self.lid=string.format("%s (%s) | ",self.alias,self.coalitiontxt)
+self.infantrytemplate="Infantry"
+self.CTLD=CtldObject
+self.verbose=true
+self.j=0
+self.carrierGroups={}
+self.Cargo={}
+self.ParatrooperCount={}
+self.ObjectTracker={}
+self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
+self:HandleEvent(EVENTS.Shot,self._HandleShot)
+self:I(self.lid.."Started")
+self:CheckTemplates()
+return self
+end
+function CTLD_HERCULES:CheckTemplates()
+self:T(self.lid..'CheckTemplates')
+self.Types["Paratroopers 10"]={
+name=self.infantrytemplate,
+container=false,
+available=false,
+}
+local missing={}
+local nomissing=0
+local found={}
+local nofound=0
+for _index,_tab in pairs(self.Types)do
+local outcometxt="MISSING"
+if _DATABASE.Templates.Groups[_tab.name]then
+outcometxt="OK"
+self.Types[_index].available=true
+found[_tab.name]=true
+else
+self.Types[_index].available=false
+missing[_tab.name]=true
+end
+if self.verbose then
+self:I(string.format(self.lid.."Checking template for %s (%s) ... %s",_index,_tab.name,outcometxt))
+end
+end
+for _,_name in pairs(found)do
+nofound=nofound+1
+end
+for _,_name in pairs(missing)do
+nomissing=nomissing+1
+end
+self:I(string.format(self.lid.."Template Check Summary: Found %d, Missing %d, Total %d",nofound,nomissing,nofound+nomissing))
+return self
+end
+function CTLD_HERCULES:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Drop_Position,Cargo_Type_name,CargoHeading,Cargo_Country,GroupSpacing)
+self:T(self.lid..'Soldier_SpawnGroup')
+self:T(Cargo_Drop_Position)
+local InjectTroopsType=CTLD_CARGO:New(nil,self.infantrytemplate,{self.infantrytemplate},CTLD_CARGO.Enum.TROOPS,true,true,10,nil,false,80)
+local position=Cargo_Drop_Position:GetVec2()
+local dropzone=ZONE_RADIUS:New("Infantry "..math.random(1,10000),position,100)
+self.CTLD:InjectTroops(dropzone,InjectTroopsType)
+return self
+end
+function CTLD_HERCULES:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Drop_Position,Cargo_Type_name,CargoHeading,Cargo_Country)
+self:T(self.lid.."Cargo_SpawnGroup")
+self:T(Cargo_Type_name)
+if Cargo_Type_name~='Container red 1'then
+local InjectVehicleType=CTLD_CARGO:New(nil,Cargo_Type_name,{Cargo_Type_name},CTLD_CARGO.Enum.VEHICLE,true,true,1,nil,false,1000)
+local position=Cargo_Drop_Position:GetVec2()
+local dropzone=ZONE_RADIUS:New("Vehicle "..math.random(1,10000),position,100)
+self.CTLD:InjectVehicles(dropzone,InjectVehicleType)
+end
+return self
+end
+function CTLD_HERCULES:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Drop_Position,Cargo_Type_name,CargoHeading,dead,Cargo_Country)
+self:T(self.lid.."Cargo_SpawnStatic")
+self:T("Static "..Cargo_Type_name.." Dead "..tostring(dead))
+local position=Cargo_Drop_Position:GetVec2()
+local Zone=ZONE_RADIUS:New("Cargo Static "..math.random(1,10000),position,100)
+if not dead then
+local injectstatic=CTLD_CARGO:New(nil,"Cargo Static Group "..math.random(1,10000),"iso_container",CTLD_CARGO.Enum.STATIC,true,false,1,nil,true,4500,1)
+self.CTLD:InjectStatics(Zone,injectstatic,true)
+else
+end
+return self
+end
+function CTLD_HERCULES:Cargo_SpawnObjects(Cargo_Drop_initiator,Cargo_Drop_Direction,Cargo_Content_position,Cargo_Type_name,Cargo_over_water,Container_Enclosed,ParatrooperGroupSpawn,offload_cargo,all_cargo_survive_to_the_ground,all_cargo_gets_destroyed,destroy_cargo_dropped_without_parachute,Cargo_Country)
+self:T(self.lid..'Cargo_SpawnObjects')
+local CargoHeading=self.CargoHeading
+if offload_cargo==true or ParatrooperGroupSpawn==true then
+if ParatrooperGroupSpawn==true then
+self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
+self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,5)
+self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,10)
+else
+self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
+end
+else
+if all_cargo_gets_destroyed==true or Cargo_over_water==true then
+if Container_Enclosed==true then
+if ParatrooperGroupSpawn==false then
+end
+else
+end
+else
+if all_cargo_survive_to_the_ground==true then
+if ParatrooperGroupSpawn==true then
+self:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,true,Cargo_Country)
+else
+self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
+end
+if Container_Enclosed==true then
+if ParatrooperGroupSpawn==false then
+self:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Content_position,"Hercules_Container_Parachute_Static",CargoHeading,false,Cargo_Country)
+end
+end
+end
+if destroy_cargo_dropped_without_parachute==true then
+if Container_Enclosed==true then
+if ParatrooperGroupSpawn==true then
+self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
+else
+self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
+self:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Content_position,"Hercules_Container_Parachute_Static",CargoHeading,false,Cargo_Country)
+end
+else
+self:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,true,Cargo_Country)
+end
+end
+end
+end
+return self
+end
+function CTLD_HERCULES:Calculate_Object_Height_AGL(group)
+self:T(self.lid.."Calculate_Object_Height_AGL")
+if group.ClassName and group.ClassName=="GROUP"then
+local gcoord=group:GetCoordinate()
+local height=group:GetHeight()
+local lheight=gcoord:GetLandHeight()
+self:T(self.lid.."Height "..height-lheight)
+return height-lheight
+else
+if group:isExist()then
+local dcsposition=group:getPosition().p
+local dcsvec2={x=dcsposition.x,y=dcsposition.z}
+local height=math.floor(group:getPosition().p.y-land.getHeight(dcsvec2))
+self.ObjectTracker[group.id_]=dcsposition
+self:T(self.lid.."Height "..height)
+return height
+else
+return 0
+end
+end
+end
+function CTLD_HERCULES:Check_SurfaceType(object)
+self:T(self.lid.."Check_SurfaceType")
+if object:isExist()then
+return land.getSurfaceType({x=object:getPosition().p.x,y=object:getPosition().p.z})
+else
+return 1
+end
+end
+function CTLD_HERCULES:Cargo_Track(cargo,initiator)
+self:T(self.lid.."Cargo_Track")
+local Cargo_Drop_initiator=initiator
+if cargo.Cargo_Contents~=nil then
+if self:Calculate_Object_Height_AGL(cargo.Cargo_Contents)<10 then
+if self:Check_SurfaceType(cargo.Cargo_Contents)==2 or self:Check_SurfaceType(cargo.Cargo_Contents)==3 then
+cargo.Cargo_over_water=true
+end
+local dcsvec3=self.ObjectTracker[cargo.Cargo_Contents.id_]
+self:T("SPAWNPOSITION: ")
+self:T({dcsvec3})
+local Vec2={
+x=dcsvec3.x,
+y=dcsvec3.z,
+}
+local vec3=COORDINATE:NewFromVec2(Vec2)
+self.ObjectTracker[cargo.Cargo_Contents.id_]=nil
+self:Cargo_SpawnObjects(Cargo_Drop_initiator,cargo.Cargo_Drop_Direction,vec3,cargo.Cargo_Type_name,cargo.Cargo_over_water,cargo.Container_Enclosed,cargo.ParatrooperGroupSpawn,cargo.offload_cargo,cargo.all_cargo_survive_to_the_ground,cargo.all_cargo_gets_destroyed,cargo.destroy_cargo_dropped_without_parachute,cargo.Cargo_Country)
+if cargo.Cargo_Contents:isExist()then
+cargo.Cargo_Contents:destroy()
+end
+cargo.scheduleFunctionID:Stop()
+cargo={}
+end
+end
+return self
+end
+function CTLD_HERCULES:Calculate_Cargo_Drop_initiator_NorthCorrection(point)
+self:T(self.lid.."Calculate_Cargo_Drop_initiator_NorthCorrection")
+if not point.z then
+point.z=point.y
+point.y=0
+end
+local lat,lon=coord.LOtoLL(point)
+local north_posit=coord.LLtoLO(lat+1,lon)
+return math.atan2(north_posit.z-point.z,north_posit.x-point.x)
+end
+function CTLD_HERCULES:Calculate_Cargo_Drop_initiator_Heading(Cargo_Drop_initiator)
+self:T(self.lid.."Calculate_Cargo_Drop_initiator_Heading")
+local Heading=Cargo_Drop_initiator:GetHeading()
+Heading=Heading+self:Calculate_Cargo_Drop_initiator_NorthCorrection(Cargo_Drop_initiator:GetVec3())
+if Heading<0 then
+Heading=Heading+(2*math.pi)
+end
+return Heading+0.06
+end
+function CTLD_HERCULES:Cargo_Initialize(Initiator,Cargo_Contents,Cargo_Type_name,Container_Enclosed,SoldierGroup,ParatrooperGroupSpawnInit)
+self:T(self.lid.."Cargo_Initialize")
+local Cargo_Drop_initiator=Initiator:GetName()
+if Cargo_Drop_initiator~=nil then
+if ParatrooperGroupSpawnInit==true then
+self:T("Paratrooper Drop")
+if not self.ParatrooperCount[Cargo_Drop_initiator]then
+self.ParatrooperCount[Cargo_Drop_initiator]=1
+else
+self.ParatrooperCount[Cargo_Drop_initiator]=self.ParatrooperCount[Cargo_Drop_initiator]+1
+end
+local Paratroopers=self.ParatrooperCount[Cargo_Drop_initiator]
+self:T("Paratrooper Drop Number "..self.ParatrooperCount[Cargo_Drop_initiator])
+local SpawnParas=false
+if math.fmod(Paratroopers,10)==0 then
+SpawnParas=true
+end
+self.j=self.j+1
+self.Cargo[self.j]={}
+self.Cargo[self.j].Cargo_Drop_Direction=self:Calculate_Cargo_Drop_initiator_Heading(Initiator)
+self.Cargo[self.j].Cargo_Contents=Cargo_Contents
+self.Cargo[self.j].Cargo_Type_name=Cargo_Type_name
+self.Cargo[self.j].Container_Enclosed=Container_Enclosed
+self.Cargo[self.j].ParatrooperGroupSpawn=SpawnParas
+self.Cargo[self.j].Cargo_Country=Initiator:GetCountry()
+if self:Calculate_Object_Height_AGL(Initiator)<5.0 then
+self.Cargo[self.j].offload_cargo=true
+elseif self:Calculate_Object_Height_AGL(Initiator)<10.0 then
+self.Cargo[self.j].all_cargo_survive_to_the_ground=true
+elseif self:Calculate_Object_Height_AGL(Initiator)<100.0 then
+self.Cargo[self.j].all_cargo_gets_destroyed=true
+else
+self.Cargo[self.j].all_cargo_gets_destroyed=false
+end
+local timer=TIMER:New(self.Cargo_Track,self,self.Cargo[self.j],Initiator)
+self.Cargo[self.j].scheduleFunctionID=timer
+timer:Start(5,2,600)
+else
+self.j=self.j+1
+self.Cargo[self.j]={}
+self.Cargo[self.j].Cargo_Drop_Direction=self:Calculate_Cargo_Drop_initiator_Heading(Initiator)
+self.Cargo[self.j].Cargo_Contents=Cargo_Contents
+self.Cargo[self.j].Cargo_Type_name=Cargo_Type_name
+self.Cargo[self.j].Container_Enclosed=Container_Enclosed
+self.Cargo[self.j].ParatrooperGroupSpawn=false
+self.Cargo[self.j].Cargo_Country=Initiator:GetCountry()
+if self:Calculate_Object_Height_AGL(Initiator)<5.0 then
+self.Cargo[self.j].offload_cargo=true
+elseif self:Calculate_Object_Height_AGL(Initiator)<10.0 then
+self.Cargo[self.j].all_cargo_survive_to_the_ground=true
+elseif self:Calculate_Object_Height_AGL(Initiator)<100.0 then
+self.Cargo[self.j].all_cargo_gets_destroyed=true
+else
+self.Cargo[self.j].destroy_cargo_dropped_without_parachute=true
+end
+local timer=TIMER:New(self.Cargo_Track,self,self.Cargo[self.j],Initiator)
+self.Cargo[self.j].scheduleFunctionID=timer
+timer:Start(5,2,600)
+end
+end
+return self
+end
+function CTLD_HERCULES:SetType(key,cargoType,cargoNum)
+self:T(self.lid.."SetType")
+self.carrierGroups[key]['cargoType']=cargoType
+self.carrierGroups[key]['cargoNum']=cargoNum
+return self
+end
+function CTLD_HERCULES:_HandleShot(Cargo_Drop_Event)
+self:T(self.lid.."Shot Event ID:"..Cargo_Drop_Event.id)
+if Cargo_Drop_Event.id==EVENTS.Shot then
+local GT_Name=""
+local SoldierGroup=false
+local ParatrooperGroupSpawnInit=false
+local GT_DisplayName=Weapon.getDesc(Cargo_Drop_Event.weapon).typeName:sub(15,-1)
+self:T(string.format("%sCargo_Drop_Event: %s",self.lid,Weapon.getDesc(Cargo_Drop_Event.weapon).typeName))
+if(GT_DisplayName=="Squad 30 x Soldier [7950lb]")then
+self:Cargo_Initialize(Cargo_Drop_Event.IniGroup,Cargo_Drop_Event.weapon,"Soldier M4 GRG",false,true,true)
+end
+if self.Types[GT_DisplayName]then
+local GT_Name=self.Types[GT_DisplayName]['name']
+local Cargo_Container_Enclosed=self.Types[GT_DisplayName]['container']
+self:Cargo_Initialize(Cargo_Drop_Event.IniGroup,Cargo_Drop_Event.weapon,GT_Name,Cargo_Container_Enclosed)
+end
+end
+return self
+end
+function CTLD_HERCULES:_HandleBirth(event)
+self:T(self.lid.."Birth Event ID:"..event.id)
 return self
 end
 end
