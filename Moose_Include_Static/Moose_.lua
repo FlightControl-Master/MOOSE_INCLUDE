@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-03T08:59:35.0000000Z-ec600ab67200626ea140a9162be53e32ba490048 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-04T07:56:34.0000000Z-595bc16d92cb9ac7e3bc2abcfb2267b6946e1861 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -30807,6 +30807,36 @@ self._SmokeDetectedZones=false
 self._FlareDetectedZones=false
 self._BoundDetectedZones=false
 return self
+end
+function DETECTION_AREAS:GetDetectionZones()
+local zoneset=SET_ZONE:New()
+for _ID,_Item in pairs(self.DetectedItems)do
+local item=_Item
+if item.Zone then
+zoneset:AddZone(item.Zone)
+end
+end
+return zoneset
+end
+function DETECTION_AREAS:GetDetectionZoneByID(ID)
+local zone=nil
+for _ID,_Item in pairs(self.DetectedItems)do
+local item=_Item
+if item.ID==ID then
+zone=item.Zone
+break
+end
+end
+return zone
+end
+function DETECTION_AREAS:GetDetectionZoneCount()
+local zoneset=0
+for _ID,_Item in pairs(self.DetectedItems)do
+if _Item.Zone then
+zoneset=zoneset+1
+end
+end
+return zoneset
 end
 function DETECTION_AREAS:DetectedItemReportMenu(DetectedItem,AttackGroup,Settings)
 self:F({DetectedItem=DetectedItem})
@@ -80588,7 +80618,6 @@ if self.marker then
 self.marker:Remove()
 end
 self.marker=nil
-self.marker=false
 end
 return self
 end
