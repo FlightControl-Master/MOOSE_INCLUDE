@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-03T09:01:48.0000000Z-63cbc0c55bcd385b0fcf60a5119a19ac418a9126 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-04T07:54:02.0000000Z-9f7588b245aaff0b400a5bb25a5b28ddc087fce3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29862,6 +29862,36 @@ self._SmokeDetectedZones=false
 self._FlareDetectedZones=false
 self._BoundDetectedZones=false
 return self
+end
+function DETECTION_AREAS:GetDetectionZones()
+local zoneset=SET_ZONE:New()
+for _ID,_Item in pairs(self.DetectedItems)do
+local item=_Item
+if item.Zone then
+zoneset:AddZone(item.Zone)
+end
+end
+return zoneset
+end
+function DETECTION_AREAS:GetDetectionZoneByID(ID)
+local zone=nil
+for _ID,_Item in pairs(self.DetectedItems)do
+local item=_Item
+if item.ID==ID then
+zone=item.Zone
+break
+end
+end
+return zone
+end
+function DETECTION_AREAS:GetDetectionZoneCount()
+local zoneset=0
+for _ID,_Item in pairs(self.DetectedItems)do
+if _Item.Zone then
+zoneset=zoneset+1
+end
+end
+return zoneset
 end
 function DETECTION_AREAS:DetectedItemReportMenu(DetectedItem,AttackGroup,Settings)
 self:F({DetectedItem=DetectedItem})
