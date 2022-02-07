@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-04T07:56:34.0000000Z-595bc16d92cb9ac7e3bc2abcfb2267b6946e1861 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-07T10:54:35.0000000Z-099238a2e50490f2c527e0486924220f8a48f096 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -77345,6 +77345,8 @@ self:E({_point1,_point2})
 return-1
 end
 end
+end
+do
 CTLD_CARGO={
 ClassName="CTLD_CARGO",
 ID=0,
@@ -77369,7 +77371,7 @@ REPAIR="Repair",
 ENGINEERS="Engineers",
 STATIC="Static",
 }
-function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock)
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory)
 local self=BASE:Inherit(self,BASE:New())
 self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
 self.ID=ID or math.random(100000,1000000)
@@ -77384,10 +77386,14 @@ self.HasBeenDropped=Dropped or false
 self.PerCrateMass=PerCrateMass or 0
 self.Stock=Stock or nil
 self.Mark=nil
+self.Subcategory=Subcategory or"Other"
 return self
 end
 function CTLD_CARGO:GetID()
 return self.ID
+end
+function CTLD_CARGO:GetSubCat()
+return self.Subcategory
 end
 function CTLD_CARGO:GetMass()
 return self.PerCrateMass
@@ -77523,7 +77529,7 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.5"
+CTLD.version="1.0.6"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -77630,6 +77636,8 @@ self.enableLoadSave=false
 self.filepath=nil
 self.saveinterval=600
 self.eventoninject=true
+self.usesubcats=false
+self.subcats={}
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -78083,13 +78091,14 @@ self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos"
 end
 local templ=cargotype:GetTemplates()
 local sorte=cargotype:GetType()
+local subcat=cargotype.Subcategory
 self.CargoCounter=self.CargoCounter+1
 local realcargo=nil
 if drop then
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass)
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,subcat)
 table.insert(droppedcargo,realcargo)
 else
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass)
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,subcat)
 Cargo:RemoveStock()
 end
 table.insert(self.Spawned_Cargo,realcargo)
@@ -78917,6 +78926,14 @@ end
 end
 end
 self.CtldUnits=_UnitList
+if self.usesubcats then
+for _id,_cargo in pairs(self.Cargo_Crates)do
+local entry=_cargo
+if not self.subcats[entry.Subcategory]then
+self.subcats[entry.Subcategory]=entry.Subcategory
+end
+end
+end
 local menucount=0
 local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
@@ -78959,11 +78976,25 @@ end
 if cancrates then
 local loadmenu=MENU_GROUP_COMMAND:New(_group,"Load crates",topcrates,self._LoadCratesNearby,self,_group,_unit)
 local cratesmenu=MENU_GROUP:New(_group,"Get Crates",topcrates)
+if self.usesubcats then
+local subcatmenus={}
+for _name,_entry in pairs(self.subcats)do
+subcatmenus[_name]=MENU_GROUP:New(_group,_name,cratesmenu)
+end
+for _,_entry in pairs(self.Cargo_Crates)do
+local entry=_entry
+local subcat=entry.Subcategory
+menucount=menucount+1
+local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
+end
+else
 for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
+end
 end
 for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
@@ -79016,14 +79047,14 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTr
 table.insert(self.Cargo_Troops,cargo)
 return self
 end
-function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock)
+function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock,SubCategory)
 self:T(self.lid.." AddCratesCargo")
 if not self:_CheckTemplates(Templates)then
 self:E(self.lid.."Crates Cargo for "..Name.." has missing template(s)!")
 return self
 end
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
@@ -79044,14 +79075,14 @@ local template=STATIC:FindByName(Name,true):GetTypeName()
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
 return cargo
 end
-function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock)
+function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock,SubCategory)
 self:T(self.lid.." AddCratesRepair")
 if not self:_CheckTemplates(Template)then
 self:E(self.lid.."Repair Cargo for "..Name.." has a missing template!")
 return self
 end
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
@@ -79165,6 +79196,14 @@ ctldzone.shiplength=Shiplength or 100
 ctldzone.shipwidth=Shipwidth or 10
 end
 self:AddZone(ctldzone)
+return self
+end
+function CTLD:AddCTLDZoneFromAirbase(AirbaseName,Type,Color,Active,HasBeacon)
+self:T(self.lid.." AddCTLDZoneFromAirbase")
+local AFB=AIRBASE:FindByName(AirbaseName)
+local name=AFB:GetZone():GetName()
+self:T(self.lid.."AFB "..AirbaseName.." ZoneName "..name)
+self:AddCTLDZone(name,Type,Color,Active,HasBeacon)
 return self
 end
 function CTLD:DropBeaconNow(Unit)
@@ -79327,8 +79366,14 @@ zone=UNIT:FindByName(zonename)
 zonecoord=zone:GetCoordinate()
 zoneradius=czone.shiplength
 zonewidth=czone.shipwidth
-else
+elseif ZONE:FindByName(zonename)then
 zone=ZONE:FindByName(zonename)
+self:T("Checking Zone: "..zonename)
+zonecoord=zone:GetCoordinate()
+zoneradius=zone:GetRadius()
+zonewidth=zoneradius
+elseif AIRBASE:FindByName(zonename)then
+zone=AIRBASE:FindByName(zonename):GetZone()
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
 zoneradius=zone:GetRadius()
