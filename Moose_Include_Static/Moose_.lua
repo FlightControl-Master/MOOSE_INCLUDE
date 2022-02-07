@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-07T10:54:35.0000000Z-099238a2e50490f2c527e0486924220f8a48f096 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-07T11:17:41.0000000Z-a079ac4207414e2010ea88a82442bd9fa98924ca ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79286,6 +79286,9 @@ elseif IsDropped then
 Zone=self.droppedbeaconref[Name]
 else
 Zone=ZONE:FindByName(Name)
+if not Zone then
+Zone=AIRBASE:FindByName(Name):GetZone()
+end
 end
 local Sound=Sound or"beacon.ogg"
 if IsDropped and Zone then
@@ -79431,6 +79434,9 @@ if i==4 then
 zone=UNIT:FindByName(zonename)
 else
 zone=ZONE:FindByName(zonename)
+if not zone then
+zone=AIRBASE:FindByName(zonename):GetZone()
+end
 end
 local zonecoord=zone:GetCoordinate()
 local active=CZone.active
