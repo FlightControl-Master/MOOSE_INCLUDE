@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-07T11:17:41.0000000Z-a079ac4207414e2010ea88a82442bd9fa98924ca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-08T06:49:16.0000000Z-8cdf0d9fce7e04afaaea3176a543e76b7b5ce5f5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75937,7 +75937,7 @@ CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
-CSAR.version="1.0.2"
+CSAR.version="1.0.3"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -76178,7 +76178,14 @@ end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
 self:T(self.lid.." _SpawnCsarAtZone")
 local freq=self:_GenerateADFFrequency()
-local _triggerZone=ZONE:New(_zone)
+local _triggerZone=nil
+if type(_zone)=="string"then
+_triggerZone=ZONE:New(_zone)
+elseif type(_zone)=="table"and _zone.ClassName then
+if string.find(_zone.ClassName,"ZONE",1)then
+_triggerZone=_zone
+end
+end
 if _triggerZone==nil then
 self:E(self.lid.."ERROR: Can\'t find zone called ".._zone,10)
 return
