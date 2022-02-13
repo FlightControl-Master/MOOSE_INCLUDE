@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-08T06:49:04.0000000Z-a4163017d5290f476a18c51bd50ab60a60a47fa6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-13T11:08:23.0000000Z-ba5ccc1021674213a3366110a69838c8e5b46b4c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56455,7 +56455,7 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.6"
+CTLD.version="1.0.7"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56546,6 +56546,7 @@ self.dropcratesanywhere=false
 self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
+self.troopdropzoneradius=100
 self.enableHercules=false
 self.HercMinAngels=165
 self.HercMaxAngels=2000
@@ -56613,6 +56614,13 @@ self:T(self.lid.." _GenerateVHFrequencies")
 self.FreeVHFFrequencies={}
 self.UsedVHFFrequencies={}
 self.FreeVHFFrequencies=UTILS.GenerateVHFrequencies()
+return self
+end
+function CTLD:SetTroopDropZoneRadius(Radius)
+self:T(self.lid.." SetTroopDropZoneRadius")
+local tradius=Radius or 100
+if tradius<25 then tradius=25 end
+self.troopdropzoneradius=tradius
 return self
 end
 function CTLD:_EventHandler(EventData)
@@ -57465,7 +57473,7 @@ if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo
 local name=cargo:GetName()or"none"
 local temptable=cargo:GetTemplates()or{}
 local position=Group:GetCoordinate()
-local zoneradius=100
+local zoneradius=self.troopdropzoneradius or 100
 local factor=1
 if IsHerc then
 factor=cargo:GetCratesNeeded()or 1
