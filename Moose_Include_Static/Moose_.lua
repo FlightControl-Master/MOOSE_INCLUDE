@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-13T11:07:57.0000000Z-21c242ee058936561f354d38477ee1065bb11ff3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-15T06:30:41.0000000Z-e46922d34109206397bf909cd936b8629a753230 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47233,7 +47233,7 @@ local color=self.smokecolor
 if self.RecceSmokeColor[RecceName]==nil then
 self.RecceSmokeColor[RecceName]=color
 else
-color=self.RecceLaserCode[RecceName]
+color=self.RecceSmokeColor[RecceName]
 end
 return color
 end
