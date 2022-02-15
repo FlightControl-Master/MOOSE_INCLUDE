@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-13T11:08:23.0000000Z-ba5ccc1021674213a3366110a69838c8e5b46b4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-15T13:41:31.0000000Z-a0d492cd2de47715d046284e2db7b79c4fb7bebf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21011,6 +21011,24 @@ local unit=self:GetUnit(1)
 local name=unit:GetName()
 local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
 return skill
+end
+function GROUP:GetHighestThreat()
+local units=self:GetUnits()
+if units then
+local threat=nil;local maxtl=0
+for _,_unit in pairs(units or{})do
+local unit=_unit
+if unit and unit:IsAlive()then
+local tl=unit:GetThreatLevel()
+if tl>maxtl then
+maxtl=tl
+threat=unit
+end
+end
+end
+return threat,maxtl
+end
+return nil,nil
 end
 UNIT={
 ClassName="UNIT",
