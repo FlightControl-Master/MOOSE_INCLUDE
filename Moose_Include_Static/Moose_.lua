@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-15T13:41:31.0000000Z-a0d492cd2de47715d046284e2db7b79c4fb7bebf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-15T17:07:26.0000000Z-00c8690e61ec067f622557c928f889a06993dc4d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56473,7 +56473,7 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.7"
+CTLD.version="1.0.8"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -58426,14 +58426,21 @@ unittype=unit:GetTypeName()
 else
 return self
 end
+local length=20
+local maxcargo=500
+local existingcaps=self.UnitTypes[unittype]
+if existingcaps then
+length=existingcaps.length or 20
+maxcargo=existingcaps.cargoweightlimit or 500
+end
 local capabilities={}
 capabilities.type=unittype
 capabilities.crates=Cancrates or false
 capabilities.troops=Cantroops or false
 capabilities.cratelimit=Cratelimit or 0
 capabilities.trooplimit=Trooplimit or 0
-capabilities.length=Length or 20
-capabilities.cargoweightlimit=Maxcargoweight or 0
+capabilities.length=Length or length
+capabilities.cargoweightlimit=Maxcargoweight or maxcargo
 self.UnitTypes[unittype]=capabilities
 return self
 end
