@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-15T17:07:26.0000000Z-00c8690e61ec067f622557c928f889a06993dc4d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-16T09:06:04.0000000Z-6c6cdcf7630e85c390b1204ec76467e2389ef256 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56473,7 +56473,7 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.8"
+CTLD.version="1.0.9"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -56959,7 +56959,7 @@ end
 local capabilities=self:_GetUnitCapabilities(Unit)
 local canloadcratesno=capabilities.cratelimit
 local loaddist=self.CrateDistance or 35
-local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist)
+local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist,true)
 if numbernearby>=canloadcratesno and not drop then
 self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
 return self
@@ -57111,7 +57111,7 @@ end
 function CTLD:_ListCratesNearby(_group,_unit)
 self:T(self.lid.." _ListCratesNearby")
 local finddist=self.CrateDistance or 35
-local crates,number=self:_FindCratesNearby(_group,_unit,finddist)
+local crates,number=self:_FindCratesNearby(_group,_unit,finddist,true)
 if number>0 then
 local text=REPORT:New("Crates Found Nearby:")
 text:Add("------------------------------------------------------------")
@@ -57155,7 +57155,7 @@ self:E({_point1,_point2})
 return-1
 end
 end
-function CTLD:_FindCratesNearby(_group,_unit,_dist)
+function CTLD:_FindCratesNearby(_group,_unit,_dist,_ignoreweight)
 self:T(self.lid.." _FindCratesNearby")
 local finddist=_dist
 local location=_group:GetCoordinate()
@@ -57177,7 +57177,7 @@ self:T(self.lid.." Found cargo mass: "..weight)
 if static and static:IsAlive()then
 local staticpos=static:GetCoordinate()
 local distance=self:_GetDistance(location,staticpos)
-if distance<=finddist and static and weight<=maxloadable then
+if distance<=finddist and static and(weight<=maxloadable or _ignoreweight)then
 index=index+1
 table.insert(found,staticid,cargo)
 maxloadable=maxloadable-weight
@@ -57218,7 +57218,7 @@ loaded.Cratesloaded=0
 loaded.Cargo={}
 end
 local finddist=self.CrateDistance or 35
-local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist)
+local nearcrates,number=self:_FindCratesNearby(Group,Unit,finddist,false)
 self:T(self.lid.." Crates found: "..number)
 if number==0 and self.hoverautoloading then
 return self
@@ -57630,7 +57630,7 @@ return self
 end
 end
 local finddist=self.CrateDistance or 35
-local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
+local crates,number=self:_FindCratesNearby(Group,Unit,finddist,true)
 local buildables={}
 local foundbuilds=false
 local canbuild=false
@@ -57702,7 +57702,7 @@ end
 function CTLD:_RepairCrates(Group,Unit,Engineering)
 self:T(self.lid.." _RepairCrates")
 local finddist=self.CrateDistance or 35
-local crates,number=self:_FindCratesNearby(Group,Unit,finddist)
+local crates,number=self:_FindCratesNearby(Group,Unit,finddist,true)
 local buildables={}
 local foundbuilds=false
 local canbuild=false
@@ -58644,7 +58644,7 @@ local wrenches=engineers.Group
 self:T(_engineers.lid.._engineers:GetStatus())
 if wrenches and wrenches:IsAlive()then
 if engineers:IsStatus("Running")or engineers:IsStatus("Searching")then
-local crates,number=self:_FindCratesNearby(wrenches,nil,self.EngineerSearch)
+local crates,number=self:_FindCratesNearby(wrenches,nil,self.EngineerSearch,true)
 engineers:Search(crates,number)
 elseif engineers:IsStatus("Moving")then
 engineers:Move()
