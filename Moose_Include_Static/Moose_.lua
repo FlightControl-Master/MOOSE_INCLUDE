@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-16T09:02:44.0000000Z-44ad841d05ae0b411f4f50538485177f84a86921 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-17T16:41:20.0000000Z-33265507053327563a126880f36e319ed63fb3bc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75955,7 +75955,7 @@ CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
-CSAR.version="1.0.3"
+CSAR.version="1.0.4"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -76052,13 +76052,15 @@ self.countryblue=country.id.USA
 self.countryred=country.id.RUSSIA
 self.countryneutral=country.id.UN_PEACEKEEPERS
 self.csarUsePara=false
+self.wetfeettemplate=nil
+self.usewetfeet=false
 self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
 return self
 end
-function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername)
+function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
 self:T({"_CreateDownedPilotTrack",Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername})
 local DownedPilot={}
 DownedPilot.desc=Description or""
@@ -76072,6 +76074,7 @@ DownedPilot.typename=Typename or""
 DownedPilot.group=Group
 DownedPilot.timestamp=0
 DownedPilot.alive=true
+DownedPilot.wetfeet=Wetfeet or false
 local PilotTable=self.downedPilots
 local counter=self.downedpilotcounter
 PilotTable[counter]={}
@@ -76102,15 +76105,20 @@ end
 self.lastCrash[_unitname]=timer.getTime()
 return false
 end
-function CSAR:_SpawnPilotInField(country,point,frequency)
-self:T({country,point,frequency})
+function CSAR:_SpawnPilotInField(country,point,frequency,wetfeet)
+self:T({country,point,frequency,tostring(wetfeet)})
 local freq=frequency or 1000
 local freq=freq/1000
 for i=1,10 do
 math.random(i,10000)
 end
-if point:IsSurfaceTypeWater()then point.y=0 end
+if point:IsSurfaceTypeWater()or wetfeet then
+point.y=0
+end
 local template=self.template
+if self.usewetfeet and wetfeet then
+template=self.wetfeettemplate
+end
 local alias=string.format("Pilot %.2fkHz-%d",freq,math.random(1,99))
 local coalition=self.coalition
 local pilotcacontrol=self.allowDownedPilotCAcontrol
@@ -76154,11 +76162,16 @@ function CSAR:_AddCsar(_coalition,_country,_point,_typeName,_unitName,_playerNam
 self:T(self.lid.." _AddCsar")
 self:T({_coalition,_country,_point,_typeName,_unitName,_playerName,_freq,noMessage,_description})
 local template=self.template
+local wetfeet=false
+local surface=_point:GetSurfaceType()
+if surface==land.SurfaceType.WATER then
+wetfeet=true
+end
 if not _freq then
 _freq=self:_GenerateADFFrequency()
 if not _freq then _freq=333000 end
 end
-local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq)
+local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq,wetfeet)
 local _typeName=_typeName or"Pilot"
 if not noMessage then
 if _freq~=0 then
@@ -76189,7 +76202,7 @@ end
 end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
-self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName)
+self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet)
 self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage)
 return self
 end
@@ -77106,6 +77119,9 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
+if self.wetfeettemplate then
+self.usewetfeet=true
+end
 self:__Status(-10)
 return self
 end
