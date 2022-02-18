@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-17T16:41:32.0000000Z-3d9bb14713d31b601011890e1cb1eaaf2b03a400 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-18T07:22:47.0000000Z-84f231ea08decd2b50ed3ea661e574f1996c951d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59560,7 +59560,7 @@ CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
-CSAR.version="1.0.4"
+CSAR.version="1.0.4a"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -59952,7 +59952,12 @@ end
 if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
 return
 end
-if self.csarUsePara==false then
+local wetfeet=false
+local surface=_unit:GetCoordinate():GetSurfaceType()
+if surface==land.SurfaceType.WATER then
+wetfeet=true
+end
+if self.csarUsePara==false or(self.csarUsePara and wetfeet)then
 local _freq=self:_GenerateADFFrequency()
 self:_AddCsar(_coalition,_unit:GetCountry(),_unit:GetCoordinate(),_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
 return true
