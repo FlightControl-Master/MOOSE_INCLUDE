@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-18T07:22:57.0000000Z-6b4975559d2e015a35690738ab006c8a02b73bbd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-19T12:26:02.0000000Z-8a3120be39683332180dae673875e7e6ae6b1cd9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47472,6 +47472,7 @@ return outcome
 end
 function AUTOLASE:CanLase(Recce,Unit)
 local canlase=false
+if Recce and Recce:IsAlive()==true then
 local name=Recce:GetName()
 local cooldown=self.RecceUnits[name].cooldown and self.forcecooldown
 if cooldown then
@@ -47489,6 +47490,7 @@ local distance=math.floor(reccecoord:Get3DDistance(unitcoord))
 local lasedistance=self:GetLosFromUnit(Recce)
 if distance<=lasedistance and islos then
 canlase=true
+end
 end
 return canlase
 end
