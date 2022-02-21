@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-19T12:26:02.0000000Z-8a3120be39683332180dae673875e7e6ae6b1cd9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-21T07:35:56.0000000Z-890dae8ba7bd9371db8001a6458c3a5a51e88555 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26589,7 +26589,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.2")
+self:I("*** SEAD - Started Version 0.4.3")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -26664,8 +26664,8 @@ self:E({_point1,_point2})
 return-1
 end
 end
-function SEAD:onafterCalculateHitZone(From,Event,To,SEADWeapon,pos0,height,SEADGroup)
-self:T("**** Calculating hit zone")
+function SEAD:onafterCalculateHitZone(From,Event,To,SEADWeapon,pos0,height,SEADGroup,SEADWeaponName)
+self:T("**** Calculating hit zone for "..(SEADWeaponName or"None"))
 if SEADWeapon and SEADWeapon:isExist()then
 local position=SEADWeapon:getPosition()
 local mheight=height
@@ -26675,6 +26675,9 @@ wph=wph+2*math.pi
 end
 wph=math.deg(wph)
 local wpndata=SEAD.HarmData["AGM_88"]
+if string.find(SEADWeaponName,"154",1)then
+wpndata=SEAD.HarmData["AGM_154"]
+end
 local mveloc=math.floor(wpndata[2]*340.29)
 local c1=(2*mheight*9.81)/(mveloc^2)
 local c2=(mveloc^2)/9.81
@@ -26812,13 +26815,14 @@ local _targetskill="Random"
 local _targetgroupname="none"
 local _target=EventData.Weapon:getTarget()
 if not _target or self.debug then
-if string.find(SEADWeaponName,"AGM_88",1,true)then
-self:I("**** Tracking AGM-88 with no target data.")
+self:E("***** SEAD - No target data for "..(SEADWeaponName or"None"))
+if string.find(SEADWeaponName,"AGM_88",1,true)or string.find(SEADWeaponName,"AGM_154",1,true)then
+self:I("**** Tracking AGM-88/154 with no target data.")
 local pos0=SEADPlane:GetCoordinate()
 local fheight=SEADPlane:GetHeight()
-self:__CalculateHitZone(20,SEADWeapon,pos0,fheight,SEADGroup)
-return self
+self:__CalculateHitZone(20,SEADWeapon,pos0,fheight,SEADGroup,SEADWeaponName)
 end
+return self
 end
 local targetcat=_target:getCategory()
 local _targetUnit=nil
