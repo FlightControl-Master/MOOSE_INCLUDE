@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-18T07:22:47.0000000Z-84f231ea08decd2b50ed3ea661e574f1996c951d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-21T07:36:37.0000000Z-94f093826b2ae580a7559573b0b4f77347aed2ee ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25840,6 +25840,7 @@ EngagementRange=75,
 Padding=10,
 CallBack=nil,
 UseCallBack=false,
+debug=false,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
@@ -25854,12 +25855,14 @@ SEAD.Harms={
 ["X_25"]="X_25",
 ["X_31"]="X_31",
 ["Kh25"]="Kh25",
+["BGM_109"]="BGM_109",
+["AGM_154"]="AGM_154",
 }
 SEAD.HarmData={
 ["AGM_88"]={150,3},
 ["AGM_45"]={12,2},
 ["AGM_122"]={16.5,2.3},
-["AGM_84"]={280,0.85},
+["AGM_84"]={280,0.8},
 ["ALARM"]={45,2},
 ["LD-10"]={60,4},
 ["X_58"]={70,4},
@@ -25867,10 +25870,12 @@ SEAD.HarmData={
 ["X_25"]={25,0.76},
 ["X_31"]={150,3},
 ["Kh25"]={25,0.8},
+["BGM_109"]={460,0.705},
+["AGM_154"]={130,0.61},
 }
 function SEAD:New(SEADGroupPrefixes,Padding)
-local self=BASE:Inherit(self,BASE:New())
-self:F(SEADGroupPrefixes)
+local self=BASE:Inherit(self,FSM:New())
+self:T(SEADGroupPrefixes)
 if type(SEADGroupPrefixes)=='table'then
 for SEADGroupPrefixID,SEADGroupPrefix in pairs(SEADGroupPrefixes)do
 self.SEADGroupPrefixes[SEADGroupPrefix]=SEADGroupPrefix
@@ -25881,11 +25886,15 @@ end
 local padding=Padding or 10
 if padding<10 then padding=10 end
 self.Padding=padding
-self.UseEmissionsOnOff=false
+self.UseEmissionsOnOff=true
+self.debug=false
 self.CallBack=nil
 self.UseCallBack=false
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
-self:I("*** SEAD - Started Version 0.3.3")
+self:SetStartState("Running")
+self:AddTransition("*","ManageEvasion","*")
+self:AddTransition("*","CalculateHitZone","*")
+self:I("*** SEAD - Started Version 0.4.3")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -25932,7 +25941,7 @@ self:T({WeaponName})
 local hit=false
 local name=""
 for _,_name in pairs(SEAD.Harms)do
-if string.find(WeaponName,_name,1)then
+if string.find(WeaponName,_name,1,true)then
 hit=true
 name=_name
 break
@@ -25960,39 +25969,62 @@ self:E({_point1,_point2})
 return-1
 end
 end
-function SEAD:HandleEventShot(EventData)
-self:T({EventData.id})
-local SEADPlane=EventData.IniUnit
-local SEADPlanePos=SEADPlane:GetCoordinate()
-local SEADUnit=EventData.IniDCSUnit
-local SEADUnitName=EventData.IniDCSUnitName
-local SEADWeapon=EventData.Weapon
-local SEADWeaponName=EventData.WeaponName
-self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
-if self:_CheckHarms(SEADWeaponName)then
-self:T('*** SEAD - Weapon Match')
-local _targetskill="Random"
-local _targetgroupname="none"
-local _target=EventData.Weapon:getTarget()
-local _targetUnit=UNIT:Find(_target)
+function SEAD:onafterCalculateHitZone(From,Event,To,SEADWeapon,pos0,height,SEADGroup,SEADWeaponName)
+self:T("**** Calculating hit zone for "..(SEADWeaponName or"None"))
+if SEADWeapon and SEADWeapon:isExist()then
+local position=SEADWeapon:getPosition()
+local mheight=height
+local wph=math.atan2(position.x.z,position.x.x)
+if wph<0 then
+wph=wph+2*math.pi
+end
+wph=math.deg(wph)
+local wpndata=SEAD.HarmData["AGM_88"]
+if string.find(SEADWeaponName,"154",1)then
+wpndata=SEAD.HarmData["AGM_154"]
+end
+local mveloc=math.floor(wpndata[2]*340.29)
+local c1=(2*mheight*9.81)/(mveloc^2)
+local c2=(mveloc^2)/9.81
+local Ropt=c2*math.sqrt(c1+1)
+if height<=5000 then
+Ropt=Ropt*0.72
+elseif height<=7500 then
+Ropt=Ropt*0.82
+elseif height<=10000 then
+Ropt=Ropt*0.87
+elseif height<=12500 then
+Ropt=Ropt*0.98
+end
+for n=1,3 do
+local dist=Ropt-((n-1)*20000)
+local predpos=pos0:Translate(dist,wph)
+if predpos then
+local targetzone=ZONE_RADIUS:New("Target Zone",predpos:GetVec2(),20000)
+if self.debug then
+predpos:MarkToAll(string.format("height=%dm | heading=%d | velocity=%ddeg | Ropt=%dm",mheight,wph,mveloc,Ropt),false)
+targetzone:DrawZone(coalition.side.BLUE,{0,0,1},0.2,nil,nil,3,true)
+end
+local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterZones({targetzone}):FilterOnce()
+local tgtcoord=targetzone:GetRandomPointVec2()
+local tgtgrp=seadset:GetRandom()
 local _targetgroup=nil
-if _targetUnit and _targetUnit:IsAlive()then
-_targetgroup=_targetUnit:GetGroup()
-_targetgroupname=_targetgroup:GetName()
-local _targetUnitName=_targetUnit:GetName()
-_targetUnit:GetSkill()
-_targetskill=_targetUnit:GetSkill()
-end
-local SEADGroupFound=false
-for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
-self:T(_targetgroupname,SEADGroupPrefix)
-if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
-SEADGroupFound=true
-self:T('*** SEAD - Group Match Found')
-break
+local _targetgroupname="none"
+local _targetskill="Random"
+if tgtgrp and tgtgrp:IsAlive()then
+_targetgroup=tgtgrp
+_targetgroupname=tgtgrp:GetName()
+_targetskill=tgtgrp:GetUnit(1):GetSkill()
+self:T("*** Found Target = ".._targetgroupname)
+self:ManageEvasion(_targetskill,_targetgroup,pos0,"AGM_88",SEADGroup,20)
 end
 end
-if SEADGroupFound==true then
+end
+end
+return self
+end
+function SEAD:onafterManageEvasion(From,Event,To,_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,timeoffset)
+local timeoffset=timeoffset or 0
 if _targetskill=="Random"then
 local Skills={"Average","Good","High","Excellent"}
 _targetskill=Skills[math.random(1,4)]
@@ -26012,7 +26044,7 @@ reach=wpndata[1]*1,1
 local mach=wpndata[2]
 wpnspeed=math.floor(mach*340.29)
 end
-local _tti=math.floor(_distance/wpnspeed)
+local _tti=math.floor(_distance/wpnspeed)-timeoffset
 if _distance>0 then
 _distance=math.floor(_distance/1000)
 else
@@ -26025,6 +26057,7 @@ local function SuppressionStart(args)
 self:T(string.format("*** SEAD - %s Radar Off & Relocating",args[2]))
 local grp=args[1]
 local name=args[2]
+local attacker=args[3]
 if self.UseEmissionsOnOff then
 grp:EnableEmission(false)
 end
@@ -26032,7 +26065,7 @@ grp:OptionAlarmStateGreen()
 grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
 if self.UseCallBack then
 local object=self.CallBack
-object:SeadSuppressionStart(grp,name)
+object:SeadSuppressionStart(grp,name,attacker)
 end
 end
 local function SuppressionStop(args)
@@ -26042,7 +26075,7 @@ local name=args[2]
 if self.UseEmissionsOnOff then
 grp:EnableEmission(true)
 end
-grp:OptionAlarmStateAuto()
+grp:OptionAlarmStateRed()
 grp:OptionEngageRange(self.EngagementRange)
 self.SuppressedGroups[name]=false
 if self.UseCallBack then
@@ -26052,22 +26085,88 @@ end
 end
 local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSkill[_targetskill].DelayOn[2])
 if delay>_tti then delay=delay/2 end
-if _tti>(3*delay)then delay=(_tti/2)*0.9 end
+if _tti>600 then delay=_tti-90 end
 local SuppressionStartTime=timer.getTime()+delay
 local SuppressionEndTime=timer.getTime()+_tti+self.Padding
+local _targetgroupname=_targetgroup:GetName()
 if not self.SuppressedGroups[_targetgroupname]then
 self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_targetgroupname,_tti,delay))
-timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname},SuppressionStartTime)
+timer.scheduleFunction(SuppressionStart,{_targetgroup,_targetgroupname,SEADGroup},SuppressionStartTime)
 timer.scheduleFunction(SuppressionStop,{_targetgroup,_targetgroupname},SuppressionEndTime)
 self.SuppressedGroups[_targetgroupname]=true
 if self.UseCallBack then
 local object=self.CallBack
-object:SeadSuppressionPlanned(_targetgroup,_targetgroupname,SuppressionStartTime,SuppressionEndTime)
+object:SeadSuppressionPlanned(_targetgroup,_targetgroupname,SuppressionStartTime,SuppressionEndTime,SEADGroup)
 end
 end
 end
 end
 end
+return self
+end
+function SEAD:HandleEventShot(EventData)
+self:T({EventData.id})
+local SEADPlane=EventData.IniUnit
+local SEADGroup=EventData.IniGroup
+local SEADPlanePos=SEADPlane:GetCoordinate()
+local SEADUnit=EventData.IniDCSUnit
+local SEADUnitName=EventData.IniDCSUnitName
+local SEADWeapon=EventData.Weapon
+local SEADWeaponName=EventData.WeaponName
+self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
+if self:_CheckHarms(SEADWeaponName)then
+self:T('*** SEAD - Weapon Match')
+local _targetskill="Random"
+local _targetgroupname="none"
+local _target=EventData.Weapon:getTarget()
+if not _target or self.debug then
+self:E("***** SEAD - No target data for "..(SEADWeaponName or"None"))
+if string.find(SEADWeaponName,"AGM_88",1,true)or string.find(SEADWeaponName,"AGM_154",1,true)then
+self:I("**** Tracking AGM-88/154 with no target data.")
+local pos0=SEADPlane:GetCoordinate()
+local fheight=SEADPlane:GetHeight()
+self:__CalculateHitZone(20,SEADWeapon,pos0,fheight,SEADGroup,SEADWeaponName)
+end
+return self
+end
+local targetcat=_target:getCategory()
+local _targetUnit=nil
+local _targetgroup=nil
+self:T(string.format("*** Targetcat = %d",targetcat))
+if targetcat==Object.Category.UNIT then
+self:T("*** Target Category UNIT")
+_targetUnit=UNIT:Find(_target)
+if _targetUnit and _targetUnit:IsAlive()then
+_targetgroup=_targetUnit:GetGroup()
+_targetgroupname=_targetgroup:GetName()
+local _targetUnitName=_targetUnit:GetName()
+_targetUnit:GetSkill()
+_targetskill=_targetUnit:GetSkill()
+end
+elseif targetcat==Object.Category.STATIC then
+self:T("*** Target Category STATIC")
+local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterOnce()
+local targetpoint=_target:getPoint()or{x=0,y=0,z=0}
+local tgtcoord=COORDINATE:NewFromVec3(targetpoint)
+local tgtgrp=seadset:FindNearestGroupFromPointVec2(tgtcoord)
+if tgtgrp and tgtgrp:IsAlive()then
+_targetgroup=tgtgrp
+_targetgroupname=tgtgrp:GetName()
+_targetskill=tgtgrp:GetUnit(1):GetSkill()
+self:T("*** Found Target = ".._targetgroupname)
+end
+end
+local SEADGroupFound=false
+for SEADGroupPrefixID,SEADGroupPrefix in pairs(self.SEADGroupPrefixes)do
+self:T("Target = ".._targetgroupname.." | Prefix = "..SEADGroupPrefix)
+if string.find(_targetgroupname,SEADGroupPrefix,1,true)then
+SEADGroupFound=true
+self:T('*** SEAD - Group Match Found')
+break
+end
+end
+if SEADGroupFound==true then
+self:ManageEvasion(_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup)
 end
 end
 return self
