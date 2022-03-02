@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-21T18:36:13.0000000Z-594febaece1b6e61f110587354809b6cf7a20280 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-02T08:34:18.0000000Z-e41ba1be45d07b6fe3b05a8a8babbc761144c2a1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59490,7 +59490,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.8.1"
+AUFTRAG.version="0.8.2"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -59808,7 +59808,7 @@ mission.categories={AUFTRAG.Category.HELICOPTER}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet,DropoffCoordinate,PickupCoordinate)
+function AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet,DropoffCoordinate,PickupCoordinate,PickupRadius)
 local mission=AUFTRAG:New(AUFTRAG.Type.TROOPTRANSPORT)
 if TransportGroupSet:IsInstanceOf("GROUP")then
 mission.transportGroupSet=SET_GROUP:New()
@@ -59822,9 +59822,8 @@ end
 mission:_TargetFromObject(mission.transportGroupSet)
 mission.transportPickup=PickupCoordinate or mission:GetTargetCoordinate()
 mission.transportDropoff=DropoffCoordinate
+mission.transportPickupRadius=PickupRadius or 500
 mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.TROOPTRANSPORT)
-mission.transportPickup:MarkToAll("Pickup")
-mission.transportDropoff:MarkToAll("Drop off")
 mission.optionROE=ENUMS.ROE.ReturnFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.categories={AUFTRAG.Category.HELICOPTER,AUFTRAG.Category.GROUND}
@@ -62361,7 +62360,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="0.7.5"
+OPSGROUP.version="0.7.6"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -64381,10 +64380,13 @@ end
 local SpeedToMission=mission.missionSpeed and UTILS.KmphToKnots(mission.missionSpeed)or self:GetSpeedCruise()
 if mission.type==AUFTRAG.Type.TROOPTRANSPORT then
 mission.DCStask=mission:GetDCSMissionTask(self.group)
+local pradius=500
+local pickupZone=ZONE_RADIUS:New("Pickup Zone",mission.transportPickup:GetVec2(),pradius)
 for _,_group in pairs(mission.transportGroupSet.Set)do
 local group=_group
 if group and group:IsAlive()then
-local DCSTask=group:TaskEmbarkToTransport(mission.transportPickup,500)
+local pcoord=pickupZone:GetRandomCoordinate(20,pradius,{land.SurfaceType.LAND,land.SurfaceType.ROAD})
+local DCSTask=group:TaskEmbarkToTransport(pcoord,pradius)
 group:SetTask(DCSTask,5)
 end
 end
