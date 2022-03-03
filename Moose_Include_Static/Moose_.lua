@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-02-21T18:36:22.0000000Z-cde0d09f0ac0cf33e96dac731699dde29144cf8d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-03T10:02:25.0000000Z-473362af459790a3d6b609e4a45182ada186ca38 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56572,7 +56572,7 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.9"
+CTLD.version="1.0.10"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -57261,11 +57261,18 @@ local location=_group:GetCoordinate()
 local existingcrates=self.Spawned_Cargo
 local index=0
 local found={}
-local loadedmass=self:_GetUnitCargoMass(_unit)
-local unittype=_unit:GetTypeName()
-local capabilities=self:_GetUnitCapabilities(_unit)
-local maxmass=capabilities.cargoweightlimit
-local maxloadable=maxmass-loadedmass
+local loadedmass=0
+local unittype="none"
+local capabilities={}
+local maxmass=2000
+local maxloadable=2000
+if not _ignoreweight then
+loadedmass=self:_GetUnitCargoMass(_unit)
+unittype=_unit:GetTypeName()
+capabilities=self:_GetUnitCapabilities(_unit)
+maxmass=capabilities.cargoweightlimit
+maxloadable=maxmass-loadedmass
+end
 self:T(self.lid.." Max loadable mass: "..maxloadable)
 for _,_cargoobject in pairs(existingcrates)do
 local cargo=_cargoobject
