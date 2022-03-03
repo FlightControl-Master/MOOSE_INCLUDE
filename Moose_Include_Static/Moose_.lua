@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-02T08:34:18.0000000Z-e41ba1be45d07b6fe3b05a8a8babbc761144c2a1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-03T10:02:14.0000000Z-b0c2bad1d8ce2668208c9ec58cfeb0c93ad7cbde ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26552,6 +26552,7 @@ SEAD.Harms={
 ["Kh25"]="Kh25",
 ["BGM_109"]="BGM_109",
 ["AGM_154"]="AGM_154",
+["HY-2"]="HY-2",
 }
 SEAD.HarmData={
 ["AGM_88"]={150,3},
@@ -26567,6 +26568,7 @@ SEAD.HarmData={
 ["Kh25"]={25,0.8},
 ["BGM_109"]={460,0.705},
 ["AGM_154"]={130,0.61},
+["HY-2"]={90,1},
 }
 function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,FSM:New())
@@ -45806,6 +45808,7 @@ MANTIS.SamData={
 ["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Avenger"},
 ["Chaparrel"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
 ["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Linebacker"},
+["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
 ["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
@@ -77583,7 +77586,7 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 }
-CTLD.version="1.0.9"
+CTLD.version="1.0.10"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -78272,11 +78275,18 @@ local location=_group:GetCoordinate()
 local existingcrates=self.Spawned_Cargo
 local index=0
 local found={}
-local loadedmass=self:_GetUnitCargoMass(_unit)
-local unittype=_unit:GetTypeName()
-local capabilities=self:_GetUnitCapabilities(_unit)
-local maxmass=capabilities.cargoweightlimit
-local maxloadable=maxmass-loadedmass
+local loadedmass=0
+local unittype="none"
+local capabilities={}
+local maxmass=2000
+local maxloadable=2000
+if not _ignoreweight then
+loadedmass=self:_GetUnitCargoMass(_unit)
+unittype=_unit:GetTypeName()
+capabilities=self:_GetUnitCapabilities(_unit)
+maxmass=capabilities.cargoweightlimit
+maxloadable=maxmass-loadedmass
+end
 self:T(self.lid.." Max loadable mass: "..maxloadable)
 for _,_cargoobject in pairs(existingcrates)do
 local cargo=_cargoobject
