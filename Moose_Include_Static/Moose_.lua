@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-03T10:02:25.0000000Z-473362af459790a3d6b609e4a45182ada186ca38 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-03T11:34:43.0000000Z-ae7a3630123bed276c666d744dbe655767b00ef6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57399,6 +57399,7 @@ return self
 end
 function CTLD:_GetUnitCargoMass(Unit)
 self:T(self.lid.." _GetUnitCargoMass")
+if not Unit then return 0 end
 local unitname=Unit:GetName()
 local loadedcargo=self.Loaded_Cargo[unitname]or{}
 local loadedmass=0
