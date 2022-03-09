@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-03T11:34:43.0000000Z-ae7a3630123bed276c666d744dbe655767b00ef6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-09T09:26:16.0000000Z-26b1fd34875cfbc393e97b60698cc2efb8dc14dc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57270,7 +57270,7 @@ if not _ignoreweight then
 loadedmass=self:_GetUnitCargoMass(_unit)
 unittype=_unit:GetTypeName()
 capabilities=self:_GetUnitCapabilities(_unit)
-maxmass=capabilities.cargoweightlimit
+maxmass=capabilities.cargoweightlimit or 2000
 maxloadable=maxmass-loadedmass
 end
 self:T(self.lid.." Max loadable mass: "..maxloadable)
