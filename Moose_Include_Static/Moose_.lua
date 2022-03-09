@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-05T13:43:39.0000000Z-3557706e3a13bacd07e18e3866f6a8914041b5c5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-09T18:07:24.0000000Z-ff1ebf9775670d3b77e498c965fc61248080d614 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7762,7 +7762,6 @@ local N=1;local Nmax=100;local gotit=false
 while gotit==false and N<=Nmax do
 gotit=_checkSurface(point)
 if gotit then
-env.info(string.format("Got random coordinate with surface type %d after N=%d/%d iterations",land.getSurfaceType(point),N,Nmax))
 else
 point=_getpoint()
 N=N+1
@@ -42321,12 +42320,14 @@ local weight=0
 local cargobay={}
 local cargobaytot=0
 local cargobaymax=0
+local weights={}
 for _i,_unit in pairs(group:GetUnits())do
 local unit=_unit
 local Desc=unit:GetDesc()
 local unitweight=forceweight or Desc.massEmpty
 if unitweight then
 weight=weight+unitweight
+weights[_i]=unitweight
 end
 local cargomax=0
 local massfuel=Desc.fuelMassMax or 0
@@ -42356,6 +42357,7 @@ asset.range=RangeMin
 asset.speedmax=SpeedMax
 asset.size=smax
 asset.weight=weight
+asset.weights=weights
 asset.DCSdesc=Descriptors
 asset.attribute=attribute
 asset.cargobay=cargobay
@@ -63888,7 +63890,7 @@ elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
 local Coordinate=zone:GetRandomCoordinate(nil,nil,surfacetypes)
-local Speed=UTILS.MpsToKnots(Task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
+local Speed=Task.dcstask.params.speed and UTILS.MpsToKnots(Task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=Task.dcstask.params.altitude and UTILS.MetersToFeet(Task.dcstask.params.altitude)or nil
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
@@ -64550,7 +64552,7 @@ elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
 local Coordinate=zone:GetRandomCoordinate(nil,nil,surfacetypes)
-local Speed=UTILS.MpsToKnots(task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
+local Speed=task.dcstask.params.speed and UTILS.MpsToKnots(task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=UTILS.MetersToFeet(task.dcstask.params.altitude or self.altitudeCruise)
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
@@ -64569,7 +64571,7 @@ if n<=#target.targets then
 local object=target.targets[n]
 local zone=object.Object
 local Coordinate=zone:GetRandomCoordinate()
-local Speed=UTILS.MpsToKnots(task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
+local Speed=task.dcstask.params.speed and UTILS.MpsToKnots(task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=task.dcstask.params.altitude and UTILS.MetersToFeet(task.dcstask.params.altitude)or nil
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
@@ -72164,21 +72166,33 @@ local cohort=self:_GetCohort(asset.assignment)
 if cohort then
 if asset.assignment==assignment then
 local nunits=#asset.template.units
-local text=string.format("Adding asset to squadron %s: assignment=%s, type=%s, attribute=%s, nunits=%d %s",cohort.name,assignment,asset.unittype,asset.attribute,nunits,tostring(cohort.ngrouping))
+local text=string.format("Adding asset to squadron %s: assignment=%s, type=%s, attribute=%s, nunits=%d ngroup=%s",cohort.name,assignment,asset.unittype,asset.attribute,nunits,tostring(cohort.ngrouping))
 self:T(self.lid..text)
 if cohort.ngrouping then
 local template=asset.template
 local N=math.max(#template.units,cohort.ngrouping)
+asset.weight=0
+asset.cargobaytot=0
 for i=1,N do
 local unit=template.units[i]
 if i>nunits then
 table.insert(template.units,UTILS.DeepCopy(template.units[1]))
+asset.cargobaytot=asset.cargobaytot+asset.cargobay[1]
+asset.weight=asset.weight+asset.weights[1]
+template.units[i].x=template.units[1].x+5*(i-nunits)
+template.units[i].y=template.units[1].y+5*(i-nunits)
+else
+if i<=cohort.ngrouping then
+asset.weight=asset.weight+asset.weights[i]
+asset.cargobaytot=asset.cargobaytot+asset.cargobay[i]
 end
-if cohort.ngrouping<nunits and i>nunits then
-unit=nil
+end
+if i>cohort.ngrouping then
+template.units[i]=nil
 end
 end
 asset.nunits=cohort.ngrouping
+self:T(self.lid..string.format("After regrouping: Nunits=%d, weight=%.1f cargobaytot=%.1f kg",#asset.template.units,asset.weight,asset.cargobaytot))
 end
 asset.takeoffType=cohort.takeoffType
 asset.parkingIDs=cohort.parkingIDs
@@ -72527,26 +72541,29 @@ end
 if#Cohorts==0 then
 Cohorts=self.cohorts
 end
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,Mission.engageRange,Mission.refuelSystem,nil)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,Mission.engageRange,Mission.refuelSystem)
 return recruited,assets,legions
 end
 function LEGION:RecruitAssetsForTransport(Transport)
 local cargoOpsGroups=Transport:GetCargoOpsGroups(false)
 local weightGroup=0
+local TotalWeight=nil
 if#cargoOpsGroups>0 then
+TotalWeight=0
 for _,_opsgroup in pairs(cargoOpsGroups)do
 local opsgroup=_opsgroup
 local weight=opsgroup:GetWeightTotal()
 if weight>weightGroup then
 weightGroup=weight
 end
+TotalWeight=TotalWeight+weight
 end
 else
 return false
 end
 local TargetVec2=Transport:GetDeployZone():GetVec2()
 local NreqMin,NreqMax=Transport:GetRequiredCarriers()
-local recruited,assets,legions=LEGION.RecruitCohortAssets(self.cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NreqMin,NreqMax,TargetVec2,nil,nil,nil,weightGroup)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(self.cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NreqMin,NreqMax,TargetVec2,nil,nil,nil,weightGroup,TotalWeight)
 return recruited,assets,legions
 end
 function LEGION:RecruitAssetsForEscort(Mission,Assets)
@@ -72572,7 +72589,7 @@ return assigned
 end
 return true
 end
-function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,Categories,Attributes)
+function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,Categories,Attributes)
 local Assets={}
 local Legions={}
 if MissionTypeOpt==nil then
@@ -72644,10 +72661,19 @@ end
 LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,true)
 local Nassets=math.min(#Assets,NreqMax)
 if#Assets>=NreqMin then
+local cargobay=0
 for i=1,Nassets do
 local asset=Assets[i]
 asset.isReserved=true
 Legions[asset.legion.alias]=asset.legion
+if TotalWeight then
+local N=math.floor(asset.cargobaytot/asset.nunits/CargoWeight)*asset.nunits
+cargobay=cargobay+N*CargoWeight
+if cargobay>=TotalWeight then
+Nassets=i
+break
+end
+end
 end
 for i=#Assets,Nassets+1,-1 do
 local asset=Assets[i]
@@ -72697,7 +72723,7 @@ if asset.category==Group.Category.AIRPLANE then
 Categories={Group.Category.AIRPLANE}
 TargetTypes={"Air"}
 end
-local Erecruited,eassets,elegions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.ESCORT,nil,NescortMin,NescortMax,TargetVec2,nil,nil,nil,nil,Categories)
+local Erecruited,eassets,elegions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.ESCORT,nil,NescortMin,NescortMax,TargetVec2,nil,nil,nil,nil,nil,Categories)
 if Erecruited then
 Escorts[asset.spawngroupname]={EscortLegions=elegions,EscortAssets=eassets,ecategory=asset.category,TargetTypes=TargetTypes}
 else
@@ -72757,17 +72783,18 @@ table.insert(Cohorts,cohort)
 end
 end
 end
-local CargoLegions={};local CargoWeight=nil
+local CargoLegions={};local CargoWeight=nil;local TotalWeight=0
 for _,_asset in pairs(CargoAssets)do
 local asset=_asset
 CargoLegions[asset.legion.alias]=asset.legion
 if CargoWeight==nil or asset.weight>CargoWeight then
 CargoWeight=asset.weight
 end
+TotalWeight=TotalWeight+asset.weight
 end
 local TargetVec2=DeployZone:GetVec2()
 local TransportAvail,CarrierAssets,CarrierLegions=
-LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NcarriersMin,NcarriersMax,TargetVec2,nil,nil,nil,CargoWeight,Categories,Attributes)
+LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NcarriersMin,NcarriersMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight,Categories,Attributes)
 if TransportAvail then
 local Transport=OPSTRANSPORT:New(nil,nil,DeployZone)
 if DisembarkZone then
@@ -78344,7 +78371,7 @@ if not _ignoreweight then
 loadedmass=self:_GetUnitCargoMass(_unit)
 unittype=_unit:GetTypeName()
 capabilities=self:_GetUnitCapabilities(_unit)
-maxmass=capabilities.cargoweightlimit
+maxmass=capabilities.cargoweightlimit or 2000
 maxloadable=maxmass-loadedmass
 end
 self:T(self.lid.." Max loadable mass: "..maxloadable)
