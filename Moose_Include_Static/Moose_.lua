@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-09T18:07:24.0000000Z-ff1ebf9775670d3b77e498c965fc61248080d614 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-10T09:05:21.0000000Z-5dae9a197a54d620d7b52b6d55952d15248b3e8d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18164,7 +18164,7 @@ massMax=maxTakeoff
 end
 local massEmpty=Desc.massEmpty or 0
 local massFuelMax=Desc.fuelMassMax or 0
-local relFuel=math.max(self:GetFuel()or 1.0,1.0)
+local relFuel=math.min(self:GetFuel()or 1.0,1.0)
 local massFuel=massFuelMax*relFuel
 local CargoWeight=massMax-(massEmpty+massFuel)
 self:T(string.format("Setting Cargo bay weight limit [%s]=%d kg (Mass max=%d, empty=%d, fuelMax=%d kg (rel=%.3f), fuel=%d kg",TypeName,CargoWeight,massMax,massEmpty,massFuelMax,relFuel,massFuel))
@@ -62407,6 +62407,7 @@ self.isFlightgroup=true
 self.isHelo=true
 else
 end
+self.attribute=self.group:GetAttribute()
 local units=self.group:GetUnits()
 if units then
 local masterunit=units[1]
@@ -62528,6 +62529,9 @@ life0=life+l0
 end
 end
 return life,life0
+end
+function OPSGROUP:GetAttribute()
+return self.attribute
 end
 function OPSGROUP:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
@@ -74539,7 +74543,7 @@ gcicapZones={},
 awacsZones={},
 tankerZones={},
 }
-COMMANDER.version="0.1.0"
+COMMANDER.version="0.1.1"
 function COMMANDER:New(Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition==nil then
@@ -74985,7 +74989,7 @@ end
 local NreqMin,NreqMax=Mission:GetRequiredAssets()
 local TargetVec2=Mission:GetTargetVec2()
 local Payloads=Mission.payloads
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,Mission.engageRange,Mission.refuelSystem,nil)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,Mission.engageRange,Mission.refuelSystem)
 return recruited,assets,legions
 end
 function COMMANDER:RecruitAssetsForEscort(Mission,Assets)
@@ -75039,6 +75043,7 @@ local transport=_transport
 if transport:IsPlanned()and transport:IsReadyToGo()and(transport.importance==nil or transport.importance<=vip)then
 local cargoOpsGroups=transport:GetCargoOpsGroups(false)
 local weightGroup=0
+local TotalWeight=0
 if#cargoOpsGroups>0 then
 for _,_opsgroup in pairs(cargoOpsGroups)do
 local opsgroup=_opsgroup
@@ -75046,10 +75051,11 @@ local weight=opsgroup:GetWeightTotal()
 if weight>weightGroup then
 weightGroup=weight
 end
+TotalWeight=TotalWeight+weight
 end
 end
 if weightGroup>0 then
-local recruited,assets,legions=self:RecruitAssetsForTransport(transport,weightGroup)
+local recruited,assets,legions=self:RecruitAssetsForTransport(transport,weightGroup,TotalWeight)
 if recruited then
 for _,_asset in pairs(assets)do
 local asset=_asset
@@ -75065,7 +75071,7 @@ else
 end
 end
 end
-function COMMANDER:RecruitAssetsForTransport(Transport,CargoWeight)
+function COMMANDER:RecruitAssetsForTransport(Transport,CargoWeight,TotalWeight)
 if CargoWeight==0 then
 return false,{},{}
 end
@@ -75082,7 +75088,7 @@ end
 end
 local TargetVec2=Transport:GetDeployZone():GetVec2()
 local NreqMin,NreqMax=Transport:GetRequiredCarriers()
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NreqMin,NreqMax,TargetVec2,nil,nil,nil,CargoWeight)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NreqMin,NreqMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight)
 return recruited,assets,legions
 end
 function COMMANDER:CountAssets(InStock,MissionTypes,Attributes)
@@ -81260,7 +81266,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.1.0"
+CHIEF.version="0.1.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -82010,7 +82016,7 @@ end
 if MissionType==AUFTRAG.Type.ARMOREDGUARD then
 RangeMax=UTILS.NMToMeters(50)
 end
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,Categories,Attributes)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,nil,Categories,Attributes)
 if recruited then
 self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zone %s",#assets,MissionType,tostring(StratZone.opszone.zoneName)))
 if MissionType==AUFTRAG.Type.PATROLZONE or MissionType==AUFTRAG.Type.ONGUARD then
