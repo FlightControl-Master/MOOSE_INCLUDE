@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-10T09:05:21.0000000Z-5dae9a197a54d620d7b52b6d55952d15248b3e8d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-11T09:19:30.0000000Z-2d0b4d6ae53394828511586fb782200cfec6c53f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26073,7 +26073,7 @@ local ReportMissions,ScoreMissions,PenaltyMissions=self:ReportDetailedPlayerMiss
 ReportMissions=ReportMissions~=""and"\n- "..ReportMissions or ReportMissions
 self:F({ReportMissions,ScoreMissions,PenaltyMissions})
 local PlayerScore=ScoreHits+ScoreDestroys+ScoreCoalitionChanges+ScoreGoals+ScoreMissions
-local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+ScoreGoals+PenaltyMissions
+local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+PenaltyGoals+PenaltyMissions
 PlayerMessage=
 string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )%s%s%s%s%s",
 PlayerName,
@@ -26112,7 +26112,7 @@ local ReportMissions,ScoreMissions,PenaltyMissions=self:ReportDetailedPlayerMiss
 ReportMissions=ReportMissions~=""and"\n- "..ReportMissions or ReportMissions
 self:F({ReportMissions,ScoreMissions,PenaltyMissions})
 local PlayerScore=ScoreHits+ScoreDestroys+ScoreCoalitionChanges+ScoreGoals+ScoreMissions
-local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+ScoreGoals+PenaltyMissions
+local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+PenaltyGoals+PenaltyMissions
 PlayerMessage=
 string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )",
 PlayerName,
