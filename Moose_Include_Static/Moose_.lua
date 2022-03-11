@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-11T09:19:30.0000000Z-2d0b4d6ae53394828511586fb782200cfec6c53f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-11T21:36:00.0000000Z-520eb4cd1db55597ecabfc3ce013762719d0cbe7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65070,6 +65070,13 @@ if self.Ndestroyed==#self.elements then
 self:Destroyed()
 end
 end
+function OPSGROUP:CancelAllMissions()
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+self:T(self.lid.."Cancelling mission "..tostring(mission:GetName()))
+self:MissionCancel(mission)
+end
+end
 function OPSGROUP:onafterDead(From,Event,To)
 self:T(self.lid..string.format("Group dead at t=%.3f",timer.getTime()))
 self.isDead=true
@@ -66018,6 +66025,10 @@ OpsGroup:_RemoveMyCarrier()
 end
 function OPSGROUP:onafterUnloaded(From,Event,To,OpsGroupCargo)
 self:T(self.lid..string.format("Unloaded OPSGROUP %s",OpsGroupCargo:GetName()))
+if OpsGroupCargo.legion and OpsGroupCargo:IsInZone(OpsGroupCargo.legion.spawnzone)then
+self:T(self.lid..string.format("Unloaded group %s returned to legion",OpsGroupCargo:GetName()))
+OpsGroupCargo:Returned()
+end
 end
 function OPSGROUP:onafterUnloadingDone(From,Event,To)
 self:T(self.lid.."Cargo unloading done..")
@@ -66273,6 +66284,10 @@ return
 end
 if self:IsRearming()then
 self:T(self.lid.."Rearming! Group NOT done...")
+return
+end
+if self:IsRetreating()then
+self:T(self.lid.."Retreating! Group NOT done...")
 return
 end
 if self:IsWaiting()then
@@ -70507,6 +70522,7 @@ self:SetRetreatZones()
 self:AddTransition("*","FullStop","Holding")
 self:AddTransition("*","Cruise","Cruising")
 self:AddTransition("*","RTZ","Returning")
+self:AddTransition("Holding","Returned","Returned")
 self:AddTransition("Returning","Returned","Returned")
 self:AddTransition("*","Detour","OnDetour")
 self:AddTransition("OnDetour","DetourReached","Cruising")
@@ -70971,6 +70987,7 @@ local uid=self:GetWaypointCurrent().uid
 local Coordinate=Zone:GetRandomCoordinate()
 local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
 wp.detour=0
+self:CancelAllMissions()
 end
 function ARMYGROUP:onafterRetreated(From,Event,To)
 local pos=self:GetCoordinate()
