@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-11T09:18:59.0000000Z-85a7e18fae670e91485e0a39d0a62ef2086c6ec7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-12T08:47:14.0000000Z-802a77238a715675b6d96387c559a46927fffabd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -34506,13 +34506,12 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
-goodhitrange=25,
-foulline=610,
+foulline=610
 }
 RANGE.TargetType={
 UNIT="Unit",
 STATIC="Static",
-COORD="Coordinate",
+COORD="Coordinate"
 }
 hypemanStrafeRollIn="nil"
 StrafeAircraftType="strafeAircraftTypeNotSet"
@@ -35188,8 +35187,7 @@ local playerData=self.PlayerSettings[_playername]
 self:T(self.id..string.format("RANGE %s: Tracking %s - %s.",self.rangename,_weapon,EventData.weapon:getName()))
 local _lastBombPos={x=0,y=0,z=0}
 local function trackBomb(_ordnance)
-local _status,_bombPos=pcall(
-function()
+local _status,_bombPos=pcall(function()
 return _ordnance:getPoint()
 end)
 self:T2(self.id..string.format("Range %s: Bomb still in air: %s",self.rangename,tostring(_status)))
@@ -35504,7 +35502,9 @@ local _results=self.strafePlayerResults[_playername]
 if _results==nil then
 _message=string.format("%s: No Score yet.",_playername)
 else
-local _sort=function(a,b)return a.hits>b.hits end
+local _sort=function(a,b)
+return a.hits>b.hits
+end
 table.sort(_results,_sort)
 local _bestMsg=""
 local _count=1
@@ -35541,7 +35541,9 @@ local text=string.format("%s: Hits %i - %s - %s",_playerName,_best.hits,_best.zo
 table.insert(_playerResults,{msg=text,hits=_best.hits})
 end
 end
-local _sort=function(a,b)return a.hits>b.hits end
+local _sort=function(a,b)
+return a.hits>b.hits
+end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -35561,7 +35563,9 @@ local _results=self.bombPlayerResults[_playername]
 if _results==nil then
 _message=_playername..": No Score yet."
 else
-local _sort=function(a,b)return a.distance<b.distance end
+local _sort=function(a,b)
+return a.distance<b.distance
+end
 table.sort(_results,_sort)
 local _bestMsg=""
 for i,_result in pairs(_results)do
@@ -35597,7 +35601,9 @@ local bestres=string.format("%s: %d m - %s - %s - %s hit",_playerName,_best.dist
 table.insert(_playerResults,{msg=bestres,distance=_best.distance})
 end
 end
-local _sort=function(a,b)return a.distance<b.distance end
+local _sort=function(a,b)
+return a.distance<b.distance
+end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -35820,7 +35826,9 @@ local shots=_result.ammo-_ammo
 local accur=0
 if shots>0 then
 accur=_result.hits/shots*100
-if accur>100 then accur=100 end
+if accur>100 then
+accur=100
+end
 end
 if invalidStrafe==true then
 _result.text="* INVALID - PASSED FOUL LINE *"
@@ -36352,7 +36360,6 @@ function RANGE:_myname(unitname)
 self:F2(unitname)
 local unit=UNIT:FindByName(unitname)
 local pname=unit:GetPlayerName()
-local csign=unit:GetCallsign()
 return string.format("%s",pname)
 end
 do
