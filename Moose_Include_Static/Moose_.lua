@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-14T07:32:09.0000000Z-229868bb20568e036024b4f83ba95e16d11ad509 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-14T08:12:06.0000000Z-e1ab6b6c937f0e572e9e2b6a05843f0f2a89cfcd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -76067,7 +76067,7 @@ CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
-CSAR.version="1.0.4a"
+CSAR.version="1.0.4c"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -76708,7 +76708,7 @@ else
 _time=self.landedStatus[_lookupKeyHeli]-10
 self.landedStatus[_lookupKeyHeli]=_time
 end
-if _time<=0 or _distance<self.loadDistance then
+if _distance<self.loadDistance+5 or _distance<=13 then
 if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true)
 return true
