@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-14T08:12:24.0000000Z-4df1e310a31efdfceee6714442cd127f884510e4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-16T07:45:27.0000000Z-57de0b7351b7b139aa874532d7cdcbbf9ded9e75 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21983,7 +21983,9 @@ MESSAGE:New(Message,MessageDuration,MessageCategory):ToClient(self)
 end
 end
 end
-STATIC={ClassName="STATIC"}
+STATIC={
+ClassName="STATIC",
+}
 function STATIC:Register(StaticName)
 local self=BASE:Inherit(self,POSITIONABLE:New(StaticName))
 self.StaticName=StaticName
