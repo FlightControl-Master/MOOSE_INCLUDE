@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-16T07:45:27.0000000Z-57de0b7351b7b139aa874532d7cdcbbf9ded9e75 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-18T06:39:48.0000000Z-3aee8a49c1c5d71adddd1ec655cd993bb9a3aa21 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19659,6 +19659,32 @@ return false
 end
 end
 return nil
+end
+function CONTROLLABLE:SetSpeed(Speed,Keep)
+self:F2({self.ControllableName})
+local speed=Speed or 5
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if Controller then
+Controller:setSpeed(speed,Keep)
+end
+end
+return self
+end
+function CONTROLLABLE:SetAltitude(Altitude,Keep,AltType)
+self:F2({self.ControllableName})
+local altitude=Altitude or 1000
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if Controller then
+if self:IsAir()then
+Controller:setAltitude(altitude,Keep,AltType)
+end
+end
+end
+return self
 end
 GROUP={
 ClassName="GROUP",
