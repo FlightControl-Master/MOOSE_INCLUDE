@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-20T21:20:09.0000000Z-3ea1881ff577248c3a00190b821528fa0c865433 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-22T08:31:16.0000000Z-14dea99ccd652d699cd8dc28fa966514b6d9bedf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2846,13 +2846,6 @@ function UTILS.GetMissionDayOfYear(Time)
 local Date,Year,Month,Day=UTILS.GetDCSMissionDate()
 local d=UTILS.GetMissionDay(Time)
 return UTILS.GetDayOfYear(Year,Month,Day)+d
-end
-function UTILS.GetDate()
-local date,year,month,day=UTILS.GetDCSMissionDate()
-local time=timer.getAbsTime()
-local clock=UTILS.SecondsToClock(time,false)
-local x=tonumber(UTILS.Split(clock,"+")[2])
-local day=day+x
 end
 function UTILS.GetMagneticDeclination(map)
 map=map or UTILS.GetDCSMap()
