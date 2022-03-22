@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-18T08:48:50.0000000Z-b0e3f82d27095d0681013fff3eefb868a51e5f30 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-22T09:38:20.0000000Z-a1f5c0ab9b549e4963611321182f3da153135d95 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3044,6 +3044,10 @@ BASE:T(unit_name.." cargo door is open")
 ret_val=true
 end
 if string.find(type_name,"UH-60L")and unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(400)==1 then
+BASE:T(unit_name.." front door(s) are open")
+ret_val=true
+end
+if string.find(type_name,"AH-64D")then
 BASE:T(unit_name.." front door(s) are open")
 ret_val=true
 end
@@ -56616,6 +56620,7 @@ CTLD.UnitTypes={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
+["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
 CTLD.version="1.0.10"
 function CTLD:New(Coalition,Prefixes,Alias)
@@ -59712,7 +59717,8 @@ CSAR.AircraftType["Mi-24P"]=8
 CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
-CSAR.version="1.0.4c"
+CSAR.AircraftType["AH-64D_BLK_II"]=2
+CSAR.version="1.0.4d"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
