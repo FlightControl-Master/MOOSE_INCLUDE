@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-22T09:38:20.0000000Z-a1f5c0ab9b549e4963611321182f3da153135d95 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-23T06:56:52.0000000Z-ca8b0899d0640dbe7687668eee5ffe221a6bdb87 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7192,7 +7192,7 @@ ClassName="ZONE_BASE",
 ZoneName="",
 ZoneProbability=1,
 DrawID=nil,
-Color={},
+Color={}
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -7264,6 +7264,19 @@ else
 self.Coordinate=COORDINATE:NewFromVec3(Vec3)
 end
 return self.Coordinate
+end
+function ZONE_BASE:Get2DDistance(Coordinate)
+local a=self:GetVec2()
+local b={}
+if Coordinate.z then
+b.x=Coordinate.x
+b.y=Coordinate.z
+else
+b.x=Coordinate.x
+b.y=Coordinate.y
+end
+local dist=UTILS.VecDist2D(a,b)
+return dist
 end
 function ZONE_BASE:GetRandomVec2()
 return nil
@@ -7491,7 +7504,7 @@ id=world.VolumeType.SPHERE,
 params={
 point=ZoneCoord:GetVec3(),
 radius=ZoneRadius,
-},
+}
 }
 local function EvaluateZone(ZoneObject)
 if ZoneObject then
@@ -7629,7 +7642,7 @@ id=world.VolumeType.SPHERE,
 params={
 point=ZoneCoord:GetVec3(),
 radius=ZoneRadius/2,
-},
+}
 }
 local function EvaluateZone(ZoneDCSUnit)
 local ZoneUnit=UNIT:Find(ZoneDCSUnit)
@@ -7652,17 +7665,42 @@ self:F2(Vec3)
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
-function ZONE_RADIUS:GetRandomVec2(inner,outer)
-self:F(self.ZoneName,inner,outer)
-local Point={}
+function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
 local _inner=inner or 0
 local _outer=outer or self:GetRadius()
-local angle=math.random()*math.pi*2;
-Point.x=Vec2.x+math.cos(angle)*math.random(_inner,_outer);
-Point.y=Vec2.y+math.sin(angle)*math.random(_inner,_outer);
-self:T({Point})
-return Point
+if surfacetypes and type(surfacetypes)~="table"then
+surfacetypes={surfacetypes}
+end
+local function _getpoint()
+local point={}
+local angle=math.random()*math.pi*2
+point.x=Vec2.x+math.cos(angle)*math.random(_inner,_outer)
+point.y=Vec2.y+math.sin(angle)*math.random(_inner,_outer)
+return point
+end
+local function _checkSurface(point)
+local stype=land.getSurfaceType(point)
+for _,sf in pairs(surfacetypes)do
+if sf==stype then
+return true
+end
+end
+return false
+end
+local point=_getpoint()
+if surfacetypes then
+local N=1;local Nmax=100;local gotit=false
+while gotit==false and N<=Nmax do
+gotit=_checkSurface(point)
+if gotit then
+else
+point=_getpoint()
+N=N+1
+end
+end
+end
+return point
 end
 function ZONE_RADIUS:GetRandomPointVec2(inner,outer)
 self:F(self.ZoneName,inner,outer)
@@ -7682,10 +7720,9 @@ local PointVec3=POINT_VEC3:NewFromVec2(self:GetRandomVec2(inner,outer))
 self:T3({PointVec3})
 return PointVec3
 end
-function ZONE_RADIUS:GetRandomCoordinate(inner,outer)
-self:F(self.ZoneName,inner,outer)
-local Coordinate=COORDINATE:NewFromVec2(self:GetRandomVec2(inner,outer))
-self:T3({Coordinate=Coordinate})
+function ZONE_RADIUS:GetRandomCoordinate(inner,outer,surfacetypes)
+local vec2=self:GetRandomVec2(inner,outer,surfacetypes)
+local Coordinate=COORDINATE:NewFromVec2(vec2)
 return Coordinate
 end
 ZONE={
@@ -7698,7 +7735,7 @@ return zone
 end
 local Zone=trigger.misc.getZone(ZoneName)
 if not Zone then
-error("Zone "..ZoneName.." does not exist.")
+env.error("ERROR: Zone "..ZoneName.." does not exist!")
 return nil
 end
 local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,{x=Zone.point.x,y=Zone.point.z},Zone.radius))
@@ -8001,7 +8038,8 @@ Prev=#self._.Polygon
 while Next<=#self._.Polygon do
 self:T({Next,Prev,self._.Polygon[Next],self._.Polygon[Prev]})
 if(((self._.Polygon[Next].y>Vec2.y)~=(self._.Polygon[Prev].y>Vec2.y))and
-(Vec2.x<(self._.Polygon[Prev].x-self._.Polygon[Next].x)*(Vec2.y-self._.Polygon[Next].y)/(self._.Polygon[Prev].y-self._.Polygon[Next].y)+self._.Polygon[Next].x))then
+(Vec2.x<(self._.Polygon[Prev].x-self._.Polygon[Next].x)*(Vec2.y-self._.Polygon[Next].y)/(self._.Polygon[Prev].y-self._.Polygon[Next].y)+self._.Polygon[Next].x)
+)then
 InPolygon=not InPolygon
 end
 self:T2({InPolygon=InPolygon})
@@ -8012,20 +8050,17 @@ self:T({InPolygon=InPolygon})
 return InPolygon
 end
 function ZONE_POLYGON_BASE:GetRandomVec2()
-self:F2()
-local Vec2Found=false
-local Vec2
 local BS=self:GetBoundingSquare()
-self:T2(BS)
-while Vec2Found==false do
-Vec2={x=math.random(BS.x1,BS.x2),y=math.random(BS.y1,BS.y2)}
-self:T2(Vec2)
+local Nmax=1000;local n=0
+while n<Nmax do
+local Vec2={x=math.random(BS.x1,BS.x2),y=math.random(BS.y1,BS.y2)}
 if self:IsVec2InZone(Vec2)then
-Vec2Found=true
-end
-end
-self:T2(Vec2)
 return Vec2
+end
+n=n+1
+end
+self:E("Could not find a random point in the polygon zone!")
+return nil
 end
 function ZONE_POLYGON_BASE:GetRandomPointVec2()
 self:F2()
@@ -8121,6 +8156,19 @@ local Airbase=AIRBASE:FindByName(AirbaseName)
 local self=BASE:Inherit(self,ZONE_RADIUS:New(AirbaseName,Airbase:GetVec2(),Radius))
 self._.ZoneAirbase=Airbase
 self._.ZoneVec2Cache=self._.ZoneAirbase:GetVec2()
+if Airbase:IsShip()then
+self.isShip=true
+self.isHelipad=false
+self.isAirdrome=false
+elseif Airbase:IsHelipad()then
+self.isShip=false
+self.isHelipad=true
+self.isAirdrome=false
+elseif Airbase:IsAirdrome()then
+self.isShip=false
+self.isHelipad=false
+self.isAirdrome=true
+end
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
@@ -8138,16 +8186,6 @@ ZoneVec2=self._.ZoneVec2Cache
 end
 self:T({ZoneVec2})
 return ZoneVec2
-end
-function ZONE_AIRBASE:GetRandomVec2()
-self:F(self.ZoneName)
-local Point={}
-local Vec2=self._.ZoneAirbase:GetVec2()
-local angle=math.random()*math.pi*2;
-Point.x=Vec2.x+math.cos(angle)*math.random()*self:GetRadius();
-Point.y=Vec2.y+math.sin(angle)*math.random()*self:GetRadius();
-self:T({Point})
-return Point
 end
 function ZONE_AIRBASE:GetRandomPointVec2(inner,outer)
 self:F(self.ZoneName,inner,outer)
