@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-25T11:52:31.0000000Z-fc0c0f87dcd2c3a68b2bd8de30c1c6363c87d68f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-25T16:54:02.0000000Z-6546c27cf52285b7b44d39952b91496f62c4b5bd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59469,6 +59469,7 @@ ARMOREDGUARD="Armored Guard",
 BARRAGE="Barrage",
 ARMORATTACK="Armor Attack",
 CASENHANCED="CAS Enhanced",
+HOVER="Hover",
 }
 AUFTRAG.SpecialTask={
 PATROLZONE="PatrolZone",
@@ -59480,6 +59481,7 @@ ONGUARD="On Guard",
 ARMOREDGUARD="ArmoredGuard",
 BARRAGE="Barrage",
 ARMORATTACK="AmorAttack",
+HOVER="Hover",
 }
 AUFTRAG.Status={
 PLANNED="planned",
@@ -59518,7 +59520,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.8.4"
+AUFTRAG.version="0.8.5"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -59573,6 +59575,25 @@ mission.missionAltitude=mission.engageAltitude
 mission.missionFraction=0.4
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.EvadeFire
+mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewHOVER(Coordinate,Altitude,Time,Speed,MissionAlt)
+local mission=AUFTRAG:New(AUFTRAG.Type.HOVER)
+if Altitude then
+mission.hoverAltitude=Coordinate:GetLandHeight()+UTILS.FeetToMeters(Altitude)
+else
+mission.hoverAltitude=Coordinate:GetLandHeight()+UTILS.FeetToMeters(50)
+end
+mission:_TargetFromObject(Coordinate)
+mission.hoverSpeed=0.1
+mission.hoverTime=Time or 300
+mission.missionSpeed=UTILS.KnotsToMps(Speed or 150)
+mission.missionAltitude=mission.MissionAlt or UTILS.FeetToMeters(1000)
+mission.missionFraction=0.9
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
@@ -61532,6 +61553,16 @@ DCStask.id=AUFTRAG.SpecialTask.ALERT5
 local param={}
 DCStask.params=param
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.HOVER then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.HOVER
+local param={}
+param.hoverAltitude=self.hoverAltitude
+param.hoverTime=self.hoverTime
+param.missionSpeed=self.missionSpeed
+param.missionAltitude=self.missionAltitude
+DCStask.params=param
+table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.ONGUARD or self.type==AUFTRAG.Type.ARMOREDGUARD then
 local DCStask={}
 DCStask.id=self.type==AUFTRAG.Type.ONGUARD and AUFTRAG.SpecialTask.ONGUARD or AUFTRAG.SpecialTask.ARMOREDGUARD
@@ -61617,6 +61648,8 @@ mtask=ENUMS.MissionTask.REFUELING
 elseif MissionType==AUFTRAG.Type.TROOPTRANSPORT then
 mtask=ENUMS.MissionTask.TRANSPORT
 elseif MissionType==AUFTRAG.Type.ARMORATTACK then
+mtask=ENUMS.MissionTask.NOTHING
+elseif MissionType==AUFTRAG.Type.HOVER then
 mtask=ENUMS.MissionTask.NOTHING
 end
 return mtask
@@ -62567,6 +62600,8 @@ self:AddTransition("*","Unloaded","*")
 self:AddTransition("*","UnloadingDone","*")
 self:AddTransition("*","Delivered","*")
 self:AddTransition("*","TransportCancel","*")
+self:AddTransition("*","HoverStart","*")
+self:AddTransition("*","HoverEnd","*")
 return self
 end
 function OPSGROUP:GetCoalition()
@@ -63942,8 +63977,10 @@ end
 return true
 end
 function OPSGROUP:onafterTaskExecute(From,Event,To,Task)
+self:T({Task})
 local text=string.format("Task %s ID=%d execute",tostring(Task.description),Task.id)
 self:T(self.lid..text)
+self:T({Task})
 if self.taskcurrent>0 then
 self:TaskCancel()
 end
@@ -64008,6 +64045,29 @@ elseif Task.dcstask.id==AUFTRAG.SpecialTask.ONGUARD or Task.dcstask.id==AUFTRAG.
 if self:IsArmygroup()or self:IsNavygroup()then
 self:FullStop()
 else
+end
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
+if self.isFlightgroup then
+self:T("We are Special Auftrag HOVER, hovering now ...")
+local alt=Task.dcstask.params.hoverAltitude
+local time=Task.dcstask.params.hoverTime
+local Speed=UTILS.MpsToKnots(Task.dcstask.params.missionSpeed)or UTILS.KmphToKnots(self.speedCruise)
+local CruiseAlt=UTILS.FeetToMeters(Task.dcstask.params.missionAltitude)
+local helo=self:GetGroup()
+helo:SetSpeed(0.01,true)
+helo:SetAltitude(alt,true,"BARO")
+self:HoverStart()
+local function FlyOn(Helo,Speed,CruiseAlt,Task)
+if Helo then
+Helo:SetSpeed(Speed,true)
+Helo:SetAltitude(CruiseAlt,true,"BARO")
+self:T("We are Special Auftrag HOVER, end of hovering now ...")
+self:TaskDone(Task)
+self:HoverEnd()
+end
+end
+local timer=TIMER:New(FlyOn,helo,Speed,CruiseAlt,Task)
+timer:Start(time)
 end
 else
 if Task.type==OPSGROUP.TaskType.SCHEDULED or Task.ismission then
@@ -64458,6 +64518,10 @@ elseif mission.type==AUFTRAG.Type.ONGUARD or mission.type==AUFTRAG.Type.ARMOREDG
 waypointcoord=mission:GetMissionWaypointCoord(self.group,nil,surfacetypes)
 else
 waypointcoord=mission:GetMissionWaypointCoord(self.group,randomradius,surfacetypes)
+end
+if mission.type==AUFTRAG.Type.HOVER then
+local zone=mission.engageTarget:GetObject()
+waypointcoord=zone:GetCoordinate()
 end
 local armorwaypointcoord=nil
 if mission.type==AUFTRAG.Type.ARMORATTACK then
@@ -68807,6 +68871,8 @@ if task.dcstask.id=="PatrolZone"then
 self:T2(self.lid.."Allowing update route for Task: PatrolZone")
 elseif task.dcstask.id=="ReconMission"then
 self:T2(self.lid.."Allowing update route for Task: ReconMission")
+elseif task.dcstask.id=="Hover"then
+self:T2(self.lid.."Allowing update route for Task: Hover")
 elseif task.description and task.description=="Task_Land_At"then
 self:T2(self.lid.."Allowing update route for Task: Task_Land_At")
 else
