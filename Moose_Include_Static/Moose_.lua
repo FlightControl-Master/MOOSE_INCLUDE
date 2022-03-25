@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-25T09:27:32.0000000Z-f92e8a285a0fff0a43a8517238a438184f30c073 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-25T11:52:31.0000000Z-fc0c0f87dcd2c3a68b2bd8de30c1c6363c87d68f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44237,7 +44237,9 @@ local unit=_unit
 local _coord=unit:GetVec3()
 local _size=self:_GetObjectSize(unit:GetDCSObject())
 local _name=unit:GetName()
+if unit and unit:IsAlive()then
 table.insert(obstacles,{coord=_coord,size=_size,name=_name,type="unit"})
+end
 end
 for _,static in pairs(_statics)do
 local _coord=static:getPoint()
@@ -44258,6 +44260,7 @@ local _asset=asset
 local terminaltype=asset.terminalType or self:_GetTerminal(asset.attribute,self:GetAirbaseCategory())
 parking[_asset.uid]={}
 for i=1,_asset.nunits do
+local assetname=_asset.spawngroupname.."-"..tostring(i)
 local gotit=false
 for _,_parkingspot in pairs(parkingdata)do
 local parkingspot=_parkingspot
@@ -44270,6 +44273,7 @@ for _,obstacle in pairs(obstacles)do
 local dist=_spot:Get2DDistance(obstacle.coord)
 local safe=_overlap(_asset.size,obstacle.size,dist)
 if not safe then
+self:T3(self.lid..string.format("FF asset=%s (id=%d): spot id=%d dist=%.1fm is NOT SAFE",assetname,_asset.uid,_termid,dist))
 free=false
 problem=obstacle
 problem.dist=dist
@@ -44279,22 +44283,26 @@ end
 end
 if free then
 table.insert(parking[_asset.uid],parkingspot)
-self:T(self.lid..string.format("Parking spot %d is free for asset id=%d!",_termid,_asset.uid))
-table.insert(obstacles,{coord=_spot,size=_asset.size,name=_asset.templatename,type="asset"})
+self:T(self.lid..string.format("Parking spot %d is free for asset %s [id=%d]!",_termid,assetname,_asset.uid))
+table.insert(obstacles,{coord=_spot,size=_asset.size,name=assetname,type="asset"})
 gotit=true
 break
 else
-self:T(self.lid..string.format("Parking spot %d is occupied or not big enough!",_termid))
 if self.Debug then
 local coord=problem.coord
-local text=string.format("Obstacle blocking spot #%d is %s type %s with size=%.1f m and distance=%.1f m.",_termid,problem.name,problem.type,problem.size,problem.dist)
+local text=string.format("Obstacle %s [type=%s] blocking spot=%d! Size=%.1f m and distance=%.1f m.",problem.name,problem.type,_termid,problem.size,problem.dist)
+self:I(self.lid..text)
 coord:MarkToAll(string.format(text))
+else
+self:T(self.lid..string.format("Parking spot %d is occupied or not big enough!",_termid))
 end
 end
+else
+self:T2(self.lid..string.format("Terminal ID=%d: type=%s not supported",parkingspot.TerminalID,parkingspot.TerminalType))
 end
 end
 if not gotit then
-self:I(self.lid..string.format("WARNING: No free parking spot for asset id=%d",_asset.uid))
+self:I(self.lid..string.format("WARNING: No free parking spot for asset %s [id=%d]",assetname,_asset.uid))
 return nil
 end
 end
@@ -60663,6 +60671,22 @@ self.NrepeatSuccess=NrepeatS
 self.NrepeatFailure=NrepeatF
 elseif(Ntargets0>0 and Ntargets==0)then
 self:Cancel()
+elseif self:IsExecuting()then
+if Ngroups==0 then
+self:Done()
+else
+local done=true
+for groupname,data in pairs(self.groupdata or{})do
+local groupdata=data
+local opsgroup=groupdata.opsgroup
+if opsgroup:IsAlive()then
+done=false
+end
+end
+if done then
+self:Done()
+end
+end
 end
 end
 local fsmstate=self:GetState()
@@ -75376,6 +75400,16 @@ N=N+legion:CountAssets(InStock,MissionTypes,Attributes)
 end
 return N
 end
+function COMMANDER:CountMissions(MissionTypes)
+local N=0
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+if AUFTRAG.CheckMissionType(mission.type,MissionTypes)then
+N=N+1
+end
+end
+return N
+end
 function COMMANDER:GetAssets(InStock,Legions,MissionTypes,Attributes)
 local assets={}
 for _,_legion in pairs(Legions or self.legions)do
@@ -81127,6 +81161,9 @@ end
 function OPSZONE:GetOwner()
 return self.ownerCurrent
 end
+function OPSZONE:GetOwnerName()
+return UTILS.GetCoalitionName(self.ownerCurrent)
+end
 function OPSZONE:GetCoordinate()
 local coordinate=self.zone:GetCoordinate()
 return coordinate
@@ -81532,6 +81569,7 @@ zonequeue={},
 borderzoneset=nil,
 yellowzoneset=nil,
 engagezoneset=nil,
+tacview=false,
 }
 CHIEF.DEFCON={
 GREEN="Green",
@@ -81622,6 +81660,14 @@ return self
 end
 function CHIEF:GetDefcon(Defcon)
 return self.Defcon
+end
+function CHIEF:SetTacticalOverviewOn()
+self.tacview=true
+return self
+end
+function CHIEF:SetTacticalOverviewOff()
+self.tacview=false
+return self
 end
 function CHIEF:SetStrategy(Strategy)
 if Strategy~=self.strategy then
@@ -81803,21 +81849,21 @@ if contact.target then
 self:RemoveTarget(contact.target)
 end
 end
-local Nborder=0;local Nconflict=0;local Nattack=0
+self.Nborder=0;self.Nconflict=0;self.Nattack=0
 for _,_contact in pairs(self.Contacts)do
 local contact=_contact
 local group=contact.group
 local inred=self:CheckGroupInBorder(group)
 if inred then
-Nborder=Nborder+1
+self.Nborder=self.Nborder+1
 end
 local inyellow=self:CheckGroupInConflict(group)
 if inyellow then
-Nconflict=Nconflict+1
+self.Nconflict=self.Nconflict+1
 end
 local inattack=self:CheckGroupInAttack(group)
 if inattack then
-Nattack=Nattack+1
+self.Nattack=self.Nattack+1
 end
 if not contact.target then
 local Target=TARGET:New(contact.group)
@@ -81826,22 +81872,23 @@ Target.contact=contact
 self:AddTarget(Target)
 end
 end
-if Nborder>0 then
+if self.Nborder>0 then
 self:SetDefcon(CHIEF.DEFCON.RED)
-elseif Nconflict>0 then
+elseif self.Nconflict>0 then
 self:SetDefcon(CHIEF.DEFCON.YELLOW)
 else
 self:SetDefcon(CHIEF.DEFCON.GREEN)
 end
 self:CheckTargetQueue()
 self:CheckOpsZoneQueue()
+self:_TacticalOverview()
 if self.verbose>=1 then
 local Nassets=self.commander:CountAssets()
 local Ncontacts=#self.Contacts
 local Nmissions=#self.commander.missionqueue
 local Ntargets=#self.targetqueue
 local text=string.format("Defcon=%s Strategy=%s: Assets=%d, Contacts=%d [Border=%d, Conflict=%d, Attack=%d], Targets=%d, Missions=%d",
-self.Defcon,self.strategy,Nassets,Ncontacts,Nborder,Nconflict,Nattack,Ntargets,Nmissions)
+self.Defcon,self.strategy,Nassets,Ncontacts,self.Nborder,self.Nconflict,self.Nattack,Ntargets,Nmissions)
 self:I(self.lid..text)
 end
 if self.verbose>=2 and#self.Contacts>0 then
@@ -81960,6 +82007,39 @@ self:T(self.lid..string.format("Zone %s empty!",OpsZone:GetName()))
 end
 function CHIEF:onafterZoneAttacked(From,Event,To,OpsZone)
 self:T(self.lid..string.format("Zone %s attacked!",OpsZone:GetName()))
+end
+function CHIEF:_TacticalOverview()
+if self.tacview then
+local NassetsTotal=self.commander:CountAssets()
+local NassetsStock=self.commander:CountAssets(true)
+local Ncontacts=#self.Contacts
+local Nmissions=#self.commander.missionqueue
+local Ntargets=#self.targetqueue
+local Nzones=#self.zonequeue
+local text=string.format("Tactical Overview\n")
+text=text..string.format("=================\n")
+text=text..string.format("Strategy: %s - Defcon: %s\n",self.strategy,self.Defcon)
+text=text..string.format("Contacts: %d [Border=%d, Conflict=%d, Attack=%d]\n",Ncontacts,self.Nborder,self.Nconflict,self.Nattack)
+text=text..string.format("Targets: %d\n",Ntargets)
+text=text..string.format("Missions: %d\n",Nmissions)
+for _,mtype in pairs(AUFTRAG.Type)do
+local n=self.commander:CountMissions(mtype)
+if n>0 then
+text=text..string.format("  - %s: %d\n",mtype,n)
+end
+end
+text=text..string.format("Assets: %d [Stock %d]\n",NassetsTotal,NassetsStock)
+text=text..string.format("Strategic Zones: %d\n",Nzones)
+for _,_stratzone in pairs(self.zonequeue)do
+local stratzone=_stratzone
+local owner=stratzone.opszone:GetOwnerName()
+text=text..string.format("  - %s: %s - %s [I=%d, P=%d]\n",stratzone.opszone:GetName(),owner,stratzone.opszone:GetState(),stratzone.importance,stratzone.prio)
+end
+MESSAGE:New(text,60,nil,true):ToCoalition(self.coalition)
+if self.verbose>=4 then
+self:I(self.lid..text)
+end
+end
 end
 function CHIEF:CheckTargetQueue()
 local Ntargets=#self.targetqueue
