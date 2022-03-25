@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-23T06:57:06.0000000Z-5f57d4ddcdedf6390bc334e348e0506aab9e8f76 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-25T09:27:32.0000000Z-f92e8a285a0fff0a43a8517238a438184f30c073 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2731,8 +2731,14 @@ end
 function UTILS.VecSubstract(a,b)
 return{x=a.x-b.x,y=a.y-b.y,z=a.z-b.z}
 end
+function UTILS.Vec2Substract(a,b)
+return{x=a.x-b.x,y=a.y-b.y}
+end
 function UTILS.VecAdd(a,b)
 return{x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
+end
+function UTILS.Vec2Add(a,b)
+return{x=a.x+b.x,y=a.y+b.y}
 end
 function UTILS.VecAngle(a,b)
 local cosalpha=UTILS.VecDot(a,b)/(UTILS.VecNorm(a)*UTILS.VecNorm(b))
@@ -43008,7 +43014,6 @@ end
 function WAREHOUSE:onafterAssetDead(From,Event,To,asset,request)
 local text=string.format("Asset %s from request id=%d is dead!",asset.templatename,request.uid)
 self:T(self.lid..text)
-self:_DebugMessage(text)
 local groupname=asset.spawngroupname
 local NoTriggerEvent=true
 if request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
@@ -43574,21 +43579,19 @@ end
 end
 end
 function WAREHOUSE:_UnitDead(deadunit,deadgroup,request)
-local asset=self:FindAssetInDB(deadgroup)
+self:F(self.lid.."FF unit dead "..deadunit:GetName())
 local opsgroup=_DATABASE:FindOpsGroup(deadgroup)
-local groupdead=false
 if opsgroup then
-if opsgroup:IsDead()then
-groupdead=true
+return nil
 end
-else
 local nalive=deadgroup:CountAliveUnits()
+local groupdead=false
 if nalive>0 then
 groupdead=false
 else
 groupdead=true
 end
-end
+local asset=self:FindAssetInDB(deadgroup)
 local unitname=self:_GetNameWithOut(deadunit)
 local groupname=self:_GetNameWithOut(deadgroup)
 if groupdead then
@@ -59507,7 +59510,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.8.3"
+AUFTRAG.version="0.8.4"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -59896,7 +59899,7 @@ mission.categories={AUFTRAG.Category.GROUND,AUFTRAG.Category.NAVAL}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewPATROLZONE(Zone,Speed,Altitude)
+function AUFTRAG:NewPATROLZONE(Zone,Speed,Altitude,Formation)
 local mission=AUFTRAG:New(AUFTRAG.Type.PATROLZONE)
 if type(Zone)=="string"then
 Zone=ZONE:New(Zone)
@@ -59911,6 +59914,7 @@ mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
 mission.categories={AUFTRAG.Category.ALL}
 mission.DCStask=mission:GetDCSMissionTask()
+mission.DCStask.params.formation=Formation
 return mission
 end
 function AUFTRAG:NewARMORATTACK(Target,Speed,Formation)
@@ -60782,7 +60786,7 @@ end
 end
 local isNotOver=self:IsNotOver()
 local groupsDone=self:CheckGroupsDone()
-self:T2(self.lid..string.format("Setting OPSGROUP %s status to %s. IsNotOver=%s  CheckGroupsDone=%s",opsgroup.groupname,self:GetGroupStatus(opsgroup),tostring(self:IsNotOver()),tostring(self:CheckGroupsDone())))
+self:T2(self.lid..string.format("Setting OPSGROUP %s status to %s. IsNotOver=%s  CheckGroupsDone=%s",opsgroup.groupname,self:GetGroupStatus(opsgroup),tostring(self:IsNotOver()),tostring(groupsDone)))
 if isNotOver and groupsDone then
 self:T3(self.lid.."All assigned OPSGROUPs done ==> mission DONE!")
 self:Done()
@@ -62571,6 +62575,7 @@ self.verbose=VerbosityLevel or 0
 return self
 end
 function OPSGROUP:_SetLegion(Legion)
+self:T2(self.lid..string.format("Adding opsgroup to legion %s",Legion.alias))
 self.legion=Legion
 return self
 end
@@ -62952,11 +62957,6 @@ function OPSGROUP:Despawn(Delay,NoEventRemoveUnit)
 if Delay and Delay>0 then
 self.scheduleIDDespawn=self:ScheduleOnce(Delay,OPSGROUP.Despawn,self,0,NoEventRemoveUnit)
 else
-if self.legion and not NoEventRemoveUnit then
-self:T(self.lid..string.format("Despawning Group by adding asset to LEGION!"))
-self.legion:AddAsset(self.group,1)
-return
-end
 self:T(self.lid..string.format("Despawning Group!"))
 local DCSGroup=self:GetDCSGroup()
 if DCSGroup then
@@ -62974,6 +62974,19 @@ end
 end
 return self
 end
+function OPSGROUP:ReturnToLegion(Delay)
+if Delay and Delay>0 then
+self.scheduleIDDespawn=self:ScheduleOnce(Delay,OPSGROUP.ReturnToLegion,self)
+else
+if self.legion then
+self:T(self.lid..string.format("Adding asset back to LEGION"))
+self.legion:AddAsset(self.group,1)
+else
+self:E(self.lid..string.format("ERROR: Group does not belong to a LEGION!"))
+end
+end
+return self
+end
 function OPSGROUP:DestroyUnit(UnitName,Delay)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,OPSGROUP.DestroyUnit,self,UnitName,0)
@@ -62986,6 +62999,7 @@ self:CreateEventUnitLost(EventTime,unit)
 else
 self:CreateEventDead(EventTime,unit)
 end
+unit:destroy()
 end
 end
 end
@@ -63941,7 +63955,7 @@ local wp=nil
 if self.isFlightgroup then
 wp=FLIGHTGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 elseif self.isArmygroup then
-wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Formation)
+wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Task.dcstask.params.formation)
 elseif self.isNavygroup then
 wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
@@ -64603,7 +64617,7 @@ local wp=nil
 if self.isFlightgroup then
 wp=FLIGHTGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 elseif self.isArmygroup then
-wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Formation)
+wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,task.dcstask.params.formation)
 elseif self.isNavygroup then
 wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
@@ -64975,10 +64989,12 @@ self:_UpdateStatus(Element,OPSGROUP.ElementStatus.INUTERO)
 end
 function OPSGROUP:onafterElementDamaged(From,Event,To,Element)
 self:T(self.lid..string.format("Element damaged %s",Element.name))
-if Element and Element.status~=OPSGROUP.ElementStatus.DEAD then
-local lifepoints=Element.DCSunit:getLife()
-local lifepoint0=Element.DCSunit:getLife0()
-self:T(self.lid..string.format("Element life %s: %.2f/%.2f",Element.name,lifepoints,lifepoint0))
+if Element and(Element.status~=OPSGROUP.ElementStatus.DEAD and Element.status~=OPSGROUP.ElementStatus.INUTERO)then
+local lifepoints=0
+if Element.DCSunit and Element.DCSunit:isExist()then
+lifepoints=Element.DCSunit:getLife()
+self:T(self.lid..string.format("Element life %s: %.2f/%.2f",Element.name,lifepoints,Element.life0))
+end
 if lifepoints<=1.0 then
 self:T(self.lid..string.format("Element %s life %.2f <= 1.0 ==> Destroyed!",Element.name,lifepoints))
 self:ElementDestroyed(Element)
@@ -64997,13 +65013,6 @@ end
 function OPSGROUP:onafterElementDead(From,Event,To,Element)
 self:I(self.lid..string.format("Element dead %s at t=%.3f",Element.name,timer.getTime()))
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.DEAD)
-if self.legion then
-if not self:IsInUtero()then
-local asset=self.legion:GetAssetByName(self.groupname)
-local request=self.legion:GetRequestByID(asset.rid)
-self.legion:_UnitDead(Element.unit,self.group,request)
-end
-end
 if self.spot.On and self.spot.element.name==Element.name then
 self:LaserOff()
 if self:GetNelements()>0 then
@@ -65046,18 +65055,56 @@ local template=UTILS.DeepCopy(Template or self.template)
 template.lateActivation=false
 self:_Respawn(0,template)
 end
+function OPSGROUP:Teleport(Coordinate,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,OPSGROUP.Teleport,self,Coordinate)
+else
+self:T(self.lid.."FF Teleporting...")
+if self.currentmission>0 then
+self:T(self.lid.."Pausing current mission")
+self:PauseMission()
+end
+local Template=UTILS.DeepCopy(self.template)
+local units=Template.units
+local d={}
+for i=1,#units do
+local unit=units[i]
+d[i]={x=Coordinate.x+(units[i].x-units[1].x),y=Coordinate.z+units[i].y-units[1].y}
+end
+for i=#units,1,-1 do
+local unit=units[i]
+local element=self:GetElementByName(unit.name)
+if element and element.status~=OPSGROUP.ElementStatus.DEAD then
+unit.parking=nil
+unit.parking_id=nil
+local vec3=element.unit:GetVec3()
+local heading=element.unit:GetHeading()
+unit.x=d[i].x
+unit.y=d[i].y
+unit.alt=Coordinate.y
+unit.heading=math.rad(heading)
+unit.psi=-unit.heading
+else
+table.remove(units,i)
+end
+end
+self:_Respawn(0,Template,true)
+end
+end
 function OPSGROUP:_Respawn(Delay,Template,Reset)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,OPSGROUP._Respawn,self,0,Template,Reset)
 else
 self:T2(self.lid.."FF _Respawn")
 Template=Template or self:_GetTemplate(true)
+self.Ndestroyed=0
 if self:IsAlive()then
 local units=Template.units
 for i=#units,1,-1 do
 local unit=units[i]
 local element=self:GetElementByName(unit.name)
 if element and element.status~=OPSGROUP.ElementStatus.DEAD then
+if not Reset then
 unit.parking=element.parking and element.parking.TerminalID or unit.parking
 unit.parking_id=nil
 local vec3=element.unit:GetVec3()
@@ -65067,8 +65114,10 @@ unit.y=vec3.z
 unit.alt=vec3.y
 unit.heading=math.rad(heading)
 unit.psi=-unit.heading
+end
 else
 table.remove(units,i)
+self.Ndestroyed=self.Ndestroyed+1
 end
 end
 self:Despawn(0,true)
@@ -65087,7 +65136,6 @@ self.isUncontrolled=Template.uncontrolled
 self.isDead=false
 self.isDestroyed=false
 self.groupinitialized=false
-self.Ndestroyed=0
 self.wpcounter=1
 self.currentwp=1
 self:_InitWaypoints()
@@ -65151,6 +65199,11 @@ end
 else
 end
 if self.legion then
+if not self:IsInUtero()then
+local asset=self.legion:GetAssetByName(self.groupname)
+local request=self.legion:GetRequestByID(asset.rid)
+self.legion:AssetDead(asset,request)
+end
 self:__Stop(-5)
 end
 end
@@ -67909,7 +67962,7 @@ ATTACKHELO="AttackHelo",
 UAV="UAV",
 OTHER="Other",
 }
-FLIGHTGROUP.version="0.7.0"
+FLIGHTGROUP.version="0.7.1"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -68187,37 +68240,6 @@ end
 function FLIGHTGROUP:GetKills()
 return self.Nkills
 end
-function FLIGHTGROUP:onbeforeStatus(From,Event,To)
-for i,_element in pairs(self.elements)do
-local element=_element
-if element.status~=OPSGROUP.ElementStatus.DEAD and element.status~=OPSGROUP.ElementStatus.INUTERO then
-local unit=element.unit
-local isdead=false
-if unit and unit:IsAlive()then
-local life=unit:GetLife()or 0
-if life<=1 then
-isdead=true
-end
-else
-isdead=true
-end
-if isdead then
-local text=string.format("Element %s is dead at t=%.3f but has status %s! Maybe despawned without notice or landed at a too small airbase. Calling ElementDead in 60 sec to give other events a chance",
-tostring(element.name),timer.getTime(),tostring(element.status))
-self:T(self.lid..text)
-self:__ElementDead(60,element)
-end
-end
-end
-if self:IsDead()then
-self:T(self.lid..string.format("Onbefore Status DEAD ==> false"))
-return false
-elseif self:IsStopped()then
-self:T(self.lid..string.format("Onbefore Status STOPPED ==> false"))
-return false
-end
-return true
-end
 function FLIGHTGROUP:Status()
 local fsmstate=self:GetState()
 local alive=self:IsAlive()
@@ -68246,6 +68268,8 @@ else
 end
 end
 end
+else
+self:_CheckDamage()
 end
 if self.verbose>=1 then
 local nelem=self:CountElements()
@@ -69817,7 +69841,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="0.7.0"
+NAVYGROUP.version="0.7.1"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -70025,6 +70049,8 @@ end
 end
 end
 self:_CheckTurnsIntoWind()
+self:_CheckAmmoStatus()
+self:_CheckDamage()
 self:_CheckStuck()
 if self:IsWaiting()then
 if self.Twaiting and self.dTwait then
@@ -70035,6 +70061,8 @@ self:Cruise()
 end
 end
 end
+else
+self:_CheckDamage()
 end
 if alive~=nil then
 if self.verbose>=1 then
@@ -70314,6 +70342,7 @@ end
 function NAVYGROUP:_UpdateEngageTarget()
 if self.engage.Target and self.engage.Target:IsAlive()then
 local vec3=self.engage.Target:GetVec3()
+if vec3 then
 local dist=UTILS.VecDist3D(vec3,self.engage.Coordinate:GetVec3())
 if dist>100 then
 self.engage.Coordinate:UpdateFromVec3(vec3)
@@ -70322,6 +70351,9 @@ self:RemoveWaypointByID(self.engage.Waypoint.uid)
 local intercoord=self:GetCoordinate():GetIntermediateCoordinate(self.engage.Coordinate,0.9)
 self.engage.Waypoint=self:AddWaypoint(intercoord,nil,uid,Formation,true)
 self.engage.Waypoint.detour=0
+end
+else
+self:Disengage()
 end
 else
 self:Disengage()
@@ -70691,6 +70723,8 @@ self:Cruise()
 end
 end
 end
+else
+self:_CheckDamage()
 end
 if alive~=nil then
 if self.verbose>=1 then
@@ -70828,7 +70862,6 @@ local waypoints={}
 local formationlast=nil
 for i=n,#self.waypoints do
 local wp=UTILS.DeepCopy(self.waypoints[i])
-self:T({wp})
 if Speed then
 wp.speed=UTILS.KnotsToMps(tonumber(Speed))
 else
@@ -71053,12 +71086,14 @@ self.engage.alarmstate=self:GetAlarmstate()
 self:SwitchAlarmstate(ENUMS.AlarmState.Auto)
 self:SwitchROE(ENUMS.ROE.OpenFire)
 local uid=self:GetWaypointCurrent().uid
+local Formation=ENUMS.Formation.Vehicle.Vee
 self.engage.Waypoint=self:AddWaypoint(intercoord,nil,uid,Formation,true)
 self.engage.Waypoint.detour=1
 end
 function ARMYGROUP:_UpdateEngageTarget()
 if self.engage.Target and self.engage.Target:IsAlive()then
 local vec3=self.engage.Target:GetVec3()
+if vec3 then
 local dist=UTILS.VecDist3D(vec3,self.engage.Coordinate:GetVec3())
 if dist>100 then
 self.engage.Coordinate:UpdateFromVec3(vec3)
@@ -71067,6 +71102,9 @@ self:RemoveWaypointByID(self.engage.Waypoint.uid)
 local intercoord=self:GetCoordinate():GetIntermediateCoordinate(self.engage.Coordinate,0.9)
 self.engage.Waypoint=self:AddWaypoint(intercoord,nil,uid,Formation,true)
 self.engage.Waypoint.detour=0
+end
+else
+self:Disengage()
 end
 else
 self:Disengage()
@@ -71215,6 +71253,7 @@ livery=nil,
 skill=nil,
 legion=nil,
 Ngroups=nil,
+Ngroups=0,
 engageRange=nil,
 tacanChannel={},
 weightAsset=99999,
@@ -71291,8 +71330,6 @@ return self
 end
 function COHORT:SetGrouping(nunits)
 self.ngrouping=nunits or 2
-if self.ngrouping<1 then self.ngrouping=1 end
-if self.ngrouping>4 then self.ngrouping=4 end
 return self
 end
 function COHORT:AddMissionCapability(MissionTypes,Performance)
@@ -71865,7 +71902,7 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.2.0"
+LEGION.version="0.2.1"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -72100,6 +72137,9 @@ asset.isReserved=false
 if Mission.missionTask then
 asset.missionTask=Mission.missionTask
 end
+if Mission.type==AUFTRAG.Type.ALERT5 then
+asset.takeoffType=COORDINATE.WaypointType.TakeOffParking
+end
 end
 local assignment=string.format("Mission-%d",Mission.auftragsnummer)
 self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,nil,nil,Mission.prio,assignment)
@@ -72247,6 +72287,7 @@ asset.spawngroupname=string.format("%s_AID-%d",cohort.name,asset.uid)
 cohort:AddAsset(asset)
 else
 self:T(self.lid..string.format("Asset returned to legion ==> calling LegionAssetReturned event"))
+asset.takeoffType=cohort.takeoffType
 self:LegionAssetReturned(cohort,asset)
 end
 end
