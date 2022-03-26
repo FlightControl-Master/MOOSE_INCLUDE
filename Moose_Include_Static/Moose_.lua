@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-23T06:56:52.0000000Z-ca8b0899d0640dbe7687668eee5ffe221a6bdb87 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T13:43:06.0000000Z-0213bc7aefc777a5e81b974d445de4af1d950dd1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -1974,7 +1974,7 @@ Normandy="Normandy",
 PersianGulf="PersianGulf",
 TheChannel="TheChannel",
 Syria="Syria",
-MarianaIslands="MarianaIslands",
+MarianaIslands="MarianaIslands"
 }
 CALLSIGN={
 Aircraft={
@@ -2269,8 +2269,8 @@ else
 return 0
 end
 end
-UTILS.CelsiusToFahrenheit=function(Celsius)
-return Celsius*9/5+32
+UTILS.CelsiusToFarenheit=function(Celcius)
+return Celcius*9/5+32
 end
 UTILS.hPa2inHg=function(hPa)
 return hPa*0.0295299830714
@@ -2325,7 +2325,8 @@ else
 local width=3+acc
 secFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d°',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '..string.format('%03d°',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
+return string.format('%03d°',latDeg)..string.format('%02d',latMin)..'\''..string.format(secFrmtStr,latSec)..'"'..latHemi..' '
+..string.format('%03d°',lonDeg)..string.format('%02d',lonMin)..'\''..string.format(secFrmtStr,lonSec)..'"'..lonHemi
 else
 latMin=UTILS.Round(latMin,acc)
 lonMin=UTILS.Round(lonMin,acc)
@@ -2344,7 +2345,8 @@ else
 local width=3+acc
 minFrmtStr='%0'..width..'.'..acc..'f'
 end
-return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
+return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
+..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
 end
 end
 UTILS.tostringMGRS=function(MGRS,acc)
@@ -2355,12 +2357,8 @@ local Easting=tostring(MGRS.Easting)
 local Northing=tostring(MGRS.Northing)
 local nE=5-string.len(Easting)
 local nN=5-string.len(Northing)
-for i=1,nE do
-Easting="0"..Easting
-end
-for i=1,nN do
-Northing="0"..Northing
-end
+for i=1,nE do Easting="0"..Easting end
+for i=1,nN do Northing="0"..Northing end
 return string.format("%s %s %s %s",MGRS.UTMZone,MGRS.MGRSDigraph,string.sub(Easting,1,acc),string.sub(Northing,1,acc))
 end
 end
@@ -2378,13 +2376,9 @@ end
 end
 function UTILS.spairs(t,order)
 local keys={}
-for k in pairs(t)do
-keys[#keys+1]=k
-end
+for k in pairs(t)do keys[#keys+1]=k end
 if order then
-table.sort(keys,function(a,b)
-return order(t,a,b)
-end)
+table.sort(keys,function(a,b)return order(t,a,b)end)
 else
 table.sort(keys)
 end
@@ -2399,14 +2393,9 @@ end
 function UTILS.kpairs(t,getkey,order)
 local keys={}
 local keyso={}
-for k,o in pairs(t)do
-keys[#keys+1]=k
-keyso[#keyso+1]=getkey(o)
-end
+for k,o in pairs(t)do keys[#keys+1]=k keyso[#keyso+1]=getkey(o)end
 if order then
-table.sort(keys,function(a,b)
-return order(t,a,b)
-end)
+table.sort(keys,function(a,b)return order(t,a,b)end)
 else
 table.sort(keys)
 end
@@ -2420,9 +2409,7 @@ end
 end
 function UTILS.rpairs(t)
 local keys={}
-for k in pairs(t)do
-keys[#keys+1]=k
-end
+for k in pairs(t)do keys[#keys+1]=k end
 local random={}
 local j=#keys
 for i=1,j do
@@ -2649,8 +2636,14 @@ end
 function UTILS.VecSubstract(a,b)
 return{x=a.x-b.x,y=a.y-b.y,z=a.z-b.z}
 end
+function UTILS.Vec2Substract(a,b)
+return{x=a.x-b.x,y=a.y-b.y}
+end
 function UTILS.VecAdd(a,b)
 return{x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
+end
+function UTILS.Vec2Add(a,b)
+return{x=a.x+b.x,y=a.y+b.y}
 end
 function UTILS.VecAngle(a,b)
 local cosalpha=UTILS.VecDot(a,b)/(UTILS.VecNorm(a)*UTILS.VecNorm(b))
@@ -2764,13 +2757,6 @@ function UTILS.GetMissionDayOfYear(Time)
 local Date,Year,Month,Day=UTILS.GetDCSMissionDate()
 local d=UTILS.GetMissionDay(Time)
 return UTILS.GetDayOfYear(Year,Month,Day)+d
-end
-function UTILS.GetDate()
-local date,year,month,day=UTILS.GetDCSMissionDate()
-local time=timer.getAbsTime()
-local clock=UTILS.SecondsToClock(time,false)
-local x=tonumber(UTILS.Split(clock,"+")[2])
-local day=day+x
 end
 function UTILS.GetMagneticDeclination(map)
 map=map or UTILS.GetDCSMap()
@@ -2905,27 +2891,13 @@ Tlocal=Tlocal or 0
 local rad=math.rad
 local deg=math.deg
 local floor=math.floor
-local frac=function(n)
-return n-floor(n)
-end
-local cos=function(d)
-return math.cos(rad(d))
-end
-local acos=function(d)
-return deg(math.acos(d))
-end
-local sin=function(d)
-return math.sin(rad(d))
-end
-local asin=function(d)
-return deg(math.asin(d))
-end
-local tan=function(d)
-return math.tan(rad(d))
-end
-local atan=function(d)
-return deg(math.atan(d))
-end
+local frac=function(n)return n-floor(n)end
+local cos=function(d)return math.cos(rad(d))end
+local acos=function(d)return deg(math.acos(d))end
+local sin=function(d)return math.sin(rad(d))end
+local asin=function(d)return deg(math.asin(d))end
+local tan=function(d)return math.tan(rad(d))end
+local atan=function(d)return deg(math.atan(d))end
 local function fit_into_range(val,min,max)
 local range=max-min
 local count
@@ -3159,7 +3131,9 @@ local _count=1
 while _code<1777 and _count<30 do
 while true do
 _code=_code+1
-if not ContainsDigit(_code,8)and not ContainsDigit(_code,9)and not ContainsDigit(_code,0)then
+if not ContainsDigit(_code,8)
+and not ContainsDigit(_code,9)
+and not ContainsDigit(_code,0)then
 table.insert(jtacGeneratedLaserCodes,_code)
 break
 end
@@ -3319,9 +3293,7 @@ return outcome
 end
 function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce)
 local reduce=true
-if Reduce==false then
-reduce=false
-end
+if Reduce==false then reduce=false end
 local filename=Filename or"StateListofGroups"
 local datatable={}
 if UTILS.CheckFileExists(Path,filename)then
@@ -3338,9 +3310,8 @@ local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
 local data={groupname=groupname,size=size,coordinate=coordinate,group=GROUP:FindByName(groupname)}
 if reduce then
 local actualgroup=GROUP:FindByName(groupname)
-local actualsize=actualgroup:CountAliveUnits()
-if actualsize>size then
-local reduction=actualsize-size
+if actualgroup and actualgroup:IsAlive()and actualgroup:CountAliveUnits()>size then
+local reduction=actualgroup:CountAliveUnits()-size
 BASE:I("Reducing groupsize by "..reduction.." units!")
 local units=actualgroup:GetUnits()
 local units2=UTILS.ShuffleTable(units)
@@ -3358,9 +3329,7 @@ return datatable
 end
 function UTILS.LoadSetOfGroups(Path,Filename,Spawn)
 local spawn=true
-if Spawn==false then
-spawn=false
-end
+if Spawn==false then spawn=false end
 BASE:I("Spawn = "..tostring(spawn))
 local filename=Filename or"SetOfGroups"
 local setdata=SET_GROUP:New()
@@ -3381,7 +3350,10 @@ local group=nil
 local data={groupname=groupname,size=size,coordinate=coordinate}
 table.insert(datatable,data)
 if spawn then
-local group=SPAWN:New(groupname):InitDelayOff():OnSpawnGroup(function(spwndgrp)
+local group=SPAWN:New(groupname)
+:InitDelayOff()
+:OnSpawnGroup(
+function(spwndgrp)
 setdata:AddObject(spwndgrp)
 local actualsize=spwndgrp:CountAliveUnits()
 if actualsize>size then
@@ -3392,7 +3364,9 @@ for i=1,reduction do
 units2[i]:Destroy(false)
 end
 end
-end):SpawnFromCoordinate(coordinate)
+end
+)
+:SpawnFromCoordinate(coordinate)
 end
 end
 else
@@ -3426,9 +3400,7 @@ return datatable
 end
 function UTILS.LoadStationaryListOfStatics(Path,Filename,Reduce)
 local reduce=true
-if Reduce==false then
-reduce=false
-end
+if Reduce==false then reduce=false end
 local filename=Filename or"StateListofStatics"
 local datatable={}
 if UTILS.CheckFileExists(Path,filename)then
@@ -12828,7 +12800,7 @@ if DegreesCelcius then
 if Settings:IsMetric()then
 return string.format(" %-2.2f °C",DegreesCelcius)
 else
-return string.format(" %-2.2f °F",UTILS.CelciusToFarenheit(DegreesCelcius))
+return string.format(" %-2.2f °F",UTILS.CelsiusToFarenheit(DegreesCelcius))
 end
 else
 return" no temperature"
