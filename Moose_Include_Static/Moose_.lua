@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T13:47:10.0000000Z-42c6b8a016967e8bc01286a80b33cf80f1fc4fe2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T21:39:44.0000000Z-c3591c1faeb56427ad435635d0171b4500daa04f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60794,8 +60794,16 @@ text=text..string.format("=========================")
 self:I(self.lid..text)
 end
 if failed then
+self:I(self.lid..string.format("Mission %d [%s] failed!",self.auftragsnummer,self.type))
+if self.chief then
+self.chief.Nfailure=self.chief.Nfailure+1
+end
 self:Failed()
 else
+self:I(self.lid..string.format("Mission %d [%s] success!",self.auftragsnummer,self.type))
+if self.chief then
+self.chief.Nsuccess=self.chief.Nsuccess+1
+end
 self:Success()
 end
 return self
@@ -74909,6 +74917,7 @@ capZones={},
 gcicapZones={},
 awacsZones={},
 tankerZones={},
+limitMission={},
 }
 COMMANDER.version="0.1.1"
 function COMMANDER:New(Coalition,Alias)
@@ -74942,6 +74951,15 @@ return self
 end
 function COMMANDER:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
+return self
+end
+function COMMANDER:SetLimitMission(Limit,MissionType)
+MissionType=MissionType or"Total"
+if MissionType then
+self.limitMission[MissionType]=Limit or 10
+else
+self:E(self.lid.."ERROR: No mission type given for setting limit!")
+end
 return self
 end
 function COMMANDER:GetCoalition()
@@ -75285,6 +75303,10 @@ local Nmissions=#self.missionqueue
 if Nmissions==0 then
 return nil
 end
+local NoLimit=self:_CheckMissionLimit("Total")
+if NoLimit==false then
+return nil
+end
 local function _sort(a,b)
 local taskA=a
 local taskB=b
@@ -75300,7 +75322,7 @@ end
 end
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
-if mission:IsPlanned()and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)then
+if mission:IsPlanned()and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)and self:_CheckMissionLimit(mission.type)then
 local recruited,assets,legions=self:RecruitAssetsForMission(mission)
 if recruited then
 for _,_asset in pairs(assets)do
@@ -75458,6 +75480,19 @@ local NreqMin,NreqMax=Transport:GetRequiredCarriers()
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NreqMin,NreqMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight)
 return recruited,assets,legions
 end
+function COMMANDER:_CheckMissionLimit(MissionType)
+local limit=self.limitMission[MissionType]
+if limit then
+if MissionType=="Total"then
+MissionType=AUFTRAG.Type
+end
+local N=self:CountMissions(MissionType,true)
+if N>=limit then
+return false
+end
+end
+return true
+end
 function COMMANDER:CountAssets(InStock,MissionTypes,Attributes)
 local N=0
 for _,_legion in pairs(self.legions)do
@@ -75466,12 +75501,14 @@ N=N+legion:CountAssets(InStock,MissionTypes,Attributes)
 end
 return N
 end
-function COMMANDER:CountMissions(MissionTypes)
+function COMMANDER:CountMissions(MissionTypes,OnlyRunning)
 local N=0
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
+if(not OnlyRunning)or(mission.statusCommander~=AUFTRAG.Status.PLANNED)then
 if AUFTRAG.CheckMissionType(mission.type,MissionTypes)then
 N=N+1
+end
 end
 end
 return N
@@ -81117,7 +81154,7 @@ Nnut=0,
 chiefs={},
 Missions={},
 }
-OPSZONE.version="0.2.0"
+OPSZONE.version="0.3.0"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -81237,6 +81274,9 @@ end
 function OPSZONE:GetName()
 return self.zoneName
 end
+function OPSZONE:GetZone()
+return self.zone
+end
 function OPSZONE:GetPreviousOwner()
 return self.ownerPrevious
 end
@@ -81257,6 +81297,10 @@ return is
 end
 function OPSZONE:IsNeutral()
 local is=self.ownerCurrent==coalition.side.NEUTRAL
+return is
+end
+function OPSZONE:IsCoalition(Coalition)
+local is=self.ownerCurrent==Coalition
 return is
 end
 function OPSZONE:IsGuarded()
@@ -81289,7 +81333,23 @@ end
 function OPSZONE:onafterStop(From,Event,To)
 self:I(self.lid..string.format("Stopping OPSZONE"))
 self.timerStatus:Stop()
+if self.drawZone then
+self.zone:UndrawZone()
+end
+if self.markZone then
+self.marker:Remove()
+end
 self:UnHandleEvent(EVENTS.BaseCaptured)
+for _,_entry in pairs(self.Missions or{})do
+local entry=_entry
+if entry.Mission and entry.Mission:IsNotOver()then
+entry.Mission:Cancel()
+end
+end
+self.CallScheduler:Clear()
+if self.Scheduler then
+self.Scheduler:Clear()
+end
 end
 function OPSZONE:Status()
 local fsmstate=self:GetState()
@@ -81636,6 +81696,8 @@ borderzoneset=nil,
 yellowzoneset=nil,
 engagezoneset=nil,
 tacview=false,
+Nsuccess=0,
+Nfailure=0,
 }
 CHIEF.DEFCON={
 GREEN="Green",
@@ -81649,7 +81711,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.1.1"
+CHIEF.version="0.2.0"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -81727,6 +81789,10 @@ end
 function CHIEF:GetDefcon(Defcon)
 return self.Defcon
 end
+function CHIEF:SetLimitMission(Limit,MissionType)
+self.commander:SetLimitMission(Limit,MissionType)
+return self
+end
 function CHIEF:SetTacticalOverviewOn()
 self.tacview=true
 return self
@@ -81763,6 +81829,8 @@ return self
 end
 function CHIEF:AddMission(Mission)
 Mission.chief=self
+Mission.statusChief=AUFTRAG.Status.PLANNED
+self:I(self.lid..string.format("Adding mission #%d",Mission.auftragsnummer))
 self.commander:AddMission(Mission)
 return self
 end
@@ -81817,6 +81885,27 @@ OpsZone:Start()
 end
 table.insert(self.zonequeue,stratzone)
 OpsZone:_AddChief(self)
+return self
+end
+function CHIEF:RemoveStrategicZone(OpsZone,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,CHIEF.RemoveStrategicZone,self,OpsZone)
+else
+for i=#self.zonequeue,1,-1 do
+local stratzone=self.zonequeue[i]
+if OpsZone.zoneName==stratzone.opszone.zoneName then
+self:T(self.lid..string.format("Removing OPS zone \"%s\" from queue! All running missions will be cancelled",OpsZone.zoneName))
+for _,_entry in pairs(OpsZone.Missions or{})do
+local entry=_entry
+if entry.Coalition==self.coalition and entry.Mission and entry.Mission:IsNotOver()then
+entry.Mission:Cancel()
+end
+end
+table.remove(self.zonequeue,i)
+return self
+end
+end
+end
 return self
 end
 function CHIEF:AddRearmingZone(RearmingZone)
@@ -82079,22 +82168,25 @@ if self.tacview then
 local NassetsTotal=self.commander:CountAssets()
 local NassetsStock=self.commander:CountAssets(true)
 local Ncontacts=#self.Contacts
-local Nmissions=#self.commander.missionqueue
+local NmissionsTotal=#self.commander.missionqueue
+local NmissionsRunni=self.commander:CountMissions(AUFTRAG.Type,true)
 local Ntargets=#self.targetqueue
 local Nzones=#self.zonequeue
 local text=string.format("Tactical Overview\n")
 text=text..string.format("=================\n")
 text=text..string.format("Strategy: %s - Defcon: %s\n",self.strategy,self.Defcon)
 text=text..string.format("Contacts: %d [Border=%d, Conflict=%d, Attack=%d]\n",Ncontacts,self.Nborder,self.Nconflict,self.Nattack)
+text=text..string.format("Assets: %d [Active=%d, Stock=%d]\n",NassetsTotal,NassetsTotal-NassetsStock,NassetsStock)
 text=text..string.format("Targets: %d\n",Ntargets)
-text=text..string.format("Missions: %d\n",Nmissions)
+text=text..string.format("Missions: %d [Running=%d/%d - Success=%d, Failure=%d]\n",NmissionsTotal,NmissionsRunni,self:GetMissionLimit("Total"),self.Nsuccess,self.Nfailure)
 for _,mtype in pairs(AUFTRAG.Type)do
 local n=self.commander:CountMissions(mtype)
 if n>0 then
-text=text..string.format("  - %s: %d\n",mtype,n)
+local N=self.commander:CountMissions(mtype,true)
+local limit=self:GetMissionLimit(mtype)
+text=text..string.format("  - %s: %d [Running=%d/%d]\n",mtype,n,N,limit)
 end
 end
-text=text..string.format("Assets: %d [Stock %d]\n",NassetsTotal,NassetsStock)
 text=text..string.format("Strategic Zones: %d\n",Nzones)
 for _,_stratzone in pairs(self.zonequeue)do
 local stratzone=_stratzone
@@ -82110,6 +82202,10 @@ end
 function CHIEF:CheckTargetQueue()
 local Ntargets=#self.targetqueue
 if Ntargets==0 then
+return nil
+end
+local NoLimit=self:_CheckMissionLimit("Total")
+if NoLimit==false then
 return nil
 end
 local function _sort(a,b)
@@ -82181,6 +82277,8 @@ NassetsMax=1
 end
 for _,_mp in pairs(MissionPerformances)do
 local mp=_mp
+local notlimited=self:_CheckMissionLimit(mp.MissionType)
+if notlimited then
 self:T2(self.lid..string.format("Recruiting assets for mission type %s [performance=%d] of target %s",mp.MissionType,mp.Performance,target:GetName()))
 local recruited,assets,legions=self:RecruitAssetsForTarget(target,mp.MissionType,NassetsMin,NassetsMax)
 if recruited then
@@ -82199,6 +82297,7 @@ self:T(self.lid..string.format("Could NOT recruit assets for mission type %s [pe
 end
 end
 end
+end
 if mission and Legions then
 target.mission=mission
 mission.prio=target.prio
@@ -82210,12 +82309,26 @@ end
 end
 end
 end
+function CHIEF:_CheckMissionLimit(MissionType)
+return self.commander:_CheckMissionLimit(MissionType)
+end
+function CHIEF:GetMissionLimit(MissionType)
+local l=self.commander.limitMission[MissionType]
+if not l then
+l=999
+end
+return l
+end
 function CHIEF:CheckOpsZoneQueue()
 if self:IsPassive()then
 return
 end
 local Nzones=#self.zonequeue
 if Nzones==0 then
+return nil
+end
+local NoLimit=self:_CheckMissionLimit("Total")
+if NoLimit==false then
 return nil
 end
 local function _sort(a,b)
@@ -82234,7 +82347,7 @@ end
 for _,_startzone in pairs(self.zonequeue)do
 local stratzone=_startzone
 local ownercoalition=stratzone.opszone:GetOwner()
-if ownercoalition~=self.coalition and(stratzone.importance==nil or stratzone.importance<=vip)then
+if ownercoalition~=self.coalition and(stratzone.importance==nil or stratzone.importance<=vip)and(not stratzone.opszone:IsStopped())then
 local hasMissionPatrol=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ONGUARD)or stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARMOREDGUARD)
 local hasMissionCAS=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.CASENHANCED)
 local hasMissionARTY=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARTY)
@@ -82276,6 +82389,12 @@ if ownercoalition==self.coalition and hasMissionARTY then
 for _,_auftrag in pairs(ARTYMissions)do
 _auftrag:Cancel()
 end
+end
+end
+for i=#self.zonequeue,1,-1 do
+local stratzone=self.zonequeue[i]
+if stratzone.opszone:IsStopped()then
+self:RemoveStrategicZone(stratzone.opszone)
 end
 end
 end
