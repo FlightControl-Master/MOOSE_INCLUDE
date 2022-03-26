@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T13:42:36.0000000Z-48f9d808cfa8c59c4da41c417c598d82bda29a38 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T13:47:10.0000000Z-42c6b8a016967e8bc01286a80b33cf80f1fc4fe2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2364,7 +2364,7 @@ else
 return 0
 end
 end
-UTILS.CelsiusToFarenheit=function(Celcius)
+UTILS.CelsiusToFahrenheit=function(Celcius)
 return Celcius*9/5+32
 end
 UTILS.hPa2inHg=function(hPa)
@@ -12915,7 +12915,7 @@ if DegreesCelcius then
 if Settings:IsMetric()then
 return string.format(" %-2.2f °C",DegreesCelcius)
 else
-return string.format(" %-2.2f °F",UTILS.CelsiusToFarenheit(DegreesCelcius))
+return string.format(" %-2.2f °F",UTILS.CelsiusToFahrenheit(DegreesCelcius))
 end
 else
 return" no temperature"
@@ -41240,7 +41240,7 @@ end
 text=text..string.format("QFE %.1f hPa = %s.\n",Pqfe,_Pqfe)
 text=text..string.format("QNH %.1f hPa = %s.\n",Pqnh,_Pqnh)
 local T=position:GetTemperature()
-local _T=string.format('%d°F',UTILS.CelsiusToFarenheit(T))
+local _T=string.format('%d°F',UTILS.CelsiusToFahrenheit(T))
 if settings:IsMetric()then
 _T=string.format('%d°C',T)
 end
@@ -58631,8 +58631,8 @@ end
 local temperature=coord:GetTemperature(height+5)
 local dewpoint=temperature-(100-self.relHumidity)/5
 if self.TDegF then
-temperature=UTILS.CelsiusToFarenheit(temperature)
-dewpoint=UTILS.CelsiusToFarenheit(dewpoint)
+temperature=UTILS.CelsiusToFahrenheit(temperature)
+dewpoint=UTILS.CelsiusToFahrenheit(dewpoint)
 end
 local TEMPERATURE=string.format("%d",math.abs(temperature))
 local DEWPOINT=string.format("%d",math.abs(dewpoint))
