@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T13:43:06.0000000Z-0213bc7aefc777a5e81b974d445de4af1d950dd1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T13:46:52.0000000Z-5260b2b4302c27ac8ca32661397e9da37072d58a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2269,7 +2269,7 @@ else
 return 0
 end
 end
-UTILS.CelsiusToFarenheit=function(Celcius)
+UTILS.CelsiusToFahrenheit=function(Celcius)
 return Celcius*9/5+32
 end
 UTILS.hPa2inHg=function(hPa)
@@ -12800,7 +12800,7 @@ if DegreesCelcius then
 if Settings:IsMetric()then
 return string.format(" %-2.2f °C",DegreesCelcius)
 else
-return string.format(" %-2.2f °F",UTILS.CelsiusToFarenheit(DegreesCelcius))
+return string.format(" %-2.2f °F",UTILS.CelsiusToFahrenheit(DegreesCelcius))
 end
 else
 return" no temperature"
