@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-26T22:34:54.0000000Z-2d544b7a98cdacb009fa91a5c57ed2894a63907f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-28T08:12:39.0000000Z-38413625c2348054cc8b3efda969d607cb71e931 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22250,6 +22250,9 @@ AIRBASE.TheChannel={
 ["Lympne"]="Lympne",
 ["Detling"]="Detling",
 ["High_Halden"]="High Halden",
+["Biggin_Hill"]="Biggin Hill",
+["Eastchurch"]="Eastchurch",
+["Headcorn"]="Headcorn",
 }
 AIRBASE.Syria={
 ["Kuweires"]="Kuweires",
