@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-28T08:13:02.0000000Z-b5db08eec3665218dcfff43ef45eb4e24aa0380f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-29T06:52:21.0000000Z-0d15cdd370e73d2bb3c3e56bc3680f44637724a9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -80104,8 +80104,8 @@ local uheight=Unit:GetHeight()
 local ucoord=Unit:GetCoordinate()
 local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
-local maxh=self.HercMinAngels
-local minh=self.HercMaxAngels
+local minh=self.HercMinAngels
+local maxh=self.HercMaxAngels
 local maxspeed=self.HercMaxSpeed
 local kmspeed=uspeed*3.6
 local knspeed=kmspeed/1.86
