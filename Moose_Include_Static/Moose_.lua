@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-29T06:52:21.0000000Z-0d15cdd370e73d2bb3c3e56bc3680f44637724a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-29T10:03:45.0000000Z-f8a577749a35d8fd409ebe71638407de8b42672a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59955,7 +59955,7 @@ mission:_TargetFromObject(Target)
 mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.ARMORATTACK)
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionAlarm=ENUMS.AlarmState.Auto
-mission.optionFormation="Off Road"
+mission.optionFormation="On Road"
 mission.optionAttackFormation=Formation or"Wedge"
 mission.missionFraction=1.0
 mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or 20
@@ -61540,6 +61540,8 @@ local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.ARMORATTACK
 local param={}
 param.zone=self:GetObjective()
+param.tVec2=param.zone:GetVec2()
+param.tzone=ZONE_RADIUS:New("ARMORATTACK-Zone-"..self.auftragsnummer,param.tVec2,1000)
 param.action="Wedge"
 param.speed=self.missionSpeed
 DCStask.params=param
@@ -62142,7 +62144,11 @@ if Target.Type==TARGET.ObjectType.GROUP then
 local object=Target.Object
 if object and object:IsAlive()then
 local vec3=object:GetVec3()
+if vec3 then
 return vec3
+else
+return nil
+end
 else
 return nil
 end
@@ -64537,9 +64543,10 @@ end
 local armorwaypointcoord=nil
 if mission.type==AUFTRAG.Type.ARMORATTACK then
 local target=mission.engageTarget:GetObject()
-local zone=ZONE_RADIUS:New("AttackZone",target:GetVec2(),1000)
+local zone=mission.DCStask.params.tzone
 waypointcoord=zone:GetRandomCoordinate(0,100,surfacetypes)
 armorwaypointcoord=zone:GetRandomCoordinate(1000,500,surfacetypes)
+self:__EngageTarget(2,target)
 end
 for _,task in pairs(mission.enrouteTasks)do
 self:AddTaskEnroute(task)
