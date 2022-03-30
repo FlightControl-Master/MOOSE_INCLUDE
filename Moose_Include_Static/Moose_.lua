@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-29T10:01:28.0000000Z-fb2031d7ca774103bab7fce7702ec1c8a06a8f01 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-30T10:06:25.0000000Z-d2a5144a23fd42a811a47e67be68539769d48a72 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22269,7 +22269,6 @@ AIRBASE.Syria={
 ["Wujah_Al_Hajar"]="Wujah Al Hajar",
 ["Al_Dumayr"]="Al-Dumayr",
 ["Gazipasa"]="Gazipasa",
-["Ru_Convoy_4"]="Ru Convoy-4",
 ["Hatay"]="Hatay",
 ["Nicosia"]="Nicosia",
 ["Pinarbashi"]="Pinarbashi",
@@ -22317,6 +22316,7 @@ AIRBASE.Syria={
 ["Ruwayshid"]="Ruwayshid",
 ["Sanliurfa"]="Sanliurfa",
 ["Tal_Siman"]="Tal Siman",
+["Deir_ez-Zor"]="Deir ez-Zor",
 }
 AIRBASE.MarianaIslands={
 ["Rota_Intl"]="Rota Intl",
