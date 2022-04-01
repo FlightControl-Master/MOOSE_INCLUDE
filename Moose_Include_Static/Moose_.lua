@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-30T10:05:04.0000000Z-ad37e5ca2714804561808abb58defbee3930d0d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-01T10:33:31.0000000Z-61097de76ded8df5a0aa0c7b99579e7877e94e7d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -43015,6 +43015,7 @@ self:T(self.lid..string.format("Not all assets %d (ncargo=%d + ntransport=%d) of
 end
 end
 function WAREHOUSE:onafterAssetDead(From,Event,To,asset,request)
+if asset and request then
 local text=string.format("Asset %s from request id=%d is dead!",asset.templatename,request.uid)
 self:T(self.lid..text)
 local groupname=asset.spawngroupname
@@ -43032,6 +43033,9 @@ request.cargogroupset:Remove(groupname,NoTriggerEvent)
 self:T(self.lid..string.format("Removed transported cargo %s outside carrier: ncargo=%d",groupname,request.cargogroupset:Count()))
 else
 end
+end
+else
+self:E(self.lid.."ERROR: Asset and/or Request is nil in onafterAssetDead")
 end
 end
 function WAREHOUSE:onafterDestroyed(From,Event,To)
@@ -59473,6 +59477,7 @@ BARRAGE="Barrage",
 ARMORATTACK="Armor Attack",
 CASENHANCED="CAS Enhanced",
 HOVER="Hover",
+GROUNDATTACK="Ground Attack"
 }
 AUFTRAG.SpecialTask={
 PATROLZONE="PatrolZone",
@@ -59485,6 +59490,7 @@ ARMOREDGUARD="ArmoredGuard",
 BARRAGE="Barrage",
 ARMORATTACK="AmorAttack",
 HOVER="Hover",
+GROUNDATTACK="Ground Attack",
 }
 AUFTRAG.Status={
 PLANNED="planned",
@@ -59523,7 +59529,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.8.5"
+AUFTRAG.version="0.9.0"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -59958,6 +59964,20 @@ mission.optionAlarm=ENUMS.AlarmState.Auto
 mission.optionFormation="On Road"
 mission.optionAttackFormation=Formation or"Wedge"
 mission.missionFraction=1.0
+mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or 20
+mission.categories={AUFTRAG.Category.GROUND}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewGROUNDATTACK(Target,Speed,Formation)
+local mission=AUFTRAG:New(AUFTRAG.Type.GROUNDATTACK)
+mission:_TargetFromObject(Target)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.GROUNDATTACK)
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionAlarm=ENUMS.AlarmState.Auto
+mission.optionFormation="On Road"
+mission.optionAttackFormation=Formation or"Wedge"
+mission.missionFraction=0.75
 mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or 20
 mission.categories={AUFTRAG.Category.GROUND}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -60694,6 +60714,7 @@ self.Nrepeat=Nrepeat
 self.NrepeatSuccess=NrepeatS
 self.NrepeatFailure=NrepeatF
 elseif(Ntargets0>0 and Ntargets==0)then
+self:T(self.lid.."No targets left cancelling mission!")
 self:Cancel()
 elseif self:IsExecuting()then
 if Ngroups==0 then
@@ -61542,6 +61563,15 @@ local param={}
 param.zone=self:GetObjective()
 param.tVec2=param.zone:GetVec2()
 param.tzone=ZONE_RADIUS:New("ARMORATTACK-Zone-"..self.auftragsnummer,param.tVec2,1000)
+param.action="Wedge"
+param.speed=self.missionSpeed
+DCStask.params=param
+table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.GROUNDATTACK then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.GROUNDATTACK
+local param={}
+param.target=self:GetTargetData()
 param.action="Wedge"
 param.speed=self.missionSpeed
 DCStask.params=param
@@ -62444,6 +62474,7 @@ cargoBay={},
 mycarrier={},
 carrierLoader={},
 carrierUnloader={},
+useMEtasks=false,
 }
 OPSGROUP.ElementStatus={
 INUTERO="inutero",
@@ -62684,6 +62715,52 @@ end
 function OPSGROUP:GetCruiseAltitude()
 local alt=UTILS.MetersToFeet(self.altitudeCruise)
 return alt
+end
+function OPSGROUP:SetAltitude(Altitude,Keep,RadarAlt)
+if Altitude then
+Altitude=UTILS.FeetToMeters(Altitude)
+else
+if self:IsFlightgroup()then
+if self.isHelo then
+Altitude=UTILS.FeetToMeters(1500)
+else
+Altitude=UTILS.FeetToMeters(10000)
+end
+else
+Altitude=0
+end
+end
+local AltType="BARO"
+if RadarAlt then
+AltType="RADIO"
+end
+if self.controller then
+self.controller:setAltitude(Altitude,Keep,AltType)
+end
+return self
+end
+function OPSGROUP:GetAltitude()
+local alt=0
+if self.group then
+alt=self.group:GetUnit(1):GetAltitude()
+alt=UTILS.MetersToFeet(alt)
+end
+return alt
+end
+function OPSGROUP:SetSpeed(Speed,Keep,AltCorrected)
+if Speed then
+else
+Speed=UTILS.KmphToKnots(self.speedMax)
+end
+if AltCorrected then
+local altitude=self:GetAltitude()
+Speed=UTILS.KnotsToAltKIAS(Speed,altitude)
+end
+Speed=UTILS.KnotsToMps(Speed)
+if self.controller then
+self.controller:setSpeed(Speed,Keep)
+end
+return self
 end
 function OPSGROUP:SetDetection(Switch)
 self:T(self.lid..string.format("Detection is %s",tostring(Switch)))
@@ -63137,25 +63214,32 @@ end
 end
 return self
 end
-function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port)
+function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey)
 self.useSRS=true
 self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
 self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
 self.msrs:SetPort(Port)
+if PathToGoogleKey then
+self.msrs:SetGoogle(PathToGoogleKey)
+end
 self.msrs:SetCoalition(self:GetCoalition())
 return self
 end
-function OPSGROUP:RadioTransmission(Text,Delay)
+function OPSGROUP:RadioTransmission(Text,Delay,SayCallsign)
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,OPSGROUP.RadioTransmission,self,Text,0)
+self:ScheduleOnce(Delay,OPSGROUP.RadioTransmission,self,Text,0,SayCallsign)
 else
 if self.useSRS and self.msrs then
 local freq,modu,radioon=self:GetRadio()
 self.msrs:SetFrequencies(freq)
 self.msrs:SetModulations(modu)
-self:T(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
+if SayCallsign then
+local callsign=self:GetCallsignName()
+Text=string.format("%s, %s",callsign,Text)
+end
+self:I(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
 self.msrs:PlayText(Text)
 end
 end
@@ -64063,6 +64147,11 @@ if self:IsArmygroup()or self:IsNavygroup()then
 self:FullStop()
 else
 end
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK then
+local target=Task.dcstask.params.target
+if target then
+self:EngageTarget(target)
+end
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
 if self.isFlightgroup then
 self:T("We are Special Auftrag HOVER, hovering now ...")
@@ -64149,6 +64238,8 @@ done=true
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.ALERT5 then
 done=true
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.ONGUARD or Task.dcstask.id==AUFTRAG.SpecialTask.ARMOREDGUARD then
+done=true
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK then
 done=true
 elseif stopflag==1 or(not self:IsAlive())or self:IsDead()or self:IsStopped()then
 done=true
@@ -64527,8 +64618,7 @@ surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD}
 elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
-if mission.type==AUFTRAG.Type.PATROLZONE or mission.type==AUFTRAG.Type.BARRAGE or mission.type==AUFTRAG.Type.AMMOSUPPLY
-or mission.type.FUELSUPPLY then
+if mission.type==AUFTRAG.Type.PATROLZONE or mission.type==AUFTRAG.Type.BARRAGE or mission.type==AUFTRAG.Type.AMMOSUPPLY or mission.type.FUELSUPPLY then
 local zone=mission.engageTarget:GetObject()
 waypointcoord=zone:GetRandomCoordinate(nil,nil,surfacetypes)
 elseif mission.type==AUFTRAG.Type.ONGUARD or mission.type==AUFTRAG.Type.ARMOREDGUARD then
@@ -66780,7 +66870,7 @@ elseif self:IsNavygroup()then
 Waypoint=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,nil,Depth,false)
 end
 local DCStasks=wp.task and wp.task.params.tasks or nil
-if DCStasks then
+if DCStasks and self.useMEtasks then
 for _,DCStask in pairs(DCStasks)do
 if DCStask.id and DCStask.id~="WrappedAction"then
 self:AddTaskWaypoint(DCStask,Waypoint,"ME Task")
@@ -67361,6 +67451,17 @@ else
 self:T(self.lid.."ERROR: Group is not alive and not in utero! Cannot switch callsign")
 end
 return self
+end
+function OPSGROUP:GetCallsignName()
+local numberSquad=self.callsign.NumberSquad or self.callsignDefault.NumberSquad
+local numberGroup=self.callsign.NumberGroup or self.callsignDefault.NumberGroup
+local callsign="Unknown 1"
+if numberSquad and numberGroup then
+local nameSquad=UTILS.GetCallsignName(numberSquad)
+callsign=string.format("%s %d",nameSquad,numberGroup)
+else
+end
+return callsign
 end
 function OPSGROUP:_UpdatePosition()
 if self:IsExist()then
@@ -68067,6 +68168,10 @@ TRANSPORTHELO="TransportHelo",
 ATTACKHELO="AttackHelo",
 UAV="UAV",
 OTHER="Other",
+}
+FLIGHTGROUP.RadioMessage={
+AIRBORNE={normal="Airborn",enhanced="Airborn"},
+TAXIING={normal="Taxiing",enhanced="Taxiing"},
 }
 FLIGHTGROUP.version="0.7.1"
 function FLIGHTGROUP:New(group)
@@ -71167,7 +71272,8 @@ if ammo.Total==0 then
 self:T(self.lid.."WARNING: Cannot engage TARGET because no ammo left!")
 return false
 end
-if self.currentmission and self.currentmission>0 then
+local mission=self:GetMissionCurrent()
+if mission and mission.type~=AUFTRAG.Type.GROUNDATTACK then
 self:T(self.lid.."Engage command but have current mission ==> Pausing mission!")
 self:PauseMission()
 dt=-0.1
@@ -71222,6 +71328,11 @@ function ARMYGROUP:onafterDisengage(From,Event,To)
 self:T(self.lid.."Disengage Target")
 self:SwitchROE(self.engage.roe)
 self:SwitchAlarmstate(self.engage.alarmstate)
+local task=self:GetTaskCurrent()
+if task and task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK then
+self:T(self.lid.."Disengage with current task GROUNDATTACK ==> Task Done!")
+self:TaskDone(task)
+end
 if self.engage.Waypoint then
 self:RemoveWaypointByID(self.engage.Waypoint.uid)
 end
@@ -71366,8 +71477,10 @@ engageRange=nil,
 tacanChannel={},
 weightAsset=99999,
 cargobayLimit=0,
+descriptors={},
+properties={},
 }
-COHORT.version="0.1.0"
+COHORT.version="0.2.0"
 function COHORT:New(TemplateGroupName,Ngroups,CohortName)
 local self=BASE:Inherit(self,FSM:New())
 self.templatename=TemplateGroupName
@@ -71381,6 +71494,8 @@ end
 self.attribute=self.templategroup:GetAttribute()
 self.category=self.templategroup:GetCategory()
 self.aircrafttype=self.templategroup:GetTypeName()
+self.descriptors=self.templategroup:GetUnit(1):GetDesc()
+self.properties=self.descriptors.attributes
 self.Ngroups=Ngroups or 3
 self:SetSkill(AI.Skill.GOOD)
 if self.category==Group.Category.AIRPLANE then
@@ -71458,6 +71573,14 @@ end
 end
 self:T2(self.missiontypes)
 return self
+end
+function COHORT:HasProperty(Property)
+for _,property in pairs(self.properties)do
+if Property==property then
+return true
+end
+end
+return false
 end
 function COHORT:GetMissionTypes()
 local missiontypes={}
@@ -72783,7 +72906,7 @@ return assigned
 end
 return true
 end
-function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,Categories,Attributes)
+function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,Categories,Attributes,Properties)
 local Assets={}
 local Legions={}
 if MissionTypeOpt==nil then
@@ -72813,6 +72936,20 @@ else
 return true
 end
 end
+local function CheckProperty(_cohort)
+local cohort=_cohort
+if Properties and#Properties>0 then
+for _,Property in pairs(Properties)do
+for _,property in pairs(cohort.properties)do
+if Property==property then
+return true
+end
+end
+end
+else
+return true
+end
+end
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
 local TargetDistance=TargetVec2 and UTILS.VecDist2D(TargetVec2,cohort.legion:GetVec2())or 0
@@ -72830,9 +72967,10 @@ local Capable=AUFTRAG.CheckMissionCapability({MissionTypeRecruit},cohort.mission
 local CanCarry=CargoWeight and cohort.cargobayLimit>=CargoWeight or true
 local RightCategory=CheckCategory(cohort)
 local RightAttribute=CheckAttribute(cohort)
-cohort:T(cohort.lid..string.format("State=%s: Capable=%s, InRange=%s, Refuel=%s, CanCarry=%s, RightCategory=%s, RightAttribute=%s",
-cohort:GetState(),tostring(Capable),tostring(InRange),tostring(Refuel),tostring(CanCarry),tostring(RightCategory),tostring(RightAttribute)))
-if cohort:IsOnDuty()and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute then
+local RightProperty=CheckProperty(cohort)
+cohort:T2(cohort.lid..string.format("State=%s: Capable=%s, InRange=%s, Refuel=%s, CanCarry=%s, RightCategory=%s, RightAttribute=%s, RightProperty=%s",
+cohort:GetState(),tostring(Capable),tostring(InRange),tostring(Refuel),tostring(CanCarry),tostring(RightCategory),tostring(RightAttribute),tostring(RightProperty)))
+if cohort:IsOnDuty()and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute and RightProperty then
 local assets,npayloads=cohort:RecruitAssets(MissionTypeRecruit,999)
 for _,asset in pairs(assets)do
 table.insert(Assets,asset)
@@ -81350,12 +81488,6 @@ if self.markZone then
 self.marker:Remove()
 end
 self:UnHandleEvent(EVENTS.BaseCaptured)
-for _,_entry in pairs(self.Missions or{})do
-local entry=_entry
-if entry.Mission and entry.Mission:IsNotOver()then
-entry.Mission:Cancel()
-end
-end
 self.CallScheduler:Clear()
 if self.Scheduler then
 self.Scheduler:Clear()
@@ -81721,7 +81853,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.2.0"
+CHIEF.version="0.3.0"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -81794,6 +81926,47 @@ if Defcon~=self.Defcon then
 self:DefconChange(Defcon)
 end
 self.Defcon=Defcon
+return self
+end
+function CHIEF:CreateResource(MissionType,Nmin,Nmax,Attributes,Properties)
+local resource={}
+self:AddToResource(resource,MissionType,Nmin,Nmax,Attributes,Properties)
+return resource
+end
+function CHIEF:AddToResource(Resource,MissionType,Nmin,Nmax,Attributes,Properties)
+if Attributes and type(Attributes)~="table"then
+Attributes={Attributes}
+end
+if Properties and type(Properties)~="table"then
+Properties={Properties}
+end
+local resource={}
+resource.MissionType=MissionType
+resource.Nmin=Nmin or 1
+resource.Nmax=Nmax or 1
+resource.Attributes=Attributes or{}
+resource.Properties=Properties or{}
+table.insert(Resource,resource)
+if self.verbose>10 then
+local text="Resource:"
+for _,_r in pairs(Resource)do
+local r=_r
+text=text..string.format("\nmission=%s, Nmin=%d, Nmax=%d, attribute=%s, properties=%s",r.MissionType,r.Nmin,r.Nmax,tostring(r.Attributes[1]),tostring(r.Properties[1]))
+end
+self:I(self.lid..text)
+end
+return self
+end
+function CHIEF:DeleteFromResource(Resource,MissionType)
+for i=#Resource,1,-1 do
+local resource=Resource[i]
+if resource.MissionType==MissionType then
+if resource.mission and resource.mission:IsNotOver()then
+resource.mission:Cancel()
+end
+table.remove(Resource,i)
+end
+end
 return self
 end
 function CHIEF:GetDefcon(Defcon)
@@ -81890,12 +82063,39 @@ local stratzone={}
 stratzone.opszone=OpsZone
 stratzone.prio=Priority or 50
 stratzone.importance=Importance
+stratzone.missions={}
 if OpsZone:IsStopped()then
 OpsZone:Start()
 end
+stratzone.resourceOccup=self:CreateResource(AUFTRAG.Type.ARTY,1,2)
+self:AddToResource(stratzone.resourceOccup,AUFTRAG.Type.CASENHANCED,1,2)
+stratzone.resourceEmpty=self:CreateResource(AUFTRAG.Type.ONGUARD,1,3,GROUP.Attribute.GROUND_INFANTRY)
+self:AddToResource(stratzone.resourceEmpty,AUFTRAG.Type.ONGUARD,1,1,GROUP.Attribute.GROUND_TANK)
 table.insert(self.zonequeue,stratzone)
 OpsZone:_AddChief(self)
+return stratzone
+end
+function CHIEF:SetStrategicZoneResourceEmpty(StrategicZone,Resource,NoCopy)
+if NoCopy then
+StrategicZone.resourceEmpty=Resource
+else
+StrategicZone.resourceEmpty=UTILS.DeepCopy(Resource)
+end
 return self
+end
+function CHIEF:SetStrategicZoneResourceOccupied(StrategicZone,Resource,NoCopy)
+if NoCopy then
+StrategicZone.resourceOccup=Resource
+else
+StrategicZone.resourceOccup=UTILS.DeepCopy(Resource)
+end
+return self
+end
+function CHIEF:GetStrategicZoneResourceEmpty(StrategicZone)
+return StrategicZone.resourceEmpty
+end
+function CHIEF:GetStrategicZoneResourceOccupied(StrategicZone)
+return StrategicZone.resourceOccup
 end
 function CHIEF:RemoveStrategicZone(OpsZone,Delay)
 if Delay and Delay>0 then
@@ -81905,10 +82105,16 @@ for i=#self.zonequeue,1,-1 do
 local stratzone=self.zonequeue[i]
 if OpsZone.zoneName==stratzone.opszone.zoneName then
 self:T(self.lid..string.format("Removing OPS zone \"%s\" from queue! All running missions will be cancelled",OpsZone.zoneName))
-for _,_entry in pairs(OpsZone.Missions or{})do
-local entry=_entry
-if entry.Coalition==self.coalition and entry.Mission and entry.Mission:IsNotOver()then
-entry.Mission:Cancel()
+for _,_resource in pairs(stratzone.resourceEmpty)do
+local resource=_resource
+if resource.mission and resource.mission:IsNotOver()then
+resource.mission:Cancel()
+end
+end
+for _,_resource in pairs(stratzone.resourceOccup)do
+local resource=_resource
+if resource.mission and resource.mission:IsNotOver()then
+resource.mission:Cancel()
 end
 end
 table.remove(self.zonequeue,i)
@@ -82182,9 +82388,10 @@ local NmissionsTotal=#self.commander.missionqueue
 local NmissionsRunni=self.commander:CountMissions(AUFTRAG.Type,true)
 local Ntargets=#self.targetqueue
 local Nzones=#self.zonequeue
+local Nagents=self.detectionset:CountAlive()
 local text=string.format("Tactical Overview\n")
 text=text..string.format("=================\n")
-text=text..string.format("Strategy: %s - Defcon: %s\n",self.strategy,self.Defcon)
+text=text..string.format("Strategy: %s - Defcon: %s - Agents=%s\n",self.strategy,self.Defcon,Nagents)
 text=text..string.format("Contacts: %d [Border=%d, Conflict=%d, Attack=%d]\n",Ncontacts,self.Nborder,self.Nconflict,self.Nattack)
 text=text..string.format("Assets: %d [Active=%d, Stock=%d]\n",NassetsTotal,NassetsTotal-NassetsStock,NassetsStock)
 text=text..string.format("Targets: %d\n",Ntargets)
@@ -82330,12 +82537,30 @@ end
 return l
 end
 function CHIEF:CheckOpsZoneQueue()
-if self:IsPassive()then
-return
-end
 local Nzones=#self.zonequeue
 if Nzones==0 then
 return nil
+end
+for i=Nzones,1,-1 do
+local stratzone=self.zonequeue[i]
+if stratzone.opszone:IsStopped()then
+self:RemoveStrategicZone(stratzone.opszone)
+end
+end
+for _,_startzone in pairs(self.zonequeue)do
+local stratzone=_startzone
+local ownercoalition=stratzone.opszone:GetOwner()
+if ownercoalition==self.coalition or stratzone.opszone:IsEmpty()then
+for _,_resource in pairs(stratzone.resourceOccup or{})do
+local resource=_resource
+if resource.mission then
+resource.mission:Cancel()
+end
+end
+end
+end
+if self:IsPassive()then
+return
 end
 local NoLimit=self:_CheckMissionLimit("Total")
 if NoLimit==false then
@@ -82357,54 +82582,38 @@ end
 for _,_startzone in pairs(self.zonequeue)do
 local stratzone=_startzone
 local ownercoalition=stratzone.opszone:GetOwner()
+local zoneName=stratzone.opszone.zone:GetName()
 if ownercoalition~=self.coalition and(stratzone.importance==nil or stratzone.importance<=vip)and(not stratzone.opszone:IsStopped())then
-local hasMissionPatrol=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ONGUARD)or stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARMOREDGUARD)
-local hasMissionCAS=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.CASENHANCED)
-local hasMissionARTY=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARTY)
-self:T(self.lid..string.format("Zone %s [%s] is owned by coalition %d",stratzone.opszone.zone:GetName(),stratzone.opszone:GetState(),ownercoalition))
+self:T(self.lid..string.format("Zone %s [%s] is owned by coalition %d",zoneName,stratzone.opszone:GetState(),ownercoalition))
 if stratzone.opszone:IsEmpty()then
-if not hasMissionPatrol then
-self:T3(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets"))
-local recruitedI=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ONGUARD,1,3,{Group.Category.GROUND},{GROUP.Attribute.GROUND_INFANTRY})
-local recruitedT=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ARMOREDGUARD,1,1,{Group.Category.GROUND},{GROUP.Attribute.GROUND_TANK})
-self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone infantry assets=%s",tostring(recruitedI)))
-self:T(self.lid..string.format("Zone is empty ==> Recruit Patrol zone armored assets=%s",tostring(recruitedT)))
+for _,_resource in pairs(stratzone.resourceEmpty or{})do
+local resource=_resource
+local missionType=resource.MissionType
+if(not resource.mission)or resource.mission:IsOver()then
+self:T2(self.lid..string.format("Zone \"%s\" is empty ==> Recruiting for mission type %s: Nmin=%d, Nmax=%d",zoneName,missionType,resource.Nmin,resource.Nmax))
+local recruited=self:RecruitAssetsForZone(stratzone,resource)
+if recruited then
+self:T(self.lid..string.format("Successfully recruited assets for empty zone \"%s\" [mission type=%s]",zoneName,missionType))
+else
+self:T(self.lid..string.format("Could not recruited assets for empty zone \"%s\" [mission type=%s]",zoneName,missionType))
+end
+end
 end
 else
-if not hasMissionCAS then
-self:T3(self.lid..string.format("Zone is NOT empty ==> Recruit CAS assets"))
-local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.CASENHANCED,1,1)
-self:T(self.lid..string.format("Zone is NOT empty ==> Recruit CAS assets=%s",tostring(recruited)))
-end
-if not hasMissionARTY then
-self:T3(self.lid..string.format("Zone is NOT empty ==> Recruit ARTY assets"))
-local recruited=self:RecruitAssetsForZone(stratzone,AUFTRAG.Type.ARTY,1,1)
-self:T(self.lid..string.format("Zone is NOT empty ==> Recruit ARTY assets=%s",tostring(recruited)))
-end
-end
-end
-end
-for _,_startzone in pairs(self.zonequeue)do
-local stratzone=_startzone
-local ownercoalition=stratzone.opszone:GetOwner()
-local hasMissionPATROL=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.PATROLZONE)
-local hasMissionCAS,CASMissions=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.CASENHANCED)
-local hasMissionARTY,ARTYMissions=stratzone.opszone:_FindMissions(self.coalition,AUFTRAG.Type.ARTY)
-if ownercoalition==self.coalition and stratzone.opszone:IsEmpty()and hasMissionCAS then
-for _,_auftrag in pairs(CASMissions)do
-_auftrag:Cancel()
-end
-end
-if ownercoalition==self.coalition and hasMissionARTY then
-for _,_auftrag in pairs(ARTYMissions)do
-_auftrag:Cancel()
+for _,_resource in pairs(stratzone.resourceOccup or{})do
+local resource=_resource
+local missionType=resource.MissionType
+if(not resource.mission)or resource.mission:IsOver()then
+self:T2(self.lid..string.format("Zone %s is NOT empty ==> Recruiting for mission type %s: Nmin=%d, Nmax=%d",zoneName,missionType,resource.Nmin,resource.Nmax))
+local recruited=self:RecruitAssetsForZone(stratzone,resource)
+if recruited then
+self:T(self.lid..string.format("Successfully recruited assets for occupied zone %s, mission type=%s",zoneName,missionType))
+else
+self:T(self.lid..string.format("Could not recruited assets for occupied zone %s, mission type=%s",zoneName,missionType))
 end
 end
 end
-for i=#self.zonequeue,1,-1 do
-local stratzone=self.zonequeue[i]
-if stratzone.opszone:IsStopped()then
-self:RemoveStrategicZone(stratzone.opszone)
+end
 end
 end
 end
@@ -82550,7 +82759,7 @@ local TargetVec2=Target:GetVec2()
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2)
 return recruited,assets,legions
 end
-function CHIEF:RecruitAssetsForZone(StratZone,MissionType,NassetsMin,NassetsMax,Categories,Attributes)
+function CHIEF:RecruitAssetsForZone(StratZone,Resource)
 local Cohorts={}
 for _,_legion in pairs(self.commander.legions)do
 local legion=_legion
@@ -82562,6 +82771,12 @@ table.insert(Cohorts,cohort)
 end
 end
 end
+local MissionType=Resource.MissionType
+local NassetsMin=Resource.Nmax
+local NassetsMax=Resource.Nmax
+local Categories=Resource.Categories
+local Attributes=Resource.Attributes
+local Properties=Resource.Properties
 local TargetVec2=StratZone.opszone.zone:GetVec2()
 local RangeMax=nil
 if MissionType==AUFTRAG.Type.PATROLZONE or MissionType==AUFTRAG.Type.ONGUARD then
@@ -82570,99 +82785,85 @@ end
 if MissionType==AUFTRAG.Type.ARMOREDGUARD then
 RangeMax=UTILS.NMToMeters(50)
 end
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,nil,Categories,Attributes)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,nil,Categories,Attributes,Properties)
 if recruited then
+local mission=nil
 self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zone %s",#assets,MissionType,tostring(StratZone.opszone.zoneName)))
+local TargetZone=StratZone.opszone.zone
+local TargetCoord=TargetZone:GetCoordinate()
 if MissionType==AUFTRAG.Type.PATROLZONE or MissionType==AUFTRAG.Type.ONGUARD then
 self:T2(self.lid..string.format("Recruited %d assets for PATROL mission",#assets))
-local recruitedTrans=true
-local transport=nil
+local recruitedTrans=true;local transport=nil
 if Attributes and Attributes[1]==GROUP.Attribute.GROUND_INFANTRY then
 local Categories=self.TransportCategories
-recruitedTrans,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,assets,1,1,StratZone.opszone.zone,nil,Categories)
+recruitedTrans,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,assets,1,1,TargetZone,nil,Categories)
 end
 if recruitedTrans then
-local mission=nil
 if MissionType==AUFTRAG.Type.PATROLZONE then
-mission=AUFTRAG:NewPATROLZONE(StratZone.opszone.zone)
-mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
+mission=AUFTRAG:NewPATROLZONE(TargetZone)
 elseif MissionType==AUFTRAG.Type.ONGUARD then
-mission=AUFTRAG:NewONGUARD(StratZone.opszone.zone:GetRandomCoordinate(),nil,nil,{land.SurfaceType.LAND})
+mission=AUFTRAG:NewONGUARD(TargetZone:GetRandomCoordinate(nil,nil,{land.SurfaceType.LAND}))
 end
-mission:SetEngageDetected()
-for _,asset in pairs(assets)do
-mission:AddAsset(asset)
-end
+mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
 mission.opstransport=transport
-self:MissionAssign(mission,legions)
-StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
+if transport then
 transport.opszone=StratZone.opszone
 transport.chief=self
 transport.commander=self.commander
-return true
+end
 else
+self:T(self.lid..string.format("Could not allocate transport of OPSZONE infantry!"))
 LEGION.UnRecruitAssets(assets)
 return false
 end
 elseif MissionType==AUFTRAG.Type.CASENHANCED then
-local caszone=StratZone.opszone.zone
-local coord=caszone:GetCoordinate()
-local height=UTILS.MetersToFeet(coord:GetLandHeight())+2500
+local height=UTILS.MetersToFeet(TargetCoord:GetLandHeight())+2500
 local Speed=200
 if assets[1]then
 if assets[1].speedmax then
 Speed=UTILS.KmphToKnots(assets[1].speedmax*0.7)or 200
 end
 end
-local mission=AUFTRAG:NewCASENHANCED(caszone,height,Speed)
-for _,asset in pairs(assets)do
-mission:AddAsset(asset)
-end
-self:MissionAssign(mission,legions)
-StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
-return true
+mission=AUFTRAG:NewCASENHANCED(TargetZone,height,Speed)
 elseif MissionType==AUFTRAG.Type.CAS then
-local caszone=StratZone.opszone.zone
-local coord=caszone:GetCoordinate()
-local height=UTILS.MetersToFeet(coord:GetLandHeight())+2500
+local height=UTILS.MetersToFeet(TargetCoord:GetLandHeight())+2500
 local Speed=200
 if assets[1]then
 if assets[1].speedmax then
 Speed=UTILS.KmphToKnots(assets[1].speedmax*0.7)or 200
 end
 end
-local Leg=caszone:GetRadius()<=10000 and 5 or UTILS.MetersToNM(caszone:GetRadius())
-local mission=AUFTRAG:NewCAS(caszone,height,Speed,coord,math.random(0,359),Leg)
-mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
-mission:SetWeaponExpend(AI.Task.WeaponExpend.ALL)
-mission:SetMissionSpeed(Speed)
-for _,asset in pairs(assets)do
-mission:AddAsset(asset)
-end
-self:MissionAssign(mission,legions)
-StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
-return true
+local Leg=TargetZone:GetRadius()<=10000 and 5 or UTILS.MetersToNM(TargetZone:GetRadius())
+mission=AUFTRAG:NewCAS(TargetZone,height,Speed,TargetCoord,math.random(0,359),Leg)
 elseif MissionType==AUFTRAG.Type.ARTY then
-local TargetZone=StratZone.opszone.zone
-local Target=TargetZone:GetCoordinate()
 local Radius=TargetZone:GetRadius()
-local mission=AUFTRAG:NewARTY(Target,120,Radius)
-for _,asset in pairs(assets)do
-mission:AddAsset(asset)
-end
-self:MissionAssign(mission,legions)
-StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
-return true
+mission=AUFTRAG:NewARTY(TargetCoord,120,Radius)
 elseif MissionType==AUFTRAG.Type.ARMOREDGUARD then
-local TargetZone=StratZone.opszone.zone
-local Target=TargetZone:GetCoordinate()
-local mission=AUFTRAG:NewARMOREDGUARD(Target)
+mission=AUFTRAG:NewARMOREDGUARD(TargetCoord)
+elseif MissionType==AUFTRAG.Type.BOMBCARPET then
+mission=AUFTRAG:NewBOMBCARPET(TargetCoord,nil,1000)
+elseif MissionType==AUFTRAG.Type.BOMBING then
+local coord=TargetZone:GetRandomCoordinate()
+mission=AUFTRAG:NewBOMBING(TargetCoord)
+elseif MissionType==AUFTRAG.Type.RECON then
+mission=AUFTRAG:NewRECON(TargetZone,nil,5000)
+elseif MissionType==AUFTRAG.Type.BARRAGE then
+mission=AUFTRAG:NewBARRAGE(TargetZone)
+elseif MissionType==AUFTRAG.Type.AMMOSUPPLY then
+mission=AUFTRAG:NewAMMOSUPPLY(TargetZone)
+end
+if mission then
 for _,asset in pairs(assets)do
 mission:AddAsset(asset)
 end
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
+Resource.mission=mission
 return true
+else
+self:E(self.lid..string.format("ERROR: Mission type not supported for OPSZONE! Unrecruiting assets..."))
+LEGION.UnRecruitAssets(assets)
+return false
 end
 end
 self:T2(self.lid..string.format("Could NOT recruit assets for %s mission of STRATEGIC zone %s",MissionType,tostring(StratZone.opszone.zoneName)))
