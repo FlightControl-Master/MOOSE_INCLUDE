@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-01T17:36:00.0000000Z-559be38baf0a05ee108cc3c8cebc7f7d892615bb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-01T17:37:55.0000000Z-3b9a9cb0fa1991f0d95effaf0f7d5ed171a53716 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -48942,7 +48942,7 @@ self.ICLSon=true
 return self
 end
 function AIRBOSS:SetBeaconRefresh(interval)
-self.dTbeacon=interval or 20*60
+self.dTbeacon=interval or(20*60)
 return self
 end
 function AIRBOSS:SetLSORadio(frequency,modulation)
@@ -50851,6 +50851,7 @@ local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
 local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
+local goshawk=playerData.actype==AIRBOSS.AircraftCarrier.T45C
 local alt
 local aoa
 local dist
@@ -78308,7 +78309,6 @@ FreeVHFFrequencies={},
 FreeUHFFrequencies={},
 FreeFMFrequencies={},
 CargoCounter=0,
-wpZones={},
 Cargo_Troops={},
 Cargo_Crates={},
 Loaded_Cargo={},
@@ -78809,6 +78809,8 @@ local inzone=false
 local drop=drop or false
 local ship=nil
 local width=20
+local distance=nil
+local zone=nil
 if not drop then
 inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
@@ -81187,7 +81189,7 @@ self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_n
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,5)
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,10)
 else
-self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
+self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
 end
 else
 if all_cargo_gets_destroyed==true or Cargo_over_water==true then
