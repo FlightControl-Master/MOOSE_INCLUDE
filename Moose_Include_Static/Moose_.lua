@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-01T10:33:31.0000000Z-61097de76ded8df5a0aa0c7b99579e7877e94e7d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-01T17:17:31.0000000Z-95649d7d4637cdfb06f50997727c93d0904cfbb4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -17286,6 +17286,105 @@ self:T({self.lid,From,Event,To})
 self:UnHandleEvent(EVENTS.MarkAdded)
 self:UnHandleEvent(EVENTS.MarkChange)
 self:UnHandleEvent(EVENTS.MarkRemoved)
+end
+TEXTANDSOUND={
+ClassName="TEXTANDSOUND",
+version="0.0.1",
+lid="",
+locale="en",
+entries={},
+textclass="",
+}
+function TEXTANDSOUND:New(ClassName,Defaultlocale)
+local self=BASE:Inherit(self,BASE:New())
+self.lid=string.format("%s (%s) | ",self.ClassName,self.version)
+self.locale=Defaultlocale or"en"
+self.textclass=ClassName or"none"
+self.entries={}
+local initentry={}
+initentry.Classname=ClassName
+initentry.Data={}
+initentry.Locale=self.locale
+self.entries[self.locale]=initentry
+self:I(self.lid.."Instatiated.")
+self:T({self.entries[self.locale]})
+return self
+end
+function TEXTANDSOUND:AddEntry(Locale,ID,Text,Soundfile,Soundlength,Subtitle)
+self:T(self.lid.."AddEntry")
+local locale=Locale or self.locale
+local dataentry={}
+dataentry.ID=ID or"1"
+dataentry.Text=Text or"none"
+dataentry.Soundfile=Soundfile
+dataentry.Soundlength=Soundlength or 0
+dataentry.Subtitle=Subtitle
+if not self.entries[locale]then
+local initentry={}
+initentry.Classname=self.textclass
+initentry.Data={}
+initentry.Locale=locale
+self.entries[locale]=initentry
+end
+self.entries[locale].Data[ID]=dataentry
+self:T({self.entries[locale].Data})
+return self
+end
+function TEXTANDSOUND:GetEntry(ID,Locale)
+self:T(self.lid.."GetEntry")
+local locale=Locale or self.locale
+if not self.entries[locale]then
+locale=self.locale
+end
+local Text,Soundfile,Soundlength,Subtitle=nil,nil,0,nil
+if self.entries[locale]then
+if self.entries[locale].Data then
+local data=self.entries[locale].Data[ID]
+if data then
+Text=data.Text
+Soundfile=data.Soundfile
+Soundlength=data.Soundlength
+Subtitle=data.Subtitle
+elseif self.entries[self.locale].Data[ID]then
+local data=self.entries[self.locale].Data[ID]
+Text=data.Text
+Soundfile=data.Soundfile
+Soundlength=data.Soundlength
+Subtitle=data.Subtitle
+end
+end
+else
+return nil,nil,0,nil
+end
+return Text,Soundfile,Soundlength,Subtitle
+end
+function TEXTANDSOUND:GetDefaultLocale()
+self:T(self.lid.."GetDefaultLocale")
+return self.locale
+end
+function TEXTANDSOUND:SetDefaultLocale(locale)
+self:T(self.lid.."SetDefaultLocale")
+self.locale=locale or"en"
+return self
+end
+function TEXTANDSOUND:HasLocale(Locale)
+self:T(self.lid.."HasLocale")
+return self.entries[Locale]and true or false
+end
+function TEXTANDSOUND:FlushToLog()
+self:I(self.lid.."Flushing entries:")
+local text=string.format("Textclass: %s | Default Locale: %s",self.textclass,self.locale)
+for _,_entry in pairs(self.entries)do
+local entry=_entry
+local text=string.format("Textclassname: %s | Locale: %s",entry.Classname,entry.Locale)
+self:I(text)
+for _ID,_data in pairs(entry.Data)do
+local data=_data
+local text=string.format("ID: %s\nText: %s\nSoundfile: %s With length: %d\nSubtitle: %s",tostring(_ID),data.Text or"none",data.Soundfile or"none",data.Soundlength or 0,data.Subtitle or"none")
+self:I(text)
+end
+end
+return self
 end
 OBJECT={
 ClassName="OBJECT",
