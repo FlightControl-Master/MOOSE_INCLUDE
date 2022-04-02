@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-01T17:37:55.0000000Z-3b9a9cb0fa1991f0d95effaf0f7d5ed171a53716 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-02T10:49:09.0000000Z-e623f45c047d5c82f9694c8a34b5a85ff61df3b8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47803,7 +47803,7 @@ return self
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.0.4",
+version="0.0.5",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -47833,8 +47833,11 @@ DCSModulation=radio.modulation.AM,
 DCSRadioGroup=nil,
 limithelos=true,
 helonumber=3,
+gettext=nil,
+locale="en",
 }
 AICSAR.Messages={
+EN={
 INITIALOK="Roger, Pilot, we hear you. Stay where you are, a helo is on the way!",
 INITIALNOTOK="Sorry, Pilot. You're behind maximum operational distance! Good Luck!",
 PILOTDOWN="Pilot down at ",
@@ -47842,8 +47845,19 @@ PILOTKIA="Pilot KIA!",
 HELODOWN="CSAR Helo Down!",
 PILOTRESCUED="Pilot rescued!",
 PILOTINHELO="Pilot picked up!",
+},
+DE={
+INITIALOK="Copy, Pilot, wir hören Sie. Bleiben Sie, wo Sie sind!\nEin Hubschrauber sammelt Sie auf!",
+INITIALNOTOK="Verstehe, Pilot. Sie sind zu weit weg von uns.\nViel Glück!",
+PILOTDOWN="Pilot abgestürzt: ",
+PILOTKIA="Pilot gefallen!",
+HELODOWN="CSAR Hubschrauber verloren!",
+PILOTRESCUED="Pilot gerettet!",
+PILOTINHELO="Pilot an Bord geholt!",
+},
 }
 AICSAR.RadioMessages={
+EN={
 INITIALOK="initialok.ogg",
 INITIALNOTOK="initialnotok.ogg",
 PILOTDOWN="pilotdown.ogg",
@@ -47851,8 +47865,10 @@ PILOTKIA="pilotkia.ogg",
 HELODOWN="helodown.ogg",
 PILOTRESCUED="pilotrescued.ogg",
 PILOTINHELO="pilotinhelo.ogg",
+},
 }
 AICSAR.RadioLength={
+EN={
 INITIALOK=4.1,
 INITIALNOTOK=4.6,
 PILOTDOWN=2.6,
@@ -47860,6 +47876,7 @@ PILOTKIA=1.1,
 HELODOWN=2.1,
 PILOTRESCUED=3.5,
 PILOTINHELO=2.6,
+},
 }
 function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone)
 local self=BASE:Inherit(self,FSM:New())
@@ -47911,6 +47928,7 @@ self.DCSRadioQueue=nil
 self.MGRS_Accuracy=2
 self.limithelos=true
 self.helonumber=3
+self:InitLocalization()
 self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -47925,6 +47943,26 @@ self:HandleEvent(EVENTS.LandingAfterEjection)
 self:__Start(math.random(2,5))
 local text=string.format("%sAICSAR Version %s Starting",self.lid,self.version)
 self:I(text)
+return self
+end
+function AICSAR:InitLocalization()
+self:T(self.lid.."InitLocalization")
+self.gettext=TEXTANDSOUND:New(self.ClassName,"en")
+self.gettext:AddEntry("en","INITIALOK",AICSAR.Messages.EN.INITIALOK,AICSAR.RadioMessages.EN.INITIALOK,AICSAR.RadioLength.INITIALOK)
+self.gettext:AddEntry("en","INITIALNOTOK",AICSAR.Messages.EN.INITIALNOTOK,AICSAR.RadioMessages.EN.INITIALNOTOK,AICSAR.RadioLength.EN.INITIALNOTOK)
+self.gettext:AddEntry("en","HELODOWN",AICSAR.Messages.EN.HELODOWN,AICSAR.RadioMessages.EN.HELODOWN,AICSAR.RadioLength.EN.HELODOWN)
+self.gettext:AddEntry("en","PILOTDOWN",AICSAR.Messages.EN.PILOTDOWN,AICSAR.RadioMessages.EN.PILOTDOWN,AICSAR.RadioLength.EN.PILOTDOWN)
+self.gettext:AddEntry("en","PILOTINHELO",AICSAR.Messages.EN.PILOTINHELO,AICSAR.RadioMessages.EN.PILOTINHELO,AICSAR.RadioLength.EN.PILOTINHELO)
+self.gettext:AddEntry("en","PILOTKIA",AICSAR.Messages.EN.PILOTKIA,AICSAR.RadioMessages.EN.PILOTKIA,AICSAR.RadioLength.EN.PILOTKIA)
+self.gettext:AddEntry("en","PILOTRESCUED",AICSAR.Messages.EN.PILOTRESCUED,AICSAR.RadioMessages.EN.PILOTRESCUED,AICSAR.RadioLength.EN.PILOTRESCUED)
+self.gettext:AddEntry("de","INITIALOK",AICSAR.Messages.DE.INITIALOK,AICSAR.RadioMessages.EN.INITIALOK,AICSAR.RadioLength.INITIALOK)
+self.gettext:AddEntry("de","INITIALNOTOK",AICSAR.Messages.DE.INITIALNOTOK,AICSAR.RadioMessages.EN.INITIALNOTOK,AICSAR.RadioLength.EN.INITIALNOTOK)
+self.gettext:AddEntry("de","HELODOWN",AICSAR.Messages.DE.HELODOWN,AICSAR.RadioMessages.EN.HELODOWN,AICSAR.RadioLength.EN.HELODOWN)
+self.gettext:AddEntry("de","PILOTDOWN",AICSAR.Messages.DE.PILOTDOWN,AICSAR.RadioMessages.EN.PILOTDOWN,AICSAR.RadioLength.EN.PILOTDOWN)
+self.gettext:AddEntry("de","PILOTINHELO",AICSAR.Messages.DE.PILOTINHELO,AICSAR.RadioMessages.EN.PILOTINHELO,AICSAR.RadioLength.EN.PILOTINHELO)
+self.gettext:AddEntry("de","PILOTKIA",AICSAR.Messages.DE.PILOTKIA,AICSAR.RadioMessages.EN.PILOTKIA,AICSAR.RadioLength.EN.PILOTKIA)
+self.gettext:AddEntry("de","PILOTRESCUED",AICSAR.Messages.DE.PILOTRESCUED,AICSAR.RadioMessages.EN.PILOTRESCUED,AICSAR.RadioLength.EN.PILOTRESCUED)
+self.locale="en"
 return self
 end
 function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath)
@@ -47977,19 +48015,21 @@ local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
 local _country=_event.initiator:getCountry()
 local _coalition=coalition.getCountryCoalition(_country)
 local distancetofarp=_LandingPos:Get2DDistance(self.farp:GetCoordinate())
+local Text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTDOWN",self.locale)
+local text=""
 if _coalition==self.coalition then
 if self.verbose then
 local setting={}
 setting.MGRS_Accuracy=self.MGRS_Accuracy
 local location=_LandingPos:ToStringMGRS(setting)
-local text=AICSAR.Messages.PILOTDOWN..location.."!"
+text=Text..location.."!"
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTDOWN,nil,AICSAR.RadioLength.PILOTDOWN)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTDOWN,AICSAR.RadioLength.PILOTDOWN,AICSAR.Messages.PILOTDOWN)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 end
 if _coalition==self.coalition and distancetofarp<=self.maxdistance then
@@ -48140,55 +48180,57 @@ self:T({From,Event,To})
 local CoordinateText=Coordinate:ToStringMGRS()
 local inreach=tostring(InReach)
 if InReach then
-local text=AICSAR.Messages.INITIALOK
+local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("INITIALOK",self.locale)
 self:T(text)
 if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALOK,nil,AICSAR.RadioLength.INITIALOK)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.INITIALOK,AICSAR.RadioLength.INITIALOK,AICSAR.Messages.INITIALOK)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 else
-local text=AICSAR.Messages.INITIALNOTOK
+local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("INITIALNOTOK",self.locale)
 self:T(text)
 if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.INITIALNOTOK,nil,AICSAR.RadioLength.INITIALNOTOK)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.INITIALNOTOK,AICSAR.RadioLength.INITIALNOTOK,AICSAR.Messages.INITIALNOTOK)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 end
 return self
 end
 function AICSAR:onafterPilotKIA(From,Event,To)
 self:T({From,Event,To})
+local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTKIA",self.locale)
 if self.verbose then
-MESSAGE:New(AICSAR.Messages.PILOTKIA,15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTKIA,nil,AICSAR.RadioLength.PILOTKIA)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTKIA,AICSAR.RadioLength.PILOTKIA,AICSAR.Messages.PILOTKIA)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 return self
 end
 function AICSAR:onafterHeloDown(From,Event,To,Helo,Index)
 self:T({From,Event,To})
+local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("HELODOWN",self.locale)
 if self.verbose then
-MESSAGE:New(AICSAR.Messages.HELODOWN,15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.HELODOWN,nil,AICSAR.RadioLength.HELODOWN)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.HELODOWN,AICSAR.RadioLength.HELODOWN,AICSAR.Messages.HELODOWN)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 local findex=0
 local fhname=Helo:GetName()
@@ -48220,27 +48262,29 @@ return self
 end
 function AICSAR:onafterPilotRescued(From,Event,To)
 self:T({From,Event,To})
+local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTRESCUED",self.locale)
 if self.verbose then
-MESSAGE:New(AICSAR.Messages.PILOTRESCUED,15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTRESCUED,nil,AICSAR.RadioLength.PILOTRESCUED)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTRESCUED,AICSAR.RadioLength.PILOTRESCUED,AICSAR.Messages.PILOTRESCUED)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 return self
 end
 function AICSAR:onafterPilotPickedUp(From,Event,To,Helo,CargoTable,Index)
 self:T({From,Event,To})
+local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTINHELO",self.locale)
 if self.verbose then
-MESSAGE:New(AICSAR.Messages.PILOTINHELO,15,"AICSAR"):ToCoalition(self.coalition)
+MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(AICSAR.RadioMessages.PILOTINHELO,nil,AICSAR.RadioLength.PILOTINHELO)
+local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
-self:DCSRadioBroadcast(AICSAR.RadioMessages.PILOTINHELO,AICSAR.RadioLength.PILOTINHELO,AICSAR.Messages.PILOTINHELO)
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 end
 local findex=0
 local fhname=Helo:GetName()
