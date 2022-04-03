@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-02T10:49:09.0000000Z-e623f45c047d5c82f9694c8a34b5a85ff61df3b8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-03T22:00:51.0000000Z-fc6dac326dc5e69082ea1fe64efb0c366dd1356a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3068,6 +3068,21 @@ TempTable[i]=t[r]
 table.remove(t,r)
 end
 return TempTable
+end
+function UTILS.GetRandomTableElement(t,replace)
+if t==nil or type(t)~="table"then
+BASE:I("Error in ShuffleTable: Missing or wrong type of Argument")
+return
+end
+math.random()
+math.random()
+math.random()
+local r=math.random(#t)
+local element=t[r]
+if not replace then
+table.remove(t,r)
+end
+return element
 end
 function UTILS.IsLoadingDoorOpen(unit_name)
 local ret_val=false
@@ -12100,6 +12115,13 @@ self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
+function SET_ZONE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+for _,_zone in pairs(self.Set)do
+local zone=_zone
+zone:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+end
+return self
+end
 function SET_ZONE:IsIncludeObject(MZone)
 self:F2(MZone)
 local MZoneInclude=true
@@ -12108,7 +12130,8 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-self:T3({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
+env.info(string.format("zone %s %s",MZoneName,ZonePrefix))
+self:I({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
 if string.find(MZoneName,ZonePrefix,1)then
 MZonePrefix=true
 end
@@ -60096,21 +60119,12 @@ mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
 mission.categories={AUFTRAG.Category.ALL}
 mission.DCStask=mission:GetDCSMissionTask()
-mission.DCStask.params.formation=Formation
+mission.DCStask.params.formation=Formation or"Off Road"
 return mission
 end
 function AUFTRAG:NewARMORATTACK(Target,Speed,Formation)
-local mission=AUFTRAG:New(AUFTRAG.Type.ARMORATTACK)
-mission:_TargetFromObject(Target)
-mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.ARMORATTACK)
-mission.optionROE=ENUMS.ROE.OpenFire
-mission.optionAlarm=ENUMS.AlarmState.Auto
-mission.optionFormation="On Road"
-mission.optionAttackFormation=Formation or"Wedge"
-mission.missionFraction=1.0
-mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or 20
-mission.categories={AUFTRAG.Category.GROUND}
-mission.DCStask=mission:GetDCSMissionTask()
+local mission=AUFTRAG:NewGROUNDATTACK(Target,Speed,Formation)
+mission.type=AUFTRAG.Type.ARMORATTACK
 return mission
 end
 function AUFTRAG:NewGROUNDATTACK(Target,Speed,Formation)
@@ -60120,14 +60134,15 @@ mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.GROUNDATTA
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionAlarm=ENUMS.AlarmState.Auto
 mission.optionFormation="On Road"
-mission.optionAttackFormation=Formation or"Wedge"
-mission.missionFraction=0.75
-mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or 20
+mission.missionFraction=0.70
+mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.categories={AUFTRAG.Category.GROUND}
 mission.DCStask=mission:GetDCSMissionTask()
+mission.DCStask.params.speed=Speed
+mission.DCStask.params.formation=Formation or ENUMS.Formation.Vehicle.Vee
 return mission
 end
-function AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly)
+function AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly,Formation)
 local mission=AUFTRAG:New(AUFTRAG.Type.RECON)
 mission:_TargetFromObject(ZoneSet)
 mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.RECON)
@@ -60141,11 +60156,7 @@ mission.categories={AUFTRAG.Category.ALL}
 mission.DCStask=mission:GetDCSMissionTask()
 mission.DCStask.params.adinfinitum=Adinfinitum
 mission.DCStask.params.randomly=Randomly
-if Randomly then
-local targets=mission.DCStask.params.target.targets
-local shuffled=UTILS.ShuffleTable(targets)
-mission.DCStask.params.target.targets=shuffled
-end
+mission.DCStask.params.formation=Formation
 return mission
 end
 function AUFTRAG:NewAMMOSUPPLY(Zone)
@@ -61700,17 +61711,6 @@ param.altitude=self.missionAltitude
 param.speed=self.missionSpeed
 DCStask.params=param
 table.insert(DCStasks,DCStask)
-elseif self.type==AUFTRAG.Type.ARMORATTACK then
-local DCStask={}
-DCStask.id=AUFTRAG.SpecialTask.ARMORATTACK
-local param={}
-param.zone=self:GetObjective()
-param.tVec2=param.zone:GetVec2()
-param.tzone=ZONE_RADIUS:New("ARMORATTACK-Zone-"..self.auftragsnummer,param.tVec2,1000)
-param.action="Wedge"
-param.speed=self.missionSpeed
-DCStask.params=param
-table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.GROUNDATTACK then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.GROUNDATTACK
@@ -62439,7 +62439,7 @@ if coordinate then
 return coordinate
 end
 end
-self:E(self.lid..string.format("ERROR: Cannot get coordinate of target %s",self.name))
+self:E(self.lid..string.format("ERROR: Cannot get coordinate of target %s",tostring(self.name)))
 return nil
 end
 function TARGET:GetCategory()
@@ -64268,18 +64268,27 @@ end
 wp.missionUID=Mission and Mission.auftragsnummer or nil
 elseif Task.dcstask.id=="ReconMission"then
 local target=Task.dcstask.params.target
-self.lastindex=1
-local object=target.targets[1]
+self.reconindecies={}
+for i=1,#target.targets do
+table.insert(self.reconindecies,i)
+end
+local n=1
+if Task.dcstask.params.randomly then
+n=UTILS.GetRandomTableElement(self.reconindecies)
+else
+table.remove(self.reconindecies,n)
+end
+local object=target.targets[n]
 local zone=object.Object
 local Coordinate=zone:GetRandomCoordinate()
-local Speed=UTILS.MpsToKnots(Task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
+local Speed=Task.dcstask.params.speed and UTILS.MpsToKnots(Task.dcstask.params.speed)or UTILS.KmphToKnots(self.speedCruise)
 local Altitude=Task.dcstask.params.altitude and UTILS.MetersToFeet(Task.dcstask.params.altitude)or nil
 local currUID=self:GetWaypointCurrent().uid
 local wp=nil
 if self.isFlightgroup then
 wp=FLIGHTGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 elseif self.isArmygroup then
-wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Formation)
+wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Task.dcstask.params.formation)
 elseif self.isNavygroup then
 wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
@@ -64291,10 +64300,14 @@ if self:IsArmygroup()or self:IsNavygroup()then
 self:FullStop()
 else
 end
-elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK then
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK or Task.dcstask.id==AUFTRAG.SpecialTask.ARMORATTACK then
 local target=Task.dcstask.params.target
+local speed=self.speedMax and UTILS.KmphToKnots(self.speedMax)or nil
+if Task.dcstask.params.speed then
+speed=Task.dcstask.params.speed
+end
 if target then
-self:EngageTarget(target)
+self:EngageTarget(target,speed,Task.dcstask.params.formation)
 end
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
 if self.isFlightgroup then
@@ -64383,7 +64396,7 @@ elseif Task.dcstask.id==AUFTRAG.SpecialTask.ALERT5 then
 done=true
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.ONGUARD or Task.dcstask.id==AUFTRAG.SpecialTask.ARMOREDGUARD then
 done=true
-elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK then
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK or Task.dcstask.id==AUFTRAG.SpecialTask.ARMORATTACK then
 done=true
 elseif stopflag==1 or(not self:IsAlive())or self:IsDead()or self:IsStopped()then
 done=true
@@ -64774,14 +64787,6 @@ if mission.type==AUFTRAG.Type.HOVER then
 local zone=mission.engageTarget:GetObject()
 waypointcoord=zone:GetCoordinate()
 end
-local armorwaypointcoord=nil
-if mission.type==AUFTRAG.Type.ARMORATTACK then
-local target=mission.engageTarget:GetObject()
-local zone=mission.DCStask.params.tzone
-waypointcoord=zone:GetRandomCoordinate(0,100,surfacetypes)
-armorwaypointcoord=zone:GetRandomCoordinate(1000,500,surfacetypes)
-self:__EngageTarget(2,target)
-end
 for _,task in pairs(mission.enrouteTasks)do
 self:AddTaskEnroute(task)
 end
@@ -64821,13 +64826,7 @@ local waypoint=nil
 if self:IsFlightgroup()then
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
-if mission.type==AUFTRAG.Type.ARMORATTACK then
-waypoint=ARMYGROUP.AddWaypoint(self,armorwaypointcoord,SpeedToMission,uid,mission.optionFormation,false)
-local attackformation=mission.optionAttackFormation or"Vee"
-waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,nil,attackformation,false)
-else
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,mission.optionFormation,false)
-end
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,mission.missionAltitude or self.altitudeCruise,false)
 end
@@ -64964,8 +64963,19 @@ end
 wp.missionUID=mission and mission.auftragsnummer or nil
 elseif task and task.dcstask.id=="ReconMission"then
 local target=task.dcstask.params.target
-local n=self.lastindex+1
-if n<=#target.targets then
+if self.adinfinitum and#self.reconindecies==0 then
+self.reconindecies={}
+for i=1,#target.targets do
+table.insert(self.reconindecies,i)
+end
+end
+if#self.reconindecies>0 then
+local n=1
+if task.dcstask.params.randomly then
+n=UTILS.GetRandomTableElement(self.reconindecies)
+else
+table.remove(self.reconindecies,n)
+end
 local object=target.targets[n]
 local zone=object.Object
 local Coordinate=zone:GetRandomCoordinate()
@@ -64976,15 +64986,11 @@ local wp=nil
 if self.isFlightgroup then
 wp=FLIGHTGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 elseif self.isArmygroup then
-wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Formation)
+wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,task.dcstask.params.formation)
 elseif self.isNavygroup then
 wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
 wp.missionUID=mission and mission.auftragsnummer or nil
-self.lastindex=self.lastindex+1
-if self.adinfinitum and n==#target.targets then
-self.lastindex=1
-end
 else
 local wpindex=self:GetWaypointIndex(Waypoint.uid)
 if wpindex==nil or wpindex==#self.waypoints then
@@ -68817,7 +68823,7 @@ end
 function FLIGHTGROUP:onafterElementSpawned(From,Event,To,Element)
 self:T(self.lid..string.format("Element spawned %s",Element.name))
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.SPAWNED)
-if Element.unit:InAir(true)then
+if Element.unit:InAir(not self.isHelo)then
 self:__ElementAirborne(0.11,Element)
 else
 local spot=self:GetParkingSpot(Element,10)
@@ -68956,6 +68962,9 @@ local airbase=self:GetClosestAirbase()
 local airbasename=airbase:GetName()or"unknown"
 self:T(self.lid..string.format("Flight is parking at airbase %s",airbasename))
 self.currbase=airbase
+if not self.homebase then
+self.homebase=airbase
+end
 self.Tparking=timer.getAbsTime()
 local flightcontrol=_DATABASE:GetFlightControl(airbasename)
 if flightcontrol then
@@ -71408,7 +71417,7 @@ local pos=self:GetCoordinate()
 local wp=pos:WaypointGround(0)
 self:Route({wp})
 end
-function ARMYGROUP:onbeforeEngageTarget(From,Event,To,Target)
+function ARMYGROUP:onbeforeEngageTarget(From,Event,To,Target,Speed,Formation)
 local dt=nil
 local allowed=true
 local ammo=self:GetAmmoTot()
@@ -71430,7 +71439,7 @@ allowed=false
 end
 return allowed
 end
-function ARMYGROUP:onafterEngageTarget(From,Event,To,Target)
+function ARMYGROUP:onafterEngageTarget(From,Event,To,Target,Speed,Formation)
 self:T(self.lid.."Engaging Target")
 if Target:IsInstanceOf("TARGET")then
 self.engage.Target=Target
@@ -71444,8 +71453,9 @@ self.engage.alarmstate=self:GetAlarmstate()
 self:SwitchAlarmstate(ENUMS.AlarmState.Auto)
 self:SwitchROE(ENUMS.ROE.OpenFire)
 local uid=self:GetWaypointCurrent().uid
-local Formation=ENUMS.Formation.Vehicle.Vee
-self.engage.Waypoint=self:AddWaypoint(intercoord,nil,uid,Formation,true)
+self.engage.Formation=Formation or ENUMS.Formation.Vehicle.Vee
+self.engage.Speed=Speed
+self.engage.Waypoint=self:AddWaypoint(intercoord,self.engage.Speed,uid,self.engage.Formation,true)
 self.engage.Waypoint.detour=1
 end
 function ARMYGROUP:_UpdateEngageTarget()
@@ -71458,7 +71468,7 @@ self.engage.Coordinate:UpdateFromVec3(vec3)
 local uid=self:GetWaypointCurrent().uid
 self:RemoveWaypointByID(self.engage.Waypoint.uid)
 local intercoord=self:GetCoordinate():GetIntermediateCoordinate(self.engage.Coordinate,0.9)
-self.engage.Waypoint=self:AddWaypoint(intercoord,nil,uid,Formation,true)
+self.engage.Waypoint=self:AddWaypoint(intercoord,self.engage.Speed,uid,self.engage.Formation,true)
 self.engage.Waypoint.detour=0
 end
 else
@@ -82826,23 +82836,32 @@ table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.INTERCEPT,1
 elseif category==Group.Category.GROUND or category==Group.Category.TRAIN then
 if attribute==GROUP.Attribute.GROUND_SAM then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.SEAD,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
 elseif attribute==GROUP.Attribute.GROUND_EWR then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.SEAD,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,90))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
 elseif attribute==GROUP.Attribute.GROUND_AAA then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,40))
 elseif attribute==GROUP.Attribute.GROUND_ARTILLERY then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,75))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,70))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBING,70))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,75))
 elseif attribute==GROUP.Attribute.GROUND_INFANTRY then
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,40))
 elseif attribute==GROUP.Attribute.GROUND_TANK then
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,75))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.CAS,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,40))
 else
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
 end
 elseif category==Group.Category.SHIP then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ANTISHIP,100))
