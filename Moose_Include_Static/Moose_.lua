@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T10:57:31.0000000Z-89845883d02951f9f3caa7a4467aa4c934f750aa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T14:53:52.0000000Z-e3d987bbdfcc86a4ab0e667177f3a97dd0ee69d8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8752,12 +8752,13 @@ return GroupTemplate
 end
 function DATABASE:_RegisterStaticTemplate(StaticTemplate,CoalitionID,CategoryID,CountryID)
 local StaticTemplate=UTILS.DeepCopy(StaticTemplate)
-local StaticTemplateName=env.getValueDictByKey(StaticTemplate.name)
+local StaticTemplateGroupName=env.getValueDictByKey(StaticTemplate.name)
+local StaticTemplateName=StaticTemplate.units[1].name
 self.Templates.Statics[StaticTemplateName]=self.Templates.Statics[StaticTemplateName]or{}
 StaticTemplate.CategoryID=CategoryID
 StaticTemplate.CoalitionID=CoalitionID
 StaticTemplate.CountryID=CountryID
-self.Templates.Statics[StaticTemplateName].StaticName=StaticTemplateName
+self.Templates.Statics[StaticTemplateName].StaticName=StaticTemplateGroupName
 self.Templates.Statics[StaticTemplateName].GroupTemplate=StaticTemplate
 self.Templates.Statics[StaticTemplateName].UnitTemplate=StaticTemplate.units[1]
 self.Templates.Statics[StaticTemplateName].CategoryID=CategoryID
