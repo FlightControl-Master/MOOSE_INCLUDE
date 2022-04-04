@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T10:18:45.0000000Z-b17507d0faa1fc5b63f1c159279f4e5389aacf52 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T10:58:32.0000000Z-fa5afae7832a4115c080e15846d5d8055a388daa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62616,7 +62616,14 @@ local AttackerCount=AttackerSet:Count()
 local DefenderFriendlies=self:GetAIFriendliesNearBy(AttackerDetection)
 for FriendlyDistance,AIFriendly in UTILS.spairs(DefenderFriendlies or{})do
 if AttackerCount>DefenderCount then
-local Friendly=AIFriendly:GetGroup()
+if AIFriendly then
+local classname=AIFriendly.ClassName or"No Class Name"
+local unitname=AIFriendly.IdentifiableName or"No Unit Name"
+end
+local Friendly=nil
+if AIFriendly and AIFriendly:IsAlive()then
+Friendly=AIFriendly:GetGroup()
+end
 if Friendly and Friendly:IsAlive()then
 local DefenderTask=self:GetDefenderTask(Friendly)
 if DefenderTask then
