@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-03-30T10:06:25.0000000Z-d2a5144a23fd42a811a47e67be68539769d48a72 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T09:31:35.0000000Z-5ed43a319080859d6e5e3d2698a10fee4b0c5d68 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56634,7 +56634,6 @@ FreeVHFFrequencies={},
 FreeUHFFrequencies={},
 FreeFMFrequencies={},
 CargoCounter=0,
-wpZones={},
 Cargo_Troops={},
 Cargo_Crates={},
 Loaded_Cargo={},
@@ -57135,6 +57134,8 @@ local inzone=false
 local drop=drop or false
 local ship=nil
 local width=20
+local distance=nil
+local zone=nil
 if not drop then
 inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
@@ -57845,6 +57846,7 @@ local name=Crate:GetName()
 local required=Crate:GetCratesNeeded()
 local template=Crate:GetTemplates()
 local ctype=Crate:GetType()
+local ccoord=Crate:GetPositionable():GetCoordinate()
 if not buildables[name]then
 local object={}
 object.Name=name
@@ -57853,6 +57855,7 @@ object.Found=1
 object.Template=template
 object.CanBuild=false
 object.Type=ctype
+object.Coord=ccoord:GetVec2()
 buildables[name]=object
 foundbuilds=true
 else
@@ -57990,7 +57993,7 @@ if type(temptable)=="string"then
 temptable={temptable}
 end
 local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
-local randomcoord=zone:GetRandomCoordinate(35):GetVec2()
+local randomcoord=Build.Coord or zone:GetRandomCoordinate(35):GetVec2()
 if Repair then
 randomcoord=RepairLocation:GetVec2()
 end
@@ -57999,7 +58002,6 @@ self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitRandomizeUnits(true,20,2)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
 else
@@ -59513,7 +59515,7 @@ self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_n
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,5)
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,10)
 else
-self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
+self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
 end
 else
 if all_cargo_gets_destroyed==true or Cargo_over_water==true then
