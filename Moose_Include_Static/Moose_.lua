@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T09:31:35.0000000Z-5ed43a319080859d6e5e3d2698a10fee4b0c5d68 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T10:18:45.0000000Z-b17507d0faa1fc5b63f1c159279f4e5389aacf52 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16402,11 +16402,15 @@ self.InitFarpModu=Modulation or 0
 return self
 end
 function SPAWNSTATIC:InitCargoMass(Mass)
-self.InitCargoMass=Mass
+self.InitStaticCargoMass=Mass
 return self
 end
 function SPAWNSTATIC:InitCargo(IsCargo)
-self.InitCargo=IsCargo
+self.InitStaticCargo=IsCargo
+return self
+end
+function SPAWNSTATIC:InitDead(IsDead)
+self.InitStaticDead=IsDead
 return self
 end
 function SPAWNSTATIC:InitCountry(CountryID)
@@ -16475,14 +16479,14 @@ end
 if self.InitStaticLivery then
 Template.livery_id=self.InitStaticLivery
 end
-if self.InitDead~=nil then
-Template.dead=self.InitDead
+if self.InitStaticDead~=nil then
+Template.dead=self.InitStaticDead
 end
-if self.InitCargo~=nil then
-Template.canCargo=self.InitCargo
+if self.InitStaticCargo~=nil then
+Template.canCargo=self.InitStaticCargo
 end
-if self.InitCargoMass~=nil then
-Template.mass=self.InitCargoMass
+if self.InitStaticCargoMass~=nil then
+Template.mass=self.InitStaticCargoMass
 end
 if self.InitLinkUnit then
 Template.linkUnit=self.InitLinkUnit:GetID()
@@ -16517,6 +16521,8 @@ self:T({Template=Template})
 self:T({TemplateGroup=TemplateGroup})
 Static=coalition.addGroup(CountryID,-1,TemplateGroup)
 else
+self:T("Spawning Static")
+self:T2({Template=Template})
 Static=coalition.addStaticObject(CountryID,Template)
 end
 return mystatic
