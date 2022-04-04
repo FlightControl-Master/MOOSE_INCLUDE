@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T10:16:48.0000000Z-4e7ff94b33a20ede3292c73026e0f4299c1c1d0c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T10:57:31.0000000Z-89845883d02951f9f3caa7a4467aa4c934f750aa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6101,6 +6101,7 @@ self:SetMessageTime(MESSAGE.Type.Information,30)
 self:SetMessageTime(MESSAGE.Type.Overview,60)
 self:SetMessageTime(MESSAGE.Type.Update,15)
 self:SetEraModern()
+self:SetLocale("en")
 return self
 else
 local Settings=_DATABASE:GetPlayerSettings(PlayerName)
@@ -6119,6 +6120,12 @@ _SETTINGS.MenuStatic=onoff
 end
 function SETTINGS:SetMetric()
 self.Metric=true
+end
+function SETTINGS:SetLocale(Locale)
+self.Locale=Locale or"en"
+end
+function SETTINGS:GetLocale()
+return self.Locale or _SETTINGS:GetLocale()
 end
 function SETTINGS:IsMetric()
 return(self.Metric~=nil and self.Metric==true)or(self.Metric==nil and _SETTINGS:IsMetric())
@@ -17327,7 +17334,7 @@ textclass="",
 function TEXTANDSOUND:New(ClassName,Defaultlocale)
 local self=BASE:Inherit(self,BASE:New())
 self.lid=string.format("%s (%s) | ",self.ClassName,self.version)
-self.locale=Defaultlocale or"en"
+self.locale=Defaultlocale or(_SETTINGS:GetLocale()or"en")
 self.textclass=ClassName or"none"
 self.entries={}
 local initentry={}
@@ -84610,7 +84617,14 @@ local AttackerCount=AttackerSet:Count()
 local DefenderFriendlies=self:GetAIFriendliesNearBy(AttackerDetection)
 for FriendlyDistance,AIFriendly in UTILS.spairs(DefenderFriendlies or{})do
 if AttackerCount>DefenderCount then
-local Friendly=AIFriendly:GetGroup()
+if AIFriendly then
+local classname=AIFriendly.ClassName or"No Class Name"
+local unitname=AIFriendly.IdentifiableName or"No Unit Name"
+end
+local Friendly=nil
+if AIFriendly and AIFriendly:IsAlive()then
+Friendly=AIFriendly:GetGroup()
+end
 if Friendly and Friendly:IsAlive()then
 local DefenderTask=self:GetDefenderTask(Friendly)
 if DefenderTask then
