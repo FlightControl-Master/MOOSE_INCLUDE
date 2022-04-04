@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T14:53:52.0000000Z-e3d987bbdfcc86a4ab0e667177f3a97dd0ee69d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T20:31:33.0000000Z-407f6f2b0f0732611c8841b63395dfb3b1c67156 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7285,7 +7285,8 @@ ClassName="ZONE_BASE",
 ZoneName="",
 ZoneProbability=1,
 DrawID=nil,
-Color={}
+Color={},
+ZoneID=nil,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -8526,6 +8527,7 @@ Zone=ZONE_POLYGON_BASE:New(ZoneName,ZoneData.verticies)
 end
 if Zone then
 Zone.Color=color
+Zone.ZoneID=ZoneData.zoneId
 self.ZONENAMES[ZoneName]=ZoneName
 self:AddZone(ZoneName,Zone)
 end
@@ -59658,7 +59660,8 @@ BARRAGE="Barrage",
 ARMORATTACK="Armor Attack",
 CASENHANCED="CAS Enhanced",
 HOVER="Hover",
-GROUNDATTACK="Ground Attack"
+GROUNDATTACK="Ground Attack",
+CARGOTRANSPORT="Cargo Transport"
 }
 AUFTRAG.SpecialTask={
 PATROLZONE="PatrolZone",
@@ -59710,7 +59713,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.0"
+AUFTRAG.version="0.9.1"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -60084,6 +60087,20 @@ mission.optionROE=ENUMS.ROE.ReturnFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.categories={AUFTRAG.Category.HELICOPTER,AUFTRAG.Category.GROUND}
 mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewCARGOTRANSPORT(StaticCargo,DropZone)
+local mission=AUFTRAG:New(AUFTRAG.Type.CARGOTRANSPORT)
+mission:_TargetFromObject(StaticCargo)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.CARGOTRANSPORT)
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.PassiveDefense
+mission.categories={AUFTRAG.Category.HELICOPTER}
+mission.DCStask=mission:GetDCSMissionTask()
+mission.DCStask.params.groupId=StaticCargo:GetID()
+mission.DCStask.params.zoneId=DropZone.ZoneID
+mission.DCStask.params.zone=DropZone
+mission.DCStask.params.cargo=StaticCargo
 return mission
 end
 function AUFTRAG:NewARTY(Target,Nshots,Radius,Altitude)
@@ -60948,6 +60965,14 @@ if self.type==AUFTRAG.Type.TROOPTRANSPORT or self.type==AUFTRAG.Type.ESCORT then
 if Ntargets<Ntargets0 then
 failed=true
 end
+elseif self.type==AUFTRAG.Type.CARGOTRANSPORT then
+local zone=self.DCStask.params.zone
+local cargo=self.DCStask.params.cargo
+if cargo and zone then
+failed=not cargo:IsInZone(zone)
+else
+failed=true
+end
 elseif self.type==AUFTRAG.Type.RESCUEHELO then
 if self.Nelements==self.Ncasualties then
 failed=true
@@ -61680,6 +61705,12 @@ DCStask.id="OpsTransport"
 local param={}
 DCStask.params=param
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.CARGOTRANSPORT then
+local TaskCargoTransportation={
+id="CargoTransportation",
+params={}
+}
+table.insert(DCStasks,TaskCargoTransportation)
 elseif self.type==AUFTRAG.Type.RESCUEHELO then
 local DCStask={}
 DCStask.id="Formation"
@@ -61847,6 +61878,8 @@ mtask=ENUMS.MissionTask.GROUNDATTACK
 elseif MissionType==AUFTRAG.Type.TANKER then
 mtask=ENUMS.MissionTask.REFUELING
 elseif MissionType==AUFTRAG.Type.TROOPTRANSPORT then
+mtask=ENUMS.MissionTask.TRANSPORT
+elseif MissionType==AUFTRAG.Type.CARGOTRANSPORT then
 mtask=ENUMS.MissionTask.TRANSPORT
 elseif MissionType==AUFTRAG.Type.ARMORATTACK then
 mtask=ENUMS.MissionTask.NOTHING
