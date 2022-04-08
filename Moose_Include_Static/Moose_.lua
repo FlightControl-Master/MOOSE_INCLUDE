@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-07T10:39:49.0000000Z-2e119e2efda48365edfe101baf6356865b51f6b5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-08T09:26:59.0000000Z-c2b1c2b1d80cf2d952c72866802fc73c49b20719 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9307,7 +9307,7 @@ end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
 self:F2({ObjectName=ObjectName})
 local TriggerEvent=true
-if NoTriggerEvent==false then TriggerEvent=false end
+if NoTriggerEvent then TriggerEvent=false end
 local Object=self.Set[ObjectName]
 if Object then
 for Index,Key in ipairs(self.Index)do
