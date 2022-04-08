@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-04T14:50:17.0000000Z-7f5be2829c13cd3e074e477fc4f761e850bff3c1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-08T05:16:23.0000000Z-7b907df816d526b967e85f84688cf26065289073 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -46381,15 +46381,34 @@ self.Tmessage=Duration or 10
 return self
 end
 function AIRBOSS:SetGlideslopeErrorThresholds(_max,_min,High,HIGH,Low,LOW)
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self.gle._max=_max or 0.7
+self.gle.High=High or 1.4
+self.gle.HIGH=HIGH or 1.9
+self.gle._min=_min or-0.5
+self.gle.Low=Low or-1.2
+self.gle.LOW=LOW or-1.5
+else
 self.gle._max=_max or 0.4
 self.gle.High=High or 0.8
 self.gle.HIGH=HIGH or 1.5
 self.gle._min=_min or-0.3
 self.gle.Low=Low or-0.6
 self.gle.LOW=LOW or-0.9
+end
 return self
 end
 function AIRBOSS:SetLineupErrorThresholds(_max,_min,Left,LeftMed,LEFT,Right,RightMed,RIGHT)
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self.lue._max=_max or 1.8
+self.lue._min=_min or-1.8
+self.lue.Left=Left or-2.8
+self.lue.LeftMed=LeftMed or-3.8
+self.lue.LEFT=LEFT or-4.5
+self.lue.Right=Right or 2.8
+self.lue.RightMed=RightMed or 3.8
+self.lue.RIGHT=RIGHT or 4.5
+else
 self.lue._max=_max or 0.5
 self.lue._min=_min or-0.5
 self.lue.Left=Left or-1.0
@@ -46398,6 +46417,7 @@ self.lue.LEFT=LEFT or-3.0
 self.lue.Right=Right or 1.0
 self.lue.RightMed=RightMed or 2.0
 self.lue.RIGHT=RIGHT or 3.0
+end
 return self
 end
 function AIRBOSS:SetMarshalRadius(Radius)
@@ -47673,11 +47693,11 @@ aoa.OnSpeedMin=8.50
 aoa.Fast=8.25
 aoa.FAST=8.00
 elseif harrier then
-aoa.SLOW=14.0
-aoa.Slow=13.0
-aoa.OnSpeedMax=12.0
-aoa.OnSpeed=11.0
-aoa.OnSpeedMin=10.0
+aoa.SLOW=16.0
+aoa.Slow=13.5
+aoa.OnSpeedMax=12.5
+aoa.OnSpeed=10.0
+aoa.OnSpeedMin=9.5
 aoa.Fast=8.0
 aoa.FAST=7.5
 end
@@ -47814,7 +47834,7 @@ alt=UTILS.FeetToMeters(360)
 elseif skyhawk then
 alt=UTILS.FeetToMeters(300)
 elseif harrier then
-alt=UTILS.FeetToMeters(300)
+alt=UTILS.FeetToMeters(312)
 end
 aoa=aoaac.OnSpeed
 end
@@ -49843,7 +49863,7 @@ local ZoneALS=self:_GetZoneAbeamLandingSpot()
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
-local stable=dv<20
+local stable=dv<30
 if playerData.unit:IsInZone(ZoneALS)and stable then
 self:RadioTransmission(self.LSORadio,self.LSOCall.CLEAREDTOLAND,nil,nil,nil,true)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.GROOVE_LC)
@@ -49856,7 +49876,7 @@ local ZoneLS=self:_GetZoneLandingSpot()
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
-local stable=dv<10
+local stable=dv<15
 if playerData.unit:IsInZone(ZoneLS)and stable and playerData.stable==true then
 self:RadioTransmission(self.LSORadio,self.LSOCall.STABILIZED,nil,nil,nil,false)
 playerData.stable=false
@@ -49954,7 +49974,7 @@ local glMin=-1.2
 local luAbs=3.0
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 glMax=2.6
-glMin=-2.6
+glMin=-2.2
 luAbs=4.1
 end
 if glideslopeError>glMax then
@@ -50054,9 +50074,14 @@ end
 function AIRBOSS:_GetSternCoord()
 local hdg=self.carrier:GetHeading()
 local FB=self:GetFinalBearing()
+local case=self.case
 self.sterncoord:UpdateFromCoordinate(self:GetCoordinate())
 if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if case==3 then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(8,FB-90,true,true)
+elseif case==2 or case==1 then
+self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(8,FB-90,true,true)
+end
 elseif self.carriertype==AIRBOSS.CarrierType.STENNIS then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(7,FB+90,true,true)
 elseif self.carriertype==AIRBOSS.CarrierType.FORRESTAL then
@@ -50549,21 +50574,15 @@ end
 function AIRBOSS:_GetOptLandingCoordinate()
 self.landingcoord:UpdateFromCoordinate(self:_GetSternCoord())
 local FB=self:GetFinalBearing(false)
-if self.carriertype==AIRBOSS.CarrierType.HERMES then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(25,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(100))
-elseif self.carriertype==AIRBOSS.CarrierType.TARAWA then
+local case=self.case
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if case==3 then
+self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate())
+self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
+elseif case==2 or case==1 then
 self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
 self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
-elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
-elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
-elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
+end
 else
 if self.carrierparam.wire3 then
 local w3=self.carrierparam.wire3
@@ -50829,9 +50848,11 @@ local GIC,nIC=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IC)
 local GAR,nAR=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.AR)
 local G=GXX.." "..GIM.." ".." "..GIC.." "..GAR
 local N=nXX+nIM+nIC+nAR
+local Nv=nXX+nIM
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
+local nNv=Nv-nS-nL
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
@@ -50842,12 +50863,15 @@ grade="_OK_"
 points=5.0
 G="Unicorn"
 else
-if nL>3 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if nL>1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 grade="--"
 points=2.0
-elseif nN>2 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+elseif nNv>=1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 grade="(OK)"
 points=3.0
+elseif nNv<1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+grade="OK"
+points=4.0
 elseif nL>0 then
 grade="--"
 points=2.0
