@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-08T09:26:59.0000000Z-c2b1c2b1d80cf2d952c72866802fc73c49b20719 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-08T20:19:42.0000000Z-f4569fb5cc071e51eaeda9433042ed8b718d60fc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66920,7 +66920,11 @@ else
 if self:HasPassedFinalWaypoint()then
 if self.legion then
 self:T(self.lid..string.format("Passed final WP, adinfinitum=FALSE, LEGION set ==> RTZ"))
+if self.isArmygroup then
 self:RTZ(self.legion.spawnzone)
+elseif self.isNavygroup then
+self:RTZ(self.legion.portzone)
+end
 else
 self:__FullStop(-1)
 self:T(self.lid..string.format("Passed final WP, adinfinitum=FALSE ==> Full Stop"))
@@ -70896,6 +70900,29 @@ self:RemoveWaypointByID(self.engage.Waypoint.uid)
 end
 self:_CheckGroupDone(1)
 end
+function NAVYGROUP:onafterRTZ(From,Event,To,Zone,Formation)
+local zone=Zone or self.homezone
+if zone then
+if self:IsInZone(zone)then
+self:Returned()
+else
+self:T(self.lid..string.format("RTZ to Zone %s",zone:GetName()))
+local Coordinate=zone:GetRandomCoordinate()
+local uid=self:GetWaypointCurrentUID()
+local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
+wp.detour=0
+end
+else
+self:T(self.lid.."ERROR: No RTZ zone given!")
+end
+end
+function NAVYGROUP:onafterReturned(From,Event,To)
+self:T(self.lid..string.format("Group returned"))
+if self.legion then
+self:T(self.lid..string.format("Adding group back to warehouse stock"))
+self.legion:__AddAsset(10,self.group,1)
+end
+end
 function NAVYGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Depth,Updateroute)
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
@@ -72582,6 +72609,10 @@ function LEGION:IsAirwing()
 local is=self.ClassName==AIRWING.ClassName
 return is
 end
+function LEGION:IsFleet()
+local is=self.ClassName==FLEET.ClassName
+return is
+end
 function LEGION:onafterStart(From,Event,To)
 self:GetParent(self,LEGION).onafterStart(self,From,Event,To)
 self:T3(self.lid..string.format("Starting LEGION v%s",LEGION.version))
@@ -73021,6 +73052,8 @@ if self:IsAirwing()then
 opsgroup=FLIGHTGROUP:New(asset.spawngroupname)
 elseif self:IsBrigade()then
 opsgroup=ARMYGROUP:New(asset.spawngroupname)
+elseif self:IsFleet()then
+opsgroup=NAVYGROUP:New(asset.spawngroupname)
 else
 self:E(self.lid.."ERROR: not airwing or brigade!")
 end
@@ -83274,6 +83307,196 @@ end
 end
 self:T2(self.lid..string.format("Could NOT recruit assets for %s mission of STRATEGIC zone %s",MissionType,tostring(StratZone.opszone.zoneName)))
 return false
+end
+FLOTILLA={
+ClassName="FLOTILLA",
+verbose=0,
+weaponData={},
+}
+FLOTILLA.version="0.0.1"
+function FLOTILLA:New(TemplateGroupName,Ngroups,FlotillaName)
+local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,FlotillaName))
+return self
+end
+function FLOTILLA:SetFleet(Fleet)
+self.legion=Fleet
+return self
+end
+function FLOTILLA:GetFleet()
+return self.legion
+end
+function FLOTILLA:AddWeaponRange(RangeMin,RangeMax,BitType)
+RangeMin=UTILS.NMToMeters(RangeMin or 0)
+RangeMax=UTILS.NMToMeters(RangeMax or 10)
+local weapon={}
+weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
+weapon.RangeMax=RangeMax
+weapon.RangeMin=RangeMin
+self.weaponData=self.weaponData or{}
+self.weaponData[tostring(weapon.BitType)]=weapon
+self:T(self.lid..string.format("Adding weapon data: Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapon.BitType),weapon.RangeMin,weapon.RangeMax))
+if self.verbose>=2 then
+local text="Weapon data:"
+for _,_weapondata in pairs(self.weaponData)do
+local weapondata=_weapondata
+text=text..string.format("\n- Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapondata.BitType),weapondata.RangeMin,weapondata.RangeMax)
+end
+self:I(self.lid..text)
+end
+return self
+end
+function FLOTILLA:onafterStart(From,Event,To)
+local text=string.format("Starting %s v%s %s",self.ClassName,self.version,self.name)
+self:I(self.lid..text)
+self:__Status(-1)
+end
+function FLOTILLA:onafterStatus(From,Event,To)
+if self.verbose>=1 then
+local fsmstate=self:GetState()
+local callsign=self.callsignName and UTILS.GetCallsignName(self.callsignName)or"N/A"
+local modex=self.modex and self.modex or-1
+local skill=self.skill and tostring(self.skill)or"N/A"
+local NassetsTot=#self.assets
+local NassetsInS=self:CountAssets(true)
+local NassetsQP=0;local NassetsP=0;local NassetsQ=0
+if self.legion then
+NassetsQP,NassetsP,NassetsQ=self.legion:CountAssetsOnMission(nil,self)
+end
+local text=string.format("%s [Type=%s, Call=%s, Modex=%d, Skill=%s]: Assets Total=%d, Stock=%d, Mission=%d [Active=%d, Queue=%d]",
+fsmstate,self.aircrafttype,callsign,modex,skill,NassetsTot,NassetsInS,NassetsQP,NassetsP,NassetsQ)
+self:T(self.lid..text)
+if self.verbose>=3 and self.weaponData then
+local text="Weapon Data:"
+for bit,_weapondata in pairs(self.weaponData)do
+local weapondata=_weapondata
+text=text..string.format("\n- Bit=%s: Rmin=%.1f km, Rmax=%.1f km",bit,weapondata.RangeMin/1000,weapondata.RangeMax/1000)
+end
+self:I(self.lid..text)
+end
+self:_CheckAssetStatus()
+end
+if not self:IsStopped()then
+self:__Status(-60)
+end
+end
+FLEET={
+ClassName="FLEET",
+verbose=0,
+rearmingZones={},
+refuellingZones={},
+}
+FLEET.version="0.0.1"
+function FLEET:New(WarehouseName,FleetName)
+local self=BASE:Inherit(self,LEGION:New(WarehouseName,FleetName))
+if not self then
+BASE:E(string.format("ERROR: Could not find warehouse %s!",WarehouseName))
+return nil
+end
+self.lid=string.format("FLEET %s | ",self.alias)
+self:SetRetreatZones()
+self:AddTransition("*","NavyOnMission","*")
+return self
+end
+function FLEET:AddFlotilla(Flotilla)
+table.insert(self.cohorts,Flotilla)
+self:AddAssetToFlotilla(Flotilla,Flotilla.Ngroups)
+Flotilla:SetFleet(self)
+if Flotilla:IsStopped()then
+Flotilla:Start()
+end
+return self
+end
+function FLEET:AddAssetToFlotilla(Flotilla,Nassets)
+if Flotilla then
+local Group=GROUP:FindByName(Flotilla.templatename)
+if Group then
+local text=string.format("Adding asset %s to flotilla %s",Group:GetName(),Flotilla.name)
+self:T(self.lid..text)
+self:AddAsset(Group,Nassets,nil,nil,nil,nil,Flotilla.skill,Flotilla.livery,Flotilla.name)
+else
+self:E(self.lid.."ERROR: Group does not exist!")
+end
+else
+self:E(self.lid.."ERROR: Flotilla does not exit!")
+end
+return self
+end
+function FLEET:SetRetreatZones(RetreatZoneSet)
+self.retreatZones=RetreatZoneSet or SET_ZONE:New()
+return self
+end
+function FLEET:AddRetreatZone(RetreatZone)
+self.retreatZones:AddZone(RetreatZone)
+return self
+end
+function FLEET:GetRetreatZones()
+return self.retreatZones
+end
+function FLEET:GetFlotilla(FlotillaName)
+local flotilla=self:_GetCohort(FlotillaName)
+return flotilla
+end
+function FLEET:GetFlotillaOfAsset(Asset)
+local flotilla=self:GetFlotilla(Asset.squadname)
+return flotilla
+end
+function FLEET:RemoveAssetFromFlotilla(Asset)
+local flotilla=self:GetFlotillaOfAsset(Asset)
+if flotilla then
+flotilla:DelAsset(Asset)
+end
+end
+function FLEET:onafterStart(From,Event,To)
+self:GetParent(self,FLEET).onafterStart(self,From,Event,To)
+self:I(self.lid..string.format("Starting FLEET v%s",FLEET.version))
+end
+function FLEET:onafterStatus(From,Event,To)
+self:GetParent(self).onafterStatus(self,From,Event,To)
+local fsmstate=self:GetState()
+self:CheckTransportQueue()
+self:CheckMissionQueue()
+if self.verbose>=1 then
+local Nmissions=self:CountMissionsInQueue()
+local Npq,Np,Nq=self:CountAssetsOnMission()
+local assets=string.format("%d [OnMission: Total=%d, Active=%d, Queued=%d]",self:CountAssets(),Npq,Np,Nq)
+local text=string.format("%s: Missions=%d, Flotillas=%d, Assets=%s",fsmstate,Nmissions,#self.cohorts,assets)
+self:I(self.lid..text)
+end
+if self.verbose>=2 then
+local text=string.format("Missions Total=%d:",#self.missionqueue)
+for i,_mission in pairs(self.missionqueue)do
+local mission=_mission
+local prio=string.format("%d/%s",mission.prio,tostring(mission.importance));if mission.urgent then prio=prio.." (!)"end
+local assets=string.format("%d/%d",mission:CountOpsGroups(),mission.Nassets or 0)
+local target=string.format("%d/%d Damage=%.1f",mission:CountMissionTargets(),mission:GetTargetInitialNumber(),mission:GetTargetDamage())
+text=text..string.format("\n[%d] %s %s: Status=%s, Prio=%s, Assets=%s, Targets=%s",i,mission.name,mission.type,mission.status,prio,assets,target)
+end
+self:I(self.lid..text)
+end
+if self.verbose>=2 then
+local text=string.format("Transports Total=%d:",#self.transportqueue)
+for i,_transport in pairs(self.transportqueue)do
+local transport=_transport
+local prio=string.format("%d/%s",transport.prio,tostring(transport.importance));if transport.urgent then prio=prio.." (!)"end
+local carriers=string.format("Ncargo=%d/%d, Ncarriers=%d",transport.Ncargo,transport.Ndelivered,transport.Ncarrier)
+text=text..string.format("\n[%d] UID=%d: Status=%s, Prio=%s, Cargo: %s",i,transport.uid,transport:GetState(),prio,carriers)
+end
+self:I(self.lid..text)
+end
+if self.verbose>=3 then
+local text="Flotillas:"
+for i,_flotilla in pairs(self.cohorts)do
+local flotilla=_flotilla
+local callsign=flotilla.callsignName and UTILS.GetCallsignName(flotilla.callsignName)or"N/A"
+local modex=flotilla.modex and flotilla.modex or-1
+local skill=flotilla.skill and tostring(flotilla.skill)or"N/A"
+text=text..string.format("\n* %s %s: %s*%d/%d, Callsign=%s, Modex=%d, Skill=%s",flotilla.name,flotilla:GetState(),flotilla.aircrafttype,flotilla:CountAssets(true),#flotilla.assets,callsign,modex,skill)
+end
+self:I(self.lid..text)
+end
+end
+function FLEET:onafterNavyOnMission(From,Event,To,NavyGroup,Mission)
+self:T(self.lid..string.format("Group %s on %s mission %s",NavyGroup:GetName(),Mission:GetType(),Mission:GetName()))
 end
 AI_BALANCER={
 ClassName="AI_BALANCER",
