@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T08:18:26.0000000Z-d1f1f14bc399ee42cb40aaaedb3b32ce105d049b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T16:26:27.0000000Z-b24f31922f6ec16a9c781fa43ddd19886f4da00a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -17345,7 +17345,7 @@ initentry.Classname=ClassName
 initentry.Data={}
 initentry.Locale=self.locale
 self.entries[self.locale]=initentry
-self:I(self.lid.."Instatiated.")
+self:I(self.lid.."Instantiated.")
 self:T({self.entries[self.locale]})
 return self
 end
@@ -47847,7 +47847,7 @@ return self
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.0.6",
+version="0.0.8",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -48018,7 +48018,8 @@ self.SRSRadio=OnOff and true
 self.SRSFrequency=Frequency or 243
 self.SRSPath=Path or"c:\\"
 self.SRSModulation=Modulation or radio.modulation.AM
-self.SRSSoundPath=SoundPath or nil
+local soundpath=os.getenv('TMP').."\\DCS\\Mission\\l10n\\DEFAULT"
+self.SRSSoundPath=SoundPath or soundpath
 self.SRSPort=Port or 5002
 if OnOff then
 self.SRS=MSRS:New(Path,Frequency,Modulation)
@@ -48074,7 +48075,8 @@ text=Text..location.."!"
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -48234,7 +48236,8 @@ if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -48246,7 +48249,8 @@ if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -48261,7 +48265,8 @@ if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -48275,7 +48280,8 @@ if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -48315,7 +48321,8 @@ if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -48329,7 +48336,8 @@ if self.verbose then
 MESSAGE:New(text,15,"AICSAR"):ToCoalition(self.coalition)
 end
 if self.SRSRadio then
-local sound=SOUNDFILE:New(Soundfile,nil,Soundlength)
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
 self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
@@ -92027,6 +92035,9 @@ return self
 end
 function SOUNDFILE:SetPath(Path)
 self.path=Path or"l10n/DEFAULT/"
+if not Path and self.useSRS then
+self.path=os.getenv('TMP').."\\DCS\\Mission\\l10n\\DEFAULT"
+end
 local nmax=1000;local n=1
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
 self.path=self.path:sub(1,#self.path-1)
@@ -92870,12 +92881,14 @@ return self.path
 end
 function MSRS:SetPort(Port)
 self.port=Port or 5002
+return self
 end
 function MSRS:GetPort()
 return self.port
 end
 function MSRS:SetCoalition(Coalition)
 self.coalition=Coalition or 0
+return self
 end
 function MSRS:GetCoalition()
 return self.coalition
@@ -92943,7 +92956,7 @@ self:ScheduleOnce(Delay,MSRS.PlaySoundFile,self,Soundfile,0)
 else
 local soundfile=Soundfile:GetName()
 local command=self:_GetCommand()
-command=command.." --file="..tostring(soundfile)
+command=command..' --file="'..tostring(soundfile)..'"'
 self:_ExecCommand(command)
 end
 return self
@@ -93031,8 +93044,7 @@ speed=speed or self.speed
 port=port or self.port
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-local command=string.format("start /min \"\" /d \"%s\" /b \"%s\" -f %s -m %s -c %s -p %s -n \"%s\" -h",path,exe,freqs,modus,coal,port,"ROBOT")
-local command=string.format('%s/%s -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,"ROBOT")
+local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,"ROBOT")
 if voice then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
 else
