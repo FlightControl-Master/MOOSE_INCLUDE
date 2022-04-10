@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T08:18:12.0000000Z-e84156d2e9dba95c4121706ed1f32653560ab044 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T16:29:09.0000000Z-a685f3ffbd84aa1f5cac36399a4764f8dc6c5d4d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -69564,6 +69564,9 @@ return self
 end
 function SOUNDFILE:SetPath(Path)
 self.path=Path or"l10n/DEFAULT/"
+if not Path and self.useSRS then
+self.path=os.getenv('TMP').."\\DCS\\Mission\\l10n\\DEFAULT"
+end
 local nmax=1000;local n=1
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
 self.path=self.path:sub(1,#self.path-1)
@@ -70407,12 +70410,14 @@ return self.path
 end
 function MSRS:SetPort(Port)
 self.port=Port or 5002
+return self
 end
 function MSRS:GetPort()
 return self.port
 end
 function MSRS:SetCoalition(Coalition)
 self.coalition=Coalition or 0
+return self
 end
 function MSRS:GetCoalition()
 return self.coalition
@@ -70480,7 +70485,7 @@ self:ScheduleOnce(Delay,MSRS.PlaySoundFile,self,Soundfile,0)
 else
 local soundfile=Soundfile:GetName()
 local command=self:_GetCommand()
-command=command.." --file="..tostring(soundfile)
+command=command..' --file="'..tostring(soundfile)..'"'
 self:_ExecCommand(command)
 end
 return self
@@ -70568,13 +70573,12 @@ speed=speed or self.speed
 port=port or self.port
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-local command=string.format("start /min \"\" /d \"%s\" /b \"%s\" -f %s -m %s -c %s -p %s -n \"%s\" -h",path,exe,freqs,modus,coal,port,"ROBOT")
-local command=string.format('%s/%s -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,"ROBOT")
+local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,"ROBOT")
 if voice then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
 else
 if gender and gender~="female"then
-command=command..string.format(" --gender=%s",tostring(gender))
+command=command..string.format(" -g %s",tostring(gender))
 end
 if culture and culture~="en-GB"then
 command=command..string.format(" -l %s",tostring(culture))
