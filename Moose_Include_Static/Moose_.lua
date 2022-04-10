@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-08T09:27:31.0000000Z-f7e14bb60c9f32372ac5511437257b1a195ebf67 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T07:29:22.0000000Z-0ce1c31e1cc34402e8981e2868fcf02ec934eb72 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59797,7 +59797,7 @@ CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
-CSAR.version="1.0.4d"
+CSAR.version="1.0.4e"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -59900,6 +59900,7 @@ self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
+self.SRSport=5002
 return self
 end
 function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
@@ -60573,6 +60574,7 @@ local path=self.SRSPath
 local modulation=self.SRSModulation
 local channel=self.SRSchannel
 local msrs=MSRS:New(path,channel,modulation)
+msrs:SetPort(self.SRSport)
 msrs:PlaySoundText(srstext,2)
 end
 return self
