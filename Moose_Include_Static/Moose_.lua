@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-08T20:19:42.0000000Z-f4569fb5cc071e51eaeda9433042ed8b718d60fc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T07:28:47.0000000Z-5ee1f5d3afd8f7d357c749624cd2e33c66fc076c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47847,7 +47847,7 @@ return self
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.0.5",
+version="0.0.6",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -47871,6 +47871,7 @@ SRSFrequency=243,
 SRSPath="\\",
 SRSModulation=radio.modulation.AM,
 SRSSoundPath=nil,
+SRSPort=5002,
 DCSRadio=false,
 DCSFrequency=243,
 DCSModulation=radio.modulation.AM,
@@ -47964,6 +47965,7 @@ self.SRSFrequency=243
 self.SRSPath="\\"
 self.SRSModulation=radio.modulation.AM
 self.SRSSoundPath=nil
+self.SRSPort=5002
 self.DCSRadio=false
 self.DCSFrequency=243
 self.DCSModulation=radio.modulation.AM
@@ -48009,7 +48011,7 @@ self.gettext:AddEntry("de","PILOTRESCUED",AICSAR.Messages.DE.PILOTRESCUED,AICSAR
 self.locale="en"
 return self
 end
-function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath)
+function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath,Port)
 self:T(self.lid.."SetSRSRadio")
 self:T(self.lid.."SetSRSRadio to "..tostring(OnOff))
 self.SRSRadio=OnOff and true
@@ -48017,8 +48019,10 @@ self.SRSFrequency=Frequency or 243
 self.SRSPath=Path or"c:\\"
 self.SRSModulation=Modulation or radio.modulation.AM
 self.SRSSoundPath=SoundPath or nil
+self.SRSPort=Port or 5002
 if OnOff then
 self.SRS=MSRS:New(Path,Frequency,Modulation)
+self.SRS:SetPort(self.SRSPort)
 end
 return self
 end
@@ -77050,7 +77054,7 @@ CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
-CSAR.version="1.0.4d"
+CSAR.version="1.0.4e"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -77153,6 +77157,7 @@ self.useSRS=false
 self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
+self.SRSport=5002
 return self
 end
 function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
@@ -77826,6 +77831,7 @@ local path=self.SRSPath
 local modulation=self.SRSModulation
 local channel=self.SRSchannel
 local msrs=MSRS:New(path,channel,modulation)
+msrs:SetPort(self.SRSport)
 msrs:PlaySoundText(srstext,2)
 end
 return self
