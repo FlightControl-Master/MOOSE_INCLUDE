@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-10T16:29:09.0000000Z-a685f3ffbd84aa1f5cac36399a4764f8dc6c5d4d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-12T06:23:18.0000000Z-6828f7e262d412ccff939a02a21e283f589c01c0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3019,7 +3019,7 @@ if string.find(type_name,"UH-60L")and unit:getDrawArgumentValue(38)==1 or unit:g
 BASE:T(unit_name.." front door(s) are open")
 ret_val=true
 end
-if string.find(type_name,"AH-64D")then
+if type_name=="AH-64D_BLK_II"then
 BASE:T(unit_name.." front door(s) are open")
 ret_val=true
 end
