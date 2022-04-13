@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-12T06:23:37.0000000Z-7525fe935747c15376f98cce040ff80bb3d5e872 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-13T07:35:18.0000000Z-32bdaf4f244fdb6eba2c64e3bcfed5770782a01c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -48508,6 +48508,7 @@ TRUMAN="CVN_75",
 STENNIS="Stennis",
 FORRESTAL="Forrestal",
 VINSON="VINSON",
+HERMES="HERMES81",
 TARAWA="LHA_Tarawa",
 AMERICA="USS America LHA-6",
 JCARLOS="L61",
@@ -48641,6 +48642,8 @@ elseif self.carriertype==AIRBOSS.CarrierType.FORRESTAL then
 self:_InitForrestal()
 elseif self.carriertype==AIRBOSS.CarrierType.VINSON then
 self:_InitStennis()
+elseif self.carriertype==AIRBOSS.CarrierType.HERMES then
+self:_InitHermes()
 elseif self.carriertype==AIRBOSS.CarrierType.TARAWA then
 self:_InitTarawa()
 elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
@@ -48696,7 +48699,7 @@ local r2=stern:Translate(self.carrierparam.rwywidth*0.5,FB-90,true)
 rwy:FlareRed()
 local cR=stern:Translate(self.carrierparam.totwidthstarboard,hdg+90,true)
 local cL=stern:Translate(self.carrierparam.totwidthport,hdg-90,true)
-if self.carrier:GetTypeName()~=AIRBOSS.CarrierType.TARAWA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.AMERICA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.JCARLOS or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.CANBERRA then
+if self.carrier:GetTypeName()~=AIRBOSS.CarrierType.HERMES or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.TARAWA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.AMERICA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.JCARLOS or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.CANBERRA then
 local w1=stern:Translate(self.carrierparam.wire1,FB,true)
 local w2=stern:Translate(self.carrierparam.wire2,FB,true)
 local w3=stern:Translate(self.carrierparam.wire3,FB,true)
@@ -48737,40 +48740,40 @@ self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
 return self
 end
-function AIRBOSS:SetWelcomePlayers(switch)
-self.welcome=switch
+function AIRBOSS:SetWelcomePlayers(Switch)
+self.welcome=Switch
 return self
 end
-function AIRBOSS:SetCarrierControlledArea(radius)
-radius=UTILS.NMToMeters(radius or 50)
-self.zoneCCA=ZONE_UNIT:New("Carrier Controlled Area",self.carrier,radius)
+function AIRBOSS:SetCarrierControlledArea(Radius)
+Radius=UTILS.NMToMeters(Radius or 50)
+self.zoneCCA=ZONE_UNIT:New("Carrier Controlled Area",self.carrier,Radius)
 return self
 end
-function AIRBOSS:SetCarrierControlledZone(radius)
-radius=UTILS.NMToMeters(radius or 5)
-self.zoneCCZ=ZONE_UNIT:New("Carrier Controlled Zone",self.carrier,radius)
+function AIRBOSS:SetCarrierControlledZone(Radius)
+Radius=UTILS.NMToMeters(Radius or 5)
+self.zoneCCZ=ZONE_UNIT:New("Carrier Controlled Zone",self.carrier,Radius)
 return self
 end
-function AIRBOSS:SetCollisionDistance(distance)
-self.collisiondist=UTILS.NMToMeters(distance or 5)
+function AIRBOSS:SetCollisionDistance(Distance)
+self.collisiondist=UTILS.NMToMeters(Distance or 5)
 return self
 end
-function AIRBOSS:SetRecoveryCase(case)
-self.defaultcase=case or 1
+function AIRBOSS:SetRecoveryCase(Case)
+self.defaultcase=Case or 1
 self.case=self.defaultcase
 return self
 end
-function AIRBOSS:SetHoldingOffsetAngle(offset)
-self.defaultoffset=offset or 0
+function AIRBOSS:SetHoldingOffsetAngle(Offset)
+self.defaultoffset=Offset or 0
 self.holdingoffset=self.defaultoffset
 return self
 end
-function AIRBOSS:SetMenuRecovery(duration,windondeck,uturn,offset)
+function AIRBOSS:SetMenuRecovery(Duration,WindOnDeck,Uturn,Offset)
 self.skipperMenu=true
-self.skipperTime=duration or 30
-self.skipperSpeed=windondeck or 25
-self.skipperOffset=offset or 30
-if uturn then
+self.skipperTime=Duration or 30
+self.skipperSpeed=WindOnDeck or 25
+self.skipperOffset=Offset or 30
+if Uturn then
 self.skipperUturn=true
 else
 self.skipperUturn=false
@@ -48820,22 +48823,22 @@ end
 table.insert(self.recoverytimes,recovery)
 return recovery
 end
-function AIRBOSS:SetSquadronAI(setgroup)
-self.squadsetAI=setgroup
+function AIRBOSS:SetSquadronAI(SetGroup)
+self.squadsetAI=SetGroup
 return self
 end
-function AIRBOSS:SetExcludeAI(setgroup)
-self.excludesetAI=setgroup
+function AIRBOSS:SetExcludeAI(SetGroup)
+self.excludesetAI=SetGroup
 return self
 end
-function AIRBOSS:AddExcludeAI(group)
+function AIRBOSS:AddExcludeAI(Group)
 self.excludesetAI=self.excludesetAI or SET_GROUP:New()
-self.excludesetAI:AddGroup(group)
+self.excludesetAI:AddGroup(Group)
 return self
 end
-function AIRBOSS:CloseCurrentRecoveryWindow(delay)
-if delay and delay>0 then
-self:ScheduleOnce(delay,self.CloseCurrentRecoveryWindow,self)
+function AIRBOSS:CloseCurrentRecoveryWindow(Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.CloseCurrentRecoveryWindow,self)
 else
 if self:IsRecovering()and self.recoverywindow and self.recoverywindow.OPEN then
 self:RecoveryStop()
@@ -48845,10 +48848,10 @@ self:DeleteRecoveryWindow(self.recoverywindow)
 end
 end
 end
-function AIRBOSS:DeleteAllRecoveryWindows(delay)
+function AIRBOSS:DeleteAllRecoveryWindows(Delay)
 for _,recovery in pairs(self.recoverytimes)do
-self:T(self.lid..string.format("Deleting recovery window ID %s",tostring(recovery.ID)))
-self:DeleteRecoveryWindow(recovery,delay)
+self:I(self.lid..string.format("Deleting recovery window ID %s",tostring(recovery.ID)))
+self:DeleteRecoveryWindow(recovery,Delay)
 end
 return self
 end
@@ -48863,14 +48866,14 @@ end
 end
 return nil
 end
-function AIRBOSS:DeleteRecoveryWindow(window,delay)
-if delay and delay>0 then
-self:ScheduleOnce(delay,self.DeleteRecoveryWindow,self,window)
+function AIRBOSS:DeleteRecoveryWindow(Window,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.DeleteRecoveryWindow,self,Window)
 else
 for i,_recovery in pairs(self.recoverytimes)do
 local recovery=_recovery
-if window and window.ID==recovery.ID then
-if window.OPEN then
+if Window and Window.ID==recovery.ID then
+if Window.OPEN then
 self:RecoveryStop()
 else
 table.remove(self.recoverytimes,i)
@@ -48879,91 +48882,110 @@ end
 end
 end
 end
-function AIRBOSS:SetRecoveryTurnTime(interval)
-self.dTturn=interval or 300
+function AIRBOSS:SetRecoveryTurnTime(Interval)
+self.dTturn=Interval or 300
 return self
 end
 function AIRBOSS:SetMPWireCorrection(Dcorr)
 self.mpWireCorrection=Dcorr or 12
 return self
 end
-function AIRBOSS:SetQueueUpdateTime(interval)
-self.dTqueue=interval or 30
+function AIRBOSS:SetQueueUpdateTime(TimeInterval)
+self.dTqueue=TimeInterval or 30
 return self
 end
-function AIRBOSS:SetLSOCallInterval(timeinterval)
-self.LSOdT=timeinterval or 4
+function AIRBOSS:SetLSOCallInterval(TimeInterval)
+self.LSOdT=TimeInterval or 4
 return self
 end
-function AIRBOSS:SetAirbossNiceGuy(switch)
-if switch==true or switch==nil then
+function AIRBOSS:SetAirbossNiceGuy(Switch)
+if Switch==true or Switch==nil then
 self.airbossnice=true
 else
 self.airbossnice=false
 end
 return self
 end
-function AIRBOSS:SetEmergencyLandings(switch)
-if switch==true or switch==nil then
+function AIRBOSS:SetEmergencyLandings(Switch)
+if Switch==true or Switch==nil then
 self.emergency=true
 else
 self.emergency=false
 end
 return self
 end
-function AIRBOSS:SetDespawnOnEngineShutdown(switch)
-if switch==true or switch==nil then
+function AIRBOSS:SetDespawnOnEngineShutdown(Switch)
+if Switch==true or Switch==nil then
 self.despawnshutdown=true
 else
 self.despawnshutdown=false
 end
 return self
 end
-function AIRBOSS:SetRespawnAI(switch)
-if switch==true or switch==nil then
+function AIRBOSS:SetRespawnAI(Switch)
+if Switch==true or Switch==nil then
 self.respawnAI=true
 else
 self.respawnAI=false
 end
 return self
 end
-function AIRBOSS:SetRefuelAI(lowfuelthreshold)
-self.lowfuelAI=lowfuelthreshold or 10
+function AIRBOSS:SetRefuelAI(LowFuelThreshold)
+self.lowfuelAI=LowFuelThreshold or 10
 return self
 end
-function AIRBOSS:SetInitialMaxAlt(altitude)
-self.initialmaxalt=UTILS.FeetToMeters(altitude or 1300)
+function AIRBOSS:SetInitialMaxAlt(MaxAltitude)
+self.initialmaxalt=UTILS.FeetToMeters(MaxAltitude or 1300)
 return self
 end
-function AIRBOSS:SetSoundfilesFolder(folderpath)
-if folderpath then
-local lastchar=string.sub(folderpath,-1)
+function AIRBOSS:SetSoundfilesFolder(FolderPath)
+if FolderPath then
+local lastchar=string.sub(FolderPath,-1)
 if lastchar~="/"then
-folderpath=folderpath.."/"
+FolderPath=FolderPath.."/"
 end
 end
-self.soundfolder=folderpath
+self.soundfolder=FolderPath
 self:I(self.lid..string.format("Setting sound files folder to: %s",self.soundfolder))
 return self
 end
-function AIRBOSS:SetStatusUpdateTime(interval)
-self.dTstatus=interval or 0.5
+function AIRBOSS:SetStatusUpdateTime(TimeInterval)
+self.dTstatus=TimeInterval or 0.5
 return self
 end
-function AIRBOSS:SetDefaultMessageDuration(duration)
-self.Tmessage=duration or 10
+function AIRBOSS:SetDefaultMessageDuration(Duration)
+self.Tmessage=Duration or 10
 return self
 end
 function AIRBOSS:SetGlideslopeErrorThresholds(_max,_min,High,HIGH,Low,LOW)
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self.gle._max=_max or 0.7
+self.gle.High=High or 1.4
+self.gle.HIGH=HIGH or 1.9
+self.gle._min=_min or-0.5
+self.gle.Low=Low or-1.2
+self.gle.LOW=LOW or-1.5
+else
 self.gle._max=_max or 0.4
 self.gle.High=High or 0.8
 self.gle.HIGH=HIGH or 1.5
 self.gle._min=_min or-0.3
 self.gle.Low=Low or-0.6
 self.gle.LOW=LOW or-0.9
+end
 return self
 end
 function AIRBOSS:SetLineupErrorThresholds(_max,_min,Left,LeftMed,LEFT,Right,RightMed,RIGHT)
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+self.lue._max=_max or 1.8
+self.lue._min=_min or-1.8
+self.lue.Left=Left or-2.8
+self.lue.LeftMed=LeftMed or-3.8
+self.lue.LEFT=LEFT or-4.5
+self.lue.Right=Right or 2.8
+self.lue.RightMed=RightMed or 3.8
+self.lue.RIGHT=RIGHT or 4.5
+else
 self.lue._max=_max or 0.5
 self.lue._min=_min or-0.5
 self.lue.Left=Left or-1.0
@@ -48972,48 +48994,49 @@ self.lue.LEFT=LEFT or-3.0
 self.lue.Right=Right or 1.0
 self.lue.RightMed=RightMed or 2.0
 self.lue.RIGHT=RIGHT or 3.0
+end
 return self
 end
-function AIRBOSS:SetMarshalRadius(radius)
-self.marshalradius=UTILS.NMToMeters(radius or 2.8)
+function AIRBOSS:SetMarshalRadius(Radius)
+self.marshalradius=UTILS.NMToMeters(Radius or 2.8)
 return self
 end
-function AIRBOSS:SetMenuSingleCarrier(switch)
-if switch==true or switch==nil then
+function AIRBOSS:SetMenuSingleCarrier(Switch)
+if Switch==true or Switch==nil then
 self.menusingle=true
 else
 self.menusingle=false
 end
 return self
 end
-function AIRBOSS:SetMenuMarkZones(switch)
-if switch==nil or switch==true then
+function AIRBOSS:SetMenuMarkZones(Switch)
+if Switch==nil or Switch==true then
 self.menumarkzones=true
 else
 self.menumarkzones=false
 end
 return self
 end
-function AIRBOSS:SetMenuSmokeZones(switch)
-if switch==nil or switch==true then
+function AIRBOSS:SetMenuSmokeZones(Switch)
+if Switch==nil or Switch==true then
 self.menusmokezones=true
 else
 self.menusmokezones=false
 end
 return self
 end
-function AIRBOSS:SetTrapSheet(path,prefix)
+function AIRBOSS:SetTrapSheet(Path,Prefix)
 if io then
 self.trapsheet=true
-self.trappath=path
-self.trapprefix=prefix
+self.trappath=Path
+self.trapprefix=Prefix
 else
 self:E(self.lid.."ERROR: io is not desanitized. Cannot save trap sheet.")
 end
 return self
 end
-function AIRBOSS:SetStaticWeather(switch)
-if switch==nil or switch==true then
+function AIRBOSS:SetStaticWeather(Switch)
+if Switch==nil or Switch==true then
 self.staticweather=true
 else
 self.staticweather=false
@@ -49024,10 +49047,10 @@ function AIRBOSS:SetTACANoff()
 self.TACANon=false
 return self
 end
-function AIRBOSS:SetTACAN(channel,mode,morsecode)
-self.TACANchannel=channel or 74
-self.TACANmode=mode or"X"
-self.TACANmorse=morsecode or"STN"
+function AIRBOSS:SetTACAN(Channel,Mode,MorseCode)
+self.TACANchannel=Channel or 74
+self.TACANmode=Mode or"X"
+self.TACANmorse=MorseCode or"STN"
 self.TACANon=true
 return self
 end
@@ -49035,20 +49058,20 @@ function AIRBOSS:SetICLSoff()
 self.ICLSon=false
 return self
 end
-function AIRBOSS:SetICLS(channel,morsecode)
-self.ICLSchannel=channel or 1
-self.ICLSmorse=morsecode or"STN"
+function AIRBOSS:SetICLS(Channel,MorseCode)
+self.ICLSchannel=Channel or 1
+self.ICLSmorse=MorseCode or"STN"
 self.ICLSon=true
 return self
 end
-function AIRBOSS:SetBeaconRefresh(interval)
-self.dTbeacon=interval or(20*60)
+function AIRBOSS:SetBeaconRefresh(TimeInterval)
+self.dTbeacon=TimeInterval or(20*60)
 return self
 end
-function AIRBOSS:SetLSORadio(frequency,modulation)
-self.LSOFreq=(frequency or 264)
-modulation=modulation or"AM"
-if modulation=="FM"then
+function AIRBOSS:SetLSORadio(Frequency,Modulation)
+self.LSOFreq=(Frequency or 264)
+Modulation=Modulation or"AM"
+if Modulation=="FM"then
 self.LSOModu=radio.modulation.FM
 else
 self.LSOModu=radio.modulation.AM
@@ -49059,10 +49082,10 @@ self.LSORadio.modulation=self.LSOModu
 self.LSORadio.alias="LSO"
 return self
 end
-function AIRBOSS:SetMarshalRadio(frequency,modulation)
-self.MarshalFreq=frequency or 305
-modulation=modulation or"AM"
-if modulation=="FM"then
+function AIRBOSS:SetMarshalRadio(Frequency,Modulation)
+self.MarshalFreq=Frequency or 305
+Modulation=Modulation or"AM"
+if Modulation=="FM"then
 self.MarshalModu=radio.modulation.FM
 else
 self.MarshalModu=radio.modulation.AM
@@ -49102,7 +49125,7 @@ if call.loud then
 self:RadioTransmission(self.LSORadio,call,true)
 end
 end
-self:T(self.lid..text)
+self:I(self.lid..text)
 end
 end
 function AIRBOSS:SoundCheckMarshal(delay)
@@ -49118,7 +49141,7 @@ if call.loud then
 self:RadioTransmission(self.MarshalRadio,call,true)
 end
 end
-self:T(self.lid..text)
+self:I(self.lid..text)
 end
 end
 function AIRBOSS:SetMaxLandingPattern(nmax)
@@ -49300,8 +49323,7 @@ self.holdtimestamp=nil
 end
 end
 end
-local text=string.format("Time %s - Status %s (case=%d) - Speed=%.1f kts - Heading=%d - WP=%d - ETA=%s - Turning=%s - Collision Warning=%s - Detour=%s - Turn Into Wind=%s - Holdtime=%d sec",
-clock,self:GetState(),self.case,speed,hdg,self.currentwp,eta,tostring(self.turning),tostring(collision),tostring(self.detour),tostring(self.turnintowind),holdtime)
+local text=string.format("Time %s - Status %s (case=%d) - Speed=%.1f kts - Heading=%d - WP=%d - ETA=%s - Turning=%s - Collision Warning=%s - Detour=%s - Turn Into Wind=%s - Holdtime=%d sec",clock,self:GetState(),self.case,speed,hdg,self.currentwp,eta,tostring(self.turning),tostring(collision),tostring(self.detour),tostring(self.turnintowind),holdtime)
 self:T(self.lid..text)
 text="Players:"
 local i=0
@@ -49313,7 +49335,7 @@ end
 if i==0 then
 text=text.." none"
 end
-self:T(self.lid..text)
+self:I(self.lid..text)
 if collision then
 if self.turnintowind then
 self:CarrierResumeRoute(self.Creturnto)
@@ -49357,7 +49379,6 @@ if flight.ai then
 for _,_element in pairs(flight.elements)do
 local element=_element
 local unit=element.unit
-if unit and unit:IsAlive()then
 local lineup=self:_Lineup(unit,true)
 local unitcoord=unit:GetCoord()
 local dist=unitcoord:Get2DDistance(self:GetCoord())
@@ -49369,7 +49390,6 @@ self:_LSOCallAircraftBall(element.onboard,self:_GetACNickname(unit:GetTypeName()
 self:RadioTransmission(self.LSORadio,self.LSOCall.ROGERBALL,nil,nil,0.5,true)
 element.ballcall=true
 flight.ballcall=true
-end
 end
 end
 end
@@ -49436,7 +49456,9 @@ local text=string.format(self.lid.."Recovery time windows:")
 if#self.recoverytimes==0 then
 text=text.." none!"
 end
-local _sort=function(a,b)return a.START<b.START end
+local _sort=function(a,b)
+return a.START<b.START
+end
 table.sort(self.recoverytimes,_sort)
 local nextwindow=nil
 local currwindow=nil
@@ -49599,13 +49621,13 @@ self:T(self.lid..string.format("Unpausing aircraft recovery."))
 self:_MarshalCallResumeRecovery()
 end
 function AIRBOSS:onafterPassingWaypoint(From,Event,To,n)
-self:T(self.lid..string.format("Carrier passed waypoint %d.",n))
+self:I(self.lid..string.format("Carrier passed waypoint %d.",n))
 end
 function AIRBOSS:onafterIdle(From,Event,To)
 self:T(self.lid..string.format("Carrier goes to idle."))
 end
 function AIRBOSS:onafterStop(From,Event,To)
-self:T(self.lid..string.format("Stopping airboss script."))
+self:I(self.lid..string.format("Stopping airboss script."))
 self:UnHandleEvent(EVENTS.Birth)
 self:UnHandleEvent(EVENTS.Land)
 self:UnHandleEvent(EVENTS.EngineShutdown)
@@ -49758,6 +49780,30 @@ self.carrierparam.wire1=44
 self.carrierparam.wire2=54
 self.carrierparam.wire3=64
 self.carrierparam.wire4=74
+end
+function AIRBOSS:_InitHermes()
+self:_InitStennis()
+self.carrierparam.sterndist=-105
+self.carrierparam.deckheight=12
+self.carrierparam.totlength=228.19
+self.carrierparam.totwidthport=20.5
+self.carrierparam.totwidthstarboard=24.5
+self.carrierparam.rwyangle=0
+self.carrierparam.rwylength=215
+self.carrierparam.rwywidth=13
+self.carrierparam.wire1=nil
+self.carrierparam.wire2=nil
+self.carrierparam.wire3=nil
+self.carrierparam.wire4=nil
+self.BreakLate.name="Late Break"
+self.BreakLate.Xmin=-UTILS.NMToMeters(1)
+self.BreakLate.Xmax=UTILS.NMToMeters(5)
+self.BreakLate.Zmin=-UTILS.NMToMeters(0.25)
+self.BreakLate.Zmax=UTILS.NMToMeters(0.5)
+self.BreakLate.LimitXmin=0
+self.BreakLate.LimitXmax=nil
+self.BreakLate.LimitZmin=-UTILS.NMToMeters(0.5)
+self.BreakLate.LimitZmax=nil
 end
 function AIRBOSS:_InitTarawa()
 self:_InitStennis()
@@ -50079,792 +50125,109 @@ self.MarshalCall.STARTINGRECOVERY.duration=2.65
 end
 function AIRBOSS:_InitVoiceOvers()
 self.LSOCall={
-BOLTER={
-file="LSO-BolterBolter",
-suffix="ogg",
-loud=false,
-subtitle="Bolter, Bolter",
-duration=0.75,
-subduration=5,
-},
-CALLTHEBALL={
-file="LSO-CallTheBall",
-suffix="ogg",
-loud=false,
-subtitle="Call the ball",
-duration=0.6,
-subduration=2,
-},
-CHECK={
-file="LSO-Check",
-suffix="ogg",
-loud=false,
-subtitle="Check",
-duration=0.45,
-subduration=2.5,
-},
-CLEAREDTOLAND={
-file="LSO-ClearedToLand",
-suffix="ogg",
-loud=false,
-subtitle="Cleared to land",
-duration=1.0,
-subduration=5,
-},
-COMELEFT={
-file="LSO-ComeLeft",
-suffix="ogg",
-loud=true,
-subtitle="Come left",
-duration=0.60,
-subduration=1,
-},
-RADIOCHECK={
-file="LSO-RadioCheck",
-suffix="ogg",
-loud=false,
-subtitle="Paddles, radio check",
-duration=1.1,
-subduration=5,
-},
-RIGHTFORLINEUP={
-file="LSO-RightForLineup",
-suffix="ogg",
-loud=true,
-subtitle="Right for line up",
-duration=0.80,
-subduration=1,
-},
-HIGH={
-file="LSO-High",
-suffix="ogg",
-loud=true,
-subtitle="You're high",
-duration=0.65,
-subduration=1,
-},
-LOW={
-file="LSO-Low",
-suffix="ogg",
-loud=true,
-subtitle="You're low",
-duration=0.50,
-subduration=1,
-},
-POWER={
-file="LSO-Power",
-suffix="ogg",
-loud=true,
-subtitle="Power",
-duration=0.50,
-subduration=1,
-},
-SLOW={
-file="LSO-Slow",
-suffix="ogg",
-loud=true,
-subtitle="You're slow",
-duration=0.65,
-subduration=1,
-},
-FAST={
-file="LSO-Fast",
-suffix="ogg",
-loud=true,
-subtitle="You're fast",
-duration=0.70,
-subduration=1,
-},
-ROGERBALL={
-file="LSO-RogerBall",
-suffix="ogg",
-loud=false,
-subtitle="Roger ball",
-duration=1.00,
-subduration=2,
-},
-WAVEOFF={
-file="LSO-WaveOff",
-suffix="ogg",
-loud=false,
-subtitle="Wave off",
-duration=0.6,
-subduration=5,
-},
-LONGINGROOVE={
-file="LSO-LongInTheGroove",
-suffix="ogg",
-loud=false,
-subtitle="You're long in the groove",
-duration=1.2,
-subduration=5,
-},
-FOULDECK={
-file="LSO-FoulDeck",
-suffix="ogg",
-loud=false,
-subtitle="Foul deck",
-duration=0.62,
-subduration=5,
-},
-DEPARTANDREENTER={
-file="LSO-DepartAndReenter",
-suffix="ogg",
-loud=false,
-subtitle="Depart and re-enter",
-duration=1.1,
-subduration=5,
-},
-PADDLESCONTACT={
-file="LSO-PaddlesContact",
-suffix="ogg",
-loud=false,
-subtitle="Paddles, contact",
-duration=1.0,
-subduration=5,
-},
-WELCOMEABOARD={
-file="LSO-WelcomeAboard",
-suffix="ogg",
-loud=false,
-subtitle="Welcome aboard",
-duration=1.0,
-subduration=5,
-},
-EXPECTHEAVYWAVEOFF={
-file="LSO-ExpectHeavyWaveoff",
-suffix="ogg",
-loud=false,
-subtitle="Expect heavy waveoff",
-duration=1.2,
-subduration=5,
-},
-EXPECTSPOT75={
-file="LSO-ExpectSpot75",
-suffix="ogg",
-loud=false,
-subtitle="Expect spot 7.5",
-duration=2.0,
-subduration=5,
-},
-EXPECTSPOT5={
-file="LSO-ExpectSpot5",
-suffix="ogg",
-loud=false,
-subtitle="Expect spot 5",
-duration=1.3,
-subduration=5,
-},
-STABILIZED={
-file="LSO-Stabilized",
-suffix="ogg",
-loud=false,
-subtitle="Stabilized",
-duration=0.9,
-subduration=5,
-},
-IDLE={
-file="LSO-Idle",
-suffix="ogg",
-loud=false,
-subtitle="Idle",
-duration=0.45,
-subduration=5,
-},
-N0={
-file="LSO-N0",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N1={
-file="LSO-N1",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.25,
-},
-N2={
-file="LSO-N2",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N3={
-file="LSO-N3",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N4={
-file="LSO-N4",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.39,
-},
-N5={
-file="LSO-N5",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.39,
-},
-N6={
-file="LSO-N6",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N7={
-file="LSO-N7",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N8={
-file="LSO-N8",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N9={
-file="LSO-N9",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-CLICK={
-file="AIRBOSS-RadioClick",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.35,
-},
-NOISE={
-file="AIRBOSS-Noise",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=3.6,
-},
-SPINIT={
-file="AIRBOSS-SpinIt",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.73,
-subduration=5,
-},
+BOLTER={file="LSO-BolterBolter",suffix="ogg",loud=false,subtitle="Bolter, Bolter",duration=0.75,subduration=5},
+CALLTHEBALL={file="LSO-CallTheBall",suffix="ogg",loud=false,subtitle="Call the ball",duration=0.6,subduration=2},
+CHECK={file="LSO-Check",suffix="ogg",loud=false,subtitle="Check",duration=0.45,subduration=2.5},
+CLEAREDTOLAND={file="LSO-ClearedToLand",suffix="ogg",loud=false,subtitle="Cleared to land",duration=1.0,subduration=5},
+COMELEFT={file="LSO-ComeLeft",suffix="ogg",loud=true,subtitle="Come left",duration=0.60,subduration=1},
+RADIOCHECK={file="LSO-RadioCheck",suffix="ogg",loud=false,subtitle="Paddles, radio check",duration=1.1,subduration=5},
+RIGHTFORLINEUP={file="LSO-RightForLineup",suffix="ogg",loud=true,subtitle="Right for line up",duration=0.80,subduration=1},
+HIGH={file="LSO-High",suffix="ogg",loud=true,subtitle="You're high",duration=0.65,subduration=1},
+LOW={file="LSO-Low",suffix="ogg",loud=true,subtitle="You're low",duration=0.50,subduration=1},
+POWER={file="LSO-Power",suffix="ogg",loud=true,subtitle="Power",duration=0.50,subduration=1},
+SLOW={file="LSO-Slow",suffix="ogg",loud=true,subtitle="You're slow",duration=0.65,subduration=1},
+FAST={file="LSO-Fast",suffix="ogg",loud=true,subtitle="You're fast",duration=0.70,subduration=1},
+ROGERBALL={file="LSO-RogerBall",suffix="ogg",loud=false,subtitle="Roger ball",duration=1.00,subduration=2},
+WAVEOFF={file="LSO-WaveOff",suffix="ogg",loud=false,subtitle="Wave off",duration=0.6,subduration=5},
+LONGINGROOVE={file="LSO-LongInTheGroove",suffix="ogg",loud=false,subtitle="You're long in the groove",duration=1.2,subduration=5},
+FOULDECK={file="LSO-FoulDeck",suffix="ogg",loud=false,subtitle="Foul deck",duration=0.62,subduration=5},
+DEPARTANDREENTER={file="LSO-DepartAndReenter",suffix="ogg",loud=false,subtitle="Depart and re-enter",duration=1.1,subduration=5},
+PADDLESCONTACT={file="LSO-PaddlesContact",suffix="ogg",loud=false,subtitle="Paddles, contact",duration=1.0,subduration=5},
+WELCOMEABOARD={file="LSO-WelcomeAboard",suffix="ogg",loud=false,subtitle="Welcome aboard",duration=1.0,subduration=5},
+EXPECTHEAVYWAVEOFF={file="LSO-ExpectHeavyWaveoff",suffix="ogg",loud=false,subtitle="Expect heavy waveoff",duration=1.2,subduration=5},
+EXPECTSPOT75={file="LSO-ExpectSpot75",suffix="ogg",loud=false,subtitle="Expect spot 7.5",duration=2.0,subduration=5},
+EXPECTSPOT5={file="LSO-ExpectSpot5",suffix="ogg",loud=false,subtitle="Expect spot 5",duration=1.3,subduration=5},
+STABILIZED={file="LSO-Stabilized",suffix="ogg",loud=false,subtitle="Stabilized",duration=0.9,subduration=5},
+IDLE={file="LSO-Idle",suffix="ogg",loud=false,subtitle="Idle",duration=0.45,subduration=5},
+N0={file="LSO-N0",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N1={file="LSO-N1",suffix="ogg",loud=false,subtitle="",duration=0.25},
+N2={file="LSO-N2",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N3={file="LSO-N3",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N4={file="LSO-N4",suffix="ogg",loud=false,subtitle="",duration=0.39},
+N5={file="LSO-N5",suffix="ogg",loud=false,subtitle="",duration=0.39},
+N6={file="LSO-N6",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N7={file="LSO-N7",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N8={file="LSO-N8",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N9={file="LSO-N9",suffix="ogg",loud=false,subtitle="",duration=0.40},
+CLICK={file="AIRBOSS-RadioClick",suffix="ogg",loud=false,subtitle="",duration=0.35},
+NOISE={file="AIRBOSS-Noise",suffix="ogg",loud=false,subtitle="",duration=3.6},
+SPINIT={file="AIRBOSS-SpinIt",suffix="ogg",loud=false,subtitle="",duration=0.73,subduration=5},
 }
 self.PilotCall={
-N0={
-file="PILOT-N0",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N1={
-file="PILOT-N1",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.25,
-},
-N2={
-file="PILOT-N2",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N3={
-file="PILOT-N3",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N4={
-file="PILOT-N4",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.39,
-},
-N5={
-file="PILOT-N5",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.39,
-},
-N6={
-file="PILOT-N6",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N7={
-file="PILOT-N7",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N8={
-file="PILOT-N8",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N9={
-file="PILOT-N9",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-POINT={
-file="PILOT-Point",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.33,
-},
-SKYHAWK={
-file="PILOT-Skyhawk",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.95,
-subduration=5,
-},
-HARRIER={
-file="PILOT-Harrier",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.58,
-subduration=5,
-},
-HAWKEYE={
-file="PILOT-Hawkeye",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.63,
-subduration=5,
-},
-TOMCAT={
-file="PILOT-Tomcat",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.66,
-subduration=5,
-},
-HORNET={
-file="PILOT-Hornet",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.56,
-subduration=5,
-},
-VIKING={
-file="PILOT-Viking",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.61,
-subduration=5,
-},
-BALL={
-file="PILOT-Ball",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.50,
-subduration=5,
-},
-BINGOFUEL={
-file="PILOT-BingoFuel",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.80,
-},
-GASATDIVERT={
-file="PILOT-GasAtDivert",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.80,
-},
-GASATTANKER={
-file="PILOT-GasAtTanker",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.95,
-},
-MARSHAL={
-file="PILOT-Marshal",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.50,
-},
-MARKINGMOMS={
-file="PILOT-MarkingMoms",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.90,
-},
-FOR={
-file="PILOT-For",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.29,
-},
-ANGELS={
-file="PILOT-Angels",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.50,
-},
-STATE={
-file="PILOT-State",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-COMMENCING={
-file="PILOT-Commencing",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.45,
-},
+N0={file="PILOT-N0",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N1={file="PILOT-N1",suffix="ogg",loud=false,subtitle="",duration=0.25},
+N2={file="PILOT-N2",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N3={file="PILOT-N3",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N4={file="PILOT-N4",suffix="ogg",loud=false,subtitle="",duration=0.39},
+N5={file="PILOT-N5",suffix="ogg",loud=false,subtitle="",duration=0.39},
+N6={file="PILOT-N6",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N7={file="PILOT-N7",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N8={file="PILOT-N8",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N9={file="PILOT-N9",suffix="ogg",loud=false,subtitle="",duration=0.40},
+POINT={file="PILOT-Point",suffix="ogg",loud=false,subtitle="",duration=0.33},
+SKYHAWK={file="PILOT-Skyhawk",suffix="ogg",loud=false,subtitle="",duration=0.95,subduration=5},
+HARRIER={file="PILOT-Harrier",suffix="ogg",loud=false,subtitle="",duration=0.58,subduration=5},
+HAWKEYE={file="PILOT-Hawkeye",suffix="ogg",loud=false,subtitle="",duration=0.63,subduration=5},
+TOMCAT={file="PILOT-Tomcat",suffix="ogg",loud=false,subtitle="",duration=0.66,subduration=5},
+HORNET={file="PILOT-Hornet",suffix="ogg",loud=false,subtitle="",duration=0.56,subduration=5},
+VIKING={file="PILOT-Viking",suffix="ogg",loud=false,subtitle="",duration=0.61,subduration=5},
+BALL={file="PILOT-Ball",suffix="ogg",loud=false,subtitle="",duration=0.50,subduration=5},
+BINGOFUEL={file="PILOT-BingoFuel",suffix="ogg",loud=false,subtitle="",duration=0.80},
+GASATDIVERT={file="PILOT-GasAtDivert",suffix="ogg",loud=false,subtitle="",duration=1.80},
+GASATTANKER={file="PILOT-GasAtTanker",suffix="ogg",loud=false,subtitle="",duration=1.95},
 }
 self.MarshalCall={
-AFFIRMATIVE={
-file="MARSHAL-Affirmative",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.90,
-},
-ALTIMETER={
-file="MARSHAL-Altimeter",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.85,
-},
-BRC={
-file="MARSHAL-BRC",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.80,
-},
-CARRIERTURNTOHEADING={
-file="MARSHAL-CarrierTurnToHeading",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=2.48,
-subduration=5,
-},
-CASE={
-file="MARSHAL-Case",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-CHARLIETIME={
-file="MARSHAL-CharlieTime",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.90,
-},
-CLEAREDFORRECOVERY={
-file="MARSHAL-ClearedForRecovery",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.25,
-},
-DECKCLOSED={
-file="MARSHAL-DeckClosed",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.10,
-subduration=5,
-},
-DEGREES={
-file="MARSHAL-Degrees",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.60,
-},
-EXPECTED={
-file="MARSHAL-Expected",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.55,
-},
-FLYNEEDLES={
-file="MARSHAL-FlyYourNeedles",
-suffix="ogg",
-loud=false,
-subtitle="Fly your needles",
-duration=0.9,
-subduration=5,
-},
-HOLDATANGELS={
-file="MARSHAL-HoldAtAngels",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.10,
-},
-HOURS={
-file="MARSHAL-Hours",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.60,
-subduration=5,
-},
-MARSHALRADIAL={
-file="MARSHAL-MarshalRadial",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.10,
-},
-N0={
-file="MARSHAL-N0",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N1={
-file="MARSHAL-N1",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.25,
-},
-N2={
-file="MARSHAL-N2",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N3={
-file="MARSHAL-N3",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N4={
-file="MARSHAL-N4",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.39,
-},
-N5={
-file="MARSHAL-N5",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.39,
-},
-N6={
-file="MARSHAL-N6",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N7={
-file="MARSHAL-N7",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-N8={
-file="MARSHAL-N8",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.37,
-},
-N9={
-file="MARSHAL-N9",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.40,
-},
-NEGATIVE={
-file="MARSHAL-Negative",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.80,
-subduration=5,
-},
-NEWFB={
-file="MARSHAL-NewFB",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.35,
-},
-OPS={
-file="MARSHAL-Ops",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.48,
-},
-POINT={
-file="MARSHAL-Point",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.33,
-},
-RADIOCHECK={
-file="MARSHAL-RadioCheck",
-suffix="ogg",
-loud=false,
-subtitle="Radio check",
-duration=1.20,
-subduration=5,
-},
-RECOVERY={
-file="MARSHAL-Recovery",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.70,
-subduration=5,
-},
-RECOVERYOPSSTOPPED={
-file="MARSHAL-RecoveryOpsStopped",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=1.65,
-subduration=5,
-},
-RECOVERYPAUSEDNOTICE={
-file="MARSHAL-RecoveryPausedNotice",
-suffix="ogg",
-loud=false,
-subtitle="aircraft recovery paused until further notice",
-duration=2.90,
-subduration=5,
-},
-RECOVERYPAUSEDRESUMED={
-file="MARSHAL-RecoveryPausedResumed",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=3.40,
-subduration=5,
-},
-REPORTSEEME={
-file="MARSHAL-ReportSeeMe",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.95,
-},
-RESUMERECOVERY={
-file="MARSHAL-ResumeRecovery",
-suffix="ogg",
-loud=false,
-subtitle="resuming aircraft recovery",
-duration=1.75,
-subduraction=5,
-},
-ROGER={
-file="MARSHAL-Roger",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.53,
-subduration=5,
-},
-SAYNEEDLES={
-file="MARSHAL-SayNeedles",
-suffix="ogg",
-loud=false,
-subtitle="Say needles",
-duration=0.90,
-subduration=5,
-},
-STACKFULL={
-file="MARSHAL-StackFull",
-suffix="ogg",
-loud=false,
-subtitle="Marshal Stack is currently full. Hold outside 10 NM zone and wait for further instructions",
-duration=6.35,
-subduration=10,
-},
-STARTINGRECOVERY={
-file="MARSHAL-StartingRecovery",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=2.65,
-subduration=5,
-},
-CLICK={
-file="AIRBOSS-RadioClick",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=0.35,
-},
-NOISE={
-file="AIRBOSS-Noise",
-suffix="ogg",
-loud=false,
-subtitle="",
-duration=3.6,
-},
+AFFIRMATIVE={file="MARSHAL-Affirmative",suffix="ogg",loud=false,subtitle="",duration=0.90},
+ALTIMETER={file="MARSHAL-Altimeter",suffix="ogg",loud=false,subtitle="",duration=0.85},
+BRC={file="MARSHAL-BRC",suffix="ogg",loud=false,subtitle="",duration=0.80},
+CARRIERTURNTOHEADING={file="MARSHAL-CarrierTurnToHeading",suffix="ogg",loud=false,subtitle="",duration=2.48,subduration=5},
+CASE={file="MARSHAL-Case",suffix="ogg",loud=false,subtitle="",duration=0.40},
+CHARLIETIME={file="MARSHAL-CharlieTime",suffix="ogg",loud=false,subtitle="",duration=0.90},
+CLEAREDFORRECOVERY={file="MARSHAL-ClearedForRecovery",suffix="ogg",loud=false,subtitle="",duration=1.25},
+DECKCLOSED={file="MARSHAL-DeckClosed",suffix="ogg",loud=false,subtitle="",duration=1.10,subduration=5},
+DEGREES={file="MARSHAL-Degrees",suffix="ogg",loud=false,subtitle="",duration=0.60},
+EXPECTED={file="MARSHAL-Expected",suffix="ogg",loud=false,subtitle="",duration=0.55},
+FLYNEEDLES={file="MARSHAL-FlyYourNeedles",suffix="ogg",loud=false,subtitle="Fly your needles",duration=0.9,subduration=5},
+HOLDATANGELS={file="MARSHAL-HoldAtAngels",suffix="ogg",loud=false,subtitle="",duration=1.10},
+HOURS={file="MARSHAL-Hours",suffix="ogg",loud=false,subtitle="",duration=0.60,subduration=5},
+MARSHALRADIAL={file="MARSHAL-MarshalRadial",suffix="ogg",loud=false,subtitle="",duration=1.10},
+N0={file="MARSHAL-N0",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N1={file="MARSHAL-N1",suffix="ogg",loud=false,subtitle="",duration=0.25},
+N2={file="MARSHAL-N2",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N3={file="MARSHAL-N3",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N4={file="MARSHAL-N4",suffix="ogg",loud=false,subtitle="",duration=0.39},
+N5={file="MARSHAL-N5",suffix="ogg",loud=false,subtitle="",duration=0.39},
+N6={file="MARSHAL-N6",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N7={file="MARSHAL-N7",suffix="ogg",loud=false,subtitle="",duration=0.40},
+N8={file="MARSHAL-N8",suffix="ogg",loud=false,subtitle="",duration=0.37},
+N9={file="MARSHAL-N9",suffix="ogg",loud=false,subtitle="",duration=0.40},
+NEGATIVE={file="MARSHAL-Negative",suffix="ogg",loud=false,subtitle="",duration=0.80,subduration=5},
+NEWFB={file="MARSHAL-NewFB",suffix="ogg",loud=false,subtitle="",duration=1.35},
+OPS={file="MARSHAL-Ops",suffix="ogg",loud=false,subtitle="",duration=0.48},
+POINT={file="MARSHAL-Point",suffix="ogg",loud=false,subtitle="",duration=0.33},
+RADIOCHECK={file="MARSHAL-RadioCheck",suffix="ogg",loud=false,subtitle="Radio check",duration=1.20,subduration=5},
+RECOVERY={file="MARSHAL-Recovery",suffix="ogg",loud=false,subtitle="",duration=0.70,subduration=5},
+RECOVERYOPSSTOPPED={file="MARSHAL-RecoveryOpsStopped",suffix="ogg",loud=false,subtitle="",duration=1.65,subduration=5},
+RECOVERYPAUSEDNOTICE={file="MARSHAL-RecoveryPausedNotice",suffix="ogg",loud=false,subtitle="aircraft recovery paused until further notice",duration=2.90,subduration=5},
+RECOVERYPAUSEDRESUMED={file="MARSHAL-RecoveryPausedResumed",suffix="ogg",loud=false,subtitle="",duration=3.40,subduration=5},
+REPORTSEEME={file="MARSHAL-ReportSeeMe",suffix="ogg",loud=false,subtitle="",duration=0.95},
+RESUMERECOVERY={file="MARSHAL-ResumeRecovery",suffix="ogg",loud=false,subtitle="resuming aircraft recovery",duration=1.75,subduraction=5},
+ROGER={file="MARSHAL-Roger",suffix="ogg",loud=false,subtitle="",duration=0.53,subduration=5},
+SAYNEEDLES={file="MARSHAL-SayNeedles",suffix="ogg",loud=false,subtitle="Say needles",duration=0.90,subduration=5},
+STACKFULL={file="MARSHAL-StackFull",suffix="ogg",loud=false,subtitle="Marshal Stack is currently full. Hold outside 10 NM zone and wait for further instructions",duration=6.35,subduration=10},
+STARTINGRECOVERY={file="MARSHAL-StartingRecovery",suffix="ogg",loud=false,subtitle="",duration=2.65,subduration=5},
+CLICK={file="AIRBOSS-RadioClick",suffix="ogg",loud=false,subtitle="",duration=0.35},
+NOISE={file="AIRBOSS-Noise",suffix="ogg",loud=false,subtitle="",duration=3.6},
 }
 self:SetVoiceOversLSOByRaynor()
 self:SetVoiceOversMarshalByRaynor()
@@ -50915,11 +50278,11 @@ aoa.OnSpeedMin=8.50
 aoa.Fast=8.25
 aoa.FAST=8.00
 elseif harrier then
-aoa.SLOW=14.0
-aoa.Slow=13.0
-aoa.OnSpeedMax=12.0
-aoa.OnSpeed=11.0
-aoa.OnSpeedMin=10.0
+aoa.SLOW=16.0
+aoa.Slow=13.5
+aoa.OnSpeedMax=12.5
+aoa.OnSpeed=10.0
+aoa.OnSpeedMin=9.5
 aoa.Fast=8.0
 aoa.FAST=7.5
 end
@@ -50951,7 +50314,6 @@ local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
 local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
-local goshawk=playerData.actype==AIRBOSS.AircraftCarrier.T45C
 local alt
 local aoa
 local dist
@@ -51057,7 +50419,7 @@ alt=UTILS.FeetToMeters(360)
 elseif skyhawk then
 alt=UTILS.FeetToMeters(300)
 elseif harrier then
-alt=UTILS.FeetToMeters(300)
+alt=UTILS.FeetToMeters(312)
 end
 aoa=aoaac.OnSpeed
 end
@@ -51210,16 +50572,13 @@ end
 for groupname,_group in pairs(insideCCA)do
 local group=_group
 local knownflight=self:_GetFlightFromGroupInQueue(group,self.flights)
-if not knownflight and not self:_IsHuman(group)then
-knownflight=self:_CreateFlightGroup(group)
-end
 local actype=group:GetTypeName()
 if knownflight then
 if knownflight.ai and knownflight.flag==-100 and self.handleai then
 local putintomarshal=false
-local flight=_DATABASE:GetOpsGroup(groupname)
+local flight=_DATABASE:GetFlightGroup(groupname)
 if flight and flight:IsInbound()and flight.destbase:GetName()==self.carrier:GetName()then
-if flight.isHelo then
+if flight.ishelo then
 else
 putintomarshal=true
 end
@@ -51239,6 +50598,9 @@ break
 end
 end
 else
+if not self:_IsHuman(group)then
+self:_CreateFlightGroup(group)
+end
 end
 end
 local remove={}
@@ -51467,7 +50829,7 @@ angels0=2
 local hdg=self.carrier:GetHeading()
 p1=Carrier
 p2=Carrier:Translate(UTILS.NMToMeters(1.5),hdg)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 p1=Carrier:Translate(UTILS.NMToMeters(1.0),hdg+90)
 p2=p1:Translate(2.5,hdg)
 end
@@ -51651,7 +51013,7 @@ else
 nfree=nmax
 end
 end
-self:T(self.lid..string.format("Returning free stack %s",tostring(nfree)))
+self:I(self.lid..string.format("Returning free stack %s",tostring(nfree)))
 return nfree
 end
 function AIRBOSS:_GetFreeStack_Old(ai,case,empty)
@@ -51772,16 +51134,14 @@ local actype=self:_GetACNickname(flight.actype)
 local onboard=flight.onboard
 local holding=tostring(flight.holding)
 local _,nunits,nsec=self:_GetFlightUnits(flight,false)
-text=text..string.format("\n[%d] %s*%d (%s): lead=%s (%d/%d), onboard=%s, flag=%d, case=%d, time=%s, fuel=%d, ai=%s, holding=%s",
-i,flight.groupname,nunits,actype,lead,nsec,Nsec,onboard,stack,case,clock,fuel,ai,holding)
+text=text..string.format("\n[%d] %s*%d (%s): lead=%s (%d/%d), onboard=%s, flag=%d, case=%d, time=%s, fuel=%d, ai=%s, holding=%s",i,flight.groupname,nunits,actype,lead,nsec,Nsec,onboard,stack,case,clock,fuel,ai,holding)
 if stack>0 then
 local alt=UTILS.MetersToFeet(self:_GetMarshalAltitude(stack,case))
 text=text..string.format(" stackalt=%d ft",alt)
 end
 for j,_element in pairs(flight.elements)do
 local element=_element
-text=text..string.format("\n  (%d) %s (%s): ai=%s, ballcall=%s, recovered=%s",
-j,element.onboard,element.unitname,tostring(element.ai),tostring(element.ballcall),tostring(element.recovered))
+text=text..string.format("\n  (%d) %s (%s): ai=%s, ballcall=%s, recovered=%s",j,element.onboard,element.unitname,tostring(element.ai),tostring(element.ballcall),tostring(element.recovered))
 end
 end
 end
@@ -52147,7 +51507,7 @@ self:_UpdateFlightSection(flight)
 self:_RemoveFlightFromQueue(self.flights,flight)
 local playerdata=self.players[flight.name]
 if playerdata then
-self:T(self.lid..string.format("Removing player %s completely.",flight.name))
+self:I(self.lid..string.format("Removing player %s completely.",flight.name))
 self.players[flight.name]=nil
 end
 flight=nil
@@ -52386,7 +51746,7 @@ self:_SetTimeInGroove(playerData)
 local text=string.format("Player %s AC type %s landed at dist=%.1f m. Tgroove=%.1f sec.",playerData.name,playerData.actype,dist,self:_GetTimeInGroove(playerData))
 text=text..string.format(" X=%.1f m, Z=%.1f m, rho=%.1f m.",X,Z,rho)
 self:T(self.lid..text)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self:RadioTransmission(self.LSORadio,self.LSOCall.IDLE,false,1,nil,true)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.DEBRIEF)
 else
@@ -52400,7 +51760,7 @@ self:E(self.lid..string.format("Player %s did not land in carrier box zone. Mayb
 end
 end
 else
-if self.carriertype~=AIRBOSS.CarrierType.TARAWA or self.carriertype~=AIRBOSS.CarrierType.AMERICA or self.carriertype~=AIRBOSS.CarrierType.JCARLOS or self.carriertype~=AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype~=AIRBOSS.CarrierType.HERMES or self.carriertype~=AIRBOSS.CarrierType.TARAWA or self.carriertype~=AIRBOSS.CarrierType.AMERICA or self.carriertype~=AIRBOSS.CarrierType.JCARLOS or self.carriertype~=AIRBOSS.CarrierType.CANBERRA then
 local coord=EventData.IniUnit:GetCoordinate()
 local dist=coord:Get2DDistance(self:GetCoordinate())
 local wire=self:_GetWire(coord,0)
@@ -52935,7 +52295,7 @@ end
 function AIRBOSS:_CheckForLongDownwind(playerData)
 local X,Z=self:_GetDistances(playerData.unit)
 local limit=UTILS.NMToMeters(-1.6)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 limit=UTILS.NMToMeters(-2.0)
 end
 if X<limit then
@@ -52975,7 +52335,7 @@ end
 local relheading=self:_GetRelativeHeading(playerData.unit,false)
 if relheading<=90 then
 self:_PlayerHint(playerData)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.FINAL)
 else
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.WAKE)
@@ -53096,7 +52456,7 @@ local ZoneALS=self:_GetZoneAbeamLandingSpot()
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
-local stable=dv<20
+local stable=dv<30
 if playerData.unit:IsInZone(ZoneALS)and stable then
 self:RadioTransmission(self.LSORadio,self.LSOCall.CLEAREDTOLAND,nil,nil,nil,true)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.GROOVE_LC)
@@ -53109,7 +52469,7 @@ local ZoneLS=self:_GetZoneLandingSpot()
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
-local stable=dv<10
+local stable=dv<15
 if playerData.unit:IsInZone(ZoneLS)and stable and playerData.stable==true then
 self:RadioTransmission(self.LSORadio,self.LSOCall.STABILIZED,nil,nil,nil,false)
 playerData.stable=false
@@ -53207,7 +52567,7 @@ local glMin=-1.2
 local luAbs=3.0
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 glMax=2.6
-glMin=-2.0
+glMin=-2.2
 luAbs=4.1
 end
 if glideslopeError>glMax then
@@ -53245,13 +52605,11 @@ return waveoff
 end
 function AIRBOSS:_CheckFoulDeck(playerData)
 local check=false
-if playerData.step==AIRBOSS.PatternStep.GROOVE_IM or
-playerData.step==AIRBOSS.PatternStep.GROOVE_IC then
+if playerData.step==AIRBOSS.PatternStep.GROOVE_IM or playerData.step==AIRBOSS.PatternStep.GROOVE_IC then
 check=true
 end
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
-if playerData.step==AIRBOSS.PatternStep.GROOVE_AR or
-playerData.step==AIRBOSS.PatternStep.GROOVE_AL then
+if playerData.step==AIRBOSS.PatternStep.GROOVE_AR or playerData.step==AIRBOSS.PatternStep.GROOVE_AL then
 check=true
 end
 end
@@ -53309,9 +52667,14 @@ end
 function AIRBOSS:_GetSternCoord()
 local hdg=self.carrier:GetHeading()
 local FB=self:GetFinalBearing()
+local case=self.case
 self.sterncoord:UpdateFromCoordinate(self:GetCoordinate())
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if case==3 then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(8,FB-90,true,true)
+elseif case==2 or case==1 then
+self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(8,FB-90,true,true)
+end
 elseif self.carriertype==AIRBOSS.CarrierType.STENNIS then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(7,FB+90,true,true)
 elseif self.carriertype==AIRBOSS.CarrierType.FORRESTAL then
@@ -53630,7 +52993,7 @@ local hdg=self:GetHeading()
 local D=UTILS.NMToMeters(2.5)
 local Post=self:GetCoordinate():Translate(D,hdg+270)
 self.zoneHolding=ZONE_RADIUS:New("CASE I Holding Zone",Post:GetVec2(),self.marshalradius)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self.zoneHolding=ZONE_RADIUS:New("CASE I Holding Zone",self.carrier:GetVec2(),UTILS.NMToMeters(5))
 end
 else
@@ -53652,7 +53015,7 @@ local hdg=self:GetHeading()
 local D=UTILS.NMToMeters(4.75)
 local R=UTILS.NMToMeters(1)
 local Three=self:GetCoordinate():Translate(D,hdg+275)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 local Dx=UTILS.NMToMeters(2.25)
 local Dz=UTILS.NMToMeters(2.25)
 R=UTILS.NMToMeters(1)
@@ -53804,18 +53167,15 @@ end
 function AIRBOSS:_GetOptLandingCoordinate()
 self.landingcoord:UpdateFromCoordinate(self:_GetSternCoord())
 local FB=self:GetFinalBearing(false)
-if self.carriertype==AIRBOSS.CarrierType.TARAWA then
+local case=self.case
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if case==3 then
+self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate())
+self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
+elseif case==2 or case==1 then
 self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
 self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
-elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
-elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
-elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
-self.landingcoord:UpdateFromCoordinate(self:_GetLandingSpotCoordinate()):Translate(35,FB-90,true,true)
-self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
+end
 else
 if self.carrierparam.wire3 then
 local w3=self.carrierparam.wire3
@@ -53827,7 +53187,10 @@ return self.landingcoord
 end
 function AIRBOSS:_GetLandingSpotCoordinate()
 self.landingspotcoord:UpdateFromCoordinate(self:_GetSternCoord())
-if self.carriertype==AIRBOSS.CarrierType.TARAWA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES then
+local hdg=self:GetHeading()
+self.landingspotcoord:Translate(69,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
+elseif self.carriertype==AIRBOSS.CarrierType.TARAWA then
 local hdg=self:GetHeading()
 self.landingspotcoord:Translate(57,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
 elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
@@ -53951,14 +53314,16 @@ if runway then
 vC=UTILS.Rotate2D(vC,-self.carrierparam.rwyangle)
 end
 local vP=unit:GetOrientationX()
-vC.y=0;vP.y=0
+vC.y=0;
+vP.y=0
 local rhdg=UTILS.VecAngle(vC,vP)
 return rhdg
 end
 function AIRBOSS:_GetRelativeVelocity(unit)
 local vC=self.carrier:GetVelocityVec3()
 local vP=unit:GetVelocityVec3()
-vC.y=0;vP.y=0
+vC.y=0;
+vP.y=0
 local v=UTILS.VecSubstract(vP,vC)
 return UTILS.VecNorm(v),v
 end
@@ -53983,8 +53348,7 @@ local nextXmax=check.LimitXmax==nil or(check.LimitXmax and(check.LimitXmax<0 and
 local nextZmin=check.LimitZmin==nil or(check.LimitZmin and(check.LimitZmin<0 and Z<=check.LimitZmin or check.LimitZmin>=0 and Z>=check.LimitZmin))
 local nextZmax=check.LimitZmax==nil or(check.LimitZmax and(check.LimitZmax<0 and Z>=check.LimitZmax or check.LimitZmax>=0 and Z<=check.LimitZmax))
 local next=nextXmin and nextXmax and nextZmin and nextZmax
-local text=string.format("step=%s: next=%s: X=%d Xmin=%s Xmax=%s | Z=%d Zmin=%s Zmax=%s",
-check.name,tostring(next),X,tostring(check.LimitXmin),tostring(check.LimitXmax),Z,tostring(check.LimitZmin),tostring(check.LimitZmax))
+local text=string.format("step=%s: next=%s: X=%d Xmin=%s Xmax=%s | Z=%d Zmin=%s Zmax=%s",check.name,tostring(next),X,tostring(check.LimitXmin),tostring(check.LimitXmax),Z,tostring(check.LimitZmin),tostring(check.LimitZmax))
 self:T3(self.lid..text)
 return next
 end
@@ -54077,9 +53441,11 @@ local GIC,nIC=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IC)
 local GAR,nAR=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.AR)
 local G=GXX.." "..GIM.." ".." "..GIC.." "..GAR
 local N=nXX+nIM+nIC+nAR
+local Nv=nXX+nIM
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
+local nNv=Nv-nS-nL
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
@@ -54090,12 +53456,15 @@ grade="_OK_"
 points=5.0
 G="Unicorn"
 else
-if nL>3 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if nL>1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 grade="--"
 points=2.0
-elseif nN>2 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+elseif nNv>=1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
 grade="(OK)"
 points=3.0
+elseif nNv<1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+grade="OK"
+points=4.0
 elseif nL>0 then
 grade="--"
 points=2.0
@@ -54183,11 +53552,9 @@ local P=nil
 if step==AIRBOSS.PatternStep.GROOVE_XX and ROL<=4.0 and playerData.case<3 then
 if LUE>self.lue.RIGHT then
 P=underline("AA")
-elseif
-LUE>self.lue.RightMed then
+elseif LUE>self.lue.RightMed then
 P="AA "
-elseif
-LUE>self.lue.Right then
+elseif LUE>self.lue.Right then
 P=little("AA")
 end
 end
@@ -54195,11 +53562,9 @@ local O=nil
 if step==AIRBOSS.PatternStep.GROOVE_XX then
 if LUE<self.lue.LEFT then
 O=underline("OS")
-elseif
-LUE<self.lue.Left then
+elseif LUE<self.lue.Left then
 O="OS"
-elseif
-LUE<self.lue._min then
+elseif LUE<self.lue._min then
 O=little("OS")
 end
 end
@@ -54334,7 +53699,7 @@ gp=AIRBOSS.GroovePos.AR
 if n==-1 then
 gp=AIRBOSS.GroovePos.IC
 elseif n==1 then
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 gp=AIRBOSS.GroovePos.AL
 else
 gp=AIRBOSS.GroovePos.IW
@@ -54923,7 +54288,7 @@ local vtot=math.max(vdeck-vwind,UTILS.KnotsToMps(2))
 local dist=vtot*time
 local speedknots=UTILS.MpsToKnots(vtot)
 local distNM=UTILS.MetersToNM(dist)
-self:T(self.lid..string.format("Carrier steaming into the wind (%.1f kts). Distance=%.1f NM, Speed=%.1f knots, Time=%d sec.",UTILS.MpsToKnots(vwind),distNM,speedknots,time))
+self:I(self.lid..string.format("Carrier steaming into the wind (%.1f kts). Distance=%.1f NM, Speed=%.1f knots, Time=%d sec.",UTILS.MpsToKnots(vwind),distNM,speedknots,time))
 local hiw=self:GetHeadingIntoWind()
 local hdg=self:GetHeading()
 local deltaH=self:_GetDeltaHeading(hdg,hiw)
@@ -55013,7 +54378,8 @@ end
 function AIRBOSS:_CheckCarrierTurning()
 local vNew=self.carrier:GetOrientationX()
 local vLast=self.Corientlast
-vNew.y=0;vLast.y=0
+vNew.y=0;
+vLast.y=0
 local deltaLast=math.deg(math.acos(UTILS.VecDot(vNew,vLast)/UTILS.VecNorm(vNew)/UTILS.VecNorm(vLast)))
 self.Corientlast=vNew
 local turning=math.abs(deltaLast)>=1
@@ -55046,7 +54412,8 @@ return
 end
 local vNew=self.carrier:GetOrientationX()
 local vOld=self.Corientation
-vNew.y=0;vOld.y=0
+vNew.y=0;
+vOld.y=0
 local deltaHeading=math.deg(math.acos(UTILS.VecDot(vNew,vOld)/UTILS.VecNorm(vNew)/UTILS.VecNorm(vOld)))
 local Hchange=false
 if math.abs(deltaHeading)>=Hupdate then
@@ -55229,13 +54596,13 @@ end
 function AIRBOSS:_IsCarrierAircraft(unit)
 local aircrafttype=unit:GetTypeName()
 if aircrafttype==AIRBOSS.AircraftCarrier.AV8B then
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 return true
 else
 return false
 end
 end
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 if aircrafttype~=AIRBOSS.AircraftCarrier.AV8B then
 return false
 end
@@ -55494,7 +54861,8 @@ id="SetFrequency",
 params={
 frequency=radio.frequency*1000000,
 modulation=radio.modulation,
-}}
+},
+}
 local commandTransmit={
 id="TransmitMessage",
 params={
@@ -55502,7 +54870,8 @@ file=filename,
 duration=call.subduration or 5,
 subtitle=subtitle,
 loop=false,
-}}
+},
+}
 sender:SetCommand(commandFrequency)
 sender:SetCommand(commandTransmit)
 else
@@ -55789,7 +55158,7 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalRadio.CLICK,nil,nil,nil,nil
 end
 function AIRBOSS:_LSOCallAircraftBall(modex,nickname,fuelstate)
 local text=string.format("%s Ball, %.1f.",nickname,fuelstate)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local NICKNAME=nickname:upper()
 local FS=UTILS.Split(string.format("%.1f",fuelstate),".")
 local call=self:_NewRadioCall(self.PilotCall[NICKNAME],modex,text,self.Tmessage,nil,modex)
@@ -55802,21 +55171,21 @@ self:RadioTransmission(self.LSORadio,self.LSOCall.CLICK)
 end
 function AIRBOSS:_MarshalCallGasAtTanker(modex)
 local text=string.format("Bingo fuel! Going for gas at the recovery tanker.")
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.PilotCall.BINGOFUEL,modex,text,self.Tmessage,nil,modex)
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,nil,true)
 self:RadioTransmission(self.MarshalRadio,self.PilotCall.GASATTANKER,nil,nil,nil,true,true)
 end
 function AIRBOSS:_MarshalCallGasAtDivert(modex,divertname)
 local text=string.format("Bingo fuel! Going for gas at divert field %s.",divertname)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.PilotCall.BINGOFUEL,modex,text,self.Tmessage,nil,modex)
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,nil,true)
 self:RadioTransmission(self.MarshalRadio,self.PilotCall.GASATDIVERT,nil,nil,nil,true,true)
 end
 function AIRBOSS:_MarshalCallRecoveryStopped(case)
 local text=string.format("Case %d recovery ops are stopped. Deck is closed.",case)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CASE,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,tostring(case))
@@ -55831,7 +55200,7 @@ function AIRBOSS:_MarshalCallRecoveryPausedResumedAt(clock)
 local _clock=UTILS.Split(clock,"+")
 local CT=UTILS.Split(_clock[1],":")
 local text=string.format("aircraft recovery is paused and will be resumed at %s.",clock)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.RECOVERYPAUSEDRESUMED,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,CT[1])
@@ -55840,7 +55209,7 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalCall.HOURS,nil,nil,nil,true
 end
 function AIRBOSS:_MarshalCallClearedForRecovery(modex,case)
 local text=string.format("you're cleared for Case %d recovery.",case)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CLEAREDFORRECOVERY,"MARSHAL",text,self.Tmessage,modex)
 local delay=2
 self:RadioTransmission(self.MarshalRadio,call,nil,delay)
@@ -55853,7 +55222,7 @@ self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,true)
 end
 function AIRBOSS:_MarshalCallNewFinalBearing(FB)
 local text=string.format("new final bearing %03d°.",FB)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.NEWFB,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,string.format("%03d",FB),nil,0.2)
@@ -55861,7 +55230,7 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES,nil,nil,nil,tr
 end
 function AIRBOSS:_MarshalCallCarrierTurnTo(hdg)
 local text=string.format("carrier is now starting turn to heading %03d°.",hdg)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CARRIERTURNTOHEADING,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,string.format("%03d",hdg),nil,0.2)
@@ -55876,7 +55245,7 @@ text=text..string.format("There are %d flights ahead of you.",nwaiting)
 else
 text=text..string.format("You are next in line.")
 end
-self:T(self.lid..text)
+self:I(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.STACKFULL,"AIRBOSS",text,self.Tmessage,modex)
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,true)
 end
@@ -55908,7 +55277,7 @@ local QFE=UTILS.Split(string.format("%.2f",qfe),".")
 local clock=UTILS.Split(charlie,"+")
 local CT=UTILS.Split(clock[1],":")
 local text=string.format("Case %d, expected BRC %03d°, hold at angels %d. Expected Charlie Time %s. Altimeter %.2f. Report see me.",case,brc,angels,charlie,qfe)
-self:T(self.lid..text)
+self:I(self.lid..text)
 local casecall=self:_NewRadioCall(self.MarshalCall.CASE,"MARSHAL",text,self.Tmessage,modex)
 self:RadioTransmission(self.MarshalRadio,casecall)
 self:_Number2Radio(self.MarshalRadio,tostring(case))
@@ -56400,7 +55769,9 @@ table.insert(section,{flight=flight,distance=distance})
 end
 end
 end
-table.sort(section,function(a,b)return a.distance<b.distance end)
+table.sort(section,function(a,b)
+return a.distance<b.distance
+end)
 playerData.seclead=playerData.name
 for _,_flight in pairs(playerData.section)do
 local flight=_flight
@@ -56472,7 +55843,9 @@ end
 end
 local text=string.format("Greenie Board (top ten):")
 local i=1
-for _playerName,_points in UTILS.spairs(_playerResults,function(t,a,b)return t[b]<t[a]end)do
+for _playerName,_points in UTILS.spairs(_playerResults,function(t,a,b)
+return t[b]<t[a]
+end)do
 text=text..string.format("\n[%d] %s %.1f||",i,_playerName,_points)
 local playerGrades=self.playerscores[_playerName]
 for _,_grade in pairs(playerGrades)do
@@ -56966,7 +56339,7 @@ if case==3 then
 text=text.."\n* bullseye with GREEN flares"
 self:_GetZoneBullseye(case):FlareZone(FLARECOLOR.Green,45)
 end
-if self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 text=text.."\n* abeam landing stop with RED flares"
 local ALSPT=self:_GetZoneAbeamLandingSpot()
 ALSPT:FlareZone(FLARECOLOR.Red,5,nil,UTILS.FeetToMeters(110))
@@ -57130,9 +56503,7 @@ local finalscore="n/a"
 if grade.finalscore then
 finalscore=tostring(UTILS.Round(grade.finalscore,1))
 end
-scores=scores..string.format("%s,%d,%s,%.1f,%s,%s,%s,%s,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
-playername,i,finalscore,grade.points,grade.grade,grade.details,wire,Tgroove,grade.case,
-grade.wind,grade.modex,grade.airframe,grade.carriertype,grade.carriername,grade.theatre,grade.mitime,grade.midate,grade.osdate)
+scores=scores..string.format("%s,%d,%s,%.1f,%s,%s,%s,%s,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",playername,i,finalscore,grade.points,grade.grade,grade.details,wire,Tgroove,grade.case,grade.wind,grade.modex,grade.airframe,grade.carriertype,grade.carriername,grade.theatre,grade.mitime,grade.midate,grade.osdate)
 n=n+1
 end
 end
