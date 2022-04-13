@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-13T07:35:18.0000000Z-32bdaf4f244fdb6eba2c64e3bcfed5770782a01c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-13T13:30:43.0000000Z-eadeaae6db77cd1fbd9462f6682717891f572353 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -80086,7 +80086,7 @@ text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Ma
 else
 local minheight=UTILS.MetersToFeet(self.minimumHoverHeight)
 local maxheight=UTILS.MetersToFeet(self.maximumHoverHeight)
-text=string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 6fts \n - In parameter: %s",minheight,maxheight,htxt)
+text=string.format("Hover parameters (autoload/drop):\n - Min height %dft \n - Max height %dft \n - Max speed 6ftps \n - In parameter: %s",minheight,maxheight,htxt)
 end
 self:_SendMessage(text,10,false,Group)
 return self
