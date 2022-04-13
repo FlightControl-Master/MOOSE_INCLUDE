@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-13T14:13:02.0000000Z-34153308717a276c9396434c2bf8af840fe33572 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-13T20:44:52.0000000Z-faac26537322e155057975406419b01d25e7b07a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64,12 +64,77 @@ AnyAAM=264241152,
 AnyAutonomousMissile=36012032,
 AnyMissile=268402688,
 Cannons=805306368,
+Torpedo=4294967296,
 Auto=3221225470,
 AutoDCS=1073741822,
 AnyAG=2956984318,
 AnyAA=264241152,
 AnyUnguided=2952822768,
 AnyGuided=268402702,
+}
+ENUMS.WeaponType={}
+ENUMS.WeaponType.Bomb={
+LGB=2,
+TvGB=4,
+SNSGB=8,
+HEBomb=16,
+Penetrator=32,
+NapalmBomb=64,
+FAEBomb=128,
+ClusterBomb=256,
+Dispencer=512,
+CandleBomb=1024,
+ParachuteBomb=2147483648,
+GuidedBomb=14,
+AnyUnguidedBomb=2147485680,
+AnyBomb=2147485694,
+}
+ENUMS.WeaponType.Rocket={
+LightRocket=2048,
+MarkerRocket=4096,
+CandleRocket=8192,
+HeavyRocket=16384,
+AnyRocket=30720,
+}
+ENUMS.WeaponType.Gun={
+GunPod=268435456,
+BuiltInCannon=536870912,
+Cannons=805306368,
+}
+ENUMS.WeaponType.Missile={
+AntiRadarMissile=32768,
+AntiShipMissile=65536,
+AntiTankMissile=131072,
+FireAndForgetASM=262144,
+LaserASM=524288,
+TeleASM=1048576,
+CruiseMissile=2097152,
+AntiRadarMissile2=1073741824,
+GuidedASM=1572864,
+TacticalASM=1835008,
+AnyASM=4161536,
+AnyASM2=1077903360,
+AnyAutonomousMissile=36012032,
+AnyMissile=268402688,
+}
+ENUMS.WeaponType.AAM={
+SRAM=4194304,
+MRAAM=8388608,
+LRAAM=16777216,
+IR_AAM=33554432,
+SAR_AAM=67108864,
+AR_AAM=134217728,
+AnyAAM=264241152,
+}
+ENUMS.WeaponType.Torpedo={
+Torpedo=4294967296,
+}
+ENUMS.WeaponType.Any={
+Weapon=3221225470,
+AG=2956984318,
+AA=264241152,
+Unguided=2952822768,
+Guided=268402702,
 }
 ENUMS.MissionTask={
 NOTHING="Nothing",
@@ -7603,7 +7668,7 @@ local coordinate=self:GetCoordinate()
 local Radius=self:GetRadius()
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillAlpha=FillAlpha or self:GetColorAlpha()
 self.DrawID=coordinate:CircleToAll(Radius,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
 return self
@@ -8184,7 +8249,7 @@ function ZONE_POLYGON_BASE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,Li
 local coordinate=COORDINATE:NewFromVec2(self._.Polygon[1])
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillAlpha=FillAlpha or self:GetColorAlpha()
 if#self._.Polygon==4 then
 local Coord2=COORDINATE:NewFromVec2(self._.Polygon[2])
@@ -13675,7 +13740,7 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
 trigger.action.circleToAll(Coalition,MarkID,vec3,Radius,Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
@@ -13691,7 +13756,7 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
 trigger.action.rectToAll(Coalition,MarkID,self:GetVec3(),vec3,Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
@@ -13709,9 +13774,9 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
-trigger.action.quadToAll(Coalition,MarkID,self:GetVec3(),point2,point3,point4,Color,FillColor,LineType,ReadOnly,Text or"")
+trigger.action.quadToAll(Coalition,MarkID,point1,point2,point3,point4,Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
 end
 function COORDINATE:MarkupToAllFreeForm(Coordinates,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly,Text)
@@ -13762,7 +13827,7 @@ end
 Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.3
 FontSize=FontSize or 14
 trigger.action.textToAll(Coalition,MarkID,self:GetVec3(),Color,FillColor,FontSize,ReadOnly,Text or"Hello World")
@@ -13778,7 +13843,7 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
 trigger.action.arrowToAll(Coalition,MarkID,vec3,self:GetVec3(),Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
@@ -59169,6 +59234,7 @@ NOTHING="Nothing",
 RELOCATECOHORT="Relocate Cohort",
 }
 AUFTRAG.SpecialTask={
+FORMATION="Formation",
 PATROLZONE="PatrolZone",
 RECON="ReconMission",
 AMMOSUPPLY="Ammo Supply",
@@ -59221,7 +59287,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.2"
+AUFTRAG.version="0.9.3"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -59295,7 +59361,7 @@ mission.missionAltitude=mission.MissionAlt or UTILS.FeetToMeters(1000)
 mission.missionFraction=0.9
 mission.optionROE=ENUMS.ROE.ReturnFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
-mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.categories={AUFTRAG.Category.HELICOPTER}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
@@ -61150,6 +61216,15 @@ end
 function AUFTRAG:GetMissionEgressCoord()
 return self.missionEgressCoord
 end
+function AUFTRAG:_GetMissionWaypointCoordSet()
+if self.missionWaypointCoord then
+local coord=self.missionWaypointCoord
+if self.missionAltitude then
+coord.y=self.missionAltitude
+end
+return coord
+end
+end
 function AUFTRAG:GetMissionWaypointCoord(group,randomradius,surfacetypes)
 if self.missionWaypointCoord then
 local coord=self.missionWaypointCoord
@@ -61239,7 +61314,7 @@ elseif self.type==AUFTRAG.Type.ORBIT then
 elseif self.type==AUFTRAG.Type.GCICAP then
 elseif self.type==AUFTRAG.Type.RECON then
 local DCStask={}
-DCStask.id="ReconMission"
+DCStask.id=AUFTRAG.SpecialTask.RECON
 local param={}
 param.target=self.engageTarget
 param.altitude=self.missionAltitude
@@ -61274,7 +61349,7 @@ params={}
 table.insert(DCStasks,TaskCargoTransportation)
 elseif self.type==AUFTRAG.Type.RESCUEHELO then
 local DCStask={}
-DCStask.id="Formation"
+DCStask.id=AUFTRAG.SpecialTask.FORMATION
 local param={}
 param.unitname=self:GetTargetName()
 param.offsetX=200
@@ -61284,8 +61359,18 @@ param.dtFollow=1.0
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.ARTY then
+if self.artyShots==1 or self.artyRadius<10 or true then
 local DCStask=CONTROLLABLE.TaskFireAtPoint(nil,self:GetTargetVec2(),self.artyRadius,self.artyShots,self.engageWeaponType,self.artyAltitude)
 table.insert(DCStasks,DCStask)
+else
+local Vec2=self:GetTargetVec2()
+local zone=ZONE_RADIUS:New("temp",Vec2,self.artyRadius)
+for i=1,self.artyShots do
+local vec2=zone:GetRandomVec2()
+local DCStask=CONTROLLABLE.TaskFireAtPoint(nil,vec2,0,1,self.engageWeaponType,self.artyAltitude)
+table.insert(DCStasks,DCStask)
+end
+end
 elseif self.type==AUFTRAG.Type.BARRAGE then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.BARRAGE
@@ -61301,7 +61386,7 @@ DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.PATROLZONE then
 local DCStask={}
-DCStask.id="PatrolZone"
+DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
 local param={}
 param.zone=self:GetObjective()
 param.altitude=self.missionAltitude
@@ -61310,7 +61395,7 @@ DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.CASENHANCED then
 local DCStask={}
-DCStask.id="PatrolZone"
+DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
 local param={}
 param.zone=self:GetObjective()
 param.altitude=self.missionAltitude
@@ -63844,16 +63929,16 @@ if self:GetTaskCurrent()==nil then
 table.insert(self.taskqueue,Task)
 end
 local Mission=self:GetMissionByTaskID(self.taskcurrent)
-if Task.dcstask.id=="Formation"then
+if Task.dcstask.id==AUFTRAG.SpecialTask.FORMATION then
 local followSet=SET_GROUP:New():AddGroup(self.group)
 local param=Task.dcstask.params
 local followUnit=UNIT:FindByName(param.unitname)
-Task.formation=AI_FORMATION:New(followUnit,followSet,"Formation","Follow X at given parameters.")
+Task.formation=AI_FORMATION:New(followUnit,followSet,AUFTRAG.SpecialTask.FORMATION,"Follow X at given parameters.")
 Task.formation:FormationCenterWing(-param.offsetX,50,math.abs(param.altitude),50,param.offsetZ,50)
 Task.formation:SetFollowTimeInterval(param.dtFollow)
 Task.formation:SetFlightModeFormation(self.group)
 Task.formation:Start()
-elseif Task.dcstask.id=="PatrolZone"then
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.PATROLZONE then
 local zone=Task.dcstask.params.zone
 local surfacetypes=nil
 if self:IsArmygroup()then
@@ -63874,7 +63959,7 @@ elseif self.isNavygroup then
 wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
 wp.missionUID=Mission and Mission.auftragsnummer or nil
-elseif Task.dcstask.id=="ReconMission"then
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 local target=Task.dcstask.params.target
 self.reconindecies={}
 for i=1,#target.targets do
@@ -64005,12 +64090,12 @@ local text=string.format("Current task %s ID=%d cancelled (flag %s=%d)",Task.des
 self:T(self.lid..text)
 Task.stopflag:Set(1)
 local done=false
-if Task.dcstask.id=="Formation"then
+if Task.dcstask.id==AUFTRAG.SpecialTask.FORMATION then
 Task.formation:Stop()
 done=true
-elseif Task.dcstask.id=="PatrolZone"then
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.PATROLZONE then
 done=true
-elseif Task.dcstask.id=="ReconMission"then
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 done=true
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.AMMOSUPPLY then
 done=true
@@ -64451,22 +64536,37 @@ group:SetTask(DCSTask,5)
 end
 end
 elseif mission.type==AUFTRAG.Type.ARTY then
+local coord=waypointcoord
 local weapondata=self:GetWeaponData(mission.engageWeaponType)
+local coordInRange=nil
 if weapondata then
 local targetcoord=mission:GetTargetCoordinate()
-local heading=self:GetCoordinate():HeadingTo(targetcoord)
-local dist=self:GetCoordinate():Get2DDistance(targetcoord)
+local heading=coord:HeadingTo(targetcoord)
+local dist=coord:Get2DDistance(targetcoord)
 if dist>weapondata.RangeMax then
 local d=(dist-weapondata.RangeMax)*1.1
-waypointcoord=self:GetCoordinate():Translate(d,heading)
+coordInRange=coord:Translate(d,heading)
 self:T(self.lid..string.format("Out of max range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(mission.engageWeaponType)))
 elseif dist<weapondata.RangeMin then
 local d=(dist-weapondata.RangeMin)*1.1
-waypointcoord=self:GetCoordinate():Translate(d,heading)
+coordInRange=coord:Translate(d,heading)
 self:T(self.lid..string.format("Out of min range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(mission.engageWeaponType)))
 end
 else
 self:T(self.lid..string.format("No weapon data for weapon type %s",tostring(mission.engageWeaponType)))
+end
+if coordInRange then
+local waypoint=nil
+if self:IsFlightgroup()then
+waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
+elseif self:IsArmygroup()then
+waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,mission.optionFormation,false)
+elseif self:IsNavygroup()then
+waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
+end
+waypoint.missionUID=mission.auftragsnummer
+waypointcoord=coordInRange
+uid=waypoint.uid
 end
 end
 local waypoint=nil
@@ -64586,7 +64686,7 @@ local mission=nil
 if task then
 mission=self:GetMissionByTaskID(task.id)
 end
-if task and task.dcstask.id=="PatrolZone"then
+if task and task.dcstask.id==AUFTRAG.SpecialTask.PATROLZONE then
 self:RemoveWaypointByID(Waypoint.uid)
 local zone=task.dcstask.params.zone
 local surfacetypes=nil
@@ -64608,7 +64708,7 @@ elseif self.isNavygroup then
 wp=NAVYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Altitude)
 end
 wp.missionUID=mission and mission.auftragsnummer or nil
-elseif task and task.dcstask.id=="ReconMission"then
+elseif task and task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 local target=task.dcstask.params.target
 if self.adinfinitum and#self.reconindecies==0 then
 self.reconindecies={}
@@ -64621,7 +64721,8 @@ local n=1
 if task.dcstask.params.randomly then
 n=UTILS.GetRandomTableElement(self.reconindecies)
 else
-table.remove(self.reconindecies,n)
+n=self.reconindecies[1]
+table.remove(self.reconindecies,1)
 end
 local object=target.targets[n]
 local zone=object.Object
@@ -66460,7 +66561,9 @@ if self.stuckTimestamp then
 local holdtime=Tnow-self.stuckTimestamp
 if holdtime>=5*60 and holdtime<10*60 then
 self:T(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
-if self:IsReturning()then
+if self:IsEngaging()then
+self:__Disengage(1)
+elseif self:IsReturning()then
 self:__RTZ(1)
 else
 self:__Cruise(1)
@@ -67630,6 +67733,7 @@ function OPSGROUP:GetAmmoUnit(unit,display)
 if display==nil then
 display=false
 end
+unit=unit or self.group:GetUnit(1)
 local nammo=0
 local nshells=0
 local nrockets=0
@@ -67648,6 +67752,8 @@ if ammotable then
 local weapons=#ammotable
 for w=1,weapons do
 local Nammo=ammotable[w]["count"]
+local rmin=ammotable[w]["desc"]["rangeMin"]or 0
+local rmax=ammotable[w]["desc"]["rangeMaxAltMin"]or 0
 local Tammo=ammotable[w]["desc"]["typeName"]
 local _weaponString=UTILS.Split(Tammo,"%.")
 local _weaponName=_weaponString[#_weaponString]
@@ -67658,10 +67764,10 @@ MissileCategory=ammotable[w].desc.missileCategory
 end
 if Category==Weapon.Category.SHELL then
 nshells=nshells+Nammo
-text=text..string.format("- %d shells of type %s\n",Nammo,_weaponName)
+text=text..string.format("- %d shells of type %s, range=%d - %d meters\n",Nammo,_weaponName,rmin,rmax)
 elseif Category==Weapon.Category.ROCKET then
 nrockets=nrockets+Nammo
-text=text..string.format("- %d rockets of type %s\n",Nammo,_weaponName)
+text=text..string.format("- %d rockets of type %s, \n",Nammo,_weaponName,rmin,rmax)
 elseif Category==Weapon.Category.BOMB then
 nbombs=nbombs+Nammo
 text=text..string.format("- %d bombs of type %s\n",Nammo,_weaponName)
@@ -67685,7 +67791,7 @@ elseif MissileCategory==Weapon.MissileCategory.OTHER then
 nmissiles=nmissiles+Nammo
 nmissilesAG=nmissilesAG+Nammo
 end
-text=text..string.format("- %d %s missiles of type %s\n",Nammo,self:_MissileCategoryName(MissileCategory),_weaponName)
+text=text..string.format("- %d %s missiles of type %s, range=%d - %d meters\n",Nammo,self:_MissileCategoryName(MissileCategory),_weaponName,rmin,rmax)
 elseif Category==Weapon.Category.TORPEDO then
 ntorps=ntorps+Nammo
 text=text..string.format("- %d torpedos of type %s\n",Nammo,_weaponName)
@@ -70393,10 +70499,32 @@ function NAVYGROUP:onafterDisengage(From,Event,To)
 self:T(self.lid.."Disengage Target")
 self:SwitchROE(self.engage.roe)
 self:SwitchAlarmstate(self.engage.alarmstate)
+local task=self:GetTaskCurrent()
+if task and task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK then
+self:T(self.lid.."Disengage with current task GROUNDATTACK ==> Task Done!")
+self:TaskDone(task)
+end
 if self.engage.Waypoint then
 self:RemoveWaypointByID(self.engage.Waypoint.uid)
 end
 self:_CheckGroupDone(1)
+end
+function NAVYGROUP:onafterOutOfAmmo(From,Event,To)
+self:T(self.lid..string.format("Group is out of ammo at t=%.3f",timer.getTime()))
+if self.retreatOnOutOfAmmo then
+self:__Retreat(-1)
+return
+end
+if self.rtzOnOutOfAmmo then
+self:__RTZ(-1)
+end
+local task=self:GetTaskCurrent()
+if task then
+if task.dcstask.id=="FireAtPoint"or task.dcstask.id==AUFTRAG.SpecialTask.BARRAGE then
+self:T(self.lid..string.format("Cancelling current %s task because out of ammo!",task.dcstask.id))
+self:TaskCancel(task)
+end
+end
 end
 function NAVYGROUP:onafterRTZ(From,Event,To,Zone,Formation)
 local zone=Zone or self.homezone
@@ -70514,7 +70642,8 @@ N=N+1
 end
 return 0
 end
-return check()
+local _check=check()
+return _check
 end
 function NAVYGROUP:_CheckTurning()
 local unit=self.group:GetUnit(1)
@@ -71563,6 +71692,29 @@ function COHORT:ReturnTacan(channel)
 self:T(self.lid..string.format("Returning Tacan channel %d",channel))
 self.tacanChannel[channel]=true
 end
+function COHORT:AddWeaponRange(RangeMin,RangeMax,BitType)
+RangeMin=UTILS.NMToMeters(RangeMin or 0)
+RangeMax=UTILS.NMToMeters(RangeMax or 10)
+local weapon={}
+weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
+weapon.RangeMax=RangeMax
+weapon.RangeMin=RangeMin
+self.weaponData=self.weaponData or{}
+self.weaponData[tostring(weapon.BitType)]=weapon
+self:T(self.lid..string.format("Adding weapon data: Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapon.BitType),weapon.RangeMin,weapon.RangeMax))
+if self.verbose>=2 then
+local text="Weapon data:"
+for _,_weapondata in pairs(self.weaponData)do
+local weapondata=_weapondata
+text=text..string.format("\n- Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapondata.BitType),weapondata.RangeMin,weapondata.RangeMax)
+end
+self:I(self.lid..text)
+end
+return self
+end
+function COHORT:GetWeaponData(BitType)
+return self.weaponData[tostring(BitType)]
+end
 function COHORT:IsOnDuty()
 return self:Is("OnDuty")
 end
@@ -71781,6 +71933,31 @@ else
 return 0
 end
 end
+function COHORT:GetMissionRange(WeaponTypes)
+if WeaponTypes and type(WeaponTypes)~="table"then
+WeaponTypes={WeaponTypes}
+end
+local function checkWeaponType(Weapon)
+local weapon=Weapon
+if WeaponTypes and#WeaponTypes>0 then
+for _,weapontype in pairs(WeaponTypes)do
+if weapontype==weapon.BitType then
+return true
+end
+end
+return false
+end
+return true
+end
+local WeaponRange=0
+for _,_weapon in pairs(self.weaponData or{})do
+local weapon=_weapon
+if weapon.RangeMax>WeaponRange and checkWeaponType(weapon)then
+WeaponRange=weapon.RangeMax
+end
+end
+return self.engageRange+WeaponRange
+end
 function COHORT:IsRepaired(Asset)
 if Asset.Treturned then
 local Tnow=timer.getAbsTime()
@@ -71804,6 +71981,135 @@ return true
 end
 end
 return false
+end
+function COHORT:_CheckAmmo()
+local units=self.templategroup:GetUnits()
+local nammo=0
+local nguns=0
+local nshells=0
+local nrockets=0
+local nmissiles=0
+local nmissilesAA=0
+local nmissilesAG=0
+local nmissilesAS=0
+local nmissilesSA=0
+local nmissilesBM=0
+local nmissilesCR=0
+local ntorps=0
+local nbombs=0
+for _,_unit in pairs(units)do
+local unit=_unit
+local text=string.format("Unit %s:\n",unit:GetName())
+local ammotable=unit:GetAmmo()
+if ammotable then
+self:T3(ammotable)
+for w=1,#ammotable do
+local weapon=ammotable[w]
+local Desc=weapon["desc"]
+local Warhead=Desc["warhead"]
+local Nammo=weapon["count"]
+local Category=Desc["category"]
+local MissileCategory=(Category==Weapon.Category.MISSILE)and Desc.missileCategory or nil
+local TypeName=Desc["typeName"]
+local weaponString=UTILS.Split(TypeName,"%.")
+local WeaponName=weaponString[#weaponString]
+local Rmin=Desc["rangeMin"]or 0
+local Rmax=Desc["rangeMaxAltMin"]or 0
+local Caliber=Warhead and Warhead["caliber"]or 0
+if Category==Weapon.Category.SHELL then
+if Caliber<70 then
+nguns=nguns+Nammo
+else
+nshells=nshells+Nammo
+end
+text=text..string.format("- %d shells [%s]: caliber=%d mm, range=%d - %d meters\n",Nammo,WeaponName,Caliber,Rmin,Rmax)
+elseif Category==Weapon.Category.ROCKET then
+nrockets=nrockets+Nammo
+text=text..string.format("- %d rockets [%s]: caliber=%d mm, range=%d - %d meters\n",Nammo,WeaponName,Caliber,Rmin,Rmax)
+elseif Category==Weapon.Category.BOMB then
+nbombs=nbombs+Nammo
+text=text..string.format("- %d bombs [%s]: caliber=%d mm, range=%d - %d meters\n",Nammo,WeaponName,Caliber,Rmin,Rmax)
+elseif Category==Weapon.Category.MISSILE then
+if MissileCategory==Weapon.MissileCategory.AAM then
+nmissiles=nmissiles+Nammo
+nmissilesAA=nmissilesAA+Nammo
+if Rmax>0 then
+self:AddWeaponRange(UTILS.MetersToNM(Rmin),UTILS.MetersToNM(Rmax),ENUMS.WeaponFlag.AnyAA)
+end
+elseif MissileCategory==Weapon.MissileCategory.SAM then
+nmissiles=nmissiles+Nammo
+nmissilesSA=nmissilesSA+Nammo
+if Rmax>0 then
+end
+elseif MissileCategory==Weapon.MissileCategory.ANTI_SHIP then
+nmissiles=nmissiles+Nammo
+nmissilesAS=nmissilesAS+Nammo
+if Rmax>0 then
+self:AddWeaponRange(UTILS.MetersToNM(Rmin),UTILS.MetersToNM(Rmax),ENUMS.WeaponFlag.AntiShipMissile)
+end
+elseif MissileCategory==Weapon.MissileCategory.BM then
+nmissiles=nmissiles+Nammo
+nmissilesBM=nmissilesBM+Nammo
+if Rmax>0 then
+end
+elseif MissileCategory==Weapon.MissileCategory.CRUISE then
+nmissiles=nmissiles+Nammo
+nmissilesCR=nmissilesCR+Nammo
+if Rmax>0 then
+self:AddWeaponRange(UTILS.MetersToNM(Rmin),UTILS.MetersToNM(Rmax),ENUMS.WeaponFlag.CruiseMissile)
+end
+elseif MissileCategory==Weapon.MissileCategory.OTHER then
+nmissiles=nmissiles+Nammo
+nmissilesAG=nmissilesAG+Nammo
+end
+text=text..string.format("- %d %s missiles [%s]: caliber=%d mm, range=%d - %d meters\n",Nammo,self:_MissileCategoryName(MissileCategory),WeaponName,Caliber,Rmin,Rmax)
+elseif Category==Weapon.Category.TORPEDO then
+ntorps=ntorps+Nammo
+text=text..string.format("- %d torpedos [%s]: caliber=%d mm, range=%d - %d meters\n",Nammo,WeaponName,Caliber,Rmin,Rmax)
+else
+text=text..string.format("- %d unknown ammo of type %s (category=%d, missile category=%s)\n",Nammo,TypeName,Category,tostring(MissileCategory))
+end
+end
+end
+if self.verbose>=5 then
+self:I(self.lid..text)
+else
+self:T2(self.lid..text)
+end
+end
+nammo=nguns+nshells+nrockets+nmissiles+nbombs+ntorps
+local ammo={}
+ammo.Total=nammo
+ammo.Guns=nguns
+ammo.Shells=nshells
+ammo.Rockets=nrockets
+ammo.Bombs=nbombs
+ammo.Torpedos=ntorps
+ammo.Missiles=nmissiles
+ammo.MissilesAA=nmissilesAA
+ammo.MissilesAG=nmissilesAG
+ammo.MissilesAS=nmissilesAS
+ammo.MissilesCR=nmissilesCR
+ammo.MissilesBM=nmissilesBM
+ammo.MissilesSA=nmissilesSA
+return ammo
+end
+function COHORT:_MissileCategoryName(categorynumber)
+local cat="unknown"
+if categorynumber==Weapon.MissileCategory.AAM then
+cat="air-to-air"
+elseif categorynumber==Weapon.MissileCategory.SAM then
+cat="surface-to-air"
+elseif categorynumber==Weapon.MissileCategory.BM then
+cat="ballistic"
+elseif categorynumber==Weapon.MissileCategory.ANTI_SHIP then
+cat="anti-ship"
+elseif categorynumber==Weapon.MissileCategory.CRUISE then
+cat="cruise"
+elseif categorynumber==Weapon.MissileCategory.OTHER then
+cat="other"
+end
+return cat
 end
 SQUADRON={
 ClassName="SQUADRON",
@@ -71908,6 +72214,7 @@ weaponData={},
 PLATOON.version="0.1.0"
 function PLATOON:New(TemplateGroupName,Ngroups,PlatoonName)
 local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,PlatoonName))
+self.ammo=self:_CheckAmmo()
 return self
 end
 function PLATOON:SetBrigade(Brigade)
@@ -71916,26 +72223,6 @@ return self
 end
 function PLATOON:GetBrigade()
 return self.legion
-end
-function PLATOON:AddWeaponRange(RangeMin,RangeMax,BitType)
-RangeMin=UTILS.NMToMeters(RangeMin or 0)
-RangeMax=UTILS.NMToMeters(RangeMax or 10)
-local weapon={}
-weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
-weapon.RangeMax=RangeMax
-weapon.RangeMin=RangeMin
-self.weaponData=self.weaponData or{}
-self.weaponData[tostring(weapon.BitType)]=weapon
-self:T(self.lid..string.format("Adding weapon data: Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapon.BitType),weapon.RangeMin,weapon.RangeMax))
-if self.verbose>=2 then
-local text="Weapon data:"
-for _,_weapondata in pairs(self.weaponData)do
-local weapondata=_weapondata
-text=text..string.format("\n- Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapondata.BitType),weapondata.RangeMin,weapondata.RangeMax)
-end
-self:I(self.lid..text)
-end
-return self
 end
 function PLATOON:onafterStart(From,Event,To)
 local text=string.format("Starting %s v%s %s",self.ClassName,self.version,self.name)
@@ -71946,7 +72233,6 @@ function PLATOON:onafterStatus(From,Event,To)
 if self.verbose>=1 then
 local fsmstate=self:GetState()
 local callsign=self.callsignName and UTILS.GetCallsignName(self.callsignName)or"N/A"
-local modex=self.modex and self.modex or-1
 local skill=self.skill and tostring(self.skill)or"N/A"
 local NassetsTot=#self.assets
 local NassetsInS=self:CountAssets(true)
@@ -71954,8 +72240,8 @@ local NassetsQP=0;local NassetsP=0;local NassetsQ=0
 if self.legion then
 NassetsQP,NassetsP,NassetsQ=self.legion:CountAssetsOnMission(nil,self)
 end
-local text=string.format("%s [Type=%s, Call=%s, Modex=%d, Skill=%s]: Assets Total=%d, Stock=%d, Mission=%d [Active=%d, Queue=%d]",
-fsmstate,self.aircrafttype,callsign,modex,skill,NassetsTot,NassetsInS,NassetsQP,NassetsP,NassetsQ)
+local text=string.format("%s [Type=%s, Call=%s, Skill=%s]: Assets Total=%d, Stock=%d, Mission=%d [Active=%d, Queue=%d]",
+fsmstate,self.aircrafttype,callsign,skill,NassetsTot,NassetsInS,NassetsQP,NassetsP,NassetsQ)
 self:T(self.lid..text)
 if self.verbose>=3 and self.weaponData then
 local text="Weapon Data:"
@@ -71979,7 +72265,7 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.3.0"
+LEGION.version="0.3.1"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -72379,6 +72665,7 @@ self:FlightOnMission(OpsGroup,Mission)
 elseif self:IsBrigade()then
 self:ArmyOnMission(OpsGroup,Mission)
 else
+self:NavyOnMission(OpsGroup,Mission)
 end
 if self.chief then
 self.chief:OpsOnMission(OpsGroup,Mission)
@@ -72475,6 +72762,9 @@ if cohort.fuellowRefuel then
 flightgroup:SetFuelLowRefuel(cohort.fuellowRefuel)
 end
 local assignment=request.assignment
+if self:IsFleet()then
+flightgroup:SetPathfinding(self.pathfinding)
+end
 if string.find(assignment,"Mission-")then
 local uid=UTILS.Split(assignment,"-")[2]
 local mission=self:GetMissionByID(uid)
@@ -72778,7 +73068,8 @@ end
 if#Cohorts==0 then
 Cohorts=self.cohorts
 end
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,Mission.engageRange,Mission.refuelSystem)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
+Mission.engageRange,Mission.refuelSystem,nil,nil,nil,nil,nil,{Mission.engageWeaponType})
 return recruited,assets,legions
 end
 function LEGION:RecruitAssetsForTransport(Transport)
@@ -72826,7 +73117,7 @@ return assigned
 end
 return true
 end
-function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,Categories,Attributes,Properties)
+function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,Categories,Attributes,Properties,WeaponTypes)
 local Assets={}
 local Legions={}
 if MissionTypeOpt==nil then
@@ -72870,10 +73161,27 @@ else
 return true
 end
 end
+local function CheckWeapon(_cohort)
+local cohort=_cohort
+if WeaponTypes and#WeaponTypes>0 then
+for _,WeaponType in pairs(WeaponTypes)do
+for _,_weaponData in pairs(cohort.weaponData or{})do
+local weaponData=_weaponData
+if weaponData.BitType==WeaponType then
+return true
+end
+end
+end
+return false
+else
+return true
+end
+end
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
 local TargetDistance=TargetVec2 and UTILS.VecDist2D(TargetVec2,cohort.legion:GetVec2())or 0
-local InRange=(RangeMax and math.max(RangeMax,cohort.engageRange)or cohort.engageRange)>=TargetDistance
+local Rmax=cohort:GetMissionRange(WeaponTypes)
+local InRange=(RangeMax and math.max(RangeMax,Rmax)or Rmax)>=TargetDistance
 local Refuel=RefuelSystem~=nil and(RefuelSystem==cohort.tankerSystem)or true
 local Refuel=true
 if RefuelSystem then
@@ -72888,9 +73196,10 @@ local CanCarry=CargoWeight and cohort.cargobayLimit>=CargoWeight or true
 local RightCategory=CheckCategory(cohort)
 local RightAttribute=CheckAttribute(cohort)
 local RightProperty=CheckProperty(cohort)
-cohort:T2(cohort.lid..string.format("State=%s: Capable=%s, InRange=%s, Refuel=%s, CanCarry=%s, RightCategory=%s, RightAttribute=%s, RightProperty=%s",
-cohort:GetState(),tostring(Capable),tostring(InRange),tostring(Refuel),tostring(CanCarry),tostring(RightCategory),tostring(RightAttribute),tostring(RightProperty)))
-if cohort:IsOnDuty()and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute and RightProperty then
+local RightWeapon=CheckWeapon(cohort)
+cohort:T2(cohort.lid..string.format("State=%s: Capable=%s, InRange=%s, Refuel=%s, CanCarry=%s, Category=%s, Attribute=%s, Property=%s, Weapon=%s",
+cohort:GetState(),tostring(Capable),tostring(InRange),tostring(Refuel),tostring(CanCarry),tostring(RightCategory),tostring(RightAttribute),tostring(RightProperty),tostring(RightWeapon)))
+if cohort:IsOnDuty()and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute and RightProperty and RightWeapon then
 local assets,npayloads=cohort:RecruitAssets(MissionTypeRecruit,999)
 for _,asset in pairs(assets)do
 table.insert(Assets,asset)
@@ -81935,6 +82244,10 @@ function CHIEF:AddBrigade(Brigade)
 self:AddLegion(Brigade)
 return self
 end
+function CHIEF:AddFleet(Fleet)
+self:AddLegion(Fleet)
+return self
+end
 function CHIEF:AddLegion(Legion)
 Legion.chief=self
 self.commander:AddLegion(Legion)
@@ -82816,6 +83129,7 @@ weaponData={},
 FLOTILLA.version="0.0.1"
 function FLOTILLA:New(TemplateGroupName,Ngroups,FlotillaName)
 local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,FlotillaName))
+self.ammo=self:_CheckAmmo()
 return self
 end
 function FLOTILLA:SetFleet(Fleet)
@@ -82824,26 +83138,6 @@ return self
 end
 function FLOTILLA:GetFleet()
 return self.legion
-end
-function FLOTILLA:AddWeaponRange(RangeMin,RangeMax,BitType)
-RangeMin=UTILS.NMToMeters(RangeMin or 0)
-RangeMax=UTILS.NMToMeters(RangeMax or 10)
-local weapon={}
-weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
-weapon.RangeMax=RangeMax
-weapon.RangeMin=RangeMin
-self.weaponData=self.weaponData or{}
-self.weaponData[tostring(weapon.BitType)]=weapon
-self:T(self.lid..string.format("Adding weapon data: Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapon.BitType),weapon.RangeMin,weapon.RangeMax))
-if self.verbose>=2 then
-local text="Weapon data:"
-for _,_weapondata in pairs(self.weaponData)do
-local weapondata=_weapondata
-text=text..string.format("\n- Bit=%s, Rmin=%d m, Rmax=%d m",tostring(weapondata.BitType),weapondata.RangeMin,weapondata.RangeMax)
-end
-self:I(self.lid..text)
-end
-return self
 end
 function FLOTILLA:onafterStart(From,Event,To)
 local text=string.format("Starting %s v%s %s",self.ClassName,self.version,self.name)
@@ -82854,7 +83148,6 @@ function FLOTILLA:onafterStatus(From,Event,To)
 if self.verbose>=1 then
 local fsmstate=self:GetState()
 local callsign=self.callsignName and UTILS.GetCallsignName(self.callsignName)or"N/A"
-local modex=self.modex and self.modex or-1
 local skill=self.skill and tostring(self.skill)or"N/A"
 local NassetsTot=#self.assets
 local NassetsInS=self:CountAssets(true)
@@ -82862,8 +83155,8 @@ local NassetsQP=0;local NassetsP=0;local NassetsQ=0
 if self.legion then
 NassetsQP,NassetsP,NassetsQ=self.legion:CountAssetsOnMission(nil,self)
 end
-local text=string.format("%s [Type=%s, Call=%s, Modex=%d, Skill=%s]: Assets Total=%d, Stock=%d, Mission=%d [Active=%d, Queue=%d]",
-fsmstate,self.aircrafttype,callsign,modex,skill,NassetsTot,NassetsInS,NassetsQP,NassetsP,NassetsQ)
+local text=string.format("%s [Type=%s, Call=%s, Skill=%s]: Assets Total=%d, Stock=%d, Mission=%d [Active=%d, Queue=%d]",
+fsmstate,self.aircrafttype,callsign,skill,NassetsTot,NassetsInS,NassetsQP,NassetsP,NassetsQ)
 self:T(self.lid..text)
 if self.verbose>=3 and self.weaponData then
 local text="Weapon Data:"
@@ -82882,8 +83175,7 @@ end
 FLEET={
 ClassName="FLEET",
 verbose=0,
-rearmingZones={},
-refuellingZones={},
+pathfinding=false,
 }
 FLEET.version="0.0.1"
 function FLEET:New(WarehouseName,FleetName)
@@ -82919,6 +83211,10 @@ end
 else
 self:E(self.lid.."ERROR: Flotilla does not exit!")
 end
+return self
+end
+function FLEET:SetPathfinding(Switch)
+self.pathfinding=Switch
 return self
 end
 function FLEET:SetRetreatZones(RetreatZoneSet)
