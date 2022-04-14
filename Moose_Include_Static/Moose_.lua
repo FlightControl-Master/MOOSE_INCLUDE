@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T09:11:33.0000000Z-c56763b68fae5e8d8c83e03f1bf6c9b4ee605359 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:06:14.0000000Z-fba359d389504161c675dd03d6293b251fd3ba67 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3459,6 +3459,7 @@ self.pointer=0
 self.counter=0
 self.stackbypointer={}
 self.stackbyid={}
+self.uniquecounter=0
 self.lid=string.format("%s (%s) | ","FiFo",self.version)
 self:I(self.lid.."Created.")
 return self
@@ -3472,7 +3473,8 @@ self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=Uni
 if UniqueID then
 self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
 else
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+self.uniquecounter=self.uniquecounter+1
+self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
 end
 return self
 end
@@ -3551,7 +3553,7 @@ local stack=self:GetIDStack()
 local idstack={}
 for _id,_entry in pairs(stack)do
 idstack[#idstack+1]=_id
-self:I({"pre",_id})
+self:T({"pre",_id})
 end
 local function sortID(a,b)
 return a<b
@@ -3564,12 +3566,12 @@ self:T(self.lid.."FiFo Flush")
 self:I("FIFO Flushing Stack by Pointer")
 for _id,_data in pairs(self.stackbypointer)do
 local data=_data
-self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("FIFO Flushing Stack by ID")
 for _id,_data in pairs(self.stackbyid)do
 local data=_data
-self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("Counter = "..self.counter)
 self:I("Pointer = "..self.pointer)
@@ -3590,6 +3592,7 @@ function LIFO:New()
 local self=BASE:Inherit(self,BASE:New())
 self.pointer=0
 self.counter=0
+self.uniquecounter=0
 self.stackbypointer={}
 self.stackbyid={}
 self.lid=string.format("%s (%s) | ","LiFo",self.version)
@@ -3605,7 +3608,8 @@ self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=Uni
 if UniqueID then
 self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
 else
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+self.uniquecounter=self.uniquecounter+1
+self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
 end
 return self
 end
@@ -3681,7 +3685,7 @@ local stack=self:GetIDStack()
 local idstack={}
 for _id,_entry in pairs(stack)do
 idstack[#idstack+1]=_id
-self:I({"pre",_id})
+self:T({"pre",_id})
 end
 local function sortID(a,b)
 return a<b
@@ -3698,12 +3702,12 @@ self:T(self.lid.."FiFo Flush")
 self:I("LIFO Flushing Stack by Pointer")
 for _id,_data in pairs(self.stackbypointer)do
 local data=_data
-self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("LIFO Flushing Stack by ID")
 for _id,_data in pairs(self.stackbyid)do
 local data=_data
-self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("Counter = "..self.counter)
 self:I("Pointer = "..self.pointer)
