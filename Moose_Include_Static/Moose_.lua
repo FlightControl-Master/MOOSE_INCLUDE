@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T06:54:42.0000000Z-dd957237e2d424612737818c6c9c94caa6aa72e4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T09:11:18.0000000Z-626b48c3d1f48c9ddb85afb00ec7ec721aa46b81 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3697,6 +3697,10 @@ function FIFO:GetPointerStack()
 self:T(self.lid.."GetPointerStack")
 return self.stackbypointer
 end
+function FIFO:HasUniqueID(UniqueID)
+self:T(self.lid.."HasUniqueID")
+return self.stackbyid[UniqueID]and true or false
+end
 function FIFO:GetIDStack()
 self:T(self.lid.."GetIDStack")
 return self.stackbyid
@@ -3844,6 +3848,10 @@ return a<b
 end
 table.sort(idstack)
 return idstack
+end
+function LIFO:HasUniqueID(UniqueID)
+self:T(self.lid.."HasUniqueID")
+return self.stackbyid[UniqueID]and true or false
 end
 function LIFO:Flush()
 self:T(self.lid.."FiFo Flush")
