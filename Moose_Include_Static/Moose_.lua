@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-13T20:44:52.0000000Z-faac26537322e155057975406419b01d25e7b07a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T06:12:02.0000000Z-fc9e237dbb5bfaf44c4f3b0d501af96a610d7297 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3606,13 +3606,10 @@ end
 do
 FIFO={
 ClassName="FIFO",
-debug=true,
 lid="",
 version="0.0.1",
 counter=0,
 pointer=0,
-nextin=0,
-nextout=0,
 stackbypointer={},
 stackbyid={}
 }
@@ -3642,10 +3639,9 @@ end
 function FIFO:Pull()
 self:T(self.lid.."Pull")
 if self.counter==0 then return nil end
-local object=self.stackbypointer[self.pointer].data
-self.stackbypointer[self.pointer]=nil
+local object=self.stackbypointer[1].data
+self.stackbypointer[1]=nil
 self.counter=self.counter-1
-self.pointer=self.pointer-1
 self:Flatten()
 return object
 end
@@ -3689,6 +3685,10 @@ function FIFO:IsEmpty()
 self:T(self.lid.."IsEmpty")
 return self.counter==0 and true or false
 end
+function FIFO:GetSize()
+self:T(self.lid.."GetSize")
+return self.counter
+end
 function FIFO:IsNotEmpty()
 self:T(self.lid.."IsNotEmpty")
 return not self:IsEmpty()
@@ -3701,6 +3701,20 @@ function FIFO:GetIDStack()
 self:T(self.lid.."GetIDStack")
 return self.stackbyid
 end
+function FIFO:GetIDStackSorted()
+self:T(self.lid.."GetIDStackSorted")
+local stack=self:GetIDStack()
+local idstack={}
+for _id,_entry in pairs(stack)do
+idstack[#idstack+1]=_id
+self:I({"pre",_id})
+end
+local function sortID(a,b)
+return a<b
+end
+table.sort(idstack)
+return idstack
+end
 function FIFO:Flush()
 self:T(self.lid.."FiFo Flush")
 self:I("FIFO Flushing Stack by Pointer")
@@ -3709,6 +3723,136 @@ local data=_data
 self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("FIFO Flushing Stack by ID")
+for _id,_data in pairs(self.stackbyid)do
+local data=_data
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+end
+self:I("Counter = "..self.counter)
+self:I("Pointer = "..self.pointer)
+return self
+end
+end
+do
+LIFO={
+ClassName="LIFO",
+lid="",
+version="0.0.1",
+counter=0,
+pointer=0,
+stackbypointer={},
+stackbyid={}
+}
+function LIFO:New()
+local self=BASE:Inherit(self,BASE:New())
+self.pointer=0
+self.counter=0
+self.stackbypointer={}
+self.stackbyid={}
+self.lid=string.format("%s (%s) | ","LiFo",self.version)
+self:I(self.lid.."Created.")
+return self
+end
+function LIFO:Push(Object,UniqueID)
+self:T(self.lid.."Push")
+self:T({Object,UniqueID})
+self.pointer=self.pointer+1
+self.counter=self.counter+1
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+if UniqueID then
+self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+else
+self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+end
+return self
+end
+function LIFO:Pull()
+self:T(self.lid.."Pull")
+if self.counter==0 then return nil end
+local object=self.stackbypointer[self.pointer].data
+self.stackbypointer[self.pointer]=nil
+self.counter=self.counter-1
+self.pointer=self.pointer-1
+self:Flatten()
+return object
+end
+function LIFO:PullByPointer(Pointer)
+self:T(self.lid.."PullByPointer "..tostring(Pointer))
+if self.counter==0 then return nil end
+local object=self.stackbypointer[Pointer]
+self.stackbypointer[Pointer]=nil
+self.stackbyid[object.uniqueID]=nil
+self.counter=self.counter-1
+self:Flatten()
+return object.data
+end
+function LIFO:PullByID(UniqueID)
+self:T(self.lid.."PullByID "..tostring(UniqueID))
+if self.counter==0 then return nil end
+local object=self.stackbyid[UniqueID]
+return self:PullByPointer(object.pointer)
+end
+function LIFO:Flatten()
+self:T(self.lid.."Flatten")
+local pointerstack={}
+local idstack={}
+local counter=0
+for _ID,_entry in pairs(self.stackbypointer)do
+counter=counter+1
+pointerstack[counter]={pointer=counter,data=_entry.data,uniqueID=_entry.uniqueID}
+end
+for _ID,_entry in pairs(pointerstack)do
+idstack[_entry.uniqueID]={pointer=_entry.pointer,data=_entry.data,uniqueID=_entry.uniqueID}
+end
+self.stackbypointer=nil
+self.stackbypointer=pointerstack
+self.stackbyid=nil
+self.stackbyid=idstack
+self.counter=counter
+self.pointer=counter
+return self
+end
+function LIFO:IsEmpty()
+self:T(self.lid.."IsEmpty")
+return self.counter==0 and true or false
+end
+function LIFO:GetSize()
+self:T(self.lid.."GetSize")
+return self.counter
+end
+function LIFO:IsNotEmpty()
+self:T(self.lid.."IsNotEmpty")
+return not self:IsEmpty()
+end
+function LIFO:GetPointerStack()
+self:T(self.lid.."GetPointerStack")
+return self.stackbypointer
+end
+function LIFO:GetIDStack()
+self:T(self.lid.."GetIDStack")
+return self.stackbyid
+end
+function LIFO:GetIDStackSorted()
+self:T(self.lid.."GetIDStackSorted")
+local stack=self:GetIDStack()
+local idstack={}
+for _id,_entry in pairs(stack)do
+idstack[#idstack+1]=_id
+self:I({"pre",_id})
+end
+local function sortID(a,b)
+return a<b
+end
+table.sort(idstack)
+return idstack
+end
+function LIFO:Flush()
+self:T(self.lid.."FiFo Flush")
+self:I("LIFO Flushing Stack by Pointer")
+for _id,_data in pairs(self.stackbypointer)do
+local data=_data
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+end
+self:I("LIFO Flushing Stack by ID")
 for _id,_data in pairs(self.stackbyid)do
 local data=_data
 self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
