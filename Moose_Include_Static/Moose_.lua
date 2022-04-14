@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:06:14.0000000Z-fba359d389504161c675dd03d6293b251fd3ba67 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:54:38.0000000Z-ba8505c9839ea359ae2de2ad1706190b4a4c236e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3469,13 +3469,13 @@ self:T(self.lid.."Push")
 self:T({Object,UniqueID})
 self.pointer=self.pointer+1
 self.counter=self.counter+1
-self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-if UniqueID then
-self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-else
+local uniID=UniqueID
+if not UniqueID then
 self.uniquecounter=self.uniquecounter+1
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
+uniID=self.uniquecounter
 end
+self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
 return self
 end
 function FIFO:Pull()
@@ -3604,13 +3604,13 @@ self:T(self.lid.."Push")
 self:T({Object,UniqueID})
 self.pointer=self.pointer+1
 self.counter=self.counter+1
-self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-if UniqueID then
-self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-else
+local uniID=UniqueID
+if not UniqueID then
 self.uniquecounter=self.uniquecounter+1
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
+uniID=self.uniquecounter
 end
+self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
 return self
 end
 function LIFO:Pull()
