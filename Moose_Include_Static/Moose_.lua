@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T09:11:18.0000000Z-626b48c3d1f48c9ddb85afb00ec7ec721aa46b81 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:05:49.0000000Z-6e218ed908cbfbe7e308abb9b2b20a4bd0fdd06f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3619,6 +3619,7 @@ self.pointer=0
 self.counter=0
 self.stackbypointer={}
 self.stackbyid={}
+self.uniquecounter=0
 self.lid=string.format("%s (%s) | ","FiFo",self.version)
 self:I(self.lid.."Created.")
 return self
@@ -3632,7 +3633,8 @@ self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=Uni
 if UniqueID then
 self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
 else
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+self.uniquecounter=self.uniquecounter+1
+self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
 end
 return self
 end
@@ -3724,12 +3726,12 @@ self:T(self.lid.."FiFo Flush")
 self:I("FIFO Flushing Stack by Pointer")
 for _id,_data in pairs(self.stackbypointer)do
 local data=_data
-self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("FIFO Flushing Stack by ID")
 for _id,_data in pairs(self.stackbyid)do
 local data=_data
-self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("Counter = "..self.counter)
 self:I("Pointer = "..self.pointer)
@@ -3750,6 +3752,7 @@ function LIFO:New()
 local self=BASE:Inherit(self,BASE:New())
 self.pointer=0
 self.counter=0
+self.uniquecounter=0
 self.stackbypointer={}
 self.stackbyid={}
 self.lid=string.format("%s (%s) | ","LiFo",self.version)
@@ -3765,7 +3768,8 @@ self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=Uni
 if UniqueID then
 self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
 else
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
+self.uniquecounter=self.uniquecounter+1
+self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
 end
 return self
 end
