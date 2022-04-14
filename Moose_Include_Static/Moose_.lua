@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:05:49.0000000Z-6e218ed908cbfbe7e308abb9b2b20a4bd0fdd06f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:55:51.0000000Z-061469840b25a60039b1f45c1301afe0b0d06870 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3629,13 +3629,13 @@ self:T(self.lid.."Push")
 self:T({Object,UniqueID})
 self.pointer=self.pointer+1
 self.counter=self.counter+1
-self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-if UniqueID then
-self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-else
+local uniID=UniqueID
+if not UniqueID then
 self.uniquecounter=self.uniquecounter+1
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
+uniID=self.uniquecounter
 end
+self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
 return self
 end
 function FIFO:Pull()
@@ -3713,7 +3713,7 @@ local stack=self:GetIDStack()
 local idstack={}
 for _id,_entry in pairs(stack)do
 idstack[#idstack+1]=_id
-self:I({"pre",_id})
+self:T({"pre",_id})
 end
 local function sortID(a,b)
 return a<b
@@ -3764,13 +3764,13 @@ self:T(self.lid.."Push")
 self:T({Object,UniqueID})
 self.pointer=self.pointer+1
 self.counter=self.counter+1
-self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-if UniqueID then
-self.stackbyid[UniqueID]={pointer=self.pointer,data=Object,uniqueID=UniqueID}
-else
+local uniID=UniqueID
+if not UniqueID then
 self.uniquecounter=self.uniquecounter+1
-self.stackbyid[self.pointer]={pointer=self.pointer,data=Object,uniqueID=self.uniquecounter}
+uniID=self.uniquecounter
 end
+self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
 return self
 end
 function LIFO:Pull()
@@ -3845,7 +3845,7 @@ local stack=self:GetIDStack()
 local idstack={}
 for _id,_entry in pairs(stack)do
 idstack[#idstack+1]=_id
-self:I({"pre",_id})
+self:T({"pre",_id})
 end
 local function sortID(a,b)
 return a<b
@@ -3862,12 +3862,12 @@ self:T(self.lid.."FiFo Flush")
 self:I("LIFO Flushing Stack by Pointer")
 for _id,_data in pairs(self.stackbypointer)do
 local data=_data
-self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("LIFO Flushing Stack by ID")
 for _id,_data in pairs(self.stackbyid)do
 local data=_data
-self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
 end
 self:I("Counter = "..self.counter)
 self:I("Pointer = "..self.pointer)
