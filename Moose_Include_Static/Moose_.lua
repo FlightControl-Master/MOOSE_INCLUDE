@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:55:51.0000000Z-061469840b25a60039b1f45c1301afe0b0d06870 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-16T16:58:43.0000000Z-0522036b8024fd3427ae10b7b60d025e8043f8e8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3621,7 +3621,18 @@ self.stackbypointer={}
 self.stackbyid={}
 self.uniquecounter=0
 self.lid=string.format("%s (%s) | ","FiFo",self.version)
-self:I(self.lid.."Created.")
+self:T(self.lid.."Created.")
+return self
+end
+function FIFO:Clear()
+self:T(self.lid.."Clear")
+self.pointer=0
+self.counter=0
+self.stackbypointer=nil
+self.stackbyid=nil
+self.stackbypointer={}
+self.stackbyid={}
+self.uniquecounter=0
 return self
 end
 function FIFO:Push(Object,UniqueID)
@@ -3756,7 +3767,18 @@ self.uniquecounter=0
 self.stackbypointer={}
 self.stackbyid={}
 self.lid=string.format("%s (%s) | ","LiFo",self.version)
-self:I(self.lid.."Created.")
+self:T(self.lid.."Created.")
+return self
+end
+function LIFO:Clear()
+self:T(self.lid.."Clear")
+self.pointer=0
+self.counter=0
+self.stackbypointer=nil
+self.stackbyid=nil
+self.stackbypointer={}
+self.stackbyid={}
+self.uniquecounter=0
 return self
 end
 function LIFO:Push(Object,UniqueID)
