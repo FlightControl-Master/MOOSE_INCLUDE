@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-16T16:58:43.0000000Z-0522036b8024fd3427ae10b7b60d025e8043f8e8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-17T09:25:48.0000000Z-75fddd9349c54f1324123281b86f8cd5da7506ff ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3607,7 +3607,7 @@ do
 FIFO={
 ClassName="FIFO",
 lid="",
-version="0.0.1",
+version="0.0.2",
 counter=0,
 pointer=0,
 stackbypointer={},
@@ -3668,6 +3668,18 @@ self.counter=self.counter-1
 self:Flatten()
 return object.data
 end
+function FIFO:ReadByPointer(Pointer)
+self:T(self.lid.."ReadByPointer "..tostring(Pointer))
+if self.counter==0 or not Pointer or not self.stackbypointer[Pointer]then return nil end
+local object=self.stackbypointer[Pointer]
+return object.data
+end
+function FIFO:ReadByID(UniqueID)
+self:T(self.lid.."ReadByID "..tostring(UniqueID))
+if self.counter==0 or not UniqueID or not self.stackbyid[UniqueID]then return nil end
+local object=self.stackbyid[UniqueID]
+return object.data
+end
 function FIFO:PullByID(UniqueID)
 self:T(self.lid.."PullByID "..tostring(UniqueID))
 if self.counter==0 then return nil end
@@ -3700,6 +3712,10 @@ return self.counter==0 and true or false
 end
 function FIFO:GetSize()
 self:T(self.lid.."GetSize")
+return self.counter
+end
+function FIFO:Count()
+self:T(self.lid.."Count")
 return self.counter
 end
 function FIFO:IsNotEmpty()
@@ -3753,7 +3769,7 @@ do
 LIFO={
 ClassName="LIFO",
 lid="",
-version="0.0.1",
+version="0.0.2",
 counter=0,
 pointer=0,
 stackbypointer={},
@@ -3815,6 +3831,18 @@ self.counter=self.counter-1
 self:Flatten()
 return object.data
 end
+function LIFO:ReadByPointer(Pointer)
+self:T(self.lid.."ReadByPointer "..tostring(Pointer))
+if self.counter==0 or not Pointer or not self.stackbypointer[Pointer]then return nil end
+local object=self.stackbypointer[Pointer]
+return object.data
+end
+function LIFO:ReadByID(UniqueID)
+self:T(self.lid.."ReadByID "..tostring(UniqueID))
+if self.counter==0 or not UniqueID or not self.stackbyid[UniqueID]then return nil end
+local object=self.stackbyid[UniqueID]
+return object.data
+end
 function LIFO:PullByID(UniqueID)
 self:T(self.lid.."PullByID "..tostring(UniqueID))
 if self.counter==0 then return nil end
@@ -3847,6 +3875,10 @@ return self.counter==0 and true or false
 end
 function LIFO:GetSize()
 self:T(self.lid.."GetSize")
+return self.counter
+end
+function LIFO:Count()
+self:T(self.lid.."Count")
 return self.counter
 end
 function LIFO:IsNotEmpty()
