@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-18T14:57:33.0000000Z-2033e22216484cdd9070cc83fe214c5d2863f855 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-19T13:36:44.0000000Z-2d0f5817d02cc080c161090263c23162da9cc1dc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3007,6 +3007,41 @@ return name
 end
 end
 for name,value in pairs(CALLSIGN.Tanker)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.B1B)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.B52)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.F15E)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.F16)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.F18)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.FARP)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.TransportAircraft)do
 if value==Callsign then
 return name
 end
@@ -63301,7 +63336,7 @@ if SayCallsign then
 local callsign=self:GetCallsignName()
 Text=string.format("%s, %s",callsign,Text)
 end
-self:I(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
+self:T(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
 self.msrs:PlayText(Text)
 end
 end
