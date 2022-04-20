@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-19T13:38:29.0000000Z-f93033695d066c66b33fdd274693205a677a2949 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T06:33:49.0000000Z-1a798886a234f1d42dbef41de03d5d5898208ac1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4401,7 +4401,7 @@ do
 FIFO={
 ClassName="FIFO",
 lid="",
-version="0.0.2",
+version="0.0.3",
 counter=0,
 pointer=0,
 stackbypointer={},
@@ -4545,6 +4545,58 @@ return a<b
 end
 table.sort(idstack)
 return idstack
+end
+function FIFO:GetDataTable()
+self:T(self.lid.."GetDataTable")
+local datatable={}
+for _,_entry in pairs(self.stackbypointer)do
+datatable[#datatable+1]=_entry.data
+end
+return datatable
+end
+function FIFO:GetSortedDataTable()
+self:T(self.lid.."GetSortedDataTable")
+local datatable={}
+local idtablesorted=self:GetIDStackSorted()
+for _,_entry in pairs(idtablesorted)do
+datatable[#datatable+1]=self:ReadByID(_entry)
+end
+return datatable
+end
+function FIFO:ForEach(IteratorFunction,Arg,Function,FunctionArguments)
+self:T(self.lid.."ForEach")
+local Set=self:GetPointerStack()or{}
+Arg=Arg or{}
+local function CoRoutine()
+local Count=0
+for ObjectID,ObjectData in pairs(Set)do
+local Object=ObjectData.data
+self:T({Object})
+if Function then
+if Function(unpack(FunctionArguments or{}),Object)==true then
+IteratorFunction(Object,unpack(Arg))
+end
+else
+IteratorFunction(Object,unpack(Arg))
+end
+Count=Count+1
+end
+return true
+end
+local co=CoRoutine
+local function Schedule()
+local status,res=co()
+self:T({status,res})
+if status==false then
+error(res)
+end
+if res==false then
+return true
+end
+return false
+end
+Schedule()
+return self
 end
 function FIFO:Flush()
 self:T(self.lid.."FiFo Flush")
@@ -4727,6 +4779,58 @@ self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostr
 end
 self:I("Counter = "..self.counter)
 self:I("Pointer = "..self.pointer)
+return self
+end
+function LIFO:GetDataTable()
+self:T(self.lid.."GetDataTable")
+local datatable={}
+for _,_entry in pairs(self.stackbypointer)do
+datatable[#datatable+1]=_entry.data
+end
+return datatable
+end
+function LIFO:GetSortedDataTable()
+self:T(self.lid.."GetSortedDataTable")
+local datatable={}
+local idtablesorted=self:GetIDStackSorted()
+for _,_entry in pairs(idtablesorted)do
+datatable[#datatable+1]=self:ReadByID(_entry)
+end
+return datatable
+end
+function LIFO:ForEach(IteratorFunction,Arg,Function,FunctionArguments)
+self:T(self.lid.."ForEach")
+local Set=self:GetPointerStack()or{}
+Arg=Arg or{}
+local function CoRoutine()
+local Count=0
+for ObjectID,ObjectData in pairs(Set)do
+local Object=ObjectData.data
+self:T({Object})
+if Function then
+if Function(unpack(FunctionArguments or{}),Object)==true then
+IteratorFunction(Object,unpack(Arg))
+end
+else
+IteratorFunction(Object,unpack(Arg))
+end
+Count=Count+1
+end
+return true
+end
+local co=CoRoutine
+local function Schedule()
+local status,res=co()
+self:T({status,res})
+if status==false then
+error(res)
+end
+if res==false then
+return true
+end
+return false
+end
+Schedule()
 return self
 end
 end
@@ -74244,8 +74348,22 @@ end
 end
 return nil
 end
+function AIRWING:SetUsingOpsAwacs(ConnectecdAwacs)
+self:I(self.lid.."Added AWACS Object: "..ConnectecdAwacs:GetName()or"unknown")
+self.UseConnectedOpsAwacs=true
+self.ConnectedOpsAwacs=ConnectecdAwacs
+return self
+end
+function AIRWING:RemoveUsingOpsAwacs()
+self:I(self.lid.."Reomve AWACS Object: "..self.ConnectedOpsAwacs:GetName()or"unknown")
+self.UseConnectedOpsAwacs=false
+return self
+end
 function AIRWING:onafterFlightOnMission(From,Event,To,FlightGroup,Mission)
 self:T(self.lid..string.format("Group %s on %s mission %s",FlightGroup:GetName(),Mission:GetType(),Mission:GetName()))
+if self.UseConnectedOpsAwacs and self.ConnectedOpsAwacs then
+self.ConnectedOpsAwacs:__FlightOnMission(2,FlightGroup,Mission)
+end
 end
 function AIRWING:CountPayloadsInStock(MissionTypes,UnitTypes,Payloads)
 if MissionTypes then
