@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T12:03:18.0000000Z-a385ed57fb1c1efc951be719ae8810747e8fe462 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T17:14:36.0000000Z-e6fc301b0dac71003170954e26dd8c126762c7f5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3443,7 +3443,7 @@ return nil
 end
 return datatable
 end
-function Utils.BearingToCardinal(Heading)
+function UTILS.BearingToCardinal(Heading)
 if Heading>=0 and Heading<=22 then return"North"
 elseif Heading>=23 and Heading<=66 then return"North-East"
 elseif Heading>=67 and Heading<=101 then return"East"
@@ -3455,7 +3455,7 @@ elseif Heading>=292 and Heading<=338 then return"North-West"
 elseif Heading>=339 then return"North"
 end
 end
-function Utils.ToStringBRAANATO(FromGrp,ToGrp)
+function UTILS.ToStringBRAANATO(FromGrp,ToGrp)
 local BRAANATO="Merged."
 local GroupNumber=FromGrp:GetSize()
 local GroupWords="Singleton"
@@ -3471,7 +3471,7 @@ local rangeMetres=tgtCoord:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=tgtCoord:ToStringAspect(currentCoord)
 local alt=UTILS.Round(UTILS.MetersToFeet(grpLeadUnit:GetAltitude())/1000,0)
-local track=Utils.BearingToCardinal(hdg)
+local track=UTILS.BearingToCardinal(hdg)
 if rangeNM>3 then
 BRAANATO=string.format("%s, BRAA, %s, %d miles, Angels %d, %s, Track %s, Spades.",GroupWords,bearing,rangeNM,alt,aspect,track)
 end
