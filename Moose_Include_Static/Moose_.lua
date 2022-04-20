@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T16:54:51.0000000Z-610e33e4a46f614ee0adb3e3e0e7a77e419cc99f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T17:04:37.0000000Z-9169bfc608990cded6254d1d5b33fdcebf0b656c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13603,21 +13603,22 @@ local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
 local s=string.format('%03d°',AngleDegrees)
 return s
 end
-function COORDINATE:GetDistanceText(Distance,Settings,Language)
+function COORDINATE:GetDistanceText(Distance,Settings,Language,Precision)
 local Settings=Settings or _SETTINGS
 local Language=Language or"EN"
+local Precision=Precision or 0
 local DistanceText
 if Settings:IsMetric()then
 if Language=="EN"then
-DistanceText=" for "..UTILS.Round(Distance/1000,2).." km"
+DistanceText=" for "..UTILS.Round(Distance/1000,Precision).." km"
 elseif Language=="RU"then
-DistanceText=" за "..UTILS.Round(Distance/1000,2).." километров"
+DistanceText=" за "..UTILS.Round(Distance/1000,Precision).." километров"
 end
 else
 if Language=="EN"then
-DistanceText=" for "..UTILS.Round(UTILS.MetersToNM(Distance),2).." miles"
+DistanceText=" for "..UTILS.Round(UTILS.MetersToNM(Distance),Precision).." miles"
 elseif Language=="RU"then
-DistanceText=" за "..UTILS.Round(UTILS.MetersToNM(Distance),2).." миль"
+DistanceText=" за "..UTILS.Round(UTILS.MetersToNM(Distance),Precision).." миль"
 end
 end
 return DistanceText
@@ -13668,14 +13669,14 @@ end
 function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language)
 local Settings=Settings or _SETTINGS
 local BearingText=self:GetBearingText(AngleRadians,0,Settings,Language)
-local DistanceText=self:GetDistanceText(Distance,Settings,Language)
+local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
 local BRText=BearingText..DistanceText
 return BRText
 end
 function COORDINATE:GetBRAText(AngleRadians,Distance,Settings,Language)
 local Settings=Settings or _SETTINGS
 local BearingText=self:GetBearingText(AngleRadians,0,Settings,Language)
-local DistanceText=self:GetDistanceText(Distance,Settings,Language)
+local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
 local AltitudeText=self:GetAltitudeText(Settings,Language)
 local BRAText=BearingText..DistanceText..AltitudeText
 return BRAText
