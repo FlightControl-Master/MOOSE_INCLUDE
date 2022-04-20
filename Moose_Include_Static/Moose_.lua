@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T17:14:19.0000000Z-e6cc8757ac9021ab8bb165f27f93cc5256d10342 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T19:51:09.0000000Z-04f60747d9bf3165977bb2404046aa5e031020a5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -43999,9 +43999,19 @@ _type=COORDINATE.WaypointType.TakeOffParkingHot
 _action=COORDINATE.WaypointAction.FromParkingAreaHot
 uncontrolled=false
 end
+local airstart=asset.takeoffType and asset.takeoffType==COORDINATE.WaypointType.TurningPoint or false
+if airstart then
+_type=COORDINATE.WaypointType.TurningPoint
+_action=COORDINATE.WaypointAction.TurningPoint
+uncontrolled=false
+end
 if request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
 if request.toself then
-local wp=self.airbase:GetCoordinate():WaypointAir("RADIO",_type,_action,0,false,self.airbase,{},"Parking")
+local coord=self.airbase:GetCoordinate()
+if airstart then
+coord:SetAltitude(math.random(1000,2000))
+end
+local wp=coord:WaypointAir("RADIO",_type,_action,0,false,self.airbase,{},"Parking")
 template.route.points={wp}
 else
 template.route.points=self:_GetFlightplan(asset,self.airbase,request.warehouse.airbase)
@@ -44013,7 +44023,7 @@ local AirbaseID=self.airbase:GetID()
 local AirbaseCategory=self:GetAirbaseCategory()
 if AirbaseCategory==Airbase.Category.HELIPAD or AirbaseCategory==Airbase.Category.SHIP then
 else
-if#parking<#template.units then
+if#parking<#template.units and not airstart then
 local text=string.format("ERROR: Not enough parking! Free parking = %d < %d aircraft to be spawned.",#parking,#template.units)
 self:_DebugMessage(text)
 return nil
@@ -44026,11 +44036,20 @@ local coord=self.airbase:GetCoordinate()
 unit.x=coord.x
 unit.y=coord.z
 unit.alt=coord.y
+if airstart then
+unit.alt=math.random(1000,2000)
+end
 unit.parking_id=nil
 unit.parking=nil
 else
-local coord=parking[i].Coordinate
-local terminal=parking[i].TerminalID
+local coord=nil
+local terminal=nil
+if airstart then
+coord=self.airbase:GetCoordinate():SetAltitude(math.random(1000,2000))
+else
+coord=parking[i].Coordinate
+terminal=parking[i].TerminalID
+end
 if self.Debug then
 coord:MarkToAll(string.format("Spawnplace unit %s terminal %d.",unit.name,terminal))
 end
@@ -63386,7 +63405,7 @@ return self
 end
 function OPSGROUP:ReturnToLegion(Delay)
 if Delay and Delay>0 then
-self.scheduleIDDespawn=self:ScheduleOnce(Delay,OPSGROUP.ReturnToLegion,self)
+self:ScheduleOnce(Delay,OPSGROUP.ReturnToLegion,self)
 else
 if self.legion then
 self:T(self.lid..string.format("Adding asset back to LEGION"))
@@ -64571,7 +64590,7 @@ self:T(self.lid.."Task Done ==> Mission Done!")
 self:MissionDone(Mission)
 end
 else
-if self.currentmission and self.currentmission==Mission.auftragsnummer then
+if self:IsOnMission(Mission.auftragsnummer)then
 self.currentmission=nil
 end
 self:T(self.lid.."Remove mission waypoints")
@@ -64732,8 +64751,17 @@ end
 function OPSGROUP:GetMissionCurrent()
 return self:GetMissionByID(self.currentmission)
 end
-function OPSGROUP:IsOnMission()
-return self.currentmission~=nil
+function OPSGROUP:IsOnMission(MissionUID)
+if self.currentmission==nil then
+return false
+else
+if MissionUID then
+return MissionUID==self.currentmission
+else
+return true
+end
+end
+return true
 end
 function OPSGROUP:onbeforeMissionStart(From,Event,To,Mission)
 self:T(self.lid..string.format("Starting mission %s, FSM=%s, LateActivated=%s, UnControlled=%s",tostring(Mission.name),self:GetState(),tostring(self:IsLateActivated()),tostring(self:IsUncontrolled())))
@@ -64797,7 +64825,7 @@ self:T(self.lid.."ERROR: No mission to unpause!")
 end
 end
 function OPSGROUP:onafterMissionCancel(From,Event,To,Mission)
-if self.currentmission and Mission.auftragsnummer==self.currentmission then
+if self:IsOnMission(Mission.auftragsnummer)then
 if Mission.type==AUFTRAG.Type.ALERT5 or Mission.type==AUFTRAG.Type.ONGUARD or Mission.type==AUFTRAG.Type.ARMOREDGUARD then
 self:MissionDone(Mission)
 return
@@ -64827,7 +64855,7 @@ function OPSGROUP:onafterMissionDone(From,Event,To,Mission)
 local text=string.format("Mission %s DONE!",Mission.name)
 self:T(self.lid..text)
 Mission:SetGroupStatus(self,AUFTRAG.GroupStatus.DONE)
-if self.currentmission and Mission.auftragsnummer==self.currentmission then
+if self:IsOnMission(Mission.auftragsnummer)then
 self.currentmission=nil
 end
 self:_RemoveMissionWaypoints(Mission)
@@ -65578,11 +65606,12 @@ if Delay and Delay>0 then
 self:ScheduleOnce(Delay,OPSGROUP.Teleport,self,Coordinate)
 else
 self:T(self.lid.."FF Teleporting...")
-if self.currentmission>0 then
+if self:IsOnMission()then
 self:T(self.lid.."Pausing current mission")
 self:PauseMission()
 end
 local Template=UTILS.DeepCopy(self.template)
+Template.lateActivation=self:IsLateActivated()
 local units=Template.units
 local d={}
 for i=1,#units do
@@ -68511,7 +68540,7 @@ FLIGHTGROUP.RadioMessage={
 AIRBORNE={normal="Airborn",enhanced="Airborn"},
 TAXIING={normal="Taxiing",enhanced="Taxiing"},
 }
-FLIGHTGROUP.version="0.7.2"
+FLIGHTGROUP.version="0.7.3"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -68677,6 +68706,10 @@ function FLIGHTGROUP:SetDespawnAfterLanding()
 self.despawnAfterLanding=true
 return self
 end
+function FLIGHTGROUP:SetDespawnAfterHolding()
+self.despawnAfterHolding=true
+return self
+end
 function FLIGHTGROUP:IsParking()
 return self:Is("Parking")
 end
@@ -68825,19 +68858,32 @@ local nelem=self:CountElements()
 local Nelem=#self.elements
 local nTaskTot,nTaskSched,nTaskWP=self:CountRemainingTasks()
 local nMissions=self:CountRemainingMissison()
-local currT=self.taskcurrent or"None"
-local currM=self.currentmission or"None"
-local currW=self.currentwp or 0
-local nWp=self.waypoints and#self.waypoints or 0
+local roe=self:GetROE()or-1
+local als=self:GetAlarmstate()or-1
+local wpidxCurr=self.currentwp
+local wpuidCurr=self:GetWaypointUIDFromIndex(wpidxCurr)or 0
+local wpidxNext=self:GetWaypointIndexNext()or 0
+local wpuidNext=self:GetWaypointUIDFromIndex(wpidxNext)or 0
+local wpN=#self.waypoints or 0
+local wpF=tostring(self.passedfinalwp)
+local speed=UTILS.MpsToKnots(self.velocity or 0)
+local speedEx=UTILS.MpsToKnots(self:GetExpectedSpeed())
+local alt=self.position and self.position.y or 0
+local hdg=self.heading or 0
+local formation=self.option.Formation or"unknown"
+local life=self.life or 0
+local ammo=self:GetAmmoTot().Total
+local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
+local cargo=0
+for _,_element in pairs(self.elements)do
+local element=_element
+cargo=cargo+element.weightCargo
+end
 local home=self.homebase and self.homebase:GetName()or"unknown"
 local dest=self.destbase and self.destbase:GetName()or"unknown"
-local fc=self.flightcontrol and self.flightcontrol.airbasename or"N/A"
 local curr=self.currbase and self.currbase:GetName()or"N/A"
-local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
-local text=string.format("Status %s [%d/%d]: T/M=%d/%d [Current %s/%s] [%s], Waypoint=%d/%d [%s], Base=%s [%s-->%s]",
-fsmstate,nelem,Nelem,
-nTaskTot,nMissions,currT,currM,tostring(self:HasTaskController()),
-currW,nWp,tostring(self.passedfinalwp),curr,home,dest)
+local text=string.format("%s [%d/%d]: ROE/AS=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f | Base=%s [%s-->%s]",
+fsmstate,nelem,Nelem,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,hdg,ammo,ndetected,cargo,curr,home,dest)
 self:I(self.lid..text)
 end
 if self.verbose>=2 then
@@ -69060,9 +69106,6 @@ self:_UpdateStatus(Element,OPSGROUP.ElementStatus.AIRBORNE)
 end
 function FLIGHTGROUP:onafterElementLanded(From,Event,To,Element,airbase)
 self:T2(self.lid..string.format("Element landed %s at %s airbase",Element.name,airbase and airbase:GetName()or"unknown"))
-if self.despawnAfterLanding then
-self:DespawnElement(Element)
-else
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.LANDED,airbase)
 if self.isHelo then
 local Spot=self:GetParkingSpot(Element,10,airbase)
@@ -69070,6 +69113,18 @@ if Spot then
 self:_SetElementParkingAt(Element,Spot)
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.ARRIVED)
 end
+end
+if self.despawnAfterLanding then
+if self.legion then
+if airbase and self.legion.airbase and airbase.AirbaseName==self.legion.airbase.AirbaseName then
+if self:IsLanded()then
+self:ReturnToLegion()
+else
+self:DespawnElement(Element)
+end
+end
+else
+self:DespawnElement(Element)
 end
 end
 end
@@ -69226,7 +69281,7 @@ end
 local airwing=self:GetAirWing()
 if airwing and not(self:IsPickingup()or self:IsTransporting())then
 self:T(self.lid..string.format("Airwing asset group %s arrived ==> Adding asset back to stock of airwing %s",self.groupname,airwing.alias))
-airwing:AddAsset(self.group,1)
+self:ReturnToLegion(1)
 elseif self.isLandingAtAirbase then
 local Template=UTILS.DeepCopy(self.template)
 self.isLateActivated=false
@@ -69714,6 +69769,14 @@ self:_CheckGroupDone(1)
 end
 function FLIGHTGROUP:onafterHolding(From,Event,To)
 self.flaghold:Set(0)
+if self.despawnAfterHolding then
+if self.legion then
+self:ReturnToLegion(1)
+else
+self:Despawn(1)
+end
+return
+end
 self.Tholding=timer.getAbsTime()
 local text=string.format("Flight group %s is HOLDING now",self.groupname)
 self:T(self.lid..text)
@@ -70397,7 +70460,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="0.7.1"
+NAVYGROUP.version="0.7.3"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -70622,25 +70685,34 @@ self:_CheckDamage()
 end
 if alive~=nil then
 if self.verbose>=1 then
+local nelem=self:CountElements()
+local Nelem=#self.elements
 local nTaskTot,nTaskSched,nTaskWP=self:CountRemainingTasks()
 local nMissions=self:CountRemainingMissison()
-local intowind=self:IsSteamingIntoWind()and UTILS.SecondsToClock(self.intowind.Tstop-timer.getAbsTime(),true)or"N/A"
-local turning=tostring(self:IsTurning())
-local alt=self.position and self.position.y or 0
-local speed=UTILS.MpsToKnots(self.velocity or 0)
-local speedExpected=UTILS.MpsToKnots(self:GetExpectedSpeed())
+local roe=self:GetROE()or-1
+local als=self:GetAlarmstate()or-1
 local wpidxCurr=self.currentwp
 local wpuidCurr=self:GetWaypointUIDFromIndex(wpidxCurr)or 0
 local wpidxNext=self:GetWaypointIndexNext()or 0
 local wpuidNext=self:GetWaypointUIDFromIndex(wpidxNext)or 0
 local wpN=#self.waypoints or 0
 local wpF=tostring(self.passedfinalwp)
-local wpDist=UTILS.MetersToNM(self:GetDistanceToWaypoint()or 0)
-local wpETA=UTILS.SecondsToClock(self:GetTimeToWaypoint()or 0,true)
-local roe=self:GetROE()or 0
-local als=self:GetAlarmstate()or 0
-local text=string.format("%s [ROE=%d,AS=%d, T/M=%d/%d]: Wp=%d[%d]-->%d[%d] /%d [%s]  Dist=%.1f NM ETA=%s - Speed=%.1f (%.1f) kts, Depth=%.1f m, Hdg=%03d, Turn=%s Collision=%d IntoWind=%s",
-fsmstate,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,wpDist,wpETA,speed,speedExpected,alt,self.heading or 0,turning,freepath,intowind)
+local speed=UTILS.MpsToKnots(self.velocity or 0)
+local speedEx=UTILS.MpsToKnots(self:GetExpectedSpeed())
+local alt=self.position and self.position.y or 0
+local hdg=self.heading or 0
+local life=self.life or 0
+local ammo=self:GetAmmoTot().Total
+local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
+local cargo=0
+for _,_element in pairs(self.elements)do
+local element=_element
+cargo=cargo+element.weightCargo
+end
+local intowind=self:IsSteamingIntoWind()and UTILS.SecondsToClock(self.intowind.Tstop-timer.getAbsTime(),true)or"N/A"
+local turning=tostring(self:IsTurning())
+local text=string.format("%s [%d/%d]: ROE/AS=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f | Turn=%s Collision=%d IntoWind=%s",
+fsmstate,nelem,Nelem,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,hdg,ammo,ndetected,cargo,turning,freepath,intowind)
 self:I(self.lid..text)
 end
 else
@@ -71177,7 +71249,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="0.7.2"
+ARMYGROUP.version="0.7.3"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -71330,22 +71402,34 @@ self:_CheckDamage()
 end
 if alive~=nil then
 if self.verbose>=1 then
+local nelem=self:CountElements()
+local Nelem=#self.elements
 local nTaskTot,nTaskSched,nTaskWP=self:CountRemainingTasks()
 local nMissions=self:CountRemainingMissison()
-local roe=self:GetROE()
-local alarm=self:GetAlarmstate()
+local roe=self:GetROE()or-1
+local als=self:GetAlarmstate()or-1
+local wpidxCurr=self.currentwp
+local wpuidCurr=self:GetWaypointUIDFromIndex(wpidxCurr)or 0
+local wpidxNext=self:GetWaypointIndexNext()or 0
+local wpuidNext=self:GetWaypointUIDFromIndex(wpidxNext)or 0
+local wpN=#self.waypoints or 0
+local wpF=tostring(self.passedfinalwp)
 local speed=UTILS.MpsToKnots(self.velocity or 0)
 local speedEx=UTILS.MpsToKnots(self:GetExpectedSpeed())
+local alt=self.position and self.position.y or 0
+local hdg=self.heading or 0
 local formation=self.option.Formation or"unknown"
-local ammo=self:GetAmmoTot()
+local life=self.life or 0
+local ammo=self:GetAmmoTot().Total
+local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
 local cargo=0
 for _,_element in pairs(self.elements)do
 local element=_element
 cargo=cargo+element.weightCargo
 end
-local text=string.format("%s [ROE-AS=%d-%d T/M=%d/%d]: Wp=%d/%d-->%d (final %s), Life=%.1f, Speed=%.1f (%d), Heading=%03d, Ammo=%d, Cargo=%.1f",
-fsmstate,roe,alarm,nTaskTot,nMissions,self.currentwp,#self.waypoints,self:GetWaypointIndexNext(),tostring(self.passedfinalwp),self.life or 0,speed,speedEx,self.heading or 0,ammo.Total,cargo)
-self:T(self.lid..text)
+local text=string.format("%s [%d/%d]: ROE/AS=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f",
+fsmstate,nelem,Nelem,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,hdg,ammo,ndetected,cargo)
+self:I(self.lid..text)
 end
 else
 if self.verbose>=1 then
@@ -71417,6 +71501,7 @@ self.isDestroyed=false
 if self.isAI then
 self:SwitchROE(self.option.ROE)
 self:SwitchAlarmstate(self.option.Alarm)
+self:SwitchEmission(self.option.Emission)
 self:SwitchEPLRS(self.option.EPLRS)
 self:_SwitchTACAN()
 if self.radioDefault then
@@ -71563,7 +71648,7 @@ end
 function ARMYGROUP:onbeforeRearm(From,Event,To,Coordinate,Formation)
 local dt=nil
 local allowed=true
-if self.currentmission and self.currentmission>0 then
+if self:IsOnMission()then
 self:T(self.lid.."Rearm command but have current mission ==> Pausing mission!")
 self:PauseMission()
 dt=-0.1
@@ -71870,7 +71955,7 @@ cargobayLimit=0,
 descriptors={},
 properties={},
 }
-COHORT.version="0.3.0"
+COHORT.version="0.3.2"
 function COHORT:New(TemplateGroupName,Ngroups,CohortName)
 local self=BASE:Inherit(self,FSM:New())
 self.templatename=TemplateGroupName
@@ -72541,7 +72626,7 @@ callsigncounter=11,
 tankerSystem=nil,
 refuelSystem=nil,
 }
-SQUADRON.version="0.8.0"
+SQUADRON.version="0.8.1"
 function SQUADRON:New(TemplateGroupName,Ngroups,SquadronName)
 local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,SquadronName))
 self:AddMissionCapability(AUFTRAG.Type.ORBIT)
@@ -72568,6 +72653,8 @@ if TakeoffType:lower()=="hot"then
 self.takeoffType=COORDINATE.WaypointType.TakeOffParkingHot
 elseif TakeoffType:lower()=="cold"then
 self.takeoffType=COORDINATE.WaypointType.TakeOffParking
+elseif TakeoffType:lower()=="air"then
+self.takeoffType=COORDINATE.WaypointType.TurningPoint
 else
 self.takeoffType=COORDINATE.WaypointType.TakeOffParking
 end
@@ -72579,6 +72666,26 @@ return self
 end
 function SQUADRON:SetTakeoffHot()
 self:SetTakeoffType("Hot")
+return self
+end
+function SQUADRON:SetTakeoffAir()
+self:SetTakeoffType("Air")
+return self
+end
+function SQUADRON:SetDespawnAfterLanding(Switch)
+if Switch then
+self.despawnAfterLanding=Switch
+else
+self.despawnAfterLanding=true
+end
+return self
+end
+function SQUADRON:SetDespawnAfterHolding(Switch)
+if Switch then
+self.despawnAfterHolding=Switch
+else
+self.despawnAfterHolding=true
+end
 return self
 end
 function SQUADRON:SetFuelLowThreshold(LowFuel)
@@ -72685,7 +72792,7 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.3.1"
+LEGION.version="0.3.2"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -73130,7 +73237,7 @@ end
 asset.nunits=cohort.ngrouping
 self:T(self.lid..string.format("After regrouping: Nunits=%d, weight=%.1f cargobaytot=%.1f kg",#asset.template.units,asset.weight,asset.cargobaytot))
 end
-asset.takeoffType=cohort.takeoffType
+asset.takeoffType=cohort.takeoffType~=nil and cohort.takeoffType or self.takeoffType
 asset.parkingIDs=cohort.parkingIDs
 cohort:GetCallsign(asset)
 cohort:GetModex(asset)
@@ -73188,6 +73295,14 @@ end
 if string.find(assignment,"Mission-")then
 local uid=UTILS.Split(assignment,"-")[2]
 local mission=self:GetMissionByID(uid)
+local despawnLanding=cohort.despawnAfterLanding~=nil and cohort.despawnAfterLanding or self.despawnAfterLanding
+if despawnLanding then
+flightgroup:SetDespawnAfterLanding()
+end
+local despawnHolding=cohort.despawnAfterHolding~=nil and cohort.despawnAfterHolding or self.despawnAfterHolding
+if despawnHolding then
+flightgroup:SetDespawnAfterHolding()
+end
 if mission then
 if Tacan then
 end
@@ -73934,7 +74049,7 @@ pointsTANKER={},
 pointsAWACS={},
 markpoints=false,
 }
-AIRWING.version="0.9.1"
+AIRWING.version="0.9.2"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -74237,6 +74352,47 @@ return self
 end
 function AIRWING:SetAirboss(airboss)
 self.airboss=airboss
+return self
+end
+function AIRWING:SetTakeoffType(TakeoffType)
+TakeoffType=TakeoffType or"Cold"
+if TakeoffType:lower()=="hot"then
+self.takeoffType=COORDINATE.WaypointType.TakeOffParkingHot
+elseif TakeoffType:lower()=="cold"then
+self.takeoffType=COORDINATE.WaypointType.TakeOffParking
+elseif TakeoffType:lower()=="air"then
+self.takeoffType=COORDINATE.WaypointType.TurningPoint
+else
+self.takeoffType=COORDINATE.WaypointType.TakeOffParking
+end
+return self
+end
+function AIRWING:SetTakeoffCold()
+self:SetTakeoffType("Cold")
+return self
+end
+function AIRWING:SetTakeoffHot()
+self:SetTakeoffType("Hot")
+return self
+end
+function AIRWING:SetTakeoffAir()
+self:SetTakeoffType("Air")
+return self
+end
+function AIRWING:SetDespawnAfterLanding(Switch)
+if Switch then
+self.despawnAfterLanding=Switch
+else
+self.despawnAfterLanding=true
+end
+return self
+end
+function AIRWING:SetDespawnAfterHolding(Switch)
+if Switch then
+self.despawnAfterHolding=Switch
+else
+self.despawnAfterHolding=true
+end
 return self
 end
 function AIRWING:onafterStart(From,Event,To)
@@ -83392,6 +83548,7 @@ self:E(self.lid.."ERROR: Unknown Group category!")
 end
 elseif airbase then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBRUNWAY,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
 elseif static then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BOMBING,70))
