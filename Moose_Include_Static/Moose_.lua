@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-14T13:54:38.0000000Z-ba8505c9839ea359ae2de2ad1706190b4a4c236e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T12:03:18.0000000Z-a385ed57fb1c1efc951be719ae8810747e8fe462 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3442,6 +3442,40 @@ else
 return nil
 end
 return datatable
+end
+function Utils.BearingToCardinal(Heading)
+if Heading>=0 and Heading<=22 then return"North"
+elseif Heading>=23 and Heading<=66 then return"North-East"
+elseif Heading>=67 and Heading<=101 then return"East"
+elseif Heading>=102 and Heading<=146 then return"South-East"
+elseif Heading>=147 and Heading<=201 then return"South"
+elseif Heading>=202 and Heading<=246 then return"South-West"
+elseif Heading>=247 and Heading<=291 then return"West"
+elseif Heading>=292 and Heading<=338 then return"North-West"
+elseif Heading>=339 then return"North"
+end
+end
+function Utils.ToStringBRAANATO(FromGrp,ToGrp)
+local BRAANATO="Merged."
+local GroupNumber=FromGrp:GetSize()
+local GroupWords="Singleton"
+if GroupNumber==2 then GroupWords="Two-Ship"
+elseif GroupNumber>=3 then GroupWords="Heavy"
+end
+local grpLeadUnit=ToGrp:GetUnit(1)
+local tgtCoord=grpLeadUnit:GetCoordinate()
+local currentCoord=FromGrp:GetCoordinate()
+local hdg=UTILS.Round(ToGrp:GetHeading()/100,1)*100
+local bearing=UTILS.Round(currentCoord:HeadingTo(tgtCoord),0)
+local rangeMetres=tgtCoord:Get2DDistance(currentCoord)
+local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
+local aspect=tgtCoord:ToStringAspect(currentCoord)
+local alt=UTILS.Round(UTILS.MetersToFeet(grpLeadUnit:GetAltitude())/1000,0)
+local track=Utils.BearingToCardinal(hdg)
+if rangeNM>3 then
+BRAANATO=string.format("%s, BRAA, %s, %d miles, Angels %d, %s, Track %s, Spades.",GroupWords,bearing,rangeNM,alt,aspect,track)
+end
+return BRAANATO
 end
 do
 FIFO={
@@ -7450,7 +7484,8 @@ ClassName="ZONE_BASE",
 ZoneName="",
 ZoneProbability=1,
 DrawID=nil,
-Color={}
+Color={},
+ZoneID=nil,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -7652,7 +7687,7 @@ local coordinate=self:GetCoordinate()
 local Radius=self:GetRadius()
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillAlpha=FillAlpha or self:GetColorAlpha()
 self.DrawID=coordinate:CircleToAll(Radius,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
 return self
@@ -8233,7 +8268,7 @@ function ZONE_POLYGON_BASE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,Li
 local coordinate=COORDINATE:NewFromVec2(self._.Polygon[1])
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillAlpha=FillAlpha or self:GetColorAlpha()
 if#self._.Polygon==4 then
 local Coord2=COORDINATE:NewFromVec2(self._.Polygon[2])
