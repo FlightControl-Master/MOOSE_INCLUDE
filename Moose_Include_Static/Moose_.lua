@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T06:33:49.0000000Z-1a798886a234f1d42dbef41de03d5d5898208ac1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T10:43:24.0000000Z-eabc8b585494c99fabf931d608cc8c56f37dff0f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3637,6 +3637,40 @@ else
 return nil
 end
 return datatable
+end
+function Utils.BearingToCardinal(Heading)
+if Heading>=0 and Heading<=22 then return"North"
+elseif Heading>=23 and Heading<=66 then return"North-East"
+elseif Heading>=67 and Heading<=101 then return"East"
+elseif Heading>=102 and Heading<=146 then return"South-East"
+elseif Heading>=147 and Heading<=201 then return"South"
+elseif Heading>=202 and Heading<=246 then return"South-West"
+elseif Heading>=247 and Heading<=291 then return"West"
+elseif Heading>=292 and Heading<=338 then return"North-West"
+elseif Heading>=339 then return"North"
+end
+end
+function Utils.ToStringBRAANATO(FromGrp,ToGrp)
+local BRAANATO="Merged."
+local GroupNumber=FromGrp:GetSize()
+local GroupWords="Singleton"
+if GroupNumber==2 then GroupWords="Two-Ship"
+elseif GroupNumber>=3 then GroupWords="Heavy"
+end
+local grpLeadUnit=ToGrp:GetUnit(1)
+local tgtCoord=grpLeadUnit:GetCoordinate()
+local currentCoord=FromGrp:GetCoordinate()
+local hdg=UTILS.Round(ToGrp:GetHeading()/100,1)*100
+local bearing=UTILS.Round(currentCoord:HeadingTo(tgtCoord),0)
+local rangeMetres=tgtCoord:Get2DDistance(currentCoord)
+local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
+local aspect=tgtCoord:ToStringAspect(currentCoord)
+local alt=UTILS.Round(UTILS.MetersToFeet(grpLeadUnit:GetAltitude())/1000,0)
+local track=Utils.BearingToCardinal(hdg)
+if rangeNM>3 then
+BRAANATO=string.format("%s, BRAA, %s, %d miles, Angels %d, %s, Track %s, Spades.",GroupWords,bearing,rangeNM,alt,aspect,track)
+end
+return BRAANATO
 end
 PROFILER={
 ClassName="PROFILER",
