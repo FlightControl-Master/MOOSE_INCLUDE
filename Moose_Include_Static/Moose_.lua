@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T17:14:36.0000000Z-e6fc301b0dac71003170954e26dd8c126762c7f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-21T16:59:31.0000000Z-c02ae82003c1222ab01f2aede1e1c818aa4963f9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13992,6 +13992,31 @@ local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=FromCoordinate:Get2DDistance(self)
 local Altitude=self:GetAltitudeText()
 return"BRA, "..self:GetBRAText(AngleRadians,Distance,Settings,Language)
+end
+function COORDINATE:ToStringBRAANATO(FromCoordinate,Spades)
+local BRAANATO="Merged."
+local currentCoord=FromCoordinate
+local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
+local AngleRadians=self:GetAngleRadians(DirectionVec3)
+local bearing=UTILS.Round(UTILS.ToDegree(AngleRadians),0)
+local rangeMetres=self:Get2DDistance(currentCoord)
+local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
+local aspect=self:ToStringAspect(currentCoord)
+local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
+local track=UTILS.BearingToCardinal(bearing)or"North"
+if rangeNM>3 then
+if aspect==""then
+BRAANATO=string.format("BRA, %s, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+else
+BRAANATO=string.format("BRAA, %s, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+end
+if Spades then
+BRAANATO=BRAANATO..", Spades."
+else
+BRAANATO=BRAANATO.."."
+end
+end
+return BRAANATO
 end
 function COORDINATE:ToStringBULLS(Coalition,Settings)
 local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(Coalition))
