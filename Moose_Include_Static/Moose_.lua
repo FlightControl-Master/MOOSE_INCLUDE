@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-21T10:56:40.0000000Z-60c78da0f652a77775373e8e4d5c544a62ffdccc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-21T16:56:51.0000000Z-83491f535aa554e53317585ae84e94599ce49f90 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14425,9 +14425,13 @@ local rangeMetres=self:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=self:ToStringAspect(currentCoord)
 local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
-local track=UTILS.BearingToCardinal(bearing)
+local track=UTILS.BearingToCardinal(bearing)or"North"
 if rangeNM>3 then
+if aspect==""then
+BRAANATO=string.format("BRA, %s, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+else
 BRAANATO=string.format("BRAA, %s, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+end
 if Spades then
 BRAANATO=BRAANATO..", Spades."
 else
