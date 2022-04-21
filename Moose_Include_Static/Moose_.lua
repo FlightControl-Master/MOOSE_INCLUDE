@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-20T19:51:09.0000000Z-04f60747d9bf3165977bb2404046aa5e031020a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-21T10:56:40.0000000Z-60c78da0f652a77775373e8e4d5c544a62ffdccc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4435,7 +4435,7 @@ do
 FIFO={
 ClassName="FIFO",
 lid="",
-version="0.0.3",
+version="0.0.5",
 counter=0,
 pointer=0,
 stackbypointer={},
@@ -4504,19 +4504,31 @@ function FIFO:ReadByPointer(Pointer)
 self:T(self.lid.."ReadByPointer "..tostring(Pointer))
 if self.counter==0 or not Pointer or not self.stackbypointer[Pointer]then return nil end
 local object=self.stackbypointer[Pointer]
+if object then
 return object.data
+else
+return nil
+end
 end
 function FIFO:ReadByID(UniqueID)
 self:T(self.lid.."ReadByID "..tostring(UniqueID))
 if self.counter==0 or not UniqueID or not self.stackbyid[UniqueID]then return nil end
 local object=self.stackbyid[UniqueID]
+if object then
 return object.data
+else
+return nil
+end
 end
 function FIFO:PullByID(UniqueID)
 self:T(self.lid.."PullByID "..tostring(UniqueID))
 if self.counter==0 then return nil end
 local object=self.stackbyid[UniqueID]
+if object then
 return self:PullByPointer(object.pointer)
+else
+return nil
+end
 end
 function FIFO:Flatten()
 self:T(self.lid.."Flatten")
@@ -4653,7 +4665,7 @@ do
 LIFO={
 ClassName="LIFO",
 lid="",
-version="0.0.2",
+version="0.0.5",
 counter=0,
 pointer=0,
 stackbypointer={},
@@ -4723,19 +4735,31 @@ function LIFO:ReadByPointer(Pointer)
 self:T(self.lid.."ReadByPointer "..tostring(Pointer))
 if self.counter==0 or not Pointer or not self.stackbypointer[Pointer]then return nil end
 local object=self.stackbypointer[Pointer]
+if object then
 return object.data
+else
+return nil
+end
 end
 function LIFO:ReadByID(UniqueID)
 self:T(self.lid.."ReadByID "..tostring(UniqueID))
 if self.counter==0 or not UniqueID or not self.stackbyid[UniqueID]then return nil end
 local object=self.stackbyid[UniqueID]
+if object then
 return object.data
+else
+return nil
+end
 end
 function LIFO:PullByID(UniqueID)
 self:T(self.lid.."PullByID "..tostring(UniqueID))
 if self.counter==0 then return nil end
 local object=self.stackbyid[UniqueID]
+if object then
 return self:PullByPointer(object.pointer)
+else
+return nil
+end
 end
 function LIFO:Flatten()
 self:T(self.lid.."Flatten")
@@ -14401,7 +14425,7 @@ local rangeMetres=self:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=self:ToStringAspect(currentCoord)
 local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
-local track=Utils.BearingToCardinal(bearing)
+local track=UTILS.BearingToCardinal(bearing)
 if rangeNM>3 then
 BRAANATO=string.format("BRAA, %s, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
 if Spades then
