@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-21T16:56:51.0000000Z-83491f535aa554e53317585ae84e94599ce49f90 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-22T11:32:34.0000000Z-51d924c1b8107597cec783dc0a15ca7f2b4d528c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3668,7 +3668,11 @@ local aspect=tgtCoord:ToStringAspect(currentCoord)
 local alt=UTILS.Round(UTILS.MetersToFeet(grpLeadUnit:GetAltitude())/1000,0)
 local track=UTILS.BearingToCardinal(hdg)
 if rangeNM>3 then
-BRAANATO=string.format("%s, BRAA, %s, %d miles, Angels %d, %s, Track %s, Spades.",GroupWords,bearing,rangeNM,alt,aspect,track)
+if aspect==""then
+BRAANATO=string.format("%s, BRA, %03d, %d miles, Angels %d, Track %s",GroupWords,bearing,rangeNM,alt,track)
+else
+BRAANATO=string.format("%s, BRAA, %03d, %d miles, Angels %d, %s, Track %s",GroupWords,bearing,rangeNM,alt,aspect,track)
+end
 end
 return BRAANATO
 end
@@ -14428,9 +14432,9 @@ local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
 local track=UTILS.BearingToCardinal(bearing)or"North"
 if rangeNM>3 then
 if aspect==""then
-BRAANATO=string.format("BRA, %s, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+BRAANATO=string.format("BRA, %03d, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
 else
-BRAANATO=string.format("BRAA, %s, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+BRAANATO=string.format("BRAA, %03d, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
 end
 if Spades then
 BRAANATO=BRAANATO..", Spades."
