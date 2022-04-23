@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-22T18:34:24.0000000Z-ad3a3c52663d71c7a1f0b8874fc042c47db4593b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-23T13:09:02.0000000Z-4c7ac68858e34aeafe3a96a61146b719d2ea46ad ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -316,6 +316,43 @@ W='Whiskey',
 X='Xray',
 Y='Yankee',
 Z='Zulu',
+}
+ENUMS.ReportingName=
+{
+NATO={
+Dragon="JF-17",
+Fagot="MiG-15",
+Farmer="MiG-19",
+Felon="Su-57",
+Fencer="Su-24",
+Fishbed="MiG-21",
+Fitter="Su-17",
+Flogger="MiG-23",
+Flogger_D="MiG-27",
+Flagon="Su-15",
+Foxbat="MiG-25",
+Fulcrum="MiG-29",
+Foxhound="MiG-31",
+Flanker="Su-27",
+Flanker_C="Su-30",
+Flanker_E="Su-35",
+Flanker_F="Su-37",
+Flanker_Dragon="J-11A",
+Sea_Flanker="Su-33",
+Fullback="Su-32",
+Frogfoot="Su-25",
+Tomcat="F-14",
+Mirage="Mirage",
+H6J="H6-J",
+Bear="Tu-142",
+Blinder="Tu-22",
+Blackjack="Tu-160",
+Clank="An-30",
+Curl="An-26",
+Candid="IL-76",
+Midas="IL-78",
+Mainstay="A-50",
+}
 }
 env.setErrorMessageBoxEnabled(false)
 routines={}
@@ -2989,6 +3026,16 @@ end
 else
 return"Unknown"
 end
+end
+function UTILS.GetReportingName(Typename)
+local typename=string.lower(Typename)
+for name,value in pairs(ENUMS.ReportingName.NATO)do
+local svalue=string.lower(value)
+if string.find(typename,svalue,1,true)then
+return name
+end
+end
+return"Bogey"
 end
 function UTILS.GetCallsignName(Callsign)
 for name,value in pairs(CALLSIGN.Aircraft)do
