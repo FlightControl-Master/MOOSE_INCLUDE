@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-23T13:09:02.0000000Z-4c7ac68858e34aeafe3a96a61146b719d2ea46ad ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-23T14:41:47.0000000Z-2f4d5b32b612daea3aa61554a158d98d3781ef08 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -344,7 +344,8 @@ Frogfoot="Su-25",
 Tomcat="F-14",
 Mirage="Mirage",
 H6J="H6-J",
-Bear="Tu-142",
+Sea_Bear="Tu-142",
+Bear="Tu-95",
 Blinder="Tu-22",
 Blackjack="Tu-160",
 Clank="An-30",
@@ -21503,6 +21504,16 @@ return(GroupTypeName)
 end
 return nil
 end
+function GROUP:GetNatoReportingName()
+self:F2(self.GroupName)
+local DCSGroup=self:GetDCSObject()
+if DCSGroup then
+local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
+self:T3(GroupTypeName)
+return UTILS.GetReportingName(GroupTypeName)
+end
+return"Bogey"
+end
 function GROUP:GetPlayerName()
 self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
@@ -22614,6 +22625,10 @@ if client then
 return client
 end
 return nil
+end
+function UNIT:GetNatoReportingName()
+local typename=self:GetTypeName()
+return UTILS.GetReportingName(typename)
 end
 function UNIT:GetNumber()
 self:F2(self.UnitName)
