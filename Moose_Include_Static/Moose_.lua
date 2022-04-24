@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T12:06:24.0000000Z-68c75a4e3413239d0f014ad85d9ec61f1ba5eea8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T17:11:08.0000000Z-619cc3c04796e02ac3664bafac4d08777ce7b631 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18431,6 +18431,8 @@ local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=self:GetVec3()
 local coord=COORDINATE:NewFromVec3(PositionableVec3)
+local heading=self:GetHeading()
+coord.Heading=heading
 return coord
 end
 self:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
@@ -21579,6 +21581,8 @@ function GROUP:GetCoordinate()
 local FirstUnit=self:GetUnit(1)
 if FirstUnit then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
+local Heading=self:GetHeading()
+FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
 end
 BASE:E({"Cannot GetCoordinate",Group=self,Alive=self:IsAlive()})
