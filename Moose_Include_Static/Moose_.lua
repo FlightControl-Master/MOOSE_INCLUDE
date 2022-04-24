@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-23T16:58:27.0000000Z-fd5a190490c54c1e763801060b3724e313ec9c02 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T10:46:11.0000000Z-d9f409069a9c637a2e2e36533b8aa176bb241339 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63584,32 +63584,37 @@ end
 end
 return self
 end
-function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey)
+function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label)
 self.useSRS=true
 self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
 self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
 self.msrs:SetPort(Port)
+self.msrs:SetLabel(Label)
 if PathToGoogleKey then
 self.msrs:SetGoogle(PathToGoogleKey)
 end
 self.msrs:SetCoalition(self:GetCoalition())
 return self
 end
-function OPSGROUP:RadioTransmission(Text,Delay,SayCallsign)
+function OPSGROUP:RadioTransmission(Text,Delay,SayCallsign,Frequency)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,OPSGROUP.RadioTransmission,self,Text,0,SayCallsign)
 else
 if self.useSRS and self.msrs then
 local freq,modu,radioon=self:GetRadio()
+if Frequency then
+self.msrs:SetFrequencies(Frequency)
+else
 self.msrs:SetFrequencies(freq)
+end
 self.msrs:SetModulations(modu)
 if SayCallsign then
 local callsign=self:GetCallsignName()
 Text=string.format("%s, %s",callsign,Text)
 end
-self:T(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
+self:I(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
 self.msrs:PlayText(Text)
 end
 end
@@ -74999,7 +75004,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.0"
+INTEL.version="0.3.1"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -75311,6 +75316,11 @@ item.recce=RecceName
 item.isground=group:IsGround()or false
 item.isship=group:IsShip()or false
 item.isStatic=false
+if group:IsAir()then
+item.platform=group:GetNatoReportingName()
+else
+item.platform="Unknown"
+end
 if item.category==Group.Category.AIRPLANE or item.category==Group.Category.HELICOPTER then
 item.ctype=INTEL.Ctype.AIRCRAFT
 elseif item.category==Group.Category.GROUND or item.category==Group.Category.TRAIN then
@@ -93315,8 +93325,9 @@ voice=nil,
 volume=1,
 speed=1,
 coordinate=nil,
+Label="ROBOT",
 }
-MSRS.version="0.0.3"
+MSRS.version="0.0.4"
 function MSRS:New(PathToSRS,Frequency,Modulation)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
@@ -93327,6 +93338,7 @@ self:SetFrequencies(Frequency)
 self:SetModulations(Modulation)
 self:SetGender()
 self:SetCoalition()
+self:SetLabel()
 return self
 end
 function MSRS:SetPath(Path)
@@ -93345,6 +93357,13 @@ return self
 end
 function MSRS:GetPath()
 return self.path
+end
+function MSRS:SetLabel(Label)
+self.Label=Label or"ROBOT"
+return self
+end
+function MSRS:GetLabel()
+return self.Label
 end
 function MSRS:SetPort(Port)
 self.port=Port or 5002
@@ -93497,7 +93516,7 @@ function MSRS:_GetLatLongAlt(Coordinate)
 local lat,lon,alt=coord.LOtoLL(Coordinate)
 return lat,lon,math.floor(alt)
 end
-function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port)
+function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port,label)
 local path=self:GetPath()or STTS.DIRECTORY
 local exe=STTS.EXECUTABLE or"DCS-SR-ExternalAudio.exe"
 freqs=table.concat(freqs or self.frequencies,",")
@@ -93509,9 +93528,10 @@ culture=culture or self.culture
 volume=volume or self.volume
 speed=speed or self.speed
 port=port or self.port
+label=label or self.Label
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,"ROBOT")
+local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,label)
 if voice then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
 else
