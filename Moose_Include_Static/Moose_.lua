@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T10:46:11.0000000Z-d9f409069a9c637a2e2e36533b8aa176bb241339 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T11:50:23.0000000Z-37671cefa3cb3400b3be7ea0ef753b793fa44cdb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21444,6 +21444,10 @@ return VelocityVec3
 end
 BASE:E({"Cannot GetVelocityVec3",Group=self,Alive=self:IsAlive()})
 return nil
+end
+function GROUP:GetAltitude(FromGround)
+self:F2(self.GroupName)
+return self:GetHeight(FromGround)
 end
 function GROUP:GetHeight(FromGround)
 self:F2(self.GroupName)
