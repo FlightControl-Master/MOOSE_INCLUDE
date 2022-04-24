@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T11:50:23.0000000Z-37671cefa3cb3400b3be7ea0ef753b793fa44cdb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T12:06:24.0000000Z-68c75a4e3413239d0f014ad85d9ec61f1ba5eea8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7377,13 +7377,14 @@ local GroupName=Group:GetName()
 for MenuID,Menu in pairs(self.Group[GroupName].Menus)do
 Menu:Refresh()
 end
+return self
 end
 do
 MENU_BASE={
 ClassName="MENU_BASE",
 MenuPath=nil,
 MenuText="",
-MenuParentPath=nil
+MenuParentPath=nil,
 }
 function MENU_BASE:New(MenuText,ParentMenu)
 local MenuParentPath={}
@@ -7481,7 +7482,7 @@ end
 end
 do
 MENU_MISSION={
-ClassName="MENU_MISSION"
+ClassName="MENU_MISSION",
 }
 function MENU_MISSION:New(MenuText,ParentMenu)
 MENU_INDEX:PrepareMission()
@@ -7502,6 +7503,7 @@ do
 missionCommands.removeItem(self.MenuPath)
 self.MenuPath=missionCommands.addSubMenu(self.MenuText,self.MenuParentPath)
 end
+return self
 end
 function MENU_MISSION:RemoveSubMenus()
 for MenuID,Menu in pairs(self.Menus or{})do
@@ -7534,7 +7536,7 @@ end
 end
 do
 MENU_MISSION_COMMAND={
-ClassName="MENU_MISSION_COMMAND"
+ClassName="MENU_MISSION_COMMAND",
 }
 function MENU_MISSION_COMMAND:New(MenuText,ParentMenu,CommandMenuFunction,...)
 MENU_INDEX:PrepareMission()
@@ -7557,6 +7559,7 @@ do
 missionCommands.removeItem(self.MenuPath)
 missionCommands.addCommand(self.MenuText,self.MenuParentPath,self.MenuCallHandler)
 end
+return self
 end
 function MENU_MISSION_COMMAND:Remove()
 MENU_INDEX:PrepareMission()
@@ -7604,6 +7607,7 @@ do
 missionCommands.removeItemForCoalition(self.Coalition,self.MenuPath)
 missionCommands.addSubMenuForCoalition(self.Coalition,self.MenuText,self.MenuParentPath)
 end
+return self
 end
 function MENU_COALITION:RemoveSubMenus()
 for MenuID,Menu in pairs(self.Menus or{})do
@@ -7660,6 +7664,7 @@ do
 missionCommands.removeItemForCoalition(self.Coalition,self.MenuPath)
 missionCommands.addCommandForCoalition(self.Coalition,self.MenuText,self.MenuParentPath,self.MenuCallHandler)
 end
+return self
 end
 function MENU_COALITION_COMMAND:Remove(MenuStamp,MenuTag)
 MENU_INDEX:PrepareCoalition(self.Coalition)
@@ -7712,6 +7717,7 @@ for MenuText,Menu in pairs(self.Menus or{})do
 Menu:Refresh()
 end
 end
+return self
 end
 function MENU_GROUP:RemoveSubMenus(MenuStamp,MenuTag)
 for MenuText,Menu in pairs(self.Menus or{})do
@@ -7768,6 +7774,7 @@ do
 missionCommands.removeItemForGroup(self.GroupID,self.MenuPath)
 missionCommands.addCommandForGroup(self.GroupID,self.MenuText,self.MenuParentPath,self.MenuCallHandler)
 end
+return self
 end
 function MENU_GROUP_COMMAND:Remove(MenuStamp,MenuTag)
 MENU_INDEX:PrepareGroup(self.Group)
@@ -7835,6 +7842,7 @@ for MenuText,Menu in pairs(self.Menus or{})do
 Menu:Refresh()
 end
 end
+return self
 end
 function MENU_GROUP_DELAYED:RemoveSubMenus(MenuStamp,MenuTag)
 for MenuText,Menu in pairs(self.Menus or{})do
@@ -7904,6 +7912,7 @@ do
 missionCommands.removeItemForGroup(self.GroupID,self.MenuPath)
 missionCommands.addCommandForGroup(self.GroupID,self.MenuText,self.MenuParentPath,self.MenuCallHandler)
 end
+return self
 end
 function MENU_GROUP_COMMAND_DELAYED:Remove(MenuStamp,MenuTag)
 MENU_INDEX:PrepareGroup(self.Group)
