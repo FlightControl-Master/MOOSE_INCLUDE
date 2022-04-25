@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-24T17:11:08.0000000Z-619cc3c04796e02ac3664bafac4d08777ce7b631 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-25T07:59:44.0000000Z-71fd72e4627fd065626bc2a7f51bff2e25ff4078 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8798,6 +8798,11 @@ Next=Next+1
 end
 self:T({InPolygon=InPolygon})
 return InPolygon
+end
+function ZONE_POLYGON_BASE:IsVec3InZone(Vec3)
+self:F2(Vec3)
+local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
+return InZone
 end
 function ZONE_POLYGON_BASE:GetRandomVec2()
 local BS=self:GetBoundingSquare()
