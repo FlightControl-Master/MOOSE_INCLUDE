@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-25T08:35:38.0000000Z-cac0f306730469d66d4375caaaf8467f524567eb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-25T08:36:36.0000000Z-2d91647e0baa33c32a91c24bae3ae7d6de7e217c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64,12 +64,77 @@ AnyAAM=264241152,
 AnyAutonomousMissile=36012032,
 AnyMissile=268402688,
 Cannons=805306368,
+Torpedo=4294967296,
 Auto=3221225470,
 AutoDCS=1073741822,
 AnyAG=2956984318,
 AnyAA=264241152,
 AnyUnguided=2952822768,
 AnyGuided=268402702,
+}
+ENUMS.WeaponType={}
+ENUMS.WeaponType.Bomb={
+LGB=2,
+TvGB=4,
+SNSGB=8,
+HEBomb=16,
+Penetrator=32,
+NapalmBomb=64,
+FAEBomb=128,
+ClusterBomb=256,
+Dispencer=512,
+CandleBomb=1024,
+ParachuteBomb=2147483648,
+GuidedBomb=14,
+AnyUnguidedBomb=2147485680,
+AnyBomb=2147485694,
+}
+ENUMS.WeaponType.Rocket={
+LightRocket=2048,
+MarkerRocket=4096,
+CandleRocket=8192,
+HeavyRocket=16384,
+AnyRocket=30720,
+}
+ENUMS.WeaponType.Gun={
+GunPod=268435456,
+BuiltInCannon=536870912,
+Cannons=805306368,
+}
+ENUMS.WeaponType.Missile={
+AntiRadarMissile=32768,
+AntiShipMissile=65536,
+AntiTankMissile=131072,
+FireAndForgetASM=262144,
+LaserASM=524288,
+TeleASM=1048576,
+CruiseMissile=2097152,
+AntiRadarMissile2=1073741824,
+GuidedASM=1572864,
+TacticalASM=1835008,
+AnyASM=4161536,
+AnyASM2=1077903360,
+AnyAutonomousMissile=36012032,
+AnyMissile=268402688,
+}
+ENUMS.WeaponType.AAM={
+SRAM=4194304,
+MRAAM=8388608,
+LRAAM=16777216,
+IR_AAM=33554432,
+SAR_AAM=67108864,
+AR_AAM=134217728,
+AnyAAM=264241152,
+}
+ENUMS.WeaponType.Torpedo={
+Torpedo=4294967296,
+}
+ENUMS.WeaponType.Any={
+Weapon=3221225470,
+AG=2956984318,
+AA=264241152,
+Unguided=2952822768,
+Guided=268402702,
 }
 ENUMS.MissionTask={
 NOTHING="Nothing",
@@ -251,6 +316,44 @@ W='Whiskey',
 X='Xray',
 Y='Yankee',
 Z='Zulu',
+}
+ENUMS.ReportingName=
+{
+NATO={
+Dragon="JF-17",
+Fagot="MiG-15",
+Farmer="MiG-19",
+Felon="Su-57",
+Fencer="Su-24",
+Fishbed="MiG-21",
+Fitter="Su-17",
+Flogger="MiG-23",
+Flogger_D="MiG-27",
+Flagon="Su-15",
+Foxbat="MiG-25",
+Fulcrum="MiG-29",
+Foxhound="MiG-31",
+Flanker="Su-27",
+Flanker_C="Su-30",
+Flanker_E="Su-35",
+Flanker_F="Su-37",
+Flanker_Dragon="J-11A",
+Sea_Flanker="Su-33",
+Fullback="Su-32",
+Frogfoot="Su-25",
+Tomcat="F-14",
+Mirage="Mirage",
+H6J="H6-J",
+Sea_Bear="Tu-142",
+Bear="Tu-95",
+Blinder="Tu-22",
+Blackjack="Tu-160",
+Clank="An-30",
+Curl="An-26",
+Candid="IL-76",
+Midas="IL-78",
+Mainstay="A-50",
+}
 }
 env.setErrorMessageBoxEnabled(false)
 routines={}
@@ -2830,6 +2933,16 @@ else
 return"Unknown"
 end
 end
+function UTILS.GetReportingName(Typename)
+local typename=string.lower(Typename)
+for name,value in pairs(ENUMS.ReportingName.NATO)do
+local svalue=string.lower(value)
+if string.find(typename,svalue,1,true)then
+return name
+end
+end
+return"Bogey"
+end
 function UTILS.GetCallsignName(Callsign)
 for name,value in pairs(CALLSIGN.Aircraft)do
 if value==Callsign then
@@ -2847,6 +2960,41 @@ return name
 end
 end
 for name,value in pairs(CALLSIGN.Tanker)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.B1B)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.B52)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.F15E)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.F16)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.F18)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.FARP)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.TransportAircraft)do
 if value==Callsign then
 return name
 end
@@ -3480,277 +3628,6 @@ BRAANATO=string.format("%s, BRAA, %03d, %d miles, Angels %d, %s, Track %s",Group
 end
 end
 return BRAANATO
-end
-do
-FIFO={
-ClassName="FIFO",
-lid="",
-version="0.0.1",
-counter=0,
-pointer=0,
-stackbypointer={},
-stackbyid={}
-}
-function FIFO:New()
-local self=BASE:Inherit(self,BASE:New())
-self.pointer=0
-self.counter=0
-self.stackbypointer={}
-self.stackbyid={}
-self.uniquecounter=0
-self.lid=string.format("%s (%s) | ","FiFo",self.version)
-self:I(self.lid.."Created.")
-return self
-end
-function FIFO:Push(Object,UniqueID)
-self:T(self.lid.."Push")
-self:T({Object,UniqueID})
-self.pointer=self.pointer+1
-self.counter=self.counter+1
-local uniID=UniqueID
-if not UniqueID then
-self.uniquecounter=self.uniquecounter+1
-uniID=self.uniquecounter
-end
-self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
-self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
-return self
-end
-function FIFO:Pull()
-self:T(self.lid.."Pull")
-if self.counter==0 then return nil end
-local object=self.stackbypointer[1].data
-self.stackbypointer[1]=nil
-self.counter=self.counter-1
-self:Flatten()
-return object
-end
-function FIFO:PullByPointer(Pointer)
-self:T(self.lid.."PullByPointer "..tostring(Pointer))
-if self.counter==0 then return nil end
-local object=self.stackbypointer[Pointer]
-self.stackbypointer[Pointer]=nil
-self.stackbyid[object.uniqueID]=nil
-self.counter=self.counter-1
-self:Flatten()
-return object.data
-end
-function FIFO:PullByID(UniqueID)
-self:T(self.lid.."PullByID "..tostring(UniqueID))
-if self.counter==0 then return nil end
-local object=self.stackbyid[UniqueID]
-return self:PullByPointer(object.pointer)
-end
-function FIFO:Flatten()
-self:T(self.lid.."Flatten")
-local pointerstack={}
-local idstack={}
-local counter=0
-for _ID,_entry in pairs(self.stackbypointer)do
-counter=counter+1
-pointerstack[counter]={pointer=counter,data=_entry.data,uniqueID=_entry.uniqueID}
-end
-for _ID,_entry in pairs(pointerstack)do
-idstack[_entry.uniqueID]={pointer=_entry.pointer,data=_entry.data,uniqueID=_entry.uniqueID}
-end
-self.stackbypointer=nil
-self.stackbypointer=pointerstack
-self.stackbyid=nil
-self.stackbyid=idstack
-self.counter=counter
-self.pointer=counter
-return self
-end
-function FIFO:IsEmpty()
-self:T(self.lid.."IsEmpty")
-return self.counter==0 and true or false
-end
-function FIFO:GetSize()
-self:T(self.lid.."GetSize")
-return self.counter
-end
-function FIFO:IsNotEmpty()
-self:T(self.lid.."IsNotEmpty")
-return not self:IsEmpty()
-end
-function FIFO:GetPointerStack()
-self:T(self.lid.."GetPointerStack")
-return self.stackbypointer
-end
-function FIFO:HasUniqueID(UniqueID)
-self:T(self.lid.."HasUniqueID")
-return self.stackbyid[UniqueID]and true or false
-end
-function FIFO:GetIDStack()
-self:T(self.lid.."GetIDStack")
-return self.stackbyid
-end
-function FIFO:GetIDStackSorted()
-self:T(self.lid.."GetIDStackSorted")
-local stack=self:GetIDStack()
-local idstack={}
-for _id,_entry in pairs(stack)do
-idstack[#idstack+1]=_id
-self:T({"pre",_id})
-end
-local function sortID(a,b)
-return a<b
-end
-table.sort(idstack)
-return idstack
-end
-function FIFO:Flush()
-self:T(self.lid.."FiFo Flush")
-self:I("FIFO Flushing Stack by Pointer")
-for _id,_data in pairs(self.stackbypointer)do
-local data=_data
-self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
-end
-self:I("FIFO Flushing Stack by ID")
-for _id,_data in pairs(self.stackbyid)do
-local data=_data
-self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
-end
-self:I("Counter = "..self.counter)
-self:I("Pointer = "..self.pointer)
-return self
-end
-end
-do
-LIFO={
-ClassName="LIFO",
-lid="",
-version="0.0.1",
-counter=0,
-pointer=0,
-stackbypointer={},
-stackbyid={}
-}
-function LIFO:New()
-local self=BASE:Inherit(self,BASE:New())
-self.pointer=0
-self.counter=0
-self.uniquecounter=0
-self.stackbypointer={}
-self.stackbyid={}
-self.lid=string.format("%s (%s) | ","LiFo",self.version)
-self:I(self.lid.."Created.")
-return self
-end
-function LIFO:Push(Object,UniqueID)
-self:T(self.lid.."Push")
-self:T({Object,UniqueID})
-self.pointer=self.pointer+1
-self.counter=self.counter+1
-local uniID=UniqueID
-if not UniqueID then
-self.uniquecounter=self.uniquecounter+1
-uniID=self.uniquecounter
-end
-self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
-self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
-return self
-end
-function LIFO:Pull()
-self:T(self.lid.."Pull")
-if self.counter==0 then return nil end
-local object=self.stackbypointer[self.pointer].data
-self.stackbypointer[self.pointer]=nil
-self.counter=self.counter-1
-self.pointer=self.pointer-1
-self:Flatten()
-return object
-end
-function LIFO:PullByPointer(Pointer)
-self:T(self.lid.."PullByPointer "..tostring(Pointer))
-if self.counter==0 then return nil end
-local object=self.stackbypointer[Pointer]
-self.stackbypointer[Pointer]=nil
-self.stackbyid[object.uniqueID]=nil
-self.counter=self.counter-1
-self:Flatten()
-return object.data
-end
-function LIFO:PullByID(UniqueID)
-self:T(self.lid.."PullByID "..tostring(UniqueID))
-if self.counter==0 then return nil end
-local object=self.stackbyid[UniqueID]
-return self:PullByPointer(object.pointer)
-end
-function LIFO:Flatten()
-self:T(self.lid.."Flatten")
-local pointerstack={}
-local idstack={}
-local counter=0
-for _ID,_entry in pairs(self.stackbypointer)do
-counter=counter+1
-pointerstack[counter]={pointer=counter,data=_entry.data,uniqueID=_entry.uniqueID}
-end
-for _ID,_entry in pairs(pointerstack)do
-idstack[_entry.uniqueID]={pointer=_entry.pointer,data=_entry.data,uniqueID=_entry.uniqueID}
-end
-self.stackbypointer=nil
-self.stackbypointer=pointerstack
-self.stackbyid=nil
-self.stackbyid=idstack
-self.counter=counter
-self.pointer=counter
-return self
-end
-function LIFO:IsEmpty()
-self:T(self.lid.."IsEmpty")
-return self.counter==0 and true or false
-end
-function LIFO:GetSize()
-self:T(self.lid.."GetSize")
-return self.counter
-end
-function LIFO:IsNotEmpty()
-self:T(self.lid.."IsNotEmpty")
-return not self:IsEmpty()
-end
-function LIFO:GetPointerStack()
-self:T(self.lid.."GetPointerStack")
-return self.stackbypointer
-end
-function LIFO:GetIDStack()
-self:T(self.lid.."GetIDStack")
-return self.stackbyid
-end
-function LIFO:GetIDStackSorted()
-self:T(self.lid.."GetIDStackSorted")
-local stack=self:GetIDStack()
-local idstack={}
-for _id,_entry in pairs(stack)do
-idstack[#idstack+1]=_id
-self:T({"pre",_id})
-end
-local function sortID(a,b)
-return a<b
-end
-table.sort(idstack)
-return idstack
-end
-function LIFO:HasUniqueID(UniqueID)
-self:T(self.lid.."HasUniqueID")
-return self.stackbyid[UniqueID]and true or false
-end
-function LIFO:Flush()
-self:T(self.lid.."FiFo Flush")
-self:I("LIFO Flushing Stack by Pointer")
-for _id,_data in pairs(self.stackbypointer)do
-local data=_data
-self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
-end
-self:I("LIFO Flushing Stack by ID")
-for _id,_data in pairs(self.stackbyid)do
-local data=_data
-self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
-end
-self:I("Counter = "..self.counter)
-self:I("Pointer = "..self.pointer)
-return self
-end
 end
 PROFILER={
 ClassName="PROFILER",
@@ -4515,6 +4392,467 @@ cmd=cmd..string.format(" -L %s -O %s -A %s",lat,lon,alt)
 end
 env.info("[DCS-STTS] MP3/OGG Command :\n"..cmd.."\n")
 os.execute(cmd)
+end
+do
+FIFO={
+ClassName="FIFO",
+lid="",
+version="0.0.5",
+counter=0,
+pointer=0,
+stackbypointer={},
+stackbyid={}
+}
+function FIFO:New()
+local self=BASE:Inherit(self,BASE:New())
+self.pointer=0
+self.counter=0
+self.stackbypointer={}
+self.stackbyid={}
+self.uniquecounter=0
+self.lid=string.format("%s (%s) | ","FiFo",self.version)
+self:T(self.lid.."Created.")
+return self
+end
+function FIFO:Clear()
+self:T(self.lid.."Clear")
+self.pointer=0
+self.counter=0
+self.stackbypointer=nil
+self.stackbyid=nil
+self.stackbypointer={}
+self.stackbyid={}
+self.uniquecounter=0
+return self
+end
+function FIFO:Push(Object,UniqueID)
+self:T(self.lid.."Push")
+self:T({Object,UniqueID})
+self.pointer=self.pointer+1
+self.counter=self.counter+1
+local uniID=UniqueID
+if not UniqueID then
+self.uniquecounter=self.uniquecounter+1
+uniID=self.uniquecounter
+end
+self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
+return self
+end
+function FIFO:Pull()
+self:T(self.lid.."Pull")
+if self.counter==0 then return nil end
+local object=self.stackbypointer[1].data
+self.stackbypointer[1]=nil
+self.counter=self.counter-1
+self:Flatten()
+return object
+end
+function FIFO:PullByPointer(Pointer)
+self:T(self.lid.."PullByPointer "..tostring(Pointer))
+if self.counter==0 then return nil end
+local object=self.stackbypointer[Pointer]
+self.stackbypointer[Pointer]=nil
+if object then self.stackbyid[object.uniqueID]=nil end
+self.counter=self.counter-1
+self:Flatten()
+if object then
+return object.data
+else
+return nil
+end
+end
+function FIFO:ReadByPointer(Pointer)
+self:T(self.lid.."ReadByPointer "..tostring(Pointer))
+if self.counter==0 or not Pointer or not self.stackbypointer[Pointer]then return nil end
+local object=self.stackbypointer[Pointer]
+if object then
+return object.data
+else
+return nil
+end
+end
+function FIFO:ReadByID(UniqueID)
+self:T(self.lid.."ReadByID "..tostring(UniqueID))
+if self.counter==0 or not UniqueID or not self.stackbyid[UniqueID]then return nil end
+local object=self.stackbyid[UniqueID]
+if object then
+return object.data
+else
+return nil
+end
+end
+function FIFO:PullByID(UniqueID)
+self:T(self.lid.."PullByID "..tostring(UniqueID))
+if self.counter==0 then return nil end
+local object=self.stackbyid[UniqueID]
+if object then
+return self:PullByPointer(object.pointer)
+else
+return nil
+end
+end
+function FIFO:Flatten()
+self:T(self.lid.."Flatten")
+local pointerstack={}
+local idstack={}
+local counter=0
+for _ID,_entry in pairs(self.stackbypointer)do
+counter=counter+1
+pointerstack[counter]={pointer=counter,data=_entry.data,uniqueID=_entry.uniqueID}
+end
+for _ID,_entry in pairs(pointerstack)do
+idstack[_entry.uniqueID]={pointer=_entry.pointer,data=_entry.data,uniqueID=_entry.uniqueID}
+end
+self.stackbypointer=nil
+self.stackbypointer=pointerstack
+self.stackbyid=nil
+self.stackbyid=idstack
+self.counter=counter
+self.pointer=counter
+return self
+end
+function FIFO:IsEmpty()
+self:T(self.lid.."IsEmpty")
+return self.counter==0 and true or false
+end
+function FIFO:GetSize()
+self:T(self.lid.."GetSize")
+return self.counter
+end
+function FIFO:Count()
+self:T(self.lid.."Count")
+return self.counter
+end
+function FIFO:IsNotEmpty()
+self:T(self.lid.."IsNotEmpty")
+return not self:IsEmpty()
+end
+function FIFO:GetPointerStack()
+self:T(self.lid.."GetPointerStack")
+return self.stackbypointer
+end
+function FIFO:HasUniqueID(UniqueID)
+self:T(self.lid.."HasUniqueID")
+return self.stackbyid[UniqueID]and true or false
+end
+function FIFO:GetIDStack()
+self:T(self.lid.."GetIDStack")
+return self.stackbyid
+end
+function FIFO:GetIDStackSorted()
+self:T(self.lid.."GetIDStackSorted")
+local stack=self:GetIDStack()
+local idstack={}
+for _id,_entry in pairs(stack)do
+idstack[#idstack+1]=_id
+self:T({"pre",_id})
+end
+local function sortID(a,b)
+return a<b
+end
+table.sort(idstack)
+return idstack
+end
+function FIFO:GetDataTable()
+self:T(self.lid.."GetDataTable")
+local datatable={}
+for _,_entry in pairs(self.stackbypointer)do
+datatable[#datatable+1]=_entry.data
+end
+return datatable
+end
+function FIFO:GetSortedDataTable()
+self:T(self.lid.."GetSortedDataTable")
+local datatable={}
+local idtablesorted=self:GetIDStackSorted()
+for _,_entry in pairs(idtablesorted)do
+datatable[#datatable+1]=self:ReadByID(_entry)
+end
+return datatable
+end
+function FIFO:ForEach(IteratorFunction,Arg,Function,FunctionArguments)
+self:T(self.lid.."ForEach")
+local Set=self:GetPointerStack()or{}
+Arg=Arg or{}
+local function CoRoutine()
+local Count=0
+for ObjectID,ObjectData in pairs(Set)do
+local Object=ObjectData.data
+self:T({Object})
+if Function then
+if Function(unpack(FunctionArguments or{}),Object)==true then
+IteratorFunction(Object,unpack(Arg))
+end
+else
+IteratorFunction(Object,unpack(Arg))
+end
+Count=Count+1
+end
+return true
+end
+local co=CoRoutine
+local function Schedule()
+local status,res=co()
+self:T({status,res})
+if status==false then
+error(res)
+end
+if res==false then
+return true
+end
+return false
+end
+Schedule()
+return self
+end
+function FIFO:Flush()
+self:T(self.lid.."FiFo Flush")
+self:I("FIFO Flushing Stack by Pointer")
+for _id,_data in pairs(self.stackbypointer)do
+local data=_data
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+end
+self:I("FIFO Flushing Stack by ID")
+for _id,_data in pairs(self.stackbyid)do
+local data=_data
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+end
+self:I("Counter = "..self.counter)
+self:I("Pointer = "..self.pointer)
+return self
+end
+end
+do
+LIFO={
+ClassName="LIFO",
+lid="",
+version="0.0.5",
+counter=0,
+pointer=0,
+stackbypointer={},
+stackbyid={}
+}
+function LIFO:New()
+local self=BASE:Inherit(self,BASE:New())
+self.pointer=0
+self.counter=0
+self.uniquecounter=0
+self.stackbypointer={}
+self.stackbyid={}
+self.lid=string.format("%s (%s) | ","LiFo",self.version)
+self:T(self.lid.."Created.")
+return self
+end
+function LIFO:Clear()
+self:T(self.lid.."Clear")
+self.pointer=0
+self.counter=0
+self.stackbypointer=nil
+self.stackbyid=nil
+self.stackbypointer={}
+self.stackbyid={}
+self.uniquecounter=0
+return self
+end
+function LIFO:Push(Object,UniqueID)
+self:T(self.lid.."Push")
+self:T({Object,UniqueID})
+self.pointer=self.pointer+1
+self.counter=self.counter+1
+local uniID=UniqueID
+if not UniqueID then
+self.uniquecounter=self.uniquecounter+1
+uniID=self.uniquecounter
+end
+self.stackbyid[uniID]={pointer=self.pointer,data=Object,uniqueID=uniID}
+self.stackbypointer[self.pointer]={pointer=self.pointer,data=Object,uniqueID=uniID}
+return self
+end
+function LIFO:Pull()
+self:T(self.lid.."Pull")
+if self.counter==0 then return nil end
+local object=self.stackbypointer[self.pointer].data
+self.stackbypointer[self.pointer]=nil
+self.counter=self.counter-1
+self.pointer=self.pointer-1
+self:Flatten()
+return object
+end
+function LIFO:PullByPointer(Pointer)
+self:T(self.lid.."PullByPointer "..tostring(Pointer))
+if self.counter==0 then return nil end
+local object=self.stackbypointer[Pointer]
+self.stackbypointer[Pointer]=nil
+if object then self.stackbyid[object.uniqueID]=nil end
+self.counter=self.counter-1
+self:Flatten()
+if object then
+return object.data
+else
+return nil
+end
+end
+function LIFO:ReadByPointer(Pointer)
+self:T(self.lid.."ReadByPointer "..tostring(Pointer))
+if self.counter==0 or not Pointer or not self.stackbypointer[Pointer]then return nil end
+local object=self.stackbypointer[Pointer]
+if object then
+return object.data
+else
+return nil
+end
+end
+function LIFO:ReadByID(UniqueID)
+self:T(self.lid.."ReadByID "..tostring(UniqueID))
+if self.counter==0 or not UniqueID or not self.stackbyid[UniqueID]then return nil end
+local object=self.stackbyid[UniqueID]
+if object then
+return object.data
+else
+return nil
+end
+end
+function LIFO:PullByID(UniqueID)
+self:T(self.lid.."PullByID "..tostring(UniqueID))
+if self.counter==0 then return nil end
+local object=self.stackbyid[UniqueID]
+if object then
+return self:PullByPointer(object.pointer)
+else
+return nil
+end
+end
+function LIFO:Flatten()
+self:T(self.lid.."Flatten")
+local pointerstack={}
+local idstack={}
+local counter=0
+for _ID,_entry in pairs(self.stackbypointer)do
+counter=counter+1
+pointerstack[counter]={pointer=counter,data=_entry.data,uniqueID=_entry.uniqueID}
+end
+for _ID,_entry in pairs(pointerstack)do
+idstack[_entry.uniqueID]={pointer=_entry.pointer,data=_entry.data,uniqueID=_entry.uniqueID}
+end
+self.stackbypointer=nil
+self.stackbypointer=pointerstack
+self.stackbyid=nil
+self.stackbyid=idstack
+self.counter=counter
+self.pointer=counter
+return self
+end
+function LIFO:IsEmpty()
+self:T(self.lid.."IsEmpty")
+return self.counter==0 and true or false
+end
+function LIFO:GetSize()
+self:T(self.lid.."GetSize")
+return self.counter
+end
+function LIFO:Count()
+self:T(self.lid.."Count")
+return self.counter
+end
+function LIFO:IsNotEmpty()
+self:T(self.lid.."IsNotEmpty")
+return not self:IsEmpty()
+end
+function LIFO:GetPointerStack()
+self:T(self.lid.."GetPointerStack")
+return self.stackbypointer
+end
+function LIFO:GetIDStack()
+self:T(self.lid.."GetIDStack")
+return self.stackbyid
+end
+function LIFO:GetIDStackSorted()
+self:T(self.lid.."GetIDStackSorted")
+local stack=self:GetIDStack()
+local idstack={}
+for _id,_entry in pairs(stack)do
+idstack[#idstack+1]=_id
+self:T({"pre",_id})
+end
+local function sortID(a,b)
+return a<b
+end
+table.sort(idstack)
+return idstack
+end
+function LIFO:HasUniqueID(UniqueID)
+self:T(self.lid.."HasUniqueID")
+return self.stackbyid[UniqueID]and true or false
+end
+function LIFO:Flush()
+self:T(self.lid.."FiFo Flush")
+self:I("LIFO Flushing Stack by Pointer")
+for _id,_data in pairs(self.stackbypointer)do
+local data=_data
+self:I(string.format("Pointer: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+end
+self:I("LIFO Flushing Stack by ID")
+for _id,_data in pairs(self.stackbyid)do
+local data=_data
+self:I(string.format("ID: %s | Entry: Number = %s Data = %s UniqueID = %s",tostring(_id),tostring(data.pointer),tostring(data.data),tostring(data.uniqueID)))
+end
+self:I("Counter = "..self.counter)
+self:I("Pointer = "..self.pointer)
+return self
+end
+function LIFO:GetDataTable()
+self:T(self.lid.."GetDataTable")
+local datatable={}
+for _,_entry in pairs(self.stackbypointer)do
+datatable[#datatable+1]=_entry.data
+end
+return datatable
+end
+function LIFO:GetSortedDataTable()
+self:T(self.lid.."GetSortedDataTable")
+local datatable={}
+local idtablesorted=self:GetIDStackSorted()
+for _,_entry in pairs(idtablesorted)do
+datatable[#datatable+1]=self:ReadByID(_entry)
+end
+return datatable
+end
+function LIFO:ForEach(IteratorFunction,Arg,Function,FunctionArguments)
+self:T(self.lid.."ForEach")
+local Set=self:GetPointerStack()or{}
+Arg=Arg or{}
+local function CoRoutine()
+local Count=0
+for ObjectID,ObjectData in pairs(Set)do
+local Object=ObjectData.data
+self:T({Object})
+if Function then
+if Function(unpack(FunctionArguments or{}),Object)==true then
+IteratorFunction(Object,unpack(Arg))
+end
+else
+IteratorFunction(Object,unpack(Arg))
+end
+Count=Count+1
+end
+return true
+end
+local co=CoRoutine
+local function Schedule()
+local status,res=co()
+self:T({status,res})
+if status==false then
+error(res)
+end
+if res==false then
+return true
+end
+return false
+end
+Schedule()
+return self
+end
 end
 local _TraceOnOff=true
 local _TraceLevel=1
@@ -8354,6 +8692,11 @@ Next=Next+1
 end
 self:T({InPolygon=InPolygon})
 return InPolygon
+end
+function ZONE_POLYGON_BASE:IsVec3InZone(Vec3)
+self:F2(Vec3)
+local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
+return InZone
 end
 function ZONE_POLYGON_BASE:GetRandomVec2()
 local BS=self:GetBoundingSquare()
@@ -13219,21 +13562,22 @@ local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
 local s=string.format('%03d°',AngleDegrees)
 return s
 end
-function COORDINATE:GetDistanceText(Distance,Settings,Language)
+function COORDINATE:GetDistanceText(Distance,Settings,Language,Precision)
 local Settings=Settings or _SETTINGS
 local Language=Language or"EN"
+local Precision=Precision or 0
 local DistanceText
 if Settings:IsMetric()then
 if Language=="EN"then
-DistanceText=" for "..UTILS.Round(Distance/1000,2).." km"
+DistanceText=" for "..UTILS.Round(Distance/1000,Precision).." km"
 elseif Language=="RU"then
-DistanceText=" за "..UTILS.Round(Distance/1000,2).." километров"
+DistanceText=" за "..UTILS.Round(Distance/1000,Precision).." километров"
 end
 else
 if Language=="EN"then
-DistanceText=" for "..UTILS.Round(UTILS.MetersToNM(Distance),2).." miles"
+DistanceText=" for "..UTILS.Round(UTILS.MetersToNM(Distance),Precision).." miles"
 elseif Language=="RU"then
-DistanceText=" за "..UTILS.Round(UTILS.MetersToNM(Distance),2).." миль"
+DistanceText=" за "..UTILS.Round(UTILS.MetersToNM(Distance),Precision).." миль"
 end
 end
 return DistanceText
@@ -13284,14 +13628,14 @@ end
 function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language)
 local Settings=Settings or _SETTINGS
 local BearingText=self:GetBearingText(AngleRadians,0,Settings,Language)
-local DistanceText=self:GetDistanceText(Distance,Settings,Language)
+local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
 local BRText=BearingText..DistanceText
 return BRText
 end
 function COORDINATE:GetBRAText(AngleRadians,Distance,Settings,Language)
 local Settings=Settings or _SETTINGS
 local BearingText=self:GetBearingText(AngleRadians,0,Settings,Language)
-local DistanceText=self:GetDistanceText(Distance,Settings,Language)
+local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
 local AltitudeText=self:GetAltitudeText(Settings,Language)
 local BRAText=BearingText..DistanceText..AltitudeText
 return BRAText
@@ -13747,7 +14091,7 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
 trigger.action.circleToAll(Coalition,MarkID,vec3,Radius,Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
@@ -13763,7 +14107,7 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
 trigger.action.rectToAll(Coalition,MarkID,self:GetVec3(),vec3,Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
@@ -13781,9 +14125,9 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
-trigger.action.quadToAll(Coalition,MarkID,self:GetVec3(),point2,point3,point4,Color,FillColor,LineType,ReadOnly,Text or"")
+trigger.action.quadToAll(Coalition,MarkID,point1,point2,point3,point4,Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
 end
 function COORDINATE:MarkupToAllFreeForm(Coordinates,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly,Text)
@@ -13834,7 +14178,7 @@ end
 Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.3
 FontSize=FontSize or 14
 trigger.action.textToAll(Coalition,MarkID,self:GetVec3(),Color,FillColor,FontSize,ReadOnly,Text or"Hello World")
@@ -13850,7 +14194,7 @@ Coalition=Coalition or-1
 Color=Color or{1,0,0}
 Color[4]=Alpha or 1.0
 LineType=LineType or 1
-FillColor=FillColor or Color
+FillColor=FillColor or UTILS.DeepCopy(Color)
 FillColor[4]=FillAlpha or 0.15
 trigger.action.arrowToAll(Coalition,MarkID,vec3,self:GetVec3(),Color,FillColor,LineType,ReadOnly,Text or"")
 return MarkID
@@ -17410,6 +17754,8 @@ local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=self:GetVec3()
 local coord=COORDINATE:NewFromVec3(PositionableVec3)
+local heading=self:GetHeading()
+coord.Heading=heading
 return coord
 end
 self:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
@@ -20490,6 +20836,16 @@ return(GroupTypeName)
 end
 return nil
 end
+function GROUP:GetNatoReportingName()
+self:F2(self.GroupName)
+local DCSGroup=self:GetDCSObject()
+if DCSGroup then
+local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
+self:T3(GroupTypeName)
+return UTILS.GetReportingName(GroupTypeName)
+end
+return"Bogey"
+end
 function GROUP:GetPlayerName()
 self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
@@ -20542,6 +20898,8 @@ function GROUP:GetCoordinate()
 local FirstUnit=self:GetUnit(1)
 if FirstUnit then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
+local Heading=self:GetHeading()
+FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
 end
 BASE:E({"Cannot GetCoordinate",Group=self,Alive=self:IsAlive()})
@@ -21602,6 +21960,10 @@ return client
 end
 return nil
 end
+function UNIT:GetNatoReportingName()
+local typename=self:GetTypeName()
+return UTILS.GetReportingName(typename)
+end
 function UNIT:GetNumber()
 self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
@@ -21667,6 +22029,30 @@ system=1
 end
 end
 return tanker,system
+end
+function UNIT:IsAmmoSupply()
+local typename=self:GetTypeName()
+if typename=="M 818"then
+return true
+elseif typename=="Ural-375"then
+return true
+elseif typename=="ZIL-135"then
+return true
+end
+return false
+end
+function UNIT:IsFuelSupply()
+local typename=self:GetTypeName()
+if typename=="M978 HEMTT Tanker"then
+return true
+elseif typename=="ATMZ-5"then
+return true
+elseif typename=="ATMZ-10"then
+return true
+elseif typename=="ATZ-5"then
+return true
+end
+return false
 end
 function UNIT:GetGroup()
 self:F2(self.UnitName)
@@ -21900,7 +22286,7 @@ Attributes["ATGM"]then ThreatLevel=4
 elseif(Attributes["Tanks"]or Attributes["IFV"])and
 not Attributes["ATGM"]then ThreatLevel=3
 elseif Attributes["Old Tanks"]or Attributes["APC"]or Attributes["Artillery"]then ThreatLevel=2
-elseif Attributes["Infantry"]then ThreatLevel=1
+elseif Attributes["Infantry"]or Attributes["EWR"]then ThreatLevel=1
 end
 ThreatText=ThreatLevels[ThreatLevel+1]
 end
@@ -70740,8 +71126,9 @@ voice=nil,
 volume=1,
 speed=1,
 coordinate=nil,
+Label="ROBOT",
 }
-MSRS.version="0.0.3"
+MSRS.version="0.0.4"
 function MSRS:New(PathToSRS,Frequency,Modulation)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
@@ -70752,6 +71139,7 @@ self:SetFrequencies(Frequency)
 self:SetModulations(Modulation)
 self:SetGender()
 self:SetCoalition()
+self:SetLabel()
 return self
 end
 function MSRS:SetPath(Path)
@@ -70770,6 +71158,13 @@ return self
 end
 function MSRS:GetPath()
 return self.path
+end
+function MSRS:SetLabel(Label)
+self.Label=Label or"ROBOT"
+return self
+end
+function MSRS:GetLabel()
+return self.Label
 end
 function MSRS:SetPort(Port)
 self.port=Port or 5002
@@ -70922,7 +71317,7 @@ function MSRS:_GetLatLongAlt(Coordinate)
 local lat,lon,alt=coord.LOtoLL(Coordinate)
 return lat,lon,math.floor(alt)
 end
-function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port)
+function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port,label)
 local path=self:GetPath()or STTS.DIRECTORY
 local exe=STTS.EXECUTABLE or"DCS-SR-ExternalAudio.exe"
 freqs=table.concat(freqs or self.frequencies,",")
@@ -70934,9 +71329,10 @@ culture=culture or self.culture
 volume=volume or self.volume
 speed=speed or self.speed
 port=port or self.port
+label=label or self.Label
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,"ROBOT")
+local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,label)
 if voice then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
 else
