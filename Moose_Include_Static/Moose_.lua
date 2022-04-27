@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-27T12:37:38.0000000Z-3a513da9424acf66d392bde04c2eddb39775a991 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-27T20:38:34.0000000Z-41f8207b3ac21582bf194a2c9aead8427542d8d9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5516,6 +5516,7 @@ return nil
 end
 function BEACON:ActivateTACAN(Channel,Mode,Message,Bearing,Duration)
 self:T({channel=Channel,mode=Mode,callsign=Message,bearing=Bearing,duration=Duration})
+Mode=Mode or"Y"
 local Frequency=UTILS.TACANToFrequency(Channel,Mode)
 if not Frequency then
 self:E({"The passed TACAN channel is invalid, the BEACON is not emitting"})
@@ -5526,8 +5527,10 @@ local System=BEACON.System.TACAN
 local AA=self.Positionable:IsAir()
 if AA then
 System=5
-if Mode~="Y"then
-self:E({"WARNING: The POSITIONABLE you want to attach the AA Tacan Beacon is an aircraft: Mode should Y !The BEACON is not emitting.",self.Positionable})
+if Mode=="X"then
+System=BEACON.System.TACAN_TANKER_X
+else
+System=BEACON.System.TACAN_TANKER_Y
 end
 end
 local UnitID=self.Positionable:GetID()
@@ -5562,19 +5565,22 @@ IsValid=false
 end
 local System
 if Bearing then
-System=5
+System=BEACON.System.TACAN_TANKER_Y
 else
-System=14
+System=BEACON.System.TACAN_AA_MODE_Y
 end
 if IsValid then
 self:T2({"AA TACAN BEACON started !"})
 self.Positionable:SetCommand({
 id="ActivateBeacon",
 params={
-type=4,
+type=BEACON.Type.TACAN,
 system=System,
 callsign=Message,
+AA=true,
 frequency=Frequency,
+bearing=Bearing,
+modeChannel="Y",
 }
 })
 if BeaconDuration then
@@ -8000,6 +8006,7 @@ ZoneProbability=1,
 DrawID=nil,
 Color={},
 ZoneID=nil,
+Sureface=nil,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -8096,6 +8103,11 @@ return nil
 end
 function ZONE_BASE:GetBoundingSquare()
 return nil
+end
+function ZONE_BASE:GetSurfaceType()
+local coord=self:GetCoordinate()
+local surface=coord:GetSurfaceType()
+return surface
 end
 function ZONE_BASE:BoundZone()
 self:F2()
@@ -21348,6 +21360,7 @@ return nil
 end
 function GROUP:HasAttribute(attribute,all)
 local _units=self:GetUnits()
+if _units then
 local _allhave=true
 local _onehas=false
 for _,_unit in pairs(_units)do
@@ -21367,18 +21380,18 @@ else
 return _onehas
 end
 end
+return nil
+end
 function GROUP:GetSpeedMax()
 self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local Units=self:GetUnits()
-local speedmax=0
+local speedmax=nil
 for _,unit in pairs(Units)do
 local unit=unit
 local speed=unit:GetSpeedMax()
-if speedmax==0 then
-speedmax=speed
-elseif speed<speedmax then
+if speedmax==nil or speed<speedmax then
 speedmax=speed
 end
 end
@@ -57592,9 +57605,9 @@ function RECOVERYTANKER:SetTACANoff()
 self.TACANon=false
 return self
 end
-function RECOVERYTANKER:SetTACAN(channel,morse)
+function RECOVERYTANKER:SetTACAN(channel,morse,mode)
 self.TACANchannel=channel or 1
-self.TACANmode="Y"
+self.TACANmode=mode or"Y"
 self.TACANmorse=morse or"TKR"
 self.TACANon=true
 return self
@@ -59835,8 +59848,10 @@ CASENHANCED="CAS Enhanced",
 HOVER="Hover",
 GROUNDATTACK="Ground Attack",
 CARGOTRANSPORT="Cargo Transport",
-NOTHING="Nothing",
 RELOCATECOHORT="Relocate Cohort",
+AIRDEFENSE="Air Defence",
+EWR="Early Warning Radar",
+NOTHING="Nothing",
 }
 AUFTRAG.SpecialTask={
 FORMATION="Formation",
@@ -59852,8 +59867,10 @@ ARMORATTACK="AmorAttack",
 HOVER="Hover",
 GROUNDATTACK="Ground Attack",
 FERRY="Ferry",
-NOTHING="Nothing",
 RELOCATECOHORT="Relocate Cohort",
+AIRDEFENSE="Air Defense",
+EWR="Early Warning Radar",
+NOTHING="Nothing",
 }
 AUFTRAG.Status={
 PLANNED="planned",
@@ -59892,7 +59909,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.3"
+AUFTRAG.version="0.9.4"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -60119,7 +60136,7 @@ end
 function AUFTRAG:NewBAI(Target,Altitude)
 local mission=AUFTRAG:New(AUFTRAG.Type.BAI)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.AnyAG
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 5000)
 mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
@@ -60134,9 +60151,9 @@ end
 function AUFTRAG:NewSEAD(Target,Altitude)
 local mission=AUFTRAG:New(AUFTRAG.Type.SEAD)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.AnyAG
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
-mission.engageAltitude=UTILS.FeetToMeters(Altitude or 8000)
+mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.missionTask=ENUMS.MissionTask.SEAD
 mission.missionAltitude=mission.engageAltitude
 mission.missionFraction=0.2
@@ -60149,7 +60166,7 @@ end
 function AUFTRAG:NewSTRIKE(Target,Altitude)
 local mission=AUFTRAG:New(AUFTRAG.Type.STRIKE)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.AnyAG
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 2000)
 mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
@@ -60164,7 +60181,7 @@ end
 function AUFTRAG:NewBOMBING(Target,Altitude)
 local mission=AUFTRAG:New(AUFTRAG.Type.BOMBING)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.AnyBomb
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
@@ -60183,7 +60200,7 @@ Airdrome=AIRBASE:FindByName(Airdrome)
 end
 local mission=AUFTRAG:New(AUFTRAG.Type.BOMBRUNWAY)
 mission:_TargetFromObject(Airdrome)
-mission.engageWeaponType=ENUMS.WeaponFlag.AnyBomb
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.missionTask=ENUMS.MissionTask.RUNWAYATTACK
@@ -60199,7 +60216,7 @@ end
 function AUFTRAG:NewBOMBCARPET(Target,Altitude,CarpetLength)
 local mission=AUFTRAG:New(AUFTRAG.Type.BOMBCARPET)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.AnyBomb
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.engageCarpetLength=CarpetLength or 500
@@ -60411,6 +60428,26 @@ mission.categories={AUFTRAG.Category.GROUND,AUFTRAG.Category.NAVAL}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
+function AUFTRAG:NewAIRDEFENSE(Zone)
+local mission=AUFTRAG:New(AUFTRAG.Type.AIRDEFENSE)
+mission:_TargetFromObject(Zone)
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionAlarm=ENUMS.AlarmState.Auto
+mission.missionFraction=1.0
+mission.categories={AUFTRAG.Category.GROUND,AUFTRAG.Category.NAVAL}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewEWR(Zone)
+local mission=AUFTRAG:New(AUFTRAG.Type.EWR)
+mission:_TargetFromObject(Zone)
+mission.optionROE=ENUMS.ROE.WeaponHold
+mission.optionAlarm=ENUMS.AlarmState.Auto
+mission.missionFraction=1.0
+mission.categories={AUFTRAG.Category.GROUND}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
 function AUFTRAG:_NewRELOCATECOHORT(Legion,Cohort)
 local mission=AUFTRAG:New(AUFTRAG.Type.RELOCATECOHORT)
 mission:_TargetFromObject(Legion.spawnzone)
@@ -60595,6 +60632,10 @@ function AUFTRAG:SetDuration(Duration)
 self.durationExe=Duration
 return self
 end
+function AUFTRAG:SetTeleport()
+self.teleport=true
+return self
+end
 function AUFTRAG:SetPushTime(ClockPush)
 if ClockPush then
 if type(ClockPush)=="string"then
@@ -60739,6 +60780,18 @@ Carriers:AddOpsTransport(self.opstransport)
 end
 end
 end
+function AUFTRAG:SetRequiredAttribute(Attributes)
+if Attributes and type(Attributes)~="table"then
+Attributes={Attributes}
+end
+self.attributes=Attributes
+end
+function AUFTRAG:SetRequiredProperty(Properties)
+if Properties and type(Properties)~="table"then
+Properties={Properties}
+end
+self.properties=Properties
+end
 function AUFTRAG:SetRequiredCarriers(NcarriersMin,NcarriersMax)
 self.NcarriersMin=NcarriersMin or 1
 self.NcarriersMax=NcarriersMax or self.NcarriersMin
@@ -60804,6 +60857,14 @@ if OnOffSwitch==nil then
 self.optionEPLRS=true
 else
 self.optionEPLRS=OnOffSwitch
+end
+return self
+end
+function AUFTRAG:SetEmission(OnOffSwitch)
+if OnOffSwitch==nil then
+self.optionEmission=true
+else
+self.optionEmission=OnOffSwitch
 end
 return self
 end
@@ -61288,6 +61349,7 @@ local legion=self.legions[i]
 if legion.alias==Legion.alias then
 self:T(self.lid..string.format("Removing legion %s",Legion.alias))
 table.remove(self.legions,i)
+self.statusLegion[Legion.alias]=nil
 return self
 end
 end
@@ -61581,7 +61643,6 @@ self.repeated=self.repeated+1
 if self.chief then
 self.statusChief=AUFTRAG.Status.PLANNED
 if self.commander then
-self.commander:RemoveMission(self)
 self.statusCommander=AUFTRAG.Status.PLANNED
 end
 for _,_legion in pairs(self.legions)do
@@ -62060,6 +62121,22 @@ local param={}
 param.coordinate=self:GetObjective()
 DCStask.params=param
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.AIRDEFENSE then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.AIRDEFENSE
+local param={}
+param.zone=self:GetObjective()
+DCStask.params=param
+table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.EWR then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.EWR
+local param={}
+param.zone=self:GetObjective()
+DCStask.params=param
+table.insert(DCStasks,DCStask)
+local Enroutetask=CONTROLLABLE.EnRouteTaskEWR()
+table.insert(self.enrouteTasks,Enroutetask)
 else
 self:T(self.lid..string.format("ERROR: Unknown mission task!"))
 return nil
@@ -62963,7 +63040,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="0.7.7"
+OPSGROUP.version="0.7.8"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -63216,6 +63293,60 @@ self:T(self.lid..string.format("Detection is %s",tostring(Switch)))
 self.detectionOn=Switch
 return self
 end
+function OPSGROUP:GetDCSObject()
+return self.dcsgroup
+end
+function OPSGROUP:KnowTarget(TargetObject,KnowType,KnowDist,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,OPSGROUP.KnowTarget,self,TargetObject,KnowType,KnowDist,0)
+else
+if TargetObject:IsInstanceOf("GROUP")then
+TargetObject=TargetObject:GetUnit(1)
+elseif TargetObject:IsInstanceOf("OPSGROUP")then
+TargetObject=TargetObject.group:GetUnit(1)
+end
+local object=TargetObject:GetDCSObject()
+for _,_element in pairs(self.elements)do
+local element=_element
+if element.controller then
+element.controller:knowTarget(object,true,true)
+end
+end
+self:T(self.lid..string.format("We should now know target %s",TargetObject:GetName()))
+end
+return self
+end
+function OPSGROUP:IsTargetDetected(TargetObject)
+local objects={}
+if TargetObject:IsInstanceOf("GROUP")then
+for _,unit in pairs(TargetObject:GetUnits())do
+table.insert(objects,unit:GetDCSObject())
+end
+elseif TargetObject:IsInstanceOf("OPSGROUP")then
+for _,unit in pairs(TargetObject.group:GetUnits())do
+table.insert(objects,unit:GetDCSObject())
+end
+elseif TargetObject:IsInstanceOf("UNIT")or TargetObject:IsInstanceOf("STATIC")then
+table.insert(objects,TargetObject:GetDCSObject())
+end
+for _,object in pairs(objects or{})do
+local detected,visible,lastTime,type,distance,lastPos,lastVel=self.controller:isTargetDetected(object,1,2,4,8,16,32)
+if detected then
+return true
+end
+for _,_element in pairs(self.elements)do
+local element=_element
+if element.controller then
+local detected,visible,lastTime,type,distance,lastPos,lastVel=
+element.controller:isTargetDetected(object,1,2,4,8,16,32)
+if detected then
+return true
+end
+end
+end
+end
+return false
+end
 function OPSGROUP:SetLaser(Code,CheckLOS,IROff,UpdateTime)
 self.spot.Code=Code or 1688
 if CheckLOS~=nil then
@@ -63337,6 +63468,14 @@ return self
 end
 function OPSGROUP:SetRearmOnOutOfAmmo()
 self.rearmOnOutOfAmmo=true
+return self
+end
+function OPSGROUP:SetRetreatOnOutOfAmmo()
+self.retreatOnOutOfAmmo=true
+return self
+end
+function OPSGROUP:SetReturnOnOutOfAmmo()
+self.rtzOnOutOfAmmo=true
 return self
 end
 function OPSGROUP:HasLoS(Coordinate,Element,OffsetElement,OffsetCoordinate)
@@ -64529,6 +64668,18 @@ self:__TaskExecute(-dt,Task)
 return false
 end
 end
+if Mission and Mission.opstransport then
+local delivered=Mission.opstransport:IsCargoDelivered(self.groupname)
+if not delivered then
+local dt=30
+self:T(self.lid..string.format("Mission %s task execute suspended for %d seconds because we were not delivered",Mission.name,dt))
+self:__TaskExecute(-dt,Task)
+if(self:IsArmygroup()or self:IsNavygroup())and self:IsCruising()then
+self:FullStop()
+end
+return false
+end
+end
 return true
 end
 function OPSGROUP:onafterTaskExecute(From,Event,To,Task)
@@ -64610,6 +64761,11 @@ if self:IsArmygroup()or self:IsNavygroup()then
 self:FullStop()
 else
 end
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.AIRDEFENSE or Task.dcstask.id==AUFTRAG.SpecialTask.EWR then
+if self:IsArmygroup()or self:IsNavygroup()then
+self:FullStop()
+else
+end
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK or Task.dcstask.id==AUFTRAG.SpecialTask.ARMORATTACK then
 local target=Task.dcstask.params.target
 local speed=self.speedMax and UTILS.KmphToKnots(self.speedMax)or nil
@@ -64671,6 +64827,16 @@ local distance=Altitude/math.tan(math.rad(Alpha))
 local tvec2=UTILS.Vec2Translate(vec2,distance,heading)
 self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%dÂ°, heading=%03dÂ°, distance=%d m",tostring(param.shots),Altitude,Alpha,heading,distance))
 DCSTask=CONTROLLABLE.TaskFireAtPoint(nil,tvec2,param.radius,param.shots,param.weaponType,Altitude)
+elseif Task.ismission and Task.dcstask.id=='FireAtPoint'then
+DCSTask=UTILS.DeepCopy(Task.dcstask)
+local ammo=self:GetAmmoTot()
+local nAmmo=ammo.Total
+if DCSTask.params.weaponType then
+end
+local nShots=DCSTask.params.expendQty or 1
+self:T(self.lid..string.format("Fire at point with nshots=%d of %d",nShots,nAmmo))
+nShots=math.min(nShots,nAmmo)
+DCSTask.params.expendQty=nShots
 else
 DCSTask=Task.dcstask
 end
@@ -64776,11 +64942,11 @@ self:_RemoveMissionWaypoints(Mission,false)
 end
 else
 if Task.description=="Engage_Target"then
-self:T(self.lid.."Taske DONE Engage_Target ==> Cruise")
+self:T(self.lid.."Task DONE Engage_Target ==> Cruise")
 self:Disengage()
 end
 if Task.description==AUFTRAG.SpecialTask.ONGUARD or Task.description==AUFTRAG.SpecialTask.ARMOREDGUARD then
-self:T(self.lid.."Taske DONE OnGuard ==> Cruise")
+self:T(self.lid.."Task DONE OnGuard ==> Cruise")
 self:Cruise()
 end
 if Task.description=="Task_Land_At"then
@@ -64888,7 +65054,6 @@ local cargos=mission.opstransport:GetCargoOpsGroups(false)or{}
 for _,_opsgroup in pairs(cargos)do
 local opscargo=_opsgroup
 if opscargo.groupname==self.groupname then
-isTransport=false
 break
 end
 end
@@ -64896,7 +65061,10 @@ end
 local isScheduled=mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.SCHEDULED
 local isReadyToGo=(mission:IsReadyToGo()or self.legion)
 local isImportant=(mission.importance==nil or mission.importance<=vip)
-if isScheduled and isReadyToGo and isImportant and isTransport and isEscort then
+local go=isScheduled and isReadyToGo and isImportant and isTransport and isEscort
+self:T3(self.lid..string.format("Mission %s [%s]: Go=%s [Scheduled=%s, Ready=%s, Important=%s, Transport=%s, Escort=%s]",mission:GetName(),mission:GetType(),tostring(go),
+tostring(isScheduled),tostring(isReadyToGo),tostring(isImportant),tostring(isTransport),tostring(isEscort)))
+if go then
 return mission
 end
 end
@@ -64961,9 +65129,10 @@ self:T(self.lid..text)
 self.currentmission=Mission.auftragsnummer
 Mission:SetGroupStatus(self,AUFTRAG.GroupStatus.STARTED)
 Mission:__Started(3)
-if self.speedMax>3.6 then
+if self.speedMax>3.6 or true then
 self:RouteToMission(Mission,3)
 else
+env.info(self.lid.."FF Immobile GROUP")
 local Clock=Mission.Tpush and UTILS.SecondsToClock(Mission.Tpush)or 5
 local Task=self:AddTask(Mission.DCStask,Clock,Mission.name,Mission.prio,Mission.duration)
 Task.ismission=true
@@ -64987,6 +65156,7 @@ Mission:SetGroupStatus(self,AUFTRAG.GroupStatus.PAUSED)
 local Task=Mission:GetGroupWaypointTask(self)
 self:T(self.lid..string.format("Pausing current mission %s. Task=%s",tostring(Mission.name),tostring(Task and Task.description or"WTF")))
 self:TaskCancel(Task)
+self:_RemoveMissionWaypoints(Mission)
 self.missionpaused=Mission
 end
 end
@@ -65004,7 +65174,11 @@ end
 end
 function OPSGROUP:onafterMissionCancel(From,Event,To,Mission)
 if self:IsOnMission(Mission.auftragsnummer)then
-if Mission.type==AUFTRAG.Type.ALERT5 or Mission.type==AUFTRAG.Type.ONGUARD or Mission.type==AUFTRAG.Type.ARMOREDGUARD then
+if Mission.type==AUFTRAG.Type.ALERT5 or
+Mission.type==AUFTRAG.Type.ONGUARD or
+Mission.type==AUFTRAG.Type.ARMOREDGUARD or
+Mission.type==AUFTRAG.Type.AIRDEFENSE or
+Mission.type==AUFTRAG.Type.EWR then
 self:MissionDone(Mission)
 return
 end
@@ -65055,6 +65229,9 @@ self:SwitchAlarmstate()
 end
 if Mission.optionEPLRS then
 self:SwitchEPLRS()
+end
+if Mission.optionEmission then
+self:SwitchEmission()
 end
 if Mission.optionFormation then
 self:SwitchFormation()
@@ -65119,6 +65296,7 @@ return
 end
 local uid=self:GetWaypointCurrent().uid
 local waypointcoord=nil
+local targetzone=nil
 local randomradius=mission.missionWaypointRadius or 1000
 local surfacetypes=nil
 if self:IsArmygroup()then
@@ -65126,11 +65304,29 @@ surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD}
 elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
-if mission.type==AUFTRAG.Type.PATROLZONE or mission.type==AUFTRAG.Type.BARRAGE or mission.type==AUFTRAG.Type.AMMOSUPPLY or mission.type.FUELSUPPLY then
-local zone=mission.engageTarget:GetObject()
-waypointcoord=zone:GetRandomCoordinate(nil,nil,surfacetypes)
+if mission.opstransport and not mission.opstransport:IsCargoDelivered(self.groupname)then
+local tzc=mission.opstransport:GetTZCofCargo(self.groupname)
+local pickupzone=tzc.PickupZone
+if self:IsInZone(pickupzone)then
+self:PauseMission()
+self:FullStop()
+return
+else
+waypointcoord=pickupzone:GetRandomCoordinate()
+end
+elseif mission.type==AUFTRAG.Type.PATROLZONE or
+mission.type==AUFTRAG.Type.BARRAGE or
+mission.type==AUFTRAG.Type.AMMOSUPPLY or
+mission.type==AUFTRAG.Type.FUELSUPPLY or
+mission.type==AUFTRAG.Type.AIRDEFENSE or
+mission.type==AUFTRAG.Type.EWR then
+targetzone=mission.engageTarget:GetObject()
+waypointcoord=targetzone:GetRandomCoordinate(nil,nil,surfacetypes)
 elseif mission.type==AUFTRAG.Type.ONGUARD or mission.type==AUFTRAG.Type.ARMOREDGUARD then
 waypointcoord=mission:GetMissionWaypointCoord(self.group,nil,surfacetypes)
+elseif mission.type==AUFTRAG.Type.HOVER then
+local zone=mission.engageTarget:GetObject()
+waypointcoord=zone:GetCoordinate()
 elseif mission.type==AUFTRAG.Type.RELOCATECOHORT then
 local ToCoordinate=mission.DCStask.params.legion:GetCoordinate()
 if self.isFlightgroup then
@@ -65140,10 +65336,6 @@ waypointcoord=self:GetCoordinate():GetIntermediateCoordinate(ToCoordinate,0.05)
 end
 else
 waypointcoord=mission:GetMissionWaypointCoord(self.group,randomradius,surfacetypes)
-end
-if mission.type==AUFTRAG.Type.HOVER then
-local zone=mission.engageTarget:GetObject()
-waypointcoord=zone:GetCoordinate()
 end
 for _,task in pairs(mission.enrouteTasks)do
 self:AddTaskEnroute(task)
@@ -65221,7 +65413,22 @@ end
 Ewaypoint.missionUID=mission.auftragsnummer
 mission:SetGroupEgressWaypointUID(self,Ewaypoint.uid)
 end
-self:_SetMissionOptions(mission)
+local coord=self:GetCoordinate()
+local d=coord:Get2DDistance(waypointcoord)
+self:T(self.lid..string.format("FF distance to ingress waypoint=%.1f m",d))
+if targetzone and self:IsInZone(targetzone)then
+self:T(self.lid.."Already in mission zone ==> TaskExecute()")
+self:TaskExecute(waypointtask)
+return
+elseif d<25 then
+self:T(self.lid.."Already within 25 meters of mission waypoint ==> TaskExecute()")
+self:TaskExecute(waypointtask)
+return
+end
+if self.speedMax<=3.6 or mission.teleport then
+self:Teleport(waypointcoord,nil,true)
+self:__TaskExecute(-1,waypointtask)
+else
 if self:IsArmygroup()then
 self:Cruise(SpeedToMission)
 elseif self:IsNavygroup()then
@@ -65229,6 +65436,8 @@ self:Cruise(SpeedToMission)
 elseif self:IsFlightgroup()then
 self:UpdateRoute()
 end
+end
+self:_SetMissionOptions(mission)
 end
 end
 function OPSGROUP:_SetMissionOptions(mission)
@@ -65243,6 +65452,9 @@ self:SwitchAlarmstate(mission.optionAlarm)
 end
 if mission.optionEPLRS then
 self:SwitchEPLRS(mission.optionEPLRS)
+end
+if mission.optionEPLRS then
+self:SwitchEmission(mission.optionEmission)
 end
 if mission.optionFormation and self:IsFlightgroup()then
 self:SwitchFormation(mission.optionFormation)
@@ -65433,6 +65645,13 @@ end
 self:T(self.lid..text)
 if missiontask then
 self:T(self.lid.."Executing mission task")
+local mission=self:GetMissionByTaskID(missiontask.id)
+if mission then
+if mission.opstransport and not mission.opstransport:IsCargoDelivered(self.groupname)then
+self:PauseMission()
+return
+end
+end
 self:TaskExecute(missiontask)
 return 1
 end
@@ -65779,17 +65998,21 @@ local template=UTILS.DeepCopy(Template or self.template)
 template.lateActivation=false
 self:_Respawn(0,template)
 end
-function OPSGROUP:Teleport(Coordinate,Delay)
+function OPSGROUP:Teleport(Coordinate,Delay,NoPauseMission)
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,OPSGROUP.Teleport,self,Coordinate)
+self:ScheduleOnce(Delay,OPSGROUP.Teleport,self,Coordinate,0,NoPauseMission)
 else
 self:T(self.lid.."FF Teleporting...")
-if self:IsOnMission()then
-self:T(self.lid.."Pausing current mission")
+if self:IsOnMission()and not NoPauseMission then
+self:T(self.lid.."Pausing current mission for telport")
 self:PauseMission()
 end
 local Template=UTILS.DeepCopy(self.template)
 Template.lateActivation=self:IsLateActivated()
+Template.uncontrolled=false
+if self:IsFlightgroup()then
+Template.route.points[1]=Coordinate:WaypointAir("BARO",COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,300,true,nil,nil,"Spawnpoint")
+end
 local units=Template.units
 local d={}
 for i=1,#units do
@@ -66564,10 +66787,19 @@ self.Tloading=timer.getAbsTime()
 local cargos={}
 for _,_cargo in pairs(self.cargoTZC.Cargos)do
 local cargo=_cargo
+local canCargo=self:CanCargo(cargo.opsgroup)
 local isCarrier=cargo.opsgroup:IsPickingup()or cargo.opsgroup:IsLoading()or cargo.opsgroup:IsTransporting()or cargo.opsgroup:IsUnloading()
+local isNotCargo=cargo.opsgroup:IsNotCargo(true)
+local isHolding=cargo.opsgroup:IsHolding()
+local inZone=cargo.opsgroup:IsInZone(self.cargoTZC.EmbarkZone)
 local isOnMission=cargo.opsgroup:IsOnMission()
-local inzone=cargo.opsgroup:IsInZone(self.cargoTZC.EmbarkZone)
-if self:CanCargo(cargo.opsgroup)and inzone and cargo.opsgroup:IsNotCargo(true)and(not(cargo.delivered or cargo.opsgroup:IsDead()or isCarrier or isOnMission))then
+if isOnMission then
+local mission=cargo.opsgroup:GetMissionCurrent()
+if mission and mission.opstransport and mission.opstransport.uid==self.cargoTransport.uid then
+isOnMission=not cargo.opsgroup:IsHolding()
+end
+end
+if canCargo and inZone and isNotCargo and isHolding and(not(cargo.delivered or cargo.opsgroup:IsDead()or isCarrier or isOnMission))then
 table.insert(cargos,cargo)
 end
 end
@@ -66847,6 +67079,9 @@ if OpsGroupCargo.legion and OpsGroupCargo:IsInZone(OpsGroupCargo.legion.spawnzon
 self:T(self.lid..string.format("Unloaded group %s returned to legion",OpsGroupCargo:GetName()))
 OpsGroupCargo:Returned()
 end
+if OpsGroupCargo.missionpaused then
+OpsGroupCargo:UnpauseMission()
+end
 end
 function OPSGROUP:onafterUnloadingDone(From,Event,To)
 self:T(self.lid.."Cargo unloading done..")
@@ -67106,6 +67341,10 @@ return
 end
 if self:IsRetreating()then
 self:T(self.lid.."Retreating! Group NOT done...")
+return
+end
+if self:IsBoarding()then
+self:T(self.lid.."Boarding! Group NOT done...")
 return
 end
 if self:IsWaiting()then
@@ -68538,6 +68777,7 @@ element.unit=unit
 element.DCSunit=Unit.getByName(unitname)
 element.gid=element.DCSunit:getNumber()
 element.uid=element.DCSunit:getID()
+element.controller=element.DCSunit:getController()
 element.opsgroup=self
 element.skill=unittemplate.skill or"Unknown"
 if element.skill=="Client"or element.skill=="Player"then
@@ -69051,7 +69291,7 @@ local hdg=self.heading or 0
 local formation=self.option.Formation or"unknown"
 local life=self.life or 0
 local ammo=self:GetAmmoTot().Total
-local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
+local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"Off"
 local cargo=0
 for _,_element in pairs(self.elements)do
 local element=_element
@@ -70881,7 +71121,7 @@ local alt=self.position and self.position.y or 0
 local hdg=self.heading or 0
 local life=self.life or 0
 local ammo=self:GetAmmoTot().Total
-local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
+local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"Off"
 local cargo=0
 for _,_element in pairs(self.elements)do
 local element=_element
@@ -71599,7 +71839,7 @@ local hdg=self.heading or 0
 local formation=self.option.Formation or"unknown"
 local life=self.life or 0
 local ammo=self:GetAmmoTot().Total
-local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"OFF"
+local ndetected=self.detectionOn and tostring(self.detectedunits:Count())or"Off"
 local cargo=0
 for _,_element in pairs(self.elements)do
 local element=_element
@@ -72133,7 +72373,7 @@ cargobayLimit=0,
 descriptors={},
 properties={},
 }
-COHORT.version="0.3.2"
+COHORT.version="0.3.4"
 function COHORT:New(TemplateGroupName,Ngroups,CohortName)
 local self=BASE:Inherit(self,FSM:New())
 self.templatename=TemplateGroupName
@@ -72528,16 +72768,34 @@ end
 return N
 end
 function COHORT:RecruitAssets(MissionType,Npayloads)
-self:T("RecruitAssets for "..MissionType.." with "..Npayloads)
-self:T3(self.lid..string.format("Recruiting asset for Mission type=%s",MissionType))
+self:T2(self.lid..string.format("Recruiting asset for Mission type=%s",MissionType))
 local assets={}
 for _,_asset in pairs(self.assets)do
 local asset=_asset
-if not(asset.requested or asset.isReserved)then
+local isRequested=asset.requested
+local isReserved=asset.isReserved
+local isSpawned=asset.spawned
+local isOnMission=self.legion:IsAssetOnMission(asset)
+local opsgroup=asset.flightgroup
+self:T(self.lid..string.format("Asset %s: requested=%s, reserved=%s, spawned=%s,  onmission=%s",
+asset.spawngroupname,tostring(isRequested),tostring(isReserved),tostring(isSpawned),tostring(isOnMission)))
+if not(isRequested or isReserved)then
 if self.legion:IsAssetOnMission(asset)then
-if self.legion:IsAssetOnMission(asset,AUFTRAG.Type.GCICAP)and MissionType==AUFTRAG.Type.INTERCEPT then
+if MissionType==AUFTRAG.Type.RELOCATECOHORT then
+table.insert(assets,asset)
+elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.GCICAP)and MissionType==AUFTRAG.Type.INTERCEPT then
 self:T(self.lid..string.format("Adding asset on GCICAP mission for an INTERCEPT mission"))
 table.insert(assets,asset)
+elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.ONGUARD)and(MissionType==AUFTRAG.Type.ARTY or MissionType==AUFTRAG.Type.GROUNDATTACK)then
+if not opsgroup:IsOutOfAmmo()then
+self:T(self.lid..string.format("Adding asset on ONGUARD mission for an XXX mission"))
+table.insert(assets,asset)
+end
+elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.PATROLZONE)and(MissionType==AUFTRAG.Type.ARTY or MissionType==AUFTRAG.Type.GROUNDATTACK)then
+if not opsgroup:IsOutOfAmmo()then
+self:T(self.lid..string.format("Adding asset on PATROLZONE mission for an XXX mission"))
+table.insert(assets,asset)
+end
 elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.ALERT5)and AUFTRAG.CheckMissionCapability(MissionType,asset.payload.capabilities)then
 self:T(self.lid..string.format("Adding asset on ALERT 5 mission for %s mission",MissionType))
 table.insert(assets,asset)
@@ -73043,9 +73301,9 @@ end
 end
 return self
 end
-function LEGION:RelocateCohort(Cohort,Legion,Delay)
+function LEGION:RelocateCohort(Cohort,Legion,Delay,NcarriersMin,NcarriersMax,TransportLegions)
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,LEGION.RelocateCohort,self,Cohort,Legion,0)
+self:ScheduleOnce(Delay,LEGION.RelocateCohort,self,Cohort,Legion,0,NcarriersMin,NcarriersMax,TransportLegions)
 else
 if Legion:IsCohort(Cohort.name)then
 self:E(self.lid..string.format("ERROR: Cohort %s is already part of new legion %s ==> CANNOT Relocate!",Cohort.name,Legion.alias))
@@ -73063,10 +73321,25 @@ return self
 end
 Cohort:Relocate()
 local mission=AUFTRAG:_NewRELOCATECOHORT(Legion,Cohort)
+if false then
 mission:_AddAssets(Cohort.assets)
 self:I(self.lid..string.format("Relocating Cohort %s [nassets=%d] to legion %s",Cohort.name,#Cohort.assets,Legion.alias))
 self:MissionAssign(mission,{self})
+else
+mission:AssignCohort(Cohort)
+mission:SetRequiredAssets(#Cohort.assets)
+if NcarriersMin and NcarriersMin>0 then
+mission:SetRequiredTransport(Legion.spawnzone,NcarriersMin,NcarriersMax)
 end
+if TransportLegions then
+for _,legion in pairs(TransportLegions)do
+mission:AssignTransportLegion(legion)
+end
+end
+self:AddMission(mission)
+end
+end
+return self
 end
 function LEGION:_GetCohort(CohortName)
 for _,_cohort in pairs(self.cohorts)do
@@ -73229,14 +73502,13 @@ asset.flightgroup:AddMission(Mission)
 local currM=asset.flightgroup:GetMissionCurrent()
 if currM then
 local cancel=false
+local pause=false
 if currM.type==AUFTRAG.Type.GCICAP and Mission.type==AUFTRAG.Type.INTERCEPT then
-self:T(self.lid..string.format("Pausing %s mission %s to send flight on intercept mission %s",currM.type,currM.name,Mission.name))
-asset.flightgroup:PauseMission()
+pause=true
+elseif(currM.type==AUFTRAG.Type.ONGUARD or currM.type==AUFTRAG.Type.PATROLZONE)and(Mission.type==AUFTRAG.Type.ARTY or Mission.type==AUFTRAG.Type.GROUNDATTACK)then
+pause=true
 end
 if currM.type==AUFTRAG.Type.ALERT5 then
-cancel=true
-end
-if currM.type==AUFTRAG.Type.ONGUARD or currM.type==AUFTRAG.Type.ARMOREDGUARD then
 cancel=true
 end
 if Mission.type==AUFTRAG.Type.RELOCATECOHORT then
@@ -73251,10 +73523,15 @@ self:E(self.lid.."ERROR: no request for spawned asset!")
 end
 end
 if cancel then
+self:T(self.lid..string.format("Cancel current mission %s [%s] to send group on mission %s [%s]",currM.name,currM.type,Mission.name,Mission.type))
 asset.flightgroup:MissionCancel(currM)
+elseif pause then
+self:T(self.lid..string.format("Pausing current mission %s [%s] to send group on mission %s [%s]",currM.name,currM.type,Mission.name,Mission.type))
+asset.flightgroup:PauseMission()
 end
+asset.isReserved=false
 end
-self:__OpsOnMission(5,asset.flightgroup,Mission)
+self:__OpsOnMission(2,asset.flightgroup,Mission)
 else
 self:E(self.lid.."ERROR: OPSGROUP for asset does NOT exist but it seems to be SPAWNED (asset.spawned=true)!")
 end
@@ -73267,6 +73544,9 @@ if#Assetlist>0 then
 for i,_asset in pairs(Assetlist)do
 local asset=_asset
 asset.requested=true
+if asset.spawned then
+asset.requested=false
+end
 asset.isReserved=false
 if Mission.missionTask then
 asset.missionTask=Mission.missionTask
@@ -73485,6 +73765,9 @@ if mission then
 if Tacan then
 end
 flightgroup:AddMission(mission)
+if self:IsBrigade()or self:IsFleet()then
+flightgroup:SetReturnOnOutOfAmmo()
+end
 self:__OpsOnMission(5,flightgroup,mission)
 else
 if Tacan then
@@ -73782,7 +74065,7 @@ if#Cohorts==0 then
 Cohorts=self.cohorts
 end
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
-Mission.engageRange,Mission.refuelSystem,nil,nil,nil,nil,nil,{Mission.engageWeaponType})
+Mission.engageRange,Mission.refuelSystem,nil,nil,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
 return recruited,assets,legions
 end
 function LEGION:RecruitAssetsForTransport(Transport)
@@ -73878,10 +74161,14 @@ local function CheckWeapon(_cohort)
 local cohort=_cohort
 if WeaponTypes and#WeaponTypes>0 then
 for _,WeaponType in pairs(WeaponTypes)do
+if WeaponType==ENUMS.WeaponFlag.Auto then
+return true
+else
 for _,_weaponData in pairs(cohort.weaponData or{})do
 local weaponData=_weaponData
 if weaponData.BitType==WeaponType then
 return true
+end
 end
 end
 end
@@ -73910,9 +74197,14 @@ local RightCategory=CheckCategory(cohort)
 local RightAttribute=CheckAttribute(cohort)
 local RightProperty=CheckProperty(cohort)
 local RightWeapon=CheckWeapon(cohort)
+local Ready=cohort:IsOnDuty()
+if MissionTypeRecruit==AUFTRAG.Type.RELOCATECOHORT then
+Ready=cohort:IsRelocating()
+Capable=true
+end
 cohort:T2(cohort.lid..string.format("State=%s: Capable=%s, InRange=%s, Refuel=%s, CanCarry=%s, Category=%s, Attribute=%s, Property=%s, Weapon=%s",
 cohort:GetState(),tostring(Capable),tostring(InRange),tostring(Refuel),tostring(CanCarry),tostring(RightCategory),tostring(RightAttribute),tostring(RightProperty),tostring(RightWeapon)))
-if cohort:IsOnDuty()and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute and RightProperty and RightWeapon then
+if Ready and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute and RightProperty and RightWeapon then
 local assets,npayloads=cohort:RecruitAssets(MissionTypeRecruit,999)
 for _,asset in pairs(assets)do
 table.insert(Assets,asset)
@@ -74140,7 +74432,9 @@ local currmission=asset.flightgroup:GetMissionCurrent()
 if currmission then
 if currmission.type==AUFTRAG.Type.ALERT5 and currmission.alert5MissionType==MissionType then
 score=score+25
-elseif currmission==AUFTRAG.Type.GCICAP and MissionType==AUFTRAG.Type.INTERCEPT then
+elseif currmission.type==AUFTRAG.Type.GCICAP and MissionType==AUFTRAG.Type.INTERCEPT then
+score=score+25
+elseif(currmission.type==AUFTRAG.Type.ONGUARD or currmission.type==AUFTRAG.Type.PATROLZONE)and(MissionType==AUFTRAG.Type.ARTY or MissionType==AUFTRAG.Type.GROUNDATTACK)then
 score=score+25
 end
 end
@@ -74154,6 +74448,9 @@ end
 end
 if MissionType==AUFTRAG.Type.OPSTRANSPORT then
 score=score+UTILS.Round(asset.cargobaymax/10,0)
+end
+if asset.legion and asset.legion.verbose>=2 then
+asset.legion:I(asset.legion.lid..string.format("Asset %s [spawned=%s] score=%d",asset.spawngroupname,tostring(asset.spawned),score))
 end
 return score
 end
@@ -74253,6 +74550,7 @@ self:NewPayload(Squadron.templategroup,-1,AUFTRAG.Type.AWACS)
 elseif Squadron.attribute==GROUP.Attribute.AIR_TANKER then
 self:NewPayload(Squadron.templategroup,-1,AUFTRAG.Type.TANKER)
 end
+self:NewPayload(Squadron.templategroup,-1,AUFTRAG.Type.RELOCATECOHORT,0)
 Squadron:SetAirwing(self)
 if Squadron:IsStopped()then
 Squadron:Start()
@@ -76075,7 +76373,7 @@ awacsZones={},
 tankerZones={},
 limitMission={},
 }
-COMMANDER.version="0.1.1"
+COMMANDER.version="0.1.2"
 function COMMANDER:New(Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition==nil then
@@ -76127,6 +76425,10 @@ return self
 end
 function COMMANDER:AddBrigade(Brigade)
 self:AddLegion(Brigade)
+return self
+end
+function COMMANDER:AddFleet(Fleet)
+self:AddLegion(Fleet)
 return self
 end
 function COMMANDER:AddLegion(Legion)
@@ -76240,6 +76542,45 @@ return true
 end
 end
 return false
+end
+function COMMANDER:RelocateCohort(Cohort,Legion,Delay,NcarriersMin,NcarriersMax,TransportLegions)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COMMANDER.RelocateCohort,self,Cohort,Legion,0,NcarriersMin,NcarriersMax,TransportLegions)
+else
+if Legion:IsCohort(Cohort.name)then
+self:E(self.lid..string.format("ERROR: Cohort %s is already part of new legion %s ==> CANNOT Relocate!",Cohort.name,Legion.alias))
+return self
+else
+table.insert(Legion.cohorts,Cohort)
+end
+local LegionOld=Cohort.legion
+if not LegionOld:IsCohort(Cohort.name)then
+self:E(self.lid..string.format("ERROR: Cohort %s is NOT part of this legion %s ==> CANNOT Relocate!",Cohort.name,self.alias))
+return self
+end
+if LegionOld.alias==Legion.alias then
+self:E(self.lid..string.format("ERROR: old legion %s is same as new legion %s ==> CANNOT Relocate!",LegionOld.alias,Legion.alias))
+return self
+end
+Cohort:Relocate()
+local mission=AUFTRAG:_NewRELOCATECOHORT(Legion,Cohort)
+mission:AssignCohort(Cohort)
+mission:SetRequiredAssets(#Cohort.assets)
+if NcarriersMin and NcarriersMin>0 then
+mission:SetRequiredTransport(Legion.spawnzone,NcarriersMin,NcarriersMax)
+end
+if TransportLegions then
+for _,legion in pairs(TransportLegions)do
+mission:AssignTransportLegion(legion)
+end
+else
+for _,legion in pairs(self.legions)do
+mission:AssignTransportLegion(legion)
+end
+end
+self:AddMission(mission)
+end
+return self
 end
 function COMMANDER:onafterStart(From,Event,To)
 local text=string.format("Starting Commander")
@@ -76534,7 +76875,8 @@ end
 local NreqMin,NreqMax=Mission:GetRequiredAssets()
 local TargetVec2=Mission:GetTargetVec2()
 local Payloads=Mission.payloads
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,Mission.engageRange,Mission.refuelSystem)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
+Mission.engageRange,Mission.refuelSystem,nil,nil,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
 return recruited,assets,legions
 end
 function COMMANDER:RecruitAssetsForEscort(Mission,Assets)
@@ -77165,6 +77507,18 @@ TransportZoneCombo.assetsCargo=TransportZoneCombo.assetsCargo or{}
 TransportZoneCombo.assetsCargo[Asset.spawngroupname]=Asset
 return self
 end
+function OPSTRANSPORT:GetTZCofCargo(GroupName)
+for _,_tzc in pairs(self.tzCombos)do
+local tzc=_tzc
+for _,_cargo in pairs(tzc.Cargos)do
+local cargo=_cargo
+if cargo.opsgroup:GetName()==GroupName then
+return tzc
+end
+end
+end
+return nil
+end
 function OPSTRANSPORT:AddLegion(Legion)
 self:T(self.lid..string.format("Adding legion %s",Legion.alias))
 table.insert(self.legions,Legion)
@@ -77311,6 +77665,15 @@ self:_CheckDelivered()
 if not self:IsDelivered()then
 self:__StatusUpdate(-30)
 end
+end
+function OPSTRANSPORT:IsCargoDelivered(GroupName)
+for _,_cargo in pairs(self:GetCargos())do
+local cargo=_cargo
+if cargo.opsgroup:GetName()==GroupName then
+return cargo.delivered
+end
+end
+return nil
 end
 function OPSTRANSPORT:onafterPlanned(From,Event,To)
 self:T(self.lid..string.format("New status: %s-->%s",From,To))
@@ -82431,6 +82794,11 @@ function OPSZONE:GetCoordinate()
 local coordinate=self.zone:GetCoordinate()
 return coordinate
 end
+function OPSZONE:GetRandomCoordinate(inner,outer,surfacetypes)
+local zone=self:GetZone()
+local coord=zone:GetRandomCoordinate(inner,outer,surfacetypes)
+return coord
+end
 function OPSZONE:GetName()
 return self.zoneName
 end
@@ -82865,7 +83233,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.3.0"
+CHIEF.version="0.3.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -83074,7 +83442,7 @@ end
 end
 return self
 end
-function CHIEF:AddStrategicZone(OpsZone,Priority,Importance)
+function CHIEF:AddStrategicZone(OpsZone,Priority,Importance,ResourceOccupied,ResourceEmpty)
 local stratzone={}
 stratzone.opszone=OpsZone
 stratzone.prio=Priority or 50
@@ -83083,10 +83451,18 @@ stratzone.missions={}
 if OpsZone:IsStopped()then
 OpsZone:Start()
 end
+if ResourceOccupied then
+stratzone.resourceOccup=UTILS.DeepCopy(ResourceOccupied)
+else
 stratzone.resourceOccup=self:CreateResource(AUFTRAG.Type.ARTY,1,2)
 self:AddToResource(stratzone.resourceOccup,AUFTRAG.Type.CASENHANCED,1,2)
+end
+if ResourceEmpty then
+stratzone.resourceEmpty=UTILS.DeepCopy(ResourceEmpty)
+else
 stratzone.resourceEmpty=self:CreateResource(AUFTRAG.Type.ONGUARD,1,3,GROUP.Attribute.GROUND_INFANTRY)
 self:AddToResource(stratzone.resourceEmpty,AUFTRAG.Type.ONGUARD,1,1,GROUP.Attribute.GROUND_TANK)
+end
 table.insert(self.zonequeue,stratzone)
 OpsZone:_AddChief(self)
 return stratzone
@@ -83698,10 +84074,11 @@ elseif category==Group.Category.GROUND or category==Group.Category.TRAIN then
 if attribute==GROUP.Attribute.GROUND_SAM then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.SEAD,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
 elseif attribute==GROUP.Attribute.GROUND_EWR then
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.SEAD,100))
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,90))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
 elseif attribute==GROUP.Attribute.GROUND_AAA then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
@@ -83720,9 +84097,11 @@ elseif attribute==GROUP.Attribute.GROUND_TANK then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.CAS,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,40))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
 else
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
 end
 elseif category==Group.Category.SHIP then
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ANTISHIP,100))
