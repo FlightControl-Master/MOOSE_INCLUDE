@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T11:48:48.0000000Z-6404417dade5c7705127905b6d4b45dc3094aeaf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T14:48:24.0000000Z-035110df758a4c6ef1a24802fc1e2763c1c98adf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15027,10 +15027,11 @@ local Settings=Settings or(Client and _DATABASE:GetPlayerSettings(Client:GetPlay
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
 self.MessageCategory=""
 end
+local Unit=Client:GetClient()
 if self.MessageDuration~=0 then
 local ClientGroupID=Client:GetClientGroupID()
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
-trigger.action.outTextForGroup(ClientGroupID,self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
+trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
 end
 return self
@@ -15046,6 +15047,21 @@ end
 if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
 trigger.action.outTextForGroup(Group:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
+end
+end
+return self
+end
+function MESSAGE:ToUnit(Unit,Settings)
+self:F(Unit.IdentifiableName)
+if Unit then
+if self.MessageType then
+local Settings=Settings or(Unit and _DATABASE:GetPlayerSettings(Unit:GetPlayerName()))or _SETTINGS
+self.MessageDuration=Settings:GetMessageTime(self.MessageType)
+self.MessageCategory=""
+end
+if self.MessageDuration~=0 then
+self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
+trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
 end
 return self
@@ -18916,6 +18932,22 @@ end
 end
 return nil
 end
+function POSITIONABLE:MessageToUnit(Message,Duration,MessageUnit,Name)
+self:F2({Message,Duration})
+local DCSObject=self:GetDCSObject()
+if DCSObject then
+if DCSObject:isExist()then
+if MessageUnit:IsAlive()then
+self:GetMessage(Message,Duration,Name):ToUnit(MessageUnit)
+else
+BASE:E({"Message not sent to Unit; Unit is not alive...",Message=Message,MessageUnit=MessageUnit})
+end
+else
+BASE:E({"Message not sent to Unit; Positionable is not alive ...",Message=Message,Positionable=self,MessageUnit=MessageUnit})
+end
+end
+return nil
+end
 function POSITIONABLE:MessageTypeToGroup(Message,MessageType,MessageGroup,Name)
 self:F2({Message,MessageType})
 local DCSObject=self:GetDCSObject()
@@ -18934,6 +18966,20 @@ if DCSObject:isExist()then
 MessageSetGroup:ForEachGroupAlive(
 function(MessageGroup)
 self:GetMessage(Message,Duration,Name):ToGroup(MessageGroup)
+end
+)
+end
+end
+return nil
+end
+function POSITIONABLE:MessageToSetUnit(Message,Duration,MessageSetUnit,Name)
+self:F2({Message,Duration})
+local DCSObject=self:GetDCSObject()
+if DCSObject then
+if DCSObject:isExist()then
+MessageSetUnit:ForEachUnit(
+function(MessageGroup)
+self:GetMessage(Message,Duration,Name):ToUnit(MessageGroup)
 end
 )
 end
@@ -95859,6 +95905,15 @@ if Delay>0 then
 SCHEDULER:New(nil,USERSOUND.ToGroup,{self,Group},Delay)
 else
 trigger.action.outSoundForGroup(Group:GetID(),self.UserSoundFileName)
+end
+return self
+end
+function USERSOUND:ToUnit(Unit,Delay)
+Delay=Delay or 0
+if Delay>0 then
+SCHEDULER:New(nil,USERSOUND.ToUnit,{self,Unit},Delay)
+else
+trigger.action.outSoundForUnit(Unit:GetID(),self.UserSoundFileName)
 end
 return self
 end
