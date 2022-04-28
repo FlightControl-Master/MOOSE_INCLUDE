@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T15:10:49.0000000Z-adb94f8773a7fc6ef5e211bce111568af31d15bf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T18:52:47.0000000Z-c2b86bac4ba9f84885ca332b53249aa096f92235 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -51421,7 +51421,7 @@ local actype=group:GetTypeName()
 if knownflight then
 if knownflight.ai and knownflight.flag==-100 and self.handleai then
 local putintomarshal=false
-local flight=_DATABASE:GetFlightGroup(groupname)
+local flight=_DATABASE:GetOpsGroup(groupname)
 if flight and flight:IsInbound()and flight.destbase:GetName()==self.carrier:GetName()then
 if flight.ishelo then
 else
