@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-27T20:38:34.0000000Z-41f8207b3ac21582bf194a2c9aead8427542d8d9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T07:19:01.0000000Z-3a907ec7c28f31416b95077569ef28d0f9e8ae8a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75381,7 +75381,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.1"
+INTEL.version="0.3.2"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -75487,6 +75487,13 @@ end
 self:T(self.lid..text)
 return self
 end
+function INTEL:AddAgent(AgentGroup)
+if AgentGroup:IsInstanceOf("OPSGROUP")then
+AgentGroup=AgentGroup:GetGroup()
+end
+self.detectionset:AddGroup(AgentGroup)
+return self
+end
 function INTEL:SetClusterAnalysis(Switch,Markers)
 self.clusteranalysis=Switch
 self.clustermarkers=Markers
@@ -75545,8 +75552,20 @@ end
 function INTEL:GetContactName(Contact)
 return Contact.groupname
 end
+function INTEL:GetContactGroup(Contact)
+return Contact.group
+end
+function INTEL:GetContactThreatlevel(Contact)
+return Contact.threatlevel
+end
+function INTEL:GetContactTypeName(Contact)
+return Contact.typename
+end
 function INTEL:GetContactCategoryName(Contact)
 return Contact.categoryname
+end
+function INTEL:GetContactCoordinate(Contact)
+return Contact.position
 end
 function INTEL:onafterStart(From,Event,To)
 local text=string.format("Starting INTEL v%s",self.version)
