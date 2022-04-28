@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-26T08:08:50.0000000Z-3d38f4d17afb6748bab717bfcff7c32ea11a8475 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T11:10:34.0000000Z-e5eeb592a2c39e2ffbb79f41912c7bd422942b33 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -369,10 +369,11 @@ Atlas="A400",
 Lancer="B1-B",
 Stratofortress="B-52H",
 Hercules="C-130",
+Super_Hercules="Hercules",
 Globemaster="C-17",
 Greyhound="C-2A",
 Galaxy="C-5",
-Hawkexe="E-2D",
+Hawkeye="E-2D",
 Sentry="E-3A",
 Stratotanker="KC-135",
 Extender="KC-10",
