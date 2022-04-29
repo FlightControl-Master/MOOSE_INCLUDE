@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T10:19:06.0000000Z-1aaa51c4be629145aa7c044a61c3e98ca1b9e75b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T16:48:27.0000000Z-def5d33055c27f4c1bf84e01b404272217c160ca ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14570,9 +14570,9 @@ BRAANATO=string.format("BRAA, %03d, %d miles, Angels %d, %s, Track %s",bearing,r
 end
 if Bogey and Spades then
 BRAANATO=BRAANATO..", Bogey, Spades."
-elseif Bogey and(not Spades)then
+elseif Bogey then
 BRAANATO=BRAANATO..", Bogey."
-elseif(not Bogey)and Spades then
+elseif Spades then
 BRAANATO=BRAANATO..", Spades."
 else
 BRAANATO=BRAANATO.."."
@@ -21704,12 +21704,17 @@ BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetCoordinate()
-local FirstUnit=self:GetUnit(1)
+local Units=self:GetUnits()
+for _,_unit in pairs(Units)do
+local FirstUnit=_unit
 if FirstUnit then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
+if FirstUnitCoordinate then
 local Heading=self:GetHeading()
 FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
+end
+end
 end
 BASE:E({"Cannot GetCoordinate",Group=self,Alive=self:IsAlive()})
 return nil
