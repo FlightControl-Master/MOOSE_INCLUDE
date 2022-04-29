@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T18:52:47.0000000Z-c2b86bac4ba9f84885ca332b53249aa096f92235 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T10:10:16.0000000Z-37206bcc8385cbcf6a66318516f86b5bd21c3d02 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -37735,7 +37735,7 @@ Straferesult.roundsHit=_result.hits
 Straferesult.roundsQuality=_result.text
 Straferesult.strafeAccuracy=accur
 Straferesult.rangename=self.rangename
-if playerData.targeton and self.targetsheet then
+if playerData and playerData.targeton and self.targetsheet then
 self:_SaveTargetSheet(_playername,result)
 end
 if self.rangecontrol then
