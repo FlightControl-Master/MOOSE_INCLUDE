@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T10:10:16.0000000Z-37206bcc8385cbcf6a66318516f86b5bd21c3d02 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T10:19:06.0000000Z-1aaa51c4be629145aa7c044a61c3e98ca1b9e75b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14551,7 +14551,7 @@ local Distance=FromCoordinate:Get2DDistance(self)
 local Altitude=self:GetAltitudeText()
 return"BRA, "..self:GetBRAText(AngleRadians,Distance,Settings,Language)
 end
-function COORDINATE:ToStringBRAANATO(FromCoordinate,Spades)
+function COORDINATE:ToStringBRAANATO(FromCoordinate,Bogey,Spades)
 local BRAANATO="Merged."
 local currentCoord=FromCoordinate
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
@@ -14568,7 +14568,11 @@ BRAANATO=string.format("BRA, %03d, %d miles, Angels %d, Track %s",bearing,rangeN
 else
 BRAANATO=string.format("BRAA, %03d, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
 end
-if Spades then
+if Bogey and Spades then
+BRAANATO=BRAANATO..", Bogey, Spades."
+elseif Bogey and(not Spades)then
+BRAANATO=BRAANATO..", Bogey."
+elseif(not Bogey)and Spades then
 BRAANATO=BRAANATO..", Spades."
 else
 BRAANATO=BRAANATO.."."
