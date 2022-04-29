@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-28T15:10:26.0000000Z-b3d4024f21915be0ca89e28b099f783dfe1fe75e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T10:09:57.0000000Z-749158c086ce03cd9751677cf394bfc48597fdb7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -36799,7 +36799,7 @@ Straferesult.roundsHit=_result.hits
 Straferesult.roundsQuality=_result.text
 Straferesult.strafeAccuracy=accur
 Straferesult.rangename=self.rangename
-if playerData.targeton and self.targetsheet then
+if playerData and playerData.targeton and self.targetsheet then
 self:_SaveTargetSheet(_playername,result)
 end
 if self.rangecontrol then
@@ -37105,7 +37105,7 @@ if playerData then
 local text=""
 if self.targetsheet then
 playerData.targeton=not playerData.targeton
-if playerData.targeton==true then
+if playerData and playerData.targeton==true then
 text=string.format("roger, your targetsheets are now SAVED.")
 else
 text=string.format("affirm, your targetsheets are NOT SAVED.")
