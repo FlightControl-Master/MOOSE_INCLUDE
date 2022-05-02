@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T20:02:24.0000000Z-f725709e5bbd3aa0acc90ffd8af42e9dd7b211a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-02T15:18:48.0000000Z-bc03eb2e65e12ed4db7e366885b992705ecd2ff3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4682,7 +4682,11 @@ return self.stackbypointer
 end
 function FIFO:HasUniqueID(UniqueID)
 self:T(self.lid.."HasUniqueID")
-return self.stackbyid[UniqueID]and true or false
+if self.stackbyid[UniqueID]~=nil then
+return true
+else
+return false
+end
 end
 function FIFO:GetIDStack()
 self:T(self.lid.."GetIDStack")
@@ -10393,10 +10397,14 @@ ReportUnitTypes:Add(UnitType.." of "..UnitTypeID)
 end
 return ReportUnitTypes
 end
-function SET_GROUP:AddGroup(group)
+function SET_GROUP:AddGroup(group,DontSetCargoBayLimit)
 self:Add(group:GetName(),group)
+if not DontSetCargoBayLimit then
 for UnitID,UnitData in pairs(group:GetUnits())do
+if UnitData and UnitData:IsAlive()then
 UnitData:SetCargoBayWeightLimit()
+end
+end
 end
 return self
 end
@@ -21501,6 +21509,15 @@ self:T3(Units)
 return Units
 end
 return nil
+end
+function GROUP:IsPlayer()
+local units=self:GetTemplate().units
+for _,unit in pairs(units)do
+if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
+return true
+end
+end
+return false
 end
 function GROUP:GetUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
@@ -63918,7 +63935,7 @@ if SayCallsign then
 local callsign=self:GetCallsignName()
 Text=string.format("%s, %s",callsign,Text)
 end
-self:I(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
+self:T(self.lid..string.format("Radio transmission on %.3f MHz %s: %s",freq,UTILS.GetModulationName(modu),Text))
 self.msrs:PlayText(Text)
 end
 end
@@ -75518,7 +75535,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.2"
+INTEL.version="0.3.3"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -75642,6 +75659,7 @@ self.detectStatics=true
 else
 self.detectStatics=false
 end
+return self
 end
 function INTEL:SetVerbosity(Verbosity)
 self.verbose=Verbosity or 2
@@ -75708,6 +75726,7 @@ function INTEL:onafterStart(From,Event,To)
 local text=string.format("Starting INTEL v%s",self.version)
 self:I(self.lid..text)
 self:__Status(-math.random(10))
+return self
 end
 function INTEL:onafterStatus(From,Event,To)
 local fsmstate=self:GetState()
@@ -75734,6 +75753,7 @@ end
 self:I(self.lid..text)
 end
 self:__Status(self.statusupdate)
+return self
 end
 function INTEL:UpdateIntel()
 local DetectedUnits={}
@@ -75817,6 +75837,7 @@ self:CreateDetectedItems(DetectedGroups,DetectedStatics,RecceGroups)
 if self.clusteranalysis then
 self:PaintPicture()
 end
+return self
 end
 function INTEL:_UpdateContact(Contact)
 if Contact.isStatic then
@@ -75826,8 +75847,22 @@ Contact.Tdetected=timer.getAbsTime()
 Contact.position=Contact.group:GetCoordinate()
 Contact.velocity=Contact.group:GetVelocityVec3()
 Contact.speed=Contact.group:GetVelocityMPS()
+if Contact.group:IsAir()then
+Contact.altitude=Contact.group:GetAltitude()
+local oldheading=Contact.heading or 1
+local newheading=Contact.group:GetHeading()
+if newheading==0 then newheading=1 end
+local changeh=math.abs(((oldheading-newheading)+360)%360)
+Contact.heading=newheading
+if changeh>10 then
+Contact.maneuvering=true
+else
+Contact.maneuvering=false
 end
 end
+end
+end
+return self
 end
 function INTEL:_CreateContact(Positionable,RecceName)
 if Positionable and Positionable:IsAlive()then
@@ -75851,8 +75886,12 @@ item.isship=group:IsShip()or false
 item.isStatic=false
 if group:IsAir()then
 item.platform=group:GetNatoReportingName()
+item.heading=group:GetHeading()
+item.maneuvering=false
+item.altitude=group:GetAltitude()
 else
 item.platform="Unknown"
+item.altitude=group:GetAltitude(true)
 end
 if item.category==Group.Category.AIRPLANE or item.category==Group.Category.HELICOPTER then
 item.ctype=INTEL.Ctype.AIRCRAFT
@@ -75905,6 +75944,7 @@ self:LostContact(item)
 self:RemoveContact(item)
 end
 end
+return self
 end
 function INTEL:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
 local reccename=Unit:GetName()
@@ -75939,14 +75979,17 @@ end
 function INTEL:onafterNewContact(From,Event,To,Contact)
 self:F(self.lid..string.format("NEW contact %s",Contact.groupname))
 table.insert(self.ContactsUnknown,Contact)
+return self
 end
 function INTEL:onafterLostContact(From,Event,To,Contact)
 self:F(self.lid..string.format("LOST contact %s",Contact.groupname))
 table.insert(self.ContactsLost,Contact)
+return self
 end
 function INTEL:onafterNewCluster(From,Event,To,Cluster)
 self:F(self.lid..string.format("NEW cluster #%d [%s] of size %d",Cluster.index,Cluster.ctype,Cluster.size))
 self:_AddCluster(Cluster)
+return self
 end
 function INTEL:onafterLostCluster(From,Event,To,Cluster,Mission)
 local text=self.lid..string.format("LOST cluster #%d [%s]",Cluster.index,Cluster.ctype)
@@ -75955,6 +75998,7 @@ local mission=Mission
 text=text..string.format(" mission name=%s type=%s target=%s",mission.name,mission.type,mission:GetTargetName()or"unknown")
 end
 self:T(text)
+return self
 end
 function INTEL:KnowObject(Positionable,RecceName,Tdetected)
 local Tnow=timer.getAbsTime()
@@ -76013,6 +76057,7 @@ if contact.groupname==Contact.groupname then
 table.remove(self.Contacts,i)
 end
 end
+return self
 end
 function INTEL:_CheckContactLost(Contact)
 if Contact.group==nil or not Contact.group:IsAlive()then
@@ -76104,6 +76149,7 @@ self:UpdateClusterMarker(cluster)
 self:CalcClusterFuturePosition(cluster,300)
 end
 end
+return self
 end
 function INTEL:_CreateCluster()
 local cluster={}
@@ -76113,6 +76159,7 @@ cluster.threatlevelSum=0
 cluster.threatlevelMax=0
 cluster.size=0
 cluster.Contacts={}
+cluster.altitude=0
 self.clustercounter=self.clustercounter+1
 return cluster
 end
@@ -76126,14 +76173,17 @@ return cluster
 end
 function INTEL:_AddCluster(Cluster)
 table.insert(self.Clusters,Cluster)
+return self
 end
 function INTEL:AddContactToCluster(contact,cluster)
 if contact and cluster then
 table.insert(cluster.Contacts,contact)
 cluster.threatlevelSum=cluster.threatlevelSum+contact.threatlevel
 cluster.size=cluster.size+1
+self:GetClusterAltitude(cluster,true)
 self:T(self.lid..string.format("Adding contact %s to cluster #%d [%s] ==> New size=%d",contact.groupname,cluster.index,cluster.ctype,cluster.size))
 end
+return self
 end
 function INTEL:RemoveContactFromCluster(contact,cluster)
 if contact and cluster then
@@ -76144,10 +76194,11 @@ cluster.threatlevelSum=cluster.threatlevelSum-contact.threatlevel
 cluster.size=cluster.size-1
 table.remove(cluster.Contacts,i)
 self:T(self.lid..string.format("Removing contact %s from cluster #%d ==> New cluster size=%d",contact.groupname,cluster.index,cluster.size))
-return
+return self
 end
 end
 end
+return self
 end
 function INTEL:CalcClusterThreatlevelSum(cluster)
 local threatlevel=0
@@ -76253,7 +76304,15 @@ for _,_contact in pairs(cluster.Contacts)do
 local Contact=_contact
 if Contact.groupname~=contact.groupname or cluster.size==1 then
 local dist=Contact.position:DistanceFromPointVec2(contact.position)
-if dist<self.clusterradius then
+local airprox=false
+if contact.ctype==INTEL.Ctype.AIRCRAFT then
+self:T(string.format("Cluster Alt=%d | Contact Alt=%d",cluster.altitude,contact.altitude))
+local adist=math.abs(cluster.altitude-contact.altitude)
+if adist<UTILS.FeetToMeters(10000)then
+airprox=true
+end
+end
+if dist<self.clusterradius and airprox then
 return true,dist
 end
 end
@@ -76285,11 +76344,25 @@ end
 function INTEL:_GetClosestClusterOfContact(Contact)
 local Cluster=nil
 local distmin=self.clusterradius
+if not Contact.altitude then
+Contact.altitude=Contact.group:GetAltitude()
+end
 for _,_cluster in pairs(self.Clusters)do
 local cluster=_cluster
 if cluster.ctype==Contact.ctype then
 local dist=self:_GetDistContactToCluster(Contact,cluster)
-if dist<distmin then
+local airprox=false
+if Contact.ctype==INTEL.Ctype.AIRCRAFT then
+if not cluster.altitude then
+cluster.altitude=self:GetClusterAltitude(cluster,true)
+end
+local adist=math.abs(cluster.altitude-Contact.altitude)
+self:T(string.format("Cluster Alt=%d | Contact Alt=%d",cluster.altitude,Contact.altitude))
+if adist<UTILS.FeetToMeters(10000)then
+airprox=true
+end
+end
+if dist<distmin and airprox then
 Cluster=cluster
 distmin=dist
 end
@@ -76309,6 +76382,24 @@ end
 end
 return nil
 end
+function INTEL:GetClusterAltitude(Cluster,Update)
+local newalt=0
+local n=0
+for _,_contact in pairs(Cluster.Contacts)do
+local contact=_contact
+if contact.altitude then
+newalt=newalt+contact.altitude
+n=n+1
+end
+end
+local avgalt=0
+if n>0 then
+avgalt=newalt/n
+end
+Cluster.altitude=avgalt
+self:T(string.format("Updating Cluster Altitude: %d",Cluster.altitude))
+return Cluster.altitude
+end
 function INTEL:GetClusterCoordinate(Cluster,Update)
 local x=0;local y=0;local z=0;local n=0
 for _,_contact in pairs(Cluster.Contacts)do
@@ -76319,10 +76410,12 @@ vec3=contact.group:GetVec3()
 else
 vec3=contact.position
 end
+if vec3 then
 x=x+vec3.x
 y=y+vec3.y
 z=z+vec3.z
 n=n+1
+end
 end
 local Vec3={x=x/n,y=y/n,z=z/n}
 Cluster.coordinate:UpdateFromVec3(Vec3)
@@ -76344,8 +76437,10 @@ function INTEL:_UpdateClusterPositions()
 for _,_cluster in pairs(self.Clusters)do
 local cluster=_cluster
 local coord=self:GetClusterCoordinate(cluster,true)
+local alt=self:GetClusterAltitude(cluster,true)
 self:T(self.lid..string.format("Updating Cluster position size: %s",cluster.size))
 end
+return self
 end
 function INTEL:ContactCountUnits(Contact)
 if Contact.isStatic then
