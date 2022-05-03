@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-03T07:41:22.0000000Z-d2d431ce2ea0bed42ba03d6ea020b0de487389a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-03T21:31:15.0000000Z-22cc9eabc0fbe5b6917c298788f4ef8d535a45cc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -76239,7 +76239,9 @@ self:_UpdateClusterPositions()
 if self.clustermarkers then
 for _,_cluster in pairs(self.Clusters)do
 local cluster=_cluster
-MESSAGE:New("Updating cluster marker and future position",10):ToAll()
+if self.verbose>=1 then
+BASE:I("Updating cluster marker and future position")
+end
 self:UpdateClusterMarker(cluster)
 self:CalcClusterFuturePosition(cluster,300)
 end
