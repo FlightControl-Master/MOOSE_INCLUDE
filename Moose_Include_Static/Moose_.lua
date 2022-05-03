@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-03T06:46:23.0000000Z-68dce2f247b44db6b992e0812421efb452695cb4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-03T07:41:22.0000000Z-d2d431ce2ea0bed42ba03d6ea020b0de487389a7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64949,7 +64949,16 @@ nAmmo=ammo.Guns
 end
 local nShots=DCSTask.params.expendQty or 1
 self:T(self.lid..string.format("Fire at point with nshots=%d of %d",nShots,nAmmo))
+if nShots==-1 then
+nShots=nAmmo
+self:T(self.lid..string.format("Fire at point taking max amount of ammo = %d",nShots))
+elseif nShots<1 then
+local p=nShots
+nShots=UTILS.Round(p*nAmmo,0)
+self:T(self.lid..string.format("Fire at point taking %.1f percent amount of ammo = %d",p,nShots))
+else
 nShots=math.min(nShots,nAmmo)
+end
 DCSTask.params.expendQty=nShots
 elseif Mission and Mission.type==AUFTRAG.Type.RECOVERYTANKER then
 env.info("FF recoverytanker setting DCS task")
@@ -70459,6 +70468,11 @@ self.isHelo=group:IsHelicopter()
 self.isUncontrolled=template.uncontrolled
 self.isLateActivated=template.lateActivation
 self.speedMax=group:GetSpeedMax()
+if self.speedMax>3.6 then
+self.isMobile=true
+else
+self.isMobile=false
+end
 local speedCruiseLimit=self.isHelo and UTILS.KnotsToKmph(80)or UTILS.KnotsToKmph(350)
 self.speedCruise=math.min(self.speedMax*0.7,speedCruiseLimit)
 self.ammo=self:GetAmmoTot()
@@ -71339,23 +71353,51 @@ end
 end
 end
 function NAVYGROUP:onbeforeUpdateRoute(From,Event,To,n,Speed,Depth)
+local allowed=true
+local trepeat=nil
 if self:IsWaiting()then
-self:E(self.lid.."Update route denied. Group is WAITING!")
+self:T(self.lid.."Update route denied. Group is WAITING!")
 return false
 elseif self:IsInUtero()then
-self:E(self.lid.."Update route denied. Group is INUTERO!")
+self:T(self.lid.."Update route denied. Group is INUTERO!")
 return false
 elseif self:IsDead()then
-self:E(self.lid.."Update route denied. Group is DEAD!")
+self:T(self.lid.."Update route denied. Group is DEAD!")
 return false
 elseif self:IsStopped()then
-self:E(self.lid.."Update route denied. Group is STOPPED!")
+self:T(self.lid.."Update route denied. Group is STOPPED!")
 return false
 elseif self:IsHolding()then
 self:T(self.lid.."Update route denied. Group is holding position!")
 return false
 end
-return true
+if self.taskcurrent>0 then
+local task=self:GetTaskByID(self.taskcurrent)
+if task then
+if task.dcstask.id=="PatrolZone"then
+self:T2(self.lid.."Allowing update route for Task: PatrolZone")
+elseif task.dcstask.id=="ReconMission"then
+self:T2(self.lid.."Allowing update route for Task: ReconMission")
+elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
+self:T2(self.lid.."Allowing update route for Task: Relocate Cohort")
+else
+local taskname=task and task.description or"No description"
+self:T(self.lid..string.format("WARNING: Update route denied because taskcurrent=%d>0! Task description = %s",self.taskcurrent,tostring(taskname)))
+allowed=false
+end
+else
+self:T(self.lid..string.format("WARNING: before update route taskcurrent=%d (>0!) but no task?!",self.taskcurrent))
+allowed=false
+end
+end
+if not self.isAI then
+allowed=false
+end
+self:T2(self.lid..string.format("Onbefore Updateroute in state %s: allowed=%s (repeat in %s)",self:GetState(),tostring(allowed),tostring(trepeat)))
+if trepeat then
+self:__UpdateRoute(trepeat,n)
+end
+return allowed
 end
 function NAVYGROUP:onafterUpdateRoute(From,Event,To,n,N,Speed,Depth)
 n=n or self:GetWaypointIndexNext()
@@ -71620,6 +71662,11 @@ self.isAI=true
 self.isLateActivated=template.lateActivation
 self.isUncontrolled=false
 self.speedMax=self.group:GetSpeedMax()
+if self.speedMax>3.6 then
+self.isMobile=true
+else
+self.isMobile=false
+end
 self.speedCruise=self.speedMax*0.7
 self.ammo=self:GetAmmoTot()
 self.radio.On=true
@@ -72064,8 +72111,9 @@ self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,true)
 end
 if not self.option.Formation then
 end
-if#self.waypoints>1 then
-self:T(self.lid.."Got waypoints on spawn ==> Cruise in -0.1 sec!")
+local Nwp=#self.waypoints
+if Nwp>1 and self.isMobile then
+self:T(self.lid..string.format("Got %d waypoints on spawn ==> Cruise in -1.0 sec!",Nwp))
 self:__Cruise(-1,nil,self.option.Formation)
 else
 self:T(self.lid.."No waypoints on spawn ==> Full Stop!")
@@ -72074,8 +72122,10 @@ end
 end
 end
 function ARMYGROUP:onbeforeUpdateRoute(From,Event,To,n,N,Speed,Formation)
+local allowed=true
+local trepeat=nil
 if self:IsWaiting()then
-self:T(self.lid.."Update route denied. Group is WAIRING!")
+self:T(self.lid.."Update route denied. Group is WAITING!")
 return false
 elseif self:IsInUtero()then
 self:T(self.lid.."Update route denied. Group is INUTERO!")
@@ -72090,7 +72140,33 @@ elseif self:IsHolding()then
 self:T(self.lid.."Update route denied. Group is holding position!")
 return false
 end
-return true
+if self.taskcurrent>0 then
+local task=self:GetTaskByID(self.taskcurrent)
+if task then
+if task.dcstask.id=="PatrolZone"then
+self:T2(self.lid.."Allowing update route for Task: PatrolZone")
+elseif task.dcstask.id=="ReconMission"then
+self:T2(self.lid.."Allowing update route for Task: ReconMission")
+elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
+self:T2(self.lid.."Allowing update route for Task: Relocate Cohort")
+else
+local taskname=task and task.description or"No description"
+self:T(self.lid..string.format("WARNING: Update route denied because taskcurrent=%d>0! Task description = %s",self.taskcurrent,tostring(taskname)))
+allowed=false
+end
+else
+self:T(self.lid..string.format("WARNING: before update route taskcurrent=%d (>0!) but no task?!",self.taskcurrent))
+allowed=false
+end
+end
+if not self.isAI then
+allowed=false
+end
+self:T2(self.lid..string.format("Onbefore Updateroute in state %s: allowed=%s (repeat in %s)",self:GetState(),tostring(allowed),tostring(trepeat)))
+if trepeat then
+self:__UpdateRoute(trepeat,n)
+end
+return allowed
 end
 function ARMYGROUP:onafterUpdateRoute(From,Event,To,n,N,Speed,Formation)
 local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%s, Formation=%s",self:GetState(),tostring(n),tostring(N),tostring(Speed),tostring(Formation))
@@ -72229,6 +72305,19 @@ end
 function ARMYGROUP:onafterRearmed(From,Event,To)
 self:T(self.lid.."Group rearmed")
 self:_CheckGroupDone(1)
+end
+function ARMYGROUP:onbeforeRTZ(From,Event,To,Zone,Formation)
+local zone=Zone or self.homezone
+if zone then
+if(not self.isMobile)and(not self:IsInZone(zone))then
+self:Teleport(zone:GetCoordinate(),0,true)
+self:__RTZ(-1,Zone,Formation)
+return false
+end
+else
+return false
+end
+return true
 end
 function ARMYGROUP:onafterRTZ(From,Event,To,Zone,Formation)
 local zone=Zone or self.homezone
@@ -72379,7 +72468,8 @@ end
 function ARMYGROUP:onafterCruise(From,Event,To,Speed,Formation)
 self.Twaiting=nil
 self.dTwait=nil
-self:__UpdateRoute(-0.1,nil,nil,Speed,Formation)
+self:T(self.lid.."Cruise ==> Update route in 0.01 sec")
+self:__UpdateRoute(-0.01,nil,nil,Speed,Formation)
 end
 function ARMYGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Formation,Updateroute)
 self:T(self.lid..string.format("AddWaypoint Formation = %s",tostring(Formation)or"none"))
@@ -72420,6 +72510,11 @@ self.isAI=true
 self.isLateActivated=template.lateActivation
 self.isUncontrolled=false
 self.speedMax=self.group:GetSpeedMax()
+if self.speedMax>3.6 then
+self.isMobile=true
+else
+self.isMobile=false
+end
 self.speedCruise=self.speedMax*0.7
 self.ammo=self:GetAmmoTot()
 self.radio.On=false
@@ -76405,9 +76500,10 @@ local x=0;local y=0;local z=0;local n=0
 for _,_contact in pairs(Cluster.Contacts)do
 local contact=_contact
 local vec3=nil
-if Update and contact.group:IsAlive()then
+if Update and contact.group and contact.group:IsAlive()then
 vec3=contact.group:GetVec3()
-else
+end
+if not vec3 then
 vec3=contact.position
 end
 if vec3 then
@@ -76417,8 +76513,10 @@ z=z+vec3.z
 n=n+1
 end
 end
+if n>0 then
 local Vec3={x=x/n,y=y/n,z=z/n}
 Cluster.coordinate:UpdateFromVec3(Vec3)
+end
 return Cluster.coordinate
 end
 function INTEL:_CheckClusterCoordinateChanged(Cluster,Coordinate,Threshold)
