@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-02T15:18:48.0000000Z-bc03eb2e65e12ed4db7e366885b992705ecd2ff3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-03T06:46:23.0000000Z-68dce2f247b44db6b992e0812421efb452695cb4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21483,7 +21483,7 @@ function GROUP:GetUnits()
 self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local DCSUnits=DCSGroup:getUnits()
+local DCSUnits=DCSGroup:getUnits()or{}
 local Units={}
 for Index,UnitData in pairs(DCSUnits)do
 Units[#Units+1]=UNIT:Find(UnitData)
@@ -21721,7 +21721,7 @@ BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetCoordinate()
-local Units=self:GetUnits()
+local Units=self:GetUnits()or{}
 for _,_unit in pairs(Units)do
 local FirstUnit=_unit
 if FirstUnit then
