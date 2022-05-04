@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T11:29:14.0000000Z-21f93aa7e81994f4c4f1422ab53f24e0e6b34ffc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T16:10:20.0000000Z-290cc151bc42ebae692e720d5d95cb70d645403f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10547,7 +10547,11 @@ self:F({Event})
 if Event.IniDCSUnit then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
-if Event.IniDCSGroup:getSize()==1 then
+local size=1
+if Event.IniDCSGroup then
+size=Event.IniDCSGroup:getSize()
+end
+if size==1 then
 self:Remove(ObjectName)
 end
 end
@@ -84814,7 +84818,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="alpha 0.0.14",
+version="alpha 0.0.15",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -87102,11 +87106,11 @@ function AWACS:_ThreatRangeCall(GID,Contact)
 self:I(self.lid.."_ThreatRangeCall")
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
-local flightpos=managedgroup.Group:GetCoordinate()
+local flightpos=managedgroup.Group:GetCoordinate()or managedgroup.LastKnownPosition
 local contact=Contact.Contact
 local contacttag=Contact.TargetGroupNaming
 if contact then
-local position=contact.position
+local position=contact.position or contact.group:GetCoordinate()
 if position then
 local BRATExt=position:ToStringBRAANATO(flightpos,false,false)
 local text=string.format("%s. %s. %s group, Threat. %s",self.callsigntxt,pilotcallsign,contacttag,BRATExt)
@@ -87580,19 +87584,20 @@ end
 return self
 end
 function AWACS:onafterNewContact(From,Event,To,Contact)
-self:I({From,Event,To,Contact})
-local cluster=self.intel:IsContactPartOfAnyClusters(Contact)
-if cluster then
-local name=Contact.groupname
-local CID=Contact.CID or 0
-local cCID=cluster.CID or 0
-local text=string.format("New contact name=%s CID=%d with Cluster CID=%d!",name,CID,cCID)
-self:I(self.lid..text)
-else
-local name=Contact.groupname
-local CID=Contact.CID or 0
-local text=string.format("New contact name=%s CID=%d NO Intel Cluster!",name,CID)
-self:I(self.lid..text)
+self:T({From,Event,To,Contact})
+local tdist=self.ThreatDistance
+for _gid,_mgroup in pairs(self.ManagedGrps)do
+local managedgroup=_mgroup
+local group=managedgroup.Group
+if group and group:IsAlive()then
+local cpos=Contact.position or Contact.group:GetCoordinate()
+local mpos=group:GetCoordinate()
+local dist=cpos:Get2DDistance(mpos)
+dist=UTILS.Round(UTILS.MetersToNM(dist),0)
+if dist<=tdist then
+self:_ThreatRangeCall(_gid,Contact)
+end
+end
 end
 return self
 end
