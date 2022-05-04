@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T08:25:50.0000000Z-8099847e29c6ce88be5ac44e283329e57af3cdce ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T11:29:40.0000000Z-40bb181c7822abe9025d47f0dc6c520fc566a73b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7911,6 +7911,7 @@ self:F2(Vec2)
 return false
 end
 function ZONE_BASE:IsVec3InZone(Vec3)
+if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
