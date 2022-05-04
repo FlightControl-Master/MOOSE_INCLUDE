@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T07:49:37.0000000Z-c6da6544da76a7f9077e5902d7a7f7fb2d57cc8c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T07:58:30.0000000Z-04c77e9760854ce8fc4922c124e0d8792c3f445f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5162,12 +5162,13 @@ initiator=Initiator,
 }
 world.onEvent(Event)
 end
-function BASE:CreateEventDead(EventTime,Initiator)
-self:F({EventTime,Initiator})
+function BASE:CreateEventDead(EventTime,Initiator,IniObjectCategory)
+self:F({EventTime,Initiator,IniObjectCategory})
 local Event={
 id=world.event.S_EVENT_DEAD,
 time=EventTime,
 initiator=Initiator,
+IniObjectCategory=IniObjectCategory,
 }
 world.onEvent(Event)
 end
@@ -9675,6 +9676,14 @@ local name=Event.IniDCSUnitName
 if Event.IniObjectCategory==3 then
 if self.STATICS[Event.IniDCSUnitName]then
 self:DeleteStatic(Event.IniDCSUnitName)
+end
+if self.UNITS[Event.IniDCSUnitName]then
+self:T("STATIC Event for UNIT "..tostring(Event.IniDCSUnitName))
+local DCSUnit=_DATABASE:FindUnit(Event.IniDCSUnitName)
+self:T({DCSUnit})
+if DCSUnit then
+return
+end
 end
 else
 if Event.IniObjectCategory==1 then
@@ -21823,10 +21832,12 @@ function GROUP:IsInZone(Zone)
 if self:IsAlive()then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
-local vec2=Unit:GetVec2()
-if Zone:IsVec2InZone(vec2)then
+local vec2=nil
+if Unit then
+vec2=Unit:GetVec2()
+end
+if vec2 and Zone:IsVec2InZone(vec2)then
 return true
-else
 end
 end
 return false
