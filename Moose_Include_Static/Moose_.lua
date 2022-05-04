@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T11:29:40.0000000Z-40bb181c7822abe9025d47f0dc6c520fc566a73b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T16:09:56.0000000Z-8a8b806362e65ac02d7650d559b75571d75ab6f3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8750,6 +8750,7 @@ return InPolygon
 end
 function ZONE_POLYGON_BASE:IsVec3InZone(Vec3)
 self:F2(Vec3)
+if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
@@ -10409,7 +10410,11 @@ self:F({Event})
 if Event.IniDCSUnit then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
-if Event.IniDCSGroup:getSize()==1 then
+local size=1
+if Event.IniDCSGroup then
+size=Event.IniDCSGroup:getSize()
+end
+if size==1 then
 self:Remove(ObjectName)
 end
 end
