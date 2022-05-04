@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-04-29T16:48:41.0000000Z-6e8edd95ec3bb802740c5868d1d94df64ee2b940 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T08:25:50.0000000Z-8099847e29c6ce88be5ac44e283329e57af3cdce ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4592,7 +4592,11 @@ return self.stackbypointer
 end
 function FIFO:HasUniqueID(UniqueID)
 self:T(self.lid.."HasUniqueID")
-return self.stackbyid[UniqueID]and true or false
+if self.stackbyid[UniqueID]~=nil then
+return true
+else
+return false
+end
 end
 function FIFO:GetIDStack()
 self:T(self.lid.."GetIDStack")
@@ -5050,12 +5054,13 @@ subplace=subplace,
 }
 world.onEvent(Event)
 end
-function BASE:CreateEventCrash(EventTime,Initiator)
+function BASE:CreateEventCrash(EventTime,Initiator,IniObjectCategory)
 self:F({EventTime,Initiator})
 local Event={
 id=world.event.S_EVENT_CRASH,
 time=EventTime,
 initiator=Initiator,
+IniObjectCategory=IniObjectCategory,
 }
 world.onEvent(Event)
 end
@@ -6368,7 +6373,7 @@ self:F({PlayerUnit})
 local Event={
 id=EVENTS.PlayerEnterUnit,
 time=timer.getTime(),
-initiator=PlayerUnit:GetDCSObject(),
+initiator=PlayerUnit:GetDCSObject()
 }
 world.onEvent(Event)
 end
@@ -6377,7 +6382,7 @@ self:F({PlayerUnit})
 local Event={
 id=EVENTS.PlayerEnterAircraft,
 time=timer.getTime(),
-initiator=PlayerUnit:GetDCSObject(),
+initiator=PlayerUnit:GetDCSObject()
 }
 world.onEvent(Event)
 end
@@ -6398,26 +6403,6 @@ self.MissionEnd=true
 end
 if Event.initiator then
 Event.IniObjectCategory=Event.initiator:getCategory()
-if Event.IniObjectCategory==Object.Category.UNIT then
-Event.IniDCSUnit=Event.initiator
-Event.IniDCSUnitName=Event.IniDCSUnit:getName()
-Event.IniUnitName=Event.IniDCSUnitName
-Event.IniDCSGroup=Event.IniDCSUnit:getGroup()
-Event.IniUnit=UNIT:FindByName(Event.IniDCSUnitName)
-if not Event.IniUnit then
-Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
-end
-Event.IniDCSGroupName=""
-if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
-Event.IniDCSGroupName=Event.IniDCSGroup:getName()
-Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
-Event.IniGroupName=Event.IniDCSGroupName
-end
-Event.IniPlayerName=Event.IniDCSUnit:getPlayerName()
-Event.IniCoalition=Event.IniDCSUnit:getCoalition()
-Event.IniTypeName=Event.IniDCSUnit:getTypeName()
-Event.IniCategory=Event.IniDCSUnit:getDesc().category
-end
 if Event.IniObjectCategory==Object.Category.STATIC then
 if Event.id==31 then
 Event.IniDCSUnit=Event.initiator
@@ -6444,6 +6429,30 @@ Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
 end
+local Unit=UNIT:FindByName(Event.IniDCSUnitName)
+if Unit then
+Event.IniObjectCategory=Object.Category.UNIT
+end
+end
+if Event.IniObjectCategory==Object.Category.UNIT then
+Event.IniDCSUnit=Event.initiator
+Event.IniDCSUnitName=Event.IniDCSUnit:getName()
+Event.IniUnitName=Event.IniDCSUnitName
+Event.IniDCSGroup=Event.IniDCSUnit:getGroup()
+Event.IniUnit=UNIT:FindByName(Event.IniDCSUnitName)
+if not Event.IniUnit then
+Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
+end
+Event.IniDCSGroupName=Event.IniUnit and Event.IniUnit.GroupName or""
+if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
+Event.IniDCSGroupName=Event.IniDCSGroup:getName()
+Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
+Event.IniGroupName=Event.IniDCSGroupName
+end
+Event.IniPlayerName=Event.IniDCSUnit:getPlayerName()
+Event.IniCoalition=Event.IniDCSUnit:getCoalition()
+Event.IniTypeName=Event.IniDCSUnit:getTypeName()
+Event.IniCategory=Event.IniDCSUnit:getDesc().category
 end
 if Event.IniObjectCategory==Object.Category.CARGO then
 Event.IniDCSUnit=Event.initiator
@@ -6563,37 +6572,31 @@ end
 local PriorityOrder=EventMeta.Order
 local PriorityBegin=PriorityOrder==-1 and 5 or 1
 local PriorityEnd=PriorityOrder==-1 and 1 or 5
-if Event.IniObjectCategory~=Object.Category.STATIC then
-self:F({EventMeta.Text,Event,Event.IniDCSUnitName,Event.TgtDCSUnitName,PriorityOrder})
-end
 for EventPriority=PriorityBegin,PriorityEnd,PriorityOrder do
 if self.Events[Event.id][EventPriority]then
 for EventClass,EventData in pairs(self.Events[Event.id][EventPriority])do
-Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
-Event.TgtGroup=GROUP:FindByName(Event.TgtDCSGroupName)
+Event.IniGroup=Event.IniGroup or GROUP:FindByName(Event.IniDCSGroupName)
+Event.TgtGroup=Event.TgtGroup or GROUP:FindByName(Event.TgtDCSGroupName)
 if EventData.EventUnit then
 if EventClass:IsAlive()or
 Event.id==EVENTS.PlayerEnterUnit or
 Event.id==EVENTS.Crash or
 Event.id==EVENTS.Dead or
-Event.id==EVENTS.RemoveUnit then
+Event.id==EVENTS.RemoveUnit or
+Event.id==EVENTS.UnitLost then
 local UnitName=EventClass:GetName()
 if(EventMeta.Side=="I"and UnitName==Event.IniDCSUnitName)or
 (EventMeta.Side=="T"and UnitName==Event.TgtDCSUnitName)then
 if EventData.EventFunction then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling EventFunction for UNIT ",EventClass:GetClassNameAndID(),", Unit ",Event.IniUnitName,EventPriority})
-end
-local Result,Value=xpcall(function()
+local Result,Value=xpcall(
+function()
 return EventData.EventFunction(EventClass,Event)
 end,ErrorHandler)
 else
 local EventFunction=EventClass[EventMeta.Event]
 if EventFunction and type(EventFunction)=="function"then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling "..EventMeta.Event.." for Class ",EventClass:GetClassNameAndID(),EventPriority})
-end
-local Result,Value=xpcall(function()
+local Result,Value=xpcall(
+function()
 return EventFunction(EventClass,Event)
 end,ErrorHandler)
 end
@@ -6608,24 +6611,21 @@ if EventClass:IsAlive()or
 Event.id==EVENTS.PlayerEnterUnit or
 Event.id==EVENTS.Crash or
 Event.id==EVENTS.Dead or
-Event.id==EVENTS.RemoveUnit then
+Event.id==EVENTS.RemoveUnit or
+Event.id==EVENTS.UnitLost then
 local GroupName=EventClass:GetName()
 if(EventMeta.Side=="I"and GroupName==Event.IniDCSGroupName)or
 (EventMeta.Side=="T"and GroupName==Event.TgtDCSGroupName)then
 if EventData.EventFunction then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling EventFunction for GROUP ",EventClass:GetClassNameAndID(),", Unit ",Event.IniUnitName,EventPriority})
-end
-local Result,Value=xpcall(function()
+local Result,Value=xpcall(
+function()
 return EventData.EventFunction(EventClass,Event,unpack(EventData.Params))
 end,ErrorHandler)
 else
 local EventFunction=EventClass[EventMeta.Event]
 if EventFunction and type(EventFunction)=="function"then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling "..EventMeta.Event.." for GROUP ",EventClass:GetClassNameAndID(),EventPriority})
-end
-local Result,Value=xpcall(function()
+local Result,Value=xpcall(
+function()
 return EventFunction(EventClass,Event,unpack(EventData.Params))
 end,ErrorHandler)
 end
@@ -6636,19 +6636,15 @@ end
 else
 if not EventData.EventUnit then
 if EventData.EventFunction then
-if Event.IniObjectCategory~=3 then
-self:F2({"Calling EventFunction for Class ",EventClass:GetClassNameAndID(),EventPriority})
-end
-local Result,Value=xpcall(function()
+local Result,Value=xpcall(
+function()
 return EventData.EventFunction(EventClass,Event)
 end,ErrorHandler)
 else
 local EventFunction=EventClass[EventMeta.Event]
 if EventFunction and type(EventFunction)=="function"then
-if Event.IniObjectCategory~=3 then
-self:F2({"Calling "..EventMeta.Event.." for Class ",EventClass:GetClassNameAndID(),EventPriority})
-end
-local Result,Value=xpcall(function()
+local Result,Value=xpcall(
+function()
 local Result,Value=EventFunction(EventClass,Event)
 return Result,Value
 end,ErrorHandler)
@@ -10260,8 +10256,12 @@ return ReportUnitTypes
 end
 function SET_GROUP:AddGroup(group)
 self:Add(group:GetName(),group)
+if not DontSetCargoBayLimit then
 for UnitID,UnitData in pairs(group:GetUnits())do
+if UnitData and UnitData:IsAlive()then
 UnitData:SetCargoBayWeightLimit()
+end
+end
 end
 return self
 end
@@ -16735,10 +16735,16 @@ return nil
 end
 end
 function SPAWN:_GetPrefixFromGroup(SpawnGroup)
-self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnGroup})
 local GroupName=SpawnGroup:GetName()
 if GroupName then
-local SpawnPrefix=string.match(GroupName,".*#")
+local SpawnPrefix=self:_GetPrefixFromGroupName(GroupName)
+return SpawnPrefix
+end
+return nil
+end
+function SPAWN:_GetPrefixFromGroupName(SpawnGroupName)
+if SpawnGroupName then
+local SpawnPrefix=string.match(SpawnGroupName,".*#")
 if SpawnPrefix then
 SpawnPrefix=SpawnPrefix:sub(1,-2)
 end
@@ -17005,9 +17011,9 @@ end
 end
 function SPAWN:_OnDeadOrCrash(EventData)
 self:F(self.SpawnTemplatePrefix)
-local SpawnGroup=EventData.IniGroup
-if SpawnGroup then
-local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
+local unit=UNIT:FindByName(EventData.IniUnitName)
+if unit then
+local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 self:T({"Dead event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
@@ -20773,7 +20779,7 @@ function GROUP:GetUnits()
 self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local DCSUnits=DCSGroup:getUnits()
+local DCSUnits=DCSGroup:getUnits()or{}
 local Units={}
 for Index,UnitData in pairs(DCSUnits)do
 Units[#Units+1]=UNIT:Find(UnitData)
@@ -20808,6 +20814,15 @@ local UnitFound=UNIT:Find(DCSUnit)
 return UnitFound
 end
 return nil
+end
+function GROUP:IsPlayer()
+local units=self:GetTemplate().units
+for _,unit in pairs(units)do
+if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
+return true
+end
+end
+return false
 end
 function GROUP:GetDCSUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
@@ -21002,7 +21017,7 @@ BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetCoordinate()
-local Units=self:GetUnits()
+local Units=self:GetUnits()or{}
 for _,_unit in pairs(Units)do
 local FirstUnit=_unit
 if FirstUnit then
@@ -21112,10 +21127,12 @@ function GROUP:IsInZone(Zone)
 if self:IsAlive()then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
-local vec2=Unit:GetVec2()
-if Zone:IsVec2InZone(vec2)then
+local vec2=nil
+if Unit then
+vec2=Unit:GetVec2()
+end
+if vec2 and Zone:IsVec2InZone(vec2)then
 return true
-else
 end
 end
 return false
@@ -21912,10 +21929,15 @@ end
 UNIT={
 ClassName="UNIT",
 UnitName=nil,
+GroupName=nil,
 }
 function UNIT:Register(UnitName)
 local self=BASE:Inherit(self,CONTROLLABLE:New(UnitName))
 self.UnitName=UnitName
+local unit=Unit.getByName(self.UnitName)
+if unit then
+self.GroupName=unit:getGroup():getName()
+end
 self:SetEventPriority(3)
 return self
 end
