@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-03T21:31:15.0000000Z-22cc9eabc0fbe5b6917c298788f4ef8d535a45cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T07:49:37.0000000Z-c6da6544da76a7f9077e5902d7a7f7fb2d57cc8c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6501,26 +6501,6 @@ self.MissionEnd=true
 end
 if Event.initiator then
 Event.IniObjectCategory=Event.initiator:getCategory()
-if Event.IniObjectCategory==Object.Category.UNIT then
-Event.IniDCSUnit=Event.initiator
-Event.IniDCSUnitName=Event.IniDCSUnit:getName()
-Event.IniUnitName=Event.IniDCSUnitName
-Event.IniDCSGroup=Event.IniDCSUnit:getGroup()
-Event.IniUnit=UNIT:FindByName(Event.IniDCSUnitName)
-if not Event.IniUnit then
-Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
-end
-Event.IniDCSGroupName=""
-if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
-Event.IniDCSGroupName=Event.IniDCSGroup:getName()
-Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
-Event.IniGroupName=Event.IniDCSGroupName
-end
-Event.IniPlayerName=Event.IniDCSUnit:getPlayerName()
-Event.IniCoalition=Event.IniDCSUnit:getCoalition()
-Event.IniTypeName=Event.IniDCSUnit:getTypeName()
-Event.IniCategory=Event.IniDCSUnit:getDesc().category
-end
 if Event.IniObjectCategory==Object.Category.STATIC then
 if Event.id==31 then
 Event.IniDCSUnit=Event.initiator
@@ -6547,6 +6527,30 @@ Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
 end
+local Unit=UNIT:FindByName(Event.IniDCSUnitName)
+if Unit then
+Event.IniObjectCategory=Object.Category.UNIT
+end
+end
+if Event.IniObjectCategory==Object.Category.UNIT then
+Event.IniDCSUnit=Event.initiator
+Event.IniDCSUnitName=Event.IniDCSUnit:getName()
+Event.IniUnitName=Event.IniDCSUnitName
+Event.IniDCSGroup=Event.IniDCSUnit:getGroup()
+Event.IniUnit=UNIT:FindByName(Event.IniDCSUnitName)
+if not Event.IniUnit then
+Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
+end
+Event.IniDCSGroupName=Event.IniUnit and Event.IniUnit.GroupName or""
+if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
+Event.IniDCSGroupName=Event.IniDCSGroup:getName()
+Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
+Event.IniGroupName=Event.IniDCSGroupName
+end
+Event.IniPlayerName=Event.IniDCSUnit:getPlayerName()
+Event.IniCoalition=Event.IniDCSUnit:getCoalition()
+Event.IniTypeName=Event.IniDCSUnit:getTypeName()
+Event.IniCategory=Event.IniDCSUnit:getDesc().category
 end
 if Event.IniObjectCategory==Object.Category.CARGO then
 Event.IniDCSUnit=Event.initiator
@@ -6666,27 +6670,22 @@ end
 local PriorityOrder=EventMeta.Order
 local PriorityBegin=PriorityOrder==-1 and 5 or 1
 local PriorityEnd=PriorityOrder==-1 and 1 or 5
-if Event.IniObjectCategory~=Object.Category.STATIC then
-self:F({EventMeta.Text,Event,Event.IniDCSUnitName,Event.TgtDCSUnitName,PriorityOrder})
-end
 for EventPriority=PriorityBegin,PriorityEnd,PriorityOrder do
 if self.Events[Event.id][EventPriority]then
 for EventClass,EventData in pairs(self.Events[Event.id][EventPriority])do
-Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
-Event.TgtGroup=GROUP:FindByName(Event.TgtDCSGroupName)
+Event.IniGroup=Event.IniGroup or GROUP:FindByName(Event.IniDCSGroupName)
+Event.TgtGroup=Event.TgtGroup or GROUP:FindByName(Event.TgtDCSGroupName)
 if EventData.EventUnit then
 if EventClass:IsAlive()or
 Event.id==EVENTS.PlayerEnterUnit or
 Event.id==EVENTS.Crash or
 Event.id==EVENTS.Dead or
-Event.id==EVENTS.RemoveUnit then
+Event.id==EVENTS.RemoveUnit or
+Event.id==EVENTS.UnitLost then
 local UnitName=EventClass:GetName()
 if(EventMeta.Side=="I"and UnitName==Event.IniDCSUnitName)or
 (EventMeta.Side=="T"and UnitName==Event.TgtDCSUnitName)then
 if EventData.EventFunction then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling EventFunction for UNIT ",EventClass:GetClassNameAndID(),", Unit ",Event.IniUnitName,EventPriority})
-end
 local Result,Value=xpcall(
 function()
 return EventData.EventFunction(EventClass,Event)
@@ -6694,9 +6693,6 @@ end,ErrorHandler)
 else
 local EventFunction=EventClass[EventMeta.Event]
 if EventFunction and type(EventFunction)=="function"then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling "..EventMeta.Event.." for Class ",EventClass:GetClassNameAndID(),EventPriority})
-end
 local Result,Value=xpcall(
 function()
 return EventFunction(EventClass,Event)
@@ -6713,14 +6709,12 @@ if EventClass:IsAlive()or
 Event.id==EVENTS.PlayerEnterUnit or
 Event.id==EVENTS.Crash or
 Event.id==EVENTS.Dead or
-Event.id==EVENTS.RemoveUnit then
+Event.id==EVENTS.RemoveUnit or
+Event.id==EVENTS.UnitLost then
 local GroupName=EventClass:GetName()
 if(EventMeta.Side=="I"and GroupName==Event.IniDCSGroupName)or
 (EventMeta.Side=="T"and GroupName==Event.TgtDCSGroupName)then
 if EventData.EventFunction then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling EventFunction for GROUP ",EventClass:GetClassNameAndID(),", Unit ",Event.IniUnitName,EventPriority})
-end
 local Result,Value=xpcall(
 function()
 return EventData.EventFunction(EventClass,Event,unpack(EventData.Params))
@@ -6728,9 +6722,6 @@ end,ErrorHandler)
 else
 local EventFunction=EventClass[EventMeta.Event]
 if EventFunction and type(EventFunction)=="function"then
-if Event.IniObjectCategory~=3 then
-self:F({"Calling "..EventMeta.Event.." for GROUP ",EventClass:GetClassNameAndID(),EventPriority})
-end
 local Result,Value=xpcall(
 function()
 return EventFunction(EventClass,Event,unpack(EventData.Params))
@@ -6743,9 +6734,6 @@ end
 else
 if not EventData.EventUnit then
 if EventData.EventFunction then
-if Event.IniObjectCategory~=3 then
-self:F2({"Calling EventFunction for Class ",EventClass:GetClassNameAndID(),EventPriority})
-end
 local Result,Value=xpcall(
 function()
 return EventData.EventFunction(EventClass,Event)
@@ -6753,9 +6741,6 @@ end,ErrorHandler)
 else
 local EventFunction=EventClass[EventMeta.Event]
 if EventFunction and type(EventFunction)=="function"then
-if Event.IniObjectCategory~=3 then
-self:F2({"Calling "..EventMeta.Event.." for Class ",EventClass:GetClassNameAndID(),EventPriority})
-end
 local Result,Value=xpcall(
 function()
 local Result,Value=EventFunction(EventClass,Event)
@@ -16868,10 +16853,16 @@ return nil
 end
 end
 function SPAWN:_GetPrefixFromGroup(SpawnGroup)
-self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnGroup})
 local GroupName=SpawnGroup:GetName()
 if GroupName then
-local SpawnPrefix=string.match(GroupName,".*#")
+local SpawnPrefix=self:_GetPrefixFromGroupName(GroupName)
+return SpawnPrefix
+end
+return nil
+end
+function SPAWN:_GetPrefixFromGroupName(SpawnGroupName)
+if SpawnGroupName then
+local SpawnPrefix=string.match(SpawnGroupName,".*#")
 if SpawnPrefix then
 SpawnPrefix=SpawnPrefix:sub(1,-2)
 end
@@ -17142,9 +17133,9 @@ end
 end
 function SPAWN:_OnDeadOrCrash(EventData)
 self:F(self.SpawnTemplatePrefix)
-local SpawnGroup=EventData.IniGroup
-if SpawnGroup then
-local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
+local unit=UNIT:FindByName(EventData.IniUnitName)
+if unit then
+local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 self:T({"Dead event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
@@ -22632,10 +22623,15 @@ end
 UNIT={
 ClassName="UNIT",
 UnitName=nil,
+GroupName=nil,
 }
 function UNIT:Register(UnitName)
 local self=BASE:Inherit(self,CONTROLLABLE:New(UnitName))
 self.UnitName=UnitName
+local unit=Unit.getByName(self.UnitName)
+if unit then
+self.GroupName=unit:getGroup():getName()
+end
 self:SetEventPriority(3)
 return self
 end
