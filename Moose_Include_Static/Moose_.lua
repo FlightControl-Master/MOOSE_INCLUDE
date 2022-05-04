@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T16:10:20.0000000Z-290cc151bc42ebae692e720d5d95cb70d645403f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T20:40:22.0000000Z-0e74d3622729b3b8d7be0eb3fa9b6a0cb63105e2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -36403,20 +36403,13 @@ TdelaySmoke=3.0,
 boxlength=3000,
 boxwidth=300,
 goodpass=20,
-goodhitrange=25,
-foulline=610,
+foulline=610
 }
 RANGE.TargetType={
 UNIT="Unit",
 STATIC="Static",
-COORD="Coordinate",
+COORD="Coordinate"
 }
-hypemanStrafeRollIn="nil"
-StrafeAircraftType="strafeAircraftTypeNotSet"
-Straferesult={}
-clientRollingIn=false
-clientStrafed=false
-invalidStrafe=false
 RANGE.Sound={
 RC0={filename="RC-0.ogg",duration=0.60},
 RC1={filename="RC-1.ogg",duration=0.47},
@@ -36466,7 +36459,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.3.0"
+RANGE.version="2.4.0"
 function RANGE:New(rangename)
 BASE:F({rangename=rangename})
 local self=BASE:Inherit(self,FSM:New())
@@ -36479,6 +36472,8 @@ self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
 self:AddTransition("*","Impact","*")
+self:AddTransition("*","RollingIn","*")
+self:AddTransition("*","StrafeResult","*")
 self:AddTransition("*","EnterRange","*")
 self:AddTransition("*","ExitRange","*")
 self:AddTransition("*","Save","*")
@@ -37085,8 +37080,7 @@ local playerData=self.PlayerSettings[_playername]
 self:T(self.id..string.format("RANGE %s: Tracking %s - %s.",self.rangename,_weapon,EventData.weapon:getName()))
 local _lastBombPos={x=0,y=0,z=0}
 local function trackBomb(_ordnance)
-local _status,_bombPos=pcall(
-function()
+local _status,_bombPos=pcall(function()
 return _ordnance:getPoint()
 end)
 self:T2(self.id..string.format("Range %s: Bomb still in air: %s",self.rangename,tostring(_status)))
@@ -37169,55 +37163,6 @@ end
 self:T(self.id..string.format("Range %s, player %s: Tracking of weapon starts in 0.1 seconds.",self.rangename,_playername))
 timer.scheduleFunction(trackBomb,EventData.weapon,timer.getTime()+0.1)
 end
-end
-function RANGE:_SaveTargetSheet(_playername,result)
-local function _savefile(filename,data)
-local f=io.open(filename,"wb")
-if f then
-f:write(data)
-f:close()
-else
-env.info("RANGEBOSS EDIT - could not save target sheet to file")
-end
-end
-local path=self.targetpath
-if lfs then
-path=path or lfs.writedir()..[[Logs\]]
-end
-local filename=nil
-for i=1,9999 do
-if self.targetprefix then
-filename=string.format("%s_%s-%04d.csv",self.targetprefix,playerData.actype,i)
-else
-local name=UTILS.ReplaceIllegalCharacters(_playername,"_")
-filename=string.format("RANGERESULTS-%s_Targetsheet-%s-%04d.csv",self.rangename,name,i)
-end
-if path~=nil then
-filename=path.."\\"..filename
-end
-local _exists=UTILS.FileExists(filename)
-if not _exists then
-break
-end
-end
-local data="Name,Target,Distance,Radial,Quality,Rounds Fired,Rounds Hit,Rounds Quality,Attack Heading,Weapon,Airframe,Mission Time,OS Time\n"
-local distance=result.distance
-local weapon=result.weapon
-local target=result.name
-local radial=result.radial
-local quality=result.quality
-local time=UTILS.SecondsToClock(result.time)
-local airframe=result.airframe
-local date="n/a"
-local roundsFired=result.roundsFired
-local roundsHit=result.roundsHit
-local strafeResult=result.roundsQuality
-local attackHeading=result.heading
-if os then
-date=os.date()
-end
-data=data..string.format("%s,%s,%.2f,%03d,%s,%03d,%03d,%s,%03d,%s,%s,%s,%s",_playername,target,distance,radial,quality,roundsFired,roundsHit,strafeResult,attackHeading,weapon,airframe,time,date)
-_savefile(filename,data)
 end
 function RANGE:onafterStatus(From,Event,To)
 if self.verbose>0 then
@@ -37389,6 +37334,50 @@ table.insert(self.bombPlayerResults[playername],result)
 end
 end
 end
+function RANGE:_SaveTargetSheet(_playername,result)
+local function _savefile(filename,data)
+local f=io.open(filename,"wb")
+if f then
+f:write(data)
+f:close()
+else
+env.info("RANGEBOSS EDIT - could not save target sheet to file")
+end
+end
+local path=self.targetpath
+if lfs then
+path=path or lfs.writedir()..[[Logs\]]
+end
+local filename=nil
+for i=1,9999 do
+if self.targetprefix then
+filename=string.format("%s_%s-%04d.csv",self.targetprefix,result.airframe,i)
+else
+local name=UTILS.ReplaceIllegalCharacters(_playername,"_")
+filename=string.format("RANGERESULTS-%s_Targetsheet-%s-%04d.csv",self.rangename,name,i)
+end
+if path~=nil then
+filename=path.."\\"..filename
+end
+local _exists=UTILS.FileExists(filename)
+if not _exists then
+break
+end
+end
+local data="Name,Target,Rounds Fired,Rounds Hit,Rounds Quality,Airframe,Mission Time,OS Time\n"
+local target=result.name
+local airframe=result.airframe
+local roundsFired=result.roundsFired
+local roundsHit=result.roundsHit
+local strafeResult=result.roundsQuality
+local time=UTILS.SecondsToClock(result.time)
+local date="n/a"
+if os then
+date=os.date()
+end
+data=data..string.format("%s,%s,%d,%d,%s,%s,%s,%s",_playername,target,roundsFired,roundsHit,strafeResult,airframe,time,date)
+_savefile(filename,data)
+end
 function RANGE._DelayedSmoke(_args)
 trigger.action.smoke(_args.coord:GetVec3(),_args.color)
 end
@@ -37401,12 +37390,15 @@ local _results=self.strafePlayerResults[_playername]
 if _results==nil then
 _message=string.format("%s: No Score yet.",_playername)
 else
-local _sort=function(a,b)return a.hits>b.hits end
+local _sort=function(a,b)
+return a.hits>b.hits
+end
 table.sort(_results,_sort)
 local _bestMsg=""
 local _count=1
 for _,_result in pairs(_results)do
-_message=_message..string.format("\n[%d] Hits %d - %s - %s",_count,_result.hits,_result.zone.name,_result.text)
+local result=_result
+_message=_message..string.format("\n[%d] Hits %d - %s - %s",_count,result.roundsHit,result.name,result.roundsQuality)
 if _bestMsg==""then
 _bestMsg=string.format("Hits %d - %s - %s",_result.hits,_result.zone.name,_result.text)
 end
@@ -37438,7 +37430,9 @@ local text=string.format("%s: Hits %i - %s - %s",_playerName,_best.hits,_best.zo
 table.insert(_playerResults,{msg=text,hits=_best.hits})
 end
 end
-local _sort=function(a,b)return a.hits>b.hits end
+local _sort=function(a,b)
+return a.hits>b.hits
+end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -37458,7 +37452,9 @@ local _results=self.bombPlayerResults[_playername]
 if _results==nil then
 _message=_playername..": No Score yet."
 else
-local _sort=function(a,b)return a.distance<b.distance end
+local _sort=function(a,b)
+return a.distance<b.distance
+end
 table.sort(_results,_sort)
 local _bestMsg=""
 for i,_result in pairs(_results)do
@@ -37494,7 +37490,9 @@ local bestres=string.format("%s: %d m - %s - %s - %s hit",_playerName,_best.dist
 table.insert(_playerResults,{msg=bestres,distance=_best.distance})
 end
 end
-local _sort=function(a,b)return a.distance<b.distance end
+local _sort=function(a,b)
+return a.distance<b.distance
+end
 table.sort(_playerResults,_sort)
 for _i=1,math.min(#_playerResults,self.ndisplayresult)do
 _message=_message..string.format("\n[%d] %s",_i,_playerResults[_i].msg)
@@ -37673,10 +37671,10 @@ self:F2(_unitName)
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 local unitheading=0
 if _unit and _playername then
+local playerData=self.PlayerSettings[_playername]
 local function checkme(targetheading,_zone)
 local zone=_zone
 local unitheading=_unit:GetHeading()
-unitheadingStrafe=_unit:GetHeading()
 local pitheading=targetheading-180
 local deltaheading=unitheading-pitheading
 local towardspit=math.abs(deltaheading)<=90 or math.abs(deltaheading-360)<=90
@@ -37698,7 +37696,6 @@ if _currentStrafeRun then
 local zone=_currentStrafeRun.zone.polygon
 local unitinzone=checkme(_currentStrafeRun.zone.heading,zone)
 if unitinzone then
-StrafeAircraftType=_unit:GetTypeName()
 _currentStrafeRun.time=_currentStrafeRun.time+1
 else
 _currentStrafeRun.time=_currentStrafeRun.time+1
@@ -37717,30 +37714,32 @@ local shots=_result.ammo-_ammo
 local accur=0
 if shots>0 then
 accur=_result.hits/shots*100
-if accur>100 then accur=100 end
+if accur>100 then
+accur=100
 end
-if invalidStrafe==true then
-_result.text="* INVALID - PASSED FOUL LINE *"
+end
+local resulttext=""
+if _result.pastfoulline==true then
+resulttext="* INVALID - PASSED FOUL LINE *"
 _sound=RANGE.Sound.RCPoorPass
 else
 if accur>=90 then
-_result.text="DEADEYE PASS"
+resulttext="DEADEYE PASS"
 _sound=RANGE.Sound.RCExcellentPass
 elseif accur>=75 then
-_result.text="EXCELLENT PASS"
+resulttext="EXCELLENT PASS"
 _sound=RANGE.Sound.RCExcellentPass
 elseif accur>=50 then
-_result.text="GOOD PASS"
+resulttext="GOOD PASS"
 _sound=RANGE.Sound.RCGoodPass
 elseif accur>=25 then
-_result.text="INEFFECTIVE PASS"
+resulttext="INEFFECTIVE PASS"
 _sound=RANGE.Sound.RCIneffectivePass
 else
-_result.text="POOR PASS"
+resulttext="POOR PASS"
 _sound=RANGE.Sound.RCPoorPass
 end
 end
-clientStrafed=true
 local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_result.zone.name,_result.hits)
 if shots and accur then
 _text=_text..string.format("\nTotal rounds fired %d. Accuracy %.1f %%.",shots,accur)
@@ -37748,32 +37747,17 @@ end
 _text=_text..string.format("\n%s",_result.text)
 self:_DisplayMessageToGroup(_unit,_text)
 local result={}
+result.player=_playername
 result.name=_result.zone.name or"unknown"
-result.distance=0
-result.radial=0
-result.weapon="N/A"
-result.quality="N/A"
-result.player=_playernamee
 result.time=timer.getAbsTime()
-result.airframe=StrafeAircraftType
 result.roundsFired=shots
 result.roundsHit=_result.hits
-result.roundsQuality=_result.text
+result.roundsQuality=resulttext
 result.strafeAccuracy=accur
-result.heading=unitheadingStrafe
-Straferesult.name=_result.zone.name or"unknown"
-Straferesult.distance=0
-Straferesult.radial=0
-Straferesult.weapon="N/A"
-Straferesult.quality="N/A"
-Straferesult.player=_playername
-Straferesult.time=timer.getAbsTime()
-Straferesult.airframe=StrafeAircraftType
-Straferesult.roundsFired=shots
-Straferesult.roundsHit=_result.hits
-Straferesult.roundsQuality=_result.text
-Straferesult.strafeAccuracy=accur
-Straferesult.rangename=self.rangename
+result.rangename=self.rangename
+result.airframe=playerData.airframe
+result.invalid=_result.pastfoulline
+self:StrafeResult(playerData,result)
 if playerData and playerData.targeton and self.targetsheet then
 self:_SaveTargetSheet(_playername,result)
 end
@@ -37791,24 +37775,24 @@ self.rangecontrol:NewTransmission(_sound.filename,_sound.duration,self.soundpath
 end
 self.strafeStatus[_unitID]=nil
 local _stats=self.strafePlayerResults[_playername]or{}
-table.insert(_stats,_result)
+table.insert(_stats,result)
 self.strafePlayerResults[_playername]=_stats
 end
 end
 else
 for _,_targetZone in pairs(self.strafeTargets)do
-local zone=_targetZone.polygon
-local unitinzone=checkme(_targetZone.heading,zone)
+local target=_targetZone
+local zone=target.polygon
+local unitinzone=checkme(target.heading,zone)
 if unitinzone then
 local _ammo=self:_GetAmmo(_unitName)
-self.strafeStatus[_unitID]={hits=0,zone=_targetZone,time=1,ammo=_ammo,pastfoulline=false}
-local _msg=string.format("%s, rolling in on strafe pit %s.",self:_myname(_unitName),_targetZone.name)
+self.strafeStatus[_unitID]={hits=0,zone=target,time=1,ammo=_ammo,pastfoulline=false}
+local _msg=string.format("%s, rolling in on strafe pit %s.",self:_myname(_unitName),target.name)
 if self.rangecontrol then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCRollingInOnStrafeTarget.filename,RANGE.Sound.RCRollingInOnStrafeTarget.duration,self.soundpath)
 end
-clientRollingIn=true
 self:_DisplayMessageToGroup(_unit,_msg,10,true)
-hypemanStrafeRollIn=_msg
+self:RollingIn(playerData,target)
 break
 end
 end
@@ -38080,7 +38064,7 @@ if playerData then
 local text=""
 if self.targetsheet then
 playerData.targeton=not playerData.targeton
-if playerData.targeton==true then
+if playerData and playerData.targeton==true then
 text=string.format("roger, your targetsheets are now SAVED.")
 else
 text=string.format("affirm, your targetsheets are NOT SAVED.")
@@ -38249,7 +38233,6 @@ function RANGE:_myname(unitname)
 self:F2(unitname)
 local unit=UNIT:FindByName(unitname)
 local pname=unit:GetPlayerName()
-local csign=unit:GetCallsign()
 return string.format("%s",pname)
 end
 do
