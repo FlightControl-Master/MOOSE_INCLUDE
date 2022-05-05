@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T09:34:14.0000000Z-decc9d09f8be16d3cc56d9267de11c7d01ba7850 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T10:07:56.0000000Z-ca52585759250067e1a4763c0353268fcb0e83ff ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8351,6 +8351,7 @@ world.searchObjects(Object.Category.UNIT,SphereSearch,EvaluateZone)
 end
 function ZONE_RADIUS:IsVec2InZone(Vec2)
 self:F2(Vec2)
+if not Vec2 then return false end
 local ZoneVec2=self:GetVec2()
 if ZoneVec2 then
 if((Vec2.x-ZoneVec2.x)^2+(Vec2.y-ZoneVec2.y)^2)^0.5<=self:GetRadius()then
@@ -8361,6 +8362,7 @@ return false
 end
 function ZONE_RADIUS:IsVec3InZone(Vec3)
 self:F2(Vec3)
+if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
@@ -8729,6 +8731,7 @@ return self
 end
 function ZONE_POLYGON_BASE:IsVec2InZone(Vec2)
 self:F2(Vec2)
+if not Vec2 then return false end
 local Next
 local Prev
 local InPolygon=false
@@ -66104,7 +66107,7 @@ local PatrolRoute={}
 if self.Controllable:InAir()==false then
 self:T("Not in the air, finding route path within PatrolZone")
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -66118,7 +66121,7 @@ PatrolRoute[#PatrolRoute+1]=CurrentRoutePoint
 else
 self:T("In the air, finding route path within PatrolZone")
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -66186,7 +66189,7 @@ self:SetDetectionOff()
 self.CheckStatus=false
 local PatrolRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -66292,7 +66295,7 @@ function AI_CAP_ZONE:onafterEngage(Controllable,From,Event,To)
 if Controllable and Controllable:IsAlive()then
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -66455,7 +66458,7 @@ Controllable:OptionROEOpenFire()
 Controllable:OptionROTVertical()
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -66626,7 +66629,7 @@ self.EngageDirection=EngageDirection
 if Controllable:IsAlive()then
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
