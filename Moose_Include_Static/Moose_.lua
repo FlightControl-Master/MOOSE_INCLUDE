@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T09:35:27.0000000Z-ef4398a5f18b4d346d679cb13cc051f3d1b4260d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T10:08:43.0000000Z-7989267d51be0bc76288bd27204e341c0ec55fca ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8463,6 +8463,7 @@ world.searchObjects(Object.Category.UNIT,SphereSearch,EvaluateZone)
 end
 function ZONE_RADIUS:IsVec2InZone(Vec2)
 self:F2(Vec2)
+if not Vec2 then return false end
 local ZoneVec2=self:GetVec2()
 if ZoneVec2 then
 if((Vec2.x-ZoneVec2.x)^2+(Vec2.y-ZoneVec2.y)^2)^0.5<=self:GetRadius()then
@@ -8473,6 +8474,7 @@ return false
 end
 function ZONE_RADIUS:IsVec3InZone(Vec3)
 self:F2(Vec3)
+if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
@@ -8841,6 +8843,7 @@ return self
 end
 function ZONE_POLYGON_BASE:IsVec2InZone(Vec2)
 self:F2(Vec2)
+if not Vec2 then return false end
 local Next
 local Prev
 local InPolygon=false
@@ -63367,7 +63370,7 @@ end
 function OPSGROUP:GetAltitude()
 local alt=0
 if self.group then
-alt=self.group:GetUnit(1):GetAltitude()
+alt=self.group:GetAltitude()
 alt=UTILS.MetersToFeet(alt)
 end
 return alt
@@ -85062,6 +85065,7 @@ self.Gender="male"
 self.Culture="en-US"
 self.Voice=nil
 self.Port=5002
+self.Volume=1.0
 self.RadioQueue=FIFO:New()
 self.maxspeakentries=3
 self.CAPGender="male"
@@ -85218,15 +85222,6 @@ self:_CheckOut(nil,GID,true)
 end
 end
 end
-if Event.id==EVENTS.Dead or Event.id==EVENTS.UnitLost then
-self:I("DEAD (8) or BDA (37) Event, ID="..Event.id)
-local eventtext=UTILS.OneLineSerialize(Event)
-local text=string.gsub(eventtext,",","\n")
-text=string.gsub(text,"{","\n")
-text=string.gsub(text,"}","")
-text=string.gsub(text,"="," = ")
-self:I(text)
-end
 if Event.id==EVENTS.Shot and self.PlayerGuidance then
 if Event.IniCoalition~=self.coalition then
 self:I("Shot from: "..Event.IniGroupName)
@@ -85312,7 +85307,7 @@ self.DetectionSet:AddSet(Group)
 end
 return self
 end
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,PathToGoogleKey)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or"male"
@@ -85320,6 +85315,7 @@ self.Culture=Culture or"en-US"
 self.Port=Port or 5002
 self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
+self.Volume=Volume or 1.0
 return self
 end
 function AWACS:SetEscort(EscortNumber)
@@ -85388,7 +85384,7 @@ group:SetCommandInvisible(self.invisible)
 group:SetCommandImmortal(self.immortal)
 group:CommandSetCallsign(self.CallSign,self.CallSignNo,2)
 self.AwacsFG=AwacsFG
-self.AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,self.PathToGoogleKey,"AWACS")
+self.AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,self.PathToGoogleKey,"AWACS",self.Volume)
 self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
 self:__CheckRadioQueue(10)
 if self.HasEscorts then
@@ -86177,7 +86173,7 @@ local picture=MENU_GROUP_COMMAND:New(cgrp,"Picture",basemenu,self._Picture,self,
 local bogeydope=MENU_GROUP_COMMAND:New(cgrp,"Bogey Dope",basemenu,self._BogeyDope,self,cgrp)
 local declare=MENU_GROUP_COMMAND:New(cgrp,"Declare",basemenu,self._Declare,self,cgrp)
 local tasking=MENU_GROUP:New(cgrp,"Tasking",basemenu)
-local checkout=MENU_GROUP_COMMAND:New(cgrp,"Check Out",basemenu,self._CheckOut,self,cgrp)
+local checkout=MENU_GROUP_COMMAND:New(cgrp,"Check Out",basemenu,self._CheckOut,self,cgrp):Refresh()
 local showtask=MENU_GROUP_COMMAND:New(cgrp,"Showtask",tasking,self._Showtask,self,cgrp)
 local commit=MENU_GROUP_COMMAND:New(cgrp,"Commit",tasking,self._Commit,self,cgrp)
 local unable=MENU_GROUP_COMMAND:New(cgrp,"Unable",tasking,self._Unable,self,cgrp)
@@ -91923,7 +91919,7 @@ local PatrolRoute={}
 if self.Controllable:InAir()==false then
 self:T("Not in the air, finding route path within PatrolZone")
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -91937,7 +91933,7 @@ PatrolRoute[#PatrolRoute+1]=CurrentRoutePoint
 else
 self:T("In the air, finding route path within PatrolZone")
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -92005,7 +92001,7 @@ self:SetDetectionOff()
 self.CheckStatus=false
 local PatrolRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -92111,7 +92107,7 @@ function AI_CAP_ZONE:onafterEngage(Controllable,From,Event,To)
 if Controllable and Controllable:IsAlive()then
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -92274,7 +92270,7 @@ Controllable:OptionROEOpenFire()
 Controllable:OptionROTVertical()
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
@@ -92445,7 +92441,7 @@ self.EngageDirection=EngageDirection
 if Controllable:IsAlive()then
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-local CurrentAltitude=self.Controllable:GetUnit(1):GetAltitude()
+local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
 local CurrentRoutePoint=CurrentPointVec3:WaypointAir(
