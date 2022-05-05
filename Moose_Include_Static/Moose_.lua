@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T14:41:32.0000000Z-07d761941ad8c8a7965777216813367d57ff61f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T15:40:00.0000000Z-69eb920173a0a4b073eca2f4d0fb003e9359aa8d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66296,6 +66296,9 @@ function AI_CAP_ZONE:onafterEngage(Controllable,From,Event,To)
 if Controllable and Controllable:IsAlive()then
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
+if not CurrentVec2 then
+return self
+end
 local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
