@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-04T20:40:22.0000000Z-0e74d3622729b3b8d7be0eb3fa9b6a0cb63105e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T06:57:15.0000000Z-0da8afc108ad49180973e2cdc2b74bed0623d3f6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -97072,8 +97072,8 @@ speed=1,
 coordinate=nil,
 Label="ROBOT",
 }
-MSRS.version="0.0.4"
-function MSRS:New(PathToSRS,Frequency,Modulation)
+MSRS.version="0.0.5"
+function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
 local self=BASE:Inherit(self,BASE:New())
@@ -97084,6 +97084,11 @@ self:SetModulations(Modulation)
 self:SetGender()
 self:SetCoalition()
 self:SetLabel()
+self:SetVolume()
+self.lid=string.format("%s-%s | ",self.name,self.version)
+if not io or not os then
+self:E(self.lid.."***** ERROR - io or os NOT desanitized! MSRS will not work!")
+end
 return self
 end
 function MSRS:SetPath(Path)
@@ -97102,6 +97107,15 @@ return self
 end
 function MSRS:GetPath()
 return self.path
+end
+function MSRS:SetVolume(Volume)
+local volume=Volume or 1
+if volume>1 then volume=1 elseif volume<0 then volume=0 end
+self.volume=volume
+return self
+end
+function MSRS:GetVolume()
+return self.volume
 end
 function MSRS:SetLabel(Label)
 self.Label=Label or"ROBOT"
