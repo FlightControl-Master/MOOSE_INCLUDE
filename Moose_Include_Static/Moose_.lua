@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T10:08:43.0000000Z-7989267d51be0bc76288bd27204e341c0ec55fca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T14:41:15.0000000Z-36cf7f718b28629a2b5a0c8c62d1be5d8537c047 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -88033,6 +88033,7 @@ self:F({AIGroup,From,Event,To})
 if AIGroup and AIGroup:IsAlive()then
 self:T("Group "..AIGroup:GetName().." ... RTB! ( "..self:GetState().." )")
 self:ClearTargetDistance()
+AIGroup:OptionProhibitAfterburner(true)
 local EngageRoute={}
 local FromCoord=AIGroup:GetCoordinate()
 local ToTargetCoord=self.HomeAirbase:GetCoordinate()
