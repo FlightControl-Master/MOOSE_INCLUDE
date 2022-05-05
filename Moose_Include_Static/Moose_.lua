@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T06:57:15.0000000Z-0da8afc108ad49180973e2cdc2b74bed0623d3f6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T09:35:27.0000000Z-ef4398a5f18b4d346d679cb13cc051f3d1b4260d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63901,7 +63901,7 @@ end
 end
 return self
 end
-function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label)
+function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume)
 self.useSRS=true
 self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
@@ -63913,6 +63913,7 @@ if PathToGoogleKey then
 self.msrs:SetGoogle(PathToGoogleKey)
 end
 self.msrs:SetCoalition(self:GetCoalition())
+self.msrs:SetVolume(Volume)
 return self
 end
 function OPSGROUP:RadioTransmission(Text,Delay,SayCallsign,Frequency)
