@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T14:36:57.0000000Z-28de292107dba3495d1b559a7cc39fa63b05e89d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T19:50:23.0000000Z-313f99d09d18d60d8ce4df2c8e683841132c2011 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59987,7 +59987,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.5"
+AUFTRAG.version="0.9.6"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -60319,7 +60319,7 @@ else
 mission:_TargetFromObject(EscortGroup)
 end
 mission.escortVec3=OffsetVector or{x=-100,y=0,z=200}
-mission.engageMaxDistance=EngageMaxDistance and UTILS.NMToMeters(EngageMaxDistance)or nil
+mission.engageMaxDistance=EngageMaxDistance and UTILS.NMToMeters(EngageMaxDistance)or UTILS.NMToMeters(32)
 mission.engageTargetTypes=TargetTypes or{"Air"}
 mission.missionTask=ENUMS.MissionTask.ESCORT
 mission.missionFraction=0.1
@@ -60766,12 +60766,15 @@ end
 function AUFTRAG:GetRequiredAssets(Legion)
 return self.NassetsMin,self.NassetsMax
 end
-function AUFTRAG:SetRequiredEscorts(NescortMin,NescortMax)
+function AUFTRAG:SetRequiredEscorts(NescortMin,NescortMax,MissionType,TargetTypes,EngageRange)
 self.NescortMin=NescortMin or 1
 self.NescortMax=NescortMax or self.NescortMin
 if self.NescortMax<self.NescortMin then
 self.NescortMax=self.NescortMin
 end
+self.escortMissionType=MissionType
+self.escortTargetTypes=TargetTypes
+self.escortEngageRange=EngageRange or 32
 self:T(self.lid..string.format("NescortMin=%s, NescortMax=%s",tostring(self.NescortMin),tostring(self.NescortMax)))
 return self
 end
@@ -73477,7 +73480,7 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.3.3"
+LEGION.version="0.3.4"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -74359,7 +74362,7 @@ end
 if#Cohorts==0 then
 Cohorts=self.cohorts
 end
-local assigned=LEGION.AssignAssetsForEscort(self,Cohorts,Assets,Mission.NescortMin,Mission.NescortMax)
+local assigned=LEGION.AssignAssetsForEscort(self,Cohorts,Assets,Mission.NescortMin,Mission.NescortMax,Mission.escortMissionType,Mission.escortTargetTypes)
 return assigned
 end
 return true
@@ -74526,7 +74529,7 @@ Mission:DelAsset(asset)
 end
 end
 end
-function LEGION:AssignAssetsForEscort(Cohorts,Assets,NescortMin,NescortMax)
+function LEGION:AssignAssetsForEscort(Cohorts,Assets,NescortMin,NescortMax,MissionType,TargetTypes,EngageRange)
 if NescortMin and NescortMax and(NescortMin>0 or NescortMax>0)then
 self:T(self.lid..string.format("Requested escort for %d assets from %d cohorts. Required escort assets=%d-%d",#Assets,#Cohorts,NescortMin,NescortMax))
 local Escorts={}
@@ -74535,14 +74538,15 @@ for _,_asset in pairs(Assets)do
 local asset=_asset
 local TargetVec2=asset.legion:GetVec2()
 local Categories={Group.Category.HELICOPTER}
-local TargetTypes={"Ground Units"}
+local targetTypes={"Ground Units"}
 if asset.category==Group.Category.AIRPLANE then
 Categories={Group.Category.AIRPLANE}
-TargetTypes={"Air"}
+targetTypes={"Air"}
 end
-local Erecruited,eassets,elegions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.ESCORT,nil,NescortMin,NescortMax,TargetVec2,nil,nil,nil,nil,nil,Categories)
+TargetTypes=TargetTypes or targetTypes
+local Erecruited,eassets,elegions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.ESCORT,MissionType,NescortMin,NescortMax,TargetVec2,nil,nil,nil,nil,nil,Categories)
 if Erecruited then
-Escorts[asset.spawngroupname]={EscortLegions=elegions,EscortAssets=eassets,ecategory=asset.category,TargetTypes=TargetTypes}
+Escorts[asset.spawngroupname]={EscortLegions=elegions,EscortAssets=eassets,ecategory=asset.category}
 else
 EscortAvail=false
 break
@@ -74562,8 +74566,16 @@ OffsetVector={}
 OffsetVector.x=0
 OffsetVector.y=UTILS.FeetToMeters(1000)
 OffsetVector.z=0
+elseif MissionType==AUFTRAG.Type.SEAD then
+OffsetVector={}
+OffsetVector.x=-100
+OffsetVector.y=500
+OffsetVector.z=500
 end
-local escort=AUFTRAG:NewESCORT(groupname,OffsetVector,nil,value.TargetTypes)
+local escort=AUFTRAG:NewESCORT(groupname,OffsetVector,EngageRange,TargetTypes)
+if MissionType==AUFTRAG.Type.SEAD then
+escort.missionTask=ENUMS.MissionTask.SEAD
+end
 for _,_asset in pairs(Eassets)do
 local asset=_asset
 escort:AddAsset(asset)
@@ -76731,7 +76743,7 @@ awacsZones={},
 tankerZones={},
 limitMission={},
 }
-COMMANDER.version="0.1.2"
+COMMANDER.version="0.1.3"
 function COMMANDER:New(Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition==nil then
@@ -77260,7 +77272,7 @@ table.insert(Cohorts,cohort)
 end
 end
 end
-local assigned=LEGION.AssignAssetsForEscort(self,Cohorts,Assets,Mission.NescortMin,Mission.NescortMax)
+local assigned=LEGION.AssignAssetsForEscort(self,Cohorts,Assets,Mission.NescortMin,Mission.NescortMax,Mission.escortTargetTypes,Mission.escortEngageRange)
 return assigned
 end
 return true
