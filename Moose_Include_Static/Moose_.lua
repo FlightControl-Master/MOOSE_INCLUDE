@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-05T15:40:17.0000000Z-a777997f7906b76af54b8e45978e21819a08a2b3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T06:01:18.0000000Z-092434a1035b2eed3014bcee60dcc33e6eb7f92d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22650,7 +22650,10 @@ local self=BASE:Inherit(self,CONTROLLABLE:New(UnitName))
 self.UnitName=UnitName
 local unit=Unit.getByName(self.UnitName)
 if unit then
-self.GroupName=unit:getGroup():getName()
+local group=unit:getGroup()
+if group then
+self.GroupName=group:getName()
+end
 end
 self:SetEventPriority(3)
 return self
