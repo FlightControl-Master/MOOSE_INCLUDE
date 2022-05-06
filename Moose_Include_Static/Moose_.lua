@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T06:01:31.0000000Z-7c5067a59a35bfbfe42da255fcbe360c36376b7f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T08:36:39.0000000Z-ba4a8050ba527c45678b27418a665a5dc606f925 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66106,11 +66106,13 @@ self:F2()
 if From=="RTB"then
 return
 end
-if self.Controllable:IsAlive()then
+local life=self.Controllable:GetLife()or 0
+if self.Controllable:IsAlive()and life>1 then
 local PatrolRoute={}
 if self.Controllable:InAir()==false then
 self:T("Not in the air, finding route path within PatrolZone")
 local CurrentVec2=self.Controllable:GetVec2()
+if not CurrentVec2 then return end
 local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
@@ -66125,6 +66127,7 @@ PatrolRoute[#PatrolRoute+1]=CurrentRoutePoint
 else
 self:T("In the air, finding route path within PatrolZone")
 local CurrentVec2=self.Controllable:GetVec2()
+if not CurrentVec2 then return end
 local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
