@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T08:36:39.0000000Z-ba4a8050ba527c45678b27418a665a5dc606f925 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T09:45:11.0000000Z-cc497919975a1999c6eeef499c8ffbebb71aff7a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13527,6 +13527,7 @@ local coord=COORDINATE:New(vec.x,vec.y,vec.z)
 return coord
 end
 function COORDINATE:Get2DDistance(TargetCoordinate)
+if not TargetCoordinate then return 1000000 end
 local a={x=TargetCoordinate.x-self.x,y=0,z=TargetCoordinate.z-self.z}
 local norm=UTILS.VecNorm(a)
 return norm
@@ -21097,7 +21098,7 @@ local GroupSize=self:GetSize()
 local TotalFuel=0
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
-local UnitFuel=Unit:GetFuel()
+local UnitFuel=Unit:GetFuel()or 0
 self:F({Fuel=UnitFuel})
 TotalFuel=TotalFuel+UnitFuel
 end
@@ -29977,7 +29978,7 @@ local DetectedObjectName=DetectedObject:getName()
 local DetectedObjectType=DetectedObject:getTypeName()
 local DetectedObjectVec3=DetectedObject:getPoint()
 local DetectedObjectVec2={x=DetectedObjectVec3.x,y=DetectedObjectVec3.z}
-local DetectionGroupVec3=Detection:GetVec3()
+local DetectionGroupVec3=Detection:GetVec3()or{x=0,y=0,z=0}
 local DetectionGroupVec2={x=DetectionGroupVec3.x,y=DetectionGroupVec3.z}
 local Distance=((DetectedObjectVec3.x-DetectionGroupVec3.x)^2+
 (DetectedObjectVec3.y-DetectionGroupVec3.y)^2+
@@ -62614,6 +62615,10 @@ local EngageSpeed=math.random(self.EngageMinSpeed,self.EngageMaxSpeed)
 local DefenderCoord=DefenderGroup:GetPointVec3()
 DefenderCoord:SetY(EngageAltitude)
 local TargetCoord=AttackSetUnit:GetFirst():GetPointVec3()
+if not TargetCoord then
+self:Return()
+return
+end
 TargetCoord:SetY(EngageAltitude)
 local TargetDistance=DefenderCoord:Get2DDistance(TargetCoord)
 local EngageDistance=(DefenderGroup:IsHelicopter()and 5000)or(DefenderGroup:IsAirPlane()and 10000)
@@ -66196,6 +66201,7 @@ self:SetDetectionOff()
 self.CheckStatus=false
 local PatrolRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
+if not CurrentVec2 then return end
 local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToPatrolZoneSpeed=self.PatrolMaxSpeed
