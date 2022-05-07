@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-06T09:45:11.0000000Z-cc497919975a1999c6eeef499c8ffbebb71aff7a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-07T09:54:33.0000000Z-41e8ddea8c5a51e97d1c4fb6012b28c4b69542e4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20837,8 +20837,14 @@ end
 function GROUP:GetDCSUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local DCSUnitFound=DCSGroup:getUnit(UnitNumber)
-return DCSUnitFound
+local UnitFound=nil
+local units=DCSGroup:getUnits()or{}
+for _,_unit in pairs(units)do
+local UnitFound=UNIT:Find(_unit)
+if UnitFound and UnitFound:IsAlive()then
+return UnitFound
+end
+end
 end
 return nil
 end
@@ -21054,12 +21060,13 @@ return nil
 end
 function GROUP:GetHeading()
 self:F2(self.GroupName)
+self:F2(self.GroupName)
 local GroupSize=self:GetSize()
 local HeadingAccumulator=0
 local n=0
+local Units=self:GetUnits()
 if GroupSize then
-for i=1,GroupSize do
-local unit=self:GetUnit(i)
+for _,unit in pairs(Units)do
 if unit and unit:IsAlive()then
 HeadingAccumulator=HeadingAccumulator+unit:GetHeading()
 n=n+1
