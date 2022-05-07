@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-07T09:54:48.0000000Z-e83ea8124e380e027aa37989c8d2134996634f8b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-07T13:32:48.0000000Z-6793228fbef744c51a37d6b869a9b1558ef41d2b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75642,6 +75642,7 @@ clustercounter=1,
 clusterradius=15000,
 clusteranalysis=true,
 clustermarkers=false,
+clusterarrows=false,
 prediction=300,
 detectStatics=false,
 }
@@ -75764,9 +75765,10 @@ end
 self.detectionset:AddGroup(AgentGroup)
 return self
 end
-function INTEL:SetClusterAnalysis(Switch,Markers)
+function INTEL:SetClusterAnalysis(Switch,Markers,Arrows)
 self.clusteranalysis=Switch
 self.clustermarkers=Markers
+self.clusterarrows=Arrows
 return self
 end
 function INTEL:SetDetectStatics(Switch)
@@ -76397,7 +76399,7 @@ local v=self:CalcClusterVelocityVec3(cluster)
 local t=seconds or self.prediction
 local Vec3={x=p.x+v.x*t,y=p.y+v.y*t,z=p.z+v.z*t}
 local futureposition=COORDINATE:NewFromVec3(Vec3)
-if self.clustermarkers and self.verbose>1 then
+if self.clustermarkers and self.clusterarrows then
 if cluster.markerID then
 COORDINATE:RemoveMark(cluster.markerID)
 end
