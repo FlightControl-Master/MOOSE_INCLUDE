@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-07T13:32:48.0000000Z-6793228fbef744c51a37d6b869a9b1558ef41d2b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-07T17:42:10.0000000Z-e74aa160af9bf0681761b4bbee9e60093ac69cb9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21536,7 +21536,7 @@ local UnitFound=nil
 local units=DCSGroup:getUnits()or{}
 for _,_unit in pairs(units)do
 local UnitFound=UNIT:Find(_unit)
-if UnitFound and UnitFound:IsAlive()then
+if UnitFound then
 return UnitFound
 end
 end
