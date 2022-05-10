@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-07T17:42:10.0000000Z-e74aa160af9bf0681761b4bbee9e60093ac69cb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-10T08:11:25.0000000Z-9b699ba37404204b0b3af743702d33385c393b1e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -88095,6 +88095,8 @@ self:AddTransition("*","Eject","*")
 self:AddTransition("*","Crash","Crashed")
 self:AddTransition("*","PilotDead","*")
 self.IdleCount=0
+self.RTBSpeedMaxFactor=0.6
+self.RTBSpeedMinFactor=0.5
 return self
 end
 function GROUP:OnEventTakeoff(EventData,Fsm)
@@ -88256,6 +88258,11 @@ local Task=AIGroup:TaskOrbitCircle(4000,400)
 AIGroup:SetTask(Task)
 end
 end
+function AI_AIR:SetRTBSpeedFactors(MinFactor,MaxFactor)
+self.RTBSpeedMaxFactor=MaxFactor or 0.6
+self.RTBSpeedMinFactor=MinFactor or 0.5
+return self
+end
 function AI_AIR:onafterRTB(AIGroup,From,Event,To)
 self:F({AIGroup,From,Event,To})
 if AIGroup and AIGroup:IsAlive()then
@@ -88266,11 +88273,13 @@ local EngageRoute={}
 local FromCoord=AIGroup:GetCoordinate()
 local ToTargetCoord=self.HomeAirbase:GetCoordinate()
 local ToTargetVec3=ToTargetCoord:GetVec3()
-ToTargetVec3.y=ToTargetCoord:GetLandHeight()+1000
+ToTargetVec3.y=ToTargetCoord:GetLandHeight()+3000
 local ToTargetCoord2=COORDINATE:NewFromVec3(ToTargetVec3)
 if not self.RTBMinSpeed or not self.RTBMaxSpeed then
 local RTBSpeedMax=AIGroup:GetSpeedMax()
-self:SetRTBSpeed(RTBSpeedMax*0.5,RTBSpeedMax*0.6)
+local RTBSpeedMaxFactor=self.RTBSpeedMaxFactor or 0.6
+local RTBSpeedMinFactor=self.RTBSpeedMinFactor or 0.5
+self:SetRTBSpeed(RTBSpeedMax*RTBSpeedMinFactor,RTBSpeedMax*RTBSpeedMaxFactor)
 end
 local RTBSpeed=math.random(self.RTBMinSpeed,self.RTBMaxSpeed)
 local Distance=FromCoord:Get2DDistance(ToTargetCoord2)
