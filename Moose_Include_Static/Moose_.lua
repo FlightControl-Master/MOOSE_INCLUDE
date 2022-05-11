@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-11T04:18:48.0000000Z-d8e9997987cfd6fcad16bd471d772bce305cca47 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-11T05:30:39.0000000Z-dc2e5afe3e31829ce4b57580b38ff7eb80d7a642 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -97534,7 +97534,7 @@ port=port or self.port
 label=label or self.Label
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s" -v %.1f',path,exe,freqs,modus,coal,port,label,volume)
+local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s" -v "%.1f"',path,exe,freqs,modus,coal,port,label,volume)
 if voice then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
 else
