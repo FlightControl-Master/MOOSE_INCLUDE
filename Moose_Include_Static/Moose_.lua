@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-10T17:40:32.0000000Z-58074f499ffdd6356d70e5c16faa0689803eb7fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-11T04:19:09.0000000Z-646b113c55a3955800aef068e666a26ebb213534 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -71287,7 +71287,7 @@ speed=1,
 coordinate=nil,
 Label="ROBOT",
 }
-MSRS.version="0.0.5"
+MSRS.version="0.0.6"
 function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
@@ -71505,7 +71505,7 @@ port=port or self.port
 label=label or self.Label
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s"',path,exe,freqs,modus,coal,port,label)
+local command=string.format('"%s\\%s" -f %s -m %s -c %s -p %s -n "%s" -v %.1f',path,exe,freqs,modus,coal,port,label,volume)
 if voice then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
 else
