@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-11T05:30:26.0000000Z-f6aea13fae0193f9e1b8c280dcbf80c03834074f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-12T12:49:30.0000000Z-e2b1276d7b6ae78cc63edeba2b6e511899e821a9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14418,7 +14418,7 @@ local Distance=FromCoordinate:Get2DDistance(self)
 local Altitude=self:GetAltitudeText()
 return"BRA, "..self:GetBRAText(AngleRadians,Distance,Settings,Language)
 end
-function COORDINATE:ToStringBRAANATO(FromCoordinate,Bogey,Spades)
+function COORDINATE:ToStringBRAANATO(FromCoordinate,Bogey,Spades,SSML)
 local BRAANATO="Merged."
 local currentCoord=FromCoordinate
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
@@ -14430,10 +14430,11 @@ local aspect=self:ToStringAspect(currentCoord)
 local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
 local track=UTILS.BearingToCardinal(bearing)or"North"
 if rangeNM>3 then
+if SSML then
 if aspect==""then
-BRAANATO=string.format("BRA, %03d, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+BRAANATO=string.format("brah <say-as interpret-as='characters'>%03d</say-as>, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
 else
-BRAANATO=string.format("BRAA, %03d, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+BRAANATO=string.format("brah <say-as interpret-as='characters'>%03d</say-as>, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
 end
 if Bogey and Spades then
 BRAANATO=BRAANATO..", Bogey, Spades."
@@ -14443,6 +14444,22 @@ elseif Spades then
 BRAANATO=BRAANATO..", Spades."
 else
 BRAANATO=BRAANATO.."."
+end
+else
+if aspect==""then
+BRAANATO=string.format("BRA %03d, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+else
+BRAANATO=string.format("BRAA %03d, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+end
+if Bogey and Spades then
+BRAANATO=BRAANATO..", Bogey, Spades."
+elseif Bogey then
+BRAANATO=BRAANATO..", Bogey."
+elseif Spades then
+BRAANATO=BRAANATO..", Spades."
+else
+BRAANATO=BRAANATO.."."
+end
 end
 end
 return BRAANATO
