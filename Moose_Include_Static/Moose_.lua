@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-11T05:30:39.0000000Z-dc2e5afe3e31829ce4b57580b38ff7eb80d7a642 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-12T08:50:47.0000000Z-9bb2b17c777c14996913e81bf77f6ee1b4c6900a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65091,6 +65091,7 @@ self:Cruise()
 end
 if Task.description=="Task_Land_At"then
 self:T(self.lid.."Taske DONE Task_Land_At ==> Wait")
+self:Cruise()
 self:Wait(20,100)
 else
 self:T(self.lid.."Task Done but NO mission found ==> _CheckGroupDone in 1 sec")
@@ -65285,6 +65286,9 @@ local text=string.format("Executing %s Mission %s, target %s",Mission.type,tostr
 self:T(self.lid..text)
 Mission:SetGroupStatus(self,AUFTRAG.GroupStatus.EXECUTING)
 Mission:Executing()
+if self:IsHolding()and not self:HasPassedFinalWaypoint()then
+self:Cruise()
+end
 if Mission.engagedetectedOn then
 self:SetEngageDetectedOn(UTILS.MetersToNM(Mission.engagedetectedRmax),Mission.engagedetectedTypes,Mission.engagedetectedEngageZones,Mission.engagedetectedNoEngageZones)
 end
@@ -67607,12 +67611,14 @@ self.life=0
 local damaged=false
 for _,_element in pairs(self.elements)do
 local element=_element
+if element.status~=OPSGROUP.ElementStatus.DEAD and element.status~=OPSGROUP.ElementStatus.INUTERO then
 local life=element.unit:GetLife()
 self.life=self.life+life
 if life<element.life then
 element.life=life
 self:ElementDamaged(element)
 damaged=true
+end
 end
 end
 if damaged then
@@ -68726,7 +68732,7 @@ Ammo.MissilesAG=0
 Ammo.MissilesAS=0
 Ammo.MissilesCR=0
 Ammo.MissilesSA=0
-for _,_unit in pairs(units)do
+for _,_unit in pairs(units or{})do
 local unit=_unit
 if unit and unit:IsAlive()~=nil then
 local ammo=self:GetAmmoUnit(unit)
@@ -69427,7 +69433,7 @@ local Nelem=#self.elements
 local nTaskTot,nTaskSched,nTaskWP=self:CountRemainingTasks()
 local nMissions=self:CountRemainingMissison()
 local roe=self:GetROE()or-1
-local als=self:GetAlarmstate()or-1
+local rot=self:GetROT()or-1
 local wpidxCurr=self.currentwp
 local wpuidCurr=self:GetWaypointUIDFromIndex(wpidxCurr)or 0
 local wpidxNext=self:GetWaypointIndexNext()or 0
@@ -69450,8 +69456,8 @@ end
 local home=self.homebase and self.homebase:GetName()or"unknown"
 local dest=self.destbase and self.destbase:GetName()or"unknown"
 local curr=self.currbase and self.currbase:GetName()or"N/A"
-local text=string.format("%s [%d/%d]: ROE/AS=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f | Base=%s [%s-->%s]",
-fsmstate,nelem,Nelem,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,hdg,ammo,ndetected,cargo,curr,home,dest)
+local text=string.format("%s [%d/%d]: ROE/ROT=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f | Base=%s [%s-->%s]",
+fsmstate,nelem,Nelem,roe,rot,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,hdg,ammo,ndetected,cargo,curr,home,dest)
 self:I(self.lid..text)
 end
 if self.verbose>=2 then
@@ -69850,6 +69856,9 @@ function FLIGHTGROUP:onafterArrived(From,Event,To)
 self:T(self.lid..string.format("Flight arrived"))
 if self.flightcontrol then
 self.flightcontrol:SetFlightStatus(self,FLIGHTCONTROL.FlightStatus.ARRIVED)
+end
+if not self.isAI then
+return
 end
 local airwing=self:GetAirWing()
 if airwing and not(self:IsPickingup()or self:IsTransporting())then
@@ -84020,6 +84029,34 @@ else
 self:SetDefcon(CHIEF.DEFCON.GREEN)
 end
 self:CheckTargetQueue()
+for _,_target in pairs(self.targetqueue)do
+local target=_target
+if target and target:IsAlive()and target.mission and target.mission:IsNotOver()then
+local inborder=self:CheckTargetInZones(target,self.borderzoneset)
+local inyellow=self:CheckTargetInZones(target,self.yellowzoneset)
+local inattack=self:CheckTargetInZones(target,self.engagezoneset)
+if self.strategy==CHIEF.Strategy.PASSIVE then
+self:T(self.lid..string.format("Cancelling mission for target %s as strategy is PASSIVE",target:GetName()))
+target.mission:Cancel()
+elseif self.strategy==CHIEF.Strategy.DEFENSIVE then
+if not inborder then
+self:T(self.lid..string.format("Cancelling mission for target %s as strategy is DEFENSIVE and not inside border",target:GetName()))
+target.mission:Cancel()
+end
+elseif self.strategy==CHIEF.Strategy.OFFENSIVE then
+if not(inborder or inyellow)then
+self:T(self.lid..string.format("Cancelling mission for target %s as strategy is OFFENSIVE and not inside border or conflict",target:GetName()))
+target.mission:Cancel()
+end
+elseif self.strategy==CHIEF.Strategy.AGGRESSIVE then
+if not(inborder or inyellow or inattack)then
+self:T(self.lid..string.format("Cancelling mission for target %s as strategy is AGGRESSIVE and not inside border, conflict or attack",target:GetName()))
+target.mission:Cancel()
+end
+elseif self.strategy==CHIEF.Strategy.TOTALWAR then
+end
+end
+end
 self:CheckOpsZoneQueue()
 self:_TacticalOverview()
 if self.verbose>=1 then
