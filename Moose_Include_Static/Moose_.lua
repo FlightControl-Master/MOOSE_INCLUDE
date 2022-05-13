@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-12T12:48:56.0000000Z-0785ee3099a9a99e5dbc08cc5cbcc405297544f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-13T14:38:10.0000000Z-0422eee9afcac916d113515071cf4afc8f0670b7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85854,7 +85854,11 @@ text=text.." "..refBRAATTS.." miles, "..alt.." thousand."
 textScreen=textScreen.." "..refBRAA.." miles, "..alt.." thousand."
 else
 refBRAA=coordinate:ToStringBRAANATO(groupcoord,true,true)
+refBRAATTS=string.gsub(refBRAA,"BRAA","brah")
+refBRAATTS=string.gsub(refBRAATTS,"BRA","brah")
+if self.PathToGoogleKey then
 refBRAATTS=coordinate:ToStringBRAANATO(groupcoord,true,true,true)
+end
 text=text.." "..refBRAATTS
 textScreen=textScreen.." "..refBRAA
 end
@@ -86711,7 +86715,12 @@ local DirectionVec3=FromCoordinate:GetDirectionVec3(ToCoordinate)
 local AngleRadians=FromCoordinate:GetAngleRadians(DirectionVec3)
 local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),0)
 local AngleDegText=string.format("%03d",AngleDegrees)
-local AngleDegTextTTS=string.format("<say-as interpret-as='characters'>%s</say-as>",AngleDegText)
+local AngleDegTextTTS=""
+if self.PathToGoogleKey then
+AngleDegTextTTS=string.format("<say-as interpret-as='characters'>%s</say-as>",AngleDegText)
+else
+AngleDegTextTTS=string.format("%s",AngleDegText)
+end
 AngleDegText=string.gsub(AngleDegText,"%d","%1 ")
 AngleDegText=string.gsub(AngleDegText," $","")
 local Distance=ToCoordinate:Get2DDistance(FromCoordinate)
@@ -87104,7 +87113,11 @@ BRAfromBulls=BRAfromBulls.."."
 BRAfromBullsTTS=BRAfromBullsTTS.."."
 if isGroup then
 BRAfromBulls=clustercoordinate:ToStringBRAANATO(Group:GetCoordinate(),true,true)
+BRAfromBullsTTS=string.gsub(BRAfromBulls,"BRAA","brah")
+BRAfromBullsTTS=string.gsub(BRAfromBullsTTS,"BRA","brah")
+if self.PathToGoogleKey then
 BRAfromBullsTTS=clustercoordinate:ToStringBRAANATO(Group:GetCoordinate(),true,true,true)
+end
 end
 local BRAText=""
 local TextScreen=""
@@ -87414,7 +87427,12 @@ local contacttag=Contact.TargetGroupNaming
 if contact and not Contact.MeldCallDone then
 local position=contact.position
 if position then
-local BRATExt=position:ToStringBRAANATO(flightpos,false,false,true)
+local BRATExt=""
+if self.PathToGoogleKey then
+BRATExt=position:ToStringBRAANATO(flightpos,false,false,true)
+else
+BRATExt=position:ToStringBRAANATO(flightpos,false,false)
+end
 local text=string.format("%s. %s. %s group, %s",self.callsigntxt,pilotcallsign,contacttag,BRATExt)
 self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true)
 self:_UpdateContactEngagementTag(Contact.CID,Contact.EngagementTag,true,true,AWACS.TaskStatus.EXECUTING)
@@ -87432,7 +87450,12 @@ local contacttag=Contact.TargetGroupNaming
 if contact then
 local position=contact.position or contact.group:GetCoordinate()
 if position then
-local BRATExt=position:ToStringBRAANATO(flightpos,false,false,true)
+local BRATExt=""
+if self.PathToGoogleKey then
+BRATExt=position:ToStringBRAANATO(flightpos,false,false,true)
+else
+BRATExt=position:ToStringBRAANATO(flightpos,false,false)
+end
 local text=string.format("%s. %s. %s group, Threat. %s",self.callsigntxt,pilotcallsign,contacttag,BRATExt)
 self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true)
 end
