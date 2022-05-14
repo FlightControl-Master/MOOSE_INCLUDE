@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-13T14:38:10.0000000Z-0422eee9afcac916d113515071cf4afc8f0670b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-14T11:11:17.0000000Z-6c9c983f721cd0236fc715bb3f7344fa89c35542 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19212,6 +19212,10 @@ local Weights={
 ["Ural-4320T"]=14,
 ["ZBD04A"]=7,
 ["VAB_Mephisto"]=8,
+["tt_KORD"]=6,
+["tt_DSHK"]=6,
+["HL_KORD"]=6,
+["HL_DSHK"]=6,
 }
 local CargoBayWeightLimit=(Weights[TypeName]or 0)*95
 self.__.CargoBayWeightLimit=CargoBayWeightLimit
