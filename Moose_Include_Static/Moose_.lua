@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-14T11:11:17.0000000Z-6c9c983f721cd0236fc715bb3f7344fa89c35542 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-15T10:49:36.0000000Z-0fd149749607b8a53a5d6ae179a222049ea6c5d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84886,7 +84886,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="alpha 0.0.18",
+version="alpha 0.0.19",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85118,7 +85118,6 @@ self.BorderZone=nil
 self.CallSign=CALLSIGN.AWACS.Darkstar
 self.CallSignNo=1
 self.NoHelos=true
-self.MaxAIonCAP=4
 self.AIRequested=0
 self.AIonCAP=0
 self.AICAPMissions=FIFO:New()
@@ -85131,7 +85130,6 @@ self.sunrisedone=false
 local speed=250
 self.SpeedBase=speed
 self.Speed=UTILS.KnotsToAltKIAS(speed,self.AwacsAngels*1000)
-self.CapSpeedBase=270
 self.Heading=0
 self.Leg=50
 self.invisible=false
@@ -85145,7 +85143,14 @@ self.EscortsTimeStamp=0
 self.ShiftChangeTime=0.25
 self.ShiftChangeAwacsFlag=false
 self.ShiftChangeEscortsFlag=false
+self.CapSpeedBase=270
 self.CAPTimeOnStation=4
+self.MaxAIonCAP=4
+self.AICAPCAllName=CALLSIGN.Aircraft.Colt
+self.AICAPCAllNumber=0
+self.CAPGender="male"
+self.CAPCulture="en-US"
+self.CAPVoice=nil
 self.DeclareRadius=5
 self.AwacsMission=nil
 self.AwacsInZone=false
@@ -85164,17 +85169,12 @@ self.Volume=1.0
 self.RadioQueue=FIFO:New()
 self.PrioRadioQueue=FIFO:New()
 self.maxspeakentries=3
-self.CAPGender="male"
-self.CAPCulture="en-US"
-self.CAPVoice=nil
 self.SuppressScreenOutput=false
 self.clientset=SET_CLIENT:New():FilterActive(true):FilterCoalitions(self.coalitiontxt):FilterCategories("plane"):FilterStart()
 self.PlayerGuidance=true
 self.ModernEra=true
 self.ManagedGrps={}
 self.ManagedGrpID=0
-self.AICAPCAllName=CALLSIGN.Aircraft.Colt
-self.AICAPCAllNumber=0
 self.AnchorStacks=FIFO:New()
 self.AnchorBaseAngels=22
 self.AnchorStackDistance=2
@@ -85440,11 +85440,22 @@ self.CAPCulture=Culture or"en-US"
 self.CAPVoice=Voice or"en-GB-Standard-B"
 return self
 end
+function AWACS:SetAICAPDetails(Callsign,MaxAICap,TOS,Speed)
+self:T(self.lid.."SetAICAPDetails")
+self.CapSpeedBase=Speed or 270
+self.CAPTimeOnStation=TOS or 4
+self.MaxAIonCAP=MaxAICap or 4
+self.AICAPCAllName=Callsign or CALLSIGN.Aircraft.Colt
+return self
+end
 function AWACS:SetEscort(EscortNumber)
 self:T(self.lid.."SetEscort")
 if EscortNumber and EscortNumber>0 then
 self.HasEscorts=true
 self.EscortNumber=EscortNumber
+else
+self.HasEscorts=false
+self.EscortNumber=0
 end
 return self
 end
@@ -85550,7 +85561,7 @@ self.AwacsReady=true
 end
 return self
 end
-function AWACS:ToStringBULLS(Coordinate,ssml)
+function AWACS:ToStringBULLS(Coordinate,ssml,TTS)
 local bullseyename=self.AOName or"Rock"
 local BullsCoordinate=self.AOCoordinate
 local DirectionVec3=BullsCoordinate:GetDirectionVec3(Coordinate)
@@ -85561,8 +85572,11 @@ local Bearing=string.format('%03d',AngleDegrees)
 local Distance=UTILS.Round(UTILS.MetersToNM(Distance),0)
 if ssml then
 return string.format("%s <say-as interpret-as='characters'>%03d</say-as>, %d",bullseyename,Bearing,Distance)
+elseif TTS then
+Bearing=self:ToStringBullsTTS(Bearing)
+return string.format("%s %s, %d",bullseyename,Bearing,Distance)
 else
-return string.format("%s %03d, %d",bullseyename,Bearing,Distance)
+return string.format("%s %s, %d",bullseyename,Bearing,Distance)
 end
 end
 function AWACS:ToStringBullsTTS(Text)
@@ -85850,7 +85864,7 @@ refBRAA=self:ToStringBULLS(coordinate)
 if self.PathToGoogleKey then
 refBRAATTS=self:ToStringBULLS(coordinate,true)
 else
-refBRAATTS=self:ToStringBullsTTS(refBRAA)
+refBRAATTS=self:ToStringBULLS(refBRAA,false,true)
 end
 local alt=contact.Contact.group:GetAltitude()or 8000
 alt=UTILS.Round(UTILS.MetersToFeet(alt)/1000,0)
@@ -86635,9 +86649,10 @@ self:T(self.lid.."_StartIntel")
 if self.intelstarted then return self end
 self.DetectionSet:AddGroup(awacs)
 local intel=INTEL:New(self.DetectionSet,self.coalition,self.callsigntxt)
-intel:SetClusterAnalysis(true,false,true)
+intel:SetClusterAnalysis(true,true,true)
 local acceptzoneset=SET_ZONE:New()
 acceptzoneset:AddZone(self.ControlZone)
+acceptzoneset:AddZone(self.OpsZone)
 self.OrbitZone:SetRadius(UTILS.NMToMeters(55))
 acceptzoneset:AddZone(self.OrbitZone)
 if self.BorderZone then
@@ -87985,7 +88000,7 @@ local inborderzone=false
 if self.BorderZone then
 inborderzone=self.BorderZone:IsVec2InZone(ContactCoordinate)
 end
-if incontrolzone or inborderzone or(distance<=UTILS.NMToMeters(55))then
+if incontrolzone or inborderzone or(distance<=UTILS.NMToMeters(55))or IsPopup then
 self:_AnnounceContact(managedcontact,true,nil,false,managedcontact.TargetGroupNaming,IsPopup,managedcontact.ReportingName)
 end
 return self
@@ -88154,7 +88169,7 @@ local faded=textoptions[math.random(1,4)]
 local text=string.format("All stations. %s. %s %s.",self.callsigntxt,faded,savedcallsign)
 local textScreen=string.format("All stations, %s. %s %s.",self.callsigntxt,faded,savedcallsign)
 local brtext=self:ToStringBULLS(managedgroup.LastKnownPosition)
-local brtexttts=self:ToStringBullsTTS(brtext)
+local brtexttts=self:ToStringBULLS(brtext,false,true)
 if self.PathToGoogleKey then
 brtexttts=self:ToStringBULLS(managedgroup.LastKnownPosition,true)
 end
@@ -88191,7 +88206,7 @@ local faded=textoptions[math.random(1,4)]
 local text=string.format("All stations. %s. %s %s.",self.callsigntxt,faded,savedcallsign)
 local textScreen=string.format("All stations, %s. %s %s.",self.callsigntxt,faded,savedcallsign)
 local brtext=self:ToStringBULLS(managedgroup.LastKnownPosition)
-local brtexttts=self:ToStringBullsTTS(brtext)
+local brtexttts=self:ToStringBULLS(brtext,false,true)
 if self.PathToGoogleKey then
 brtexttts=self:ToStringBULLS(managedgroup.LastKnownPosition,true)
 end
