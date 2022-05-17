@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-15T10:49:36.0000000Z-0fd149749607b8a53a5d6ae179a222049ea6c5d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-17T20:53:10.0000000Z-5be3f333f37c72546eeb1fd38b8205154214df09 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13664,6 +13664,10 @@ end
 function COORDINATE:GetIntermediateCoordinate(ToCoordinate,Fraction)
 local f=Fraction or 0.5
 local vec=UTILS.VecSubstract(ToCoordinate,self)
+if f>1 then
+local norm=UTILS.VecNorm(vec)
+f=Fraction/norm
+end
 vec.x=f*vec.x
 vec.y=f*vec.y
 vec.z=f*vec.z
@@ -60573,6 +60577,9 @@ mission.optionAlarm=ENUMS.AlarmState.Auto
 mission.missionFraction=0.0
 mission.categories={AUFTRAG.Category.ALL}
 mission.DCStask=mission:GetDCSMissionTask()
+if Cohort.isGround then
+mission.optionFormation=ENUMS.Formation.Vehicle.OnRoad
+end
 mission.DCStask.params.legion=Legion
 mission.DCStask.params.cohort=Cohort
 return mission
@@ -60790,7 +60797,14 @@ end
 return self
 end
 function AUFTRAG:GetRequiredAssets(Legion)
-return self.NassetsMin,self.NassetsMax
+local Nmin=self.NassetsMin
+local Nmax=self.NassetsMax
+if self.type==AUFTRAG.Type.RELOCATECOHORT then
+local cohort=self.DCStask.params.cohort
+Nmin=#cohort.assets
+Nmax=Nmin
+end
+return Nmin,Nmax
 end
 function AUFTRAG:SetRequiredEscorts(NescortMin,NescortMax,MissionType,TargetTypes,EngageRange)
 self.NescortMin=NescortMin or 1
@@ -64947,11 +64961,14 @@ local currUID=self:GetWaypointCurrent().uid
 local wp=nil
 if self.isArmygroup then
 self:T2(self.lid.."Routing group to spawn zone of new legion")
-wp=ARMYGROUP.AddWaypoint(self,Coordinate,Speed,currUID,Formation)
+wp=ARMYGROUP.AddWaypoint(self,Coordinate,UTILS.KmphToKnots(self.speedCruise),currUID,Mission.optionFormation)
 elseif self.isFlightgroup then
 self:T2(self.lid.."Routing group to intermediate point near new legion")
 Coordinate=self:GetCoordinate():GetIntermediateCoordinate(Coordinate,0.8)
 wp=FLIGHTGROUP.AddWaypoint(self,Coordinate,UTILS.KmphToKnots(self.speedCruise),currUID,UTILS.MetersToFeet(self.altitudeCruise))
+elseif self.isNavygroup then
+self:T2(self.lid.."Routing group to spawn zone of new legion")
+wp=NAVYGROUP.AddWaypoint(self,Coordinate,UTILS.KmphToKnots(self.speedCruise),currUID)
 else
 end
 wp.missionUID=Mission and Mission.auftragsnummer or nil
@@ -65399,7 +65416,7 @@ end
 if Mission.optionEmission then
 self:SwitchEmission()
 end
-if Mission.optionFormation then
+if Mission.optionFormation and self:IsFlightgroup()then
 self:SwitchFormation()
 end
 if Mission.radio then
@@ -65462,6 +65479,12 @@ return
 end
 local uid=self:GetWaypointCurrent().uid
 local waypointcoord=nil
+local currentcoord=self:GetCoordinate()
+local roadcoord=currentcoord:GetClosestPointToRoad()
+local roaddist=nil
+if roadcoord then
+roaddist=currentcoord:Get2DDistance(roadcoord)
+end
 local targetzone=nil
 local randomradius=mission.missionWaypointRadius or 1000
 local surfacetypes=nil
@@ -65499,9 +65522,15 @@ waypointcoord=zone:GetCoordinate()
 elseif mission.type==AUFTRAG.Type.RELOCATECOHORT then
 local ToCoordinate=mission.DCStask.params.legion:GetCoordinate()
 if self.isFlightgroup then
-waypointcoord=self:GetCoordinate():GetIntermediateCoordinate(ToCoordinate,0.2):SetAltitude(self.altitudeCruise)
+waypointcoord=currentcoord:GetIntermediateCoordinate(ToCoordinate,0.2):SetAltitude(self.altitudeCruise)
+elseif self.isArmygroup then
+if roadcoord then
+waypointcoord=roadcoord
 else
-waypointcoord=self:GetCoordinate():GetIntermediateCoordinate(ToCoordinate,0.05)
+waypointcoord=currentcoord:GetIntermediateCoordinate(ToCoordinate,100)
+end
+else
+waypointcoord=currentcoord:GetIntermediateCoordinate(ToCoordinate,0.05)
 end
 elseif mission.type==AUFTRAG.Type.RECOVERYTANKER then
 local carrier=mission.DCStask.params.carrier
@@ -65566,7 +65595,11 @@ local waypoint=nil
 if self:IsFlightgroup()then
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
-waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,mission.optionFormation,false)
+local formation=mission.optionFormation
+if mission.type==AUFTRAG.Type.RELOCATECOHORT then
+formation=ENUMS.Formation.Vehicle.OffRoad
+end
+waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,formation,false)
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 end
@@ -65588,8 +65621,7 @@ end
 Ewaypoint.missionUID=mission.auftragsnummer
 mission:SetGroupEgressWaypointUID(self,Ewaypoint.uid)
 end
-local coord=self:GetCoordinate()
-local d=coord:Get2DDistance(waypointcoord)
+local d=currentcoord:Get2DDistance(waypointcoord)
 self:T(self.lid..string.format("FF distance to ingress waypoint=%.1f m",d))
 if targetzone and self:IsInZone(targetzone)then
 self:T(self.lid.."Already in mission zone ==> TaskExecute()")
@@ -65775,13 +65807,21 @@ else
 if#self.waypoints<=1 then
 self:_PassedFinalWaypoint(true,"PassingWaypoint: adinfinitum but only ONE WAYPOINT left")
 else
-local wp1=self:GetWaypointByIndex(1)
-local Coordinate=Waypoint.coordinate:GetIntermediateCoordinate(wp1.coordinate,0.1)
-self:Detour(Coordinate,self.speedCruise,nil,true)
+self:__UpdateRoute(-0.01,1,1)
 end
 end
 else
 self:_PassedFinalWaypoint(true,"PassingWaypoint: wpindex=#self.waypoints (or wpindex=nil)")
+end
+elseif wpindex==1 then
+if self.adinfinitum then
+if#self.waypoints<=1 then
+self:_PassedFinalWaypoint(true,"PassingWaypoint: adinfinitum but only ONE WAYPOINT left")
+else
+if not Waypoint.missionUID then
+self:__UpdateRoute(-0.01,2)
+end
+end
 end
 end
 local isEgress=false
@@ -67624,6 +67664,10 @@ end
 end
 elseif holdtime>=30*60 then
 self:T(self.lid..string.format("WARNING: Group came to an unexpected standstill. Speed=%.1f<%.1f m/s expected for %d sec",speed,ExpectedSpeed,holdtime))
+if self.legion then
+self:T(self.lid..string.format("Asset is returned to its legion after being stuck!"))
+self:ReturnToLegion()
+end
 end
 end
 end
@@ -71163,6 +71207,9 @@ starttime=UTILS.SecondsToClock(Tnow+starttime)
 end
 starttime=starttime or UTILS.SecondsToClock(Tnow)
 local Tstart=UTILS.ClockToSeconds(starttime)
+if uturn==nil then
+uturn=true
+end
 local Tstop=Tstart+90*60
 if stoptime==nil then
 Tstop=Tstart+90*60
@@ -71503,7 +71550,7 @@ end
 function NAVYGROUP:onafterTurnIntoWind(From,Event,To,IntoWind)
 IntoWind.Heading=self:GetHeadingIntoWind(IntoWind.Offset)
 IntoWind.Open=true
-IntoWind.Coordinate=self:GetCoordinate()
+IntoWind.Coordinate=self:GetCoordinate(true)
 self.intowind=IntoWind
 local _,vwind=self:GetWind()
 vwind=UTILS.MpsToKnots(vwind)
@@ -72211,15 +72258,32 @@ end
 return allowed
 end
 function ARMYGROUP:onafterUpdateRoute(From,Event,To,n,N,Speed,Formation)
-local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%s, Formation=%s",self:GetState(),tostring(n),tostring(N),tostring(Speed),tostring(Formation))
-self:T(self.lid..text)
 n=n or self:GetWaypointIndexNext(self.adinfinitum)
 N=N or#self.waypoints
 N=math.min(N,#self.waypoints)
+local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%s, Formation=%s",self:GetState(),tostring(n),tostring(N),tostring(Speed),tostring(Formation))
+self:T(self.lid..text)
 local waypoints={}
-local formationlast=nil
-for i=n,#self.waypoints do
-local wp=UTILS.DeepCopy(self.waypoints[i])
+local wp=self.waypoints[n]
+local formation0=wp.action
+if formation0==ENUMS.Formation.Vehicle.OnRoad then
+if wp.roadcoord then
+if wp.roaddist>10 then
+formation0=ENUMS.Formation.Vehicle.OffRoad
+end
+else
+formation0=ENUMS.Formation.Vehicle.OffRoad
+end
+end
+local current=self:GetCoordinate():WaypointGround(UTILS.MpsToKmph(self.speedWp),formation0)
+table.insert(waypoints,1,current)
+for j=n,N do
+local i=j-1
+if i==0 then
+i=self.currentwp
+end
+local wp=UTILS.DeepCopy(self.waypoints[j])
+local wp0=self.waypoints[i]
 if Speed then
 wp.speed=UTILS.KnotsToMps(tonumber(Speed))
 else
@@ -72232,28 +72296,24 @@ wp.action=self.formationPerma
 elseif Formation then
 wp.action=Formation
 end
-if wp.action==ENUMS.Formation.Vehicle.OnRoad and wp.roaddist>10 then
+if wp.action==ENUMS.Formation.Vehicle.OnRoad and wp0.roaddist>=0 then
+local wproad=wp0.roadcoord:WaypointGround(UTILS.MpsToKmph(wp.speed),ENUMS.Formation.Vehicle.OnRoad)
+table.insert(waypoints,wproad)
+end
+if wp.action==ENUMS.Formation.Vehicle.OnRoad and wp.roaddist>=0 then
 wp.action=ENUMS.Formation.Vehicle.OffRoad
 local wproad=wp.roadcoord:WaypointGround(UTILS.MpsToKmph(wp.speed),ENUMS.Formation.Vehicle.OnRoad)
 table.insert(waypoints,wproad)
 end
 table.insert(waypoints,wp)
-formationlast=wp.action
 end
 local wp=waypoints[1]
 self.option.Formation=wp.action
 self.speedWp=wp.speed
-local formation0=wp.action==ENUMS.Formation.Vehicle.OnRoad and ENUMS.Formation.Vehicle.OnRoad or wp.action
-local current=self:GetCoordinate():WaypointGround(UTILS.MpsToKmph(self.speedWp),formation0)
-table.insert(waypoints,1,current)
-if wp.action==ENUMS.Formation.Vehicle.OnRoad and(wp.coordinate or wp.roadcoord)then
-current=self:GetClosestRoad():WaypointGround(UTILS.MpsToKmph(self.speedWp),ENUMS.Formation.Vehicle.OnRoad)
-table.insert(waypoints,2,current)
-end
 if self.verbose>=10 then
 for i,_wp in pairs(waypoints)do
 local wp=_wp
-local text=string.format("WP #%d UID=%d type=%s: Speed=%d m/s, alt=%d m, Action=%s",i,wp.uid and wp.uid or-1,wp.type,wp.speed,wp.alt,wp.action)
+local text=string.format("WP #%d UID=%d Formation=%s: Speed=%d m/s, Alt=%d m, Type=%s",i,wp.uid and wp.uid or-1,wp.action,wp.speed,wp.alt,wp.type)
 local coord=COORDINATE:NewFromWaypoint(wp):MarkToAll(text)
 self:I(text)
 end
@@ -73352,6 +73412,7 @@ SQUADRON.version="0.8.1"
 function SQUADRON:New(TemplateGroupName,Ngroups,SquadronName)
 local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,SquadronName))
 self:AddMissionCapability(AUFTRAG.Type.ORBIT)
+self.isAir=true
 self.refuelSystem=select(2,self.templategroup:GetUnit(1):IsRefuelable())
 self.tankerSystem=select(2,self.templategroup:GetUnit(1):IsTanker())
 return self
@@ -73464,6 +73525,7 @@ PLATOON.version="0.1.0"
 function PLATOON:New(TemplateGroupName,Ngroups,PlatoonName)
 local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,PlatoonName))
 self:AddMissionCapability(AUFTRAG.Type.NOTHING,50)
+self.isGround=true
 self.ammo=self:_CheckAmmo()
 return self
 end
@@ -73623,6 +73685,7 @@ for _,legion in pairs(TransportLegions)do
 mission:AssignTransportLegion(legion)
 end
 end
+mission:SetMissionRange(10000)
 self:AddMission(mission)
 end
 end
@@ -76985,6 +77048,7 @@ for _,legion in pairs(self.legions)do
 mission:AssignTransportLegion(legion)
 end
 end
+mission:SetMissionRange(10000)
 self:AddMission(mission)
 end
 return self
@@ -84718,6 +84782,7 @@ FLOTILLA.version="0.1.0"
 function FLOTILLA:New(TemplateGroupName,Ngroups,FlotillaName)
 local self=BASE:Inherit(self,COHORT:New(TemplateGroupName,Ngroups,FlotillaName))
 self:AddMissionCapability(AUFTRAG.Type.NOTHING,50)
+self.isNaval=true
 self.ammo=self:_CheckAmmo()
 return self
 end
