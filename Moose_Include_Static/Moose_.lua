@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-20T17:31:11.0000000Z-d169d60d8d46d4c7b12df9435e5f31688d9a504c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-20T18:15:11.0000000Z-61f3b87dae3aadd56de721a767d65c8dbf178e01 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -54125,7 +54125,7 @@ return self:GetHeading(true)
 end
 function AIRBOSS:GetWind(alt,magnetic,coord)
 local cv=coord or self:GetCoordinate()
-local Wdir,Wspeed=cv:GetWind(alt or 50)
+local Wdir,Wspeed=cv:GetWind(alt or 15)
 if magnetic then
 Wdir=Wdir-self.magvar
 if Wdir<0 then
