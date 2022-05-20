@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-20T14:19:51.0000000Z-f49cf43fb130291ddfb78045d384192dbe3dfd49 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-20T17:31:11.0000000Z-d169d60d8d46d4c7b12df9435e5f31688d9a504c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84965,8 +84965,8 @@ AwacsAngels=25,
 OrbitZone=nil,
 CallSign=CALLSIGN.AWACS.Magic,
 CallSignNo=1,
-debug=true,
-verbose=true,
+debug=false,
+verbose=false,
 ManagedGrps={},
 ManagedGrpID=0,
 ManagedTaskID=0,
@@ -84984,9 +84984,9 @@ Countactcounter=0,
 ContactsAO={},
 RadioQueue={},
 PrioRadioQueue={},
-AwacsTimeOnStation=1,
+AwacsTimeOnStation=4,
 AwacsTimeStamp=0,
-EscortsTimeOnStation=0.5,
+EscortsTimeOnStation=4,
 EscortsTimeStamp=0,
 CAPTimeOnStation=4,
 AwacsROE="",
@@ -85177,6 +85177,7 @@ self.AOName=self.OpsZone:GetName()
 self.UseBullsAO=true
 self.ControlZoneRadius=100
 self.StationZone=ZONE:New(StationZone)
+self.StationZoneName=StationZone
 self.Frequency=Frequency or 271
 self.Modulation=Modulation or radio.modulation.AM
 self.Airbase=AIRBASE:FindByName(AirbaseName)
@@ -85205,9 +85206,9 @@ self.invisible=false
 self.immortal=false
 self.callsigntxt="AWACS"
 self.maxassigndistance=100
-self.AwacsTimeOnStation=2
+self.AwacsTimeOnStation=4
 self.AwacsTimeStamp=0
-self.EscortsTimeOnStation=2
+self.EscortsTimeOnStation=4
 self.EscortsTimeStamp=0
 self.ShiftChangeTime=0.25
 self.ShiftChangeAwacsFlag=false
@@ -85302,13 +85303,6 @@ self:AddTransition("*","InterceptFailure","*")
 self:AddTransition("*","Stop","Stopped")
 local text=string.format("%sAWACS Version %s Initiated",self.lid,self.version)
 self:I(text)
-if self.debug then
-self.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
-local stationtag=string.format("Station: %s\nCoordinate: %s",StationZone,self.StationZone:GetCoordinate():ToStringLLDDM())
-MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToAll()
-self.OrbitZone:DrawZone(-1,{0,1,0},1,{0,1,0},0.2,5,true)
-MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToAll()
-end
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
@@ -85342,6 +85336,12 @@ end
 function AWACS:SetBullsEyeAlias(Name)
 self:T(self.lid.."_SetBullsEyeAlias")
 self.AOName=Name or"Rock"
+return self
+end
+function AWACS:SetTOS(AICHours,CapHours)
+self:T(self.lid.."SetTOS")
+self.AwacsTimeOnStation=AICHours or 4
+self.CAPTimeOnStation=CapHours or 4
 return self
 end
 function AWACS:SetReassignmentPause(Seconds)
@@ -85653,7 +85653,7 @@ self.PictureTimeStamp=timer.getTime()+10*60
 self.AwacsReady=true
 self:Started()
 elseif self.ShiftChangeAwacsRequested and self.AwacsMissionReplacement and self.AwacsMissionReplacement:GetName()==Mission:GetName()then
-self:T("Setting up Awacs Replacement")
+self:I("Setting up Awacs Replacement")
 AwacsFG:SetDefaultRadio(self.Frequency,self.Modulation,false)
 AwacsFG:SwitchRadio(self.Frequency,self.Modulation)
 AwacsFG:SetDefaultAltitude(self.AwacsAngels*1000)
@@ -86203,7 +86203,7 @@ end
 return self
 end
 function AWACS:_ShowAwacsInfo(Group)
-self:T(self.lid.."_ShowAwacsInfo")
+self:I(self.lid.."_ShowAwacsInfo")
 local report=REPORT:New("Info")
 report:Add("====================")
 report:Add(string.format("AWACS %s",self.callsigntxt))
@@ -86221,7 +86221,7 @@ MESSAGE:New(report:Text(),45,"AWACS"):ToGroup(Group)
 return self
 end
 function AWACS:_VID(Group,Declaration)
-self:T(self.lid.."_VID")
+self:I(self.lid.."_VID")
 local GID,Outcome,Callsign=self:_GetManagedGrpID(Group)
 local text=""
 local TextTTS=""
@@ -86247,7 +86247,7 @@ local cposition=gposition or cluster.Cluster.coordinate or cluster.Contact.posit
 local distance=cposition:Get2DDistance(position)
 distance=UTILS.Round(distance,0)+1
 if distance<=radius or self.debug then
-self:T("Contact VID as "..Declaration)
+self:I("Contact VID as "..Declaration)
 cluster.IFF=Declaration
 task.Status=AWACS.TaskStatus.SUCCESS
 self.ManagedTasks:PullByID(TID)
@@ -86255,11 +86255,11 @@ self.ManagedTasks:Push(task,TID)
 self.Contacts:PullByID(CID)
 self.Contacts:Push(cluster,CID)
 text=string.format("%s. %s. Copy, target identified as %s.",Callsign,self.callsigntxt,Declaration)
-self:T(text)
+self:I(text)
 else
-self:T("Contact VID not close enough")
+self:I("Contact VID not close enough")
 text=string.format("%s. %s. Negative, get closer to target.",Callsign,self.callsigntxt)
-self:T(text)
+self:I(text)
 end
 self:_NewRadioEntry(text,text,GID,Outcome,true,true,false,true)
 end
@@ -86774,6 +86774,9 @@ if self.debug then
 AnchorStackOne.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
+else
+local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
 end
 self.AnchorStacks:Push(AnchorStackOne,newname)
 else
@@ -86792,6 +86795,9 @@ AnchorStackOne.StationZoneCoordinateText=newanchorbasecoord:ToStringLLDDM()
 AnchorStackOne.StationName=newname
 if self.debug then
 AnchorStackOne.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
+local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
+else
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
 end
@@ -87111,7 +87117,7 @@ end
 return self
 end
 function AWACS:_CheckTaskQueue()
-self:T(self.lid.."_CheckTaskQueue")
+self:I(self.lid.."_CheckTaskQueue")
 local opentasks=0
 local assignedtasks=0
 for _id,_managedgroup in pairs(self.ManagedGrps)do
@@ -87127,7 +87133,7 @@ end
 end
 if self.ManagedTasks:IsNotEmpty()then
 opentasks=self.ManagedTasks:GetSize()
-self:T("Assigned Tasks: "..opentasks)
+self:I("Assigned Tasks: "..opentasks)
 local taskstack=self.ManagedTasks:GetPointerStack()
 for _id,_entry in pairs(taskstack)do
 local data=_entry
@@ -87135,7 +87141,7 @@ local entry=data.data
 local target=entry.Target
 local description=entry.ToDo
 if description==AWACS.TaskDescription.ANCHOR or description==AWACS.TaskDescription.REANCHOR then
-self:T("Open Task ANCHOR/REANCHOR")
+self:I("Open Task ANCHOR/REANCHOR")
 local managedgroup=self.ManagedGrps[entry.AssignedGroupID]
 if managedgroup then
 local group=managedgroup.Group
@@ -87144,7 +87150,7 @@ local groupcoord=group:GetCoordinate()
 local zone=target:GetObject()
 self:T({zone})
 if group:IsInZone(zone)then
-self:T("Open Task ANCHOR/REANCHOR success for GroupID "..entry.AssignedGroupID)
+self:I("Open Task ANCHOR/REANCHOR success for GroupID "..entry.AssignedGroupID)
 target:Stop()
 if managedgroup.IsAI then
 self:_MessageAIReadyForTasking(managedgroup.GID)
@@ -87154,14 +87160,14 @@ managedgroup.HasAssignedTask=false
 self.ManagedGrps[entry.AssignedGroupID]=managedgroup
 self.ManagedTasks:PullByID(entry.TID)
 else
-self:T("Open Task ANCHOR/REANCHOR executing for GroupID "..entry.AssignedGroupID)
+self:I("Open Task ANCHOR/REANCHOR executing for GroupID "..entry.AssignedGroupID)
 end
 else
 self.ManagedTasks:PullByID(entry.TID)
 end
 end
 elseif description==AWACS.TaskDescription.INTERCEPT then
-self:T("Open Tasks INTERCEPT")
+self:I("Open Tasks INTERCEPT")
 local taskstatus=entry.Status
 local targetstatus=entry.Target:GetState()
 if taskstatus==AWACS.TaskStatus.UNASSIGNED then
@@ -87179,13 +87185,13 @@ if grouposition then
 distance=grouposition:Get2DDistance(position)
 distance=UTILS.Round(UTILS.MetersToNM(distance),0)
 end
-self:T("TAC/MELD distance check: "..distance.."NM!")
+self:I("TAC/MELD distance check: "..distance.."NM!")
 if distance<=self.TacDistance and distance>=self.MeldDistance then
-self:T("TAC distance: "..distance.."NM!")
+self:I("TAC distance: "..distance.."NM!")
 local Contact=self.Contacts:ReadByID(entry.Contact.CID)
 self:_TACRangeCall(entry.AssignedGroupID,Contact)
 elseif distance<=self.MeldDistance and distance>=self.ThreatDistance then
-self:T("MELD distance: "..distance.."NM!")
+self:I("MELD distance: "..distance.."NM!")
 local Contact=self.Contacts:ReadByID(entry.Contact.CID)
 self:_MeldRangeCall(entry.AssignedGroupID,Contact)
 end
@@ -87197,7 +87203,7 @@ if auftrag then
 auftragstatus=auftrag:GetState()
 end
 local text=string.format("ID=%d | Status=%s | TargetState=%s | AuftragState=%s",entry.TID,taskstatus,targetstatus,auftragstatus)
-self:T(text)
+self:I(text)
 if auftrag then
 if auftrag:IsExecuting()then
 entry.Status=AWACS.TaskStatus.EXECUTING
@@ -87246,7 +87252,7 @@ end
 end
 end
 if entry.Status==AWACS.TaskStatus.SUCCESS then
-self:T("Open Tasks INTERCEPT success for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks INTERCEPT success for GroupID "..entry.AssignedGroupID)
 if managedgroup then
 self:_UpdateContactEngagementTag(managedgroup.ContactCID,"",true,true,AWACS.TaskStatus.SUCCESS)
 managedgroup.HasAssignedTask=false
@@ -87263,7 +87269,7 @@ self:__InterceptSuccess(1)
 self:__ReAnchor(5,managedgroup.GID)
 end
 elseif entry.Status==AWACS.TaskStatus.FAILED then
-self:T("Open Tasks INTERCEPT failed for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks INTERCEPT failed for GroupID "..entry.AssignedGroupID)
 if managedgroup then
 managedgroup.HasAssignedTask=false
 self:_UpdateContactEngagementTag(managedgroup.ContactCID,"",false,false,AWACS.TaskStatus.UNASSIGNED)
@@ -87285,7 +87291,7 @@ end
 self.ManagedTasks:PullByID(entry.TID)
 self:__InterceptFailure(1)
 elseif entry.Status==AWACS.TaskStatus.REQUESTED then
-self:T("Open Tasks INTERCEPT REQUESTED for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks INTERCEPT REQUESTED for GroupID "..entry.AssignedGroupID)
 local created=entry.RequestedTimestamp or timer.getTime()-120
 local Tnow=timer.getTime()
 local Trunning=(Tnow-created)/60
@@ -87294,7 +87300,7 @@ if Trunning>self.ReassignmentPause then
 entry.Status=AWACS.TaskStatus.UNASSIGNED
 self.ManagedTasks:PullByID(entry.TID)
 end
-self:T(text)
+self:I(text)
 end
 elseif description==AWACS.TaskDescription.VID then
 local managedgroup=self.ManagedGrps[entry.AssignedGroupID]
@@ -87305,7 +87311,7 @@ end
 if entry.Target:IsDead()or entry.Target:IsDestroyed()then
 entry.Status=AWACS.TaskStatus.SUCCESS
 elseif entry.Target:IsAlive()then
-self:T("Checking VID target out of bounds")
+self:I("Checking VID target out of bounds")
 local targetpos=entry.Target:GetCoordinate()
 local outofzones=false
 self.RejectZoneSet:ForEachZone(
@@ -87333,11 +87339,11 @@ targetpos:GetVec2()
 end
 if outofzones then
 entry.Status=AWACS.TaskStatus.SUCCESS
-self:T("Out of bounds - SUCCESS")
+self:I("Out of bounds - SUCCESS")
 end
 end
 if entry.Status==AWACS.TaskStatus.REQUESTED then
-self:T("Open Tasks VID REQUESTED for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks VID REQUESTED for GroupID "..entry.AssignedGroupID)
 local created=entry.RequestedTimestamp or timer.getTime()-120
 local Tnow=timer.getTime()
 local Trunning=(Tnow-created)/60
@@ -87346,9 +87352,9 @@ if Trunning>self.ReassignmentPause then
 entry.Status=AWACS.TaskStatus.UNASSIGNED
 self.ManagedTasks:PullByID(entry.TID)
 end
-self:T(text)
+self:I(text)
 elseif entry.Status==AWACS.TaskStatus.ASSIGNED then
-self:T("Open Tasks VID ASSIGNED for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks VID ASSIGNED for GroupID "..entry.AssignedGroupID)
 local targetgrp=entry.Contact.group
 local position=entry.Contact.position or entry.Cluster.coordinate
 if targetgrp and targetgrp:IsAlive()and managedgroup then
@@ -87359,24 +87365,24 @@ if grouposition then
 distance=grouposition:Get2DDistance(position)
 distance=UTILS.Round(UTILS.MetersToNM(distance),0)
 end
-self:T("TAC/MELD distance check: "..distance.."NM!")
+self:I("TAC/MELD distance check: "..distance.."NM!")
 if distance<=self.TacDistance and distance>=self.MeldDistance then
-self:T("TAC distance: "..distance.."NM!")
+self:I("TAC distance: "..distance.."NM!")
 local Contact=self.Contacts:ReadByID(entry.Contact.CID)
 self:_TACRangeCall(entry.AssignedGroupID,Contact)
 elseif distance<=self.MeldDistance and distance>=self.ThreatDistance then
-self:T("MELD distance: "..distance.."NM!")
+self:I("MELD distance: "..distance.."NM!")
 local Contact=self.Contacts:ReadByID(entry.Contact.CID)
 self:_MeldRangeCall(entry.AssignedGroupID,Contact)
 end
 end
 end
 elseif entry.Status==AWACS.TaskStatus.SUCCESS then
-self:T("Open Tasks VID success for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks VID success for GroupID "..entry.AssignedGroupID)
 self.ManagedTasks:PullByID(entry.TID)
 local Contact=self.Contacts:ReadByID(entry.Contact.CID)
 if Contact and(Contact.IFF==AWACS.IFF.FRIENDLY or Contact.IFF==AWACS.IFF.NEUTRAL)then
-self:T("IFF outcome friendly/neutral for GroupID "..entry.AssignedGroupID)
+self:I("IFF outcome friendly/neutral for GroupID "..entry.AssignedGroupID)
 if managedgroup then
 managedgroup.HasAssignedTask=false
 self:_UpdateContactEngagementTag(managedgroup.ContactCID,"",false,false,AWACS.TaskStatus.UNASSIGNED)
@@ -87394,7 +87400,7 @@ self.ManagedGrps[entry.AssignedGroupID]=managedgroup
 self:__ReAnchor(5,managedgroup.GID)
 end
 elseif Contact and Contact.IFF==AWACS.IFF.ENEMY then
-self:T("IFF outcome hostile for GroupID "..entry.AssignedGroupID)
+self:I("IFF outcome hostile for GroupID "..entry.AssignedGroupID)
 entry.ToDo=AWACS.TaskDescription.INTERCEPT
 entry.Status=AWACS.TaskStatus.ASSIGNED
 local cname=Contact.TargetGroupNaming
@@ -87403,7 +87409,7 @@ self.ManagedTasks:Push(entry,entry.TID)
 local TextTTS=string.format("%s, %s. Engage hostile target!",managedgroup.CallSign,self.callsigntxt)
 self:_NewRadioEntry(TextTTS,TextTTS,managedgroup.GID,true,self.debug,true,false,true)
 elseif not Contact then
-self:T("IFF outcome target DEAD for GroupID "..entry.AssignedGroupID)
+self:I("IFF outcome target DEAD for GroupID "..entry.AssignedGroupID)
 if managedgroup then
 managedgroup.HasAssignedTask=false
 self:_UpdateContactEngagementTag(managedgroup.ContactCID,"",false,false,AWACS.TaskStatus.UNASSIGNED)
@@ -87424,7 +87430,7 @@ end
 end
 end
 elseif entry.Status==AWACS.TaskStatus.FAILED then
-self:T("Open Tasks VID failed for GroupID "..entry.AssignedGroupID)
+self:I("Open Tasks VID failed for GroupID "..entry.AssignedGroupID)
 if managedgroup then
 managedgroup.HasAssignedTask=false
 self:_UpdateContactEngagementTag(managedgroup.ContactCID,"",false,false,AWACS.TaskStatus.UNASSIGNED)
@@ -87489,6 +87495,9 @@ AnchorStackOne.StationZoneCoordinateText=Zone:GetCoordinate():ToStringLLDDM()
 AnchorStackOne.StationName=newname
 if self.debug then
 AnchorStackOne.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
+local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
+else
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
 end
@@ -87818,7 +87827,7 @@ FlightGroup:SetOutOfAAMRTB(true)
 return self
 end
 function AWACS:_TACRangeCall(GID,Contact)
-self:T(self.lid.."_TACRangeCall")
+self:I(self.lid.."_TACRangeCall")
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local contact=Contact.Contact
@@ -87836,7 +87845,7 @@ end
 return self
 end
 function AWACS:_MeldRangeCall(GID,Contact)
-self:T(self.lid.."_MeldRangeCall")
+self:I(self.lid.."_MeldRangeCall")
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local flightpos=managedgroup.Group:GetCoordinate()
@@ -87859,7 +87868,7 @@ end
 return self
 end
 function AWACS:_ThreatRangeCall(GID,Contact)
-self:T(self.lid.."_ThreatRangeCall")
+self:I(self.lid.."_ThreatRangeCall")
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local flightpos=managedgroup.Group:GetCoordinate()or managedgroup.LastKnownPosition
@@ -87881,7 +87890,7 @@ end
 return self
 end
 function AWACS:_AssignPilotToTarget(Pilots,Targets)
-self:T(self.lid.."_AssignPilotToTarget")
+self:I(self.lid.."_AssignPilotToTarget")
 local inreach=false
 local Pilot=nil
 local closest=UTILS.NMToMeters(self.maxassigndistance+1)
@@ -87893,7 +87902,7 @@ for _,_Pilot in pairs(Pilots)do
 local pilotcoord=_Pilot.Group:GetCoordinate()
 local targetdist=targetgroupcoord:Get2DDistance(pilotcoord)
 if UTILS.MetersToNM(targetdist)<self.maxassigndistance and targetdist<closest then
-self:T(string.format("%sTarget distance %d! Assignment %s!",self.lid,UTILS.Round(UTILS.MetersToNM(targetdist),0),_Pilot.CallSign))
+self:I(string.format("%sTarget distance %d! Assignment %s!",self.lid,UTILS.Round(UTILS.MetersToNM(targetdist),0),_Pilot.CallSign))
 inreach=true
 closest=targetdist
 Pilot=_Pilot
@@ -87901,7 +87910,7 @@ Target=_target
 Targets:PullByID(_target.CID)
 break
 else
-self:T(self.lid.."Target distance > "..self.maxassigndistance.."NM! No Assignment!")
+self:I(self.lid.."Target distance > "..self.maxassigndistance.."NM! No Assignment!")
 end
 end
 end
@@ -87936,13 +87945,13 @@ self:_NewRadioEntry(text,textScreen,Pilot.GID,true,self.debug,true,false,true)
 elseif inreach and Pilot and Pilot.IsAI then
 local callsign=Pilot.CallSign
 local FGStatus=Pilot.FlightGroup:GetState()
-self:T("Pilot AI Callsign: "..callsign)
-self:T("Pilot FG State: "..FGStatus)
+self:I("Pilot AI Callsign: "..callsign)
+self:I("Pilot FG State: "..FGStatus)
 local targetstatus=Target.Target:GetState()
-self:T("Target State: "..targetstatus)
+self:I("Target State: "..targetstatus)
 local currmission=Pilot.FlightGroup:GetMissionCurrent()
 if currmission then
-self:T("Current Mission: "..currmission:GetType())
+self:I("Current Mission: "..currmission:GetType())
 end
 local ZoneSet=self.ZoneSet
 local RejectZoneSet=self.RejectZoneSet
@@ -88034,6 +88043,18 @@ self.OpsZone:DrawZone(-1,{1,0,0},1,{1,0,0},0.2,5,true)
 local AOCoordString=self.AOCoordinate:ToStringLLDDM()
 local Rocktag=string.format("FEZ: %s\nBulls Coordinate: %s",self.AOName,AOCoordString)
 MARKER:New(self.AOCoordinate,Rocktag):ToAll()
+self.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
+local stationtag=string.format("Station: %s\nCoordinate: %s",self.StationZoneName,self.StationZone:GetCoordinate():ToStringLLDDM())
+MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToAll()
+self.OrbitZone:DrawZone(-1,{0,1,0},1,{0,1,0},0.2,5,true)
+MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToAll()
+else
+local AOCoordString=self.AOCoordinate:ToStringLLDDM()
+local Rocktag=string.format("FEZ: %s\nBulls Coordinate: %s",self.AOName,AOCoordString)
+MARKER:New(self.AOCoordinate,Rocktag):ToAll()
+MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToAll()
+local stationtag=string.format("Station: %s\nCoordinate: %s",self.StationZoneName,self.StationZone:GetCoordinate():ToStringLLDDM())
+MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToAll()
 end
 local AwacsAW=self.AirWing
 local mission=AUFTRAG:NewORBIT_RACETRACK(self.OrbitZone:GetCoordinate(),self.AwacsAngels*1000,self.Speed,self.Heading,self.Leg)
@@ -88230,7 +88251,7 @@ else
 local AWmission=self.AwacsMission
 local awstatus=AWmission:GetState()
 if AWmission:IsOver()then
-self:T(self.lid.."*****AWACS is dead!*****")
+self:I(self.lid.."*****AWACS is dead!*****")
 self.ShiftChangeAwacsFlag=true
 self:__AwacsShiftChange(2)
 end
@@ -88238,7 +88259,7 @@ end
 return monitoringdata
 end
 function AWACS:onafterStatus(From,Event,To)
-self:T({From,Event,To})
+self:I({From,Event,To})
 self:_SetClientMenus()
 local monitoringdata=self:_CheckAwacsStatus()
 local awacsalive=false
