@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-22T09:16:16.0000000Z-4762793adcc8ff8ce7b57a49bf317d4a5427233a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-22T10:06:49.0000000Z-ed9c14e63d5a7d65b891cdb27744afdfd97be7e8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20858,12 +20858,15 @@ end
 function GROUP:GetDCSUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
+if DCSGroup.getUnit and DCSGroup:getUnit(UnitNumber)then
+return DCSGroup:getUnit(UnitNumber)
+else
 local UnitFound=nil
 local units=DCSGroup:getUnits()or{}
 for _,_unit in pairs(units)do
-local UnitFound=UNIT:Find(_unit)
-if UnitFound then
-return UnitFound
+if _unit and _unit:isExist()then
+return _unit
+end
 end
 end
 end
