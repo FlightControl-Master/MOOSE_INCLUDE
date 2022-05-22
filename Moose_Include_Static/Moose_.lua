@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-20T18:15:11.0000000Z-61f3b87dae3aadd56de721a767d65c8dbf178e01 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-22T11:03:38.0000000Z-ce33e1d2428108257e23600d036eef33fe91cbdd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85507,22 +85507,30 @@ self.MeldDistance=MeldDistance or 35
 self.ThreatDistance=ThreatDistance or 25
 return self
 end
-function AWACS:SetAdditionalZone(Zone)
+function AWACS:SetAdditionalZone(Zone,Draw)
 self:T(self.lid.."SetAdditionalZone")
 self.BorderZone=Zone
 if self.debug then
 Zone:DrawZone(-1,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
 MARKER:New(Zone:GetCoordinate(),"Defensive Zone"):ToAll()
+elseif Draw then
+Zone:DrawZone(-1,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
 end
 return self
 end
-function AWACS:SetRejectionZone(Zone)
+function AWACS:SetRejectionZone(Zone,Draw)
 self:T(self.lid.."SetRejectionZone")
 self.RejectZone=Zone
-if self.debug then
+if Draw then
+Zone:DrawZone(-1,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
+elseif self.debug then
 Zone:DrawZone(-1,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
 MARKER:New(Zone:GetCoordinate(),"Rejection Zone"):ToAll()
 end
+return self
+end
+function AWACS:DrawFEZ()
+self.OpsZone:DrawZone(-1,{1,0,0},1,{1,0,0},0.2,5,true)
 return self
 end
 function AWACS:SetAwacsDetails(CallSign,CallSignNo,Angels,Speed,Heading,Leg)
