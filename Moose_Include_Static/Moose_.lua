@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-24T12:44:23.0000000Z-88d132931eb3f9e6d22c430361fc0674a0ad74d7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-24T14:05:04.0000000Z-91686e252c967ffee744dd0ee91ff93d7f8291bd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -88331,6 +88331,16 @@ if SubAW then
 SubAW:RemoveUsingOpsAwacs()
 end
 end
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+self:UnHandleEvent(EVENTS.PlayerEnterUnit)
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.Dead)
+self:UnHandleEvent(EVENTS.UnitLost)
+self:UnHandleEvent(EVENTS.BDA)
+self:UnHandleEvent(EVENTS.PilotDead)
+self:UnHandleEvent(EVENTS.Shot)
 return self
 end
 function AWACS:onafterAssignAnchor(From,Event,To,GID,HasOwnStation,StationName)
