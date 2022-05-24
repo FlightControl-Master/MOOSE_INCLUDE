@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-22T15:14:14.0000000Z-77aba386255807bc1cfc09c1c528c20315247ae4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-24T12:04:52.0000000Z-4afedcf126036e1d58df7534e5c48a554df09acd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84951,7 +84951,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.22",
+version="beta 0.1.23",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85025,6 +85025,8 @@ AOCoordinate=nil,
 clientmenus=nil,
 RadarBlur=15,
 ReassignmentPause=180,
+NoGroupTags=false,
+SuppressScreenOutput=false,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -85205,7 +85207,6 @@ self.Leg=50
 self.invisible=false
 self.immortal=false
 self.callsigntxt="AWACS"
-self.maxassigndistance=100
 self.AwacsTimeOnStation=4
 self.AwacsTimeStamp=0
 self.EscortsTimeOnStation=4
@@ -85221,14 +85222,11 @@ self.AICAPCAllNumber=0
 self.CAPGender="male"
 self.CAPCulture="en-US"
 self.CAPVoice=nil
-self.ReassignmentPause=180
-self.DeclareRadius=5
 self.AwacsMission=nil
 self.AwacsInZone=false
 self.AwacsReady=false
 self.AwacsROE=AWACS.ROE.IFF
 self.AwacsROT=AWACS.ROT.BYPASSESCAPE
-self.MenuStrict=true
 self.HasEscorts=false
 self.EscortTemplate=""
 self.PathToSRS="C:\\Program Files\\DCS-SimpleRadio-Standalone"
@@ -85240,10 +85238,16 @@ self.Volume=1.0
 self.RadioQueue=FIFO:New()
 self.PrioRadioQueue=FIFO:New()
 self.maxspeakentries=3
-self.SuppressScreenOutput=false
 self.clientset=SET_CLIENT:New():FilterActive(true):FilterCoalitions(self.coalitiontxt):FilterCategories("plane"):FilterStart()
 self.PlayerGuidance=true
 self.ModernEra=true
+self.NoGroupTags=false
+self.SuppressScreenOutput=false
+self.ReassignmentPause=180
+self.callsignshort=true
+self.DeclareRadius=5
+self.MenuStrict=true
+self.maxassigndistance=100
 self.ManagedGrps={}
 self.ManagedGrpID=0
 self.AnchorStacks=FIFO:New()
@@ -85998,8 +86002,13 @@ coordinate.Heading=contact.Contact.heading or contact.Contact.group:GetHeading()
 end
 local refBRAA=""
 local refBRAATTS=""
+if self.NoGroupTags then
+text="Group."
+textScreen="Group,"
+else
 text=contact.TargetGroupNaming.." group."
 textScreen=contact.TargetGroupNaming.." group,"
+end
 if IsGeneral then
 refBRAA=self:_ToStringBULLS(coordinate)
 if self.PathToGoogleKey then
@@ -86084,11 +86093,11 @@ local text=""
 local textScreen=text
 local general=IsGeneral
 local GID,Outcome,gcallsign=self:_GetManagedGrpID(Group)
-if Group and Outcome then
-general=false
-end
 if general then
 gcallsign="All Stations"
+end
+if Group and Outcome then
+general=false
 end
 if not self.intel then
 text=string.format("%s. %s. Picture Clean.",self.callsigntxt,gcallsign)
@@ -86128,13 +86137,8 @@ if clustersAO==0 and clustersEWR==0 then
 self:_NewRadioEntry(text,textScreen,GID,Outcome,true,true,false)
 else
 if clustersAO>0 then
-if general then
-text=string.format("%s, %s. ",gcallsign,self.callsigntxt)
-textScreen=string.format("%s, %s. ",gcallsign,self.callsigntxt)
-else
 text=string.format("%s, %s. Picture. ",gcallsign,self.callsigntxt)
 textScreen=string.format("%s, %s. Picture. ",gcallsign,self.callsigntxt)
-end
 if clustersAO==1 then
 text=text.."One group. "
 textScreen=textScreen.."One group.\n"
@@ -87526,6 +87530,9 @@ local CID=0
 if not Tag then
 CID=Contact.CID or 0
 Tag=Contact.TargetGroupNaming or""
+end
+if self.NoGroupTags then
+Tag=nil
 end
 local isGroup=false
 local GID=0
