@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-31T12:02:14.0000000Z-e731fe9b98bdad3356a19e7e3236efd11f02734a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-31T14:21:19.0000000Z-6c33c5701f0cb2f6a93c9b6d895440566164ac23 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -87609,7 +87609,7 @@ else
 BRAText=string.format("%s.",self.callsigntxt)
 TextScreen=string.format("%s.",self.callsigntxt)
 end
-if IsNew then
+if IsNew and self.PlayerGuidance then
 BRAText=BRAText.." New group."
 TextScreen=TextScreen.." New group."
 elseif IsPopup then
