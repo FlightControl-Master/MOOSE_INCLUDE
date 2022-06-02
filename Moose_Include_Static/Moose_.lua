@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-02T13:31:03.0000000Z-3f918bd309a38be694fe787d9f8145c98cd3fad5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-02T15:39:39.0000000Z-bd3364a3cf2eda953e4a1930df7cb59b900baabf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85837,6 +85837,8 @@ for _id,_pilot in pairs(self.ManagedGrps)do
 local pilot=_pilot
 if pilot.Group and pilot.Group:IsAlive()then
 local ppos=pilot.Group:GetCoordinate()
+local pcallsign=pilot.CallSign
+self:I(self.lid.."Checking for "..pcallsign)
 if ppos then
 self.Contacts:ForEach(
 function(Contact)
@@ -85844,9 +85846,13 @@ local contact=Contact
 local cpos=contact.Cluster.coordinate or contact.Contact.position or contact.Contact.group:GetCoordinate()
 local dist=ppos:Get2DDistance(cpos)
 local distnm=UTILS.Round(UTILS.MetersToNM(dist),0)
-if(pilot.IsPlayer or self.debug)and distnm<=5 then
+if(pilot.IsPlayer or self.debug)and distnm<=5 and not contact.MergeCallDone then
+local label=contact.EngagementTag or""
+if not contact.MergeCallDone or not string.find(label,pcallsign)then
 self:I(self.lid.."Merged")
 self:_MergedCall(_id)
+contact.MergeCallDone=true
+end
 end
 end
 )
