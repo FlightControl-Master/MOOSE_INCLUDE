@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-05-31T14:21:19.0000000Z-6c33c5701f0cb2f6a93c9b6d895440566164ac23 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-02T13:31:03.0000000Z-3f918bd309a38be694fe787d9f8145c98cd3fad5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84977,7 +84977,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.24",
+version="beta 0.1.25",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85383,6 +85383,13 @@ self:T(self.lid.."_SetBullsEyeAlias")
 self.SuppressScreenOutput=Switch or false
 return self
 end
+function AWACS:ZipLip()
+self:T(self.lid.."ZipLip")
+self:SuppressScreenMessages(true)
+self.PlayerGuidance=false
+self.callsignshort=true
+return self
+end
 function AWACS:_GetGIDFromGroupOrName(Group)
 self:T(self.lid.."_GetGIDFromGroupOrName")
 local GID=0
@@ -85497,6 +85504,13 @@ self.AwacsROT=AWACS.ROT.PASSIVE
 self.AwacsROE=AWACS.ROE.VID
 self.RadarBlur=25
 self:SetInterceptTimeline(35,25,15)
+return self
+end
+function AWACS:SetModernEra()
+self.ModernEra=true
+self.AwacsROT=AWACS.ROT.EVADE
+self.AwacsROE=AWACS.ROE.BVR
+self.RadarBlur=15
 return self
 end
 function AWACS:SetModernEraDefensive()
@@ -85752,7 +85766,7 @@ return text
 end
 function AWACS:_GetManagedGrpID(Group)
 if not Group or not Group:IsAlive()then
-self:E(self.lid.."_GetManagedGrpID - Requested Group is not alive!")
+self:T(self.lid.."_GetManagedGrpID - Requested Group is not alive!")
 return 0,false,""
 end
 self:T(self.lid.."_GetManagedGrpID for "..Group:GetName())
@@ -85830,7 +85844,8 @@ local contact=Contact
 local cpos=contact.Cluster.coordinate or contact.Contact.position or contact.Contact.group:GetCoordinate()
 local dist=ppos:Get2DDistance(cpos)
 local distnm=UTILS.Round(UTILS.MetersToNM(dist),0)
-if pilot.IsPlayer and distnm<=3 then
+if(pilot.IsPlayer or self.debug)and distnm<=5 then
+self:I(self.lid.."Merged")
 self:_MergedCall(_id)
 end
 end
@@ -88460,6 +88475,7 @@ end
 return nil
 end
 local Contact=GetFirstAliveContact(ContactTable)
+if not Contact then return self end
 local targetset=SET_GROUP:New()
 for _,_grp in pairs(ContactTable)do
 local grp=_grp
@@ -88531,7 +88547,7 @@ end
 function AWACS:onafterCheckRadioQueue(From,Event,To)
 self:T({From,Event,To})
 local nextcall=10
-if(self.RadioQueue:IsNotEmpty()or self.PrioRadioQueue:IsNotEmpty())and self.clientset:CountAlive()>0 then
+if(self.RadioQueue:IsNotEmpty()or self.PrioRadioQueue:IsNotEmpty())then
 local RadioEntry=nil
 if self.PrioRadioQueue:IsNotEmpty()then
 RadioEntry=self.PrioRadioQueue:Pull()
@@ -88539,6 +88555,11 @@ else
 RadioEntry=self.RadioQueue:Pull()
 end
 self:T({RadioEntry})
+if self.clientset:CountAlive()==0 then
+self:I(self.lid.."No player connected.")
+self:__CheckRadioQueue(5)
+return self
+end
 if not RadioEntry.FromAI then
 if self.PathToGoogleKey then
 local gtext=RadioEntry.TextTTS
@@ -88577,7 +88598,7 @@ end
 end
 end
 if self:Is("Running")then
-self:__CheckRadioQueue(nextcall+2)
+self:__CheckRadioQueue(nextcall+1)
 end
 return self
 end
@@ -88668,7 +88689,7 @@ local faded=textoptions[math.random(1,4)]
 local text=string.format("All stations. %s. %s %s.",self.callsigntxt,faded,savedcallsign)
 local textScreen=string.format("All stations, %s. %s %s.",self.callsigntxt,faded,savedcallsign)
 local brtext=self:_ToStringBULLS(lastknown)
-local brtexttts=self:_ToStringBULLS(brtext,false,true)
+local brtexttts=self:_ToStringBULLS(lastknown,false,true)
 text=text.." "..brtexttts.." miles."
 textScreen=textScreen.." "..brtext.." miles."
 self:_NewRadioEntry(text,textScreen,0,false,self.debug,true,false,true)
@@ -88705,7 +88726,7 @@ local textScreen=string.format("All stations, %s. %s %s.",self.callsigntxt,faded
 if managedgroup.LastKnownPosition then
 local lastknown=UTILS.DeepCopy(managedgroup.LastKnownPosition)
 local brtext=self:_ToStringBULLS(lastknown)
-local brtexttts=self:_ToStringBULLS(brtext,false,true)
+local brtexttts=self:_ToStringBULLS(lastknown,false,true)
 text=text.." "..brtexttts.." miles."
 textScreen=textScreen.." "..brtext.." miles."
 self:_NewRadioEntry(text,textScreen,0,false,self.debug,true,false,true)
@@ -88714,7 +88735,6 @@ self.ManagedGrps[GID]=nil
 end
 end
 end
-return self
 end
 end
 AI_BALANCER={
