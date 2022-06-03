@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-02T15:39:39.0000000Z-bd3364a3cf2eda953e4a1930df7cb59b900baabf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-03T07:27:01.0000000Z-613b7eda8a31b103cfe17304fec61445d880cb75 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84977,7 +84977,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.25",
+version="beta 0.1.26",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85388,6 +85388,7 @@ self:T(self.lid.."ZipLip")
 self:SuppressScreenMessages(true)
 self.PlayerGuidance=false
 self.callsignshort=true
+self.NoGroupTags=true
 return self
 end
 function AWACS:_GetGIDFromGroupOrName(Group)
@@ -86080,27 +86081,12 @@ else
 text=contact.TargetGroupNaming.." group."
 textScreen=contact.TargetGroupNaming.." group,"
 end
-if IsGeneral then
 refBRAA=self:_ToStringBULLS(coordinate)
 refBRAATTS=self:_ToStringBULLS(coordinate,false,true)
 local alt=contact.Contact.group:GetAltitude()or 8000
 alt=UTILS.Round(UTILS.MetersToFeet(alt)/1000,0)
 text=text.." "..refBRAATTS.." miles, "..alt.." thousand."
 textScreen=textScreen.." "..refBRAA.." miles, "..alt.." thousand."
-else
-refBRAA=coordinate:ToStringBRAANATO(groupcoord,true,true)
-refBRAATTS=string.gsub(refBRAA,"BRAA","brah")
-refBRAATTS=string.gsub(refBRAATTS,"BRA","brah")
-if self.PathToGoogleKey then
-refBRAATTS=coordinate:ToStringBRAANATO(groupcoord,true,true,true,false,true)
-end
-if contact.IFF~=AWACS.IFF.BOGEY then
-refBRAA=string.gsub(refBRAA,"Bogey",contact.IFF)
-refBRAATTS=string.gsub(refBRAATTS,"Bogey",contact.IFF)
-end
-text=text.." "..refBRAATTS
-textScreen=textScreen.." "..refBRAA
-end
 local aspect=""
 local size=contact.Contact.group:CountAliveUnits()
 local threatsize,threatsizetext=self:_GetBlurredSize(size)
@@ -86130,7 +86116,7 @@ local managedgroup=self.ManagedGrps[GID]
 local group=managedgroup.Group
 local groupcoord=group:GetCoordinate()
 local fifo=self.ContactsAO
-local maxentries=self.maxspeakentries
+local maxentries=1
 local counter=0
 local entries=fifo:GetSize()
 if entries<maxentries then maxentries=entries end
