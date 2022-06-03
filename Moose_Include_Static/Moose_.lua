@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-03T07:27:01.0000000Z-613b7eda8a31b103cfe17304fec61445d880cb75 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-03T12:42:08.0000000Z-feddda2948fdd5254df52b32366150d81b790ef9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85053,6 +85053,8 @@ RadarBlur=15,
 ReassignmentPause=180,
 NoGroupTags=false,
 SuppressScreenOutput=false,
+GoogleTTSPadding=1,
+WindowsTTSPadding=2.5,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -85264,6 +85266,8 @@ self.Volume=1.0
 self.RadioQueue=FIFO:New()
 self.PrioRadioQueue=FIFO:New()
 self.maxspeakentries=3
+self.GoogleTTSPadding=1
+self.WindowsTTSPadding=2.5
 self.clientset=SET_CLIENT:New():FilterActive(true):FilterCoalitions(self.coalitiontxt):FilterCategories("plane"):FilterStart()
 self.PlayerGuidance=true
 self.ModernEra=true
@@ -85473,7 +85477,6 @@ return self
 end
 function AWACS:_MissileWarning(Coordinate,Type,Warndist)
 self:T(self.lid.."_MissileWarning Type="..Type.." WarnDist="..Warndist)
-self:T(UTILS.OneLineSerialize(Coordinate))
 if not Coordinate then return self end
 local shotzone=ZONE_RADIUS:New("WarningZone",Coordinate:GetVec2(),UTILS.NMToMeters(Warndist))
 local targetgrpset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryAirplane():FilterActive():FilterZones({shotzone}):FilterOnce()
@@ -85481,7 +85484,7 @@ if targetgrpset:Count()>0 then
 local targets=targetgrpset:GetSetObjects()
 for _,_grp in pairs(targets)do
 if _grp and _grp:IsAlive()then
-local isPlayer=_grp:GetUnit(1):IsPlayer()
+local isPlayer=_grp:IsPlayer()
 if isPlayer then
 local callsign=self:_GetCallSign(_grp)
 local text=string.format("%s, %s! %s! %s! Defend!",callsign,Type,Type,Type)
@@ -85541,6 +85544,14 @@ self.AwacsROT=AWACS.ROT.BYPASSESCAPE
 self.AwacsROE=AWACS.ROE.VID
 self.RadarBlur=25
 self:SetInterceptTimeline(35,25,15)
+return self
+end
+function AWACS:SetPlayerGuidance(Switch)
+if(Switch==nil)or(Switch==true)then
+self.PlayerGuidance=true
+else
+self.PlayerGuidance=false
+end
 return self
 end
 function AWACS:GetName()
@@ -85839,7 +85850,7 @@ local pilot=_pilot
 if pilot.Group and pilot.Group:IsAlive()then
 local ppos=pilot.Group:GetCoordinate()
 local pcallsign=pilot.CallSign
-self:I(self.lid.."Checking for "..pcallsign)
+self:T(self.lid.."Checking for "..pcallsign)
 if ppos then
 self.Contacts:ForEach(
 function(Contact)
@@ -85850,7 +85861,7 @@ local distnm=UTILS.Round(UTILS.MetersToNM(dist),0)
 if(pilot.IsPlayer or self.debug)and distnm<=5 and not contact.MergeCallDone then
 local label=contact.EngagementTag or""
 if not contact.MergeCallDone or not string.find(label,pcallsign)then
-self:I(self.lid.."Merged")
+self:T(self.lid.."Merged")
 self:_MergedCall(_id)
 contact.MergeCallDone=true
 end
@@ -87889,6 +87900,7 @@ return self
 end
 function AWACS:_TACRangeCall(GID,Contact)
 self:T(self.lid.."_TACRangeCall")
+if not Contact then return self end
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local contact=Contact.Contact
@@ -87907,6 +87919,7 @@ return self
 end
 function AWACS:_MeldRangeCall(GID,Contact)
 self:T(self.lid.."_MeldRangeCall")
+if not Contact then return self end
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local flightpos=managedgroup.Group:GetCoordinate()
@@ -87930,6 +87943,7 @@ return self
 end
 function AWACS:_ThreatRangeCall(GID,Contact)
 self:T(self.lid.."_ThreatRangeCall")
+if not Contact then return self end
 local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local flightpos=managedgroup.Group:GetCoordinate()or managedgroup.LastKnownPosition
@@ -88549,7 +88563,7 @@ end
 self:T({RadioEntry})
 if self.clientset:CountAlive()==0 then
 self:I(self.lid.."No player connected.")
-self:__CheckRadioQueue(5)
+self:__CheckRadioQueue(-5)
 return self
 end
 if not RadioEntry.FromAI then
@@ -88590,7 +88604,12 @@ end
 end
 end
 if self:Is("Running")then
-self:__CheckRadioQueue(nextcall+1)
+if self.PathToGoogleKey then
+nextcall=nextcall+self.GoogleTTSPadding
+else
+nextcall=nextcall+self.WindowsTTSPadding
+end
+self:__CheckRadioQueue(-nextcall)
 end
 return self
 end
