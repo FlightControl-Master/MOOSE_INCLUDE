@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-03T12:42:08.0000000Z-feddda2948fdd5254df52b32366150d81b790ef9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-04T11:56:57.0000000Z-9f287d0d7f8e2ff8777480ff30a71692fbd817b8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84977,7 +84977,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.26",
+version="beta 0.1.27",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85053,8 +85053,10 @@ RadarBlur=15,
 ReassignmentPause=180,
 NoGroupTags=false,
 SuppressScreenOutput=false,
+NoMissileCalls=true,
 GoogleTTSPadding=1,
 WindowsTTSPadding=2.5,
+PlayerCapAssigment=true,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -85278,6 +85280,8 @@ self.callsignshort=true
 self.DeclareRadius=5
 self.MenuStrict=true
 self.maxassigndistance=100
+self.NoMissileCalls=true
+self.PlayerCapAssigment=true
 self.ManagedGrps={}
 self.ManagedGrpID=0
 self.AnchorStacks=FIFO:New()
@@ -85393,6 +85397,7 @@ self:SuppressScreenMessages(true)
 self.PlayerGuidance=false
 self.callsignshort=true
 self.NoGroupTags=true
+self.NoMissileCalls=true
 return self
 end
 function AWACS:_GetGIDFromGroupOrName(Group)
@@ -85444,7 +85449,7 @@ self:_CheckOut(nil,GID,true)
 end
 end
 end
-if Event.id==EVENTS.Shot and self.PlayerGuidance then
+if Event.id==EVENTS.Shot and self.PlayerGuidance and not self.NoMissileCalls then
 if Event.IniCoalition~=self.coalition then
 self:T("Shot from: "..Event.IniGroupName)
 local position=Event.IniGroup:GetCoordinate()
@@ -88360,7 +88365,7 @@ end
 local outcome,targets=self:_TargetSelectionProcess(true)
 self:_CheckTaskQueue()
 local AI,Humans=self:_GetIdlePilots()
-if outcome and#Humans>0 then
+if outcome and#Humans>0 and self.PlayerCapAssigment then
 self:_AssignPilotToTarget(Humans,targets)
 end
 if outcome and#AI>0 then
