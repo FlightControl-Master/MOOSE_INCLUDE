@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-04T11:56:57.0000000Z-9f287d0d7f8e2ff8777480ff30a71692fbd817b8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-05T16:03:39.0000000Z-0cb7415a4c1d2bc258f9d5be06bcb52fb70ba371 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85709,6 +85709,7 @@ local group=AwacsFG:GetGroup()
 group:SetCommandInvisible(self.invisible)
 group:SetCommandImmortal(self.immortal)
 group:CommandSetCallsign(self.CallSign,self.CallSignNo,2)
+group:CommandEPLRS(self.ModernEra,5)
 self.AwacsFG=AwacsFG
 self.AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,self.PathToGoogleKey,"AWACS",self.Volume)
 self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
