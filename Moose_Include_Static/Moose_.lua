@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-07T06:56:25.0000000Z-30dc3386368dd6df257d22172d1e9191d323dc4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-07T09:30:20.0000000Z-01e9e8364114ee82dc0f5560832be14ddcb513a5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84989,7 +84989,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.27",
+version="beta 0.1.28",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -86109,12 +86109,27 @@ else
 text=contact.TargetGroupNaming.." group."
 textScreen=contact.TargetGroupNaming.." group,"
 end
+if IsGeneral or not self.PlayerGuidance then
 refBRAA=self:_ToStringBULLS(coordinate)
 refBRAATTS=self:_ToStringBULLS(coordinate,false,true)
 local alt=contact.Contact.group:GetAltitude()or 8000
 alt=UTILS.Round(UTILS.MetersToFeet(alt)/1000,0)
 text=text.." "..refBRAATTS.." miles, "..alt.." thousand."
 textScreen=textScreen.." "..refBRAA.." miles, "..alt.." thousand."
+else
+refBRAA=coordinate:ToStringBRAANATO(groupcoord,true,true)
+refBRAATTS=string.gsub(refBRAA,"BRAA","brah")
+refBRAATTS=string.gsub(refBRAATTS,"BRA","brah")
+if self.PathToGoogleKey then
+refBRAATTS=coordinate:ToStringBRAANATO(groupcoord,true,true,true,false,true)
+end
+if contact.IFF~=AWACS.IFF.BOGEY then
+refBRAA=string.gsub(refBRAA,"Bogey",contact.IFF)
+refBRAATTS=string.gsub(refBRAATTS,"Bogey",contact.IFF)
+end
+text=text.." "..refBRAATTS
+textScreen=textScreen.." "..refBRAA
+end
 local aspect=""
 local size=contact.Contact.group:CountAliveUnits()
 local threatsize,threatsizetext=self:_GetBlurredSize(size)
@@ -86709,6 +86724,7 @@ end
 end
 if managedgroup.CurrentTask and managedgroup.CurrentTask>0 then
 self.ManagedTasks:PullByID(managedgroup.CurrentTask)
+self:_UpdateContactEngagementTag(managedgroup.ContactCID,"",false,false)
 end
 self.ManagedGrps[GID]=nil
 self:__CheckedOut(1,GID,Stack,Angels)
