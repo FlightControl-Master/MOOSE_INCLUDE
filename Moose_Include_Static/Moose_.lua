@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-07T06:56:13.0000000Z-1dcccdc43409e1c582a9b60a9f108517456ece95 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-08T18:24:45.0000000Z-4011bc3fe66de16ccc70899692e1b808b858c38c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23258,6 +23258,16 @@ AIRBASE.MarianaIslands={
 ["Saipan_Intl"]="Saipan Intl",
 ["Tinian_Intl"]="Tinian Intl",
 ["Olf_Orote"]="Olf Orote",
+}
+AIRBASE.SouthAtlantic={
+["Port_Stanley"]="Port Stanley",
+["Mount_Pleasant"]="Mount Pleasant",
+["San_Carlos_FOB"]="San Carlos FOB",
+["Rio_Grande"]="Rio Grande",
+["Rio_Gallegos"]="Rio Gallegos",
+["Ushuaia"]="Ushuaia",
+["Ushuaia_Helo_Port"]="Ushuaia Helo Port",
+["Punta_Arenas"]="Punta Arenas",
 }
 AIRBASE.TerminalType={
 Runway=16,
