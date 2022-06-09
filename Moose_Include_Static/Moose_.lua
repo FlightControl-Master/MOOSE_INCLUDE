@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-08T18:24:31.0000000Z-6636e89a0bdd2d33a0e19076cc713f7705b90a37 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-09T08:56:33.0000000Z-96c6c372fdf09a4b9bfb830166a178759377b1a2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -82859,7 +82859,6 @@ CTLD_HERCULES.Types={
 ["ART GVOZDIKA [34720lb]"]={['name']="SAU Gvozdika",['container']=false},
 ["APC MTLB Air [26400lb]"]={['name']="MTLB",['container']=true},
 ["APC MTLB Skid [26290lb]"]={['name']="MTLB",['container']=false},
-["Generic Crate [20000lb]"]={['name']="Hercules_Container_Parachute",['container']=true}
 }
 function CTLD_HERCULES:New(Coalition,Alias,CtldObject)
 local self=BASE:Inherit(self,FSM:New())
