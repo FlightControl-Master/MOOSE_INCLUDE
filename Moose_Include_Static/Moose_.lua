@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-09T10:12:45.0000000Z-a2b3190b1dd41d8c285ccad2d0ecf631563f1d5c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-10T09:56:19.0000000Z-f48c71f30cc2f0e394cb9c85b34566e8cd5028ae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84998,7 +84998,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.28",
+version="beta 0.1.29",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85078,6 +85078,8 @@ NoMissileCalls=true,
 GoogleTTSPadding=1,
 WindowsTTSPadding=2.5,
 PlayerCapAssigment=true,
+AllowMarkers=false,
+PlayerStationName=nil,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -86659,7 +86661,11 @@ self.ManagedGrps[self.ManagedGrpID]=managedgroup
 text=string.format("%s. %s. Alpha Check. %s",managedgroup.CallSign,self.callsigntxt,alphacheckbulls)
 textTTS=string.format("%s. %s. Alpha Check. %s",managedgroup.CallSign,self.callsigntxt,alphacheckbullstts)
 self:__CheckedIn(1,managedgroup.GID)
+if self.PlayerStationName then
+self:__AssignAnchor(5,managedgroup.GID,true,self.PlayerStationName)
+else
 self:__AssignAnchor(5,managedgroup.GID)
+end
 elseif self.AwacsFG then
 text=string.format("%s. %s. Negative. You are already checked in.",self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
 end
@@ -86864,6 +86870,79 @@ self.MonitoringData.Players=clientcount or 0
 self.MonitoringData.PlayersCheckedin=clientcheckedin or 0
 return self
 end
+function AWACS:_DeleteAnchorStackFromMarker(Name,Coord)
+self:I(self.lid.."_DeleteAnchorStackFromMarker")
+if self.AnchorStacks:HasUniqueID(Name)and self.PlayerStationName==Name then
+local stack=self.AnchorStacks:ReadByID(Name)
+local marker=stack.AnchorMarker
+if stack.AnchorAssignedID:Count()==0 then
+marker:Remove()
+if self.debug then
+stack.StationZone:UndrawZone()
+end
+self.AnchorStacks:PullByID(Name)
+self.PlayerStationName=nil
+else
+if self.debug then
+self:I(self.lid.."**** Cannot delete station, there are CAPs assigned!")
+local text=marker:GetText()
+marker:TextUpdate(text.."\nMarked for deletion")
+end
+end
+end
+return self
+end
+function AWACS:_MoveAnchorStackFromMarker(Name,Coord)
+self:I(self.lid.."_MoveAnchorStackFromMarker")
+if self.AnchorStacks:HasUniqueID(Name)and self.PlayerStationName==Name then
+local station=self.AnchorStacks:PullByID(Name)
+local stationtag=string.format("Station: %s\nCoordinate: %s",Name,Coord:ToStringLLDDM())
+local marker=station.AnchorMarker
+local zone=station.StationZone
+if self.debug then
+zone:UndrawZone()
+end
+local radius=self.StationZone:GetRadius()
+if radius<10000 then radius=10000 end
+station.StationZone=ZONE_RADIUS:New(Name,Coord:GetVec2(),radius)
+marker:UpdateCoordinate(Coord)
+marker:UpdateText(stationtag)
+station.AnchorMarker=marker
+if self.debug then
+station.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
+end
+self.AnchorStacks:Push(station,Name)
+end
+return self
+end
+function AWACS:_CreateAnchorStackFromMarker(Name,Coord)
+self:I(self.lid.."_CreateAnchorStackFromMarker")
+local AnchorStackOne={}
+AnchorStackOne.AnchorBaseAngels=self.AnchorBaseAngels
+AnchorStackOne.Anchors=FIFO:New()
+AnchorStackOne.AnchorAssignedID=FIFO:New()
+local newname=Name
+for i=1,self.AnchorMaxStacks do
+AnchorStackOne.Anchors:Push((i-1)*self.AnchorStackDistance+self.AnchorBaseAngels)
+end
+local radius=self.StationZone:GetRadius()
+if radius<10000 then radius=10000 end
+AnchorStackOne.StationZone=ZONE_RADIUS:New(newname,Coord:GetVec2(),radius)
+AnchorStackOne.StationZoneCoordinate=Coord
+AnchorStackOne.StationZoneCoordinateText=Coord:ToStringLLDDM()
+AnchorStackOne.StationName=newname
+if self.debug then
+AnchorStackOne.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
+local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
+else
+local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToAll()
+end
+self.AnchorStacks:Push(AnchorStackOne,newname)
+self.PlayerStationName=newname
+return self
+end
 function AWACS:_CreateAnchorStack()
 self:T(self.lid.."_CreateAnchorStack")
 local stackscreated=self.AnchorStacks:GetSize()
@@ -86904,7 +86983,9 @@ self:T("Angel Radians= "..angel)
 local turn=math.fmod(self.AnchorTurn*stackscreated,360)
 if self.AnchorTurn<0 then turn=-turn end
 local newanchorbasecoord=anchorbasecoord:Translate(anchorradius,turn+angel)
-AnchorStackOne.StationZone=ZONE_RADIUS:New(newname,newanchorbasecoord:GetVec2(),self.StationZone:GetRadius())
+local radius=self.StationZone:GetRadius()
+if radius<10000 then radius=10000 end
+AnchorStackOne.StationZone=ZONE_RADIUS:New(newname,newanchorbasecoord:GetVec2(),radius)
 AnchorStackOne.StationZoneCoordinate=newanchorbasecoord
 AnchorStackOne.StationZoneCoordinateText=newanchorbasecoord:ToStringLLDDM()
 AnchorStackOne.StationName=newname
@@ -88201,6 +88282,39 @@ RejectZoneSet:AddZone(self.RejectZone)
 end
 self.ZoneSet=ZoneSet
 self.RejectZoneSet=RejectZoneSet
+if self.AllowMarkers then
+local MarkerOps=MARKEROPS_BASE:New("AWACS",{"Station","Delete","Move"})
+local function Handler(Keywords,Coord,Text)
+self:I(Text)
+for _,_word in pairs(Keywords)do
+if string.lower(_word)=="station"then
+local Name=string.match(Text," ([%a]+)$")
+self:_CreateAnchorStackFromMarker(Name,Coord)
+break
+elseif string.lower(_word)=="delete"then
+local Name=string.match(Text," ([%a]+)$")
+self:_DeleteAnchorStackFromMarker(Name,Coord)
+break
+elseif string.lower(_word)=="move"then
+local Name=string.match(Text," ([%a]+)$")
+self:_MoveAnchorStackFromMarker(Name,Coord)
+break
+end
+end
+end
+function MarkerOps:OnAfterMarkAdded(From,Event,To,Text,Keywords,Coord)
+BASE:I(string.format("%s Mark Added.",self.Tag))
+Handler(Keywords,Coord,Text)
+end
+function MarkerOps:OnAfterMarkChanged(From,Event,To,Text,Keywords,Coord)
+BASE:I(string.format("%s Mark Changed.",self.Tag))
+Handler(Keywords,Coord,Text)
+end
+function MarkerOps:OnAfterMarkDeleted(From,Event,To)
+BASE:I(string.format("%s Mark Deleted.",self.Tag))
+end
+self.MarkerOps=MarkerOps
+end
 self:__Status(-30)
 return self
 end
