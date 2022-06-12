@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-10T09:56:19.0000000Z-f48c71f30cc2f0e394cb9c85b34566e8cd5028ae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-12T10:47:10.0000000Z-d01360ca19253a74718bca7d3756a61f93606545 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79140,6 +79140,7 @@ local _time=self.landedStatus[_lookupKeyHeli]
 if _time==nil then
 self.landedStatus[_lookupKeyHeli]=math.floor((_distance-self.loadDistance)/3.6)
 _time=self.landedStatus[_lookupKeyHeli]
+_woundedGroup:OptionAlarmStateGreen()
 self:_OrderGroupToMoveToPoint(_woundedGroup,_heliUnit:GetCoordinate())
 self:_DisplayMessageToSAR(_heliUnit,"Wait till ".._pilotName.." gets in. \nETA ".._time.." more seconds.",self.messageTime,false)
 else
