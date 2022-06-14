@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T10:39:17.0000000Z-6025339b464739d20e4e732629cac6705cf457c1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T11:06:55.0000000Z-afec1c3a5bc66e3c9cf487e24d2de5ab764f8517 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14427,7 +14427,7 @@ local Distance=FromCoordinate:Get2DDistance(self)
 local Altitude=self:GetAltitudeText()
 return"BRA, "..self:GetBRAText(AngleRadians,Distance,Settings,Language)
 end
-function COORDINATE:ToStringBRAANATO(FromCoordinate,Bogey,Spades,SSML)
+function COORDINATE:ToStringBRAANATO(FromCoordinate,Bogey,Spades,SSML,Angels,Zeros)
 local BRAANATO="Merged."
 local currentCoord=FromCoordinate
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
@@ -14437,13 +14437,32 @@ local rangeMetres=self:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=self:ToStringAspect(currentCoord)
 local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
+local alttext=string.format("%d thousand",alt)
+if Angels then
+alttext=string.format("Angels %d",alt)
+end
+if alt<1 then
+alttext="very low"
+end
 local track=UTILS.BearingToCardinal(bearing)or"North"
 if rangeNM>3 then
 if SSML then
+if Zeros then
+bearing=string.format("%03d",bearing)
+local AngleDegText=string.gsub(bearing,"%d","%1 ")
+AngleDegText=string.gsub(AngleDegText," $","")
+AngleDegText=string.gsub(AngleDegText,"0","zero")
 if aspect==""then
-BRAANATO=string.format("brah <say-as interpret-as='characters'>%03d</say-as>, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+BRAANATO=string.format("brah %s, %d miles, %s, Track %s",AngleDegText,rangeNM,alttext,track)
 else
-BRAANATO=string.format("brah <say-as interpret-as='characters'>%03d</say-as>, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+BRAANATO=string.format("brah %s, %d miles, %s, %s, Track %s",AngleDegText,rangeNM,alttext,aspect,track)
+end
+else
+if aspect==""then
+BRAANATO=string.format("brah <say-as interpret-as='characters'>%03d</say-as>, %d miles, %s, Track %s",bearing,rangeNM,alttext,track)
+else
+BRAANATO=string.format("brah <say-as interpret-as='characters'>%03d</say-as>, %d miles, %s, %s, Track %s",bearing,rangeNM,alttext,aspect,track)
+end
 end
 if Bogey and Spades then
 BRAANATO=BRAANATO..", Bogey, Spades."
@@ -14456,9 +14475,9 @@ BRAANATO=BRAANATO.."."
 end
 else
 if aspect==""then
-BRAANATO=string.format("BRA %03d, %d miles, Angels %d, Track %s",bearing,rangeNM,alt,track)
+BRAANATO=string.format("BRA %03d, %d miles, %s, Track %s",bearing,rangeNM,alttext,track)
 else
-BRAANATO=string.format("BRAA %03d, %d miles, Angels %d, %s, Track %s",bearing,rangeNM,alt,aspect,track)
+BRAANATO=string.format("BRAA %03d, %d miles, %s, %s, Track %s",bearing,rangeNM,alttext,aspect,track)
 end
 if Bogey and Spades then
 BRAANATO=BRAANATO..", Bogey, Spades."
