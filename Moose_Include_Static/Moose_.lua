@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T10:37:56.0000000Z-ab31aecdac7269b32ad0edaf1d9aef0aee0d0327 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T11:08:18.0000000Z-3eb9bfe9ee1676318320ac84f61924e7637596d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14590,6 +14590,9 @@ local alt=UTILS.Round(UTILS.MetersToFeet(self.y)/1000,0)
 local alttext=string.format("%d thousand",alt)
 if Angels then
 alttext=string.format("Angels %d",alt)
+end
+if alt<1 then
+alttext="very low"
 end
 local track=UTILS.BearingToCardinal(bearing)or"North"
 if rangeNM>3 then
@@ -85017,7 +85020,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.29",
+version="beta 0.1.30",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85933,7 +85936,7 @@ self:T("DEAD contact CID="..contact.CID)
 end
 end
 )
-if deadcontacts:Count()>0 then
+if deadcontacts:Count()>0 and(not self.NoGroupTags)then
 self:T("DEAD count="..deadcontacts:Count())
 deadcontacts:ForEach(
 function(Contact)
@@ -86287,7 +86290,7 @@ local GID,Outcome=self:_GetManagedGrpID(Group)
 local gcallsign=self:_GetCallSign(Group,GID)or"Ghost 1"
 if not self.intel then
 text=string.format("%s. %s. Clean.",self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
-self:_NewRadioEntry(text,text,0,false,true,true,false)
+self:_NewRadioEntry(text,text,0,false,true,true,false,true)
 return self
 end
 if Outcome then
@@ -86314,7 +86317,7 @@ end
 local contactsAO=self.ContactsAO:GetSize()
 if contactsAO==0 then
 text=string.format("%s. %s. Clean.",self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
-self:_NewRadioEntry(text,textScreen,GID,Outcome,Outcome,true,false)
+self:_NewRadioEntry(text,textScreen,GID,Outcome,Outcome,true,false,true)
 else
 if contactsAO>0 then
 text=string.format("%s. %s. Bogey Dope. ",self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
@@ -86325,7 +86328,7 @@ else
 text=text..contactsAO.." groups. "
 textScreen=textScreen..contactsAO.." groups.\n"
 end
-self:_NewRadioEntry(text,textScreen,GID,Outcome,true,true,false)
+self:_NewRadioEntry(text,textScreen,GID,Outcome,true,true,false,true)
 self:_CreateBogeyDope(self:_GetCallSign(Group,GID)or"Ghost 1",GID)
 end
 end
@@ -87199,10 +87202,18 @@ AngleDegText=string.gsub(AngleDegText," $","")
 local AngleDegTextTTS=string.gsub(AngleDegText,"0","zero")
 local Distance=ToCoordinate:Get2DDistance(FromCoordinate)
 local distancenm=UTILS.Round(UTILS.MetersToNM(Distance),0)
+if altitude>=1 then
 BRText=string.format("%03d, %d miles, %d thousand",AngleDegrees,distancenm,altitude)
 BRTextTTS=string.format("%s, %d miles, %d thousand",AngleDegText,distancenm,altitude)
 if self.PathToGoogleKey then
 BRTextTTS=string.format("%s, %d miles, %d thousand",AngleDegTextTTS,distancenm,altitude)
+end
+else
+BRText=string.format("%03d, %d miles, very low",AngleDegrees,distancenm)
+BRTextTTS=string.format("%s, %d miles, very low",AngleDegText,distancenm)
+if self.PathToGoogleKey then
+BRTextTTS=string.format("%s, %d miles, very low",AngleDegTextTTS,distancenm)
+end
 end
 self:T(BRText,BRTextTTS)
 return BRText,BRTextTTS
@@ -87818,7 +87829,8 @@ end
 end
 string.gsub(BRAText,"BRAA","brah")
 string.gsub(BRAText,"BRA","brah")
-self:_NewRadioEntry(BRAText,TextScreen,GID,isGroup,true,IsNew,false,IsNew)
+local prio=IsNew or IsBogeyDope
+self:_NewRadioEntry(BRAText,TextScreen,GID,isGroup,true,IsNew,false,prio)
 return self
 end
 function AWACS:_GetAliveOpsGroupFromTable(OpsGroups)
