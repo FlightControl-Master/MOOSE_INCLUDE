@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T11:06:55.0000000Z-afec1c3a5bc66e3c9cf487e24d2de5ab764f8517 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T14:56:33.0000000Z-196bcf39cf76ade9edf081408fbca404efb36252 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2135,7 +2135,8 @@ Normandy="Normandy",
 PersianGulf="PersianGulf",
 TheChannel="TheChannel",
 Syria="Syria",
-MarianaIslands="MarianaIslands"
+MarianaIslands="MarianaIslands",
+Falklands="Falklands",
 }
 CALLSIGN={
 Aircraft={
@@ -2936,6 +2937,8 @@ elseif map==DCSMAP.Syria then
 declination=5
 elseif map==DCSMAP.MarianaIslands then
 declination=2
+elseif map==DCSMAP.Falklands then
+declination=12
 else
 declination=0
 end
