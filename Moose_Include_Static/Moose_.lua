@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-13T13:43:10.0000000Z-40c6cc59d3336553a5f95e400f2fef05c1a6be39 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T10:39:17.0000000Z-6025339b464739d20e4e732629cac6705cf457c1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61040,104 +61040,107 @@ self:T(self.lid.." _EventHandler")
 self:T({Event=EventData.id})
 local _event=EventData
 if self.enableForAI==false and _event.IniPlayerName==nil then
-return
+return self
 end
 if _event==nil or _event.initiator==nil then
-return false
+return self
 elseif _event.id==EVENTS.Takeoff then
 self:T(self.lid.." Event unit - Takeoff")
 local _coalition=_event.IniCoalition
 if _coalition~=self.coalition then
-return
+return self
 end
 if _event.IniGroupName then
 self.takenOff[_event.IniUnitName]=true
 end
-return true
+return self
 elseif _event.id==EVENTS.PlayerEnterAircraft or _event.id==EVENTS.PlayerEnterUnit then
 self:T(self.lid.." Event unit - Player Enter")
 local _coalition=_event.IniCoalition
+self:T("Coalition = "..UTILS.GetCoalitionName(_coalition))
 if _coalition~=self.coalition then
-return
+return self
 end
 if _event.IniPlayerName then
 self.takenOff[_event.IniPlayerName]=nil
+end
+self:T("Taken Off: "..tostring(_event.IniUnit:InAir(true)))
+if _event.IniUnit:InAir(true)then
+self.takenOff[_event.IniPlayerName]=true
 end
 local _unit=_event.IniUnit
 local _group=_event.IniGroup
 if _unit:IsHelicopter()or _group:IsHelicopter()then
 self:_AddMedevacMenuItem()
 end
-return true
+return self
 elseif(_event.id==EVENTS.PilotDead and self.csarOncrash==false)then
 self:T(self.lid.." Event unit - Pilot Dead")
 local _unit=_event.IniUnit
 local _unitname=_event.IniUnitName
 local _group=_event.IniGroup
 if _unit==nil then
-return
+return self
 end
 local _coalition=_event.IniCoalition
 if _coalition~=self.coalition then
-return
+return self
 end
 if self.takenOff[_event.IniUnitName]==true or _group:IsAirborne()then
 if self:_DoubleEjection(_unitname)then
-return
+return self
 end
 else
 self:T(self.lid.." Pilot has not taken off, ignore")
 end
-return
+return self
 elseif _event.id==EVENTS.PilotDead or _event.id==EVENTS.Ejection then
 if _event.id==EVENTS.PilotDead and self.csarOncrash==false then
-return
+return self
 end
 self:T(self.lid.." Event unit - Pilot Ejected")
 local _unit=_event.IniUnit
 local _unitname=_event.IniUnitName
 local _group=_event.IniGroup
+self:T({_unit.UnitName,_unitname,_group.GroupName})
 if _unit==nil then
-return
+self:T("Unit NIL!")
+return self
 end
-local _coalition=_unit:GetCoalition()
+local _coalition=_group:GetCoalition()
 if _coalition~=self.coalition then
-return
+self:T("Wrong coalition! Coalition = "..UTILS.GetCoalitionName(_coalition))
+return self
 end
+self:T("Airborne: "..tostring(_group:IsAirborne()))
+self:T("Taken Off: "..tostring(self.takenOff[_event.IniUnitName]))
 if not self.takenOff[_event.IniUnitName]and not _group:IsAirborne()then
 self:T(self.lid.." Pilot has not taken off, ignore")
-return
 end
 if self:_DoubleEjection(_unitname)then
-return
+self:T("Double Ejection!")
+return self
 end
 if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
-return
+self:T("Maxed Downed Pilot!")
+return self
 end
 local wetfeet=false
-local surface=_unit:GetCoordinate():GetSurfaceType()
+local initdcscoord=nil
+local initcoord=nil
+initdcscoord=_event.TgtDCSUnit:getPoint()
+initcoord=COORDINATE:NewFromVec3(initdcscoord)
+self:T({initdcscoord})
+local surface=initcoord:GetSurfaceType()
 if surface==land.SurfaceType.WATER then
+self:T("Wet feet!")
 wetfeet=true
 end
 if self.csarUsePara==false or(self.csarUsePara and wetfeet)then
 local _freq=self:_GenerateADFFrequency()
-self:_AddCsar(_coalition,_unit:GetCountry(),_unit:GetCoordinate(),_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
-return true
+self:_AddCsar(_coalition,_unit:GetCountry(),initcoord,_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
+return self
 end
-elseif(_event.id==EVENTS.LandingAfterEjection and self.csarUsePara==true)then
-self:I({EVENT=_event})
-local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
-local _unitname="Aircraft"
-local _typename="Ejected Pilot"
-local _country=_event.initiator:getCountry()
-local _coalition=coalition.getCountryCoalition(_country)
-if _coalition==self.coalition then
-local _freq=self:_GenerateADFFrequency()
-self:I({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
-self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,false,"none")
-Unit.destroy(_event.initiator)
-end
-return true
 elseif _event.id==EVENTS.Land then
 self:T(self.lid.." Landing")
 if _event.IniUnitName then
@@ -61147,20 +61150,20 @@ if self.allowFARPRescue then
 local _unit=_event.IniUnit
 if _unit==nil then
 self:T(self.lid.." Unit nil on landing")
-return
+return self
 end
 local _coalition=_event.IniCoalition
 if _coalition~=self.coalition then
-return
+return self
 end
 self.takenOff[_event.IniUnitName]=nil
 local _place=_event.Place
 if _place==nil then
 self:T(self.lid.." Landing Place Nil")
-return
+return self
 end
 if self.inTransitGroups[_event.IniUnitName]==nil then
-return
+return self
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
 self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true)
@@ -61168,7 +61171,22 @@ else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
 end
-return true
+return self
+end
+if(_event.id==EVENTS.LandingAfterEjection and self.csarUsePara==true)then
+self:T("LANDING_AFTER_EJECTION")
+local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
+local _unitname="Aircraft"
+local _typename="Ejected Pilot"
+local _country=_event.initiator:getCountry()
+local _coalition=coalition.getCountryCoalition(_country)
+self:T("Country = ".._country.." Coalition = ".._coalition)
+if _coalition==self.coalition then
+local _freq=self:_GenerateADFFrequency()
+self:I({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
+self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,false,"none")
+Unit.destroy(_event.initiator)
+end
 end
 return self
 end
