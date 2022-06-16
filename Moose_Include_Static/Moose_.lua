@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-16T11:41:44.0000000Z-d5636f4a1902f271ffbc1fb3fec6120b747399a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-16T13:42:02.0000000Z-b83f4782943fbf1bb6516362d21e32fac5e5f2b9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61151,9 +61151,15 @@ end
 local wetfeet=false
 local initdcscoord=nil
 local initcoord=nil
+if _event.id==EVENTS.Ejection then
 initdcscoord=_event.TgtDCSUnit:getPoint()
 initcoord=COORDINATE:NewFromVec3(initdcscoord)
 self:T({initdcscoord})
+else
+initdcscoord=_event.IniDCSUnit:getPoint()
+initcoord=COORDINATE:NewFromVec3(initdcscoord)
+self:T({initdcscoord})
+end
 local surface=initcoord:GetSurfaceType()
 if surface==land.SurfaceType.WATER then
 self:T("Wet feet!")
