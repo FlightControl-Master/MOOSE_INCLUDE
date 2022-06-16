@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-14T14:56:33.0000000Z-196bcf39cf76ade9edf081408fbca404efb36252 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-16T11:41:44.0000000Z-d5636f4a1902f271ffbc1fb3fec6120b747399a5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60739,7 +60739,7 @@ CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
-CSAR.version="1.0.5"
+CSAR.version="1.0.6"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -60777,6 +60777,7 @@ self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
 self:AddTransition("*","PilotDown","*")
 self:AddTransition("*","Approach","*")
+self:AddTransition("*","Landed","*")
 self:AddTransition("*","Boarded","*")
 self:AddTransition("*","Returning","*")
 self:AddTransition("*","Rescued","*")
@@ -61174,8 +61175,9 @@ if _unit==nil then
 self:T(self.lid.." Unit nil on landing")
 return self
 end
-local _coalition=_event.IniCoalition
+local _coalition=_event.IniGroup:GetCoalition()
 if _coalition~=self.coalition then
+self:T(self.lid.." Wrong coalition")
 return self
 end
 self.takenOff[_event.IniUnitName]=nil
@@ -61188,6 +61190,7 @@ if self.inTransitGroups[_event.IniUnitName]==nil then
 return self
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
+self:__Landed(2,_event.IniUnitName,_place)
 self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true)
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
@@ -61275,7 +61278,7 @@ if _heliUnit==nil then
 self.heliVisibleMessage[_lookupKeyHeli]=nil
 self.heliCloseMessage[_lookupKeyHeli]=nil
 self.landedStatus[_lookupKeyHeli]=nil
-self:T("...helinunit nil!")
+self:T("...heliunit nil!")
 return
 end
 local _heliCoord=_heliUnit:GetCoordinate()
@@ -61344,7 +61347,7 @@ _maxUnits=self.max_units
 end
 if _unitsInHelicopter+1>_maxUnits then
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s, %s. We\'re already crammed with %d guys! Sorry!",_pilotName,_heliName,_unitsInHelicopter,_unitsInHelicopter),self.messageTime,false,false,true)
-return true
+return self
 end
 local found,downedgrouptable=self:_CheckNameInDownedPilots(_woundedGroupName)
 local grouptable=downedgrouptable
@@ -61360,7 +61363,7 @@ _woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
 self:__Boarded(5,_heliName,_woundedGroupName)
-return true
+return self
 end
 function CSAR:_OrderGroupToMoveToPoint(_leader,_destination)
 self:T(self.lid.." _OrderGroupToMoveToPoint")
@@ -61405,24 +61408,24 @@ _time=self.landedStatus[_lookupKeyHeli]-10
 self.landedStatus[_lookupKeyHeli]=_time
 end
 if _distance<self.loadDistance+5 or _distance<=13 then
-if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+if self.pilotmustopendoors and(self:_IsLoadingDoorOpen(_heliName)==false)then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true,true)
-return true
+return false
 else
 self.landedStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
-return false
+return true
 end
 end
 end
 else
 if(_distance<self.loadDistance)then
-if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+if self.pilotmustopendoors and(self:_IsLoadingDoorOpen(_heliName)==false)then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true,true)
-return true
+return false
 else
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
-return false
+return true
 end
 end
 end
@@ -61449,18 +61452,19 @@ end
 if _time>0 then
 self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",self.messageTime,true)
 else
-if self.pilotmustopendoors and not self:_IsLoadingDoorOpen(_heliName)then
+if self.pilotmustopendoors and(self:_IsLoadingDoorOpen(_heliName)==false)then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true,true)
-return true
+return false
 else
 self.hoverStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
-return false
+return true
 end
 end
 _reset=false
 else
 self:_DisplayMessageToSAR(_heliUnit,"Too high to winch ".._pilotName.." \nReduce height and hover for 10 seconds!",self.messageTime,true,true)
+return false
 end
 end
 end
@@ -61926,7 +61930,7 @@ end
 end
 function CSAR:onafterStart(From,Event,To)
 self:T({From,Event,To})
-self:I(self.lid.."Started.")
+self:I(self.lid.."Started ("..self.version..")")
 self:HandleEvent(EVENTS.Takeoff,self._EventHandler)
 self:HandleEvent(EVENTS.Land,self._EventHandler)
 self:HandleEvent(EVENTS.Ejection,self._EventHandler)
@@ -62049,6 +62053,10 @@ return self
 end
 function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText)
 self:T({From,Event,To,Group,Frequency,Leadername,CoordinatesText})
+return self
+end
+function CSAR:onbeforeLanded(From,Event,To,HeliName,Airbase)
+self:T({From,Event,To,HeliName,Airbase})
 return self
 end
 AI_BALANCER={
