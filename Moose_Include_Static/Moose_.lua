@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-25T12:28:04.0000000Z-7dda54f36d6007491c4787d94bfb2fc64a8df710 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-25T15:24:37.0000000Z-ad5a0a5cd93367334b4958bd911818f7b46b7e21 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79132,7 +79132,7 @@ player=grouptable.player,
 _woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
-self:__Boarded(5,_heliName,_woundedGroupName)
+self:__Boarded(5,_heliName,_woundedGroupName,grouptable.desc)
 return self
 end
 function CSAR:_OrderGroupToMoveToPoint(_leader,_destination)
