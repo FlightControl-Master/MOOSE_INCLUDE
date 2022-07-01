@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-06-25T15:24:37.0000000Z-ad5a0a5cd93367334b4958bd911818f7b46b7e21 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-01T21:10:10.0000000Z-6cfa24340f8d8b121c49cf672945155a78836fdf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -37820,7 +37820,7 @@ local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_r
 if shots and accur then
 _text=_text..string.format("\nTotal rounds fired %d. Accuracy %.1f %%.",shots,accur)
 end
-_text=_text..string.format("\n%s",_result.text)
+_text=_text..string.format("\n%s",resulttext)
 self:_DisplayMessageToGroup(_unit,_text)
 local result={}
 result.player=_playername
