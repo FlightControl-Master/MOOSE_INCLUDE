@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T06:47:43.0000000Z-25915c077ec3f7316836794a98bf0e40926cc971 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T06:51:28.0000000Z-ccbf8b34ef805694ff8a7d971bc0dee3fa8125f5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -42394,9 +42394,12 @@ for i=0,2 do
 local airports=coalition.getAirbases(i)
 for _,airbase in pairs(airports)do
 local name=airbase:getName()
-local q=AIRBASE:FindByName(name):GetCoordinate()
+local a=AIRBASE:FindByName(name)
+if a then
+local q=a:GetCoordinate()
 local d=q:Get2DDistance(pos)
 table.insert(self.group[GID].player[UID].airports,{distance=d,name=name})
+end
 end
 end
 local function compare(a,b)
