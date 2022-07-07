@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-01T21:05:26.0000000Z-183a60159c6069df05069815b40fc506502db896 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T06:41:56.0000000Z-f6e673c2bbe80951c0eb1c83546da7e169120e1a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56712,6 +56712,9 @@ self:Transmission(ATIS.Sound.TimeLocal,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
+if self.useSRS then
+WINDFROM=string.gsub(WINDFROM,".","%1 ")
+end
 if self.metric then
 subtitle=string.format("Wind from %s at %s m/s",WINDFROM,WINDSPEED)
 else
@@ -57117,7 +57120,7 @@ end
 alltext=alltext..";\n"..subtitle
 end
 if self.tacan then
-subtitle=string.format("TACAN channel %dX",self.tacan)
+subtitle=string.format("TACAN channel %dX Ray",self.tacan)
 if not self.useSRS then
 self:Transmission(ATIS.Sound.TACANChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(self.tacan),nil,0.2)
