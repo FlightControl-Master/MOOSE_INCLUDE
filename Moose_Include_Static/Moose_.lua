@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-01T21:10:10.0000000Z-6cfa24340f8d8b121c49cf672945155a78836fdf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T06:47:43.0000000Z-25915c077ec3f7316836794a98bf0e40926cc971 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9208,10 +9208,6 @@ end
 function DATABASE:FindStatic(StaticName)
 local StaticFound=self.STATICS[StaticName]
 return StaticFound
-end
-function DATABASE:FindAirbase(AirbaseName)
-local AirbaseFound=self.AIRBASES[AirbaseName]
-return AirbaseFound
 end
 function DATABASE:AddAirbase(AirbaseName)
 if not self.AIRBASES[AirbaseName]then
@@ -59350,6 +59346,9 @@ self:Transmission(ATIS.Sound.TimeLocal,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
+if self.useSRS then
+WINDFROM=string.gsub(WINDFROM,".","%1 ")
+end
 if self.metric then
 subtitle=string.format("Wind from %s at %s m/s",WINDFROM,WINDSPEED)
 else
@@ -59755,7 +59754,7 @@ end
 alltext=alltext..";\n"..subtitle
 end
 if self.tacan then
-subtitle=string.format("TACAN channel %dX",self.tacan)
+subtitle=string.format("TACAN channel %dX Ray",self.tacan)
 if not self.useSRS then
 self:Transmission(ATIS.Sound.TACANChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(self.tacan),nil,0.2)
