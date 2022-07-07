@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T06:51:28.0000000Z-ccbf8b34ef805694ff8a7d971bc0dee3fa8125f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T15:55:35.0000000Z-5f8a0643f42dc0c585a398ef5b58e23fd1d13ed9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85036,7 +85036,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.1.30",
+version="beta 0.2.31",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85118,6 +85118,8 @@ WindowsTTSPadding=2.5,
 PlayerCapAssigment=true,
 AllowMarkers=false,
 PlayerStationName=nil,
+GCI=false,
+GCIGroup=nil,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -85275,7 +85277,9 @@ self.Frequency=Frequency or 271
 self.Modulation=Modulation or radio.modulation.AM
 self.Airbase=AIRBASE:FindByName(AirbaseName)
 self.AwacsAngels=25
+if AwacsOrbit then
 self.OrbitZone=ZONE:New(AwacsOrbit)
+end
 self.BorderZone=nil
 self.CallSign=CALLSIGN.AWACS.Darkstar
 self.CallSignNo=1
@@ -85412,6 +85416,16 @@ self:HandleEvent(EVENTS.UnitLost,self._EventHandler)
 self:HandleEvent(EVENTS.BDA,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.Shot,self._EventHandler)
+return self
+end
+function AWACS:StartAsGCI(EWR,Delay)
+self:T(self.lid.."SetGCI")
+local delay=Delay or-5
+self.GCI=true
+self.GCIGroup=EWR
+self:SetEscort(0)
+self:__Start(delay)
+self:__Started(2*delay)
 return self
 end
 function AWACS:_NewRadioEntry(TextTTS,TextScreen,GID,IsGroup,ToScreen,IsNew,FromAI,IsPrio)
@@ -86050,6 +86064,7 @@ self:T(self.lid.."Across Border = YES - ignore")
 checked=true
 end
 end
+if not self.GCI then
 local HVTCoordinate=self.OrbitZone:GetCoordinate()
 local distance=UTILS.NMToMeters(200)
 if contactcoord then
@@ -86060,6 +86075,7 @@ if UTILS.MetersToNM(distance)<=45 and not checked then
 self:T(self.lid.."In HVT Distance = YES")
 targettable:Push(contact,distance)
 checked=true
+end
 end
 local isinopszone=self.OpsZone:IsVec2InZone(contactvec2)
 local distance=self.OpsZone:Get2DDistance(contactcoord)
@@ -86252,7 +86268,7 @@ local contact=_contact
 local coordVec2=contact.Contact.position:GetVec2()
 if self.OpsZone:IsVec2InZone(coordVec2)then
 self.PictureAO:Push(contact)
-elseif self.OrbitZone:IsVec2InZone(coordVec2)then
+elseif self.OrbitZone and self.OrbitZone:IsVec2InZone(coordVec2)then
 self.PictureAO:Push(contact)
 elseif self.ControlZone:IsVec2InZone(coordVec2)then
 local distance=math.floor((contact.Contact.position:Get2DDistance(self.ControlZone:GetCoordinate())/1000)+1)
@@ -86324,9 +86340,11 @@ self.ContactsAO:Push(managedcontact,dist)
 elseif self.BorderZone and self.BorderZone:IsVec2InZone(coordVec2)then
 self.ContactsAO:Push(managedcontact,dist)
 else
+if self.OrbitZone then
 local distance=contactposition:Get2DDistance(self.OrbitZone:GetCoordinate())
 if(distance<=UTILS.NMToMeters(45))then
 self.ContactsAO:Push(managedcontact,distance)
+end
 end
 end
 end
@@ -87109,8 +87127,10 @@ intel:SetClusterAnalysis(true,false,false)
 local acceptzoneset=SET_ZONE:New()
 acceptzoneset:AddZone(self.ControlZone)
 acceptzoneset:AddZone(self.OpsZone)
+if not self.GCI then
 self.OrbitZone:SetRadius(UTILS.NMToMeters(55))
 acceptzoneset:AddZone(self.OrbitZone)
+end
 if self.BorderZone then
 acceptzoneset:AddZone(self.BorderZone)
 end
@@ -88297,17 +88317,22 @@ local Rocktag=string.format("FEZ: %s\nBulls Coordinate: %s",self.AOName,AOCoordS
 MARKER:New(self.AOCoordinate,Rocktag):ToAll()
 self.StationZone:DrawZone(-1,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",self.StationZoneName,self.StationZone:GetCoordinate():ToStringLLDDM())
+if not self.GCI then
 MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToAll()
 self.OrbitZone:DrawZone(-1,{0,1,0},1,{0,1,0},0.2,5,true)
 MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToAll()
+end
 else
 local AOCoordString=self.AOCoordinate:ToStringLLDDM()
 local Rocktag=string.format("FEZ: %s\nBulls Coordinate: %s",self.AOName,AOCoordString)
 MARKER:New(self.AOCoordinate,Rocktag):ToAll()
+if not self.GCI then
 MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToAll()
+end
 local stationtag=string.format("Station: %s\nCoordinate: %s",self.StationZoneName,self.StationZone:GetCoordinate():ToStringLLDDM())
 MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToAll()
 end
+if not self.GCI then
 local AwacsAW=self.AirWing
 local mission=AUFTRAG:NewORBIT_RACETRACK(self.OrbitZone:GetCoordinate(),self.AwacsAngels*1000,self.Speed,self.Heading,self.Leg)
 local timeonstation=(self.AwacsTimeOnStation+self.ShiftChangeTime)*3600
@@ -88317,9 +88342,36 @@ AwacsAW:AddMission(mission)
 self.AwacsMission=mission
 self.AwacsInZone=false
 self.AwacsReady=false
+else
+self.AwacsInZone=true
+self.AwacsReady=true
+self:_StartIntel(self.GCIGroup)
+if self.GCIGroup:IsGround()then
+self.AwacsFG=ARMYGROUP:New(self.GCIGroup)
+self.AwacsFG:SetDefaultRadio(self.Frequency,self.Modulation)
+self.AwacsFG:SwitchRadio(self.Frequency,self.Modulation)
+elseif self.GCIGroup:IsShip()then
+self.AwacsFG=NAVYGROUP:New(self.GCIGroup)
+self.AwacsFG:SetDefaultRadio(self.Frequency,self.Modulation)
+self.AwacsFG:SwitchRadio(self.Frequency,self.Modulation)
+else
+self:E(self.lid.."**** Group unsuitable for GCI ops! Needs to be a GROUND or SHIP type group!")
+self:Stop()
+return self
+end
+self.AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,self.PathToGoogleKey,"AWACS",self.Volume)
+self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
+self:__CheckRadioQueue(-10)
+local text=string.format("%s. All stations, SUNRISE SUNRISE SUNRISE, %s.",self.callsigntxt,self.callsigntxt)
+self:_NewRadioEntry(text,text,0,false,false,false,false,true)
+self:T(self.lid..text)
+self.sunrisedone=true
+end
 local ZoneSet=SET_ZONE:New()
 ZoneSet:AddZone(self.ControlZone)
+if not self.GCI then
 ZoneSet:AddZone(self.OrbitZone)
+end
 if self.BorderZone then
 ZoneSet:AddZone(self.BorderZone)
 end
@@ -88372,6 +88424,7 @@ if self.AwacsFG then
 awacs=self.AwacsFG:GetGroup()
 end
 local monitoringdata=self.MonitoringData
+if not self.GCI then
 if awacs and awacs:IsAlive()and not self.AwacsInZone then
 local orbitzone=self.OrbitZone
 if awacs:IsInZone(orbitzone)then
@@ -88380,6 +88433,7 @@ self:T(self.lid.."Arrived in Orbit Zone: "..orbitzone:GetName())
 local text=string.format("%s on station for %s control.",self.callsigntxt,self.AOName or"Rock")
 local textScreen=string.format("%s on station for %s control.",self.callsigntxt,self.AOName or"Rock")
 self:_NewRadioEntry(text,textScreen,0,false,true,true,false,true)
+end
 end
 end
 if(awacs and awacs:IsAlive())then
@@ -88546,7 +88600,10 @@ end
 function AWACS:onafterStatus(From,Event,To)
 self:I({From,Event,To})
 self:_SetClientMenus()
-local monitoringdata=self:_CheckAwacsStatus()
+local monitoringdata=self.MonitoringData
+if not self.GCI then
+monitoringdata=self:_CheckAwacsStatus()
+end
 local awacsalive=false
 if self.AwacsFG then
 local awacs=self.AwacsFG:GetGroup()
@@ -88570,12 +88627,14 @@ if outcome and#AI>0 then
 self:_AssignPilotToTarget(AI,targets)
 end
 end
+if not self.GCI then
 monitoringdata.AwacsShiftChange=self.ShiftChangeAwacsFlag
 if self.AwacsFG then
 monitoringdata.AwacsStateFG=self.AwacsFG:GetState()
 end
 monitoringdata.AwacsStateMission=self.AwacsMission:GetState()
 monitoringdata.EscortsShiftChange=self.ShiftChangeEscortsFlag
+end
 monitoringdata.AICAPCurrent=self.AICAPMissions:Count()
 monitoringdata.AICAPMax=self.MaxAIonCAP
 monitoringdata.Airwings=self.CAPAirwings:Count()
@@ -88717,7 +88776,10 @@ Cluster.TargetGroupNaming=managedcontact.TargetGroupNaming
 self.Contacts:Push(managedcontact,self.CID)
 local ContactCoordinate=Contact.position:GetVec2()
 local incontrolzone=self.ControlZone:IsVec2InZone(ContactCoordinate)
-local distance=Contact.position:Get2DDistance(self.OrbitZone:GetCoordinate())
+local distance=1000000
+if not self.GCI then
+distance=Contact.position:Get2DDistance(self.OrbitZone:GetCoordinate())
+end
 local inborderzone=false
 if self.BorderZone then
 inborderzone=self.BorderZone:IsVec2InZone(ContactCoordinate)
