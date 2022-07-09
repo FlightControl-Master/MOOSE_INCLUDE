@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-09T12:52:49.0000000Z-18dcd0a5d271783e02ab6400fa07e6be6782057a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-09T13:02:14.0000000Z-536341b6de770c127dcbb28952680a12288a09f5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85425,8 +85425,12 @@ end
 function AWACS:StartAsGCI(EWR,Delay)
 self:T(self.lid.."SetGCI")
 local delay=Delay or-5
-self.GCI=true
+if type(EWR)=="string"then
+self.GCIGroup=GROUP:FindByName(EWR)
+else
 self.GCIGroup=EWR
+end
+self.GCI=true
 self:SetEscort(0)
 self:__Start(delay)
 self:__Started(2*delay)
