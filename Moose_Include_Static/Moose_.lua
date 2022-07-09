@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-07T15:55:35.0000000Z-5f8a0643f42dc0c585a398ef5b58e23fd1d13ed9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-09T12:52:49.0000000Z-18dcd0a5d271783e02ab6400fa07e6be6782057a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13647,7 +13647,11 @@ function COORDINATE:GetMovingText(Settings)
 return self:GetVelocityText(Settings)..", "..self:GetHeadingText(Settings)
 end
 function COORDINATE:GetDirectionVec3(TargetCoordinate)
+if TargetCoordinate then
 return{x=TargetCoordinate.x-self.x,y=TargetCoordinate.y-self.y,z=TargetCoordinate.z-self.z}
+else
+return{x=0,y=0,z=0}
+end
 end
 function COORDINATE:GetNorthCorrectionRadians()
 local TargetVec3=self:GetVec3()
@@ -85036,7 +85040,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="beta 0.2.31",
+version="beta 0.2.3231",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -87891,13 +87895,13 @@ self:T("Checking MissionStack")
 for _,_mission in pairs(self.CatchAllMissions)do
 local mission=_mission
 local type=mission:GetType()
-if type==AUFTRAG.Type.ALERT5 then
+if type==AUFTRAG.Type.ALERT5 and mission:IsNotOver()then
 MissionStack:Push(mission,mission.auftragsnummer)
 Alert5Missions=Alert5Missions+1
-elseif type==AUFTRAG.Type.CAP then
+elseif type==AUFTRAG.Type.CAP and mission:IsNotOver()then
 MissionStack:Push(mission,mission.auftragsnummer)
 CAPMissions=CAPMissions+1
-elseif type==AUFTRAG.Type.INTERCEPT then
+elseif type==AUFTRAG.Type.INTERCEPT and mission:IsNotOver()then
 MissionStack:Push(mission,mission.auftragsnummer)
 InterceptMissions=InterceptMissions+1
 end
@@ -87966,23 +87970,10 @@ function AWACS:_CheckAICAPOnStation()
 self:T(self.lid.."_CheckAICAPOnStation")
 self:_ConsistencyCheck()
 local capmissions,alert5missions,interceptmissions=self:_CleanUpAIMissionStack()
-self:T({capmissions,alert5missions,interceptmissions})
+self:I("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
 if self.MaxAIonCAP>0 then
 local onstation=capmissions+alert5missions
-if self.AIRequested<self.MaxAIonCAP then
-local AnchorStackNo,free=self:_GetFreeAnchorStack()
-if free then
-local mission=AUFTRAG:NewALERT5(AUFTRAG.Type.CAP)
-self.CatchAllMissions[#self.CatchAllMissions+1]=mission
-local availableAWS=self.CAPAirwings:Count()
-local AWS=self.CAPAirwings:GetDataTable()
-self.AIRequested=self.AIRequested+1
-local selectedAW=AWS[(((self.AIRequested-1)%availableAWS)+1)]
-selectedAW:AddMission(mission)
-self:T("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
-end
-end
-if self.AIRequested>self.MaxAIonCAP then
+if capmissions>self.MaxAIonCAP then
 self:T(string.format("*** Onstation %d > MaxAIOnCAP %d",onstation,self.MaxAIonCAP))
 local mission=self.AICAPMissions:Pull()
 local Groups=mission:GetOpsGroups()
@@ -87994,7 +87985,20 @@ if checkedin then
 self:_CheckOut(OpsGroup,GID)
 end
 end
-if onstation>0 then
+if capmissions<self.MaxAIonCAP then
+local AnchorStackNo,free=self:_GetFreeAnchorStack()
+if free then
+local mission=AUFTRAG:NewALERT5(AUFTRAG.Type.CAP)
+self.CatchAllMissions[#self.CatchAllMissions+1]=mission
+local availableAWS=self.CAPAirwings:Count()
+local AWS=self.CAPAirwings:GetDataTable()
+self.AIRequested=self.AIRequested+1
+local selectedAW=AWS[(((self.AIRequested-1)%availableAWS)+1)]
+selectedAW:AddMission(mission)
+self:I("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
+end
+end
+if onstation>0 and capmissions<self.MaxAIonCAP then
 local missions=self.AICAPMissions:GetDataTable()
 for _,_Mission in pairs(missions)do
 local mission=_Mission
@@ -88048,6 +88052,7 @@ end
 report:Add("===============")
 end
 if self.debug then
+self:I(report:Text())
 end
 end
 end
@@ -88265,7 +88270,7 @@ ZoneSet,
 RejectZoneSet
 )
 Pilot.FlightGroup:AddMission(intercept)
-local Angels=Pilot.AnchorStackAngels
+local Angels=Pilot.AnchorStackAngels or 25
 Angels=Angels*1000
 local AnchorSpeed=self.CapSpeedBase or 270
 AnchorSpeed=UTILS.KnotsToAltKIAS(AnchorSpeed,Angels)
@@ -88716,6 +88721,7 @@ local auftragtype=auftrag:GetType()
 if auftragtype==AUFTRAG.Type.ALERT5 then
 local capauftrag=AUFTRAG:NewCAP(Anchor.StationZone,Angels*1000,AnchorSpeed,Anchor.StationZone:GetCoordinate(),0,15,{})
 capauftrag:SetTime(nil,((self.CAPTimeOnStation*3600)+(15*60)))
+capauftrag:AddAsset(managedgroup.FlightGroup)
 self.CatchAllMissions[#self.CatchAllMissions+1]=capauftrag
 managedgroup.FlightGroup:AddMission(capauftrag)
 auftrag:Cancel()
