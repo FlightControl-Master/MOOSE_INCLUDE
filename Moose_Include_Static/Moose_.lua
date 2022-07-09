@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-09T13:02:14.0000000Z-536341b6de770c127dcbb28952680a12288a09f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-09T13:34:08.0000000Z-5ad88be9974065a1c3e6b5cac630ed5b5f7fc223 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85422,7 +85422,7 @@ self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.Shot,self._EventHandler)
 return self
 end
-function AWACS:StartAsGCI(EWR,Delay)
+function AWACS:SetAsGCI(EWR,Delay)
 self:T(self.lid.."SetGCI")
 local delay=Delay or-5
 if type(EWR)=="string"then
@@ -85432,8 +85432,6 @@ self.GCIGroup=EWR
 end
 self.GCI=true
 self:SetEscort(0)
-self:__Start(delay)
-self:__Started(2*delay)
 return self
 end
 function AWACS:_NewRadioEntry(TextTTS,TextScreen,GID,IsGroup,ToScreen,IsNew,FromAI,IsPrio)
@@ -88422,6 +88420,9 @@ function MarkerOps:OnAfterMarkDeleted(From,Event,To)
 BASE:I(string.format("%s Mark Deleted.",self.Tag))
 end
 self.MarkerOps=MarkerOps
+end
+if self.GCI then
+self:__Started(-5)
 end
 self:__Status(-30)
 return self
