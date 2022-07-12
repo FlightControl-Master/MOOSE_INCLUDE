@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-12T06:13:24.0000000Z-0e4d731068d284c827decd7d11dc25f7c3d11d5f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-12T06:18:47.0000000Z-ab1dd2b3743c1f75d7376730710236e1fe05e2ba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85328,6 +85328,8 @@ self.AwacsROE=AWACS.ROE.IFF
 self.AwacsROT=AWACS.ROT.BYPASSESCAPE
 self.HasEscorts=false
 self.EscortTemplate=""
+self.EscortMission={}
+self.EscortMissionReplacement={}
 self.PathToSRS="C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender="female"
 self.Culture="en-GB"
@@ -85759,16 +85761,18 @@ function AWACS:_StartEscorts(Shiftchange)
 self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
-local mission=AUFTRAG:NewESCORT(group,{x=-100,y=0,z=200},45,{"Air"})
-self.CatchAllMissions[#self.CatchAllMissions+1]=mission
-mission:SetRequiredAssets(self.EscortNumber)
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
-mission:SetTime(nil,timeonstation)
-self.AirWing:AddMission(mission)
+for i=1,self.EscortNumber do
+local escort=AUFTRAG:NewESCORT(group,{x=-100*((i+(i%2))/2),y=0,z=(100+100*((i+(i%2))/2))*(-1)^i},45,{"Air"})
+escort:SetRequiredAssets(1)
+escort:SetTime(nil,timeonstation)
+self.AirWing:AddMission(escort)
+self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
-self.EscortMissionReplacement=mission
+self.EscortMissionReplacement[i]=mission
 else
-self.EscortMission=mission
+self.EscortMission[i]=mission
+end
 end
 return self
 end
@@ -88535,7 +88539,9 @@ end
 report:Add("====================")
 end
 if self.HasEscorts then
-local ESmission=self.EscortMission
+for i=1,self.EscortNumber do
+local ESmission=self.EscortMission[i]
+if not ESmission then break end
 local esstatus=ESmission:GetState()
 local ESmissiontime=(timer.getTime()-self.EscortsTimeStamp)
 local ESTOSLeft=UTILS.Round((((self.EscortsTimeOnStation+self.ShiftChangeTime)*3600)-ESmissiontime),0)
@@ -88560,14 +88566,14 @@ local OpsCallSign=OpsGroup:GetCallsignName()or"Unknown"
 report:Add(string.format("Mission FG %s",OpsName))
 report:Add(string.format("Callsign %s",OpsCallSign))
 report:Add(string.format("Mission FG State %s",OpsGroup:GetState()))
-monitoringdata.EscortsStateMission=esstatus
-monitoringdata.EscortsStateFG=OpsGroup:GetState()
+monitoringdata.EscortsStateMission[i]=esstatus
+monitoringdata.EscortsStateFG[i]=OpsGroup:GetState()
 else
 report:Add("***** Cannot obtain (yet) this missions OpsGroup!")
 end
 report:Add("====================")
 if self.ShiftChangeEscortsFlag and self.ShiftChangeEscortsRequested then
-ESmission=self.EscortMissionReplacement
+ESmission=self.EscortMissionReplacement[i]
 local esstatus=ESmission:GetState()
 local ESmissiontime=(timer.getTime()-self.EscortsTimeStamp)
 local ESTOSLeft=UTILS.Round((((self.EscortsTimeOnStation+self.ShiftChangeTime)*3600)-ESmissiontime),0)
@@ -88590,15 +88596,16 @@ end
 if ESmission:IsExecuting()then
 self.ShiftChangeEscortsFlag=false
 self.ShiftChangeEscortsRequested=false
-if self.EscortMission and self.EscortMission:IsNotOver()then
-self.EscortMission:Cancel()
+if ESmission and ESmission:IsNotOver()then
+ESmission:Cancel()
 end
-self.EscortMission=self.EscortMissionReplacement
-self.EscortMissionReplacement=nil
+self.EscortMission[i]=self.EscortMissionReplacement[i]
+self.EscortMissionReplacement[i]=nil
 self.EscortsTimeStamp=timer.getTime()
 report:Add("*** Replacement DONE ***")
 end
 report:Add("====================")
+end
 end
 end
 if self.debug then
