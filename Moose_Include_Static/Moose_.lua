@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-09T13:34:08.0000000Z-5ad88be9974065a1c3e6b5cac630ed5b5f7fc223 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-12T06:13:24.0000000Z-0e4d731068d284c827decd7d11dc25f7c3d11d5f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85353,6 +85353,7 @@ self.NoMissileCalls=true
 self.PlayerCapAssigment=true
 self.ManagedGrps={}
 self.ManagedGrpID=0
+self.callsignTranslations=nil
 self.AnchorStacks=FIFO:New()
 self.AnchorBaseAngels=22
 self.AnchorStackDistance=2
@@ -85479,6 +85480,9 @@ self.PlayerGuidance=false
 self.callsignshort=true
 self.NoMissileCalls=true
 return self
+end
+function AWACS:SetCustomCallsigns(translationTable)
+self.callsignTranslations=translationTable
 end
 function AWACS:_GetGIDFromGroupOrName(Group)
 self:T(self.lid.."_GetGIDFromGroupOrName")
@@ -85893,6 +85897,10 @@ end
 local callsign="Ghost 1"
 if Group and Group:IsAlive()then
 local shortcallsign=Group:GetCallsign()or"unknown11"
+local callsignroot=string.match(shortcallsign,'(%a+)')
+if self.callsignTranslations and self.callsignTranslations[callsignroot]then
+shortcallsign=string.gsub(shortcallsign,callsignroot,self.callsignTranslations[callsignroot])
+end
 local groupname=Group:GetName()
 local callnumber=string.match(shortcallsign,"(%d+)$")or"unknown11"
 local callnumbermajor=string.char(string.byte(callnumber,1))
