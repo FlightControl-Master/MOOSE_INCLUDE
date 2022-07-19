@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-14T12:06:20.0000000Z-90d1a01998451f301147c6c234647a405885844c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-19T06:10:35.0000000Z-ab50d0a5147f881a5b4beab3748fcc6a66500933 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5552,6 +5552,16 @@ self:F({Channel=Channel,Callsign=Callsign,Duration=Duration})
 local UnitID=self.Positionable:GetID()
 self:T2({"ICLS BEACON started!"})
 self.Positionable:CommandActivateICLS(Channel,UnitID,Callsign)
+if Duration then
+self.Positionable:DeactivateBeacon(Duration)
+end
+return self
+end
+function BEACON:ActivateLink4(Frequency,Morse,Duration)
+self:F({Frequency=Frequency,Morse=Morse,Duration=Duration})
+local UnitID=self.Positionable:GetID()
+self:T2({"LINK4 BEACON started!"})
+self.Positionable:CommandActivateLink4(Frequency,UnitID,Morse)
 if Duration then
 self.Positionable:DeactivateBeacon(Duration)
 end
@@ -19608,6 +19618,22 @@ if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandActivateICLS,{self},Delay)
 else
 self:SetCommand(CommandActivateICLS)
+end
+return self
+end
+function CONTROLLABLE:CommandActivateLink4(Frequency,UnitID,Callsign,Delay)
+local CommandActivateLink4={
+id="ActivateLink4",
+params={
+["frequency "]=Frequency*1000,
+["unitId"]=UnitID,
+["name"]=Callsign,
+}
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandActivateLink4,{self},Delay)
+else
+self:SetCommand(CommandActivateLink4)
 end
 return self
 end
