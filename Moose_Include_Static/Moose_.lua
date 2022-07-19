@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-19T06:30:09.0000000Z-f19740e376d485431d9f68e1cf792c03f8a77851 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-19T07:34:40.0000000Z-58cb0118b4a889488659d9143829a14074ad0d80 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85320,7 +85320,7 @@ if AwacsOrbit then
 self.OrbitZone=ZONE:New(AwacsOrbit)
 end
 self.BorderZone=nil
-self.CallSign=CALLSIGN.AWACS.Darkstar
+self.CallSign=CALLSIGN.AWACS.Magic
 self.CallSignNo=1
 self.NoHelos=true
 self.AIRequested=0
@@ -85733,6 +85733,11 @@ self.SpeedBase=speed
 self.Speed=UTILS.KnotsToAltKIAS(speed,self.Angels*1000)
 self.Heading=Heading or 0
 self.Leg=Leg or 25
+return self
+end
+function AWACS:SetCustomAWACSCallSign(CallsignTable)
+self:T(self.lid.."SetCustomAWACSCallSign")
+self.CallSignClear=CallsignTable
 return self
 end
 function AWACS:AddGroupToDetection(Group)
