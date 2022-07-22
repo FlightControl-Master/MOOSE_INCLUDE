@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-20T20:58:57.0000000Z-420526df9d39be3bef643816588cbd3745dc8ee6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-22T09:02:08.0000000Z-498d7e2f66a50f807f965820fea2119514193fb8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12915,8 +12915,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-env.info(string.format("zone %s %s",MZoneName,ZonePrefix))
-self:I({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
+self:T2({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
 if string.find(MZoneName,ZonePrefix,1)then
 MZonePrefix=true
 end
@@ -24171,6 +24170,8 @@ AIRBASE.SouthAtlantic={
 ["Ushuaia"]="Ushuaia",
 ["Ushuaia_Helo_Port"]="Ushuaia Helo Port",
 ["Punta_Arenas"]="Punta Arenas",
+["Pampa_Guanaco"]="Pampa Guanaco",
+["San_Julian"]="San Julian",
 }
 AIRBASE.TerminalType={
 Runway=16,
