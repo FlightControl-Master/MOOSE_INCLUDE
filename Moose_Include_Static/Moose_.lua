@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-27T17:28:36.0000000Z-88e7b3fb47ff2798ceb72c33266fc7f74fa98164 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-27T17:41:20.0000000Z-80f73f0bb18f17f165d073aec47cd010b092adfe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -48969,6 +48969,17 @@ local reccename=entry.reccename
 local typename=entry.unittype
 local code=entry.lasercode
 local locationstring=entry.location
+local playername=Group:GetPlayerName()
+if playername then
+local settings=_DATABASE:GetPlayerSettings(playername)
+if settings then
+if settings:IsA2G_MGRS()then
+locationstring=entry.coordinate:ToStringMGRS(settings)
+elseif settings:IsA2G_LL_DMS()then
+locationstring=entry.coordinate:ToStringLLDMS()
+end
+end
+end
 local text=string.format("%s lasing %s code %d\nat %s",reccename,typename,code,locationstring)
 report:Add(text)
 lines=lines+1
@@ -49172,6 +49183,7 @@ timestamp=timer.getAbsTime(),
 unitname=unitname,
 reccename=reccename,
 unittype=unit:GetTypeName(),
+coordinate=unit:GetCoordinate(),
 }
 if self.smoketargets then
 local coord=unit:GetCoordinate()
