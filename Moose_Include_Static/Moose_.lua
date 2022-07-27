@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-25T06:12:10.0000000Z-f9ace54fabc1e6e862b29a92603d9998a1db46d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-27T17:28:36.0000000Z-88e7b3fb47ff2798ceb72c33266fc7f74fa98164 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -48696,7 +48696,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.11"
+AUTOLASE.version="0.0.12"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -49154,6 +49154,14 @@ local code=self:GetLaserCode(reccename)
 local spot=SPOT:New(recce)
 spot:LaseOn(unit,code,self.LaseDuration)
 local locationstring=unit:GetCoordinate():ToStringLLDDM()
+if _SETTINGS:IsA2G_MGRS()then
+local precision=_SETTINGS:GetMGRS_Accuracy()
+local settings={}
+settings.MGRS_Accuracy=precision
+locationstring=unit:GetCoordinate():ToStringMGRS(settings)
+elseif _SETTINGS:IsA2G_LL_DMS()then
+locationstring=unit:GetCoordinate():ToStringLLDMS()
+end
 local laserspot={
 laserspot=spot,
 lasedunit=unit,
