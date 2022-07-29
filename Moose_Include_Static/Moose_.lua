@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T06:51:00.0000000Z-1f8b51fafefb485f159f06a37708179bb22c3112 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T10:24:36.0000000Z-8ce1f5884f3053d1adb5aba03e34828a9f225952 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -34447,9 +34447,15 @@ self.aircraft.Reff=self.aircraft.Rmax*self.aircraft.fuel*0.95
 self.aircraft.Vmax=DCSdesc.speedMax
 self.aircraft.Vymax=DCSdesc.VyMax
 self.aircraft.ceiling=DCSdesc.Hmax
+if DCSdesc.box then
 self.aircraft.length=DCSdesc.box.max.x
 self.aircraft.height=DCSdesc.box.max.y
 self.aircraft.width=DCSdesc.box.max.z
+elseif DCStype=="Mirage-F1CE"then
+self.aircraft.length=16
+self.aircraft.height=5
+self.aircraft.width=9
+end
 self.aircraft.box=math.max(self.aircraft.length,self.aircraft.width)
 local text=string.format("\n******************************************************\n")
 text=text..string.format("Aircraft parameters:\n")
@@ -92812,6 +92818,590 @@ local vec2=self.airbase:GetVec2()
 local Vec2=UTILS.Vec2Translate(vec2,UTILS.NMToMeters(5),heading+90)
 local ArrivalZone=ZONE_RADIUS:New("Arrival Zone",Vec2,5000)
 self.holdingBackup=self:AddHoldingPattern(ArrivalZone,heading,15,5,25,999)
+return self
+end
+_PlayerTaskNr=0
+PLAYERTASK={
+ClassName="PLAYERTASK",
+verbose=true,
+lid=nil,
+PlayerTaskNr=nil,
+Type=nil,
+Target=nil,
+Clients=nil,
+Repeat=false,
+repeats=0,
+RepeatNo=1,
+TargetMarker=nil,
+SmokeColor=nil,
+FlareColor=nil,
+conditionSuccess={},
+conditionFailure={},
+}
+PLAYERTASK.version="0.0.3"
+function PLAYERTASK:New(Type,Target,Repeat,Times)
+local self=BASE:Inherit(self,FSM:New())
+self.Type=Type
+self.Repeat=false
+self.repeats=0
+self.RepeatNo=1
+self.Clients=FIFO:New()
+self.TargetMarker=nil
+self.SmokeColor=SMOKECOLOR.Red
+self.conditionSuccess={}
+self.conditionFailure={}
+if Repeat then
+self.Repeat=true
+self.RepeatNo=Times or 1
+end
+_PlayerTaskNr=_PlayerTaskNr+1
+self.PlayerTaskNr=_PlayerTaskNr
+self.lid=string.format("PlayerTask #%d %s | ",self.PlayerTaskNr,tostring(self.Type))
+if Target and Target.ClassName and Target.ClassName=="TARGET"then
+self.Target=Target
+elseif Target and Target.ClassName then
+self.Target=TARGET:New(Target)
+else
+self:E(self.lid.."*** NO VALID TARGET!")
+return self
+end
+self:I(self.lid.."Created.")
+self:SetStartState("Planned")
+self:AddTransition("*","Planned","Planned")
+self:AddTransition("*","Requested","Requested")
+self:AddTransition("*","ClientAdded","*")
+self:AddTransition("*","ClientRemoved","*")
+self:AddTransition("*","Executing","Executing")
+self:AddTransition("*","Done","Done")
+self:AddTransition("*","Cancel","Done")
+self:AddTransition("*","Success","Done")
+self:AddTransition("*","ClientAborted","*")
+self:AddTransition("*","Failed","*")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","Stop","Stopped")
+self:__Status(-5)
+return self
+end
+function PLAYERTASK:IsDone()
+self:I(self.lid.."IsDone?")
+local IsDone=false
+local state=self:GetState()
+if state=="Done"or state=="Stopped"then
+IsDone=true
+end
+return IsDone
+end
+function PLAYERTASK:AddClient(Client)
+self:I(self.lid.."AddClient")
+local name=Client:GetName()
+if not self.Clients:HasUniqueID(name)then
+self.Clients:Push(Client,name)
+self:__ClientAdded(-2,Client)
+end
+return self
+end
+function PLAYERTASK:RemoveClient(Client)
+self:I(self.lid.."RemoveClient")
+local name=Client:GetName()
+if self.Clients:HasUniqueID(name)then
+self.Clients:PullByID(name)
+self:__ClientRemoved(-2,Client)
+if self.Clients:Count()==0 then
+self:__Planned(-1)
+end
+end
+return self
+end
+function PLAYERTASK:ClientAbort(Client)
+self:I(self.lid.."ClientAbort")
+local name=Client:GetName()
+if Client and Client:IsAlive()then
+self:RemoveClient(Client)
+self:__ClientAborted(-1,Client)
+return self
+else
+if self.Clients:Count()==0 then
+self:__Planned(-1)
+end
+end
+return self
+end
+function PLAYERTASK:MarkTargetOnF10Map()
+self:I(self.lid.."MarkTargetOnF10Map")
+if self.Target then
+local coordinate=self.Target:GetCoordinate()
+if coordinate then
+if self.TargetMarker then
+self.TargetMarker:Remove()
+end
+self.TargetMarker=MARKER:New(coordinate,"Target of "..self.lid)
+self.TargetMarker:ReadOnly()
+self.TargetMarker:ToAll()
+end
+end
+return self
+end
+function PLAYERTASK:SmokeTarget(Color)
+self:I(self.lid.."SmokeTarget")
+local color=Color or SMOKECOLOR.Red
+if self.Target then
+local coordinate=self.Target:GetCoordinate()
+if coordinate then
+coordinate:Smoke(color)
+end
+end
+return self
+end
+function PLAYERTASK:FlareTarget(Color)
+self:I(self.lid.."SmokeTarget")
+local color=Color or FLARECOLOR.Red
+if self.Target then
+local coordinate=self.Target:GetCoordinate()
+if coordinate then
+coordinate:Flare(color,0)
+end
+end
+return self
+end
+function PLAYERTASK:AddConditionSuccess(ConditionFunction,...)
+local condition={}
+condition.func=ConditionFunction
+condition.arg={}
+if arg then
+condition.arg=arg
+end
+table.insert(self.conditionSuccess,condition)
+return self
+end
+function PLAYERTASK:AddConditionFailure(ConditionFunction,...)
+local condition={}
+condition.func=ConditionFunction
+condition.arg={}
+if arg then
+condition.arg=arg
+end
+table.insert(self.conditionFailure,condition)
+return self
+end
+function PLAYERTASK:_EvalConditionsAny(Conditions)
+for _,_condition in pairs(Conditions or{})do
+local condition=_condition
+local istrue=condition.func(unpack(condition.arg))
+if istrue then
+return true
+end
+end
+return false
+end
+function PLAYERTASK:onafterStatus(From,Event,To)
+self:I({From,Event,To})
+self:I(self.lid.."onafterStatus")
+local status=self:GetState()
+local targetdead=false
+if self.Target:IsDead()or self.Target:IsDestroyed()then
+targetdead=true
+self:__Success(-2)
+status="Success"
+return self
+end
+if status=="Executing"then
+local clientsalive=false
+local ClientTable=self.Clients:GetDataTable()
+for _,_client in pairs(ClientTable)do
+local client=_client
+if client:IsAlive()then
+clientsalive=true
+end
+end
+if status=="Executing"and(not clientsalive)and(not targetdead)then
+self:__Failed(-2)
+status="Failed"
+end
+local successCondition=self:_EvalConditionsAny(self.conditionSuccess)
+local failureCondition=self:_EvalConditionsAny(self.conditionFailure)
+if failureCondition then
+self:__Failed(-2)
+status="Failed"
+elseif successCondition then
+self:__Success(-2)
+status="Success"
+end
+if self.verbose then
+self:I(self.lid.."Target dead: "..tostring(targetdead).." | Clients alive: "..tostring(clientsalive))
+end
+end
+if status~="Done"then
+self:__Status(-20)
+else
+self:__Stop(-1)
+end
+return self
+end
+function PLAYERTASK:onafterPlanned(From,Event,To)
+self:I({From,Event,To})
+return self
+end
+function PLAYERTASK:onafterRequested(From,Event,To)
+self:I({From,Event,To})
+return self
+end
+function PLAYERTASK:onafterExecuting(From,Event,To)
+self:I({From,Event,To})
+return self
+end
+function PLAYERTASK:onafterStop(From,Event,To)
+self:I({From,Event,To})
+return self
+end
+function PLAYERTASK:onafterClientAdded(From,Event,To,Client)
+self:I({From,Event,To})
+if Client then
+local text=string.format("Player %s joined task %d!",Client:GetPlayerName()or"Generic",self.PlayerTaskNr)
+self:I(self.lid..text)
+end
+return self
+end
+function PLAYERTASK:onafterDone(From,Event,To)
+self:I({From,Event,To})
+self:__Stop(-1)
+return self
+end
+function PLAYERTASK:onafterCancel(From,Event,To)
+self:I({From,Event,To})
+self:__Done(-1)
+return self
+end
+function PLAYERTASK:onafterSuccess(From,Event,To)
+self:I({From,Event,To})
+if self.TargetMarker then
+self.TargetMarker:Remove()
+end
+self:__Done(-1)
+return self
+end
+function PLAYERTASK:onafterFailed(From,Event,To)
+self:I({From,Event,To})
+self.repeats=self.repeats+1
+if self.Repeat and(self.repeats<=self.RepeatNo)then
+self:__Planned(-1)
+return self
+else
+if self.TargetMarker then
+self.TargetMarker:Remove()
+end
+self:__Done(-1)
+end
+return self
+end
+PLAYERTASKCONTROLLER={
+ClassName="PLAYERTASKCONTROLLER",
+verbose=true,
+lid=nil,
+TargetQueue=nil,
+ClientSet=nil,
+}
+PLAYERTASKCONTROLLER.Type={
+A2A="Air-To-Air",
+A2G="Air-To-Ground",
+A2S="Air-To-Sea",
+}
+PLAYERTASKCONTROLLER.version="0.0.1"
+function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
+local self=BASE:Inherit(self,FSM:New())
+self.Name=Name or"CentCom"
+self.Coalition=Coalition or coalition.side.BLUE
+self.CoalitionName=UTILS.GetCoalitionName(Coalition)
+self.Type=Type or PLAYERTASKCONTROLLER.Type.A2G
+self.ClientFilter=ClientFilter or""
+self.TargetQueue=FIFO:New()
+self.TaskQueue=FIFO:New()
+self.TasksPerPlayer=FIFO:New()
+self.repeatonfailed=true
+self.repeattimes=5
+if ClientFilter then
+self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
+else
+self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterStart()
+end
+self.lid=string.format("PlayerTaskController %s %s | ",self.Name,tostring(self.Type))
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","Stop","Stopped")
+self:__Start(-1)
+self:__Status(-2)
+self:I(self.lid.."Started.")
+return self
+end
+function PLAYERTASKCONTROLLER:_DummyMenu(group)
+self:I(self.lid.."_DummyMenu")
+return self
+end
+function PLAYERTASKCONTROLLER:_GetAvailableTaskTypes()
+self:I(self.lid.."_GetAvailableTaskTypes")
+local tasktypes={}
+self.TaskQueue:ForEach(
+function(Task)
+local task=Task
+local type=Task.Type
+tasktypes[type]={}
+end
+)
+return tasktypes
+end
+function PLAYERTASKCONTROLLER:_GetTasksPerType()
+self:I(self.lid.."_GetTasksPerType")
+local tasktypes=self:_GetAvailableTaskTypes()
+self:I({tasktypes})
+self.TaskQueue:ForEach(
+function(Task)
+local task=Task
+local type=Task.Type
+if task:GetState()~="Executing"and not task:IsDone()then
+table.insert(tasktypes[type],task)
+end
+end
+)
+return tasktypes
+end
+function PLAYERTASKCONTROLLER:_CheckTargetQueue()
+self:I(self.lid.."_CheckTargetQueue")
+if self.TargetQueue:Count()>0 then
+local object=self.TargetQueue:Pull()
+local target=TARGET:New(object)
+self:_AddTask(target)
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_CheckTaskQueue()
+self:I(self.lid.."_CheckTaskQueue")
+if self.TaskQueue:Count()>0 then
+local tasks=self.TaskQueue:GetIDStack()
+for _id,_entry in pairs(tasks)do
+local data=_entry.data
+self:I("Looking at Task: "..data.PlayerTaskNr.." Type: "..data.Type.." State: "..data:GetState())
+if data:GetState()=="Done"or data:GetState()=="Stopped"then
+local task=self.TaskQueue:PullByID(_id)
+end
+end
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddTarget(Target)
+self:I(self.lid.."AddTarget")
+self.TargetQueue:Push(Target)
+return self
+end
+function PLAYERTASKCONTROLLER:_AddTask(Target)
+self:I(self.lid.."_AddTask")
+local cat=Target:GetCategory()
+local type=AUFTRAG.Type.CAS
+if cat==TARGET.Category.GROUND then
+type=AUFTRAG.Type.CAS
+local targetobject=Target:GetObject()
+if targetobject:IsInstanceOf("UNIT")then
+self:I("SEAD Check UNIT")
+if targetobject:HasSEAD()then
+type=AUFTRAG.Type.SEAD
+end
+elseif targetobject:IsInstanceOf("GROUP")then
+self:I("SEAD Check GROUP")
+local attribute=targetobject:GetAttribute()
+if attribute==GROUP.Attribute.GROUND_SAM or attribute==GROUP.Attribute.GROUND_AAA then
+type=AUFTRAG.Type.SEAD
+end
+elseif targetobject:IsInstanceOf("SET_GROUP")then
+self:I("SEAD Check SET_GROUP")
+targetobject:ForEachGroup(
+function(group)
+local attribute=group:GetAttribute()
+if attribute==GROUP.Attribute.GROUND_SAM or attribute==GROUP.Attribute.GROUND_AAA then
+type=AUFTRAG.Type.SEAD
+end
+end
+)
+elseif targetobject:IsInstanceOf("SET_UNIT")then
+self:I("SEAD Check SET_UNIT")
+targetobject:ForEachUnit(
+function(unit)
+if unit:HasSEAD()then
+type=AUFTRAG.Type.SEAD
+end
+end
+)
+end
+local targetcoord=Target:GetCoordinate()
+local targetvec2=targetcoord:GetVec2()
+local targetzone=ZONE_RADIUS:New(self.Name,targetvec2,2000)
+local coalition=targetobject:GetCoalitionName()or"Blue"
+coalition=string.lower(coalition)
+self:I("Target coalition is "..tostring(coalition))
+local filtercoalition="blue"
+if coalition=="blue"then filtercoalition="red"end
+local friendlyset=SET_GROUP:New():FilterCategoryGround():FilterCoalitions(filtercoalition):FilterZones({targetzone}):FilterOnce()
+if friendlyset:Count()==0 and type~=AUFTRAG.Type.SEAD then
+type=AUFTRAG.Type.BAI
+end
+elseif cat==TARGET.Category.NAVAL then
+type=AUFTRAG.Type.ANTISHIP
+elseif cat==TARGET.Category.AIRCRAFT then
+type=AUFTRAG.Type.INTERCEPT
+elseif cat==TARGET.Category.AIRBASE then
+type=AUFTRAG.Type.BOMBRUNWAY
+elseif cat==TARGET.Category.COORDINATE or cat==TARGET.Category.ZONE then
+type=AUFTRAG.Type.BOMBING
+end
+local task=PLAYERTASK:New(type,Target,self.repeatonfailed,self.repeattimes)
+self.TaskQueue:Push(task)
+return self
+end
+function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task)
+self:I(self.lid.."_JoinTask")
+local playername=Client:GetPlayerName()
+Task:AddClient(Client)
+local taskstate=Task:GetState()
+if taskstate~="Executing"and taskstate~="Done"then
+Task:__Requested(-1)
+Task:__Executing(-2)
+local text=string.format("Player %s joined task %d in state %s",playername,Task.PlayerTaskNr,taskstate)
+self:I(self.lid..text)
+local m=MESSAGE:New(text,"10","Info"):ToAll()
+self.TasksPerPlayer:Push(Task,playername)
+Task.TaskMenu:Remove()
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_ActiveTaskInfo(Group,Client)
+self:I(self.lid.."_ActiveTaskInfo")
+local playername=Client:GetPlayerName()
+local text=""
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:ReadByID(playername)
+local taskname=string.format("%s Task ID %02d",task.Type,task.PlayerTaskNr)
+local Coordinate=task.Target:GetCoordinate()
+local CoordText=Coordinate:ToStringA2G(Client)
+local ThreatLevel=task.Target:GetThreatLevelMax()
+local targets=task.Target:CountTargets()or 0
+local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
+text=string.format("%s\nThreat: %s\nTargets left: %d\nCoord: %s",taskname,ThreatGraph,targets,CoordText)
+else
+text="No active task!"
+end
+local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+return self
+end
+function PLAYERTASKCONTROLLER:_MarkTask(Group,Client)
+self:I(self.lid.."_ActiveTaskInfo")
+local playername=Client:GetPlayerName()
+local text=""
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:ReadByID(playername)
+task:MarkTargetOnF10Map()
+text="Task location marked!"
+else
+text="No active task!"
+end
+local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+return self
+end
+function PLAYERTASKCONTROLLER:_SmokeTask(Group,Client)
+self:I(self.lid.."_SmokeTask")
+local playername=Client:GetPlayerName()
+local text=""
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:ReadByID(playername)
+task:SmokeTarget()
+text="Task location smoked!"
+else
+text="No active task!"
+end
+local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+return self
+end
+function PLAYERTASKCONTROLLER:_FlareTask(Group,Client)
+self:I(self.lid.."_FlareTask")
+local playername=Client:GetPlayerName()
+local text=""
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:ReadByID(playername)
+task:FlareTarget()
+text="Task location illuminated!"
+else
+text="No active task!"
+end
+local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+return self
+end
+function PLAYERTASKCONTROLLER:_AbortTask(Group,Client)
+self:I(self.lid.."_FlareTask")
+local playername=Client:GetPlayerName()
+local text=""
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:PullByID(playername)
+task:ClientAbort(Client)
+text="Task aborted!"
+else
+text="No active task!"
+end
+local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+return self
+end
+function PLAYERTASKCONTROLLER:_BuildMenus()
+self:I(self.lid.."_BuildMenus")
+local clients=self.ClientSet:GetAliveSet()
+for _,_client in pairs(clients)do
+if _client then
+local client=_client
+local group=client:GetGroup()
+if group then
+local topmenu=MENU_GROUP:New(group,self.Name.." Tasking "..self.Type,nil)
+local active=MENU_GROUP:New(group,"Active Task",topmenu)
+local info=MENU_GROUP_COMMAND:New(group,"Info",active,self._ActiveTaskInfo,self,group,client)
+local mark=MENU_GROUP_COMMAND:New(group,"Mark on map",active,self._MarkTask,self,group,client)
+local smoke=MENU_GROUP_COMMAND:New(group,"Smoke",active,self._SmokeTask,self,group,client)
+local flare=MENU_GROUP_COMMAND:New(group,"Flare",active,self._FlareTask,self,group,client)
+local abort=MENU_GROUP_COMMAND:New(group,"Abort",active,self._AbortTask,self,group,client)
+local join=MENU_GROUP:New(group,"Join Task",topmenu)
+local tasktypes=self:_GetAvailableTaskTypes()
+local taskpertype=self:_GetTasksPerType()
+local ttypes={}
+local taskmenu={}
+for _tasktype,_data in pairs(tasktypes)do
+ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,join)
+local tasks=taskpertype[_tasktype]or{}
+for _,_task in pairs(tasks)do
+local text=string.format("TaskNo %03d",_task.PlayerTaskNr)
+local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
+taskentry:SetTag(client:GetPlayerName())
+taskmenu[#taskmenu+1]=taskentry
+_task.TaskMenu=taskentry
+end
+end
+end
+end
+end
+return self
+end
+function PLAYERTASKCONTROLLER:onafterStatus(From,Event,To)
+self:I({From,Event,To})
+self:_CheckTargetQueue()
+self:_CheckTaskQueue()
+self:_BuildMenus()
+local targetcount=self.TargetQueue:Count()
+local taskcount=self.TaskQueue:Count()
+local playercount=self.ClientSet:CountAlive()
+if self.verbose then
+local text=string.format("New Targets: %02d | Active Tasks: %02d | Active Players: %02d",targetcount,taskcount,playercount)
+self:I(text)
+end
+if self:GetState()~="Stopped"then
+self:__Status(-30)
+end
+return self
+end
+function PLAYERTASKCONTROLLER:onafterStop(From,Event,To)
+self:I({From,Event,To})
+self:I(self.lid.."Stopped.")
 return self
 end
 AI_BALANCER={
