@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T12:14:22.0000000Z-5eb134f7b5b834307810d31d9828cb54ead4cedd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T12:53:23.0000000Z-d060c7535aba92d52acdca7f9b7a38d0343c9b04 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92837,8 +92837,9 @@ SmokeColor=nil,
 FlareColor=nil,
 conditionSuccess={},
 conditionFailure={},
+TaskController=nil,
 }
-PLAYERTASK.version="0.0.3"
+PLAYERTASK.version="0.0.5"
 function PLAYERTASK:New(Type,Target,Repeat,Times)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92850,6 +92851,7 @@ self.TargetMarker=nil
 self.SmokeColor=SMOKECOLOR.Red
 self.conditionSuccess={}
 self.conditionFailure={}
+self.TaskController=nil
 if Repeat then
 self.Repeat=true
 self.RepeatNo=Times or 1
@@ -92882,6 +92884,11 @@ self:AddTransition("*","Stop","Stopped")
 self:__Status(-5)
 return self
 end
+function PLAYERTASK:_SetController(Controller)
+self:I(self.lid.."_SetController")
+self.TaskController=Controller
+return self
+end
 function PLAYERTASK:IsDone()
 self:I(self.lid.."IsDone?")
 local IsDone=false
@@ -92907,7 +92914,7 @@ if self.Clients:HasUniqueID(name)then
 self.Clients:PullByID(name)
 self:__ClientRemoved(-2,Client)
 if self.Clients:Count()==0 then
-self:__Planned(-1)
+self:__Failed(-1)
 end
 end
 return self
@@ -92921,7 +92928,7 @@ self:__ClientAborted(-1,Client)
 return self
 else
 if self.Clients:Count()==0 then
-self:__Planned(-1)
+self:__Failed(-1)
 end
 end
 return self
@@ -93063,16 +93070,25 @@ return self
 end
 function PLAYERTASK:onafterDone(From,Event,To)
 self:I({From,Event,To})
+if self.TaskController then
+self.TaskController:__TaskDone(-1,self)
+end
 self:__Stop(-1)
 return self
 end
 function PLAYERTASK:onafterCancel(From,Event,To)
 self:I({From,Event,To})
+if self.TaskController then
+self.TaskController:__TaskCancelled(-1,self)
+end
 self:__Done(-1)
 return self
 end
 function PLAYERTASK:onafterSuccess(From,Event,To)
 self:I({From,Event,To})
+if self.TaskController then
+self.TaskController:__TaskSuccess(-1,self)
+end
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
@@ -93083,11 +93099,17 @@ function PLAYERTASK:onafterFailed(From,Event,To)
 self:I({From,Event,To})
 self.repeats=self.repeats+1
 if self.Repeat and(self.repeats<=self.RepeatNo)then
+if self.TaskController then
+self.TaskController:__TaskRepeatOnFailed(-1,self)
+end
 self:__Planned(-1)
 return self
 else
 if self.TargetMarker then
 self.TargetMarker:Remove()
+end
+if self.TaskController then
+self.TaskController:__TaskFailed(-1,self)
 end
 self:__Done(-1)
 end
@@ -93106,7 +93128,7 @@ A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.2"
+PLAYERTASKCONTROLLER.version="0.0.3"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93129,6 +93151,11 @@ self.lid=string.format("PlayerTaskController %s %s | ",self.Name,tostring(self.T
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
+self:AddTransition("*","TaskDone","*")
+self:AddTransition("*","TaskCancelled","*")
+self:AddTransition("*","TaskSuccess","*")
+self:AddTransition("*","TaskFailed","*")
+self:AddTransition("*","TaskRepeatOnFailed","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Start(-1)
 self:__Status(-2)
@@ -93268,6 +93295,7 @@ elseif cat==TARGET.Category.COORDINATE or cat==TARGET.Category.ZONE then
 type=AUFTRAG.Type.BOMBING
 end
 local task=PLAYERTASK:New(type,Target,self.repeatonfailed,self.repeattimes)
+task:_SetController(self)
 self.TaskQueue:Push(task)
 return self
 end
@@ -93424,6 +93452,37 @@ end
 if self:GetState()~="Stopped"then
 self:__Status(-30)
 end
+return self
+end
+function PLAYERTASKCONTROLLER:onafterTaskDone(From,Event,To,Task)
+self:I({From,Event,To})
+self:I(self.lid.."TaskDone")
+return self
+end
+function PLAYERTASKCONTROLLER:onafterTaskCancelled(From,Event,To,Task)
+self:I({From,Event,To})
+self:I(self.lid.."TaskCancelled")
+return self
+end
+function PLAYERTASKCONTROLLER:onafterTaskSuccess(From,Event,To,Task)
+self:I({From,Event,To})
+self:I(self.lid.."TaskSuccess")
+local taskname=string.format("Task #%d %s Success!",Task.PlayerTaskNr,tostring(Task.Type))
+local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERTASKCONTROLLER:onafterTaskFailed(From,Event,To,Task)
+self:I({From,Event,To})
+self:I(self.lid.."TaskFailed")
+local taskname=string.format("Task #%d %s Failed!",Task.PlayerTaskNr,tostring(Task.Type))
+local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERTASKCONTROLLER:onafterTaskRepeatOnFailed(From,Event,To,Task)
+self:I({From,Event,To})
+self:I(self.lid.."RepeatOnFailed")
+local taskname=string.format("Task #%d %s Failed! Replanning!",Task.PlayerTaskNr,tostring(Task.Type))
+local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
 return self
 end
 function PLAYERTASKCONTROLLER:onafterStop(From,Event,To)
