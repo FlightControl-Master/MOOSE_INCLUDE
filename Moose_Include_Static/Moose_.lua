@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-27T17:41:20.0000000Z-80f73f0bb18f17f165d073aec47cd010b092adfe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T06:51:00.0000000Z-1f8b51fafefb485f159f06a37708179bb22c3112 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10452,7 +10452,8 @@ function SET_GROUP:FindNearestGroupFromPointVec2(PointVec2)
 self:F2(PointVec2)
 local NearestGroup=nil
 local ClosestDistance=nil
-for ObjectID,ObjectData in pairs(self.Set)do
+local Set=self:GetAliveSet()
+for ObjectID,ObjectData in pairs(Set)do
 if NearestGroup==nil then
 NearestGroup=ObjectData
 ClosestDistance=PointVec2:DistanceFromPointVec2(ObjectData:GetCoordinate())
