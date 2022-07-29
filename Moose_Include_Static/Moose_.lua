@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T12:53:23.0000000Z-d060c7535aba92d52acdca7f9b7a38d0343c9b04 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T13:31:56.0000000Z-c74a14fcb0d2062db823c316fa845f6774b48adc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92839,7 +92839,7 @@ conditionSuccess={},
 conditionFailure={},
 TaskController=nil,
 }
-PLAYERTASK.version="0.0.5"
+PLAYERTASK.version="0.0.6"
 function PLAYERTASK:New(Type,Target,Repeat,Times)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92900,7 +92900,7 @@ return IsDone
 end
 function PLAYERTASK:AddClient(Client)
 self:I(self.lid.."AddClient")
-local name=Client:GetName()
+local name=Client:GetPlayerName()
 if not self.Clients:HasUniqueID(name)then
 self.Clients:Push(Client,name)
 self:__ClientAdded(-2,Client)
@@ -92909,7 +92909,7 @@ return self
 end
 function PLAYERTASK:RemoveClient(Client)
 self:I(self.lid.."RemoveClient")
-local name=Client:GetName()
+local name=Client:GetPlayerName()
 if self.Clients:HasUniqueID(name)then
 self.Clients:PullByID(name)
 self:__ClientRemoved(-2,Client)
@@ -92921,7 +92921,6 @@ return self
 end
 function PLAYERTASK:ClientAbort(Client)
 self:I(self.lid.."ClientAbort")
-local name=Client:GetName()
 if Client and Client:IsAlive()then
 self:RemoveClient(Client)
 self:__ClientAborted(-1,Client)
@@ -93128,7 +93127,7 @@ A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.3"
+PLAYERTASKCONTROLLER.version="0.0.4"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93219,11 +93218,13 @@ for _id,_entry in pairs(tasks)do
 local data=_entry.data
 self:I("Looking at Task: "..data.PlayerTaskNr.." Type: "..data.Type.." State: "..data:GetState())
 if data:GetState()=="Done"or data:GetState()=="Stopped"then
-local task=self.TaskQueue:PullByID(_id)
+local task=self.TaskQueue:ReadByID(_id)
 local clientsattask=task.Clients:GetIDStackSorted()
 for _,_id in pairs(clientsattask)do
+self:I("*****Removing player ".._id)
 self.TasksPerPlayer:PullByID(_id)
 end
+local task=self.TaskQueue:PullByID(_id)
 task=nil
 end
 end
@@ -93432,6 +93433,7 @@ taskmenu[#taskmenu+1]=taskentry
 _task.TaskMenu=taskentry
 end
 end
+join:Refresh()
 end
 end
 end
