@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T10:25:45.0000000Z-c1c5117f01532af585b0acfecc54f6700f7b06cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T12:14:22.0000000Z-5eb134f7b5b834307810d31d9828cb54ead4cedd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93099,13 +93099,14 @@ verbose=true,
 lid=nil,
 TargetQueue=nil,
 ClientSet=nil,
+UseGroupNames=true,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.1"
+PLAYERTASKCONTROLLER.version="0.0.2"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93118,6 +93119,7 @@ self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
 self.repeatonfailed=true
 self.repeattimes=5
+self.UseGroupNames=true
 if ClientFilter then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
 else
@@ -93135,6 +93137,15 @@ return self
 end
 function PLAYERTASKCONTROLLER:_DummyMenu(group)
 self:I(self.lid.."_DummyMenu")
+return self
+end
+function PLAYERTASKCONTROLLER:SwitchUseGroupNames(OnOff)
+self:I(self.lid.."SwitchUseGroupNames")
+if OnOff then
+self.UseGroupNames=true
+else
+self.UseGroupNames=false
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_GetAvailableTaskTypes()
@@ -93182,6 +93193,11 @@ local data=_entry.data
 self:I("Looking at Task: "..data.PlayerTaskNr.." Type: "..data.Type.." State: "..data:GetState())
 if data:GetState()=="Done"or data:GetState()=="Stopped"then
 local task=self.TaskQueue:PullByID(_id)
+local clientsattask=task.Clients:GetIDStackSorted()
+for _,_id in pairs(clientsattask)do
+self.TasksPerPlayer:PullByID(_id)
+end
+task=nil
 end
 end
 end
@@ -93258,6 +93274,10 @@ end
 function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task)
 self:I(self.lid.."_JoinTask")
 local playername=Client:GetPlayerName()
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local m=MESSAGE:New("You already have one active task! Complete it first!","10","Info"):ToGroup(Group)
+return self
+end
 Task:AddClient(Client)
 local taskstate=Task:GetState()
 if taskstate~="Executing"and taskstate~="Done"then
@@ -93276,6 +93296,7 @@ self:I(self.lid.."_ActiveTaskInfo")
 local playername=Client:GetPlayerName()
 local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:GetIDStack()
 local task=self.TasksPerPlayer:ReadByID(playername)
 local taskname=string.format("%s Task ID %02d",task.Type,task.PlayerTaskNr)
 local Coordinate=task.Target:GetCoordinate()
@@ -93371,6 +93392,12 @@ ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,join)
 local tasks=taskpertype[_tasktype]or{}
 for _,_task in pairs(tasks)do
 local text=string.format("TaskNo %03d",_task.PlayerTaskNr)
+if self.UseGroupNames then
+local name=_task.Target:GetName()
+if name~="Unknown"then
+text=string.format("%s (%03d)",name,_task.PlayerTaskNr)
+end
+end
 local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
 taskentry:SetTag(client:GetPlayerName())
 taskmenu[#taskmenu+1]=taskentry
