@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T13:31:56.0000000Z-c74a14fcb0d2062db823c316fa845f6774b48adc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-30T10:06:11.0000000Z-6ff0a699c08ea19d085799b690ad04ad98d7cbbc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92839,7 +92839,7 @@ conditionSuccess={},
 conditionFailure={},
 TaskController=nil,
 }
-PLAYERTASK.version="0.0.6"
+PLAYERTASK.version="0.0.7"
 function PLAYERTASK:New(Type,Target,Repeat,Times)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92897,6 +92897,15 @@ if state=="Done"or state=="Stopped"then
 IsDone=true
 end
 return IsDone
+end
+function PLAYERTASK:GetClients()
+self:I(self.lid.."GetClients?")
+local clientlist=self.Clients:GetIDStackSorted()or{}
+return clientlist
+end
+function PLAYERTASK:HasPlayerName(Name)
+self:I(self.lid.."HasPlayerName?")
+return self.Clients:HasUniqueID(Name)
 end
 function PLAYERTASK:AddClient(Client)
 self:I(self.lid.."AddClient")
@@ -93121,13 +93130,14 @@ lid=nil,
 TargetQueue=nil,
 ClientSet=nil,
 UseGroupNames=true,
+PlayerMenu={},
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.4"
+PLAYERTASKCONTROLLER.version="0.0.6"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93138,6 +93148,7 @@ self.ClientFilter=ClientFilter or""
 self.TargetQueue=FIFO:New()
 self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
+self.PlayerMenu={}
 self.repeatonfailed=true
 self.repeattimes=5
 self.UseGroupNames=true
@@ -93150,6 +93161,7 @@ self.lid=string.format("PlayerTaskController %s %s | ",self.Name,tostring(self.T
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
+self:AddTransition("*","TaskAdded","*")
 self:AddTransition("*","TaskDone","*")
 self:AddTransition("*","TaskCancelled","*")
 self:AddTransition("*","TaskSuccess","*")
@@ -93158,7 +93170,36 @@ self:AddTransition("*","TaskRepeatOnFailed","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Start(-1)
 self:__Status(-2)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.Crash,self._EventHandler)
+self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:I(self.lid.."Started.")
+return self
+end
+function PLAYERTASKCONTROLLER:_EventHandler(EventData)
+self:I(self.lid.."_EventHandler: "..EventData.id)
+if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
+if EventData.IniPlayerName then
+self:I(self.lid.."Event for player: "..EventData.IniPlayerName)
+if self.PlayerMenu[EventData.IniPlayerName]then
+self.PlayerMenu[EventData.IniPlayerName]:Remove()
+self.PlayerMenu[EventData.IniPlayerName]=nil
+end
+local text=""
+if self.TasksPerPlayer:HasUniqueID(EventData.IniPlayerName)then
+local task=self.TasksPerPlayer:PullByID(EventData.IniPlayerName)
+local Client=_DATABASE:FindClient(EventData.IniPlayerName)
+if Client then
+task:ClientAbort(Client)
+text="Task aborted!"
+end
+else
+text="No active task!"
+end
+self:I(self.lid..text)
+end
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_DummyMenu(group)
@@ -93298,6 +93339,7 @@ end
 local task=PLAYERTASK:New(type,Target,self.repeatonfailed,self.repeattimes)
 task:_SetController(self)
 self.TaskQueue:Push(task)
+self:__TaskAdded(-1,task)
 return self
 end
 function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task)
@@ -93316,7 +93358,9 @@ local text=string.format("Player %s joined task %d in state %s",playername,Task.
 self:I(self.lid..text)
 local m=MESSAGE:New(text,"10","Info"):ToAll()
 self.TasksPerPlayer:Push(Task,playername)
-Task.TaskMenu:Remove()
+if self.PlayerMenu[playername]then
+self.PlayerMenu[playername]:RemoveSubMenus()
+end
 end
 return self
 end
@@ -93403,23 +93447,31 @@ for _,_client in pairs(clients)do
 if _client then
 local client=_client
 local group=client:GetGroup()
-if group then
+local playername=client:GetPlayerName()or"Unknown"
+if group and client then
 local topmenu=MENU_GROUP:New(group,self.Name.." Tasking "..self.Type,nil)
 local active=MENU_GROUP:New(group,"Active Task",topmenu)
 local info=MENU_GROUP_COMMAND:New(group,"Info",active,self._ActiveTaskInfo,self,group,client)
 local mark=MENU_GROUP_COMMAND:New(group,"Mark on map",active,self._MarkTask,self,group,client)
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
 local smoke=MENU_GROUP_COMMAND:New(group,"Smoke",active,self._SmokeTask,self,group,client)
 local flare=MENU_GROUP_COMMAND:New(group,"Flare",active,self._FlareTask,self,group,client)
+end
 local abort=MENU_GROUP_COMMAND:New(group,"Abort",active,self._AbortTask,self,group,client)
-local join=MENU_GROUP:New(group,"Join Task",topmenu)
+if self.PlayerMenu[playername]then
+self.PlayerMenu[playername]:RemoveSubMenus()
+else
+self.PlayerMenu[playername]=MENU_GROUP:New(group,"Join Task",topmenu)
+end
 local tasktypes=self:_GetAvailableTaskTypes()
 local taskpertype=self:_GetTasksPerType()
 local ttypes={}
 local taskmenu={}
 for _tasktype,_data in pairs(tasktypes)do
-ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,join)
+ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,self.PlayerMenu[playername])
 local tasks=taskpertype[_tasktype]or{}
 for _,_task in pairs(tasks)do
+_task=_task
 local text=string.format("TaskNo %03d",_task.PlayerTaskNr)
 if self.UseGroupNames then
 local name=_task.Target:GetName()
@@ -93427,13 +93479,14 @@ if name~="Unknown"then
 text=string.format("%s (%03d)",name,_task.PlayerTaskNr)
 end
 end
+if _task:GetState()=="Planned"or(not _task:HasPlayerName(playername))then
 local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
-taskentry:SetTag(client:GetPlayerName())
+taskentry:SetTag(playername)
 taskmenu[#taskmenu+1]=taskentry
-_task.TaskMenu=taskentry
 end
 end
-join:Refresh()
+end
+self.PlayerMenu[playername]:Refresh()
 end
 end
 end
@@ -93487,9 +93540,20 @@ local taskname=string.format("Task #%d %s Failed! Replanning!",Task.PlayerTaskNr
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
 return self
 end
+function PLAYERTASKCONTROLLER:onafterTaskAdded(From,Event,To,Task)
+self:I({From,Event,To})
+self:I(self.lid.."TaskAdded")
+local taskname=string.format("%s has a new Task %s",self.Name,tostring(Task.Type))
+local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+return self
+end
 function PLAYERTASKCONTROLLER:onafterStop(From,Event,To)
 self:I({From,Event,To})
 self:I(self.lid.."Stopped.")
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.PilotDead)
 return self
 end
 AI_BALANCER={
