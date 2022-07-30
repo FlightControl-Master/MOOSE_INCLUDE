@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-30T10:26:29.0000000Z-894bff2e357e4812f95f5a1d85b99743aee3416c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-30T23:16:55.0000000Z-f94944c41ac18c3e42b91f9790a1f63f84356bb1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8114,6 +8114,13 @@ end
 function ZONE_BASE:BoundZone()
 self:F2()
 end
+function ZONE_BASE:SetDrawCoalition(Coalition)
+self.drawCoalition=Coalition or-1
+return self
+end
+function ZONE_BASE:GetDrawCoalition()
+return self.drawCoalition or-1
+end
 function ZONE_BASE:SetColor(RGBcolor,Alpha)
 RGBcolor=RGBcolor or{1,0,0}
 Alpha=Alpha or 0.15
@@ -8136,6 +8143,30 @@ return rgb
 end
 function ZONE_BASE:GetColorAlpha()
 local alpha=self.Color[4]
+return alpha
+end
+function ZONE_BASE:SetFillColor(RGBcolor,Alpha)
+RGBcolor=RGBcolor or{1,0,0}
+Alpha=Alpha or 0.15
+self.FillColor={}
+self.FillColor[1]=RGBcolor[1]
+self.FillColor[2]=RGBcolor[2]
+self.FillColor[3]=RGBcolor[3]
+self.FillColor[4]=Alpha
+return self
+end
+function ZONE_BASE:GetFillColor()
+return self.FillColor
+end
+function ZONE_BASE:GetFillColorRGB()
+local rgb={}
+rgb[1]=self.FillColor[1]
+rgb[2]=self.FillColor[2]
+rgb[3]=self.FillColor[3]
+return rgb
+end
+function ZONE_BASE:GetFillColorAlpha()
+local alpha=self.FillColor[4]
 return alpha
 end
 function ZONE_BASE:UndrawZone(Delay)
@@ -8795,11 +8826,18 @@ end
 return self
 end
 function ZONE_POLYGON_BASE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+if self._.Polygon and#self._.Polygon>=3 then
 local coordinate=COORDINATE:NewFromVec2(self._.Polygon[1])
+Coalition=Coalition or self:GetDrawCoalition()
+self:SetDrawCoalition(Coalition)
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
-FillColor=FillColor or UTILS.DeepCopy(Color)
-FillAlpha=FillAlpha or self:GetColorAlpha()
+self:SetColor(Color,Alpha)
+FillColor=FillColor or self:GetFillColorRGB()
+if not FillColor then UTILS.DeepCopy(Color)end
+FillAlpha=FillAlpha or self:GetFillColorAlpha()
+if not FillAlpha then FillAlpha=0.15 end
+self:SetFillColor(FillColor,FillAlpha)
 if#self._.Polygon==4 then
 local Coord2=COORDINATE:NewFromVec2(self._.Polygon[2])
 local Coord3=COORDINATE:NewFromVec2(self._.Polygon[3])
@@ -8809,6 +8847,7 @@ else
 local Coordinates=self:GetVerticiesCoordinates()
 table.remove(Coordinates,1)
 self.DrawID=coordinate:MarkupToAllFreeForm(Coordinates,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+end
 end
 return self
 end
@@ -8975,6 +9014,98 @@ end
 function ZONE_POLYGON:FindByName(ZoneName)
 local ZoneFound=_DATABASE:FindZone(ZoneName)
 return ZoneFound
+end
+do
+ZONE_ELASTIC={
+ClassName="ZONE_ELASTIC",
+points={},
+setGroups={}
+}
+function ZONE_ELASTIC:New(ZoneName,Points)
+local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(ZoneName,Points))
+_EVENTDISPATCHER:CreateEventNewZone(self)
+if Points then
+self.points=Points
+end
+return self
+end
+function ZONE_ELASTIC:AddVertex2D(Vec2)
+table.insert(self.points,Vec2)
+return self
+end
+function ZONE_ELASTIC:AddVertex3D(Vec3)
+table.insert(self.points,{x=Vec3.x,y=Vec3.z})
+return self
+end
+function ZONE_ELASTIC:AddSetGroup(GroupSet)
+table.insert(self.setGroups,GroupSet)
+return self
+end
+function ZONE_ELASTIC:Update(Delay,Draw)
+self:T(string.format("Updating ZONE_ELASTIC %s",tostring(self.ZoneName)))
+local points=UTILS.DeepCopy(self.points or{})
+if self.setGroups then
+for _,_setGroup in pairs(self.setGroups)do
+local setGroup=_setGroup
+for _,_group in pairs(setGroup.Set)do
+local group=_group
+if group and group:IsAlive()then
+table.insert(points,group:GetVec2())
+end
+end
+end
+end
+self._.Polygon=self:_ConvexHull(points)
+if Draw~=false then
+if self.DrawID or Draw==true then
+self:UndrawZone()
+self:DrawZone()
+end
+end
+end
+function ZONE_ELASTIC:StartUpdate(Tstart,dT,Tstop,Draw)
+self.updateID=self:ScheduleRepeat(Tstart,dT,0,Tstop,ZONE_ELASTIC.Update,self,0,Draw)
+return self
+end
+function ZONE_ELASTIC:StopUpdate(Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,ZONE_ELASTIC.StopUpdate,self)
+else
+if self.updateID then
+self:ScheduleStop(self.updateID)
+self.updateID=nil
+end
+end
+return self
+end
+function ZONE_ELASTIC:_ConvexHull(pl)
+if#pl==0 then
+return{}
+end
+table.sort(pl,function(left,right)
+return left.x<right.x
+end)
+local h={}
+local function ccw(a,b,c)
+return(b.x-a.x)*(c.y-a.y)>(b.y-a.y)*(c.x-a.x)
+end
+for i,pt in pairs(pl)do
+while#h>=2 and not ccw(h[#h-1],h[#h],pt)do
+table.remove(h,#h)
+end
+table.insert(h,pt)
+end
+local t=#h+1
+for i=#pl,1,-1 do
+local pt=pl[i]
+while#h>=t and not ccw(h[#h-1],h[#h],pt)do
+table.remove(h,#h)
+end
+table.insert(h,pt)
+end
+table.remove(h,#h)
+return h
+end
 end
 do
 ZONE_AIRBASE={
@@ -14421,8 +14552,28 @@ elseif#vecs==9 then
 trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],Color,FillColor,LineType,ReadOnly,Text or"")
 elseif#vecs==10 then
 trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],vecs[10],Color,FillColor,LineType,ReadOnly,Text or"")
+elseif#vecs==11 then
+trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],vecs[10],
+vecs[11],
+Color,FillColor,LineType,ReadOnly,Text or"")
+elseif#vecs==12 then
+trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],vecs[10],
+vecs[11],vecs[12],
+Color,FillColor,LineType,ReadOnly,Text or"")
+elseif#vecs==13 then
+trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],vecs[10],
+vecs[11],vecs[12],vecs[13],
+Color,FillColor,LineType,ReadOnly,Text or"")
+elseif#vecs==14 then
+trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],vecs[10],
+vecs[11],vecs[12],vecs[13],vecs[14],
+Color,FillColor,LineType,ReadOnly,Text or"")
+elseif#vecs==15 then
+trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],vecs[5],vecs[6],vecs[7],vecs[8],vecs[9],vecs[10],
+vecs[11],vecs[12],vecs[13],vecs[14],vecs[15],
+Color,FillColor,LineType,ReadOnly,Text or"")
 else
-self:E("ERROR: Currently a free form polygon can only have 10 points in total!")
+self:E("ERROR: Currently a free form polygon can only have 15 points in total!")
 trigger.action.markupToAll(7,Coalition,MarkID,unpack(vecs),Color,FillColor,LineType,ReadOnly,Text or"")
 end
 return MarkID
@@ -17555,7 +17706,7 @@ return self
 end
 function TIMER:Start(Tstart,dT,Duration)
 local Tnow=timer.getTime()
-self.Tstart=Tstart and Tnow+Tstart or Tnow+0.001
+self.Tstart=Tstart and Tnow+math.max(Tstart,0.001)or Tnow+0.001
 self.dT=dT
 if Duration then
 self.Tstop=self.Tstart+Duration
@@ -74846,7 +74997,11 @@ self:T(self.lid..text)
 return self
 end
 function LEGION:AddCohort(Cohort)
+if self:IsCohort(Cohort.name)then
+self:E(self.lid..string.format("ERROR: A cohort with name %s already exists in this legion. Cohorts must have UNIQUE names!"))
+else
 table.insert(self.cohorts,Cohort)
+end
 return self
 end
 function LEGION:DelCohort(Cohort)
