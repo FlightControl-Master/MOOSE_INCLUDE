@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-30T10:06:11.0000000Z-6ff0a699c08ea19d085799b690ad04ad98d7cbbc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-30T10:26:29.0000000Z-894bff2e357e4812f95f5a1d85b99743aee3416c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92921,6 +92921,9 @@ self:I(self.lid.."RemoveClient")
 local name=Client:GetPlayerName()
 if self.Clients:HasUniqueID(name)then
 self.Clients:PullByID(name)
+if self.verbose then
+self.Clients:Flush()
+end
 self:__ClientRemoved(-2,Client)
 if self.Clients:Count()==0 then
 self:__Failed(-1)
@@ -93137,7 +93140,7 @@ A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.6"
+PLAYERTASKCONTROLLER.version="0.0.7"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93191,7 +93194,7 @@ if self.TasksPerPlayer:HasUniqueID(EventData.IniPlayerName)then
 local task=self.TasksPerPlayer:PullByID(EventData.IniPlayerName)
 local Client=_DATABASE:FindClient(EventData.IniPlayerName)
 if Client then
-task:ClientAbort(Client)
+task:RemoveClient(Client)
 text="Task aborted!"
 end
 else
@@ -93376,8 +93379,15 @@ local Coordinate=task.Target:GetCoordinate()
 local CoordText=Coordinate:ToStringA2G(Client)
 local ThreatLevel=task.Target:GetThreatLevelMax()
 local targets=task.Target:CountTargets()or 0
+local clientlist=task:GetClients()
 local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
 text=string.format("%s\nThreat: %s\nTargets left: %d\nCoord: %s",taskname,ThreatGraph,targets,CoordText)
+local clienttxt="\nPilot(s): "
+for _,_name in pairs(clientlist)do
+clienttxt=clienttxt.._name..", "
+end
+clienttxt=string.gsub(clienttxt,", $",".")
+text=text..clienttxt
 else
 text="No active task!"
 end
