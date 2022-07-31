@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-29T06:51:23.0000000Z-562a3f6208a42d80dfc513b28e6698f263898711 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-31T07:17:36.0000000Z-73493c3a237bfa30d6eb62a0d33080156882e206 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22071,7 +22071,7 @@ function UNIT:GetAltitude(FromGround)
 local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
 local altitude=0
-local point=DCSUnit.getPoint()
+local point=DCSUnit:getPoint()
 altitude=point.y
 if FromGround then
 local land=land.getHeight({x=point.x,y=point.z})or 0
