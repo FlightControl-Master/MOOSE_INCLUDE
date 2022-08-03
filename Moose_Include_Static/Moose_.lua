@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-07-31T07:16:46.0000000Z-08e429210afb73fa51ab7535e72e2f4ce7fc9637 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-03T07:14:12.0000000Z-7affd052470fe8fc0394979e754b600e28cf8698 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4469,7 +4469,7 @@ local cps=math.floor((wpm*5)/60)
 if type(length)=="string"then
 length=string.len(length)
 end
-return math.ceil(length/cps)
+return length/cps
 end
 function STTS.TextToSpeech(message,freqs,modulations,volume,name,coalition,point,speed,gender,culture,voice,googleTTS)
 if os==nil or io==nil then
@@ -8132,17 +8132,19 @@ self.Color[4]=Alpha
 return self
 end
 function ZONE_BASE:GetColor()
-return self.Color
+return self.Color or{1,0,0,0.15}
 end
 function ZONE_BASE:GetColorRGB()
 local rgb={}
-rgb[1]=self.Color[1]
-rgb[2]=self.Color[2]
-rgb[3]=self.Color[3]
+local Color=self:GetColor()
+rgb[1]=Color[1]
+rgb[2]=Color[2]
+rgb[3]=Color[3]
 return rgb
 end
 function ZONE_BASE:GetColorAlpha()
-local alpha=self.Color[4]
+local Color=self:GetColor()
+local alpha=Color[4]
 return alpha
 end
 function ZONE_BASE:SetFillColor(RGBcolor,Alpha)
@@ -8156,17 +8158,19 @@ self.FillColor[4]=Alpha
 return self
 end
 function ZONE_BASE:GetFillColor()
-return self.FillColor
+return self.FillColor or{1,0,0,0.15}
 end
 function ZONE_BASE:GetFillColorRGB()
 local rgb={}
-rgb[1]=self.FillColor[1]
-rgb[2]=self.FillColor[2]
-rgb[3]=self.FillColor[3]
+local FillColor=self:GetFillColor()
+rgb[1]=FillColor[1]
+rgb[2]=FillColor[2]
+rgb[3]=FillColor[3]
 return rgb
 end
 function ZONE_BASE:GetFillColorAlpha()
-local alpha=self.FillColor[4]
+local FillColor=self:GetFillColor()
+local alpha=FillColor[4]
 return alpha
 end
 function ZONE_BASE:UndrawZone(Delay)
@@ -9062,6 +9066,7 @@ self:UndrawZone()
 self:DrawZone()
 end
 end
+return self
 end
 function ZONE_ELASTIC:StartUpdate(Tstart,dT,Tstop,Draw)
 self.updateID=self:ScheduleRepeat(Tstart,dT,0,Tstop,ZONE_ELASTIC.Update,self,0,Draw)
@@ -9735,7 +9740,8 @@ end
 function DATABASE:_RegisterClients()
 for ClientName,ClientTemplate in pairs(self.Templates.ClientsByName)do
 self:I(string.format("Register Client: %s",tostring(ClientName)))
-self:AddClient(ClientName)
+local client=self:AddClient(ClientName)
+client.SpawnCoord=COORDINATE:New(ClientTemplate.x,ClientTemplate.alt,ClientTemplate.y)
 end
 return self
 end
@@ -9768,8 +9774,6 @@ end
 end
 text=text.."]"
 self:I(text)
-if airbaseID~=airbase:GetID()then
-end
 end
 return self
 end
@@ -24583,12 +24587,10 @@ self.NparkingTerminal[terminalType]=0
 end
 local function isClient(coord)
 local clients=_DATABASE.CLIENTS
-for clientname,client in pairs(clients)do
-local template=_DATABASE:GetGroupTemplateFromUnitName(clientname)
-local units=template.units
-for i,unit in pairs(units)do
-local Coord=COORDINATE:New(unit.x,unit.alt,unit.y)
-local dist=Coord:Get2DDistance(coord)
+for clientname,_client in pairs(clients)do
+local client=_client
+if client and client.SpawnCoord then
+local dist=client.SpawnCoord:Get2DDistance(coord)
 if dist<2 then
 return true,clientname
 end
@@ -25100,7 +25102,7 @@ if not runway then
 runway=self:GetRunwayIntoWind(PreferLeft)
 end
 if runway then
-self:I("Setting active runway for landing as "..self:GetRunwayName(runway))
+self:I(string.format("%s: Setting active runway for landing as %s",self.AirbaseName,self:GetRunwayName(runway)))
 else
 self:E("ERROR: Could not set the runway for landing!")
 end
@@ -25122,7 +25124,7 @@ if not runway then
 runway=self:GetRunwayIntoWind(PreferLeft)
 end
 if runway then
-self:I("Setting active runway for takeoff as "..self:GetRunwayName(runway))
+self:I(string.format("%s: Setting active runway for takeoff as %s",self.AirbaseName,self:GetRunwayName(runway)))
 else
 self:E("ERROR: Could not set the runway for takeoff!")
 end
@@ -46925,7 +46927,7 @@ local bearing=playerUnit:GetCoordinate():HeadingTo(missile.shotCoord)
 if player.launchalert then
 if(missile.targetPlayer and player.unitname==missile.targetPlayer.unitname)or(distance<missile.missileRange)then
 local text=string.format("Missile launch detected! Distance %.1f NM, bearing %03d°.",UTILS.MetersToNM(distance),bearing)
-BASE:ScheduleOnce(5,FOX._SayNotchingHeadings,self,player,missile.weapon)
+self:ScheduleOnce(5,FOX._SayNotchingHeadings,self,player,missile.weapon)
 MESSAGE:New(text,5,"ALERT"):ToClient(player.client)
 end
 end
@@ -47075,6 +47077,8 @@ end
 self:T(FOX.lid..string.format("Tracking of missile starts in 0.0001 seconds."))
 timer.scheduleFunction(trackMissile,missile.weapon,timer.getTime()+0.0001)
 end
+function FOX:OnEventPlayerEnterAircraft(EventData)
+end
 function FOX:OnEventBirth(EventData)
 self:F3({eventbirth=EventData})
 if EventData==nil then
@@ -47100,7 +47104,7 @@ local text=string.format("Pilot %s, callsign %s entered unit %s of group %s.",pl
 self:T(self.lid..text)
 MESSAGE:New(text,5):ToAllIf(self.Debug)
 if not self.menudisabled then
-SCHEDULER:New(nil,self._AddF10Commands,{self,_unitName},0.1)
+self:ScheduleOnce(0.1,FOX._AddF10Commands,self,_unitname)
 end
 local playerData={}
 playerData.unit=playerunit
@@ -50187,7 +50191,7 @@ self.landingcoord=COORDINATE:New(0,0,0)
 self.sterncoord=COORDINATE:New(0,0,0)
 self.landingspotcoord=COORDINATE:New(0,0,0)
 if self.carriertype==AIRBOSS.CarrierType.STENNIS then
-self:_InitStennis()
+self:_InitNimitz()
 elseif self.carriertype==AIRBOSS.CarrierType.ROOSEVELT then
 self:_InitNimitz()
 elseif self.carriertype==AIRBOSS.CarrierType.LINCOLN then
@@ -70394,58 +70398,70 @@ self.despawnAfterHolding=true
 return self
 end
 function FLIGHTGROUP:IsParking(Element)
+local is=self:Is("Parking")
 if Element then
-return Element.status==OPSGROUP.ElementStatus.PARKING
+is=Element.status==OPSGROUP.ElementStatus.PARKING
 end
-return self:Is("Parking")
+return is
 end
 function FLIGHTGROUP:IsTaxiing(Element)
+local is=self:Is("Taxiing")
 if Element then
-return Element.status==OPSGROUP.ElementStatus.TAXIING
+is=Element.status==OPSGROUP.ElementStatus.TAXIING
 end
-return self:Is("Taxiing")
+return is
 end
 function FLIGHTGROUP:IsAirborne(Element)
+local is=self:Is("Airborne")or self:Is("Cruising")
 if Element then
-return Element.status==OPSGROUP.ElementStatus.AIRBORNE
+is=Element.status==OPSGROUP.ElementStatus.AIRBORNE
 end
-return self:Is("Airborne")or self:Is("Cruising")
+return is
 end
 function FLIGHTGROUP:IsCruising()
-return self:Is("Cruising")
+local is=self:Is("Cruising")
+return is
 end
 function FLIGHTGROUP:IsLanding(Element)
+local is=self:Is("Landing")
 if Element then
-return Element.status==OPSGROUP.ElementStatus.LANDING
+is=Element.status==OPSGROUP.ElementStatus.LANDING
 end
-return self:Is("Landing")
+return is
 end
 function FLIGHTGROUP:IsLanded(Element)
+local is=self:Is("Landed")
 if Element then
-return Element.status==OPSGROUP.ElementStatus.LANDED
+is=Element.status==OPSGROUP.ElementStatus.LANDED
 end
-return self:Is("Landed")
+return is
 end
 function FLIGHTGROUP:IsArrived(Element)
+local is=self:Is("Arrived")
 if Element then
-return Element.status==OPSGROUP.ElementStatus.ARRIVED
+is=Element.status==OPSGROUP.ElementStatus.ARRIVED
 end
-return self:Is("Arrived")
+return is
 end
 function FLIGHTGROUP:IsInbound()
-return self:Is("Inbound")
+local is=self:Is("Inbound")
+return is
 end
 function FLIGHTGROUP:IsHolding()
-return self:Is("Holding")
+local is=self:Is("Holding")
+return is
 end
 function FLIGHTGROUP:IsGoing4Fuel()
-return self:Is("Going4Fuel")
+local is=self:Is("Going4Fuel")
+return is
 end
 function FLIGHTGROUP:IsLandingAt()
-return self:Is("LandingAt")
+local is=self:Is("LandingAt")
+return is
 end
 function FLIGHTGROUP:IsLandedAt()
-return self:Is("LandedAt")
+is=self:Is("LandedAt")
+return is
 end
 function FLIGHTGROUP:IsFuelLow()
 return self.fuellow
@@ -91063,7 +91079,7 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.0"
+FLIGHTCONTROL.version="0.7.1"
 function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
@@ -91088,6 +91104,7 @@ self:SetLandingInterval()
 self:SetFrequency(Frequency,Modulation)
 self:SetMarkHoldingPattern(true)
 self:SetRunwayRepairtime()
+self.msrsqueue=MSRSQUEUE:New(self.alias)
 self.msrsTower=MSRS:New(PathToSRS,Frequency,Modulation)
 self:SetSRSTower()
 self.msrsPilot=MSRS:New(PathToSRS,Frequency,Modulation)
@@ -91310,18 +91327,12 @@ self:HandleEvent(EVENTS.Kill)
 self:__StatusUpdate(-1)
 end
 function FLIGHTCONTROL:onbeforeStatusUpdate()
-if self.Tlastmessage then
-local Tnow=timer.getAbsTime()
-local dT=Tnow-self.Tlastmessage
-if dT<self.dTmessage then
-local dt=self.dTmessage-dT+1
-local text=string.format("Last message sent %d sec ago. Will call status again in %d sec",dT,dt)
-self:T(self.lid..text)
-self:__StatusUpdate(-dt)
+local Tqueue=self.msrsqueue:CalcTransmisstionDuration()
+if Tqueue>0 then
+local text=string.format("Still got %d messages in the radio queue. Will call status again in %.1f sec",#self.msrsqueue,Tqueue)
+self:I(self.lid..text)
+self:__StatusUpdate(-Tqueue)
 return false
-else
-self:T2(self.lid..string.format("Last radio sent %d>%d sec ago. Status update allowed",dT,self.dTmessage))
-end
 end
 return true
 end
@@ -92404,7 +92415,8 @@ end
 function FLIGHTCONTROL:_PlayerAbortLanding(groupname)
 local flight=_DATABASE:GetOpsGroup(groupname)
 if flight then
-if flight:IsLanding()and self:IsControlling(flight)then
+local flightstatus=self:GetFlightStatus(flight)
+if(flight:IsLanding()or flightstatus==FLIGHTCONTROL.FlightStatus.LANDING)and self:IsControlling(flight)then
 local callsign=self:_GetCallsignName(flight)
 local text=string.format("%s, %s, abort landing",self.alias,callsign)
 self:TransmissionPilot(text,flight)
@@ -92438,7 +92450,8 @@ if nTakeoff>self.NlandingTakeoff then
 local text=string.format("%s, negative! We have currently traffic taking off",callsign)
 self:TransmissionTower(text,flight,10)
 else
-local text=string.format("%s, affirmative! Confirm approach",callsign)
+local runway=self:GetActiveRunwayText()
+local text=string.format("%s, affirmative, runway %s. Confirm approach!",callsign,runway)
 self:TransmissionTower(text,flight,10)
 self:SetFlightStatus(flight,FLIGHTCONTROL.FlightStatus.LANDING)
 end
@@ -92735,9 +92748,10 @@ if(flightstatus==FLIGHTCONTROL.FlightStatus.TAXIINB or flightstatus==FLIGHTCONTR
 local speed=playerElement.unit:GetVelocityMPS()
 local coord=playerElement.unit:GetCoord()
 local onRunway=self:IsCoordinateRunway(coord)
-self:I(self.lid..string.format("Player %s speed %.1f knots (max=%.1f) onRunway=%s",playerElement.playerName,UTILS.MpsToKnots(speed),UTILS.MpsToKnots(self.speedLimitTaxi),tostring(onRunway)))
+self:T(self.lid..string.format("Player %s speed %.1f knots (max=%.1f) onRunway=%s",playerElement.playerName,UTILS.MpsToKnots(speed),UTILS.MpsToKnots(self.speedLimitTaxi),tostring(onRunway)))
 if speed and speed>self.speedLimitTaxi and not onRunway then
-local text="Slow down, you are taxiing too fast!"
+local callsign=self:_GetCallsignName(flight)
+local text=string.format("%s, slow down, you are taxiing too fast!",callsign)
 self:TransmissionTower(text,flight)
 local PlayerData=flight:_GetPlayerData()
 self:PlayerSpeeding(PlayerData)
@@ -92829,13 +92843,15 @@ return self
 end
 function FLIGHTCONTROL:TransmissionTower(Text,Flight,Delay)
 local text=self:_GetTextForSpeech(Text)
-self.msrsTower:PlayText(text,Delay)
+local subgroups=nil
 if Flight and not Flight.isAI then
 local playerData=Flight:_GetPlayerData()
 if playerData.subtitles then
-self:TextMessageToFlight(Text,Flight,5,false,Delay)
+subgroups=subgroups or{}
+table.insert(subgroups,Flight.group)
 end
 end
+local transmission=self.msrsqueue:NewTransmission(text,nil,self.msrsTower,nil,1,subgroups,Text)
 self.Tlastmessage=timer.getAbsTime()+(Delay or 0)
 self:T(self.lid..string.format("Radio Tower: %s",Text))
 end
@@ -92843,14 +92859,19 @@ function FLIGHTCONTROL:TransmissionPilot(Text,Flight,Delay)
 local playerData=Flight:_GetPlayerData()
 if playerData==nil or playerData.myvoice then
 local text=self:_GetTextForSpeech(Text)
+local msrs=self.msrsPilot
 if Flight.useSRS and Flight.msrs then
-Flight.msrs:PlayTextExt(text,Delay,self.frequency,self.modulation,Gender,Culture,Voice,Volume,Label)
-else
-self.msrsPilot:PlayText(text,Delay)
+msrs=Flight.msrs
 end
+local subgroups=nil
 if Flight and not Flight.isAI then
-self:TextMessageToFlight(Text,Flight,5,false,Delay)
+local playerData=Flight:_GetPlayerData()
+if playerData.subtitles then
+subgroups=subgroups or{}
+table.insert(subgroups,Flight.group)
 end
+end
+self.msrsqueue:NewTransmission(text,nil,msrs,nil,1,subgroups,Text,nil,self.frequency,self.modulation)
 end
 self.Tlastmessage=timer.getAbsTime()+(Delay or 0)
 self:T(self.lid..string.format("Radio Pilot: %s",Text))
@@ -103087,7 +103108,7 @@ speed=1,
 coordinate=nil,
 Label="ROBOT",
 }
-MSRS.version="0.0.6"
+MSRS.version="0.1.0"
 function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
@@ -103341,6 +103362,165 @@ command=command..string.format(' --ssml -G "%s"',self.google)
 end
 self:T("MSRS command="..command)
 return command
+end
+MSRSQUEUE={
+ClassName="MSRSQUEUE",
+Debugmode=nil,
+lid=nil,
+queue={},
+alias=nil,
+dt=nil,
+Tlast=nil,
+checking=nil,
+}
+function MSRSQUEUE:New(alias)
+local self=BASE:Inherit(self,BASE:New())
+self.alias=alias or"My Radio"
+self.dt=1.0
+self.lid=string.format("MSRSQUEUE %s | ",self.alias)
+return self
+end
+function MSRSQUEUE:Clear()
+self:I(self.lid.."Clearning MSRSQUEUE")
+self.queue={}
+return self
+end
+function MSRSQUEUE:AddTransmission(transmission)
+transmission.isplaying=false
+transmission.Tstarted=nil
+table.insert(self.queue,transmission)
+if not self.checking then
+self:_CheckRadioQueue()
+end
+return self
+end
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation)
+if not text then
+self:E(self.lid.."ERROR: No text specified.")
+return nil
+end
+if type(text)~="string"then
+self:E(self.lid.."ERROR: Text specified is NOT a string.")
+return nil
+end
+local transmission={}
+transmission.text=text
+transmission.duration=duration or STTS.getSpeechTime(text)
+transmission.msrs=msrs
+transmission.Tplay=tstart or timer.getAbsTime()
+transmission.subtitle=subtitle
+transmission.interval=interval or 0
+transmission.frequency=frequency
+transmission.modulation=modulation
+transmission.subgroups=subgroups
+if transmission.subtitle then
+transmission.subduration=subduration or transmission.duration
+else
+transmission.subduration=0
+end
+self:AddTransmission(transmission)
+return transmission
+end
+function MSRSQUEUE:Broadcast(transmission)
+if transmission.frequency then
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,Gender,Culture,Voice,Volume,Label)
+else
+transmission.msrs:PlayText(transmission.text)
+end
+local function texttogroup(gid)
+trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
+end
+if transmission.subgroups and#transmission.subgroups>0 then
+for _,_group in pairs(transmission.subgroups)do
+local group=_group
+if group and group:IsAlive()then
+local gid=group:GetID()
+self:ScheduleOnce(4,texttogroup,gid)
+end
+end
+end
+end
+function MSRSQUEUE:CalcTransmisstionDuration()
+local Tnow=timer.getAbsTime()
+local T=0
+for _,_transmission in pairs(self.queue)do
+local transmission=_transmission
+if transmission.isplaying then
+local dt=Tnow-transmission.Tstarted
+T=T+transmission.duration-dt
+else
+T=T+transmission.duration
+end
+end
+return T
+end
+function MSRSQUEUE:_CheckRadioQueue(delay)
+local N=#self.queue
+self:T2(self.lid..string.format("Check radio queue %s: delay=%.3f sec, N=%d, checking=%s",self.alias,delay or 0,N,tostring(self.checking)))
+if delay and delay>0 then
+self:ScheduleOnce(delay,MSRSQUEUE._CheckRadioQueue,self)
+self.checking=true
+else
+if N==0 then
+self:T(self.lid..string.format("Check radio queue %s empty ==> disable checking",self.alias))
+self.checking=false
+return
+end
+local time=timer.getAbsTime()
+self.checking=true
+local dt=self.dt
+local playing=false
+local next=nil
+local remove=nil
+for i,_transmission in ipairs(self.queue)do
+local transmission=_transmission
+if time>=transmission.Tplay then
+if transmission.isplaying then
+if time>=transmission.Tstarted+transmission.duration then
+transmission.isplaying=false
+remove=i
+self.Tlast=time
+else
+playing=true
+dt=transmission.duration-(time-transmission.Tstarted)
+end
+else
+local Tlast=self.Tlast
+if transmission.interval==nil then
+if next==nil then
+next=transmission
+end
+else
+if Tlast==nil or time-Tlast>=transmission.interval then
+next=transmission
+else
+end
+end
+if next or Tlast then
+break
+end
+end
+else
+end
+end
+if next~=nil and not playing then
+self:T(self.lid..string.format("Broadcasting text=\"%s\" at T=%.3f",next.text,time))
+self:Broadcast(next)
+next.isplaying=true
+next.Tstarted=time
+dt=next.duration
+end
+if remove then
+table.remove(self.queue,remove)
+N=N-1
+if#self.queue==0 then
+self:T(self.lid..string.format("Check radio queue %s empty ==> disable checking",self.alias))
+self.checking=false
+return
+end
+end
+self:_CheckRadioQueue(dt)
+end
 end
 COMMANDCENTER={
 ClassName="COMMANDCENTER",
