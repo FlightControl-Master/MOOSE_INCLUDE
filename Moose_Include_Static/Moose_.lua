@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-03T07:14:12.0000000Z-7affd052470fe8fc0394979e754b600e28cf8698 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-04T20:13:18.0000000Z-fa0549f34ff9c2317de11ec2dfb95c786e1f947c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -51943,12 +51943,9 @@ elseif skyhawk then
 alt=UTILS.FeetToMeters(500)
 end
 aoa=aoaac.OnSpeed
-if harrier then
-dist=UTILS.NMToMeters(0.9)
-else
-dist=UTILS.NMToMeters(1.2)
-end
 if goshawk then
+dist=UTILS.NMToMeters(0.9)
+elseif harrier then
 dist=UTILS.NMToMeters(0.9)
 else
 dist=UTILS.NMToMeters(1.1)
