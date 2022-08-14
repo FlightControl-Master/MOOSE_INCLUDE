@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-04T20:13:18.0000000Z-fa0549f34ff9c2317de11ec2dfb95c786e1f947c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-14T14:50:57.0000000Z-b968d0d694526a27ce29ac6c080370b5a86ac40a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93011,8 +93011,9 @@ FlareColor=nil,
 conditionSuccess={},
 conditionFailure={},
 TaskController=nil,
+timestamp=0,
 }
-PLAYERTASK.version="0.0.7"
+PLAYERTASK.version="0.0.8"
 function PLAYERTASK:New(Type,Target,Repeat,Times)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -93025,6 +93026,7 @@ self.SmokeColor=SMOKECOLOR.Red
 self.conditionSuccess={}
 self.conditionFailure={}
 self.TaskController=nil
+self.timestamp=timer.getTime()
 if Repeat then
 self.Repeat=true
 self.RepeatNo=Times or 1
@@ -93072,9 +93074,13 @@ end
 return IsDone
 end
 function PLAYERTASK:GetClients()
-self:I(self.lid.."GetClients?")
+self:I(self.lid.."GetClients")
 local clientlist=self.Clients:GetIDStackSorted()or{}
 return clientlist
+end
+function PLAYERTASK:CountClients()
+self:I(self.lid.."CountClients")
+return self.Clients:Count()
 end
 function PLAYERTASK:HasPlayerName(Name)
 self:I(self.lid.."HasPlayerName?")
@@ -93307,19 +93313,24 @@ TargetQueue=nil,
 ClientSet=nil,
 UseGroupNames=true,
 PlayerMenu={},
+usecluster=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.7"
+PLAYERTASKCONTROLLER.version="0.0.8"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
 self.Coalition=Coalition or coalition.side.BLUE
 self.CoalitionName=UTILS.GetCoalitionName(Coalition)
 self.Type=Type or PLAYERTASKCONTROLLER.Type.A2G
+self.usecluster=false
+if self.Type==PLAYERTASKCONTROLLER.Type.A2A then
+self.usecluster=true
+end
 self.ClientFilter=ClientFilter or""
 self.TargetQueue=FIFO:New()
 self.TaskQueue=FIFO:New()
@@ -93655,11 +93666,17 @@ ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,self.PlayerMenu[playername])
 local tasks=taskpertype[_tasktype]or{}
 for _,_task in pairs(tasks)do
 _task=_task
-local text=string.format("TaskNo %03d",_task.PlayerTaskNr)
+local pilotcount=_task:CountClients()
+local newtext="]"
+local tnow=timer.getTime()
+if tnow-_task.timestamp<60 then
+newtext="*]"
+end
+local text=string.format("TaskNo %03d [%d%s",_task.PlayerTaskNr,pilotcount,newtext)
 if self.UseGroupNames then
 local name=_task.Target:GetName()
 if name~="Unknown"then
-text=string.format("%s (%03d)",name,_task.PlayerTaskNr)
+text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
 if _task:GetState()=="Planned"or(not _task:HasPlayerName(playername))then
@@ -93672,6 +93689,86 @@ end
 self.PlayerMenu[playername]:Refresh()
 end
 end
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddAgent(Recce)
+self:I(self.lid.."AddAgent: "..Recce:GetName())
+if self.Intel then
+self.Intel:AddAgent(Recce)
+end
+return self
+end
+function PLAYERTASKCONTROLLER:SetupIntel(RecceName)
+self:I(self.lid.."SetupIntel: "..RecceName)
+self.RecceSet=SET_GROUP:New():FilterCoalitions(self.CoalitionName):FilterPrefixes(RecceName):FilterStart()
+self.Intel=INTEL:New(self.RecceSet,self.Coalition,self.Name.."-Intel")
+self.Intel:SetClusterAnalysis(true,false,false)
+self.Intel:SetClusterRadius(2500)
+self.Intel.statusupdate=25
+if self.Type==PLAYERTASKCONTROLLER.Type.A2G then
+self.Intel:SetDetectStatics(true)
+end
+self.Intel:__Start(2)
+local function NewCluster(Cluster)
+if not self.usecluster then return self end
+local cluster=Cluster
+local type=cluster.ctype
+self:I({type,self.Type})
+if(type==INTEL.Ctype.AIRCRAFT and self.Type==PLAYERTASKCONTROLLER.Type.A2A)or(type==INTEL.Ctype.NAVAL and self.Type==PLAYERTASKCONTROLLER.Type.A2S)then
+self:I("A2A or A2S")
+local contacts=cluster.Contacts
+local targetset=SET_GROUP:New()
+for _,_object in pairs(contacts)do
+local contact=_object
+self:I("Adding group: "..contact.groupname)
+targetset:AddGroup(contact.group,true)
+end
+self:AddTarget(targetset)
+elseif(type==INTEL.Ctype.GROUND or type==INTEL.Ctype.STRUCTURE)and self.Type==PLAYERTASKCONTROLLER.Type.A2G then
+self:I("A2G")
+local contacts=cluster.Contacts
+local targetset=nil
+if type==INTEL.Ctype.GROUND then
+targetset=SET_GROUP:New()
+for _,_object in pairs(contacts)do
+local contact=_object
+self:I("Adding group: "..contact.groupname)
+targetset:AddGroup(contact.group,true)
+end
+elseif type==INTEL.Ctype.STRUCTURE then
+targetset=SET_STATIC:New()
+for _,_object in pairs(contacts)do
+local contact=_object
+self:I("Adding static: "..contact.groupname)
+targetset:AddStatic(contact.group)
+end
+end
+if targetset then
+self:AddTarget(targetset)
+end
+end
+end
+local function NewContact(Contact)
+if self.usecluster then return self end
+local contact=Contact
+local type=contact.ctype
+self:I({type,self.Type})
+if(type==INTEL.Ctype.AIRCRAFT and self.Type==PLAYERTASKCONTROLLER.Type.A2A)or(type==INTEL.Ctype.NAVAL and self.Type==PLAYERTASKCONTROLLER.Type.A2S)then
+self:I("A2A or A2S")
+self:I("Adding group: "..contact.groupname)
+self:AddTarget(contact.group)
+elseif(type==INTEL.Ctype.GROUND or type==INTEL.Ctype.STRUCTURE)and self.Type==PLAYERTASKCONTROLLER.Type.A2G then
+self:I("A2G")
+self:I("Adding group: "..contact.groupname)
+self:AddTarget(contact.group)
+end
+end
+function self.Intel:OnAfterNewCluster(From,Event,To,Cluster)
+NewCluster(Cluster)
+end
+function self.Intel:OnAfterNewContact(From,Event,To,Contact)
+NewContact(Contact)
 end
 return self
 end
