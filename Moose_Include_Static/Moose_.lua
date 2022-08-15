@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-14T14:50:57.0000000Z-b968d0d694526a27ce29ac6c080370b5a86ac40a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-15T11:11:09.0000000Z-ce15e8dfe02deafd57d343597567061378bdf8b3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93314,13 +93314,14 @@ ClientSet=nil,
 UseGroupNames=true,
 PlayerMenu={},
 usecluster=false,
+MenuName=nil,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
 A2G="Air-To-Ground",
 A2S="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.8"
+PLAYERTASKCONTROLLER.version="0.0.9"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93336,6 +93337,7 @@ self.TargetQueue=FIFO:New()
 self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
 self.PlayerMenu={}
+self.MenuName=nil
 self.repeatonfailed=true
 self.repeattimes=5
 self.UseGroupNames=true
@@ -93459,6 +93461,10 @@ end
 end
 return self
 end
+function PLAYERTASKCONTROLLER:_CheckPlayerHasTask(PlayerName)
+self:I(self.lid.."_CheckPlayerHasTask")
+return self.TasksPerPlayer:HasUniqueID(PlayerName)
+end
 function PLAYERTASKCONTROLLER:AddTarget(Target)
 self:I(self.lid.."AddTarget")
 self.TargetQueue:Push(Target)
@@ -93545,9 +93551,7 @@ local text=string.format("Player %s joined task %d in state %s",playername,Task.
 self:I(self.lid..text)
 local m=MESSAGE:New(text,"10","Info"):ToAll()
 self.TasksPerPlayer:Push(Task,playername)
-if self.PlayerMenu[playername]then
-self.PlayerMenu[playername]:RemoveSubMenus()
-end
+self:_BuildMenus(Client)
 end
 return self
 end
@@ -93632,18 +93636,29 @@ else
 text="No active task!"
 end
 local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+self:_BuildMenus(Client)
 return self
 end
-function PLAYERTASKCONTROLLER:_BuildMenus()
+function PLAYERTASKCONTROLLER:_BuildMenus(Client)
 self:I(self.lid.."_BuildMenus")
 local clients=self.ClientSet:GetAliveSet()
+if Client then
+clients={Client}
+end
 for _,_client in pairs(clients)do
 if _client then
 local client=_client
 local group=client:GetGroup()
 local playername=client:GetPlayerName()or"Unknown"
 if group and client then
-local topmenu=MENU_GROUP:New(group,self.Name.." Tasking "..self.Type,nil)
+local menuname=self.MenuName or self.Name.." Tasking "..self.Type
+local topmenu=MENU_GROUP:New(group,menuname,nil)
+if self.PlayerMenu[playername]then
+self.PlayerMenu[playername]:RemoveSubMenus()
+else
+self.PlayerMenu[playername]=topmenu
+end
+if self:_CheckPlayerHasTask(playername)then
 local active=MENU_GROUP:New(group,"Active Task",topmenu)
 local info=MENU_GROUP_COMMAND:New(group,"Info",active,self._ActiveTaskInfo,self,group,client)
 local mark=MENU_GROUP_COMMAND:New(group,"Mark on map",active,self._MarkTask,self,group,client)
@@ -93652,17 +93667,14 @@ local smoke=MENU_GROUP_COMMAND:New(group,"Smoke",active,self._SmokeTask,self,gro
 local flare=MENU_GROUP_COMMAND:New(group,"Flare",active,self._FlareTask,self,group,client)
 end
 local abort=MENU_GROUP_COMMAND:New(group,"Abort",active,self._AbortTask,self,group,client)
-if self.PlayerMenu[playername]then
-self.PlayerMenu[playername]:RemoveSubMenus()
-else
-self.PlayerMenu[playername]=MENU_GROUP:New(group,"Join Task",topmenu)
-end
+elseif self.TaskQueue:Count()>0 then
 local tasktypes=self:_GetAvailableTaskTypes()
 local taskpertype=self:_GetTasksPerType()
+local joinmenu=MENU_GROUP:New(group,"Join Task",topmenu)
 local ttypes={}
 local taskmenu={}
 for _tasktype,_data in pairs(tasktypes)do
-ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,self.PlayerMenu[playername])
+ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,joinmenu)
 local tasks=taskpertype[_tasktype]or{}
 for _,_task in pairs(tasks)do
 _task=_task
@@ -93686,6 +93698,9 @@ taskmenu[#taskmenu+1]=taskentry
 end
 end
 end
+else
+local joinmenu=MENU_GROUP:New(group,"Currently no tasks available.",topmenu)
+end
 self.PlayerMenu[playername]:Refresh()
 end
 end
@@ -93697,6 +93712,11 @@ self:I(self.lid.."AddAgent: "..Recce:GetName())
 if self.Intel then
 self.Intel:AddAgent(Recce)
 end
+return self
+end
+function PLAYERTASKCONTROLLER:SetMenuName(Name)
+self:I(self.lid.."SetMenuName: "..Name)
+self.MenuName=Name
 return self
 end
 function PLAYERTASKCONTROLLER:SetupIntel(RecceName)
@@ -93823,7 +93843,7 @@ end
 function PLAYERTASKCONTROLLER:onafterTaskAdded(From,Event,To,Task)
 self:I({From,Event,To})
 self:I(self.lid.."TaskAdded")
-local taskname=string.format("%s has a new Task %s",self.Name,tostring(Task.Type))
+local taskname=string.format("%s has a new Task %s",self.MenuName or self.Name,tostring(Task.Type))
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
 return self
 end
