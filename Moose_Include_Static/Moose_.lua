@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-15T17:07:05.0000000Z-724da4e500f70750eae68e3108cde9d49ccaa05d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-16T14:48:13.0000000Z-0166b53e21a1fdb3427481bebe5278c8f4284f78 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93255,7 +93255,7 @@ end
 function PLAYERTASK:onafterClientAdded(From,Event,To,Client)
 self:T({From,Event,To})
 if Client and self.verbose then
-local text=string.format("Player %s joined task %d!",Client:GetPlayerName()or"Generic",self.PlayerTaskNr)
+local text=string.format("Player %s joined task %03d!",Client:GetPlayerName()or"Generic",self.PlayerTaskNr)
 self:I(self.lid..text)
 end
 return self
@@ -93318,13 +93318,15 @@ PlayerMenu={},
 usecluster=false,
 MenuName=nil,
 ClusterRadius=1250,
+NoScreenOutput=false,
+TargetRadius=500,
 }
 PLAYERTASKCONTROLLER.Type={
-A2A="Air-To-Air",
-A2G="Air-To-Ground",
-A2S="Air-To-Sea",
+["A2A"]="Air-To-Air",
+["A2G"]="Air-To-Ground",
+["A2S"]="Air-To-Sea",
 }
-PLAYERTASKCONTROLLER.version="0.0.11"
+PLAYERTASKCONTROLLER.version="0.0.12"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93336,6 +93338,7 @@ if self.Type==PLAYERTASKCONTROLLER.Type.A2A then
 self.usecluster=true
 end
 self.ClusterRadius=1250
+self.TargetRadius=500
 self.ClientFilter=ClientFilter or""
 self.TargetQueue=FIFO:New()
 self.TaskQueue=FIFO:New()
@@ -93397,11 +93400,16 @@ elseif EventData.id==EVENTS.PlayerEnterAircraft then
 if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
 local frequency=self.Frequency
-if type(frequency)=="table"then frequency=frequency[1]end
+local freqtext=""
+if type(frequency)=="table"then
+freqtext="frequencies "..table.concat(frequency,", ")
+else
+freqtext=string.format("frequency %.3f",frequency)
+end
 local modulation=self.Modulation
 if type(modulation)=="table"then modulation=modulation[1]end
 modulation=UTILS.GetModulationName(modulation)
-local text=string.format("%s, %s, switch to frequency %.3f for task assignment!",EventData.IniPlayerName,self.MenuName or self.Name,frequency)
+local text=string.format("%s, %s, switch to %s for task assignment!",EventData.IniPlayerName,self.MenuName or self.Name,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
 end
@@ -93409,6 +93417,16 @@ return self
 end
 function PLAYERTASKCONTROLLER:_DummyMenu(group)
 self:T(self.lid.."_DummyMenu")
+return self
+end
+function PLAYERTASKCONTROLLER:SuppressScreenOutput(OnOff)
+self:T(self.lid.."SuppressScreenOutput")
+self.NoScreenOutput=OnOff or false
+return self
+end
+function PLAYERTASKCONTROLLER:SetTargetRadius(Radius)
+self:T(self.lid.."SetTargetRadius")
+self.TargetRadius=Radius or 500
 return self
 end
 function PLAYERTASKCONTROLLER:SetClusterRadius(Radius)
@@ -93546,17 +93564,21 @@ ttstype="suppress air defenses"
 end
 end
 )
+elseif targetobject:IsInstanceOf("SET_STATIC")or targetobject:IsInstanceOf("STATIC")then
+self:T("BOMBING SET_STATIC or STATIC")
+type=AUFTRAG.Type.BOMBING
+ttstype="bombing"
 end
 local targetcoord=Target:GetCoordinate()
 local targetvec2=targetcoord:GetVec2()
-local targetzone=ZONE_RADIUS:New(self.Name,targetvec2,2000)
+local targetzone=ZONE_RADIUS:New(self.Name,targetvec2,self.TargetRadius)
 local coalition=targetobject:GetCoalitionName()or"Blue"
 coalition=string.lower(coalition)
 self:T("Target coalition is "..tostring(coalition))
 local filtercoalition="blue"
 if coalition=="blue"then filtercoalition="red"end
 local friendlyset=SET_GROUP:New():FilterCategoryGround():FilterCoalitions(filtercoalition):FilterZones({targetzone}):FilterOnce()
-if friendlyset:Count()==0 and type~=AUFTRAG.Type.SEAD then
+if friendlyset:Count()==0 and type==AUFTRAG.Type.CAS then
 type=AUFTRAG.Type.BAI
 ttstype="battle field air interdiction"
 end
@@ -93570,10 +93592,39 @@ elseif cat==TARGET.Category.AIRBASE then
 type=AUFTRAG.Type.BOMBRUNWAY
 ttstype="bomb runway"
 elseif cat==TARGET.Category.COORDINATE or cat==TARGET.Category.ZONE then
-type=AUFTRAG.Type.BOMBING
-ttstype="bombing"
+local zone=Target:GetObject()
+if cat==TARGET.Category.COORDINATE then
+zone=ZONE_RADIUS:New("TargetZone-"..math.random(1,10000),Target:GetVec2(),self.TargetRadius)
+end
+local enemies=self.CoalitionName=="Blue"and"red"or"blue"
+local enemysetg=SET_GROUP:New():FilterCoalitions(enemies):FilterCategoryGround():FilterActive(true):FilterZones({zone}):FilterOnce()
+local enemysets=SET_STATIC:New():FilterCoalitions(enemies):FilterZones({zone}):FilterOnce()
+local countg=enemysetg:Count()
+local counts=enemysets:Count()
+if countg>0 then
+self:AddTarget(enemysetg)
+end
+if counts>0 then
+self:AddTarget(enemysets)
+end
+return self
 end
 local task=PLAYERTASK:New(type,Target,self.repeatonfailed,self.repeattimes,ttstype)
+task.coalition=self.Coalition
+if type==AUFTRAG.Type.BOMBRUNWAY then
+task:HandleEvent(EVENTS.Shot)
+function task:OnEventShot(EventData)
+local data=EventData
+local wcat=data.Weapon:getCategory()
+local coord=data.IniUnit:GetCoordinate()or data.IniGroup:GetCoordinate()
+local coal=data.IniCoalition
+local afbzone=AIRBASE:FindByName(Target:GetName()):GetZone()
+local inzone=afbzone:IsVec2InZone(coord:GetVec2()or{x=0,y=0})
+if coal==task.coalition and(wcat==2 or wcat==3)and inzone then
+task:__Success(-20)
+end
+end
+end
 task:_SetController(self)
 self.TaskQueue:Push(task)
 self:__TaskAdded(-1,task)
@@ -93583,7 +93634,9 @@ function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task)
 self:T(self.lid.."_JoinTask")
 local playername=Client:GetPlayerName()
 if self.TasksPerPlayer:HasUniqueID(playername)then
-local m=MESSAGE:New("You already have one active task! Complete it first!","10","Info"):ToGroup(Group)
+if not self.NoScreenOutput then
+local m=MESSAGE:New("You already have one active task! Complete it first!","10","Tasking"):ToGroup(Group)
+end
 return self
 end
 Task:AddClient(Client)
@@ -93591,9 +93644,11 @@ local taskstate=Task:GetState()
 if taskstate~="Executing"and taskstate~="Done"then
 Task:__Requested(-1)
 Task:__Executing(-2)
-local text=string.format("Pilot %s joined task %d",playername,Task.PlayerTaskNr)
+local text=string.format("%s, pilot %s joined task %03d",self.MenuName or self.Name,playername,Task.PlayerTaskNr)
 self:T(self.lid..text)
-local m=MESSAGE:New(text,"10","Info"):ToAll()
+if not self.NoScreenOutput then
+local m=MESSAGE:New(text,"10","Tasking"):ToAll()
+end
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
@@ -93607,12 +93662,23 @@ self:T(self.lid.."_ActiveTaskInfo")
 local playername=Client:GetPlayerName()
 local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
-local task=self.TasksPerPlayer:GetIDStack()
 local task=self.TasksPerPlayer:ReadByID(playername)
-local taskname=string.format("%s Task ID %02d",task.Type,task.PlayerTaskNr)
+local taskname=string.format("%s Task ID %03d",task.Type,task.PlayerTaskNr)
+local ttstaskname=string.format("%s Task ID %03d",task.TTSType,task.PlayerTaskNr)
 local Coordinate=task.Target:GetCoordinate()
-local CoordText=Coordinate:ToStringA2G(Client)
+local CoordText=""
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+CoordText=Coordinate:ToStringA2G(Client)
+else
+CoordText=Coordinate:ToStringA2A(Client)
+end
 local ThreatLevel=task.Target:GetThreatLevelMax()
+local ThreatLevelText="high"
+if ThreatLevel>3 and ThreatLevel<8 then
+ThreatLevelText="medium"
+elseif ThreatLevel<=3 then
+ThreatLevelText="low"
+end
 local targets=task.Target:CountTargets()or 0
 local clientlist=task:GetClients()
 local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
@@ -93623,10 +93689,16 @@ clienttxt=clienttxt.._name..", "
 end
 clienttxt=string.gsub(clienttxt,", $",".")
 text=text..clienttxt
+if self.UseSRS then
+local ttstext=string.format("%s, %s. Target information for %s. Threat level %s. Targets left %d. Target location %s.",self.MenuName or self.Name,playername,ttstaskname,ThreatLevelText,targets,CoordText)
+self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,2)
+end
 else
 text="No active task!"
 end
+if not self.NoScreenOutput then
 local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_MarkTask(Group,Client)
@@ -93636,11 +93708,17 @@ local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
 task:MarkTargetOnF10Map()
-text="Task location marked!"
+text=string.format("%s, copy pilot %s, task %03d location marked on map!",self.MenuName or self.Name,playername,task.PlayerTaskNr)
+self:T(self.lid..text)
+if self.UseSRS then
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
+end
 else
 text="No active task!"
 end
-local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+if not self.NoScreenOutput then
+local m=MESSAGE:New(text,"10","Tasking"):ToGroup(Group)
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_SmokeTask(Group,Client)
@@ -93650,11 +93728,17 @@ local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
 task:SmokeTarget()
-text="Task location smoked!"
+text=string.format("%s, copy pilot %s, task %03d location smoked!",self.MenuName or self.Name,playername,task.PlayerTaskNr)
+self:T(self.lid..text)
+if self.UseSRS then
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
+end
 else
 text="No active task!"
 end
-local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+if not self.NoScreenOutput then
+local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_FlareTask(Group,Client)
@@ -93664,11 +93748,17 @@ local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
 task:FlareTarget()
-text="Task location illuminated!"
+text=string.format("%s, copy pilot %s, task %03d location illuminated!",self.MenuName or self.Name,playername,task.PlayerTaskNr)
+self:T(self.lid..text)
+if self.UseSRS then
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
+end
 else
 text="No active task!"
 end
-local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+if not self.NoScreenOutput then
+local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_AbortTask(Group,Client)
@@ -93678,11 +93768,17 @@ local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:PullByID(playername)
 task:ClientAbort(Client)
-text="Task aborted!"
+text=string.format("%s, all stations, pilot %s aborted task %03d",self.MenuName or self.Name,playername,task.PlayerTaskNr)
+self:T(self.lid..text)
+if self.UseSRS then
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
+end
 else
 text="No active task!"
 end
-local m=MESSAGE:New(text,15,"Info"):ToGroup(Group)
+if not self.NoScreenOutput then
+local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+end
 self:_BuildMenus(Client)
 return self
 end
@@ -93881,7 +93977,7 @@ self.Volume=Volume or 1.0
 self.UseSRS=true
 self.Frequency=Frequency or{127,251}
 self.BCFrequency=self.Frequency
-self.Modulation=Modulation or{radio.modulationFM,radio.modulation.AM}
+self.Modulation=Modulation or{radio.modulation.FM,radio.modulation.AM}
 self.BCModulation=self.Modulation
 self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,self.Volume)
 self.SRS:SetCoalition(self.Coalition)
@@ -93926,10 +94022,12 @@ end
 function PLAYERTASKCONTROLLER:onafterTaskCancelled(From,Event,To,Task)
 self:T({From,Event,To})
 self:T(self.lid.."TaskCancelled")
-local taskname=string.format("Task #%d %s is ancelled!",Task.PlayerTaskNr,tostring(Task.Type))
+local taskname=string.format("Task #%03d %s is cancelled!",Task.PlayerTaskNr,tostring(Task.Type))
+if not self.NoScreenOutput then
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+end
 if self.UseSRS then
-taskname=string.format("Task %d %s is cancelled!",Task.PlayerTaskNr,tostring(Task.TTSType))
+taskname=string.format("%s, task %03d %s is cancelled!",self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
 end
 return self
@@ -93937,10 +94035,12 @@ end
 function PLAYERTASKCONTROLLER:onafterTaskSuccess(From,Event,To,Task)
 self:T({From,Event,To})
 self:T(self.lid.."TaskSuccess")
-local taskname=string.format("Task #%d %s completed successfully!",Task.PlayerTaskNr,tostring(Task.Type))
+local taskname=string.format("Task #%03d %s completed successfully!",Task.PlayerTaskNr,tostring(Task.Type))
+if not self.NoScreenOutput then
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+end
 if self.UseSRS then
-taskname=string.format("Task %d %s completed successfully!",Task.PlayerTaskNr,tostring(Task.TTSType))
+taskname=string.format("%s, task %03d %s completed successfully!",self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
 end
 return self
@@ -93948,10 +94048,12 @@ end
 function PLAYERTASKCONTROLLER:onafterTaskFailed(From,Event,To,Task)
 self:T({From,Event,To})
 self:T(self.lid.."TaskFailed")
-local taskname=string.format("Task #%d %s was a failure!",Task.PlayerTaskNr,tostring(Task.Type))
+local taskname=string.format("Task #%03d %s was a failure!",Task.PlayerTaskNr,tostring(Task.Type))
+if not self.NoScreenOutput then
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+end
 if self.UseSRS then
-taskname=string.format("Task %d %s was a failure!",Task.PlayerTaskNr,tostring(Task.TTSType))
+taskname=string.format("%s, task %03d %s was a failure!",self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
 end
 return self
@@ -93959,10 +94061,12 @@ end
 function PLAYERTASKCONTROLLER:onafterTaskRepeatOnFailed(From,Event,To,Task)
 self:T({From,Event,To})
 self:T(self.lid.."RepeatOnFailed")
-local taskname=string.format("Task #%d %s was a failure! Replanning!",Task.PlayerTaskNr,tostring(Task.Type))
+local taskname=string.format("Task #%03d %s was a failure! Replanning!",Task.PlayerTaskNr,tostring(Task.Type))
+if not self.NoScreenOutput then
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+end
 if self.UseSRS then
-taskname=string.format("Task %d %s was a failure! Replanning!",Task.PlayerTaskNr,tostring(Task.TTSType))
+taskname=string.format("%s, task %03d %s was a failure! Replanning!",self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
 end
 return self
@@ -93971,7 +94075,9 @@ function PLAYERTASKCONTROLLER:onafterTaskAdded(From,Event,To,Task)
 self:T({From,Event,To})
 self:T(self.lid.."TaskAdded")
 local taskname=string.format("%s has a new task %s",self.MenuName or self.Name,tostring(Task.Type))
+if not self.NoScreenOutput then
 local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+end
 if self.UseSRS then
 taskname=string.format("%s has a new task %s",self.MenuName or self.Name,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
@@ -93985,6 +94091,7 @@ self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
 self:UnHandleEvent(EVENTS.Ejection)
 self:UnHandleEvent(EVENTS.Crash)
 self:UnHandleEvent(EVENTS.PilotDead)
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
 return self
 end
 AI_BALANCER={
