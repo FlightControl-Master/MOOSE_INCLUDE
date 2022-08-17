@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-17T13:38:20.0000000Z-c38a737421d441b439539d34fada7dcd9f94b99d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-17T14:23:37.0000000Z-18ec2ff458119fac1c299544a524a41a65b5fefc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93014,7 +93014,7 @@ conditionFailure={},
 TaskController=nil,
 timestamp=0,
 }
-PLAYERTASK.version="0.0.8"
+PLAYERTASK.version="0.0.9"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -93125,7 +93125,7 @@ end
 end
 return self
 end
-function PLAYERTASK:MarkTargetOnF10Map()
+function PLAYERTASK:MarkTargetOnF10Map(Text)
 self:T(self.lid.."MarkTargetOnF10Map")
 if self.Target then
 local coordinate=self.Target:GetCoordinate()
@@ -93133,6 +93133,7 @@ if coordinate then
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
+local text=Text or"Target of "..self.lid
 self.TargetMarker=MARKER:New(coordinate,"Target of "..self.lid)
 self.TargetMarker:ReadOnly()
 self.TargetMarker:ToAll()
@@ -93430,7 +93431,7 @@ PILOTS="\nPilot(en): ",
 PILOTSTTS=". Pilot(en): ",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.14"
+PLAYERTASKCONTROLLER.version="0.1.15"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93875,7 +93876,8 @@ local playername=Client:GetPlayerName()
 local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
-task:MarkTargetOnF10Map()
+local text=string.format("Task ID #%03d | Type: %s | Threat: %d",task.PlayerTaskNr,task.Type,task.Target:GetThreatLevelMax())
+task:MarkTargetOnF10Map(text)
 local textmark=self.gettext:GetEntry("MARKTASK",self.locale)
 text=string.format(textmark,self.MenuName or self.Name,playername,task.PlayerTaskNr)
 self:T(self.lid..text)
