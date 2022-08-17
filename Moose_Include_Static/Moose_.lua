@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-17T14:23:37.0000000Z-18ec2ff458119fac1c299544a524a41a65b5fefc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-17T15:33:29.0000000Z-fa8c96af13cfda7c71e049ed796b3c5534dce1e1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -48858,7 +48858,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.0.12"
+AUTOLASE.version="0.1.13"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -48978,11 +48978,35 @@ color=self.RecceSmokeColor[RecceName]
 end
 return color
 end
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation)
-self.useSRS=OnOff or true
-self.SRSPath=Path or"E:\\Program Files\\DCS-SimpleRadio-Standalone"
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+if OnOff then
+self.useSRS=true
+self.SRSPath=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSFreq=Frequency or 271
 self.SRSMod=Modulation or radio.modulation.AM
+self.Gender=Gender or"male"
+self.Culture=Culture or"en-US"
+self.Port=Port or 5002
+self.Voice=Voice
+self.PathToGoogleKey=PathToGoogleKey
+self.Volume=Volume or 1.0
+self.Label=Label
+self.SRS=MSRS:New(self.SRSPath,self.SRSFreq,self.SRSMod,self.Volume)
+self.SRS:SetCoalition(self.coalition)
+self.SRS:SetLabel(self.MenuName or self.Name)
+self.SRS:SetGender(self.Gender)
+self.SRS:SetCulture(self.Culture)
+self.SRS:SetPort(self.Port)
+self.SRS:SetVoice(self.Voice)
+if self.PathToGoogleKey then
+self.SRS:SetGoogle(self.PathToGoogleKey)
+end
+self.SRSQueue=MSRSQUEUE:New(self.alias)
+else
+self.useSRS=false
+self.SRS=nil
+self.SRSQueue=nil
+end
 return self
 end
 function AUTOLASE:SetMaxLasingTargets(Number)
@@ -49178,17 +49202,7 @@ return self
 end
 function AUTOLASE:NotifyPilotsWithSRS(Message)
 if self.useSRS then
-if self.debug then
-BASE:TraceOn()
-BASE:TraceClass("SOUNDTEXT")
-BASE:TraceClass("MSRS")
-end
-local path=self.SRSPath or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
-local freq=self.SRSFreq or 271
-local mod=self.SRSMod or radio.modulation.AM
-local text=SOUNDTEXT:New(Message)
-local msrs=MSRS:New(path,freq,mod)
-msrs:PlaySoundText(text,2)
+self.SRSQueue:NewTransmission(Message,nil,self.SRS,nil,2)
 end
 if self.debug then self:I(Message)end
 return self
@@ -93431,7 +93445,7 @@ PILOTS="\nPilot(en): ",
 PILOTSTTS=". Pilot(en): ",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.15"
+PLAYERTASKCONTROLLER.version="0.1.16"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -94167,6 +94181,10 @@ self.BCModulation=self.Modulation
 self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,self.Volume)
 self.SRS:SetCoalition(self.Coalition)
 self.SRS:SetLabel(self.MenuName or self.Name)
+self.SRS:SetGender(self.Gender)
+self.SRS:SetCulture(self.Culture)
+self.SRS:SetPort(self.Port)
+self.SRS:SetVoice(self.Voice)
 if self.PathToGoogleKey then
 self.SRS:SetGoogle(self.PathToGoogleKey)
 end
