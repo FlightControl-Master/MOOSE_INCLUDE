@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-17T15:33:29.0000000Z-fa8c96af13cfda7c71e049ed796b3c5534dce1e1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-18T14:01:34.0000000Z-7e1ab1e6b0affda5eb2f73bfd4f76596fc132616 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93007,6 +93007,7 @@ local ArrivalZone=ZONE_RADIUS:New("Arrival Zone",Vec2,5000)
 self.holdingBackup=self:AddHoldingPattern(ArrivalZone,heading,15,5,25,999)
 return self
 end
+do
 _PlayerTaskNr=0
 PLAYERTASK={
 ClassName="PLAYERTASK",
@@ -93322,6 +93323,8 @@ self:__Done(-1)
 end
 return self
 end
+end
+do
 PLAYERTASKCONTROLLER={
 ClassName="PLAYERTASKCONTROLLER",
 verbose=true,
@@ -93445,7 +93448,7 @@ PILOTS="\nPilot(en): ",
 PILOTSTTS=". Pilot(en): ",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.16"
+PLAYERTASKCONTROLLER.version="0.1.17"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93505,6 +93508,17 @@ for ID,Text in pairs(table)do
 self:T(string.format('Adding ID %s',tostring(ID)))
 self.gettext:AddEntry(Locale,tostring(ID),Text)
 end
+end
+return self
+end
+function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff,Repeats)
+self:T(self.lid.."SetTaskRepetition")
+if OnOff then
+self.repeatonfailed=true
+self.repeattimes=Repeats or 5
+else
+self.repeatonfailed=false
+self.repeattimes=Repeats or 5
 end
 return self
 end
@@ -94305,6 +94319,7 @@ self:UnHandleEvent(EVENTS.Crash)
 self:UnHandleEvent(EVENTS.PilotDead)
 self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
 return self
+end
 end
 AI_BALANCER={
 ClassName="AI_BALANCER",
