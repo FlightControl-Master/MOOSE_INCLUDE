@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-18T16:24:37.0000000Z-a8d5d2ace19b1380b3cb225a231deaa8e082a1e6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-19T06:12:06.0000000Z-9547a06f399005e53ce38530db47a3946ad65785 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93394,7 +93394,7 @@ TASKFAILED="Task #%03d %s was a failure!",
 TASKFAILEDTTS="%s, task %03d %s was a failure!",
 TASKFAILEDREPLAN="Task #%03d %s was a failure! Replanning!",
 TASKFAILEDREPLANTTS="%s, task %03d %s was a failure! Replanning!",
-TASKADDED="%s has a new task %s",
+TASKADDED="%s has a new task %s available!",
 PILOTS="\nPilot(s): ",
 PILOTSTTS=". Pilot(s): ",
 },
@@ -93443,12 +93443,12 @@ TASKFAILED="Auftrag #%03d %s gescheitert!",
 TASKFAILEDTTS="%s, Auftrag %03d %s gescheitert!",
 TASKFAILEDREPLAN="Auftrag #%03d %s gescheitert! Neuplanung!",
 TASKFAILEDREPLANTTS="%s, Auftrag %03d %s gescheitert! Neuplanung!",
-TASKADDED="%s hat einen neuen Auftrag %s",
+TASKADDED="%s hat einen neuen Auftrag %s zur Verfügung!",
 PILOTS="\nPilot(en): ",
 PILOTSTTS=". Pilot(en): ",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.17"
+PLAYERTASKCONTROLLER.version="0.1.18"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
