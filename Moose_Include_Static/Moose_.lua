@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-20T07:24:52.0000000Z-8aec463eb48224ce0c2aa295bb977a420683800d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-20T07:45:09.0000000Z-f6b56735b65c819f27f043ca4951b278daa9c957 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93363,7 +93363,7 @@ ANTISHIPTTS="anti-ship",
 INTERCEPTTS="intercept",
 BOMBRUNWAYTTS="bomb runway",
 HAVEACTIVETASK="You already have one active task! Complete it first!",
-PILOTJOINEDTASK="%s, pilot %s joined task %03d",
+PILOTJOINEDTASK="%s, %s joined task %03d",
 TASKNAME="%s Task ID %03d",
 TASKNAMETTS="%s Task ID %03d",
 THREATHIGH="high",
@@ -93412,7 +93412,7 @@ ANTISHIPTTS="Anti-Schiff",
 INTERCEPTTS="Abfangen",
 BOMBRUNWAYTTS="Startbahn Bombardieren",
 HAVEACTIVETASK="Du hast einen aktiven Auftrag! Beende ihn zuerst!",
-PILOTJOINEDTASK="%s, Pilot %s hat Auftrag %03d angenommen",
+PILOTJOINEDTASK="%s, %s hat Auftrag %03d angenommen",
 TASKNAME="%s Auftrag ID %03d",
 TASKNAMETTS="%s Auftrag ID %03d",
 THREATHIGH="hoch",
@@ -93886,6 +93886,9 @@ end
 clienttxt=string.gsub(clienttxt,", $",".")
 text=text..clienttxt
 if self.UseSRS then
+if string.find(CoordText," BR, ")then
+CoordText=string.gsub(CoordText," BR, "," Bee, Arr, ")
+end
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
 local ttstext=string.format(ThreatLocaleTextTTS,self.MenuName or self.Name,playername,ttstaskname,ThreatLevelText,targets,CoordText)
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,2)
