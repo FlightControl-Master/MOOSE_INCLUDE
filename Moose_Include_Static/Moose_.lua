@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-19T08:34:36.0000000Z-37cdcf93e65397c2cbbf94fd7d8fee66077aeecf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-20T07:24:52.0000000Z-8aec463eb48224ce0c2aa295bb977a420683800d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93371,10 +93371,10 @@ THREATMEDIUM="medium",
 THREATLOW="low",
 THREATTEXT="%s\nThreat: %s\nTargets left: %d\nCoord: %s",
 THREATTEXTTTS="%s, %s. Target information for %s. Threat level %s. Targets left %d. Target location %s.",
-MARKTASK="%s, copy pilot %s, task %03d location marked on map!",
-SMOKETASK="%s, copy pilot %s, task %03d location smoked!",
-FLARETASK="%s, copy pilot %s, task %03d location illuminated!",
-ABORTTASK="%s, all stations, pilot %s aborted task %03d!",
+MARKTASK="%s, %s, copy, task %03d location marked on map!",
+SMOKETASK="%s, %s, copy, task %03d location smoked!",
+FLARETASK="%s, %s, copy, task %03d location illuminated!",
+ABORTTASK="%s, all stations, %s aborted task %03d!",
 UNKNOWN="Unknown",
 MENUTASKING=" Tasking ",
 MENUACTIVE="Active Task",
@@ -93420,10 +93420,10 @@ THREATMEDIUM="mittel",
 THREATLOW="niedrig",
 THREATTEXT="%s\nGefahrstufe: %s\nZiele: %d\nKoord: %s",
 THREATTEXTTTS="%s, %s. Zielinformation zu %s. Gefahrstufe %s. Ziele %d. Zielposition %s.",
-MARKTASK="%s, verstanden Pilot %s, Auftrag %03d auf der Karte markiert!",
-SMOKETASK="%s, verstanden Pilot %s, Auftrag %03d mit Rauch markiert!",
-FLARETASK="%s, verstanden Pilot %s, Auftrag %03d beleuchtet!",
-ABORTTASK="%s, an alle, Pilot %s hat Auftrag %03d abgebrochen!",
+MARKTASK="%s, %s, verstanden, Zielposition %03d auf der Karte markiert!",
+SMOKETASK="%s, %s, verstanden, Zielposition %03d mit Rauch markiert!",
+FLARETASK="%s, %s, verstanden, Zielposition %03d beleuchtet!",
+ABORTTASK="%s, an alle, %s hat Auftrag %03d abgebrochen!",
 UNKNOWN="Unbekannt",
 MENUTASKING=" Aufträge ",
 MENUACTIVE="Aktiver Auftrag",
@@ -93443,12 +93443,12 @@ TASKFAILED="Auftrag #%03d %s gescheitert!",
 TASKFAILEDTTS="%s, Auftrag %03d %s gescheitert!",
 TASKFAILEDREPLAN="Auftrag #%03d %s gescheitert! Neuplanung!",
 TASKFAILEDREPLANTTS="%s, Auftrag %03d %s gescheitert! Neuplanung!",
-TASKADDED="%s hat einen neuen Auftrag %s zur Verfügung!",
+TASKADDED="%s hat einen neuen Auftrag %s erstellt!",
 PILOTS="\nPilot(en): ",
 PILOTSTTS=". Pilot(en): ",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.18"
+PLAYERTASKCONTROLLER.version="0.1.19"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93907,7 +93907,7 @@ local task=self.TasksPerPlayer:ReadByID(playername)
 local text=string.format("Task ID #%03d | Type: %s | Threat: %d",task.PlayerTaskNr,task.Type,task.Target:GetThreatLevelMax())
 task:MarkTargetOnF10Map(text)
 local textmark=self.gettext:GetEntry("MARKTASK",self.locale)
-text=string.format(textmark,self.MenuName or self.Name,playername,task.PlayerTaskNr)
+text=string.format(textmark,playername,self.MenuName or self.Name,task.PlayerTaskNr)
 self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
@@ -93928,7 +93928,7 @@ if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
 task:SmokeTarget()
 local textmark=self.gettext:GetEntry("SMOKETASK",self.locale)
-text=string.format(textmark,self.MenuName or self.Name,playername,task.PlayerTaskNr)
+text=string.format(textmark,playername,self.MenuName or self.Name,task.PlayerTaskNr)
 self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
@@ -93949,7 +93949,7 @@ if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
 task:FlareTarget()
 local textmark=self.gettext:GetEntry("FLARETASK",self.locale)
-text=string.format(textmark,self.MenuName or self.Name,playername,task.PlayerTaskNr)
+text=string.format(textmark,playername,self.MenuName or self.Name,task.PlayerTaskNr)
 self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
@@ -93970,7 +93970,7 @@ if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:PullByID(playername)
 task:ClientAbort(Client)
 local textmark=self.gettext:GetEntry("ABORTTASK",self.locale)
-text=string.format(textmark,self.MenuName or self.Name,playername,task.PlayerTaskNr)
+text=string.format(textmark,playername,self.MenuName or self.Name,task.PlayerTaskNr)
 self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
