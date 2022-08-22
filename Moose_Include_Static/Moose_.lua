@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-22T15:03:02.0000000Z-63b0dae794f3e9c6e5633e517220e3ca236a81f9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-22T15:03:21.0000000Z-73994914eb5d227dc4c4c417d3ac4fdcfb71c75e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3163,9 +3163,16 @@ return UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tlocal)
 end
 function UTILS.GetOSTime()
 if os then
-return os.clock()
-end
+local ts=0
+local t=os.date("*t")
+local s=t.sec
+local m=t.min*60
+local h=t.hour*3600
+ts=s+m+h
+return ts
+else
 return nil
+end
 end
 function UTILS.ShuffleTable(t)
 if t==nil or type(t)~="table"then
