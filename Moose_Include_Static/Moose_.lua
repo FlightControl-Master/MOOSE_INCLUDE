@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-22T15:03:21.0000000Z-73994914eb5d227dc4c4c417d3ac4fdcfb71c75e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-22T15:03:33.0000000Z-d15c2be2d0054fff5f776ca132bc9618ac26ad56 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35450,7 +35450,7 @@ if _results==nil then
 _message=string.format("%s: No Score yet.",_playername)
 else
 local _sort=function(a,b)
-return a.hits>b.hits
+return a.roundsHit>b.roundsHit
 end
 table.sort(_results,_sort)
 local _bestMsg=""
@@ -35459,7 +35459,7 @@ for _,_result in pairs(_results)do
 local result=_result
 _message=_message..string.format("\n[%d] Hits %d - %s - %s",_count,result.roundsHit,result.name,result.roundsQuality)
 if _bestMsg==""then
-_bestMsg=string.format("Hits %d - %s - %s",_result.hits,_result.zone.name,_result.text)
+_bestMsg=string.format("Hits %d - %s - %s",result.roundsHit,result.name,result.roundsQuality)
 end
 if _count==self.ndisplayresult then
 break
@@ -35480,13 +35480,13 @@ local _message=string.format("Strafe Pit Results - Top %d Players:\n",self.ndisp
 for _playerName,_results in pairs(self.strafePlayerResults)do
 local _best=nil
 for _,_result in pairs(_results)do
-if _best==nil or _result.hits>_best.hits then
+if _best==nil or _result.roundsHit>_best.roundsHit then
 _best=_result
 end
 end
 if _best~=nil then
-local text=string.format("%s: Hits %i - %s - %s",_playerName,_best.hits,_best.zone.name,_best.text)
-table.insert(_playerResults,{msg=text,hits=_best.hits})
+local text=string.format("%s: Hits %i - %s - %s",_playerName,_best.roundsHit,_best.name,_best.roundsQuality)
+table.insert(_playerResults,{msg=text,hits=_best.roundsHit})
 end
 end
 local _sort=function(a,b)
@@ -36079,7 +36079,7 @@ if self.PlayerSettings[playername].smokebombimpact==true then
 self.PlayerSettings[playername].smokebombimpact=false
 text=string.format("%s, %s, smoking impact points of bombs is now OFF.",self.rangename,playername)
 else
-self.PlayerSettigs[playername].smokebombimpact=true
+self.PlayerSettings[playername].smokebombimpact=true
 text=string.format("%s, %s, smoking impact points of bombs is now ON.",self.rangename,playername)
 end
 self:_DisplayMessageToGroup(unit,text,5,false,true)
@@ -36094,7 +36094,7 @@ if self.PlayerSettings[playername].delaysmoke==true then
 self.PlayerSettings[playername].delaysmoke=false
 text=string.format("%s, %s, delayed smoke of bombs is now OFF.",self.rangename,playername)
 else
-self.PlayerSettigs[playername].delaysmoke=true
+self.PlayerSettings[playername].delaysmoke=true
 text=string.format("%s, %s, delayed smoke of bombs is now ON.",self.rangename,playername)
 end
 self:_DisplayMessageToGroup(unit,text,5,false,true)
