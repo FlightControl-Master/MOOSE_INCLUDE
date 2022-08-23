@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-22T15:03:33.0000000Z-d15c2be2d0054fff5f776ca132bc9618ac26ad56 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-23T07:58:50.0000000Z-bdbbdfe60ec1268c275aa2f443e0159f9e269c79 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35615,6 +35615,26 @@ text=text..string.format("Altitude ASL: %s\n",trangealt)
 text=text..string.format("Max strafing alt AGL: %s\n",tstrafemaxalt)
 text=text..string.format("# of strafe targets: %d\n",self.nstrafetargets)
 text=text..string.format("# of bomb targets: %d\n",self.nbombtargets)
+if self.instructor then
+local alive="N/A"
+if self.instructorrelayname then
+local relay=UNIT:FindByName(self.instructorrelayname)
+if relay then
+alive=tostring(relay:IsAlive())
+end
+end
+text=text..string.format("Instructor %.3f MHz (Relay=%s)\n",self.instructorfreq,alive)
+end
+if self.rangecontrol then
+local alive="N/A"
+if self.rangecontrolrelayname then
+local relay=UNIT:FindByName(self.rangecontrolrelayname)
+if relay then
+alive=tostring(relay:IsAlive())
+end
+end
+text=text..string.format("Control %.3f MHz (Relay=%s)\n",self.rangecontrolfreq,alive)
+end
 text=text..texthit
 text=text..textbomb
 text=text..textdelay
