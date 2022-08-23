@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-23T07:58:06.0000000Z-9f3d152d8ca172e3fdeb9c303ed5f4a459400c3b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-23T10:44:42.0000000Z-a5b394aa93419202c87eb9fc66de4e33138cba40 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85337,7 +85337,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.34",
+version="0.2.35",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -86220,6 +86220,10 @@ local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
 if IsPlayer and string.find(groupname,"#")then
 shortcallsign=string.match(groupname,"#([%a]+)")
+personalized=true
+end
+if IsPlayer and string.find(Group:GetPlayerName(),"|")then
+shortcallsign=string.match(Group:GetPlayerName(),"| ([%a]+)")
 personalized=true
 end
 if(not personalized)and self.callsignTranslations and self.callsignTranslations[callsignroot]then
@@ -87168,6 +87172,9 @@ local basemenu=hasclientmenu.basemenu
 if hasclientmenu and(not hasclientmenu.menuset)then
 self:T(self.lid.."Setting Menus for "..cgrpname)
 basemenu:RemoveSubMenus()
+local bogeydope=MENU_GROUP_COMMAND:New(cgrp,"Bogey Dope",basemenu,self._BogeyDope,self,cgrp)
+local picture=MENU_GROUP_COMMAND:New(cgrp,"Picture",basemenu,self._Picture,self,cgrp)
+local declare=MENU_GROUP_COMMAND:New(cgrp,"Declare",basemenu,self._Declare,self,cgrp)
 local tasking=MENU_GROUP:New(cgrp,"Tasking",basemenu)
 local showtask=MENU_GROUP_COMMAND:New(cgrp,"Showtask",tasking,self._Showtask,self,cgrp)
 local commit=MENU_GROUP_COMMAND:New(cgrp,"Commit",tasking,self._Commit,self,cgrp)
@@ -87179,12 +87186,8 @@ local hostile=MENU_GROUP_COMMAND:New(cgrp,"Hostile",vid,self._VID,self,cgrp,AWAC
 local neutral=MENU_GROUP_COMMAND:New(cgrp,"Neutral",vid,self._VID,self,cgrp,AWACS.IFF.NEUTRAL)
 local friendly=MENU_GROUP_COMMAND:New(cgrp,"Friendly",vid,self._VID,self,cgrp,AWACS.IFF.FRIENDLY)
 end
-local picture=MENU_GROUP_COMMAND:New(cgrp,"Picture",basemenu,self._Picture,self,cgrp)
-local bogeydope=MENU_GROUP_COMMAND:New(cgrp,"Bogey Dope",basemenu,self._BogeyDope,self,cgrp)
-local declare=MENU_GROUP_COMMAND:New(cgrp,"Declare",basemenu,self._Declare,self,cgrp)
 local ainfo=MENU_GROUP_COMMAND:New(cgrp,"Awacs Info",basemenu,self._ShowAwacsInfo,self,cgrp)
 local checkout=MENU_GROUP_COMMAND:New(cgrp,"Check Out",basemenu,self._CheckOut,self,cgrp)
-basemenu:Refresh()
 local menus={
 groupname=cgrpname,
 menuset=true,
