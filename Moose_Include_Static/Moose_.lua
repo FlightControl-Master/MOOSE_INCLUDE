@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T10:10:20.0000000Z-7743456d7d7821f4079147563bbb10b1a0511a28 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T11:28:20.0000000Z-1c54f6b2f4946e4936c7aef23b4bb34fc6e499b1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47608,7 +47608,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.1.13"
+AUTOLASE.version="0.1.14"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -47684,7 +47684,6 @@ self.usepilotset=true
 self.pilotset=PilotSet
 self:HandleEvent(EVENTS.PlayerEnterAircraft)
 end
-self.SetPilotMenu()
 self:SetClusterAnalysis(false,false)
 self:__Start(2)
 self:__Monitor(math.random(5,10))
