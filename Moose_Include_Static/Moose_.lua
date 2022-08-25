@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-23T07:58:50.0000000Z-bdbbdfe60ec1268c275aa2f443e0159f9e269c79 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T08:38:44.0000000Z-3f488cc091371e7f0308f3daa6af79258f407f6e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23351,6 +23351,9 @@ AIRBASE.SouthAtlantic={
 ["Punta_Arenas"]="Punta Arenas",
 ["Pampa_Guanaco"]="Pampa Guanaco",
 ["San_Julian"]="San Julian",
+["Puerto_Williams"]="Puerto Williams",
+["Puerto_Natales"]="Puerto Natales",
+["El_Calafate"]="El Calafate",
 }
 AIRBASE.TerminalType={
 Runway=16,
