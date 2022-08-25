@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T07:44:45.0000000Z-8289ebbe509bc871c97fa399de9a86e33a306ef1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T08:38:04.0000000Z-5d84f1c5233891a0bcbb8f8866149d7abc86b452 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24365,6 +24365,9 @@ AIRBASE.SouthAtlantic={
 ["Punta_Arenas"]="Punta Arenas",
 ["Pampa_Guanaco"]="Pampa Guanaco",
 ["San_Julian"]="San Julian",
+["Puerto_Williams"]="Puerto Williams",
+["Puerto_Natales"]="Puerto Natales",
+["El_Calafate"]="El Calafate",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -92168,7 +92171,7 @@ PILOTSTTS=". Pilot(s): ",
 YES="Yes",
 NO="No",
 POINTEROVERTARGET="%s, %s, pointer over target for task %03d, lasing!",
-POINTERTARGETREPORT="\nPointer over target: %s\nLasing: %s\n",
+POINTERTARGETREPORT="\nPointer over target: %s\nLasing: %s",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -92222,7 +92225,7 @@ PILOTSTTS=". Pilot(en): ",
 YES="Ja",
 NO="Nein",
 POINTEROVERTARGET="%s, %s, Marker im Zielbereich für %03d, Laser an!",
-POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s\n",
+POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 },
 }
 PLAYERTASKCONTROLLER.version="0.1.22"
@@ -92581,10 +92584,31 @@ return true
 end
 return Outcome
 end
+function PLAYERTASKCONTROLLER:_CheckTaskTypeDisallowed(Type)
+self:T(self.lid.."_CheckTaskTypeDisallowed")
+local Outcome=false
+if self.UseBlackList then
+for _,_type in pairs(self.BlackList)do
+if Type==_type then
+Outcome=true
+break
+end
+end
+else
+return true
+end
+return Outcome
+end
 function PLAYERTASKCONTROLLER:SetTaskWhiteList(WhiteList)
 self:T(self.lid.."SetTaskWhiteList")
 self.WhiteList=WhiteList
 self.UseWhiteList=true
+return self
+end
+function PLAYERTASKCONTROLLER:SetTaskBlackList(BlackList)
+self:T(self.lid.."SetTaskBlackList")
+self.BlackList=BlackList
+self.UseBlackList=true
 return self
 end
 function PLAYERTASKCONTROLLER:_AddTask(Target)
@@ -92688,6 +92712,11 @@ return self
 end
 if self.UseWhiteList then
 if not self:_CheckTaskTypeAllowed(type)then
+return self
+end
+end
+if self.UseBlackList then
+if self:_CheckTaskTypeDisallowed(type)then
 return self
 end
 end
