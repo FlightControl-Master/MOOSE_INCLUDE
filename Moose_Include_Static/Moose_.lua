@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-24T17:22:33.0000000Z-94741f1b4a3ea4e96c5b4ca2323c97230b69b04f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T07:44:45.0000000Z-8289ebbe509bc871c97fa399de9a86e33a306ef1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92225,7 +92225,7 @@ POINTEROVERTARGET="%s, %s, Marker im Zielbereich für %03d, Laser an!",
 POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s\n",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.21"
+PLAYERTASKCONTROLLER.version="0.1.22"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92352,7 +92352,7 @@ text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 self:T(self.lid..text)
 end
-elseif EventData.id==EVENTS.PlayerEnterAircraft then
+elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
 if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
 local frequency=self.Frequency
