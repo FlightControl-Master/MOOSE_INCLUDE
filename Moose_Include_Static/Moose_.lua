@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T08:50:45.0000000Z-aaf77815ca7ec911694e8da281ed81c3bd46a57d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T14:00:47.0000000Z-5277cca4e1455db98114ff569a9467d57eaa9400 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -34882,7 +34882,7 @@ self:AddBombingTargetUnit(_static,goodhitrange)
 elseif _isstatic==false then
 local _unit=UNIT:FindByName(name)
 self:T2(self.id..string.format("Adding unit bombing target %s with hit range %d.",name,goodhitrange,randommove))
-self:AddBombingTargetUnit(_unit,goodhitrange)
+self:AddBombingTargetUnit(_unit,goodhitrange,randommove)
 else
 self:E(self.id..string.format("ERROR! Could not find bombing target %s.",name))
 end
