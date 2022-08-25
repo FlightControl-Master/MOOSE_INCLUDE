@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T08:38:44.0000000Z-3f488cc091371e7f0308f3daa6af79258f407f6e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T08:50:45.0000000Z-aaf77815ca7ec911694e8da281ed81c3bd46a57d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -70382,7 +70382,7 @@ speed=1,
 coordinate=nil,
 Label="ROBOT",
 }
-MSRS.version="0.0.6"
+MSRS.version="0.1.0"
 function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
@@ -70536,6 +70536,22 @@ self:_ExecCommand(command)
 end
 return self
 end
+function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+else
+if Frequencies and type(Frequencies)~="table"then
+Frequencies={Frequencies}
+end
+if Modulations and type(Modulations)~="table"then
+Modulations={Modulations}
+end
+local command=self:_GetCommand(Frequencies,Modulations,nil,Gender,Voice,Culture,Volume,nil,nil,Label)
+command=command..string.format(" --text=\"%s\"",tostring(Text))
+self:_ExecCommand(command)
+end
+return self
+end
 function MSRS:PlayTextFile(TextFile,Delay)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayTextFile,self,TextFile,0)
@@ -70620,6 +70636,165 @@ command=command..string.format(' --ssml -G "%s"',self.google)
 end
 self:T("MSRS command="..command)
 return command
+end
+MSRSQUEUE={
+ClassName="MSRSQUEUE",
+Debugmode=nil,
+lid=nil,
+queue={},
+alias=nil,
+dt=nil,
+Tlast=nil,
+checking=nil,
+}
+function MSRSQUEUE:New(alias)
+local self=BASE:Inherit(self,BASE:New())
+self.alias=alias or"My Radio"
+self.dt=1.0
+self.lid=string.format("MSRSQUEUE %s | ",self.alias)
+return self
+end
+function MSRSQUEUE:Clear()
+self:I(self.lid.."Clearning MSRSQUEUE")
+self.queue={}
+return self
+end
+function MSRSQUEUE:AddTransmission(transmission)
+transmission.isplaying=false
+transmission.Tstarted=nil
+table.insert(self.queue,transmission)
+if not self.checking then
+self:_CheckRadioQueue()
+end
+return self
+end
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation)
+if not text then
+self:E(self.lid.."ERROR: No text specified.")
+return nil
+end
+if type(text)~="string"then
+self:E(self.lid.."ERROR: Text specified is NOT a string.")
+return nil
+end
+local transmission={}
+transmission.text=text
+transmission.duration=duration or STTS.getSpeechTime(text)
+transmission.msrs=msrs
+transmission.Tplay=tstart or timer.getAbsTime()
+transmission.subtitle=subtitle
+transmission.interval=interval or 0
+transmission.frequency=frequency
+transmission.modulation=modulation
+transmission.subgroups=subgroups
+if transmission.subtitle then
+transmission.subduration=subduration or transmission.duration
+else
+transmission.subduration=0
+end
+self:AddTransmission(transmission)
+return transmission
+end
+function MSRSQUEUE:Broadcast(transmission)
+if transmission.frequency then
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,Gender,Culture,Voice,Volume,Label)
+else
+transmission.msrs:PlayText(transmission.text)
+end
+local function texttogroup(gid)
+trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
+end
+if transmission.subgroups and#transmission.subgroups>0 then
+for _,_group in pairs(transmission.subgroups)do
+local group=_group
+if group and group:IsAlive()then
+local gid=group:GetID()
+self:ScheduleOnce(4,texttogroup,gid)
+end
+end
+end
+end
+function MSRSQUEUE:CalcTransmisstionDuration()
+local Tnow=timer.getAbsTime()
+local T=0
+for _,_transmission in pairs(self.queue)do
+local transmission=_transmission
+if transmission.isplaying then
+local dt=Tnow-transmission.Tstarted
+T=T+transmission.duration-dt
+else
+T=T+transmission.duration
+end
+end
+return T
+end
+function MSRSQUEUE:_CheckRadioQueue(delay)
+local N=#self.queue
+self:T2(self.lid..string.format("Check radio queue %s: delay=%.3f sec, N=%d, checking=%s",self.alias,delay or 0,N,tostring(self.checking)))
+if delay and delay>0 then
+self:ScheduleOnce(delay,MSRSQUEUE._CheckRadioQueue,self)
+self.checking=true
+else
+if N==0 then
+self:T(self.lid..string.format("Check radio queue %s empty ==> disable checking",self.alias))
+self.checking=false
+return
+end
+local time=timer.getAbsTime()
+self.checking=true
+local dt=self.dt
+local playing=false
+local next=nil
+local remove=nil
+for i,_transmission in ipairs(self.queue)do
+local transmission=_transmission
+if time>=transmission.Tplay then
+if transmission.isplaying then
+if time>=transmission.Tstarted+transmission.duration then
+transmission.isplaying=false
+remove=i
+self.Tlast=time
+else
+playing=true
+dt=transmission.duration-(time-transmission.Tstarted)
+end
+else
+local Tlast=self.Tlast
+if transmission.interval==nil then
+if next==nil then
+next=transmission
+end
+else
+if Tlast==nil or time-Tlast>=transmission.interval then
+next=transmission
+else
+end
+end
+if next or Tlast then
+break
+end
+end
+else
+end
+end
+if next~=nil and not playing then
+self:T(self.lid..string.format("Broadcasting text=\"%s\" at T=%.3f",next.text,time))
+self:Broadcast(next)
+next.isplaying=true
+next.Tstarted=time
+dt=next.duration
+end
+if remove then
+table.remove(self.queue,remove)
+N=N-1
+if#self.queue==0 then
+self:T(self.lid..string.format("Check radio queue %s empty ==> disable checking",self.alias))
+self.checking=false
+return
+end
+end
+self:_CheckRadioQueue(dt)
+end
 end
 COMMANDCENTER={
 ClassName="COMMANDCENTER",
