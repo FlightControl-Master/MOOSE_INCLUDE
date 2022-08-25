@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T09:41:27.0000000Z-4dc43263a5e3f8cd41aff4b662f77553a091da16 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T10:10:20.0000000Z-7743456d7d7821f4079147563bbb10b1a0511a28 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92228,7 +92228,7 @@ POINTEROVERTARGET="%s, %s, Marker im Zielbereich für %03d, Laser an!",
 POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.22"
+PLAYERTASKCONTROLLER.version="0.1.23"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92371,7 +92371,11 @@ local modulation=self.Modulation
 if type(modulation)=="table"then modulation=modulation[1]end
 modulation=UTILS.GetModulationName(modulation)
 local switchtext=self.gettext:GetEntry("BROADCAST",self.locale)
-local text=string.format(switchtext,self.MenuName or self.Name,EventData.IniPlayerName,freqtext)
+local playername=EventData.IniPlayerName
+if string.find(playername,"|")then
+playername=string.match(playername,"| ([%a]+)")
+end
+local text=string.format(switchtext,self.MenuName or self.Name,playername,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
 end
