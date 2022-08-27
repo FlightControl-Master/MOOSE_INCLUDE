@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-26T16:46:07.0000000Z-3e38db16f6c1c474b5b9bedab4fae850109e2e94 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-27T14:05:47.0000000Z-b468134432f1e548a8764d6f5a375f77e269b67d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92409,7 +92409,7 @@ POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.24"
+PLAYERTASKCONTROLLER.version="0.1.25"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93228,11 +93228,9 @@ if name~="Unknown"then
 text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
-if _task:GetState()=="Planned"or(not _task:HasPlayerName(playername))then
 local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
 taskentry:SetTag(playername)
 taskmenu[#taskmenu+1]=taskentry
-end
 end
 end
 else
