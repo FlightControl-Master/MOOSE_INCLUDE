@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-27T14:05:47.0000000Z-b468134432f1e548a8764d6f5a375f77e269b67d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-27T16:26:04.0000000Z-23815429e2f144c84b18bde097fe1681b3a6416f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92643,7 +92643,7 @@ for _id,_data in pairs(threattable)do
 local threat=_data.threat
 local task=_data.task
 local type=task.Type
-if task:GetState()~="Executing"and not task:IsDone()then
+if not task:IsDone()then
 table.insert(tasktypes[type],task)
 end
 end
@@ -92985,11 +92985,13 @@ local m=MESSAGE:New(text,"10","Tasking"):ToGroup(Group)
 end
 return self
 end
-Task:AddClient(Client)
 local taskstate=Task:GetState()
-if taskstate~="Executing"and taskstate~="Done"then
+if not Task:IsDone()then
+if taskstate~="Executing"then
 Task:__Requested(-1)
 Task:__Executing(-2)
+end
+Task:AddClient(Client)
 local joined=self.gettext:GetEntry("PILOTJOINEDTASK",self.locale)
 local text=string.format(joined,self.MenuName or self.Name,ttsplayername,Task.PlayerTaskNr)
 self:T(self.lid..text)
