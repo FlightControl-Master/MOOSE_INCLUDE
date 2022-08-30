@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-27T16:26:04.0000000Z-23815429e2f144c84b18bde097fe1681b3a6416f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-30T12:29:41.0000000Z-b4e2d3edfe24ce5dee1affadf385848d1c65ade9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8414,7 +8414,7 @@ local SceneryType=ZoneObject:getTypeName()
 local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
 self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(SceneryName,ZoneObject)
-self:F2({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
+self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
 end
 end
 return true
@@ -8605,6 +8605,61 @@ function ZONE_RADIUS:GetRandomCoordinate(inner,outer,surfacetypes)
 local vec2=self:GetRandomVec2(inner,outer,surfacetypes)
 local Coordinate=COORDINATE:NewFromVec2(vec2)
 return Coordinate
+end
+function ZONE_RADIUS:GetRandomCoordinateWithoutBuildings(inner,outer,distance,markbuildings,markfinal)
+local dist=distance or 100
+local objects={}
+if self.ScanData and self.ScanData.Scenery then
+objects=self:GetScannedScenery()
+else
+self:Scan({Object.Category.SCENERY})
+objects=self:GetScannedScenery()
+end
+local T0=timer.getTime()
+local T1=timer.getTime()
+local buildings={}
+if self.ScanData and self.ScanData.BuildingCoordinates then
+buildings=self.ScanData.BuildingCoordinates
+else
+for _,_object in pairs(objects)do
+for _,_scen in pairs(_object)do
+local scenery=_scen
+local description=scenery:GetDesc()
+if description and description.attributes and description.attributes.Buildings then
+if markbuildings then
+MARKER:New(scenery:GetCoordinate(),"Building"):ToAll()
+end
+buildings[#buildings+1]=scenery:GetCoordinate()
+end
+end
+end
+self.ScanData.BuildingCoordinates=buildings
+end
+local rcoord=nil
+local found=false
+local iterations=0
+for i=1,1000 do
+iterations=iterations+1
+rcoord=self:GetRandomCoordinate(inner,outer)
+found=false
+for _,_coord in pairs(buildings)do
+local coord=_coord
+if coord:Get2DDistance(rcoord)>dist then
+found=true
+else
+found=false
+end
+end
+if found then
+if markfinal then
+MARKER:New(rcoord,"FREE"):ToAll()
+end
+break
+end
+end
+T1=timer.getTime()
+self:T(string.format("Found a coordinate: %s | Iterations: %d | Time: %d",tostring(found),iterations,T1-T0))
+if found then return rcoord else return nil end
 end
 ZONE={
 ClassName="ZONE",
@@ -65662,7 +65717,7 @@ end
 local element=self:GetElementAlive()
 if element then
 self.spot.element=element
-local offsetY=0
+local offsetY=2
 if self.isFlightgroup or self.isNavygroup then
 offsetY=element.height
 end
@@ -92510,6 +92565,25 @@ self.precisionbombing=false
 end
 return self
 end
+function PLAYERTASKCONTROLLER:EnableMarkerOps(Tag)
+self:T(self.lid.."EnableMarkerOps")
+local tag=Tag or"TASK"
+local MarkerOps=MARKEROPS_BASE:New(tag)
+local function Handler(Keywords,Coord,Text)
+if self.verbose then
+local m=MESSAGE:New(string.format("Target added from marker at: %s",Coord:ToStringLLDMS()),15,"INFO"):ToAll()
+end
+self:AddTarget(Coord)
+end
+function MarkerOps:OnAfterMarkAdded(From,Event,To,Text,Keywords,Coord)
+Handler(Keywords,Coord,Text)
+end
+function MarkerOps:OnAfterMarkChanged(From,Event,To,Text,Keywords,Coord)
+Handler(Keywords,Coord,Text)
+end
+self.MarkerOps=MarkerOps
+return self
+end
 function PLAYERTASKCONTROLLER:_GetPlayerName(Client)
 self:T(self.lid.."DisablePrecisionBombing")
 local playername=Client:GetPlayerName()
@@ -92695,7 +92769,7 @@ return self
 end
 if self.LasingDrone and self.LasingDrone:IsAlive()then
 if self.LasingDrone.playertask and(not self.LasingDrone.playertask.busy)then
-self:I(self.lid.."Sending lasing unit to target")
+self:T(self.lid.."Sending lasing unit to target")
 local task=self.PrecisionTasks:Pull()
 self.LasingDrone.playertask.id=task.PlayerTaskNr
 self.LasingDrone.playertask.busy=true
@@ -92711,7 +92785,7 @@ local tgtcoord=task.Target:GetCoordinate()
 local tgtzone=ZONE_RADIUS:New("ArmyGroup-"..math.random(1,10000),tgtcoord:GetVec2(),3000)
 local finalpos=nil
 for i=1,50 do
-finalpos=tgtzone:GetRandomCoordinate(2000,0,{land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.SHALLOW_WATER})
+finalpos=tgtzone:GetRandomCoordinate(2500,0,{land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.SHALLOW_WATER})
 if finalpos then
 if finalpos:IsLOS(tgtcoord,0)then
 break
@@ -92719,7 +92793,7 @@ end
 end
 end
 if finalpos then
-local auftrag=AUFTRAG:NewARMOREDGUARD(finalpos)
+local auftrag=AUFTRAG:NewARMOREDGUARD(finalpos,"Off road")
 local currmission=self.LasingDrone:GetMissionCurrent()
 self.LasingDrone:AddMission(auftrag)
 if currmission then currmission:__Cancel(-2)end
@@ -92734,7 +92808,7 @@ end
 self.PrecisionTasks:Push(task,task.PlayerTaskNr)
 elseif self.LasingDrone.playertask and self.LasingDrone.playertask.busy then
 local task=self.PrecisionTasks:ReadByID(self.LasingDrone.playertask.id)
-self:I("Looking at Task: "..task.PlayerTaskNr.." Type: "..task.Type.." State: "..task:GetState())
+self:T("Looking at Task: "..task.PlayerTaskNr.." Type: "..task.Type.." State: "..task:GetState())
 if(not task)or task:GetState()=="Done"or task:GetState()=="Stopped"then
 local task=self.PrecisionTasks:PullByID(self.LasingDrone.playertask.id)
 self:_CheckTaskQueue()
@@ -92746,13 +92820,13 @@ self.LasingDrone.playertask.busy=false
 self.LasingDrone.playertask.inreach=false
 self.LasingDrone.playertask.id=0
 self.LasingDrone.playertask.reachmessage=false
-self:I(self.lid.."Laser Off")
+self:T(self.lid.."Laser Off")
 else
 local dcoord=self.LasingDrone:GetCoordinate()
 local tcoord=task.Target:GetCoordinate()
 local dist=dcoord:Get2DDistance(tcoord)
 if dist<3000 and not self.LasingDrone:IsLasing()then
-self:I(self.lid.."Laser On")
+self:T(self.lid.."Laser On")
 self.LasingDrone:__LaserOn(-1,tcoord)
 self.LasingDrone.playertask.inreach=true
 if not self.LasingDrone.playertask.reachmessage then
