@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-25T14:00:47.0000000Z-5277cca4e1455db98114ff569a9467d57eaa9400 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-30T12:36:42.0000000Z-7ef69208d4919b28cbc4eb341c8cbbba802ea730 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8451,6 +8451,61 @@ function ZONE_RADIUS:GetRandomCoordinate(inner,outer,surfacetypes)
 local vec2=self:GetRandomVec2(inner,outer,surfacetypes)
 local Coordinate=COORDINATE:NewFromVec2(vec2)
 return Coordinate
+end
+function ZONE_RADIUS:GetRandomCoordinateWithoutBuildings(inner,outer,distance,markbuildings,markfinal)
+local dist=distance or 100
+local objects={}
+if self.ScanData and self.ScanData.Scenery then
+objects=self:GetScannedScenery()
+else
+self:Scan({Object.Category.SCENERY})
+objects=self:GetScannedScenery()
+end
+local T0=timer.getTime()
+local T1=timer.getTime()
+local buildings={}
+if self.ScanData and self.ScanData.BuildingCoordinates then
+buildings=self.ScanData.BuildingCoordinates
+else
+for _,_object in pairs(objects)do
+for _,_scen in pairs(_object)do
+local scenery=_scen
+local description=scenery:GetDesc()
+if description and description.attributes and description.attributes.Buildings then
+if markbuildings then
+MARKER:New(scenery:GetCoordinate(),"Building"):ToAll()
+end
+buildings[#buildings+1]=scenery:GetCoordinate()
+end
+end
+end
+self.ScanData.BuildingCoordinates=buildings
+end
+local rcoord=nil
+local found=false
+local iterations=0
+for i=1,1000 do
+iterations=iterations+1
+rcoord=self:GetRandomCoordinate(inner,outer)
+found=false
+for _,_coord in pairs(buildings)do
+local coord=_coord
+if coord:Get2DDistance(rcoord)>dist then
+found=true
+else
+found=false
+end
+end
+if found then
+if markfinal then
+MARKER:New(rcoord,"FREE"):ToAll()
+end
+break
+end
+end
+T1=timer.getTime()
+self:T(string.format("Found a coordinate: %s | Iterations: %d | Time: %d",tostring(found),iterations,T1-T0))
+if found then return rcoord else return nil end
 end
 ZONE={
 ClassName="ZONE",
@@ -17583,6 +17638,106 @@ end
 function SPOT:IsLasing()
 return self.Lasing
 end
+end
+MARKEROPS_BASE={
+ClassName="MARKEROPS",
+Tag="mytag",
+Keywords={},
+version="0.0.1",
+debug=false,
+}
+function MARKEROPS_BASE:New(Tagname,Keywords)
+local self=BASE:Inherit(self,FSM:New())
+self.lid=string.format("MARKEROPS_BASE %s | ",tostring(self.version))
+self.Tag=Tagname or"mytag"
+self.Keywords=Keywords or{}
+self.debug=false
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","MarkAdded","*")
+self:AddTransition("*","MarkChanged","*")
+self:AddTransition("*","MarkDeleted","*")
+self:AddTransition("Running","Stop","Stopped")
+self:HandleEvent(EVENTS.MarkAdded,self.OnEventMark)
+self:HandleEvent(EVENTS.MarkChange,self.OnEventMark)
+self:HandleEvent(EVENTS.MarkRemoved,self.OnEventMark)
+self:I(self.lid..string.format("started for %s",self.Tag))
+self:__Start(1)
+return self
+end
+function MARKEROPS_BASE:OnEventMark(Event)
+self:T({Event})
+if Event==nil or Event.idx==nil then
+self:E("Skipping onEvent. Event or Event.idx unknown.")
+return true
+end
+local vec3={y=Event.pos.y,x=Event.pos.x,z=Event.pos.z}
+local coord=COORDINATE:NewFromVec3(vec3)
+if self.debug then
+local coordtext=coord:ToStringLLDDM()
+local text=tostring(Event.text)
+local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
+end
+if Event.id==world.event.S_EVENT_MARK_ADDED then
+self:T({event="S_EVENT_MARK_ADDED",carrier=self.groupname,vec3=Event.pos})
+local Eventtext=tostring(Event.text)
+if Eventtext~=nil then
+if self:_MatchTag(Eventtext)then
+local matchtable=self:_MatchKeywords(Eventtext)
+self:MarkAdded(Eventtext,matchtable,coord)
+end
+end
+elseif Event.id==world.event.S_EVENT_MARK_CHANGE then
+self:T({event="S_EVENT_MARK_CHANGE",carrier=self.groupname,vec3=Event.pos})
+local Eventtext=tostring(Event.text)
+if Eventtext~=nil then
+if self:_MatchTag(Eventtext)then
+local matchtable=self:_MatchKeywords(Eventtext)
+self:MarkChanged(Eventtext,matchtable,coord)
+end
+end
+elseif Event.id==world.event.S_EVENT_MARK_REMOVED then
+self:T({event="S_EVENT_MARK_REMOVED",carrier=self.groupname,vec3=Event.pos})
+local Eventtext=tostring(Event.text)
+if Eventtext~=nil then
+if self:_MatchTag(Eventtext)then
+self:MarkDeleted()
+end
+end
+end
+end
+function MARKEROPS_BASE:_MatchTag(Eventtext)
+local matches=false
+local type=string.lower(self.Tag)
+if string.find(string.lower(Eventtext),type)then
+matches=true
+end
+return matches
+end
+function MARKEROPS_BASE:_MatchKeywords(Eventtext)
+local matchtable={}
+local keytable=self.Keywords
+for _index,_word in pairs(keytable)do
+if string.find(string.lower(Eventtext),string.lower(_word))then
+table.insert(matchtable,_word)
+end
+end
+return matchtable
+end
+function MARKEROPS_BASE:onbeforeMarkAdded(From,Event,To,Text,Keywords,Coord)
+self:T({self.lid,From,Event,To,Text,Keywords,Coord:ToStringLLDDM()})
+end
+function MARKEROPS_BASE:onbeforeMarkChanged(From,Event,To,Text,Keywords,Coord)
+self:T({self.lid,From,Event,To,Text,Keywords,Coord:ToStringLLDDM()})
+end
+function MARKEROPS_BASE:onbeforeMarkDeleted(From,Event,To)
+self:T({self.lid,From,Event,To})
+end
+function MARKEROPS_BASE:onenterStopped(From,Event,To)
+self:T({self.lid,From,Event,To})
+self:UnHandleEvent(EVENTS.MarkAdded)
+self:UnHandleEvent(EVENTS.MarkChange)
+self:UnHandleEvent(EVENTS.MarkRemoved)
 end
 OBJECT={
 ClassName="OBJECT",
