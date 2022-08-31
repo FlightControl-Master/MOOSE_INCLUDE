@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-30T12:29:41.0000000Z-b4e2d3edfe24ce5dee1affadf385848d1c65ade9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-31T15:32:41.0000000Z-5f5749ac8fe20a04f22f166a9e027c5684f8e454 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92352,6 +92352,11 @@ A2S="Air-To-Sea",
 A2GS="Air-To-Ground-Sea",
 }
 AUFTRAG.Type.PRECISIONBOMBING="Precision Bombing"
+PLAYERTASKCONTROLLER.SeadAttributes={
+SAM=GROUP.Attribute.GROUND_SAM,
+AAA=GROUP.Attribute.GROUND_AAA,
+EWR=GROUP.Attribute.GROUND_EWR,
+}
 PLAYERTASKCONTROLLER.Messages={
 EN={
 TASKABORT="Task aborted!",
@@ -92464,7 +92469,7 @@ POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.25"
+PLAYERTASKCONTROLLER.version="0.1.26"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92910,6 +92915,25 @@ self.BlackList=BlackList
 self.UseBlackList=true
 return self
 end
+function PLAYERTASKCONTROLLER:SetSEADAttributes(Attributes)
+self:T(self.lid.."SetSEADAttributes")
+if type(Attributes)~=table then
+Attributes={Attributes}
+end
+self.SeadAttributes=Attributes
+return self
+end
+function PLAYERTASKCONTROLLER:_IsAttributeSead(Attribute)
+self:T(self.lid.."_IsAttributeSead?")
+local IsSead=false
+for _,_attribute in pairs(self.SeadAttributes)do
+if Attribute==_attribute then
+IsSead=true
+break
+end
+end
+return IsSead
+end
 function PLAYERTASKCONTROLLER:_AddTask(Target)
 self:T(self.lid.."_AddTask")
 local cat=Target:GetCategory()
@@ -92928,7 +92952,7 @@ end
 elseif targetobject:IsInstanceOf("GROUP")then
 self:T("SEAD Check GROUP")
 local attribute=targetobject:GetAttribute()
-if attribute==GROUP.Attribute.GROUND_SAM or attribute==GROUP.Attribute.GROUND_AAA or attribute==GROUP.Attribute.GROUND_EWR then
+if self:_IsAttributeSead(attribute)then
 type=AUFTRAG.Type.SEAD
 ttstype=self.gettext:GetEntry("SEADTTS",self.locale)
 end
@@ -92937,7 +92961,7 @@ self:T("SEAD Check SET_GROUP")
 targetobject:ForEachGroup(
 function(group)
 local attribute=group:GetAttribute()
-if attribute==GROUP.Attribute.GROUND_SAM or attribute==GROUP.Attribute.GROUND_AAA or attribute==GROUP.Attribute.GROUND_EWR then
+if self:_IsAttributeSead(attribute)then
 type=AUFTRAG.Type.SEAD
 ttstype=self.gettext:GetEntry("SEADTTS",self.locale)
 end
