@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-31T15:32:41.0000000Z-5f5749ac8fe20a04f22f166a9e027c5684f8e454 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-31T15:40:15.0000000Z-7c834993f64382436bde0da754485b1daad1656a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22944,12 +22944,12 @@ elseif artillery then
 attribute=GROUP.Attribute.GROUND_ARTILLERY
 elseif tank then
 attribute=GROUP.Attribute.GROUND_TANK
+elseif ifv then
+attribute=GROUP.Attribute.GROUND_IFV
 elseif apc then
 attribute=GROUP.Attribute.GROUND_APC
 elseif infantry then
 attribute=GROUP.Attribute.GROUND_INFANTRY
-elseif ifv then
-attribute=GROUP.Attribute.GROUND_IFV
 elseif truck then
 attribute=GROUP.Attribute.GROUND_TRUCK
 elseif train then
