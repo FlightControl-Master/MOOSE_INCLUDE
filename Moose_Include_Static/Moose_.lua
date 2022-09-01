@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-31T16:10:57.0000000Z-ae45c77523652e3fe77cc68f1787bbf73caef5c0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T06:07:40.0000000Z-15dff872006c829c6028411464a547fdef130df8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22909,10 +22909,10 @@ local truck=self:HasAttribute("Trucks")and self:GetCategory()==Group.Category.GR
 local infantry=self:HasAttribute("Infantry")
 local artillery=self:HasAttribute("Artillery")
 local tank=self:HasAttribute("Old Tanks")or self:HasAttribute("Modern Tanks")
-local aaa=self:HasAttribute("AAA")
+local aaa=self:HasAttribute("AAA")and(not self:HasAttribute("SAM elements"))
 local ewr=self:HasAttribute("EWR")
 local ifv=self:HasAttribute("IFV")
-local sam=self:HasAttribute("SAM elements")and(not self:HasAttribute("AAA"))
+local sam=self:HasAttribute("SAM elements")or self:HasAttribute("Optical Tracker")
 local train=self:GetCategory()==Group.Category.TRAIN
 local aircraftcarrier=self:HasAttribute("Aircraft Carriers")
 local warship=self:HasAttribute("Heavy armed ships")
@@ -92336,7 +92336,7 @@ UseGroupNames=true,
 PlayerMenu={},
 usecluster=false,
 MenuName=nil,
-ClusterRadius=1250,
+ClusterRadius=0.5,
 NoScreenOutput=false,
 TargetRadius=500,
 UseWhiteList=false,
@@ -92469,7 +92469,7 @@ POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.26"
+PLAYERTASKCONTROLLER.version="0.1.27"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92480,7 +92480,7 @@ self.usecluster=false
 if self.Type==PLAYERTASKCONTROLLER.Type.A2A then
 self.usecluster=true
 end
-self.ClusterRadius=1250
+self.ClusterRadius=0.5
 self.TargetRadius=500
 self.ClientFilter=ClientFilter or""
 self.TargetQueue=FIFO:New()
@@ -92676,7 +92676,7 @@ return self
 end
 function PLAYERTASKCONTROLLER:SetClusterRadius(Radius)
 self:T(self.lid.."SetClusterRadius")
-self.ClusterRadius=Radius or 1250
+self.ClusterRadius=Radius or 0.5
 self.usecluster=true
 return self
 end
@@ -92917,7 +92917,7 @@ return self
 end
 function PLAYERTASKCONTROLLER:SetSEADAttributes(Attributes)
 self:T(self.lid.."SetSEADAttributes")
-if type(Attributes)~=table then
+if type(Attributes)~="table"then
 Attributes={Attributes}
 end
 self.SeadAttributes=Attributes
@@ -93344,7 +93344,7 @@ end
 return self
 end
 function PLAYERTASKCONTROLLER:AddAgent(Recce)
-self:T(self.lid.."AddAgent: "..Recce:GetName())
+self:T(self.lid.."AddAgent")
 if self.Intel then
 self.Intel:AddAgent(Recce)
 end
@@ -93388,7 +93388,7 @@ self:T(self.lid.."SetupIntel: "..RecceName)
 self.RecceSet=SET_GROUP:New():FilterCoalitions(self.CoalitionName):FilterPrefixes(RecceName):FilterStart()
 self.Intel=INTEL:New(self.RecceSet,self.Coalition,self.Name.."-Intel")
 self.Intel:SetClusterAnalysis(true,false,false)
-self.Intel:SetClusterRadius(self.ClusterRadius or 500)
+self.Intel:SetClusterRadius(self.ClusterRadius or 0.5)
 self.Intel.statusupdate=25
 self.Intel:SetAcceptZones()
 self.Intel:SetRejectZones()
