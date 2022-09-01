@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T07:22:18.0000000Z-14e8b2ef17fb664585334d01f8a84d515f0eb3a4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T13:50:35.0000000Z-ae5fd91cd417032c079f752201fb124403bad1c1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92032,7 +92032,7 @@ conditionFailure={},
 TaskController=nil,
 timestamp=0,
 }
-PLAYERTASK.version="0.0.9"
+PLAYERTASK.version="0.1.0"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92073,7 +92073,7 @@ self:AddTransition("*","Done","Done")
 self:AddTransition("*","Cancel","Done")
 self:AddTransition("*","Success","Done")
 self:AddTransition("*","ClientAborted","*")
-self:AddTransition("*","Failed","*")
+self:AddTransition("*","Failed","Failed")
 self:AddTransition("*","Status","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Status(-5)
@@ -92237,7 +92237,7 @@ status="Failed"
 end
 local successCondition=self:_EvalConditionsAny(self.conditionSuccess)
 local failureCondition=self:_EvalConditionsAny(self.conditionFailure)
-if failureCondition then
+if failureCondition and status~="Failed"then
 self:__Failed(-2)
 status="Failed"
 elseif successCondition then
@@ -92411,9 +92411,9 @@ PILOTS="\nPilot(s): ",
 PILOTSTTS=". Pilot(s): ",
 YES="Yes",
 NO="No",
-POINTEROVERTARGET="%s, %s, pointer over target for task %03d, lasing!",
-POINTERTARGETREPORT="\nPointer over target: %s\nLasing: %s",
-POINTERTARGETLASINGTTS=". Pointer over target and lasing.",
+POINTEROVERTARGET="%s, %s, pointer in reach for task %03d, lasing!",
+POINTERTARGETREPORT="\nPointer in reach: %s\nLasing: %s",
+POINTERTARGETLASINGTTS=". Pointer in reach and lasing.",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
