@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-08-31T16:11:55.0000000Z-a0c189a3495b6b56a9022c5e8ab92a0d1f6e9807 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T06:03:53.0000000Z-6820774266773a20f0735bd3b398a6c14543693c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21993,14 +21993,15 @@ local tanker=self:HasAttribute("Tankers")
 local uav=self:HasAttribute("UAVs")
 local transporthelo=self:HasAttribute("Transport helicopters")
 local attackhelicopter=self:HasAttribute("Attack helicopters")
-local apc=self:HasAttribute("Infantry carriers")
+local apc=self:HasAttribute("APC")
 local truck=self:HasAttribute("Trucks")and self:GetCategory()==Group.Category.GROUND
 local infantry=self:HasAttribute("Infantry")
 local artillery=self:HasAttribute("Artillery")
 local tank=self:HasAttribute("Old Tanks")or self:HasAttribute("Modern Tanks")
-local aaa=self:HasAttribute("AAA")
+local aaa=self:HasAttribute("AAA")and(not self:HasAttribute("SAM elements"))
 local ewr=self:HasAttribute("EWR")
-local sam=self:HasAttribute("SAM elements")and(not self:HasAttribute("AAA"))
+local ifv=self:HasAttribute("IFV")
+local sam=self:HasAttribute("SAM elements")or self:HasAttribute("Optical Tracker")
 local train=self:GetCategory()==Group.Category.TRAIN
 local aircraftcarrier=self:HasAttribute("Aircraft Carriers")
 local warship=self:HasAttribute("Heavy armed ships")
