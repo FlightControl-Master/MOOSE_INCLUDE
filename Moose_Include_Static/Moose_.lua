@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T13:50:35.0000000Z-ae5fd91cd417032c079f752201fb124403bad1c1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T20:44:43.0000000Z-85eca4c4643465e439c3dda4d07e585a2d6ac241 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5012,6 +5012,50 @@ end
 Schedule()
 return self
 end
+end
+SOCKET={
+ClassName="SOCKET",
+verbose=0,
+lid=nil,
+}
+SOCKET.DataType={
+TEXT="moose_text",
+BOMBRESULT="moose_bomb_result",
+STRAFERESULT="moose_strafe_result",
+LSOGRADE="moose_lso_grade",
+}
+SOCKET.version="0.1.0"
+function SOCKET:New(Port,Host)
+local self=BASE:Inherit(self,FSM:New())
+package.path=package.path..";.\\LuaSocket\\?.lua;"
+package.cpath=package.cpath..";.\\LuaSocket\\?.dll;"
+self.socket=require("socket")
+self.port=Port or 10042
+self.host=Host or"127.0.0.1"
+self.json=loadfile("Scripts\\JSON.lua")()
+self.UDPSendSocket=self.socket.udp()
+self.UDPSendSocket:settimeout(0)
+return self
+end
+function SOCKET:SetPort(Port)
+self.port=Port or 10042
+end
+function SOCKET:SetHost(Host)
+self.host=Host or"127.0.0.1"
+end
+function SOCKET:SendTable(Table)
+local json=self.json:encode(Table)
+self:T("Json table:")
+self:T(json)
+self.socket.try(self.UDPSendSocket:sendto(json,self.host,self.port))
+return self
+end
+function SOCKET:SendText(Text)
+local message={}
+message.command=SOCKET.DataType.TEXT
+message.text=Text
+self:SendTable(message)
+return self
 end
 local _TraceOnOff=true
 local _TraceLevel=1
@@ -35904,10 +35948,9 @@ RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
 RANGE.version="2.4.0"
-function RANGE:New(rangename)
-BASE:F({rangename=rangename})
+function RANGE:New(RangeName)
 local self=BASE:Inherit(self,FSM:New())
-self.rangename=rangename or"Practice Range"
+self.rangename=RangeName or"Practice Range"
 self.id=string.format("RANGE %s | ",self.rangename)
 local text=string.format("Script version %s - creating new RANGE object %s.",RANGE.version,self.rangename)
 self:I(self.id..text)
@@ -36047,6 +36090,10 @@ self.targetprefix=prefix
 else
 self:E(self.lid.."ERROR: io is not desanitized. Cannot save target sheet.")
 end
+return self
+end
+function RANGE:SetFunkManOn(Port,Host)
+self.funkmanSocket=SOCKET:New(Port,Host)
 return self
 end
 function RANGE:SetMessageToExaminer(examinergroupname,exclusively)
@@ -36471,7 +36518,6 @@ local text=string.format("%s, Invalid hit!\nYou already passed foul line distanc
 self:_DisplayMessageToGroup(_unit,text)
 self:T2(self.id..text)
 _currentTarget.pastfoulline=true
-invalidStrafe=true
 end
 end
 end
@@ -36488,6 +36534,8 @@ end
 end
 end
 end
+end
+function RANGE:_TrackWeapon(weapon)
 end
 function RANGE:OnEventShot(EventData)
 self:F({eventshot=EventData})
@@ -36514,6 +36562,9 @@ local _missiles=weaponcategory==Weapon.Category.MISSILE
 local _track=(_bombs and self.trackbombs)or(_rockets and self.trackrockets)or(_missiles and self.trackmissiles)
 local _unitName=EventData.IniUnitName
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local attackHdg=_unit:GetHeading()
+local attackAlt=_unit:GetHeight()
+local attackVel=_unit:GetVelocityKNOTS()
 local dPR=self.BombtrackThreshold*2
 if _unit and _playername then
 dPR=_unit:GetCoordinate():Get2DDistance(self.location)
@@ -36550,20 +36601,21 @@ impactcoord:Smoke(playerData.smokecolor)
 end
 end
 for _,_bombtarget in pairs(self.bombingTargets)do
+local bombtarget=_bombtarget
 local targetcoord=self:_GetBombTargetCoordinate(_bombtarget)
 if targetcoord then
 local _temp=impactcoord:Get2DDistance(targetcoord)
 if _distance==nil or _temp<_distance then
 _distance=_temp
-_closetTarget=_bombtarget
+_closetTarget=bombtarget
 _closeCoord=targetcoord
 if _distance<=1.53 then
 _hitquality="SHACK"
-elseif _distance<=0.5*_bombtarget.goodhitrange then
+elseif _distance<=0.5*bombtarget.goodhitrange then
 _hitquality="EXCELLENT"
-elseif _distance<=_bombtarget.goodhitrange then
+elseif _distance<=bombtarget.goodhitrange then
 _hitquality="GOOD"
-elseif _distance<=2*_bombtarget.goodhitrange then
+elseif _distance<=2*bombtarget.goodhitrange then
 _hitquality="INEFFECTIVE"
 else
 _hitquality="POOR"
@@ -36577,6 +36629,7 @@ self.bombPlayerResults[_playername]={}
 end
 local _results=self.bombPlayerResults[_playername]
 local result={}
+result.command=SOCKET.DataType.BOMBRESULT
 result.name=_closetTarget.name or"unknown"
 result.distance=_distance
 result.radial=_closeCoord:HeadingTo(impactcoord)
@@ -36584,11 +36637,17 @@ result.weapon=_weaponName or"unknown"
 result.quality=_hitquality
 result.player=playerData.playername
 result.time=timer.getAbsTime()
+result.clock=UTILS.SecondsToClock(result.time,true)
+result.midate=UTILS.GetDCSMissionDate()
+result.theatre=env.mission.theatre
 result.airframe=playerData.airframe
 result.roundsFired=0
 result.roundsHit=0
 result.roundsQuality="N/A"
 result.rangename=self.rangename
+result.attackHdg=attackHdg
+result.attackVel=attackVel
+result.attackAlt=attackAlt
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
@@ -36657,11 +36716,11 @@ end
 function RANGE:onafterImpact(From,Event,To,result,player)
 local targetname=nil
 if#self.bombingTargets>1 then
-local targetname=result.name
+targetname=result.name
 end
 local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
 if targetname then
-text=text..string.format(" from bulls of target %s.")
+text=text..string.format(" from bulls of target %s.",targetname)
 else
 text=text.."."
 end
@@ -36683,11 +36742,21 @@ elseif result.quality=="EXCELLENT"then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCExcellentHit.filename,RANGE.Sound.RCExcellentHit.duration,self.soundpath,nil,0.5)
 end
 end
+if player.unitname then
 local unit=UNIT:FindByName(player.unitname)
 self:_DisplayMessageToGroup(unit,text,nil,true)
 self:T(self.id..text)
+end
 if self.autosave then
 self:Save()
+end
+if self.funkmanSocket then
+self.funkmanSocket:SendTable(result)
+end
+end
+function RANGE:onafterStrafeResult(From,Event,To,player,result)
+if self.funkmanSocket then
+self.funkmanSocket:SendTable(result)
 end
 end
 function RANGE:onbeforeSave(From,Event,To)
@@ -36720,7 +36789,7 @@ local weapon=result.weapon
 local target=result.name
 local radial=result.radial
 local quality=result.quality
-local time=UTILS.SecondsToClock(result.time)
+local time=UTILS.SecondsToClock(result.time,true)
 local airframe=result.airframe
 local date="n/a"
 if os then
@@ -37211,9 +37280,13 @@ end
 _text=_text..string.format("\n%s",resulttext)
 self:_DisplayMessageToGroup(_unit,_text)
 local result={}
+result.command=SOCKET.DataType.STRAFERESULT
 result.player=_playername
 result.name=_result.zone.name or"unknown"
 result.time=timer.getAbsTime()
+result.clock=UTILS.SecondsToClock(result.time)
+result.midate=UTILS.GetDCSMissionDate()
+result.theatre=env.mission.theatre
 result.roundsFired=shots
 result.roundsHit=_result.hits
 result.roundsQuality=resulttext
@@ -49620,6 +49693,10 @@ function AIRBOSS:SetDebugModeOFF()
 self.Debug=false
 return self
 end
+function AIRBOSS:SetFunkManOn(Port,Host)
+self.funkmanSocket=SOCKET:New(Port,Host)
+return self
+end
 function AIRBOSS:GetNextRecoveryTime(InSeconds)
 if self.recoverywindow then
 if InSeconds then
@@ -53620,7 +53697,7 @@ local xc=self.carrier:GetOrientationX()
 local zc=self.carrier:GetOrientationZ()
 xc=UTILS.Rotate2D(xc,-self.carrierparam.rwyangle)
 zc=UTILS.Rotate2D(zc,-self.carrierparam.rwyangle)
-local vw=cv:GetWindWithTurbulenceVec3(alt or 15)
+local vw=cv:GetWindWithTurbulenceVec3(alt or 18)
 local vT=UTILS.VecSubstract(vw,vc)
 local vpa=UTILS.VecDot(vT,xc)
 local vpp=UTILS.VecDot(vT,zc)
@@ -54469,18 +54546,20 @@ mygrade.finalscore=Points
 end
 mygrade.case=playerData.case
 local windondeck=self:GetWindOnDeck()
-mygrade.wind=tostring(UTILS.Round(UTILS.MpsToKnots(windondeck),1))
+mygrade.wind=UTILS.Round(UTILS.MpsToKnots(windondeck),1)
 mygrade.modex=playerData.onboard
 mygrade.airframe=playerData.actype
 mygrade.carriertype=self.carriertype
 mygrade.carriername=self.alias
+mygrade.carrierrwy=self.carrierparam.rwyangle
 mygrade.theatre=self.theatre
-mygrade.mitime=UTILS.SecondsToClock(timer.getAbsTime())
+mygrade.mitime=UTILS.SecondsToClock(timer.getAbsTime(),true)
 mygrade.midate=UTILS.GetDCSMissionDate()
 mygrade.osdate="n/a"
 if os then
 mygrade.osdate=os.date()
 end
+playerData.grade=mygrade
 if playerData.trapon and self.trapsheet then
 self:_SaveTrapSheet(playerData,mygrade)
 end
@@ -56982,6 +57061,39 @@ self:T2({playername,self.playerscores[playername]})
 end
 local text=string.format("Loaded %d player LSO grades from file %s",n,filename)
 self:I(self.lid..text)
+end
+function AIRBOSS:onafterLSOGrade(From,Event,To,playerData,grade)
+if self.funkmanSocket then
+local trapsheet={};trapsheet.X={};trapsheet.Z={};trapsheet.AoA={};trapsheet.Alt={}
+for i=1,#playerData.trapsheet do
+local ts=playerData.trapsheet[i]
+table.insert(trapsheet.X,UTILS.Round(ts.X,1))
+table.insert(trapsheet.Z,UTILS.Round(ts.Z,1))
+table.insert(trapsheet.AoA,UTILS.Round(ts.AoA,2))
+table.insert(trapsheet.Alt,UTILS.Round(ts.Alt,1))
+end
+local result={}
+result.command=SOCKET.DataType.LSOGRADE
+result.name=playerData.name
+result.trapsheet=trapsheet
+result.airframe=grade.airframe
+result.mitime=grade.mitime
+result.midate=grade.midate
+result.wind=grade.wind
+result.carriertype=grade.carriertype
+result.carriername=grade.carriername
+result.carrierrwy=grade.carrierrwy
+result.theatre=grade.theatre
+result.case=playerData.case
+result.Tgroove=grade.Tgroove
+result.wire=grade.wire
+result.grade=grade.grade
+result.points=grade.points
+result.details=grade.details
+self:T(self.lid.."Result onafterLSOGrade")
+self:T(result)
+self.funkmanSocket:SendTable(result)
+end
 end
 RECOVERYTANKER={
 ClassName="RECOVERYTANKER",
