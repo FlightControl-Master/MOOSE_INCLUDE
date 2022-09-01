@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T06:03:53.0000000Z-6820774266773a20f0735bd3b398a6c14543693c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T06:36:40.0000000Z-372cc021bda19891fe7c6fe8eee46fd08f049ede ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22575,7 +22575,9 @@ if DCSUnit then
 local UnitSEADAttributes=DCSUnit:getDesc().attributes
 local HasSEAD=false
 if UnitSEADAttributes["RADAR_BAND1_FOR_ARM"]and UnitSEADAttributes["RADAR_BAND1_FOR_ARM"]==true or
-UnitSEADAttributes["RADAR_BAND2_FOR_ARM"]and UnitSEADAttributes["RADAR_BAND2_FOR_ARM"]==true then
+UnitSEADAttributes["RADAR_BAND2_FOR_ARM"]and UnitSEADAttributes["RADAR_BAND2_FOR_ARM"]==true or
+UnitSEADAttributes["Optical Tracker"]and UnitSEADAttributes["Optical Tracker"]==true
+then
 HasSEAD=true
 end
 return HasSEAD
