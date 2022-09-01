@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T06:36:21.0000000Z-5bacea8b500e10b75393b2d3ba097ee4c70eb9d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T07:22:18.0000000Z-14e8b2ef17fb664585334d01f8a84d515f0eb3a4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93349,6 +93349,8 @@ function PLAYERTASKCONTROLLER:AddAgent(Recce)
 self:T(self.lid.."AddAgent")
 if self.Intel then
 self.Intel:AddAgent(Recce)
+else
+self:E(self.lid.."NO detection has been set up (yet)!")
 end
 return self
 end
@@ -93356,6 +93358,8 @@ function PLAYERTASKCONTROLLER:AddAcceptZone(AcceptZone)
 self:T(self.lid.."AddAcceptZone")
 if self.Intel then
 self.Intel:AddAcceptZone(AcceptZone)
+else
+self:E(self.lid.."NO detection has been set up (yet)!")
 end
 return self
 end
@@ -93363,6 +93367,8 @@ function PLAYERTASKCONTROLLER:AddRejectZone(RejectZone)
 self:T(self.lid.."AddRejectZone")
 if self.Intel then
 self.Intel:AddRejectZone(RejectZone)
+else
+self:E(self.lid.."NO detection has been set up (yet)!")
 end
 return self
 end
@@ -93370,6 +93376,8 @@ function PLAYERTASKCONTROLLER:RemoveAcceptZone(AcceptZone)
 self:T(self.lid.."RemoveAcceptZone")
 if self.Intel then
 self.Intel:RemoveAcceptZone(AcceptZone)
+else
+self:E(self.lid.."NO detection has been set up (yet)!")
 end
 return self
 end
@@ -93377,6 +93385,8 @@ function PLAYERTASKCONTROLLER:RemoveRejectZone(RejectZone)
 self:T(self.lid.."RemoveRejectZone")
 if self.Intel then
 self.Intel:RemoveRejectZone(RejectZone)
+else
+self:E(self.lid.."NO detection has been set up (yet)!")
 end
 return self
 end
