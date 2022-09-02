@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-02T04:19:50.0000000Z-fa0d076a09d203e1a83ad4f17765b88f303463c1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-02T11:12:52.0000000Z-361ca2cece9900da36ede5fda6a1116320af9714 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18398,15 +18398,20 @@ MARKEROPS_BASE={
 ClassName="MARKEROPS",
 Tag="mytag",
 Keywords={},
-version="0.0.1",
+version="0.1.0",
 debug=false,
+Casesensitive=true,
 }
-function MARKEROPS_BASE:New(Tagname,Keywords)
+function MARKEROPS_BASE:New(Tagname,Keywords,Casesensitive)
 local self=BASE:Inherit(self,FSM:New())
 self.lid=string.format("MARKEROPS_BASE %s | ",tostring(self.version))
 self.Tag=Tagname or"mytag"
 self.Keywords=Keywords or{}
 self.debug=false
+self.Casesensitive=true
+if Casesensitive and Casesensitive==false then
+self.Casesensitive=false
+end
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","MarkAdded","*")
@@ -18463,9 +18468,16 @@ end
 end
 function MARKEROPS_BASE:_MatchTag(Eventtext)
 local matches=false
+if not self.Casesensitive then
 local type=string.lower(self.Tag)
 if string.find(string.lower(Eventtext),type)then
 matches=true
+end
+else
+local type=self.Tag
+if string.find(Eventtext,type)then
+matches=true
+end
 end
 return matches
 end
@@ -92224,7 +92236,8 @@ end
 function PLAYERTASK:GetClients()
 self:T(self.lid.."GetClients")
 local clientlist=self.Clients:GetIDStackSorted()or{}
-return clientlist
+local count=self.Clients:Count()
+return clientlist,count
 end
 function PLAYERTASK:CountClients()
 self:T(self.lid.."CountClients")
@@ -92474,6 +92487,7 @@ WhiteList={},
 gettext=nil,
 locale="en",
 precisionbombing=false,
+taskinfomenu=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -92503,7 +92517,7 @@ ANTISHIPTTS="anti-ship",
 INTERCEPTTS="intercept",
 BOMBRUNWAYTTS="bomb runway",
 HAVEACTIVETASK="You already have one active task! Complete it first!",
-PILOTJOINEDTASK="%s, %s joined task %03d",
+PILOTJOINEDTASK="%s, %s. You have been assigned %s task %03d",
 TASKNAME="%s Task ID %03d",
 TASKNAMETTS="%s Task ID %03d",
 THREATHIGH="high",
@@ -92514,7 +92528,7 @@ THREATTEXTTTS="%s, %s. Target information for %s. Threat level %s. Targets left 
 MARKTASK="%s, %s, copy, task %03d location marked on map!",
 SMOKETASK="%s, %s, copy, task %03d location smoked!",
 FLARETASK="%s, %s, copy, task %03d location illuminated!",
-ABORTTASK="%s, all stations, %s aborted task %03d!",
+ABORTTASK="%s, all stations, %s has aborted %s task %03d!",
 UNKNOWN="Unknown",
 MENUTASKING=" Tasking ",
 MENUACTIVE="Active Task",
@@ -92524,6 +92538,7 @@ MENUSMOKE="Smoke",
 MENUFLARE="Flare",
 MENUABORT="Abort",
 MENUJOIN="Join Task",
+MENUTASKINFO="Task Info",
 MENUTASKNO="TaskNo",
 MENUNOTASKS="Currently no tasks available.",
 TASKCANCELLED="Task #%03d %s is cancelled!",
@@ -92532,13 +92547,14 @@ TASKSUCCESS="Task #%03d %s completed successfully!",
 TASKSUCCESSTTS="%s, task %03d %s completed successfully!",
 TASKFAILED="Task #%03d %s was a failure!",
 TASKFAILEDTTS="%s, task %03d %s was a failure!",
-TASKFAILEDREPLAN="Task #%03d %s was a failure! Replanning!",
-TASKFAILEDREPLANTTS="%s, task %03d %s was a failure! Replanning!",
-TASKADDED="%s has a new task %s available!",
+TASKFAILEDREPLAN="Task #%03d %s available for reassignment!",
+TASKFAILEDREPLANTTS="%s, task %03d %s vailable for reassignment!",
+TASKADDED="%s has a new %s task available!",
 PILOTS="\nPilot(s): ",
 PILOTSTTS=". Pilot(s): ",
 YES="Yes",
 NO="No",
+NONE="None",
 POINTEROVERTARGET="%s, %s, pointer in reach for task %03d, lasing!",
 POINTERTARGETREPORT="\nPointer in reach: %s\nLasing: %s",
 POINTERTARGETLASINGTTS=". Pointer in reach and lasing.",
@@ -92558,7 +92574,7 @@ ANTISHIPTTS="Anti-Schiff",
 INTERCEPTTS="Abfangen",
 BOMBRUNWAYTTS="Startbahn Bombardieren",
 HAVEACTIVETASK="Du hast einen aktiven Auftrag! Beende ihn zuerst!",
-PILOTJOINEDTASK="%s, %s hat Auftrag %03d angenommen",
+PILOTJOINEDTASK="%s, %s hat Auftrag %s %03d angenommen",
 TASKNAME="%s Auftrag ID %03d",
 TASKNAMETTS="%s Auftrag ID %03d",
 THREATHIGH="hoch",
@@ -92569,7 +92585,7 @@ THREATTEXTTTS="%s, %s. Zielinformation zu %s. Gefahrstufe %s. Ziele %d. Zielposi
 MARKTASK="%s, %s, verstanden, Zielposition %03d auf der Karte markiert!",
 SMOKETASK="%s, %s, verstanden, Zielposition %03d mit Rauch markiert!",
 FLARETASK="%s, %s, verstanden, Zielposition %03d beleuchtet!",
-ABORTTASK="%s, an alle, %s hat Auftrag %03d abgebrochen!",
+ABORTTASK="%s, an alle, %s hat Auftrag %s %03d abgebrochen!",
 UNKNOWN="Unbekannt",
 MENUTASKING=" Aufträge ",
 MENUACTIVE="Aktiver Auftrag",
@@ -92579,6 +92595,7 @@ MENUSMOKE="Rauchgranate",
 MENUFLARE="Leuchtgranate",
 MENUABORT="Abbrechen",
 MENUJOIN="Auftrag annehmen",
+MENUTASKINFO="Auftrag Briefing",
 MENUTASKNO="AuftragsNr",
 MENUNOTASKS="Momentan keine Aufträge verfügbar.",
 TASKCANCELLED="Auftrag #%03d %s wurde beendet!",
@@ -92594,12 +92611,13 @@ PILOTS="\nPilot(en): ",
 PILOTSTTS=". Pilot(en): ",
 YES="Ja",
 NO="Nein",
+NONE="Keine",
 POINTEROVERTARGET="%s, %s, Marker im Zielbereich für %03d, Laser an!",
 POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.27"
+PLAYERTASKCONTROLLER.version="0.1.29"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92618,6 +92636,8 @@ self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
 self.PrecisionTasks=FIFO:New()
 self.PlayerMenu={}
+self.lasttaskcount=0
+self.taskinfomenu=false
 self.MenuName=nil
 self.repeatonfailed=true
 self.repeattimes=5
@@ -92736,6 +92756,14 @@ self:T(self.lid.."DisablePrecisionBombing")
 self.autolase=nil
 self.precisionbombing=false
 return self
+end
+function PLAYERTASKCONTROLLER:EnableTaskInfoMenu()
+self:T(self.lid.."EnableTaskInfoMenu")
+self.taskinfomenu=true
+end
+function PLAYERTASKCONTROLLER:DisableTaskInfoMenu()
+self:T(self.lid.."DisableTaskInfoMenu")
+self.taskinfomenu=false
 end
 function PLAYERTASKCONTROLLER:_EventHandler(EventData)
 self:T(self.lid.."_EventHandler: "..EventData.id)
@@ -93221,7 +93249,7 @@ Task:__Executing(-2)
 end
 Task:AddClient(Client)
 local joined=self.gettext:GetEntry("PILOTJOINEDTASK",self.locale)
-local text=string.format(joined,self.MenuName or self.Name,ttsplayername,Task.PlayerTaskNr)
+local text=string.format(joined,ttsplayername,self.MenuName or self.Name,Task.TTSType,Task.PlayerTaskNr)
 self:T(self.lid..text)
 if not self.NoScreenOutput then
 local m=MESSAGE:New(text,"10","Tasking"):ToAll()
@@ -93230,7 +93258,7 @@ if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
 self.TasksPerPlayer:Push(Task,playername)
-self:_BuildMenus(Client)
+self:_BuildMenus(Client,true)
 end
 if Task.Type==AUFTRAG.Type.PRECISIONBOMBING then
 if not self.PrecisionTasks:HasUniqueID(Task.PlayerTaskNr)then
@@ -93239,12 +93267,12 @@ end
 end
 return self
 end
-function PLAYERTASKCONTROLLER:_ActiveTaskInfo(Group,Client)
+function PLAYERTASKCONTROLLER:_ActiveTaskInfo(Group,Client,Task)
 self:T(self.lid.."_ActiveTaskInfo")
 local playername,ttsplayername=self:_GetPlayerName(Client)
 local text=""
-if self.TasksPerPlayer:HasUniqueID(playername)then
-local task=self.TasksPerPlayer:ReadByID(playername)
+if self.TasksPerPlayer:HasUniqueID(playername)or Task then
+local task=Task or self.TasksPerPlayer:ReadByID(playername)
 local tname=self.gettext:GetEntry("TASKNAME",self.locale)
 local ttsname=self.gettext:GetEntry("TASKNAMETTS",self.locale)
 local taskname=string.format(tname,task.Type,task.PlayerTaskNr)
@@ -93264,7 +93292,7 @@ elseif ThreatLevel<=3 then
 ThreatLevelText=self.gettext:GetEntry("THREATLOW",self.locale)
 end
 local targets=task.Target:CountTargets()or 0
-local clientlist=task:GetClients()
+local clientlist,clientcount=task:GetClients()
 local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
 local ThreatLocaleText=self.gettext:GetEntry("THREATTEXT",self.locale)
 text=string.format(ThreatLocaleText,taskname,ThreatGraph,targets,CoordText)
@@ -93280,6 +93308,7 @@ text=text..prectext
 end
 end
 local clienttxt=self.gettext:GetEntry("PILOTS",self.locale)
+if clientcount>0 then
 for _,_name in pairs(clientlist)do
 if string.find(_name,"|")then
 _name=string.match(_name,"| ([%a]+)")
@@ -93287,6 +93316,10 @@ end
 clienttxt=clienttxt.._name..", "
 end
 clienttxt=string.gsub(clienttxt,", $",".")
+else
+local keine=self.gettext:GetEntry("NONE",self.locale)
+clienttxt=clienttxt..keine
+end
 text=text..clienttxt
 if self.UseSRS then
 if string.find(CoordText," BR, ")then
@@ -93316,7 +93349,7 @@ local playername,ttsplayername=self:_GetPlayerName(Client)
 local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
-local text=string.format("Task ID #%03d | Type: %s | Threat: %d",task.PlayerTaskNr,task.Type,task.Target:GetThreatLevelMax())
+text=string.format("Task ID #%03d | Type: %s | Threat: %d",task.PlayerTaskNr,task.Type,task.Target:GetThreatLevelMax())
 task:MarkTargetOnF10Map(text)
 local textmark=self.gettext:GetEntry("MARKTASK",self.locale)
 text=string.format(textmark,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
@@ -93382,7 +93415,7 @@ if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:PullByID(playername)
 task:ClientAbort(Client)
 local textmark=self.gettext:GetEntry("ABORTTASK",self.locale)
-text=string.format(textmark,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
+text=string.format(textmark,self.MenuName or self.Name,ttsplayername,task.TTSType,task.PlayerTaskNr)
 self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
@@ -93393,14 +93426,15 @@ end
 if not self.NoScreenOutput then
 local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
 end
-self:_BuildMenus(Client)
+self:_BuildMenus(Client,true)
 return self
 end
-function PLAYERTASKCONTROLLER:_BuildMenus(Client)
+function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced)
 self:T(self.lid.."_BuildMenus")
 local clients=self.ClientSet:GetAliveSet()
 if Client then
 clients={Client}
+enforced=true
 end
 for _,_client in pairs(clients)do
 if _client then
@@ -93411,13 +93445,20 @@ local playername=client:GetPlayerName()or unknown
 if group and client then
 local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
 local menuname=self.MenuName or self.Name..taskings..self.Type
-local topmenu=MENU_GROUP:New(group,menuname,nil)
+local playerhastask=false
+if self:_CheckPlayerHasTask(playername)then playerhastask=true end
+local topmenu=nil
+self:T("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced))
 if self.PlayerMenu[playername]then
+if enforced or not playerhastask then
 self.PlayerMenu[playername]:RemoveSubMenus()
+end
+topmenu=self.PlayerMenu[playername]
 else
+topmenu=MENU_GROUP:New(group,menuname,nil)
 self.PlayerMenu[playername]=topmenu
 end
-if self:_CheckPlayerHasTask(playername)then
+if playerhastask and enforced then
 local menuactive=self.gettext:GetEntry("MENUACTIVE",self.locale)
 local menuinfo=self.gettext:GetEntry("MENUINFO",self.locale)
 local menumark=self.gettext:GetEntry("MENUMARK",self.locale)
@@ -93432,13 +93473,16 @@ local smoke=MENU_GROUP_COMMAND:New(group,menusmoke,active,self._SmokeTask,self,g
 local flare=MENU_GROUP_COMMAND:New(group,menuflare,active,self._FlareTask,self,group,client)
 end
 local abort=MENU_GROUP_COMMAND:New(group,menuabort,active,self._AbortTask,self,group,client)
-elseif self.TaskQueue:Count()>0 then
+elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask)then
 local tasktypes=self:_GetAvailableTaskTypes()
 local taskpertype=self:_GetTasksPerType()
 local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
+local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
 local joinmenu=MENU_GROUP:New(group,menujoin,topmenu)
 local ttypes={}
 local taskmenu={}
+local ittypes={}
+local itaskmenu={}
 for _tasktype,_data in pairs(tasktypes)do
 ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,joinmenu)
 local tasks=taskpertype[_tasktype]or{}
@@ -93463,7 +93507,34 @@ taskentry:SetTag(playername)
 taskmenu[#taskmenu+1]=taskentry
 end
 end
-else
+if self.taskinfomenu then
+local taskinfomenu=MENU_GROUP:New(group,menutaskinfo,topmenu)
+for _tasktype,_data in pairs(tasktypes)do
+ittypes[_tasktype]=MENU_GROUP:New(group,_tasktype,taskinfomenu)
+local tasks=taskpertype[_tasktype]or{}
+for _,_task in pairs(tasks)do
+_task=_task
+local pilotcount=_task:CountClients()
+local newtext="]"
+local tnow=timer.getTime()
+if tnow-_task.timestamp<60 then
+newtext="*]"
+end
+local menutaskno=self.gettext:GetEntry("MENUTASKNO",self.locale)
+local text=string.format("%s %03d [%d%s",menutaskno,_task.PlayerTaskNr,pilotcount,newtext)
+if self.UseGroupNames then
+local name=_task.Target:GetName()
+if name~="Unknown"then
+text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
+end
+end
+local taskentry=MENU_GROUP_COMMAND:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task)
+taskentry:SetTag(playername)
+itaskmenu[#itaskmenu+1]=taskentry
+end
+end
+end
+elseif self.TaskQueue:Count()==0 then
 local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
 local joinmenu=MENU_GROUP:New(group,menunotasks,topmenu)
 end
@@ -93638,11 +93709,16 @@ self:I({From,Event,To})
 self:_CheckTargetQueue()
 self:_CheckTaskQueue()
 self:_CheckPrecisionTasks()
-self:_BuildMenus()
 local targetcount=self.TargetQueue:Count()
 local taskcount=self.TaskQueue:Count()
 local playercount=self.ClientSet:CountAlive()
 local assignedtasks=self.TasksPerPlayer:Count()
+local enforcedmenu=false
+if taskcount~=self.lasttaskcount then
+self.lasttaskcount=taskcount
+enforcedmenu=true
+end
+self:_BuildMenus(nil,enforcedmenu)
 if self.verbose then
 local text=string.format("New Targets: %02d | Active Tasks: %02d | Active Players: %02d | Assigned Tasks: %02d",targetcount,taskcount,playercount,assignedtasks)
 self:I(text)
