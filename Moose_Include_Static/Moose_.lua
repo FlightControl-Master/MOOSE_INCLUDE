@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-02T11:12:52.0000000Z-361ca2cece9900da36ede5fda6a1116320af9714 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-02T14:32:29.0000000Z-4ea1b93f8d7c16b9d90c57a13bedb64c04ad77ea ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92172,7 +92172,7 @@ conditionFailure={},
 TaskController=nil,
 timestamp=0,
 }
-PLAYERTASK.version="0.1.0"
+PLAYERTASK.version="0.1.1"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92284,7 +92284,7 @@ end
 end
 return self
 end
-function PLAYERTASK:MarkTargetOnF10Map(Text)
+function PLAYERTASK:MarkTargetOnF10Map(Text,Coalition,ReadOnly)
 self:T(self.lid.."MarkTargetOnF10Map")
 if self.Target then
 local coordinate=self.Target:GetCoordinate()
@@ -92294,8 +92294,14 @@ self.TargetMarker:Remove()
 end
 local text=Text or"Target of "..self.lid
 self.TargetMarker=MARKER:New(coordinate,"Target of "..self.lid)
+if ReadOnly then
 self.TargetMarker:ReadOnly()
+end
+if Coalition then
+self.TargetMarker:ToCoalition(Coalition)
+else
 self.TargetMarker:ToAll()
+end
 end
 end
 return self
@@ -92487,7 +92493,8 @@ WhiteList={},
 gettext=nil,
 locale="en",
 precisionbombing=false,
-taskinfomenu=false,
+taskinfomenu=true,
+MarkerReadOnly=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -92639,6 +92646,7 @@ self.PlayerMenu={}
 self.lasttaskcount=0
 self.taskinfomenu=false
 self.MenuName=nil
+self.MarkerReadOnly=false
 self.repeatonfailed=true
 self.repeattimes=5
 self.UseGroupNames=true
@@ -92760,10 +92768,22 @@ end
 function PLAYERTASKCONTROLLER:EnableTaskInfoMenu()
 self:T(self.lid.."EnableTaskInfoMenu")
 self.taskinfomenu=true
+return self
 end
 function PLAYERTASKCONTROLLER:DisableTaskInfoMenu()
 self:T(self.lid.."DisableTaskInfoMenu")
 self.taskinfomenu=false
+return self
+end
+function PLAYERTASKCONTROLLER:SetMarkerReadOnly()
+self:T(self.lid.."SetMarkerReadOnly")
+self.MarkerReadOnly=true
+return self
+end
+function PLAYERTASKCONTROLLER:SetMarkerDeleteable()
+self:T(self.lid.."SetMarkerDeleteable")
+self.MarkerReadOnly=false
+return self
 end
 function PLAYERTASKCONTROLLER:_EventHandler(EventData)
 self:T(self.lid.."_EventHandler: "..EventData.id)
@@ -93350,7 +93370,7 @@ local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
 text=string.format("Task ID #%03d | Type: %s | Threat: %d",task.PlayerTaskNr,task.Type,task.Target:GetThreatLevelMax())
-task:MarkTargetOnF10Map(text)
+task:MarkTargetOnF10Map(text,self.Coalition,self.MarkerReadOnly)
 local textmark=self.gettext:GetEntry("MARKTASK",self.locale)
 text=string.format(textmark,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
 self:T(self.lid..text)
