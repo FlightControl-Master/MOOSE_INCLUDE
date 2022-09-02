@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-01T21:50:04.0000000Z-da5a1e09456627aa0bbc069920f3c316b410122f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-02T04:19:50.0000000Z-fa0d076a09d203e1a83ad4f17765b88f303463c1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8074,6 +8074,7 @@ ZoneProbability=1,
 DrawID=nil,
 Color={},
 ZoneID=nil,
+Properties={},
 Sureface=nil,
 }
 function ZONE_BASE:New(ZoneName)
@@ -8273,6 +8274,12 @@ return self
 else
 return nil
 end
+end
+function ZONE_BASE:GetProperty(PropertyName)
+return self.Properties[PropertyName]
+end
+function ZONE_BASE:GetAllProperties()
+return self.Properties
 end
 ZONE_RADIUS={
 ClassName="ZONE_RADIUS",
@@ -9518,6 +9525,15 @@ end
 if Zone then
 Zone.Color=color
 Zone.ZoneID=ZoneData.zoneId
+local ZoneProperties=ZoneData.properties or nil
+Zone.Properties={}
+if ZoneName and ZoneProperties then
+for _,ZoneProp in ipairs(ZoneProperties)do
+if ZoneProp.key then
+Zone.Properties[ZoneProp.key]=ZoneProp.value
+end
+end
+end
 self.ZONENAMES[ZoneName]=ZoneName
 self:AddZone(ZoneName,Zone)
 end
