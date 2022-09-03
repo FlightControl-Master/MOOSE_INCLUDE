@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-02T16:28:18.0000000Z-df54d094945c4b815b408c0f777f14d3e96d383d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-03T14:28:32.0000000Z-e53ff167ee729509b3af84f5fbf8fadb85de6f06 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92535,7 +92535,7 @@ THREATTEXTTTS="%s, %s. Target information for %s. Threat level %s. Targets left 
 MARKTASK="%s, %s, copy, task %03d location marked on map!",
 SMOKETASK="%s, %s, copy, task %03d location smoked!",
 FLARETASK="%s, %s, copy, task %03d location illuminated!",
-ABORTTASK="%s, all stations, %s has aborted %s task %03d!",
+ABORTTASK="All stations, %s, %s has aborted %s task %03d!",
 UNKNOWN="Unknown",
 MENUTASKING=" Tasking ",
 MENUACTIVE="Active Task",
@@ -92624,7 +92624,7 @@ POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.29"
+PLAYERTASKCONTROLLER.version="0.1.30"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93475,7 +93475,7 @@ self.PlayerMenu[playername]:RemoveSubMenus()
 end
 topmenu=self.PlayerMenu[playername]
 else
-topmenu=MENU_GROUP:New(group,menuname,nil)
+topmenu=MENU_GROUP_DELAYED:New(group,menuname,nil)
 self.PlayerMenu[playername]=topmenu
 end
 if playerhastask and enforced then
@@ -93485,26 +93485,26 @@ local menumark=self.gettext:GetEntry("MENUMARK",self.locale)
 local menusmoke=self.gettext:GetEntry("MENUSMOKE",self.locale)
 local menuflare=self.gettext:GetEntry("MENUFLARE",self.locale)
 local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
-local active=MENU_GROUP:New(group,menuactive,topmenu)
-local info=MENU_GROUP_COMMAND:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client)
-local mark=MENU_GROUP_COMMAND:New(group,menumark,active,self._MarkTask,self,group,client)
+local active=MENU_GROUP_DELAYED:New(group,menuactive,topmenu)
+local info=MENU_GROUP_COMMAND_DELAYED:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client)
+local mark=MENU_GROUP_COMMAND_DELAYED:New(group,menumark,active,self._MarkTask,self,group,client)
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
-local smoke=MENU_GROUP_COMMAND:New(group,menusmoke,active,self._SmokeTask,self,group,client)
-local flare=MENU_GROUP_COMMAND:New(group,menuflare,active,self._FlareTask,self,group,client)
+local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client)
+local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client)
 end
-local abort=MENU_GROUP_COMMAND:New(group,menuabort,active,self._AbortTask,self,group,client)
+local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client)
 elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask)then
 local tasktypes=self:_GetAvailableTaskTypes()
 local taskpertype=self:_GetTasksPerType()
 local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
 local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
-local joinmenu=MENU_GROUP:New(group,menujoin,topmenu)
+local joinmenu=MENU_GROUP_DELAYED:New(group,menujoin,topmenu)
 local ttypes={}
 local taskmenu={}
 local ittypes={}
 local itaskmenu={}
 for _tasktype,_data in pairs(tasktypes)do
-ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,joinmenu)
+ttypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,joinmenu)
 local tasks=taskpertype[_tasktype]or{}
 for _,_task in pairs(tasks)do
 _task=_task
@@ -93522,15 +93522,15 @@ if name~="Unknown"then
 text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
-local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
+local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
 taskentry:SetTag(playername)
 taskmenu[#taskmenu+1]=taskentry
 end
 end
 if self.taskinfomenu then
-local taskinfomenu=MENU_GROUP:New(group,menutaskinfo,topmenu)
+local taskinfomenu=MENU_GROUP_DELAYED:New(group,menutaskinfo,topmenu)
 for _tasktype,_data in pairs(tasktypes)do
-ittypes[_tasktype]=MENU_GROUP:New(group,_tasktype,taskinfomenu)
+ittypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,taskinfomenu)
 local tasks=taskpertype[_tasktype]or{}
 for _,_task in pairs(tasks)do
 _task=_task
@@ -93548,7 +93548,7 @@ if name~="Unknown"then
 text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
-local taskentry=MENU_GROUP_COMMAND:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task)
+local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task)
 taskentry:SetTag(playername)
 itaskmenu[#itaskmenu+1]=taskentry
 end
@@ -93556,9 +93556,9 @@ end
 end
 elseif self.TaskQueue:Count()==0 then
 local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
-local joinmenu=MENU_GROUP:New(group,menunotasks,topmenu)
+local joinmenu=MENU_GROUP_DELAYED:New(group,menunotasks,topmenu)
 end
-self.PlayerMenu[playername]:Refresh()
+self.PlayerMenu[playername]:Set()
 end
 end
 end
