@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-04T12:48:06.0000000Z-71686819182d275a4856b6de79df399fb6b84b1d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-04T19:04:59.0000000Z-a3260b4ce3eb8856e3b826d8551d94747c029c14 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -83694,7 +83694,7 @@ Nnut=0,
 chiefs={},
 Missions={},
 }
-OPSZONE.version="0.3.0"
+OPSZONE.version="0.3.1"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -83736,6 +83736,7 @@ if self.airbase then
 self.ownerCurrent=self.airbase:GetCoalition()
 self.ownerPrevious=self.airbase:GetCoalition()
 end
+self:SetTimeCapture()
 self:SetObjectCategories()
 self:SetUnitCategories()
 self:SetDrawZone()
@@ -83775,6 +83776,10 @@ return self
 end
 function OPSZONE:SetThreatlevelOffending(Threatlevel)
 self.threatlevelOffending=Threatlevel or 0
+return self
+end
+function OPSZONE:SetTimeCapture(Tcapture)
+self.TminCaptured=Tcapture or 0
 return self
 end
 function OPSZONE:SetNeutralCanCapture(CanCapture)
@@ -83908,6 +83913,12 @@ end
 self:Scan()
 self:EvaluateZone()
 self:_UpdateMarker()
+end
+function OPSZONE:onbeforeCaptured(From,Event,To,NewOwnerCoalition)
+if self.ownerCurrent==NewOwnerCoalition then
+self:T(self.lid.."")
+end
+return true
 end
 function OPSZONE:onafterCaptured(From,Event,To,NewOwnerCoalition)
 self:T(self.lid..string.format("Zone captured by coalition=%d",NewOwnerCoalition))
@@ -84051,11 +84062,25 @@ if self:IsRed()then
 if Nred==0 then
 if Nblu>0 then
 if not self.airbase then
+local Tnow=timer.getAbsTime()
+if not self.Tcaptured then
+self.Tcaptured=Tnow
+end
+if Tnow-self.Tcaptured>=self.TminCaptured then
 self:Captured(coalition.side.BLUE)
+self.Tcaptured=nil
+end
 end
 elseif Nnut>0 and self.neutralCanCapture then
 if not self.airbase then
+local Tnow=timer.getAbsTime()
+if not self.Tcaptured then
+self.Tcaptured=Tnow
+end
+if Tnow-self.Tcaptured>=self.TminCaptured then
 self:Captured(coalition.side.NEUTRAL)
+self.Tcaptured=nil
+end
 end
 else
 if not self:IsEmpty()then
@@ -90252,7 +90277,7 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.1"
+FLIGHTCONTROL.version="0.7.2"
 function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
@@ -90322,6 +90347,7 @@ msrs:SetVoice(Voice)
 msrs:SetVolume(Volume)
 msrs:SetLabel(Label)
 msrs:SetGoogle(PathToGoogleCredentials)
+msrs:SetCoalition(self:GetCoalition())
 end
 return self
 end
