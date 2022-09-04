@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-03T14:28:32.0000000Z-e53ff167ee729509b3af84f5fbf8fadb85de6f06 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-04T10:19:06.0000000Z-233291b30c345861d31da11533e85327dbfcbf86 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -85556,7 +85556,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.40",
+version="0.2.41",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85862,6 +85862,8 @@ self.StationZone=ZONE:New(StationZone)
 self.StationZoneName=StationZone
 self.Frequency=Frequency or 271
 self.Modulation=Modulation or radio.modulation.AM
+self.MultiFrequency={self.Frequency}
+self.MultiModulation={self.Modulation}
 self.Airbase=AIRBASE:FindByName(AirbaseName)
 self.AwacsAngels=25
 if AwacsOrbit then
@@ -86026,6 +86028,16 @@ end
 function AWACS:SetLocale(Locale)
 self:T(self.lid.."SetLocale")
 self.locale=Locale or"en"
+return self
+end
+function AWACS:AddFrequencyAndModulation(Frequency,Modulation)
+self:T(self.lid.."AddFrequencyAndModulation")
+table.insert(self.MultiFrequency,Frequency)
+table.insert(self.MultiModulation,Modulation)
+if self.AwacsSRS then
+self.AwacsSRS:SetFrequencies(self.MultiFrequency)
+self.AwacsSRS:SetModulations(self.MultiModulation)
+end
 return self
 end
 function AWACS:SetAsGCI(EWR,Delay)
@@ -86327,6 +86339,15 @@ self.Port=Port or 5002
 self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
 self.Volume=Volume or 1.0
+self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Volume)
+self.AwacsSRS:SetGender(self.Gender)
+self.AwacsSRS:SetCulture(self.Culture)
+self.AwacsSRS:SetVoice(self.Voice)
+self.AwacsSRS:SetPort(self.Port)
+self.AwacsSRS:SetLabel("AWACS")
+if self.PathToGoogleKey then
+self.AwacsSRS:SetGoogle(self.PathToGoogleKey)
+end
 return self
 end
 function AWACS:SetSRSVoiceCAP(Gender,Culture,Voice)
@@ -86419,7 +86440,6 @@ group:SetCommandImmortal(self.immortal)
 group:CommandSetCallsign(self.CallSign,self.CallSignNo,2)
 group:CommandEPLRS(self.ModernEra,5)
 self.AwacsFG=AwacsFG
-self.AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,self.PathToGoogleKey,"AWACS",self.Volume)
 self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
 self:__CheckRadioQueue(10)
 if self.HasEscorts then
@@ -86448,7 +86468,6 @@ local group=AwacsFG:GetGroup()
 group:SetCommandInvisible(self.invisible)
 group:SetCommandImmortal(self.immortal)
 group:CommandSetCallsign(self.CallSign,self.CallSignNo,2)
-AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,nil,"AWACS")
 self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
 local shifting=self.gettext:GetEntry("SHIFTCHANGE",self.locale)
 local text=string.format(shifting,self.callsigntxt,self.AOName or"Rock")
@@ -89087,7 +89106,6 @@ self:E(self.lid.."**** Group unsuitable for GCI ops! Needs to be a GROUND or SHI
 self:Stop()
 return self
 end
-self.AwacsFG:SetSRS(self.PathToSRS,self.Gender,self.Culture,self.Voice,self.Port,self.PathToGoogleKey,"AWACS",self.Volume)
 self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
 self:__CheckRadioQueue(-10)
 local sunrise=self.gettext:GetEntry("SUNRISE",self.locale)
@@ -89579,9 +89597,9 @@ if not RadioEntry.FromAI then
 if self.PathToGoogleKey then
 local gtext=RadioEntry.TextTTS
 gtext=string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
-self.AwacsFG:RadioTransmission(gtext,1,false)
+self.AwacsSRS:PlayTextExt(gtext,nil,self.MultiFrequency,self.MultiModulation,self.Gender,self.Culture,self.Voice,self.Volume,"AWACS")
 else
-self.AwacsFG:RadioTransmission(RadioEntry.TextTTS,1,false)
+self.AwacsSRS:PlayTextExt(RadioEntry.TextTTS,nil,self.MultiFrequency,self.MultiModulation,self.Gender,self.Culture,self.Voice,self.Volume,"AWACS")
 end
 self:T(RadioEntry.TextTTS)
 else
