@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-04T10:19:06.0000000Z-233291b30c345861d31da11533e85327dbfcbf86 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-04T12:48:06.0000000Z-71686819182d275a4856b6de79df399fb6b84b1d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58568,6 +58568,7 @@ self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
 self.msrs:SetPort(Port)
 self.msrs:SetCoalition(self:GetCoalition())
+self.msrs:SetLabel("ATIS")
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
 end
@@ -92686,7 +92687,8 @@ self:AddTransition("*","TaskFailed","*")
 self:AddTransition("*","TaskRepeatOnFailed","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Start(-1)
-self:__Status(-2)
+local starttime=math.random(5,10)
+self:__Status(-starttime)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
 self:HandleEvent(EVENTS.Ejection,self._EventHandler)
 self:HandleEvent(EVENTS.Crash,self._EventHandler)
@@ -93482,7 +93484,8 @@ local unknown=self.gettext:GetEntry("UNKNOWN",self.locale)
 local playername=client:GetPlayerName()or unknown
 if group and client then
 local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
-local menuname=self.MenuName or self.Name..taskings..self.Type
+local longname=self.Name..taskings..self.Type
+local menuname=self.MenuName or longname
 local playerhastask=false
 if self:_CheckPlayerHasTask(playername)then playerhastask=true end
 local topmenu=nil
