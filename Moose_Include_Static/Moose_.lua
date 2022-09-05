@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-04T19:04:59.0000000Z-a3260b4ce3eb8856e3b826d8551d94747c029c14 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-05T04:14:58.0000000Z-bf3ee93c2302fc97a0b81990fa530f23b2d4355e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93662,7 +93662,7 @@ self.MenuName=Name
 return self
 end
 function PLAYERTASKCONTROLLER:SetupIntel(RecceName)
-self:T(self.lid.."SetupIntel: "..RecceName)
+self:T(self.lid.."SetupIntel")
 self.RecceSet=SET_GROUP:New():FilterCoalitions(self.CoalitionName):FilterPrefixes(RecceName):FilterStart()
 self.Intel=INTEL:New(self.RecceSet,self.Coalition,self.Name.."-Intel")
 self.Intel:SetClusterAnalysis(true,false,false)
