@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-06T11:16:40.0000000Z-6c46dafc599eedb638c8298d688ff9ff6362fea2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-06T11:18:22.0000000Z-c137a4b06dd968656211df21ddcf2d732168cccc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7917,8 +7917,6 @@ ZoneProbability=1,
 DrawID=nil,
 Color={},
 ZoneID=nil,
-Properties={},
-Surface=nil,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -8017,20 +8015,8 @@ end
 function ZONE_BASE:GetBoundingSquare()
 return nil
 end
-function ZONE_BASE:GetSurfaceType()
-local coord=self:GetCoordinate()
-local surface=coord:GetSurfaceType()
-return surface
-end
 function ZONE_BASE:BoundZone()
 self:F2()
-end
-function ZONE_BASE:SetDrawCoalition(Coalition)
-self.drawCoalition=Coalition or-1
-return self
-end
-function ZONE_BASE:GetDrawCoalition()
-return self.drawCoalition or-1
 end
 function ZONE_BASE:SetColor(RGBcolor,Alpha)
 RGBcolor=RGBcolor or{1,0,0}
@@ -8043,45 +8029,17 @@ self.Color[4]=Alpha
 return self
 end
 function ZONE_BASE:GetColor()
-return self.Color or{1,0,0,0.15}
+return self.Color
 end
 function ZONE_BASE:GetColorRGB()
 local rgb={}
-local Color=self:GetColor()
-rgb[1]=Color[1]
-rgb[2]=Color[2]
-rgb[3]=Color[3]
+rgb[1]=self.Color[1]
+rgb[2]=self.Color[2]
+rgb[3]=self.Color[3]
 return rgb
 end
 function ZONE_BASE:GetColorAlpha()
-local Color=self:GetColor()
-local alpha=Color[4]
-return alpha
-end
-function ZONE_BASE:SetFillColor(RGBcolor,Alpha)
-RGBcolor=RGBcolor or{1,0,0}
-Alpha=Alpha or 0.15
-self.FillColor={}
-self.FillColor[1]=RGBcolor[1]
-self.FillColor[2]=RGBcolor[2]
-self.FillColor[3]=RGBcolor[3]
-self.FillColor[4]=Alpha
-return self
-end
-function ZONE_BASE:GetFillColor()
-return self.FillColor or{1,0,0,0.15}
-end
-function ZONE_BASE:GetFillColorRGB()
-local rgb={}
-local FillColor=self:GetFillColor()
-rgb[1]=FillColor[1]
-rgb[2]=FillColor[2]
-rgb[3]=FillColor[3]
-return rgb
-end
-function ZONE_BASE:GetFillColorAlpha()
-local FillColor=self:GetFillColor()
-local alpha=FillColor[4]
+local alpha=self.Color[4]
 return alpha
 end
 function ZONE_BASE:UndrawZone(Delay)
@@ -8117,12 +8075,6 @@ return self
 else
 return nil
 end
-end
-function ZONE_BASE:GetProperty(PropertyName)
-return self.Properties[PropertyName]
-end
-function ZONE_BASE:GetAllProperties()
-return self.Properties
 end
 ZONE_RADIUS={
 ClassName="ZONE_RADIUS",
@@ -8308,7 +8260,7 @@ local SceneryType=ZoneObject:getTypeName()
 local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
 self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(SceneryName,ZoneObject)
-self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
+self:F2({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
 end
 end
 return true
@@ -8802,18 +8754,11 @@ end
 return self
 end
 function ZONE_POLYGON_BASE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
-if self._.Polygon and#self._.Polygon>=3 then
 local coordinate=COORDINATE:NewFromVec2(self._.Polygon[1])
-Coalition=Coalition or self:GetDrawCoalition()
-self:SetDrawCoalition(Coalition)
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
-self:SetColor(Color,Alpha)
-FillColor=FillColor or self:GetFillColorRGB()
-if not FillColor then UTILS.DeepCopy(Color)end
-FillAlpha=FillAlpha or self:GetFillColorAlpha()
-if not FillAlpha then FillAlpha=0.15 end
-self:SetFillColor(FillColor,FillAlpha)
+FillColor=FillColor or UTILS.DeepCopy(Color)
+FillAlpha=FillAlpha or self:GetColorAlpha()
 if#self._.Polygon==4 then
 local Coord2=COORDINATE:NewFromVec2(self._.Polygon[2])
 local Coord3=COORDINATE:NewFromVec2(self._.Polygon[3])
@@ -8823,7 +8768,6 @@ else
 local Coordinates=self:GetVerticiesCoordinates()
 table.remove(Coordinates,1)
 self.DrawID=coordinate:MarkupToAllFreeForm(Coordinates,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
-end
 end
 return self
 end
@@ -8990,99 +8934,6 @@ end
 function ZONE_POLYGON:FindByName(ZoneName)
 local ZoneFound=_DATABASE:FindZone(ZoneName)
 return ZoneFound
-end
-do
-ZONE_ELASTIC={
-ClassName="ZONE_ELASTIC",
-points={},
-setGroups={}
-}
-function ZONE_ELASTIC:New(ZoneName,Points)
-local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(ZoneName,Points))
-_EVENTDISPATCHER:CreateEventNewZone(self)
-if Points then
-self.points=Points
-end
-return self
-end
-function ZONE_ELASTIC:AddVertex2D(Vec2)
-table.insert(self.points,Vec2)
-return self
-end
-function ZONE_ELASTIC:AddVertex3D(Vec3)
-table.insert(self.points,{x=Vec3.x,y=Vec3.z})
-return self
-end
-function ZONE_ELASTIC:AddSetGroup(GroupSet)
-table.insert(self.setGroups,GroupSet)
-return self
-end
-function ZONE_ELASTIC:Update(Delay,Draw)
-self:T(string.format("Updating ZONE_ELASTIC %s",tostring(self.ZoneName)))
-local points=UTILS.DeepCopy(self.points or{})
-if self.setGroups then
-for _,_setGroup in pairs(self.setGroups)do
-local setGroup=_setGroup
-for _,_group in pairs(setGroup.Set)do
-local group=_group
-if group and group:IsAlive()then
-table.insert(points,group:GetVec2())
-end
-end
-end
-end
-self._.Polygon=self:_ConvexHull(points)
-if Draw~=false then
-if self.DrawID or Draw==true then
-self:UndrawZone()
-self:DrawZone()
-end
-end
-return self
-end
-function ZONE_ELASTIC:StartUpdate(Tstart,dT,Tstop,Draw)
-self.updateID=self:ScheduleRepeat(Tstart,dT,0,Tstop,ZONE_ELASTIC.Update,self,0,Draw)
-return self
-end
-function ZONE_ELASTIC:StopUpdate(Delay)
-if Delay and Delay>0 then
-self:ScheduleOnce(Delay,ZONE_ELASTIC.StopUpdate,self)
-else
-if self.updateID then
-self:ScheduleStop(self.updateID)
-self.updateID=nil
-end
-end
-return self
-end
-function ZONE_ELASTIC:_ConvexHull(pl)
-if#pl==0 then
-return{}
-end
-table.sort(pl,function(left,right)
-return left.x<right.x
-end)
-local h={}
-local function ccw(a,b,c)
-return(b.x-a.x)*(c.y-a.y)>(b.y-a.y)*(c.x-a.x)
-end
-for i,pt in pairs(pl)do
-while#h>=2 and not ccw(h[#h-1],h[#h],pt)do
-table.remove(h,#h)
-end
-table.insert(h,pt)
-end
-local t=#h+1
-for i=#pl,1,-1 do
-local pt=pl[i]
-while#h>=t and not ccw(h[#h-1],h[#h],pt)do
-table.remove(h,#h)
-end
-table.insert(h,pt)
-end
-table.remove(h,#h)
-return h
-end
 end
 do
 ZONE_AIRBASE={
