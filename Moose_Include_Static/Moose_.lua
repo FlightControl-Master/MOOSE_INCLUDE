@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-05T04:14:58.0000000Z-bf3ee93c2302fc97a0b81990fa530f23b2d4355e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-07T13:22:00.0000000Z-fe5f252bc93774c8bdfcbeeb35a3b1f7422b81b1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -47767,7 +47767,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.1.14"
+AUTOLASE.version="0.1.15"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -47830,6 +47830,7 @@ self.SRSPath=""
 self.SRSFreq=251
 self.SRSMod=radio.modulation.AM
 self.NoMenus=false
+self.minthreatlevel=0
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -47868,6 +47869,12 @@ return self
 end
 function AUTOLASE:OnEventPlayerEnterAircraft(EventData)
 self:SetPilotMenu()
+return self
+end
+function AUTOLASE:SetMinThreatLevel(Level)
+local level=Level or 0
+if level<0 or level>10 then level=0 end
+self.minthreatlevel=level
 return self
 end
 function AUTOLASE:GetLaserCode(RecceName)
@@ -48171,6 +48178,7 @@ local contact=_contact
 local grp=contact.group
 local coord=contact.position
 local reccename=contact.recce or"none"
+local threat=contact.threatlevel or 0
 local reccegrp=UNIT:FindByName(reccename)
 if reccegrp then
 local reccecoord=reccegrp:GetCoordinate()
@@ -48181,7 +48189,7 @@ self:T(text)
 if self.debug then self:I(text)end
 lines=lines+1
 local lasedistance=self:GetLosFromUnit(reccegrp)
-if grp:IsGround()and lasedistance>=distance then
+if grp:IsGround()and lasedistance>=distance and threat>=self.minthreatlevel then
 table.insert(groupsbythreat,{contact.group,contact.threatlevel})
 self.RecceNames[contact.groupname]=contact.recce
 end
