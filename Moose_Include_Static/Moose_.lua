@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-08T09:58:29.0000000Z-15496aed444a5928048038952457de49468c88c3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-08T14:10:38.0000000Z-35513e1e21d4187f4694810ba3ed6bc94085f8bb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22395,18 +22395,20 @@ local Nshells=0
 local Nrockets=0
 local Nmissiles=0
 local Nbombs=0
+local Narti=0
 if DCSControllable then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
-local ntot,nshells,nrockets,nbombs,nmissiles=Unit:GetAmmunition()
+local ntot,nshells,nrockets,nbombs,nmissiles,narti=Unit:GetAmmunition()
 Ntot=Ntot+ntot
 Nshells=Nshells+nshells
 Nrockets=Nrockets+nrockets
 Nmissiles=Nmissiles+nmissiles
 Nbombs=Nbombs+nbombs
+Narti=Narti+narti
 end
 end
-return Ntot,Nshells,Nrockets,Nbombs,Nmissiles
+return Ntot,Nshells,Nrockets,Nbombs,Nmissiles,Narti
 end
 do
 function GROUP:IsInZone(Zone)
@@ -23534,6 +23536,7 @@ local nshells=0
 local nrockets=0
 local nmissiles=0
 local nbombs=0
+local narti=0
 local unit=self
 local ammotable=unit:GetAmmo()
 if ammotable then
@@ -23548,6 +23551,9 @@ MissileCategory=ammotable[w].desc.missileCategory
 end
 if Category==Weapon.Category.SHELL then
 nshells=nshells+Nammo
+if ammotable[w].desc.warhead and ammotable[w].desc.warhead.explosiveMass and ammotable[w].desc.warhead.explosiveMass>0 then
+narti=narti+Nammo
+end
 elseif Category==Weapon.Category.ROCKET then
 nrockets=nrockets+Nammo
 elseif Category==Weapon.Category.BOMB then
@@ -23570,7 +23576,7 @@ end
 end
 end
 nammo=nshells+nrockets+nmissiles+nbombs
-return nammo,nshells,nrockets,nbombs,nmissiles
+return nammo,nshells,nrockets,nbombs,nmissiles,narti
 end
 function UNIT:GetSensors()
 self:F2(self.UnitName)
