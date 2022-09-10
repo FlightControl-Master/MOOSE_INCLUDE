@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-09T15:33:23.0000000Z-cea9437e6677771cd2fc87036e02e9928deaf0fb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T09:38:50.0000000Z-a61059242c2935091fe37665cd9b6aefce25693b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62141,6 +62141,7 @@ self.DefenderSquadrons={}
 self.DefenderSpawns={}
 self.DefenderTasks={}
 self.DefenderDefault={}
+self.SetSendPlayerMessages=false
 self.Detection:FilterCategories({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
 self.Detection:SetRefreshTimeInterval(30)
 self:SetEngageRadius()
@@ -62604,6 +62605,9 @@ function AI_A2A_DISPATCHER:SetDefaultTakeoffInAir()
 self:SetDefaultTakeoff(AI_A2A_DISPATCHER.Takeoff.Air)
 return self
 end
+function AI_A2A_DISPATCHER:SetSendMessages(onoff)
+self.SetSendPlayerMessages=onoff
+end
 function AI_A2A_DISPATCHER:SetSquadronTakeoffInAir(SquadronName,TakeoffAltitude)
 self:SetSquadronTakeoff(SquadronName,AI_A2A_DISPATCHER.Takeoff.Air)
 if TakeoffAltitude then
@@ -62909,7 +62913,9 @@ local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=AI_A2A_Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron then
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName.." Wheels up.",DefenderGroup)
+end
 AI_A2A_Fsm:__Patrol(2)
 end
 end
@@ -62921,7 +62927,7 @@ self:GetParent(self).onafterPatrolRoute(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
-if Squadron then
+if Squadron and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", patrolling.",DefenderGroup)
 end
 Dispatcher:ClearDefenderTaskTarget(DefenderGroup)
@@ -62934,7 +62940,7 @@ self:GetParent(self).onafterRTB(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
-if Squadron then
+if Squadron and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName.." returning to base.",DefenderGroup)
 end
 Dispatcher:ClearDefenderTaskTarget(DefenderGroup)
@@ -63048,10 +63054,10 @@ local Dispatcher=Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 local DefenderTarget=Dispatcher:GetDefenderTaskTarget(DefenderGroup)
 if DefenderTarget then
-if Squadron.Language=="EN"then
+if Squadron.Language=="EN"and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName.." wheels up.",DefenderGroup)
-elseif Squadron.Language=="RU"then
-Dispatcher:MessageToPlayers(Squadron,DefenderName.." колеса вверх.",DefenderGroup)
+elseif Squadron.Language=="RU"and self.SetSendPlayerMessages then
+Dispatcher:MessageToPlayers(Squadron,DefenderName.." колёса вверх.",DefenderGroup)
 end
 Fsm:EngageRoute(DefenderTarget.Set)
 end
@@ -63064,11 +63070,11 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron and AttackSetUnit:Count()>0 then
 local FirstUnit=AttackSetUnit:GetFirst()
 local Coordinate=FirstUnit:GetCoordinate()
-if Squadron.Language=="EN"then
+if Squadron.Language=="EN"and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", intercepting bogeys at "..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
-elseif Squadron.Language=="RU"then
-Dispatcher:MessageToPlayers(Squadron,DefenderName..", перехват самолетов в "..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
-elseif Squadron.Language=="DE"then
+elseif Squadron.Language=="RU"and self.SetSendPlayerMessages then
+Dispatcher:MessageToPlayers(Squadron,DefenderName..", перехватывая боги в "..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
+elseif Squadron.Language=="DE"and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", Eindringlinge abfangen bei"..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
 end
 end
@@ -63082,10 +63088,10 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron and AttackSetUnit:Count()>0 then
 local FirstUnit=AttackSetUnit:GetFirst()
 local Coordinate=FirstUnit:GetCoordinate()
-if Squadron.Language=="EN"then
+if Squadron.Language=="EN"and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", engaging bogeys at "..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
-elseif Squadron.Language=="RU"then
-Dispatcher:MessageToPlayers(Squadron,DefenderName..", захватывающие самолеты в "..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
+elseif Squadron.Language=="RU"and self.SetSendPlayerMessages then
+Dispatcher:MessageToPlayers(Squadron,DefenderName..", задействуя боги в "..Coordinate:ToStringA2A(DefenderGroup,nil,Squadron.Language),DefenderGroup)
 end
 end
 self:GetParent(Fsm).onafterEngage(self,DefenderGroup,From,Event,To,AttackSetUnit)
@@ -63097,10 +63103,10 @@ local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron then
-if Squadron.Language=="EN"then
+if Squadron.Language=="EN"and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName.." returning to base.",DefenderGroup)
-elseif Squadron.Language=="RU"then
-Dispatcher:MessageToPlayers(Squadron,DefenderName..", возвращаясь на базу.",DefenderGroup)
+elseif Squadron.Language=="RU"and self.SetSendPlayerMessages then
+Dispatcher:MessageToPlayers(Squadron,DefenderName..", возвращение на базу.",DefenderGroup)
 end
 end
 Dispatcher:ClearDefenderTaskTarget(DefenderGroup)
@@ -63121,10 +63127,10 @@ self:GetParent(self).onafterHome(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
-if Squadron.Language=="EN"then
+if Squadron.Language=="EN"and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName.." landing at base.",DefenderGroup)
-elseif Squadron.Language=="RU"then
-Dispatcher:MessageToPlayers(Squadron,DefenderName..", захватывающие самолеты в посадка на базу.",DefenderGroup)
+elseif Squadron.Language=="RU"and self.SetSendPlayerMessages then
+Dispatcher:MessageToPlayers(Squadron,DefenderName..", посадка на базу.",DefenderGroup)
 end
 if Action and Action=="Destroy"then
 Dispatcher:RemoveDefenderFromSquadron(Squadron,DefenderGroup)
@@ -63610,6 +63616,7 @@ self.DefenderSquadrons={}
 self.DefenderSpawns={}
 self.DefenderTasks={}
 self.DefenderDefault={}
+self.SetSendPlayerMessages=false
 self:SetDefenseRadius()
 self:SetDefenseLimit(nil)
 self:SetDefenseApproach(AI_A2G_DISPATCHER.DefenseApproach.Random)
@@ -64548,7 +64555,9 @@ local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=AI_A2G_Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron then
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", wheels up.",DefenderGroup)
+end
 AI_A2G_Fsm:Patrol()
 end
 end
@@ -64558,7 +64567,7 @@ self:GetParent(self).onafterPatrolRoute(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
-if Squadron then
+if Squadron and self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", patrolling.",DefenderGroup)
 end
 Dispatcher:ClearDefenderTaskTarget(DefenderGroup)
@@ -64572,7 +64581,9 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron and AttackSetUnit:Count()>0 then
 local FirstUnit=AttackSetUnit:GetFirst()
 local Coordinate=FirstUnit:GetCoordinate()
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", moving on to ground target at "..Coordinate:ToStringA2G(DefenderGroup),DefenderGroup)
+end
 end
 end
 function AI_A2G_Fsm:OnAfterEngage(DefenderGroup,From,Event,To,AttackSetUnit)
@@ -64583,7 +64594,9 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 local FirstUnit=AttackSetUnit:GetFirst()
 if FirstUnit then
 local Coordinate=FirstUnit:GetCoordinate()
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", engaging ground target at "..Coordinate:ToStringA2G(DefenderGroup),DefenderGroup)
+end
 end
 end
 function AI_A2G_Fsm:onafterRTB(DefenderGroup,From,Event,To)
@@ -64592,7 +64605,9 @@ self:GetParent(self).onafterRTB(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", returning to base.",DefenderGroup)
+end
 Dispatcher:ClearDefenderTaskTarget(DefenderGroup)
 end
 function AI_A2G_Fsm:onafterLostControl(DefenderGroup,From,Event,To)
@@ -64601,7 +64616,9 @@ self:GetParent(self).onafterHome(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=AI_A2G_Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", lost control.")
+end
 if DefenderGroup:IsAboveRunway()then
 Dispatcher:RemoveDefenderFromSquadron(Squadron,DefenderGroup)
 DefenderGroup:Destroy()
@@ -64613,7 +64630,9 @@ self:GetParent(self).onafterHome(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", landing at base.",DefenderGroup)
+end
 if Action and Action=="Destroy"then
 Dispatcher:RemoveDefenderFromSquadron(Squadron,DefenderGroup)
 DefenderGroup:Destroy()
@@ -64652,7 +64671,9 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 local DefenderTarget=Dispatcher:GetDefenderTaskTarget(DefenderGroup)
 self:F({DefenderTarget=DefenderTarget})
 if DefenderTarget then
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", wheels up.",DefenderGroup)
+end
 AI_A2G_Fsm:EngageRoute(DefenderTarget.Set)
 end
 end
@@ -64664,7 +64685,9 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron then
 local FirstUnit=AttackSetUnit:GetFirst()
 local Coordinate=FirstUnit:GetCoordinate()
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", on route to ground target at "..Coordinate:ToStringA2G(DefenderGroup),DefenderGroup)
+end
 end
 self:GetParent(self).onafterEngageRoute(self,DefenderGroup,From,Event,To,AttackSetUnit)
 end
@@ -64676,7 +64699,9 @@ local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 local FirstUnit=AttackSetUnit:GetFirst()
 if FirstUnit then
 local Coordinate=FirstUnit:GetCoordinate()
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", engaging ground target at "..Coordinate:ToStringA2G(DefenderGroup),DefenderGroup)
+end
 end
 end
 function AI_A2G_Fsm:onafterRTB(DefenderGroup,From,Event,To)
@@ -64684,7 +64709,9 @@ self:F({"Defender RTB",DefenderGroup:GetName()})
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", returning to base.",DefenderGroup)
+end
 self:GetParent(self).onafterRTB(self,DefenderGroup,From,Event,To)
 Dispatcher:ClearDefenderTaskTarget(DefenderGroup)
 end
@@ -64694,6 +64721,9 @@ self:GetParent(self).onafterHome(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=AI_A2G_Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
+if self.SetSendPlayerMessages then
+Dispatcher:MessageToPlayers(Squadron,"Squadron "..Squadron.Name..", "..DefenderName.." lost control.")
+end
 if DefenderGroup:IsAboveRunway()then
 Dispatcher:RemoveDefenderFromSquadron(Squadron,DefenderGroup)
 DefenderGroup:Destroy()
@@ -64705,7 +64735,9 @@ self:GetParent(self).onafterHome(self,DefenderGroup,From,Event,To)
 local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=self:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
+if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", landing at base.",DefenderGroup)
+end
 if Action and Action=="Destroy"then
 Dispatcher:RemoveDefenderFromSquadron(Squadron,DefenderGroup)
 DefenderGroup:Destroy()
@@ -65230,6 +65262,10 @@ local PatrolTaskTypes={"SEAD","CAS","BAI"}
 local PatrolTaskType=PatrolTaskTypes[math.random(1,3)]
 self:Patrol(SquadronName,PatrolTaskType)
 end
+function AI_A2G_DISPATCHER:SetSendMessages(onoff)
+self.SetSendPlayerMessages=onoff
+end
+end
 function AI_A2G_DISPATCHER:AddToSquadron(Squadron,Amount)
 local Squadron=self:GetSquadron(Squadron)
 if Squadron.ResourceCount then
@@ -65243,7 +65279,6 @@ if Squadron.ResourceCount then
 Squadron.ResourceCount=Squadron.ResourceCount-Amount
 end
 self:T({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
-end
 end
 AI_PATROL_ZONE={
 ClassName="AI_PATROL_ZONE",
@@ -65601,9 +65636,7 @@ function AI_CAP_ZONE:onafterEngage(Controllable,From,Event,To)
 if Controllable and Controllable:IsAlive()then
 local EngageRoute={}
 local CurrentVec2=self.Controllable:GetVec2()
-if not CurrentVec2 then
-return self
-end
+if not CurrentVec2 then return self end
 local CurrentAltitude=self.Controllable:GetAltitude()
 local CurrentPointVec3=POINT_VEC3:New(CurrentVec2.x,CurrentAltitude,CurrentVec2.y)
 local ToEngageZoneSpeed=self.PatrolMaxSpeed
@@ -66279,7 +66312,7 @@ self:__Follow(-self.dtFollow)
 end
 end
 function AI_FORMATION:FollowMe(FollowGroup,ClientUnit,CT1,CV1,CT2,CV2)
-if FollowGroup:GetState(FollowGroup,"Mode")==self.__Enum.Mode.Formation then
+if FollowGroup:GetState(FollowGroup,"Mode")==self.__Enum.Mode.Formation and not self:Is("Stopped")then
 self:T({Mode=FollowGroup:GetState(FollowGroup,"Mode")})
 FollowGroup:OptionROTEvadeFire()
 FollowGroup:OptionROEReturnFire()
@@ -69134,14 +69167,16 @@ function AI_CARGO_DISPATCHER_HELICOPTER:New(HelicopterSet,CargoSet,PickupZoneSet
 local self=BASE:Inherit(self,AI_CARGO_DISPATCHER:New(HelicopterSet,CargoSet,PickupZoneSet,DeployZoneSet))
 self:SetPickupSpeed(350,150)
 self:SetDeploySpeed(350,150)
-self:SetPickupRadius(0,0)
-self:SetDeployRadius(0,0)
+self:SetPickupRadius(40,12)
+self:SetDeployRadius(40,12)
 self:SetPickupHeight(500,200)
 self:SetDeployHeight(500,200)
 return self
 end
 function AI_CARGO_DISPATCHER_HELICOPTER:AICargo(Helicopter,CargoSet)
-return AI_CARGO_HELICOPTER:New(Helicopter,CargoSet)
+local dispatcher=AI_CARGO_HELICOPTER:New(Helicopter,CargoSet)
+dispatcher:SetLandingSpeedAndHeight(27,6)
+return dispatcher
 end
 AI_CARGO_DISPATCHER_AIRPLANE={
 ClassName="AI_CARGO_DISPATCHER_AIRPLANE",
