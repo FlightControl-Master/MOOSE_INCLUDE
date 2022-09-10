@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T09:56:03.0000000Z-7c22e9fe6945eee74c4f6523ba87f2a16323eaae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T10:08:30.0000000Z-a73818a61579aeb6c84c1ec78427516c2977026c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4930,6 +4930,50 @@ Schedule()
 return self
 end
 end
+SOCKET={
+ClassName="SOCKET",
+verbose=0,
+lid=nil,
+}
+SOCKET.DataType={
+TEXT="moose_text",
+BOMBRESULT="moose_bomb_result",
+STRAFERESULT="moose_strafe_result",
+LSOGRADE="moose_lso_grade",
+}
+SOCKET.version="0.1.0"
+function SOCKET:New(Port,Host)
+local self=BASE:Inherit(self,FSM:New())
+package.path=package.path..";.\\LuaSocket\\?.lua;"
+package.cpath=package.cpath..";.\\LuaSocket\\?.dll;"
+self.socket=require("socket")
+self.port=Port or 10042
+self.host=Host or"127.0.0.1"
+self.json=loadfile("Scripts\\JSON.lua")()
+self.UDPSendSocket=self.socket.udp()
+self.UDPSendSocket:settimeout(0)
+return self
+end
+function SOCKET:SetPort(Port)
+self.port=Port or 10042
+end
+function SOCKET:SetHost(Host)
+self.host=Host or"127.0.0.1"
+end
+function SOCKET:SendTable(Table)
+local json=self.json:encode(Table)
+self:T("Json table:")
+self:T(json)
+self.socket.try(self.UDPSendSocket:sendto(json,self.host,self.port))
+return self
+end
+function SOCKET:SendText(Text)
+local message={}
+message.command=SOCKET.DataType.TEXT
+message.text=Text
+self:SendTable(message)
+return self
+end
 local _TraceOnOff=true
 local _TraceLevel=1
 local _TraceAll=false
@@ -5386,6 +5430,367 @@ else
 env.info(string.format("%1s:%30s%05d(%s)","I",self.ClassName,self.ClassID,routines.utils.oneLineSerialize(Arguments)))
 end
 end
+ASTAR={
+ClassName="ASTAR",
+Debug=nil,
+lid=nil,
+nodes={},
+counter=1,
+Nnodes=0,
+ncost=0,
+ncostcache=0,
+nvalid=0,
+nvalidcache=0,
+}
+ASTAR.INF=1/0
+ASTAR.version="0.4.0"
+function ASTAR:New()
+local self=BASE:Inherit(self,BASE:New())
+self.lid="ASTAR | "
+return self
+end
+function ASTAR:SetStartCoordinate(Coordinate)
+self.startCoord=Coordinate
+return self
+end
+function ASTAR:SetEndCoordinate(Coordinate)
+self.endCoord=Coordinate
+return self
+end
+function ASTAR:GetNodeFromCoordinate(Coordinate)
+local node={}
+node.coordinate=Coordinate
+node.surfacetype=Coordinate:GetSurfaceType()
+node.id=self.counter
+node.valid={}
+node.cost={}
+self.counter=self.counter+1
+return node
+end
+function ASTAR:AddNode(Node)
+self.nodes[Node.id]=Node
+self.Nnodes=self.Nnodes+1
+return self
+end
+function ASTAR:AddNodeFromCoordinate(Coordinate)
+local node=self:GetNodeFromCoordinate(Coordinate)
+self:AddNode(node)
+return node
+end
+function ASTAR:CheckValidSurfaceType(Node,SurfaceTypes)
+if SurfaceTypes then
+if type(SurfaceTypes)~="table"then
+SurfaceTypes={SurfaceTypes}
+end
+for _,surface in pairs(SurfaceTypes)do
+if surface==Node.surfacetype then
+return true
+end
+end
+return false
+else
+return true
+end
+end
+function ASTAR:SetValidNeighbourFunction(NeighbourFunction,...)
+self.ValidNeighbourFunc=NeighbourFunction
+self.ValidNeighbourArg={}
+if arg then
+self.ValidNeighbourArg=arg
+end
+return self
+end
+function ASTAR:SetValidNeighbourLoS(CorridorWidth)
+self:SetValidNeighbourFunction(ASTAR.LoS,CorridorWidth)
+return self
+end
+function ASTAR:SetValidNeighbourDistance(MaxDistance)
+self:SetValidNeighbourFunction(ASTAR.DistMax,MaxDistance)
+return self
+end
+function ASTAR:SetValidNeighbourRoad(MaxDistance)
+self:SetValidNeighbourFunction(ASTAR.Road,MaxDistance)
+return self
+end
+function ASTAR:SetCostFunction(CostFunction,...)
+self.CostFunc=CostFunction
+self.CostArg={}
+if arg then
+self.CostArg=arg
+end
+return self
+end
+function ASTAR:SetCostDist2D()
+self:SetCostFunction(ASTAR.Dist2D)
+return self
+end
+function ASTAR:SetCostDist3D()
+self:SetCostFunction(ASTAR.Dist3D)
+return self
+end
+function ASTAR:SetCostRoad()
+self:SetCostFunction(ASTAR)
+return self
+end
+function ASTAR:CreateGrid(ValidSurfaceTypes,BoxHY,SpaceX,deltaX,deltaY,MarkGrid)
+local Dz=SpaceX or 10000
+local Dx=BoxHY and BoxHY/2 or 20000
+local dz=deltaX or 2000
+local dx=deltaY or dz
+local angle=self.startCoord:HeadingTo(self.endCoord)
+local dist=self.startCoord:Get2DDistance(self.endCoord)+2*Dz
+local co=COORDINATE:New(0,0,0)
+local do1=co:Get2DDistance(self.startCoord)
+local ho1=co:HeadingTo(self.startCoord)
+local xmin=-Dx
+local zmin=-Dz
+local nz=dist/dz+1
+local nx=2*Dx/dx+1
+local text=string.format("Building grid with nx=%d ny=%d => total=%d nodes",nx,nz,nx*nz)
+self:T(self.lid..text)
+for i=1,nx do
+local x=xmin+dx*(i-1)
+for j=1,nz do
+local z=zmin+dz*(j-1)
+local vec3=UTILS.Rotate2D({x=x,y=0,z=z},angle)
+local c=COORDINATE:New(vec3.z,vec3.y,vec3.x):Translate(do1,ho1,true)
+local node=self:GetNodeFromCoordinate(c)
+if self:CheckValidSurfaceType(node,ValidSurfaceTypes)then
+if MarkGrid then
+c:MarkToAll(string.format("i=%d, j=%d surface=%d",i,j,node.surfacetype))
+end
+self:AddNode(node)
+end
+end
+end
+local text=string.format("Done building grid!")
+self:T2(self.lid..text)
+return self
+end
+function ASTAR.LoS(nodeA,nodeB,corridor)
+local offset=1
+local dx=corridor and corridor/2 or nil
+local dy=dx
+local cA=nodeA.coordinate:GetVec3()
+local cB=nodeB.coordinate:GetVec3()
+cA.y=offset
+cB.y=offset
+local los=land.isVisible(cA,cB)
+if los and corridor then
+local heading=nodeA.coordinate:HeadingTo(nodeB.coordinate)
+local Ap=UTILS.VecTranslate(cA,dx,heading+90)
+local Bp=UTILS.VecTranslate(cB,dx,heading+90)
+los=land.isVisible(Ap,Bp)
+if los then
+local Am=UTILS.VecTranslate(cA,dx,heading-90)
+local Bm=UTILS.VecTranslate(cB,dx,heading-90)
+los=land.isVisible(Am,Bm)
+end
+end
+return los
+end
+function ASTAR.Road(nodeA,nodeB)
+local path=land.findPathOnRoads("roads",nodeA.coordinate.x,nodeA.coordinate.z,nodeB.coordinate.x,nodeB.coordinate.z)
+if path then
+return true
+else
+return false
+end
+end
+function ASTAR.DistMax(nodeA,nodeB,distmax)
+distmax=distmax or 2000
+local dist=nodeA.coordinate:Get2DDistance(nodeB.coordinate)
+return dist<=distmax
+end
+function ASTAR.Dist2D(nodeA,nodeB)
+local dist=nodeA.coordinate:Get2DDistance(nodeB)
+return dist
+end
+function ASTAR.Dist3D(nodeA,nodeB)
+local dist=nodeA.coordinate:Get3DDistance(nodeB.coordinate)
+return dist
+end
+function ASTAR.DistRoad(nodeA,nodeB)
+local path=land.findPathOnRoads("roads",nodeA.coordinate.x,nodeA.coordinate.z,nodeB.coordinate.x,nodeB.coordinate.z)
+if path then
+local dist=0
+for i=2,#path do
+local b=path[i]
+local a=path[i-1]
+dist=dist+UTILS.VecDist2D(a,b)
+end
+return dist
+end
+return math.huge
+end
+function ASTAR:FindClosestNode(Coordinate)
+local distMin=math.huge
+local closeNode=nil
+for _,_node in pairs(self.nodes)do
+local node=_node
+local dist=node.coordinate:Get2DDistance(Coordinate)
+if dist<distMin then
+distMin=dist
+closeNode=node
+end
+end
+return closeNode,distMin
+end
+function ASTAR:FindStartNode()
+local node,dist=self:FindClosestNode(self.startCoord)
+self.startNode=node
+if dist>1000 then
+self:T(self.lid.."Adding start node to node grid!")
+self:AddNode(node)
+end
+return self
+end
+function ASTAR:FindEndNode()
+local node,dist=self:FindClosestNode(self.endCoord)
+self.endNode=node
+if dist>1000 then
+self:T(self.lid.."Adding end node to node grid!")
+self:AddNode(node)
+end
+return self
+end
+function ASTAR:GetPath(ExcludeStartNode,ExcludeEndNode)
+self:FindStartNode()
+self:FindEndNode()
+local nodes=self.nodes
+local start=self.startNode
+local goal=self.endNode
+local openset={}
+local closedset={}
+local came_from={}
+local g_score={}
+local f_score={}
+openset[start.id]=true
+local Nopen=1
+g_score[start.id]=0
+f_score[start.id]=g_score[start.id]+self:_HeuristicCost(start,goal)
+local T0=timer.getAbsTime()
+local text=string.format("Starting A* pathfinding with %d Nodes",self.Nnodes)
+self:T(self.lid..text)
+local Tstart=UTILS.GetOSTime()
+while Nopen>0 do
+local current=self:_LowestFscore(openset,f_score)
+if current.id==goal.id then
+local path=self:_UnwindPath({},came_from,goal)
+if not ExcludeEndNode then
+table.insert(path,goal)
+end
+if ExcludeStartNode then
+table.remove(path,1)
+end
+local Tstop=UTILS.GetOSTime()
+local dT=nil
+if Tstart and Tstop then
+dT=Tstop-Tstart
+end
+local text=string.format("Found path with %d nodes (%d total)",#path,self.Nnodes)
+if dT then
+text=text..string.format(", OS Time %.6f sec",dT)
+end
+text=text..string.format(", Nvalid=%d [%d cached]",self.nvalid,self.nvalidcache)
+text=text..string.format(", Ncost=%d [%d cached]",self.ncost,self.ncostcache)
+self:T(self.lid..text)
+return path
+end
+openset[current.id]=nil
+Nopen=Nopen-1
+closedset[current.id]=true
+local neighbors=self:_NeighbourNodes(current,nodes)
+for _,neighbor in pairs(neighbors)do
+if self:_NotIn(closedset,neighbor.id)then
+local tentative_g_score=g_score[current.id]+self:_DistNodes(current,neighbor)
+if self:_NotIn(openset,neighbor.id)or tentative_g_score<g_score[neighbor.id]then
+came_from[neighbor]=current
+g_score[neighbor.id]=tentative_g_score
+f_score[neighbor.id]=g_score[neighbor.id]+self:_HeuristicCost(neighbor,goal)
+if self:_NotIn(openset,neighbor.id)then
+openset[neighbor.id]=true
+Nopen=Nopen+1
+end
+end
+end
+end
+end
+local text=string.format("WARNING: Could NOT find valid path!")
+self:E(self.lid..text)
+MESSAGE:New(text,60,"ASTAR"):ToAllIf(self.Debug)
+return nil
+end
+function ASTAR:_HeuristicCost(nodeA,nodeB)
+self.ncost=self.ncost+1
+local cost=nodeA.cost[nodeB.id]
+if cost~=nil then
+self.ncostcache=self.ncostcache+1
+return cost
+end
+local cost=nil
+if self.CostFunc then
+cost=self.CostFunc(nodeA,nodeB,unpack(self.CostArg))
+else
+cost=self:_DistNodes(nodeA,nodeB)
+end
+nodeA.cost[nodeB.id]=cost
+nodeB.cost[nodeA.id]=cost
+return cost
+end
+function ASTAR:_IsValidNeighbour(node,neighbor)
+self.nvalid=self.nvalid+1
+local valid=node.valid[neighbor.id]
+if valid~=nil then
+self.nvalidcache=self.nvalidcache+1
+return valid
+end
+local valid=nil
+if self.ValidNeighbourFunc then
+valid=self.ValidNeighbourFunc(node,neighbor,unpack(self.ValidNeighbourArg))
+else
+valid=true
+end
+node.valid[neighbor.id]=valid
+neighbor.valid[node.id]=valid
+return valid
+end
+function ASTAR:_DistNodes(nodeA,nodeB)
+return nodeA.coordinate:Get2DDistance(nodeB.coordinate)
+end
+function ASTAR:_LowestFscore(set,f_score)
+local lowest,bestNode=ASTAR.INF,nil
+for nid,node in pairs(set)do
+local score=f_score[nid]
+if score<lowest then
+lowest,bestNode=score,nid
+end
+end
+return self.nodes[bestNode]
+end
+function ASTAR:_NeighbourNodes(theNode,nodes)
+local neighbors={}
+for _,node in pairs(nodes)do
+if theNode.id~=node.id then
+local isvalid=self:_IsValidNeighbour(theNode,node)
+if isvalid then
+table.insert(neighbors,node)
+end
+end
+end
+return neighbors
+end
+function ASTAR:_NotIn(set,theNode)
+return set[theNode]==nil
+end
+function ASTAR:_UnwindPath(flat_path,map,current_node)
+if map[current_node]then
+table.insert(flat_path,1,map[current_node])
+return self:_UnwindPath(flat_path,map,map[current_node])
+else
+return flat_path
+end
+end
 BEACON={
 ClassName="BEACON",
 Positionable=nil,
@@ -5612,6 +6017,107 @@ A=962
 end
 end
 return(A+TACANChannel-B)*1000000
+end
+CONDITION={
+ClassName="CONDITION",
+lid=nil,
+functionsGen={},
+functionsAny={},
+functionsAll={},
+}
+CONDITION.version="0.1.0"
+function CONDITION:New(Name)
+local self=BASE:Inherit(self,BASE:New())
+self.name=Name or"Condition X"
+self.lid=string.format("%s | ",self.name)
+return self
+end
+function CONDITION:SetAny(Any)
+self.isAny=Any
+return self
+end
+function CONDITION:SetNegateResult(Negate)
+self.negateResult=Negate
+return self
+end
+function CONDITION:AddFunction(Function,...)
+local condition=self:_CreateCondition(Function,...)
+table.insert(self.functionsGen,condition)
+return self
+end
+function CONDITION:AddFunctionAny(Function,...)
+local condition=self:_CreateCondition(Function,...)
+table.insert(self.functionsAny,condition)
+return self
+end
+function CONDITION:AddFunctionAll(Function,...)
+local condition=self:_CreateCondition(Function,...)
+table.insert(self.functionsAll,condition)
+return self
+end
+function CONDITION:Evaluate(AnyTrue)
+if#self.functionsAll+#self.functionsAny+#self.functionsAll==0 then
+if self.negateResult then
+return true
+else
+return false
+end
+end
+local evalAny=self.isAny
+if AnyTrue~=nil then
+evalAny=AnyTrue
+end
+local isGen=nil
+if evalAny then
+isGen=self:_EvalConditionsAny(self.functionsGen)
+else
+isGen=self:_EvalConditionsAll(self.functionsGen)
+end
+local isAny=self:_EvalConditionsAny(self.functionsAny)
+local isAll=self:_EvalConditionsAll(self.functionsAll)
+local result=isGen and isAny and isAll
+if self.negateResult then
+result=not result
+end
+self:T(self.lid..string.format("Evaluate: isGen=%s, isAny=%s, isAll=%s (negate=%s) ==> result=%s",tostring(isGen),tostring(isAny),tostring(isAll),tostring(self.negateResult),tostring(result)))
+return result
+end
+function CONDITION:_EvalConditionsAll(functions)
+local gotone=false
+for _,_condition in pairs(functions or{})do
+local condition=_condition
+gotone=true
+local istrue=condition.func(unpack(condition.arg))
+if not istrue then
+return false
+end
+end
+return true
+end
+function CONDITION:_EvalConditionsAny(functions)
+local gotone=false
+for _,_condition in pairs(functions or{})do
+local condition=_condition
+gotone=true
+local istrue=condition.func(unpack(condition.arg))
+if istrue then
+return true
+end
+end
+if gotone then
+return false
+else
+return true
+end
+end
+function CONDITION:_CreateCondition(Function,...)
+local condition={}
+condition.func=Function
+condition.arg={}
+if arg then
+condition.arg=arg
+end
+return condition
 end
 do
 USERFLAG={
@@ -18055,6 +18561,105 @@ self:T({self.lid,From,Event,To})
 self:UnHandleEvent(EVENTS.MarkAdded)
 self:UnHandleEvent(EVENTS.MarkChange)
 self:UnHandleEvent(EVENTS.MarkRemoved)
+end
+TEXTANDSOUND={
+ClassName="TEXTANDSOUND",
+version="0.0.1",
+lid="",
+locale="en",
+entries={},
+textclass="",
+}
+function TEXTANDSOUND:New(ClassName,Defaultlocale)
+local self=BASE:Inherit(self,BASE:New())
+self.lid=string.format("%s (%s) | ",self.ClassName,self.version)
+self.locale=Defaultlocale or(_SETTINGS:GetLocale()or"en")
+self.textclass=ClassName or"none"
+self.entries={}
+local initentry={}
+initentry.Classname=ClassName
+initentry.Data={}
+initentry.Locale=self.locale
+self.entries[self.locale]=initentry
+self:I(self.lid.."Instantiated.")
+self:T({self.entries[self.locale]})
+return self
+end
+function TEXTANDSOUND:AddEntry(Locale,ID,Text,Soundfile,Soundlength,Subtitle)
+self:T(self.lid.."AddEntry")
+local locale=Locale or self.locale
+local dataentry={}
+dataentry.ID=ID or"1"
+dataentry.Text=Text or"none"
+dataentry.Soundfile=Soundfile
+dataentry.Soundlength=Soundlength or 0
+dataentry.Subtitle=Subtitle
+if not self.entries[locale]then
+local initentry={}
+initentry.Classname=self.textclass
+initentry.Data={}
+initentry.Locale=locale
+self.entries[locale]=initentry
+end
+self.entries[locale].Data[ID]=dataentry
+self:T({self.entries[locale].Data})
+return self
+end
+function TEXTANDSOUND:GetEntry(ID,Locale)
+self:T(self.lid.."GetEntry")
+local locale=Locale or self.locale
+if not self.entries[locale]then
+locale=self.locale
+end
+local Text,Soundfile,Soundlength,Subtitle=nil,nil,0,nil
+if self.entries[locale]then
+if self.entries[locale].Data then
+local data=self.entries[locale].Data[ID]
+if data then
+Text=data.Text
+Soundfile=data.Soundfile
+Soundlength=data.Soundlength
+Subtitle=data.Subtitle
+elseif self.entries[self.locale].Data[ID]then
+local data=self.entries[self.locale].Data[ID]
+Text=data.Text
+Soundfile=data.Soundfile
+Soundlength=data.Soundlength
+Subtitle=data.Subtitle
+end
+end
+else
+return nil,nil,0,nil
+end
+return Text,Soundfile,Soundlength,Subtitle
+end
+function TEXTANDSOUND:GetDefaultLocale()
+self:T(self.lid.."GetDefaultLocale")
+return self.locale
+end
+function TEXTANDSOUND:SetDefaultLocale(locale)
+self:T(self.lid.."SetDefaultLocale")
+self.locale=locale or"en"
+return self
+end
+function TEXTANDSOUND:HasLocale(Locale)
+self:T(self.lid.."HasLocale")
+return self.entries[Locale]and true or false
+end
+function TEXTANDSOUND:FlushToLog()
+self:I(self.lid.."Flushing entries:")
+local text=string.format("Textclass: %s | Default Locale: %s",self.textclass,self.locale)
+for _,_entry in pairs(self.entries)do
+local entry=_entry
+local text=string.format("Textclassname: %s | Locale: %s",entry.Classname,entry.Locale)
+self:I(text)
+for _ID,_data in pairs(entry.Data)do
+local data=_data
+local text=string.format("ID: %s\nText: %s\nSoundfile: %s With length: %d\nSubtitle: %s",tostring(_ID),data.Text or"none",data.Soundfile or"none",data.Soundlength or 0,data.Subtitle or"none")
+self:I(text)
+end
+end
+return self
 end
 OBJECT={
 ClassName="OBJECT",
