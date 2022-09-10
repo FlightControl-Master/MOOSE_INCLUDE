@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-09T15:50:18.0000000Z-27550d7ec987af61617cdaa00c5c7488d3d826e7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T10:19:23.0000000Z-8ab5575e0a846e0ae4e315f766bd03fd5f1cd46c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5656,6 +5656,107 @@ A=962
 end
 end
 return(A+TACANChannel-B)*1000000
+end
+CONDITION={
+ClassName="CONDITION",
+lid=nil,
+functionsGen={},
+functionsAny={},
+functionsAll={},
+}
+CONDITION.version="0.1.0"
+function CONDITION:New(Name)
+local self=BASE:Inherit(self,BASE:New())
+self.name=Name or"Condition X"
+self.lid=string.format("%s | ",self.name)
+return self
+end
+function CONDITION:SetAny(Any)
+self.isAny=Any
+return self
+end
+function CONDITION:SetNegateResult(Negate)
+self.negateResult=Negate
+return self
+end
+function CONDITION:AddFunction(Function,...)
+local condition=self:_CreateCondition(Function,...)
+table.insert(self.functionsGen,condition)
+return self
+end
+function CONDITION:AddFunctionAny(Function,...)
+local condition=self:_CreateCondition(Function,...)
+table.insert(self.functionsAny,condition)
+return self
+end
+function CONDITION:AddFunctionAll(Function,...)
+local condition=self:_CreateCondition(Function,...)
+table.insert(self.functionsAll,condition)
+return self
+end
+function CONDITION:Evaluate(AnyTrue)
+if#self.functionsAll+#self.functionsAny+#self.functionsAll==0 then
+if self.negateResult then
+return true
+else
+return false
+end
+end
+local evalAny=self.isAny
+if AnyTrue~=nil then
+evalAny=AnyTrue
+end
+local isGen=nil
+if evalAny then
+isGen=self:_EvalConditionsAny(self.functionsGen)
+else
+isGen=self:_EvalConditionsAll(self.functionsGen)
+end
+local isAny=self:_EvalConditionsAny(self.functionsAny)
+local isAll=self:_EvalConditionsAll(self.functionsAll)
+local result=isGen and isAny and isAll
+if self.negateResult then
+result=not result
+end
+self:T(self.lid..string.format("Evaluate: isGen=%s, isAny=%s, isAll=%s (negate=%s) ==> result=%s",tostring(isGen),tostring(isAny),tostring(isAll),tostring(self.negateResult),tostring(result)))
+return result
+end
+function CONDITION:_EvalConditionsAll(functions)
+local gotone=false
+for _,_condition in pairs(functions or{})do
+local condition=_condition
+gotone=true
+local istrue=condition.func(unpack(condition.arg))
+if not istrue then
+return false
+end
+end
+return true
+end
+function CONDITION:_EvalConditionsAny(functions)
+local gotone=false
+for _,_condition in pairs(functions or{})do
+local condition=_condition
+gotone=true
+local istrue=condition.func(unpack(condition.arg))
+if istrue then
+return true
+end
+end
+if gotone then
+return false
+else
+return true
+end
+end
+function CONDITION:_CreateCondition(Function,...)
+local condition={}
+condition.func=Function
+condition.arg={}
+if arg then
+condition.arg=arg
+end
+return condition
 end
 do
 USERFLAG={
