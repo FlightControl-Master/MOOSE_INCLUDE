@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T10:54:37.0000000Z-3aa9ffc2414af53c91221fd4e8b9bcb35d9b7a1b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T13:14:41.0000000Z-5d1998accbe39cf8725206a07137c721ad465861 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22004,7 +22004,7 @@ return self
 end
 return nil
 end
-function POSITIONABLE:IsSubmarine()
+function CONTROLLABLE:IsSubmarine()
 self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
