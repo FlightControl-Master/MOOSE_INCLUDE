@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-11T12:22:52.0000000Z-e6ae034f7ef496fff84284d5b24c8fe73b34d498 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-11T16:21:58.0000000Z-eca8d6dd8d9b5c49199d2cf280227411928b5761 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62701,7 +62701,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.41",
+version="0.2.42",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -63585,7 +63585,7 @@ group:SetCommandImmortal(self.immortal)
 group:CommandSetCallsign(self.CallSign,self.CallSignNo,2)
 group:CommandEPLRS(self.ModernEra,5)
 self.AwacsFG=AwacsFG
-self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
+self.callsigntxt=string.format("%s",self.CallSignClear[self.CallSign])
 self:__CheckRadioQueue(10)
 if self.HasEscorts then
 self:_StartEscorts()
@@ -63613,7 +63613,7 @@ local group=AwacsFG:GetGroup()
 group:SetCommandInvisible(self.invisible)
 group:SetCommandImmortal(self.immortal)
 group:CommandSetCallsign(self.CallSign,self.CallSignNo,2)
-self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
+self.callsigntxt=string.format("%s",self.CallSignClear[self.CallSign])
 local shifting=self.gettext:GetEntry("SHIFTCHANGE",self.locale)
 local text=string.format(shifting,self.callsigntxt,self.AOName or"Rock")
 self:T(self.lid..text)
@@ -66251,7 +66251,7 @@ self:E(self.lid.."**** Group unsuitable for GCI ops! Needs to be a GROUND or SHI
 self:Stop()
 return self
 end
-self.callsigntxt=string.format("%s",AWACS.CallSignClear[self.CallSign])
+self.callsigntxt=string.format("%s",self.CallSignClear[self.CallSign])
 self:__CheckRadioQueue(-10)
 local sunrise=self.gettext:GetEntry("SUNRISE",self.locale)
 local text=string.format(sunrise,self.callsigntxt,self.callsigntxt)
