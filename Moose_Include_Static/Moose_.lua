@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T13:16:47.0000000Z-6bf05741a950ab3d297de3ba67d1b7c220fa6e45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-11T12:22:52.0000000Z-e6ae034f7ef496fff84284d5b24c8fe73b34d498 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -90794,7 +90794,8 @@ WhiteList={},
 gettext=nil,
 locale="en",
 precisionbombing=false,
-taskinfomenu=true,
+taskinfomenu=false,
+activehasinfomenu=false,
 MarkerReadOnly=false,
 }
 PLAYERTASKCONTROLLER.Type={
@@ -90866,6 +90867,10 @@ NONE="None",
 POINTEROVERTARGET="%s, %s, pointer in reach for task %03d, lasing!",
 POINTERTARGETREPORT="\nPointer in reach: %s\nLasing: %s",
 POINTERTARGETLASINGTTS=". Pointer in reach and lasing.",
+TARGET="Target",
+FLASHON="%s - Flashing directions is now ON!",
+FLASHOFF="%s - Flashing directions is now OFF!",
+FLASHMENU="Flash Directions Switch",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -90923,9 +90928,13 @@ NONE="Keine",
 POINTEROVERTARGET="%s, %s, Marker im Zielbereich für %03d, Laser an!",
 POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
+TARGET="Ziel",
+FLASHON="%s - Richtungsangaben einblenden ist EIN!",
+FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
+FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.30"
+PLAYERTASKCONTROLLER.version="0.1.32"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -90944,9 +90953,14 @@ self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
 self.PrecisionTasks=FIFO:New()
 self.PlayerMenu={}
+self.FlashPlayer={}
+self.AllowFlash=false
 self.lasttaskcount=0
 self.taskinfomenu=false
+self.activehasinfomenu=false
 self.MenuName=nil
+self.menuitemlimit=5
+self.holdmenutime=30
 self.MarkerReadOnly=false
 self.repeatonfailed=true
 self.repeattimes=5
@@ -90993,6 +91007,11 @@ end
 end
 return self
 end
+function PLAYERTASKCONTROLLER:SetAllowFlashDirection(OnOff)
+self:T(self.lid.."SetAllowFlashDirection")
+self.AllowFlash=OnOff
+return self
+end
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff,Repeats)
 self:T(self.lid.."SetTaskRepetition")
 if OnOff then
@@ -91002,6 +91021,16 @@ else
 self.repeatonfailed=false
 self.repeattimes=Repeats or 5
 end
+return self
+end
+function PLAYERTASKCONTROLLER:_SendMessageToClients(Text,Seconds)
+self:T(self.lid.."_SendMessageToClients")
+local seconds=Seconds or 10
+self.ClientSet:ForEachClient(
+function(Client)
+local m=MESSAGE:New(Text,seconds,"Tasking"):ToClient(Client)
+end
+)
 return self
 end
 function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode)
@@ -91056,8 +91085,10 @@ local ttsplayername=playername
 if string.find(playername,"|")then
 ttsplayername=string.match(playername,"| ([%a]+)")
 end
-if string.find(playername,"#")then
-ttsplayername=string.match(playername,"# ([%a]+)")
+local group=Client:GetGroup()
+local groupname=group:GetName()
+if string.find(groupname,"#")then
+ttsplayername=string.match(groupname,"#([%a]+)")
 end
 return playername,ttsplayername
 end
@@ -91075,6 +91106,16 @@ end
 function PLAYERTASKCONTROLLER:DisableTaskInfoMenu()
 self:T(self.lid.."DisableTaskInfoMenu")
 self.taskinfomenu=false
+return self
+end
+function PLAYERTASKCONTROLLER:SetMenuOptions(InfoMenu,ItemLimit,HoldTime)
+self:T(self.lid.."SetMenuOptions")
+self.activehasinfomenu=InfoMenu or false
+if self.activehasinfomenu then
+self:EnableTaskInfoMenu()
+end
+self.menuitemlimit=ItemLimit or 5
+self.holdmenutime=HoldTime or 30
 return self
 end
 function PLAYERTASKCONTROLLER:SetMarkerReadOnly()
@@ -91559,7 +91600,7 @@ local playername,ttsplayername=self:_GetPlayerName(Client)
 if self.TasksPerPlayer:HasUniqueID(playername)then
 if not self.NoScreenOutput then
 local text=self.gettext:GetEntry("HAVEACTIVETASK",self.locale)
-local m=MESSAGE:New(text,"10","Tasking"):ToGroup(Group)
+local m=MESSAGE:New(text,"10","Tasking"):ToClient(Client)
 end
 return self
 end
@@ -91574,7 +91615,7 @@ local joined=self.gettext:GetEntry("PILOTJOINEDTASK",self.locale)
 local text=string.format(joined,ttsplayername,self.MenuName or self.Name,Task.TTSType,Task.PlayerTaskNr)
 self:T(self.lid..text)
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,"10","Tasking"):ToAll()
+self:_SendMessageToClients(text)
 end
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
@@ -91585,6 +91626,43 @@ end
 if Task.Type==AUFTRAG.Type.PRECISIONBOMBING then
 if not self.PrecisionTasks:HasUniqueID(Task.PlayerTaskNr)then
 self.PrecisionTasks:Push(Task,Task.PlayerTaskNr)
+end
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_SwitchFlashing(Group,Client)
+self:T(self.lid.."_SwitchFlashing")
+local playername,ttsplayername=self:_GetPlayerName(Client)
+if(not self.FlashPlayer[playername])or(self.FlashPlayer[playername]==false)then
+self.FlashPlayer[playername]=Client
+local flashtext=self.gettext:GetEntry("FLASHON",self.locale)
+local text=string.format(flashtext,ttsplayername)
+local m=MESSAGE:New(text,10,"Tasking"):ToClient(Client)
+else
+self.FlashPlayer[playername]=false
+local flashtext=self.gettext:GetEntry("FLASHOFF",self.locale)
+local text=string.format(flashtext,ttsplayername)
+local m=MESSAGE:New(text,10,"Tasking"):ToClient(Client)
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_FlashInfo()
+self:T(self.lid.."_FlashInfo")
+for _playername,_client in pairs(self.FlashPlayer)do
+if _client and _client:IsAlive()then
+if self.TasksPerPlayer:HasUniqueID(_playername)then
+local task=self.TasksPerPlayer:ReadByID(_playername)
+local Coordinate=task.Target:GetCoordinate()
+local CoordText=""
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+CoordText=Coordinate:ToStringA2G(_client)
+else
+c=Coordinate:ToStringA2A(_client)
+end
+local targettxt=self.gettext:GetEntry("TARGET",self.locale)
+local text="Target: "..CoordText
+local m=MESSAGE:New(text,10,"Tasking"):ToClient(_client)
+end
 end
 end
 return self
@@ -91661,7 +91739,7 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
 end
 return self
 end
@@ -91683,7 +91761,7 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,"10","Tasking"):ToGroup(Group)
+local m=MESSAGE:New(text,"10","Tasking"):ToClient(Client)
 end
 return self
 end
@@ -91704,7 +91782,7 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
 end
 return self
 end
@@ -91725,7 +91803,7 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
 end
 return self
 end
@@ -91746,95 +91824,21 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,15,"Tasking"):ToGroup(Group)
+local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
 end
 self:_BuildMenus(Client,true)
 return self
 end
-function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced)
-self:T(self.lid.."_BuildMenus")
-local clients=self.ClientSet:GetAliveSet()
-if Client then
-clients={Client}
-enforced=true
-end
-for _,_client in pairs(clients)do
-if _client then
-local client=_client
-local group=client:GetGroup()
-local unknown=self.gettext:GetEntry("UNKNOWN",self.locale)
-local playername=client:GetPlayerName()or unknown
-if group and client then
-local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
-local longname=self.Name..taskings..self.Type
-local menuname=self.MenuName or longname
-local playerhastask=false
-if self:_CheckPlayerHasTask(playername)then playerhastask=true end
-local topmenu=nil
-self:T("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced))
-if self.PlayerMenu[playername]then
-if enforced or not playerhastask then
-self.PlayerMenu[playername]:RemoveSubMenus()
-end
-topmenu=self.PlayerMenu[playername]
-else
-topmenu=MENU_GROUP_DELAYED:New(group,menuname,nil)
-self.PlayerMenu[playername]=topmenu
-end
-if playerhastask and enforced then
-local menuactive=self.gettext:GetEntry("MENUACTIVE",self.locale)
-local menuinfo=self.gettext:GetEntry("MENUINFO",self.locale)
-local menumark=self.gettext:GetEntry("MENUMARK",self.locale)
-local menusmoke=self.gettext:GetEntry("MENUSMOKE",self.locale)
-local menuflare=self.gettext:GetEntry("MENUFLARE",self.locale)
-local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
-local active=MENU_GROUP_DELAYED:New(group,menuactive,topmenu)
-local info=MENU_GROUP_COMMAND_DELAYED:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client)
-local mark=MENU_GROUP_COMMAND_DELAYED:New(group,menumark,active,self._MarkTask,self,group,client)
-if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
-local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client)
-local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client)
-end
-local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client)
-elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask)then
-local tasktypes=self:_GetAvailableTaskTypes()
-local taskpertype=self:_GetTasksPerType()
-local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
+function PLAYERTASKCONTROLLER:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
+if self.taskinfomenu then
 local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
-local joinmenu=MENU_GROUP_DELAYED:New(group,menujoin,topmenu)
-local ttypes={}
-local taskmenu={}
 local ittypes={}
 local itaskmenu={}
-for _tasktype,_data in pairs(tasktypes)do
-ttypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,joinmenu)
-local tasks=taskpertype[_tasktype]or{}
-for _,_task in pairs(tasks)do
-_task=_task
-local pilotcount=_task:CountClients()
-local newtext="]"
-local tnow=timer.getTime()
-if tnow-_task.timestamp<60 then
-newtext="*]"
-end
-local menutaskno=self.gettext:GetEntry("MENUTASKNO",self.locale)
-local text=string.format("%s %03d [%d%s",menutaskno,_task.PlayerTaskNr,pilotcount,newtext)
-if self.UseGroupNames then
-local name=_task.Target:GetName()
-if name~="Unknown"then
-text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
-end
-end
-local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
-taskentry:SetTag(playername)
-taskmenu[#taskmenu+1]=taskentry
-end
-end
-if self.taskinfomenu then
 local taskinfomenu=MENU_GROUP_DELAYED:New(group,menutaskinfo,topmenu)
 for _tasktype,_data in pairs(tasktypes)do
 ittypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,taskinfomenu)
 local tasks=taskpertype[_tasktype]or{}
+local n=0
 for _,_task in pairs(tasks)do
 _task=_task
 local pilotcount=_task:CountClients()
@@ -91852,14 +91856,124 @@ text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
 local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task)
-taskentry:SetTag(playername)
 itaskmenu[#itaskmenu+1]=taskentry
+n=n+1
+if n>=self.menuitemlimit then
+break
 end
 end
+end
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced)
+self:T(self.lid.."_BuildMenus")
+local clients=self.ClientSet:GetAliveSet()
+local joinorabort=false
+if Client then
+clients={Client}
+enforced=true
+joinorabort=true
+end
+for _,_client in pairs(clients)do
+if _client then
+local client=_client
+local group=client:GetGroup()
+local unknown=self.gettext:GetEntry("UNKNOWN",self.locale)
+local playername=client:GetPlayerName()or unknown
+if group and client then
+local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
+local longname=self.Name..taskings..self.Type
+local menuname=self.MenuName or longname
+local playerhastask=false
+if self:_CheckPlayerHasTask(playername)then playerhastask=true end
+local topmenu=nil
+self:I("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced).." Join or Abort = "..tostring(joinorabort))
+if self.PlayerMenu[playername]then
+if joinorabort then
+self.PlayerMenu[playername]:RemoveSubMenus()
+self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
+topmenu=self.PlayerMenu[playername]
+elseif(not playerhastask)and enforced then
+local T0=timer.getAbsTime()
+local TDiff=T0-self.PlayerMenu[playername].MenuTag
+self:I("TDiff = "..TDiff)
+if TDiff>=self.holdmenutime then
+self.PlayerMenu[playername]:RemoveSubMenus()
+self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
+end
+topmenu=self.PlayerMenu[playername]
+end
+else
+topmenu=MENU_GROUP_DELAYED:New(group,menuname,nil)
+self.PlayerMenu[playername]=topmenu
+self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
+end
+if playerhastask and enforced then
+local menuactive=self.gettext:GetEntry("MENUACTIVE",self.locale)
+local menuinfo=self.gettext:GetEntry("MENUINFO",self.locale)
+local menumark=self.gettext:GetEntry("MENUMARK",self.locale)
+local menusmoke=self.gettext:GetEntry("MENUSMOKE",self.locale)
+local menuflare=self.gettext:GetEntry("MENUFLARE",self.locale)
+local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
+local active=MENU_GROUP_DELAYED:New(group,menuactive,topmenu)
+local info=MENU_GROUP_COMMAND_DELAYED:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client)
+local mark=MENU_GROUP_COMMAND_DELAYED:New(group,menumark,active,self._MarkTask,self,group,client)
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client)
+local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client)
+end
+local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client)
+if self.activehasinfomenu and self.taskinfomenu then
+local tasktypes=self:_GetAvailableTaskTypes()
+local taskpertype=self:_GetTasksPerType()
+self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
+end
+elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask)then
+local tasktypes=self:_GetAvailableTaskTypes()
+local taskpertype=self:_GetTasksPerType()
+local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
+local joinmenu=MENU_GROUP_DELAYED:New(group,menujoin,topmenu)
+local ttypes={}
+local taskmenu={}
+for _tasktype,_data in pairs(tasktypes)do
+ttypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,joinmenu)
+local tasks=taskpertype[_tasktype]or{}
+local n=0
+for _,_task in pairs(tasks)do
+_task=_task
+local pilotcount=_task:CountClients()
+local newtext="]"
+local tnow=timer.getTime()
+if tnow-_task.timestamp<60 then
+newtext="*]"
+end
+local menutaskno=self.gettext:GetEntry("MENUTASKNO",self.locale)
+local text=string.format("%s %03d [%d%s",menutaskno,_task.PlayerTaskNr,pilotcount,newtext)
+if self.UseGroupNames then
+local name=_task.Target:GetName()
+if name~="Unknown"then
+text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
+end
+end
+local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task)
+taskmenu[#taskmenu+1]=taskentry
+n=n+1
+if n>=self.menuitemlimit then
+break
+end
+end
+end
+if self.taskinfomenu then
+self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
 end
 elseif self.TaskQueue:Count()==0 then
 local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
 local joinmenu=MENU_GROUP_DELAYED:New(group,menunotasks,topmenu)
+end
+if self.AllowFlash then
+local flashtext=self.gettext:GetEntry("FLASHMENU",self.locale)
+local flashmenu=MENU_GROUP_COMMAND_DELAYED:New(group,flashtext,self.PlayerMenu[playername],self._SwitchFlashing,self,group,client)
 end
 self.PlayerMenu[playername]:Set()
 end
@@ -92032,6 +92146,9 @@ self:I({From,Event,To})
 self:_CheckTargetQueue()
 self:_CheckTaskQueue()
 self:_CheckPrecisionTasks()
+if self.AllowFlash then
+self:_FlashInfo()
+end
 local targetcount=self.TargetQueue:Count()
 local taskcount=self.TaskQueue:Count()
 local playercount=self.ClientSet:CountAlive()
@@ -92063,7 +92180,7 @@ local canceltxt=self.gettext:GetEntry("TASKCANCELLED",self.locale)
 local canceltxttts=self.gettext:GetEntry("TASKCANCELLEDTTS",self.locale)
 local taskname=string.format(canceltxt,Task.PlayerTaskNr,tostring(Task.Type))
 if not self.NoScreenOutput then
-local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+self:_SendMessageToClients(taskname,15)
 end
 if self.UseSRS then
 taskname=string.format(canceltxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
@@ -92078,7 +92195,7 @@ local succtxt=self.gettext:GetEntry("TASKSUCCESS",self.locale)
 local succtxttts=self.gettext:GetEntry("TASKSUCCESSTTS",self.locale)
 local taskname=string.format(succtxt,Task.PlayerTaskNr,tostring(Task.Type))
 if not self.NoScreenOutput then
-local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+self:_SendMessageToClients(taskname,15)
 end
 if self.UseSRS then
 taskname=string.format(succtxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
@@ -92093,7 +92210,7 @@ local failtxt=self.gettext:GetEntry("TASKFAILED",self.locale)
 local failtxttts=self.gettext:GetEntry("TASKFAILEDTTS",self.locale)
 local taskname=string.format(failtxt,Task.PlayerTaskNr,tostring(Task.Type))
 if not self.NoScreenOutput then
-local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+self:_SendMessageToClients(taskname,15)
 end
 if self.UseSRS then
 taskname=string.format(failtxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
@@ -92108,7 +92225,7 @@ local repfailtxt=self.gettext:GetEntry("TASKFAILEDREPLAN",self.locale)
 local repfailtxttts=self.gettext:GetEntry("TASKFAILEDREPLANTTS",self.locale)
 local taskname=string.format(repfailtxt,Task.PlayerTaskNr,tostring(Task.Type))
 if not self.NoScreenOutput then
-local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+self:_SendMessageToClients(taskname,15)
 end
 if self.UseSRS then
 taskname=string.format(repfailtxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
@@ -92122,7 +92239,7 @@ self:T(self.lid.."TaskAdded")
 local addtxt=self.gettext:GetEntry("TASKADDED",self.locale)
 local taskname=string.format(addtxt,self.MenuName or self.Name,tostring(Task.Type))
 if not self.NoScreenOutput then
-local m=MESSAGE:New(taskname,15,"Tasking"):ToCoalition(self.Coalition)
+self:_SendMessageToClients(taskname,15)
 end
 if self.UseSRS then
 taskname=string.format(addtxt,self.MenuName or self.Name,tostring(Task.TTSType))
