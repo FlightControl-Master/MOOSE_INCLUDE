@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-10T13:14:28.0000000Z-f42aedd4858d66d656e65120e34b4c68325f715b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-11T11:38:00.0000000Z-994a36001f277b9f5057837741ca22bf38b7624f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -56185,9 +56185,9 @@ function RECOVERYTANKER:SetTACANoff()
 self.TACANon=false
 return self
 end
-function RECOVERYTANKER:SetTACAN(channel,morse)
+function RECOVERYTANKER:SetTACAN(channel,morse,mode)
 self.TACANchannel=channel or 1
-self.TACANmode="Y"
+self.TACANmode=mode or"Y"
 self.TACANmorse=morse or"TKR"
 self.TACANon=true
 return self
@@ -57040,7 +57040,6 @@ return self
 end
 ATIS={
 ClassName="ATIS",
-Debug=false,
 lid=nil,
 theatre=nil,
 airbasename=nil,
@@ -57205,16 +57204,17 @@ Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
 ATIS.version="0.9.6"
-function ATIS:New(airbasename,frequency,modulation)
+function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
-self.airbasename=airbasename
-self.airbase=AIRBASE:FindByName(airbasename)
+local self=BASE:Inherit(self,FSM:New())
+self.airbasename=AirbaseName
+self.airbase=AIRBASE:FindByName(AirbaseName)
 if self.airbase==nil then
-self:E("ERROR: Airbase %s for ATIS could not be found!",tostring(airbasename))
+self:E("ERROR: Airbase %s for ATIS could not be found!",tostring(AirbaseName))
 return nil
 end
-self.frequency=frequency or 143.00
-self.modulation=modulation or 0
+self.frequency=Frequency or 143.00
+self.modulation=Modulation or 0
 self.theatre=env.mission.theatre
 self.lid=string.format("ATIS %s | ",self.airbasename)
 _ATIS[#_ATIS+1]=self
@@ -57234,12 +57234,6 @@ self:AddTransition("*","Broadcast","*")
 self:AddTransition("*","CheckQueue","*")
 self:AddTransition("*","Report","*")
 self:AddTransition("*","Stop","Stopped")
-if false then
-self.Debug=true
-BASE:TraceOnOff(true)
-BASE:TraceClass(self.ClassName)
-BASE:TraceLevel(1)
-end
 return self
 end
 function ATIS:SetSoundfilesPath(path)
@@ -57262,6 +57256,10 @@ return self
 end
 function ATIS:SetActiveRunway(runway)
 self.activerunway=tostring(runway)
+return self
+end
+function ATIS:SetRunwayLength()
+self.rwylength=true
 return self
 end
 function ATIS:SetRunwayLength()
@@ -57418,6 +57416,7 @@ end
 end
 end
 function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port)
+if PathToSRS then
 self.useSRS=true
 self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
@@ -57425,8 +57424,12 @@ self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
 self.msrs:SetPort(Port)
 self.msrs:SetCoalition(self:GetCoalition())
+self.msrs:SetLabel("ATIS")
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
+end
+else
+self:E(self.lid..string.format("ERROR: No SRS path specified!"))
 end
 return self
 end
@@ -57549,7 +57552,8 @@ end
 if self.metric then
 WINDSPEED=string.format("%d",windSpeed)
 end
-local runway,rwyLeft=self:GetActiveRunway()
+local runwayLanding,rwyLandingLeft=self:GetActiveRunway()
+local runwayTakeoff,rwyTakeoffLeft=self:GetActiveRunway(true)
 local time=timer.getAbsTime()
 if self.zuludiff then
 time=time-self.zuludiff*60*60
@@ -58023,19 +58027,19 @@ end
 end
 end
 alltext=alltext..";\n"..subtitle
-local subtitle=string.format("Active runway %s",runway)
-if rwyLeft==true then
+local subtitle=string.format("Active runway %s",runwayLanding)
+if rwyLandingLeft==true then
 subtitle=subtitle.." Left"
-elseif rwyLeft==false then
+elseif rwyLandingLeft==false then
 subtitle=subtitle.." Right"
 end
 local _RUNACT=subtitle
 if not self.useSRS then
 self:Transmission(ATIS.Sound.ActiveRunway,1.0,subtitle)
-self.radioqueue:Number2Transmission(runway)
-if rwyLeft==true then
+self.radioqueue:Number2Transmission(runwayLanding)
+if rwyLandingLeft==true then
 self:Transmission(ATIS.Sound.Left,0.2)
-elseif rwyLeft==false then
+elseif rwyLandingLeft==false then
 self:Transmission(ATIS.Sound.Right,0.2)
 end
 end
@@ -58125,7 +58129,7 @@ end
 end
 alltext=alltext..";\n"..subtitle
 end
-local ils=self:GetNavPoint(self.ils,runway,rwyLeft)
+local ils=self:GetNavPoint(self.ils,runwayLanding,rwyLandingLeft)
 if ils then
 subtitle=string.format("ILS frequency %.2f MHz",ils.frequency)
 if not self.useSRS then
@@ -58141,7 +58145,7 @@ self:Transmission(ATIS.Sound.MegaHertz,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
-local ndb=self:GetNavPoint(self.ndbouter,runway,rwyLeft)
+local ndb=self:GetNavPoint(self.ndbouter,runwayLanding,rwyLandingLeft)
 if ndb then
 subtitle=string.format("Outer NDB frequency %.2f MHz",ndb.frequency)
 if not self.useSRS then
@@ -58157,7 +58161,7 @@ self:Transmission(ATIS.Sound.MegaHertz,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
-local ndb=self:GetNavPoint(self.ndbinner,runway,rwyLeft)
+local ndb=self:GetNavPoint(self.ndbinner,runwayLanding,rwyLandingLeft)
 if ndb then
 subtitle=string.format("Inner NDB frequency %.2f MHz",ndb.frequency)
 if not self.useSRS then
@@ -58208,7 +58212,7 @@ self.radioqueue:Number2Transmission(tostring(self.rsbn),nil,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
-local ndb=self:GetNavPoint(self.prmg,runway,rwyLeft)
+local ndb=self:GetNavPoint(self.prmg,runwayLanding,rwyLandingLeft)
 if ndb then
 subtitle=string.format("PRMG channel %d",ndb.frequency)
 if not self.useSRS then
@@ -58267,21 +58271,14 @@ text=text..string.format("%s",tostring(temperature))
 self.markerid=self.airbase:GetCoordinate():MarkToAll(text,true)
 return self.markerid
 end
-function ATIS:GetActiveRunway()
-local coord=self.airbase:GetCoordinate()
-local height=coord:GetLandHeight()
-local windFrom,windSpeed=coord:GetWind(height+10)
-local runact=self.airbase:GetActiveRunway(self.runwaym2t)
-local runway=self:GetMagneticRunway(windFrom)or runact.idx
-local rwyLeft=nil
-if self.activerunway then
-local runwayno=self:GetRunwayWithoutLR(self.activerunway)
-if runwayno~=""then
-runway=runwayno
+function ATIS:GetActiveRunway(Takeoff)
+local runway=nil
+if Takeoff then
+runway=self.airbase:GetActiveRunwayTakeoff()
+else
+runway=self.airbase:GetActiveRunwayLanding()
 end
-rwyLeft=self:GetRunwayLR(self.activerunway)
-end
-return runway,rwyLeft
+return runway.name,runway.isLeft
 end
 function ATIS:GetMagneticRunway(windfrom)
 local diffmin=nil
