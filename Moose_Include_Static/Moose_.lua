@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-11T16:21:58.0000000Z-eca8d6dd8d9b5c49199d2cf280227411928b5761 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-12T15:29:47.0000000Z-76a8286c04fea47eafc98afd5d1d7829cee33d60 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22327,13 +22327,7 @@ end
 return nil
 end
 function GROUP:IsPlayer()
-local units=self:GetTemplate().units
-for _,unit in pairs(units)do
-if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
-return true
-end
-end
-return false
+return self:GetUnit(1):IsPlayer()
 end
 function GROUP:GetUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
@@ -22348,15 +22342,6 @@ end
 end
 end
 return nil
-end
-function GROUP:IsPlayer()
-local units=self:GetTemplate().units
-for _,unit in pairs(units)do
-if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
-return true
-end
-end
-return false
 end
 function GROUP:GetDCSUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
@@ -23474,6 +23459,50 @@ end
 return threat,maxtl
 end
 return nil,nil
+end
+function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations)
+local callsign="Ghost 1"
+if self:IsAlive()then
+local IsPlayer=self:IsPlayer()
+local shortcallsign=self:GetCallsign()or"unknown91"
+local callsignroot=string.match(shortcallsign,'(%a+)')
+local groupname=self:GetName()
+BASE:I({name=groupname,IsPlayer=IsPlayer})
+local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
+local callnumbermajor=string.char(string.byte(callnumber,1))
+local callnumberminor=string.char(string.byte(callnumber,2))
+local personalized=false
+if IsPlayer and string.find(groupname,"#")then
+if Keepnumber then
+shortcallsign=string.match(groupname,"#(.+)")
+else
+shortcallsign=string.match(groupname,"#([%a]+)")
+end
+personalized=true
+elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
+shortcallsign=string.match(self:GetPlayerName(),"|([%a]+)")
+personalized=true
+end
+if(not personalized)and CallsignTranslations and CallsignTranslations[callsignroot]then
+callsignroot=CallsignTranslations[callsignroot]
+end
+if personalized then
+if Keepnumber then
+return shortcallsign
+elseif ShortCallsign then
+callsign=shortcallsign.." "..callnumbermajor
+else
+callsign=shortcallsign.." "..callnumbermajor.." "..callnumberminor
+end
+return callsign
+end
+if ShortCallsign then
+callsign=callsignroot.." "..callnumbermajor
+else
+callsign=callsignroot.." "..callnumbermajor.." "..callnumberminor
+end
+end
+return callsign
 end
 IDENTIFIABLE={
 ClassName="IDENTIFIABLE",
