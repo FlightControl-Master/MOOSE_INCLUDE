@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-12T15:29:47.0000000Z-76a8286c04fea47eafc98afd5d1d7829cee33d60 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-13T08:11:10.0000000Z-d2132b2e64a957f8ccca04b28a6bf5f7101fbeae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23467,7 +23467,6 @@ local IsPlayer=self:IsPlayer()
 local shortcallsign=self:GetCallsign()or"unknown91"
 local callsignroot=string.match(shortcallsign,'(%a+)')
 local groupname=self:GetName()
-BASE:I({name=groupname,IsPlayer=IsPlayer})
 local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
@@ -90826,6 +90825,9 @@ precisionbombing=false,
 taskinfomenu=false,
 activehasinfomenu=false,
 MarkerReadOnly=false,
+customcallsigns={},
+ShortCallsign=true,
+Keepnumber=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -90963,7 +90965,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.32"
+PLAYERTASKCONTROLLER.version="0.1.33"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -90994,6 +90996,9 @@ self.MarkerReadOnly=false
 self.repeatonfailed=true
 self.repeattimes=5
 self.UseGroupNames=true
+self.customcallsigns={}
+self.ShortCallsign=true
+self.Keepnumber=false
 if ClientFilter then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
 else
@@ -91039,6 +91044,15 @@ end
 function PLAYERTASKCONTROLLER:SetAllowFlashDirection(OnOff)
 self:T(self.lid.."SetAllowFlashDirection")
 self.AllowFlash=OnOff
+return self
+end
+function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber)
+if not ShortCallsign or ShortCallsign==false then
+self.ShortCallsign=false
+else
+self.ShortCallsign=true
+end
+self.Keepnumber=Keepnumber or false
 return self
 end
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff,Repeats)
@@ -91110,14 +91124,13 @@ end
 function PLAYERTASKCONTROLLER:_GetPlayerName(Client)
 self:T(self.lid.."DisablePrecisionBombing")
 local playername=Client:GetPlayerName()
-local ttsplayername=playername
-if string.find(playername,"|")then
-ttsplayername=string.match(playername,"| ([%a]+)")
-end
-local group=Client:GetGroup()
-local groupname=group:GetName()
-if string.find(groupname,"#")then
-ttsplayername=string.match(groupname,"#([%a]+)")
+local ttsplayername=nil
+if not self.customcallsigns[playername]then
+local playergroup=Client:GetGroup()
+ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber)
+self.customcallsigns[playername]=ttsplayername
+else
+ttsplayername=self.customcallsigns[playername]
 end
 return playername,ttsplayername
 end
@@ -91196,17 +91209,16 @@ if type(modulation)=="table"then modulation=modulation[1]end
 modulation=UTILS.GetModulationName(modulation)
 local switchtext=self.gettext:GetEntry("BROADCAST",self.locale)
 local playername=EventData.IniPlayerName
-if string.find(playername,"|")then
-playername=string.match(playername,"| ([%a]+)")
+if EventData.IniGroup then
+if self.customcallsigns[playername]then
+self.customcallsigns[playername]=nil
+end
+playername=EventData.IniGroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber)
 end
 local text=string.format(switchtext,self.MenuName or self.Name,playername,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
 end
-return self
-end
-function PLAYERTASKCONTROLLER:_DummyMenu(group)
-self:T(self.lid.."_DummyMenu")
 return self
 end
 function PLAYERTASKCONTROLLER:SetLocale(Locale)
@@ -91390,7 +91402,11 @@ local clients=task:GetClients()
 local text=""
 for _,playername in pairs(clients)do
 local pointertext=self.gettext:GetEntry("POINTEROVERTARGET",self.locale)
-text=string.format(pointertext,playername,self.MenuName or self.Name,task.PlayerTaskNr)
+local ttsplayername=playername
+if self.customcallsigns[playername]then
+ttsplayername=self.customcallsigns[playername]
+end
+text=string.format(pointertext,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
 if not self.NoScreenOutput then
 local client=nil
 self.ClientSet:ForEachClient(
@@ -91739,8 +91755,8 @@ end
 local clienttxt=self.gettext:GetEntry("PILOTS",self.locale)
 if clientcount>0 then
 for _,_name in pairs(clientlist)do
-if string.find(_name,"|")then
-_name=string.match(_name,"| ([%a]+)")
+if self.customcallsigns[_name]then
+_name=self.customcallsigns[_name]
 end
 clienttxt=clienttxt.._name..", "
 end
@@ -91917,7 +91933,7 @@ local menuname=self.MenuName or longname
 local playerhastask=false
 if self:_CheckPlayerHasTask(playername)then playerhastask=true end
 local topmenu=nil
-self:I("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced).." Join or Abort = "..tostring(joinorabort))
+self:T("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced).." Join or Abort = "..tostring(joinorabort))
 if self.PlayerMenu[playername]then
 if joinorabort then
 self.PlayerMenu[playername]:RemoveSubMenus()
@@ -91926,7 +91942,7 @@ topmenu=self.PlayerMenu[playername]
 elseif(not playerhastask)and enforced then
 local T0=timer.getAbsTime()
 local TDiff=T0-self.PlayerMenu[playername].MenuTag
-self:I("TDiff = "..TDiff)
+self:T("TDiff = "..TDiff)
 if TDiff>=self.holdmenutime then
 self.PlayerMenu[playername]:RemoveSubMenus()
 self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
@@ -92171,7 +92187,7 @@ end
 return self
 end
 function PLAYERTASKCONTROLLER:onafterStatus(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 self:_CheckTargetQueue()
 self:_CheckTaskQueue()
 self:_CheckPrecisionTasks()
