@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-13T08:55:57.0000000Z-b60d3a771db25bfd3b48770f84fa59dcf3104836 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-13T15:19:44.0000000Z-55f0f5271dd354938c1fd4c03bd0edf213f1679f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -90501,7 +90501,7 @@ conditionFailure={},
 TaskController=nil,
 timestamp=0,
 }
-PLAYERTASK.version="0.1.1"
+PLAYERTASK.version="0.1.2"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -90514,7 +90514,7 @@ self.SmokeColor=SMOKECOLOR.Red
 self.conditionSuccess={}
 self.conditionFailure={}
 self.TaskController=nil
-self.timestamp=timer.getTime()
+self.timestamp=timer.getAbsTime()
 self.TTSType=TTSType or"close air support"
 if Repeat then
 self.Repeat=true
@@ -90565,6 +90565,12 @@ end
 function PLAYERTASK:GetClients()
 self:T(self.lid.."GetClients")
 local clientlist=self.Clients:GetIDStackSorted()or{}
+local count=self.Clients:Count()
+return clientlist,count
+end
+function PLAYERTASK:GetClientObjects()
+self:T(self.lid.."GetClientObjects")
+local clientlist=self.Clients:GetDataTable()or{}
 local count=self.Clients:Count()
 return clientlist,count
 end
@@ -90733,18 +90739,22 @@ return self
 end
 function PLAYERTASK:onafterPlanned(From,Event,To)
 self:T({From,Event,To})
+self.timestamp=timer.getAbsTime()
 return self
 end
 function PLAYERTASK:onafterRequested(From,Event,To)
 self:T({From,Event,To})
+self.timestamp=timer.getAbsTime()
 return self
 end
 function PLAYERTASK:onafterExecuting(From,Event,To)
 self:T({From,Event,To})
+self.timestamp=timer.getAbsTime()
 return self
 end
 function PLAYERTASK:onafterStop(From,Event,To)
 self:T({From,Event,To})
+self.timestamp=timer.getAbsTime()
 return self
 end
 function PLAYERTASK:onafterClientAdded(From,Event,To,Client)
@@ -90753,6 +90763,7 @@ if Client and self.verbose then
 local text=string.format("Player %s joined task %03d!",Client:GetPlayerName()or"Generic",self.PlayerTaskNr)
 self:I(self.lid..text)
 end
+self.timestamp=timer.getAbsTime()
 return self
 end
 function PLAYERTASK:onafterDone(From,Event,To)
@@ -90760,6 +90771,7 @@ self:T({From,Event,To})
 if self.TaskController then
 self.TaskController:__TaskDone(-1,self)
 end
+self.timestamp=timer.getAbsTime()
 self:__Stop(-1)
 return self
 end
@@ -90768,6 +90780,7 @@ self:T({From,Event,To})
 if self.TaskController then
 self.TaskController:__TaskCancelled(-1,self)
 end
+self.timestamp=timer.getAbsTime()
 self:__Done(-1)
 return self
 end
@@ -90779,6 +90792,7 @@ end
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
+self.timestamp=timer.getAbsTime()
 self:__Done(-1)
 return self
 end
@@ -90800,6 +90814,7 @@ self.TaskController:__TaskFailed(-1,self)
 end
 self:__Done(-1)
 end
+self.timestamp=timer.getAbsTime()
 return self
 end
 end
@@ -90828,6 +90843,10 @@ MarkerReadOnly=false,
 customcallsigns={},
 ShortCallsign=true,
 Keepnumber=false,
+CallsignTranslations=nil,
+PlayerFlashMenu={},
+PlayerJoinMenu={},
+PlayerInfoMenu={},
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -90965,7 +90984,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.33"
+PLAYERTASKCONTROLLER.version="0.1.35"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -90999,6 +91018,7 @@ self.UseGroupNames=true
 self.customcallsigns={}
 self.ShortCallsign=true
 self.Keepnumber=false
+self.CallsignTranslations=nil
 if ClientFilter then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
 else
@@ -91046,13 +91066,14 @@ self:T(self.lid.."SetAllowFlashDirection")
 self.AllowFlash=OnOff
 return self
 end
-function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber)
+function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
 if not ShortCallsign or ShortCallsign==false then
 self.ShortCallsign=false
 else
 self.ShortCallsign=true
 end
 self.Keepnumber=Keepnumber or false
+self.CallsignTranslations=CallsignTranslations
 return self
 end
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff,Repeats)
@@ -91127,7 +91148,7 @@ local playername=Client:GetPlayerName()
 local ttsplayername=nil
 if not self.customcallsigns[playername]then
 local playergroup=Client:GetGroup()
-ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber)
+ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
 self.customcallsigns[playername]=ttsplayername
 else
 ttsplayername=self.customcallsigns[playername]
@@ -91277,7 +91298,9 @@ local threattable={}
 for _,_task in pairs(datatable)do
 local task=_task
 local threat=task.Target:GetThreatLevelMax()
+if not task:IsDone()then
 threattable[#threattable+1]={task=task,threat=threat}
+end
 end
 table.sort(threattable,function(k1,k2)return k1.threat>k2.threat end)
 for _id,_data in pairs(threattable)do
@@ -91313,8 +91336,11 @@ for _,_id in pairs(clientsattask)do
 self:T("*****Removing player ".._id)
 self.TasksPerPlayer:PullByID(_id)
 end
+local TNow=timer.getAbsTime()
+if TNow-task.timestamp>10 then
 local task=self.TaskQueue:PullByID(_id)
 task=nil
+end
 end
 end
 end
@@ -91875,11 +91901,13 @@ self:_BuildMenus(Client,true)
 return self
 end
 function PLAYERTASKCONTROLLER:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
+self:T(self.lid.."_BuildTaskInfoMenu")
+local taskinfomenu=nil
 if self.taskinfomenu then
 local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
+local taskinfomenu=MENU_GROUP_DELAYED:New(group,menutaskinfo,topmenu)
 local ittypes={}
 local itaskmenu={}
-local taskinfomenu=MENU_GROUP_DELAYED:New(group,menutaskinfo,topmenu)
 for _tasktype,_data in pairs(tasktypes)do
 ittypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,taskinfomenu)
 local tasks=taskpertype[_tasktype]or{}
@@ -91909,12 +91937,13 @@ end
 end
 end
 end
-return self
+return taskinfomenu
 end
-function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced)
+function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced,fromsuccess)
 self:T(self.lid.."_BuildMenus")
 local clients=self.ClientSet:GetAliveSet()
 local joinorabort=false
+local timedbuild=false
 if Client then
 clients={Client}
 enforced=true
@@ -91931,7 +91960,7 @@ local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
 local longname=self.Name..taskings..self.Type
 local menuname=self.MenuName or longname
 local playerhastask=false
-if self:_CheckPlayerHasTask(playername)then playerhastask=true end
+if self:_CheckPlayerHasTask(playername)and not fromsuccess then playerhastask=true end
 local topmenu=nil
 self:T("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced).." Join or Abort = "..tostring(joinorabort))
 if self.PlayerMenu[playername]then
@@ -91939,13 +91968,14 @@ if joinorabort then
 self.PlayerMenu[playername]:RemoveSubMenus()
 self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
 topmenu=self.PlayerMenu[playername]
-elseif(not playerhastask)and enforced then
+elseif(not playerhastask)or enforced then
 local T0=timer.getAbsTime()
 local TDiff=T0-self.PlayerMenu[playername].MenuTag
-self:T("TDiff = "..TDiff)
+self:T("TDiff = "..string.format("%.2d",TDiff))
 if TDiff>=self.holdmenutime then
 self.PlayerMenu[playername]:RemoveSubMenus()
 self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
+timedbuild=true
 end
 topmenu=self.PlayerMenu[playername]
 end
@@ -91972,9 +92002,12 @@ local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTas
 if self.activehasinfomenu and self.taskinfomenu then
 local tasktypes=self:_GetAvailableTaskTypes()
 local taskpertype=self:_GetTasksPerType()
-self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
+if self.PlayerInfoMenu[playername]then
+self.PlayerInfoMenu[playername]:RemoveSubMenus()
 end
-elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask)then
+self.PlayerInfoMenu[playername]=self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
+end
+elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask and(timedbuild or joinorabort))then
 local tasktypes=self:_GetAvailableTaskTypes()
 local taskpertype=self:_GetTasksPerType()
 local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
@@ -92010,7 +92043,10 @@ end
 end
 end
 if self.taskinfomenu then
-self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
+if self.PlayerInfoMenu[playername]then
+self.PlayerInfoMenu[playername]:RemoveSubMenus()
+end
+self.PlayerInfoMenu[playername]=self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype)
 end
 elseif self.TaskQueue:Count()==0 then
 local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
@@ -92245,6 +92281,10 @@ end
 if self.UseSRS then
 taskname=string.format(succtxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
+end
+local clients=Task:GetClientObjects()
+for _,client in pairs(clients)do
+self:_BuildMenus(client,true,true)
 end
 return self
 end
