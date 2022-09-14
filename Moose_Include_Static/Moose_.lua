@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-14T16:06:36.0000000Z-f281e5aa956b1f489bf54ceed56bcc0f3fd65209 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-14T16:07:53.0000000Z-785c5e66ec874b90412f9b0f6a4ab8a1775a7556 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62729,7 +62729,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.42",
+version="0.2.43",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
