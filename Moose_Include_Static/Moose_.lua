@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-13T15:19:44.0000000Z-55f0f5271dd354938c1fd4c03bd0edf213f1679f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-14T16:06:36.0000000Z-f281e5aa956b1f489bf54ceed56bcc0f3fd65209 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62795,6 +62795,8 @@ maxassigndistance=100,
 PlayerGuidance=true,
 ModernEra=true,
 callsignshort=true,
+keepnumber=true,
+callsignTranslations=nil,
 TacDistance=45,
 MeldDistance=35,
 ThreatDistance=25,
@@ -63715,33 +63717,19 @@ return managedgroup.CallSign
 end
 local callsign="Ghost 1"
 if Group and Group:IsAlive()then
-local shortcallsign=Group:GetCallsign()or"unknown11"
-local callsignroot=string.match(shortcallsign,'(%a+)')
-self:I("CallSign = "..callsignroot)
-local groupname=Group:GetName()
-local callnumber=string.match(shortcallsign,"(%d+)$")or"unknown11"
-local callnumbermajor=string.char(string.byte(callnumber,1))
-local callnumberminor=string.char(string.byte(callnumber,2))
-local personalized=false
-if IsPlayer and string.find(groupname,"#")then
-shortcallsign=string.match(groupname,"#([%a]+)")
-personalized=true
-end
-if IsPlayer and string.find(Group:GetPlayerName(),"|")then
-shortcallsign=string.match(Group:GetPlayerName(),"| ([%a]+)")
-personalized=true
-end
-if(not personalized)and self.callsignTranslations and self.callsignTranslations[callsignroot]then
-shortcallsign=string.gsub(shortcallsign,callsignroot,self.callsignTranslations[callsignroot])
-end
-if self.callsignshort then
-callsign=string.gsub(shortcallsign,callnumber,"").." "..callnumbermajor
-else
-callsign=string.gsub(shortcallsign,callnumber,"").." "..callnumbermajor.." "..callnumberminor
-end
-self:T("Generated Callsign for TTS = "..callsign)
+callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations)
 end
 return callsign
+end
+function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+if not ShortCallsign or ShortCallsign==false then
+self.callsignshort=false
+else
+self.callsignshort=true
+end
+self.keepnumber=Keepnumber or false
+self.callsignTranslations=CallsignTranslations
+return self
 end
 function AWACS:_UpdateContactFromCluster(CID)
 self:T(self.lid.."_UpdateContactFromCluster CID="..CID)
@@ -65215,40 +65203,6 @@ return self.ManagedGrps[task.AssignedGroupID]
 end
 end
 return nil
-end
-function AWACS:_CreateIdleTaskForContact(Description,Object,Contact)
-self:T(self.lid.."_CreateIdleTaskForContact "..Description)
-local task={}
-self.ManagedTaskID=self.ManagedTaskID+1
-task.TID=self.ManagedTaskID
-task.AssignedGroupID=0
-task.Status=AWACS.TaskStatus.IDLE
-task.ToDo=Description
-task.Target=TARGET:New(Object)
-task.Contact=Contact
-task.ScreenText=Description
-if Description==AWACS.TaskDescription.ANCHOR or Description==AWACS.TaskDescription.REANCHOR then
-task.Target.Type=TARGET.ObjectType.ZONE
-end
-self.ManagedTasks:Push(task,task.TID)
-return self
-end
-function AWACS:_CreateIdleTaskForCluster(Description,Object,Cluster)
-self:T(self.lid.."_CreateIdleTaskForCluster "..Description)
-local task={}
-self.ManagedTaskID=self.ManagedTaskID+1
-task.TID=self.ManagedTaskID
-task.AssignedGroupID=0
-task.Status=AWACS.TaskStatus.IDLE
-task.ToDo=Description
-task.Target=TARGET:New(self.intel:GetClusterCoordinate(Cluster))
-task.Cluster=Cluster
-task.ScreenText=Description
-if Description==AWACS.TaskDescription.ANCHOR or Description==AWACS.TaskDescription.REANCHOR then
-task.Target.Type=TARGET.ObjectType.ZONE
-end
-self.ManagedTasks:Push(task,task.TID)
-return self
 end
 function AWACS:_MessageAIReadyForTasking(GID)
 self:T(self.lid.."_MessageAIReadyForTasking")
