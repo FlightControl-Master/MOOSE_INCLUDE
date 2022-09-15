@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T12:02:09.0000000Z-92044c7797557fee08cddf64e1f2e6f57d3431c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T17:50:45.0000000Z-c95d5dc3201c55031a58f4dd62301099952281a4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91738,7 +91738,7 @@ local CoordText=""
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
 CoordText=Coordinate:ToStringA2G(_client)
 else
-c=Coordinate:ToStringA2A(_client)
+CoordText=Coordinate:ToStringA2A(_client)
 end
 local targettxt=self.gettext:GetEntry("TARGET",self.locale)
 local text="Target: "..CoordText
