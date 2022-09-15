@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T06:17:37.0000000Z-c1ab3b547605261bede74f379526dd0c4a2911fd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T11:40:37.0000000Z-5d20a59d92a3a2b9a9de5587a263492b2aadaab3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23228,6 +23228,8 @@ if(not personalized)and CallsignTranslations and CallsignTranslations[callsignro
 callsignroot=CallsignTranslations[callsignroot]
 end
 if personalized then
+shortcallsign=string.gsub(shortcallsign,"^%s*","")
+shortcallsign=string.gsub(shortcallsign,"%s*$","")
 if Keepnumber then
 return shortcallsign
 elseif ShortCallsign then
