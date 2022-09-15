@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T11:40:37.0000000Z-5d20a59d92a3a2b9a9de5587a263492b2aadaab3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T12:01:23.0000000Z-299820162b27a503662522778a68a5d8ef7b2c45 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57233,7 +57233,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.6"
+ATIS.version="0.9.7"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 local self=BASE:Inherit(self,FSM:New())
@@ -57476,6 +57476,7 @@ self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AI
 return
 end
 self:I(self.lid..string.format("Starting ATIS v%s for airbase %s on %.3f MHz Modulation=%d",ATIS.version,self.airbasename,self.frequency,self.modulation))
+if not self.useSRS then
 self.radioqueue=RADIOQUEUE:New(self.frequency,self.modulation,string.format("ATIS %s",self.airbasename))
 self.radioqueue:SetSenderCoordinate(self.airbase:GetCoordinate())
 self.radioqueue:SetSenderUnitName(self.relayunitname)
@@ -57491,6 +57492,7 @@ self.radioqueue:SetDigit(7,ATIS.Sound.N7.filename,ATIS.Sound.N7.duration,self.so
 self.radioqueue:SetDigit(8,ATIS.Sound.N8.filename,ATIS.Sound.N8.duration,self.soundpath)
 self.radioqueue:SetDigit(9,ATIS.Sound.N9.filename,ATIS.Sound.N9.duration,self.soundpath)
 self.radioqueue:Start(1,0.1)
+end
 self:HandleEvent(EVENTS.BaseCaptured)
 self:__Status(-2)
 self:__CheckQueue(-3)
