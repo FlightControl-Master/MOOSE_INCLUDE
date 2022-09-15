@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T12:01:23.0000000Z-299820162b27a503662522778a68a5d8ef7b2c45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T17:51:15.0000000Z-877b36f8a8f84ae56e723924b94f7b06b97d3464 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62990,9 +62990,12 @@ return
 end
 if _group:IsAlive()then
 local _radioUnit=_group:GetUnit(1)
+if _radioUnit then
 local Frequency=_freq
 local Sound="l10n/DEFAULT/"..self.radioSound
-trigger.action.radioTransmission(Sound,_radioUnit:GetPositionVec3(),0,false,Frequency,1000)
+local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
+trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,1000)
+end
 end
 return self
 end
