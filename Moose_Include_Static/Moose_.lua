@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-13T08:51:25.0000000Z-00761304832e9c377ea8edc429de66c87106d6d3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T06:17:37.0000000Z-c1ab3b547605261bede74f379526dd0c4a2911fd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23217,11 +23217,11 @@ if IsPlayer and string.find(groupname,"#")then
 if Keepnumber then
 shortcallsign=string.match(groupname,"#(.+)")
 else
-shortcallsign=string.match(groupname,"#([%a]+)")
+shortcallsign=string.match(groupname,"#%s*([%a]+)")
 end
 personalized=true
 elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
-shortcallsign=string.match(self:GetPlayerName(),"|([%a]+)")
+shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")
 personalized=true
 end
 if(not personalized)and CallsignTranslations and CallsignTranslations[callsignroot]then
