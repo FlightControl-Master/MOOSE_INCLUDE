@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T11:52:20.0000000Z-af96e2f14326264df0caf52df9372b89a35bd9d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T12:02:09.0000000Z-92044c7797557fee08cddf64e1f2e6f57d3431c7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58959,7 +58959,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.6"
+ATIS.version="0.9.7"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 local self=BASE:Inherit(self,FSM:New())
@@ -59202,6 +59202,7 @@ self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AI
 return
 end
 self:I(self.lid..string.format("Starting ATIS v%s for airbase %s on %.3f MHz Modulation=%d",ATIS.version,self.airbasename,self.frequency,self.modulation))
+if not self.useSRS then
 self.radioqueue=RADIOQUEUE:New(self.frequency,self.modulation,string.format("ATIS %s",self.airbasename))
 self.radioqueue:SetSenderCoordinate(self.airbase:GetCoordinate())
 self.radioqueue:SetSenderUnitName(self.relayunitname)
@@ -59217,6 +59218,7 @@ self.radioqueue:SetDigit(7,ATIS.Sound.N7.filename,ATIS.Sound.N7.duration,self.so
 self.radioqueue:SetDigit(8,ATIS.Sound.N8.filename,ATIS.Sound.N8.duration,self.soundpath)
 self.radioqueue:SetDigit(9,ATIS.Sound.N9.filename,ATIS.Sound.N9.duration,self.soundpath)
 self.radioqueue:Start(1,0.1)
+end
 self:HandleEvent(EVENTS.BaseCaptured)
 self:__Status(-2)
 self:__CheckQueue(-3)
@@ -74792,8 +74794,8 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.2"
-function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS)
+FLIGHTCONTROL.version="0.7.3"
+function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
 self.airbasename=AirbaseName
@@ -74817,10 +74819,14 @@ self:SetLandingInterval()
 self:SetFrequency(Frequency,Modulation)
 self:SetMarkHoldingPattern(true)
 self:SetRunwayRepairtime()
+self:SetSRSPort(Port or 5002)
+self:SetCallSignOptions(true,true)
 self.msrsqueue=MSRSQUEUE:New(self.alias)
 self.msrsTower=MSRS:New(PathToSRS,Frequency,Modulation)
+self.msrsTower:SetPort(self.Port)
 self:SetSRSTower()
 self.msrsPilot=MSRS:New(PathToSRS,Frequency,Modulation)
+self.msrsPilot:SetPort(self.Port)
 self:SetSRSPilot()
 self.dTmessage=10
 self:SetStartState("Stopped")
@@ -74851,7 +74857,11 @@ self.msrsTower:SetModulations(Modulation)
 end
 return self
 end
-function FLIGHTCONTROL:_SetSRSOptions(msrs,Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials)
+function FLIGHTCONTROL:SetSRSPort(Port)
+self.Port=Port or 5002
+return self
+end
+function FLIGHTCONTROL:_SetSRSOptions(msrs,Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials,Port)
 Gender=Gender or"female"
 Culture=Culture or"en-GB"
 Volume=Volume or 1.0
@@ -74863,6 +74873,7 @@ msrs:SetVolume(Volume)
 msrs:SetLabel(Label)
 msrs:SetGoogle(PathToGoogleCredentials)
 msrs:SetCoalition(self:GetCoalition())
+msrs:SetPort(Port or self.Port or 5002)
 end
 return self
 end
@@ -75823,7 +75834,17 @@ function FLIGHTCONTROL:_PlayerRadioCheck(groupname)
 local flight=_DATABASE:GetOpsGroup(groupname)
 if flight then
 local callsign=self:_GetCallsignName(flight)
-local text=string.format("%s, %s, radio check %.3f",self.alias,callsign,self.frequency)
+local text=""
+if type(self.frequency)=="table"then
+local multifreq=""
+for _,_entry in pairs(self.frequency)do
+multifreq=string.format("%s%.2f, ",multifreq,_entry)
+end
+multifreq=string.gsub(multifreq,", $","")
+text=string.format("%s, %s, radio check %s",self.alias,callsign,multifreq)
+else
+text=string.format("%s, %s, radio check %.3f",self.alias,callsign,self.frequency)
+end
 self:TransmissionPilot(text,flight)
 local text=string.format("%s, %s, reading you 5",callsign,self.alias)
 self:TransmissionTower(text,flight,10)
@@ -75859,7 +75880,16 @@ local flight=_DATABASE:GetOpsGroup(groupname)
 if flight then
 local text=string.format("Airbase %s Info:",self.airbasename)
 text=text..string.format("\nATC Status: %s",self:GetState())
+if type(self.frequency)=="table"then
+local multifreq=""
+for i=1,#self.frequency do
+multifreq=string.format("%s%.2f %s, ",multifreq,self.frequency[i],UTILS.GetModulationName(self.modulation[i]or 0))
+end
+text=string.gsub(text,", $","")
+text=text..string.format("\nFrequencies: %s",multifreq)
+else
 text=text..string.format("\nFrequency: %.3f %s",self.frequency,UTILS.GetModulationName(self.modulation))
+end
 text=text..string.format("\nRunway Landing: %s",self:GetActiveRunwayText())
 text=text..string.format("\nRunway Takeoff: %s",self:GetActiveRunwayText(true))
 self:TextMessageToFlight(text,flight,10,true)
@@ -76643,8 +76673,18 @@ end
 end
 return nil
 end
+function FLIGHTCONTROL:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+if not ShortCallsign or ShortCallsign==false then
+self.ShortCallsign=false
+else
+self.ShortCallsign=true
+end
+self.Keepnumber=Keepnumber or false
+self.CallsignTranslations=CallsignTranslations
+return self
+end
 function FLIGHTCONTROL:_GetCallsignName(flight)
-local callsign=flight:GetCallsignName()
+local callsign=flight:GetCallsignName(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
 return callsign
 end
 function FLIGHTCONTROL:_GetTextForSpeech(text)
@@ -78849,7 +78889,8 @@ function FLIGHTGROUP:_PlayerSubtitles()
 local playerData=self:_GetPlayerData()
 if playerData then
 playerData.subtitles=not playerData.subtitles
-MESSAGE:New(string.format("%s, subtitles are now %s",playerData.name,tostring(playerData.subtitles)),10,nil,true):ToGroup(self.group)
+local onoff=playerData.subtitles==true and"ON"or"OFF"
+MESSAGE:New(string.format("%s, subtitles are now %s",playerData.name,onoff),10,nil,true):ToGroup(self.group)
 else
 end
 end
@@ -88248,12 +88289,15 @@ self:T(self.lid.."ERROR: Group is not alive and not in utero! Cannot switch call
 end
 return self
 end
-function OPSGROUP:GetCallsignName()
+function OPSGROUP:GetCallsignName(ShortCallsign,Keepnumber,CallsignTranslations)
 local element=self:GetElementAlive()
 if element then
 self:T2(self.lid..string.format("Callsign %s",tostring(element.callsign)))
 local name=element.callsign or"Ghostrider11"
 name=name:gsub("-","")
+if self.group:IsPlayer()or CallsignTranslations then
+name=self.group:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations)
+end
 return name
 end
 return"Ghostrider11"
@@ -90940,7 +90984,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.35"
+PLAYERTASKCONTROLLER.version="0.1.36"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -91032,6 +91076,12 @@ self.Keepnumber=Keepnumber or false
 self.CallsignTranslations=CallsignTranslations
 return self
 end
+function PLAYERTASKCONTROLLER:_GetTextForSpeech(text)
+text=string.gsub(text,"%d","%1 ")
+text=string.gsub(text,"^%s*","")
+text=string.gsub(text,"%s*$","")
+return text
+end
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff,Repeats)
 self:T(self.lid.."SetTaskRepetition")
 if OnOff then
@@ -91105,7 +91155,9 @@ local ttsplayername=nil
 if not self.customcallsigns[playername]then
 local playergroup=Client:GetGroup()
 ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
-self.customcallsigns[playername]=ttsplayername
+local newplayername=self:_GetTextForSpeech(ttsplayername)
+self.customcallsigns[playername]=newplayername
+ttsplayername=newplayername
 else
 ttsplayername=self.customcallsigns[playername]
 end
@@ -91192,6 +91244,7 @@ self.customcallsigns[playername]=nil
 end
 playername=EventData.IniGroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber)
 end
+playername=self:_GetTextForSpeech(playername)
 local text=string.format(switchtext,self.MenuName or self.Name,playername,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
@@ -91645,6 +91698,7 @@ if not self.NoScreenOutput then
 self:_SendMessageToClients(text)
 end
 if self.UseSRS then
+self:I(self.lid..text)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
 self.TasksPerPlayer:Push(Task,playername)
