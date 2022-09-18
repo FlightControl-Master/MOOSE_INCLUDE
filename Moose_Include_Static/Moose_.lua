@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T17:54:36.0000000Z-11d37bcb934f9bcca8e4fa76009f33e703fb8671 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-18T17:04:40.0000000Z-79669d9a6966417fc12220aef01c9877eb35f8f8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63418,7 +63418,7 @@ self.AwacsROE=AWACS.ROE.IFF
 self.RadarBlur=15
 return self
 end
-function AWACS:SetModernEraAgressive()
+function AWACS:SetModernEraAggressive()
 self.ModernEra=true
 self.AwacsROT=AWACS.ROT.RETURNFIRE
 self.AwacsROE=AWACS.ROE.BVR
@@ -63519,6 +63519,7 @@ self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
 self.Volume=Volume or 1.0
 self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Volume)
+self.AwacsSRS:SetCoalition(self.coalition)
 self.AwacsSRS:SetGender(self.Gender)
 self.AwacsSRS:SetCulture(self.Culture)
 self.AwacsSRS:SetVoice(self.Voice)
