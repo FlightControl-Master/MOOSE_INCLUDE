@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-19T09:43:50.0000000Z-d23403383f9419c0d8bd5899207e8fcdf2761589 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-19T11:20:45.0000000Z-d17df741916307f8a3764a3a80c3b2a0a6f1cbb1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57239,7 +57239,6 @@ Zulu={filename="Zulu.ogg",duration=0.62},
 _ATIS={}
 ATIS.version="0.9.7"
 function ATIS:New(AirbaseName,Frequency,Modulation)
-local self=BASE:Inherit(self,FSM:New())
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
 self.airbase=AIRBASE:FindByName(AirbaseName)
