@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-15T17:51:15.0000000Z-877b36f8a8f84ae56e723924b94f7b06b97d3464 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-19T09:43:50.0000000Z-d23403383f9419c0d8bd5899207e8fcdf2761589 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3255,6 +3255,10 @@ BASE:T(unit_name.." front door(s) are open")
 return true
 end
 if type_name=="AH-64D_BLK_II"then
+BASE:T(unit_name.." front door(s) are open")
+return true
+end
+if type_name=="Bronco-OV-10A"then
 BASE:T(unit_name.." front door(s) are open")
 return true
 end
@@ -61825,6 +61829,7 @@ rescues=0,
 rescuedpilots=0,
 limitmaxdownedpilots=true,
 maxdownedpilots=10,
+allheligroupset=nil,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -61839,7 +61844,8 @@ CSAR.AircraftType["Mi-24V"]=8
 CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
-CSAR.version="1.0.6"
+CSAR.AircraftType["Bronco-OV-10A"]=2
+CSAR.version="1.0.9"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -61939,15 +61945,17 @@ self.countryneutral=country.id.UN_PEACEKEEPERS
 self.csarUsePara=false
 self.wetfeettemplate=nil
 self.usewetfeet=false
+self.allowbronco=false
 self.useSRS=false
-self.SRSPath="E:\\Progra~1\\DCS-SimpleRadio-Standalone\\"
+self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
 self.SRSport=5002
 self.SRSCulture="en-GB"
 self.SRSVoice=nil
 self.SRSGPathToCredentials=nil
-self.SRSVolume=1
+self.SRSVolume=1.0
+self.SRSGender="male"
 return self
 end
 function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
@@ -62193,7 +62201,14 @@ self.takenOff[_event.IniPlayerName]=true
 end
 local _unit=_event.IniUnit
 local _group=_event.IniGroup
-if _unit:IsHelicopter()or _group:IsHelicopter()then
+local function IsBronco(Group)
+local grp=Group
+local typename=grp:GetTypeName()
+self:T(typename)
+if typename=="Bronco-OV-10A"then return true end
+return false
+end
+if _unit:IsHelicopter()or _group:IsHelicopter()or IsBronco(_group)then
 self:_AddMedevacMenuItem()
 end
 return self
@@ -62644,21 +62659,7 @@ if _override or not self.suppressmessages then
 local m=MESSAGE:New(_text,_time,"Info",_clear):ToGroup(group)
 end
 if _speak and self.useSRS then
-local srstext=SOUNDTEXT:New(_text)
-local path=self.SRSPath
-local modulation=self.SRSModulation
-local channel=self.SRSchannel
-local msrs=MSRS:New(path,channel,modulation)
-msrs:SetPort(self.SRSport)
-msrs:SetLabel("CSAR")
-msrs:SetCulture(self.SRSCulture)
-msrs:SetCoalition(self.coalition)
-msrs:SetVoice(self.SRSVoice)
-if self.SRSGPathToCredentials then
-msrs:SetGoogle(self.SRSGPathToCredentials)
-end
-msrs:SetVolume(self.SRSVolume)
-msrs:PlaySoundText(srstext,2)
+self.SRSQueue:NewTransmission(_text,nil,self.msrs,nil,2)
 end
 return self
 end
@@ -63047,7 +63048,10 @@ self:HandleEvent(EVENTS.LandingAfterEjection,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
-if self.useprefix then
+if self.allowbronco then
+local prefixes=self.csarPrefix or{}
+self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterStart()
+elseif self.useprefix then
 local prefixes=self.csarPrefix or{}
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterCategoryHelicopter():FilterStart()
 else
@@ -63056,6 +63060,24 @@ end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
 if self.wetfeettemplate then
 self.usewetfeet=true
+end
+if self.useSRS then
+local path=self.SRSPath
+local modulation=self.SRSModulation
+local channel=self.SRSchannel
+self.msrs=MSRS:New(path,channel,modulation)
+self.msrs:SetPort(self.SRSport)
+self.msrs:SetLabel("CSAR")
+self.msrs:SetCulture(self.SRSCulture)
+self.msrs:SetCoalition(self.coalition)
+self.msrs:SetVoice(self.SRSVoice)
+self.msrs:SetGender(self.SRSGender)
+if self.SRSGPathToCredentials then
+self.msrs:SetGoogle(self.SRSGPathToCredentials)
+end
+self.msrs:SetVolume(self.SRSVolume)
+self.msrs:SetLabel("CSAR")
+self.SRSQueue=MSRSQUEUE:New("CSAR")
 end
 self:__Status(-10)
 return self
