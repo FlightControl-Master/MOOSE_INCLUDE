@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-18T17:04:40.0000000Z-79669d9a6966417fc12220aef01c9877eb35f8f8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-19T09:42:50.0000000Z-852ebba530e7ac4edf0e13c108d5331597fd0821 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -30614,7 +30614,7 @@ verbose=0,
 alias="",
 debug=false,
 }
-AUTOLASE.version="0.1.20"
+AUTOLASE.version="0.1.21"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -30774,6 +30774,7 @@ self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
+self.SRS:SetCoalition(self.coalition)
 if self.PathToGoogleKey then
 self.SRS:SetGoogle(self.PathToGoogleKey)
 end
@@ -30949,7 +30950,9 @@ if settings then
 if settings:IsA2G_MGRS()then
 locationstring=entry.coordinate:ToStringMGRS(settings)
 elseif settings:IsA2G_LL_DMS()then
-locationstring=entry.coordinate:ToStringLLDMS()
+locationstring=entry.coordinate:ToStringLLDMS(settings)
+elseif settings:IsA2G_BR()then
+locationstring=entry.coordinate:ToStringBR(Group:GetCoordinate()or Unit:GetCoordinate(),settings)
 end
 end
 end
@@ -31152,7 +31155,9 @@ local settings={}
 settings.MGRS_Accuracy=precision
 locationstring=unit:GetCoordinate():ToStringMGRS(settings)
 elseif _SETTINGS:IsA2G_LL_DMS()then
-locationstring=unit:GetCoordinate():ToStringLLDMS()
+locationstring=unit:GetCoordinate():ToStringLLDMS(_SETTINGS)
+elseif _SETTINGS:IsA2G_BR()then
+locationstring=unit:GetCoordinate():ToStringBULLS(self.coalition,_SETTINGS)
 end
 local laserspot={
 laserspot=spot,
