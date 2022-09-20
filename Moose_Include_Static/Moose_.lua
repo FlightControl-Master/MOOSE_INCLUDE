@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T13:51:16.0000000Z-450f4eaec0883fac76381bc48815bf3465d8c2fb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T15:15:57.0000000Z-9739f9442836f20fb46d0bfdde9482737bf9aa28 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57331,7 +57331,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.7"
+ATIS.version="0.9.8"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -57552,6 +57552,7 @@ self.msrs:SetVoice(Voice)
 self.msrs:SetPort(Port)
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
+self.msrsQ=MSRSQUEUE:New("ATIS")
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
 end
@@ -58374,7 +58375,8 @@ local text=string.gsub(text,"hPa","hectopascals")
 local text=string.gsub(text,"m/s","meters per second")
 local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
-self.msrs:PlayText(text)
+local duration=STTS.getSpeechTime(text,0.95)
+self.msrsQ:NewTransmission(text,duration,self.msrs,nil,2)
 end
 end
 function ATIS:OnEventBaseCaptured(EventData)
