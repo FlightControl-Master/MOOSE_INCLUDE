@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T07:27:19.0000000Z-242d735d8c55164cd67e69127ea3d89e2570362a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T08:26:19.0000000Z-526dc8363d81b391b8f2af2c980918190182a16e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -32340,8 +32340,6 @@ local DetectedItem=self.Detection:GetDetectedItemByIndex(Index)
 local TargetSetUnit=self.Detection:GetDetectedItemSet(DetectedItem)
 local MarkingCount=0
 local MarkedTypes={}
-local ReportTypes=REPORT:New()
-local ReportLaserCodes=REPORT:New()
 TargetSetUnit:Flush(self)
 for TargetUnit,RecceData in pairs(self.Recces)do
 local Recce=RecceData
@@ -32376,7 +32374,6 @@ if TargetUnit:IsAlive()then
 local Recce=self.Recces[TargetUnit]
 if not Recce then
 self:F("Lasing...")
-self.RecceSet:Flush(self)
 for RecceGroupID,RecceGroup in pairs(self.RecceSet:GetSet())do
 for UnitID,UnitData in pairs(RecceGroup:GetUnits()or{})do
 local RecceUnit=UnitData
@@ -32401,11 +32398,11 @@ end
 self.Recces[TargetUnit]=RecceUnit
 MarkingCount=MarkingCount+1
 local TargetUnitType=TargetUnit:GetTypeName()
+RecceUnit:MessageToSetGroup("Marking "..TargetUnit:GetTypeName().." with laser "..RecceUnit:GetSpot().LaserCode.." for "..Duration.."s.",
+10,self.AttackSet,DesignateName)
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
-ReportTypes:Add(TargetUnitType)
 end
-ReportLaserCodes:Add(RecceUnit.LaserCode)
 return
 end
 else
@@ -32415,15 +32412,13 @@ if not RecceUnit:IsDetected(TargetUnit)or not RecceUnit:IsLOS(TargetUnit)then
 local Recce=self.Recces[TargetUnit]
 if Recce then
 Recce:LaseOff()
-Recce:MessageToSetGroup("Target "..TargetUnit:GetTypeName()"out of LOS. Cancelling lase!",5,self.AttackSet,self.DesignateName)
+Recce:MessageToSetGroup("Target "..TargetUnit:GetTypeName()"out of LOS. Cancelling lase!",10,self.AttackSet,self.DesignateName)
 end
 else
 local TargetUnitType=TargetUnit:GetTypeName()
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
-ReportTypes:Add(TargetUnitType)
 end
-ReportLaserCodes:Add(RecceUnit.LaserCode)
 end
 end
 end
@@ -32433,17 +32428,13 @@ MarkingCount=MarkingCount+1
 local TargetUnitType=TargetUnit:GetTypeName()
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
-ReportTypes:Add(TargetUnitType)
 end
-ReportLaserCodes:Add(Recce.LaserCode)
+Recce:MessageToSetGroup(self.DesignateName..": Marking "..TargetUnit:GetTypeName().." with laser "..Recce.LaserCode..".",10,self.AttackSet)
 end
 end
 end
 end
 )
-local MarkedTypesText=ReportTypes:Text(', ')
-local MarkedLaserCodesText=ReportLaserCodes:Text(', ')
-self.CC:GetPositionable():MessageToSetGroup("Marking "..MarkingCount.." x "..MarkedTypesText..", code "..MarkedLaserCodesText..".",5,self.AttackSet,self.DesignateName)
 self:__Lasing(-self.LaseDuration,Index,Duration,LaserCodeRequested)
 self:SetDesignateMenu()
 else
