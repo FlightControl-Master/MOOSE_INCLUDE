@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T08:26:19.0000000Z-526dc8363d81b391b8f2af2c980918190182a16e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T13:26:34.0000000Z-b5186fa328e42d235b9759fa93583044cca2f684 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7279,7 +7279,7 @@ function SETTINGS:SetImperial()
 self.Metric=false
 end
 function SETTINGS:IsImperial()
-return(self.Metric~=nil and self.Metric==false)or(self.Metric==nil and _SETTINGS:IsMetric())
+return(self.Metric~=nil and self.Metric==false)or(self.Metric==nil and _SETTINGS:IsImperial())
 end
 function SETTINGS:SetLL_Accuracy(LL_Accuracy)
 self.LL_Accuracy=LL_Accuracy
