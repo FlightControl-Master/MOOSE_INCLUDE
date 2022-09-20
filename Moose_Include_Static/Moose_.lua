@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-19T16:25:54.0000000Z-a146003a6ad6cd6144ec214c1a68af55466369e9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T06:23:49.0000000Z-9fedd32e78c81e43f8a87ffecf7b155a30af9a1c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3583,10 +3583,10 @@ local posy=tonumber(dataset[5])
 local posz=tonumber(dataset[6])
 local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
 local group=nil
-local data={groupname=groupname,size=size,coordinate=coordinate}
+local data={groupname=groupname,size=size,coordinate=coordinate,template=template}
 table.insert(datatable,data)
 if spawn then
-local group=SPAWN:New(groupname)
+local group=SPAWN:New(template)
 :InitDelayOff()
 :OnSpawnGroup(
 function(spwndgrp)
