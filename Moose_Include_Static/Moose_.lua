@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T06:24:50.0000000Z-5abec25c5801f7a3c1b854d1be527ffdc24bf99f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T08:27:06.0000000Z-0159ce5b1dfb25b493d89f42889b489f6139dba9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -31699,8 +31699,8 @@ local DetectedItems=self.Detection:GetDetectedItemsByIndex()
 for DesignateIndex,Designating in pairs(self.Designating)do
 local DetectedItem=DetectedItems[DesignateIndex]
 if DetectedItem then
-local Report=self.Detection:DetectedItemReportSummary(DetectedItem,AttackGroup):Text(", ")
-DetectedReport:Add(string.rep("-",140))
+local Report=self.Detection:DetectedItemReportSummary(DetectedItem,AttackGroup,nil,true):Text(", ")
+DetectedReport:Add(string.rep("-",40))
 DetectedReport:Add(" - "..Report)
 if string.find(Designating,"L")then
 DetectedReport:Add(" - ".."Lasing Targets")
@@ -31869,8 +31869,6 @@ local DetectedItem=self.Detection:GetDetectedItemByIndex(Index)
 local TargetSetUnit=self.Detection:GetDetectedItemSet(DetectedItem)
 local MarkingCount=0
 local MarkedTypes={}
-local ReportTypes=REPORT:New()
-local ReportLaserCodes=REPORT:New()
 TargetSetUnit:Flush(self)
 for TargetUnit,RecceData in pairs(self.Recces)do
 local Recce=RecceData
@@ -31905,7 +31903,6 @@ if TargetUnit:IsAlive()then
 local Recce=self.Recces[TargetUnit]
 if not Recce then
 self:F("Lasing...")
-self.RecceSet:Flush(self)
 for RecceGroupID,RecceGroup in pairs(self.RecceSet:GetSet())do
 for UnitID,UnitData in pairs(RecceGroup:GetUnits()or{})do
 local RecceUnit=UnitData
@@ -31930,11 +31927,11 @@ end
 self.Recces[TargetUnit]=RecceUnit
 MarkingCount=MarkingCount+1
 local TargetUnitType=TargetUnit:GetTypeName()
+RecceUnit:MessageToSetGroup("Marking "..TargetUnit:GetTypeName().." with laser "..RecceUnit:GetSpot().LaserCode.." for "..Duration.."s.",
+10,self.AttackSet,DesignateName)
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
-ReportTypes:Add(TargetUnitType)
 end
-ReportLaserCodes:Add(RecceUnit.LaserCode)
 return
 end
 else
@@ -31944,15 +31941,13 @@ if not RecceUnit:IsDetected(TargetUnit)or not RecceUnit:IsLOS(TargetUnit)then
 local Recce=self.Recces[TargetUnit]
 if Recce then
 Recce:LaseOff()
-Recce:MessageToSetGroup("Target "..TargetUnit:GetTypeName()"out of LOS. Cancelling lase!",5,self.AttackSet,self.DesignateName)
+Recce:MessageToSetGroup("Target "..TargetUnit:GetTypeName()"out of LOS. Cancelling lase!",10,self.AttackSet,self.DesignateName)
 end
 else
 local TargetUnitType=TargetUnit:GetTypeName()
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
-ReportTypes:Add(TargetUnitType)
 end
-ReportLaserCodes:Add(RecceUnit.LaserCode)
 end
 end
 end
@@ -31962,17 +31957,13 @@ MarkingCount=MarkingCount+1
 local TargetUnitType=TargetUnit:GetTypeName()
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
-ReportTypes:Add(TargetUnitType)
 end
-ReportLaserCodes:Add(Recce.LaserCode)
+Recce:MessageToSetGroup(self.DesignateName..": Marking "..TargetUnit:GetTypeName().." with laser "..Recce.LaserCode..".",10,self.AttackSet)
 end
 end
 end
 end
 )
-local MarkedTypesText=ReportTypes:Text(', ')
-local MarkedLaserCodesText=ReportLaserCodes:Text(', ')
-self.CC:GetPositionable():MessageToSetGroup("Marking "..MarkingCount.." x "..MarkedTypesText..", code "..MarkedLaserCodesText..".",5,self.AttackSet,self.DesignateName)
 self:__Lasing(-self.LaseDuration,Index,Duration,LaserCodeRequested)
 self:SetDesignateMenu()
 else
@@ -32947,7 +32938,7 @@ self:SetDetectedItemThreatLevel(DetectedItem)
 self:NearestRecce(DetectedItem)
 end
 end
-function DETECTION_UNITS:DetectedItemReportSummary(DetectedItem,AttackGroup,Settings)
+function DETECTION_UNITS:DetectedItemReportSummary(DetectedItem,AttackGroup,Settings,ForceA2GCoordinate)
 self:F({DetectedItem=DetectedItem})
 local DetectedItemID=self:GetDetectedItemID(DetectedItem)
 if DetectedItem then
@@ -32976,6 +32967,9 @@ end
 end
 local DetectedItemCoordinate=self:GetDetectedItemCoordinate(DetectedItem)
 local DetectedItemCoordText=DetectedItemCoordinate:ToString(AttackGroup,Settings)
+if ForceA2GCoordinate then
+DetectedItemCoordText=DetectedItemCoordinate:ToStringA2G(AttackGroup,Settings)
+end
 local ThreatLevelA2G=self:GetDetectedItemThreatLevel(DetectedItem)
 local Report=REPORT:New()
 Report:Add(DetectedItemID..", "..DetectedItemCoordText)
