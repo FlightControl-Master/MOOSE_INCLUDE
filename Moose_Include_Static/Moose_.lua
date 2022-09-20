@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T08:27:06.0000000Z-0159ce5b1dfb25b493d89f42889b489f6139dba9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T13:53:09.0000000Z-76321343c25fd89e3ce274b1208a276e6414fc05 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14655,7 +14655,7 @@ function SETTINGS:SetImperial()
 self.Metric=false
 end
 function SETTINGS:IsImperial()
-return(self.Metric~=nil and self.Metric==false)or(self.Metric==nil and _SETTINGS:IsMetric())
+return(self.Metric~=nil and self.Metric==false)or(self.Metric==nil and _SETTINGS:IsImperial())
 end
 function SETTINGS:SetLL_Accuracy(LL_Accuracy)
 self.LL_Accuracy=LL_Accuracy
@@ -19349,14 +19349,14 @@ occupied=true
 end
 end
 if occupied then
-self:I(string.format("%s: Parking spot id %d occupied.",airport,_termid))
+self:T(string.format("%s: Parking spot id %d occupied.",airport,_termid))
 else
-self:I(string.format("%s: Parking spot id %d free.",airport,_termid))
+self:T(string.format("%s: Parking spot id %d free.",airport,_termid))
 if nvalid<_nspots then
 table.insert(validspots,{Coordinate=_spot,TerminalID=_termid})
 end
 nvalid=nvalid+1
-self:I(string.format("%s: Parking spot id %d free. Nfree=%d/%d.",airport,_termid,nvalid,_nspots))
+self:T(string.format("%s: Parking spot id %d free. Nfree=%d/%d.",airport,_termid,nvalid,_nspots))
 end
 end
 if nvalid>=_nspots then
@@ -19647,7 +19647,7 @@ if not runway then
 runway=self:GetRunwayIntoWind(PreferLeft)
 end
 if runway then
-self:I(string.format("%s: Setting active runway for landing as %s",self.AirbaseName,self:GetRunwayName(runway)))
+self:T(string.format("%s: Setting active runway for landing as %s",self.AirbaseName,self:GetRunwayName(runway)))
 else
 self:E("ERROR: Could not set the runway for landing!")
 end
@@ -19669,7 +19669,7 @@ if not runway then
 runway=self:GetRunwayIntoWind(PreferLeft)
 end
 if runway then
-self:I(string.format("%s: Setting active runway for takeoff as %s",self.AirbaseName,self:GetRunwayName(runway)))
+self:T(string.format("%s: Setting active runway for takeoff as %s",self.AirbaseName,self:GetRunwayName(runway)))
 else
 self:E("ERROR: Could not set the runway for takeoff!")
 end
@@ -37165,7 +37165,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.4.0"
+RANGE.version="2.5.0"
 function RANGE:New(RangeName)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
@@ -37234,7 +37234,7 @@ local unit=_target.target
 _target.target:PatrolZones({self.rangezone},_target.speed*0.75,"Off road")
 end
 end
-if self.rangecontrolfreq then
+if self.rangecontrolfreq and not self.useSRS then
 self.rangecontrol=RADIOQUEUE:New(self.rangecontrolfreq,nil,self.rangename)
 self.rangecontrol.schedonce=true
 self.rangecontrol:SetDigit(0,RANGE.Sound.RC0.filename,RANGE.Sound.RC0.duration,self.soundpath)
@@ -37250,7 +37250,7 @@ self.rangecontrol:SetDigit(9,RANGE.Sound.RC9.filename,RANGE.Sound.RC9.duration,s
 self.rangecontrol:SetSenderCoordinate(self.location)
 self.rangecontrol:SetSenderUnitName(self.rangecontrolrelayname)
 self.rangecontrol:Start(1,0.1)
-if self.instructorfreq then
+if self.instructorfreq and not self.useSRS then
 self.instructor=RADIOQUEUE:New(self.instructorfreq,nil,self.rangename)
 self.instructor.schedonce=true
 self.instructor:SetDigit(0,RANGE.Sound.IR0.filename,RANGE.Sound.IR0.duration,self.soundpath)
@@ -37405,6 +37405,55 @@ return self
 end
 function RANGE:TrackMissilesOFF()
 self.trackmissiles=false
+return self
+end
+function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey)
+if PathToSRS then
+self.useSRS=true
+self.controlmsrs=MSRS:New(PathToSRS,Frequency or 256,Modulation or radio.modulation.AM,Volume or 1.0)
+self.controlmsrs:SetPort(Port)
+self.controlmsrs:SetCoalition(Coalition or coalition.side.BLUE)
+self.controlmsrs:SetLabel("RANGEC")
+self.controlsrsQ=MSRSQUEUE:New("CONTROL")
+self.instructmsrs=MSRS:New(PathToSRS,Frequency or 305,Modulation or radio.modulation.AM,Volume or 1.0)
+self.instructmsrs:SetPort(Port)
+self.instructmsrs:SetCoalition(Coalition or coalition.side.BLUE)
+self.instructmsrs:SetLabel("RANGEI")
+self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
+else
+self:E(self.lid..string.format("ERROR: No SRS path specified!"))
+end
+return self
+end
+function RANGE:SetSRSRangeControl(frequency,modulation,voice,culture,gender,relayunitname)
+self.rangecontrolfreq=frequency or 256
+self.controlmsrs:SetFrequencies(self.rangecontrolfreq)
+self.controlmsrs:SetModulations(modulation or radio.modulation.AM)
+self.controlmsrs:SetVoice(voice)
+self.controlmsrs:SetCulture(culture or"en-US")
+self.controlmsrs:SetGender(gender or"female")
+self.rangecontrol=true
+if relayunitname then
+local unit=UNIT:FindByName(relayunitname)
+local Coordinate=unit:GetCoordinate()
+self.rangecontrolrelayname=relayunitname
+end
+return self
+end
+function RANGE:SetSRSRangeInstructor(frequency,modulation,voice,culture,gender,relayunitname)
+self.instructorfreq=frequency or 305
+self.instructmsrs:SetFrequencies(self.instructorfreq)
+self.instructmsrs:SetModulations(modulation or radio.modulation.AM)
+self.instructmsrs:SetVoice(voice)
+self.instructmsrs:SetCulture(culture or"en-US")
+self.instructmsrs:SetGender(gender or"male")
+self.instructor=true
+if relayunitname then
+local unit=UNIT:FindByName(relayunitname)
+local Coordinate=unit:GetCoordinate()
+self.instructmsrs:SetCoordinate(Coordinate)
+self.instructorrelayname=relayunitname
+end
 return self
 end
 function RANGE:SetRangeControl(frequency,relayunitname)
@@ -37763,6 +37812,9 @@ end
 if EventData.IniDCSUnit==nil then
 return
 end
+if EventData.IniPlayerName==nil then
+return
+end
 local _weapon=EventData.Weapon:getTypeName()
 local _weaponStrArray=UTILS.Split(_weapon,"%.")
 local _weaponName=_weaponStrArray[#_weaponStrArray]
@@ -37872,7 +37924,11 @@ elseif insidezone then
 local _message=string.format("%s, weapon impacted too far from nearest range target (>%.1f km). No score!",_callsign,self.scorebombdistance/1000)
 self:_DisplayMessageToGroup(_unit,_message,nil,false)
 if self.rangecontrol then
+if self.useSRS then
+self.controlsrsQ:NewTransmission(_message,nil,self.controlmsrs,nil,1)
+else
 self.rangecontrol:NewTransmission(RANGE.Sound.RCWeaponImpactedTooFar.filename,RANGE.Sound.RCWeaponImpactedTooFar.duration,self.soundpath,nil,nil,_message,self.subduration)
+end
 end
 else
 self:T(self.id.."Weapon impacted outside range zone.")
@@ -37916,6 +37972,12 @@ self:__Status(-10)
 end
 function RANGE:onafterEnterRange(From,Event,To,player)
 if self.instructor and self.rangecontrol then
+if self.useSRS then
+local text=string.format("You entered the bombing range. For hit assessment, contact the range controller at %.3f MHz",self.rangecontrolfreq)
+local ttstext=string.format("You entered the bombing range. For hit assessment, contact the range controller at %.3f mega hertz.",self.rangecontrolfreq)
+local group=player.client:GetGroup()
+self.instructsrsQ:NewTransmission(ttstext,nil,self.instructmsrs,nil,1,{group},text,10)
+else
 local RF=UTILS.Split(string.format("%.3f",self.rangecontrolfreq),".")
 self.instructor:NewTransmission(RANGE.Sound.IREnterRange.filename,RANGE.Sound.IREnterRange.duration,self.soundpath)
 self.instructor:Number2Transmission(RF[1])
@@ -37926,9 +37988,16 @@ end
 self.instructor:NewTransmission(RANGE.Sound.IRMegaHertz.filename,RANGE.Sound.IRMegaHertz.duration,self.soundpath)
 end
 end
+end
 function RANGE:onafterExitRange(From,Event,To,player)
 if self.instructor then
+if self.useSRS then
+local text="You left the bombing range zone. Have a nice day!"
+local group=player.client:GetGroup()
+self.instructsrsQ:NewTransmission(text,nil,self.instructmsrs,nil,1,{group},text,10)
+else
 self.instructor:NewTransmission(RANGE.Sound.IRExitRange.filename,RANGE.Sound.IRExitRange.duration,self.soundpath)
+end
 end
 end
 function RANGE:onafterImpact(From,Event,To,result,player)
@@ -37944,6 +38013,10 @@ text=text.."."
 end
 text=text..string.format(" %s hit.",result.quality)
 if self.rangecontrol then
+if self.useSRS then
+local group=player.client:GetGroup()
+self.controlsrsQ:NewTransmission(text,nil,self.controlmsrs,nil,1,{group},text,10)
+else
 self.rangecontrol:NewTransmission(RANGE.Sound.RCImpact.filename,RANGE.Sound.RCImpact.duration,self.soundpath,nil,nil,text,self.subduration)
 self.rangecontrol:Number2Transmission(string.format("%03d",result.radial),nil,0.1)
 self.rangecontrol:NewTransmission(RANGE.Sound.RCDegrees.filename,RANGE.Sound.RCDegrees.duration,self.soundpath)
@@ -37960,7 +38033,8 @@ elseif result.quality=="EXCELLENT"then
 self.rangecontrol:NewTransmission(RANGE.Sound.RCExcellentHit.filename,RANGE.Sound.RCExcellentHit.duration,self.soundpath,nil,0.5)
 end
 end
-if player.unitname then
+end
+if player.unitname and not self.useSRS then
 local unit=UNIT:FindByName(player.unitname)
 self:_DisplayMessageToGroup(unit,text,nil,true)
 self:T(self.id..text)
@@ -38238,6 +38312,7 @@ function RANGE:_DisplayRangeInfo(_unitname)
 self:F(_unitname)
 local unit,playername=self:_GetPlayerUnitAndName(_unitname)
 if unit and playername then
+self:I(playername)
 local text=""
 local coord=unit:GetCoordinate()
 if self.location then
@@ -38292,7 +38367,7 @@ local alive="N/A"
 if self.instructorrelayname then
 local relay=UNIT:FindByName(self.instructorrelayname)
 if relay then
-alive=tostring(relay:IsAlive())
+alive=relay:IsAlive()and"ok"or"N/A"
 end
 end
 text=text..string.format("Instructor %.3f MHz (Relay=%s)\n",self.instructorfreq,alive)
@@ -38303,6 +38378,7 @@ if self.rangecontrolrelayname then
 local relay=UNIT:FindByName(self.rangecontrolrelayname)
 if relay then
 alive=tostring(relay:IsAlive())
+alive=relay:IsAlive()and"ok"or"N/A"
 end
 end
 text=text..string.format("Control %.3f MHz (Relay=%s)\n",self.rangecontrolfreq,alive)
@@ -38455,7 +38531,13 @@ self.strafeStatus[_unitID]=nil
 local _msg=string.format("%s left strafing zone %s too quickly. No Score.",_playername,_currentStrafeRun.zone.name)
 self:_DisplayMessageToGroup(_unit,_msg,nil,true)
 if self.rangecontrol then
+if self.useSRS then
+local group=_unit:GetGroup()
+local text="You left the strafing zone too quickly! No score!"
+self.controlsrsQ:NewTransmission(text,nil,self.controlmsrs,nil,1)
+else
 self.rangecontrol:NewTransmission(RANGE.Sound.RCLeftStrafePitTooQuickly.filename,RANGE.Sound.RCLeftStrafePitTooQuickly.duration,self.soundpath)
+end
 end
 else
 local _ammo=self:_GetAmmo(_unitName)
@@ -38492,10 +38574,13 @@ _sound=RANGE.Sound.RCPoorPass
 end
 end
 local _text=string.format("%s, hits on target %s: %d",self:_myname(_unitName),_result.zone.name,_result.hits)
+local ttstext=string.format("%s, hits on target %s: %d.",self:_myname(_unitName),_result.zone.name,_result.hits)
 if shots and accur then
 _text=_text..string.format("\nTotal rounds fired %d. Accuracy %.1f %%.",shots,accur)
+ttstext=ttstext..string.format(". Total rounds fired %d. Accuracy %.1f percent.",shots,accur)
 end
 _text=_text..string.format("\n%s",resulttext)
+ttstext=ttstext..string.format(" %s",resulttext)
 self:_DisplayMessageToGroup(_unit,_text)
 local result={}
 result.command=SOCKET.DataType.STRAFERESULT
@@ -38517,6 +38602,9 @@ if playerData and playerData.targeton and self.targetsheet then
 self:_SaveTargetSheet(_playername,result)
 end
 if self.rangecontrol then
+if self.useSRS then
+self.controlsrsQ:NewTransmission(ttstext,nil,self.controlmsrs,nil,1)
+else
 self.rangecontrol:NewTransmission(RANGE.Sound.RCHitsOnTarget.filename,RANGE.Sound.RCHitsOnTarget.duration,self.soundpath)
 self.rangecontrol:Number2Transmission(string.format("%d",_result.hits))
 if shots and accur then
@@ -38527,6 +38615,7 @@ self.rangecontrol:Number2Transmission(string.format("%d",UTILS.Round(accur,0)))
 self.rangecontrol:NewTransmission(RANGE.Sound.RCPercent.filename,RANGE.Sound.RCPercent.duration,self.soundpath)
 end
 self.rangecontrol:NewTransmission(_sound.filename,_sound.duration,self.soundpath,nil,0.5)
+end
 end
 self.strafeStatus[_unitID]=nil
 local _stats=self.strafePlayerResults[_playername]or{}
@@ -38544,7 +38633,11 @@ local _ammo=self:_GetAmmo(_unitName)
 self.strafeStatus[_unitID]={hits=0,zone=target,time=1,ammo=_ammo,pastfoulline=false}
 local _msg=string.format("%s, rolling in on strafe pit %s.",self:_myname(_unitName),target.name)
 if self.rangecontrol then
+if self.useSRS then
+self.controlsrsQ:NewTransmission(_msg,nil,self.controlmsrs,nil,1)
+else
 self.rangecontrol:NewTransmission(RANGE.Sound.RCRollingInOnStrafeTarget.filename,RANGE.Sound.RCRollingInOnStrafeTarget.duration,self.soundpath)
+end
 end
 self:_DisplayMessageToGroup(_unit,_msg,10,true)
 self:RollingIn(playerData,target)
@@ -38979,6 +39072,7 @@ local playername=DCSunit:getPlayerName()
 local unit=UNIT:Find(DCSunit)
 self:T2({DCSunit=DCSunit,unit=unit,playername=playername})
 if DCSunit and unit and playername then
+self:F2(playername)
 return unit,playername
 end
 end
@@ -38987,9 +39081,15 @@ return nil,nil
 end
 function RANGE:_myname(unitname)
 self:F2(unitname)
+local pname="Ghost 1 1"
 local unit=UNIT:FindByName(unitname)
-local pname=unit:GetPlayerName()
-return string.format("%s",pname)
+if unit then
+local grp=unit:GetGroup()
+if grp then
+pname=grp:GetCustomCallSign(true,true)
+end
+end
+return pname
 end
 RAT={
 ClassName="RAT",
@@ -58996,12 +59096,12 @@ return self
 end
 function ATIS:SetSoundfilesPath(path)
 self.soundpath=tostring(path or"ATIS Soundfiles/")
-self:I(self.lid..string.format("Setting sound files path to %s",self.soundpath))
+self:T(self.lid..string.format("Setting sound files path to %s",self.soundpath))
 return self
 end
 function ATIS:SetRadioRelayUnitName(unitname)
 self.relayunitname=unitname
-self:I(self.lid..string.format("Setting radio relay unit to %s",self.relayunitname))
+self:T(self.lid..string.format("Setting radio relay unit to %s",self.relayunitname))
 return self
 end
 function ATIS:SetTowerFrequencies(freqs)
@@ -59049,7 +59149,7 @@ for _,heading in pairs(headings)do
 if type(heading)=="number"then
 heading=string.format("%02d",heading)
 end
-self:I(self.lid..string.format("Adding user specified magnetic runway heading %s",heading))
+self:T(self.lid..string.format("Adding user specified magnetic runway heading %s",heading))
 table.insert(self.runwaymag,heading)
 local h=self:GetRunwayWithoutLR(heading)
 local head2=tonumber(h)-18
@@ -59063,7 +59163,7 @@ head2=head2.."L"
 elseif left==false then
 head2=head2.."R"
 end
-self:I(self.lid..string.format("Adding user specified magnetic runway heading %s (inverse)",head2))
+self:T(self.lid..string.format("Adding user specified magnetic runway heading %s (inverse)",head2))
 table.insert(self.runwaymag,head2)
 end
 return self
@@ -59240,7 +59340,7 @@ text=text..string.format(", SRS path=%s (%s), gender=%s, culture=%s, voice=%s",t
 else
 text=text..string.format(", Relay unit=%s (alive=%s)",tostring(self.relayunitname),relayunitstatus)
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 self:__Status(-60)
 end
 function ATIS:onafterCheckQueue(From,Event,To)
@@ -103638,6 +103738,104 @@ coordinate=nil,
 Label="ROBOT",
 }
 MSRS.version="0.1.0"
+MSRS.Voices={
+Microsoft={
+["Hedda"]="Microsoft Hedda Desktop",
+["Hazel"]="Microsoft Hazel Desktop",
+["David"]="Microsoft David Desktop",
+["Zira"]="Microsoft Zira Desktop",
+["Hortense"]="Microsoft Hortense Desktop",
+},
+Google={
+Standard={
+["en-AU-Standard-A"]='en-AU-Standard-A',
+["en-AU-Standard-B"]='en-AU-Standard-B',
+["en-AU-Standard-C"]='en-AU-Standard-C',
+["en-AU-Standard-D"]='en-AU-Standard-D',
+["en-IN-Standard-A"]='en-IN-Standard-A',
+["en-IN-Standard-B"]='en-IN-Standard-B',
+["en-IN-Standard-C"]='en-IN-Standard-C',
+["en-IN-Standard-D"]='en-IN-Standard-D',
+["en-GB-Standard-A"]='en-GB-Standard-A',
+["en-GB-Standard-B"]='en-GB-Standard-B',
+["en-GB-Standard-C"]='en-GB-Standard-C',
+["en-GB-Standard-D"]='en-GB-Standard-D',
+["en-GB-Standard-F"]='en-GB-Standard-F',
+["en-US-Standard-A"]='en-US-Standard-A',
+["en-US-Standard-B"]='en-US-Standard-B',
+["en-US-Standard-C"]='en-US-Standard-C',
+["en-US-Standard-D"]='en-US-Standard-D',
+["en-US-Standard-E"]='en-US-Standard-E',
+["en-US-Standard-F"]='en-US-Standard-F',
+["en-US-Standard-G"]='en-US-Standard-G',
+["en-US-Standard-H"]='en-US-Standard-H',
+["en-US-Standard-I"]='en-US-Standard-I',
+["en-US-Standard-J"]='en-US-Standard-J',
+["fr-FR-Standard-A"]="fr-FR-Standard-A",
+["fr-FR-Standard-B"]="fr-FR-Standard-B",
+["fr-FR-Standard-C"]="fr-FR-Standard-C",
+["fr-FR-Standard-D"]="fr-FR-Standard-D",
+["fr-FR-Standard-E"]="fr-FR-Standard-E",
+["de-DE-Standard-A"]="de-DE-Standard-A",
+["de-DE-Standard-B"]="de-DE-Standard-B",
+["de-DE-Standard-C"]="de-DE-Standard-C",
+["de-DE-Standard-D"]="de-DE-Standard-D",
+["de-DE-Standard-E"]="de-DE-Standard-E",
+["de-DE-Standard-F"]="de-DE-Standard-F",
+["es-ES-Standard-A"]="es-ES-Standard-A",
+["es-ES-Standard-B"]="es-ES-Standard-B",
+["es-ES-Standard-C"]="es-ES-Standard-C",
+["es-ES-Standard-D"]="es-ES-Standard-D",
+["it-IT-Standard-A"]="it-IT-Standard-A",
+["it-IT-Standard-B"]="it-IT-Standard-B",
+["it-IT-Standard-C"]="it-IT-Standard-C",
+["it-IT-Standard-D"]="it-IT-Standard-D",
+},
+Wavenet={
+["en-AU-Wavenet-A"]='en-AU-Wavenet-A',
+["en-AU-Wavenet-B"]='en-AU-Wavenet-B',
+["en-AU-Wavenet-C"]='en-AU-Wavenet-C',
+["en-AU-Wavenet-D"]='en-AU-Wavenet-D',
+["en-IN-Wavenet-A"]='en-IN-Wavenet-A',
+["en-IN-Wavenet-B"]='en-IN-Wavenet-B',
+["en-IN-Wavenet-C"]='en-IN-Wavenet-C',
+["en-IN-Wavenet-D"]='en-IN-Wavenet-D',
+["en-GB-Wavenet-A"]='en-GB-Wavenet-A',
+["en-GB-Wavenet-B"]='en-GB-Wavenet-B',
+["en-GB-Wavenet-C"]='en-GB-Wavenet-C',
+["en-GB-Wavenet-D"]='en-GB-Wavenet-D',
+["en-GB-Wavenet-F"]='en-GB-Wavenet-F',
+["en-US-Wavenet-A"]='en-US-Wavenet-A',
+["en-US-Wavenet-B"]='en-US-Wavenet-B',
+["en-US-Wavenet-C"]='en-US-Wavenet-C',
+["en-US-Wavenet-D"]='en-US-Wavenet-D',
+["en-US-Wavenet-E"]='en-US-Wavenet-E',
+["en-US-Wavenet-F"]='en-US-Wavenet-F',
+["en-US-Wavenet-G"]='en-US-Wavenet-G',
+["en-US-Wavenet-H"]='en-US-Wavenet-H',
+["en-US-Wavenet-I"]='en-US-Wavenet-I',
+["en-US-Wavenet-J"]='en-US-Wavenet-J',
+["fr-FR-Wavenet-A"]="fr-FR-Wavenet-A",
+["fr-FR-Wavenet-B"]="fr-FR-Wavenet-B",
+["fr-FR-Wavenet-C"]="fr-FR-Wavenet-C",
+["fr-FR-Wavenet-D"]="fr-FR-Wavenet-D",
+["fr-FR-Wavenet-E"]="fr-FR-Wavenet-E",
+["de-DE-Wavenet-A"]="de-DE-Wavenet-A",
+["de-DE-Wavenet-B"]="de-DE-Wavenet-B",
+["de-DE-Wavenet-C"]="de-DE-Wavenet-C",
+["de-DE-Wavenet-D"]="de-DE-Wavenet-D",
+["de-DE-Wavenet-E"]="de-DE-Wavenet-E",
+["de-DE-Wavenet-F"]="de-DE-Wavenet-F",
+["es-ES-Wavenet-B"]="es-ES-Wavenet-B",
+["es-ES-Wavenet-C"]="es-ES-Wavenet-C",
+["es-ES-Wavenet-D"]="es-ES-Wavenet-D",
+["it-IT-Wavenet-A"]="it-IT-Wavenet-A",
+["it-IT-Wavenet-B"]="it-IT-Wavenet-B",
+["it-IT-Wavenet-C"]="it-IT-Wavenet-C",
+["it-IT-Wavenet-D"]="it-IT-Wavenet-D",
+},
+},
+}
 function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
