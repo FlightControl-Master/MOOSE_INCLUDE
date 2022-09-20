@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T06:23:49.0000000Z-9fedd32e78c81e43f8a87ffecf7b155a30af9a1c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T07:27:19.0000000Z-242d735d8c55164cd67e69127ea3d89e2570362a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -31244,7 +31244,7 @@ self:SetDetectedItemThreatLevel(DetectedItem)
 self:NearestRecce(DetectedItem)
 end
 end
-function DETECTION_UNITS:DetectedItemReportSummary(DetectedItem,AttackGroup,Settings)
+function DETECTION_UNITS:DetectedItemReportSummary(DetectedItem,AttackGroup,Settings,ForceA2GCoordinate)
 self:F({DetectedItem=DetectedItem})
 local DetectedItemID=self:GetDetectedItemID(DetectedItem)
 if DetectedItem then
@@ -31273,6 +31273,9 @@ end
 end
 local DetectedItemCoordinate=self:GetDetectedItemCoordinate(DetectedItem)
 local DetectedItemCoordText=DetectedItemCoordinate:ToString(AttackGroup,Settings)
+if ForceA2GCoordinate then
+DetectedItemCoordText=DetectedItemCoordinate:ToStringA2G(AttackGroup,Settings)
+end
 local ThreatLevelA2G=self:GetDetectedItemThreatLevel(DetectedItem)
 local Report=REPORT:New()
 Report:Add(DetectedItemID..", "..DetectedItemCoordText)
@@ -32167,8 +32170,8 @@ local DetectedItems=self.Detection:GetDetectedItemsByIndex()
 for DesignateIndex,Designating in pairs(self.Designating)do
 local DetectedItem=DetectedItems[DesignateIndex]
 if DetectedItem then
-local Report=self.Detection:DetectedItemReportSummary(DetectedItem,AttackGroup):Text(", ")
-DetectedReport:Add(string.rep("-",140))
+local Report=self.Detection:DetectedItemReportSummary(DetectedItem,AttackGroup,nil,true):Text(", ")
+DetectedReport:Add(string.rep("-",40))
 DetectedReport:Add(" - "..Report)
 if string.find(Designating,"L")then
 DetectedReport:Add(" - ".."Lasing Targets")
