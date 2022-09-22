@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-22T08:57:43.0000000Z-0971f8ffa72c0e1efb0a8250bc78eaf64fac8405 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-22T13:46:55.0000000Z-8820b8a41ce8ec0baf028af8e6a22acf56bc61ad ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -49169,7 +49169,7 @@ self.CallScheduler:Clear()
 end
 function AIRBOSS:_InitStennis()
 self.carrierparam.sterndist=-153
-self.carrierparam.deckheight=19.06
+self.carrierparam.deckheight=18.30
 self.carrierparam.totlength=310
 self.carrierparam.totwidthport=40
 self.carrierparam.totwidthstarboard=30
