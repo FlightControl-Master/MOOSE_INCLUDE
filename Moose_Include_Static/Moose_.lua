@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-20T15:15:57.0000000Z-9739f9442836f20fb46d0bfdde9482737bf9aa28 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-22T08:57:43.0000000Z-0971f8ffa72c0e1efb0a8250bc78eaf64fac8405 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18017,7 +18017,9 @@ function SPAWN:_SpawnCleanUpScheduler()
 self:F({"CleanUp Scheduler:",self.SpawnTemplatePrefix})
 local SpawnGroup,SpawnCursor=self:GetFirstAliveGroup()
 self:T({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
+local IsHelo=false
 while SpawnGroup do
+IsHelo=SpawnGroup:IsHelicopter()
 local SpawnUnits=SpawnGroup:GetUnits()
 for UnitID,UnitData in pairs(SpawnUnits)do
 local SpawnUnit=UnitData
@@ -18026,8 +18028,8 @@ self.SpawnCleanUpTimeStamps[SpawnUnitName]=self.SpawnCleanUpTimeStamps[SpawnUnit
 local Stamp=self.SpawnCleanUpTimeStamps[SpawnUnitName]
 self:T({SpawnUnitName,Stamp})
 if Stamp.Vec2 then
-if SpawnUnit:InAir()==false and SpawnUnit:GetVelocityKMH()<1 then
-local NewVec2=SpawnUnit:GetVec2()
+if(SpawnUnit:InAir()==false and SpawnUnit:GetVelocityKMH()<1)or IsHelo then
+local NewVec2=SpawnUnit:GetVec2()or{x=0,y=0}
 if(Stamp.Vec2.x==NewVec2.x and Stamp.Vec2.y==NewVec2.y)or(SpawnUnit:GetLife()<=1)then
 if Stamp.Time+self.SpawnCleanUpInterval<timer.getTime()then
 self:T({"CleanUp Scheduler:","ReSpawning:",SpawnGroup:GetName()})
@@ -18044,8 +18046,8 @@ Stamp.Vec2=nil
 Stamp.Time=nil
 end
 else
-if SpawnUnit:InAir()==false then
-Stamp.Vec2=SpawnUnit:GetVec2()
+if SpawnUnit:InAir()==false or(IsHelo and SpawnUnit:GetLife()<=1)then
+Stamp.Vec2=SpawnUnit:GetVec2()or{x=0,y=0}
 if(SpawnUnit:GetVelocityKMH()<1)then
 Stamp.Time=timer.getTime()
 end
