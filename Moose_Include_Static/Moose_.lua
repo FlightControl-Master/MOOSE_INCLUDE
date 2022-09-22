@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-22T13:49:31.0000000Z-481ee186aac6584b2bd5a1778070280081d48777 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-22T15:30:01.0000000Z-4483d3231a285b07149a517495433d1bc69dc2e4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58795,6 +58795,9 @@ function CTLD_CARGO:WipeMark()
 self.Mark=nil
 return self
 end
+function CTLD_CARGO:GetNetMass()
+return self.CratesNeeded*self.PerCrateMass
+end
 end
 do
 CTLD={
@@ -58842,7 +58845,7 @@ CTLD.UnitTypes={
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
-CTLD.version="1.0.10"
+CTLD.version="1.0.11"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -59050,6 +59053,8 @@ self:T(self.lid.." _LoadTroops")
 local instock=Cargotype:GetStock()
 local cgoname=Cargotype:GetName()
 local cgotype=Cargotype:GetType()
+local cgonetmass=Cargotype:GetNetMass()
+local maxloadable=self:_GetMaxLoadableMass(Unit)
 if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
 self:_SendMessage(string.format("Sorry, all %s are gone!",cgoname),10,false,Group)
 return self
@@ -59093,6 +59098,9 @@ loaded.Cargo={}
 end
 if troopsize+numberonboard>trooplimit then
 self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
+return
+elseif maxloadable<cgonetmass then
+self:_SendMessage("Sorry, that\'s too heavy to load!",10,false,Group)
 return
 else
 self.CargoCounter=self.CargoCounter+1
@@ -59539,11 +59547,7 @@ local capabilities={}
 local maxmass=2000
 local maxloadable=2000
 if not _ignoreweight then
-loadedmass=self:_GetUnitCargoMass(_unit)
-unittype=_unit:GetTypeName()
-capabilities=self:_GetUnitCapabilities(_unit)
-maxmass=capabilities.cargoweightlimit or 2000
-maxloadable=maxmass-loadedmass
+maxloadable=self:_GetMaxLoadableMass(_unit)
 end
 self:T(self.lid.." Max loadable mass: "..maxloadable)
 for _,_cargoobject in pairs(existingcrates)do
@@ -59690,6 +59694,16 @@ end
 end
 return loadedmass
 end
+function CTLD:_GetMaxLoadableMass(Unit)
+self:T(self.lid.." _GetMaxLoadableMass")
+if not Unit then return 0 end
+local loadable=0
+local loadedmass=self:_GetUnitCargoMass(Unit)
+local capabilities=self:_GetUnitCapabilities(Unit)
+local maxmass=capabilities.cargoweightlimit or 2000
+loadable=maxmass-loadedmass
+return loadable
+end
 function CTLD:_UpdateUnitCargoMass(Unit)
 self:T(self.lid.." _UpdateUnitCargoMass")
 local calculatedMass=self:_GetUnitCargoMass(Unit)
@@ -59705,6 +59719,7 @@ local trooplimit=capabilities.trooplimit
 local cratelimit=capabilities.cratelimit
 local loadedcargo=self.Loaded_Cargo[unitname]or{}
 local loadedmass=self:_GetUnitCargoMass(Unit)
+local maxloadable=self:_GetMaxLoadableMass(Unit)
 if self.Loaded_Cargo[unitname]then
 local no_troops=loadedcargo.Troopsloaded or 0
 local no_crates=loadedcargo.Cratesloaded or 0
@@ -59739,11 +59754,11 @@ if cratecount==0 then
 report:Add("        N O N E")
 end
 report:Add("------------------------------------------------------------")
-report:Add("Total Mass: "..loadedmass.." kg")
+report:Add("Total Mass: "..loadedmass.." kg. Loadable: "..maxloadable.." kg.")
 local text=report:Text()
 self:_SendMessage(text,30,true,Group)
 else
-self:_SendMessage(string.format("Nothing loaded!\nTroop limit: %d | Crate limit %d",trooplimit,cratelimit),10,false,Group)
+self:_SendMessage(string.format("Nothing loaded!\nTroop limit: %d | Crate limit %d | Weight limit %d kgs",trooplimit,cratelimit,maxloadable),10,false,Group)
 end
 return self
 end
@@ -61086,7 +61101,6 @@ if type==CTLD_CARGO.Enum.ENGINEERS then
 self.Engineers=self.Engineers+1
 local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
 self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
-else
 end
 if self.eventoninject then
 self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter])
@@ -61298,7 +61312,6 @@ for _,_cargo in pairs(stcstable)do
 local cargo=_cargo
 local object=cargo:GetPositionable()
 if object and object:IsAlive()and cargo:WasDropped()then
-self:I({_cargo})
 statics[#statics+1]=cargo
 end
 end
@@ -61676,7 +61689,6 @@ local Zone=ZONE_RADIUS:New("Cargo Static "..math.random(1,10000),position,100)
 if not dead then
 local injectstatic=CTLD_CARGO:New(nil,"Cargo Static Group "..math.random(1,10000),"iso_container",CTLD_CARGO.Enum.STATIC,true,false,1,nil,true,4500,1)
 self.CTLD:InjectStatics(Zone,injectstatic,true)
-else
 end
 return self
 end
@@ -61693,11 +61705,6 @@ self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_nam
 end
 else
 if all_cargo_gets_destroyed==true or Cargo_over_water==true then
-if Container_Enclosed==true then
-if ParatrooperGroupSpawn==false then
-end
-else
-end
 else
 if all_cargo_survive_to_the_ground==true then
 if ParatrooperGroupSpawn==true then
