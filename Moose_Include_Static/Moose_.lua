@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-22T15:32:43.0000000Z-3022dce26e03f3c688f1425f86673a630477d454 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-23T08:00:09.0000000Z-1b691a3dd767b881d275d9f77d879733f13a7424 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -34749,7 +34749,7 @@ local text=string.format("Pilot %s, callsign %s entered unit %s of group %s.",pl
 self:T(self.lid..text)
 MESSAGE:New(text,5):ToAllIf(self.Debug)
 if not self.menudisabled then
-self:ScheduleOnce(0.1,FOX._AddF10Commands,self,_unitname)
+self:ScheduleOnce(0.1,self._AddF10Commands,self,_unitName)
 end
 local playerData={}
 playerData.unit=playerunit
@@ -34892,10 +34892,10 @@ missionCommands.addCommandForGroup(gid,"Mark Launch On/Off",_rootPath,self._Togg
 missionCommands.addCommandForGroup(gid,"My Status",_rootPath,self._MyStatus,self,_unitName)
 end
 else
-self:E(self.lid..string.format("ERROR: Could not find group or group ID in AddF10Menu() function. Unit name: %s.",_unitName))
+self:E(self.lid..string.format("ERROR: Could not find group or group ID in AddF10Menu() function. Unit name: %s.",_unitName or"unknown"))
 end
 else
-self:E(self.lid..string.format("ERROR: Player unit does not exist in AddF10Menu() function. Unit name: %s.",_unitName))
+self:E(self.lid..string.format("ERROR: Player unit does not exist in AddF10Menu() function. Unit name: %s.",_unitName or"unknown"))
 end
 end
 function FOX:_MyStatus(_unitname)
