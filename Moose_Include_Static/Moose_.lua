@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-23T07:59:24.0000000Z-d506067c723cc0599f8b964eff8af87b8ab9273d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-23T08:28:35.0000000Z-d8bdf6a8d3cd24cbdea114ea3ddc309c96b35ddd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61934,6 +61934,7 @@ rescuedpilots=0,
 limitmaxdownedpilots=true,
 maxdownedpilots=10,
 allheligroupset=nil,
+topmenuname="CSAR",
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -63017,7 +63018,8 @@ if _group then
 local groupname=_group:GetName()
 if self.addedTo[groupname]==nil then
 self.addedTo[groupname]=true
-local _rootPath=MENU_GROUP:New(_group,"CSAR")
+local menuname=self.topmenuname or"CSAR"
+local _rootPath=MENU_GROUP:New(_group,menuname)
 local _rootMenu1=MENU_GROUP_COMMAND:New(_group,"List Active CSAR",_rootPath,self._DisplayActiveSAR,self,_unitName)
 local _rootMenu2=MENU_GROUP_COMMAND:New(_group,"Check Onboard",_rootPath,self._CheckOnboard,self,_unitName)
 local _rootMenu3=MENU_GROUP_COMMAND:New(_group,"Request Signal Flare",_rootPath,self._SignalFlare,self,_unitName)
