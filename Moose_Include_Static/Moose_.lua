@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-23T08:28:35.0000000Z-d8bdf6a8d3cd24cbdea114ea3ddc309c96b35ddd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-24T08:09:00.0000000Z-231acc7363f42fcc32be71c88340efabc240e19d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -36633,6 +36633,10 @@ else
 if _currentTarget.pastfoulline==false and _unit and _playername then
 local _d=_currentTarget.zone.foulline
 local text=string.format("%s, Invalid hit!\nYou already passed foul line distance of %d m for target %s.",self:_myname(_unitName),_d,targetname)
+if self.useSRS then
+local ttstext=string.format("%s, Invalid hit! You already passed foul line distance of %d meters for target %s.",self:_myname(_unitName),_d,targetname)
+self.controlsrsQ:NewTransmission(ttstext,nil,self.controlmsrs,nil,2)
+end
 self:_DisplayMessageToGroup(_unit,text)
 self:T2(self.id..text)
 _currentTarget.pastfoulline=true
@@ -36773,6 +36777,10 @@ table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
 local _message=string.format("%s, weapon impacted too far from nearest range target (>%.1f km). No score!",_callsign,self.scorebombdistance/1000)
+if self.useSRS then
+local ttstext=string.format("%s, weapon impacted too far from nearest range target, mor than %.1f kilometer. No score!",_callsign,self.scorebombdistance/1000)
+self.controlsrsQ:NewTransmission(ttstext,nil,self.controlmsrs,nil,2)
+end
 self:_DisplayMessageToGroup(_unit,_message,nil,false)
 if self.rangecontrol then
 if self.useSRS then
@@ -37552,10 +37560,10 @@ local _BoTgtgs=MENU_GROUP_COMMAND:New(group,"Bombing Targets",_infoPath,self._Di
 local _StrPits=MENU_GROUP_COMMAND:New(group,"Strafe Pits",_infoPath,self._DisplayStrafePits,self,_unitName):Refresh()
 end
 else
-self:E(self.id.."Could not find group or group ID in AddF10Menu() function. Unit name: ".._unitName)
+self:E(self.id.."Could not find group or group ID in AddF10Menu() function. Unit name: ".._unitName or"N/A")
 end
 else
-self:E(self.id.."Player unit does not exist in AddF10Menu() function. Unit name: ".._unitName)
+self:E(self.id.."Player unit does not exist in AddF10Menu() function. Unit name: ".._unitName or"N/A")
 end
 end
 function RANGE:_GetBombTargetCoordinate(target)
