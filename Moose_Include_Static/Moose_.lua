@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-24T08:09:00.0000000Z-231acc7363f42fcc32be71c88340efabc240e19d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-24T08:10:06.0000000Z-e804ab9254875f5fa712e787455e67249f7163ca ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45831,6 +45831,10 @@ return self
 end
 function FOX:SetDisableF10Menu()
 self.menudisabled=true
+return self
+end
+function FOX:SetEnableF10Menu()
+self.menudisabled=false
 return self
 end
 function FOX:SetDefaultMissileDestruction(switch)
