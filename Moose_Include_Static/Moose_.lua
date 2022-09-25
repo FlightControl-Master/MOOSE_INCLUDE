@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-25T12:42:51.0000000Z-6290409e5402767d3643e87bde1e492c3f90b840 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-25T13:04:39.0000000Z-41813dcc53f6504404a51e8d702e61a1a8bcbb17 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63537,7 +63537,7 @@ self.AwacsROE=AWACS.ROE.IFF
 self.RadarBlur=15
 return self
 end
-function AWACS:SetModernEraAgressive()
+function AWACS:SetModernEraAggressive()
 self.ModernEra=true
 self.AwacsROT=AWACS.ROT.RETURNFIRE
 self.AwacsROE=AWACS.ROE.BVR
