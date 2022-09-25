@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-24T08:11:23.0000000Z-1cde688fbb78feee50b67b08cafa6095f98389db ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-25T12:12:46.0000000Z-6d4e4e2f69c970ffb1a20870149996598baf974d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63536,7 +63536,7 @@ self.AwacsROE=AWACS.ROE.IFF
 self.RadarBlur=15
 return self
 end
-function AWACS:SetModernEraAggressive()
+function AWACS:SetModernEraAgressive()
 self.ModernEra=true
 self.AwacsROT=AWACS.ROT.RETURNFIRE
 self.AwacsROE=AWACS.ROE.BVR
@@ -64349,7 +64349,7 @@ self:I(self.lid.."_ShowAwacsInfo")
 local report=REPORT:New("Info")
 report:Add("====================")
 report:Add(string.format("AWACS %s",self.callsigntxt))
-report:Add(string.format("Radio: %d %s",self.Frequency,UTILS.GetModulationName(self.Modulation)))
+report:Add(string.format("Radio: %.3f %s",self.Frequency,UTILS.GetModulationName(self.Modulation)))
 report:Add(string.format("Bulls Alias: %s",self.AOName))
 report:Add(string.format("Coordinate: %s",self.AOCoordinate:ToStringLLDDM()))
 report:Add("====================")
