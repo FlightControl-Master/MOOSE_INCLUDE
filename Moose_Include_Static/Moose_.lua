@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-25T12:16:19.0000000Z-b8fae00c1e6a9dda7a7ecc6f6cce025f79d7bdd4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-25T12:40:17.0000000Z-25033f4f6b009deeb3a35341825b3d931117beb6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74944,7 +74944,7 @@ TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
 FLIGHTCONTROL.version="0.7.3"
-function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port)
+function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
 self.airbasename=AirbaseName
@@ -74973,9 +74973,11 @@ self:SetCallSignOptions(true,true)
 self.msrsqueue=MSRSQUEUE:New(self.alias)
 self.msrsTower=MSRS:New(PathToSRS,Frequency,Modulation)
 self.msrsTower:SetPort(self.Port)
+self.msrsTower:SetGoogle(GoogleKey)
 self:SetSRSTower()
 self.msrsPilot=MSRS:New(PathToSRS,Frequency,Modulation)
 self.msrsPilot:SetPort(self.Port)
+self.msrsPilot:SetGoogle(GoogleKey)
 self:SetSRSPilot()
 self.dTmessage=10
 self:SetStartState("Stopped")
