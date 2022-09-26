@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-25T13:04:39.0000000Z-41813dcc53f6504404a51e8d702e61a1a8bcbb17 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-26T15:03:08.0000000Z-28a826b35d773f64aba615a10c1e9820fc951f87 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -70022,6 +70022,7 @@ limitmaxdownedpilots=true,
 maxdownedpilots=10,
 allheligroupset=nil,
 topmenuname="CSAR",
+ADFRadioPwr=1000,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -70037,7 +70038,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.9"
+CSAR.version="1.0.11"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -70138,6 +70139,7 @@ self.csarUsePara=false
 self.wetfeettemplate=nil
 self.usewetfeet=false
 self.allowbronco=false
+self.ADFRadioPwr=1000
 self.useSRS=false
 self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSchannel=300
@@ -71188,7 +71190,7 @@ if _radioUnit then
 local Frequency=_freq
 local Sound="l10n/DEFAULT/"..self.radioSound
 local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
-trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,1000)
+trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000)
 end
 end
 return self
