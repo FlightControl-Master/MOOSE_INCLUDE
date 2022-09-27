@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-26T15:01:18.0000000Z-0731e15385425c38f2ff20a35e100442d70030a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-27T07:27:59.0000000Z-14c6d1be9bd7cb7f9ce46652b4024123152f7241 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23221,13 +23221,13 @@ local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
 if IsPlayer and string.find(groupname,"#")then
 if Keepnumber then
-shortcallsign=string.match(groupname,"#(.+)")
+shortcallsign=string.match(groupname,"#(.+)")or"Ghost 111"
 else
-shortcallsign=string.match(groupname,"#%s*([%a]+)")
+shortcallsign=string.match(groupname,"#%s*([%a]+)")or"Ghost"
 end
 personalized=true
 elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
-shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")
+shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
 personalized=true
 end
 if(not personalized)and CallsignTranslations and CallsignTranslations[callsignroot]then
@@ -37942,9 +37942,9 @@ function RANGE:_myname(unitname)
 self:F2(unitname)
 local pname="Ghost 1 1"
 local unit=UNIT:FindByName(unitname)
-if unit then
+if unit and unit:IsAlive()then
 local grp=unit:GetGroup()
-if grp then
+if grp and grp:IsAlive()then
 pname=grp:GetCustomCallSign(true,true)
 end
 end
