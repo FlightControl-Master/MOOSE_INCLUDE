@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-27T07:27:59.0000000Z-14c6d1be9bd7cb7f9ce46652b4024123152f7241 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-27T09:16:08.0000000Z-f582f7df7c959653b0343a067f9606e5c88994d8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57218,6 +57218,7 @@ altimeterQNH=nil,
 usemarker=nil,
 markerid=nil,
 relHumidity=nil,
+ReportmBar=false,
 }
 ATIS.Alphabet={
 [1]="Alfa",
@@ -57345,7 +57346,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.8"
+ATIS.version="0.9.9"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -57368,6 +57369,7 @@ self:SetAltimeterQNH(true)
 self:SetMapMarks(false)
 self:SetRelativeHumidity()
 self:SetQueueUpdateTime()
+self:SetReportmBar(false)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
@@ -57397,6 +57399,21 @@ return self
 end
 function ATIS:SetActiveRunway(runway)
 self.activerunway=tostring(runway)
+local prefer=nil
+if string.find(string.lower(runway),"l")then
+prefer=true
+elseif string.find(string.lower(runway),"r")then
+prefer=false
+end
+self.airbase:SetActiveRunway(runway,prefer)
+return self
+end
+function ATIS:SetActiveRunwayLanding(runway,preferleft)
+self.airbase:SetActiveRunwayLanding(runway,preferleft)
+return self
+end
+function ATIS:SetActiveRunwayTakeoff(runway,preferleft)
+self.airbase:SetActiveRunwayTakeoff(runway,preferleft)
 return self
 end
 function ATIS:SetRunwayLength()
@@ -57481,6 +57498,18 @@ self.altimeterQNH=true
 else
 self.altimeterQNH=false
 end
+return self
+end
+function ATIS:SetReportmBar(switch)
+if switch==true or switch==nil then
+self.ReportmBar=true
+else
+self.ReportmBar=false
+end
+return self
+end
+function ATIS:SetAdditionalInformation(text)
+self.AdditionalInformation=text
 return self
 end
 function ATIS:ReportQNHOnly()
@@ -57660,6 +57689,8 @@ local A=(T0/L)*((P/q)^(((-R*L)/(g*M)))-1)
 self:T2(self.lid..string.format("height=%.1f, A=%.1f, T0=%.1f, QFE=%.1f, QNH=%.1f, P=%.1f, Q=%.1f hPa = %.2f",height,A,T0-273.15,qfe,qnh,P/100,Q/100,UTILS.hPa2inHg(Q/100)))
 qnh=Q/100
 end
+local mBarqnh=qnh
+local mBarqfe=qfe
 if self.PmmHg then
 qfe=UTILS.hPa2mmHg(qfe)
 qnh=UTILS.hPa2mmHg(qnh)
@@ -57975,6 +58006,7 @@ self:Transmission(ATIS.Sound.StatuteMiles,0.2)
 end
 end
 alltext=alltext..";\n"..subtitle
+subtitle=""
 local wp=false
 local wpsub=""
 if precepitation==1 then
@@ -58067,6 +58099,7 @@ end
 end
 end
 alltext=alltext..";\n"..subtitle
+subtitle=""
 if self.TDegF then
 if temperature<0 then
 subtitle=string.format("Temperature -%s °F",TEMPERATURE)
@@ -58140,6 +58173,13 @@ subtitle=string.format("Altimeter %s.%s inHg",QNH[1],QNH[2])
 else
 subtitle=string.format("Altimeter: QNH %s.%s, QFE %s.%s inHg",QNH[1],QNH[2],QFE[1],QFE[2])
 end
+end
+end
+if self.ReportmBar and not self.metric then
+if self.qnhonly then
+subtitle=string.format("%s;\nAltimeter %d hPa",subtitle,mBarqnh)
+else
+subtitle=string.format("%s;\nAltimeter: QNH %d, QFE %d hPa",subtitle,mBarqnh,mBarqfe)
 end
 end
 local _ALTIMETER=subtitle
@@ -58365,6 +58405,9 @@ self:Transmission(ATIS.Sound.PRMGChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(ndb.frequency),nil,0.5)
 end
 alltext=alltext..";\n"..subtitle
+end
+if self.useSRS and self.AdditionalInformation then
+alltext=alltext..";\n"..self.AdditionalInformation
 end
 subtitle=string.format("Advise on initial contact, you have information %s",NATO)
 if not self.useSRS then
