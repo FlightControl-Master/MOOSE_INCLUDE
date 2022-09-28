@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-27T09:16:08.0000000Z-f582f7df7c959653b0343a067f9606e5c88994d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-28T09:49:06.0000000Z-dddb9ff713f03e86e0206bec0800d82045a7395f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9078,7 +9078,7 @@ rcoord=self:GetRandomCoordinate(inner,outer)
 found=false
 for _,_coord in pairs(buildings)do
 local coord=_coord
-if coord:Get2DDistance(rcoord)>dist then
+if coord:Get3DDistance(rcoord)>dist then
 found=true
 else
 found=false
@@ -9530,6 +9530,145 @@ end
 function ZONE_POLYGON:FindByName(ZoneName)
 local ZoneFound=_DATABASE:FindZone(ZoneName)
 return ZoneFound
+end
+function ZONE_POLYGON:Scan(ObjectCategories,UnitCategories)
+self.ScanData={}
+self.ScanData.Coalitions={}
+self.ScanData.Scenery={}
+self.ScanData.Units={}
+local function EvaluateZone(ZoneObject)
+if ZoneObject then
+local ObjectCategory=ZoneObject:getCategory()
+if(ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()and ZoneObject:isActive())or(ObjectCategory==Object.Category.STATIC and ZoneObject:isExist())then
+local CoalitionDCSUnit=ZoneObject:getCoalition()
+local Include=false
+if not UnitCategories then
+Include=true
+else
+local CategoryDCSUnit=ZoneObject:getDesc().category
+for UnitCategoryID,UnitCategory in pairs(UnitCategories)do
+if UnitCategory==CategoryDCSUnit then
+Include=true
+break
+end
+end
+end
+if Include then
+local CoalitionDCSUnit=ZoneObject:getCoalition()
+self.ScanData.Coalitions[CoalitionDCSUnit]=true
+self.ScanData.Units[ZoneObject]=ZoneObject
+self:F2({Name=ZoneObject:getName(),Coalition=CoalitionDCSUnit})
+end
+end
+end
+return true
+end
+local inzoneunits=SET_UNIT:New():FilterZones({self}):FilterOnce()
+local inzonestatics=SET_STATIC:New():FilterZones({self}):FilterOnce()
+inzoneunits:ForEach(
+function(unit)
+local Unit=unit
+local DCS=Unit:GetDCSObject()
+EvaluateZone(DCS)
+end
+)
+inzonestatics:ForEach(
+function(static)
+local Static=static
+local DCS=Static:GetDCSObject()
+EvaluateZone(DCS)
+end
+)
+end
+function ZONE_POLYGON:GetScannedUnits()
+return self.ScanData.Units
+end
+function ZONE_POLYGON:GetScannedSetUnit()
+local SetUnit=SET_UNIT:New()
+if self.ScanData then
+for ObjectID,UnitObject in pairs(self.ScanData.Units)do
+local UnitObject=UnitObject
+if UnitObject:isExist()then
+local FoundUnit=UNIT:FindByName(UnitObject:getName())
+if FoundUnit then
+SetUnit:AddUnit(FoundUnit)
+else
+local FoundStatic=STATIC:FindByName(UnitObject:getName())
+if FoundStatic then
+SetUnit:AddUnit(FoundStatic)
+end
+end
+end
+end
+end
+return SetUnit
+end
+function ZONE_POLYGON:GetScannedSetGroup()
+self.ScanSetGroup=self.ScanSetGroup or SET_GROUP:New()
+self.ScanSetGroup.Set={}
+if self.ScanData then
+for ObjectID,UnitObject in pairs(self.ScanData.Units)do
+local UnitObject=UnitObject
+if UnitObject:isExist()then
+local FoundUnit=UNIT:FindByName(UnitObject:getName())
+if FoundUnit then
+local group=FoundUnit:GetGroup()
+self.ScanSetGroup:AddGroup(group)
+end
+end
+end
+end
+return self.ScanSetGroup
+end
+function ZONE_POLYGON:CountScannedCoalitions()
+local Count=0
+for CoalitionID,Coalition in pairs(self.ScanData.Coalitions)do
+Count=Count+1
+end
+return Count
+end
+function ZONE_POLYGON:CheckScannedCoalition(Coalition)
+if Coalition then
+return self.ScanData.Coalitions[Coalition]
+end
+return nil
+end
+function ZONE_POLYGON:GetScannedCoalition(Coalition)
+if Coalition then
+return self.ScanData.Coalitions[Coalition]
+else
+local Count=0
+local ReturnCoalition=nil
+for CoalitionID,Coalition in pairs(self.ScanData.Coalitions)do
+Count=Count+1
+ReturnCoalition=CoalitionID
+end
+if Count~=1 then
+ReturnCoalition=nil
+end
+return ReturnCoalition
+end
+end
+function ZONE_POLYGON:GetScannedSceneryType(SceneryType)
+return self.ScanData.Scenery[SceneryType]
+end
+function ZONE_POLYGON:GetScannedScenery()
+return self.ScanData.Scenery
+end
+function ZONE_POLYGON:IsAllInZoneOfCoalition(Coalition)
+return self:CountScannedCoalitions()==1 and self:GetScannedCoalition(Coalition)==true
+end
+function ZONE_POLYGON:IsAllInZoneOfOtherCoalition(Coalition)
+return self:CountScannedCoalitions()==1 and self:GetScannedCoalition(Coalition)==nil
+end
+function ZONE_POLYGON:IsSomeInZoneOfCoalition(Coalition)
+return self:CountScannedCoalitions()>1 and self:GetScannedCoalition(Coalition)==true
+end
+function ZONE_POLYGON:IsNoneInZoneOfCoalition(Coalition)
+return self:GetScannedCoalition(Coalition)==nil
+end
+function ZONE_POLYGON:IsNoneInZone()
+return self:CountScannedCoalitions()==0
 end
 do
 ZONE_ELASTIC={
@@ -37960,8 +38099,14 @@ SmokeColor=nil,
 SmokeZone=nil,
 }
 function ZONE_GOAL:New(Zone)
-local self=BASE:Inherit(self,ZONE_RADIUS:New(Zone:GetName(),Zone:GetVec2(),Zone:GetRadius()))
+BASE:I({Zone=Zone})
+local self=BASE:Inherit(self,BASE:New())
+if type(Zone)=="string"then
+self=BASE:Inherit(self,ZONE_POLYGON:NewFromGroupName(Zone))
+else
+self=BASE:Inherit(self,ZONE_RADIUS:New(Zone:GetName(),Zone:GetVec2(),Zone:GetRadius()))
 self:F({Zone=Zone})
+end
 self.Goal=GOAL:New()
 self.SmokeTime=nil
 self:SetSmokeZone(true)
