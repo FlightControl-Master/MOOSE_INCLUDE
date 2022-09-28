@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-28T09:51:22.0000000Z-8a9ee747c18c1abc4cc72f4e8253fb994300243d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-28T11:07:37.0000000Z-de415384f3fb1ff58be2a3a075d050f988f36b04 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -90842,8 +90842,9 @@ conditionSuccess={},
 conditionFailure={},
 TaskController=nil,
 timestamp=0,
+lastsmoketime=0,
 }
-PLAYERTASK.version="0.1.2"
+PLAYERTASK.version="0.1.3"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -90858,6 +90859,7 @@ self.conditionFailure={}
 self.TaskController=nil
 self.timestamp=timer.getAbsTime()
 self.TTSType=TTSType or"close air support"
+self.lastsmoketime=0
 if Repeat then
 self.Repeat=true
 self.RepeatNo=Times or 1
@@ -90986,10 +90988,13 @@ end
 function PLAYERTASK:SmokeTarget(Color)
 self:T(self.lid.."SmokeTarget")
 local color=Color or SMOKECOLOR.Red
-if self.Target then
+if not self.lastsmoketime then self.lastsmoketime=0 end
+local TDiff=timer.getAbsTime()-self.lastsmoketime
+if self.Target and TDiff>299 then
 local coordinate=self.Target:GetCoordinate()
 if coordinate then
 coordinate:Smoke(color)
+self.lastsmoketime=timer.getAbsTime()
 end
 end
 return self
@@ -91189,6 +91194,7 @@ CallsignTranslations=nil,
 PlayerFlashMenu={},
 PlayerJoinMenu={},
 PlayerInfoMenu={},
+noflaresmokemenu=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -91326,7 +91332,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.36"
+PLAYERTASKCONTROLLER.version="0.1.37"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -91361,6 +91367,7 @@ self.customcallsigns={}
 self.ShortCallsign=true
 self.Keepnumber=false
 self.CallsignTranslations=nil
+self.noflaresmokemenu=false
 if ClientFilter then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
 else
@@ -91406,6 +91413,16 @@ end
 function PLAYERTASKCONTROLLER:SetAllowFlashDirection(OnOff)
 self:T(self.lid.."SetAllowFlashDirection")
 self.AllowFlash=OnOff
+return self
+end
+function PLAYERTASKCONTROLLER:SetDisableSmokeFlareTask()
+self:T(self.lid.."SetDisableSmokeFlareTask")
+self.noflaresmokemenu=true
+return self
+end
+function PLAYERTASKCONTROLLER:SetEnableSmokeFlareTask()
+self:T(self.lid.."SetEnableSmokeFlareTask")
+self.noflaresmokemenu=false
 return self
 end
 function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
@@ -92346,7 +92363,7 @@ local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
 local active=MENU_GROUP_DELAYED:New(group,menuactive,topmenu)
 local info=MENU_GROUP_COMMAND_DELAYED:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client)
 local mark=MENU_GROUP_COMMAND_DELAYED:New(group,menumark,active,self._MarkTask,self,group,client)
-if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A or self.noflaresmokemenu then
 local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client)
 local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client)
 end
