@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-28T09:49:06.0000000Z-dddb9ff713f03e86e0206bec0800d82045a7395f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-29T14:43:40.0000000Z-e8ace49e8b8126fd18e9cc2a4d032f877920dd38 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9519,6 +9519,12 @@ self:F({ZoneName,ZoneGroup,self._.Polygon})
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
+function ZONE_POLYGON:NewFromPointsArray(ZoneName,PointsArray)
+local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(ZoneName,PointsArray))
+self:F({ZoneName,self._.Polygon})
+_EVENTDISPATCHER:CreateEventNewZone(self)
+return self
+end
 function ZONE_POLYGON:NewFromGroupName(GroupName)
 local ZoneGroup=GROUP:FindByName(GroupName)
 local GroupPoints=ZoneGroup:GetTaskRoute()
@@ -18527,8 +18533,9 @@ self.Target=Target
 self.LaserCode=LaserCode
 self.Lasing=true
 local RecceDcsUnit=self.Recce:GetDCSObject()
-self.SpotIR=Spot.createInfraRed(RecceDcsUnit,{x=0,y=2,z=0},Target:GetPointVec3():AddY(1):GetVec3())
-self.SpotLaser=Spot.createLaser(RecceDcsUnit,{x=0,y=2,z=0},Target:GetPointVec3():AddY(1):GetVec3(),LaserCode)
+local relativespot=self.relstartpos or{x=0,y=2,z=0}
+self.SpotIR=Spot.createInfraRed(RecceDcsUnit,relativespot,Target:GetPointVec3():AddY(1):GetVec3())
+self.SpotLaser=Spot.createLaser(RecceDcsUnit,relativespot,Target:GetPointVec3():AddY(1):GetVec3(),LaserCode)
 if Duration then
 self.ScheduleID=self.LaseScheduler:Schedule(self,StopLase,{self},Duration)
 end
@@ -18593,6 +18600,10 @@ return self
 end
 function SPOT:IsLasing()
 return self.Lasing
+end
+function SPOT:SetRelativeStartPosition(position)
+self.relstartpos=position or{x=0,y=2,z=0}
+return self
 end
 end
 MARKEROPS_BASE={
