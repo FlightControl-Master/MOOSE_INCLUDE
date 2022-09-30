@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-30T12:41:38.0000000Z-a8a92c00fe473e7ca8ed9483ebeb65307f569c24 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-30T12:48:35.0000000Z-61aed403d90c40f66d93115a75f85ef8e276f86c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -11534,9 +11534,22 @@ function SET_BASE:IsIncludeObject(Object)
 self:F3(Object)
 return true
 end
-function SET_BASE:IsInSet(ObjectName)
+function SET_BASE:IsInSet(Object)
 self:F3(Object)
-return true
+local outcome=false
+local name=Object:GetName()
+self:ForEach(
+function(object)
+if object:GetName()==name then
+outcome=true
+end
+end
+)
+return outcome
+end
+function SET_BASE:IsNotInSet(Object)
+self:F3(Object)
+return not self:IsInSet(Object)
 end
 function SET_BASE:GetObjectNames()
 self:F3()
