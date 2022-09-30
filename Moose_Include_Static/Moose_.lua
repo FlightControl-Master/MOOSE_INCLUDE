@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-30T12:48:35.0000000Z-61aed403d90c40f66d93115a75f85ef8e276f86c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-30T16:49:08.0000000Z-43856341e640a22396d0c7a4461b4a55716fd174 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92735,6 +92735,659 @@ self:UnHandleEvent(EVENTS.PilotDead)
 self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
 return self
 end
+end
+PLAYERRECCE={
+ClassName="PLAYERRECCE",
+verbose=true,
+lid=nil,
+version="0.0.1",
+ViewZone={},
+ViewZoneVisual={},
+PlayerSet=nil,
+debug=true,
+LaserSpots={},
+UnitLaserCodes={},
+LaserCodes={},
+ClientMenus={},
+OnStation={},
+minthreatlevel=0,
+lasingtime=60,
+AutoLase={},
+AttackSet=nil,
+}
+PLAYERRECCE.LaserRelativePos={
+["SA342M"]={x=1.7,y=1.2,z=0},
+["SA342Mistral"]={x=1.7,y=1.2,z=0},
+["SA342Minigun"]={x=1.7,y=1.2,z=0},
+["SA342L"]={x=1.7,y=1.2,z=0},
+}
+PLAYERRECCE.MaxViewDistance={
+["SA342M"]=5000,
+["SA342Mistral"]=5000,
+["SA342Minigun"]=5000,
+["SA342L"]=5000,
+}
+PLAYERRECCE.Cameraheight={
+["SA342M"]=2.85,
+["SA342Mistral"]=2.85,
+["SA342Minigun"]=2.85,
+["SA342L"]=2.85,
+}
+PLAYERRECCE.CanLase={
+["SA342M"]=true,
+["SA342Mistral"]=true,
+["SA342Minigun"]=false,
+["SA342L"]=true,
+}
+function PLAYERRECCE:New(Name,Coalition,PlayerSet)
+local self=BASE:Inherit(self,FSM:New())
+self.Name=Name or"Blue FACA"
+self.Coalition=Coalition or coalition.side.BLUE
+self.CoalitionName=UTILS.GetCoalitionName(Coalition)
+self.PlayerSet=PlayerSet
+self.lid=string.format("PlayerForwardController %s %s | ",self.Name,self.version)
+self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
+self.lasingtime=60
+self.minthreatlevel=0
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","RecceOnStation","*")
+self:AddTransition("*","RecceOffStation","*")
+self:AddTransition("*","TargetDetected","*")
+self:AddTransition("*","TargetsSmoked","*")
+self:AddTransition("*","TargetsFlared","*")
+self:AddTransition("*","TargetLasing","*")
+self:AddTransition("*","TargetLOSLost","*")
+self:AddTransition("*","TargetReport","*")
+self:AddTransition("*","TargetReportSent","*")
+self:AddTransition("Running","Stop","Stopped")
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.Crash,self._EventHandler)
+self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:__Start(-1)
+local starttime=math.random(5,10)
+self:__Status(-starttime)
+return self
+end
+function PLAYERRECCE:_EventHandler(EventData)
+self:T(self.lid.."_EventHandler: "..EventData.id)
+if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
+if EventData.IniPlayerName then
+self:I(self.lid.."Event for player: "..EventData.IniPlayerName)
+if self.ClientMenus[EventData.IniPlayerName]then
+self.ClientMenus[EventData.IniPlayerName]:Remove()
+end
+self.ClientMenus[EventData.IniPlayerName]=nil
+self.LaserSpots[EventData.IniPlayerName]=nil
+self.OnStation[EventData.IniPlayerName]=false
+end
+elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
+if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
+self:I(self.lid.."Event for player: "..EventData.IniPlayerName)
+self.UnitLaserCodes[EventData.IniPlayerName]=1688
+self.ClientMenus[EventData.IniPlayerName]=nil
+self.LaserSpots[EventData.IniPlayerName]=nil
+self.OnStation[EventData.IniPlayerName]=false
+self:_BuildMenus()
+end
+end
+return self
+end
+function PLAYERRECCE:SetLaserCodes(LaserCodes)
+self.LaserCodes=(type(LaserCodes)=="table")and LaserCodes or{LaserCodes}
+return self
+end
+function PLAYERRECCE:SetAttackSet(AttackSet)
+self.AttackSet=AttackSet
+return self
+end
+function PLAYERRECCE:_GetGazelleVivianneSight(Gazelle)
+self:I(self.lid.."GetGazelleVivianneSight")
+local unit=Gazelle
+if unit and unit:IsAlive()then
+local dcsunit=Unit.getByName(Gazelle:GetName())
+local vivihorizontal=dcsunit:getDrawArgumentValue(215)or 0
+local vivivertical=dcsunit:getDrawArgumentValue(216)or 0
+local vivioff=false
+if vivihorizontal<-0.7 then
+vivihorizontal=-0.7
+vivioff=true
+return 0,0,0,false
+elseif vivihorizontal>0.7 then
+vivihorizontal=0.7
+vivioff=true
+return 0,0,0,false
+end
+local horizontalview=vivihorizontal*-180
+local verticalview=vivivertical*-30
+local heading=unit:GetHeading()
+local viviheading=(heading+horizontalview)%360
+local maxview=self:_GetActualMaxLOSight(unit,viviheading,verticalview,vivioff)
+return viviheading,verticalview,maxview,not vivioff
+end
+return 0,0,0,false
+end
+function PLAYERRECCE:_GetActualMaxLOSight(unit,vheading,vnod,vivoff)
+self:I(self.lid.."_GetActualMaxLOSight")
+if vivoff then return 0 end
+local maxview=0
+if unit and unit:IsAlive()then
+local typename=unit:GetTypeName()
+maxview=self.MaxViewDistance[typename]or 5000
+local CamHeight=self.Cameraheight[typename]or 0
+if vnod>0 then
+local beta=90
+local gamma=math.floor(90-vnod)
+local alpha=math.floor(180-beta-gamma)
+local a=unit:GetHeight()-unit:GetCoordinate():GetLandHeight()+CamHeight
+local b=a/math.sin(math.rad(alpha))
+local c=b*math.sin(math.rad(gamma))
+maxview=c*1.2
+end
+end
+return maxview
+end
+function PLAYERRECCE:_GetViewZone(unit,vheading,vnod,maxview,angle,camon,draw)
+self:I(self.lid.."_GetViewZone")
+local viewzone=nil
+if not camon then return nil end
+if unit and unit:IsAlive()then
+local unitname=unit:GetName()
+if self.ViewZone[unitname]then
+self.ViewZone[unitname]:UndrawZone()
+end
+local startpos=unit:GetCoordinate()
+local heading1=(vheading+angle)%360
+local heading2=(vheading-angle)%360
+local pos1=startpos:Translate(maxview,heading1)
+local pos2=startpos:Translate(maxview,heading2)
+local array={}
+table.insert(array,startpos:GetVec2())
+table.insert(array,pos1:GetVec2())
+table.insert(array,pos2:GetVec2())
+viewzone=ZONE_POLYGON:NewFromPointsArray(unitname,array)
+if draw then
+viewzone:DrawZone(-1,{0,0,1},nil,nil,nil,1)
+self.ViewZone[unitname]=viewzone
+end
+end
+return viewzone
+end
+function PLAYERRECCE:_GetTargetSet(unit,camera)
+self:I(self.lid.."_GetTargetSet")
+local finaltargets=SET_UNIT:New()
+local finalcount=0
+local heading,nod,maxview,angle=0,30,5000,10
+local camon=true
+local typename=unit:GetTypeName()
+local name=unit:GetName()
+if string.find(typename,"SA342")and camera then
+heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
+angle=10
+else
+heading=unit:GetHeading()
+nod,maxview,camon=10,1000,true
+angle=45
+end
+local zone=self:_GetViewZone(unit,heading,nod,maxview,angle,camon)
+if zone then
+local redcoalition="red"
+if self.Coalition==coalition.side.RED then
+redcoalition="blue"
+end
+local startpos=unit:GetCoordinate()
+local targetset=SET_UNIT:New():FilterCategories("ground"):FilterActive(true):FilterZones({zone}):FilterCoalitions(redcoalition):FilterOnce()
+self:I("Prefilter Target Count = "..targetset:CountAlive())
+targetset:ForEach(
+function(_unit)
+local _unit=_unit
+local _unitpos=_unit:GetCoordinate()
+if startpos:IsLOS(_unitpos)then
+self:I("Adding to final targets: ".._unit:GetName())
+finaltargets:Add(_unit:GetName(),_unit)
+end
+end
+)
+finalcount=finaltargets:CountAlive()
+self:I(string.format("%s Unit: %s | Targets in view %s",self.lid,name,finalcount))
+end
+return finaltargets,finalcount,zone
+end
+function PLAYERRECCE:_GetHVTTarget(targetset)
+self:I(self.lid.."_GetHVTTarget")
+local unitsbythreat={}
+local minthreat=self.minthreatlevel or 0
+for _,_unit in pairs(targetset.Set)do
+local unit=_unit
+if unit and unit:IsAlive()then
+local threat=unit:GetThreatLevel()
+if threat>=minthreat then
+if unit:HasAttribute("RADAR_BAND1_FOR_ARM")or unit:HasAttribute("RADAR_BAND2_FOR_ARM")or unit:HasAttribute("Optical Tracker")then
+threat=11
+end
+table.insert(unitsbythreat,{unit,threat})
+end
+end
+end
+table.sort(unitsbythreat,function(a,b)
+local aNum=a[2]
+local bNum=b[2]
+return aNum>bNum
+end)
+return unitsbythreat[1][1]
+end
+function PLAYERRECCE:_LaseTarget(client,targetset)
+self:I(self.lid.."_LaseTarget")
+local target=self:_GetHVTTarget(targetset)
+local playername=client:GetPlayerName()
+local laser=nil
+if not self.LaserSpots[playername]then
+laser=SPOT:New(client)
+if not self.UnitLaserCodes[playername]then
+self.UnitLaserCodes[playername]=1688
+end
+laser.LaserCode=self.UnitLaserCodes[playername]or 1688
+self.LaserSpots[playername]=laser
+else
+laser=self.LaserSpots[playername]
+end
+if not laser:IsLasing()and target then
+local relativecam=self.LaserRelativePos[client:GetTypeName()]
+laser:SetRelativeStartPosition(relativecam)
+local lasercode=self.UnitLaserCodes[playername]or laser.LaserCode or 1688
+local lasingtime=self.lasingtime or 60
+local targettype=target:GetTypeName()
+laser:LaseOn(target,lasercode,lasingtime)
+self:__TargetLasing(-1,client,target,lasercode,lasingtime)
+else
+local oldtarget=laser.Target
+if targetset:IsNotInSet(oldtarget)then
+local targettype=oldtarget:GetTypeName()
+laser:LaseOff()
+self:__TargetLOSLost(-1,client,oldtarget)
+end
+end
+return self
+end
+function PLAYERRECCE:_SetClientLaserCode(client,group,playername,code)
+self:I(self.lid.."_SetClientLaserCode")
+self.UnitLaserCodes[playername]=code or 1688
+if self.ClientMenus[playername]then
+self.ClientMenus[playername]:Remove()
+self.ClientMenus[playername]=nil
+end
+return self
+end
+function PLAYERRECCE:_SwitchOnStation(client,group,playername)
+self:I(self.lid.."_SwitchOnStation")
+if not self.OnStation[playername]then
+self.OnStation[playername]=true
+self:__RecceOnStation(-1,client,playername)
+else
+self.OnStation[playername]=false
+self:__RecceOffStation(-1,client,playername)
+end
+if self.ClientMenus[playername]then
+self.ClientMenus[playername]:Remove()
+self.ClientMenus[playername]=nil
+end
+return self
+end
+function PLAYERRECCE:_SwitchLasing(client,group,playername)
+self:I(self.lid.."_SwitchLasing")
+if not self.AutoLase[playername]then
+self.AutoLase[playername]=true
+MESSAGE:New("Lasing is now ON",10,self.Name or"FACA"):ToClient(client)
+else
+self.AutoLase[playername]=false
+MESSAGE:New("Lasing is now OFF",10,self.Name or"FACA"):ToClient(client)
+end
+if self.ClientMenus[playername]then
+self.ClientMenus[playername]:Remove()
+self.ClientMenus[playername]=nil
+end
+return self
+end
+function PLAYERRECCE:_WIP(client,group,playername)
+self:I(self.lid.."_WIP")
+return self
+end
+function PLAYERRECCE:_SmokeTargets(client,group,playername)
+self:I(self.lid.."_SmokeTargets")
+local cameraset=self:_GetTargetSet(client,true)
+local visualset=self:_GetTargetSet(client,false)
+cameraset:AddSet(visualset)
+self:__TargetsSmoked(-1,client,playername,cameraset)
+local highsmoke=SMOKECOLOR.Orange
+local medsmoke=SMOKECOLOR.White
+local lowsmoke=SMOKECOLOR.Green
+local lasersmoke=SMOKECOLOR.Red
+local laser=self.LaserSpots[playername]
+if laser and laser.Target and laser.Target:IsAlive()then
+laser.Target:GetCoordinate():Smoke(lasersmoke)
+if cameraset:IsInSet(laser.Target)then
+cameraset:Remove(laser.Target:GetName(),true)
+end
+end
+for _,_unit in pairs(cameraset.Set)do
+local unit=_unit
+if unit then
+local coord=unit:GetCoordinate()
+local threat=unit:GetThreatLevel()
+if coord then
+local color=lowsmoke
+if threat>7 then
+color=medsmoke
+elseif threat>2 then
+color=lowsmoke
+end
+coord:Smoke(color)
+end
+end
+end
+return self
+end
+function PLAYERRECCE:_FlareTargets(client,group,playername)
+self:I(self.lid.."_SmokeTargets")
+local cameraset=self:_GetTargetSet(client,true)
+local visualset=self:_GetTargetSet(client,false)
+cameraset:AddSet(visualset)
+self:__TargetsFlared(-1,client,playername,cameraset)
+local highsmoke=FLARECOLOR.Yellow
+local medsmoke=FLARECOLOR.White
+local lowsmoke=FLARECOLOR.Green
+local lasersmoke=FLARECOLOR.Red
+local laser=self.LaserSpots[playername]
+if laser and laser.Target and laser.Target:IsAlive()then
+laser.Target:GetCoordinate():Flare(lasersmoke)
+if cameraset:IsInSet(laser.Target)then
+cameraset:Remove(laser.Target:GetName(),true)
+end
+end
+for _,_unit in pairs(cameraset.Set)do
+local unit=_unit
+if unit then
+local coord=unit:GetCoordinate()
+local threat=unit:GetThreatLevel()
+if coord then
+local color=lowsmoke
+if threat>7 then
+color=medsmoke
+elseif threat>2 then
+color=lowsmoke
+end
+coord:Flare(color)
+end
+end
+end
+return self
+end
+function PLAYERRECCE:_ReportLaserTargets(client,group,playername)
+self:I(self.lid.."_ReportLaserTargets")
+local targetset,number=self:_GetTargetSet(client,true)
+if number>0 and self.AutoLase[playername]then
+local Settings=(client and _DATABASE:GetPlayerSettings(playername))or _SETTINGS
+local target=self:_GetHVTTarget(targetset)
+local ThreatLevel=target:GetThreatLevel()
+local ThreatLevelText="high"
+if ThreatLevel>3 and ThreatLevel<8 then
+ThreatLevelText="medium"
+elseif ThreatLevel<=3 then
+ThreatLevelText="low"
+end
+local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
+local report=REPORT:New("Lasing Report")
+report:Add(string.rep("-",15))
+report:Add("Target type: "..target:GetTypeName())
+report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
+report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
+report:Add("Laser Code: "..self.UnitLaserCodes[playername]or 1688)
+report:Add(string.rep("-",15))
+local text=report:Text()
+self:__TargetReport(-1,client,targetset,target,text)
+else
+local report=REPORT:New("Lasing Report")
+report:Add(string.rep("-",15))
+report:Add("N O  T A R G E T S")
+report:Add(string.rep("-",15))
+local text=report:Text()
+self:__TargetReport(-1,client,nil,nil,text)
+end
+return self
+end
+function PLAYERRECCE:_ReportVisualTargets(client,group,playername)
+self:I(self.lid.."_ReportVisualTargets")
+local targetset,number=self:_GetTargetSet(client,false)
+if number>0 then
+local Settings=(client and _DATABASE:GetPlayerSettings(playername))or _SETTINGS
+local ThreatLevel=targetset:CalculateThreatLevelA2G()
+local ThreatLevelText="high"
+if ThreatLevel>3 and ThreatLevel<8 then
+ThreatLevelText="medium"
+elseif ThreatLevel<=3 then
+ThreatLevelText="low"
+end
+local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
+local report=REPORT:New("Target Report")
+report:Add(string.rep("-",15))
+report:Add("Target count: "..number)
+report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
+report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
+report:Add(string.rep("-",15))
+local text=report:Text()
+self:__TargetReport(-1,client,targetset,nil,text)
+else
+local report=REPORT:New("Target Report")
+report:Add(string.rep("-",15))
+report:Add("N O  T A R G E T S")
+report:Add(string.rep("-",15))
+local text=report:Text()
+self:__TargetReport(-1,client,nil,nil,text)
+end
+return self
+end
+function PLAYERRECCE:_BuildMenus()
+self:I(self.lid.."_BuildMenus")
+local clients=self.PlayerSet
+local clientset=clients:GetSetObjects()
+for _,_client in pairs(clientset)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+if not self.UnitLaserCodes[playername]then
+self:_SetClientLaserCode(nil,nil,playername,1688)
+end
+local group=client:GetGroup()
+if not self.ClientMenus[playername]then
+local canlase=self.CanLase[client:GetTypeName()]
+self.ClientMenus[playername]=MENU_GROUP:New(group,self.Name or"RECCE")
+local txtonstation=self.OnStation[playername]and"ON"or"OFF"
+local text=string.format("Switch On-Station (%s)",txtonstation)
+local onstationmenu=MENU_GROUP_COMMAND:New(group,text,self.ClientMenus[playername],self._SwitchOnStation,self,client,group,playername)
+if self.OnStation[playername]then
+local smokemenu=MENU_GROUP_COMMAND:New(group,"Smoke Targets",self.ClientMenus[playername],self._SmokeTargets,self,client,group,playername)
+local smokemenu=MENU_GROUP_COMMAND:New(group,"Flare Targets",self.ClientMenus[playername],self._FlareTargets,self,client,group,playername)
+if canlase then
+local txtonstation=self.AutoLase[playername]and"ON"or"OFF"
+local text=string.format("Switch Lasing (%s)",txtonstation)
+local lasemenu=MENU_GROUP_COMMAND:New(group,text,self.ClientMenus[playername],self._SwitchLasing,self,client,group,playername)
+end
+local targetmenu=MENU_GROUP:New(group,"Target Report",self.ClientMenus[playername])
+if canlase then
+local reportL=MENU_GROUP_COMMAND:New(group,"Laser Target",targetmenu,self._ReportLaserTargets,self,client,group,playername)
+end
+local reportV=MENU_GROUP_COMMAND:New(group,"Visual Targets",targetmenu,self._ReportVisualTargets,self,client,group,playername)
+if canlase then
+local lasecodemenu=MENU_GROUP:New(group,"Set Laser Code",self.ClientMenus[playername])
+local codemenu={}
+for _,_code in pairs(self.LaserCodes)do
+if _code==self.UnitLaserCodes[playername]then
+_code=tostring(_code).."(*)"
+end
+codemenu[playername.._code]=MENU_GROUP_COMMAND:New(group,tostring(_code),lasecodemenu,self._SetClientLaserCode,self,client,group,playername,_code)
+end
+end
+end
+end
+end
+end
+return self
+end
+function PLAYERRECCE:_CheckNewTargets(targetset,client,playername)
+self:I(self.lid.."_CheckNewTargets")
+targetset:ForEachUnit(
+function(unit)
+if unit and unit:IsAlive()then
+if not unit.PlayerRecceDetected then
+unit.PlayerRecceDetected={
+detected=true,
+recce=client,
+playername=playername,
+timestamp=timer.getTime()
+}
+self:__TargetDetected(-1,unit,client,playername)
+end
+end
+end
+)
+return self
+end
+function PLAYERRECCE:onafterStatus(From,Event,To)
+self:I({From,Event,To})
+self:_BuildMenus()
+self.PlayerSet:ForEachClient(
+function(Client)
+local client=Client
+local playername=client:GetPlayerName()
+if client and client:IsAlive()and self.OnStation[playername]then
+local targetset,targetcount,tzone=self:_GetTargetSet(client,true)
+if targetset then
+if self.ViewZone[playername]then
+self.ViewZone[playername]:UndrawZone()
+end
+if self.debug and tzone then
+self.ViewZone[playername]=tzone:DrawZone(self.Coalition,{0,0,1},nil,nil,nil,1)
+end
+end
+self:I({targetcount=targetcount})
+local vistargetset,vistargetcount,viszone=self:_GetTargetSet(client,false)
+if vistargetset then
+if self.ViewZoneVisual[playername]then
+self.ViewZoneVisual[playername]:UndrawZone()
+end
+if self.debug and viszone then
+self.ViewZoneVisual[playername]=viszone:DrawZone(self.Coalition,{1,0,0},nil,nil,nil,3)
+end
+end
+self:I({targetcount=targetcount})
+if targetcount>0 then
+if self.CanLase[client:GetTypeName()]and self.AutoLase[playername]then
+self:_LaseTarget(client,targetset)
+end
+end
+targetset:AddSet(vistargetset)
+self:_CheckNewTargets(targetset,client,playername)
+end
+end
+)
+self:__Status(-10)
+return self
+end
+function PLAYERRECCE:onafterRecceOnStation(From,Event,To,Client,Playername)
+self:I({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(true,true)
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition)
+local text=string.format("All stations, FACA %s on station\nat %s!",callsign,coordtext)
+MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERRECCE:onafterRecceOffStation(From,Event,To,Client,Playername)
+self:I({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(true,true)
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition)
+local text=string.format("All stations, FACA %s leaving station\nat %s, going home!",callsign,coordtext)
+MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERRECCE:onafterTargetDetected(From,Event,To,Target,Client,Playername)
+self:I({From,Event,To})
+if self.debug then
+local text=string.format("New target %s detected by %s!",Target:GetTypeName(),Playername)
+MESSAGE:New(text,10,self.Name or"FACA"):ToCoalition(self.Coalition)
+end
+return self
+end
+function PLAYERRECCE:onafterTargetsSmoked(From,Event,To,Client,Playername,TargetSet)
+self:I({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(true,true)
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition)
+local text=string.format("All stations, FACA %s smoked targets\nat %s!",callsign,coordtext)
+MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERRECCE:onafterTargetsFlared(From,Event,To,Client,Playername,TargetSet)
+self:I({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(true,true)
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition)
+local text=string.format("All stations, FACA %s flared\ntargets at %s!",callsign,coordtext)
+MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERRECCE:onafterTargetLasing(From,Event,To,Client,Target,Lasercode,Lasingtime)
+self:I({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(true,true)
+local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
+local targettype=Target:GetTypeName()
+local text=string.format("All stations, FACA %s lasing %s\nat %s!\nCode %d, Duration %d seconds!",callsign,targettype,coordtext,Lasercode,Lasingtime)
+MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERRECCE:onafterTargetLOSLost(From,Event,To,Client,Target)
+self:I({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(true,true)
+local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
+local targettype=Target:GetTypeName()
+local text=string.format("All stations, FACA %s lost sight of %s\nat %s!",callsign,targettype,coordtext)
+MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+return self
+end
+function PLAYERRECCE:onafterTargetReport(From,Event,To,Client,TargetSet,Target,Text)
+self:I({From,Event,To})
+MESSAGE:New(Text,45,self.Name or"FACA"):ToClient(Client)
+if self.AttackSet then
+for _,_client in pairs(self.AttackSet.Set)do
+local client=_client
+if client and client:IsAlive()then
+MESSAGE:New(Text,45,self.Name or"FACA"):ToClient(client)
+end
+end
+end
+self:__TargetReportSent(-2,Client,TargetSet,Target,Text)
+return self
+end
+function PLAYERRECCE:onafterTargetReportSent(From,Event,To,Client,TargetSet,Target,Text)
+self:I({From,Event,To})
+return self
+end
+function PLAYERRECCE:onafterStop(From,Event,To)
+self:I({From,Event,To})
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.PilotDead)
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+return self
 end
 RECOVERYTANKER={
 ClassName="RECOVERYTANKER",
