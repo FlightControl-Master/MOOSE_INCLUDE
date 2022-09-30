@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-29T14:45:29.0000000Z-84c41aa55469cddd44a9ad84d3955efba664baa4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-30T12:41:38.0000000Z-a8a92c00fe473e7ca8ed9483ebeb65307f569c24 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -31257,7 +31257,7 @@ local unit=_unit
 if unit and unit:IsAlive()then
 local threat=unit:GetThreatLevel()
 local coord=unit:GetCoordinate()
-if threat>0 then
+if threat>=self.minthreatlevel then
 local unitname=unit:GetName()
 if unit:HasAttribute("RADAR_BAND1_FOR_ARM")or unit:HasAttribute("RADAR_BAND2_FOR_ARM")or unit:HasAttribute("Optical Tracker")then
 threat=11
