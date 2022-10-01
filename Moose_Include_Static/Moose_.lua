@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-01T14:03:05.0000000Z-a42ff854063af7cf9fbe8833d4345f66e6d136a2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-01T14:36:29.0000000Z-405e66ea72f65c44425194b8f9205cf85aebdd72 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91228,6 +91228,7 @@ PlayerFlashMenu={},
 PlayerJoinMenu={},
 PlayerInfoMenu={},
 noflaresmokemenu=false,
+TransmitOnlyWithPlayers=true,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -91365,7 +91366,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.37"
+PLAYERTASKCONTROLLER.version="0.1.38"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -91451,6 +91452,13 @@ end
 function PLAYERTASKCONTROLLER:SetDisableSmokeFlareTask()
 self:T(self.lid.."SetDisableSmokeFlareTask")
 self.noflaresmokemenu=true
+return self
+end
+function PLAYERTASKCONTROLLER:SetTransmitOnlyWithPlayers(Switch)
+self.TransmitOnlyWithPlayers=Switch
+if self.SRSQueue then
+self.SRSQueue:SetTransmitOnlyWithPlayers(Switch)
+end
 return self
 end
 function PLAYERTASKCONTROLLER:SetEnableSmokeFlareTask()
@@ -92614,6 +92622,7 @@ if self.PathToGoogleKey then
 self.SRS:SetGoogle(self.PathToGoogleKey)
 end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
+self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self
 end
 function PLAYERTASKCONTROLLER:SetSRSBroadcast(Frequency,Modulation)
