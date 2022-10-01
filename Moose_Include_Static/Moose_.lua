@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-09-30T17:07:12.0000000Z-ca92d7d5693c996968557e574d50141ccdeecd57 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-01T09:58:28.0000000Z-2eba68b35c7857ce1b30005156ebe6c0e70f6449 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59119,6 +59119,7 @@ usemarker=nil,
 markerid=nil,
 relHumidity=nil,
 ReportmBar=false,
+TransmitOnlyWithPlayers=false,
 }
 ATIS.Alphabet={
 [1]="Alfa",
@@ -59246,7 +59247,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.9"
+ATIS.version="0.9.10"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -59295,6 +59296,13 @@ else
 freqs={freqs}
 end
 self.towerfrequency=freqs
+return self
+end
+function ATIS:SetTransmitOnlyWithPlayers(Switch)
+self.TransmitOnlyWithPlayers=Switch
+if self.msrsQ then
+self.msrsQ:SetTransmitOnlyWithPlayers(Switch)
+end
 return self
 end
 function ATIS:SetActiveRunway(runway)
@@ -59497,6 +59505,7 @@ self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
 self.msrs:SetGoogle(GoogleKey)
 self.msrsQ=MSRSQUEUE:New("ATIS")
+self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
 end
@@ -105033,7 +105042,24 @@ self:_CheckRadioQueue()
 end
 return self
 end
+function MSRSQUEUE:SetTransmitOnlyWithPlayers(Switch)
+self.TransmitOnlyWithPlayers=Switch
+if Switch==false or Switch==nil then
+if self.PlayerSet then
+self.PlayerSet:FilterStop()
+end
+self.PlayerSet=nil
+else
+self.PlayerSet=SET_CLIENT:New():FilterStart()
+end
+return self
+end
 function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation)
+if self.TransmitOnlyWithPlayers then
+if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
+return self
+end
+end
 if not text then
 self:E(self.lid.."ERROR: No text specified.")
 return nil
