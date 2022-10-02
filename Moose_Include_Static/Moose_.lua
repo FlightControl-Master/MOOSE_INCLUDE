@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T11:16:56.0000000Z-894062c7576916109114c1a879312e02c6152c64 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T14:10:14.0000000Z-60cf7506f893eccaf89d49254d799ad10ee14e91 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -49665,7 +49665,7 @@ self:_InitAmerica()
 elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
 self:_InitJcarlos()
 elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
-self:_InitJcarlos()
+self:_InitCanberra()
 elseif self.carriertype==AIRBOSS.CarrierType.KUZNETSOV then
 self:_InitStennis()
 else
@@ -50669,6 +50669,7 @@ self.carrierparam.wire1=46
 self.carrierparam.wire2=46+12
 self.carrierparam.wire3=46+24
 self.carrierparam.wire4=46+35
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
 self.Platform.name="Platform 5k"
 self.Platform.Xmin=-UTILS.NMToMeters(22)
 self.Platform.Xmax=nil
@@ -50783,6 +50784,7 @@ self.carrierparam.wire1=55
 self.carrierparam.wire2=67
 self.carrierparam.wire3=79
 self.carrierparam.wire4=92
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
 end
 function AIRBOSS:_InitForrestal()
 self:_InitNimitz()
@@ -50798,6 +50800,7 @@ self.carrierparam.wire1=44
 self.carrierparam.wire2=54
 self.carrierparam.wire3=64
 self.carrierparam.wire4=74
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
 end
 function AIRBOSS:_InitHermes()
 self:_InitStennis()
@@ -50813,6 +50816,8 @@ self.carrierparam.wire1=nil
 self.carrierparam.wire2=nil
 self.carrierparam.wire3=nil
 self.carrierparam.wire4=nil
+self.carrierparam.landingspot=69
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.landingspot
 self.BreakLate.name="Late Break"
 self.BreakLate.Xmin=-UTILS.NMToMeters(1)
 self.BreakLate.Xmax=UTILS.NMToMeters(5)
@@ -50837,6 +50842,8 @@ self.carrierparam.wire1=nil
 self.carrierparam.wire2=nil
 self.carrierparam.wire3=nil
 self.carrierparam.wire4=nil
+self.carrierparam.landingspot=57
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.landingspot
 self.BreakLate.name="Late Break"
 self.BreakLate.Xmin=-UTILS.NMToMeters(1)
 self.BreakLate.Xmax=UTILS.NMToMeters(5)
@@ -50861,6 +50868,8 @@ self.carrierparam.wire1=nil
 self.carrierparam.wire2=nil
 self.carrierparam.wire3=nil
 self.carrierparam.wire4=nil
+self.carrierparam.landingspot=59
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.landingspot
 self.BreakLate.name="Late Break"
 self.BreakLate.Xmin=-UTILS.NMToMeters(1)
 self.BreakLate.Xmax=UTILS.NMToMeters(5)
@@ -50885,6 +50894,8 @@ self.carrierparam.wire1=nil
 self.carrierparam.wire2=nil
 self.carrierparam.wire3=nil
 self.carrierparam.wire4=nil
+self.carrierparam.landingspot=89
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.landingspot
 self.BreakLate.name="Late Break"
 self.BreakLate.Xmin=-UTILS.NMToMeters(1)
 self.BreakLate.Xmax=UTILS.NMToMeters(5)
@@ -50894,6 +50905,9 @@ self.BreakLate.LimitXmin=0
 self.BreakLate.LimitXmax=nil
 self.BreakLate.LimitZmin=-UTILS.NMToMeters(0.5)
 self.BreakLate.LimitZmax=nil
+end
+function AIRBOSS:_InitCanberra()
+self:_InitJcarlos()
 end
 function AIRBOSS:SetVoiceOversMarshalByGabriella(mizfolder)
 if mizfolder then
@@ -54193,8 +54207,7 @@ self.landingcoord:SetAltitude(UTILS.FeetToMeters(120))
 end
 else
 if self.carrierparam.wire3 then
-local w3=self.carrierparam.wire3
-self.landingcoord:Translate(w3,FB,true,true)
+self.landingcoord:Translate(self.carrierparam.wire3,FB,true,true)
 end
 self.landingcoord.y=self.landingcoord.y+2
 end
@@ -54202,22 +54215,8 @@ return self.landingcoord
 end
 function AIRBOSS:_GetLandingSpotCoordinate()
 self.landingspotcoord:UpdateFromCoordinate(self:_GetSternCoord())
-if self.carriertype==AIRBOSS.CarrierType.HERMES then
 local hdg=self:GetHeading()
-self.landingspotcoord:Translate(69,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
-elseif self.carriertype==AIRBOSS.CarrierType.TARAWA then
-local hdg=self:GetHeading()
-self.landingspotcoord:Translate(57,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
-elseif self.carriertype==AIRBOSS.CarrierType.AMERICA then
-local hdg=self:GetHeading()
-self.landingspotcoord:Translate(59,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
-elseif self.carriertype==AIRBOSS.CarrierType.JCARLOS then
-local hdg=self:GetHeading()
-self.landingspotcoord:Translate(89,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
-elseif self.carriertype==AIRBOSS.CarrierType.CANBERRA then
-local hdg=self:GetHeading()
-self.landingspotcoord:Translate(89,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
-end
+self.landingspotcoord:Translate(self.carrierparam.landingspot,hdg,true,true):SetAltitude(self.carrierparam.deckheight)
 return self.landingspotcoord
 end
 function AIRBOSS:GetHeading(magnetic)
@@ -54466,7 +54465,7 @@ local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
 local grade
 local points
-if N==0 and(TgrooveUnicorn or TgrooveVstolUnicorn)then
+if N==0 and(TgrooveUnicorn or TgrooveVstolUnicorn or playerData.case==3)then
 grade="_OK_"
 points=5.0
 G="Unicorn"
@@ -57638,6 +57637,7 @@ result.wind=grade.wind
 result.carriertype=grade.carriertype
 result.carriername=grade.carriername
 result.carrierrwy=grade.carrierrwy
+result.landingdist=self.carrierparam.landingdist
 result.theatre=grade.theatre
 result.case=playerData.case
 result.Tgroove=grade.Tgroove
