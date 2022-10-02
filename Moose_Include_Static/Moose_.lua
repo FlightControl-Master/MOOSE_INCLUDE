@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T17:13:51.0000000Z-42baf6c8d224ccc0750509fc8318128d9efb03da ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T17:34:09.0000000Z-1474ff9b88acaf5a0c0c89eaf6faca6adbc72be7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92805,11 +92805,11 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.6",
+version="0.0.8",
 ViewZone={},
 ViewZoneVisual={},
 PlayerSet=nil,
-debug=false,
+debug=true,
 LaserSpots={},
 UnitLaserCodes={},
 LaserCodes={},
@@ -92826,6 +92826,8 @@ ShortCallsign=true,
 Keepnumber=true,
 CallsignTranslations=nil,
 ReferencePoint=nil,
+TForget=600,
+TargetCache=nil,
 }
 PLAYERRECCE.LaserRelativePos={
 ["SA342M"]={x=1.7,y=1.2,z=0},
@@ -92851,6 +92853,20 @@ PLAYERRECCE.CanLase={
 ["SA342Minigun"]=false,
 ["SA342L"]=true,
 }
+PLAYERRECCE.SmokeColor={
+["highsmoke"]=SMOKECOLOR.Orange,
+["medsmoke"]=SMOKECOLOR.White,
+["lowsmoke"]=SMOKECOLOR.Green,
+["lasersmoke"]=SMOKECOLOR.Red,
+["ownsmoke"]=SMOKECOLOR.Blue,
+}
+PLAYERRECCE.FlareColor={
+["highflare"]=FLARECOLOR.Yellow,
+["medflare"]=FLARECOLOR.White,
+["lowflare"]=FLARECOLOR.Green,
+["laserflare"]=FLARECOLOR.Red,
+["ownflare"]=FLARECOLOR.Green,
+}
 function PLAYERRECCE:New(Name,Coalition,PlayerSet)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"Blue FACA"
@@ -92861,6 +92877,8 @@ self.lid=string.format("PlayerForwardController %s %s | ",self.Name,self.version
 self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.lasingtime=60
 self.minthreatlevel=0
+self.TForget=600
+self.TargetCache=FIFO:New()
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
@@ -93039,6 +93057,47 @@ end
 end
 return viewzone
 end
+function PLAYERRECCE:_GetKnownTargets(client)
+self:T(self.lid.."_GetKnownTargets")
+local finaltargets=SET_UNIT:New()
+local targets=self.TargetCache:GetDataTable()
+local playername=client:GetPlayerName()
+for _,_target in pairs(targets)do
+local targetdata=_target.PlayerRecceDetected
+if targetdata.playername==playername then
+finaltargets:Add(_target:GetName(),_target)
+end
+end
+return finaltargets,finaltargets:CountAlive()
+end
+function PLAYERRECCE:_CleanupTargetCache()
+self:T(self.lid.."_CleanupTargetCache")
+local cleancache=FIFO:New()
+self.TargetCache:ForEach(
+function(unit)
+local pull=false
+if unit and unit:IsAlive()then
+if unit.PlayerRecceDetected and unit.PlayerRecceDetected.timestamp then
+local TNow=timer.getTime()
+if TNow-unit.PlayerRecceDetected.timestamp>self.TForget then
+pull=true
+unit.PlayerRecceDetected=nil
+end
+else
+pull=true
+end
+else
+pull=true
+end
+if not pull then
+cleancache:Push(unit,unit:GetName())
+end
+end
+)
+self.TargetCache=nil
+self.TargetCache=cleancache
+return self
+end
 function PLAYERRECCE:_GetTargetSet(unit,camera)
 self:T(self.lid.."_GetTargetSet")
 local finaltargets=SET_UNIT:New()
@@ -93186,10 +93245,10 @@ cameraset:AddSet(visualset)
 if cameraset:CountAlive()>0 then
 self:__TargetsSmoked(-1,client,playername,cameraset)
 end
-local highsmoke=SMOKECOLOR.Orange
-local medsmoke=SMOKECOLOR.White
-local lowsmoke=SMOKECOLOR.Green
-local lasersmoke=SMOKECOLOR.Red
+local highsmoke=self.SmokeColor.highsmoke
+local medsmoke=self.SmokeColor.medsmoke
+local lowsmoke=self.SmokeColor.lowsmoke
+local lasersmoke=self.SmokeColor.lasersmoke
 local laser=self.LaserSpots[playername]
 if laser and laser.Target and laser.Target:IsAlive()then
 laser.Target:GetCoordinate():Smoke(lasersmoke)
@@ -93223,10 +93282,10 @@ cameraset:AddSet(visualset)
 if cameraset:CountAlive()>0 then
 self:__TargetsFlared(-1,client,playername,cameraset)
 end
-local highsmoke=FLARECOLOR.Yellow
-local medsmoke=FLARECOLOR.White
-local lowsmoke=FLARECOLOR.Green
-local lasersmoke=FLARECOLOR.Red
+local highsmoke=self.FlareColor.highflare
+local medsmoke=self.FlareColor.medflare
+local lowsmoke=self.FlareColor.lowflare
+local lasersmoke=self.FlareColor.laserflare
 local laser=self.LaserSpots[playername]
 if laser and laser.Target and laser.Target:IsAlive()then
 laser.Target:GetCoordinate():Flare(lasersmoke)
@@ -93304,7 +93363,7 @@ return self
 end
 function PLAYERRECCE:_ReportVisualTargets(client,group,playername)
 self:T(self.lid.."_ReportVisualTargets")
-local targetset,number=self:_GetTargetSet(client,false)
+local targetset,number=self:_GetKnownTargets(client)
 if number>0 then
 local Settings=(client and _DATABASE:GetPlayerSettings(playername))or _SETTINGS
 local ThreatLevel=targetset:CalculateThreatLevelA2G()
@@ -93390,6 +93449,7 @@ return self
 end
 function PLAYERRECCE:_CheckNewTargets(targetset,client,playername)
 self:T(self.lid.."_CheckNewTargets")
+local tempset=SET_UNIT:New()
 targetset:ForEach(
 function(unit)
 if unit and unit:IsAlive()then
@@ -93402,11 +93462,44 @@ recce=client,
 playername=playername,
 timestamp=timer.getTime()
 }
-self:TargetDetected(unit,client,playername)
+tempset:Add(unit:GetName(),unit)
+if not self.TargetCache:HasUniqueID(unit:GetName())then
+self.TargetCache:Push(unit,unit:GetName())
+end
+end
+if unit.PlayerRecceDetected and unit.PlayerRecceDetected.timestamp then
+local TNow=timer.getTime()
+if TNow-unit.PlayerRecceDetected.timestamp>self.TForget then
+unit.PlayerRecceDetected={
+detected=true,
+recce=client,
+playername=playername,
+timestamp=timer.getTime()
+}
+if not self.TargetCache:HasUniqueID(unit:GetName())then
+self.TargetCache:Push(unit,unit:GetName())
+end
+tempset:Add(unit:GetName(),unit)
+end
 end
 end
 end
 )
+local targetsbyclock={}
+for i=1,12 do
+targetsbyclock[i]={}
+end
+tempset:ForEach(
+function(object)
+local obj=object
+local clock=self:_GetClockDirection(client,obj)
+table.insert(targetsbyclock[clock],obj)
+end
+)
+self:I("Known target Count: "..self.TargetCache:Count())
+if tempset:CountAlive()>0 then
+self:TargetDetected(targetsbyclock,client,playername)
+end
 return self
 end
 function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
@@ -93457,6 +93550,15 @@ return text
 end
 function PLAYERRECCE:onafterStatus(From,Event,To)
 self:I({From,Event,To})
+if not self.timestamp then
+self.timestamp=timer.getTime()
+else
+local tNow=timer.getTime()
+if tNow-self.timestamp>=60 then
+self:_CleanupTargetCache()
+self.timestamp=timer.getTime()
+end
+end
 self:_BuildMenus()
 self.PlayerSet:ForEachClient(
 function(Client)
@@ -93478,7 +93580,6 @@ if self.CanLase[client:GetTypeName()]and self.AutoLase[playername]then
 self:_LaseTarget(client,targetset)
 end
 end
-self:_CheckNewTargets(targetset,client,playername)
 local vistargetset,vistargetcount,viszone=self:_GetTargetSet(client,false)
 if vistargetset then
 if self.ViewZoneVisual[playername]then
@@ -93489,7 +93590,8 @@ self.ViewZoneVisual[playername]=viszone:DrawZone(self.Coalition,{1,0,0},nil,nil,
 end
 end
 self:T({visualtargetcount=vistargetcount})
-self:_CheckNewTargets(vistargetset,client,playername)
+targetset:AddSet(vistargetset)
+self:_CheckNewTargets(targetset,client,playername)
 end
 end
 )
@@ -93550,13 +93652,17 @@ MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
 end
 return self
 end
-function PLAYERRECCE:onafterTargetDetected(From,Event,To,Target,Client,Playername)
+function PLAYERRECCE:onafterTargetDetected(From,Event,To,Targetsbyclock,Client,Playername)
 self:T({From,Event,To})
 local dunits="meters"
-local targetdirection=self:_GetClockDirection(Client,Target)
-local targetdistance=Client:GetCoordinate():Get2DDistance(Target:GetCoordinate())or 100
 local Settings=Client and _DATABASE:GetPlayerSettings(Playername)or _SETTINGS
-local Threatlvl=Target:GetThreatLevel()
+local clientcoord=Client:GetCoordinate()
+for i=1,12 do
+local targets=Targetsbyclock[i]
+local targetno=#targets
+if targetno==1 then
+local targetdistance=clientcoord:Get2DDistance(targets[1]:GetCoordinate())or 100
+local Threatlvl=targets[1]:GetThreatLevel()
 local ThreatTxt="Low"
 if Threatlvl>=7 then
 ThreatTxt="Medium"
@@ -93569,13 +93675,41 @@ else
 targetdistance=UTILS.Round(UTILS.MetersToFeet(targetdistance),-2)
 dunits="feet"
 end
-local text=string.format("Target! %s! %s o\'clock, %d %s!",ThreatTxt,targetdirection,targetdistance,dunits)
-local ttstext=string.format("Target! %s! %s oh clock, %d %s!",ThreatTxt,targetdirection,targetdistance,dunits)
+local text=string.format("Target! %s! %s o\'clock, %d %s!",ThreatTxt,i,targetdistance,dunits)
+local ttstext=string.format("Target! %s! %s oh clock, %d %s!",ThreatTxt,i,targetdistance,dunits)
 if self.UseSRS then
 local grp=Client:GetGroup()
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
+end
+elseif targetno>1 then
+local function GetNearest(TTable)
+local distance=10000000
+for _,_unit in pairs(TTable)do
+local dist=clientcoord:Get2DDistance(_unit:GetCoordinate())or 100
+if dist<distance then
+distance=dist
+end
+end
+return distance
+end
+local targetdistance=GetNearest(targets)
+if Settings:IsMetric()then
+targetdistance=UTILS.Round(targetdistance,-2)
+else
+targetdistance=UTILS.Round(UTILS.MetersToFeet(targetdistance),-2)
+dunits="feet"
+end
+local text=string.format(" %d targets! %s o\'clock, %d %s!",targetno,i,targetdistance,dunits)
+local ttstext=string.format("%d targets! %s oh clock, %d %s!",targetno,i,targetdistance,dunits)
+if self.UseSRS then
+local grp=Client:GetGroup()
+self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
+else
+MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
+end
+end
 end
 return self
 end
