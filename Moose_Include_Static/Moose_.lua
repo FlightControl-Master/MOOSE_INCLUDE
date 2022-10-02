@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T11:14:57.0000000Z-30aba1258de75ecc3f2b5f32c44a376a5485685c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T14:54:48.0000000Z-c0f82eabb2a4b7f97501b988c3c0100d56ffdd27 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4945,7 +4945,7 @@ BOMBRESULT="moose_bomb_result",
 STRAFERESULT="moose_strafe_result",
 LSOGRADE="moose_lso_grade",
 }
-SOCKET.version="0.1.0"
+SOCKET.version="0.2.0"
 function SOCKET:New(Port,Host)
 local self=BASE:Inherit(self,FSM:New())
 package.path=package.path..";.\\LuaSocket\\?.lua;"
@@ -4965,6 +4965,7 @@ function SOCKET:SetHost(Host)
 self.host=Host or"127.0.0.1"
 end
 function SOCKET:SendTable(Table)
+Table.server_name=BASE.ServerName or"Unknown"
 local json=self.json:encode(Table)
 self:T("Json table:")
 self:T(json)
@@ -77527,6 +77528,18 @@ __na=true
 end
 if __na then
 BASE:I("Check <DCS install folder>/Scripts/MissionScripting.lua and comment out the lines with sanitizeModule(''). Use at your own risk!)")
+end
+BASE.ServerName="Unknown"
+if lfs and loadfile then
+local serverfile=lfs.writedir()..'Config/serverSettings.lua'
+if UTILS.FileExists(serverfile)then
+loadfile(serverfile)()
+if cfg and cfg.name then
+BASE.ServerName=cfg.name
+end
+end
+BASE.ServerName=BASE.ServerName or"Unknown"
+BASE:I("Server Name: "..tostring(BASE.ServerName))
 end
 BASE:TraceOnOff(false)
 env.info('*** MOOSE INCLUDE END *** ')
