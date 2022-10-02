@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T11:16:00.0000000Z-165a5d7364dd253fd5bedb96a33ae5d1edb516c5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T11:16:56.0000000Z-894062c7576916109114c1a879312e02c6152c64 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10684,6 +10684,23 @@ local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(ReferenceCoord)
 return"Target are located "..self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
+end
+return nil
+end
+function COORDINATE:ToStringFromRPShort(ReferenceCoord,ReferenceName,Controllable,Settings)
+self:F2({ReferenceCoord=ReferenceCoord,ReferenceName=ReferenceName})
+local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
+local IsAir=Controllable and Controllable:IsAirPlane()or false
+if IsAir then
+local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
+local AngleRadians=self:GetAngleRadians(DirectionVec3)
+local Distance=self:Get2DDistance(ReferenceCoord)
+return self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
+else
+local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
+local AngleRadians=self:GetAngleRadians(DirectionVec3)
+local Distance=self:Get2DDistance(ReferenceCoord)
+return self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
 end
 return nil
 end
