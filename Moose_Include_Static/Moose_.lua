@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-03T14:32:55.0000000Z-10eec8a47baa361d8c86e63cba73d68b4542b5b4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-03T17:12:19.0000000Z-064e082a1221cbc5ae275bc3a33ec254b120d238 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57786,6 +57786,20 @@ Payload.navail=Navailable
 end
 end
 return self
+end
+function AIRWING:IncreasePayloadAmount(Payload,N)
+N=N or 1
+if Payload and Payload.navail>=0 then
+Payload.navail=Payload.navail+N
+Payload.navail=math.max(Payload.navail,0)
+end
+return self
+end
+function AIRWING:GetPayloadAmount(Payload)
+return Payload.navail
+end
+function AIRWING:GetPayloadCapabilities(Payload)
+return Payload.capabilities
 end
 function AIRWING:AddPayloadCapability(Payload,MissionTypes,Performance)
 if MissionTypes and type(MissionTypes)~="table"then
