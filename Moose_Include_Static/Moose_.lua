@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-02T17:45:48.0000000Z-1e04aaa77dcd22fb36a0cf6754c911c101bc63f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-03T14:32:55.0000000Z-10eec8a47baa361d8c86e63cba73d68b4542b5b4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -77223,7 +77223,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="0.8.0"
+FLIGHTGROUP.version="0.8.1"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -77294,8 +77294,19 @@ function FLIGHTGROUP:AddTaskEnrouteEngageTargetsInZone(ZoneRadius,TargetTypes,Pr
 local Task=self.group:EnRouteTaskEngageTargetsInZone(ZoneRadius:GetVec2(),ZoneRadius:GetRadius(),TargetTypes,Priority)
 self:AddTaskEnroute(Task)
 end
-function FLIGHTGROUP:GetAirWing()
+function FLIGHTGROUP:GetAirwing()
 return self.legion
+end
+function FLIGHTGROUP:GetAirwing()
+local name=self.legion and self.legion.alias or"None"
+return name
+end
+function FLIGHTGROUP:GetSquadron()
+return self.cohort
+end
+function FLIGHTGROUP:GetSquadronName()
+local name=self.cohort and self.cohort:GetName()or"None"
+return name
 end
 function FLIGHTGROUP:SetVTOL()
 self.isVTOL=true
