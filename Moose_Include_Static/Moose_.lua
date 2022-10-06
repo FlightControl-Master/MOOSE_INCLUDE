@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T11:29:58.0000000Z-f790c4fb9edc66baf1d4d162bbb3af959310ebb2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T15:05:16.0000000Z-d63ab1138c239178c0c6be3e257548405e42f50c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -90952,7 +90952,7 @@ TaskController=nil,
 timestamp=0,
 lastsmoketime=0,
 }
-PLAYERTASK.version="0.1.3"
+PLAYERTASK.version="0.1.4"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -91304,6 +91304,8 @@ PlayerJoinMenu={},
 PlayerInfoMenu={},
 noflaresmokemenu=false,
 TransmitOnlyWithPlayers=true,
+buddylasing=false,
+PlayerRecce=nil,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -91373,6 +91375,7 @@ NO="No",
 NONE="None",
 POINTEROVERTARGET="%s, %s, pointer in reach for task %03d, lasing!",
 POINTERTARGETREPORT="\nPointer in reach: %s\nLasing: %s",
+RECCETARGETREPORT="\nRecce %s in reach: %s\nLasing: %s",
 POINTERTARGETLASINGTTS=". Pointer in reach and lasing.",
 TARGET="Target",
 FLASHON="%s - Flashing directions is now ON!",
@@ -91434,6 +91437,7 @@ NO="Nein",
 NONE="Keine",
 POINTEROVERTARGET="%s, %s, Marker im Zielbereich für %03d, Laser an!",
 POINTERTARGETREPORT="\nMarker im Zielbereich: %s\nLaser an: %s",
+RECCETARGETREPORT="\nSpäher % im Zielbereich: %s\nLasing: %s",
 POINTERTARGETLASINGTTS=". Marker im Zielbereich, Laser is an.",
 TARGET="Ziel",
 FLASHON="%s - Richtungsangaben einblenden ist EIN!",
@@ -91441,7 +91445,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.39"
+PLAYERTASKCONTROLLER.version="0.1.40"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -91494,9 +91498,9 @@ self:AddTransition("*","TaskSuccess","*")
 self:AddTransition("*","TaskFailed","*")
 self:AddTransition("*","TaskRepeatOnFailed","*")
 self:AddTransition("*","Stop","Stopped")
-self:__Start(-1)
+self:__Start(2)
 local starttime=math.random(5,10)
-self:__Status(-starttime)
+self:__Status(starttime)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
 self:HandleEvent(EVENTS.Ejection,self._EventHandler)
 self:HandleEvent(EVENTS.Crash,self._EventHandler)
@@ -91604,6 +91608,17 @@ self.precisionbombing=false
 end
 return self
 end
+function PLAYERTASKCONTROLLER:EnableBuddyLasing(Recce)
+self:T(self.lid.."EnableBuddyLasing")
+self.buddylasing=true
+self.PlayerRecce=Recce
+return self
+end
+function PLAYERTASKCONTROLLER:DisableBuddyLasing()
+self:T(self.lid.."DisableBuddyLasing")
+self.buddylasing=false
+return self
+end
 function PLAYERTASKCONTROLLER:EnableMarkerOps(Tag)
 self:T(self.lid.."EnableMarkerOps")
 local tag=Tag or"TASK"
@@ -91624,7 +91639,7 @@ self.MarkerOps=MarkerOps
 return self
 end
 function PLAYERTASKCONTROLLER:_GetPlayerName(Client)
-self:T(self.lid.."DisablePrecisionBombing")
+self:T(self.lid.."_GetPlayerName")
 local playername=Client:GetPlayerName()
 local ttsplayername=nil
 if not self.customcallsigns[playername]then
@@ -92076,7 +92091,7 @@ if friendlyset:Count()==0 and type==AUFTRAG.Type.CAS then
 type=AUFTRAG.Type.BAI
 ttstype=self.gettext:GetEntry("BAITTS",self.locale)
 end
-if(type==AUFTRAG.Type.BAI or type==AUFTRAG.Type.CAS)and self.precisionbombing then
+if(type==AUFTRAG.Type.BAI or type==AUFTRAG.Type.CAS)and(self.precisionbombing or self.buddylasing)then
 if threat>2 and threat<7 then
 type=AUFTRAG.Type.PRECISIONBOMBING
 ttstype=self.gettext:GetEntry("PRECBOMBTTS",self.locale)
@@ -92261,6 +92276,32 @@ local islasing=self.LasingDrone:IsLasing()==true and yes or no
 local prectext=self.gettext:GetEntry("POINTERTARGETREPORT",self.locale)
 prectext=string.format(prectext,inreach,islasing)
 text=text..prectext
+end
+end
+if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.buddylasing then
+if self.PlayerRecce then
+local yes=self.gettext:GetEntry("YES",self.locale)
+local no=self.gettext:GetEntry("NO",self.locale)
+local reachdist=8000
+local inreach=false
+local pset=self.PlayerRecce.PlayerSet:GetAliveSet()
+for _,_player in pairs(pset)do
+local player=_player
+local pcoord=player:GetCoordinate()
+if pcoord:Get2DDistance(Coordinate)<=reachdist then
+inreach=true
+local callsign=player:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local playername=player:GetPlayerName()
+local islasing=no
+if self.PlayerRecce.CanLase[player:GetTypeName()]and self.PlayerRecce.AutoLase[playername]then
+islasing=yes
+end
+local inrtext=inreach==true and yes or no
+local prectext=self.gettext:GetEntry("RECCETARGETREPORT",self.locale)
+prectext=string.format(prectext,callsign,inrtext,islasing)
+text=text..prectext
+end
+end
 end
 end
 local clienttxt=self.gettext:GetEntry("PILOTS",self.locale)
@@ -92479,9 +92520,11 @@ local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
 local active=MENU_GROUP_DELAYED:New(group,menuactive,topmenu)
 local info=MENU_GROUP_COMMAND_DELAYED:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client)
 local mark=MENU_GROUP_COMMAND_DELAYED:New(group,menumark,active,self._MarkTask,self,group,client)
-if self.Type~=PLAYERTASKCONTROLLER.Type.A2A or self.noflaresmokemenu then
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+if self.noflaresmokemenu~=true then
 local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client)
 local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client)
+end
 end
 local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client)
 if self.activehasinfomenu and self.taskinfomenu then
@@ -92833,7 +92876,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.9",
+version="0.0.10",
 ViewZone={},
 ViewZoneVisual={},
 PlayerSet=nil,
