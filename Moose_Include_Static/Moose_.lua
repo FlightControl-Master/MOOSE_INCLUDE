@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T06:07:37.0000000Z-4d2a58e4288c52a508e8a712cd5f19948299f013 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T06:15:39.0000000Z-e18a5e48325132e891d0ae132eb25564038f0b95 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91441,7 +91441,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.38"
+PLAYERTASKCONTROLLER.version="0.1.39"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -91720,7 +91720,7 @@ end
 playername=EventData.IniGroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber)
 end
 playername=self:_GetTextForSpeech(playername)
-local text=string.format(switchtext,self.MenuName or self.Name,playername,freqtext)
+local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
 end
