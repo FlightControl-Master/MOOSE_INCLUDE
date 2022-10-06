@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-05T05:32:17.0000000Z-0da22994721dcf11a2cf1ca7c2b7029a84bb5699 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T05:27:07.0000000Z-2ca6168f475b6c4ed7d0d800cfdf03293155e438 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8668,11 +8668,14 @@ end
 ZONE_RADIUS={
 ClassName="ZONE_RADIUS",
 }
-function ZONE_RADIUS:New(ZoneName,Vec2,Radius)
+function ZONE_RADIUS:New(ZoneName,Vec2,Radius,DoNotRegisterZone)
 local self=BASE:Inherit(self,ZONE_BASE:New(ZoneName))
 self:F({ZoneName,Vec2,Radius})
 self.Radius=Radius
 self.Vec2=Vec2
+if not DoNotRegisterZone then
+_EVENTDISPATCHER:CreateEventNewZone(self)
+end
 return self
 end
 function ZONE_RADIUS:UpdateFromVec2(Vec2,Radius)
@@ -9109,7 +9112,7 @@ if not Zone then
 env.error("ERROR: Zone "..ZoneName.." does not exist!")
 return nil
 end
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,{x=Zone.point.x,y=Zone.point.z},Zone.radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,{x=Zone.point.x,y=Zone.point.z},Zone.radius,true))
 self:F(ZoneName)
 self.Color={1,0,0,0.15}
 self.Zone=Zone
@@ -9133,7 +9136,7 @@ self.rho=Offset.rho or 0.0
 self.theta=(Offset.theta or 0.0)*math.pi/180.0
 self.relative_to_unit=Offset.relative_to_unit or false
 end
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneUNIT:GetVec2(),Radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneUNIT:GetVec2(),Radius,true))
 self:F({ZoneName,ZoneUNIT:GetVec2(),Radius})
 self.ZoneUNIT=ZoneUNIT
 self.LastVec2=ZoneUNIT:GetVec2()
@@ -9191,7 +9194,7 @@ ZONE_GROUP={
 ClassName="ZONE_GROUP",
 }
 function ZONE_GROUP:New(ZoneName,ZoneGROUP,Radius)
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneGROUP:GetVec2(),Radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneGROUP:GetVec2(),Radius,true))
 self:F({ZoneName,ZoneGROUP:GetVec2(),Radius})
 self._.ZoneGROUP=ZoneGROUP
 self._.ZoneVec2Cache=self._.ZoneGROUP:GetVec2()
@@ -9502,7 +9505,7 @@ local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
 local PointX=self._.Polygon[i].x+(Segment*DeltaX/Segments)
 local PointY=self._.Polygon[i].y+(Segment*DeltaY/Segments)
-ZONE_RADIUS:New("Zone",{x=PointX,y=PointY},Radius):DrawZone(Coalition,Color,1,Color,Alpha,nil,true)
+ZONE_RADIUS:New("Zone",{x=PointX,y=PointY},Radius,true):DrawZone(Coalition,Color,1,Color,Alpha,nil,false)
 end
 end
 j=i
@@ -9777,7 +9780,7 @@ ClassName="ZONE_AIRBASE",
 function ZONE_AIRBASE:New(AirbaseName,Radius)
 Radius=Radius or 4000
 local Airbase=AIRBASE:FindByName(AirbaseName)
-local self=BASE:Inherit(self,ZONE_RADIUS:New(AirbaseName,Airbase:GetVec2(),Radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(AirbaseName,Airbase:GetVec2(),Radius,true))
 self._.ZoneAirbase=Airbase
 self._.ZoneVec2Cache=self._.ZoneAirbase:GetVec2()
 if Airbase:IsShip()then
