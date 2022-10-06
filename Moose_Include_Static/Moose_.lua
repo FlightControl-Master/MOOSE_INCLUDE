@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T06:15:39.0000000Z-e18a5e48325132e891d0ae132eb25564038f0b95 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T11:28:19.0000000Z-40427c75b9fcfdd20f4d294ef32e057f89faa6f2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -77314,7 +77314,7 @@ end
 function FLIGHTGROUP:GetAirwing()
 return self.legion
 end
-function FLIGHTGROUP:GetAirwing()
+function FLIGHTGROUP:GetAirwingName()
 local name=self.legion and self.legion.alias or"None"
 return name
 end
