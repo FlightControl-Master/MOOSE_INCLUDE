@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-05T05:33:46.0000000Z-1a332ae6abcc7be9c25f7cc1443a7b25a0998535 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T06:07:37.0000000Z-4d2a58e4288c52a508e8a712cd5f19948299f013 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -17698,11 +17698,14 @@ end
 ZONE_RADIUS={
 ClassName="ZONE_RADIUS",
 }
-function ZONE_RADIUS:New(ZoneName,Vec2,Radius)
+function ZONE_RADIUS:New(ZoneName,Vec2,Radius,DoNotRegisterZone)
 local self=BASE:Inherit(self,ZONE_BASE:New(ZoneName))
 self:F({ZoneName,Vec2,Radius})
 self.Radius=Radius
 self.Vec2=Vec2
+if not DoNotRegisterZone then
+_EVENTDISPATCHER:CreateEventNewZone(self)
+end
 return self
 end
 function ZONE_RADIUS:UpdateFromVec2(Vec2,Radius)
@@ -18139,7 +18142,7 @@ if not Zone then
 env.error("ERROR: Zone "..ZoneName.." does not exist!")
 return nil
 end
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,{x=Zone.point.x,y=Zone.point.z},Zone.radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,{x=Zone.point.x,y=Zone.point.z},Zone.radius,true))
 self:F(ZoneName)
 self.Color={1,0,0,0.15}
 self.Zone=Zone
@@ -18163,7 +18166,7 @@ self.rho=Offset.rho or 0.0
 self.theta=(Offset.theta or 0.0)*math.pi/180.0
 self.relative_to_unit=Offset.relative_to_unit or false
 end
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneUNIT:GetVec2(),Radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneUNIT:GetVec2(),Radius,true))
 self:F({ZoneName,ZoneUNIT:GetVec2(),Radius})
 self.ZoneUNIT=ZoneUNIT
 self.LastVec2=ZoneUNIT:GetVec2()
@@ -18221,7 +18224,7 @@ ZONE_GROUP={
 ClassName="ZONE_GROUP",
 }
 function ZONE_GROUP:New(ZoneName,ZoneGROUP,Radius)
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneGROUP:GetVec2(),Radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneGROUP:GetVec2(),Radius,true))
 self:F({ZoneName,ZoneGROUP:GetVec2(),Radius})
 self._.ZoneGROUP=ZoneGROUP
 self._.ZoneVec2Cache=self._.ZoneGROUP:GetVec2()
@@ -18532,7 +18535,7 @@ local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
 local PointX=self._.Polygon[i].x+(Segment*DeltaX/Segments)
 local PointY=self._.Polygon[i].y+(Segment*DeltaY/Segments)
-ZONE_RADIUS:New("Zone",{x=PointX,y=PointY},Radius):DrawZone(Coalition,Color,1,Color,Alpha,nil,true)
+ZONE_RADIUS:New("Zone",{x=PointX,y=PointY},Radius,true):DrawZone(Coalition,Color,1,Color,Alpha,nil,false)
 end
 end
 j=i
@@ -18807,7 +18810,7 @@ ClassName="ZONE_AIRBASE",
 function ZONE_AIRBASE:New(AirbaseName,Radius)
 Radius=Radius or 4000
 local Airbase=AIRBASE:FindByName(AirbaseName)
-local self=BASE:Inherit(self,ZONE_RADIUS:New(AirbaseName,Airbase:GetVec2(),Radius))
+local self=BASE:Inherit(self,ZONE_RADIUS:New(AirbaseName,Airbase:GetVec2(),Radius,true))
 self._.ZoneAirbase=Airbase
 self._.ZoneVec2Cache=self._.ZoneAirbase:GetVec2()
 if Airbase:IsShip()then
@@ -63134,7 +63137,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.44",
+version="0.2.45",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -65049,7 +65052,7 @@ local alphacheckbulls=self:_ToStringBULLS(Group:GetCoordinate(),false,true)
 local alpha=self.gettext:GetEntry("ALPHACHECK",self.locale)
 text=string.format("%s. %s. %s. %s",managedgroup.CallSign,self.callsigntxt,alpha,alphacheckbulls)
 self:__CheckedIn(1,managedgroup.GID)
-local AW=FlightGroup:GetAirWing()
+local AW=FlightGroup.legion
 if AW.HasOwnStation then
 self:__AssignAnchor(5,managedgroup.GID,AW.HasOwnStation,AW.StationName)
 else
@@ -92916,6 +92919,7 @@ self:AddTransition("*","TargetLasing","*")
 self:AddTransition("*","TargetLOSLost","*")
 self:AddTransition("*","TargetReport","*")
 self:AddTransition("*","TargetReportSent","*")
+self:AddTransition("*","Shack","*")
 self:AddTransition("Running","Stop","Stopped")
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
 self:HandleEvent(EVENTS.Ejection,self._EventHandler)
@@ -93101,7 +93105,7 @@ local cleancache=FIFO:New()
 self.TargetCache:ForEach(
 function(unit)
 local pull=false
-if unit and unit:IsAlive()then
+if unit and unit:IsAlive()and unit:GetLife()>1 then
 if unit.PlayerRecceDetected and unit.PlayerRecceDetected.timestamp then
 local TNow=timer.getTime()
 if TNow-unit.PlayerRecceDetected.timestamp>self.TForget then
@@ -93152,7 +93156,7 @@ targetset:ForEach(
 function(_unit)
 local _unit=_unit
 local _unitpos=_unit:GetCoordinate()
-if startpos:IsLOS(_unitpos)then
+if startpos:IsLOS(_unitpos)and _unit:IsAlive()and _unit:GetLife()>1 then
 self:T("Adding to final targets: ".._unit:GetName())
 finaltargets:Add(_unit:GetName(),_unit)
 end
@@ -93169,7 +93173,7 @@ local unitsbythreat={}
 local minthreat=self.minthreatlevel or 0
 for _,_unit in pairs(targetset.Set)do
 local unit=_unit
-if unit and unit:IsAlive()then
+if unit and unit:IsAlive()and unit:GetLife()>1 then
 local threat=unit:GetThreatLevel()
 if threat>=minthreat then
 if unit:HasAttribute("RADAR_BAND1_FOR_ARM")or unit:HasAttribute("RADAR_BAND2_FOR_ARM")or unit:HasAttribute("Optical Tracker")then
@@ -93211,10 +93215,13 @@ laser:LaseOn(target,lasercode,lasingtime)
 self:__TargetLasing(-1,client,target,lasercode,lasingtime)
 else
 local oldtarget=laser.Target
-if targetset:IsNotInSet(oldtarget)then
-local targettype=oldtarget:GetTypeName()
+if targetset:IsNotInSet(oldtarget)or(not oldtarget)or(not oldtarget:IsAlive())or(oldtarget:GetLife()<2)then
 laser:LaseOff()
+if(not oldtarget:IsAlive())or(oldtarget:GetLife()<2)then
+self:__Shack(-1,client,oldtarget)
+else
 self:__TargetLOSLost(-1,client,oldtarget)
+end
 end
 end
 return self
@@ -93571,6 +93578,8 @@ function PLAYERRECCE:_GetTextForSpeech(text)
 text=string.gsub(text,"%d","%1 ")
 text=string.gsub(text,"^%s*","")
 text=string.gsub(text,"%s*$","")
+text=string.gsub(text,"0","zero")
+text=string.gsub(text,"9","niner")
 return text
 end
 function PLAYERRECCE:onafterStatus(From,Event,To)
@@ -93632,14 +93641,13 @@ if self.ReferencePoint then
 local Settings=Client and _DATABASE:GetPlayerSettings(Playername)or _SETTINGS
 coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Settings)
 end
-if self.debug then
-local text=string.format("All stations, FACA %s on station\nat %s!",callsign,coordtext)
-MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
-end
 local text1="Party time!"
 local text2=string.format("All stations, FACA %s on station\nat %s!",callsign,coordtext)
 local text2tts=string.format("All stations, FACA %s on station at %s!",callsign,coordtext)
 text2tts=self:_GetTextForSpeech(text2tts)
+if self.debug then
+self:I(text2.."\n"..text2tts)
+end
 if self.UseSRS then
 local grp=Client:GetGroup()
 self.SRSQueue:NewTransmission(text1,nil,self.SRS,nil,2)
@@ -93647,7 +93655,7 @@ self.SRSQueue:NewTransmission(text2tts,nil,self.SRS,nil,2)
 MESSAGE:New(text2,10,self.Name or"FACA"):ToCoalition(self.Coalition)
 else
 MESSAGE:New(text1,10,self.Name or"FACA"):ToClient(Client)
-MESSAGE:New(text2,10,self.Name or"FACA"):ToClient(Client)
+MESSAGE:New(text2,10,self.Name or"FACA"):ToCoalition(self.Coalition)
 end
 return self
 end
@@ -93664,7 +93672,7 @@ local text=string.format("All stations, FACA %s leaving station\nat %s, good bye
 local texttts=string.format("All stations, FACA %s leaving station at %s, good bye!",callsign,coordtext)
 texttts=self:_GetTextForSpeech(texttts)
 if self.debug then
-MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+self:I(text.."\n"..texttts)
 end
 local text1="Going home!"
 if self.UseSRS then
@@ -93673,7 +93681,7 @@ self.SRSQueue:NewTransmission(text1,nil,self.SRS,nil,2)
 self.SRSQueue:NewTransmission(texttts,nil,self.SRS,nil,2)
 MESSAGE:New(text,10,self.Name or"FACA"):ToCoalition(self.Coalition)
 else
-MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
+MESSAGE:New(text,10,self.Name or"FACA"):ToCoalition(self.Coalition)
 end
 return self
 end
@@ -93743,10 +93751,6 @@ self:T({From,Event,To})
 local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
-if self.debug then
-local text=string.format("All stations, %s smoked targets\nat %s!",callsign,coordtext)
-MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
-end
 if self.AttackSet then
 for _,_client in pairs(self.AttackSet.Set)do
 local client=_client
@@ -93776,10 +93780,6 @@ self:T({From,Event,To})
 local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
-if self.debug then
-local text=string.format("All stations, %s flared\ntargets at %s!",callsign,coordtext)
-MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
-end
 if self.AttackSet then
 for _,_client in pairs(self.AttackSet.Set)do
 local client=_client
@@ -93814,12 +93814,56 @@ if self.ReferencePoint then
 coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Settings)
 end
 local targettype=Target:GetTypeName()
-if self.debug then
+if self.AttackSet then
+for _,_client in pairs(self.AttackSet.Set)do
+local client=_client
+if client and client:IsAlive()then
+local Settings=client and _DATABASE:GetPlayerSettings(client:GetPlayerName())or _SETTINGS
+if self.ReferencePoint then
+coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings)
+end
+local coordtext=coord:ToStringA2G(client,Settings)
 local text=string.format("All stations, %s lasing %s\nat %s!\nCode %d, Duration %d seconds!",callsign,targettype,coordtext,Lasercode,Lasingtime)
-MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+MESSAGE:New(text,15,self.Name or"FACA"):ToClient(client)
+end
+end
 end
 local text="Lasing!"
 local ttstext="Laser on!"
+if self.UseSRS then
+local grp=Client:GetGroup()
+self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
+else
+MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
+end
+return self
+end
+function PLAYERRECCE:onafterShack(From,Event,To,Client,Target)
+self:T({From,Event,To})
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
+local coord=Client:GetCoordinate()
+local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
+if self.ReferencePoint then
+coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Settings)
+end
+local targettype=Target:GetTypeName()
+if self.AttackSet then
+for _,_client in pairs(self.AttackSet.Set)do
+local client=_client
+if client and client:IsAlive()then
+local Settings=client and _DATABASE:GetPlayerSettings(client:GetPlayerName())or _SETTINGS
+if self.ReferencePoint then
+coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings)
+end
+local coordtext=coord:ToStringA2G(client,Settings)
+local text=string.format("All stations, %s lost sight of %s\nat %s!",callsign,targettype,coordtext)
+MESSAGE:New(text,15,self.Name or"FACA"):ToClient(client)
+end
+end
+end
+local text="Shack!"
+local ttstext="Kaboom!"
 if self.UseSRS then
 local grp=Client:GetGroup()
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
@@ -93838,9 +93882,19 @@ if self.ReferencePoint then
 coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Settings)
 end
 local targettype=Target:GetTypeName()
-if self.debug then
+if self.AttackSet then
+for _,_client in pairs(self.AttackSet.Set)do
+local client=_client
+if client and client:IsAlive()then
+local Settings=client and _DATABASE:GetPlayerSettings(client:GetPlayerName())or _SETTINGS
+if self.ReferencePoint then
+coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings)
+end
+local coordtext=coord:ToStringA2G(client,Settings)
 local text=string.format("All stations, %s lost sight of %s\nat %s!",callsign,targettype,coordtext)
-MESSAGE:New(text,15,self.Name or"FACA"):ToCoalition(self.Coalition)
+MESSAGE:New(text,15,self.Name or"FACA"):ToClient(client)
+end
+end
 end
 local text="Lost LOS!"
 local ttstext="Lost L O S!"
