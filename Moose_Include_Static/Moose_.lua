@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T15:05:16.0000000Z-d63ab1138c239178c0c6be3e257548405e42f50c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-07T12:33:38.0000000Z-69a80a6c38731e7d365904ef3536907236005226 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92876,9 +92876,12 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.10",
+version="0.0.11",
 ViewZone={},
 ViewZoneVisual={},
+ViewZoneLaser={},
+LaserFOV={},
+LaserTarget={},
 PlayerSet=nil,
 debug=true,
 LaserSpots={},
@@ -93121,15 +93124,12 @@ self.Keepnumber=Keepnumber or false
 self.CallsignTranslations=CallsignTranslations
 return self
 end
-function PLAYERRECCE:_GetViewZone(unit,vheading,vnod,maxview,angle,camon,draw)
+function PLAYERRECCE:_GetViewZone(unit,vheading,minview,maxview,angle,camon,laser)
 self:T(self.lid.."_GetViewZone")
 local viewzone=nil
-if not camon then return nil end
 if unit and unit:IsAlive()then
 local unitname=unit:GetName()
-if self.ViewZone[unitname]then
-self.ViewZone[unitname]:UndrawZone()
-end
+if not laser then
 local startpos=unit:GetCoordinate()
 local heading1=(vheading+angle)%360
 local heading2=(vheading-angle)%360
@@ -93140,9 +93140,22 @@ table.insert(array,startpos:GetVec2())
 table.insert(array,pos1:GetVec2())
 table.insert(array,pos2:GetVec2())
 viewzone=ZONE_POLYGON:NewFromPointsArray(unitname,array)
-if draw then
-viewzone:DrawZone(-1,{0,0,1},nil,nil,nil,1)
-self.ViewZone[unitname]=viewzone
+else
+local startp=unit:GetCoordinate()
+local heading1=(vheading+90)%360
+local heading2=(vheading-90)%360
+self:I({heading1,heading2})
+local startpos=startp:Translate(minview,vheading)
+local pos1=startpos:Translate(10,heading1)
+local pos2=startpos:Translate(10,heading2)
+local pos3=pos1:Translate(maxview,vheading)
+local pos4=pos2:Translate(maxview,vheading)
+local array={}
+table.insert(array,pos1:GetVec2())
+table.insert(array,pos2:GetVec2())
+table.insert(array,pos4:GetVec2())
+table.insert(array,pos3:GetVec2())
+viewzone=ZONE_POLYGON:NewFromPointsArray(unitname,array)
 end
 end
 return viewzone
@@ -93188,23 +93201,40 @@ self.TargetCache=nil
 self.TargetCache=cleancache
 return self
 end
-function PLAYERRECCE:_GetTargetSet(unit,camera)
+function PLAYERRECCE:_GetTargetSet(unit,camera,laser)
 self:T(self.lid.."_GetTargetSet")
 local finaltargets=SET_UNIT:New()
 local finalcount=0
+local minview=0
+local typename=unit:GetTypeName()
+local playername=unit:GetPlayerName()
+local maxview=self.MaxViewDistance[typename]or 5000
 local heading,nod,maxview,angle=0,30,8000,10
 local camon=true
-local typename=unit:GetTypeName()
 local name=unit:GetName()
 if string.find(typename,"SA342")and camera then
 heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
 angle=10
+maxview=self.MaxViewDistance[typename]or 5000
 else
 heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
 angle=45
 end
-local zone=self:_GetViewZone(unit,heading,nod,maxview,angle,camon)
+if laser then
+if not self.LaserFOV[playername]then
+minview=100
+maxview=2000
+self.LaserFOV[playername]={
+min=100,
+max=2000,
+}
+else
+minview=self.LaserFOV[playername].min
+maxview=self.LaserFOV[playername].max
+end
+end
+local zone=self:_GetViewZone(unit,heading,minview,maxview,angle,camon,laser)
 if zone then
 local redcoalition="red"
 if self.Coalition==coalition.side.RED then
@@ -93249,7 +93279,11 @@ local aNum=a[2]
 local bNum=b[2]
 return aNum>bNum
 end)
+if unitsbythreat[1]and unitsbythreat[1][1]then
 return unitsbythreat[1][1]
+else
+return nil
+end
 end
 function PLAYERRECCE:_LaseTarget(client,targetset)
 self:T(self.lid.."_LaseTarget")
@@ -93266,31 +93300,30 @@ self.LaserSpots[playername]=laser
 else
 laser=self.LaserSpots[playername]
 end
-if not laser:IsLasing()and target then
+if self.LaserTarget[playername]then
+local target=self.LaserTarget[playername]
+local oldtarget=target:GetObject()
+self:I("Targetstate: "..target:GetState())
+if not oldtarget or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
+laser:LaseOff()
+if target:IsDead()or target:IsDestroyed()or target:GetLife()<2 then
+self:__Shack(-1,client,oldtarget)
+self.LaserTarget[playername]=nil
+else
+self:__TargetLOSLost(-1,client,oldtarget)
+self.LaserTarget[playername]=nil
+end
+end
+elseif not laser:IsLasing()and target then
 local relativecam=self.LaserRelativePos[client:GetTypeName()]
 laser:SetRelativeStartPosition(relativecam)
 local lasercode=self.UnitLaserCodes[playername]or laser.LaserCode or 1688
 local lasingtime=self.lasingtime or 60
 local targettype=target:GetTypeName()
 laser:LaseOn(target,lasercode,lasingtime)
-local function Shack(dT,client,target,targettype)
-self:__Shack(-1,client,target,targettype)
-end
-function laser:OnAfterDestroyed(From,Event,To)
-Shack(-1,client,target,targettype)
-end
+self.LaserTarget[playername]=TARGET:New(target)
+self.LaserTarget[playername].TStatus=9
 self:__TargetLasing(-1,client,target,lasercode,lasingtime)
-else
-local oldtarget=laser.Target
-if targetset:IsNotInSet(oldtarget)or(not oldtarget)or(not oldtarget:IsAlive())or(oldtarget:GetLife()<2)then
-laser:LaseOff()
-self:I(self.lid.."*** Laser off!")
-if(not oldtarget:IsAlive())or(oldtarget:GetLife()<2)then
-self:__Shack(-1,client,oldtarget)
-else
-self:__TargetLOSLost(-1,client,oldtarget)
-end
-end
 end
 return self
 end
@@ -93327,6 +93360,26 @@ else
 self.AutoLase[playername]=false
 MESSAGE:New("Lasing is now OFF",10,self.Name or"FACA"):ToClient(client)
 end
+if self.ClientMenus[playername]then
+self.ClientMenus[playername]:Remove()
+self.ClientMenus[playername]=nil
+end
+return self
+end
+function PLAYERRECCE:_SwitchLasingDist(client,group,playername,mindist,maxdist)
+self:T(self.lid.."_SwitchLasingDist")
+local mind=mindist or 100
+local maxd=maxdist or 2000
+if not self.LaserFOV[playername]then
+self.LaserFOV[playername]={
+min=mind,
+max=maxd,
+}
+else
+self.LaserFOV[playername].min=mind
+self.LaserFOV[playername].max=maxd
+end
+MESSAGE:New(string.format("Laser distance set to %d-%dm!",mindist,maxdist),10,"FACA"):ToClient(client)
 if self.ClientMenus[playername]then
 self.ClientMenus[playername]:Remove()
 self.ClientMenus[playername]=nil
@@ -93422,7 +93475,7 @@ return self
 end
 function PLAYERRECCE:_ReportLaserTargets(client,group,playername)
 self:T(self.lid.."_ReportLaserTargets")
-local targetset,number=self:_GetTargetSet(client,true)
+local targetset,number=self:_GetTargetSet(client,true,true)
 if number>0 and self.AutoLase[playername]then
 local Settings=(client and _DATABASE:GetPlayerSettings(playername))or _SETTINGS
 local target=self:_GetHVTTarget(targetset)
@@ -93517,6 +93570,23 @@ if canlase then
 local txtonstation=self.AutoLase[playername]and"ON"or"OFF"
 local text=string.format("Switch Lasing (%s)",txtonstation)
 local lasemenu=MENU_GROUP_COMMAND:New(group,text,self.ClientMenus[playername],self._SwitchLasing,self,client,group,playername)
+local lasedist=MENU_GROUP:New(group,"Set Laser Distance",self.ClientMenus[playername])
+local mindist=100
+local maxdist=2000
+if self.LaserFOV[playername]and self.LaserFOV[playername].max then
+maxdist=self.LaserFOV[playername].max
+end
+local laselist={}
+for i=2,8 do
+local dist1=(i*1000)-1000
+local dist2=i*1000
+dist1=dist1==1000 and 100 or dist1
+local text=string.format("%d-%dm",dist1,dist2)
+if dist2==maxdist then
+text=text.." (*)"
+end
+laselist[i]=MENU_GROUP_COMMAND:New(group,text,lasedist,self._SwitchLasingDist,self,client,group,playername,dist1,dist2)
+end
 end
 local targetmenu=MENU_GROUP:New(group,"Target Report",self.ClientMenus[playername])
 if canlase then
@@ -93673,10 +93743,22 @@ self.ViewZone[playername]=tzone:DrawZone(self.Coalition,{0,0,1},nil,nil,nil,1)
 end
 end
 self:T({targetcount=targetcount})
-if targetcount>0 then
-if self.CanLase[client:GetTypeName()]and self.AutoLase[playername]then
-self:_LaseTarget(client,targetset)
+if self.AutoLase[playername]then
+local laserset,targetcount,lzone=self:_GetTargetSet(client,true,true)
+if targetcount>0 or self.LaserTarget[playername]then
+if self.CanLase[client:GetTypeName()]then
+self:_LaseTarget(client,laserset)
 end
+end
+if lzone then
+if self.ViewZoneLaser[playername]then
+self.ViewZoneLaser[playername]:UndrawZone()
+end
+if self.debug and tzone then
+self.ViewZoneLaser[playername]=lzone:DrawZone(self.Coalition,{0,1,0},nil,nil,nil,1)
+end
+end
+self:I({lasercount=targetcount})
 end
 local vistargetset,vistargetcount,viszone=self:_GetTargetSet(client,false)
 if vistargetset then
@@ -93911,7 +93993,7 @@ local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
 if self.ReferencePoint then
 coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Settings)
 end
-local targettype=Targettype
+local targettype="target"
 if self.AttackSet then
 for _,_client in pairs(self.AttackSet.Set)do
 local client=_client
@@ -93945,7 +94027,7 @@ local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
 if self.ReferencePoint then
 coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Settings)
 end
-local targettype=Target:GetTypeName()
+local targettype="target"
 if self.AttackSet then
 for _,_client in pairs(self.AttackSet.Set)do
 local client=_client
@@ -95197,6 +95279,7 @@ elements={},
 casualties={},
 threatlevel0=0,
 conditionStart={},
+TStatus=30,
 }
 TARGET.ObjectType={
 GROUP="Group",
@@ -95220,7 +95303,7 @@ ALIVE="Alive",
 DEAD="Dead",
 }
 _TARGETID=0
-TARGET.version="0.5.2"
+TARGET.version="0.5.3"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -95230,6 +95313,7 @@ self:AddObject(TargetObject)
 end
 self:SetPriority()
 self:SetImportance()
+self.TStatus=30
 self.lid=string.format("TARGET #%03d | ",_TARGETID)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Alive")
@@ -95398,7 +95482,7 @@ end
 self:I(self.lid..text)
 end
 if self:IsAlive()then
-self:__Status(-30)
+self:__Status(-self.TStatus)
 end
 end
 function TARGET:onafterObjectDamaged(From,Event,To,Target)
