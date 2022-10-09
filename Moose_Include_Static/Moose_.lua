@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-06T05:27:07.0000000Z-2ca6168f475b6c4ed7d0d800cfdf03293155e438 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-09T10:53:45.0000000Z-38b9778e9aab98aa318dbb15e2cad561dc8e3af6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10906,6 +10906,7 @@ end
 table.sort(self.Index)
 end
 function SET_BASE:AddSet(SetToAdd)
+if not SetToAdd then return self end
 for _,ObjectB in pairs(SetToAdd.Set)do
 self:AddObject(ObjectB)
 end
