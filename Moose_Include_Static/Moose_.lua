@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-09T10:56:00.0000000Z-7e6aa201684e277ccaf7866d8c23936beb626c78 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-09T10:56:54.0000000Z-eecef9a0aae2f8821959ce656b654ab1c63ea2ff ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92877,7 +92877,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.11",
+version="0.0.12",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -92990,6 +92990,13 @@ end
 self.ClientMenus[EventData.IniPlayerName]=nil
 self.LaserSpots[EventData.IniPlayerName]=nil
 self.OnStation[EventData.IniPlayerName]=false
+self.LaserFOV[EventData.IniPlayerName]=nil
+self.UnitLaserCodes[EventData.IniPlayerName]=nil
+self.LaserTarget[EventData.IniPlayerName]=nil
+self.AutoLase[EventData.IniPlayerName]=false
+if self.ViewZone[EventData.IniPlayerName]then self.ViewZone[EventData.IniPlayerName]:UndrawZone()end
+if self.ViewZoneLaser[EventData.IniPlayerName]then self.ViewZoneLaser[EventData.IniPlayerName]:UndrawZone()end
+if self.ViewZoneVisual[EventData.IniPlayerName]then self.ViewZoneVisual[EventData.IniPlayerName]:UndrawZone()end
 end
 elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
 if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
@@ -92998,6 +93005,13 @@ self.UnitLaserCodes[EventData.IniPlayerName]=1688
 self.ClientMenus[EventData.IniPlayerName]=nil
 self.LaserSpots[EventData.IniPlayerName]=nil
 self.OnStation[EventData.IniPlayerName]=false
+self.LaserFOV[EventData.IniPlayerName]=nil
+self.UnitLaserCodes[EventData.IniPlayerName]=nil
+self.LaserTarget[EventData.IniPlayerName]=nil
+self.AutoLase[EventData.IniPlayerName]=false
+if self.ViewZone[EventData.IniPlayerName]then self.ViewZone[EventData.IniPlayerName]:UndrawZone()end
+if self.ViewZoneLaser[EventData.IniPlayerName]then self.ViewZoneLaser[EventData.IniPlayerName]:UndrawZone()end
+if self.ViewZoneVisual[EventData.IniPlayerName]then self.ViewZoneVisual[EventData.IniPlayerName]:UndrawZone()end
 self:_BuildMenus()
 end
 end
@@ -93046,6 +93060,18 @@ end
 function PLAYERRECCE:SetAttackSet(AttackSet)
 self.AttackSet=AttackSet
 return self
+end
+function PLAYERRECCE:_CameraOn(client,playername)
+local camera=true
+local unit=client
+if unit and unit:IsAlive()then
+local dcsunit=Unit.getByName(client:GetName())
+local vivihorizontal=dcsunit:getDrawArgumentValue(215)or 0
+if vivihorizontal<-0.7 or vivihorizontal>0.7 then
+camera=false
+end
+end
+return camera
 end
 function PLAYERRECCE:_GetGazelleVivianneSight(Gazelle)
 self:T(self.lid.."GetGazelleVivianneSight")
@@ -93128,6 +93154,7 @@ end
 function PLAYERRECCE:_GetViewZone(unit,vheading,minview,maxview,angle,camon,laser)
 self:T(self.lid.."_GetViewZone")
 local viewzone=nil
+if not camon then return nil end
 if unit and unit:IsAlive()then
 local unitname=unit:GetName()
 if not laser then
@@ -93211,7 +93238,7 @@ local typename=unit:GetTypeName()
 local playername=unit:GetPlayerName()
 local maxview=self.MaxViewDistance[typename]or 5000
 local heading,nod,maxview,angle=0,30,8000,10
-local camon=true
+local camon=false
 local name=unit:GetName()
 if string.find(typename,"SA342")and camera then
 heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
@@ -93733,8 +93760,13 @@ self.PlayerSet:ForEachClient(
 function(Client)
 local client=Client
 local playername=client:GetPlayerName()
+local cameraison=self:_CameraOn(client,playername)
 if client and client:IsAlive()and self.OnStation[playername]then
-local targetset,targetcount,tzone=self:_GetTargetSet(client,true)
+local targetset,targetcount,tzone=nil,0,nil
+local laserset,lzone=nil,nil
+local vistargetset,vistargetcount,viszone=nil,0,nil
+if cameraison then
+targetset,targetcount,tzone=self:_GetTargetSet(client,true)
 if targetset then
 if self.ViewZone[playername]then
 self.ViewZone[playername]:UndrawZone()
@@ -93744,8 +93776,9 @@ self.ViewZone[playername]=tzone:DrawZone(self.Coalition,{0,0,1},nil,nil,nil,1)
 end
 end
 self:T({targetcount=targetcount})
-if self.AutoLase[playername]then
-local laserset,targetcount,lzone=self:_GetTargetSet(client,true,true)
+end
+if self.AutoLase[playername]and cameraison then
+laserset,targetcount,lzone=self:_GetTargetSet(client,true,true)
 if targetcount>0 or self.LaserTarget[playername]then
 if self.CanLase[client:GetTypeName()]then
 self:_LaseTarget(client,laserset)
@@ -93761,7 +93794,7 @@ end
 end
 self:I({lasercount=targetcount})
 end
-local vistargetset,vistargetcount,viszone=self:_GetTargetSet(client,false)
+vistargetset,vistargetcount,viszone=self:_GetTargetSet(client,false)
 if vistargetset then
 if self.ViewZoneVisual[playername]then
 self.ViewZoneVisual[playername]:UndrawZone()
@@ -93771,8 +93804,21 @@ self.ViewZoneVisual[playername]=viszone:DrawZone(self.Coalition,{1,0,0},nil,nil,
 end
 end
 self:T({visualtargetcount=vistargetcount})
-targetset:AddSet(vistargetset)
-self:_CheckNewTargets(targetset,client,playername)
+if targetset then
+vistargetset:AddSet(targetset)
+end
+if laserset then
+vistargetset:AddSet(laserset)
+end
+if not cameraison and self.debug then
+if self.ViewZoneLaser[playername]then
+self.ViewZoneLaser[playername]:UndrawZone()
+end
+if self.ViewZone[playername]then
+self.ViewZone[playername]:UndrawZone()
+end
+end
+self:_CheckNewTargets(vistargetset,client,playername)
 end
 end
 )
