@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-09T10:53:45.0000000Z-38b9778e9aab98aa318dbb15e2cad561dc8e3af6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-10T15:42:02.0000000Z-c5145a38e2e65495c16e84d0b19c65e2319bacc1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14847,7 +14847,7 @@ RoutePoint.task.params={}
 RoutePoint.task.params.tasks=DCSTasks or{}
 return RoutePoint
 end
-function COORDINATE:GetClosestAirbase2(Category,Coalition)
+function COORDINATE:GetClosestAirbase(Category,Coalition)
 local airbases=AIRBASE.GetAllAirbases(Coalition)
 local closest=nil
 local distmin=nil
@@ -14871,20 +14871,9 @@ end
 end
 return closest,distmin
 end
-function COORDINATE:GetClosestAirbase(Category,Coalition)
-local a=self:GetVec3()
-local distmin=math.huge
-local airbase=nil
-for DCSairbaseID,DCSairbase in pairs(world.getAirbases(Coalition))do
-local b=DCSairbase:getPoint()
-local c=UTILS.VecSubstract(a,b)
-local dist=UTILS.VecNorm(c)
-if dist<distmin and(Category==nil or Category==DCSairbase:getDesc().category)then
-distmin=dist
-airbase=DCSairbase
-end
-end
-return AIRBASE:Find(airbase)
+function COORDINATE:GetClosestAirbase2(Category,Coalition)
+local closest,distmin=self:GetClosestAirbase(Category,Coalition)
+return closest,distmin
 end
 function COORDINATE:GetClosestParkingSpot(airbase,terminaltype,free)
 local airbases={}
@@ -63311,7 +63300,7 @@ return distmin
 end
 if self.allowFARPRescue then
 local position=_heli:GetCoordinate()
-local afb,distance=position:GetClosestAirbase2(nil,self.coalition)
+local afb,distance=position:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
 end
 for _,_mashUnit in pairs(_mashes)do
