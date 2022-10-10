@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-09T10:56:54.0000000Z-eecef9a0aae2f8821959ce656b654ab1c63ea2ff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-10T15:44:20.0000000Z-66d5ba9981d126a9c406f8c9b33db217202b2638 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -71333,7 +71333,7 @@ return distmin
 end
 if self.allowFARPRescue then
 local position=_heli:GetCoordinate()
-local afb,distance=position:GetClosestAirbase2(nil,self.coalition)
+local afb,distance=position:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
 end
 for _,_mashUnit in pairs(_mashes)do
