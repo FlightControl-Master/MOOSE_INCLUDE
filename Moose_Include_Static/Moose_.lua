@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-12T07:36:42.0000000Z-11ef7c6a00b07367da70d564d18d5676a4994677 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-12T08:14:40.0000000Z-a777b4061373732faa762df6c09b0e3fe9ca7483 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -90956,8 +90956,11 @@ conditionFailure={},
 TaskController=nil,
 timestamp=0,
 lastsmoketime=0,
+Freetext=nil,
+FreetextTTS=nil,
+TaskSubType=nil,
 }
-PLAYERTASK.version="0.1.4"
+PLAYERTASK.version="0.1.6"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -91009,6 +91012,42 @@ function PLAYERTASK:_SetController(Controller)
 self:T(self.lid.."_SetController")
 self.TaskController=Controller
 return self
+end
+function PLAYERTASK:SetCoalition(Coalition)
+self:T(self.lid.."SetCoalition")
+self.coalition=Coalition or coalition.side.BLUE
+return self
+end
+function PLAYERTASK:GetCoalition()
+self:T(self.lid.."GetCoalition")
+return self.coalition
+end
+function PLAYERTASK:AddFreetext(Text)
+self:T(self.lid.."AddFreetext")
+self.Freetext=Text
+return self
+end
+function PLAYERTASK:SetSubType(Type)
+self:T(self.lid.."AddSubType")
+self.TaskSubType=Type
+return self
+end
+function PLAYERTASK:GetSubType()
+self:T(self.lid.."GetSubType")
+return self.TaskSubType
+end
+function PLAYERTASK:GetFreetext()
+self:T(self.lid.."GetFreetext")
+return self.Freetext
+end
+function PLAYERTASK:AddFreetextTTS(TextTTS)
+self:T(self.lid.."AddFreetextTTS")
+self.FreetextTTS=TextTTS
+return self
+end
+function PLAYERTASK:GetFreetextTTS()
+self:T(self.lid.."GetFreetextTTS")
+return self.FreetextTTS
 end
 function PLAYERTASK:IsDone()
 self:T(self.lid.."IsDone?")
@@ -91119,6 +91158,19 @@ if self.Target then
 local coordinate=self.Target:GetCoordinate()
 if coordinate then
 coordinate:Flare(color,0)
+end
+end
+return self
+end
+function PLAYERTASK:IlluminateTarget(Power,Height)
+self:T(self.lid.."IlluminateTarget")
+local Power=Power or 1000
+local Height=Height or 150
+if self.Target then
+local coordinate=self.Target:GetCoordinate()
+if coordinate then
+local bcoord=COORDINATE:NewFromVec2(coordinate:GetVec2(),Height)
+bcoord:IlluminationBomb(Power)
 end
 end
 return self
@@ -91311,6 +91363,7 @@ noflaresmokemenu=false,
 TransmitOnlyWithPlayers=true,
 buddylasing=false,
 PlayerRecce=nil,
+Coalition=nil,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -91319,6 +91372,8 @@ A2S="Air-To-Sea",
 A2GS="Air-To-Ground-Sea",
 }
 AUFTRAG.Type.PRECISIONBOMBING="Precision Bombing"
+AUFTRAG.Type.CTLD="Combat Transport"
+AUFTRAG.Type.CSAR="Combat Rescue"
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
 AAA=GROUP.Attribute.GROUND_AAA,
@@ -92167,6 +92222,18 @@ end
 task:_SetController(self)
 self.TaskQueue:Push(task)
 self:__TaskAdded(-1,task)
+return self
+end
+function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask)
+self:T(self.lid.."AddPlayerTaskToQueue")
+if PlayerTask and PlayerTask.ClassName and PlayerTask.ClassName=="PLAYERTASK"then
+PlayerTask:_SetController(self)
+PlayerTask:SetCoalition(self.Coalition)
+self.TaskQueue:Push(PlayerTask)
+self:__TaskAdded(-1,PlayerTask)
+else
+self:E(self.lid.."***** NO valid PAYERTASK object sent!")
+end
 return self
 end
 function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task)
