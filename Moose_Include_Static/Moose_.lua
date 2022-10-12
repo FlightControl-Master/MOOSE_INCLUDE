@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-10T15:44:55.0000000Z-b5bc881d522717bfe25688c71469596d76607c45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-12T07:36:42.0000000Z-11ef7c6a00b07367da70d564d18d5676a4994677 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25090,7 +25090,22 @@ ClassName="STATIC",
 function STATIC:Register(StaticName)
 local self=BASE:Inherit(self,POSITIONABLE:New(StaticName))
 self.StaticName=StaticName
+local DCSStatic=StaticObject.getByName(self.StaticName)
+if DCSStatic then
+local Life0=DCSStatic:getLife()or 1
+self.Life0=Life0
+end
 return self
+end
+function STATIC:GetLife0()
+return self.Life0 or 1
+end
+function STATIC:GetLife()
+local DCSStatic=StaticObject.getByName(self.StaticName)
+if DCSStatic then
+return DCSStatic:getLife()or 1
+end
+return nil
 end
 function STATIC:Find(DCSStatic)
 local StaticName=DCSStatic:getName()
@@ -95339,7 +95354,7 @@ ALIVE="Alive",
 DEAD="Dead",
 }
 _TARGETID=0
-TARGET.version="0.5.3"
+TARGET.version="0.5.4"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -95626,8 +95641,8 @@ target.Type=TARGET.ObjectType.STATIC
 target.Name=static:GetName()
 target.Coordinate=static:GetCoordinate()
 if static and static:IsAlive()then
-target.Life0=1
-target.Life=1
+target.Life0=static:GetLife0()
+target.Life=static:GetLife()
 target.N0=target.N0+1
 table.insert(self.elements,target.Name)
 end
