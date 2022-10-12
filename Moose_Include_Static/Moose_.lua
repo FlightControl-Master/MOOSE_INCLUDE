@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-10T15:42:02.0000000Z-c5145a38e2e65495c16e84d0b19c65e2319bacc1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-12T07:32:51.0000000Z-3434ef47d913ea9a80c65bb4bb21e785e66616fd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24442,7 +24442,22 @@ ClassName="STATIC",
 function STATIC:Register(StaticName)
 local self=BASE:Inherit(self,POSITIONABLE:New(StaticName))
 self.StaticName=StaticName
+local DCSStatic=StaticObject.getByName(self.StaticName)
+if DCSStatic then
+local Life0=DCSStatic:getLife()or 1
+self.Life0=Life0
+end
 return self
+end
+function STATIC:GetLife0()
+return self.Life0 or 1
+end
+function STATIC:GetLife()
+local DCSStatic=StaticObject.getByName(self.StaticName)
+if DCSStatic then
+return DCSStatic:getLife()or 1
+end
+return nil
 end
 function STATIC:Find(DCSStatic)
 local StaticName=DCSStatic:getName()
