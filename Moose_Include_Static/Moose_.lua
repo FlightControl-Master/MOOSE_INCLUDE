@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T15:44:04.0000000Z-141d00e160a91be150b35a20abb3fdb00934bc55 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T15:45:33.0000000Z-265196398ad93764ec156b1d6e4772121a59ffb8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91073,8 +91073,11 @@ lastsmoketime=0,
 Freetext=nil,
 FreetextTTS=nil,
 TaskSubType=nil,
+NextTaskSuccess={},
+NextTaskFailure={},
+FinalState="none",
 }
-PLAYERTASK.version="0.1.6"
+PLAYERTASK.version="0.1.8"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -91152,7 +91155,7 @@ return self.TaskSubType
 end
 function PLAYERTASK:GetFreetext()
 self:T(self.lid.."GetFreetext")
-return self.Freetext
+return self.Freetext or self.FreetextTTS or"No Details"
 end
 function PLAYERTASK:AddFreetextTTS(TextTTS)
 self:T(self.lid.."AddFreetextTTS")
@@ -91161,11 +91164,21 @@ return self
 end
 function PLAYERTASK:GetFreetextTTS()
 self:T(self.lid.."GetFreetextTTS")
-return self.FreetextTTS
+return self.FreetextTTS or self.Freetext or"No Details"
 end
 function PLAYERTASK:SetMenuName(Text)
 self:T(self.lid.."SetMenuName")
 self.Target.name=Text
+return self
+end
+function PLAYERTASK:AddNextTaskAfterSuccess(Task)
+self:T(self.lid.."AddNextTaskAfterSuccess")
+table.insert(self.NextTaskSuccess,Task)
+return self
+end
+function PLAYERTASK:AddNextTaskAfterFailure(Task)
+self:T(self.lid.."AddNextTaskAfterFailure")
+table.insert(self.NextTaskFailure,Task)
 return self
 end
 function PLAYERTASK:IsDone()
@@ -91412,6 +91425,7 @@ if self.TaskController then
 self.TaskController:__TaskCancelled(-1,self)
 end
 self.timestamp=timer.getAbsTime()
+self.FinalState="Cancel"
 self:__Done(-1)
 return self
 end
@@ -91424,6 +91438,7 @@ if self.TargetMarker then
 self.TargetMarker:Remove()
 end
 self.timestamp=timer.getAbsTime()
+self.FinalState="Success"
 self:__Done(-1)
 return self
 end
@@ -91440,9 +91455,7 @@ else
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
-if self.TaskController then
-self.TaskController:__TaskFailed(-1,self)
-end
+self.FinalState="Failed"
 self:__Done(-1)
 end
 self.timestamp=timer.getAbsTime()
@@ -91624,7 +91637,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.40"
+PLAYERTASKCONTROLLER.version="0.1.41"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -91738,6 +91751,7 @@ function PLAYERTASKCONTROLLER:_GetTextForSpeech(text)
 text=string.gsub(text,"%d","%1 ")
 text=string.gsub(text,"^%s*","")
 text=string.gsub(text,"%s*$","")
+text=string.gsub(text,"  "," ")
 return text
 end
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff,Repeats)
@@ -92013,6 +92027,22 @@ local clientsattask=task.Clients:GetIDStackSorted()
 for _,_id in pairs(clientsattask)do
 self:T("*****Removing player ".._id)
 self.TasksPerPlayer:PullByID(_id)
+end
+local nexttasks={}
+if task.FinalState=="Success"then
+nexttasks=task.NextTaskSuccess
+elseif task.FinalState=="Failed"then
+nexttasks=task.NextTaskFailure
+end
+local clientlist,count=task:GetClientObjects()
+if count>0 then
+for _,_client in pairs(clientlist)do
+local client=_client
+local group=client:GetGroup()
+for _,task in pairs(nexttasks)do
+self:_JoinTask(group,client,task,true)
+end
+end
 end
 local TNow=timer.getAbsTime()
 if TNow-task.timestamp>10 then
@@ -92355,10 +92385,10 @@ self:E(self.lid.."***** NO valid PAYERTASK object sent!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task)
+function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task,Force)
 self:T(self.lid.."_JoinTask")
 local playername,ttsplayername=self:_GetPlayerName(Client)
-if self.TasksPerPlayer:HasUniqueID(playername)then
+if self.TasksPerPlayer:HasUniqueID(playername)and not Force then
 if not self.NoScreenOutput then
 local text=self.gettext:GetEntry("HAVEACTIVETASK",self.locale)
 local m=MESSAGE:New(text,"10","Tasking"):ToClient(Client)
@@ -92433,6 +92463,7 @@ function PLAYERTASKCONTROLLER:_ActiveTaskInfo(Group,Client,Task)
 self:T(self.lid.."_ActiveTaskInfo")
 local playername,ttsplayername=self:_GetPlayerName(Client)
 local text=""
+local textTTS=""
 if self.TasksPerPlayer:HasUniqueID(playername)or Task then
 local task=Task or self.TasksPerPlayer:ReadByID(playername)
 local tname=self.gettext:GetEntry("TASKNAME",self.locale)
@@ -92494,6 +92525,13 @@ text=text..prectext
 end
 end
 end
+elseif task.Type==AUFTRAG.Type.CTLD or task.Type==AUFTRAG.Type.CSAR then
+text=taskname
+textTTS=taskname
+local detail=task:GetFreetext()
+local detailTTS=task:GetFreetextTTS()
+text=text.."\nDetail: "..detail.."\nTarget location "..CoordText
+textTTS=textTTS.."; Detail: "..detailTTS.."\nTarget location "..CoordText
 end
 local clienttxt=self.gettext:GetEntry("PILOTS",self.locale)
 if clientcount>0 then
@@ -92509,6 +92547,7 @@ local keine=self.gettext:GetEntry("NONE",self.locale)
 clienttxt=clienttxt..keine
 end
 text=text..clienttxt
+textTTS=textTTS..clienttxt
 if self.UseSRS then
 if string.find(CoordText," BR, ")then
 CoordText=string.gsub(CoordText," BR, "," Bee, Arr, ")
@@ -92519,6 +92558,11 @@ if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.precisionbombing then
 if self.LasingDrone.playertask.inreach and self.LasingDrone:IsLasing()then
 local lasingtext=self.gettext:GetEntry("POINTERTARGETLASINGTTS",self.locale)
 ttstext=ttstext..lasingtext
+end
+elseif task.Type==AUFTRAG.Type.CTLD or task.Type==AUFTRAG.Type.CSAR then
+ttstext=textTTS
+if string.find(ttstext," BR, ")then
+CoordText=string.gsub(ttstext," BR, "," Bee, Arr, ")
 end
 end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,2)
@@ -93932,6 +93976,7 @@ text=string.gsub(text,"^%s*","")
 text=string.gsub(text,"%s*$","")
 text=string.gsub(text,"0","zero")
 text=string.gsub(text,"9","niner")
+text=string.gsub(text,"  "," ")
 return text
 end
 function PLAYERRECCE:onafterStatus(From,Event,To)
