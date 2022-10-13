@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T10:54:10.0000000Z-5c8d90f50ee1d9640e3c526eb646ba62b2d2f9a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T15:44:04.0000000Z-141d00e160a91be150b35a20abb3fdb00934bc55 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -70352,7 +70352,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.11"
+CSAR.version="1.0.13"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -70510,6 +70510,14 @@ end
 end
 self.lastCrash[_unitname]=timer.getTime()
 return false
+end
+function CSAR:AddPlayerTask(PlayerTask)
+self:T(self.lid.." AddPlayerTask")
+if not self.PlayerTaskQueue then
+self.PlayerTaskQueue=FIFO:New()
+end
+self.PlayerTaskQueue:Push(PlayerTask,PlayerTask.PlayerTaskNr)
+return self
 end
 function CSAR:_SpawnPilotInField(country,point,frequency,wetfeet)
 self:T({country,point,frequency,tostring(wetfeet)})
@@ -71678,6 +71686,27 @@ end
 function CSAR:onbeforeBoarded(From,Event,To,Heliname,Woundedgroupname)
 self:T({From,Event,To,Heliname,Woundedgroupname})
 self:_ScheduledSARFlight(Heliname,Woundedgroupname)
+local Unit=UNIT:FindByName(Heliname)
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+local dropcoord=Unit:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if(targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2))
+or(string.find(task.CSARPilotName,Woundedgroupname))then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
 return self
 end
 function CSAR:onbeforeReturning(From,Event,To,Heliname,Woundedgroupname,IsAirPort)
@@ -71689,6 +71718,21 @@ function CSAR:onbeforeRescued(From,Event,To,HeliUnit,HeliName,PilotsSaved)
 self:T({From,Event,To,HeliName,HeliUnit})
 self.rescues=self.rescues+1
 self.rescuedpilots=self.rescuedpilots+PilotsSaved
+local Unit=HeliUnit or UNIT:FindByName(HeliName)
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+)
+end
 return self
 end
 function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText)
