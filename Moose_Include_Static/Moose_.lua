@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T08:49:17.0000000Z-ab4c83d284efd9c1f00504e6bc44dcb11c86a6dd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T10:53:27.0000000Z-c84e153ff2eec3e4a50d2b049555246a0e5dc8e9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25646,10 +25646,31 @@ function SCENERY:Register(SceneryName,SceneryObject)
 local self=BASE:Inherit(self,POSITIONABLE:New(SceneryName))
 self.SceneryName=SceneryName
 self.SceneryObject=SceneryObject
+if self.SceneryObject then
+self.Life0=self.SceneryObject:getLife()
+else
+self.Life0=0
+end
 return self
 end
 function SCENERY:GetDCSObject()
 return self.SceneryObject
+end
+function SCENERY:GetLife()
+local life=0
+if self.SceneryObject then
+life=self.SceneryObject:getLife()
+end
+return life
+end
+function SCENERY:GetLife0()
+return self.Life0 or 0
+end
+function SCENERY:IsAlive()
+return self:GetLife()>=1 and true or false
+end
+function SCENERY:IsDead()
+return self:GetLife()<1 and true or false
 end
 function SCENERY:GetThreatLevel()
 return 0,"Scenery"
