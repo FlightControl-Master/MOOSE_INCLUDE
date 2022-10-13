@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T15:45:33.0000000Z-265196398ad93764ec156b1d6e4772121a59ffb8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T21:11:09.0000000Z-55fe3630c522e3f49763df65acfbb609fa10c775 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -78178,7 +78178,7 @@ end
 if not self.isAI then
 return
 end
-local airwing=self:GetAirWing()
+local airwing=self:GetAirwing()
 if airwing and not(self:IsPickingup()or self:IsTransporting())then
 self:T(self.lid..string.format("Airwing asset group %s arrived ==> Adding asset back to stock of airwing %s",self.groupname,airwing.alias))
 self:ReturnToLegion(1)
