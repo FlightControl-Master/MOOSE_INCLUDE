@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-12T14:22:37.0000000Z-f604f0f9133f8a671c8e5897142b74fea909e1b1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T08:49:58.0000000Z-351a2463a237ea842fddf8533a89b342494a1c59 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25054,35 +25054,38 @@ end
 function SCENERY:GetThreatLevel()
 return 0,"Scenery"
 end
-function SCENERY:FindByName(name)
-local findAirbase=function()
-local airbases=AIRBASE.GetAllAirbases()
-for index,airbase in pairs(airbases)do
-local surftype=airbase:GetCoordinate():GetSurfaceType()
-if surftype~=land.SurfaceType.SHALLOW_WATER and surftype~=land.SurfaceType.WATER then
-return airbase:GetCoordinate()
+function SCENERY:FindByName(Name,Coordinate,Radius)
+local radius=Radius or 100
+local name=Name or"unknown"
+local scenery=nil
+local function SceneryScan(coordinate,radius,name)
+if coordinate~=nil then
+local scenerylist=coordinate:ScanScenery(radius)
+local rscenery=nil
+for _,_scenery in pairs(scenerylist)do
+local scenery=_scenery
+if tostring(scenery.SceneryName)==tostring(name)then
+rscenery=scenery
+break
 end
 end
-return nil
-end
-local sceneryScan=function(scancoord)
-if scancoord~=nil then
-local _,_,sceneryfound,_,_,scenerylist=scancoord:ScanObjects(200,false,false,true)
-if sceneryfound==true then
-scenerylist[1].id_=name
-SCENERY.SceneryObject=SCENERY:Register(scenerylist[1].id_,scenerylist[1])
-return SCENERY.SceneryObject
-end
+return rscenery
 end
 return nil
 end
-if SCENERY.SceneryObject then
-SCENERY.SceneryObject.SceneryObject.id_=name
-SCENERY.SceneryObject.SceneryName=name
-return SCENERY:Register(SCENERY.SceneryObject.SceneryObject.id_,SCENERY.SceneryObject.SceneryObject)
-else
-return sceneryScan(findAirbase())
+if Coordinate then
+scenery=SceneryScan(Coordinate,radius,name)
 end
+return scenery
+end
+function SCENERY:FindByNameInZone(Name,Zone,Radius)
+local radius=Radius or 100
+local name=Name or"unknown"
+if type(Zone)=="string"then
+Zone=ZONE:FindByName(Zone)
+end
+local coordinate=Zone:GetCoordinate()
+return self:FindByName(Name,coordinate,Radius)
 end
 STATIC={
 ClassName="STATIC",
