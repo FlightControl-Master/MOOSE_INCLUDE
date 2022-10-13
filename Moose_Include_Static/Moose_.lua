@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T10:53:27.0000000Z-c84e153ff2eec3e4a50d2b049555246a0e5dc8e9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T15:43:27.0000000Z-bdd40fdf7d600f14eadd0428a5ed1ea05b14d784 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59224,7 +59224,7 @@ CTLD.UnitTypes={
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
-CTLD.version="1.0.11"
+CTLD.version="1.0.14"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -59390,6 +59390,14 @@ self:T(self.lid.." SetTroopDropZoneRadius")
 local tradius=Radius or 100
 if tradius<25 then tradius=25 end
 self.troopdropzoneradius=tradius
+return self
+end
+function CTLD:AddPlayerTask(PlayerTask)
+self:T(self.lid.." AddPlayerTask")
+if not self.PlayerTaskQueue then
+self.PlayerTaskQueue=FIFO:New()
+end
+self.PlayerTaskQueue:Push(PlayerTask,PlayerTask.PlayerTaskNr)
 return self
 end
 function CTLD:_EventHandler(EventData)
@@ -61635,6 +61643,25 @@ return self
 end
 function CTLD:onbeforeTroopsDeployed(From,Event,To,Group,Unit,Troops)
 self:T({From,Event,To})
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+local dropcoord=Troops:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
 return self
 end
 function CTLD:onbeforeCratesDropped(From,Event,To,Group,Unit,Cargotable)
@@ -61642,7 +61669,26 @@ self:T({From,Event,To})
 return self
 end
 function CTLD:onbeforeCratesBuild(From,Event,To,Group,Unit,Vehicle)
-self:T({From,Event,To})
+self:I({From,Event,To})
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+local dropcoord=Vehicle:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
 return self
 end
 function CTLD:onbeforeTroopsRTB(From,Event,To,Group,Unit)
@@ -62330,7 +62376,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.11"
+CSAR.version="1.0.13"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -62488,6 +62534,14 @@ end
 end
 self.lastCrash[_unitname]=timer.getTime()
 return false
+end
+function CSAR:AddPlayerTask(PlayerTask)
+self:T(self.lid.." AddPlayerTask")
+if not self.PlayerTaskQueue then
+self.PlayerTaskQueue=FIFO:New()
+end
+self.PlayerTaskQueue:Push(PlayerTask,PlayerTask.PlayerTaskNr)
+return self
 end
 function CSAR:_SpawnPilotInField(country,point,frequency,wetfeet)
 self:T({country,point,frequency,tostring(wetfeet)})
@@ -63656,6 +63710,27 @@ end
 function CSAR:onbeforeBoarded(From,Event,To,Heliname,Woundedgroupname)
 self:T({From,Event,To,Heliname,Woundedgroupname})
 self:_ScheduledSARFlight(Heliname,Woundedgroupname)
+local Unit=UNIT:FindByName(Heliname)
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+local dropcoord=Unit:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if(targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2))
+or(string.find(task.CSARPilotName,Woundedgroupname))then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
 return self
 end
 function CSAR:onbeforeReturning(From,Event,To,Heliname,Woundedgroupname,IsAirPort)
@@ -63667,6 +63742,21 @@ function CSAR:onbeforeRescued(From,Event,To,HeliUnit,HeliName,PilotsSaved)
 self:T({From,Event,To,HeliName,HeliUnit})
 self.rescues=self.rescues+1
 self.rescuedpilots=self.rescuedpilots+PilotsSaved
+local Unit=HeliUnit or UNIT:FindByName(HeliName)
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+)
+end
 return self
 end
 function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText)
