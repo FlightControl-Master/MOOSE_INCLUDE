@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-13T15:43:27.0000000Z-bdd40fdf7d600f14eadd0428a5ed1ea05b14d784 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-14T14:18:53.0000000Z-a6bddc5acafbf3af5e248e26e7b102226d9d3684 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12036,7 +12036,7 @@ self:F({MaxThreatLevelA2G=MaxThreatLevelA2G,MaxThreatText=MaxThreatText})
 return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_UNIT:GetCoordinate()
-local Coordinate=self:GetFirst():GetCoordinate()
+local Coordinate=self:GetRandom():GetCoordinate()
 local x1=Coordinate.x
 local x2=Coordinate.x
 local y1=Coordinate.y
