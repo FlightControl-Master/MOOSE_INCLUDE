@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-14T14:51:59.0000000Z-798684e300893e754481f5d4ec4a46580b18ab8f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-16T07:30:55.0000000Z-e750a99636d0303367908f0b62908f37a57cd57d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93240,7 +93240,7 @@ if self.ViewZoneLaser[EventData.IniPlayerName]then self.ViewZoneLaser[EventData.
 if self.ViewZoneVisual[EventData.IniPlayerName]then self.ViewZoneVisual[EventData.IniPlayerName]:UndrawZone()end
 end
 elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
-if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
+if EventData.IniPlayerName then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
 self.UnitLaserCodes[EventData.IniPlayerName]=1688
 self.ClientMenus[EventData.IniPlayerName]=nil
