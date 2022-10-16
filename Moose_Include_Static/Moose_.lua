@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-16T11:38:54.0000000Z-cefb5d98f09a3df4a5a22574acc34ff5b1d115ed ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-16T11:47:52.0000000Z-7dd46ec24f44e588bf24c14d792b01401efcbc15 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91109,7 +91109,7 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 }
-PLAYERTASK.version="0.1.8"
+PLAYERTASK.version="0.1.9"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -91175,6 +91175,14 @@ function PLAYERTASK:AddFreetext(Text)
 self:T(self.lid.."AddFreetext")
 self.Freetext=Text
 return self
+end
+function PLAYERTASK:HasFreetext()
+self:T(self.lid.."HasFreetext")
+return self.Freetext~=nil and true or false
+end
+function PLAYERTASK:HasFreetextTTS()
+self:T(self.lid.."HasFreetextTTS")
+return self.FreetextTTS~=nil and true or false
 end
 function PLAYERTASK:SetSubType(Type)
 self:T(self.lid.."AddSubType")
@@ -91307,7 +91315,7 @@ local color=Color or SMOKECOLOR.Red
 if not self.lastsmoketime then self.lastsmoketime=0 end
 local TDiff=timer.getAbsTime()-self.lastsmoketime
 if self.Target and TDiff>299 then
-local coordinate=self.Target:GetCoordinate()
+local coordinate=self.Target:GetAverageCoordinate()
 if coordinate then
 coordinate:Smoke(color)
 self.lastsmoketime=timer.getAbsTime()
@@ -91319,7 +91327,7 @@ function PLAYERTASK:FlareTarget(Color)
 self:T(self.lid.."SmokeTarget")
 local color=Color or FLARECOLOR.Red
 if self.Target then
-local coordinate=self.Target:GetCoordinate()
+local coordinate=self.Target:GetAverageCoordinate()
 if coordinate then
 coordinate:Flare(color,0)
 end
@@ -91331,7 +91339,7 @@ self:T(self.lid.."IlluminateTarget")
 local Power=Power or 1000
 local Height=Height or 150
 if self.Target then
-local coordinate=self.Target:GetCoordinate()
+local coordinate=self.Target:GetAverageCoordinate()
 if coordinate then
 local bcoord=COORDINATE:NewFromVec2(coordinate:GetVec2(),Height)
 bcoord:IlluminationBomb(Power)
@@ -91669,7 +91677,7 @@ FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.41"
+PLAYERTASKCONTROLLER.version="0.1.42"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92562,8 +92570,8 @@ text=taskname
 textTTS=taskname
 local detail=task:GetFreetext()
 local detailTTS=task:GetFreetextTTS()
-text=text.."\nDetail: "..detail.."\nTarget location "..CoordText
-textTTS=textTTS.."; Detail: "..detailTTS.."\nTarget location "..CoordText
+text=text.."\nBriefing: "..detail.."\nTarget location "..CoordText
+textTTS=textTTS.."; Briefing: "..detailTTS.."\nTarget location "..CoordText
 end
 local clienttxt=self.gettext:GetEntry("PILOTS",self.locale)
 if clientcount>0 then
@@ -92596,6 +92604,9 @@ ttstext=textTTS
 if string.find(ttstext," BR, ")then
 CoordText=string.gsub(ttstext," BR, "," Bee, Arr, ")
 end
+elseif task:HasFreetext()then
+text=text.."\nBriefing: "..task:GetFreetext()
+ttstext=ttstext.."; Briefing: "..task:GetFreetextTTS()
 end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,2)
 end
@@ -96182,11 +96193,14 @@ return{x=vec3.x,y=vec3.z}
 end
 return nil
 end
-function TARGET:GetTargetVec3(Target)
+function TARGET:GetTargetVec3(Target,Average)
 if Target.Type==TARGET.ObjectType.GROUP then
 local object=Target.Object
 if object and object:IsAlive()then
-local vec3=object:GetAverageVec3()
+local vec3=object:GetVec3()
+if Average then
+vec3=object:GetAverageVec3()
+end
 if vec3 then
 return vec3
 else
@@ -96234,11 +96248,11 @@ return vec3
 end
 self:E(self.lid.."ERROR: Unknown TARGET type! Cannot get Vec3")
 end
-function TARGET:GetTargetCoordinate(Target)
+function TARGET:GetTargetCoordinate(Target,Average)
 if Target.Type==TARGET.ObjectType.COORDINATE then
 return Target.Object
 else
-local vec3=self:GetTargetVec3(Target)
+local vec3=self:GetTargetVec3(Target,Average)
 if vec3 then
 Target.Coordinate.x=vec3.x
 Target.Coordinate.y=vec3.y
@@ -96309,6 +96323,17 @@ return coordinate
 end
 end
 self:E(self.lid..string.format("ERROR: Cannot get coordinate of target %s",tostring(self.name)))
+return nil
+end
+function TARGET:GetAverageCoordinate()
+for _,_target in pairs(self.targets)do
+local Target=_target
+local coordinate=self:GetTargetCoordinate(Target,true)
+if coordinate then
+return coordinate
+end
+end
+self:E(self.lid..string.format("ERROR: Cannot get average coordinate of target %s",tostring(self.name)))
 return nil
 end
 function TARGET:GetCategory()
