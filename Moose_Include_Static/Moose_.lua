@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-16T07:30:55.0000000Z-e750a99636d0303367908f0b62908f37a57cd57d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-16T11:38:54.0000000Z-cefb5d98f09a3df4a5a22574acc34ff5b1d115ed ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22713,6 +22713,27 @@ end
 self:E("ERROR: Cannot get Vec3 of group "..tostring(self.GroupName))
 return nil
 end
+function GROUP:GetAverageVec3()
+local units=self:GetUnits()or{}
+local x=0;local y=0;local z=0;local n=0
+for _,unit in pairs(units)do
+local vec3=nil
+if unit and unit:IsAlive()then
+vec3=unit:GetVec3()
+end
+if vec3 then
+x=x+vec3.x
+y=y+vec3.y
+z=z+vec3.z
+n=n+1
+end
+end
+if n>0 then
+local Vec3={x=x/n,y=y/n,z=z/n}
+return Vec3
+end
+return nil
+end
 function GROUP:GetPointVec2()
 self:F2(self.GroupName)
 local FirstUnit=self:GetUnit(1)
@@ -22723,6 +22744,17 @@ return FirstUnitPointVec2
 end
 BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
 return nil
+end
+function GROUP:GetAverageCoordinate()
+local vec3=self:GetAverageVec3()
+if vec3 then
+local coord=COORDINATE:NewFromVec3(vec3)
+local Heading=self:GetHeading()
+coord.Heading=Heading
+else
+BASE:E({"Cannot GetAverageCoordinate",Group=self,Alive=self:IsAlive()})
+return nil
+end
 end
 function GROUP:GetCoordinate()
 local Units=self:GetUnits()or{}
@@ -96154,7 +96186,7 @@ function TARGET:GetTargetVec3(Target)
 if Target.Type==TARGET.ObjectType.GROUP then
 local object=Target.Object
 if object and object:IsAlive()then
-local vec3=object:GetVec3()
+local vec3=object:GetAverageVec3()
 if vec3 then
 return vec3
 else
