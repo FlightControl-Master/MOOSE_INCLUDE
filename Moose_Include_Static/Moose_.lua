@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-16T11:47:52.0000000Z-7dd46ec24f44e588bf24c14d792b01401efcbc15 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-17T10:44:27.0000000Z-f17db43501efc737626bb423e555e59fedf9870c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72119,7 +72119,7 @@ CTLD.UnitTypes={
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
-CTLD.version="1.0.14"
+CTLD.version="1.0.15"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73983,9 +73983,10 @@ local maxdist=1000000
 local zoneret=nil
 local zonewret=nil
 local zonenameret=nil
+local unitcoord=Unit:GetCoordinate()
+local unitVec2=unitcoord:GetVec2()
 for _,_cargozone in pairs(zonetable)do
 local czone=_cargozone
-local unitcoord=Unit:GetCoordinate()
 local zonename=czone.name
 local active=czone.active
 local color=czone.color
@@ -74002,17 +74003,17 @@ elseif ZONE:FindByName(zonename)then
 zone=ZONE:FindByName(zonename)
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
-zoneradius=zone:GetRadius()
+zoneradius=1500
 zonewidth=zoneradius
 elseif AIRBASE:FindByName(zonename)then
 zone=AIRBASE:FindByName(zonename):GetZone()
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
-zoneradius=zone:GetRadius()
+zoneradius=2500
 zonewidth=zoneradius
 end
 local distance=self:_GetDistance(zonecoord,unitcoord)
-if distance<=zoneradius and active then
+if zone:IsVec2InZone(unitVec2)and active then
 outcome=true
 end
 if maxdist>distance then
