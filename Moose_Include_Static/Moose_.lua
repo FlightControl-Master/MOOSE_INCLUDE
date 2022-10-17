@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-17T10:33:17.0000000Z-66f52d41eba43cf78d8dbcda184ef107c5a798b5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-17T16:06:29.0000000Z-7ec18ebf00146ae27bf9cac00f56412240db04af ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14211,6 +14211,124 @@ return MGroupInclude
 end
 end
 do
+SET_SCENERY={
+ClassName="SET_SCENERY",
+Scenerys={},
+Filter={
+SceneryPrefixes=nil,
+Zones=nil,
+},
+}
+function SET_SCENERY:New(ZoneSet)
+local zoneset={}
+local self=BASE:Inherit(self,SET_BASE:New(zoneset))
+local zonenames={}
+for _,_zone in pairs(ZoneSet.Set)do
+table.insert(zonenames,_zone:GetName())
+end
+self:AddSceneryByName(zonenames)
+return self
+end
+function SET_SCENERY:AddScenery(AddScenery)
+self:F2(AddScenery:GetName())
+self:Add(AddScenery:GetName(),AddScenery)
+return self
+end
+function SET_SCENERY:AddSceneryByName(AddSceneryNames)
+local AddSceneryNamesArray=(type(AddSceneryNames)=="table")and AddSceneryNames or{AddSceneryNames}
+self:T(AddSceneryNamesArray)
+for AddSceneryID,AddSceneryName in pairs(AddSceneryNamesArray)do
+self:Add(AddSceneryName,SCENERY:FindByZoneName(AddSceneryName))
+end
+return self
+end
+function SET_SCENERY:RemoveSceneryByName(RemoveSceneryNames)
+local RemoveSceneryNamesArray=(type(RemoveSceneryNames)=="table")and RemoveSceneryNames or{RemoveSceneryNames}
+for RemoveSceneryID,RemoveSceneryName in pairs(RemoveSceneryNamesArray)do
+self:Remove(RemoveSceneryName)
+end
+return self
+end
+function SET_SCENERY:FindScenery(SceneryName)
+local SceneryFound=self.Set[SceneryName]
+return SceneryFound
+end
+function SET_SCENERY:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
+return self
+end
+function SET_SCENERY:FilterPrefixes(Prefixes)
+if not self.Filter.SceneryPrefixes then
+self.Filter.SceneryPrefixes={}
+end
+if type(Prefixes)~="table"then
+Prefixes={Prefixes}
+end
+for PrefixID,Prefix in pairs(Prefixes)do
+self.Filter.SceneryPrefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_SCENERY:CountAlive()
+local Set=self:GetSet()
+local CountU=0
+for UnitID,UnitData in pairs(Set)do
+if UnitData and UnitData:IsAlive()then
+CountU=CountU+1
+end
+end
+return CountU
+end
+function SET_SCENERY:ForEachScenery(IteratorFunction,...)
+self:F2(arg)
+self:ForEach(IteratorFunction,arg,self:GetSet())
+return self
+end
+function SET_SCENERY:GetCoordinate()
+local Coordinate=self:GetRandom():GetCoordinate()
+local x1=Coordinate.x
+local x2=Coordinate.x
+local y1=Coordinate.y
+local y2=Coordinate.y
+local z1=Coordinate.z
+local z2=Coordinate.z
+for SceneryName,SceneryData in pairs(self:GetSet())do
+local Scenery=SceneryData
+local Coordinate=Scenery:GetCoordinate()
+x1=(Coordinate.x<x1)and Coordinate.x or x1
+x2=(Coordinate.x>x2)and Coordinate.x or x2
+y1=(Coordinate.y<y1)and Coordinate.y or y1
+y2=(Coordinate.y>y2)and Coordinate.y or y2
+z1=(Coordinate.y<z1)and Coordinate.z or z1
+z2=(Coordinate.y>z2)and Coordinate.z or z2
+end
+Coordinate.x=(x2-x1)/2+x1
+Coordinate.y=(y2-y1)/2+y1
+Coordinate.z=(z2-z1)/2+z1
+self:F({Coordinate=Coordinate})
+return Coordinate
+end
+function SET_SCENERY:IsIncludeObject(MScenery)
+self:F2(MScenery)
+return true
+end
+end
+do
 COORDINATE={
 ClassName="COORDINATE",
 }
@@ -25739,6 +25857,14 @@ Zone=ZONE:FindByName(Zone)
 end
 local coordinate=Zone:GetCoordinate()
 return self:FindByName(Name,coordinate,Radius)
+end
+function SCENERY:FindByZoneName(ZoneName)
+local zone=ZoneName
+if type(ZoneName)=="string"then
+zone=ZONE:FindByName(ZoneName)
+end
+local _id=zone:GetProperty('OBJECT ID')
+return self:FindByName(_id,zone:GetCoordinate())
 end
 MARKER={
 ClassName="MARKER",
