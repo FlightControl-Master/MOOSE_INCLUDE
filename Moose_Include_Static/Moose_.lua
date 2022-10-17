@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-14T14:50:31.0000000Z-1d296d1cf46f6650ab1ce69fd0c7c5a4955ff37e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-17T10:33:17.0000000Z-66f52d41eba43cf78d8dbcda184ef107c5a798b5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22455,6 +22455,27 @@ end
 self:E("ERROR: Cannot get Vec3 of group "..tostring(self.GroupName))
 return nil
 end
+function GROUP:GetAverageVec3()
+local units=self:GetUnits()or{}
+local x=0;local y=0;local z=0;local n=0
+for _,unit in pairs(units)do
+local vec3=nil
+if unit and unit:IsAlive()then
+vec3=unit:GetVec3()
+end
+if vec3 then
+x=x+vec3.x
+y=y+vec3.y
+z=z+vec3.z
+n=n+1
+end
+end
+if n>0 then
+local Vec3={x=x/n,y=y/n,z=z/n}
+return Vec3
+end
+return nil
+end
 function GROUP:GetPointVec2()
 self:F2(self.GroupName)
 local FirstUnit=self:GetUnit(1)
@@ -22465,6 +22486,17 @@ return FirstUnitPointVec2
 end
 BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
 return nil
+end
+function GROUP:GetAverageCoordinate()
+local vec3=self:GetAverageVec3()
+if vec3 then
+local coord=COORDINATE:NewFromVec3(vec3)
+local Heading=self:GetHeading()
+coord.Heading=Heading
+else
+BASE:E({"Cannot GetAverageCoordinate",Group=self,Alive=self:IsAlive()})
+return nil
+end
 end
 function GROUP:GetCoordinate()
 local Units=self:GetUnits()or{}
@@ -59224,7 +59256,7 @@ CTLD.UnitTypes={
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
-CTLD.version="1.0.14"
+CTLD.version="1.0.15"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -61088,9 +61120,10 @@ local maxdist=1000000
 local zoneret=nil
 local zonewret=nil
 local zonenameret=nil
+local unitcoord=Unit:GetCoordinate()
+local unitVec2=unitcoord:GetVec2()
 for _,_cargozone in pairs(zonetable)do
 local czone=_cargozone
-local unitcoord=Unit:GetCoordinate()
 local zonename=czone.name
 local active=czone.active
 local color=czone.color
@@ -61107,17 +61140,17 @@ elseif ZONE:FindByName(zonename)then
 zone=ZONE:FindByName(zonename)
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
-zoneradius=zone:GetRadius()
+zoneradius=1500
 zonewidth=zoneradius
 elseif AIRBASE:FindByName(zonename)then
 zone=AIRBASE:FindByName(zonename):GetZone()
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
-zoneradius=zone:GetRadius()
+zoneradius=2500
 zonewidth=zoneradius
 end
 local distance=self:_GetDistance(zonecoord,unitcoord)
-if distance<=zoneradius and active then
+if zone:IsVec2InZone(unitVec2)and active then
 outcome=true
 end
 if maxdist>distance then
