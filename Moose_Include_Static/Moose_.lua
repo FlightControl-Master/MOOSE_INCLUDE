@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T14:59:19.0000000Z-3a6c52ae73d0b442d4a34f60ea09d9ec6de72636 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T15:23:01.0000000Z-ff0f1c4c24c6a1888f2a40d0ccbbd57ba6643973 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59382,7 +59382,7 @@ CTLD.UnitTypes={
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
-CTLD.version="1.0.15"
+CTLD.version="1.0.16"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -61068,6 +61068,11 @@ return beacon
 end
 function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth)
 self:T(self.lid.." AddCTLDZone")
+local zone=ZONE:FindByName(Name)
+if not zone then
+self:E(self.lid.."**** Zone does not exist: "..Name)
+return self
+end
 local ctldzone={}
 ctldzone.active=Active or false
 ctldzone.color=Color or SMOKECOLOR.Red
