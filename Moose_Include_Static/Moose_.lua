@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T11:32:18.0000000Z-23f45359f84e9483b6519355b12ab8db6c9d673f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T15:01:32.0000000Z-92591432d30cb0c7d08305f749727b4f15127aa6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -70510,7 +70510,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.13"
+CSAR.version="1.0.15"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -71055,6 +71055,25 @@ end
 end
 return found
 end
+function CSAR:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+if not ShortCallsign or ShortCallsign==false then
+self.ShortCallsign=false
+else
+self.ShortCallsign=true
+end
+self.Keepnumber=Keepnumber or false
+self.CallsignTranslations=CallsignTranslations
+return self
+end
+function CSAR:_GetCustomCallSign(UnitName)
+local callsign=Unitname
+local unit=UNIT:FindByName(UnitName)
+if unit and unit:IsAlive()then
+local group=unit:GetGroup()
+callsign=group:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+end
+return callsign
+end
 function CSAR:_CheckWoundedGroupStatus(heliname,woundedgroupname)
 self:T(self.lid.." _CheckWoundedGroupStatus")
 local _heliName=heliname
@@ -71097,9 +71116,9 @@ if _SETTINGS:IsImperial()then
 local dist=UTILS.MetersToNM(self.autosmokedistance)
 disttext=string.format("%.0fnm",dist)
 end
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Finally, that is music in my ears!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.",_heliName,_pilotName,disttext),self.messageTime,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Finally, that is music in my ears!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.",self:_GetCustomCallSign(_heliName),_pilotName,disttext),self.messageTime,false,true)
 else
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Finally, that is music in my ears!\nRequest a flare or smoke if you need.",_heliName,_pilotName),self.messageTime,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. I hear you! Finally, that is music in my ears!\nRequest a flare or smoke if you need.",self:_GetCustomCallSign(_heliName),_pilotName),self.messageTime,false,true)
 end
 self.heliVisibleMessage[_lookupKeyHeli]=true
 end
@@ -71141,7 +71160,7 @@ if _maxUnits==nil then
 _maxUnits=self.max_units
 end
 if _unitsInHelicopter+1>_maxUnits then
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s, %s. We\'re already crammed with %d guys! Sorry!",_pilotName,_heliName,_unitsInHelicopter,_unitsInHelicopter),self.messageTime,false,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s, %s. We\'re already crammed with %d guys! Sorry!",_pilotName,self:_GetCustomCallSign(_heliName),_unitsInHelicopter,_unitsInHelicopter),self.messageTime,false,false,true)
 return self
 end
 local found,downedgrouptable=self:_CheckNameInDownedPilots(_woundedGroupName)
@@ -71156,8 +71175,18 @@ player=grouptable.player,
 }
 _woundedGroup:Destroy(false)
 self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",_heliName,_pilotName),self.messageTime,true,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s I\'m in! Get to the MASH ASAP! ",self:_GetCustomCallSign(_heliName),_pilotName),self.messageTime,true,true)
+self:_UpdateUnitCargoMass(_heliName)
 self:__Boarded(5,_heliName,_woundedGroupName,grouptable.desc)
+return self
+end
+function CSAR:_UpdateUnitCargoMass(_heliName)
+self:T(self.lid.." _UpdateUnitCargoMass")
+local calculatedMass=self:_PilotsOnboard(_heliName)*80
+local Unit=UNIT:FindByName(_heliName)
+if Unit then
+Unit:SetUnitInternalCargo(calculatedMass)
+end
 return self
 end
 function CSAR:_OrderGroupToMoveToPoint(_leader,_destination)
@@ -71182,9 +71211,9 @@ local _reset=true
 if(_distance<500)then
 if self.heliCloseMessage[_lookupKeyHeli]==nil then
 if self.autosmoke==true then
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land or hover at the smoke.",_heliName,_pilotName),self.messageTime,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land or hover at the smoke.",self:_GetCustomCallSign(_heliName),_pilotName),self.messageTime,false,true)
 else
-self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land in a safe place, I will go there ",_heliName,_pilotName),self.messageTime,false,true)
+self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land in a safe place, I will go there ",self:_GetCustomCallSign(_heliName),_pilotName),self.messageTime,false,true)
 end
 self.heliCloseMessage[_lookupKeyHeli]=true
 end
@@ -71310,8 +71339,9 @@ return
 end
 local PilotsSaved=self:_PilotsOnboard(_heliName)
 self.inTransitGroups[_heliName]=nil
-local _txt=string.format("%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!",_heliName,PilotsSaved)
+local _txt=string.format("%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!",self:_GetCustomCallSign(_heliName),PilotsSaved)
 self:_DisplayMessageToSAR(_heliUnit,_txt,self.messageTime)
+self:_UpdateUnitCargoMass(_heliName)
 self:__Rescued(-1,_heliUnit,_heliName,PilotsSaved)
 return self
 end
@@ -71330,7 +71360,7 @@ local group=_unit:GetGroup()
 local _clear=_clear or nil
 local _time=_time or self.messageTime
 if _override or not self.suppressmessages then
-local m=MESSAGE:New(_text,_time,"Info",_clear):ToGroup(group)
+local m=MESSAGE:New(_text,_time,"CSAR",_clear):ToGroup(group)
 end
 if _speak and self.useSRS then
 self.SRSQueue:NewTransmission(_text,nil,self.msrs,nil,2)
@@ -71444,7 +71474,7 @@ _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
 _distance=string.format("%.1fkm",_closest.distance)
 end
-local _msg=string.format("%s - Popping signal flare at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
+local _msg=string.format("%s - Popping signal flare at your %s o\'clock. Distance %s",self:_GetCustomCallSign(_unitName),_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true,true)
 local _coord=_closest.pilot:GetCoordinate()
 _coord:FlareRed(_clockDir)
@@ -71487,7 +71517,7 @@ _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
 _distance=string.format("%.1fkm",_closest.distance/1000)
 end
-local _msg=string.format("%s - Popping smoke at your %s o\'clock. Distance %s",_unitName,_clockDir,_distance)
+local _msg=string.format("%s - Popping smoke at your %s o\'clock. Distance %s",self:_GetCustomCallSign(_unitName),_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true,true)
 local _coord=_closest.pilot:GetCoordinate()
 local color=self.smokecolor
@@ -71643,12 +71673,15 @@ local _heading=_heli:GetHeading()
 local DirectionVec3=_playerPosition:GetDirectionVec3(_targetpostions)
 local Angle=_playerPosition:GetAngleDegrees(DirectionVec3)
 self:T(self.lid.." _GetClockDirection"..tostring(Angle).." "..tostring(_heading))
+local hours=0
 local clock=12
-if _heading then
-local Aspect=Angle-_heading
-if Aspect==0 then Aspect=360 end
-clock=math.abs(UTILS.Round((Aspect/30),0))
-if clock==0 then clock=12 end
+if _heading and Angle then
+clock=12
+clock=_heading-Angle
+hours=(clock/30)*-1
+clock=12+hours
+clock=UTILS.Round(clock,0)
+if clock>12 then clock=clock-12 end
 end
 return clock
 end
@@ -91919,6 +91952,7 @@ self.CallsignTranslations=CallsignTranslations
 return self
 end
 function PLAYERTASKCONTROLLER:_GetTextForSpeech(text)
+self:T(self.lid.."_GetTextForSpeech")
 text=string.gsub(text,"%d","%1 ")
 text=string.gsub(text,"^%s*","")
 text=string.gsub(text,"%s*$","")
@@ -92720,7 +92754,7 @@ local keine=self.gettext:GetEntry("NONE",self.locale)
 clienttxt=clienttxt..keine
 end
 text=text..clienttxt
-if task:HasFreetext()then
+if task:HasFreetext()and not(task.Type==AUFTRAG.Type.CTLD or task.Type==AUFTRAG.Type.CSAR)then
 local brieftxt=self.gettext:GetEntry("BRIEFING",self.locale)
 text=text..string.format("\n%s: ",brieftxt)..task:GetFreetext()
 end
