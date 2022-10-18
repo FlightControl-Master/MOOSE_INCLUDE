@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T08:27:25.0000000Z-0bc09548cf3456ac9d1bde98cc2be82858e7aada ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T11:32:18.0000000Z-23f45359f84e9483b6519355b12ab8db6c9d673f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91740,6 +91740,8 @@ TARGET="Target",
 FLASHON="%s - Flashing directions is now ON!",
 FLASHOFF="%s - Flashing directions is now OFF!",
 FLASHMENU="Flash Directions Switch",
+BRIEFING="Briefing",
+TARGETLOCATION="Target location",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -91802,9 +91804,11 @@ TARGET="Ziel",
 FLASHON="%s - Richtungsangaben einblenden ist EIN!",
 FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
+BRIEFING="Briefing",
+TARGETLOCATION="Zielkoordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.42"
+PLAYERTASKCONTROLLER.version="0.1.43"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92576,7 +92580,7 @@ if not self.NoScreenOutput then
 self:_SendMessageToClients(text)
 end
 if self.UseSRS then
-self:I(self.lid..text)
+self:T(self.lid..text)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
 self.TasksPerPlayer:Push(Task,playername)
@@ -92697,8 +92701,10 @@ text=taskname
 textTTS=taskname
 local detail=task:GetFreetext()
 local detailTTS=task:GetFreetextTTS()
-text=text.."\nBriefing: "..detail.."\nTarget location "..CoordText
-textTTS=textTTS.."; Briefing: "..detailTTS.."\nTarget location "..CoordText
+local brieftxt=self.gettext:GetEntry("BRIEFING",self.locale)
+local locatxt=self.gettext:GetEntry("TARGETLOCATION",self.locale)
+text=text..string.format("\n%s: %s\n%s %s",brieftxt,detail,locatxt,CoordText)
+textTTS=textTTS..string.format("; %s: %s; %s %s",brieftxt,detailTTS,locatxt,CoordText)
 end
 local clienttxt=self.gettext:GetEntry("PILOTS",self.locale)
 if clientcount>0 then
@@ -92714,6 +92720,10 @@ local keine=self.gettext:GetEntry("NONE",self.locale)
 clienttxt=clienttxt..keine
 end
 text=text..clienttxt
+if task:HasFreetext()then
+local brieftxt=self.gettext:GetEntry("BRIEFING",self.locale)
+text=text..string.format("\n%s: ",brieftxt)..task:GetFreetext()
+end
 textTTS=textTTS..clienttxt
 if self.UseSRS then
 if string.find(CoordText," BR, ")then
@@ -92732,8 +92742,8 @@ if string.find(ttstext," BR, ")then
 CoordText=string.gsub(ttstext," BR, "," Bee, Arr, ")
 end
 elseif task:HasFreetext()then
-text=text.."\nBriefing: "..task:GetFreetext()
-ttstext=ttstext.."; Briefing: "..task:GetFreetextTTS()
+local brieftxt=self.gettext:GetEntry("BRIEFING",self.locale)
+ttstext=ttstext..string.format("; %s: ",brieftxt)..task:GetFreetextTTS()
 end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,2)
 end
