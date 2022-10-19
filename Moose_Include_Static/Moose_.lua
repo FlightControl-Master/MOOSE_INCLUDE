@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T15:26:40.0000000Z-2854a2d93edf57e875ff7009fc67fa8c123299d6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T17:13:55.0000000Z-8f7694111b60c530a3c3318543f7890c83a39b4b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -96597,6 +96597,9 @@ return coord:ToStringMGRS()
 elseif Target.Type==TARGET.ObjectType.ZONE then
 local Zone=Target.Object
 return Zone:GetName()
+elseif Target.Type==TARGET.ObjectType.SCENERY then
+local Zone=Target.Object
+return Zone:GetName()
 end
 return"Unknown"
 end
@@ -96705,7 +96708,7 @@ end
 function TARGET:GetObjective()
 for _,_target in pairs(self.targets)do
 local target=_target
-if target.Status==TARGET.ObjectStatus.ALIVE then
+if target.Status~=TARGET.ObjectStatus.DEAD then
 return target
 end
 end
