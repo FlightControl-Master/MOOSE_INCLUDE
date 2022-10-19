@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T15:23:01.0000000Z-ff0f1c4c24c6a1888f2a40d0ccbbd57ba6643973 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T04:32:57.0000000Z-89f0909a8fb8019827e028cf68a9c55732962bd9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16125,21 +16125,6 @@ end
 if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
 trigger.action.outTextForGroup(Group:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
-end
-end
-return self
-end
-function MESSAGE:ToUnit(Unit,Settings)
-self:F(Unit.IdentifiableName)
-if Unit then
-if self.MessageType then
-local Settings=Settings or(Unit and _DATABASE:GetPlayerSettings(Unit:GetPlayerName()))or _SETTINGS
-self.MessageDuration=Settings:GetMessageTime(self.MessageType)
-self.MessageCategory=""
-end
-if self.MessageDuration~=0 then
-self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
-trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
 end
 return self
