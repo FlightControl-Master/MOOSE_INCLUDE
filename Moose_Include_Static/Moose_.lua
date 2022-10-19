@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-18T15:26:24.0000000Z-542fe20782aad058ff90ee7085998410dcd3962c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T10:21:16.0000000Z-b5fd737ceac54d206dc82d2e91a26149b77488b4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91701,6 +91701,7 @@ TransmitOnlyWithPlayers=true,
 buddylasing=false,
 PlayerRecce=nil,
 Coalition=nil,
+MenuParent=nil,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -91846,7 +91847,7 @@ BRIEFING="Briefing",
 TARGETLOCATION="Zielkoordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.43"
+PLAYERTASKCONTROLLER.version="0.1.44"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92960,7 +92961,7 @@ end
 topmenu=self.PlayerMenu[playername]
 end
 else
-topmenu=MENU_GROUP_DELAYED:New(group,menuname,nil)
+topmenu=MENU_GROUP_DELAYED:New(group,menuname,self.MenuParent)
 self.PlayerMenu[playername]=topmenu
 self.PlayerMenu[playername]:SetTag(timer.getAbsTime())
 end
@@ -93092,6 +93093,11 @@ end
 function PLAYERTASKCONTROLLER:SetMenuName(Name)
 self:T(self.lid.."SetMenuName: "..Name)
 self.MenuName=Name
+return self
+end
+function PLAYERTASKCONTROLLER:SetParentName(Menu)
+self:T(self.lid.."SetParentName")
+self.MenuParent=Menu
 return self
 end
 function PLAYERTASKCONTROLLER:SetupIntel(RecceName)
