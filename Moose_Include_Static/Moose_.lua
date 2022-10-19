@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T10:20:39.0000000Z-0441acf1015b43febb3d7ca4b95e4da89bbad393 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T10:37:24.0000000Z-7bba5ec69ede67ff024b102a7d80ada2bb97d232 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8812,6 +8812,7 @@ function ZONE_RADIUS:Scan(ObjectCategories,UnitCategories)
 self.ScanData={}
 self.ScanData.Coalitions={}
 self.ScanData.Scenery={}
+self.ScanData.SceneryTable={}
 self.ScanData.Units={}
 local ZoneCoord=self:GetCoordinate()
 local ZoneRadius=self:GetRadius()
@@ -8852,6 +8853,7 @@ local SceneryType=ZoneObject:getTypeName()
 local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
 self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(SceneryName,ZoneObject)
+table.insert(self.ScanData.SceneryTable,self.ScanData.Scenery[SceneryType][SceneryName])
 self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
 end
 end
@@ -8933,6 +8935,17 @@ return self.ScanData.Scenery[SceneryType]
 end
 function ZONE_RADIUS:GetScannedScenery()
 return self.ScanData.Scenery
+end
+function ZONE_RADIUS:GetScannedSceneryObjects()
+return self.ScanData.SceneryTable
+end
+function ZONE_RADIUS:GetScannedSetScenery()
+local scenery=SET_SCENERY:New()
+local objects=self:GetScannedSceneryObjects()
+for _,_obj in pairs(objects)do
+scenery:AddScenery(_obj)
+end
+return scenery
 end
 function ZONE_RADIUS:IsAllInZoneOfCoalition(Coalition)
 return self:CountScannedCoalitions()==1 and self:GetScannedCoalition(Coalition)==true
@@ -9505,7 +9518,6 @@ local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
 local PointX=self._.Polygon[i].x+(Segment*DeltaX/Segments)
 local PointY=self._.Polygon[i].y+(Segment*DeltaY/Segments)
-ZONE_RADIUS:New("Zone",{x=PointX,y=PointY},Radius,true):DrawZone(Coalition,Color,1,Color,Alpha,nil,false)
 end
 end
 j=i
@@ -9545,7 +9557,18 @@ function ZONE_POLYGON:Scan(ObjectCategories,UnitCategories)
 self.ScanData={}
 self.ScanData.Coalitions={}
 self.ScanData.Scenery={}
+self.ScanData.SceneryTable={}
 self.ScanData.Units={}
+local vectors=self:GetBoundingSquare()
+local minVec3={x=vectors.x1,y=0,z=vectors.y1}
+local maxVec3={x=vectors.x2,y=0,z=vectors.y2}
+local VolumeBox={
+id=world.VolumeType.BOX,
+params={
+min=minVec3,
+max=maxVec3
+}
+}
 local function EvaluateZone(ZoneObject)
 if ZoneObject then
 local ObjectCategory=ZoneObject:getCategory()
@@ -9570,6 +9593,14 @@ self.ScanData.Units[ZoneObject]=ZoneObject
 self:F2({Name=ZoneObject:getName(),Coalition=CoalitionDCSUnit})
 end
 end
+if ObjectCategory==Object.Category.SCENERY then
+local SceneryType=ZoneObject:getTypeName()
+local SceneryName=ZoneObject:getName()
+self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
+self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(SceneryName,ZoneObject)
+table.insert(self.ScanData.SceneryTable,self.ScanData.Scenery[SceneryType][SceneryName])
+self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
+end
 end
 return true
 end
@@ -9589,6 +9620,15 @@ local DCS=Static:GetDCSObject()
 EvaluateZone(DCS)
 end
 )
+local searchscenery=false
+for _,_type in pairs(ObjectCategories)do
+if _type==Object.Category.SCENERY then
+searchscenery=true
+end
+end
+if searchscenery then
+world.searchObjects({Object.Category.SCENERY},VolumeBox,EvaluateZone)
+end
 end
 function ZONE_POLYGON:GetScannedUnits()
 return self.ScanData.Units
@@ -9662,8 +9702,19 @@ end
 function ZONE_POLYGON:GetScannedSceneryType(SceneryType)
 return self.ScanData.Scenery[SceneryType]
 end
+function ZONE_POLYGON:GetScannedSceneryObjects()
+return self.ScanData.SceneryTable
+end
 function ZONE_POLYGON:GetScannedScenery()
 return self.ScanData.Scenery
+end
+function ZONE_POLYGON:GetScannedSetScenery()
+local scenery=SET_SCENERY:New()
+local objects=self:GetScannedSceneryObjects()
+for _,_obj in pairs(objects)do
+scenery:AddScenery(_obj)
+end
+return scenery
 end
 function ZONE_POLYGON:IsAllInZoneOfCoalition(Coalition)
 return self:CountScannedCoalitions()==1 and self:GetScannedCoalition(Coalition)==true
@@ -10052,7 +10103,7 @@ self:I(string.format("Register ZONE: %s (Circular)",ZoneName))
 Zone=ZONE:New(ZoneName)
 else
 self:I(string.format("Register ZONE: %s (Polygon, Quad)",ZoneName))
-Zone=ZONE_POLYGON_BASE:New(ZoneName,ZoneData.verticies)
+Zone=ZONE_POLYGON:NewFromPointsArray(ZoneName,ZoneData.verticies)
 end
 if Zone then
 Zone.Color=color
@@ -14223,11 +14274,21 @@ function SET_SCENERY:New(ZoneSet)
 local zoneset={}
 local self=BASE:Inherit(self,SET_BASE:New(zoneset))
 local zonenames={}
+if ZoneSet then
 for _,_zone in pairs(ZoneSet.Set)do
 table.insert(zonenames,_zone:GetName())
 end
 self:AddSceneryByName(zonenames)
+end
 return self
+end
+function SET_SCENERY:NewFromZone(Zone)
+local zone=Zone
+if type(Zone)=="string"then
+zone=ZONE:FindByName(Zone)
+end
+zone:Scan({Object.Category.SCENERY})
+return zone:GetScannedSetScenery()
 end
 function SET_SCENERY:AddScenery(AddScenery)
 self:F2(AddScenery:GetName())
@@ -25849,7 +25910,55 @@ if type(ZoneName)=="string"then
 zone=ZONE:FindByName(ZoneName)
 end
 local _id=zone:GetProperty('OBJECT ID')
+if not _id then
+BASE:E("**** Zone without object ID: "..ZoneName.." | Type: "..tostring(zone.ClassName))
+if string.find(zone.ClassName,"POLYGON")then
+zone:Scan({Object.Category.SCENERY})
+local scanned=zone:GetScannedScenery()
+for _,_scenery in(scanned)do
+local scenery=_scenery
+if scenery:IsAlive()then
+return scenery
+end
+end
+return nil
+else
+local coordinate=zone:GetCoordinate()
+local scanned=coordinate:ScanScenery()
+for _,_scenery in(scanned)do
+local scenery=_scenery
+if scenery:IsAlive()then
+return scenery
+end
+end
+return nil
+end
+else
 return self:FindByName(_id,zone:GetCoordinate())
+end
+end
+function SCENERY:FindAllByZoneName(ZoneName)
+local zone=ZoneName
+if type(ZoneName)=="string"then
+zone=ZONE:FindByName(ZoneName)
+end
+local _id=zone:GetProperty('OBJECT ID')
+if not _id then
+zone:Scan({Object.Category.SCENERY})
+local scanned=zone:GetScannedSceneryObjects()
+if#scanned>0 then
+return scanned
+else
+return nil
+end
+else
+local obj=self:FindByName(_id,zone:GetCoordinate())
+if obj then
+return{obj}
+else
+return nil
+end
+end
 end
 MARKER={
 ClassName="MARKER",
