@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T11:05:19.0000000Z-78c209a96fe30f298a343dddf7e2dd10edd4abce ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T15:26:40.0000000Z-2854a2d93edf57e875ff7009fc67fa8c123299d6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -96011,9 +96011,10 @@ ZONE="Zone",
 TARGET.ObjectStatus={
 ALIVE="Alive",
 DEAD="Dead",
+DAMAGED="Damaged",
 }
 _TARGETID=0
-TARGET.version="0.5.4"
+TARGET.version="0.5.5"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -96032,7 +96033,7 @@ self:AddTransition("*","Stop","Stopped")
 self:AddTransition("*","ObjectDamaged","*")
 self:AddTransition("*","ObjectDestroyed","*")
 self:AddTransition("*","ObjectDead","*")
-self:AddTransition("*","Damaged","*")
+self:AddTransition("*","Damaged","Damaged")
 self:AddTransition("*","Destroyed","Dead")
 self:AddTransition("*","Dead","Dead")
 self:__Start(-1)
@@ -96058,6 +96059,7 @@ else
 self:_AddObject(Object)
 end
 end
+return self
 end
 function TARGET:SetPriority(Priority)
 self.prio=Priority or 50
@@ -96149,27 +96151,38 @@ local is=self:Is("Dead")
 return is
 end
 function TARGET:onafterStart(From,Event,To)
+self:T({From,Event,To})
 local text=string.format("Starting Target")
 self:T(self.lid..text)
 self:HandleEvent(EVENTS.Dead,self.OnEventUnitDeadOrLost)
 self:HandleEvent(EVENTS.UnitLost,self.OnEventUnitDeadOrLost)
 self:HandleEvent(EVENTS.RemoveUnit,self.OnEventUnitDeadOrLost)
 self:__Status(-1)
+return self
 end
 function TARGET:onafterStatus(From,Event,To)
+self:T({From,Event,To})
 local fsmstate=self:GetState()
 local damaged=false
 for i,_target in pairs(self.targets)do
 local target=_target
 local life=target.Life
 target.Life=self:GetTargetLife(target)
+if target.Life>target.Life0 then
+local delta=2*(target.Life-target.Life0)
+target.Life0=target.Life0+delta
+life=target.Life0
+self.life0=self.life0+delta
+end
 if target.Life<life then
+target.Status=TARGET.ObjectStatus.DAMAGED
 self:ObjectDamaged(target)
 damaged=true
 end
-if life==0 then
-self:I(self.lid..string.format("FF life is zero but no object dead event fired ==> object dead now for target object %s!",tostring(target.Name)))
+if life<1 and(not target.Status==TARGET.ObjectStatus.DEAD)then
+self:E(self.lid..string.format("FF life is zero but no object dead event fired ==> object dead now for target object %s!",tostring(target.Name)))
 self:ObjectDead(target)
+damaged=true
 end
 end
 if damaged then
@@ -96194,16 +96207,22 @@ end
 if self:IsAlive()then
 self:__Status(-self.TStatus)
 end
+return self
 end
 function TARGET:onafterObjectDamaged(From,Event,To,Target)
+self:T({From,Event,To})
 self:T(self.lid..string.format("Object %s damaged",Target.Name))
+return self
 end
 function TARGET:onafterObjectDestroyed(From,Event,To,Target)
+self:T({From,Event,To})
 self:T(self.lid..string.format("Object %s destroyed",Target.Name))
 self.Ndestroyed=self.Ndestroyed+1
 self:ObjectDead(Target)
+return self
 end
 function TARGET:onafterObjectDead(From,Event,To,Target)
+self:T({From,Event,To})
 self:T(self.lid..string.format("Object %s dead",Target.Name))
 Target.Status=TARGET.ObjectStatus.DEAD
 self.Ndead=self.Ndead+1
@@ -96221,22 +96240,31 @@ self:Destroyed()
 else
 self:Dead()
 end
+else
+self:Damaged()
 end
+return self
 end
 function TARGET:onafterDamaged(From,Event,To)
+self:T({From,Event,To})
 self:T(self.lid..string.format("TARGET damaged"))
+return self
 end
 function TARGET:onafterDestroyed(From,Event,To)
+self:T({From,Event,To})
 self:T(self.lid..string.format("TARGET destroyed"))
 self:Dead()
+return self
 end
 function TARGET:onafterDead(From,Event,To)
+self:T({From,Event,To})
 self:T(self.lid..string.format("TARGET dead"))
+return self
 end
 function TARGET:OnEventUnitDeadOrLost(EventData)
 local Name=EventData and EventData.IniUnitName or nil
 if self:IsElement(Name)and not self:IsCasualty(Name)then
-self:T3(self.lid..string.format("EVENT ID=%d: Unit %s dead or lost!",EventData.id,tostring(Name)))
+self:T(self.lid..string.format("EVENT ID=%d: Unit %s dead or lost!",EventData.id,tostring(Name)))
 table.insert(self.casualties,Name)
 local target=self:GetTargetByName(EventData.IniGroupName)
 if not target then
@@ -96252,14 +96280,17 @@ end
 if target.Ndead==target.N0 then
 if target.Ndestroyed>=target.N0 then
 self:T2(self.lid..string.format("EVENT ID=%d: target %s dead/lost ==> destroyed",EventData.id,tostring(target.Name)))
+target.Life=0
 self:ObjectDestroyed(target)
 else
 self:T2(self.lid..string.format("EVENT ID=%d: target %s removed ==> dead",EventData.id,tostring(target.Name)))
+target.Life=0
 self:ObjectDead(target)
 end
 end
 end
 end
+return self
 end
 function TARGET:_AddObject(Object)
 local target={}
@@ -96310,8 +96341,8 @@ local scenery=Object
 target.Type=TARGET.ObjectType.SCENERY
 target.Name=scenery:GetName()
 target.Coordinate=scenery:GetCoordinate()
-target.Life0=1
-target.Life=1
+target.Life0=scenery:GetLife0()
+target.Life=scenery:GetLife()
 target.N0=target.N0+1
 table.insert(self.elements,target.Name)
 elseif Object:IsInstanceOf("AIRBASE")then
@@ -96357,6 +96388,7 @@ end
 if self.category==nil then
 self.category=self:GetTargetCategory(target)
 end
+return self
 end
 function TARGET:GetLife0()
 return self.life0
@@ -96394,8 +96426,9 @@ else
 return 0
 end
 elseif Target.Type==TARGET.ObjectType.SCENERY then
-if Target.Status==TARGET.ObjectStatus.ALIVE then
-return 1
+if Target.Object and Target.Object:IsAlive()then
+local life=Target.Object:GetLife()
+return life
 else
 return 0
 end
@@ -96412,6 +96445,7 @@ return 1
 else
 self:E("ERROR: unknown target object type in GetTargetLife!")
 end
+return self
 end
 function TARGET:GetLife()
 local N=0
@@ -96451,6 +96485,7 @@ return 0
 else
 self:E("ERROR: unknown target object type in GetTargetThreatLevel!")
 end
+return self
 end
 function TARGET:GetThreatLevelMax()
 local N=0
@@ -96705,7 +96740,7 @@ if target and target:IsAlive()then
 N=N+1
 end
 elseif Target.Type==TARGET.ObjectType.SCENERY then
-if Target.Status==TARGET.ObjectStatus.ALIVE then
+if Target.Status~=TARGET.ObjectStatus.DEAD then
 N=N+1
 end
 elseif Target.Type==TARGET.ObjectType.AIRBASE then
@@ -96743,7 +96778,7 @@ if Name==nil then
 return false
 end
 for _,name in pairs(self.casualties)do
-if name==Name then
+if tostring(name)==tostring(Name)then
 return true
 end
 end
