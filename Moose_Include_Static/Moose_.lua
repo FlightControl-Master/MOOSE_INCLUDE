@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T10:46:17.0000000Z-9809f08954bef4bd58d9006641bf78deffd79563 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T11:05:19.0000000Z-78c209a96fe30f298a343dddf7e2dd10edd4abce ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92845,6 +92845,7 @@ if clientcount>0 then
 for _,_name in pairs(clientlist)do
 if self.customcallsigns[_name]then
 _name=self.customcallsigns[_name]
+_name=string.gsub(_name,"(%d) ","%1")
 end
 clienttxt=clienttxt.._name..", "
 end
