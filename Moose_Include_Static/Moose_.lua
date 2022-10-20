@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-19T17:13:55.0000000Z-8f7694111b60c530a3c3318543f7890c83a39b4b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-20T09:40:57.0000000Z-c3cd7322544548a5af18591232b4b21536593c25 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -35656,6 +35656,18 @@ MANTIS.SamDataHDS={
 ["SA-23 HDS 1"]={Range=100,Blindspot=1,Height=50,Type="Long",Radar="S-300VM 9A83ME"},
 ["HQ-2 HDS"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
 }
+MANTIS.SamDataSMA={
+["RBS98M SMA"]={Range=20,Blindspot=0,Height=8,Type="Short",Radar="RBS-98"},
+["RBS70 SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-70"},
+["RBS70M SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="BV410_RBS70"},
+["RBS90 SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-90"},
+["RBS90M SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="BV410_RBS90"},
+["RBS103A SMA"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
+["RBS103B SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
+["RBS103AM SMA"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
+["RBS103BM SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
+["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
+}
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
@@ -35750,7 +35762,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.8"
+self.version="0.8.9"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -36145,7 +36157,7 @@ MANTISAwacs:SetRefreshTimeInterval(interval)
 MANTISAwacs:Start()
 return MANTISAwacs
 end
-function MANTIS:_GetSAMDataFromUnits(grpname,mod)
+function MANTIS:_GetSAMDataFromUnits(grpname,mod,sma)
 self:T(self.lid.."_GetSAMRangeFromUnits")
 local found=false
 local range=self.checkradius
@@ -36158,6 +36170,8 @@ local units=group:GetUnits()
 local SAMData=self.SamData
 if mod then
 SAMData=self.SamDataHDS
+elseif sma then
+SAMData=self.SamDataSMA
 end
 for _,_unit in pairs(units)do
 local unit=_unit
@@ -36191,8 +36205,11 @@ local radiusscale=self.radiusscale[type]
 local blind=0
 local found=false
 local HDSmod=false
+local SMAMod=false
 if string.find(grpname,"HDS",1,true)then
 HDSmod=true
+elseif string.find(grpname,"SMA",1,true)then
+SMAMod=true
 end
 if self.automode then
 for idx,entry in pairs(self.SamData)do
@@ -36208,8 +36225,8 @@ break
 end
 end
 end
-if(not found and self.automode)or HDSmod then
-range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod)
+if(not found and self.automode)or HDSmod or SMAMod then
+range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
