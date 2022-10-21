@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-21T13:11:46.0000000Z-60927e6728faa85db031e097fa433b3b180cd002 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-21T13:15:51.0000000Z-141130920412a4d78c7ccfbb18190228a64c05dd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4064,13 +4064,17 @@ function UTILS.Vec2Norm(a)
 return math.sqrt(UTILS.Vec2Dot(a,a))
 end
 function UTILS.VecDist2D(a,b)
+local d=math.huge
+if(not a)or(not b)then return d end
 local c={x=b.x-a.x,y=b.y-a.y}
-local d=math.sqrt(c.x*c.x+c.y*c.y)
+d=math.sqrt(c.x*c.x+c.y*c.y)
 return d
 end
 function UTILS.VecDist3D(a,b)
+local d=math.huge
+if(not a)or(not b)then return d end
 local c={x=b.x-a.x,y=b.y-a.y,z=b.z-a.z}
-local d=math.sqrt(UTILS.VecDot(c,c))
+d=math.sqrt(UTILS.VecDot(c,c))
 return d
 end
 function UTILS.VecCross(a,b)
@@ -64333,7 +64337,7 @@ self.PictureTimeStamp=timer.getTime()+10*60
 self.AwacsReady=true
 self:Started()
 elseif self.ShiftChangeAwacsRequested and self.AwacsMissionReplacement and self.AwacsMissionReplacement:GetName()==Mission:GetName()then
-self:I("Setting up Awacs Replacement")
+self:T("Setting up Awacs Replacement")
 AwacsFG:SetDefaultRadio(self.Frequency,self.Modulation,false)
 AwacsFG:SwitchRadio(self.Frequency,self.Modulation)
 AwacsFG:SetDefaultAltitude(self.AwacsAngels*1000)
@@ -64929,7 +64933,7 @@ end
 return self
 end
 function AWACS:_ShowAwacsInfo(Group)
-self:I(self.lid.."_ShowAwacsInfo")
+self:T(self.lid.."_ShowAwacsInfo")
 local report=REPORT:New("Info")
 report:Add("====================")
 report:Add(string.format("AWACS %s",self.callsigntxt))
@@ -65514,7 +65518,7 @@ self.MonitoringData.PlayersCheckedin=clientcheckedin or 0
 return self
 end
 function AWACS:_DeleteAnchorStackFromMarker(Name,Coord)
-self:I(self.lid.."_DeleteAnchorStackFromMarker")
+self:T(self.lid.."_DeleteAnchorStackFromMarker")
 if self.AnchorStacks:HasUniqueID(Name)and self.PlayerStationName==Name then
 local stack=self.AnchorStacks:ReadByID(Name)
 local marker=stack.AnchorMarker
@@ -65536,7 +65540,7 @@ end
 return self
 end
 function AWACS:_MoveAnchorStackFromMarker(Name,Coord)
-self:I(self.lid.."_MoveAnchorStackFromMarker")
+self:T(self.lid.."_MoveAnchorStackFromMarker")
 if self.AnchorStacks:HasUniqueID(Name)and self.PlayerStationName==Name then
 local station=self.AnchorStacks:PullByID(Name)
 local stationtag=string.format("Station: %s\nCoordinate: %s",Name,Coord:ToStringLLDDM())
@@ -65559,7 +65563,7 @@ end
 return self
 end
 function AWACS:_CreateAnchorStackFromMarker(Name,Coord)
-self:I(self.lid.."_CreateAnchorStackFromMarker")
+self:T(self.lid.."_CreateAnchorStackFromMarker")
 local AnchorStackOne={}
 AnchorStackOne.AnchorBaseAngels=self.AnchorBaseAngels
 AnchorStackOne.Anchors=FIFO:New()
@@ -66533,7 +66537,7 @@ function AWACS:_CheckAICAPOnStation()
 self:T(self.lid.."_CheckAICAPOnStation")
 self:_ConsistencyCheck()
 local capmissions,alert5missions,interceptmissions=self:_CleanUpAIMissionStack()
-self:I("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
+self:T("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
 if self.MaxAIonCAP>0 then
 local onstation=capmissions+alert5missions
 if capmissions>self.MaxAIonCAP then
@@ -66558,7 +66562,7 @@ local AWS=self.CAPAirwings:GetDataTable()
 self.AIRequested=self.AIRequested+1
 local selectedAW=AWS[(((self.AIRequested-1)%availableAWS)+1)]
 selectedAW:AddMission(mission)
-self:I("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
+self:T("CAP="..capmissions.." ALERT5="..alert5missions.." Requested="..self.AIRequested)
 end
 end
 if onstation>0 and capmissions<self.MaxAIonCAP then
@@ -66965,7 +66969,7 @@ self.RejectZoneSet=RejectZoneSet
 if self.AllowMarkers then
 local MarkerOps=MARKEROPS_BASE:New("AWACS",{"Station","Delete","Move"})
 local function Handler(Keywords,Coord,Text)
-self:I(Text)
+self:T(Text)
 for _,_word in pairs(Keywords)do
 if string.lower(_word)=="station"then
 local Name=string.match(Text," ([%a]+)$")
@@ -67184,7 +67188,7 @@ end
 return monitoringdata
 end
 function AWACS:onafterStatus(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 self:_SetClientMenus()
 local monitoringdata=self.MonitoringData
 if not self.GCI then
@@ -67423,7 +67427,7 @@ RadioEntry=self.RadioQueue:Pull()
 end
 self:T({RadioEntry})
 if self.clientset:CountAlive()==0 then
-self:I(self.lid.."No player connected.")
+self:T(self.lid.."No player connected.")
 self:__CheckRadioQueue(-5)
 return self
 end
