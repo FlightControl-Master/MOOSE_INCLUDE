@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-21T06:58:48.0000000Z-1fc541a9df949d60cc2b49e8bfedd9139987fab3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-21T07:51:44.0000000Z-37a00f25bca032d3a812ffb7a64173a35d668acd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -83402,6 +83402,16 @@ Target.operation=self
 table.insert(self.targets,Target)
 return self
 end
+function OPERATION:GetTargets(Phase)
+local N={}
+for _,_target in pairs(self.targets)do
+local target=_target
+if target:IsAlive()and(Phase==nil or target.phase==Phase)then
+table.insert(N,target)
+end
+end
+return N
+end
 function OPERATION:CountTargets(Phase)
 local N=0
 for _,_target in pairs(self.targets)do
@@ -83478,6 +83488,7 @@ return is
 end
 function OPERATION:onafterStart(From,Event,To)
 self:T(self.lid..string.format("Starting Operation!"))
+return self
 end
 function OPERATION:onafterStatusUpdate(From,Event,To)
 local Tnow=timer.getAbsTime()
@@ -83519,6 +83530,7 @@ if text=="Phases:"then text=text.." None"end
 self:I(self.lid..text)
 end
 self:__StatusUpdate(-30)
+return self
 end
 function OPERATION:onafterPhaseNext(From,Event,To)
 local Phase=self:GetPhaseNext()
@@ -83527,6 +83539,7 @@ self:PhaseChange(Phase)
 else
 self:Over()
 end
+return self
 end
 function OPERATION:onafterPhaseChange(From,Event,To,Phase)
 local oldphase="None"
@@ -83537,10 +83550,12 @@ end
 self:I(self.lid..string.format("Phase change: %s --> %s",oldphase,Phase.name))
 self.phase=Phase
 self:SetPhaseStatus(Phase,OPERATION.PhaseStatus.ACTIVE)
+return self
 end
 function OPERATION:onafterBranchSwitch(From,Event,To,Branch)
 self:T(self.lid..string.format("Switching to branch %s",Branch.name))
 self.branchActive=Branch
+return self
 end
 function OPERATION:onafterOver(From,Event,To)
 self:T(self.lid..string.format("Operation is over!"))
@@ -83552,6 +83567,7 @@ local phase=_phase
 self:SetPhaseStatus(phase,OPERATION.PhaseStatus.OVER)
 end
 end
+return self
 end
 function OPERATION:_CheckPhases()
 local phase=self:GetPhaseActive()
@@ -91658,7 +91674,7 @@ self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
 local targetdead=false
-if self.Target:IsDead()or self.Target:IsDestroyed()then
+if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
 targetdead=true
 self:__Success(-2)
 status="Success"
@@ -91958,7 +91974,7 @@ BRIEFING="Briefing",
 TARGETLOCATION="Zielkoordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.44"
+PLAYERTASKCONTROLLER.version="0.1.45"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92009,6 +92025,9 @@ self:AddTransition("*","TaskDone","*")
 self:AddTransition("*","TaskCancelled","*")
 self:AddTransition("*","TaskSuccess","*")
 self:AddTransition("*","TaskFailed","*")
+self:AddTransition("*","TaskTargetSmoked","*")
+self:AddTransition("*","TaskTargetFlared","*")
+self:AddTransition("*","TaskTargetIlluminated","*")
 self:AddTransition("*","TaskRepeatOnFailed","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Start(2)
@@ -92942,6 +92961,7 @@ self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
+self:__TaskTargetSmoked(5,task)
 else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
@@ -92963,6 +92983,29 @@ self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
+self:__TaskTargetFlared(5,task)
+else
+text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
+end
+if not self.NoScreenOutput then
+local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_IlluminateTask(Group,Client)
+self:T(self.lid.."_IlluminateTask")
+local playername,ttsplayername=self:_GetPlayerName(Client)
+local text=""
+if self.TasksPerPlayer:HasUniqueID(playername)then
+local task=self.TasksPerPlayer:ReadByID(playername)
+task:FlareTarget()
+local textmark=self.gettext:GetEntry("FLARETASK",self.locale)
+text=string.format(textmark,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
+self:T(self.lid..text)
+if self.UseSRS then
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
+end
+self:__TaskTargetIlluminated(5,task)
 else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
@@ -92972,7 +93015,7 @@ end
 return self
 end
 function PLAYERTASKCONTROLLER:_AbortTask(Group,Client)
-self:T(self.lid.."_FlareTask")
+self:T(self.lid.."_AbortTask")
 local playername,ttsplayername=self:_GetPlayerName(Client)
 local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
@@ -93091,6 +93134,10 @@ if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
 if self.noflaresmokemenu~=true then
 local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client)
 local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client)
+local IsNight=client:GetCoordinate():IsNight()
+if IsNight then
+local light=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._IlluminateTask,self,group,client)
+end
 end
 end
 local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client)
@@ -93207,7 +93254,7 @@ self:T(self.lid.."SetMenuName: "..Name)
 self.MenuName=Name
 return self
 end
-function PLAYERTASKCONTROLLER:SetParentName(Menu)
+function PLAYERTASKCONTROLLER:SetParentMenu(Menu)
 self:T(self.lid.."SetParentName")
 self.MenuParent=Menu
 return self
@@ -96207,7 +96254,9 @@ self:Damaged()
 end
 if self.verbose>=1 then
 local text=string.format("%s: Targets=%d/%d Life=%.1f/%.1f Damage=%.1f",fsmstate,self:CountTargets(),self.N0,self:GetLife(),self:GetLife0(),self:GetDamage())
-if damaged then
+if self:CountTargets()==0 then
+text=text.." Dead!"
+elseif damaged then
 text=text.." Damaged!"
 end
 self:I(self.lid..text)
@@ -96220,6 +96269,9 @@ local damage=(1-target.Life/target.Life0)*100
 text=text..string.format("\n[%d] %s %s %s: Life=%.1f/%.1f, Damage=%.1f",i,target.Type,target.Name,target.Status,target.Life,target.Life0,damage)
 end
 self:I(self.lid..text)
+end
+if self:CountTargets()==0 then
+self:Dead()
 end
 if self:IsAlive()then
 self:__Status(-self.TStatus)
