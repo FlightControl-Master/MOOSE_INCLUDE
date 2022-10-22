@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-21T11:52:09.0000000Z-61ea4846141fec056064958fc5d9a7363bb07549 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-22T09:07:58.0000000Z-81818705dfffa4bf258e91f1ef1a5123a2593b2e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8459,7 +8459,7 @@ DrawID=nil,
 Color={},
 ZoneID=nil,
 Properties={},
-Sureface=nil,
+Surface=nil,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -44953,7 +44953,7 @@ self:E(self.lid..string.format("ERROR: INVALID request. Request for zero assets 
 valid=false
 end
 if self:GetCoalition()~=request.warehouse:GetCoalition()then
-self:E(self.lid..string.format("ERROR: INVALID request. Requesting warehouse is of wrong coaltion! Own coalition %s != %s of requesting warehouse.",self:GetCoalitionName(),request.warehouse:GetCoalitionName()))
+self:E(self.lid..string.format("ERROR: INVALID request. Requesting warehouse is of wrong coalition! Own coalition %s != %s of requesting warehouse.",self:GetCoalitionName(),request.warehouse:GetCoalitionName()))
 valid=false
 end
 if request.warehouse:IsStopped()then
@@ -47088,11 +47088,11 @@ MANTIS.SamDataSMA={
 ["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
 do
-function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
+function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding)
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
-self.Coalition=coaltion or"red"
+self.Coalition=coalition or"red"
 self.SAM_Table={}
 self.SAM_Table_Long={}
 self.SAM_Table_Medium={}
