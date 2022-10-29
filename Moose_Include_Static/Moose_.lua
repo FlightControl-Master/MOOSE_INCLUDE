@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-21T13:15:51.0000000Z-141130920412a4d78c7ccfbb18190228a64c05dd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-29T08:49:18.0000000Z-946a1de931a6fd6bb1cf175c343957ec9e6cf154 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -17596,7 +17596,7 @@ DrawID=nil,
 Color={},
 ZoneID=nil,
 Properties={},
-Sureface=nil,
+Surface=nil,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -35673,11 +35673,11 @@ MANTIS.SamDataSMA={
 ["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
 do
-function MANTIS:New(name,samprefix,ewrprefix,hq,coaltion,dynamic,awacs,EmOnOff,Padding)
+function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding)
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
-self.Coalition=coaltion or"red"
+self.Coalition=coalition or"red"
 self.SAM_Table={}
 self.SAM_Table_Long={}
 self.SAM_Table_Medium={}
@@ -47976,7 +47976,7 @@ self:E(self.lid..string.format("ERROR: INVALID request. Request for zero assets 
 valid=false
 end
 if self:GetCoalition()~=request.warehouse:GetCoalition()then
-self:E(self.lid..string.format("ERROR: INVALID request. Requesting warehouse is of wrong coaltion! Own coalition %s != %s of requesting warehouse.",self:GetCoalitionName(),request.warehouse:GetCoalitionName()))
+self:E(self.lid..string.format("ERROR: INVALID request. Requesting warehouse is of wrong coalition! Own coalition %s != %s of requesting warehouse.",self:GetCoalitionName(),request.warehouse:GetCoalitionName()))
 valid=false
 end
 if request.warehouse:IsStopped()then
