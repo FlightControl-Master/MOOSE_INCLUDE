@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T09:26:45.0000000Z-fc77df4b5d8df57857871e6f4423684a93f18e01 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T11:22:34.0000000Z-8ee8898a787e48c9c01291970fb6a3b7bf7dbfd5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63439,7 +63439,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.45",
+version="0.2.46",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -67337,13 +67337,16 @@ local function GetFirstAliveContact(table)
 for _,_contact in pairs(table)do
 local contact=_contact
 if contact and contact.group and contact.group:IsAlive()then
-return contact
+return contact,contact.group
 end
 end
 return nil
 end
-local Contact=GetFirstAliveContact(ContactTable)
+local Contact,Group=GetFirstAliveContact(ContactTable)
 if not Contact then return self end
+if Group and not Group:IsAirborne()then
+return self
+end
 local targetset=SET_GROUP:New()
 for _,_grp in pairs(ContactTable)do
 local grp=_grp
@@ -67395,7 +67398,7 @@ local tdist=self.ThreatDistance
 for _gid,_mgroup in pairs(self.ManagedGrps)do
 local managedgroup=_mgroup
 local group=managedgroup.Group
-if group and group:IsAlive()then
+if group and group:IsAlive()and group:IsAirborne()then
 local cpos=Contact.position or Contact.group:GetCoordinate()
 local mpos=group:GetCoordinate()
 local dist=cpos:Get2DDistance(mpos)
