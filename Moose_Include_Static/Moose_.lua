@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T07:02:21.0000000Z-13018ed96aac113898b315ad055859780bfe521d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T09:26:45.0000000Z-fc77df4b5d8df57857871e6f4423684a93f18e01 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23644,7 +23644,7 @@ local apc=self:HasAttribute("APC")
 local truck=self:HasAttribute("Trucks")and self:GetCategory()==Group.Category.GROUND
 local infantry=self:HasAttribute("Infantry")
 local artillery=self:HasAttribute("Artillery")
-local tank=self:HasAttribute("Old Tanks")or self:HasAttribute("Modern Tanks")
+local tank=self:HasAttribute("Old Tanks")or self:HasAttribute("Modern Tanks")or self:HasAttribute("Tanks")
 local aaa=self:HasAttribute("AAA")and(not self:HasAttribute("SAM elements"))
 local ewr=self:HasAttribute("EWR")
 local ifv=self:HasAttribute("IFV")
