@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T11:22:34.0000000Z-8ee8898a787e48c9c01291970fb6a3b7bf7dbfd5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T14:44:29.0000000Z-cc1e071e35f7bd6df05ccdfa06bb1cea875975a0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7075,6 +7075,17 @@ WeaponAdd=world.event.S_EVENT_WEAPON_ADD or-1,
 TriggerZone=world.event.S_EVENT_TRIGGER_ZONE or-1,
 LandingQualityMark=world.event.S_EVENT_LANDING_QUALITY_MARK or-1,
 BDA=world.event.S_EVENT_BDA or-1,
+AIAbortMission=world.event.S_EVENT_AI_ABORT_MISSION or-1,
+DayNight=world.event.S_EVENT_DAYNIGHT or-1,
+FlightTime=world.event.S_EVENT_FLIGHT_TIME or-1,
+SelfKillPilot=world.event.S_EVENT_PLAYER_SELF_KILL_PILOT or-1,
+PlayerCaptureAirfield=world.event.S_EVENT_PLAYER_CAPTURE_AIRFIELD or-1,
+EmergencyLanding=world.event.S_EVENT_EMERGENCY_LANDING or-1,
+UnitCreateTask=world.event.S_EVENT_UNIT_CREATE_TASK or-1,
+UnitDeleteTask=world.event.S_EVENT_UNIT_DELETE_TASK or-1,
+SimulationStart=world.event.S_EVENT_SIMULATION_START or-1,
+WeaponRearm=world.event.S_EVENT_WEAPON_REARM or-1,
+WeaponDrop=world.event.S_EVENT_WEAPON_DROP or-1,
 }
 local _EVENTMETA={
 [world.event.S_EVENT_SHOT]={
@@ -7327,6 +7338,66 @@ Text="S_EVENT_LANDING_QUALITYMARK"
 Order=1,
 Event="OnEventBDA",
 Text="S_EVENT_BDA"
+},
+[EVENTS.AIAbortMission]={
+Order=1,
+Side="I",
+Event="OnEventAIAbortMission",
+Text="S_EVENT_AI_ABORT_MISSION"
+},
+[EVENTS.DayNight]={
+Order=1,
+Event="OnEventDayNight",
+Text="S_EVENT_DAYNIGHT"
+},
+[EVENTS.FlightTime]={
+Order=1,
+Event="OnEventFlightTime",
+Text="S_EVENT_FLIGHT_TIME"
+},
+[EVENTS.SelfKillPilot]={
+Order=1,
+Side="I",
+Event="OnEventSelfKillPilot",
+Text="S_EVENT_PLAYER_SELF_KILL_PILOT"
+},
+[EVENTS.PlayerCaptureAirfield]={
+Order=1,
+Event="OnEventPlayerCaptureAirfield",
+Text="S_EVENT_PLAYER_CAPTURE_AIRFIELD"
+},
+[EVENTS.EmergencyLanding]={
+Order=1,
+Side="I",
+Event="OnEventEmergencyLanding",
+Text="S_EVENT_EMERGENCY_LANDING"
+},
+[EVENTS.UnitCreateTask]={
+Order=1,
+Event="OnEventUnitCreateTask",
+Text="S_EVENT_UNIT_CREATE_TASK"
+},
+[EVENTS.UnitDeleteTask]={
+Order=1,
+Event="OnEventUnitDeleteTask",
+Text="S_EVENT_UNIT_DELETE_TASK"
+},
+[EVENTS.SimulationStart]={
+Order=1,
+Event="OnEventSimulationStart",
+Text="S_EVENT_SIMULATION_START"
+},
+[EVENTS.WeaponRearm]={
+Order=1,
+Side="I",
+Event="OnEventWeaponRearm",
+Text="S_EVENT_WEAPON_REARM"
+},
+[EVENTS.WeaponDrop]={
+Order=1,
+Side="I",
+Event="OnEventWeaponDrop",
+Text="S_EVENT_WEAPON_DROP"
 },
 }
 function EVENT:New()
