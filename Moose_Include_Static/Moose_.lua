@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T14:44:29.0000000Z-cc1e071e35f7bd6df05ccdfa06bb1cea875975a0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T15:07:25.0000000Z-dd32d2e53c9f75d212c0fb829459e9540db264cf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75191,7 +75191,7 @@ CTLD_HERCULES={
 ClassName="CTLD_HERCULES",
 lid="",
 Name="",
-Version="0.0.1",
+Version="0.0.2",
 }
 CTLD_HERCULES.Types={
 ["ATGM M1045 HMMWV TOW Air [7183lb]"]={['name']="M1045 HMMWV TOW",['container']=true},
@@ -75445,7 +75445,7 @@ if self:Calculate_Object_Height_AGL(cargo.Cargo_Contents)<10 then
 if self:Check_SurfaceType(cargo.Cargo_Contents)==2 or self:Check_SurfaceType(cargo.Cargo_Contents)==3 then
 cargo.Cargo_over_water=true
 end
-local dcsvec3=self.ObjectTracker[cargo.Cargo_Contents.id_]
+local dcsvec3=self.ObjectTracker[cargo.Cargo_Contents.id_]or initiator:GetVec3()
 self:T("SPAWNPOSITION: ")
 self:T({dcsvec3})
 local Vec2={
@@ -75519,7 +75519,7 @@ self.Cargo[self.j].all_cargo_gets_destroyed=false
 end
 local timer=TIMER:New(self.Cargo_Track,self,self.Cargo[self.j],Initiator)
 self.Cargo[self.j].scheduleFunctionID=timer
-timer:Start(5,2,600)
+timer:Start(1,1,600)
 else
 self.j=self.j+1
 self.Cargo[self.j]={}
@@ -75540,7 +75540,7 @@ self.Cargo[self.j].destroy_cargo_dropped_without_parachute=true
 end
 local timer=TIMER:New(self.Cargo_Track,self,self.Cargo[self.j],Initiator)
 self.Cargo[self.j].scheduleFunctionID=timer
-timer:Start(5,2,600)
+timer:Start(1,1,600)
 end
 end
 return self
