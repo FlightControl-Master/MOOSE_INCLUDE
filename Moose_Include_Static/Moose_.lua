@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-10-31T15:06:30.0000000Z-7d37acb1cdfba8ecd8cfcece6edfd4312dc8a687 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-01T13:32:02.0000000Z-1da0792ed782bc1bebc79ff9c1d335020dad818d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -23848,6 +23848,7 @@ return nil
 end
 function UNIT:IsPlayer()
 local group=self:GetGroup()
+if not group then return false end
 local units=group:GetTemplate().units
 for _,unit in pairs(units)do
 if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
@@ -59564,7 +59565,7 @@ CTLD.UnitTypes={
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 }
-CTLD.version="1.0.16"
+CTLD.version="1.0.17"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -59662,6 +59663,7 @@ self.HercMaxAngels=2000
 self.HercMaxSpeed=77
 self.suppressmessages=false
 self.repairtime=300
+self.buildtime=300
 self.placeCratesAhead=false
 self.cratecountry=country.id.GERMANY
 self.pilotmustopendoors=false
@@ -60813,7 +60815,13 @@ for _,_build in pairs(buildables)do
 local build=_build
 if build.CanBuild then
 self:_CleanUpCrates(crates,build,number)
+if self.buildtime and self.buildtime>0 then
+local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate())
+buildtimer:Start(self.buildtime)
+self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
+else
 self:_BuildObjectFromCrates(Group,Unit,build)
+end
 end
 end
 end
@@ -60895,9 +60903,7 @@ return self
 end
 function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair,RepairLocation)
 self:T(self.lid.." _BuildObjectFromCrates")
-if Group and Group:IsAlive()then
-local position=Unit:GetCoordinate()or Group:GetCoordinate()
-local unitname=Unit:GetName()or Group:GetName()
+if Group and Group:IsAlive()or(RepairLocation and not Repair)then
 local name=Build.Name
 local ctype=Build.Type
 local canmove=false
@@ -60909,7 +60915,12 @@ local temptable=Build.Template or{}
 if type(temptable)=="string"then
 temptable={temptable}
 end
-local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,100)
+local zone=nil
+if RepairLocation and not Repair then
+zone=ZONE_RADIUS:New(string.format("Build zone-%d",math.random(1,10000)),RepairLocation:GetVec2(),100)
+else
+zone=ZONE_GROUP:New(string.format("Unload zone-%d",math.random(1,10000)),Group,100)
+end
 local randomcoord=Build.Coord or zone:GetRandomCoordinate(35):GetVec2()
 if Repair then
 randomcoord=RepairLocation:GetVec2()
