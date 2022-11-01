@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-01T13:33:06.0000000Z-e841a388668c2062c235d076cc8472985206e3e1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-01T15:32:40.0000000Z-8fb66ed3298a0fcf9e3b9368d6d9cf0ee5d0f6be ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18770,11 +18770,15 @@ self.ScanData.Units={}
 local vectors=self:GetBoundingSquare()
 local minVec3={x=vectors.x1,y=0,z=vectors.y1}
 local maxVec3={x=vectors.x2,y=0,z=vectors.y2}
-local VolumeBox={
-id=world.VolumeType.BOX,
+local minmarkcoord=COORDINATE:NewFromVec3(minVec3)
+local maxmarkcoord=COORDINATE:NewFromVec3(maxVec3)
+local ZoneRadius=minmarkcoord:Get2DDistance(maxmarkcoord)/2
+local CenterVec3=self:GetCoordinate():GetVec3()
+local SphereSearch={
+id=world.VolumeType.SPHERE,
 params={
-min=minVec3,
-max=maxVec3
+point=CenterVec3,
+radius=ZoneRadius,
 }
 }
 local function EvaluateZone(ZoneObject)
@@ -18801,7 +18805,7 @@ self.ScanData.Units[ZoneObject]=ZoneObject
 self:F2({Name=ZoneObject:getName(),Coalition=CoalitionDCSUnit})
 end
 end
-if ObjectCategory==Object.Category.SCENERY then
+if ObjectCategory==Object.Category.SCENERY and self:IsVec3InZone(ZoneObject:getPoint())then
 local SceneryType=ZoneObject:getTypeName()
 local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
@@ -18835,7 +18839,7 @@ searchscenery=true
 end
 end
 if searchscenery then
-world.searchObjects({Object.Category.SCENERY},VolumeBox,EvaluateZone)
+world.searchObjects({Object.Category.SCENERY},SphereSearch,EvaluateZone)
 end
 end
 function ZONE_POLYGON:GetScannedUnits()
