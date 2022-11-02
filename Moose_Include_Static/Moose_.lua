@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-02T10:24:59.0000000Z-2b3363de400d244cfb9415a1e385b978e6c66143 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-02T16:32:20.0000000Z-35057b9d05eb7be454fad88f3e4fef95aa3605fb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61648,6 +61648,10 @@ elseif MissionType==AUFTRAG.Type.BOMBING then
 mission=self:NewBOMBING(Target,Altitude)
 elseif MissionType==AUFTRAG.Type.BOMBRUNWAY then
 mission=self:NewBOMBRUNWAY(Target,Altitude)
+elseif MissionType==AUFTRAG.Type.CAS then
+mission=self:NewCAS(ZONE_RADIUS:New(Target:GetName(),Target:GetVec2(),1000),Altitude,Speed,Target:GetAverageCoordinate(),Heading,Leg,TargetTypes)
+elseif MissionType==AUFTRAG.Type.CASENHANCED then
+mission=self:NewCASENHANCED(ZONE_RADIUS:New(Target:GetName(),Target:GetVec2(),1000),Altitude,Speed,RangeMax,NoEngageZoneSet,TargetTypes)
 elseif MissionType==AUFTRAG.Type.INTERCEPT then
 mission=self:NewINTERCEPT(Target)
 elseif MissionType==AUFTRAG.Type.SEAD then
@@ -68919,7 +68923,9 @@ table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,40))
 elseif attribute==GROUP.Attribute.GROUND_TANK then
-table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.CAS,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.BAI,100))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.CAS,90))
+table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.CASENHANCED,90))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.GROUNDATTACK,50))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARMORATTACK,40))
 table.insert(missionperf,self:_CreateMissionPerformance(AUFTRAG.Type.ARTY,30))
