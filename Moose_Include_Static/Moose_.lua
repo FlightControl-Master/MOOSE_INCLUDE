@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-02T16:33:34.0000000Z-1fea016ac14a7c0a1837f05f7d0e7b76c70d83db ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-04T12:31:33.0000000Z-0de8c0beb25ee5a2efbbe355e2d308ed92ea1c5c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -80015,7 +80015,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.3"
+INTEL.version="0.3.4"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -80977,6 +80977,18 @@ cluster.marker:Refresh()
 end
 end
 return self
+end
+function INTEL:GetHighestThreatContact(Cluster)
+local threatlevel=-1
+local rcontact=nil
+for _,_contact in pairs(Cluster.Contacts)do
+local contact=_contact
+if contact.threatlevel>threatlevel then
+threatlevel=contact.threatlevel
+rcontact=contact
+end
+end
+return rcontact
 end
 INTEL_DLINK={
 ClassName="INTEL_DLINK",
