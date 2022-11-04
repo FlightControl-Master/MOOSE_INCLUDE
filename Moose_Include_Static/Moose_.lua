@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-04T12:31:33.0000000Z-0de8c0beb25ee5a2efbbe355e2d308ed92ea1c5c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-04T21:55:24.0000000Z-ead8411454f0d4f5261f702e0eeb384446df01a2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3876,7 +3876,9 @@ function UTILS.RemoveMark(MarkID,Delay)
 if Delay and Delay>0 then
 TIMER:New(UTILS.RemoveMark,MarkID):Start(Delay)
 else
+if MarkID then
 trigger.action.removeMark(MarkID)
+end
 end
 end
 function UTILS.IsInRadius(InVec2,Vec2,Radius)
@@ -4658,6 +4660,16 @@ end
 _count=_count+1
 end
 return jtacGeneratedLaserCodes
+end
+function UTILS.EnsureTable(Object)
+if Object then
+if type(Object)~="table"then
+Object={Object}
+end
+else
+Object={}
+end
+return Object
 end
 function UTILS.SaveToFile(Path,Filename,Data)
 if not io then
@@ -21030,11 +21042,11 @@ return DCSTask
 end
 function CONTROLLABLE:TaskOrbit(Coord,Altitude,Speed,CoordRaceTrack)
 local Pattern=AI.Task.OrbitPattern.CIRCLE
-local P1=Coord:GetVec2()
+local P1={x=Coord.x,y=Coord.z or Coord.y}
 local P2=nil
 if CoordRaceTrack then
 Pattern=AI.Task.OrbitPattern.RACE_TRACK
-P2=CoordRaceTrack:GetVec2()
+P2={x=CoordRaceTrack.x,y=CoordRaceTrack.z or CoordRaceTrack.y}
 end
 local Task={
 id='Orbit',
@@ -58695,7 +58707,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="0.7.9"
+ARMYGROUP.version="0.8.0"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -58897,8 +58909,8 @@ for _,_element in pairs(self.elements)do
 local element=_element
 cargo=cargo+element.weightCargo
 end
-local text=string.format("%s [%d/%d]: ROE/AS=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f",
-fsmstate,nelem,Nelem,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,hdg,ammo,ndetected,cargo)
+local text=string.format("%s [%d/%d]: ROE/AS=%d/%d | T/M=%d/%d | Wp=%d[%d]-->%d[%d]/%d [%s] | Life=%.1f | v=%.1f (%d) [%s] | Hdg=%03d | Ammo=%d | Detect=%s | Cargo=%.1f",
+fsmstate,nelem,Nelem,roe,als,nTaskTot,nMissions,wpidxCurr,wpuidCurr,wpidxNext,wpuidNext,wpN,wpF,life,speed,speedEx,formation,hdg,ammo,ndetected,cargo)
 self:I(self.lid..text)
 end
 else
@@ -59044,18 +59056,20 @@ local text=string.format("Update route state=%s: n=%s, N=%s, Speed=%s, Formation
 self:T(self.lid..text)
 local waypoints={}
 local wp=self.waypoints[n]
+local coordinate=self:GetCoordinate()
+local coordRoad=coordinate:GetClosestPointToRoad()
+local roaddist=coordinate:Get2DDistance(coordRoad)
 local formation0=wp.action
 if formation0==ENUMS.Formation.Vehicle.OnRoad then
-if wp.roadcoord then
-if wp.roaddist>10 then
+if roaddist>10 then
 formation0=ENUMS.Formation.Vehicle.OffRoad
-end
 else
-formation0=ENUMS.Formation.Vehicle.OffRoad
+formation0=ENUMS.Formation.Vehicle.OnRoad
 end
 end
-local current=self:GetCoordinate():WaypointGround(UTILS.MpsToKmph(self.speedWp),formation0)
+local current=coordinate:WaypointGround(UTILS.MpsToKmph(self.speedWp),formation0)
 table.insert(waypoints,1,current)
+if N-n>0 then
 for j=n,N do
 local i=j-1
 if i==0 then
@@ -59063,6 +59077,10 @@ i=self.currentwp
 end
 local wp=UTILS.DeepCopy(self.waypoints[j])
 local wp0=self.waypoints[i]
+if false and self.attribute==GROUP.Attribute.GROUND_APC then
+local text=string.format("FF Update: i=%d, wp[i]=%s, wp[i-1]=%s",i,wp.action,wp0.action)
+env.info(text)
+end
 if Speed then
 wp.speed=UTILS.KnotsToMps(tonumber(Speed))
 else
@@ -59083,6 +59101,32 @@ if wp.action==ENUMS.Formation.Vehicle.OnRoad and wp.roaddist>=0 then
 wp.action=ENUMS.Formation.Vehicle.OffRoad
 local wproad=wp.roadcoord:WaypointGround(UTILS.MpsToKmph(wp.speed),ENUMS.Formation.Vehicle.OnRoad)
 table.insert(waypoints,wproad)
+end
+table.insert(waypoints,wp)
+end
+else
+local wp=UTILS.DeepCopy(self.waypoints[n])
+if wp.speed<0.1 then
+wp.speed=UTILS.KmphToMps(self.speedCruise)
+end
+local formation=wp.action
+if self.formationPerma then
+formation=self.formationPerma
+elseif Formation then
+formation=Formation
+end
+if formation==ENUMS.Formation.Vehicle.OnRoad then
+if roaddist>10 then
+local wproad=coordRoad:WaypointGround(UTILS.MpsToKmph(wp.speed),ENUMS.Formation.Vehicle.OnRoad)
+table.insert(waypoints,wproad)
+end
+if wp.roaddist>10 then
+local wproad=wp.roadcoord:WaypointGround(UTILS.MpsToKmph(wp.speed),ENUMS.Formation.Vehicle.OnRoad)
+table.insert(waypoints,wproad)
+end
+end
+if wp.action==ENUMS.Formation.Vehicle.OnRoad and wp.roaddist>10 then
+wp.action=ENUMS.Formation.Vehicle.OffRoad
 end
 table.insert(waypoints,wp)
 end
@@ -59309,7 +59353,7 @@ self.engage.roe=self:GetROE()
 self.engage.alarmstate=self:GetAlarmstate()
 self:SwitchAlarmstate(ENUMS.AlarmState.Auto)
 self:SwitchROE(ENUMS.ROE.OpenFire)
-local uid=self:GetWaypointCurrent().uid
+local uid=self:GetWaypointCurrentUID()
 self.engage.Formation=Formation or ENUMS.Formation.Vehicle.Vee
 self.engage.Speed=Speed
 self.engage.Waypoint=self:AddWaypoint(intercoord,self.engage.Speed,uid,self.engage.Formation,true)
@@ -59372,7 +59416,7 @@ self:_Suppress()
 end
 end
 function ARMYGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Formation,Updateroute)
-self:T(self.lid..string.format("AddWaypoint Formation = %s",tostring(Formation)or"none"))
+self:T(self.lid..string.format("AddWaypoint Formation = %s",tostring(Formation)))
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
 Speed=Speed or self:GetSpeedCruise()
@@ -59382,8 +59426,9 @@ Formation=self.formationPerma
 elseif self.option.Formation then
 Formation=self.option.Formation
 else
-Formation="On Road"
+Formation=ENUMS.Formation.Vehicle.OnRoad
 end
+self:T2(self.lid..string.format("Formation set to = %s",tostring(Formation)))
 end
 local wp=coordinate:WaypointGround(UTILS.KnotsToKmph(Speed),Formation)
 local waypoint=self:_CreateWaypoint(wp)
@@ -61032,7 +61077,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.6"
+AUFTRAG.version="0.9.7"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -61115,19 +61160,21 @@ return mission
 end
 function AUFTRAG:NewORBIT(Coordinate,Altitude,Speed,Heading,Leg)
 local mission=AUFTRAG:New(AUFTRAG.Type.ORBIT)
+mission:_TargetFromObject(Coordinate)
 if Altitude then
 mission.orbitAltitude=UTILS.FeetToMeters(Altitude)
 else
 mission.orbitAltitude=Coordinate.y
 end
-Coordinate.y=mission.orbitAltitude
-mission:_TargetFromObject(Coordinate)
-mission.orbitSpeed=UTILS.KnotsToMps(Speed or 350)
+mission.orbitSpeed=UTILS.KnotsToMps(UTILS.KnotsToAltKIAS(Speed or 350,UTILS.MetersToFeet(mission.orbitAltitude)))
 mission.missionSpeed=UTILS.KnotsToKmph(Speed or 350)
-if Heading and Leg then
-mission.orbitHeading=Heading
+if Leg then
 mission.orbitLeg=UTILS.NMToMeters(Leg)
-mission.orbitRaceTrack=Coordinate:Translate(mission.orbitLeg,mission.orbitHeading,true)
+if Heading and Heading<0 then
+mission.orbitHeadingRel=true
+Heading=-Heading
+end
+mission.orbitHeading=Heading
 end
 mission.missionAltitude=mission.orbitAltitude*0.9
 mission.missionFraction=0.9
@@ -61145,6 +61192,26 @@ function AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
 Heading=Heading or math.random(360)
 Leg=Leg or 10
 local mission=AUFTRAG:NewORBIT(Coordinate,Altitude,Speed,Heading,Leg)
+return mission
+end
+function AUFTRAG:NewORBIT_GROUP(Group,Altitude,Speed,Leg,Heading,OffsetVec2,Distance)
+Altitude=Altitude or 6000
+local mission=AUFTRAG:NewORBIT(Group,Altitude,Speed,Heading,Leg)
+mission.updateDCSTask=true
+if OffsetVec2 then
+if OffsetVec2.x then
+OffsetVec2.x=UTILS.NMToMeters(OffsetVec2.x)
+end
+if OffsetVec2.y then
+OffsetVec2.y=UTILS.NMToMeters(OffsetVec2.y)
+end
+if OffsetVec2.r then
+OffsetVec2.r=UTILS.NMToMeters(OffsetVec2.r)
+end
+end
+mission.orbitOffsetVec2=OffsetVec2
+mission.orbitDeltaR=UTILS.NMToMeters(Distance or 5)
+mission:GetDCSMissionTask()
 return mission
 end
 function AUFTRAG:NewGCICAP(Coordinate,Altitude,Speed,Heading,Leg)
@@ -61389,15 +61456,20 @@ mission.categories={AUFTRAG.Category.HELICOPTER}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewRECOVERYTANKER(Carrier)
-local mission=AUFTRAG:New(AUFTRAG.Type.RECOVERYTANKER)
-mission:_TargetFromObject(Carrier)
+function AUFTRAG:NewRECOVERYTANKER(Carrier,Altitude,Speed,Leg,RelHeading,OffsetDist,OffsetAngle,UpdateDistance)
+local OffsetVec2={r=OffsetDist or 6,phi=OffsetAngle or 180}
+Leg=Leg or 14
+Speed=Speed or 250
+local Heading=nil
+if RelHeading then
+Heading=-math.abs(RelHeading)
+end
+local mission=AUFTRAG:NewORBIT_GROUP(Carrier,Altitude,Speed,Leg,Heading,OffsetVec2,UpdateDistance)
+mission.type=AUFTRAG.Type.RECOVERYTANKER
 mission.missionTask=ENUMS.MissionTask.REFUELING
-mission.missionFraction=0.5
+mission.missionFraction=0.9
 mission.optionROE=ENUMS.ROE.WeaponHold
 mission.optionROT=ENUMS.ROT.NoReaction
-mission.missionAltitude=UTILS.FeetToMeters(6000)
-mission.missionSpeed=UTILS.KnotsToKmph(274)
 mission.categories={AUFTRAG.Category.AIRPLANE}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
@@ -63009,6 +63081,13 @@ self:T(self.lid.."ERROR: Cannot get target coordinate!")
 end
 return nil
 end
+function AUFTRAG:GetTargetHeading()
+if self.engageTarget then
+local heading=self.engageTarget:GetHeading()
+return heading
+end
+return nil
+end
 function AUFTRAG:GetTargetName()
 if self.engageTarget then
 local name=self.engageTarget:GetName()
@@ -63140,6 +63219,9 @@ function AUFTRAG:_SetLogID()
 self.lid=string.format("Auftrag #%d %s | ",self.auftragsnummer,tostring(self.type))
 return self
 end
+function AUFTRAG:_UpdateTask()
+return self
+end
 function AUFTRAG:UpdateMarker()
 local text=string.format("%s %s: %s",self.name,self.type:upper(),self.status:upper())
 text=text..string.format("\n%s",self:GetTargetName())
@@ -63203,21 +63285,6 @@ DCStask.id=AUFTRAG.SpecialTask.RELOCATECOHORT
 local param={}
 DCStask.params=param
 table.insert(DCStasks,DCStask)
-elseif self.type==AUFTRAG.Type.RECOVERYTANKER then
-local Carrier=self:GetObjective()
-local Coord=Carrier:GetCoordinate()
-local hdg=Carrier:GetHeading()
-local Altitude=self.missionAltitude
-local distStern=UTILS.NMToMeters(4)
-local distBow=UTILS.NMToMeters(10)
-local p1=Coord:Translate(distStern,hdg):SetAltitude(self.missionAltitude)
-local p2=Coord:Translate(distBow,hdg):SetAltitude(self.missionAltitude)
-p1:MarkToAll("p1")
-p2:MarkToAll("p2")
-local Speed=UTILS.KmphToMps(self.missionSpeed)
-local DCStask=CONTROLLABLE.TaskOrbit(nil,p1,Altitude,Speed,p2)
-DCStask.params.carrier=Carrier
-table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.INTERCEPT then
 self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.ORBIT then
@@ -63237,7 +63304,7 @@ self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.STRIKE then
 local DCStask=CONTROLLABLE.TaskAttackMapObject(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
 table.insert(DCStasks,DCStask)
-elseif self.type==AUFTRAG.Type.TANKER then
+elseif self.type==AUFTRAG.Type.TANKER or self.type==AUFTRAG.Type.RECOVERYTANKER then
 local DCStask=CONTROLLABLE.EnRouteTaskTanker(nil)
 table.insert(self.enrouteTasks,DCStask)
 elseif self.type==AUFTRAG.Type.TROOPTRANSPORT then
@@ -63396,10 +63463,44 @@ self.type==AUFTRAG.Type.CAP or
 self.type==AUFTRAG.Type.CAS or
 self.type==AUFTRAG.Type.GCICAP or
 self.type==AUFTRAG.Type.AWACS or
-self.type==AUFTRAG.Type.TANKER then
-local Coordinate=self:GetTargetCoordinate()
-local DCStask=CONTROLLABLE.TaskOrbit(nil,Coordinate,self.orbitAltitude,self.orbitSpeed,self.orbitRaceTrack)
+self.type==AUFTRAG.Type.TANKER or
+self.type==AUFTRAG.Type.RECOVERYTANKER then
+self.orbitVec2=self:GetTargetVec2()
+if self.orbitVec2 then
+self.targetHeading=self:GetTargetHeading()
+local OffsetVec2=nil
+if(self.orbitOffsetVec2~=nil)then
+OffsetVec2=UTILS.DeepCopy(self.orbitOffsetVec2)
+end
+if OffsetVec2 then
+if self.orbitOffsetVec2.r then
+local r=self.orbitOffsetVec2.r
+local phi=(self.orbitOffsetVec2.phi or 0)+self.targetHeading
+OffsetVec2.x=r*math.cos(math.rad(phi))
+OffsetVec2.y=r*math.sin(math.rad(phi))
+else
+OffsetVec2.x=self.orbitOffsetVec2.x
+OffsetVec2.y=self.orbitOffsetVec2.y
+end
+end
+local orbitVec2=OffsetVec2 and UTILS.Vec2Add(self.orbitVec2,OffsetVec2)or self.orbitVec2
+local orbitRaceTrack=nil
+if self.orbitLeg then
+local heading=0
+if self.orbitHeading then
+if self.orbitHeadingRel then
+heading=self.targetHeading+self.orbitHeading
+else
+heading=self.orbitHeading
+end
+else
+heading=self.targetHeading or 0
+end
+orbitRaceTrack=UTILS.Vec2Translate(orbitVec2,self.orbitLeg,heading)
+end
+local DCStask=CONTROLLABLE.TaskOrbit(nil,orbitVec2,self.orbitAltitude,self.orbitSpeed,orbitRaceTrack)
 table.insert(DCStasks,DCStask)
+end
 end
 self:T3({missiontask=DCStasks})
 if#DCStasks==1 then
@@ -67962,7 +68063,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.4.0"
+CHIEF.version="0.5.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -68038,23 +68139,25 @@ self.Defcon=Defcon
 return self
 end
 function CHIEF:CreateResource(MissionType,Nmin,Nmax,Attributes,Properties)
-local resource={}
-self:AddToResource(resource,MissionType,Nmin,Nmax,Attributes,Properties)
-return resource
+local resources={}
+local resource=self:AddToResource(resources,MissionType,Nmin,Nmax,Attributes,Properties)
+return resources,resource
 end
 function CHIEF:AddToResource(Resource,MissionType,Nmin,Nmax,Attributes,Properties)
-if Attributes and type(Attributes)~="table"then
-Attributes={Attributes}
-end
-if Properties and type(Properties)~="table"then
-Properties={Properties}
-end
 local resource={}
 resource.MissionType=MissionType
 resource.Nmin=Nmin or 1
-resource.Nmax=Nmax or 1
-resource.Attributes=Attributes or{}
-resource.Properties=Properties or{}
+resource.Nmax=Nmax or Nmin
+resource.Attributes=UTILS.EnsureTable(Attributes)
+resource.Properties=UTILS.EnsureTable(Properties)
+resource.cargoAttributes=nil
+resource.cargoProperties=nil
+resource.cargoCategories=nil
+resource.carrierNmin=nil
+resource.carrierNmax=nil
+resource.carrierAttributes=nil
+resource.carrierProperties=nil
+resource.carrierCategories=nil
 table.insert(Resource,resource)
 if self.verbose>10 then
 local text="Resource:"
@@ -68064,6 +68167,17 @@ text=text..string.format("\nmission=%s, Nmin=%d, Nmax=%d, attribute=%s, properti
 end
 self:I(self.lid..text)
 end
+return resource
+end
+function CHIEF:AddTransportToResource(Resource,CargoAttributes,CargoProperties,CargoCategories,Nmin,Nmax,CarrierAttributes,CarrierProperties,CarrierCategories)
+Resource.cargoCategories=CargoCategories
+Resource.cargoAttributes=CargoAttributes
+Resource.cargoProperties=CargoProperties
+Resource.carrierNmin=Nmin or 1
+Resource.carrierNmax=Nmax or Nmin
+Resource.carrierCategories=CarrierCategories
+Resource.carrierAttributes=CarrierAttributes
+Resource.carrierProperties=CarrierProperties
 return self
 end
 function CHIEF:DeleteFromResource(Resource,MissionType)
@@ -68272,8 +68386,11 @@ end
 if ResourceEmpty then
 stratzone.resourceEmpty=UTILS.DeepCopy(ResourceEmpty)
 else
-stratzone.resourceEmpty=self:CreateResource(AUFTRAG.Type.ONGUARD,1,3,GROUP.Attribute.GROUND_INFANTRY)
-self:AddToResource(stratzone.resourceEmpty,AUFTRAG.Type.ONGUARD,1,1,GROUP.Attribute.GROUND_TANK)
+local resourceEmpty,resourceInfantry=self:CreateResource(AUFTRAG.Type.ONGUARD,1,3,GROUP.Attribute.GROUND_INFANTRY)
+self:AddToResource(resourceEmpty,AUFTRAG.Type.ONGUARD,0,1,GROUP.Attribute.GROUND_TANK)
+self:AddToResource(resourceEmpty,AUFTRAG.Type.ONGUARD,0,1,GROUP.Attribute.GROUND_IFV)
+self:AddTransportToResource(resourceInfantry,GROUP.Attribute.GROUND_INFANTRY,nil,nil,0,1,{GROUP.Attribute.AIR_TRANSPORTHELO,GROUP.Attribute.GROUND_APC})
+stratzone.resourceEmpty=resourceEmpty
 end
 table.insert(self.zonequeue,stratzone)
 OpsZone:_AddChief(self)
@@ -68360,12 +68477,20 @@ function CHIEF:AddBorderZone(Zone)
 self.borderzoneset:AddZone(Zone)
 return self
 end
+function CHIEF:RemoveBorderZone(Zone)
+self.borderzoneset:Remove(Zone:GetName())
+return self
+end
 function CHIEF:SetConflictZones(ZoneSet)
 self.yellowzoneset=ZoneSet or SET_ZONE:New()
 return self
 end
 function CHIEF:AddConflictZone(Zone)
 self.yellowzoneset:AddZone(Zone)
+return self
+end
+function CHIEF:RemoveConflictZone(Zone)
+self.yellowzoneset:Remove(Zone:GetName())
 return self
 end
 function CHIEF:SetAttackZones(ZoneSet)
@@ -68376,11 +68501,17 @@ function CHIEF:AddAttackZone(Zone)
 self.engagezoneset:AddZone(Zone)
 return self
 end
+function CHIEF:RemoveAttackZone(Zone)
+self.engagezoneset:Remove(Zone:GetName())
+return self
+end
 function CHIEF:AllowGroundTransport()
+env.warning("WARNING: CHIEF:AllowGroundTransport() is depricated and will be removed in the future!")
 self.TransportCategories={Group.Category.GROUND,Group.Category.HELICOPTER}
 return self
 end
 function CHIEF:ForbidGroundTransport()
+env.warning("WARNING: CHIEF:ForbidGroundTransport() is depricated and will be removed in the future!")
 self.TransportCategories={Group.Category.HELICOPTER}
 return self
 end
@@ -68640,7 +68771,15 @@ text=text..string.format("Strategic Zones: %d\n",Nzones)
 for _,_stratzone in pairs(self.zonequeue)do
 local stratzone=_stratzone
 local owner=stratzone.opszone:GetOwnerName()
-text=text..string.format("  - %s: %s - %s [I=%d, P=%d]\n",stratzone.opszone:GetName(),owner,stratzone.opszone:GetState(),stratzone.importance,stratzone.prio)
+text=text..string.format("  - %s: %s - %s [I=%d, P=%d]\n",stratzone.opszone:GetName(),owner,stratzone.opszone:GetState(),stratzone.importance or 0,stratzone.prio or 0)
+end
+local Ntransports=#self.commander.transportqueue
+if Ntransports>0 then
+text=text..string.format("Transports: %d\n",Ntransports)
+for _,_transport in pairs(self.commander.transportqueue)do
+local transport=_transport
+text=text..string.format(" - %s",transport:GetState())
+end
 end
 MESSAGE:New(text,60,nil,true):ToCoalition(self.coalition)
 if self.verbose>=4 then
@@ -69001,31 +69140,27 @@ local mission=nil
 self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zone %s",#assets,MissionType,tostring(StratZone.opszone.zoneName)))
 local TargetZone=StratZone.opszone.zone
 local TargetCoord=TargetZone:GetCoordinate()
+local transport=nil
+if Resource.carrierNmin and Resource.carrierNmax and Resource.carrierNmax>0 then
+local cargoassets=CHIEF._FilterAssets(assets,Resource.cargoCategories,Resource.cargoAttributes,Resource.cargoProperties)
+if#cargoassets>0 then
+recruited,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,cargoassets,
+Resource.carrierNmin,Resource.carrierNmax,TargetZone,nil,Resource.carrierCategories,Resource.carrierAttributes)
+end
+end
+if not recruited then
+self:T(self.lid..string.format("Could not allocate assets or transport of OPSZONE!"))
+LEGION.UnRecruitAssets(assets)
+return false
+end
 if MissionType==AUFTRAG.Type.PATROLZONE or MissionType==AUFTRAG.Type.ONGUARD then
 self:T2(self.lid..string.format("Recruited %d assets for PATROL mission",#assets))
-local recruitedTrans=true;local transport=nil
-if Attributes and Attributes[1]==GROUP.Attribute.GROUND_INFANTRY then
-local Categories=self.TransportCategories
-recruitedTrans,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,assets,1,1,TargetZone,nil,Categories)
-end
-if recruitedTrans then
 if MissionType==AUFTRAG.Type.PATROLZONE then
 mission=AUFTRAG:NewPATROLZONE(TargetZone)
 elseif MissionType==AUFTRAG.Type.ONGUARD then
 mission=AUFTRAG:NewONGUARD(TargetZone:GetRandomCoordinate(nil,nil,{land.SurfaceType.LAND}))
 end
 mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
-mission.opstransport=transport
-if transport then
-transport.opszone=StratZone.opszone
-transport.chief=self
-transport.commander=self.commander
-end
-else
-self:T(self.lid..string.format("Could not allocate transport of OPSZONE infantry!"))
-LEGION.UnRecruitAssets(assets)
-return false
-end
 elseif MissionType==AUFTRAG.Type.CASENHANCED then
 local height=UTILS.MetersToFeet(TargetCoord:GetLandHeight())+2500
 local Speed=200
@@ -69069,6 +69204,12 @@ end
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
 Resource.mission=mission
+if transport then
+mission.opstransport=transport
+transport.opszone=StratZone.opszone
+transport.chief=self
+transport.commander=self.commander
+end
 return true
 else
 self:E(self.lid..string.format("ERROR: Mission type not supported for OPSZONE! Unrecruiting assets..."))
@@ -69077,6 +69218,52 @@ return false
 end
 end
 self:T2(self.lid..string.format("Could NOT recruit assets for %s mission of STRATEGIC zone %s",MissionType,tostring(StratZone.opszone.zoneName)))
+return false
+end
+function CHIEF._FilterAssets(Assets,Categories,Attributes,Properties)
+local filtered={}
+for _,_asset in pairs(Assets)do
+local asset=_asset
+local hasCat=CHIEF._CheckAssetCategories(asset,Categories)
+local hasAtt=CHIEF._CheckAssetAttributes(asset,Attributes)
+local hasPro=CHIEF._CheckAssetProperties(asset,Properties)
+if hasAtt and hasCat and hasPro then
+table.insert(filtered,asset)
+end
+end
+return filtered
+end
+function CHIEF._CheckAssetAttributes(Asset,Attributes)
+if not Attributes then
+return true
+end
+for _,attribute in pairs(UTILS.EnsureTable(Attributes))do
+if attribute==Asset.attribute then
+return true
+end
+end
+return false
+end
+function CHIEF._CheckAssetCategories(Asset,Categories)
+if not Categories then
+return true
+end
+for _,attribute in pairs(UTILS.EnsureTable(Categories))do
+if attribute==Asset.category then
+return true
+end
+end
+return false
+end
+function CHIEF._CheckAssetProperties(Asset,Properties)
+if not Properties then
+return true
+end
+for _,attribute in pairs(UTILS.EnsureTable(Properties))do
+if attribute==Asset.DCSdesc then
+return true
+end
+end
 return false
 end
 COHORT={
@@ -77766,7 +77953,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="0.8.1"
+FLIGHTGROUP.version="0.8.2"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -78116,6 +78303,29 @@ if timer.getAbsTime()>self.Twaiting+self.dTwait then
 end
 end
 end
+local mission=self:GetMissionCurrent()
+if mission and mission.updateDCSTask then
+if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER)and mission.orbitVec2 then
+local vec2=mission:GetTargetVec2()
+local hdg=mission:GetTargetHeading()
+local hdgchange=false
+if mission.orbitLeg then
+if UTILS.HdgDiff(hdg,mission.targetHeading)>0 then
+hdgchange=true
+end
+end
+local dist=UTILS.VecDist2D(vec2,mission.orbitVec2)
+local distchange=dist>mission.orbitDeltaR
+self:T3(self.lid..string.format("Checking orbit mission dist=%d meters",dist))
+if distchange or hdgchange then
+self:T3(self.lid..string.format("Updating orbit!"))
+local DCSTask=mission:GetDCSMissionTask()
+local Task=self:GetTaskByID(mission.auftragsnummer)
+self.controller:resetTask()
+self:_SandwitchDCSTask(DCSTask,Task,false,1)
+end
+end
+end
 if self:IsParking()then
 for _,_element in pairs(self.elements)do
 local element=_element
@@ -78236,10 +78446,6 @@ end
 self:_CheckCargoTransport()
 self:_PrintTaskAndMissionStatus()
 local mission=self:GetMissionCurrent()
-if mission and mission.type==AUFTRAG.Type.RECOVERYTANKER and mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING then
-local DCSTask=mission:GetDCSMissionTask()
-self:SetTask(DCSTask)
-end
 end
 function FLIGHTGROUP:OnEventEngineStartup(EventData)
 if EventData and EventData.IniGroup and EventData.IniUnit and EventData.IniGroupName and EventData.IniGroupName==self.groupname then
@@ -83817,7 +84023,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="0.7.9"
+OPSGROUP.version="0.8.0"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -85588,6 +85794,13 @@ if self:GetTaskCurrent()==nil then
 table.insert(self.taskqueue,Task)
 end
 local Mission=self:GetMissionByTaskID(self.taskcurrent)
+self:_UpdateTask(Task,Mission)
+if Mission then
+self:MissionExecute(Mission)
+end
+end
+function OPSGROUP:_UpdateTask(Task,Mission)
+local Mission=Mission or self:GetMissionByTaskID(self.taskcurrent)
 if Task.dcstask.id==AUFTRAG.SpecialTask.FORMATION then
 local followSet=SET_GROUP:New():AddGroup(self.group)
 local param=Task.dcstask.params
@@ -85753,12 +85966,20 @@ else
 nShots=math.min(nShots,nAmmo)
 end
 DCSTask.params.expendQty=nShots
-elseif Mission and Mission.type==AUFTRAG.Type.RECOVERYTANKER then
-env.info("FF recoverytanker setting DCS task")
-DCSTask=Mission:GetDCSMissionTask()
 else
 DCSTask=Task.dcstask
 end
+self:_SandwitchDCSTask(DCSTask,Task)
+elseif Task.type==OPSGROUP.TaskType.WAYPOINT then
+else
+self:T(self.lid.."ERROR: Unknown task type: ")
+end
+end
+end
+function OPSGROUP:_SandwitchDCSTask(DCSTask,Task,SetTask,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,OPSGROUP._SandwitchDCSTask,self,DCSTask,Task,SetTask)
+else
 local DCStasks={}
 if DCSTask.id=='ComboTask'then
 for TaskID,Task in ipairs(DCSTask.params.tasks)do
@@ -85772,14 +85993,11 @@ local TaskCondition=self.group:TaskCondition(nil,Task.stopflag:GetName(),1,nil,T
 local TaskControlled=self.group:TaskControlled(TaskCombo,TaskCondition)
 local TaskDone=self.group:TaskFunction("OPSGROUP._TaskDone",self,Task)
 local TaskFinal=self.group:TaskCombo({TaskControlled,TaskDone})
-self:PushTask(TaskFinal)
-elseif Task.type==OPSGROUP.TaskType.WAYPOINT then
+if SetTask then
+self:SetTask(TaskFinal)
 else
-self:T(self.lid.."ERROR: Unknown task type: ")
+self:PushTask(TaskFinal)
 end
-end
-if Mission then
-self:MissionExecute(Mission)
 end
 end
 function OPSGROUP:onafterTaskCancel(From,Event,To,Task)
@@ -86296,12 +86514,6 @@ end
 else
 waypointcoord=currentcoord:GetIntermediateCoordinate(ToCoordinate,0.05)
 end
-elseif mission.type==AUFTRAG.Type.RECOVERYTANKER then
-local carrier=mission.DCStask.params.carrier
-local CarrierCoordinate=carrier:GetCoordinate()
-local heading=carrier:GetHeading()
-waypointcoord=CarrierCoordinate:Translate(10000,heading-180):SetAltitude(2000)
-waypointcoord:MarkToAll("Recoverytanker")
 else
 waypointcoord=mission:GetMissionWaypointCoord(self.group,randomradius,surfacetypes)
 end
@@ -86343,12 +86555,14 @@ uid=waypoint.uid
 end
 end
 end
+local d=currentcoord:Get2DDistance(waypointcoord)
+self:T(self.lid..string.format("Distance to ingress waypoint=%.1f m",d))
 local waypoint=nil
 if self:IsFlightgroup()then
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 local formation=mission.optionFormation
-if mission.type==AUFTRAG.Type.RELOCATECOHORT then
+if d<1000 or mission.type==AUFTRAG.Type.RELOCATECOHORT then
 formation=ENUMS.Formation.Vehicle.OffRoad
 end
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,formation,false)
@@ -86373,8 +86587,6 @@ end
 Ewaypoint.missionUID=mission.auftragsnummer
 mission:SetGroupEgressWaypointUID(self,Ewaypoint.uid)
 end
-local d=currentcoord:Get2DDistance(waypointcoord)
-self:T(self.lid..string.format("FF distance to ingress waypoint=%.1f m",d))
 if targetzone and self:IsInZone(targetzone)then
 self:T(self.lid.."Already in mission zone ==> TaskExecute()")
 self:TaskExecute(waypointtask)
@@ -87708,8 +87920,7 @@ elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER}
 end
 local Coordinate=Zone:GetRandomCoordinate(nil,nil,surfacetypes)
-local cwp=self:GetWaypointCurrent()
-local uid=cwp and cwp.uid or nil
+local uid=self:GetWaypointCurrentUID()
 if self:IsFlightgroup()then
 if self:IsParking()and self:IsUncontrolled()then
 self:StartUncontrolled()
@@ -87761,7 +87972,7 @@ local waypoint=NAVYGROUP.AddWaypoint(self,Coordinate,nil,uid,self.altitudeCruise
 self:__Cruise(-2)
 elseif self:IsArmygroup()then
 local path=self.cargoTransport:_GetPathTransport(self.category,self.cargoTZC)
-local Formation=self.cargoTransport:_GetFormationTransport(self.cargoTZC)
+local Formation=self.cargoTransport:_GetFormationPickup(self.cargoTZC,self)
 if path and oldstatus~=OPSGROUP.CarrierStatus.NOTCARRIER then
 for i=#path.waypoints,1,-1 do
 local wp=path.waypoints[i]
@@ -87771,7 +87982,7 @@ uid=waypoint.uid
 end
 end
 local waypoint=ARMYGROUP.AddWaypoint(self,Coordinate,nil,uid,Formation,false);waypoint.detour=1
-self:__Cruise(-2)
+self:__Cruise(-2,nil,Formation)
 end
 end
 end
@@ -87894,13 +88105,12 @@ elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
 local Coordinate=Zone:GetRandomCoordinate(nil,nil,surfacetypes)
+local uid=self:GetWaypointCurrentUID()
 if self:IsFlightgroup()then
 if self:IsParking()and self:IsUncontrolled()then
 self:StartUncontrolled()
 end
 if airbaseDeploy then
-local cwp=self:GetWaypointCurrent()
-local uid=cwp and cwp.uid or nil
 local path=self.cargoTransport:_GetPathTransport(self.category,self.cargoTZC)
 if path then
 for i=1,#path.waypoints do
@@ -87918,7 +88128,7 @@ local coordinate=self:GetCoordinate():GetIntermediateCoordinate(Coordinate,0.5)
 local waypoint=FLIGHTGROUP.AddWaypoint(self,coordinate,nil,uid,UTILS.MetersToFeet(self.altitudeCruise),true);waypoint.detour=1
 end
 elseif self.isHelo then
-local waypoint=FLIGHTGROUP.AddWaypoint(self,Coordinate,nil,self:GetWaypointCurrent().uid,UTILS.MetersToFeet(self.altitudeCruise),false);waypoint.detour=1
+local waypoint=FLIGHTGROUP.AddWaypoint(self,Coordinate,nil,uid,UTILS.MetersToFeet(self.altitudeCruise),false);waypoint.detour=1
 else
 self:T(self.lid.."ERROR: Aircraft (cargo carrier) cannot land in Deploy zone! Specify a ZONE_AIRBASE as deploy zone")
 end
@@ -87931,10 +88141,8 @@ self:T(self.lid.."ERROR: No current task but landed at?!")
 end
 end
 elseif self:IsArmygroup()then
-local cwp=self:GetWaypointCurrent()
-local uid=cwp and cwp.uid or nil
 local path=self.cargoTransport:_GetPathTransport(self.category,self.cargoTZC)
-local Formation=self.cargoTransport:_GetFormationTransport(self.cargoTZC)
+local Formation=self.cargoTransport:_GetFormationTransport(self.cargoTZC,self)
 if path then
 for i=1,#path.waypoints do
 local wp=path.waypoints[i]
@@ -87944,10 +88152,8 @@ uid=waypoint.uid
 end
 end
 local waypoint=ARMYGROUP.AddWaypoint(self,Coordinate,nil,uid,Formation,false);waypoint.detour=1
-self:Cruise()
+self:Cruise(nil,Formation)
 elseif self:IsNavygroup()then
-local cwp=self:GetWaypointCurrent()
-local uid=cwp and cwp.uid or nil
 local path=self.cargoTransport:_GetPathTransport(self.category,self.cargoTZC)
 if path then
 for i=1,#path.waypoints do
@@ -88131,7 +88337,7 @@ local Task=self:GetTaskCurrent()
 self:TaskCancel(Task)
 end
 else
-self:__Cruise(0.1)
+self:__Cruise(-0.1)
 end
 self.cargoTransport:SetCarrierTransportStatus(self,OPSTRANSPORT.Status.DELIVERED)
 self:T(self.lid..string.format("All cargo of transport UID=%d delivered ==> check group done in 0.2 sec",self.cargoTransport.uid))
@@ -88322,10 +88528,10 @@ function OPSGROUP:_CheckGroupDone(delay)
 local fsmstate=self:GetState()
 if self:IsAlive()and self.isAI then
 if delay and delay>0 then
-self:T(self.lid..string.format("Check OPSGROUP [state=%s] done in %.3f seconds...",fsmstate,delay))
+self:T(self.lid..string.format("Check OPSGROUP done? [state=%s] in %.3f seconds...",fsmstate,delay))
 self:ScheduleOnce(delay,self._CheckGroupDone,self)
 else
-self:T(self.lid..string.format("Check OSGROUP [state=%s] done?",fsmstate))
+self:T(self.lid..string.format("Check OSGROUP done? [state=%s]",fsmstate))
 if self:IsEngaging()then
 self:T(self.lid.."Engaging! Group NOT done ==> UpdateRoute()")
 self:UpdateRoute()
@@ -88738,7 +88944,7 @@ local wpnext=opsgroup:GetWaypointNext()
 if wpnext then
 opsgroup:T(opsgroup.lid..string.format("Next waypoint UID=%d index=%d",wpnext.uid,opsgroup:GetWaypointIndex(wpnext.uid)))
 if opsgroup.isArmygroup then
-opsgroup.formation=wpnext.action
+opsgroup.option.Formation=wpnext.action
 end
 opsgroup.speed=wpnext.speed
 if opsgroup.speed<0.01 then
@@ -90005,7 +90211,7 @@ SUCCESS="success",
 FAILED="failed",
 }
 _OPSTRANSPORTID=0
-OPSTRANSPORT.version="0.6.0"
+OPSTRANSPORT.version="0.6.1"
 function OPSTRANSPORT:New(CargoGroups,PickupZone,DeployZone)
 local self=BASE:Inherit(self,FSM:New())
 _OPSTRANSPORTID=_OPSTRANSPORTID+1
@@ -90014,6 +90220,9 @@ self.uid=_OPSTRANSPORTID
 self:SetPriority()
 self:SetTime()
 self:SetRequiredCarriers()
+self.formationArmy=ENUMS.Formation.Vehicle.OnRoad
+self.formationHelo=ENUMS.Formation.RotaryWing.Wedge
+self.formationPlane=ENUMS.Formation.FixedWing.Wedge
 self.carriers={}
 self.Ncargo=0
 self.Ncarrier=0
@@ -90186,18 +90395,34 @@ TransportZoneCombo=TransportZoneCombo or self.tzcDefault
 TransportZoneCombo.PickupFormation=Formation
 return self
 end
-function OPSTRANSPORT:_GetFormationPickup(TransportZoneCombo)
+function OPSTRANSPORT:_GetFormationDefault(OpsGroup)
+if OpsGroup.isArmygroup then
+return self.formationArmy
+elseif OpsGroup.isFlightgroup then
+if OpsGroup.isHelo then
+return self.formationHelo
+else
+return self.formationPlane
+end
+else
+return ENUMS.Formation.Vehicle.OffRoad
+end
+return nil
+end
+function OPSTRANSPORT:_GetFormationPickup(TransportZoneCombo,OpsGroup)
 TransportZoneCombo=TransportZoneCombo or self.tzcDefault
-return TransportZoneCombo.PickupFormation
+local formation=TransportZoneCombo.PickupFormation or self:_GetFormationDefault(OpsGroup)
+return formation
 end
 function OPSTRANSPORT:SetFormationTransport(Formation,TransportZoneCombo)
 TransportZoneCombo=TransportZoneCombo or self.tzcDefault
 TransportZoneCombo.TransportFormation=Formation
 return self
 end
-function OPSTRANSPORT:_GetFormationTransport(TransportZoneCombo)
+function OPSTRANSPORT:_GetFormationTransport(TransportZoneCombo,OpsGroup)
 TransportZoneCombo=TransportZoneCombo or self.tzcDefault
-return TransportZoneCombo.TransportFormation
+local formation=TransportZoneCombo.TransportFormation or self:_GetFormationDefault(OpsGroup)
+return formation
 end
 function OPSTRANSPORT:SetRequiredCargos(Cargos,TransportZoneCombo)
 self:T(self.lid.."Setting required cargos!")
@@ -91068,9 +91293,7 @@ end
 function OPSZONE:onafterStop(From,Event,To)
 self:I(self.lid..string.format("Stopping OPSZONE"))
 self.timerStatus:Stop()
-if self.drawZone then
 self.zone:UndrawZone()
-end
 if self.markZone then
 self.marker:Remove()
 end
@@ -91090,6 +91313,9 @@ end
 self:Scan()
 self:EvaluateZone()
 self:_UpdateMarker()
+if self.zone.DrawID and not self.drawZone then
+self.zone:UndrawZone()
+end
 end
 function OPSZONE:onbeforeCaptured(From,Event,To,NewOwnerCoalition)
 if self.ownerCurrent==NewOwnerCoalition then
@@ -96189,7 +96415,7 @@ DEAD="Dead",
 DAMAGED="Damaged",
 }
 _TARGETID=0
-TARGET.version="0.5.5"
+TARGET.version="0.5.6"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -96740,6 +96966,55 @@ return vec3
 end
 self:E(self.lid.."ERROR: Unknown TARGET type! Cannot get Vec3")
 end
+function TARGET:GetTargetHeading(Target)
+if Target.Type==TARGET.ObjectType.GROUP then
+local object=Target.Object
+if object and object:IsAlive()then
+local heading=object:GetHeading()
+if heading then
+return heading
+else
+return nil
+end
+else
+return nil
+end
+elseif Target.Type==TARGET.ObjectType.UNIT then
+local object=Target.Object
+if object and object:IsAlive()then
+local heading=object:GetHeading()
+return heading
+else
+return nil
+end
+elseif Target.Type==TARGET.ObjectType.STATIC then
+local object=Target.Object
+if object and object:IsAlive()then
+local heading=object:GetHeading()
+return heading
+else
+return nil
+end
+elseif Target.Type==TARGET.ObjectType.SCENERY then
+local object=Target.Object
+if object then
+local heading=object:GetHeading()
+return heading
+else
+return nil
+end
+elseif Target.Type==TARGET.ObjectType.AIRBASE then
+local object=Target.Object
+return 0
+elseif Target.Type==TARGET.ObjectType.COORDINATE then
+local object=Target.Object
+return 0
+elseif Target.Type==TARGET.ObjectType.ZONE then
+local object=Target.Object
+return 0
+end
+self:E(self.lid.."ERROR: Unknown TARGET type! Cannot get heading")
+end
 function TARGET:GetTargetCoordinate(Target,Average)
 if Target.Type==TARGET.ObjectType.COORDINATE then
 return Target.Object
@@ -96829,6 +97104,17 @@ return coordinate
 end
 end
 self:E(self.lid..string.format("ERROR: Cannot get average coordinate of target %s",tostring(self.name)))
+return nil
+end
+function TARGET:GetHeading()
+for _,_target in pairs(self.targets)do
+local Target=_target
+local heading=self:GetTargetHeading(Target)
+if heading then
+return heading
+end
+end
+self:E(self.lid..string.format("ERROR: Cannot get heading of target %s",tostring(self.name)))
 return nil
 end
 function TARGET:GetCategory()
