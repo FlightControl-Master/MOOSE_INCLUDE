@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-02T10:20:35.0000000Z-574fa8abf464ae6403192b7730e120211b117ec6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-05T13:03:38.0000000Z-b2a351e67d6dcdc2c1a3d903bc0f110c320d6489 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2599,7 +2599,9 @@ function UTILS.RemoveMark(MarkID,Delay)
 if Delay and Delay>0 then
 TIMER:New(UTILS.RemoveMark,MarkID):Start(Delay)
 else
+if MarkID then
 trigger.action.removeMark(MarkID)
+end
 end
 end
 function UTILS.IsInRadius(InVec2,Vec2,Radius)
@@ -2787,13 +2789,17 @@ function UTILS.Vec2Norm(a)
 return math.sqrt(UTILS.Vec2Dot(a,a))
 end
 function UTILS.VecDist2D(a,b)
+local d=math.huge
+if(not a)or(not b)then return d end
 local c={x=b.x-a.x,y=b.y-a.y}
-local d=math.sqrt(c.x*c.x+c.y*c.y)
+d=math.sqrt(c.x*c.x+c.y*c.y)
 return d
 end
 function UTILS.VecDist3D(a,b)
+local d=math.huge
+if(not a)or(not b)then return d end
 local c={x=b.x-a.x,y=b.y-a.y,z=b.z-a.z}
-local d=math.sqrt(UTILS.VecDot(c,c))
+d=math.sqrt(UTILS.VecDot(c,c))
 return d
 end
 function UTILS.VecCross(a,b)
@@ -3377,6 +3383,16 @@ end
 _count=_count+1
 end
 return jtacGeneratedLaserCodes
+end
+function UTILS.EnsureTable(Object)
+if Object then
+if type(Object)~="table"then
+Object={Object}
+end
+else
+Object={}
+end
+return Object
 end
 function UTILS.SaveToFile(Path,Filename,Data)
 if not io then
