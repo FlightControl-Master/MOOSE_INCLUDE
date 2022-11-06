@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-05T13:04:06.0000000Z-ed677b768251c61b027fdf5ceb9c110b75f8d788 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-06T10:27:27.0000000Z-5819884c9887da7303fe803c3eec72bd44c6b2e8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -43064,6 +43064,7 @@ SCORING={
 ClassName="SCORING",
 ClassID=0,
 Players={},
+AutoSave=true,
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -43108,6 +43109,7 @@ self:_AddPlayerFromUnit(PlayerUnit)
 self:SetScoringMenu(PlayerUnit:GetGroup())
 end
 end)
+self.AutoSave=true
 self:OpenCSV(GameName)
 return self
 end
@@ -44009,7 +44011,7 @@ end
 end
 function SCORING:OpenCSV(ScoringCSV)
 self:F(ScoringCSV)
-if lfs and io and os then
+if lfs and io and os and self.AutoSave then
 if ScoringCSV then
 self.ScoringCSV=ScoringCSV
 local fdir=lfs.writedir()..[[Logs\]]..self.ScoringCSV.." "..os.date("%Y-%m-%d %H-%M-%S")..".csv"
@@ -44060,7 +44062,7 @@ TargetUnitCoalition=TargetUnitCoalition or""
 TargetUnitCategory=TargetUnitCategory or""
 TargetUnitType=TargetUnitType or""
 TargetUnitName=TargetUnitName or""
-if lfs and io and os then
+if lfs and io and os and self.AutoSave then
 self.CSVFile:write(
 '"'..self.GameName..'"'..','..
 '"'..self.RunTime..'"'..','..
@@ -44083,9 +44085,13 @@ self.CSVFile:write("\n")
 end
 end
 function SCORING:CloseCSV()
-if lfs and io and os then
+if lfs and io and os and self.AutoSave then
 self.CSVFile:close()
 end
+end
+function SCORING:SwitchAutoSave(OnOff)
+self.AutoSave=OnOff
+return self
 end
 SEAD={
 ClassName="SEAD",
