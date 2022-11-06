@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-06T10:28:03.0000000Z-e93bb5ceba0f4bb2bc7c1a637a883c516eb30b24 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-06T18:33:44.0000000Z-88fc501c248666fabe8d812eef5476ee024e73c0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -37427,7 +37427,7 @@ local targetname=nil
 if#self.bombingTargets>1 then
 targetname=result.name
 end
-local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
+local text=string.format("%s, impact %03d° for %d ft (%d m)",player.playername,result.radial,UTILS.MetersToFeet(result.distance),result.distance)
 if targetname then
 text=text..string.format(" from bulls of target %s.",targetname)
 else
