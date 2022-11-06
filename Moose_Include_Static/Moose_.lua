@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-05T13:03:38.0000000Z-b2a351e67d6dcdc2c1a3d903bc0f110c320d6489 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-06T10:26:16.0000000Z-6c79d6b01fe0ade68cf79dac83f798cd073c8e9a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27631,6 +27631,7 @@ SCORING={
 ClassName="SCORING",
 ClassID=0,
 Players={},
+AutoSave=true,
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -27675,6 +27676,7 @@ self:_AddPlayerFromUnit(PlayerUnit)
 self:SetScoringMenu(PlayerUnit:GetGroup())
 end
 end)
+self.AutoSave=true
 self:OpenCSV(GameName)
 return self
 end
@@ -28576,7 +28578,7 @@ end
 end
 function SCORING:OpenCSV(ScoringCSV)
 self:F(ScoringCSV)
-if lfs and io and os then
+if lfs and io and os and self.AutoSave then
 if ScoringCSV then
 self.ScoringCSV=ScoringCSV
 local fdir=lfs.writedir()..[[Logs\]]..self.ScoringCSV.." "..os.date("%Y-%m-%d %H-%M-%S")..".csv"
@@ -28627,7 +28629,7 @@ TargetUnitCoalition=TargetUnitCoalition or""
 TargetUnitCategory=TargetUnitCategory or""
 TargetUnitType=TargetUnitType or""
 TargetUnitName=TargetUnitName or""
-if lfs and io and os then
+if lfs and io and os and self.AutoSave then
 self.CSVFile:write(
 '"'..self.GameName..'"'..','..
 '"'..self.RunTime..'"'..','..
@@ -28650,9 +28652,13 @@ self.CSVFile:write("\n")
 end
 end
 function SCORING:CloseCSV()
-if lfs and io and os then
+if lfs and io and os and self.AutoSave then
 self.CSVFile:close()
 end
+end
+function SCORING:SwitchAutoSave(OnOff)
+self.AutoSave=OnOff
+return self
 end
 CLEANUP_AIRBASE={
 ClassName="CLEANUP_AIRBASE",
