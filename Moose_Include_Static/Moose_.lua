@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T17:21:36.0000000Z-7f81039f46b7a8e76661daf23791f066ea8b50be ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T18:14:09.0000000Z-4fff842c90950958dc9dd4fc99566231c6e715aa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74569,8 +74569,8 @@ local zoneradius=100
 local zonewidth=20
 if Zonetype==CTLD.CargoZoneType.SHIP then
 self:T("Checking Type Ship: "..zonename)
-ZoneUNIT=UNIT:FindByName(zonename)
-zonecoord=zone:GetCoordinate()
+local ZoneUNIT=UNIT:FindByName(zonename)
+zonecoord=ZoneUNIT:GetCoordinate()
 zoneradius=czone.shiplength
 zonewidth=czone.shipwidth
 zone=ZONE_UNIT:New(ZoneUNIT:GetName(),ZoneUNIT,zoneradius/2)
