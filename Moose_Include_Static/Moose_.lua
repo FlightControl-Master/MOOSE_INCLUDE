@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T15:09:00.0000000Z-565a5294e24c90322c5f97e29eb6148c88ea9bbf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T16:39:11.0000000Z-b63be6dd28e26d125087d87c15b26a7e547e3683 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -91745,7 +91745,7 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 }
-PLAYERTASK.version="0.1.9"
+PLAYERTASK.version="0.1.10"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92018,11 +92018,13 @@ self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
 local targetdead=false
+if self.Type~=AUFTRAG.Type.CTLD and self.Type~=AUFTRAG.Type.CSAR then
 if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
 targetdead=true
 self:__Success(-2)
 status="Success"
 return self
+end
 end
 if status=="Executing"then
 local clientsalive=false
