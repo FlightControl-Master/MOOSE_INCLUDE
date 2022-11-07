@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T16:39:11.0000000Z-b63be6dd28e26d125087d87c15b26a7e547e3683 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T17:21:36.0000000Z-7f81039f46b7a8e76661daf23791f066ea8b50be ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72864,7 +72864,7 @@ local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
-if _unit:GetTypeName()=="Hercules"and self.enableHercules then
+if self:IsHercules(_unit)and self.enableHercules then
 local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
@@ -73682,7 +73682,7 @@ end
 return self
 end
 function CTLD:IsHercules(Unit)
-if Unit:GetTypeName()=="Hercules"then
+if Unit:GetTypeName()=="Hercules"or string.find(Unit:GetTypeName(),"Bronco")then
 return true
 else
 return false
@@ -73851,8 +73851,7 @@ return self
 end
 function CTLD:_BuildCrates(Group,Unit,Engineering)
 self:T(self.lid.." _BuildCrates")
-local type=Unit:GetTypeName()
-if type=="Hercules"and self.enableHercules and not Engineering then
+if self:IsHercules(Unit)and self.enableHercules and not Engineering then
 local speed=Unit:GetVelocityKMH()
 if speed>1 then
 self:_SendMessage("You need to land / stop to build something, Pilot!",10,false,Group)
@@ -74110,7 +74109,7 @@ for _key,_group in pairs(PlayerTable)do
 local _unit=_group:GetUnit(1)
 if _unit then
 if _unit:IsAlive()and _unit:IsPlayer()then
-if _unit:IsHelicopter()or(_unit:GetTypeName()=="Hercules"and self.enableHercules)then
+if _unit:IsHelicopter()or(self:IsHercules(_unit)and self.enableHercules)then
 local unitName=_unit:GetName()
 _UnitList[unitName]=unitName
 end
@@ -74199,7 +74198,7 @@ local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._Unl
 local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit)
 local repairmenu=MENU_GROUP_COMMAND:New(_group,"Repair",topcrates,self._RepairCrates,self,_group,_unit):Refresh()
 end
-if unittype=="Hercules"then
+if self:IsHercules(_unit)then
 local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show flight parameters",topmenu,self._ShowFlightParams,self,_group,_unit):Refresh()
 else
 local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show hover parameters",topmenu,self._ShowHoverParams,self,_group,_unit):Refresh()
@@ -74369,9 +74368,16 @@ end
 function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth)
 self:T(self.lid.." AddCTLDZone")
 local zone=ZONE:FindByName(Name)
-if not zone then
+if not zone and Type~=CTLD.CargoZoneType.SHIP then
 self:E(self.lid.."**** Zone does not exist: "..Name)
 return self
+end
+if Type==CTLD.CargoZoneType.SHIP then
+local Ship=UNIT:FindByName(Name)
+if not Ship then
+self:E(self.lid.."**** Ship does not exist: "..Name)
+return self
+end
 end
 local ctldzone={}
 ctldzone.active=Active or false
@@ -74563,21 +74569,21 @@ local zoneradius=100
 local zonewidth=20
 if Zonetype==CTLD.CargoZoneType.SHIP then
 self:T("Checking Type Ship: "..zonename)
-zone=UNIT:FindByName(zonename)
+ZoneUNIT=UNIT:FindByName(zonename)
 zonecoord=zone:GetCoordinate()
 zoneradius=czone.shiplength
 zonewidth=czone.shipwidth
+zone=ZONE_UNIT:New(ZoneUNIT:GetName(),ZoneUNIT,zoneradius/2)
 elseif ZONE:FindByName(zonename)then
 zone=ZONE:FindByName(zonename)
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
-zoneradius=1500
 zonewidth=zoneradius
 elseif AIRBASE:FindByName(zonename)then
 zone=AIRBASE:FindByName(zonename):GetZone()
 self:T("Checking Zone: "..zonename)
 zonecoord=zone:GetCoordinate()
-zoneradius=2500
+zoneradius=2000
 zonewidth=zoneradius
 end
 local distance=self:_GetDistance(zonecoord,unitcoord)
@@ -74772,7 +74778,7 @@ return outcome
 end
 function CTLD:IsUnitInAir(Unit)
 local minheight=self.minimumHoverHeight
-if self.enableHercules and Unit:GetTypeName()=="Hercules"then
+if self.enableHercules and self:IsHercules(Unit)then
 minheight=5.1
 end
 local uheight=Unit:GetHeight()
