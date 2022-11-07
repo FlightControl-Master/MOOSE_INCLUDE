@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-06T10:27:27.0000000Z-5819884c9887da7303fe803c3eec72bd44c6b2e8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T15:09:00.0000000Z-565a5294e24c90322c5f97e29eb6148c88ea9bbf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -38593,7 +38593,7 @@ local targetname=nil
 if#self.bombingTargets>1 then
 targetname=result.name
 end
-local text=string.format("%s, impact %03d° for %d ft",player.playername,result.radial,UTILS.MetersToFeet(result.distance))
+local text=string.format("%s, impact %03d° for %d ft (%d m)",player.playername,result.radial,UTILS.MetersToFeet(result.distance),result.distance)
 if targetname then
 text=text..string.format(" from bulls of target %s.",targetname)
 else
@@ -72670,8 +72670,9 @@ CTLD.UnitTypes={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
+["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.17"
+CTLD.version="1.0.18"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
