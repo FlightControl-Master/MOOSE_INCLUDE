@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T16:24:32.0000000Z-e348bbc3440c1d26b6140b06027300e165b8debd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T21:11:21.0000000Z-6c342ef910e9f0c955f5132704d93a6036ebffb8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4661,13 +4661,17 @@ _count=_count+1
 end
 return jtacGeneratedLaserCodes
 end
-function UTILS.EnsureTable(Object)
+function UTILS.EnsureTable(Object,ReturnNil)
 if Object then
 if type(Object)~="table"then
 Object={Object}
 end
 else
+if ReturnNil then
+return nil
+else
 Object={}
+end
 end
 return Object
 end
@@ -47626,7 +47630,9 @@ coord=parking[i].Coordinate
 terminal=parking[i].TerminalID
 end
 if self.Debug then
-coord:MarkToAll(string.format("Spawnplace unit %s terminal %d.",unit.name,terminal))
+local text=string.format("Spawnplace unit %s terminal %d.",unit.name,terminal)
+coord:MarkToAll(text)
+env.info(text)
 end
 unit.x=coord.x
 unit.y=coord.z
@@ -48270,17 +48276,22 @@ end
 local _transports
 local _assetattribute
 local _assetcategory
+local _assetairstart=false
 if _nassets>0 then
 _assetattribute=_assets[1].attribute
 _assetcategory=_assets[1].category
+_assetairstart=_assets[1].takeoffType and _assets[1].takeoffType==COORDINATE.WaypointType.TurningPoint or false
 if _assetcategory==Group.Category.AIRPLANE or _assetcategory==Group.Category.HELICOPTER then
 if self.airbase and self.airbase:GetCoalition()==self:GetCoalition()then
-if self:IsRunwayOperational()then
+if self:IsRunwayOperational()or _assetairstart then
+if _assetairstart then
+else
 local Parking=self:_FindParkingForAssets(self.airbase,_assets)
 if Parking==nil then
 local text=string.format("Warehouse %s: Request denied! Not enough free parking spots for all requested assets at the moment.",self.alias)
 self:_InfoMessage(text,5)
 return false
+end
 end
 else
 local text=string.format("Warehouse %s: Request denied! Runway is still destroyed",self.alias)
@@ -48605,7 +48616,16 @@ local assetname=_asset.spawngroupname.."-"..tostring(i)
 local gotit=false
 for _,_parkingspot in pairs(parkingdata)do
 local parkingspot=_parkingspot
-if AIRBASE._CheckTerminalType(parkingspot.TerminalType,terminaltype)and self:_CheckParkingValid(parkingspot)and self:_CheckParkingAsset(parkingspot,asset)and airbase:_CheckParkingLists(parkingspot.TerminalID)then
+local valid=true
+if asset.parkingIDs then
+valid=self:_CheckParkingAsset(parkingspot,asset)
+else
+local validTerminal=AIRBASE._CheckTerminalType(parkingspot.TerminalType,terminaltype)
+local validParking=self:_CheckParkingValid(parkingspot)
+local validBWlist=airbase:_CheckParkingLists(parkingspot.TerminalID)
+valid=validTerminal and validParking and validBWlist
+end
+if valid then
 local _spot=parkingspot.Coordinate
 local _termid=parkingspot.TerminalID
 local free=true
@@ -68075,7 +68095,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.5.1"
+CHIEF.version="0.5.3"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -68150,21 +68170,19 @@ end
 self.Defcon=Defcon
 return self
 end
-function CHIEF:CreateResource(MissionType,Nmin,Nmax,Attributes,Properties)
+function CHIEF:CreateResource(MissionType,Nmin,Nmax,Attributes,Properties,Categories)
 local resources={}
-local resource=self:AddToResource(resources,MissionType,Nmin,Nmax,Attributes,Properties)
+local resource=self:AddToResource(resources,MissionType,Nmin,Nmax,Attributes,Properties,Categories)
 return resources,resource
 end
-function CHIEF:AddToResource(Resource,MissionType,Nmin,Nmax,Attributes,Properties)
+function CHIEF:AddToResource(Resource,MissionType,Nmin,Nmax,Attributes,Properties,Categories)
 local resource={}
 resource.MissionType=MissionType
 resource.Nmin=Nmin or 1
 resource.Nmax=Nmax or Nmin
-resource.Attributes=UTILS.EnsureTable(Attributes)
-resource.Properties=UTILS.EnsureTable(Properties)
-resource.cargoAttributes=nil
-resource.cargoProperties=nil
-resource.cargoCategories=nil
+resource.Attributes=UTILS.EnsureTable(Attributes,true)
+resource.Properties=UTILS.EnsureTable(Properties,true)
+resource.Categories=UTILS.EnsureTable(Categories,true)
 resource.carrierNmin=nil
 resource.carrierNmax=nil
 resource.carrierAttributes=nil
@@ -68181,15 +68199,12 @@ self:I(self.lid..text)
 end
 return resource
 end
-function CHIEF:AddTransportToResource(Resource,CargoAttributes,CargoProperties,CargoCategories,Nmin,Nmax,CarrierAttributes,CarrierProperties,CarrierCategories)
-Resource.cargoCategories=CargoCategories
-Resource.cargoAttributes=CargoAttributes
-Resource.cargoProperties=CargoProperties
+function CHIEF:AddTransportToResource(Resource,Nmin,Nmax,CarrierAttributes,CarrierProperties,CarrierCategories)
 Resource.carrierNmin=Nmin or 1
 Resource.carrierNmax=Nmax or Nmin
-Resource.carrierCategories=CarrierCategories
-Resource.carrierAttributes=CarrierAttributes
-Resource.carrierProperties=CarrierProperties
+Resource.carrierCategories=UTILS.EnsureTable(CarrierCategories,true)
+Resource.carrierAttributes=UTILS.EnsureTable(CarrierAttributes,true)
+Resource.carrierProperties=UTILS.EnsureTable(CarrierProperties,true)
 return self
 end
 function CHIEF:DeleteFromResource(Resource,MissionType)
@@ -68401,7 +68416,7 @@ else
 local resourceEmpty,resourceInfantry=self:CreateResource(AUFTRAG.Type.ONGUARD,1,3,GROUP.Attribute.GROUND_INFANTRY)
 self:AddToResource(resourceEmpty,AUFTRAG.Type.ONGUARD,0,1,GROUP.Attribute.GROUND_TANK)
 self:AddToResource(resourceEmpty,AUFTRAG.Type.ONGUARD,0,1,GROUP.Attribute.GROUND_IFV)
-self:AddTransportToResource(resourceInfantry,GROUP.Attribute.GROUND_INFANTRY,nil,nil,0,1,{GROUP.Attribute.AIR_TRANSPORTHELO,GROUP.Attribute.GROUND_APC})
+self:AddTransportToResource(resourceInfantry,0,1,{GROUP.Attribute.AIR_TRANSPORTHELO,GROUP.Attribute.GROUND_APC})
 stratzone.resourceEmpty=resourceEmpty
 end
 table.insert(self.zonequeue,stratzone)
@@ -68518,12 +68533,12 @@ self.engagezoneset:Remove(Zone:GetName())
 return self
 end
 function CHIEF:AllowGroundTransport()
-env.warning("WARNING: CHIEF:AllowGroundTransport() is depricated and will be removed in the future!")
+env.warning("WARNING: CHIEF:AllowGroundTransport() is deprecated and will be removed in the future!")
 self.TransportCategories={Group.Category.GROUND,Group.Category.HELICOPTER}
 return self
 end
 function CHIEF:ForbidGroundTransport()
-env.warning("WARNING: CHIEF:ForbidGroundTransport() is depricated and will be removed in the future!")
+env.warning("WARNING: CHIEF:ForbidGroundTransport() is deprecated and will be removed in the future!")
 self.TransportCategories={Group.Category.HELICOPTER}
 return self
 end
@@ -69154,10 +69169,10 @@ local TargetZone=StratZone.opszone.zone
 local TargetCoord=TargetZone:GetCoordinate()
 local transport=nil
 if Resource.carrierNmin and Resource.carrierNmax and Resource.carrierNmax>0 then
-local cargoassets=CHIEF._FilterAssets(assets,Resource.cargoCategories,Resource.cargoAttributes,Resource.cargoProperties)
+local cargoassets=CHIEF._FilterAssets(assets,Resource.Categories,Resource.Attributes,Resource.Properties)
 if#cargoassets>0 then
 recruited,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,cargoassets,
-Resource.carrierNmin,Resource.carrierNmax,TargetZone,nil,Resource.carrierCategories,Resource.carrierAttributes)
+Resource.carrierNmin,Resource.carrierNmax,TargetZone,nil,Resource.carrierCategories,Resource.carrierAttributes,Resource.carrierProperties)
 end
 end
 if not recruited then
@@ -69444,6 +69459,19 @@ function COHORT:SetCallsign(Callsign,Index)
 self.callsignName=Callsign
 self.callsignIndex=Index
 return self
+end
+function COHORT:SetAttribute(Attribute)
+self.attribute=Attribute
+return self
+end
+function COHORT:GetAttribute()
+return self.attribute
+end
+function COHORT:GetCategory()
+return self.category
+end
+function COHORT:GetProperties()
+return self.properties
 end
 function COHORT:SetModex(Modex,Prefix,Suffix)
 self.modex=Modex
@@ -82482,7 +82510,7 @@ self:T(self.lid..string.format("No escort required! NescortMin=%s, NescortMax=%s
 return true
 end
 end
-function LEGION:AssignAssetsForTransport(Legions,CargoAssets,NcarriersMin,NcarriersMax,DeployZone,DisembarkZone,Categories,Attributes)
+function LEGION:AssignAssetsForTransport(Legions,CargoAssets,NcarriersMin,NcarriersMax,DeployZone,DisembarkZone,Categories,Attributes,Properties)
 if NcarriersMin and NcarriersMax and(NcarriersMin>0 or NcarriersMax>0)then
 local Cohorts={}
 for _,_legion in pairs(Legions)do
@@ -82506,7 +82534,7 @@ TotalWeight=TotalWeight+asset.weight
 end
 local TargetVec2=DeployZone:GetVec2()
 local TransportAvail,CarrierAssets,CarrierLegions=
-LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NcarriersMin,NcarriersMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight,Categories,Attributes)
+LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NcarriersMin,NcarriersMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight,Categories,Attributes,Properties)
 if TransportAvail then
 local Transport=OPSTRANSPORT:New(nil,nil,DeployZone)
 if DisembarkZone then
@@ -82533,6 +82561,7 @@ end
 self:TransportAssign(Transport,CarrierLegions)
 return true,Transport
 else
+self:T(self.lid..string.format("Transport assets could not be allocated ==> Unrecruiting assets"))
 LEGION.UnRecruitAssets(CarrierAssets)
 return false,nil
 end
