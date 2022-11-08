@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T09:10:11.0000000Z-10a9b062b62c64858fb951d9b0fc94fd9e14fe08 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T14:33:09.0000000Z-0c9238651a50c91c29cc23ce66ef7df2df885cfe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14921,27 +14921,34 @@ local TargetVec3=TargetCoordinate:GetVec3()
 local SourceVec3=self:GetVec3()
 return((TargetVec3.x-SourceVec3.x)^2+(TargetVec3.y-SourceVec3.y)^2+(TargetVec3.z-SourceVec3.z)^2)^0.5
 end
-function COORDINATE:GetBearingText(AngleRadians,Precision,Settings,Language)
+function COORDINATE:GetBearingText(AngleRadians,Precision,Settings,MagVar)
 local Settings=Settings or _SETTINGS
 local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
 local s=string.format('%03d°',AngleDegrees)
+if MagVar then
+local variation=UTILS.GetMagneticDeclination()or 0
+local AngleMagnetic=AngleDegrees-variation
+if AngleMagnetic<0 then AngleMagnetic=360-AngleMagnetic end
+s=string.format('%03d°M|%03d°',AngleMagnetic,AngleDegrees)
+end
 return s
 end
 function COORDINATE:GetDistanceText(Distance,Settings,Language,Precision)
 local Settings=Settings or _SETTINGS
-local Language=Language or"EN"
+local Language=Language or Settings.Locale or _SETTINGS.Locale or"EN"
+Language=string.lower(Language)
 local Precision=Precision or 0
 local DistanceText
 if Settings:IsMetric()then
-if Language=="EN"then
+if Language=="en"then
 DistanceText=" for "..UTILS.Round(Distance/1000,Precision).." km"
-elseif Language=="RU"then
+elseif Language=="ru"then
 DistanceText=" за "..UTILS.Round(Distance/1000,Precision).." километров"
 end
 else
-if Language=="EN"then
+if Language=="en"then
 DistanceText=" for "..UTILS.Round(UTILS.MetersToNM(Distance),Precision).." miles"
-elseif Language=="RU"then
+elseif Language=="ru"then
 DistanceText=" за "..UTILS.Round(UTILS.MetersToNM(Distance),Precision).." миль"
 end
 end
@@ -14950,18 +14957,19 @@ end
 function COORDINATE:GetAltitudeText(Settings,Language)
 local Altitude=self.y
 local Settings=Settings or _SETTINGS
-local Language=Language or"EN"
+local Language=Language or Settings.Locale or _SETTINGS.Locale or"EN"
+Language=string.lower(Language)
 if Altitude~=0 then
 if Settings:IsMetric()then
-if Language=="EN"then
+if Language=="en"then
 return" at "..UTILS.Round(self.y,-3).." meters"
-elseif Language=="RU"then
+elseif Language=="ru"then
 return" в "..UTILS.Round(self.y,-3).." метры"
 end
 else
-if Language=="EN"then
+if Language=="en"then
 return" at "..UTILS.Round(UTILS.MetersToFeet(self.y),-3).." feet"
-elseif Language=="RU"then
+elseif Language=="ru"then
 return" в "..UTILS.Round(self.y,-3).." ноги"
 end
 end
@@ -14990,16 +14998,16 @@ else
 return" bearing unknown"
 end
 end
-function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language)
+function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language,MagVar)
 local Settings=Settings or _SETTINGS
-local BearingText=self:GetBearingText(AngleRadians,0,Settings,Language)
+local BearingText=self:GetBearingText(AngleRadians,0,Settings,MagVar)
 local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
 local BRText=BearingText..DistanceText
 return BRText
 end
-function COORDINATE:GetBRAText(AngleRadians,Distance,Settings,Language)
+function COORDINATE:GetBRAText(AngleRadians,Distance,Settings,Language,MagVar)
 local Settings=Settings or _SETTINGS
-local BearingText=self:GetBearingText(AngleRadians,0,Settings,Language)
+local BearingText=self:GetBearingText(AngleRadians,0,Settings,MagVar)
 local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
 local AltitudeText=self:GetAltitudeText(Settings,Language)
 local BRAText=BearingText..DistanceText..AltitudeText
@@ -15711,18 +15719,18 @@ delta=sunset+UTILS.SecondsToMidnight()
 end
 return delta/60
 end
-function COORDINATE:ToStringBR(FromCoordinate,Settings)
+function COORDINATE:ToStringBR(FromCoordinate,Settings,MagVar)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(FromCoordinate)
-return"BR, "..self:GetBRText(AngleRadians,Distance,Settings)
+return"BR, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar)
 end
-function COORDINATE:ToStringBRA(FromCoordinate,Settings,Language)
+function COORDINATE:ToStringBRA(FromCoordinate,Settings,MagVar)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=FromCoordinate:Get2DDistance(self)
 local Altitude=self:GetAltitudeText()
-return"BRA, "..self:GetBRAText(AngleRadians,Distance,Settings,Language)
+return"BRA, "..self:GetBRAText(AngleRadians,Distance,Settings,nil,MagVar)
 end
 function COORDINATE:ToStringBRAANATO(FromCoordinate,Bogey,Spades,SSML,Angels,Zeros)
 local BRAANATO="Merged."
@@ -15789,13 +15797,13 @@ end
 end
 return BRAANATO
 end
-function COORDINATE:ToStringBULLS(Coalition,Settings)
+function COORDINATE:ToStringBULLS(Coalition,Settings,MagVar)
 local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(Coalition))
 local DirectionVec3=BullsCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(BullsCoordinate)
 local Altitude=self:GetAltitudeText()
-return"BULLS, "..self:GetBRText(AngleRadians,Distance,Settings)
+return"BULLS, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar)
 end
 function COORDINATE:ToStringAspect(TargetCoordinate)
 local Heading=self.Heading
@@ -15837,7 +15845,7 @@ local lat,lon=coord.LOtoLL(self:GetVec3())
 local MGRS=coord.LLtoMGRS(lat,lon)
 return"MGRS "..UTILS.tostringMGRS(MGRS,MGRS_Accuracy)
 end
-function COORDINATE:ToStringFromRP(ReferenceCoord,ReferenceName,Controllable,Settings)
+function COORDINATE:ToStringFromRP(ReferenceCoord,ReferenceName,Controllable,Settings,MagVar)
 self:F2({ReferenceCoord=ReferenceCoord,ReferenceName=ReferenceName})
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 local IsAir=Controllable and Controllable:IsAirPlane()or false
@@ -15845,16 +15853,16 @@ if IsAir then
 local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(ReferenceCoord)
-return"Targets are the last seen "..self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
+return"Targets are the last seen "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar).." from "..ReferenceName
 else
 local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(ReferenceCoord)
-return"Target are located "..self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
+return"Target are located "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar).." from "..ReferenceName
 end
 return nil
 end
-function COORDINATE:ToStringFromRPShort(ReferenceCoord,ReferenceName,Controllable,Settings)
+function COORDINATE:ToStringFromRPShort(ReferenceCoord,ReferenceName,Controllable,Settings,MagVar)
 self:F2({ReferenceCoord=ReferenceCoord,ReferenceName=ReferenceName})
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 local IsAir=Controllable and Controllable:IsAirPlane()or false
@@ -15862,22 +15870,22 @@ if IsAir then
 local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(ReferenceCoord)
-return self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
+return self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar).." from "..ReferenceName
 else
 local DirectionVec3=ReferenceCoord:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(ReferenceCoord)
-return self:GetBRText(AngleRadians,Distance,Settings).." from "..ReferenceName
+return self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar).." from "..ReferenceName
 end
 return nil
 end
-function COORDINATE:ToStringA2G(Controllable,Settings)
+function COORDINATE:ToStringA2G(Controllable,Settings,MagVar)
 self:F2({Controllable=Controllable and Controllable:GetName()})
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 if Settings:IsA2G_BR()then
 if Controllable then
 local Coordinate=Controllable:GetCoordinate()
-return Controllable and self:ToStringBR(Coordinate,Settings)or self:ToStringMGRS(Settings)
+return Controllable and self:ToStringBR(Coordinate,Settings,MagVar)or self:ToStringMGRS(Settings)
 else
 return self:ToStringMGRS(Settings)
 end
@@ -15893,29 +15901,29 @@ return self:ToStringMGRS(Settings)
 end
 return nil
 end
-function COORDINATE:ToStringA2A(Controllable,Settings,Language)
+function COORDINATE:ToStringA2A(Controllable,Settings,MagVar)
 self:F2({Controllable=Controllable and Controllable:GetName()})
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 if Settings:IsA2A_BRAA()then
 if Controllable then
 local Coordinate=Controllable:GetCoordinate()
-return self:ToStringBRA(Coordinate,Settings,Language)
+return self:ToStringBRA(Coordinate,Settings,MagVar)
 else
-return self:ToStringMGRS(Settings,Language)
+return self:ToStringMGRS(Settings)
 end
 end
 if Settings:IsA2A_BULLS()then
 local Coalition=Controllable:GetCoalition()
-return self:ToStringBULLS(Coalition,Settings,Language)
+return self:ToStringBULLS(Coalition,Settings,MagVar)
 end
 if Settings:IsA2A_LL_DMS()then
-return self:ToStringLLDMS(Settings,Language)
+return self:ToStringLLDMS(Settings)
 end
 if Settings:IsA2A_LL_DDM()then
-return self:ToStringLLDDM(Settings,Language)
+return self:ToStringLLDDM(Settings)
 end
 if Settings:IsA2A_MGRS()then
-return self:ToStringMGRS(Settings,Language)
+return self:ToStringMGRS(Settings)
 end
 return nil
 end
