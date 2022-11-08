@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-07T18:14:09.0000000Z-4fff842c90950958dc9dd4fc99566231c6e715aa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T09:11:28.0000000Z-af1083d0f14b9a1e90fff4c5fa2c90113e415ed6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -106590,7 +106590,7 @@ speed=1,
 coordinate=nil,
 Label="ROBOT",
 }
-MSRS.version="0.1.0"
+MSRS.version="0.1.1"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
@@ -106761,6 +106761,15 @@ end
 self.frequencies=Frequencies
 return self
 end
+function MSRS:AddFrequencies(Frequencies)
+if type(Frequencies)~="table"then
+Frequencies={Frequencies}
+end
+for _,_freq in pairs(Frequencies)do
+table.insert(self.frequencies,_freq)
+end
+return self
+end
 function MSRS:GetFrequencies()
 return self.frequencies
 end
@@ -106769,6 +106778,15 @@ if type(Modulations)~="table"then
 Modulations={Modulations}
 end
 self.modulations=Modulations
+return self
+end
+function MSRS:AddModulations(Modulations)
+if type(Modulations)~="table"then
+Modulations={Modulations}
+end
+for _,_mod in pairs(Modulations)do
+table.insert(self.modulations,_mod)
+end
 return self
 end
 function MSRS:GetModulations()
