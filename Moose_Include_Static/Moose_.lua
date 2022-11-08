@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T14:43:46.0000000Z-bad17c39d123b928e39cdc35e3814ba8ecc4f240 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T16:24:32.0000000Z-e348bbc3440c1d26b6140b06027300e165b8debd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63634,7 +63634,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.46",
+version="0.2.47",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -64694,7 +64694,7 @@ local deadcontacts=FIFO:New()
 self.Contacts:ForEach(
 function(Contact)
 local contact=Contact
-if not contact.Contact.group:IsAlive()or contact.Target:IsDead()then
+if not contact.Contact.group:IsAlive()or contact.Target:IsDead()or contact.Target:IsDestroyed()or contact.Target:CountTargets()==0 then
 deadcontacts:Push(contact,contact.CID)
 self:T("DEAD contact CID="..contact.CID)
 end
@@ -66235,7 +66235,7 @@ elseif targetstatus=="Alive"and auftrag:IsOver()then
 entry.Status=AWACS.TaskStatus.FAILED
 end
 elseif entry.IsPlayerTask then
-if entry.Target:IsDead()or entry.Target:IsDestroyed()then
+if entry.Target:IsDead()or entry.Target:IsDestroyed()or entry.Target:CountTargets()==0 then
 entry.Status=AWACS.TaskStatus.SUCCESS
 elseif entry.Target:IsAlive()then
 local targetpos=entry.Target:GetCoordinate()
@@ -66325,7 +66325,7 @@ if(not managedgroup)or(not managedgroup.Group:IsAlive())then
 self.ManagedTasks:PullByID(entry.TID)
 return self
 end
-if entry.Target:IsDead()or entry.Target:IsDestroyed()then
+if entry.Target:IsDead()or entry.Target:IsDestroyed()or entry.Target:CountTargets()==0 then
 entry.Status=AWACS.TaskStatus.SUCCESS
 elseif entry.Target:IsAlive()then
 self:T("Checking VID target out of bounds")
@@ -67011,7 +67011,7 @@ intercept:AddConditionSuccess(
 function(target,zoneset,rzoneset)
 local success=true
 local target=target
-if target:IsDestroyed()then return true end
+if target:IsDestroyed()or target:IsDead()or target:CountTargets()==0 then return true end
 local tgtcoord=target:GetCoordinate()
 local tgtvec2=nil
 if tgtcoord then
@@ -67400,8 +67400,6 @@ if self:Is("Running")and(awacsalive or self.AwacsInZone)then
 self:_CheckAICAPOnStation()
 self:_CleanUpContacts()
 self:_CheckMerges()
-if self.debug then
-end
 local outcome,targets=self:_TargetSelectionProcess(true)
 self:_CheckTaskQueue()
 local AI,Humans=self:_GetIdlePilots()
