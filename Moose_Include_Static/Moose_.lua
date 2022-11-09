@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-08T14:33:09.0000000Z-0c9238651a50c91c29cc23ce66ef7df2df885cfe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-09T15:09:05.0000000Z-08c5c38c7bff803e6c6091fafcc0044f6cd8d6fd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3384,13 +3384,17 @@ _count=_count+1
 end
 return jtacGeneratedLaserCodes
 end
-function UTILS.EnsureTable(Object)
+function UTILS.EnsureTable(Object,ReturnNil)
 if Object then
 if type(Object)~="table"then
 Object={Object}
 end
 else
+if ReturnNil then
+return nil
+else
 Object={}
+end
 end
 return Object
 end
