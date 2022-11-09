@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-09T15:11:44.0000000Z-788d2d49b97d69b6ba2a829f6370ffa0e7799b82 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-09T23:40:15.0000000Z-a1a258f48eabbcb1ae244f3dae6531ee67f63884 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -80268,7 +80268,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.4"
+INTEL.version="0.3.5"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -80530,7 +80530,7 @@ if inzone then
 table.insert(remove,unitname)
 end
 end
-if#self.filterCategory>0 then
+if#self.filterCategory>0 and unit:IsInstanceOf("UNIT")then
 local unitcategory=unit:GetUnitCategory()
 local keepit=false
 for _,filtercategory in pairs(self.filterCategory)do
@@ -80698,10 +80698,12 @@ DetectedUnits[name]=unit
 RecceDetecting[name]=reccename
 self:T(string.format("Unit %s detect by %s",name,reccename))
 else
+if self.detectStatics then
 local static=STATIC:FindByName(name,false)
 if static then
 DetectedUnits[name]=static
 RecceDetecting[name]=reccename
+end
 end
 end
 else
