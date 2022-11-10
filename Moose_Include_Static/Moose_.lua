@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-10T11:18:18.0000000Z-a0ad5292b97b751d4a72ee81d46657844a238283 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-10T16:11:29.0000000Z-27598406d1c6ac761cef4ff41bdd9917208f61ab ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28155,6 +28155,458 @@ local pilot=self.pilotqueue[findex]
 self:T("Boarded: Found Pilot ID "..findex.." with name "..pilot:GetName())
 pilot.AICSAR.Boarded=true
 end
+return self
+end
+AMMOTRUCK={
+ClassName="AMMOTRUCK",
+lid="",
+version="0.0.10",
+alias="",
+debug=false,
+trucklist={},
+targetlist={},
+coalition=nil,
+truckset=nil,
+targetset=nil,
+remunitionqueue={},
+waitingtargets={},
+ammothreshold=5,
+remunidist=20000,
+monitor=-60,
+unloadtime=600,
+waitingtime=1800,
+routeonroad=true
+}
+AMMOTRUCK.State={
+IDLE="idle",
+DRIVING="driving",
+ARRIVED="arrived",
+UNLOADING="unloading",
+RETURNING="returning",
+WAITING="waiting",
+RELOADING="reloading",
+OUTOFAMMO="outofammo",
+REQUESTED="requested",
+}
+function AMMOTRUCK:New(Truckset,Targetset,Coalition,Alias,Homezone)
+local self=BASE:Inherit(self,FSM:New())
+self.truckset=Truckset
+self.targetset=Targetset
+self.coalition=Coalition
+self.alias=Alias
+self.debug=false
+self.remunitionqueue={}
+self.trucklist={}
+self.targetlist={}
+self.ammothreshold=5
+self.remunidist=20000
+self.homezone=Homezone
+self.waitingtime=1800
+self.usearmygroup=false
+self.hasarmygroup=false
+self.lid=string.format("AMMOTRUCK %s | %s | ",self.version,self.alias)
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Monitor","*")
+self:AddTransition("*","RouteTruck","*")
+self:AddTransition("*","TruckArrived","*")
+self:AddTransition("*","TruckUnloading","*")
+self:AddTransition("*","TruckReturning","*")
+self:AddTransition("*","TruckHome","*")
+self:AddTransition("*","Stop","Stopped")
+self:__Start(math.random(5,10))
+self:I(self.lid.."Started")
+return self
+end
+function AMMOTRUCK:CheckDrivingTrucks(dataset)
+self:T(self.lid.." CheckDrivingTrucks")
+local data=dataset
+for _,_data in pairs(data)do
+local truck=_data
+local coord=truck.group:GetCoordinate()
+local tgtcoord=truck.targetcoordinate
+local dist=coord:Get2DDistance(tgtcoord)
+if dist<=150 then
+truck.statusquo=AMMOTRUCK.State.ARRIVED
+truck.timestamp=timer.getAbsTime()
+truck.coordinate=coord
+self:__TruckArrived(1,truck)
+end
+local Tnow=timer.getAbsTime()
+if Tnow-truck.timestamp>30 then
+local group=truck.group
+if self.usearmygroup then
+group=truck.group:GetGroup()
+end
+local currspeed=group:GetVelocityKMH()
+if truck.lastspeed then
+if truck.lastspeed==0 and currspeed==0 then
+self:T(truck.group:GetName().." Is not moving!")
+truck.timestamp=timer.getAbsTime()
+if self.routeonroad then
+group:RouteGroundOnRoad(truck.targetcoordinate,30,2,"Vee")
+else
+group:RouteGroundTo(truck.targetcoordinate,30,"Vee",2)
+end
+end
+truck.lastspeed=currspeed
+else
+truck.lastspeed=currspeed
+truck.timestamp=timer.getAbsTime()
+end
+self:I({truck=truck.group:GetName(),currspeed=currspeed,lastspeed=truck.lastspeed})
+end
+end
+return self
+end
+function AMMOTRUCK:GetAmmoStatus(Group)
+local ammotot,shells,rockets,bombs,missiles,narti=Group:GetAmmunition()
+return rockets+missiles+narti
+end
+function AMMOTRUCK:CheckWaitingTargets(dataset)
+self:T(self.lid.." CheckWaitingTargets")
+local data=dataset
+for _,_data in pairs(data)do
+local truck=_data
+local Tnow=timer.getAbsTime()
+local Tdiff=Tnow-truck.timestamp
+if Tdiff>self.waitingtime then
+local hasammo=self:GetAmmoStatus(truck.group)
+if hasammo<=self.ammothreshold then
+truck.statusquo=AMMOTRUCK.State.OUTOFAMMO
+else
+truck.statusquo=AMMOTRUCK.State.IDLE
+end
+end
+end
+return self
+end
+function AMMOTRUCK:CheckReturningTrucks(dataset)
+self:T(self.lid.." CheckReturningTrucks")
+local data=dataset
+local tgtcoord=self.homezone:GetCoordinate()
+local radius=self.homezone:GetRadius()
+for _,_data in pairs(data)do
+local truck=_data
+local coord=truck.group:GetCoordinate()
+local dist=coord:Get2DDistance(tgtcoord)
+self:T({name=truck.name,radius=radius,distance=dist})
+if dist<=radius then
+truck.statusquo=AMMOTRUCK.State.IDLE
+truck.timestamp=timer.getAbsTime()
+truck.coordinate=coord
+self:__TruckHome(1,truck)
+end
+end
+return self
+end
+function AMMOTRUCK:FindTarget(name)
+self:T(self.lid.." FindTarget")
+local data=nil
+local dataset=self.targetlist
+for _,_entry in pairs(dataset)do
+local entry=_entry
+if entry.name==name then
+data=entry
+break
+end
+end
+return data
+end
+function AMMOTRUCK:FindTruck(name)
+self:T(self.lid.." FindTruck")
+local data=nil
+local dataset=self.trucklist
+for _,_entry in pairs(dataset)do
+local entry=_entry
+if entry.name==name then
+data=entry
+break
+end
+end
+return data
+end
+function AMMOTRUCK:CheckArrivedTrucks(dataset)
+self:T(self.lid.." CheckArrivedTrucks")
+local data=dataset
+for _,_data in pairs(data)do
+local truck=_data
+truck.statusquo=AMMOTRUCK.State.UNLOADING
+truck.timestamp=timer.getAbsTime()
+self:__TruckUnloading(2,truck)
+local aridata=self:FindTarget(truck.targetname)
+if aridata then
+aridata.statusquo=AMMOTRUCK.State.RELOADING
+aridata.timestamp=timer.getAbsTime()
+end
+end
+return self
+end
+function AMMOTRUCK:CheckUnloadingTrucks(dataset)
+self:T(self.lid.." CheckUnloadingTrucks")
+local data=dataset
+for _,_data in pairs(data)do
+local truck=_data
+local Tnow=timer.getAbsTime()
+local Tpassed=Tnow-truck.timestamp
+local hasammo=self:GetAmmoStatus(truck.targetgroup)
+if Tpassed>self.unloadtime and hasammo>self.ammothreshold then
+truck.statusquo=AMMOTRUCK.State.RETURNING
+truck.timestamp=timer.getAbsTime()
+self:__TruckReturning(2,truck)
+local aridata=self:FindTarget(truck.targetname)
+if aridata then
+aridata.statusquo=AMMOTRUCK.State.IDLE
+aridata.timestamp=timer.getAbsTime()
+end
+end
+end
+return self
+end
+function AMMOTRUCK:CheckTargetsAlive()
+self:T(self.lid.." CheckTargetsAlive")
+local arilist=self.targetlist
+for _,_ari in pairs(arilist)do
+local ari=_ari
+if ari.group and ari.group:IsAlive()then
+else
+self.targetlist[ari.name]=nil
+end
+end
+local aritable=self.targetset:GetSetObjects()
+for _,_ari in pairs(aritable)do
+local ari=_ari
+if ari and ari:IsAlive()and not self.targetlist[ari:GetName()]then
+local name=ari:GetName()
+local newari={}
+newari.name=name
+newari.group=ari
+newari.statusquo=AMMOTRUCK.State.IDLE
+newari.timestamp=timer.getAbsTime()
+newari.coordinate=ari:GetCoordinate()
+local hasammo=self:GetAmmoStatus(ari)
+newari.ammo=hasammo
+self.targetlist[name]=newari
+end
+end
+return self
+end
+function AMMOTRUCK:CheckTrucksAlive()
+self:T(self.lid.." CheckTrucksAlive")
+local trucklist=self.trucklist
+for _,_truck in pairs(trucklist)do
+local truck=_truck
+if truck.group and truck.group:IsAlive()then
+else
+local tgtname=truck.targetname
+local targetdata=self:FindTarget(tgtname)
+if targetdata then
+if targetdata.statusquo~=AMMOTRUCK.State.IDLE then
+targetdata.statusquo=AMMOTRUCK.State.IDLE
+end
+end
+self.trucklist[truck.name]=nil
+end
+end
+local trucktable=self.truckset:GetSetObjects()
+for _,_truck in pairs(trucktable)do
+local truck=_truck
+if truck and truck:IsAlive()and not self.trucklist[truck:GetName()]then
+local name=truck:GetName()
+local newtruck={}
+newtruck.name=name
+newtruck.group=truck
+if self.hasarmygroup then
+if truck.ClassName and truck.ClassName=="GROUP"then
+local trucker=ARMYGROUP:New(truck)
+trucker:Activate()
+newtruck.group=trucker
+end
+end
+newtruck.statusquo=AMMOTRUCK.State.IDLE
+newtruck.timestamp=timer.getAbsTime()
+newtruck.coordinate=truck:GetCoordinate()
+self.trucklist[name]=newtruck
+end
+end
+return self
+end
+function AMMOTRUCK:onafterStart(From,Event,To)
+self:T({From,Event,To})
+if ARMYGROUP and self.usearmygroup then
+self.hasarmygroup=true
+else
+self.hasarmygroup=false
+end
+if self.debug then
+BASE:TraceOn()
+BASE:TraceClass("AMMOTRUCK")
+end
+self:CheckTargetsAlive()
+self:CheckTrucksAlive()
+self:__Monitor(-30)
+return self
+end
+function AMMOTRUCK:onafterMonitor(From,Event,To)
+self:T({From,Event,To})
+self:CheckTargetsAlive()
+self:CheckTrucksAlive()
+local remunition=false
+local remunitionqueue={}
+local waitingtargets={}
+for _,_ari in pairs(self.targetlist)do
+local data=_ari
+if data.group and data.group:IsAlive()then
+data.ammo=self:GetAmmoStatus(data.group)
+data.timestamp=timer.getAbsTime()
+local text=string.format("Ari %s | Ammo %d | State %s",data.name,data.ammo,data.statusquo)
+self:T(text)
+if data.ammo<=self.ammothreshold and(data.statusquo==AMMOTRUCK.State.IDLE or data.statusquo==AMMOTRUCK.State.OUTOFAMMO)then
+data.statusquo=AMMOTRUCK.State.OUTOFAMMO
+remunitionqueue[#remunitionqueue+1]=data
+remunition=true
+elseif data.statusquo==AMMOTRUCK.State.WAITING then
+waitingtargets[#waitingtargets+1]=data
+end
+else
+self.targetlist[data.name]=nil
+end
+end
+local idletrucks={}
+local drivingtrucks={}
+local unloadingtrucks={}
+local arrivedtrucks={}
+local returningtrucks={}
+local found=false
+for _,_truckdata in pairs(self.trucklist)do
+local data=_truckdata
+if data.group and data.group:IsAlive()then
+local text=string.format("Truck %s | State %s",data.name,data.statusquo)
+self:T(text)
+if data.statusquo==AMMOTRUCK.State.IDLE then
+idletrucks[#idletrucks+1]=data
+found=true
+elseif data.statusquo==AMMOTRUCK.State.DRIVING then
+drivingtrucks[#drivingtrucks+1]=data
+elseif data.statusquo==AMMOTRUCK.State.ARRIVED then
+arrivedtrucks[#arrivedtrucks+1]=data
+elseif data.statusquo==AMMOTRUCK.State.UNLOADING then
+unloadingtrucks[#unloadingtrucks+1]=data
+elseif data.statusquo==AMMOTRUCK.State.RETURNING then
+returningtrucks[#returningtrucks+1]=data
+idletrucks[#idletrucks+1]=data
+found=true
+end
+else
+self.truckset[data.name]=nil
+end
+end
+local n=0
+if found and remunition then
+local match=false
+for _,_truckdata in pairs(idletrucks)do
+local truckdata=_truckdata
+local truckcoord=truckdata.group:GetCoordinate()
+for _,_aridata in pairs(remunitionqueue)do
+local aridata=_aridata
+local aricoord=aridata.coordinate
+local distance=truckcoord:Get2DDistance(aricoord)
+if distance<=self.remunidist and aridata.statusquo==AMMOTRUCK.State.OUTOFAMMO and n<=#idletrucks then
+n=n+1
+aridata.statusquo=AMMOTRUCK.State.REQUESTED
+self:__RouteTruck(n*5,truckdata,aridata)
+break
+end
+end
+end
+end
+if#drivingtrucks>0 then
+self:CheckDrivingTrucks(drivingtrucks)
+end
+if#arrivedtrucks>0 then
+self:CheckArrivedTrucks(arrivedtrucks)
+end
+if#unloadingtrucks>0 then
+self:CheckUnloadingTrucks(unloadingtrucks)
+end
+if#returningtrucks>0 then
+self:CheckReturningTrucks(returningtrucks)
+end
+if#waitingtargets>0 then
+self:CheckWaitingTargets(waitingtargets)
+end
+self:__Monitor(self.monitor)
+return self
+end
+function AMMOTRUCK:onafterRouteTruck(From,Event,To,Truckdata,Aridata)
+self:T({From,Event,To,Truckdata.name,Aridata.name})
+local truckdata=Truckdata
+local aridata=Aridata
+local tgtgrp=aridata.group
+local tgtzone=ZONE_GROUP:New(aridata.name,tgtgrp,30)
+local tgtcoord=tgtzone:GetRandomCoordinate(15)
+if self.hasarmygroup then
+local mission=AUFTRAG:NewONGUARD(tgtcoord)
+local oldmission=truckdata.group:GetMissionCurrent()
+if oldmission then oldmission:Cancel()end
+mission:SetTime(5)
+mission:SetTeleport(false)
+truckdata.group:AddMission(mission)
+elseif self.routeonroad then
+truckdata.group:RouteGroundOnRoad(tgtcoord,30)
+else
+truckdata.group:RouteGroundTo(tgtcoord,30)
+end
+truckdata.statusquo=AMMOTRUCK.State.DRIVING
+truckdata.targetgroup=tgtgrp
+truckdata.targetname=aridata.name
+truckdata.targetcoordinate=tgtcoord
+aridata.statusquo=AMMOTRUCK.State.WAITING
+aridata.timestamp=timer.getAbsTime()
+return self
+end
+function AMMOTRUCK:onafterTruckUnloading(From,Event,To,Truckdata)
+local m=MESSAGE:New("Truck "..Truckdata.name.." unloading!",15,"AmmoTruck"):ToCoalitionIf(self.coalition,self.debug)
+local truck=Truckdata
+local coord=truck.group:GetCoordinate()
+local heading=truck.group:GetHeading()
+heading=heading<180 and(360-heading)or(heading-180)
+local cid=self.coalition==coalition.side.BLUE and country.id.USA or country.id.RUSSIA
+cid=self.coalition==coalition.side.NEUTRAL and country.id.UN_PEACEKEEPERS or cid
+local ammo={}
+for i=1,5 do
+ammo[i]=SPAWNSTATIC:NewFromType("ammo_cargo","Cargos",cid)
+:InitCoordinate(coord:Translate((15+((i-1)*4)),heading))
+:Spawn(0,"AmmoCrate-"..math.random(1,10000))
+end
+local function destroyammo(ammo)
+for _,_crate in pairs(ammo)do
+_crate:Destroy(false)
+end
+end
+local scheduler=SCHEDULER:New(nil,destroyammo,{ammo},self.waitingtime)
+end
+function AMMOTRUCK:onafterTruckReturning(From,Event,To,Truck)
+self:T({From,Event,To,Truck.name})
+local truckdata=Truck
+local tgtzone=self.homezone
+local tgtcoord=tgtzone:GetRandomCoordinate()
+if self.hasarmygroup then
+local mission=AUFTRAG:NewONGUARD(tgtcoord)
+local oldmission=truckdata.group:GetMissionCurrent()
+if oldmission then oldmission:Cancel()end
+mission:SetTime(5)
+mission:SetTeleport(false)
+truckdata.group:AddMission(mission)
+elseif self.routeonroad then
+truckdata.group:RouteGroundOnRoad(tgtcoord,30,1,"Cone")
+else
+truckdata.group:RouteGroundTo(tgtcoord,30,"Cone",1)
+end
+return self
+end
+function AMMOTRUCK:onafterStop(From,Event,To)
+self:T({From,Event,To})
 return self
 end
 ARTY={
