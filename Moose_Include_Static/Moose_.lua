@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-09T23:40:15.0000000Z-a1a258f48eabbcb1ae244f3dae6531ee67f63884 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-10T11:18:18.0000000Z-a0ad5292b97b751d4a72ee81d46657844a238283 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63654,7 +63654,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.47",
+version="0.2.49",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -64596,7 +64596,8 @@ local Bearing=string.format('%03d',AngleDegrees)
 local Distance=UTILS.Round(UTILS.MetersToNM(Distance),0)
 if ssml then
 return string.format("%s <say-as interpret-as='characters'>%03d</say-as>, %d",bullseyename,Bearing,Distance)
-elseif TTS then
+end
+if TTS then
 Bearing=self:_ToStringBullsTTS(Bearing)
 local zero=self.gettext:GetEntry("ZERO",self.locale)
 local BearingTTS=string.gsub(Bearing,"0",zero)
@@ -65450,6 +65451,7 @@ local targettype=currenttask.Target:GetCategory()
 local targetstatus=currenttask.Target:GetState()
 local ToDo=currenttask.ToDo
 local description=currenttask.ScreenText
+local descTTS=currenttask.ScreenText
 local callsign=Callsign
 if self.debug then
 local taskreport=REPORT:New("AWACS Tasking Display")
@@ -65466,16 +65468,22 @@ if currenttask.ToDo==AWACS.TaskDescription.INTERCEPT or currenttask.ToDo==AWACS.
 local targetpos=currenttask.Target:GetCoordinate()
 if pposition and targetpos then
 local alti=currenttask.Cluster.altitude or currenttask.Contact.altitude or currenttask.Contact.group:GetAltitude()
-local direction=self:_ToStringBRA(pposition,targetpos,alti)
+local direction,direcTTS=self:_ToStringBRA(pposition,targetpos,alti)
 description=description.."\nBRA "..direction
+descTTS=descTTS..";BRA "..direcTTS
 end
 elseif currenttask.ToDo==AWACS.TaskDescription.ANCHOR or currenttask.ToDo==AWACS.TaskDescription.REANCHOR then
 local targetpos=currenttask.Target:GetCoordinate()
-local direction=self:_ToStringBR(pposition,targetpos)
+local direction,direcTTS=self:_ToStringBR(pposition,targetpos)
 description=description.."\nBR "..direction
+descTTS=descTTS..";BR "..direcTTS
 end
 local statustxt=self.gettext:GetEntry("STATUS",self.locale)
-MESSAGE:New(string.format("%s\n%s %s",description,statustxt,status),30,"AWACS",true):ToGroup(Group)
+local text=string.format("%s\n%s %s",description,statustxt,status)
+local ttstext=string.format("%s. %s. %s",managedgroup.CallSign,self.callsigntxt,descTTS)
+ttstext=string.gsub(ttstext,"\\n",";")
+ttstext=string.gsub(ttstext,"VID","V I D")
+self:_NewRadioEntry(ttstext,text,GID,true,true,false,false,true)
 end
 end
 end
@@ -65512,7 +65520,7 @@ local alphacheckbulls=self:_ToStringBULLS(Group:GetCoordinate())
 local alphacheckbullstts=self:_ToStringBULLS(Group:GetCoordinate(),false,true)
 local alpha=self.gettext:GetEntry("ALPHACHECK",self.locale)
 text=string.format("%s. %s. %s. %s",managedgroup.CallSign,self.callsigntxt,alpha,alphacheckbulls)
-textTTS=text
+textTTS=string.format("%s. %s. %s. %s",managedgroup.CallSign,self.callsigntxt,alpha,alphacheckbullstts)
 self:__CheckedIn(1,managedgroup.GID)
 if self.PlayerStationName then
 self:__AssignAnchor(5,managedgroup.GID,true,self.PlayerStationName)
