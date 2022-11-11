@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-11T10:42:30.0000000Z-5ec8a4674c173b2040d529465fb86a0faeb5260f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-11T14:40:03.0000000Z-09b86d6fdf73da7573331207d30eca052decb8c8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -86401,8 +86401,9 @@ if self.isFlightgroup then
 self:T("We are Special Auftrag HOVER, hovering now ...")
 local alt=Task.dcstask.params.hoverAltitude
 local time=Task.dcstask.params.hoverTime
-local Speed=UTILS.MpsToKnots(Task.dcstask.params.missionSpeed)or UTILS.KmphToKnots(self.speedCruise)
-local CruiseAlt=UTILS.FeetToMeters(Task.dcstask.params.missionAltitude)
+local mSpeed=Task.dcstask.params.missionSpeed or self.speedCruise or 150
+local Speed=UTILS.KmphToKnots(mSpeed)
+local CruiseAlt=UTILS.FeetToMeters(Task.dcstask.params.missionAltitude or 1000)
 local helo=self:GetGroup()
 helo:SetSpeed(0.01,true)
 helo:SetAltitude(alt,true,"BARO")
