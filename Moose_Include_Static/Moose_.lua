@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-11T08:38:27.0000000Z-0db13b6cdfb88517780a33297b438c6ac748133f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-11T09:00:13.0000000Z-b9a7fc940987a3ab379d1fe1e3bdcf15ec7ff3d8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61635,8 +61635,8 @@ end
 mission:_TargetFromObject(Coordinate)
 mission.hoverSpeed=0.1
 mission.hoverTime=Time or 300
-mission.missionSpeed=UTILS.KnotsToMps(Speed or 150)
-mission.missionAltitude=mission.MissionAlt or UTILS.FeetToMeters(1000)
+self:SetMissionSpeed(Speed or 150)
+self:SetMissionAltitude(MissionAlt or 1000)
 mission.missionFraction=0.9
 mission.optionROE=ENUMS.ROE.ReturnFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
