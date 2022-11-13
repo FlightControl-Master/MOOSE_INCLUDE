@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-11T10:40:36.0000000Z-5c6efed99593c3754de56ac3cb8d071463fcd1a6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-13T12:37:25.0000000Z-d4a06089c98100b945996ff94244a28b53fcfe0a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59604,7 +59604,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.18"
+CTLD.version="1.0.19"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -60668,9 +60668,7 @@ self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
-if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
-self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
-end
+self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter],type)
 end
 cargo:SetWasDropped(true)
 if type==CTLD_CARGO.Enum.ENGINEERS then
@@ -60681,7 +60679,6 @@ self:_SendMessage(string.format("Dropped Engineers %s into action!",name),10,fal
 else
 self:_SendMessage(string.format("Dropped Troops %s into action!",name),10,false,Group)
 end
-self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
 end
 end
 else
@@ -60974,9 +60971,6 @@ else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
-end
-if self.movetroopstowpzone and canmove then
-self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
 end
 if Repair then
 self:__CratesRepaired(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
@@ -61892,7 +61886,7 @@ local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
 self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
 end
 if self.eventoninject then
-self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter])
+self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter],type)
 end
 end
 return self
@@ -61941,9 +61935,6 @@ else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
-end
-if self.movetroopstowpzone and canmove then
-self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
 end
 if self.eventoninject then
 self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
@@ -62066,6 +62057,13 @@ end
 end
 return self
 end
+function CTLD:onafterTroopsDeployed(From,Event,To,Group,Unit,Troops,Type)
+self:T({From,Event,To})
+if self.movetroopstowpzone and Type~=CTLD_CARGO.Enum.ENGINEERS then
+self:_MoveGroupToZone(Troops)
+end
+return self
+end
 function CTLD:onbeforeCratesDropped(From,Event,To,Group,Unit,Cargotable)
 self:T({From,Event,To})
 return self
@@ -62090,6 +62088,13 @@ end
 end
 end
 )
+end
+return self
+end
+function CTLD:onafterCratesBuild(From,Event,To,Group,Unit,Vehicle)
+self:T({From,Event,To})
+if self.movetroopstowpzone then
+self:_MoveGroupToZone(Vehicle)
 end
 return self
 end
