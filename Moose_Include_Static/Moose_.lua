@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T16:38:46.0000000Z-7b5b5e0bd23b3ac9f6c2d6231e0c237bdc2474ea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T17:17:27.0000000Z-6724bb8edd8dc3135a81bc869f4733c4af84930f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3793,9 +3793,10 @@ return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\
 end
 end
 UTILS.tostringMGRS=function(MGRS,acc)
-if acc==0 then
+if acc<=0 then
 return MGRS.UTMZone..' '..MGRS.MGRSDigraph
 else
+if acc>5 then acc=5 end
 local Easting=tostring(MGRS.Easting)
 local Northing=tostring(MGRS.Northing)
 local nE=5-string.len(Easting)
@@ -94122,7 +94123,7 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:AddRejectZone(RejectZoneSet)
+function PLAYERTASKCONTROLLER:AddRejectZoneSet(RejectZoneSet)
 self:T(self.lid.."AddRejectZoneSet")
 if self.Intel then
 self.Intel.rejectzoneset:AddSet(RejectZoneSet)
@@ -94140,7 +94141,7 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:RemoveRejectZone(RejectZone)
+function PLAYERTASKCONTROLLER:RemoveRejectZoneSet(RejectZone)
 self:T(self.lid.."RemoveRejectZone")
 if self.Intel then
 self.Intel:RemoveRejectZone(RejectZone)
