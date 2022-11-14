@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-13T12:51:59.0000000Z-79a4af44d3bdc4c05618c802a1b2f60cc0c04b79 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T16:38:46.0000000Z-7b5b5e0bd23b3ac9f6c2d6231e0c237bdc2474ea ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60220,7 +60220,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.10"
+ATIS.version="0.9.11"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -60537,7 +60537,9 @@ else
 text=text..string.format(", Relay unit=%s (alive=%s)",tostring(self.relayunitname),relayunitstatus)
 end
 self:T(self.lid..text)
+if not self:Is("Stopped")then
 self:__Status(-60)
+end
 end
 function ATIS:onafterCheckQueue(From,Event,To)
 if self.useSRS then
@@ -60550,7 +60552,9 @@ else
 self:T2(self.lid..string.format("Radio queue %d transmissions queued.",#self.radioqueue.queue))
 end
 end
+if not self:Is("Stopped")then
 self:__CheckQueue(-math.abs(self.dTQueueCheck))
+end
 end
 function ATIS:onafterBroadcast(From,Event,To)
 local coord=self.airbase:GetCoordinate()
@@ -92441,7 +92445,7 @@ if self.TargetMarker then
 self.TargetMarker:Remove()
 end
 local text=Text or"Target of "..self.lid
-self.TargetMarker=MARKER:New(coordinate,text)
+self.TargetMarker=MARKER:New(coordinate,"Target of "..self.lid)
 if ReadOnly then
 self.TargetMarker:ReadOnly()
 end
@@ -92830,7 +92834,7 @@ BRIEFING="Briefing",
 TARGETLOCATION="Zielkoordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.46"
+PLAYERTASKCONTROLLER.version="0.1.47"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93577,7 +93581,7 @@ end
 end
 task:_SetController(self)
 self.TaskQueue:Push(task)
-self:__TaskAdded(-1,task)
+self:__TaskAdded(10,task)
 return self
 end
 function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask)
@@ -93586,7 +93590,7 @@ if PlayerTask and PlayerTask.ClassName and PlayerTask.ClassName=="PLAYERTASK"the
 PlayerTask:_SetController(self)
 PlayerTask:SetCoalition(self.Coalition)
 self.TaskQueue:Push(PlayerTask)
-self:__TaskAdded(-1,PlayerTask)
+self:__TaskAdded(10,PlayerTask)
 else
 self:E(self.lid.."***** NO valid PAYERTASK object sent!")
 end
@@ -94078,7 +94082,16 @@ self:T(self.lid.."AddAgent")
 if self.Intel then
 self.Intel:AddAgent(Recce)
 else
-self:E(self.lid.."NO detection has been set up (yet)!")
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:SwitchDetectStatics(OnOff)
+self:T(self.lid.."SwitchDetectStatics")
+if self.Intel then
+self.Intel:SetDetectStatics(OnOff)
+else
+self:E(self.lid.."***** NO detection has been set up (yet)!")
 end
 return self
 end
@@ -94087,7 +94100,16 @@ self:T(self.lid.."AddAcceptZone")
 if self.Intel then
 self.Intel:AddAcceptZone(AcceptZone)
 else
-self:E(self.lid.."NO detection has been set up (yet)!")
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddAcceptZoneSet(AcceptZoneSet)
+self:T(self.lid.."AddAcceptZoneSet")
+if self.Intel then
+self.Intel.acceptzoneset:AddSet(AcceptZoneSet)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
@@ -94096,7 +94118,16 @@ self:T(self.lid.."AddRejectZone")
 if self.Intel then
 self.Intel:AddRejectZone(RejectZone)
 else
-self:E(self.lid.."NO detection has been set up (yet)!")
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddRejectZone(RejectZoneSet)
+self:T(self.lid.."AddRejectZoneSet")
+if self.Intel then
+self.Intel.rejectzoneset:AddSet(RejectZoneSet)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
@@ -94105,7 +94136,7 @@ self:T(self.lid.."RemoveAcceptZone")
 if self.Intel then
 self.Intel:RemoveAcceptZone(AcceptZone)
 else
-self:E(self.lid.."NO detection has been set up (yet)!")
+self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
@@ -94114,7 +94145,7 @@ self:T(self.lid.."RemoveRejectZone")
 if self.Intel then
 self.Intel:RemoveRejectZone(RejectZone)
 else
-self:E(self.lid.."NO detection has been set up (yet)!")
+self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
