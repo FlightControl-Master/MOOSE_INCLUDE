@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-13T12:37:25.0000000Z-d4a06089c98100b945996ff94244a28b53fcfe0a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T16:36:34.0000000Z-782cfd1fd08f1a2ca81e1f155869ba8b3f9be23f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58040,7 +58040,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.10"
+ATIS.version="0.9.11"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -58357,7 +58357,9 @@ else
 text=text..string.format(", Relay unit=%s (alive=%s)",tostring(self.relayunitname),relayunitstatus)
 end
 self:T(self.lid..text)
+if not self:Is("Stopped")then
 self:__Status(-60)
+end
 end
 function ATIS:onafterCheckQueue(From,Event,To)
 if self.useSRS then
@@ -58370,7 +58372,9 @@ else
 self:T2(self.lid..string.format("Radio queue %d transmissions queued.",#self.radioqueue.queue))
 end
 end
+if not self:Is("Stopped")then
 self:__CheckQueue(-math.abs(self.dTQueueCheck))
+end
 end
 function ATIS:onafterBroadcast(From,Event,To)
 local coord=self.airbase:GetCoordinate()
