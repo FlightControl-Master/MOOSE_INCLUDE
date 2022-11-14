@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T16:36:34.0000000Z-782cfd1fd08f1a2ca81e1f155869ba8b3f9be23f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T17:15:55.0000000Z-fbad50973f327e3103e685770073cca92bbfc09c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2516,9 +2516,10 @@ return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\
 end
 end
 UTILS.tostringMGRS=function(MGRS,acc)
-if acc==0 then
+if acc<=0 then
 return MGRS.UTMZone..' '..MGRS.MGRSDigraph
 else
+if acc>5 then acc=5 end
 local Easting=tostring(MGRS.Easting)
 local Northing=tostring(MGRS.Northing)
 local nE=5-string.len(Easting)
