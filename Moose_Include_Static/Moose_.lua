@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-15T14:59:03.0000000Z-2acb8415397eb3f78630f5c3c644643b1bc0f6d1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-15T16:56:29.0000000Z-f86db5f134cde0475192ecd9560eab97f2623fcc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92657,7 +92657,7 @@ end
 do
 PLAYERTASKCONTROLLER={
 ClassName="PLAYERTASKCONTROLLER",
-verbose=true,
+verbose=false,
 lid=nil,
 TargetQueue=nil,
 ClientSet=nil,
@@ -92839,7 +92839,7 @@ TARGETLOCATION="Zielposition",
 COORDINATE="Koordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.48"
+PLAYERTASKCONTROLLER.version="0.1.49"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93031,7 +93031,7 @@ local tag=Tag or"TASK"
 local MarkerOps=MARKEROPS_BASE:New(tag)
 local function Handler(Keywords,Coord,Text)
 if self.verbose then
-local m=MESSAGE:New(string.format("Target added from marker at: %s",Coord:ToStringLLDMS()),15,"INFO"):ToAll()
+local m=MESSAGE:New(string.format("Target added from marker at: %s",Coord:ToStringA2G(nil,nil,self.ShowMagnetic)),15,"INFO"):ToAll()
 end
 self:AddTarget(Coord)
 end
@@ -93143,6 +93143,9 @@ end
 playername=self:_GetTextForSpeech(playername)
 local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
+if EventData.IniUnitName then
+self:_BuildMenus(CLIENT:FindByName(EventData.IniUnitName))
+end
 end
 end
 return self
