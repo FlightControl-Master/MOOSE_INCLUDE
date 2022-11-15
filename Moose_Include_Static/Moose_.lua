@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-14T17:17:27.0000000Z-6724bb8edd8dc3135a81bc869f4733c4af84930f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-15T14:59:03.0000000Z-2acb8415397eb3f78630f5c3c644643b1bc0f6d1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92446,7 +92446,7 @@ if self.TargetMarker then
 self.TargetMarker:Remove()
 end
 local text=Text or"Target of "..self.lid
-self.TargetMarker=MARKER:New(coordinate,"Target of "..self.lid)
+self.TargetMarker=MARKER:New(coordinate,text)
 if ReadOnly then
 self.TargetMarker:ReadOnly()
 end
@@ -92690,6 +92690,8 @@ PlayerRecce=nil,
 Coalition=nil,
 MenuParent=nil,
 ShowMagnetic=true,
+InfoHasLLDDM=false,
+InfoHasCoordinate=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -92769,6 +92771,7 @@ FLASHOFF="%s - Flashing directions is now OFF!",
 FLASHMENU="Flash Directions Switch",
 BRIEFING="Briefing",
 TARGETLOCATION="Target location",
+COORDINATE="Coordinate",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -92832,10 +92835,11 @@ FLASHON="%s - Richtungsangaben einblenden ist EIN!",
 FLASHOFF="%s - Richtungsangaben einblenden ist AUS!",
 FLASHMENU="Richtungsangaben Schalter",
 BRIEFING="Briefing",
-TARGETLOCATION="Zielkoordinate",
+TARGETLOCATION="Zielposition",
+COORDINATE="Koordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.47"
+PLAYERTASKCONTROLLER.version="0.1.48"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -92937,6 +92941,12 @@ end
 function PLAYERTASKCONTROLLER:SetEnableSmokeFlareTask()
 self:T(self.lid.."SetEnableSmokeFlareTask")
 self.noflaresmokemenu=false
+return self
+end
+function PLAYERTASKCONTROLLER:SetInfoShowsCoordinate(OnOff,LLDDM)
+self:T(self.lid.."SetInfoShowsCoordinate")
+self.InfoHasCoordinate=OnOff
+self.InfoHasLLDDM=LLDDM
 return self
 end
 function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
@@ -93684,6 +93694,7 @@ local taskname=string.format(tname,task.Type,task.PlayerTaskNr)
 local ttstaskname=string.format(ttsname,task.TTSType,task.PlayerTaskNr)
 local Coordinate=task.Target:GetCoordinate()
 local CoordText=""
+local CoordTextLLDM=nil
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
 CoordText=Coordinate:ToStringA2G(Client,nil,self.ShowMagnetic)
 else
@@ -93762,11 +93773,20 @@ local keine=self.gettext:GetEntry("NONE",self.locale)
 clienttxt=clienttxt..keine
 end
 text=text..clienttxt
+textTTS=textTTS..clienttxt
+if self.InfoHasCoordinate then
+if self.InfoHasLLDDM then
+CoordTextLLDM=Coordinate:ToStringLLDDM()
+else
+CoordTextLLDM=Coordinate:ToStringLLDMS()
+end
+local locatxt=self.gettext:GetEntry("COORDINATE",self.locale)
+text=string.format("%s\n%s: %s",text,locatxt,CoordTextLLDM)
+end
 if task:HasFreetext()and not(task.Type==AUFTRAG.Type.CTLD or task.Type==AUFTRAG.Type.CSAR)then
 local brieftxt=self.gettext:GetEntry("BRIEFING",self.locale)
 text=text..string.format("\n%s: ",brieftxt)..task:GetFreetext()
 end
-textTTS=textTTS..clienttxt
 if self.UseSRS then
 if string.find(CoordText," BR, ")then
 CoordText=string.gsub(CoordText," BR, "," Bee, Arr, ")
