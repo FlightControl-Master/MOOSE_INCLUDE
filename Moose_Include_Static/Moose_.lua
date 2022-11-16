@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-15T16:56:29.0000000Z-f86db5f134cde0475192ecd9560eab97f2623fcc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T08:42:36.0000000Z-62122a15bc011f35fd164c565ec8a637af39a29a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9326,6 +9326,28 @@ if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
 trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
+end
+return self
+end
+function MESSAGE:ToCountry(Country,Settings)
+self:F(Country)
+if Country then
+if self.MessageType then
+local Settings=Settings or _SETTINGS
+self.MessageDuration=Settings:GetMessageTime(self.MessageType)
+self.MessageCategory=""
+end
+if self.MessageDuration~=0 then
+self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
+trigger.action.outTextForCountry(Country,self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
+end
+end
+return self
+end
+function MESSAGE:ToCountryIf(Country,Condition,Settings)
+self:F(Country)
+if Country and Condition==true then
+self:ToCountry(Country,Settings)
 end
 return self
 end
