@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T08:42:36.0000000Z-62122a15bc011f35fd164c565ec8a637af39a29a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T09:44:00.0000000Z-bd42032e3ade369e1e9ca95c72daa22168e7fc5d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -46400,6 +46400,9 @@ function WAREHOUSE:SetWarehouseZone(zone)
 self.zone=zone
 return self
 end
+function WAREHOUSE:GetWarehouseZone()
+return self.zone
+end
 function WAREHOUSE:SetAutoDefenceOn()
 self.autodefence=true
 return self
@@ -78551,8 +78554,8 @@ self:HandleEvent(EVENTS.RemoveUnit,self.OnEventRemoveUnit)
 self:HandleEvent(EVENTS.UnitLost,self.OnEventUnitLost)
 self:HandleEvent(EVENTS.Kill,self.OnEventKill)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self.OnEventPlayerLeaveUnit)
-self:_InitWaypoints()
 self:_InitGroup()
+self:_InitWaypoints()
 self.timerStatus=TIMER:New(self.Status,self):Start(1,30)
 self.timerQueueUpdate=TIMER:New(self._QueueUpdate,self):Start(2,5)
 self.timerCheckZone=TIMER:New(self._CheckInZones,self):Start(3,10)
@@ -79992,7 +79995,7 @@ self.isMobile=true
 else
 self.isMobile=false
 end
-local speedCruiseLimit=self.isHelo and UTILS.KnotsToKmph(80)or UTILS.KnotsToKmph(350)
+local speedCruiseLimit=self.isHelo and UTILS.KnotsToKmph(110)or UTILS.KnotsToKmph(380)
 self.speedCruise=math.min(self.speedMax*0.7,speedCruiseLimit)
 self.ammo=self:GetAmmoTot()
 self.radio.Freq=tonumber(template.frequency)
@@ -80200,7 +80203,11 @@ function FLIGHTGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Altitude,U
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
 Speed=Speed or self:GetSpeedCruise()
-local wp=coordinate:WaypointAir(COORDINATE.WaypointAltType.BARO,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,UTILS.KnotsToKmph(Speed),true,nil,{})
+local alttype=COORDINATE.WaypointAltType.BARO
+if self.isHelo then
+alttype=COORDINATE.WaypointAltType.RADIO
+end
+local wp=coordinate:WaypointAir(alttype,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,UTILS.KnotsToKmph(Speed),true,nil,{})
 local waypoint=self:_CreateWaypoint(wp)
 if Altitude then
 waypoint.alt=UTILS.FeetToMeters(Altitude)
