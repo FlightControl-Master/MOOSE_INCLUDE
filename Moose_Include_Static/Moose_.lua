@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T08:39:54.0000000Z-ae2196585e4ceaa8244b4442932895e3f5e6377b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T10:12:47.0000000Z-a125497fe7e004cd597535414fb3bebb697dc1cf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -17159,7 +17159,11 @@ return self
 end
 function SPAWN:InitRandomizeTemplate(SpawnTemplatePrefixTable)
 self:F({self.SpawnTemplatePrefix,SpawnTemplatePrefixTable})
-self.SpawnTemplatePrefixTable=SpawnTemplatePrefixTable
+local temptable={}
+for _,_temp in pairs(SpawnTemplatePrefixTable)do
+temptable[#temptable+1]=_temp
+end
+self.SpawnTemplatePrefixTable=UTILS.ShuffleTable(temptable)
 self.SpawnRandomizeTemplate=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
 self:_RandomizeTemplate(SpawnGroupID)
@@ -17168,11 +17172,8 @@ return self
 end
 function SPAWN:InitRandomizeTemplateSet(SpawnTemplateSet)
 self:F({self.SpawnTemplatePrefix})
-self.SpawnTemplatePrefixTable=SpawnTemplateSet:GetSetNames()
-self.SpawnRandomizeTemplate=true
-for SpawnGroupID=1,self.SpawnMaxGroups do
-self:_RandomizeTemplate(SpawnGroupID)
-end
+local setnames=SpawnTemplateSet:GetSetNames()
+self:InitRandomizeTemplate(setnames)
 return self
 end
 function SPAWN:InitRandomizeTemplatePrefixes(SpawnTemplatePrefixes)
@@ -17188,7 +17189,11 @@ return self
 end
 function SPAWN:InitRandomizeZones(SpawnZoneTable)
 self:F({self.SpawnTemplatePrefix,SpawnZoneTable})
-self.SpawnZoneTable=SpawnZoneTable
+local temptable={}
+for _,_temp in pairs(SpawnZoneTable)do
+temptable[#temptable+1]=_temp
+end
+self.SpawnZoneTable=UTILS.ShuffleTable(temptable)
 self.SpawnRandomizeZones=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
 self:_RandomizeZones(SpawnGroupID)
