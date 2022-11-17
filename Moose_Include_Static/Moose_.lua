@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-17T12:55:42.0000000Z-a9f2df83ff14446d940d000bf80e93b35cea7375 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-17T16:14:52.0000000Z-7490796637cfe487a070181985295496d95743af ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19358,6 +19358,12 @@ AIRBASE.SouthAtlantic={
 ["Puerto_Williams"]="Puerto Williams",
 ["Puerto_Natales"]="Puerto Natales",
 ["El_Calafate"]="El Calafate",
+["Puerto_Santa_Cruz"]="Puerto Santa Cruz",
+["Comandante_Luis_Piedrabuena"]="Comandante Luis Piedrabuena",
+["Aerodromo_De_Tolhuin"]="Aerodromo De Tolhuin",
+["Porvenir_Airfield"]="Porvenir Airfield",
+["Almirante_Schroeders"]="Almirante Schroeders",
+["Rio_Turbio"]="Rio Turbio",
 }
 AIRBASE.TerminalType={
 Runway=16,
