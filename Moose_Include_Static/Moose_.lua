@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T10:17:19.0000000Z-50112695864d10e857954d50baa0e697c312b907 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-17T12:22:34.0000000Z-50aca57112a2c7c41d7a3c109727a6af6a300bb9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93062,10 +93062,19 @@ end
 function PLAYERTASKCONTROLLER:EnableMarkerOps(Tag)
 self:T(self.lid.."EnableMarkerOps")
 local tag=Tag or"TASK"
-local MarkerOps=MARKEROPS_BASE:New(tag)
+local MarkerOps=MARKEROPS_BASE:New(tag,{"Name","Text"},true)
 local function Handler(Keywords,Coord,Text)
 if self.verbose then
 local m=MESSAGE:New(string.format("Target added from marker at: %s",Coord:ToStringA2G(nil,nil,self.ShowMagnetic)),15,"INFO"):ToAll()
+local m=MESSAGE:New(string.format("Text: %s",Text),15,"INFO"):ToAll()
+end
+local menuname=string.match(Text,"Name=(.+),")
+local freetext=string.match(Text,"Text=(.+)")
+if menuname then
+Coord.menuname=menuname
+if freetext then
+Coord.freetext=freetext
+end
 end
 self:AddTarget(Coord)
 end
@@ -93269,6 +93278,12 @@ self:T(self.lid.."_CheckTargetQueue")
 if self.TargetQueue:Count()>0 then
 local object=self.TargetQueue:Pull()
 local target=TARGET:New(object)
+if object.menuname then
+target.menuname=object.menuname
+if object.freetext then
+target.freetext=object.freetext
+end
+end
 self:_AddTask(target)
 end
 return self
@@ -93585,9 +93600,21 @@ local enemysets=SET_STATIC:New():FilterCoalitions(enemies):FilterZones({zone}):F
 local countg=enemysetg:Count()
 local counts=enemysets:Count()
 if countg>0 then
+if Target.menuname then
+enemysetg.menuname=Target.menuname
+if Target.freetext then
+enemysetg.freetext=Target.freetext
+end
+end
 self:AddTarget(enemysetg)
 end
 if counts>0 then
+if Target.menuname then
+enemysets.menuname=Target.menuname
+if Target.freetext then
+enemysets.freetext=Target.freetext
+end
+end
 self:AddTarget(enemysets)
 end
 return self
@@ -93603,6 +93630,12 @@ return self
 end
 end
 local task=PLAYERTASK:New(type,Target,self.repeatonfailed,self.repeattimes,ttstype)
+if Target.menuname then
+task:SetMenuName(Target.menuname)
+if Target.freetext then
+task:AddFreetext(Target.freetext)
+end
+end
 task.coalition=self.Coalition
 if type==AUFTRAG.Type.BOMBRUNWAY then
 task:HandleEvent(EVENTS.Shot)
