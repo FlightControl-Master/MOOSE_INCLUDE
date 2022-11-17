@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-16T10:12:47.0000000Z-a125497fe7e004cd597535414fb3bebb697dc1cf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-17T12:54:43.0000000Z-4fb98cf72b5c63f76f491da996cbd94ad7bb0265 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62800,6 +62800,7 @@ maxdownedpilots=10,
 allheligroupset=nil,
 topmenuname="CSAR",
 ADFRadioPwr=1000,
+PilotWeight=80,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -62815,7 +62816,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.15"
+CSAR.version="1.0.16"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
@@ -62917,6 +62918,7 @@ self.wetfeettemplate=nil
 self.usewetfeet=false
 self.allowbronco=false
 self.ADFRadioPwr=1000
+self.PilotWeight=80
 self.useSRS=false
 self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSchannel=300
@@ -63487,7 +63489,7 @@ return self
 end
 function CSAR:_UpdateUnitCargoMass(_heliName)
 self:T(self.lid.." _UpdateUnitCargoMass")
-local calculatedMass=self:_PilotsOnboard(_heliName)*80
+local calculatedMass=self:_PilotsOnboard(_heliName)*(self.PilotWeight or 80)
 local Unit=UNIT:FindByName(_heliName)
 if Unit then
 Unit:SetUnitInternalCargo(calculatedMass)
