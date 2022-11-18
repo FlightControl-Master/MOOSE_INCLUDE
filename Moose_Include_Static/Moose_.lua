@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T10:24:36.0000000Z-b47737bda3bff817faeef45d3686eda1c388e48c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T10:28:33.0000000Z-df17a3d2a3a3d305dfd6d39aec96ba742a0aba21 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21141,7 +21141,7 @@ params={},
 return DCSTask
 end
 function CONTROLLABLE:TaskRecoveryTanker(CarrierGroup,Speed,Altitude,LastWptNumber)
-local LastWptFlag=LastWptNumber and true or false
+local LastWptFlag=type(LastWptNumber)=="number"and true or false
 local DCSTask={
 id="RecoveryTanker",
 params={
