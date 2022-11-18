@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-17T16:13:33.0000000Z-5a7a23552d6e72f9f123659c246d417c556cddb4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T08:58:48.0000000Z-239e2ef86d84cfea8b4fbb7c532c01b44477ac1d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20876,6 +20876,20 @@ params={},
 }
 return DCSTask
 end
+function CONTROLLABLE:TaskRecoveryTanker(CarrierGroup,Speed,Altitude,LastWptNumber)
+local LastWptFlag=LastWptNumber and true or false
+local DCSTask={
+id="RecoveryTanker",
+params={
+groupId=CarrierGroup:GetID(),
+speed=Speed,
+altitude=Altitude,
+lastWptIndexFlag=LastWptFlag,
+lastWptIndex=LastWptNumber
+}
+}
+return DCSTask
+end
 function CONTROLLABLE:TaskLandAtVec2(Vec2,Duration)
 local DCSTask={
 id='Land',
@@ -23753,6 +23767,15 @@ callsign=callsignroot.." "..callnumbermajor.." "..callnumberminor
 end
 end
 return callsign
+end
+function GROUP:SetAsRecoveryTanker(CarrierGroup,Speed,ToKIAS,Altitude,Delay,LastWaypoint)
+local speed=ToKIAS==true and UTILS.KnotsToAltKIAS(Speed,Altitude)or Speed
+speed=UTILS.KnotsToMps(speed)
+local alt=UTILS.FeetToMeters(Altitude)
+local delay=Delay or 1
+local task=self:TaskRecoveryTanker(CarrierGroup,speed,alt,LastWaypoint)
+self:SetTask(task,delay)
+return self
 end
 UNIT={
 ClassName="UNIT",
