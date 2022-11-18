@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T08:59:43.0000000Z-96bb475306dc159b8c89a6141eec72ba0a51c5eb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T10:24:36.0000000Z-b47737bda3bff817faeef45d3686eda1c388e48c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24039,6 +24039,8 @@ local alt=UTILS.FeetToMeters(Altitude)
 local delay=Delay or 1
 local task=self:TaskRecoveryTanker(CarrierGroup,speed,alt,LastWaypoint)
 self:SetTask(task,delay)
+local tankertask=self:EnRouteTaskTanker()
+self:PushTask(tankertask,delay+2)
 return self
 end
 IDENTIFIABLE={
