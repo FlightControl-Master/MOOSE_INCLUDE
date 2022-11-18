@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T10:29:45.0000000Z-ae9c2585314455c6b8a7d7d7d4ff09809d22c031 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-18T19:02:15.0000000Z-e79941bb8b8e49e97843cc68755244b4ecd47c85 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68652,6 +68652,7 @@ self:AddTransition("*","ZoneEmpty","*")
 self:AddTransition("*","ZoneAttacked","*")
 self:AddTransition("*","DefconChange","*")
 self:AddTransition("*","StrategyChange","*")
+self:AddTransition("*","LegionLost","*")
 return self
 end
 function CHIEF:SetAirToAny()
@@ -68870,6 +68871,11 @@ end
 function CHIEF:AddLegion(Legion)
 Legion.chief=self
 self.commander:AddLegion(Legion)
+return self
+end
+function CHIEF:RemoveLegion(Legion)
+Legion.chief=nil
+self.commander:RemoveLegion(Legion)
 return self
 end
 function CHIEF:AddMission(Mission)
@@ -70609,6 +70615,7 @@ self:AddTransition("*","MissionCancel","*")
 self:AddTransition("*","TransportAssign","*")
 self:AddTransition("*","TransportCancel","*")
 self:AddTransition("*","OpsOnMission","*")
+self:AddTransition("*","LegionLost","*")
 return self
 end
 function COMMANDER:SetVerbosity(VerbosityLevel)
@@ -70642,6 +70649,16 @@ end
 function COMMANDER:AddLegion(Legion)
 Legion.commander=self
 table.insert(self.legions,Legion)
+return self
+end
+function COMMANDER:RemoveLegion(Legion)
+for i,_legion in pairs(self.legions)do
+local legion=_legion
+if legion.alias==Legion.alias then
+table.remove(self.legions,i)
+Legion.commander=nil
+end
+end
 return self
 end
 function COMMANDER:AddMission(Mission)
@@ -82047,6 +82064,9 @@ end
 end
 return false
 end
+function LEGION:GetName()
+return self.alias
+end
 function LEGION:_GetCohortOfAsset(Asset)
 local cohort=self:_GetCohort(Asset.squadname)
 return cohort
@@ -82523,6 +82543,17 @@ end
 end
 function LEGION:onafterRequestSpawned(From,Event,To,Request,CargoGroupSet,TransportGroupSet)
 self:GetParent(self,LEGION).onafterRequestSpawned(self,From,Event,To,Request,CargoGroupSet,TransportGroupSet)
+end
+function LEGION:onafterCaptured(From,Event,To,Coalition,Country)
+self:GetParent(self,LEGION).onafterCaptured(self,From,Event,To,Coalition,Country)
+if self.chief then
+self.chief.commander:LegionLost(self,Coalition,Country)
+self.chief:LegionLost(self,Coalition,Country)
+self.chief:RemoveLegion(self)
+elseif self.commander then
+self.commander:LegionLost(self,Coalition,Country)
+self.commander:RemoveLegion(self)
+end
 end
 function LEGION:_CreateFlightGroup(asset)
 local opsgroup=nil
