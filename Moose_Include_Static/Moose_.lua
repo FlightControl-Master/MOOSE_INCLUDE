@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-19T18:36:55.0000000Z-2538d583ad8895c17de86f04d5115274658b3cf7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-20T19:55:34.0000000Z-6834a2e083a723bd49d68d3cfdcf4d97e04a472a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7115,6 +7115,10 @@ Event.IniUnit=AIRBASE:FindByName(Event.IniDCSUnitName)
 Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
+if not Event.IniUnit then
+_DATABASE:_RegisterAirbase(Event.initiator)
+Event.IniUnit=AIRBASE:FindByName(Event.IniDCSUnitName)
+end
 end
 end
 if Event.target then
@@ -10579,8 +10583,14 @@ return self
 end
 function DATABASE:_RegisterAirbases()
 for DCSAirbaseId,DCSAirbase in pairs(world.getAirbases())do
-local DCSAirbaseName=DCSAirbase:getName()
-local airbaseID=DCSAirbase:getID()
+self:_RegisterAirbase(DCSAirbase)
+end
+return self
+end
+function DATABASE:_RegisterAirbase(airbase)
+if airbase then
+local DCSAirbaseName=airbase:getName()
+local airbaseID=airbase:getID()
 local airbase=self:AddAirbase(DCSAirbaseName)
 local airbaseUID=airbase:GetID(true)
 local text=string.format("Register %s: %s (UID=%d), Runways=%d, Parking=%d [",AIRBASE.CategoryName[airbase.category],tostring(DCSAirbaseName),airbaseUID,#airbase.runways,airbase.NparkingTotal)
@@ -10597,10 +10607,10 @@ end
 function DATABASE:_EventOnBirth(Event)
 self:F({Event})
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==3 then
+if Event.IniObjectCategory==Object.Category.STATIC then
 self:AddStatic(Event.IniDCSUnitName)
 else
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 self:AddUnit(Event.IniDCSUnitName)
 self:AddGroup(Event.IniDCSGroupName)
 local DCSAirbase=Airbase.getByName(Event.IniDCSUnitName)
@@ -10610,7 +10620,7 @@ self:AddAirbase(Event.IniDCSUnitName)
 end
 end
 end
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 Event.IniUnit=self:FindUnit(Event.IniDCSUnitName)
 Event.IniGroup=self:FindGroup(Event.IniDCSGroupName)
 local client=self.CLIENTS[Event.IniDCSUnitName]
@@ -18709,6 +18719,12 @@ self:T("Spawning FARP")
 self:T({Template=Template})
 self:T({TemplateGroup=TemplateGroup})
 Static=coalition.addGroup(CountryID,-1,TemplateGroup)
+local Event={
+id=EVENTS.Birth,
+time=timer.getTime(),
+initiator=Static
+}
+world.onEvent(Event)
 else
 self:T("Spawning Static")
 self:T2({Template=Template})
@@ -25183,6 +25199,7 @@ end
 else
 self:E(string.format("ERROR: Cound not get position Vec2 of airbase %s",AirbaseName))
 end
+self:T2(string.format("Registered airbase %s",tostring(self.AirbaseName)))
 return self
 end
 function AIRBASE:Find(DCSAirbase)
