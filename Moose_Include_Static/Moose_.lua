@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-20T19:56:07.0000000Z-b8398af5a3889431e9c67ee20398498bab2e40c3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-23T08:56:37.0000000Z-b99d963cd508b34a39788ce9d08a5a9e7edb90ed ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16792,6 +16792,7 @@ if Callsign then
 if type(Callsign)~="number"then
 Callsign[2]=((SpawnIndex-1)%10)+1
 local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
+CallsignName=string.match(CallsignName,"^(%a+)")
 local CallsignLen=CallsignName:len()
 SpawnTemplate.units[UnitID].callsign["name"]=CallsignName:sub(1,CallsignLen)..SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
 else
