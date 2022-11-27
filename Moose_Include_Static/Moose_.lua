@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-23T11:57:54.0000000Z-fe9a5aea2a1aef5ad6f4feba5ad0df5b43741713 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-27T16:35:42.0000000Z-66bf32351ac5ca1c47c8a0dfa09b10d2700073e8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4366,6 +4366,8 @@ elseif theatre==DCSMAP.Syria then
 return 3
 elseif theatre==DCSMAP.MarianaIslands then
 return 10
+elseif theatre==DCSMAP.Falklands then
+return-3
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -19779,7 +19781,7 @@ ay=7
 az=17
 end
 local _nspots=nspots or group:GetSize()
-self:E(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
+self:T(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
 local validspots={}
 local nvalid=0
 local _test=false
@@ -21676,7 +21678,7 @@ self:Route(route,DelaySeconds)
 return self
 end
 function CONTROLLABLE:TaskGroundOnRoad(ToCoordinate,Speed,OffRoadFormation,Shortcut,FromCoordinate,WaypointFunction,WaypointFunctionArguments)
-self:I({ToCoordinate=ToCoordinate,Speed=Speed,OffRoadFormation=OffRoadFormation,WaypointFunction=WaypointFunction,Args=WaypointFunctionArguments})
+self:T({ToCoordinate=ToCoordinate,Speed=Speed,OffRoadFormation=OffRoadFormation,WaypointFunction=WaypointFunction,Args=WaypointFunctionArguments})
 Speed=Speed or 20
 OffRoadFormation=OffRoadFormation or"Off Road"
 FromCoordinate=FromCoordinate or self:GetCoordinate()
@@ -108049,7 +108051,7 @@ end
 end
 local Task=Tasks[math.random(1,#Tasks)]
 if Task then
-self:I("Assigning task "..Task:GetName().." using auto assign method "..self.AutoAssignMethod.." to "..TaskGroup:GetName().." with task priority "..AssignPriority)
+self:T("Assigning task "..Task:GetName().." using auto assign method "..self.AutoAssignMethod.." to "..TaskGroup:GetName().." with task priority "..AssignPriority)
 if not self.AutoAcceptTasks==true then
 Task:SetAutoAssignMethod(ACT_ASSIGN_MENU_ACCEPT:New(Task.TaskBriefing))
 end
@@ -108223,7 +108225,7 @@ function MISSION:GetShortText()
 return string.format('Mission "%s"',self.Name)
 end
 function MISSION:JoinUnit(PlayerUnit,PlayerGroup)
-self:I({Mission=self:GetName(),PlayerUnit=PlayerUnit,PlayerGroup=PlayerGroup})
+self:T({Mission=self:GetName(),PlayerUnit=PlayerUnit,PlayerGroup=PlayerGroup})
 local PlayerUnitAdded=false
 for TaskID,Task in pairs(self:GetTasks())do
 local Task=Task
@@ -108303,7 +108305,7 @@ function MISSION:SetGroupAssigned(MissionGroup)
 local MissionName=self:GetName()
 local MissionGroupName=MissionGroup:GetName()
 self.AssignedGroups[MissionGroupName]=MissionGroup
-self:I(string.format("Mission %s is assigned to %s",MissionName,MissionGroupName))
+self:T(string.format("Mission %s is assigned to %s",MissionName,MissionGroupName))
 return self
 end
 function MISSION:ClearGroupAssignment(MissionGroup)
@@ -108358,14 +108360,14 @@ return self.TaskNumber
 end
 function MISSION:AddTask(Task)
 local TaskName=Task:GetTaskName()
-self:I({"==> Adding TASK ",MissionName=self:GetName(),TaskName=TaskName})
+self:T({"==> Adding TASK ",MissionName=self:GetName(),TaskName=TaskName})
 self.Tasks[TaskName]=Task
 self:GetCommandCenter():SetMenu()
 return Task
 end
 function MISSION:RemoveTask(Task)
 local TaskName=Task:GetTaskName()
-self:I({"<== Removing TASK ",MissionName=self:GetName(),TaskName=TaskName})
+self:T({"<== Removing TASK ",MissionName=self:GetName(),TaskName=TaskName})
 self:F(TaskName)
 self.Tasks[TaskName]=self.Tasks[TaskName]or{n=0}
 self.Tasks[TaskName]=nil
