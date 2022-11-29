@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-28T16:42:09.0000000Z-53d71d976678af6dbc7cac5846c721bb0f8ff624 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-29T14:39:58.0000000Z-df0c0ec21e7a58afa830d748fb5ef8fe25e9dd11 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59664,7 +59664,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.19"
+CTLD.version="1.0.20"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -61426,6 +61426,7 @@ local timeout=self.droppedbeacontimeout or 600
 local livebeacontable={}
 for _,_beacon in pairs(self.droppedBeacons)do
 local beacon=_beacon
+if not beacon.timestamp then beacon.timestamp=timer.getTime()end
 local T0=beacon.timestamp
 if timer.getTime()-T0>timeout then
 local name=beacon.name
