@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-29T14:42:49.0000000Z-6965d319ef16795faca171af27347a3dcd40675d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-29T16:54:15.0000000Z-907d62c4e790233319885deb6fb01d60a9e01db2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60279,7 +60279,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.11"
+ATIS.version="0.9.12"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -60379,6 +60379,9 @@ else
 self.usemarker=false
 end
 return self
+end
+function ATIS:GetSRSText()
+return self.SRSText
 end
 function ATIS:SetRunwayHeadingsMagnetic(headings)
 if type(headings)=="table"then
@@ -61380,6 +61383,7 @@ local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
 local duration=STTS.getSpeechTime(text,0.95)
 self.msrsQ:NewTransmission(text,duration,self.msrs,nil,2)
+self.SRSText=text
 end
 end
 function ATIS:OnEventBaseCaptured(EventData)
