@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-28T16:45:47.0000000Z-75bc95167f2b051227372443b418c3c21fdff6c6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-29T14:42:49.0000000Z-6965d319ef16795faca171af27347a3dcd40675d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -73248,7 +73248,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.19"
+CTLD.version="1.0.20"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -75010,6 +75010,7 @@ local timeout=self.droppedbeacontimeout or 600
 local livebeacontable={}
 for _,_beacon in pairs(self.droppedBeacons)do
 local beacon=_beacon
+if not beacon.timestamp then beacon.timestamp=timer.getTime()end
 local T0=beacon.timestamp
 if timer.getTime()-T0>timeout then
 local name=beacon.name
@@ -92934,7 +92935,7 @@ TARGETLOCATION="Zielposition",
 COORDINATE="Koordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.49"
+PLAYERTASKCONTROLLER.version="0.1.50"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93726,13 +93727,15 @@ self.TaskQueue:Push(task)
 self:__TaskAdded(10,task)
 return self
 end
-function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask)
+function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask,Silent)
 self:T(self.lid.."AddPlayerTaskToQueue")
 if PlayerTask and PlayerTask.ClassName and PlayerTask.ClassName=="PLAYERTASK"then
 PlayerTask:_SetController(self)
 PlayerTask:SetCoalition(self.Coalition)
 self.TaskQueue:Push(PlayerTask)
+if not Silent then
 self:__TaskAdded(10,PlayerTask)
+end
 else
 self:E(self.lid.."***** NO valid PAYERTASK object sent!")
 end
