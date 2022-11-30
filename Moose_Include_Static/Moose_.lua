@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-29T16:54:15.0000000Z-907d62c4e790233319885deb6fb01d60a9e01db2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-30T17:37:28.0000000Z-2a8d166c54330c8423dee1e76e95d1636309b220 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6053,7 +6053,7 @@ functionsGen={},
 functionsAny={},
 functionsAll={},
 }
-CONDITION.version="0.1.0"
+CONDITION.version="0.2.0"
 function CONDITION:New(Name)
 local self=BASE:Inherit(self,BASE:New())
 self.name=Name or"Condition X"
@@ -6146,6 +6146,38 @@ if arg then
 condition.arg=arg
 end
 return condition
+end
+function CONDITION.IsTimeGreater(Time,Absolute)
+local Tnow=nil
+if Absolute then
+Tnow=timer.getAbsTime()
+else
+Tnow=timer.getTime()
+end
+if Tnow>Time then
+return true
+else
+return false
+end
+return nil
+end
+function CONDITION.IsRandomSuccess(Probability)
+Probability=Probability or 50
+math.random()
+math.random()
+math.random()
+local N=math.random()*100
+if N<Probability then
+return true
+else
+return false
+end
+end
+function CONDITION.ReturnTrue()
+return true
+end
+function CONDITION.ReturnFalse()
+return false
 end
 DATABASE={
 ClassName="DATABASE",
@@ -9412,6 +9444,10 @@ function MESSAGE:ToAllIf(Condition)
 if Condition and Condition==true then
 self:ToAll()
 end
+return self
+end
+function MESSAGE:ToLog()
+env.info(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""))
 return self
 end
 do
