@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-01T20:32:19.0000000Z-b29b9f1b2c71caef118ded5eaf9e56828379a7a3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-02T15:39:09.0000000Z-37b1e7366c1f1a7e4003e2bedcc4e59ba91d1255 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16428,6 +16428,12 @@ return self
 end
 function MESSAGE:ToLog()
 env.info(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""))
+return self
+end
+function MESSAGE:ToLogIf(Condition)
+if Condition and Condition==true then
+env.info(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""))
+end
 return self
 end
 do
@@ -61528,7 +61534,7 @@ local Frequency=Mhz*1000000
 local Sound="l10n/DEFAULT/"..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,Frequency,1000)
 elseif Zone then
-local ZoneCoord=Zone:GetCoordinate()
+local ZoneCoord=Zone:GetCoordinate(2)
 local ZoneVec3=ZoneCoord:GetVec3()
 local Frequency=Mhz*1000000
 local Sound="l10n/DEFAULT/"..Sound
