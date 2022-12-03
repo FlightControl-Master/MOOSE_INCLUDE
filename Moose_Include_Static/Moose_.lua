@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-03T13:36:28.0000000Z-85504fbe6241116e119e6a2ea20745633d1dfdb1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-03T13:38:57.0000000Z-9659bfa553379df3e6b82998d7e60210cfd780db ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75001,6 +75001,10 @@ ctldzone.color=Color or SMOKECOLOR.Red
 ctldzone.name=Name or"NONE"
 ctldzone.type=Type or CTLD.CargoZoneType.MOVE
 ctldzone.hasbeacon=HasBeacon or false
+if Type==CTLD.CargoZoneType.BEACON then
+self.droppedbeaconref[ctldzone.name]=zone:GetCoordinate()
+ctldzone.timestamp=timer.getTime()
+end
 if HasBeacon then
 ctldzone.fmbeacon=self:_GetFMBeacon(Name)
 ctldzone.uhfbeacon=self:_GetUHFBeacon(Name)
@@ -75056,7 +75060,7 @@ local timeout=self.droppedbeacontimeout or 600
 local livebeacontable={}
 for _,_beacon in pairs(self.droppedBeacons)do
 local beacon=_beacon
-if not beacon.timestamp then beacon.timestamp=timer.getTime()end
+if not beacon.timestamp then beacon.timestamp=timer.getTime()+timeout end
 local T0=beacon.timestamp
 if timer.getTime()-T0>timeout then
 local name=beacon.name
@@ -75114,13 +75118,13 @@ local Sound=Sound or"beacon.ogg"
 if IsDropped and Zone then
 local ZoneCoord=Zone
 local ZoneVec3=ZoneCoord:GetVec3()
-local Frequency=Mhz*1000000
+local Frequency=string.format("%09d",Mhz*1000000)
 local Sound="l10n/DEFAULT/"..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,Frequency,1000)
 elseif Zone then
 local ZoneCoord=Zone:GetCoordinate(2)
 local ZoneVec3=ZoneCoord:GetVec3()
-local Frequency=Mhz*1000000
+local Frequency=string.format("%09d",Mhz*1000000)
 local Sound="l10n/DEFAULT/"..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,Frequency,1000)
 end
