@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-06T11:50:08.0000000Z-386171bcabb0a5fe3ae7f4feced9796de77c04d7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-06T17:05:41.0000000Z-525666be7caf40fa8c73d591f56dff6ffb2c78fb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -94609,7 +94609,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.15",
+version="0.0.16",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -95213,9 +95213,10 @@ end
 coordinate:Smoke(color)
 end
 if self.SmokeOwn[playername]then
-local cc=client:GetCoordinate()
+local cc=client:GetVec2()
+local lc=COORDINATE:NewFromVec2(cc,1)
 local color=self.SmokeColor.ownsmoke
-cc:Smoke(color)
+lc:Smoke(color)
 end
 return self
 end
