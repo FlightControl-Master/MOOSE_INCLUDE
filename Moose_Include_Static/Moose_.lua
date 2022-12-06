@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-03T13:37:01.0000000Z-508e36d3274a8478aa6a72321777d155ff3eb8ea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-06T11:49:27.0000000Z-9ea4a5dbd4c22b8c01ac9b7b1b7581c07654448a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62180,7 +62180,7 @@ self:T({From,Event,To})
 return self
 end
 function CTLD:onbeforeCratesBuild(From,Event,To,Group,Unit,Vehicle)
-self:I({From,Event,To})
+self:T({From,Event,To})
 if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
 local playername=Unit:GetPlayerName()
 local dropcoord=Vehicle:GetCoordinate()or COORDINATE:New(0,0,0)
