@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-03T13:38:57.0000000Z-9659bfa553379df3e6b82998d7e60210cfd780db ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-06T11:50:08.0000000Z-386171bcabb0a5fe3ae7f4feced9796de77c04d7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75764,7 +75764,7 @@ self:T({From,Event,To})
 return self
 end
 function CTLD:onbeforeCratesBuild(From,Event,To,Group,Unit,Vehicle)
-self:I({From,Event,To})
+self:T({From,Event,To})
 if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
 local playername=Unit:GetPlayerName()
 local dropcoord=Vehicle:GetCoordinate()or COORDINATE:New(0,0,0)
@@ -92985,7 +92985,7 @@ TARGETLOCATION="Zielposition",
 COORDINATE="Koordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.50"
+PLAYERTASKCONTROLLER.version="0.1.51"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93973,10 +93973,19 @@ text=text..string.format("\n%s: ",brieftxt)..task:GetFreetext()
 end
 if self.UseSRS then
 if string.find(CoordText," BR, ")then
-CoordText=string.gsub(CoordText," BR, "," Bee, Arr, ")
+CoordText=string.gsub(CoordText," BR, "," Bee, Arr; ")
 end
 if self.ShowMagnetic then
-text=string.gsub(text,"°M|","° magnetic, ")
+text=string.gsub(text,"°M|","° magnetic; ")
+end
+if string.find(CoordText,"MGRS")then
+local Text=string.gsub(CoordText,"%d","%1;")
+Text=string.gsub(Text," $","")
+CoordText=string.gsub(Text,"0","zero")
+CoordText=string.gsub(Text,"MGRS","MGRS;")
+if self.PathToGoogleKey then
+CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordText)
+end
 end
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
 local ttstext=string.format(ThreatLocaleTextTTS,self.MenuName or self.Name,ttsplayername,ttstaskname,ThreatLevelText,targets,CoordText)
