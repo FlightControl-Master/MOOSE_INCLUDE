@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-07T17:35:12.0000000Z-813d4edc970915de04591762e02b249d59f88fec ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-07T17:50:26.0000000Z-dcfce8b619fe582254d88ce30d35d1868ba433fa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59746,6 +59746,10 @@ wpZones={},
 dropOffZones={},
 pickupZones={},
 }
+CTLD.RadioModulation={
+AM=0,
+FM=1,
+}
 CTLD.CargoZoneType={
 LOAD="load",
 DROP="drop",
@@ -61425,7 +61429,7 @@ local FM=table.remove(self.FreeFMFrequencies,math.random(#self.FreeFMFrequencies
 table.insert(self.UsedFMFrequencies,FM)
 beacon.name=Name
 beacon.frequency=FM/1000000
-beacon.modulation=radio.modulation.FM
+beacon.modulation=CTLD.RadioModulation.FM
 return beacon
 end
 function CTLD:_GetUHFBeacon(Name)
@@ -61439,7 +61443,7 @@ local UHF=table.remove(self.FreeUHFFrequencies,math.random(#self.FreeUHFFrequenc
 table.insert(self.UsedUHFFrequencies,UHF)
 beacon.name=Name
 beacon.frequency=UHF/1000000
-beacon.modulation=radio.modulation.AM
+beacon.modulation=CTLD.RadioModulation.AM
 return beacon
 end
 function CTLD:_GetVHFBeacon(Name)
@@ -61453,7 +61457,7 @@ local VHF=table.remove(self.FreeVHFFrequencies,math.random(#self.FreeVHFFrequenc
 table.insert(self.UsedVHFFrequencies,VHF)
 beacon.name=Name
 beacon.frequency=VHF/1000000
-beacon.modulation=radio.modulation.FM
+beacon.modulation=CTLD.RadioModulation.FM
 return beacon
 end
 function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth)
@@ -61592,16 +61596,16 @@ end
 local Sound=Sound or"beacon.ogg"
 if IsDropped and Zone then
 local ZoneCoord=Zone
-local ZoneVec3=ZoneCoord:GetVec3()
+local ZoneVec3=ZoneCoord:GetVec3(1)
 local Frequency=string.format("%09d",Mhz*1000000)
 local Sound="l10n/DEFAULT/"..Sound
-trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,Frequency,1000)
+trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 elseif Zone then
-local ZoneCoord=Zone:GetCoordinate(2)
+local ZoneCoord=Zone:GetCoordinate(1)
 local ZoneVec3=ZoneCoord:GetVec3()
 local Frequency=string.format("%09d",Mhz*1000000)
 local Sound="l10n/DEFAULT/"..Sound
-trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,Frequency,1000)
+trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 end
 return self
 end
@@ -61624,9 +61628,9 @@ local Name=czone.name
 local FM=FMbeacon.frequency
 local VHF=VHFbeacon.frequency
 local UHF=UHFbeacon.frequency
-self:_AddRadioBeacon(Name,Sound,FM,radio.modulation.FM,IsShip,IsDropped)
-self:_AddRadioBeacon(Name,Sound,VHF,radio.modulation.FM,IsShip,IsDropped)
-self:_AddRadioBeacon(Name,Sound,UHF,radio.modulation.AM,IsShip,IsDropped)
+self:_AddRadioBeacon(Name,Sound,FM,CTLD.RadioModulation.FM,IsShip,IsDropped)
+self:_AddRadioBeacon(Name,Sound,VHF,CTLD.RadioModulation.FM,IsShip,IsDropped)
+self:_AddRadioBeacon(Name,Sound,UHF,CTLD.RadioModulation.AM,IsShip,IsDropped)
 end
 end
 end
