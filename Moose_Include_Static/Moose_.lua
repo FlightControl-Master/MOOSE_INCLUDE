@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-07T17:58:56.0000000Z-f6a88db46b0aaacf65173cf4ef29f70d59443595 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-08T12:15:07.0000000Z-8eef039312519c87cbd92d3f79a7ac2f335dbc41 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61929,6 +61929,32 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
+function AUFTRAG:NewCAPGROUP(Grp,Altitude,Speed,RelHeading,Leg,OffsetDist,OffsetAngle,UpdateDistance,TargetTypes,EngageRange)
+if TargetTypes then
+if type(TargetTypes)~="table"then
+TargetTypes={TargetTypes}
+end
+end
+local OffsetVec2={r=OffsetDist or 6,phi=OffsetAngle or 180}
+Leg=Leg or 14
+local Heading=nil
+if RelHeading then
+Heading=-math.abs(RelHeading)
+end
+local mission=AUFTRAG:NewORBIT_GROUP(Grp,Altitude,Speed,Leg,Heading,OffsetVec2,UpdateDistance)
+mission.type=AUFTRAG.Type.CAP
+mission:_SetLogID()
+local engage=EngageRange or 32
+local zoneCAPGroup=ZONE_GROUP:New("CAPGroup",Grp,UTILS.NMToMeters(engage))
+mission.engageZone=zoneCAPGroup
+mission.engageTargetTypes=TargetTypes or{"Air"}
+mission.missionTask=ENUMS.MissionTask.CAP
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionROT=ENUMS.ROT.EvadeFire
+mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
 function AUFTRAG:NewCAS(ZoneCAS,Altitude,Speed,Coordinate,Heading,Leg,TargetTypes)
 if TargetTypes then
 if type(TargetTypes)~="table"then
@@ -79013,7 +79039,7 @@ end
 end
 local mission=self:GetMissionCurrent()
 if mission and mission.updateDCSTask then
-if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER)and mission.orbitVec2 then
+if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP)and mission.orbitVec2 then
 local vec2=mission:GetTargetVec2()
 local hdg=mission:GetTargetHeading()
 local hdgchange=false
