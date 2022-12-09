@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-07T17:50:26.0000000Z-dcfce8b619fe582254d88ce30d35d1868ba433fa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-09T11:37:39.0000000Z-84d301c67662965fc05b6a4ad278166b8c04d816 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59773,7 +59773,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.20"
+CTLD.version="1.0.21"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -59884,6 +59884,7 @@ self.saveinterval=600
 self.eventoninject=true
 self.usesubcats=false
 self.subcats={}
+self.nobuildinloadzones=true
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -60363,10 +60364,10 @@ local subcat=cargotype.Subcategory
 self.CargoCounter=self.CargoCounter+1
 local realcargo=nil
 if drop then
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,subcat)
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,nil,subcat)
 table.insert(droppedcargo,realcargo)
 else
-realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,subcat)
+realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],false,cargotype.PerCrateMass,nil,subcat)
 Cargo:RemoveStock()
 end
 table.insert(self.Spawned_Cargo,realcargo)
@@ -60953,6 +60954,13 @@ if self:IsHercules(Unit)and self.enableHercules and not Engineering then
 local speed=Unit:GetVelocityKMH()
 if speed>1 then
 self:_SendMessage("You need to land / stop to build something, Pilot!",10,false,Group)
+return self
+end
+end
+if not Engineering and self.nobuildinloadzones then
+local inloadzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+if inloadzone then
+self:_SendMessage("You cannot build in a loading area, Pilot!",10,false,Group)
 return self
 end
 end
