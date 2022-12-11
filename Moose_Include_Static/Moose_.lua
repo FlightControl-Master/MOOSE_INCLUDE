@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-09T11:38:02.0000000Z-614cfcd7f767765fc8862b189014f85805851420 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-11T14:51:22.0000000Z-4892a580845a62a1ef8f35ac252885cb42c0bc77 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -11586,18 +11586,20 @@ self:T3({FirstObject})
 return FirstObject
 end
 function SET_BASE:GetLast()
-local ObjectName=self.Index[#self.Index]
+local tablemax=table.maxn(self.Index)
+local ObjectName=self.Index[tablemax]
 local LastObject=self.Set[ObjectName]
 self:T3({LastObject})
 return LastObject
 end
 function SET_BASE:GetRandom()
-local RandomItem=self.Set[self.Index[math.random(#self.Index)]]
+local tablemax=table.maxn(self.Index)
+local RandomItem=self.Set[self.Index[math.random(1,tablemax)]]
 self:T3({RandomItem})
 return RandomItem
 end
 function SET_BASE:Count()
-return self.Index and#self.Index or 0
+return self.Index and table.maxn(self.Index)or 0
 end
 function SET_BASE:SetDatabase(BaseSet)
 local OtherFilter=routines.utils.deepCopy(BaseSet.Filter)
@@ -14850,6 +14852,7 @@ local self=BASE:Inherit(self,SET_BASE:New(zoneset))
 local zonenames={}
 if ZoneSet then
 for _,_zone in pairs(ZoneSet.Set)do
+self:T("Zone type handed: "..tostring(_zone.ClassName))
 table.insert(zonenames,_zone:GetName())
 end
 self:AddSceneryByName(zonenames)
@@ -64381,7 +64384,7 @@ SuppressScreenOutput=false,
 NoMissileCalls=true,
 GoogleTTSPadding=1,
 WindowsTTSPadding=2.5,
-PlayerCapAssigment=true,
+PlayerCapAssignment=true,
 AllowMarkers=false,
 PlayerStationName=nil,
 GCI=false,
@@ -64683,7 +64686,7 @@ self.DeclareRadius=5
 self.MenuStrict=true
 self.maxassigndistance=100
 self.NoMissileCalls=true
-self.PlayerCapAssigment=true
+self.PlayerCapAssignment=true
 self.ManagedGrps={}
 self.ManagedGrpID=0
 self.callsignTranslations=nil
@@ -66300,9 +66303,11 @@ local picture=MENU_GROUP_COMMAND:New(cgrp,"Picture",basemenu,self._Picture,self,
 local declare=MENU_GROUP_COMMAND:New(cgrp,"Declare",basemenu,self._Declare,self,cgrp)
 local tasking=MENU_GROUP:New(cgrp,"Tasking",basemenu)
 local showtask=MENU_GROUP_COMMAND:New(cgrp,"Showtask",tasking,self._Showtask,self,cgrp)
+if self.PlayerCapAssignment then
 local commit=MENU_GROUP_COMMAND:New(cgrp,"Commit",tasking,self._Commit,self,cgrp)
 local unable=MENU_GROUP_COMMAND:New(cgrp,"Unable",tasking,self._Unable,self,cgrp)
 local abort=MENU_GROUP_COMMAND:New(cgrp,"Abort",tasking,self._TaskAbort,self,cgrp)
+end
 if self.AwacsROE==AWACS.ROE.POLICE or self.AwacsROE==AWACS.ROE.VID then
 local vid=MENU_GROUP:New(cgrp,"VID as",tasking)
 local hostile=MENU_GROUP_COMMAND:New(cgrp,"Hostile",vid,self._VID,self,cgrp,AWACS.IFF.ENEMY)
@@ -68077,7 +68082,7 @@ self:_CheckMerges()
 local outcome,targets=self:_TargetSelectionProcess(true)
 self:_CheckTaskQueue()
 local AI,Humans=self:_GetIdlePilots()
-if outcome and#Humans>0 and self.PlayerCapAssigment then
+if outcome and#Humans>0 and self.PlayerCapAssignment then
 self:_AssignPilotToTarget(Humans,targets)
 end
 if outcome and#AI>0 then
