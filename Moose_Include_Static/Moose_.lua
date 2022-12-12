@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-11T14:51:22.0000000Z-4892a580845a62a1ef8f35ac252885cb42c0bc77 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-12T15:24:25.0000000Z-696569f749aa11a2fabb955f216f6922feec0cec ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92941,6 +92941,7 @@ MenuParent=nil,
 ShowMagnetic=true,
 InfoHasLLDDM=false,
 InfoHasCoordinate=false,
+UseTypeNames=false,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -93021,6 +93022,13 @@ FLASHMENU="Flash Directions Switch",
 BRIEFING="Briefing",
 TARGETLOCATION="Target location",
 COORDINATE="Coordinate",
+INFANTRY="Infantry",
+TECHNICAL="Technical",
+ARTILLERY="Artillery",
+TANKS="Tanks",
+AIRDEFENSE="Airdefense",
+SAM="SAM",
+GROUP="Group",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -93086,9 +93094,16 @@ FLASHMENU="Richtungsangaben Schalter",
 BRIEFING="Briefing",
 TARGETLOCATION="Zielposition",
 COORDINATE="Koordinate",
+INFANTRY="Infantrie",
+TECHNICAL="Technische",
+ARTILLERY="Artillerie",
+TANKS="Panzer",
+AIRDEFENSE="Flak",
+SAM="Luftabwehr",
+GROUP="Einheit",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.51"
+PLAYERTASKCONTROLLER.version="0.1.52"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93125,6 +93140,7 @@ self.Keepnumber=false
 self.CallsignTranslations=nil
 self.noflaresmokemenu=false
 self.ShowMagnetic=true
+self.UseTypeNames=false
 if ClientFilter then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
 else
@@ -93168,6 +93184,16 @@ self:T(string.format('Adding ID %s',tostring(ID)))
 self.gettext:AddEntry(Locale,tostring(ID),Text)
 end
 end
+return self
+end
+function PLAYERTASKCONTROLLER:SetEnableUseTypeNames()
+self:T(self.lid.."SetEnableUseTypeNames")
+self.UseTypeNames=true
+return self
+end
+function PLAYERTASKCONTROLLER:SetDisableUseTypeNames()
+self:T(self.lid.."SetDisableUseTypeNames")
+self.UseTypeNames=false
 return self
 end
 function PLAYERTASKCONTROLLER:SetAllowFlashDirection(OnOff)
@@ -93497,6 +93523,24 @@ target.menuname=object.menuname
 if object.freetext then
 target.freetext=object.freetext
 end
+end
+if self.UseTypeNames and object:IsGround()then
+local threat=object:GetThreatLevel()
+local typekey="INFANTRY"
+if threat==0 or threat==2 then
+typekey="TECHNICAL"
+elseif threat==3 then
+typekey="ARTILLERY"
+elseif threat==4 or threat==5 then
+typekey="TANKS"
+elseif threat==6 or threat==7 then
+typekey="AIRDEFENSE"
+elseif threat>=8 then
+typekey="SAM"
+end
+local typename=self.gettext:GetEntry(typekey,self.locale)
+local gname=self.gettext:GetEntry("GROUP",self.locale)
+target.TypeName=string.format("%s %s",typename,gname)
 end
 self:_AddTask(target)
 end
@@ -93851,6 +93895,7 @@ task:AddFreetext(Target.freetext)
 end
 end
 task.coalition=self.Coalition
+task.TypeName=Target.TypeName
 if type==AUFTRAG.Type.BOMBRUNWAY then
 task:HandleEvent(EVENTS.Shot)
 function task:OnEventShot(EventData)
@@ -94251,6 +94296,11 @@ if self.UseGroupNames then
 local name=_task.Target:GetName()
 if name~="Unknown"then
 text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
+end
+end
+if self.UseTypeNames then
+if _task.TypeName then
+text=string.format("%s (%03d) [%d%s",_task.TypeName,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
 local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task):SetTag(newtag)
