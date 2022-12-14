@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-14T10:42:12.0000000Z-178e4ceb7f5fb4e1efabbdfeace55cce023b7639 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-14T13:50:06.0000000Z-a6e7ea65909a3d83283e30fa121199656be8e3d5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13347,6 +13347,8 @@ Types=nil,
 Countries=nil,
 ClientPrefixes=nil,
 Zones=nil,
+Playernames=nil,
+Callsigns=nil,
 },
 FilterMeta={
 Coalitions={
@@ -13385,6 +13387,30 @@ end
 function SET_CLIENT:FindClient(ClientName)
 local ClientFound=self.Set[ClientName]
 return ClientFound
+end
+function SET_CLIENT:FilterCallsigns(Callsigns)
+if not self.Filter.Callsigns then
+self.Filter.Callsigns={}
+end
+if type(Callsigns)~="table"then
+Callsigns={Callsigns}
+end
+for callsignID,callsign in pairs(Callsigns)do
+self.Filter.Callsigns[callsign]=callsign
+end
+return self
+end
+function SET_CLIENT:FilterPlayernames(Playernames)
+if not self.Filter.Playernames then
+self.Filter.Playernames={}
+end
+if type(Playernames)~="table"then
+Playernames={Playernames}
+end
+for PlayernameID,playername in pairs(Playernames)do
+self.Filter.Playernames[playername]=playername
+end
+return self
 end
 function SET_CLIENT:FilterCoalitions(Coalitions)
 if not self.Filter.Coalitions then
@@ -13606,7 +13632,6 @@ end
 self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
-end
 if self.Filter.Zones then
 local MClientZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
@@ -13617,6 +13642,29 @@ MClientZone=true
 end
 end
 MClientInclude=MClientInclude and MClientZone
+end
+if self.Filter.Playernames then
+local MClientPlayername=false
+local playername=MClient:GetPlayerName()or"Unknown"
+for _,_Playername in pairs(self.Filter.Playernames)do
+if playername and string.find(playername,_Playername)then
+MClientPlayername=true
+end
+end
+self:T({"Evaluated Playername",MClientPlayername})
+MClientInclude=MClientInclude and MClientPlayername
+end
+if self.Filter.Callsigns then
+local MClientCallsigns=false
+local callsign=MClient:GetCallsign()
+for _,_Callsign in pairs(self.Filter.Callsigns)do
+if callsign and string.find(callsign,_Callsign)then
+MClientCallsigns=true
+end
+end
+self:T({"Evaluated Callsign",MClientCallsigns})
+MClientInclude=MClientInclude and MClientCallsigns
+end
 end
 self:T2(MClientInclude)
 return MClientInclude
