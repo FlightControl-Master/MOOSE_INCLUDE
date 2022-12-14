@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-14T08:43:34.0000000Z-e12455d1548856e73b727e80415870e4c193bac5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-14T10:42:12.0000000Z-178e4ceb7f5fb4e1efabbdfeace55cce023b7639 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93103,7 +93103,7 @@ SAM="Luftabwehr",
 GROUP="Einheit",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.52"
+PLAYERTASKCONTROLLER.version="0.1.53"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93924,9 +93924,17 @@ self.TaskQueue:Push(task)
 self:__TaskAdded(10,task)
 return self
 end
-function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask,Silent)
+function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask,Silent,TaskFilter)
 self:T(self.lid.."AddPlayerTaskToQueue")
 if PlayerTask and PlayerTask.ClassName and PlayerTask.ClassName=="PLAYERTASK"then
+if TaskFilter then
+if self.UseWhiteList and(not self:_CheckTaskTypeAllowed(PlayerTask.Type))then
+return self
+end
+if self.UseBlackList and self:_CheckTaskTypeDisallowed(PlayerTask.Type)then
+return self
+end
+end
 PlayerTask:_SetController(self)
 PlayerTask:SetCoalition(self.Coalition)
 self.TaskQueue:Push(PlayerTask)
