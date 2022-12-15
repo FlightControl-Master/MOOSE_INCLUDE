@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-14T13:48:20.0000000Z-1fac6b7c937b205365f630fd65250e27a3c452ee ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-15T10:49:28.0000000Z-d5028d86dffa671804e7aa77800d23a8ebbd2fae ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -13194,7 +13194,7 @@ if MClient then
 local MClientName=MClient.UnitName
 if self.Filter.Active~=nil then
 local MClientActive=false
-if self.Filter.Active==false or(self.Filter.Active==true and MClient:IsActive()==true)then
+if self.Filter.Active==false or(self.Filter.Active==true and MClient:IsActive()==true and MClient:IsAlive()==true)then
 MClientActive=true
 end
 MClientInclude=MClientInclude and MClientActive
