@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-15T10:49:28.0000000Z-d5028d86dffa671804e7aa77800d23a8ebbd2fae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-15T17:28:06.0000000Z-80e3b157caf51f99e161e9e632ac81a308ede594 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3646,11 +3646,10 @@ table.remove(loadeddata,1)
 for _id,_entry in pairs(loadeddata)do
 local dataset=UTILS.Split(_entry,",")
 local staticname=dataset[1]
-local posx=tonumber(dataset[2])
-local posy=tonumber(dataset[3])
-local posz=tonumber(dataset[4])
-local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
-datatable:AddObject(STATIC:FindByName(staticname,false))
+local StaticObject=STATIC:FindByName(staticname,false)
+if StaticObject then
+datatable:AddObject(StaticObject)
+end
 end
 else
 return nil
