@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-14T13:50:06.0000000Z-a6e7ea65909a3d83283e30fa121199656be8e3d5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-15T10:50:05.0000000Z-a3fd583d9d80f796cc85af1da9e6cb17b1d4c51f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93151,7 +93151,7 @@ SAM="Luftabwehr",
 GROUP="Einheit",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.53"
+PLAYERTASKCONTROLLER.version="0.1.54"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93189,9 +93189,14 @@ self.CallsignTranslations=nil
 self.noflaresmokemenu=false
 self.ShowMagnetic=true
 self.UseTypeNames=false
-if ClientFilter then
+local IsClientSet=false
+if ClientFilter and type(ClientFilter)=="table"and ClientFilter.ClassName and ClientFilter.ClassName=="SET_CLIENT"then
+self.ClientSet=ClientFilter
+IsClientSet=true
+end
+if ClientFilter and not IsClientSet then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
-else
+elseif not IsClientSet then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterStart()
 end
 self.lid=string.format("PlayerTaskController %s %s | ",self.Name,tostring(self.Type))
@@ -93451,6 +93456,9 @@ self:T(self.lid..text)
 end
 elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
 if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
+if self.ClientSet:IsNotInSet(CLIENT:FindByName(EventData.IniUnitName))then
+return self
+end
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
 local frequency=self.Frequency
 local freqtext=""
@@ -94381,7 +94389,7 @@ enforced=true
 joinorabort=true
 end
 for _,_client in pairs(clients)do
-if _client then
+if _client and _client:IsAlive()then
 local client=_client
 local group=client:GetGroup()
 local unknown=self.gettext:GetEntry("UNKNOWN",self.locale)
@@ -94730,7 +94738,7 @@ enforcedmenu=true
 end
 self:_BuildMenus(nil,enforcedmenu)
 if self.verbose then
-local text=string.format("New Targets: %02d | Active Tasks: %02d | Active Players: %02d | Assigned Tasks: %02d",targetcount,taskcount,playercount,assignedtasks)
+local text=string.format("%s | New Targets: %02d | Active Tasks: %02d | Active Players: %02d | Assigned Tasks: %02d",self.MenuName,targetcount,taskcount,playercount,assignedtasks)
 self:I(text)
 end
 if self:GetState()~="Stopped"then
