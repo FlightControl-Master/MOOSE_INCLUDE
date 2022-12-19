@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-19T12:08:35.0000000Z-6e26e7eac322e4b49d2f718e5fb645931977a20a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-19T13:05:21.0000000Z-fa1f67420debae56ec31f93fa050440250b2d30c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -73436,7 +73436,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.21"
+CTLD.version="1.0.22"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -75988,7 +75988,7 @@ self:T(self.lid.."Bulding Statics Table for Saving")
 for _,_cargo in pairs(stcstable)do
 local cargo=_cargo
 local object=cargo:GetPositionable()
-if object and object:IsAlive()and cargo:WasDropped()then
+if object and object:IsAlive()and(cargo:WasDropped()or not cargo:HasMoved())then
 statics[#statics+1]=cargo
 end
 end
