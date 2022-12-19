@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-19T13:04:30.0000000Z-5010cdff71b1467642719406104384e7db1dd69d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-19T15:12:09.0000000Z-8df6e2dd57400d3d252d1da6eb3c7c1dc7cd44c2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24230,10 +24230,18 @@ return false
 end
 function UNIT:GetGroup()
 self:F2(self.UnitName)
+local UnitGroup=GROUP:FindByName(self.GroupName)
+if UnitGroup then
+return UnitGroup
+else
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
-local UnitGroup=GROUP:FindByName(DCSUnit:getGroup():getName())
+local grp=DCSUnit:getGroup()
+if grp then
+local UnitGroup=GROUP:FindByName(grp:getName())
 return UnitGroup
+end
+end
 end
 return nil
 end
