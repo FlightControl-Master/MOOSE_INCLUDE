@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-20T15:05:50.0000000Z-79e99dcb388839a062c75f9a41152c2064ec5867 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-20T17:18:24.0000000Z-b501eec3065937b3de71a4ceeb83b6051795d720 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64237,7 +64237,11 @@ heading=self.targetHeading or 0
 end
 orbitRaceTrack=UTILS.Vec2Translate(orbitVec2,self.orbitLeg,heading)
 end
-local DCStask=CONTROLLABLE.TaskOrbit(nil,COORDINATE:NewFromVec2(orbitVec2),self.orbitAltitude,self.orbitSpeed,COORDINATE:NewFromVec2(orbitRaceTrack))
+local orbitRaceTrackCoord=nil
+if orbitRaceTrack then
+orbitRaceTrackCoord=COORDINATE:NewFromVec2(orbitRaceTrack)
+end
+local DCStask=CONTROLLABLE.TaskOrbit(nil,COORDINATE:NewFromVec2(orbitVec2),self.orbitAltitude,self.orbitSpeed,orbitRaceTrackCoord)
 table.insert(DCStasks,DCStask)
 end
 end
