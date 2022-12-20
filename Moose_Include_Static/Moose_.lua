@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-19T15:14:41.0000000Z-f6eccba966016a624e764289ab34cdc6f876b682 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-20T15:05:50.0000000Z-79e99dcb388839a062c75f9a41152c2064ec5867 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -92563,7 +92563,7 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 }
-PLAYERTASK.version="0.1.10"
+PLAYERTASK.version="0.1.11"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -92624,6 +92624,10 @@ end
 function PLAYERTASK:GetCoalition()
 self:T(self.lid.."GetCoalition")
 return self.coalition
+end
+function PLAYERTASK:GetTarget()
+self:T(self.lid.."GetTarget")
+return self.Target
 end
 function PLAYERTASK:AddFreetext(Text)
 self:T(self.lid.."AddFreetext")
