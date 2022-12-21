@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-20T17:18:24.0000000Z-b501eec3065937b3de71a4ceeb83b6051795d720 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-21T11:55:38.0000000Z-9e823f12c2a7818f9b34fab1393df12fe8da2fb2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -14978,6 +14978,19 @@ CountU=CountU+1
 end
 end
 return CountU
+end
+function SET_SCENERY:GetAliveSet()
+self:F2()
+local AliveSet=SET_SCENERY:New()
+for GroupName,GroupObject in pairs(self.Set)do
+local GroupObject=GroupObject
+if GroupObject then
+if GroupObject:IsAlive()then
+AliveSet:Add(GroupName,GroupObject)
+end
+end
+end
+return AliveSet.Set or{},AliveSet
 end
 function SET_SCENERY:ForEachScenery(IteratorFunction,...)
 self:F2(arg)
@@ -97623,7 +97636,7 @@ self:Damaged()
 end
 if self.verbose>=1 then
 local text=string.format("%s: Targets=%d/%d Life=%.1f/%.1f Damage=%.1f",fsmstate,self:CountTargets(),self.N0,self:GetLife(),self:GetLife0(),self:GetDamage())
-if self:CountTargets()==0 then
+if self:CountTargets()==0 or self:GetDamage()>=100 then
 text=text.." Dead!"
 elseif damaged then
 text=text.." Damaged!"
@@ -97639,7 +97652,7 @@ text=text..string.format("\n[%d] %s %s %s: Life=%.1f/%.1f, Damage=%.1f",i,target
 end
 self:I(self.lid..text)
 end
-if self:CountTargets()==0 then
+if self:CountTargets()==0 or self:GetDamage()>=100 then
 self:Dead()
 end
 if self:IsAlive()then
@@ -97780,6 +97793,7 @@ target.Type=TARGET.ObjectType.SCENERY
 target.Name=scenery:GetName()
 target.Coordinate=scenery:GetCoordinate()
 target.Life0=scenery:GetLife0()
+if target.Life0==0 then target.Life0=1 end
 target.Life=scenery:GetLife()
 target.N0=target.N0+1
 table.insert(self.elements,target.Name)
@@ -97859,7 +97873,8 @@ return 0
 end
 elseif Target.Type==TARGET.ObjectType.STATIC then
 if Target.Object and Target.Object:IsAlive()then
-return 1
+local life=Target.Object:GetLife()
+return life
 else
 return 0
 end
