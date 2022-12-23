@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-23T12:39:00.0000000Z-535060153a3bf227ccf541e24448c20f612f47d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-23T12:42:14.0000000Z-9619b11c58a9ef67982daa312bd30199924d008d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61715,6 +61715,18 @@ local Frequency=string.format("%09d",Mhz*1000000)
 local Sound=self.RadioPath..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 end
+return self
+end
+function CTLD:SetSoundfilesFolder(FolderPath)
+self:T(self.lid.." SetSoundfilesFolder")
+if FolderPath then
+local lastchar=string.sub(FolderPath,-1)
+if lastchar~="/"then
+FolderPath=FolderPath.."/"
+end
+end
+self.RadioPath=FolderPath
+self:I(self.lid..string.format("Setting sound files folder to: %s",self.RadioPath))
 return self
 end
 function CTLD:_RefreshRadioBeacons()
