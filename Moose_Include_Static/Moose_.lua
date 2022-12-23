@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-21T13:09:47.0000000Z-f26ff52712f8d98af471733b4f872520b45a258c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-23T12:39:00.0000000Z-535060153a3bf227ccf541e24448c20f612f47d8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59845,7 +59845,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.23"
+CTLD.version="1.0.24"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -59902,6 +59902,7 @@ self.UsedVHFFrequencies={}
 self.UsedUHFFrequencies={}
 self.UsedFMFrequencies={}
 self.RadioSound="beacon.ogg"
+self.RadioPath="l10n/DEFAULT/"
 self.pickupZones={}
 self.dropOffZones={}
 self.wpZones={}
@@ -61705,13 +61706,13 @@ if IsDropped and Zone then
 local ZoneCoord=Zone
 local ZoneVec3=ZoneCoord:GetVec3(1)
 local Frequency=string.format("%09d",Mhz*1000000)
-local Sound="l10n/DEFAULT/"..Sound
+local Sound=self.RadioPath..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 elseif Zone then
 local ZoneCoord=Zone:GetCoordinate(1)
 local ZoneVec3=ZoneCoord:GetVec3()
 local Frequency=string.format("%09d",Mhz*1000000)
-local Sound="l10n/DEFAULT/"..Sound
+local Sound=self.RadioPath..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 end
 return self
