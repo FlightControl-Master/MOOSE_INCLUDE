@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-21T13:12:23.0000000Z-2f6cd20cbdff50c364508bc857d38913134bf1fb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-23T12:43:43.0000000Z-1b0131bd9dd853c4bea38a07541d1ad284122a37 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -73461,7 +73461,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.23"
+CTLD.version="1.0.24"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73518,6 +73518,7 @@ self.UsedVHFFrequencies={}
 self.UsedUHFFrequencies={}
 self.UsedFMFrequencies={}
 self.RadioSound="beacon.ogg"
+self.RadioPath="l10n/DEFAULT/"
 self.pickupZones={}
 self.dropOffZones={}
 self.wpZones={}
@@ -75321,15 +75322,27 @@ if IsDropped and Zone then
 local ZoneCoord=Zone
 local ZoneVec3=ZoneCoord:GetVec3(1)
 local Frequency=string.format("%09d",Mhz*1000000)
-local Sound="l10n/DEFAULT/"..Sound
+local Sound=self.RadioPath..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 elseif Zone then
 local ZoneCoord=Zone:GetCoordinate(1)
 local ZoneVec3=ZoneCoord:GetVec3()
 local Frequency=string.format("%09d",Mhz*1000000)
-local Sound="l10n/DEFAULT/"..Sound
+local Sound=self.RadioPath..Sound
 trigger.action.radioTransmission(Sound,ZoneVec3,Modulation,false,tonumber(Frequency),1000)
 end
+return self
+end
+function CTLD:SetSoundfilesFolder(FolderPath)
+self:T(self.lid.." SetSoundfilesFolder")
+if FolderPath then
+local lastchar=string.sub(FolderPath,-1)
+if lastchar~="/"then
+FolderPath=FolderPath.."/"
+end
+end
+self.RadioPath=FolderPath
+self:I(self.lid..string.format("Setting sound files folder to: %s",self.RadioPath))
 return self
 end
 function CTLD:_RefreshRadioBeacons()
