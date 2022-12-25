@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-24T11:04:08.0000000Z-89d854f5be3a532af73cc1badfbe772210faf726 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-25T13:20:25.0000000Z-f9c1d6217334785e726608e21484c0f8af7549a5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60325,6 +60325,7 @@ markerid=nil,
 relHumidity=nil,
 ReportmBar=false,
 TransmitOnlyWithPlayers=false,
+ATISforFARPs=false,
 }
 ATIS.Alphabet={
 [1]="Alfa",
@@ -60452,7 +60453,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.12"
+ATIS.version="0.9.14"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -60730,9 +60731,14 @@ local coal=self.airbase and self.airbase:GetCoalition()or nil
 return coal
 end
 function ATIS:onafterStart(From,Event,To)
-if self.airbase:GetAirbaseCategory()~=Airbase.Category.AIRDROME then
-self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AIRDROMES are supported but NOT FARPS or SHIPS.",self.airbasename))
+if self.airbase:GetAirbaseCategory()==Airbase.Category.SHIP then
+self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AIRDROMES are supported but NOT SHIPS.",self.airbasename))
 return
+end
+if self.airbase:GetAirbaseCategory()==Airbase.Category.HELIPAD then
+self:E(self.lid..string.format("EXPERIMENTAL: Starting ATIS for Helipad %s! SRS must be ON",self.airbasename))
+self.ATISforFARPs=true
+self.useSRS=true
 end
 self:I(self.lid..string.format("Starting ATIS v%s for airbase %s on %.3f MHz Modulation=%d",ATIS.version,self.airbasename,self.frequency,self.modulation))
 if not self.useSRS then
@@ -60849,8 +60855,15 @@ end
 if self.metric then
 WINDSPEED=string.format("%d",windSpeed)
 end
-local runwayLanding,rwyLandingLeft=self:GetActiveRunway()
-local runwayTakeoff,rwyTakeoffLeft=self:GetActiveRunway(true)
+local runwayLanding,rwyLandingLeft
+local runwayTakeoff,rwyTakeoffLeft
+if self.airbase:GetAirbaseCategory()==Airbase.Category.HELIPAD then
+runwayLanding,rwyLandingLeft="PAD 01",false
+runwayTakeoff,rwyTakeoffLeft="PAD 02",false
+else
+runwayLanding,rwyLandingLeft=self:GetActiveRunway()
+runwayTakeoff,rwyTakeoffLeft=self:GetActiveRunway(true)
+end
 local time=timer.getAbsTime()
 if self.zuludiff then
 time=time-self.zuludiff*60*60
@@ -61049,7 +61062,7 @@ end
 end
 local subtitle=""
 subtitle=string.format("%s",self.airbasename)
-if self.airbasename:find("AFB")==nil and self.airbasename:find("Airport")==nil and self.airbasename:find("Airstrip")==nil and self.airbasename:find("airfield")==nil and self.airbasename:find("AB")==nil then
+if(not self.ATISforFARPs)and self.airbasename:find("AFB")==nil and self.airbasename:find("Airport")==nil and self.airbasename:find("Airstrip")==nil and self.airbasename:find("airfield")==nil and self.airbasename:find("AB")==nil then
 subtitle=subtitle.." Airport"
 end
 if not self.useSRS then
@@ -61333,6 +61346,7 @@ end
 end
 end
 alltext=alltext..";\n"..subtitle
+if not self.ATISforFARPs then
 local subtitle=string.format("Active runway %s",runwayLanding)
 if rwyLandingLeft==true then
 subtitle=subtitle.." Left"
@@ -61380,6 +61394,7 @@ self:Transmission(ATIS.Sound.Feet,0.1)
 end
 end
 alltext=alltext..";\n"..subtitle
+end
 end
 if self.elevation then
 local elevation=self.airbase:GetHeight()
