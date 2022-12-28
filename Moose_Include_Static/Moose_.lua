@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-25T13:20:25.0000000Z-f9c1d6217334785e726608e21484c0f8af7549a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-28T14:48:46.0000000Z-9871bf82d324055b8adede29434a087a53f2b2cc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4761,7 +4761,21 @@ else
 return true
 end
 end
-function UTILS.SaveStationaryListOfGroups(List,Path,Filename)
+function UTILS.GetCountPerTypeName(Group)
+local units=Group:GetUnits()
+local TypeNameTable={}
+for _,_unt in pairs(units)do
+local unit=_unt
+local typen=unit:GetTypeName()
+if not TypeNameTable[typen]then
+TypeNameTable[typen]=1
+else
+TypeNameTable[typen]=TypeNameTable[typen]+1
+end
+end
+return TypeNameTable
+end
+function UTILS.SaveStationaryListOfGroups(List,Path,Filename,Structured)
 local filename=Filename or"StateListofGroups"
 local data="--Save Stationary List of Groups: "..Filename.."\n"
 for _,_group in pairs(List)do
@@ -4769,7 +4783,16 @@ local group=GROUP:FindByName(_group)
 if group and group:IsAlive()then
 local units=group:CountAliveUnits()
 local position=group:GetVec3()
+if Structured then
+local structure=UTILS.GetCountPerTypeName(group)
+local strucdata=""
+for typen,anzahl in pairs(structure)do
+strucdata=strucdata..typen.."=="..anzahl..";"
+end
+data=string.format("%s%s,%d,%d,%d,%d,%s\n",data,_group,units,position.x,position.y,position.z,strucdata)
+else
 data=string.format("%s%s,%d,%d,%d,%d\n",data,_group,units,position.x,position.y,position.z)
+end
 else
 data=string.format("%s%s,0,0,0,0\n",data,_group)
 end
@@ -4777,7 +4800,7 @@ end
 local outcome=UTILS.SaveToFile(Path,Filename,data)
 return outcome
 end
-function UTILS.SaveSetOfGroups(Set,Path,Filename)
+function UTILS.SaveSetOfGroups(Set,Path,Filename,Structured)
 local filename=Filename or"SetOfGroups"
 local data="--Save SET of groups: "..Filename.."\n"
 local List=Set:GetSetObjects()
@@ -4791,7 +4814,16 @@ template=string.gsub(name,"#(%d+)$","")
 end
 local units=group:CountAliveUnits()
 local position=group:GetVec3()
+if Structured then
+local structure=UTILS.GetCountPerTypeName(group)
+local strucdata=""
+for typen,anzahl in pairs(structure)do
+strucdata=strucdata..typen.."=="..anzahl..";"
+end
+data=string.format("%s%s,%s,%d,%d,%d,%d,%s\n",data,name,template,units,position.x,position.y,position.z,strucdata)
+else
 data=string.format("%s%s,%s,%d,%d,%d,%d\n",data,name,template,units,position.x,position.y,position.z)
+end
 end
 end
 local outcome=UTILS.SaveToFile(Path,Filename,data)
@@ -4827,7 +4859,31 @@ end
 local outcome=UTILS.SaveToFile(Path,Filename,data)
 return outcome
 end
-function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce)
+function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce,Structured,Cinematic,Effect,Density)
+local fires={}
+local function Smokers(name,coord,effect,density)
+local eff=math.random(8)
+if type(effect)=="number"then eff=effect end
+coord:BigSmokeAndFire(eff,density,name)
+table.insert(fires,name)
+end
+local function Cruncher(group,typename,anzahl)
+local units=group:GetUnits()
+local reduced=0
+for _,_unit in pairs(units)do
+local typo=_unit:GetTypeName()
+if typename==typo then
+if Cinematic then
+local coordinate=_unit:GetCoordinate()
+local name=_unit:GetName()
+Smokers(name,coordinate,Effect,Density)
+end
+_unit:Destroy(false)
+reduced=reduced+1
+if reduced==anzahl then break end
+end
+end
+end
 local reduce=true
 if Reduce==false then reduce=false end
 local filename=Filename or"StateListofGroups"
@@ -4842,17 +4898,38 @@ local size=tonumber(dataset[2])
 local posx=tonumber(dataset[3])
 local posy=tonumber(dataset[4])
 local posz=tonumber(dataset[5])
+local structure=dataset[6]
 local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
 local data={groupname=groupname,size=size,coordinate=coordinate,group=GROUP:FindByName(groupname)}
 if reduce then
 local actualgroup=GROUP:FindByName(groupname)
 if actualgroup and actualgroup:IsAlive()and actualgroup:CountAliveUnits()>size then
+if Structured and structure then
+local loadedstructure={}
+local strcset=UTILS.Split(structure,";")
+for _,_data in pairs(strcset)do
+local datasplit=UTILS.Split(_data,"==")
+loadedstructure[datasplit[1]]=tonumber(datasplit[2])
+end
+local originalstructure=UTILS.GetCountPerTypeName(actualgroup)
+for _name,_number in pairs(originalstructure)do
+local loadednumber=0
+if loadedstructure[_name]then
+loadednumber=loadedstructure[_name]
+end
+local reduce=false
+if loadednumber<_number then reduce=true end
+if reduce then
+Cruncher(actualgroup,_name,_number-loadednumber)
+end
+end
+else
 local reduction=actualgroup:CountAliveUnits()-size
-BASE:I("Reducing groupsize by "..reduction.." units!")
 local units=actualgroup:GetUnits()
 local units2=UTILS.ShuffleTable(units)
 for i=1,reduction do
 units2[i]:Destroy(false)
+end
 end
 end
 end
@@ -4861,12 +4938,35 @@ end
 else
 return nil
 end
-return datatable
+return datatable,fires
 end
-function UTILS.LoadSetOfGroups(Path,Filename,Spawn)
+function UTILS.LoadSetOfGroups(Path,Filename,Spawn,Structured,Cinematic,Effect,Density)
+local fires={}
+local function Smokers(name,coord,effect,density)
+local eff=math.random(8)
+if type(effect)=="number"then eff=effect end
+coord:BigSmokeAndFire(eff,density,name)
+table.insert(fires,name)
+end
+local function Cruncher(group,typename,anzahl)
+local units=group:GetUnits()
+local reduced=0
+for _,_unit in pairs(units)do
+local typo=_unit:GetTypeName()
+if typename==typo then
+if Cinematic then
+local coordinate=_unit:GetCoordinate()
+local name=_unit:GetName()
+Smokers(name,coordinate,Effect,Density)
+end
+_unit:Destroy(false)
+reduced=reduced+1
+if reduced==anzahl then break end
+end
+end
+end
 local spawn=true
 if Spawn==false then spawn=false end
-BASE:I("Spawn = "..tostring(spawn))
 local filename=Filename or"SetOfGroups"
 local setdata=SET_GROUP:New()
 local datatable={}
@@ -4881,6 +4981,7 @@ local size=tonumber(dataset[3])
 local posx=tonumber(dataset[4])
 local posy=tonumber(dataset[5])
 local posz=tonumber(dataset[6])
+local structure=dataset[7]
 local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
 local group=nil
 local data={groupname=groupname,size=size,coordinate=coordinate,template=template}
@@ -4893,11 +4994,32 @@ function(spwndgrp)
 setdata:AddObject(spwndgrp)
 local actualsize=spwndgrp:CountAliveUnits()
 if actualsize>size then
+if Structured and structure then
+local loadedstructure={}
+local strcset=UTILS.Split(structure,";")
+for _,_data in pairs(strcset)do
+local datasplit=UTILS.Split(_data,"==")
+loadedstructure[datasplit[1]]=tonumber(datasplit[2])
+end
+local originalstructure=UTILS.GetCountPerTypeName(spwndgrp)
+for _name,_number in pairs(originalstructure)do
+local loadednumber=0
+if loadedstructure[_name]then
+loadednumber=loadedstructure[_name]
+end
+local reduce=false
+if loadednumber<_number then reduce=true end
+if reduce then
+Cruncher(spwndgrp,_name,_number-loadednumber)
+end
+end
+else
 local reduction=actualsize-size
 local units=spwndgrp:GetUnits()
 local units2=UTILS.ShuffleTable(units)
 for i=1,reduction do
 units2[i]:Destroy(false)
+end
 end
 end
 end
@@ -4909,7 +5031,7 @@ else
 return nil
 end
 if spawn then
-return setdata
+return setdata,fires
 else
 return datatable
 end
@@ -4933,7 +5055,8 @@ return nil
 end
 return datatable
 end
-function UTILS.LoadStationaryListOfStatics(Path,Filename,Reduce)
+function UTILS.LoadStationaryListOfStatics(Path,Filename,Reduce,Dead,Cinematic,Effect,Density)
+local fires={}
 local reduce=true
 if Reduce==false then reduce=false end
 local filename=Filename or"StateListofStatics"
@@ -4954,14 +5077,31 @@ table.insert(datatable,data)
 if size==0 and reduce then
 local static=STATIC:FindByName(staticname,false)
 if static then
+if Dead then
+local deadobject=SPAWNSTATIC:NewFromStatic(staticname,static:GetCountry())
+deadobject:InitDead(true)
+local heading=static:GetHeading()
+local coord=static:GetCoordinate()
 static:Destroy(false)
+deadobject:SpawnFromCoordinate(coord,heading,staticname)
+if Cinematic then
+local effect=math.random(8)
+if type(Effect)=="number"then
+effect=Effect
+end
+coord:BigSmokeAndFire(effect,Density,staticname)
+table.insert(fires,staticname)
+end
+else
+static:Destroy(false)
+end
 end
 end
 end
 else
 return nil
 end
-return datatable
+return datatable,fires
 end
 function UTILS.BearingToCardinal(Heading)
 if Heading>=0 and Heading<=22 then return"North"
