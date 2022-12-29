@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-28T14:48:46.0000000Z-9871bf82d324055b8adede29434a087a53f2b2cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-29T15:34:11.0000000Z-d25efe2293dd33a2dc01ec43452616c568885ddb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61707,6 +61707,8 @@ local text=string.gsub(text,"inHg","inches of Mercury")
 local text=string.gsub(text,"mmHg","millimeters of Mercury")
 local text=string.gsub(text,"hPa","hectopascals")
 local text=string.gsub(text,"m/s","meters per second")
+local text=string.gsub(text,"TACAN","tackan")
+local text=string.gsub(text,"FARP","farp")
 local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
 local duration=STTS.getSpeechTime(text,0.95)
@@ -64531,7 +64533,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.50",
+version="0.2.51",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -64618,6 +64620,7 @@ PlayerStationName=nil,
 GCI=false,
 GCIGroup=nil,
 locale="en",
+IncludeHelicopters=false,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -67989,6 +67992,13 @@ local comm=self.gettext:GetEntry("COMMIT",self.locale)
 local text=string.format("%s. %s.",Pilot.CallSign,comm)
 self:_NewRadioEntry(text,text,Pilot.GID,true,self.debug,true,true,true)
 self:__Intercept(2)
+end
+return self
+end
+function AWACS:onbeforeStart(From,Event,to)
+self:T({From,Event,To})
+if self.IncludeHelicopters then
+self.clientset:FilterCategories("helicopter")
 end
 return self
 end
