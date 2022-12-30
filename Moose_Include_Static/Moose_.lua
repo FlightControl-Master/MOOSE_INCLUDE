@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-30T16:40:10.0000000Z-5a44948050f9467fb7bafda5a8cac90a81eb428e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-30T21:30:57.0000000Z-ff7ebb4f923d333474d5a0954c0c4bdceff005b6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4269,6 +4269,22 @@ else
 return"Unknown"
 end
 end
+function UTILS.GetCoalitionEnemy(Coalition,Neutral)
+local Coalitions={}
+if Coalition then
+if Coalition==coalition.side.RED then
+Coalitions={coalition.side.BLUE}
+elseif Coalition==coalition.side.BLUE then
+Coalitions={coalition.side.RED}
+elseif Coalition==coalition.side.NEUTRAL then
+Coalitions={coalition.side.RED,coalition.side.BLUE}
+end
+end
+if Neutral then
+table.insert(Coalitions,coalition.side.NEUTRAL)
+end
+return Coalitions
+end
 function UTILS.GetModulationName(Modulation)
 if Modulation then
 if Modulation==0 then
@@ -5140,6 +5156,36 @@ BRAANATO=string.format("%s, BRAA, %03d, %d miles, Angels %d, %s, Track %s",Group
 end
 end
 return BRAANATO
+end
+function UTILS.IsInTable(Table,Object,Key)
+for key,object in pairs(Table)do
+if Key then
+if Object[Key]==object[Key]then
+return true
+end
+else
+if object==Object then
+return true
+end
+end
+end
+return false
+end
+function UTILS.IsAnyInTable(Table,Objects,Key)
+for _,Object in pairs(UTILS.EnsureTable(Objects))do
+for key,object in pairs(Table)do
+if Key then
+if Object[Key]==object[Key]then
+return true
+end
+else
+if object==Object then
+return true
+end
+end
+end
+end
+return false
 end
 local _TraceOnOff=true
 local _TraceLevel=1
@@ -6408,6 +6454,7 @@ ZONES_GOAL={},
 WAREHOUSES={},
 FLIGHTGROUPS={},
 FLIGHTCONTROLS={},
+OPSZONES={},
 }
 local _DATABASECoalition=
 {
@@ -6551,6 +6598,23 @@ end
 end
 function DATABASE:DeleteZoneGoal(ZoneName)
 self.ZONES_GOAL[ZoneName]=nil
+end
+end
+do
+function DATABASE:FindOpsZone(ZoneName)
+local ZoneFound=self.OPSZONES[ZoneName]
+return ZoneFound
+end
+function DATABASE:AddOpsZone(OpsZone)
+if OpsZone then
+local ZoneName=OpsZone:GetName()
+if not self.OPSZONES[ZoneName]then
+self.OPSZONES[ZoneName]=OpsZone
+end
+end
+end
+function DATABASE:DeleteOpsZone(ZoneName)
+self.OPSZONES[ZoneName]=nil
 end
 end
 do
@@ -11600,9 +11664,9 @@ self.CallScheduler=SCHEDULER:New(self)
 self:SetEventPriority(2)
 return self
 end
-function SET_BASE:Clear()
+function SET_BASE:Clear(TriggerEvent)
 for Name,Object in pairs(self.Set)do
-self:Remove(Name)
+self:Remove(Name,not TriggerEvent)
 end
 return self
 end
@@ -11633,7 +11697,11 @@ end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
 self:F2({ObjectName=ObjectName})
 local TriggerEvent=true
-if NoTriggerEvent then TriggerEvent=false end
+if NoTriggerEvent then
+TriggerEvent=false
+else
+TriggerEvent=true
+end
 local Object=self.Set[ObjectName]
 if Object then
 for Index,Key in ipairs(self.Index)do
@@ -11762,7 +11830,15 @@ function SET_BASE:FilterOnce()
 for ObjectName,Object in pairs(self.Database)do
 if self:IsIncludeObject(Object)then
 self:Add(ObjectName,Object)
+else
+self:Remove(ObjectName,true)
 end
+end
+return self
+end
+function SET_BASE:FilterClear()
+for key,value in pairs(self.Filter)do
+self.Filter[key]={}
 end
 return self
 end
@@ -12052,8 +12128,8 @@ end
 end
 return NearestGroup
 end
-function SET_GROUP:FilterZones(Zones)
-if not self.Filter.Zones then
+function SET_GROUP:FilterZones(Zones,Clear)
+if Clear or not self.Filter.Zones then
 self.Filter.Zones={}
 end
 local zones={}
@@ -12071,39 +12147,18 @@ self.Filter.Zones[zonename]=Zone
 end
 return self
 end
-function SET_GROUP:FilterZones(Zones)
-if not self.Filter.Zones then
-self.Filter.Zones={}
-end
-local zones={}
-if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
-zones=Zones.Set
-elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
-self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
-return self
-else
-zones=Zones
-end
-for _,Zone in pairs(zones)do
-local zonename=Zone:GetName()
-self.Filter.Zones[zonename]=Zone
-end
-return self
-end
-function SET_GROUP:FilterCoalitions(Coalitions)
-if not self.Filter.Coalitions then
+function SET_GROUP:FilterCoalitions(Coalitions,Clear)
+if Clear or(not self.Filter.Coalitions)then
 self.Filter.Coalitions={}
 end
-if type(Coalitions)~="table"then
-Coalitions={Coalitions}
-end
+Coalitions=UTILS.EnsureTable(Coalitions,false)
 for CoalitionID,Coalition in pairs(Coalitions)do
 self.Filter.Coalitions[Coalition]=Coalition
 end
 return self
 end
-function SET_GROUP:FilterCategories(Categories)
-if not self.Filter.Categories then
+function SET_GROUP:FilterCategories(Categories,Clear)
+if Clear or not self.Filter.Categories then
 self.Filter.Categories={}
 end
 if type(Categories)~="table"then
@@ -12445,6 +12500,23 @@ for UnitName,UnitData in pairs(GroupData:GetUnits())do
 UnitData:SetCargoBayWeightLimit()
 end
 end
+end
+function SET_GROUP:GetClosestGroup(Coordinate,Coalitions)
+local Set=self:GetSet()
+local dmin=math.huge
+local gmin=nil
+for GroupID,GroupData in pairs(Set)do
+local group=GroupData
+if group and group:IsAlive()and(Coalitions==nil or UTILS.IsAnyInTable(Coalitions,group:GetCoalition()))then
+local coord=group:GetCoord()
+local d=UTILS.VecDist3D(Coordinate,coord)
+if d<dmin then
+dmin=d
+gmin=group
+end
+end
+end
+return gmin,dmin
 end
 end
 do
@@ -14610,6 +14682,19 @@ end
 end
 return nil
 end
+function SET_ZONE:GetClosestZone(Coordinate)
+local dmin=math.huge
+local zmin=nil
+for _,Zone in pairs(self:GetSet())do
+local Zone=Zone
+local d=Zone:Get2DDistance(Coordinate)
+if d<dmin then
+dmin=d
+zmin=Zone
+end
+end
+return zmin,dmin
+end
 end
 do
 SET_ZONE_GOAL={
@@ -14754,6 +14839,215 @@ return nil
 end
 end
 do
+SET_OPSZONE={
+ClassName="SET_OPSZONE",
+Zones={},
+Filter={
+Prefixes=nil,
+Coalitions=nil,
+},
+FilterMeta={
+Coalitions={
+red=coalition.side.RED,
+blue=coalition.side.BLUE,
+neutral=coalition.side.NEUTRAL,
+},
+},
+}
+function SET_OPSZONE:New()
+local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.OPSZONES))
+return self
+end
+function SET_OPSZONE:AddZone(Zone)
+self:Add(Zone:GetName(),Zone)
+return self
+end
+function SET_OPSZONE:RemoveZonesByName(RemoveZoneNames)
+local RemoveZoneNamesArray=(type(RemoveZoneNames)=="table")and RemoveZoneNames or{RemoveZoneNames}
+for RemoveZoneID,RemoveZoneName in pairs(RemoveZoneNamesArray)do
+self:Remove(RemoveZoneName)
+end
+return self
+end
+function SET_OPSZONE:FindZone(ZoneName)
+local ZoneFound=self.Set[ZoneName]
+return ZoneFound
+end
+function SET_OPSZONE:GetRandomZone()
+if self:Count()~=0 then
+local Index=self.Index
+local ZoneFound=nil
+while not ZoneFound do
+local ZoneRandom=math.random(1,#Index)
+ZoneFound=self.Set[Index[ZoneRandom]]:GetZoneMaybe()
+end
+return ZoneFound
+end
+return nil
+end
+function SET_OPSZONE:SetZoneProbability(ZoneName,Probability)
+local Zone=self:FindZone(ZoneName)
+Zone:SetZoneProbability(Probability)
+return self
+end
+function SET_OPSZONE:FilterPrefixes(Prefixes)
+if not self.Filter.Prefixes then
+self.Filter.Prefixes={}
+end
+Prefixes=UTILS.EnsureTable(Prefixes,false)
+for PrefixID,Prefix in pairs(Prefixes)do
+self.Filter.Prefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_OPSZONE:FilterCoalitions(Coalitions)
+if not self.Filter.Coalitions then
+self.Filter.Coalitions={}
+end
+Coalitions=UTILS.EnsureTable(Coalitions,false)
+for CoalitionID,Coalition in pairs(Coalitions)do
+self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_OPSZONE:FilterOnce()
+for ObjectName,Object in pairs(self.Database)do
+self:Remove(ObjectName,true)
+if self:IsIncludeObject(Object)then
+self:Add(ObjectName,Object)
+end
+end
+return self
+end
+function SET_OPSZONE:FilterClear()
+local parent=self:GetParent(self,SET_OPSZONE)
+parent:FilterClear()
+return self
+end
+function SET_OPSZONE:FilterStart()
+if _DATABASE then
+for ObjectName,Object in pairs(self.Database)do
+if self:IsIncludeObject(Object)then
+self:Add(ObjectName,Object)
+else
+self:RemoveZonesByName(ObjectName)
+end
+end
+end
+self:HandleEvent(EVENTS.NewZoneGoal)
+self:HandleEvent(EVENTS.DeleteZoneGoal)
+return self
+end
+function SET_OPSZONE:FilterStop()
+self:UnHandleEvent(EVENTS.NewZoneGoal)
+self:UnHandleEvent(EVENTS.DeleteZoneGoal)
+return self
+end
+function SET_OPSZONE:AddInDatabase(Event)
+self:F3({Event})
+return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
+end
+function SET_OPSZONE:FindInDatabase(Event)
+self:F3({Event})
+return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
+end
+function SET_OPSZONE:ForEachZone(IteratorFunction,...)
+self:F2(arg)
+self:ForEach(IteratorFunction,arg,self:GetSet())
+return self
+end
+function SET_OPSZONE:IsIncludeObject(MZone)
+self:F2(MZone)
+local MZoneInclude=true
+if MZone then
+local MZoneName=MZone:GetName()
+if self.Filter.Prefixes then
+local MZonePrefix=false
+for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
+self:T3({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
+if string.find(MZoneName,ZonePrefix,1)then
+MZonePrefix=true
+break
+end
+end
+self:T({"Evaluated Prefix",MZonePrefix})
+MZoneInclude=MZoneInclude and MZonePrefix
+end
+if self.Filter.Coalitions then
+local MGroupCoalition=false
+local coalition=MZone:GetOwner()
+for _,CoalitionName in pairs(self.Filter.Coalitions)do
+if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==coalition then
+MGroupCoalition=true
+break
+end
+end
+MZoneInclude=MZoneInclude and MGroupCoalition
+end
+end
+self:T2(MZoneInclude)
+return MZoneInclude
+end
+function SET_OPSZONE:OnEventNewZoneGoal(EventData)
+self:T({"New Zone Capture Coalition",EventData})
+self:T({"Zone Capture Coalition",EventData.ZoneGoal})
+if EventData.ZoneGoal then
+if EventData.ZoneGoal and self:IsIncludeObject(EventData.ZoneGoal)then
+self:T({"Adding Zone Capture Coalition",EventData.ZoneGoal.ZoneName,EventData.ZoneGoal})
+self:Add(EventData.ZoneGoal.ZoneName,EventData.ZoneGoal)
+end
+end
+end
+function SET_OPSZONE:OnEventDeleteZoneGoal(EventData)
+self:F3({EventData})
+if EventData.ZoneGoal then
+local Zone=_DATABASE:FindZone(EventData.ZoneGoal.ZoneName)
+if Zone and Zone.ZoneName then
+self:F({ZoneNoDestroy=Zone.NoDestroy})
+if Zone.NoDestroy then
+else
+self:Remove(Zone.ZoneName)
+end
+end
+end
+end
+function SET_OPSZONE:Start()
+for _,_Zone in pairs(self:GetSet())do
+local Zone=_Zone
+if Zone:IsStopped()then
+Zone:Start()
+end
+end
+return self
+end
+function SET_OPSZONE:IsCoordinateInZone(Coordinate)
+for _,_Zone in pairs(self:GetSet())do
+local Zone=_Zone
+if Zone:GetZone():IsCoordinateInZone(Coordinate)then
+return Zone
+end
+end
+return nil
+end
+function SET_OPSZONE:GetClosestZone(Coordinate,Coalitions)
+Coalitions=UTILS.EnsureTable(Coalitions,true)
+local dmin=math.huge
+local zmin=nil
+for _,_opszone in pairs(self:GetSet())do
+local opszone=_opszone
+local coal=opszone:GetOwner()
+if opszone:IsStarted()and(Coalitions==nil or(Coalitions and UTILS.IsInTable(Coalitions,coal)))then
+local d=opszone:GetZone():Get2DDistance(Coordinate)
+if d<dmin then
+dmin=d
+zmin=opszone
+end
+end
+end
+return zmin,dmin
+end
+end
+do
 SET_OPSGROUP={
 ClassName="SET_OPSGROUP",
 Filter={
@@ -14857,8 +15151,8 @@ function SET_OPSGROUP:FindNavyGroup(GroupName)
 local GroupFound=self:FindGroup(GroupName)
 return GroupFound
 end
-function SET_OPSGROUP:FilterCoalitions(Coalitions)
-if not self.Filter.Coalitions then
+function SET_OPSGROUP:FilterCoalitions(Coalitions,Clear)
+if Clear or not self.Filter.Coalitions then
 self.Filter.Coalitions={}
 end
 if type(Coalitions)~="table"then
@@ -14869,8 +15163,8 @@ self.Filter.Coalitions[Coalition]=Coalition
 end
 return self
 end
-function SET_OPSGROUP:FilterCategories(Categories)
-if not self.Filter.Categories then
+function SET_OPSGROUP:FilterCategories(Categories,Clear)
+if Clear or not self.Filter.Categories then
 self.Filter.Categories={}
 end
 if type(Categories)~="table"then
@@ -14901,8 +15195,8 @@ function SET_OPSGROUP:FilterCategoryShip()
 self:FilterCategories("ship")
 return self
 end
-function SET_OPSGROUP:FilterCountries(Countries)
-if not self.Filter.Countries then
+function SET_OPSGROUP:FilterCountries(Countries,Clear)
+if Clear or not self.Filter.Countries then
 self.Filter.Countries={}
 end
 if type(Countries)~="table"then
@@ -14913,8 +15207,8 @@ self.Filter.Countries[Country]=Country
 end
 return self
 end
-function SET_OPSGROUP:FilterPrefixes(Prefixes)
-if not self.Filter.GroupPrefixes then
+function SET_OPSGROUP:FilterPrefixes(Prefixes,Clear)
+if Clear or not self.Filter.GroupPrefixes then
 self.Filter.GroupPrefixes={}
 end
 if type(Prefixes)~="table"then
@@ -59565,7 +59859,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="0.8.0"
+ARMYGROUP.version="0.9.0"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -59737,6 +60031,13 @@ end
 end
 end
 end
+local mission=self:GetMissionCurrent()
+if mission and mission.updateDCSTask and mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING then
+if mission.type==AUFTRAG.Type.CAPTUREZONE then
+local Task=mission:GetGroupWaypointTask(self)
+self:_UpdateTask(Task,mission)
+end
+end
 else
 self:_CheckDamage()
 end
@@ -59887,6 +60188,8 @@ elseif task.dcstask.id=="ReconMission"then
 self:T2(self.lid.."Allowing update route for Task: ReconMission")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
 self:T2(self.lid.."Allowing update route for Task: Relocate Cohort")
+elseif task.dcstask.id==AUFTRAG.SpecialTask.REARMING then
+self:T2(self.lid.."Allowing update route for Task: Rearming")
 else
 local taskname=task and task.description or"No description"
 self:T(self.lid..string.format("WARNING: Update route denied because taskcurrent=%d>0! Task description = %s",self.taskcurrent,tostring(taskname)))
@@ -60023,7 +60326,7 @@ self:RemoveWaypointByID(wp.uid)
 end
 end
 Speed=Speed or self:GetSpeedCruise()
-local uid=self:GetWaypointCurrent().uid
+local uid=self:GetWaypointCurrentUID()
 local wp=self:AddWaypoint(Coordinate,Speed,uid,Formation,true)
 if ResumeRoute then
 wp.detour=1
@@ -60061,10 +60364,15 @@ function ARMYGROUP:onbeforeRearm(From,Event,To,Coordinate,Formation)
 local dt=nil
 local allowed=true
 if self:IsOnMission()then
+local mission=self:GetMissionCurrent()
+if mission and mission.type~=AUFTRAG.Type.REARMING then
 self:T(self.lid.."Rearm command but have current mission ==> Pausing mission!")
 self:PauseMission()
 dt=-0.1
 allowed=false
+else
+self:T(self.lid.."Rearm command and current mission is REARMING ==> Transition ALLOWED!")
+end
 end
 if self:IsEngaging()then
 self:T(self.lid.."Rearm command but currently engaging ==> Disengage!")
@@ -60088,7 +60396,7 @@ return allowed
 end
 function ARMYGROUP:onafterRearm(From,Event,To,Coordinate,Formation)
 self:T(self.lid..string.format("Group send to rearm"))
-local uid=self:GetWaypointCurrent().uid
+local uid=self:GetWaypointCurrentUID()
 local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
 wp.detour=0
 end
@@ -60165,8 +60473,9 @@ end
 return true
 end
 function ARMYGROUP:onafterRetreat(From,Event,To,Zone,Formation)
-local uid=self:GetWaypointCurrent().uid
+local uid=self:GetWaypointCurrentUID()
 local Coordinate=Zone:GetRandomCoordinate()
+self:T(self.lid..string.format("Retreating to zone %s",Zone:GetName()))
 local wp=self:AddWaypoint(Coordinate,nil,uid,Formation,true)
 wp.detour=0
 self:CancelAllMissions()
@@ -60185,7 +60494,7 @@ self:T(self.lid.."WARNING: Cannot engage TARGET because no ammo left!")
 return false
 end
 local mission=self:GetMissionCurrent()
-if mission and mission.type~=AUFTRAG.Type.GROUNDATTACK then
+if mission and mission.type~=AUFTRAG.Type.GROUNDATTACK and mission.type~=AUFTRAG.Type.CAPTUREZONE then
 self:T(self.lid.."Engage command but have current mission ==> Pausing mission!")
 self:PauseMission()
 dt=-0.1
@@ -60222,9 +60531,9 @@ if self.engage.Target and self.engage.Target:IsAlive()then
 local vec3=self.engage.Target:GetVec3()
 if vec3 then
 local dist=UTILS.VecDist3D(vec3,self.engage.Coordinate:GetVec3())
-if dist>100 then
+if dist>100 or not self:HasLoS(self.engage.Target:GetCoordinate())then
 self.engage.Coordinate:UpdateFromVec3(vec3)
-local uid=self:GetWaypointCurrent().uid
+local uid=self:GetWaypointCurrentUID()
 self:RemoveWaypointByID(self.engage.Waypoint.uid)
 local intercoord=self:GetCoordinate():GetIntermediateCoordinate(self.engage.Coordinate,0.9)
 self.engage.Waypoint=self:AddWaypoint(intercoord,self.engage.Speed,uid,self.engage.Formation,true)
@@ -60281,6 +60590,8 @@ Speed=Speed or self:GetSpeedCruise()
 if not Formation then
 if self.formationPerma then
 Formation=self.formationPerma
+elseif self.optionDefault.Formation then
+Formation=self.optionDefault.Formation
 elseif self.option.Formation then
 Formation=self.option.Formation
 else
@@ -60324,7 +60635,8 @@ self.radio.On=false
 self.radio.Freq=133
 self.radio.Modu=radio.modulation.AM
 self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
-self.optionDefault.Formation=template.route.points[1].action
+self.option.Formation=template.route.points[1].action
+self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
 local units=self.group:GetUnits()
@@ -61900,6 +62212,7 @@ AIRDEFENSE="Air Defence",
 EWR="Early Warning Radar",
 RECOVERYTANKER="Recovery Tanker",
 REARMING="Rearming",
+CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
 }
 AUFTRAG.SpecialTask={
@@ -61921,6 +62234,7 @@ AIRDEFENSE="Air Defense",
 EWR="Early Warning Radar",
 RECOVERYTANKER="Recovery Tanker",
 REARMING="Rearming",
+CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
 }
 AUFTRAG.Status={
@@ -61960,7 +62274,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.7"
+AUFTRAG.version="0.9.9"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -62469,6 +62783,28 @@ mission.DCStask=mission:GetDCSMissionTask()
 mission.DCStask.params.formation=Formation or"Off Road"
 return mission
 end
+function AUFTRAG:NewCAPTUREZONE(OpsZone,Coalition,Speed,Altitude,Formation)
+local mission=AUFTRAG:New(AUFTRAG.Type.CAPTUREZONE)
+mission:_TargetFromObject(OpsZone)
+mission.coalition=Coalition
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.CAPTUREZONE)
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.PassiveDefense
+mission.optionAlarm=ENUMS.AlarmState.Auto
+mission.missionFraction=0.1
+mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
+mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
+mission.categories={AUFTRAG.Category.ALL}
+mission.DCStask=mission:GetDCSMissionTask()
+mission.updateDCSTask=true
+local params={}
+params.formation=Formation or"Off Road"
+params.zone=mission:GetObjective()
+params.altitude=mission.missionAltitude
+params.speed=mission.missionSpeed
+mission.DCStask.params=params
+return mission
+end
 function AUFTRAG:NewARMORATTACK(Target,Speed,Formation)
 local mission=AUFTRAG:NewGROUNDATTACK(Target,Speed,Formation)
 mission.type=AUFTRAG.Type.ARMORATTACK
@@ -62807,6 +63143,10 @@ function AUFTRAG:SetRepeatOnSuccess(Nrepeat)
 self.NrepeatSuccess=Nrepeat or 0
 return self
 end
+function AUFTRAG:SetReinforce(Nreinforce)
+self.reinforce=Nreinforce
+return self
+end
 function AUFTRAG:SetRequiredAssets(NassetsMin,NassetsMax)
 self.NassetsMin=NassetsMin or 1
 self.NassetsMax=NassetsMax or self.NassetsMin
@@ -62815,13 +63155,22 @@ self.NassetsMax=self.NassetsMin
 end
 return self
 end
-function AUFTRAG:GetRequiredAssets(Legion)
+function AUFTRAG:GetRequiredAssets()
 local Nmin=self.NassetsMin
 local Nmax=self.NassetsMax
 if self.type==AUFTRAG.Type.RELOCATECOHORT then
 local cohort=self.DCStask.params.cohort
 Nmin=#cohort.assets
 Nmax=Nmin
+else
+if self:IsExecuting()and self.reinforce and self.reinforce>0 then
+local N=self:CountOpsGroups()
+if N<Nmin then
+Nmin=math.min(Nmin-N,self.reinforce)
+Nmax=Nmin
+self:T(self.lid..string.format("FF Executing Nmin=%d, N=%d, Nreinfoce=%d ==> Nmin=%d",self.NassetsMin,N,self.reinforce,Nmin))
+end
+end
 end
 return Nmin,Nmax
 end
@@ -62939,18 +63288,15 @@ elseif Carriers:IsInstanceOf("OPSGROUP")then
 Carriers:AddOpsTransport(self.opstransport)
 end
 end
+return self
 end
 function AUFTRAG:SetRequiredAttribute(Attributes)
-if Attributes and type(Attributes)~="table"then
-Attributes={Attributes}
-end
-self.attributes=Attributes
+self.attributes=UTILS.EnsureTable(Attributes,true)
+return self
 end
 function AUFTRAG:SetRequiredProperty(Properties)
-if Properties and type(Properties)~="table"then
-Properties={Properties}
-end
-self.properties=Properties
+self.properties=UTILS.EnsureTable(Properties,true)
+return self
 end
 function AUFTRAG:SetRequiredCarriers(NcarriersMin,NcarriersMax)
 self.NcarriersMin=NcarriersMin or 1
@@ -63355,7 +63701,7 @@ self.NrepeatFailure=NrepeatF
 elseif(Ntargets0>0 and Ntargets==0)then
 self:T(self.lid.."No targets left cancelling mission!")
 self:Cancel()
-elseif self:IsExecuting()then
+elseif self:IsExecuting()and((not self.reinforce)or self.reinforce==0)then
 if Ngroups==0 then
 self:Done()
 else
@@ -63645,6 +63991,10 @@ if self:IsPlanned()or self:IsQueued()or self:IsRequested()then
 self:T2(self.lid..string.format("CheckGroupsDone: Mission is still in state %s [FSM=%s] (PLANNED or QUEUED or REQUESTED). Mission NOT DONE!",self.status,self:GetState()))
 return false
 end
+if self:IsExecuting()and self.reinforce and self.reinforce>0 then
+self:T2(self.lid..string.format("CheckGroupsDone: Mission is still in state %s [FSM=%s] and reinfoce=%d. Mission NOT DONE!",self.status,self:GetState(),self.reinforce))
+return false
+end
 if self:IsStarted()and self:CountOpsGroups()==0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] but count of alive OPSGROUP is zero. Mission DONE!",self.status,self:GetState()))
 return true
@@ -63707,7 +64057,7 @@ end
 function AUFTRAG:onafterAssetDead(From,Event,To,Asset)
 local N=self:CountOpsGroups()
 self:T(self.lid..string.format("Asset %s dead! Number of ops groups remaining %d",tostring(Asset.spawngroupname),N))
-if N==0 then
+if N==0 and(self.reinforce==nil or self.reinforce==0)then
 if self:IsNotOver()then
 self:Cancel()
 else
@@ -63912,8 +64262,9 @@ return self
 end
 function AUFTRAG:CountMissionTargets()
 local N=0
+local Coalitions=self.coalition and UTILS.GetCoalitionEnemy(self.coalition,true)or nil
 if self.engageTarget then
-N=self.engageTarget:CountTargets()
+N=self.engageTarget:CountTargets(Coalitions)
 end
 return N
 end
@@ -63952,8 +64303,8 @@ end
 function AUFTRAG:GetTargetData()
 return self.engageTarget
 end
-function AUFTRAG:GetObjective()
-local objective=self:GetTargetData():GetObject()
+function AUFTRAG:GetObjective(RefCoordinate,Coalitions)
+local objective=self:GetTargetData():GetObject(RefCoordinate,Coalitions)
 return objective
 end
 function AUFTRAG:GetTargetType()
@@ -64279,6 +64630,12 @@ param.altitude=self.missionAltitude
 param.speed=self.missionSpeed
 DCStask.params=param
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.CAPTUREZONE then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.CAPTUREZONE
+local param={}
+DCStask.params=param
+table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.CASENHANCED then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
@@ -64311,7 +64668,7 @@ local param={}
 param.zone=self:GetObjective()
 DCStask.params=param
 table.insert(DCStasks,DCStask)
-elseif self.type==AUFTRAG.Type.AMMOSUPPLY then
+elseif self.type==AUFTRAG.Type.REARMING then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.REARMING
 local param={}
@@ -70255,7 +70612,11 @@ self.weightAsset=0
 for i,_unit in pairs(units)do
 local unit=_unit
 local desc=unit:GetDesc()
-self.weightAsset=self.weightAsset+(desc.massMax or 666)
+local mass=666
+if desc then
+mass=desc.massMax or desc.massEmpty
+end
+self.weightAsset=self.weightAsset+(mass or 666)
 if i==1 then
 self.cargobayLimit=unit:GetCargoBayFreeWeight()
 end
@@ -71630,13 +71991,26 @@ return cohorts
 end
 function COMMANDER:RecruitAssetsForMission(Mission)
 self:T2(self.lid..string.format("Recruiting assets for mission \"%s\" [%s]",Mission:GetName(),Mission:GetType()))
-local Cohorts=self:_GetCohorts(Mission.specialLegions,Mission.specialCohorts,Mission.operation)
-self:T(self.lid..string.format("Found %d cohort candidates for mission",#Cohorts))
 local NreqMin,NreqMax=Mission:GetRequiredAssets()
 local TargetVec2=Mission:GetTargetVec2()
 local Payloads=Mission.payloads
+local MaxWeight=nil
+if Mission.NcarriersMin then
+local Cohorts=LEGION._GetCohorts(Mission.transportLegions or self.legions,Mission.transportCohorts)
+local transportcohorts={}
+for _,_cohort in pairs(Cohorts)do
+local cohort=_cohort
+local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Categories,Attributes,Properties,nil,TargetVec2)
+if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
+MaxWeight=cohort.cargobayLimit
+end
+end
+self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
+end
+local Cohorts=LEGION._GetCohorts(Mission.specialLegions or self.legions,Mission.specialCohorts,Mission.operation,self.opsqueue)
+self:T(self.lid..string.format("Found %d cohort candidates for mission",#Cohorts))
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
-Mission.engageRange,Mission.refuelSystem,nil,nil,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
+Mission.engageRange,Mission.refuelSystem,nil,nil,MaxWeight,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
 return recruited,assets,legions
 end
 function COMMANDER:RecruitAssetsForEscort(Mission,Assets)
@@ -82356,7 +82730,7 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.3.4"
+LEGION.version="0.4.0"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -82552,7 +82926,16 @@ end
 end
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
-if mission:IsQueued(self)and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)then
+local reinforce=false
+if mission:IsExecuting()and mission.reinforce and mission.reinforce>0 then
+local N=mission:CountOpsGroups()
+local Nmin,Nmax=mission:GetRequiredAssets()
+if N<Nmin then
+reinforce=true
+end
+end
+mission:CountOpsGroups()
+if(mission:IsQueued(self)or reinforce)and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)then
 local recruited,assets,legions=self:RecruitAssetsForMission(mission)
 if recruited then
 for _,_asset in pairs(assets)do
@@ -83212,23 +83595,22 @@ function LEGION:RecruitAssetsForMission(Mission)
 local NreqMin,NreqMax=Mission:GetRequiredAssets()
 local TargetVec2=Mission:GetTargetVec2()
 local Payloads=Mission.payloads
-local Cohorts={}
-for _,_legion in pairs(Mission.specialLegions or{})do
-local legion=_legion
-for _,_cohort in pairs(legion.cohorts)do
+local MaxWeight=nil
+if Mission.NcarriersMin then
+local Cohorts=LEGION._GetCohorts(Mission.transportLegions or{self},Mission.transportCohorts or self.cohorts)
+local transportcohorts={}
+for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
-table.insert(Cohorts,cohort)
+local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Categories,Attributes,Properties,nil,TargetVec2)
+if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
+MaxWeight=cohort.cargobayLimit
 end
 end
-for _,_cohort in pairs(Mission.specialCohorts or{})do
-local cohort=_cohort
-table.insert(Cohorts,cohort)
+self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
 end
-if#Cohorts==0 then
-Cohorts=self.cohorts
-end
+local Cohorts=LEGION._GetCohorts(Mission.specialLegions or{self},Mission.specialCohorts or self.cohorts,Operation,OpsQueue)
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
-Mission.engageRange,Mission.refuelSystem,nil,nil,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
+Mission.engageRange,Mission.refuelSystem,nil,nil,MaxWeight,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
 return recruited,assets,legions
 end
 function LEGION:RecruitAssetsForTransport(Transport)
@@ -83276,12 +83658,56 @@ return assigned
 end
 return true
 end
-function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,Categories,Attributes,Properties,WeaponTypes)
-local Assets={}
-local Legions={}
-if MissionTypeOpt==nil then
-MissionTypeOpt=MissionTypeRecruit
+function LEGION._GetCohorts(Legions,Cohorts,Operation,OpsQueue)
+OpsQueue=OpsQueue or{}
+local function CheckOperation(LegionOrCohort)
+if#OpsQueue==0 then
+return true
 end
+local isAvail=true
+if Operation then
+isAvail=false
+end
+for _,_operation in pairs(OpsQueue)do
+local operation=_operation
+local isOps=operation:IsAssignedCohortOrLegion(LegionOrCohort)
+if isOps and operation:IsRunning()then
+isAvail=false
+if Operation==nil then
+return false
+else
+if Operation.uid==operation.uid then
+return true
+end
+end
+end
+end
+return isAvail
+end
+local cohorts={}
+if(Legions and#Legions>0)or(Cohorts and#Cohorts>0)then
+for _,_legion in pairs(Legions or{})do
+local legion=_legion
+local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+if legion:IsRunning()and Runway then
+for _,_cohort in pairs(legion.cohorts)do
+local cohort=_cohort
+if(CheckOperation(cohort.legion)or CheckOperation(cohort))and not UTILS.IsInTable(cohorts,cohort,"name")then
+table.insert(cohorts,cohort)
+end
+end
+end
+end
+for _,_cohort in pairs(Cohorts or{})do
+local cohort=_cohort
+if CheckOperation(cohort)and not UTILS.IsInTable(cohorts,cohort,"name")then
+table.insert(cohorts,cohort)
+end
+end
+end
+return cohorts
+end
+function LEGION._CohortCan(Cohort,MissionType,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight)
 local function CheckCategory(_cohort)
 local cohort=_cohort
 if Categories and#Categories>0 then
@@ -83340,34 +83766,121 @@ else
 return true
 end
 end
-for _,_cohort in pairs(Cohorts)do
+local function CheckRange(_cohort)
 local cohort=_cohort
 local TargetDistance=TargetVec2 and UTILS.VecDist2D(TargetVec2,cohort.legion:GetVec2())or 0
 local Rmax=cohort:GetMissionRange(WeaponTypes)
 local InRange=(RangeMax and math.max(RangeMax,Rmax)or Rmax)>=TargetDistance
-local Refuel=RefuelSystem~=nil and(RefuelSystem==cohort.tankerSystem)or true
-local Refuel=true
+return InRange
+end
+local function CheckRefueling(_cohort)
+local cohort=_cohort
 if RefuelSystem then
 if cohort.tankerSystem then
-Refuel=RefuelSystem==cohort.tankerSystem
+return RefuelSystem==cohort.tankerSystem
 else
-Refuel=false
+return false
+end
+else
+return true
 end
 end
-local Capable=AUFTRAG.CheckMissionCapability({MissionTypeRecruit},cohort.missiontypes)
-local CanCarry=CargoWeight and cohort.cargobayLimit>=CargoWeight or true
-local RightCategory=CheckCategory(cohort)
-local RightAttribute=CheckAttribute(cohort)
-local RightProperty=CheckProperty(cohort)
-local RightWeapon=CheckWeapon(cohort)
-local Ready=cohort:IsOnDuty()
-if MissionTypeRecruit==AUFTRAG.Type.RELOCATECOHORT then
-Ready=cohort:IsRelocating()
-Capable=true
+local function CheckCargoWeight(_cohort)
+local cohort=_cohort
+if CargoWeight~=nil then
+return cohort.cargobayLimit>=CargoWeight
+else
+return true
 end
-cohort:T(cohort.lid..string.format("State=%s: Capable=%s, InRange=%s, Refuel=%s, CanCarry=%s, Category=%s, Attribute=%s, Property=%s, Weapon=%s",
-cohort:GetState(),tostring(Capable),tostring(InRange),tostring(Refuel),tostring(CanCarry),tostring(RightCategory),tostring(RightAttribute),tostring(RightProperty),tostring(RightWeapon)))
-if Ready and Capable and InRange and Refuel and CanCarry and RightCategory and RightAttribute and RightProperty and RightWeapon then
+end
+local function CheckMaxWeight(_cohort)
+local cohort=_cohort
+if MaxWeight~=nil then
+cohort:I(string.format("Cohort weight=%.1f | max weight=%.1f",cohort.weightAsset,MaxWeight))
+return cohort.weightAsset<=MaxWeight
+else
+return true
+end
+end
+local can=AUFTRAG.CheckMissionCapability(MissionType,Cohort.missiontypes)
+if can then
+can=CheckCategory(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of mission types",Cohort.name))
+return false
+end
+if can then
+if MissionType==AUFTRAG.Type.RELOCATECOHORT then
+can=Cohort:IsRelocating()
+else
+can=Cohort:IsOnDuty()
+end
+else
+env.info(string.format("Cohort %s cannot because of category",Cohort.name))
+BASE:I(Categories)
+BASE:I(Cohort.category)
+return false
+end
+if can then
+can=CheckAttribute(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of readyiness",Cohort.name))
+return false
+end
+if can then
+can=CheckProperty(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of attribute",Cohort.name))
+return false
+end
+if can then
+can=CheckWeapon(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of property",Cohort.name))
+return false
+end
+if can then
+can=CheckRange(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of weapon type",Cohort.name))
+return false
+end
+if can then
+can=CheckRefueling(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of range",Cohort.name))
+return false
+end
+if can then
+can=CheckCargoWeight(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of refueling system",Cohort.name))
+return false
+end
+if can then
+can=CheckMaxWeight(Cohort)
+else
+env.info(string.format("Cohort %s cannot because of cargo weight",Cohort.name))
+return false
+end
+if can then
+return true
+else
+env.info(string.format("Cohort %s cannot because of max weight",Cohort.name))
+return false
+end
+return nil
+end
+function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,MaxWeight,Categories,Attributes,Properties,WeaponTypes)
+local Assets={}
+local Legions={}
+if MissionTypeOpt==nil then
+MissionTypeOpt=MissionTypeRecruit
+end
+for _,_cohort in pairs(Cohorts)do
+local cohort=_cohort
+local can=LEGION._CohortCan(cohort,MissionTypeRecruit,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight)
+if can then
 local assets,npayloads=cohort:RecruitAssets(MissionTypeRecruit,999)
 for _,asset in pairs(assets)do
 table.insert(Assets,asset)
@@ -83453,7 +83966,7 @@ Categories={Group.Category.AIRPLANE}
 targetTypes={"Air"}
 end
 TargetTypes=TargetTypes or targetTypes
-local Erecruited,eassets,elegions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.ESCORT,MissionType,NescortMin,NescortMax,TargetVec2,nil,nil,nil,nil,nil,Categories)
+local Erecruited,eassets,elegions=LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.ESCORT,MissionType,NescortMin,NescortMax,TargetVec2,nil,nil,nil,nil,nil,nil,Categories)
 if Erecruited then
 Escorts[asset.spawngroupname]={EscortLegions=elegions,EscortAssets=eassets,ecategory=asset.category}
 else
@@ -83510,17 +84023,7 @@ end
 end
 function LEGION:AssignAssetsForTransport(Legions,CargoAssets,NcarriersMin,NcarriersMax,DeployZone,DisembarkZone,Categories,Attributes,Properties)
 if NcarriersMin and NcarriersMax and(NcarriersMin>0 or NcarriersMax>0)then
-local Cohorts={}
-for _,_legion in pairs(Legions)do
-local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
-if legion:IsRunning()and Runway then
-for _,_cohort in pairs(legion.cohorts)do
-local cohort=_cohort
-table.insert(Cohorts,cohort)
-end
-end
-end
+local Cohorts=LEGION._GetCohorts(Legions)
 local CargoLegions={};local CargoWeight=nil;local TotalWeight=0
 for _,_asset in pairs(CargoAssets)do
 local asset=_asset
@@ -83530,9 +84033,11 @@ CargoWeight=asset.weight
 end
 TotalWeight=TotalWeight+asset.weight
 end
+self:T(self.lid..string.format("Cargo weight=%.1f",CargoWeight))
+self:T(self.lid..string.format("Total weight=%.1f",TotalWeight))
 local TargetVec2=DeployZone:GetVec2()
 local TransportAvail,CarrierAssets,CarrierLegions=
-LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NcarriersMin,NcarriersMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight,Categories,Attributes,Properties)
+LEGION.RecruitCohortAssets(Cohorts,AUFTRAG.Type.OPSTRANSPORT,nil,NcarriersMin,NcarriersMax,TargetVec2,nil,nil,nil,CargoWeight,TotalWeight,nil,Categories,Attributes,Properties)
 if TransportAvail then
 local Transport=OPSTRANSPORT:New(nil,nil,DeployZone)
 if DisembarkZone then
@@ -83642,7 +84147,7 @@ if LEGION.verbose>0 then
 local text=string.format("Optimized %d assets for %s mission/transport (payload=%s):",#assets,MissionType,tostring(IncludePayload))
 for i,Asset in pairs(assets)do
 local asset=Asset
-text=text..string.format("\n%s %s: score=%d",asset.squadname,asset.spawngroupname,asset.score)
+text=text..string.format("\n%s %s: score=%d",asset.squadname,asset.spawngroupname,asset.score or-1)
 asset.score=nil
 end
 env.info(text)
@@ -84540,7 +85045,7 @@ PLANNED="Planned",
 ACTIVE="Active",
 OVER="Over",
 }
-OPERATION.version="0.1.0"
+OPERATION.version="0.2.0"
 function OPERATION:New(Name)
 local self=BASE:Inherit(self,FSM:New())
 _OPERATIONID=_OPERATIONID+1
@@ -84549,6 +85054,12 @@ self.name=Name or string.format("Operation-%02d",_OPERATIONID)
 self.lid=string.format("%s | ",self.name)
 self:SetStartState("Planned")
 self.branchMaster=self:AddBranch("Master")
+self.conditionStart=CONDITION:New("Operation %s start",self.name)
+self.conditionStart:SetNoneResult(false)
+self.conditionStart:SetDefaultPersistence(false)
+self.conditionOver=CONDITION:New("Operation %s over",self.name)
+self.conditionOver:SetNoneResult(false)
+self.conditionOver:SetDefaultPersistence(false)
 self.branchActive=self.branchMaster
 self:AddTransition("*","Start","Running")
 self:AddTransition("*","StatusUpdate","*")
@@ -84588,10 +85099,19 @@ self.duration=self.Tstop-self.Tstart
 end
 return self
 end
-function OPERATION:AddPhase(Name,Branch)
+function OPERATION:AddConditonOverAll(Function,...)
+local cf=self.conditionOver:AddFunctionAll(Function,...)
+return cf
+end
+function OPERATION:AddConditonOverAny(Phase,Function,...)
+local cf=self.conditionOver:AddFunctionAny(Function,...)
+return cf
+end
+function OPERATION:AddPhase(Name,Branch,Duration)
 Branch=Branch or self.branchMaster
 local phase=self:_CreatePhase(Name)
 phase.branch=Branch
+phase.duration=Duration
 self:T(self.lid..string.format("Adding phase %s to branch %s",phase.name,Branch.name))
 table.insert(Branch.phases,phase)
 return phase
@@ -84604,6 +85124,9 @@ local phase=self:_CreatePhase(Name)
 end
 end
 return nil
+end
+function OPERATION:GetName()
+return self.name or"Unknown"
 end
 function OPERATION:GetPhaseByName(Name)
 for _,_branch in pairs(self.branches)do
@@ -84619,8 +85142,14 @@ return nil
 end
 function OPERATION:SetPhaseStatus(Phase,Status)
 if Phase then
-self:T(self.lid..string.format("Phase %s status: %s-->%s"),Phase.status,Status)
+self:T(self.lid..string.format("Phase %s status: %s-->%s",tostring(Phase.name),tostring(Phase.status),tostring(Status)))
 Phase.status=Status
+if Phase.status==OPERATION.PhaseStatus.ACTIVE then
+Phase.Tstart=timer.getAbsTime()
+Phase.nActive=Phase.nActive+1
+elseif Phase.status==OPERATION.PhaseStatus.OVER then
+self:PhaseOver(Phase)
+end
 end
 return self
 end
@@ -84629,35 +85158,40 @@ return Phase.status
 end
 function OPERATION:SetPhaseConditonOver(Phase,Condition)
 if Phase then
-self:T(self.lid..string.format("Setting phase %s conditon over %s"),Phase.name,Condition and Condition.name or"None")
+self:T(self.lid..string.format("Setting phase %s conditon over %s",self:GetPhaseName(Phase),Condition and Condition.name or"None"))
 Phase.conditionOver=Condition
 end
 return self
 end
 function OPERATION:AddPhaseConditonOverAll(Phase,Function,...)
 if Phase then
-Phase.conditionOver:AddFunctionAll(Function,...)
+local cf=Phase.conditionOver:AddFunctionAll(Function,...)
+return cf
 end
-return self
+return nil
 end
 function OPERATION:AddPhaseConditonOverAny(Phase,Function,...)
 if Phase then
-Phase.conditionOver:AddFunctionAny(Function,...)
+local cf=Phase.conditionOver:AddFunctionAny(Function,...)
+return cf
+end
+return nil
+end
+function OPERATION:SetConditionFunctionPersistence(ConditionFunction,IsPersistent)
+ConditionFunction.persistence=IsPersistent
+return self
+end
+function OPERATION:AddPhaseConditonRepeatAll(Phase,Function,...)
+if Phase then
+Phase.conditionRepeat:AddFunctionAll(Function,...)
 end
 return self
 end
 function OPERATION:GetPhaseConditonOver(Phase,Condition)
 return Phase.conditionOver
 end
-function OPERATION:SetPhaseStatus(Phase,Status)
-if Phase then
-self:T(self.lid..string.format("Phase \"%s\" status: %s-->%s",Phase.name,Phase.status,Status))
-Phase.status=Status
-end
-return self
-end
-function OPERATION:GetPhaseActive()
-return self.phase
+function OPERATION:GetPhaseNactive(Phase)
+return Phase.nActive
 end
 function OPERATION:GetPhaseName(Phase)
 Phase=Phase or self.phase
@@ -84666,14 +85200,8 @@ return Phase.name
 end
 return"None"
 end
-function OPERATION:IsPhaseActive(Phase)
-local phase=self:GetPhaseActive()
-if phase and phase.uid==Phase.uid then
-return true
-else
-return false
-end
-return nil
+function OPERATION:GetPhaseActive()
+return self.phase
 end
 function OPERATION:GetPhaseIndex(Phase)
 local branch=Phase.branch
@@ -84727,6 +85255,9 @@ local branch=self:_CreateBranch(Name)
 table.insert(self.branches,branch)
 return branch
 end
+function OPERATION:GetBranchMaster()
+return self.branchMaster
+end
 function OPERATION:GetBranchActive()
 return self.branchActive or self.branchMaster
 end
@@ -84737,21 +85268,27 @@ return Branch.name
 end
 return"None"
 end
-function OPERATION:AddEdge(BranchTo,PhaseAfter,PhaseNext,ConditionSwitch)
+function OPERATION:AddEdge(PhaseFrom,PhaseTo,ConditionSwitch)
 local edge={}
-edge.branchFrom=PhaseAfter and PhaseAfter.branch or self.branchMaster
-edge.phaseFrom=PhaseAfter
-edge.branchTo=BranchTo
-edge.phaseTo=PhaseNext
-edge.conditionSwitch=ConditionSwitch or CONDITION:New("Edge")
+edge.phaseFrom=PhaseFrom
+edge.phaseTo=PhaseTo
+edge.branchFrom=PhaseFrom.branch
+edge.branchTo=PhaseTo.branch
+if ConditionSwitch then
+edge.conditionSwitch=ConditionSwitch
+else
+edge.conditionSwitch=CONDITION:New("Edge")
+edge.conditionSwitch:SetNoneResult(true)
+end
 table.insert(edge.branchFrom.edges,edge)
 return edge
 end
 function OPERATION:AddEdgeConditonSwitchAll(Edge,Function,...)
 if Edge then
-Edge.conditionSwitch:AddFunctionAll(Function,...)
+local cf=Edge.conditionSwitch:AddFunctionAll(Function,...)
+return cf
 end
-return self
+return nil
 end
 function OPERATION:AddMission(Mission,Phase)
 Mission.phase=Phase
@@ -84849,6 +85386,37 @@ function OPERATION:IsStopped()
 local is=self:is("Stopped")
 return is
 end
+function OPERATION:IsNotOver()
+local is=not(self:IsOver()or self:IsStopped())
+return is
+end
+function OPERATION:IsPhaseActive(Phase)
+if Phase and Phase.status and Phase.status==OPERATION.PhaseStatus.ACTIVE then
+return true
+end
+return false
+end
+function OPERATION:IsPhaseActive(Phase)
+local phase=self:GetPhaseActive()
+if phase and phase.uid==Phase.uid then
+return true
+else
+return false
+end
+return nil
+end
+function OPERATION:IsPhasePlanned(Phase)
+if Phase and Phase.status and Phase.status==OPERATION.PhaseStatus.PLANNED then
+return true
+end
+return false
+end
+function OPERATION:IsPhaseOver(Phase)
+if Phase and Phase.status and Phase.status==OPERATION.PhaseStatus.OVER then
+return true
+end
+return false
+end
 function OPERATION:onafterStart(From,Event,To)
 self:T(self.lid..string.format("Starting Operation!"))
 return self
@@ -84857,18 +85425,13 @@ function OPERATION:onafterStatusUpdate(From,Event,To)
 local Tnow=timer.getAbsTime()
 local fsmstate=self:GetState()
 if self:IsPlanned()then
-if self.Tstart and Tnow>self.Tstart then
+if(self.Tstart and Tnow>self.Tstart or self.Tstart==nil)and(self.conditionStart==nil or self.conditionStart:Evaluate())then
 self:Start()
 end
-end
-if(self.Tstop and Tnow>self.Tstop)and not(self:IsOver()or self:IsStopped())then
+elseif self:IsNotOver()then
+if(self.Tstop and Tnow>self.Tstop or self.Tstop==nil)and(self.conditionOver==nil or self.conditionOver:Evaluate())then
 self:Over()
 end
-if(not self:IsRunning())and(self.conditionStart and self.conditionStart:Evaluate())then
-self:Start()
-end
-if self:IsRunning()and(self.conditionStop and self.conditionStop:Evaluate())then
-self:Over()
 end
 if self:IsRunning()then
 self:_CheckPhases()
@@ -84887,7 +85450,7 @@ if self.verbose>=2 then
 local text="Phases:"
 for i,_phase in pairs(self.branchActive.phases)do
 local phase=_phase
-text=text..string.format("\n[%d] %s: status=%s",i,phase.name,tostring(phase.status))
+text=text..string.format("\n[%d] %s [uid=%d]: status=%s Nact=%d",i,phase.name,phase.uid,tostring(phase.status),phase.nActive)
 end
 if text=="Phases:"then text=text.." None"end
 self:I(self.lid..text)
@@ -84907,7 +85470,9 @@ end
 function OPERATION:onafterPhaseChange(From,Event,To,Phase)
 local oldphase="None"
 if self.phase then
+if self.phase.status~=OPERATION.PhaseStatus.OVER then
 self:SetPhaseStatus(self.phase,OPERATION.PhaseStatus.OVER)
+end
 oldphase=self.phase.name
 end
 self:I(self.lid..string.format("Phase change: %s --> %s",oldphase,Phase.name))
@@ -84915,9 +85480,13 @@ self.phase=Phase
 self:SetPhaseStatus(Phase,OPERATION.PhaseStatus.ACTIVE)
 return self
 end
-function OPERATION:onafterBranchSwitch(From,Event,To,Branch)
+function OPERATION:onafterPhaseOver(From,Event,To,Phase)
+Phase.conditionOver:RemoveNonPersistant()
+end
+function OPERATION:onafterBranchSwitch(From,Event,To,Branch,Phase)
 self:T(self.lid..string.format("Switching to branch %s",Branch.name))
 self.branchActive=Branch
+self:PhaseChange(Phase)
 return self
 end
 function OPERATION:onafterOver(From,Event,To)
@@ -84927,7 +85496,9 @@ for _,_branch in pairs(self.branches)do
 local branch=_branch
 for _,_phase in pairs(branch.phases)do
 local phase=_phase
+if not self:IsPhaseOver(phase)then
 self:SetPhaseStatus(phase,OPERATION.PhaseStatus.OVER)
+end
 end
 end
 return self
@@ -84936,6 +85507,10 @@ function OPERATION:_CheckPhases()
 local phase=self:GetPhaseActive()
 if phase and phase.conditionOver then
 local isOver=phase.conditionOver:Evaluate()
+local Tnow=timer.getAbsTime()
+if phase.duration and phase.Tstart and Tnow-phase.Tstart>phase.duration then
+isOver=true
+end
 if isOver then
 self:SetPhaseStatus(phase,OPERATION.PhaseStatus.OVER)
 end
@@ -84943,15 +85518,18 @@ end
 if phase==nil or phase.status==OPERATION.PhaseStatus.OVER then
 for _,_edge in pairs(self.branchActive.edges)do
 local edge=_edge
+if phase then
+end
 if(edge.phaseFrom==nil)or(phase and edge.phaseFrom.uid==phase.uid)then
 local switch=edge.conditionSwitch:Evaluate()
 if switch then
-self:BranchSwitch(edge.branchTo)
-if edge.phaseTo then
-self:PhaseChange(edge.phaseTo)
-return
+local phaseTo=edge.phaseTo or self:GetPhaseNext(edge.branchTo,nil)
+if phaseTo then
+self:BranchSwitch(edge.branchTo,phaseTo)
+else
+self:Over()
 end
-break
+return
 end
 end
 end
@@ -84964,7 +85542,9 @@ local phase={}
 phase.uid=self.counterPhase
 phase.name=Name or string.format("Phase-%02d",self.counterPhase)
 phase.conditionOver=CONDITION:New(Name.." Over")
+phase.conditionOver:SetDefaultPersistence(false)
 phase.status=OPERATION.PhaseStatus.PLANNED
+phase.nActive=0
 return phase
 end
 function OPERATION:_CreateBranch(Name)
@@ -85069,7 +85649,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="0.8.0"
+OPSGROUP.version="0.9.0"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -86463,6 +87043,9 @@ end
 else
 self.currentwp=self.currentwp-1
 end
+if(self.adinfinitum or istemp)then
+self:_PassedFinalWaypoint(false,"Removed PASSED temporary waypoint ")
+end
 end
 end
 return self
@@ -86826,10 +87409,9 @@ end
 return true
 end
 function OPSGROUP:onafterTaskExecute(From,Event,To,Task)
-self:T({Task})
 local text=string.format("Task %s ID=%d execute",tostring(Task.description),Task.id)
 self:T(self.lid..text)
-self:T({Task})
+self:T2({Task})
 if self.taskcurrent>0 then
 self:TaskCancel()
 end
@@ -86846,7 +87428,7 @@ self:MissionExecute(Mission)
 end
 end
 function OPSGROUP:_UpdateTask(Task,Mission)
-local Mission=Mission or self:GetMissionByTaskID(self.taskcurrent)
+Mission=Mission or self:GetMissionByTaskID(self.taskcurrent)
 if Task.dcstask.id==AUFTRAG.SpecialTask.FORMATION then
 local followSet=SET_GROUP:New():AddGroup(self.group)
 local param=Task.dcstask.params
@@ -86907,6 +87489,13 @@ wp.missionUID=Mission and Mission.auftragsnummer or nil
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.AMMOSUPPLY or Task.dcstask.id==AUFTRAG.SpecialTask.FUELSUPPLY then
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.REARMING then
 local rearmed=self:_CheckAmmoFull()
+if rearmed then
+self:T2(self.lid.."Ammo already full ==> reaming task done!")
+self:TaskDone(Task)
+else
+self:T2(self.lid.."Ammo not full ==> Rearm()")
+self:Rearm()
+end
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.ALERT5 then
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.ONGUARD or Task.dcstask.id==AUFTRAG.SpecialTask.ARMOREDGUARD then
 if self:IsArmygroup()or self:IsNavygroup()then
@@ -86975,6 +87564,36 @@ wp=NAVYGROUP.AddWaypoint(self,Coordinate,UTILS.KmphToKnots(self.speedCruise),cur
 else
 end
 wp.missionUID=Mission and Mission.auftragsnummer or nil
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.CAPTUREZONE then
+if self:IsEngaging()then
+self:T2(self.lid..string.format("CaptureZone: Engaging currently!"))
+else
+local Coalitions=UTILS.GetCoalitionEnemy(self:GetCoalition(),false)
+local zoneCurr=Task.target
+if zoneCurr then
+self:T(self.lid..string.format("Current target zone=%s owner=%s",zoneCurr:GetName(),zoneCurr:GetOwnerName()))
+if zoneCurr:GetOwner()==self:GetCoalition()then
+self:T(self.lid..string.format("Zone %s captured ==> Task DONE!",zoneCurr:GetName()))
+self:TaskDone(Task)
+else
+self:T(self.lid..string.format("Zone %s NOT captured!",zoneCurr:GetName()))
+if Mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING then
+self:T(self.lid..string.format("Zone %s NOT captured and EXECUTING ==> Find target",zoneCurr:GetName()))
+local targetgroup=zoneCurr:GetScannedGroupSet():GetClosestGroup(self.coordinate,Coalitions)
+if targetgroup then
+self:T(self.lid..string.format("Zone %s NOT captured: engaging target %s",zoneCurr:GetName(),targetgroup:GetName()))
+self:EngageTarget(targetgroup)
+else
+self:E(self.lid..string.format("ERROR: Current zone not captured but no target group could be found. This should NOT happen!"))
+end
+else
+self:T(self.lid..string.format("Zone %s NOT captured and NOT EXECUTING",zoneCurr:GetName()))
+end
+end
+else
+self:T(self.lid..string.format("NO Current target zone=%s"))
+end
+end
 else
 if Task.type==OPSGROUP.TaskType.SCHEDULED or Task.ismission then
 local DCSTask=nil
@@ -87114,6 +87733,13 @@ local Mission=self:GetMissionByTaskID(Task.id)
 if Mission and Mission:IsNotOver()then
 local status=Mission:GetGroupStatus(self)
 if status~=AUFTRAG.GroupStatus.PAUSED then
+if Mission.type==AUFTRAG.Type.CAPTUREZONE and Mission:CountMissionTargets()>0 then
+self:T(self.lid.."Remove mission waypoints")
+self:_RemoveMissionWaypoints(Mission,false)
+self:T(self.lid.."Task done ==> Route to mission for next opszone")
+self:MissionStart(Mission)
+return
+end
 local EgressUID=Mission:GetGroupEgressWaypointUID(self)
 if EgressUID then
 self:T(self.lid..string.format("Task Done but Egress waypoint defined ==> Will call Mission Done once group passed waypoint UID=%d!",EgressUID))
@@ -87521,6 +88147,10 @@ surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD}
 elseif self:IsNavygroup()then
 surfacetypes={land.SurfaceType.WATER,land.SurfaceType.SHALLOW_WATER}
 end
+local targetobject=mission:GetObjective(currentcoord,UTILS.GetCoalitionEnemy(self:GetCoalition(),true))
+if targetobject then
+self:T(self.lid..string.format("Route to mission target object %s",targetobject:GetName()))
+end
 if mission.opstransport and not mission.opstransport:IsCargoDelivered(self.groupname)then
 local tzc=mission.opstransport:GetTZCofCargo(self.groupname)
 local pickupzone=tzc.PickupZone
@@ -87538,15 +88168,15 @@ mission.type==AUFTRAG.Type.FUELSUPPLY or
 mission.type==AUFTRAG.Type.REARMING or
 mission.type==AUFTRAG.Type.AIRDEFENSE or
 mission.type==AUFTRAG.Type.EWR then
-targetzone=mission.engageTarget:GetObject()
+targetzone=targetobject
 waypointcoord=targetzone:GetRandomCoordinate(nil,nil,surfacetypes)
 elseif mission.type==AUFTRAG.Type.ONGUARD or mission.type==AUFTRAG.Type.ARMOREDGUARD then
 waypointcoord=mission:GetMissionWaypointCoord(self.group,nil,surfacetypes)
 elseif mission.type==AUFTRAG.Type.NOTHING then
-targetzone=mission.engageTarget:GetObject()
+targetzone=targetobject
 waypointcoord=targetzone:GetRandomCoordinate(nil,nil,surfacetypes)
 elseif mission.type==AUFTRAG.Type.HOVER then
-local zone=mission.engageTarget:GetObject()
+local zone=targetobject
 waypointcoord=zone:GetCoordinate()
 elseif mission.type==AUFTRAG.Type.RELOCATECOHORT then
 local ToCoordinate=mission.DCStask.params.legion:GetCoordinate()
@@ -87561,6 +88191,9 @@ end
 else
 waypointcoord=currentcoord:GetIntermediateCoordinate(ToCoordinate,0.05)
 end
+elseif mission.type==AUFTRAG.Type.CAPTUREZONE then
+targetzone=targetobject:GetZone()
+waypointcoord=targetzone:GetRandomCoordinate(nil,nil,surfacetypes)
 else
 waypointcoord=mission:GetMissionWaypointCoord(self.group,randomradius,surfacetypes)
 end
@@ -87619,6 +88252,7 @@ end
 waypoint.missionUID=mission.auftragsnummer
 local waypointtask=self:AddTaskWaypoint(mission.DCStask,waypoint,mission.name,mission.prio,mission.duration)
 waypointtask.ismission=true
+waypointtask.target=targetobject
 mission:SetGroupWaypointTask(self,waypointtask)
 mission:SetGroupWaypointIndex(self,waypoint.uid)
 local egresscoord=mission:GetMissionEgressCoord()
@@ -87820,6 +88454,9 @@ elseif task and task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
 local legion=task.dcstask.params.legion
 self:T(self.lid..string.format("Asset arrived at relocation task waypoint ==> Task Done!"))
 self:TaskDone(task)
+elseif task and task.dcstask.id==AUFTRAG.SpecialTask.REARMING then
+self:T(self.lid..string.format("FF Rearming Mission ==> Rearm()"))
+self:Rearm()
 else
 local ntasks=self:_SetWaypointTasks(Waypoint)
 local wpindex=self:GetWaypointIndex(Waypoint.uid)
@@ -88172,7 +88809,7 @@ function OPSGROUP:onafterElementDamaged(From,Event,To,Element)
 self:T(self.lid..string.format("Element damaged %s",Element.name))
 if Element and(Element.status~=OPSGROUP.ElementStatus.DEAD and Element.status~=OPSGROUP.ElementStatus.INUTERO)then
 local lifepoints=0
-if Element.DCSunit and Element.DCSunit:isExist()then
+if Element.DCSunit then
 lifepoints=Element.DCSunit:getLife()
 self:T(self.lid..string.format("Element life %s: %.2f/%.2f",Element.name,lifepoints,Element.life0))
 end
@@ -88360,8 +88997,10 @@ end
 function OPSGROUP:CancelAllMissions()
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
+if mission:IsNotOver()then
 self:T(self.lid.."Cancelling mission "..tostring(mission:GetName()))
 self:MissionCancel(mission)
+end
 end
 end
 function OPSGROUP:onafterDead(From,Event,To)
@@ -89712,6 +90351,7 @@ end
 end
 end
 function OPSGROUP:_CheckDamage()
+self:T(self.lid..string.format("Checking damage..."))
 self.life=0
 local damaged=false
 for _,_element in pairs(self.elements)do
@@ -89744,7 +90384,7 @@ function OPSGROUP:_CheckAmmoStatus()
 if self.ammo.Total>0 then
 local ammo=self:GetAmmoTot()
 if self:IsRearming()then
-if ammo.Total==self.ammo.Total then
+if ammo.Total>=self.ammo.Total then
 self:Rearmed()
 end
 end
@@ -92140,10 +92780,13 @@ verbose=0,
 Nred=0,
 Nblu=0,
 Nnut=0,
+Tred=0,
+Tblu=0,
+Tnut=0,
 chiefs={},
 Missions={},
 }
-OPSZONE.version="0.3.1"
+OPSZONE.version="0.4.0"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -92178,6 +92821,9 @@ self.zone=Zone
 self.zoneName=Zone:GetName()
 self.zoneRadius=Zone:GetRadius()
 self.Missions={}
+self.ScanUnitSet=SET_UNIT:New():FilterZones({Zone})
+self.ScanGroupSet=SET_GROUP:New():FilterZones({Zone})
+_DATABASE:AddOpsZone(self)
 self.ownerCurrent=CoalitionOwner or coalition.side.NEUTRAL
 self.ownerPrevious=CoalitionOwner or coalition.side.NEUTRAL
 self.isContested=false
@@ -92185,15 +92831,18 @@ if self.airbase then
 self.ownerCurrent=self.airbase:GetCoalition()
 self.ownerPrevious=self.airbase:GetCoalition()
 end
-self:SetTimeCapture()
 self:SetObjectCategories()
 self:SetUnitCategories()
 self:SetDrawZone()
 self:SetMarkZone(true)
+self:SetCaptureTime()
+self:SetCaptureNunits()
+self:SetCaptureThreatlevel()
 self.timerStatus=TIMER:New(OPSZONE.Status,self)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Empty")
 self:AddTransition("*","Stop","Stopped")
+self:AddTransition("*","Evaluated","*")
 self:AddTransition("*","Captured","Guarded")
 self:AddTransition("Empty","Guarded","Guarded")
 self:AddTransition("*","Empty","Empty")
@@ -92219,15 +92868,16 @@ end
 self.UnitCategories=Categories or{Unit.Category.GROUND_UNIT}
 return self
 end
-function OPSZONE:SetThreatlevelDefinding(Threatlevel)
-self.threatlevelDefending=Threatlevel or 0
+function OPSZONE:SetCaptureThreatlevel(Threatlevel)
+self.threatlevelCapture=Threatlevel or 0
 return self
 end
-function OPSZONE:SetThreatlevelOffending(Threatlevel)
-self.threatlevelOffending=Threatlevel or 0
+function OPSZONE:SetCaptureNunits(Nunits)
+Nunits=Nunits or 1
+self.nunitsCapture=Nunits
 return self
 end
-function OPSZONE:SetTimeCapture(Tcapture)
+function OPSZONE:SetCaptureTime(Tcapture)
 self.TminCaptured=Tcapture or 0
 return self
 end
@@ -92273,6 +92923,12 @@ function OPSZONE:GetCoordinate()
 local coordinate=self.zone:GetCoordinate()
 return coordinate
 end
+function OPSZONE:GetScannedUnitSet()
+return self.ScanUnitSet
+end
+function OPSZONE:GetScannedGroupSet()
+return self.ScanGroupSet
+end
 function OPSZONE:GetRandomCoordinate(inner,outer,surfacetypes)
 local zone=self:GetZone()
 local coord=zone:GetRandomCoordinate(inner,outer,surfacetypes)
@@ -92308,6 +92964,14 @@ return is
 end
 function OPSZONE:IsCoalition(Coalition)
 local is=self.ownerCurrent==Coalition
+return is
+end
+function OPSZONE:IsStarted()
+local is=not self:IsStopped()
+return is
+end
+function OPSZONE:IsStopped()
+local is=self:is("Stopped")
 return is
 end
 function OPSZONE:IsGuarded()
@@ -92385,27 +93049,16 @@ end
 end
 function OPSZONE:onafterEmpty(From,Event,To)
 self:T(self.lid..string.format("Zone is empty EVENT"))
-for _,_chief in pairs(self.chiefs)do
-local chief=_chief
-chief:ZoneEmpty(self)
-end
 end
 function OPSZONE:onafterAttacked(From,Event,To,AttackerCoalition)
 self:T(self.lid..string.format("Zone is being attacked by coalition=%s!",tostring(AttackerCoalition)))
-if AttackerCoalition then
-for _,_chief in pairs(self.chiefs)do
-local chief=_chief
-if chief.coalition~=AttackerCoalition then
-chief:ZoneAttacked(self)
-end
-end
-end
 end
 function OPSZONE:onafterDefeated(From,Event,To,DefeatedCoalition)
 self:T(self.lid..string.format("Defeated attack on zone by coalition=%d",DefeatedCoalition))
 self.Tattacked=nil
 end
 function OPSZONE:onenterGuarded(From,Event,To)
+if From~=To then
 self:T(self.lid..string.format("Zone is guarded"))
 self.Tattacked=nil
 if self.drawZone then
@@ -92414,9 +93067,19 @@ local color=self:_GetZoneColor()
 self.zone:DrawZone(nil,color,1.0,color,0.5)
 end
 end
-function OPSZONE:onenterAttacked(From,Event,To)
+end
+function OPSZONE:onenterAttacked(From,Event,To,AttackerCoalition)
+if From~="Attacked"then
 self:T(self.lid..string.format("Zone is Attacked"))
 self.Tattacked=timer.getAbsTime()
+if AttackerCoalition then
+for _,_chief in pairs(self.chiefs)do
+local chief=_chief
+if chief.coalition~=AttackerCoalition then
+chief:ZoneAttacked(self)
+end
+end
+end
 if self.drawZone then
 self.zone:UndrawZone()
 local color={1,204/255,204/255}
@@ -92424,12 +93087,19 @@ self.zone:DrawZone(nil,color,1.0,color,0.5)
 end
 self:_CleanMissionTable()
 end
+end
 function OPSZONE:onenterEmpty(From,Event,To)
+if From~=To then
 self:T(self.lid..string.format("Zone is empty now"))
+for _,_chief in pairs(self.chiefs)do
+local chief=_chief
+chief:ZoneEmpty(self)
+end
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
 self.zone:DrawZone(nil,color,1.0,color,0.2)
+end
 end
 end
 function OPSZONE:Scan()
@@ -92441,6 +93111,11 @@ local SphereSearch={id=world.VolumeType.SPHERE,params={point=self.zone:GetVec3()
 local Nred=0
 local Nblu=0
 local Nnut=0
+local Tred=0
+local Tblu=0
+local Tnut=0
+self.ScanGroupSet:Clear(false)
+self.ScanUnitSet:Clear(false)
 local function EvaluateZone(_ZoneObject)
 local ZoneObject=_ZoneObject
 if ZoneObject then
@@ -92462,12 +93137,25 @@ return false
 end
 if Included()then
 local Coalition=DCSUnit:getCoalition()
+local tl=0
+local unit=UNIT:Find(DCSUnit)
+if unit then
+tl=unit:GetThreatLevel()
+self.ScanUnitSet:AddUnit(unit)
+local group=unit:GetGroup()
+if group then
+self.ScanGroupSet:AddGroup(group,true)
+end
+end
 if Coalition==coalition.side.RED then
 Nred=Nred+1
+Tred=Tred+tl
 elseif Coalition==coalition.side.BLUE then
 Nblu=Nblu+1
+Tblu=Tblu+tl
 elseif Coalition==coalition.side.NEUTRAL then
 Nnut=Nnut+1
+Tnut=Tnut+tl
 end
 if self.verbose>=4 then
 self:I(self.lid..string.format("Found unit %s (coalition=%d)",DCSUnit:getName(),Coalition))
@@ -92502,40 +93190,33 @@ end
 self.Nred=Nred
 self.Nblu=Nblu
 self.Nnut=Nnut
+self.Tblu=Tblu
+self.Tred=Tred
+self.Tnut=Tnut
 return self
 end
 function OPSZONE:EvaluateZone()
 local Nred=self.Nred
 local Nblu=self.Nblu
 local Nnut=self.Nnut
+local Tnow=timer.getAbsTime()
+local function captured(coal)
+if not self.airbase then
+if not self.Tcaptured then
+self.Tcaptured=Tnow
+end
+if Tnow-self.Tcaptured>=self.TminCaptured then
+self:Captured(coal)
+self.Tcaptured=nil
+end
+end
+end
 if self:IsRed()then
 if Nred==0 then
-if Nblu>0 then
-if not self.airbase then
-local Tnow=timer.getAbsTime()
-if not self.Tcaptured then
-self.Tcaptured=Tnow
-end
-if Tnow-self.Tcaptured>=self.TminCaptured then
-self:Captured(coalition.side.BLUE)
-self.Tcaptured=nil
-end
-end
-elseif Nnut>0 and self.neutralCanCapture then
-if not self.airbase then
-local Tnow=timer.getAbsTime()
-if not self.Tcaptured then
-self.Tcaptured=Tnow
-end
-if Tnow-self.Tcaptured>=self.TminCaptured then
-self:Captured(coalition.side.NEUTRAL)
-self.Tcaptured=nil
-end
-end
-else
-if not self:IsEmpty()then
-self:Empty()
-end
+if Nblu>=self.nunitsCapture and self.Tblu>=self.threatlevelCapture then
+captured(coalition.side.BLUE)
+elseif Nnut>=self.nunitsCapture and self.Tnut>=self.threatlevelCapture and self.neutralCanCapture then
+captured(coalition.side.NEUTRAL)
 end
 else
 if Nblu>0 then
@@ -92557,18 +93238,10 @@ self.isContested=true
 end
 elseif self:IsBlue()then
 if Nblu==0 then
-if Nred>0 then
-if not self.airbase then
-self:Captured(coalition.side.RED)
-end
-elseif Nnut>0 and self.neutralCanCapture then
-if not self.airbase then
-self:Captured(coalition.side.NEUTRAL)
-end
-else
-if not self:IsEmpty()then
-self:Empty()
-end
+if Nred>=self.nunitsCapture and self.Tred>=self.threatlevelCapture then
+captured(coalition.side.RED)
+elseif Nnut>=self.nunitsCapture and self.Tnut>=self.threatlevelCapture and self.neutralCanCapture then
+captured(coalition.side.NEUTRAL)
 end
 else
 if Nred>0 then
@@ -92595,21 +93268,16 @@ if not self:IsAttacked()then
 self:Attacked()
 end
 self.isContested=true
-elseif Nred>0 then
-if not self.airbase then
-self:Captured(coalition.side.RED)
-end
-elseif Nblu>0 then
-if not self.airbase then
-self:Captured(coalition.side.BLUE)
-end
-else
-if not self:IsEmpty()then
-self:Empty()
-end
+elseif Nred>=self.nunitsCapture and self.Tred>=self.threatlevelCapture then
+captured(coalition.side.RED)
+elseif Nblu>=self.nunitsCapture and self.Tblu>=self.threatlevelCapture then
+captured(coalition.side.BLUE)
 end
 else
 self:E(self.lid.."ERROR: Unknown coaliton!")
+end
+if Nblu==0 and Nred==0 and Nnut==0 and(not self:IsEmpty())then
+self:Empty()
 end
 if self.airbase then
 local airbasecoalition=self.airbase:GetCoalition()
@@ -92618,6 +93286,7 @@ self:T(self.lid..string.format("Captured airbase %s: Coaltion %d-->%d",self.airb
 self:Captured(airbasecoalition)
 end
 end
+self:Evaluated()
 end
 function OPSZONE:OnEventHit(EventData)
 if self.HitsOn then
@@ -92667,8 +93336,10 @@ end
 function OPSZONE:_GetMarkerText()
 local owner=UTILS.GetCoalitionName(self.ownerCurrent)
 local prevowner=UTILS.GetCoalitionName(self.ownerPrevious)
-local text=string.format("%s: Owner=%s [%s]\nState=%s [Contested=%s]\nBlue=%d, Red=%d, Neutral=%d",
-self.zoneName,owner,prevowner,self:GetState(),tostring(self:IsContested()),self.Nblu,self.Nred,self.Nnut)
+local text=string.format("%s [N=%d, TL=%d T=%d]:\nOwner=%s [%s]\nState=%s [Contested=%s]\nBlue=%d [TL=%d]\nRed=%d [TL=%d]\nNeutral=%d [TL=%d]",
+self.zoneName,self.nunitsCapture or 0,self.threatlevelCapture or 0,self.TminCaptured or 0,
+owner,prevowner,self:GetState(),tostring(self:IsContested()),
+self.Nblu,self.Tblu,self.Nred,self.Tred,self.Nnut,self.Tnut)
 return text
 end
 function OPSZONE:_AddChief(Chief)
@@ -97650,6 +98321,7 @@ SCENERY="Scenery",
 COORDINATE="Coordinate",
 AIRBASE="Airbase",
 ZONE="Zone",
+OPSZONE="OpsZone"
 }
 TARGET.Category={
 AIRCRAFT="Aircraft",
@@ -97665,7 +98337,7 @@ DEAD="Dead",
 DAMAGED="Damaged",
 }
 _TARGETID=0
-TARGET.version="0.5.6"
+TARGET.version="0.6.0"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -97691,7 +98363,12 @@ self:__Start(-1)
 return self
 end
 function TARGET:AddObject(Object)
-if Object:IsInstanceOf("SET_GROUP")or Object:IsInstanceOf("SET_UNIT")or Object:IsInstanceOf("SET_STATIC")or Object:IsInstanceOf("SET_SCENERY")or Object:IsInstanceOf("SET_OPSGROUP")then
+if Object:IsInstanceOf("SET_GROUP")or
+Object:IsInstanceOf("SET_UNIT")or
+Object:IsInstanceOf("SET_STATIC")or
+Object:IsInstanceOf("SET_SCENERY")or
+Object:IsInstanceOf("SET_OPSGROUP")or
+Object:IsInstanceOf("SET_OPSZONE")then
 local set=Object
 for _,object in pairs(set.Set)do
 self:AddObject(object)
@@ -98026,6 +98703,15 @@ target.Name=zone:GetName()
 target.Coordinate=zone:GetCoordinate()
 target.Life0=1
 target.Life=1
+elseif Object:IsInstanceOf("OPSZONE")then
+local zone=Object
+Object=zone
+target.Type=TARGET.ObjectType.OPSZONE
+target.Name=zone:GetName()
+target.Coordinate=zone:GetCoordinate()
+target.N0=target.N0+1
+target.Life0=1
+target.Life=1
 else
 self:E(self.lid.."ERROR: Unknown object type!")
 return nil
@@ -98098,7 +98784,7 @@ return 0
 end
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
 return 1
-elseif Target.Type==TARGET.ObjectType.ZONE then
+elseif Target.Type==TARGET.ObjectType.ZONE or Target.Type==TARGET.ObjectType.OPSZONE then
 return 1
 else
 self:E("ERROR: unknown target object type in GetTargetLife!")
@@ -98215,6 +98901,10 @@ elseif Target.Type==TARGET.ObjectType.ZONE then
 local object=Target.Object
 local vec3=object:GetVec3()
 return vec3
+elseif Target.Type==TARGET.ObjectType.OPSZONE then
+local object=Target.Object
+local vec3=object:GetZone():GetVec3()
+return vec3
 end
 self:E(self.lid.."ERROR: Unknown TARGET type! Cannot get Vec3")
 end
@@ -98261,7 +98951,7 @@ return 0
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
 local object=Target.Object
 return 0
-elseif Target.Type==TARGET.ObjectType.ZONE then
+elseif Target.Type==TARGET.ObjectType.ZONE or Target.Type==TARGET.ObjectType.OPSZONE then
 local object=Target.Object
 return 0
 end
@@ -98409,10 +99099,41 @@ elseif Target.Type==TARGET.ObjectType.COORDINATE then
 return TARGET.Category.COORDINATE
 elseif Target.Type==TARGET.ObjectType.ZONE then
 return TARGET.Category.ZONE
+elseif Target.Type==TARGET.ObjectType.OPSZONE then
+return TARGET.Category.OPSZONE
 else
 self:E("ERROR: unknown target category!")
 end
 return category
+end
+function TARGET:GetTargetCoalition(Target)
+local coal=coalition.side.NEUTRAL
+if Target.Type==TARGET.ObjectType.GROUP then
+if Target.Object and Target.Object:IsAlive()~=nil then
+local object=Target.Object
+coal=object:GetCoalition()
+end
+elseif Target.Type==TARGET.ObjectType.UNIT then
+if Target.Object and Target.Object:IsAlive()~=nil then
+local object=Target.Object
+coal=object:GetCoalition()
+end
+elseif Target.Type==TARGET.ObjectType.STATIC then
+local object=Target.Object
+coal=object:GetCoalition()
+elseif Target.Type==TARGET.ObjectType.SCENERY then
+elseif Target.Type==TARGET.ObjectType.AIRBASE then
+local object=Target.Object
+coal=object:GetCoalition()
+elseif Target.Type==TARGET.ObjectType.COORDINATE then
+elseif Target.Type==TARGET.ObjectType.ZONE then
+elseif Target.Type==TARGET.ObjectType.OPSZONE then
+local object=Target.Object
+coal=object:GetOwner()
+else
+self:E("ERROR: unknown target category!")
+end
+return coal
 end
 function TARGET:GetTargetByName(ObjectName)
 for _,_target in pairs(self.targets)do
@@ -98423,23 +99144,40 @@ end
 end
 return nil
 end
-function TARGET:GetObjective()
+function TARGET:GetObjective(RefCoordinate,Coalitions)
+if RefCoordinate then
+local dmin=math.huge
+local tmin=nil
 for _,_target in pairs(self.targets)do
 local target=_target
-if target.Status~=TARGET.ObjectStatus.DEAD then
+if target.Status~=TARGET.ObjectStatus.DEAD and(Coalitions==nil or UTILS.IsInTable(UTILS.EnsureTable(Coalitions),self:GetTargetCoalition(target)))then
+local vec3=self:GetTargetVec3(target)
+local d=UTILS.VecDist3D(vec3,RefCoordinate)
+if d<dmin then
+dmin=d
+tmin=target
+end
+end
+end
+return tmin
+else
+for _,_target in pairs(self.targets)do
+local target=_target
+if target.Status~=TARGET.ObjectStatus.DEAD and(Coalitions==nil or UTILS.IsInTable(UTILS.EnsureTable(Coalitions),self:GetTargetCoalition(target)))then
 return target
+end
 end
 end
 return nil
 end
-function TARGET:GetObject()
-local target=self:GetObjective()
+function TARGET:GetObject(RefCoordinate,Coalitions)
+local target=self:GetObjective(RefCoordinate,Coalitions)
 if target then
 return target.Object
 end
 return nil
 end
-function TARGET:CountObjectives(Target)
+function TARGET:CountObjectives(Target,Coalitions)
 local N=0
 if Target.Type==TARGET.ObjectType.GROUP then
 local target=Target.Object
@@ -98447,39 +99185,53 @@ local units=target:GetUnits()
 for _,_unit in pairs(units or{})do
 local unit=_unit
 if unit and unit:IsAlive()~=nil and unit:GetLife()>1 then
+if Coalitions==nil or UTILS.IsInTable(UTILS.EnsureTable(Coalitions),unit:GetCoalition())then
 N=N+1
+end
 end
 end
 elseif Target.Type==TARGET.ObjectType.UNIT then
 local target=Target.Object
 if target and target:IsAlive()~=nil and target:GetLife()>1 then
+if Coalitions==nil or UTILS.IsInTable(Coalitions,target:GetCoalition())then
 N=N+1
+end
 end
 elseif Target.Type==TARGET.ObjectType.STATIC then
 local target=Target.Object
 if target and target:IsAlive()then
+if Coalitions==nil or UTILS.IsInTable(Coalitions,target:GetCoalition())then
 N=N+1
+end
 end
 elseif Target.Type==TARGET.ObjectType.SCENERY then
 if Target.Status~=TARGET.ObjectStatus.DEAD then
 N=N+1
 end
 elseif Target.Type==TARGET.ObjectType.AIRBASE then
+local target=Target.Object
 if Target.Status==TARGET.ObjectStatus.ALIVE then
+if Coalitions==nil or UTILS.IsInTable(Coalitions,target:GetCoalition())then
 N=N+1
+end
 end
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
 elseif Target.Type==TARGET.ObjectType.ZONE then
+elseif Target.Type==TARGET.ObjectType.OPSZONE then
+local target=Target.Object
+if Coalitions==nil or UTILS.IsInTable(Coalitions,target:GetOwner())then
+N=N+1
+end
 else
 self:E(self.lid.."ERROR: Unknown target type! Cannot count targets")
 end
 return N
 end
-function TARGET:CountTargets()
+function TARGET:CountTargets(Coalitions)
 local N=0
 for _,_target in pairs(self.targets)do
 local Target=_target
-N=N+self:CountObjectives(Target)
+N=N+self:CountObjectives(Target,Coalitions)
 end
 return N
 end
