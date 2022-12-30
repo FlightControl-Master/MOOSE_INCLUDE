@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-29T15:34:11.0000000Z-d25efe2293dd33a2dc01ec43452616c568885ddb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-30T16:40:10.0000000Z-5a44948050f9467fb7bafda5a8cac90a81eb428e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79230,7 +79230,7 @@ local is=self:Is("LandingAt")
 return is
 end
 function FLIGHTGROUP:IsLandedAt()
-is=self:Is("LandedAt")
+local is=self:Is("LandedAt")
 return is
 end
 function FLIGHTGROUP:IsFuelLow()
