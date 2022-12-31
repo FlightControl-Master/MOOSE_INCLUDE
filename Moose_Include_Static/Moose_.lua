@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T11:24:49.0000000Z-095c36b3ba07d7da512b1d65b71d5950c9cf8ad9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T11:42:02.0000000Z-c33f6377178b353577808cf35d50b1ceee5c149c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60032,10 +60032,12 @@ end
 end
 end
 local mission=self:GetMissionCurrent()
-if mission and mission.updateDCSTask and mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING then
+if mission and mission.updateDCSTask then
 if mission.type==AUFTRAG.Type.CAPTUREZONE then
 local Task=mission:GetGroupWaypointTask(self)
+if mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING or mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.STARTED then
 self:_UpdateTask(Task,mission)
+end
 end
 end
 else
@@ -79719,7 +79721,7 @@ self:T3(self.lid..string.format("Checking orbit mission dist=%d meters",dist))
 if distchange or hdgchange then
 self:T3(self.lid..string.format("Updating orbit!"))
 local DCSTask=mission:GetDCSMissionTask()
-local Task=self:GetTaskByID(mission.auftragsnummer)
+local Task=mission:GetGroupWaypointTask(self)
 self.controller:resetTask()
 self:_SandwitchDCSTask(DCSTask,Task,false,1)
 end
@@ -87584,7 +87586,7 @@ if targetgroup then
 self:T(self.lid..string.format("Zone %s NOT captured: engaging target %s",zoneCurr:GetName(),targetgroup:GetName()))
 self:EngageTarget(targetgroup)
 else
-self:E(self.lid..string.format("ERROR: Current zone not captured but no target group could be found. This should NOT happen!"))
+self:T(self.lid..string.format("Zone %s not captured but no target group could be found. Should be captured in the next zone evaluation.",zoneCurr:GetName()))
 end
 else
 self:T(self.lid..string.format("Zone %s NOT captured and NOT EXECUTING",zoneCurr:GetName()))
@@ -93185,6 +93187,16 @@ end
 world.searchObjects(self.ObjectCategories,SphereSearch,EvaluateZone)
 if self.verbose>=3 then
 local text=string.format("Scan result Nred=%d, Nblue=%d, Nneutral=%d",Nred,Nblu,Nnut)
+if self.verbose>=4 then
+for _,_unit in pairs(self.ScanUnitSet:GetSet())do
+local unit=_unit
+text=text..string.format("\nUnit %s coalition=%s",unit:GetName(),unit:GetCoalitionName())
+end
+for _,_group in pairs(self.ScanGroupSet:GetSet())do
+local group=_group
+text=text..string.format("\nGroup %s coalition=%s",group:GetName(),group:GetCoalitionName())
+end
+end
 self:I(self.lid..text)
 end
 self.Nred=Nred
