@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T17:01:28.0000000Z-daa60ac501030f337342e542c7b35f57e576c8f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T17:02:35.0000000Z-e25b9155b4d96393d2005032e4ada9f490ffa6f0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79722,7 +79722,7 @@ self:T3(self.lid..string.format("Checking orbit mission dist=%d meters",dist))
 if distchange or hdgchange then
 self:T3(self.lid..string.format("Updating orbit!"))
 local DCSTask=mission:GetDCSMissionTask()
-local Task=mission:GetGroupWaypointTask(self)
+local Task=self:GetTaskByID(mission.auftragsnummer)
 self.controller:resetTask()
 self:_SandwitchDCSTask(DCSTask,Task,false,1)
 end
@@ -81062,7 +81062,11 @@ end
 function FLIGHTGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Altitude,Updateroute)
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
-Speed=Speed or self:GetSpeedCruise()
+if not Speed or Speed<10 then
+local mission=self:GetMissionCurrent()
+local speed=mission.missionSpeed
+Speed=speed or self:GetSpeedCruise()
+end
 local alttype=COORDINATE.WaypointAltType.BARO
 if self.isHelo then
 alttype=COORDINATE.WaypointAltType.RADIO
