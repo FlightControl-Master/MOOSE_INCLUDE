@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-30T21:30:57.0000000Z-ff7ebb4f923d333474d5a0954c0c4bdceff005b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T11:24:49.0000000Z-095c36b3ba07d7da512b1d65b71d5950c9cf8ad9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64890,7 +64890,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.51",
+version="0.2.52",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -66004,7 +66004,7 @@ if entry.FlightGroup:IsAirborne()and((not entry.HasAssignedTask)or overridetask)
 self:T("Adding AI with Callsign: "..entry.CallSign)
 AIPilots[#AIPilots+1]=_entry
 end
-elseif entry.IsPlayer and not entry.Blocked then
+elseif entry.IsPlayer and(not entry.Blocked)and(not entry.Group:IsHelicopter())then
 if(not entry.HasAssignedTask)or overridetask then
 local TNow=timer.getTime()
 if entry.LastTasking and(TNow-entry.LastTasking>self.ReassignTime)then
