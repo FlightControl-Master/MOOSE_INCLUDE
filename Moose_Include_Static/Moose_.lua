@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T14:56:01.0000000Z-0340d17ab887f5ab093317d7ec7c8dacb118d633 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T17:01:28.0000000Z-daa60ac501030f337342e542c7b35f57e576c8f2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62462,7 +62462,7 @@ if type(TargetTypes)~="table"then
 TargetTypes={TargetTypes}
 end
 end
-local mission=AUFTRAG:NewORBIT(Coordinate or ZoneCAP:GetCoordinate(),Altitude or 10000,Speed,Heading,Leg)
+local mission=AUFTRAG:NewORBIT(Coordinate or ZoneCAP:GetCoordinate(),Altitude or 10000,Speed or 350,Heading,Leg)
 mission.type=AUFTRAG.Type.CAP
 mission:_SetLogID()
 mission.engageZone=ZoneCAP
@@ -62470,6 +62470,7 @@ mission.engageTargetTypes=TargetTypes or{"Air"}
 mission.missionTask=ENUMS.MissionTask.CAP
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.EvadeFire
+mission.missionSpeed=UTILS.KnotsToAltKIAS(Speed or 350,Altitude)
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
