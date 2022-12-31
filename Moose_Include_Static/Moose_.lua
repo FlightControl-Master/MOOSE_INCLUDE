@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T17:02:35.0000000Z-e25b9155b4d96393d2005032e4ada9f490ffa6f0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T17:07:35.0000000Z-e3f9a27f879aeeaaa7d5d07499b6c30359ec4b06 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79722,7 +79722,7 @@ self:T3(self.lid..string.format("Checking orbit mission dist=%d meters",dist))
 if distchange or hdgchange then
 self:T3(self.lid..string.format("Updating orbit!"))
 local DCSTask=mission:GetDCSMissionTask()
-local Task=self:GetTaskByID(mission.auftragsnummer)
+local Task=mission:GetGroupWaypointTask(self)
 self.controller:resetTask()
 self:_SandwitchDCSTask(DCSTask,Task,false,1)
 end
