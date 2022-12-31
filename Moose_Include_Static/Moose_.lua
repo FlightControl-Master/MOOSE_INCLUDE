@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T11:42:02.0000000Z-c33f6377178b353577808cf35d50b1ceee5c149c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T14:56:01.0000000Z-0340d17ab887f5ab093317d7ec7c8dacb118d633 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -94068,7 +94068,7 @@ SAM="Luftabwehr",
 GROUP="Einheit",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.54"
+PLAYERTASKCONTROLLER.version="0.1.55"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -95305,6 +95305,8 @@ clients={Client}
 enforced=true
 joinorabort=true
 end
+local tasktypes=self:_GetAvailableTaskTypes()
+local taskpertype=self:_GetTasksPerType()
 for _,_client in pairs(clients)do
 if _client and _client:IsAlive()then
 local client=_client
@@ -95333,6 +95335,7 @@ local T0=timer.getAbsTime()
 local TDiff=T0-self.PlayerMenu[playername].PTTimeStamp
 self:T("TDiff = "..string.format("%.2d",TDiff))
 if TDiff>=self.holdmenutime then
+self.PlayerMenu[playername]:RemoveSubMenus()
 self.PlayerMenu[playername]=MENU_GROUP_DELAYED:New(group,menuname,self.MenuParent)
 self.PlayerMenu[playername]:SetTag(newtag)
 self.PlayerMenu[playername].PTTimeStamp=timer.getAbsTime()
@@ -95372,8 +95375,6 @@ end
 local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client):SetTag(newtag)
 if self.activehasinfomenu and self.taskinfomenu then
 self:T("Building Active-Info Menus for "..playername)
-local tasktypes=self:_GetAvailableTaskTypes()
-local taskpertype=self:_GetTasksPerType()
 if self.PlayerInfoMenu[playername]then
 self.PlayerInfoMenu[playername]:RemoveSubMenus(nil,oldtag)
 end
@@ -95382,10 +95383,12 @@ end
 elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask and(timedbuild or joinorabort))then
 self:T("Building Join Menus for "..playername)
 rebuilddone=true
-local tasktypes=self:_GetAvailableTaskTypes()
-local taskpertype=self:_GetTasksPerType()
 local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
+if self.PlayerJoinMenu[playername]then
+self.PlayerJoinMenu[playername]:RemoveSubMenus(nil,oldtag)
+end
 local joinmenu=MENU_GROUP_DELAYED:New(group,menujoin,topmenu):SetTag(newtag)
+self.PlayerJoinMenu[playername]=joinmenu
 local ttypes={}
 local taskmenu={}
 for _tasktype,_data in pairs(tasktypes)do
@@ -95436,6 +95439,7 @@ rebuilddone=true
 end
 if rebuilddone then
 self.PlayerMenu[playername]:RemoveSubMenus(nil,oldtag)
+self.PlayerMenu[playername]:Set()
 self.PlayerMenu[playername]:Refresh()
 end
 end
