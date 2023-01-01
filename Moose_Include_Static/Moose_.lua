@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T08:30:15.0000000Z-9564d9d8938b83d61c6942597bcbe6a9673b5845 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T11:34:32.0000000Z-8f185d129123ed078a45f03d2bd97db78658e3b7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18077,6 +18077,12 @@ self.tid=timer.scheduleFunction(self._Function,self,self.Tstart)
 self.lid=string.format("TIMER UID=%d/%d | ",self.uid,self.tid)
 self.isrunning=true
 self:T(self.lid..string.format("Starting Timer in %.3f sec, dT=%s, Tstop=%s",self.Tstart-Tnow,tostring(self.dT),tostring(self.Tstop)))
+return self
+end
+function TIMER:StartIf(Condition,Tstart,dT,Duration)
+if Condition then
+self:Start(Tstart,dT,Duration)
+end
 return self
 end
 function TIMER:Stop(Delay)
