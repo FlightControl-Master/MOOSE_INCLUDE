@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T11:34:32.0000000Z-8f185d129123ed078a45f03d2bd97db78658e3b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T19:07:14.0000000Z-bdd283956c95a3951f07988301839c06e6a17421 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62476,7 +62476,7 @@ mission.engageTargetTypes=TargetTypes or{"Air"}
 mission.missionTask=ENUMS.MissionTask.CAP
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.EvadeFire
-mission.missionSpeed=UTILS.KnotsToAltKIAS(Speed or 350,Altitude)
+mission.missionSpeed=UTILS.KnotsToKmph(UTILS.KnotsToAltKIAS(Speed or 350,Altitude))
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
@@ -81088,6 +81088,7 @@ function FLIGHTGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Altitude,U
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
 Speed=Speed or self:GetSpeedCruise()
+self:T3(self.lid..string.format("Waypoint Speed=%.1f knots",Speed))
 local alttype=COORDINATE.WaypointAltType.BARO
 if self.isHelo then
 alttype=COORDINATE.WaypointAltType.RADIO
