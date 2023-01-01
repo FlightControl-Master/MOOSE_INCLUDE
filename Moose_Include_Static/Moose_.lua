@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-12-31T17:07:35.0000000Z-e3f9a27f879aeeaaa7d5d07499b6c30359ec4b06 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T00:08:59.0000000Z-c8d9377dbb391f7910e1f7fb160495c5c9e18ccf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -70424,7 +70424,11 @@ end
 if MissionType==AUFTRAG.Type.ARMOREDGUARD then
 RangeMax=UTILS.NMToMeters(50)
 end
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,nil,Categories,Attributes,Properties)
+self:T(self.lid.."Missiontype="..MissionType)
+self:T({categories=Categories})
+self:T({attributes=Attributes})
+self:T({properties=Properties})
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,RangeMax,nil,nil,nil,nil,Categories,Attributes,Properties)
 if recruited then
 local mission=nil
 self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zone %s",#assets,MissionType,tostring(StratZone.opszone.zoneName)))
@@ -71999,7 +72003,13 @@ local TargetVec2=Mission:GetTargetVec2()
 local Payloads=Mission.payloads
 local MaxWeight=nil
 if Mission.NcarriersMin then
-local Cohorts=LEGION._GetCohorts(Mission.transportLegions or self.legions,Mission.transportCohorts)
+local legions=self.legions
+local cohorts=nil
+if Mission.transportLegions or Mission.transportCohorts then
+legions=Mission.transportLegions
+cohorts=Mission.transportCohorts
+end
+local Cohorts=LEGION._GetCohorts(legions,cohorts)
 local transportcohorts={}
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
@@ -72010,7 +72020,13 @@ end
 end
 self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
 end
-local Cohorts=LEGION._GetCohorts(Mission.specialLegions or self.legions,Mission.specialCohorts,Mission.operation,self.opsqueue)
+local legions=self.legions
+local cohorts=nil
+if Mission.specialLegions or Mission.specialCohorts then
+legions=Mission.specialLegions
+cohorts=Mission.specialCohorts
+end
+local Cohorts=LEGION._GetCohorts(legions,cohorts,Mission.operation,self.opsqueue)
 self:T(self.lid..string.format("Found %d cohort candidates for mission",#Cohorts))
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
 Mission.engageRange,Mission.refuelSystem,nil,nil,MaxWeight,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
@@ -80346,6 +80362,9 @@ table.insert(wp,current)
 for i=n,N do
 table.insert(wp,self.waypoints[i])
 end
+if wp[2]then
+self.speedWp=wp[2].speed
+end
 local hb=self.homebase and self.homebase:GetName()or"unknown"
 local db=self.destbase and self.destbase:GetName()or"unknown"
 self:T(self.lid..string.format("Updating route for WP #%d-%d [%s], homebase=%s destination=%s",n,#wp,self:GetState(),hb,db))
@@ -82936,19 +82955,15 @@ local mission=_mission
 local reinforce=false
 if mission:IsExecuting()and mission.reinforce and mission.reinforce>0 then
 local N=mission:CountOpsGroups()
-local Nmin,Nmax=mission:GetRequiredAssets()
-if N<Nmin then
+if N<mission.NassetsMin then
 reinforce=true
 end
+self:I(self.lid..string.format("Checking Reinforcement N=%d, Nmin=%d ==> Reinforce=%s",N,mission.NassetsMin,tostring(reinforce)))
 end
-mission:CountOpsGroups()
 if(mission:IsQueued(self)or reinforce)and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)then
 local recruited,assets,legions=self:RecruitAssetsForMission(mission)
 if recruited then
-for _,_asset in pairs(assets)do
-local asset=_asset
-mission:AddAsset(asset)
-end
+mission:_AddAssets(assets)
 local EscortAvail=self:RecruitAssetsForEscort(mission,assets)
 local TransportAvail=true
 if EscortAvail then
@@ -82963,6 +82978,10 @@ end
 end
 if EscortAvail and TransportAvail then
 self:MissionRequest(mission)
+if reinforce then
+mission.reinforce=mission.reinforce-#assets
+self:I(self.lid..string.format("Reinforced with N=%d Nreinforce=%d",#assets,mission.reinforce))
+end
 return true
 else
 LEGION.UnRecruitAssets(assets,mission)
@@ -83604,7 +83623,13 @@ local TargetVec2=Mission:GetTargetVec2()
 local Payloads=Mission.payloads
 local MaxWeight=nil
 if Mission.NcarriersMin then
-local Cohorts=LEGION._GetCohorts(Mission.transportLegions or{self},Mission.transportCohorts or self.cohorts)
+local legions={self}
+local cohorts=self.cohorts
+if Mission.transportLegions or Mission.transportCohorts then
+legions=Mission.transportLegions
+cohorts=Mission.transportCohorts
+end
+local Cohorts=LEGION._GetCohorts(legions,cohorts)
 local transportcohorts={}
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
@@ -83615,7 +83640,13 @@ end
 end
 self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
 end
-local Cohorts=LEGION._GetCohorts(Mission.specialLegions or{self},Mission.specialCohorts or self.cohorts,Operation,OpsQueue)
+local legions={self}
+local cohorts=self.cohorts
+if Mission.specialLegions or Mission.specialCohorts then
+legions=Mission.specialLegions
+cohorts=Mission.specialCohorts
+end
+local Cohorts=LEGION._GetCohorts(legions,cohorts,Operation,OpsQueue)
 local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,Mission.type,Mission.alert5MissionType,NreqMin,NreqMax,TargetVec2,Payloads,
 Mission.engageRange,Mission.refuelSystem,nil,nil,MaxWeight,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType})
 return recruited,assets,legions
@@ -83803,7 +83834,7 @@ end
 local function CheckMaxWeight(_cohort)
 local cohort=_cohort
 if MaxWeight~=nil then
-cohort:I(string.format("Cohort weight=%.1f | max weight=%.1f",cohort.weightAsset,MaxWeight))
+cohort:T(string.format("Cohort weight=%.1f | max weight=%.1f",cohort.weightAsset,MaxWeight))
 return cohort.weightAsset<=MaxWeight
 else
 return true
@@ -83813,7 +83844,7 @@ local can=AUFTRAG.CheckMissionCapability(MissionType,Cohort.missiontypes)
 if can then
 can=CheckCategory(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of mission types",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of mission types",Cohort.name))
 return false
 end
 if can then
@@ -83823,57 +83854,55 @@ else
 can=Cohort:IsOnDuty()
 end
 else
-env.info(string.format("Cohort %s cannot because of category",Cohort.name))
-BASE:I(Categories)
-BASE:I(Cohort.category)
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of category",Cohort.name))
 return false
 end
 if can then
 can=CheckAttribute(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of readyiness",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of readyiness",Cohort.name))
 return false
 end
 if can then
 can=CheckProperty(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of attribute",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of attribute",Cohort.name))
 return false
 end
 if can then
 can=CheckWeapon(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of property",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of property",Cohort.name))
 return false
 end
 if can then
 can=CheckRange(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of weapon type",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of weapon type",Cohort.name))
 return false
 end
 if can then
 can=CheckRefueling(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of range",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of range",Cohort.name))
 return false
 end
 if can then
 can=CheckCargoWeight(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of refueling system",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of refueling system",Cohort.name))
 return false
 end
 if can then
 can=CheckMaxWeight(Cohort)
 else
-env.info(string.format("Cohort %s cannot because of cargo weight",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of cargo weight",Cohort.name))
 return false
 end
 if can then
 return true
 else
-env.info(string.format("Cohort %s cannot because of max weight",Cohort.name))
+Cohort:T(Cohort.lid..string.format("Cohort %s cannot because of max weight",Cohort.name))
 return false
 end
 return nil
@@ -88507,6 +88536,10 @@ end
 local text=string.format("Group passed waypoint %s/%d ID=%d: final=%s detour=%s astar=%s",
 tostring(wpindex),#self.waypoints,Waypoint.uid,tostring(self.passedfinalwp),tostring(Waypoint.detour),tostring(Waypoint.astar))
 self:T(self.lid..text)
+end
+local wpnext=self:GetWaypointNext()
+if wpnext then
+self.speedWp=wpnext.speed
 end
 end
 function OPSGROUP:_SetWaypointTasks(Waypoint)
