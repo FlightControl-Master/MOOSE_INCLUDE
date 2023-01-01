@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T00:08:59.0000000Z-c8d9377dbb391f7910e1f7fb160495c5c9e18ccf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T08:30:15.0000000Z-9564d9d8938b83d61c6942597bcbe6a9673b5845 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -81081,11 +81081,7 @@ end
 function FLIGHTGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Altitude,Updateroute)
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
-if not Speed or Speed<10 then
-local mission=self:GetMissionCurrent()
-local speed=mission.missionSpeed
-Speed=speed or self:GetSpeedCruise()
-end
+Speed=Speed or self:GetSpeedCruise()
 local alttype=COORDINATE.WaypointAltType.BARO
 if self.isHelo then
 alttype=COORDINATE.WaypointAltType.RADIO
