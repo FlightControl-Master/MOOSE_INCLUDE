@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-01T19:07:14.0000000Z-bdd283956c95a3951f07988301839c06e6a17421 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-02T11:08:37.0000000Z-92710f4625870e19baeefdd852d587360eb96bff ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19267,6 +19267,26 @@ end
 end
 return self
 end
+function ZONE_POLYGON_BASE:GetZoneRadius(ZoneName,DoNotRegisterZone)
+local center=self:GetVec2()
+local radius=0
+for _,_vec2 in pairs(self._.Polygon)do
+local vec2=_vec2
+local r=UTILS.VecDist2D(center,vec2)
+if r>radius then
+radius=r
+end
+end
+local zone=ZONE_RADIUS:New(ZoneName or self.ZoneName,center,radius,DoNotRegisterZone)
+return zone
+end
+function ZONE_POLYGON_BASE:GetZoneQuad(ZoneName,DoNotRegisterZone)
+local vec1,vec3=self:GetBoundingVec2()
+local vec2={x=vec1.x,y=vec3.y}
+local vec4={x=vec3.x,y=vec1.y}
+local zone=ZONE_POLYGON_BASE:New(ZoneName or self.ZoneName,{vec1,vec2,vec3,vec4})
+return zone
+end
 function ZONE_POLYGON_BASE:SmokeZone(SmokeColor,Segments)
 self:F2(SmokeColor)
 Segments=Segments or 10
@@ -19378,6 +19398,22 @@ y1=(y1>self._.Polygon[i].y)and self._.Polygon[i].y or y1
 y2=(y2<self._.Polygon[i].y)and self._.Polygon[i].y or y2
 end
 return{x1=x1,y1=y1,x2=x2,y2=y2}
+end
+function ZONE_POLYGON_BASE:GetBoundingVec2()
+local x1=self._.Polygon[1].x
+local y1=self._.Polygon[1].y
+local x2=self._.Polygon[1].x
+local y2=self._.Polygon[1].y
+for i=2,#self._.Polygon do
+self:T2({self._.Polygon[i],x1,y1,x2,y2})
+x1=(x1>self._.Polygon[i].x)and self._.Polygon[i].x or x1
+x2=(x2<self._.Polygon[i].x)and self._.Polygon[i].x or x2
+y1=(y1>self._.Polygon[i].y)and self._.Polygon[i].y or y1
+y2=(y2<self._.Polygon[i].y)and self._.Polygon[i].y or y2
+end
+local vec1={x=x1,y=y1}
+local vec2={x=x2,y=y2}
+return vec1,vec2
 end
 function ZONE_POLYGON_BASE:Boundary(Coalition,Color,Radius,Alpha,Segments,Closed)
 Coalition=Coalition or-1
@@ -49733,6 +49769,7 @@ end
 local parking={}
 for _,asset in pairs(assets)do
 local _asset=asset
+if not _asset.spawned then
 local terminaltype=asset.terminalType or self:_GetTerminal(asset.attribute,self:GetAirbaseCategory())
 parking[_asset.uid]={}
 for i=1,_asset.nunits do
@@ -49789,6 +49826,7 @@ end
 if not gotit then
 self:I(self.lid..string.format("WARNING: No free parking spot for asset %s [id=%d]",assetname,_asset.uid))
 return nil
+end
 end
 end
 end
@@ -60539,7 +60577,8 @@ if self.engage.Target and self.engage.Target:IsAlive()then
 local vec3=self.engage.Target:GetVec3()
 if vec3 then
 local dist=UTILS.VecDist3D(vec3,self.engage.Coordinate:GetVec3())
-if dist>100 or not self:HasLoS(self.engage.Target:GetCoordinate())then
+local los=self:HasLoS(vec3)
+if dist>100 or los==false then
 self.engage.Coordinate:UpdateFromVec3(vec3)
 local uid=self:GetWaypointCurrentUID()
 self:RemoveWaypointByID(self.engage.Waypoint.uid)
@@ -64488,7 +64527,41 @@ function AUFTRAG:_SetLogID()
 self.lid=string.format("Auftrag #%d %s | ",self.auftragsnummer,tostring(self.type))
 return self
 end
-function AUFTRAG:_UpdateTask()
+function AUFTRAG:_GetRequestID(Legion)
+local requestid=nil
+local name=nil
+if type(Legion)=="string"then
+name=Legion
+else
+name=Legion.alias
+end
+if name then
+requestid=self.requestID[name]
+end
+return nil
+end
+function AUFTRAG:_GetRequest(Legion)
+local request=nil
+local requestID=self:_GetRequestID(Legion)
+if requestID then
+request=Legion:GetRequestByID(requestID)
+end
+return request
+end
+function AUFTRAG:_SetRequestID(Legion,RequestID)
+local requestid=nil
+local name=nil
+if type(Legion)=="string"then
+name=Legion
+else
+name=Legion.alias
+end
+if name then
+if self.requestID[name]then
+self:I(self.lid..string.format("WARNING: Mission already has a request ID=%d!",self.requestID[name]))
+end
+self.requestID[name]=RequestID
+end
 return self
 end
 function AUFTRAG:UpdateMarker()
@@ -69326,6 +69399,14 @@ local text="Refuelling Zones:"
 for i,_refuellingzone in pairs(self.refuellingZones)do
 local refuellingzone=_refuellingzone
 text=text..string.format("\n* %s: Mission status=%s, suppliers=%d",refuellingzone.zone:GetName(),refuellingzone.mission:GetState(),refuellingzone.mission:CountOpsGroups())
+end
+self:I(self.lid..text)
+end
+if self.verbose>=5 then
+local text="Assets in stock:"
+for i,_asset in pairs(self.stock)do
+local asset=_asset
+text=text..string.format("\n* %s: spawned=%s",asset.spawngroupname,tostring(asset.spawned))
 end
 self:I(self.lid..text)
 end
@@ -83036,6 +83117,37 @@ Legion:AddMission(Mission)
 Legion:MissionRequest(Mission)
 end
 end
+function LEGION:_AddRequest(AssetDescriptor,AssetDescriptorValue,nAsset,Prio,Assignment)
+nAsset=nAsset or 1
+Prio=Prio or 50
+self.queueid=self.queueid+1
+local request={
+uid=self.queueid,
+prio=Prio,
+warehouse=self,
+assetdesc=AssetDescriptor,
+assetdescval=AssetDescriptorValue,
+nasset=nAsset,
+transporttype=WAREHOUSE.TransportType.SELFPROPELLED,
+ntransport=0,
+assignment=tostring(Assignment),
+airbase=self:GetAirbase(),
+category=self:GetAirbaseCategory(),
+ndelivered=0,
+ntransporthome=0,
+assets={},
+toself=true,
+}
+table.insert(self.queue,request)
+local descval="assetlist"
+if request.assetdesc==WAREHOUSE.Descriptor.ASSETLIST then
+else
+descval=tostring(request.assetdescval)
+end
+local text=string.format("Warehouse %s: New request from warehouse %s.\nDescriptor %s=%s, #assets=%s; Transport=%s, #transports=%s.",
+self.alias,self.alias,request.assetdesc,descval,tostring(request.nasset),request.transporttype,tostring(request.ntransport))
+self:_DebugMessage(text,5)
+end
 function LEGION:onafterMissionRequest(From,Event,To,Mission)
 self:T(self.lid..string.format("MissionRequest for mission %s [%s]",Mission:GetName(),Mission:GetType()))
 Mission:Requested()
@@ -83063,8 +83175,7 @@ cancel=true
 end
 if Mission.type==AUFTRAG.Type.RELOCATECOHORT then
 cancel=true
-local requestID=currM.requestID[self.alias]
-local request=self:GetRequestByID(requestID)
+local request=currM:_GetRequest(self)
 if request then
 self:T2(self.lid.."Removing group from cargoset")
 request.cargogroupset:Remove(asset.spawngroupname,true)
@@ -83106,7 +83217,7 @@ asset.takeoffType=COORDINATE.WaypointType.TakeOffParking
 end
 end
 local assignment=string.format("Mission-%d",Mission.auftragsnummer)
-self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,nil,nil,Mission.prio,assignment)
+self:_AddRequest(WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,Mission.prio,assignment)
 Mission.requestID[self.alias]=self.queueid
 local request=self:GetRequestByID(self.queueid)
 self:T(self.lid..string.format("Mission %s [%s] got Request ID=%d",Mission:GetName(),Mission:GetType(),self.queueid))
@@ -83141,7 +83252,7 @@ if#AssetList>0 then
 OpsTransport:Requested()
 OpsTransport:SetLegionStatus(self,OPSTRANSPORT.Status.REQUESTED)
 local assignment=string.format("Transport-%d",OpsTransport.uid)
-self:AddRequest(self,WAREHOUSE.Descriptor.ASSETLIST,AssetList,#AssetList,nil,nil,OpsTransport.prio,assignment)
+self:_AddRequest(WAREHOUSE.Descriptor.ASSETLIST,AssetList,#AssetList,OpsTransport.prio,assignment)
 OpsTransport.requestID[self.alias]=self.queueid
 end
 end
@@ -83189,8 +83300,9 @@ asset.requested=nil
 asset.isReserved=nil
 end
 end
-if Mission.requestID[self.alias]then
-self:_DeleteQueueItemByID(Mission.requestID[self.alias],self.queue)
+local requestID=Mission:_GetRequestID(self)
+if requestID then
+self:_DeleteQueueItemByID(requestID,self.queue)
 end
 end
 function LEGION:onafterOpsOnMission(From,Event,To,OpsGroup,Mission)
@@ -86175,29 +86287,44 @@ self.rtzOnOutOfAmmo=true
 return self
 end
 function OPSGROUP:HasLoS(Coordinate,Element,OffsetElement,OffsetCoordinate)
-local Vec3=Coordinate:GetVec3()
+if Coordinate then
+local Vec3={x=Coordinate.x,y=Coordinate.y,z=Coordinate.z}
 if OffsetCoordinate then
 Vec3=UTILS.VecAdd(Vec3,OffsetCoordinate)
 end
-local function checklos(element)
-local vec3=element.unit:GetVec3()
+local function checklos(vec3)
+if vec3 then
 if OffsetElement then
 vec3=UTILS.VecAdd(vec3,OffsetElement)
 end
 local _los=land.isVisible(vec3,Vec3)
 return _los
 end
+return nil
+end
 if Element then
+if Element.unit and Element.unit:IsAlive()then
+local vec3=Element.unit:GetVec3()
 local los=checklos(Element)
 return los
+end
 else
-for _,element in pairs(self.elements)do
-local los=checklos(element)
+local gotit=false
+for _,_element in pairs(self.elements)do
+local element=_element
+if element and element.unit and element.unit:IsAlive()then
+gotit=true
+local vec3=element.unit:GetVec3()
+local los=checklos(vec3)
 if los then
 return true
 end
 end
+end
+if gotit then
 return false
+end
+end
 end
 return nil
 end
@@ -92829,13 +92956,17 @@ Tnut=0,
 chiefs={},
 Missions={},
 }
-OPSZONE.version="0.4.0"
+OPSZONE.ZoneType={
+Circular="Circular",
+Polygon="Polygon",
+}
+OPSZONE.version="0.5.0"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
 if type(Zone)=="string"then
 local Name=Zone
-Zone=ZONE:New(Name)
+Zone=ZONE:FindByName(Name)
 if not Zone then
 local airbase=AIRBASE:FindByName(Name)
 if airbase then
@@ -92854,7 +92985,15 @@ end
 if Zone:IsInstanceOf("ZONE_AIRBASE")then
 self.airbase=Zone._.ZoneAirbase
 self.airbaseName=self.airbase:GetName()
+self.zoneType=OPSZONE.ZoneType.Circular
+self.zoneCircular=Zone
 elseif Zone:IsInstanceOf("ZONE_RADIUS")then
+self.zoneType=OPSZONE.ZoneType.Circular
+self.zoneCircular=Zone
+elseif Zone:IsInstanceOf("ZONE_POLYGON_BASE")then
+self.zoneType=OPSZONE.ZoneType.Polygon
+local zone=Zone
+self.zoneCircular=zone:GetZoneRadius(nil,true)
 else
 self:E("ERROR: OPSZONE must be a SPHERICAL zone due to DCS restrictions!")
 return nil
@@ -92862,7 +93001,7 @@ end
 self.lid=string.format("OPSZONE %s | ",Zone:GetName())
 self.zone=Zone
 self.zoneName=Zone:GetName()
-self.zoneRadius=Zone:GetRadius()
+self.zoneRadius=self.zoneCircular:GetRadius()
 self.Missions={}
 self.ScanUnitSet=SET_UNIT:New():FilterZones({Zone})
 self.ScanGroupSet=SET_GROUP:New():FilterZones({Zone})
@@ -93183,12 +93322,17 @@ local Coalition=DCSUnit:getCoalition()
 local tl=0
 local unit=UNIT:Find(DCSUnit)
 if unit then
+local inzone=true
+if self.zoneType==OPSZONE.ZoneType.Polygon then
+inzone=unit:IsInZone(self.zone)
+unit:GetCoordinate():MarkToAll(string.format("Unit %s inzone=%s",unit:GetName(),tostring(inzone)))
+end
+if inzone then
 tl=unit:GetThreatLevel()
 self.ScanUnitSet:AddUnit(unit)
 local group=unit:GetGroup()
 if group then
 self.ScanGroupSet:AddGroup(group,true)
-end
 end
 if Coalition==coalition.side.RED then
 Nred=Nred+1
@@ -93204,9 +93348,17 @@ if self.verbose>=4 then
 self:I(self.lid..string.format("Found unit %s (coalition=%d)",DCSUnit:getName(),Coalition))
 end
 end
+end
+end
 elseif ObjectCategory==Object.Category.STATIC and ZoneObject:isExist()then
 local DCSStatic=ZoneObject
 local Coalition=DCSStatic:getCoalition()
+local inzone=true
+if self.zoneType==OPSZONE.ZoneType.Polygon then
+local Vec3=DCSStatic:getPoint()
+inzone=self.zone:IsVec3InZone(Vec3)
+end
+if inzone then
 if Coalition==coalition.side.RED then
 Nred=Nred+1
 elseif Coalition==coalition.side.BLUE then
@@ -93216,6 +93368,7 @@ Nnut=Nnut+1
 end
 if self.verbose>=4 then
 self:I(self.lid..string.format("Found static %s (coalition=%d)",DCSStatic:getName(),Coalition))
+end
 end
 elseif ObjectCategory==Object.Category.SCENERY then
 local SceneryType=ZoneObject:getTypeName()
