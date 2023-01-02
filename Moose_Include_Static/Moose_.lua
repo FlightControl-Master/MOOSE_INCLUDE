@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-02T11:08:37.0000000Z-92710f4625870e19baeefdd852d587360eb96bff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-02T16:28:20.0000000Z-55656761d2923aea36ffd306e0712d1b351a3429 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26358,7 +26358,7 @@ local Vec3=SpawnGroup:GetVec3()
 SpawnGroupTemplate.x=Coordinate.x
 SpawnGroupTemplate.y=Coordinate.z
 self:F(#SpawnGroupTemplate.units)
-for UnitID,UnitData in pairs(SpawnGroup:GetUnits())do
+for UnitID,UnitData in pairs(SpawnGroup:GetUnits()or{})do
 local GroupUnit=UnitData
 self:F(GroupUnit:GetName())
 if GroupUnit:IsAlive()then
@@ -38348,9 +38348,10 @@ mrefresh=120,
 talt=3,
 chatty=true,
 eventsmoose=true,
+reportplayername=false,
 }
 PSEUDOATC.id="PseudoATC | "
-PSEUDOATC.version="0.9.2"
+PSEUDOATC.version="0.9.3"
 function PSEUDOATC:New()
 local self=BASE:Inherit(self,BASE:New())
 self:E(PSEUDOATC.id..string.format("PseudoATC version %s",PSEUDOATC.version))
@@ -38385,6 +38386,10 @@ self.chatty=false
 end
 function PSEUDOATC:SetMessageDuration(duration)
 self.mdur=duration or 30
+end
+function PSEUDOATC:SetReportPlayername()
+self.reportplayername=true
+return self
 end
 function PSEUDOATC:SetMenuRefresh(interval)
 self.mrefresh=interval or 120
@@ -38551,6 +38556,9 @@ self:T(PSEUDOATC.id..text)
 MESSAGE:New(text,30):ToAllIf(self.Debug)
 if place and self.chatty then
 local text=string.format("%s, %s, you are airborne. Have a safe trip!",place,CallSign)
+if self.reportplayername then
+text=string.format("%s, %s, you are airborne. Have a safe trip!",place,PlayerName)
+end
 MESSAGE:New(text,self.mdur):ToGroup(group)
 end
 end
@@ -38726,12 +38734,16 @@ if unit and unit:IsAlive()then
 local position=unit:GetCoordinate()
 local height=get_AGL(position)
 local callsign=unit:GetCallsign()
+local PlayerName=self.group[GID].player[UID].playername
 local settings=_DATABASE:GetPlayerSettings(self.group[GID].player[UID].playername)or _SETTINGS
 local Hs=string.format("%d ft",UTILS.MetersToFeet(height))
 if settings:IsMetric()then
 Hs=string.format("%d m",height)
 end
 local _text=string.format("%s, your altitude is %s AGL.",callsign,Hs)
+if self.reportplayername then
+_text=string.format("%s, your altitude is %s AGL.",PlayerName,Hs)
+end
 if _clear==false then
 _text=_text..string.format(" FL%03d.",position.y/30.48)
 end
