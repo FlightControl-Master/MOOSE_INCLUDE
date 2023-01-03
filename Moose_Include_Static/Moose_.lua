@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T09:23:34.0000000Z-75ddd2e1e069c7344b84513a6be18b9c017fc97a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T09:33:51.0000000Z-9695789843c1074d8b0f126198195f199984ab62 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79447,7 +79447,7 @@ isHelo=nil,
 RTBRecallCount=0,
 playerSettings={},
 playerWarnings={},
-prohibitAB=true,
+prohibitAB=false,
 jettisonEmptyTanks=true,
 jettisonWeapons=true,
 }
