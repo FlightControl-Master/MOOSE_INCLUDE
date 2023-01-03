@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-02T16:28:20.0000000Z-55656761d2923aea36ffd306e0712d1b351a3429 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T09:17:48.0000000Z-43c81afd12cae952e0a8f4d5cafd14f86376f586 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -79447,6 +79447,9 @@ isHelo=nil,
 RTBRecallCount=0,
 playerSettings={},
 playerWarnings={},
+prohibitAB=true,
+jettisonEmptyTanks=true,
+jettisonWeapons=true,
 }
 FLIGHTGROUP.Attribute={
 TRANSPORTPLANE="TransportPlane",
@@ -79470,7 +79473,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="0.8.2"
+FLIGHTGROUP.version="0.8.3"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -79557,6 +79560,34 @@ return name
 end
 function FLIGHTGROUP:SetVTOL()
 self.isVTOL=true
+return self
+end
+function FLIGHTGROUP:SetProhibitAfterburner()
+self.prohibitAB=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_AB,true)
+end
+return self
+end
+function FLIGHTGROUP:SetAllowAfterburner()
+self.prohibitAB=false
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_AB,false)
+end
+return self
+end
+function FLIGHTGROUP:SetJettisonEmptyTanks(Switch)
+self.jettisonEmptyTanks=Switch
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOption(AI.Option.Air.id.JETT_TANKS_IF_EMPTY,Switch)
+end
+return self
+end
+function FLIGHTGROUP:SetJettisonWeapons(Switch)
+self.jettisonWeapons=not Switch
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_JETT,not Switch)
+end
 return self
 end
 function FLIGHTGROUP:SetReadyForTakeoff(ReadyTO,Delay)
@@ -80206,9 +80237,10 @@ self:SwitchCallsign(self.callsignDefault.NumberSquad,self.callsignDefault.Number
 else
 self:SetDefaultCallsign(self.callsign.NumberSquad,self.callsign.NumberGroup)
 end
-self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_JETT,true)
-self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_AB,true)
+self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_JETT,self.jettisonWeapons)
+self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_AB,self.prohibitAB)
 self:GetGroup():SetOption(AI.Option.Air.id.RTB_ON_BINGO,false)
+self:GetGroup():SetOption(AI.Option.Air.id.JETT_TANKS_IF_EMPTY,self.jettisonEmptyTanks)
 self:__UpdateRoute(-0.5)
 else
 if self.currbase then
