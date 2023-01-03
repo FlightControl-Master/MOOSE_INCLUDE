@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-02T16:27:01.0000000Z-3fbfb8b5284820187dad7f473dfe049c773bd200 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T09:15:16.0000000Z-b0eef34146edb5d76020698389a21a4e97fcd59c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9712,6 +9712,26 @@ end
 end
 return self
 end
+function ZONE_POLYGON_BASE:GetZoneRadius(ZoneName,DoNotRegisterZone)
+local center=self:GetVec2()
+local radius=0
+for _,_vec2 in pairs(self._.Polygon)do
+local vec2=_vec2
+local r=UTILS.VecDist2D(center,vec2)
+if r>radius then
+radius=r
+end
+end
+local zone=ZONE_RADIUS:New(ZoneName or self.ZoneName,center,radius,DoNotRegisterZone)
+return zone
+end
+function ZONE_POLYGON_BASE:GetZoneQuad(ZoneName,DoNotRegisterZone)
+local vec1,vec3=self:GetBoundingVec2()
+local vec2={x=vec1.x,y=vec3.y}
+local vec4={x=vec3.x,y=vec1.y}
+local zone=ZONE_POLYGON_BASE:New(ZoneName or self.ZoneName,{vec1,vec2,vec3,vec4})
+return zone
+end
 function ZONE_POLYGON_BASE:SmokeZone(SmokeColor,Segments)
 self:F2(SmokeColor)
 Segments=Segments or 10
@@ -9823,6 +9843,22 @@ y1=(y1>self._.Polygon[i].y)and self._.Polygon[i].y or y1
 y2=(y2<self._.Polygon[i].y)and self._.Polygon[i].y or y2
 end
 return{x1=x1,y1=y1,x2=x2,y2=y2}
+end
+function ZONE_POLYGON_BASE:GetBoundingVec2()
+local x1=self._.Polygon[1].x
+local y1=self._.Polygon[1].y
+local x2=self._.Polygon[1].x
+local y2=self._.Polygon[1].y
+for i=2,#self._.Polygon do
+self:T2({self._.Polygon[i],x1,y1,x2,y2})
+x1=(x1>self._.Polygon[i].x)and self._.Polygon[i].x or x1
+x2=(x2<self._.Polygon[i].x)and self._.Polygon[i].x or x2
+y1=(y1>self._.Polygon[i].y)and self._.Polygon[i].y or y1
+y2=(y2<self._.Polygon[i].y)and self._.Polygon[i].y or y2
+end
+local vec1={x=x1,y=y1}
+local vec2={x=x2,y=y2}
+return vec1,vec2
 end
 function ZONE_POLYGON_BASE:Boundary(Coalition,Color,Radius,Alpha,Segments,Closed)
 Coalition=Coalition or-1
@@ -43293,6 +43329,9 @@ function WAREHOUSE:SetWarehouseZone(zone)
 self.zone=zone
 return self
 end
+function WAREHOUSE:GetWarehouseZone()
+return self.zone
+end
 function WAREHOUSE:SetAutoDefenceOn()
 self.autodefence=true
 return self
@@ -44998,7 +45037,9 @@ coord=parking[i].Coordinate
 terminal=parking[i].TerminalID
 end
 if self.Debug then
-coord:MarkToAll(string.format("Spawnplace unit %s terminal %d.",unit.name,terminal))
+local text=string.format("Spawnplace unit %s terminal %d.",unit.name,terminal)
+coord:MarkToAll(text)
+env.info(text)
 end
 unit.x=coord.x
 unit.y=coord.z
@@ -45642,17 +45683,22 @@ end
 local _transports
 local _assetattribute
 local _assetcategory
+local _assetairstart=false
 if _nassets>0 then
 _assetattribute=_assets[1].attribute
 _assetcategory=_assets[1].category
+_assetairstart=_assets[1].takeoffType and _assets[1].takeoffType==COORDINATE.WaypointType.TurningPoint or false
 if _assetcategory==Group.Category.AIRPLANE or _assetcategory==Group.Category.HELICOPTER then
 if self.airbase and self.airbase:GetCoalition()==self:GetCoalition()then
-if self:IsRunwayOperational()then
+if self:IsRunwayOperational()or _assetairstart then
+if _assetairstart then
+else
 local Parking=self:_FindParkingForAssets(self.airbase,_assets)
 if Parking==nil then
 local text=string.format("Warehouse %s: Request denied! Not enough free parking spots for all requested assets at the moment.",self.alias)
 self:_InfoMessage(text,5)
 return false
+end
 end
 else
 local text=string.format("Warehouse %s: Request denied! Runway is still destroyed",self.alias)
@@ -45970,6 +46016,7 @@ end
 local parking={}
 for _,asset in pairs(assets)do
 local _asset=asset
+if not _asset.spawned then
 local terminaltype=asset.terminalType or self:_GetTerminal(asset.attribute,self:GetAirbaseCategory())
 parking[_asset.uid]={}
 for i=1,_asset.nunits do
@@ -45977,7 +46024,16 @@ local assetname=_asset.spawngroupname.."-"..tostring(i)
 local gotit=false
 for _,_parkingspot in pairs(parkingdata)do
 local parkingspot=_parkingspot
-if AIRBASE._CheckTerminalType(parkingspot.TerminalType,terminaltype)and self:_CheckParkingValid(parkingspot)and self:_CheckParkingAsset(parkingspot,asset)and airbase:_CheckParkingLists(parkingspot.TerminalID)then
+local valid=true
+if asset.parkingIDs then
+valid=self:_CheckParkingAsset(parkingspot,asset)
+else
+local validTerminal=AIRBASE._CheckTerminalType(parkingspot.TerminalType,terminaltype)
+local validParking=self:_CheckParkingValid(parkingspot)
+local validBWlist=airbase:_CheckParkingLists(parkingspot.TerminalID)
+valid=validTerminal and validParking and validBWlist
+end
+if valid then
 local _spot=parkingspot.Coordinate
 local _termid=parkingspot.TerminalID
 local free=true
@@ -46017,6 +46073,7 @@ end
 if not gotit then
 self:I(self.lid..string.format("WARNING: No free parking spot for asset %s [id=%d]",assetname,_asset.uid))
 return nil
+end
 end
 end
 end
