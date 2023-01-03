@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T09:33:51.0000000Z-9695789843c1074d8b0f126198195f199984ab62 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T21:13:28.0000000Z-09e9377e545c74dbd1aeedfa481e6c36866e9fe8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19267,7 +19267,7 @@ end
 end
 return self
 end
-function ZONE_POLYGON_BASE:GetZoneRadius(ZoneName,DoNotRegisterZone)
+function ZONE_POLYGON_BASE:GetRadius()
 local center=self:GetVec2()
 local radius=0
 for _,_vec2 in pairs(self._.Polygon)do
@@ -19277,6 +19277,11 @@ if r>radius then
 radius=r
 end
 end
+return radius
+end
+function ZONE_POLYGON_BASE:GetZoneRadius(ZoneName,DoNotRegisterZone)
+local center=self:GetVec2()
+local radius=self:GetRadius()
 local zone=ZONE_RADIUS:New(ZoneName or self.ZoneName,center,radius,DoNotRegisterZone)
 return zone
 end
@@ -48676,7 +48681,7 @@ end
 local UnControlled=true
 for i=1,#cargoassets do
 local asset=cargoassets[i]
-asset.spawned=false
+if not asset.spawned then
 asset.iscargo=true
 asset.rid=Request.uid
 local _alias=asset.spawngroupname
@@ -48701,6 +48706,7 @@ self:E(self.lid.."ERROR: Unknown asset category!")
 end
 if _group then
 self:__AssetSpawned(0.01,_group,asset,Request)
+end
 end
 end
 end
@@ -63745,6 +63751,7 @@ end
 local Ntargets=self:CountMissionTargets()
 local Ntargets0=self:GetTargetInitialNumber()
 local Ngroups=self:CountOpsGroups()
+local Nassigned=self.Nassigned and self.Nassigned-self.Ndead or 0
 if self:IsNotOver()then
 if self:CheckGroupsDone()then
 self:Done()
@@ -63761,7 +63768,7 @@ self.NrepeatFailure=NrepeatF
 elseif(Ntargets0>0 and Ntargets==0)then
 self:T(self.lid.."No targets left cancelling mission!")
 self:Cancel()
-elseif self:IsExecuting()and((not self.reinforce)or self.reinforce==0)then
+elseif self:IsExecuting()and((not self.reinforce)or(self.reinforce==0 and Nassigned<=0))then
 if Ngroups==0 then
 self:Done()
 else
@@ -63798,6 +63805,14 @@ local text="Group data:"
 for groupname,_groupdata in pairs(self.groupdata)do
 local groupdata=_groupdata
 text=text..string.format("\n- %s: status mission=%s opsgroup=%s",groupname,groupdata.status,groupdata.opsgroup and groupdata.opsgroup:GetState()or"N/A")
+end
+self:I(self.lid..text)
+end
+if self.verbose>=3 then
+local text=string.format("Assets [N=%d,Nassigned=%s, Ndead=%s]:",self.Nassets or 0,self.Nassigned or 0,self.Ndead or 0)
+for i,_asset in pairs(self.assets or{})do
+local asset=_asset
+text=text..string.format("\n[%d] %s: spawned=%s, requested=%s, reserved=%s",i,asset.spawngroupname,tostring(asset.spawned),tostring(asset.requested),tostring(asset.reserved))
 end
 self:I(self.lid..text)
 end
@@ -64051,7 +64066,7 @@ if self:IsPlanned()or self:IsQueued()or self:IsRequested()then
 self:T2(self.lid..string.format("CheckGroupsDone: Mission is still in state %s [FSM=%s] (PLANNED or QUEUED or REQUESTED). Mission NOT DONE!",self.status,self:GetState()))
 return false
 end
-if self:IsExecuting()and self.reinforce and self.reinforce>0 then
+if self:IsExecuting()and self.reinforce and(self.reinforce>0 or self.Nassigned-self.Ndead>0)then
 self:T2(self.lid..string.format("CheckGroupsDone: Mission is still in state %s [FSM=%s] and reinfoce=%d. Mission NOT DONE!",self.status,self:GetState(),self.reinforce))
 return false
 end
@@ -69451,7 +69466,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.5.3"
+CHIEF.version="0.6.0"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -70546,14 +70561,16 @@ self:T(self.lid..string.format("Could not allocate assets or transport of OPSZON
 LEGION.UnRecruitAssets(assets)
 return false
 end
+self:T2(self.lid..string.format("Recruited %d assets for mission %s",#assets,MissionType))
 if MissionType==AUFTRAG.Type.PATROLZONE or MissionType==AUFTRAG.Type.ONGUARD then
-self:T2(self.lid..string.format("Recruited %d assets for PATROL mission",#assets))
 if MissionType==AUFTRAG.Type.PATROLZONE then
 mission=AUFTRAG:NewPATROLZONE(TargetZone)
 elseif MissionType==AUFTRAG.Type.ONGUARD then
 mission=AUFTRAG:NewONGUARD(TargetZone:GetRandomCoordinate(nil,nil,{land.SurfaceType.LAND}))
 end
 mission:SetEngageDetected(25,{"Ground Units","Light armed ships","Helicopters"})
+elseif MissionType==AUFTRAG.Type.CAPTUREZONE then
+mission=AUFTRAG:NewCAPTUREZONE(StratZone.opszone,self.coalition)
 elseif MissionType==AUFTRAG.Type.CASENHANCED then
 local height=UTILS.MetersToFeet(TargetCoord:GetLandHeight())+2500
 local Speed=200
@@ -70571,6 +70588,7 @@ if assets[1].speedmax then
 Speed=UTILS.KmphToKnots(assets[1].speedmax*0.7)or 200
 end
 end
+TargetZone=StratZone.opszone.zoneCircular
 local Leg=TargetZone:GetRadius()<=10000 and 5 or UTILS.MetersToNM(TargetZone:GetRadius())
 mission=AUFTRAG:NewCAS(TargetZone,height,Speed,TargetCoord,math.random(0,359),Leg)
 elseif MissionType==AUFTRAG.Type.ARTY then
@@ -70591,9 +70609,7 @@ elseif MissionType==AUFTRAG.Type.AMMOSUPPLY then
 mission=AUFTRAG:NewAMMOSUPPLY(TargetZone)
 end
 if mission then
-for _,asset in pairs(assets)do
-mission:AddAsset(asset)
-end
+mission:_AddAssets(assets)
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
 Resource.mission=mission
@@ -83082,16 +83098,16 @@ for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
 local reinforce=false
 if mission:IsExecuting()and mission.reinforce and mission.reinforce>0 then
-local N=mission:CountOpsGroups()
+local N=mission.Nassigned-mission.Ndead
 if N<mission.NassetsMin then
 reinforce=true
 end
-self:I(self.lid..string.format("Checking Reinforcement N=%d, Nmin=%d ==> Reinforce=%s",N,mission.NassetsMin,tostring(reinforce)))
+self:T(self.lid..string.format("Checking Reinforcement Nreinf=%d, Nops=%d, Nassigned=%d, Ndead=%d, Nmin=%d ==> Reinforce=%s",
+mission.reinforce,N,mission.Nassigned,mission.Ndead,mission.NassetsMin,tostring(reinforce)))
 end
 if(mission:IsQueued(self)or reinforce)and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)then
 local recruited,assets,legions=self:RecruitAssetsForMission(mission)
 if recruited then
-mission:_AddAssets(assets)
 local EscortAvail=self:RecruitAssetsForEscort(mission,assets)
 local TransportAvail=true
 if EscortAvail then
@@ -83105,7 +83121,7 @@ mission.opstransport=Transport
 end
 end
 if EscortAvail and TransportAvail then
-self:MissionRequest(mission)
+self:MissionRequest(mission,assets)
 if reinforce then
 mission.reinforce=mission.reinforce-#assets
 self:I(self.lid..string.format("Reinforced with N=%d Nreinforce=%d",#assets,mission.reinforce))
@@ -83191,17 +83207,19 @@ end
 local text=string.format("Warehouse %s: New request from warehouse %s.\nDescriptor %s=%s, #assets=%s; Transport=%s, #transports=%s.",
 self.alias,self.alias,request.assetdesc,descval,tostring(request.nasset),request.transporttype,tostring(request.ntransport))
 self:_DebugMessage(text,5)
+return request
 end
-function LEGION:onafterMissionRequest(From,Event,To,Mission)
+function LEGION:onafterMissionRequest(From,Event,To,Mission,Assets)
 self:T(self.lid..string.format("MissionRequest for mission %s [%s]",Mission:GetName(),Mission:GetType()))
+Assets=Assets or Mission.assets
 Mission:Requested()
 Mission:SetLegionStatus(self,AUFTRAG.Status.REQUESTED)
 local Assetlist={}
-for _,_asset in pairs(Mission.assets)do
+for _,_asset in pairs(Assets)do
 local asset=_asset
 if asset.wid==self.uid then
 if asset.spawned then
-if asset.flightgroup then
+if asset.flightgroup and not asset.flightgroup:IsMissionInQueue(Mission)then
 asset.flightgroup:AddMission(Mission)
 local currM=asset.flightgroup:GetMissionCurrent()
 if currM then
@@ -83236,9 +83254,10 @@ asset.flightgroup:PauseMission()
 end
 asset.isReserved=false
 end
+Mission:AddAsset(asset)
 self:__OpsOnMission(2,asset.flightgroup,Mission)
 else
-self:E(self.lid.."ERROR: OPSGROUP for asset does NOT exist but it seems to be SPAWNED (asset.spawned=true)!")
+self:T(self.lid.."ERROR: OPSGROUP for asset does NOT exist but it seems to be SPAWNED (asset.spawned=true)!")
 end
 else
 table.insert(Assetlist,asset)
@@ -83259,11 +83278,12 @@ end
 if Mission.type==AUFTRAG.Type.ALERT5 then
 asset.takeoffType=COORDINATE.WaypointType.TakeOffParking
 end
+Mission:AddAsset(asset)
 end
 local assignment=string.format("Mission-%d",Mission.auftragsnummer)
-self:_AddRequest(WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,Mission.prio,assignment)
-Mission.requestID[self.alias]=self.queueid
-local request=self:GetRequestByID(self.queueid)
+local request=self:_AddRequest(WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,Mission.prio,assignment)
+env.info(string.format("FF Added request=%d for Nasssets=%d",request.uid,#Assetlist))
+Mission:_SetRequestID(self,self.queueid)
 self:T(self.lid..string.format("Mission %s [%s] got Request ID=%d",Mission:GetName(),Mission:GetType(),self.queueid))
 if request then
 if self:IsShip()then
@@ -88110,6 +88130,15 @@ return mission
 end
 end
 return nil
+end
+function OPSGROUP:IsMissionInQueue(Mission)
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+if mission.auftragsnummer==Mission.auftragsnummer then
+return true
+end
+end
+return false
 end
 function OPSGROUP:GetMissionByTaskID(taskid)
 if taskid then
@@ -93136,6 +93165,7 @@ if self.marker then
 self.marker:Remove()
 end
 self.marker=nil
+self.markZone=false
 end
 return self
 end
