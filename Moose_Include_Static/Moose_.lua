@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-03T21:13:28.0000000Z-09e9377e545c74dbd1aeedfa481e6c36866e9fe8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-04T08:21:00.0000000Z-4773a83a2484639efdbd9b3d6ae58a08adf802d8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65754,10 +65754,10 @@ function AWACS:SetAwacsDetails(CallSign,CallSignNo,Angels,Speed,Heading,Leg)
 self:T(self.lid.."SetAwacsDetails")
 self.CallSign=CallSign or CALLSIGN.AWACS.Magic
 self.CallSignNo=CallSignNo or 1
-self.Angels=Angels or 25
+self.AwacsAngels=Angels or 25
 local speed=Speed or 250
 self.SpeedBase=speed
-self.Speed=UTILS.KnotsToAltKIAS(speed,self.Angels*1000)
+self.Speed=UTILS.KnotsToAltKIAS(speed,self.AwacsAngels*1000)
 self.Heading=Heading or 0
 self.Leg=Leg or 25
 return self
