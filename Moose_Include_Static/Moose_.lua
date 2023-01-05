@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-05T09:49:13.0000000Z-21a2df083038a41cb5e30b43d2e1df5eca460d02 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-05T10:00:06.0000000Z-691a50038195eb46d514828aae99d75c68a1e101 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26187,6 +26187,9 @@ else
 return nil
 end
 end
+end
+function SCENERY:Destroy()
+return self
 end
 STATIC={
 ClassName="STATIC",
