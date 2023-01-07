@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-05T10:00:06.0000000Z-691a50038195eb46d514828aae99d75c68a1e101 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-07T16:19:34.0000000Z-aa5e8662edc7f6164931da4ee12329c696768655 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -60420,10 +60420,12 @@ return
 end
 end
 if self.retreatOnOutOfAmmo then
+self:T(self.lid.."Retreat on out of ammo")
 self:__Retreat(-1)
 return
 end
-if self.rtzOnOutOfAmmo then
+if self.rtzOnOutOfAmmo and not self:IsMissionTypeInQueue(AUFTRAG.Type.REARMING)then
+self:T(self.lid.."RTZ on out of ammo")
 self:__RTZ(-1)
 end
 end
@@ -60477,6 +60479,7 @@ self:_CheckGroupDone(1)
 end
 end
 function ARMYGROUP:onbeforeRTZ(From,Event,To,Zone,Formation)
+self:T2(self.lid.."onbeforeRTZ")
 local zone=Zone or self.homezone
 if zone then
 if(not self.isMobile)and(not self:IsInZone(zone))then
@@ -60490,6 +60493,7 @@ end
 return true
 end
 function ARMYGROUP:onafterRTZ(From,Event,To,Zone,Formation)
+self:T2(self.lid.."onafterRTZ")
 local zone=Zone or self.homezone
 self:CancelAllMissions()
 if zone then
@@ -79499,7 +79503,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="0.8.3"
+FLIGHTGROUP.version="0.8.4"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -80686,15 +80690,7 @@ end
 function FLIGHTGROUP:onafterRTB(From,Event,To,airbase,SpeedTo,SpeedHold,SpeedLand)
 self:T(self.lid..string.format("RTB: event=%s: %s --> %s to %s",Event,From,To,airbase:GetName()))
 self.destbase=airbase
-for _,_mission in pairs(self.missionqueue)do
-local mission=_mission
-local mystatus=mission:GetGroupStatus(self)
-if not(mystatus==AUFTRAG.GroupStatus.DONE or mystatus==AUFTRAG.GroupStatus.CANCELLED)then
-local text=string.format("Canceling mission %s in state=%s",mission.name,mission.status)
-self:T(self.lid..text)
-self:MissionCancel(mission)
-end
-end
+self:CancelAllMissions()
 self:_LandAtAirbase(airbase,SpeedTo,SpeedHold,SpeedLand)
 end
 function FLIGHTGROUP:onbeforeLandAtAirbase(From,Event,To,airbase)
@@ -80810,7 +80806,7 @@ local pland=airbase:GetCoordinate()
 wp[#wp+1]=pland:WaypointAirLanding(UTILS.KnotsToKmph(SpeedLand),airbase,{},"Landing")
 end
 if self.isAI then
-self:Route(wp,0.1)
+self:Route(wp,1.0)
 end
 end
 function FLIGHTGROUP:onbeforeWait(From,Event,To,Duration,Altitude,Speed)
@@ -83292,7 +83288,7 @@ Mission:AddAsset(asset)
 end
 local assignment=string.format("Mission-%d",Mission.auftragsnummer)
 local request=self:_AddRequest(WAREHOUSE.Descriptor.ASSETLIST,Assetlist,#Assetlist,Mission.prio,assignment)
-env.info(string.format("FF Added request=%d for Nasssets=%d",request.uid,#Assetlist))
+self:T(self.lid..string.format("Added request=%d for Nasssets=%d",request.uid,#Assetlist))
 Mission:_SetRequestID(self,self.queueid)
 self:T(self.lid..string.format("Mission %s [%s] got Request ID=%d",Mission:GetName(),Mission:GetType(),self.queueid))
 if request then
@@ -88046,6 +88042,17 @@ end
 end
 return self
 end
+function OPSGROUP:CancelAllMissions()
+self:T(self.lid.."Cancelling ALL missions!")
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+local mystatus=mission:GetGroupStatus(self)
+if not(mystatus==AUFTRAG.GroupStatus.DONE or mystatus==AUFTRAG.GroupStatus.CANCELLED)then
+self:T(self.lid.."Cancelling mission "..tostring(mission:GetName()))
+self:MissionCancel(mission)
+end
+end
+end
 function OPSGROUP:CountRemainingMissison()
 local N=0
 for _,_mission in pairs(self.missionqueue)do
@@ -88145,6 +88152,15 @@ function OPSGROUP:IsMissionInQueue(Mission)
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
 if mission.auftragsnummer==Mission.auftragsnummer then
+return true
+end
+end
+return false
+end
+function OPSGROUP:IsMissionTypeInQueue(MissionType)
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+if mission:GetType()==MissionType then
 return true
 end
 end
@@ -89245,15 +89261,6 @@ end
 function OPSGROUP:onbeforeDead(From,Event,To)
 if self.Ndestroyed==#self.elements then
 self:Destroyed()
-end
-end
-function OPSGROUP:CancelAllMissions()
-for _,_mission in pairs(self.missionqueue)do
-local mission=_mission
-if mission:IsNotOver()then
-self:T(self.lid.."Cancelling mission "..tostring(mission:GetName()))
-self:MissionCancel(mission)
-end
 end
 end
 function OPSGROUP:onafterDead(From,Event,To)
@@ -90533,8 +90540,10 @@ if self:HasPassedFinalWaypoint()then
 if self.legion then
 self:T(self.lid..string.format("Passed final WP, adinfinitum=FALSE, LEGION set ==> RTZ"))
 if self.isArmygroup then
+self:T2(self.lid.."RTZ to legion spawn zone")
 self:RTZ(self.legion.spawnzone)
 elseif self.isNavygroup then
+self:T2(self.lid.."RTZ to legion port zone")
 self:RTZ(self.legion.portzone)
 end
 else
@@ -90577,6 +90586,7 @@ self:T(self.lid..string.format("WARNING: Group came to an unexpected standstill.
 if self:IsEngaging()then
 self:__Disengage(1)
 elseif self:IsReturning()then
+self:T2(self.lid.."RTZ because of stuck")
 self:__RTZ(1)
 else
 self:__Cruise(1)
@@ -90589,6 +90599,7 @@ self:T(self.lid..string.format("WARNING: Cancelling mission %s [%s] due to being
 self:MissionCancel(mission)
 else
 if self:IsReturning()then
+self:T2(self.lid.."RTZ because of stuck")
 self:__RTZ(1)
 else
 self:__Cruise(1)
