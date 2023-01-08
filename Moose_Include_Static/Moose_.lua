@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-05T09:58:40.0000000Z-8cedd88ce259d407be844eadf5ef9d4eda54a2f0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-08T18:32:38.0000000Z-dd2a4ee7ff9b3f4dd2d215675c288aa51d3cbc26 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15187,6 +15187,24 @@ function COORDINATE:UpdateFromVec2(Vec2)
 self.x=Vec2.x
 self.z=Vec2.y
 return self
+end
+function COORDINATE:GetMagneticDeclination(Month,Year)
+local decl=UTILS.GetMagneticDeclination()
+if require then
+local magvar=require('magvar')
+if magvar then
+local date,year,month,day=UTILS.GetDCSMissionDate()
+magvar.init(Month or month,Year or year)
+local lat,lon=self:GetLLDDM()
+decl=magvar.get_mag_decl(lat,lon)
+if decl then
+decl=math.deg(decl)
+end
+end
+else
+self:T("The require package is not available. Using constant value for magnetic declination")
+end
+return decl
 end
 function COORDINATE:NewFromLLDD(latitude,longitude,altitude)
 local vec3=coord.LLtoLO(latitude,longitude)
