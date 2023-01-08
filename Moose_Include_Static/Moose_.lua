@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-08T16:41:38.0000000Z-2806d3a191b3d9fd7c796a7e4a12c73132c7d780 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-08T17:09:26.0000000Z-a21b9b382e3c029374797abcfbc61c480c6544f9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -94357,7 +94357,7 @@ SAM="Luftabwehr",
 GROUP="Einheit",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.55"
+PLAYERTASKCONTROLLER.version="0.1.56"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -94419,6 +94419,8 @@ self:AddTransition("*","TaskTargetSmoked","*")
 self:AddTransition("*","TaskTargetFlared","*")
 self:AddTransition("*","TaskTargetIlluminated","*")
 self:AddTransition("*","TaskRepeatOnFailed","*")
+self:AddTransition("*","PlayerJoinedTask","*")
+self:AddTransition("*","PlayerAbortedTask","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Start(2)
 local starttime=math.random(5,10)
@@ -95236,6 +95238,7 @@ self:T(self.lid..text)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
 self.TasksPerPlayer:Push(Task,playername)
+self:__PlayerJoinedTask(1,Group,Client,Task)
 self:_BuildMenus(Client,true)
 end
 if Task.Type==AUFTRAG.Type.PRECISIONBOMBING then
@@ -95531,6 +95534,7 @@ self:T(self.lid..text)
 if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
+self:__PlayerAbortedTask(1,Group,Client,task)
 else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
