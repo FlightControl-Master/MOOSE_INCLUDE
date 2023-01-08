@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-07T16:19:34.0000000Z-aa5e8662edc7f6164931da4ee12329c696768655 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-08T07:37:11.0000000Z-d6181d26f8e16f16481d2ff63a8f06e78609cc8f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -108883,8 +108883,9 @@ volume=1,
 speed=1,
 coordinate=nil,
 Label="ROBOT",
+AltBackend=nil,
 }
-MSRS.version="0.1.1"
+MSRS.version="0.1.2"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
@@ -108983,10 +108984,20 @@ Wavenet={
 },
 },
 }
-function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
+function MSRS:New(PathToSRS,Frequency,Modulation,Volume,AltBackend)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
 local self=BASE:Inherit(self,BASE:New())
+if type(AltBackend)=="table"or type(self.AltBackend)=="table"then
+local Backend=UTILS.DeepCopy(AltBackend)or UTILS.DeepCopy(self.AltBackend)
+Backend.Vars=Backend.Vars or{}
+Backend.Vars.PathToSRS=UTILS.DeepCopy(PathToSRS)
+Backend.Vars.Frequency=UTILS.DeepCopy(Frequency)
+Backend.Vars.Modulation=UTILS.DeepCopy(Modulation)
+Backend.Vars.Volume=UTILS.DeepCopy(Volume)
+Backend.Functions=Backend.Functions or{}
+return self:_NewAltBackend(Backend)
+end
 self:SetPath(PathToSRS)
 self:SetPort()
 self:SetFrequencies(Frequency)
@@ -109123,6 +109134,21 @@ env.info(data)
 env.info("======================================================================")
 return self
 end
+function MSRS.SetDefaultBackend(Backend)
+if type(Backend)=="table"then
+MSRS.AltBackend=UTILS.DeepCopy(Backend)
+else
+return false
+end
+return true
+end
+function MSRS.ResetDefaultBackend()
+MSRS.AltBackend=nil
+return true
+end
+function MSRS.SetDefaultBackendGRPC()
+return MSRS.SetDefaultBackend(MSRS_BACKEND_DCSGRPC)
+end
 function MSRS:PlaySoundFile(Soundfile,Delay)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlaySoundFile,self,Soundfile,0)
@@ -109184,6 +109210,23 @@ command=command..string.format(" --textFile=\"%s\"",tostring(TextFile))
 self:T(string.format("MSRS TextFile command=%s",command))
 local l=string.len(command)
 self:_ExecCommand(command)
+end
+return self
+end
+function MSRS:_NewAltBackend(Backend)
+BASE:T('Entering MSRS:_NewAltBackend()')
+for funcName,funcDef in pairs(Backend.Functions)do
+if type(funcDef)=='function'then
+BASE:T('MSRS (re-)defining function MSRS:'..funcName)
+self[funcName]=funcDef
+end
+end
+for varName,varVal in pairs(Backend.Vars)do
+BASE:T('MSRS setting self.'..varName)
+self[varName]=UTILS.DeepCopy(varVal)
+end
+if self._MSRSbackendInit and type(self._MSRSbackendInit)=='function'then
+return self:_MSRSbackendInit()
 end
 return self
 end
@@ -109254,6 +109297,137 @@ command=command..string.format(' --ssml -G "%s"',self.google)
 end
 self:T("MSRS command="..command)
 return command
+end
+MSRS_BACKEND_DCSGRPC={}
+MSRS_BACKEND_DCSGRPC.version=0.1
+MSRS_BACKEND_DCSGRPC.Functions={}
+MSRS_BACKEND_DCSGRPC.Vars={provider='win'}
+MSRS_BACKEND_DCSGRPC.Functions._MSRSbackendInit=function(self)
+BASE:I('Loaded MSRS DCS-gRPC alternate backend version '..self.AltBackend.version or'unspecified')
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetPath=function(self)
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.GetPath=function(self)
+return''
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetVolume=function(self)
+BASE:I('NOTE: MSRS:SetVolume() not used with DCS-gRPC backend.')
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.GetVolume=function(self)
+BASE:I('NOTE: MSRS:GetVolume() not used with DCS-gRPC backend.')
+return 1
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetGender=function(self,Gender)
+if Gender then
+self.gender=Gender:lower()
+end
+self:T("Setting gender to "..tostring(self.gender))
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetGoogle=function(self)
+self.provider='gcloud'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetAWS=function(self)
+self.provider='aws'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetAzure=function(self)
+self.provider='azure'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetWin=function(self)
+self.provider='win'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.Help=function(self)
+env.info('For DCS-gRPC help, please see: https://github.com/DCS-gRPC/rust-server')
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlaySoundFile=function(self)
+BASE:E("ERROR: MSRS:PlaySoundFile() is not supported by the DCS-gRPC backend.")
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlaySoundText=function(self,SoundText,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.PlaySoundText,self,SoundText,0)
+else
+self:_DCSgRPCtts(tostring(SoundText.text))
+end
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlayText=function(self,Text,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.PlayText,self,Text,0)
+else
+self:_DCSgRPCtts(tostring(Text))
+end
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlayTextExt=function(self,Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+else
+self:_DCSgRPCtts(tostring(Text,nil,Frequencies,Voice,Label))
+end
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlayTextFile=function(self,TextFile,Delay)
+BASE:E("ERROR: MSRS:PlayTextFile() is not supported by the DCS-gRPC backend.")
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions._DCSgRPCtts=function(self,Text,Plaintext,Frequencies,Voice,Label)
+BASE:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
+BASE:T({Text,Plaintext,Frequencies,Voice,Label})
+local options={}
+local ssml=Text or''
+local XmitFrequencies=Frequencies or self.Frequency
+if type(XmitFrequencies)~="table"then
+XmitFrequencies={XmitFrequencies}
+end
+options.plaintext=Plaintext
+options.srsClientName=Label or self.Label
+options.position={}
+if self.coordinate then
+options.position.lat,options.position.lat,options.position.alt=self._GetLatLongAlt(self.coordinate)
+end
+options.position.lat=options.position.lat or 0.0
+options.position.lon=options.position.lon or 0.0
+options.position.alt=options.position.alt or 0.0
+if UTILS.GetCoalitionName(self.coalition)=='Blue'then
+options.coalition='blue'
+elseif UTILS.GetCoalitionName(self.coalition)=='Red'then
+options.coalition='red'
+end
+options.provider={}
+options.provider[self.provider]={}
+if self.voice then
+options.provider[self.provider].voice=Voice or self.voice
+elseif ssml then
+local preTag,genderProp,langProp,postTag='','','',''
+if self.gender then
+genderProp=' gender=\"'..self.gender..'\"'
+end
+if self.culture then
+langProp=' language=\"'..self.culture..'\"'
+end
+if self.culture or self.gender then
+preTag='<voice'..langProp..genderProp..'>'
+postTag='</voice>'
+ssml=preTag..Text..postTag
+end
+end
+for _,_freq in ipairs(XmitFrequencies)do
+local freq=_freq*1000000
+BASE:T("GRPC.tts")
+BASE:T(ssml)
+BASE:T(freq)
+BASE:T(options)
+GRPC.tts(ssml,freq,options)
+end
 end
 MSRSQUEUE={
 ClassName="MSRSQUEUE",
