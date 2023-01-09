@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-09T16:08:48.0000000Z-79c8b31042975164f78d37c7b54cbdfba747b036 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-09T22:12:49.0000000Z-40276d190a1e2192654108e3bb4443e96e9b0f50 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -93453,7 +93453,6 @@ if unit then
 local inzone=true
 if self.zoneType==OPSZONE.ZoneType.Polygon then
 inzone=unit:IsInZone(self.zone)
-unit:GetCoordinate():MarkToAll(string.format("Unit %s inzone=%s",unit:GetName(),tostring(inzone)))
 end
 if inzone then
 tl=unit:GetThreatLevel()
