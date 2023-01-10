@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-10T06:49:02.0000000Z-a7bad8e9f4ee09e475d1b6bb9fb6dd125f0c043d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-10T11:45:17.0000000Z-0fa4be7c4a9311d732ba33008e07447607499af3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65041,7 +65041,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.52",
+version="0.2.53",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -66515,6 +66515,7 @@ else
 if contactsAO>0 then
 local dope=self.gettext:GetEntry("DOPE",self.locale)
 text=string.format(dope,self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
+textScreen=string.format(dope,self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
 local onetxt=self.gettext:GetEntry("ONE",self.locale)
 local grptxt=self.gettext:GetEntry("GROUP",self.locale)
 local groupstxt=self.gettext:GetEntry("GROUPMULTI",self.locale)
@@ -93791,7 +93792,7 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 }
-PLAYERTASK.version="0.1.11"
+PLAYERTASK.version="0.1.12"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -94067,6 +94068,7 @@ function PLAYERTASK:onafterStatus(From,Event,To)
 self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
+if status=="Stopped"then return self end
 local targetdead=false
 if self.Type~=AUFTRAG.Type.CTLD and self.Type~=AUFTRAG.Type.CSAR then
 if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
@@ -94076,8 +94078,8 @@ status="Success"
 return self
 end
 end
-if status=="Executing"then
 local clientsalive=false
+if status=="Executing"then
 local ClientTable=self.Clients:GetDataTable()
 for _,_client in pairs(ClientTable)do
 local client=_client
@@ -94089,6 +94091,8 @@ if status=="Executing"and(not clientsalive)and(not targetdead)then
 self:__Failed(-2)
 status="Failed"
 end
+end
+if status~="Done"and status~="Stopped"then
 local successCondition=self:_EvalConditionsAny(self.conditionSuccess)
 local failureCondition=self:_EvalConditionsAny(self.conditionFailure)
 if failureCondition and status~="Failed"then
@@ -94101,10 +94105,8 @@ end
 if self.verbose then
 self:I(self.lid.."Target dead: "..tostring(targetdead).." | Clients alive: "..tostring(clientsalive))
 end
-end
-if status~="Done"then
 self:__Status(-20)
-else
+elseif status~="Stopped"then
 self:__Stop(-1)
 end
 return self
