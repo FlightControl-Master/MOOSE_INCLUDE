@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-10T12:09:25.0000000Z-0d8b94c7fde890cac2f7755cbc064163331d73de ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-10T16:09:17.0000000Z-5898bc7f0789b5c63e2e7a81e37c87e120a3fa48 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -95435,10 +95435,12 @@ if self.ShowMagnetic then
 text=string.gsub(text,"°M|","° magnetic; ")
 end
 if string.find(CoordText,"MGRS")then
-local Text=string.gsub(CoordText,"%d","%1;")
-Text=string.gsub(Text," $","")
-CoordText=string.gsub(Text,"0","zero")
-CoordText=string.gsub(Text,"MGRS","MGRS;")
+local Text=string.gsub(CoordText,"MGRS ","")
+Text=string.gsub(Text,"%s+","")
+Text=string.gsub(Text,"([%a%d])","%1;")
+Text=string.gsub(Text,"0","zero")
+Text=string.gsub(Text,"9","niner")
+CoordText="MGRS;"..Text
 if self.PathToGoogleKey then
 CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordText)
 end
