@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-09T16:07:21.0000000Z-91801d441f00991933a2d7e1a7b01f2cb84cf8eb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-10T06:47:56.0000000Z-6501e89fa29877bebe8675fb965ae3fe9b2dfce8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -42921,7 +42921,7 @@ eventsmoose=true,
 reportplayername=false,
 }
 PSEUDOATC.id="PseudoATC | "
-PSEUDOATC.version="0.9.3"
+PSEUDOATC.version="0.9.4"
 function PSEUDOATC:New()
 local self=BASE:Inherit(self,BASE:New())
 self:E(PSEUDOATC.id..string.format("PseudoATC version %s",PSEUDOATC.version))
@@ -43100,12 +43100,14 @@ self:F2({unit=unit,place=place})
 local group=unit:GetGroup()
 local GID=group:GetID()
 local UID=unit:GetDCSObject():getID()
-local PlayerName=self.group[GID].player[UID].playername
-local UnitName=self.group[GID].player[UID].unitname
-local GroupName=self.group[GID].player[UID].groupname
-local text=string.format("Player %s in unit %s of group %s (id=%d) landed at %s.",PlayerName,UnitName,GroupName,GID,place)
+local PlayerName=unit:GetPlayerName()or"Ghost"
+local UnitName=unit:GetName()or"Ghostplane"
+local GroupName=group:GetName()or"Ghostgroup"
+if self.Debug then
+local text=string.format("Player %s in unit %s of group %s landed at %s.",PlayerName,UnitName,GroupName,place)
 self:T(PSEUDOATC.id..text)
 MESSAGE:New(text,30):ToAllIf(self.Debug)
+end
 self:AltitudeTimerStop(GID,UID)
 if place and self.chatty then
 local text=string.format("Touchdown! Welcome to %s pilot %s. Have a nice day!",place,PlayerName)
@@ -43115,15 +43117,15 @@ end
 function PSEUDOATC:PlayerTakeOff(unit,place)
 self:F2({unit=unit,place=place})
 local group=unit:GetGroup()
-local GID=group:GetID()
-local UID=unit:GetDCSObject():getID()
-local PlayerName=self.group[GID].player[UID].playername
-local CallSign=self.group[GID].player[UID].callsign
-local UnitName=self.group[GID].player[UID].unitname
-local GroupName=self.group[GID].player[UID].groupname
-local text=string.format("Player %s in unit %s of group %s (id=%d) took off at %s.",PlayerName,UnitName,GroupName,GID,place)
+local PlayerName=unit:GetPlayerName()or"Ghost"
+local UnitName=unit:GetName()or"Ghostplane"
+local GroupName=group:GetName()or"Ghostgroup"
+local CallSign=unit:GetCallsign()or"Ghost11"
+if self.Debug then
+local text=string.format("Player %s in unit %s of group %s took off at %s.",PlayerName,UnitName,GroupName,place)
 self:T(PSEUDOATC.id..text)
 MESSAGE:New(text,30):ToAllIf(self.Debug)
+end
 if place and self.chatty then
 local text=string.format("%s, %s, you are airborne. Have a safe trip!",place,CallSign)
 if self.reportplayername then
