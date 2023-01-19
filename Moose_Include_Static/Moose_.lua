@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T14:00:49.0000000Z-6e666b0ac89ebe4131d96c61ba221ea56047110b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T16:01:59.0000000Z-ff58a472443b0de9cb14d7bb57c488bd7c91cb20 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -81464,10 +81464,14 @@ return-1
 end
 function FLIGHTGROUP:GetClosestAirbase()
 local group=self.group
+if group and group:IsAlive()then
 local coord=group:GetCoordinate()
 local coalition=self:GetCoalition()
 local airbase=coord:GetClosestAirbase()
 return airbase
+else
+return nil
+end
 end
 function FLIGHTGROUP:GetParking(airbase)
 local scanradius=50
