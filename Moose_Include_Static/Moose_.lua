@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T09:33:26.0000000Z-0d0292385fe7abaccc942cd9e98eafc702a0bd44 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T09:35:02.0000000Z-47684e871712a5ea5f48bfe7dc36a815c918452f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16130,7 +16130,7 @@ function SPAWN:NewFromTemplate(SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefi
 local self=BASE:Inherit(self,BASE:New())
 self:F({SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix})
 if SpawnAliasPrefix==nil or SpawnAliasPrefix==""then
-BASE:I("ERROR: in function NewFromTemplate, required paramter SpawnAliasPrefix is not set")
+BASE:I("ERROR: in function NewFromTemplate, required parameter SpawnAliasPrefix is not set")
 return nil
 end
 if SpawnTemplate then
