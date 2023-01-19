@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T13:59:54.0000000Z-6ec867196c3100495da5ff8b6a078c5424230c70 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T18:10:56.0000000Z-1d52e27668afdcbdf7af84eee202ced7dfd6e08e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21713,6 +21713,17 @@ id='EngageTargets',
 key="AntiShip",
 params={
 targetTypes=TargetTypes or{"Ships"},
+priority=Priority or 0
+}
+}
+return DCSTask
+end
+function CONTROLLABLE:EnRouteTaskSEAD(TargetTypes,Priority)
+local DCSTask={
+id='EngageTargets',
+key="SEAD",
+params={
+targetTypes=TargetTypes or{"Air Defence"},
 priority=Priority or 0
 }
 }
