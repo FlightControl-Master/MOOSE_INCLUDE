@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-17T11:09:13.0000000Z-80798f278c63d0fe1de1bd6cd47248b89c8c2da7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T13:59:54.0000000Z-6ec867196c3100495da5ff8b6a078c5424230c70 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3681,6 +3681,12 @@ return datatable,fires
 end
 function UTILS.LoadSetOfGroups(Path,Filename,Spawn,Structured,Cinematic,Effect,Density)
 local fires={}
+local usedtemplates={}
+local spawn=true
+if Spawn==false then spawn=false end
+local filename=Filename or"SetOfGroups"
+local setdata=SET_GROUP:New()
+local datatable={}
 local function Smokers(name,coord,effect,density)
 local eff=math.random(8)
 if type(effect)=="number"then eff=effect end
@@ -3704,32 +3710,10 @@ if reduced==anzahl then break end
 end
 end
 end
-local spawn=true
-if Spawn==false then spawn=false end
-local filename=Filename or"SetOfGroups"
-local setdata=SET_GROUP:New()
-local datatable={}
-if UTILS.CheckFileExists(Path,filename)then
-local outcome,loadeddata=UTILS.LoadFromFile(Path,Filename)
-table.remove(loadeddata,1)
-for _id,_entry in pairs(loadeddata)do
-local dataset=UTILS.Split(_entry,",")
-local groupname=dataset[1]
-local template=dataset[2]
-local size=tonumber(dataset[3])
-local posx=tonumber(dataset[4])
-local posy=tonumber(dataset[5])
-local posz=tonumber(dataset[6])
-local structure=dataset[7]
-local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
-local group=nil
-local data={groupname=groupname,size=size,coordinate=coordinate,template=template}
-table.insert(datatable,data)
-if spawn then
-local group=SPAWN:New(template)
-:InitDelayOff()
-:OnSpawnGroup(
-function(spwndgrp)
+local function PostSpawn(args)
+local spwndgrp=args[1]
+local size=args[2]
+local structure=args[3]
 setdata:AddObject(spwndgrp)
 local actualsize=spwndgrp:CountAliveUnits()
 if actualsize>size then
@@ -3762,8 +3746,60 @@ end
 end
 end
 end
-)
-:SpawnFromCoordinate(coordinate)
+local function MultiUse(Data)
+local template=Data.template
+if template and usedtemplates[template]and usedtemplates[template].used and usedtemplates[template].used>1 then
+if not usedtemplates[template].done then
+local spwnd=0
+local spawngrp=SPAWN:New(template)
+spawngrp:InitLimit(0,usedtemplates[template].used)
+for _,_entry in pairs(usedtemplates[template].data)do
+spwnd=spwnd+1
+local sgrp=spawngrp:SpawnFromCoordinate(_entry.coordinate,spwnd)
+BASE:ScheduleOnce(0.5,PostSpawn,{sgrp,_entry.size,_entry.structure})
+end
+usedtemplates[template].done=true
+end
+return true
+else
+return false
+end
+end
+if UTILS.CheckFileExists(Path,filename)then
+local outcome,loadeddata=UTILS.LoadFromFile(Path,Filename)
+table.remove(loadeddata,1)
+for _id,_entry in pairs(loadeddata)do
+local dataset=UTILS.Split(_entry,",")
+local groupname=dataset[1]
+local template=dataset[2]
+local size=tonumber(dataset[3])
+local posx=tonumber(dataset[4])
+local posy=tonumber(dataset[5])
+local posz=tonumber(dataset[6])
+local structure=dataset[7]
+local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
+local group=nil
+if size>0 then
+local data={groupname=groupname,size=size,coordinate=coordinate,template=template,structure=structure}
+table.insert(datatable,data)
+if usedtemplates[template]then
+usedtemplates[template].used=usedtemplates[template].used+1
+table.insert(usedtemplates[template].data,data)
+else
+usedtemplates[template]={
+data={},
+used=1,
+done=false,
+}
+table.insert(usedtemplates[template].data,data)
+end
+end
+end
+for _id,_entry in pairs(datatable)do
+if spawn and not MultiUse(_entry)and _entry.size>0 then
+local group=SPAWN:New(_entry.template)
+local sgrp=group:SpawnFromCoordinate(_entry.coordinate)
+BASE:ScheduleOnce(0.5,PostSpawn,{sgrp,_entry.size,_entry.structure})
 end
 end
 else
