@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-19T18:11:09.0000000Z-d0d21a6b5d46459f6a9ddd9f451f8428a923765d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-21T14:39:44.0000000Z-285f8d102baad9921cd59d76e3a2bd97c7db6f7a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62323,6 +62323,8 @@ conditionStart={},
 conditionSuccess={},
 conditionFailure={},
 conditionPush={},
+conditionSuccessSet=false,
+conditionFailureSet=false,
 }
 _AUFTRAGSNR=0
 AUFTRAG.Type={
@@ -62428,7 +62430,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.9"
+AUFTRAG.version="0.9.10"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -62684,6 +62686,7 @@ mission.optionROT=ENUMS.ROT.EvadeFire
 mission.missionFraction=1.0
 mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
+mission.dTevaluate=15
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
@@ -63616,6 +63619,7 @@ if arg then
 condition.arg=arg
 end
 table.insert(self.conditionSuccess,condition)
+self.conditionSuccessSet=true
 return self
 end
 function AUFTRAG:AddConditionFailure(ConditionFunction,...)
@@ -63626,6 +63630,7 @@ if arg then
 condition.arg=arg
 end
 table.insert(self.conditionFailure,condition)
+self.conditionFailureSet=true
 return self
 end
 function AUFTRAG:AddConditionPush(ConditionFunction,...)
@@ -63904,6 +63909,14 @@ local asset=_asset
 text=text..string.format("\n[%d] %s: spawned=%s, requested=%s, reserved=%s",i,asset.spawngroupname,tostring(asset.spawned),tostring(asset.requested),tostring(asset.reserved))
 end
 self:I(self.lid..text)
+end
+if self.conditionFailureSet then
+local failed=self:EvalConditionsAny(self.conditionFailure)
+if failed then self:__Failed(-1)end
+end
+if self.conditionSuccessSet then
+local success=self:EvalConditionsAny(self.conditionSuccess)
+if success then self:__Success(-1)end
 end
 local ready2evaluate=self.Tover and Tnow-self.Tover>=self.dTevaluate or false
 if self:IsOver()and ready2evaluate then
