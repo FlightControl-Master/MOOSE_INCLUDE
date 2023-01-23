@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-22T12:11:13.0000000Z-24d47ef353558883bfa24fe43d0e17698b9025f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-23T16:12:01.0000000Z-2ec8d94e382eaa403ec93195d26e81b73744f7e1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21484,50 +21484,64 @@ self:SetCommand(CommandActivateBeacon)
 end
 return self
 end
+function CONTROLLABLE:CommandActivateACLS(UnitID,Name,Delay)
+local CommandActivateACLS={
+id='ActivateACLS',
+params={
+unitId=UnitID or self:GetID(),
+name=Name or"ACL",
+}
+}
+self:T({CommandActivateACLS})
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandActivateACLS,{self,UnitID,Name},Delay)
+else
+self:SetCommand(CommandActivateACLS)
+end
+return self
+end
+function CONTROLLABLE:CommandDeactivateACLS(Delay)
+local CommandDeactivateACLS={
+id='DeactivateACLS',
+params={}
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandDeactivateACLS,{self},Delay)
+else
+self:SetCommand(CommandDeactivateACLS)
+end
+return self
+end
 function CONTROLLABLE:CommandActivateICLS(Channel,UnitID,Callsign,Delay)
 local CommandActivateICLS={
 id="ActivateICLS",
 params={
 ["type"]=BEACON.Type.ICLS,
 ["channel"]=Channel,
-["unitId"]=UnitID,
+["unitId"]=UnitID or self:GetID(),
 ["callsign"]=Callsign,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandActivateICLS,{self},Delay)
+SCHEDULER:New(nil,self.CommandActivateICLS,{self,Channel,UnitID,Callsign},Delay)
 else
 self:SetCommand(CommandActivateICLS)
 end
 return self
 end
 function CONTROLLABLE:CommandActivateLink4(Frequency,UnitID,Callsign,Delay)
+local freq=Frequency or 336
 local CommandActivateLink4={
 id="ActivateLink4",
 params={
-["frequency "]=Frequency*1000,
-["unitId"]=UnitID,
-["name"]=Callsign,
+["frequency "]=freq*1000000,
+["unitId"]=UnitID or self:GetID(),
+["name"]=Callsign or"LNK",
 }
 }
+self:T({CommandActivateLink4})
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandActivateLink4,{self},Delay)
-else
-self:SetCommand(CommandActivateLink4)
-end
-return self
-end
-function CONTROLLABLE:CommandActivateLink4(Frequency,UnitID,Callsign,Delay)
-local CommandActivateLink4={
-id="ActivateLink4",
-params={
-["frequency "]=Frequency*1000,
-["unitId"]=UnitID,
-["name"]=Callsign,
-}
-}
-if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandActivateLink4,{self},Delay)
+SCHEDULER:New(nil,self.CommandActivateLink4,{self,Frequency,UnitID,Callsign},Delay)
 else
 self:SetCommand(CommandActivateLink4)
 end
@@ -21558,15 +21572,6 @@ if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandDeactivateICLS,{self},Delay)
 else
 self:SetCommand(CommandDeactivateICLS)
-end
-return self
-end
-function CONTROLLABLE:CommandDeactivateLink4(Delay)
-local CommandDeactivateLink4={id='DeactivateLink4',params={}}
-if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandDeactivateLink4,{self},Delay)
-else
-self:SetCommand(CommandDeactivateLink4)
 end
 return self
 end
