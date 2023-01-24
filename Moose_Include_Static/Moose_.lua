@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-23T16:11:18.0000000Z-be68314c3a1c7e0f5d797539305d791641e3fb94 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-24T09:06:05.0000000Z-f34408479127d2d787b206001264d7b906026951 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -42975,7 +42975,7 @@ eventsmoose=true,
 reportplayername=false,
 }
 PSEUDOATC.id="PseudoATC | "
-PSEUDOATC.version="0.9.4"
+PSEUDOATC.version="0.9.5"
 function PSEUDOATC:New()
 local self=BASE:Inherit(self,BASE:New())
 self:E(PSEUDOATC.id..string.format("PseudoATC version %s",PSEUDOATC.version))
@@ -43193,7 +43193,7 @@ self:F({unit=unit})
 local group=unit:GetGroup()
 local GID=group:GetID()
 local UID=unit:GetDCSObject():getID()
-if self.group[GID].player[UID]then
+if self.group[GID]and self.group[GID].player and self.group[GID].player[UID]then
 local PlayerName=self.group[GID].player[UID].playername
 local CallSign=self.group[GID].player[UID].callsign
 local UnitName=self.group[GID].player[UID].unitname
@@ -43287,6 +43287,9 @@ break
 end
 local pos=COORDINATE:New(wp.x,wp.alt,wp.y)
 local name=string.format("Waypoint %d",i-1)
+if wp.name and wp.name~=""then
+name=string.format("Waypoint %s",wp.name)
+end
 local submenu=missionCommands.addSubMenuForGroup(GID,name,self.group[GID].player[UID].menu_waypoints)
 missionCommands.addCommandForGroup(GID,"Weather Report",submenu,self.ReportWeather,self,GID,UID,pos,name)
 missionCommands.addCommandForGroup(GID,"Request BR",submenu,self.ReportBR,self,GID,UID,pos,name)
