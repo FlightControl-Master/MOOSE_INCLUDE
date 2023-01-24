@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-24T14:26:32.0000000Z-57a30621e1662d163372305be207ba500ed5bf80 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-24T19:16:46.0000000Z-d763e924a9cc3b386e0c457f9a764bbc6ea34658 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3892,7 +3892,7 @@ end
 end
 function UTILS.ToStringBRAANATO(FromGrp,ToGrp)
 local BRAANATO="Merged."
-local GroupNumber=FromGrp:GetSize()
+local GroupNumber=ToGrp:GetSize()
 local GroupWords="Singleton"
 if GroupNumber==2 then GroupWords="Two-Ship"
 elseif GroupNumber>=3 then GroupWords="Heavy"
