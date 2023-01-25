@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-25T16:19:03.0000000Z-262c8ffc59052c531e7053c2a5e059162521024a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-25T16:55:34.0000000Z-e106ca3da5515d1094261ab190326211fe5ab4ad ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20087,6 +20087,10 @@ AIRBASE.SouthAtlantic={
 ["Almirante_Schroeders"]="Almirante Schroeders",
 ["Rio_Turbio"]="Rio Turbio",
 ["Rio_Chico"]="Rio Chico",
+["Franco_Bianco"]="Franco Bianco",
+["Goose_Green"]="Goose Green",
+["Hipico"]="Hipico",
+["CaletaTortel"]="CaletaTortel",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -39051,7 +39055,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.5.0"
+RANGE.version="2.5.1"
 function RANGE:New(RangeName)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
@@ -39306,6 +39310,10 @@ self.instructmsrs:SetPort(Port)
 self.instructmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.instructmsrs:SetLabel("RANGEI")
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
+if PathToGoogleKey then
+self.instructmsrs:SetGoogle(PathToGoogleKey)
+self.instructmsrs:SetGoogle(PathToGoogleKey)
+end
 else
 self:E(self.lid..string.format("ERROR: No SRS path specified!"))
 end
@@ -40082,7 +40090,7 @@ _args.coord:Smoke(_args.color)
 end
 function RANGE:_DisplayMyStrafePitResults(_unitName)
 self:F(_unitName)
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit,_playername,_multiplayer=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _playername then
 local _message=string.format("My Top %d Strafe Pit Results:\n",self.ndisplayresult)
 local _results=self.strafePlayerResults[_playername]
@@ -40108,12 +40116,12 @@ _count=_count+1
 end
 _message=_message.."\n\nBEST: ".._bestMsg
 end
-self:_DisplayMessageToGroup(_unit,_message,nil,true,true)
+self:_DisplayMessageToGroup(_unit,_message,nil,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayStrafePitResults(_unitName)
 self:F(_unitName)
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit,_playername,_multiplayer=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _playername then
 local _playerResults={}
 local _message=string.format("Strafe Pit Results - Top %d Players:\n",self.ndisplayresult)
@@ -40139,12 +40147,12 @@ end
 if#_playerResults<1 then
 _message=_message.."No player scored yet."
 end
-self:_DisplayMessageToGroup(_unit,_message,nil,true,true)
+self:_DisplayMessageToGroup(_unit,_message,nil,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayMyBombingResults(_unitName)
 self:F(_unitName)
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit,_playername,_multiplayer=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _playername then
 local _message=string.format("My Top %d Bombing Results:\n",self.ndisplayresult)
 local _results=self.bombPlayerResults[_playername]
@@ -40168,13 +40176,13 @@ end
 end
 _message=_message.."\n\nBEST: ".._bestMsg
 end
-self:_DisplayMessageToGroup(_unit,_message,nil,true,true)
+self:_DisplayMessageToGroup(_unit,_message,nil,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayBombingResults(_unitName)
 self:F(_unitName)
 local _playerResults={}
-local _unit,_player=self:_GetPlayerUnitAndName(_unitName)
+local _unit,_player,_multiplayer=self:_GetPlayerUnitAndName(_unitName)
 if _unit and _player then
 local _message=string.format("Bombing Results - Top %d Players:\n",self.ndisplayresult)
 for _playerName,_results in pairs(self.bombPlayerResults)do
@@ -40199,12 +40207,12 @@ end
 if#_playerResults<1 then
 _message=_message.."No player scored yet."
 end
-self:_DisplayMessageToGroup(_unit,_message,nil,true,true)
+self:_DisplayMessageToGroup(_unit,_message,nil,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayRangeInfo(_unitname)
 self:F(_unitname)
-local unit,playername=self:_GetPlayerUnitAndName(_unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(_unitname)
 if unit and playername then
 self:I(playername)
 local text=""
@@ -40280,14 +40288,14 @@ end
 text=text..texthit
 text=text..textbomb
 text=text..textdelay
-self:_DisplayMessageToGroup(unit,text,nil,true,true)
+self:_DisplayMessageToGroup(unit,text,nil,true,true,_multiplayer)
 self:T2(self.id..text)
 end
 end
 end
 function RANGE:_DisplayBombTargets(_unitname)
 self:F(_unitname)
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitname)
+local _unit,_playername,_multiplayer=self:_GetPlayerUnitAndName(_unitname)
 if _unit and _playername then
 local _settings=_DATABASE:GetPlayerSettings(_playername)or _SETTINGS
 local _text="Bomb Target Locations:"
@@ -40305,12 +40313,12 @@ local ca2g=coord:ToStringA2G(_unit,_settings)
 _text=_text..string.format("\n- %s:\n%s @ %s",bombtarget.name or"unknown",ca2g,eltxt)
 end
 end
-self:_DisplayMessageToGroup(_unit,_text,120,true,true)
+self:_DisplayMessageToGroup(_unit,_text,120,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayStrafePits(_unitname)
 self:F(_unitname)
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitname)
+local _unit,_playername,_multiplayer=self:_GetPlayerUnitAndName(_unitname)
 if _unit and _playername then
 local _settings=_DATABASE:GetPlayerSettings(_playername)or _SETTINGS
 local _text="Strafe Target Locations:"
@@ -40326,12 +40334,12 @@ end
 local mycoord=coord:ToStringA2G(_unit,_settings)
 _text=_text..string.format("\n- %s: heading %03d°\n%s",_strafepit.name,heading,mycoord)
 end
-self:_DisplayMessageToGroup(_unit,_text,nil,true,true)
+self:_DisplayMessageToGroup(_unit,_text,nil,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayRangeWeather(_unitname)
 self:F(_unitname)
-local unit,playername=self:_GetPlayerUnitAndName(_unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(_unitname)
 if unit and playername then
 local text=""
 local coord=unit:GetCoordinate()
@@ -40361,7 +40369,7 @@ text=text..string.format("QFE %.1f hPa = %s",P,tP)
 else
 text=string.format("No range location defined for range %s.",self.rangename)
 end
-self:_DisplayMessageToGroup(unit,text,nil,true,true)
+self:_DisplayMessageToGroup(unit,text,nil,true,true,_multiplayer)
 self:T2(self.id..text)
 else
 self:T(self.id..string.format("ERROR! Could not find player unit in RangeInfo! Name = %s",_unitname))
@@ -40727,7 +40735,7 @@ local text=string.format("%s, %s, your range stats were cleared.",self.rangename
 self:DisplayMessageToGroup(_unit,text,5,false,true)
 end
 end
-function RANGE:_DisplayMessageToGroup(_unit,_text,_time,_clear,display)
+function RANGE:_DisplayMessageToGroup(_unit,_text,_time,_clear,display,_togroup)
 self:F({unit=_unit,text=_text,time=_time,clear=_clear})
 _time=_time or self.Tmsg
 if _clear==nil or _clear==false then
@@ -40744,7 +40752,11 @@ local _grp=_unit:GetGroup()
 local _,playername=self:_GetPlayerUnitAndName(_unit:GetName())
 local playermessage=self.PlayerSettings[playername].messages
 if _gid and(playermessage==true or display)and(not self.examinerexclusive)then
+if _togroup and _grp then
+local m=MESSAGE:New(_text,_time,nil,_clear):ToGroup(_grp)
+else
 local m=MESSAGE:New(_text,_time,nil,_clear):ToUnit(_unit)
+end
 end
 if self.examinergroupname~=nil then
 local _examinerid=GROUP:FindByName(self.examinergroupname)
@@ -40756,7 +40768,7 @@ end
 end
 function RANGE:_SmokeBombImpactOnOff(unitname)
 self:F(unitname)
-local unit,playername=self:_GetPlayerUnitAndName(unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(unitname)
 if unit and playername then
 local text
 if self.PlayerSettings[playername].smokebombimpact==true then
@@ -40771,7 +40783,7 @@ end
 end
 function RANGE:_SmokeBombDelayOnOff(unitname)
 self:F(unitname)
-local unit,playername=self:_GetPlayerUnitAndName(unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(unitname)
 if unit and playername then
 local text
 if self.PlayerSettings[playername].delaysmoke==true then
@@ -40786,7 +40798,7 @@ end
 end
 function RANGE:_MessagesToPlayerOnOff(unitname)
 self:F(unitname)
-local unit,playername=self:_GetPlayerUnitAndName(unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(unitname)
 if unit and playername then
 local text
 if self.PlayerSettings[playername].messages==true then
@@ -40800,7 +40812,7 @@ end
 end
 function RANGE:_TargetsheetOnOff(_unitname)
 self:F2(_unitname)
-local unit,playername=self:_GetPlayerUnitAndName(_unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(_unitname)
 if unit and playername then
 local playerData=self.PlayerSettings[playername]
 if playerData then
@@ -40821,7 +40833,7 @@ end
 end
 function RANGE:_FlareDirectHitsOnOff(unitname)
 self:F(unitname)
-local unit,playername=self:_GetPlayerUnitAndName(unitname)
+local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(unitname)
 if unit and playername then
 local text
 if self.PlayerSettings[playername].flaredirecthits==true then
@@ -40960,6 +40972,7 @@ end
 function RANGE:_GetPlayerUnitAndName(_unitName)
 self:F2(_unitName)
 if _unitName~=nil then
+local multiplayer=false
 local DCSunit=Unit.getByName(_unitName)
 if DCSunit then
 local playername=DCSunit:getPlayerName()
@@ -40967,11 +40980,15 @@ local unit=UNIT:Find(DCSunit)
 self:T2({DCSunit=DCSunit,unit=unit,playername=playername})
 if DCSunit and unit and playername then
 self:F2(playername)
-return unit,playername
+local grp=unit:GetGroup()
+if grp and grp:CountAliveUnits()>1 then
+multiplayer=true
+end
+return unit,playername,multiplayer
 end
 end
 end
-return nil,nil
+return nil,nil,nil
 end
 function RANGE:_myname(unitname)
 self:F2(unitname)
