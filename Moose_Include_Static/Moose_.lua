@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-25T16:53:29.0000000Z-6ab1632b4bd23c5d70e280dbb7da5fcaf1d35f6c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-25T16:54:13.0000000Z-bdc08a530db439cd0959ed546da453cae3d08de1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25866,6 +25866,10 @@ AIRBASE.SouthAtlantic={
 ["Almirante_Schroeders"]="Almirante Schroeders",
 ["Rio_Turbio"]="Rio Turbio",
 ["Rio_Chico"]="Rio Chico",
+["Franco_Bianco"]="Franco Bianco",
+["Goose_Green"]="Goose Green",
+["Hipico"]="Hipico",
+["CaletaTortel"]="CaletaTortel",
 }
 AIRBASE.TerminalType={
 Runway=16,
