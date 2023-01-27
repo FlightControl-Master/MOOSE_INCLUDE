@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-26T10:25:01.0000000Z-f4c9bced45e1262096407f00d7dfa29dd2b917af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-27T17:36:38.0000000Z-5ec18d45a20662423530c3847de9bf8e452a6fd8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24946,7 +24946,6 @@ coalition=nil,
 _MARKERID=0
 MARKER.version="0.1.1"
 function MARKER:New(Coordinate,Text)
-local self=BASE:Inherit(self,FSM:New())
 local self=BASE:Inherit(self,FSM:New())
 self.coordinate=UTILS.DeepCopy(Coordinate)
 self.text=Text
@@ -72495,6 +72494,7 @@ CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.version="1.0.17"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
+BASE:T({Coalition,Prefixes,Alias})
 if Coalition and type(Coalition)=="string"then
 if Coalition=="blue"then
 self.coalition=coalition.side.BLUE
@@ -72535,6 +72535,8 @@ self:AddTransition("*","Boarded","*")
 self:AddTransition("*","Returning","*")
 self:AddTransition("*","Rescued","*")
 self:AddTransition("*","KIA","*")
+self:AddTransition("*","Load","*")
+self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
 self.addedTo={}
 self.allheligroupset={}
@@ -72605,6 +72607,11 @@ self.SRSVoice=nil
 self.SRSGPathToCredentials=nil
 self.SRSVolume=1.0
 self.SRSGender="male"
+local AliaS=string.gsub(self.alias," ","_")
+self.filename=string.format("CSAR_%s_Persist.csv",AliaS)
+self.enableLoadSave=false
+self.filepath=nil
+self.saveinterval=600
 return self
 end
 function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
@@ -73772,6 +73779,12 @@ self.msrs:SetLabel("CSAR")
 self.SRSQueue=MSRSQUEUE:New("CSAR")
 end
 self:__Status(-10)
+if self.enableLoadSave then
+local interval=self.saveinterval
+local filename=self.filename
+local filepath=self.filepath
+self:__Save(interval,filepath,filename)
+end
 return self
 end
 function CSAR:_CheckDownedPilotTable()
@@ -73916,6 +73929,150 @@ return self
 end
 function CSAR:onbeforeLanded(From,Event,To,HeliName,Airbase)
 self:T({From,Event,To,HeliName,Airbase})
+return self
+end
+function CSAR:onbeforeSave(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+if not io then
+self:E(self.lid.."ERROR: io not desanitized. Can't save current state.")
+return false
+end
+if path==nil and not lfs then
+self:E(self.lid.."WARNING: lfs not desanitized. State will be saved in DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+return true
+end
+function CSAR:onafterSave(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+local function _savefile(filename,data)
+local f=assert(io.open(filename,"wb"))
+f:write(data)
+f:close()
+end
+if lfs then
+path=self.filepath or lfs.writedir()
+end
+filename=filename or self.filename
+if path~=nil then
+filename=path.."\\"..filename
+end
+local pilots=self.downedPilots
+local data="playerName,x,y,z,coalition,country,description,typeName,unitName,freq\n"
+local n=0
+for _,_grp in pairs(pilots)do
+local DownedPilot=_grp
+if DownedPilot and DownedPilot.alive then
+local playerName=DownedPilot.player
+local group=DownedPilot.group
+local coalition=group:GetCoalition()
+local country=group:GetCountry()
+local description=DownedPilot.desc
+local typeName=DownedPilot.typename
+local freq=DownedPilot.frequency
+local location=group:GetVec3()
+local unitName=DownedPilot.originalUnit
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%s,%s,%d\n",playerName,location.x,location.y,location.z,coalition,country,description,typeName,unitName,freq)
+self:I(self.lid.."Saving to CSAR File: "..txt)
+data=data..txt
+end
+end
+_savefile(filename,data)
+if self.enableLoadSave then
+local interval=self.saveinterval
+local filename=self.filename
+local filepath=self.filepath
+self:__Save(interval,filepath,filename)
+end
+return self
+end
+function CSAR:onbeforeLoad(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+local function _fileexists(name)
+local f=io.open(name,"r")
+if f~=nil then
+io.close(f)
+return true
+else
+return false
+end
+end
+filename=filename or self.filename
+path=path or self.filepath
+if not io then
+self:E(self.lid.."WARNING: io not desanitized. Cannot load file.")
+return false
+end
+if path==nil and not lfs then
+self:E(self.lid.."WARNING: lfs not desanitized. State will be saved in DCS installation root directory rather than your \"Saved Games\\DCS\" folder.")
+end
+if lfs then
+path=path or lfs.writedir()
+end
+if path~=nil then
+filename=path.."\\"..filename
+end
+local exists=_fileexists(filename)
+if exists then
+return true
+else
+self:E(self.lid..string.format("WARNING: State file %s might not exist.",filename))
+return false
+end
+end
+function CSAR:onafterLoad(From,Event,To,path,filename)
+self:T({From,Event,To,path,filename})
+if not self.enableLoadSave then
+return self
+end
+local function _loadfile(filename)
+local f=assert(io.open(filename,"rb"))
+local data=f:read("*all")
+f:close()
+return data
+end
+filename=filename or self.filename
+path=path or self.filepath
+if lfs then
+path=path or lfs.writedir()
+end
+if path~=nil then
+filename=path.."\\"..filename
+end
+local text=string.format("Loading CSAR state from file %s",filename)
+MESSAGE:New(text,10):ToAllIf(self.Debug)
+self:I(self.lid..text)
+local file=assert(io.open(filename,"rb"))
+local loadeddata={}
+for line in file:lines()do
+loadeddata[#loadeddata+1]=line
+end
+file:close()
+table.remove(loadeddata,1)
+for _id,_entry in pairs(loadeddata)do
+local dataset=UTILS.Split(_entry,",")
+local playerName=dataset[1]
+local vec3={}
+vec3.x=tonumber(dataset[2])
+vec3.y=tonumber(dataset[3])
+vec3.z=tonumber(dataset[4])
+local point=COORDINATE:NewFromVec3(vec3)
+local coalition=dataset[5]
+local country=dataset[6]
+local description=dataset[7]
+local typeName=dataset[8]
+local unitName=dataset[9]
+local freq=dataset[10]
+self:_AddCsar(coalition,country,point,typeName,unitName,playerName,freq,nil,description,nil)
+end
 return self
 end
 do
