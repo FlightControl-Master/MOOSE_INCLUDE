@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-26T20:11:15.0000000Z-0d5b6d4c3e43802e83d7b25bda4626410e7012a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-27T17:34:53.0000000Z-c20927b6d7b6b389b9b687778d67f2c571eb8923 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26884,7 +26884,6 @@ coalition=nil,
 _MARKERID=0
 MARKER.version="0.1.1"
 function MARKER:New(Coordinate,Text)
-local self=BASE:Inherit(self,FSM:New())
 local self=BASE:Inherit(self,FSM:New())
 self.coordinate=UTILS.DeepCopy(Coordinate)
 self.text=Text
