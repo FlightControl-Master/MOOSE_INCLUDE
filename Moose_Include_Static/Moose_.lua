@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-28T08:02:15.0000000Z-c0442fca682907667a6602a5aefc92a8660c05ca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-28T17:42:29.0000000Z-3f97ba3bd7e6368b17c19141b767581a2f2675ab ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10585,6 +10585,27 @@ local Zone_Polygon=ZONE_POLYGON:New(ZoneName,ZoneGroup)
 Zone_Polygon:SetColor({1,0,0},0.15)
 self.ZONENAMES[ZoneName]=ZoneName
 self:AddZone(ZoneName,Zone_Polygon)
+end
+end
+if env.mission.drawings and env.mission.drawings.layers then
+for layerID,layerData in pairs(env.mission.drawings.layers or{})do
+for objectID,objectData in pairs(layerData.objects or{})do
+if objectData.polygonMode=="free"and objectData.points and#objectData.points>=4 then
+local ZoneName=objectData.name or"Unknown Drawing Zone"
+local vec2={x=objectData.mapX,y=objectData.mapY}
+local points=UTILS.DeepCopy(objectData.points)
+for i,_point in pairs(points)do
+local point=_point
+points[i]=UTILS.Vec2Add(point,vec2)
+end
+table.remove(points,#points)
+self:I(string.format("Register ZONE: %s (Polygon drawing with %d verticies)",ZoneName,#points))
+local Zone=ZONE_POLYGON:NewFromPointsArray(ZoneName,points)
+Zone:SetColor({1,0,0},0.15)
+self.ZONENAMES[ZoneName]=ZoneName
+self:AddZone(ZoneName,Zone)
+end
+end
 end
 end
 end
