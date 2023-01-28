@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-28T08:05:23.0000000Z-016643e494c963f94737c2f1ea7ec429f0f7bf4b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-28T09:47:49.0000000Z-cfb30041426669518f21e8a8367a0896beff8fab ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84515,6 +84515,8 @@ end
 local escort=AUFTRAG:NewESCORT(groupname,OffsetVector,EngageRange,TargetTypes)
 if MissionType==AUFTRAG.Type.SEAD then
 escort.missionTask=ENUMS.MissionTask.SEAD
+local DCStask=CONTROLLABLE.EnRouteTaskSEAD(nil)
+table.insert(escort.enrouteTasks,DCStask)
 end
 for _,_asset in pairs(Eassets)do
 local asset=_asset
