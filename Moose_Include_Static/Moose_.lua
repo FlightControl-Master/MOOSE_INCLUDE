@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-29T11:54:13.0000000Z-383ee00e7175830f906ea931163210a52a82362e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-29T17:37:19.0000000Z-5b8f840d6ec0796555acc593d6c393785db07e79 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74468,7 +74468,7 @@ CTLD.UnitTypes={
 ["SA342Minigun"]={type="SA342Minigun",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12,cargoweightlimit=400},
 ["UH-1H"]={type="UH-1H",crates=true,troops=true,cratelimit=1,trooplimit=8,length=15,cargoweightlimit=700},
 ["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
-["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
+["Mi-8MT"]={type="Mi-8MT",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
 ["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15,cargoweightlimit=0},
 ["Ka-50_3"]={type="Ka-50_3",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15,cargoweightlimit=0},
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
@@ -74478,7 +74478,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.27"
+CTLD.version="1.0.28"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74558,6 +74558,7 @@ self.TroopCounter=0
 self.Engineers=0
 self.EngineersInField={}
 self.EngineerSearch=2000
+self.nobuildmenu=false
 self.CrateDistance=35
 self.ExtractFactor=3.33
 self.prefixes=Prefixes or{"Cargoheli"}
@@ -76038,8 +76039,12 @@ menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrat
 end
 listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
 local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
+if not self.nobuildmenu then
 local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit)
 local repairmenu=MENU_GROUP_COMMAND:New(_group,"Repair",topcrates,self._RepairCrates,self,_group,_unit):Refresh()
+else
+unloadmenu:Refresh()
+end
 end
 if self:IsHercules(_unit)then
 local hoverpars=MENU_GROUP_COMMAND:New(_group,"Show flight parameters",topmenu,self._ShowFlightParams,self,_group,_unit):Refresh()
