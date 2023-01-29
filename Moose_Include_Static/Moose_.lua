@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-28T17:42:57.0000000Z-f3d1378692e2be85dbf853fd3552d4c58c53b215 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-29T11:54:13.0000000Z-383ee00e7175830f906ea931163210a52a82362e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -51255,6 +51255,9 @@ S3B="S-3B",
 S3BTANKER="S-3B Tanker",
 E2D="E-2C",
 C2A="C2A_Greyhound",
+RHINOE="FA-18E",
+RHINOF="FA-18F",
+GROWLER="EA-18G",
 }
 AIRBOSS.CarrierType={
 ROOSEVELT="CVN_71",
@@ -53043,6 +53046,9 @@ radiocall.suffix=suffix or".ogg"
 end
 function AIRBOSS:_GetAircraftAoA(playerData)
 local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
 local goshawk=playerData.actype==AIRBOSS.AircraftCarrier.T45C
 local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
@@ -53114,6 +53120,9 @@ end
 function AIRBOSS:_GetAircraftParameters(playerData,step)
 step=step or playerData.step
 local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
 local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
@@ -53557,6 +53566,9 @@ actype==AIRBOSS.AircraftCarrier.F14A or
 actype==AIRBOSS.AircraftCarrier.F14B or
 actype==AIRBOSS.AircraftCarrier.F14A_AI or
 actype==AIRBOSS.AircraftCarrier.HORNET or
+actype==AIRBOSS.AircraftCarrier.RHINOE or
+actype==AIRBOSS.AircraftCarrier.RHINOF or
+actype==AIRBOSS.AircraftCarrier.GROWLER or
 actype==AIRBOSS.AircraftCarrier.FA18C or
 actype==AIRBOSS.AircraftCarrier.S3B or
 actype==AIRBOSS.AircraftCarrier.S3BTANKER then
@@ -53594,7 +53606,11 @@ end
 function AIRBOSS:_LandAI(flight)
 self:T(self.lid..string.format("Landing AI flight %s.",flight.groupname))
 local Speed=UTILS.KnotsToKmph(200)
-if flight.actype==AIRBOSS.AircraftCarrier.HORNET or flight.actype==AIRBOSS.AircraftCarrier.FA18C then
+if flight.actype==AIRBOSS.AircraftCarrier.HORNET
+or flight.actype==AIRBOSS.AircraftCarrier.FA18C
+or flight.actype==AIRBOSS.AircraftCarrier.RHINOE
+or flight.actype==AIRBOSS.AircraftCarrier.RHINOF
+or flight.actype==AIRBOSS.AircraftCarrier.GROWLER then
 Speed=UTILS.KnotsToKmph(200)
 elseif flight.actype==AIRBOSS.AircraftCarrier.E2D then
 Speed=UTILS.KnotsToKmph(150)
@@ -55000,7 +55016,13 @@ self:_CheckCorridor(playerData)
 local inzone=playerData.unit:IsInZone(self:_GetZoneDirtyUp(playerData.case))
 if inzone then
 self:_PlayerHint(playerData)
-if playerData.actype==AIRBOSS.AircraftCarrier.HORNET or playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B then
+if playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.F14A
+or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
+then
 local callsay=self:_NewRadioCall(self.MarshalCall.SAYNEEDLES,nil,nil,5,playerData.onboard)
 local callfly=self:_NewRadioCall(self.MarshalCall.FLYNEEDLES,nil,nil,5,playerData.onboard)
 self:RadioTransmission(self.MarshalRadio,callsay,false,55,nil,true)
@@ -55536,7 +55558,10 @@ local v=unit:GetVelocityKMH()-self.carrier:GetVelocityKMH()
 local stern=self:_GetSternCoord()
 local s=stern:Get2DDistance(coord)
 local dcorr=100
-if playerData.actype==AIRBOSS.AircraftCarrier.HORNET then
+if playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER then
 dcorr=100
 elseif playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B then
 dcorr=100
@@ -56665,7 +56690,10 @@ end
 end
 if playerData.step==AIRBOSS.PatternStep.BULLSEYE then
 if playerData.difficulty==AIRBOSS.Difficulty.EASY then
-if playerData.actype==AIRBOSS.AircraftCarrier.HORNET then
+if playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER then
 hint=hint..string.format("\nIntercept glideslope and follow the needles.")
 else
 hint=hint..string.format("\nIntercept glideslope.")
@@ -57329,6 +57357,10 @@ elseif actype==AIRBOSS.AircraftCarrier.F14A_AI or actype==AIRBOSS.AircraftCarrie
 nickname="Tomcat"
 elseif actype==AIRBOSS.AircraftCarrier.FA18C or actype==AIRBOSS.AircraftCarrier.HORNET then
 nickname="Hornet"
+elseif actype==AIRBOSS.AircraftCarrier.RHINOE or actype==AIRBOSS.AircraftCarrier.RHINOF then
+nickname="Rhino"
+elseif actype==AIRBOSS.AircraftCarrier.GROWLER then
+nickname="Growler"
 elseif actype==AIRBOSS.AircraftCarrier.S3B or actype==AIRBOSS.AircraftCarrier.S3BTANKER then
 nickname="Viking"
 end
