@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-29T17:36:44.0000000Z-2f4f98cfe03ea583259e9ee28f79104aa0cb2e84 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-30T17:00:16.0000000Z-ee59d999f54c639a90932872d6ddaf229e682bf2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15320,6 +15320,7 @@ local gotstatics=false
 local gotunits=false
 local gotscenery=false
 local function EvaluateZone(ZoneObject)
+BASE:T({ZoneObject})
 if ZoneObject then
 local ObjectCategory=ZoneObject:getCategory()
 if ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()then
@@ -15725,6 +15726,11 @@ end
 self.y=alt
 return self
 end
+function COORDINATE:SetAtLandheight()
+local alt=self:GetLandHeight()
+self.y=alt
+return self
+end
 function COORDINATE:WaypointAir(AltType,Type,Action,Speed,SpeedLocked,airbase,DCSTasks,description,timeReFuAr)
 self:F2({AltType,Type,Action,Speed,SpeedLocked})
 AltType=AltType or"RADIO"
@@ -16030,7 +16036,6 @@ self.firename=name or"Fire-"..math.random(1,10000)
 trigger.action.effectSmokeBig(self:GetVec3(),preset,density,self.firename)
 end
 function COORDINATE:StopBigSmokeAndFire(name)
-self:F2({name=name})
 name=name or self.firename
 trigger.action.effectSmokeStop(name)
 end
