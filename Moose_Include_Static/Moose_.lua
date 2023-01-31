@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-30T17:01:04.0000000Z-f731ec7b2f59fdd1c2742f62edc811273bd949e0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-31T10:28:00.0000000Z-ee6d34a9bdc4844405e71d41d25ca2f511ecc289 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74483,7 +74483,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.28"
+CTLD.version="1.0.29"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -75973,6 +75973,12 @@ if not self.subcats[entry.Subcategory]then
 self.subcats[entry.Subcategory]=entry.Subcategory
 end
 end
+for _id,_cargo in pairs(self.Cargo_Statics)do
+local entry=_cargo
+if not self.subcats[entry.Subcategory]then
+self.subcats[entry.Subcategory]=entry.Subcategory
+end
+end
 end
 local menucount=0
 local menus={}
@@ -76028,6 +76034,13 @@ menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
+for _,_entry in pairs(self.Cargo_Statics)do
+local entry=_entry
+local subcat=entry.Subcategory
+menucount=menucount+1
+local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
+end
 else
 for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
@@ -76035,12 +76048,12 @@ menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
-end
 for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
+end
 end
 listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
 local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
@@ -76102,12 +76115,12 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoC
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
-function CTLD:AddStaticsCargo(Name,Mass,Stock)
+function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory)
 self:T(self.lid.." AddStaticsCargo")
 self.CargoCounter=self.CargoCounter+1
 local type=CTLD_CARGO.Enum.STATIC
 local template=STATIC:FindByName(Name,true):GetTypeName()
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory)
 table.insert(self.Cargo_Statics,cargo)
 return self
 end
