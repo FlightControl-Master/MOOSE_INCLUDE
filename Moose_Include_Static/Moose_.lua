@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-31T10:28:00.0000000Z-ee6d34a9bdc4844405e71d41d25ca2f511ecc289 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-02T08:47:29.0000000Z-789a4c4b7f98327af89c198384ac6d3c4ebed09f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59611,7 +59611,7 @@ local pB=b
 if a and b then
 local performanceA=self:GetPayloadPeformance(a,MissionType)
 local performanceB=self:GetPayloadPeformance(b,MissionType)
-return(performanceA>performanceB)or(performanceA==performanceB and a.unlimited==true)or(performanceA==performanceB and a.unlimited==true and b.unlimited==true and a.navail>b.navail)
+return(performanceA>performanceB)or(performanceA==performanceB and a.unlimited==true and b.unlimited~=true)or(performanceA==performanceB and a.unlimited==true and b.unlimited==true and a.navail>b.navail)
 elseif not a then
 self:I(self.lid..string.format("FF ERROR in sortpayloads: a is nil"))
 return false
@@ -77315,7 +77315,7 @@ CTLD_HERCULES={
 ClassName="CTLD_HERCULES",
 lid="",
 Name="",
-Version="0.0.2",
+Version="0.0.3",
 }
 CTLD_HERCULES.Types={
 ["ATGM M1045 HMMWV TOW Air [7183lb]"]={['name']="M1045 HMMWV TOW",['container']=true},
@@ -77495,8 +77495,6 @@ self:T(self.lid..'Cargo_SpawnObjects')
 local CargoHeading=self.CargoHeading
 if offload_cargo==true or ParatrooperGroupSpawn==true then
 if ParatrooperGroupSpawn==true then
-self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
-self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,5)
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,10)
 else
 self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
@@ -96435,7 +96433,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.16",
+version="0.0.17",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -96469,7 +96467,8 @@ PLAYERRECCE.LaserRelativePos={
 ["SA342Mistral"]={x=1.7,y=1.2,z=0},
 ["SA342Minigun"]={x=1.7,y=1.2,z=0},
 ["SA342L"]={x=1.7,y=1.2,z=0},
-["Ka-50"]={x=6.1,y=-0.85,z=0}
+["Ka-50"]={x=6.1,y=-0.85,z=0},
+["Ka-50_3"]={x=6.1,y=-0.85,z=0}
 }
 PLAYERRECCE.MaxViewDistance={
 ["SA342M"]=8000,
@@ -96477,6 +96476,7 @@ PLAYERRECCE.MaxViewDistance={
 ["SA342Minigun"]=8000,
 ["SA342L"]=8000,
 ["Ka-50"]=8000,
+["Ka-50_3"]=8000,
 }
 PLAYERRECCE.Cameraheight={
 ["SA342M"]=2.85,
@@ -96484,6 +96484,7 @@ PLAYERRECCE.Cameraheight={
 ["SA342Minigun"]=2.85,
 ["SA342L"]=2.85,
 ["Ka-50"]=0.5,
+["Ka-50_3"]=0.5,
 }
 PLAYERRECCE.CanLase={
 ["SA342M"]=true,
@@ -96491,6 +96492,7 @@ PLAYERRECCE.CanLase={
 ["SA342Minigun"]=false,
 ["SA342L"]=true,
 ["Ka-50"]=true,
+["Ka-50_3"]=true,
 }
 PLAYERRECCE.SmokeColor={
 ["highsmoke"]=SMOKECOLOR.Orange,
@@ -96640,7 +96642,7 @@ local vivihorizontal=dcsunit:getDrawArgumentValue(215)or 0
 if vivihorizontal<-0.7 or vivihorizontal>0.7 then
 camera=false
 end
-elseif typename=="Ka-50"then
+elseif string.find(typename,"Ka-50")then
 camera=true
 end
 end
@@ -96817,7 +96819,7 @@ if string.find(typename,"SA342")and camera then
 heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
 angle=10
 maxview=self.MaxViewDistance[typename]or 5000
-elseif typename=="Ka-50"and camera then
+elseif string.find(typename,"Ka-50")and camera then
 heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
 angle=10
