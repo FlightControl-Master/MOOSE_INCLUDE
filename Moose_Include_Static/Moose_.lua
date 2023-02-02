@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-31T10:27:12.0000000Z-48721859fabbb5006ddef989822ad92ee5def497 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-02T08:35:53.0000000Z-f9aa392c6dcb29afa72ed443755b7863a7b63d68 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63357,7 +63357,7 @@ CTLD_HERCULES={
 ClassName="CTLD_HERCULES",
 lid="",
 Name="",
-Version="0.0.2",
+Version="0.0.3",
 }
 CTLD_HERCULES.Types={
 ["ATGM M1045 HMMWV TOW Air [7183lb]"]={['name']="M1045 HMMWV TOW",['container']=true},
@@ -63537,8 +63537,6 @@ self:T(self.lid..'Cargo_SpawnObjects')
 local CargoHeading=self.CargoHeading
 if offload_cargo==true or ParatrooperGroupSpawn==true then
 if ParatrooperGroupSpawn==true then
-self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
-self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,5)
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,10)
 else
 self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
