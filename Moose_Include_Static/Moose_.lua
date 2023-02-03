@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-02T08:35:53.0000000Z-f9aa392c6dcb29afa72ed443755b7863a7b63d68 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-03T21:34:01.0000000Z-bf486b9f44829f68ef470191d66473fcd9188722 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -39583,7 +39583,7 @@ end
 function ZONE_CAPTURE_COALITION:OnEventHit(EventData)
 if self.HitsOn then
 local UnitHit=EventData.TgtUnit
-if UnitHit.ClassName~="SCENERY"then
+if UnitHit and UnitHit.ClassName~="SCENERY"then
 if UnitHit and UnitHit:IsInZone(self)and UnitHit:GetCoalition()==self.Coalition then
 self.HitTimeLast=timer.getTime()
 if self:GetState()~="Attacked"then
