@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T16:16:10.0000000Z-5571b49b4f3adc083cfab8eecbae0eebfea82e77 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T16:21:52.0000000Z-23091ff8514fc9e62def0a6c9818dba46b0071c7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74483,7 +74483,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.29"
+CTLD.version="1.0.30"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74711,6 +74711,17 @@ end
 end
 return nil
 end
+function CTLD:_FindCratesCargoObject(Name)
+self:T(self.lid.." _FindCratesCargoObject")
+local cargo=nil
+for _,_cargo in pairs(self.Cargo_Crates)do
+local cargo=_cargo
+if cargo.Name==Name then
+return cargo
+end
+end
+return nil
+end
 function CTLD:PreloadTroops(Unit,Troopname)
 self:T(self.lid.." PreloadTroops")
 local name=Troopname or"Unknown"
@@ -74721,6 +74732,60 @@ if cargo then
 self:_LoadTroops(group,Unit,cargo,true)
 else
 self:E(self.lid.." Troops preload - Cargo Object "..name.." not found!")
+end
+end
+return self
+end
+function CTLD:_PreloadCrates(Group,Unit,Cargo,NumberOfCrates)
+local group=Group
+local unit=Unit
+local unitname=unit:GetName()
+local unittype=unit:GetTypeName()
+local capabilities=self:_GetUnitCapabilities(Unit)
+local cancrates=capabilities.crates
+local cratelimit=capabilities.cratelimit
+if not cancrates then
+self:_SendMessage("Sorry this chopper cannot carry crates!",10,false,Group)
+return self
+else
+local numberonboard=0
+local massonboard=0
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+numberonboard=loaded.Cratesloaded or 0
+massonboard=self:_GetUnitCargoMass(Unit)
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+end
+local crate=Cargo
+local numbercrates=NumberOfCrates or crate:GetCratesNeeded()
+for i=1,numbercrates do
+loaded.Cratesloaded=loaded.Cratesloaded+1
+crate:SetHasMoved(true)
+crate:SetWasDropped(false)
+table.insert(loaded.Cargo,crate)
+crate.Positionable=nil
+self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()),10,false,Group)
+self.Loaded_Cargo[unitname]=loaded
+self:_UpdateUnitCargoMass(Unit)
+end
+end
+return self
+end
+function CTLD:PreloadCrates(Unit,Cratesname,NumberOfCrates)
+self:T(self.lid.." PreloadCrates")
+local name=Cratesname or"Unknown"
+if Unit and Unit:IsAlive()then
+local cargo=self:_FindCratesCargoObject(name)
+local group=Unit:GetGroup()
+if cargo then
+self:_PreloadCrates(group,Unit,cargo,NumberOfCrates)
+else
+self:E(self.lid.." Crates preload - Cargo Object "..name.." not found!")
 end
 end
 return self
