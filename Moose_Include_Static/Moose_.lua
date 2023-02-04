@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T21:36:16.0000000Z-c58918e00257024c3a2e60c8bc0682ee0f462f68 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T22:02:36.0000000Z-d4d305d53bd86ba9efdeba8bd4771a7b63db3a26 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28895,18 +28895,19 @@ end
 local Score=0
 if InitCoalition then
 if InitCoalition==TargetCoalition then
-Player.Penalty=Player.Penalty+10
-PlayerHit.Penalty=PlayerHit.Penalty+10
+local Penalty=10
+Player.Penalty=Player.Penalty+Penalty
+PlayerHit.Penalty=PlayerHit.Penalty+Penalty
 PlayerHit.PenaltyHit=PlayerHit.PenaltyHit+1
 if TargetPlayerName~=nil then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit friendly player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.PenaltyHit.." times. "..
-"Penalty: -"..PlayerHit.Penalty..".  Score Total:"..Player.Score-Player.Penalty,
+"Penalty: -"..Penalty..".  Score Total:"..Player.Score-Player.Penalty,
 MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 else
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit friendly target "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.PenaltyHit.." times. "..
-"Penalty: -"..PlayerHit.Penalty..".  Score Total:"..Player.Score-Player.Penalty,
+"Penalty: -"..Penalty..".  Score Total:"..Player.Score-Player.Penalty,
 MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
@@ -28976,13 +28977,14 @@ PlayerHit.TimeStamp=timer.getTime()
 local Score=0
 if InitCoalition then
 if InitCoalition==TargetCoalition then
-Player.Penalty=Player.Penalty+10
-PlayerHit.Penalty=PlayerHit.Penalty+10
+local Penalty=10
+Player.Penalty=Player.Penalty+Penalty
+PlayerHit.Penalty=PlayerHit.Penalty+Penalty
 PlayerHit.PenaltyHit=PlayerHit.PenaltyHit+1*self.ScaleDestroyPenalty
 MESSAGE
 :NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit friendly target "..
 TargetUnitCategory.." ( "..TargetType.." ) "..
-"Penalty: -"..PlayerHit.Penalty.." = "..Player.Score-Player.Penalty,
+"Penalty: -"..Penalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Update
 )
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
@@ -28993,7 +28995,7 @@ Player.Score=Player.Score+1
 PlayerHit.Score=PlayerHit.Score+1
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..
-"Score: +"..PlayerHit.Score.." = "..Player.Score-Player.Penalty,
+"Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
 MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(Event.WeaponCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
@@ -29071,13 +29073,13 @@ TargetDestroy.Penalty=TargetDestroy.Penalty+ThreatPenalty
 TargetDestroy.PenaltyDestroy=TargetDestroy.PenaltyDestroy+1
 if Player.HitPlayers[TargetPlayerName]then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
-"Penalty: -"..TargetDestroy.Penalty.." = "..Player.Score-Player.Penalty,
+"Penalty: -"..ThreatPenalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly target "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
-"Penalty: -"..TargetDestroy.Penalty.." = "..Player.Score-Player.Penalty,
+"Penalty: -"..ThreatPenalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
@@ -29095,13 +29097,13 @@ TargetDestroy.Score=TargetDestroy.Score+ThreatScore
 TargetDestroy.ScoreDestroy=TargetDestroy.ScoreDestroy+1
 if Player.HitPlayers[TargetPlayerName]then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
-"Score: +"..TargetDestroy.Score.." = "..Player.Score-Player.Penalty,
+"Score: +"..ThreatScore.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
-"Score: +"..TargetDestroy.Score.." = "..Player.Score-Player.Penalty,
+"Score: +"..ThreatScore.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
