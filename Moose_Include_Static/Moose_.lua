@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T21:01:55.0000000Z-dec785447660f24158ef654ce3cfc234ea25a4fd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T21:36:16.0000000Z-c58918e00257024c3a2e60c8bc0682ee0f462f68 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28961,7 +28961,16 @@ PlayerHit.ScoreHit=PlayerHit.ScoreHit or 0
 PlayerHit.PenaltyHit=PlayerHit.PenaltyHit or 0
 PlayerHit.TimeStamp=PlayerHit.TimeStamp or 0
 PlayerHit.UNIT=PlayerHit.UNIT or TargetUNIT
+if PlayerHit.UNIT.ThreatType==nil then
 PlayerHit.ThreatLevel,PlayerHit.ThreatType=PlayerHit.UNIT:GetThreatLevel()
+if PlayerHit.ThreatType==nil then
+PlayerHit.ThreatLevel=1
+PlayerHit.ThreatType="Unknown"
+end
+else
+PlayerHit.ThreatLevel=PlayerHit.UNIT.ThreatLevel
+PlayerHit.ThreatType=PlayerHit.UNIT.ThreatType
+end
 if timer.getTime()-PlayerHit.TimeStamp>1 then
 PlayerHit.TimeStamp=timer.getTime()
 local Score=0
