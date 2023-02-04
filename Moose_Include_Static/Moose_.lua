@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T16:21:16.0000000Z-4748c66d9c8c7617dbcb94f1427a68215e8ba88f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T20:46:34.0000000Z-8ca102f5843103114316184dc5e4bc1727f2312b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28787,6 +28787,7 @@ function SCORING:OnEventBirth(Event)
 if Event.IniUnit then
 if Event.IniObjectCategory==1 then
 local PlayerName=Event.IniUnit:GetPlayerName()
+Event.IniUnit.BirthTime=timer.getTime()
 if PlayerName then
 self:_AddPlayerFromUnit(Event.IniUnit)
 self:SetScoringMenu(Event.IniGroup)
@@ -29029,7 +29030,7 @@ local InitUnitCoalition=_SCORINGCoalition[InitCoalition]
 local InitUnitCategory=_SCORINGCategory[InitCategory]
 self:T({InitUnitName,InitUnitType,InitUnitCoalition,InitCoalition,InitUnitCategory,InitCategory})
 local Destroyed=false
-if Player and Player.Hit and Player.Hit[TargetCategory]and Player.Hit[TargetCategory][TargetUnitName]and Player.Hit[TargetCategory][TargetUnitName].TimeStamp~=0 then
+if Player and Player.Hit and Player.Hit[TargetCategory]and Player.Hit[TargetCategory][TargetUnitName]and Player.Hit[TargetCategory][TargetUnitName].TimeStamp~=0 and(TargetUnit.BirthTime==nil or Player.Hit[TargetCategory][TargetUnitName].TimeStamp>TargetUnit.BirthTime)then
 local TargetThreatLevel=Player.Hit[TargetCategory][TargetUnitName].ThreatLevel
 local TargetThreatType=Player.Hit[TargetCategory][TargetUnitName].ThreatType
 Player.Destroy[TargetCategory]=Player.Destroy[TargetCategory]or{}
