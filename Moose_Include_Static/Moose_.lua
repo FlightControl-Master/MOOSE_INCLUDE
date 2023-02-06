@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T22:31:55.0000000Z-772921c6b8a9e3c74fb876e86f1cb09576095981 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-06T07:15:45.0000000Z-03ba7524b2ec8fd365546cc64f7f2230510c1dc9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29214,8 +29214,6 @@ MESSAGE.Type.Update)
 end
 self:ScoreCSV(InitPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 else
-Player.Score=Player.Score+1
-PlayerHit.Score=PlayerHit.Score+1
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 if TargetPlayerName~=nil then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
@@ -29291,8 +29289,6 @@ MESSAGE.Type.Update
 :ToCoalitionIf(Event.WeaponCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(Event.WeaponPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,Event.WeaponName,Event.WeaponCoalition,Event.WeaponCategory,Event.WeaponTypeName,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 else
-Player.Score=Player.Score+1
-PlayerHit.Score=PlayerHit.Score+1
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..
 "Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
