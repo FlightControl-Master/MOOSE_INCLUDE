@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-04T22:34:14.0000000Z-57079e5104a7f43085a90a0887de1546132ae350 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-06T07:16:14.0000000Z-184f93168b48c28afe4c33190f08558c0521d53b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -110162,7 +110162,7 @@ options.plaintext=Plaintext
 options.srsClientName=Label or self.Label
 options.position={}
 if self.coordinate then
-options.position.lat,options.position.lat,options.position.alt=self._GetLatLongAlt(self.coordinate)
+options.position.lat,options.position.lat,options.position.alt=self:_GetLatLongAlt(self.coordinate)
 end
 options.position.lat=options.position.lat or 0.0
 options.position.lon=options.position.lon or 0.0
