@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-06T07:17:05.0000000Z-63b16e5bd428bad478a497131426b681bb9f53cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-07T07:01:34.0000000Z-c97f1791b0b15bef05d9f8add553ac522804e804 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -74441,12 +74441,12 @@ vec3.x=tonumber(dataset[2])
 vec3.y=tonumber(dataset[3])
 vec3.z=tonumber(dataset[4])
 local point=COORDINATE:NewFromVec3(vec3)
-local coalition=dataset[5]
-local country=dataset[6]
+local coalition=tonumber(dataset[5])
+local country=tonumber(dataset[6])
 local description=dataset[7]
 local typeName=dataset[8]
 local unitName=dataset[9]
-local freq=dataset[10]
+local freq=tonumber(dataset[10])
 self:_AddCsar(coalition,country,point,typeName,unitName,playerName,freq,nil,description,nil)
 end
 return self
