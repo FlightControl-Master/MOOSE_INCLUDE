@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-07T06:28:00.0000000Z-5b044cc036d64b0db97de845b6f1748744a71ae3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-09T15:11:45.0000000Z-2a3d69d0d5c28e66c76fd680d5d075e814b15786 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -33153,7 +33153,7 @@ DetectionZoneRange=nil,
 }
 function DETECTION_AREAS:New(DetectionSetGroup,DetectionZoneRange)
 local self=BASE:Inherit(self,DETECTION_BASE:New(DetectionSetGroup))
-self.DetectionZoneRange=DetectionZoneRange
+self.DetectionZoneRange=DetectionZoneRange or 5000
 self._SmokeDetectedUnits=false
 self._FlareDetectedUnits=false
 self._SmokeDetectedZones=false
