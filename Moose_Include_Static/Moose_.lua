@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-09T10:57:28.0000000Z-28c25816a656336942cd0b3101f060b83d6c79d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-09T12:17:49.0000000Z-608033f38f3708d656ca2ea7a18434b7b0a06da9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29340,7 +29340,11 @@ self.SRS:PlaySoundFile(sound,2)
 elseif self.DCSRadio then
 self:DCSRadioBroadcast(Soundfile,Soundlength,text)
 elseif self.SRSTTSRadio then
+if self.SRSOperatorVoice then
+self.SRSQ:NewTransmission(text,nil,self.SRSOperator,nil,1)
+else
 self.SRSQ:NewTransmission(text,nil,self.SRS,nil,1)
+end
 end
 local findex=0
 local fhname=Helo:GetName()
