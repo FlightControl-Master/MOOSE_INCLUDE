@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-10T09:45:23.0000000Z-d6aa7ec17ca3957cc821c953b6956134b30ab205 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-10T10:40:15.0000000Z-713a5b067f4521b583d48b01dde8907348ac0a34 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -94765,7 +94765,7 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 }
-PLAYERTASK.version="0.1.12"
+PLAYERTASK.version="0.1.14"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -96755,6 +96755,18 @@ function PLAYERTASKCONTROLLER:AddAgent(Recce)
 self:T(self.lid.."AddAgent")
 if self.Intel then
 self.Intel:AddAgent(Recce)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddAgentSet(RecceSet)
+self:T(self.lid.."AddAgentSet")
+if self.Intel then
+local Set=RecceSet:GetAliveSet()
+for _,_Recce in pairs(Set)do
+self.Intel:AddAgent(_Recce)
+end
 else
 self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
