@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-09T15:12:39.0000000Z-2da2ddb5bb02808154d301805257f2505f756a3e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-10T09:45:23.0000000Z-d6aa7ec17ca3957cc821c953b6956134b30ab205 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27468,6 +27468,138 @@ if Distance>0 and self.pos3 then
 ip=land.getIP(self.pos3.p,self.pos3.x,Distance or 20)
 end
 return ip
+end
+do
+NET={
+ClassName="NET",
+Version="0.0.2"
+}
+function NET:New()
+local self=BASE:Inherit(self,BASE:New())
+return self
+end
+function NET:SendChat(Message,ToAll)
+if Message then
+net.send_chat(Message,ToAll)
+end
+return self
+end
+function NET:GetPlayerIdByName(Name)
+local playerList=self:GetPlayerList()
+for i=1,#playerList do
+local playerName=net.get_name(i)
+if playerName==Name then
+return playerList[i]
+end
+end
+return nil
+end
+function NET:GetPlayerIDFromClient(Client)
+local name=Client:GetPlayerName()
+local id=self:GetPlayerIdByName(name)
+return id
+end
+function NET:SendChatToPlayer(Message,ToClient,FromClient)
+local PlayerId=self:GetPlayerIDFromClient(ToClient)
+local FromId=self:GetPlayerIDFromClient(FromClient)
+if Message and PlayerId and FromId then
+net.send_chat_to(Message,tonumber(PlayerId),tonumber(FromId))
+elseif Message and PlayerId then
+net.send_chat_to(Message,tonumber(PlayerId))
+end
+return self
+end
+function NET:LoadMission(Path)
+local outcome=false
+if Path then
+outcome=net.load_mission(Path)
+end
+return outcome
+end
+function NET:LoadNextMission()
+local outcome=false
+outcome=net.load_next_mission()
+return outcome
+end
+function NET:GetPlayerList()
+local plist=nil
+plist=net.get_player_list()
+return plist
+end
+function NET:GetMyPlayerID()
+return net.get_my_player_id()
+end
+function NET:GetServerID()
+return net.get_server_id()
+end
+function NET:GetPlayerInfo(Client,Attribute)
+local PlayerID=self:GetPlayerIDFromClient(Client)
+if PlayerID then
+return net.get_player_info(tonumber(PlayerID),Attribute)
+else
+return nil
+end
+end
+function NET:Kick(Client,Message)
+local PlayerID=self:GetPlayerIDFromClient(Client)
+if PlayerID and tonumber(PlayerID)~=1 then
+return net.kick(tonumber(PlayerID),Message)
+else
+return false
+end
+end
+function NET:GetPlayerStatistic(Client,StatisticID)
+local PlayerID=self:GetPlayerIDFromClient(Client)
+local stats=StatisticID or 0
+if stats>7 or stats<0 then stats=0 end
+if PlayerID then
+return net.get_stat(tonumber(PlayerID),stats)
+else
+return nil
+end
+end
+function NET:GetName(Client)
+local PlayerID=self:GetPlayerIDFromClient(Client)
+if PlayerID then
+return net.get_name(tonumber(PlayerID))
+else
+return nil
+end
+end
+function NET:GetSlot(Client)
+local PlayerID=self:GetPlayerIDFromClient(Client)
+if PlayerID then
+local side,slot=net.get_slot(tonumber(PlayerID))
+return side,slot
+else
+return nil,nil
+end
+end
+function NET:ForceSlot(Client,SideID,SlotID)
+local PlayerID=self:GetPlayerIDFromClient(Client)
+if PlayerID then
+return net.force_player_slot(tonumber(PlayerID),SideID,SlotID)
+else
+return false
+end
+end
+function NET:ReturnToSpectators(Client)
+local outcome=self:ForceSlot(Client,0)
+return outcome
+end
+function NET.Lua2Json(Lua)
+return net.lua2json(Lua)
+end
+function NET.Lua2Json(Json)
+return net.json2lua(Json)
+end
+function NET:DoStringIn(State,DoString)
+return net.dostring_in(State,DoString)
+end
+function NET:Log(Message)
+net.log(Message)
+return self
+end
 end
 CARGOS={}
 do
