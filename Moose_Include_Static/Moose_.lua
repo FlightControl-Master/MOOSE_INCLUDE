@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-10T10:00:14.0000000Z-3d5470eb222b7a5fd3245b977f7f33e387d37381 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-11T21:11:21.0000000Z-d3c34ef04d34e23225098c4b62f6122b3ffd9b56 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19654,7 +19654,7 @@ MARKEROPS_BASE={
 ClassName="MARKEROPS",
 Tag="mytag",
 Keywords={},
-version="0.1.0",
+version="0.1.1",
 debug=false,
 Casesensitive=true,
 }
@@ -19709,7 +19709,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkChanged(Eventtext,matchtable,coord)
+self:MarkChanged(Eventtext,matchtable,coord,Event.idx)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_REMOVED then
