@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-12T10:51:16.0000000Z-0487487e7cd9974d43f7c2ccd955dcd916034caf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-12T12:04:32.0000000Z-7280c1750655eb303338cde2328609dfdc48340e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -41372,12 +41372,11 @@ end
 function RANGE:_GetBombTargetCoordinate(target)
 local coord=nil
 if target.type==RANGE.TargetType.UNIT then
-if not target.move then
-coord=target.coordinate
-else
 if target.target and target.target:IsAlive()then
 coord=target.target:GetCoordinate()
-end
+target.coordinate=coord
+else
+coord=target.coordinate
 end
 elseif target.type==RANGE.TargetType.STATIC then
 coord=target.coordinate
