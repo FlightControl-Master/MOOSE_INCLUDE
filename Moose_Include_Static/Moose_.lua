@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-12T12:04:32.0000000Z-7280c1750655eb303338cde2328609dfdc48340e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-14T11:58:23.0000000Z-77a39364f4c42d0304ea77cafa993ae7771b815a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -95487,6 +95487,13 @@ TANKS="Tanks",
 AIRDEFENSE="Airdefense",
 SAM="SAM",
 GROUP="Group",
+UNARMEDSHIP="Merchant",
+LIGHTARMEDSHIP="Light Boat",
+CORVETTE="Corvette",
+FRIGATE="Frigate",
+CRUISER="Cruiser",
+DESTROYER="Destroyer",
+CARRIER="Aircraft Carrier",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -95559,9 +95566,16 @@ TANKS="Panzer",
 AIRDEFENSE="Flak",
 SAM="Luftabwehr",
 GROUP="Einheit",
+UNARMEDSHIP="Handelsschiff",
+LIGHTARMEDSHIP="Tender",
+CORVETTE="Korvette",
+FRIGATE="Fregatte",
+CRUISER="Kreuzer",
+DESTROYER="Zerstörer",
+CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.56"
+PLAYERTASKCONTROLLER.version="0.1.57"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -96009,6 +96023,25 @@ end
 local typename=self.gettext:GetEntry(typekey,self.locale)
 local gname=self.gettext:GetEntry("GROUP",self.locale)
 target.TypeName=string.format("%s %s",typename,gname)
+end
+if self.UseTypeNames and object:IsShip()then
+local threat=object:GetThreatLevel()
+local typekey="UNARMEDSHIP"
+if threat==1 then
+typekey="LIGHTARMEDSHIP"
+elseif threat==2 then
+typekey="CORVETTE"
+elseif threat==3 or threat==4 then
+typekey="FRIGATE"
+elseif threat==5 or threat==6 then
+typekey="CRUISER"
+elseif threat==7 or threat==8 then
+typekey="DESTROYER"
+elseif threat>=9 then
+typekey="CARRIER"
+end
+local typename=self.gettext:GetEntry(typekey,self.locale)
+target.TypeName=typename
 end
 self:_AddTask(target)
 end
