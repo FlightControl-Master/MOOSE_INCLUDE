@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-12T12:03:08.0000000Z-92c5c32e8c53ddcf2131e91809530ddaee5b4080 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-15T09:31:52.0000000Z-5d4c0f3c87dc4745dcc3bf0082e3715961c5b5d0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24658,7 +24658,7 @@ local callsign="Ghost 1"
 if self:IsAlive()then
 local IsPlayer=self:IsPlayer()
 local shortcallsign=self:GetCallsign()or"unknown91"
-local callsignroot=string.match(shortcallsign,'(%a+)')
+local callsignroot=string.match(shortcallsign,'(%a+)')or"Ghost"
 local groupname=self:GetName()
 local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
