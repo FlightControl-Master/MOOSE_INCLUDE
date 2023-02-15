@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-15T09:31:52.0000000Z-5d4c0f3c87dc4745dcc3bf0082e3715961c5b5d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-15T11:23:31.0000000Z-35322399e9ae78a844459508f2375009a70095b3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19603,6 +19603,7 @@ self:AddTransition("On","Lasing","On")
 self:AddTransition({"On","Destroyed"},"LaseOff","Off")
 self:AddTransition("*","Destroyed","Destroyed")
 self.Recce=Recce
+self.RecceName=self.Recce:GetName()
 self.LaseScheduler=SCHEDULER:New(self)
 self:SetEventPriority(5)
 self.Lasing=false
@@ -19614,6 +19615,7 @@ local function StopLase(self)
 self:LaseOff()
 end
 self.Target=Target
+self.TargetName=Target:GetName()
 self.LaserCode=LaserCode
 self.Lasing=true
 local RecceDcsUnit=self.Recce:GetDCSObject()
@@ -19646,9 +19648,15 @@ end
 function SPOT:OnEventDead(EventData)
 self:F({Dead=EventData.IniDCSUnitName,Target=self.Target})
 if self.Target then
-if EventData.IniDCSUnitName==self.Target:GetName()then
-self:F({"Target dead ",self.Target:GetName()})
+if EventData.IniDCSUnitName==self.TargetName then
+self:F({"Target dead ",self.TargetName})
 self:Destroyed()
+self:LaseOff()
+end
+end
+if self.Recce then
+if EventData.IniDCSUnitName==self.RecceName then
+self:F({"Recce dead ",self.RecceName})
 self:LaseOff()
 end
 end
