@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-14T11:58:23.0000000Z-77a39364f4c42d0304ea77cafa993ae7771b815a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-15T09:32:30.0000000Z-ef0ddddb46b9602ac35d3686c2f71e25456a21fc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -95575,7 +95575,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.57"
+PLAYERTASKCONTROLLER.version="0.1.58"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -96006,6 +96006,7 @@ if object.freetext then
 target.freetext=object.freetext
 end
 end
+if object:IsInstanceOf("UNIT")or object:IsInstanceOf("GROUP")then
 if self.UseTypeNames and object:IsGround()then
 local threat=object:GetThreatLevel()
 local typekey="INFANTRY"
@@ -96042,6 +96043,7 @@ typekey="CARRIER"
 end
 local typename=self.gettext:GetEntry(typekey,self.locale)
 target.TypeName=typename
+end
 end
 self:_AddTask(target)
 end
