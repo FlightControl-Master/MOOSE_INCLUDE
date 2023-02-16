@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-16T16:29:54.0000000Z-34c799b668d7580178bee5d4aa67c3a635e06b30 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-16T17:22:10.0000000Z-7637f0c6ce943596abc11b1c510ff2d431f8dddf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29277,7 +29277,7 @@ end
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.1.9",
+version="0.1.10",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -29317,6 +29317,7 @@ SRSPilot=nil,
 SRSPilotVoice=false,
 SRSOperator=nil,
 SRSOperatorVoice=false,
+PilotStore=nil,
 }
 AICSAR.Messages={
 EN={
@@ -29416,6 +29417,7 @@ self.limithelos=true
 self.helonumber=3
 self:InitLocalization()
 self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
+self.PilotStore=FIFO:New()
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
@@ -29427,6 +29429,7 @@ self:AddTransition("*","PilotKIA","*")
 self:AddTransition("*","HeloDown","*")
 self:AddTransition("*","Stop","Stopped")
 self:HandleEvent(EVENTS.LandingAfterEjection)
+self:HandleEvent(EVENTS.Ejection)
 self:__Start(math.random(2,5))
 local text=string.format("%sAICSAR Version %s Starting",self.lid,self.version)
 self:I(text)
@@ -29545,6 +29548,14 @@ function AICSAR:DCSRadioBroadcast(Soundfile,Duration,Subtitle)
 self:T(self.lid.."DCSRadioBroadcast")
 local radioqueue=self.DCSRadioQueue
 radioqueue:NewTransmission(Soundfile,Duration,nil,2,nil,Subtitle,10)
+return self
+end
+function AICSAR:OnEventEjection(EventData)
+local _event=EventData
+if _event.IniPlayerName then
+self.PilotStore:Push(_event.IniPlayerName)
+self:T(self.lid.."Pilot Ejected: ".._event.IniPlayerName)
+end
 return self
 end
 function AICSAR:OnEventLandingAfterEjection(EventData)
@@ -29691,6 +29702,7 @@ self:T(self.lid.."_CheckQueue")
 for _index,_pilot in pairs(self.pilotqueue)do
 local classname=_pilot.ClassName and _pilot.ClassName or"NONE"
 local name=_pilot.GroupName and _pilot.GroupName or"NONE"
+local playername="John Doe"
 local helocount=self:_CountHelos()
 if _pilot and _pilot.ClassName and _pilot.ClassName=="GROUP"then
 local flightgroup=self.helos[_index]
@@ -29703,7 +29715,10 @@ _pilot:Destroy(true,10)
 end
 self.pilotqueue[_index]=nil
 self.rescued[_index]=true
-self:__PilotRescued(2)
+if self.PilotStore:Count()>0 then
+playername=self.PilotStore:Pull()
+end
+self:__PilotRescued(2,playername)
 if flightgroup then
 flightgroup.AICSARReserved=false
 end
@@ -29856,7 +29871,7 @@ end
 end
 return self
 end
-function AICSAR:onafterPilotRescued(From,Event,To)
+function AICSAR:onafterPilotRescued(From,Event,To,PilotName)
 self:T({From,Event,To})
 local text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTRESCUED",self.locale)
 if self.verbose then
