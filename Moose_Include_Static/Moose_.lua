@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-16T10:41:45.0000000Z-bae7edb9149dedb30fdf5b5ba80d5b9b50e312e1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-16T16:28:13.0000000Z-1a96b30a45cf40a8fa6e2642b62e06b81ed5b8af ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2440,6 +2440,16 @@ return Celcius*9/5+32
 end
 UTILS.hPa2inHg=function(hPa)
 return hPa*0.0295299830714
+end
+UTILS.IasToTas=function(ias,altitude,oatcorr)
+oatcorr=oatcorr or 0.017
+local tas=ias+(ias*oatcorr*UTILS.MetersToFeet(altitude)/1000)
+return tas
+end
+UTILS.TasToIas=function(tas,altitude,oatcorr)
+oatcorr=oatcorr or 0.017
+local ias=tas/(1+oatcorr*UTILS.MetersToFeet(altitude)/1000)
+return ias
 end
 UTILS.KnotsToAltKIAS=function(knots,altitude)
 return(knots*0.018*(altitude/1000))+knots
@@ -15623,20 +15633,26 @@ heading=360+heading
 end
 return heading
 end
-function COORDINATE:GetWind(height)
+function COORDINATE:GetWindVec3(height,turbulence)
 local landheight=self:GetLandHeight()+0.1
 local point={x=self.x,y=math.max(height or self.y,landheight),z=self.z}
-local wind=atmosphere.getWind(point)
-local direction=math.deg(math.atan2(wind.z,wind.x))
-if direction<0 then
-direction=360+direction
+local wind=nil
+if turbulence then
+wind=atmosphere.getWindWithTurbulence(point)
+else
+wind=atmosphere.getWind(point)
 end
+return wind
+end
+function COORDINATE:GetWind(height,turbulence)
+local wind=self:GetWindVec3(height,turbulence)
+local direction=UTILS.VecHdg(wind)
 if direction>180 then
 direction=direction-180
 else
 direction=direction+180
 end
-local strength=math.sqrt((wind.x)^2+(wind.z)^2)
+local strength=UTILS.VecNorm(wind)
 return direction,strength
 end
 function COORDINATE:GetWindWithTurbulenceVec3(height)
@@ -20618,6 +20634,33 @@ end
 function POSITIONABLE:GetVelocityKNOTS()
 self:F2(self.PositionableName)
 return UTILS.MpsToKnots(self:GetVelocityMPS())
+end
+function POSITIONABLE:GetAirspeedTrue()
+local tas=0
+local coord=self:GetCoord()
+if coord then
+local alt=coord.y
+local wvec3=coord:GetWindVec3(alt,false)
+local vvec3=self:GetVelocityVec3()
+local tasvec3=UTILS.VecSubstract(vvec3,wvec3)
+tas=UTILS.VecNorm(tasvec3)
+end
+return tas
+end
+function POSITIONABLE:GetAirspeedIndicated(oatcorr)
+local tas=self:GetAirspeedTrue()
+local altitude=self:GetAltitude()
+local ias=UTILS.TasToIas(tas,altitude,oatcorr)
+return ias
+end
+function POSITIONABLE:GetGroundSpeed()
+local gs=0
+local vel=self:GetVelocityVec3()
+if vel then
+local vec2={x=vel.x,y=vel.z}
+gs=UTILS.Vec2Norm(vel)
+end
+return gs
 end
 function POSITIONABLE:GetAoA()
 local unitpos=self:GetPosition()
