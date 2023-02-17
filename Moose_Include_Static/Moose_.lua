@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T13:32:48.0000000Z-4797abc2875fdbdf4addc54b7f6cb3f19ec2e5da ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T14:02:11.0000000Z-83866c3dd3080a45c84ac9824f3e9d11d6e05811 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27759,7 +27759,7 @@ end
 function NET:BlockPlayer(Client,PlayerName,Seconds,Message)
 local name
 if Client then
-name=CLIENT:GetPlayerName()
+name=Client:GetPlayerName()
 elseif PlayerName then
 name=PlayerName
 else
@@ -27783,7 +27783,7 @@ end
 function NET:UnblockPlayer(Client,PlayerName,Message)
 local name
 if Client then
-name=CLIENT:GetPlayerName()
+name=Client:GetPlayerName()
 elseif PlayerName then
 name=PlayerName
 else
