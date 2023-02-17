@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T14:41:33.0000000Z-a4dcb643bd0a9c4b1e07275434b3034c83d6a07b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T15:24:21.0000000Z-05b8df0d8837f3c6022f33055cb5c93361170ca6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27705,7 +27705,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.0.4",
+Version="0.0.5",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -27780,7 +27780,7 @@ end
 return self
 end
 function NET:BlockPlayer(Client,PlayerName,Seconds,Message)
-local name
+local name=PlayerName
 if Client then
 name=Client:GetPlayerName()
 elseif PlayerName then
@@ -27800,11 +27800,14 @@ else
 self:SendChat(name..": "..message)
 end
 self:__PlayerBlocked(1,Client,name,Seconds)
-self:ReturnToSpectators(Client)
+local PlayerID=self:GetPlayerIDByName(name)
+if PlayerID and tonumber(PlayerID)~=1 then
+local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
+end
 return self
 end
 function NET:UnblockPlayer(Client,PlayerName,Message)
-local name
+local name=PlayerName
 if Client then
 name=Client:GetPlayerName()
 elseif PlayerName then
@@ -27844,6 +27847,7 @@ end
 return self
 end
 function NET:GetPlayerIDByName(Name)
+if not Name then return nil end
 local playerList=self:GetPlayerList()
 for i=1,#playerList do
 local playerName=net.get_name(i)
@@ -27962,8 +27966,8 @@ end
 end
 function NET:ForceSlot(Client,SideID,SlotID)
 local PlayerID=self:GetPlayerIDFromClient(Client)
-if PlayerID then
-return net.force_player_slot(tonumber(PlayerID),SideID,SlotID)
+if PlayerID and tonumber(PlayerID)~=1 then
+return net.force_player_slot(tonumber(PlayerID),SideID,SlotID or'')
 else
 return false
 end
