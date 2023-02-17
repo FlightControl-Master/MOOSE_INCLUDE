@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T12:22:10.0000000Z-50f73f1be275bfef4ad6970e1723bb80ebbbdf05 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T13:32:48.0000000Z-4797abc2875fdbdf4addc54b7f6cb3f19ec2e5da ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27763,7 +27763,7 @@ name=CLIENT:GetPlayerName()
 elseif PlayerName then
 name=PlayerName
 else
-self:F(self.lid.."Block: No PlayerName given or not found!")
+self:F(self.lid.."Block: No Client or PlayerName given or nothing found!")
 return self
 end
 local ucid=self:GetPlayerUCID(Client,name)
@@ -27877,7 +27877,14 @@ return nil
 end
 end
 function NET:GetPlayerUCID(Client,Name)
-local PlayerID=self:GetPlayerIDByName(Name)or self:GetPlayerIDFromClient(Client)
+local PlayerID=nil
+if Client then
+PlayerID=self:GetPlayerIDFromClient(Client)
+elseif Name then
+PlayerID=self:GetPlayerIDByName(Name)
+else
+self:E(self.lid.."Neither client nor name provided!")
+end
 local ucid=net.get_player_info(tonumber(PlayerID),'ucid')
 return ucid
 end
