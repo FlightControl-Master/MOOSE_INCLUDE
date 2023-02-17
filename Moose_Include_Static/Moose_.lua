@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T15:23:02.0000000Z-66494b7b5ac2a98eddb1d623698bd7916f123757 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T15:41:38.0000000Z-ff86bfb91dafb5748857d2dcc41e71abe03b85e7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27727,9 +27727,15 @@ self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
 local TNow=timer.getTime()
 if self.BlockedPilots[name]and TNow<self.BlockedPilots[name]then
-self:ReturnToSpectators(data.IniUnit)
+local PlayerID=self:GetPlayerIDByName(name)
+if PlayerID and tonumber(PlayerID)~=1 then
+local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
+end
 elseif self.BlockedUCIDs[ucid]and TNow<self.BlockedUCIDs[ucid]then
-self:ReturnToSpectators(data.IniUnit)
+local PlayerID=self:GetPlayerIDByName(name)
+if PlayerID and tonumber(PlayerID)~=1 then
+local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
+end
 else
 self.KnownPilots[name]=true
 self.BlockedPilots[name]=nil
