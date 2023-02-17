@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T07:54:15.0000000Z-2ebbc8f466b2629c4d5033e50cb4ef8b0e08756c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T12:22:10.0000000Z-50f73f1be275bfef4ad6970e1723bb80ebbbdf05 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27682,9 +27682,10 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.0.3",
+Version="0.0.4",
 BlockTime=600,
 BlockedPilots={},
+BlockedUCIDs={},
 KnownPilots={},
 BlockMessage=nil,
 UnblockMessage=nil,
@@ -27721,14 +27722,18 @@ self:T2({Event=EventData.id})
 local data=EventData
 if data.id and data.IniUnit and(data.IniPlayerName or data.IniUnit:GetPlayerName())then
 local name=data.IniPlayerName and data.IniPlayerName or data.IniUnit:GetPlayerName()
-self:T(self.lid.."Event for: "..name)
+local ucid=self:GetPlayerUCID(nil,name)
+self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
 local TNow=timer.getTime()
 if self.BlockedPilots[name]and TNow<self.BlockedPilots[name]then
 self:ReturnToSpectators(data.IniUnit)
+elseif self.BlockedUCIDs[ucid]and TNow<self.BlockedUCIDs[ucid]then
+self:ReturnToSpectators(data.IniUnit)
 else
 self.KnownPilots[name]=true
 self.BlockedPilots[name]=nil
+self.BlockedUCIDs[ucid]=nil
 self:__PlayerJoined(1,data.IniUnit,name)
 return self
 end
@@ -27761,8 +27766,10 @@ else
 self:F(self.lid.."Block: No PlayerName given or not found!")
 return self
 end
+local ucid=self:GetPlayerUCID(Client,name)
 local addon=Seconds or self.BlockTime
 self.BlockedPilots[name]=timer.getTime()+addon
+self.BlockedUCIDs[ucid]=timer.getTime()+addon
 local message=Message or self.BlockMessage
 if Client then
 self:SendChatToPlayer(message,Client)
@@ -27783,7 +27790,9 @@ else
 self:F(self.lid.."Unblock: No PlayerName given or not found!")
 return self
 end
+local ucid=self:GetPlayerUCID(Client,name)
 self.BlockedPilots[name]=nil
+self.BlockedUCIDs[ucid]=nil
 local message=Message or self.UnblockMessage
 if Client then
 self:SendChatToPlayer(message,Client)
@@ -27811,7 +27820,7 @@ net.send_chat(Message,ToAll)
 end
 return self
 end
-function NET:GetPlayerIdByName(Name)
+function NET:GetPlayerIDByName(Name)
 local playerList=self:GetPlayerList()
 for i=1,#playerList do
 local playerName=net.get_name(i)
@@ -27823,7 +27832,7 @@ return nil
 end
 function NET:GetPlayerIDFromClient(Client)
 local name=Client:GetPlayerName()
-local id=self:GetPlayerIdByName(name)
+local id=self:GetPlayerIDByName(name)
 return id
 end
 function NET:SendChatToPlayer(Message,ToClient,FromClient)
@@ -27866,6 +27875,11 @@ return net.get_player_info(tonumber(PlayerID),Attribute)
 else
 return nil
 end
+end
+function NET:GetPlayerUCID(Client,Name)
+local PlayerID=self:GetPlayerIDByName(Name)or self:GetPlayerIDFromClient(Client)
+local ucid=net.get_player_info(tonumber(PlayerID),'ucid')
+return ucid
 end
 function NET:Kick(Client,Message)
 local PlayerID=self:GetPlayerIDFromClient(Client)
