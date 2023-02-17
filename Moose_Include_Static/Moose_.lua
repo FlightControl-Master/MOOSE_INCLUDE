@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-16T17:22:10.0000000Z-7637f0c6ce943596abc11b1c510ff2d431f8dddf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T07:55:27.0000000Z-822b95e8aaa6b2d1fe7f0b4dbec96971288c210d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29277,7 +29277,7 @@ end
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.1.10",
+version="0.1.11",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -29318,6 +29318,8 @@ SRSPilotVoice=false,
 SRSOperator=nil,
 SRSOperatorVoice=false,
 PilotStore=nil,
+Speed=100,
+Altitude=1500,
 }
 AICSAR.Messages={
 EN={
@@ -29641,6 +29643,8 @@ local pickupzone=ZONE_GROUP:New(Pilot:GetName(),Pilot,self.rescuezoneradius)
 local opstransport=OPSTRANSPORT:New(Pilot,pickupzone,self.farpzone)
 local helo=self:_GetFlight()
 helo.AICSARReserved=true
+helo:SetDefaultAltitude(self.Altitude or 1500)
+helo:SetDefaultSpeed(self.Speed or 100)
 helo:AddOpsTransport(opstransport)
 local function AICPickedUp(Helo,Cargo,Index)
 self:__PilotPickedUp(2,Helo,Cargo,Index)
@@ -29670,6 +29674,16 @@ return true
 else
 return false
 end
+end
+function AICSAR:SetDefaultSpeed(Knots)
+self:T(self.lid.."SetDefaultSpeed")
+self.Speed=Knots or 100
+return self
+end
+function AICSAR:SetDefaultAltitude(Feet)
+self:T(self.lid.."SetDefaultAltitude")
+self.Altitude=Feet or 1500
+return self
 end
 function AICSAR:_CheckHelos()
 self:T(self.lid.."_CheckHelos")
