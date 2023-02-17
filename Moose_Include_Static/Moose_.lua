@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T14:01:49.0000000Z-9e23cda02a292bfcab0ebf9bf309bf06797070cb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T14:41:33.0000000Z-a4dcb643bd0a9c4b1e07275434b3034c83d6a07b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27794,8 +27794,8 @@ local addon=Seconds or self.BlockTime
 self.BlockedPilots[name]=timer.getTime()+addon
 self.BlockedUCIDs[ucid]=timer.getTime()+addon
 local message=Message or self.BlockMessage
-if Client then
-self:SendChatToPlayer(message,Client)
+if name then
+self:SendChatToPlayer(message,name)
 else
 self:SendChat(name..": "..message)
 end
@@ -27817,8 +27817,8 @@ local ucid=self:GetPlayerUCID(Client,name)
 self.BlockedPilots[name]=nil
 self.BlockedUCIDs[ucid]=nil
 local message=Message or self.UnblockMessage
-if Client then
-self:SendChatToPlayer(message,Client)
+if name then
+self:SendChatToPlayer(message,name)
 else
 self:SendChat(name..": "..message)
 end
@@ -27854,13 +27854,27 @@ end
 return nil
 end
 function NET:GetPlayerIDFromClient(Client)
+if Client then
 local name=Client:GetPlayerName()
 local id=self:GetPlayerIDByName(name)
 return id
+else
+return nil
 end
-function NET:SendChatToPlayer(Message,ToClient,FromClient)
+end
+function NET:SendChatToClient(Message,ToClient,FromClient)
 local PlayerId=self:GetPlayerIDFromClient(ToClient)
 local FromId=self:GetPlayerIDFromClient(FromClient)
+if Message and PlayerId and FromId then
+net.send_chat_to(Message,tonumber(PlayerId),tonumber(FromId))
+elseif Message and PlayerId then
+net.send_chat_to(Message,tonumber(PlayerId))
+end
+return self
+end
+function NET:SendChatToPlayer(Message,ToPlayer,FromPlayer)
+local PlayerId=self:GetPlayerIDByName(ToPlayer)
+local FromId=self:GetPlayerIDByName(FromPlayer)
 if Message and PlayerId and FromId then
 net.send_chat_to(Message,tonumber(PlayerId),tonumber(FromId))
 elseif Message and PlayerId then
