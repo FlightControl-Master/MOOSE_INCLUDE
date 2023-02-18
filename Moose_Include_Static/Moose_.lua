@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-17T15:42:10.0000000Z-6f3fbb25cf7868d601dd668313b89316e9c377c3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-18T10:04:49.0000000Z-1fd8f4d8373401efad40ef0d7d3ef96de4451f2e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -29322,7 +29322,7 @@ end
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.1.11",
+version="0.1.12",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -29475,8 +29475,8 @@ self:AddTransition("*","PilotRescued","*")
 self:AddTransition("*","PilotKIA","*")
 self:AddTransition("*","HeloDown","*")
 self:AddTransition("*","Stop","Stopped")
-self:HandleEvent(EVENTS.LandingAfterEjection)
-self:HandleEvent(EVENTS.Ejection)
+self:HandleEvent(EVENTS.LandingAfterEjection,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandlerEject)
 self:__Start(math.random(2,5))
 local text=string.format("%sAICSAR Version %s Starting",self.lid,self.version)
 self:I(text)
@@ -29597,7 +29597,7 @@ local radioqueue=self.DCSRadioQueue
 radioqueue:NewTransmission(Soundfile,Duration,nil,2,nil,Subtitle,10)
 return self
 end
-function AICSAR:OnEventEjection(EventData)
+function AICSAR:_EventHandlerEject(EventData)
 local _event=EventData
 if _event.IniPlayerName then
 self.PilotStore:Push(_event.IniPlayerName)
@@ -29605,7 +29605,7 @@ self:T(self.lid.."Pilot Ejected: ".._event.IniPlayerName)
 end
 return self
 end
-function AICSAR:OnEventLandingAfterEjection(EventData)
+function AICSAR:_EventHandler(EventData)
 self:T(self.lid.."OnEventLandingAfterEjection ID="..EventData.id)
 if self.autoonoff then
 if self.playerset:CountAlive()>0 then
