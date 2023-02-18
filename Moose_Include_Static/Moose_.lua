@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-18T10:04:49.0000000Z-1fd8f4d8373401efad40ef0d7d3ef96de4451f2e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-18T14:04:36.0000000Z-46c3ed72c3da3f9018e0cfde69c5a82db0bc4483 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27705,7 +27705,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.0.5",
+Version="0.0.6",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -27746,38 +27746,49 @@ local data=EventData
 if data.id and data.IniUnit and(data.IniPlayerName or data.IniUnit:GetPlayerName())then
 local name=data.IniPlayerName and data.IniPlayerName or data.IniUnit:GetPlayerName()
 local ucid=self:GetPlayerUCID(nil,name)
-self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
-if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
+local PlayerID=self:GetPlayerIDByName(name)or"none"
 local TNow=timer.getTime()
+self:I(self.lid.."Event for: "..name.." | UCID: "..ucid)
+if self.BlockedPilots[name]then
+self:I(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedPilots[name]-timer.getTime().." seconds!")
+end
+if self.BlockedUCIDs[ucid]then
+self:I(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedUCIDs[ucid]-timer.getTime().." seconds!")
+end
+if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
+self:I(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid)
 if self.BlockedPilots[name]and TNow<self.BlockedPilots[name]then
-local PlayerID=self:GetPlayerIDByName(name)
 if PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
 end
 elseif self.BlockedUCIDs[ucid]and TNow<self.BlockedUCIDs[ucid]then
-local PlayerID=self:GetPlayerIDByName(name)
 if PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
 end
 else
 self.KnownPilots[name]=true
+if(self.BlockedUCIDs[ucid]and TNow>=self.BlockedUCIDs[ucid])or(self.BlockedPilots[name]and TNow>=self.BlockedPilots[name])then
 self.BlockedPilots[name]=nil
 self.BlockedUCIDs[ucid]=nil
+end
 self:__PlayerJoined(1,data.IniUnit,name)
 return self
 end
 end
 if data.id==EVENTS.PlayerLeaveUnit and self.KnownPilots[name]then
+self:I(self.lid.."Pilot Leaving: "..name.." | UCID: "..ucid)
 self:__PlayerLeft(1,data.IniUnit,name)
 self.KnownPilots[name]=false
 return self
 end
 if data.id==EVENTS.Ejection and self.KnownPilots[name]then
+self:I(self.lid.."Pilot Ejecting: "..name.." | UCID: "..ucid)
 self:__PlayerEjected(1,data.IniUnit,name)
 self.KnownPilots[name]=false
 return self
 end
 if(data.id==EVENTS.PilotDead or data.id==EVENTS.SelfKillPilot or data.id==EVENTS.Crash)and self.KnownPilots[name]then
+self:I(self.lid.."Pilot Dead: "..name.." | UCID: "..ucid)
 self:__PlayerDied(1,data.IniUnit,name)
 self.KnownPilots[name]=false
 return self
@@ -27786,8 +27797,9 @@ end
 return self
 end
 function NET:BlockPlayer(Client,PlayerName,Seconds,Message)
+self:I({PlayerName,Seconds,Message})
 local name=PlayerName
-if Client then
+if Client and(not PlayerName)then
 name=Client:GetPlayerName()
 elseif PlayerName then
 name=PlayerName
@@ -27855,8 +27867,10 @@ end
 function NET:GetPlayerIDByName(Name)
 if not Name then return nil end
 local playerList=self:GetPlayerList()
+self:I({playerList})
 for i=1,#playerList do
 local playerName=net.get_name(i)
+self:I({playerName})
 if playerName==Name then
 return playerList[i]
 end
