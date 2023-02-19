@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-18T14:04:36.0000000Z-46c3ed72c3da3f9018e0cfde69c5a82db0bc4483 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-19T11:32:29.0000000Z-feeb0c01f2a4a6049e658c62127db6d4e97de9d9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21209,6 +21209,17 @@ if not Error then
 error("CLIENT not found for: "..ClientName)
 end
 end
+function CLIENT:FindByPlayerName(Name)
+local foundclient=nil
+_DATABASE:ForEachClient(
+function(client)
+if client:GetPlayerName()==Name then
+foundclient=client
+end
+end
+)
+return foundclient
+end
 function CLIENT:FindByName(ClientName,ClientBriefing,Error)
 local ClientFound=_DATABASE:FindClient(ClientName)
 if ClientFound then
@@ -27705,7 +27716,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.0.6",
+Version="0.0.7",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -27747,16 +27758,17 @@ if data.id and data.IniUnit and(data.IniPlayerName or data.IniUnit:GetPlayerName
 local name=data.IniPlayerName and data.IniPlayerName or data.IniUnit:GetPlayerName()
 local ucid=self:GetPlayerUCID(nil,name)
 local PlayerID=self:GetPlayerIDByName(name)or"none"
+local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
 local TNow=timer.getTime()
-self:I(self.lid.."Event for: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
 if self.BlockedPilots[name]then
-self:I(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedPilots[name]-timer.getTime().." seconds!")
+self:T(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedPilots[name]-timer.getTime().." seconds!")
 end
 if self.BlockedUCIDs[ucid]then
-self:I(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedUCIDs[ucid]-timer.getTime().." seconds!")
+self:T(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedUCIDs[ucid]-timer.getTime().." seconds!")
 end
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
-self:I(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid)
 if self.BlockedPilots[name]and TNow<self.BlockedPilots[name]then
 if PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
@@ -27766,7 +27778,13 @@ if PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
 end
 else
-self.KnownPilots[name]=true
+self.KnownPilots[name]={
+name=name,
+ucid=ucid,
+id=PlayerID,
+side=PlayerSide,
+slot=PlayerSlot,
+}
 if(self.BlockedUCIDs[ucid]and TNow>=self.BlockedUCIDs[ucid])or(self.BlockedPilots[name]and TNow>=self.BlockedPilots[name])then
 self.BlockedPilots[name]=nil
 self.BlockedUCIDs[ucid]=nil
@@ -27776,19 +27794,19 @@ return self
 end
 end
 if data.id==EVENTS.PlayerLeaveUnit and self.KnownPilots[name]then
-self:I(self.lid.."Pilot Leaving: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Pilot Leaving: "..name.." | UCID: "..ucid)
 self:__PlayerLeft(1,data.IniUnit,name)
 self.KnownPilots[name]=false
 return self
 end
 if data.id==EVENTS.Ejection and self.KnownPilots[name]then
-self:I(self.lid.."Pilot Ejecting: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Pilot Ejecting: "..name.." | UCID: "..ucid)
 self:__PlayerEjected(1,data.IniUnit,name)
 self.KnownPilots[name]=false
 return self
 end
 if(data.id==EVENTS.PilotDead or data.id==EVENTS.SelfKillPilot or data.id==EVENTS.Crash)and self.KnownPilots[name]then
-self:I(self.lid.."Pilot Dead: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Pilot Dead: "..name.." | UCID: "..ucid)
 self:__PlayerDied(1,data.IniUnit,name)
 self.KnownPilots[name]=false
 return self
@@ -27797,7 +27815,7 @@ end
 return self
 end
 function NET:BlockPlayer(Client,PlayerName,Seconds,Message)
-self:I({PlayerName,Seconds,Message})
+self:T({PlayerName,Seconds,Message})
 local name=PlayerName
 if Client and(not PlayerName)then
 name=Client:GetPlayerName()
@@ -27867,10 +27885,10 @@ end
 function NET:GetPlayerIDByName(Name)
 if not Name then return nil end
 local playerList=self:GetPlayerList()
-self:I({playerList})
+self:T({playerList})
 for i=1,#playerList do
 local playerName=net.get_name(i)
-self:I({playerName})
+self:T({playerName})
 if playerName==Name then
 return playerList[i]
 end
@@ -29336,7 +29354,7 @@ end
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.1.12",
+version="0.1.14",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -29379,6 +29397,8 @@ SRSOperatorVoice=false,
 PilotStore=nil,
 Speed=100,
 Altitude=1500,
+UseEventEject=false,
+Delay=100,
 }
 AICSAR.Messages={
 EN={
@@ -29458,6 +29478,8 @@ self.helotemplate=Helotemplate
 self.farp=FARP
 self.farpzone=MASHZone
 self.playerset=SET_CLIENT:New():FilterActive(true):FilterCategories("helicopter"):FilterStart()
+self.UseEventEject=false
+self.Delay=300
 self.SRS=nil
 self.SRSRadio=false
 self.SRSTTSRadio=false
@@ -29490,7 +29512,7 @@ self:AddTransition("*","PilotKIA","*")
 self:AddTransition("*","HeloDown","*")
 self:AddTransition("*","Stop","Stopped")
 self:HandleEvent(EVENTS.LandingAfterEjection,self._EventHandler)
-self:HandleEvent(EVENTS.Ejection,self._EventHandlerEject)
+self:HandleEvent(EVENTS.Ejection,self._EjectEventHandler)
 self:__Start(math.random(2,5))
 local text=string.format("%sAICSAR Version %s Starting",self.lid,self.version)
 self:I(text)
@@ -29611,21 +29633,85 @@ local radioqueue=self.DCSRadioQueue
 radioqueue:NewTransmission(Soundfile,Duration,nil,2,nil,Subtitle,10)
 return self
 end
-function AICSAR:_EventHandlerEject(EventData)
+function AICSAR:_EjectEventHandler(EventData)
 local _event=EventData
 if _event.IniPlayerName then
 self.PilotStore:Push(_event.IniPlayerName)
 self:T(self.lid.."Pilot Ejected: ".._event.IniPlayerName)
+if self.UseEventEject then
+local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
+local _country=_event.initiator:getCountry()
+local _coalition=coalition.getCountryCoalition(_country)
+local data=UTILS.DeepCopy(EventData)
+Unit.destroy(_event.initiator)
+self:ScheduleOnce(self.Delay,self._DelayedSpawnPilot,self,_LandingPos,_coalition)
+end
 end
 return self
 end
-function AICSAR:_EventHandler(EventData)
+function AICSAR:_DelayedSpawnPilot(_LandingPos,_coalition)
+local distancetofarp=_LandingPos:Get2DDistance(self.farp:GetCoordinate())
+local Text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTDOWN",self.locale)
+local text=""
+local setting={}
+setting.MGRS_Accuracy=self.MGRS_Accuracy
+local location=_LandingPos:ToStringMGRS(setting)
+local msgtxt=Text..location.."!"
+location=string.gsub(location,"MGRS ","")
+location=string.gsub(location,"%s+","")
+location=string.gsub(location,"([%a%d])","%1;")
+location=string.gsub(location,"0","zero")
+location=string.gsub(location,"9","niner")
+location="MGRS;"..location
+if self.SRSGoogle then
+location=string.format("<say-as interpret-as='characters'>%s</say-as>",location)
+end
+text=Text..location.."!"
+local ttstext=Text..location.."! Repeat! "..location
+if _coalition==self.coalition then
+if self.verbose then
+MESSAGE:New(msgtxt,15,"AICSAR"):ToCoalition(self.coalition)
+end
+if self.SRSRadio then
+local sound=SOUNDFILE:New(Soundfile,self.SRSSoundPath,Soundlength)
+sound:SetPlayWithSRS(true)
+self.SRS:PlaySoundFile(sound,2)
+elseif self.DCSRadio then
+self:DCSRadioBroadcast(Soundfile,Soundlength,text)
+elseif self.SRSTTSRadio then
+if self.SRSPilotVoice then
+self.SRSQ:NewTransmission(ttstext,nil,self.SRSPilot,nil,1)
+else
+self.SRSQ:NewTransmission(ttstext,nil,self.SRS,nil,1)
+end
+end
+end
+if _coalition==self.coalition and distancetofarp<=self.maxdistance then
+self:T(self.lid.."Spawning new Pilot")
+self.pilotindex=self.pilotindex+1
+local newpilot=SPAWN:NewWithAlias(self.template,string.format("%s-AICSAR-%d",self.template,self.pilotindex))
+newpilot:InitDelayOff()
+newpilot:OnSpawnGroup(
+function(grp)
+self.pilotqueue[self.pilotindex]=grp
+end
+)
+newpilot:SpawnFromCoordinate(_LandingPos)
+self:__PilotDown(2,_LandingPos,true)
+elseif _coalition==self.coalition and distancetofarp>self.maxdistance then
+self:T(self.lid.."Pilot out of reach")
+self:__PilotDown(2,_LandingPos,false)
+end
+return self
+end
+function AICSAR:_EventHandler(EventData,FromEject)
 self:T(self.lid.."OnEventLandingAfterEjection ID="..EventData.id)
 if self.autoonoff then
 if self.playerset:CountAlive()>0 then
 return self
 end
 end
+if self.UseEventEject and(not FromEject)then return self end
 local _event=EventData
 local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
 local _country=_event.initiator:getCountry()
