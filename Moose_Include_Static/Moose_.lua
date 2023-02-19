@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-19T11:31:32.0000000Z-7dc239f506bb010bd363bc86201b88f2a858db8a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-19T16:16:00.0000000Z-6c1abddb1e14b121ef21e014405d4845915bdbec ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27693,10 +27693,12 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.0.7",
+Version="0.1.0",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
+BlockedSides={},
+BlockedSlots={},
 KnownPilots={},
 BlockMessage=nil,
 UnblockMessage=nil,
@@ -27709,23 +27711,39 @@ self.BlockedPilots={}
 self.KnownPilots={}
 self:SetBlockMessage()
 self:SetUnblockMessage()
-self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
-self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
-self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
-self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
-self:HandleEvent(EVENTS.Ejection,self._EventHandler)
-self:HandleEvent(EVENTS.Crash,self._EventHandler)
-self:HandleEvent(EVENTS.SelfKillPilot,self._EventHandler)
-self:SetStartState("Running")
-self:AddTransition("*","Run","Running")
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Run","Running")
 self:AddTransition("*","PlayerJoined","*")
 self:AddTransition("*","PlayerLeft","*")
 self:AddTransition("*","PlayerDied","*")
 self:AddTransition("*","PlayerEjected","*")
 self:AddTransition("*","PlayerBlocked","*")
 self:AddTransition("*","PlayerUnblocked","*")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","Stop","Stopped")
 self.lid=string.format("NET %s | ",self.Version)
+self:Run()
 return self
+end
+function NET:IsAnyBlocked(UCID,Name,PlayerID,PlayerSide,PlayerSlot)
+local blocked=false
+local TNow=timer.getTime()
+if UCID and self.BlockedUCIDs[UCID]and TNow<self.BlockedUCIDs[UCID]then
+return true
+end
+if PlayerID and not Name then
+Name=self:GetPlayerIDByName(Name)
+end
+if Name and self.BlockedPilots[Name]and TNow<self.BlockedPilots[Name]then
+return true
+end
+if PlayerSide and self.BlockedSides[PlayerSide]and TNow<self.BlockedSides[PlayerSide]then
+return true
+end
+if PlayerSlot and self.BlockedSlots[PlayerSlot]and TNow<self.BlockedSlots[PlayerSlot]then
+return true
+end
+return blocked
 end
 function NET:_EventHandler(EventData)
 self:T(self.lid.." _EventHandler")
@@ -27738,22 +27756,11 @@ local PlayerID=self:GetPlayerIDByName(name)or"none"
 local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
 local TNow=timer.getTime()
 self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
-if self.BlockedPilots[name]then
-self:T(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedPilots[name]-timer.getTime().." seconds!")
-end
-if self.BlockedUCIDs[ucid]then
-self:T(self.lid.."Pilot "..name.." ID "..PlayerID.." Blocked for another "..self.BlockedUCIDs[ucid]-timer.getTime().." seconds!")
-end
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
 self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid)
-if self.BlockedPilots[name]and TNow<self.BlockedPilots[name]then
-if PlayerID and tonumber(PlayerID)~=1 then
+local blocked=self:IsAnyBlocked(ucid,name,PlayerID,PlayerSide,PlayerSlot)
+if blocked and PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
-end
-elseif self.BlockedUCIDs[ucid]and TNow<self.BlockedUCIDs[ucid]then
-if PlayerID and tonumber(PlayerID)~=1 then
-local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
-end
 else
 self.KnownPilots[name]={
 name=name,
@@ -27762,10 +27769,6 @@ id=PlayerID,
 side=PlayerSide,
 slot=PlayerSlot,
 }
-if(self.BlockedUCIDs[ucid]and TNow>=self.BlockedUCIDs[ucid])or(self.BlockedPilots[name]and TNow>=self.BlockedPilots[name])then
-self.BlockedPilots[name]=nil
-self.BlockedUCIDs[ucid]=nil
-end
 self:__PlayerJoined(1,data.IniUnit,name)
 return self
 end
@@ -27817,6 +27820,63 @@ local PlayerID=self:GetPlayerIDByName(name)
 if PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
 end
+return self
+end
+function NET:BlockPlayerSet(PlayerSet,Seconds,Message)
+self:T({PlayerSet.Set,Seconds,Message})
+local addon=Seconds or self.BlockTime
+local message=Message or self.BlockMessage
+for _,_client in pairs(PlayerSet.Set)do
+local name=_client:GetPlayerName()
+self:BlockPlayer(_client,name,addon,message)
+end
+return self
+end
+function NET:UnblockPlayerSet(PlayerSet,Message)
+self:T({PlayerSet.Set,Seconds,Message})
+local message=Message or self.UnblockMessage
+for _,_client in pairs(PlayerSet.Set)do
+local name=_client:GetPlayerName()
+self:UnblockPlayer(_client,name,message)
+end
+return self
+end
+function NET:BlockUCID(ucid,Seconds)
+self:T({ucid,Seconds})
+local addon=Seconds or self.BlockTime
+self.BlockedUCIDs[ucid]=timer.getTime()+addon
+return self
+end
+function NET:UnblockUCID(ucid)
+self:T({ucid})
+self.BlockedUCIDs[ucid]=nil
+return self
+end
+function NET:BlockSide(Side,Seconds)
+self:T({Side,Seconds})
+local addon=Seconds or self.BlockTime
+if Side==1 or Side==2 then
+self.BlockedSides[Side]=timer.getTime()+addon
+end
+return self
+end
+function NET:UnblockSide(Side,Seconds)
+self:T({Side,Seconds})
+local addon=Seconds or self.BlockTime
+if Side==1 or Side==2 then
+self.BlockedSides[Side]=nil
+end
+return self
+end
+function NET:BlockSlot(Slot,Seconds)
+self:T({Slot,Seconds})
+local addon=Seconds or self.BlockTime
+self.BlockedSlots[Slot]=timer.getTime()+addon
+return self
+end
+function NET:UnblockSlot(Slot)
+self:T({Slot})
+self.BlockedSlots[Slot]=nil
 return self
 end
 function NET:UnblockPlayer(Client,PlayerName,Message)
@@ -28002,6 +28062,56 @@ return net.dostring_in(State,DoString)
 end
 function NET:Log(Message)
 net.log(Message)
+return self
+end
+function NET:GetKnownPilotData(Client,Name)
+local name=Name
+if Client and not Name then
+name=Client:GetPlayerName()
+end
+if name then
+return self.KnownPilots[name]
+else
+return nil
+end
+end
+function NET:onafterStatus(From,Event,To)
+self:T({From,Event,To})
+local function HouseHold(tavolo)
+local TNow=timer.getTime()
+for _,entry in pairs(tavolo)do
+if entry>=TNow then entry=nil end
+end
+end
+HouseHold(self.BlockedPilots)
+HouseHold(self.BlockedSides)
+HouseHold(self.BlockedSlots)
+HouseHold(self.BlockedUCIDs)
+if self:Is("Running")then
+self:__Status(-60)
+end
+return self
+end
+function NET:onafterRun(From,Event,To)
+self:T({From,Event,To})
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
+self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.Crash,self._EventHandler)
+self:HandleEvent(EVENTS.SelfKillPilot,self._EventHandler)
+self:__Status(-30)
+end
+function NET:onafterStop(From,Event,To)
+self:T({From,Event,To})
+self:UnHandleEvent(EVENTS.PlayerEnterUnit)
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.PilotDead)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.SelfKillPilot)
 return self
 end
 end
