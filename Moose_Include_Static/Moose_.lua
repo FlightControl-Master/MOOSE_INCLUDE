@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-19T16:16:00.0000000Z-6c1abddb1e14b121ef21e014405d4845915bdbec ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-21T10:38:40.0000000Z-9cfed56847ffaea249b325d81d709ba5773a32b9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61525,7 +61525,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.30"
+CTLD.version="1.0.31"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -62409,7 +62409,7 @@ if _crate:GetID()>crateind and _crate.Positionable~=nil then
 crateind=_crate:GetID()
 end
 else
-if not _crate:HasMoved()and _crate:WasDropped()and _crate:GetID()>crateind then
+if not _crate:HasMoved()and not _crate:WasDropped()and _crate:GetID()>crateind then
 crateind=_crate:GetID()
 end
 end
