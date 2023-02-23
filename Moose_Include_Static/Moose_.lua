@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-22T22:18:29.0000000Z-b0978b362eb21969ff627608212bc498e7c88882 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-23T09:32:38.0000000Z-8c0f960e39a9cad26f87f7b56d0e5d83583f4599 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18857,7 +18857,6 @@ self.ScanData.SceneryTable={}
 self.ScanData.Units={}
 local ZoneCoord=self:GetCoordinate()
 local ZoneRadius=self:GetRadius()
-self:F({ZoneCoord=ZoneCoord,ZoneRadius=ZoneRadius,ZoneCoordLL=ZoneCoord:ToStringLLDMS()})
 local SphereSearch={
 id=world.VolumeType.SPHERE,
 params={
@@ -26804,6 +26803,9 @@ local UnitIsAlive=DCSUnit:isExist()and DCSUnit:isActive()
 return UnitIsAlive
 end
 return nil
+end
+function UNIT:IsDead()
+return not self:IsAlive()
 end
 function UNIT:GetCallsign()
 self:F2(self.UnitName)
