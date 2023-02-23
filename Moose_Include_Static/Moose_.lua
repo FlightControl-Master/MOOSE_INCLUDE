@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-23T09:32:38.0000000Z-8c0f960e39a9cad26f87f7b56d0e5d83583f4599 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-23T10:12:05.0000000Z-0d08d732a596980836f3180ad7c0dfa7b097a601 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66353,7 +66353,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.53",
+version="0.2.54",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -66685,7 +66685,7 @@ self.intelstarted=false
 self.sunrisedone=false
 local speed=250
 self.SpeedBase=speed
-self.Speed=UTILS.KnotsToAltKIAS(speed,self.AwacsAngels*1000)
+self.Speed=speed
 self.Heading=0
 self.Leg=50
 self.invisible=false
@@ -67111,7 +67111,7 @@ self.CallSignNo=CallSignNo or 1
 self.AwacsAngels=Angels or 25
 local speed=Speed or 250
 self.SpeedBase=speed
-self.Speed=UTILS.KnotsToAltKIAS(speed,self.AwacsAngels*1000)
+self.Speed=speed
 self.Heading=Heading or 0
 self.Leg=Leg or 25
 return self
