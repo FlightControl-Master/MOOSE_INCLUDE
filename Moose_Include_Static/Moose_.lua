@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-24T13:04:53.0000000Z-9d00ec0c256ba0fdd1181c0c9b667e4ce1c099f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-24T22:29:32.0000000Z-901480d99cd87edf5c7e9fda6a18ce121fbbfacb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -32182,7 +32182,6 @@ end
 end
 function ARTY:onafterRespawn(Controllable,From,Event,To)
 self:_EventFromTo("onafterRespawn",Event,From,To)
-env.info("FF Respawning arty group")
 local group=self.Controllable
 self.Controllable=group:Respawn()
 self.respawning=false
@@ -90651,7 +90650,6 @@ return
 end
 self.spot.vec3=UTILS.VecAdd(Target:GetVec3(),self.spot.offsetTarget)
 self.spot.Coordinate:UpdateFromVec3(self.spot.vec3)
-self.spot.Coordinate:MarkToAll("Target Laser",ReadOnly,Text)
 end
 end
 function OPSGROUP:_UpdateLaser()
