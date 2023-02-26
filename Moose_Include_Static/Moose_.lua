@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-23T09:33:11.0000000Z-a6224b484e8c23a0542bc02b1b3c43ae201986b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-26T18:03:33.0000000Z-5341e5faeea86614e1e8b060036b949f49696a73 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -349,6 +349,7 @@ Maya="L-39",
 Warthog="A-10",
 Skyhawk="A-4E",
 Viggen="AJS37",
+Harrier_B="AV8BNA",
 Harrier="AV-8B",
 Spirit="B-2",
 Aviojet="C-101",
