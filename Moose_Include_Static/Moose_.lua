@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-24T22:29:32.0000000Z-901480d99cd87edf5c7e9fda6a18ce121fbbfacb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-26T00:02:39.0000000Z-7aa4aaf3710978a252f0f4d59cf07760276a8765 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63776,7 +63776,7 @@ mission.orbitAltitude=UTILS.FeetToMeters(Altitude)
 else
 mission.orbitAltitude=Coordinate.y
 end
-mission.orbitSpeed=UTILS.TasToIas(UTILS.KnotsToMps(Speed or 350),mission.orbitAltitude)
+mission.orbitSpeed=UTILS.IasToTas(UTILS.KnotsToMps(Speed or 350),mission.orbitAltitude)
 mission.missionSpeed=UTILS.KnotsToKmph(Speed or 350)
 if Leg then
 mission.orbitLeg=UTILS.NMToMeters(Leg)
