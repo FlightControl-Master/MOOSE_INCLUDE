@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-26T18:03:33.0000000Z-5341e5faeea86614e1e8b060036b949f49696a73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-28T07:00:06.0000000Z-34285b26ae4c04dbe62e78e173e016b1f80cab6b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18250,11 +18250,13 @@ else
 end
 return nil
 end
-function SPAWN:SpawnScheduled(SpawnTime,SpawnTimeVariation)
+function SPAWN:SpawnScheduled(SpawnTime,SpawnTimeVariation,WithDelay)
 self:F({SpawnTime,SpawnTimeVariation})
+local SpawnTime=SpawnTime or 60
+local SpawnTimeVariation=SpawnTimeVariation or 0.5
 if SpawnTime~=nil and SpawnTimeVariation~=nil then
 local InitialDelay=0
-if self.DelayOnOff==true then
+if WithDelay or self.DelayOnOff==true then
 InitialDelay=math.random(SpawnTime-SpawnTime*SpawnTimeVariation,SpawnTime+SpawnTime*SpawnTimeVariation)
 end
 self.SpawnScheduler=SCHEDULER:New(self,self._Scheduler,{},InitialDelay,SpawnTime,SpawnTimeVariation)
