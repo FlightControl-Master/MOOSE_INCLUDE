@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-02-28T07:00:06.0000000Z-34285b26ae4c04dbe62e78e173e016b1f80cab6b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-05T10:03:26.0000000Z-ae6716ac0149691260b294211a58c9e39f15c20e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24733,7 +24733,9 @@ local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
-if IsPlayer and string.find(groupname,"#")then
+if CallsignTranslations and CallsignTranslations[callsignroot]then
+callsignroot=CallsignTranslations[callsignroot]
+elseif IsPlayer and string.find(groupname,"#")then
 if Keepnumber then
 shortcallsign=string.match(groupname,"#(.+)")or"Ghost 111"
 else
@@ -24743,9 +24745,6 @@ personalized=true
 elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
 shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
 personalized=true
-end
-if(not personalized)and CallsignTranslations and CallsignTranslations[callsignroot]then
-callsignroot=CallsignTranslations[callsignroot]
 end
 if personalized then
 shortcallsign=string.gsub(shortcallsign,"^%s*","")
