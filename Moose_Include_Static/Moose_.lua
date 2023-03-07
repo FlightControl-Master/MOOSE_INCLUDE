@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-05T10:04:22.0000000Z-4e7c689f7a3b4998372906a8f9b1926d64dc2212 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-07T09:55:42.0000000Z-a67bae4f0d57bbbfcdc186448b286daf224cb6fe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5244,6 +5244,28 @@ end
 end
 end
 return false
+end
+function UTILS.PlotRacetrack(Coordinate,Altitude,Speed,Heading,Leg,Coalition,Color,Alpha,LineType,ReadOnly)
+local fix_coordinate=Coordinate
+local altitude=Altitude
+local speed=Speed or 350
+local heading=Heading or 270
+local leg_distance=Leg or 10
+local coalition=Coalition or-1
+local color=Color or{1,0,0}
+local alpha=Alpha or 1
+local lineType=LineType or 1
+speed=UTILS.IasToTas(speed,UTILS.FeetToMeters(altitude),oatcorr)
+local turn_radius=0.0211*speed-3.01
+local point_two=fix_coordinate:Translate(UTILS.NMToMeters(leg_distance),heading,true,false)
+local point_three=point_two:Translate(UTILS.NMToMeters(turn_radius)*2,heading-90,true,false)
+local point_four=fix_coordinate:Translate(UTILS.NMToMeters(turn_radius)*2,heading-90,true,false)
+local circle_center_fix_four=point_two:Translate(UTILS.NMToMeters(turn_radius),heading-90,true,false)
+local circle_center_two_three=fix_coordinate:Translate(UTILS.NMToMeters(turn_radius),heading-90,true,false)
+fix_coordinate:LineToAll(point_two,coalition,color,alpha,lineType)
+point_four:LineToAll(point_three,coalition,color,alpha,lineType)
+circle_center_fix_four:CircleToAll(UTILS.NMToMeters(turn_radius),coalition,color,alpha,nil,0,lineType)
+circle_center_two_three:CircleToAll(UTILS.NMToMeters(turn_radius),coalition,color,alpha,nil,0,lineType)
 end
 local _TraceOnOff=true
 local _TraceLevel=1
