@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-05T10:03:26.0000000Z-ae6716ac0149691260b294211a58c9e39f15c20e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-09T07:49:07.0000000Z-c9a91d068371a2fab5fd2ce8b65aaca4a11664a3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3967,6 +3967,28 @@ end
 end
 end
 return false
+end
+function UTILS.PlotRacetrack(Coordinate,Altitude,Speed,Heading,Leg,Coalition,Color,Alpha,LineType,ReadOnly)
+local fix_coordinate=Coordinate
+local altitude=Altitude
+local speed=Speed or 350
+local heading=Heading or 270
+local leg_distance=Leg or 10
+local coalition=Coalition or-1
+local color=Color or{1,0,0}
+local alpha=Alpha or 1
+local lineType=LineType or 1
+speed=UTILS.IasToTas(speed,UTILS.FeetToMeters(altitude),oatcorr)
+local turn_radius=0.0211*speed-3.01
+local point_two=fix_coordinate:Translate(UTILS.NMToMeters(leg_distance),heading,true,false)
+local point_three=point_two:Translate(UTILS.NMToMeters(turn_radius)*2,heading-90,true,false)
+local point_four=fix_coordinate:Translate(UTILS.NMToMeters(turn_radius)*2,heading-90,true,false)
+local circle_center_fix_four=point_two:Translate(UTILS.NMToMeters(turn_radius),heading-90,true,false)
+local circle_center_two_three=fix_coordinate:Translate(UTILS.NMToMeters(turn_radius),heading-90,true,false)
+fix_coordinate:LineToAll(point_two,coalition,color,alpha,lineType)
+point_four:LineToAll(point_three,coalition,color,alpha,lineType)
+circle_center_fix_four:CircleToAll(UTILS.NMToMeters(turn_radius),coalition,color,alpha,nil,0,lineType)
+circle_center_two_three:CircleToAll(UTILS.NMToMeters(turn_radius),coalition,color,alpha,nil,0,lineType)
 end
 PROFILER={
 ClassName="PROFILER",
@@ -24123,7 +24145,7 @@ if DCSGroup then
 local GroupHeightMax=-999999999
 for Index,UnitData in pairs(DCSGroup:getUnits())do
 local UnitData=UnitData
-local UnitHeight=UnitData:getPoint()
+local UnitHeight=UnitData:getPoint().p.y
 if UnitHeight>GroupHeightMax then
 GroupHeightMax=UnitHeight
 end
