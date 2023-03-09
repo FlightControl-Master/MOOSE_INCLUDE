@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-07T09:55:42.0000000Z-a67bae4f0d57bbbfcdc186448b286daf224cb6fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-09T07:49:53.0000000Z-6ac1d66aaeccf248ecc4fc54ca9be281a9d5a517 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -24416,7 +24416,7 @@ if DCSGroup then
 local GroupHeightMax=-999999999
 for Index,UnitData in pairs(DCSGroup:getUnits())do
 local UnitData=UnitData
-local UnitHeight=UnitData:getPoint()
+local UnitHeight=UnitData:getPoint().p.y
 if UnitHeight>GroupHeightMax then
 GroupHeightMax=UnitHeight
 end
