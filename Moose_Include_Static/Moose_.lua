@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-09T07:49:53.0000000Z-6ac1d66aaeccf248ecc4fc54ca9be281a9d5a517 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-10T09:09:40.0000000Z-6946d8d185494eb40a72c8349efb43088a3f8324 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75591,6 +75591,10 @@ if self.Stock<0 then self.Stock=0 end
 end
 return self
 end
+function CTLD_CARGO:SetStock(Number)
+self.Stock=Number
+return self
+end
 function CTLD_CARGO:IsRepair()
 if self.CargoType=="Repair"then
 return true
@@ -75672,7 +75676,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.31"
+CTLD.version="1.0.32"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -77998,6 +78002,7 @@ if _troop.Name==name then
 _troop:AddStock(number)
 end
 end
+return self
 end
 function CTLD:AddStockCrates(Name,Number)
 local name=Name or"none"
@@ -78008,6 +78013,75 @@ if _troop.Name==name then
 _troop:AddStock(number)
 end
 end
+return self
+end
+function CTLD:AddStockStatics(Name,Number)
+local name=Name or"none"
+local number=Number or 1
+local gentroops=self.Cargo_Statics
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:AddStock(number)
+end
+end
+return self
+end
+function CTLD:SetStockCrates(Name,Number)
+local name=Name or"none"
+local number=Number
+local gentroops=self.Cargo_Crates
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:SetStock(number)
+end
+end
+return self
+end
+function CTLD:SetStockTroops(Name,Number)
+local name=Name or"none"
+local number=Number
+local gentroops=self.Cargo_Troops
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:SetStock(number)
+end
+end
+return self
+end
+function CTLD:SetStockStatics(Name,Number)
+local name=Name or"none"
+local number=Number
+local gentroops=self.Cargo_Statics
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:SetStock(number)
+end
+end
+return self
+end
+function CTLD:GetStockCrates()
+local Stock={}
+local gentroops=self.Cargo_Crates
+for _id,_troop in pairs(gentroops)do
+table.insert(Stock,_troop.Name,_troop.Stock or-1)
+end
+return Stock
+end
+function CTLD:GetStockTroops()
+local Stock={}
+local gentroops=self.Cargo_Troops
+for _id,_troop in pairs(gentroops)do
+table.insert(Stock,_troop.Name,_troop.Stock or-1)
+end
+return Stock
+end
+function CTLD:GetStockStatics()
+local Stock={}
+local gentroops=self.Cargo_Statics
+for _id,_troop in pairs(gentroops)do
+table.insert(Stock,_troop.Name,_troop.Stock or-1)
+end
+return Stock
 end
 function CTLD:RemoveStockTroops(Name,Number)
 local name=Name or"none"
@@ -78018,11 +78092,23 @@ if _troop.Name==name then
 _troop:RemoveStock(number)
 end
 end
+return self
 end
 function CTLD:RemoveStockCrates(Name,Number)
 local name=Name or"none"
 local number=Number or 1
 local gentroops=self.Cargo_Crates
+for _id,_troop in pairs(gentroops)do
+if _troop.Name==name then
+_troop:RemoveStock(number)
+end
+end
+return self
+end
+function CTLD:RemoveStockStatics(Name,Number)
+local name=Name or"none"
+local number=Number or 1
+local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:RemoveStock(number)
