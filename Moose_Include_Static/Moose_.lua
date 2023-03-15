@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-10T09:09:40.0000000Z-6946d8d185494eb40a72c8349efb43088a3f8324 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-15T20:07:19.0000000Z-0d29c39724a52cacc48af8d81e765446e826e8c6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75766,6 +75766,7 @@ self.minimumHoverHeight=4
 self.forcehoverload=true
 self.hoverautoloading=true
 self.dropcratesanywhere=false
+self.dropAsCargoCrate=false
 self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
@@ -76305,7 +76306,7 @@ if IsHerc then
 addon=180
 end
 for i=1,number do
-local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
+local cratealias=string.format("%s-%s-%d",cratename,cratetemplate,math.random(1,100000))
 if not self.placeCratesAhead then
 cratedistance=(i-1)*2.5+capabilities.length
 if cratedistance>self.CrateDistance then cratedistance=self.CrateDistance end
@@ -76392,10 +76393,10 @@ end
 local cargotype=Cargo
 local cratesneeded=cargotype:GetCratesNeeded()
 local cratetemplate="Container"
-local cratealias=string.format("%s-%d",cratetemplate,math.random(1,100000))
 local cratename=cargotype:GetName()
 local cgotype=cargotype:GetType()
 local cgomass=cargotype:GetMass()
+local cratealias=string.format("%s-%s-%d",cratename,cratetemplate,math.random(1,100000))
 local isstatic=false
 if cgotype==CTLD_CARGO.Enum.STATIC then
 cratetemplate=cargotype:GetTemplates()
@@ -78830,6 +78831,25 @@ self.CTLD:InjectStatics(Zone,injectstatic,true)
 end
 return self
 end
+function CTLD_HERCULES:Cargo_SpawnDroppedAsCargo(_name,_pos)
+local theCargo=self.CTLD:_FindCratesCargoObject(_name)
+if theCargo then
+self.CTLD.CrateCounter=self.CTLD.CrateCounter+1
+self.CTLD.CargoCounter=self.CTLD.CargoCounter+1
+local basetype=self.CTLD.basetype or"container_cargo"
+local theStatic=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
+:InitCargoMass(theCargo.PerCrateMass)
+:InitCargo(self.CTLD.enableslingload)
+:InitCoordinate(_pos)
+:Spawn(270,_name.."-Container-"..math.random(1,100000))
+self.CTLD.Spawned_Crates[self.CTLD.CrateCounter]=theStatic
+local newCargo=CTLD_CARGO:New(self.CTLD.CargoCounter,theCargo.Name,theCargo.Templates,theCargo.CargoType,true,false,theCargo.CratesNeeded,self.CTLD.Spawned_Crates[self.CTLD.CrateCounter],true,theCargo.PerCrateMass,nil,theCargo.Subcategory)
+table.insert(self.CTLD.Spawned_Cargo,newCargo)
+newCargo:SetWasDropped(true)
+newCargo:SetHasMoved(true)
+end
+return self
+end
 function CTLD_HERCULES:Cargo_SpawnObjects(Cargo_Drop_initiator,Cargo_Drop_Direction,Cargo_Content_position,Cargo_Type_name,Cargo_over_water,Container_Enclosed,ParatrooperGroupSpawn,offload_cargo,all_cargo_survive_to_the_ground,all_cargo_gets_destroyed,destroy_cargo_dropped_without_parachute,Cargo_Country)
 self:T(self.lid..'Cargo_SpawnObjects')
 local CargoHeading=self.CargoHeading
@@ -78859,8 +78879,12 @@ if Container_Enclosed==true then
 if ParatrooperGroupSpawn==true then
 self:Soldier_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country,0)
 else
+if self.CTLD.dropAsCargoCrate then
+self:Cargo_SpawnDroppedAsCargo(Cargo_Type_name,Cargo_Content_position)
+else
 self:Cargo_SpawnGroup(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,Cargo_Country)
 self:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Content_position,"Hercules_Container_Parachute_Static",CargoHeading,false,Cargo_Country)
+end
 end
 else
 self:Cargo_SpawnStatic(Cargo_Drop_initiator,Cargo_Content_position,Cargo_Type_name,CargoHeading,true,Cargo_Country)
