@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-23T08:21:58.0000000Z-7157836eb155c9f1feaa8572891b7aadf8575dae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-24T09:28:36.0000000Z-b1e233421ef09452730e0b39a8f498b6d7ac7dc2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -90853,9 +90853,11 @@ function OPSGROUP:onafterElementDamaged(From,Event,To,Element)
 self:T(self.lid..string.format("Element damaged %s",Element.name))
 if Element and(Element.status~=OPSGROUP.ElementStatus.DEAD and Element.status~=OPSGROUP.ElementStatus.INUTERO)then
 local lifepoints=0
-if Element.DCSunit then
+if Element.DCSunit and Element.DCSunit:isExist()then
 lifepoints=Element.DCSunit:getLife()
 self:T(self.lid..string.format("Element life %s: %.2f/%.2f",Element.name,lifepoints,Element.life0))
+else
+self:T(self.lid..string.format("Element.DCSunit %s does not exist!",Element.name))
 end
 if lifepoints<=1.0 then
 self:T(self.lid..string.format("Element %s life %.2f <= 1.0 ==> Destroyed!",Element.name,lifepoints))
