@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-23T08:21:46.0000000Z-a85ef6e769ae80c6664dd88883164ac272e6b13a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-28T09:03:00.0000000Z-ff656182e846d6f2ef2359f917a6c9d11b3dff68 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12283,14 +12283,6 @@ end
 self:T2(MGroupInclude)
 return MGroupInclude
 end
-function SET_GROUP:SetCargoBayWeightLimit()
-local Set=self:GetSet()
-for GroupID,GroupData in pairs(Set)do
-for UnitName,UnitData in pairs(GroupData:GetUnits())do
-UnitData:SetCargoBayWeightLimit()
-end
-end
-end
 function SET_GROUP:GetClosestGroup(Coordinate,Coalitions)
 local Set=self:GetSet()
 local dmin=math.huge
@@ -12307,6 +12299,14 @@ end
 end
 end
 return gmin,dmin
+end
+function SET_GROUP:SetCargoBayWeightLimit()
+local Set=self:GetSet()
+for GroupID,GroupData in pairs(Set)do
+for UnitName,UnitData in pairs(GroupData:GetUnits())do
+UnitData:SetCargoBayWeightLimit()
+end
+end
 end
 end
 do
@@ -13335,6 +13335,23 @@ TypeReport:Add(StaticTypeName)
 end
 end
 return TypeReport:Text(Delimiter)
+end
+function SET_STATIC:GetClosestStatic(Coordinate,Coalitions)
+local Set=self:GetSet()
+local dmin=math.huge
+local gmin=nil
+for GroupID,GroupData in pairs(Set)do
+local group=GroupData
+if group and group:IsAlive()and(Coalitions==nil or UTILS.IsAnyInTable(Coalitions,group:GetCoalition()))then
+local coord=group:GetCoord()
+local d=UTILS.VecDist3D(Coordinate,coord)
+if d<dmin then
+dmin=d
+gmin=group
+end
+end
+end
+return gmin,dmin
 end
 end
 do
