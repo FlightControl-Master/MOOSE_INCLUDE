@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-30T07:24:48.0000000Z-d2e91ffcd2fb8fe2eefe288536eaa4bf5c82d4f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-30T10:23:07.0000000Z-a97e844acaf7c4c875b21ce657ea10dfcdc718d1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16475,6 +16475,18 @@ self:_RandomizeRoute(GroupID)
 end
 return self
 end
+function SPAWN:InitSetUnitRelativePositions(Positions)
+self:F({self.SpawnTemplatePrefix,Positions})
+self.SpawnUnitsWithRelativePositions=true
+self.UnitsRelativePositions=Positions
+return self
+end
+function SPAWN:InitSetUnitAbsolutePositions(Positions)
+self:F({self.SpawnTemplatePrefix,Positions})
+self.SpawnUnitsWithAbsolutePositions=true
+self.UnitsAbsolutePositions=Positions
+return self
+end
 function SPAWN:InitRandomizeTemplate(SpawnTemplatePrefixTable)
 self:F({self.SpawnTemplatePrefix,SpawnTemplatePrefixTable})
 local temptable={}
@@ -16726,6 +16738,33 @@ if self.SpawnInitHeadingMin then
 for UnitID=1,#SpawnTemplate.units do
 SpawnTemplate.units[UnitID].heading=_Heading(_RandomInRange(self.SpawnInitHeadingMin,self.SpawnInitHeadingMax))
 SpawnTemplate.units[UnitID].psi=-SpawnTemplate.units[UnitID].heading
+end
+end
+if self.SpawnUnitsWithRelativePositions and self.UnitsRelativePositions then
+local BaseX=SpawnTemplate.units[1].x or 0
+local BaseY=SpawnTemplate.units[1].y or 0
+local BaseZ=SpawnTemplate.units[1].z or 0
+for UnitID=1,#SpawnTemplate.units do
+if self.UnitsRelativePositions[UnitID].heading then
+SpawnTemplate.units[UnitID].heading=math.rad(self.UnitsRelativePositions[UnitID].heading or 0)
+end
+SpawnTemplate.units[UnitID].x=BaseX+(self.UnitsRelativePositions[UnitID].x or 0)
+SpawnTemplate.units[UnitID].y=BaseY+(self.UnitsRelativePositions[UnitID].y or 0)
+if self.UnitsRelativePositions[UnitID].z then
+SpawnTemplate.units[UnitID].z=BaseZ+(self.UnitsRelativePositions[UnitID].z or 0)
+end
+end
+end
+if self.SpawnUnitsWithAbsolutePositions and self.UnitsAbsolutePositions then
+for UnitID=1,#SpawnTemplate.units do
+if self.UnitsAbsolutePositions[UnitID].heading then
+SpawnTemplate.units[UnitID].heading=math.rad(self.UnitsAbsolutePositions[UnitID].heading or 0)
+end
+SpawnTemplate.units[UnitID].x=self.UnitsAbsolutePositions[UnitID].x or 0
+SpawnTemplate.units[UnitID].y=self.UnitsAbsolutePositions[UnitID].y or 0
+if self.UnitsAbsolutePositions[UnitID].z then
+SpawnTemplate.units[UnitID].z=self.UnitsAbsolutePositions[UnitID].z or 0
+end
 end
 end
 if self.SpawnInitLivery then
