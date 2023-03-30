@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-28T09:03:00.0000000Z-ff656182e846d6f2ef2359f917a6c9d11b3dff68 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-03-30T07:24:08.0000000Z-f3b6b27521a7771f30091f6c494fd61cde956dbb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12344,7 +12344,9 @@ end
 function SET_UNIT:AddUnit(Unit)
 self:F2(Unit:GetName())
 self:Add(Unit:GetName(),Unit)
+if Unit:IsInstanceOf("UNIT")then
 Unit:SetCargoBayWeightLimit()
+end
 return self
 end
 function SET_UNIT:AddUnitsByName(AddUnitNames)
