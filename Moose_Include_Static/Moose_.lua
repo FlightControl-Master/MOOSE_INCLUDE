@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-03T10:15:29.0000000Z-cf94c4d043f5d4ae34dd34ed1e24f4200b31aac8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-04T08:33:04.0000000Z-9e138aa149134038d26bf493994d9fc68d0684d8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10504,6 +10504,7 @@ ZONES_GOAL={},
 WAREHOUSES={},
 FLIGHTGROUPS={},
 FLIGHTCONTROLS={},
+OPSZONES={},
 PATHLINES={},
 }
 local _DATABASECoalition=
@@ -10708,6 +10709,23 @@ end
 end
 function DATABASE:DeleteZoneGoal(ZoneName)
 self.ZONES_GOAL[ZoneName]=nil
+end
+end
+do
+function DATABASE:FindOpsZone(ZoneName)
+local ZoneFound=self.OPSZONES[ZoneName]
+return ZoneFound
+end
+function DATABASE:AddOpsZone(OpsZone)
+if OpsZone then
+local ZoneName=OpsZone:GetName()
+if not self.OPSZONES[ZoneName]then
+self.OPSZONES[ZoneName]=OpsZone
+end
+end
+end
+function DATABASE:DeleteOpsZone(ZoneName)
+self.OPSZONES[ZoneName]=nil
 end
 end
 do
@@ -11234,14 +11252,14 @@ self:F2(arg)
 self:ForEach(IteratorFunction,FinalizeFunction,arg,self.PLAYERUNITS)
 return self
 end
-function DATABASE:ForEachClient(IteratorFunction,...)
+function DATABASE:ForEachClient(IteratorFunction,FinalizeFunction,...)
 self:F2(arg)
-self:ForEach(IteratorFunction,arg,self.CLIENTS)
+self:ForEach(IteratorFunction,FinalizeFunction,arg,self.CLIENTS)
 return self
 end
-function DATABASE:ForEachCargo(IteratorFunction,...)
+function DATABASE:ForEachCargo(IteratorFunction,FinalizeFunction,...)
 self:F2(arg)
-self:ForEach(IteratorFunction,arg,self.CARGOS)
+self:ForEach(IteratorFunction,FinalizeFunction,arg,self.CARGOS)
 return self
 end
 function DATABASE:OnEventNewCargo(EventData)
