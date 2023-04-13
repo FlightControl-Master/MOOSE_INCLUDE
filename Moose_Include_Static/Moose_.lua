@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-04T08:33:41.0000000Z-6fa9e5894ef84fa189d695cdf36f888195bf85f9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-13T13:51:55.0000000Z-078253276393a624d7ea9ca2d1d140dcde65967e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -75738,7 +75738,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.32"
+CTLD.version="1.0.33"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -75803,6 +75803,7 @@ self.shipZones={}
 self.droppedBeacons={}
 self.droppedbeaconref={}
 self.droppedbeacontimeout=600
+self.useprecisecoordloads=true
 self.Cargo_Crates={}
 self.Cargo_Troops={}
 self.Cargo_Statics={}
@@ -78260,7 +78261,7 @@ end
 end
 return self
 end
-function CTLD:InjectVehicles(Zone,Cargo)
+function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation)
 self:T(self.lid.." InjectVehicles")
 local cargo=Cargo
 local function IsVehicMatch(cargo)
@@ -78288,7 +78289,10 @@ local name=cargo:GetName()or"none"
 local temptable=cargo:GetTemplates()or{}
 local factor=1.5
 local zone=Zone
-local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
+local randomcoord=zone:GetRandomCoordinate(10,30*factor,Surfacetypes):GetVec2()
+if PreciseLocation then
+randomcoord=zone:GetCoordinate():GetVec2()
+end
 cargo:SetWasDropped(true)
 local canmove=false
 if type==CTLD_CARGO.Enum.VEHICLE then canmove=true end
@@ -78686,10 +78690,10 @@ local mass=tonumber(dataset[9])
 local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
 local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectVehicles(dropzone,injectvehicle)
+self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectTroops(dropzone,injecttroops,self.surfacetypes)
+self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads)
 end
 elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local cargotemplates=dataset[6]
