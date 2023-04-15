@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-13T13:51:21.0000000Z-ee409c45a0647df62d157bbd942ae42e07ae073c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-15T14:17:01.0000000Z-ad8938cd7495113eeb8ef0ce1853e251988817cd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61592,7 +61592,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.33"
+CTLD.version="1.0.34"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -61994,8 +61994,10 @@ end
 local groupname=nearestGroup:GetName()
 local function matchstring(String,Table)
 local match=false
+String=string.gsub(String,"-"," ")
 if type(Table)=="table"then
 for _,_name in pairs(Table)do
+_name=string.gsub(_name,"-"," ")
 if string.find(String,_name)then
 match=true
 break
@@ -62003,6 +62005,7 @@ end
 end
 else
 if type(String)=="string"then
+Table=string.gsub(Table,"-"," ")
 if string.find(String,Table)then match=true end
 end
 end
