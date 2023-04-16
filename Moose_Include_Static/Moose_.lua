@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-16T10:29:57.0000000Z-49b702106a695c6f5dac35adea861880c4de79c6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-16T14:10:46.0000000Z-9869dbd95a2af59070e2c359be2a9cdb34787b38 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61592,7 +61592,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.34"
+CTLD.version="1.0.35"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -64063,7 +64063,7 @@ end
 end
 return self
 end
-function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation)
+function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
 self:T(self.lid.." InjectTroops")
 local cargo=Cargo
 local function IsTroopsMatch(cargo)
@@ -64078,6 +64078,42 @@ break
 end
 end
 return match
+end
+local function Cruncher(group,typename,anzahl)
+local units=group:GetUnits()
+local reduced=0
+for _,_unit in pairs(units)do
+local typo=_unit:GetTypeName()
+if typename==typo then
+_unit:Destroy(false)
+reduced=reduced+1
+if reduced==anzahl then break end
+end
+end
+end
+local function PostSpawn(args)
+local group=args[1]
+local structure=args[2]
+if structure then
+local loadedstructure={}
+local strcset=UTILS.Split(structure,";")
+for _,_data in pairs(strcset)do
+local datasplit=UTILS.Split(_data,"==")
+loadedstructure[datasplit[1]]=tonumber(datasplit[2])
+end
+local originalstructure=UTILS.GetCountPerTypeName(group)
+for _name,_number in pairs(originalstructure)do
+local loadednumber=0
+if loadedstructure[_name]then
+loadednumber=loadedstructure[_name]
+end
+local reduce=false
+if loadednumber<_number then reduce=true end
+if reduce then
+Cruncher(group,_name,_number-loadednumber)
+end
+end
+end
 end
 if not IsTroopsMatch(cargo)then
 self.CargoCounter=self.CargoCounter+1
@@ -64112,13 +64148,16 @@ self.Engineers=self.Engineers+1
 local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
 self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
 end
+if Structure then
+BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
+end
 if self.eventoninject then
 self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter],type)
 end
 end
 return self
 end
-function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation)
+function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
 self:T(self.lid.." InjectVehicles")
 local cargo=Cargo
 local function IsVehicMatch(cargo)
@@ -64133,6 +64172,42 @@ break
 end
 end
 return match
+end
+local function Cruncher(group,typename,anzahl)
+local units=group:GetUnits()
+local reduced=0
+for _,_unit in pairs(units)do
+local typo=_unit:GetTypeName()
+if typename==typo then
+_unit:Destroy(false)
+reduced=reduced+1
+if reduced==anzahl then break end
+end
+end
+end
+local function PostSpawn(args)
+local group=args[1]
+local structure=args[2]
+if structure then
+local loadedstructure={}
+local strcset=UTILS.Split(structure,";")
+for _,_data in pairs(strcset)do
+local datasplit=UTILS.Split(_data,"==")
+loadedstructure[datasplit[1]]=tonumber(datasplit[2])
+end
+local originalstructure=UTILS.GetCountPerTypeName(group)
+for _name,_number in pairs(originalstructure)do
+local loadednumber=0
+if loadedstructure[_name]then
+loadednumber=loadedstructure[_name]
+end
+local reduce=false
+if loadednumber<_number then reduce=true end
+if reduce then
+Cruncher(group,_name,_number-loadednumber)
+end
+end
+end
 end
 if not IsVehicMatch(cargo)then
 self.CargoCounter=self.CargoCounter+1
@@ -64165,6 +64240,9 @@ else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
+end
+if Structure then
+BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
 end
 if self.eventoninject then
 self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
@@ -64380,6 +64458,7 @@ end
 local function FindCargoType(name,table)
 local match=false
 local cargo=nil
+name=string.gsub(name,"-"," ")
 for _ind,_cargo in pairs(table)do
 local thiscargo=_cargo
 local template=thiscargo:GetTemplates()
@@ -64387,6 +64466,7 @@ if type(template)=="string"then
 template={template}
 end
 for _,_name in pairs(template)do
+_name=string.gsub(_name,"-"," ")
 if string.find(name,_name)and _cargo:GetType()~=CTLD_CARGO.Enum.REPAIR then
 match=true
 cargo=thiscargo
@@ -64396,16 +64476,17 @@ if match then break end
 end
 return match,cargo
 end
-local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass\n"
+local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure\n"
 local n=0
 for _,_grp in pairs(grouptable)do
 local group=_grp
 if group and group:IsAlive()then
 local name=group:GetName()
-local template=string.gsub(name,"-(.+)$","")
+local template=name
 if string.find(template,"#")then
 template=string.gsub(name,"#(%d+)$","")
 end
+local template=string.gsub(name,"-(%d+)$","")
 local match,cargo=FindCargoType(template,cgotable)
 if not match then
 match,cargo=FindCargoType(template,cgovehic)
@@ -64418,6 +64499,11 @@ local cgotemp=cargo.Templates
 local cgotype=cargo.CargoType
 local cgoneed=cargo.CratesNeeded
 local cgomass=cargo.PerCrateMass
+local structure=UTILS.GetCountPerTypeName(group)
+local strucdata=""
+for typen,anzahl in pairs(structure)do
+strucdata=strucdata..typen.."=="..anzahl..";"
+end
 if type(cgotemp)=="table"then
 local templates="{"
 for _,_tmpl in pairs(cgotemp)do
@@ -64427,8 +64513,8 @@ templates=templates.."}"
 cgotemp=templates
 end
 local location=group:GetVec3()
-local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d\n"
-,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass)
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s\n"
+,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata)
 data=data..txt
 end
 end
@@ -64544,13 +64630,18 @@ cargotemplates=string.gsub(cargotemplates,"}","")
 cargotemplates=UTILS.Split(cargotemplates,";")
 local size=tonumber(dataset[8])
 local mass=tonumber(dataset[9])
+local structure=nil
+if dataset[10]then
+structure=dataset[10]
+structure=string.gsub(structure,",","")
+end
 local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
 local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads)
+self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads)
+self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure)
 end
 elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local cargotemplates=dataset[6]
