@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-16T14:11:12.0000000Z-dffb1c0768d58b9f7694162c0ca23f1abac761a2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-18T08:28:00.0000000Z-d8e765a9b1975b2448223dd79a78bd417e10be85 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -39759,7 +39759,7 @@ eventsmoose=true,
 reportplayername=false,
 }
 PSEUDOATC.id="PseudoATC | "
-PSEUDOATC.version="0.9.5"
+PSEUDOATC.version="0.10.5"
 function PSEUDOATC:New()
 local self=BASE:Inherit(self,BASE:New())
 self:E(PSEUDOATC.id..string.format("PseudoATC version %s",PSEUDOATC.version))
@@ -39767,18 +39767,12 @@ return self
 end
 function PSEUDOATC:Start()
 self:F()
-self:E(PSEUDOATC.id.."Starting PseudoATC")
-if self.eventsmoose then
-self:T(PSEUDOATC.id.."Events are handled by MOOSE.")
+self:I(PSEUDOATC.id.."Starting PseudoATC")
 self:HandleEvent(EVENTS.Birth,self._OnBirth)
 self:HandleEvent(EVENTS.Land,self._PlayerLanded)
 self:HandleEvent(EVENTS.Takeoff,self._PlayerTakeOff)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._PlayerLeft)
 self:HandleEvent(EVENTS.Crash,self._PlayerLeft)
-else
-self:T(PSEUDOATC.id.."Events are handled by DCS.")
-world.addEventHandler(self)
-end
 end
 function PSEUDOATC:DebugOn()
 self.Debug=true
@@ -39808,56 +39802,11 @@ end
 function PSEUDOATC:SetReportAltInterval(interval)
 self.talt=interval or 3
 end
-function PSEUDOATC:onEvent(Event)
-if Event==nil or Event.initiator==nil or Unit.getByName(Event.initiator:getName())==nil then
-return true
-end
-local DCSiniunit=Event.initiator
-local DCSplace=Event.place
-local DCSsubplace=Event.subplace
-local EventData={}
-local _playerunit=nil
-local _playername=nil
-if Event.initiator then
-EventData.IniUnitName=Event.initiator:getName()
-EventData.IniDCSGroup=Event.initiator:getGroup()
-EventData.IniGroupName=Event.initiator:getGroup():getName()
-_playerunit,_playername=self:_GetPlayerUnitAndName(EventData.IniUnitName)
-end
-if Event.place then
-EventData.Place=Event.place
-EventData.PlaceName=Event.place:getName()
-end
-if Event.subplace then
-EventData.SubPlace=Event.subplace
-EventData.SubPlaceName=Event.subplace:getName()
-end
-self:T3(PSEUDOATC.id..string.format("EVENT: Event in onEvent with ID = %s",tostring(Event.id)))
-self:T3(PSEUDOATC.id..string.format("EVENT: Ini unit   = %s",tostring(EventData.IniUnitName)))
-self:T3(PSEUDOATC.id..string.format("EVENT: Ini group  = %s",tostring(EventData.IniGroupName)))
-self:T3(PSEUDOATC.id..string.format("EVENT: Ini player = %s",tostring(_playername)))
-self:T3(PSEUDOATC.id..string.format("EVENT: Place      = %s",tostring(EventData.PlaceName)))
-self:T3(PSEUDOATC.id..string.format("EVENT: SubPlace   = %s",tostring(EventData.SubPlaceName)))
-if Event.id==world.event.S_EVENT_BIRTH and _playername then
-self:_OnBirth(EventData)
-end
-if Event.id==world.event.S_EVENT_TAKEOFF and _playername and EventData.Place then
-self:_PlayerTakeOff(EventData)
-end
-if Event.id==world.event.S_EVENT_LAND and _playername and EventData.Place then
-self:_PlayerLanded(EventData)
-end
-if Event.id==world.event.S_EVENT_PLAYER_LEAVE_UNIT and _playername then
-self:_PlayerLeft(EventData)
-end
-if Event.id==world.event.S_EVENT_CRASH and _playername then
-self:_PlayerLeft(EventData)
-end
-end
 function PSEUDOATC:_OnBirth(EventData)
 self:F({EventData=EventData})
 local _unitName=EventData.IniUnitName
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit=EventData.IniUnit
+local _playername=EventData.IniPlayerName
 if _unit and _playername then
 self:PlayerEntered(_unit)
 end
@@ -39865,7 +39814,8 @@ end
 function PSEUDOATC:_PlayerLeft(EventData)
 self:F({EventData=EventData})
 local _unitName=EventData.IniUnitName
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit=EventData.IniUnit
+local _playername=EventData.IniPlayerName
 if _unit and _playername then
 self:PlayerLeft(_unit)
 end
@@ -39873,7 +39823,8 @@ end
 function PSEUDOATC:_PlayerLanded(EventData)
 self:F({EventData=EventData})
 local _unitName=EventData.IniUnitName
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit=EventData.IniUnit
+local _playername=EventData.IniPlayerName
 local _base=nil
 local _baseName=nil
 if EventData.place then
@@ -39887,7 +39838,8 @@ end
 function PSEUDOATC:_PlayerTakeOff(EventData)
 self:F({EventData=EventData})
 local _unitName=EventData.IniUnitName
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit=EventData.IniUnit
+local _playername=EventData.IniPlayerName
 local _base=nil
 local _baseName=nil
 if EventData.place then
@@ -40176,7 +40128,7 @@ end
 function PSEUDOATC:AltitudeTimeStart(GID,UID)
 self:F({GID=GID,UID=UID})
 self:T(PSEUDOATC.id..string.format("Starting altitude report timer for player ID %d.",UID))
-self.group[GID].player[UID].altimer,self.group[GID].player[UID].altimerid=SCHEDULER:New(nil,self.ReportHeight,{self,GID,UID,0.1,true},1,3)
+self.group[GID].player[UID].altimer,self.group[GID].player[UID].altimerid=SCHEDULER:New(nil,self.ReportHeight,{self,GID,UID,1,true},1,3)
 end
 function PSEUDOATC:AltitudeTimerStop(GID,UID)
 self:F({GID=GID,UID=UID})
@@ -55717,6 +55669,7 @@ self:E(self.lid.."ERROR: EventData.IniUnit=nil in event BIRTH!")
 self:E(EventData)
 return
 end
+if EventData.IniObjectCategory~=Object.Category.UNIT then return end
 local _unitName=EventData.IniUnitName
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 self:T(self.lid.."BIRTH: unit   = "..tostring(EventData.IniUnitName))
