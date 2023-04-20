@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-19T07:51:53.0000000Z-9414096de700823e905559ae1e8816cb75f3f8cb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-20T06:06:43.0000000Z-90c74bd82c45812cb1c8442bf47856d60b36b91d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12323,7 +12323,6 @@ end
 if self.Filter.Zones then
 local MGroupZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
-self:I("Zone:",ZoneName)
 if MGroup:IsInZone(Zone)then
 MGroupZone=true
 end
