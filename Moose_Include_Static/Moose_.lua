@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-20T06:06:43.0000000Z-90c74bd82c45812cb1c8442bf47856d60b36b91d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-20T06:23:03.0000000Z-240307ef940e67744fbf0980e9c34341b66bba5f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61286,6 +61286,150 @@ local h=S[2]
 return t,h
 end
 do
+CTLD_CARGO={
+ClassName="CTLD_CARGO",
+ID=0,
+Name="none",
+Templates={},
+CargoType="none",
+HasBeenMoved=false,
+LoadDirectly=false,
+CratesNeeded=0,
+Positionable=nil,
+HasBeenDropped=false,
+PerCrateMass=0,
+Stock=nil,
+Mark=nil,
+}
+CTLD_CARGO.Enum={
+VEHICLE="Vehicle",
+TROOPS="Troops",
+FOB="FOB",
+CRATE="Crate",
+REPAIR="Repair",
+ENGINEERS="Engineers",
+STATIC="Static",
+}
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory)
+local self=BASE:Inherit(self,BASE:New())
+self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
+self.ID=ID or math.random(100000,1000000)
+self.Name=Name or"none"
+self.Templates=Templates or{}
+self.CargoType=Sorte or"type"
+self.HasBeenMoved=HasBeenMoved or false
+self.LoadDirectly=LoadDirectly or false
+self.CratesNeeded=CratesNeeded or 0
+self.Positionable=Positionable or nil
+self.HasBeenDropped=Dropped or false
+self.PerCrateMass=PerCrateMass or 0
+self.Stock=Stock or nil
+self.Mark=nil
+self.Subcategory=Subcategory or"Other"
+return self
+end
+function CTLD_CARGO:GetID()
+return self.ID
+end
+function CTLD_CARGO:GetSubCat()
+return self.Subcategory
+end
+function CTLD_CARGO:GetMass()
+return self.PerCrateMass
+end
+function CTLD_CARGO:GetName()
+return self.Name
+end
+function CTLD_CARGO:GetTemplates()
+return self.Templates
+end
+function CTLD_CARGO:HasMoved()
+return self.HasBeenMoved
+end
+function CTLD_CARGO:WasDropped()
+return self.HasBeenDropped
+end
+function CTLD_CARGO:CanLoadDirectly()
+return self.LoadDirectly
+end
+function CTLD_CARGO:GetCratesNeeded()
+return self.CratesNeeded
+end
+function CTLD_CARGO:GetType()
+return self.CargoType
+end
+function CTLD_CARGO:GetPositionable()
+return self.Positionable
+end
+function CTLD_CARGO:SetHasMoved(moved)
+self.HasBeenMoved=moved or false
+end
+function CTLD_CARGO:Isloaded()
+if self.HasBeenMoved and not self.WasDropped()then
+return true
+else
+return false
+end
+end
+function CTLD_CARGO:SetWasDropped(dropped)
+self.HasBeenDropped=dropped or false
+end
+function CTLD_CARGO:GetStock()
+if self.Stock then
+return self.Stock
+else
+return-1
+end
+end
+function CTLD_CARGO:AddStock(Number)
+if self.Stock then
+local number=Number or 1
+self.Stock=self.Stock+number
+end
+return self
+end
+function CTLD_CARGO:RemoveStock(Number)
+if self.Stock then
+local number=Number or 1
+self.Stock=self.Stock-number
+if self.Stock<0 then self.Stock=0 end
+end
+return self
+end
+function CTLD_CARGO:SetStock(Number)
+self.Stock=Number
+return self
+end
+function CTLD_CARGO:IsRepair()
+if self.CargoType=="Repair"then
+return true
+else
+return false
+end
+end
+function CTLD_CARGO:IsStatic()
+if self.CargoType=="Static"then
+return true
+else
+return false
+end
+end
+function CTLD_CARGO:AddMark(Mark)
+self.Mark=Mark
+return self
+end
+function CTLD_CARGO:GetMark(Mark)
+return self.Mark
+end
+function CTLD_CARGO:WipeMark()
+self.Mark=nil
+return self
+end
+function CTLD_CARGO:GetNetMass()
+return self.CratesNeeded*self.PerCrateMass
+end
+end
+do
 CTLD_ENGINEERING={
 ClassName="CTLD_ENGINEERING",
 lid="",
@@ -61441,150 +61585,6 @@ self:E("******Cannot calculate distance!")
 self:E({_point1,_point2})
 return-1
 end
-end
-end
-do
-CTLD_CARGO={
-ClassName="CTLD_CARGO",
-ID=0,
-Name="none",
-Templates={},
-CargoType="none",
-HasBeenMoved=false,
-LoadDirectly=false,
-CratesNeeded=0,
-Positionable=nil,
-HasBeenDropped=false,
-PerCrateMass=0,
-Stock=nil,
-Mark=nil,
-}
-CTLD_CARGO.Enum={
-VEHICLE="Vehicle",
-TROOPS="Troops",
-FOB="FOB",
-CRATE="Crate",
-REPAIR="Repair",
-ENGINEERS="Engineers",
-STATIC="Static",
-}
-function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory)
-local self=BASE:Inherit(self,BASE:New())
-self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
-self.ID=ID or math.random(100000,1000000)
-self.Name=Name or"none"
-self.Templates=Templates or{}
-self.CargoType=Sorte or"type"
-self.HasBeenMoved=HasBeenMoved or false
-self.LoadDirectly=LoadDirectly or false
-self.CratesNeeded=CratesNeeded or 0
-self.Positionable=Positionable or nil
-self.HasBeenDropped=Dropped or false
-self.PerCrateMass=PerCrateMass or 0
-self.Stock=Stock or nil
-self.Mark=nil
-self.Subcategory=Subcategory or"Other"
-return self
-end
-function CTLD_CARGO:GetID()
-return self.ID
-end
-function CTLD_CARGO:GetSubCat()
-return self.Subcategory
-end
-function CTLD_CARGO:GetMass()
-return self.PerCrateMass
-end
-function CTLD_CARGO:GetName()
-return self.Name
-end
-function CTLD_CARGO:GetTemplates()
-return self.Templates
-end
-function CTLD_CARGO:HasMoved()
-return self.HasBeenMoved
-end
-function CTLD_CARGO:WasDropped()
-return self.HasBeenDropped
-end
-function CTLD_CARGO:CanLoadDirectly()
-return self.LoadDirectly
-end
-function CTLD_CARGO:GetCratesNeeded()
-return self.CratesNeeded
-end
-function CTLD_CARGO:GetType()
-return self.CargoType
-end
-function CTLD_CARGO:GetPositionable()
-return self.Positionable
-end
-function CTLD_CARGO:SetHasMoved(moved)
-self.HasBeenMoved=moved or false
-end
-function CTLD_CARGO:Isloaded()
-if self.HasBeenMoved and not self.WasDropped()then
-return true
-else
-return false
-end
-end
-function CTLD_CARGO:SetWasDropped(dropped)
-self.HasBeenDropped=dropped or false
-end
-function CTLD_CARGO:GetStock()
-if self.Stock then
-return self.Stock
-else
-return-1
-end
-end
-function CTLD_CARGO:AddStock(Number)
-if self.Stock then
-local number=Number or 1
-self.Stock=self.Stock+number
-end
-return self
-end
-function CTLD_CARGO:RemoveStock(Number)
-if self.Stock then
-local number=Number or 1
-self.Stock=self.Stock-number
-if self.Stock<0 then self.Stock=0 end
-end
-return self
-end
-function CTLD_CARGO:SetStock(Number)
-self.Stock=Number
-return self
-end
-function CTLD_CARGO:IsRepair()
-if self.CargoType=="Repair"then
-return true
-else
-return false
-end
-end
-function CTLD_CARGO:IsStatic()
-if self.CargoType=="Static"then
-return true
-else
-return false
-end
-end
-function CTLD_CARGO:AddMark(Mark)
-self.Mark=Mark
-return self
-end
-function CTLD_CARGO:GetMark(Mark)
-return self.Mark
-end
-function CTLD_CARGO:WipeMark()
-self.Mark=nil
-return self
-end
-function CTLD_CARGO:GetNetMass()
-return self.CratesNeeded*self.PerCrateMass
 end
 end
 do
