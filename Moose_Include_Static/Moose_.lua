@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-20T06:23:03.0000000Z-240307ef940e67744fbf0980e9c34341b66bba5f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-22T12:05:09.0000000Z-302e785f3228a5aaa5d1ada22c99392c8d9900fa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -9316,6 +9316,16 @@ return true
 end
 world.searchObjects(ObjectCategories,SphereSearch,EvaluateZone)
 end
+function ZONE_RADIUS:RemoveJunk()
+local radius=self.Radius
+local vec3=self:GetVec3()
+local volS={
+id=world.VolumeType.SPHERE,
+params={point=vec3,radius=radius}
+}
+local n=world.removeJunk(volS)
+return n
+end
 function ZONE_RADIUS:GetScannedUnits()
 return self.ScanData.Units
 end
@@ -9863,6 +9873,21 @@ local vec2={x=vec1.x,y=vec3.y}
 local vec4={x=vec3.x,y=vec1.y}
 local zone=ZONE_POLYGON_BASE:New(ZoneName or self.ZoneName,{vec1,vec2,vec3,vec4})
 return zone
+end
+function ZONE_POLYGON_BASE:RemoveJunk(Height)
+Height=Height or 1000
+local vec2SW,vec2NE=self:GetBoundingVec2()
+local vec3SW={x=vec2SW.x,y=-Height,z=vec2SW.y}
+local vec3NE={x=vec2NE.x,y=Height,z=vec2NE.y}
+local volume={
+id=world.VolumeType.BOX,
+params={
+min=vec3SW,
+max=vec3SW
+}
+}
+local n=world.removeJunk(volume)
+return n
 end
 function ZONE_POLYGON_BASE:SmokeZone(SmokeColor,Segments)
 self:F2(SmokeColor)
@@ -20596,6 +20621,18 @@ return coord
 end
 self:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
 return nil
+end
+function POSITIONABLE:Explode(power,delay)
+power=power or 100
+if delay and delay>0 then
+self:ScheduleOnce(delay,POSITIONABLE.Explode,self,power,0)
+else
+local coord=self:GetCoord()
+if coord then
+coord:Explosion(power)
+end
+end
+return self
 end
 function POSITIONABLE:GetOffsetCoordinate(x,y,z)
 x=x or 0
