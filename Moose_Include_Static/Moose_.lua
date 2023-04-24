@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-24T09:09:03.0000000Z-88b6540f5b3b65309de2c43c76700c00b0d7e266 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-24T14:44:38.0000000Z-1060d63808ffcbcf6e55c1b80573c3d766f0c3ba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15404,6 +15404,32 @@ end
 function SET_SCENERY:IsIncludeObject(MScenery)
 self:F2(MScenery)
 return true
+end
+function SET_SCENERY:GetLife0()
+local life0=0
+self:ForEachScenery(
+function(obj)
+local Obj=obj
+life0=life0+Obj:GetLife0()
+end
+)
+return life0
+end
+function SET_SCENERY:GetLife()
+local life=0
+self:ForEachScenery(
+function(obj)
+local Obj=obj
+life=life+Obj:GetLife()
+end
+)
+return life
+end
+function SET_SCENERY:GetRelativeLife()
+local life0=self:GetLife0()
+local life=self:GetLife()
+local rlife=math.floor((life/life0)*100)
+return rlife
 end
 end
 do
