@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-25T07:12:31.0000000Z-b96ebc1872abf9987e08ac6408503fb5cf1b14bc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-25T19:42:53.0000000Z-c360759e49097d956c0f8390aaf5b838780c351b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -5232,8 +5232,9 @@ TEXT="moose_text",
 BOMBRESULT="moose_bomb_result",
 STRAFERESULT="moose_strafe_result",
 LSOGRADE="moose_lso_grade",
+TTS="moose_text2speech"
 }
-SOCKET.version="0.2.0"
+SOCKET.version="0.3.0"
 function SOCKET:New(Port,Host)
 local self=BASE:Inherit(self,FSM:New())
 package.path=package.path..";.\\LuaSocket\\?.lua;"
@@ -5264,6 +5265,19 @@ function SOCKET:SendText(Text)
 local message={}
 message.command=SOCKET.DataType.TEXT
 message.text=Text
+self:SendTable(message)
+return self
+end
+function SOCKET:SendTextToSpeech(Text,Provider,Voice,Culture,Gender,Volume)
+Text=Text or"Hello World!"
+local message={}
+message.command=SOCKET.DataType.TTS
+message.text=Text
+message.provider=Provider
+message.voice=Voice
+message.culture=Culture
+message.gender=Gender
+message.volume=Volume
 self:SendTable(message)
 return self
 end
