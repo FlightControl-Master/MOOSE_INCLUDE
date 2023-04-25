@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-24T14:45:31.0000000Z-19a4ec48bb2f6b214eeb673b0361ac0496b7ba04 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-25T07:13:27.0000000Z-6cd56e4de4538dff858807056ff93b9eb0a6ee1a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15766,8 +15766,9 @@ end
 return life
 end
 function SET_SCENERY:GetRelativeLife()
-local life0=self:GetLife0()
 local life=self:GetLife()
+local life0=self:GetLife0()
+self:T3(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
 local rlife=math.floor((life/life0)*100)
 return rlife
 end
@@ -26723,6 +26724,9 @@ function SCENERY:GetLife()
 local life=0
 if self.SceneryObject then
 life=self.SceneryObject:getLife()
+if life>self.Life0 then
+self.Life0=math.floor(life*1.2)
+end
 end
 return life
 end
@@ -26742,6 +26746,7 @@ function SCENERY:FindByName(Name,Coordinate,Radius)
 local radius=Radius or 100
 local name=Name or"unknown"
 local scenery=nil
+BASE:T({name,radius,Coordinate:GetVec2()})
 local function SceneryScan(coordinate,radius,name)
 if coordinate~=nil then
 local scenerylist=coordinate:ScanScenery(radius)
@@ -26777,6 +26782,7 @@ if type(ZoneName)=="string"then
 zone=ZONE:FindByName(ZoneName)
 end
 local _id=zone:GetProperty('OBJECT ID')
+BASE:T("Object ID ".._id)
 if not _id then
 BASE:E("**** Zone without object ID: "..ZoneName.." | Type: "..tostring(zone.ClassName))
 if string.find(zone.ClassName,"POLYGON")then
