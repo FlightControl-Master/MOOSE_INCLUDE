@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-25T19:53:39.0000000Z-817c69bb118aa861b947b7b463066b045cd006f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-27T08:34:21.0000000Z-74abcce9563a3ace7f93caed97d2c63982880865 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64962,6 +64962,22 @@ self.NcarriersMax=self.NcarriersMin
 end
 return self
 end
+function AUFTRAG:SetProhibitAfterburner()
+self.prohibitAB=true
+return self
+end
+function AUFTRAG:SetAllowAfterburner()
+self.prohibitAB=false
+return self
+end
+function AUFTRAG:SetProhibitAfterburnerExecutePhase()
+self.prohibitABExecute=true
+return self
+end
+function AUFTRAG:SetAllowAfterburnerExecutePhase()
+self.prohibitABExecute=false
+return self
+end
 function AUFTRAG:AssignCohort(Cohort)
 self.specialCohorts=self.specialCohorts or{}
 self:T3(self.lid..string.format("Assigning cohort %s",tostring(Cohort.name)))
@@ -90330,6 +90346,15 @@ end
 if Mission.engagedetectedOn then
 self:SetEngageDetectedOn(UTILS.MetersToNM(Mission.engagedetectedRmax),Mission.engagedetectedTypes,Mission.engagedetectedEngageZones,Mission.engagedetectedNoEngageZones)
 end
+if self.isFlightgroup then
+if Mission.prohibitABExecute==true then
+self:SetProhibitAfterburner()
+self:I("Set prohibit AB")
+elseif Mission.prohibitABExecute==false then
+self:SetAllowAfterburner()
+self:T2("Set allow AB")
+end
+end
 end
 function OPSGROUP:onafterPauseMission(From,Event,To)
 local Mission=self:GetMissionCurrent()
@@ -90463,6 +90488,15 @@ self:T2(self.lid.."Adding asset via RTB to new legion airbase")
 self:RTB(self.legion.airbase)
 end
 return
+end
+if self.isFlightgroup then
+if Mission.prohibitAB==true then
+self:T2("Setting prohibit AB")
+self:SetProhibitAfterburner()
+elseif Mission.prohibitAB==false then
+self:T2("Setting allow AB")
+self:SetAllowAfterburner()
+end
 end
 self:_CheckGroupDone(delay)
 end
@@ -90684,6 +90718,16 @@ end
 if mission.icls then
 self:SwitchICLS(mission.icls.Channel,mission.icls.Morse,mission.icls.UnitName)
 end
+if self.isFlightgroup then
+if mission.prohibitAB==true then
+self:SetProhibitAfterburner()
+self:T2("Set prohibit AB")
+elseif mission.prohibitAB==false then
+self:SetAllowAfterburner()
+self:T2("Set allow AB")
+end
+end
+return self
 end
 function OPSGROUP:_QueueUpdate()
 if self:IsExist()then
