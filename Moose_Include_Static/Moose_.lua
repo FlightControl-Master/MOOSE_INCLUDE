@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-04-25T19:42:53.0000000Z-c360759e49097d956c0f8390aaf5b838780c351b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-05T08:31:23.0000000Z-9b8154246f97680a9f616526be769480b240567f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15603,7 +15603,6 @@ local gotstatics=false
 local gotunits=false
 local gotscenery=false
 local function EvaluateZone(ZoneObject)
-BASE:T({ZoneObject})
 if ZoneObject then
 local ObjectCategory=ZoneObject:getCategory()
 if ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()then
@@ -16972,6 +16971,36 @@ function COORDINATE:ToStringTemperature(Controllable,Settings)
 self:F2({Controllable=Controllable and Controllable:GetName()})
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 return self:GetTemperatureText(nil,Settings)
+end
+function COORDINATE:IsInSteepArea(Radius,Minelevation)
+local steep=false
+local elev=Minelevation or 8
+local bdelta=0
+local h0=self:GetLandHeight()
+local radius=Radius or 50
+local diam=radius*2
+for i=0,150,30 do
+local polar=math.fmod(i+180,360)
+local c1=self:Translate(radius,i,false,false)
+local c2=self:Translate(radius,polar,false,false)
+local h1=c1:GetLandHeight()
+local h2=c2:GetLandHeight()
+local d1=math.abs(h1-h2)
+local d2=math.abs(h0-h1)
+local d3=math.abs(h0-h2)
+local dm=d1>d2 and d1 or d2
+local dm1=dm>d3 and dm or d3
+bdelta=dm1>bdelta and dm1 or bdelta
+self:T(string.format("d1=%d, d2=%d, d3=%d, max delta=%d",d1,d2,d3,bdelta))
+end
+local steepness=bdelta/(radius/100)
+if steepness>=elev then steep=true end
+return steep,math.floor(steepness)
+end
+function COORDINATE:IsInFlatArea(Radius,Minelevation)
+local steep,elev=self:IsInSteepArea(Radius,Minelevation)
+local flat=not steep
+return flat,elev
 end
 end
 do
