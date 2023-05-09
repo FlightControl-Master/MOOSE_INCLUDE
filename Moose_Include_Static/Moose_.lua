@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-05T08:31:23.0000000Z-9b8154246f97680a9f616526be769480b240567f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-09T07:44:41.0000000Z-7ed0d7eec3acfd2e55576362e56048c77a408fba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68067,6 +68067,15 @@ error("Unknown Squadron:"..SquadronName)
 end
 return DefenderSquadron
 end
+function AI_A2A_DISPATCHER:QuerySquadron(Squadron)
+local Squadron=self:GetSquadron(Squadron)
+if Squadron.ResourceCount then
+self:T2(string.format("%s = %s",Squadron.Name,Squadron.ResourceCount))
+return Squadron.ResourceCount
+end
+self:F({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
+return nil
+end
 function AI_A2A_DISPATCHER:SetSquadronVisible(SquadronName)
 self.DefenderSquadrons[SquadronName]=self.DefenderSquadrons[SquadronName]or{}
 local DefenderSquadron=self:GetSquadron(SquadronName)
@@ -69584,6 +69593,15 @@ if not DefenderSquadron then
 error("Unknown Squadron:"..SquadronName)
 end
 return DefenderSquadron
+end
+function AI_A2G_DISPATCHER:QuerySquadron(Squadron)
+local Squadron=self:GetSquadron(Squadron)
+if Squadron.ResourceCount then
+self:T2(string.format("%s = %s",Squadron.Name,Squadron.ResourceCount))
+return Squadron.ResourceCount
+end
+self:F({Squadron=Squadron.Name,SquadronResourceCount=Squadron.ResourceCount})
+return nil
 end
 function AI_A2G_DISPATCHER:IsSquadronVisible(SquadronName)
 self.DefenderSquadrons[SquadronName]=self.DefenderSquadrons[SquadronName]or{}
