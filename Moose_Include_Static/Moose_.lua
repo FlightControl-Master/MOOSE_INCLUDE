@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-11T13:31:24.0000000Z-943b68f38f968516e0fe6b7c47af31ad429983a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-13T21:35:58.0000000Z-21bcd64c9d038acca4723d74d31b999f0c116c50 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22365,7 +22365,7 @@ params={},
 }
 return DCSTask
 end
-function CONTROLLABLE:EnRouteTaskFAC_EngageGroup(AttackGroup,Priority,WeaponType,Designation,Datalink)
+function CONTROLLABLE:EnRouteTaskFAC_EngageGroup(AttackGroup,Priority,WeaponType,Designation,Datalink,Frequency,Modulation,CallsignID,CallsignNumber)
 local DCSTask={
 id='FAC_EngageControllable',
 params={
@@ -22373,17 +22373,24 @@ groupId=AttackGroup:GetID(),
 weaponType=WeaponType or"Auto",
 designation=Designation,
 datalink=Datalink and Datalink or false,
+frequency=(Frequency or 133)*1000000,
+modulation=Modulation or radio.modulation.AM,
+callname=CallsignID,
+number=CallsignNumber,
 priority=Priority or 0,
 },
 }
 return DCSTask
 end
-function CONTROLLABLE:EnRouteTaskFAC(Radius,Priority)
+function CONTROLLABLE:EnRouteTaskFAC(Frequency,Modulation,CallsignID,CallsignNumber,Priority)
 local DCSTask={
 id='FAC',
 params={
-radius=Radius,
-priority=Priority
+frequency=(Frequency or 133)*1000000,
+modulation=Modulation or radio.modulation.AM,
+callname=CallsignID,
+number=CallsignNumber,
+priority=Priority or 0
 }
 }
 return DCSTask
