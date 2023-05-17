@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-17T07:34:54.0000000Z-ffcc46cb2d7b1c66ef545587f098ef3750c708e7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-17T08:26:29.0000000Z-0868286f27de7afbcf2817a8aa0d5ac6559d7572 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -44849,7 +44849,7 @@ Assets={},
 WarehouseID=0,
 Warehouses={}
 }
-WAREHOUSE.version="1.0.2"
+WAREHOUSE.version="1.0.2a"
 function WAREHOUSE:New(warehouse,alias)
 local self=BASE:Inherit(self,FSM:New())
 if type(warehouse)=="string"then
@@ -45981,7 +45981,8 @@ spawngroup=self:_SpawnAssetGroundNaval(_alias,_assetitem,Request,self.spawnzone)
 elseif Request.transporttype==WAREHOUSE.TransportType.TRAIN then
 self:_ErrorMessage("ERROR: Cargo transport by train not supported yet!")
 return
-elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.NAVALCARRIER then
+elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.NAVALCARRIER
+or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
 spawngroup=self:_SpawnAssetGroundNaval(_alias,_assetitem,Request,self.portzone)
 elseif Request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
 self:_ErrorMessage("ERROR: Transport type selfpropelled was already handled above. We should not get here!")
@@ -46570,7 +46571,7 @@ end
 local UnControlled=true
 for i=1,#cargoassets do
 local asset=cargoassets[i]
-asset.spawned=false
+if not asset.spawned then
 asset.iscargo=true
 asset.rid=Request.uid
 local _alias=asset.spawngroupname
@@ -46595,6 +46596,7 @@ self:E(self.lid.."ERROR: Unknown asset category!")
 end
 if _group then
 self:__AssetSpawned(0.01,_group,asset,Request)
+end
 end
 end
 end
