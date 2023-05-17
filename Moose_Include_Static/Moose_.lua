@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-13T21:35:58.0000000Z-21bcd64c9d038acca4723d74d31b999f0c116c50 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-17T07:34:54.0000000Z-ffcc46cb2d7b1c66ef545587f098ef3750c708e7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61790,7 +61790,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.36"
+CTLD.version="1.0.37"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -61847,6 +61847,7 @@ self.UsedVHFFrequencies={}
 self.UsedUHFFrequencies={}
 self.UsedFMFrequencies={}
 self.RadioSound="beacon.ogg"
+self.RadioSoundFC3="beacon.ogg"
 self.RadioPath="l10n/DEFAULT/"
 self.pickupZones={}
 self.dropOffZones={}
@@ -63786,6 +63787,7 @@ if i==5 then IsDropped=true end
 for index,cargozone in pairs(zones[i])do
 local czone=cargozone
 local Sound=self.RadioSound
+local Silent=self.RadioSoundFC3 or self.RadioSound
 if czone.active and czone.hasbeacon then
 local FMbeacon=czone.fmbeacon
 local VHFbeacon=czone.vhfbeacon
@@ -63795,8 +63797,8 @@ local FM=FMbeacon.frequency
 local VHF=VHFbeacon.frequency
 local UHF=UHFbeacon.frequency
 self:_AddRadioBeacon(Name,Sound,FM,CTLD.RadioModulation.FM,IsShip,IsDropped)
-self:_AddRadioBeacon(Name,Sound,VHF,CTLD.RadioModulation.FM,IsShip,IsDropped)
-self:_AddRadioBeacon(Name,Sound,UHF,CTLD.RadioModulation.AM,IsShip,IsDropped)
+self:_AddRadioBeacon(Name,Sound,VHF,CTLD.RadioModulation.AM,IsShip,IsDropped)
+self:_AddRadioBeacon(Name,Silent,UHF,CTLD.RadioModulation.AM,IsShip,IsDropped)
 end
 end
 end
