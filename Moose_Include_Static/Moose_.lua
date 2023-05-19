@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-17T08:26:29.0000000Z-0868286f27de7afbcf2817a8aa0d5ac6559d7572 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-19T15:11:54.0000000Z-60b75a4c8fb17ef3be818cd089f54d0c7e5319cb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -15638,6 +15638,29 @@ for _,unit in pairs(units)do
 set:AddUnit(unit)
 end
 return set
+end
+function COORDINATE:ScanStatics(radius)
+local _,_,_,_,statics=self:ScanObjects(radius,false,true,false)
+local set=SET_STATIC:New()
+for _,unit in pairs(statics)do
+set:AddUnit(unit)
+end
+return set
+end
+function COORDINATE:FindClosestStatic(radius)
+local units=self:ScanStatics(radius)
+local umin=nil
+local dmin=math.huge
+for _,_unit in pairs(units.Set)do
+local unit=_unit
+local coordinate=unit:GetCoordinate()
+local d=self:Get2DDistance(coordinate)
+if d<dmin then
+dmin=d
+umin=unit
+end
+end
+return umin
 end
 function COORDINATE:FindClosestUnit(radius)
 local units=self:ScanUnits(radius)
