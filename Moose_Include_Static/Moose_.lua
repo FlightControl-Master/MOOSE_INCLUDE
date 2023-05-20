@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-19T15:13:17.0000000Z-7901d53d548c6302ef66b385f20076c6b471a89b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-20T10:13:35.0000000Z-034b2444ff990c9d1d82c84edb6fab51dc48502f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10070,8 +10070,8 @@ end
 function COORDINATE:ScanStatics(radius)
 local _,_,_,_,statics=self:ScanObjects(radius,false,true,false)
 local set=SET_STATIC:New()
-for _,unit in pairs(statics)do
-set:AddUnit(unit)
+for _,stat in pairs(statics)do
+set:AddStatic(STATIC:Find(stat))
 end
 return set
 end
