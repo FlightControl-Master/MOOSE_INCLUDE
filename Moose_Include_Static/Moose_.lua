@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-20T10:12:18.0000000Z-5f97299cb248f155dd207764698e7671d9981d05 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-22T15:57:03.0000000Z-905d29b2797d2ccf0d703c84bb2c6cd5ef97dd53 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18036,17 +18036,18 @@ self:SetEventPriority(5)
 self.SpawnHookScheduler=SCHEDULER:New(nil)
 return self
 end
-function SPAWN:NewFromTemplate(SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix)
+function SPAWN:NewFromTemplate(SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix,MooseNaming)
 local self=BASE:Inherit(self,BASE:New())
 self:F({SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix})
-if SpawnAliasPrefix==nil or SpawnAliasPrefix==""then
-BASE:I("ERROR: in function NewFromTemplate, required parameter SpawnAliasPrefix is not set")
+if SpawnTemplatePrefix==nil or SpawnTemplatePrefix==""then
+BASE:I("ERROR: in function NewFromTemplate, required parameter SpawnTemplatePrefix is not set")
 return nil
 end
 if SpawnTemplate then
 self.SpawnTemplate=SpawnTemplate
 self.SpawnTemplatePrefix=SpawnTemplatePrefix
-self.SpawnAliasPrefix=SpawnAliasPrefix
+self.SpawnAliasPrefix=SpawnAliasPrefix or SpawnTemplatePrefix
+self.SpawnTemplate.name=SpawnTemplatePrefix
 self.SpawnIndex=0
 self.SpawnCount=0
 self.AliveUnits=0
@@ -18071,6 +18072,7 @@ self.SpawnInitRadio=nil
 self.SpawnInitModex=nil
 self.SpawnInitAirbase=nil
 self.TweakedTemplate=true
+self.MooseNameing=MooseNaming or true
 self.SpawnGroups={}
 else
 error("There is no template provided for SpawnTemplatePrefix = '"..SpawnTemplatePrefix.."'")
@@ -19316,6 +19318,9 @@ local SpawnTemplate
 if self.TweakedTemplate~=nil and self.TweakedTemplate==true then
 BASE:I("WARNING: You are using a tweaked template.")
 SpawnTemplate=self.SpawnTemplate
+if self.MooseNameing then
+SpawnTemplate.name=self:SpawnGroupName(SpawnIndex)
+end
 else
 SpawnTemplate=self:_GetTemplate(SpawnTemplatePrefix)
 SpawnTemplate.name=self:SpawnGroupName(SpawnIndex)
