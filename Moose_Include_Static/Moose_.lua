@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-22T15:57:50.0000000Z-0575b366dd78c7b1334338b8149f12a359b7aa84 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-22T23:46:51.0000000Z-c9b90e884d027f7a08eb3130a84ede3a6d55aeef ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63907,6 +63907,7 @@ BOMBCARPET="Carpet Bombing",
 CAP="CAP",
 CAS="CAS",
 ESCORT="Escort",
+FAC="FAC",
 FACA="FAC-A",
 FERRY="Ferry Flight",
 INTERCEPT="Intercept",
@@ -64000,7 +64001,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.1.0"
+AUFTRAG.version="1.2.0"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -64246,6 +64247,25 @@ mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
 mission.dTevaluate=15
 mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewFAC(FacZone,Speed,Altitude,Frequency,Modulation)
+local mission=AUFTRAG:New(AUFTRAG.Type.FAC)
+if type(FacZone)=="string"then
+FacZone=ZONE:FindByName(FacZone)
+end
+mission:_TargetFromObject(FacZone)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.FAC)
+mission.facFreq=Frequency or 133
+mission.facModu=Modulation or radio.modulation.AM
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.EvadeFire
+mission.optionAlarm=ENUMS.AlarmState.Auto
+mission.missionFraction=1.0
+mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
+mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
+mission.categories={AUFTRAG.Category.AIRCRAFT,AUFTRAG.Category.GROUND}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
@@ -66324,6 +66344,17 @@ table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.FACA then
 local DCStask=CONTROLLABLE.TaskFAC_AttackGroup(nil,self.engageTarget:GetObject(),self.engageWeaponType,self.facDesignation,self.facDatalink,self.facFreq,self.facModu,CallsignName,CallsignNumber)
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.FAC then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
+local param={}
+param.zone=self:GetObjective()
+param.altitude=self.missionAltitude
+param.speed=self.missionSpeed
+DCStask.params=param
+table.insert(DCStasks,DCStask)
+local DCSenroute=CONTROLLABLE.EnRouteTaskFAC(self,self.facFreq,self.facModu)
+table.insert(self.enrouteTasks,DCSenroute)
 elseif self.type==AUFTRAG.Type.FERRY then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.FERRY
@@ -66611,6 +66642,8 @@ mtask=ENUMS.MissionTask.CAS
 elseif MissionType==AUFTRAG.Type.ESCORT then
 mtask=ENUMS.MissionTask.ESCORT
 elseif MissionType==AUFTRAG.Type.FACA then
+mtask=ENUMS.MissionTask.AFAC
+elseif MissionType==AUFTRAG.Type.FAC then
 mtask=ENUMS.MissionTask.AFAC
 elseif MissionType==AUFTRAG.Type.FERRY then
 mtask=ENUMS.MissionTask.NOTHING
@@ -95309,7 +95342,7 @@ OPSZONE.ZoneType={
 Circular="Circular",
 Polygon="Polygon",
 }
-OPSZONE.version="0.5.0"
+OPSZONE.version="0.6.0"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -95570,6 +95603,11 @@ function OPSZONE:onafterCaptured(From,Event,To,NewOwnerCoalition)
 self:T(self.lid..string.format("Zone captured by coalition=%d",NewOwnerCoalition))
 self.ownerPrevious=self.ownerCurrent
 self.ownerCurrent=NewOwnerCoalition
+if self.drawZone then
+self.zone:UndrawZone()
+local color=self:_GetZoneColor()
+self.zone:DrawZone(nil,color,1.0,color,0.5)
+end
 for _,_chief in pairs(self.chiefs)do
 local chief=_chief
 if chief.coalition==self.ownerCurrent then
