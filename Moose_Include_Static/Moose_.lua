@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-22T23:46:51.0000000Z-c9b90e884d027f7a08eb3130a84ede3a6d55aeef ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-24T09:16:36.0000000Z-ee055531b600588297d6c0e561ff9229c25b5640 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -8187,7 +8187,7 @@ Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
 end
 if Event.TgtObjectCategory==Object.Category.STATIC then
 Event.TgtDCSUnit=Event.target
-if Event.target:isExist()and Event.id~=33 and not Event.TgtObjectCategory==Object.Category.COORDINATE then
+if Event.target:isExist()and Event.id~=33 then
 Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
 Event.TgtUnitName=Event.TgtDCSUnitName
 Event.TgtUnit=STATIC:FindByName(Event.TgtDCSUnitName,false)
