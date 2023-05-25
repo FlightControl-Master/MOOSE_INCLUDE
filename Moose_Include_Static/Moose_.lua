@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-25T06:23:31.0000000Z-91a445961b1c8b65b8e236617c35e1225a567589 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-25T06:57:15.0000000Z-0cd6a59ce4e19740fc2ac40da1d4c57102c55040 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -21805,7 +21805,8 @@ self:T({CommandActivateACLS})
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandActivateACLS,{self,UnitID,Name},Delay)
 else
-self:SetCommand(CommandActivateACLS)
+local controller=self:_GetController()
+controller:setCommand(CommandActivateACLS)
 end
 return self
 end
@@ -21817,7 +21818,8 @@ params={}
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandDeactivateACLS,{self},Delay)
 else
-self:SetCommand(CommandDeactivateACLS)
+local controller=self:_GetController()
+controller:setCommand(CommandDeactivateACLS)
 end
 return self
 end
@@ -21843,7 +21845,7 @@ local freq=Frequency or 336
 local CommandActivateLink4={
 id="ActivateLink4",
 params={
-["frequency "]=freq*1000000,
+["frequency"]=freq*1000000,
 ["unitId"]=UnitID or self:GetID(),
 ["name"]=Callsign or"LNK",
 }
@@ -21852,7 +21854,8 @@ self:T({CommandActivateLink4})
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandActivateLink4,{self,Frequency,UnitID,Callsign},Delay)
 else
-self:SetCommand(CommandActivateLink4)
+local controller=self:_GetController()
+controller:setCommand(CommandActivateLink4)
 end
 return self
 end
@@ -21871,7 +21874,8 @@ local CommandDeactivateLink4={id='DeactivateLink4',params={}}
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandDeactivateLink4,{self},Delay)
 else
-self:SetCommand(CommandDeactivateLink4)
+local controller=self:_GetController()
+controller:setCommand(CommandDeactivateLink4)
 end
 return self
 end
