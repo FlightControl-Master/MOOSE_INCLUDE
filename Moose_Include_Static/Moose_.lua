@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-24T09:16:01.0000000Z-749e9b7e08ecbab3467587bc1bb9514d55c67688 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-25T06:23:31.0000000Z-91a445961b1c8b65b8e236617c35e1225a567589 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -59865,7 +59865,8 @@ if EventData.IniGroupName~=self.helo:GetName()then
 local text=string.format("Unit %s crashed or ejected.",unitname)
 MESSAGE:New(text,10,"DEBUG"):ToAllIf(self.Debug)
 self:T(self.lid..text)
-local coord=unit:GetCoordinate()
+local Vec3=EventData.IniDCSUnit:getPoint()
+local coord=COORDINATE:NewFromVec3(Vec3)
 if coord and self.rescuezone:IsCoordinateInZone(coord)then
 if self.Debug then
 coord:MarkToCoalition(self.lid..string.format("Crash site of unit %s.",unitname),self.helo:GetCoalition())
