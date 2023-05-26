@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-25T06:57:54.0000000Z-2967de8f6e743ca4936872342db386c58eec0b9c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-26T06:28:45.0000000Z-89223ae142680491f87c12723ae5cd23ffb292f4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3663,6 +3663,22 @@ return tostring(s)
 elseif type(s)=='string'then
 s=string.format('%q',s)
 return s
+end
+end
+end
+function UTILS.PrintTableToLog(table,indent)
+if not table then
+BASE:E("No table passed!")
+return
+end
+if not indent then indent=0 end
+for k,v in pairs(table)do
+if type(v)=="table"then
+BASE:I(string.rep("  ",indent)..tostring(k).." = {")
+UTILS.PrintTableToLog(v,indent+1)
+BASE:I(string.rep("  ",indent).."}")
+else
+BASE:I(string.rep("  ",indent)..tostring(k).." = "..tostring(v))
 end
 end
 end
