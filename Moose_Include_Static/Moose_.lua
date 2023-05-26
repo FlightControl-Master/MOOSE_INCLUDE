@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-26T06:28:45.0000000Z-89223ae142680491f87c12723ae5cd23ffb292f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-26T09:42:26.0000000Z-725efc3e70c06fc27fec02015330e2b4a301849f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65490,7 +65490,7 @@ self.NrepeatFailure=NrepeatF
 elseif(Ntargets0>0 and Ntargets==0)then
 self:T(self.lid.."No targets left cancelling mission!")
 self:Cancel()
-elseif self:IsExecuting()and((not self.reinforce)or(self.reinforce==0 and Nassigned<=0))then
+elseif self:IsExecuting()and self:_IsNotReinforcing()then
 if Ngroups==0 then
 self:Done()
 else
@@ -65788,7 +65788,7 @@ if self:IsPlanned()or self:IsQueued()or self:IsRequested()then
 self:T2(self.lid..string.format("CheckGroupsDone: Mission is still in state %s [FSM=%s] (PLANNED or QUEUED or REQUESTED). Mission NOT DONE!",self.status,self:GetState()))
 return false
 end
-if self:IsExecuting()and self.reinforce and(self.reinforce>0 or self.Nassigned-self.Ndead>0)then
+if self:IsExecuting()and self:_IsReinforcing()then
 self:T2(self.lid..string.format("CheckGroupsDone: Mission is still in state %s [FSM=%s] and reinfoce=%d. Mission NOT DONE!",self.status,self:GetState(),self.reinforce))
 return false
 end
@@ -65853,8 +65853,9 @@ self.Ndead=self.Ndead+1
 end
 function AUFTRAG:onafterAssetDead(From,Event,To,Asset)
 local N=self:CountOpsGroups()
-self:T(self.lid..string.format("Asset %s dead! Number of ops groups remaining %d",tostring(Asset.spawngroupname),N))
-if N==0 and(self.reinforce==nil or self.reinforce==0)then
+local notreinforcing=self:_IsNotReinforcing()
+self:T(self.lid..string.format("Asset %s dead! Number of ops groups remaining %d (reinforcing=%s)",tostring(Asset.spawngroupname),N,tostring(not notreinforcing)))
+if N==0 and notreinforcing then
 if self:IsNotOver()then
 self:Cancel()
 else
@@ -66164,9 +66165,12 @@ end
 function AUFTRAG:AddAsset(Asset)
 self:T(self.lid..string.format("Adding asset \"%s\" to mission",tostring(Asset.spawngroupname)))
 self.assets=self.assets or{}
+local asset=self:GetAssetByName(Asset.spawngroupname)
+if not asset then
 table.insert(self.assets,Asset)
 self.Nassigned=self.Nassigned or 0
 self.Nassigned=self.Nassigned+1
+end
 return self
 end
 function AUFTRAG:_AddAssets(Assets)
@@ -66312,6 +66316,15 @@ end
 self.requestID[name]=RequestID
 end
 return self
+end
+function AUFTRAG:_IsNotReinforcing()
+local Nassigned=self.Nassigned and self.Nassigned-self.Ndead or 0
+local notreinforcing=((not self.reinforce)or(self.reinforce==0 and Nassigned<=0))
+return notreinforcing
+end
+function AUFTRAG:_IsReinforcing()
+local reinforcing=not self:_IsNotReinforcing()
+return reinforcing
 end
 function AUFTRAG:UpdateMarker()
 local text=string.format("%s %s: %s",self.name,self.type:upper(),self.status:upper())
