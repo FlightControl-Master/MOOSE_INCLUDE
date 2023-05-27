@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-26T09:42:26.0000000Z-725efc3e70c06fc27fec02015330e2b4a301849f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-27T12:38:30.0000000Z-709621967d96f231347c79a71a1a8506b8c507e4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -89264,6 +89264,10 @@ end
 return self.cargoStatus==OPSGROUP.CargoStatus.BOARDING
 end
 function OPSGROUP:IsLoaded(CarrierGroupName)
+local isloaded=self.cargoStatus==OPSGROUP.CargoStatus.LOADED
+if not isloaded then
+return false
+end
 if CarrierGroupName then
 if type(CarrierGroupName)~="table"then
 CarrierGroupName={CarrierGroupName}
@@ -89271,12 +89275,12 @@ end
 for _,CarrierName in pairs(CarrierGroupName)do
 local carrierGroup=self:_GetMyCarrierGroup()
 if carrierGroup and carrierGroup.groupname==CarrierName then
-return true
+return isloaded
 end
 end
 return false
 end
-return self.cargoStatus==OPSGROUP.CargoStatus.LOADED
+return isloaded
 end
 function OPSGROUP:IsBusy()
 if self:IsBoarding()then
