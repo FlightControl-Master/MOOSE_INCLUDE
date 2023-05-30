@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-28T13:27:34.0000000Z-2318578126e4abb87bac108f5131fecbc8a88fae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-30T05:38:19.0000000Z-f7acbc3928ba777b3cbf2a13b8b3836886be11e7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65382,10 +65382,10 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.17"
+CSAR.version="1.0.18"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
-BASE:T({Coalition,Prefixes,Alias})
+BASE:T({Coalition,Template,Alias})
 if Coalition and type(Coalition)=="string"then
 if Coalition=="blue"then
 self.coalition=coalition.side.BLUE
@@ -66353,7 +66353,7 @@ local _distance=0
 if _SETTINGS:IsImperial()then
 _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
-_distance=string.format("%.1fkm",_closest.distance)
+_distance=string.format("%.1fkm",_closest.distance/1000)
 end
 local _msg=string.format("%s - Popping signal flare at your %s o\'clock. Distance %s",self:_GetCustomCallSign(_unitName),_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true,true)
@@ -66581,6 +66581,7 @@ end
 if _group:IsAlive()then
 local _radioUnit=_group:GetUnit(1)
 if _radioUnit then
+local name=_radioUnit:GetName()
 local Frequency=_freq
 local name=_radioUnit:GetName()
 local Sound="l10n/DEFAULT/"..self.radioSound
