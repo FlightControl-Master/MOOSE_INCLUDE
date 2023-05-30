@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-30T05:38:48.0000000Z-39f29b066ba77599ab4998885f24d94613380bc8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-30T10:06:03.0000000Z-6773ac784193209d4e9154a4b8ef9d30eb34d3f6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -96091,8 +96091,9 @@ TaskSubType=nil,
 NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
+PreviousCount=0,
 }
-PLAYERTASK.version="0.1.14"
+PLAYERTASK.version="0.1.16"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -96123,6 +96124,7 @@ else
 self:E(self.lid.."*** NO VALID TARGET!")
 return self
 end
+self.PreviousCount=self.Target:CountTargets()
 self:T(self.lid.."Created.")
 self:SetStartState("Planned")
 self:AddTransition("*","Planned","Planned")
@@ -96130,6 +96132,7 @@ self:AddTransition("*","Requested","Requested")
 self:AddTransition("*","ClientAdded","*")
 self:AddTransition("*","ClientRemoved","*")
 self:AddTransition("*","Executing","Executing")
+self:AddTransition("*","Progress","*")
 self:AddTransition("*","Done","Done")
 self:AddTransition("*","Cancel","Done")
 self:AddTransition("*","Success","Done")
@@ -96402,12 +96405,26 @@ elseif successCondition then
 self:__Success(-2)
 status="Success"
 end
+if status~="Failed"and status~="Success"then
+local targetcount=self.Target:CountTargets()
+if targetcount<self.PreviousCount then
+self:__Progress(-2,targetcount)
+self.PreviousCount=targetcount
+end
+end
 if self.verbose then
 self:I(self.lid.."Target dead: "..tostring(targetdead).." | Clients alive: "..tostring(clientsalive))
 end
 self:__Status(-20)
 elseif status~="Stopped"then
 self:__Stop(-1)
+end
+return self
+end
+function PLAYERTASK:onafterProgress(From,Event,To,TargetCount)
+self:T({From,Event,To})
+if self.TaskController then
+self.TaskController:__TaskProgress(-1,self,TargetCount)
 end
 return self
 end
@@ -96765,6 +96782,7 @@ self:AddTransition("*","TaskDone","*")
 self:AddTransition("*","TaskCancelled","*")
 self:AddTransition("*","TaskSuccess","*")
 self:AddTransition("*","TaskFailed","*")
+self:AddTransition("*","TaskProgress","*")
 self:AddTransition("*","TaskTargetSmoked","*")
 self:AddTransition("*","TaskTargetFlared","*")
 self:AddTransition("*","TaskTargetIlluminated","*")
@@ -97922,12 +97940,12 @@ self:T(self.lid.."_BuildTaskInfoMenu")
 local taskinfomenu=nil
 if self.taskinfomenu then
 local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
-local taskinfomenu=MENU_GROUP_DELAYED:New(group,menutaskinfo,topmenu):SetTag(newtag)
+local taskinfomenu=MENU_GROUP:New(group,menutaskinfo,topmenu):SetTag(newtag)
 local ittypes={}
 local itaskmenu={}
 local tnow=timer.getTime()
 for _tasktype,_data in pairs(tasktypes)do
-ittypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,taskinfomenu):SetTag(newtag)
+ittypes[_tasktype]=MENU_GROUP:New(group,_tasktype,taskinfomenu):SetTag(newtag)
 local tasks=taskpertype[_tasktype]or{}
 local n=0
 for _,_task in pairs(tasks)do
@@ -97950,7 +97968,7 @@ if _task.TypeName then
 text=string.format("%s (%03d) [%d%s",_task.TypeName,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
-local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task):SetTag(newtag)
+local taskentry=MENU_GROUP_COMMAND:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task):SetTag(newtag)
 itaskmenu[#itaskmenu+1]=taskentry
 n=n+1
 if n>=self.menuitemlimit then
@@ -97994,6 +98012,7 @@ self:T("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enf
 if self.PlayerMenu[playername]then
 if joinorabort then
 self.PlayerMenu[playername]:RemoveSubMenus()
+self.PlayerMenu[playername]=MENU_GROUP:New(group,menuname,self.MenuParent)
 self.PlayerMenu[playername]:SetTag(newtag)
 topmenu=self.PlayerMenu[playername]
 elseif(not playerhastask)or enforced then
@@ -98001,16 +98020,11 @@ local T0=timer.getAbsTime()
 local TDiff=T0-self.PlayerMenu[playername].PTTimeStamp
 self:T("TDiff = "..string.format("%.2d",TDiff))
 if TDiff>=self.holdmenutime then
-self.PlayerMenu[playername]:RemoveSubMenus()
-self.PlayerMenu[playername]=MENU_GROUP_DELAYED:New(group,menuname,self.MenuParent)
-self.PlayerMenu[playername]:SetTag(newtag)
-self.PlayerMenu[playername].PTTimeStamp=timer.getAbsTime()
-timedbuild=true
 end
 topmenu=self.PlayerMenu[playername]
 end
 else
-topmenu=MENU_GROUP_DELAYED:New(group,menuname,self.MenuParent)
+topmenu=MENU_GROUP:New(group,menuname,self.MenuParent)
 self.PlayerMenu[playername]=topmenu
 self.PlayerMenu[playername]:SetTag(newtag)
 self.PlayerMenu[playername].PTTimeStamp=timer.getAbsTime()
@@ -98025,20 +98039,20 @@ local menumark=self.gettext:GetEntry("MENUMARK",self.locale)
 local menusmoke=self.gettext:GetEntry("MENUSMOKE",self.locale)
 local menuflare=self.gettext:GetEntry("MENUFLARE",self.locale)
 local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
-local active=MENU_GROUP_DELAYED:New(group,menuactive,topmenu):SetTag(newtag)
-local info=MENU_GROUP_COMMAND_DELAYED:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client):SetTag(newtag)
-local mark=MENU_GROUP_COMMAND_DELAYED:New(group,menumark,active,self._MarkTask,self,group,client):SetTag(newtag)
+local active=MENU_GROUP:New(group,menuactive,topmenu):SetTag(newtag)
+local info=MENU_GROUP_COMMAND:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client):SetTag(newtag)
+local mark=MENU_GROUP_COMMAND:New(group,menumark,active,self._MarkTask,self,group,client):SetTag(newtag)
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
 if self.noflaresmokemenu~=true then
-local smoke=MENU_GROUP_COMMAND_DELAYED:New(group,menusmoke,active,self._SmokeTask,self,group,client):SetTag(newtag)
-local flare=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._FlareTask,self,group,client):SetTag(newtag)
+local smoke=MENU_GROUP_COMMAND:New(group,menusmoke,active,self._SmokeTask,self,group,client):SetTag(newtag)
+local flare=MENU_GROUP_COMMAND:New(group,menuflare,active,self._FlareTask,self,group,client):SetTag(newtag)
 local IsNight=client:GetCoordinate():IsNight()
 if IsNight then
-local light=MENU_GROUP_COMMAND_DELAYED:New(group,menuflare,active,self._IlluminateTask,self,group,client):SetTag(newtag)
+local light=MENU_GROUP_COMMAND:New(group,menuflare,active,self._IlluminateTask,self,group,client):SetTag(newtag)
 end
 end
 end
-local abort=MENU_GROUP_COMMAND_DELAYED:New(group,menuabort,active,self._AbortTask,self,group,client):SetTag(newtag)
+local abort=MENU_GROUP_COMMAND:New(group,menuabort,active,self._AbortTask,self,group,client):SetTag(newtag)
 if self.activehasinfomenu and self.taskinfomenu then
 self:T("Building Active-Info Menus for "..playername)
 if self.PlayerInfoMenu[playername]then
@@ -98053,12 +98067,12 @@ local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
 if self.PlayerJoinMenu[playername]then
 self.PlayerJoinMenu[playername]:RemoveSubMenus(nil,oldtag)
 end
-local joinmenu=MENU_GROUP_DELAYED:New(group,menujoin,topmenu):SetTag(newtag)
+local joinmenu=MENU_GROUP:New(group,menujoin,topmenu):SetTag(newtag)
 self.PlayerJoinMenu[playername]=joinmenu
 local ttypes={}
 local taskmenu={}
 for _tasktype,_data in pairs(tasktypes)do
-ttypes[_tasktype]=MENU_GROUP_DELAYED:New(group,_tasktype,joinmenu):SetTag(newtag)
+ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,joinmenu):SetTag(newtag)
 local tasks=taskpertype[_tasktype]or{}
 local n=0
 for _,_task in pairs(tasks)do
@@ -98077,7 +98091,7 @@ if name~="Unknown"then
 text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
 end
 end
-local taskentry=MENU_GROUP_COMMAND_DELAYED:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task):SetTag(newtag)
+local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task):SetTag(newtag)
 taskmenu[#taskmenu+1]=taskentry
 n=n+1
 if n>=self.menuitemlimit then
@@ -98093,19 +98107,17 @@ end
 self.PlayerInfoMenu[playername]=self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype,newtag)
 end
 end
-if self.AllowFlash then
+if self.AllowFlash and topmenu~=nil then
 local flashtext=self.gettext:GetEntry("FLASHMENU",self.locale)
-local flashmenu=MENU_GROUP_COMMAND_DELAYED:New(group,flashtext,topmenu,self._SwitchFlashing,self,group,client):SetTag(newtag)
+local flashmenu=MENU_GROUP_COMMAND:New(group,flashtext,topmenu,self._SwitchFlashing,self,group,client):SetTag(newtag)
 end
 if self.TaskQueue:Count()==0 then
 self:T("No open tasks info")
 local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
-local joinmenu=MENU_GROUP_DELAYED:New(group,menunotasks,self.PlayerMenu[playername]):SetTag(newtag)
+local joinmenu=MENU_GROUP:New(group,menunotasks,self.PlayerMenu[playername]):SetTag(newtag)
 rebuilddone=true
 end
 if rebuilddone then
-self.PlayerMenu[playername]:RemoveSubMenus(nil,oldtag)
-self.PlayerMenu[playername]:Set()
 self.PlayerMenu[playername]:Refresh()
 end
 end
@@ -98333,7 +98345,9 @@ local assignedtasks=self.TasksPerPlayer:Count()
 local enforcedmenu=false
 if taskcount~=self.lasttaskcount then
 self.lasttaskcount=taskcount
+if taskcount<self.menuitemlimit then
 enforcedmenu=true
+end
 end
 self:_BuildMenus(nil,enforcedmenu)
 if self.verbose then
