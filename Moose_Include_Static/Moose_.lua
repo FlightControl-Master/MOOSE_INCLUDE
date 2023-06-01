@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-05-30T10:06:03.0000000Z-6773ac784193209d4e9154a4b8ef9d30eb34d3f6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-01T08:03:34.0000000Z-261f79851ca5610244b519f9e41fecc16d24e2ac ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7058,7 +7058,7 @@ function DATABASE:GetCoalitionFromAirbase(AirbaseName)
 return self.AIRBASES[AirbaseName]:GetCoalition()
 end
 function DATABASE:GetCategoryFromAirbase(AirbaseName)
-return self.AIRBASES[AirbaseName]:GetCategory()
+return self.AIRBASES[AirbaseName]:GetAirbaseCategory()
 end
 function DATABASE:_RegisterPlayers()
 local CoalitionsData={AlivePlayersRed=coalition.getPlayers(coalition.side.RED),AlivePlayersBlue=coalition.getPlayers(coalition.side.BLUE),AlivePlayersNeutral=coalition.getPlayers(coalition.side.NEUTRAL)}
@@ -16454,7 +16454,7 @@ self.SpawnInitModu=nil
 self.SpawnInitRadio=nil
 self.SpawnInitModex=nil
 self.SpawnInitAirbase=nil
-self.TweakedTemplate=true
+self.TweakedTemplate=false
 self.SpawnGroups={}
 else
 error("SPAWN:New: There is no group declared in the mission editor with SpawnTemplatePrefix = '"..SpawnTemplatePrefix.."'")
@@ -21552,6 +21552,12 @@ else
 self:T(string.format("%s, checking if group %s is on runway. Group is NOT alive.",self:GetName(),group:GetName()))
 end
 return false
+end
+function AIRBASE:GetCategory()
+return self.category
+end
+function AIRBASE:GetCategoryName()
+return AIRBASE.CategoryName[self.category]
 end
 CLIENT={
 ClassName="CLIENT",
