@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-01T08:02:51.0000000Z-dd7a883a33c4200579abe6110377b448d7f51ba4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-02T06:44:14.0000000Z-55ed39478246e4bcc83fd96a8ad83c315399d1d3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25140,6 +25140,7 @@ UNIT={
 ClassName="UNIT",
 UnitName=nil,
 GroupName=nil,
+DCSUnit=nil,
 }
 function UNIT:Register(UnitName)
 local self=BASE:Inherit(self,CONTROLLABLE:New(UnitName))
@@ -25150,6 +25151,7 @@ local group=unit:getGroup()
 if group then
 self.GroupName=group:getName()
 end
+self.DCSUnit=unit
 end
 self:SetEventPriority(3)
 return self
@@ -25173,6 +25175,9 @@ function UNIT:GetDCSObject()
 local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
 return DCSUnit
+end
+if self.DCSUnit then
+return self.DCSUnit
 end
 return nil
 end
@@ -61852,7 +61857,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.37"
+CTLD.version="1.0.38"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -64033,6 +64038,9 @@ if self:IsUnitInAir(Unit)then
 local uspeed=Unit:GetVelocityMPS()
 local uheight=Unit:GetHeight()
 local ucoord=Unit:GetCoordinate()
+if not ucoord then
+return false
+end
 local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
 local maxh=self.maximumHoverHeight
@@ -64051,6 +64059,9 @@ if self:IsUnitInAir(Unit)then
 local uspeed=Unit:GetVelocityMPS()
 local uheight=Unit:GetHeight()
 local ucoord=Unit:GetCoordinate()
+if not ucoord then
+return false
+end
 local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
 local minh=self.HercMinAngels
@@ -64113,6 +64124,9 @@ minheight=5.1
 end
 local uheight=Unit:GetHeight()
 local ucoord=Unit:GetCoordinate()
+if not ucoord then
+return false
+end
 local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
 if aheight>=minheight then
