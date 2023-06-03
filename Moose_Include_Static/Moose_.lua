@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-02T06:45:35.0000000Z-f7e64bc9b5980d5ceac4d905247ec211fa9dbbb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-03T10:35:05.0000000Z-823f8fb4fbd36a3871a4fc643415a16fb6e1d10e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -76064,7 +76064,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.38"
+CTLD.version="1.0.39"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -76257,6 +76257,8 @@ local _coalition=event.IniCoalition
 if _coalition~=self.coalition then
 return
 end
+local unitname=event.IniUnitName or"none"
+self.MenusDone[unitname]=nil
 local _unit=event.IniUnit
 local _group=event.IniGroup
 if _unit:IsHelicopter()or _group:IsHelicopter()then
@@ -76274,6 +76276,7 @@ elseif event.id==EVENTS.PlayerLeaveUnit then
 local unitname=event.IniUnitName or"none"
 self.CtldUnits[unitname]=nil
 self.Loaded_Cargo[unitname]=nil
+self.MenusDone[unitname]=nil
 end
 return self
 end
@@ -77613,6 +77616,9 @@ if _unit:IsAlive()and _unit:IsPlayer()then
 if _unit:IsHelicopter()or(self:IsHercules(_unit)and self.enableHercules)then
 local unitName=_unit:GetName()
 _UnitList[unitName]=unitName
+else
+local unitName=_unit:GetName()
+_UnitList[unitName]=nil
 end
 end
 end
