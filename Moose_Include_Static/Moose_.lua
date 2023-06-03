@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-03T10:35:05.0000000Z-823f8fb4fbd36a3871a4fc643415a16fb6e1d10e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-03T18:15:33.0000000Z-0a1d469c6813a04b3b4e7528f53404cb1fd754d5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -19489,13 +19489,15 @@ if Offset then
 if(Offset.dx or Offset.dy)and(Offset.rho or Offset.theta)then
 error("Cannot use (dx, dy) with (rho, theta)")
 end
+end
+local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneUNIT:GetVec2(),Radius,true))
+if Offset then
 self.dy=Offset.dy or 0.0
 self.dx=Offset.dx or 0.0
 self.rho=Offset.rho or 0.0
 self.theta=(Offset.theta or 0.0)*math.pi/180.0
 self.relative_to_unit=Offset.relative_to_unit or false
 end
-local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneUNIT:GetVec2(),Radius,true))
 self:F({ZoneName,ZoneUNIT:GetVec2(),Radius})
 self.ZoneUNIT=ZoneUNIT
 self.LastVec2=ZoneUNIT:GetVec2()
