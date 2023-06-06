@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-03T18:15:33.0000000Z-0a1d469c6813a04b3b4e7528f53404cb1fd754d5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-06T14:20:16.0000000Z-6f02f23240c3a4f4feb0f9cd51914fb70ef60d43 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -97827,7 +97827,7 @@ CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordTex
 end
 end
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
-local ttstext=string.format(ThreatLocaleTextTTS,self.MenuName or self.Name,ttsplayername,ttstaskname,ThreatLevelText,targets,CoordText)
+local ttstext=string.format(ThreatLocaleTextTTS,ttsplayername,self.MenuName or self.Name,ttstaskname,ThreatLevelText,targets,CoordText)
 if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.precisionbombing then
 if self.LasingDrone.playertask.inreach and self.LasingDrone:IsLasing()then
 local lasingtext=self.gettext:GetEntry("POINTERTARGETLASINGTTS",self.locale)
