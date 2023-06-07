@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-06T14:20:16.0000000Z-6f02f23240c3a4f4feb0f9cd51914fb70ef60d43 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-07T15:26:20.0000000Z-73ff2c576dd0da17d416a15325b8144a216183da ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -73292,7 +73292,7 @@ return self
 end
 function COMMANDER:AddOpsTransport(Transport)
 Transport.commander=self
-Transport.statusCommander=TRANSPORT.Status.PLANNED
+Transport.statusCommander=OPSTRANSPORT.Status.PLANNED
 table.insert(self.transportqueue,Transport)
 return self
 end
