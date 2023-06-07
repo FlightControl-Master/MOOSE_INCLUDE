@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-07T15:26:20.0000000Z-73ff2c576dd0da17d416a15325b8144a216183da ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-07T15:25:49.0000000Z-910da86cafe009c066a9a6359e5c20f768343eba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -96752,7 +96752,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.58"
+PLAYERTASKCONTROLLER.version="0.1.59"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
