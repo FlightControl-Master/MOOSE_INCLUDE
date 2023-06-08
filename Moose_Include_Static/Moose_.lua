@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-03T10:34:18.0000000Z-41bb2551d336032bdb7ed6bda07d6b0f8292a8b8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T07:45:49.0000000Z-f351d2a37ec9bdf0017812966d159a8fab87402a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -38558,6 +38558,7 @@ Debug=false,
 rat={},
 name={},
 alive={},
+planned={},
 min={},
 nrat=0,
 ntot=nil,
@@ -38579,6 +38580,7 @@ ratobject.f10menu=false
 self.nrat=self.nrat+1
 self.rat[self.nrat]=ratobject
 self.alive[self.nrat]=0
+self.planned[self.nrat]=0
 self.name[self.nrat]=ratobject.alias
 self.min[self.nrat]=min or 1
 self:T(RATMANAGER.id..string.format("Adding ratobject %s with min flights = %d",self.name[self.nrat],self.min[self.nrat]))
@@ -38651,9 +38653,15 @@ local time=0.0
 for i=1,self.nrat do
 for j=1,N[i]do
 time=time+self.dTspawn
-SCHEDULER:New(nil,RAT._SpawnWithRoute,{self.rat[i]},time)
+self.planned[i]=self.planned[i]+1
+SCHEDULER:New(nil,RATMANAGER._Spawn,{self,i},time)
 end
 end
+end
+function RATMANAGER:_Spawn(i)
+local rat=self.rat[i]
+rat:_SpawnWithRoute()
+self.planned[i]=self.planned[i]-1
 end
 function RATMANAGER:_Count()
 local ntotal=0
@@ -38668,7 +38676,7 @@ end
 end
 self.alive[i]=n
 ntotal=ntotal+n
-local text=string.format("Number of alive groups of %s = %d",self.name[i],n)
+local text=string.format("Number of alive groups of %s = %d, planned=%d",self.name[i],n,self.planned[i])
 self:T(RATMANAGER.id..text)
 end
 return ntotal
@@ -38685,9 +38693,10 @@ local N={}
 local M={}
 local P={}
 for i=1,nrat do
+local a=alive[i]+self.planned[i]
 N[#N+1]=0
-M[#M+1]=math.max(alive[i],min[i])
-P[#P+1]=math.max(min[i]-alive[i],0)
+M[#M+1]=math.max(a,min[i])
+P[#P+1]=math.max(min[i]-a,0)
 end
 local mini={}
 local maxi={}
@@ -38698,7 +38707,7 @@ end
 local done={}
 local nnew=ntot
 for i=1,nrat do
-nnew=nnew-alive[i]
+nnew=nnew-alive[i]-self.planned[i]
 end
 for i=1,nrat-1 do
 local r=math.random(#rattab)
@@ -38714,7 +38723,7 @@ N[j]=math.random(mini[j],maxi[j])
 else
 N[j]=0
 end
-self:T3(string.format("RATMANAGER: i=%d, alive=%d, min=%d, mini=%d, maxi=%d, add=%d, sumN=%d, sumP=%d",j,alive[j],min[j],mini[j],maxi[j],N[j],sN,sP))
+self:T3(string.format("RATMANAGER: i=%d, alive=%d, planned=%d, min=%d, mini=%d, maxi=%d, add=%d, sumN=%d, sumP=%d",j,alive[j],self.planned[i],min[j],mini[j],maxi[j],N[j],sN,sP))
 end
 local j=rattab[1]
 N[j]=nnew-sum(N,done)
@@ -38724,7 +38733,7 @@ table.remove(rattab,1)
 table.insert(done,j)
 local text=RATMANAGER.id.."\n"
 for i=1,nrat do
-text=text..string.format("%s: i=%d, alive=%d, min=%d, mini=%d, maxi=%d, add=%d\n",self.name[i],i,alive[i],min[i],mini[i],maxi[i],N[i])
+text=text..string.format("%s: i=%d, alive=%d, planned=%d, min=%d, mini=%d, maxi=%d, add=%d\n",self.name[i],i,alive[i],self.planned[i],min[i],mini[i],maxi[i],N[i])
 end
 text=text..string.format("Total # of groups to add = %d",sum(N,done))
 self:T(text)
