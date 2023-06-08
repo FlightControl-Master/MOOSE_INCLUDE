@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T07:46:24.0000000Z-569b3df6aff42f55783f68d2a92d528b92298d16 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T11:57:03.0000000Z-4314959cbbef8962b793925f173d9bcbd0b79677 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -46149,23 +46149,27 @@ local PlayerData=self.Players[PlayerName]
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix..Text,
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","GOAL_"..string.upper(GoalTag),1,Score,nil)
 end
 end
 function SCORING:AddGoalScore(PlayerUnit,GoalTag,Text,Score)
 local PlayerName=PlayerUnit:GetPlayerName()
-self:F({PlayerUnit.UnitName,PlayerName,GoalTag,Text,Score})
+self:T2({PlayerUnit.UnitName,PlayerName,GoalTag,Text,Score})
 if PlayerName then
 local PlayerData=self.Players[PlayerName]
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix..Text,
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","GOAL_"..string.upper(GoalTag),1,Score,PlayerUnit:GetName())
 end
 end
@@ -46184,9 +46188,11 @@ self:T(PlayerName)
 self:T(PlayerData.Mission[MissionName])
 PlayerData.Score=self.Players[PlayerName].Score+Score
 PlayerData.Mission[MissionName].ScoreTask=self.Players[PlayerName].Mission[MissionName].ScoreTask+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix..Mission:GetText().." : "..Text.." Score: "..Score,
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","TASK_"..MissionName:gsub(' ','_'),1,Score,PlayerUnit:GetName())
 end
 end
@@ -46204,7 +46210,9 @@ self:T(PlayerName)
 self:T(PlayerData.Mission[MissionName])
 PlayerData.Score=self.Players[PlayerName].Score+Score
 PlayerData.Mission[MissionName].ScoreTask=self.Players[PlayerName].Mission[MissionName].ScoreTask+Score
+if Text then
 MESSAGE:NewType(string.format("%s%s: %s! Player %s receives %d score!",self.DisplayMessagePrefix,Mission:GetText(),Text,PlayerName,Score),MESSAGE.Type.Information):ToAll()
+end
 self:ScoreCSV(PlayerName,"","TASK_"..MissionName:gsub(' ','_'),1,Score)
 end
 end
@@ -46217,9 +46225,11 @@ self:F(PlayerData)
 if PlayerData.Mission[MissionName]then
 PlayerData.Score=PlayerData.Score+Score
 PlayerData.Mission[MissionName].ScoreMission=PlayerData.Mission[MissionName].ScoreMission+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' has "..Text.." in "..Mission:GetText()..". "..Score.." mission score!",
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","MISSION_"..MissionName:gsub(' ','_'),1,Score)
 end
 end
@@ -96130,7 +96140,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.16"
+PLAYERTASK.version="0.1.17"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -96283,6 +96293,9 @@ local name=Client:GetPlayerName()
 if not self.Clients:HasUniqueID(name)then
 self.Clients:Push(Client,name)
 self:__ClientAdded(-2,Client)
+end
+if self.TaskController and self.TaskController.Scoring then
+self.TaskController.Scoring:_AddPlayerFromUnit(Client)
 end
 return self
 end
@@ -96461,6 +96474,14 @@ end
 function PLAYERTASK:onafterProgress(From,Event,To,TargetCount)
 self:T({From,Event,To})
 if self.TaskController then
+if self.TaskController.Scoring then
+local clients,count=self:GetClientObjects()
+if count>0 then
+for _,_client in pairs(clients)do
+self.TaskController.Scoring:AddGoalScore(_client,self.Type,nil,10)
+end
+end
+end
 self.TaskController:__TaskProgress(-1,self,TargetCount)
 end
 return self
@@ -96521,6 +96542,15 @@ end
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
+if self.TaskController.Scoring then
+local clients,count=self:GetClientObjects()
+if count>0 then
+for _,_client in pairs(clients)do
+local auftrag=self:GetSubType()
+self.TaskController.Scoring:AddGoalScore(_client,self.Type,nil,self.TaskController.Scores[self.Type])
+end
+end
+end
 self.timestamp=timer.getAbsTime()
 self.FinalState="Success"
 self:__Done(-1)
@@ -96541,6 +96571,15 @@ self.TargetMarker:Remove()
 end
 self.FinalState="Failed"
 self:__Done(-1)
+end
+if self.TaskController.Scoring then
+local clients,count=self:GetClientObjects()
+if count>0 then
+for _,_client in pairs(clients)do
+local auftrag=self:GetSubType()
+self.TaskController.Scoring:AddGoalScore(_client,self.Type,nil,-self.TaskController.Scores[self.Type])
+end
+end
 end
 self.timestamp=timer.getAbsTime()
 return self
@@ -96586,6 +96625,7 @@ ShowMagnetic=true,
 InfoHasLLDDM=false,
 InfoHasCoordinate=false,
 UseTypeNames=false,
+Scoring=nil,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -96596,6 +96636,19 @@ A2GS="Air-To-Ground-Sea",
 AUFTRAG.Type.PRECISIONBOMBING="Precision Bombing"
 AUFTRAG.Type.CTLD="Combat Transport"
 AUFTRAG.Type.CSAR="Combat Rescue"
+PLAYERTASKCONTROLLER.Scores={
+[AUFTRAG.Type.PRECISIONBOMBING]=100,
+[AUFTRAG.Type.CTLD]=100,
+[AUFTRAG.Type.CSAR]=100,
+[AUFTRAG.Type.INTERCEPT]=100,
+[AUFTRAG.Type.ANTISHIP]=100,
+[AUFTRAG.Type.CAS]=100,
+[AUFTRAG.Type.BAI]=100,
+[AUFTRAG.Type.SEAD]=100,
+[AUFTRAG.Type.BOMBING]=100,
+[AUFTRAG.Type.PRECISIONBOMBING]=100,
+[AUFTRAG.Type.BOMBRUNWAY]=100,
+}
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
 AAA=GROUP.Attribute.GROUND_AAA,
@@ -96761,7 +96814,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.59"
+PLAYERTASKCONTROLLER.version="0.1.60"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -96836,6 +96889,14 @@ self:HandleEvent(EVENTS.Crash,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:I(self.lid..self.version.." Started.")
+return self
+end
+function PLAYERTASKCONTROLLER:EnableScoring(Scoring)
+self.Scoring=Scoring or SCORING:New(self.Name)
+return self
+end
+function PLAYERTASKCONTROLLER:DisableScoring()
+self.Scoring=nil
 return self
 end
 function PLAYERTASKCONTROLLER:_InitLocalization()
