@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T11:57:03.0000000Z-4314959cbbef8962b793925f173d9bcbd0b79677 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T17:55:30.0000000Z-7a16a5dda8325fff0191c3cd34d4ad93c969052d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -50747,7 +50747,11 @@ self:_DebugMessage(string.format("Warehouse %s alias %s was destroyed!",warehous
 self:Destroyed()
 end
 if self.airbase and self.airbasename and self.airbasename==EventData.IniUnitName then
+if self:IsRunwayOperational()then
 self:RunwayDestroyed()
+else
+self.runwaydestroyed=timer.getAbsTime()
+end
 end
 end
 self:T2(self.lid..string.format("Warehouse %s captured event dead or crash or unit %s",self.alias,tostring(EventData.IniUnitName)))
@@ -61633,7 +61637,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="1.0.0"
+ARMYGROUP.version="1.0.1"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -61958,9 +61962,9 @@ end
 if self.taskcurrent>0 then
 local task=self:GetTaskByID(self.taskcurrent)
 if task then
-if task.dcstask.id=="PatrolZone"then
+if task.dcstask.id==AUFTRAG.SpecialTask.PATROLZONE then
 self:T2(self.lid.."Allowing update route for Task: PatrolZone")
-elseif task.dcstask.id=="ReconMission"then
+elseif task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 self:T2(self.lid.."Allowing update route for Task: ReconMission")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
 self:T2(self.lid.."Allowing update route for Task: Relocate Cohort")
@@ -81758,7 +81762,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="1.0.0"
+FLIGHTGROUP.version="1.0.1"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -82156,6 +82160,11 @@ local DCSTask=mission:GetDCSMissionTask()
 local Task=mission:GetGroupWaypointTask(self)
 self.controller:resetTask()
 self:_SandwitchDCSTask(DCSTask,Task,false,1)
+end
+elseif mission.type==AUFTRAG.Type.CAPTUREZONE then
+local Task=mission:GetGroupWaypointTask(self)
+if mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING or mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.STARTED then
+self:_UpdateTask(Task,mission)
 end
 end
 end
@@ -82733,11 +82742,13 @@ end
 if self.taskcurrent>0 then
 local task=self:GetTaskByID(self.taskcurrent)
 if task then
-if task.dcstask.id=="PatrolZone"then
+if task.dcstask.id==AUFTRAG.SpecialTask.PATROLZONE then
 self:T2(self.lid.."Allowing update route for Task: PatrolZone")
-elseif task.dcstask.id=="ReconMission"then
+elseif task.dcstask.id==AUFTRAG.SpecialTask.CAPTUREZONE then
+self:T2(self.lid.."Allowing update route for Task: CaptureZone")
+elseif task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 self:T2(self.lid.."Allowing update route for Task: ReconMission")
-elseif task.dcstask.id=="Hover"then
+elseif task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
 self:T2(self.lid.."Allowing update route for Task: Hover")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
 self:T2(self.lid.."Allowing update route for Task: Relocate Cohort")
@@ -86685,7 +86696,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="1.0.0"
+NAVYGROUP.version="1.0.1"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -86912,6 +86923,15 @@ end
 end
 end
 end
+local mission=self:GetMissionCurrent()
+if mission and mission.updateDCSTask then
+if mission.type==AUFTRAG.Type.CAPTUREZONE then
+local Task=mission:GetGroupWaypointTask(self)
+if mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.EXECUTING or mission:GetGroupStatus(self)==AUFTRAG.GroupStatus.STARTED then
+self:_UpdateTask(Task,mission)
+end
+end
+end
 else
 self:_CheckDamage()
 end
@@ -87046,9 +87066,9 @@ end
 if self.taskcurrent>0 then
 local task=self:GetTaskByID(self.taskcurrent)
 if task then
-if task.dcstask.id=="PatrolZone"then
+if task.dcstask.id==AUFTRAG.SpecialTask.PATROLZONE then
 self:T2(self.lid.."Allowing update route for Task: PatrolZone")
-elseif task.dcstask.id=="ReconMission"then
+elseif task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 self:T2(self.lid.."Allowing update route for Task: ReconMission")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
 self:T2(self.lid.."Allowing update route for Task: Relocate Cohort")
@@ -90116,7 +90136,12 @@ if targetgroup then
 self:T(self.lid..string.format("Zone %s NOT captured: engaging target %s",zoneCurr:GetName(),targetgroup:GetName()))
 self:EngageTarget(targetgroup)
 else
+if self:IsFlightgroup()then
+self:T(self.lid..string.format("Zone %s not captured but no target group could be found ==> TaskDone as FLIGHTGROUPS cannot capture zones",zoneCurr:GetName()))
+self:TaskDone(Task)
+else
 self:T(self.lid..string.format("Zone %s not captured but no target group could be found. Should be captured in the next zone evaluation.",zoneCurr:GetName()))
+end
 end
 else
 self:T(self.lid..string.format("Zone %s NOT captured and NOT EXECUTING",zoneCurr:GetName()))
@@ -90268,9 +90293,12 @@ if status~=AUFTRAG.GroupStatus.PAUSED then
 if Mission.type==AUFTRAG.Type.CAPTUREZONE and Mission:CountMissionTargets()>0 then
 self:T(self.lid.."Remove mission waypoints")
 self:_RemoveMissionWaypoints(Mission,false)
+if self:IsFlightgroup()then
+else
 self:T(self.lid.."Task done ==> Route to mission for next opszone")
 self:MissionStart(Mission)
 return
+end
 end
 local EgressUID=Mission:GetGroupEgressWaypointUID(self)
 if EgressUID then
@@ -93760,6 +93788,7 @@ end
 return self
 end
 function OPSGROUP:SetDefaultCallsign(CallsignName,CallsignNumber)
+self:T(self.lid..string.format("Setting Default callsing %s-%s",tostring(CallsignName),tostring(CallsignNumber)))
 self.callsignDefault={}
 self.callsignDefault.NumberSquad=CallsignName
 self.callsignDefault.NumberGroup=CallsignNumber or 1
@@ -95422,6 +95451,7 @@ verbose=0,
 Nred=0,
 Nblu=0,
 Nnut=0,
+Ncoal={},
 Tred=0,
 Tblu=0,
 Tnut=0,
@@ -95481,6 +95511,9 @@ _DATABASE:AddOpsZone(self)
 self.ownerCurrent=CoalitionOwner or coalition.side.NEUTRAL
 self.ownerPrevious=CoalitionOwner or coalition.side.NEUTRAL
 self.isContested=false
+self.Ncoal[coalition.side.BLUE]=0
+self.Ncoal[coalition.side.RED]=0
+self.Ncoal[coalition.side.NEUTRAL]=0
 if self.airbase then
 self.ownerCurrent=self.airbase:GetCoalition()
 self.ownerPrevious=self.airbase:GetCoalition()
@@ -95873,6 +95906,9 @@ end
 self.Nred=Nred
 self.Nblu=Nblu
 self.Nnut=Nnut
+self.Ncoal[coalition.side.BLUE]=Nblu
+self.Ncoal[coalition.side.RED]=Nred
+self.Ncoal[coalition.side.NEUTRAL]=Nnut
 self.Tblu=Tblu
 self.Tred=Tred
 self.Tnut=Tnut
