@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T07:45:49.0000000Z-f351d2a37ec9bdf0017812966d159a8fab87402a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-08T11:58:26.0000000Z-2c14ee74b020bdca6cb1c3145b198e88120e0efb ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -30108,23 +30108,27 @@ local PlayerData=self.Players[PlayerName]
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix..Text,
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","GOAL_"..string.upper(GoalTag),1,Score,nil)
 end
 end
 function SCORING:AddGoalScore(PlayerUnit,GoalTag,Text,Score)
 local PlayerName=PlayerUnit:GetPlayerName()
-self:F({PlayerUnit.UnitName,PlayerName,GoalTag,Text,Score})
+self:T2({PlayerUnit.UnitName,PlayerName,GoalTag,Text,Score})
 if PlayerName then
 local PlayerData=self.Players[PlayerName]
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix..Text,
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","GOAL_"..string.upper(GoalTag),1,Score,PlayerUnit:GetName())
 end
 end
@@ -30143,9 +30147,11 @@ self:T(PlayerName)
 self:T(PlayerData.Mission[MissionName])
 PlayerData.Score=self.Players[PlayerName].Score+Score
 PlayerData.Mission[MissionName].ScoreTask=self.Players[PlayerName].Mission[MissionName].ScoreTask+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix..Mission:GetText().." : "..Text.." Score: "..Score,
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","TASK_"..MissionName:gsub(' ','_'),1,Score,PlayerUnit:GetName())
 end
 end
@@ -30163,7 +30169,9 @@ self:T(PlayerName)
 self:T(PlayerData.Mission[MissionName])
 PlayerData.Score=self.Players[PlayerName].Score+Score
 PlayerData.Mission[MissionName].ScoreTask=self.Players[PlayerName].Mission[MissionName].ScoreTask+Score
+if Text then
 MESSAGE:NewType(string.format("%s%s: %s! Player %s receives %d score!",self.DisplayMessagePrefix,Mission:GetText(),Text,PlayerName,Score),MESSAGE.Type.Information):ToAll()
+end
 self:ScoreCSV(PlayerName,"","TASK_"..MissionName:gsub(' ','_'),1,Score)
 end
 end
@@ -30176,9 +30184,11 @@ self:F(PlayerData)
 if PlayerData.Mission[MissionName]then
 PlayerData.Score=PlayerData.Score+Score
 PlayerData.Mission[MissionName].ScoreMission=PlayerData.Mission[MissionName].ScoreMission+Score
+if Text then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' has "..Text.." in "..Mission:GetText()..". "..Score.." mission score!",
 MESSAGE.Type.Information)
 :ToAll()
+end
 self:ScoreCSV(PlayerName,"","MISSION_"..MissionName:gsub(' ','_'),1,Score)
 end
 end
