@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-09T11:25:29.0000000Z-fd51ec6932732133761db085d66abf6f3719839b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-09T13:16:41.0000000Z-dabe8a58d106a2f3c56536fb092f1a88b56313b8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20683,6 +20683,38 @@ AIRBASE.SouthAtlantic={
 ["Aerodromo_O_Higgins"]="Aerodromo O'Higgins",
 ["Cullen_Airport"]="Cullen Airport",
 ["Gull_Point"]="Gull Point",
+}
+AIRBASE.Sinai={
+["Hatzerim"]="Hatzerim",
+["Abu_Suwayr"]="Abu Suwayr",
+["Sde_Dov"]="Sde Dov",
+["AzZaqaziq"]="AzZaqaziq",
+["Hatzor"]="Hatzor",
+["Kedem"]="Kedem",
+["Nevatim"]="Nevatim",
+["Cairo_International_Airport"]="Cairo International Airport",
+["Al_Ismailiyah"]="Al Ismailiyah",
+["As_Salihiyah"]="As Salihiyah",
+["Fayed"]="Fayed",
+["Bilbeis_Air_Base"]="Bilbeis Air Base",
+["Ramon_Airbase"]="Ramon Airbase",
+["Kibrit_Air_Base"]="Kibrit Air Base",
+["El_Arish"]="El Arish",
+["Ovda"]="Ovda",
+["Melez"]="Melez",
+["Al_Mansurah"]="Al Mansurah",
+["Palmahim"]="Palmahim",
+["Baluza"]="Baluza",
+["El_Gora"]="El Gora",
+["Difarsuwar_Airfield"]="Difarsuwar Airfield",
+["Wadi_al_Jandali"]="Wadi al Jandali",
+["St_Catherine"]="St Catherine",
+["Tel_Nof"]="Tel Nof",
+["Abu_Rudeis"]="Abu Rudeis",
+["Inshas_Airbase"]="Inshas Airbase",
+["Ben-Gurion"]="Ben-Gurion",
+["Bir_Hasanah"]="Bir Hasanah",
+["Cairo_West"]="Cairo West",
 }
 AIRBASE.TerminalType={
 Runway=16,
