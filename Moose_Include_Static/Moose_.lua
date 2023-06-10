@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-09T13:13:45.0000000Z-e9adcb0dd5f7588f325ff05e1b59164283d8304c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-10T08:08:22.0000000Z-f1fc9f0b2775a645e6fc92fcee8f2015c14c5eaf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2142,6 +2142,7 @@ TheChannel="TheChannel",
 Syria="Syria",
 MarianaIslands="MarianaIslands",
 Falklands="Falklands",
+Sinai="SinaiMap"
 }
 CALLSIGN={
 Aircraft={
@@ -2986,6 +2987,8 @@ elseif map==DCSMAP.MarianaIslands then
 declination=2
 elseif map==DCSMAP.Falklands then
 declination=12
+elseif map==DCSMAP.Sinai then
+declination=4.8
 else
 declination=0
 end
@@ -3143,6 +3146,8 @@ elseif theatre==DCSMAP.MarianaIslands then
 return 10
 elseif theatre==DCSMAP.Falklands then
 return-3
+elseif theatre==DCSMAP.Sinai then
+return 2
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
