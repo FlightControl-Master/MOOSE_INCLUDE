@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-10T08:08:35.0000000Z-6d1030925c9987839ee7c596170bc937e9a8dd84 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-10T22:52:13.0000000Z-3bbd55cfc23fa2cf1d2c7a58ff436a119a3a6a07 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -88355,7 +88355,7 @@ else
 for _,element in pairs(self.elements)do
 local l,l0=self:GetLifePoints(element)
 life=life+l
-life0=life+l0
+life0=life0+l0
 end
 end
 return life,life0
