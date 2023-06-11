@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-10T17:08:46.0000000Z-3a7521c492238841b56864672f895df2b7b75d67 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-11T10:33:01.0000000Z-b3883301a23832248c3926dfc8f9e40135632656 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26594,7 +26594,7 @@ AIRBASE.Sinai={
 ["Tel_Nof"]="Tel Nof",
 ["Abu_Rudeis"]="Abu Rudeis",
 ["Inshas_Airbase"]="Inshas Airbase",
-["Ben-Gurion"]="Ben-Gurion",
+["Ben_Gurion"]="Ben-Gurion",
 ["Bir_Hasanah"]="Bir Hasanah",
 ["Cairo_West"]="Cairo West",
 }
