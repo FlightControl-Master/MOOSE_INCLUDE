@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-10T22:52:13.0000000Z-3bbd55cfc23fa2cf1d2c7a58ff436a119a3a6a07 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-11T20:52:28.0000000Z-d31db1351a659e77abdabee98629e2347c8153ac ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -64340,7 +64340,7 @@ mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.CASENHANCE
 mission:SetEngageDetected(RangeMax,TargetTypes or{"Helicopters","Ground Units","Light armed ships"},CasZone,NoEngageZoneSet)
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.EvadeFire
-mission.missionFraction=1.0
+mission.missionFraction=0.5
 mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
 mission.dTevaluate=15
