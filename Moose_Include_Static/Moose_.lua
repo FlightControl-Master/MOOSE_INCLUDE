@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T06:39:56.0000000Z-241b2beee1992ed78ef400dd0b02131da8395be1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T17:02:55.0000000Z-cc907b9c14e31939160aca00c3a9b2f43260aced ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25292,8 +25292,8 @@ end
 function UNIT:IsAlive()
 self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
-if DCSUnit then
-local UnitIsAlive=DCSUnit:isExist()and DCSUnit:isActive()
+if DCSUnit and DCSUnit:isExist()then
+local UnitIsAlive=DCSUnit:isActive()
 return UnitIsAlive
 end
 return nil
