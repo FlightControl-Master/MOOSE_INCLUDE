@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T14:02:00.0000000Z-4a0307457176faaa27f8c5e3af1c0297d94db952 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T16:00:18.0000000Z-27e85e921fe387a74de8fc780d3c4ff0cf461be1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27136,9 +27136,6 @@ function UNIT:GetDCSObject()
 local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
 return DCSUnit
-end
-if self.DCSUnit then
-return self.DCSUnit
 end
 return nil
 end
