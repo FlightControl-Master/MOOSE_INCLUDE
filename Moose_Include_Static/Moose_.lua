@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T06:40:21.0000000Z-2cedb5e99628dbded66e9086dcf42a59a72b3686 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T14:02:00.0000000Z-4a0307457176faaa27f8c5e3af1c0297d94db952 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -88812,7 +88812,7 @@ local vec3=nil
 local carrier=self:_GetMyCarrierElement()
 if carrier and carrier.status~=OPSGROUP.ElementStatus.DEAD and self:IsLoaded()then
 local unit=carrier.unit
-if unit and unit:IsAlive()~=nil then
+if unit and unit:IsExist()then
 vec3=unit:GetVec3()
 return vec3
 end
@@ -94220,7 +94220,7 @@ Ammo.MissilesCR=0
 Ammo.MissilesSA=0
 for _,_unit in pairs(units or{})do
 local unit=_unit
-if unit and unit:IsAlive()~=nil then
+if unit and unit:IsExist()then
 local ammo=self:GetAmmoUnit(unit)
 Ammo.Total=Ammo.Total+ammo.Total
 Ammo.Guns=Ammo.Guns+ammo.Guns
@@ -94241,7 +94241,6 @@ function OPSGROUP:GetAmmoUnit(unit,display)
 if display==nil then
 display=false
 end
-unit=unit or self.group:GetUnit(1)
 local nammo=0
 local nshells=0
 local nrockets=0
@@ -94254,6 +94253,8 @@ local nmissilesBM=0
 local nmissilesCR=0
 local ntorps=0
 local nbombs=0
+unit=unit or self.group:GetUnit(1)
+if unit and unit:IsExist()then
 local text=string.format("OPSGROUP group %s - unit %s:\n",self.groupname,unit:GetName())
 local ammotable=unit:GetAmmo()
 if ammotable then
@@ -94312,6 +94313,7 @@ if display then
 self:I(self.lid..text)
 else
 self:T3(self.lid..text)
+end
 end
 nammo=nshells+nrockets+nmissiles+nbombs+ntorps
 local ammo={}
