@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T17:09:42.0000000Z-d96a55d83cc854c152cda0e071d8db01fa462e14 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T19:53:29.0000000Z-c3ffffbb52e1a13ce83e6f17d282ec93926330f9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18513,7 +18513,7 @@ ClassName="TIMER",
 lid=nil,
 }
 _TIMERID=0
-TIMER.version="0.1.2"
+TIMER.version="0.2.0"
 function TIMER:New(Function,...)
 local self=BASE:Inherit(self,BASE:New())
 self.func=Function
@@ -18550,7 +18550,16 @@ self.Tstop=timer.getTime()+Delay
 else
 if self.tid then
 self:T(self.lid..string.format("Stopping timer by removing timer function after %d calls!",self.ncalls))
+local status=pcall(
+function()
 timer.removeFunction(self.tid)
+end
+)
+if status then
+self:T2(self.lid..string.format("Stopped timer!"))
+else
+self:E(self.lid..string.format("WARNING: Could not remove timer function! isrunning=%s",tostring(self.isrunning)))
+end
 self.isrunning=false
 end
 end
