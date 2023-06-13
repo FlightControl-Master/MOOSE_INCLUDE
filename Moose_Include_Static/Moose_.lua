@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-12T21:01:19.0000000Z-12f260e857714d9b47c3b583598756fe347316e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T06:39:56.0000000Z-241b2beee1992ed78ef400dd0b02131da8395be1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20674,14 +20674,19 @@ end
 function POSITIONABLE:GetVec3()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
+local status,vec3=pcall(
+function()
 local vec3=DCSPositionable:getPoint()
-if vec3 then
+return vec3
+end
+)
+if status then
 return vec3
 else
-self:E("ERROR: Cannot get vec3!")
+self:E({"Cannot get Vec3 from DCS Object",Positionable=self,Alive=self:IsAlive()})
 end
 end
-self:E({"Cannot GetVec3",Positionable=self,Alive=self:IsAlive()})
+self:E({"Cannot get the Positionable DCS Object for GetVec3",Positionable=self,Alive=self:IsAlive()})
 return nil
 end
 function POSITIONABLE:GetVec2()
@@ -25467,8 +25472,15 @@ function UNIT:GetAmmo()
 self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
+local status,unitammo=pcall(
+function()
 local UnitAmmo=DCSUnit:getAmmo()
 return UnitAmmo
+end
+)
+if status then
+return unitammo
+end
 end
 return nil
 end
