@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-13T19:53:19.0000000Z-f86fc845e79dc6bf97449f31f73f891eb4449b2b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-14T15:40:33.0000000Z-71be4d99d6b043c3cc77f0e5e73023885fea347f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20787,6 +20787,62 @@ local a={x=x.x+y.x+z.x,y=x.y+y.y+z.y,z=x.z+y.z+z.z}
 local u=self:GetVec3()
 local v={x=a.x+u.x,y=a.y+u.y,z=a.z+u.z}
 local coord=COORDINATE:NewFromVec3(v)
+return coord
+end
+function POSITIONABLE:GetRelativeCoordinate(x,y,z)
+x=x or 0
+y=y or 0
+z=z or 0
+local selfPos=self:GetVec3()
+local X=self:GetOrientationX()
+local Y=self:GetOrientationY()
+local Z=self:GetOrientationZ()
+local off={
+x=x-selfPos.x,
+y=y-selfPos.y,
+z=z-selfPos.z
+}
+local res={x=0,y=0,z=0}
+local mat={
+{X.x,Y.x,Z.x,off.x},
+{X.y,Y.y,Z.y,off.y},
+{X.z,Y.z,Z.z,off.z}
+}
+local m=3
+local n=4
+local h=1
+local k=1
+while h<=m and k<=n do
+local v_max=math.abs(mat[h][k])
+local i_max=h
+for i=h,m,1 do
+local value=math.abs(mat[i][k])
+if value>v_max then
+i_max=i
+v_max=value
+end
+end
+if mat[i_max][k]==0 then
+k=k+1
+else
+local tmp=mat[h]
+mat[h]=mat[i_max]
+mat[i_max]=tmp
+for i=h+1,m,1 do
+local f=mat[i][k]/mat[h][k]
+mat[i][k]=0
+for j=k+1,n,1 do
+mat[i][j]=mat[i][j]-f*mat[h][j]
+end
+end
+h=h+1
+k=k+1
+end
+end
+res.z=mat[3][4]/mat[3][3]
+res.y=(mat[2][4]-res.z*mat[2][3])/mat[2][2]
+res.x=(mat[1][4]-res.y*mat[1][2]-res.z*mat[1][3])/mat[1][1]
+local coord=COORDINATE:NewFromVec3(res)
 return coord
 end
 function POSITIONABLE:GetRandomVec3(Radius)
