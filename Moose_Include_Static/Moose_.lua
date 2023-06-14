@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-14T15:41:13.0000000Z-0cf35b664f13552045ec74c05a904311b168970d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-14T22:39:45.0000000Z-14ddba69b0df14b554d2572ddcc9777b822acac2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72432,7 +72432,7 @@ end
 function CHIEF:RecruitAssetsForZone(StratZone,Resource)
 local Cohorts=self.commander:_GetCohorts()
 local MissionType=Resource.MissionType
-local NassetsMin=Resource.Nmax
+local NassetsMin=Resource.Nmin
 local NassetsMax=Resource.Nmax
 local Categories=Resource.Categories
 local Attributes=Resource.Attributes
