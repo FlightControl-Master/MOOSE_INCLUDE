@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-14T22:39:45.0000000Z-14ddba69b0df14b554d2572ddcc9777b822acac2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-15T12:50:11.0000000Z-aec3eee3a583775e8a677eed8d7e855e42df30d7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28243,7 +28243,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.1.1",
+Version="0.1.2",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -28319,7 +28319,8 @@ id=PlayerID,
 side=PlayerSide,
 slot=PlayerSlot,
 }
-self:__PlayerJoined(1,data.IniUnit,name)
+local client=CLIENT:FindByPlayerName(name)or data.IniUnit
+self:__PlayerJoined(1,client,name)
 return self
 end
 end
@@ -28626,7 +28627,7 @@ return nil
 end
 end
 function NET:onafterStatus(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 local function HouseHold(tavolo)
 local TNow=timer.getTime()
 for _,entry in pairs(tavolo)do
@@ -28643,7 +28644,7 @@ end
 return self
 end
 function NET:onafterRun(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
@@ -28651,7 +28652,7 @@ self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.Ejection,self._EventHandler)
 self:HandleEvent(EVENTS.Crash,self._EventHandler)
 self:HandleEvent(EVENTS.SelfKillPilot,self._EventHandler)
-self:__Status(-30)
+self:__Status(-10)
 end
 function NET:onafterStop(From,Event,To)
 self:T({From,Event,To})
