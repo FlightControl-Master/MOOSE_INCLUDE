@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-15T12:52:09.0000000Z-d4c2de9dd188170136fe3552779d004bb5b94dbf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-15T17:15:34.0000000Z-f28d92e86527994dc369d123acaa4ad8e0ab2d24 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -25972,17 +25972,8 @@ end
 function POSITIONABLE:GetVec3()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
-local status,vec3=pcall(
-function()
 local vec3=DCSPositionable:getPoint()
 return vec3
-end
-)
-if status then
-return vec3
-else
-self:E({"Cannot get Vec3 from DCS Object",Positionable=self,Alive=self:IsAlive()})
-end
 end
 self:E({"Cannot get the Positionable DCS Object for GetVec3",Positionable=self,Alive=self:IsAlive()})
 return nil
@@ -27485,15 +27476,8 @@ function UNIT:GetAmmo()
 self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
-local status,unitammo=pcall(
-function()
 local UnitAmmo=DCSUnit:getAmmo()
 return UnitAmmo
-end
-)
-if status then
-return unitammo
-end
 end
 return nil
 end
@@ -66425,7 +66409,13 @@ coord.y=self.missionAltitude
 end
 return coord
 end
-local waypointcoord=group:GetCoordinate():GetIntermediateCoordinate(self:GetTargetCoordinate(),self.missionFraction)
+local waypointcoord=COORDINATE:New(0,0,0)
+local coord=group:GetCoordinate()
+if coord then
+waypointcoord=coord:GetIntermediateCoordinate(self:GetTargetCoordinate(),self.missionFraction)
+else
+self:E(self.lid..string.format("ERROR: Cannot get coordinate of group %s (alive=%s)!",tostring(group:GetName()),tostring(group:IsAlive())))
+end
 local alt=waypointcoord.y
 if randomradius then
 waypointcoord=ZONE_RADIUS:New("Temp",waypointcoord:GetVec2(),randomradius):GetRandomCoordinate(nil,nil,surfacetypes):SetAltitude(alt,false)
@@ -72255,7 +72245,9 @@ for _,_startzone in pairs(self.zonequeue)do
 local stratzone=_startzone
 local ownercoalition=stratzone.opszone:GetOwner()
 local zoneName=stratzone.opszone.zone:GetName()
-if ownercoalition~=self.coalition and(stratzone.importance==nil or stratzone.importance<=vip)and(not stratzone.opszone:IsStopped())then
+if(ownercoalition~=self.coalition or(ownercoalition==self.coalition and stratzone.opszone:IsEmpty()))
+and(stratzone.importance==nil or stratzone.importance<=vip)
+and(not stratzone.opszone:IsStopped())then
 self:T(self.lid..string.format("Zone %s [%s] is owned by coalition %d",zoneName,stratzone.opszone:GetState(),ownercoalition))
 if stratzone.opszone:IsEmpty()then
 for _,_resource in pairs(stratzone.resourceEmpty or{})do
