@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-16T09:11:37.0000000Z-bfe7bf1af511b54f10c35ca4eafecf8ab3748b79 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-16T16:18:18.0000000Z-c80213b4cfb0dc60ebed975adeb92e60d8d1cf97 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -28291,20 +28291,23 @@ local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
 local TNow=timer.getTime()
 self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
-self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid.." | Event ID: "..data.id)
 local blocked=self:IsAnyBlocked(ucid,name,PlayerID,PlayerSide,PlayerSlot)
 if blocked and PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
 else
+local client=CLIENT:FindByPlayerName(name)or data.IniUnit
+if not self.KnownPilots[name]or(self.KnownPilots[name]and TNow-self.KnownPilots[name].timestamp>3)then
+self:__PlayerJoined(1,client,name)
 self.KnownPilots[name]={
 name=name,
 ucid=ucid,
 id=PlayerID,
 side=PlayerSide,
 slot=PlayerSlot,
+timestamp=TNow,
 }
-local client=CLIENT:FindByPlayerName(name)or data.IniUnit
-self:__PlayerJoined(1,client,name)
+end
 return self
 end
 end
@@ -52960,7 +52963,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.3.0"
+AIRBOSS.version="1.3.1"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -53467,7 +53470,32 @@ function AIRBOSS:SetBeaconRefresh(TimeInterval)
 self.dTbeacon=TimeInterval or(20*60)
 return self
 end
-function AIRBOSS:SetLSORadio(Frequency,Modulation)
+function AIRBOSS:EnableSRS(PathToSRS,Port,Culture,Gender,Voice,GoogleCreds,Volume,AltBackend)
+local Frequency=self.MarshalRadio.frequency
+local Modulation=self.MarshalRadio.modulation
+self.SRS=MSRS:New(PathToSRS,Frequency,Modulation,Volume,AltBackend)
+self.SRS:SetCoalition(self:GetCoalition())
+self.SRS:SetCoordinate(self:GetCoordinate())
+self.SRS:SetCulture(Culture or"en-US")
+self.SRS:SetGender(Gender or"male")
+self.SRS:SetPath(PathToSRS)
+self.SRS:SetPort(Port or 5002)
+self.SRS:SetLabel(self.MarshalRadio.alias or"AIRBOSS")
+if GoogleCreds then
+self.SRS:SetGoogle(GoogleCreds)
+end
+if Voice then
+self.SRS:SetVoice(Voice)
+end
+self.SRS:SetVolume(Volume or 1.0)
+self.SRSQ=MSRSQUEUE:New("AIRBOSS")
+self.SRSQ:SetTransmitOnlyWithPlayers(true)
+if not self.PilotRadio then
+self:SetSRSPilotVoice()
+end
+return self
+end
+function AIRBOSS:SetLSORadio(Frequency,Modulation,Voice,Gender,Culture)
 self.LSOFreq=(Frequency or 264)
 Modulation=Modulation or"AM"
 if Modulation=="FM"then
@@ -53479,9 +53507,12 @@ self.LSORadio={}
 self.LSORadio.frequency=self.LSOFreq
 self.LSORadio.modulation=self.LSOModu
 self.LSORadio.alias="LSO"
+self.LSORadio.voice=Voice
+self.LSORadio.gender=Gender or"male"
+self.LSORadio.culture=Culture or"en-US"
 return self
 end
-function AIRBOSS:SetMarshalRadio(Frequency,Modulation)
+function AIRBOSS:SetMarshalRadio(Frequency,Modulation,Voice,Gender,Culture)
 self.MarshalFreq=Frequency or 305
 Modulation=Modulation or"AM"
 if Modulation=="FM"then
@@ -53493,6 +53524,9 @@ self.MarshalRadio={}
 self.MarshalRadio.frequency=self.MarshalFreq
 self.MarshalRadio.modulation=self.MarshalModu
 self.MarshalRadio.alias="MARSHAL"
+self.MarshalRadio.voice=Voice
+self.MarshalRadio.gender=Gender or"male"
+self.MarshalRadio.culture=Culture or"en-US"
 return self
 end
 function AIRBOSS:SetRadioUnitName(unitname)
@@ -59277,6 +59311,7 @@ self:F2({radio=radio,call=call,loud=loud,delay=delay,interval=interval,click=cli
 if radio==nil or call==nil then
 return
 end
+if not self.SRS then
 local transmission={}
 transmission.radio=radio
 transmission.call=call
@@ -59310,6 +59345,55 @@ end
 if click then
 self:RadioTransmission(radio,self[caller].CLICK,false,delay)
 end
+else
+local frequency=self.MarshalRadio.frequency
+local modulation=self.MarshalRadio.modulation
+local voice=nil
+local gender=nil
+local culture=nil
+if radio.alias=="MARSHAL"or radio.alias=="AIRBOSS"then
+voice=self.MarshalRadio.voice
+gender=self.MarshalRadio.gender
+culture=self.MarshalRadio.culture
+end
+if radio.alias=="LSO"then
+frequency=self.LSORadio.frequency
+modulation=self.LSORadio.modulation
+voice=self.LSORadio.voice
+gender=self.LSORadio.gender
+culture=self.LSORadio.culture
+end
+if pilotcall then
+voice=self.PilotRadio.voice
+gender=self.PilotRadio.gender
+culture=self.PilotRadio.culture
+radio.alias="PILOT"
+end
+if not radio.alias then
+frequency=243
+modulation=radio.modulation.AM
+radio.alias="AIRBOSS"
+end
+local volume=nil
+if loud then
+volume=1.0
+end
+local text=call.subtitle
+self:I(text)
+local srstext=string.gsub(text,"\n","; ")
+self.SRSQ:NewTransmission(srstext,call.duration,self.SRS,tstart,0.1,subgroups,call.subtitle,call.subduration,frequency,modulation,gender,culture,voice,volume,radio.alias)
+end
+end
+function AIRBOSS:SetSRSPilotVoice(Voice,Gender,Culture)
+self.PilotRadio={}
+self.PilotRadio.alias="PILOT"
+self.PilotRadio.voice=Voice or MSRS.Voices.Microsoft.David
+self.PilotRadio.gender=Gender or"male"
+self.PilotRadio.culture=Culture or"en-US"
+if(not Voice)and self.SRS and self.SRS.google then
+self.PilotRadio.voice=MSRS.Voices.Google.Standard.en_US_Standard_J
+end
+return self
 end
 function AIRBOSS:_NeedsSubtitle(call)
 if call.file==self.MarshalCall.NOISE.file or call.file==self.LSOCall.NOISE.file then
@@ -59438,6 +59522,7 @@ self:T(self.lid..text)
 if delay and delay>0 then
 self:ScheduleOnce(delay,self.MessageToPlayer,self,playerData,message,sender,receiver,duration,clear)
 else
+if not self.SRS then
 local wait=0
 if receiver==playerData.onboard then
 if sender and(sender=="LSO"or sender=="MARSHAL"or sender=="AIRBOSS")then
@@ -59462,6 +59547,32 @@ end
 if wait>0 then
 local filename=self:_RadioFilename(self.MarshalCall.CLICK)
 USERSOUND:New(filename):ToGroup(playerData.group,wait)
+end
+else
+local frequency=self.MarshalRadio.frequency
+local modulation=self.MarshalRadio.modulation
+local voice=nil
+local gender=nil
+local culture=nil
+if sender=="MARSHAL"or sender=="AIRBOSS"then
+voice=self.MarshalRadio.voice
+gender=self.MarshalRadio.gender
+culture=self.MarshalRadio.culture
+end
+if sender=="LSO"then
+frequency=self.LSORadio.frequency
+modulation=self.LSORadio.modulation
+voice=self.LSORadio.voice
+gender=self.LSORadio.gender
+culture=self.LSORadio.culture
+elseif not sender then
+frequency=243
+modulation=radio.modulation.AM
+sender="AIRBOSS"
+end
+self:I(text)
+local srstext=string.gsub(text,"\n","; ")
+self.SRSQ:NewTransmission(srstext,duration,self.SRS,tstart,0.1,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,sender)
 end
 if playerData.client then
 MESSAGE:New(text,duration,sender,clear):ToClient(playerData.client)
@@ -60083,7 +60194,7 @@ local call=self:_NewRadioCall(self.LSOCall.SPINIT,"AIRBOSS","Spin it!",self.Tmes
 self:RadioTransmission(self.LSORadio,call,nil,nil,nil,true)
 if playerData.difficulty==AIRBOSS.Difficulty.EASY then
 local text="Climb to 1200 feet and proceed to the initial again."
-self:MessageToPlayer(playerData,text,"INSTRUCTOR","")
+self:MessageToPlayer(playerData,text,"AIRBOSS","")
 end
 return
 end
@@ -112147,7 +112258,7 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation)
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label)
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
@@ -112176,12 +112287,17 @@ transmission.subduration=subduration or transmission.duration
 else
 transmission.subduration=0
 end
+transmission.gender=gender
+transmission.culture=culture
+transmission.voice=voice
+transmission.gender=volume
+transmission.label=label
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
 if transmission.frequency then
-transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,Gender,Culture,Voice,Volume,Label)
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label)
 else
 transmission.msrs:PlayText(transmission.text)
 end
