@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-17T13:01:33.0000000Z-a3876c296e4c3e80b2da92a461caf7a6ba1ccb31 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-17T23:08:10.0000000Z-97376320f4b4b2ca20b33192ad87c98f6f4ed685 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -65342,10 +65342,10 @@ end
 function AUFTRAG:GetOpsTransport()
 return self.opstransport
 end
-function AUFTRAG:SetRequiredTransport(DeployZone,NcarriersMin,NcarriersMax,DisembarkZone)
+function AUFTRAG:SetRequiredTransport(DeployZone,NcarriersMin,NcarriersMax,DisembarkZone,Categories,Attributes,Properties)
 self.transportDeployZone=DeployZone
 self.transportDisembarkZone=DisembarkZone
-self:SetRequiredCarriers(NcarriersMin,NcarriersMax)
+self:SetRequiredCarriers(NcarriersMin,NcarriersMax,Categories,Attributes,Properties)
 return self
 end
 function AUFTRAG:AddTransportCarriers(Carriers)
@@ -65369,12 +65369,15 @@ function AUFTRAG:SetRequiredProperty(Properties)
 self.properties=UTILS.EnsureTable(Properties,true)
 return self
 end
-function AUFTRAG:SetRequiredCarriers(NcarriersMin,NcarriersMax)
+function AUFTRAG:SetRequiredCarriers(NcarriersMin,NcarriersMax,Categories,Attributes,Properties)
 self.NcarriersMin=NcarriersMin or 1
 self.NcarriersMax=NcarriersMax or self.NcarriersMin
 if self.NcarriersMax<self.NcarriersMin then
 self.NcarriersMax=self.NcarriersMin
 end
+self.carrierCategories=UTILS.EnsureTable(Categories,true)
+self.carrierAttributes=UTILS.EnsureTable(Attributes,true)
+self.carrierProperties=UTILS.EnsureTable(Properties,true)
 return self
 end
 function AUFTRAG:SetProhibitAfterburner()
@@ -74100,7 +74103,7 @@ if EscortAvail then
 if mission.NcarriersMin then
 local Transport=nil
 local Legions=mission.transportLegions or self.legions
-TransportAvail,Transport=LEGION.AssignAssetsForTransport(self,Legions,assets,mission.NcarriersMin,mission.NcarriersMax,mission.transportDeployZone,mission.transportDisembarkZone)
+TransportAvail,Transport=LEGION.AssignAssetsForTransport(self,Legions,assets,mission.NcarriersMin,mission.NcarriersMax,mission.transportDeployZone,mission.transportDisembarkZone,mission.carrierCategories,mission.carrierAttributes,mission.carrierProperties)
 if TransportAvail and Transport then
 mission.opstransport=Transport
 end
@@ -74195,7 +74198,7 @@ local Cohorts=LEGION._GetCohorts(legions,cohorts)
 local transportcohorts={}
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
-local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Categories,Attributes,Properties,nil,TargetVec2)
+local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Mission.carrierCategories,Mission.carrierAttributes,Mission.carrierProperties,nil,TargetVec2)
 if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
 MaxWeight=cohort.cargobayLimit
 end
@@ -85671,7 +85674,7 @@ if EscortAvail then
 local Transport=nil
 if mission.NcarriersMin then
 local Legions=mission.transportLegions or{self}
-TransportAvail,Transport=self:AssignAssetsForTransport(Legions,assets,mission.NcarriersMin,mission.NcarriersMax,mission.transportDeployZone,mission.transportDisembarkZone)
+TransportAvail,Transport=self:AssignAssetsForTransport(Legions,assets,mission.NcarriersMin,mission.NcarriersMax,mission.transportDeployZone,mission.transportDisembarkZone,mission.carrierCategories,mission.carrierAttributes,mission.carrierProperties)
 end
 if TransportAvail and Transport then
 mission.opstransport=Transport
@@ -86369,7 +86372,7 @@ local Cohorts=LEGION._GetCohorts(legions,cohorts)
 local transportcohorts={}
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
-local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Categories,Attributes,Properties,nil,TargetVec2)
+local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Mission.carrierCategories,Mission.carrierAttributes,Mission.carrierProperties,nil,TargetVec2)
 if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
 MaxWeight=cohort.cargobayLimit
 end
