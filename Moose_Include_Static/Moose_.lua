@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-16T16:18:18.0000000Z-c80213b4cfb0dc60ebed975adeb92e60d8d1cf97 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-17T13:01:33.0000000Z-a3876c296e4c3e80b2da92a461caf7a6ba1ccb31 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -52987,6 +52987,7 @@ self:_InitWaypoints()
 self.currentwp=1
 self:_PatrolRoute()
 self:SetMarshalRadio()
+self:SetAirbossRadio()
 self:SetLSORadio()
 self:SetLSOCallInterval()
 self.radiotimer=SCHEDULER:New()
@@ -53471,8 +53472,8 @@ self.dTbeacon=TimeInterval or(20*60)
 return self
 end
 function AIRBOSS:EnableSRS(PathToSRS,Port,Culture,Gender,Voice,GoogleCreds,Volume,AltBackend)
-local Frequency=self.MarshalRadio.frequency
-local Modulation=self.MarshalRadio.modulation
+local Frequency=self.AirbossRadio.frequency
+local Modulation=self.AirbossRadio.modulation
 self.SRS=MSRS:New(PathToSRS,Frequency,Modulation,Volume,AltBackend)
 self.SRS:SetCoalition(self:GetCoalition())
 self.SRS:SetCoordinate(self:GetCoordinate())
@@ -53480,7 +53481,7 @@ self.SRS:SetCulture(Culture or"en-US")
 self.SRS:SetGender(Gender or"male")
 self.SRS:SetPath(PathToSRS)
 self.SRS:SetPort(Port or 5002)
-self.SRS:SetLabel(self.MarshalRadio.alias or"AIRBOSS")
+self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 if GoogleCreds then
 self.SRS:SetGoogle(GoogleCreds)
 end
@@ -53510,6 +53511,27 @@ self.LSORadio.alias="LSO"
 self.LSORadio.voice=Voice
 self.LSORadio.gender=Gender or"male"
 self.LSORadio.culture=Culture or"en-US"
+return self
+end
+function AIRBOSS:SetAirbossRadio(Frequency,Modulation,Voice,Gender,Culture)
+self.AirbossFreq=Frequency or self:_GetTowerFrequency()or 127.5
+Modulation=Modulation or"AM"
+if type(Modulation)=="table"then
+self.AirbossModu=Modulation
+else
+if Modulation=="FM"then
+self.AirbossModu=radio.modulation.FM
+else
+self.AirbossModu=radio.modulation.AM
+end
+end
+self.AirbossRadio={}
+self.AirbossRadio.frequency=self.AirbossFreq
+self.AirbossRadio.modulation=self.AirbossModu
+self.AirbossRadio.alias="AIRBOSS"
+self.AirbossRadio.voice=Voice
+self.AirbossRadio.gender=Gender or"male"
+self.AirbossRadio.culture=Culture or"en-US"
 return self
 end
 function AIRBOSS:SetMarshalRadio(Frequency,Modulation,Voice,Gender,Culture)
@@ -59351,7 +59373,14 @@ local modulation=self.MarshalRadio.modulation
 local voice=nil
 local gender=nil
 local culture=nil
-if radio.alias=="MARSHAL"or radio.alias=="AIRBOSS"then
+if radio.alias=="AIRBOSS"then
+frequency=self.AirbossRadio.frequency
+modulation=self.AirbossRadio.modulation
+voice=self.AirbossRadio.voice
+gender=self.AirbossRadio.gender
+culture=self.AirbossRadio.culture
+end
+if radio.alias=="MARSHAL"then
 voice=self.MarshalRadio.voice
 gender=self.MarshalRadio.gender
 culture=self.MarshalRadio.culture
@@ -59370,8 +59399,8 @@ culture=self.PilotRadio.culture
 radio.alias="PILOT"
 end
 if not radio.alias then
-frequency=243
-modulation=radio.modulation.AM
+frequency=self.AirbossRadio.frequency
+modulation=self.AirbossRadio.modulation
 radio.alias="AIRBOSS"
 end
 local volume=nil
@@ -59379,8 +59408,8 @@ if loud then
 volume=1.0
 end
 local text=call.subtitle
-self:I(text)
-local srstext=string.gsub(text,"\n","; ")
+self:I(self.lid..text)
+local srstext=self:_GetNiceSRSText(text)
 self.SRSQ:NewTransmission(srstext,call.duration,self.SRS,tstart,0.1,subgroups,call.subtitle,call.subduration,frequency,modulation,gender,culture,voice,volume,radio.alias)
 end
 end
@@ -59508,7 +59537,34 @@ end
 local filename=string.format("%s%s.%s",path,prefix,suffix)
 return filename
 end
+function AIRBOSS:_GetNiceSRSText(text)
+text=string.gsub(text,"================================\n","")
+text=string.gsub(text,"||","parallel")
+text=string.gsub(text,"==","perpendicular")
+text=string.gsub(text,"BRC","Base recovery")
+text=string.gsub(text,"#","Number")
+text=string.gsub(text,"°C","° Celsius")
+text=string.gsub(text,"°"," degrees")
+text=string.gsub(text," FB "," Final bearing ")
+text=string.gsub(text," ops"," operations ")
+text=string.gsub(text," kts"," knots")
+text=string.gsub(text,"TACAN","Tackan")
+text=string.gsub(text,"ICLS","I.C.L.S.")
+text=string.gsub(text,"LSO","L.S.O.")
+text=string.gsub(text,"inHg","inches of Mercury")
+text=string.gsub(text,"QFE","Q.F.E.")
+text=string.gsub(text,"hPa","hecto pascal")
+text=string.gsub(text," NM"," nautical miles")
+text=string.gsub(text," ft"," feet")
+text=string.gsub(text,"A/C","aircraft")
+text=string.gsub(text,"%.000"," dot zero")
+text=string.gsub(text,"00"," double zero")
+text=string.gsub(text," 0 "," zero ")
+text=string.gsub(text,"\n","; ")
+return text
+end
 function AIRBOSS:MessageToPlayer(playerData,message,sender,receiver,duration,clear,delay)
+self:I({sender,receiver,message})
 if playerData and message and message~=""then
 duration=duration or self.Tmessage
 local text
@@ -59551,13 +59607,16 @@ end
 else
 local frequency=self.MarshalRadio.frequency
 local modulation=self.MarshalRadio.modulation
-local voice=nil
-local gender=nil
-local culture=nil
-if sender=="MARSHAL"or sender=="AIRBOSS"then
-voice=self.MarshalRadio.voice
-gender=self.MarshalRadio.gender
-culture=self.MarshalRadio.culture
+local voice=self.MarshalRadio.voice
+local gender=self.MarshalRadio.gender
+local culture=self.MarshalRadio.culture
+if not sender then sender="AIRBOSS"end
+if string.find(sender,"AIRBOSS")then
+frequency=self.AirbossRadio.frequency
+modulation=self.AirbossRadio.modulation
+voice=self.AirbossRadio.voice
+gender=self.AirbossRadio.gender
+culture=self.AirbossRadio.culture
 end
 if sender=="LSO"then
 frequency=self.LSORadio.frequency
@@ -59565,13 +59624,10 @@ modulation=self.LSORadio.modulation
 voice=self.LSORadio.voice
 gender=self.LSORadio.gender
 culture=self.LSORadio.culture
-elseif not sender then
-frequency=243
-modulation=radio.modulation.AM
-sender="AIRBOSS"
 end
-self:I(text)
-local srstext=string.gsub(text,"\n","; ")
+self:I(self.lid..text)
+self:I({sender,frequency,modulation,voice})
+local srstext=self:_GetNiceSRSText(text)
 self.SRSQ:NewTransmission(srstext,duration,self.SRS,tstart,0.1,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,sender)
 end
 if playerData.client then
