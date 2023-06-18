@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-18T10:19:37.0000000Z-1cdbe55cddf89f803eb37b92cf797ee032258259 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-18T11:29:07.0000000Z-5456cd04c3d2336f9f1aa775d212198ca5a79246 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -97136,7 +97136,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.60"
+PLAYERTASKCONTROLLER.version="0.1.60a"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -97479,8 +97479,9 @@ end
 playername=self:_GetTextForSpeech(playername)
 local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
-if EventData.IniUnitName then
-self:_BuildMenus(CLIENT:FindByName(EventData.IniUnitName))
+if EventData.IniPlayerName then
+self.PlayerMenu[EventData.IniPlayerName]=nil
+self:_BuildMenus(CLIENT:FindByPlayerName(EventData.IniPlayerName))
 end
 end
 end
@@ -98401,6 +98402,12 @@ return taskinfomenu
 end
 function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced,fromsuccess)
 self:T(self.lid.."_BuildMenus")
+if self.MenuBuildLocked and(timer.getAbsTime()-self.MenuBuildLocked<2)then
+self:ScheduleOnce(2,self._BuildMenus,self,Client,enforced,fromsuccess)
+return self
+else
+self.MenuBuildLocked=timer.getAbsTime()
+end
 local clients=self.ClientSet:GetAliveSet()
 local joinorabort=false
 local timedbuild=false
@@ -98543,6 +98550,7 @@ end
 end
 end
 end
+self.MenuBuildLocked=false
 return self
 end
 function PLAYERTASKCONTROLLER:AddAgent(Recce)
