@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-18T11:29:07.0000000Z-5456cd04c3d2336f9f1aa775d212198ca5a79246 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-21T08:25:00.0000000Z-970275e96e8c781e47cb4d92b509e838a0a30849 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -52963,7 +52963,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.3.1"
+AIRBOSS.version="1.3.2"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -57763,7 +57763,22 @@ local vabs=UTILS.VecNorm(vT)
 return-vpa,vpp,vabs
 end
 function AIRBOSS:GetHeadingIntoWind(magnetic,coord)
-local windfrom,vwind=self:GetWind(nil,nil,coord)
+local function adjustDegreesForWindSpeed(windSpeed)
+local degreesAdjustment=0
+if windSpeed>0 and windSpeed<3 then
+degreesAdjustment=30
+elseif windSpeed>=3 and windSpeed<5 then
+degreesAdjustment=20
+elseif windSpeed>=5 and windSpeed<8 then
+degreesAdjustment=8
+elseif windSpeed>=8 and windSpeed<13 then
+degreesAdjustment=4
+elseif windSpeed>=13 then
+degreesAdjustment=0
+end
+return degreesAdjustment
+end
+local windfrom,vwind=self:GetWind(nil,nil,coord)+adjustDegreesForWindSpeed(vwind)
 local intowind=windfrom-self.carrierparam.rwyangle
 if vwind<0.1 then
 intowind=self:GetHeading()
