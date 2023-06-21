@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-21T08:43:40.0000000Z-cdbbad809a35ebe0da644545d5db14a99fc63e9c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-21T12:05:17.0000000Z-1df525b9c588e635201e3ac1fc8b333829e2335d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58821,7 +58821,7 @@ self.carrier:Route(wp)
 end
 function AIRBOSS:CarrierTurnIntoWind(time,vdeck,uturn)
 local _,vwind=self:GetWind()
-local vtot=math.max(vdeck-vwind,UTILS.KnotsToMps(2))
+local vtot=math.max(vdeck-vwind,UTILS.KnotsToMps(4))
 local dist=vtot*time
 local speedknots=UTILS.MpsToKnots(vtot)
 local distNM=UTILS.MetersToNM(dist)
@@ -87458,7 +87458,7 @@ IntoWind.Coordinate=self:GetCoordinate(true)
 self.intowind=IntoWind
 local _,vwind=self:GetWind()
 vwind=UTILS.MpsToKnots(vwind)
-local speed=math.max(IntoWind.Speed-vwind,2)
+local speed=math.max(IntoWind.Speed-vwind,4)
 self:T(self.lid..string.format("Steaming into wind: Heading=%03d Speed=%.1f Vwind=%.1f Vtot=%.1f knots, Tstart=%d Tstop=%d",IntoWind.Heading,speed,vwind,speed+vwind,IntoWind.Tstart,IntoWind.Tstop))
 local distance=UTILS.NMToMeters(1000)
 local coord=self:GetCoordinate()
