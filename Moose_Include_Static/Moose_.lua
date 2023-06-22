@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-21T12:05:17.0000000Z-1df525b9c588e635201e3ac1fc8b333829e2335d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-22T07:34:02.0000000Z-ac386d5ebefe8e0d92a79c50d3c4bebcbc9ee480 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -57777,7 +57777,8 @@ degreesAdjustment=0
 end
 return degreesAdjustment
 end
-local windfrom,vwind=self:GetWind(nil,nil,coord)+adjustDegreesForWindSpeed(vwind)
+local windfrom,vwind=self:GetWind(nil,nil,coord)
+vwind=vwind+adjustDegreesForWindSpeed(vwind)
 local intowind=windfrom-self.carrierparam.rwyangle
 if vwind<0.1 then
 intowind=self:GetHeading()
@@ -60691,7 +60692,7 @@ if state=="Idle"then
 state="Deck closed"
 end
 if self.turning then
-state=state.." (turning currently)"
+state=state.." (currently turning)"
 end
 local text=string.format("%s info:\n",self.alias)
 text=text..string.format("================================\n")
