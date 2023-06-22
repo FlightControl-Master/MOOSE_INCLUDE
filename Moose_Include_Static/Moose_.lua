@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-21T08:42:35.0000000Z-7164e211f27bb634d248807751d09831c89bfc23 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-22T11:46:11.0000000Z-d937ab26795a1dd4a518c129db581a3e19bc38a7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -61706,7 +61706,7 @@ function CTLD_CARGO:SetHasMoved(moved)
 self.HasBeenMoved=moved or false
 end
 function CTLD_CARGO:Isloaded()
-if self.HasBeenMoved and not self.WasDropped()then
+if self.HasBeenMoved and not self:WasDropped()then
 return true
 else
 return false
@@ -61980,7 +61980,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.39"
+CTLD.version="1.0.40"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -62096,6 +62096,7 @@ self.saveinterval=600
 self.eventoninject=true
 self.usesubcats=false
 self.subcats={}
+self.subcatsTroop={}
 self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
@@ -63553,6 +63554,12 @@ if not self.subcats[entry.Subcategory]then
 self.subcats[entry.Subcategory]=entry.Subcategory
 end
 end
+for _id,_cargo in pairs(self.Cargo_Troops)do
+local entry=_cargo
+if not self.subcatsTroop[entry.Subcategory]then
+self.subcatsTroop[entry.Subcategory]=entry.Subcategory
+end
+end
 end
 local menucount=0
 local menus={}
@@ -63585,10 +63592,23 @@ local flareself=MENU_GROUP_COMMAND:New(_group,"Fire flare now",smoketopmenu,self
 local beaconself=MENU_GROUP_COMMAND:New(_group,"Drop beacon now",smoketopmenu,self.DropBeaconNow,self,_unit):Refresh()
 if cantroops then
 local troopsmenu=MENU_GROUP:New(_group,"Load troops",toptroops)
+if self.usesubcats then
+local subcatmenus={}
+for _name,_entry in pairs(self.subcatsTroop)do
+subcatmenus[_name]=MENU_GROUP:New(_group,_name,troopsmenu)
+end
+for _,_entry in pairs(self.Cargo_Troops)do
+local entry=_entry
+local subcat=entry.Subcategory
+menucount=menucount+1
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
+end
+else
 for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
 menucount=menucount+1
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
+end
 end
 local unloadmenu1=MENU_GROUP_COMMAND:New(_group,"Drop troops",toptroops,self._UnloadTroops,self,_group,_unit):Refresh()
 local extractMenu1=MENU_GROUP_COMMAND:New(_group,"Extract troops",toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
@@ -63666,7 +63686,7 @@ end
 end
 return outcome
 end
-function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass,Stock)
+function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass,Stock,SubCategory)
 self:T(self.lid.." AddTroopsCargo")
 self:T({Name,Templates,Type,NoTroops,PerTroopMass,Stock})
 if not self:_CheckTemplates(Templates)then
@@ -63674,7 +63694,7 @@ self:E(self.lid.."Troops Cargo for "..Name.." has missing template(s)!")
 return self
 end
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass,Stock)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass,Stock,SubCategory)
 table.insert(self.Cargo_Troops,cargo)
 return self
 end
