@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-22T11:52:19.0000000Z-e9c1b6d268c560bd112cfb1ab0c0393ea71a4f0e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-24T12:04:32.0000000Z-248228720e9d57c52f2e1c02e72922975bdf6abe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -62975,7 +62975,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.14"
+ATIS.version="0.9.15"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -63868,14 +63868,17 @@ end
 end
 end
 alltext=alltext..";\n"..subtitle
+local _RUNACT
 if not self.ATISforFARPs then
+if runwayLanding then
 local subtitle=string.format("Active runway %s",runwayLanding)
 if rwyLandingLeft==true then
 subtitle=subtitle.." Left"
 elseif rwyLandingLeft==false then
 subtitle=subtitle.." Right"
 end
-local _RUNACT=subtitle
+end
+_RUNACT=subtitle
 if not self.useSRS then
 self:Transmission(ATIS.Sound.ActiveRunway,1.0,subtitle)
 self.radioqueue:Number2Transmission(runwayLanding)
@@ -64128,7 +64131,11 @@ runway=self.airbase:GetActiveRunwayTakeoff()
 else
 runway=self.airbase:GetActiveRunwayLanding()
 end
+if runway then
 return runway.name,runway.isLeft
+else
+return nil,nil
+end
 end
 function ATIS:GetMagneticRunway(windfrom)
 local diffmin=nil
