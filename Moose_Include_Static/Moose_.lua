@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-24T12:03:43.0000000Z-f59326bf1065ef4ffce37dcff48f0d66c60d0b27 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-26T11:25:23.0000000Z-a978420a67208a825f481d1e544892ce1d0ea6bc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -16789,7 +16789,10 @@ end
 if alt<1 then
 alttext="very low"
 end
-local track=UTILS.BearingToCardinal(bearing)or"North"
+local track="Maneuver"
+if self.Heading then
+track=UTILS.BearingToCardinal(self.Heading)or"North"
+end
 if rangeNM>3 then
 if SSML then
 if Zeros then
