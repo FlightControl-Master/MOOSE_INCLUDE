@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-26T11:25:23.0000000Z-a978420a67208a825f481d1e544892ce1d0ea6bc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-01T11:15:59.0000000Z-1eaa3d309df58a65631d9f1b0e28937798d7e8b7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -2304,11 +2304,11 @@ local objectreturn=_copy(object)
 return objectreturn
 end
 UTILS.OneLineSerialize=function(tbl)
-lookup_table={}
+local lookup_table={}
 local function _Serialize(tbl)
 if type(tbl)=='table'then
 if lookup_table[tbl]then
-return lookup_table[object]
+return lookup_table[tbl]
 end
 local tbl_str={}
 lookup_table[tbl]=tbl_str
@@ -27053,15 +27053,15 @@ end
 local airport=self:GetName()
 parkingdata=parkingdata or self:GetParkingSpotsTable(terminaltype)
 local aircraft=nil
-local _aircraftsize,ax,ay,az
+local _aircraftsize=23
+local ax=23
+local ay=7
+local az=17
 if group and group.ClassName=="GROUP"then
 aircraft=group:GetUnit(1)
+if aircraft then
 _aircraftsize,ax,ay,az=aircraft:GetObjectSize()
-else
-_aircraftsize=23
-ax=23
-ay=7
-az=17
+end
 end
 local _nspots=nspots or group:GetSize()
 self:T(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
@@ -30948,9 +30948,9 @@ local nSeconds=sSeconds
 if nSeconds==0 then
 return"00:00:00";
 else
-nHours=string.format("%02.f",math.floor(nSeconds/3600));
-nMins=string.format("%02.f",math.floor(nSeconds/60-(nHours*60)));
-nSecs=string.format("%02.f",math.floor(nSeconds-nHours*3600-nMins*60));
+local nHours=string.format("%02.f",math.floor(nSeconds/3600));
+local nMins=string.format("%02.f",math.floor(nSeconds/60-(nHours*60)));
+local nSecs=string.format("%02.f",math.floor(nSeconds-nHours*3600-nMins*60));
 return nHours..":"..nMins..":"..nSecs
 end
 end
@@ -49470,6 +49470,7 @@ MANTIS.SamData={
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
+["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="Igla"}
 }
 MANTIS.SamDataHDS={
 ["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
@@ -49588,7 +49589,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.9"
+self.version="0.8.10"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
