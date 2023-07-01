@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-06-26T11:29:34.0000000Z-0dab316514cbe4c0f19b78fe4803645182413b92 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-01T11:17:19.0000000Z-389d5c7e5bcd857b5acf8c98f9f2757d73460515 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3595,11 +3595,11 @@ local objectreturn=_copy(object)
 return objectreturn
 end
 UTILS.OneLineSerialize=function(tbl)
-lookup_table={}
+local lookup_table={}
 local function _Serialize(tbl)
 if type(tbl)=='table'then
 if lookup_table[tbl]then
-return lookup_table[object]
+return lookup_table[tbl]
 end
 local tbl_str={}
 lookup_table[tbl]=tbl_str
@@ -21116,15 +21116,15 @@ end
 local airport=self:GetName()
 parkingdata=parkingdata or self:GetParkingSpotsTable(terminaltype)
 local aircraft=nil
-local _aircraftsize,ax,ay,az
+local _aircraftsize=23
+local ax=23
+local ay=7
+local az=17
 if group and group.ClassName=="GROUP"then
 aircraft=group:GetUnit(1)
+if aircraft then
 _aircraftsize,ax,ay,az=aircraft:GetObjectSize()
-else
-_aircraftsize=23
-ax=23
-ay=7
-az=17
+end
 end
 local _nspots=nspots or group:GetSize()
 self:T(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
@@ -38754,6 +38754,7 @@ MANTIS.SamData={
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
+["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="Igla"}
 }
 MANTIS.SamDataHDS={
 ["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
@@ -38872,7 +38873,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.9"
+self.version="0.8.10"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -46989,9 +46990,9 @@ local nSeconds=sSeconds
 if nSeconds==0 then
 return"00:00:00";
 else
-nHours=string.format("%02.f",math.floor(nSeconds/3600));
-nMins=string.format("%02.f",math.floor(nSeconds/60-(nHours*60)));
-nSecs=string.format("%02.f",math.floor(nSeconds-nHours*3600-nMins*60));
+local nHours=string.format("%02.f",math.floor(nSeconds/3600));
+local nMins=string.format("%02.f",math.floor(nSeconds/60-(nHours*60)));
+local nSecs=string.format("%02.f",math.floor(nSeconds-nHours*3600-nMins*60));
 return nHours..":"..nMins..":"..nSecs
 end
 end
@@ -67092,7 +67093,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.54",
+version="0.2.55",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -67500,8 +67501,8 @@ MonitoringData.AwacsShiftChange=false
 MonitoringData.AwacsStateFG="unknown"
 MonitoringData.AwacsStateMission="unknown"
 MonitoringData.EscortsShiftChange=false
-MonitoringData.EscortsStateFG="unknown"
-MonitoringData.EscortsStateMission="unknown"
+MonitoringData.EscortsStateFG={}
+MonitoringData.EscortsStateMission={}
 self.MonitoringOn=false
 self.MonitoringData=MonitoringData
 self.CatchAllMissions={}
@@ -67950,9 +67951,9 @@ escort:SetTime(nil,timeonstation)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
-self.EscortMissionReplacement[i]=mission
+self.EscortMissionReplacement[i]=escort
 else
-self.EscortMission[i]=mission
+self.EscortMission[i]=escort
 end
 end
 return self
@@ -69094,10 +69095,13 @@ local picture=MENU_GROUP_COMMAND:New(cgrp,"Picture",basemenu,self._Picture,self,
 local declare=MENU_GROUP_COMMAND:New(cgrp,"Declare",basemenu,self._Declare,self,cgrp)
 local tasking=MENU_GROUP:New(cgrp,"Tasking",basemenu)
 local showtask=MENU_GROUP_COMMAND:New(cgrp,"Showtask",tasking,self._Showtask,self,cgrp)
+local commit
+local unable
+local abort
 if self.PlayerCapAssignment then
-local commit=MENU_GROUP_COMMAND:New(cgrp,"Commit",tasking,self._Commit,self,cgrp)
-local unable=MENU_GROUP_COMMAND:New(cgrp,"Unable",tasking,self._Unable,self,cgrp)
-local abort=MENU_GROUP_COMMAND:New(cgrp,"Abort",tasking,self._TaskAbort,self,cgrp)
+commit=MENU_GROUP_COMMAND:New(cgrp,"Commit",tasking,self._Commit,self,cgrp)
+unable=MENU_GROUP_COMMAND:New(cgrp,"Unable",tasking,self._Unable,self,cgrp)
+abort=MENU_GROUP_COMMAND:New(cgrp,"Abort",tasking,self._TaskAbort,self,cgrp)
 end
 if self.AwacsROE==AWACS.ROE.POLICE or self.AwacsROE==AWACS.ROE.VID then
 local vid=MENU_GROUP:New(cgrp,"VID as",tasking)
@@ -70099,8 +70103,8 @@ BRAText=BRAText..fast
 TextScreen=TextScreen..fast
 end
 end
-string.gsub(BRAText,"BRAA","brah")
-string.gsub(BRAText,"BRA","brah")
+BRAText=string.gsub(BRAText,"BRAA","brah")
+BRAText=string.gsub(BRAText,"BRA","brah")
 local prio=IsNew or IsBogeyDope
 self:_NewRadioEntry(BRAText,TextScreen,GID,isGroup,true,IsNew,false,prio)
 return self
@@ -70555,7 +70559,7 @@ self:__Intercept(2)
 end
 return self
 end
-function AWACS:onbeforeStart(From,Event,to)
+function AWACS:onbeforeStart(From,Event,To)
 self:T({From,Event,To})
 if self.IncludeHelicopters then
 self.clientset:FilterCategories("helicopter")
