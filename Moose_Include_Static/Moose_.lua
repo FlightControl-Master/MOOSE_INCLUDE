@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-01T11:17:19.0000000Z-389d5c7e5bcd857b5acf8c98f9f2757d73460515 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-03T15:29:06.0000000Z-10872918bb7d0319a3d6ac3551498835b30ca44c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -144,6 +144,7 @@ AWACS="AWACS",
 CAP="CAP",
 CAS="CAS",
 ESCORT="Escort",
+GROUNDESCORT="Ground escort",
 FIGHTERSWEEP="Fighter Sweep",
 GROUNDATTACK="Ground Attack",
 INTERCEPT="Intercept",
@@ -22583,9 +22584,22 @@ lastWptIndexFlagChangedManually=lastWptIndexFlagChangedManually,
 self:T3({DCSTask})
 return DCSTask
 end
+function CONTROLLABLE:TaskGroundEscort(FollowControllable,LastWaypointIndex,OrbitDistance,TargetTypes)
+local DCSTask={
+id='GroundEscort',
+params={
+groupId=FollowControllable and FollowControllable:GetID()or nil,
+engagementDistMax=OrbitDistance or 2000,
+lastWptIndexFlag=LastWaypointIndex and true or false,
+lastWptIndex=LastWaypointIndex,
+targetTypes=TargetTypes or{"Ground vehicles"},
+lastWptIndexFlagChangedManually=true,
+},
+}
+return DCSTask
+end
 function CONTROLLABLE:TaskEscort(FollowControllable,Vec3,LastWaypointIndex,EngagementDistance,TargetTypes)
-local DCSTask
-DCSTask={
+local DCSTask={
 id='Escort',
 params={
 groupId=FollowControllable and FollowControllable:GetID()or nil,
@@ -30718,7 +30732,7 @@ end
 AMMOTRUCK={
 ClassName="AMMOTRUCK",
 lid="",
-version="0.0.10",
+version="0.0.12",
 alias="",
 debug=false,
 trucklist={},
@@ -30733,7 +30747,8 @@ remunidist=20000,
 monitor=-60,
 unloadtime=600,
 waitingtime=1800,
-routeonroad=true
+routeonroad=true,
+reloads=5,
 }
 AMMOTRUCK.State={
 IDLE="idle",
@@ -30853,6 +30868,7 @@ if dist<=radius then
 truck.statusquo=AMMOTRUCK.State.IDLE
 truck.timestamp=timer.getAbsTime()
 truck.coordinate=coord
+truck.reloads=self.reloads or 5
 self:__TruckHome(1,truck)
 end
 end
@@ -30984,6 +31000,7 @@ end
 newtruck.statusquo=AMMOTRUCK.State.IDLE
 newtruck.timestamp=timer.getAbsTime()
 newtruck.coordinate=truck:GetCoordinate()
+newtruck.reloads=self.reloads or 5
 self.trucklist[name]=newtruck
 end
 end
@@ -31052,8 +31069,10 @@ elseif data.statusquo==AMMOTRUCK.State.UNLOADING then
 unloadingtrucks[#unloadingtrucks+1]=data
 elseif data.statusquo==AMMOTRUCK.State.RETURNING then
 returningtrucks[#returningtrucks+1]=data
+if data.reloads>0 or data.reloads==-1 then
 idletrucks[#idletrucks+1]=data
 found=true
+end
 end
 else
 self.truckset[data.name]=nil
@@ -31061,7 +31080,6 @@ end
 end
 local n=0
 if found and remunition then
-local match=false
 for _,_truckdata in pairs(idletrucks)do
 local truckdata=_truckdata
 local truckcoord=truckdata.group:GetCoordinate()
@@ -31143,6 +31161,10 @@ _crate:Destroy(false)
 end
 end
 local scheduler=SCHEDULER:New(nil,destroyammo,{ammo},self.waitingtime)
+if truck.reloads~=-1 then
+truck.reloads=truck.reloads-1
+end
+return self
 end
 function AMMOTRUCK:onafterTruckReturning(From,Event,To,Truck)
 self:T({From,Event,To,Truck.name})
@@ -64267,6 +64289,7 @@ ESCORT="Escort",
 FAC="FAC",
 FACA="FAC-A",
 FERRY="Ferry Flight",
+GROUNDESCORT="Ground Escort",
 INTERCEPT="Intercept",
 ORBIT="Orbit",
 GCICAP="Ground Controlled CAP",
@@ -64294,7 +64317,6 @@ CARGOTRANSPORT="Cargo Transport",
 RELOCATECOHORT="Relocate Cohort",
 AIRDEFENSE="Air Defence",
 EWR="Early Warning Radar",
-RECOVERYTANKER="Recovery Tanker",
 REARMING="Rearming",
 CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
@@ -64738,6 +64760,25 @@ mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.NoReaction
 mission.dTevaluate=5*60
 mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewGROUNDESCORT(EscortGroup,OrbitDistance,TargetTypes)
+local mission=AUFTRAG:New(AUFTRAG.Type.GROUNDESCORT)
+if type(EscortGroup)=="string"then
+mission.escortGroupName=EscortGroup
+mission:_TargetFromObject()
+else
+mission:_TargetFromObject(EscortGroup)
+end
+mission.orbitDistance=OrbitDistance and UTILS.NMToMeters(OrbitDistance)or UTILS.NMToMeters(1.5)
+mission.engageTargetTypes=TargetTypes or{"Ground vehicles"}
+mission.missionTask=ENUMS.MissionTask.GROUNDESCORT
+mission.missionFraction=0.1
+mission.missionAltitude=100
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionROT=ENUMS.ROT.EvadeFire
+mission.categories={AUFTRAG.Category.HELICOPTER}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
@@ -66718,8 +66759,11 @@ elseif self.type==AUFTRAG.Type.CAS then
 local DCStask=CONTROLLABLE.EnRouteTaskEngageTargetsInZone(nil,self.engageZone:GetVec2(),self.engageZone:GetRadius(),self.engageTargetTypes,Priority)
 table.insert(self.enrouteTasks,DCStask)
 elseif self.type==AUFTRAG.Type.ESCORT then
-local DCStask=CONTROLLABLE.TaskEscort(nil,self.engageTarget:GetObject(),self.escortVec3,LastWaypointIndex,self.engageMaxDistance,self.engageTargetTypes)
+local DCStask=CONTROLLABLE.TaskEscort(nil,self.engageTarget:GetObject(),self.escortVec3,nil,self.engageMaxDistance,self.engageTargetTypes)
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.GROUNDESCORT then
+local DCSTask=CONTROLLABLE.TaskGroundEscort(nil,self.engageTarget:GetObject(),nil,self.orbitDistance,self.engageTargetTypes)
+table.insert(DCStasks,DCSTask)
 elseif self.type==AUFTRAG.Type.FACA then
 local DCStask=CONTROLLABLE.TaskFAC_AttackGroup(nil,self.engageTarget:GetObject(),self.engageWeaponType,self.facDesignation,self.facDatalink,self.facFreq,self.facModu,CallsignName,CallsignNumber)
 table.insert(DCStasks,DCStask)
@@ -67026,6 +67070,8 @@ elseif MissionType==AUFTRAG.Type.FAC then
 mtask=ENUMS.MissionTask.AFAC
 elseif MissionType==AUFTRAG.Type.FERRY then
 mtask=ENUMS.MissionTask.NOTHING
+elseif MissionType==AUFTRAG.Type.GROUNDESCORT then
+mtask=ENUMS.MissionTask.GROUNDESCORT
 elseif MissionType==AUFTRAG.Type.INTERCEPT then
 mtask=ENUMS.MissionTask.INTERCEPT
 elseif MissionType==AUFTRAG.Type.RECON then
