@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-01T11:15:59.0000000Z-1eaa3d309df58a65631d9f1b0e28937798d7e8b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-03T14:44:46.0000000Z-8c8ef19f01b83f95a4a07190705fc3b0f1477ed4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22218,11 +22218,11 @@ return DCSTask
 end
 function CONTROLLABLE:TaskOrbit(Coord,Altitude,Speed,CoordRaceTrack)
 local Pattern=AI.Task.OrbitPattern.CIRCLE
-local P1=Coord:GetVec2()
+local P1={x=Coord.x,y=Coord.z or Coord.y}
 local P2=nil
 if CoordRaceTrack then
 Pattern=AI.Task.OrbitPattern.RACE_TRACK
-P2=CoordRaceTrack:GetVec2()
+P2={x=CoordRaceTrack.x,y=CoordRaceTrack.z or CoordRaceTrack.y}
 end
 local Task={
 id='Orbit',
@@ -22321,9 +22321,22 @@ lastWptIndexFlagChangedManually=lastWptIndexFlagChangedManually,
 self:T3({DCSTask})
 return DCSTask
 end
+function CONTROLLABLE:TaskGroundEscort(FollowControllable,LastWaypointIndex,OrbitDistance,TargetTypes)
+local DCSTask={
+id='GroundEscort',
+params={
+groupId=FollowControllable and FollowControllable:GetID()or nil,
+engagementDistMax=OrbitDistance or 2000,
+lastWptIndexFlag=LastWaypointIndex and true or false,
+lastWptIndex=LastWaypointIndex,
+targetTypes=TargetTypes or{"Ground vehicles"},
+lastWptIndexFlagChangedManually=true,
+},
+}
+return DCSTask
+end
 function CONTROLLABLE:TaskEscort(FollowControllable,Vec3,LastWaypointIndex,EngagementDistance,TargetTypes)
-local DCSTask
-DCSTask={
+local DCSTask={
 id='Escort',
 params={
 groupId=FollowControllable and FollowControllable:GetID()or nil,
