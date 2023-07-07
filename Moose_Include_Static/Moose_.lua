@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-03T14:44:46.0000000Z-8c8ef19f01b83f95a4a07190705fc3b0f1477ed4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-07T13:14:33.0000000Z-40fa929eb0d2a17b2a9db34970af31652f16b663 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -34328,6 +34328,7 @@ local DetectedItem=self:GetDetectedItemByKey(DetectedTypeName)
 if not DetectedItem then
 DetectedItem=self:AddDetectedItem("TYPE",DetectedTypeName)
 DetectedItem.TypeName=DetectedTypeName
+DetectedItem.Name=DetectedUnitName
 end
 DetectedItem.Set:AddUnit(DetectedUnit)
 self:AddChangeUnit(DetectedItem,"AU",DetectedTypeName)
