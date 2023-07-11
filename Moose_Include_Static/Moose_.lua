@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-07T13:15:09.0000000Z-ffbab7453c926a1afe8abf9e35b1011826ab2ee7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-11T13:41:06.0000000Z-fb8f804af2abdefb5afd6482ec0970432d7a7350 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6538,6 +6538,545 @@ return true
 end
 function CONDITION.ReturnFalse()
 return false
+end
+CLIENTMENU={
+ClassName="CLIENTMENUE",
+lid="",
+version="0.0.1",
+name=nil,
+path=nil,
+group=nil,
+client=nil,
+GID=nil,
+Children={},
+Once=false,
+Generic=false,
+debug=false,
+Controller=nil,
+}
+CLIENTMENU_ID=0
+function CLIENTMENU:NewEntry(Client,Text,Parent,Function,...)
+local self=BASE:Inherit(self,BASE:New())
+CLIENTMENU_ID=CLIENTMENU_ID+1
+self.ID=CLIENTMENU_ID
+if Client then
+self.group=Client:GetGroup()
+self.client=Client
+self.GID=self.group:GetID()
+else
+self.Generic=true
+end
+self.name=Text or"unknown entry"
+if Parent then
+self.parentpath=Parent:GetPath()
+Parent:AddChild(self)
+end
+self.Parent=Parent
+self.Function=Function
+self.Functionargs=arg
+if self.Functionargs and self.debug then
+self:I({"Functionargs",self.Functionargs})
+end
+if not self.Generic then
+if Function~=nil then
+local ErrorHandler=function(errmsg)
+env.info("MOOSE Error in CLIENTMENU COMMAND function: "..errmsg)
+if BASE.Debug~=nil then
+env.info(BASE.Debug.traceback())
+end
+return errmsg
+end
+self.CallHandler=function()
+local function MenuFunction()
+return self.Function(unpack(self.Functionargs))
+end
+local Status,Result=xpcall(MenuFunction,ErrorHandler)
+if self.Once==true then
+self:Clear()
+end
+end
+self.path=missionCommands.addCommandForGroup(self.GID,Text,self.parentpath,self.CallHandler)
+else
+self.path=missionCommands.addSubMenuForGroup(self.GID,Text,self.parentpath)
+end
+else
+if self.parentpath then
+self.path=UTILS.DeepCopy(self.parentpath)
+else
+self.path={}
+end
+self.path[#self.path+1]=Text
+self:T({self.path})
+end
+self.Once=false
+self.lid=string.format("CLIENTMENU %s | %s | ",self.ID,self.name)
+self:T(self.lid.."Created")
+return self
+end
+function CLIENTMENU:SetController(Controller)
+self.Controller=Controller
+return self
+end
+function CLIENTMENU:SetOnce()
+self:T(self.lid.."SetOnce")
+self.Once=true
+return self
+end
+function CLIENTMENU:RemoveF10()
+self:T(self.lid.."RemoveF10")
+if not self.Generic then
+missionCommands.removeItemForGroup(self.GID,self.path)
+end
+return self
+end
+function CLIENTMENU:GetPath()
+self:T(self.lid.."GetPath")
+return self.path
+end
+function CLIENTMENU:AddChild(Child)
+self:T(self.lid.."AddChild "..Child.ID)
+table.insert(self.Children,Child.ID,Child)
+return self
+end
+function CLIENTMENU:RemoveChild(Child)
+self:T(self.lid.."RemoveChild "..Child.ID)
+table.remove(self.Children,Child.ID)
+return self
+end
+function CLIENTMENU:RemoveSubEntries()
+self:T(self.lid.."RemoveSubEntries")
+for _id,_entry in pairs(self.Children)do
+self:T("Removing ".._id)
+if _entry then
+_entry:RemoveSubEntries()
+_entry:RemoveF10()
+if _entry.Parent then
+_entry.Parent:RemoveChild(self)
+end
+if self.Controller then
+self.Controller:_RemoveByID(_entry.ID)
+end
+_entry=nil
+end
+end
+return self
+end
+function CLIENTMENU:Clear()
+self:T(self.lid.."Clear")
+for _id,_entry in pairs(self.Children)do
+if _entry then
+_entry:RemoveSubEntries()
+_entry=nil
+end
+end
+self:RemoveF10()
+if self.Parent then
+self.Parent:RemoveChild(self)
+end
+if self.Controller then
+self.Controller:_RemoveByID(self.ID)
+end
+return self
+end
+CLIENTMENUMANAGER={
+ClassName="CLIENTMENUMANAGER",
+lid="",
+version="0.0.1",
+name=nil,
+clientset=nil,
+structure={
+generic={},
+IDs={},
+},
+replacementstructure={
+generic={},
+IDs={},
+},
+entrycount=0,
+rootentries={},
+debug=true,
+}
+function CLIENTMENUMANAGER:New(ClientSet,Alias)
+local self=BASE:Inherit(self,BASE:New())
+self.clientset=ClientSet
+self.name=Alias or"Nightshift"
+self.lid=string.format("CLIENTMENUMANAGER %s | %s | ",self.version,self.name)
+if self.debug then
+self:I(self.lid.."Created")
+end
+return self
+end
+function CLIENTMENUMANAGER:NewEntry(Text,Parent,Function,...)
+self:T(self.lid.."NewEntry "..Text or"None")
+self.entrycount=self.entrycount+1
+local entry=CLIENTMENU:NewEntry(nil,Text,Parent,Function,unpack(arg))
+self.structure.generic[self.entrycount]=entry
+self.structure.IDs[entry.ID]=self.entrycount
+if not Parent then
+self.rootentries[self.entrycount]=self.entrycount
+end
+return entry
+end
+function CLIENTMENUMANAGER:FindEntryByText(Text)
+self:T(self.lid.."FindEntryByText "..Text or"None")
+local entry=nil
+local gid=nil
+for _gid,_entry in UTILS.spairs(self.structure.generic)do
+local Entry=_entry
+if Entry and Entry.name==Text then
+entry=Entry
+gid=_gid
+end
+end
+return entry,gid
+end
+function CLIENTMENUMANAGER:GetEntryByGID(GID)
+self:T(self.lid.."GetEntryByGID "..GID or"None")
+if GID and type(GID)=="number"then
+return self.structure.generic[GID]
+else
+return nil
+end
+end
+function CLIENTMENUMANAGER:ChangeEntryTextForAll(Entry,Text)
+self:T(self.lid.."ChangeEntryTextForAll "..Text or"None")
+for _,_client in pairs(self.clientset.Set)do
+local client=_client
+if client and client:IsAlive()then
+self:ChangeEntryText(Entry,Text,client)
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:ChangeEntryText(Entry,Text,Client)
+self:T(self.lid.."ChangeEntryText "..Text or"None")
+local text=Text or"none"
+local oldtext=Entry.name
+Entry.name=text
+local newstructure={}
+local changed=0
+local function ChangePath(path,oldtext,newtext)
+local newpath={}
+for _id,_text in UTILS.spairs(path)do
+local txt=_text
+if _text==oldtext then
+txt=newtext
+end
+newpath[_id]=txt
+end
+return newpath
+end
+local function AlterPath(children)
+for _,_entry in pairs(children)do
+local entry=_entry
+local newpath=ChangePath(entry.path,oldtext,text)
+local newparentpath=ChangePath(entry.parentpath,oldtext,text)
+entry.path=nil
+entry.parentpath=nil
+entry.path=newpath
+entry.parentpath=newparentpath
+self:T({entry.ID})
+newstructure[entry.ID]=UTILS.DeepCopy(entry)
+changed=changed+1
+if entry.Children and#entry.Children>0 then
+AlterPath(entry.Children)
+end
+end
+end
+local ID=Entry.ID
+local GID=self.structure.IDs[ID]
+local playername=Client:GetPlayerName()
+local children=self.structure[playername][GID].Children
+AlterPath(children)
+self:T("Changed entries: "..changed)
+local NewParent=self:NewEntry(Entry.name,Entry.Parent,Entry.Function,unpack(Entry.Functionargs))
+for _,_entry in pairs(children)do
+self:T("Changed parent for ".._entry.ID.." | GID ".._entry.GID)
+local entry=_entry
+entry.Parent=NewParent
+end
+self:PrepareNewReplacementStructure()
+for _,_entry in pairs(newstructure)do
+self:T("Changed entry: ".._entry.ID.." | GID ".._entry.GID)
+local entry=_entry
+self:NewReplacementEntry(entry.name,entry.Parent,entry.Function,unpack(entry.Functionargs))
+end
+self:AddEntry(NewParent)
+self:ReplaceEntries(NewParent)
+self:Clear(Entry)
+return self
+end
+function CLIENTMENUMANAGER:NewReplacementEntry(Text,Parent,Function,...)
+self:T(self.lid.."NewReplacementEntry "..Text or"None")
+self.entrycount=self.entrycount+1
+local entry=CLIENTMENU:NewEntry(nil,Text,Parent,Function,unpack(arg))
+self.replacementstructure.generic[self.entrycount]=entry
+self.replacementstructure.IDs[entry.ID]=self.entrycount
+local pID=Parent and Parent.ID or"none"
+if self.debug then
+self:I("Entry ID = "..self.entrycount.." | Parent ID = "..tostring(pID))
+end
+if not Parent then
+self.rootentries[self.entrycount]=self.entrycount
+end
+return entry
+end
+function CLIENTMENUMANAGER:PrepareNewReplacementStructure()
+self:T(self.lid.."PrepareNewReplacementStructure")
+self.replacementstructure=nil
+self.replacementstructure={
+generic={},
+IDs={},
+}
+return self
+end
+function CLIENTMENUMANAGER:_MergeReplacementData()
+self:T(self.lid.."_MergeReplacementData")
+for _id,_entry in pairs(self.replacementstructure.generic)do
+self.structure.generic[_id]=_entry
+end
+for _id,_entry in pairs(self.replacementstructure.IDs)do
+self.structure.IDs[_id]=_entry
+end
+self:_CleanUpPlayerStructure()
+return self
+end
+function CLIENTMENUMANAGER:ReplaceEntries(Parent,Client)
+self:T(self.lid.."ReplaceEntries")
+local Set=self.clientset.Set
+if Client then
+Set={Client}
+else
+self:RemoveSubEntries(Parent)
+end
+for _,_client in pairs(Set)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+for _id,_entry in UTILS.spairs(self.replacementstructure.generic)do
+local entry=_entry
+local parent=Parent
+self:T("Posted Parent = "..Parent.ID)
+if entry.Parent and entry.Parent.name then
+parent=self:_GetParentEntry(self.replacementstructure.generic,entry.Parent.name)or Parent
+self:T("Found Parent = "..parent.ID)
+end
+self.structure[playername][_id]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
+self.structure[playername][_id].Once=entry.Once
+end
+end
+end
+self:_MergeReplacementData()
+return self
+end
+function CLIENTMENUMANAGER:_GetParentEntry(Structure,Name)
+self:T(self.lid.."_GetParentEntry")
+local found=nil
+for _,_entry in pairs(Structure)do
+local entry=_entry
+if entry.name==Name then
+found=entry
+break
+end
+end
+return found
+end
+function CLIENTMENUMANAGER:Propagate(Client)
+self:T(self.lid.."Propagate")
+local Set=self.clientset.Set
+if Client then
+Set={Set}
+end
+for _,_client in pairs(Set)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+self.structure[playername]={}
+for _id,_entry in pairs(self.structure.generic)do
+local entry=_entry
+local parent=nil
+if entry.Parent and entry.Parent.name then
+parent=self:_GetParentEntry(self.structure[playername],entry.Parent.name)
+end
+self.structure[playername][_id]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
+self.structure[playername][_id].Once=entry.Once
+end
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:AddEntry(Entry,Client)
+self:T(self.lid.."AddEntry")
+local Set=self.clientset.Set
+if Client then
+Set={Client}
+end
+for _,_client in pairs(Set)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+local entry=Entry
+local parent=nil
+if entry.Parent and entry.Parent.name then
+parent=self:_GetParentEntry(self.structure[playername],entry.Parent.name)
+end
+self.structure[playername][Entry.ID]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
+self.structure[playername][Entry.ID].Once=entry.Once
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:ResetMenu(Client)
+self:T(self.lid.."ResetMenu")
+for _,_entry in pairs(self.rootentries)do
+local RootEntry=self.structure.generic[_entry]
+if RootEntry then
+self:Clear(RootEntry,Client)
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:ResetMenuComplete()
+self:T(self.lid.."ResetMenuComplete")
+for _,_entry in pairs(self.rootentries)do
+local RootEntry=self.structure.generic[_entry]
+if RootEntry then
+self:Clear(RootEntry)
+end
+end
+self.structure=nil
+self.structure={
+generic={},
+IDs={},
+}
+self.rootentries=nil
+self.rootentries={}
+return self
+end
+function CLIENTMENUMANAGER:Clear(Entry,Client)
+self:T(self.lid.."Clear")
+local rid=self.structure.IDs[Entry.ID]
+if rid then
+local generic=self.structure.generic[rid]
+local Set=self.clientset.Set
+if Client then
+Set={Client}
+end
+for _,_client in pairs(Set)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+local entry=self.structure[playername][rid]
+if entry then
+entry:Clear()
+self.structure[playername][rid]=nil
+end
+end
+end
+if not Client then
+for _id,_entry in pairs(self.structure.generic)do
+local entry=_entry
+if entry and entry.Parent and entry.Parent.ID and entry.Parent.ID==rid then
+self.structure.IDs[entry.ID]=nil
+entry=nil
+end
+end
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:_CleanUpPlayerStructure()
+self:T(self.lid.."_CleanUpPlayerStructure")
+for _,_client in pairs(self.clientset.Set)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+local newstructure={}
+for _id,_entry in UTILS.spairs(self.structure[playername])do
+if self.structure.generic[_id]then
+newstructure[_id]=_entry
+end
+end
+self.structure[playername]=nil
+self.structure[playername]=newstructure
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:RemoveSubEntries(Entry,Client)
+self:T(self.lid.."RemoveSubEntries")
+local rid=self.structure.IDs[Entry.ID]
+if rid then
+local Set=self.clientset.Set
+if Client then
+Set={Client}
+end
+for _,_client in pairs(Set)do
+local client=_client
+if client and client:IsAlive()then
+local playername=client:GetPlayerName()
+local entry=self.structure[playername][rid]
+if entry then
+entry:RemoveSubEntries()
+end
+end
+end
+if not Client then
+for _id,_entry in pairs(self.structure.generic)do
+local entry=_entry
+if entry and entry.Parent and entry.Parent.ID and entry.Parent.ID==rid then
+self.structure.IDs[entry.ID]=nil
+self.structure.generic[_id]=nil
+end
+end
+end
+end
+self:_CleanUpPlayerStructure()
+return self
+end
+function CLIENTMENUMANAGER:_RemoveByID(ID)
+self:T(self.lid.."_RemoveByID "..ID or"none")
+if ID then
+local gid=self.structure.IDs[ID]
+if gid then
+self.structure.generic[gid]=nil
+self.structure.IDs[ID]=nil
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:_CheckStructures(Playername)
+self:T(self.lid.."CheckStructures")
+self:I("Generic Structure")
+self:I("-----------------")
+for _id,_entry in UTILS.spairs(self.structure.generic)do
+local ID="none"
+if _entry and _entry.ID then
+ID=_entry.ID
+end
+self:I("ID= ".._id.." | EntryID = "..ID)
+if _id>10 and _id<14 then
+self:I(_entry.name)
+end
+end
+self:I("Reverse Structure")
+self:I("-----------------")
+for _id,_entry in UTILS.spairs(self.structure.IDs)do
+self:I("EntryID= ".._id.." | ID = ".._entry)
+end
+if Playername then
+self:I("Player Structure")
+self:I("-----------------")
+for _id,_entry in UTILS.spairs(self.structure[Playername])do
+local ID="none"
+if _entry and _entry.ID then
+ID=_entry.ID
+end
+local _lid=_id or"none"
+self:I("ID= ".._lid.." | EntryID = "..ID)
+end
+end
+return self
 end
 DATABASE={
 ClassName="DATABASE",
