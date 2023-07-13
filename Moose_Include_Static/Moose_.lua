@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-12T15:54:17.0000000Z-10b9a32f298e055033d84e39911019093ae14744 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-13T14:13:00.0000000Z-04a9dc3a8c14cc1dbfa0de1328c3f7d32e50a272 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -18295,6 +18295,21 @@ self:_RandomizeZones(SpawnGroupID)
 end
 return self
 end
+function SPAWN:InitPositionCoordinate(Coordinate)
+self:T({self.SpawnTemplatePrefix,Coordinate:GetVec2()})
+self:InitPositionVec2(Coordinate:GetVec2())
+return self
+end
+function SPAWN:InitPositionVec2(Vec2)
+self:T({self.SpawnTemplatePrefix,Vec2})
+self.SpawnInitPosition=Vec2
+self.SpawnFromNewPosition=true
+self:I("MaxGroups:"..self.SpawnMaxGroups)
+for SpawnGroupID=1,self.SpawnMaxGroups do
+self:_SetInitialPosition(SpawnGroupID)
+end
+return self
+end
 function SPAWN:InitRepeat()
 self:F({self.SpawnTemplatePrefix,self.SpawnIndex})
 self.Repeat=true
@@ -18428,6 +18443,9 @@ end
 function SPAWN:SpawnWithIndex(SpawnIndex,NoBirth)
 self:F2({SpawnTemplatePrefix=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,AliveUnits=self.AliveUnits,SpawnMaxGroups=self.SpawnMaxGroups})
 if self:_GetSpawnIndex(SpawnIndex)then
+if self.SpawnFromNewPosition then
+self:_SetInitialPosition(SpawnIndex)
+end
 if self.SpawnGroups[self.SpawnIndex].Visible then
 self.SpawnGroups[self.SpawnIndex].Group:Activate()
 else
@@ -19330,6 +19348,9 @@ end
 function SPAWN:_GetTemplate(SpawnTemplatePrefix)
 self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnTemplatePrefix})
 local SpawnTemplate=nil
+if _DATABASE.Templates.Groups[SpawnTemplatePrefix]==nil then
+error('No Template exists for SpawnTemplatePrefix = '..SpawnTemplatePrefix)
+end
 local Template=_DATABASE.Templates.Groups[SpawnTemplatePrefix].Template
 self:F({Template=Template})
 SpawnTemplate=UTILS.DeepCopy(_DATABASE.Templates.Groups[SpawnTemplatePrefix].Template)
@@ -19446,6 +19467,39 @@ self.SpawnGroups[SpawnIndex].SpawnTemplate.units[UnitID].alt=self.SpawnTemplate.
 end
 end
 self:_RandomizeRoute(SpawnIndex)
+return self
+end
+function SPAWN:_SetInitialPosition(SpawnIndex)
+self:T({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeZones})
+if self.SpawnFromNewPosition then
+self:T("Preparing Spawn at Vec2 ",self.SpawnInitPosition)
+local SpawnVec2=self.SpawnInitPosition
+self:T({SpawnVec2=SpawnVec2})
+local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
+SpawnTemplate.route=SpawnTemplate.route or{}
+SpawnTemplate.route.points=SpawnTemplate.route.points or{}
+SpawnTemplate.route.points[1]=SpawnTemplate.route.points[1]or{}
+SpawnTemplate.route.points[1].x=SpawnTemplate.route.points[1].x or 0
+SpawnTemplate.route.points[1].y=SpawnTemplate.route.points[1].y or 0
+self:T({Route=SpawnTemplate.route})
+for UnitID=1,#SpawnTemplate.units do
+local UnitTemplate=SpawnTemplate.units[UnitID]
+self:T('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
+local SX=UnitTemplate.x
+local SY=UnitTemplate.y
+local BX=SpawnTemplate.route.points[1].x
+local BY=SpawnTemplate.route.points[1].y
+local TX=SpawnVec2.x+(SX-BX)
+local TY=SpawnVec2.y+(SY-BY)
+UnitTemplate.x=TX
+UnitTemplate.y=TY
+self:T('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
+end
+SpawnTemplate.route.points[1].x=SpawnVec2.x
+SpawnTemplate.route.points[1].y=SpawnVec2.y
+SpawnTemplate.x=SpawnVec2.x
+SpawnTemplate.y=SpawnVec2.y
+end
 return self
 end
 function SPAWN:_RandomizeZones(SpawnIndex)
