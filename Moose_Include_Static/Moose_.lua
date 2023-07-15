@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-13T14:15:11.0000000Z-f6fdecf892bd1ecfd75641a83c7d21e2b64eda4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-15T07:36:24.0000000Z-5954b8692f8c6047138edd11e96831a560589c1a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -20125,7 +20125,7 @@ end
 return self
 end
 function SPOT:onafterLaseOff(From,Event,To)
-self:t({From,Event,To})
+self:T({From,Event,To})
 self:T2({"Stopped lasing for ",self.Target and self.Target:GetName()or"coord",SpotIR=self.SportIR,SpotLaser=self.SpotLaser})
 self.Lasing=false
 self.SpotIR:destroy()
