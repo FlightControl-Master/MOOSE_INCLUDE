@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-15T07:46:55.0000000Z-1ad538ea9f2c6a292be7ddf47058ecebd7c2a02b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-16T09:28:24.0000000Z-bb579fff5b14b35e826f73c5e7fef48f9af5d469 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -39404,6 +39404,24 @@ MANTIS.SamDataSMA={
 ["RBS103BM SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
 ["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
+MANTIS.SamDataCH={
+["2S38 CH"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
+["PantsirS1 CH"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
+["PantsirS2 CH"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
+["PGL-625 CH"]={Range=10,Blindspot=0.5,Height=5,Type="Short",Radar="PGL_625"},
+["HQ-17A CH"]={Range=20,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
+["M903PAC2 CH"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
+["M903PAC3 CH"]={Range=120,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
+["TorM2 CH"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
+["TorM2K CH"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
+["TorM2M CH"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
+["NASAMS3-AMRAAMER CH"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
+["NASAMS3-AIM9X2 CH"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
+["C-RAM CH"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
+["PGZ-09 CH"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
+["S350-9M100 CH"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
+["S350-9M96D CH"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
+}
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding)
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
@@ -39498,7 +39516,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.10"
+self.version="0.8.11"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -39893,7 +39911,7 @@ MANTISAwacs:SetRefreshTimeInterval(interval)
 MANTISAwacs:Start()
 return MANTISAwacs
 end
-function MANTIS:_GetSAMDataFromUnits(grpname,mod,sma)
+function MANTIS:_GetSAMDataFromUnits(grpname,mod,sma,chm)
 self:T(self.lid.."_GetSAMRangeFromUnits")
 local found=false
 local range=self.checkradius
@@ -39908,6 +39926,8 @@ if mod then
 SAMData=self.SamDataHDS
 elseif sma then
 SAMData=self.SamDataSMA
+elseif chm then
+SAMData=self.SamDataCH
 end
 for _,_unit in pairs(units)do
 local unit=_unit
@@ -39942,10 +39962,13 @@ local blind=0
 local found=false
 local HDSmod=false
 local SMAMod=false
+local CHMod=false
 if string.find(grpname,"HDS",1,true)then
 HDSmod=true
 elseif string.find(grpname,"SMA",1,true)then
 SMAMod=true
+elseif string.find(grpname,"CHM",1,true)then
+CHMod=true
 end
 if self.automode then
 for idx,entry in pairs(self.SamData)do
@@ -39961,8 +39984,8 @@ break
 end
 end
 end
-if(not found and self.automode)or HDSmod or SMAMod then
-range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod)
+if(not found and self.automode)or HDSmod or SMAMod or CHMod then
+range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
