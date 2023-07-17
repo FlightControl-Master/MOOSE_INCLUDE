@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-16T09:28:24.0000000Z-bb579fff5b14b35e826f73c5e7fef48f9af5d469 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-17T14:27:54.0000000Z-8a8e40e810b00f356a321a490eae39c466d661e8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6542,12 +6542,12 @@ end
 CLIENTMENU={
 ClassName="CLIENTMENUE",
 lid="",
-version="0.0.1",
+version="0.1.0",
 name=nil,
 path=nil,
 group=nil,
 client=nil,
-GID=nil,
+GroupID=nil,
 Children={},
 Once=false,
 Generic=false,
@@ -6562,20 +6562,26 @@ self.ID=CLIENTMENU_ID
 if Client then
 self.group=Client:GetGroup()
 self.client=Client
-self.GID=self.group:GetID()
+self.GroupID=self.group:GetID()
 else
 self.Generic=true
 end
 self.name=Text or"unknown entry"
 if Parent then
+if Parent:IsInstanceOf("MENU_BASE")then
+self.parentpath=Parent.MenuPath
+else
 self.parentpath=Parent:GetPath()
 Parent:AddChild(self)
 end
+end
 self.Parent=Parent
 self.Function=Function
-self.Functionargs=arg
+self.Functionargs=arg or{}
+table.insert(self.Functionargs,self.group)
+table.insert(self.Functionargs,self.client)
 if self.Functionargs and self.debug then
-self:I({"Functionargs",self.Functionargs})
+self:T({"Functionargs",self.Functionargs})
 end
 if not self.Generic then
 if Function~=nil then
@@ -6595,9 +6601,9 @@ if self.Once==true then
 self:Clear()
 end
 end
-self.path=missionCommands.addCommandForGroup(self.GID,Text,self.parentpath,self.CallHandler)
+self.path=missionCommands.addCommandForGroup(self.GroupID,Text,self.parentpath,self.CallHandler)
 else
-self.path=missionCommands.addSubMenuForGroup(self.GID,Text,self.parentpath)
+self.path=missionCommands.addSubMenuForGroup(self.GroupID,Text,self.parentpath)
 end
 else
 if self.parentpath then
@@ -6606,12 +6612,22 @@ else
 self.path={}
 end
 self.path[#self.path+1]=Text
-self:T({self.path})
 end
+self.UUID=table.concat(self.path,";")
+self:T({self.UUID})
 self.Once=false
 self.lid=string.format("CLIENTMENU %s | %s | ",self.ID,self.name)
 self:T(self.lid.."Created")
 return self
+end
+function CLIENTMENU:CreateUUID(Parent,Text)
+local path={}
+if Parent and Parent.path then
+path=Parent.path
+end
+path[#path+1]=Text
+local UUID=table.concat(path,";")
+return UUID
 end
 function CLIENTMENU:SetController(Controller)
 self.Controller=Controller
@@ -6624,14 +6640,18 @@ return self
 end
 function CLIENTMENU:RemoveF10()
 self:T(self.lid.."RemoveF10")
-if not self.Generic then
-missionCommands.removeItemForGroup(self.GID,self.path)
+if self.GroupID then
+missionCommands.removeItemForGroup(self.GroupID,self.path)
 end
 return self
 end
 function CLIENTMENU:GetPath()
 self:T(self.lid.."GetPath")
 return self.path
+end
+function CLIENTMENU:GetUUID()
+self:T(self.lid.."GetUUID")
+return self.UUID
 end
 function CLIENTMENU:AddChild(Child)
 self:T(self.lid.."AddChild "..Child.ID)
@@ -6645,6 +6665,7 @@ return self
 end
 function CLIENTMENU:RemoveSubEntries()
 self:T(self.lid.."RemoveSubEntries")
+self:T({self.Children})
 for _id,_entry in pairs(self.Children)do
 self:T("Removing ".._id)
 if _entry then
@@ -6653,10 +6674,6 @@ _entry:RemoveF10()
 if _entry.Parent then
 _entry.Parent:RemoveChild(self)
 end
-if self.Controller then
-self.Controller:_RemoveByID(_entry.ID)
-end
-_entry=nil
 end
 end
 return self
@@ -6673,25 +6690,17 @@ self:RemoveF10()
 if self.Parent then
 self.Parent:RemoveChild(self)
 end
-if self.Controller then
-self.Controller:_RemoveByID(self.ID)
-end
 return self
 end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.0.1",
+version="0.1.0",
 name=nil,
 clientset=nil,
-structure={
-generic={},
-IDs={},
-},
-replacementstructure={
-generic={},
-IDs={},
-},
+menutree={},
+flattree={},
+playertree={},
 entrycount=0,
 rootentries={},
 debug=true,
@@ -6702,7 +6711,7 @@ self.clientset=ClientSet
 self.name=Alias or"Nightshift"
 self.lid=string.format("CLIENTMENUMANAGER %s | %s | ",self.version,self.name)
 if self.debug then
-self:I(self.lid.."Created")
+self:T(self.lid.."Created")
 end
 return self
 end
@@ -6710,196 +6719,127 @@ function CLIENTMENUMANAGER:NewEntry(Text,Parent,Function,...)
 self:T(self.lid.."NewEntry "..Text or"None")
 self.entrycount=self.entrycount+1
 local entry=CLIENTMENU:NewEntry(nil,Text,Parent,Function,unpack(arg))
-self.structure.generic[self.entrycount]=entry
-self.structure.IDs[entry.ID]=self.entrycount
 if not Parent then
-self.rootentries[self.entrycount]=self.entrycount
+self.rootentries[self.entrycount]=entry
+end
+local depth=#entry.path
+if not self.menutree[depth]then self.menutree[depth]={}end
+table.insert(self.menutree[depth],entry.UUID)
+self.flattree[entry.UUID]=entry
+return entry
+end
+function CLIENTMENUMANAGER:EntryUUIDExists(UUID)
+local exists=self.flattree[UUID]and true or false
+return exists
+end
+function CLIENTMENUMANAGER:FindEntryByUUID(UUID)
+self:T(self.lid.."FindEntryByUUID "..UUID or"None")
+local entry=nil
+for _gid,_entry in pairs(self.flattree)do
+local Entry=_entry
+if Entry and Entry.UUID==UUID then
+entry=Entry
+end
 end
 return entry
 end
-function CLIENTMENUMANAGER:FindEntryByText(Text)
-self:T(self.lid.."FindEntryByText "..Text or"None")
-local entry=nil
-local gid=nil
-for _gid,_entry in UTILS.spairs(self.structure.generic)do
+function CLIENTMENUMANAGER:FindUUIDsByText(Text,Parent)
+self:T(self.lid.."FindUUIDsByText "..Text or"None")
+local matches={}
+local entries={}
+local n=0
+for _uuid,_entry in pairs(self.flattree)do
 local Entry=_entry
-if Entry and Entry.name==Text then
-entry=Entry
-gid=_gid
+if Parent then
+if Entry and string.find(Entry.name,Text)and string.find(Entry.UUID,Parent.UUID)then
+table.insert(matches,_uuid)
+table.insert(entries,Entry)
+n=n+1
 end
-end
-return entry,gid
-end
-function CLIENTMENUMANAGER:GetEntryByGID(GID)
-self:T(self.lid.."GetEntryByGID "..GID or"None")
-if GID and type(GID)=="number"then
-return self.structure.generic[GID]
 else
-return nil
+if Entry and string.find(Entry.name,Text)then
+table.insert(matches,_uuid)
+table.insert(entries,Entry)
+n=n+1
 end
 end
-function CLIENTMENUMANAGER:ChangeEntryTextForAll(Entry,Text)
-self:T(self.lid.."ChangeEntryTextForAll "..Text or"None")
-for _,_client in pairs(self.clientset.Set)do
-local client=_client
-if client and client:IsAlive()then
-self:ChangeEntryText(Entry,Text,client)
+end
+return matches,entries,n
+end
+function CLIENTMENUMANAGER:FindEntriesByText(Text,Parent)
+self:T(self.lid.."FindEntriesByText "..Text or"None")
+local matches,objects,number=self:FindUUIDsByText(Text,Parent)
+return objects,number
+end
+function CLIENTMENUMANAGER:FindUUIDsByParent(Parent)
+self:T(self.lid.."FindUUIDsByParent")
+local matches={}
+local entries={}
+local n=0
+for _uuid,_entry in pairs(self.flattree)do
+local Entry=_entry
+if Parent then
+if Entry and string.find(Entry.UUID,Parent.UUID)then
+table.insert(matches,_uuid)
+table.insert(entries,Entry)
+n=n+1
 end
 end
-return self
+end
+return matches,entries,n
+end
+function CLIENTMENUMANAGER:FindEntriesByParent(Parent)
+self:T(self.lid.."FindEntriesByParent")
+local matches,objects,number=self:FindUUIDsByParent(Parent)
+return objects,number
 end
 function CLIENTMENUMANAGER:ChangeEntryText(Entry,Text,Client)
 self:T(self.lid.."ChangeEntryText "..Text or"None")
-local text=Text or"none"
-local oldtext=Entry.name
-Entry.name=text
-local newstructure={}
-local changed=0
-local function ChangePath(path,oldtext,newtext)
-local newpath={}
-for _id,_text in UTILS.spairs(path)do
-local txt=_text
-if _text==oldtext then
-txt=newtext
+local newentry=CLIENTMENU:NewEntry(nil,Text,Entry.Parent,Entry.Function,unpack(Entry.Functionargs))
+self:DeleteF10Entry(Entry,Client)
+self:DeleteGenericEntry(Entry)
+if not Entry.Parent then
+self.rootentries[self.entrycount]=newentry
 end
-newpath[_id]=txt
-end
-return newpath
-end
-local function AlterPath(children)
-for _,_entry in pairs(children)do
-local entry=_entry
-local newpath=ChangePath(entry.path,oldtext,text)
-local newparentpath=ChangePath(entry.parentpath,oldtext,text)
-entry.path=nil
-entry.parentpath=nil
-entry.path=newpath
-entry.parentpath=newparentpath
-self:T({entry.ID})
-newstructure[entry.ID]=UTILS.DeepCopy(entry)
-changed=changed+1
-if entry.Children and#entry.Children>0 then
-AlterPath(entry.Children)
-end
-end
-end
-local ID=Entry.ID
-local GID=self.structure.IDs[ID]
-local playername=Client:GetPlayerName()
-local children=self.structure[playername][GID].Children
-AlterPath(children)
-self:T("Changed entries: "..changed)
-local NewParent=self:NewEntry(Entry.name,Entry.Parent,Entry.Function,unpack(Entry.Functionargs))
-for _,_entry in pairs(children)do
-self:T("Changed parent for ".._entry.ID.." | GID ".._entry.GID)
-local entry=_entry
-entry.Parent=NewParent
-end
-self:PrepareNewReplacementStructure()
-for _,_entry in pairs(newstructure)do
-self:T("Changed entry: ".._entry.ID.." | GID ".._entry.GID)
-local entry=_entry
-self:NewReplacementEntry(entry.name,entry.Parent,entry.Function,unpack(entry.Functionargs))
-end
-self:AddEntry(NewParent)
-self:ReplaceEntries(NewParent)
-self:Clear(Entry)
+local depth=#newentry.path
+if not self.menutree[depth]then self.menutree[depth]={}end
+table.insert(self.menutree[depth],newentry.UUID)
+self.flattree[newentry.UUID]=newentry
+self:AddEntry(newentry,Client)
 return self
-end
-function CLIENTMENUMANAGER:NewReplacementEntry(Text,Parent,Function,...)
-self:T(self.lid.."NewReplacementEntry "..Text or"None")
-self.entrycount=self.entrycount+1
-local entry=CLIENTMENU:NewEntry(nil,Text,Parent,Function,unpack(arg))
-self.replacementstructure.generic[self.entrycount]=entry
-self.replacementstructure.IDs[entry.ID]=self.entrycount
-local pID=Parent and Parent.ID or"none"
-if self.debug then
-self:I("Entry ID = "..self.entrycount.." | Parent ID = "..tostring(pID))
-end
-if not Parent then
-self.rootentries[self.entrycount]=self.entrycount
-end
-return entry
-end
-function CLIENTMENUMANAGER:PrepareNewReplacementStructure()
-self:T(self.lid.."PrepareNewReplacementStructure")
-self.replacementstructure=nil
-self.replacementstructure={
-generic={},
-IDs={},
-}
-return self
-end
-function CLIENTMENUMANAGER:_MergeReplacementData()
-self:T(self.lid.."_MergeReplacementData")
-for _id,_entry in pairs(self.replacementstructure.generic)do
-self.structure.generic[_id]=_entry
-end
-for _id,_entry in pairs(self.replacementstructure.IDs)do
-self.structure.IDs[_id]=_entry
-end
-self:_CleanUpPlayerStructure()
-return self
-end
-function CLIENTMENUMANAGER:ReplaceEntries(Parent,Client)
-self:T(self.lid.."ReplaceEntries")
-local Set=self.clientset.Set
-if Client then
-Set={Client}
-else
-self:RemoveSubEntries(Parent)
-end
-for _,_client in pairs(Set)do
-local client=_client
-if client and client:IsAlive()then
-local playername=client:GetPlayerName()
-for _id,_entry in UTILS.spairs(self.replacementstructure.generic)do
-local entry=_entry
-local parent=Parent
-self:T("Posted Parent = "..Parent.ID)
-if entry.Parent and entry.Parent.name then
-parent=self:_GetParentEntry(self.replacementstructure.generic,entry.Parent.name)or Parent
-self:T("Found Parent = "..parent.ID)
-end
-self.structure[playername][_id]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
-self.structure[playername][_id].Once=entry.Once
-end
-end
-end
-self:_MergeReplacementData()
-return self
-end
-function CLIENTMENUMANAGER:_GetParentEntry(Structure,Name)
-self:T(self.lid.."_GetParentEntry")
-local found=nil
-for _,_entry in pairs(Structure)do
-local entry=_entry
-if entry.name==Name then
-found=entry
-break
-end
-end
-return found
 end
 function CLIENTMENUMANAGER:Propagate(Client)
 self:T(self.lid.."Propagate")
+self:T(Client)
 local Set=self.clientset.Set
 if Client then
-Set={Set}
+Set={Client}
 end
+self:ResetMenu(Client)
 for _,_client in pairs(Set)do
 local client=_client
 if client and client:IsAlive()then
 local playername=client:GetPlayerName()
-self.structure[playername]={}
-for _id,_entry in pairs(self.structure.generic)do
-local entry=_entry
-local parent=nil
-if entry.Parent and entry.Parent.name then
-parent=self:_GetParentEntry(self.structure[playername],entry.Parent.name)
+if not self.playertree[playername]then
+self.playertree[playername]={}
 end
-self.structure[playername][_id]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
-self.structure[playername][_id].Once=entry.Once
+for level,branch in pairs(self.menutree)do
+self:T("Building branch:"..level)
+for _,leaf in pairs(branch)do
+self:T("Building leaf:"..leaf)
+local entry=self:FindEntryByUUID(leaf)
+if entry then
+self:T("Found generic entry:"..entry.UUID)
+local parent=nil
+if entry.Parent and entry.Parent.UUID then
+parent=self.playertree[playername][entry.Parent.UUID]or self:FindEntryByUUID(entry.Parent.UUID)
+end
+self.playertree[playername][entry.UUID]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
+self.playertree[playername][entry.UUID].Once=entry.Once
+else
+self:T("NO generic entry for:"..leaf)
+end
+end
 end
 end
 end
@@ -6915,13 +6855,20 @@ for _,_client in pairs(Set)do
 local client=_client
 if client and client:IsAlive()then
 local playername=client:GetPlayerName()
-local entry=Entry
+if Entry then
+self:T("Adding generic entry:"..Entry.UUID)
 local parent=nil
-if entry.Parent and entry.Parent.name then
-parent=self:_GetParentEntry(self.structure[playername],entry.Parent.name)
+if not self.playertree[playername]then
+self.playertree[playername]={}
 end
-self.structure[playername][Entry.ID]=CLIENTMENU:NewEntry(client,entry.name,parent,entry.Function,unpack(entry.Functionargs))
-self.structure[playername][Entry.ID].Once=entry.Once
+if Entry.Parent and Entry.Parent.UUID then
+parent=self.playertree[playername][Entry.Parent.UUID]or self:FindEntryByUUID(Entry.Parent.UUID)
+end
+self.playertree[playername][Entry.UUID]=CLIENTMENU:NewEntry(client,Entry.name,parent,Entry.Function,unpack(Entry.Functionargs))
+self.playertree[playername][Entry.UUID].Once=Entry.Once
+else
+self:T("NO generic entry given")
+end
 end
 end
 return self
@@ -6929,9 +6876,8 @@ end
 function CLIENTMENUMANAGER:ResetMenu(Client)
 self:T(self.lid.."ResetMenu")
 for _,_entry in pairs(self.rootentries)do
-local RootEntry=self.structure.generic[_entry]
-if RootEntry then
-self:Clear(RootEntry,Client)
+if _entry then
+self:DeleteF10Entry(_entry,Client)
 end
 end
 return self
@@ -6939,141 +6885,91 @@ end
 function CLIENTMENUMANAGER:ResetMenuComplete()
 self:T(self.lid.."ResetMenuComplete")
 for _,_entry in pairs(self.rootentries)do
-local RootEntry=self.structure.generic[_entry]
-if RootEntry then
-self:Clear(RootEntry)
+if _entry then
+self:DeleteF10Entry(_entry)
 end
 end
-self.structure=nil
-self.structure={
-generic={},
-IDs={},
-}
+self.playertree=nil
+self.playertree={}
 self.rootentries=nil
 self.rootentries={}
+self.menutree=nil
+self.menutree={}
 return self
 end
-function CLIENTMENUMANAGER:Clear(Entry,Client)
-self:T(self.lid.."Clear")
-local rid=self.structure.IDs[Entry.ID]
-if rid then
-local generic=self.structure.generic[rid]
+function CLIENTMENUMANAGER:DeleteF10Entry(Entry,Client)
+self:T(self.lid.."DeleteF10Entry")
 local Set=self.clientset.Set
 if Client then
 Set={Client}
 end
 for _,_client in pairs(Set)do
-local client=_client
-if client and client:IsAlive()then
-local playername=client:GetPlayerName()
-local entry=self.structure[playername][rid]
-if entry then
-entry:Clear()
-self.structure[playername][rid]=nil
-end
-end
-end
-if not Client then
-for _id,_entry in pairs(self.structure.generic)do
-local entry=_entry
-if entry and entry.Parent and entry.Parent.ID and entry.Parent.ID==rid then
-self.structure.IDs[entry.ID]=nil
-entry=nil
+if _client and _client:IsAlive()then
+local playername=_client:GetPlayerName()
+if self.playertree[playername]then
+local centry=self.playertree[playername][Entry.UUID]
+if centry then
+centry:Clear()
 end
 end
 end
 end
 return self
 end
-function CLIENTMENUMANAGER:_CleanUpPlayerStructure()
-self:T(self.lid.."_CleanUpPlayerStructure")
-for _,_client in pairs(self.clientset.Set)do
-local client=_client
-if client and client:IsAlive()then
-local playername=client:GetPlayerName()
-local newstructure={}
-for _id,_entry in UTILS.spairs(self.structure[playername])do
-if self.structure.generic[_id]then
-newstructure[_id]=_entry
+function CLIENTMENUMANAGER:DeleteGenericEntry(Entry)
+self:T(self.lid.."DeleteGenericEntry")
+if Entry.Children and#Entry.Children>0 then
+self:RemoveGenericSubEntries(Entry)
+end
+local depth=#Entry.path
+local uuid=Entry.UUID
+local tbl=UTILS.DeepCopy(self.menutree)
+if tbl[depth]then
+for i=depth,#tbl do
+for _id,_uuid in pairs(tbl[i])do
+self:T(_uuid)
+if string.find(_uuid,uuid)or _uuid==uuid then
+self.menutree[i][_id]=nil
+self.flattree[_uuid]=nil
 end
 end
-self.structure[playername]=nil
-self.structure[playername]=newstructure
 end
 end
 return self
 end
-function CLIENTMENUMANAGER:RemoveSubEntries(Entry,Client)
+function CLIENTMENUMANAGER:RemoveGenericSubEntries(Entry)
+self:T(self.lid.."RemoveGenericSubEntries")
+local depth=#Entry.path+1
+local uuid=Entry.UUID
+local tbl=UTILS.DeepCopy(self.menutree)
+if tbl[depth]then
+for i=depth,#tbl do
+self:T("Level = "..i)
+for _id,_uuid in pairs(tbl[i])do
+self:T(_uuid)
+if string.find(_uuid,uuid)then
+self:T("Match for ".._uuid)
+self.menutree[i][_id]=nil
+self.flattree[_uuid]=nil
+end
+end
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:RemoveF10SubEntries(Entry,Client)
 self:T(self.lid.."RemoveSubEntries")
-local rid=self.structure.IDs[Entry.ID]
-if rid then
 local Set=self.clientset.Set
 if Client then
 Set={Client}
 end
 for _,_client in pairs(Set)do
-local client=_client
-if client and client:IsAlive()then
-local playername=client:GetPlayerName()
-local entry=self.structure[playername][rid]
-if entry then
-entry:RemoveSubEntries()
+if _client and _client:IsAlive()then
+local playername=_client:GetPlayerName()
+if self.playertree[playername]then
+local centry=self.playertree[playername][Entry.UUID]
+centry:RemoveSubEntries()
 end
-end
-end
-if not Client then
-for _id,_entry in pairs(self.structure.generic)do
-local entry=_entry
-if entry and entry.Parent and entry.Parent.ID and entry.Parent.ID==rid then
-self.structure.IDs[entry.ID]=nil
-self.structure.generic[_id]=nil
-end
-end
-end
-end
-self:_CleanUpPlayerStructure()
-return self
-end
-function CLIENTMENUMANAGER:_RemoveByID(ID)
-self:T(self.lid.."_RemoveByID "..ID or"none")
-if ID then
-local gid=self.structure.IDs[ID]
-if gid then
-self.structure.generic[gid]=nil
-self.structure.IDs[ID]=nil
-end
-end
-return self
-end
-function CLIENTMENUMANAGER:_CheckStructures(Playername)
-self:T(self.lid.."CheckStructures")
-self:I("Generic Structure")
-self:I("-----------------")
-for _id,_entry in UTILS.spairs(self.structure.generic)do
-local ID="none"
-if _entry and _entry.ID then
-ID=_entry.ID
-end
-self:I("ID= ".._id.." | EntryID = "..ID)
-if _id>10 and _id<14 then
-self:I(_entry.name)
-end
-end
-self:I("Reverse Structure")
-self:I("-----------------")
-for _id,_entry in UTILS.spairs(self.structure.IDs)do
-self:I("EntryID= ".._id.." | ID = ".._entry)
-end
-if Playername then
-self:I("Player Structure")
-self:I("-----------------")
-for _id,_entry in UTILS.spairs(self.structure[Playername])do
-local ID="none"
-if _entry and _entry.ID then
-ID=_entry.ID
-end
-local _lid=_id or"none"
-self:I("ID= ".._lid.." | EntryID = "..ID)
 end
 end
 return self
@@ -97379,7 +97275,7 @@ if coordinate then
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
-local text=Text or"Target of "..self.lid
+local text=Text or("Target of "..self.lid)
 self.TargetMarker=MARKER:New(coordinate,text)
 if ReadOnly then
 self.TargetMarker:ReadOnly()
@@ -97660,6 +97556,7 @@ PlayerJoinMenu={},
 PlayerInfoMenu={},
 PlayerMenuTag={},
 noflaresmokemenu=false,
+illumenu=false,
 TransmitOnlyWithPlayers=true,
 buddylasing=false,
 PlayerRecce=nil,
@@ -97732,6 +97629,7 @@ MENUINFO="Info",
 MENUMARK="Mark on map",
 MENUSMOKE="Smoke",
 MENUFLARE="Flare",
+MENUILLU="Illuminate",
 MENUABORT="Abort",
 MENUJOIN="Join Task",
 MENUTASKINFO="Task Info",
@@ -97811,6 +97709,7 @@ MENUINFO="Information",
 MENUMARK="Kartenmarkierung",
 MENUSMOKE="Rauchgranate",
 MENUFLARE="Leuchtgranate",
+MENUILLU="Feldbeleuchtung",
 MENUABORT="Abbrechen",
 MENUJOIN="Auftrag annehmen",
 MENUTASKINFO="Auftrag Briefing",
@@ -97893,18 +97792,20 @@ self.ShortCallsign=true
 self.Keepnumber=false
 self.CallsignTranslations=nil
 self.noflaresmokemenu=false
+self.illumenu=false
 self.ShowMagnetic=true
 self.UseTypeNames=false
-local IsClientSet=false
+self.IsClientSet=false
 if ClientFilter and type(ClientFilter)=="table"and ClientFilter.ClassName and ClientFilter.ClassName=="SET_CLIENT"then
 self.ClientSet=ClientFilter
-IsClientSet=true
+self.IsClientSet=true
 end
-if ClientFilter and not IsClientSet then
+if ClientFilter and not self.IsClientSet then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterPrefixes(ClientFilter):FilterStart()
-elseif not IsClientSet then
+elseif not self.IsClientSet then
 self.ClientSet=SET_CLIENT:New():FilterCoalitions(string.lower(self.CoalitionName)):FilterActive(true):FilterStart()
 end
+self.ActiveClientSet=SET_CLIENT:New()
 self.lid=string.format("PlayerTaskController %s %s | ",self.Name,tostring(self.Type))
 self:_InitLocalization()
 self:SetStartState("Stopped")
@@ -97986,6 +97887,16 @@ end
 function PLAYERTASKCONTROLLER:SetEnableSmokeFlareTask()
 self:T(self.lid.."SetEnableSmokeFlareTask")
 self.noflaresmokemenu=false
+return self
+end
+function PLAYERTASKCONTROLLER:SetEnableIlluminateTask()
+self:T(self.lid.."SetEnableSmokeFlareTask")
+self.illumenu=true
+return self
+end
+function PLAYERTASKCONTROLLER:SetDisableIlluminateTask()
+self:T(self.lid.."SetDisableIlluminateTask")
+self.illumenu=false
 return self
 end
 function PLAYERTASKCONTROLLER:SetInfoShowsCoordinate(OnOff,LLDDM)
@@ -98151,6 +98062,7 @@ return self
 end
 function PLAYERTASKCONTROLLER:_EventHandler(EventData)
 self:T(self.lid.."_EventHandler: "..EventData.id)
+self:T(self.lid.."_EventHandler: "..EventData.IniPlayerName)
 if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
 if EventData.IniPlayerName then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
@@ -98172,11 +98084,13 @@ end
 self:T(self.lid..text)
 end
 elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
-if EventData.IniPlayerName and EventData.IniGroup and self.UseSRS then
-if self.ClientSet:IsNotInSet(CLIENT:FindByName(EventData.IniUnitName))then
+if EventData.IniPlayerName and EventData.IniGroup then
+if self.IsClientSet and self.ClientSet:IsNotInSet(CLIENT:FindByName(EventData.IniUnitName))then
+self:T(self.lid.."Client not in SET: "..EventData.IniPlayerName)
 return self
 end
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
+if self.UseSRS then
 local frequency=self.Frequency
 local freqtext=""
 if type(frequency)=="table"then
@@ -98200,9 +98114,11 @@ end
 playername=self:_GetTextForSpeech(playername)
 local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
+end
 if EventData.IniPlayerName then
 self.PlayerMenu[EventData.IniPlayerName]=nil
-self:_BuildMenus(CLIENT:FindByPlayerName(EventData.IniPlayerName))
+local player=CLIENT:FindByName(EventData.IniUnitName)
+self:_SwitchMenuForClient(player,"Info")
 end
 end
 end
@@ -98281,6 +98197,7 @@ for _id,_data in pairs(threattable)do
 local threat=_data.threat
 local task=_data.task
 local type=task.Type
+local name=task.Target:GetName()
 if not task:IsDone()then
 table.insert(tasktypes[type],task)
 end
@@ -98367,7 +98284,7 @@ for _,_client in pairs(clientlist)do
 local client=_client
 local group=client:GetGroup()
 for _,task in pairs(nexttasks)do
-self:_JoinTask(group,client,task,true)
+self:_JoinTask(task,true,group,client)
 end
 end
 end
@@ -98382,7 +98299,7 @@ end
 return self
 end
 function PLAYERTASKCONTROLLER:_CheckPrecisionTasks()
-self:T(self.lid.."_CheckTaskQueue")
+self:T(self.lid.."_CheckPrecisionTasks")
 if self.PrecisionTasks:Count()>0 and self.precisionbombing then
 if not self.LasingDrone or self.LasingDrone:IsDead()then
 self:E(self.lid.."Lasing drone is dead ... creating a new one!")
@@ -98741,10 +98658,15 @@ self:E(self.lid.."***** NO valid PAYERTASK object sent!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:_JoinTask(Group,Client,Task,Force)
+function PLAYERTASKCONTROLLER:_JoinTask(Task,Force,Group,Client)
+self:T({Force,Group,Client})
 self:T(self.lid.."_JoinTask")
+local force=false
+if type(Force)=="boolean"then
+force=Force
+end
 local playername,ttsplayername=self:_GetPlayerName(Client)
-if self.TasksPerPlayer:HasUniqueID(playername)and not Force then
+if self.TasksPerPlayer:HasUniqueID(playername)and not force then
 if not self.NoScreenOutput then
 local text=self.gettext:GetEntry("HAVEACTIVETASK",self.locale)
 local m=MESSAGE:New(text,"10","Tasking"):ToClient(Client)
@@ -98770,7 +98692,7 @@ self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
 self.TasksPerPlayer:Push(Task,playername)
 self:__PlayerJoinedTask(1,Group,Client,Task)
-self:_BuildMenus(Client,true)
+self:_SwitchMenuForClient(Client,"Active",1)
 end
 if Task.Type==AUFTRAG.Type.PRECISIONBOMBING then
 if not self.PrecisionTasks:HasUniqueID(Task.PlayerTaskNr)then
@@ -98816,13 +98738,17 @@ end
 end
 return self
 end
-function PLAYERTASKCONTROLLER:_ActiveTaskInfo(Group,Client,Task)
+function PLAYERTASKCONTROLLER:_ActiveTaskInfo(Task,Group,Client)
 self:T(self.lid.."_ActiveTaskInfo")
 local playername,ttsplayername=self:_GetPlayerName(Client)
 local text=""
 local textTTS=""
-if self.TasksPerPlayer:HasUniqueID(playername)or Task then
-local task=Task or self.TasksPerPlayer:ReadByID(playername)
+local task=nil
+if type(Task)~="string"then
+task=Task
+end
+if self.TasksPerPlayer:HasUniqueID(playername)or task then
+local task=task or self.TasksPerPlayer:ReadByID(playername)
 local tname=self.gettext:GetEntry("TASKNAME",self.locale)
 local ttsname=self.gettext:GetEntry("TASKNAMETTS",self.locale)
 local taskname=string.format(tname,task.Type,task.PlayerTaskNr)
@@ -99074,204 +99000,216 @@ end
 if not self.NoScreenOutput then
 local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
 end
-self:_BuildMenus(Client,true)
+self:_SwitchMenuForClient(Client,"Info",1)
 return self
 end
-function PLAYERTASKCONTROLLER:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype,newtag)
-self:T(self.lid.."_BuildTaskInfoMenu")
-local taskinfomenu=nil
-if self.taskinfomenu then
-local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
-local taskinfomenu=MENU_GROUP:New(group,menutaskinfo,topmenu):SetTag(newtag)
-local ittypes={}
-local itaskmenu={}
-local tnow=timer.getTime()
-for _tasktype,_data in pairs(tasktypes)do
-ittypes[_tasktype]=MENU_GROUP:New(group,_tasktype,taskinfomenu):SetTag(newtag)
-local tasks=taskpertype[_tasktype]or{}
-local n=0
-for _,_task in pairs(tasks)do
-_task=_task
-local pilotcount=_task:CountClients()
-local newtext="]"
-if tnow-_task.timestamp<60 then
-newtext="*]"
+function PLAYERTASKCONTROLLER:_UpdateJoinMenuTemplate()
+self:T("_UpdateJoinMenuTemplate")
+if self.TaskQueue:Count()>0 then
+local taskpertype=self:_GetTasksPerType()
+local JoinMenu=self.JoinMenu
+local controller=self.JoinTaskMenuTemplate
+local actcontroller=self.ActiveTaskMenuTemplate
+local actinfomenu=self.ActiveInfoMenu
+local maxn=self.menuitemlimit
+for _type,_ in pairs(taskpertype)do
+local found=controller:FindEntriesByText(_type)
+if#found==0 then
+local newentry=controller:NewEntry(_type,JoinMenu)
+controller:AddEntry(newentry)
+if self.JoinInfoMenu then
+local newentry=controller:NewEntry(_type,self.JoinInfoMenu)
+controller:AddEntry(newentry)
 end
+if actinfomenu then
+local newentry=actcontroller:NewEntry(_type,self.ActiveInfoMenu)
+actcontroller:AddEntry(newentry)
+end
+end
+end
+local typelist=self:_GetAvailableTaskTypes()
+for _tasktype,_data in pairs(typelist)do
+self:T("**** Building for TaskType: ".._tasktype)
+for _,_task in pairs(taskpertype[_tasktype])do
+_task=_task
+self:T("**** Building for Task: ".._task.Target:GetName())
+if _task.InMenu then
+self:T("**** Task already in Menu ".._task.Target:GetName())
+else
 local menutaskno=self.gettext:GetEntry("MENUTASKNO",self.locale)
-local text=string.format("%s %03d [%d%s",menutaskno,_task.PlayerTaskNr,pilotcount,newtext)
+local text=string.format("%s %03d",menutaskno,_task.PlayerTaskNr)
 if self.UseGroupNames then
 local name=_task.Target:GetName()
 if name~="Unknown"then
-text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
+text=string.format("%s (%03d)",name,_task.PlayerTaskNr)
 end
 end
-if self.UseTypeNames then
-if _task.TypeName then
-text=string.format("%s (%03d) [%d%s",_task.TypeName,_task.PlayerTaskNr,pilotcount,newtext)
+local parenttable,number=controller:FindEntriesByText(_tasktype,JoinMenu)
+if number>0 then
+local Parent=parenttable[1]
+local matches,count=controller:FindEntriesByParent(Parent)
+self:T("***** Join Menu ".._tasktype.." # of entries: "..count)
+if count<self.menuitemlimit then
+local taskentry=controller:NewEntry(text,Parent,self._JoinTask,self,_task,"false")
+controller:AddEntry(taskentry)
+_task.InMenu=true
+if not _task.UUIDS then _task.UUIDS={}end
+table.insert(_task.UUIDS,taskentry.UUID)
 end
 end
-local taskentry=MENU_GROUP_COMMAND:New(group,text,ittypes[_tasktype],self._ActiveTaskInfo,self,group,client,_task):SetTag(newtag)
-itaskmenu[#itaskmenu+1]=taskentry
-n=n+1
-if n>=self.menuitemlimit then
-break
+if self.JoinInfoMenu then
+local parenttable,number=controller:FindEntriesByText(_tasktype,self.JoinInfoMenu)
+if number>0 then
+local Parent=parenttable[1]
+local matches,count=controller:FindEntriesByParent(Parent)
+self:T("***** Join Info Menu ".._tasktype.." # of entries: "..count)
+if count<self.menuitemlimit then
+local taskentry=controller:NewEntry(text,Parent,self._ActiveTaskInfo,self,_task)
+controller:AddEntry(taskentry)
+_task.InMenu=true
+if not _task.UUIDS then _task.UUIDS={}end
+table.insert(_task.UUIDS,taskentry.UUID)
+end
+end
+end
+if actinfomenu then
+local parenttable,number=actcontroller:FindEntriesByText(_tasktype,self.ActiveInfoMenu)
+if number>0 then
+local Parent=parenttable[1]
+local matches,count=actcontroller:FindEntriesByParent(Parent)
+self:T("***** Active Info Menu ".._tasktype.." # of entries: "..count)
+if count<self.menuitemlimit then
+local taskentry=actcontroller:NewEntry(text,Parent,self._ActiveTaskInfo,self,_task)
+actcontroller:AddEntry(taskentry)
+_task.InMenu=true
+if not _task.AUUIDS then _task.AUUIDS={}end
+table.insert(_task.AUUIDS,taskentry.UUID)
 end
 end
 end
 end
-return taskinfomenu
 end
-function PLAYERTASKCONTROLLER:_BuildMenus(Client,enforced,fromsuccess)
-self:T(self.lid.."_BuildMenus")
-if self.MenuBuildLocked and(timer.getAbsTime()-self.MenuBuildLocked<2)then
-self:ScheduleOnce(2,self._BuildMenus,self,Client,enforced,fromsuccess)
+end
+end
 return self
-else
-self.MenuBuildLocked=timer.getAbsTime()
 end
-local clients=self.ClientSet:GetAliveSet()
-local joinorabort=false
-local timedbuild=false
-if Client then
-clients={Client}
-enforced=true
-joinorabort=true
+function PLAYERTASKCONTROLLER:_RemoveMenuEntriesForTask(Task,Client)
+self:T("_RemoveMenuEntriesForTask")
+if Task then
+if Task.UUIDS and self.JoinTaskMenuTemplate then
+UTILS.PrintTableToLog(Task.UUIDS)
+local controller=self.JoinTaskMenuTemplate
+for _,_uuid in pairs(Task.UUIDS)do
+local Entry=controller:FindEntryByUUID(_uuid)
+if Entry then
+controller:DeleteF10Entry(Entry,Client)
+controller:DeleteGenericEntry(Entry)
+UTILS.PrintTableToLog(controller.menutree)
 end
-local tasktypes=self:_GetAvailableTaskTypes()
-local taskpertype=self:_GetTasksPerType()
-for _,_client in pairs(clients)do
-if _client and _client:IsAlive()then
-local client=_client
-local group=client:GetGroup()
-local unknown=self.gettext:GetEntry("UNKNOWN",self.locale)
-local playername=client:GetPlayerName()or unknown
-local oldtag=self.PlayerMenuTag[playername]
-local newtag=playername..timer.getAbsTime()
-self.PlayerMenuTag[playername]=newtag
-if group and client then
+end
+end
+if Task.AUUIDS and self.ActiveTaskMenuTemplate then
+UTILS.PrintTableToLog(Task.AUUIDS)
+for _,_uuid in pairs(Task.AUUIDS)do
+local controller=self.ActiveTaskMenuTemplate
+local Entry=controller:FindEntryByUUID(_uuid)
+if Entry then
+controller:DeleteF10Entry(Entry,Client)
+controller:DeleteGenericEntry(Entry)
+UTILS.PrintTableToLog(controller.menutree)
+end
+end
+end
+Task.UUIDS=nil
+Task.AUUIDS=nil
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_CreateJoinMenuTemplate()
+self:T("_CreateActiveTaskMenuTemplate")
+local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
+local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
+local flashtext=self.gettext:GetEntry("FLASHMENU",self.locale)
+local JoinTaskMenuTemplate=CLIENTMENUMANAGER:New(self.ClientSet,"JoinTask")
+if not self.JoinTopMenu then
 local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
 local longname=self.Name..taskings..self.Type
 local menuname=self.MenuName or longname
-local playerhastask=false
-if self:_CheckPlayerHasTask(playername)and not fromsuccess then playerhastask=true end
-local topmenu=nil
-local rebuilddone=false
-self:T("Playerhastask = "..tostring(playerhastask).." Enforced = "..tostring(enforced).." Join or Abort = "..tostring(joinorabort))
-if self.PlayerMenu[playername]then
-if joinorabort then
-self.PlayerMenu[playername]:RemoveSubMenus()
-self.PlayerMenu[playername]=MENU_GROUP:New(group,menuname,self.MenuParent)
-self.PlayerMenu[playername]:SetTag(newtag)
-topmenu=self.PlayerMenu[playername]
-elseif(not playerhastask)or enforced then
-local T0=timer.getAbsTime()
-local TDiff=T0-self.PlayerMenu[playername].PTTimeStamp
-self:T("TDiff = "..string.format("%.2d",TDiff))
-if TDiff>=self.holdmenutime then
+self.JoinTopMenu=JoinTaskMenuTemplate:NewEntry(menuname,self.MenuParent)
 end
-topmenu=self.PlayerMenu[playername]
+if self.AllowFlash then
+JoinTaskMenuTemplate:NewEntry(flashtext,self.JoinTopMenu,self._SwitchFlashing,self)
 end
-else
-topmenu=MENU_GROUP:New(group,menuname,self.MenuParent)
-self.PlayerMenu[playername]=topmenu
-self.PlayerMenu[playername]:SetTag(newtag)
-self.PlayerMenu[playername].PTTimeStamp=timer.getAbsTime()
-enforced=true
+self.JoinMenu=JoinTaskMenuTemplate:NewEntry(menujoin,self.JoinTopMenu)
+if self.taskinfomenu then
+local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
+self.JoinInfoMenu=JoinTaskMenuTemplate:NewEntry(menutaskinfo,self.JoinTopMenu)
 end
-if playerhastask and enforced then
-self:T("Building Active Task Menus for "..playername)
-rebuilddone=true
+if self.TaskQueue:Count()==0 then
+JoinTaskMenuTemplate:NewEntry(menunotasks,self.JoinMenu)
+end
+self.JoinTaskMenuTemplate=JoinTaskMenuTemplate
+return self
+end
+function PLAYERTASKCONTROLLER:_CreateActiveTaskMenuTemplate()
+self:T("_CreateActiveTaskMenuTemplate")
 local menuactive=self.gettext:GetEntry("MENUACTIVE",self.locale)
 local menuinfo=self.gettext:GetEntry("MENUINFO",self.locale)
 local menumark=self.gettext:GetEntry("MENUMARK",self.locale)
 local menusmoke=self.gettext:GetEntry("MENUSMOKE",self.locale)
 local menuflare=self.gettext:GetEntry("MENUFLARE",self.locale)
+local menuillu=self.gettext:GetEntry("MENUILLU",self.locale)
 local menuabort=self.gettext:GetEntry("MENUABORT",self.locale)
-local active=MENU_GROUP:New(group,menuactive,topmenu):SetTag(newtag)
-local info=MENU_GROUP_COMMAND:New(group,menuinfo,active,self._ActiveTaskInfo,self,group,client):SetTag(newtag)
-local mark=MENU_GROUP_COMMAND:New(group,menumark,active,self._MarkTask,self,group,client):SetTag(newtag)
-if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
-if self.noflaresmokemenu~=true then
-local smoke=MENU_GROUP_COMMAND:New(group,menusmoke,active,self._SmokeTask,self,group,client):SetTag(newtag)
-local flare=MENU_GROUP_COMMAND:New(group,menuflare,active,self._FlareTask,self,group,client):SetTag(newtag)
-local IsNight=client:GetCoordinate():IsNight()
-if IsNight then
-local light=MENU_GROUP_COMMAND:New(group,menuflare,active,self._IlluminateTask,self,group,client):SetTag(newtag)
+local ActiveTaskMenuTemplate=CLIENTMENUMANAGER:New(self.ActiveClientSet,"ActiveTask")
+if not self.ActiveTopMenu then
+local taskings=self.gettext:GetEntry("MENUTASKING",self.locale)
+local longname=self.Name..taskings..self.Type
+local menuname=self.MenuName or longname
+self.ActiveTopMenu=ActiveTaskMenuTemplate:NewEntry(menuname,self.MenuParent)
 end
-end
-end
-local abort=MENU_GROUP_COMMAND:New(group,menuabort,active,self._AbortTask,self,group,client):SetTag(newtag)
-if self.activehasinfomenu and self.taskinfomenu then
-self:T("Building Active-Info Menus for "..playername)
-if self.PlayerInfoMenu[playername]then
-self.PlayerInfoMenu[playername]:RemoveSubMenus(nil,oldtag)
-end
-self.PlayerInfoMenu[playername]=self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype,newtag)
-end
-elseif(self.TaskQueue:Count()>0 and enforced)or(not playerhastask and(timedbuild or joinorabort))then
-self:T("Building Join Menus for "..playername)
-rebuilddone=true
-local menujoin=self.gettext:GetEntry("MENUJOIN",self.locale)
-if self.PlayerJoinMenu[playername]then
-self.PlayerJoinMenu[playername]:RemoveSubMenus(nil,oldtag)
-end
-local joinmenu=MENU_GROUP:New(group,menujoin,topmenu):SetTag(newtag)
-self.PlayerJoinMenu[playername]=joinmenu
-local ttypes={}
-local taskmenu={}
-for _tasktype,_data in pairs(tasktypes)do
-ttypes[_tasktype]=MENU_GROUP:New(group,_tasktype,joinmenu):SetTag(newtag)
-local tasks=taskpertype[_tasktype]or{}
-local n=0
-for _,_task in pairs(tasks)do
-_task=_task
-local pilotcount=_task:CountClients()
-local newtext="]"
-local tnow=timer.getTime()
-if tnow-_task.timestamp<60 then
-newtext="*]"
-end
-local menutaskno=self.gettext:GetEntry("MENUTASKNO",self.locale)
-local text=string.format("%s %03d [%d%s",menutaskno,_task.PlayerTaskNr,pilotcount,newtext)
-if self.UseGroupNames then
-local name=_task.Target:GetName()
-if name~="Unknown"then
-text=string.format("%s (%03d) [%d%s",name,_task.PlayerTaskNr,pilotcount,newtext)
-end
-end
-local taskentry=MENU_GROUP_COMMAND:New(group,text,ttypes[_tasktype],self._JoinTask,self,group,client,_task):SetTag(newtag)
-taskmenu[#taskmenu+1]=taskentry
-n=n+1
-if n>=self.menuitemlimit then
-break
-end
-end
-end
-if self.taskinfomenu then
-self:T("Building Join-Info Menus for "..playername)
-if self.PlayerInfoMenu[playername]then
-self.PlayerInfoMenu[playername]:RemoveSubMenus(nil,oldtag)
-end
-self.PlayerInfoMenu[playername]=self:_BuildTaskInfoMenu(group,client,playername,topmenu,tasktypes,taskpertype,newtag)
-end
-end
-if self.AllowFlash and topmenu~=nil then
+if self.AllowFlash then
 local flashtext=self.gettext:GetEntry("FLASHMENU",self.locale)
-local flashmenu=MENU_GROUP_COMMAND:New(group,flashtext,topmenu,self._SwitchFlashing,self,group,client):SetTag(newtag)
+ActiveTaskMenuTemplate:NewEntry(flashtext,self.ActiveTopMenu,self._SwitchFlashing,self)
 end
-if self.TaskQueue:Count()==0 then
-self:T("No open tasks info")
-local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
-local joinmenu=MENU_GROUP:New(group,menunotasks,self.PlayerMenu[playername]):SetTag(newtag)
-rebuilddone=true
-end
-if rebuilddone then
-self.PlayerMenu[playername]:Refresh()
-end
-end
+local active=ActiveTaskMenuTemplate:NewEntry(menuactive,self.ActiveTopMenu)
+ActiveTaskMenuTemplate:NewEntry(menuinfo,active,self._ActiveTaskInfo,self,"NONE")
+ActiveTaskMenuTemplate:NewEntry(menumark,active,self._MarkTask,self)
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A and self.noflaresmokemenu~=true then
+ActiveTaskMenuTemplate:NewEntry(menusmoke,active,self._SmokeTask,self)
+ActiveTaskMenuTemplate:NewEntry(menuflare,active,self._FlareTask,self)
+if self.illumenu then
+ActiveTaskMenuTemplate:NewEntry(menuillu,active,self._IlluminateTask,self)
 end
 end
-self.MenuBuildLocked=false
+ActiveTaskMenuTemplate:NewEntry(menuabort,active,self._AbortTask,self)
+self.ActiveTaskMenuTemplate=ActiveTaskMenuTemplate
+if self.taskinfomenu and self.activehasinfomenu then
+local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
+self.ActiveInfoMenu=ActiveTaskMenuTemplate:NewEntry(menutaskinfo,self.ActiveTopMenu)
+end
+return self
+end
+function PLAYERTASKCONTROLLER:_SwitchMenuForClient(Client,MenuType,Delay)
+self:T(self.lid.."_SwitchMenuForClient")
+if Delay then
+self:ScheduleOnce(Delay,self._SwitchMenuForClient,self,Client,MenuType)
+return self
+end
+if MenuType=="Info"then
+self.ClientSet:AddClientsByName(Client:GetName())
+self.ActiveClientSet:Remove(Client:GetName(),true)
+self.ActiveTaskMenuTemplate:ResetMenu(Client)
+self.JoinTaskMenuTemplate:ResetMenu(Client)
+self.JoinTaskMenuTemplate:Propagate(Client)
+elseif MenuType=="Active"then
+self.ActiveClientSet:AddClientsByName(Client:GetName())
+self.ClientSet:Remove(Client:GetName(),true)
+self.ActiveTaskMenuTemplate:ResetMenu(Client)
+self.JoinTaskMenuTemplate:ResetMenu(Client)
+self.ActiveTaskMenuTemplate:Propagate(Client)
+else
+self:E(self.lid.."Unknown menu type in _SwitchMenuForClient:"..tostring(MenuType))
+end
 return self
 end
 function PLAYERTASKCONTROLLER:AddAgent(Recce)
@@ -99364,8 +99302,7 @@ self.MenuName=Name
 return self
 end
 function PLAYERTASKCONTROLLER:SetParentMenu(Menu)
-self:T(self.lid.."SetParentName")
-self.MenuParent=Menu
+self:T(self.lid.."SetParentMenu")
 return self
 end
 function PLAYERTASKCONTROLLER:SetupIntel(RecceName)
@@ -99479,6 +99416,13 @@ self.BCModulation=Modulation
 end
 return self
 end
+function PLAYERTASKCONTROLLER:onafterStart(From,Event,To)
+self:T({From,Event,To})
+self:T(self.lid.."onafterStart")
+self:_CreateJoinMenuTemplate()
+self:_CreateActiveTaskMenuTemplate()
+return self
+end
 function PLAYERTASKCONTROLLER:onafterStatus(From,Event,To)
 self:T({From,Event,To})
 self:_CheckTargetQueue()
@@ -99498,7 +99442,7 @@ if taskcount<self.menuitemlimit then
 enforcedmenu=true
 end
 end
-self:_BuildMenus(nil,enforcedmenu)
+self:_UpdateJoinMenuTemplate()
 if self.verbose then
 local text=string.format("%s | New Targets: %02d | Active Tasks: %02d | Active Players: %02d | Assigned Tasks: %02d",self.MenuName,targetcount,taskcount,playercount,assignedtasks)
 self:I(text)
@@ -99526,6 +99470,13 @@ if self.UseSRS then
 taskname=string.format(canceltxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
 end
+local clients=Task:GetClientObjects()
+for _,client in pairs(clients)do
+self:_RemoveMenuEntriesForTask(Task,client)
+end
+for _,client in pairs(clients)do
+self:_SwitchMenuForClient(client,"Info",5)
+end
 return self
 end
 function PLAYERTASKCONTROLLER:onafterTaskSuccess(From,Event,To,Task)
@@ -99543,7 +99494,10 @@ self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
 end
 local clients=Task:GetClientObjects()
 for _,client in pairs(clients)do
-self:_BuildMenus(client,true,true)
+self:_RemoveMenuEntriesForTask(Task,client)
+end
+for _,client in pairs(clients)do
+self:_SwitchMenuForClient(client,"Info",5)
 end
 return self
 end
