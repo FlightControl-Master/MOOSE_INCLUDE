@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-16T09:27:34.0000000Z-6481f66e27a022d51aa7ad7872763c0726991c4e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-23T10:37:57.0000000Z-46258492bd2404866be1640362ba13d6827751af ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26680,6 +26680,8 @@ AIRBASE.MarianaIslands={
 ["Saipan_Intl"]="Saipan Intl",
 ["Tinian_Intl"]="Tinian Intl",
 ["Olf_Orote"]="Olf Orote",
+["Pagan_Airstrip"]="Pagan Airstrip",
+["North_West_Field"]="North West Field",
 }
 AIRBASE.SouthAtlantic={
 ["Port_Stanley"]="Port Stanley",
@@ -60399,6 +60401,8 @@ PersianGulf=2,
 TheChannel=-10,
 Syria=5,
 MarianaIslands=2,
+Falklands=12,
+Sinai=5,
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -60407,7 +60411,9 @@ Normandy=true,
 PersianGulf=true,
 TheChannel=true,
 Syria=true,
-MarianaIslands=true
+MarianaIslands=true,
+Falklands=true,
+Sinai=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
@@ -60765,6 +60771,7 @@ local coal=self.airbase and self.airbase:GetCoalition()or nil
 return coal
 end
 function ATIS:onafterStart(From,Event,To)
+self:I("Airbase category is "..self.airbase:GetAirbaseCategory())
 if self.airbase:GetAirbaseCategory()==Airbase.Category.SHIP then
 self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AIRDROMES are supported but NOT SHIPS.",self.airbasename))
 return
@@ -61096,7 +61103,10 @@ end
 end
 local subtitle=""
 subtitle=string.format("%s",self.airbasename)
-if(not self.ATISforFARPs)and self.airbasename:find("AFB")==nil and self.airbasename:find("Airport")==nil and self.airbasename:find("Airstrip")==nil and self.airbasename:find("airfield")==nil and self.airbasename:find("AB")==nil then
+if(not self.ATISforFARPs)and self.airbasename:find("AFB")==nil and self.airbasename:find("Airport")==nil
+and self.airbasename:find("Airstrip")==nil and self.airbasename:find("airfield")==nil and self.airbasename:find("AB")==nil
+and self.airbasename:find("Field")==nil
+then
 subtitle=subtitle.." Airport"
 end
 if not self.useSRS then
