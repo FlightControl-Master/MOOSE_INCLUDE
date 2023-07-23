@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-19T14:06:44.0000000Z-e2929a78c41bfadb6bb012bcb2ba6998449f8bff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-23T10:42:59.0000000Z-f84d02d8a14884f030401f346efb602605e95bda ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -6695,7 +6695,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.0",
+version="0.1.1",
 name=nil,
 clientset=nil,
 menutree={},
@@ -21166,6 +21166,8 @@ AIRBASE.MarianaIslands={
 ["Saipan_Intl"]="Saipan Intl",
 ["Tinian_Intl"]="Tinian Intl",
 ["Olf_Orote"]="Olf Orote",
+["Pagan_Airstrip"]="Pagan Airstrip",
+["North_West_Field"]="North West Field",
 }
 AIRBASE.SouthAtlantic={
 ["Port_Stanley"]="Port Stanley",
@@ -63441,6 +63443,8 @@ PersianGulf=2,
 TheChannel=-10,
 Syria=5,
 MarianaIslands=2,
+Falklands=12,
+Sinai=5,
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -63449,7 +63453,9 @@ Normandy=true,
 PersianGulf=true,
 TheChannel=true,
 Syria=true,
-MarianaIslands=true
+MarianaIslands=true,
+Falklands=true,
+Sinai=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
@@ -63807,6 +63813,7 @@ local coal=self.airbase and self.airbase:GetCoalition()or nil
 return coal
 end
 function ATIS:onafterStart(From,Event,To)
+self:I("Airbase category is "..self.airbase:GetAirbaseCategory())
 if self.airbase:GetAirbaseCategory()==Airbase.Category.SHIP then
 self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AIRDROMES are supported but NOT SHIPS.",self.airbasename))
 return
@@ -64138,7 +64145,10 @@ end
 end
 local subtitle=""
 subtitle=string.format("%s",self.airbasename)
-if(not self.ATISforFARPs)and self.airbasename:find("AFB")==nil and self.airbasename:find("Airport")==nil and self.airbasename:find("Airstrip")==nil and self.airbasename:find("airfield")==nil and self.airbasename:find("AB")==nil then
+if(not self.ATISforFARPs)and self.airbasename:find("AFB")==nil and self.airbasename:find("Airport")==nil
+and self.airbasename:find("Airstrip")==nil and self.airbasename:find("airfield")==nil and self.airbasename:find("AB")==nil
+and self.airbasename:find("Field")==nil
+then
 subtitle=subtitle.." Airport"
 end
 if not self.useSRS then
@@ -97086,7 +97096,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.17"
+PLAYERTASK.version="0.1.18"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -97573,6 +97583,7 @@ InfoHasLLDDM=false,
 InfoHasCoordinate=false,
 UseTypeNames=false,
 Scoring=nil,
+MenuNoTask=nil,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -99017,6 +99028,16 @@ local JoinMenu=self.JoinMenu
 local controller=self.JoinTaskMenuTemplate
 local actcontroller=self.ActiveTaskMenuTemplate
 local actinfomenu=self.ActiveInfoMenu
+if self.TaskQueue:Count()==0 and self.MenuNoTask==nil then
+local menunotasks=self.gettext:GetEntry("MENUNOTASKS",self.locale)
+self.MenuNoTask=controller:NewEntry(menunotasks,self.JoinMenu)
+controller:AddEntry(self.MenuNoTask)
+end
+if self.TaskQueue:Count()>0 and self.MenuNoTask~=nil then
+controller:DeleteGenericEntry(self.MenuNoTask)
+controller:DeleteF10Entry(self.MenuNoTask)
+self.MenuNoTask=nil
+end
 local maxn=self.menuitemlimit
 for _type,_ in pairs(taskpertype)do
 local found=controller:FindEntriesByText(_type)
@@ -99151,8 +99172,12 @@ if self.taskinfomenu then
 local menutaskinfo=self.gettext:GetEntry("MENUTASKINFO",self.locale)
 self.JoinInfoMenu=JoinTaskMenuTemplate:NewEntry(menutaskinfo,self.JoinTopMenu)
 end
-if self.TaskQueue:Count()==0 then
-JoinTaskMenuTemplate:NewEntry(menunotasks,self.JoinMenu)
+if self.TaskQueue:Count()==0 and self.MenuNoTask==nil then
+self.MenuNoTask=JoinTaskMenuTemplate:NewEntry(menunotasks,self.JoinMenu)
+end
+if self.TaskQueue:Count()>0 and self.MenuNoTask~=nil then
+JoinTaskMenuTemplate:DeleteGenericEntry(self.MenuNoTask)
+self.MenuNoTask=nil
 end
 self.JoinTaskMenuTemplate=JoinTaskMenuTemplate
 return self
