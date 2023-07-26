@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T05:49:35.0000000Z-63a524f25cb60dbd98bf93feb82ce93115ec923c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T13:36:09.0000000Z-065717b2f5e75f77285e0c1e757b7900bb4acadf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -84783,8 +84783,12 @@ local group=self.group
 if group and group:IsAlive()then
 local coord=group:GetCoordinate()
 local coalition=self:GetCoalition()
+if coord then
 local airbase=coord:GetClosestAirbase()
 return airbase
+else
+return nil
+end
 else
 return nil
 end
