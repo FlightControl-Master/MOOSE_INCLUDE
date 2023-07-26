@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-25T12:50:29.0000000Z-838e11de05c9bdef1b375aefa50017e64933fdd0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T05:49:35.0000000Z-63a524f25cb60dbd98bf93feb82ce93115ec923c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -67677,7 +67677,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.56",
+version="0.2.57",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -68417,7 +68417,7 @@ local warndist=25
 local Type="SAM"
 if WeaponDesc.category==1 then
 Type="Missile"
-local guidance=WeaponDesc.guidance
+local guidance=WeaponDesc.guidance or 4
 if guidance==2 then
 warndist=10
 elseif guidance==3 then
@@ -69747,10 +69747,16 @@ self:T(text)
 local managedgroup=self.ManagedGrps[GID]
 local Stack=managedgroup.AnchorStackNo
 local Angels=managedgroup.AnchorStackAngels
+local GroupName=managedgroup.GroupName
 if managedgroup.IsPlayer then
-if self.clientmenus:HasUniqueID(managedgroup.GroupName)then
-local menus=self.clientmenus:PullByID(managedgroup.GroupName)
+if self.clientmenus:HasUniqueID(GroupName)then
+local menus=self.clientmenus:PullByID(GroupName)
 menus.basemenu:Remove()
+if self.TacticalSubscribers[GroupName]then
+local Freq=self.TacticalSubscribers[GroupName]
+self.TacticalFrequencies[Freq]=Freq
+self.TacticalSubscribers[GroupName]=nil
+end
 end
 end
 if managedgroup.CurrentTask and managedgroup.CurrentTask>0 then
