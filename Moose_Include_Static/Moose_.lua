@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T13:36:09.0000000Z-065717b2f5e75f77285e0c1e757b7900bb4acadf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T15:23:34.0000000Z-3c74aef378bc5df2e2c6efaaef87d1fa2270e11b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -55631,6 +55631,7 @@ local group=_group
 local knownflight=self:_GetFlightFromGroupInQueue(group,self.flights)
 local actype=group:GetTypeName()
 if knownflight then
+self:T2(self.lid..string.format("Known flight group %s of type %s in CCA.",groupname,actype))
 if knownflight.ai and knownflight.flag==-100 and self.handleai then
 local putintomarshal=false
 local flight=_DATABASE:GetOpsGroup(groupname)
