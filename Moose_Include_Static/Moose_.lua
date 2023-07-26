@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-25T10:01:18.0000000Z-f31741f934a8d3c66bfe5a1f3ced16a7b1c40e86 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T14:36:44.0000000Z-8bf56b8b1a1977c2112627388e4d4fdbcf2c7585 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -53175,17 +53175,32 @@ local group=_group
 local knownflight=self:_GetFlightFromGroupInQueue(group,self.flights)
 local actype=group:GetTypeName()
 if knownflight then
-if knownflight.ai and knownflight.flag==-100 and self.handleai and false then
-local putintomarshal=false
-local flight=_DATABASE:GetOpsGroup(groupname)
-if flight and flight:IsInbound()and flight.destbase:GetName()==self.carrier:GetName()then
-if flight.ishelo then
+self:T2(self.lid..string.format("Known flight group %s of type %s in CCA.",groupname,actype))
+if knownflight.ai and self.handleai then
+local iscarriersquad=true
+if self.squadsetAI then
+local group=self.squadsetAI:FindGroup(groupname)
+if group then
+iscarriersquad=true
 else
-putintomarshal=true
+iscarriersquad=false
 end
-flight.airboss=self
 end
-if putintomarshal then
+if self.excludesetAI then
+local group=self.excludesetAI:FindGroup(groupname)
+if group then
+iscarriersquad=false
+end
+end
+local dist=knownflight.group:GetCoordinate():Get2DDistance(self:GetCoordinate())
+local closein=knownflight.dist0-dist
+self:T3(self.lid..string.format("Known AI flight group %s closed in by %.1f NM",knownflight.groupname,UTILS.MetersToNM(closein)))
+local istanker=self.tanker and self.tanker.tanker:GetName()==groupname
+local isawacs=self.awacs and self.awacs.tanker:GetName()==groupname
+local tanker2marshal=istanker and self.tanker:IsReturning()and self.tanker.airbase:GetName()==self.airbase:GetName()and knownflight.flag==-100 and self.tanker.recovery==true
+local awacs2marshal=isawacs and self.awacs:IsReturning()and self.awacs.airbase:GetName()==self.airbase:GetName()and knownflight.flag==-100 and self.awacs.recovery==true
+local putintomarshal=closein>UTILS.NMToMeters(5)and knownflight.flag==-100 and iscarriersquad and istanker==false and isawacs==false
+if putintomarshal or tanker2marshal or awacs2marshal then
 local stack=self:_GetFreeStack(knownflight.ai)
 local respawn=self.respawnAI
 if stack then
