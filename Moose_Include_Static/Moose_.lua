@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T11:37:07.0000000Z-80e9cb692cb758373ca551b7aa776e491e627f07 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T13:44:13.0000000Z-cbd371b40f89b150dec9e2922eae965810b47ea6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72757,8 +72757,16 @@ function CHIEF:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
 local zone=self.commander:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
 return zone
 end
+function CHIEF:RemoveAwacsZone(Zone)
+local zone=self.commander:RemoveAwacsZone(Zone)
+return zone
+end
 function CHIEF:AddTankerZone(Zone,Altitude,Speed,Heading,Leg,RefuelSystem)
 local zone=self.commander:AddTankerZone(Zone,Altitude,Speed,Heading,Leg,RefuelSystem)
+return zone
+end
+function CHIEF:RemoveTankerZone(Zone)
+local zone=self.commander:RemoveTankerZone(Zone)
 return zone
 end
 function CHIEF:SetBorderZones(BorderZoneSet)
@@ -74520,6 +74528,20 @@ awacszone.mission=nil
 table.insert(self.awacsZones,awacszone)
 return awacszone
 end
+function COMMANDER:RemoveAwacsZone(Zone)
+local awacszone={}
+awacszone.zone=Zone
+for i,_awacszone in pairs(self.awacsZones)do
+if _awacszone.zone==awacszone.zone then
+if _awacszone.mission and _awacszone.mission:IsNotOver()then
+_awacszone.mission:Cancel()
+end
+table.remove(self.awacsZones,i)
+break
+end
+end
+return awacszone
+end
 function COMMANDER:AddTankerZone(Zone,Altitude,Speed,Heading,Leg,RefuelSystem)
 local tankerzone={}
 tankerzone.zone=Zone
@@ -74531,6 +74553,20 @@ tankerzone.refuelsystem=RefuelSystem
 tankerzone.mission=nil
 tankerzone.marker=MARKER:New(tankerzone.zone:GetCoordinate(),"Tanker Zone"):ToCoalition(self:GetCoalition())
 table.insert(self.tankerZones,tankerzone)
+return tankerzone
+end
+function COMMANDER:RemoveTankerZone(Zone)
+local tankerzone={}
+tankerzone.zone=Zone
+for i,_tankerzone in pairs(self.tankerZones)do
+if _tankerzone.zone==tankerzone.zone then
+if _tankerzone.mission and _tankerzone.mission:IsNotOver()then
+_tankerzone.mission:Cancel()
+end
+table.remove(self.tankerZones,i)
+break
+end
+end
 return tankerzone
 end
 function COMMANDER:IsMission(Mission)
