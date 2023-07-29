@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-26T14:36:44.0000000Z-8bf56b8b1a1977c2112627388e4d4fdbcf2c7585 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T14:45:00.0000000Z-f87a676e4bfb84757367655e8fd307c688fb5b32 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -30782,7 +30782,7 @@ ScoreHit=ScoreHit+UnitData.ScoreHit
 Penalty=Penalty+UnitData.Penalty
 PenaltyHit=UnitData.PenaltyHit
 end
-local ScoreMessageHit=string.format("%s:%d  ",CategoryName,Score-Penalty)
+local ScoreMessageHit=string.format("%s: %d  ",CategoryName,Score-Penalty)
 self:T(ScoreMessageHit)
 ScoreMessageHits=ScoreMessageHits..ScoreMessageHit
 PlayerScore=PlayerScore+Score
@@ -30824,7 +30824,7 @@ Penalty=Penalty+UnitData.Penalty
 PenaltyDestroy=PenaltyDestroy+UnitData.PenaltyDestroy
 end
 end
-local ScoreMessageDestroy=string.format("  %s:%d  ",CategoryName,Score-Penalty)
+local ScoreMessageDestroy=string.format("  %s: %d  ",CategoryName,Score-Penalty)
 self:T(ScoreMessageDestroy)
 ScoreMessageDestroys=ScoreMessageDestroys..ScoreMessageDestroy
 PlayerScore=PlayerScore+Score
