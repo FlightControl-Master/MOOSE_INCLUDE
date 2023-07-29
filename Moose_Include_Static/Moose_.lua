@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T14:48:08.0000000Z-2afd09b8785760d93eb09960d0eefd0ae0491458 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T15:19:51.0000000Z-65703d1092f679da072b47fa0711e4d51855a278 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68312,7 +68312,7 @@ self:T(self.lid.."_NewRadioEntry")
 local RadioEntry={}
 RadioEntry.IsNew=IsNew
 RadioEntry.TextTTS=TextTTS
-RadioEntry.TextScreen=TextScreen
+RadioEntry.TextScreen=TextScreen or TextTTS
 RadioEntry.GroupID=GID
 RadioEntry.ToScreen=ToScreen
 RadioEntry.Duration=STTS.getSpeechTime(TextTTS,0.95,false)or 8
@@ -98337,7 +98337,6 @@ return self
 end
 function PLAYERTASKCONTROLLER:_EventHandler(EventData)
 self:T(self.lid.."_EventHandler: "..EventData.id)
-self:T(self.lid.."_EventHandler: "..EventData.IniPlayerName)
 if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
 if EventData.IniPlayerName then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
