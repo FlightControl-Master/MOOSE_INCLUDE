@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T13:44:13.0000000Z-cbd371b40f89b150dec9e2922eae965810b47ea6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T14:44:25.0000000Z-4ed2b0610d90e63fcf5f80557ceeabb28a3dd2ce ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -68255,6 +68255,17 @@ self:_NewRadioEntry(text,text,GID,Outcome,true,true,false)
 end
 return self
 end
+function AWACS:_CheckSubscribers()
+self:T(self.lid.."_InitLocalization")
+for _name,_freq in pairs(self.TacticalSubscribers or{})do
+local grp=GROUP:FindByName(_name)
+if(not grp)or(not grp:IsAlive())then
+self.TacticalFrequencies[_freq]=_freq
+self.TacticalSubscribers[_name]=nil
+end
+end
+return self
+end
 function AWACS:_InitLocalization()
 self:T(self.lid.."_InitLocalization")
 self.gettext=TEXTANDSOUND:New("AWACS","en")
@@ -71619,6 +71630,7 @@ if self:Is("Running")and(awacsalive or self.AwacsInZone)then
 self:_CheckAICAPOnStation()
 self:_CleanUpContacts()
 self:_CheckMerges()
+self:_CheckSubscribers()
 local outcome,targets=self:_TargetSelectionProcess(true)
 self:_CheckTaskQueue()
 local AI,Humans=self:_GetIdlePilots()
@@ -97342,7 +97354,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.18"
+PLAYERTASK.version="0.1.19"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -98535,6 +98547,13 @@ for _,_id in pairs(clientsattask)do
 self:T("*****Removing player ".._id)
 self.TasksPerPlayer:PullByID(_id)
 end
+local clients=task:GetClientObjects()
+for _,client in pairs(clients)do
+self:_RemoveMenuEntriesForTask(task,client)
+end
+for _,client in pairs(clients)do
+self:_SwitchMenuForClient(client,"Info",5)
+end
 local nexttasks={}
 if task.FinalState=="Success"then
 nexttasks=task.NextTaskSuccess
@@ -99370,26 +99389,22 @@ function PLAYERTASKCONTROLLER:_RemoveMenuEntriesForTask(Task,Client)
 self:T("_RemoveMenuEntriesForTask")
 if Task then
 if Task.UUIDS and self.JoinTaskMenuTemplate then
-UTILS.PrintTableToLog(Task.UUIDS)
 local controller=self.JoinTaskMenuTemplate
 for _,_uuid in pairs(Task.UUIDS)do
 local Entry=controller:FindEntryByUUID(_uuid)
 if Entry then
 controller:DeleteF10Entry(Entry,Client)
 controller:DeleteGenericEntry(Entry)
-UTILS.PrintTableToLog(controller.menutree)
 end
 end
 end
 if Task.AUUIDS and self.ActiveTaskMenuTemplate then
-UTILS.PrintTableToLog(Task.AUUIDS)
 for _,_uuid in pairs(Task.AUUIDS)do
 local controller=self.ActiveTaskMenuTemplate
 local Entry=controller:FindEntryByUUID(_uuid)
 if Entry then
 controller:DeleteF10Entry(Entry,Client)
 controller:DeleteGenericEntry(Entry)
-UTILS.PrintTableToLog(controller.menutree)
 end
 end
 end
@@ -99790,6 +99805,13 @@ end
 if self.UseSRS then
 taskname=string.format(failtxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
+end
+local clients=Task:GetClientObjects()
+for _,client in pairs(clients)do
+self:_RemoveMenuEntriesForTask(Task,client)
+end
+for _,client in pairs(clients)do
+self:_SwitchMenuForClient(client,"Info",5)
 end
 return self
 end
