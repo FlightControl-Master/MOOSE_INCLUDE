@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T15:19:51.0000000Z-65703d1092f679da072b47fa0711e4d51855a278 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-31T12:24:47.0000000Z-09d4e155ded1d79140d4ea97263f15ea5c3589c3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -98102,11 +98102,6 @@ self:AddTransition("*","Stop","Stopped")
 self:__Start(2)
 local starttime=math.random(5,10)
 self:__Status(starttime)
-self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
-self:HandleEvent(EVENTS.Ejection,self._EventHandler)
-self:HandleEvent(EVENTS.Crash,self._EventHandler)
-self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
-self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:I(self.lid..self.version.." Started.")
 return self
 end
@@ -99712,6 +99707,11 @@ self:T({From,Event,To})
 self:T(self.lid.."onafterStart")
 self:_CreateJoinMenuTemplate()
 self:_CreateActiveTaskMenuTemplate()
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.Crash,self._EventHandler)
+self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 return self
 end
 function PLAYERTASKCONTROLLER:onafterStatus(From,Event,To)
