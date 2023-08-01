@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-29T14:45:00.0000000Z-f87a676e4bfb84757367655e8fd307c688fb5b32 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T08:00:42.0000000Z-1fdc50b0dae7620fcfbe43ba8a548bc697786e87 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -27701,7 +27701,6 @@ if type(ZoneName)=="string"then
 zone=ZONE:FindByName(ZoneName)
 end
 local _id=zone:GetProperty('OBJECT ID')
-BASE:T("Object ID ".._id)
 if not _id then
 BASE:E("**** Zone without object ID: "..ZoneName.." | Type: "..tostring(zone.ClassName))
 if string.find(zone.ClassName,"POLYGON")then
