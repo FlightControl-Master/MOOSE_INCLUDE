@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T08:00:42.0000000Z-1fdc50b0dae7620fcfbe43ba8a548bc697786e87 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T09:53:00.0000000Z-7c4dd8160dd353bdffa6b8cdddfca06b1fa3b785 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12948,7 +12948,7 @@ end
 return FriendlyUnitCount
 end
 function SET_UNIT:IsIncludeObject(MUnit)
-self:F2(MUnit)
+self:F2({MUnit})
 local MUnitInclude=false
 if MUnit:IsAlive()~=nil then
 MUnitInclude=true
@@ -15463,7 +15463,7 @@ end
 function SET_SCENERY:GetRelativeLife()
 local life=self:GetLife()
 local life0=self:GetLife0()
-self:T3(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
+self:T2(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
 local rlife=math.floor((life/life0)*100)
 return rlife
 end
