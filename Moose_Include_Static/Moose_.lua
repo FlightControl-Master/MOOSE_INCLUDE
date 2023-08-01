@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-07-31T12:24:47.0000000Z-09d4e155ded1d79140d4ea97263f15ea5c3589c3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T08:00:17.0000000Z-56fcd8f37f839430acaed9aad85d37177349044a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -72765,6 +72765,10 @@ function CHIEF:AddGciCapZone(Zone,Altitude,Speed,Heading,Leg)
 local zone=self.commander:AddGciCapZone(Zone,Altitude,Speed,Heading,Leg)
 return zone
 end
+function CHIEF:RemoveGciCapZone(Zone)
+local zone=self.commander:RemoveGciCapZone(Zone)
+return zone
+end
 function CHIEF:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
 local zone=self.commander:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
 return zone
@@ -74527,6 +74531,20 @@ patrolzone.speed=UTILS.KnotsToAltKIAS(Speed or 350,patrolzone.altitude)
 patrolzone.leg=Leg or 30
 patrolzone.mission=nil
 table.insert(self.gcicapZones,patrolzone)
+return patrolzone
+end
+function COMMANDER:RemoveGciCapZone(Zone)
+local patrolzone={}
+patrolzone.zone=Zone
+for i,_patrolzone in pairs(self.gcicapZones)do
+if _patrolzone.zone==patrolzone.zone then
+if _patrolzone.mission and _patrolzone.mission:IsNotOver()then
+_patrolzone.mission:Cancel()
+end
+table.remove(self.gcicapZones,i)
+break
+end
+end
 return patrolzone
 end
 function COMMANDER:AddAwacsZone(Zone,Altitude,Speed,Heading,Leg)
