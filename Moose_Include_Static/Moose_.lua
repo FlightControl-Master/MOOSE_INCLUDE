@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T08:38:39.0000000Z-677a64c3dc0ea339f70feca7c27095879cf1bf79 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T14:26:14.0000000Z-268b7ef80c440ce68303b0e65dc3cfd1de390118 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -12416,13 +12416,14 @@ end
 end
 end
 function SET_BASE:Add(ObjectName,Object)
-self:T({ObjectName=ObjectName,Object=Object})
+self:T2({ObjectName=ObjectName,Object=Object})
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
 self.Set[ObjectName]=Object
 table.insert(self.Index,ObjectName)
 self:Added(ObjectName,Object)
+return self
 end
 function SET_BASE:AddObject(Object)
 self:F2(Object.ObjectName)
@@ -13779,7 +13780,7 @@ end
 return FriendlyUnitCount
 end
 function SET_UNIT:IsIncludeObject(MUnit)
-self:F2(MUnit)
+self:F2({MUnit})
 local MUnitInclude=false
 if MUnit:IsAlive()~=nil then
 MUnitInclude=true
@@ -16136,6 +16137,7 @@ ClassName="SET_SCENERY",
 Scenerys={},
 Filter={
 SceneryPrefixes=nil,
+SceneryRoles=nil,
 Zones=nil,
 },
 }
@@ -16199,6 +16201,7 @@ zones=Zones
 end
 for _,Zone in pairs(zones)do
 local zonename=Zone:GetName()
+self:T(zonename)
 self.Filter.Zones[zonename]=Zone
 end
 return self
@@ -16212,6 +16215,18 @@ Prefixes={Prefixes}
 end
 for PrefixID,Prefix in pairs(Prefixes)do
 self.Filter.SceneryPrefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_SCENERY:FilterRoles(Role)
+if not self.Filter.SceneryRoles then
+self.Filter.SceneryRoles={}
+end
+if type(Role)~="table"then
+Role={Role}
+end
+for PrefixID,Prefix in pairs(Role)do
+self.Filter.SceneryRoles[Prefix]=Prefix
 end
 return self
 end
@@ -16268,8 +16283,58 @@ self:F({Coordinate=Coordinate})
 return Coordinate
 end
 function SET_SCENERY:IsIncludeObject(MScenery)
-self:F2(MScenery)
-return true
+self:T(MScenery.SceneryName)
+local MSceneryInclude=true
+if MScenery then
+local MSceneryName=MScenery:GetName()
+if self.Filter.Prefixes then
+local MSceneryPrefix=false
+for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
+self:T({"Prefix:",string.find(MSceneryName,ZonePrefix,1),ZonePrefix})
+if string.find(MSceneryName,ZonePrefix,1)then
+MSceneryPrefix=true
+end
+end
+self:T({"Evaluated Prefix",MSceneryPrefix})
+MSceneryInclude=MSceneryInclude and MSceneryPrefix
+end
+if self.Filter.Zones then
+local MSceneryZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+local coord=MScenery:GetCoordinate()
+if coord and Zone:IsCoordinateInZone(coord)then
+MSceneryZone=true
+end
+self:T({"Evaluated Zone",MSceneryZone})
+end
+MSceneryInclude=MSceneryInclude and MSceneryZone
+end
+if self.Filter.SceneryRoles then
+local MSceneryRole=false
+local Role=MScenery:GetProperty("ROLE")or"none"
+for ZoneRoleId,ZoneRole in pairs(self.Filter.SceneryRoles)do
+self:T({"Role:",ZoneRole,Role})
+if ZoneRole==Role then
+MSceneryRole=true
+end
+end
+self:T({"Evaluated Role ",MSceneryRole})
+MSceneryInclude=MSceneryInclude and MSceneryRole
+end
+end
+self:T2(MSceneryInclude)
+return MSceneryInclude
+end
+function SET_SCENERY:FilterOnce()
+for ObjectName,Object in pairs(self:GetSet())do
+self:T(ObjectName)
+if self:IsIncludeObject(Object)then
+self:Add(ObjectName,Object)
+else
+self:Remove(ObjectName,true)
+end
+end
+return self
 end
 function SET_SCENERY:GetLife0()
 local life0=0
@@ -16294,7 +16359,7 @@ end
 function SET_SCENERY:GetRelativeLife()
 local life=self:GetLife()
 local life0=self:GetLife0()
-self:T3(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
+self:T2(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
 local rlife=math.floor((life/life0)*100)
 return rlife
 end
@@ -27431,14 +27496,28 @@ ClassName="SCENERY",
 }
 function SCENERY:Register(SceneryName,SceneryObject)
 local self=BASE:Inherit(self,POSITIONABLE:New(SceneryName))
-self.SceneryName=SceneryName
+self.SceneryName=tostring(SceneryName)
 self.SceneryObject=SceneryObject
 if self.SceneryObject then
 self.Life0=self.SceneryObject:getLife()
 else
 self.Life0=0
 end
+self.Properties={}
 return self
+end
+function SCENERY:GetProperty(PropertyName)
+return self.Properties[PropertyName]
+end
+function SCENERY:GetAllProperties()
+return self.Properties
+end
+function SCENERY:SetProperty(PropertyName,PropertyValue)
+self.Properties[PropertyName]=PropertyValue
+return self
+end
+function SCENERY:GetName()
+return self.SceneryName
 end
 function SCENERY:GetDCSObject()
 return self.SceneryObject
@@ -27465,19 +27544,22 @@ end
 function SCENERY:GetThreatLevel()
 return 0,"Scenery"
 end
-function SCENERY:FindByName(Name,Coordinate,Radius)
+function SCENERY:FindByName(Name,Coordinate,Radius,Role)
 local radius=Radius or 100
 local name=Name or"unknown"
 local scenery=nil
-BASE:T({name,radius,Coordinate:GetVec2()})
-local function SceneryScan(coordinate,radius,name)
-if coordinate~=nil then
-local scenerylist=coordinate:ScanScenery(radius)
+local function SceneryScan(scoordinate,sradius,sname)
+if scoordinate~=nil then
+local Vec2=scoordinate:GetVec2()
+local scanzone=ZONE_RADIUS:New("Zone-"..sname,Vec2,sradius,true)
+scanzone:Scan({Object.Category.SCENERY})
+local scanned=scanzone:GetScannedSceneryObjects()
 local rscenery=nil
-for _,_scenery in pairs(scenerylist)do
+for _,_scenery in pairs(scanned)do
 local scenery=_scenery
-if tostring(scenery.SceneryName)==tostring(name)then
+if tostring(scenery.SceneryName)==tostring(sname)then
 rscenery=scenery
+if Role then rscenery:SetProperty("ROLE",Role)end
 break
 end
 end
@@ -27497,7 +27579,7 @@ if type(Zone)=="string"then
 Zone=ZONE:FindByName(Zone)
 end
 local coordinate=Zone:GetCoordinate()
-return self:FindByName(Name,coordinate,Radius)
+return self:FindByName(Name,coordinate,Radius,Zone:GetProperty("ROLE"))
 end
 function SCENERY:FindByZoneName(ZoneName)
 local zone=ZoneName
@@ -27509,27 +27591,21 @@ if not _id then
 BASE:E("**** Zone without object ID: "..ZoneName.." | Type: "..tostring(zone.ClassName))
 if string.find(zone.ClassName,"POLYGON")then
 zone:Scan({Object.Category.SCENERY})
-local scanned=zone:GetScannedScenery()
+local scanned=zone:GetScannedSceneryObjects()
 for _,_scenery in(scanned)do
 local scenery=_scenery
 if scenery:IsAlive()then
+local role=zone:GetProperty("ROLE")
+if role then scenery:SetProperty("ROLE",role)end
 return scenery
 end
 end
 return nil
 else
-local coordinate=zone:GetCoordinate()
-local scanned=coordinate:ScanScenery()
-for _,_scenery in(scanned)do
-local scenery=_scenery
-if scenery:IsAlive()then
-return scenery
-end
-end
-return nil
+return self:FindByName(_id,zone:GetCoordinate(),nil,zone:GetProperty("ROLE"))
 end
 else
-return self:FindByName(_id,zone:GetCoordinate())
+return self:FindByName(_id,zone:GetCoordinate(),nil,zone:GetProperty("ROLE"))
 end
 end
 function SCENERY:FindAllByZoneName(ZoneName)
@@ -27547,7 +27623,7 @@ else
 return nil
 end
 else
-local obj=self:FindByName(_id,zone:GetCoordinate())
+local obj=self:FindByName(_id,zone:GetCoordinate(),nil,zone:GetProperty("ROLE"))
 if obj then
 return{obj}
 else
