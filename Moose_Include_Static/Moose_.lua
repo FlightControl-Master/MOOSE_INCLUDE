@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-01T14:26:29.0000000Z-9cc08cb088861fd378386de812af20aa2b0bbfce ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-02T16:02:34.0000000Z-c5757ffd222fe703e8f58252e6293296d6f0411b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -22564,6 +22564,18 @@ id='EngageTargets',
 key="SEAD",
 params={
 targetTypes=TargetTypes or{"Air Defence"},
+priority=Priority or 0
+}
+}
+return DCSTask
+end
+function CONTROLLABLE:EnRouteTaskCAP(TargetTypes,Priority)
+local DCSTask={
+id='EngageTargets',
+key="CAP",
+enabled=true,
+params={
+targetTypes=TargetTypes or{"Air"},
 priority=Priority or 0
 }
 }
