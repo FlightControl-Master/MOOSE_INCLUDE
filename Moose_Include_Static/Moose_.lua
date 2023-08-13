@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-13T16:20:09.0000000Z-56aebfbee819f82166c65096cba468dea719480a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-13T20:57:06.0000000Z-dbd78f35a416dde9ebe48b1252635773c86bd343 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -50368,9 +50368,9 @@ self:F({groupname=group:GetName(),ngroups=ngroups,forceattribute=forceattribute,
 local n=ngroups or 1
 local function _GetObjectSize(DCSdesc)
 if DCSdesc.box then
-local x=DCSdesc.box.max.x+math.abs(DCSdesc.box.min.x)
-local y=DCSdesc.box.max.y+math.abs(DCSdesc.box.min.y)
-local z=DCSdesc.box.max.z+math.abs(DCSdesc.box.min.z)
+local x=DCSdesc.box.max.x-DCSdesc.box.min.x
+local y=DCSdesc.box.max.y-DCSdesc.box.min.y
+local z=DCSdesc.box.max.z-DCSdesc.box.min.z
 return math.max(x,z),x,y,z
 end
 return 0,0,0,0
@@ -67472,10 +67472,12 @@ text=text..string.format("\nTargets %d/%d, Life Points=%d/%d",self:CountMissionT
 text=text..string.format("\nOpsGroups %d/%d",self:CountOpsGroups(),self:GetNumberOfRequiredAssets())
 if not self.marker then
 local targetcoord=self:GetTargetCoordinate()
+if targetcoord then
 if self.markerCoaliton and self.markerCoaliton>=0 then
 self.marker=MARKER:New(targetcoord,text):ReadOnly():ToCoalition(self.markerCoaliton)
 else
 self.marker=MARKER:New(targetcoord,text):ReadOnly():ToAll()
+end
 end
 else
 if self.marker:GetText()~=text then
@@ -75319,7 +75321,7 @@ end
 function COMMANDER:RecruitAssetsForEscort(Mission,Assets)
 if Mission.NescortMin and Mission.NescortMax and(Mission.NescortMin>0 or Mission.NescortMax>0)then
 local Cohorts=self:_GetCohorts(Mission.escortLegions,Mission.escortCohorts,Mission.operation)
-local assigned=LEGION.AssignAssetsForEscort(self,Cohorts,Assets,Mission.NescortMin,Mission.NescortMax,Mission.escortTargetTypes,Mission.escortEngageRange)
+local assigned=LEGION.AssignAssetsForEscort(self,Cohorts,Assets,Mission.NescortMin,Mission.NescortMax,Mission.escortMissionType,Mission.escortTargetTypes,Mission.escortEngageRange)
 return assigned
 end
 return true
@@ -90787,7 +90789,7 @@ function OPSGROUP:MarkWaypoints(Duration)
 for i,_waypoint in pairs(self.waypoints or{})do
 local waypoint=_waypoint
 local text=string.format("Waypoint ID=%d of %s",waypoint.uid,self.groupname)
-text=text..string.format("\nSpeed=%.1f kts, Alt=%d ft (%s)",UTILS.MpsToKnots(waypoint.speed),UTILS.MetersToFeet(waypoint.alt),"BARO")
+text=text..string.format("\nSpeed=%.1f kts, Alt=%d ft (%s)",UTILS.MpsToKnots(waypoint.speed),UTILS.MetersToFeet(waypoint.alt or 0),"BARO")
 if waypoint.marker then
 if waypoint.marker.text~=text then
 waypoint.marker.text=text
