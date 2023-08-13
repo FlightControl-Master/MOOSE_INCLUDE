@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-02T16:03:03.0000000Z-ffdcfa012992b1bd60de15028171e3c81f5c2bf7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-13T16:20:09.0000000Z-56aebfbee819f82166c65096cba468dea719480a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -3656,6 +3656,40 @@ end
 local objectreturn=_Serialize(tbl)
 return objectreturn
 end
+function UTILS._OneLineSerialize(tbl)
+if type(tbl)=='table'then
+local tbl_str={}
+tbl_str[#tbl_str+1]='{ '
+for ind,val in pairs(tbl)do
+if type(ind)=="number"then
+tbl_str[#tbl_str+1]='['
+tbl_str[#tbl_str+1]=tostring(ind)
+tbl_str[#tbl_str+1]='] = '
+else
+tbl_str[#tbl_str+1]='['
+tbl_str[#tbl_str+1]=UTILS.BasicSerialize(ind)
+tbl_str[#tbl_str+1]='] = '
+end
+if((type(val)=='number')or(type(val)=='boolean'))then
+tbl_str[#tbl_str+1]=tostring(val)
+tbl_str[#tbl_str+1]=', '
+elseif type(val)=='string'then
+tbl_str[#tbl_str+1]=UTILS.BasicSerialize(val)
+tbl_str[#tbl_str+1]=', '
+elseif type(val)=='nil'then
+tbl_str[#tbl_str+1]='nil, '
+elseif type(val)=='table'then
+tbl_str[#tbl_str+1]=UTILS._OneLineSerialize(val)
+tbl_str[#tbl_str+1]=', '
+else
+end
+end
+tbl_str[#tbl_str+1]='}'
+return table.concat(tbl_str)
+else
+return UTILS.BasicSerialize(tbl)
+end
+end
 UTILS.BasicSerialize=function(s)
 if s==nil then
 return"\"\""
@@ -3682,6 +3716,86 @@ BASE:I(string.rep("  ",indent).."}")
 else
 BASE:I(string.rep("  ",indent)..tostring(k).." = "..tostring(v))
 end
+end
+end
+function UTILS.TableShow(tbl,loc,indent,tableshow_tbls)
+tableshow_tbls=tableshow_tbls or{}
+loc=loc or""
+indent=indent or""
+if type(tbl)=='table'then
+tableshow_tbls[tbl]=loc
+local tbl_str={}
+tbl_str[#tbl_str+1]=indent..'{\n'
+for ind,val in pairs(tbl)do
+if type(ind)=="number"then
+tbl_str[#tbl_str+1]=indent
+tbl_str[#tbl_str+1]=loc..'['
+tbl_str[#tbl_str+1]=tostring(ind)
+tbl_str[#tbl_str+1]='] = '
+else
+tbl_str[#tbl_str+1]=indent
+tbl_str[#tbl_str+1]=loc..'['
+tbl_str[#tbl_str+1]=UTILS.BasicSerialize(ind)
+tbl_str[#tbl_str+1]='] = '
+end
+if((type(val)=='number')or(type(val)=='boolean'))then
+tbl_str[#tbl_str+1]=tostring(val)
+tbl_str[#tbl_str+1]=',\n'
+elseif type(val)=='string'then
+tbl_str[#tbl_str+1]=UTILS.BasicSerialize(val)
+tbl_str[#tbl_str+1]=',\n'
+elseif type(val)=='nil'then
+tbl_str[#tbl_str+1]='nil,\n'
+elseif type(val)=='table'then
+if tableshow_tbls[val]then
+tbl_str[#tbl_str+1]=tostring(val)..' already defined: '..tableshow_tbls[val]..',\n'
+else
+tableshow_tbls[val]=loc..'['..UTILS.BasicSerialize(ind)..']'
+tbl_str[#tbl_str+1]=tostring(val)..' '
+tbl_str[#tbl_str+1]=UTILS.TableShow(val,loc..'['..UTILS.BasicSerialize(ind)..']',indent..'    ',tableshow_tbls)
+tbl_str[#tbl_str+1]=',\n'
+end
+elseif type(val)=='function'then
+if debug and debug.getinfo then
+local fcnname=tostring(val)
+local info=debug.getinfo(val,"S")
+if info.what=="C"then
+tbl_str[#tbl_str+1]=string.format('%q',fcnname..', C function')..',\n'
+else
+if(string.sub(info.source,1,2)==[[./]])then
+tbl_str[#tbl_str+1]=string.format('%q',fcnname..', defined in ('..info.linedefined..'-'..info.lastlinedefined..')'..info.source)..',\n'
+else
+tbl_str[#tbl_str+1]=string.format('%q',fcnname..', defined in ('..info.linedefined..'-'..info.lastlinedefined..')')..',\n'
+end
+end
+else
+tbl_str[#tbl_str+1]='a function,\n'
+end
+else
+tbl_str[#tbl_str+1]='unable to serialize value type '..UTILS.BasicSerialize(type(val))..' at index '..tostring(ind)
+end
+end
+tbl_str[#tbl_str+1]=indent..'}'
+return table.concat(tbl_str)
+end
+end
+function UTILS.Gdump(fname)
+if lfs and io then
+local fdir=lfs.writedir()..[[Logs\]]..fname
+local f=io.open(fdir,'w')
+f:write(UTILS.TableShow(_G))
+f:close()
+env.info(string.format('Wrote debug data to $1',fdir))
+else
+env.error("WARNING: lfs and/or io not de-sanitized - cannot dump _G!")
+end
+end
+function UTILS.DoString(s)
+local f,err=loadstring(s)
+if f then
+return true,f()
+else
+return false,err
 end
 end
 UTILS.ToDegree=function(angle)
@@ -11451,8 +11565,20 @@ trigger.action.markupToAll(7,Coalition,MarkID,vecs[1],vecs[2],vecs[3],vecs[4],ve
 vecs[11],vecs[12],vecs[13],vecs[14],vecs[15],
 Color,FillColor,LineType,ReadOnly,Text or"")
 else
-self:E("ERROR: Currently a free form polygon can only have 15 points in total!")
-trigger.action.markupToAll(7,Coalition,MarkID,unpack(vecs),Color,FillColor,LineType,ReadOnly,Text or"")
+local s=string.format("trigger.action.markupToAll(7, %d, %d,",Coalition,MarkID)
+for _,vec in pairs(vecs)do
+s=s..string.format("%s,",UTILS._OneLineSerialize(vec))
+end
+s=s..string.format("%s, %s, %s, %s",UTILS._OneLineSerialize(Color),UTILS._OneLineSerialize(FillColor),tostring(LineType),tostring(ReadOnly))
+if Text and Text~=""then
+s=s..string.format(", \"%s\"",Text)
+end
+s=s..")"
+local success=UTILS.DoString(s)
+if not success then
+self:E("ERROR: Could not draw polygon")
+env.info(s)
+end
 end
 return MarkID
 end
