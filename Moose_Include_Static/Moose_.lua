@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-13T16:19:16.0000000Z-747e5d801a3d131769d4601bb4f95a5b48aa3482 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-17T17:11:01.0000000Z-fe7acecdd3ebd498c3caab623eb8e5f3ca9646d7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -10680,6 +10680,7 @@ FLIGHTGROUPS={},
 FLIGHTCONTROLS={},
 OPSZONES={},
 PATHLINES={},
+STORAGES={},
 }
 local _DATABASECoalition=
 {
@@ -10755,6 +10756,19 @@ end
 function DATABASE:FindAirbase(AirbaseName)
 local AirbaseFound=self.AIRBASES[AirbaseName]
 return AirbaseFound
+end
+function DATABASE:AddStorage(AirbaseName)
+if not self.STORAGES[AirbaseName]then
+self.STORAGES[AirbaseName]=STORAGE:New(AirbaseName)
+end
+return self.STORAGES[AirbaseName]
+end
+function DATABASE:DeleteStorage(AirbaseName)
+self.STORAGES[AirbaseName]=nil
+end
+function DATABASE:FindStorage(AirbaseName)
+local storage=self.STORAGES[AirbaseName]
+return storage
 end
 do
 function DATABASE:FindZone(ZoneName)
@@ -26991,6 +27005,7 @@ end
 self:_InitParkingSpots()
 local vec2=self:GetVec2()
 self:GetCoordinate()
+self.storage=_DATABASE:AddStorage(AirbaseName)
 if vec2 then
 if self.isShip then
 local unit=UNIT:FindByName(AirbaseName)
@@ -27034,6 +27049,47 @@ return nil
 end
 function AIRBASE:GetZone()
 return self.AirbaseZone
+end
+function AIRBASE:GetWarehouse()
+local warehouse=nil
+local airbase=self:GetDCSObject()
+if airbase then
+warehouse=airbase:getWarehouse()
+end
+return warehouse
+end
+function AIRBASE:GetStorage()
+return self.storage
+end
+function AIRBASE:SetAutoCapture(Switch)
+local airbase=self:GetDCSObject()
+if airbase then
+airbase:autoCapture(Switch)
+end
+return self
+end
+function AIRBASE:SetAutoCaptureON()
+self:SetAutoCapture(true)
+return self
+end
+function AIRBASE:SetAutoCaptureOFF()
+self:SetAutoCapture(false)
+return self
+end
+function AIRBASE:IsAutoCapture()
+local airbase=self:GetDCSObject()
+local auto=nil
+if airbase then
+auto=airbase:autoCaptureIsOn()
+end
+return auto
+end
+function AIRBASE:SetCoalition(Coal)
+local airbase=self:GetDCSObject()
+if airbase then
+airbase:setCoalition(Coal)
+end
+return self
 end
 function AIRBASE.GetAllAirbases(coalition,category)
 local airbases={}
@@ -28943,6 +28999,89 @@ self:UnHandleEvent(EVENTS.Crash)
 self:UnHandleEvent(EVENTS.SelfKillPilot)
 return self
 end
+end
+STORAGE={
+ClassName="STORAGE",
+verbose=0,
+}
+STORAGE.Liquid={
+JETFUEL=0,
+GASOLINE=1,
+MW50=2,
+DIESEL=3,
+}
+STORAGE.version="0.0.1"
+function STORAGE:New(AirbaseName)
+local self=BASE:Inherit(self,BASE:New())
+self.airbase=Airbase.getByName(AirbaseName)
+self.warehouse=self.airbase:getWarehouse()
+self.lid=string.format("STORAGE %s",AirbaseName)
+return self
+end
+function STORAGE:FindByName(AirbaseName)
+local storage=_DATABASE:FindStorage(AirbaseName)
+return storage
+end
+function STORAGE:SetVerbosity(VerbosityLevel)
+self.verbose=VerbosityLevel or 0
+return self
+end
+function STORAGE:AddItem(Name,Amount)
+self:T(self.lid..string.format("Adding %d items of %s",Amount,UTILS.OneLineSerialize(Name)))
+self.warehouse:addItem(Name,Amount)
+return self
+end
+function STORAGE:SetItem(Name,Amount)
+self:T(self.lid..string.format("Setting item %s to N=%d",UTILS.OneLineSerialize(Name),Amount))
+self.warehouse:setItem(Name,Amount)
+return self
+end
+function STORAGE:GetItemAmount(Name)
+local N=self.warehouse:getItemCount(Name)
+return N
+end
+function STORAGE:RemoveItem(Name,Amount)
+self:T(self.lid..string.format("Removing N=%d of item %s",Amount,Name))
+self.warehouse:removeItem(Name,Amount)
+return self
+end
+function STORAGE:AddLiquid(Type,Amount)
+self:T(self.lid..string.format("Adding %d liquids of %s",Amount,self:GetLiquidName(Type)))
+self.warehouse:addLiquid(Type,Amount)
+return self
+end
+function STORAGE:SetLiquid(Type,Amount)
+self:T(self.lid..string.format("Setting liquid %s to N=%d",self:GetLiquidName(Type),Amount))
+self.warehouse:setLiquid(Type,Amount)
+return self
+end
+function STORAGE:RemoveLiquid(Type,Amount)
+self:T(self.lid..string.format("Removing N=%d of liquid %s",Amount,self:GetLiquidName(Type)))
+self.warehouse:removeLiquid(Type,Amount)
+return self
+end
+function STORAGE:GetLiquidAmount(Type)
+local N=self.warehouse:getLiquidAmount(Type)
+return N
+end
+function STORAGE:GetLiquidName(Type)
+local name="Unknown"
+if Type==STORAGE.Liquid.JETFUEL then
+name="Jet fuel"
+elseif Type==STORAGE.Liquid.GASOLINE then
+name="Aircraft gasoline"
+elseif Type==STORAGE.Liquid.MW50 then
+name="MW 50"
+elseif Type==STORAGE.Liquid.DIESEL then
+name="Diesel"
+else
+self:E(self.lid..string.format("ERROR: Unknown liquid type %s",tostring(Type)))
+end
+return name
+end
+function STORAGE:GetInventory(Item)
+local inventory=self.warehouse:getInventory(Item)
+return inventory.aircraft,inventory.liquids,inventory.weapon
 end
 CARGOS={}
 do
