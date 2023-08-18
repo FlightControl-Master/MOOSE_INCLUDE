@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-17T17:13:47.0000000Z-1329cd23fdb2242ddc621ef8bf54ca5846264d1a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-18T09:01:38.0000000Z-83bae9c2f739ee23eb7571cd9cbda9fd36f6cdee ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -26907,10 +26907,10 @@ if DCSPositionable then
 local PositionablePointVec3=DCSPositionable:getPosition().p
 if Radius then
 local PositionableRandomVec3={}
-local angle=math.random()*math.pi*2;
-PositionableRandomVec3.x=PositionablePointVec3.x+math.cos(angle)*math.random()*Radius;
+local angle=math.random()*math.pi*2
+PositionableRandomVec3.x=PositionablePointVec3.x+math.cos(angle)*math.random()*Radius
 PositionableRandomVec3.y=PositionablePointVec3.y
-PositionableRandomVec3.z=PositionablePointVec3.z+math.sin(angle)*math.random()*Radius;
+PositionableRandomVec3.z=PositionablePointVec3.z+math.sin(angle)*math.random()*Radius
 self:T3(PositionableRandomVec3)
 return PositionableRandomVec3
 else
@@ -27512,6 +27512,73 @@ CargoWeight=CargoWeight+Cargo:GetWeight()
 end
 return self.__.CargoBayWeightLimit-CargoWeight
 end
+POSITIONABLE.DefaultInfantryWeight=95
+POSITIONABLE.CargoBayCapacityValues={
+["Air"]={
+["C_130"]=70000,
+},
+["Naval"]={
+["Type_071"]=245000,
+["LHA_Tarawa"]=500000,
+["Ropucha_class"]=150000,
+["Dry_cargo_ship_1"]=70000,
+["Dry_cargo_ship_2"]=70000,
+["Higgins_boat"]=3700,
+["USS_Samuel_Chase"]=25000,
+["LST_Mk2"]=2100000,
+["speedboat"]=500,
+["Seawise_Giant"]=261000000,
+},
+["Ground"]={
+["AAV7"]=25*POSITIONABLE.DefaultInfantryWeight,
+["Bedford_MWD"]=8*POSITIONABLE.DefaultInfantryWeight,
+["Blitz_36_6700A"]=10*POSITIONABLE.DefaultInfantryWeight,
+["BMD_1"]=9*POSITIONABLE.DefaultInfantryWeight,
+["BMP_1"]=8*POSITIONABLE.DefaultInfantryWeight,
+["BMP_2"]=7*POSITIONABLE.DefaultInfantryWeight,
+["BMP_3"]=8*POSITIONABLE.DefaultInfantryWeight,
+["Boman"]=25*POSITIONABLE.DefaultInfantryWeight,
+["BTR_80"]=9*POSITIONABLE.DefaultInfantryWeight,
+["BTR_82A"]=9*POSITIONABLE.DefaultInfantryWeight,
+["BTR_D"]=12*POSITIONABLE.DefaultInfantryWeight,
+["Cobra"]=8*POSITIONABLE.DefaultInfantryWeight,
+["Land_Rover_101_FC"]=11*POSITIONABLE.DefaultInfantryWeight,
+["Land_Rover_109_S3"]=7*POSITIONABLE.DefaultInfantryWeight,
+["LAV_25"]=6*POSITIONABLE.DefaultInfantryWeight,
+["M_2_Bradley"]=6*POSITIONABLE.DefaultInfantryWeight,
+["M1043_HMMWV_Armament"]=4*POSITIONABLE.DefaultInfantryWeight,
+["M1045_HMMWV_TOW"]=4*POSITIONABLE.DefaultInfantryWeight,
+["M1126_Stryker_ICV"]=9*POSITIONABLE.DefaultInfantryWeight,
+["M1134_Stryker_ATGM"]=9*POSITIONABLE.DefaultInfantryWeight,
+["M2A1_halftrack"]=9*POSITIONABLE.DefaultInfantryWeight,
+["M_113"]=9*POSITIONABLE.DefaultInfantryWeight,
+["Marder"]=6*POSITIONABLE.DefaultInfantryWeight,
+["MCV_80"]=9*POSITIONABLE.DefaultInfantryWeight,
+["MLRS_FDDM"]=4*POSITIONABLE.DefaultInfantryWeight,
+["MTLB"]=25*POSITIONABLE.DefaultInfantryWeight,
+["GAZ_66"]=8*POSITIONABLE.DefaultInfantryWeight,
+["GAZ_3307"]=12*POSITIONABLE.DefaultInfantryWeight,
+["GAZ_3308"]=14*POSITIONABLE.DefaultInfantryWeight,
+["Grad_FDDM"]=6*POSITIONABLE.DefaultInfantryWeight,
+["KAMAZ_Truck"]=12*POSITIONABLE.DefaultInfantryWeight,
+["KrAZ6322"]=12*POSITIONABLE.DefaultInfantryWeight,
+["M_818"]=12*POSITIONABLE.DefaultInfantryWeight,
+["Tigr_233036"]=6*POSITIONABLE.DefaultInfantryWeight,
+["TPZ"]=10*POSITIONABLE.DefaultInfantryWeight,
+["UAZ_469"]=4*POSITIONABLE.DefaultInfantryWeight,
+["Ural_375"]=12*POSITIONABLE.DefaultInfantryWeight,
+["Ural_4320_31"]=14*POSITIONABLE.DefaultInfantryWeight,
+["Ural_4320_APA_5D"]=10*POSITIONABLE.DefaultInfantryWeight,
+["Ural_4320T"]=14*POSITIONABLE.DefaultInfantryWeight,
+["ZBD04A"]=7*POSITIONABLE.DefaultInfantryWeight,
+["VAB_Mephisto"]=8*POSITIONABLE.DefaultInfantryWeight,
+["tt_KORD"]=6*POSITIONABLE.DefaultInfantryWeight,
+["tt_DSHK"]=6*POSITIONABLE.DefaultInfantryWeight,
+["HL_KORD"]=6*POSITIONABLE.DefaultInfantryWeight,
+["HL_DSHK"]=6*POSITIONABLE.DefaultInfantryWeight,
+["CCKW_353"]=16*POSITIONABLE.DefaultInfantryWeight,
+}
+}
 function POSITIONABLE:SetCargoBayWeightLimit(WeightLimit)
 if WeightLimit then
 self.__.CargoBayWeightLimit=WeightLimit
@@ -27520,10 +27587,9 @@ else
 local Desc=self:GetDesc()
 self:F({Desc=Desc})
 local TypeName=Desc.typeName or"Unknown Type"
+TypeName=string.gsub(TypeName,"[%p%s]","_")
 if self:IsAir()then
-local Weights={
-["C-130"]=70000,
-}
+local Weights=POSITIONABLE.CargoBayCapacityValues.Air
 local massMax=Desc.massMax or 0
 local maxTakeoff=Weights[TypeName]
 if maxTakeoff then
@@ -27537,70 +27603,11 @@ local CargoWeight=massMax-(massEmpty+massFuel)
 self:T(string.format("Setting Cargo bay weight limit [%s]=%d kg (Mass max=%d, empty=%d, fuelMax=%d kg (rel=%.3f), fuel=%d kg",TypeName,CargoWeight,massMax,massEmpty,massFuelMax,relFuel,massFuel))
 self.__.CargoBayWeightLimit=CargoWeight
 elseif self:IsShip()then
-local Weights={
-["Type_071"]=245000,
-["LHA_Tarawa"]=500000,
-["Ropucha-class"]=150000,
-["Dry-cargo ship-1"]=70000,
-["Dry-cargo ship-2"]=70000,
-["Higgins_boat"]=3700,
-["USS_Samuel_Chase"]=25000,
-["LST_Mk2"]=2100000,
-["speedboat"]=500,
-["Seawise_Giant"]=261000000,
-}
+local Weights=POSITIONABLE.CargoBayCapacityValues.Naval
 self.__.CargoBayWeightLimit=(Weights[TypeName]or 50000)
 else
-local Weights={
-["AAV7"]=25,
-["Bedford_MWD"]=8,
-["Blitz_36-6700A"]=10,
-["BMD-1"]=9,
-["BMP-1"]=8,
-["BMP-2"]=7,
-["BMP-3"]=8,
-["Boman"]=25,
-["BTR-80"]=9,
-["BTR-82A"]=9,
-["BTR_D"]=12,
-["Cobra"]=8,
-["Land_Rover_101_FC"]=11,
-["Land_Rover_109_S3"]=7,
-["LAV-25"]=6,
-["M-2 Bradley"]=6,
-["M1043 HMMWV Armament"]=4,
-["M1045 HMMWV TOW"]=4,
-["M1126 Stryker ICV"]=9,
-["M1134 Stryker ATGM"]=9,
-["M2A1_halftrack"]=9,
-["M-113"]=9,
-["Marder"]=6,
-["MCV-80"]=9,
-["MLRS FDDM"]=4,
-["MTLB"]=25,
-["GAZ-66"]=8,
-["GAZ-3307"]=12,
-["GAZ-3308"]=14,
-["Grad_FDDM"]=6,
-["KAMAZ Truck"]=12,
-["KrAZ6322"]=12,
-["M 818"]=12,
-["Tigr_233036"]=6,
-["TPZ"]=10,
-["UAZ-469"]=4,
-["Ural-375"]=12,
-["Ural-4320-31"]=14,
-["Ural-4320 APA-5D"]=10,
-["Ural-4320T"]=14,
-["ZBD04A"]=7,
-["VAB_Mephisto"]=8,
-["tt_KORD"]=6,
-["tt_DSHK"]=6,
-["HL_KORD"]=6,
-["HL_DSHK"]=6,
-["CCKW_353"]=16,
-}
-local CargoBayWeightLimit=(Weights[TypeName]or 0)*95
+local Weights=POSITIONABLE.CargoBayCapacityValues.Ground
+local CargoBayWeightLimit=(Weights[TypeName]or 0)
 self.__.CargoBayWeightLimit=CargoBayWeightLimit
 end
 end
