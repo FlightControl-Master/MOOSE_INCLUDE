@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-20T09:19:24.0000000Z-2eafadcedfbd5f855ef48686a372006c9f79f4f1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-20T12:18:43.0000000Z-be5c1bed3bd5451f9a0a9bbcb0c32d40f3ed9fba ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -100243,7 +100243,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.17",
+version="0.0.18",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -100752,6 +100752,7 @@ if self.ClientMenus[playername]then
 self.ClientMenus[playername]:Remove()
 self.ClientMenus[playername]=nil
 end
+self:_BuildMenus()
 return self
 end
 function PLAYERRECCE:_SwitchOnStation(client,group,playername)
@@ -100767,6 +100768,7 @@ if self.ClientMenus[playername]then
 self.ClientMenus[playername]:Remove()
 self.ClientMenus[playername]=nil
 end
+self:_BuildMenus(client)
 return self
 end
 function PLAYERRECCE:_SwitchSmoke(client,group,playername)
@@ -100782,6 +100784,7 @@ if self.ClientMenus[playername]then
 self.ClientMenus[playername]:Remove()
 self.ClientMenus[playername]=nil
 end
+self:_BuildMenus(client)
 return self
 end
 function PLAYERRECCE:_SwitchLasing(client,group,playername)
@@ -100797,6 +100800,7 @@ if self.ClientMenus[playername]then
 self.ClientMenus[playername]:Remove()
 self.ClientMenus[playername]=nil
 end
+self:_BuildMenus(client)
 return self
 end
 function PLAYERRECCE:_SwitchLasingDist(client,group,playername,mindist,maxdist)
@@ -100817,6 +100821,7 @@ if self.ClientMenus[playername]then
 self.ClientMenus[playername]:Remove()
 self.ClientMenus[playername]=nil
 end
+self:_BuildMenus(client)
 return self
 end
 function PLAYERRECCE:_WIP(client,group,playername)
@@ -100830,6 +100835,8 @@ local visualset=self:_GetTargetSet(client,false)
 cameraset:AddSet(visualset)
 if cameraset:CountAlive()>0 then
 self:__TargetsSmoked(-1,client,playername,cameraset)
+else
+return self
 end
 local highsmoke=self.SmokeColor.highsmoke
 local medsmoke=self.SmokeColor.medsmoke
@@ -100924,7 +100931,7 @@ local targetset,number=self:_GetTargetSet(client,true,true)
 if number>0 and self.AutoLase[playername]then
 local Settings=(client and _DATABASE:GetPlayerSettings(playername))or _SETTINGS
 local target=self:_GetHVTTarget(targetset)
-local ThreatLevel=target:GetThreatLevel()
+local ThreatLevel=target:GetThreatLevel()or 1
 local ThreatLevelText="high"
 if ThreatLevel>3 and ThreatLevel<8 then
 ThreatLevelText="medium"
@@ -100934,7 +100941,7 @@ end
 local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
 local report=REPORT:New("Lasing Report")
 report:Add(string.rep("-",15))
-report:Add("Target type: "..target:GetTypeName())
+report:Add("Target type: "..target:GetTypeName()or"unknown")
 report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
 if not self.ReferencePoint then
 report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
@@ -100944,14 +100951,14 @@ end
 report:Add("Laser Code: "..self.UnitLaserCodes[playername]or 1688)
 report:Add(string.rep("-",15))
 local text=report:Text()
-self:__TargetReport(-1,client,targetset,target,text)
+self:__TargetReport(1,client,targetset,target,text)
 else
 local report=REPORT:New("Lasing Report")
 report:Add(string.rep("-",15))
 report:Add("N O  T A R G E T S")
 report:Add(string.rep("-",15))
 local text=report:Text()
-self:__TargetReport(-1,client,nil,nil,text)
+self:__TargetReport(1,client,nil,nil,text)
 end
 return self
 end
@@ -100979,21 +100986,22 @@ report:Add("Location: "..client:GetCoordinate():ToStringFromRPShort(self.Referen
 end
 report:Add(string.rep("-",15))
 local text=report:Text()
-self:__TargetReport(-1,client,targetset,nil,text)
+self:__TargetReport(1,client,targetset,nil,text)
 else
 local report=REPORT:New("Target Report")
 report:Add(string.rep("-",15))
 report:Add("N O  T A R G E T S")
 report:Add(string.rep("-",15))
 local text=report:Text()
-self:__TargetReport(-1,client,nil,nil,text)
+self:__TargetReport(1,client,nil,nil,text)
 end
 return self
 end
-function PLAYERRECCE:_BuildMenus()
+function PLAYERRECCE:_BuildMenus(Client)
 self:T(self.lid.."_BuildMenus")
 local clients=self.PlayerSet
 local clientset=clients:GetSetObjects()
+if Client then clientset={Client}end
 for _,_client in pairs(clientset)do
 local client=_client
 if client and client:IsAlive()then
@@ -101001,7 +101009,7 @@ local playername=client:GetPlayerName()
 if not self.UnitLaserCodes[playername]then
 self:_SetClientLaserCode(nil,nil,playername,1688)
 end
-if not self.SmokeOwn[playername]then
+if self.SmokeOwn[playername]==nil then
 self.SmokeOwn[playername]=self.smokeownposition
 end
 local group=client:GetGroup()
@@ -101588,7 +101596,7 @@ MESSAGE:New(Text,45,self.Name or"FACA"):ToClient(Client)
 if self.AttackSet then
 for _,_client in pairs(self.AttackSet.Set)do
 local client=_client
-if client and client:IsAlive()then
+if client and client:IsAlive()and client~=Client then
 MESSAGE:New(Text,45,self.Name or"FACA"):ToClient(client)
 end
 end
