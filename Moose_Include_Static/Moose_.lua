@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-18T09:08:47.0000000Z-6b4c08d53f901678903a5cd2ead1dd5d4a4542d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-20T09:19:24.0000000Z-2eafadcedfbd5f855ef48686a372006c9f79f4f1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -63895,7 +63895,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.15"
+ATIS.version="0.9.16"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -64173,7 +64173,8 @@ local coal=self.airbase and self.airbase:GetCoalition()or nil
 return coal
 end
 function ATIS:onafterStart(From,Event,To)
-self:I("Airbase category is "..self.airbase:GetAirbaseCategory())
+self:T({From,Event,To})
+self:T("Airbase category is "..self.airbase:GetAirbaseCategory())
 if self.airbase:GetAirbaseCategory()==Airbase.Category.SHIP then
 self:E(self.lid..string.format("ERROR: Cannot start ATIS for airbase %s! Only AIRDROMES are supported but NOT SHIPS.",self.airbasename))
 return
@@ -64206,6 +64207,7 @@ self:__Status(-2)
 self:__CheckQueue(-3)
 end
 function ATIS:onafterStatus(From,Event,To)
+self:T({From,Event,To})
 local fsmstate=self:GetState()
 local relayunitstatus="N/A"
 if self.relayunitname then
@@ -64222,10 +64224,12 @@ text=text..string.format(", Relay unit=%s (alive=%s)",tostring(self.relayunitnam
 end
 self:T(self.lid..text)
 if not self:Is("Stopped")then
-self:__Status(-60)
+self:__Status(60)
 end
 end
 function ATIS:onafterCheckQueue(From,Event,To)
+self:T({From,Event,To})
+if not self:Is("Stopped")then
 if self.useSRS then
 self:Broadcast()
 else
@@ -64236,11 +64240,11 @@ else
 self:T2(self.lid..string.format("Radio queue %d transmissions queued.",#self.radioqueue.queue))
 end
 end
-if not self:Is("Stopped")then
-self:__CheckQueue(-math.abs(self.dTQueueCheck))
+self:__CheckQueue(math.abs(self.dTQueueCheck))
 end
 end
 function ATIS:onafterBroadcast(From,Event,To)
+self:T({From,Event,To})
 local coord=self.airbase:GetCoordinate()
 local height=coord:GetLandHeight()
 local qfe=coord:GetPressure(height)
@@ -64794,8 +64798,9 @@ end
 alltext=alltext..";\n"..subtitle
 local _RUNACT
 if not self.ATISforFARPs then
+local subtitle
 if runwayLanding then
-local subtitle=string.format("Active runway %s",runwayLanding)
+subtitle=string.format("Active runway %s",runwayLanding)
 if rwyLandingLeft==true then
 subtitle=subtitle.." Left"
 elseif rwyLandingLeft==false then
@@ -65006,6 +65011,7 @@ self:UpdateMarker(_INFORMATION,_RUNACT,_WIND,_ALTIMETER,_TEMPERATURE)
 end
 end
 function ATIS:onafterReport(From,Event,To,Text)
+self:T({From,Event,To})
 self:T(self.lid..string.format("Report:\n%s",Text))
 if self.useSRS and self.msrs then
 local text=string.gsub(Text,"[\r\n]","")
