@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-20T09:18:58.0000000Z-045c49679de8ef65b21c69e595c8b61f87ca5ec3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-20T11:41:20.0000000Z-ef40b1c524e386671803eba4f1de1e6fcaa0fb94 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -39410,7 +39410,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.7.0"
+RANGE.version="2.7.1"
 function RANGE:New(RangeName)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
@@ -40125,6 +40125,7 @@ if _track and dPR<=self.BombtrackThreshold and _unit and _playername then
 local playerData=self.PlayerSettings[_playername]
 local attackHdg=_unit:GetHeading()
 local attackAlt=_unit:GetHeight()
+attackAlt=UTILS.MetersToFeet(attackAlt)
 local attackVel=_unit:GetVelocityKNOTS()
 self:T(self.lid..string.format("RANGE %s: Tracking %s - %s.",self.rangename,weapon:GetTypeName(),weapon:GetName()))
 weapon:SetFuncImpact(RANGE._OnImpact,self,playerData,attackHdg,attackAlt,attackVel)
