@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-20T13:22:49.0000000Z-3a432782b224905ecd844497b7150ce08ab1b4ee ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-21T09:35:01.0000000Z-8d2e291deb543803465f6165fc527bc79fa36ab1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -913,7 +913,6 @@ ENUMS.Storage.weapons.bombs.BDU_45B="weapons.bombs.BDU_45B"
 ENUMS.Storage.weapons.missiles.GB_6_HE="weapons.missiles.GB-6-HE"
 ENUMS.Storage.weapons.missiles.KD_63B="weapons.missiles.KD-63B"
 ENUMS.Storage.weapons.missiles.P_27PE="weapons.missiles.P_27PE"
-ENUMS.Storage.weapons.droptanks="weapons.droptanks."
 ENUMS.Storage.weapons.droptanks.PTB300_MIG15="weapons.droptanks.PTB300_MIG15"
 ENUMS.Storage.weapons.bombs.Two50_3="weapons.bombs.250-3"
 ENUMS.Storage.weapons.bombs.SC_500_L2="weapons.bombs.SC_500_L2"
