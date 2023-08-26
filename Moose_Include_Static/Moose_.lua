@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-23T09:39:45.0000000Z-9a9de9306e04f20b1502755a63589536963511c5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-26T12:00:26.0000000Z-38cb8fb88e7743708caa65034739ab00df1760d3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -30490,6 +30490,81 @@ else
 self:E(self.lid..string.format("ERROR: Unknown liquid type %s",tostring(Type)))
 end
 return name
+end
+function STORAGE:AddAmount(Type,Amount)
+if type(Type)=="number"then
+self:AddLiquid(Type,Amount)
+else
+self:AddItem(Type,Amount)
+end
+return self
+end
+function STORAGE:RemoveAmount(Type,Amount)
+if type(Type)=="number"then
+self:RemoveLiquid(Type,Amount)
+else
+self:RemoveItem(Type,Amount)
+end
+return self
+end
+function STORAGE:SetAmount(Type,Amount)
+if type(Type)=="number"then
+self:SetLiquid(Type,Amount)
+else
+self:SetItem(Type,Amount)
+end
+return self
+end
+function STORAGE:GetAmount(Type)
+local N=0
+if type(Type)=="number"then
+N=self:GetLiquidAmount(Type)
+else
+N=self:GetItemAmount(Type)
+end
+return N
+end
+function STORAGE:IsUnlimited(Type)
+local N=self:GetAmount(Type)
+local unlimited=false
+if N>0 then
+self:RemoveAmount(Type,1)
+local n=self:GetAmount(Type)
+unlimited=n==N
+if not unlimited then
+self:AddAmount(Type,1)
+end
+self:I(self.lid..string.format("Type=%s: unlimited=%s (N=%d n=%d)",tostring(Type),tostring(unlimited),N,n))
+end
+return unlimited
+end
+function STORAGE:IsLimited(Type)
+local limited=not self:IsUnlimited(Type)
+return limited
+end
+function STORAGE:IsUnlimitedAircraft()
+local unlimited=self:IsUnlimited("A-10C")
+return unlimited
+end
+function STORAGE:IsUnlimitedLiquids()
+local unlimited=self:IsUnlimited(STORAGE.Liquid.DIESEL)
+return unlimited
+end
+function STORAGE:IsUnlimitedWeapons()
+local unlimited=self:IsUnlimited(ENUMS.Storage.weapons.bombs.Mk_82)
+return unlimited
+end
+function STORAGE:IsLimitedAircraft()
+local limited=self:IsLimited("A-10C")
+return limited
+end
+function STORAGE:IsLimitedLiquids()
+local limited=self:IsLimited(STORAGE.Liquid.DIESEL)
+return limited
+end
+function STORAGE:IsLimitedWeapons()
+local limited=self:IsLimited(ENUMS.Storage.weapons.bombs.Mk_82)
+return limited
 end
 function STORAGE:GetInventory(Item)
 local inventory=self.warehouse:getInventory(Item)
