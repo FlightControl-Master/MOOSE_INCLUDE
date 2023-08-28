@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-27T16:46:50.0000000Z-1337815f054c4d7e24c957eb2641d64654a44dba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-28T18:27:39.0000000Z-8b04d32839a4a3d1e224eb98716becc03f9e98a0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -95595,7 +95595,8 @@ function OPSGROUP:onafterLoad(From,Event,To,CargoGroup,Carrier)
 self:T(self.lid..string.format("Loading group %s",tostring(CargoGroup.groupname)))
 local carrier=Carrier or CargoGroup:_GetMyCarrierElement()
 if not carrier then
-carrier=self:FindCarrierForCargo(CargoGroup)
+local weight=CargoGroup:GetWeightTotal()
+carrier=self:FindCarrierForCargo(weight)
 end
 if carrier then
 CargoGroup:_NewCargoStatus(OPSGROUP.CargoStatus.LOADED)
