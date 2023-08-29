@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-26T12:00:26.0000000Z-38cb8fb88e7743708caa65034739ab00df1760d3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-29T13:48:36.0000000Z-d9aff32a36c889ccd4a27be9cf43a55610ccae61 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -51431,6 +51431,8 @@ MANTIS.SamDataCH={
 ["PGZ-09 CH"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
 ["S350-9M100 CH"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
 ["S350-9M96D CH"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
+["LAV-AD CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
+["HQ-22 CHM"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding)
@@ -51526,7 +51528,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.11"
+self.version="0.8.12"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
