@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-30T14:47:19.0000000Z-79ddc01bf70058dcb6e6812e697e3027831fbf79 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-31T12:57:31.0000000Z-b5b079d75fe4bb893d7e0e5c0168d1d6bdeb8e22 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -66948,7 +66948,8 @@ return mission
 end
 function AUFTRAG:NewCAP(ZoneCAP,Altitude,Speed,Coordinate,Heading,Leg,TargetTypes)
 TargetTypes=UTILS.EnsureTable(TargetTypes,true)
-local mission=AUFTRAG:NewORBIT(Coordinate or ZoneCAP:GetCoordinate(),Altitude or 10000,Speed or 350,Heading,Leg)
+Altitude=Altitude or 10000
+local mission=AUFTRAG:NewORBIT(Coordinate or ZoneCAP:GetCoordinate(),Altitude,Speed or 350,Heading,Leg)
 mission.type=AUFTRAG.Type.CAP
 mission:_SetLogID()
 mission.engageZone=ZoneCAP
