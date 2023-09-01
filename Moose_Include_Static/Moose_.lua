@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-08-31T12:57:31.0000000Z-b5b079d75fe4bb893d7e0e5c0168d1d6bdeb8e22 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-01T06:52:46.0000000Z-d7b87b63d8b9ec7fe737bc2aef7bd73817e7cea4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -41167,7 +41167,7 @@ MANTIS.SamDataCH={
 ["HQ-22 CH"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
 }
 do
-function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding)
+function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
@@ -41217,6 +41217,7 @@ self.maxshortrange=2
 self.maxclassic=6
 self.autoshorad=true
 self.ShoradGroupSet=SET_GROUP:New()
+self.FilterZones=Zones
 self.UseEmOnOff=true
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -41250,17 +41251,22 @@ if self.advAwacs then
 table.insert(self.ewr_templates,awacs)
 end
 self:T({self.ewr_templates})
+self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition)
+self.EWR_Group=SET_GROUP:New():FilterPrefixes(self.ewr_templates):FilterCoalitions(self.Coalition)
+if self.FilterZones then
+self.SAM_Group:FilterZones(self.FilterZones)
+end
 if self.dynamic then
-self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition):FilterStart()
-self.EWR_Group=SET_GROUP:New():FilterPrefixes(self.ewr_templates):FilterCoalitions(self.Coalition):FilterStart()
+self.SAM_Group:FilterStart()
+self.EWR_Group:FilterStart()
 else
-self.SAM_Group=SET_GROUP:New():FilterPrefixes(self.SAM_Templates_Prefix):FilterCoalitions(self.Coalition):FilterOnce()
-self.EWR_Group=SET_GROUP:New():FilterPrefixes(self.ewr_templates):FilterCoalitions(self.Coalition):FilterOnce()
+self.SAM_Group:FilterOnce()
+self.EWR_Group:FilterOnce()
 end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.12a"
+self.version="0.8.14"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
