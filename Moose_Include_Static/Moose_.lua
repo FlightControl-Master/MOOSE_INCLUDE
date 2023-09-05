@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-01T06:52:46.0000000Z-d7b87b63d8b9ec7fe737bc2aef7bd73817e7cea4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-05T18:53:02.0000000Z-02105b1efcfaeaa5dedf819d83ede61ccd494fa7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7224,7 +7224,7 @@ end
 CLIENTMENU={
 ClassName="CLIENTMENUE",
 lid="",
-version="0.1.0",
+version="0.1.1",
 name=nil,
 path=nil,
 group=nil,
@@ -7235,6 +7235,7 @@ Once=false,
 Generic=false,
 debug=false,
 Controller=nil,
+groupname=nil,
 }
 CLIENTMENU_ID=0
 function CLIENTMENU:NewEntry(Client,Text,Parent,Function,...)
@@ -7245,6 +7246,7 @@ if Client then
 self.group=Client:GetGroup()
 self.client=Client
 self.GroupID=self.group:GetID()
+self.groupname=self.group:GetName()or"Unknown Groupname"
 else
 self.Generic=true
 end
@@ -7323,7 +7325,10 @@ end
 function CLIENTMENU:RemoveF10()
 self:T(self.lid.."RemoveF10")
 if self.GroupID then
-missionCommands.removeItemForGroup(self.GroupID,self.path)
+local status,err=pcall(missionCommands.removeItemForGroup(self.GroupID,self.path))
+if not status then
+self:I(string.format("**** Error Removing Menu Entry %s for %s!",tostring(self.name),self.groupname))
+end
 end
 return self
 end
@@ -55601,7 +55606,7 @@ self:E(string.format("ERROR: Recovery stop time %s lies before recovery start ti
 return self
 end
 if Tstop<=Tnow then
-self:I(string.format("WARNING: Recovery stop time %s already over. Tnow=%s! Recovery window rejected.",UTILS.SecondsToClock(Tstop),UTILS.SecondsToClock(Tnow)))
+string.format("WARNING: Recovery stop time %s already over. Tnow=%s! Recovery window rejected.",UTILS.SecondsToClock(Tstop),UTILS.SecondsToClock(Tnow))
 return self
 end
 case=case or self.defaultcase
@@ -55982,7 +55987,7 @@ if call.loud then
 self:RadioTransmission(self.LSORadio,call,true)
 end
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 end
 function AIRBOSS:SoundCheckMarshal(delay)
@@ -55998,7 +56003,7 @@ if call.loud then
 self:RadioTransmission(self.MarshalRadio,call,true)
 end
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 end
 function AIRBOSS:SetMaxLandingPattern(nmax)
@@ -56196,7 +56201,7 @@ end
 if i==0 then
 text=text.." none"
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 if collision then
 if self.turnintowind then
 self:CarrierResumeRoute(self.Creturnto)
@@ -57221,6 +57226,7 @@ or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
 local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
+local goshawk=playerData.actype==AIRBOSS.AircraftCarrier.T45C
 local alt
 local aoa
 local dist
@@ -57925,7 +57931,7 @@ else
 nfree=nmax
 end
 end
-self:I(self.lid..string.format("Returning free stack %s",tostring(nfree)))
+self:T(self.lid..string.format("Returning free stack %s",tostring(nfree)))
 return nfree
 end
 function AIRBOSS:_GetFreeStack_Old(ai,case,empty)
@@ -58419,7 +58425,7 @@ self:_UpdateFlightSection(flight)
 self:_RemoveFlightFromQueue(self.flights,flight)
 local playerdata=self.players[flight.name]
 if playerdata then
-self:I(self.lid..string.format("Removing player %s completely.",flight.name))
+self:T(self.lid..string.format("Removing player %s completely.",flight.name))
 self.players[flight.name]=nil
 end
 flight=nil
@@ -61787,6 +61793,8 @@ if click then
 self:RadioTransmission(radio,self[caller].CLICK,false,delay)
 end
 else
+if call.subtitle~=nil and string.len(call.subtitle)>1 then
+else
 local frequency=self.MarshalRadio.frequency
 local modulation=self.MarshalRadio.modulation
 local voice=nil
@@ -61830,6 +61838,7 @@ local text=call.subtitle
 self:I(self.lid..text)
 local srstext=self:_GetNiceSRSText(text)
 self.SRSQ:NewTransmission(srstext,call.duration,self.SRS,tstart,0.1,subgroups,call.subtitle,call.subduration,frequency,modulation,gender,culture,voice,volume,radio.alias)
+end
 end
 end
 function AIRBOSS:SetSRSPilotVoice(Voice,Gender,Culture)
@@ -62216,7 +62225,7 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalRadio.CLICK,nil,nil,nil,nil
 end
 function AIRBOSS:_LSOCallAircraftBall(modex,nickname,fuelstate)
 local text=string.format("%s Ball, %.1f.",nickname,fuelstate)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local NICKNAME=nickname:upper()
 local FS=UTILS.Split(string.format("%.1f",fuelstate),".")
 local call=self:_NewRadioCall(self.PilotCall[NICKNAME],modex,text,self.Tmessage,nil,modex)
@@ -62229,21 +62238,21 @@ self:RadioTransmission(self.LSORadio,self.LSOCall.CLICK)
 end
 function AIRBOSS:_MarshalCallGasAtTanker(modex)
 local text=string.format("Bingo fuel! Going for gas at the recovery tanker.")
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.PilotCall.BINGOFUEL,modex,text,self.Tmessage,nil,modex)
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,nil,true)
 self:RadioTransmission(self.MarshalRadio,self.PilotCall.GASATTANKER,nil,nil,nil,true,true)
 end
 function AIRBOSS:_MarshalCallGasAtDivert(modex,divertname)
 local text=string.format("Bingo fuel! Going for gas at divert field %s.",divertname)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.PilotCall.BINGOFUEL,modex,text,self.Tmessage,nil,modex)
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,nil,true)
 self:RadioTransmission(self.MarshalRadio,self.PilotCall.GASATDIVERT,nil,nil,nil,true,true)
 end
 function AIRBOSS:_MarshalCallRecoveryStopped(case)
 local text=string.format("Case %d recovery ops are stopped. Deck is closed.",case)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CASE,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,tostring(case))
@@ -62258,7 +62267,7 @@ function AIRBOSS:_MarshalCallRecoveryPausedResumedAt(clock)
 local _clock=UTILS.Split(clock,"+")
 local CT=UTILS.Split(_clock[1],":")
 local text=string.format("aircraft recovery is paused and will be resumed at %s.",clock)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.RECOVERYPAUSEDRESUMED,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,CT[1])
@@ -62267,7 +62276,7 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalCall.HOURS,nil,nil,nil,true
 end
 function AIRBOSS:_MarshalCallClearedForRecovery(modex,case)
 local text=string.format("you're cleared for Case %d recovery.",case)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CLEAREDFORRECOVERY,"MARSHAL",text,self.Tmessage,modex)
 local delay=2
 self:RadioTransmission(self.MarshalRadio,call,nil,delay)
@@ -62280,7 +62289,7 @@ self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,true)
 end
 function AIRBOSS:_MarshalCallNewFinalBearing(FB)
 local text=string.format("new final bearing %03d°.",FB)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.NEWFB,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,string.format("%03d",FB),nil,0.2)
@@ -62288,7 +62297,7 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES,nil,nil,nil,tr
 end
 function AIRBOSS:_MarshalCallCarrierTurnTo(hdg)
 local text=string.format("carrier is now starting turn to heading %03d°.",hdg)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.CARRIERTURNTOHEADING,"AIRBOSS",text,self.Tmessage,"99")
 self:RadioTransmission(self.MarshalRadio,call)
 self:_Number2Radio(self.MarshalRadio,string.format("%03d",hdg),nil,0.2)
@@ -62303,7 +62312,7 @@ text=text..string.format("There are %d flights ahead of you.",nwaiting)
 else
 text=text..string.format("You are next in line.")
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.STACKFULL,"AIRBOSS",text,self.Tmessage,modex)
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,true)
 end
@@ -62335,7 +62344,7 @@ local QFE=UTILS.Split(string.format("%.2f",qfe),".")
 local clock=UTILS.Split(charlie,"+")
 local CT=UTILS.Split(clock[1],":")
 local text=string.format("Case %d, expected BRC %03d°, hold at angels %d. Expected Charlie Time %s. Altimeter %.2f. Report see me.",case,brc,angels,charlie,qfe)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local casecall=self:_NewRadioCall(self.MarshalCall.CASE,"MARSHAL",text,self.Tmessage,modex)
 self:RadioTransmission(self.MarshalRadio,casecall)
 self:_Number2Radio(self.MarshalRadio,tostring(case))
