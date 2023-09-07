@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-06T19:33:29.0000000Z-a8f14fca70fccd1c3d72334bbf9a6d59c37c1c98 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-07T10:45:30.0000000Z-53297453253f5dde65d8c97f084c0b97a275c4f1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -7325,7 +7325,10 @@ end
 function CLIENTMENU:RemoveF10()
 self:T(self.lid.."RemoveF10")
 if self.GroupID then
-local status,err=pcall(missionCommands.removeItemForGroup(self.GroupID,self.path))
+local function RemoveFunction()
+return missionCommands.removeItemForGroup(self.GroupID,self.path)
+end
+local status,err=pcall(RemoveFunction)
 if not status then
 self:I(string.format("**** Error Removing Menu Entry %s for %s!",tostring(self.name),self.groupname))
 end
@@ -7438,13 +7441,13 @@ local n=0
 for _uuid,_entry in pairs(self.flattree)do
 local Entry=_entry
 if Parent then
-if Entry and string.find(Entry.name,Text)and string.find(Entry.UUID,Parent.UUID)then
+if Entry and string.find(Entry.name,Text,1,true)and string.find(Entry.UUID,Parent.UUID,1,true)then
 table.insert(matches,_uuid)
 table.insert(entries,Entry)
 n=n+1
 end
 else
-if Entry and string.find(Entry.name,Text)then
+if Entry and string.find(Entry.name,Text,1,true)then
 table.insert(matches,_uuid)
 table.insert(entries,Entry)
 n=n+1
@@ -7466,7 +7469,7 @@ local n=0
 for _uuid,_entry in pairs(self.flattree)do
 local Entry=_entry
 if Parent then
-if Entry and string.find(Entry.UUID,Parent.UUID)then
+if Entry and string.find(Entry.UUID,Parent.UUID,1,true)then
 table.insert(matches,_uuid)
 table.insert(entries,Entry)
 n=n+1
@@ -7615,7 +7618,7 @@ if tbl[depth]then
 for i=depth,#tbl do
 for _id,_uuid in pairs(tbl[i])do
 self:T(_uuid)
-if string.find(_uuid,uuid)or _uuid==uuid then
+if string.find(_uuid,uuid,1,true)or _uuid==uuid then
 self.menutree[i][_id]=nil
 self.flattree[_uuid]=nil
 end
@@ -7634,7 +7637,7 @@ for i=depth,#tbl do
 self:T("Level = "..i)
 for _id,_uuid in pairs(tbl[i])do
 self:T(_uuid)
-if string.find(_uuid,uuid)then
+if string.find(_uuid,uuid,1,true)then
 self:T("Match for ".._uuid)
 self.menutree[i][_id]=nil
 self.flattree[_uuid]=nil
@@ -100230,7 +100233,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.60a"
+PLAYERTASKCONTROLLER.version="0.1.61"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -100764,7 +100767,8 @@ end
 end
 end
 local TNow=timer.getAbsTime()
-if TNow-task.timestamp>10 then
+if TNow-task.timestamp>5 then
+self:_RemoveMenuEntriesForTask(task)
 local task=self.TaskQueue:PullByID(_id)
 task=nil
 end
