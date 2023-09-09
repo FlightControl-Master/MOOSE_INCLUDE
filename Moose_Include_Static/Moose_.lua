@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-09T09:56:28.0000000Z-515764bb88a86f2963302ef8d928778e803d0344 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-09T11:09:20.0000000Z-ab1e3e6c60e35d0861146daa31e96f34b302f7c3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -30650,7 +30650,7 @@ end
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.1.15",
+version="0.1.16",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -31102,14 +31102,16 @@ end
 local function AICHeloUnloaded(Helo,OpsGroup)
 self:__PilotUnloaded(2,Helo,OpsGroup)
 end
-function helo:OnAfterLoadingDone(From,Event,To)
+function helo:OnAfterLoading(From,Event,To)
 AICPickedUp(helo,helo:GetCargoGroups(),Index)
+helo:__LoadingDone(5)
 end
 function helo:OnAfterDead(From,Event,To)
 AICHeloDead(helo,Index)
 end
 function helo:OnAfterUnloaded(From,Event,To,OpsGroupCargo)
 AICHeloUnloaded(helo,OpsGroupCargo)
+helo:__UnloadingDone(5)
 end
 self.helos[Index]=helo
 return self
