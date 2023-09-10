@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-10T20:40:17.0000000Z-468a8fed8bea369c32f80fdee607b42d1f53339b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-10T20:42:39.0000000Z-6ccfd499c8976903086f9e83f1eb6d04cc9c7044 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -113740,7 +113740,7 @@ MSRS_BACKEND_DCSGRPC.Functions.PlayTextExt=function(self,Text,Delay,Frequencies,
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
 else
-self:_DCSgRPCtts(tostring(Text,nil,Frequencies,Voice,Label))
+self:_DCSgRPCtts(tostring(Text),nil,Frequencies,Voice,Label)
 end
 return self
 end
