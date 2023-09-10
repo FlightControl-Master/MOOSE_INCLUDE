@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-09T11:09:20.0000000Z-ab1e3e6c60e35d0861146daa31e96f34b302f7c3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-10T13:42:48.0000000Z-ef3127fdab82fe8566080c3402b8927e6679b346 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -45229,8 +45229,11 @@ local prefix=self:_GetPrefixFromGroup(group)
 local life=self:_GetLife(group)
 local fuel=group:GetFuel()*100.0
 local airborne=group:InAir()
-local coords=group:GetCoordinate()
-local alt=coords.y or 1000
+local coords=group:GetCoordinate()or group:GetVec3()
+local alt=1000
+if coords then
+alt=coords.y or 1000
+end
 local departure=ratcraft.departure:GetName()
 local destination=ratcraft.destination:GetName()
 local type=self.aircraft.type
