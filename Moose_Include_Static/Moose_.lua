@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-10T20:42:39.0000000Z-6ccfd499c8976903086f9e83f1eb6d04cc9c7044 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-13T09:11:43.0000000Z-3e2d312202e71b4fda93fa3ca16edb1b51825dad ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -58505,8 +58505,7 @@ end
 return degreesAdjustment
 end
 local windfrom,vwind=self:GetWind(nil,nil,coord)
-vwind=vwind+adjustDegreesForWindSpeed(vwind)
-local intowind=windfrom-self.carrierparam.rwyangle
+local intowind=windfrom-self.carrierparam.rwyangle+adjustDegreesForWindSpeed(vwind)
 if vwind<0.1 then
 intowind=self:GetHeading()
 end
