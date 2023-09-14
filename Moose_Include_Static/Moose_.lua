@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-13T14:04:23.0000000Z-3f1ad24f6adab0b76740ac36d31071395acbd98c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-14T10:36:51.0000000Z-5e36425058b7f0404ed314c3e6e6d07d6a845b4a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -97869,7 +97869,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.19"
+PLAYERTASK.version="0.1.20"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -98869,7 +98869,7 @@ self:T(self.lid..text)
 end
 elseif EventData.id==EVENTS.PlayerEnterAircraft and EventData.IniCoalition==self.Coalition then
 if EventData.IniPlayerName and EventData.IniGroup then
-if self.IsClientSet and self.ClientSet:IsNotInSet(CLIENT:FindByName(EventData.IniUnitName))then
+if self.IsClientSet and(not self.ClientSet:IsIncludeObject(CLIENT:FindByName(EventData.IniUnitName)))then
 self:T(self.lid.."Client not in SET: "..EventData.IniPlayerName)
 return self
 end
@@ -100228,6 +100228,7 @@ self:HandleEvent(EVENTS.Ejection,self._EventHandler)
 self:HandleEvent(EVENTS.Crash,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:SetEventPriority(5)
 return self
 end
 function PLAYERTASKCONTROLLER:onafterStatus(From,Event,To)
