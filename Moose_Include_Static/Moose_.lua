@@ -1,6 +1,7 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-14T10:36:51.0000000Z-5e36425058b7f0404ed314c3e6e6d07d6a845b4a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-15T07:12:17.0000000Z-5048201771be0a0999af7b7b5762dc05481b43cc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
+env.setErrorMessageBoxEnabled(false)
 ENUMS.ROE={
 WeaponFree=0,
 OpenFireWeaponFree=1,
@@ -13528,7 +13529,6 @@ return self
 end
 function SET_CLIENT:FilterStart()
 if _DATABASE then
-self:_FilterStart()
 self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
@@ -13537,6 +13537,7 @@ self.ZoneTimer=TIMER:New(self._ContinousZoneFilter,self)
 local timing=self.ZoneTimerInterval or 30
 self.ZoneTimer:Start(timing,timing)
 end
+self:_FilterStart()
 end
 return self
 end
@@ -13693,7 +13694,7 @@ if self.Filter.Callsigns then
 local MClientCallsigns=false
 local callsign=MClient:GetCallsign()
 for _,_Callsign in pairs(self.Filter.Callsigns)do
-if callsign and string.find(callsign,_Callsign)then
+if callsign and string.find(callsign,_Callsign,1,true)then
 MClientCallsigns=true
 end
 end
