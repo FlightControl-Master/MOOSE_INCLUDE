@@ -1,6 +1,7 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-14T10:36:15.0000000Z-bc16970d965774fca390c5be8424280f2372525c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-15T07:11:32.0000000Z-5e20874dcaf44cf0a24b5877fe0b5a5452e83ece ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
+env.setErrorMessageBoxEnabled(false)
 ENUMS.ROE={
 WeaponFree=0,
 OpenFireWeaponFree=1,
