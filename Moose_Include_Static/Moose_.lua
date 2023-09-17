@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-15T07:11:32.0000000Z-5e20874dcaf44cf0a24b5877fe0b5a5452e83ece ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-17T14:13:28.0000000Z-6a05789db5190ca268d06643c9547c950cc10691 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -21609,7 +21609,7 @@ return DCSTask
 end
 function CONTROLLABLE:EnRouteTaskEngageGroup(AttackGroup,Priority,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit)
 local DCSTask={
-id='EngageControllable',
+id='EngageGroup',
 params={
 groupId=AttackGroup:GetID(),
 weaponType=WeaponType,
@@ -21668,7 +21668,7 @@ return DCSTask
 end
 function CONTROLLABLE:EnRouteTaskFAC_EngageGroup(AttackGroup,Priority,WeaponType,Designation,Datalink,Frequency,Modulation,CallsignID,CallsignNumber)
 local DCSTask={
-id='FAC_EngageControllable',
+id='FAC_EngageGroup',
 params={
 groupId=AttackGroup:GetID(),
 weaponType=WeaponType or"Auto",
