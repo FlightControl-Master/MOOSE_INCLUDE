@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-17T14:13:28.0000000Z-6a05789db5190ca268d06643c9547c950cc10691 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-17T15:15:12.0000000Z-250d640e7630469d98af552cf7abe39860bd282f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -17080,6 +17080,8 @@ self.SpawnInitFreq=nil
 self.SpawnInitModu=nil
 self.SpawnInitRadio=nil
 self.SpawnInitModex=nil
+self.SpawnInitModexPrefix=nil
+self.SpawnInitModexPostfix=nil
 self.SpawnInitAirbase=nil
 self.TweakedTemplate=false
 self.SpawnGroups={}
@@ -17120,6 +17122,8 @@ self.SpawnInitFreq=nil
 self.SpawnInitModu=nil
 self.SpawnInitRadio=nil
 self.SpawnInitModex=nil
+self.SpawnInitModexPrefix=nil
+self.SpawnInitModexPostfix=nil
 self.SpawnInitAirbase=nil
 self.TweakedTemplate=false
 self.SpawnGroups={}
@@ -17164,6 +17168,8 @@ self.SpawnInitFreq=nil
 self.SpawnInitModu=nil
 self.SpawnInitRadio=nil
 self.SpawnInitModex=nil
+self.SpawnInitModexPrefix=nil
+self.SpawnInitModexPostfix=nil
 self.SpawnInitAirbase=nil
 self.TweakedTemplate=true
 self.MooseNameing=true
@@ -17272,10 +17278,12 @@ self.SpawnInitModu=radio.modulation.AM
 end
 return self
 end
-function SPAWN:InitModex(modex)
+function SPAWN:InitModex(modex,prefix,postfix)
 if modex then
 self.SpawnInitModex=tonumber(modex)
 end
+self.SpawnInitModexPrefix=prefix
+self.SpawnInitModexPostfix=postfix
 return self
 end
 function SPAWN:InitRandomizeRoute(SpawnStartPoint,SpawnEndPoint,SpawnRadius,SpawnHeight)
@@ -17632,7 +17640,10 @@ end
 end
 if self.SpawnInitModex then
 for UnitID=1,#SpawnTemplate.units do
-SpawnTemplate.units[UnitID].onboard_num=string.format("%03d",self.SpawnInitModex+(UnitID-1))
+local modexnumber=string.format("%03d",self.SpawnInitModex+(UnitID-1))
+if self.SpawnInitModexPrefix then modexnumber=self.SpawnInitModexPrefix..modexnumber end
+if self.SpawnInitModexPostfix then modexnumber=modexnumber..self.SpawnInitModexPostfix end
+SpawnTemplate.units[UnitID].onboard_num=modexnumber
 end
 end
 if self.SpawnInitRadio then
@@ -17952,6 +17963,9 @@ function SPAWN:SpawnAtParkingSpot(Airbase,Spots,Takeoff)
 self:F({Airbase=Airbase,Spots=Spots,Takeoff=Takeoff})
 if type(Spots)~="table"then
 Spots={Spots}
+end
+if type(Airbase)=="string"then
+Airbase=AIRBASE:FindByName(Airbase)
 end
 local group=GROUP:FindByName(self.SpawnTemplatePrefix)
 local nunits=self.SpawnGrouping or#group:GetUnits()
