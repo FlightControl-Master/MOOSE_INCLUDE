@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-19T09:30:46.0000000Z-81fd5cb605cdd65f3ac0543be581c1f7c16514ab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-19T10:13:39.0000000Z-6d94a0c77681b581e80a661b2488e71b7c4ffc7d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -1250,8 +1250,6 @@ tbl_str[#tbl_str+1]=', '
 elseif type(val)=='nil'then
 tbl_str[#tbl_str+1]='nil, '
 elseif type(val)=='table'then
-tbl_str[#tbl_str+1]=UTILS._OneLineSerialize(val)
-tbl_str[#tbl_str+1]=', '
 else
 end
 end
@@ -7005,7 +7003,7 @@ local PlayerName=PlayerUnit:GetPlayerName()
 local PlayerNames=PlayerGroup:GetPlayerNames()
 local PlayerMenu=MENU_GROUP:New(PlayerGroup,'Settings "'..PlayerName..'"')
 self.PlayerMenu=PlayerMenu
-self:I(string.format("Setting menu for player %s",tostring(PlayerName)))
+self:T(string.format("Setting menu for player %s",tostring(PlayerName)))
 local submenu=MENU_GROUP:New(PlayerGroup,"LL Accuracy",PlayerMenu)
 MENU_GROUP_COMMAND:New(PlayerGroup,"LL 0 Decimals",submenu,self.MenuGroupLL_DDM_AccuracySystem,self,PlayerUnit,PlayerGroup,PlayerName,0)
 MENU_GROUP_COMMAND:New(PlayerGroup,"LL 1 Decimal",submenu,self.MenuGroupLL_DDM_AccuracySystem,self,PlayerUnit,PlayerGroup,PlayerName,1)
@@ -7189,7 +7187,6 @@ MESSAGE:New(string.format("Settings: Default message time set for %s to %d.",Mes
 end
 do
 function SETTINGS:MenuGroupA2GSystem(PlayerUnit,PlayerGroup,PlayerName,A2GSystem)
-BASE:E({self,PlayerUnit:GetName(),A2GSystem})
 self.A2GSystem=A2GSystem
 MESSAGE:New(string.format("Settings: A2G format set to %s for player %s.",A2GSystem,PlayerName),5):ToGroup(PlayerGroup)
 if _SETTINGS.MenuStatic==false then
@@ -37583,7 +37580,7 @@ local Tnow=timer.getTime()
 local nalive=0
 for spawnindex,ratcraft in ipairs(self.ratcraft)do
 local group=ratcraft.group
-if group and group:IsAlive()then
+if group and group:IsAlive()and(group:GetCoordinate()or group:GetVec3())then
 nalive=nalive+1
 local prefix=self:_GetPrefixFromGroup(group)
 local life=self:_GetLife(group)
