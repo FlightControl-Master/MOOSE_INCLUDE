@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-17T15:15:12.0000000Z-250d640e7630469d98af552cf7abe39860bd282f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-19T09:10:06.0000000Z-b70bf3b9afcfa325098c2d699c0f8ee338fb6f5a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -31602,7 +31602,6 @@ debug=false,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
-["AGM_45"]="AGM_45",
 ["AGM_122"]="AGM_122",
 ["AGM_84"]="AGM_84",
 ["AGM_45"]="AGM_45",
@@ -31654,7 +31653,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.3")
+self:I("*** SEAD - Started Version 0.4.4")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -31800,7 +31799,7 @@ local wpnspeed=666
 local reach=10
 if hit then
 local wpndata=SEAD.HarmData[data]
-reach=wpndata[1]*1,1
+reach=wpndata[1]*1.1
 local mach=wpndata[2]
 wpnspeed=math.floor(mach*340.29)
 end
@@ -31847,7 +31846,7 @@ local delay=math.random(self.TargetSkill[_targetskill].DelayOn[1],self.TargetSki
 if delay>_tti then delay=delay/2 end
 if _tti>600 then delay=_tti-90 end
 local SuppressionStartTime=timer.getTime()+delay
-local SuppressionEndTime=timer.getTime()+_tti+self.Padding
+local SuppressionEndTime=timer.getTime()+delay+_tti+self.Padding+delay
 local _targetgroupname=_targetgroup:GetName()
 if not self.SuppressedGroups[_targetgroupname]then
 self:T(string.format("*** SEAD - %s | Parameters TTI %ds | Switch-Off in %ds",_targetgroupname,_tti,delay))
