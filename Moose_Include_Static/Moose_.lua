@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-19T09:10:06.0000000Z-b70bf3b9afcfa325098c2d699c0f8ee338fb6f5a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-19T09:30:46.0000000Z-81fd5cb605cdd65f3ac0543be581c1f7c16514ab ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -10160,7 +10160,7 @@ if client then
 end
 local PlayerName=Event.IniUnit:GetPlayerName()
 if PlayerName then
-self:I(string.format("Player '%s' joint unit '%s' of group '%s'",tostring(PlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniDCSGroupName)))
+self:I(string.format("Player '%s' joined unit '%s' of group '%s'",tostring(PlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniDCSGroupName)))
 if not client then
 client=self:AddClient(Event.IniDCSUnitName)
 end
