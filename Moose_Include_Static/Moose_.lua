@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-20T12:38:24.0000000Z-78ffaf6e0ad196f9695c3fbf90fa06bac17e4408 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-20T15:17:43.0000000Z-d2107466ccf20e662d87076cad119a430352bc45 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -63837,11 +63837,70 @@ METERSPER="Meter pro Sekunde",
 TACAN="Tackan",
 FARP="Farp",
 DELIMITER="Komma",
-}
+},
+ES=
+{
+HOURS="horas",
+TIME="horas",
+NOCLOUDINFO="Información sobre capa de nubes no disponible",
+OVERCAST="Nublado",
+BROKEN="Nubes rotas",
+SCATTERED="Nubes dispersas",
+FEWCLOUDS="Ligeramente nublado",
+NOCLOUDS="Despejado",
+AIRPORT="Aeropuerto",
+INFORMATION="Informacion",
+SUNRISEAT="Amanecer a las %s hora local",
+SUNSETAT="Puesta de sol a las %s hora local",
+WINDFROMMS="Viento procedente de %s con %s m/s",
+WINDFROMKNOTS="Viento de %s con %s nudos",
+GUSTING="ráfagas",
+VISIKM="Visibilidad %s km",
+VISISM="Visibilidad %s millas",
+RAIN="Lluvia",
+TSTORM="Tormenta",
+SNOW="Nieve",
+SSTROM="Tormenta de nieve",
+FOG="Niebla",
+DUST="Polvo",
+PHENOMENA="Fenómenos meteorológicos",
+CLOUDBASEM="Capa de nubes de %s a %s metros",
+CLOUDBASEFT="Capa de nubes de %s a %s pies",
+TEMPERATURE="Temperatura",
+DEWPOINT="Punto de rocio",
+ALTIMETER="Altímetro",
+ACTIVERUN="Pista activa",
+LEFT="Izquierda",
+RIGHT="Derecha",
+RWYLENGTH="Longitud de pista",
+METERS="Metro",
+FEET="Pie",
+ELEVATION="Elevación",
+TOWERFREQ="Frecuencias de la torre de control",
+ILSFREQ="Fecuencia ILS",
+OUTERNDB="Frecuencia NDB externa",
+INNERNDB="Frecuencia NDB interior",
+VORFREQ="Frecuencia VOR",
+VORFREQTTS="Frecuencia V O R",
+TACANCH="Canal TACAN %d Xaver",
+RSBNCH="Canal RSBN",
+PRMGCH="Canal PRMG",
+ADVISE="Avise en el contacto inicial a torre de que tiene la informacion",
+STATUTE="Millas inglesas",
+DEGREES="Grados Celsius",
+FAHRENHEIT="Grados Fahrenheit",
+INCHHG="Pulgadas de mercurio",
+MMHG="Milímeteros de Mercurio",
+HECTO="Hectopascales",
+METERSPER="Metros por segundo",
+TACAN="Tacan",
+FARP="Farp",
+DELIMITER="Punto",
+},
 }
 ATIS.locale="en"
 _ATIS={}
-ATIS.version="0.10.1"
+ATIS.version="0.10.2"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
