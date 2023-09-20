@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-19T16:08:16.0000000Z-7c3c39c1ba7cdafaea23aded88eb10f2a53206de ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-20T12:38:24.0000000Z-78ffaf6e0ad196f9695c3fbf90fa06bac17e4408 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -93405,7 +93405,7 @@ local boarding=false
 local gotcargo=false
 for _,_cargo in pairs(self.cargoTZC.Cargos)do
 local cargo=_cargo
-if cargo.type==OPSTRANSPORT.CargoType.OPSTRANPORT then
+if cargo.type==OPSTRANSPORT.CargoType.OPSGROUP then
 if cargo.opsgroup and cargo.opsgroup:IsBoarding(self.groupname)then
 boarding=true
 end
