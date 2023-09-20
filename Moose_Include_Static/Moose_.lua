@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-20T15:17:43.0000000Z-d2107466ccf20e662d87076cad119a430352bc45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-20T19:55:03.0000000Z-b7b369e78f288ac0e67c4d2690d10ef4f5856d4f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -51018,8 +51018,12 @@ self:T(self.lid..text)
 local groupname=asset.spawngroupname
 local NoTriggerEvent=true
 if request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
+if request.cargogroupset then
 request.cargogroupset:Remove(groupname,NoTriggerEvent)
 self:T(self.lid..string.format("Removed selfpropelled cargo %s: ncargo=%d.",groupname,request.cargogroupset:Count()))
+else
+self:E(self.lid..string.format("ERROR: cargogroupset is nil for request ID=%s!",tostring(request.uid)))
+end
 else
 local istransport=not asset.iscargo
 if istransport==true then
@@ -86821,7 +86825,8 @@ missionqueue={},
 transportqueue={},
 cohorts={},
 }
-LEGION.version="0.4.0"
+LEGION.RandomAssetScore=1
+LEGION.version="0.5.0"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -88278,6 +88283,11 @@ function LEGION._OptimizeAssetSelection(assets,MissionType,TargetVec2,IncludePay
 for _,_asset in pairs(assets)do
 local asset=_asset
 asset.score=LEGION.CalculateAssetMissionScore(asset,MissionType,TargetVec2,IncludePayload)
+if IncludePayload then
+local RandomScoreMax=asset.legion and asset.legion.RandomAssetScore or LEGION.RandomAssetScore
+local RandomScore=math.random(0,RandomScoreMax)
+asset.score=asset.score+RandomScore
+end
 end
 local function optimize(a,b)
 local assetA=a
@@ -88289,7 +88299,7 @@ if LEGION.verbose>0 then
 local text=string.format("Optimized %d assets for %s mission/transport (payload=%s):",#assets,MissionType,tostring(IncludePayload))
 for i,Asset in pairs(assets)do
 local asset=Asset
-text=text..string.format("\n%s %s: score=%d",asset.squadname,asset.spawngroupname,asset.score or-1)
+text=text..string.format("\n%d. %s [%s]: score=%d",i,asset.spawngroupname,asset.squadname,asset.score or-1)
 asset.score=nil
 end
 env.info(text)
