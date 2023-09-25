@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-20T15:17:12.0000000Z-ca84fa11cdc779433bc3d6f721ef75a279b0981b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-25T06:43:24.0000000Z-2efb6a624fc9f6a4366df7a826c8acdb345699de ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -30220,6 +30220,7 @@ ClassName="SCORING",
 ClassID=0,
 Players={},
 AutoSave=true,
+version="1.17.1"
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -30416,7 +30417,7 @@ if self.Players[PlayerName].UnitCoalition~=UnitCoalition and self.penaltyoncoali
 self.Players[PlayerName].Penalty=self.Players[PlayerName].Penalty+self.CoalitionChangePenalty or 50
 self.Players[PlayerName].PenaltyCoalition=self.Players[PlayerName].PenaltyCoalition+1
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' changed coalition from ".._SCORINGCoalition[self.Players[PlayerName].UnitCoalition].." to ".._SCORINGCoalition[UnitCoalition]..
-"(changed "..self.Players[PlayerName].PenaltyCoalition.." times the coalition). "..self.CoalitionChangePenalty.."Penalty points added.",
+"(changed "..self.Players[PlayerName].PenaltyCoalition.." times the coalition). "..self.CoalitionChangePenalty.." penalty points added.",
 MESSAGE.Type.Information
 ):ToAll()
 self:ScoreCSV(PlayerName,"","COALITION_PENALTY",1,-1*self.CoalitionChangePenalty,self.Players[PlayerName].UnitName,_SCORINGCoalition[self.Players[PlayerName].UnitCoalition],_SCORINGCategory[self.Players[PlayerName].UnitCategory],self.Players[PlayerName].UnitType,
