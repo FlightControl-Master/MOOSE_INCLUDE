@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-25T06:43:50.0000000Z-bb8e6eb7a14a34fd675cbb9624508a6a785cff91 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-26T11:07:41.0000000Z-652df5570a09f0481982b6745954dc5feb037fe1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -104162,6 +104162,457 @@ return true
 end
 end
 return false
+end
+EASYGCICAP={
+ClassName="EASYGCICAP",
+overhead=0.75,
+capgrouping=2,
+airbasename=nil,
+airbase=nil,
+coalition="blue",
+alias=nil,
+wings={},
+Intel=nil,
+resurrection=900,
+capspeed=300,
+capalt=25000,
+capdir=45,
+capleg=15,
+capgrouping=2,
+maxinterceptsize=2,
+missionrange=100,
+noaltert5=4,
+ManagedAW={},
+ManagedSQ={},
+ManagedCP={},
+ManagedTK={},
+MaxAliveMissions=6,
+debug=true,
+engagerange=50,
+}
+EASYGCICAP.version="0.0.4"
+function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
+local self=BASE:Inherit(self,FSM:New())
+self.alias=Alias or AirbaseName.." CAP Wing"
+self.coalitionname=string.lower(Coalition)or"blue"
+self.coalition=self.coaltitionname=="blue"and coalition.side.BLUE or coalition.side.RED
+self.wings={}
+self.EWRName=EWRName or self.coalitionname.." EWR"
+self.airbasename=AirbaseName
+self.airbase=AIRBASE:FindByName(self.airbasename)
+self.BlueGoZoneSet=SET_ZONE:New()
+self.BlueNoGoZoneSet=SET_ZONE:New()
+self.resurrection=900
+self.capspeed=300
+self.capalt=25000
+self.capdir=90
+self.capleg=15
+self.capgrouping=2
+self.missionrange=100
+self.noaltert5=2
+self.MaxAliveMissions=6
+self.engagerange=50
+self.lid=string.format("EASYGCICAP %s | ",self.alias)
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("Running","Stop","Stopped")
+self:AddTransition("*","Status","*")
+self:AddAirwing(self.airbasename,self.alias,self.CapZoneName)
+self:I(self.lid.."Created new instance (v"..self.version..")")
+self:__Start(math.random(6,12))
+return self
+end
+function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
+self:I(self.lid.."SetDefaultResurrection")
+self.MaxAliveMissions=Maxiumum or 6
+return self
+end
+function EASYGCICAP:SetDefaultResurrection(Seconds)
+self:I(self.lid.."SetDefaultResurrection")
+self.resurrection=Seconds or 900
+return self
+end
+function EASYGCICAP:SetDefaultCAPSpeed(Speed)
+self:I(self.lid.."SetDefaultSpeed")
+self.capspeed=Speed or 300
+return self
+end
+function EASYGCICAP:SetDefaultCAPAlt(Altitude)
+self:I(self.lid.."SetDefaultAltitude")
+self.capalt=Altitude or 25000
+return self
+end
+function EASYGCICAP:SetDefaultCAPDirection(Direction)
+self:I(self.lid.."SetDefaultDirection")
+self.capdir=Direction or 90
+return self
+end
+function EASYGCICAP:SetDefaultCAPLeg(Leg)
+self:I(self.lid.."SetDefaultLeg")
+self.capleg=Leg or 15
+return self
+end
+function EASYGCICAP:SetDefaultCAPGrouping(Grouping)
+self:I(self.lid.."SetDefaultCAPGrouping")
+self.capgrouping=Grouping or 2
+return self
+end
+function EASYGCICAP:SetDefaultMissionRange(Range)
+self:I(self.lid.."SetDefaultMissionRange")
+self.missionrange=Range or 100
+return self
+end
+function EASYGCICAP:SetDefaultNumberAlter5Standby(Airframes)
+self:I(self.lid.."SetDefaultNumberAlter5Standby")
+self.noaltert5=math.abs(Airframes)or 2
+return self
+end
+function EASYGCICAP:SetDefaultEngageRange(Range)
+self:I(self.lid.."SetDefaultNumberAlter5Standby")
+self.engagerange=Range or 50
+return self
+end
+function EASYGCICAP:AddAirwing(Airbasename,Alias)
+self:I(self.lid.."AddAirwing "..Airbasename)
+local AWEntry={}
+AWEntry.AirbaseName=Airbasename
+AWEntry.Alias=Alias
+self.ManagedAW[Airbasename]=AWEntry
+return self
+end
+function EASYGCICAP:_CreateAirwings()
+self:I(self.lid.."_CreateAirwings")
+for airbase,data in pairs(self.ManagedAW)do
+local wing=data
+local afb=wing.AirbaseName
+local alias=wing.Alias
+self:_AddAirwing(airbase,alias)
+end
+return self
+end
+function EASYGCICAP:_AddAirwing(Airbasename,Alias)
+self:I(self.lid.."_AddAirwing "..Airbasename)
+local CAP_Wing=AIRWING:New(Airbasename,Alias)
+CAP_Wing:SetReportOff()
+CAP_Wing:SetMarker(false)
+CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
+CAP_Wing:SetRespawnAfterDestroyed()
+CAP_Wing:SetNumberCAP(self.capgrouping)
+CAP_Wing:SetNumberTankerBoom(1)
+CAP_Wing:SetNumberTankerProbe(1)
+CAP_Wing:SetTakeoffHot()
+CAP_Wing:SetLowFuelThreshold(0.3)
+CAP_Wing.RandomAssetScore=math.random(50,100)
+CAP_Wing:Start()
+local Intel=self.Intel
+function CAP_Wing:OnAfterFlightOnMission(From,Event,To,Flightgroup,Mission)
+local flightgroup=Flightgroup
+flightgroup:SetDespawnAfterHolding()
+flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
+flightgroup:GetGroup():CommandEPLRS(true,5)
+flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.BlueGoZoneSet,self.BlueNoGoZoneSet)
+flightgroup:GetGroup():OptionROTEvadeFire()
+flightgroup:SetOutOfAAMRTB()
+flightgroup:SetFuelLowRTB(true)
+Intel:AddAgent(flightgroup)
+end
+if self.noaltert5>0 then
+local alert=AUFTRAG:NewALERT5(AUFTRAG.Type.INTERCEPT)
+alert:SetRequiredAssets(self.noaltert5)
+alert:SetRepeat(99)
+CAP_Wing:AddMission(alert)
+end
+self.wings[Airbasename]={CAP_Wing,AIRBASE:FindByName(Airbasename):GetZone(),Airbasename}
+return self
+end
+function EASYGCICAP:AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
+self:I(self.lid.."AddPatrolPointCAP "..Coordinate:ToStringLLDDM())
+local EntryCAP={}
+EntryCAP.AirbaseName=AirbaseName
+EntryCAP.Coordinate=Coordinate
+EntryCAP.Altitude=Altitude or 25000
+EntryCAP.Speed=Speed or 300
+EntryCAP.Heading=Heading or 90
+EntryCAP.LegLength=LegLength or 15
+self.ManagedCP[#self.ManagedCP+1]=EntryCAP
+if self.debug then
+local mark=MARKER:New(Coordinate,self.lid.."Patrol Point"):ToAll()
+end
+return self
+end
+function EASYGCICAP:AddPatrolPointTanker(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
+self:I(self.lid.."AddPatrolPointTanker "..Coordinate:ToStringLLDDM())
+local EntryCAP={}
+EntryCAP.AirbaseName=AirbaseName
+EntryCAP.Coordinate=Coordinate
+EntryCAP.Altitude=Altitude or 25000
+EntryCAP.Speed=Speed or 300
+EntryCAP.Heading=Heading or 90
+EntryCAP.LegLength=LegLength or 15
+self.ManagedTK[#self.ManagedTK+1]=EntryCAP
+if self.debug then
+local mark=MARKER:New(Coordinate,self.lid.."Patrol Point Tanker"):ToAll()
+end
+return self
+end
+function EASYGCICAP:_SetTankerPatrolPoints()
+self:I(self.lid.."_SetTankerPatrolPoints")
+for _,_data in pairs(self.ManagedTK)do
+local data=_data
+local Wing=self.wings[data.AirbaseName][1]
+local Coordinate=data.Coordinate
+local Altitude=data.Altitude
+local Speed=data.Speed
+local Heading=data.Heading
+local LegLength=data.LegLength
+Wing:AddPatrolPointTANKER(Coordinate,Altitude,Speed,Heading,LegLength)
+end
+return self
+end
+function EASYGCICAP:_SetCAPPatrolPoints()
+self:I(self.lid.."_SetCAPPatrolPoints")
+for _,_data in pairs(self.ManagedCP)do
+local data=_data
+local Wing=self.wings[data.AirbaseName][1]
+local Coordinate=data.Coordinate
+local Altitude=data.Altitude
+local Speed=data.Speed
+local Heading=data.Heading
+local LegLength=data.LegLength
+Wing:AddPatrolPointCAP(Coordinate,Altitude,Speed,Heading,LegLength)
+end
+return self
+end
+function EASYGCICAP:_AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
+self:I(self.lid.."_AddPatrolPointCAP")
+local airbasename=AirbaseName or self.airbasename
+local coordinate=Coordinate
+local Altitude=Altitude or 25000
+local Speed=Speed or 300
+local Heading=Heading or 90
+local LegLength=LegLength or 15
+local wing=self.wings[airbasename][1]
+wing:AddPatrolPointCAP(coordinate,Altitude,Speed,Heading,LegLength)
+return self
+end
+function EASYGCICAP:_CreateSquads()
+self:I(self.lid.."_CreateSquads")
+for name,data in pairs(self.ManagedSQ)do
+local squad=data
+local SquadName=name
+local TemplateName=squad.TemplateName
+local AirbaseName=squad.AirbaseName
+local AirFrames=squad.AirFrames
+local Skill=squad.Skill
+local Modex=squad.Modex
+local Livery=squad.Livery
+if squad.Tanker then
+self:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+else
+self:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+end
+end
+return self
+end
+function EASYGCICAP:AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:I(self.lid.."AddSquadron "..SquadName)
+local EntrySQ={}
+EntrySQ.TemplateName=TemplateName
+EntrySQ.SquadName=SquadName
+EntrySQ.AirbaseName=AirbaseName
+EntrySQ.AirFrames=AirFrames or 20
+EntrySQ.Skill=Skill or AI.Skill.AVERAGE
+EntrySQ.Modex=Modex or 402
+EntrySQ.Livery=Livery
+self.ManagedSQ[SquadName]=EntrySQ
+return self
+end
+function EASYGCICAP:AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:I(self.lid.."AddTankerSquadron "..SquadName)
+local EntrySQ={}
+EntrySQ.TemplateName=TemplateName
+EntrySQ.SquadName=SquadName
+EntrySQ.AirbaseName=AirbaseName
+EntrySQ.AirFrames=AirFrames or 20
+EntrySQ.Skill=Skill or AI.Skill.AVERAGE
+EntrySQ.Modex=Modex or 402
+EntrySQ.Livery=Livery
+EntrySQ.Tanker=true
+self.ManagedSQ[SquadName]=EntrySQ
+return self
+end
+function EASYGCICAP:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:I(self.lid.."_AddSquadron "..SquadName)
+local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
+Squadron_One:AddMissionCapability({AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5})
+Squadron_One:SetFuelLowThreshold(0.3)
+Squadron_One:SetTurnoverTime(10,20)
+Squadron_One:SetModex(Modex)
+Squadron_One:SetLivery(Livery)
+Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
+Squadron_One:SetMissionRange(self.missionrange)
+local wing=self.wings[AirbaseName][1]
+wing:AddSquadron(Squadron_One)
+wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5},75)
+return self
+end
+function EASYGCICAP:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:I(self.lid.."_AddTankerSquadron "..SquadName)
+local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
+Squadron_One:AddMissionCapability({AUFTRAG.Type.TANKER})
+Squadron_One:SetFuelLowThreshold(0.3)
+Squadron_One:SetTurnoverTime(10,20)
+Squadron_One:SetModex(Modex)
+Squadron_One:SetLivery(Livery)
+Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
+Squadron_One:SetMissionRange(self.missionrange)
+local wing=self.wings[AirbaseName][1]
+wing:AddSquadron(Squadron_One)
+wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.TANKER},75)
+return self
+end
+function EASYGCICAP:AddAcceptZone(Zone)
+self:I(self.lid.."AddAcceptZone0")
+self.BlueGoZoneSet:AddZone(Zone)
+return self
+end
+function EASYGCICAP:AddRejectZone(Zone)
+self:I(self.lid.."AddRejectZone")
+self.BlueNoGoZoneSet:AddZone(Zone)
+return self
+end
+function EASYGCICAP:_StartIntel()
+self:I(self.lid.."_StartIntel")
+local BlueAir_DetectionSetGroup=SET_GROUP:New()
+BlueAir_DetectionSetGroup:FilterPrefixes({self.EWRName})
+BlueAir_DetectionSetGroup:FilterStart()
+local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.EWRName)
+BlueIntel:SetClusterAnalysis(true,false,false)
+BlueIntel:SetForgetTime(300)
+BlueIntel:SetAcceptZones(self.BlueGoZoneSet)
+BlueIntel:SetRejectZones(self.BlueNoGoZoneSet)
+BlueIntel:SetVerbosity(0)
+BlueIntel:Start()
+if self.debug then
+BlueIntel.debug=true
+end
+local overhead=self.overhead
+local capspeed=self.capspeed+100
+local capalt=self.capalt
+local maxsize=self.maxinterceptsize
+local wings=self.wings
+local ctlpts=self.ManagedCP
+local MaxAliveMissions=self.MaxAliveMissions*self.capgrouping
+function BlueIntel:OnAfterNewCluster(From,Event,To,Cluster)
+if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
+local contact=self:GetHighestThreatContact(Cluster)
+local name=contact.groupname
+local threat=contact.threatlevel
+local position=self:CalcClusterFuturePosition(Cluster,300)
+local bestdistance=2000*1000
+local targetairwing=nil
+local targetawname=""
+local clustersize=self:ClusterCountUnits(Cluster)or 1
+local wingsize=math.abs(overhead*(clustersize+1))
+if wingsize>maxsize then wingsize=maxsize end
+if(not Cluster.mission)and(wingsize>0)then
+MESSAGE:New(string.format("**** %s Interceptors need wingsize %d",UTILS.GetCoalitionName(self.coalition),wingsize),15,"CAPGCI"):ToAllIf(self.debug):ToLog()
+for _,_data in pairs(wings)do
+local airwing=_data[1]
+local zone=_data[2]
+local zonecoord=zone:GetCoordinate()
+local name=_data[3]
+local distance=position:DistanceFromPointVec2(zonecoord)
+local airframes=airwing:CountAssets(true)
+if distance<bestdistance and airframes>=wingsize then
+bestdistance=distance
+targetairwing=airwing
+targetawname=name
+end
+end
+for _,_data in pairs(ctlpts)do
+local data=_data
+local name=data.AirbaseName
+local zonecoord=data.Coordinate
+local airwing=wings[name][1]
+local distance=position:DistanceFromPointVec2(zonecoord)
+local airframes=airwing:CountAssets(true)
+if distance<bestdistance and airframes>=wingsize then
+bestdistance=distance
+targetairwing=airwing
+targetawname=name
+end
+end
+local text=string.format("Closest Airwing is %s",targetawname)
+local m=MESSAGE:New(text,10,"CAPGCI"):ToAll():ToLog()
+if targetairwing then
+local AssetCount=targetairwing:CountAssetsOnMission(MissionTypes,Cohort)
+self:I(self.lid.." Assets on Mission "..AssetCount)
+if AssetCount<=MaxAliveMissions then
+local repeats=math.random(1,2)
+local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
+:SetMissionRange(150)
+:SetPriority(1,true,1)
+:SetRequiredAssets(wingsize)
+:SetRepeatOnFailure(repeats)
+:SetMissionSpeed(UTILS.KnotsToAltKIAS(capspeed,capalt))
+:SetMissionAltitude(capalt)
+targetairwing:AddMission(InterceptAuftrag)
+Cluster.mission=InterceptAuftrag
+end
+else
+MESSAGE:New("**** Not enough airframes available or max mission limit reached!",15,"CAPGCI"):ToAllIf(self.debug):ToLog()
+end
+end
+end
+self.Intel=BlueIntel
+return self
+end
+function EASYGCICAP:onafterStart(From,Event,To)
+self:I({From,Event,To})
+self:_StartIntel()
+self:_CreateAirwings()
+self:_CreateSquads()
+self:_SetCAPPatrolPoints()
+self:_SetTankerPatrolPoints()
+self:__Status(-10)
+return self
+end
+function EASYGCICAP:onbeforeStatus(From,Event,To)
+self:T({From,Event,To})
+if self:GetState()=="Stopped"then return false end
+return self
+end
+function EASYGCICAP:onafterStatus(From,Event,To)
+self:I({From,Event,To})
+local function counttable(tbl)
+local count=0
+for _,_data in pairs(tbl)do
+count=count+1
+end
+return count
+end
+local wings=counttable(self.ManagedAW)
+local squads=counttable(self.ManagedSQ)
+local caps=counttable(self.ManagedCP)
+local assets=0
+local instock=0
+for _,_wing in pairs(self.wings)do
+local count=_wing[1]:CountAssetsOnMission(MissionTypes,Cohort)
+local count2=_wing[1]:CountAssets(true,MissionTypes,Attributes)
+assets=assets+count
+instock=instock+count2
+end
+if self.debug then
+self:I(self.lid.."Wings: "..wings.." | Squads: "..squads.." | CapPoints: "..caps.." | Assets on Mission: "..assets.." | Assets in Stock: "..instock)
+end
+self:__Status(30)
+return self
+end
+function EASYGCICAP:onafterStop(From,Event,To)
+self:I({From,Event,To})
+self.Intel:Stop()
+return self
 end
 AI_BALANCER={
 ClassName="AI_BALANCER",
