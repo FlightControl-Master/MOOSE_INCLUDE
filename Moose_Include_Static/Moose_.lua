@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-26T11:29:09.0000000Z-c4e8ad50c87284272b0f363a20ce7ede6fc9169a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T08:57:12.0000000Z-dfc7f17308c58795ad54485f7a0c961684391953 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -88352,7 +88352,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="1.0.1"
+NAVYGROUP.version="1.0.2"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -88809,14 +88809,12 @@ function NAVYGROUP:onafterDetourReached(From,Event,To)
 self:T(self.lid.."Group reached detour coordinate.")
 end
 function NAVYGROUP:onafterTurnIntoWind(From,Event,To,IntoWind)
-IntoWind.Heading=self:GetHeadingIntoWind(IntoWind.Offset)
+local heading,speed=self:GetHeadingIntoWind(IntoWind.Offset,IntoWind.Speed)
+IntoWind.Heading=heading
 IntoWind.Open=true
 IntoWind.Coordinate=self:GetCoordinate(true)
 self.intowind=IntoWind
-local _,vwind=self:GetWind()
-vwind=UTILS.MpsToKnots(vwind)
-local speed=math.max(IntoWind.Speed-vwind,4)
-self:T(self.lid..string.format("Steaming into wind: Heading=%03d Speed=%.1f Vwind=%.1f Vtot=%.1f knots, Tstart=%d Tstop=%d",IntoWind.Heading,speed,vwind,speed+vwind,IntoWind.Tstart,IntoWind.Tstop))
+self:T(self.lid..string.format("Steaming into wind: Heading=%03d Speed=%.1f, Tstart=%d Tstop=%d",IntoWind.Heading,speed,IntoWind.Tstart,IntoWind.Tstop))
 local distance=UTILS.NMToMeters(1000)
 local coord=self:GetCoordinate()
 local Coord=coord:Translate(distance,IntoWind.Heading)
@@ -89132,12 +89130,12 @@ end
 function NAVYGROUP:GetTurnIntoWindCurrent()
 return self.intowind
 end
-function NAVYGROUP:GetWind()
+function NAVYGROUP:GetWind(Altitude)
 local coord=self:GetCoordinate()
-local Wdir,Wspeed=coord:GetWind(50)
+local Wdir,Wspeed=coord:GetWind(Altitude or 18)
 return Wdir,Wspeed
 end
-function NAVYGROUP:GetHeadingIntoWind(Offset)
+function NAVYGROUP:GetHeadingIntoWind_old(Offset)
 Offset=Offset or 0
 local windfrom,vwind=self:GetWind()
 local intowind=windfrom-Offset
@@ -89148,6 +89146,36 @@ if intowind<0 then
 intowind=intowind+360
 end
 return intowind
+end
+function NAVYGROUP:GetHeadingIntoWind(Offset,vdeck)
+Offset=Offset or 0
+local windfrom,vwind=self:GetWind(18)
+vwind=UTILS.MpsToKnots(vwind)
+local windto=(windfrom+180)%360
+local alpha=math.rad(-Offset)
+local Vmin=4
+local Vmax=UTILS.KmphToKnots(self.speedMax)
+local C=math.sqrt(math.cos(alpha)^2/math.sin(alpha)^2+1)
+local vdeckMax=vwind+math.cos(alpha)*Vmax
+local vdeckMin=vwind+math.cos(alpha)*Vmin
+local v=0
+local theta=0
+if vdeck>vdeckMax then
+v=Vmax
+theta=math.asin(v/(vwind*C))-math.asin(-1/C)
+elseif vdeck<vdeckMin then
+v=Vmin
+theta=math.asin(v/(vwind*C))-math.asin(-1/C)
+elseif vdeck*math.sin(alpha)>vwind then
+theta=math.pi/2
+v=math.sqrt(vdeck^2-vwind^2)
+else
+theta=math.asin(vdeck*math.sin(alpha)/vwind)
+v=vdeck*math.cos(alpha)-vwind*math.cos(theta)
+end
+local intowind=(540+(windto+math.deg(theta)))%360
+self:T(self.lid..string.format("Heading into Wind: vship=%.1f, vwind=%.1f, WindTo=%03d°, Theta=%03d°, Heading=%03d",v,vwind,windto,theta,intowind))
+return intowind,v
 end
 function NAVYGROUP:_FindPathToNextWaypoint()
 self:T3(self.lid.."Path finding")
