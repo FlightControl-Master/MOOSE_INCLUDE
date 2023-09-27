@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T13:41:52.0000000Z-912c162eee594c021e7b183721c8afce90c8e27e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T16:08:02.0000000Z-55fb8f20643f4bd96f194728220d953367600d22 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -7952,6 +7952,7 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_BASE:IsCoordinateInZone(Coordinate)
+if not Coordinate then return false end
 local InZone=self:IsVec2InZone(Coordinate:GetVec2())
 return InZone
 end
