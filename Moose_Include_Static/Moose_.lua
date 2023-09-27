@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T13:42:26.0000000Z-1f235257995da1bf371b1460efb012a0a13ec193 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T16:08:25.0000000Z-39fc112e53baf67a488ad64e460061adb8fc86c5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -18426,6 +18426,7 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_BASE:IsCoordinateInZone(Coordinate)
+if not Coordinate then return false end
 local InZone=self:IsVec2InZone(Coordinate:GetVec2())
 return InZone
 end
@@ -104242,10 +104243,14 @@ ManagedSQ={},
 ManagedCP={},
 ManagedTK={},
 MaxAliveMissions=6,
-debug=true,
+debug=false,
 engagerange=50,
+repeatsonfailure=3,
+GoZoneSet=nil,
+NoGoZoneSet=nil,
+Monitor=false,
 }
-EASYGCICAP.version="0.0.4"
+EASYGCICAP.version="0.0.7"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -104255,8 +104260,8 @@ self.wings={}
 self.EWRName=EWRName or self.coalitionname.." EWR"
 self.airbasename=AirbaseName
 self.airbase=AIRBASE:FindByName(self.airbasename)
-self.BlueGoZoneSet=SET_ZONE:New()
-self.BlueNoGoZoneSet=SET_ZONE:New()
+self.GoZoneSet=SET_ZONE:New()
+self.NoGoZoneSet=SET_ZONE:New()
 self.resurrection=900
 self.capspeed=300
 self.capalt=25000
@@ -104267,6 +104272,8 @@ self.missionrange=100
 self.noaltert5=2
 self.MaxAliveMissions=6
 self.engagerange=50
+self.repeatsonfailure=3
+self.Monitor=false
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -104278,57 +104285,62 @@ self:__Start(math.random(6,12))
 return self
 end
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
-self:I(self.lid.."SetDefaultResurrection")
+self:T(self.lid.."SetDefaultResurrection")
 self.MaxAliveMissions=Maxiumum or 6
 return self
 end
 function EASYGCICAP:SetDefaultResurrection(Seconds)
-self:I(self.lid.."SetDefaultResurrection")
+self:T(self.lid.."SetDefaultResurrection")
 self.resurrection=Seconds or 900
 return self
 end
+function EASYGCICAP:SetDefaultRepeatOnFailure(Retries)
+self:T(self.lid.."SetDefaultRepeatOnFailure")
+self.repeatsonfailure=Retries or 3
+return self
+end
 function EASYGCICAP:SetDefaultCAPSpeed(Speed)
-self:I(self.lid.."SetDefaultSpeed")
+self:T(self.lid.."SetDefaultSpeed")
 self.capspeed=Speed or 300
 return self
 end
 function EASYGCICAP:SetDefaultCAPAlt(Altitude)
-self:I(self.lid.."SetDefaultAltitude")
+self:T(self.lid.."SetDefaultAltitude")
 self.capalt=Altitude or 25000
 return self
 end
 function EASYGCICAP:SetDefaultCAPDirection(Direction)
-self:I(self.lid.."SetDefaultDirection")
+self:T(self.lid.."SetDefaultDirection")
 self.capdir=Direction or 90
 return self
 end
 function EASYGCICAP:SetDefaultCAPLeg(Leg)
-self:I(self.lid.."SetDefaultLeg")
+self:T(self.lid.."SetDefaultLeg")
 self.capleg=Leg or 15
 return self
 end
 function EASYGCICAP:SetDefaultCAPGrouping(Grouping)
-self:I(self.lid.."SetDefaultCAPGrouping")
+self:T(self.lid.."SetDefaultCAPGrouping")
 self.capgrouping=Grouping or 2
 return self
 end
 function EASYGCICAP:SetDefaultMissionRange(Range)
-self:I(self.lid.."SetDefaultMissionRange")
+self:T(self.lid.."SetDefaultMissionRange")
 self.missionrange=Range or 100
 return self
 end
 function EASYGCICAP:SetDefaultNumberAlter5Standby(Airframes)
-self:I(self.lid.."SetDefaultNumberAlter5Standby")
+self:T(self.lid.."SetDefaultNumberAlter5Standby")
 self.noaltert5=math.abs(Airframes)or 2
 return self
 end
 function EASYGCICAP:SetDefaultEngageRange(Range)
-self:I(self.lid.."SetDefaultNumberAlter5Standby")
+self:T(self.lid.."SetDefaultNumberAlter5Standby")
 self.engagerange=Range or 50
 return self
 end
 function EASYGCICAP:AddAirwing(Airbasename,Alias)
-self:I(self.lid.."AddAirwing "..Airbasename)
+self:T(self.lid.."AddAirwing "..Airbasename)
 local AWEntry={}
 AWEntry.AirbaseName=Airbasename
 AWEntry.Alias=Alias
@@ -104336,7 +104348,7 @@ self.ManagedAW[Airbasename]=AWEntry
 return self
 end
 function EASYGCICAP:_CreateAirwings()
-self:I(self.lid.."_CreateAirwings")
+self:T(self.lid.."_CreateAirwings")
 for airbase,data in pairs(self.ManagedAW)do
 local wing=data
 local afb=wing.AirbaseName
@@ -104346,7 +104358,7 @@ end
 return self
 end
 function EASYGCICAP:_AddAirwing(Airbasename,Alias)
-self:I(self.lid.."_AddAirwing "..Airbasename)
+self:T(self.lid.."_AddAirwing "..Airbasename)
 local CAP_Wing=AIRWING:New(Airbasename,Alias)
 CAP_Wing:SetReportOff()
 CAP_Wing:SetMarker(false)
@@ -104365,7 +104377,7 @@ local flightgroup=Flightgroup
 flightgroup:SetDespawnAfterHolding()
 flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
 flightgroup:GetGroup():CommandEPLRS(true,5)
-flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.BlueGoZoneSet,self.BlueNoGoZoneSet)
+flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
 flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetOutOfAAMRTB()
 flightgroup:SetFuelLowRTB(true)
@@ -104381,7 +104393,7 @@ self.wings[Airbasename]={CAP_Wing,AIRBASE:FindByName(Airbasename):GetZone(),Airb
 return self
 end
 function EASYGCICAP:AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
-self:I(self.lid.."AddPatrolPointCAP "..Coordinate:ToStringLLDDM())
+self:T(self.lid.."AddPatrolPointCAP "..Coordinate:ToStringLLDDM())
 local EntryCAP={}
 EntryCAP.AirbaseName=AirbaseName
 EntryCAP.Coordinate=Coordinate
@@ -104396,7 +104408,7 @@ end
 return self
 end
 function EASYGCICAP:AddPatrolPointTanker(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
-self:I(self.lid.."AddPatrolPointTanker "..Coordinate:ToStringLLDDM())
+self:T(self.lid.."AddPatrolPointTanker "..Coordinate:ToStringLLDDM())
 local EntryCAP={}
 EntryCAP.AirbaseName=AirbaseName
 EntryCAP.Coordinate=Coordinate
@@ -104411,7 +104423,7 @@ end
 return self
 end
 function EASYGCICAP:_SetTankerPatrolPoints()
-self:I(self.lid.."_SetTankerPatrolPoints")
+self:T(self.lid.."_SetTankerPatrolPoints")
 for _,_data in pairs(self.ManagedTK)do
 local data=_data
 local Wing=self.wings[data.AirbaseName][1]
@@ -104425,7 +104437,7 @@ end
 return self
 end
 function EASYGCICAP:_SetCAPPatrolPoints()
-self:I(self.lid.."_SetCAPPatrolPoints")
+self:T(self.lid.."_SetCAPPatrolPoints")
 for _,_data in pairs(self.ManagedCP)do
 local data=_data
 local Wing=self.wings[data.AirbaseName][1]
@@ -104439,7 +104451,7 @@ end
 return self
 end
 function EASYGCICAP:_AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
-self:I(self.lid.."_AddPatrolPointCAP")
+self:T(self.lid.."_AddPatrolPointCAP")
 local airbasename=AirbaseName or self.airbasename
 local coordinate=Coordinate
 local Altitude=Altitude or 25000
@@ -104451,7 +104463,7 @@ wing:AddPatrolPointCAP(coordinate,Altitude,Speed,Heading,LegLength)
 return self
 end
 function EASYGCICAP:_CreateSquads()
-self:I(self.lid.."_CreateSquads")
+self:T(self.lid.."_CreateSquads")
 for name,data in pairs(self.ManagedSQ)do
 local squad=data
 local SquadName=name
@@ -104470,7 +104482,7 @@ end
 return self
 end
 function EASYGCICAP:AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
-self:I(self.lid.."AddSquadron "..SquadName)
+self:T(self.lid.."AddSquadron "..SquadName)
 local EntrySQ={}
 EntrySQ.TemplateName=TemplateName
 EntrySQ.SquadName=SquadName
@@ -104483,7 +104495,7 @@ self.ManagedSQ[SquadName]=EntrySQ
 return self
 end
 function EASYGCICAP:AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
-self:I(self.lid.."AddTankerSquadron "..SquadName)
+self:T(self.lid.."AddTankerSquadron "..SquadName)
 local EntrySQ={}
 EntrySQ.TemplateName=TemplateName
 EntrySQ.SquadName=SquadName
@@ -104497,7 +104509,7 @@ self.ManagedSQ[SquadName]=EntrySQ
 return self
 end
 function EASYGCICAP:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
-self:I(self.lid.."_AddSquadron "..SquadName)
+self:T(self.lid.."_AddSquadron "..SquadName)
 local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
 Squadron_One:AddMissionCapability({AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5})
 Squadron_One:SetFuelLowThreshold(0.3)
@@ -104512,7 +104524,7 @@ wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Ty
 return self
 end
 function EASYGCICAP:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
-self:I(self.lid.."_AddTankerSquadron "..SquadName)
+self:T(self.lid.."_AddTankerSquadron "..SquadName)
 local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
 Squadron_One:AddMissionCapability({AUFTRAG.Type.TANKER})
 Squadron_One:SetFuelLowThreshold(0.3)
@@ -104527,25 +104539,25 @@ wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.TANKER},75)
 return self
 end
 function EASYGCICAP:AddAcceptZone(Zone)
-self:I(self.lid.."AddAcceptZone0")
-self.BlueGoZoneSet:AddZone(Zone)
+self:T(self.lid.."AddAcceptZone0")
+self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:AddRejectZone(Zone)
-self:I(self.lid.."AddRejectZone")
-self.BlueNoGoZoneSet:AddZone(Zone)
+self:T(self.lid.."AddRejectZone")
+self.NoGoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:_StartIntel()
-self:I(self.lid.."_StartIntel")
+self:T(self.lid.."_StartIntel")
 local BlueAir_DetectionSetGroup=SET_GROUP:New()
 BlueAir_DetectionSetGroup:FilterPrefixes({self.EWRName})
 BlueAir_DetectionSetGroup:FilterStart()
 local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.EWRName)
 BlueIntel:SetClusterAnalysis(true,false,false)
 BlueIntel:SetForgetTime(300)
-BlueIntel:SetAcceptZones(self.BlueGoZoneSet)
-BlueIntel:SetRejectZones(self.BlueNoGoZoneSet)
+BlueIntel:SetAcceptZones(self.GoZoneSet)
+BlueIntel:SetRejectZones(self.NoGoZoneSet)
 BlueIntel:SetVerbosity(0)
 BlueIntel:Start()
 if self.debug then
@@ -104555,9 +104567,11 @@ local overhead=self.overhead
 local capspeed=self.capspeed+100
 local capalt=self.capalt
 local maxsize=self.maxinterceptsize
+local repeatsonfailure=self.repeatsonfailure
 local wings=self.wings
 local ctlpts=self.ManagedCP
 local MaxAliveMissions=self.MaxAliveMissions*self.capgrouping
+local nogozoneset=self.NoGoZoneSet
 function BlueIntel:OnAfterNewCluster(From,Event,To,Cluster)
 if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
 local contact=self:GetHighestThreatContact(Cluster)
@@ -104599,12 +104613,12 @@ targetawname=name
 end
 end
 local text=string.format("Closest Airwing is %s",targetawname)
-local m=MESSAGE:New(text,10,"CAPGCI"):ToAll():ToLog()
+local m=MESSAGE:New(text,10,"CAPGCI"):ToAllIf(self.debug):ToLog()
 if targetairwing then
 local AssetCount=targetairwing:CountAssetsOnMission(MissionTypes,Cohort)
-self:I(self.lid.." Assets on Mission "..AssetCount)
+self:T(self.lid.." Assets on Mission "..AssetCount)
 if AssetCount<=MaxAliveMissions then
-local repeats=math.random(1,2)
+local repeats=repeatsonfailure
 local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetMissionRange(150)
 :SetPriority(1,true,1)
@@ -104612,6 +104626,22 @@ local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetRepeatOnFailure(repeats)
 :SetMissionSpeed(UTILS.KnotsToAltKIAS(capspeed,capalt))
 :SetMissionAltitude(capalt)
+if nogozoneset:Count()>0 then
+InterceptAuftrag:AddConditionSuccess(
+function(group,zoneset)
+local success=false
+if group and group:IsAlive()then
+local coord=group:GetCoordinate()
+if coord and zoneset:IsCoordinateInZone(coord)then
+success=true
+end
+end
+return success
+end,
+contact.group,
+nogozoneset
+)
+end
 targetairwing:AddMission(InterceptAuftrag)
 Cluster.mission=InterceptAuftrag
 end
@@ -104624,7 +104654,7 @@ self.Intel=BlueIntel
 return self
 end
 function EASYGCICAP:onafterStart(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 self:_StartIntel()
 self:_CreateAirwings()
 self:_CreateSquads()
@@ -104639,7 +104669,7 @@ if self:GetState()=="Stopped"then return false end
 return self
 end
 function EASYGCICAP:onafterStatus(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 local function counttable(tbl)
 local count=0
 for _,_data in pairs(tbl)do
@@ -104661,11 +104691,18 @@ end
 if self.debug then
 self:I(self.lid.."Wings: "..wings.." | Squads: "..squads.." | CapPoints: "..caps.." | Assets on Mission: "..assets.." | Assets in Stock: "..instock)
 end
+if self.Monitor then
+local threatcount=#self.Intel.Clusters or 0
+local text="GCICAP "..self.alias
+text=text.."\nWings: "..wings.."\nSquads: "..squads.."\nCapPoints: "..caps.."\nAssets on Mission: "..assets.."\nAssets in Stock: "..instock
+text=text.."\nThreats:"..threatcount
+MESSAGE:New(text,15,"GCICAP"):ToAll():ToLogIf(self.debug)
+end
 self:__Status(30)
 return self
 end
 function EASYGCICAP:onafterStop(From,Event,To)
-self:I({From,Event,To})
+self:T({From,Event,To})
 self.Intel:Stop()
 return self
 end
