@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T08:57:12.0000000Z-dfc7f17308c58795ad54485f7a0c961684391953 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T13:42:26.0000000Z-1f235257995da1bf371b1460efb012a0a13ec193 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -18792,7 +18792,7 @@ if ObjectCategory==Object.Category.SCENERY then
 local SceneryType=ZoneObject:getTypeName()
 local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
-self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(SceneryName,ZoneObject)
+self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(tostring(SceneryName),ZoneObject)
 table.insert(self.ScanData.SceneryTable,self.ScanData.Scenery[SceneryType][SceneryName])
 self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
 end
@@ -19019,8 +19019,10 @@ end
 local T0=timer.getTime()
 local T1=timer.getTime()
 local buildings={}
+local buildingzones={}
 if self.ScanData and self.ScanData.BuildingCoordinates then
 buildings=self.ScanData.BuildingCoordinates
+buildingzones=self.ScanData.BuildingZones
 else
 for _,_object in pairs(objects)do
 for _,_scen in pairs(_object)do
@@ -19031,23 +19033,47 @@ if markbuildings then
 MARKER:New(scenery:GetCoordinate(),"Building"):ToAll()
 end
 buildings[#buildings+1]=scenery:GetCoordinate()
+local bradius=scenery:GetBoundingRadius()or dist
+local bzone=ZONE_RADIUS:New("Building-"..math.random(1,100000),scenery:GetVec2(),bradius,false)
+buildingzones[#buildingzones+1]=bzone
 end
 end
 end
 self.ScanData.BuildingCoordinates=buildings
+self.ScanData.BuildingZones=buildingzones
 end
 local rcoord=nil
-local found=false
+local found=true
 local iterations=0
 for i=1,1000 do
 iterations=iterations+1
 rcoord=self:GetRandomCoordinate(inner,outer)
+found=true
+for _,_coord in pairs(buildingzones)do
+local zone=_coord
+if zone:IsPointVec2InZone(rcoord)then
 found=false
+break
+end
+end
+if found then
+if markfinal then
+MARKER:New(rcoord,"FREE"):ToAll()
+end
+break
+end
+end
+if not found then
+local rcoord=nil
+local found=true
+local iterations=0
+for i=1,1000 do
+iterations=iterations+1
+rcoord=self:GetRandomCoordinate(inner,outer)
+found=true
 for _,_coord in pairs(buildings)do
 local coord=_coord
-if coord:Get3DDistance(rcoord)>dist then
-found=true
-else
+if coord:Get3DDistance(rcoord)<dist then
 found=false
 end
 end
@@ -19058,8 +19084,9 @@ end
 break
 end
 end
+end
 T1=timer.getTime()
-self:T(string.format("Found a coordinate: %s | Iterations: %d | Time: %d",tostring(found),iterations,T1-T0))
+self:T(string.format("Found a coordinate: %s | Iterations: %d | Time: %.3f",tostring(found),iterations,T1-T0))
 if found then return rcoord else return nil end
 end
 ZONE={
