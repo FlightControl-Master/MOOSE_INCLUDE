@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T16:08:02.0000000Z-55fb8f20643f4bd96f194728220d953367600d22 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T20:28:21.0000000Z-05df765c5cda88a06b404f830f27c51426fb5d13 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -52324,7 +52324,7 @@ if nextwindow then
 self:RecoveryCase(nextwindow.CASE,nextwindow.OFFSET)
 if nextwindow.WIND and nextwindow.START-time<self.dTturn and not self.turnintowind then
 local hdg=self:GetHeading()
-local wind=self:GetHeadingIntoWind()
+local wind=self:GetHeadingIntoWind(nextwindow.SPEED)
 local delta=self:_GetDeltaHeading(hdg,wind)
 local uturn=delta>5
 local _,vwind=self:GetWind()
@@ -53760,7 +53760,7 @@ local P=UTILS.hPa2inHg(self:GetCoordinate():GetPressure())
 local alt=self:_GetMarshalAltitude(stack,flight.case)
 local brc=self:GetBRC()
 if self.recoverywindow and self.recoverywindow.WIND then
-brc=self:GetBRCintoWind()
+brc=self:GetBRCintoWind(self.recoverywindow.SPEED)
 end
 flight.Tcharlie=self:_GetCharlieTime(flight)
 local Ccharlie=UTILS.SecondsToClock(flight.Tcharlie)
@@ -56118,7 +56118,7 @@ local vpp=UTILS.VecDot(vT,zc)
 local vabs=UTILS.VecNorm(vT)
 return-vpa,vpp,vabs
 end
-function AIRBOSS:GetHeadingIntoWind(magnetic,coord)
+function AIRBOSS:GetHeadingIntoWind_old(magnetic,coord)
 local function adjustDegreesForWindSpeed(windSpeed)
 local degreesAdjustment=0
 if windSpeed>0 and windSpeed<3 then
@@ -56147,8 +56147,42 @@ intowind=intowind+360
 end
 return intowind
 end
-function AIRBOSS:GetBRCintoWind()
-return self:GetHeadingIntoWind(true)
+function AIRBOSS:GetHeadingIntoWind(vdeck,magnetic,coord)
+local Offset=self.carrierparam.rwyangle or 0
+local windfrom,vwind=self:GetWind(18,nil,coord)
+local Vmin=4
+local Vmax=UTILS.KmphToKnots(self.carrier:GetSpeedMax())
+if vwind<0.1 then
+local h=self:GetHeading(magnetic)
+return h,math.min(vdeck,Vmax)
+end
+vwind=UTILS.MpsToKnots(vwind)
+local windto=(windfrom+180)%360
+local alpha=math.rad(-Offset)
+local C=math.sqrt(math.cos(alpha)^2/math.sin(alpha)^2+1)
+local vdeckMax=vwind+math.cos(alpha)*Vmax
+local vdeckMin=vwind+math.cos(alpha)*Vmin
+local v=0
+local theta=0
+if vdeck>vdeckMax then
+v=Vmax
+theta=math.asin(v/(vwind*C))-math.asin(-1/C)
+elseif vdeck<vdeckMin then
+v=Vmin
+theta=math.asin(v/(vwind*C))-math.asin(-1/C)
+elseif vdeck*math.sin(alpha)>vwind then
+theta=math.pi/2
+v=math.sqrt(vdeck^2-vwind^2)
+else
+theta=math.asin(vdeck*math.sin(alpha)/vwind)
+v=vdeck*math.cos(alpha)-vwind*math.cos(theta)
+end
+local magvar=magnetic and self.magvar or 0
+local intowind=(540+(windto-magvar+math.deg(theta)))%360
+return intowind,v
+end
+function AIRBOSS:GetBRCintoWind(vdeck)
+return self:GetHeadingIntoWind(vdeck,true)
 end
 function AIRBOSS:GetFinalBearing(magnetic)
 local fb=self:GetHeading(magnetic)
@@ -57178,32 +57212,33 @@ self.carrier:Route(wp)
 end
 function AIRBOSS:CarrierTurnIntoWind(time,vdeck,uturn)
 local _,vwind=self:GetWind()
-local vtot=math.max(vdeck-vwind,UTILS.KnotsToMps(4))
+local vdeck=UTILS.MpsToKnots(vdeck)
+local hiw,speedknots=self:GetHeadingIntoWind(vdeck)
+local vtot=UTILS.KnotsToMps(speedknots)
 local dist=vtot*time
-local speedknots=UTILS.MpsToKnots(vtot)
 local distNM=UTILS.MetersToNM(dist)
-self:I(self.lid..string.format("Carrier steaming into the wind (%.1f kts). Distance=%.1f NM, Speed=%.1f knots, Time=%d sec.",UTILS.MpsToKnots(vwind),distNM,speedknots,time))
-local hiw=self:GetHeadingIntoWind()
 local hdg=self:GetHeading()
 local deltaH=self:_GetDeltaHeading(hdg,hiw)
+self:I(self.lid..string.format("Carrier steaming into the wind (%.1f kts). Heading=%03d-->%03d (Delta=%.1f), Speed=%.1f knots, Distance=%.1f NM, Time=%d sec",
+UTILS.MpsToKnots(vwind),hdg,hiw,deltaH,speedknots,distNM,speedknots,time))
 local Cv=self:GetCoordinate()
 local Ctiw=nil
 local Csoo=nil
 if deltaH<45 then
 Csoo=Cv:Translate(750,hdg):Translate(750,hiw)
-local hsw=self:GetHeadingIntoWind(false,Csoo)
+local hsw=self:GetHeadingIntoWind(vdeck,false,Csoo)
 Ctiw=Csoo:Translate(dist,hsw)
 elseif deltaH<90 then
 Csoo=Cv:Translate(900,hdg):Translate(900,hiw)
-local hsw=self:GetHeadingIntoWind(false,Csoo)
+local hsw=self:GetHeadingIntoWind(vdeck,false,Csoo)
 Ctiw=Csoo:Translate(dist,hsw)
 elseif deltaH<135 then
 Csoo=Cv:Translate(1100,hdg-90):Translate(1000,hiw)
-local hsw=self:GetHeadingIntoWind(false,Csoo)
+local hsw=self:GetHeadingIntoWind(vdeck,false,Csoo)
 Ctiw=Csoo:Translate(dist,hsw)
 else
 Csoo=Cv:Translate(1200,hdg-90):Translate(1000,hiw)
-local hsw=self:GetHeadingIntoWind(false,Csoo)
+local hsw=self:GetHeadingIntoWind(vdeck,false,Csoo)
 Ctiw=Csoo:Translate(dist,hsw)
 end
 self.Creturnto=self:GetCoordinate()
@@ -57284,7 +57319,8 @@ end
 if turning and not self.turning then
 local hdg
 if self.turnintowind then
-hdg=self:GetHeadingIntoWind(false)
+local vdeck=self.recoverywindow and self.recoverywindow.SPEED or 20
+hdg=self:GetHeadingIntoWind(vdeck,false)
 else
 hdg=self:GetCoordinate():HeadingTo(self:_GetNextWaypoint())
 end
