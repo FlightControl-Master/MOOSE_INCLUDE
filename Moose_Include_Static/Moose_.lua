@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-27T20:28:58.0000000Z-bd79750efa6f6995033d2950bef433497ddc41d1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-28T11:15:56.0000000Z-6c3f3cf0d2c26201813afc2c8095af417cf24055 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -104278,15 +104278,17 @@ ManagedAW={},
 ManagedSQ={},
 ManagedCP={},
 ManagedTK={},
-MaxAliveMissions=6,
+ManagedEWR={},
+MaxAliveMissions=8,
 debug=false,
 engagerange=50,
 repeatsonfailure=3,
 GoZoneSet=nil,
 NoGoZoneSet=nil,
 Monitor=false,
+TankerInvisible=true,
 }
-EASYGCICAP.version="0.0.7"
+EASYGCICAP.version="0.0.8"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -104306,10 +104308,11 @@ self.capleg=15
 self.capgrouping=2
 self.missionrange=100
 self.noaltert5=2
-self.MaxAliveMissions=6
+self.MaxAliveMissions=8
 self.engagerange=50
 self.repeatsonfailure=3
 self.Monitor=false
+self.TankerInvisible=true
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -104320,9 +104323,14 @@ self:I(self.lid.."Created new instance (v"..self.version..")")
 self:__Start(math.random(6,12))
 return self
 end
+function EASYGCICAP:SetTankerAndAWACSInvisible(Switch)
+self:T(self.lid.."SetTankerAndAWACSInvisible")
+self.TankerInvisible=Switch
+return self
+end
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
 self:T(self.lid.."SetDefaultResurrection")
-self.MaxAliveMissions=Maxiumum or 6
+self.MaxAliveMissions=Maxiumum or 8
 return self
 end
 function EASYGCICAP:SetDefaultResurrection(Seconds)
@@ -104403,21 +104411,33 @@ CAP_Wing:SetRespawnAfterDestroyed()
 CAP_Wing:SetNumberCAP(self.capgrouping)
 CAP_Wing:SetNumberTankerBoom(1)
 CAP_Wing:SetNumberTankerProbe(1)
+CAP_Wing:SetNumberAWACS(1)
 CAP_Wing:SetTakeoffHot()
 CAP_Wing:SetLowFuelThreshold(0.3)
 CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
 local Intel=self.Intel
+local TankerInvisible=self.TankerInvisible
 function CAP_Wing:OnAfterFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 flightgroup:SetDespawnAfterHolding()
 flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
 flightgroup:GetGroup():CommandEPLRS(true,5)
+if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS then
 flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
-flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetOutOfAAMRTB()
+end
+if Mission.type==AUFTRAG.Type.TANKER or Mission.type==AUFTRAG.Type.AWACS then
+if TankerInvisible then
+flightgroup:GetGroup():SetCommandInvisible(true)
+end
+end
+flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetFuelLowRTB(true)
 Intel:AddAgent(flightgroup)
+function flightgroup:OnAfterHolding(From,Event,To)
+self:ClearToLand(5)
+end
 end
 if self.noaltert5>0 then
 local alert=AUFTRAG:NewALERT5(AUFTRAG.Type.INTERCEPT)
@@ -104458,6 +104478,21 @@ local mark=MARKER:New(Coordinate,self.lid.."Patrol Point Tanker"):ToAll()
 end
 return self
 end
+function EASYGCICAP:AddPatrolPointAwacs(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
+self:T(self.lid.."AddPatrolPointAwacs "..Coordinate:ToStringLLDDM())
+local EntryCAP={}
+EntryCAP.AirbaseName=AirbaseName
+EntryCAP.Coordinate=Coordinate
+EntryCAP.Altitude=Altitude or 25000
+EntryCAP.Speed=Speed or 300
+EntryCAP.Heading=Heading or 90
+EntryCAP.LegLength=LegLength or 15
+self.ManagedEWR[#self.ManagedEWR+1]=EntryCAP
+if self.debug then
+local mark=MARKER:New(Coordinate,self.lid.."Patrol Point AWACS"):ToAll()
+end
+return self
+end
 function EASYGCICAP:_SetTankerPatrolPoints()
 self:T(self.lid.."_SetTankerPatrolPoints")
 for _,_data in pairs(self.ManagedTK)do
@@ -104469,6 +104504,20 @@ local Speed=data.Speed
 local Heading=data.Heading
 local LegLength=data.LegLength
 Wing:AddPatrolPointTANKER(Coordinate,Altitude,Speed,Heading,LegLength)
+end
+return self
+end
+function EASYGCICAP:_SetAwacsPatrolPoints()
+self:T(self.lid.."_SetAwacsPatrolPoints")
+for _,_data in pairs(self.ManagedEWR)do
+local data=_data
+local Wing=self.wings[data.AirbaseName][1]
+local Coordinate=data.Coordinate
+local Altitude=data.Altitude
+local Speed=data.Speed
+local Heading=data.Heading
+local LegLength=data.LegLength
+Wing:AddPatrolPointAWACS(Coordinate,Altitude,Speed,Heading,LegLength)
 end
 return self
 end
@@ -104509,8 +104558,13 @@ local AirFrames=squad.AirFrames
 local Skill=squad.Skill
 local Modex=squad.Modex
 local Livery=squad.Livery
+local Frequeny=squad.Frequency
+local Modulation=squad.Modulation
+local TACAN=squad.TACAN
 if squad.Tanker then
-self:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequeny,Modulation,TACAN)
+elseif squad.AWACS then
+self:_AddAWACSSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequeny,Modulation)
 else
 self:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
 end
@@ -104530,7 +104584,7 @@ EntrySQ.Livery=Livery
 self.ManagedSQ[SquadName]=EntrySQ
 return self
 end
-function EASYGCICAP:AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+function EASYGCICAP:AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation,TACAN)
 self:T(self.lid.."AddTankerSquadron "..SquadName)
 local EntrySQ={}
 EntrySQ.TemplateName=TemplateName
@@ -104538,13 +104592,32 @@ EntrySQ.SquadName=SquadName
 EntrySQ.AirbaseName=AirbaseName
 EntrySQ.AirFrames=AirFrames or 20
 EntrySQ.Skill=Skill or AI.Skill.AVERAGE
-EntrySQ.Modex=Modex or 402
+EntrySQ.Modex=Modex or 602
 EntrySQ.Livery=Livery
+EntrySQ.Frequency=Frequency
+EntrySQ.Modulation=Livery
+EntrySQ.TACAN=TACAN
 EntrySQ.Tanker=true
 self.ManagedSQ[SquadName]=EntrySQ
 return self
 end
-function EASYGCICAP:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+function EASYGCICAP:AddAWACSSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation)
+self:T(self.lid.."AddAWACSSquadron "..SquadName)
+local EntrySQ={}
+EntrySQ.TemplateName=TemplateName
+EntrySQ.SquadName=SquadName
+EntrySQ.AirbaseName=AirbaseName
+EntrySQ.AirFrames=AirFrames or 20
+EntrySQ.Skill=Skill or AI.Skill.AVERAGE
+EntrySQ.Modex=Modex or 702
+EntrySQ.Livery=Livery
+EntrySQ.Frequency=Frequency
+EntrySQ.Modulation=Livery
+EntrySQ.AWACS=true
+self.ManagedSQ[SquadName]=EntrySQ
+return self
+end
+function EASYGCICAP:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation)
 self:T(self.lid.."_AddSquadron "..SquadName)
 local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
 Squadron_One:AddMissionCapability({AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5})
@@ -104559,7 +104632,7 @@ wing:AddSquadron(Squadron_One)
 wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5},75)
 return self
 end
-function EASYGCICAP:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+function EASYGCICAP:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation,TACAN)
 self:T(self.lid.."_AddTankerSquadron "..SquadName)
 local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
 Squadron_One:AddMissionCapability({AUFTRAG.Type.TANKER})
@@ -104569,9 +104642,27 @@ Squadron_One:SetModex(Modex)
 Squadron_One:SetLivery(Livery)
 Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
 Squadron_One:SetMissionRange(self.missionrange)
+Squadron_One:SetRadio(Frequency,Modulation)
+Squadron_One:AddTacanChannel(TACAN,TACAN)
 local wing=self.wings[AirbaseName][1]
 wing:AddSquadron(Squadron_One)
 wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.TANKER},75)
+return self
+end
+function EASYGCICAP:_AddAWACSSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation)
+self:T(self.lid.."_AddAWACSSquadron "..SquadName)
+local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
+Squadron_One:AddMissionCapability({AUFTRAG.Type.AWACS})
+Squadron_One:SetFuelLowThreshold(0.3)
+Squadron_One:SetTurnoverTime(10,20)
+Squadron_One:SetModex(Modex)
+Squadron_One:SetLivery(Livery)
+Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
+Squadron_One:SetMissionRange(self.missionrange)
+Squadron_One:SetRadio(Frequency,Modulation)
+local wing=self.wings[AirbaseName][1]
+wing:AddSquadron(Squadron_One)
+wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.AWACS},75)
 return self
 end
 function EASYGCICAP:AddAcceptZone(Zone)
@@ -104620,7 +104711,11 @@ local targetawname=""
 local clustersize=self:ClusterCountUnits(Cluster)or 1
 local wingsize=math.abs(overhead*(clustersize+1))
 if wingsize>maxsize then wingsize=maxsize end
-if(not Cluster.mission)and(wingsize>0)then
+local retrymission=true
+if Cluster.mission and(not Cluster.mission:IsOver())then
+retrymission=false
+end
+if(retrymission)and(wingsize>=1)then
 MESSAGE:New(string.format("**** %s Interceptors need wingsize %d",UTILS.GetCoalitionName(self.coalition),wingsize),15,"CAPGCI"):ToAllIf(self.debug):ToLog()
 for _,_data in pairs(wings)do
 local airwing=_data[1]
@@ -104696,6 +104791,7 @@ self:_CreateAirwings()
 self:_CreateSquads()
 self:_SetCAPPatrolPoints()
 self:_SetTankerPatrolPoints()
+self:_SetAwacsPatrolPoints()
 self:__Status(-10)
 return self
 end
@@ -104731,7 +104827,7 @@ if self.Monitor then
 local threatcount=#self.Intel.Clusters or 0
 local text="GCICAP "..self.alias
 text=text.."\nWings: "..wings.."\nSquads: "..squads.."\nCapPoints: "..caps.."\nAssets on Mission: "..assets.."\nAssets in Stock: "..instock
-text=text.."\nThreats:"..threatcount
+text=text.."\nThreats: "..threatcount
 MESSAGE:New(text,15,"GCICAP"):ToAll():ToLogIf(self.debug)
 end
 self:__Status(30)
