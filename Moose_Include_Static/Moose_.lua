@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-28T11:15:56.0000000Z-6c3f3cf0d2c26201813afc2c8095af417cf24055 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-06T09:31:59.0000000Z-a6c244f6707c8ad498383d964eed2bf693a2ddcd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -14454,6 +14454,25 @@ local zone=_zone
 zone:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
 end
 return self
+end
+function SET_ZONE:GetAverageCoordinate()
+local x,y,z=0,0,0
+local count=0
+for _,_zone in pairs(self.Set)do
+local zone=_zone
+local vec3=zone:GetVec3()
+x=x+vec3.x
+y=y+vec3.y
+z=z+vec3.z
+count=count+1
+end
+if count>1 then
+x=x/count
+y=y/count
+z=z/count
+end
+local coord=COORDINATE:New(x,y,z)
+return coord
 end
 function SET_ZONE:IsIncludeObject(MZone)
 self:F2(MZone)
@@ -62107,9 +62126,10 @@ payloadcounter=0,
 pointsCAP={},
 pointsTANKER={},
 pointsAWACS={},
+pointsRecon={},
 markpoints=false,
 }
-AIRWING.version="0.9.2"
+AIRWING.version="0.9.3"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -62119,6 +62139,7 @@ end
 self.lid=string.format("AIRWING %s | ",self.alias)
 self.nflightsCAP=0
 self.nflightsAWACS=0
+self.nflightsRecon=0
 self.nflightsTANKERboom=0
 self.nflightsTANKERprobe=0
 self.nflightsRecoveryTanker=0
@@ -62375,6 +62396,10 @@ function AIRWING:SetNumberAWACS(n)
 self.nflightsAWACS=n or 1
 return self
 end
+function AIRWING:SetNumberRecon(n)
+self.nflightsRecon=n or 1
+return self
+end
 function AIRWING:SetNumberRescuehelo(n)
 self.nflightsRescueHelo=n or 1
 return self
@@ -62413,6 +62438,11 @@ end
 function AIRWING:AddPatrolPointCAP(Coordinate,Altitude,Speed,Heading,LegLength)
 local patrolpoint=self:NewPatrolPoint("CAP",Coordinate,Altitude,Speed,Heading,LegLength)
 table.insert(self.pointsCAP,patrolpoint)
+return self
+end
+function AIRWING:AddPatrolPointRecon(Coordinate,Altitude,Speed,Heading,LegLength)
+local patrolpoint=self:NewPatrolPoint("RECON",Coordinate,Altitude,Speed,Heading,LegLength)
+table.insert(self.pointsRecon,patrolpoint)
 return self
 end
 function AIRWING:AddPatrolPointTANKER(Coordinate,Altitude,Speed,Heading,LegLength,RefuelSystem)
@@ -62481,6 +62511,7 @@ self:CheckCAP()
 self:CheckTANKER()
 self:CheckAWACS()
 self:CheckRescuhelo()
+self:CheckRECON()
 self:CheckTransportQueue()
 self:CheckMissionQueue()
 if self.verbose>=1 then
@@ -62546,6 +62577,32 @@ missionCAP.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
 if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
 self:AddMission(missionCAP)
+end
+return self
+end
+function AIRWING:CheckRECON()
+local Ncap=0
+for _,_mission in pairs(self.missionqueue)do
+local mission=_mission
+if mission:IsNotOver()and mission.type==AUFTRAG.Type.RECON and mission.patroldata then
+Ncap=Ncap+1
+end
+end
+for i=1,self.nflightsRecon-Ncap do
+local patrol=self:_GetPatrolData(self.pointsRecon)
+local altitude=patrol.altitude
+local ZoneSet=SET_ZONE:New()
+local Zone=ZONE_RADIUS:New(self.alias.." Recon "..math.random(1,10000),patrol.coord:GetVec2(),UTILS.NMToMeters(patrol.leg/2))
+ZoneSet:AddZone(Zone)
+if self.Debug then
+Zone:DrawZone(self.coalition,{0,0,1},Alpha,FillColor,FillAlpha,2,true)
+end
+local missionRECON=AUFTRAG:NewRECON(ZoneSet,patrol.speed,patrol.altitude,true)
+missionRECON.patroldata=patrol
+missionRECON.categories={AUFTRAG.Category.AIRCRAFT}
+patrol.noccupied=patrol.noccupied+1
+if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
+self:AddMission(missionRECON)
 end
 return self
 end
@@ -66005,6 +66062,7 @@ end
 function AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly,Formation)
 local mission=AUFTRAG:New(AUFTRAG.Type.RECON)
 mission:_TargetFromObject(ZoneSet)
+mission.missionZoneSet=ZoneSet
 mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.RECON)
 mission.optionROE=ENUMS.ROE.WeaponHold
 mission.optionROT=ENUMS.ROT.PassiveDefense
@@ -66243,6 +66301,7 @@ mission=AUFTRAG:NewINTERCEPT(Target)
 elseif auftrag==AUFTRAG.Type.ORBIT then
 mission=AUFTRAG:NewORBIT(Coordinate,Altitude,Speed,Heading,Leg)
 elseif auftrag==AUFTRAG.Type.RECON then
+mission=AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly,Formation)
 elseif auftrag==AUFTRAG.Type.RESCUEHELO then
 mission=AUFTRAG:NewRESCUEHELO(Carrier)
 elseif auftrag==AUFTRAG.Type.SEAD then
@@ -67553,6 +67612,8 @@ end
 function AUFTRAG:GetTargetCoordinate()
 if self.transportPickup then
 return self.transportPickup
+elseif self.missionZoneSet and self.type==AUFTRAG.Type.RECON then
+return self.missionZoneSet:GetAverageCoordinate()
 elseif self.engageTarget then
 local coord=self.engageTarget:GetCoordinate()
 return coord
@@ -104279,6 +104340,7 @@ ManagedSQ={},
 ManagedCP={},
 ManagedTK={},
 ManagedEWR={},
+ManagedREC={},
 MaxAliveMissions=8,
 debug=false,
 engagerange=50,
@@ -104404,14 +104466,22 @@ end
 function EASYGCICAP:_AddAirwing(Airbasename,Alias)
 self:T(self.lid.."_AddAirwing "..Airbasename)
 local CAP_Wing=AIRWING:New(Airbasename,Alias)
+CAP_Wing:SetVerbosityLevel(3)
 CAP_Wing:SetReportOff()
 CAP_Wing:SetMarker(false)
 CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
 CAP_Wing:SetNumberCAP(self.capgrouping)
+if#self.ManagedTK>0 then
 CAP_Wing:SetNumberTankerBoom(1)
 CAP_Wing:SetNumberTankerProbe(1)
+end
+if#self.ManagedAW>0 then
 CAP_Wing:SetNumberAWACS(1)
+end
+if#self.ManagedREC>0 then
+CAP_Wing:SetNumberRecon(1)
+end
 CAP_Wing:SetTakeoffHot()
 CAP_Wing:SetLowFuelThreshold(0.3)
 CAP_Wing.RandomAssetScore=math.random(50,100)
@@ -104423,13 +104493,17 @@ local flightgroup=Flightgroup
 flightgroup:SetDespawnAfterHolding()
 flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
 flightgroup:GetGroup():CommandEPLRS(true,5)
-if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS then
+if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mission.type~=AUFTRAG.Type.RECON then
+flightgroup:SetDetection(true)
 flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
 flightgroup:SetOutOfAAMRTB()
 end
-if Mission.type==AUFTRAG.Type.TANKER or Mission.type==AUFTRAG.Type.AWACS then
+if Mission.type==AUFTRAG.Type.TANKER or Mission.type==AUFTRAG.Type.AWACS or Mission.type==AUFTRAG.Type.RECON then
 if TankerInvisible then
 flightgroup:GetGroup():SetCommandInvisible(true)
+end
+if Mission.type==AUFTRAG.Type.RECON then
+flightgroup:SetDetection(true)
 end
 end
 flightgroup:GetGroup():OptionROTEvadeFire()
@@ -104460,6 +104534,21 @@ EntryCAP.LegLength=LegLength or 15
 self.ManagedCP[#self.ManagedCP+1]=EntryCAP
 if self.debug then
 local mark=MARKER:New(Coordinate,self.lid.."Patrol Point"):ToAll()
+end
+return self
+end
+function EASYGCICAP:AddPatrolPointRecon(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
+self:T(self.lid.."AddPatrolPointRecon "..Coordinate:ToStringLLDDM())
+local EntryCAP={}
+EntryCAP.AirbaseName=AirbaseName
+EntryCAP.Coordinate=Coordinate
+EntryCAP.Altitude=Altitude or 25000
+EntryCAP.Speed=Speed or 300
+EntryCAP.Heading=Heading or 90
+EntryCAP.LegLength=LegLength or 15
+self.ManagedREC[#self.ManagedREC+1]=EntryCAP
+if self.debug then
+local mark=MARKER:New(Coordinate,self.lid.."Patrol Point Recon"):ToAll()
 end
 return self
 end
@@ -104535,16 +104624,18 @@ Wing:AddPatrolPointCAP(Coordinate,Altitude,Speed,Heading,LegLength)
 end
 return self
 end
-function EASYGCICAP:_AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
-self:T(self.lid.."_AddPatrolPointCAP")
-local airbasename=AirbaseName or self.airbasename
-local coordinate=Coordinate
-local Altitude=Altitude or 25000
-local Speed=Speed or 300
-local Heading=Heading or 90
-local LegLength=LegLength or 15
-local wing=self.wings[airbasename][1]
-wing:AddPatrolPointCAP(coordinate,Altitude,Speed,Heading,LegLength)
+function EASYGCICAP:_SetReconPatrolPoints()
+self:T(self.lid.."_SetReconPatrolPoints")
+for _,_data in pairs(self.ManagedREC)do
+local data=_data
+local Wing=self.wings[data.AirbaseName][1]
+local Coordinate=data.Coordinate
+local Altitude=data.Altitude
+local Speed=data.Speed
+local Heading=data.Heading
+local LegLength=data.LegLength
+Wing:AddPatrolPointRecon(Coordinate,Altitude,Speed,Heading,LegLength)
+end
 return self
 end
 function EASYGCICAP:_CreateSquads()
@@ -104565,6 +104656,8 @@ if squad.Tanker then
 self:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequeny,Modulation,TACAN)
 elseif squad.AWACS then
 self:_AddAWACSSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequeny,Modulation)
+elseif squad.RECON then
+self:_AddReconSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
 else
 self:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
 end
@@ -104581,6 +104674,20 @@ EntrySQ.AirFrames=AirFrames or 20
 EntrySQ.Skill=Skill or AI.Skill.AVERAGE
 EntrySQ.Modex=Modex or 402
 EntrySQ.Livery=Livery
+self.ManagedSQ[SquadName]=EntrySQ
+return self
+end
+function EASYGCICAP:AddReconSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:T(self.lid.."AddReconSquadron "..SquadName)
+local EntrySQ={}
+EntrySQ.TemplateName=TemplateName
+EntrySQ.SquadName=SquadName
+EntrySQ.AirbaseName=AirbaseName
+EntrySQ.AirFrames=AirFrames or 20
+EntrySQ.Skill=Skill or AI.Skill.AVERAGE
+EntrySQ.Modex=Modex or 402
+EntrySQ.Livery=Livery
+EntrySQ.RECON=true
 self.ManagedSQ[SquadName]=EntrySQ
 return self
 end
@@ -104630,6 +104737,21 @@ Squadron_One:SetMissionRange(self.missionrange)
 local wing=self.wings[AirbaseName][1]
 wing:AddSquadron(Squadron_One)
 wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5},75)
+return self
+end
+function EASYGCICAP:_AddReconSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
+self:T(self.lid.."_AddReconSquadron "..SquadName)
+local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
+Squadron_One:AddMissionCapability({AUFTRAG.Type.RECON})
+Squadron_One:SetFuelLowThreshold(0.3)
+Squadron_One:SetTurnoverTime(10,20)
+Squadron_One:SetModex(Modex)
+Squadron_One:SetLivery(Livery)
+Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
+Squadron_One:SetMissionRange(self.missionrange)
+local wing=self.wings[AirbaseName][1]
+wing:AddSquadron(Squadron_One)
+wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.RECON},75)
 return self
 end
 function EASYGCICAP:_AddTankerSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation,TACAN)
@@ -104792,6 +104914,7 @@ self:_CreateSquads()
 self:_SetCAPPatrolPoints()
 self:_SetTankerPatrolPoints()
 self:_SetAwacsPatrolPoints()
+self:_SetReconPatrolPoints()
 self:__Status(-10)
 return self
 end
@@ -104814,20 +104937,27 @@ local squads=counttable(self.ManagedSQ)
 local caps=counttable(self.ManagedCP)
 local assets=0
 local instock=0
+local capmission=0
+local interceptmission=0
+local reconmission=0
 for _,_wing in pairs(self.wings)do
 local count=_wing[1]:CountAssetsOnMission(MissionTypes,Cohort)
 local count2=_wing[1]:CountAssets(true,MissionTypes,Attributes)
+capmission=capmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.GCICAP})
+interceptmission=interceptmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.INTERCEPT})
+reconmission=reconmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.RECON})
 assets=assets+count
 instock=instock+count2
-end
-if self.debug then
-self:I(self.lid.."Wings: "..wings.." | Squads: "..squads.." | CapPoints: "..caps.." | Assets on Mission: "..assets.." | Assets in Stock: "..instock)
 end
 if self.Monitor then
 local threatcount=#self.Intel.Clusters or 0
 local text="GCICAP "..self.alias
 text=text.."\nWings: "..wings.."\nSquads: "..squads.."\nCapPoints: "..caps.."\nAssets on Mission: "..assets.."\nAssets in Stock: "..instock
 text=text.."\nThreats: "..threatcount
+text=text.."\nMissions: "..capmission+interceptmission
+text=text.."\n - CAP: "..capmission
+text=text.."\n - Intercept: "..interceptmission
+text=text.."\n - Recon: "..reconmission
 MESSAGE:New(text,15,"GCICAP"):ToAll():ToLogIf(self.debug)
 end
 self:__Status(30)
