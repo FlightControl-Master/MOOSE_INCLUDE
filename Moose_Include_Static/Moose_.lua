@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-09-29T12:26:22.0000000Z-04b4af58f79158fc0eab7f77b687581e96641d46 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-06T09:30:59.0000000Z-4a594f41b0edeace83b328f5b307a49551c8caf9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -13633,6 +13633,25 @@ local zone=_zone
 zone:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
 end
 return self
+end
+function SET_ZONE:GetAverageCoordinate()
+local x,y,z=0,0,0
+local count=0
+for _,_zone in pairs(self.Set)do
+local zone=_zone
+local vec3=zone:GetVec3()
+x=x+vec3.x
+y=y+vec3.y
+z=z+vec3.z
+count=count+1
+end
+if count>1 then
+x=x/count
+y=y/count
+z=z/count
+end
+local coord=COORDINATE:New(x,y,z)
+return coord
 end
 function SET_ZONE:IsIncludeObject(MZone)
 self:F2(MZone)
