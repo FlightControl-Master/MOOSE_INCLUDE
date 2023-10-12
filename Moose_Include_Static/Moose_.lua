@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-06T13:49:42.0000000Z-17838e7fe70060755e047d69ce11bef3a9af346f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-12T15:55:41.0000000Z-b9cc66004d38b85c0449a39db6dad60f35427b73 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -47553,7 +47553,7 @@ end
 self:AssetDead(asset,request)
 end
 local NoTriggerEvent=true
-if not request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
+if request.transporttype~=WAREHOUSE.TransportType.SELFPROPELLED then
 if not asset.iscargo then
 local cargogroupnames=request.carriercargo[unitname]
 if cargogroupnames then
