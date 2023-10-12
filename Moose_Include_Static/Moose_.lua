@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-06T13:50:10.0000000Z-fb1b5b209e8fdc3a78f86bd1a94c780360c28e2d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-12T15:56:31.0000000Z-6ba62e3e041669fb3799f06384b667f87a846021 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -66118,7 +66118,12 @@ end
 function AUFTRAG:NewRECON(ZoneSet,Speed,Altitude,Adinfinitum,Randomly,Formation)
 local mission=AUFTRAG:New(AUFTRAG.Type.RECON)
 mission:_TargetFromObject(ZoneSet)
+if ZoneSet:IsInstanceOf("SET_ZONE")then
 mission.missionZoneSet=ZoneSet
+else
+mission.missionZoneSet=SET_ZONE:New()
+mission.missionZoneSet:AddZone(ZoneSet)
+end
 mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.RECON)
 mission.optionROE=ENUMS.ROE.WeaponHold
 mission.optionROT=ENUMS.ROT.PassiveDefense
