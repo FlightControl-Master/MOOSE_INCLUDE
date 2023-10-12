@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-12T15:56:31.0000000Z-6ba62e3e041669fb3799f06384b667f87a846021 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-12T16:01:56.0000000Z-9ccde838e7dfc6e47bf0db1f919036f27c4bf56f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -66120,7 +66120,7 @@ local mission=AUFTRAG:New(AUFTRAG.Type.RECON)
 mission:_TargetFromObject(ZoneSet)
 if ZoneSet:IsInstanceOf("SET_ZONE")then
 mission.missionZoneSet=ZoneSet
-else
+elseif ZoneSet:IsInstanceOf("ZONE_BASE")then
 mission.missionZoneSet=SET_ZONE:New()
 mission.missionZoneSet:AddZone(ZoneSet)
 end
