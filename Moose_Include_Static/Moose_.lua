@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-12T15:55:41.0000000Z-b9cc66004d38b85c0449a39db6dad60f35427b73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-13T14:13:12.0000000Z-2ebad9ce96cc04379a88a9081077824dc47641a0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -77395,8 +77395,9 @@ volume=1,
 speed=1,
 coordinate=nil,
 Label="ROBOT",
+AltBackend=nil,
 }
-MSRS.version="0.1.1"
+MSRS.version="0.1.3"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
@@ -77495,10 +77496,20 @@ Wavenet={
 },
 },
 }
-function MSRS:New(PathToSRS,Frequency,Modulation,Volume)
+function MSRS:New(PathToSRS,Frequency,Modulation,Volume,AltBackend)
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
 local self=BASE:Inherit(self,BASE:New())
+if type(AltBackend)=="table"or type(self.AltBackend)=="table"then
+local Backend=UTILS.DeepCopy(AltBackend)or UTILS.DeepCopy(self.AltBackend)
+Backend.Vars=Backend.Vars or{}
+Backend.Vars.PathToSRS=UTILS.DeepCopy(PathToSRS)
+Backend.Vars.Frequency=UTILS.DeepCopy(Frequency)
+Backend.Vars.Modulation=UTILS.DeepCopy(Modulation)
+Backend.Vars.Volume=UTILS.DeepCopy(Volume)
+Backend.Functions=Backend.Functions or{}
+return self:_NewAltBackend(Backend)
+end
 self:SetPath(PathToSRS)
 self:SetPort()
 self:SetFrequencies(Frequency)
@@ -77612,12 +77623,23 @@ function MSRS:SetVoice(Voice)
 self.voice=Voice
 return self
 end
+function MSRS:SetDefaultVoice(Voice)
+self.defaultVoice=Voice
+return self
+end
 function MSRS:SetCoordinate(Coordinate)
 self.coordinate=Coordinate
 return self
 end
 function MSRS:SetGoogle(PathToCredentials)
 self.google=PathToCredentials
+self.APIKey=PathToCredentials
+self.provider="gcloud"
+return self
+end
+function MSRS:SetGoogleAPIKey(APIKey)
+self.APIKey=APIKey
+self.provider="gcloud"
 return self
 end
 function MSRS:Help()
@@ -77634,6 +77656,21 @@ env.info("======================================================================
 env.info(data)
 env.info("======================================================================")
 return self
+end
+function MSRS.SetDefaultBackend(Backend)
+if type(Backend)=="table"then
+MSRS.AltBackend=UTILS.DeepCopy(Backend)
+else
+return false
+end
+return true
+end
+function MSRS.ResetDefaultBackend()
+MSRS.AltBackend=nil
+return true
+end
+function MSRS.SetDefaultBackendGRPC()
+return MSRS.SetDefaultBackend(MSRS_BACKEND_DCSGRPC)
 end
 function MSRS:PlaySoundFile(Soundfile,Delay)
 if Delay and Delay>0 then
@@ -77699,7 +77736,25 @@ self:_ExecCommand(command)
 end
 return self
 end
+function MSRS:_NewAltBackend(Backend)
+BASE:T('Entering MSRS:_NewAltBackend()')
+for funcName,funcDef in pairs(Backend.Functions)do
+if type(funcDef)=='function'then
+BASE:T('MSRS (re-)defining function MSRS:'..funcName)
+self[funcName]=funcDef
+end
+end
+for varName,varVal in pairs(Backend.Vars)do
+BASE:T('MSRS setting self.'..varName)
+self[varName]=UTILS.DeepCopy(varVal)
+end
+if self._MSRSbackendInit and type(self._MSRSbackendInit)=='function'then
+return self:_MSRSbackendInit()
+end
+return self
+end
 function MSRS:_ExecCommand(command)
+self:T("SRS TTS command="..command)
 local filename=os.getenv('TMP').."\\MSRS-"..STTS.uuid()..".bat"
 local script=io.open(filename,"w+")
 script:write(command.." && exit")
@@ -77720,6 +77775,16 @@ self:T("MSRS execute VBS command="..runvbs)
 res=os.execute(runvbs)
 timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
+elseif false then
+local filenvbs=os.getenv('TMP').."\\MSRS-"..STTS.uuid()..".vbs"
+local script=io.open(filenvbs,"w+")
+script:write(string.format('Set oShell = CreateObject ("Wscript.Shell")\n'))
+script:write(string.format('Dim strArgs\n'))
+script:write(string.format('strArgs = "cmd /c %s"\n',filename))
+script:write(string.format('oShell.Run strArgs, 0, false'))
+script:close()
+local runvbs=string.format('cscript.exe //Nologo //B "%s"',filenvbs)
+res=os.execute(runvbs)
 else
 self:T("MSRS execute command="..command)
 res=os.execute(command)
@@ -77767,6 +77832,150 @@ end
 self:T("MSRS command="..command)
 return command
 end
+MSRS_BACKEND_DCSGRPC={}
+MSRS_BACKEND_DCSGRPC.version=0.1
+MSRS_BACKEND_DCSGRPC.Functions={}
+MSRS_BACKEND_DCSGRPC.Vars={provider='win'}
+MSRS_BACKEND_DCSGRPC.Functions._MSRSbackendInit=function(self)
+BASE:I('Loaded MSRS DCS-gRPC alternate backend version '..self.AltBackend.version or'unspecified')
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetPath=function(self)
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.GetPath=function(self)
+return''
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetVolume=function(self)
+BASE:I('NOTE: MSRS:SetVolume() not used with DCS-gRPC backend.')
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.GetVolume=function(self)
+BASE:I('NOTE: MSRS:GetVolume() not used with DCS-gRPC backend.')
+return 1
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetGender=function(self,Gender)
+if Gender then
+self.gender=Gender:lower()
+end
+self:T("Setting gender to "..tostring(self.gender))
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetGoogle=function(self)
+self.provider='gcloud'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetAPIKey=function(self,key)
+self.APIKey=key
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetDefaultVoice=function(self,voice)
+self.defaultVoice=voice
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetAWS=function(self)
+self.provider='aws'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetAzure=function(self)
+self.provider='azure'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.SetWin=function(self)
+self.provider='win'
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.Help=function(self)
+env.info('For DCS-gRPC help, please see: https://github.com/DCS-gRPC/rust-server')
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlaySoundFile=function(self)
+BASE:E("ERROR: MSRS:PlaySoundFile() is not supported by the DCS-gRPC backend.")
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlaySoundText=function(self,SoundText,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.PlaySoundText,self,SoundText,0)
+else
+self:_DCSgRPCtts(tostring(SoundText.text))
+end
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlayText=function(self,Text,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.PlayText,self,Text,0)
+else
+self:_DCSgRPCtts(tostring(Text))
+end
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlayTextExt=function(self,Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+else
+self:_DCSgRPCtts(tostring(Text),nil,Frequencies,Voice,Label)
+end
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions.PlayTextFile=function(self,TextFile,Delay)
+BASE:E("ERROR: MSRS:PlayTextFile() is not supported by the DCS-gRPC backend.")
+return self
+end
+MSRS_BACKEND_DCSGRPC.Functions._DCSgRPCtts=function(self,Text,Plaintext,Frequencies,Voice,Label)
+BASE:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
+BASE:T({Text,Plaintext,Frequencies,Voice,Label})
+local options={}
+local ssml=Text or''
+local XmitFrequencies=Frequencies or self.Frequency
+if type(XmitFrequencies)~="table"then
+XmitFrequencies={XmitFrequencies}
+end
+options.plaintext=Plaintext
+options.srsClientName=Label or self.Label
+options.position={}
+if self.coordinate then
+options.position.lat,options.position.lat,options.position.alt=self:_GetLatLongAlt(self.coordinate)
+end
+options.position.lat=options.position.lat or 0.0
+options.position.lon=options.position.lon or 0.0
+options.position.alt=options.position.alt or 0.0
+if UTILS.GetCoalitionName(self.coalition)=='Blue'then
+options.coalition='blue'
+elseif UTILS.GetCoalitionName(self.coalition)=='Red'then
+options.coalition='red'
+end
+options[self.provider]={}
+if self.APIKey then
+options[self.provider].key=self.APIKey
+end
+if self.defaultVoice then
+options[self.provider].voice=self.defaultVoice
+end
+if self.voice then
+options[self.provider].voice=Voice or self.voice
+elseif ssml then
+local preTag,genderProp,langProp,postTag='','','',''
+if self.gender then
+genderProp=' gender=\"'..self.gender..'\"'
+end
+if self.culture then
+langProp=' language=\"'..self.culture..'\"'
+end
+if self.culture or self.gender then
+preTag='<voice'..langProp..genderProp..'>'
+postTag='</voice>'
+ssml=preTag..Text..postTag
+end
+end
+for _,_freq in ipairs(XmitFrequencies)do
+local freq=_freq*1000000
+BASE:T("GRPC.tts")
+BASE:T(ssml)
+BASE:T(freq)
+BASE:T(options)
+GRPC.tts(ssml,freq,options)
+end
+end
 MSRSQUEUE={
 ClassName="MSRSQUEUE",
 Debugmode=nil,
@@ -77810,7 +78019,7 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation)
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label)
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
@@ -77839,12 +78048,17 @@ transmission.subduration=subduration or transmission.duration
 else
 transmission.subduration=0
 end
+transmission.gender=gender
+transmission.culture=culture
+transmission.voice=voice
+transmission.gender=volume
+transmission.label=label
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
 if transmission.frequency then
-transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,Gender,Culture,Voice,Volume,Label)
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label)
 else
 transmission.msrs:PlayText(transmission.text)
 end
