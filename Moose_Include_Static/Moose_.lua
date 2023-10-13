@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-12T16:02:33.0000000Z-b8a2b28462e905ce20f7869871e6303f6b2eaeec ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-13T14:15:23.0000000Z-3f04249d0723434f2631c3955be2082dcac727f6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -114603,12 +114603,23 @@ function MSRS:SetVoice(Voice)
 self.voice=Voice
 return self
 end
+function MSRS:SetDefaultVoice(Voice)
+self.defaultVoice=Voice
+return self
+end
 function MSRS:SetCoordinate(Coordinate)
 self.coordinate=Coordinate
 return self
 end
 function MSRS:SetGoogle(PathToCredentials)
 self.google=PathToCredentials
+self.APIKey=PathToCredentials
+self.provider="gcloud"
+return self
+end
+function MSRS:SetGoogleAPIKey(APIKey)
+self.APIKey=APIKey
+self.provider="gcloud"
 return self
 end
 function MSRS:Help()
