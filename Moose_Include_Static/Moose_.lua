@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-17T09:08:13.0000000Z-e578a673d95e552cb65d4c1d86b063a30ddbd33c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-17T14:03:24.0000000Z-85b10fb1c98348005631a76cb3619c21c5223d08 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -14395,6 +14395,7 @@ Prefixes=nil,
 },
 FilterMeta={
 },
+Checktime=5,
 }
 function SET_ZONE:New()
 local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.ZONES))
@@ -14573,6 +14574,75 @@ zmin=Zone
 end
 end
 return zmin,dmin
+end
+function SET_ZONE:SetCheckTime(seconds)
+self.Checktime=seconds or 5
+return self
+end
+function SET_ZONE:Trigger(Objects)
+self:AddTransition("*","TriggerStart","TriggerRunning")
+self:AddTransition("*","EnteredZone","*")
+self:AddTransition("*","LeftZone","*")
+self:AddTransition("*","TriggerRunCheck","*")
+self:AddTransition("*","TriggerStop","TriggerStopped")
+self:TriggerStart()
+self.checkobjects=Objects
+if UTILS.IsInstanceOf(Objects,"SET_BASE")then
+self.objectset=Objects.Set
+else
+self.objectset={Objects}
+end
+self:_TriggerCheck(true)
+self:__TriggerRunCheck(self.Checktime)
+return self
+end
+function SET_ZONE:_TriggerCheck(fromstart)
+if fromstart then
+for _,_object in pairs(self.objectset)do
+local obj=_object
+if obj and obj:IsAlive()then
+for _,_zone in pairs(self.Set)do
+if not obj.TriggerInZone then obj.TriggerInZone={}end
+if _zone:IsCoordinateInZone(obj:GetCoordinate())then
+obj.TriggerInZone[_zone.ZoneName]=true
+else
+obj.TriggerInZone[_zone.ZoneName]=false
+end
+end
+end
+end
+else
+for _,_object in pairs(self.objectset)do
+local obj=_object
+if obj and obj:IsAlive()then
+for _,_zone in pairs(self.Set)do
+if not obj.TriggerInZone then
+obj.TriggerInZone={}
+end
+if not obj.TriggerInZone[_zone.ZoneName]then
+obj.TriggerInZone[_zone.ZoneName]=false
+end
+local inzone=_zone:IsCoordinateInZone(obj:GetCoordinate())
+if inzone and not obj.TriggerInZone[_zone.ZoneName]then
+self:__EnteredZone(0.5,obj,_zone)
+obj.TriggerInZone[_zone.ZoneName]=true
+elseif(not inzone)and obj.TriggerInZone[_zone.ZoneName]then
+self:__LeftZone(0.5,obj,_zone)
+obj.TriggerInZone[_zone.ZoneName]=false
+else
+end
+end
+end
+end
+end
+return self
+end
+function SET_ZONE:onafterTriggerRunCheck(From,Event,To)
+if self:GetState()~="TriggerStopped"then
+self:_TriggerCheck()
+self:__TriggerRunCheck(self.Checktime)
+end
+return self
 end
 end
 do
@@ -18457,6 +18527,7 @@ Color={},
 ZoneID=nil,
 Properties={},
 Surface=nil,
+Checktime=5,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
@@ -18656,6 +18727,71 @@ return self
 else
 return nil
 end
+end
+function ZONE_BASE:SetCheckTime(seconds)
+self.Checktime=seconds or 5
+return self
+end
+function ZONE_BASE:Trigger(Objects)
+self:SetStartState("TriggerStopped")
+self:AddTransition("TriggerStopped","TriggerStart","TriggerRunning")
+self:AddTransition("*","EnteredZone","*")
+self:AddTransition("*","LeftZone","*")
+self:AddTransition("*","TriggerRunCheck","*")
+self:AddTransition("*","TriggerStop","TriggerStopped")
+self:TriggerStart()
+self.checkobjects=Objects
+if UTILS.IsInstanceOf(Objects,"SET_BASE")then
+self.objectset=Objects.Set
+else
+self.objectset={Objects}
+end
+self:_TriggerCheck(true)
+self:__TriggerRunCheck(self.Checktime)
+return self
+end
+function ZONE_BASE:_TriggerCheck(fromstart)
+local objectset=self.objectset or{}
+if fromstart then
+for _,_object in pairs(objectset)do
+local obj=_object
+if not obj.TriggerInZone then obj.TriggerInZone={}end
+if obj and obj:IsAlive()and self:IsCoordinateInZone(obj:GetCoordinate())then
+obj.TriggerInZone[self.ZoneName]=true
+else
+obj.TriggerInZone[self.ZoneName]=false
+end
+end
+else
+for _,_object in pairs(objectset)do
+local obj=_object
+if obj and obj:IsAlive()then
+if not obj.TriggerInZone then
+obj.TriggerInZone={}
+end
+if not obj.TriggerInZone[self.ZoneName]then
+obj.TriggerInZone[self.ZoneName]=false
+end
+local inzone=self:IsCoordinateInZone(obj:GetCoordinate())
+if inzone and not obj.TriggerInZone[self.ZoneName]then
+self:__EnteredZone(0.5,obj)
+obj.TriggerInZone[self.ZoneName]=true
+elseif(not inzone)and obj.TriggerInZone[self.ZoneName]then
+self:__LeftZone(0.5,obj)
+obj.TriggerInZone[self.ZoneName]=false
+else
+end
+end
+end
+end
+return self
+end
+function ZONE_BASE:onafterTriggerRunCheck(From,Event,To)
+if self:GetState()~="TriggerStopped"then
+self:_TriggerCheck()
+self:__TriggerRunCheck(self.Checktime)
+end
+return self
 end
 function ZONE_BASE:GetProperty(PropertyName)
 return self.Properties[PropertyName]
