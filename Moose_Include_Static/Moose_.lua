@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-20T16:13:30+02:00-4d9197b3cc443fe9d74553b79716797cdc42a995 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-20T18:44:28+02:00-df6d968ebec7257616a6b4e771a8f59b54c6d7f6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -21393,6 +21393,20 @@ self:SetCommand(CommandEPLRS)
 end
 return self
 end
+function CONTROLLABLE:CommandSetUnlimitedFuel(OnOff,Delay)
+local CommandSetFuel={
+id='SetUnlimitedFuel',
+params={
+value=OnOff
+}
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandSetUnlimitedFuel,{self,OnOff},Delay)
+else
+self:SetCommand(CommandSetFuel)
+end
+return self
+end
 function CONTROLLABLE:CommandSetFrequency(Frequency,Modulation,Delay)
 local CommandSetFrequency={
 id='SetFrequency',
@@ -21477,6 +21491,23 @@ attackType=Divebomb and"Dive"or nil,
 }
 return DCSTask
 end
+function CONTROLLABLE:TaskStrafing(Vec2,AttackQty,Length,WeaponType,WeaponExpend,Direction,GroupAttack)
+local DCSTask={
+id='Strafing',
+params={
+point=Vec2,
+weaponType=WeaponType or 1073741822,
+expend=WeaponExpend or"Auto",
+attackQty=AttackQty or 1,
+attackQtyLimit=AttackQty>1 and true or false,
+direction=Direction and math.rad(Direction)or 0,
+directionEnabled=Direction and true or false,
+groupAttack=GroupAttack or false,
+length=Length,
+}
+}
+return DCSTask
+end
 function CONTROLLABLE:TaskAttackMapObject(Vec2,GroupAttack,WeaponExpend,AttackQty,Direction,Altitude,WeaponType)
 local DCSTask={
 id='AttackMapObject',
@@ -21487,7 +21518,6 @@ y=Vec2.y,
 groupAttack=GroupAttack or false,
 expend=WeaponExpend or"Auto",
 attackQtyLimit=AttackQty and true or false,
-attackQty=AttackQty,
 directionEnabled=Direction and true or false,
 direction=Direction and math.rad(Direction)or 0,
 altitudeEnabled=Altitude and true or false,
@@ -22028,7 +22058,7 @@ PatrolGroup:Route(Route,1)
 end
 end
 function CONTROLLABLE:PatrolZones(ZoneList,Speed,Formation,DelayMin,DelayMax)
-if not type(ZoneList)=="table"then
+if type(ZoneList)~="table"then
 ZoneList={ZoneList}
 end
 local PatrolGroup=self
