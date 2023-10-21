@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-20T23:37:29+02:00-456c002c3cc59293c68b4532fb8b3086f52cd5e6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-21T12:43:20+02:00-ab068670cc1d2970437bcf974f23ddef00a8219b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -59945,9 +59945,10 @@ modex=nil,
 eplrs=nil,
 recovery=nil,
 terminaltype=nil,
+unlimitedfuel=false,
 }
 _RECOVERYTANKERID=0
-RECOVERYTANKER.version="1.0.9"
+RECOVERYTANKER.version="1.0.10"
 function RECOVERYTANKER:New(carrierunit,tankergroupname)
 local self=BASE:Inherit(self,FSM:New())
 if type(carrierunit)=="string"then
@@ -59992,6 +59993,10 @@ self:AddTransition("Returning","Returned","Returned")
 self:AddTransition("*","Status","*")
 self:AddTransition("Running","PatternUpdate","*")
 self:AddTransition("*","Stop","Stopped")
+return self
+end
+function RECOVERYTANKER:SetUnlimitedFuel(OnOff)
+self.unlimitedfuel=OnOff
 return self
 end
 function RECOVERYTANKER:SetSpeed(speed)
@@ -60165,6 +60170,13 @@ self:HandleEvent(EVENTS.RefuelingStop,self._RefuelingStop)
 self:HandleEvent(EVENTS.Crash,self._OnEventCrashOrDead)
 self:HandleEvent(EVENTS.Dead,self._OnEventCrashOrDead)
 local Spawn=SPAWN:NewWithAlias(self.tankergroupname,self.alias)
+if self.unlimitedfuel then
+Spawn:OnSpawnGroup(
+function(grp)
+grp:CommandSetUnlimitedFuel(self.unlimitedfuel)
+end
+)
+end
 Spawn:InitRadioCommsOnOff(true)
 Spawn:InitRadioFrequency(self.RadioFreq)
 Spawn:InitRadioModulation(self.RadioModu)
