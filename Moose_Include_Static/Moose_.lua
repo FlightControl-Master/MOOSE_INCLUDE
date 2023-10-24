@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-21T12:43:48+02:00-375a5644466f46aa9aab73743dfd31fffef7313b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-24T13:46:35+02:00-e24acb28f72d571a4ad78bfeef1cdfa2879e15f9 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -24703,6 +24703,32 @@ local Task={
 }
 table.insert(TaskAerobatics.params["maneuversSequency"],Task)
 return TaskAerobatics
+end
+function CONTROLLABLE:PatrolRaceTrack(Point1,Point2,Altitude,Speed,Formation,Delay)
+local PatrolGroup=self
+if not self:IsInstanceOf("GROUP")then
+PatrolGroup=self:GetGroup()
+end
+local delay=Delay or 1
+self:F({PatrolGroup=PatrolGroup:GetName()})
+if PatrolGroup:IsAir()then
+if Formation then
+PatrolGroup:SetOption(AI.Option.Air.id.FORMATION,Formation)
+end
+local FromCoord=PatrolGroup:GetCoordinate()
+local ToCoord=Point1:GetCoordinate()
+if Altitude then
+FromCoord:SetAltitude(Altitude)
+ToCoord:SetAltitude(Altitude)
+end
+local Route={}
+Route[#Route+1]=FromCoord:WaypointAir(AltType,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,description,timeReFuAr)
+Route[#Route+1]=ToCoord:WaypointAir(AltType,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,description,timeReFuAr)
+local TaskRouteToZone=PatrolGroup:TaskFunction("CONTROLLABLE.PatrolRaceTrack",Point2,Point1,Altitude,Speed,Formation,Delay)
+PatrolGroup:SetTaskWaypoint(Route[#Route],TaskRouteToZone)
+PatrolGroup:Route(Route,Delay)
+end
+return self
 end
 GROUP={
 ClassName="GROUP",
@@ -50338,8 +50364,10 @@ if request then
 self:Request(request)
 end
 end
+if self.verbosity>2 then
 self:_PrintQueue(self.queue,"Queue waiting")
 self:_PrintQueue(self.pending,"Queue pending")
+end
 self:_UpdateWarehouseMarkText()
 if self.Debug then
 self:_DisplayStockItems(self.stock)
@@ -62331,8 +62359,10 @@ pointsTANKER={},
 pointsAWACS={},
 pointsRecon={},
 markpoints=false,
+capOptionPatrolRaceTrack=false,
+capFormation=nil,
 }
-AIRWING.version="0.9.3"
+AIRWING.version="0.9.4"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -62579,6 +62609,14 @@ function AIRWING:SetNumberCAP(n)
 self.nflightsCAP=n or 1
 return self
 end
+function AIRWING:SetCAPFormation(Formation)
+self.capFormation=Formation
+return self
+end
+function AIRWING:SetCapCloseRaceTrack(OnOff)
+self.capOptionPatrolRaceTrack=OnOff
+return self
+end
 function AIRWING:SetNumberTankerBoom(Nboom)
 self.nflightsTANKERboom=Nboom or 1
 return self
@@ -62768,14 +62806,19 @@ function AIRWING:CheckCAP()
 local Ncap=0
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
-if mission:IsNotOver()and mission.type==AUFTRAG.Type.GCICAP and mission.patroldata then
+if mission:IsNotOver()and(mission.type==AUFTRAG.Type.GCICAP or mission.type==AUFTRAG.Type.PATROLRACETRACK)and mission.patroldata then
 Ncap=Ncap+1
 end
 end
 for i=1,self.nflightsCAP-Ncap do
 local patrol=self:_GetPatrolData(self.pointsCAP)
 local altitude=patrol.altitude+1000*patrol.noccupied
-local missionCAP=AUFTRAG:NewGCICAP(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg)
+local missionCAP=nil
+if self.capOptionPatrolRaceTrack then
+missionCAP=AUFTRAG:NewPATROL_RACETRACK(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg,self.capFormation)
+else
+missionCAP=AUFTRAG:NewGCICAP(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg)
+end
 missionCAP.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
 if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
@@ -65622,6 +65665,7 @@ EWR="Early Warning Radar",
 REARMING="Rearming",
 CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
+PATROLRACETRACK="Patrol Racetrack",
 }
 AUFTRAG.SpecialTask={
 FORMATION="Formation",
@@ -65644,6 +65688,7 @@ RECOVERYTANKER="Recovery Tanker",
 REARMING="Rearming",
 CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
+PATROLRACETRACK="Patrol Racetrack",
 }
 AUFTRAG.Status={
 PLANNED="planned",
@@ -65682,7 +65727,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.2.0"
+AUFTRAG.version="1.2.1"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -65760,6 +65805,29 @@ mission.missionFraction=0.9
 mission.optionROE=ENUMS.ROE.ReturnFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.categories={AUFTRAG.Category.HELICOPTER}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewPATROL_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg,Formation)
+local mission=AUFTRAG:New(AUFTRAG.Type.PATROLRACETRACK)
+mission:_TargetFromObject(Coordinate)
+if Altitude then
+mission.TrackAltitude=UTILS.FeetToMeters(Altitude)
+else
+mission.TrackAltitude=UTILS.FeetToMeters(20000)
+end
+mission.TrackPoint1=Coordinate
+local leg=UTILS.NMToMeters(Leg)or UTILS.NMToMeters(10)
+local heading=Heading or 90
+if heading<0 or heading>360 then heading=90 end
+mission.TrackPoint2=Coordinate:Translate(leg,heading,true)
+mission.TrackSpeed=UTILS.IasToTas(UTILS.KnotsToKmph(Speed or 300),mission.TrackAltitude)
+mission.missionSpeed=UTILS.KnotsToKmph(Speed or 300)
+mission.missionAltitude=mission.TrackAltitude*0.9
+mission.missionTask=ENUMS.MissionTask.CAP
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.PassiveDefense
+mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
@@ -66520,6 +66588,8 @@ elseif auftrag==AUFTRAG.Type.TANKER then
 mission=AUFTRAG:NewTANKER(Coordinate,Altitude,Speed,Heading,Leg,RefuelSystem)
 elseif auftrag==AUFTRAG.Type.TROOPTRANSPORT then
 mission=AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet,DropoffCoordinate,PickupCoordinate)
+elseif auftrag==AUFTRAG.Type.PATROLRACETRACK then
+mission=AUFTRAG:NewPATROL_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg,Formation)
 else
 end
 if mission then
@@ -68246,6 +68316,19 @@ DCStask.id=AUFTRAG.SpecialTask.NOTHING
 local param={}
 DCStask.params=param
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.PATROLRACETRACK then
+local DCStask={}
+DCStask.id=AUFTRAG.SpecialTask.PATROLRACETRACK
+local param={}
+param.TrackAltitude=self.TrackAltitude
+param.TrackSpeed=self.TrackSpeed
+param.TrackPoint1=self.TrackPoint1
+param.TrackPoint2=self.TrackPoint2
+param.missionSpeed=self.missionSpeed
+param.missionAltitude=self.missionAltitude
+param.TrackFormation=self.TrackFormation
+DCStask.params=param
+table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.HOVER then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.HOVER
@@ -68404,6 +68487,8 @@ elseif MissionType==AUFTRAG.Type.ARMORATTACK then
 mtask=ENUMS.MissionTask.NOTHING
 elseif MissionType==AUFTRAG.Type.HOVER then
 mtask=ENUMS.MissionTask.NOTHING
+elseif MissionType==AUFTRAG.Type.PATROLRACETRACK then
+mtask=ENUMS.MissionTask.CAP
 end
 return mtask
 end
@@ -74377,7 +74462,6 @@ maintenancetime=0,
 livery=nil,
 skill=nil,
 legion=nil,
-Ngroups=nil,
 Ngroups=0,
 engageRange=nil,
 tacanChannel={},
@@ -74841,7 +74925,7 @@ if MissionType==AUFTRAG.Type.RELOCATECOHORT then
 table.insert(assets,asset)
 elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.NOTHING)then
 table.insert(assets,asset)
-elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.GCICAP)and MissionType==AUFTRAG.Type.INTERCEPT then
+elseif self.legion:IsAssetOnMission(asset,{AUFTRAG.Type.GCICAP,AUFTRAG.Type.PATROLRACETRACK})and MissionType==AUFTRAG.Type.INTERCEPT then
 self:T(self.lid..string.format("Adding asset on GCICAP mission for an INTERCEPT mission"))
 table.insert(assets,asset)
 elseif self.legion:IsAssetOnMission(asset,AUFTRAG.Type.ONGUARD)and(MissionType==AUFTRAG.Type.ARTY or MissionType==AUFTRAG.Type.GROUNDATTACK)then
@@ -84723,6 +84807,8 @@ elseif task.dcstask.id==AUFTRAG.SpecialTask.CAPTUREZONE then
 self:T2(self.lid.."Allowing update route for Task: CaptureZone")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.RECON then
 self:T2(self.lid.."Allowing update route for Task: ReconMission")
+elseif task.dcstask.id==AUFTRAG.SpecialTask.PATROLRACETRACK then
+self:T2(self.lid.."Allowing update route for Task: Patrol Race Track")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
 self:T2(self.lid.."Allowing update route for Task: Hover")
 elseif task.dcstask.id==AUFTRAG.SpecialTask.RELOCATECOHORT then
@@ -87485,7 +87571,7 @@ local currM=asset.flightgroup:GetMissionCurrent()
 if currM then
 local cancel=false
 local pause=false
-if currM.type==AUFTRAG.Type.GCICAP and Mission.type==AUFTRAG.Type.INTERCEPT then
+if(currM.type==AUFTRAG.Type.GCICAP or currM.type==AUFTRAG.Type.PATROLRACETRACK)and Mission.type==AUFTRAG.Type.INTERCEPT then
 pause=true
 elseif(currM.type==AUFTRAG.Type.ONGUARD or currM.type==AUFTRAG.Type.PATROLZONE)and(Mission.type==AUFTRAG.Type.ARTY or Mission.type==AUFTRAG.Type.GROUNDATTACK)then
 pause=true
@@ -87699,7 +87785,7 @@ end
 end
 end
 function LEGION:onafterLegionAssetReturned(From,Event,To,Cohort,Asset)
-self:I(self.lid..string.format("Asset %s from Cohort %s returned! asset.assignment=\"%s\"",Asset.spawngroupname,Cohort.name,tostring(Asset.assignment)))
+self:T(self.lid..string.format("Asset %s from Cohort %s returned! asset.assignment=\"%s\"",Asset.spawngroupname,Cohort.name,tostring(Asset.assignment)))
 if Asset.flightgroup and not Asset.flightgroup:IsStopped()then
 Asset.flightgroup:Stop()
 end
@@ -88247,6 +88333,7 @@ local function CheckRange(_cohort)
 local cohort=_cohort
 local TargetDistance=TargetVec2 and UTILS.VecDist2D(TargetVec2,cohort.legion:GetVec2())or 0
 local Rmax=cohort:GetMissionRange(WeaponTypes)
+local RangeMax=RangeMax or 0
 local InRange=(RangeMax and math.max(RangeMax,Rmax)or Rmax)>=TargetDistance
 return InRange
 end
@@ -88589,7 +88676,7 @@ local currmission=asset.flightgroup:GetMissionCurrent()
 if currmission then
 if currmission.type==AUFTRAG.Type.ALERT5 and currmission.alert5MissionType==MissionType then
 score=score+25
-elseif currmission.type==AUFTRAG.Type.GCICAP and MissionType==AUFTRAG.Type.INTERCEPT then
+elseif(currmission.type==AUFTRAG.Type.GCICAP or currmission.type==AUFTRAG.Type.PATROLRACETRACK)and MissionType==AUFTRAG.Type.INTERCEPT then
 score=score+35
 elseif(currmission.type==AUFTRAG.Type.ONGUARD or currmission.type==AUFTRAG.Type.PATROLZONE)and(MissionType==AUFTRAG.Type.ARTY or MissionType==AUFTRAG.Type.GROUNDATTACK)then
 score=score+25
@@ -92091,6 +92178,12 @@ speed=Task.dcstask.params.speed
 end
 if target then
 self:EngageTarget(target,speed,Task.dcstask.params.formation)
+end
+elseif Task.dcstask.id==AUFTRAG.SpecialTask.PATROLRACETRACK then
+if self.isFlightgroup then
+self:T("We are Special Auftrag Patrol Race Track, starting now ...")
+local aircraft=self:GetGroup()
+aircraft:PatrolRaceTrack(Task.dcstask.params.TrackPoint1,Task.dcstask.params.TrackPoint2,Task.dcstask.params.TrackAltitude,Task.dcstask.params.TrackSpeed,Task.dcstask.params.TrackFormation,1)
 end
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
 if self.isFlightgroup then
@@ -104569,8 +104662,9 @@ GoZoneSet=nil,
 NoGoZoneSet=nil,
 Monitor=false,
 TankerInvisible=true,
+CapFormation=nil,
 }
-EASYGCICAP.version="0.0.8"
+EASYGCICAP.version="0.0.9"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -104595,6 +104689,7 @@ self.engagerange=50
 self.repeatsonfailure=3
 self.Monitor=false
 self.TankerInvisible=true
+self.CapFormation=ENUMS.Formation.FixedWing.FingerFour.Group
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -104603,6 +104698,10 @@ self:AddTransition("*","Status","*")
 self:AddAirwing(self.airbasename,self.alias,self.CapZoneName)
 self:I(self.lid.."Created new instance (v"..self.version..")")
 self:__Start(math.random(6,12))
+return self
+end
+function EASYGCICAP:SetCAPFormation(Formation)
+self.CapFormation=Formation
 return self
 end
 function EASYGCICAP:SetTankerAndAWACSInvisible(Switch)
@@ -104685,6 +104784,7 @@ return self
 end
 function EASYGCICAP:_AddAirwing(Airbasename,Alias)
 self:T(self.lid.."_AddAirwing "..Airbasename)
+local CapFormation=self.CapFormation
 local CAP_Wing=AIRWING:New(Airbasename,Alias)
 CAP_Wing:SetVerbosityLevel(3)
 CAP_Wing:SetReportOff()
@@ -104692,11 +104792,15 @@ CAP_Wing:SetMarker(false)
 CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
 CAP_Wing:SetNumberCAP(self.capgrouping)
+CAP_Wing:SetCapCloseRaceTrack(true)
+if CapFormation then
+CAP_Wing:SetCAPFormation(CapFormation)
+end
 if#self.ManagedTK>0 then
 CAP_Wing:SetNumberTankerBoom(1)
 CAP_Wing:SetNumberTankerProbe(1)
 end
-if#self.ManagedAW>0 then
+if#self.ManagedEWR>0 then
 CAP_Wing:SetNumberAWACS(1)
 end
 if#self.ManagedREC>0 then
@@ -104717,6 +104821,9 @@ if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mi
 flightgroup:SetDetection(true)
 flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
 flightgroup:SetOutOfAAMRTB()
+if CapFormation then
+flightgroup:GetGroup():SetOption(AI.Option.Air.id.FORMATION,CapFormation)
+end
 end
 if Mission.type==AUFTRAG.Type.TANKER or Mission.type==AUFTRAG.Type.AWACS or Mission.type==AUFTRAG.Type.RECON then
 if TankerInvisible then
@@ -104947,7 +105054,7 @@ end
 function EASYGCICAP:_AddSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery,Frequency,Modulation)
 self:T(self.lid.."_AddSquadron "..SquadName)
 local Squadron_One=SQUADRON:New(TemplateName,AirFrames,SquadName)
-Squadron_One:AddMissionCapability({AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5})
+Squadron_One:AddMissionCapability({AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.PATROLRACETRACK,AUFTRAG.Type.ALERT5})
 Squadron_One:SetFuelLowThreshold(0.3)
 Squadron_One:SetTurnoverTime(10,20)
 Squadron_One:SetModex(Modex)
@@ -104956,7 +105063,7 @@ Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
 Squadron_One:SetMissionRange(self.missionrange)
 local wing=self.wings[AirbaseName][1]
 wing:AddSquadron(Squadron_One)
-wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.ALERT5},75)
+wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.PATROLRACETRACK,AUFTRAG.Type.ALERT5},75)
 return self
 end
 function EASYGCICAP:_AddReconSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
@@ -105160,12 +105267,16 @@ local instock=0
 local capmission=0
 local interceptmission=0
 local reconmission=0
+local awacsmission=0
+local tankermission=0
 for _,_wing in pairs(self.wings)do
 local count=_wing[1]:CountAssetsOnMission(MissionTypes,Cohort)
 local count2=_wing[1]:CountAssets(true,MissionTypes,Attributes)
-capmission=capmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.GCICAP})
+capmission=capmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.GCICAP,AUFTRAG.Type.PATROLRACETRACK})
 interceptmission=interceptmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.INTERCEPT})
 reconmission=reconmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.RECON})
+awacsmission=awacsmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.AWACS})
+tankermission=tankermission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.TANKER})
 assets=assets+count
 instock=instock+count2
 end
@@ -105177,6 +105288,8 @@ text=text.."\nThreats: "..threatcount
 text=text.."\nMissions: "..capmission+interceptmission
 text=text.."\n - CAP: "..capmission
 text=text.."\n - Intercept: "..interceptmission
+text=text.."\n - AWACS: "..awacsmission
+text=text.."\n - TANKER: "..tankermission
 text=text.."\n - Recon: "..reconmission
 MESSAGE:New(text,15,"GCICAP"):ToAll():ToLogIf(self.debug)
 end
