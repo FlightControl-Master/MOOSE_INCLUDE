@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-24T17:04:00+02:00-1126b7753ac2550762becb146efa2d0531960172 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-24T18:25:09+02:00-8f1e2a1d544784ec3892f507959b501c6d9b406b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -98590,7 +98590,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.20"
+PLAYERTASK.version="0.1.21"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -98749,9 +98749,9 @@ self.TaskController.Scoring:_AddPlayerFromUnit(Client)
 end
 return self
 end
-function PLAYERTASK:RemoveClient(Client)
+function PLAYERTASK:RemoveClient(Client,Name)
 self:T(self.lid.."RemoveClient")
-local name=Client:GetPlayerName()
+local name=Name or Client:GetPlayerName()
 if self.Clients:HasUniqueID(name)then
 self.Clients:PullByID(name)
 if self.verbose then
@@ -99267,7 +99267,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.61"
+PLAYERTASKCONTROLLER.version="0.1.62"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -99581,6 +99581,9 @@ local task=self.TasksPerPlayer:PullByID(EventData.IniPlayerName)
 local Client=_DATABASE:FindClient(EventData.IniPlayerName)
 if Client then
 task:RemoveClient(Client)
+text=self.gettext:GetEntry("TASKABORT",self.locale)
+else
+task:RemoveClient(nil,EventData.IniPlayerName)
 text=self.gettext:GetEntry("TASKABORT",self.locale)
 end
 else
