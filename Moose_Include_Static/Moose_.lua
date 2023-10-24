@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-21T12:43:20+02:00-ab068670cc1d2970437bcf974f23ddef00a8219b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-24T13:45:43+02:00-4e5b483cc0441efe74363d8278cd1ee93b4ee168 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -23964,6 +23964,32 @@ local Task={
 table.insert(TaskAerobatics.params["maneuversSequency"],Task)
 return TaskAerobatics
 end
+function CONTROLLABLE:PatrolRaceTrack(Point1,Point2,Altitude,Speed,Formation,Delay)
+local PatrolGroup=self
+if not self:IsInstanceOf("GROUP")then
+PatrolGroup=self:GetGroup()
+end
+local delay=Delay or 1
+self:F({PatrolGroup=PatrolGroup:GetName()})
+if PatrolGroup:IsAir()then
+if Formation then
+PatrolGroup:SetOption(AI.Option.Air.id.FORMATION,Formation)
+end
+local FromCoord=PatrolGroup:GetCoordinate()
+local ToCoord=Point1:GetCoordinate()
+if Altitude then
+FromCoord:SetAltitude(Altitude)
+ToCoord:SetAltitude(Altitude)
+end
+local Route={}
+Route[#Route+1]=FromCoord:WaypointAir(AltType,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,description,timeReFuAr)
+Route[#Route+1]=ToCoord:WaypointAir(AltType,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,description,timeReFuAr)
+local TaskRouteToZone=PatrolGroup:TaskFunction("CONTROLLABLE.PatrolRaceTrack",Point2,Point1,Altitude,Speed,Formation,Delay)
+PatrolGroup:SetTaskWaypoint(Route[#Route],TaskRouteToZone)
+PatrolGroup:Route(Route,Delay)
+end
+return self
+end
 GROUP={
 ClassName="GROUP",
 }
@@ -46157,8 +46183,10 @@ if request then
 self:Request(request)
 end
 end
+if self.verbosity>2 then
 self:_PrintQueue(self.queue,"Queue waiting")
 self:_PrintQueue(self.pending,"Queue pending")
+end
 self:_UpdateWarehouseMarkText()
 if self.Debug then
 self:_DisplayStockItems(self.stock)
@@ -46405,9 +46433,9 @@ self:F({groupname=group:GetName(),ngroups=ngroups,forceattribute=forceattribute,
 local n=ngroups or 1
 local function _GetObjectSize(DCSdesc)
 if DCSdesc.box then
-local x=DCSdesc.box.max.x+math.abs(DCSdesc.box.min.x)
-local y=DCSdesc.box.max.y+math.abs(DCSdesc.box.min.y)
-local z=DCSdesc.box.max.z+math.abs(DCSdesc.box.min.z)
+local x=DCSdesc.box.max.x-DCSdesc.box.min.x
+local y=DCSdesc.box.max.y-DCSdesc.box.min.y
+local z=DCSdesc.box.max.z-DCSdesc.box.min.z
 return math.max(x,z),x,y,z
 end
 return 0,0,0,0
@@ -47088,8 +47116,12 @@ self:T(self.lid..text)
 local groupname=asset.spawngroupname
 local NoTriggerEvent=true
 if request.transporttype==WAREHOUSE.TransportType.SELFPROPELLED then
+if request.cargogroupset then
 request.cargogroupset:Remove(groupname,NoTriggerEvent)
 self:T(self.lid..string.format("Removed selfpropelled cargo %s: ncargo=%d.",groupname,request.cargogroupset:Count()))
+else
+self:E(self.lid..string.format("ERROR: cargogroupset is nil for request ID=%s!",tostring(request.uid)))
+end
 else
 local istransport=not asset.iscargo
 if istransport==true then
@@ -47657,7 +47689,11 @@ self:_DebugMessage(string.format("Warehouse %s alias %s was destroyed!",warehous
 self:Destroyed()
 end
 if self.airbase and self.airbasename and self.airbasename==EventData.IniUnitName then
+if self:IsRunwayOperational()then
 self:RunwayDestroyed()
+else
+self.runwaydestroyed=timer.getAbsTime()
+end
 end
 end
 self:T2(self.lid..string.format("Warehouse %s captured event dead or crash or unit %s",self.alias,tostring(EventData.IniUnitName)))
