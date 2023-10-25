@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-25T08:46:52+02:00-e48a8235602ab7528be1b15ffe6e76c5f3894d77 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-25T13:47:11+02:00-6e1dabfe9b14b33c62c082b606dd12f44a16a04e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -81783,6 +81783,7 @@ dTlanding=nil,
 Nparkingspots=nil,
 holdingpatterns={},
 hpcounter=0,
+nosubs=false,
 }
 FLIGHTCONTROL.FlightStatus={
 UNKNOWN="Unknown",
@@ -81797,7 +81798,7 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.3"
+FLIGHTCONTROL.version="0.7.4"
 function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
@@ -81822,6 +81823,7 @@ self:SetLandingInterval()
 self:SetFrequency(Frequency,Modulation)
 self:SetMarkHoldingPattern(true)
 self:SetRunwayRepairtime()
+self.nosubs=false
 self:SetSRSPort(Port or 5002)
 self:SetCallSignOptions(true,true)
 self.msrsqueue=MSRSQUEUE:New(self.alias)
@@ -81847,6 +81849,14 @@ return self
 end
 function FLIGHTCONTROL:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
+return self
+end
+function FLIGHTCONTROL:SwitchSubtitlesOn()
+self.nosubs=false
+return self
+end
+function FLIGHTCONTROL:SwitchSubtitlesOff()
+self.nosubs=true
 return self
 end
 function FLIGHTCONTROL:SetFrequency(Frequency,Modulation)
@@ -82060,7 +82070,7 @@ function FLIGHTCONTROL:onbeforeStatusUpdate()
 local Tqueue=self.msrsqueue:CalcTransmisstionDuration()
 if Tqueue>0 then
 local text=string.format("Still got %d messages in the radio queue. Will call status again in %.1f sec",#self.msrsqueue,Tqueue)
-self:I(self.lid..text)
+self:T(self.lid..text)
 self:__StatusUpdate(-Tqueue)
 return false
 end
@@ -82906,8 +82916,10 @@ function FLIGHTCONTROL:_PlayerInfoATIS(groupname)
 local flight=_DATABASE:GetOpsGroup(groupname)
 if flight then
 local text=string.format("Airbase %s ATIS:",self.airbasename)
+local srstxt=string.format("Airbase %s ",self.airbasename)
 if self.atis then
 text=text..string.format("\nATIS %.3f MHz %s",self.atis.frequency,UTILS.GetModulationName(self.atis.modulation))
+srstxt=srstxt..string.format("ATIS %.3f Megahertz %s",self.atis.frequency,UTILS.GetModulationName(self.atis.modulation))
 if self.atis.towerfrequency then
 local tower=""
 for _,freq in pairs(self.atis.towerfrequency)do
@@ -82926,7 +82938,10 @@ end
 else
 text=text.." Not defined"
 end
-self:TextMessageToFlight(text,flight,10,true)
+local callsign=self:_GetCallsignName(flight)
+local rtext=string.format("%s, %s, request ATIS frequency.",self.alias,callsign)
+self:TransmissionPilot(rtext,flight)
+self:TransmissionTower(srstxt,flight,10)
 else
 self:E(self.lid..string.format("Cannot find flight group %s.",tostring(groupname)))
 end
@@ -83196,7 +83211,7 @@ local nTakeoff=self:CountFlights(FLIGHTCONTROL.FlightStatus.TAKEOFF)
 local text=string.format("%s, request direct approach.",callsign)
 self:TransmissionPilot(text,flight)
 if nTakeoff>self.NlandingTakeoff then
-local text=string.format("%s, negative! We have currently traffic taking off",callsign)
+local text=string.format("%s, negative! We have currently traffic taking off!",callsign)
 self:TransmissionTower(text,flight,10)
 else
 local runway=self:GetActiveRunwayText()
@@ -83400,7 +83415,7 @@ end
 end
 self:TransmissionTower(text,flight,10)
 else
-local text=string.format("%s, %s, arrived at parking position",self.alias,callsign)
+local text=string.format("%s, %s, arrived at parking position.",self.alias,callsign)
 self:TransmissionPilot(text,flight)
 local text=""
 if spot.ReservedBy then
@@ -83595,7 +83610,7 @@ local text=self:_GetTextForSpeech(Text)
 local subgroups=nil
 if Flight and not Flight.isAI then
 local playerData=Flight:_GetPlayerData()
-if playerData.subtitles then
+if playerData.subtitles and(not self.nosubs)then
 subgroups=subgroups or{}
 table.insert(subgroups,Flight.group)
 end
@@ -83615,7 +83630,7 @@ end
 local subgroups=nil
 if Flight and not Flight.isAI then
 local playerData=Flight:_GetPlayerData()
-if playerData.subtitles then
+if playerData.subtitles and(not self.nosubs)then
 subgroups=subgroups or{}
 table.insert(subgroups,Flight.group)
 end
