@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-24T18:25:09+02:00-8f1e2a1d544784ec3892f507959b501c6d9b406b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-25T08:46:52+02:00-e48a8235602ab7528be1b15ffe6e76c5f3894d77 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -24704,7 +24704,7 @@ local Task={
 table.insert(TaskAerobatics.params["maneuversSequency"],Task)
 return TaskAerobatics
 end
-function CONTROLLABLE:PatrolRaceTrack(Point1,Point2,Altitude,Speed,Formation,Delay)
+function CONTROLLABLE:PatrolRaceTrack(Point1,Point2,Altitude,Speed,Formation,AGL,Delay)
 local PatrolGroup=self
 if not self:IsInstanceOf("GROUP")then
 PatrolGroup=self:GetGroup()
@@ -24718,8 +24718,10 @@ end
 local FromCoord=PatrolGroup:GetCoordinate()
 local ToCoord=Point1:GetCoordinate()
 if Altitude then
-FromCoord:SetAltitude(Altitude)
-ToCoord:SetAltitude(Altitude)
+local asl=true
+if AGL then asl=false end
+FromCoord:SetAltitude(Altitude,asl)
+ToCoord:SetAltitude(Altitude,asl)
 end
 local Route={}
 Route[#Route+1]=FromCoord:WaypointAir(AltType,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,description,timeReFuAr)
@@ -92183,7 +92185,7 @@ elseif Task.dcstask.id==AUFTRAG.SpecialTask.PATROLRACETRACK then
 if self.isFlightgroup then
 self:T("We are Special Auftrag Patrol Race Track, starting now ...")
 local aircraft=self:GetGroup()
-aircraft:PatrolRaceTrack(Task.dcstask.params.TrackPoint1,Task.dcstask.params.TrackPoint2,Task.dcstask.params.TrackAltitude,Task.dcstask.params.TrackSpeed,Task.dcstask.params.TrackFormation,1)
+aircraft:PatrolRaceTrack(Task.dcstask.params.TrackPoint1,Task.dcstask.params.TrackPoint2,Task.dcstask.params.TrackAltitude,Task.dcstask.params.TrackSpeed,Task.dcstask.params.TrackFormation,false,1)
 end
 elseif Task.dcstask.id==AUFTRAG.SpecialTask.HOVER then
 if self.isFlightgroup then
