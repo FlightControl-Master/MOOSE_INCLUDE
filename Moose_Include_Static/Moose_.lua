@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-25T15:52:11+02:00-6bf6b933cc000ccbfb7e9c212a51f340539f93fc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-26T12:45:45+02:00-31075f7c04bc40832bdd0c6a5779ac9c4538db9c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -25549,9 +25549,6 @@ local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
 return DCSUnit
 end
-if self.DCSUnit then
-return self.DCSUnit
-end
 return nil
 end
 function UNIT:GetAltitude(FromGround)
@@ -25768,7 +25765,7 @@ end
 local typename=self:GetTypeName()
 if typename=="IL-78M"then
 system=1
-elseif typename=="KC130"then
+elseif typename=="KC130"or typename=="KC130J"then
 system=1
 elseif typename=="KC135BDA"then
 system=1
@@ -25776,6 +25773,10 @@ elseif typename=="KC135MPRS"then
 system=1
 elseif typename=="S-3B Tanker"then
 system=1
+elseif typename=="KC_10_Extender"then
+system=1
+elseif typename=="KC_10_Extender_D"then
+system=0
 end
 end
 return tanker,system
