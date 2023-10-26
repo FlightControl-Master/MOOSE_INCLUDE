@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-25T15:35:59+02:00-e7f7199a39403a8a2a65aaecbe4d8ce444d19e4a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-26T12:46:20+02:00-bca3abe2c2ec7541ebbed60c2ab166cc43d25511 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -28212,7 +28212,7 @@ end
 local typename=self:GetTypeName()
 if typename=="IL-78M"then
 system=1
-elseif typename=="KC130"then
+elseif typename=="KC130"or typename=="KC130J"then
 system=1
 elseif typename=="KC135BDA"then
 system=1
@@ -28220,6 +28220,10 @@ elseif typename=="KC135MPRS"then
 system=1
 elseif typename=="S-3B Tanker"then
 system=1
+elseif typename=="KC_10_Extender"then
+system=1
+elseif typename=="KC_10_Extender_D"then
+system=0
 end
 end
 return tanker,system
