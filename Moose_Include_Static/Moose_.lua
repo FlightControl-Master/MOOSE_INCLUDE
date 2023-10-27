@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-26T12:46:20+02:00-bca3abe2c2ec7541ebbed60c2ab166cc43d25511 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-27T09:10:04+02:00-bf604da2ae5c4dcebf4dc9f1f08380a8e9fb345e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -2324,6 +2324,9 @@ Tanker={
 Texaco=1,
 Arco=2,
 Shell=3,
+Navy_One=4,
+Mauler=5,
+Bloodhound=6,
 },
 JTAC={
 Axeman=1,
