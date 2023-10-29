@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-27T17:49:14+02:00-3ca4898860299972f6c52d68ecd5820afe1ef746 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-29T17:29:01+01:00-92e2414612e2547122bc7675530302965134694d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -78090,6 +78090,7 @@ Loaded_Cargo={},
 Spawned_Crates={},
 Spawned_Cargo={},
 CrateDistance=35,
+PackDistance=35,
 debug=false,
 wpZones={},
 dropOffZones={},
@@ -78207,6 +78208,7 @@ self.EngineersInField={}
 self.EngineerSearch=2000
 self.nobuildmenu=false
 self.CrateDistance=35
+self.PackDistance=35
 self.ExtractFactor=3.33
 self.prefixes=Prefixes or{"Cargoheli"}
 self.useprefix=true
@@ -78697,9 +78699,9 @@ end
 self:CleanDroppedTroops()
 return self
 end
-function CTLD:_GetCrates(Group,Unit,Cargo,number,drop)
+function CTLD:_GetCrates(Group,Unit,Cargo,number,drop,pack)
 self:T(self.lid.." _GetCrates")
-if not drop then
+if not drop and not pack then
 local cgoname=Cargo:GetName()
 local instock=Cargo:GetStock()
 if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
@@ -78713,17 +78715,19 @@ local ship=nil
 local width=20
 local distance=nil
 local zone=nil
-if not drop then
+if not drop and not pack then
 inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
 if not inzone then
 inzone,ship,zone,distance,width=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
 end
-else
+elseif drop and not pack then
 if self.dropcratesanywhere then
 inzone=true
 else
 inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
 end
+elseif pack and not drop then
+inzone=true
 end
 if not inzone then
 self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
@@ -79503,6 +79507,25 @@ if not Engineering then self:_SendMessage(string.format("No crates within %d met
 end
 return self
 end
+function CTLD:_PackCratesNearby(Group,Unit)
+self:T(self.lid.." _PackCratesNearby")
+local location=Group:GetCoordinate()
+local nearestGroups=SET_GROUP:New():FilterCoalitions("blue"):FilterZones({ZONE_RADIUS:New("TempZone",location:GetVec2(),self.PackDistance,false)}):FilterOnce()
+for _,_Group in pairs(nearestGroups.Set)do
+for _,_Template in pairs(_DATABASE.Templates.Groups)do
+if(string.match(_Group:GetName(),_Template.GroupName))then
+for _,_entry in pairs(self.Cargo_Crates)do
+if(_entry.Templates[1]==_Template.GroupName)then
+_Group:Destroy()
+self:_GetCrates(Group,Unit,_entry,nil,false,true)
+return self
+end
+end
+end
+end
+end
+return self
+end
 function CTLD:_RepairCrates(Group,Unit,Engineering)
 self:T(self.lid.." _RepairCrates")
 local finddist=self.CrateDistance or 35
@@ -79759,6 +79782,7 @@ end
 if cancrates then
 local loadmenu=MENU_GROUP_COMMAND:New(_group,"Load crates",topcrates,self._LoadCratesNearby,self,_group,_unit)
 local cratesmenu=MENU_GROUP:New(_group,"Get Crates",topcrates)
+local packmenu=MENU_GROUP_COMMAND:New(_group,"Pack crates",topcrates,self._PackCratesNearby,self,_group,_unit)
 if self.usesubcats then
 local subcatmenus={}
 for _name,_entry in pairs(self.subcats)do
