@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-31T13:07:02+01:00-0fb8fd888651c5fd9284632f9c2ba4d04baa2dfe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-31T13:44:56+01:00-cd316e6719f37c9f9f78cdac02c7db5f989d31f1 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -105982,10 +105982,8 @@ TargetCoord:SetY(EngageAltitude)
 local TargetDistance=DefenderCoord:Get2DDistance(TargetCoord)
 local EngageDistance=(DefenderGroup:IsHelicopter()and 5000)or(DefenderGroup:IsAirPlane()and 10000)
 if TargetDistance<=EngageDistance*9 then
-self:I(string.format("AI_AIR_ENGAGE onafterEngageRoute ==> __Engage - target distance = %.1f km",TargetDistance/1000))
 self:__Engage(0.1,AttackSetUnit)
 else
-self:I(string.format("FF AI_AIR_ENGAGE onafterEngageRoute ==> Routing - target distance = %.1f km",TargetDistance/1000))
 local EngageRoute={}
 local AttackTasks={}
 local FromWP=DefenderCoord:WaypointAir(self.PatrolAltType or"RADIO",POINT_VEC3.RoutePointType.TurningPoint,POINT_VEC3.RoutePointAction.TurningPoint,EngageSpeed,true)
