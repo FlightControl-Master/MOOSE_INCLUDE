@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-10-31T19:53:20+01:00-1561f49c9c1dab73025577a232ca1432aacbcec7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-01T06:19:53+01:00-36d9460cdfc9423a3855aaeba9d860ab8b986f49 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -29067,7 +29067,7 @@ return self
 end
 function STORAGE:SetLiquid(Type,Amount)
 self:T(self.lid..string.format("Setting liquid %s to N=%d",self:GetLiquidName(Type),Amount))
-self.warehouse:setLiquid(Type,Amount)
+self.warehouse:setLiquidAmount(Type,Amount)
 return self
 end
 function STORAGE:RemoveLiquid(Type,Amount)
