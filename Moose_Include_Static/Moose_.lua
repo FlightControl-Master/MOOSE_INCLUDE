@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-01T06:21:56+01:00-dc26134845e2ef0824a3ef97de3339ce1a636014 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T01:40:01+01:00-d60f20a16293c98d93b3efe924e57f1fdae247fe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -52511,7 +52511,7 @@ return DCSTask
 end
 function WAREHOUSE:_GetTerminal(_attribute,_category)
 local _terminal=AIRBASE.TerminalType.OpenBig
-if _attribute==WAREHOUSE.Attribute.AIR_FIGHTER then
+if _attribute==WAREHOUSE.Attribute.AIR_FIGHTER or _attribute==WAREHOUSE.Attribute.AIR_UAV then
 _terminal=AIRBASE.TerminalType.FighterAircraft
 elseif _attribute==WAREHOUSE.Attribute.AIR_BOMBER or _attribute==WAREHOUSE.Attribute.AIR_TRANSPORTPLANE or _attribute==WAREHOUSE.Attribute.AIR_TANKER or _attribute==WAREHOUSE.Attribute.AIR_AWACS then
 _terminal=AIRBASE.TerminalType.OpenBig
