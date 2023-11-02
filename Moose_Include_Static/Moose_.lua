@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T18:18:55+01:00-bcbe872c7d1852b548c37f9f9b35c24135a77fe7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T19:25:28+01:00-7393cb2cbeea24d07a384339f14da264d6498502 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -61221,8 +61221,8 @@ CLOUDBASEFT="Cloud base %s, ceiling %s feet",
 TEMPERATURE="Temperature",
 DEWPOINT="Dew point",
 ALTIMETER="Altimeter",
-ACTIVERUN="Active runway take off",
-ACTIVELANDING="Active runway landing",
+ACTIVERUN="Active runway departure",
+ACTIVELANDING="Active runway arrival",
 LEFT="Left",
 RIGHT="Right",
 RWYLENGTH="Runway length",
@@ -62314,20 +62314,20 @@ if not self.ATISforFARPs then
 local subtitle
 if runwayLanding then
 local actrun=self.gettext:GetEntry("ACTIVELANDING",self.locale)
-subtitle=string.format("%s %s",actrun,runwayTakeoff)
-if rwyTakeoffLeft==true then
+subtitle=string.format("%s %s",actrun,runwayLanding)
+if rwyLandingLeft==true then
 subtitle=subtitle.." "..self.gettext:GetEntry("LEFT",self.locale)
-elseif rwyTakeoffLeft==false then
+elseif rwyLandingLeft==false then
 subtitle=subtitle.." "..self.gettext:GetEntry("RIGHT",self.locale)
 end
 alltext=alltext..";\n"..subtitle
 end
 if runwayTakeoff then
 local actrun=self.gettext:GetEntry("ACTIVERUN",self.locale)
-subtitle=string.format("%s %s",actrun,runwayLanding)
-if rwyLandingLeft==true then
+subtitle=string.format("%s %s",actrun,runwayTakeoff)
+if rwyTakeoffLeft==true then
 subtitle=subtitle.." "..self.gettext:GetEntry("LEFT",self.locale)
-elseif rwyLandingLeft==false then
+elseif rwyTakeoffLeft==false then
 subtitle=subtitle.." "..self.gettext:GetEntry("RIGHT",self.locale)
 end
 end
