@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T15:16:41+01:00-cc95c45fb051133071e54f4db3b2f20e67dfc7fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T18:20:49+01:00-74bd41743b93016d89d55db2f8ec4be337774310 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -64132,7 +64132,8 @@ CLOUDBASEFT="Cloud base %s, ceiling %s feet",
 TEMPERATURE="Temperature",
 DEWPOINT="Dew point",
 ALTIMETER="Altimeter",
-ACTIVERUN="Active runway",
+ACTIVERUN="Active runway take off",
+ACTIVELANDING="Active runway landing",
 LEFT="Left",
 RIGHT="Right",
 RWYLENGTH="Runway length",
@@ -64192,6 +64193,7 @@ TEMPERATURE="Temperatur",
 DEWPOINT="Taupunkt",
 ALTIMETER="Hoehenmesser",
 ACTIVERUN="Aktive Startbahn",
+ACTIVELANDING="Aktive Landebahn",
 LEFT="Links",
 RIGHT="Rechts",
 RWYLENGTH="Startbahn",
@@ -64251,6 +64253,7 @@ TEMPERATURE="Temperatura",
 DEWPOINT="Punto de rocio",
 ALTIMETER="Altímetro",
 ACTIVERUN="Pista activa",
+ACTIVELANDING="Pista de aterrizaje activa",
 LEFT="Izquierda",
 RIGHT="Derecha",
 RWYLENGTH="Longitud de pista",
@@ -64281,7 +64284,7 @@ DELIMITER="Punto",
 }
 ATIS.locale="en"
 _ATIS={}
-ATIS.version="0.10.2"
+ATIS.version="0.10.3"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -64560,6 +64563,7 @@ self.msrs:SetPort(Port)
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
 self.msrs:SetGoogle(GoogleKey)
+self.msrs:SetCoordinate(self.airbase:GetCoordinate())
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
@@ -65220,6 +65224,16 @@ local _RUNACT
 if not self.ATISforFARPs then
 local subtitle
 if runwayLanding then
+local actrun=self.gettext:GetEntry("ACTIVELANDING",self.locale)
+subtitle=string.format("%s %s",actrun,runwayTakeoff)
+if rwyTakeoffLeft==true then
+subtitle=subtitle.." "..self.gettext:GetEntry("LEFT",self.locale)
+elseif rwyTakeoffLeft==false then
+subtitle=subtitle.." "..self.gettext:GetEntry("RIGHT",self.locale)
+end
+alltext=alltext..";\n"..subtitle
+end
+if runwayTakeoff then
 local actrun=self.gettext:GetEntry("ACTIVERUN",self.locale)
 subtitle=string.format("%s %s",actrun,runwayLanding)
 if rwyLandingLeft==true then
@@ -81861,10 +81875,12 @@ self.msrsqueue=MSRSQUEUE:New(self.alias)
 self.msrsTower=MSRS:New(PathToSRS,Frequency,Modulation)
 self.msrsTower:SetPort(self.Port)
 self.msrsTower:SetGoogle(GoogleKey)
+self.msrsTower:SetCoordinate(self:GetCoordinate())
 self:SetSRSTower()
 self.msrsPilot=MSRS:New(PathToSRS,Frequency,Modulation)
 self.msrsPilot:SetPort(self.Port)
 self.msrsPilot:SetGoogle(GoogleKey)
+self.msrsTower:SetCoordinate(self:GetCoordinate())
 self:SetSRSPilot()
 self.dTmessage=10
 self:SetStartState("Stopped")
@@ -83666,6 +83682,8 @@ subgroups=subgroups or{}
 table.insert(subgroups,Flight.group)
 end
 end
+local coordinate=Flight:GetCoordinate(true)
+msrs:SetCoordinate()
 self.msrsqueue:NewTransmission(text,nil,msrs,nil,1,subgroups,Text,nil,self.frequency,self.modulation)
 end
 self.Tlastmessage=timer.getAbsTime()+(Delay or 0)
@@ -91182,6 +91200,8 @@ self:ScheduleOnce(Delay,OPSGROUP.RadioTransmission,self,Text,0,SayCallsign)
 else
 if self.useSRS and self.msrs then
 local freq,modu,radioon=self:GetRadio()
+local coord=self:GetCoordinate()
+self.msrs:SetCoordinate(coord)
 if Frequency then
 self.msrs:SetFrequencies(Frequency)
 else
