@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T15:16:12+01:00-bf60c535bcd97f55e03645fe654cf4784ffb40f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T18:18:55+01:00-bcbe872c7d1852b548c37f9f9b35c24135a77fe7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -61221,7 +61221,8 @@ CLOUDBASEFT="Cloud base %s, ceiling %s feet",
 TEMPERATURE="Temperature",
 DEWPOINT="Dew point",
 ALTIMETER="Altimeter",
-ACTIVERUN="Active runway",
+ACTIVERUN="Active runway take off",
+ACTIVELANDING="Active runway landing",
 LEFT="Left",
 RIGHT="Right",
 RWYLENGTH="Runway length",
@@ -61281,6 +61282,7 @@ TEMPERATURE="Temperatur",
 DEWPOINT="Taupunkt",
 ALTIMETER="Hoehenmesser",
 ACTIVERUN="Aktive Startbahn",
+ACTIVELANDING="Aktive Landebahn",
 LEFT="Links",
 RIGHT="Rechts",
 RWYLENGTH="Startbahn",
@@ -61340,6 +61342,7 @@ TEMPERATURE="Temperatura",
 DEWPOINT="Punto de rocio",
 ALTIMETER="Altímetro",
 ACTIVERUN="Pista activa",
+ACTIVELANDING="Pista de aterrizaje activa",
 LEFT="Izquierda",
 RIGHT="Derecha",
 RWYLENGTH="Longitud de pista",
@@ -61370,7 +61373,7 @@ DELIMITER="Punto",
 }
 ATIS.locale="en"
 _ATIS={}
-ATIS.version="0.10.2"
+ATIS.version="0.10.3"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -61649,6 +61652,7 @@ self.msrs:SetPort(Port)
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
 self.msrs:SetGoogle(GoogleKey)
+self.msrs:SetCoordinate(self.airbase:GetCoordinate())
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
@@ -62309,6 +62313,16 @@ local _RUNACT
 if not self.ATISforFARPs then
 local subtitle
 if runwayLanding then
+local actrun=self.gettext:GetEntry("ACTIVELANDING",self.locale)
+subtitle=string.format("%s %s",actrun,runwayTakeoff)
+if rwyTakeoffLeft==true then
+subtitle=subtitle.." "..self.gettext:GetEntry("LEFT",self.locale)
+elseif rwyTakeoffLeft==false then
+subtitle=subtitle.." "..self.gettext:GetEntry("RIGHT",self.locale)
+end
+alltext=alltext..";\n"..subtitle
+end
+if runwayTakeoff then
 local actrun=self.gettext:GetEntry("ACTIVERUN",self.locale)
 subtitle=string.format("%s %s",actrun,runwayLanding)
 if rwyLandingLeft==true then
