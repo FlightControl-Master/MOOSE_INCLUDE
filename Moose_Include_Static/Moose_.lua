@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-02T19:25:50+01:00-e560c3ffdd5b1c616b0b51216b91321d9da78533 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-03T13:39:02+01:00-4eb0f8e9ca2f624dce57cfd2209ee8d6be00af27 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -9354,6 +9354,9 @@ end
 function MESSAGE:ToSRS(frequency,modulation,gender,culture,voice,coalition,volume,coordinate)
 if _MESSAGESRS.SRSQ then
 _MESSAGESRS.MSRS:SetVoice(voice or _MESSAGESRS.Voice)
+if coordinate then
+_MESSAGESRS.MSRS:SetCoordinate(coordinate)
+end
 _MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency,modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,voice or _MESSAGESRS.Voice,volume,self.MessageCategory)
 end
 return self
@@ -53990,7 +53993,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.3.2"
+AIRBOSS.version="1.3.3"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -54509,6 +54512,7 @@ self.SRS:SetGender(Gender or"male")
 self.SRS:SetPath(PathToSRS)
 self.SRS:SetPort(Port or 5002)
 self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
+self.SRS:SetCoordinate(self.carrier:GetCoordinate())
 if GoogleCreds then
 self.SRS:SetGoogle(GoogleCreds)
 end
@@ -60449,7 +60453,6 @@ self:RadioTransmission(radio,self[caller].CLICK,false,delay)
 end
 else
 if call.subtitle~=nil and string.len(call.subtitle)>1 then
-else
 local frequency=self.MarshalRadio.frequency
 local modulation=self.MarshalRadio.modulation
 local voice=nil
@@ -60490,9 +60493,9 @@ if loud then
 volume=1.0
 end
 local text=call.subtitle
-self:I(self.lid..text)
+self:T(self.lid..text)
 local srstext=self:_GetNiceSRSText(text)
-self.SRSQ:NewTransmission(srstext,call.duration,self.SRS,tstart,0.1,subgroups,call.subtitle,call.subduration,frequency,modulation,gender,culture,voice,volume,radio.alias)
+self.SRSQ:NewTransmission(srstext,call.duration,self.SRS,nil,0.1,nil,call.subtitle,call.subduration,frequency,modulation,gender,culture,voice,volume,radio.alias)
 end
 end
 end
@@ -60648,7 +60651,7 @@ text=string.gsub(text,"\n","; ")
 return text
 end
 function AIRBOSS:MessageToPlayer(playerData,message,sender,receiver,duration,clear,delay)
-self:I({sender,receiver,message})
+self:T({sender,receiver,message})
 if playerData and message and message~=""then
 duration=duration or self.Tmessage
 local text
@@ -60709,10 +60712,10 @@ voice=self.LSORadio.voice
 gender=self.LSORadio.gender
 culture=self.LSORadio.culture
 end
-self:I(self.lid..text)
-self:I({sender,frequency,modulation,voice})
+self:T(self.lid..text)
+self:T({sender,frequency,modulation,voice})
 local srstext=self:_GetNiceSRSText(text)
-self.SRSQ:NewTransmission(srstext,duration,self.SRS,tstart,0.1,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,sender)
+self.SRSQ:NewTransmission(srstext,duration,self.SRS,nil,0.1,nil,nil,nil,frequency,modulation,gender,culture,voice,nil,sender)
 end
 if playerData.client then
 MESSAGE:New(text,duration,sender,clear):ToClient(playerData.client)
@@ -68561,7 +68564,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.57",
+version="0.2.58",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -72510,6 +72513,12 @@ awacsalive=true
 end
 end
 if self:Is("Running")and(awacsalive or self.AwacsInZone)then
+if self.AwacsSRS then
+self.AwacsSRS:SetCoordinate(self.AwacsFG:GetCoordinate())
+if self.TacticalSRS then
+self.TacticalSRS:SetCoordinate(self.AwacsFG:GetCoordinate())
+end
+end
 self:_CheckAICAPOnStation()
 self:_CleanUpContacts()
 self:_CheckMerges()
@@ -76158,7 +76167,6 @@ UsedVHFFrequencies={},
 takenOff={},
 csarUnits={},
 downedPilots={},
-woundedGroups={},
 landedStatus={},
 addedTo={},
 woundedGroups={},
@@ -76314,6 +76322,9 @@ self.SRSVoice=nil
 self.SRSGPathToCredentials=nil
 self.SRSVolume=1.0
 self.SRSGender="male"
+self.CSARVoice=MSRS.Voices.Google.Standard.en_US_Standard_A
+self.CSARVoiceMS=MSRS.Voices.Microsoft.Hedda
+self.coordinate=nil
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CSAR_%s_Persist.csv",AliaS)
 self.enableLoadSave=false
@@ -76763,7 +76774,7 @@ self.CallsignTranslations=CallsignTranslations
 return self
 end
 function CSAR:_GetCustomCallSign(UnitName)
-local callsign=Unitname
+local callsign=UnitName
 local unit=UNIT:FindByName(UnitName)
 if unit and unit:IsAlive()then
 local group=unit:GetGroup()
@@ -77060,7 +77071,14 @@ if _override or not self.suppressmessages then
 local m=MESSAGE:New(_text,_time,"CSAR",_clear):ToGroup(group)
 end
 if _speak and self.useSRS then
-self.SRSQueue:NewTransmission(_text,nil,self.msrs,nil,2)
+local coord=_unit:GetCoordinate()
+if coord then
+self.msrs:SetCoordinate(coord)
+end
+_text=string.gsub(_text,"km"," kilometer")
+_text=string.gsub(_text,"nm"," nautical miles")
+self:I("Voice = "..self.SRSVoice)
+self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
 end
 return self
 end
@@ -77165,7 +77183,7 @@ local smokedist=8000
 if self.approachdist_far>smokedist then smokedist=self.approachdist_far end
 if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
-local _distance=0
+local _distance=""
 if _SETTINGS:IsImperial()then
 _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
@@ -77177,18 +77195,27 @@ local _coord=_closest.pilot:GetCoordinate()
 _coord:FlareRed(_clockDir)
 else
 local _distance=smokedist
+local dtext=""
 if _SETTINGS:IsImperial()then
-_distance=string.format("%.1fnm",UTILS.MetersToNM(smokedist))
+dtext=string.format("%.1fnm",UTILS.MetersToNM(smokedist))
 else
-_distance=string.format("%.1fkm",smokedist/1000)
+dtext=string.format("%.1fkm",smokedist/1000)
 end
-self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",_distance),self.messageTime,false,false,true)
+self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",dtext),self.messageTime,false,false,true)
 end
 return self
 end
 function CSAR:_DisplayToAllSAR(_message,_side,_messagetime)
 self:T(self.lid.." _DisplayToAllSAR")
 local messagetime=_messagetime or self.messageTime
+if self.msrs then
+local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
+if self.msrs.google==nil then
+voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
+end
+self:I("Voice = "..voice)
+self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
+end
 for _,_unitName in pairs(self.csarUnits)do
 local _unit=self:_GetSARHeli(_unitName)
 if _unit and not self.suppressmessages then
@@ -77208,7 +77235,7 @@ if smokedist<self.approachdist_far then smokedist=self.approachdist_far end
 local _closest=self:_GetClosestDownedPilot(_heli)
 if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
 local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
-local _distance=0
+local _distance=string.format("%.1fkm",_closest.distance/1000)
 if _SETTINGS:IsImperial()then
 _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
@@ -77220,7 +77247,7 @@ local _coord=_closest.pilot:GetCoordinate()
 local color=self.smokecolor
 _coord:Smoke(color)
 else
-local _distance=0
+local _distance=string.format("%.1fkm",smokedist/1000)
 if _SETTINGS:IsImperial()then
 _distance=string.format("%.1fnm",UTILS.MetersToNM(smokedist))
 else
@@ -77465,6 +77492,12 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
+if not self.coordinate then
+local csarhq=self.mash:GetRandom()
+if csarhq then
+self.coordinate=csarhq:GetCoordinate()
+end
+end
 if self.wetfeettemplate then
 self.usewetfeet=true
 end
@@ -98658,7 +98691,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.21"
+PLAYERTASK.version="0.1.22"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -100974,7 +101007,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Coordinate)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or"male"
@@ -100997,6 +101030,9 @@ self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
 if self.PathToGoogleKey then
 self.SRS:SetGoogle(self.PathToGoogleKey)
+end
+if Coordinate then
+self.SRS:SetCoordinate(Coordinate)
 end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
@@ -101167,7 +101203,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.18",
+version="0.0.19",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -102211,8 +102247,12 @@ self:I(text2.."\n"..text2tts)
 end
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(text1,nil,self.SRS,nil,2)
-self.SRSQueue:NewTransmission(text2tts,nil,self.SRS,nil,2)
+self.SRSQueue:NewTransmission(text2tts,nil,self.SRS,nil,3)
 MESSAGE:New(text2,10,self.Name or"FACA"):ToCoalition(self.Coalition)
 else
 MESSAGE:New(text1,10,self.Name or"FACA"):ToClient(Client)
@@ -102238,8 +102278,12 @@ end
 local text1="Going home!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(text1,nil,self.SRS,nil,2)
-self.SRSQueue:NewTransmission(texttts,nil,self.SRS,nil,2)
+self.SRSQueue:NewTransmission(texttts,nil,self.SRS,nil,3)
 MESSAGE:New(text,10,self.Name or"FACA"):ToCoalition(self.Coalition)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToCoalition(self.Coalition)
@@ -102282,6 +102326,9 @@ local text=string.format("Target! %s! %s o\'clock, %d %s!",ThreatTxt,i,targetdis
 local ttstext=string.format("Target! %s! %s oh clock, %d %s!",ThreatTxt,i,targetdistance,dunits)
 if self.UseSRS then
 local grp=Client:GetGroup()
+if clientcoord then
+self.SRS:SetCoordinate(clientcoord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102317,6 +102364,10 @@ local text=string.format(" %d targets! %s o\'clock, %d %s!",targetno,i,targetdis
 local ttstext=string.format("%d targets! %s oh clock, %d %s!",targetno,i,targetdistance,dunits)
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102348,6 +102399,10 @@ local text="Sunshine!"
 local ttstext="Sunshine!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102377,6 +102432,10 @@ local text="Smoke on!"
 local ttstext="Smoke and Mirrors!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102406,6 +102465,10 @@ local text="Fireworks!"
 local ttstext="Fire works!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102440,6 +102503,10 @@ local text="Lasing!"
 local ttstext="Laser on!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102474,6 +102541,10 @@ local text="Shack!"
 local ttstext="Shack!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102508,6 +102579,10 @@ local text="Lost LOS!"
 local ttstext="Lost L O S!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(ttstext,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -102532,6 +102607,10 @@ self:T({From,Event,To})
 local text="Upload completed!"
 if self.UseSRS then
 local grp=Client:GetGroup()
+local coord=grp:GetCoordinate()
+if coord then
+self.SRS:SetCoordinate(coord)
+end
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,1,{grp},text,10)
 else
 MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
@@ -115051,19 +115130,19 @@ self:_ExecCommand(command)
 end
 return self
 end
-function MSRS:PlayText(Text,Delay)
+function MSRS:PlayText(Text,Delay,Coordinate)
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,0)
+self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate)
 else
-local command=self:_GetCommand()
+local command=self:_GetCommand(nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,Coordinate)
 command=command..string.format(" --text=\"%s\"",tostring(Text))
 self:_ExecCommand(command)
 end
 return self
 end
-function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label)
+self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 else
 if Frequencies and type(Frequencies)~="table"then
 Frequencies={Frequencies}
@@ -115071,7 +115150,7 @@ end
 if Modulations and type(Modulations)~="table"then
 Modulations={Modulations}
 end
-local command=self:_GetCommand(Frequencies,Modulations,nil,Gender,Voice,Culture,Volume,nil,nil,Label)
+local command=self:_GetCommand(Frequencies,Modulations,nil,Gender,Voice,Culture,Volume,nil,nil,Label,Coordinate)
 command=command..string.format(" --text=\"%s\"",tostring(Text))
 self:_ExecCommand(command)
 end
@@ -115153,7 +115232,7 @@ function MSRS:_GetLatLongAlt(Coordinate)
 local lat,lon,alt=coord.LOtoLL(Coordinate)
 return lat,lon,math.floor(alt)
 end
-function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port,label)
+function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port,label,coordinate)
 local path=self:GetPath()or STTS.DIRECTORY
 local exe=STTS.EXECUTABLE or"DCS-SR-ExternalAudio.exe"
 freqs=table.concat(freqs or self.frequencies,",")
@@ -115166,6 +115245,7 @@ volume=volume or self.volume
 speed=speed or self.speed
 port=port or self.port
 label=label or self.Label
+coordinate=coordinate or self.coordinate
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
 local command=string.format('"%s\\%s" -f "%s" -m "%s" -c %s -p %s -n "%s" -v "%.1f"',path,exe,freqs,modus,coal,port,label,volume)
@@ -115179,8 +115259,8 @@ if culture and culture~="en-GB"then
 command=command..string.format(" -l %s",tostring(culture))
 end
 end
-if self.coordinate then
-local lat,lon,alt=self:_GetLatLongAlt(self.coordinate)
+if coordinate then
+local lat,lon,alt=self:_GetLatLongAlt(coordinate)
 command=command..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
 end
 if self.google then
@@ -115433,7 +115513,7 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label)
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate)
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
@@ -115467,14 +115547,15 @@ transmission.culture=culture
 transmission.voice=voice
 transmission.gender=volume
 transmission.label=label
+transmission.coordinate=coordinate
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
 if transmission.frequency then
-transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label)
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate)
 else
-transmission.msrs:PlayText(transmission.text)
+transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate)
 end
 local function texttogroup(gid)
 trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
