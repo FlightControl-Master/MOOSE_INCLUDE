@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-03T16:33:45+01:00-9d500186d1131fec9f307c818c6855d033c7c06a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-05T13:01:27+01:00-9d3cb4cc1b03793626cd656419935933c0eb3eb2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -16739,7 +16739,8 @@ _MESSAGESRS.MSRS:SetVoice(voice or _MESSAGESRS.Voice)
 if coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(coordinate)
 end
-_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency,modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,voice or _MESSAGESRS.Voice,volume,self.MessageCategory)
+local category=string.gsub(self.MessageCategory,":","")
+_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency,modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,voice or _MESSAGESRS.Voice,volume,category,coordinate)
 end
 return self
 end
