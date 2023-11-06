@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-05T13:01:27+01:00-9d3cb4cc1b03793626cd656419935933c0eb3eb2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-06T22:01:05+01:00-fbf2c4c721cbcb2d637bf62017563ed6d04446d7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -6411,7 +6411,7 @@ if Event.id and Event.id==EVENTS.MissionEnd then
 self.MissionEnd=true
 end
 if Event.initiator then
-Event.IniObjectCategory=Event.initiator:getCategory()
+Event.IniObjectCategory=Object.getCategory(Event.initiator)
 if Event.IniObjectCategory==Object.Category.STATIC then
 if Event.id==31 then
 Event.IniDCSUnit=Event.initiator
@@ -6442,8 +6442,7 @@ local Unit=UNIT:FindByName(Event.IniDCSUnitName)
 if Unit then
 Event.IniObjectCategory=Object.Category.UNIT
 end
-end
-if Event.IniObjectCategory==Object.Category.UNIT then
+elseif Event.IniObjectCategory==Object.Category.UNIT then
 Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit:getName()
 Event.IniUnitName=Event.IniDCSUnitName
@@ -6462,8 +6461,7 @@ Event.IniPlayerName=Event.IniDCSUnit:getPlayerName()
 Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
-end
-if Event.IniObjectCategory==Object.Category.CARGO then
+elseif Event.IniObjectCategory==Object.Category.CARGO then
 Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit:getName()
 Event.IniUnitName=Event.IniDCSUnitName
@@ -6471,16 +6469,14 @@ Event.IniUnit=CARGO:FindByName(Event.IniDCSUnitName)
 Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
-end
-if Event.IniObjectCategory==Object.Category.SCENERY then
+elseif Event.IniObjectCategory==Object.Category.SCENERY then
 Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit:getName()
 Event.IniUnitName=Event.IniDCSUnitName
 Event.IniUnit=SCENERY:Register(Event.IniDCSUnitName,Event.initiator)
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.initiator:isExist()and Event.IniDCSUnit:getTypeName()or"SCENERY"
-end
-if Event.IniObjectCategory==Object.Category.BASE then
+elseif Event.IniObjectCategory==Object.Category.BASE then
 Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit:getName()
 Event.IniUnitName=Event.IniDCSUnitName
@@ -6495,7 +6491,7 @@ end
 end
 end
 if Event.target then
-Event.TgtObjectCategory=Event.target:getCategory()
+Event.TgtObjectCategory=Object.getCategory(Event.target)
 if Event.TgtObjectCategory==Object.Category.UNIT then
 Event.TgtDCSUnit=Event.target
 Event.TgtDCSGroup=Event.TgtDCSUnit:getGroup()
@@ -6512,8 +6508,7 @@ Event.TgtPlayerName=Event.TgtDCSUnit:getPlayerName()
 Event.TgtCoalition=Event.TgtDCSUnit:getCoalition()
 Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
-end
-if Event.TgtObjectCategory==Object.Category.STATIC then
+elseif Event.TgtObjectCategory==Object.Category.STATIC then
 Event.TgtDCSUnit=Event.target
 if Event.target:isExist()and Event.id~=33 then
 Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
@@ -6540,8 +6535,7 @@ else
 Event.TgtTypeName="Static"
 end
 end
-end
-if Event.TgtObjectCategory==Object.Category.SCENERY then
+elseif Event.TgtObjectCategory==Object.Category.SCENERY then
 Event.TgtDCSUnit=Event.target
 Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
 Event.TgtUnitName=Event.TgtDCSUnitName
