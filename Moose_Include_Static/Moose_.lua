@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-05T13:01:59+01:00-6db2e333add4f4292a0c8b2e3b5d08ffad6b4aec ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-06T18:36:02+01:00-eed61191935078aaa7f035ccbee29768e1d4f10c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -83907,7 +83907,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="1.0.1"
+FLIGHTGROUP.version="1.0.2"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -84279,13 +84279,13 @@ self:_UpdatePosition()
 self:_CheckDetectedUnits()
 self:_CheckAmmoStatus()
 self:_CheckDamage()
+local mission=self:GetMissionCurrent()
 if self:IsWaiting()then
 if self.Twaiting and self.dTwait then
 if timer.getAbsTime()>self.Twaiting+self.dTwait then
 end
 end
 end
-local mission=self:GetMissionCurrent()
 if mission and mission.updateDCSTask then
 if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP)and mission.orbitVec2 then
 local vec2=mission:GetTargetVec2()
@@ -84447,6 +84447,11 @@ end
 self:_CheckCargoTransport()
 self:_PrintTaskAndMissionStatus()
 local mission=self:GetMissionCurrent()
+if not mission then
+self.Twaiting=nil
+self.dTwait=nil
+self:_CheckGroupDone()
+end
 end
 function FLIGHTGROUP:OnEventEngineStartup(EventData)
 if EventData and EventData.IniGroup and EventData.IniUnit and EventData.IniGroupName and EventData.IniGroupName==self.groupname then
