@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-06T22:01:26+01:00-21aadc14b10cc7ea4987f27540731188e4c36263 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T11:23:38+01:00-f408c11506c3e74343db2d9ce6fa71b30544e241 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -81871,7 +81871,7 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.4"
+FLIGHTCONTROL.version="0.7.5"
 function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
@@ -83738,8 +83738,15 @@ local spot=self:GetClosestParkingSpot(coordinate)
 if not spot.ParkingGuard then
 local heading=unit:GetHeading()
 local size,x,y,z=unit:GetObjectSize()
-self:T2(self.lid..string.format("Parking guard for %s: heading=%d, distance x=%.1f m",unit:GetName(),heading,x))
-local Coordinate=coordinate:Translate(0.75*x+3,heading)
+local xdiff=3
+if AIRBASE._CheckTerminalType(spot.TerminalType,AIRBASE.TerminalType.Shelter)then
+xdiff=27-(x*0.5)
+end
+if(AIRBASE._CheckTerminalType(spot.TerminalType,AIRBASE.TerminalType.OpenMed)or AIRBASE._CheckTerminalType(spot.TerminalType,AIRBASE.TerminalType.Shelter))and self.airbasename==AIRBASE.Sinai.Ramon_Airbase then
+xdiff=12
+end
+self:T2(self.lid..string.format("Parking guard for %s: heading=%d, length x=%.1f m, xdiff=%.1f m",unit:GetName(),heading,x,xdiff))
+local Coordinate=coordinate:Translate(x*0.5+xdiff,heading)
 local lookat=heading-180
 self.parkingGuard:InitHeading(lookat)
 if self.parkingGuard:IsInstanceOf("SPAWN")then
