@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T11:24:00+01:00-500a7f938f317296a8f7c47f97ad6edde14ec9ba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T17:01:57+01:00-3360f511ee371994772086f973ccb3afac019122 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -101232,7 +101232,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.19",
+version="0.0.20",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -102542,7 +102542,7 @@ MESSAGE:New(text,10,self.Name or"FACA"):ToClient(Client)
 end
 return self
 end
-function PLAYERRECCE:onafterShack(From,Event,To,Client,Target,Targettype)
+function PLAYERRECCE:onafterShack(From,Event,To,Client,Target)
 self:T({From,Event,To})
 local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
 local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
@@ -102631,7 +102631,7 @@ end
 end
 return self
 end
-function PLAYERRECCE:onafterTargetReportSent(From,Event,To,Client,TargetSet)
+function PLAYERRECCE:onafterTargetReportSent(From,Event,To,Client,Playername,TargetSet)
 self:T({From,Event,To})
 local text="Upload completed!"
 if self.UseSRS then
