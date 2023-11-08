@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T17:01:57+01:00-3360f511ee371994772086f973ccb3afac019122 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T17:44:12+01:00-04c092b9ef3ee9255e1d6b4cfd79269a6f0deb05 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -24827,6 +24827,25 @@ function GROUP:FindByName(GroupName)
 local GroupFound=_DATABASE:FindGroup(GroupName)
 return GroupFound
 end
+function GROUP:FindByMatching(Pattern)
+local GroupFound=nil
+for name,group in pairs(_DATABASE.GROUPS)do
+if string.match(name,Pattern)then
+GroupFound=group
+break
+end
+end
+return GroupFound
+end
+function GROUP:FindAllByMatching(Pattern)
+local GroupsFound={}
+for name,group in pairs(_DATABASE.GROUPS)do
+if string.match(name,Pattern)then
+GroupsFound[#GroupsFound+1]=group
+end
+end
+return GroupsFound
+end
 function GROUP:GetDCSObject()
 local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
@@ -28012,6 +28031,25 @@ end
 function UNIT:FindByName(UnitName)
 local UnitFound=_DATABASE:FindUnit(UnitName)
 return UnitFound
+end
+function UNIT:FindByMatching(Pattern)
+local GroupFound=nil
+for name,group in pairs(_DATABASE.UNITS)do
+if string.match(name,Pattern)then
+GroupFound=group
+break
+end
+end
+return GroupFound
+end
+function UNIT:FindAllByMatching(Pattern)
+local GroupsFound={}
+for name,group in pairs(_DATABASE.UNITS)do
+if string.match(name,Pattern)then
+GroupsFound[#GroupsFound+1]=group
+end
+end
+return GroupsFound
 end
 function UNIT:Name()
 return self.UnitName
