@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-06T22:01:05+01:00-fbf2c4c721cbcb2d637bf62017563ed6d04446d7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T11:23:01+01:00-9fafdea0bb4187327398c87480fe695b2362ff09 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -6458,6 +6458,12 @@ Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
 Event.IniGroupName=Event.IniDCSGroupName
 end
 Event.IniPlayerName=Event.IniDCSUnit:getPlayerName()
+if Event.IniPlayerName then
+local PID=NET.GetPlayerIDByName(nil,Event.IniPlayerName)
+if PID then
+Event.IniPlayerUCID=net.get_player_info(tonumber(PID),'ucid')
+end
+end
 Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
@@ -6505,6 +6511,12 @@ Event.TgtGroup=GROUP:FindByName(Event.TgtDCSGroupName)
 Event.TgtGroupName=Event.TgtDCSGroupName
 end
 Event.TgtPlayerName=Event.TgtDCSUnit:getPlayerName()
+if Event.TgtPlayerName then
+local PID=NET.GetPlayerIDByName(nil,Event.TgtPlayerName)
+if PID then
+Event.TgtPlayerUCID=net.get_player_info(tonumber(PID),'ucid')
+end
+end
 Event.TgtCoalition=Event.TgtDCSUnit:getCoalition()
 Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
@@ -26564,6 +26576,18 @@ MESSAGE:New(Message,MessageDuration,MessageCategory):ToClient(self)
 end
 end
 end
+function CLIENT:GetUCID()
+local PID=NET.GetPlayerIDByName(nil,self:GetPlayerName())
+return net.get_player_info(tonumber(PID),'ucid')
+end
+function CLIENT:GetPlayerInfo(Attribute)
+local PID=NET.GetPlayerIDByName(nil,self:GetPlayerName())
+if PID then
+return net.get_player_info(tonumber(PID),Attribute)
+else
+return nil
+end
+end
 STATIC={
 ClassName="STATIC",
 }
@@ -28590,7 +28614,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.1.2",
+Version="0.1.3",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -28654,20 +28678,23 @@ local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
 local TNow=timer.getTime()
 self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
-self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid.." | Event ID: "..data.id)
 local blocked=self:IsAnyBlocked(ucid,name,PlayerID,PlayerSide,PlayerSlot)
 if blocked and PlayerID and tonumber(PlayerID)~=1 then
 local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
 else
+local client=CLIENT:FindByPlayerName(name)or data.IniUnit
+if not self.KnownPilots[name]or(self.KnownPilots[name]and TNow-self.KnownPilots[name].timestamp>3)then
+self:__PlayerJoined(1,client,name)
 self.KnownPilots[name]={
 name=name,
 ucid=ucid,
 id=PlayerID,
 side=PlayerSide,
 slot=PlayerSlot,
+timestamp=TNow,
 }
-local client=CLIENT:FindByPlayerName(name)or data.IniUnit
-self:__PlayerJoined(1,client,name)
+end
 return self
 end
 end
@@ -28819,11 +28846,9 @@ return self
 end
 function NET:GetPlayerIDByName(Name)
 if not Name then return nil end
-local playerList=self:GetPlayerList()
-self:T({playerList})
+local playerList=net.get_player_list()
 for i=1,#playerList do
 local playerName=net.get_name(i)
-self:T({playerName})
 if playerName==Name then
 return playerList[i]
 end
