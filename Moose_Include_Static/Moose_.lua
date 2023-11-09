@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T17:54:08+01:00-f5d2439d693154484ec93bf61b4d4e5e5dbc79b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-09T15:09:39+01:00-166a7ab7db4664202185ad30bbfd1eaf7cd8d049 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -5682,7 +5682,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.1",
+version="0.1.3",
 name=nil,
 clientset=nil,
 menutree={},
@@ -5691,15 +5691,69 @@ playertree={},
 entrycount=0,
 rootentries={},
 debug=true,
+PlayerMenu={},
+Coalition=nil,
 }
-function CLIENTMENUMANAGER:New(ClientSet,Alias)
+function CLIENTMENUMANAGER:New(ClientSet,Alias,Coalition)
 local self=BASE:Inherit(self,BASE:New())
 self.clientset=ClientSet
+self.PlayerMenu={}
 self.name=Alias or"Nightshift"
+self.Coalition=Coalition or coalition.side.BLUE
 self.lid=string.format("CLIENTMENUMANAGER %s | %s | ",self.version,self.name)
 if self.debug then
-self:T(self.lid.."Created")
+self:I(self.lid.."Created")
 end
+return self
+end
+function CLIENTMENUMANAGER:_EventHandler(EventData)
+self:T(self.lid.."_EventHandler: "..EventData.id)
+if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
+self:T(self.lid.."Leave event for player: "..tostring(EventData.IniPlayerName))
+local Client=_DATABASE:FindClient(EventData.IniPlayerName)
+if Client then
+self:ResetMenu(Client)
+end
+elseif(EventData.id==EVENTS.PlayerEnterAircraft)and EventData.IniCoalition==self.Coalition then
+if EventData.IniPlayerName and EventData.IniGroup then
+if(not self.clientset:IsIncludeObject(_DATABASE:FindClient(EventData.IniPlayerName)))then
+self:T(self.lid.."Client not in SET: "..EventData.IniPlayerName)
+return self
+end
+local player=_DATABASE:FindClient(EventData.IniPlayerName)
+self:Propagate(player)
+end
+elseif EventData.id==EVENTS.PlayerEnterUnit then
+local grp=GROUP:FindByName(EventData.IniGroupName)
+if grp:IsGround()then
+self:T(string.format("Player %s entered GROUND unit %s!",EventData.IniPlayerName,EventData.IniUnitName))
+local IsPlayer=EventData.IniDCSUnit:getPlayerName()
+if IsPlayer then
+local client=_DATABASE.CLIENTS[EventData.IniDCSUnitName]
+if not client then
+self:I(string.format("Player '%s' joined ground unit '%s' of group '%s'",tostring(EventData.IniPlayerName),tostring(EventData.IniDCSUnitName),tostring(EventData.IniDCSGroupName)))
+client=_DATABASE:AddClient(EventData.IniDCSUnitName)
+client:AddPlayer(EventData.IniPlayerName)
+if not _DATABASE.PLAYERS[EventData.IniPlayerName]then
+_DATABASE:AddPlayer(EventData.IniUnitName,EventData.IniPlayerName)
+end
+local Settings=SETTINGS:Set(EventData.IniPlayerName)
+Settings:SetPlayerMenu(EventData.IniUnit)
+end
+self:Propagate(client)
+end
+end
+end
+return self
+end
+function CLIENTMENUMANAGER:InitAutoPropagation()
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
+self:HandleEvent(EVENTS.Ejection,self._EventHandler)
+self:HandleEvent(EVENTS.Crash,self._EventHandler)
+self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
+self:SetEventPriority(5)
 return self
 end
 function CLIENTMENUMANAGER:NewEntry(Text,Parent,Function,...)
@@ -5797,7 +5851,6 @@ return self
 end
 function CLIENTMENUMANAGER:Propagate(Client)
 self:T(self.lid.."Propagate")
-self:T(Client)
 local Set=self.clientset.Set
 if Client then
 Set={Client}
@@ -6014,6 +6067,7 @@ function DATABASE:New()
 local self=BASE:Inherit(self,BASE:New())
 self:SetEventPriority(1)
 self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventOnPlayerEnterUnit)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
@@ -6660,28 +6714,39 @@ end
 function DATABASE:_EventOnPlayerEnterUnit(Event)
 self:F2({Event})
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==1 then
-self:AddUnit(Event.IniDCSUnitName)
-Event.IniUnit=self:FindUnit(Event.IniDCSUnitName)
-self:AddGroup(Event.IniDCSGroupName)
-local PlayerName=Event.IniDCSUnit:getPlayerName()
-if PlayerName then
-if not self.PLAYERS[PlayerName]then
-self:AddPlayer(Event.IniDCSUnitName,PlayerName)
+if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+local IsPlayer=Event.IniDCSUnit:getPlayerName()
+if IsPlayer then
+self:I(string.format("Player '%s' joined GROUND unit '%s' of group '%s'",tostring(Event.IniPlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniDCSGroupName)))
+local client=self.CLIENTS[Event.IniDCSUnitName]
+if not client then
+client=self:AddClient(Event.IniDCSUnitName)
 end
-local Settings=SETTINGS:Set(PlayerName)
+client:AddPlayer(Event.IniPlayerName)
+if not self.PLAYERS[Event.IniPlayerName]then
+self:AddPlayer(Event.IniUnitName,Event.IniPlayerName)
+end
+local Settings=SETTINGS:Set(Event.IniPlayerName)
 Settings:SetPlayerMenu(Event.IniUnit)
-else
-self:E("ERROR: getPlayerName() returned nil for event PlayerEnterUnit")
 end
 end
 end
 end
 function DATABASE:_EventOnPlayerLeaveUnit(Event)
 self:F2({Event})
+local function FindPlayerName(UnitName)
+local playername=nil
+for _name,_unitname in pairs(self.PLAYERS)do
+if _unitname==UnitName then
+playername=_name
+break
+end
+end
+return playername
+end
 if Event.IniUnit then
 if Event.IniObjectCategory==1 then
-local PlayerName=Event.IniUnit:GetPlayerName()
+local PlayerName=Event.IniUnit:GetPlayerName()or FindPlayerName(Event.IniUnitName)
 if PlayerName then
 self:I(string.format("Player '%s' left unit %s",tostring(PlayerName),tostring(Event.IniUnitName)))
 local Settings=SETTINGS:Set(PlayerName)
@@ -99435,7 +99500,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.62"
+PLAYERTASKCONTROLLER.version="0.1.63"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -99453,7 +99518,6 @@ self.TargetQueue=FIFO:New()
 self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
 self.PrecisionTasks=FIFO:New()
-self.PlayerMenu={}
 self.FlashPlayer={}
 self.AllowFlash=false
 self.lasttaskcount=0
@@ -99739,10 +99803,6 @@ self:T(self.lid.."_EventHandler: "..EventData.id)
 if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
 if EventData.IniPlayerName then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
-if self.PlayerMenu[EventData.IniPlayerName]then
-self.PlayerMenu[EventData.IniPlayerName]:Remove()
-self.PlayerMenu[EventData.IniPlayerName]=nil
-end
 local text=""
 if self.TasksPerPlayer:HasUniqueID(EventData.IniPlayerName)then
 local task=self.TasksPerPlayer:PullByID(EventData.IniPlayerName)
@@ -99750,6 +99810,8 @@ local Client=_DATABASE:FindClient(EventData.IniPlayerName)
 if Client then
 task:RemoveClient(Client)
 text=self.gettext:GetEntry("TASKABORT",self.locale)
+self.ActiveTaskMenuTemplate:ResetMenu(Client)
+self.JoinTaskMenuTemplate:ResetMenu(Client)
 else
 task:RemoveClient(nil,EventData.IniPlayerName)
 text=self.gettext:GetEntry("TASKABORT",self.locale)
@@ -99792,8 +99854,7 @@ local text=string.format(switchtext,playername,self.MenuName or self.Name,freqte
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
 if EventData.IniPlayerName then
-self.PlayerMenu[EventData.IniPlayerName]=nil
-local player=CLIENT:FindByName(EventData.IniUnitName)
+local player=_DATABASE:FindClient(EventData.IniPlayerName)
 self:_SwitchMenuForClient(player,"Info")
 end
 end
