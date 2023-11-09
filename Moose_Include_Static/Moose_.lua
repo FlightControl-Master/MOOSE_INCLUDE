@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-08T17:53:43+01:00-fa43a6c40be9114cd8e1de2ccf3b46ae80438e9e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-09T15:09:01+01:00-db06154ad7bf6f914fd3e25334a3d666551e1988 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -9667,6 +9667,7 @@ function DATABASE:New()
 local self=BASE:Inherit(self,BASE:New())
 self:SetEventPriority(1)
 self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventOnPlayerEnterUnit)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
@@ -10313,28 +10314,39 @@ end
 function DATABASE:_EventOnPlayerEnterUnit(Event)
 self:F2({Event})
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==1 then
-self:AddUnit(Event.IniDCSUnitName)
-Event.IniUnit=self:FindUnit(Event.IniDCSUnitName)
-self:AddGroup(Event.IniDCSGroupName)
-local PlayerName=Event.IniDCSUnit:getPlayerName()
-if PlayerName then
-if not self.PLAYERS[PlayerName]then
-self:AddPlayer(Event.IniDCSUnitName,PlayerName)
+if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+local IsPlayer=Event.IniDCSUnit:getPlayerName()
+if IsPlayer then
+self:I(string.format("Player '%s' joined GROUND unit '%s' of group '%s'",tostring(Event.IniPlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniDCSGroupName)))
+local client=self.CLIENTS[Event.IniDCSUnitName]
+if not client then
+client=self:AddClient(Event.IniDCSUnitName)
 end
-local Settings=SETTINGS:Set(PlayerName)
+client:AddPlayer(Event.IniPlayerName)
+if not self.PLAYERS[Event.IniPlayerName]then
+self:AddPlayer(Event.IniUnitName,Event.IniPlayerName)
+end
+local Settings=SETTINGS:Set(Event.IniPlayerName)
 Settings:SetPlayerMenu(Event.IniUnit)
-else
-self:E("ERROR: getPlayerName() returned nil for event PlayerEnterUnit")
 end
 end
 end
 end
 function DATABASE:_EventOnPlayerLeaveUnit(Event)
 self:F2({Event})
+local function FindPlayerName(UnitName)
+local playername=nil
+for _name,_unitname in pairs(self.PLAYERS)do
+if _unitname==UnitName then
+playername=_name
+break
+end
+end
+return playername
+end
 if Event.IniUnit then
 if Event.IniObjectCategory==1 then
-local PlayerName=Event.IniUnit:GetPlayerName()
+local PlayerName=Event.IniUnit:GetPlayerName()or FindPlayerName(Event.IniUnitName)
 if PlayerName then
 self:I(string.format("Player '%s' left unit %s",tostring(PlayerName),tostring(Event.IniUnitName)))
 local Settings=SETTINGS:Set(PlayerName)
