@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-09T15:09:01+01:00-db06154ad7bf6f914fd3e25334a3d666551e1988 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-12T16:53:34+01:00-19047843ccb402c9fa25f63e5731643ab1003aa7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -31968,6 +31968,7 @@ SEAD.Harms={
 ["BGM_109"]="BGM_109",
 ["AGM_154"]="AGM_154",
 ["HY-2"]="HY-2",
+["ADM_141A"]="ADM_141A",
 }
 SEAD.HarmData={
 ["AGM_88"]={150,3},
@@ -31984,6 +31985,7 @@ SEAD.HarmData={
 ["BGM_109"]={460,0.705},
 ["AGM_154"]={130,0.61},
 ["HY-2"]={90,1},
+["ADM_141A"]={126,0.6},
 }
 function SEAD:New(SEADGroupPrefixes,Padding)
 local self=BASE:Inherit(self,FSM:New())
@@ -32006,7 +32008,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.4")
+self:I("*** SEAD - Started Version 0.4.5")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -32135,7 +32137,7 @@ end
 end
 return self
 end
-function SEAD:onafterManageEvasion(From,Event,To,_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,timeoffset)
+function SEAD:onafterManageEvasion(From,Event,To,_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,timeoffset,Weapon)
 local timeoffset=timeoffset or 0
 if _targetskill=="Random"then
 local Skills={"Average","Good","High","Excellent"}
@@ -32155,6 +32157,10 @@ local wpndata=SEAD.HarmData[data]
 reach=wpndata[1]*1.1
 local mach=wpndata[2]
 wpnspeed=math.floor(mach*340.29)
+if Weapon then
+wpnspeed=Weapon:GetSpeed()
+self:T(string.format("*** SEAD - Weapon Speed from WEAPON: %f m/s",wpnspeed))
+end
 end
 local _tti=math.floor(_distance/wpnspeed)-timeoffset
 if _distance>0 then
@@ -32225,6 +32231,7 @@ local SEADUnit=EventData.IniDCSUnit
 local SEADUnitName=EventData.IniDCSUnitName
 local SEADWeapon=EventData.Weapon
 local SEADWeaponName=EventData.WeaponName
+local WeaponWrapper=WEAPON:New(EventData.Weapon)
 self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
 if self:_CheckHarms(SEADWeaponName)then
 self:T('*** SEAD - Weapon Match')
@@ -32278,7 +32285,11 @@ break
 end
 end
 if SEADGroupFound==true then
-self:ManageEvasion(_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup)
+if string.find(SEADWeaponName,"ADM_141",1,true)then
+self:__ManageEvasion(2,_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,0,WeaponWrapper)
+else
+self:ManageEvasion(_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,0,WeaponWrapper)
+end
 end
 end
 return self
