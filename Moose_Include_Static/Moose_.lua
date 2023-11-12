@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-11T19:02:34+01:00-9ccfcb8fb14005e51329f45f34cd48705be0c69f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-12T12:13:12+01:00-2d631cba3ff8a6f51bf418111a4ef4d3e47df701 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -35399,6 +35399,9 @@ if self.playermenus[unitname]then self.playermenus[unitname]:Remove()end
 local lasetopm=MENU_GROUP:New(Group,"Autolase",nil)
 self.playermenus[unitname]=lasetopm
 local lasemenu=MENU_GROUP_COMMAND:New(Group,"Status",lasetopm,self.ShowStatus,self,Group,Unit)
+local smoke=(self.smoketargets==true)and"off"or"on"
+local smoketext=string.format("Switch smoke targets to %s",smoke)
+local smokemenu=MENU_GROUP_COMMAND:New(Group,smoketext,lasetopm,self.SetSmokeTargets,self,(not self.smoketargets))
 for _,_grp in pairs(self.RecceSet.Set)do
 local grp=_grp
 local unit=grp:GetUnit(1)
@@ -35539,6 +35542,9 @@ end
 function AUTOLASE:SetSmokeTargets(OnOff,Color)
 self.smoketargets=OnOff
 self.smokecolor=Color or SMOKECOLOR.Red
+local smktxt=OnOff==true and"on"or"off"
+local Message="Smoking targets is now "..smktxt.."!"
+self:NotifyPilots(Message,10)
 return self
 end
 function AUTOLASE:GetLosFromUnit(Unit)
