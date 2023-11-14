@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-12T16:53:34+01:00-19047843ccb402c9fa25f63e5731643ab1003aa7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-14T11:57:58+01:00-1b8c9367a3b7c7c46eac1c19433a16d32d43b746 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -50136,6 +50136,7 @@ MANTIS.SamDataCH={
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
+local self=BASE:Inherit(self,FSM:New())
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
@@ -50186,6 +50187,9 @@ self.maxclassic=6
 self.autoshorad=true
 self.ShoradGroupSet=SET_GROUP:New()
 self.FilterZones=Zones
+self.SkateZones=nil
+self.SkateNumber=3
+self.shootandscoot=false
 self.UseEmOnOff=true
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -50195,7 +50199,6 @@ self.advAwacs=true
 else
 self.advAwacs=false
 end
-local self=BASE:Inherit(self,FSM:New())
 self.lid=string.format("MANTIS %s | ",self.name)
 if self.debug then
 BASE:TraceOnOff(true)
@@ -50263,6 +50266,13 @@ function MANTIS:SetEWRGrouping(radius)
 self:T(self.lid.."SetEWRGrouping")
 local radius=radius or 5000
 self.grouping=radius
+return self
+end
+function MANTIS:AddScootZones(ZoneSet,Number)
+self:T(self.lid.." AddScootZones")
+self.SkateZones=ZoneSet
+self.SkateNumber=Number or 3
+self.shootandscoot=true
 return self
 end
 function MANTIS:AddZones(AcceptZones,RejectZones,ConflictZones)
@@ -50960,6 +50970,10 @@ self.Shorad=SHORAD:New(self.name.."-SHORAD",self.name.."-SHORAD",self.SAM_Group,
 self.Shorad:SetDefenseLimits(80,95)
 self.ShoradLink=true
 self.Shorad.Groupset=self.ShoradGroupSet
+self.Shorad.debug=self.debug
+end
+if self.shootandscoot and self.SkateZones then
+self.Shorad:AddScootZones(self.SkateZones,self.SkateNumber or 3)
 end
 self:__Status(-math.random(1,10))
 return self
@@ -51062,12 +51076,14 @@ DefendHarms=true,
 DefendMavs=true,
 DefenseLowProb=70,
 DefenseHighProb=90,
-UseEmOnOff=false,
+UseEmOnOff=true,
+shootandscoot=false,
+SkateNumber=3,
+SkateZones=nil,
 }
 do
 SHORAD.Harms={
 ["AGM_88"]="AGM_88",
-["AGM_45"]="AGM_45",
 ["AGM_122"]="AGM_122",
 ["AGM_84"]="AGM_84",
 ["AGM_45"]="AGM_45",
@@ -51078,6 +51094,8 @@ SHORAD.Harms={
 ["X_25"]="X_25",
 ["X_31"]="X_31",
 ["Kh25"]="Kh25",
+["HY-2"]="HY-2",
+["ADM_141A"]="ADM_141A",
 }
 SHORAD.Mavs={
 ["AGM"]="AGM",
@@ -51103,14 +51121,16 @@ self.DefendHarms=true
 self.DefendMavs=true
 self.DefenseLowProb=70
 self.DefenseHighProb=90
-self.UseEmOnOff=UseEmOnOff or false
-self:I("*** SHORAD - Started Version 0.3.1")
+self.UseEmOnOff=true
+if UseEmOnOff==false then self.UseEmOnOff=UseEmOnOff end
+self:I("*** SHORAD - Started Version 0.3.2")
 self.lid=string.format("SHORAD %s | ",self.name)
 self:_InitState()
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","WakeUpShorad","*")
 self:AddTransition("*","CalculateHitZone","*")
+self:AddTransition("*","ShootAndScoot","*")
 return self
 end
 function SHORAD:_InitState()
@@ -51133,12 +51153,19 @@ math.random()
 end
 return self
 end
+function SHORAD:AddScootZones(ZoneSet,Number)
+self:T(self.lid.." AddScootZones")
+self.SkateZones=ZoneSet
+self.SkateNumber=Number or 3
+self.shootandscoot=true
+return self
+end
 function SHORAD:SwitchDebug(onoff)
 self:T({onoff})
 if onoff then
 self:SwitchDebugOn()
 else
-self.SwitchDebugOff()
+self:SwitchDebugOff()
 end
 return self
 end
@@ -51300,6 +51327,7 @@ local targetzone=ZONE_RADIUS:New("Shorad",targetvec2,Radius)
 local groupset=self.Groupset
 local shoradset=groupset:GetAliveSet()
 local function SleepShorad(group)
+if group and group:IsAlive()then
 local groupname=group:GetName()
 self.ActiveGroups[groupname]=nil
 if self.UseEmOnOff then
@@ -51310,7 +51338,12 @@ end
 local text=string.format("Sleeping SHORAD %s",group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+if self.shootandscoot then
+self:__ShootAndScoot(1,group)
 end
+end
+end
+local TDiff=4
 for _,_group in pairs(shoradset)do
 if _group:IsAnyInZone(targetzone)then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
@@ -51324,7 +51357,11 @@ local groupname=_group:GetName()
 if self.ActiveGroups[groupname]==nil then
 self.ActiveGroups[groupname]={Timing=ActiveTimer}
 local endtime=timer.getTime()+(ActiveTimer*math.random(75,100)/100)
-timer.scheduleFunction(SleepShorad,_group,endtime)
+self.ActiveGroups[groupname].Timer=TIMER:New(SleepShorad,_group):Start(endtime)
+if self.shootandscoot then
+self:__ShootAndScoot(TDiff,_group)
+TDiff=TDiff+1
+end
 end
 end
 end
@@ -51377,6 +51414,31 @@ self:T("*** Found Target = ".._targetgroupname)
 self:WakeUpShorad(_targetgroupname,self.Radius,self.ActiveTimer,Object.Category.UNIT)
 end
 end
+end
+end
+return self
+end
+function SHORAD:onafterShootAndScoot(From,Event,To,Shorad)
+self:T({From,Event,To})
+local possibleZones={}
+local mindist=100
+local maxdist=3000
+if Shorad and Shorad:IsAlive()then
+local NowCoord=Shorad:GetCoordinate()
+for _,_zone in pairs(self.SkateZones.Set)do
+local zone=_zone
+local dist=NowCoord:Get2DDistance(zone:GetCoordinate())
+if dist>=mindist and dist<=maxdist then
+possibleZones[#possibleZones+1]=zone
+if#possibleZones==self.SkateNumber then break end
+end
+end
+if#possibleZones>0 and Shorad:GetVelocityKMH()<2 then
+local rand=math.floor(math.random(1,#possibleZones*1000)/1000+0.5)
+if rand==0 then rand=1 end
+self:T(self.lid.." ShootAndScoot to zone "..rand)
+local ToCoordinate=possibleZones[rand]:GetCoordinate()
+Shorad:RouteGroundTo(ToCoordinate,20,"Cone",1)
 end
 end
 return self
