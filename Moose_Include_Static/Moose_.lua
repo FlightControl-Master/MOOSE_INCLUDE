@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-15T07:24:01+01:00-2c3e9e992dccca0ba01593794782ab9917fda03b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-15T18:17:23+01:00-2044068393ac7e8d6faf577f17603938c964c173 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -9407,29 +9407,40 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
-_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency,Modulation,Volume)
-_MESSAGESRS.MSRS:SetCoalition(Coalition)
+_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM,Volume)
+_MESSAGESRS.frequency=Frequency
+_MESSAGESRS.modulation=Modulation or radio.modulation.AM
+_MESSAGESRS.MSRS:SetCoalition(Coalition or coalition.side.NEUTRAL)
+_MESSAGESRS.coalition=Coalition or coalition.side.NEUTRAL
+_MESSAGESRS.coordinate=Coordinate
 _MESSAGESRS.MSRS:SetCoordinate(Coordinate)
 _MESSAGESRS.MSRS:SetCulture(Culture)
-_MESSAGESRS.Culture=Culture
+_MESSAGESRS.Culture=Culture or"en-GB"
 _MESSAGESRS.MSRS:SetGender(Gender)
-_MESSAGESRS.Gender=Gender
+_MESSAGESRS.Gender=Gender or"female"
 _MESSAGESRS.MSRS:SetGoogle(PathToCredentials)
+_MESSAGESRS.google=PathToCredentials
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
-_MESSAGESRS.MSRS:SetPort(Port)
-_MESSAGESRS.MSRS:SetVoice(Voice)
-_MESSAGESRS.Voice=Voice
+_MESSAGESRS.label=Label or"MESSAGE"
+_MESSAGESRS.MSRS:SetPort(Port or 5002)
+_MESSAGESRS.port=Port or 5002
+_MESSAGESRS.volume=Volume or 1
+_MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
+if Voice then _MESSAGESRS.MSRS:SetVoice(Voice)end
+_MESSAGESRS.voice=Voice
 _MESSAGESRS.SRSQ=MSRSQUEUE:New(Label or"MESSAGE")
-env.info(_MESSAGESRS.MSRS.provider,false)
 end
 function MESSAGE:ToSRS(frequency,modulation,gender,culture,voice,coalition,volume,coordinate)
+local tgender=gender or _MESSAGESRS.Gender
 if _MESSAGESRS.SRSQ then
-_MESSAGESRS.MSRS:SetVoice(voice or _MESSAGESRS.Voice)
+if voice then
+_MESSAGESRS.MSRS:SetVoice(voice or _MESSAGESRS.voice)
+end
 if coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(coordinate)
 end
 local category=string.gsub(self.MessageCategory,":","")
-_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency,modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,voice or _MESSAGESRS.Voice,volume,category,coordinate)
+_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency or _MESSAGESRS.frequency,modulation or _MESSAGESRS.modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,nil,volume or _MESSAGESRS.volume,category,coordinate or _MESSAGESRS.coordinate)
 end
 return self
 end
@@ -115515,7 +115526,7 @@ end
 if self.google then
 command=command..string.format(' --ssml -G "%s"',self.google)
 end
-self:T("MSRS command="..command)
+self:I("MSRS command="..command)
 return command
 end
 function MSRS:LoadConfigFile(Path,Filename,ConfigLoaded)
@@ -115537,7 +115548,7 @@ self.culture=MSRS_Config.Culture or"en-GB"
 self.gender=MSRS_Config.Gender or"male"
 self.google=MSRS_Config.Google
 self.Label=MSRS_Config.Label or"MSRS"
-self.voice=MSRS_Config.Voice or MSRS.Voices.Microsoft.Hazel
+self.voice=MSRS_Config.Voice
 if MSRS_Config.GRPC then
 self.provider=MSRS_Config.GRPC.DefaultProvider
 if MSRS_Config.GRPC[MSRS_Config.GRPC.DefaultProvider]then
@@ -115561,7 +115572,7 @@ MSRS.culture=MSRS_Config.Culture or"en-GB"
 MSRS.gender=MSRS_Config.Gender or"male"
 MSRS.google=MSRS_Config.Google
 MSRS.Label=MSRS_Config.Label or"MSRS"
-MSRS.voice=MSRS_Config.Voice or MSRS.Voices.Microsoft.Hazel
+MSRS.voice=MSRS_Config.Voice
 if MSRS_Config.GRPC then
 MSRS.provider=MSRS_Config.GRPC.DefaultProvider
 if MSRS_Config.GRPC[MSRS_Config.GRPC.DefaultProvider]then
@@ -115737,7 +115748,7 @@ self.lid=string.format("MSRSQUEUE %s | ",self.alias)
 return self
 end
 function MSRSQUEUE:Clear()
-self:I(self.lid.."Clearning MSRSQUEUE")
+self:I(self.lid.."Clearing MSRSQUEUE")
 self.queue={}
 return self
 end
@@ -115794,7 +115805,7 @@ end
 transmission.gender=gender
 transmission.culture=culture
 transmission.voice=voice
-transmission.gender=volume
+transmission.volume=volume
 transmission.label=label
 transmission.coordinate=coordinate
 self:AddTransmission(transmission)
