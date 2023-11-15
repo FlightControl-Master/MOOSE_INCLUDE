@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-14T12:15:48+01:00-ef27daa28261fddd60cdfc79fc90ffaa798fa148 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-15T07:24:01+01:00-2c3e9e992dccca0ba01593794782ab9917fda03b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -99975,7 +99975,7 @@ local text=string.format(switchtext,playername,self.MenuName or self.Name,freqte
 self.SRSQueue:NewTransmission(text,nil,self.SRS,timer.getAbsTime()+60,2,{EventData.IniGroup},text,30,self.BCFrequency,self.BCModulation)
 end
 if EventData.IniPlayerName then
-local player=_DATABASE:FindClient(EventData.IniPlayerName)
+local player=_DATABASE:FindClient(EventData.IniUnitName)
 self:_SwitchMenuForClient(player,"Info")
 end
 end
