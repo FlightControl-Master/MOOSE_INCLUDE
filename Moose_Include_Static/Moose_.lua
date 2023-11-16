@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T22:32:01+01:00-5353be482e984e08936f3fde961e0ee921517514 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T00:26:21+01:00-0bc52eb3310eeadae2446396d03ab8f3a6af4e47 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -27151,7 +27151,7 @@ end
 function AIRBASE:GetWarehouse()
 local warehouse=nil
 local airbase=self:GetDCSObject()
-if airbase then
+if airbase and Airbase.getWarehouse then
 warehouse=airbase:getWarehouse()
 end
 return warehouse
@@ -29113,7 +29113,9 @@ STORAGE.version="0.0.1"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
+if Airbase.getWarehouse then
 self.warehouse=self.airbase:getWarehouse()
+end
 self.lid=string.format("STORAGE %s",AirbaseName)
 return self
 end
