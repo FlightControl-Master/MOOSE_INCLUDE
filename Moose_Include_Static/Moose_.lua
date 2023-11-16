@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-15T18:17:23+01:00-2044068393ac7e8d6faf577f17603938c964c173 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T14:08:33+01:00-ca20e059a68123cf65400c014d8e7a4bf2bff362 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -101463,7 +101463,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.20",
+version="0.0.21",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -101686,17 +101686,17 @@ local dcsunit=Unit.getByName(Gazelle:GetName())
 local vivihorizontal=dcsunit:getDrawArgumentValue(215)or 0
 local vivivertical=dcsunit:getDrawArgumentValue(216)or 0
 local vivioff=false
-if vivihorizontal<-0.7 then
-vivihorizontal=-0.7
-vivioff=true
-return 0,0,0,false
-elseif vivihorizontal>0.7 then
-vivihorizontal=0.7
+if vivihorizontal<-0.67 then
+vivihorizontal=-0.67
+vivioff=false
+elseif vivihorizontal>0.67 then
+vivihorizontal=0.67
 vivioff=true
 return 0,0,0,false
 end
+vivivertical=vivivertical/1.10731
 local horizontalview=vivihorizontal*-180
-local verticalview=vivivertical*-30
+local verticalview=vivivertical*30
 local heading=unit:GetHeading()
 local viviheading=(heading+horizontalview)%360
 local maxview=self:_GetActualMaxLOSight(unit,viviheading,verticalview,vivioff)
@@ -101718,7 +101718,7 @@ self.GazelleViewFactors={
 }
 local lfac=UTILS.Round(maxview,-2)
 if lfac<=1300 then
-factor=self.GazelleViewFactors[lfac/100]
+factor=3.15
 maxview=math.ceil((maxview*factor)/100)*100
 end
 if maxview>8000 then maxview=8000 end
@@ -101734,7 +101734,7 @@ if unit and unit:IsAlive()then
 local typename=unit:GetTypeName()
 maxview=self.MaxViewDistance[typename]or 8000
 local CamHeight=self.Cameraheight[typename]or 0
-if vnod>0 then
+if vnod<0 then
 local beta=90
 local gamma=math.floor(90-vnod)
 local alpha=math.floor(180-beta-gamma)
@@ -101744,7 +101744,7 @@ local c=b*math.sin(math.rad(gamma))
 maxview=c*1.2
 end
 end
-return maxview
+return math.abs(maxview)
 end
 function PLAYERRECCE:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
 if not ShortCallsign or ShortCallsign==false then
@@ -115526,7 +115526,7 @@ end
 if self.google then
 command=command..string.format(' --ssml -G "%s"',self.google)
 end
-self:I("MSRS command="..command)
+self:T("MSRS command="..command)
 return command
 end
 function MSRS:LoadConfigFile(Path,Filename,ConfigLoaded)
