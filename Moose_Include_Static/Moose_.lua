@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T18:11:58+01:00-8075be92a7c2bfa078ae15e7494b5477222692f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T22:32:17+01:00-067285f87064ee15fba119997e66668a8477e63c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -7763,7 +7763,7 @@ end
 if Event.place then
 if Event.id==EVENTS.LandingAfterEjection then
 else
-if Event.place:isExist()and Event.place:getCategory()~=Object.Category.SCENERY then
+if Event.place:isExist()and Object.getCategory(Event.place)~=Object.Category.SCENERY then
 Event.Place=AIRBASE:Find(Event.place)
 Event.PlaceName=Event.Place:GetName()
 end
@@ -9613,7 +9613,7 @@ local gotunits=false
 local gotscenery=false
 local function EvaluateZone(ZoneObject)
 if ZoneObject then
-local ObjectCategory=ZoneObject:getCategory()
+local ObjectCategory=Object.getCategory(ZoneObject)
 if ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()then
 table.insert(Units,UNIT:Find(ZoneObject))
 gotunits=true
@@ -19048,7 +19048,7 @@ radius=ZoneRadius,
 }
 local function EvaluateZone(ZoneObject)
 if ZoneObject then
-local ObjectCategory=ZoneObject:getCategory()
+local ObjectCategory=Object.getCategory(ZoneObject)
 if(ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()and ZoneObject:isActive())or(ObjectCategory==Object.Category.STATIC and ZoneObject:isExist())then
 local CoalitionDCSUnit=ZoneObject:getCoalition()
 local Include=false
@@ -19892,7 +19892,7 @@ radius=ZoneRadius,
 }
 local function EvaluateZone(ZoneObject)
 if ZoneObject then
-local ObjectCategory=ZoneObject:getCategory()
+local ObjectCategory=Object.getCategory(ZoneObject)
 if(ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()and ZoneObject:isActive())or(ObjectCategory==Object.Category.STATIC and ZoneObject:isExist())then
 local CoalitionDCSUnit=ZoneObject:getCoalition()
 local Include=false
@@ -26755,7 +26755,7 @@ OBJECT={
 ClassName="OBJECT",
 ObjectName="",
 }
-function OBJECT:New(ObjectName,Test)
+function OBJECT:New(ObjectName)
 local self=BASE:Inherit(self,BASE:New())
 self:F2(ObjectName)
 self.ObjectName=ObjectName
@@ -26767,7 +26767,7 @@ if DCSObject then
 local ObjectID=DCSObject:getID()
 return ObjectID
 end
-BASE:E({"Cannot GetID",Name=self.ObjectName,Class=self:GetClassName()})
+self:E({"Cannot GetID",Name=self.ObjectName,Class=self:GetClassName()})
 return nil
 end
 function OBJECT:Destroy()
@@ -26776,7 +26776,7 @@ if DCSObject then
 DCSObject:destroy(false)
 return true
 end
-BASE:E({"Cannot Destroy",Name=self.ObjectName,Class=self:GetClassName()})
+self:E({"Cannot Destroy",Name=self.ObjectName,Class=self:GetClassName()})
 return nil
 end
 POSITIONABLE={
@@ -28954,7 +28954,7 @@ local target=nil
 if self.weapon then
 local object=self.weapon:getTarget()
 if object then
-local category=object:getCategory()
+local category=Object.getCategory(object)
 local name=object:getName()
 self:T(self.lid..string.format("Got Target Object %s, category=%d",object:getName(),category))
 if category==Object.Category.UNIT then
@@ -48616,7 +48616,7 @@ self:__CalculateHitZone(20,SEADWeapon,pos0,fheight,SEADGroup,SEADWeaponName)
 end
 return self
 end
-local targetcat=_target:getCategory()
+local targetcat=Object.getCategory(_target)
 local _targetUnit=nil
 local _targetgroup=nil
 self:T(string.format("*** Targetcat = %d",targetcat))
@@ -49071,7 +49071,7 @@ self:__CalculateHitZone(20,ShootingWeapon,pos0,fheight,EventData.IniGroup)
 end
 return self
 end
-local targetcat=targetdata:getCategory()
+local targetcat=Object.getCategory(targetdata)
 self:T(string.format("Target Category (3=STATIC, 1=UNIT)= %s",tostring(targetcat)))
 self:T({targetdata})
 local targetunit=nil
