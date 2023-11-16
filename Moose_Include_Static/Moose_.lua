@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T22:32:17+01:00-067285f87064ee15fba119997e66668a8477e63c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T22:52:13+01:00-75a6a798ac075a5a16128b67d55948eaaa575430 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -98601,7 +98601,7 @@ self.ScanUnitSet:Clear(false)
 local function EvaluateZone(_ZoneObject)
 local ZoneObject=_ZoneObject
 if ZoneObject then
-local ObjectCategory=ZoneObject:getCategory()
+local ObjectCategory=Object.getCategory(ZoneObject)
 if ObjectCategory==Object.Category.UNIT and ZoneObject:isExist()and ZoneObject:isActive()then
 local DCSUnit=ZoneObject
 local function Included()
