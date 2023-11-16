@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T14:08:33+01:00-ca20e059a68123cf65400c014d8e7a4bf2bff362 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-16T16:11:20+01:00-f453619c789fde6d421ccf043d3af22fb500f994 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -41874,6 +41874,7 @@ soundpath="Range Soundfiles/",
 targetsheet=nil,
 targetpath=nil,
 targetprefix=nil,
+Coalition=nil,
 }
 RANGE.Defaults={
 goodhitrange=25,
@@ -41943,10 +41944,11 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.7.1"
-function RANGE:New(RangeName)
+RANGE.version="2.7.3"
+function RANGE:New(RangeName,Coalition)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
+self.Coalition=Coalition
 self.lid=string.format("RANGE %s | ",self.rangename)
 local text=string.format("Script version %s - creating new RANGE object %s.",RANGE.version,self.rangename)
 self:I(self.lid..text)
@@ -42481,7 +42483,13 @@ local _callsign=_unit:GetCallsign()
 local text=string.format("Player %s, callsign %s entered unit %s (UID %d) of group %s (GID %d)",_playername,_callsign,_unitName,_uid,_group:GetName(),_gid)
 self:T(self.lid..text)
 self.strafeStatus[_uid]=nil
+if self.Coalition then
+if EventData.IniCoalition==self.Coalition then
 self:ScheduleOnce(0.1,self._AddF10Commands,self,_unitName)
+end
+else
+self:ScheduleOnce(0.1,self._AddF10Commands,self,_unitName)
+end
 self.PlayerSettings[_playername]={}
 self.PlayerSettings[_playername].smokebombimpact=self.defaultsmokebomb
 self.PlayerSettings[_playername].flaredirecthits=false
