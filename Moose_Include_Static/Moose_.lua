@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T00:26:33+01:00-2a0086d3fecc5587f0899d24bb7536099e5f3842 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T06:28:33+01:00-32ae4986ca24a70380537882ced69f25e0f25018 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -100501,7 +100501,7 @@ if type==AUFTRAG.Type.BOMBRUNWAY then
 task:HandleEvent(EVENTS.Shot)
 function task:OnEventShot(EventData)
 local data=EventData
-local wcat=data.Weapon:getCategory()
+local wcat=Object.getCategory(data.Weapon)
 local coord=data.IniUnit:GetCoordinate()or data.IniGroup:GetCoordinate()
 local vec2=coord:GetVec2()or{x=0,y=0}
 local coal=data.IniCoalition
