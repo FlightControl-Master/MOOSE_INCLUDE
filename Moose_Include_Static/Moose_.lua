@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T15:05:19+01:00-5d2656d679c610688c2887202a02e1e8efcade7a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T15:06:52+01:00-6bba2fec0bd1a2fe530d490607871413af2a5253 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -19490,11 +19490,11 @@ function SPOT:onafterLasing(From,Event,To)
 self:T({From,Event,To})
 if self.Lasing then
 if self.Target and self.Target:IsAlive()then
-self.SpotIR:setPoint(self.Target:GetPointVec3():AddY(1):AddY(math.random(-100,100)/100):AddX(math.random(-100,100)/100):GetVec3())
+self.SpotIR:setPoint(self.Target:GetPointVec3():AddY(1):AddY(math.random(-100,100)/200):AddX(math.random(-100,100)/200):GetVec3())
 self.SpotLaser:setPoint(self.Target:GetPointVec3():AddY(1):GetVec3())
 self:__Lasing(0.2)
 elseif self.TargetCoord then
-local irvec3={x=self.TargetCoord.x+math.random(-100,100)/100,y=self.TargetCoord.y+math.random(-100,100)/100,z=self.TargetCoord.z}
+local irvec3={x=self.TargetCoord.x+math.random(-100,100)/200,y=self.TargetCoord.y+math.random(-100,100)/200,z=self.TargetCoord.z}
 local lsvec3={x=self.TargetCoord.x,y=self.TargetCoord.y,z=self.TargetCoord.z}
 self.SpotIR:setPoint(irvec3)
 self.SpotLaser:setPoint(lsvec3)
