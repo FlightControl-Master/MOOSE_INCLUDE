@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T12:05:14+01:00-9a360a3bd538ed4e7a166d92ebddf319a844847d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T15:07:46+01:00-f6fdff927b4abd7353c3b8fc41b02d564945d67c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -12551,6 +12551,16 @@ end
 end
 return CountU
 end
+function SET_UNIT:GetAliveSet()
+local AliveSet=SET_UNIT:New()
+for GroupName,GroupObject in pairs(self.Set)do
+local GroupObject=GroupObject
+if GroupObject and GroupObject:IsAlive()then
+AliveSet:Add(GroupName,GroupObject)
+end
+end
+return AliveSet.Set or{},AliveSet
+end
 function SET_UNIT:_ContinousZoneFilter()
 local Database=_DATABASE.UNITS
 for ObjectName,Object in pairs(Database)do
@@ -12775,7 +12785,13 @@ self:F({MaxThreatLevelA2G=MaxThreatLevelA2G,MaxThreatText=MaxThreatText})
 return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_UNIT:GetCoordinate()
-local Coordinate=self:GetRandom():GetCoordinate()
+local Coordinate=nil
+local unit=self:GetRandom()
+if self:Count()==1 and unit then
+return unit:GetCoordinate()
+end
+if unit then
+local Coordinate=unit:GetCoordinate()
 local x1=Coordinate.x
 local x2=Coordinate.x
 local y1=Coordinate.y
@@ -12785,7 +12801,7 @@ local z2=Coordinate.z
 local MaxVelocity=0
 local AvgHeading=nil
 local MovingCount=0
-for UnitName,UnitData in pairs(self:GetSet())do
+for UnitName,UnitData in pairs(self:GetAliveSet())do
 local Unit=UnitData
 local Coordinate=Unit:GetCoordinate()
 x1=(Coordinate.x<x1)and Coordinate.x or x1
@@ -12809,6 +12825,7 @@ Coordinate.z=(z2-z1)/2+z1
 Coordinate:SetHeading(AvgHeading)
 Coordinate:SetVelocity(MaxVelocity)
 self:F({Coordinate=Coordinate})
+end
 return Coordinate
 end
 function SET_UNIT:GetVelocity()
@@ -13662,6 +13679,31 @@ local timing=self.ZoneTimerInterval or 30
 self.ZoneTimer:Start(timing,timing)
 end
 self:_FilterStart()
+end
+return self
+end
+function SET_CLIENT:_EventPlayerEnterUnit(Event)
+self:I("_EventPlayerEnterUnit")
+if Event.IniDCSUnit then
+if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+local ObjectName,Object=self:AddInDatabase(Event)
+self:I(ObjectName,UTILS.PrintTableToLog(Object))
+if Object and self:IsIncludeObject(Object)then
+self:Add(ObjectName,Object)
+end
+end
+end
+return self
+end
+function SET_CLIENT:_EventPlayerLeaveUnit(Event)
+self:I("_EventPlayerLeaveUnit")
+if Event.IniDCSUnit then
+if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+local ObjectName,Object=self:FindInDatabase(Event)
+if ObjectName then
+self:Remove(ObjectName)
+end
+end
 end
 return self
 end
@@ -18176,11 +18218,11 @@ function SPOT:onafterLasing(From,Event,To)
 self:T({From,Event,To})
 if self.Lasing then
 if self.Target and self.Target:IsAlive()then
-self.SpotIR:setPoint(self.Target:GetPointVec3():AddY(1):AddY(math.random(-100,100)/100):AddX(math.random(-100,100)/100):GetVec3())
+self.SpotIR:setPoint(self.Target:GetPointVec3():AddY(1):AddY(math.random(-100,100)/200):AddX(math.random(-100,100)/200):GetVec3())
 self.SpotLaser:setPoint(self.Target:GetPointVec3():AddY(1):GetVec3())
 self:__Lasing(0.2)
 elseif self.TargetCoord then
-local irvec3={x=self.TargetCoord.x+math.random(-100,100)/100,y=self.TargetCoord.y+math.random(-100,100)/100,z=self.TargetCoord.z}
+local irvec3={x=self.TargetCoord.x+math.random(-100,100)/200,y=self.TargetCoord.y+math.random(-100,100)/200,z=self.TargetCoord.z}
 local lsvec3={x=self.TargetCoord.x,y=self.TargetCoord.y,z=self.TargetCoord.z}
 self.SpotIR:setPoint(irvec3)
 self.SpotLaser:setPoint(lsvec3)
@@ -101953,7 +101995,6 @@ end
 if self.LaserTarget[playername]then
 local target=self.LaserTarget[playername]
 local oldtarget=target:GetObject()
-self:T("Targetstate: "..target:GetState())
 if not oldtarget or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
 laser:LaseOff()
 if target:IsDead()or target:IsDestroyed()or target:GetLife()<2 then
@@ -101964,12 +102005,16 @@ self:__TargetLOSLost(-1,client,oldtarget)
 self.LaserTarget[playername]=nil
 end
 end
+if oldtarget and(not laser:IsLasing())then
+local lasercode=self.UnitLaserCodes[playername]or laser.LaserCode or 1688
+local lasingtime=self.lasingtime or 60
+laser:LaseOn(oldtarget,lasercode,lasingtime)
+end
 elseif not laser:IsLasing()and target then
 local relativecam=self.LaserRelativePos[client:GetTypeName()]
 laser:SetRelativeStartPosition(relativecam)
 local lasercode=self.UnitLaserCodes[playername]or laser.LaserCode or 1688
 local lasingtime=self.lasingtime or 60
-local targettype=target:GetTypeName()
 laser:LaseOn(target,lasercode,lasingtime)
 self.LaserTarget[playername]=TARGET:New(target)
 self.LaserTarget[playername].TStatus=9
@@ -102081,8 +102126,12 @@ if cameraset:IsInSet(laser.Target)then
 cameraset:Remove(laser.Target:GetName(),true)
 end
 end
+local coordinate=nil
+local setthreat=0
+if cameraset:CountAlive()>1 then
 local coordinate=cameraset:GetCoordinate()
 local setthreat=cameraset:CalculateThreatLevelA2G()
+end
 if coordinate then
 local color=lowsmoke
 if setthreat>7 then
@@ -102766,7 +102815,7 @@ if self.ReferencePoint then
 coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings)
 end
 local coordtext=coord:ToStringA2G(client,Settings)
-local text=string.format("All stations, %s lasing %s\nat %s!\nCode %d, Duration %d seconds!",callsign,targettype,coordtext,Lasercode,Lasingtime)
+local text=string.format("All stations, %s lasing %s\nat %s!\nCode %d, Duration %d plus seconds!",callsign,targettype,coordtext,Lasercode,Lasingtime)
 MESSAGE:New(text,15,self.Name or"FACA"):ToClient(client)
 end
 end
