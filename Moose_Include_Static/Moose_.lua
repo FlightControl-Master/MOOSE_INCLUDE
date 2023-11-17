@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T11:04:33+01:00-67248a290cc3b93a68e77d7141bd52c36f1b38e7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T15:05:19+01:00-5d2656d679c610688c2887202a02e1e8efcade7a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11691,6 +11691,16 @@ end
 end
 return CountU
 end
+function SET_UNIT:GetAliveSet()
+local AliveSet=SET_UNIT:New()
+for GroupName,GroupObject in pairs(self.Set)do
+local GroupObject=GroupObject
+if GroupObject and GroupObject:IsAlive()then
+AliveSet:Add(GroupName,GroupObject)
+end
+end
+return AliveSet.Set or{},AliveSet
+end
 function SET_UNIT:_ContinousZoneFilter()
 local Database=_DATABASE.UNITS
 for ObjectName,Object in pairs(Database)do
@@ -11915,7 +11925,13 @@ self:F({MaxThreatLevelA2G=MaxThreatLevelA2G,MaxThreatText=MaxThreatText})
 return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_UNIT:GetCoordinate()
-local Coordinate=self:GetRandom():GetCoordinate()
+local Coordinate=nil
+local unit=self:GetRandom()
+if self:Count()==1 and unit then
+return unit:GetCoordinate()
+end
+if unit then
+local Coordinate=unit:GetCoordinate()
 local x1=Coordinate.x
 local x2=Coordinate.x
 local y1=Coordinate.y
@@ -11925,7 +11941,7 @@ local z2=Coordinate.z
 local MaxVelocity=0
 local AvgHeading=nil
 local MovingCount=0
-for UnitName,UnitData in pairs(self:GetSet())do
+for UnitName,UnitData in pairs(self:GetAliveSet())do
 local Unit=UnitData
 local Coordinate=Unit:GetCoordinate()
 x1=(Coordinate.x<x1)and Coordinate.x or x1
@@ -11949,6 +11965,7 @@ Coordinate.z=(z2-z1)/2+z1
 Coordinate:SetHeading(AvgHeading)
 Coordinate:SetVelocity(MaxVelocity)
 self:F({Coordinate=Coordinate})
+end
 return Coordinate
 end
 function SET_UNIT:GetVelocity()
@@ -12802,6 +12819,31 @@ local timing=self.ZoneTimerInterval or 30
 self.ZoneTimer:Start(timing,timing)
 end
 self:_FilterStart()
+end
+return self
+end
+function SET_CLIENT:_EventPlayerEnterUnit(Event)
+self:I("_EventPlayerEnterUnit")
+if Event.IniDCSUnit then
+if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+local ObjectName,Object=self:AddInDatabase(Event)
+self:I(ObjectName,UTILS.PrintTableToLog(Object))
+if Object and self:IsIncludeObject(Object)then
+self:Add(ObjectName,Object)
+end
+end
+end
+return self
+end
+function SET_CLIENT:_EventPlayerLeaveUnit(Event)
+self:I("_EventPlayerLeaveUnit")
+if Event.IniDCSUnit then
+if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+local ObjectName,Object=self:FindInDatabase(Event)
+if ObjectName then
+self:Remove(ObjectName)
+end
+end
 end
 return self
 end
