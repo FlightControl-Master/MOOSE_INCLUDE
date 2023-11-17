@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T06:28:33+01:00-32ae4986ca24a70380537882ced69f25e0f25018 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T11:05:53+01:00-217b8fe71e605907b59b7a0a17493a6e7f33ba3c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -65489,7 +65489,7 @@ end
 alltext=alltext..";\n"..subtitle
 local _RUNACT
 if not self.ATISforFARPs then
-local subtitle
+local subtitle=""
 if runwayLanding then
 local actrun=self.gettext:GetEntry("ACTIVELANDING",self.locale)
 subtitle=string.format("%s %s",actrun,runwayLanding)
