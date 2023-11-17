@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T11:05:53+01:00-217b8fe71e605907b59b7a0a17493a6e7f33ba3c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T12:05:14+01:00-9a360a3bd538ed4e7a166d92ebddf319a844847d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -68828,7 +68828,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.58",
+version="0.2.59",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -70361,7 +70361,7 @@ end
 end
 clustersAO=self.PictureAO:GetSize()
 if clustersAO==0 and clustersEWR==0 then
-self:_NewRadioEntry(text,textScreen,GID,Outcome,true,true,false)
+self:_NewRadioEntry(text,text,GID,Outcome,true,true,false)
 else
 if clustersAO>0 then
 local picture=self.gettext:GetEntry("PICTURE",self.locale)
