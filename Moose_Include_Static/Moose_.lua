@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T16:31:10+01:00-1b6aeff0051e802ab845cfc90441e4ac76f5c726 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T16:44:23+01:00-6dd69eb6db8b4264c6d9c4288dd720c963a2af61 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -65503,6 +65503,11 @@ capabilities.trooplimit=Trooplimit or 0
 capabilities.length=Length or length
 capabilities.cargoweightlimit=Maxcargoweight or maxcargo
 self.UnitTypeCapabilities[unittype]=capabilities
+return self
+end
+function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
+self:I(self.lid.."This function been replaced with `SetUnitCapabilities()` - pls use the new one going forward!")
+self:SetUnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
 return self
 end
 function CTLD:IsCorrectHover(Unit)
