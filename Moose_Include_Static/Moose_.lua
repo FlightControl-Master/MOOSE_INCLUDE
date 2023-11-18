@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-17T15:07:46+01:00-f6fdff927b4abd7353c3b8fc41b02d564945d67c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T13:23:58+01:00-de380614fb2e238d7ff392ca78da9cf4af6a8967 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -7719,11 +7719,13 @@ elseif Event.TgtObjectCategory==Object.Category.STATIC then
 Event.TgtDCSUnit=Event.target
 if Event.target:isExist()and Event.id~=33 then
 Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
+if Event.TgtDCSUnitName and Event.TgtDCSUnitName~=""then
 Event.TgtUnitName=Event.TgtDCSUnitName
 Event.TgtUnit=STATIC:FindByName(Event.TgtDCSUnitName,false)
 Event.TgtCoalition=Event.TgtDCSUnit:getCoalition()
 Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
+end
 else
 Event.TgtDCSUnitName=string.format("No target object for Event ID %s",tostring(Event.id))
 Event.TgtUnitName=Event.TgtDCSUnitName
@@ -40848,7 +40850,7 @@ self.ShoradLink=true
 self.Shorad.Groupset=self.ShoradGroupSet
 self.Shorad.debug=self.debug
 end
-if self.shootandscoot and self.SkateZones then
+if self.shootandscoot and self.SkateZones and self.Shorad then
 self.Shorad:AddScootZones(self.SkateZones,self.SkateNumber or 3)
 end
 self:__Status(-math.random(1,10))
