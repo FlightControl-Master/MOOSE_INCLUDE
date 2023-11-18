@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T16:44:23+01:00-6dd69eb6db8b4264c6d9c4288dd720c963a2af61 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T17:16:27+01:00-b662ecc76b16420ece243e551c58247a9ba3aa70 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -50335,11 +50335,13 @@ local radius=radius or 5000
 self.grouping=radius
 return self
 end
-function MANTIS:AddScootZones(ZoneSet,Number)
+function MANTIS:AddScootZones(ZoneSet,Number,Random,Formation)
 self:T(self.lid.." AddScootZones")
 self.SkateZones=ZoneSet
 self.SkateNumber=Number or 3
 self.shootandscoot=true
+self.ScootRandom=Random
+self.ScootFormation=Formation or"Cone"
 return self
 end
 function MANTIS:AddZones(AcceptZones,RejectZones,ConflictZones)
@@ -51040,7 +51042,7 @@ self.Shorad.Groupset=self.ShoradGroupSet
 self.Shorad.debug=self.debug
 end
 if self.shootandscoot and self.SkateZones and self.Shorad then
-self.Shorad:AddScootZones(self.SkateZones,self.SkateNumber or 3)
+self.Shorad:AddScootZones(self.SkateZones,self.SkateNumber or 3,self.ScootRandom,self.ScootFormation)
 end
 self:__Status(-math.random(1,10))
 return self
@@ -51147,6 +51149,9 @@ UseEmOnOff=true,
 shootandscoot=false,
 SkateNumber=3,
 SkateZones=nil,
+minscootdist=100,
+minscootdist=3000,
+scootrandomcoord=false,
 }
 do
 SHORAD.Harms={
@@ -51190,7 +51195,7 @@ self.DefenseLowProb=70
 self.DefenseHighProb=90
 self.UseEmOnOff=true
 if UseEmOnOff==false then self.UseEmOnOff=UseEmOnOff end
-self:I("*** SHORAD - Started Version 0.3.2")
+self:I("*** SHORAD - Started Version 0.3.4")
 self.lid=string.format("SHORAD %s | ",self.name)
 self:_InitState()
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
@@ -51220,11 +51225,13 @@ math.random()
 end
 return self
 end
-function SHORAD:AddScootZones(ZoneSet,Number)
+function SHORAD:AddScootZones(ZoneSet,Number,Random,Formation)
 self:T(self.lid.." AddScootZones")
 self.SkateZones=ZoneSet
 self.SkateNumber=Number or 3
 self.shootandscoot=true
+self.scootrandomcoord=Random
+self.scootformation=Formation or"Cone"
 return self
 end
 function SHORAD:SwitchDebug(onoff)
@@ -51488,8 +51495,8 @@ end
 function SHORAD:onafterShootAndScoot(From,Event,To,Shorad)
 self:T({From,Event,To})
 local possibleZones={}
-local mindist=100
-local maxdist=3000
+local mindist=self.minscootdist or 100
+local maxdist=self.maxscootdist or 3000
 if Shorad and Shorad:IsAlive()then
 local NowCoord=Shorad:GetCoordinate()
 for _,_zone in pairs(self.SkateZones.Set)do
@@ -51505,7 +51512,11 @@ local rand=math.floor(math.random(1,#possibleZones*1000)/1000+0.5)
 if rand==0 then rand=1 end
 self:T(self.lid.." ShootAndScoot to zone "..rand)
 local ToCoordinate=possibleZones[rand]:GetCoordinate()
-Shorad:RouteGroundTo(ToCoordinate,20,"Cone",1)
+if self.scootrandomcoord then
+ToCoordinate=possibleZones[rand]:GetRandomCoordinate(nil,nil,{land.SurfaceType.LAND,land.SurfaceType.ROAD})
+end
+local formation=self.scootformation or"Cone"
+Shorad:RouteGroundTo(ToCoordinate,20,formation,1)
 end
 end
 return self
