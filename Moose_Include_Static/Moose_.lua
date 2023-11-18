@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T13:23:15+01:00-4287774d9f8c643ef22279bb0a20fd0f313c11a8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T16:31:10+01:00-1b6aeff0051e802ab845cfc90441e4ac76f5c726 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -63259,7 +63259,7 @@ MOVE="move",
 SHIP="ship",
 BEACON="beacon",
 }
-CTLD.UnitTypes={
+CTLD.UnitTypeCapabilities={
 ["SA342Mistral"]={type="SA342Mistral",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12,cargoweightlimit=400},
 ["SA342L"]={type="SA342L",crates=false,troops=true,cratelimit=0,trooplimit=2,length=12,cargoweightlimit=400},
 ["SA342M"]={type="SA342M",crates=false,troops=true,cratelimit=0,trooplimit=4,length=12,cargoweightlimit=400},
@@ -63276,7 +63276,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.41"
+CTLD.version="1.0.42"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -63416,7 +63416,7 @@ function CTLD:_GetUnitCapabilities(Unit)
 self:T(self.lid.." _GetUnitCapabilities")
 local _unit=Unit
 local unittype=_unit:GetTypeName()
-local capabilities=self.UnitTypes[unittype]
+local capabilities=self.UnitTypeCapabilities[unittype]
 if not capabilities or capabilities=={}then
 capabilities={}
 capabilities.troops=false
@@ -64892,8 +64892,14 @@ local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
-local toptroops=MENU_GROUP:New(_group,"Manage Troops",topmenu)
-local topcrates=MENU_GROUP:New(_group,"Manage Crates",topmenu)
+local toptroops=nil
+local topcrates=nil
+if cantroops then
+toptroops=MENU_GROUP:New(_group,"Manage Troops",topmenu)
+end
+if cancrates then
+topcrates=MENU_GROUP:New(_group,"Manage Crates",topmenu)
+end
 local listmenu=MENU_GROUP_COMMAND:New(_group,"List boarded cargo",topmenu,self._ListCargo,self,_group,_unit)
 local invtry=MENU_GROUP_COMMAND:New(_group,"Inventory",topmenu,self._ListInventory,self,_group,_unit)
 local rbcns=MENU_GROUP_COMMAND:New(_group,"List active zone beacons",topmenu,self._ListRadioBeacons,self,_group,_unit)
@@ -65469,7 +65475,7 @@ self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone
 end
 return self
 end
-function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
+function CTLD:SetUnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
 self:T(self.lid.." UnitCapabilities")
 local unittype=nil
 local unit=nil
@@ -65483,7 +65489,7 @@ return self
 end
 local length=20
 local maxcargo=500
-local existingcaps=self.UnitTypes[unittype]
+local existingcaps=self.UnitTypeCapabilities[unittype]
 if existingcaps then
 length=existingcaps.length or 20
 maxcargo=existingcaps.cargoweightlimit or 500
@@ -65496,7 +65502,7 @@ capabilities.cratelimit=Cratelimit or 0
 capabilities.trooplimit=Trooplimit or 0
 capabilities.length=Length or length
 capabilities.cargoweightlimit=Maxcargoweight or maxcargo
-self.UnitTypes[unittype]=capabilities
+self.UnitTypeCapabilities[unittype]=capabilities
 return self
 end
 function CTLD:IsCorrectHover(Unit)
