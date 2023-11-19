@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-18T17:16:27+01:00-b662ecc76b16420ece243e551c58247a9ba3aa70 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-19T12:40:22+01:00-522eb8b256f9edfbcb2c8ecfe66861f659c6403c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -5888,6 +5888,14 @@ UnitDeleteTask=world.event.S_EVENT_UNIT_DELETE_TASK or-1,
 SimulationStart=world.event.S_EVENT_SIMULATION_START or-1,
 WeaponRearm=world.event.S_EVENT_WEAPON_REARM or-1,
 WeaponDrop=world.event.S_EVENT_WEAPON_DROP or-1,
+UnitTaskTimeout=world.event.S_EVENT_UNIT_TASK_TIMEOUT or-1,
+UnitTaskStage=world.event.S_EVENT_UNIT_TASK_STAGE or-1,
+MacSubtaskScore=world.event.S_EVENT_MAC_SUBTASK_SCORE or-1,
+MacExtraScore=world.event.S_EVENT_MAC_EXTRA_SCORE or-1,
+MissionRestart=world.event.S_EVENT_MISSION_RESTART or-1,
+MissionWinner=world.event.S_EVENT_MISSION_WINNER or-1,
+PostponedTakeoff=world.event.S_EVENT_POSTPONED_TAKEOFF or-1,
+PostponedLand=world.event.S_EVENT_POSTPONED_LAND or-1,
 }
 local _EVENTMETA={
 [world.event.S_EVENT_SHOT]={
@@ -6200,6 +6208,54 @@ Order=1,
 Side="I",
 Event="OnEventWeaponDrop",
 Text="S_EVENT_WEAPON_DROP"
+},
+[EVENTS.UnitTaskTimeout]={
+Order=1,
+Side="I",
+Event="OnEventUnitTaskTimeout",
+Text="S_EVENT_UNIT_TASK_TIMEOUT "
+},
+[EVENTS.UnitTaskStage]={
+Order=1,
+Side="I",
+Event="OnEventUnitTaskStage",
+Text="S_EVENT_UNIT_TASK_STAGE "
+},
+[EVENTS.MacSubtaskScore]={
+Order=1,
+Side="I",
+Event="OnEventMacSubtaskScore",
+Text="S_EVENT_MAC_SUBTASK_SCORE"
+},
+[EVENTS.MacExtraScore]={
+Order=1,
+Side="I",
+Event="OnEventMacExtraScore",
+Text="S_EVENT_MAC_EXTRA_SCOREP"
+},
+[EVENTS.MissionRestart]={
+Order=1,
+Side="I",
+Event="OnEventMissionRestart",
+Text="S_EVENT_MISSION_RESTART"
+},
+[EVENTS.MissionWinner]={
+Order=1,
+Side="I",
+Event="OnEventMissionWinner",
+Text="S_EVENT_MISSION_WINNER"
+},
+[EVENTS.PostponedTakeoff]={
+Order=1,
+Side="I",
+Event="OnEventPostponedTakeoff",
+Text="S_EVENT_POSTPONED_TAKEOFF"
+},
+[EVENTS.PostponedLand]={
+Order=1,
+Side="I",
+Event="OnEventPostponedLand",
+Text="S_EVENT_POSTPONED_LAND"
 },
 }
 function EVENT:New()
