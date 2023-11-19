@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-19T12:40:22+01:00-522eb8b256f9edfbcb2c8ecfe66861f659c6403c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-19T15:36:16+01:00-1f1d1e4f2f17036da7f35e26cfee2b094d542bdf ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -63343,7 +63343,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.42"
+CTLD.version="1.0.43"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -63388,6 +63388,8 @@ self:AddTransition("*","TroopsRTB","*")
 self:AddTransition("*","CratesDropped","*")
 self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
+self:AddTransition("*","CratesBuildStarted","*")
+self:AddTransition("*","CratesRepairStarted","*")
 self:AddTransition("*","Load","*")
 self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
@@ -63807,6 +63809,7 @@ local desttimer=TIMER:New(function()NearestGroup:Destroy(false)end,self)
 desttimer:Start(self.repairtime-1)
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,object,true,NearestGroup:GetCoordinate())
 buildtimer:Start(self.repairtime)
+self:__CratesRepairStarted(1,Group,Unit)
 else
 if not Engineering then
 self:_SendMessage("Can't repair this unit with "..build.Name,10,false,Group)
@@ -64715,6 +64718,7 @@ if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate())
 buildtimer:Start(self.buildtime)
 self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
+self:__CratesBuildStarted(1,Group,Unit)
 else
 self:_BuildObjectFromCrates(Group,Unit,build)
 end
