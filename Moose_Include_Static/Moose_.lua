@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-19T15:36:16+01:00-1f1d1e4f2f17036da7f35e26cfee2b094d542bdf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-20T14:49:16+01:00-ba1dcfcdbae66d6edd212b0e5dd364c11f612a4b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -2479,7 +2479,7 @@ filename=path.."\\"..filename
 end
 local exists=UTILS.CheckFileExists(Path,Filename)
 if not exists then
-BASE:E(string.format("ERROR: File %s does not exist!",filename))
+BASE:I(string.format("ERROR: File %s does not exist!",filename))
 return false
 end
 local file=assert(io.open(filename,"rb"))
