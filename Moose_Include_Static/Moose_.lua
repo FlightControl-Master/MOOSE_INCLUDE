@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-20T14:50:12+01:00-2e6cac7bee6c0e2960b712a431e13577c9f57381 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-21T10:13:08+01:00-68350d6824b41c56b3573480951068320214f088 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -115326,8 +115326,7 @@ Backend.Vars.Volume=Volume
 Backend.Functions=Backend.Functions or{}
 return self:_NewAltBackend(Backend)
 end
-local success=self:LoadConfigFile(nil,nil,self.ConfigLoaded)
-if(not success)and(not self.ConfigLoaded)then
+if not self.ConfigLoaded then
 self:SetPath(PathToSRS)
 self:SetPort()
 self:SetFrequencies(Frequency)
@@ -115366,7 +115365,7 @@ while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
 self.path=self.path:sub(1,#self.path-1)
 n=n+1
 end
-self:I(string.format("SRS path=%s",self:GetPath()))
+self:T(string.format("SRS path=%s",self:GetPath()))
 end
 return self
 end
@@ -115674,10 +115673,12 @@ end
 self:T("MSRS command="..command)
 return command
 end
-function MSRS:LoadConfigFile(Path,Filename,ConfigLoaded)
+function MSRS:LoadConfigFile(Path,Filename)
 local path=Path or lfs.writedir()..MSRS.ConfigFilePath
 local file=Filename or MSRS.ConfigFileName or"Moose_MSRS.lua"
-if UTILS.CheckFileExists(path,file)and not ConfigLoaded then
+local pathandfile=path..file
+local filexsists=UTILS.FileExists(pathandfile)
+if filexsists and not MSRS.ConfigLoaded then
 assert(loadfile(path..file))()
 if MSRS_Config then
 if self then
@@ -115731,8 +115732,9 @@ MSRS.ConfigLoaded=true
 end
 end
 env.info("MSRS - Sucessfully loaded default configuration from disk!",false)
-else
-env.info("MSRS - Cannot load default configuration from disk!",false)
+end
+if not filexsists then
+env.info("MSRS - Cannot find default configuration file!",false)
 return false
 end
 return true
@@ -116057,6 +116059,7 @@ end
 self:_CheckRadioQueue(dt)
 end
 end
+MSRS.LoadConfigFile()
 do
 USERSOUND={
 ClassName="USERSOUND",
