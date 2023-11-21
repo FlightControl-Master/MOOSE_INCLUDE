@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-21T13:21:48+01:00-c011d383138a8ef1927f1fd06b48957fc8373222 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-21T13:22:51+01:00-2dfde7d1fdc0e71790958e41dcdc7b453e2ca8f3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -99783,7 +99783,7 @@ self.usecluster=true
 end
 self.ClusterRadius=0.5
 self.TargetRadius=500
-self.ClientFilter=ClientFilter or""
+self.ClientFilter=ClientFilter
 self.TargetQueue=FIFO:New()
 self.TaskQueue=FIFO:New()
 self.TasksPerPlayer=FIFO:New()
