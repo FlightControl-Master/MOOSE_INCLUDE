@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-22T17:57:51+01:00-3c53f627c2823027c35d557b6fc8e45d6604dce7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-22T18:35:23+01:00-f071c674d06f3340203cbdb3ed2779af7794a4d7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -115731,7 +115731,7 @@ MSRS.culture=MSRS_Config.Culture or"en-GB"
 MSRS.gender=MSRS_Config.Gender or"male"
 MSRS.google=MSRS_Config.Google
 if MSRS_Config.Provider then
-self.ttsprovider=MSRS_Config.Provider
+MSRS.ttsprovider=MSRS_Config.Provider
 end
 MSRS.Label=MSRS_Config.Label or"MSRS"
 MSRS.voice=MSRS_Config.Voice
