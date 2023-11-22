@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-21T13:22:51+01:00-2dfde7d1fdc0e71790958e41dcdc7b453e2ca8f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-22T17:57:51+01:00-3c53f627c2823027c35d557b6fc8e45d6604dce7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -115204,8 +115204,9 @@ AltBackend=nil,
 ConfigFileName="Moose_MSRS.lua",
 ConfigFilePath="Config\\",
 ConfigLoaded=false,
+ttsprovider="Microsoft",
 }
-MSRS.version="0.1.2"
+MSRS.version="0.1.3"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
@@ -115471,6 +115472,7 @@ self.APIKey=PathToCredentials
 self.provider="gcloud"
 self.GRPCOptions.DefaultProvider="gcloud"
 self.GRPCOptions.gcloud.key=PathToCredentials
+self.ttsprovider="Google"
 end
 return self
 end
@@ -115481,6 +115483,14 @@ self.provider="gcloud"
 self.GRPCOptions.DefaultProvider="gcloud"
 self.GRPCOptions.gcloud.key=APIKey
 end
+return self
+end
+function MSRS:SetTTSProviderGoogle()
+self.ttsprovider="Google"
+return self
+end
+function MSRS:SetTTSProviderMicrosoft()
+self.ttsprovider="Microsoft"
 return self
 end
 function MSRS:Help()
@@ -115667,7 +115677,7 @@ if coordinate then
 local lat,lon,alt=self:_GetLatLongAlt(coordinate)
 command=command..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
 end
-if self.google then
+if self.google and self.ttsprovider=="Google"then
 command=command..string.format(' --ssml -G "%s"',self.google)
 end
 self:T("MSRS command="..command)
@@ -115693,6 +115703,9 @@ end
 self.culture=MSRS_Config.Culture or"en-GB"
 self.gender=MSRS_Config.Gender or"male"
 self.google=MSRS_Config.Google
+if MSRS_Config.Provider then
+self.ttsprovider=MSRS_Config.Provider
+end
 self.Label=MSRS_Config.Label or"MSRS"
 self.voice=MSRS_Config.Voice
 if MSRS_Config.GRPC then
@@ -115717,6 +115730,9 @@ end
 MSRS.culture=MSRS_Config.Culture or"en-GB"
 MSRS.gender=MSRS_Config.Gender or"male"
 MSRS.google=MSRS_Config.Google
+if MSRS_Config.Provider then
+self.ttsprovider=MSRS_Config.Provider
+end
 MSRS.Label=MSRS_Config.Label or"MSRS"
 MSRS.voice=MSRS_Config.Voice
 if MSRS_Config.GRPC then
@@ -115731,7 +115747,7 @@ end
 MSRS.ConfigLoaded=true
 end
 end
-env.info("MSRS - Sucessfully loaded default configuration from disk!",false)
+env.info("MSRS - Successfully loaded default configuration from disk!",false)
 end
 if not filexsists then
 env.info("MSRS - Cannot find default configuration file!",false)
