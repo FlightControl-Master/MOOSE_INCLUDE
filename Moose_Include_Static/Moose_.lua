@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-22T18:35:12+01:00-02a87d9fe0e2d74282ab13430dd944103445d87e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T00:31:57+01:00-1fb4cb1c4fbfc003e641b4acc26c6e91b3645a45 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -28501,6 +28501,13 @@ self.launcherUnit=UNIT:Find(self.launcher)
 end
 self.coordinate=COORDINATE:NewFromVec3(self.launcher:getPoint())
 self.lid=string.format("[%s] %s | ",self.typeName,self.name)
+if self.launcherUnit then
+self.releaseHeading=self.launcherUnit:GetHeading()
+self.releaseAltitudeASL=self.launcherUnit:GetAltitude()
+self.releaseAltitudeAGL=self.launcherUnit:GetAltitude(true)
+self.releaseCoordinate=self.launcherUnit:GetCoordinate()
+self.releasePitch=self.launcherUnit:GetPitch()
+end
 self:SetTimeStepTrack()
 self:SetDistanceInterceptPoint()
 local text=string.format("Weapon v%s\nName=%s, TypeName=%s, Category=%s, Coalition=%d, Country=%d, Launcher=%s",
@@ -28646,6 +28653,26 @@ end
 function WEAPON:GetImpactCoordinate()
 return self.impactCoord
 end
+function WEAPON:GetReleaseHeading(AccountForMagneticInclination)
+AccountForMagneticInclination=AccountForMagneticInclination or true
+if AccountForMagneticInclination then return self.releaseHeading-UTILS.GetMagneticDeclination()else return self.releaseHeading end
+end
+function WEAPON:GetReleaseAltitudeASL()
+return self.releaseAltitudeASL
+end
+function WEAPON:GetReleaseAltitudeAGL()
+return self.releaseAltitudeAGL
+end
+function WEAPON:GetReleaseCoordinate()
+return self.releaseCoordinate
+end
+function WEAPON:GetReleasePitch()
+return self.releasePitch
+end
+function WEAPON:GetImpactHeading(AccountForMagneticInclination)
+AccountForMagneticInclination=AccountForMagneticInclination or true
+if AccountForMagneticInclination then return self.impactHeading-UTILS.GetMagneticDeclination()else return self.impactHeading end
+end
 function WEAPON:InAir()
 local inAir=nil
 if self.weapon then
@@ -28744,6 +28771,7 @@ self:I(self.lid..string.format("FF d(ip, vec3)=%.3f meters",d))
 end
 self.impactVec3=ip or self.vec3
 self.impactCoord=COORDINATE:NewFromVec3(self.vec3)
+self.impactHeading=UTILS.VecHdg(self:GetVelocityVec3())
 if self.impactMark then
 self.impactCoord:MarkToAll(string.format("Impact point of weapon %s\ntype=%s\nlauncher=%s",self.name,self.typeName,self.launcherName))
 end
