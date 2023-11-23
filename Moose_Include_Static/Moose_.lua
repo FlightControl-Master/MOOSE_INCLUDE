@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T18:45:36+01:00-aa7f26ac79019826731a7156281c2d5fac249d57 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T22:11:59+01:00-427a11bd0fe57d3af26412fc7e6d048c5335e958 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -28936,7 +28936,7 @@ return self.impactCoord
 end
 function WEAPON:GetReleaseHeading(AccountForMagneticInclination)
 AccountForMagneticInclination=AccountForMagneticInclination or true
-if AccountForMagneticInclination then return self.releaseHeading-UTILS.GetMagneticDeclination()else return self.releaseHeading end
+if AccountForMagneticInclination then return UTILS.ClampAngle(self.releaseHeading-UTILS.GetMagneticDeclination())else return UTILS.ClampAngle(self.releaseHeading)end
 end
 function WEAPON:GetReleaseAltitudeASL()
 return self.releaseAltitudeASL
@@ -28952,7 +28952,7 @@ return self.releasePitch
 end
 function WEAPON:GetImpactHeading(AccountForMagneticInclination)
 AccountForMagneticInclination=AccountForMagneticInclination or true
-if AccountForMagneticInclination then return self.impactHeading-UTILS.GetMagneticDeclination()else return self.impactHeading end
+if AccountForMagneticInclination then return UTILS.ClampAngle(self.impactHeading-UTILS.GetMagneticDeclination())else return self.impactHeading end
 end
 function WEAPON:InAir()
 local inAir=nil
@@ -29025,6 +29025,7 @@ if status then
 self.pos3=pos3
 self.vec3=UTILS.DeepCopy(self.pos3.p)
 self.coordinate:UpdateFromVec3(self.vec3)
+self.last_velocity=self.weapon:getVelocity()
 self.tracking=true
 if self.trackFunc then
 self.trackFunc(self,unpack(self.trackArg))
@@ -29052,7 +29053,7 @@ self:I(self.lid..string.format("FF d(ip, vec3)=%.3f meters",d))
 end
 self.impactVec3=ip or self.vec3
 self.impactCoord=COORDINATE:NewFromVec3(self.vec3)
-self.impactHeading=UTILS.VecHdg(self:GetVelocityVec3())
+self.impactHeading=UTILS.VecHdg(self.last_velocity)
 if self.impactMark then
 self.impactCoord:MarkToAll(string.format("Impact point of weapon %s\ntype=%s\nlauncher=%s",self.name,self.typeName,self.launcherName))
 end
