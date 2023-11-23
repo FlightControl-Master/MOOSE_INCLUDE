@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T16:16:05+01:00-1c1daa4ebe8f62e4bbfdc5ae2dcd41f0f6f009e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T17:00:58+01:00-3e40d72e2593bec3b031f2f5ae4043b73f2b0100 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -34026,6 +34026,12 @@ for _name,_ in pairs(_DATABASE.AIRBASES)do
 self.Airbases[_name]={}
 end
 self.AirbaseList=AirbaseList
+if not self.AirbaseList then
+self.AirbaseList={}
+for _name,_ in pairs(_DATABASE.AIRBASES)do
+self.AirbaseList[_name]=_name
+end
+end
 self.SetClient=SET_CLIENT:New():FilterCategories("plane"):FilterStart()
 for AirbaseID,Airbase in pairs(self.Airbases)do
 if Airbase.ZoneBoundary then
@@ -34311,7 +34317,7 @@ ATC_GROUND_MARIANAISLANDS={
 ClassName="ATC_GROUND_MARIANAISLANDS",
 }
 function ATC_GROUND_MARIANAISLANDS:New(AirbaseNames)
-local self=BASE:Inherit(self,ATC_GROUND_UNIVERSAL:New(self.Airbases,AirbaseNames))
+local self=BASE:Inherit(self,ATC_GROUND_UNIVERSAL:New(AirbaseNames))
 self:SetKickSpeedKmph(50)
 self:SetMaximumKickSpeedKmph(150)
 return self
