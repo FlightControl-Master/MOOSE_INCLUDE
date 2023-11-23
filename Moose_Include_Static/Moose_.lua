@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T00:31:57+01:00-1fb4cb1c4fbfc003e641b4acc26c6e91b3645a45 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T16:16:05+01:00-1c1daa4ebe8f62e4bbfdc5ae2dcd41f0f6f009e2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -1817,8 +1817,14 @@ end
 function UTILS.VecSubstract(a,b)
 return{x=a.x-b.x,y=a.y-b.y,z=a.z-b.z}
 end
+function UTILS.VecSubtract(a,b)
+return UTILS.VecSubstract(a,b)
+end
 function UTILS.Vec2Substract(a,b)
 return{x=a.x-b.x,y=a.y-b.y}
+end
+function UTILS.Vec2Subtract(a,b)
+return UTILS.Vec2Substract(a,b)
 end
 function UTILS.VecAdd(a,b)
 return{x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
@@ -2990,6 +2996,280 @@ fix_coordinate:LineToAll(point_two,coalition,color,alpha,lineType)
 point_four:LineToAll(point_three,coalition,color,alpha,lineType)
 circle_center_fix_four:CircleToAll(UTILS.NMToMeters(turn_radius),coalition,color,alpha,nil,0,lineType)
 circle_center_two_three:CircleToAll(UTILS.NMToMeters(turn_radius),coalition,color,alpha,nil,0,lineType)
+end
+function UTILS.TimeNow()
+return UTILS.SecondsToClock(timer.getAbsTime(),false,false)
+end
+function UTILS.TimeDifferenceInSeconds(start_time,end_time)
+return UTILS.ClockToSeconds(end_time)-UTILS.ClockToSeconds(start_time)
+end
+function UTILS.TimeLaterThan(time_string)
+if timer.getAbsTime()>UTILS.ClockToSeconds(time_string)then
+return true
+end
+return false
+end
+function UTILS.TimeBefore(time_string)
+if timer.getAbsTime()<UTILS.ClockToSeconds(time_string)then
+return true
+end
+return false
+end
+function UTILS.CombineTimeStrings(time_string_01,time_string_02)
+local hours1,minutes1,seconds1=time_string_01:match("(%d+):(%d+):(%d+)")
+local hours2,minutes2,seconds2=time_string_02:match("(%d+):(%d+):(%d+)")
+local total_seconds=tonumber(seconds1)+tonumber(seconds2)+tonumber(minutes1)*60+tonumber(minutes2)*60+tonumber(hours1)*3600+tonumber(hours2)*3600
+total_seconds=total_seconds%(24*3600)
+if total_seconds<0 then
+total_seconds=total_seconds+24*3600
+end
+local hours=math.floor(total_seconds/3600)
+total_seconds=total_seconds-hours*3600
+local minutes=math.floor(total_seconds/60)
+local seconds=total_seconds%60
+return string.format("%02d:%02d:%02d",hours,minutes,seconds)
+end
+function UTILS.SubtractTimeStrings(time_string_01,time_string_02)
+local hours1,minutes1,seconds1=time_string_01:match("(%d+):(%d+):(%d+)")
+local hours2,minutes2,seconds2=time_string_02:match("(%d+):(%d+):(%d+)")
+local total_seconds=tonumber(seconds1)-tonumber(seconds2)+tonumber(minutes1)*60-tonumber(minutes2)*60+tonumber(hours1)*3600-tonumber(hours2)*3600
+total_seconds=total_seconds%(24*3600)
+if total_seconds<0 then
+total_seconds=total_seconds+24*3600
+end
+local hours=math.floor(total_seconds/3600)
+total_seconds=total_seconds-hours*3600
+local minutes=math.floor(total_seconds/60)
+local seconds=total_seconds%60
+return string.format("%02d:%02d:%02d",hours,minutes,seconds)
+end
+function UTILS.TimeBetween(start_time,end_time)
+return UTILS.TimeLaterThan(start_time)and UTILS.TimeBefore(end_time)
+end
+function UTILS.PercentageChance(chance)
+chance=chance or math.random(0,100)
+chance=UTILS.Clamp(chance,0,100)
+local percentage=math.random(0,100)
+if percentage<chance then
+return true
+end
+return false
+end
+function UTILS.Clamp(value,min,max)
+if value<min then value=min end
+if value>max then value=max end
+return value
+end
+function UTILS.ClampAngle(value)
+if value>360 then return value-360 end
+if value<0 then return value+360 end
+return value
+end
+function UTILS.RemapValue(value,old_min,old_max,new_min,new_max)
+new_min=new_min or 0
+new_max=new_max or 100
+local old_range=old_max-old_min
+local new_range=new_max-new_min
+local percentage=(value-old_min)/old_range
+return(new_range*percentage)+new_min
+end
+function UTILS.RandomPointInTriangle(pt1,pt2,pt3)
+local pt={math.random(),math.random()}
+table.sort(pt)
+local s=pt[1]
+local t=pt[2]-pt[1]
+local u=1-pt[2]
+return{x=s*pt1.x+t*pt2.x+u*pt3.x,
+y=s*pt1.y+t*pt2.y+u*pt3.y}
+end
+function UTILS.AngleBetween(angle,min,max)
+angle=(360+(angle%360))%360
+min=(360+min%360)%360
+max=(360+max%360)%360
+if min<max then return min<=angle and angle<=max end
+return min<=angle or angle<=max
+end
+function UTILS.WriteJSON(data,file_path)
+package.path=package.path..";.\\Scripts\\?.lua"
+local JSON=require("json")
+local pretty_json_text=JSON:encode_pretty(data)
+local write_file=io.open(file_path,"w")
+write_file:write(pretty_json_text)
+write_file:close()
+end
+function UTILS.ReadJSON(file_path)
+package.path=package.path..";.\\Scripts\\?.lua"
+local JSON=require("json")
+local read_file=io.open(file_path,"r")
+local contents=read_file:read("*a")
+io.close(read_file)
+return JSON:decode(contents)
+end
+function UTILS.GetZoneProperties(zone_name)
+local return_table={}
+for _,zone in pairs(env.mission.triggers.zones)do
+if zone["name"]==zone_name then
+if table.length(zone["properties"])>0 then
+for _,property in pairs(zone["properties"])do
+return_table[property["key"]]=property["value"]
+end
+return return_table
+else
+BASE:I(string.format("%s doesn't have any properties",zone_name))
+return{}
+end
+end
+end
+end
+function UTILS.RotatePointAroundPivot(point,pivot,angle)
+local radians=math.rad(angle)
+local x=point.x-pivot.x
+local y=point.y-pivot.y
+local rotated_x=x*math.cos(radians)-y*math.sin(radians)
+local rotatex_y=x*math.sin(radians)+y*math.cos(radians)
+local original_x=rotated_x+pivot.x
+local original_y=rotatex_y+pivot.y
+return{x=original_x,y=original_y}
+end
+function UTILS.UniqueName(base)
+base=base or""
+local ran=tostring(math.random(0,1000000))
+if base==""then
+return ran
+end
+return base.."_"..ran
+end
+function string.startswith(str,value)
+return string.sub(str,1,string.len(value))==value
+end
+function string.endswith(str,value)
+return value==""or str:sub(-#value)==value
+end
+function string.split(input,separator)
+local parts={}
+for part in input:gmatch("[^"..separator.."]+")do
+table.insert(parts,part)
+end
+return parts
+end
+function string.contains(str,value)
+return string.match(str,value)
+end
+function table.contains(tbl,element)
+if element==nil or tbl==nil then return false end
+local index=1
+while tbl[index]do
+if tbl[index]==element then
+return true
+end
+index=index+1
+end
+return false
+end
+function table.contains_key(tbl,key)
+if tbl[key]~=nil then return true else return false end
+end
+function table.insert_unique(tbl,element)
+if element==nil or tbl==nil then return end
+if not table.contains(tbl,element)then
+table.insert(tbl,element)
+end
+end
+function table.remove_by_value(tbl,element)
+local indices_to_remove={}
+local index=1
+for _,value in pairs(tbl)do
+if value==element then
+table.insert(indices_to_remove,index)
+end
+index=index+1
+end
+for _,idx in pairs(indices_to_remove)do
+table.remove(tbl,idx)
+end
+end
+function table.remove_key(table,key)
+local element=table[key]
+table[key]=nil
+return element
+end
+function table.index_of(table,element)
+for i,v in ipairs(table)do
+if v==element then
+return i
+end
+end
+return nil
+end
+function table.length(T)
+local count=0
+for _ in pairs(T)do count=count+1 end
+return count
+end
+function table.slice(tbl,first,last)
+local sliced={}
+local start=first or 1
+local stop=last or table.length(tbl)
+local count=1
+for key,value in pairs(tbl)do
+if count>=start and count<=stop then
+sliced[key]=value
+end
+count=count+1
+end
+return sliced
+end
+function table.count_value(tbl,value)
+local count=0
+for _,item in pairs(tbl)do
+if item==value then count=count+1 end
+end
+return count
+end
+function table.combine(t1,t2)
+if t1==nil and t2==nil then
+BASE:E("Both tables were empty!")
+end
+if t1==nil then return t2 end
+if t2==nil then return t1 end
+for i=1,#t2 do
+t1[#t1+1]=t2[i]
+end
+return t1
+end
+function table.merge(t1,t2)
+for k,v in pairs(t2)do
+if(type(v)=="table")and(type(t1[k]or false)=="table")then
+table.merge(t1[k],t2[k])
+else
+t1[k]=v
+end
+end
+return t1
+end
+function table.add(tbl,item)
+tbl[#tbl+1]=item
+end
+function table.shuffle(tbl)
+local new_table={}
+for _,value in ipairs(tbl)do
+local pos=math.random(1,#new_table+1)
+table.insert(new_table,pos,value)
+end
+return new_table
+end
+function table.find_key_value_pair(tbl,key,value)
+for k,v in pairs(tbl)do
+if type(v)=="table"then
+local result=table.find_key_value_pair(v,key,value)
+if result~=nil then
+return result
+end
+elseif k==key and v==value then
+return tbl
+end
+end
+return nil
 end
 PROFILER={
 ClassName="PROFILER",
