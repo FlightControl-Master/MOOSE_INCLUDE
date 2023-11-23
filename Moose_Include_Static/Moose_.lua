@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T18:15:01+01:00-08507963680473f3969034ce57a9516b507ba568 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T18:46:03+01:00-4f4e8b17c1e498e2fc4570e419b7e8d7e45cd5ed ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -35205,7 +35205,7 @@ AirbaseNames=nil,
 }
 function ATC_GROUND:New(Airbases,AirbaseList)
 local self=BASE:Inherit(self,BASE:New())
-self:E({self.ClassName,Airbases})
+self:T({self.ClassName,Airbases})
 self.Airbases=Airbases
 self.AirbaseList=AirbaseList
 self.SetClient=SET_CLIENT:New():FilterCategories("plane"):FilterStart()
@@ -35284,7 +35284,7 @@ function(Client)
 if Client:IsAlive()then
 local IsOnGround=Client:InAir()==false
 for AirbaseID,AirbaseMeta in pairs(self.Airbases)do
-self:E(AirbaseID,AirbaseMeta.KickSpeed)
+self:T(AirbaseID,AirbaseMeta.KickSpeed)
 if AirbaseMeta.Monitor==true and Client:IsInZone(AirbaseMeta.ZoneBoundary)then
 local NotInRunwayZone=true
 for ZoneRunwayID,ZoneRunway in pairs(AirbaseMeta.ZoneRunways)do
@@ -35293,7 +35293,7 @@ end
 if NotInRunwayZone then
 if IsOnGround then
 local Taxi=Client:GetState(self,"Taxi")
-self:E(Taxi)
+self:T(Taxi)
 if Taxi==false then
 local Velocity=VELOCITY:New(AirbaseMeta.KickSpeed or self.KickSpeed)
 Client:Message("Welcome to "..AirbaseID..". The maximum taxiing speed is "..
@@ -35413,7 +35413,7 @@ KickSpeed=nil,
 }
 function ATC_GROUND_UNIVERSAL:New(AirbaseList)
 local self=BASE:Inherit(self,BASE:New())
-self:E({self.ClassName})
+self:T({self.ClassName})
 self.Airbases={}
 for _name,_ in pairs(_DATABASE.AIRBASES)do
 self.Airbases[_name]={}
@@ -35523,12 +35523,13 @@ self:SetMaximumKickSpeed(UTILS.MiphToMps(MaximumKickSpeedMiph),Airbase)
 return self
 end
 function ATC_GROUND_UNIVERSAL:_AirbaseMonitor()
+self:I("_AirbaseMonitor")
 self.SetClient:ForEachClient(
 function(Client)
 if Client:IsAlive()then
 local IsOnGround=Client:InAir()==false
 for AirbaseID,AirbaseMeta in pairs(self.Airbases)do
-self:E(AirbaseID,AirbaseMeta.KickSpeed)
+self:T(AirbaseID,AirbaseMeta.KickSpeed)
 if AirbaseMeta.Monitor==true and Client:IsInZone(AirbaseMeta.ZoneBoundary)then
 local NotInRunwayZone=true
 if AirbaseMeta.ZoneRunways then
@@ -35540,7 +35541,7 @@ end
 if NotInRunwayZone then
 if IsOnGround then
 local Taxi=Client:GetState(self,"Taxi")
-self:E(Taxi)
+self:T(Taxi)
 if Taxi==false then
 local Velocity=VELOCITY:New(AirbaseMeta.KickSpeed or self.KickSpeed)
 Client:Message("Welcome to "..AirbaseID..". The maximum taxiing speed is "..
@@ -35652,7 +35653,7 @@ return true
 end
 function ATC_GROUND_UNIVERSAL:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
-self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,RepeatScanSeconds)
 return self
 end
 ATC_GROUND_CAUCASUS={
@@ -35666,7 +35667,7 @@ return self
 end
 function ATC_GROUND_CAUCASUS:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
-self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,RepeatScanSeconds)
 end
 ATC_GROUND_NEVADA={
 ClassName="ATC_GROUND_NEVADA",
@@ -35679,7 +35680,7 @@ return self
 end
 function ATC_GROUND_NEVADA:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
-self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,RepeatScanSeconds)
 end
 ATC_GROUND_NORMANDY={
 ClassName="ATC_GROUND_NORMANDY",
@@ -35692,7 +35693,7 @@ return self
 end
 function ATC_GROUND_NORMANDY:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
-self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,RepeatScanSeconds)
 end
 ATC_GROUND_PERSIANGULF={
 ClassName="ATC_GROUND_PERSIANGULF",
@@ -35704,7 +35705,7 @@ self:SetMaximumKickSpeedKmph(150)
 end
 function ATC_GROUND_PERSIANGULF:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
-self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,RepeatScanSeconds)
 end
 ATC_GROUND_MARIANAISLANDS={
 ClassName="ATC_GROUND_MARIANAISLANDS",
@@ -35717,7 +35718,7 @@ return self
 end
 function ATC_GROUND_MARIANAISLANDS:Start(RepeatScanSeconds)
 RepeatScanSeconds=RepeatScanSeconds or 0.05
-self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,2,RepeatScanSeconds)
+self.AirbaseMonitor=SCHEDULER:New(self,self._AirbaseMonitor,{self},0,RepeatScanSeconds)
 end
 AUTOLASE={
 ClassName="AUTOLASE",
