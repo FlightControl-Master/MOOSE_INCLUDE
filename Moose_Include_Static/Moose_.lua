@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-23T22:23:17+01:00-cc79dc74d44f43a00adcb7c54cd6aed92db79e99 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-24T06:35:32+01:00-62e8302753bfa73749f977f002d57e834e6bd9be ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -116001,6 +116001,10 @@ self:T("MSRS command="..command)
 return command
 end
 function MSRS:LoadConfigFile(Path,Filename)
+if lfs==nil then
+env.info("*****Note - lfs and os need to be desanitized for MSRS to work!")
+return false
+end
 local path=Path or lfs.writedir()..MSRS.ConfigFilePath
 local file=Filename or MSRS.ConfigFileName or"Moose_MSRS.lua"
 local pathandfile=path..file
