@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-24T06:35:32+01:00-62e8302753bfa73749f977f002d57e834e6bd9be ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-24T12:17:56+01:00-6390b223b03ccecacd6a012eacf19cd6f590762c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -17992,6 +17992,21 @@ SpawnTemplate.units[UnitID].callsign[2]=UnitID
 SpawnTemplate.units[UnitID].callsign["name"]=CallsignName:sub(1,CallsignLen)..SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
 else
 SpawnTemplate.units[UnitID].callsign=Callsign+SpawnIndex
+end
+end
+local AddProps=SpawnTemplate.units[UnitID].AddPropAircraft
+if AddProps then
+if SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16 then
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16+UnitID-1
+if SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16<10000 then
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("0%d",SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16)
+end
+end
+if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber then
+SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber=SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber+UnitID-1
+end
+if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.Link16 and SpawnTemplate.units[UnitID].datalinks.Link16.settings then
+SpawnTemplate.units[UnitID].datalinks.Link16.settings.flightLead=UnitID==1 and true or false
 end
 end
 end
