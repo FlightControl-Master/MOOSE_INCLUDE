@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-25T18:30:04+01:00-9f41cc51becac61a06374f201dc4421476b3c711 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-25T18:44:38+01:00-52ed645f6c213968ae3291b673ff2b58f9d77b7f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -18046,7 +18046,6 @@ SpawnTemplate.units[UnitID].callsign[1]=callsignnr
 SpawnTemplate.units[UnitID].callsign[2]=UnitID
 SpawnTemplate.units[UnitID].callsign[3]="1"
 SpawnTemplate.units[UnitID].callsign["name"]=tostring(callsignname)..tostring(UnitID).."1"
-UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].callsign,1)
 end
 else
 for UnitID=1,#SpawnTemplate.units do
@@ -18058,7 +18057,6 @@ for UnitID=1,#SpawnTemplate.units do
 local Callsign=SpawnTemplate.units[UnitID].callsign
 if Callsign then
 if type(Callsign)~="number"then
-UTILS.PrintTableToLog(Callsign,1)
 Callsign[2]=((SpawnIndex-1)%10)+1
 local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
 CallsignName=string.match(CallsignName,"^(%a+)")
@@ -18107,14 +18105,12 @@ label=string.upper(string.match(CallsignName,"^%a")..string.match(CallsignName,"
 end
 SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel=label
 end
-UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].AddPropAircraft,1)
 if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.Link16 and SpawnTemplate.units[UnitID].datalinks.Link16.settings then
 SpawnTemplate.units[UnitID].datalinks.Link16.settings.flightLead=UnitID==1 and true or false
 end
 if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.SADL and SpawnTemplate.units[UnitID].datalinks.SADL.settings then
 SpawnTemplate.units[UnitID].datalinks.SADL.settings.flightLead=UnitID==1 and true or false
 end
-UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].datalinks,1)
 end
 end
 self:T3({"Template:",SpawnTemplate})
