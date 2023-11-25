@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-24T12:17:56+01:00-6390b223b03ccecacd6a012eacf19cd6f590762c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-25T18:30:04+01:00-9f41cc51becac61a06374f201dc4421476b3c711 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -415,6 +415,12 @@ UCAV="WingLoong",
 Reaper="MQ-9",
 Predator="MQ-1A",
 }
+}
+ENUMS.Link16Power={
+none=0,
+low=1,
+medium=2,
+high=3,
 }
 ENUMS.Storage={
 weapons={
@@ -2569,17 +2575,17 @@ end
 end
 function UTILS.PrintTableToLog(table,indent)
 if not table then
-BASE:E("No table passed!")
+env.warning("No table passed!")
 return
 end
 if not indent then indent=0 end
 for k,v in pairs(table)do
 if type(v)=="table"then
-BASE:I(string.rep("  ",indent)..tostring(k).." = {")
+env.info(string.rep("  ",indent)..tostring(k).." = {")
 UTILS.PrintTableToLog(v,indent+1)
-BASE:I(string.rep("  ",indent).."}")
+env.info(string.rep("  ",indent).."}")
 else
-BASE:I(string.rep("  ",indent)..tostring(k).." = "..tostring(v))
+env.info(string.rep("  ",indent)..tostring(k).." = "..tostring(v))
 end
 end
 end
@@ -4561,6 +4567,26 @@ return tbl
 end
 end
 return nil
+end
+function UTILS.DecimalToOctal(Number)
+if Number<8 then return Number end
+local number=tonumber(Number)
+local octal=""
+local n=1
+while number>7 do
+local number1=number%8
+octal=string.format("%d",number1)..octal
+local number2=math.abs(number/8)
+if number2<8 then
+octal=string.format("%d",number2)..octal
+end
+number=number2
+n=n+1
+end
+return tonumber(octal)
+end
+function UTILS.OctalToDecimal(Number)
+return tonumber(Number,8)
 end
 local _TraceOnOff=true
 local _TraceLevel=1
@@ -16570,6 +16596,7 @@ self.SpawnInitModexPrefix=nil
 self.SpawnInitModexPostfix=nil
 self.SpawnInitAirbase=nil
 self.TweakedTemplate=false
+self.SpawnRandomCallsign=false
 self.SpawnGroups={}
 else
 error("SPAWN:New: There is no group declared in the mission editor with SpawnTemplatePrefix = '"..SpawnTemplatePrefix.."'")
@@ -16857,6 +16884,10 @@ self.SpawnRandomizeZones=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
 self:_RandomizeZones(SpawnGroupID)
 end
+return self
+end
+function SPAWN:InitRandomizeCallsign()
+self.SpawnRandomCallsign=true
 return self
 end
 function SPAWN:InitPositionCoordinate(Coordinate)
@@ -17980,10 +18011,54 @@ SpawnTemplate.units[UnitID].name=string.format('%s#%03d-%02d',UnitPrefix,SpawnIn
 SpawnTemplate.units[UnitID].unitId=nil
 end
 end
+if self.SpawnRandomCallsign and SpawnTemplate.units[1].callsign then
+if type(SpawnTemplate.units[1].callsign)~="number"then
+local min=1
+local max=8
+local ctable=CALLSIGN.Aircraft
+if string.find(SpawnTemplate.units[1].type,"A-10",1,true)then
+max=12
+end
+if string.find(SpawnTemplate.units[1].type,"18",1,true)then
+min=9
+max=20
+ctable=CALLSIGN.F18
+end
+if string.find(SpawnTemplate.units[1].type,"16",1,true)then
+min=9
+max=20
+ctable=CALLSIGN.F16
+end
+if SpawnTemplate.units[1].type=="F-15E"then
+min=9
+max=18
+ctable=CALLSIGN.F15E
+end
+local callsignnr=math.random(min,max)
+local callsignname="Enfield"
+for name,value in pairs(ctable)do
+if value==callsignnr then
+callsignname=name
+end
+end
+for UnitID=1,#SpawnTemplate.units do
+SpawnTemplate.units[UnitID].callsign[1]=callsignnr
+SpawnTemplate.units[UnitID].callsign[2]=UnitID
+SpawnTemplate.units[UnitID].callsign[3]="1"
+SpawnTemplate.units[UnitID].callsign["name"]=tostring(callsignname)..tostring(UnitID).."1"
+UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].callsign,1)
+end
+else
+for UnitID=1,#SpawnTemplate.units do
+SpawnTemplate.units[UnitID].callsign=math.random(1,999)
+end
+end
+end
 for UnitID=1,#SpawnTemplate.units do
 local Callsign=SpawnTemplate.units[UnitID].callsign
 if Callsign then
 if type(Callsign)~="number"then
+UTILS.PrintTableToLog(Callsign,1)
 Callsign[2]=((SpawnIndex-1)%10)+1
 local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
 CallsignName=string.match(CallsignName,"^(%a+)")
@@ -17997,17 +18072,49 @@ end
 local AddProps=SpawnTemplate.units[UnitID].AddPropAircraft
 if AddProps then
 if SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16 then
-SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16+UnitID-1
-if SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16<10000 then
-SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("0%d",SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16)
+if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16)~=nil then
+local octal=SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16
+local decimal=UTILS.OctalToDecimal(octal)+UnitID-1
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%05d",UTILS.DecimalToOctal(decimal))
+else
+local STN=math.floor(UTILS.RandomGaussian(4088/2,nil,1000,4088))
+STN=STN+UnitID-1
+local OSTN=UTILS.DecimalToOctal(STN)
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%05d",OSTN)
+end
+end
+if SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN then
+if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN)~=nil then
+local octal=SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN
+local decimal=UTILS.OctalToDecimal(octal)+UnitID-1
+SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",UTILS.DecimalToOctal(decimal))
+else
+local STN=math.floor(UTILS.RandomGaussian(504/2,nil,100,504))
+STN=STN+UnitID-1
+local OSTN=UTILS.DecimalToOctal(STN)
+SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",OSTN)
 end
 end
 if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber then
-SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber=SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber+UnitID-1
+SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber=SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
 end
+if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel then
+local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
+CallsignName=string.match(CallsignName,"^(%a+)")
+local label="NY"
+if not string.find(CallsignName," ")then
+label=string.upper(string.match(CallsignName,"^%a")..string.match(CallsignName,"%a$"))
+end
+SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel=label
+end
+UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].AddPropAircraft,1)
 if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.Link16 and SpawnTemplate.units[UnitID].datalinks.Link16.settings then
 SpawnTemplate.units[UnitID].datalinks.Link16.settings.flightLead=UnitID==1 and true or false
 end
+if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.SADL and SpawnTemplate.units[UnitID].datalinks.SADL.settings then
+SpawnTemplate.units[UnitID].datalinks.SADL.settings.flightLead=UnitID==1 and true or false
+end
+UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].datalinks,1)
 end
 end
 self:T3({"Template:",SpawnTemplate})
