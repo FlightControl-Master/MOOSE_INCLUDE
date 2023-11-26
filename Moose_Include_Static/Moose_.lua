@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-25T18:44:38+01:00-52ed645f6c213968ae3291b673ff2b58f9d77b7f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-26T17:00:17+01:00-4747dae51ab1d870e2962d935ed072a762f4c780 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -29368,6 +29368,30 @@ self:F2(self.UnitName)
 local name=self.UnitName
 local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
 return skill
+end
+function UNIT:GetSTN()
+self:F2(self.UnitName)
+local STN=nil
+local VCL=nil
+local VCN=nil
+local FGL=false
+local template=self:GetTemplate()
+if template.AddPropAircraft then
+if template.AddPropAircraft.STN_L16 then
+STN=template.AddPropAircraft.STN_L16
+elseif template.AddPropAircraft.SADL_TN then
+STN=template.AddPropAircraft.SADL_TN
+end
+VCN=template.AddPropAircraft.VoiceCallsignNumber
+VCL=template.AddPropAircraft.VoiceCallsignLabel
+end
+if template.datalinks and template.datalinks.Link16 and template.datalinks.Link16.settings then
+FGL=template.datalinks.Link16.settings.flightLead
+end
+if template.datalinks and template.datalinks.SADL and template.datalinks.SADL.settings then
+FGL=template.datalinks.SADL.settings.flightLead
+end
+return STN,VCL,VCN,FGL
 end
 WEAPON={
 ClassName="WEAPON",
