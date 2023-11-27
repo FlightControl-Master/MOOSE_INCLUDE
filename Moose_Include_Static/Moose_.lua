@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-26T16:59:44+01:00-641707f37b670ed53a20f02ea227d8f2c9f80fae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-27T16:49:06+01:00-c489a881061eef407eec48643f691aefa8a4beb5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -26062,6 +26062,34 @@ self:SetTask(task,delay)
 local tankertask=self:EnRouteTaskTanker()
 self:PushTask(tankertask,delay+2)
 return self
+end
+function GROUP:GetGroupSTN()
+local tSTN={}
+local units=self:GetUnits()
+local gname=self:GetName()
+gname=string.gsub(gname,"(#%d+)$","")
+local report=REPORT:New()
+report:Add("Link16 S/TN Report")
+report:Add("Group: "..gname)
+report:Add("==================")
+for _,_unit in pairs(units)do
+local unit=_unit
+if unit and unit:IsAlive()then
+local STN,VCL,VCN,Lead=unit:GetSTN()
+local name=unit:GetName()
+tSTN[name]={
+STN=STN,
+VCL=VCL,
+VCN=VCN,
+Lead=Lead,
+}
+local lead=Lead==true and"(*)"or""
+report:Add(string.format("| %s%s %s %s",tostring(VCL),tostring(VCN),tostring(STN),lead))
+end
+end
+report:Add("==================")
+local text=report:Text()
+return tSTN,text
 end
 UNIT={
 ClassName="UNIT",
