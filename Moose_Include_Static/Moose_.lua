@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-27T16:49:56+01:00-f03a48b118e5eb1084fff1bb8a3e30cd5cde12a1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-28T10:37:45+01:00-3c0e977584dd2d37a15539b8f7c3a90a1f68f7e2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -102088,7 +102088,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.21",
+version="0.0.22",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -102255,6 +102255,7 @@ hours=(clock/30)*-1
 clock=12+hours
 clock=UTILS.Round(clock,0)
 if clock>12 then clock=clock-12 end
+if clock==0 then clock=12 end
 end
 return clock
 end
@@ -102566,29 +102567,33 @@ end
 if self.LaserTarget[playername]then
 local target=self.LaserTarget[playername]
 local oldtarget=target:GetObject()
-if not oldtarget or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
+self:T("Targetstate: "..target:GetState())
+self:T("Laser State: "..tostring(laser:IsLasing()))
+if(not oldtarget)or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
 laser:LaseOff()
 if target:IsDead()or target:IsDestroyed()or target:GetLife()<2 then
 self:__Shack(-1,client,oldtarget)
-self.LaserTarget[playername]=nil
 else
 self:__TargetLOSLost(-1,client,oldtarget)
+end
 self.LaserTarget[playername]=nil
-end
-end
-if oldtarget and(not laser:IsLasing())then
+oldtarget=nil
+self.LaserSpots[playername]=nil
+elseif oldtarget and laser and(not laser:IsLasing())then
+self:T("Switching laser back on ..")
 local lasercode=self.UnitLaserCodes[playername]or laser.LaserCode or 1688
 local lasingtime=self.lasingtime or 60
 laser:LaseOn(oldtarget,lasercode,lasingtime)
+else
+self:T("Target alive and laser is on!")
 end
-elseif not laser:IsLasing()and target then
+elseif(not laser:IsLasing())and target then
 local relativecam=self.LaserRelativePos[client:GetTypeName()]
 laser:SetRelativeStartPosition(relativecam)
 local lasercode=self.UnitLaserCodes[playername]or laser.LaserCode or 1688
 local lasingtime=self.lasingtime or 60
 laser:LaseOn(target,lasercode,lasingtime)
 self.LaserTarget[playername]=TARGET:New(target)
-self.LaserTarget[playername].TStatus=9
 self:__TargetLasing(-1,client,target,lasercode,lasingtime)
 end
 return self
@@ -102642,6 +102647,13 @@ self.AutoLase[playername]=true
 MESSAGE:New("Lasing is now ON",10,self.Name or"FACA"):ToClient(client)
 else
 self.AutoLase[playername]=false
+if self.LaserSpots[playername]then
+local laser=self.LaserSpots[playername]
+if laser:IsLasing()then
+laser:LaseOff()
+end
+self.LaserSpots[playername]=nil
+end
 MESSAGE:New("Lasing is now OFF",10,self.Name or"FACA"):ToClient(client)
 end
 if self.ClientMenus[playername]then
@@ -103135,7 +103147,7 @@ local text2=string.format("All stations, FACA %s on station\nat %s!",callsign,co
 local text2tts=string.format("All stations, FACA %s on station at %s!",callsign,coordtext)
 text2tts=self:_GetTextForSpeech(text2tts)
 if self.debug then
-self:I(text2.."\n"..text2tts)
+self:T(text2.."\n"..text2tts)
 end
 if self.UseSRS then
 local grp=Client:GetGroup()
@@ -103165,7 +103177,7 @@ local text=string.format("All stations, FACA %s leaving station\nat %s, good bye
 local texttts=string.format("All stations, FACA %s leaving station at %s, good bye!",callsign,coordtext)
 texttts=self:_GetTextForSpeech(texttts)
 if self.debug then
-self:I(text.."\n"..texttts)
+self:T(text.."\n"..texttts)
 end
 local text1="Going home!"
 if self.UseSRS then
