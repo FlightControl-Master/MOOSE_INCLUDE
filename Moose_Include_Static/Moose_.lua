@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-29T16:42:30+01:00-68b97773fe8e489adb79d72214d54dd2ca6cb245 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-29T18:01:37+01:00-1dc31cc85283a4f685c36acd939ef305cfc60232 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -18111,6 +18111,21 @@ end
 if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.SADL and SpawnTemplate.units[UnitID].datalinks.SADL.settings then
 SpawnTemplate.units[UnitID].datalinks.SADL.settings.flightLead=UnitID==1 and true or false
 end
+end
+end
+for UnitID=1,#SpawnTemplate.units do
+if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.Link16 and SpawnTemplate.units[UnitID].datalinks.Link16.network then
+local team={}
+local isF16=string.find(SpawnTemplate.units[UnitID].type,"F-16",1,true)and true or false
+for ID=1,#SpawnTemplate.units do
+local member={}
+member.missionUnitId=ID
+if isF16 then
+member.TDOA=true
+end
+table.insert(team,member)
+end
+SpawnTemplate.units[UnitID].datalinks.Link16.network.teamMembers=team
 end
 end
 self:T3({"Template:",SpawnTemplate})
