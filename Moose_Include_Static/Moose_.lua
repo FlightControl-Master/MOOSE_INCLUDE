@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-28T10:37:45+01:00-3c0e977584dd2d37a15539b8f7c3a90a1f68f7e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-29T16:42:30+01:00-68b97773fe8e489adb79d72214d54dd2ca6cb245 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -99438,14 +99438,20 @@ end
 function OPSZONE:_GetZoneColor()
 local color={0,0,0}
 if self.ownerCurrent==coalition.side.NEUTRAL then
-color={1,1,1}
+color=self.ZoneOwnerNeutral or{1,1,1}
 elseif self.ownerCurrent==coalition.side.BLUE then
-color={0,0,1}
+color=self.ZoneOwnerBlue or{0,0,1}
 elseif self.ownerCurrent==coalition.side.RED then
-color={1,0,0}
+color=self.ZoneOwnerRed or{1,0,0}
 else
 end
 return color
+end
+function OPSZONE:SetZoneColor(Neutral,Blue,Red)
+self.ZoneOwnerNeutral=Neutral or{1,1,1}
+self.ZoneOwnerBlue=Blue or{0,0,1}
+self.ZoneOwnerRed=Red or{1,0,0}
+return self
 end
 function OPSZONE:_UpdateMarker()
 if self.markZone then
