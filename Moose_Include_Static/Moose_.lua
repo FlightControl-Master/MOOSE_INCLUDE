@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-29T18:01:37+01:00-1dc31cc85283a4f685c36acd939ef305cfc60232 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-30T23:29:39+01:00-db71610d721279f4910997ea5a769cac8a73f61a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -53137,11 +53137,22 @@ local _assetattribute
 local _assetcategory
 local _assetairstart=false
 if _nassets>0 then
+local asset=_assets[1]
 _assetattribute=_assets[1].attribute
 _assetcategory=_assets[1].category
 _assetairstart=_assets[1].takeoffType and _assets[1].takeoffType==COORDINATE.WaypointType.TurningPoint or false
 if _assetcategory==Group.Category.AIRPLANE or _assetcategory==Group.Category.HELICOPTER then
 if self.airbase and self.airbase:GetCoalition()==self:GetCoalition()then
+if self.airbase.storage then
+local nS=self.airbase.storage:GetAmount(asset.unittype)
+local nA=asset.nunits*request.nasset
+if nS<nA then
+local text=string.format("Warehouse %s: Request denied! DCS Warehouse has only %d assets of type %s ==> NOT enough to spawn the requested %d asset units (%d groups)",
+self.alias,nS,asset.unittype,nA,request.nasset)
+self:_InfoMessage(text,5)
+return false
+end
+end
 if self:IsRunwayOperational()or _assetairstart then
 if _assetairstart then
 else
@@ -53203,6 +53214,7 @@ local text=string.format("Warehouse %s: Request denied! Not close enough to spaw
 self:_InfoMessage(text,5)
 return false
 end
+elseif _assetcategory==Group.Category.AIRPLANE or _assetcategory==Group.Category.HELICOPTER then
 end
 end
 request.cargoassets=_assets
