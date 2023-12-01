@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-11-30T23:29:39+01:00-db71610d721279f4910997ea5a769cac8a73f61a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-01T16:29:52+01:00-099f059eec5c2f65a85c5ce39a186972a041418d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -83925,7 +83925,11 @@ end
 local callsign=self:_GetCallsignName(flight)
 local rtext=string.format("%s, %s, request ATIS frequency.",self.alias,callsign)
 self:TransmissionPilot(rtext,flight)
+if self.atis then
 self:TransmissionTower(srstxt,flight,10)
+else
+self:TransmissionTower(text,flight,10)
+end
 else
 self:E(self.lid..string.format("Cannot find flight group %s.",tostring(groupname)))
 end
@@ -102438,8 +102442,8 @@ local heading1=(vheading+90)%360
 local heading2=(vheading-90)%360
 self:T({heading1,heading2})
 local startpos=startp:Translate(minview,vheading)
-local pos1=startpos:Translate(10,heading1)
-local pos2=startpos:Translate(10,heading2)
+local pos1=startpos:Translate(12.5,heading1)
+local pos2=startpos:Translate(12.5,heading2)
 local pos3=pos1:Translate(maxview,vheading)
 local pos4=pos2:Translate(maxview,vheading)
 local array={}
