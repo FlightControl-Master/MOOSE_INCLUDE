@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-01T16:29:52+01:00-099f059eec5c2f65a85c5ce39a186972a041418d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-02T14:46:04+01:00-460ad9db3975397d06378114122574d0a1d04b60 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -20963,6 +20963,13 @@ AIRBASE.Normandy={
 ["Broglie"]="Broglie",
 ["Bernay_Saint_Martin"]="Bernay Saint Martin",
 ["Saint_Andre_de_lEure"]="Saint-Andre-de-lEure",
+["Biggin_Hill"]="Biggin Hill",
+["Manston"]="Manston",
+["Detling"]="Detling",
+["Lympne"]="Lympne",
+["Abbeville_Drucat"]="Abbeville Drucat",
+["Merville_Calonne"]="Merville Calonne",
+["Saint_Omer_Wizernes"]="Saint-Omer Wizernes",
 }
 AIRBASE.PersianGulf={
 ["Abu_Dhabi_International_Airport"]="Abu Dhabi Intl",
