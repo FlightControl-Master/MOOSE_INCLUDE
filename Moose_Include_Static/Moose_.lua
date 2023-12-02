@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-02T15:11:35+01:00-e79c2481da25dec6ba19321939dc0693c65e36b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-02T20:48:26+01:00-494550fe915ed4c6a1cb012b2a8c4cafd91863a6 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -19301,8 +19301,12 @@ function ZONE_BASE:UndrawZone(Delay)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,ZONE_BASE.UndrawZone,self)
 else
-if self.DrawID then
+if self.DrawID and type(self.DrawID)~="table"then
 UTILS.RemoveMark(self.DrawID)
+else
+for _,mark_id in pairs(self.DrawID)do
+UTILS.RemoveMark(mark_id)
+end
 end
 end
 return self
@@ -20017,8 +20021,68 @@ local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
 self:T3({PointVec2})
 return PointVec2
 end
+_ZONE_TRIANGLE={
+ClassName="ZONE_TRIANGLE",
+Points={},
+Coords={},
+CenterVec2={x=0,y=0},
+SurfaceArea=0,
+DrawIDs={}
+}
+function _ZONE_TRIANGLE:New(p1,p2,p3)
+local self=BASE:Inherit(self,BASE:New())
+self.Points={p1,p2,p3}
+local center_x=(p1.x+p2.x+p3.x)/3
+local center_y=(p1.y+p2.y+p3.y)/3
+self.CenterVec2={x=center_x,y=center_y}
+for _,pt in pairs({p1,p2,p3})do
+table.add(self.Coords,COORDINATE:NewFromVec2(pt))
+end
+self.SurfaceArea=math.abs((p2.x-p1.x)*(p3.y-p1.y)-(p3.x-p1.x)*(p2.y-p1.y))*0.5
+return self
+end
+function _ZONE_TRIANGLE:ContainsPoint(pt,points)
+points=points or self.Points
+local function sign(p1,p2,p3)
+return(p1.x-p3.x)*(p2.y-p3.y)-(p2.x-p3.x)*(p1.y-p3.y)
+end
+local d1=sign(pt,self.Points[1],self.Points[2])
+local d2=sign(pt,self.Points[2],self.Points[3])
+local d3=sign(pt,self.Points[3],self.Points[1])
+local has_neg=(d1<0)or(d2<0)or(d3<0)
+local has_pos=(d1>0)or(d2>0)or(d3>0)
+return not(has_neg and has_pos)
+end
+function _ZONE_TRIANGLE:GetRandomVec2(points)
+points=points or self.Points
+local pt={math.random(),math.random()}
+table.sort(pt)
+local s=pt[1]
+local t=pt[2]-pt[1]
+local u=1-pt[2]
+return{x=s*points[1].x+t*points[2].x+u*points[3].x,
+y=s*points[1].y+t*points[2].y+u*points[3].y}
+end
+function _ZONE_TRIANGLE:Draw(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+Coalition=Coalition or-1
+Color=Color or{1,0,0}
+Alpha=Alpha or 1
+FillColor=FillColor or Color
+if not FillColor then UTILS.DeepCopy(Color)end
+FillAlpha=FillAlpha or Alpha
+if not FillAlpha then FillAlpha=1 end
+for i=1,#self.Coords do
+local c1=self.Coords[i]
+local c2=self.Coords[i%#self.Coords+1]
+table.add(self.DrawIDs,c1:LineToAll(c2,Coalition,Color,Alpha,LineType,ReadOnly))
+end
+return self.DrawIDs
+end
 ZONE_POLYGON_BASE={
 ClassName="ZONE_POLYGON_BASE",
+_Triangles={},
+SurfaceArea=0,
+DrawID={}
 }
 function ZONE_POLYGON_BASE:New(ZoneName,PointsArray)
 local self=BASE:Inherit(self,ZONE_BASE:New(ZoneName))
@@ -20031,7 +20095,82 @@ self._.Polygon[i].x=PointsArray[i].x
 self._.Polygon[i].y=PointsArray[i].y
 end
 end
+self._Triangles=self:_Triangulate()
+self.SurfaceArea=self:_CalculateSurfaceArea()
 return self
+end
+function ZONE_POLYGON_BASE:_Triangulate()
+local points=self._.Polygon
+local triangles={}
+local function get_orientation(shape_points)
+local sum=0
+for i=1,#shape_points do
+local j=i%#shape_points+1
+sum=sum+(shape_points[j].x-shape_points[i].x)*(shape_points[j].y+shape_points[i].y)
+end
+return sum>=0 and"clockwise"or"counter-clockwise"
+end
+local function ensure_clockwise(shape_points)
+local orientation=get_orientation(shape_points)
+if orientation=="counter-clockwise"then
+local reversed={}
+for i=#shape_points,1,-1 do
+table.insert(reversed,shape_points[i])
+end
+return reversed
+end
+return shape_points
+end
+local function is_clockwise(p1,p2,p3)
+local cross_product=(p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x)
+return cross_product<0
+end
+local function divide_recursively(shape_points)
+if#shape_points==3 then
+table.insert(triangles,_ZONE_TRIANGLE:New(shape_points[1],shape_points[2],shape_points[3]))
+elseif#shape_points>3 then
+for i,p1 in ipairs(shape_points)do
+local p2=shape_points[(i%#shape_points)+1]
+local p3=shape_points[(i+1)%#shape_points+1]
+local triangle=_ZONE_TRIANGLE:New(p1,p2,p3)
+local is_ear=true
+if not is_clockwise(p1,p2,p3)then
+is_ear=false
+else
+for _,point in ipairs(shape_points)do
+if point~=p1 and point~=p2 and point~=p3 and triangle:ContainsPoint(point)then
+is_ear=false
+break
+end
+end
+end
+if is_ear then
+local is_valid_triangle=true
+for _,point in ipairs(points)do
+if point~=p1 and point~=p2 and point~=p3 and triangle:ContainsPoint(point)then
+is_valid_triangle=false
+break
+end
+end
+if is_valid_triangle then
+table.insert(triangles,triangle)
+local remaining_points={}
+for j,point in ipairs(shape_points)do
+if point~=p2 then
+table.insert(remaining_points,point)
+end
+end
+divide_recursively(remaining_points)
+break
+end
+else
+end
+end
+end
+end
+points=ensure_clockwise(points)
+divide_recursively(points)
+return triangles
 end
 function ZONE_POLYGON_BASE:UpdateFromVec2(Vec2Array)
 self._.Polygon={}
@@ -20040,6 +20179,8 @@ self._.Polygon[i]={}
 self._.Polygon[i].x=Vec2Array[i].x
 self._.Polygon[i].y=Vec2Array[i].y
 end
+self._Triangles=self:_Triangulate()
+self.SurfaceArea=self:_CalculateSurfaceArea()
 return self
 end
 function ZONE_POLYGON_BASE:UpdateFromVec3(Vec3Array)
@@ -20049,7 +20190,16 @@ self._.Polygon[i]={}
 self._.Polygon[i].x=Vec3Array[i].x
 self._.Polygon[i].y=Vec3Array[i].z
 end
+self._Triangles=self:_Triangulate()
+self.SurfaceArea=self:_CalculateSurfaceArea()
 return self
+end
+function ZONE_POLYGON_BASE:_CalculateSurfaceArea()
+local area=0
+for _,triangle in pairs(self._Triangles)do
+area=area+triangle.SurfaceArea
+end
+return area
 end
 function ZONE_POLYGON_BASE:GetVec2()
 self:F(self.ZoneName)
@@ -20133,31 +20283,41 @@ i=i+1
 end
 return self
 end
-function ZONE_POLYGON_BASE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+function ZONE_POLYGON_BASE:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly,IncludeTriangles)
 if self._.Polygon and#self._.Polygon>=3 then
-local coordinate=COORDINATE:NewFromVec2(self._.Polygon[1])
 Coalition=Coalition or self:GetDrawCoalition()
 self:SetDrawCoalition(Coalition)
 Color=Color or self:GetColorRGB()
 Alpha=Alpha or 1
 self:SetColor(Color,Alpha)
 FillColor=FillColor or self:GetFillColorRGB()
-if not FillColor then UTILS.DeepCopy(Color)end
+if not FillColor then
+UTILS.DeepCopy(Color)
+end
 FillAlpha=FillAlpha or self:GetFillColorAlpha()
-if not FillAlpha then FillAlpha=0.15 end
+if not FillAlpha then
+FillAlpha=0.15
+end
 self:SetFillColor(FillColor,FillAlpha)
-if#self._.Polygon==4 then
-local Coord2=COORDINATE:NewFromVec2(self._.Polygon[2])
-local Coord3=COORDINATE:NewFromVec2(self._.Polygon[3])
-local Coord4=COORDINATE:NewFromVec2(self._.Polygon[4])
-self.DrawID=coordinate:QuadToAll(Coord2,Coord3,Coord4,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+IncludeTriangles=IncludeTriangles or false
+if IncludeTriangles then
+for _,triangle in pairs(self._Triangles)do
+local draw_ids=triangle:Draw()
+table.combine(self.DrawID,draw_ids)
+end
 else
-local Coordinates=self:GetVerticiesCoordinates()
-table.remove(Coordinates,1)
-self.DrawID=coordinate:MarkupToAllFreeForm(Coordinates,Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+local coords=self:GetVerticiesCoordinates()
+for i=1,#coords do
+local c1=coords[i]
+local c2=coords[i%#coords+1]
+table.add(self.DrawID,c1:LineToAll(c2,Coalition,Color,Alpha,LineType,ReadOnly))
+end
 end
 end
 return self
+end
+function ZONE_POLYGON_BASE:GetSurfaceArea()
+return self.SurfaceArea
 end
 function ZONE_POLYGON_BASE:GetRadius()
 local center=self:GetVec2()
@@ -20267,17 +20427,18 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_POLYGON_BASE:GetRandomVec2()
-local BS=self:GetBoundingSquare()
-local Nmax=1000;local n=0
-while n<Nmax do
-local Vec2={x=math.random(BS.x1,BS.x2),y=math.random(BS.y1,BS.y2)}
-if self:IsVec2InZone(Vec2)then
-return Vec2
+local weights={}
+for _,triangle in pairs(self._Triangles)do
+weights[triangle]=triangle.SurfaceArea/self.SurfaceArea
 end
-n=n+1
+local random_weight=math.random()
+local accumulated_weight=0
+for triangle,weight in pairs(weights)do
+accumulated_weight=accumulated_weight+weight
+if accumulated_weight>=random_weight then
+return triangle:GetRandomVec2()
 end
-self:E("Could not find a random point in the polygon zone!")
-return nil
+end
 end
 function ZONE_POLYGON_BASE:GetRandomPointVec2()
 self:F2()
@@ -20377,6 +20538,36 @@ local ZoneGroup=GROUP:FindByName(GroupName)
 local GroupPoints=ZoneGroup:GetTaskRoute()
 local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(GroupName,GroupPoints))
 self:F({GroupName,ZoneGroup,self._.Polygon})
+_EVENTDISPATCHER:CreateEventNewZone(self)
+return self
+end
+function ZONE_POLYGON:NewFromDrawing(DrawingName)
+local points={}
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if object["name"]==DrawingName then
+if(object["primitiveType"]=="Line"and object["closed"]==true)or(object["polygonMode"]=="free")then
+for _,point in UTILS.spairs(object["points"])do
+local p={x=object["mapX"]+point["x"],
+y=object["mapY"]+point["y"]}
+table.add(points,p)
+end
+elseif object["polygonMode"]=="rect"then
+local angle=object["angle"]
+local half_width=object["width"]/2
+local half_height=object["height"]/2
+local center={x=object["mapX"],y=object["mapY"]}
+local p1=UTILS.RotatePointAroundPivot({x=center.x-half_height,y=center.y+half_width},center,angle)
+local p2=UTILS.RotatePointAroundPivot({x=center.x+half_height,y=center.y+half_width},center,angle)
+local p3=UTILS.RotatePointAroundPivot({x=center.x+half_height,y=center.y-half_width},center,angle)
+local p4=UTILS.RotatePointAroundPivot({x=center.x-half_height,y=center.y-half_width},center,angle)
+points={p1,p2,p3,p4}
+else
+end
+end
+end
+end
+local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(DrawingName,points))
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
