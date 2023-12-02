@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-02T14:45:42+01:00-ae604fd847439b32de420cb26b8fa434f5c04823 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-02T15:11:14+01:00-89a902fd57dcabc7f0d7d21c1a9558cd8858cec4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -62468,7 +62468,16 @@ self:E(self.lid..string.format("EXPERIMENTAL: Starting ATIS for Helipad %s! SRS 
 self.ATISforFARPs=true
 self.useSRS=true
 end
+if type(self.frequency)=="table"then
+local frequency=table.concat(self.frequency,"/")
+local modulation=self.modulation
+if type(self.modulation)=="table"then
+modulation=table.concat(self.modulation,"/")
+end
+self:I(self.lid..string.format("Starting ATIS v%s for airbase %s on %s MHz Modulation=%s",ATIS.version,self.airbasename,frequency,modulation))
+else
 self:I(self.lid..string.format("Starting ATIS v%s for airbase %s on %.3f MHz Modulation=%d",ATIS.version,self.airbasename,self.frequency,self.modulation))
+end
 if not self.useSRS then
 self.radioqueue=RADIOQUEUE:New(self.frequency,self.modulation,string.format("ATIS %s",self.airbasename))
 self.radioqueue:SetSenderCoordinate(self.airbase:GetCoordinate())
@@ -62500,7 +62509,17 @@ if ru then
 relayunitstatus=tostring(ru:IsAlive())
 end
 end
-local text=string.format("State %s: Freq=%.3f MHz %s",fsmstate,self.frequency,UTILS.GetModulationName(self.modulation))
+local text=""
+if type(self.frequency)=="table"then
+local frequency=table.concat(self.frequency,"/")
+local modulation=self.modulation
+if type(self.modulation)=="table"then
+modulation=table.concat(self.modulation,"/")
+end
+text=string.format("State %s: Freq=%s MHz %s",fsmstate,frequency,modulation)
+else
+text=string.format("State %s: Freq=%.3f MHz %s",fsmstate,self.frequency,UTILS.GetModulationName(self.modulation))
+end
 if self.useSRS then
 text=text..string.format(", SRS path=%s (%s), gender=%s, culture=%s, voice=%s",tostring(self.msrs.path),tostring(self.msrs.port),tostring(self.msrs.gender),tostring(self.msrs.culture),tostring(self.msrs.voice))
 else
@@ -63385,7 +63404,17 @@ function ATIS:UpdateMarker(information,runact,wind,altimeter,temperature)
 if self.markerid then
 self.airbase:GetCoordinate():RemoveMark(self.markerid)
 end
-local text=string.format("ATIS on %.3f %s, %s:\n",self.frequency,UTILS.GetModulationName(self.modulation),tostring(information))
+local text=""
+if type(self.frequency)=="table"then
+local frequency=table.concat(self.frequency,"/")
+local modulation=self.modulation
+if type(modulation)=="table"then
+modulation=table.concat(self.modulation,"/")
+end
+text=string.format("ATIS on %s %s, %s:\n",tostring(frequency),tostring(modulation),tostring(information))
+else
+text=string.format("ATIS on %.3f %s, %s:\n",self.frequency,UTILS.GetModulationName(self.modulation),tostring(information))
+end
 text=text..string.format("%s\n",tostring(runact))
 text=text..string.format("%s\n",tostring(wind))
 text=text..string.format("%s\n",tostring(altimeter))
