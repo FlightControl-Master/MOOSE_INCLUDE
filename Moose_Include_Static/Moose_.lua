@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T11:34:52+01:00-fd191be27491bcc9fc552596a6971bb8886d3c10 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T12:03:41+01:00-2dc9f19d784ad7c830e954e3d09aacf093c2fd1d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11203,6 +11203,9 @@ end
 end
 end
 return BRAANATO
+end
+function COORDINATE.GetBullseyeCoordinate(Coalition)
+return COORDINATE:NewFromVec3(coalition.getMainRefPoint(Coalition))
 end
 function COORDINATE:ToStringBULLS(Coalition,Settings,MagVar)
 local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(Coalition))
@@ -24701,7 +24704,7 @@ if DCSControllable then
 local Controller=self:_GetController()
 if Controller then
 if self:IsAir()then
-self:SetOption(AI.Option.Air.val.MISSILE_ATTACK,range)
+self:SetOption(AI.Option.Air.id.MISSILE_ATTACK,range)
 end
 end
 return self
