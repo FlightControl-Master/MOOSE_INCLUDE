@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T12:03:41+01:00-2dc9f19d784ad7c830e954e3d09aacf093c2fd1d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T12:11:55+01:00-1c10bfea92020d008bdaaa770cfe50d8ae57fb8d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -65495,7 +65495,7 @@ DELIMITER="Punto",
 }
 ATIS.locale="en"
 _ATIS={}
-ATIS.version="0.10.3"
+ATIS.version="0.10.4"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
