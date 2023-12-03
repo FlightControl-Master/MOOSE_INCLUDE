@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T12:39:34+01:00-eab37d5e4830875952566c62c5bcec772e270fc1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T15:35:17+01:00-3243c92331833d4508daa4e770a2cf4d4f274253 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -43130,6 +43130,10 @@ end
 return self
 end
 function RANGE:SetSRSRangeControl(frequency,modulation,voice,culture,gender,relayunitname)
+if not self.instructmsrs then
+self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeControl!")
+return self
+end
 self.rangecontrolfreq=frequency or 256
 self.controlmsrs:SetFrequencies(self.rangecontrolfreq)
 self.controlmsrs:SetModulations(modulation or radio.modulation.AM)
@@ -43145,6 +43149,10 @@ end
 return self
 end
 function RANGE:SetSRSRangeInstructor(frequency,modulation,voice,culture,gender,relayunitname)
+if not self.instructmsrs then
+self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeInstructor!")
+return self
+end
 self.instructorfreq=frequency or 305
 self.instructmsrs:SetFrequencies(self.instructorfreq)
 self.instructmsrs:SetModulations(modulation or radio.modulation.AM)
