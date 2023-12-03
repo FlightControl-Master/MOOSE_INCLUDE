@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-02T20:48:26+01:00-494550fe915ed4c6a1cb012b2a8c4cafd91863a6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T09:26:09+01:00-31bdde130ab12b232b893d038da6fe6ff8a63c9e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -8119,7 +8119,7 @@ if Event.weapon then
 Event.Weapon=Event.weapon
 Event.WeaponName=Event.Weapon:getTypeName()
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
-Event.WeaponPlayerName=Event.WeaponUNIT and Event.Weapon:getPlayerName()
+Event.WeaponPlayerName=Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
 Event.WeaponCoalition=Event.WeaponUNIT and Event.Weapon:getCoalition()
 Event.WeaponCategory=Event.WeaponUNIT and Event.Weapon:getDesc().category
 Event.WeaponTypeName=Event.WeaponUNIT and Event.Weapon:getTypeName()
