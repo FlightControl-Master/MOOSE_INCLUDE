@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T15:35:17+01:00-3243c92331833d4508daa4e770a2cf4d4f274253 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T20:51:19+01:00-cca5a5d55d8a4429f8a79843c79120681b9ecc29 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -19304,11 +19304,13 @@ function ZONE_BASE:UndrawZone(Delay)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,ZONE_BASE.UndrawZone,self)
 else
-if self.DrawID and type(self.DrawID)~="table"then
+if self.DrawID then
+if type(self.DrawID)~="table"then
 UTILS.RemoveMark(self.DrawID)
 else
 for _,mark_id in pairs(self.DrawID)do
 UTILS.RemoveMark(mark_id)
+end
 end
 end
 end
@@ -86309,8 +86311,10 @@ self:T(self.lid.."Passed Final WP and NO Tasks/Missions left. No DestBase or Des
 self:__Wait(-1)
 end
 else
+if not self:IsParking()then
 self:T(self.lid..string.format("Passed Final WP but Tasks=%d or Missions=%d left in the queue. Wait!",nTasks,nMissions))
 self:__Wait(-1)
+end
 end
 else
 self:T(self.lid..string.format("Passed Final WP but still have current Task (#%s) or Mission (#%s) left to do",tostring(self.taskcurrent),tostring(self.currentmission)))
