@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-04T10:42:26+01:00-4d4b8862c26ed66c53aae9e582fb8cb368a0992b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-04T22:19:31+01:00-bc3a5271dc8ac91304862a21f55b5a4fb574b0ff ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -93112,7 +93112,7 @@ else
 self.currentwp=self.currentwp-1
 end
 if(self.adinfinitum or istemp)then
-self:_PassedFinalWaypoint(false,"Removed PASSED temporary waypoint ")
+self:_PassedFinalWaypoint(false,"Removed PASSED temporary waypoint")
 end
 end
 end
@@ -94237,6 +94237,16 @@ elseif Mission.prohibitAB==false then
 self:T2("Setting allow AB")
 self:SetAllowAfterburner()
 end
+end
+if self.legion and self.legionReturn==false and self.waypoints and#self.waypoints==1 then
+local Coordinate=self:GetCoordinate()
+if self.isArmygroup then
+ARMYGROUP.AddWaypoint(self,Coordinate,0,nil,nil,false)
+elseif self.isNavygroup then
+NAVYGROUP.AddWaypoint(self,Coordinate,0,nil,nil,false)
+end
+self:RemoveWaypoint(1)
+self:_PassedFinalWaypoint(true,"Passed final waypoint as group is done with mission but should NOT return to its legion")
 end
 self:_CheckGroupDone(delay)
 end
