@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-03T20:51:19+01:00-cca5a5d55d8a4429f8a79843c79120681b9ecc29 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-04T10:42:26+01:00-4d4b8862c26ed66c53aae9e582fb8cb368a0992b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -80209,6 +80209,34 @@ self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddis
 end
 return self
 end
+function CTLD:_RemoveCratesNearby(_group,_unit)
+self:T(self.lid.." _RemoveCratesNearby")
+local finddist=self.CrateDistance or 35
+local crates,number=self:_FindCratesNearby(_group,_unit,finddist,true)
+if number>0 then
+local text=REPORT:New("Removing Crates Found Nearby:")
+text:Add("------------------------------------------------------------")
+for _,_entry in pairs(crates)do
+local entry=_entry
+local name=entry:GetName()
+local dropped=entry:WasDropped()
+if dropped then
+text:Add(string.format("Crate for %s, %dkg removed",name,entry.PerCrateMass))
+else
+text:Add(string.format("Crate for %s, %dkg removed",name,entry.PerCrateMass))
+end
+entry:GetPositionable():Destroy(false)
+end
+if text:GetCount()==1 then
+text:Add("        N O N E")
+end
+text:Add("------------------------------------------------------------")
+self:_SendMessage(text:Text(),30,true,_group)
+else
+self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist),10,false,_group)
+end
+return self
+end
 function CTLD:_GetDistance(_point1,_point2)
 self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
@@ -81121,6 +81149,7 @@ menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrat
 end
 end
 listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
+listmenu=MENU_GROUP_COMMAND:New(_group,"Remove crates nearby",topcrates,self._RemoveCratesNearby,self,_group,_unit)
 local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
 if not self.nobuildmenu then
 local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit)
