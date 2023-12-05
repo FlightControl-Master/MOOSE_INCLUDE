@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-04T22:19:31+01:00-bc3a5271dc8ac91304862a21f55b5a4fb574b0ff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-05T17:48:34+01:00-f789fbac709d5127e068ac09b8f52433f062c57a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -20217,9 +20217,9 @@ self._.Polygon[i]={}
 self._.Polygon[i].x=PointsArray[i].x
 self._.Polygon[i].y=PointsArray[i].y
 end
-end
 self._Triangles=self:_Triangulate()
 self.SurfaceArea=self:_CalculateSurfaceArea()
+end
 return self
 end
 function ZONE_POLYGON_BASE:_Triangulate()
