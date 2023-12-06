@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-04T10:40:38+01:00-fac7a5fdc6b816e07d43d4df33325d56ff0ad0eb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-06T08:42:07+01:00-e078e488531e5d6e5d62276da17c2d293e4843f2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -19554,10 +19554,10 @@ local OSTN=UTILS.DecimalToOctal(STN)
 SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",OSTN)
 end
 end
-if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber then
+if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber and type(Callsign)~="number"then
 SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber=SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
 end
-if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel then
+if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel and type(Callsign)~="number"then
 local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
 CallsignName=string.match(CallsignName,"^(%a+)")
 local label="NY"
@@ -19572,6 +19572,21 @@ end
 if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.SADL and SpawnTemplate.units[UnitID].datalinks.SADL.settings then
 SpawnTemplate.units[UnitID].datalinks.SADL.settings.flightLead=UnitID==1 and true or false
 end
+end
+end
+for UnitID=1,#SpawnTemplate.units do
+if SpawnTemplate.units[UnitID].datalinks and SpawnTemplate.units[UnitID].datalinks.Link16 and SpawnTemplate.units[UnitID].datalinks.Link16.network then
+local team={}
+local isF16=string.find(SpawnTemplate.units[UnitID].type,"F-16",1,true)and true or false
+for ID=1,#SpawnTemplate.units do
+local member={}
+member.missionUnitId=ID
+if isF16 then
+member.TDOA=true
+end
+table.insert(team,member)
+end
+SpawnTemplate.units[UnitID].datalinks.Link16.network.teamMembers=team
 end
 end
 self:T3({"Template:",SpawnTemplate})
