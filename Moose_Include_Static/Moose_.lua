@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-05T17:48:34+01:00-f789fbac709d5127e068ac09b8f52433f062c57a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-06T08:43:09+01:00-d0491b3b5a8f85c950bf24be9106f7cb7b1887cc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -18096,10 +18096,10 @@ local OSTN=UTILS.DecimalToOctal(STN)
 SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",OSTN)
 end
 end
-if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber then
+if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber and type(Callsign)~="number"then
 SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber=SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
 end
-if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel then
+if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignLabel and type(Callsign)~="number"then
 local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
 CallsignName=string.match(CallsignName,"^(%a+)")
 local label="NY"
