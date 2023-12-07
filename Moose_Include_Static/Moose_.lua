@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T13:46:52+01:00-3b8bbdd4c1804fadca108bedcc89f452227bc70b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T15:12:18+01:00-6ee1afc67049df29f98ab5a4e938d470b8ff8482 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -20030,124 +20030,6 @@ local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
 self:T3({PointVec2})
 return PointVec2
 end
-ZONE_OVAL={
-ClassName="OVAL",
-ZoneName="",
-MajorAxis=nil,
-MinorAxis=nil,
-Angle=0,
-DrawPoly=nil
-}
-function ZONE_OVAL:New(name,vec2,major_axis,minor_axis,angle)
-self=BASE:Inherit(self,ZONE_BASE:New())
-self.ZoneName=name
-self.CenterVec2=vec2
-self.MajorAxis=major_axis
-self.MinorAxis=minor_axis
-self.Angle=angle or 0
-_DATABASE:AddZone(name,self)
-return self
-end
-function ZONE_OVAL:NewFromDrawing(DrawingName)
-self=BASE:Inherit(self,ZONE_BASE:New(DrawingName))
-for _,layer in pairs(env.mission.drawings.layers)do
-for _,object in pairs(layer["objects"])do
-if string.find(object["name"],DrawingName,1,true)then
-if object["polygonMode"]=="oval"then
-self.CenterVec2={x=object["mapX"],y=object["mapY"]}
-self.MajorAxis=object["r1"]
-self.MinorAxis=object["r2"]
-self.Angle=object["angle"]
-end
-end
-end
-end
-_DATABASE:AddZone(DrawingName,self)
-return self
-end
-function ZONE_OVAL:GetMajorAxis()
-return self.MajorAxis
-end
-function ZONE_OVAL:GetMinorAxis()
-return self.MinorAxis
-end
-function ZONE_OVAL:GetAngle()
-return self.Angle
-end
-function ZONE_OVAL:GetVec2()
-return self.CenterVec2
-end
-function ZONE_OVAL:IsVec2InZone(vec2)
-local cos,sin=math.cos,math.sin
-local dx=vec2.x-self.CenterVec2.x
-local dy=vec2.y-self.CenterVec2.y
-local rx=dx*cos(self.Angle)+dy*sin(self.Angle)
-local ry=-dx*sin(self.Angle)+dy*cos(self.Angle)
-return rx*rx/(self.MajorAxis*self.MajorAxis)+ry*ry/(self.MinorAxis*self.MinorAxis)<=1
-end
-function ZONE_OVAL:GetBoundingSquare()
-local min_x=self.CenterVec2.x-self.MajorAxis
-local min_y=self.CenterVec2.y-self.MinorAxis
-local max_x=self.CenterVec2.x+self.MajorAxis
-local max_y=self.CenterVec2.y+self.MinorAxis
-return{
-{x=min_x,y=min_x},{x=max_x,y=min_y},{x=max_x,y=max_y},{x=min_x,y=max_y}
-}
-end
-function ZONE_OVAL:PointsOnEdge(num_points)
-num_points=num_points or 40
-local points={}
-local dtheta=2*math.pi/num_points
-for i=0,num_points-1 do
-local theta=i*dtheta
-local x=self.CenterVec2.x+self.MajorAxis*math.cos(theta)*math.cos(self.Angle)-self.MinorAxis*math.sin(theta)*math.sin(self.Angle)
-local y=self.CenterVec2.y+self.MajorAxis*math.cos(theta)*math.sin(self.Angle)+self.MinorAxis*math.sin(theta)*math.cos(self.Angle)
-table.insert(points,{x=x,y=y})
-end
-return points
-end
-function ZONE_OVAL:GetRandomVec2()
-local theta=math.rad(self.Angle)
-local random_point=math.sqrt(math.random())
-local phi=math.random()*2*math.pi
-local x_c=random_point*math.cos(phi)
-local y_c=random_point*math.sin(phi)
-local x_e=x_c*self.MajorAxis
-local y_e=y_c*self.MinorAxis
-local rx=(x_e*math.cos(theta)-y_e*math.sin(theta))+self.CenterVec2.x
-local ry=(x_e*math.sin(theta)+y_e*math.cos(theta))+self.CenterVec2.y
-return{x=rx,y=ry}
-end
-function ZONE_OVAL:GetRandomPointVec2()
-return POINT_VEC2:NewFromVec2(self:GetRandomVec2())
-end
-function ZONE_OVAL:GetRandomPointVec3()
-return POINT_VEC2:NewFromVec3(self:GetRandomVec2())
-end
-function ZONE_OVAL:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType)
-Coalition=Coalition or self:GetDrawCoalition()
-self:SetDrawCoalition(Coalition)
-Color=Color or self:GetColorRGB()
-Alpha=Alpha or 1
-self:SetColor(Color,Alpha)
-FillColor=FillColor or self:GetFillColorRGB()
-if not FillColor then
-UTILS.DeepCopy(Color)
-end
-FillAlpha=FillAlpha or self:GetFillColorAlpha()
-if not FillAlpha then
-FillAlpha=0.15
-end
-LineType=LineType or 1
-self:SetFillColor(FillColor,FillAlpha)
-self.DrawPoly=ZONE_POLYGON:NewFromPointsArray(self.ZoneName,self:PointsOnEdge(80))
-self.DrawPoly:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType)
-end
-function ZONE_OVAL:UndrawZone()
-if self.DrawPoly then
-self.DrawPoly:UndrawZone()
-end
-end
 _ZONE_TRIANGLE={
 ClassName="ZONE_TRIANGLE",
 Points={},
@@ -20644,6 +20526,7 @@ i=i+1
 end
 return self
 end
+do
 ZONE_POLYGON={
 ClassName="ZONE_POLYGON",
 }
@@ -20884,6 +20767,7 @@ end
 function ZONE_POLYGON:IsNoneInZone()
 return self:CountScannedCoalitions()==0
 end
+end
 do
 ZONE_ELASTIC={
 ClassName="ZONE_ELASTIC",
@@ -20975,6 +20859,124 @@ table.insert(h,pt)
 end
 table.remove(h,#h)
 return h
+end
+end
+ZONE_OVAL={
+ClassName="OVAL",
+ZoneName="",
+MajorAxis=nil,
+MinorAxis=nil,
+Angle=0,
+DrawPoly=nil
+}
+function ZONE_OVAL:New(name,vec2,major_axis,minor_axis,angle)
+self=BASE:Inherit(self,ZONE_BASE:New())
+self.ZoneName=name
+self.CenterVec2=vec2
+self.MajorAxis=major_axis
+self.MinorAxis=minor_axis
+self.Angle=angle or 0
+_DATABASE:AddZone(name,self)
+return self
+end
+function ZONE_OVAL:NewFromDrawing(DrawingName)
+self=BASE:Inherit(self,ZONE_BASE:New(DrawingName))
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if string.find(object["name"],DrawingName,1,true)then
+if object["polygonMode"]=="oval"then
+self.CenterVec2={x=object["mapX"],y=object["mapY"]}
+self.MajorAxis=object["r1"]
+self.MinorAxis=object["r2"]
+self.Angle=object["angle"]
+end
+end
+end
+end
+_DATABASE:AddZone(DrawingName,self)
+return self
+end
+function ZONE_OVAL:GetMajorAxis()
+return self.MajorAxis
+end
+function ZONE_OVAL:GetMinorAxis()
+return self.MinorAxis
+end
+function ZONE_OVAL:GetAngle()
+return self.Angle
+end
+function ZONE_OVAL:GetVec2()
+return self.CenterVec2
+end
+function ZONE_OVAL:IsVec2InZone(vec2)
+local cos,sin=math.cos,math.sin
+local dx=vec2.x-self.CenterVec2.x
+local dy=vec2.y-self.CenterVec2.y
+local rx=dx*cos(self.Angle)+dy*sin(self.Angle)
+local ry=-dx*sin(self.Angle)+dy*cos(self.Angle)
+return rx*rx/(self.MajorAxis*self.MajorAxis)+ry*ry/(self.MinorAxis*self.MinorAxis)<=1
+end
+function ZONE_OVAL:GetBoundingSquare()
+local min_x=self.CenterVec2.x-self.MajorAxis
+local min_y=self.CenterVec2.y-self.MinorAxis
+local max_x=self.CenterVec2.x+self.MajorAxis
+local max_y=self.CenterVec2.y+self.MinorAxis
+return{
+{x=min_x,y=min_x},{x=max_x,y=min_y},{x=max_x,y=max_y},{x=min_x,y=max_y}
+}
+end
+function ZONE_OVAL:PointsOnEdge(num_points)
+num_points=num_points or 40
+local points={}
+local dtheta=2*math.pi/num_points
+for i=0,num_points-1 do
+local theta=i*dtheta
+local x=self.CenterVec2.x+self.MajorAxis*math.cos(theta)*math.cos(self.Angle)-self.MinorAxis*math.sin(theta)*math.sin(self.Angle)
+local y=self.CenterVec2.y+self.MajorAxis*math.cos(theta)*math.sin(self.Angle)+self.MinorAxis*math.sin(theta)*math.cos(self.Angle)
+table.insert(points,{x=x,y=y})
+end
+return points
+end
+function ZONE_OVAL:GetRandomVec2()
+local theta=math.rad(self.Angle)
+local random_point=math.sqrt(math.random())
+local phi=math.random()*2*math.pi
+local x_c=random_point*math.cos(phi)
+local y_c=random_point*math.sin(phi)
+local x_e=x_c*self.MajorAxis
+local y_e=y_c*self.MinorAxis
+local rx=(x_e*math.cos(theta)-y_e*math.sin(theta))+self.CenterVec2.x
+local ry=(x_e*math.sin(theta)+y_e*math.cos(theta))+self.CenterVec2.y
+return{x=rx,y=ry}
+end
+function ZONE_OVAL:GetRandomPointVec2()
+return POINT_VEC2:NewFromVec2(self:GetRandomVec2())
+end
+function ZONE_OVAL:GetRandomPointVec3()
+return POINT_VEC2:NewFromVec3(self:GetRandomVec2())
+end
+function ZONE_OVAL:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType)
+Coalition=Coalition or self:GetDrawCoalition()
+self:SetDrawCoalition(Coalition)
+Color=Color or self:GetColorRGB()
+Alpha=Alpha or 1
+self:SetColor(Color,Alpha)
+FillColor=FillColor or self:GetFillColorRGB()
+if not FillColor then
+UTILS.DeepCopy(Color)
+end
+FillAlpha=FillAlpha or self:GetFillColorAlpha()
+if not FillAlpha then
+FillAlpha=0.15
+end
+LineType=LineType or 1
+self:SetFillColor(FillColor,FillAlpha)
+self.DrawPoly=ZONE_POLYGON:NewFromPointsArray(self.ZoneName,self:PointsOnEdge(80))
+self.DrawPoly:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType)
+end
+function ZONE_OVAL:UndrawZone()
+if self.DrawPoly then
+self.DrawPoly:UndrawZone()
 end
 end
 do
