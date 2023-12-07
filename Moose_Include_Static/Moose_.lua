@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T12:12:19+01:00-dd37a42470bff96230cd7257f141fc71f11460ff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T12:14:59+01:00-6f473faa924942d2509b27ce5014952c7b87b9f7 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -17414,7 +17414,7 @@ end
 if CoalitionSide then
 if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
-trigger.action.outTextForCoalition(CoalitionSide,self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
+trigger.action.outTextForCoalition(CoalitionSide,self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
 end
 self.CoalitionSide=CoalitionSide
