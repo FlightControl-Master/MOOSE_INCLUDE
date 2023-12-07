@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-06T08:43:09+01:00-d0491b3b5a8f85c950bf24be9106f7cb7b1887cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T11:22:20+01:00-018d8eecf64bd98000f0a8f7475926fd283a196d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -12003,7 +12003,10 @@ self:T3({LastObject})
 return LastObject
 end
 function SET_BASE:GetRandom()
-local tablemax=table.maxn(self.Index)
+local tablemax=0
+for _,_ind in pairs(self.Index)do
+tablemax=tablemax+1
+end
 local RandomItem=self.Set[self.Index[math.random(1,tablemax)]]
 self:T3({RandomItem})
 return RandomItem
@@ -13153,12 +13156,13 @@ return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_UNIT:GetCoordinate()
 local Coordinate=nil
-local unit=self:GetRandom()
+local unit=self:GetFirst()
 if self:Count()==1 and unit then
 return unit:GetCoordinate()
 end
 if unit then
-local Coordinate=unit:GetCoordinate()
+Coordinate=unit:GetCoordinate()
+self:T2(UTILS.PrintTableToLog(Coordinate:GetVec3()))
 local x1=Coordinate.x
 local x2=Coordinate.x
 local y1=Coordinate.y
@@ -13168,16 +13172,16 @@ local z2=Coordinate.z
 local MaxVelocity=0
 local AvgHeading=nil
 local MovingCount=0
-for UnitName,UnitData in pairs(self:GetAliveSet())do
+for UnitName,UnitData in pairs(self.Set)do
 local Unit=UnitData
-local Coordinate=Unit:GetCoordinate()
-x1=(Coordinate.x<x1)and Coordinate.x or x1
-x2=(Coordinate.x>x2)and Coordinate.x or x2
-y1=(Coordinate.y<y1)and Coordinate.y or y1
-y2=(Coordinate.y>y2)and Coordinate.y or y2
-z1=(Coordinate.y<z1)and Coordinate.z or z1
-z2=(Coordinate.y>z2)and Coordinate.z or z2
-local Velocity=Coordinate:GetVelocity()
+local Coord=Unit:GetCoordinate()
+x1=(Coord.x<x1)and Coord.x or x1
+x2=(Coord.x>x2)and Coord.x or x2
+y1=(Coord.y<y1)and Coord.y or y1
+y2=(Coord.y>y2)and Coord.y or y2
+z1=(Coord.y<z1)and Coord.z or z1
+z2=(Coord.y>z2)and Coord.z or z2
+local Velocity=Coord:GetVelocity()
 if Velocity~=0 then
 MaxVelocity=(MaxVelocity<Velocity)and Velocity or MaxVelocity
 local Heading=Coordinate:GetHeading()
@@ -13191,7 +13195,7 @@ Coordinate.y=(y2-y1)/2+y1
 Coordinate.z=(z2-z1)/2+z1
 Coordinate:SetHeading(AvgHeading)
 Coordinate:SetVelocity(MaxVelocity)
-self:F({Coordinate=Coordinate})
+self:T2(UTILS.PrintTableToLog(Coordinate:GetVec3()))
 end
 return Coordinate
 end
@@ -102524,7 +102528,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.0.22",
+version="0.1.23",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -102550,8 +102554,9 @@ CallsignTranslations=nil,
 ReferencePoint=nil,
 TForget=600,
 TargetCache=nil,
-smokeownposition=true,
+smokeownposition=false,
 SmokeOwn={},
+smokeaveragetargetpos=false,
 }
 PLAYERRECCE.LaserRelativePos={
 ["SA342M"]={x=1.7,y=1.2,z=0},
@@ -103128,8 +103133,7 @@ function PLAYERRECCE:_SmokeTargets(client,group,playername)
 self:T(self.lid.."_SmokeTargets")
 local cameraset=self:_GetTargetSet(client,true)
 local visualset=self:_GetTargetSet(client,false)
-cameraset:AddSet(visualset)
-if cameraset:CountAlive()>0 then
+if cameraset:CountAlive()>0 or visualset:CountAlive()>0 then
 self:__TargetsSmoked(-1,client,playername,cameraset)
 else
 return self
@@ -103141,24 +103145,28 @@ local lasersmoke=self.SmokeColor.lasersmoke
 local laser=self.LaserSpots[playername]
 if laser and laser.Target and laser.Target:IsAlive()then
 laser.Target:GetCoordinate():Smoke(lasersmoke)
-if cameraset:IsInSet(laser.Target)then
-cameraset:Remove(laser.Target:GetName(),true)
 end
-end
-local coordinate=nil
-local setthreat=0
-if cameraset:CountAlive()>1 then
-local coordinate=cameraset:GetCoordinate()
-local setthreat=cameraset:CalculateThreatLevelA2G()
-end
-if coordinate then
+local coord=visualset:GetCoordinate()
+if coord and self.smokeaveragetargetpos then
+coord:SetAtLandheight()
+coord:Smoke(medsmoke)
+else
+for _,_unit in pairs(visualset.Set)do
+local unit=_unit
+if unit and unit:IsAlive()then
+local coord=unit:GetCoordinate()
+local threat=unit:GetThreatLevel()
+if coord then
 local color=lowsmoke
-if setthreat>7 then
+if threat>7 then
+color=highsmoke
+elseif threat>2 then
 color=medsmoke
-elseif setthreat>2 then
-color=lowsmoke
 end
-coordinate:Smoke(color)
+coord:Smoke(color)
+end
+end
+end
 end
 if self.SmokeOwn[playername]then
 local cc=client:GetVec2()
@@ -103189,15 +103197,15 @@ end
 end
 for _,_unit in pairs(cameraset.Set)do
 local unit=_unit
-if unit then
+if unit and unit:IsAlive()then
 local coord=unit:GetCoordinate()
 local threat=unit:GetThreatLevel()
 if coord then
 local color=lowsmoke
 if threat>7 then
-color=medsmoke
+color=highsmoke
 elseif threat>2 then
-color=lowsmoke
+color=medsmoke
 end
 coord:Flare(color)
 end
@@ -103470,13 +103478,23 @@ self.MenuName=Name
 return self
 end
 function PLAYERRECCE:EnableSmokeOwnPosition()
-self:T(self.lid.."ENableSmokeOwnPosition")
+self:T(self.lid.."EnableSmokeOwnPosition")
 self.smokeownposition=true
 return self
 end
 function PLAYERRECCE:DisableSmokeOwnPosition()
 self:T(self.lid.."DisableSmokeOwnPosition")
 self.smokeownposition=false
+return self
+end
+function PLAYERRECCE:EnableSmokeAverageTargetPosition()
+self:T(self.lid.."ENableSmokeOwnPosition")
+self.smokeaveragetargetpos=true
+return self
+end
+function PLAYERRECCE:DisableSmokeAverageTargetPosition()
+self:T(self.lid.."DisableSmokeAverageTargetPosition")
+self.smokeaveragetargetpos=false
 return self
 end
 function PLAYERRECCE:_GetTextForSpeech(text)
