@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T15:11:53+01:00-ff6704f123ca0517c6ea524607c883cc2a2f2012 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T16:08:47+01:00-6903e252d2461b7827a5b07df2bfff5937044f52 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -1283,20 +1283,32 @@ end
 end
 end
 function UTILS.PrintTableToLog(table,indent)
+local text="\n"
 if not table then
 env.warning("No table passed!")
-return
+return nil
 end
 if not indent then indent=0 end
 for k,v in pairs(table)do
+if string.find(k," ")then k='"'..k..'"'end
 if type(v)=="table"then
 env.info(string.rep("  ",indent)..tostring(k).." = {")
-UTILS.PrintTableToLog(v,indent+1)
-env.info(string.rep("  ",indent).."}")
+text=text..string.rep("  ",indent)..tostring(k).." = {\n"
+text=text..tostring(UTILS.PrintTableToLog(v,indent+1)).."\n"
+env.info(string.rep("  ",indent).."},")
+text=text..string.rep("  ",indent).."},\n"
 else
-env.info(string.rep("  ",indent)..tostring(k).." = "..tostring(v))
+local value
+if tostring(v)=="true"or tostring(v)=="false"or tonumber(v)~=nil then
+value=v
+else
+value='"'..tostring(v)..'"'
+end
+env.info(string.rep("  ",indent)..tostring(k).." = "..tostring(value)..",\n")
+text=text..string.rep("  ",indent)..tostring(k).." = "..tostring(value)..",\n"
 end
 end
+return text
 end
 function UTILS.TableShow(tbl,loc,indent,tableshow_tbls)
 tableshow_tbls=tableshow_tbls or{}
