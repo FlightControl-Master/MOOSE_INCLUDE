@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T12:14:59+01:00-6f473faa924942d2509b27ce5014952c7b87b9f7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T13:31:40+01:00-9ce1d360d6c921ad072bd3b077d3f89a772a9c37 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -64217,7 +64217,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.43"
+CTLD.version="1.0.44"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -65374,6 +65374,26 @@ else
 return false
 end
 end
+function CTLD:_GetUnitPositions(Coordinate,Radius,Heading,Template)
+local Positions={}
+local template=_DATABASE:GetGroupTemplate(Template)
+UTILS.PrintTableToLog(template)
+local numbertroops=#template.units
+local newcenter=Coordinate:Translate(Radius,((Heading+270)%360))
+for i=1,360,math.floor(360/numbertroops)do
+local phead=((Heading+270+i)%360)
+local post=newcenter:Translate(Radius,phead)
+local pos1=post:GetVec2()
+local p1t={
+x=pos1.x,
+y=pos1.y,
+heading=phead,
+}
+table.insert(Positions,p1t)
+end
+UTILS.PrintTableToLog(Positions)
+return Positions
+end
 function CTLD:_UnloadTroops(Group,Unit)
 self:T(self.lid.." _UnloadTroops")
 local droppingatbase=false
@@ -65414,14 +65434,25 @@ factor=cargo:GetCratesNeeded()or 1
 zoneradius=Unit:GetVelocityMPS()or 100
 end
 local zone=ZONE_GROUP:New(string.format("Unload zone-%s",unitname),Group,zoneradius*factor)
-local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
+local randomcoord=zone:GetRandomCoordinate(10,30*factor)
+local heading=Group:GetHeading()or 0
+if hoverunload or grounded then
+randomcoord=Group:GetCoordinate()
+local Angle=(heading+270)%360
+local offset=hoverunload and 1.5 or 5
+randomcoord:Translate(offset,Angle,nil,true)
+end
+local tempcount=0
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
+tempcount=tempcount+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
+local rad=2.5+tempcount
+local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitRandomizeUnits(true,20,2)
 :InitDelayOff()
-:SpawnFromVec2(randomcoord)
+:InitSetUnitAbsolutePositions(Positions)
+:SpawnFromVec2(randomcoord:GetVec2())
 self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter],type)
 end
 cargo:SetWasDropped(true)
