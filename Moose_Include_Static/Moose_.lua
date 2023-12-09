@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T13:53:27+01:00-6b270916c4b192b9d671801ad3e0abd324e83cd5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T14:34:41+01:00-0f4162a9a96750c5c1f3c6298ecaabaaa76104dc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -35007,7 +35007,7 @@ local fblur=math.floor(math.random(1,10000)/100)
 local unit=UNIT:FindByName(DetectedObjectName)
 if unit and unit:IsAlive()then
 local AGL=unit:GetAltitude(true)
-if AGL<=minheight and fheight>thresheight then DetectionAccepted=false end
+if AGL<=minheight and fheight<thresheight then DetectionAccepted=false end
 if fblur>thresblur then DetectionAccepted=false end
 end
 end
