@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T13:03:57+01:00-1f17fd89a479046a5bb08f8479e4f696ae529d57 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T13:54:43+01:00-ff26e4d1dcce303c78efd2a05e557d03cd37f7e2 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -37873,6 +37873,19 @@ DetectionAccepted=false
 end
 end
 end
+if self.RadarBlur then
+local minheight=self.RadarBlurMinHeight or 250
+local thresheight=self.RadarBlurThresHeight or 90
+local thresblur=self.RadarBlurThresBlur or 85
+local fheight=math.floor(math.random(1,10000)/100)
+local fblur=math.floor(math.random(1,10000)/100)
+local unit=UNIT:FindByName(DetectedObjectName)
+if unit and unit:IsAlive()then
+local AGL=unit:GetAltitude(true)
+if AGL<=minheight and fheight>thresheight then DetectionAccepted=false end
+if fblur>thresblur then DetectionAccepted=false end
+end
+end
 if not self.DetectedObjects[DetectedObjectName]and TargetIsVisible and self.DistanceProbability then
 local DistanceFactor=Distance/4
 local DistanceProbabilityReversed=(1-self.DistanceProbability)*DistanceFactor
@@ -38031,6 +38044,13 @@ end
 else
 self._.FilterCategories[FilterCategories]=FilterCategories
 end
+return self
+end
+function DETECTION_BASE:SetRadarBlur(minheight,thresheight,thresblur)
+self.RadarBlur=true
+self.RadarBlurMinHeight=minheight or 250
+self.RadarBlurThresHeight=thresheight or 90
+self.RadarBlurThresBlur=thresblur or 85
 return self
 end
 end
