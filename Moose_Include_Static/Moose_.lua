@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T15:52:16+01:00-5243a408cc8d3a5a790e7414f69128f6ce177008 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T18:16:52+01:00-a4fd55e87df7e693b212e3a4001e57e8b36897ed ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -37893,6 +37893,7 @@ end
 end
 end
 if self.RadarBlur then
+BASE:I("RadarBlur")
 local minheight=self.RadarBlurMinHeight or 250
 local thresheight=self.RadarBlurThresHeight or 90
 local thresblur=self.RadarBlurThresBlur or 85
@@ -37901,8 +37902,11 @@ local fblur=math.floor(math.random(1,10000)/100)
 local unit=UNIT:FindByName(DetectedObjectName)
 if unit and unit:IsAlive()then
 local AGL=unit:GetAltitude(true)
-if AGL<=minheight and fheight<thresheight then DetectionAccepted=false end
+BASE:I("Unit "..DetectedObjectName.." is at "..AGL.."m.")
+BASE:I(string.format("fheight = %d/%d | fblur = %d/%d",fheight,thresheight,fblur,thresblur))
 if fblur>thresblur then DetectionAccepted=false end
+if AGL<=minheight and fheight<thresheight then DetectionAccepted=false end
+BASE:I("Detection Accepted = "..tostring(DetectionAccepted))
 end
 end
 if not self.DetectedObjects[DetectedObjectName]and TargetIsVisible and self.DistanceProbability then
