@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T14:34:41+01:00-0f4162a9a96750c5c1f3c6298ecaabaaa76104dc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T15:51:35+01:00-bc3f9ed7c0ac72560b83a054d2c6a7f7d5b4fe8a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -18364,6 +18364,14 @@ function SPAWN:InitRandomizeCallsign()
 self.SpawnRandomCallsign=true
 return self
 end
+function SPAWN:InitCallSign(ID,Name,Minor,Major)
+self.SpawnInitCallSign=true
+self.SpawnInitCallSignID=ID or 1
+self.SpawnInitCallSignMinor=Minor or 1
+self.SpawnInitCallSignMajor=Major or 1
+self.SpawnInitCallSignName=string.lower(Name)or"enfield"
+return self
+end
 function SPAWN:InitPositionCoordinate(Coordinate)
 self:T({self.SpawnTemplatePrefix,Coordinate:GetVec2()})
 self:InitPositionVec2(Coordinate:GetVec2())
@@ -19527,17 +19535,28 @@ SpawnTemplate.units[UnitID].callsign=math.random(1,999)
 end
 end
 end
+if self.SpawnInitCallSign then
+for UnitID=1,#SpawnTemplate.units do
+local Callsign=SpawnTemplate.units[UnitID].callsign
+if Callsign and type(Callsign)~="number"then
+SpawnTemplate.units[UnitID].callsign[1]=self.SpawnInitCallSignID
+SpawnTemplate.units[UnitID].callsign[2]=self.SpawnInitCallSignMinor
+SpawnTemplate.units[UnitID].callsign[3]=self.SpawnInitCallSignMajor
+SpawnTemplate.units[UnitID].callsign["name"]=string.format("%s%d%d",self.SpawnInitCallSignName,self.SpawnInitCallSignMinor,self.SpawnInitCallSignMajor)
+end
+end
+end
 for UnitID=1,#SpawnTemplate.units do
 local Callsign=SpawnTemplate.units[UnitID].callsign
 if Callsign then
-if type(Callsign)~="number"then
+if type(Callsign)~="number"and not self.SpawnInitCallSign then
 Callsign[2]=((SpawnIndex-1)%10)+1
 local CallsignName=SpawnTemplate.units[UnitID].callsign["name"]
 CallsignName=string.match(CallsignName,"^(%a+)")
 local CallsignLen=CallsignName:len()
 SpawnTemplate.units[UnitID].callsign[2]=UnitID
 SpawnTemplate.units[UnitID].callsign["name"]=CallsignName:sub(1,CallsignLen)..SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
-else
+elseif type(Callsign)=="number"then
 SpawnTemplate.units[UnitID].callsign=Callsign+SpawnIndex
 end
 end
