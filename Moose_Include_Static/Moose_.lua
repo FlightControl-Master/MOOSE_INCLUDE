@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-07T16:09:13+01:00-a8e35a552d60aabd687dc698cefa94d1c8e5a829 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T13:03:57+01:00-1f17fd89a479046a5bb08f8479e4f696ae529d57 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -13167,47 +13167,40 @@ self:F({MaxThreatLevelA2G=MaxThreatLevelA2G,MaxThreatText=MaxThreatText})
 return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_UNIT:GetCoordinate()
+local function GetSetVec3(units)
+local x=0
+local y=0
+local z=0
+local n=0
+for _,unit in pairs(units)do
+local vec3=nil
+if unit and unit:IsAlive()then
+vec3=unit:GetVec3()
+end
+if vec3 then
+x=x+vec3.x
+y=y+vec3.y
+z=z+vec3.z
+n=n+1
+end
+end
+if n>0 then
+local Vec3={x=x/n,y=y/n,z=z/n}
+return Vec3
+end
+return nil
+end
 local Coordinate=nil
-local unit=self:GetFirst()
-if self:Count()==1 and unit then
-return unit:GetCoordinate()
+local Vec3=GetSetVec3(self.Set)
+if Vec3 then
+Coordinate=COORDINATE:NewFromVec3(Vec3)
 end
-if unit then
-Coordinate=unit:GetCoordinate()
-self:T2(UTILS.PrintTableToLog(Coordinate:GetVec3()))
-local x1=Coordinate.x
-local x2=Coordinate.x
-local y1=Coordinate.y
-local y2=Coordinate.y
-local z1=Coordinate.z
-local z2=Coordinate.z
-local MaxVelocity=0
-local AvgHeading=nil
-local MovingCount=0
-for UnitName,UnitData in pairs(self.Set)do
-local Unit=UnitData
-local Coord=Unit:GetCoordinate()
-x1=(Coord.x<x1)and Coord.x or x1
-x2=(Coord.x>x2)and Coord.x or x2
-y1=(Coord.y<y1)and Coord.y or y1
-y2=(Coord.y>y2)and Coord.y or y2
-z1=(Coord.y<z1)and Coord.z or z1
-z2=(Coord.y>z2)and Coord.z or z2
-local Velocity=Coord:GetVelocity()
-if Velocity~=0 then
-MaxVelocity=(MaxVelocity<Velocity)and Velocity or MaxVelocity
-local Heading=Coordinate:GetHeading()
-AvgHeading=AvgHeading and(AvgHeading+Heading)or Heading
-MovingCount=MovingCount+1
-end
-end
-AvgHeading=AvgHeading and(AvgHeading/MovingCount)
-Coordinate.x=(x2-x1)/2+x1
-Coordinate.y=(y2-y1)/2+y1
-Coordinate.z=(z2-z1)/2+z1
-Coordinate:SetHeading(AvgHeading)
-Coordinate:SetVelocity(MaxVelocity)
-self:T2(UTILS.PrintTableToLog(Coordinate:GetVec3()))
+if Coordinate then
+local heading=self:GetHeading()or 0
+local velocity=self:GetVelocity()or 0
+Coordinate:SetHeading(heading)
+Coordinate:SetVelocity(velocity)
+self:I(UTILS.PrintTableToLog(Coordinate))
 end
 return Coordinate
 end
@@ -26248,6 +26241,7 @@ if vec3 then
 local coord=COORDINATE:NewFromVec3(vec3)
 local Heading=self:GetHeading()
 coord.Heading=Heading
+return coord
 else
 BASE:E({"Cannot GetAverageCoordinate",Group=self,Alive=self:IsAlive()})
 return nil
