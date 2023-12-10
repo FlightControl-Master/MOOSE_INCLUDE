@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-09T18:16:29+01:00-d2d6fac7df3d3bf5b205fc3dfa90ddffca1fa5bc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-10T11:58:19+01:00-87f1a5ed0d303a4a128abec56fc694e8f35c2d8f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -34876,6 +34876,8 @@ DetectionRun=0,
 DetectedObjectsIdentified={},
 DetectedItems={},
 DetectedItemsByIndex={},
+debug=false,
+verbose=false,
 }
 function DETECTION_BASE:New(DetectionSet)
 local self=BASE:Inherit(self,FSM:New())
@@ -35018,7 +35020,7 @@ end
 end
 end
 if self.RadarBlur then
-BASE:I("RadarBlur")
+MESSAGE:New("Radar Blur",10):ToLogIf(self.debug):ToAllIf(self.verbose)
 local minheight=self.RadarBlurMinHeight or 250
 local thresheight=self.RadarBlurThresHeight or 90
 local thresblur=self.RadarBlurThresBlur or 85
@@ -35027,11 +35029,11 @@ local fblur=math.floor(math.random(1,10000)/100)
 local unit=UNIT:FindByName(DetectedObjectName)
 if unit and unit:IsAlive()then
 local AGL=unit:GetAltitude(true)
-BASE:I("Unit "..DetectedObjectName.." is at "..AGL.."m.")
-BASE:I(string.format("fheight = %d/%d | fblur = %d/%d",fheight,thresheight,fblur,thresblur))
+MESSAGE:New("Unit "..DetectedObjectName.." is at "..math.floor(AGL).."m.",10):ToLogIf(self.debug):ToAllIf(self.verbose)
+MESSAGE:New(string.format("fheight = %d/%d | fblur = %d/%d",fheight,thresheight,fblur,thresblur),10):ToLogIf(self.debug):ToAllIf(self.verbose)
 if fblur>thresblur then DetectionAccepted=false end
 if AGL<=minheight and fheight<thresheight then DetectionAccepted=false end
-BASE:I("Detection Accepted = "..tostring(DetectionAccepted))
+MESSAGE:New("Detection Accepted = "..tostring(DetectionAccepted),10):ToLogIf(self.debug):ToAllIf(self.verbose)
 end
 end
 if not self.DetectedObjects[DetectedObjectName]and TargetIsVisible and self.DistanceProbability then
