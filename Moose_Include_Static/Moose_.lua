@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-10T14:37:41+01:00-c089e56060974539e58a346665f7536a2898c4cf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-11T11:04:35+01:00-230d9d82bfe1ba3cc6f57c2ab1a689d98eb53b0f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -35023,9 +35023,9 @@ local minheight=self.RadarBlurMinHeight or 250
 local thresheight=self.RadarBlurThresHeight or 90
 local thresblur=self.RadarBlurThresBlur or 85
 local dist=math.floor(Distance)
-if dist<=20 then
-thresheight=(((dist*dist)/400)*thresheight)
-thresblur=(((dist*dist)/400)*thresblur)
+if dist<=self.RadarBlurClosing then
+thresheight=(((dist*dist)/self.RadarBlurClosingSquare)*thresheight)
+thresblur=(((dist*dist)/self.RadarBlurClosingSquare)*thresblur)
 end
 local fheight=math.floor(math.random(1,10000)/100)
 local fblur=math.floor(math.random(1,10000)/100)
@@ -35199,11 +35199,13 @@ self._.FilterCategories[FilterCategories]=FilterCategories
 end
 return self
 end
-function DETECTION_BASE:SetRadarBlur(minheight,thresheight,thresblur)
+function DETECTION_BASE:SetRadarBlur(minheight,thresheight,thresblur,closing)
 self.RadarBlur=true
 self.RadarBlurMinHeight=minheight or 250
 self.RadarBlurThresHeight=thresheight or 90
 self.RadarBlurThresBlur=thresblur or 85
+self.RadarBlurClosing=closing or 20
+self.RadarBlurClosingSquare=self.RadarBlurClosing*self.RadarBlurClosing
 return self
 end
 end
