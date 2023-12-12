@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-11T11:49:00+01:00-b8d44643c1e2b87f0af3cf29fb4178973d63d5da ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-12T10:54:32+01:00-585901dc7d5a26d1cc3d8dcdfaa66df860c4867e ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11266,6 +11266,31 @@ local MGRS_Accuracy=Settings and Settings.MGRS_Accuracy or _SETTINGS.MGRS_Accura
 local lat,lon=coord.LOtoLL(self:GetVec3())
 local MGRS=coord.LLtoMGRS(lat,lon)
 return"MGRS "..UTILS.tostringMGRS(MGRS,MGRS_Accuracy)
+end
+function COORDINATE:NewFromMGRSString(MGRSString)
+local myparts=UTILS.Split(MGRSString," ")
+UTILS.PrintTableToLog(myparts,1)
+local MGRS={
+UTMZone=myparts[2],
+MGRSDigraph=myparts[3],
+Easting=tonumber(myparts[4]),
+Northing=tonumber(myparts[5]),
+}
+local lat,lon=coord.MGRStoLL(MGRS)
+local point=coord.LLtoLO(lat,lon,0)
+local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
+return coord
+end
+function COORDINATE:NewFromMGRS(UTMZone,MGRSDigraph,Easting,Northing)
+local MGRS={
+UTMZone=UTMZone,
+MGRSDigraph=MGRSDigraph,
+Easting=Easting,
+Northing=Northing,
+}
+local lat,lon=coord.MGRStoLL(MGRS)
+local point=coord.LLtoLO(lat,lon,0)
+local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
 end
 function COORDINATE:ToStringFromRP(ReferenceCoord,ReferenceName,Controllable,Settings,MagVar)
 self:F2({ReferenceCoord=ReferenceCoord,ReferenceName=ReferenceName})
@@ -87641,7 +87666,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.5"
+INTEL.version="0.3.6"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -87694,6 +87719,7 @@ self:AddTransition("*","LostCluster","*")
 self:SetForgetTime()
 self:SetAcceptZones()
 self:SetRejectZones()
+self:SetConflictZones()
 return self
 end
 function INTEL:SetAcceptZones(AcceptZoneSet)
@@ -87720,6 +87746,18 @@ function INTEL:RemoveRejectZone(RejectZone)
 self.rejectzoneset:Remove(RejectZone:GetName(),true)
 return self
 end
+function INTEL:SetConflictZones(ConflictZoneSet)
+self.conflictzoneset=ConflictZoneSet or SET_ZONE:New()
+return self
+end
+function INTEL:AddConflictZone(ConflictZone)
+self.conflictzoneset:AddZone(ConflictZone)
+return self
+end
+function INTEL:RemoveConflictZone(ConflictZone)
+self.conflictzoneset:Remove(ConflictZone:GetName(),true)
+return self
+end
 function INTEL:SetForgetTime(TimeInterval)
 return self
 end
@@ -87733,6 +87771,20 @@ for _,category in pairs(self.filterCategory)do
 text=text..string.format("%d,",category)
 end
 self:T(self.lid..text)
+return self
+end
+function INTEL:SetRadarBlur(minheight,thresheight,thresblur,closing)
+self.RadarBlur=true
+self.RadarBlurMinHeight=minheight or 250
+self.RadarBlurThresHeight=thresheight or 90
+self.RadarBlurThresBlur=thresblur or 85
+self.RadarBlurClosing=closing or 20
+self.RadarBlurClosingSquare=self.RadarBlurClosing*self.RadarBlurClosing
+return self
+end
+function INTEL:SetAcceptRange(Range)
+self.RadarAcceptRange=true
+self.RadarAcceptRangeKilometers=Range or 75
 return self
 end
 function INTEL:FilterCategoryGroup(GroupCategories)
@@ -87877,6 +87929,16 @@ end
 local remove={}
 for unitname,_unit in pairs(DetectedUnits)do
 local unit=_unit
+local inconflictzone=false
+if self.conflictzoneset:Count()>0 then
+for _,_zone in pairs(self.conflictzoneset.Set)do
+local zone=_zone
+if unit:IsInZone(zone)then
+inconflictzone=true
+break
+end
+end
+end
 if self.acceptzoneset:Count()>0 then
 local inzone=false
 for _,_zone in pairs(self.acceptzoneset.Set)do
@@ -87886,7 +87948,7 @@ inzone=true
 break
 end
 end
-if not inzone then
+if(not inzone)and(not inconflictzone)then
 table.insert(remove,unitname)
 end
 end
@@ -87899,7 +87961,7 @@ inzone=true
 break
 end
 end
-if inzone then
+if inzone and(not inconflictzone)then
 table.insert(remove,unitname)
 end
 end
@@ -88067,9 +88129,41 @@ end)
 if status then
 local unit=UNIT:FindByName(name)
 if unit and unit:IsAlive()then
+local DetectionAccepted=true
+if self.RadarAcceptRange then
+local reccecoord=Unit:GetCoordinate()
+local coord=unit:GetCoordinate()
+local dist=math.floor(coord:Get2DDistance(reccecoord)/1000)
+if dist>self.RadarAcceptRangeKilometers then DetectionAccepted=false end
+end
+if self.RadarBlur then
+local reccecoord=Unit:GetCoordinate()
+local coord=unit:GetCoordinate()
+local dist=math.floor(coord:Get2DDistance(reccecoord)/1000)
+local AGL=unit:GetAltitude(true)
+local minheight=self.RadarBlurMinHeight or 250
+local thresheight=self.RadarBlurThresHeight or 90
+local thresblur=self.RadarBlurThresBlur or 85
+if dist<=self.RadarBlurClosing then
+thresheight=(((dist*dist)/self.RadarBlurClosingSquare)*thresheight)
+thresblur=(((dist*dist)/self.RadarBlurClosingSquare)*thresblur)
+end
+local fheight=math.floor(math.random(1,10000)/100)
+local fblur=math.floor(math.random(1,10000)/100)
+if fblur>thresblur then DetectionAccepted=false end
+if AGL<=minheight and fheight<thresheight then DetectionAccepted=false end
+if self.debug or self.verbose>1 then
+MESSAGE:New("Radar Blur",10):ToLogIf(self.debug):ToAllIf(self.verbose>1)
+MESSAGE:New("Unit "..name.." is at "..math.floor(AGL).."m. Distance "..math.floor(dist).."km.",10):ToLogIf(self.debug):ToAllIf(self.verbose>1)
+MESSAGE:New(string.format("fheight = %d/%d | fblur = %d/%d",fheight,thresheight,fblur,thresblur),10):ToLogIf(self.debug):ToAllIf(self.verbose>1)
+MESSAGE:New("Detection Accepted = "..tostring(DetectionAccepted),10):ToLogIf(self.debug):ToAllIf(self.verbose>1)
+end
+end
+if DetectionAccepted then
 DetectedUnits[name]=unit
 RecceDetecting[name]=reccename
 self:T(string.format("Unit %s detect by %s",name,reccename))
+end
 else
 if self.detectStatics then
 local static=STATIC:FindByName(name,false)
