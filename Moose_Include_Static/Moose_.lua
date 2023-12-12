@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-11T11:04:35+01:00-230d9d82bfe1ba3cc6f57c2ab1a689d98eb53b0f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-12T10:53:37+01:00-f837e9dec7522605ce60b31bbccfcb092c839b8b ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -16891,6 +16891,31 @@ local MGRS_Accuracy=Settings and Settings.MGRS_Accuracy or _SETTINGS.MGRS_Accura
 local lat,lon=coord.LOtoLL(self:GetVec3())
 local MGRS=coord.LLtoMGRS(lat,lon)
 return"MGRS "..UTILS.tostringMGRS(MGRS,MGRS_Accuracy)
+end
+function COORDINATE:NewFromMGRSString(MGRSString)
+local myparts=UTILS.Split(MGRSString," ")
+UTILS.PrintTableToLog(myparts,1)
+local MGRS={
+UTMZone=myparts[2],
+MGRSDigraph=myparts[3],
+Easting=tonumber(myparts[4]),
+Northing=tonumber(myparts[5]),
+}
+local lat,lon=coord.MGRStoLL(MGRS)
+local point=coord.LLtoLO(lat,lon,0)
+local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
+return coord
+end
+function COORDINATE:NewFromMGRS(UTMZone,MGRSDigraph,Easting,Northing)
+local MGRS={
+UTMZone=UTMZone,
+MGRSDigraph=MGRSDigraph,
+Easting=Easting,
+Northing=Northing,
+}
+local lat,lon=coord.MGRStoLL(MGRS)
+local point=coord.LLtoLO(lat,lon,0)
+local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
 end
 function COORDINATE:ToStringFromRP(ReferenceCoord,ReferenceName,Controllable,Settings,MagVar)
 self:F2({ReferenceCoord=ReferenceCoord,ReferenceName=ReferenceName})
