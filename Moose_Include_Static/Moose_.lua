@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-12T10:53:37+01:00-f837e9dec7522605ce60b31bbccfcb092c839b8b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-13T19:21:28+01:00-8382eb9cd80cc0144b9cb4f407b9383086035cfe ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -40841,15 +40841,15 @@ self.trackmissiles=false
 return self
 end
 function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey)
-if PathToSRS then
+if PathToSRS or MSRS.path then
 self.useSRS=true
-self.controlmsrs=MSRS:New(PathToSRS,Frequency or 256,Modulation or radio.modulation.AM,Volume or 1.0)
-self.controlmsrs:SetPort(Port)
+self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM,Volume or 1.0)
+self.controlmsrs:SetPort(Port or MSRS.port)
 self.controlmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.controlmsrs:SetLabel("RANGEC")
 self.controlsrsQ=MSRSQUEUE:New("CONTROL")
-self.instructmsrs=MSRS:New(PathToSRS,Frequency or 305,Modulation or radio.modulation.AM,Volume or 1.0)
-self.instructmsrs:SetPort(Port)
+self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM,Volume or 1.0)
+self.instructmsrs:SetPort(Port or MSRS.port)
 self.instructmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.instructmsrs:SetLabel("RANGEI")
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
