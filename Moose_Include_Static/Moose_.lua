@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-13T19:33:07+01:00-42fd2322d233a061faf0dce204b2c47ae737ba49 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-14T11:13:06+01:00-6c21dfa48c2bb9036ba006eda35a69b5fb043674 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11269,12 +11269,15 @@ return"MGRS "..UTILS.tostringMGRS(MGRS,MGRS_Accuracy)
 end
 function COORDINATE:NewFromMGRSString(MGRSString)
 local myparts=UTILS.Split(MGRSString," ")
-UTILS.PrintTableToLog(myparts,1)
+local northing=tostring(myparts[5])or""
+local easting=tostring(myparts[4])or""
+if string.len(easting)<5 then easting=easting..string.rep("0",5-string.len(easting))end
+if string.len(northing)<5 then northing=northing..string.rep("0",5-string.len(northing))end
 local MGRS={
 UTMZone=myparts[2],
 MGRSDigraph=myparts[3],
-Easting=tonumber(myparts[4]),
-Northing=tonumber(myparts[5]),
+Easting=easting,
+Northing=northing,
 }
 local lat,lon=coord.MGRStoLL(MGRS)
 local point=coord.LLtoLO(lat,lon,0)
@@ -11282,6 +11285,8 @@ local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
 return coord
 end
 function COORDINATE:NewFromMGRS(UTMZone,MGRSDigraph,Easting,Northing)
+if string.len(Easting)<5 then Easting=Easting..string.rep("0",5-string.len(Easting))end
+if string.len(Northing)<5 then Northing=Northing..string.rep("0",5-string.len(Northing))end
 local MGRS={
 UTMZone=UTMZone,
 MGRSDigraph=MGRSDigraph,
@@ -99484,7 +99489,7 @@ OPSZONE.ZoneType={
 Circular="Circular",
 Polygon="Polygon",
 }
-OPSZONE.version="0.6.0"
+OPSZONE.version="0.6.1"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -99961,7 +99966,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nblu>0 then
-if not self:IsAttacked()then
+if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
 self:Attacked(coalition.side.BLUE)
 end
 elseif Nblu==0 then
@@ -99986,7 +99991,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nred>0 then
-if not self:IsAttacked()then
+if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
 self:Attacked(coalition.side.RED)
 end
 elseif Nred==0 then
