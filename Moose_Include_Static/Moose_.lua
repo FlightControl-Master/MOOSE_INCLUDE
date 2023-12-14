@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-14T11:12:14+01:00-68548f45815f682a81cecf4538b242e0f883238e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-14T12:42:13+01:00-55ffe37a794e7dba9eeaf3bb5fee618ec2989a60 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -78105,6 +78105,15 @@ if Delay>0 then
 SCHEDULER:New(nil,USERSOUND.ToUnit,{self,Unit},Delay)
 else
 trigger.action.outSoundForUnit(Unit:GetID(),self.UserSoundFileName)
+end
+return self
+end
+function USERSOUND:ToClient(Client,Delay)
+Delay=Delay or 0
+if Delay>0 then
+SCHEDULER:New(nil,USERSOUND.ToClient,{self,Client},Delay)
+else
+trigger.action.outSoundForUnit(Client:GetID(),self.UserSoundFileName)
 end
 return self
 end
