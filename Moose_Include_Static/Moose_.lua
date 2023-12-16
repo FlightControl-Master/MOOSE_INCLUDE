@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-14T12:43:36+01:00-e84e16f58bf975dc7bdd9787ad227f286010efe0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-16T09:31:44+01:00-0ae9be49daacf38be2efbeef7224d3e3ceace495 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -41399,7 +41399,7 @@ function RANGE:onafterExitRange(From,Event,To,player)
 if self.instructor then
 if self.useSRS then
 local text="You left the bombing range zone. "
-local r=math.random(2)
+local r=math.random(5)
 if r==1 then
 text=text.."Have a nice day!"
 elseif r==2 then
