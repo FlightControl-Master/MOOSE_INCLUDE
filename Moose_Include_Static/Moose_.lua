@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-19T12:11:37+01:00-1c4e3cb801fba4d4d1617bd3cf287ec608e549bd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-19T17:38:51+01:00-69fa6f4ee6b675560588ef164273d184aa4af7fd ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -20401,7 +20401,7 @@ Alpha=Alpha or self:GetColorAlpha()
 FillColor=FillColor or self:GetFillColorRGB()
 FillAlpha=FillAlpha or self:GetFillColorAlpha()
 if FillColor then
-self:ReFill(Color,Alpha)
+self:ReFill(FillColor,FillAlpha)
 end
 if Color then
 self:ReDrawBorderline(Color,Alpha,LineType)
