@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-19T10:19:44+01:00-d803b51e847f1160ef27669d970204fa62696798 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-19T12:11:09+01:00-465ec216ea6e1dce689a3ae43aa54331c08bf457 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -23922,32 +23922,35 @@ self:SetOption(AI.Option.Air.id.PROHIBIT_AB,Prohibit)
 end
 return self
 end
+function CONTROLLABLE:OptionECM(ECMvalue)
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsAir()then
+Controller:setOption(AI.Option.Air.id.ECM_USING,ECMvalue or 1)
+end
+end
+return self
+end
 function CONTROLLABLE:OptionECM_Never()
 self:F2({self.ControllableName})
-if self:IsAir()then
-self:SetOption(AI.Option.Air.id.ECM_USING,0)
-end
+self:OptionECM(0)
 return self
 end
 function CONTROLLABLE:OptionECM_OnlyLockByRadar()
 self:F2({self.ControllableName})
-if self:IsAir()then
-self:SetOption(AI.Option.Air.id.ECM_USING,1)
-end
+self:OptionECM(1)
 return self
 end
 function CONTROLLABLE:OptionECM_DetectedLockByRadar()
 self:F2({self.ControllableName})
-if self:IsAir()then
-self:SetOption(AI.Option.Air.id.ECM_USING,2)
-end
+self:OptionECM(2)
 return self
 end
 function CONTROLLABLE:OptionECM_AlwaysOn()
 self:F2({self.ControllableName})
-if self:IsAir()then
-self:SetOption(AI.Option.Air.id.ECM_USING,3)
-end
+self:OptionECM(3)
 return self
 end
 function CONTROLLABLE:WayPointInitialize(WayPoints)
