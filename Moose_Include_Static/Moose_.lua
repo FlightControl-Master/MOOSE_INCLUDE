@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-16T09:31:56+01:00-5b7e0ce3759efd4a2de1af7592220150f2f3c4b4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-19T10:20:12+01:00-ab516e0cd8f737df2c1c8334442922d267cd7eff ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -6537,6 +6537,23 @@ table.remove(points,#points)
 self:I(string.format("Register ZONE: %s (Polygon (free) drawing with %d vertices)",ZoneName,#points))
 local Zone=ZONE_POLYGON:NewFromPointsArray(ZoneName,points)
 Zone:SetColor({1,0,0},0.15)
+Zone:SetFillColor({1,0,0},0.15)
+if objectData.colorString then
+local color=string.gsub(objectData.colorString,"^0x","")
+local r=tonumber(string.sub(color,1,2),16)/255
+local g=tonumber(string.sub(color,3,4),16)/255
+local b=tonumber(string.sub(color,5,6),16)/255
+local a=tonumber(string.sub(color,7,8),16)/255
+Zone:SetColor({r,g,b},a)
+end
+if objectData.fillColorString then
+local color=string.gsub(objectData.colorString,"^0x","")
+local r=tonumber(string.sub(color,1,2),16)/255
+local g=tonumber(string.sub(color,3,4),16)/255
+local b=tonumber(string.sub(color,5,6),16)/255
+local a=tonumber(string.sub(color,7,8),16)/255
+Zone:SetFillColor({r,g,b},a)
+end
 self.ZONENAMES[ZoneName]=ZoneName
 self:AddZone(ZoneName,Zone)
 elseif objectData.polygonMode and objectData.polygonMode=="rect"then
@@ -6552,6 +6569,22 @@ points[4]={x=vec2.x-h/2,y=vec2.y-w/2}
 self:I(string.format("Register ZONE: %s (Polygon (rect) drawing with %d vertices)",ZoneName,#points))
 local Zone=ZONE_POLYGON:NewFromPointsArray(ZoneName,points)
 Zone:SetColor({1,0,0},0.15)
+if objectData.colorString then
+local color=string.gsub(objectData.colorString,"^0x","")
+local r=tonumber(string.sub(color,1,2),16)/255
+local g=tonumber(string.sub(color,3,4),16)/255
+local b=tonumber(string.sub(color,5,6),16)/255
+local a=tonumber(string.sub(color,7,8),16)/255
+Zone:SetColor({r,g,b},a)
+end
+if objectData.fillColorString then
+local color=string.gsub(objectData.colorString,"^0x","")
+local r=tonumber(string.sub(color,1,2),16)/255
+local g=tonumber(string.sub(color,3,4),16)/255
+local b=tonumber(string.sub(color,5,6),16)/255
+local a=tonumber(string.sub(color,7,8),16)/255
+Zone:SetFillColor({r,g,b},a)
+end
 self.ZONENAMES[ZoneName]=ZoneName
 self:AddZone(ZoneName,Zone)
 elseif objectData.lineMode and(objectData.lineMode=="segments"or objectData.lineMode=="segment"or objectData.lineMode=="free")and objectData.points and#objectData.points>=2 then
@@ -20090,7 +20123,7 @@ Points={},
 Coords={},
 CenterVec2={x=0,y=0},
 SurfaceArea=0,
-DrawIDs={}
+DrawID={}
 }
 function _ZONE_TRIANGLE:New(p1,p2,p3)
 local self=BASE:Inherit(self,ZONE_BASE:New())
@@ -20137,15 +20170,28 @@ if not FillAlpha then FillAlpha=1 end
 for i=1,#self.Coords do
 local c1=self.Coords[i]
 local c2=self.Coords[i%#self.Coords+1]
-table.add(self.DrawIDs,c1:LineToAll(c2,Coalition,Color,Alpha,LineType,ReadOnly))
+local id=c1:LineToAll(c2,Coalition,Color,Alpha,LineType,ReadOnly)
+self.DrawID[#self.DrawID+1]=id
 end
-return self.DrawIDs
+local newID=self.Coords[1]:MarkupToAllFreeForm({self.Coords[2],self.Coords[3]},Coalition,Color,Alpha,FillColor,FillAlpha,LineType,ReadOnly)
+self.DrawID[#self.DrawID+1]=newID
+return self.DrawID
+end
+function _ZONE_TRIANGLE:Fill(Coalition,FillColor,FillAlpha,ReadOnly)
+Coalition=Coalition or-1
+FillColor=FillColor
+FillAlpha=FillAlpha
+local newID=self.Coords[1]:MarkupToAllFreeForm({self.Coords[2],self.Coords[3]},Coalition,nil,nil,FillColor,FillAlpha,0,nil)
+self.DrawID[#self.DrawID+1]=newID
+return self.DrawID
 end
 ZONE_POLYGON_BASE={
 ClassName="ZONE_POLYGON_BASE",
 _Triangles={},
 SurfaceArea=0,
-DrawID={}
+DrawID={},
+FillTriangles={},
+Borderlines={},
 }
 function ZONE_POLYGON_BASE:New(ZoneName,PointsArray)
 local self=BASE:Inherit(self,ZONE_BASE:New(ZoneName))
@@ -20351,31 +20397,61 @@ if self._.Polygon and#self._.Polygon>=3 then
 Coalition=Coalition or self:GetDrawCoalition()
 self:SetDrawCoalition(Coalition)
 Color=Color or self:GetColorRGB()
-Alpha=Alpha or 1
-self:SetColor(Color,Alpha)
+Alpha=Alpha or self:GetColorAlpha()
 FillColor=FillColor or self:GetFillColorRGB()
-if not FillColor then
-UTILS.DeepCopy(Color)
-end
 FillAlpha=FillAlpha or self:GetFillColorAlpha()
-if not FillAlpha then
-FillAlpha=0.15
+if FillColor then
+self:ReFill(Color,Alpha)
 end
-self:SetFillColor(FillColor,FillAlpha)
-IncludeTriangles=IncludeTriangles or false
-if IncludeTriangles then
+if Color then
+self:ReDrawBorderline(Color,Alpha,LineType)
+end
+end
+return self
+end
+function ZONE_POLYGON_BASE:ReFill(Color,Alpha)
+local color=Color or self:GetFillColorRGB()or{1,0,0}
+local alpha=Alpha or self:GetFillColorAlpha()or 1
+local coalition=self:GetDrawCoalition()or-1
+if#self.FillTriangles>0 then
 for _,triangle in pairs(self._Triangles)do
-local draw_ids=triangle:Draw()
+triangle:UndrawZone()
+end
+for _,_value in pairs(self.FillTriangles)do
+table.remove_by_value(self.DrawID,_value)
+end
+self.FillTriangles=nil
+self.FillTriangles={}
+end
+for _,triangle in pairs(self._Triangles)do
+local draw_ids=triangle:Fill(coalition,color,alpha,nil)
+self.FillTriangles=draw_ids
 table.combine(self.DrawID,draw_ids)
 end
-else
+return self
+end
+function ZONE_POLYGON_BASE:ReDrawBorderline(Color,Alpha,LineType)
+local color=Color or self:GetFillColorRGB()or{1,0,0}
+local alpha=Alpha or self:GetFillColorAlpha()or 1
+local coalition=self:GetDrawCoalition()or-1
+local linetype=LineType or 1
+if#self.Borderlines>0 then
+for _,MarkID in pairs(self.Borderlines)do
+trigger.action.removeMark(MarkID)
+end
+for _,_value in pairs(self.Borderlines)do
+table.remove_by_value(self.DrawID,_value)
+end
+self.Borderlines=nil
+self.Borderlines={}
+end
 local coords=self:GetVerticiesCoordinates()
 for i=1,#coords do
 local c1=coords[i]
 local c2=coords[i%#coords+1]
-table.add(self.DrawID,c1:LineToAll(c2,Coalition,Color,Alpha,LineType,ReadOnly))
-end
-end
+local newID=c1:LineToAll(c2,coalition,color,alpha,linetype,nil)
+self.DrawID[#self.DrawID+1]=newID
+self.Borderlines[#self.Borderlines+1]=newID
 end
 return self
 end
@@ -20558,6 +20634,7 @@ Radius=Radius or 1000
 Alpha=Alpha or 1
 Segments=Segments or 10
 Closed=Closed or false
+local Limit
 local i=1
 local j=#self._.Polygon
 if(Closed)then
