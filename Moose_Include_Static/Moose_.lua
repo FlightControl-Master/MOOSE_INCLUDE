@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-19T17:38:31+01:00-702ec75935683fc0cc89c617408bc36a39daded7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-20T10:07:42+01:00-ebe486c69a8111181e9ab90063dda7a7bc14d2de ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -2312,15 +2312,15 @@ if string.find(type_name,"Hercules")and(unit:getDrawArgumentValue(1217)==1)then
 BASE:T(unit_name.." side door is open")
 return true
 end
-if string.find(type_name,"Bell-47")then
+if type_name=="Bell-47"then
 BASE:T(unit_name.." door is open")
 return true
 end
-if string.find(type_name,"UH-60L")and(unit:getDrawArgumentValue(401)==1 or unit:getDrawArgumentValue(402)==1)then
+if type_name=="UH-60L"and(unit:getDrawArgumentValue(401)==1 or unit:getDrawArgumentValue(402)==1)then
 BASE:T(unit_name.." cargo door is open")
 return true
 end
-if string.find(type_name,"UH-60L")and(unit:getDrawArgumentValue(38)==1 or unit:getDrawArgumentValue(400)==1)then
+if type_name=="UH-60L"and(unit:getDrawArgumentValue(38)>0 or unit:getDrawArgumentValue(400)==1)then
 BASE:T(unit_name.." front door(s) are open")
 return true
 end
