@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-20T10:07:42+01:00-ebe486c69a8111181e9ab90063dda7a7bc14d2de ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-22T10:36:25+01:00-f86b3505b26c322aaf649efb1ef6d40d3fdfc1ee ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -57521,7 +57521,7 @@ text=text..string.format("\nWind Vx=%.1f Vy=%.1f Vz=%.1f m/s",wind.x,wind.y,wind
 end
 text=text..string.format("\nPitch=%.1f° | Roll=%.1f° | Yaw=%.1f°",pitch,roll,yaw)
 text=text..string.format("\nClimb Angle=%.1f° | Rate=%d ft/min",unit:GetClimbAngle(),velo.y*196.85)
-local dist=self:_GetOptLandingCoordinate():Get3DDistance(playerData.unit)
+local dist=self:_GetOptLandingCoordinate():Get3DDistance(playerData.unit:GetVec3())
 local vplayer=playerData.unit:GetVelocityKMH()
 local vcarrier=self.carrier:GetVelocityKMH()
 local dv=math.abs(vplayer-vcarrier)
