@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-22T10:36:25+01:00-f86b3505b26c322aaf649efb1ef6d40d3fdfc1ee ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-22T21:11:30+01:00-e7fb073bab0364793c2c9cbf4e1dd282263a2bed ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -38446,7 +38446,7 @@ if takeoff==RAT.wp.air then
 departure=departure:GetZone()
 end
 elseif self:_ZoneExists(_departure)then
-departure=ZONE:New(_departure)
+departure=ZONE:FindByName(_departure)
 else
 local text=string.format("ERROR! Specified departure airport %s does not exist for %s.",_departure,self.alias)
 self:E(RAT.id..text)
@@ -38517,7 +38517,7 @@ if landing==RAT.wp.air or self.returnzone then
 destination=destination:GetZone()
 end
 elseif self:_ZoneExists(_destination)then
-destination=ZONE:New(_destination)
+destination=ZONE:FindByName(_destination)
 else
 local text=string.format("ERROR: Specified destination airport/zone %s does not exist for %s!",_destination,self.alias)
 self:E(RAT.id.."ERROR: "..text)
@@ -38852,7 +38852,7 @@ end
 end
 elseif self:_ZoneExists(name)then
 if takeoff==RAT.wp.air then
-dep=ZONE:New(name)
+dep=ZONE:FindByName(name)
 else
 self:E(RAT.id..string.format("ERROR! Takeoff is not in air. Cannot use %s as departure.",name))
 end
@@ -38924,7 +38924,7 @@ end
 end
 elseif self:_ZoneExists(name)then
 if landing==RAT.wp.air then
-dest=ZONE:New(name)
+dest=ZONE:FindByName(name)
 else
 self:E(RAT.id..string.format("ERROR! Landing is not in air. Cannot use zone %s as destination!",name))
 end
@@ -39886,7 +39886,7 @@ end
 return false
 end
 function RAT:_ZoneExists(name)
-local z=trigger.misc.getZone(name)
+local z=ZONE:FindByName(name)
 if z then
 return true
 end
