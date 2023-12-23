@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-22T21:11:30+01:00-e7fb073bab0364793c2c9cbf4e1dd282263a2bed ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-23T14:51:59+01:00-7cc040c23489047b68a376827c7b8ffd1b609d51 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -41223,6 +41223,7 @@ return fouldist
 end
 function RANGE:OnEventBirth(EventData)
 self:F({eventbirth=EventData})
+if not EventData.IniPlayerName then return end
 local _unitName=EventData.IniUnitName
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 self:T3(self.lid.."BIRTH: unit   = "..tostring(EventData.IniUnitName))
