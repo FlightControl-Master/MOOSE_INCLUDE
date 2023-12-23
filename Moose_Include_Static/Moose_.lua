@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-22T21:11:41+01:00-a9a56b373800c7ba4d02d0d7809b2491f65ae672 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-23T14:53:42+01:00-a14435ce5499109647c5f23934d039efe29f8c00 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -43579,6 +43579,7 @@ return fouldist
 end
 function RANGE:OnEventBirth(EventData)
 self:F({eventbirth=EventData})
+if not EventData.IniPlayerName then return end
 local _unitName=EventData.IniUnitName
 local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
 self:T3(self.lid.."BIRTH: unit   = "..tostring(EventData.IniUnitName))
@@ -85235,8 +85236,7 @@ function FLIGHTCONTROL:_CleanText(Text)
 local text=Text:gsub("\n$",""):gsub("\n$","")
 return text
 end
-function FLIGHTCONTROL:SpawnParkingGuard(unit)
-if unit and self.parkingGuard then
+function FLIGHTCONTROL:_SpawnParkingGuard(unit)
 local coordinate=unit:GetCoordinate()
 local spot=self:GetClosestParkingSpot(coordinate)
 if not spot.ParkingGuard then
@@ -85259,6 +85259,10 @@ spot.ParkingGuard=self.parkingGuard:SpawnFromCoordinate(Coordinate)
 else
 self:E(self.lid.."ERROR: Parking Guard already exists!")
 end
+end
+function FLIGHTCONTROL:SpawnParkingGuard(unit)
+if unit and self.parkingGuard then
+self:ScheduleOnce(1,FLIGHTCONTROL._SpawnParkingGuard,self,unit)
 end
 end
 function FLIGHTCONTROL:RemoveParkingGuard(spot,delay)
