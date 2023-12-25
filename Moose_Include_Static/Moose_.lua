@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-25T13:31:35+01:00-a51afeda144b3062cb1cbd51c31e3557fc325d02 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-25T13:59:27+01:00-4e36ed170b707fbbfae69f6df67a7829b28e18b3 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -32389,8 +32389,8 @@ self.SRSPilot:SetGender(Gender or"male")
 self.SRSPilot:SetLabel("PILOT")
 if self.SRSGoogle then
 local poptions=self.SRS:GetProviderOptions(MSRS.Provider.GOOGLE)
-self.SRSOperator:SetGoogle(poptions.credentials)
-self.SRSOperator:SetGoogleAPIKey(poptions.key)
+self.SRSPilot:SetGoogle(poptions.credentials)
+self.SRSPilot:SetGoogleAPIKey(poptions.key)
 end
 return self
 end
@@ -32402,7 +32402,7 @@ self.SRSOperator:SetCoalition(self.coalition)
 self.SRSOperator:SetVoice(Voice)
 self.SRSOperator:SetCulture(Culture or"en-GB")
 self.SRSOperator:SetGender(Gender or"female")
-self.SRSPilot:SetLabel("RESCUE")
+self.SRSOperator:SetLabel("RESCUE")
 if self.SRSGoogle then
 local poptions=self.SRS:GetProviderOptions(MSRS.Provider.GOOGLE)
 self.SRSOperator:SetGoogle(poptions.credentials)
