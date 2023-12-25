@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-25T13:59:27+01:00-4e36ed170b707fbbfae69f6df67a7829b28e18b3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-25T23:12:55+01:00-1b01b893438d56e32c36709491a49c0793c814cc ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -65140,9 +65140,11 @@ self.engage.Waypoint=self:AddWaypoint(intercoord,self.engage.Speed,uid,self.enga
 self.engage.Waypoint.detour=0
 end
 else
+self:T(self.lid.."Could not get position of target ==> Disengage!")
 self:Disengage()
 end
 else
+self:T(self.lid.."Target not ALIVE ==> Disengage!")
 self:Disengage()
 end
 end
@@ -105633,7 +105635,7 @@ end
 function TARGET:IsAlive()
 for _,_target in pairs(self.targets)do
 local target=_target
-if target.Status==TARGET.ObjectStatus.ALIVE then
+if target.Status~=TARGET.ObjectStatus.DEAD then
 return true
 end
 end
