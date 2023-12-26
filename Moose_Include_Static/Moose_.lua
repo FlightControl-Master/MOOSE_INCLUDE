@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-26T14:50:54+01:00-46f70dd8a6124e17e236682755d77e989455d26b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-26T19:18:13+01:00-3bdf4b4c76c7761fcb13a1582e634ec154dd4bfa ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -64400,7 +64400,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.44"
+CTLD.version="1.0.45"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -65107,9 +65107,11 @@ realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,crat
 table.insert(droppedcargo,realcargo)
 else
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],false,cargotype.PerCrateMass,nil,subcat)
-Cargo:RemoveStock()
 end
 table.insert(self.Spawned_Cargo,realcargo)
+end
+if not(drop or pack)then
+Cargo:RemoveStock()
 end
 local text=string.format("Crates for %s have been positioned near you!",cratename)
 if drop then
