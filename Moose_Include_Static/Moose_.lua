@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-26T08:53:11+01:00-e2e9bd7de05ab1ca26295a6af6d0e19428baa96d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-26T14:51:28+01:00-6f5f89a0ee3263178d1b7af6cf77a4debba03ae8 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -116342,18 +116342,23 @@ subtitle=nil,
 subduration=0,
 useSRS=false,
 }
-function SOUNDFILE:New(FileName,Path,Duration)
+function SOUNDFILE:New(FileName,Path,Duration,UseSrs)
 local self=BASE:Inherit(self,BASE:New())
+self:F({FileName,Path,Duration,UseSrs})
 self:SetFileName(FileName)
+self:SetPlayWithSRS(UseSrs or false)
 self:SetPath(Path)
 self:SetDuration(Duration)
-self:T(string.format("New SOUNDFILE: file name=%s, path=%s",self.filename,self.path))
 return self
 end
 function SOUNDFILE:SetPath(Path)
-self.path=Path or"l10n/DEFAULT/"
-if not Path and self.useSRS then
-self.path=os.getenv('TMP').."\\DCS\\Mission\\l10n\\DEFAULT"
+self:F({Path})
+if not Path then
+if self.useSRS then
+self.path=lfs.tempdir().."Mission\\l10n\\DEFAULT"
+else
+self.path="l10n/DEFAULT/"
+end
 end
 local nmax=1000;local n=1
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
@@ -116361,6 +116366,7 @@ self.path=self.path:sub(1,#self.path-1)
 n=n+1
 end
 self.path=self.path.."/"
+self:T("self.path="..self.path)
 return self
 end
 function SOUNDFILE:GetPath()
@@ -116388,11 +116394,13 @@ local name=string.format("%s%s",path,filename)
 return name
 end
 function SOUNDFILE:SetPlayWithSRS(Switch)
+self:F({Switch})
 if Switch==true or Switch==nil then
 self.useSRS=true
 else
 self.useSRS=false
 end
+self:T("self.useSRS="..tostring(self.useSRS))
 return self
 end
 end
