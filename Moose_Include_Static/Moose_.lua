@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-27T19:28:49+01:00-b488d43d784e8b7d1fe90de8e61f72c1d4d15f4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-27T19:34:42+01:00-39b89d937ef8f11f464165ac87a95bc25dae499d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -14662,7 +14662,6 @@ return AirbaseFound
 end
 function SET_AIRBASE:GetRandomAirbase()
 local RandomAirbase=self:GetRandom()
-self:F({RandomAirbase=RandomAirbase:GetName()})
 return RandomAirbase
 end
 function SET_AIRBASE:FilterCoalitions(Coalitions)
