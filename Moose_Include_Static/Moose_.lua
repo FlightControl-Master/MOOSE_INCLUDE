@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-26T19:18:13+01:00-3bdf4b4c76c7761fcb13a1582e634ec154dd4bfa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-27T19:28:19+01:00-6ac46addf041abdd400514792824deeae109ae9a ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11414,6 +11414,27 @@ self.CallScheduler=SCHEDULER:New(self)
 self:SetEventPriority(2)
 return self
 end
+function SET_BASE:FilterFunction(ConditionFunction,...)
+local condition={}
+condition.func=ConditionFunction
+condition.arg={}
+if arg then
+condition.arg=arg
+end
+if not self.Filter.Functions then self.Filter.Functions={}end
+table.insert(self.Filter.Functions,condition)
+return self
+end
+function SET_BASE:_EvalFilterFunctions(Object)
+for _,_condition in pairs(self.Filter.Functions or{})do
+local condition=_condition
+local istrue=condition.func(Object,unpack(condition.arg))
+if istrue then
+return true
+end
+end
+return false
+end
 function SET_BASE:Clear(TriggerEvent)
 for Name,Object in pairs(self.Set)do
 self:Remove(Name,not TriggerEvent)
@@ -11777,6 +11798,7 @@ Categories=nil,
 Countries=nil,
 GroupPrefixes=nil,
 Zones=nil,
+Functions=nil,
 },
 FilterMeta={
 Coalitions={
@@ -12275,6 +12297,10 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupZone
 end
+if self.Filter.Functions then
+local MGroupFunc=self:_EvalFilterFunctions(MGroup)
+MGroupInclude=MGroupInclude and MGroupFunc
+end
 self:T2(MGroupInclude)
 return MGroupInclude
 end
@@ -12315,6 +12341,7 @@ Types=nil,
 Countries=nil,
 UnitPrefixes=nil,
 Zones=nil,
+Functions=nil,
 },
 FilterMeta={
 Coalitions={
@@ -12937,6 +12964,10 @@ MGroupZone=true
 end
 end
 MUnitInclude=MUnitInclude and MGroupZone
+end
+if self.Filter.Functions then
+local MUnitFunc=self:_EvalFilterFunctions(MUnit)
+MUnitInclude=MUnitInclude and MUnitFunc
 end
 self:T2(MUnitInclude)
 return MUnitInclude
@@ -13778,6 +13809,10 @@ end
 end
 self:T({"Evaluated Callsign",MClientCallsigns})
 MClientInclude=MClientInclude and MClientCallsigns
+end
+if self.Filter.Functions then
+local MClientFunc=self:_EvalFilterFunctions(MClient)
+MClientInclude=MClientInclude and MClientFunc
 end
 end
 self:T2(MClientInclude)
