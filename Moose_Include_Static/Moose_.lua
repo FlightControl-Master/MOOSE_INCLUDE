@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-27T19:34:20+01:00-501ab7099246020cf403ed010cc5f79a90d01dfb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-28T13:32:53+01:00-6ffe69484c43fcab55d3dda2873bd45dbfa8ef42 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -30378,7 +30378,7 @@ Reported={},
 }
 function CARGO:New(Type,Name,Weight,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,FSM:New())
-self:F({Type,Name,Weight,LoadRadius,NearRadius})
+self:T({Type,Name,Weight,LoadRadius,NearRadius})
 self:SetStartState("UnLoaded")
 self:AddTransition({"UnLoaded","Boarding"},"Board","Boarding")
 self:AddTransition("Boarding","Boarding","Boarding")
@@ -30523,7 +30523,7 @@ function CARGO:IsDeployed()
 return self.Deployed
 end
 function CARGO:Spawn(PointVec2)
-self:F()
+self:T()
 end
 function CARGO:Flare(FlareColor)
 if self:IsUnLoaded()then
@@ -30573,7 +30573,7 @@ function CARGO:GetLoadRadius()
 return self.LoadRadius
 end
 function CARGO:IsInLoadRadius(Coordinate)
-self:F({Coordinate,LoadRadius=self.LoadRadius})
+self:T({Coordinate,LoadRadius=self.LoadRadius})
 local Distance=0
 if self:IsUnLoaded()then
 local CargoCoordinate=self.CargoObject:GetCoordinate()
@@ -30586,7 +30586,7 @@ end
 return false
 end
 function CARGO:IsInReportRadius(Coordinate)
-self:F({Coordinate})
+self:T({Coordinate})
 local Distance=0
 if self:IsUnLoaded()then
 Distance=Coordinate:Get2DDistance(self.CargoObject:GetCoordinate())
@@ -30688,7 +30688,7 @@ ClassName="CARGO_REPRESENTABLE"
 }
 function CARGO_REPRESENTABLE:New(CargoObject,Type,Name,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,CARGO:New(Type,Name,0,LoadRadius,NearRadius))
-self:F({Type,Name,LoadRadius,NearRadius})
+self:T({Type,Name,LoadRadius,NearRadius})
 local Desc=CargoObject:GetDesc()
 self:T({Desc=Desc})
 local Weight=math.random(80,120)
@@ -30703,7 +30703,7 @@ self:SetWeight(Weight)
 return self
 end
 function CARGO_REPRESENTABLE:Destroy()
-self:F({CargoName=self:GetName()})
+self:T({CargoName=self:GetName()})
 return self
 end
 function CARGO_REPRESENTABLE:RouteTo(ToPointVec2,Speed)
@@ -30721,12 +30721,12 @@ local CoordinateZone=ZONE_RADIUS:New("Zone",self:GetCoordinate():GetVec2(),500)
 CoordinateZone:Scan({Object.Category.UNIT})
 for _,DCSUnit in pairs(CoordinateZone:GetScannedUnits())do
 local NearUnit=UNIT:Find(DCSUnit)
-self:F({NearUnit=NearUnit})
+self:T({NearUnit=NearUnit})
 local NearUnitCoalition=NearUnit:GetCoalition()
 local CargoCoalition=self:GetCoalition()
 if NearUnitCoalition==CargoCoalition then
 local Attributes=NearUnit:GetDesc()
-self:F({Desc=Attributes})
+self:T({Desc=Attributes})
 if NearUnit:HasAttribute("Trucks")then
 MESSAGE:New(Message,20,NearUnit:GetCallsign().." reporting - Cargo "..self:GetName()):ToGroup(TaskGroup)
 break
@@ -30741,7 +30741,7 @@ ClassName="CARGO_REPORTABLE"
 }
 function CARGO_REPORTABLE:New(Type,Name,Weight,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,CARGO:New(Type,Name,Weight,LoadRadius,NearRadius))
-self:F({Type,Name,Weight,LoadRadius,NearRadius})
+self:T({Type,Name,Weight,LoadRadius,NearRadius})
 return self
 end
 function CARGO_REPORTABLE:MessageToGroup(Message,TaskGroup,Name)
@@ -30754,13 +30754,13 @@ ClassName="CARGO_PACKAGE"
 }
 function CARGO_PACKAGE:New(CargoCarrier,Type,Name,Weight,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,CARGO_REPRESENTABLE:New(CargoCarrier,Type,Name,Weight,LoadRadius,NearRadius))
-self:F({Type,Name,Weight,LoadRadius,NearRadius})
+self:T({Type,Name,Weight,LoadRadius,NearRadius})
 self:T(CargoCarrier)
 self.CargoCarrier=CargoCarrier
 return self
 end
 function CARGO_PACKAGE:onafterOnBoard(From,Event,To,CargoCarrier,Speed,BoardDistance,LoadDistance,Angle)
-self:F()
+self:T()
 self.CargoInAir=self.CargoCarrier:InAir()
 self:T(self.CargoInAir)
 if not self.CargoInAir then
@@ -30778,7 +30778,7 @@ end
 self:Boarded(CargoCarrier,Speed,BoardDistance,LoadDistance,Angle)
 end
 function CARGO_PACKAGE:IsNear(CargoCarrier)
-self:F()
+self:T()
 local CargoCarrierPoint=CargoCarrier:GetCoordinate()
 local Distance=CargoCarrierPoint:Get2DDistance(self.CargoCarrier:GetCoordinate())
 self:T(Distance)
@@ -30789,7 +30789,7 @@ return false
 end
 end
 function CARGO_PACKAGE:onafterOnBoarded(From,Event,To,CargoCarrier,Speed,BoardDistance,LoadDistance,Angle)
-self:F()
+self:T()
 if self:IsNear(CargoCarrier)then
 self:__Load(1,CargoCarrier,Speed,LoadDistance,Angle)
 else
@@ -30797,7 +30797,7 @@ self:__Boarded(1,CargoCarrier,Speed,BoardDistance,LoadDistance,Angle)
 end
 end
 function CARGO_PACKAGE:onafterUnBoard(From,Event,To,CargoCarrier,Speed,UnLoadDistance,UnBoardDistance,Radius,Angle)
-self:F()
+self:T()
 self.CargoInAir=self.CargoCarrier:InAir()
 self:T(self.CargoInAir)
 if not self.CargoInAir then
@@ -30816,7 +30816,7 @@ end
 self:__UnBoarded(1,CargoCarrier,Speed)
 end
 function CARGO_PACKAGE:onafterUnBoarded(From,Event,To,CargoCarrier,Speed)
-self:F()
+self:T()
 if self:IsNear(CargoCarrier)then
 self:__UnLoad(1,CargoCarrier,Speed)
 else
@@ -30824,7 +30824,7 @@ self:__UnBoarded(1,CargoCarrier,Speed)
 end
 end
 function CARGO_PACKAGE:onafterLoad(From,Event,To,CargoCarrier,Speed,LoadDistance,Angle)
-self:F()
+self:T()
 self.CargoCarrier=CargoCarrier
 local StartPointVec2=self.CargoCarrier:GetPointVec2()
 local CargoCarrierHeading=self.CargoCarrier:GetHeading()
@@ -30837,7 +30837,7 @@ local TaskRoute=self.CargoCarrier:TaskRoute(Points)
 self.CargoCarrier:SetTask(TaskRoute,1)
 end
 function CARGO_PACKAGE:onafterUnLoad(From,Event,To,CargoCarrier,Speed,Distance,Angle)
-self:F()
+self:T()
 local StartPointVec2=self.CargoCarrier:GetPointVec2()
 local CargoCarrierHeading=self.CargoCarrier:GetHeading()
 local CargoDeployHeading=((CargoCarrierHeading+Angle)>=360)and(CargoCarrierHeading+Angle-360)or(CargoCarrierHeading+Angle)
@@ -31300,7 +31300,7 @@ ClassName="CARGO_GROUP",
 }
 function CARGO_GROUP:New(CargoGroup,Type,Name,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,CARGO_REPORTABLE:New(Type,Name,0,LoadRadius,NearRadius))
-self:F({Type,Name,LoadRadius})
+self:T({Type,Name,LoadRadius})
 self.CargoSet=SET_CARGO:New()
 self.CargoGroup=CargoGroup
 self.Grouped=true
@@ -31344,7 +31344,7 @@ self:SetEventPriority(4)
 return self
 end
 function CARGO_GROUP:Respawn()
-self:F({"Respawning"})
+self:T({"Respawning"})
 for CargoID,CargoData in pairs(self.CargoSet:GetSet())do
 local Cargo=CargoData
 Cargo:Destroy()
@@ -31385,7 +31385,7 @@ self.CargoObject=nil
 end
 end
 function CARGO_GROUP:Regroup()
-self:F("Regroup")
+self:T("Regroup")
 if self.Grouped==false then
 self.Grouped=true
 local GroupTemplate=UTILS.DeepCopy(self.CargoTemplate)
@@ -31394,7 +31394,7 @@ GroupTemplate.groupId=nil
 GroupTemplate.units={}
 for CargoUnitName,CargoUnit in pairs(self.CargoSet:GetSet())do
 local CargoUnit=CargoUnit
-self:F({CargoUnit:GetName(),UnLoaded=CargoUnit:IsUnLoaded()})
+self:T({CargoUnit:GetName(),UnLoaded=CargoUnit:IsUnLoaded()})
 if CargoUnit:IsUnLoaded()then
 CargoUnit.CargoObject:Destroy()
 GroupTemplate.units[#GroupTemplate.units+1]=self.CargoUnitTemplate[CargoUnitName]
@@ -31405,7 +31405,7 @@ GroupTemplate.units[#GroupTemplate.units].heading=CargoUnit:GetHeading()
 end
 end
 self.CargoGroup=GROUP:NewTemplate(GroupTemplate,GroupTemplate.CoalitionID,GroupTemplate.CategoryID,GroupTemplate.CountryID)
-self:F({"Regroup",GroupTemplate})
+self:T({"Regroup",GroupTemplate})
 self.CargoObject=_DATABASE:Spawn(GroupTemplate)
 end
 end
@@ -31436,11 +31436,11 @@ self:E({"Cargo group destroyed"})
 end
 end
 function CARGO_GROUP:onafterBoard(From,Event,To,CargoCarrier,NearRadius,...)
-self:F({CargoCarrier.UnitName,From,Event,To,NearRadius=NearRadius})
+self:T({CargoCarrier.UnitName,From,Event,To,NearRadius=NearRadius})
 NearRadius=NearRadius or self.NearRadius
 self.CargoSet:ForEach(
 function(Cargo,...)
-self:F({"Board Unit",Cargo:GetName(),Cargo:IsDestroyed(),Cargo.CargoObject:IsAlive()})
+self:T({"Board Unit",Cargo:GetName(),Cargo:IsDestroyed(),Cargo.CargoObject:IsAlive()})
 local CargoGroup=Cargo.CargoObject
 CargoGroup:OptionAlarmStateGreen()
 Cargo:__Board(1,CargoCarrier,NearRadius,...)
@@ -31481,7 +31481,7 @@ if not Cancelled then
 if not Boarded then
 self:__Boarding(-5,CargoCarrier,NearRadius,...)
 else
-self:F("Group Cargo is loaded")
+self:T("Group Cargo is loaded")
 self:__Load(1,CargoCarrier,...)
 end
 else
@@ -31492,7 +31492,7 @@ self:__Destroyed(1,CargoCarrier,NearRadius,...)
 end
 end
 function CARGO_GROUP:onafterUnBoard(From,Event,To,ToPointVec2,NearRadius,...)
-self:F({From,Event,To,ToPointVec2,NearRadius})
+self:T({From,Event,To,ToPointVec2,NearRadius})
 NearRadius=NearRadius or 25
 local Timer=1
 if From=="Loaded"then
@@ -31601,12 +31601,12 @@ end
 )
 end
 function CARGO_GROUP:IsNear(CargoCarrier,NearRadius)
-self:F({NearRadius=NearRadius})
+self:T({NearRadius=NearRadius})
 for _,Cargo in pairs(self.CargoSet:GetSet())do
 local Cargo=Cargo
 if Cargo:IsAlive()then
 if Cargo:IsNear(CargoCarrier:GetCoordinate(),NearRadius)then
-self:F("Near")
+self:T("Near")
 return true
 end
 end
@@ -31628,7 +31628,7 @@ Distance=Coordinate:Get2DDistance(CargoCoordinate)
 else
 return false
 end
-self:F({Distance=Distance,LoadRadius=self.LoadRadius})
+self:T({Distance=Distance,LoadRadius=self.LoadRadius})
 if Distance<=self.LoadRadius then
 return true
 else
@@ -31640,7 +31640,7 @@ end
 function CARGO_GROUP:IsInReportRadius(Coordinate)
 local Cargo=self:GetFirstAlive()
 if Cargo then
-self:F({Cargo})
+self:T({Cargo})
 local Distance=0
 if Cargo:IsUnLoaded()then
 Distance=Coordinate:Get2DDistance(Cargo.CargoObject:GetCoordinate())
@@ -51263,7 +51263,7 @@ MANTIS.SamData={
 ["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Short",Radar="Tor 9A331"},
 ["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
 ["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Avenger"},
-["Chaparrel"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
+["Chaparral"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
 ["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Linebacker"},
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
