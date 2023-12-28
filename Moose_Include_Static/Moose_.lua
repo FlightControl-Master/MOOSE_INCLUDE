@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-28T13:32:53+01:00-6ffe69484c43fcab55d3dda2873bd45dbfa8ef42 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-28T16:38:26+01:00-4fe1318e7c1c46842de54c9fd7b3d5ed256f849c ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -78305,6 +78305,8 @@ self.path=lfs.tempdir().."Mission\\l10n\\DEFAULT"
 else
 self.path="l10n/DEFAULT/"
 end
+else
+self.path=Path
 end
 local nmax=1000;local n=1
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
