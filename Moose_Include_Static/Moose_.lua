@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-28T16:38:26+01:00-4fe1318e7c1c46842de54c9fd7b3d5ed256f849c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-29T14:50:01+01:00-b052d993491064276fa37f5841734ff3e31dd879 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -24104,12 +24104,19 @@ return self
 end
 return nil
 end
-function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation)
+function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation,onland)
 self:F2({self.ControllableName})
 local _coord=self:GetCoordinate()
 local _radius=radius or 500
 local _speed=speed or 20
 local _tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
+if onland then
+for i=1,50 do
+local island=_tocoord:GetSurfaceType()==land.SurfaceType.LAND and true or false
+if island then break end
+_tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
+end
+end
 local _onroad=onroad or true
 local _grptsk={}
 local _candoroad=false
@@ -25013,7 +25020,7 @@ local Task={
 table.insert(TaskAerobatics.params["maneuversSequency"],Task)
 return TaskAerobatics
 end
-function CONTROLLABLE:PatrolRaceTrack(Point1,Point2,Altitude,Speed,Formation,Delay)
+function CONTROLLABLE:PatrolRaceTrack(Point1,Point2,Altitude,Speed,Formation,AGL,Delay)
 local PatrolGroup=self
 if not self:IsInstanceOf("GROUP")then
 PatrolGroup=self:GetGroup()
@@ -25027,8 +25034,10 @@ end
 local FromCoord=PatrolGroup:GetCoordinate()
 local ToCoord=Point1:GetCoordinate()
 if Altitude then
-FromCoord:SetAltitude(Altitude)
-ToCoord:SetAltitude(Altitude)
+local asl=true
+if AGL then asl=false end
+FromCoord:SetAltitude(Altitude,asl)
+ToCoord:SetAltitude(Altitude,asl)
 end
 local Route={}
 Route[#Route+1]=FromCoord:WaypointAir(AltType,COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,description,timeReFuAr)
@@ -33123,7 +33132,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.5")
+self:I("*** SEAD - Started Version 0.4.6")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -33295,7 +33304,7 @@ if self.UseEmissionsOnOff then
 grp:EnableEmission(false)
 end
 grp:OptionAlarmStateGreen()
-grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
+grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond",true)
 if self.UseCallBack then
 local object=self.CallBack
 object:SeadSuppressionStart(grp,name,attacker)
@@ -51421,7 +51430,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.15"
+self.version="0.8.16"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -51682,7 +51691,7 @@ local HQGroup=self.HQ_CC
 if self.autorelocateunits.HQ and self.HQ_CC and HQGroup:IsAlive()then
 local _hqgrp=self.HQ_CC
 local text=self.lid.." Relocating HQ"
-_hqgrp:RelocateGroundRandomInRadius(20,500,true,true)
+_hqgrp:RelocateGroundRandomInRadius(20,500,true,true,nil,true)
 end
 if self.autorelocateunits.EWR then
 local EWR_GRP=SET_GROUP:New():FilterPrefixes(self.EWR_Templates_Prefix):FilterCoalitions(self.Coalition):FilterOnce()
@@ -51692,7 +51701,7 @@ if _grp:IsAlive()and _grp:IsGround()then
 local text=self.lid.." Relocating EWR ".._grp:GetName()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
-_grp:RelocateGroundRandomInRadius(20,500,true,true)
+_grp:RelocateGroundRandomInRadius(20,500,true,true,nil,true)
 end
 end
 end
