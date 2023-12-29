@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-29T14:50:57+01:00-1b7eef5419f19bbdcc558d6e68b41ecb5b8da264 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-29T15:03:09+01:00-7557e79c0c45014311f489359b5cacd62d1bff7f ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -58637,7 +58637,7 @@ self:E(self.lid.."ERROR: EventData=nil in event BIRTH!")
 self:E(EventData)
 return
 end
-if EventData.IniUnit==nil then
+if EventData.IniUnit==nil and(not EventData.IniObjectCategory==Object.Category.STATIC)then
 self:E(self.lid.."ERROR: EventData.IniUnit=nil in event BIRTH!")
 self:E(EventData)
 return
