@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-28T16:38:57+01:00-93acd870ea1b9c00e36180ecd55949f35fcd2393 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-29T14:50:57+01:00-1b7eef5419f19bbdcc558d6e68b41ecb5b8da264 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -24916,12 +24916,19 @@ return self
 end
 return nil
 end
-function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation)
+function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation,onland)
 self:F2({self.ControllableName})
 local _coord=self:GetCoordinate()
 local _radius=radius or 500
 local _speed=speed or 20
 local _tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
+if onland then
+for i=1,50 do
+local island=_tocoord:GetSurfaceType()==land.SurfaceType.LAND and true or false
+if island then break end
+_tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
+end
+end
 local _onroad=onroad or true
 local _grptsk={}
 local _candoroad=false
@@ -41215,7 +41222,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.15"
+self.version="0.8.16"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -41476,7 +41483,7 @@ local HQGroup=self.HQ_CC
 if self.autorelocateunits.HQ and self.HQ_CC and HQGroup:IsAlive()then
 local _hqgrp=self.HQ_CC
 local text=self.lid.." Relocating HQ"
-_hqgrp:RelocateGroundRandomInRadius(20,500,true,true)
+_hqgrp:RelocateGroundRandomInRadius(20,500,true,true,nil,true)
 end
 if self.autorelocateunits.EWR then
 local EWR_GRP=SET_GROUP:New():FilterPrefixes(self.EWR_Templates_Prefix):FilterCoalitions(self.Coalition):FilterOnce()
@@ -41486,7 +41493,7 @@ if _grp:IsAlive()and _grp:IsGround()then
 local text=self.lid.." Relocating EWR ".._grp:GetName()
 local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(text)end
-_grp:RelocateGroundRandomInRadius(20,500,true,true)
+_grp:RelocateGroundRandomInRadius(20,500,true,true,nil,true)
 end
 end
 end
@@ -49533,7 +49540,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.5")
+self:I("*** SEAD - Started Version 0.4.6")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -49705,7 +49712,7 @@ if self.UseEmissionsOnOff then
 grp:EnableEmission(false)
 end
 grp:OptionAlarmStateGreen()
-grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond")
+grp:RelocateGroundRandomInRadius(20,300,false,false,"Diamond",true)
 if self.UseCallBack then
 local object=self.CallBack
 object:SeadSuppressionStart(grp,name,attacker)
