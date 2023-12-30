@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-29T15:03:09+01:00-7557e79c0c45014311f489359b5cacd62d1bff7f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-30T16:53:22+01:00-a70ad71689e71fc8e4eed6868c8c515d71e77ba5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11957,12 +11957,11 @@ end
 function SET_BASE:_EvalFilterFunctions(Object)
 for _,_condition in pairs(self.Filter.Functions or{})do
 local condition=_condition
-local istrue=condition.func(Object,unpack(condition.arg))
-if istrue then
-return true
-end
-end
+if condition.func(Object,unpack(condition.arg))==false then
 return false
+end
+end
+return true
 end
 function SET_BASE:Clear(TriggerEvent)
 for Name,Object in pairs(self.Set)do
@@ -12827,7 +12826,8 @@ end
 MGroupInclude=MGroupInclude and MGroupZone
 end
 if self.Filter.Functions then
-local MGroupFunc=self:_EvalFilterFunctions(MGroup)
+local MGroupFunc=false
+MGroupFunc=self:_EvalFilterFunctions(MGroup)
 MGroupInclude=MGroupInclude and MGroupFunc
 end
 self:T2(MGroupInclude)
@@ -27427,6 +27427,32 @@ report:Add("==================")
 local text=report:Text()
 return tSTN,text
 end
+function GROUP:IsSAM()
+local issam=false
+local units=self:GetUnits()
+for _,_unit in pairs(units or{})do
+local unit=_unit
+if unit:HasSEAD()and unit:IsGround()and(not unit:HasAttribute("Mobile AAA"))then
+issam=true
+break
+end
+end
+return issam
+end
+function GROUP:IsAAA()
+local issam=true
+local units=self:GetUnits()
+for _,_unit in pairs(units or{})do
+local unit=_unit
+if unit:HasSEAD()or(not unit:IsGround())then
+issam=false
+if unit:HasAttribute("Mobile AAA")then
+issam=true
+end
+end
+end
+return issam
+end
 IDENTIFIABLE={
 ClassName="IDENTIFIABLE",
 IdentifiableName="",
@@ -31367,7 +31393,7 @@ self:SetEventPriority(5)
 return self
 end
 function CARGO_UNIT:onenterUnBoarding(From,Event,To,ToPointVec2,NearRadius)
-self:F({From,Event,To,ToPointVec2,NearRadius})
+self:T({From,Event,To,ToPointVec2,NearRadius})
 local Angle=180
 local Speed=60
 local DeployDistance=9
@@ -31390,7 +31416,7 @@ self.CargoObject:ReSpawnAt(ToPointVec2,CargoDeployHeading)
 else
 self.CargoObject:ReSpawnAt(FromPointVec2,CargoDeployHeading)
 end
-self:F({"CargoUnits:",self.CargoObject:GetGroup():GetName()})
+self:T({"CargoUnits:",self.CargoObject:GetGroup():GetName()})
 self.CargoCarrier=nil
 local Points={}
 Points[#Points+1]=FromPointVec2:WaypointGround(Speed,"Vee")
@@ -31406,7 +31432,7 @@ end
 end
 end
 function CARGO_UNIT:onleaveUnBoarding(From,Event,To,ToPointVec2,NearRadius)
-self:F({From,Event,To,ToPointVec2,NearRadius})
+self:T({From,Event,To,ToPointVec2,NearRadius})
 local Angle=180
 local Speed=10
 local Distance=5
@@ -31415,7 +31441,7 @@ return true
 end
 end
 function CARGO_UNIT:onafterUnBoarding(From,Event,To,ToPointVec2,NearRadius)
-self:F({From,Event,To,ToPointVec2,NearRadius})
+self:T({From,Event,To,ToPointVec2,NearRadius})
 self.CargoInAir=self.CargoObject:InAir()
 self:T(self.CargoInAir)
 if not self.CargoInAir then
@@ -31423,7 +31449,7 @@ end
 self:__UnLoad(1,ToPointVec2,NearRadius)
 end
 function CARGO_UNIT:onenterUnLoaded(From,Event,To,ToPointVec2)
-self:F({ToPointVec2,From,Event,To})
+self:T({ToPointVec2,From,Event,To})
 local Angle=180
 local Speed=10
 local Distance=5
@@ -31444,7 +31470,7 @@ self.OnUnLoadedCallBack=nil
 end
 end
 function CARGO_UNIT:onafterBoard(From,Event,To,CargoCarrier,NearRadius,...)
-self:F({From,Event,To,CargoCarrier,NearRadius=NearRadius})
+self:T({From,Event,To,CargoCarrier,NearRadius=NearRadius})
 self.CargoInAir=self.CargoObject:InAir()
 local Desc=self.CargoObject:GetDesc()
 local MaxSpeed=Desc.speedMaxOffRoad
@@ -31478,8 +31504,8 @@ end
 end
 end
 function CARGO_UNIT:onafterBoarding(From,Event,To,CargoCarrier,NearRadius,...)
-self:F({From,Event,To,CargoCarrier:GetName(),NearRadius=NearRadius})
-self:F({IsAlive=self.CargoObject:IsAlive()})
+self:T({From,Event,To,CargoCarrier:GetName(),NearRadius=NearRadius})
+self:T({IsAlive=self.CargoObject:IsAlive()})
 if CargoCarrier and CargoCarrier:IsAlive()then
 if(CargoCarrier:IsAir()and not CargoCarrier:InAir())or true then
 local NearRadius=NearRadius or CargoCarrier:GetBoundingRadius(NearRadius)+5
@@ -31517,11 +31543,11 @@ self:CancelBoarding(CargoCarrier,NearRadius,...)
 self.CargoObject:SetCommand(self.CargoObject:CommandStopRoute(true))
 end
 else
-self:E("Something is wrong")
+self:T("Something is wrong")
 end
 end
 function CARGO_UNIT:onenterLoaded(From,Event,To,CargoCarrier)
-self:F({From,Event,To,CargoCarrier})
+self:T({From,Event,To,CargoCarrier})
 self.CargoCarrier=CargoCarrier
 if self.CargoObject then
 self.CargoObject:Destroy(false)
@@ -31548,7 +31574,7 @@ ClassName="CARGO_SLINGLOAD"
 }
 function CARGO_SLINGLOAD:New(CargoStatic,Type,Name,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,CARGO_REPRESENTABLE:New(CargoStatic,Type,Name,nil,LoadRadius,NearRadius))
-self:F({Type,Name,NearRadius})
+self:T({Type,Name,NearRadius})
 self.CargoObject=CargoStatic
 _EVENTDISPATCHER:CreateEventNewCargo(self)
 self:HandleEvent(EVENTS.Dead,self.OnEventCargoDead)
@@ -31659,7 +31685,7 @@ ClassName="CARGO_CRATE"
 }
 function CARGO_CRATE:New(CargoStatic,Type,Name,LoadRadius,NearRadius)
 local self=BASE:Inherit(self,CARGO_REPRESENTABLE:New(CargoStatic,Type,Name,nil,LoadRadius,NearRadius))
-self:F({Type,Name,NearRadius})
+self:T({Type,Name,NearRadius})
 self.CargoObject=CargoStatic
 _EVENTDISPATCHER:CreateEventNewCargo(self)
 self:HandleEvent(EVENTS.Dead,self.OnEventCargoDead)
@@ -31762,21 +31788,21 @@ end
 return Alive
 end
 function CARGO_CRATE:RouteTo(Coordinate)
-self:F({Coordinate=Coordinate})
+self:T({Coordinate=Coordinate})
 end
 function CARGO_CRATE:IsNear(CargoCarrier,NearRadius)
-self:F({NearRadius=NearRadius})
+self:T({NearRadius=NearRadius})
 return self:IsNear(CargoCarrier:GetCoordinate(),NearRadius)
 end
 function CARGO_CRATE:Respawn()
-self:F({"Respawning crate "..self:GetName()})
+self:T({"Respawning crate "..self:GetName()})
 if self.CargoObject then
 self.CargoObject:ReSpawn()
 self:__Reset(-0.1)
 end
 end
 function CARGO_CRATE:onafterReset()
-self:F({"Reset crate "..self:GetName()})
+self:T({"Reset crate "..self:GetName()})
 if self.CargoObject then
 self:SetDeployed(false)
 self:SetStartState("UnLoaded")
@@ -31915,7 +31941,7 @@ self.CargoObject=_DATABASE:Spawn(GroupTemplate)
 end
 end
 function CARGO_GROUP:OnEventCargoDead(EventData)
-self:E(EventData)
+self:T(EventData)
 local Destroyed=false
 if self:IsDestroyed()or self:IsUnLoaded()or self:IsBoarding()or self:IsUnboarding()then
 Destroyed=true
@@ -31937,7 +31963,7 @@ end
 end
 if Destroyed then
 self:Destroyed()
-self:E({"Cargo group destroyed"})
+self:T({"Cargo group destroyed"})
 end
 end
 function CARGO_GROUP:onafterBoard(From,Event,To,CargoCarrier,NearRadius,...)
