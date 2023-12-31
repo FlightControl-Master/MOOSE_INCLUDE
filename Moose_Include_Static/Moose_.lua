@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-31T14:57:13+01:00-0835022c5cbddb1b329e892564af1cee6dbe1133 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-31T17:15:51+01:00-0338fd5d337603d192b39c29d574639f077515d5 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -79282,9 +79282,10 @@ return string.format('%x',v)
 end)
 end
 function MSRS:New(Path,Frequency,Modulation,Backend)
+local self=BASE:Inherit(self,BASE:New())
+self:F({Path,Frequency,Modulation,Backend})
 Frequency=Frequency or 143
 Modulation=Modulation or radio.modulation.AM
-local self=BASE:Inherit(self,BASE:New())
 self.lid=string.format("%s-%s | ","unknown",self.version)
 if not self.ConfigLoaded then
 self:SetPath(Path)
@@ -79295,6 +79296,7 @@ self:SetGender()
 self:SetCoalition()
 self:SetLabel()
 self:SetVolume()
+self:SetBackend(Backend)
 else
 if Path then
 self:SetPath(Path)
@@ -79305,6 +79307,9 @@ end
 if Modulation then
 self:SetModulations(Modulation)
 end
+if Backend then
+self:SetBackend(Backend)
+end
 end
 self.lid=string.format("%s-%s | ",self.name,self.version)
 if not io or not os then
@@ -79313,40 +79318,47 @@ end
 return self
 end
 function MSRS:SetBackend(Backend)
+self:F({Backend=Backend})
 self.backend=Backend or MSRS.Backend.SRSEXE
 return self
 end
 function MSRS:SetBackendGRPC()
+self:F()
 self:SetBackend(MSRS.Backend.GRPC)
 return self
 end
-function MSRS:SetBackendSRSEXE(Backend)
+function MSRS:SetBackendSRSEXE()
+self:F()
 self:SetBackend(MSRS.Backend.SRSEXE)
 return self
 end
 function MSRS.SetDefaultBackend(Backend)
+self:F({Backend=Backend})
 MSRS.backend=Backend or MSRS.Backend.SRSEXE
 end
 function MSRS.SetDefaultBackendGRPC()
+self:F()
 MSRS.backend=MSRS.Backend.GRPC
 end
 function MSRS:GetBackend()
 return self.backend
 end
 function MSRS:SetPath(Path)
+self:F({Path=Path})
 self.path=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 local n=1;local nmax=1000
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
 self.path=self.path:sub(1,#self.path-1)
 n=n+1
 end
-self:T(string.format("SRS path=%s",self:GetPath()))
+self:F(string.format("SRS path=%s",self:GetPath()))
 return self
 end
 function MSRS:GetPath()
 return self.path
 end
 function MSRS:SetVolume(Volume)
+self:F({Volume=Volume})
 local volume=Volume or 1
 if volume>1 then volume=1 elseif volume<0 then volume=0 end
 self.volume=volume
@@ -79356,6 +79368,7 @@ function MSRS:GetVolume()
 return self.volume
 end
 function MSRS:SetLabel(Label)
+self:F({Label=Label})
 self.Label=Label or"ROBOT"
 return self
 end
@@ -79363,6 +79376,7 @@ function MSRS:GetLabel()
 return self.Label
 end
 function MSRS:SetPort(Port)
+self:F({Port=Port})
 self.port=Port or 5002
 self:T(string.format("SRS port=%s",self:GetPort()))
 return self
@@ -79371,6 +79385,7 @@ function MSRS:GetPort()
 return self.port
 end
 function MSRS:SetCoalition(Coalition)
+self:F({Coalition=Coalition})
 self.coalition=Coalition or 0
 return self
 end
@@ -79378,10 +79393,12 @@ function MSRS:GetCoalition()
 return self.coalition
 end
 function MSRS:SetFrequencies(Frequencies)
+self:F(Frequencies)
 self.frequencies=UTILS.EnsureTable(Frequencies,false)
 return self
 end
 function MSRS:AddFrequencies(Frequencies)
+self:F(Frequencies)
 for _,_freq in pairs(UTILS.EnsureTable(Frequencies,false))do
 self:T(self.lid..string.format("Adding frequency %s",tostring(_freq)))
 table.insert(self.frequencies,_freq)
@@ -79392,12 +79409,14 @@ function MSRS:GetFrequencies()
 return self.frequencies
 end
 function MSRS:SetModulations(Modulations)
+self:F(Modulations)
 self.modulations=UTILS.EnsureTable(Modulations,false)
 self:T(self.lid.."Modulations:")
 self:T(self.modulations)
 return self
 end
 function MSRS:AddModulations(Modulations)
+self:F(Modulations)
 for _,_mod in pairs(UTILS.EnsureTable(Modulations,false))do
 table.insert(self.modulations,_mod)
 end
@@ -79407,37 +79426,45 @@ function MSRS:GetModulations()
 return self.modulations
 end
 function MSRS:SetGender(Gender)
+self:F({Gender=Gender})
 Gender=Gender or"female"
 self.gender=Gender:lower()
 self:T("Setting gender to "..tostring(self.gender))
 return self
 end
 function MSRS:SetCulture(Culture)
+self:F({Culture=Culture})
 self.culture=Culture
 return self
 end
 function MSRS:SetVoice(Voice)
+self:F({Voice=Voice})
 self.voice=Voice
 return self
 end
 function MSRS:SetVoiceProvider(Voice,Provider)
+self:F({Voice=Voice,Provider=Provider})
 self.poptions=self.poptions or{}
 self.poptions[Provider or self:GetProvider()]=Voice
 return self
 end
 function MSRS:SetVoiceWindows(Voice)
+self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"Microsoft Hazel Desktop",MSRS.Provider.WINDOWS)
 return self
 end
 function MSRS:SetVoiceGoogle(Voice)
+self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or MSRS.Voices.Google.Standard.en_GB_Standard_A,MSRS.Provider.GOOGLE)
 return self
 end
 function MSRS:SetVoiceAzure(Voice)
+self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"en-US-AriaNeural",MSRS.Provider.AZURE)
 return self
 end
 function MSRS:SetVoiceAmazon(Voice)
+self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"Brian",MSRS.Provider.AMAZON)
 return self
 end
@@ -79450,10 +79477,12 @@ return self.voice
 end
 end
 function MSRS:SetCoordinate(Coordinate)
+self:F(Coordinate)
 self.coordinate=Coordinate
 return self
 end
 function MSRS:SetGoogle(PathToCredentials)
+self:F({PathToCredentials=PathToCredentials})
 if PathToCredentials then
 self.provider=MSRS.Provider.GOOGLE
 self:SetProviderOptionsGoogle(PathToCredentials,PathToCredentials)
@@ -79461,6 +79490,7 @@ end
 return self
 end
 function MSRS:SetGoogleAPIKey(APIKey)
+self:F({APIKey=APIKey})
 if APIKey then
 self.provider=MSRS.Provider.GOOGLE
 if self.poptions[MSRS.Provider.GOOGLE]then
@@ -79472,6 +79502,7 @@ end
 return self
 end
 function MSRS:SetProvider(Provider)
+self:F({Provider=Provider})
 self.provider=Provider or MSRS.Provider.WINDOWS
 return self
 end
@@ -79479,6 +79510,7 @@ function MSRS:GetProvider()
 return self.provider or MSRS.Provider.WINDOWS
 end
 function MSRS:SetProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
+self:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
 local option=MSRS._CreateProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
 if self then
 self.poptions=self.poptions or{}
@@ -79490,6 +79522,7 @@ end
 return option
 end
 function MSRS._CreateProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
+self:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
 local option={}
 option.provider=Provider
 option.credentials=CredentialsFile
@@ -79499,14 +79532,17 @@ option.region=Region
 return option
 end
 function MSRS:SetProviderOptionsGoogle(CredentialsFile,AccessKey)
+self:F({CredentialsFile,AccessKey})
 self:SetProviderOptions(MSRS.Provider.GOOGLE,CredentialsFile,AccessKey)
 return self
 end
 function MSRS:SetProviderOptionsAmazon(AccessKey,SecretKey,Region)
+self:F({AccessKey,SecretKey,Region})
 self:SetProviderOptions(MSRS.Provider.AMAZON,nil,AccessKey,SecretKey,Region)
 return self
 end
 function MSRS:SetProviderOptionsAzure(AccessKey,Region)
+self:F({AccessKey,Region})
 self:SetProviderOptions(MSRS.Provider.AZURE,nil,AccessKey,nil,Region)
 return self
 end
@@ -79514,22 +79550,27 @@ function MSRS:GetProviderOptions(Provider)
 return self.poptions[Provider or self.provider]or{}
 end
 function MSRS:SetTTSProviderGoogle()
+self:F()
 self:SetProvider(MSRS.Provider.GOOGLE)
 return self
 end
 function MSRS:SetTTSProviderMicrosoft()
+self:F()
 self:SetProvider(MSRS.Provider.WINDOWS)
 return self
 end
 function MSRS:SetTTSProviderAzure()
+self:F()
 self:SetProvider(MSRS.Provider.AZURE)
 return self
 end
 function MSRS:SetTTSProviderAmazon()
+self:F()
 self:SetProvider(MSRS.Provider.AMAZON)
 return self
 end
 function MSRS:Help()
+self:F()
 local path=self:GetPath()
 local exe="DCS-SR-ExternalAudio.exe"
 local filename=os.getenv('TMP').."\\MSRS-help-"..MSRS.uuid()..".txt"
@@ -79545,10 +79586,16 @@ env.info("======================================================================
 return self
 end
 function MSRS:PlaySoundFile(Soundfile,Delay)
+self:F({Soundfile,Delay})
+local soundfile=Soundfile:GetName()
+local exists=UTILS.FileExists(soundfile)
+if not exists then
+self:E("ERROR: MSRS sound file does not exist! File="..soundfile)
+return self
+end
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlaySoundFile,self,Soundfile,0)
 else
-local soundfile=Soundfile:GetName()
 local command=self:_GetCommand()
 command=command..' --file="'..tostring(soundfile)..'"'
 self:_ExecCommand(command)
@@ -79556,6 +79603,7 @@ end
 return self
 end
 function MSRS:PlaySoundText(SoundText,Delay)
+self:F({SoundText,Delay})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlaySoundText,self,SoundText,0)
 else
@@ -79570,6 +79618,7 @@ end
 return self
 end
 function MSRS:PlayText(Text,Delay,Coordinate)
+self:F({Text,Delay,Coordinate})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate)
 else
@@ -79583,6 +79632,7 @@ end
 return self
 end
 function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
+self:F({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 else
@@ -79599,6 +79649,7 @@ end
 return self
 end
 function MSRS:PlayTextFile(TextFile,Delay)
+self:F({TextFile,Delay})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayTextFile,self,TextFile,0)
 else
@@ -79617,6 +79668,7 @@ end
 return self
 end
 function MSRS:_GetLatLongAlt(Coordinate)
+self:F({Coordinate=Coordinate})
 local lat=0.0
 local lon=0.0
 local alt=0.0
@@ -79626,6 +79678,7 @@ end
 return lat,lon,math.floor(alt)
 end
 function MSRS:_GetCommand(freqs,modus,coal,gender,voice,culture,volume,speed,port,label,coordinate)
+self:F({freqs,modus,coal,gender,voice,culture,volume,speed,port,label,coordinate})
 local path=self:GetPath()
 local exe="DCS-SR-ExternalAudio.exe"
 local fullPath=string.format("%s\\%s",path,exe)
@@ -79672,6 +79725,7 @@ self:T("MSRS command from _GetCommand="..command)
 return command
 end
 function MSRS:_ExecCommand(command)
+self:F({command=command})
 if string.find(command,"CommandNotFound")then return 0 end
 local batContent=command.." && exit"
 local filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".bat"
@@ -79715,8 +79769,8 @@ end
 return res
 end
 function MSRS:_DCSgRPCtts(Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate)
-self:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
-self:T({Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate})
+self:F("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
+self:F({Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate})
 local options={}
 local ssml=Text or''
 Frequencies=UTILS.EnsureTable(Frequencies,true)or self:GetFrequencies()
@@ -79728,6 +79782,7 @@ options.position.lat,options.position.lon,options.position.alt=self:_GetLatLongA
 end
 options.coalition=UTILS.GetCoalitionName(self.coalition):lower()
 local provider=self.provider or MSRS.Provider.WINDOWS
+self:F({provider=provider})
 options.provider={}
 options.provider[provider]=self:GetProviderOptions(provider)
 Voice=Voice or self:GetVoice(self.provider)or self.voice
@@ -79748,10 +79803,9 @@ ssml=string.format("<voice%s%s>%s</voice>",gender,language,Text)
 end
 end
 for _,freq in pairs(Frequencies)do
-self:T("GRPC.tts")
-self:T(ssml)
-self:T(freq)
-self:T(options)
+self:F("Calling GRPC.tts with the following parameter:")
+self:F({ssml=ssml,freq=freq,options=options})
+self:F(options.provider[provider])
 GRPC.tts(ssml,freq*1e6,options)
 end
 end
