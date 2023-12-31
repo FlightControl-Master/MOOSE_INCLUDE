@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-30T16:53:22+01:00-a70ad71689e71fc8e4eed6868c8c515d71e77ba5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-31T14:58:02+01:00-cf48b2107379223986ef3262194dd2ec66c94a46 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -27440,15 +27440,15 @@ end
 return issam
 end
 function GROUP:IsAAA()
-local issam=true
+local issam=false
 local units=self:GetUnits()
 for _,_unit in pairs(units or{})do
 local unit=_unit
-if unit:HasSEAD()or(not unit:IsGround())then
-issam=false
-if unit:HasAttribute("Mobile AAA")then
+local desc=unit:GetDesc()or{}
+local attr=desc.attributes or{}
+if unit:HasSEAD()then return false end
+if attr["AAA"]or attr["SAM related"]then
 issam=true
-end
 end
 end
 return issam
