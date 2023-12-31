@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-31T17:19:51+01:00-833a0561c38792c2f21fa710097e71a1d0baaab8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-12-31T17:25:32+01:00-dd771a089c093ce7399eec11aaf121a19939131d ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -379,6 +379,7 @@ Galaxy="C-5",
 Hawkeye="E-2D",
 Sentry="E-3A",
 Stratotanker="KC-135",
+Gasstation="KC-135MPRS",
 Extender="KC-10",
 Orion="P-3C",
 Viking="S-3B",
@@ -12776,7 +12777,7 @@ MGroupActive=true
 end
 MGroupInclude=MGroupInclude and MGroupActive
 end
-if self.Filter.Coalitions then
+if self.Filter.Coalitions and MGroupInclude then
 local MGroupCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 self:T3({"Coalition:",MGroup:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
@@ -12786,7 +12787,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupCoalition
 end
-if self.Filter.Categories then
+if self.Filter.Categories and MGroupInclude then
 local MGroupCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 self:T3({"Category:",MGroup:GetCategory(),self.FilterMeta.Categories[CategoryName],CategoryName})
@@ -12796,7 +12797,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupCategory
 end
-if self.Filter.Countries then
+if self.Filter.Countries and MGroupInclude then
 local MGroupCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
 self:T3({"Country:",MGroup:GetCountry(),CountryName})
@@ -12806,7 +12807,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupCountry
 end
-if self.Filter.GroupPrefixes then
+if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
 self:T3({"Prefix:",string.find(MGroup:GetName(),GroupPrefix,1),GroupPrefix})
@@ -12816,7 +12817,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupPrefix
 end
-if self.Filter.Zones then
+if self.Filter.Zones and MGroupInclude then
 local MGroupZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
 if MGroup:IsInZone(Zone)then
@@ -12825,7 +12826,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupZone
 end
-if self.Filter.Functions then
+if self.Filter.Functions and MGroupInclude then
 local MGroupFunc=false
 MGroupFunc=self:_EvalFilterFunctions(MGroup)
 MGroupInclude=MGroupInclude and MGroupFunc
@@ -13412,7 +13413,7 @@ MUnitActive=true
 end
 MUnitInclude=MUnitInclude and MUnitActive
 end
-if self.Filter.Coalitions then
+if self.Filter.Coalitions and MUnitInclude then
 local MUnitCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 self:F({"Coalition:",MUnit:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
@@ -13422,7 +13423,7 @@ end
 end
 MUnitInclude=MUnitInclude and MUnitCoalition
 end
-if self.Filter.Categories then
+if self.Filter.Categories and MUnitInclude then
 local MUnitCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 self:T3({"Category:",MUnit:GetDesc().category,self.FilterMeta.Categories[CategoryName],CategoryName})
@@ -13432,7 +13433,7 @@ end
 end
 MUnitInclude=MUnitInclude and MUnitCategory
 end
-if self.Filter.Types then
+if self.Filter.Types and MUnitInclude then
 local MUnitType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
 self:T3({"Type:",MUnit:GetTypeName(),TypeName})
@@ -13442,7 +13443,7 @@ end
 end
 MUnitInclude=MUnitInclude and MUnitType
 end
-if self.Filter.Countries then
+if self.Filter.Countries and MUnitInclude then
 local MUnitCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
 self:T3({"Country:",MUnit:GetCountry(),CountryName})
@@ -13452,7 +13453,7 @@ end
 end
 MUnitInclude=MUnitInclude and MUnitCountry
 end
-if self.Filter.UnitPrefixes then
+if self.Filter.UnitPrefixes and MUnitInclude then
 local MUnitPrefix=false
 for UnitPrefixId,UnitPrefix in pairs(self.Filter.UnitPrefixes)do
 self:T3({"Prefix:",string.find(MUnit:GetName(),UnitPrefix,1),UnitPrefix})
@@ -13462,7 +13463,7 @@ end
 end
 MUnitInclude=MUnitInclude and MUnitPrefix
 end
-if self.Filter.RadarTypes then
+if self.Filter.RadarTypes and MUnitInclude then
 local MUnitRadar=false
 for RadarTypeID,RadarType in pairs(self.Filter.RadarTypes)do
 self:T3({"Radar:",RadarType})
@@ -13475,7 +13476,7 @@ end
 end
 MUnitInclude=MUnitInclude and MUnitRadar
 end
-if self.Filter.SEAD then
+if self.Filter.SEAD and MUnitInclude then
 local MUnitSEAD=false
 if MUnit:HasSEAD()==true then
 self:T3("SEAD Found")
@@ -13484,7 +13485,7 @@ end
 MUnitInclude=MUnitInclude and MUnitSEAD
 end
 end
-if self.Filter.Zones then
+if self.Filter.Zones and MUnitInclude then
 local MGroupZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
 self:T3("Zone:",ZoneName)
@@ -13494,7 +13495,7 @@ end
 end
 MUnitInclude=MUnitInclude and MGroupZone
 end
-if self.Filter.Functions then
+if self.Filter.Functions and MUnitInclude then
 local MUnitFunc=self:_EvalFilterFunctions(MUnit)
 MUnitInclude=MUnitInclude and MUnitFunc
 end
@@ -14248,7 +14249,7 @@ MClientActive=true
 end
 MClientInclude=MClientInclude and MClientActive
 end
-if self.Filter.Coalitions then
+if self.Filter.Coalitions and MClientInclude then
 local MClientCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 local ClientCoalitionID=_DATABASE:GetCoalitionFromClientTemplate(MClientName)
@@ -14260,7 +14261,7 @@ end
 self:T({"Evaluated Coalition",MClientCoalition})
 MClientInclude=MClientInclude and MClientCoalition
 end
-if self.Filter.Categories then
+if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
@@ -14272,7 +14273,7 @@ end
 self:T({"Evaluated Category",MClientCategory})
 MClientInclude=MClientInclude and MClientCategory
 end
-if self.Filter.Types then
+if self.Filter.Types and MClientInclude then
 local MClientType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
 self:T3({"Type:",MClient:GetTypeName(),TypeName})
@@ -14283,7 +14284,7 @@ end
 self:T({"Evaluated Type",MClientType})
 MClientInclude=MClientInclude and MClientType
 end
-if self.Filter.Countries then
+if self.Filter.Countries and MClientInclude then
 local MClientCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
 local ClientCountryID=_DATABASE:GetCountryFromClientTemplate(MClientName)
@@ -14295,7 +14296,7 @@ end
 self:T({"Evaluated Country",MClientCountry})
 MClientInclude=MClientInclude and MClientCountry
 end
-if self.Filter.ClientPrefixes then
+if self.Filter.ClientPrefixes and MClientInclude then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
 self:T3({"Prefix:",string.find(MClient.UnitName,ClientPrefix,1),ClientPrefix})
@@ -14306,7 +14307,7 @@ end
 self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
-if self.Filter.Zones then
+if self.Filter.Zones and MClientInclude then
 local MClientZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
 self:T3("Zone:",ZoneName)
@@ -14317,7 +14318,7 @@ end
 end
 MClientInclude=MClientInclude and MClientZone
 end
-if self.Filter.Playernames then
+if self.Filter.Playernames and MClientInclude then
 local MClientPlayername=false
 local playername=MClient:GetPlayerName()or"Unknown"
 for _,_Playername in pairs(self.Filter.Playernames)do
@@ -14328,7 +14329,7 @@ end
 self:T({"Evaluated Playername",MClientPlayername})
 MClientInclude=MClientInclude and MClientPlayername
 end
-if self.Filter.Callsigns then
+if self.Filter.Callsigns and MClientInclude then
 local MClientCallsigns=false
 local callsign=MClient:GetCallsign()
 for _,_Callsign in pairs(self.Filter.Callsigns)do
@@ -14339,7 +14340,7 @@ end
 self:T({"Evaluated Callsign",MClientCallsigns})
 MClientInclude=MClientInclude and MClientCallsigns
 end
-if self.Filter.Functions then
+if self.Filter.Functions and MClientInclude then
 local MClientFunc=self:_EvalFilterFunctions(MClient)
 MClientInclude=MClientInclude and MClientFunc
 end
@@ -14751,7 +14752,7 @@ end
 self:T({"Evaluated Coalition",MAirbaseCoalition})
 MAirbaseInclude=MAirbaseInclude and MAirbaseCoalition
 end
-if self.Filter.Categories then
+if self.Filter.Categories and MAirbaseInclude then
 local MAirbaseCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local AirbaseCategoryID=_DATABASE:GetCategoryFromAirbase(MAirbaseName)
@@ -15834,7 +15835,7 @@ MGroupActive=true
 end
 MGroupInclude=MGroupInclude and MGroupActive
 end
-if self.Filter.Coalitions then
+if self.Filter.Coalitions and MGroupInclude then
 local MGroupCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==MGroup:GetCoalition()then
@@ -15843,7 +15844,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupCoalition
 end
-if self.Filter.Categories then
+if self.Filter.Categories and MGroupInclude then
 local MGroupCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==MGroup:GetCategory()then
@@ -15852,7 +15853,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupCategory
 end
-if self.Filter.Countries then
+if self.Filter.Countries and MGroupInclude then
 local MGroupCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
 if country.id[CountryName]==MGroup:GetCountry()then
@@ -15861,7 +15862,7 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupCountry
 end
-if self.Filter.GroupPrefixes then
+if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
 if string.find(MGroup:GetName(),GroupPrefix:gsub("-","%%-"),1)then
