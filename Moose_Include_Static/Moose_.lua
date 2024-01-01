@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-01T00:39:11+01:00-acf37f6133f9b1cce92f67d352aa872422180f55 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-01T13:11:44+01:00-e0a108e00db41dcb1ab230a839747dabaa015a20 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -55262,6 +55262,346 @@ self:F(text)
 self:Scan(self.ObjectCategories,self.UnitCategories)
 return self
 end
+end
+TIRESIAS={
+ClassName="TIRESIAS",
+debug=false,
+version="0.0.4",
+Interval=20,
+GroundSet=nil,
+VehicleSet=nil,
+AAASet=nil,
+SAMSet=nil,
+ExceptionSet=nil,
+AAARange=60,
+HeloSwitchRange=10,
+PlaneSwitchRange=25,
+SwitchAAA=true,
+}
+function TIRESIAS:New()
+local self=BASE:Inherit(self,FSM:New())
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Status","*")
+self:AddTransition("*","Stop","Stopped")
+self.ExceptionSet=SET_GROUP:New():Clear(false)
+self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self.lid=string.format("TIRESIAS %s | ",self.version)
+self:I(self.lid.."Managing ground groups!")
+self:__Start(1)
+return self
+end
+function TIRESIAS:SetActivationRanges(HeloMiles,PlaneMiles)
+self.HeloSwitchRange=HeloMiles or 10
+self.PlaneSwitchRange=PlaneMiles or 25
+return self
+end
+function TIRESIAS:SetAAARanges(FiringRange,SwitchAAA)
+self.AAARange=FiringRange or 60
+self.SwitchAAA=(SwitchAAA==false)and false or true
+return self
+end
+function TIRESIAS:AddExceptionSet(Set)
+self:T(self.lid.."AddExceptionSet")
+local exceptions=self.ExceptionSet
+Set:ForEachGroupAlive(
+function(grp)
+if not grp.Tiresias then
+grp.Tiresias={
+type="Exception",
+exception=true,
+}
+exceptions:AddGroup(grp,true)
+end
+BASE:I("TIRESIAS: Added exception group: "..grp:GetName())
+end
+)
+return self
+end
+function TIRESIAS._FilterNotAAA(Group)
+local grp=Group
+local isaaa=grp:IsAAA()
+if isaaa==true and grp:IsGround()and not grp:IsShip()then
+return false
+else
+return true
+end
+end
+function TIRESIAS._FilterNotSAM(Group)
+local grp=Group
+local issam=grp:IsSAM()
+if issam==true and grp:IsGround()and not grp:IsShip()then
+return false
+else
+return true
+end
+end
+function TIRESIAS._FilterAAA(Group)
+local grp=Group
+local isaaa=grp:IsAAA()
+if isaaa==true and grp:IsGround()and not grp:IsShip()then
+return true
+else
+return false
+end
+end
+function TIRESIAS._FilterSAM(Group)
+local grp=Group
+local issam=grp:IsSAM()
+if issam==true and grp:IsGround()and not grp:IsShip()then
+return true
+else
+return false
+end
+end
+function TIRESIAS:_InitGroups()
+self:T(self.lid.."_InitGroups")
+local EngageRange=self.AAARange
+local SwitchAAA=self.SwitchAAA
+self.AAASet:ForEachGroupAlive(
+function(grp)
+if not grp.Tiresias then
+grp:OptionEngageRange(EngageRange)
+grp:SetCommandInvisible(true)
+if SwitchAAA then
+grp:SetAIOff()
+grp:EnableEmission(false)
+end
+grp.Tiresias={
+type="AAA",
+invisible=true,
+range=EngageRange,
+exception=false,
+AIOff=SwitchAAA,
+}
+end
+if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+grp:SetCommandInvisible(true)
+grp.Tiresias.invisible=true
+if SwitchAAA then
+grp:SetAIOff()
+grp:EnableEmission(false)
+grp.Tiresias.AIOff=true
+end
+end
+end
+end
+)
+self.VehicleSet:ForEachGroupAlive(
+function(grp)
+if not grp.Tiresias then
+grp:SetAIOff()
+grp:SetCommandInvisible(true)
+grp.Tiresias={
+type="Vehicle",
+invisible=true,
+AIOff=true,
+exception=false,
+}
+end
+if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+grp:SetCommandInvisible(true)
+grp:SetAIOff()
+grp.Tiresias.invisible=true
+end
+end
+end
+)
+self.SAMSet:ForEachGroupAlive(
+function(grp)
+if not grp.Tiresias then
+grp:SetCommandInvisible(true)
+grp.Tiresias={
+type="SAM",
+invisible=true,
+exception=false,
+}
+end
+if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+grp:SetCommandInvisible(true)
+grp.Tiresias.invisible=true
+end
+end
+end
+)
+return self
+end
+function TIRESIAS:_EventHandler(EventData)
+self:T(string.format("%s Event = %d",self.lid,EventData.id))
+local event=EventData
+if event.id==EVENTS.PlayerEnterAircraft or event.id==EVENTS.PlayerEnterUnit then
+local unitname=event.IniUnitName or"none"
+local _unit=event.IniUnit
+local _group=event.IniGroup
+if _group and _group:IsAlive()then
+local radius=self.PlaneSwitchRange
+if _group:IsHelicopter()then
+radius=self.HeloSwitchRange
+end
+self:_SwitchOnGroups(_group,radius)
+end
+end
+return self
+end
+function TIRESIAS:_SwitchOnGroups(group,radius)
+self:T(self.lid.."_SwitchOnGroups "..group:GetName().." Radius "..radius.." NM")
+local zone=ZONE_GROUP:New("Zone-"..group:GetName(),group,UTILS.NMToMeters(radius))
+local ground=SET_GROUP:New():FilterCategoryGround():FilterZones({zone}):FilterOnce()
+local count=ground:CountAlive()
+if self.debug then
+local text=string.format("There are %d groups around this plane or helo!",count)
+self:I(text)
+end
+local SwitchAAA=self.SwitchAAA
+if ground:CountAlive()>0 then
+ground:ForEachGroupAlive(
+function(grp)
+if grp.Tiresias and grp.Tiresias.type and(not grp.Tiresias.exception==true)then
+if grp.Tiresias.invisible==true then
+grp:SetCommandInvisible(false)
+grp.Tiresias.invisible=false
+end
+if grp.Tiresias.type=="Vehicle"and grp.Tiresias.AIOff and grp.Tiresias.AIOff==true then
+grp:SetAIOn()
+grp.Tiresias.AIOff=false
+end
+if SwitchAAA and grp.Tiresias.type=="AAA"and grp.Tiresias.AIOff and grp.Tiresias.AIOff==true then
+grp:SetAIOn()
+grp:EnableEmission(true)
+grp.Tiresias.AIOff=false
+end
+else
+BASE:E("TIRESIAS - This group has not been initialized or is an exception!")
+end
+end
+)
+end
+return self
+end
+function TIRESIAS:onafterStart(From,Event,To)
+self:T({From,Event,To})
+local VehicleSet=SET_GROUP:New():FilterCategoryGround():FilterFunction(TIRESIAS._FilterNotAAA):FilterFunction(TIRESIAS._FilterNotSAM):FilterStart()
+local AAASet=SET_GROUP:New():FilterCategoryGround():FilterFunction(TIRESIAS._FilterAAA):FilterStart()
+local SAMSet=SET_GROUP:New():FilterCategoryGround():FilterFunction(TIRESIAS._FilterSAM):FilterStart()
+local OpsGroupSet=SET_OPSGROUP:New():FilterActive(true):FilterStart()
+self.FlightSet=SET_GROUP:New():FilterCategories({"plane","helicopter"}):FilterStart()
+local EngageRange=self.AAARange
+local ExceptionSet=self.ExceptionSet
+if self.ExceptionSet then
+function ExceptionSet:OnAfterAdded(From,Event,To,ObjectName,Object)
+BASE:I("TIRESIAS: EXCEPTION Object Added: "..Object:GetName())
+if Object and Object:IsAlive()then
+Object.Tiresias={
+type="Exception",
+exception=true,
+}
+Object:SetAIOn()
+Object:SetCommandInvisible(false)
+Object:EnableEmission(true)
+end
+end
+local OGS=OpsGroupSet:GetAliveSet()
+for _,_OG in pairs(OGS or{})do
+local OG=_OG
+local grp=OG:GetGroup()
+ExceptionSet:AddGroup(grp,true)
+end
+function OpsGroupSet:OnAfterAdded(From,Event,To,ObjectName,Object)
+local grp=Object:GetGroup()
+ExceptionSet:AddGroup(grp,true)
+end
+end
+function VehicleSet:OnAfterAdded(From,Event,To,ObjectName,Object)
+BASE:I("TIRESIAS: VEHCILE Object Added: "..Object:GetName())
+if Object and Object:IsAlive()then
+Object:SetAIOff()
+Object:SetCommandInvisible(true)
+Object.Tiresias={
+type="Vehicle",
+invisible=true,
+AIOff=true,
+exception=false,
+}
+end
+end
+local SwitchAAA=self.SwitchAAA
+function AAASet:OnAfterAdded(From,Event,To,ObjectName,Object)
+if Object and Object:IsAlive()then
+BASE:I("TIRESIAS: AAA Object Added: "..Object:GetName())
+Object:OptionEngageRange(EngageRange)
+Object:SetCommandInvisible(true)
+if SwitchAAA then
+Object:SetAIOff()
+Object:EnableEmission(false)
+end
+Object.Tiresias={
+type="AAA",
+invisible=true,
+range=EngageRange,
+exception=false,
+AIOff=SwitchAAA,
+}
+end
+end
+function SAMSet:OnAfterAdded(From,Event,To,ObjectName,Object)
+if Object and Object:IsAlive()then
+BASE:I("TIRESIAS: SAM Object Added: "..Object:GetName())
+Object:SetCommandInvisible(true)
+Object.Tiresias={
+type="SAM",
+invisible=true,
+exception=false,
+}
+end
+end
+self.VehicleSet=VehicleSet
+self.AAASet=AAASet
+self.SAMSet=SAMSet
+self.OpsGroupSet=OpsGroupSet
+self:_InitGroups()
+self:__Status(1)
+return self
+end
+function TIRESIAS:onbeforeStatus(From,Event,To)
+self:T({From,Event,To})
+if self:GetState()=="Stopped"then
+return false
+end
+return self
+end
+function TIRESIAS:onafterStatus(From,Event,To)
+self:T({From,Event,To})
+if self.debug then
+local count=self.VehicleSet:CountAlive()
+local AAAcount=self.AAASet:CountAlive()
+local SAMcount=self.SAMSet:CountAlive()
+local text=string.format("Overall: %d | Vehicles: %d | AAA: %d | SAM: %d",count+AAAcount+SAMcount,count,AAAcount,SAMcount)
+self:I(text)
+end
+self:_InitGroups()
+if self.FlightSet:CountAlive()>0 then
+local Set=self.FlightSet:GetAliveSet()
+for _,_plane in pairs(Set)do
+local plane=_plane
+local radius=self.PlaneSwitchRange
+if plane:IsHelicopter()then
+radius=self.HeloSwitchRange
+end
+self:_SwitchOnGroups(_plane,radius)
+end
+end
+if self:GetState()~="Stopped"then
+self:__Status(self.Interval)
+end
+return self
+end
+function TIRESIAS:onafterStop(From,Event,To)
+self:T({From,Event,To})
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+return self
 end
 AIRBOSS={
 ClassName="AIRBOSS",
