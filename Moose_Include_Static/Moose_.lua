@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-02T13:33:40+01:00-b20eb84d1911e01ac54b4f5e45ed2a8ea4a1db25 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-02T17:06:41+01:00-d8b046491b725cdfb28c2eff6d64bc18ed8abac0 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -117039,11 +117039,9 @@ self:SetBackend(MSRS.Backend.SRSEXE)
 return self
 end
 function MSRS.SetDefaultBackend(Backend)
-self:F({Backend=Backend})
 MSRS.backend=Backend or MSRS.Backend.SRSEXE
 end
 function MSRS.SetDefaultBackendGRPC()
-self:F()
 MSRS.backend=MSRS.Backend.GRPC
 end
 function MSRS:GetBackend()
