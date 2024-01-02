@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-02T17:06:41+01:00-d8b046491b725cdfb28c2eff6d64bc18ed8abac0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-02T18:13:14+01:00-2d17c4d21a4aaca98129f1b9a5bd8b8aa43b5ade ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
@@ -11286,6 +11286,11 @@ return""
 end
 function COORDINATE:GetLLDDM()
 return coord.LOtoLL(self:GetVec3())
+end
+function COORDINATE:ToStringLL(Settings)
+local LL_Accuracy=Settings and Settings.LL_Accuracy or _SETTINGS.LL_Accuracy
+local lat,lon=coord.LOtoLL(self:GetVec3())
+return string.format('%f',lat)..' '..string.format('%f',lon)
 end
 function COORDINATE:ToStringLLDMS(Settings)
 local LL_Accuracy=Settings and Settings.LL_Accuracy or _SETTINGS.LL_Accuracy
