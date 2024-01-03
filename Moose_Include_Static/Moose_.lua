@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T07:19:18+01:00-4c81333a0a3716cb9058f56b3bf1ec7388ccc3ba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T18:05:29+01:00-db6dc7b77e0abfa6ba1a2cd7899e1709bb6dbf5f ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -11605,6 +11605,17 @@ local RandomItem=self.Set[self.Index[math.random(1,tablemax)]]
 self:T3({RandomItem})
 return RandomItem
 end
+function SET_BASE:GetRandomSurely()
+local tablemax=0
+local sorted={}
+for _,_obj in pairs(self.Set)do
+tablemax=tablemax+1
+sorted[tablemax]=_obj
+end
+local RandomItem=sorted[math.random(1,tablemax)]
+self:T3({RandomItem})
+return RandomItem
+end
 function SET_BASE:Count()
 return self.Index and table.maxn(self.Index)or 0
 end
@@ -15498,7 +15509,11 @@ self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_SCENERY:GetCoordinate()
-local Coordinate=self:GetRandom():GetCoordinate()
+local Coordinate=COORDINATE:New({0,0,0})
+local Item=self:GetRandomSurely()
+if Item then
+Coordinate:GetCoordinate()
+end
 local x1=Coordinate.x
 local x2=Coordinate.x
 local y1=Coordinate.y
