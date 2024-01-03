@@ -1,4 +1,29 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T09:04:43+01:00-4e50bd213c0656b251907cd8b5f4c8fb359f5da1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T11:59:27+01:00-aaf355359745118e2615d3251c7d0663bea70687 ***')
+ModuleLoader='Scripts/Moose/Modules.lua'
+local f=io.open(ModuleLoader,"r")
+if f~=nil then
+io.close(f)
+env.info('*** MOOSE DYNAMIC INCLUDE START *** ')
+local base=_G
+__Moose={}
+__Moose.Include=function(IncludeFile)
+if not __Moose.Includes[IncludeFile]then
+__Moose.Includes[IncludeFile]=IncludeFile
+local f=assert(base.loadfile(IncludeFile))
+if f==nil then
+error("Moose: Could not load Moose file "..IncludeFile)
+else
+env.info("Moose: "..IncludeFile.." dynamically loaded.")
+return f()
+end
+end
+end
+__Moose.Includes={}
+__Moose.Include('Scripts/Moose/Modules.lua')
+BASE:TraceOnOff(true)
+env.info('*** MOOSE INCLUDE END *** ')
+do return end
+end
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 env.setErrorMessageBoxEnabled(false)
