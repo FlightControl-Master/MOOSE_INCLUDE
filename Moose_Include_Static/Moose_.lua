@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T18:05:29+01:00-db6dc7b77e0abfa6ba1a2cd7899e1709bb6dbf5f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T22:32:37+01:00-9b95e71d75d17a3d3d5c8a9be326e877a1342b7e ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -59839,6 +59839,10 @@ self:E(self.lid..string.format("ERROR: Unknown radio alias %s!",tostring(radio.a
 end
 if pilotcall then
 Sender="PilotCall"
+end
+if Sender==""then
+self:E(self.lid..string.format("ERROR: Sender unknown!"))
+return
 end
 local numbers=_split(number)
 local wait=0
