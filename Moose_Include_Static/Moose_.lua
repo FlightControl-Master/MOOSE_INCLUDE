@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T14:00:43+01:00-65fb22b6cc1c8d121d7a820f66ac2ed0b5b8f9d3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T18:49:50+01:00-2a9e98c21efde763e1a74d1aded89a3b03903ab9 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -55780,6 +55780,7 @@ port=false,
 zone=abzone,
 coord=coord,
 type=abtype,
+opszone=opszone,
 }
 airbasetable[abname]=tbl
 nonconnectedab[abname]=true
@@ -56227,7 +56228,7 @@ end
 end
 return neighbors
 end
-function STRATEGO:FindRoute(Start,End,Hops,Draw)
+function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType)
 self:I({Start,End,Hops})
 local Route={}
 local hops=Hops or 4
@@ -56263,7 +56264,9 @@ local p1=Route[i]
 local p2=Route[i+1]
 local c1=self.airbasetable[p1].coord
 local c2=self.airbasetable[p2].coord
-c1:LineToAll(c2,-1,{0,0,0},1,6)
+local line=LineType or 6
+local color=Color or{0,0,0}
+c1:LineToAll(c2,-1,color,1,line)
 end
 end
 Route[#Route+1]=Start
@@ -56290,7 +56293,7 @@ end
 end
 end
 end
-if self.debug or Draw then DrawRoute(Route)end
+if(self.debug or Draw)then DrawRoute(Route)end
 return Route,routecomplete
 end
 function STRATEGO:AddBudget(Number)
@@ -91028,7 +91031,7 @@ if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
 MaxWeight=cohort.cargobayLimit
 end
 end
-self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
+self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight or 0))
 end
 local legions={self}
 local cohorts=self.cohorts
