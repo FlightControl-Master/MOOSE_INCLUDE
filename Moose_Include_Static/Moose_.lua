@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T12:44:43+01:00-96da09b9e05c97c27c575e80acc3479aa475a957 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T13:59:41+01:00-d0346c4aa3891c6d351a5c3cc269d5fd20b50cea ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -117979,7 +117979,7 @@ end
 return option
 end
 function MSRS._CreateProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
-self:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
+BASE:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
 local option={}
 option.provider=Provider
 option.credentials=CredentialsFile
