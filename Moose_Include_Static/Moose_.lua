@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-03T22:32:50+01:00-f80e7a2166e9933ca530bfb15b57cccb8bd80581 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T11:27:54+01:00-c1d468b35f2f9e2264633e358b186b87a82aa0fa ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -55653,7 +55653,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.1.0",
+version="0.2.1",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -55789,8 +55789,8 @@ end
 )
 return self
 end
-function STRATEGO:UpdateKnotCoalitions()
-self:T(self.lid.."UpdateKnotCoalitions")
+function STRATEGO:UpdateNodeCoalitions()
+self:T(self.lid.."UpdateNodeCoalitions")
 local newtable={}
 for _id,_data in pairs(self.airbasetable)do
 local data=_data
@@ -55962,7 +55962,7 @@ end
 end
 return self
 end
-function STRATEGO:GetHighestWeightKnots()
+function STRATEGO:GetHighestWeightNodes()
 self:T(self.lid.."GetHighestWeightBases")
 local weight=0
 local airbases={}
@@ -55975,7 +55975,7 @@ end
 end
 return airbases[weight],weight
 end
-function STRATEGO:GetNextHighestWeightKnots(Weight)
+function STRATEGO:GetNextHighestWeightNodes(Weight)
 self:T(self.lid.."GetNextHighestWeightBases")
 local weight=0
 local airbases={}
@@ -55988,49 +55988,49 @@ end
 end
 return airbases[weight],weight
 end
-function STRATEGO:GetKnotWeight(Name)
+function STRATEGO:GetNodeWeight(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].weight or 0
 else
 return 0
 end
 end
-function STRATEGO:GetKnotBaseWeight(Name)
+function STRATEGO:GetNodeBaseWeight(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].baseweight or 0
 else
 return 0
 end
 end
-function STRATEGO:GetKnotCoalition(Name)
+function STRATEGO:GetNodeCoalition(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].coalition or coalition.side.NEUTRAL
 else
 return coalition.side.NEUTRAL
 end
 end
-function STRATEGO:GetKnotType(Name)
+function STRATEGO:GetNodeType(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type
 else
 return nil
 end
 end
-function STRATEGO:GetKnotZone(Name)
+function STRATEGO:GetNodeZone(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].zone
 else
 return nil
 end
 end
-function STRATEGO:GetKnotOpsZone(Name)
+function STRATEGO:GetNodeOpsZone(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].opszone
 else
 return nil
 end
 end
-function STRATEGO:GetKnotCoordinate(Name)
+function STRATEGO:GetNodeCoordinate(Name)
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].coord
 else
@@ -56202,7 +56202,7 @@ end
 end
 return targets
 end
-function STRATEGO:FindNeighborKnots(Name,Enemies,Friends)
+function STRATEGO:FindNeighborNodes(Name,Enemies,Friends)
 local neighbors={}
 local name=string.gsub(Name,"[%p%s]",".")
 for _route,_data in pairs(self.disttable)do
@@ -56242,10 +56242,10 @@ return nil
 end
 local function NextClosest(Start,End)
 local ecoord=self.airbasetable[End].coord
-local knots=self:FindNeighborKnots(Start)
+local nodes=self:FindNeighborNodes(Start)
 local closest=nil
 local closedist=1000*1000
-for _name,_dist in pairs(knots)do
+for _name,_dist in pairs(nodes)do
 local kcoord=self.airbasetable[_name].coord
 local dist=math.floor((kcoord:Get2DDistance(ecoord)/1000)+0.5)
 if dist<closedist then
@@ -56267,8 +56267,8 @@ c1:LineToAll(c2,-1,{0,0,0},1,6)
 end
 end
 Route[#Route+1]=Start
-local knots=self:FindNeighborKnots(Start)
-local endpoint=Checker(knots)
+local nodes=self:FindNeighborNodes(Start)
+local endpoint=Checker(nodes)
 if endpoint then
 Route[#Route+1]=endpoint
 routecomplete=true
@@ -56278,8 +56278,8 @@ for i=1,hops do
 local Next=NextClosest(spoint,End)
 if Next then
 Route[#Route+1]=Next
-local knots=self:FindNeighborKnots(Next)
-local endpoint=Checker(knots)
+local nodes=self:FindNeighborNodes(Next)
+local endpoint=Checker(nodes)
 if endpoint then
 Route[#Route+1]=endpoint
 routecomplete=true
