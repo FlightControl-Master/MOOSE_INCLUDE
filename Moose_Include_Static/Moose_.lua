@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T15:51:09+01:00-ca9913e38b49e59f0905f69fa71572f31677d19a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T16:08:46+01:00-84230e2360d2d89f2ad3560e38caef9427948d8c ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -41054,15 +41054,17 @@ end
 function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey)
 if PathToSRS or MSRS.path then
 self.useSRS=true
-self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM,Volume or 1.0)
+self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM)
 self.controlmsrs:SetPort(Port or MSRS.port)
 self.controlmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.controlmsrs:SetLabel("RANGEC")
+self.controlmsrs:SetVolume(Volume or 1.0)
 self.controlsrsQ=MSRSQUEUE:New("CONTROL")
-self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM,Volume or 1.0)
+self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM)
 self.instructmsrs:SetPort(Port or MSRS.port)
 self.instructmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.instructmsrs:SetLabel("RANGEI")
+self.instructmsrs:SetVolume(Volume or 1.0)
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
 if PathToGoogleKey then
 self.controlmsrs:SetGoogle(PathToGoogleKey)
