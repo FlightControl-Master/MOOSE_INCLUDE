@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T12:13:04+01:00-65315251b5f3db591a8e8c6a41b345111b7e98c2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T15:51:35+01:00-f2783c46c2af1d86bae408ce16179d39f09dfbe0 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -9842,7 +9842,7 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
-_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM,Volume)
+_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM)
 _MESSAGESRS.frequency=Frequency
 _MESSAGESRS.modulation=Modulation or radio.modulation.AM
 _MESSAGESRS.MSRS:SetCoalition(Coalition or coalition.side.NEUTRAL)
@@ -9853,7 +9853,7 @@ _MESSAGESRS.MSRS:SetCulture(Culture)
 _MESSAGESRS.Culture=Culture or"en-GB"
 _MESSAGESRS.MSRS:SetGender(Gender)
 _MESSAGESRS.Gender=Gender or"female"
-_MESSAGESRS.MSRS:SetGoogle(PathToCredentials)
+_MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
 _MESSAGESRS.label=Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetPort(Port or 5002)
@@ -9874,7 +9874,7 @@ if coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(coordinate)
 end
 local category=string.gsub(self.MessageCategory,":","")
-_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency or _MESSAGESRS.frequency,modulation or _MESSAGESRS.modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,nil,volume or _MESSAGESRS.volume,category,coordinate or _MESSAGESRS.coordinate)
+_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,0.5,1,nil,nil,nil,frequency or _MESSAGESRS.frequency,modulation or _MESSAGESRS.modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,nil,volume or _MESSAGESRS.volume,category,coordinate or _MESSAGESRS.coordinate)
 end
 return self
 end
@@ -55653,7 +55653,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.1",
+version="0.2.2",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -55681,7 +55681,7 @@ FARP="FARP",
 SHIP="SHIP",
 }
 function STRATEGO:New(Name,Coalition,MaxDist)
-local self=BASE:Inherit(self,BASE:New())
+local self=BASE:Inherit(self,FSM:New())
 self.coalition=Coalition
 self.coalitiontext=UTILS.GetCoalitionName(Coalition)
 self.name=Name or"Hannibal"
@@ -55698,9 +55698,14 @@ self.colors={
 [3]={0,0,1},
 [4]={1,0.65,0},
 }
+self:SetStartState("Stopped")
+self:AddTransition("Stopped","Start","Running")
+self:AddTransition("*","Update","*")
+self:AddTransition("*","NodeEvent","*")
+self:AddTransition("Running","Stop","Stopped")
 return self
 end
-function STRATEGO:Start()
+function STRATEGO:onafterStart(From,Event,To)
 self:T(self.lid.."Start")
 self:AnalyseBases()
 self:AnalysePOIs(self.ports,self.portweight,"PORT")
@@ -55710,6 +55715,15 @@ self:AnalyseRoutes(i,i*self.routefactor,self.colors[(i%3)+1],i)
 end
 self:AnalyseUnconnected(self.colors[4])
 self:I(self.lid.."Advisory ready.")
+self:__Update(180)
+return self
+end
+function STRATEGO:onafterUpdate(From,Event,To)
+self:T(self.lid.."Update")
+self:UpdateNodeCoalitions()
+if self:GetState()=="Running"then
+self:__Update(180)
+end
 return self
 end
 function STRATEGO:SetUsingBudget(Usebudget,StartBudget)
@@ -55719,12 +55733,14 @@ self.Budget=StartBudget
 return self
 end
 function STRATEGO:SetDebug(Debug,DrawZones,MarkZones)
+self:T(self.lid.."SetDebug")
 self.debug=Debug
 self.drawzone=DrawZones
 self.markzone=MarkZones
 return self
 end
 function STRATEGO:SetWeights(MaxRunways,PortWeight,POIWeight,RouteFactor)
+self:T(self.lid.."SetWeights")
 self.portweight=PortWeight or 3
 self.POIweight=POIWeight or 1
 self.maxrunways=MaxRunways or 3
@@ -55732,10 +55748,12 @@ self.routefactor=RouteFactor or 5
 return self
 end
 function STRATEGO:SetNeutralBenefit(NeutralBenefit)
+self:T(self.lid.."SetNeutralBenefit")
 self.NeutralBenefit=NeutralBenefit or 100
 return self
 end
 function STRATEGO:SetCaptureOptions(CaptureUnits,CaptureThreatlevel)
+self:T(self.lid.."SetCaptureOptions")
 self.CaptureUnits=CaptureUnits or 3
 self.CaptureThreatlevel=CaptureThreatlevel or 1
 return self
@@ -55814,6 +55832,12 @@ opszone:SetCaptureThreatlevel(self.CaptureThreatlevel)
 opszone:SetDrawZone(self.drawzone)
 opszone:SetMarkZone(self.markzone)
 opszone:Start()
+local function Captured(opszone,coalition)
+self:__NodeEvent(1,opszone,coalition)
+end
+function opszone:OnBeforeCaptured(From,Event,To,Coalition)
+Captured(opszone,Coalition)
+end
 return opszone
 end
 function STRATEGO:AnalysePOIs(Set,Weight,Key)
@@ -55861,6 +55885,7 @@ local tofrom=pend..";"..pstart
 return fromto,tofrom
 end
 function STRATEGO:AddRoutesManually(Startpoint,Endpoint,Color,Linetype,Draw)
+self:T(self.lid.."AddRoutesManually")
 local fromto,tofrom=self:GetToFrom(Startpoint,Endpoint)
 local startcoordinate=self.airbasetable[Startpoint].coord
 local targetcoordinate=self.airbasetable[Endpoint].coord
@@ -55964,7 +55989,7 @@ end
 return self
 end
 function STRATEGO:GetHighestWeightNodes()
-self:T(self.lid.."GetHighestWeightBases")
+self:T(self.lid.."GetHighestWeightNodes")
 local weight=0
 local airbases={}
 for _name,_data in pairs(self.airbasetable)do
@@ -55977,7 +56002,7 @@ end
 return airbases[weight],weight
 end
 function STRATEGO:GetNextHighestWeightNodes(Weight)
-self:T(self.lid.."GetNextHighestWeightBases")
+self:T(self.lid.."GetNextHighestWeightNodes")
 local weight=0
 local airbases={}
 for _name,_data in pairs(self.airbasetable)do
@@ -55990,6 +56015,7 @@ end
 return airbases[weight],weight
 end
 function STRATEGO:GetNodeWeight(Name)
+self:T(self.lid.."GetNodeWeight")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].weight or 0
 else
@@ -55997,6 +56023,7 @@ return 0
 end
 end
 function STRATEGO:GetNodeBaseWeight(Name)
+self:T(self.lid.."GetNodeBaseWeight")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].baseweight or 0
 else
@@ -56004,6 +56031,7 @@ return 0
 end
 end
 function STRATEGO:GetNodeCoalition(Name)
+self:T(self.lid.."GetNodeCoalition")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].coalition or coalition.side.NEUTRAL
 else
@@ -56011,6 +56039,7 @@ return coalition.side.NEUTRAL
 end
 end
 function STRATEGO:GetNodeType(Name)
+self:T(self.lid.."GetNodeType")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type
 else
@@ -56018,6 +56047,7 @@ return nil
 end
 end
 function STRATEGO:GetNodeZone(Name)
+self:T(self.lid.."GetNodeZone")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].zone
 else
@@ -56025,6 +56055,7 @@ return nil
 end
 end
 function STRATEGO:GetNodeOpsZone(Name)
+self:T(self.lid.."GetNodeOpsZone")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].opszone
 else
@@ -56032,6 +56063,7 @@ return nil
 end
 end
 function STRATEGO:GetNodeCoordinate(Name)
+self:T(self.lid.."GetNodeCoordinate")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].coord
 else
@@ -56039,6 +56071,7 @@ return nil
 end
 end
 function STRATEGO:IsAirbase(Name)
+self:T(self.lid.."IsAirbase")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type==STRATEGO.Type.AIRBASE
 else
@@ -56046,6 +56079,7 @@ return false
 end
 end
 function STRATEGO:IsPort(Name)
+self:T(self.lid.."IsPort")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type==STRATEGO.Type.PORT
 else
@@ -56053,6 +56087,7 @@ return false
 end
 end
 function STRATEGO:IsPOI(Name)
+self:T(self.lid.."IsPOI")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type==STRATEGO.Type.POI
 else
@@ -56060,6 +56095,7 @@ return false
 end
 end
 function STRATEGO:IsFARP(Name)
+self:T(self.lid.."IsFARP")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type==STRATEGO.Type.FARP
 else
@@ -56067,6 +56103,7 @@ return false
 end
 end
 function STRATEGO:IsShip(Name)
+self:T(self.lid.."IsShip")
 if Name and self.airbasetable[Name]then
 return self.airbasetable[Name].type==STRATEGO.Type.SHIP
 else
@@ -56124,6 +56161,7 @@ end
 return shortest,target,weight,coa
 end
 function STRATEGO:FindStrategicTargets()
+self:T(self.lid.."FindStrategicTargets")
 local targets={}
 for _,_data in pairs(self.airbasetable)do
 local data=_data
@@ -56163,6 +56201,7 @@ end
 return targets
 end
 function STRATEGO:FindConsolidationTargets()
+self:T(self.lid.."FindConsolidationTargets")
 local targets={}
 for _,_data in pairs(self.airbasetable)do
 local data=_data
@@ -56204,6 +56243,7 @@ end
 return targets
 end
 function STRATEGO:FindNeighborNodes(Name,Enemies,Friends)
+self:T(self.lid.."FindNeighborNodes")
 local neighbors={}
 local name=string.gsub(Name,"[%p%s]",".")
 for _route,_data in pairs(self.disttable)do
@@ -56229,7 +56269,7 @@ end
 return neighbors
 end
 function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType)
-self:I({Start,End,Hops})
+self:T(self.lid.."FindRoute")
 local Route={}
 local hops=Hops or 4
 local routecomplete=false
@@ -56297,17 +56337,21 @@ if(self.debug or Draw)then DrawRoute(Route)end
 return Route,routecomplete
 end
 function STRATEGO:AddBudget(Number)
+self:T(self.lid.."AddBudget")
 self.Budget=self.Budget+Number
 return self
 end
 function STRATEGO:SubtractBudget(Number)
+self:T(self.lid.."SubtractBudget")
 self.Budget=self.Budget-Number
 return self
 end
 function STRATEGO:GetBudget()
+self:T(self.lid.."GetBudget")
 return self.Budget
 end
 function STRATEGO:FindAffordableStrategicTarget()
+self:T(self.lid.."FindAffordableStrategicTarget")
 local targets=self:FindStrategicTargets()
 local budget=self.Budget
 local target=nil
@@ -56332,6 +56376,7 @@ return nil
 end
 end
 function STRATEGO:FindAffordableConsolidationTarget()
+self:T(self.lid.."FindAffordableConsolidationTarget")
 local targets=self:FindConsolidationTargets()
 local budget=self.Budget
 local target=nil
@@ -87926,9 +87971,16 @@ wp[#wp+1]=c2:WaypointAir("BARO",COORDINATE.WaypointType.TurningPoint,COORDINATE.
 wp[#wp+1]=p0:WaypointAir("BARO",COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,UTILS.KnotsToKmph(SpeedTo),true,nil,{TaskArrived,TaskHold,TaskKlar},"Holding Point")
 if airbase:IsAirdrome()then
 local TaskFinal=self.group:TaskFunction("FLIGHTGROUP._OnFinal",self)
-local papp=airbase:GetCoordinate():Translate(x1,runway.heading-180):SetAltitude(h1)
+local rheading
+if runway then
+rheading=runway.heading-180
+else
+local wind=airbase:GetCoordinate():GetWind()
+rheading=-wind
+end
+local papp=airbase:GetCoordinate():Translate(x1,rheading):SetAltitude(h1)
 wp[#wp+1]=papp:WaypointAirTurningPoint("BARO",UTILS.KnotsToKmph(SpeedLand),{TaskFinal},"Final Approach")
-local pland=airbase:GetCoordinate():Translate(x2,runway.heading-180):SetAltitude(h2)
+local pland=airbase:GetCoordinate():Translate(x2,rheading):SetAltitude(h2)
 wp[#wp+1]=pland:WaypointAirLanding(UTILS.KnotsToKmph(SpeedLand),airbase,{},"Landing")
 elseif airbase:IsShip()or airbase:IsHelipad()then
 local pland=airbase:GetCoordinate()
@@ -117786,7 +117838,19 @@ return self
 end
 function MSRS:SetBackend(Backend)
 self:F({Backend=Backend})
-self.backend=Backend or MSRS.Backend.SRSEXE
+Backend=Backend or MSRS.Backend.SRSEXE
+local function Checker(back)
+local ok=false
+for _,_backend in pairs(MSRS.Backend)do
+if tostring(back)==_backend then ok=true end
+end
+return ok
+end
+if Checker(Backend)then
+self.backend=Backend
+else
+MESSAGE:New("ERROR: Backend "..tostring(Backend).." is not supported!",30,"MSRS",true):ToLog():ToAll()
+end
 return self
 end
 function MSRS:SetBackendGRPC()
@@ -118097,7 +118161,7 @@ end
 return self
 end
 function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
-self:F({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
+self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 else
@@ -118357,7 +118421,7 @@ self.lid=string.format("MSRSQUEUE %s | ",self.alias)
 return self
 end
 function MSRSQUEUE:Clear()
-self:I(self.lid.."Clearing MSRSQUEUE")
+self:T(self.lid.."Clearing MSRSQUEUE")
 self.queue={}
 return self
 end
@@ -118403,24 +118467,25 @@ transmission.msrs=msrs
 transmission.Tplay=tstart or timer.getAbsTime()
 transmission.subtitle=subtitle
 transmission.interval=interval or 0
-transmission.frequency=frequency
-transmission.modulation=modulation
+transmission.frequency=frequency or msrs.frequencies
+transmission.modulation=modulation or msrs.modulations
 transmission.subgroups=subgroups
 if transmission.subtitle then
 transmission.subduration=subduration or transmission.duration
 else
 transmission.subduration=0
 end
-transmission.gender=gender
-transmission.culture=culture
-transmission.voice=voice
-transmission.volume=volume
-transmission.label=label
-transmission.coordinate=coordinate
+transmission.gender=gender or msrs.gender
+transmission.culture=culture or msrs.culture
+transmission.voice=voice or msrs.voice
+transmission.volume=volume or msrs.volume
+transmission.label=label or msrs.Label
+transmission.coordinate=coordinate or msrs.coordinate
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
+self:T(self.lid.."Broadcast")
 if transmission.frequency then
 transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate)
 else
