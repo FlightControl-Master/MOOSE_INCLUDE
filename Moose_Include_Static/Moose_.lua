@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T18:49:50+01:00-2a9e98c21efde763e1a74d1aded89a3b03903ab9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T12:13:04+01:00-65315251b5f3db591a8e8c6a41b345111b7e98c2 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -71165,7 +71165,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.59",
+version="0.2.60",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -71655,15 +71655,16 @@ local freq=self.TacticalBaseFreq+((i-1)*self.TacticalIncrFreq)
 self.TacticalFrequencies[freq]=freq
 end
 if self.AwacsSRS then
-self.TacticalSRS=MSRS:New(self.PathToSRS,self.TacticalBaseFreq,self.TacticalModulation,self.Volume)
+self.TacticalSRS=MSRS:New(self.PathToSRS,self.TacticalBaseFreq,self.TacticalModulation)
 self.TacticalSRS:SetCoalition(self.coalition)
 self.TacticalSRS:SetGender(self.Gender)
 self.TacticalSRS:SetCulture(self.Culture)
 self.TacticalSRS:SetVoice(self.Voice)
 self.TacticalSRS:SetPort(self.Port)
 self.TacticalSRS:SetLabel("AWACS")
+self.TacticalSRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
-self.TacticalSRS:SetGoogle(self.PathToGoogleKey)
+self.TacticalSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 end
 self.TacticalSRSQ=MSRSQUEUE:New("Tactical AWACS")
 end
@@ -72074,7 +72075,7 @@ self.DetectionSet:AddSet(Group)
 end
 return self
 end
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or"male"
@@ -72082,16 +72083,18 @@ self.Culture=Culture or"en-US"
 self.Port=Port or 5002
 self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
+self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
-self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Volume)
+self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation)
 self.AwacsSRS:SetCoalition(self.coalition)
 self.AwacsSRS:SetGender(self.Gender)
 self.AwacsSRS:SetCulture(self.Culture)
 self.AwacsSRS:SetVoice(self.Voice)
 self.AwacsSRS:SetPort(self.Port)
 self.AwacsSRS:SetLabel("AWACS")
+self.AwacsSRS:SetVolume(Volume)
 if self.PathToGoogleKey then
-self.AwacsSRS:SetGoogle(self.PathToGoogleKey)
+self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 end
 return self
 end
@@ -75367,7 +75370,7 @@ local gtext=RadioEntry.TextTTS
 if self.PathToGoogleKey then
 gtext=string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
 end
-self.TacticalSRSQ:NewTransmission(gtext,nil,self.TacticalSRS,nil,0.5,nil,nil,nil,frequency,self.TacticalModulation,nil,nil,nil,nil,nil)
+self.TacticalSRSQ:NewTransmission(gtext,nil,self.TacticalSRS,nil,0.5,nil,nil,nil,frequency,self.TacticalModulation)
 self:T(RadioEntry.TextTTS)
 if RadioEntry.ToScreen and RadioEntry.TextScreen and(not self.SuppressScreenOutput)then
 if RadioEntry.GroupID and RadioEntry.GroupID~=0 then
@@ -102153,7 +102156,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.63"
+PLAYERTASKCONTROLLER.version="0.1.64"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -103788,7 +103791,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Coordinate)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or"male"
@@ -103796,21 +103799,23 @@ self.Culture=Culture or"en-US"
 self.Port=Port or 5002
 self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
+self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
 self.UseSRS=true
 self.Frequency=Frequency or{127,251}
 self.BCFrequency=self.Frequency
 self.Modulation=Modulation or{radio.modulation.FM,radio.modulation.AM}
 self.BCModulation=self.Modulation
-self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,self.Volume)
+self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation)
 self.SRS:SetCoalition(self.Coalition)
 self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
+self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
-self.SRS:SetGoogle(self.PathToGoogleKey)
+self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 end
 if Coordinate then
 self.SRS:SetCoordinate(Coordinate)
