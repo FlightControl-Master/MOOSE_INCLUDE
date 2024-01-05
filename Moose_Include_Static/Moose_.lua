@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T15:51:35+01:00-f2783c46c2af1d86bae408ce16179d39f09dfbe0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T16:09:22+01:00-2c695e187f835ce7d034f8e72f38f6d7c4c85035 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -32476,7 +32476,7 @@ self.SRSPath=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSModulation=Modulation or radio.modulation.AM
 self.SRSPort=Port or 5002
 if OnOff then
-self.SRS=MSRS:New(Path,Frequency,Modulation,1)
+self.SRS=MSRS:New(Path,Frequency,Modulation)
 self.SRS:SetPort(self.SRSPort)
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetLabel("ACSR")
@@ -32494,7 +32494,7 @@ end
 function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender)
 self:T(self.lid.."SetPilotTTSVoice")
 self.SRSPilotVoice=true
-self.SRSPilot=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation,1)
+self.SRSPilot=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
 self.SRSPilot:SetCoalition(self.coalition)
 self.SRSPilot:SetVoice(Voice)
 self.SRSPilot:SetCulture(Culture or"en-US")
@@ -32510,7 +32510,7 @@ end
 function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender)
 self:T(self.lid.."SetOperatorTTSVoice")
 self.SRSOperatorVoice=true
-self.SRSOperator=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation,1)
+self.SRSOperator=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
 self.SRSOperator:SetCoalition(self.coalition)
 self.SRSOperator:SetVoice(Voice)
 self.SRSOperator:SetCulture(Culture or"en-GB")
@@ -36683,7 +36683,7 @@ self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
 self.Volume=Volume or 1.0
 self.Label=Label
-self.SRS=MSRS:New(self.SRSPath,self.SRSFreq,self.SRSMod,self.Volume)
+self.SRS=MSRS:New(self.SRSPath,self.SRSFreq,self.SRSMod)
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
@@ -36691,6 +36691,7 @@ self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
 self.SRS:SetCoalition(self.coalition)
+self.SRS:SetVolume(Volume)
 if self.PathToGoogleKey then
 self.SRS:SetGoogle(self.PathToGoogleKey)
 end
@@ -43412,15 +43413,17 @@ end
 function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey)
 if PathToSRS or MSRS.path then
 self.useSRS=true
-self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM,Volume or 1.0)
+self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM)
 self.controlmsrs:SetPort(Port or MSRS.port)
 self.controlmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.controlmsrs:SetLabel("RANGEC")
+self.controlmsrs:SetVolume(Volume or 1.0)
 self.controlsrsQ=MSRSQUEUE:New("CONTROL")
-self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM,Volume or 1.0)
+self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM)
 self.instructmsrs:SetPort(Port or MSRS.port)
 self.instructmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.instructmsrs:SetLabel("RANGEI")
+self.instructmsrs:SetVolume(Volume or 1.0)
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
 if PathToGoogleKey then
 self.controlmsrs:SetGoogle(PathToGoogleKey)
@@ -57124,6 +57127,7 @@ self.SRS:SetPath(PathToSRS)
 self.SRS:SetPort(Port or 5002)
 self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
+self.SRS:SetVolume(Volume)
 if GoogleCreds then
 self.SRS:SetGoogle(GoogleCreds)
 end
@@ -104964,13 +104968,14 @@ self.Frequency=Frequency or{127,251}
 self.BCFrequency=self.Frequency
 self.Modulation=Modulation or{radio.modulation.FM,radio.modulation.AM}
 self.BCModulation=self.Modulation
-self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,self.Volume)
+self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation)
 self.SRS:SetCoalition(self.Coalition)
 self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
+self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
 self.SRS:SetGoogle(self.PathToGoogleKey)
 end
