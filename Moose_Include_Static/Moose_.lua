@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-04T14:01:12+01:00-f5d6d31b105ba3a7271f22af2288ca72124b0b27 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T15:51:09+01:00-ca9913e38b49e59f0905f69fa71572f31677d19a ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -17666,7 +17666,7 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
-_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM,Volume)
+_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM)
 _MESSAGESRS.frequency=Frequency
 _MESSAGESRS.modulation=Modulation or radio.modulation.AM
 _MESSAGESRS.MSRS:SetCoalition(Coalition or coalition.side.NEUTRAL)
@@ -17677,7 +17677,7 @@ _MESSAGESRS.MSRS:SetCulture(Culture)
 _MESSAGESRS.Culture=Culture or"en-GB"
 _MESSAGESRS.MSRS:SetGender(Gender)
 _MESSAGESRS.Gender=Gender or"female"
-_MESSAGESRS.MSRS:SetGoogle(PathToCredentials)
+_MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
 _MESSAGESRS.label=Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetPort(Port or 5002)
@@ -17698,7 +17698,7 @@ if coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(coordinate)
 end
 local category=string.gsub(self.MessageCategory,":","")
-_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,nil,nil,nil,nil,nil,frequency or _MESSAGESRS.frequency,modulation or _MESSAGESRS.modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,nil,volume or _MESSAGESRS.volume,category,coordinate or _MESSAGESRS.coordinate)
+_MESSAGESRS.SRSQ:NewTransmission(self.MessageText,nil,_MESSAGESRS.MSRS,0.5,1,nil,nil,nil,frequency or _MESSAGESRS.frequency,modulation or _MESSAGESRS.modulation,gender or _MESSAGESRS.Gender,culture or _MESSAGESRS.Culture,nil,volume or _MESSAGESRS.volume,category,coordinate or _MESSAGESRS.coordinate)
 end
 return self
 end
@@ -79369,7 +79369,19 @@ return self
 end
 function MSRS:SetBackend(Backend)
 self:F({Backend=Backend})
-self.backend=Backend or MSRS.Backend.SRSEXE
+Backend=Backend or MSRS.Backend.SRSEXE
+local function Checker(back)
+local ok=false
+for _,_backend in pairs(MSRS.Backend)do
+if tostring(back)==_backend then ok=true end
+end
+return ok
+end
+if Checker(Backend)then
+self.backend=Backend
+else
+MESSAGE:New("ERROR: Backend "..tostring(Backend).." is not supported!",30,"MSRS",true):ToLog():ToAll()
+end
 return self
 end
 function MSRS:SetBackendGRPC()
@@ -79680,7 +79692,7 @@ end
 return self
 end
 function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
-self:F({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
+self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 else
@@ -79940,7 +79952,7 @@ self.lid=string.format("MSRSQUEUE %s | ",self.alias)
 return self
 end
 function MSRSQUEUE:Clear()
-self:I(self.lid.."Clearing MSRSQUEUE")
+self:T(self.lid.."Clearing MSRSQUEUE")
 self.queue={}
 return self
 end
@@ -79986,24 +79998,25 @@ transmission.msrs=msrs
 transmission.Tplay=tstart or timer.getAbsTime()
 transmission.subtitle=subtitle
 transmission.interval=interval or 0
-transmission.frequency=frequency
-transmission.modulation=modulation
+transmission.frequency=frequency or msrs.frequencies
+transmission.modulation=modulation or msrs.modulations
 transmission.subgroups=subgroups
 if transmission.subtitle then
 transmission.subduration=subduration or transmission.duration
 else
 transmission.subduration=0
 end
-transmission.gender=gender
-transmission.culture=culture
-transmission.voice=voice
-transmission.volume=volume
-transmission.label=label
-transmission.coordinate=coordinate
+transmission.gender=gender or msrs.gender
+transmission.culture=culture or msrs.culture
+transmission.voice=voice or msrs.voice
+transmission.volume=volume or msrs.volume
+transmission.label=label or msrs.Label
+transmission.coordinate=coordinate or msrs.coordinate
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
+self:T(self.lid.."Broadcast")
 if transmission.frequency then
 transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate)
 else
