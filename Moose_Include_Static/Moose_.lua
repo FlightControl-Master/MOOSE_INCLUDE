@@ -1,5 +1,6 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-05T16:08:46+01:00-84230e2360d2d89f2ad3560e38caef9427948d8c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T12:22:02+01:00-4696569f8377cd8c94970bc1253c3f1722b16583 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
+if io then
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
 io.close(f)
@@ -23,6 +24,9 @@ __Moose.Include('Scripts/Moose/Modules.lua')
 BASE:TraceOnOff(true)
 env.info('*** MOOSE INCLUDE END *** ')
 do return end
+end
+else
+env.info('*** MOOSE DYNAMIC INCLUDE NOT POSSIBLE (Desanitize io to use it) *** ')
 end
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
