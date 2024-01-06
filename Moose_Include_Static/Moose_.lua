@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T12:22:02+01:00-4696569f8377cd8c94970bc1253c3f1722b16583 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T18:21:39+01:00-fce7b070145372a656fa2a842a78486334ac4d6e ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -11033,7 +11033,12 @@ local DCSAirbaseName=airbase:getName()
 local airbaseID=airbase:getID()
 local airbase=self:AddAirbase(DCSAirbaseName)
 local airbaseUID=airbase:GetID(true)
-local text=string.format("Register %s: %s (UID=%d), Runways=%d, Parking=%d [",AIRBASE.CategoryName[airbase.category],tostring(DCSAirbaseName),airbaseUID,#airbase.runways,airbase.NparkingTotal)
+local typename=airbase:GetTypeName()
+local category=airbase.category
+if category==Airbase.Category.SHIP and typename=="FARP_SINGLE_01"then
+category=Airbase.Category.HELIPAD
+end
+local text=string.format("Register %s: %s (UID=%d), Runways=%d, Parking=%d [",AIRBASE.CategoryName[category],tostring(DCSAirbaseName),airbaseUID,#airbase.runways,airbase.NparkingTotal)
 for _,terminalType in pairs(AIRBASE.TerminalType)do
 if airbase.NparkingTerminal and airbase.NparkingTerminal[terminalType]then
 text=text..string.format("%d=%d ",terminalType,airbase.NparkingTerminal[terminalType])
@@ -17670,27 +17675,32 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
-_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM)
-_MESSAGESRS.frequency=Frequency
-_MESSAGESRS.modulation=Modulation or radio.modulation.AM
-_MESSAGESRS.MSRS:SetCoalition(Coalition or coalition.side.NEUTRAL)
-_MESSAGESRS.coalition=Coalition or coalition.side.NEUTRAL
+_MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+_MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
+_MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
+_MESSAGESRS.MSRS=MSRS:New(_MESSAGESRS.PathToSRS,_MESSAGESRS.frequency,_MESSAGESRS.modulation)
+_MESSAGESRS.coalition=Coalition or MSRS.coalition or coalition.side.NEUTRAL
+_MESSAGESRS.MSRS:SetCoalition(_MESSAGESRS.coalition)
 _MESSAGESRS.coordinate=Coordinate
+if Coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(Coordinate)
+end
+_MESSAGESRS.Culture=Culture or MSRS.culture or"en-GB"
 _MESSAGESRS.MSRS:SetCulture(Culture)
-_MESSAGESRS.Culture=Culture or"en-GB"
+_MESSAGESRS.Gender=Gender or MSRS.gender or"female"
 _MESSAGESRS.MSRS:SetGender(Gender)
-_MESSAGESRS.Gender=Gender or"female"
+if PathToCredentials then
 _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
+end
+_MESSAGESRS.label=Label or MSRS.Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
-_MESSAGESRS.label=Label or"MESSAGE"
+_MESSAGESRS.port=Port or MSRS.port or 5002
 _MESSAGESRS.MSRS:SetPort(Port or 5002)
-_MESSAGESRS.port=Port or 5002
-_MESSAGESRS.volume=Volume or 1
+_MESSAGESRS.volume=Volume or MSRS.volume or 1
 _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
 if Voice then _MESSAGESRS.MSRS:SetVoice(Voice)end
-_MESSAGESRS.voice=Voice
-_MESSAGESRS.SRSQ=MSRSQUEUE:New(Label or"MESSAGE")
+_MESSAGESRS.voice=Voice or MSRS.voice
+_MESSAGESRS.SRSQ=MSRSQUEUE:New(_MESSAGESRS.label)
 end
 function MESSAGE:ToSRS(frequency,modulation,gender,culture,voice,coalition,volume,coordinate)
 local tgender=gender or _MESSAGESRS.Gender
@@ -63075,24 +63085,30 @@ end
 end
 end
 function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey)
-if PathToSRS or MSRS.path then
 self.useSRS=true
-self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
-self.msrs:SetGender(Gender)
-self.msrs:SetCulture(Culture)
-self.msrs:SetVoice(Voice)
-self.msrs:SetPort(Port)
+local path=PathToSRS or MSRS.path
+local gender=Gender or MSRS.gender
+local culture=Culture or MSRS.culture
+local voice=Voice or MSRS.voice
+local port=Port or MSRS.port or 5002
+self.msrs=MSRS:New(path,self.frequency,self.modulation)
+self.msrs:SetGender(gender)
+self.msrs:SetCulture(culture)
+self.msrs:SetPort(port)
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
-self.msrs:SetGoogle(GoogleKey)
+if GoogleKey then
+self.msrs:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
+end
+if self.msrs:GetProvider()==MSRS.Provider.GOOGLE then
+voice=Voice or MSRS.poptions.gcloud.voice
+end
+self.msrs:SetVoice(voice)
 self.msrs:SetCoordinate(self.airbase:GetCoordinate())
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
-end
-else
-self:E(self.lid..string.format("ERROR: No SRS path specified!"))
 end
 return self
 end
