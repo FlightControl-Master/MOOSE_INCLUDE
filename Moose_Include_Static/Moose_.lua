@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T12:22:25+01:00-8386fe5f6704def8ee75c1ab207c9ccaef2f89be ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T18:22:41+01:00-406dbb707a8f122b44682e167345d875331399af ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -7009,7 +7009,12 @@ local DCSAirbaseName=airbase:getName()
 local airbaseID=airbase:getID()
 local airbase=self:AddAirbase(DCSAirbaseName)
 local airbaseUID=airbase:GetID(true)
-local text=string.format("Register %s: %s (UID=%d), Runways=%d, Parking=%d [",AIRBASE.CategoryName[airbase.category],tostring(DCSAirbaseName),airbaseUID,#airbase.runways,airbase.NparkingTotal)
+local typename=airbase:GetTypeName()
+local category=airbase.category
+if category==Airbase.Category.SHIP and typename=="FARP_SINGLE_01"then
+category=Airbase.Category.HELIPAD
+end
+local text=string.format("Register %s: %s (UID=%d), Runways=%d, Parking=%d [",AIRBASE.CategoryName[category],tostring(DCSAirbaseName),airbaseUID,#airbase.runways,airbase.NparkingTotal)
 for _,terminalType in pairs(AIRBASE.TerminalType)do
 if airbase.NparkingTerminal and airbase.NparkingTerminal[terminalType]then
 text=text..string.format("%d=%d ",terminalType,airbase.NparkingTerminal[terminalType])
@@ -9846,27 +9851,32 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
-_MESSAGESRS.MSRS=MSRS:New(PathToSRS,Frequency or 243,Modulation or radio.modulation.AM)
-_MESSAGESRS.frequency=Frequency
-_MESSAGESRS.modulation=Modulation or radio.modulation.AM
-_MESSAGESRS.MSRS:SetCoalition(Coalition or coalition.side.NEUTRAL)
-_MESSAGESRS.coalition=Coalition or coalition.side.NEUTRAL
+_MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+_MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
+_MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
+_MESSAGESRS.MSRS=MSRS:New(_MESSAGESRS.PathToSRS,_MESSAGESRS.frequency,_MESSAGESRS.modulation)
+_MESSAGESRS.coalition=Coalition or MSRS.coalition or coalition.side.NEUTRAL
+_MESSAGESRS.MSRS:SetCoalition(_MESSAGESRS.coalition)
 _MESSAGESRS.coordinate=Coordinate
+if Coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(Coordinate)
+end
+_MESSAGESRS.Culture=Culture or MSRS.culture or"en-GB"
 _MESSAGESRS.MSRS:SetCulture(Culture)
-_MESSAGESRS.Culture=Culture or"en-GB"
+_MESSAGESRS.Gender=Gender or MSRS.gender or"female"
 _MESSAGESRS.MSRS:SetGender(Gender)
-_MESSAGESRS.Gender=Gender or"female"
+if PathToCredentials then
 _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
+end
+_MESSAGESRS.label=Label or MSRS.Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
-_MESSAGESRS.label=Label or"MESSAGE"
+_MESSAGESRS.port=Port or MSRS.port or 5002
 _MESSAGESRS.MSRS:SetPort(Port or 5002)
-_MESSAGESRS.port=Port or 5002
-_MESSAGESRS.volume=Volume or 1
+_MESSAGESRS.volume=Volume or MSRS.volume or 1
 _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
 if Voice then _MESSAGESRS.MSRS:SetVoice(Voice)end
-_MESSAGESRS.voice=Voice
-_MESSAGESRS.SRSQ=MSRSQUEUE:New(Label or"MESSAGE")
+_MESSAGESRS.voice=Voice or MSRS.voice
+_MESSAGESRS.SRSQ=MSRSQUEUE:New(_MESSAGESRS.label)
 end
 function MESSAGE:ToSRS(frequency,modulation,gender,culture,voice,coalition,volume,coordinate)
 local tgender=gender or _MESSAGESRS.Gender
@@ -55660,7 +55670,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.2",
+version="0.2.3",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -55780,6 +55790,9 @@ local runways=ab:GetRunways()
 local numrwys=#runways
 if numrwys>=1 then numrwys=numrwys*0.5 end
 local abzone=ab:GetZone()
+if not abzone then
+abzone=ZONE_RADIUS:New(abname,ab:GetVec2(),500)
+end
 local coa=ab:GetCoalition()+1
 local abtype="AIRBASE"
 if ab:IsShip()then
@@ -55790,7 +55803,7 @@ if ab:IsHelipad()then
 numrwys=1
 abtype="FARP"
 end
-local coord=abzone:GetCoordinate()
+local coord=ab:GetCoordinate()
 if debug then
 abzone:DrawZone(-1,colors[coa],1,colors[coa],0.3,1)
 coord:TextToAll(tostring(numrwys),-1,{0,0,0},1,colors[coa],0.3,20)
@@ -67181,24 +67194,30 @@ end
 end
 end
 function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey)
-if PathToSRS or MSRS.path then
 self.useSRS=true
-self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
-self.msrs:SetGender(Gender)
-self.msrs:SetCulture(Culture)
-self.msrs:SetVoice(Voice)
-self.msrs:SetPort(Port)
+local path=PathToSRS or MSRS.path
+local gender=Gender or MSRS.gender
+local culture=Culture or MSRS.culture
+local voice=Voice or MSRS.voice
+local port=Port or MSRS.port or 5002
+self.msrs=MSRS:New(path,self.frequency,self.modulation)
+self.msrs:SetGender(gender)
+self.msrs:SetCulture(culture)
+self.msrs:SetPort(port)
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
-self.msrs:SetGoogle(GoogleKey)
+if GoogleKey then
+self.msrs:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
+end
+if self.msrs:GetProvider()==MSRS.Provider.GOOGLE then
+voice=Voice or MSRS.poptions.gcloud.voice
+end
+self.msrs:SetVoice(voice)
 self.msrs:SetCoordinate(self.airbase:GetCoordinate())
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
-end
-else
-self:E(self.lid..string.format("ERROR: No SRS path specified!"))
 end
 return self
 end
@@ -72130,11 +72149,11 @@ return self
 end
 function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey)
 self:T(self.lid.."SetSRS")
-self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
-self.Gender=Gender or"male"
-self.Culture=Culture or"en-US"
-self.Port=Port or 5002
-self.Voice=Voice
+self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.Gender=Gender or MSRS.gender or"male"
+self.Culture=Culture or MSRS.culture or"en-US"
+self.Port=Port or MSRS.port or 5002
+self.Voice=Voice or MSRS.voice
 self.PathToGoogleKey=PathToGoogleKey
 self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
@@ -72142,13 +72161,18 @@ self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation)
 self.AwacsSRS:SetCoalition(self.coalition)
 self.AwacsSRS:SetGender(self.Gender)
 self.AwacsSRS:SetCulture(self.Culture)
-self.AwacsSRS:SetVoice(self.Voice)
 self.AwacsSRS:SetPort(self.Port)
 self.AwacsSRS:SetLabel("AWACS")
 self.AwacsSRS:SetVolume(Volume)
 if self.PathToGoogleKey then
 self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 end
+if self.AwacsSRS:GetProvider()==MSRS.Provider.GOOGLE then
+self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
+self.Voice=Voice or MSRS.poptions.gcloud.voice
+self.AccessKey=AccessKey or MSRS.poptions.gcloud.key
+end
+self.AwacsSRS:SetVoice(self.Voice)
 return self
 end
 function AWACS:SetSRSVoiceCAP(Gender,Culture,Voice)
@@ -73270,7 +73294,7 @@ local CAPVoice=self.CAPVoice
 if self.PathToGoogleKey then
 CAPVoice=self.CapVoices[math.floor(math.random(1,10))]
 end
-FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT")
+FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1)
 local checkai=self.gettext:GetEntry("CHECKINAI",self.locale)
 text=string.format(checkai,self.callsigntxt,managedgroup.CallSign,self.CAPTimeOnStation,self.AOName)
 self:_NewRadioEntry(text,text,managedgroup.GID,Outcome,false,true,true)
@@ -103853,11 +103877,11 @@ return self
 end
 function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate)
 self:T(self.lid.."SetSRS")
-self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
-self.Gender=Gender or"male"
-self.Culture=Culture or"en-US"
-self.Port=Port or 5002
-self.Voice=Voice
+self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.Gender=Gender or MSRS.gender or"male"
+self.Culture=Culture or MSRS.culture or"en-US"
+self.Port=Port or MSRS.port or 5002
+self.Voice=Voice or MSRS.voice
 self.PathToGoogleKey=PathToGoogleKey
 self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
@@ -103872,14 +103896,19 @@ self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
-self.SRS:SetVoice(self.Voice)
 self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
 self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 end
+if self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
+self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
+self.Voice=Voice or MSRS.poptions.gcloud.voice
+self.AccessKey=AccessKey or MSRS.poptions.gcloud.key
+end
 if Coordinate then
 self.SRS:SetCoordinate(Coordinate)
 end
+self.SRS:SetVoice(self.Voice)
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self
