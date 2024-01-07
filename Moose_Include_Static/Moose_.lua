@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:25:32+01:00-06c3ca00793265f72f6956c3a37fe131e721d53c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:26:58+01:00-677d888d960e57390453e91ea4418a440a9f2419 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -91413,7 +91413,7 @@ table.insert(Assets,asset)
 end
 end
 end
-LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,false)
+LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,false,TotalWeight)
 for _,_asset in pairs(Assets)do
 local asset=_asset
 if asset.legion:IsAirwing()and not asset.payload then
@@ -91426,7 +91426,7 @@ if asset.legion:IsAirwing()and not asset.payload then
 table.remove(Assets,i)
 end
 end
-LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,true)
+LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,true,TotalWeight)
 local Nassets=math.min(#Assets,NreqMax)
 if#Assets>=NreqMin then
 local cargobay=0
@@ -91600,7 +91600,7 @@ return nil,nil
 end
 return true,nil
 end
-function LEGION.CalculateAssetMissionScore(asset,MissionType,TargetVec2,IncludePayload)
+function LEGION.CalculateAssetMissionScore(asset,MissionType,TargetVec2,IncludePayload,TotalWeight)
 local score=0
 if asset.skill==AI.Skill.AVERAGE then
 score=score+0
@@ -91657,17 +91657,25 @@ end
 end
 end
 if MissionType==AUFTRAG.Type.OPSTRANSPORT then
+if TotalWeight then
+if asset.cargobaymax<TotalWeight then
 score=score+UTILS.Round(asset.cargobaymax/10,0)
+else
+score=score+UTILS.Round(TotalWeight/10,0)
+end
+else
+score=score+UTILS.Round(asset.cargobaymax/10,0)
+end
 end
 if asset.legion and asset.legion.verbose>=2 then
 asset.legion:I(asset.legion.lid..string.format("Asset %s [spawned=%s] score=%d",asset.spawngroupname,tostring(asset.spawned),score))
 end
 return score
 end
-function LEGION._OptimizeAssetSelection(assets,MissionType,TargetVec2,IncludePayload)
+function LEGION._OptimizeAssetSelection(assets,MissionType,TargetVec2,IncludePayload,TotalWeight)
 for _,_asset in pairs(assets)do
 local asset=_asset
-asset.score=LEGION.CalculateAssetMissionScore(asset,MissionType,TargetVec2,IncludePayload)
+asset.score=LEGION.CalculateAssetMissionScore(asset,MissionType,TargetVec2,IncludePayload,TotalWeight)
 if IncludePayload then
 local RandomScoreMax=asset.legion and asset.legion.RandomAssetScore or LEGION.RandomAssetScore
 local RandomScore=math.random(0,RandomScoreMax)
