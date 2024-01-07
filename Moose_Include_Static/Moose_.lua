@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:28:12+01:00-aca58462093f5d77cfd3fdbb149a8019d8270a6f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T14:44:07+01:00-fa762fe0fc6588ecc140a25ee5661dc55585fb44 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -79302,6 +79302,13 @@ Microsoft={
 ["David"]="Microsoft David Desktop",
 ["Zira"]="Microsoft Zira Desktop",
 ["Hortense"]="Microsoft Hortense Desktop",
+},
+MicrosoftGRPC={
+["Hedda"]="Hedda",
+["Hazel"]="Hazel",
+["David"]="David",
+["Zira"]="Zira",
+["Hortense"]="Hortense",
 },
 Google={
 Standard={
