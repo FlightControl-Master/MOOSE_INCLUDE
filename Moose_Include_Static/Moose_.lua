@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:23:50+01:00-9280a1224d25d1e229e2a55b77af493ee6c462b0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:27:23+01:00-4fd7d7cba91373491153ed0913d37482775e3985 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -18740,6 +18740,7 @@ if self.SpawnGroups[self.SpawnIndex].Visible then
 self.SpawnGroups[self.SpawnIndex].Group:Activate()
 else
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
+local SpawnZone=self.SpawnGroups[self.SpawnIndex].SpawnZone
 self:T(SpawnTemplate.name)
 if SpawnTemplate then
 local PointVec3=POINT_VEC3:New(SpawnTemplate.route.points[1].x,SpawnTemplate.route.points[1].alt,SpawnTemplate.route.points[1].y)
@@ -18759,6 +18760,23 @@ end
 if self.SpawnRandomizeUnits then
 for UnitID=1,#SpawnTemplate.units do
 local RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
+if(SpawnZone)then
+local inZone=SpawnZone:IsVec2InZone(RandomVec2)
+local numTries=1
+while(not inZone)and(numTries<20)do
+if not inZone then
+RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
+numTries=numTries+1
+inZone=SpawnZone:IsVec2InZone(RandomVec2)
+self:I("Retrying "..numTries.."spawn "..SpawnTemplate.name.." in Zone "..SpawnZone:GetName().."!")
+self:I(SpawnZone)
+end
+end
+if(not inZone)then
+self:I("Could not place unit within zone and within radius!")
+RandomVec2=SpawnZone:GetRandomVec2()
+end
+end
 SpawnTemplate.units[UnitID].x=RandomVec2.x
 SpawnTemplate.units[UnitID].y=RandomVec2.y
 self:T('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
@@ -18796,11 +18814,13 @@ local cosHeading=math.cos(headingRad)
 local sinHeading=math.sin(headingRad)
 local unitVarRad=math.rad(self.SpawnInitGroupUnitVar or 0)
 for UnitID=1,#SpawnTemplate.units do
+if not self.SpawnRandomizeUnits then
 if UnitID>1 then
 local unitXOff=SpawnTemplate.units[UnitID].x-pivotX
 local unitYOff=SpawnTemplate.units[UnitID].y-pivotY
 SpawnTemplate.units[UnitID].x=pivotX+(unitXOff*cosHeading)-(unitYOff*sinHeading)
 SpawnTemplate.units[UnitID].y=pivotY+(unitYOff*cosHeading)+(unitXOff*sinHeading)
+end
 end
 local unitHeading=SpawnTemplate.units[UnitID].heading+headingRad
 SpawnTemplate.units[UnitID].heading=_HeadingRad(_RandomInRange(unitHeading-unitVarRad,unitHeading+unitVarRad))
@@ -19926,6 +19946,7 @@ self:T("Preparing Spawn in Zone",SpawnZone:GetName())
 local SpawnVec2=SpawnZone:GetRandomVec2()
 self:T({SpawnVec2=SpawnVec2})
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
+self.SpawnGroups[SpawnIndex].SpawnZone=SpawnZone
 self:T({Route=SpawnTemplate.route})
 for UnitID=1,#SpawnTemplate.units do
 local UnitTemplate=SpawnTemplate.units[UnitID]
