@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T15:40:17+01:00-4ddd278471574e4c562ea3c08d7c5facc75abb63 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T17:24:51+01:00-e26647c2cae496d26ad77078fee65e2e2ecb7be6 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -12638,7 +12638,7 @@ end
 end
 function SET_GROUP:AddInDatabase(Event)
 self:F3({Event})
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSGroupName]then
 self.Database[Event.IniDCSGroupName]=GROUP:Register(Event.IniDCSGroupName)
 self:T3(self.Database[Event.IniDCSGroupName])
@@ -13136,7 +13136,7 @@ return self
 end
 function SET_UNIT:AddInDatabase(Event)
 self:F3({Event})
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSUnitName]then
 self.Database[Event.IniDCSUnitName]=UNIT:Register(Event.IniDCSUnitName)
 self:T3(self.Database[Event.IniDCSUnitName])
@@ -14214,7 +14214,7 @@ end
 function SET_CLIENT:_EventPlayerEnterUnit(Event)
 self:I("_EventPlayerEnterUnit")
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:AddInDatabase(Event)
 self:I(ObjectName,UTILS.PrintTableToLog(Object))
 if Object and self:IsIncludeObject(Object)then
@@ -14227,7 +14227,7 @@ end
 function SET_CLIENT:_EventPlayerLeaveUnit(Event)
 self:I("_EventPlayerLeaveUnit")
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 self:Remove(ObjectName)
@@ -15856,6 +15856,20 @@ end
 end
 return self
 end
+function SET_OPSGROUP:_EventOnBirth(Event)
+self:F3({Event})
+if Event.IniDCSUnit and Event.IniDCSGroup then
+local DCSgroup=Event.IniDCSGroup
+if DCSgroup:getInitialSize()==DCSgroup:getSize()then
+local groupname,group=self:AddInDatabase(Event)
+if group and group:CountAliveUnits()==DCSgroup:getInitialSize()then
+if group and self:IsIncludeObject(group)then
+self:Add(groupname,group)
+end
+end
+end
+end
+end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
 self:F({Event})
 if Event.IniDCSUnit then
@@ -15868,7 +15882,7 @@ end
 end
 end
 function SET_OPSGROUP:AddInDatabase(Event)
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSGroupName]then
 self.Database[Event.IniDCSGroupName]=GROUP:Register(Event.IniDCSGroupName)
 end
@@ -26220,7 +26234,14 @@ if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()or{}
 local Units={}
 for Index,UnitData in pairs(DCSUnits)do
+local unit=UNIT:Find(UnitData)
+if unit then
 Units[#Units+1]=UNIT:Find(UnitData)
+else
+local UnitName=UnitData:getName()
+unit=_DATABASE:AddUnit(UnitName)
+Units[#Units+1]=unit
+end
 end
 self:T3(Units)
 return Units
@@ -99976,6 +99997,11 @@ end
 else
 for _,group in pairs(GroupSet.Set)do
 self:AddCargoGroups(group,TransportZoneCombo,DisembarkActivation)
+end
+local groupset=GroupSet
+function groupset.OnAfterAdded(groupset,From,Event,To,ObjectName,Object)
+self:T(self.lid..string.format("Adding Cargo Group %s",tostring(ObjectName)))
+self:AddCargoGroups(Object,TransportZoneCombo,DisembarkActivation,DisembarkZone,DisembarkCarriers)
 end
 end
 if self.verbose>=1 then
