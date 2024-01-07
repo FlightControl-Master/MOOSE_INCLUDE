@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T14:44:45+01:00-72e31b90a9b34e9d887ef9c29ac9bff047aeb7de ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T15:40:17+01:00-4ddd278471574e4c562ea3c08d7c5facc75abb63 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -71293,7 +71293,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.60",
+version="0.2.61",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -72802,7 +72802,7 @@ general=false
 end
 if not self.intel then
 local picclean=self.gettext:GetEntry("PICCLEAN",self.locale)
-text=string.format(picclean,self.callsigntxt,gcallsign)
+text=string.format(picclean,gcallsign,self.callsigntxt)
 textScreen=text
 self:_NewRadioEntry(text,text,GID,false,true,true,false)
 return self
