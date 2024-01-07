@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T18:22:41+01:00-406dbb707a8f122b44682e167345d875331399af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:25:32+01:00-06c3ca00793265f72f6956c3a37fe131e721d53c ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -71737,6 +71737,7 @@ self.TacticalSRS:SetLabel("AWACS")
 self.TacticalSRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
 self.TacticalSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
+self.TacticalSRS:SetProvider(MSRS.Provider.GOOGLE)
 end
 self.TacticalSRSQ=MSRSQUEUE:New("Tactical AWACS")
 end
@@ -72166,8 +72167,9 @@ self.AwacsSRS:SetLabel("AWACS")
 self.AwacsSRS:SetVolume(Volume)
 if self.PathToGoogleKey then
 self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
+self.AwacsSRS:SetProvider(MSRS.Provider.GOOGLE)
 end
-if self.AwacsSRS:GetProvider()==MSRS.Provider.GOOGLE then
+if(not PathToGoogleKey)and self.AwacsSRS:GetProvider()==MSRS.Provider.GOOGLE then
 self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
 self.Voice=Voice or MSRS.poptions.gcloud.voice
 self.AccessKey=AccessKey or MSRS.poptions.gcloud.key
@@ -84661,17 +84663,25 @@ self:SetFrequency(Frequency,Modulation)
 self:SetMarkHoldingPattern(true)
 self:SetRunwayRepairtime()
 self.nosubs=false
-self:SetSRSPort(Port or 5002)
 self:SetCallSignOptions(true,true)
 self.msrsqueue=MSRSQUEUE:New(self.alias)
-self.msrsTower=MSRS:New(PathToSRS,Frequency,Modulation)
-self.msrsTower:SetPort(self.Port)
-self.msrsTower:SetGoogle(GoogleKey)
+local path=PathToSRS or MSRS.path
+local port=Port or MSRS.port or 5002
+self:SetSRSPort(port)
+self.msrsTower=MSRS:New(path,Frequency,Modulation)
+self.msrsTower:SetPort(port)
+if GoogleKey then
+self.msrsTower:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
+self.msrsTower:SetProvider(MSRS.Provider.GOOGLE)
+end
 self.msrsTower:SetCoordinate(self:GetCoordinate())
 self:SetSRSTower()
 self.msrsPilot=MSRS:New(PathToSRS,Frequency,Modulation)
 self.msrsPilot:SetPort(self.Port)
-self.msrsPilot:SetGoogle(GoogleKey)
+if GoogleKey then
+self.msrsPilot:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
+self.msrsPilot:SetProvider(MSRS.Provider.GOOGLE)
+end
 self.msrsTower:SetCoordinate(self:GetCoordinate())
 self:SetSRSPilot()
 self.dTmessage=10
@@ -84725,21 +84735,20 @@ msrs:SetCulture(Culture)
 msrs:SetVoice(Voice)
 msrs:SetVolume(Volume)
 msrs:SetLabel(Label)
-msrs:SetGoogle(PathToGoogleCredentials)
 msrs:SetCoalition(self:GetCoalition())
 msrs:SetPort(Port or self.Port or 5002)
 end
 return self
 end
-function FLIGHTCONTROL:SetSRSTower(Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials)
+function FLIGHTCONTROL:SetSRSTower(Gender,Culture,Voice,Volume,Label)
 if self.msrsTower then
-self:_SetSRSOptions(self.msrsTower,Gender or"female",Culture or"en-GB",Voice,Volume,Label or self.alias,PathToGoogleCredentials)
+self:_SetSRSOptions(self.msrsTower,Gender or"female",Culture or"en-GB",Voice,Volume,Label or self.alias)
 end
 return self
 end
-function FLIGHTCONTROL:SetSRSPilot(Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials)
+function FLIGHTCONTROL:SetSRSPilot(Gender,Culture,Voice,Volume,Label)
 if self.msrsPilot then
-self:_SetSRSOptions(self.msrsPilot,Gender or"male",Culture or"en-US",Voice,Volume,Label or"Pilot",PathToGoogleCredentials)
+self:_SetSRSOptions(self.msrsPilot,Gender or"male",Culture or"en-US",Voice,Volume,Label or"Pilot")
 end
 return self
 end
@@ -94070,14 +94079,17 @@ return self
 end
 function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume)
 self.useSRS=true
-self.msrs=MSRS:New(PathToSRS,self.frequency,self.modulation)
+local path=PathToSRS or MSRS.path
+local port=Port or MSRS.port
+self.msrs=MSRS:New(path,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
 self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
-self.msrs:SetPort(Port)
+self.msrs:SetPort(port)
 self.msrs:SetLabel(Label)
 if PathToGoogleKey then
-self.msrs:SetGoogle(PathToGoogleKey)
+self.msrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
+self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetVolume(Volume)
@@ -103899,8 +103911,9 @@ self.SRS:SetPort(self.Port)
 self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
 self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
+self.SRS:SetProvider(MSRS.Provider.GOOGLE)
 end
-if self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
+if(not PathToGoogleKey)and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
 self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
 self.Voice=Voice or MSRS.poptions.gcloud.voice
 self.AccessKey=AccessKey or MSRS.poptions.gcloud.key
@@ -105010,7 +105023,12 @@ self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
 self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
-self.SRS:SetGoogle(self.PathToGoogleKey)
+self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.PathToGoogleKey)
+self.SRS:SetProvider(MSRS.Provider.GOOGLE)
+end
+if(not PathToGoogleKey)and self.AwacsSRS:GetProvider()==MSRS.Provider.GOOGLE then
+self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
+self.Voice=Voice or MSRS.poptions.gcloud.voice
 end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
