@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:26:58+01:00-677d888d960e57390453e91ea4418a440a9f2419 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T14:44:45+01:00-72e31b90a9b34e9d887ef9c29ac9bff047aeb7de ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -9867,6 +9867,7 @@ _MESSAGESRS.Gender=Gender or MSRS.gender or"female"
 _MESSAGESRS.MSRS:SetGender(Gender)
 if PathToCredentials then
 _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
+_MESSAGESRS.MSRS:SetProvider(MSRS.Provider.GOOGLE)
 end
 _MESSAGESRS.label=Label or MSRS.Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
@@ -17224,6 +17225,7 @@ if self.SpawnGroups[self.SpawnIndex].Visible then
 self.SpawnGroups[self.SpawnIndex].Group:Activate()
 else
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
+local SpawnZone=self.SpawnGroups[self.SpawnIndex].SpawnZone
 self:T(SpawnTemplate.name)
 if SpawnTemplate then
 local PointVec3=POINT_VEC3:New(SpawnTemplate.route.points[1].x,SpawnTemplate.route.points[1].alt,SpawnTemplate.route.points[1].y)
@@ -17243,6 +17245,23 @@ end
 if self.SpawnRandomizeUnits then
 for UnitID=1,#SpawnTemplate.units do
 local RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
+if(SpawnZone)then
+local inZone=SpawnZone:IsVec2InZone(RandomVec2)
+local numTries=1
+while(not inZone)and(numTries<20)do
+if not inZone then
+RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
+numTries=numTries+1
+inZone=SpawnZone:IsVec2InZone(RandomVec2)
+self:I("Retrying "..numTries.."spawn "..SpawnTemplate.name.." in Zone "..SpawnZone:GetName().."!")
+self:I(SpawnZone)
+end
+end
+if(not inZone)then
+self:I("Could not place unit within zone and within radius!")
+RandomVec2=SpawnZone:GetRandomVec2()
+end
+end
 SpawnTemplate.units[UnitID].x=RandomVec2.x
 SpawnTemplate.units[UnitID].y=RandomVec2.y
 self:T('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
@@ -17280,11 +17299,13 @@ local cosHeading=math.cos(headingRad)
 local sinHeading=math.sin(headingRad)
 local unitVarRad=math.rad(self.SpawnInitGroupUnitVar or 0)
 for UnitID=1,#SpawnTemplate.units do
+if not self.SpawnRandomizeUnits then
 if UnitID>1 then
 local unitXOff=SpawnTemplate.units[UnitID].x-pivotX
 local unitYOff=SpawnTemplate.units[UnitID].y-pivotY
 SpawnTemplate.units[UnitID].x=pivotX+(unitXOff*cosHeading)-(unitYOff*sinHeading)
 SpawnTemplate.units[UnitID].y=pivotY+(unitYOff*cosHeading)+(unitXOff*sinHeading)
+end
 end
 local unitHeading=SpawnTemplate.units[UnitID].heading+headingRad
 SpawnTemplate.units[UnitID].heading=_HeadingRad(_RandomInRange(unitHeading-unitVarRad,unitHeading+unitVarRad))
@@ -18410,6 +18431,7 @@ self:T("Preparing Spawn in Zone",SpawnZone:GetName())
 local SpawnVec2=SpawnZone:GetRandomVec2()
 self:T({SpawnVec2=SpawnVec2})
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
+self.SpawnGroups[SpawnIndex].SpawnZone=SpawnZone
 self:T({Route=SpawnTemplate.route})
 for UnitID=1,#SpawnTemplate.units do
 local UnitTemplate=SpawnTemplate.units[UnitID]
@@ -48530,6 +48552,7 @@ self:SetMessagesScore(true)
 self:SetMessagesZone(true)
 self:SetScaleDestroyScore(10)
 self:SetScaleDestroyPenalty(30)
+self:SetScoreIncrementOnHit(0)
 self:SetFratricide(self.ScaleDestroyPenalty*3)
 self.penaltyonfratricide=true
 self:SetCoalitionChangePenalty(self.ScaleDestroyPenalty)
@@ -48604,6 +48627,10 @@ return self
 end
 function SCORING:SetMessagesHit(OnOff)
 self.MessagesHit=OnOff
+return self
+end
+function SCORING:SetScoreIncrementOnHit(score)
+self.ScoreIncrementOnHit=score
 return self
 end
 function SCORING:IfMessagesHit()
@@ -48828,6 +48855,7 @@ local PlayerName=Event.IniUnit:GetPlayerName()
 Event.IniUnit.BirthTime=timer.getTime()
 if PlayerName then
 self:_AddPlayerFromUnit(Event.IniUnit)
+self.Players[PlayerName].PlayerKills=0
 self:SetScoringMenu(Event.IniGroup)
 end
 end
@@ -48951,6 +48979,8 @@ MESSAGE.Type.Update)
 end
 self:ScoreCSV(InitPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 else
+Player.Score=Player.Score+self.ScoreIncrementOnHit
+PlayerHit.Score=PlayerHit.Score+self.ScoreIncrementOnHit
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 if TargetPlayerName~=nil then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
@@ -49026,6 +49056,8 @@ MESSAGE.Type.Update
 :ToCoalitionIf(Event.WeaponCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(Event.WeaponPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,Event.WeaponName,Event.WeaponCoalition,Event.WeaponCategory,Event.WeaponTypeName,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 else
+Player.Score=Player.Score+self.ScoreIncrementOnHit
+PlayerHit.Score=PlayerHit.Score+self.ScoreIncrementOnHit
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..
 "Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
@@ -49104,13 +49136,16 @@ self:F({ThreatLevel=ThreatPenalty,ThreatLevelTarget=ThreatLevelTarget,ThreatType
 Player.Penalty=Player.Penalty+ThreatPenalty
 TargetDestroy.Penalty=TargetDestroy.Penalty+ThreatPenalty
 TargetDestroy.PenaltyDestroy=TargetDestroy.PenaltyDestroy+1
+self:OnKillPvP(Player,TargetPlayerName,true,TargetThreatLevel,Player.ThreatLevel,ThreatPenalty)
 if Player.HitPlayers[TargetPlayerName]then
+self:OnKillPvP(Player,TargetPlayerName,true)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Penalty: -"..ThreatPenalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
+self:OnKillPvE(Player,TargetUnitName,true,TargetThreatLevel,Player.ThreatLevel,ThreatPenalty)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly target "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Penalty: -"..ThreatPenalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
@@ -49129,12 +49164,19 @@ Player.Score=Player.Score+ThreatScore
 TargetDestroy.Score=TargetDestroy.Score+ThreatScore
 TargetDestroy.ScoreDestroy=TargetDestroy.ScoreDestroy+1
 if Player.HitPlayers[TargetPlayerName]then
+if Player.PlayerKills~=nil then
+Player.PlayerKills=Player.PlayerKills+1
+else
+Player.PlayerKills=1
+end
+self:OnKillPvP(Player,TargetPlayerName,false,TargetThreatLevel,Player.ThreatLevel,ThreatScore)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Score: +"..ThreatScore.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
+self:OnKillPvE(Player,TargetUnitName,false,TargetThreatLevel,Player.ThreatLevel,ThreatScore)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Score: +"..ThreatScore.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
@@ -49557,6 +49599,10 @@ end
 function SCORING:SwitchAutoSave(OnOff)
 self.AutoSave=OnOff
 return self
+end
+function SCORING:OnKillPvP(Player,TargetPlayerName,IsTeamKill,TargetThreatLevel,PlayerThreatLevel,Score)
+end
+function SCORING:OnKillPvE(Player,TargetUnitName,IsTeamKill,TargetThreatLevel,PlayerThreatLevel,Score)
 end
 SEAD={
 ClassName="SEAD",
@@ -67208,8 +67254,9 @@ self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
 if GoogleKey then
 self.msrs:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
+self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
-if self.msrs:GetProvider()==MSRS.Provider.GOOGLE then
+if(not GoogleKey)and self.msrs:GetProvider()==MSRS.Provider.GOOGLE then
 voice=Voice or MSRS.poptions.gcloud.voice
 end
 self.msrs:SetVoice(voice)
@@ -67218,6 +67265,15 @@ self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
+end
+return self
+end
+function ATIS:SetSRSProvider(Provider)
+self:T(self.lid.."SetSRSProvider")
+if self.msrs then
+self.msrs:SetProvider(Provider)
+else
+MESSAGE:New(self.lid.."Set up SRS first before trying to change the provider!",30,"ATIS"):ToAll():ToLog()
 end
 return self
 end
@@ -117094,8 +117150,10 @@ self.power=power or 100
 return self
 end
 function RADIOQUEUE:SetSRS(PathToSRS,Port)
-self.msrs=MSRS:New(PathToSRS,self.frequency/1000000,self.modulation)
-self.msrs:SetPort(Port)
+local path=PathToSRS or MSRS.path
+local port=Port or MSRS.port
+self.msrs=MSRS:New(path,self.frequency/1000000,self.modulation)
+self.msrs:SetPort(port)
 return self
 end
 function RADIOQUEUE:SetDigit(digit,filename,duration,path,subtitle,subduration)
@@ -117756,6 +117814,13 @@ Microsoft={
 ["Zira"]="Microsoft Zira Desktop",
 ["Hortense"]="Microsoft Hortense Desktop",
 },
+MicrosoftGRPC={
+["Hedda"]="Hedda",
+["Hazel"]="Hazel",
+["David"]="David",
+["Zira"]="Zira",
+["Hortense"]="Hortense",
+},
 Google={
 Standard={
 ["en_AU_Standard_A"]='en-AU-Standard-A',
@@ -118095,15 +118160,20 @@ end
 return self
 end
 function MSRS:SetProvider(Provider)
-self:F({Provider=Provider})
+BASE:F({Provider=Provider})
+if self then
 self.provider=Provider or MSRS.Provider.WINDOWS
 return self
+else
+MSRS.provider=Provider or MSRS.Provider.WINDOWS
+end
+return
 end
 function MSRS:GetProvider()
 return self.provider or MSRS.Provider.WINDOWS
 end
 function MSRS:SetProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
-self:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
+BASE:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
 local option=MSRS._CreateProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
 if self then
 self.poptions=self.poptions or{}
