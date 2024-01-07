@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:27:23+01:00-4fd7d7cba91373491153ed0913d37482775e3985 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:28:12+01:00-aca58462093f5d77cfd3fdbb149a8019d8270a6f ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -31836,6 +31836,7 @@ self:SetMessagesScore(true)
 self:SetMessagesZone(true)
 self:SetScaleDestroyScore(10)
 self:SetScaleDestroyPenalty(30)
+self:SetScoreIncrementOnHit(0)
 self:SetFratricide(self.ScaleDestroyPenalty*3)
 self.penaltyonfratricide=true
 self:SetCoalitionChangePenalty(self.ScaleDestroyPenalty)
@@ -31910,6 +31911,10 @@ return self
 end
 function SCORING:SetMessagesHit(OnOff)
 self.MessagesHit=OnOff
+return self
+end
+function SCORING:SetScoreIncrementOnHit(score)
+self.ScoreIncrementOnHit=score
 return self
 end
 function SCORING:IfMessagesHit()
@@ -32134,6 +32139,7 @@ local PlayerName=Event.IniUnit:GetPlayerName()
 Event.IniUnit.BirthTime=timer.getTime()
 if PlayerName then
 self:_AddPlayerFromUnit(Event.IniUnit)
+self.Players[PlayerName].PlayerKills=0
 self:SetScoringMenu(Event.IniGroup)
 end
 end
@@ -32257,6 +32263,8 @@ MESSAGE.Type.Update)
 end
 self:ScoreCSV(InitPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 else
+Player.Score=Player.Score+self.ScoreIncrementOnHit
+PlayerHit.Score=PlayerHit.Score+self.ScoreIncrementOnHit
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 if TargetPlayerName~=nil then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
@@ -32332,6 +32340,8 @@ MESSAGE.Type.Update
 :ToCoalitionIf(Event.WeaponCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
 self:ScoreCSV(Event.WeaponPlayerName,TargetPlayerName,"HIT_PENALTY",1,-10,Event.WeaponName,Event.WeaponCoalition,Event.WeaponCategory,Event.WeaponTypeName,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 else
+Player.Score=Player.Score+self.ScoreIncrementOnHit
+PlayerHit.Score=PlayerHit.Score+self.ScoreIncrementOnHit
 PlayerHit.ScoreHit=PlayerHit.ScoreHit+1
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..Event.WeaponPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..
 "Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
@@ -32410,13 +32420,16 @@ self:F({ThreatLevel=ThreatPenalty,ThreatLevelTarget=ThreatLevelTarget,ThreatType
 Player.Penalty=Player.Penalty+ThreatPenalty
 TargetDestroy.Penalty=TargetDestroy.Penalty+ThreatPenalty
 TargetDestroy.PenaltyDestroy=TargetDestroy.PenaltyDestroy+1
+self:OnKillPvP(Player,TargetPlayerName,true,TargetThreatLevel,Player.ThreatLevel,ThreatPenalty)
 if Player.HitPlayers[TargetPlayerName]then
+self:OnKillPvP(Player,TargetPlayerName,true)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Penalty: -"..ThreatPenalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
+self:OnKillPvE(Player,TargetUnitName,true,TargetThreatLevel,Player.ThreatLevel,ThreatPenalty)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed friendly target "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Penalty: -"..ThreatPenalty.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
@@ -32435,12 +32448,19 @@ Player.Score=Player.Score+ThreatScore
 TargetDestroy.Score=TargetDestroy.Score+ThreatScore
 TargetDestroy.ScoreDestroy=TargetDestroy.ScoreDestroy+1
 if Player.HitPlayers[TargetPlayerName]then
+if Player.PlayerKills~=nil then
+Player.PlayerKills=Player.PlayerKills+1
+else
+Player.PlayerKills=1
+end
+self:OnKillPvP(Player,TargetPlayerName,false,TargetThreatLevel,Player.ThreatLevel,ThreatScore)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy player '"..TargetPlayerName.."' "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Score: +"..ThreatScore.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesDestroy()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesDestroy()and self:IfMessagesToCoalition())
 else
+self:OnKillPvE(Player,TargetUnitName,false,TargetThreatLevel,Player.ThreatLevel,ThreatScore)
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..PlayerName.."' destroyed enemy "..TargetUnitCategory.." ( "..ThreatTypeTarget.." ) "..
 "Score: +"..ThreatScore.." = "..Player.Score-Player.Penalty,
 MESSAGE.Type.Information)
@@ -32863,6 +32883,10 @@ end
 function SCORING:SwitchAutoSave(OnOff)
 self.AutoSave=OnOff
 return self
+end
+function SCORING:OnKillPvP(Player,TargetPlayerName,IsTeamKill,TargetThreatLevel,PlayerThreatLevel,Score)
+end
+function SCORING:OnKillPvE(Player,TargetUnitName,IsTeamKill,TargetThreatLevel,PlayerThreatLevel,Score)
 end
 CLEANUP_AIRBASE={
 ClassName="CLEANUP_AIRBASE",
