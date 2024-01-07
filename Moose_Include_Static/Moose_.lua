@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-06T18:21:39+01:00-fce7b070145372a656fa2a842a78486334ac4d6e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T13:23:50+01:00-9280a1224d25d1e229e2a55b77af493ee6c462b0 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -17691,6 +17691,7 @@ _MESSAGESRS.Gender=Gender or MSRS.gender or"female"
 _MESSAGESRS.MSRS:SetGender(Gender)
 if PathToCredentials then
 _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
+_MESSAGESRS.MSRS:SetProvider(MSRS.Provider.GOOGLE)
 end
 _MESSAGESRS.label=Label or MSRS.Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
@@ -63099,8 +63100,9 @@ self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetLabel("ATIS")
 if GoogleKey then
 self.msrs:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
+self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
-if self.msrs:GetProvider()==MSRS.Provider.GOOGLE then
+if(not GoogleKey)and self.msrs:GetProvider()==MSRS.Provider.GOOGLE then
 voice=Voice or MSRS.poptions.gcloud.voice
 end
 self.msrs:SetVoice(voice)
@@ -63109,6 +63111,15 @@ self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
 self:SetQueueUpdateTime(90)
+end
+return self
+end
+function ATIS:SetSRSProvider(Provider)
+self:T(self.lid.."SetSRSProvider")
+if self.msrs then
+self.msrs:SetProvider(Provider)
+else
+MESSAGE:New(self.lid.."Set up SRS first before trying to change the provider!",30,"ATIS"):ToAll():ToLog()
 end
 return self
 end
@@ -78720,8 +78731,10 @@ self.power=power or 100
 return self
 end
 function RADIOQUEUE:SetSRS(PathToSRS,Port)
-self.msrs=MSRS:New(PathToSRS,self.frequency/1000000,self.modulation)
-self.msrs:SetPort(Port)
+local path=PathToSRS or MSRS.path
+local port=Port or MSRS.port
+self.msrs=MSRS:New(path,self.frequency/1000000,self.modulation)
+self.msrs:SetPort(port)
 return self
 end
 function RADIOQUEUE:SetDigit(digit,filename,duration,path,subtitle,subduration)
@@ -79584,15 +79597,20 @@ end
 return self
 end
 function MSRS:SetProvider(Provider)
-self:F({Provider=Provider})
+BASE:F({Provider=Provider})
+if self then
 self.provider=Provider or MSRS.Provider.WINDOWS
 return self
+else
+MSRS.provider=Provider or MSRS.Provider.WINDOWS
+end
+return
 end
 function MSRS:GetProvider()
 return self.provider or MSRS.Provider.WINDOWS
 end
 function MSRS:SetProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
-self:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
+BASE:F({Provider,CredentialsFile,AccessKey,SecretKey,Region})
 local option=MSRS._CreateProviderOptions(Provider,CredentialsFile,AccessKey,SecretKey,Region)
 if self then
 self.poptions=self.poptions or{}
