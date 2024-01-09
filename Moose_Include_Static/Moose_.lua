@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T17:24:51+01:00-e26647c2cae496d26ad77078fee65e2e2ecb7be6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-09T08:58:07+01:00-b315375ade38a33abbe09bdc9ff4e9c79da9c8ac ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -105092,11 +105092,11 @@ return self
 end
 function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
 self:T(self.lid.."SetSRS")
-self.PathToSRS=PathToSRS or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
-self.Gender=Gender or"male"
-self.Culture=Culture or"en-US"
-self.Port=Port or 5002
-self.Voice=Voice
+self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.Gender=Gender or MSRS.gender or"male"
+self.Culture=Culture or MSRS.culture or"en-US"
+self.Port=Port or MSRS.port or 5002
+self.Voice=Voice or MSRS.voice
 self.PathToGoogleKey=PathToGoogleKey
 self.Volume=Volume or 1.0
 self.UseSRS=true
@@ -105110,16 +105110,16 @@ self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
-self.SRS:SetVoice(self.Voice)
 self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
 self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.PathToGoogleKey)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
 end
-if(not PathToGoogleKey)and self.AwacsSRS:GetProvider()==MSRS.Provider.GOOGLE then
+if(not PathToGoogleKey)and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
 self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
 self.Voice=Voice or MSRS.poptions.gcloud.voice
 end
+self.SRS:SetVoice(self.Voice)
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self
