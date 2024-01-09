@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-09T08:58:07+01:00-b315375ade38a33abbe09bdc9ff4e9c79da9c8ac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-09T17:47:14+01:00-30d6936f1d24afbe8336a2fc7bb6a7b21fa03cdb ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -32511,13 +32511,13 @@ self:T(self.lid.."SetSRSRadio")
 self.SRSRadio=OnOff and true
 self.SRSTTSRadio=false
 self.SRSFrequency=Frequency or 243
-self.SRSPath=Path or"c:\\"
+self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRS:SetLabel("ACSR")
 self.SRS:SetCoalition(self.coalition)
 self.SRSModulation=Modulation or radio.modulation.AM
 local soundpath=os.getenv('TMP').."\\DCS\\Mission\\l10n\\DEFAULT"
 self.SRSSoundPath=SoundPath or soundpath
-self.SRSPort=Port or 5002
+self.SRSPort=Port or MSRS.port or 5002
 if OnOff then
 self.SRS=MSRS:New(Path,Frequency,Modulation)
 self.SRS:SetPort(self.SRSPort)
@@ -32529,11 +32529,11 @@ self:T(self.lid.."SetSRSTTSRadio")
 self.SRSTTSRadio=OnOff and true
 self.SRSRadio=false
 self.SRSFrequency=Frequency or 243
-self.SRSPath=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSModulation=Modulation or radio.modulation.AM
-self.SRSPort=Port or 5002
+self.SRSPort=Port or MSRS.port or 5002
 if OnOff then
-self.SRS=MSRS:New(Path,Frequency,Modulation)
+self.SRS=MSRS:New(self.SRSPath,Frequency,Modulation)
 self.SRS:SetPort(self.SRSPort)
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetLabel("ACSR")
@@ -32541,7 +32541,8 @@ self.SRS:SetVoice(Voice)
 self.SRS:SetCulture(Culture)
 self.SRS:SetGender(Gender)
 if GoogleCredentials then
-self.SRS:SetGoogle(GoogleCredentials)
+self.SRS:SetProviderOptionsGoogle(GoogleCredentials,GoogleCredentials)
+self.SRS:SetProvider(MSRS.Provider.GOOGLE)
 self.SRSGoogle=true
 end
 self.SRSQ=MSRSQUEUE:New(self.alias)
@@ -32559,8 +32560,8 @@ self.SRSPilot:SetGender(Gender or"male")
 self.SRSPilot:SetLabel("PILOT")
 if self.SRSGoogle then
 local poptions=self.SRS:GetProviderOptions(MSRS.Provider.GOOGLE)
-self.SRSPilot:SetGoogle(poptions.credentials)
-self.SRSPilot:SetGoogleAPIKey(poptions.key)
+self.SRSPilot:SetProviderOptionsGoogle(poptions.credentials,poptions.key)
+self.SRSPilot:SetProvider(MSRS.Provider.GOOGLE)
 end
 return self
 end
@@ -32575,8 +32576,8 @@ self.SRSOperator:SetGender(Gender or"female")
 self.SRSOperator:SetLabel("RESCUE")
 if self.SRSGoogle then
 local poptions=self.SRS:GetProviderOptions(MSRS.Provider.GOOGLE)
-self.SRSOperator:SetGoogle(poptions.credentials)
-self.SRSOperator:SetGoogleAPIKey(poptions.key)
+self.SRSOperator:SetProviderOptionsGoogle(poptions.credentials,poptions.key)
+self.SRSOperator:SetProvider(MSRS.Provider.GOOGLE)
 end
 return self
 end
@@ -36730,12 +36731,12 @@ end
 function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
 if OnOff then
 self.useSRS=true
-self.SRSPath=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSFreq=Frequency or 271
 self.SRSMod=Modulation or radio.modulation.AM
-self.Gender=Gender or"male"
-self.Culture=Culture or"en-US"
-self.Port=Port or 5002
+self.Gender=Gender or MSRS.gender or"male"
+self.Culture=Culture or MSRS.culture or"en-US"
+self.Port=Port or MSRS.port or 5002
 self.Voice=Voice
 self.PathToGoogleKey=PathToGoogleKey
 self.Volume=Volume or 1.0
@@ -36748,9 +36749,10 @@ self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
 self.SRS:SetCoalition(self.coalition)
-self.SRS:SetVolume(Volume)
+self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
-self.SRS:SetGoogle(self.PathToGoogleKey)
+self.SRS:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
+self.SRS:SetProvider(MSRS.Provider.GOOGLE)
 end
 self.SRSQueue=MSRSQUEUE:New(self.alias)
 else
@@ -43483,8 +43485,10 @@ self.instructmsrs:SetLabel("RANGEI")
 self.instructmsrs:SetVolume(Volume or 1.0)
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
 if PathToGoogleKey then
-self.controlmsrs:SetGoogle(PathToGoogleKey)
-self.instructmsrs:SetGoogle(PathToGoogleKey)
+self.controlmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
+self.controlmsrs:SetProvider(MSRS.Provider.GOOGLE)
+self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
+self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 else
 self:E(self.lid..string.format("ERROR: No SRS path specified!"))
@@ -57213,7 +57217,8 @@ self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
 self.SRS:SetVolume(Volume)
 if GoogleCreds then
-self.SRS:SetGoogle(GoogleCreds)
+self.SRS:SetProviderOptionsGoogle(GoogleCreds,GoogleCreds)
+self.SRS:SetProvider(MSRS.Provider.GOOGLE)
 end
 if Voice then
 self.SRS:SetVoice(Voice)
@@ -80273,7 +80278,8 @@ self.msrs:SetCoalition(self.coalition)
 self.msrs:SetVoice(self.SRSVoice)
 self.msrs:SetGender(self.SRSGender)
 if self.SRSGPathToCredentials then
-self.msrs:SetGoogle(self.SRSGPathToCredentials)
+self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
+self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 self.msrs:SetVolume(self.SRSVolume)
 self.msrs:SetLabel("CSAR")
