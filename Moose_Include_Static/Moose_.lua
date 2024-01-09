@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-07T14:44:07+01:00-fa762fe0fc6588ecc140a25ee5661dc55585fb44 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-09T17:28:58+01:00-4ac583e4345a36f8e2af2c226c62886b5dbc2c05 ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -53574,7 +53574,7 @@ end
 function AIRBOSS:EnableSRS(PathToSRS,Port,Culture,Gender,Voice,GoogleCreds,Volume,AltBackend)
 local Frequency=self.AirbossRadio.frequency
 local Modulation=self.AirbossRadio.modulation
-self.SRS=MSRS:New(PathToSRS,Frequency,Modulation,Volume,AltBackend)
+self.SRS=MSRS:New(PathToSRS,Frequency,Modulation,AltBackend)
 self.SRS:SetCoalition(self:GetCoalition())
 self.SRS:SetCoordinate(self:GetCoordinate())
 self.SRS:SetCulture(Culture or"en-US")
@@ -53583,6 +53583,7 @@ self.SRS:SetPath(PathToSRS)
 self.SRS:SetPort(Port or 5002)
 self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
+self.SRS:SetVolume(Volume or 1)
 if GoogleCreds then
 self.SRS:SetGoogle(GoogleCreds)
 end
@@ -79302,13 +79303,39 @@ Microsoft={
 ["David"]="Microsoft David Desktop",
 ["Zira"]="Microsoft Zira Desktop",
 ["Hortense"]="Microsoft Hortense Desktop",
+["de-DE-Hedda"]="Microsoft Hedda Desktop",
+["en-GB-Hazel"]="Microsoft Hazel Desktop",
+["en-US-David"]="Microsoft David Desktop",
+["en-US-Zira"]="Microsoft Zira Desktop",
+["fr-FR-Hortense"]="Microsoft Hortense Desktop",
 },
 MicrosoftGRPC={
-["Hedda"]="Hedda",
 ["Hazel"]="Hazel",
+["George"]="George",
+["Susan"]="Susan",
 ["David"]="David",
 ["Zira"]="Zira",
-["Hortense"]="Hortense",
+["Mark"]="Mark",
+["James"]="James",
+["Catherine"]="Catherine",
+["Richard"]="Richard",
+["Linda"]="Linda",
+["Ravi"]="Ravi",
+["Heera"]="Heera",
+["Sean"]="Sean",
+["en_GB_Hazel"]="Hazel",
+["en_GB_George"]="George",
+["en_GB_Susan"]="Susan",
+["en_US_David"]="David",
+["en_US_Zira"]="Zira",
+["en_US_Mark"]="Mark",
+["en_AU_James"]="James",
+["en_AU_Catherine"]="Catherine",
+["en_CA_Richard"]="Richard",
+["en_CA_Linda"]="Linda",
+["en_IN_Ravi"]="Ravi",
+["en_IN_Heera"]="Heera",
+["en_IR_Sean"]="Sean",
 },
 Google={
 Standard={
