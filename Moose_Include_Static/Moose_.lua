@@ -1,5 +1,8 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-10T13:38:48+01:00-697042eac6c086da902b4016e7abb63d4b687b1e ***')
-ModuleLoader='Scripts/Moose/Modules.lua'
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-10T15:43:38+01:00-b7236eeb58c78938dadbb98707056a793df7ab9c ***')
+if not MOOSE_DEVELOPMENT_FOLDER then
+MOOSE_DEVELOPMENT_FOLDER='Scripts'
+end
+ModuleLoader=MOOSE_DEVELOPMENT_FOLDER..'/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -20,7 +23,7 @@ end
 end
 end
 __Moose.Includes={}
-__Moose.Include('Scripts/Moose/Modules.lua')
+__Moose.Include(MOOSE_DEVELOPMENT_FOLDER..'/Moose/Modules.lua')
 BASE:TraceOnOff(true)
 env.info('*** MOOSE INCLUDE END *** ')
 do return end
@@ -57206,7 +57209,7 @@ end
 function AIRBOSS:EnableSRS(PathToSRS,Port,Culture,Gender,Voice,GoogleCreds,Volume,AltBackend)
 local Frequency=self.AirbossRadio.frequency
 local Modulation=self.AirbossRadio.modulation
-self.SRS=MSRS:New(PathToSRS,Frequency,Modulation,Volume,AltBackend)
+self.SRS=MSRS:New(PathToSRS,Frequency,Modulation,AltBackend)
 self.SRS:SetCoalition(self:GetCoalition())
 self.SRS:SetCoordinate(self:GetCoordinate())
 self.SRS:SetCulture(Culture or"en-US")
@@ -57215,7 +57218,7 @@ self.SRS:SetPath(PathToSRS)
 self.SRS:SetPort(Port or 5002)
 self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
-self.SRS:SetVolume(Volume)
+self.SRS:SetVolume(Volume or 1)
 if GoogleCreds then
 self.SRS:SetProviderOptionsGoogle(GoogleCreds,GoogleCreds)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
@@ -78971,7 +78974,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.18"
+CSAR.version="1.0.19"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -79248,7 +79251,7 @@ end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet)
-self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage)
+self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
 return self
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
@@ -79483,7 +79486,7 @@ end
 end
 return self
 end
-function CSAR:_InitSARForPilot(_downedGroup,_GroupName,_freq,_nomessage)
+function CSAR:_InitSARForPilot(_downedGroup,_GroupName,_freq,_nomessage,_playername)
 self:T(self.lid.." _InitSARForPilot")
 local _leader=_downedGroup:GetUnit(1)
 local _groupName=_GroupName
@@ -79502,7 +79505,7 @@ end
 for _,_heliName in pairs(self.csarUnits)do
 self:_CheckWoundedGroupStatus(_heliName,_groupName)
 end
-self:__PilotDown(2,_downedGroup,_freqk,_groupName,_coordinatesText)
+self:__PilotDown(2,_downedGroup,_freqk,_groupName,_coordinatesText,_playername)
 return self
 end
 function CSAR:_CheckNameInDownedPilots(name)
@@ -79975,7 +79978,7 @@ self:T(self.lid.." _DisplayToAllSAR")
 local messagetime=_messagetime or self.messageTime
 if self.msrs then
 local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
-if self.msrs.google==nil then
+if self.msrs:GetProvider()==MSRS.Provider.WINDOWS then
 voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
 end
 self:I("Voice = "..voice)
@@ -80430,8 +80433,8 @@ end
 end
 return self
 end
-function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText)
-self:T({From,Event,To,Group,Frequency,Leadername,CoordinatesText})
+function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText,Playername)
+self:T({From,Event,To,Group,Frequency,Leadername,CoordinatesText,tostring(Playername)})
 return self
 end
 function CSAR:onbeforeLanded(From,Event,To,HeliName,Airbase)
@@ -117845,13 +117848,39 @@ Microsoft={
 ["David"]="Microsoft David Desktop",
 ["Zira"]="Microsoft Zira Desktop",
 ["Hortense"]="Microsoft Hortense Desktop",
+["de-DE-Hedda"]="Microsoft Hedda Desktop",
+["en-GB-Hazel"]="Microsoft Hazel Desktop",
+["en-US-David"]="Microsoft David Desktop",
+["en-US-Zira"]="Microsoft Zira Desktop",
+["fr-FR-Hortense"]="Microsoft Hortense Desktop",
 },
 MicrosoftGRPC={
-["Hedda"]="Hedda",
 ["Hazel"]="Hazel",
+["George"]="George",
+["Susan"]="Susan",
 ["David"]="David",
 ["Zira"]="Zira",
-["Hortense"]="Hortense",
+["Mark"]="Mark",
+["James"]="James",
+["Catherine"]="Catherine",
+["Richard"]="Richard",
+["Linda"]="Linda",
+["Ravi"]="Ravi",
+["Heera"]="Heera",
+["Sean"]="Sean",
+["en_GB_Hazel"]="Hazel",
+["en_GB_George"]="George",
+["en_GB_Susan"]="Susan",
+["en_US_David"]="David",
+["en_US_Zira"]="Zira",
+["en_US_Mark"]="Mark",
+["en_AU_James"]="James",
+["en_AU_Catherine"]="Catherine",
+["en_CA_Richard"]="Richard",
+["en_CA_Linda"]="Linda",
+["en_IN_Ravi"]="Ravi",
+["en_IN_Heera"]="Heera",
+["en_IR_Sean"]="Sean",
 },
 Google={
 Standard={
