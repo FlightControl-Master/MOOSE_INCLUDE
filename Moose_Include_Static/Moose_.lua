@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-09T17:47:14+01:00-30d6936f1d24afbe8336a2fc7bb6a7b21fa03cdb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-10T13:38:48+01:00-697042eac6c086da902b4016e7abb63d4b687b1e ***')
 ModuleLoader='Scripts/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
@@ -107959,7 +107959,7 @@ function EASYGCICAP:_AddAirwing(Airbasename,Alias)
 self:T(self.lid.."_AddAirwing "..Airbasename)
 local CapFormation=self.CapFormation
 local CAP_Wing=AIRWING:New(Airbasename,Alias)
-CAP_Wing:SetVerbosityLevel(3)
+CAP_Wing:SetVerbosityLevel(0)
 CAP_Wing:SetReportOff()
 CAP_Wing:SetMarker(false)
 CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
