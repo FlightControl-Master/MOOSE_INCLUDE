@@ -1,5 +1,8 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-09T17:28:58+01:00-4ac583e4345a36f8e2af2c226c62886b5dbc2c05 ***')
-ModuleLoader='Scripts/Moose/Modules.lua'
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-10T15:43:24+01:00-eb84ad3ceeb7355558dc20d0c7615de86047982c ***')
+if not MOOSE_DEVELOPMENT_FOLDER then
+MOOSE_DEVELOPMENT_FOLDER='Scripts'
+end
+ModuleLoader=MOOSE_DEVELOPMENT_FOLDER..'/Moose/Modules.lua'
 if io then
 local f=io.open(ModuleLoader,"r")
 if f~=nil then
@@ -20,7 +23,7 @@ end
 end
 end
 __Moose.Includes={}
-__Moose.Include('Scripts/Moose/Modules.lua')
+__Moose.Include(MOOSE_DEVELOPMENT_FOLDER..'/Moose/Modules.lua')
 BASE:TraceOnOff(true)
 env.info('*** MOOSE INCLUDE END *** ')
 do return end
@@ -68269,7 +68272,7 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.18"
+CSAR.version="1.0.19"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -68546,7 +68549,7 @@ end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet)
-self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage)
+self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
 return self
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
@@ -68781,7 +68784,7 @@ end
 end
 return self
 end
-function CSAR:_InitSARForPilot(_downedGroup,_GroupName,_freq,_nomessage)
+function CSAR:_InitSARForPilot(_downedGroup,_GroupName,_freq,_nomessage,_playername)
 self:T(self.lid.." _InitSARForPilot")
 local _leader=_downedGroup:GetUnit(1)
 local _groupName=_GroupName
@@ -68800,7 +68803,7 @@ end
 for _,_heliName in pairs(self.csarUnits)do
 self:_CheckWoundedGroupStatus(_heliName,_groupName)
 end
-self:__PilotDown(2,_downedGroup,_freqk,_groupName,_coordinatesText)
+self:__PilotDown(2,_downedGroup,_freqk,_groupName,_coordinatesText,_playername)
 return self
 end
 function CSAR:_CheckNameInDownedPilots(name)
@@ -69273,7 +69276,7 @@ self:T(self.lid.." _DisplayToAllSAR")
 local messagetime=_messagetime or self.messageTime
 if self.msrs then
 local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
-if self.msrs.google==nil then
+if self.msrs:GetProvider()==MSRS.Provider.WINDOWS then
 voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
 end
 self:I("Voice = "..voice)
@@ -69576,7 +69579,8 @@ self.msrs:SetCoalition(self.coalition)
 self.msrs:SetVoice(self.SRSVoice)
 self.msrs:SetGender(self.SRSGender)
 if self.SRSGPathToCredentials then
-self.msrs:SetGoogle(self.SRSGPathToCredentials)
+self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
+self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 self.msrs:SetVolume(self.SRSVolume)
 self.msrs:SetLabel("CSAR")
@@ -69727,8 +69731,8 @@ end
 end
 return self
 end
-function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText)
-self:T({From,Event,To,Group,Frequency,Leadername,CoordinatesText})
+function CSAR:onbeforePilotDown(From,Event,To,Group,Frequency,Leadername,CoordinatesText,Playername)
+self:T({From,Event,To,Group,Frequency,Leadername,CoordinatesText,tostring(Playername)})
 return self
 end
 function CSAR:onbeforeLanded(From,Event,To,HeliName,Airbase)
