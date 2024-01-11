@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T17:14:07+01:00-14686415635f16d67cbfc672f41defc05f240765 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T17:31:40+01:00-f29d055ca37e4b3d6234bb06583523c83edf3b10 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2453,10 +2453,11 @@ end
 _start=_start+500000
 end
 else
-local End=End*1000000 or 399000000
-local Start=Start*1000000 or 220000000
+local myend=End*1000000 or 399000000
+local mystart=Start*1000000 or 220000000
 while _start<399000000 do
-if _start~=243000000 and _start<Start and _start>End then
+if _start~=243000000 and(_start<mystart or _start>myend)then
+print(_start)
 table.insert(FreeUHFFrequencies,_start)
 end
 _start=_start+500000
