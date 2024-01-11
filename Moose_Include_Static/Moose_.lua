@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T10:05:22+01:00-a44ad5c7551e4a4df34f2f9d4526be78f7c3f202 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T12:52:19+01:00-82bea9d5ff6e4dbc4b79dda5cb2474743a3f6e10 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -107993,6 +107993,7 @@ local flightgroup=Flightgroup
 flightgroup:SetDespawnAfterHolding()
 flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
 flightgroup:GetGroup():CommandEPLRS(true,5)
+flightgroup:GetGroup():SetOptionRadarUsingForContinousSearch()
 if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mission.type~=AUFTRAG.Type.RECON then
 flightgroup:SetDetection(true)
 flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
@@ -108013,7 +108014,7 @@ flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetFuelLowRTB(true)
 Intel:AddAgent(flightgroup)
 function flightgroup:OnAfterHolding(From,Event,To)
-self:ClearToLand(5)
+self:Despawn(1,true)
 end
 end
 if self.noaltert5>0 then
