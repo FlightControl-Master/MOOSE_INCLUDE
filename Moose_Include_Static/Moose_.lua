@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T16:11:51+01:00-f6b6a6a5773386ce6a3b86442642e2891cb2f415 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T17:14:43+01:00-baf71233644084b65094c46bf547198c7e49e847 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2442,14 +2442,25 @@ _start=_start+50000
 end
 return FreeVHFFrequencies
 end
-function UTILS.GenerateUHFrequencies()
+function UTILS.GenerateUHFrequencies(Start,End)
 local FreeUHFFrequencies={}
 local _start=220000000
+if not Start then
 while _start<399000000 do
 if _start~=243000000 then
 table.insert(FreeUHFFrequencies,_start)
 end
 _start=_start+500000
+end
+else
+local End=End*1000000 or 399000000
+local Start=Start*1000000 or 220000000
+while _start<399000000 do
+if _start~=243000000 and _start<Start and _start>End then
+table.insert(FreeUHFFrequencies,_start)
+end
+_start=_start+500000
+end
 end
 return FreeUHFFrequencies
 end
@@ -68427,7 +68438,7 @@ end
 function CTLD:_GenerateUHFrequencies()
 self:T(self.lid.." _GenerateUHFrequencies")
 self.FreeUHFFrequencies={}
-self.FreeUHFFrequencies=UTILS.GenerateUHFrequencies()
+self.FreeUHFFrequencies=UTILS.GenerateUHFrequencies(243,320)
 return self
 end
 function CTLD:_GenerateFMFrequencies()
