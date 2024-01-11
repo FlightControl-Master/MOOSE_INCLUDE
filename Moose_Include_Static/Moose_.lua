@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T12:52:19+01:00-82bea9d5ff6e4dbc4b79dda5cb2474743a3f6e10 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T12:52:42+01:00-4d7d34b71f740fde004c02198b950dfcb30657fa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -24698,6 +24698,41 @@ end
 return self
 end
 return nil
+end
+function CONTROLLABLE:SetOptionRadarUsing(Option)
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.RADAR_USING,Option)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadarUsingNever()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.RADAR_USING,0)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadarUsingForAttackOnly()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.RADAR_USING,1)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadarUsingForSearchIfRequired()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.RADAR_USING,2)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadarUsingForContinousSearch()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.RADAR_USING,3)
+end
+return self
 end
 function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation,onland)
 self:F2({self.ControllableName})
