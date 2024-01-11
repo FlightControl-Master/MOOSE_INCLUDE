@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T12:52:42+01:00-4d7d34b71f740fde004c02198b950dfcb30657fa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T16:11:51+01:00-f6b6a6a5773386ce6a3b86442642e2891cb2f415 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -107855,7 +107855,6 @@ capspeed=300,
 capalt=25000,
 capdir=45,
 capleg=15,
-capgrouping=2,
 maxinterceptsize=2,
 missionrange=100,
 noaltert5=4,
@@ -107874,8 +107873,9 @@ NoGoZoneSet=nil,
 Monitor=false,
 TankerInvisible=true,
 CapFormation=nil,
+ReadyFlightGroups={},
 }
-EASYGCICAP.version="0.0.9"
+EASYGCICAP.version="0.1.10"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -107912,6 +107912,7 @@ self:__Start(math.random(6,12))
 return self
 end
 function EASYGCICAP:SetCAPFormation(Formation)
+self:T(self.lid.."SetCAPFormation")
 self.CapFormation=Formation
 return self
 end
@@ -107973,6 +107974,11 @@ end
 function EASYGCICAP:SetDefaultEngageRange(Range)
 self:T(self.lid.."SetDefaultNumberAlter5Standby")
 self.engagerange=Range or 50
+return self
+end
+function EASYGCICAP:SetDefaultOverhead(Overhead)
+self:T(self.lid.."SetDefaultOverhead")
+self.overhead=Overhead or 0.75
 return self
 end
 function EASYGCICAP:AddAirwing(Airbasename,Alias)
@@ -108336,21 +108342,43 @@ self:T(self.lid.."AddRejectZone")
 self.NoGoZoneSet:AddZone(Zone)
 return self
 end
-function EASYGCICAP:_StartIntel()
-self:T(self.lid.."_StartIntel")
-local BlueAir_DetectionSetGroup=SET_GROUP:New()
-BlueAir_DetectionSetGroup:FilterPrefixes({self.EWRName})
-BlueAir_DetectionSetGroup:FilterStart()
-local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.EWRName)
-BlueIntel:SetClusterAnalysis(true,false,false)
-BlueIntel:SetForgetTime(300)
-BlueIntel:SetAcceptZones(self.GoZoneSet)
-BlueIntel:SetRejectZones(self.NoGoZoneSet)
-BlueIntel:SetVerbosity(0)
-BlueIntel:Start()
-if self.debug then
-BlueIntel.debug=true
+function EASYGCICAP:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,Group,WingSize)
+self:I("_TryAssignIntercept for size "..WingSize or 1)
+local assigned=false
+local wingsize=WingSize or 1
+local mindist=0
+local disttable={}
+if Group and Group:IsAlive()then
+local gcoord=Group:GetCoordinate()or COORDINATE:New(0,0,0)
+self:I(self.lid..string.format("Assignment for %s",Group:GetName()))
+for _name,_FG in pairs(ReadyFlightGroups or{})do
+local FG=_FG
+local fcoord=FG:GetCoordinate()
+local dist=math.floor(UTILS.Round(fcoord:Get2DDistance(gcoord)/1000,1))
+self:I(self.lid..string.format("FG %s Distance %dkm",_name,dist))
+disttable[#disttable+1]={FG=FG,dist=dist}
+if dist>mindist then mindist=dist end
 end
+local function sortDistance(a,b)
+return a.dist<b.dist
+end
+table.sort(disttable,sortDistance)
+for _,_entry in ipairs(disttable)do
+local FG=_entry.FG
+FG:AddMission(InterceptAuftrag)
+local cm=FG:GetMissionCurrent()
+if cm then cm:Cancel()end
+wingsize=wingsize-1
+self:I(self.lid..string.format("Assigned to FG %s Distance %dkm",FG:GetName(),_entry.dist))
+if wingsize==0 then
+assigned=true
+break
+end
+end
+end
+return assigned,wingsize
+end
+function EASYGCICAP:_AssignIntercept(Cluster)
 local overhead=self.overhead
 local capspeed=self.capspeed+100
 local capalt=self.capalt
@@ -108360,16 +108388,16 @@ local wings=self.wings
 local ctlpts=self.ManagedCP
 local MaxAliveMissions=self.MaxAliveMissions*self.capgrouping
 local nogozoneset=self.NoGoZoneSet
-function BlueIntel:OnAfterNewCluster(From,Event,To,Cluster)
+local ReadyFlightGroups=self.ReadyFlightGroups
 if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
-local contact=self:GetHighestThreatContact(Cluster)
+local contact=self.Intel:GetHighestThreatContact(Cluster)
 local name=contact.groupname
 local threat=contact.threatlevel
-local position=self:CalcClusterFuturePosition(Cluster,300)
+local position=self.Intel:CalcClusterFuturePosition(Cluster,300)
 local bestdistance=2000*1000
 local targetairwing=nil
 local targetawname=""
-local clustersize=self:ClusterCountUnits(Cluster)or 1
+local clustersize=self.Intel:ClusterCountUnits(Cluster)or 1
 local wingsize=math.abs(overhead*(clustersize+1))
 if wingsize>maxsize then wingsize=maxsize end
 local retrymission=true
@@ -108414,7 +108442,6 @@ local repeats=repeatsonfailure
 local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetMissionRange(150)
 :SetPriority(1,true,1)
-:SetRequiredAssets(wingsize)
 :SetRepeatOnFailure(repeats)
 :SetMissionSpeed(UTILS.KnotsToAltKIAS(capspeed,capalt))
 :SetMissionAltitude(capalt)
@@ -108434,13 +108461,38 @@ contact.group,
 nogozoneset
 )
 end
+local assigned,rest=self:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,contact.group,wingsize)
+if not assigned then
+InterceptAuftrag:SetRequiredAssets(rest)
 targetairwing:AddMission(InterceptAuftrag)
+end
 Cluster.mission=InterceptAuftrag
 end
 else
 MESSAGE:New("**** Not enough airframes available or max mission limit reached!",15,"CAPGCI"):ToAllIf(self.debug):ToLog()
 end
 end
+end
+function EASYGCICAP:_StartIntel()
+self:T(self.lid.."_StartIntel")
+local BlueAir_DetectionSetGroup=SET_GROUP:New()
+BlueAir_DetectionSetGroup:FilterPrefixes({self.EWRName})
+BlueAir_DetectionSetGroup:FilterStart()
+local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.EWRName)
+BlueIntel:SetClusterAnalysis(true,false,false)
+BlueIntel:SetForgetTime(300)
+BlueIntel:SetAcceptZones(self.GoZoneSet)
+BlueIntel:SetRejectZones(self.NoGoZoneSet)
+BlueIntel:SetVerbosity(0)
+BlueIntel:Start()
+if self.debug then
+BlueIntel.debug=true
+end
+local function AssignCluster(Cluster)
+self:_AssignIntercept(Cluster)
+end
+function BlueIntel:OnAfterNewCluster(From,Event,To,Cluster)
+AssignCluster(Cluster)
 end
 self.Intel=BlueIntel
 return self
@@ -108491,6 +108543,22 @@ awacsmission=awacsmission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.AWACS})
 tankermission=tankermission+_wing[1]:CountMissionsInQueue({AUFTRAG.Type.TANKER})
 assets=assets+count
 instock=instock+count2
+local assetsonmission=_wing[1]:GetAssetsOnMission({AUFTRAG.Type.GCICAP,AUFTRAG.Type.PATROLRACETRACK})
+self.ReadyFlightGroups=nil
+self.ReadyFlightGroups={}
+for _,_asset in pairs(assetsonmission or{})do
+local asset=_asset
+local FG=asset.flightgroup
+if FG then
+local name=FG:GetName()
+local engage=FG:IsEngaging()
+local hasmissiles=FG:IsOutOfMissiles()==nil and true or false
+local ready=hasmissiles and FG:IsFuelGood()and FG:IsAirborne()
+if ready then
+self.ReadyFlightGroups[name]=FG
+end
+end
+end
 end
 if self.Monitor then
 local threatcount=#self.Intel.Clusters or 0
