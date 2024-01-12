@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T15:35:17+01:00-2e386be2f6eff6bd72f465dfc6d53b38634c41c8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T15:45:50+01:00-2946c2e225930e94b278c8ae49ececb558a6c373 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45202,6 +45202,7 @@ end
 end
 function ARTY:onafterRespawn(Controllable,From,Event,To)
 self:_EventFromTo("onafterRespawn",Event,From,To)
+self:I("Respawning arty group")
 local group=self.Controllable
 self.Controllable=group:Respawn()
 self.respawning=false
