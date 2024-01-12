@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T15:45:50+01:00-2946c2e225930e94b278c8ae49ececb558a6c373 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T18:44:38+01:00-ff84d682bd0068f4831f99f4ec4d8065f78234fd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56130,12 +56130,18 @@ end
 end
 return self
 end
-function STRATEGO:GetHighestWeightNodes()
+function STRATEGO:GetHighestWeightNodes(Coalition)
 self:T(self.lid.."GetHighestWeightNodes")
 local weight=0
 local airbases={}
 for _name,_data in pairs(self.airbasetable)do
-if _data.weight>=weight then
+local okay=true
+if Coalition then
+if _data.coalition~=Coalition then
+okay=false
+end
+end
+if _data.weight>=weight and okay then
 weight=_data.weight
 if not airbases[weight]then airbases[weight]={}end
 table.insert(airbases[weight],_name)
@@ -56143,12 +56149,18 @@ end
 end
 return airbases[weight],weight
 end
-function STRATEGO:GetNextHighestWeightNodes(Weight)
+function STRATEGO:GetNextHighestWeightNodes(Weight,Coalition)
 self:T(self.lid.."GetNextHighestWeightNodes")
 local weight=0
 local airbases={}
 for _name,_data in pairs(self.airbasetable)do
-if _data.weight>=weight and _data.weight<Weight then
+local okay=true
+if Coalition then
+if _data.coalition~=Coalition then
+okay=false
+end
+end
+if _data.weight>=weight and _data.weight<Weight and okay then
 weight=_data.weight
 if not airbases[weight]then airbases[weight]={}end
 table.insert(airbases[weight],_name)
@@ -56321,6 +56333,8 @@ name=name,
 dist=dist,
 points=fpoints,
 coalition=coa,
+coalitionname=UTILS.GetCoalitionName(coa),
+coordinate=self.airbasetable[name].coord,
 }
 end
 local enemycoa=self.coalition==coalition.side.BLUE and coalition.side.RED or coalition.side.BLUE
@@ -56336,6 +56350,8 @@ name=name,
 dist=dist,
 points=fpoints,
 coalition=coa,
+coalitionname=UTILS.GetCoalitionName(coa),
+coordinate=self.airbasetable[name].coord,
 }
 end
 end
@@ -56362,6 +56378,7 @@ dist=dist,
 points=fpoints,
 coalition=coa,
 coalitionname=UTILS.GetCoalitionName(coa),
+coordinate=self.airbasetable[name].coord,
 }
 end
 local enemycoa=self.coalition==coalition.side.BLUE and coalition.side.RED or coalition.side.BLUE
@@ -56378,6 +56395,7 @@ dist=dist,
 points=fpoints,
 coalition=coa,
 coalitionname=UTILS.GetCoalitionName(coa),
+coordinate=self.airbasetable[name].coord,
 }
 end
 end
@@ -56388,6 +56406,8 @@ function STRATEGO:FindNeighborNodes(Name,Enemies,Friends)
 self:T(self.lid.."FindNeighborNodes")
 local neighbors={}
 local name=string.gsub(Name,"[%p%s]",".")
+local shortestdist=1000*1000
+local nearest=nil
 for _route,_data in pairs(self.disttable)do
 if string.find(_route,name,1,true)then
 local dist=self.disttable[_route]
@@ -56406,9 +56426,13 @@ end
 else
 neighbors[cname]=dist
 end
+if neighbors[cname]and dist.dist<shortestdist then
+shortestdist=dist.dist
+nearest=cname
 end
 end
-return neighbors
+end
+return neighbors,nearest,shortestdist
 end
 function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType)
 self:T(self.lid.."FindRoute")
@@ -75199,6 +75223,7 @@ BARRAGE="Barrage",
 ARMORATTACK="Armor Attack",
 CASENHANCED="CAS Enhanced",
 HOVER="Hover",
+LANDATCOORDINATE="Land at Coordinate",
 GROUNDATTACK="Ground Attack",
 CARGOTRANSPORT="Cargo Transport",
 RELOCATECOHORT="Relocate Cohort",
@@ -75343,6 +75368,23 @@ mission.hoverSpeed=0.1
 mission.hoverTime=Time or 300
 self:SetMissionSpeed(Speed or 150)
 self:SetMissionAltitude(MissionAlt or 1000)
+mission.missionFraction=0.9
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.PassiveDefense
+mission.categories={AUFTRAG.Category.HELICOPTER}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewLANDATCOORDINATE(Coordinate,OuterRadius,InnerRadius,Time,Speed,MissionAlt)
+local mission=AUFTRAG:New(AUFTRAG.Type.LANDATCOORDINATE)
+mission:_TargetFromObject(Coordinate)
+mission.stayTime=Time or 300
+mission.stayAt=Coordinate
+self:SetMissionSpeed(Speed or 150)
+self:SetMissionAltitude(MissionAlt or 1000)
+if OuterRadius then
+mission.stayAt=Coordinate:GetRandomCoordinateInRadius(UTILS.FeetToMeters(OuterRadius),UTILS.FeetToMeters(InnerRadius or 0))
+end
 mission.missionFraction=0.9
 mission.optionROE=ENUMS.ROE.ReturnFire
 mission.optionROT=ENUMS.ROT.PassiveDefense
@@ -77880,6 +77922,11 @@ param.hoverTime=self.hoverTime
 param.missionSpeed=self.missionSpeed
 param.missionAltitude=self.missionAltitude
 DCStask.params=param
+table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.LANDATCOORDINATE then
+local DCStask={}
+local Vec2=self.stayAt:GetVec2()
+local DCStask=CONTROLLABLE.TaskLandAtVec2(nil,Vec2,self.stayTime)
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.ONGUARD or self.type==AUFTRAG.Type.ARMOREDGUARD then
 local DCStask={}
