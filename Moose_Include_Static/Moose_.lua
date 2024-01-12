@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-11T17:31:40+01:00-f29d055ca37e4b3d6234bb06583523c83edf3b10 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T15:33:27+01:00-797bf0047b8ece2c013a340706927b5ac2a43655 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12113,7 +12113,7 @@ end
 end
 function SET_GROUP:AddInDatabase(Event)
 self:F3({Event})
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSGroupName]then
 self.Database[Event.IniDCSGroupName]=GROUP:Register(Event.IniDCSGroupName)
 self:T3(self.Database[Event.IniDCSGroupName])
@@ -12611,7 +12611,7 @@ return self
 end
 function SET_UNIT:AddInDatabase(Event)
 self:F3({Event})
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSUnitName]then
 self.Database[Event.IniDCSUnitName]=UNIT:Register(Event.IniDCSUnitName)
 self:T3(self.Database[Event.IniDCSUnitName])
@@ -13689,7 +13689,7 @@ end
 function SET_CLIENT:_EventPlayerEnterUnit(Event)
 self:I("_EventPlayerEnterUnit")
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:AddInDatabase(Event)
 self:I(ObjectName,UTILS.PrintTableToLog(Object))
 if Object and self:IsIncludeObject(Object)then
@@ -13702,7 +13702,7 @@ end
 function SET_CLIENT:_EventPlayerLeaveUnit(Event)
 self:I("_EventPlayerLeaveUnit")
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==1 and Event.IniGroup and Event.IniGroup:IsGround()then
+if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 self:Remove(ObjectName)
@@ -15331,6 +15331,20 @@ end
 end
 return self
 end
+function SET_OPSGROUP:_EventOnBirth(Event)
+self:F3({Event})
+if Event.IniDCSUnit and Event.IniDCSGroup then
+local DCSgroup=Event.IniDCSGroup
+if DCSgroup:getInitialSize()==DCSgroup:getSize()then
+local groupname,group=self:AddInDatabase(Event)
+if group and group:CountAliveUnits()==DCSgroup:getInitialSize()then
+if group and self:IsIncludeObject(group)then
+self:Add(groupname,group)
+end
+end
+end
+end
+end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
 self:F({Event})
 if Event.IniDCSUnit then
@@ -15343,7 +15357,7 @@ end
 end
 end
 function SET_OPSGROUP:AddInDatabase(Event)
-if Event.IniObjectCategory==1 then
+if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSGroupName]then
 self.Database[Event.IniDCSGroupName]=GROUP:Register(Event.IniDCSGroupName)
 end
