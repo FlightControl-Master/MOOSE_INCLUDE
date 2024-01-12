@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T15:44:28+01:00-088436c5ceb27dc9e50ec767dc9f520dd19edeb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T16:05:14+01:00-bb07e1935e694b761e9ce3917e40fe716ef8edb7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -25472,7 +25472,14 @@ if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()or{}
 local Units={}
 for Index,UnitData in pairs(DCSUnits)do
+local unit=UNIT:Find(UnitData)
+if unit then
 Units[#Units+1]=UNIT:Find(UnitData)
+else
+local UnitName=UnitData:getName()
+unit=_DATABASE:AddUnit(UnitName)
+Units[#Units+1]=unit
+end
 end
 self:T3(Units)
 return Units
