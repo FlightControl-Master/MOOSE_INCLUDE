@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T18:44:38+01:00-ff84d682bd0068f4831f99f4ec4d8065f78234fd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-14T14:57:21+01:00-6af66db4c3d1d8946171b57973435120f3b12837 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79670,6 +79670,9 @@ end
 end
 clustersAO=self.PictureAO:GetSize()
 if clustersAO==0 and clustersEWR==0 then
+local picclean=self.gettext:GetEntry("PICCLEAN",self.locale)
+text=string.format(picclean,gcallsign,self.callsigntxt)
+textScreen=text
 self:_NewRadioEntry(text,text,GID,Outcome,true,true,false)
 else
 if clustersAO>0 then
@@ -97686,7 +97689,7 @@ function OPSGROUP:SetLaserTarget(Target)
 if Target then
 if Target:IsInstanceOf("SCENERY")then
 self.spot.TargetType=0
-self.spot.offsetTarget={x=0,y=1,z=0}
+self.spot.offsetTarget={x=0,y=3,z=0}
 elseif Target:IsInstanceOf("POSITIONABLE")then
 local target=Target
 if target:IsAlive()then
@@ -103701,7 +103704,7 @@ end
 )
 return self
 end
-function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode)
+function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode,HoldingPoint)
 self:T(self.lid.."EnablePrecisionBombing")
 if FlightGroup then
 if FlightGroup.ClassName and(FlightGroup.ClassName=="FLIGHTGROUP"or FlightGroup.ClassName=="ARMYGROUP")then
@@ -103715,6 +103718,7 @@ self.LaserCode=LaserCode or 1688
 self.LasingDroneTemplate=self.LasingDrone:_GetTemplate(true)
 if self.LasingDrone:IsFlightgroup()then
 local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(self.Coalition))
+if HoldingPoint then BullsCoordinate=HoldingPoint end
 local Orbit=AUFTRAG:NewORBIT_CIRCLE(BullsCoordinate,10000,120)
 self.LasingDrone:AddMission(Orbit)
 end
@@ -104085,10 +104089,9 @@ self.LasingDrone.playertask.busy=true
 self.LasingDrone.playertask.inreach=false
 self.LasingDrone.playertask.reachmessage=false
 if self.LasingDrone:IsFlightgroup()then
+self.LasingDrone:CancelAllMissions()
 local auftrag=AUFTRAG:NewORBIT_CIRCLE(task.Target:GetCoordinate(),10000,120)
-local currmission=self.LasingDrone:GetMissionCurrent()
 self.LasingDrone:AddMission(auftrag)
-currmission:__Cancel(-2)
 elseif self.LasingDrone:IsArmygroup()then
 local tgtcoord=task.Target:GetCoordinate()
 local tgtzone=ZONE_RADIUS:New("ArmyGroup-"..math.random(1,10000),tgtcoord:GetVec2(),3000)
