@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-14T14:57:21+01:00-6af66db4c3d1d8946171b57973435120f3b12837 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-16T15:09:51+01:00-298c569f93a47e65f8cd8826a39eda3e27e8ea7e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54643,8 +54643,9 @@ lid="",
 verbose=0,
 alias="",
 debug=false,
+smokemenu=true,
 }
-AUTOLASE.version="0.1.22"
+AUTOLASE.version="0.1.23"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -54711,6 +54712,7 @@ self.minthreatlevel=0
 self.blacklistattributes={}
 self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.playermenus={}
+self.smokemenu=true
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -54745,9 +54747,11 @@ if self.playermenus[unitname]then self.playermenus[unitname]:Remove()end
 local lasetopm=MENU_GROUP:New(Group,"Autolase",nil)
 self.playermenus[unitname]=lasetopm
 local lasemenu=MENU_GROUP_COMMAND:New(Group,"Status",lasetopm,self.ShowStatus,self,Group,Unit)
+if self.smokemenu then
 local smoke=(self.smoketargets==true)and"off"or"on"
 local smoketext=string.format("Switch smoke targets to %s",smoke)
 local smokemenu=MENU_GROUP_COMMAND:New(Group,smoketext,lasetopm,self.SetSmokeTargets,self,(not self.smoketargets))
+end
 for _,_grp in pairs(self.RecceSet.Set)do
 local grp=_grp
 local unit=grp:GetUnit(1)
@@ -54893,6 +54897,14 @@ self.smokecolor=Color or SMOKECOLOR.Red
 local smktxt=OnOff==true and"on"or"off"
 local Message="Smoking targets is now "..smktxt.."!"
 self:NotifyPilots(Message,10)
+return self
+end
+function AUTOLASE:EnableSmokeMenu()
+self.smokemenu=true
+return self
+end
+function AUTOLASE:DisableSmokeMenu()
+self.smokemenu=false
 return self
 end
 function AUTOLASE:GetLosFromUnit(Unit)
@@ -102845,7 +102857,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.22"
+PLAYERTASK.version="0.1.23"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -104136,6 +104148,7 @@ self:T(self.lid.."Laser Off")
 else
 local dcoord=self.LasingDrone:GetCoordinate()
 local tcoord=task.Target:GetCoordinate()
+tcoord.y=tcoord.y+2
 local dist=dcoord:Get2DDistance(tcoord)
 if dist<3000 and not self.LasingDrone:IsLasing()then
 self:T(self.lid.."Laser On")
@@ -104548,7 +104561,7 @@ local inreach=self.LasingDrone.playertask.inreach==true and yes or no
 local islasing=self.LasingDrone:IsLasing()==true and yes or no
 local prectext=self.gettext:GetEntry("POINTERTARGETREPORT",self.locale)
 prectext=string.format(prectext,inreach,islasing)
-text=text..prectext
+text=text..prectext.."("..self.LaserCode..")"
 end
 end
 if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.buddylasing then
