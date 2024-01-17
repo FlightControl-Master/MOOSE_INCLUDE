@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-17T08:10:01+01:00-056b761ebce6ebe08f41b0c00f83996ab1a35fcd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-17T12:17:14+01:00-4076ff5bb533c8dbacd77790ee2613c5864e7c76 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -73614,8 +73614,10 @@ pointsRecon={},
 markpoints=false,
 capOptionPatrolRaceTrack=false,
 capFormation=nil,
+capOptionVaryStartTime=nil,
+capOptionVaryEndTime=nil,
 }
-AIRWING.version="0.9.4"
+AIRWING.version="0.9.5"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -73870,6 +73872,11 @@ function AIRWING:SetCapCloseRaceTrack(OnOff)
 self.capOptionPatrolRaceTrack=OnOff
 return self
 end
+function AIRWING:SetCapStartTimeVariation(Start,End)
+self.capOptionVaryStartTime=Start or 5
+self.capOptionVaryEndTime=End or 60
+return self
+end
 function AIRWING:SetNumberTankerBoom(Nboom)
 self.nflightsTANKERboom=Nboom or 1
 return self
@@ -74071,6 +74078,10 @@ if self.capOptionPatrolRaceTrack then
 missionCAP=AUFTRAG:NewPATROL_RACETRACK(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg,self.capFormation)
 else
 missionCAP=AUFTRAG:NewGCICAP(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg)
+end
+if self.capOptionVaryStartTime then
+local ClockStart=math.random(self.capOptionVaryStartTime,self.capOptionVaryEndTime)
+missionCAP:SetTime(ClockStart)
 end
 missionCAP.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
@@ -108071,6 +108082,11 @@ self:T(self.lid.."SetDefaultOverhead")
 self.overhead=Overhead or 0.75
 return self
 end
+function EASYGCICAP:SetCapStartTimeVariation(Start,End)
+self.capOptionVaryStartTime=Start or 5
+self.capOptionVaryEndTime=End or 60
+return self
+end
 function EASYGCICAP:AddAirwing(Airbasename,Alias)
 self:T(self.lid.."AddAirwing "..Airbasename)
 local AWEntry={}
@@ -108100,6 +108116,9 @@ CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
 CAP_Wing:SetNumberCAP(self.capgrouping)
 CAP_Wing:SetCapCloseRaceTrack(true)
+if self.capOptionVaryStartTime then
+CAP_Wing:SetCapStartTimeVariation(self.capOptionVaryStartTime,self.capOptionVaryEndTime)
+end
 if CapFormation then
 CAP_Wing:SetCAPFormation(CapFormation)
 end
