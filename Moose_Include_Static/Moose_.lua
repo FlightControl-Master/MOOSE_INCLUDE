@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-12T16:05:14+01:00-bb07e1935e694b761e9ce3917e40fe716ef8edb7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-17T12:15:46+01:00-dcd4d0ab624aa530cb6953d5c68bf94d2fb18ff2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -22564,18 +22564,36 @@ self:SetCommand(CommandSetFuel)
 end
 return self
 end
-function CONTROLLABLE:CommandSetFrequency(Frequency,Modulation,Delay)
+function CONTROLLABLE:CommandSetFrequency(Frequency,Modulation,Power,Delay)
 local CommandSetFrequency={
 id='SetFrequency',
 params={
 frequency=Frequency*1000000,
 modulation=Modulation or radio.modulation.AM,
+power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation},Delay)
+SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power})
 else
 self:SetCommand(CommandSetFrequency)
+end
+return self
+end
+function CONTROLLABLE:CommandSetFrequencyForUnit(Frequency,Modulation,Power,UnitID,Delay)
+local CommandSetFrequencyForUnit={
+id='SetFrequencyForUnit',
+params={
+frequency=Frequency*1000000,
+modulation=Modulation or radio.modulation.AM,
+unitId=UnitID or self:GetID(),
+power=Power or 10,
+},
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID})
+else
+self:SetCommand(CommandSetFrequencyForUnit)
 end
 return self
 end
