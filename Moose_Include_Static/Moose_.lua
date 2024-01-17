@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-16T15:09:51+01:00-298c569f93a47e65f8cd8826a39eda3e27e8ea7e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-17T08:10:01+01:00-056b761ebce6ebe08f41b0c00f83996ab1a35fcd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -102857,7 +102857,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.23"
+PLAYERTASK.version="0.1.24"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -103716,7 +103716,7 @@ end
 )
 return self
 end
-function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode,HoldingPoint)
+function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode,HoldingPoint,Alt,Speed)
 self:T(self.lid.."EnablePrecisionBombing")
 if FlightGroup then
 if FlightGroup.ClassName and(FlightGroup.ClassName=="FLIGHTGROUP"or FlightGroup.ClassName=="ARMYGROUP")then
@@ -103728,10 +103728,19 @@ self.precisionbombing=true
 self.LasingDrone:SetLaser(LaserCode)
 self.LaserCode=LaserCode or 1688
 self.LasingDroneTemplate=self.LasingDrone:_GetTemplate(true)
+self.LasingDroneAlt=Alt or 10000
+self.LasingDroneSpeed=Speed or 120
 if self.LasingDrone:IsFlightgroup()then
+self.LasingDroneIsFlightgroup=true
 local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(self.Coalition))
 if HoldingPoint then BullsCoordinate=HoldingPoint end
-local Orbit=AUFTRAG:NewORBIT_CIRCLE(BullsCoordinate,10000,120)
+local Orbit=AUFTRAG:NewORBIT_CIRCLE(BullsCoordinate,self.LasingDroneAlt,self.LasingDroneSpeed)
+self.LasingDrone:AddMission(Orbit)
+elseif self.LasingDrone:IsArmygroup()then
+self.LasingDroneIsArmygroup=true
+local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(self.Coalition))
+if HoldingPoint then BullsCoordinate=HoldingPoint end
+local Orbit=AUFTRAG:NewONGUARD(BullsCoordinate)
 self.LasingDrone:AddMission(Orbit)
 end
 else
@@ -104086,9 +104095,15 @@ self:E(self.lid.."Lasing drone is dead ... creating a new one!")
 if self.LasingDrone then
 self.LasingDrone:_Respawn(1,nil,true)
 else
+if self.LasingDroneIsFlightgroup then
 local FG=FLIGHTGROUP:New(self.LasingDroneTemplate)
 FG:Activate()
 self:EnablePrecisionBombing(FG,self.LaserCode or 1688)
+else
+local FG=ARMYGROUP:New(self.LasingDroneTemplate)
+FG:Activate()
+self:EnablePrecisionBombing(FG,self.LaserCode or 1688)
+end
 end
 return self
 end
@@ -104100,11 +104115,11 @@ self.LasingDrone.playertask.id=task.PlayerTaskNr
 self.LasingDrone.playertask.busy=true
 self.LasingDrone.playertask.inreach=false
 self.LasingDrone.playertask.reachmessage=false
-if self.LasingDrone:IsFlightgroup()then
+if self.LasingDroneIsFlightgroup then
 self.LasingDrone:CancelAllMissions()
-local auftrag=AUFTRAG:NewORBIT_CIRCLE(task.Target:GetCoordinate(),10000,120)
+local auftrag=AUFTRAG:NewORBIT_CIRCLE(task.Target:GetCoordinate(),self.LasingDroneAlt,self.LasingDroneSpeed)
 self.LasingDrone:AddMission(auftrag)
-elseif self.LasingDrone:IsArmygroup()then
+elseif self.LasingDroneIsArmygroup then
 local tgtcoord=task.Target:GetCoordinate()
 local tgtzone=ZONE_RADIUS:New("ArmyGroup-"..math.random(1,10000),tgtcoord:GetVec2(),3000)
 local finalpos=nil
@@ -104117,10 +104132,9 @@ end
 end
 end
 if finalpos then
+self.LasingDrone:CancelAllMissions()
 local auftrag=AUFTRAG:NewARMOREDGUARD(finalpos,"Off road")
-local currmission=self.LasingDrone:GetMissionCurrent()
 self.LasingDrone:AddMission(auftrag)
-if currmission then currmission:__Cancel(-2)end
 else
 self:E("***Could not find LOS position to post ArmyGroup for lasing!")
 self.LasingDrone.playertask.id=0
