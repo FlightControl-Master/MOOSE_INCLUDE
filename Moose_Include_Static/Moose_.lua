@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-17T12:17:34+01:00-9208d7a70d3021de58ee1bb492c7ab7525648dc0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-18T14:35:54+01:00-0ce3a189c3931ef4fe0eb1f8b3a645aa7327537f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29436,7 +29436,12 @@ local function _createRunway(name,course,width,length,center)
 local bearing=-1*course
 local heading=math.deg(bearing)
 local runway={}
+local namefromheading=math.floor(heading/10)
+if self.AirbaseName==AIRBASE.Syria.Beirut_Rafic_Hariri and math.abs(namefromheading-name)>1 then
+runway.name=string.format("%02d",tonumber(namefromheading))
+else
 runway.name=string.format("%02d",tonumber(name))
+end
 runway.magheading=tonumber(runway.name)*10
 runway.heading=heading
 runway.width=width or 0
@@ -66421,7 +66426,7 @@ ATIS.Messages={
 EN=
 {
 HOURS="hours",
-TIME="hours",
+TIME="Hours",
 NOCLOUDINFO="Cloud coverage information not available",
 OVERCAST="Overcast",
 BROKEN="Broken clouds",
