@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-16T15:09:51+01:00-298c569f93a47e65f8cd8826a39eda3e27e8ea7e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-18T14:35:54+01:00-0ce3a189c3931ef4fe0eb1f8b3a645aa7327537f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23060,18 +23060,36 @@ self:SetCommand(CommandSetFuel)
 end
 return self
 end
-function CONTROLLABLE:CommandSetFrequency(Frequency,Modulation,Delay)
+function CONTROLLABLE:CommandSetFrequency(Frequency,Modulation,Power,Delay)
 local CommandSetFrequency={
 id='SetFrequency',
 params={
 frequency=Frequency*1000000,
 modulation=Modulation or radio.modulation.AM,
+power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation},Delay)
+SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power})
 else
 self:SetCommand(CommandSetFrequency)
+end
+return self
+end
+function CONTROLLABLE:CommandSetFrequencyForUnit(Frequency,Modulation,Power,UnitID,Delay)
+local CommandSetFrequencyForUnit={
+id='SetFrequencyForUnit',
+params={
+frequency=Frequency*1000000,
+modulation=Modulation or radio.modulation.AM,
+unitId=UnitID or self:GetID(),
+power=Power or 10,
+},
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID})
+else
+self:SetCommand(CommandSetFrequencyForUnit)
 end
 return self
 end
@@ -29418,7 +29436,12 @@ local function _createRunway(name,course,width,length,center)
 local bearing=-1*course
 local heading=math.deg(bearing)
 local runway={}
+local namefromheading=math.floor(heading/10)
+if self.AirbaseName==AIRBASE.Syria.Beirut_Rafic_Hariri and math.abs(namefromheading-name)>1 then
+runway.name=string.format("%02d",tonumber(namefromheading))
+else
 runway.name=string.format("%02d",tonumber(name))
+end
 runway.magheading=tonumber(runway.name)*10
 runway.heading=heading
 runway.width=width or 0
@@ -66403,7 +66426,7 @@ ATIS.Messages={
 EN=
 {
 HOURS="hours",
-TIME="hours",
+TIME="Hours",
 NOCLOUDINFO="Cloud coverage information not available",
 OVERCAST="Overcast",
 BROKEN="Broken clouds",
@@ -73614,8 +73637,10 @@ pointsRecon={},
 markpoints=false,
 capOptionPatrolRaceTrack=false,
 capFormation=nil,
+capOptionVaryStartTime=nil,
+capOptionVaryEndTime=nil,
 }
-AIRWING.version="0.9.4"
+AIRWING.version="0.9.5"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -73870,6 +73895,11 @@ function AIRWING:SetCapCloseRaceTrack(OnOff)
 self.capOptionPatrolRaceTrack=OnOff
 return self
 end
+function AIRWING:SetCapStartTimeVariation(Start,End)
+self.capOptionVaryStartTime=Start or 5
+self.capOptionVaryEndTime=End or 60
+return self
+end
 function AIRWING:SetNumberTankerBoom(Nboom)
 self.nflightsTANKERboom=Nboom or 1
 return self
@@ -74071,6 +74101,10 @@ if self.capOptionPatrolRaceTrack then
 missionCAP=AUFTRAG:NewPATROL_RACETRACK(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg,self.capFormation)
 else
 missionCAP=AUFTRAG:NewGCICAP(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg)
+end
+if self.capOptionVaryStartTime then
+local ClockStart=math.random(self.capOptionVaryStartTime,self.capOptionVaryEndTime)
+missionCAP:SetTime(ClockStart)
 end
 missionCAP.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
@@ -102857,7 +102891,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.23"
+PLAYERTASK.version="0.1.24"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -103716,7 +103750,7 @@ end
 )
 return self
 end
-function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode,HoldingPoint)
+function PLAYERTASKCONTROLLER:EnablePrecisionBombing(FlightGroup,LaserCode,HoldingPoint,Alt,Speed)
 self:T(self.lid.."EnablePrecisionBombing")
 if FlightGroup then
 if FlightGroup.ClassName and(FlightGroup.ClassName=="FLIGHTGROUP"or FlightGroup.ClassName=="ARMYGROUP")then
@@ -103728,10 +103762,19 @@ self.precisionbombing=true
 self.LasingDrone:SetLaser(LaserCode)
 self.LaserCode=LaserCode or 1688
 self.LasingDroneTemplate=self.LasingDrone:_GetTemplate(true)
+self.LasingDroneAlt=Alt or 10000
+self.LasingDroneSpeed=Speed or 120
 if self.LasingDrone:IsFlightgroup()then
+self.LasingDroneIsFlightgroup=true
 local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(self.Coalition))
 if HoldingPoint then BullsCoordinate=HoldingPoint end
-local Orbit=AUFTRAG:NewORBIT_CIRCLE(BullsCoordinate,10000,120)
+local Orbit=AUFTRAG:NewORBIT_CIRCLE(BullsCoordinate,self.LasingDroneAlt,self.LasingDroneSpeed)
+self.LasingDrone:AddMission(Orbit)
+elseif self.LasingDrone:IsArmygroup()then
+self.LasingDroneIsArmygroup=true
+local BullsCoordinate=COORDINATE:NewFromVec3(coalition.getMainRefPoint(self.Coalition))
+if HoldingPoint then BullsCoordinate=HoldingPoint end
+local Orbit=AUFTRAG:NewONGUARD(BullsCoordinate)
 self.LasingDrone:AddMission(Orbit)
 end
 else
@@ -104086,9 +104129,15 @@ self:E(self.lid.."Lasing drone is dead ... creating a new one!")
 if self.LasingDrone then
 self.LasingDrone:_Respawn(1,nil,true)
 else
+if self.LasingDroneIsFlightgroup then
 local FG=FLIGHTGROUP:New(self.LasingDroneTemplate)
 FG:Activate()
 self:EnablePrecisionBombing(FG,self.LaserCode or 1688)
+else
+local FG=ARMYGROUP:New(self.LasingDroneTemplate)
+FG:Activate()
+self:EnablePrecisionBombing(FG,self.LaserCode or 1688)
+end
 end
 return self
 end
@@ -104100,11 +104149,11 @@ self.LasingDrone.playertask.id=task.PlayerTaskNr
 self.LasingDrone.playertask.busy=true
 self.LasingDrone.playertask.inreach=false
 self.LasingDrone.playertask.reachmessage=false
-if self.LasingDrone:IsFlightgroup()then
+if self.LasingDroneIsFlightgroup then
 self.LasingDrone:CancelAllMissions()
-local auftrag=AUFTRAG:NewORBIT_CIRCLE(task.Target:GetCoordinate(),10000,120)
+local auftrag=AUFTRAG:NewORBIT_CIRCLE(task.Target:GetCoordinate(),self.LasingDroneAlt,self.LasingDroneSpeed)
 self.LasingDrone:AddMission(auftrag)
-elseif self.LasingDrone:IsArmygroup()then
+elseif self.LasingDroneIsArmygroup then
 local tgtcoord=task.Target:GetCoordinate()
 local tgtzone=ZONE_RADIUS:New("ArmyGroup-"..math.random(1,10000),tgtcoord:GetVec2(),3000)
 local finalpos=nil
@@ -104117,10 +104166,9 @@ end
 end
 end
 if finalpos then
+self.LasingDrone:CancelAllMissions()
 local auftrag=AUFTRAG:NewARMOREDGUARD(finalpos,"Off road")
-local currmission=self.LasingDrone:GetMissionCurrent()
 self.LasingDrone:AddMission(auftrag)
-if currmission then currmission:__Cancel(-2)end
 else
 self:E("***Could not find LOS position to post ArmyGroup for lasing!")
 self.LasingDrone.playertask.id=0
@@ -108057,6 +108105,11 @@ self:T(self.lid.."SetDefaultOverhead")
 self.overhead=Overhead or 0.75
 return self
 end
+function EASYGCICAP:SetCapStartTimeVariation(Start,End)
+self.capOptionVaryStartTime=Start or 5
+self.capOptionVaryEndTime=End or 60
+return self
+end
 function EASYGCICAP:AddAirwing(Airbasename,Alias)
 self:T(self.lid.."AddAirwing "..Airbasename)
 local AWEntry={}
@@ -108086,6 +108139,9 @@ CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
 CAP_Wing:SetNumberCAP(self.capgrouping)
 CAP_Wing:SetCapCloseRaceTrack(true)
+if self.capOptionVaryStartTime then
+CAP_Wing:SetCapStartTimeVariation(self.capOptionVaryStartTime,self.capOptionVaryEndTime)
+end
 if CapFormation then
 CAP_Wing:SetCAPFormation(CapFormation)
 end
