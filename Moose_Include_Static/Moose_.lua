@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:09:28+01:00-6e60a66d0ce690c7e7e70b2ec3644461fd21ca1f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:31:49+01:00-e50d54f6bc5402e26a27cf3962da3d678d6c5d42 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55950,7 +55950,8 @@ local abzone=ab:GetZone()
 if not abzone then
 abzone=ZONE_RADIUS:New(abname,ab:GetVec2(),500)
 end
-local coa=ab:GetCoalition()or 0
+local coa=ab:GetCoalition()
+if coa==nil then return end
 coa=coa+1
 local abtype="AIRBASE"
 if ab:IsShip()then
