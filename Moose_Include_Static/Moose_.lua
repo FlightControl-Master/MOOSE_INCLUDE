@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-18T14:35:54+01:00-0ce3a189c3931ef4fe0eb1f8b3a645aa7327537f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:09:28+01:00-6e60a66d0ce690c7e7e70b2ec3644461fd21ca1f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11919,7 +11919,7 @@ end
 function SET_GROUP:AddGroup(group,DontSetCargoBayLimit)
 self:Add(group:GetName(),group)
 if not DontSetCargoBayLimit then
-for UnitID,UnitData in pairs(group:GetUnits())do
+for UnitID,UnitData in pairs(group:GetUnits()or{})do
 if UnitData and UnitData:IsAlive()then
 UnitData:SetCargoBayWeightLimit()
 end
@@ -55950,7 +55950,8 @@ local abzone=ab:GetZone()
 if not abzone then
 abzone=ZONE_RADIUS:New(abname,ab:GetVec2(),500)
 end
-local coa=ab:GetCoalition()+1
+local coa=ab:GetCoalition()or 0
+coa=coa+1
 local abtype="AIRBASE"
 if ab:IsShip()then
 numrwys=1
@@ -78269,6 +78270,7 @@ TacticalBaseFreq=130,
 TacticalIncrFreq=0.5,
 TacticalModulation=radio.modulation.AM,
 TacticalInterval=120,
+DetectionSet=nil,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -90474,7 +90476,7 @@ function INTEL:AddAgent(AgentGroup)
 if AgentGroup:IsInstanceOf("OPSGROUP")then
 AgentGroup=AgentGroup:GetGroup()
 end
-self.detectionset:AddGroup(AgentGroup)
+self.detectionset:AddGroup(AgentGroup,true)
 return self
 end
 function INTEL:SetClusterAnalysis(Switch,Markers,Arrows)
