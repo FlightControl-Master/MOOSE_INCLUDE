@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-18T14:32:17+01:00-08f2c2901447605cb43028fad10cacace6143e14 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:06:52+01:00-581138b5bc552e623588cf79a907602d62660bc9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11919,7 +11919,7 @@ end
 function SET_GROUP:AddGroup(group,DontSetCargoBayLimit)
 self:Add(group:GetName(),group)
 if not DontSetCargoBayLimit then
-for UnitID,UnitData in pairs(group:GetUnits())do
+for UnitID,UnitData in pairs(group:GetUnits()or{})do
 if UnitData and UnitData:IsAlive()then
 UnitData:SetCargoBayWeightLimit()
 end
