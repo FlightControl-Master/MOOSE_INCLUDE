@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:06:52+01:00-581138b5bc552e623588cf79a907602d62660bc9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-21T16:44:14+01:00-0b3fc515e067b2103b3d3d877b5d0188c8feb889 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29307,11 +29307,25 @@ end
 function SCENERY:GetLife0()
 return self.Life0 or 0
 end
-function SCENERY:IsAlive()
+function SCENERY:IsAlive(Threshold)
+if not Threshold then
 return self:GetLife()>=1 and true or false
+else
+return self:GetRelativeLife()>Threshold and true or false
 end
-function SCENERY:IsDead()
+end
+function SCENERY:IsDead(Threshold)
+if not Threshold then
 return self:GetLife()<1 and true or false
+else
+return self:GetRelativeLife()<=Threshold and true or false
+end
+end
+function SCENERY:GetRelativeLife()
+local life=self:GetLife()
+local life0=self:GetLife0()
+local rlife=math.floor((life/life0)*100)
+return rlife
 end
 function SCENERY:GetThreatLevel()
 return 0,"Scenery"
