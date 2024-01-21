@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:31:49+01:00-e50d54f6bc5402e26a27cf3962da3d678d6c5d42 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-21T16:46:40+01:00-23df6bbc2ae456ba91e319b18894aefd33cad98a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29803,11 +29803,25 @@ end
 function SCENERY:GetLife0()
 return self.Life0 or 0
 end
-function SCENERY:IsAlive()
+function SCENERY:IsAlive(Threshold)
+if not Threshold then
 return self:GetLife()>=1 and true or false
+else
+return self:GetRelativeLife()>Threshold and true or false
 end
-function SCENERY:IsDead()
+end
+function SCENERY:IsDead(Threshold)
+if not Threshold then
 return self:GetLife()<1 and true or false
+else
+return self:GetRelativeLife()<=Threshold and true or false
+end
+end
+function SCENERY:GetRelativeLife()
+local life=self:GetLife()
+local life0=self:GetLife0()
+local rlife=math.floor((life/life0)*100)
+return rlife
 end
 function SCENERY:GetThreatLevel()
 return 0,"Scenery"
@@ -104612,7 +104626,7 @@ local inreach=self.LasingDrone.playertask.inreach==true and yes or no
 local islasing=self.LasingDrone:IsLasing()==true and yes or no
 local prectext=self.gettext:GetEntry("POINTERTARGETREPORT",self.locale)
 prectext=string.format(prectext,inreach,islasing)
-text=text..prectext.."("..self.LaserCode..")"
+text=text..prectext.." ("..self.LaserCode..")"
 end
 end
 if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.buddylasing then
@@ -107480,7 +107494,7 @@ else
 return 0
 end
 elseif Target.Type==TARGET.ObjectType.SCENERY then
-if Target.Object and Target.Object:IsAlive()then
+if Target.Object and Target.Object:IsAlive(25)then
 local life=Target.Object:GetLife()
 return life
 else
