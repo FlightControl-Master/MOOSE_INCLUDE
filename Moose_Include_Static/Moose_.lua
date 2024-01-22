@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T06:32:42+01:00-a3d56b6d1bbdb7c2435f38608d4d458f46c9264a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T21:49:31+01:00-1b4e170271b6b2dcf304a8eaa0ad0e1d7e2ba17a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -88864,6 +88864,7 @@ self.dTwait=nil
 if self.isAI then
 self:_CheckGroupDone(nil,120)
 else
+self:_UpdateMenu(0.1)
 end
 end
 function FLIGHTGROUP:onafterLanding(From,Event,To)
