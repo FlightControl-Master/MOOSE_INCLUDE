@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-19T19:31:49+01:00-e50d54f6bc5402e26a27cf3962da3d678d6c5d42 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T06:32:42+01:00-a3d56b6d1bbdb7c2435f38608d4d458f46c9264a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20823,7 +20823,7 @@ ClassName="PATHLINE",
 lid=nil,
 points={},
 }
-PATHLINE.version="0.1.0"
+PATHLINE.version="0.1.1"
 function PATHLINE:New(Name)
 local self=BASE:Inherit(self,BASE:New())
 self.name=Name or"Unknown Path"
@@ -20888,11 +20888,12 @@ table.insert(vecs,point.vec2)
 end
 return vecs
 end
-function PATHLINE:GetCoordinats()
+function PATHLINE:GetCoordinates()
 local vecs={}
 for _,_point in pairs(self.points)do
 local point=_point
 local coord=COORDINATE:NewFromVec3(point.vec3)
+table.insert(vecs,coord)
 end
 return vecs
 end
@@ -20901,7 +20902,7 @@ local N=self:GetNumberOfPoints()
 n=n or 1
 local point=nil
 if n>=1 and n<=N then
-point=self.point[n]
+point=self.points[n]
 else
 self:E(self.lid..string.format("ERROR: No point in pathline for N=%s",tostring(n)))
 end
@@ -29803,11 +29804,25 @@ end
 function SCENERY:GetLife0()
 return self.Life0 or 0
 end
-function SCENERY:IsAlive()
+function SCENERY:IsAlive(Threshold)
+if not Threshold then
 return self:GetLife()>=1 and true or false
+else
+return self:GetRelativeLife()>Threshold and true or false
 end
-function SCENERY:IsDead()
+end
+function SCENERY:IsDead(Threshold)
+if not Threshold then
 return self:GetLife()<1 and true or false
+else
+return self:GetRelativeLife()<=Threshold and true or false
+end
+end
+function SCENERY:GetRelativeLife()
+local life=self:GetLife()
+local life0=self:GetLife0()
+local rlife=math.floor((life/life0)*100)
+return rlife
 end
 function SCENERY:GetThreatLevel()
 return 0,"Scenery"
@@ -104612,7 +104627,7 @@ local inreach=self.LasingDrone.playertask.inreach==true and yes or no
 local islasing=self.LasingDrone:IsLasing()==true and yes or no
 local prectext=self.gettext:GetEntry("POINTERTARGETREPORT",self.locale)
 prectext=string.format(prectext,inreach,islasing)
-text=text..prectext.."("..self.LaserCode..")"
+text=text..prectext.." ("..self.LaserCode..")"
 end
 end
 if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.buddylasing then
@@ -107480,7 +107495,7 @@ else
 return 0
 end
 elseif Target.Type==TARGET.ObjectType.SCENERY then
-if Target.Object and Target.Object:IsAlive()then
+if Target.Object and Target.Object:IsAlive(25)then
 local life=Target.Object:GetLife()
 return life
 else
