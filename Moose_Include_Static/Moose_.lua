@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-21T16:44:14+01:00-0b3fc515e067b2103b3d3d877b5d0188c8feb889 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T06:30:53+01:00-33bd9280763d959f7a4f9dc5de14a7c87789e3f1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20823,7 +20823,7 @@ ClassName="PATHLINE",
 lid=nil,
 points={},
 }
-PATHLINE.version="0.1.0"
+PATHLINE.version="0.1.1"
 function PATHLINE:New(Name)
 local self=BASE:Inherit(self,BASE:New())
 self.name=Name or"Unknown Path"
@@ -20888,11 +20888,12 @@ table.insert(vecs,point.vec2)
 end
 return vecs
 end
-function PATHLINE:GetCoordinats()
+function PATHLINE:GetCoordinates()
 local vecs={}
 for _,_point in pairs(self.points)do
 local point=_point
 local coord=COORDINATE:NewFromVec3(point.vec3)
+table.insert(vecs,coord)
 end
 return vecs
 end
@@ -20901,7 +20902,7 @@ local N=self:GetNumberOfPoints()
 n=n or 1
 local point=nil
 if n>=1 and n<=N then
-point=self.point[n]
+point=self.points[n]
 else
 self:E(self.lid..string.format("ERROR: No point in pathline for N=%s",tostring(n)))
 end
