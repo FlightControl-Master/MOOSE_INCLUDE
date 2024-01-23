@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T06:30:53+01:00-33bd9280763d959f7a4f9dc5de14a7c87789e3f1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-23T10:03:56+01:00-748aa131e4e9ba35bbe728fa6a2acb4d0efa4cf8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -47683,6 +47683,7 @@ if self:IsRunwayOperational()==false then
 local Trepair=self:GetRunwayRepairtime()
 self:I(self.lid..string.format("Runway destroyed! Will be repaired in %d sec",Trepair))
 if Trepair==0 then
+self.runwaydestroyed=nil
 self:RunwayRepaired()
 end
 end
@@ -48583,11 +48584,13 @@ function WAREHOUSE:onafterRunwayDestroyed(From,Event,To)
 local text=string.format("Warehouse %s: Runway %s destroyed!",self.alias,self.airbasename)
 self:_InfoMessage(text)
 self.runwaydestroyed=timer.getAbsTime()
+return self
 end
 function WAREHOUSE:onafterRunwayRepaired(From,Event,To)
 local text=string.format("Warehouse %s: Runway %s repaired!",self.alias,self.airbasename)
 self:_InfoMessage(text)
 self.runwaydestroyed=nil
+return self
 end
 function WAREHOUSE:onafterAssetSpawned(From,Event,To,group,asset,request)
 local text=string.format("Asset %s from request id=%d was spawned!",asset.spawngroupname,request.uid)
