@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T21:49:31+01:00-1b4e170271b6b2dcf304a8eaa0ad0e1d7e2ba17a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-23T10:05:13+01:00-f02b774242ec283770757b35cabb7d7b625c2a4c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -48181,6 +48181,7 @@ if self:IsRunwayOperational()==false then
 local Trepair=self:GetRunwayRepairtime()
 self:I(self.lid..string.format("Runway destroyed! Will be repaired in %d sec",Trepair))
 if Trepair==0 then
+self.runwaydestroyed=nil
 self:RunwayRepaired()
 end
 end
@@ -49081,11 +49082,13 @@ function WAREHOUSE:onafterRunwayDestroyed(From,Event,To)
 local text=string.format("Warehouse %s: Runway %s destroyed!",self.alias,self.airbasename)
 self:_InfoMessage(text)
 self.runwaydestroyed=timer.getAbsTime()
+return self
 end
 function WAREHOUSE:onafterRunwayRepaired(From,Event,To)
 local text=string.format("Warehouse %s: Runway %s repaired!",self.alias,self.airbasename)
 self:_InfoMessage(text)
 self.runwaydestroyed=nil
+return self
 end
 function WAREHOUSE:onafterAssetSpawned(From,Event,To,group,asset,request)
 local text=string.format("Asset %s from request id=%d was spawned!",asset.spawngroupname,request.uid)
@@ -55842,7 +55845,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.3",
+version="0.2.4",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56342,13 +56345,13 @@ end
 end
 return shortest,target,weight,coa
 end
-function STRATEGO:FindClosestStrategicTarget(Startpoint,BaseWeight)
-self:T(self.lid.."FindClosestStrategicTarget")
+function STRATEGO:FindClosestStrategicTarget(Startpoint,Weight)
+self:T(self.lid.."FindClosestStrategicTarget for "..Startpoint.." Weight "..Weight or 0)
 local shortest=1000*1000
 local target=nil
 local weight=0
 local coa=nil
-if not BaseWeight then BaseWeight=self.maxrunways end
+if not Weight then Weight=self.maxrunways end
 local startpoint=string.gsub(Startpoint,"[%p%s]",".")
 for _,_route in pairs(self.routexists)do
 if string.find(_route,startpoint,1,true)then
@@ -56356,7 +56359,11 @@ local dist=self.disttable[_route].dist
 local tname=string.gsub(_route,startpoint,"")
 local tname=string.gsub(tname,";","")
 local cname=self.easynames[tname]
-if dist<shortest and self.airbasetable[cname].coalition~=self.coalition and self.airbasetable[cname].baseweight>=BaseWeight then
+local coa=self.airbasetable[cname].coalition
+local tweight=self.airbasetable[cname].baseweight
+local ttweight=self.airbasetable[cname].weight
+self:T("Start -> End: "..startpoint.." -> "..cname)
+if(dist<shortest)and(coa~=self.coalition)and(tweight>=Weight)then
 shortest=dist
 target=cname
 weight=self.airbasetable[cname].weight
@@ -56372,7 +56379,7 @@ local targets={}
 for _,_data in pairs(self.airbasetable)do
 local data=_data
 if data.coalition==self.coalition then
-local dist,name,points,coa=self:FindClosestStrategicTarget(data.name,self.maxrunways)
+local dist,name,points,coa=self:FindClosestStrategicTarget(data.name,data.weight)
 if coa==coalition.side.NEUTRAL and points~=0 then
 local fpoints=points+self.NeutralBenefit
 local tries=1
