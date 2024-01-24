@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-23T10:05:13+01:00-f02b774242ec283770757b35cabb7d7b625c2a4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-24T14:47:13+01:00-2893bfb29026f5cd40fbc6b5b0c80421def0708a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -61877,13 +61877,12 @@ local GXX,nXX=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.XX)
 local GIM,nIM=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IM)
 local GIC,nIC=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IC)
 local GAR,nAR=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.AR)
+local vtol=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
 local G=GXX.." "..GIM.." ".." "..GIC.." "..GAR
 local N=nXX+nIM+nIC+nAR
-local Nv=nXX+nIM
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
-local nNv=Nv-nS-nL
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
@@ -61894,16 +61893,29 @@ grade="_OK_"
 points=5.0
 G="Unicorn"
 else
-if nL>1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if vtol then
+local Gb=GXX.." "..GIM
+local N=nXX+nIM
+local nL=count(Gb,'_')/2
+local nS=count(Gb,'%(')
+local nN=N-nS-nL
+local Gv=GIC.." "..GAR
+local Nv=nIC+nAR
+local nLv=count(Gv,'_')/2
+local nSv=count(Gv,'%(')
+local nNv=Nv-nSv-nLv
+if nL>0 or nLv>1 then
 grade="--"
 points=2.0
-elseif nNv>=1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+elseif nN>0 or nNv>1 or nLv==1 then
 grade="(OK)"
 points=3.0
-elseif nNv<1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+else
 grade="OK"
 points=4.0
-elseif nL>0 then
+end
+else
+if nL>0 then
 grade="--"
 points=2.0
 elseif nN>0 then
@@ -61912,6 +61924,7 @@ points=3.0
 else
 grade="OK"
 points=4.0
+end
 end
 end
 G=G:gsub("%)%(","")
