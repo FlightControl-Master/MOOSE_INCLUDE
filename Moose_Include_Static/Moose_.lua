@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-22T06:32:42+01:00-a3d56b6d1bbdb7c2435f38608d4d458f46c9264a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-24T14:47:13+01:00-2893bfb29026f5cd40fbc6b5b0c80421def0708a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -48181,6 +48181,7 @@ if self:IsRunwayOperational()==false then
 local Trepair=self:GetRunwayRepairtime()
 self:I(self.lid..string.format("Runway destroyed! Will be repaired in %d sec",Trepair))
 if Trepair==0 then
+self.runwaydestroyed=nil
 self:RunwayRepaired()
 end
 end
@@ -49081,11 +49082,13 @@ function WAREHOUSE:onafterRunwayDestroyed(From,Event,To)
 local text=string.format("Warehouse %s: Runway %s destroyed!",self.alias,self.airbasename)
 self:_InfoMessage(text)
 self.runwaydestroyed=timer.getAbsTime()
+return self
 end
 function WAREHOUSE:onafterRunwayRepaired(From,Event,To)
 local text=string.format("Warehouse %s: Runway %s repaired!",self.alias,self.airbasename)
 self:_InfoMessage(text)
 self.runwaydestroyed=nil
+return self
 end
 function WAREHOUSE:onafterAssetSpawned(From,Event,To,group,asset,request)
 local text=string.format("Asset %s from request id=%d was spawned!",asset.spawngroupname,request.uid)
@@ -55842,7 +55845,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.3",
+version="0.2.4",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56342,13 +56345,13 @@ end
 end
 return shortest,target,weight,coa
 end
-function STRATEGO:FindClosestStrategicTarget(Startpoint,BaseWeight)
-self:T(self.lid.."FindClosestStrategicTarget")
+function STRATEGO:FindClosestStrategicTarget(Startpoint,Weight)
+self:T(self.lid.."FindClosestStrategicTarget for "..Startpoint.." Weight "..Weight or 0)
 local shortest=1000*1000
 local target=nil
 local weight=0
 local coa=nil
-if not BaseWeight then BaseWeight=self.maxrunways end
+if not Weight then Weight=self.maxrunways end
 local startpoint=string.gsub(Startpoint,"[%p%s]",".")
 for _,_route in pairs(self.routexists)do
 if string.find(_route,startpoint,1,true)then
@@ -56356,7 +56359,11 @@ local dist=self.disttable[_route].dist
 local tname=string.gsub(_route,startpoint,"")
 local tname=string.gsub(tname,";","")
 local cname=self.easynames[tname]
-if dist<shortest and self.airbasetable[cname].coalition~=self.coalition and self.airbasetable[cname].baseweight>=BaseWeight then
+local coa=self.airbasetable[cname].coalition
+local tweight=self.airbasetable[cname].baseweight
+local ttweight=self.airbasetable[cname].weight
+self:T("Start -> End: "..startpoint.." -> "..cname)
+if(dist<shortest)and(coa~=self.coalition)and(tweight>=Weight)then
 shortest=dist
 target=cname
 weight=self.airbasetable[cname].weight
@@ -56372,7 +56379,7 @@ local targets={}
 for _,_data in pairs(self.airbasetable)do
 local data=_data
 if data.coalition==self.coalition then
-local dist,name,points,coa=self:FindClosestStrategicTarget(data.name,self.maxrunways)
+local dist,name,points,coa=self:FindClosestStrategicTarget(data.name,data.weight)
 if coa==coalition.side.NEUTRAL and points~=0 then
 local fpoints=points+self.NeutralBenefit
 local tries=1
@@ -61870,13 +61877,12 @@ local GXX,nXX=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.XX)
 local GIM,nIM=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IM)
 local GIC,nIC=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IC)
 local GAR,nAR=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.AR)
+local vtol=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
 local G=GXX.." "..GIM.." ".." "..GIC.." "..GAR
 local N=nXX+nIM+nIC+nAR
-local Nv=nXX+nIM
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
-local nNv=Nv-nS-nL
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
@@ -61887,16 +61893,29 @@ grade="_OK_"
 points=5.0
 G="Unicorn"
 else
-if nL>1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+if vtol then
+local Gb=GXX.." "..GIM
+local N=nXX+nIM
+local nL=count(Gb,'_')/2
+local nS=count(Gb,'%(')
+local nN=N-nS-nL
+local Gv=GIC.." "..GAR
+local Nv=nIC+nAR
+local nLv=count(Gv,'_')/2
+local nSv=count(Gv,'%(')
+local nNv=Nv-nSv-nLv
+if nL>0 or nLv>1 then
 grade="--"
 points=2.0
-elseif nNv>=1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+elseif nN>0 or nNv>1 or nLv==1 then
 grade="(OK)"
 points=3.0
-elseif nNv<1 and playerData.actype==AIRBOSS.AircraftCarrier.AV8B then
+else
 grade="OK"
 points=4.0
-elseif nL>0 then
+end
+else
+if nL>0 then
 grade="--"
 points=2.0
 elseif nN>0 then
@@ -61905,6 +61924,7 @@ points=3.0
 else
 grade="OK"
 points=4.0
+end
 end
 end
 G=G:gsub("%)%(","")
@@ -88864,6 +88884,7 @@ self.dTwait=nil
 if self.isAI then
 self:_CheckGroupDone(nil,120)
 else
+self:_UpdateMenu(0.1)
 end
 end
 function FLIGHTGROUP:onafterLanding(From,Event,To)
