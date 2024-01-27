@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-24T14:47:13+01:00-2893bfb29026f5cd40fbc6b5b0c80421def0708a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-27T15:28:46+01:00-bd5c1af335eccd97bbe7b2e84c9625a991da634f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1573,6 +1573,43 @@ end
 return string.format('%03d°',latDeg)..' '..string.format(minFrmtStr,latMin)..'\''..latHemi..'   '
 ..string.format('%03d°',lonDeg)..' '..string.format(minFrmtStr,lonMin)..'\''..lonHemi
 end
+end
+UTILS.tostringLLM2KData=function(lat,lon,acc)
+local latHemi,lonHemi
+if lat>0 then
+latHemi='N'
+else
+latHemi='S'
+end
+if lon>0 then
+lonHemi='E'
+else
+lonHemi='W'
+end
+lat=math.abs(lat)
+lon=math.abs(lon)
+local latDeg=math.floor(lat)
+local latMin=(lat-latDeg)*60
+local lonDeg=math.floor(lon)
+local lonMin=(lon-lonDeg)*60
+latMin=UTILS.Round(latMin,acc)
+lonMin=UTILS.Round(lonMin,acc)
+if latMin==60 then
+latMin=0
+latDeg=latDeg+1
+end
+if lonMin==60 then
+lonMin=0
+lonDeg=lonDeg+1
+end
+local minFrmtStr
+if acc<=0 then
+minFrmtStr='%02d'
+else
+local width=3+acc
+minFrmtStr='%0'..width..'.'..acc..'f'
+end
+return latHemi..string.format('%02d:',latDeg)..string.format(minFrmtStr,latMin),lonHemi..string.format('%02d:',lonDeg)..string.format(minFrmtStr,lonMin)
 end
 UTILS.tostringMGRS=function(MGRS,acc)
 if acc<=0 then
