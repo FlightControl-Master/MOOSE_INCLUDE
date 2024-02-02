@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-01-27T15:28:46+01:00-bd5c1af335eccd97bbe7b2e84c9625a991da634f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-02T13:30:22+01:00-2ca847e845884d7418960b05a41cd540baee0971 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18977,7 +18977,7 @@ SpawnGroup:SetAIOnOff(self.AIOnOff)
 end
 self:T3(SpawnTemplate.name)
 if self.SpawnFunctionHook then
-self.SpawnHookScheduler:Schedule(nil,self.SpawnFunctionHook,{self.SpawnGroups[self.SpawnIndex].Group,unpack(self.SpawnFunctionArguments)},0.1)
+self.SpawnHookScheduler:Schedule(nil,self.SpawnFunctionHook,{self.SpawnGroups[self.SpawnIndex].Group,unpack(self.SpawnFunctionArguments)},0.3)
 end
 end
 self.SpawnGroups[self.SpawnIndex].Spawned=true
@@ -26295,8 +26295,9 @@ end
 if n>0 then
 local Vec3={x=x/n,y=y/n,z=z/n}
 return Vec3
+else
+return self:GetVec3()
 end
-return nil
 end
 function GROUP:GetPointVec2()
 self:F2(self.GroupName)
@@ -26317,8 +26318,13 @@ local Heading=self:GetHeading()
 coord.Heading=Heading
 return coord
 else
+local coord=self:GetCoordinate()
+if coord then
+return coord
+else
 BASE:E({"Cannot GetAverageCoordinate",Group=self,Alive=self:IsAlive()})
 return nil
+end
 end
 end
 function GROUP:GetCoordinate()
