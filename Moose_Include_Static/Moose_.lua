@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-02T13:30:22+01:00-2ca847e845884d7418960b05a41cd540baee0971 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-03T12:49:33+01:00-daa734009e3c8eb01ca19e5da4304a61491ab689 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52041,17 +52041,17 @@ MEDIUM="Medium",
 LONG="Long",
 }
 MANTIS.SamData={
-["Hawk"]={Range=44,Blindspot=0,Height=9,Type="Medium",Radar="Hawk"},
-["NASAMS"]={Range=14,Blindspot=0,Height=3,Type="Short",Radar="NSAMS"},
-["Patriot"]={Range=99,Blindspot=0,Height=9,Type="Long",Radar="Patriot"},
-["Rapier"]={Range=6,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
+["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
+["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS"},
+["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot"},
+["Rapier"]={Range=10,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
 ["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="S_75M_Volhov"},
 ["SA-3"]={Range=18,Blindspot=6,Height=18,Type="Short",Radar="5p73 s-125 ln"},
 ["SA-5"]={Range=250,Blindspot=7,Height=40,Type="Long",Radar="5N62V"},
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
 ["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["Roland"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Roland"},
+["Roland"]={Range=5,Blindspot=0,Height=5,Type="Short",Radar="Roland"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
 ["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
 ["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
