@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-04T13:13:06+01:00-4307ddcad379150951e4aa7a4d15aeba6146fa9b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-08T11:59:23+01:00-df0dbc9108598eeba4b854b0ee4751d8d97791f4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -103100,6 +103100,11 @@ IsDone=true
 end
 return IsDone
 end
+function PLAYERTASK:HasClients()
+self:T(self.lid.."HasClients?")
+local hasclients=self:CountClients()>0 and true or false
+return hasclients
+end
 function PLAYERTASK:GetClients()
 self:T(self.lid.."GetClients")
 local clientlist=self.Clients:GetIDStackSorted()or{}
@@ -103650,7 +103655,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.64"
+PLAYERTASKCONTROLLER.version="0.1.65"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -104663,7 +104668,7 @@ local tname=self.gettext:GetEntry("TASKNAME",self.locale)
 local ttsname=self.gettext:GetEntry("TASKNAMETTS",self.locale)
 local taskname=string.format(tname,task.Type,task.PlayerTaskNr)
 local ttstaskname=string.format(ttsname,task.TTSType,task.PlayerTaskNr)
-local Coordinate=task.Target:GetCoordinate()
+local Coordinate=task.Target:GetCoordinate()or COORDINATE:New(0,0,0)
 local CoordText=""
 local CoordTextLLDM=nil
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
