@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-03T12:48:41+01:00-86e13df3039b95b46af4786cb3196cb931175778 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-12T18:35:22+01:00-67e52120d4c0d7d68d604733add59cb2e0f7ee2e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1315,9 +1315,9 @@ return s
 end
 end
 end
-function UTILS.PrintTableToLog(table,indent)
+function UTILS.PrintTableToLog(table,indent,noprint)
 local text="\n"
-if not table then
+if not table or type(table)~="table"then
 env.warning("No table passed!")
 return nil
 end
@@ -1325,11 +1325,16 @@ if not indent then indent=0 end
 for k,v in pairs(table)do
 if string.find(k," ")then k='"'..k..'"'end
 if type(v)=="table"then
+if not noprint then
 env.info(string.rep("  ",indent)..tostring(k).." = {")
+end
 text=text..string.rep("  ",indent)..tostring(k).." = {\n"
 text=text..tostring(UTILS.PrintTableToLog(v,indent+1)).."\n"
+if not noprint then
 env.info(string.rep("  ",indent).."},")
+end
 text=text..string.rep("  ",indent).."},\n"
+elseif type(v)=="function"then
 else
 local value
 if tostring(v)=="true"or tostring(v)=="false"or tonumber(v)~=nil then
@@ -1337,7 +1342,9 @@ value=v
 else
 value='"'..tostring(v)..'"'
 end
+if not noprint then
 env.info(string.rep("  ",indent)..tostring(k).." = "..tostring(value)..",\n")
+end
 text=text..string.rep("  ",indent)..tostring(k).." = "..tostring(value)..",\n"
 end
 end
@@ -5006,6 +5013,13 @@ end
 _TraceClassMethod[Class].Method[Method]=true
 self:I("Tracing method "..Method.." of class "..Class)
 end
+function BASE:_Serialize(Arguments)
+local text=UTILS.PrintTableToLog({Arguments},0,true)
+text=string.gsub(text,"\n","")
+text=string.gsub(text,"%(%(","%(")
+text=string.gsub(text,"%)%)","%)")
+return text
+end
 function BASE:_F(Arguments,DebugInfoCurrentParam,DebugInfoFromParam)
 if BASE.Debug and(_TraceAll==true)or(_TraceClass[self.ClassName]or _TraceClassMethod[self.ClassName])then
 local DebugInfoCurrent=DebugInfoCurrentParam and DebugInfoCurrentParam or BASE.Debug.getinfo(2,"nl")
@@ -5023,7 +5037,7 @@ local LineFrom=0
 if DebugInfoFrom then
 LineFrom=DebugInfoFrom.currentline
 end
-env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s(%s)",LineCurrent,LineFrom,"F",self.ClassName,self.ClassID,Function,UTILS.BasicSerialize(Arguments)))
+env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s(%s)",LineCurrent,LineFrom,"F",self.ClassName,self.ClassID,Function,BASE:_Serialize(Arguments)))
 end
 end
 end
@@ -5071,7 +5085,7 @@ local LineFrom=0
 if DebugInfoFrom then
 LineFrom=DebugInfoFrom.currentline
 end
-env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s",LineCurrent,LineFrom,"T",self.ClassName,self.ClassID,UTILS.BasicSerialize(Arguments)))
+env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s",LineCurrent,LineFrom,"T",self.ClassName,self.ClassID,BASE:_Serialize(Arguments)))
 end
 end
 end
@@ -5117,7 +5131,7 @@ LineFrom=DebugInfoFrom.currentline
 end
 env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s(%s)",LineCurrent,LineFrom,"E",self.ClassName,self.ClassID,Function,UTILS.BasicSerialize(Arguments)))
 else
-env.info(string.format("%1s:%30s%05d(%s)","E",self.ClassName,self.ClassID,UTILS.BasicSerialize(Arguments)))
+env.info(string.format("%1s:%30s%05d(%s)","E",self.ClassName,self.ClassID,BASE:_Serialize(Arguments)))
 end
 end
 function BASE:I(Arguments)
@@ -5135,7 +5149,7 @@ LineFrom=DebugInfoFrom.currentline
 end
 env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s(%s)",LineCurrent,LineFrom,"I",self.ClassName,self.ClassID,Function,UTILS.BasicSerialize(Arguments)))
 else
-env.info(string.format("%1s:%30s%05d(%s)","I",self.ClassName,self.ClassID,UTILS.BasicSerialize(Arguments)))
+env.info(string.format("%1s:%30s%05d(%s)","I",self.ClassName,self.ClassID,BASE:_Serialize(Arguments)))
 end
 end
 ASTAR={
@@ -18981,6 +18995,7 @@ self.SpawnHookScheduler:Schedule(nil,self.SpawnFunctionHook,{self.SpawnGroups[se
 end
 end
 self.SpawnGroups[self.SpawnIndex].Spawned=true
+self.SpawnGroups[self.SpawnIndex].Group.TemplateDonor=self.SpawnTemplatePrefix
 return self.SpawnGroups[self.SpawnIndex].Group
 else
 end
