@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-12T18:35:22+01:00-67e52120d4c0d7d68d604733add59cb2e0f7ee2e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-13T16:43:45+01:00-7dcff7ec9c543cb6f06914b18b15774bdfd00569 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26720,6 +26720,9 @@ end
 return self
 end
 function GROUP:SetCommandInvisible(switch)
+return self:CommandSetInvisible(switch)
+end
+function GROUP:CommandSetInvisible(switch)
 self:F2(self.GroupName)
 if switch==nil then
 switch=false
@@ -26729,6 +26732,9 @@ self:SetCommand(SetInvisible)
 return self
 end
 function GROUP:SetCommandImmortal(switch)
+return self:CommandSetImmortal(switch)
+end
+function GROUP:CommandSetImmortal(switch)
 self:F2(self.GroupName)
 if switch==nil then
 switch=false
