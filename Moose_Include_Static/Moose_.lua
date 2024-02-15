@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-13T16:45:36+01:00-d7969e9455b7b6813ad4aee83df81c3f3d40613c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-15T18:17:48+01:00-79da4cbf2776acb01f8159c839e7a4b63646d4e5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78274,7 +78274,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.61",
+version="0.2.62",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -79457,13 +79457,18 @@ local contact=Contact
 local cpos=contact.Cluster.coordinate or contact.Contact.position or contact.Contact.group:GetCoordinate()
 local dist=ppos:Get2DDistance(cpos)
 local distnm=UTILS.Round(UTILS.MetersToNM(dist),0)
-if(pilot.IsPlayer or self.debug)and distnm<=5 and not contact.MergeCallDone then
-local label=contact.EngagementTag or""
-if not contact.MergeCallDone or not string.find(label,pcallsign)then
+if(pilot.IsPlayer or self.debug)and distnm<=5 then
 self:T(self.lid.."Merged")
 self:_MergedCall(_id)
-contact.MergeCallDone=true
 end
+if(pilot.IsPlayer or self.debug)and distnm>5 and distnm<=self.ThreatDistance then
+self:_ThreatRangeCall(_id,Contact)
+end
+if(pilot.IsPlayer or self.debug)and distnm>self.ThreatDistance and distnm<=self.MeldDistance then
+self:_MeldRangeCall(_id,Contact)
+end
+if(pilot.IsPlayer or self.debug)and distnm>self.MeldDistance and distnm<=self.TacDistance then
+self:_TACRangeCall(_id,Contact)
 end
 end
 )
@@ -79889,7 +79894,7 @@ local contactsAO=self.ContactsAO:GetSize()
 if contactsAO==0 then
 local clean=self.gettext:GetEntry("CLEAN",self.locale)
 text=string.format(clean,self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
-self:_NewRadioEntry(text,textScreen,GID,Outcome,Outcome,true,false,true,Tactical)
+self:_NewRadioEntry(text,text,GID,Outcome,Outcome,true,false,true,Tactical)
 else
 if contactsAO>0 then
 local dope=self.gettext:GetEntry("DOPE",self.locale)
@@ -81683,7 +81688,7 @@ local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local contact=Contact.Contact
 local contacttag=Contact.TargetGroupNaming
-if contact and not Contact.TACCallDone then
+if contact then
 local position=contact.position
 if position then
 local distance=position:Get2DDistance(managedgroup.Group:GetCoordinate())
@@ -81693,6 +81698,14 @@ local miles=self.gettext:GetEntry("MILES",self.locale)
 local text=string.format("%s. %s. %s %s, %d %s.",self.callsigntxt,pilotcallsign,contacttag,grptxt,distance,miles)
 self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true)
 self:_UpdateContactEngagementTag(Contact.CID,Contact.EngagementTag,true,false,AWACS.TaskStatus.EXECUTING)
+if GID and GID~=0 then
+if managedgroup and managedgroup.Group and managedgroup.Group:IsAlive()then
+local name=managedgroup.GroupName
+if self.TacticalSubscribers[name]then
+self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true,true)
+end
+end
+end
 end
 end
 return self
@@ -81704,8 +81717,8 @@ local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local flightpos=managedgroup.Group:GetCoordinate()
 local contact=Contact.Contact
-local contacttag=Contact.TargetGroupNaming
-if contact and not Contact.MeldCallDone then
+local contacttag=Contact.TargetGroupNaming or"Bogey"
+if contact then
 local position=contact.position
 if position then
 local BRATExt=""
@@ -81718,6 +81731,14 @@ local grptxt=self.gettext:GetEntry("GROUP",self.locale)
 local text=string.format("%s. %s. %s %s, %s",self.callsigntxt,pilotcallsign,contacttag,grptxt,BRATExt)
 self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true)
 self:_UpdateContactEngagementTag(Contact.CID,Contact.EngagementTag,true,true,AWACS.TaskStatus.EXECUTING)
+if GID and GID~=0 then
+if managedgroup and managedgroup.Group and managedgroup.Group:IsAlive()then
+local name=managedgroup.GroupName
+if self.TacticalSubscribers[name]then
+self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true,true)
+end
+end
+end
 end
 end
 return self
@@ -81729,7 +81750,7 @@ local pilotcallsign=self:_GetCallSign(nil,GID)
 local managedgroup=self.ManagedGrps[GID]
 local flightpos=managedgroup.Group:GetCoordinate()or managedgroup.LastKnownPosition
 local contact=Contact.Contact
-local contacttag=Contact.TargetGroupNaming
+local contacttag=Contact.TargetGroupNaming or"Bogey"
 if contact then
 local position=contact.position or contact.group:GetCoordinate()
 if position then
@@ -81743,6 +81764,14 @@ local grptxt=self.gettext:GetEntry("GROUP",self.locale)
 local thrt=self.gettext:GetEntry("THREAT",self.locale)
 local text=string.format("%s. %s. %s %s, %s. %s",self.callsigntxt,pilotcallsign,contacttag,grptxt,thrt,BRATExt)
 self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true)
+if GID and GID~=0 then
+if managedgroup and managedgroup.Group and managedgroup.Group:IsAlive()then
+local name=managedgroup.GroupName
+if self.TacticalSubscribers[name]then
+self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true,true)
+end
+end
+end
 end
 end
 return self
