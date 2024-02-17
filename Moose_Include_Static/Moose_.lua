@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-16T14:09:18+01:00-a16e22818d7a14088274540b490113ebba6860d8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-17T13:12:25+01:00-8d886a75d6108d6527d53d9f7a5b6137d1b59d6b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60880,7 +60880,7 @@ local rho=groovedata.Rho
 local lineupError=groovedata.LUE
 local glideslopeError=groovedata.GSE
 local AoA=groovedata.AoA
-if rho<=RXX and playerData.step==AIRBOSS.PatternStep.GROOVE_XX and(math.abs(groovedata.Roll)<=4.0 or playerData.unit:IsInZone(self:_GetZoneLineup()))then
+if rho<=RXX and playerData.step==AIRBOSS.PatternStep.GROOVE_XX and(math.abs(groovedata.Roll)<=4.0 and playerData.unit:IsInZone(self:_GetZoneLineup()))then
 playerData.TIG0=timer.getTime()
 self:RadioTransmission(self.LSORadio,self.LSOCall.CALLTHEBALL,nil,nil,nil,true)
 playerData.Tlso=timer.getTime()
