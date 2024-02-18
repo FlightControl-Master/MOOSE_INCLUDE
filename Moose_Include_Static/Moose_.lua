@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-17T18:50:30+01:00-f8595220522464747870430eb17bf7d20da9dd46 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-18T20:13:01+01:00-0faa0036ee7d7f35868fb08604ad4334ee69aaa7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28201,7 +28201,7 @@ AIRBASE.Normandy={
 ["Fecamp_Benouville"]="Fecamp-Benouville",
 ["Farnborough"]="Farnborough",
 ["Friston"]="Friston",
-["Deanland "]="Deanland ",
+["Deanland"]="Deanland",
 ["Triqueville"]="Triqueville",
 ["Poix"]="Poix",
 ["Orly"]="Orly",
