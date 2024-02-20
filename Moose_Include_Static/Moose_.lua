@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-20T12:08:33+01:00-ee17d3e99544cc860e70f64cb4c09d2ca348c857 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-20T14:32:17+01:00-e946916fc079a00e90623a1b112a006cae88d4fe ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10487,6 +10487,8 @@ FLIGHTCONTROLS={},
 OPSZONES={},
 PATHLINES={},
 STORAGES={},
+STNS={},
+SADL={},
 }
 local _DATABASECoalition=
 {
@@ -10931,6 +10933,18 @@ self.Templates.ClientsByName[UnitTemplate.name].CoalitionID=CoalitionSide
 self.Templates.ClientsByName[UnitTemplate.name].CountryID=CountryID
 self.Templates.ClientsByID[UnitTemplate.unitId]=UnitTemplate
 end
+if UnitTemplate.AddPropAircraft then
+if UnitTemplate.AddPropAircraft.STN_L16 then
+local stn=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.STN_L16)
+self.STNS[stn]=UnitTemplate.name
+self:I("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+end
+if UnitTemplate.AddPropAircraft.SADL_TN then
+local sadl=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.SADL_TN)
+self.SADL[sadl]=UnitTemplate.name
+self:I("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
+end
+end
 UnitNames[#UnitNames+1]=self.Templates.Units[UnitTemplate.name].UnitName
 end
 self:T({Group=self.Templates.Groups[GroupTemplateName].GroupName,
@@ -10940,6 +10954,66 @@ Country=self.Templates.Groups[GroupTemplateName].CountryID,
 Units=UnitNames
 }
 )
+end
+function DATABASE:GetNextSTN(octal,unitname)
+local first=UTILS.OctalToDecimal(octal)
+if self.STNS[first]==unitname then return octal end
+local nextoctal=77777
+local found=false
+if 32767-first<10 then
+first=0
+end
+for i=first+1,32767 do
+if self.STNS[i]==nil then
+found=true
+nextoctal=UTILS.DecimalToOctal(i)
+self.STNS[i]=unitname
+self:T("Register STN "..tostring(nextoctal).." for "..unitname)
+break
+end
+end
+if not found then
+self:E(string.format("WARNING: No next free STN past %05d found!",octal))
+local NewSTNS={}
+for _id,_name in pairs(self.STNS)do
+if self.UNITS[_name]~=nil then
+NewSTNS[_id]=_name
+end
+end
+self.STNS=nil
+self.STNS=NewSTNS
+end
+return nextoctal
+end
+function DATABASE:GetNextSADL(octal,unitname)
+local first=UTILS.OctalToDecimal(octal)
+if self.SADL[first]==unitname then return octal end
+local nextoctal=7777
+local found=false
+if 4095-first<10 then
+first=0
+end
+for i=first+1,4095 do
+if self.STNS[i]==nil then
+found=true
+nextoctal=UTILS.DecimalToOctal(i)
+self.SADL[i]=unitname
+self:T("Register SADL "..tostring(nextoctal).." for "..unitname)
+break
+end
+end
+if not found then
+self:E(string.format("WARNING: No next free SADL past %04d found!",octal))
+local NewSTNS={}
+for _id,_name in pairs(self.SADL)do
+if self.UNITS[_name]~=nil then
+NewSTNS[_id]=_name
+end
+end
+self.SADL=nil
+self.SADL=NewSTNS
+end
+return nextoctal
 end
 function DATABASE:GetGroupTemplate(GroupName)
 local GroupTemplate=self.Templates.Groups[GroupName].Template
@@ -18540,6 +18614,24 @@ self.SpawnInitSkill="High"
 end
 return self
 end
+function SPAWN:InitSTN(Octal)
+self:F({Octal=Octal})
+self.SpawnInitSTN=Octal or 77777
+local num=UTILS.OctalToDecimal(Octal)
+if _DATABASE.STNS[num]~=nil then
+self:E("WARNING - STN already assigned: "..tostring(Octal).." is used for ".._DATABASE.STNS[Octal])
+end
+return self
+end
+function SPAWN:InitSADL(Octal)
+self:F({Octal=Octal})
+self.SpawnInitSADL=Octal or 7777
+local num=UTILS.OctalToDecimal(Octal)
+if _DATABASE.SADL[num]~=nil then
+self:E("WARNING - SADL already assigned: "..tostring(Octal).." is used for ".._DATABASE.SADL[Octal])
+end
+return self
+end
 function SPAWN:InitRadioCommsOnOff(switch)
 self:F({switch=switch})
 self.SpawnInitRadio=switch or true
@@ -19878,27 +19970,45 @@ end
 local AddProps=SpawnTemplate.units[UnitID].AddPropAircraft
 if AddProps then
 if SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16 then
+if self.SpawnInitSTN then
+local octal=self.SpawnInitSTN
+if UnitID>1 then
+octal=_DATABASE:GetNextSTN(self.SpawnInitSTN,SpawnTemplate.units[UnitID].name)
+end
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%05d",octal)
+else
 if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16)~=nil then
 local octal=SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16
-local decimal=UTILS.OctalToDecimal(octal)+UnitID-1
-SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%05d",UTILS.DecimalToOctal(decimal))
+local num=UTILS.OctalToDecimal(octal)
+if _DATABASE.STNS[num]~=nil or UnitID>1 then
+octal=_DATABASE:GetNextSTN(octal,SpawnTemplate.units[UnitID].name)
+end
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%05d",octal)
 else
-local STN=math.floor(UTILS.RandomGaussian(4088/2,nil,1000,4088))
-STN=STN+UnitID-1
-local OSTN=UTILS.DecimalToOctal(STN)
+local OSTN=_DATABASE:GetNextSTN(1,SpawnTemplate.units[UnitID].name)
 SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%05d",OSTN)
 end
 end
+end
 if SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN then
+if self.SpawnInitSADL then
+local octal=self.SpawnInitSADL
+if UnitID>1 then
+octal=_DATABASE:GetNextSADL(self.SpawnInitSADL,SpawnTemplate.units[UnitID].name)
+end
+SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%04d",octal)
+else
 if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN)~=nil then
 local octal=SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN
-local decimal=UTILS.OctalToDecimal(octal)+UnitID-1
-SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",UTILS.DecimalToOctal(decimal))
+local num=UTILS.OctalToDecimal(octal)
+if _DATABASE.SADL[num]~=nil or UnitID>1 then
+octal=_DATABASE:GetNextSADL(self.SpawnInitSADL,SpawnTemplate.units[UnitID].name)
+end
+SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",octal)
 else
-local STN=math.floor(UTILS.RandomGaussian(504/2,nil,100,504))
-STN=STN+UnitID-1
-local OSTN=UTILS.DecimalToOctal(STN)
+local OSTN=_DATABASE:GetNextSADL(1,SpawnTemplate.units[UnitID].name)
 SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",OSTN)
+end
 end
 end
 if SpawnTemplate.units[UnitID].AddPropAircraft.VoiceCallsignNumber and type(Callsign)~="number"then
