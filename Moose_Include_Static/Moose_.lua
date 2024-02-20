@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-18T20:13:52+01:00-3baf52d3075e4a234b739bcc099cf773f9eef7ef ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-20T12:08:33+01:00-ee17d3e99544cc860e70f64cb4c09d2ca348c857 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8740,6 +8740,7 @@ end
 function ZONE_RADIUS:BoundZone(Points,CountryID,UnBound)
 local Point={}
 local Vec2=self:GetVec2()
+local countryID=CountryID or country.id.USA
 Points=Points and Points or 360
 local Angle
 local RadialBase=math.pi*2
@@ -8747,7 +8748,7 @@ for Angle=0,360,(360/Points)do
 local Radial=Angle*RadialBase/360
 Point.x=Vec2.x+math.cos(Radial)*self:GetRadius()
 Point.y=Vec2.y+math.sin(Radial)*self:GetRadius()
-local CountryName=_DATABASE.COUNTRY_NAME[CountryID]
+local CountryName=_DATABASE.COUNTRY_NAME[countryID]
 local Tire={
 ["country"]=CountryName,
 ["category"]="Fortifications",
@@ -8759,7 +8760,7 @@ local Tire={
 ["name"]=string.format("%s-Tire #%0d",self:GetName(),Angle),
 ["heading"]=0,
 }
-local Group=coalition.addStaticObject(CountryID,Tire)
+local Group=coalition.addStaticObject(countryID,Tire)
 if UnBound and UnBound==true then
 Group:destroy()
 end
