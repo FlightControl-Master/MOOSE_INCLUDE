@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-20T14:32:17+01:00-e946916fc079a00e90623a1b112a006cae88d4fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T09:01:23+01:00-bfaca9dd5f950ea56aca38bb15b46e862c4d761f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10936,13 +10936,21 @@ end
 if UnitTemplate.AddPropAircraft then
 if UnitTemplate.AddPropAircraft.STN_L16 then
 local stn=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.STN_L16)
+if stn==nil or stn<1 then
+self:E("WARNING: Invalid STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+else
 self.STNS[stn]=UnitTemplate.name
 self:I("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
 end
+end
 if UnitTemplate.AddPropAircraft.SADL_TN then
 local sadl=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.SADL_TN)
+if sadl==nil or sadl<1 then
+self:E("WARNING: Invalid SADL "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+else
 self.SADL[sadl]=UnitTemplate.name
 self:I("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
+end
 end
 end
 UnitNames[#UnitNames+1]=self.Templates.Units[UnitTemplate.name].UnitName
@@ -18618,6 +18626,10 @@ function SPAWN:InitSTN(Octal)
 self:F({Octal=Octal})
 self.SpawnInitSTN=Octal or 77777
 local num=UTILS.OctalToDecimal(Octal)
+if num==nil or num<1 then
+self:E("WARNING - STN "..tostring(Octal).." is not valid!")
+return self
+end
 if _DATABASE.STNS[num]~=nil then
 self:E("WARNING - STN already assigned: "..tostring(Octal).." is used for ".._DATABASE.STNS[Octal])
 end
@@ -18627,6 +18639,10 @@ function SPAWN:InitSADL(Octal)
 self:F({Octal=Octal})
 self.SpawnInitSADL=Octal or 7777
 local num=UTILS.OctalToDecimal(Octal)
+if num==nil or num<1 then
+self:E("WARNING - SADL "..tostring(Octal).." is not valid!")
+return self
+end
 if _DATABASE.SADL[num]~=nil then
 self:E("WARNING - SADL already assigned: "..tostring(Octal).." is used for ".._DATABASE.SADL[Octal])
 end
