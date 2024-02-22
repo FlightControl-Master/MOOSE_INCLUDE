@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T12:14:44+01:00-c5ece1675369bf0d75b83bcc0ae3391498176075 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T17:28:44+01:00-5b86bf9605d5e819b4dbed2ac2a4db535f5fb580 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78907,6 +78907,10 @@ return self
 end
 function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number)
 self:T(self.lid.."SetTacticalRadios")
+if not self.AwacsSRS then
+MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tac radios please!",30,"ERROR",true):ToLog():ToAll()
+return self
+end
 self.TacticalMenu=true
 self.TacticalBaseFreq=BaseFreq or 130
 self.TacticalIncrFreq=Increase or 0.5
