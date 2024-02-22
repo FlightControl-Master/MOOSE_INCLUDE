@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T11:52:43+01:00-e8c75b87958da7358e7e74a2f480cd4b9d89f425 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T12:14:15+01:00-4c2a89ee299ce783bee9f91207c9ef294af12edf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10947,7 +10947,7 @@ end
 if UnitTemplate.AddPropAircraft.SADL_TN then
 local sadl=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.SADL_TN)
 if sadl==nil or sadl<1 then
-self:E("WARNING: Invalid SADL "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+self:E("WARNING: Invalid SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
 else
 self.SADL[sadl]=UnitTemplate.name
 self:I("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
@@ -20040,7 +20040,7 @@ local octal=self.SpawnInitSADL
 if UnitID>1 then
 octal=_DATABASE:GetNextSADL(self.SpawnInitSADL,SpawnTemplate.units[UnitID].name)
 end
-SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%04d",octal)
+SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",octal)
 else
 if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN)~=nil then
 local octal=SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN
