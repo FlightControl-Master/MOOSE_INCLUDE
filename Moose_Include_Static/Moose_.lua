@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T09:19:43+01:00-7e21a1070a5879967a9de03207c804d2b5e2ce5d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T11:53:24+01:00-4505b60859483795387c2ac1bf93aebe1050ca55 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5018,6 +5018,7 @@ local text=UTILS.PrintTableToLog({Arguments},0,true)
 text=string.gsub(text,"\n","")
 text=string.gsub(text,"%(%(","%(")
 text=string.gsub(text,"%)%)","%)")
+text=string.gsub(text,"(%s+)","")
 return text
 end
 function BASE:_F(Arguments,DebugInfoCurrentParam,DebugInfoFromParam)
@@ -18648,6 +18649,30 @@ self:E("WARNING - SADL already assigned: "..tostring(Octal).." is used for ".._D
 end
 return self
 end
+function SPAWN:InitSpeedMps(MPS)
+self:F({MPS=MPS})
+if MPS==nil or tonumber(MPS)<0 then
+MPS=125
+end
+self.InitSpeed=MPS
+return self
+end
+function SPAWN:InitSpeedKnots(Knots)
+self:F({Knots=Knots})
+if Knots==nil or tonumber(Knots)<0 then
+Knots=300
+end
+self.InitSpeed=UTILS.KnotsToMps(Knots)
+return self
+end
+function SPAWN:InitSpeedKph(KPH)
+self:F({KPH=KPH})
+if KPH==nil or tonumber(KPH)<0 then
+KPH=UTILS.KnotsToKmph(300)
+end
+self.InitSpeed=UTILS.KmphToMps(KPH)
+return self
+end
 function SPAWN:InitRadioCommsOnOff(switch)
 self:F({switch=switch})
 self.SpawnInitRadio=switch or true
@@ -19982,6 +20007,9 @@ SpawnTemplate.units[UnitID].callsign["name"]=CallsignName:sub(1,CallsignLen)..Sp
 elseif type(Callsign)=="number"then
 SpawnTemplate.units[UnitID].callsign=Callsign+SpawnIndex
 end
+end
+if self.InitSpeed then
+SpawnTemplate.units[UnitID].speed=self.InitSpeed
 end
 local AddProps=SpawnTemplate.units[UnitID].AddPropAircraft
 if AddProps then
