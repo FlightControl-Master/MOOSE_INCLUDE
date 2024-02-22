@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-20T14:32:17+01:00-e946916fc079a00e90623a1b112a006cae88d4fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-22T12:14:44+01:00-c5ece1675369bf0d75b83bcc0ae3391498176075 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5018,6 +5018,7 @@ local text=UTILS.PrintTableToLog({Arguments},0,true)
 text=string.gsub(text,"\n","")
 text=string.gsub(text,"%(%(","%(")
 text=string.gsub(text,"%)%)","%)")
+text=string.gsub(text,"(%s+)","")
 return text
 end
 function BASE:_F(Arguments,DebugInfoCurrentParam,DebugInfoFromParam)
@@ -10936,13 +10937,21 @@ end
 if UnitTemplate.AddPropAircraft then
 if UnitTemplate.AddPropAircraft.STN_L16 then
 local stn=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.STN_L16)
+if stn==nil or stn<1 then
+self:E("WARNING: Invalid STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+else
 self.STNS[stn]=UnitTemplate.name
 self:I("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
 end
+end
 if UnitTemplate.AddPropAircraft.SADL_TN then
 local sadl=UTILS.OctalToDecimal(UnitTemplate.AddPropAircraft.SADL_TN)
+if sadl==nil or sadl<1 then
+self:E("WARNING: Invalid SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
+else
 self.SADL[sadl]=UnitTemplate.name
 self:I("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
+end
 end
 end
 UnitNames[#UnitNames+1]=self.Templates.Units[UnitTemplate.name].UnitName
@@ -18618,6 +18627,10 @@ function SPAWN:InitSTN(Octal)
 self:F({Octal=Octal})
 self.SpawnInitSTN=Octal or 77777
 local num=UTILS.OctalToDecimal(Octal)
+if num==nil or num<1 then
+self:E("WARNING - STN "..tostring(Octal).." is not valid!")
+return self
+end
 if _DATABASE.STNS[num]~=nil then
 self:E("WARNING - STN already assigned: "..tostring(Octal).." is used for ".._DATABASE.STNS[Octal])
 end
@@ -18627,9 +18640,37 @@ function SPAWN:InitSADL(Octal)
 self:F({Octal=Octal})
 self.SpawnInitSADL=Octal or 7777
 local num=UTILS.OctalToDecimal(Octal)
+if num==nil or num<1 then
+self:E("WARNING - SADL "..tostring(Octal).." is not valid!")
+return self
+end
 if _DATABASE.SADL[num]~=nil then
 self:E("WARNING - SADL already assigned: "..tostring(Octal).." is used for ".._DATABASE.SADL[Octal])
 end
+return self
+end
+function SPAWN:InitSpeedMps(MPS)
+self:F({MPS=MPS})
+if MPS==nil or tonumber(MPS)<0 then
+MPS=125
+end
+self.InitSpeed=MPS
+return self
+end
+function SPAWN:InitSpeedKnots(Knots)
+self:F({Knots=Knots})
+if Knots==nil or tonumber(Knots)<0 then
+Knots=300
+end
+self.InitSpeed=UTILS.KnotsToMps(Knots)
+return self
+end
+function SPAWN:InitSpeedKph(KPH)
+self:F({KPH=KPH})
+if KPH==nil or tonumber(KPH)<0 then
+KPH=UTILS.KnotsToKmph(300)
+end
+self.InitSpeed=UTILS.KmphToMps(KPH)
 return self
 end
 function SPAWN:InitRadioCommsOnOff(switch)
@@ -19967,6 +20008,9 @@ elseif type(Callsign)=="number"then
 SpawnTemplate.units[UnitID].callsign=Callsign+SpawnIndex
 end
 end
+if self.InitSpeed then
+SpawnTemplate.units[UnitID].speed=self.InitSpeed
+end
 local AddProps=SpawnTemplate.units[UnitID].AddPropAircraft
 if AddProps then
 if SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16 then
@@ -19996,7 +20040,7 @@ local octal=self.SpawnInitSADL
 if UnitID>1 then
 octal=_DATABASE:GetNextSADL(self.SpawnInitSADL,SpawnTemplate.units[UnitID].name)
 end
-SpawnTemplate.units[UnitID].AddPropAircraft.STN_L16=string.format("%04d",octal)
+SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN=string.format("%04d",octal)
 else
 if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN)~=nil then
 local octal=SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN
