@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-23T11:33:02+01:00-ced01a993db12edafdfffc3e55ff22e0ad498053 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-24T14:26:30+01:00-14d6085b69271332e83b477f4889e02b07db3260 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5622,6 +5622,7 @@ return self
 end
 function BEACON:AATACAN(TACANChannel,Message,Bearing,BeaconDuration)
 self:F({TACANChannel,Message,Bearing,BeaconDuration})
+self:E("This method is DEPRECATED! Please use ActivateTACAN() instead.")
 local IsValid=true
 if not self.Positionable:IsAir()then
 self:E({"The POSITIONABLE you want to attach the AA Tacan Beacon is not an aircraft ! The BEACON is not emitting",self.Positionable})
