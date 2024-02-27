@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-27T10:28:30+01:00-2dc908d9262a554a0bc8fd4a2c4a541857775963 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-27T16:38:42+01:00-80bf9928068c3205412f3b504da7ff139263bdb2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23892,7 +23892,7 @@ local TaskRoute=PatrolGroup:TaskFunction("CONTROLLABLE.PatrolRoute")
 self:F({Waypoints=Waypoints})
 local Waypoint=Waypoints[#Waypoints]
 PatrolGroup:SetTaskWaypoint(Waypoint,TaskRoute)
-PatrolGroup:Route(Waypoints)
+PatrolGroup:Route(Waypoints,2)
 end
 end
 function CONTROLLABLE:PatrolRouteRandom(Speed,Formation,ToWaypoint)
