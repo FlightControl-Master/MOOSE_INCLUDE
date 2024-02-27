@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-27T16:38:20+01:00-f2e22579ed482fee3734de4ab90e14418b92785c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-27T18:13:59+01:00-45aebff48e1d537d678324ad01986713ded61f72 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3397,6 +3397,71 @@ return tonumber(octal)
 end
 function UTILS.OctalToDecimal(Number)
 return tonumber(Number,8)
+end
+function UTILS.SaveSetOfOpsGroups(Set,Path,Filename,Structured)
+local filename=Filename or"SetOfGroups"
+local data="--Save SET of groups: (name,legion,template,alttemplate,units,position.x,position.y,position.z,strucdata) "..Filename.."\n"
+local List=Set:GetSetObjects()
+for _,_group in pairs(List)do
+local group=_group:GetGroup()
+if group and group:IsAlive()then
+local name=group:GetName()
+local template=string.gsub(name,"(.AID.%d+$","")
+if string.find(template,"#")then
+template=string.gsub(name,"#(%d+)$","")
+end
+local alttemplate=_group.templatename or"none"
+local legiono=_group.legion
+local legion="none"
+if legiono and type(legiono)=="table"and legiono.ClassName then
+legion=legiono:GetName()
+local asset=legiono:GetAssetByName(name)
+alttemplate=asset.templatename
+end
+local units=group:CountAliveUnits()
+local position=group:GetVec3()
+if Structured then
+local structure=UTILS.GetCountPerTypeName(group)
+local strucdata=""
+for typen,anzahl in pairs(structure)do
+strucdata=strucdata..typen.."=="..anzahl..";"
+end
+data=string.format("%s%s,%s,%s,%s,%d,%d,%d,%d,%s\n",data,name,legion,template,alttemplate,units,position.x,position.y,position.z,strucdata)
+else
+data=string.format("%s%s,%s,%s,%s,%d,%d,%d,%d\n",data,name,legion,template,alttemplate,units,position.x,position.y,position.z)
+end
+end
+end
+local outcome=UTILS.SaveToFile(Path,Filename,data)
+return outcome
+end
+function UTILS.LoadSetOfOpsGroups(Path,Filename)
+local filename=Filename or"SetOfGroups"
+local datatable={}
+if UTILS.CheckFileExists(Path,filename)then
+local outcome,loadeddata=UTILS.LoadFromFile(Path,Filename)
+table.remove(loadeddata,1)
+for _id,_entry in pairs(loadeddata)do
+local dataset=UTILS.Split(_entry,",")
+local groupname=dataset[1]
+local legion=dataset[2]
+local template=dataset[3]
+local alttemplate=dataset[4]
+local size=tonumber(dataset[5])
+local posx=tonumber(dataset[6])
+local posy=tonumber(dataset[7])
+local posz=tonumber(dataset[8])
+local structure=dataset[9]
+local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
+if size>0 then
+local data={groupname=groupname,size=size,coordinate=coordinate,template=template,structure=structure,legion=legion,alttemplate=alttemplate}
+table.insert(datatable,data)
+end
+end
+else
+return nil
+end
+return datatable
 end
 PROFILER={
 ClassName="PROFILER",
