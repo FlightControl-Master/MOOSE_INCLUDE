@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-24T14:26:45+01:00-8c6c1e481b4b7838c744dcf9506cad8a726de58c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-27T10:28:30+01:00-2dc908d9262a554a0bc8fd4a2c4a541857775963 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12960,7 +12960,7 @@ local heading=self:GetHeading()or 0
 local velocity=self:GetVelocity()or 0
 Coordinate:SetHeading(heading)
 Coordinate:SetVelocity(velocity)
-self:I(UTILS.PrintTableToLog(Coordinate))
+self:T(UTILS.PrintTableToLog(Coordinate))
 end
 return Coordinate
 end
@@ -13827,7 +13827,7 @@ self:I("_EventPlayerEnterUnit")
 if Event.IniDCSUnit then
 if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:AddInDatabase(Event)
-self:I(ObjectName,UTILS.PrintTableToLog(Object))
+self:T(ObjectName,UTILS.PrintTableToLog(Object))
 if Object and self:IsIncludeObject(Object)then
 self:Add(ObjectName,Object)
 end
@@ -68264,6 +68264,7 @@ HasBeenDropped=false,
 PerCrateMass=0,
 Stock=nil,
 Mark=nil,
+DontShowInMenu=false,
 }
 CTLD_CARGO.Enum={
 VEHICLE="Vehicle",
@@ -68274,7 +68275,7 @@ REPAIR="Repair",
 ENGINEERS="Engineers",
 STATIC="Static",
 }
-function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory)
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory,DontShowInMenu)
 local self=BASE:Inherit(self,BASE:New())
 self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
 self.ID=ID or math.random(100000,1000000)
@@ -68290,6 +68291,7 @@ self.PerCrateMass=PerCrateMass or 0
 self.Stock=Stock or nil
 self.Mark=nil
 self.Subcategory=Subcategory or"Other"
+self.DontShowInMenu=DontShowInMenu or false
 return self
 end
 function CTLD_CARGO:GetID()
@@ -68604,7 +68606,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.45"
+CTLD.version="1.0.46"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -69766,7 +69768,6 @@ end
 function CTLD:_GetUnitPositions(Coordinate,Radius,Heading,Template)
 local Positions={}
 local template=_DATABASE:GetGroupTemplate(Template)
-UTILS.PrintTableToLog(template)
 local numbertroops=#template.units
 local newcenter=Coordinate:Translate(Radius,((Heading+270)%360))
 for i=1,360,math.floor(360/numbertroops)do
@@ -69780,7 +69781,6 @@ heading=phead,
 }
 table.insert(Positions,p1t)
 end
-UTILS.PrintTableToLog(Positions)
 return Positions
 end
 function CTLD:_UnloadTroops(Group,Unit)
@@ -70317,14 +70317,20 @@ end
 for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
 local subcat=entry.Subcategory
+local noshow=entry.DontShowInMenu
+if not noshow then
 menucount=menucount+1
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
+end
 end
 else
 for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
+local noshow=entry.DontShowInMenu
+if not noshow then
 menucount=menucount+1
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
+end
 end
 end
 local unloadmenu1=MENU_GROUP_COMMAND:New(_group,"Drop troops",toptroops,self._UnloadTroops,self,_group,_unit):Refresh()
@@ -70343,33 +70349,45 @@ end
 for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
 local subcat=entry.Subcategory
+local noshow=entry.DontShowInMenu
+if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
+end
 end
 for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
 local subcat=entry.Subcategory
+local noshow=entry.DontShowInMenu
+if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
+end
 else
 for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
+local noshow=entry.DontShowInMenu
+if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
+end
 end
 for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
+local noshow=entry.DontShowInMenu
+if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
 end
+end
 listmenu=MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
-removecrates=MENU_GROUP_COMMAND:New(_group,"Remove crates nearby",removecratesmenu,self._RemoveCratesNearby,self,_group,_unit)
+local removecrates=MENU_GROUP_COMMAND:New(_group,"Remove crates nearby",removecratesmenu,self._RemoveCratesNearby,self,_group,_unit)
 local unloadmenu=MENU_GROUP_COMMAND:New(_group,"Drop crates",topcrates,self._UnloadCrates,self,_group,_unit)
 if not self.nobuildmenu then
 local buildmenu=MENU_GROUP_COMMAND:New(_group,"Build crates",topcrates,self._BuildCrates,self,_group,_unit)
