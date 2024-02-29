@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-28T19:43:26+01:00-34937c2cf65a7527aea0b310d30e5678b2cd5321 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-02-29T09:55:12+01:00-4c4ecccb0179817f4624f6d6670a16c82b52c812 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28183,7 +28183,9 @@ local ThreatLevels={
 }
 if Attributes["Fighters"]then ThreatLevel=10
 elseif Attributes["Multirole fighters"]then ThreatLevel=9
+elseif Attributes["Interceptors"]then ThreatLevel=9
 elseif Attributes["Battleplanes"]then ThreatLevel=8
+elseif Attributes["Battle airplanes"]then ThreatLevel=8
 elseif Attributes["Attack helicopters"]then ThreatLevel=7
 elseif Attributes["Strategic bombers"]then ThreatLevel=6
 elseif Attributes["Bombers"]then ThreatLevel=5
@@ -32705,7 +32707,7 @@ ClassName="SCORING",
 ClassID=0,
 Players={},
 AutoSave=true,
-version="1.17.1"
+version="1.18.1"
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -32792,6 +32794,21 @@ local ScoreUnits=ScoreGroup:GetUnits()
 for ScoreUnitID,ScoreUnit in pairs(ScoreUnits)do
 local UnitName=ScoreUnit:GetName()
 self.ScoringObjects[UnitName]=Score
+end
+return self
+end
+function SCORING:AddScoreSetGroup(Set,Score)
+local set=Set:GetSetObjects()
+for _,_group in pairs(set)do
+if _group and _group:IsAlive()then
+self:AddScoreGroup(_group,Score)
+end
+end
+local function AddScore(group)
+self:AddScoreGroup(group,Score)
+end
+function Set:OnAfterAdded(From,Event,To,ObjectName,Object)
+AddScore(Object)
 end
 return self
 end
