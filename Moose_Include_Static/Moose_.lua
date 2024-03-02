@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-01T17:22:33+01:00-b0d0fb9ae157059b0478c3f592e7e23a0f108af2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-02T14:25:42+01:00-3e727f777708964e910c1bb61e0e53a687841bd7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78538,7 +78538,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.62",
+version="0.2.63",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -79033,7 +79033,7 @@ local freq=self.TacticalBaseFreq+((i-1)*self.TacticalIncrFreq)
 self.TacticalFrequencies[freq]=freq
 end
 if self.AwacsSRS then
-self.TacticalSRS=MSRS:New(self.PathToSRS,self.TacticalBaseFreq,self.TacticalModulation)
+self.TacticalSRS=MSRS:New(self.PathToSRS,self.TacticalBaseFreq,self.TacticalModulation,self.Backend)
 self.TacticalSRS:SetCoalition(self.coalition)
 self.TacticalSRS:SetGender(self.Gender)
 self.TacticalSRS:SetCulture(self.Culture)
@@ -79454,7 +79454,7 @@ self.DetectionSet:AddSet(Group)
 end
 return self
 end
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or MSRS.gender or"male"
@@ -79464,7 +79464,9 @@ self.Voice=Voice or MSRS.voice
 self.PathToGoogleKey=PathToGoogleKey
 self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
-self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation)
+self.Backend=Backend or MSRS.backend
+BASE:I({backend=self.Backend})
+self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Backend)
 self.AwacsSRS:SetCoalition(self.coalition)
 self.AwacsSRS:SetGender(self.Gender)
 self.AwacsSRS:SetCulture(self.Culture)
@@ -80192,9 +80194,13 @@ end
 function AWACS:_ShowAwacsInfo(Group)
 self:T(self.lid.."_ShowAwacsInfo")
 local report=REPORT:New("Info")
+local STN=self.STN
 report:Add("====================")
 report:Add(string.format("AWACS %s",self.callsigntxt))
 report:Add(string.format("Radio: %.3f %s",self.Frequency,UTILS.GetModulationName(self.Modulation)))
+if STN then
+report:Add(string.format("Link-16 STN: %s",STN))
+end
 report:Add(string.format("Bulls Alias: %s",self.AOName))
 report:Add(string.format("Coordinate: %s",self.AOCoordinate:ToStringLLDDM()))
 report:Add("====================")
@@ -82339,6 +82345,10 @@ self:T(self.lid.."_CheckAwacsStatus")
 local awacs=nil
 if self.AwacsFG then
 awacs=self.AwacsFG:GetGroup()
+local unit=awacs:GetUnit(1)
+if unit then
+self.STN=tostring(unit:GetSTN())
+end
 end
 local monitoringdata=self.MonitoringData
 if not self.GCI then
@@ -82802,7 +82812,7 @@ end
 end
 end
 end
-if self:Is("Running")then
+if not self:Is("Stopped")then
 self:__CheckTacticalQueue(-self.TacticalInterval)
 end
 return self
