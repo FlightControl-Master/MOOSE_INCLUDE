@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-05T10:35:23+01:00-f99eac0de428ed766359743e4702129c9ec3ea00 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-05T16:38:45+01:00-fd0e6053eeab61e361355af48963d5adf63edb7f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -85278,7 +85278,7 @@ awacsZones={},
 tankerZones={},
 limitMission={},
 }
-COMMANDER.version="0.1.3"
+COMMANDER.version="0.1.4"
 function COMMANDER:New(Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition==nil then
@@ -85439,7 +85439,7 @@ local patrolzone={}
 patrolzone.zone=Zone
 patrolzone.altitude=Altitude or 12000
 patrolzone.heading=Heading or 270
-patrolzone.speed=UTILS.KnotsToAltKIAS(Speed or 350,patrolzone.altitude)
+patrolzone.speed=Speed or 350
 patrolzone.leg=Leg or 30
 patrolzone.mission=nil
 table.insert(self.capZones,patrolzone)
@@ -85450,7 +85450,7 @@ local patrolzone={}
 patrolzone.zone=Zone
 patrolzone.altitude=Altitude or 12000
 patrolzone.heading=Heading or 270
-patrolzone.speed=UTILS.KnotsToAltKIAS(Speed or 350,patrolzone.altitude)
+patrolzone.speed=Speed or 350
 patrolzone.leg=Leg or 30
 patrolzone.mission=nil
 table.insert(self.gcicapZones,patrolzone)
@@ -85475,7 +85475,8 @@ local awacszone={}
 awacszone.zone=Zone
 awacszone.altitude=Altitude or 12000
 awacszone.heading=Heading or 270
-awacszone.speed=UTILS.KnotsToAltKIAS(Speed or 350,awacszone.altitude)
+awacszone.speed=Speed or 350
+awacszone.speed=Speed or 350
 awacszone.leg=Leg or 30
 awacszone.mission=nil
 table.insert(self.awacsZones,awacszone)
@@ -85500,7 +85501,7 @@ local tankerzone={}
 tankerzone.zone=Zone
 tankerzone.altitude=Altitude or 12000
 tankerzone.heading=Heading or 270
-tankerzone.speed=UTILS.KnotsToAltKIAS(Speed or 350,tankerzone.altitude)
+tankerzone.speed=Speed or 350
 tankerzone.leg=Leg or 30
 tankerzone.refuelsystem=RefuelSystem
 tankerzone.mission=nil
