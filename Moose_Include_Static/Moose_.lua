@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-02T15:07:45+01:00-3953f0e7fcad5349f2fa416481407ae2d30662cd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-05T10:34:15+01:00-3652376d4223a68176cb5982fbb7f99b3ac80a74 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -65035,7 +65035,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.46"
+CTLD.version="1.0.47"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -66198,7 +66198,8 @@ function CTLD:_GetUnitPositions(Coordinate,Radius,Heading,Template)
 local Positions={}
 local template=_DATABASE:GetGroupTemplate(Template)
 local numbertroops=#template.units
-local newcenter=Coordinate:Translate(Radius,((Heading+270)%360))
+local slightshift=math.abs(math.random(0,200)/100)
+local newcenter=Coordinate:Translate(Radius+slightshift,((Heading+270)%360))
 for i=1,360,math.floor(360/numbertroops)do
 local phead=((Heading+270+i)%360)
 local post=newcenter:Translate(Radius,phead)
