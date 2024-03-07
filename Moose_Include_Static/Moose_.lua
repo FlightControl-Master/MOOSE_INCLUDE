@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-05T22:29:28+01:00-1e15509001ab95eea0783465e31442905e0659c0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-07T10:20:31+01:00-cb61177252919124cb8ac538a39ea9f862b83e06 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2407,6 +2407,10 @@ return true
 end
 if type_name=="Bronco-OV-10A"then
 BASE:T(unit_name.." front door(s) are open")
+return true
+end
+if type_name=="MH-60R"and(unit:getDrawArgumentValue(403)>0 or unit:getDrawArgumentValue(403)==-1)then
+BASE:T(unit_name.." cargo door is open")
 return true
 end
 return false
@@ -24419,6 +24423,9 @@ return nil
 end
 function CONTROLLABLE:WayPointFunction(WayPoint,WayPointIndex,WayPointFunction,...)
 self:F2({WayPoint,WayPointIndex,WayPointFunction})
+if not self.WayPoints then
+self:WayPointInitialize()
+end
 table.insert(self.WayPoints[WayPoint].task.params.tasks,WayPointIndex)
 self.WayPoints[WayPoint].task.params.tasks[WayPointIndex]=self:TaskFunction(WayPointFunction,arg)
 return self
@@ -65032,10 +65039,11 @@ CTLD.UnitTypeCapabilities={
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
+["MH-60R"]={type="MH-60R",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.47"
+CTLD.version="1.0.48"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68723,7 +68731,8 @@ CSAR.AircraftType["Bell-47"]=2
 CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
-CSAR.version="1.0.19"
+CSAR.AircraftType["MH-60R"]=10
+CSAR.version="1.0.20"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
