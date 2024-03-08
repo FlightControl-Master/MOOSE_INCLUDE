@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-07T10:20:56+01:00-5bde0c7605e74f0cdf66786e0ca645a91c5e0eca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-08T10:06:51+01:00-ef30bd36a5c682d7acbba447a1c93e229de79f75 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20888,7 +20888,7 @@ MARKEROPS_BASE={
 ClassName="MARKEROPS",
 Tag="mytag",
 Keywords={},
-version="0.1.1",
+version="0.1.2",
 debug=false,
 Casesensitive=true,
 }
@@ -20928,13 +20928,14 @@ local coordtext=coord:ToStringLLDDM()
 local text=tostring(Event.text)
 local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
 end
+local coalition=Event.IniCoalition
 if Event.id==world.event.S_EVENT_MARK_ADDED then
 self:T({event="S_EVENT_MARK_ADDED",carrier=self.groupname,vec3=Event.pos})
 local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkAdded(Eventtext,matchtable,coord)
+self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_CHANGE then
@@ -20943,7 +20944,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkChanged(Eventtext,matchtable,coord,Event.idx)
+self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_REMOVED then
@@ -20981,10 +20982,10 @@ end
 end
 return matchtable
 end
-function MARKEROPS_BASE:onbeforeMarkAdded(From,Event,To,Text,Keywords,Coord)
+function MARKEROPS_BASE:onbeforeMarkAdded(From,Event,To,Text,Keywords,Coord,MarkerID,CoalitionNumber)
 self:T({self.lid,From,Event,To,Text,Keywords,Coord:ToStringLLDDM()})
 end
-function MARKEROPS_BASE:onbeforeMarkChanged(From,Event,To,Text,Keywords,Coord)
+function MARKEROPS_BASE:onbeforeMarkChanged(From,Event,To,Text,Keywords,Coord,MarkerID,CoalitionNumber)
 self:T({self.lid,From,Event,To,Text,Keywords,Coord:ToStringLLDDM()})
 end
 function MARKEROPS_BASE:onbeforeMarkDeleted(From,Event,To)
