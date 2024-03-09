@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-08T10:06:51+01:00-ef30bd36a5c682d7acbba447a1c93e229de79f75 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-09T17:24:15+01:00-7c9cf96d2eacfd9d26b230d8380348f87afe318c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -94961,7 +94961,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.0"
+OPSGROUP.version="1.0.1"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -94974,9 +94974,13 @@ end
 self.lid=string.format("OPSGROUP %s | ",tostring(self.groupname))
 if self.group then
 if not self:IsExist()then
-self:T(self.lid.."ERROR: GROUP does not exist! Returning nil")
+self:E(self.lid.."ERROR: GROUP does not exist! Returning nil")
 return nil
 end
+end
+if UTILS.IsInstanceOf(group,"OPSGROUP")then
+self:E(self.lid.."ERROR: GROUP is already an OPSGROUP: "..tostring(self.groupname).."!")
+return group
 end
 self:_SetTemplate()
 self.dcsgroup=self:GetDCSGroup()
@@ -95000,6 +95004,7 @@ self.attribute=self.group:GetAttribute()
 local units=self.group:GetUnits()
 if units then
 local masterunit=units[1]
+if unit then
 self.descriptors=masterunit:GetDesc()
 self.actype=masterunit:GetTypeName()
 self.isSubmarine=masterunit:HasAttribute("Submarines")
@@ -95009,6 +95014,7 @@ self.rangemax=self.descriptors.range and self.descriptors.range*1000 or 500*1000
 self.ceiling=self.descriptors.Hmax
 self.tankertype=select(2,masterunit:IsTanker())
 self.refueltype=select(2,masterunit:IsRefuelable())
+end
 end
 end
 self.detectedunits=SET_UNIT:New()
