@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-10T16:20:06+01:00-4d8abe7f57f31e6373b23bc2147318095234ae96 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-10T16:52:46+01:00-11acb578f684e4d352821843632ab01fdda6bd35 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10942,7 +10942,7 @@ local SpawnCategoryID=SpawnTemplate.CategoryID
 SpawnTemplate.CoalitionID=nil
 SpawnTemplate.CountryID=nil
 SpawnTemplate.CategoryID=nil
-self:_RegisterGroupTemplate(SpawnTemplate,SpawnCoalitionID,SpawnCategoryID,SpawnCountryID)
+self:_RegisterGroupTemplate(SpawnTemplate,SpawnCoalitionID,SpawnCategoryID,SpawnCountryID,SpawnTemplate.name)
 self:T3(SpawnTemplate)
 coalition.addGroup(SpawnCountryID,SpawnCategoryID,SpawnTemplate)
 SpawnTemplate.CoalitionID=SpawnCoalitionID
@@ -18577,7 +18577,7 @@ BASE:I("ERROR: in function NewFromTemplate, required parameter SpawnTemplatePref
 return nil
 end
 if SpawnTemplate then
-self.SpawnTemplate=SpawnTemplate
+self.SpawnTemplate=UTILS.DeepCopy(SpawnTemplate)
 self.SpawnTemplatePrefix=SpawnTemplatePrefix
 self.SpawnAliasPrefix=SpawnAliasPrefix or SpawnTemplatePrefix
 self.SpawnTemplate.name=SpawnTemplatePrefix
