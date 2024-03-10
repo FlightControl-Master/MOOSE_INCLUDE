@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-09T17:24:15+01:00-7c9cf96d2eacfd9d26b230d8380348f87afe318c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-10T16:20:32+01:00-383eff4cd6255ef4ae8ba8c5f9365423859e06d8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7123,6 +7123,7 @@ Event.MarkVec3=Event.pos
 Event.MarkCoordinate=COORDINATE:NewFromVec3(Event.pos)
 Event.MarkText=Event.text
 Event.MarkCoalition=Event.coalition
+Event.IniCoalition=Event.coalition
 Event.MarkGroupID=Event.groupID
 end
 if Event.cargo then
@@ -20888,7 +20889,7 @@ MARKEROPS_BASE={
 ClassName="MARKEROPS",
 Tag="mytag",
 Keywords={},
-version="0.1.2",
+version="0.1.3",
 debug=false,
 Casesensitive=true,
 }
@@ -20928,9 +20929,9 @@ local coordtext=coord:ToStringLLDDM()
 local text=tostring(Event.text)
 local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
 end
-local coalition=Event.IniCoalition
+local coalition=Event.MarkCoalition
 if Event.id==world.event.S_EVENT_MARK_ADDED then
-self:T({event="S_EVENT_MARK_ADDED",carrier=self.groupname,vec3=Event.pos})
+self:T({event="S_EVENT_MARK_ADDED",carrier=Event.IniGroupName,vec3=Event.pos})
 local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
@@ -20939,7 +20940,7 @@ self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_CHANGE then
-self:T({event="S_EVENT_MARK_CHANGE",carrier=self.groupname,vec3=Event.pos})
+self:T({event="S_EVENT_MARK_CHANGE",carrier=Event.IniGroupName,vec3=Event.pos})
 local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
@@ -20948,7 +20949,7 @@ self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_REMOVED then
-self:T({event="S_EVENT_MARK_REMOVED",carrier=self.groupname,vec3=Event.pos})
+self:T({event="S_EVENT_MARK_REMOVED",carrier=Event.IniGroupName,vec3=Event.pos})
 local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
