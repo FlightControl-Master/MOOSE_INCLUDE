@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-11T08:30:22+01:00-b62f2afd8dfdea324253abef4da723fcbb0f9fce ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-11T18:19:44+01:00-dcd278e2a10d9870cc8456f4b5b863bfca8e40e3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20006,8 +20006,17 @@ SpawnTemplate.units[UnitID].unitId=nil
 end
 else
 for UnitID=1,#SpawnTemplate.units do
-local UnitPrefix,Rest=string.match(SpawnTemplate.units[UnitID].name,"^([^#]+)#?"):gsub("^%s*(.-)%s*$","%1")
+local SpawnInitKeepUnitIFF=false
+if string.find(SpawnTemplate.units[UnitID].name,"#IFF_",1,true)then
+SpawnInitKeepUnitIFF=true
+end
+local UnitPrefix,Rest
+if SpawnInitKeepUnitIFF==false then
+UnitPrefix,Rest=string.match(SpawnTemplate.units[UnitID].name,"^([^#]+)#?"):gsub("^%s*(.-)%s*$","%1")
 self:T({UnitPrefix,Rest})
+else
+UnitPrefix=SpawnTemplate.units[UnitID].name
+end
 SpawnTemplate.units[UnitID].name=string.format('%s#%03d-%02d',UnitPrefix,SpawnIndex,UnitID)
 SpawnTemplate.units[UnitID].unitId=nil
 end
@@ -28823,6 +28832,25 @@ local SpawnStatic=SPAWNSTATIC:NewFromStatic(self.StaticName,self:GetCountry())
 SpawnStatic:SpawnFromCoordinate(Coordinate,Heading,self.StaticName)
 end
 return self
+end
+function STATIC:FindByMatching(Pattern)
+local GroupFound=nil
+for name,static in pairs(_DATABASE.STATICS)do
+if string.match(name,Pattern)then
+GroupFound=static
+break
+end
+end
+return GroupFound
+end
+function STATIC:FindAllByMatching(Pattern)
+local GroupsFound={}
+for name,static in pairs(_DATABASE.STATICS)do
+if string.match(name,Pattern)then
+GroupsFound[#GroupsFound+1]=static
+end
+end
+return GroupsFound
 end
 AIRBASE={
 ClassName="AIRBASE",
