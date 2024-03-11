@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-10T17:59:26+01:00-10edd2f9d0c5bb7c196212a908fd83eb3dd3f24b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-11T08:29:56+01:00-176bd0eb8b9b9263d89a51563615498879f46790 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10942,7 +10942,7 @@ local SpawnCategoryID=SpawnTemplate.CategoryID
 SpawnTemplate.CoalitionID=nil
 SpawnTemplate.CountryID=nil
 SpawnTemplate.CategoryID=nil
-self:_RegisterGroupTemplate(SpawnTemplate,SpawnCoalitionID,SpawnCategoryID,SpawnCountryID)
+self:_RegisterGroupTemplate(SpawnTemplate,SpawnCoalitionID,SpawnCategoryID,SpawnCountryID,SpawnTemplate.name)
 self:T3(SpawnTemplate)
 coalition.addGroup(SpawnCountryID,SpawnCategoryID,SpawnTemplate)
 SpawnTemplate.CoalitionID=SpawnCoalitionID
