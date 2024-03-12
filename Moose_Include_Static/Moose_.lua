@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-11T18:19:19+01:00-2f81fcb0c01d0d11a7bb28ea98fa05be7c4f9ad6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-12T10:49:06+01:00-aca4e4d7caccb4daa48cdef34a50e4193529b721 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -24557,6 +24557,49 @@ function CONTROLLABLE:SetOptionRadarUsingForContinousSearch()
 self:F2({self.ControllableName})
 if self:IsAir()then
 self:SetOption(AI.Option.Air.id.RADAR_USING,3)
+end
+return self
+end
+function CONTROLLABLE:SetOptionWaypointPassReport(OnOff)
+self:F2({self.ControllableName})
+local onoff=(OnOff==nil or OnOff==true)and false or true
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.PROHIBIT_WP_PASS_REPORT,onoff)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadioSilence(OnOff)
+local onoff=(OnOff==true or OnOff==nil)and true or false
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.SILENCE,onoff)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadioContact(Objects)
+self:F2({self.ControllableName})
+if not Objects then Objects={"Air"}end
+if type(Objects)~="table"then Objects={Objects}end
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.OPTION_RADIO_USAGE_CONTACT,Objects)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadioEngage(Objects)
+self:F2({self.ControllableName})
+if not Objects then Objects={"Air"}end
+if type(Objects)~="table"then Objects={Objects}end
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.OPTION_RADIO_USAGE_ENGAGE,Objects)
+end
+return self
+end
+function CONTROLLABLE:SetOptionRadioKill(Objects)
+self:F2({self.ControllableName})
+if not Objects then Objects={"Air"}end
+if type(Objects)~="table"then Objects={Objects}end
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.OPTION_RADIO_USAGE_KILL,Objects)
 end
 return self
 end
