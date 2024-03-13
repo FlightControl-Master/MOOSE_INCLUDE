@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-12T15:34:53+01:00-e3d2dec91fcbc1b3b8dd5d1b0525a10d46c8e2f1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-13T07:39:56+01:00-f7f28877da96397be6ae7e5356ffb5c4d007e38a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -75543,7 +75543,7 @@ self.isAI=true
 self.isLateActivated=template.lateActivation
 self.isUncontrolled=false
 self.speedMax=self.group:GetSpeedMax()
-if self.speedMax>3.6 then
+if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
 else
 self.isMobile=false
@@ -90041,7 +90041,7 @@ self.isHelo=group:IsHelicopter()
 self.isUncontrolled=template.uncontrolled
 self.isLateActivated=template.lateActivation
 self.speedMax=group:GetSpeedMax()
-if self.speedMax>3.6 then
+if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
 else
 self.isMobile=false
@@ -94199,7 +94199,7 @@ self.isAI=true
 self.isLateActivated=template.lateActivation
 self.isUncontrolled=false
 self.speedMax=self.group:GetSpeedMax()
-if self.speedMax>3.6 then
+if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
 else
 self.isMobile=false
