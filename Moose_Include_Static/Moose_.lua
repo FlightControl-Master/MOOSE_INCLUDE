@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-13T07:39:56+01:00-f7f28877da96397be6ae7e5356ffb5c4d007e38a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-13T09:09:02+01:00-4b1a1cbcff3f86576ac2fd95cbed99fb56fb7ebd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3466,6 +3466,14 @@ else
 return nil
 end
 return datatable
+end
+function UTILS.ClockHeadingString(refHdg,tgtHdg)
+local relativeAngle=tgtHdg-refHdg
+if relativeAngle<0 then
+relativeAngle=relativeAngle+360
+end
+local clockPos=math.ceil((relativeAngle%360)/30)
+return clockPos.." o'clock"
 end
 PROFILER={
 ClassName="PROFILER",
