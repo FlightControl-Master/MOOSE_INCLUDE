@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-13T09:09:02+01:00-4b1a1cbcff3f86576ac2fd95cbed99fb56fb7ebd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-15T10:26:18+01:00-b10819220cd4af9aaa9c205c50acef4184f0f824 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10358,7 +10358,7 @@ function ZONE_OVAL:GetRandomPointVec2()
 return POINT_VEC2:NewFromVec2(self:GetRandomVec2())
 end
 function ZONE_OVAL:GetRandomPointVec3()
-return POINT_VEC2:NewFromVec3(self:GetRandomVec2())
+return POINT_VEC3:NewFromVec3(self:GetRandomVec2())
 end
 function ZONE_OVAL:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType)
 Coalition=Coalition or self:GetDrawCoalition()
@@ -12073,6 +12073,7 @@ Countries=nil,
 GroupPrefixes=nil,
 Zones=nil,
 Functions=nil,
+Alive=nil,
 },
 FilterMeta={
 Coalitions={
@@ -12277,6 +12278,10 @@ end
 function SET_GROUP:FilterActive(Active)
 Active=Active or not(Active==false)
 self.Filter.Active=Active
+return self
+end
+function SET_GROUP:FilterAlive()
+self.Filter.Alive=true
 return self
 end
 function SET_GROUP:FilterStart()
@@ -12514,6 +12519,14 @@ end
 function SET_GROUP:IsIncludeObject(MGroup)
 self:F2(MGroup)
 local MGroupInclude=true
+if self.Filter.Alive==true then
+local MGroupAlive=false
+self:F({Active=self.Filter.Active})
+if MGroup and MGroup:IsAlive()then
+MGroupAlive=true
+end
+MGroupInclude=MGroupInclude and MGroupAlive
+end
 if self.Filter.Active~=nil then
 local MGroupActive=false
 self:F({Active=self.Filter.Active})
@@ -26178,7 +26191,7 @@ end
 function GROUP:IsActive()
 self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
-if DCSGroup then
+if DCSGroup and DCSGroup:isExist()then
 local unit=DCSGroup:getUnit(1)
 if unit then
 local GroupIsActive=unit:isActive()
@@ -34379,7 +34392,6 @@ predpos:MarkToAll(string.format("height=%dm | heading=%d | velocity=%ddeg | Ropt
 targetzone:DrawZone(coalition.side.BLUE,{0,0,1},0.2,nil,nil,3,true)
 end
 local seadset=SET_GROUP:New():FilterPrefixes(self.SEADGroupPrefixes):FilterZones({targetzone}):FilterOnce()
-local tgtcoord=targetzone:GetRandomPointVec2()
 local tgtgrp=seadset:GetRandom()
 local _targetgroup=nil
 local _targetgroupname="none"
