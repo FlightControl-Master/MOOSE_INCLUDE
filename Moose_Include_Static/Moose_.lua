@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-15T10:26:18+01:00-b10819220cd4af9aaa9c205c50acef4184f0f824 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-16T12:37:11+01:00-3389d3284a4409b6c334671388947108cfc4b8a5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -75567,6 +75567,7 @@ if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
 else
 self.isMobile=false
+self.speedMax=0
 end
 self.speedCruise=self.speedMax*0.7
 self.ammo=self:GetAmmoTot()
@@ -90065,6 +90066,7 @@ if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
 else
 self.isMobile=false
+self.speedMax=0
 end
 local speedCruiseLimit=self.isHelo and UTILS.KnotsToKmph(110)or UTILS.KnotsToKmph(380)
 self.speedCruise=math.min(self.speedMax*0.7,speedCruiseLimit)
@@ -94223,6 +94225,7 @@ if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
 else
 self.isMobile=false
+self.speedMax=0
 end
 self.speedCruise=self.speedMax*0.7
 self.ammo=self:GetAmmoTot()
