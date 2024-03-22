@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-15T10:25:40+01:00-244abe2bbbfec9dbc38d56d626d34d287db14467 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-22T08:56:00+01:00-50298e4109f193af357ed40a45110347b7f08501 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32313,7 +32313,7 @@ ClassName="SCORING",
 ClassID=0,
 Players={},
 AutoSave=true,
-version="1.18.2"
+version="1.18.3"
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -32749,7 +32749,7 @@ PlayerHit.TimeStamp=PlayerHit.TimeStamp or 0
 PlayerHit.UNIT=PlayerHit.UNIT or TargetUNIT
 if PlayerHit.UNIT.ThreatType==nil then
 PlayerHit.ThreatLevel,PlayerHit.ThreatType=PlayerHit.UNIT:GetThreatLevel()
-if PlayerHit.ThreatType==nil then
+if PlayerHit.ThreatType==nil or PlayerHit.ThreatType==""then
 PlayerHit.ThreatLevel=1
 PlayerHit.ThreatType="Unknown"
 end
