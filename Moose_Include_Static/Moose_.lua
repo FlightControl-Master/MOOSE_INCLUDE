@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-22T08:56:00+01:00-50298e4109f193af357ed40a45110347b7f08501 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-23T14:58:54+01:00-613d33d731e0340fccb94baca68d44caaf87ab65 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32313,7 +32313,7 @@ ClassName="SCORING",
 ClassID=0,
 Players={},
 AutoSave=true,
-version="1.18.3"
+version="1.18.4"
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -32326,7 +32326,7 @@ local _SCORINGCategory={
 [Unit.Category.SHIP]="Ship",
 [Unit.Category.STRUCTURE]="Structure",
 }
-function SCORING:New(GameName)
+function SCORING:New(GameName,SavePath,AutoSave)
 local self=BASE:Inherit(self,BASE:New())
 if GameName then
 self.GameName=GameName
@@ -32359,7 +32359,8 @@ self:_AddPlayerFromUnit(PlayerUnit)
 self:SetScoringMenu(PlayerUnit:GetGroup())
 end
 end)
-self.AutoSave=true
+self.AutoSavePath=SavePath
+self.AutoSave=AutoSave or true
 self:OpenCSV(GameName)
 return self
 end
@@ -33322,10 +33323,11 @@ end
 end
 function SCORING:OpenCSV(ScoringCSV)
 self:F(ScoringCSV)
-if lfs and io and os and self.AutoSave then
+if lfs and io and os and self.AutoSave==true then
 if ScoringCSV then
 self.ScoringCSV=ScoringCSV
-local fdir=lfs.writedir()..[[Logs\]]..self.ScoringCSV.." "..os.date("%Y-%m-%d %H-%M-%S")..".csv"
+local path=self.AutoSavePath or lfs.writedir()..[[Logs\]]
+local fdir=path..self.ScoringCSV.." "..os.date("%Y-%m-%d %H-%M-%S")..".csv"
 self.CSVFile,self.err=io.open(fdir,"w+")
 if not self.CSVFile then
 error("Error: Cannot open CSV file in "..lfs.writedir())
