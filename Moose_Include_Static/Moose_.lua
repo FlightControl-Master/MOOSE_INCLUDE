@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-23T14:59:20+01:00-a712d74e2e7359b1498da74bdc12d2470f84285e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-24T13:25:00+01:00-8bd39b41f43b6f7e7bfa88f1b3d5720eb2261d72 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -118954,7 +118954,7 @@ end
 function MSRS:SetVoiceProvider(Voice,Provider)
 self:F({Voice=Voice,Provider=Provider})
 self.poptions=self.poptions or{}
-self.poptions[Provider or self:GetProvider()]=Voice
+self.poptions[Provider or self:GetProvider()].voice=Voice
 return self
 end
 function MSRS:SetVoiceWindows(Voice)
