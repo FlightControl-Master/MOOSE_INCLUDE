@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-24T17:58:13+01:00-a105ddba3d2a4d5e50eea4766d06735b11bac25e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-25T18:26:17+01:00-5b8416d5fdfc324927783917785820301a149c7d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20146,6 +20146,7 @@ else
 if tonumber(SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN)~=nil then
 local octal=SpawnTemplate.units[UnitID].AddPropAircraft.SADL_TN
 local num=UTILS.OctalToDecimal(octal)
+self.SpawnInitSADL=num
 if _DATABASE.SADL[num]~=nil or UnitID>1 then
 octal=_DATABASE:GetNextSADL(self.SpawnInitSADL,SpawnTemplate.units[UnitID].name)
 end
