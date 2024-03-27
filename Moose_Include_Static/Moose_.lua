@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-25T18:26:17+01:00-5b8416d5fdfc324927783917785820301a149c7d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-27T14:41:11+01:00-523375c7656fb12aaacf106737220f889cba6b4a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16141,6 +16141,7 @@ return umin
 end
 function COORDINATE:DistanceFromPointVec2(PointVec2Reference)
 self:F2(PointVec2Reference)
+if not PointVec2Reference then return math.huge end
 local Distance=((PointVec2Reference.x-self.x)^2+(PointVec2Reference.z-self.z)^2)^0.5
 self:T2(Distance)
 return Distance
