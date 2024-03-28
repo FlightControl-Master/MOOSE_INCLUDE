@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-27T14:40:34+01:00-ac42b56b8eae7bada287944f31254e22fd362d2c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-28T08:44:54+01:00-2ad111dd50838db4b556886d9b45ae294fdfa1d4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -64798,6 +64798,7 @@ PerCrateMass=0,
 Stock=nil,
 Mark=nil,
 DontShowInMenu=false,
+Location=nil,
 }
 CTLD_CARGO.Enum={
 VEHICLE="Vehicle",
@@ -64808,7 +64809,7 @@ REPAIR="Repair",
 ENGINEERS="Engineers",
 STATIC="Static",
 }
-function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory,DontShowInMenu)
+function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory,DontShowInMenu,Location)
 local self=BASE:Inherit(self,BASE:New())
 self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
 self.ID=ID or math.random(100000,1000000)
@@ -64825,7 +64826,14 @@ self.Stock=Stock or nil
 self.Mark=nil
 self.Subcategory=Subcategory or"Other"
 self.DontShowInMenu=DontShowInMenu or false
+if type(Location)=="string"then
+Location=ZONE:New(Location)
+end
+self.Location=Location
 return self
+end
+function CTLD_CARGO:GetLocation()
+return self.Location
 end
 function CTLD_CARGO:GetID()
 return self.ID
@@ -65137,10 +65145,11 @@ CTLD.UnitTypeCapabilities={
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["MH-60R"]={type="MH-60R",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
+["SH-60B"]={type="SH-60B",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.48"
+CTLD.version="1.0.49"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -65751,6 +65760,16 @@ end
 if not inzone then
 self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
 if not self.debug then return self end
+end
+local location=Cargo:GetLocation()
+if location then
+local unitcoord=Unit:GetCoordinate()or Group:GetCoordinate()
+if unitcoord then
+if not location:IsCoordinateInZone(unitcoord)then
+self:_SendMessage("The requested cargo is not available in this zone!",10,false,Group)
+if not self.debug then return self end
+end
+end
 end
 local capabilities=self:_GetUnitCapabilities(Unit)
 local canloadcratesno=capabilities.cratelimit
@@ -66885,9 +66904,13 @@ for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
+local zone=entry.Location
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
+if zone then
+menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
 end
@@ -66895,9 +66918,13 @@ for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
+local zone=entry.Location
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
+if zone then
+menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
 end
@@ -66905,18 +66932,26 @@ else
 for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
+local zone=entry.Location
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
+if zone then
+menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
 end
 for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
+local zone=entry.Location
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
+if zone then
+menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
 end
@@ -66971,23 +67006,23 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTr
 table.insert(self.Cargo_Troops,cargo)
 return self
 end
-function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock,SubCategory)
+function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
 self:T(self.lid.." AddCratesCargo")
 if not self:_CheckTemplates(Templates)then
 self:E(self.lid.."Crates Cargo for "..Name.." has missing template(s)!")
 return self
 end
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
-function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory)
+function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Location)
 self:T(self.lid.." AddStaticsCargo")
 self.CargoCounter=self.CargoCounter+1
 local type=CTLD_CARGO.Enum.STATIC
 local template=STATIC:FindByName(Name,true):GetTypeName()
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
 table.insert(self.Cargo_Statics,cargo)
 return self
 end
@@ -66999,14 +67034,14 @@ local template=STATIC:FindByName(Name,true):GetTypeName()
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
 return cargo
 end
-function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock,SubCategory)
+function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
 self:T(self.lid.." AddCratesRepair")
 if not self:_CheckTemplates(Template)then
 self:E(self.lid.."Repair Cargo for "..Name.." has a missing template!")
 return self
 end
 self.CargoCounter=self.CargoCounter+1
-local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory)
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
