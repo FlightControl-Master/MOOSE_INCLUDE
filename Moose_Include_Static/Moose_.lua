@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-28T08:45:18+01:00-577fefab3a5981927b316a37e6b683303d70b56d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-28T11:12:57+01:00-be3db864701adb961dc20e17808269c4fa636d4a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -68804,7 +68804,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.49"
+CTLD.version="1.0.50"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -69354,18 +69354,30 @@ else
 self.CargoCounter=self.CargoCounter+1
 local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,Cargotype.CargoType,true,true,Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
 self:T({cargotype=loadcargotype})
+local running=math.floor(nearestDistance/4)+10
 loaded.Troopsloaded=loaded.Troopsloaded+troopsize
 table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
-self:_SendMessage("Troops boarded!",10,false,Group)
+self:ScheduleOnce(running,self._SendMessage,self,"Troops boarded!",10,false,Group)
+self:_SendMessage("Troops boarding!",10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
-self:__TroopsExtracted(1,Group,Unit,nearestGroup)
+self:__TroopsExtracted(running,Group,Unit,nearestGroup)
+local coord=Unit:GetCoordinate()or Group:GetCoordinate()
+local Point
+if coord then
+local heading=unit:GetHeading()or 0
+local Angle=math.floor((heading+160)%360)
+Point=coord:Translate(8,Angle):GetVec2()
+if Point then
+nearestGroup:RouteToVec2(Point,4)
+end
+end
 if type(Cargotype.Templates)=="table"and Cargotype.Templates[2]then
 for _,_key in pairs(Cargotype.Templates)do
 table.insert(secondarygroups,_key)
 end
 end
-nearestGroup:Destroy(false)
+nearestGroup:Destroy(false,running)
 end
 end
 end
@@ -69374,7 +69386,7 @@ for _,_group in pairs(nearestList)do
 if _group and _group:IsAlive()then
 local groupname=string.match(_group:GetName(),"(.+)-(.+)$")
 if _name==groupname then
-_group:Destroy(false)
+_group:Destroy(false,15)
 end
 end
 end
