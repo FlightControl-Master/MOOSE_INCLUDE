@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-01T12:59:39+02:00-b4d1118c8878d8498f17e584df26b29685eb3286 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-01T19:11:53+02:00-67d53034df3d409586a33c8819d11f4ad6bf5f34 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -95122,7 +95122,7 @@ self.attribute=self.group:GetAttribute()
 local units=self.group:GetUnits()
 if units then
 local masterunit=units[1]
-if unit then
+if masterunit then
 self.descriptors=masterunit:GetDesc()
 self.actype=masterunit:GetTypeName()
 self.isSubmarine=masterunit:HasAttribute("Submarines")
