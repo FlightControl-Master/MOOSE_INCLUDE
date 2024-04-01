@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-03-28T11:12:23+01:00-67b43e2c686a617bd0a129dde0c39cc2ffd11bef ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-01T12:59:14+02:00-dcc15afb8924ef1481bb368ee9595b9fa068a58a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17345,17 +17345,18 @@ local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
 return coord
 end
 function COORDINATE:NewFromMGRS(UTMZone,MGRSDigraph,Easting,Northing)
-if string.len(Easting)<5 then Easting=Easting..string.rep("0",5-string.len(Easting))end
-if string.len(Northing)<5 then Northing=Northing..string.rep("0",5-string.len(Northing))end
+if string.len(Easting)<5 then Easting=tostring(Easting..string.rep("0",5-string.len(Easting)))end
+if string.len(Northing)<5 then Northing=tostring(Northing..string.rep("0",5-string.len(Northing)))end
 local MGRS={
 UTMZone=UTMZone,
 MGRSDigraph=MGRSDigraph,
-Easting=Easting,
-Northing=Northing,
+Easting=tostring(Easting),
+Northing=tostring(Northing),
 }
 local lat,lon=coord.MGRStoLL(MGRS)
 local point=coord.LLtoLO(lat,lon,0)
 local coord=COORDINATE:NewFromVec2({x=point.x,y=point.z})
+return coord
 end
 function COORDINATE:ToStringFromRP(ReferenceCoord,ReferenceName,Controllable,Settings,MagVar)
 self:F2({ReferenceCoord=ReferenceCoord,ReferenceName=ReferenceName})
