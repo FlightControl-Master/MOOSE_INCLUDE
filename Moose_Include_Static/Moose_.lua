@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-02T10:47:58+02:00-2eb4118d5647b8038929511dba6ecbcbdf7d8340 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-02T13:22:54+02:00-ba14330281c0223f5f38c79f241919ad2195d0f3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -83076,7 +83076,7 @@ local ActRouteTarget=ProcessUnit:GetProcess("Engaging","RouteToTargetZone")
 return ActRouteTarget:GetZone()
 end
 function TASK_A2G:SetGoalTotal()
-self.GoalTotal=self.TargetSetUnit:Count()
+self.GoalTotal=self.TargetSetUnit:CountAlive()
 end
 function TASK_A2G:GetGoalTotal()
 return self.GoalTotal
@@ -83089,7 +83089,7 @@ return Distance
 end
 function TASK_A2G:onafterGoal(TaskUnit,From,Event,To)
 local TargetSetUnit=self.TargetSetUnit
-if TargetSetUnit:Count()==0 then
+if TargetSetUnit:CountAlive()==0 then
 self:Success()
 end
 self:__Goal(-10)
@@ -83107,7 +83107,7 @@ ThreatLevel,ThreatText=self.TargetSetUnit:CalculateThreatLevelA2G()
 end
 self.TaskInfo:AddThreat(ThreatText,ThreatLevel,10,"MOD",true)
 if self.Detection then
-local DetectedItemsCount=self.TargetSetUnit:Count()
+local DetectedItemsCount=self.TargetSetUnit:CountAlive()
 local ReportTypes=REPORT:New()
 local TargetTypes={}
 for TargetUnitName,TargetUnit in pairs(self.TargetSetUnit:GetSet())do
@@ -83120,7 +83120,7 @@ end
 self.TaskInfo:AddTargetCount(DetectedItemsCount,11,"O",true)
 self.TaskInfo:AddTargets(DetectedItemsCount,ReportTypes:Text(", "),20,"D",true)
 else
-local DetectedItemsCount=self.TargetSetUnit:Count()
+local DetectedItemsCount=self.TargetSetUnit:CountAlive()
 local DetectedItemsTypes=self.TargetSetUnit:GetTypeNames()
 self.TaskInfo:AddTargetCount(DetectedItemsCount,11,"O",true)
 self.TaskInfo:AddTargets(DetectedItemsCount,DetectedItemsTypes,20,"D",true)
