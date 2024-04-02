@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-01T19:11:53+02:00-67d53034df3d409586a33c8819d11f4ad6bf5f34 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-02T10:48:57+02:00-4c890d18d1f815dfa0730723d02ee0d99469a594 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5092,7 +5092,7 @@ self:I("Tracing method "..Method.." of class "..Class)
 end
 function BASE:_Serialize(Arguments)
 local text=UTILS.PrintTableToLog({Arguments},0,true)
-text=string.gsub(text,"\n","")
+text=string.gsub(text,"(\n+)","")
 text=string.gsub(text,"%(%(","%(")
 text=string.gsub(text,"%)%)","%)")
 text=string.gsub(text,"(%s+)","")
