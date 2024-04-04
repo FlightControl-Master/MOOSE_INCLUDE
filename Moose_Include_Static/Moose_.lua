@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-02T13:22:54+02:00-ba14330281c0223f5f38c79f241919ad2195d0f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-04T17:22:46+02:00-18fd587ab0a20e10b83d43ec9dff086af8fb7ea6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30766,7 +30766,7 @@ end
 function NET.Lua2Json(Lua)
 return net.lua2json(Lua)
 end
-function NET.Lua2Json(Json)
+function NET.Json2Lua(Json)
 return net.json2lua(Json)
 end
 function NET:DoStringIn(State,DoString)
