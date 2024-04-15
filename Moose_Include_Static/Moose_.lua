@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T08:58:37+02:00-ca1018f80ba4b75d2b0eb3b430122465cbc61f1a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T12:52:19+02:00-d4a49ae68be0e756acc51e60396b6c9568d21867 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21268,7 +21268,7 @@ end
 CLIENTMENU={
 ClassName="CLIENTMENUE",
 lid="",
-version="0.1.1",
+version="0.1.2",
 name=nil,
 path=nil,
 group=nil,
@@ -21280,6 +21280,7 @@ Generic=false,
 debug=false,
 Controller=nil,
 groupname=nil,
+active=false,
 }
 CLIENTMENU_ID=0
 function CLIENTMENU:NewEntry(Client,Text,Parent,Function,...)
@@ -21311,7 +21312,7 @@ table.insert(self.Functionargs,self.client)
 if self.Functionargs and self.debug then
 self:T({"Functionargs",self.Functionargs})
 end
-if not self.Generic then
+if not self.Generic and self.active==false then
 if Function~=nil then
 local ErrorHandler=function(errmsg)
 env.info("MOOSE Error in CLIENTMENU COMMAND function: "..errmsg)
@@ -21330,8 +21331,10 @@ self:Clear()
 end
 end
 self.path=missionCommands.addCommandForGroup(self.GroupID,Text,self.parentpath,self.CallHandler)
+self.active=true
 else
 self.path=missionCommands.addSubMenuForGroup(self.GroupID,Text,self.parentpath)
+self.active=true
 end
 else
 if self.parentpath then
@@ -21376,6 +21379,7 @@ local status,err=pcall(RemoveFunction)
 if not status then
 self:I(string.format("**** Error Removing Menu Entry %s for %s!",tostring(self.name),self.groupname))
 end
+self.active=false
 end
 return self
 end
@@ -21429,7 +21433,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.4",
+version="0.1.5",
 name=nil,
 clientset=nil,
 menutree={},
@@ -21440,6 +21444,7 @@ rootentries={},
 debug=true,
 PlayerMenu={},
 Coalition=nil,
+SecondSeat={},
 }
 function CLIENTMENUMANAGER:New(ClientSet,Alias,Coalition)
 local self=BASE:Inherit(self,BASE:New())
@@ -21598,6 +21603,7 @@ return self
 end
 function CLIENTMENUMANAGER:Propagate(Client)
 self:T(self.lid.."Propagate")
+local knownunits={}
 local Set=self.clientset.Set
 if Client then
 Set={Client}
@@ -21606,7 +21612,15 @@ self:ResetMenu(Client)
 for _,_client in pairs(Set)do
 local client=_client
 if client and client:IsAlive()then
+local playerunit=client:GetName()
+local playergroup=client:GetGroup()
 local playername=client:GetPlayerName()or"none"
+if not knownunits[playerunit]then
+knownunits[playerunit]=true
+else
+self:I("Player in multi seat unit: "..playername)
+break
+end
 if not self.playertree[playername]then
 self.playertree[playername]={}
 end
@@ -21635,6 +21649,7 @@ end
 function CLIENTMENUMANAGER:AddEntry(Entry,Client)
 self:T(self.lid.."AddEntry")
 local Set=self.clientset.Set
+local knownunits={}
 if Client then
 Set={Client}
 end
@@ -21642,6 +21657,13 @@ for _,_client in pairs(Set)do
 local client=_client
 if client and client:IsAlive()then
 local playername=client:GetPlayerName()
+local unitname=client:GetName()
+if not knownunits[unitname]then
+knownunits[unitname]=true
+else
+self:I("Player in multi seat unit: "..playername)
+break
+end
 if Entry then
 self:T("Adding generic entry:"..Entry.UUID)
 local parent=nil
