@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-04T17:22:46+02:00-18fd587ab0a20e10b83d43ec9dff086af8fb7ea6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T08:57:28+02:00-b9bd8d88a91c34788d9ec146fd85fca82b48c52a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28745,6 +28745,7 @@ Runway=16,
 HelicopterOnly=40,
 Shelter=68,
 OpenMed=72,
+SmallSizeFighter=100,
 OpenBig=104,
 OpenMedOrBig=176,
 HelicopterUsable=216,
@@ -29303,7 +29304,7 @@ if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.Op
 match=true
 end
 elseif termtype==AIRBASE.TerminalType.FighterAircraft then
-if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.OpenBig or Term_Type==AIRBASE.TerminalType.Shelter then
+if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.OpenBig or Term_Type==AIRBASE.TerminalType.Shelter or Term_Type==AIRBASE.TerminalType.SmallSizeFighter then
 match=true
 end
 end
