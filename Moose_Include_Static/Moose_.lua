@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T12:52:19+02:00-d4a49ae68be0e756acc51e60396b6c9568d21867 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T18:54:46+02:00-504aa19c0310d656dc55696eb9026097d5b44cac ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5095,7 +5095,7 @@ local text=UTILS.PrintTableToLog({Arguments},0,true)
 text=string.gsub(text,"(\n+)","")
 text=string.gsub(text,"%(%(","%(")
 text=string.gsub(text,"%)%)","%)")
-text=string.gsub(text,"(%s+)","")
+text=string.gsub(text,"(%s+)"," ")
 return text
 end
 function BASE:_F(Arguments,DebugInfoCurrentParam,DebugInfoFromParam)
