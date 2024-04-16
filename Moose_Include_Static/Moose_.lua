@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T18:54:46+02:00-504aa19c0310d656dc55696eb9026097d5b44cac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-16T08:46:06+02:00-0764d076dbd29b02dc3da751eba4520ede78c8cb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21433,7 +21433,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.5",
+version="0.1.5a",
 name=nil,
 clientset=nil,
 menutree={},
@@ -21444,7 +21444,6 @@ rootentries={},
 debug=true,
 PlayerMenu={},
 Coalition=nil,
-SecondSeat={},
 }
 function CLIENTMENUMANAGER:New(ClientSet,Alias,Coalition)
 local self=BASE:Inherit(self,BASE:New())
