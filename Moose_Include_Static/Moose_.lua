@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-16T08:46:06+02:00-0764d076dbd29b02dc3da751eba4520ede78c8cb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-16T16:01:43+02:00-743baac94525030ed37659c78bab285f49bd69ee ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -84829,6 +84829,9 @@ end
 function COHORT:SetCallsign(Callsign,Index)
 self.callsignName=Callsign
 self.callsignIndex=Index
+self.callsign={}
+self.callsign.NumberSquad=Callsign
+self.callsign.NumberGroup=Index
 return self
 end
 function COHORT:SetAttribute(Attribute)
