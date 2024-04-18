@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T14:41:29+02:00-465c39529475f05de19c85299931e5c8ff43cf8a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T14:51:41+02:00-616690391c8dcb511b009455c4be05971255c0d2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11044,7 +11044,7 @@ Units=UnitNames
 )
 end
 function DATABASE:GetNextSTN(octal,unitname)
-local first=UTILS.OctalToDecimal(octal)
+local first=UTILS.OctalToDecimal(octal)or 0
 if self.STNS[first]==unitname then return octal end
 local nextoctal=77777
 local found=false
@@ -11074,7 +11074,7 @@ end
 return nextoctal
 end
 function DATABASE:GetNextSADL(octal,unitname)
-local first=UTILS.OctalToDecimal(octal)
+local first=UTILS.OctalToDecimal(octal)or 0
 if self.SADL[first]==unitname then return octal end
 local nextoctal=7777
 local found=false
