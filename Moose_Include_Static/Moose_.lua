@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-15T18:54:22+02:00-9a3effd063cea53fc4de2f2fcc0090dcfbd89a2a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T09:30:35+02:00-73bddddba40b0ed3ccbcb93c743ad825e8c394b5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -65151,7 +65151,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.50"
+CTLD.version="1.0.51"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -65654,7 +65654,9 @@ local distancekeys={}
 local extractdistance=self.CrateDistance*self.ExtractFactor
 for k,v in pairs(self.DroppedTroops)do
 local distance=self:_GetDistance(v:GetCoordinate(),unitcoord)
-if distance<=extractdistance and distance~=-1 then
+local TNow=timer.getTime()
+local vtime=v.ExtractTime or TNow-310
+if distance<=extractdistance and distance~=-1 and(TNow-vtime>300)then
 nearestGroup=v
 nearestGroupIndex=k
 nearestDistance=distance
@@ -65697,8 +65699,10 @@ loaded.Cargo={}
 end
 if troopsize+numberonboard>trooplimit then
 self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
+nearestGroup.ExtractTime=0
 else
 self.CargoCounter=self.CargoCounter+1
+nearestGroup.ExtractTime=timer.GetTime()
 local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,Cargotype.CargoType,true,true,Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
 self:T({cargotype=loadcargotype})
 local running=math.floor(nearestDistance/4)+10
