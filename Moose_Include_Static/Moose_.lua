@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T14:51:41+02:00-616690391c8dcb511b009455c4be05971255c0d2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T18:40:59+02:00-b761078c188e1bfec4eee19947a2487ad9ffcd07 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11385,7 +11385,7 @@ return playername
 end
 if Event.IniUnit then
 if Event.IniObjectCategory==1 then
-local PlayerName=Event.IniUnit:GetPlayerName()or FindPlayerName(Event.IniUnitName)
+local PlayerName=Event.IniPlayerName or Event.IniUnit:GetPlayerName()or FindPlayerName(Event.IniUnitName)
 if PlayerName then
 self:I(string.format("Player '%s' left unit %s",tostring(PlayerName),tostring(Event.IniUnitName)))
 local Settings=SETTINGS:Set(PlayerName)
