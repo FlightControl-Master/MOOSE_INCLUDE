@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T09:30:56+02:00-7c4d640690eb226e8333ff8bc5781bb191a4cdb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T14:42:12+02:00-e1e0095d9b5f9e2835bc0c53a7e9bae145ee7d62 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19003,6 +19003,18 @@ function SPAWN:InitDelayOff()
 return self:InitDelayOnOff(false)
 end
 end
+function SPAWN:InitHiddenOnMap()
+self.SpawnHiddenOnMap=true
+return self
+end
+function SPAWN:InitHiddenOnMFD()
+self.SpawnHiddenOnMFD=true
+return self
+end
+function SPAWN:InitHiddenOnPlanner()
+self.SpawnHiddenOnPlanner=true
+return self
+end
 function SPAWN:Spawn()
 self:F({self.SpawnTemplatePrefix,self.SpawnIndex,self.AliveUnits})
 if self.SpawnInitAirbase then
@@ -19195,6 +19207,16 @@ end
 if self.SpawnInitModu then
 SpawnTemplate.modulation=self.SpawnInitModu
 end
+if self.SpawnHiddenOnPlanner then
+SpawnTemplate.hiddenOnPlanner=true
+end
+if self.SpawnHiddenOnMFD then
+SpawnTemplate.hiddenOnMFD=true
+end
+if self.SpawnHiddenOnMap then
+SpawnTemplate.hidden=true
+end
+self:I(SpawnTemplate)
 SpawnTemplate.CategoryID=self.SpawnInitCategory or SpawnTemplate.CategoryID
 SpawnTemplate.CountryID=self.SpawnInitCountry or SpawnTemplate.CountryID
 SpawnTemplate.CoalitionID=self.SpawnInitCoalition or SpawnTemplate.CoalitionID
