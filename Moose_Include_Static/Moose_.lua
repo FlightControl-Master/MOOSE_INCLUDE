@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-18T18:40:59+02:00-b761078c188e1bfec4eee19947a2487ad9ffcd07 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-19T11:33:15+02:00-abc26b1e5cc0eab14ea73c3d6a65b1873fac80eb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -68904,7 +68904,7 @@ CSAR.AircraftType["UH-60L"]=10
 CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
-CSAR.version="1.0.20"
+CSAR.version="1.0.21"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -69016,7 +69016,7 @@ self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
 self.SRSport=5002
 self.SRSCulture="en-GB"
-self.SRSVoice=nil
+self.SRSVoice=MSRS.Voices.Google.Standard.en_GB_Standard_B
 self.SRSGPathToCredentials=nil
 self.SRSVolume=1.0
 self.SRSGender="male"
@@ -69392,7 +69392,7 @@ return self
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
 self:__Landed(2,_event.IniUnitName,_place)
-self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true)
+self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true,true)
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
@@ -69615,6 +69615,7 @@ local _found,_pilotable=self:_CheckNameInDownedPilots(_woundedGroupName)
 local _pilotName=_pilotable.desc
 local _reset=true
 if(_distance<500)then
+self:T(self.lid.."[Pickup Debug] Helo closer than 500m: ".._lookupKeyHeli)
 if self.heliCloseMessage[_lookupKeyHeli]==nil then
 if self.autosmoke==true then
 self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! Land or hover at the smoke.",self:_GetCustomCallSign(_heliName),_pilotName),self.messageTime,false,true)
@@ -69623,11 +69624,15 @@ self:_DisplayMessageToSAR(_heliUnit,string.format("%s: %s. You\'re close now! La
 end
 self.heliCloseMessage[_lookupKeyHeli]=true
 end
+self:T(self.lid.."[Pickup Debug] Checking landed vs Hover for ".._lookupKeyHeli)
 if not _heliUnit:InAir()then
+self:T(self.lid.."[Pickup Debug] Helo landed: ".._lookupKeyHeli)
 if self.pilotRuntoExtractPoint==true then
 if(_distance<self.extractDistance)then
 local _time=self.landedStatus[_lookupKeyHeli]
+self:T(self.lid.."[Pickup Debug] Check pilot running or arrived ".._lookupKeyHeli)
 if _time==nil then
+self:T(self.lid.."[Pickup Debug] Pilot running not arrived yet ".._lookupKeyHeli)
 self.landedStatus[_lookupKeyHeli]=math.floor((_distance-self.loadDistance)/3.6)
 _time=self.landedStatus[_lookupKeyHeli]
 _woundedGroup:OptionAlarmStateGreen()
@@ -69637,11 +69642,15 @@ else
 _time=self.landedStatus[_lookupKeyHeli]-10
 self.landedStatus[_lookupKeyHeli]=_time
 end
+self:T(self.lid.."[Pickup Debug] Pilot close enough? ".._lookupKeyHeli)
 if _distance<self.loadDistance+5 or _distance<=13 then
+self:T(self.lid.."[Pickup Debug] Pilot close enough - YES ".._lookupKeyHeli)
 if self.pilotmustopendoors and(self:_IsLoadingDoorOpen(_heliName)==false)then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true,true)
+self:T(self.lid.."[Pickup Debug] Door closed, try again next loop ".._lookupKeyHeli)
 return false
 else
+self:T(self.lid.."[Pickup Debug] Pick up Pilot ".._lookupKeyHeli)
 self.landedStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
 return true
@@ -69649,28 +69658,36 @@ end
 end
 end
 else
+self:T(self.lid.."[Pickup Debug] Helo landed, pilot NOT set to run to helo ".._lookupKeyHeli)
 if(_distance<self.loadDistance)then
+self:T(self.lid.."[Pickup Debug] Helo close enough, door check ".._lookupKeyHeli)
 if self.pilotmustopendoors and(self:_IsLoadingDoorOpen(_heliName)==false)then
+self:T(self.lid.."[Pickup Debug] Door closed, try again next loop ".._lookupKeyHeli)
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true,true)
 return false
 else
+self:T(self.lid.."[Pickup Debug] Pick up Pilot ".._lookupKeyHeli)
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
 return true
 end
 end
 end
 else
+self:T(self.lid.."[Pickup Debug] Helo hovering".._lookupKeyHeli)
 local _unitsInHelicopter=self:_PilotsOnboard(_heliName)
 local _maxUnits=self.AircraftType[_heliUnit:GetTypeName()]
 if _maxUnits==nil then
 _maxUnits=self.max_units
 end
+self:T(self.lid.."[Pickup Debug] Check capacity and close enough for winching ".._lookupKeyHeli)
 if _heliUnit:InAir()and _unitsInHelicopter+1<=_maxUnits then
 if _distance<self.rescuehoverdistance then
+self:T(self.lid.."[Pickup Debug] Helo hovering close enough ".._lookupKeyHeli)
 local leaderheight=_woundedLeader:GetHeight()
 if leaderheight<0 then leaderheight=0 end
 local _height=_heliUnit:GetHeight()-leaderheight
 if _height<=self.rescuehoverheight then
+self:T(self.lid.."[Pickup Debug] Helo hovering low enough ".._lookupKeyHeli)
 local _time=self.hoverStatus[_lookupKeyHeli]
 if _time==nil then
 self.hoverStatus[_lookupKeyHeli]=10
@@ -69679,21 +69696,28 @@ else
 _time=self.hoverStatus[_lookupKeyHeli]-10
 self.hoverStatus[_lookupKeyHeli]=_time
 end
+self:T(self.lid.."[Pickup Debug] Check hover timer ".._lookupKeyHeli)
 if _time>0 then
+self:T(self.lid.."[Pickup Debug] Helo hovering not long enough ".._lookupKeyHeli)
 self:_DisplayMessageToSAR(_heliUnit,"Hovering above ".._pilotName..". \n\nHold hover for ".._time.." seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",self.messageTime,true)
 else
+self:T(self.lid.."[Pickup Debug] Helo hovering long enough - door check ".._lookupKeyHeli)
 if self.pilotmustopendoors and(self:_IsLoadingDoorOpen(_heliName)==false)then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me in!",self.messageTime,true,true)
+self:T(self.lid.."[Pickup Debug] Door closed, try again next loop ".._lookupKeyHeli)
 return false
 else
 self.hoverStatus[_lookupKeyHeli]=nil
 self:_PickupUnit(_heliUnit,_pilotName,_woundedGroup,_woundedGroupName)
+self:T(self.lid.."[Pickup Debug] Pilot picked up ".._lookupKeyHeli)
 return true
 end
 end
 _reset=false
 else
+self:T(self.lid.."[Pickup Debug] Helo hovering too high ".._lookupKeyHeli)
 self:_DisplayMessageToSAR(_heliUnit,"Too high to winch ".._pilotName.." \nReduce height and hover for 10 seconds!",self.messageTime,true,true)
+self:T(self.lid.."[Pickup Debug] Hovering too high, try again next loop ".._lookupKeyHeli)
 return false
 end
 end
@@ -69709,7 +69733,7 @@ else
 return false
 end
 end
-function CSAR:_ScheduledSARFlight(heliname,groupname,isairport)
+function CSAR:_ScheduledSARFlight(heliname,groupname,isairport,noreschedule)
 self:T(self.lid.." _ScheduledSARFlight")
 self:T({heliname,groupname})
 local _heliUnit=self:_GetSARHeli(heliname)
@@ -69723,17 +69747,25 @@ return
 end
 local _dist=self:_GetClosestMASH(_heliUnit)
 if _dist==-1 then
+self:T(self.lid.."[Drop off debug] Check distance to MASH for "..heliname.." Distance can not be determined!")
 return
 end
+self:T(self.lid.."[Drop off debug] Check distance to MASH for "..heliname.." Distance km: "..math.floor(_dist/1000))
 if(_dist<self.FARPRescueDistance or isairport)and _heliUnit:InAir()==false then
+self:T(self.lid.."[Drop off debug] Distance ok, door check")
 if self.pilotmustopendoors and self:_IsLoadingDoorOpen(heliname)==false then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me out!",self.messageTime,true,true)
+self:T(self.lid.."[Drop off debug] Door closed, try again next loop")
 else
+self:T(self.lid.."[Drop off debug] Rescued!")
 self:_RescuePilots(_heliUnit)
 return
 end
 end
-self:__Returning(-5,heliname,_woundedGroupName,isairport)
+if not noreschedule then
+self:__Returning(5,heliname,_woundedGroupName,isairport)
+self:ScheduleOnce(5,self._ScheduledSARFlight,self,heliname,groupname,isairport,noreschedule)
+end
 return self
 end
 function CSAR:_RescuePilots(_heliUnit)
@@ -69775,7 +69807,6 @@ self.msrs:SetCoordinate(coord)
 end
 _text=string.gsub(_text,"km"," kilometer")
 _text=string.gsub(_text,"nm"," nautical miles")
-self:I("Voice = "..self.SRSVoice)
 self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
 end
 return self
@@ -70137,7 +70168,7 @@ self:T(self.lid.." _RefreshRadioBeacons")
 if self:_CountActiveDownedPilots()>0 then
 local PilotTable=self.downedPilots
 for _,_pilot in pairs(PilotTable)do
-self:T({_pilot})
+self:T({_pilot.name})
 local pilot=_pilot
 local group=pilot.group
 local frequency=pilot.frequency or 0
@@ -70339,7 +70370,6 @@ return self
 end
 function CSAR:onbeforeReturning(From,Event,To,Heliname,Woundedgroupname,IsAirPort)
 self:T({From,Event,To,Heliname,Woundedgroupname})
-self:_ScheduledSARFlight(Heliname,Woundedgroupname,IsAirPort)
 return self
 end
 function CSAR:onbeforeRescued(From,Event,To,HeliUnit,HeliName,PilotsSaved)
