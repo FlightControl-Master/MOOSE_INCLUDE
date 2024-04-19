@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-19T15:45:33+02:00-39471212d343a4f8bd7af006423341c675fdeace ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-19T15:58:17+02:00-e11bb71c2dca1d3f49ab4fd1ca148106dca161e2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19216,7 +19216,6 @@ end
 if self.SpawnHiddenOnMap then
 SpawnTemplate.hidden=true
 end
-self:I(SpawnTemplate)
 SpawnTemplate.CategoryID=self.SpawnInitCategory or SpawnTemplate.CategoryID
 SpawnTemplate.CountryID=self.SpawnInitCountry or SpawnTemplate.CountryID
 SpawnTemplate.CoalitionID=self.SpawnInitCoalition or SpawnTemplate.CoalitionID
@@ -26695,12 +26694,24 @@ function GROUP:GetCoordinate()
 local Units=self:GetUnits()or{}
 for _,_unit in pairs(Units)do
 local FirstUnit=_unit
-if FirstUnit then
+if FirstUnit and FirstUnit:IsAlive()then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
 if FirstUnitCoordinate then
 local Heading=self:GetHeading()
 FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
+end
+end
+end
+local DCSGroup=Group.getByName(self.GroupName)
+local DCSUnits=DCSGroup:getUnits()or{}
+for _,_unit in pairs(DCSUnits)do
+if Object.isExist(_unit)then
+local position=_unit:getPosition()
+local point=position.p~=nil and position.p or _unit:GetPoint()
+if point then
+local coord=COORDINATE:NewFromVec3(point)
+return coord
 end
 end
 end
@@ -109576,7 +109587,7 @@ local DistanceFromHomeBase=self.HomeAirbase:GetCoordinate():Get2DDistance(self.C
 if not self:Is("Holding")and not self:Is("Returning")then
 local DistanceFromHomeBase=self.HomeAirbase:GetCoordinate():Get2DDistance(self.Controllable:GetCoordinate())
 if DistanceFromHomeBase>self.DisengageRadius then
-self:I(self.Controllable:GetName().." is too far from home base, RTB!")
+self:T(self.Controllable:GetName().." is too far from home base, RTB!")
 self:Hold(300)
 RTB=false
 end
@@ -109585,10 +109596,10 @@ if not self:Is("Fuel")and not self:Is("Home")and not self:is("Refuelling")then
 local Fuel=self.Controllable:GetFuelMin()
 if Fuel<self.FuelThresholdPercentage then
 if self.TankerName then
-self:I(self.Controllable:GetName().." is out of fuel: "..Fuel.." ... Refuelling at Tanker!")
+self:T(self.Controllable:GetName().." is out of fuel: "..Fuel.." ... Refuelling at Tanker!")
 self:Refuel()
 else
-self:I(self.Controllable:GetName().." is out of fuel: "..Fuel.." ... RTB!")
+self:T(self.Controllable:GetName().." is out of fuel: "..Fuel.." ... RTB!")
 local OldAIControllable=self.Controllable
 local OrbitTask=OldAIControllable:TaskOrbitCircle(math.random(self.PatrolFloorAltitude,self.PatrolCeilingAltitude),self.PatrolMinSpeed)
 local TimedOrbitTask=OldAIControllable:TaskControlled(OrbitTask,OldAIControllable:TaskCondition(nil,nil,nil,nil,self.OutOfFuelOrbitTime,nil))
@@ -109605,7 +109616,7 @@ end
 local Damage=self.Controllable:GetLife()
 local InitialLife=self.Controllable:GetLife0()
 if(Damage/InitialLife)<self.PatrolDamageThreshold then
-self:I(self.Controllable:GetName().." is damaged: "..Damage.." ... RTB!")
+self:T(self.Controllable:GetName().." is damaged: "..Damage.." ... RTB!")
 self:Damaged()
 RTB=true
 self:SetStatusOff()
@@ -109620,7 +109631,7 @@ if self.IdleCount>=10 then
 if Damage~=InitialLife then
 self:Damaged()
 else
-self:I(self.Controllable:GetName().." control lost! ")
+self:T(self.Controllable:GetName().." control lost! ")
 self:LostControl()
 end
 else
@@ -109666,6 +109677,7 @@ self:ClearTargetDistance()
 AIGroup:OptionProhibitAfterburner(true)
 local EngageRoute={}
 local FromCoord=AIGroup:GetCoordinate()
+if not FromCoord then return end
 local ToTargetCoord=self.HomeAirbase:GetCoordinate()
 local ToTargetVec3=ToTargetCoord:GetVec3()
 ToTargetVec3.y=ToTargetCoord:GetLandHeight()+3000
@@ -109680,12 +109692,12 @@ local RTBSpeed=math.random(self.RTBMinSpeed,self.RTBMaxSpeed)
 local Distance=FromCoord:Get2DDistance(ToTargetCoord2)
 local ToAirbaseCoord=ToTargetCoord2
 if Distance<5000 then
-self:I("RTB and near the airbase!")
+self:T("RTB and near the airbase!")
 self:Home()
 return
 end
 if not AIGroup:InAir()==true then
-self:I("Not anymore in the air, considered Home.")
+self:T("Not anymore in the air, considered Home.")
 self:Home()
 return
 end
@@ -109715,15 +109727,17 @@ end
 end
 function AI_AIR:onafterHome(AIGroup,From,Event,To)
 self:F({AIGroup,From,Event,To})
-self:I("Group "..self.Controllable:GetName().." ... Home! ( "..self:GetState().." )")
+self:T("Group "..self.Controllable:GetName().." ... Home! ( "..self:GetState().." )")
 if AIGroup and AIGroup:IsAlive()then
 end
 end
 function AI_AIR:onafterHold(AIGroup,From,Event,To,HoldTime)
 self:F({AIGroup,From,Event,To})
-self:I("Group "..self.Controllable:GetName().." ... Holding! ( "..self:GetState().." )")
+self:T("Group "..self.Controllable:GetName().." ... Holding! ( "..self:GetState().." )")
 if AIGroup and AIGroup:IsAlive()then
-local OrbitTask=AIGroup:TaskOrbitCircle(math.random(self.PatrolFloorAltitude,self.PatrolCeilingAltitude),self.PatrolMinSpeed)
+local Coordinate=AIGroup:GetCoordinate()
+if Coordinate==nil then return end
+local OrbitTask=AIGroup:TaskOrbitCircle(math.random(self.PatrolFloorAltitude,self.PatrolCeilingAltitude),self.PatrolMinSpeed,Coordinate)
 local TimedOrbitTask=AIGroup:TaskControlled(OrbitTask,AIGroup:TaskCondition(nil,nil,nil,nil,HoldTime,nil))
 local RTBTask=AIGroup:TaskFunction("AI_AIR.RTBHold",self)
 local OrbitHoldTask=AIGroup:TaskOrbitCircle(4000,self.PatrolMinSpeed)
@@ -109731,7 +109745,7 @@ AIGroup:SetTask(AIGroup:TaskCombo({TimedOrbitTask,RTBTask,OrbitHoldTask}),1)
 end
 end
 function AI_AIR.Resume(AIGroup,Fsm)
-AIGroup:I({"AI_AIR.Resume:",AIGroup:GetName()})
+AIGroup:T({"AI_AIR.Resume:",AIGroup:GetName()})
 if AIGroup:IsAlive()then
 Fsm:__RTB(Fsm.TaskDelay)
 end
@@ -109741,7 +109755,7 @@ self:F({AIGroup,From,Event,To})
 if AIGroup and AIGroup:IsAlive()then
 local Tanker=GROUP:FindByName(self.TankerName)
 if Tanker and Tanker:IsAlive()and Tanker:IsAirPlane()then
-self:I("Group "..self.Controllable:GetName().." ... Refuelling! State="..self:GetState()..", Refuelling tanker "..self.TankerName)
+self:T("Group "..self.Controllable:GetName().." ... Refuelling! State="..self:GetState()..", Refuelling tanker "..self.TankerName)
 local RefuelRoute={}
 local FromRefuelCoord=AIGroup:GetCoordinate()
 local ToRefuelCoord=Tanker:GetCoordinate()
@@ -109954,13 +109968,13 @@ end
 end
 end
 function AI_AIR_ENGAGE.___EngageRoute(AIGroup,Fsm,AttackSetUnit)
-Fsm:I(string.format("AI_AIR_ENGAGE.___EngageRoute: %s",tostring(AIGroup:GetName())))
+Fsm:T(string.format("AI_AIR_ENGAGE.___EngageRoute: %s",tostring(AIGroup:GetName())))
 if AIGroup and AIGroup:IsAlive()then
 Fsm:__EngageRoute(Fsm.TaskDelay or 0.1,AttackSetUnit)
 end
 end
 function AI_AIR_ENGAGE:onafterEngageRoute(DefenderGroup,From,Event,To,AttackSetUnit)
-self:I({DefenderGroup,From,Event,To,AttackSetUnit})
+self:T({DefenderGroup,From,Event,To,AttackSetUnit})
 local DefenderGroupName=DefenderGroup:GetName()
 self.AttackSetUnit=AttackSetUnit
 local AttackCount=AttackSetUnit:CountAlive()
@@ -109970,7 +109984,11 @@ local EngageAltitude=math.random(self.EngageFloorAltitude,self.EngageCeilingAlti
 local EngageSpeed=math.random(self.EngageMinSpeed,self.EngageMaxSpeed)
 local DefenderCoord=DefenderGroup:GetPointVec3()
 DefenderCoord:SetY(EngageAltitude)
-local TargetCoord=AttackSetUnit:GetFirst():GetPointVec3()
+local TargetCoord=AttackSetUnit:GetRandomSurely():GetPointVec3()
+if TargetCoord==nil then
+self:Return()
+return
+end
 TargetCoord:SetY(EngageAltitude)
 local TargetDistance=DefenderCoord:Get2DDistance(TargetCoord)
 local EngageDistance=(DefenderGroup:IsHelicopter()and 5000)or(DefenderGroup:IsAirPlane()and 10000)
@@ -109994,12 +110012,12 @@ DefenderGroup:Route(EngageRoute,self.TaskDelay or 0.1)
 end
 end
 else
-self:I(DefenderGroupName..": No targets found -> Going RTB")
+self:T(DefenderGroupName..": No targets found -> Going RTB")
 self:Return()
 end
 end
 function AI_AIR_ENGAGE.___Engage(AIGroup,Fsm,AttackSetUnit)
-Fsm:I(string.format("AI_AIR_ENGAGE.___Engage: %s",tostring(AIGroup:GetName())))
+Fsm:T(string.format("AI_AIR_ENGAGE.___Engage: %s",tostring(AIGroup:GetName())))
 if AIGroup and AIGroup:IsAlive()then
 local delay=Fsm.TaskDelay or 0.1
 Fsm:__Engage(delay,AttackSetUnit)
@@ -110017,7 +110035,7 @@ local EngageAltitude=math.random(self.EngageFloorAltitude or 500,self.EngageCeil
 local EngageSpeed=math.random(self.EngageMinSpeed,self.EngageMaxSpeed)
 local DefenderCoord=DefenderGroup:GetPointVec3()
 DefenderCoord:SetY(EngageAltitude)
-local TargetCoord=AttackSetUnit:GetFirst():GetPointVec3()
+local TargetCoord=AttackSetUnit:GetRandomSurely():GetPointVec3()
 if not TargetCoord then
 self:Return()
 return
@@ -110037,12 +110055,12 @@ EngageRoute[#EngageRoute+1]=ToWP
 if TargetDistance<=EngageDistance*9 then
 local AttackUnitTasks=self:CreateAttackUnitTasks(AttackSetUnit,DefenderGroup,EngageAltitude)
 if#AttackUnitTasks==0 then
-self:I(DefenderGroupName..": No valid targets found -> Going RTB")
+self:T(DefenderGroupName..": No valid targets found -> Going RTB")
 self:Return()
 return
 else
 local text=string.format("%s: Engaging targets at distance %.2f NM",DefenderGroupName,UTILS.MetersToNM(TargetDistance))
-self:I(text)
+self:T(text)
 DefenderGroup:OptionROEOpenFire()
 DefenderGroup:OptionROTEvadeFire()
 DefenderGroup:OptionKeepWeaponsOnThreat()
@@ -110054,7 +110072,7 @@ EngageRoute[#EngageRoute].task=DefenderGroup:TaskCombo(AttackTasks)
 DefenderGroup:Route(EngageRoute,self.TaskDelay or 0.1)
 end
 else
-self:I(DefenderGroupName..": No targets found -> returning.")
+self:T(DefenderGroupName..": No targets found -> returning.")
 self:Return()
 return
 end
@@ -110315,12 +110333,12 @@ end
 end
 function AI_A2A_DISPATCHER:OnEventBaseCaptured(EventData)
 local AirbaseName=EventData.PlaceName
-self:I("Captured "..AirbaseName)
+self:T("Captured "..AirbaseName)
 for SquadronName,Squadron in pairs(self.DefenderSquadrons)do
 if Squadron.AirbaseName==AirbaseName then
 Squadron.ResourceCount=-999
 Squadron.Captured=true
-self:I("Squadron "..SquadronName.." captured.")
+self:T("Squadron "..SquadronName.." captured.")
 end
 end
 end
@@ -110557,7 +110575,7 @@ Cap.PatrolCeilingAltitude=PatrolCeilingAltitude
 Cap.PatrolAltType=PatrolAltType
 Cap.EngageAltType=EngageAltType
 self:SetSquadronCapInterval(SquadronName,self.DefenderDefault.CapLimit,self.DefenderDefault.CapMinSeconds,self.DefenderDefault.CapMaxSeconds,1)
-self:I({CAP={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,Zone,PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageAltType}})
+self:T({CAP={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,Zone,PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageAltType}})
 local RecceSet=self.Detection:GetDetectionSet()
 RecceSet:FilterPrefixes(DefenderSquadron.TemplatePrefixes)
 RecceSet:FilterStart()
@@ -110675,7 +110693,7 @@ Intercept.EngageMaxSpeed=EngageMaxSpeed
 Intercept.EngageFloorAltitude=EngageFloorAltitude
 Intercept.EngageCeilingAltitude=EngageCeilingAltitude
 Intercept.EngageAltType=EngageAltType
-self:I({GCI={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({GCI={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 end
 function AI_A2A_DISPATCHER:SetSquadronGci(SquadronName,EngageMinSpeed,EngageMaxSpeed)
 self.DefenderSquadrons[SquadronName]=self.DefenderSquadrons[SquadronName]or{}
@@ -111552,22 +111570,22 @@ table.insert(AirbaseNames,AirbaseName)
 end
 end
 self.Templates=SET_GROUP:New():FilterPrefixes(TemplatePrefixes):FilterOnce()
-self:I({Airbases=AirbaseNames})
-self:I("Defining Templates for Airbases ...")
+self:T({Airbases=AirbaseNames})
+self:T("Defining Templates for Airbases ...")
 for AirbaseID,AirbaseName in pairs(AirbaseNames)do
 local Airbase=_DATABASE:FindAirbase(AirbaseName)
 local AirbaseName=Airbase:GetName()
 local AirbaseCoord=Airbase:GetCoordinate()
 local AirbaseZone=ZONE_RADIUS:New("Airbase",AirbaseCoord:GetVec2(),3000)
 local Templates=nil
-self:I({Airbase=AirbaseName})
+self:T({Airbase=AirbaseName})
 for TemplateID,Template in pairs(self.Templates:GetSet())do
 local Template=Template
 local TemplateCoord=Template:GetCoordinate()
 if AirbaseZone:IsVec2InZone(TemplateCoord:GetVec2())then
 Templates=Templates or{}
 table.insert(Templates,Template:GetName())
-self:I({Template=Template:GetName()})
+self:T({Template=Template:GetName()})
 end
 end
 if Templates then
@@ -111577,12 +111595,12 @@ end
 self.CAPTemplates=SET_GROUP:New()
 self.CAPTemplates:FilterPrefixes(CapPrefixes)
 self.CAPTemplates:FilterOnce()
-self:I("Setting up CAP ...")
+self:T("Setting up CAP ...")
 for CAPID,CAPTemplate in pairs(self.CAPTemplates:GetSet())do
 local CAPZone=ZONE_POLYGON:New(CAPTemplate:GetName(),CAPTemplate)
 local AirbaseDistance=99999999
 local AirbaseClosest=nil
-self:I({CAPZoneGroup=CAPID})
+self:T({CAPZoneGroup=CAPID})
 for AirbaseID,AirbaseName in pairs(AirbaseNames)do
 local Airbase=_DATABASE:FindAirbase(AirbaseName)
 local AirbaseName=Airbase:GetName()
@@ -111590,7 +111608,7 @@ local AirbaseCoord=Airbase:GetCoordinate()
 local Squadron=self.DefenderSquadrons[AirbaseName]
 if Squadron then
 local Distance=AirbaseCoord:Get2DDistance(CAPZone:GetCoordinate())
-self:I({AirbaseDistance=Distance})
+self:T({AirbaseDistance=Distance})
 if Distance<AirbaseDistance then
 AirbaseDistance=Distance
 AirbaseClosest=Airbase
@@ -111598,19 +111616,19 @@ end
 end
 end
 if AirbaseClosest then
-self:I({CAPAirbase=AirbaseClosest:GetName()})
+self:T({CAPAirbase=AirbaseClosest:GetName()})
 self:SetSquadronCap(AirbaseClosest:GetName(),CAPZone,6000,10000,500,800,800,1200,"RADIO")
 self:SetSquadronCapInterval(AirbaseClosest:GetName(),CapLimit,300,600,1)
 end
 end
-self:I("Setting up GCI ...")
+self:T("Setting up GCI ...")
 for AirbaseID,AirbaseName in pairs(AirbaseNames)do
 local Airbase=_DATABASE:FindAirbase(AirbaseName)
 local AirbaseName=Airbase:GetName()
 local Squadron=self.DefenderSquadrons[AirbaseName]
 self:F({Airbase=AirbaseName})
 if Squadron then
-self:I({GCIAirbase=AirbaseName})
+self:T({GCIAirbase=AirbaseName})
 self:SetSquadronGci(AirbaseName,800,1200)
 end
 end
@@ -111773,7 +111791,7 @@ DefenderSquadron.Resource={}
 for Resource=1,DefenderSquadron.ResourceCount or 0 do
 self:ResourcePark(DefenderSquadron)
 end
-self:I("Parked resources for squadron "..DefenderSquadron.Name)
+self:T("Parked resources for squadron "..DefenderSquadron.Name)
 end
 end
 function AI_A2G_DISPATCHER:Lock(DetectedItemIndex)
@@ -111817,12 +111835,12 @@ end
 end
 function AI_A2G_DISPATCHER:OnEventBaseCaptured(EventData)
 local AirbaseName=EventData.PlaceName
-self:I("Captured "..AirbaseName)
+self:T("Captured "..AirbaseName)
 for SquadronName,Squadron in pairs(self.DefenderSquadrons)do
 if Squadron.AirbaseName==AirbaseName then
 Squadron.ResourceCount=-999
 Squadron.Captured=true
-self:I("Squadron "..SquadronName.." captured.")
+self:T("Squadron "..SquadronName.." captured.")
 end
 end
 end
@@ -111843,7 +111861,7 @@ if DefenderSize==1 then
 self:RemoveDefenderFromSquadron(Squadron,Defender)
 end
 DefenderUnit:Destroy()
-self:ResourcePark(Squadron,Defender)
+self:ResourcePark(Squadron)
 return
 end
 if DefenderUnit:GetLife()~=DefenderUnit:GetLife0()then
@@ -111866,7 +111884,7 @@ if DefenderSize==1 then
 self:RemoveDefenderFromSquadron(Squadron,Defender)
 end
 DefenderUnit:Destroy()
-self:ResourcePark(Squadron,Defender)
+self:ResourcePark(Squadron)
 end
 end
 end
@@ -111889,7 +111907,7 @@ self.DisengageRadius=DisengageRadius or 300000
 return self
 end
 function AI_A2G_DISPATCHER:SetDefenseRadius(DefenseRadius)
-self.DefenseRadius=DefenseRadius or 100000
+self.DefenseRadius=DefenseRadius or 40000
 self.Detection:SetAcceptRange(self.DefenseRadius)
 return self
 end
@@ -112158,7 +112176,7 @@ Sead.EngageFloorAltitude=EngageFloorAltitude or 500
 Sead.EngageCeilingAltitude=EngageCeilingAltitude or 1000
 Sead.EngageAltType=EngageAltType
 Sead.Defend=true
-self:I({SEAD={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({SEAD={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 return self
 end
 function AI_A2G_DISPATCHER:SetSquadronSead(SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude)
@@ -112185,7 +112203,7 @@ SeadPatrol.PatrolAltType=PatrolAltType
 SeadPatrol.EngageAltType=EngageAltType
 SeadPatrol.Patrol=true
 self:SetSquadronPatrolInterval(SquadronName,self.DefenderDefault.PatrolLimit,self.DefenderDefault.PatrolMinSeconds,self.DefenderDefault.PatrolMaxSeconds,1,"SEAD")
-self:I({SEAD={Zone:GetName(),PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({SEAD={Zone:GetName(),PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 end
 function AI_A2G_DISPATCHER:SetSquadronSeadPatrol(SquadronName,Zone,FloorAltitude,CeilingAltitude,PatrolMinSpeed,PatrolMaxSpeed,EngageMinSpeed,EngageMaxSpeed,AltType)
 self:SetSquadronSeadPatrol2(SquadronName,Zone,PatrolMinSpeed,PatrolMaxSpeed,FloorAltitude,CeilingAltitude,AltType,EngageMinSpeed,EngageMaxSpeed,FloorAltitude,CeilingAltitude,AltType)
@@ -112201,7 +112219,7 @@ Cas.EngageFloorAltitude=EngageFloorAltitude or 500
 Cas.EngageCeilingAltitude=EngageCeilingAltitude or 1000
 Cas.EngageAltType=EngageAltType
 Cas.Defend=true
-self:I({CAS={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({CAS={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 return self
 end
 function AI_A2G_DISPATCHER:SetSquadronCas(SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude)
@@ -112228,7 +112246,7 @@ CasPatrol.PatrolAltType=PatrolAltType
 CasPatrol.EngageAltType=EngageAltType
 CasPatrol.Patrol=true
 self:SetSquadronPatrolInterval(SquadronName,self.DefenderDefault.PatrolLimit,self.DefenderDefault.PatrolMinSeconds,self.DefenderDefault.PatrolMaxSeconds,1,"CAS")
-self:I({CAS={Zone:GetName(),PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({CAS={Zone:GetName(),PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 end
 function AI_A2G_DISPATCHER:SetSquadronCasPatrol(SquadronName,Zone,FloorAltitude,CeilingAltitude,PatrolMinSpeed,PatrolMaxSpeed,EngageMinSpeed,EngageMaxSpeed,AltType)
 self:SetSquadronCasPatrol2(SquadronName,Zone,PatrolMinSpeed,PatrolMaxSpeed,FloorAltitude,CeilingAltitude,AltType,EngageMinSpeed,EngageMaxSpeed,FloorAltitude,CeilingAltitude,AltType)
@@ -112244,7 +112262,7 @@ Bai.EngageFloorAltitude=EngageFloorAltitude or 500
 Bai.EngageCeilingAltitude=EngageCeilingAltitude or 1000
 Bai.EngageAltType=EngageAltType
 Bai.Defend=true
-self:I({BAI={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({BAI={SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 return self
 end
 function AI_A2G_DISPATCHER:SetSquadronBai(SquadronName,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude)
@@ -112271,7 +112289,7 @@ BaiPatrol.PatrolAltType=PatrolAltType
 BaiPatrol.EngageAltType=EngageAltType
 BaiPatrol.Patrol=true
 self:SetSquadronPatrolInterval(SquadronName,self.DefenderDefault.PatrolLimit,self.DefenderDefault.PatrolMinSeconds,self.DefenderDefault.PatrolMaxSeconds,1,"BAI")
-self:I({BAI={Zone:GetName(),PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
+self:T({BAI={Zone:GetName(),PatrolMinSpeed,PatrolMaxSpeed,PatrolFloorAltitude,PatrolCeilingAltitude,PatrolAltType,EngageMinSpeed,EngageMaxSpeed,EngageFloorAltitude,EngageCeilingAltitude,EngageAltType}})
 end
 function AI_A2G_DISPATCHER:SetSquadronBaiPatrol(SquadronName,Zone,FloorAltitude,CeilingAltitude,PatrolMinSpeed,PatrolMaxSpeed,EngageMinSpeed,EngageMaxSpeed,AltType)
 self:SetSquadronBaiPatrol2(SquadronName,Zone,PatrolMinSpeed,PatrolMaxSpeed,FloorAltitude,CeilingAltitude,AltType,EngageMinSpeed,EngageMaxSpeed,FloorAltitude,CeilingAltitude,AltType)
@@ -112811,7 +112829,7 @@ local DefenderName=DefenderGroup:GetCallsign()
 local Dispatcher=AI_A2G_Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron then
-local FirstUnit=AttackSetUnit:GetFirst()
+local FirstUnit=AttackSetUnit:GetRandomSurely()
 local Coordinate=FirstUnit:GetCoordinate()
 if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", on route to ground target at "..Coordinate:ToStringA2G(DefenderGroup),DefenderGroup)
@@ -113630,7 +113648,7 @@ if self.Controllable and self.Controllable:IsAlive()then
 local RTB=false
 local Fuel=self.Controllable:GetFuelMin()
 if Fuel<self.PatrolFuelThresholdPercentage then
-self:I(self.Controllable:GetName().." is out of fuel:"..Fuel..", RTB!")
+self:T(self.Controllable:GetName().." is out of fuel:"..Fuel..", RTB!")
 local OldAIControllable=self.Controllable
 local OrbitTask=OldAIControllable:TaskOrbitCircle(math.random(self.PatrolFloorAltitude,self.PatrolCeilingAltitude),self.PatrolMinSpeed)
 local TimedOrbitTask=OldAIControllable:TaskControlled(OrbitTask,OldAIControllable:TaskCondition(nil,nil,nil,nil,self.PatrolOutOfFuelOrbitTime,nil))
@@ -113640,7 +113658,7 @@ else
 end
 local Damage=self.Controllable:GetLife()
 if Damage<=self.PatrolDamageThreshold then
-self:I(self.Controllable:GetName().." is damaged:"..Damage..", RTB!")
+self:T(self.Controllable:GetName().." is damaged:"..Damage..", RTB!")
 RTB=true
 end
 if RTB==true then
@@ -115806,11 +115824,11 @@ function AI_ESCORT_DISPATCHER:OnEventExit(EventData)
 local PlayerGroupName=EventData.IniGroupName
 local PlayerGroup=EventData.IniGroup
 local PlayerUnit=EventData.IniUnit
-self:I({EscortAirbase=self.EscortAirbase})
-self:I({PlayerGroupName=PlayerGroupName})
-self:I({PlayerGroup=PlayerGroup})
-self:I({FirstGroup=self.CarrierSet:GetFirst()})
-self:I({FindGroup=self.CarrierSet:FindGroup(PlayerGroupName)})
+self:T({EscortAirbase=self.EscortAirbase})
+self:T({PlayerGroupName=PlayerGroupName})
+self:T({PlayerGroup=PlayerGroup})
+self:T({FirstGroup=self.CarrierSet:GetFirst()})
+self:T({FindGroup=self.CarrierSet:FindGroup(PlayerGroupName)})
 if self.CarrierSet:FindGroup(PlayerGroupName)then
 if self.AI_Escorts[PlayerGroupName]then
 self.AI_Escorts[PlayerGroupName]:Stop()
@@ -115822,16 +115840,16 @@ function AI_ESCORT_DISPATCHER:OnEventBirth(EventData)
 local PlayerGroupName=EventData.IniGroupName
 local PlayerGroup=EventData.IniGroup
 local PlayerUnit=EventData.IniUnit
-self:I({EscortAirbase=self.EscortAirbase})
-self:I({PlayerGroupName=PlayerGroupName})
-self:I({PlayerGroup=PlayerGroup})
-self:I({FirstGroup=self.CarrierSet:GetFirst()})
-self:I({FindGroup=self.CarrierSet:FindGroup(PlayerGroupName)})
+self:T({EscortAirbase=self.EscortAirbase})
+self:T({PlayerGroupName=PlayerGroupName})
+self:T({PlayerGroup=PlayerGroup})
+self:T({FirstGroup=self.CarrierSet:GetFirst()})
+self:T({FindGroup=self.CarrierSet:FindGroup(PlayerGroupName)})
 if self.CarrierSet:FindGroup(PlayerGroupName)then
 if not self.AI_Escorts[PlayerGroupName]then
 local LeaderUnit=PlayerUnit
 local EscortGroup=self.EscortSpawn:SpawnAtAirbase(self.EscortAirbase,SPAWN.Takeoff.Hot)
-self:I({EscortGroup=EscortGroup})
+self:T({EscortGroup=EscortGroup})
 self:ScheduleOnce(1,
 function(EscortGroup)
 local EscortSet=SET_GROUP:New()
@@ -116130,7 +116148,7 @@ if Carrier and Carrier:IsAlive()then
 for _,CarrierUnit in pairs(Carrier:GetUnits())do
 local CarrierUnit=CarrierUnit
 local IsEmpty=CarrierUnit:IsCargoEmpty()
-self:I({IsEmpty=IsEmpty})
+self:T({IsEmpty=IsEmpty})
 if not IsEmpty then
 AllUnloaded=false
 break
@@ -117218,7 +117236,7 @@ break
 else
 local text=string.format("WARNING: Cargo %s is too heavy to be loaded into transport. Cargo weight %.1f > %.1f load capacity of carrier %s.",
 tostring(Cargo:GetName()),Cargo:GetWeight(),LargestLoadCapacity,tostring(Carrier:GetName()))
-self:I(text)
+self:T(text)
 end
 end
 end
