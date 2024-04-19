@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-19T11:33:15+02:00-abc26b1e5cc0eab14ea73c3d6a65b1873fac80eb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-19T15:45:11+02:00-8b2237d18367651001b52467dd95c938e19af007 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -65724,7 +65724,7 @@ self:_SendMessage("Sorry, we\'re crammed already!",10,false,Group)
 nearestGroup.ExtractTime=0
 else
 self.CargoCounter=self.CargoCounter+1
-nearestGroup.ExtractTime=timer.GetTime()
+nearestGroup.ExtractTime=timer.getTime()
 local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,Cargotype.CargoType,true,true,Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
 self:T({cargotype=loadcargotype})
 local running=math.floor(nearestDistance/4)+10
