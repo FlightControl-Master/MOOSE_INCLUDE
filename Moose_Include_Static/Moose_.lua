@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-19T15:58:17+02:00-e11bb71c2dca1d3f49ab4fd1ca148106dca161e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-20T16:21:02+02:00-1346317ad9d9e8c02c0895e9097030352fa70e9a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56315,7 +56315,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.5",
+version="0.2.6",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56695,6 +56695,24 @@ table.insert(airbases[weight],_name)
 end
 end
 return airbases[weight],weight
+end
+function STRATEGO:SetNodeWeight(Name,Weight)
+self:T(self.lid.."SetNodeWeight")
+if Name and Weight and self.airbasetable[Name]then
+self.airbasetable[Name].weight=Weight or 0
+return true
+else
+return false
+end
+end
+function STRATEGO:SetNodeBaseWeight(Name,Weight)
+self:T(self.lid.."SetNodeBaseWeight")
+if Name and Weight and self.airbasetable[Name]then
+self.airbasetable[Name].baseweight=Weight or 0
+return true
+else
+return false
+end
 end
 function STRATEGO:GetNodeWeight(Name)
 self:T(self.lid.."GetNodeWeight")
