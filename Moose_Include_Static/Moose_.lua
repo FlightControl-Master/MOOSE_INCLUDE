@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-20T16:21:02+02:00-1346317ad9d9e8c02c0895e9097030352fa70e9a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-23T09:16:44+02:00-892cb90d62f41cafeaad467489990fcb95f2f28c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3266,6 +3266,18 @@ end
 function string.contains(str,value)
 return string.match(str,value)
 end
+function table.move_object(obj,from_table,to_table)
+local index
+for i,v in pairs(from_table)do
+if v==obj then
+index=i
+end
+end
+if index then
+local moved=table.remove(from_table,index)
+table.insert_unique(to_table,moved)
+end
+end
 function table.contains(tbl,element)
 if element==nil or tbl==nil then return false end
 local index=1
@@ -3401,6 +3413,17 @@ return tonumber(octal)
 end
 function UTILS.OctalToDecimal(Number)
 return tonumber(Number,8)
+end
+function UTILS.HexToRGBA(hex_string)
+local hexNumber=tonumber(string.sub(hex_string,3),16)
+local alpha=hexNumber%256
+hexNumber=(hexNumber-alpha)/256
+local blue=hexNumber%256
+hexNumber=(hexNumber-blue)/256
+local green=hexNumber%256
+hexNumber=(hexNumber-green)/256
+local red=hexNumber%256
+return{R=red,G=green,B=blue,A=alpha}
 end
 function UTILS.SaveSetOfOpsGroups(Set,Path,Filename,Structured)
 local filename=Filename or"SetOfGroups"
@@ -117858,6 +117881,954 @@ end,{},math.random(10,60)
 end
 end
 )
+end
+end
+SHAPE_BASE={
+ClassName="SHAPE_BASE",
+Name="",
+CenterVec2=nil,
+Points={},
+Coords={},
+MarkIDs={},
+ColorString="",
+ColorRGBA={}
+}
+function SHAPE_BASE:New()
+local self=BASE:Inherit(self,BASE:New())
+return self
+end
+function SHAPE_BASE:FindOnMap(shape_name)
+local self=BASE:Inherit(self,BASE:New())
+local found=false
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if object["name"]==shape_name then
+self.Name=object["name"]
+self.CenterVec2={x=object["mapX"],y=object["mapY"]}
+self.ColorString=object["colorString"]
+self.ColorRGBA=UTILS.HexToRGBA(self.ColorString)
+found=true
+end
+end
+end
+if not found then
+self:E("Can't find a shape with name "..shape_name)
+end
+return self
+end
+function SHAPE_BASE:GetAllShapes(filter)
+filter=filter or""
+local return_shapes={}
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if string.contains(object["name"],filter)then
+table.add(return_shapes,object)
+end
+end
+end
+return return_shapes
+end
+function SHAPE_BASE:Offset(new_vec2)
+local offset_vec2=UTILS.Vec2Subtract(new_vec2,self.CenterVec2)
+self.CenterVec2=new_vec2
+if self.ClassName=="POLYGON"then
+for _,point in pairs(self.Points)do
+point.x=point.x+offset_vec2.x
+point.y=point.y+offset_vec2.y
+end
+end
+end
+function SHAPE_BASE:GetName()
+return self.Name
+end
+function SHAPE_BASE:GetColorString()
+return self.ColorString
+end
+function SHAPE_BASE:GetColorRGBA()
+return self.ColorRGBA
+end
+function SHAPE_BASE:GetColorRed()
+return self.ColorRGBA.R
+end
+function SHAPE_BASE:GetColorGreen()
+return self.ColorRGBA.G
+end
+function SHAPE_BASE:GetColorBlue()
+return self.ColorRGBA.B
+end
+function SHAPE_BASE:GetColorAlpha()
+return self.ColorRGBA.A
+end
+function SHAPE_BASE:GetCenterVec2()
+return self.CenterVec2
+end
+function SHAPE_BASE:GetCenterCoordinate()
+return COORDINATE:NewFromVec2(self.CenterVec2)
+end
+function SHAPE_BASE:GetCoordinate()
+return self:GetCenterCoordinate()
+end
+function SHAPE_BASE:ContainsPoint(_)
+self:E("This needs to be set in the derived class")
+end
+function SHAPE_BASE:ContainsUnit(unit_name)
+local unit=UNIT:FindByName(unit_name)
+if unit==nil or not unit:IsAlive()then
+return false
+end
+if self:ContainsPoint(unit:GetVec2())then
+return true
+end
+return false
+end
+function SHAPE_BASE:ContainsAnyOfGroup(group_name)
+local group=GROUP:FindByName(group_name)
+if group==nil or not group:IsAlive()then
+return false
+end
+for _,unit in pairs(group:GetUnits())do
+if self:ContainsPoint(unit:GetVec2())then
+return true
+end
+end
+return false
+end
+function SHAPE_BASE:ContainsAllOfGroup(group_name)
+local group=GROUP:FindByName(group_name)
+if group==nil or not group:IsAlive()then
+return false
+end
+for _,unit in pairs(group:GetUnits())do
+if not self:ContainsPoint(unit:GetVec2())then
+return false
+end
+end
+return true
+end
+CIRCLE={
+ClassName="CIRCLE",
+Radius=nil,
+}
+function CIRCLE:FindOnMap(shape_name)
+local self=BASE:Inherit(self,SHAPE_BASE:FindOnMap(shape_name))
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if string.find(object["name"],shape_name,1,true)then
+if object["polygonMode"]=="circle"then
+self.Radius=object["radius"]
+end
+end
+end
+end
+return self
+end
+function CIRCLE:Find(shape_name)
+return _DATABASE:FindShape(shape_name)
+end
+function CIRCLE:New(vec2,radius)
+local self=BASE:Inherit(self,SHAPE_BASE:New())
+self.CenterVec2=vec2
+self.Radius=radius
+return self
+end
+function CIRCLE:GetRadius()
+return self.Radius
+end
+function CIRCLE:ContainsPoint(point)
+if((point.x-self.CenterVec2.x)^2+(point.y-self.CenterVec2.y)^2)^0.5<=self.Radius then
+return true
+end
+return false
+end
+function CIRCLE:PointInSector(point,sector_start,sector_end,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+local function are_clockwise(v1,v2)
+return-v1.x*v2.y+v1.y*v2.x>0
+end
+local function is_in_radius(rp)
+return rp.x*rp.x+rp.y*rp.y<=radius^2
+end
+local rel_pt={
+x=point.x-center.x,
+y=point.y-center.y
+}
+local rel_sector_start={
+x=sector_start.x-center.x,
+y=sector_start.y-center.y,
+}
+local rel_sector_end={
+x=sector_end.x-center.x,
+y=sector_end.y-center.y,
+}
+return not are_clockwise(rel_sector_start,rel_pt)and
+are_clockwise(rel_sector_end,rel_pt)and
+is_in_radius(rel_pt,radius)
+end
+function CIRCLE:UnitInSector(unit_name,sector_start,sector_end,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+if self:PointInSector(UNIT:FindByName(unit_name):GetVec2(),sector_start,sector_end,center,radius)then
+return true
+end
+return false
+end
+function CIRCLE:AnyOfGroupInSector(group_name,sector_start,sector_end,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+for _,unit in pairs(GROUP:FindByName(group_name):GetUnits())do
+if self:PointInSector(unit:GetVec2(),sector_start,sector_end,center,radius)then
+return true
+end
+end
+return false
+end
+function CIRCLE:AllOfGroupInSector(group_name,sector_start,sector_end,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+for _,unit in pairs(GROUP:FindByName(group_name):GetUnits())do
+if not self:PointInSector(unit:GetVec2(),sector_start,sector_end,center,radius)then
+return false
+end
+end
+return true
+end
+function CIRCLE:UnitInRadius(unit_name,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+if UTILS.IsInRadius(center,UNIT:FindByName(unit_name):GetVec2(),radius)then
+return true
+end
+return false
+end
+function CIRCLE:AnyOfGroupInRadius(group_name,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+for _,unit in pairs(GROUP:FindByName(group_name):GetUnits())do
+if UTILS.IsInRadius(center,unit:GetVec2(),radius)then
+return true
+end
+end
+return false
+end
+function CIRCLE:AllOfGroupInRadius(group_name,center,radius)
+center=center or self.CenterVec2
+radius=radius or self.Radius
+for _,unit in pairs(GROUP:FindByName(group_name):GetUnits())do
+if not UTILS.IsInRadius(center,unit:GetVec2(),radius)then
+return false
+end
+end
+return true
+end
+function CIRCLE:GetRandomVec2()
+local angle=math.random()*2*math.pi
+local rx=math.random(0,self.Radius)*math.cos(angle)+self.CenterVec2.x
+local ry=math.random(0,self.Radius)*math.sin(angle)+self.CenterVec2.y
+return{x=rx,y=ry}
+end
+function CIRCLE:GetRandomVec2OnBorder()
+local angle=math.random()*2*math.pi
+local rx=self.Radius*math.cos(angle)+self.CenterVec2.x
+local ry=self.Radius*math.sin(angle)+self.CenterVec2.y
+return{x=rx,y=ry}
+end
+function CIRCLE:GetBoundingBox()
+local min_x=self.CenterVec2.x-self.Radius
+local min_y=self.CenterVec2.y-self.Radius
+local max_x=self.CenterVec2.x+self.Radius
+local max_y=self.CenterVec2.y+self.Radius
+return{
+{x=min_x,y=min_x},{x=max_x,y=min_y},{x=max_x,y=max_y},{x=min_x,y=max_y}
+}
+end
+CUBE={
+ClassName="CUBE",
+Points={},
+Coords={}
+}
+function CUBE:New(p1,p2,p3,p4,p5,p6,p7,p8)
+local self=BASE:Inherit(self,SHAPE_BASE)
+self.Points={p1,p2,p3,p4,p5,p6,p7,p8}
+for _,point in spairs(self.Points)do
+table.insert(self.Coords,COORDINATE:NewFromVec3(point))
+end
+return self
+end
+function CUBE:GetCenter()
+local center={x=0,y=0,z=0}
+for _,point in pairs(self.Points)do
+center.x=center.x+point.x
+center.y=center.y+point.y
+center.z=center.z+point.z
+end
+center.x=center.x/8
+center.y=center.y/8
+center.z=center.z/8
+return center
+end
+function CUBE:ContainsPoint(point,cube_points)
+cube_points=cube_points or self.Points
+local min_x,min_y,min_z=math.huge,math.huge,math.huge
+local max_x,max_y,max_z=-math.huge,-math.huge,-math.huge
+for _,p in ipairs(cube_points)do
+if p.x<min_x then min_x=p.x end
+if p.y<min_y then min_y=p.y end
+if p.z<min_z then min_z=p.z end
+if p.x>max_x then max_x=p.x end
+if p.y>max_y then max_y=p.y end
+if p.z>max_z then max_z=p.z end
+end
+return point.x>=min_x and point.x<=max_x and point.y>=min_y and point.y<=max_y and point.z>=min_z and point.z<=max_z
+end
+LINE={
+ClassName="LINE",
+Points={},
+Coords={},
+}
+function LINE:FindOnMap(line_name)
+local self=BASE:Inherit(self,SHAPE_BASE:FindOnMap(line_name))
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if object["name"]==line_name then
+if object["primitiveType"]=="Line"then
+for _,point in UTILS.spairs(object["points"])do
+local p={x=object["mapX"]+point["x"],
+y=object["mapY"]+point["y"]}
+local coord=COORDINATE:NewFromVec2(p)
+table.insert(self.Points,p)
+table.insert(self.Coords,coord)
+end
+end
+end
+end
+end
+self:I(#self.Points)
+if#self.Points==0 then
+return nil
+end
+self.MarkIDs={}
+return self
+end
+function LINE:Find(shape_name)
+return _DATABASE:FindShape(shape_name)
+end
+function LINE:New(...)
+local self=BASE:Inherit(self,SHAPE_BASE:New())
+self.Points={...}
+self:I(self.Points)
+for _,point in UTILS.spairs(self.Points)do
+table.insert(self.Coords,COORDINATE:NewFromVec2(point))
+end
+return self
+end
+function LINE:NewFromCircle(center_point,radius,angle_degrees)
+local self=BASE:Inherit(self,SHAPE_BASE:New())
+self.CenterVec2=center_point
+local angleRadians=math.rad(angle_degrees)
+local point1={
+x=center_point.x+radius*math.cos(angleRadians),
+y=center_point.y+radius*math.sin(angleRadians)
+}
+local point2={
+x=center_point.x+radius*math.cos(angleRadians+math.pi),
+y=center_point.y+radius*math.sin(angleRadians+math.pi)
+}
+for _,point in pairs{point1,point2}do
+table.insert(self.Points,point)
+table.insert(self.Coords,COORDINATE:NewFromVec2(point))
+end
+return self
+end
+function LINE:Coordinates()
+return self.Coords
+end
+function LINE:GetStartCoordinate()
+return self.Coords[1]
+end
+function LINE:GetEndCoordinate()
+return self.Coords[#self.Coords]
+end
+function LINE:GetStartPoint()
+return self.Points[1]
+end
+function LINE:GetEndPoint()
+return self.Points[#self.Points]
+end
+function LINE:GetLength()
+local total_length=0
+for i=1,#self.Points-1 do
+local x1,y1=self.Points[i]["x"],self.Points[i]["y"]
+local x2,y2=self.Points[i+1]["x"],self.Points[i+1]["y"]
+local segment_length=math.sqrt((x2-x1)^2+(y2-y1)^2)
+total_length=total_length+segment_length
+end
+return total_length
+end
+function LINE:GetRandomPoint(points)
+points=points or self.Points
+local rand=math.random()
+local random_x=points[1].x+rand*(points[2].x-points[1].x)
+local random_y=points[1].y+rand*(points[2].y-points[1].y)
+return{x=random_x,y=random_y}
+end
+function LINE:GetHeading(points)
+points=points or self.Points
+local angle=math.atan2(points[2].y-points[1].y,points[2].x-points[1].x)
+angle=math.deg(angle)
+if angle<0 then
+angle=angle+360
+end
+return angle
+end
+function LINE:GetIndividualParts()
+local parts={}
+if#self.Points==2 then
+parts={self}
+end
+for i=1,#self.Points-1 do
+local p1=self.Points[i]
+local p2=self.Points[i%#self.Points+1]
+table.add(parts,LINE:New(p1,p2))
+end
+return parts
+end
+function LINE:GetPointsInbetween(amount,start_point,end_point)
+start_point=start_point or self:GetStartPoint()
+end_point=end_point or self:GetEndPoint()
+if amount==0 then return{start_point,end_point}end
+amount=amount+1
+local points={}
+local difference={x=end_point.x-start_point.x,y=end_point.y-start_point.y}
+local divided={x=difference.x/amount,y=difference.y/amount}
+for j=0,amount do
+local part_pos={x=divided.x*j,y=divided.y*j}
+local point={x=start_point.x+part_pos.x,y=start_point.y+part_pos.y}
+table.insert(points,point)
+end
+return points
+end
+function LINE:GetCoordinatesInBetween(amount,start_point,end_point)
+local coords={}
+for _,pt in pairs(self:GetPointsInbetween(amount,start_point,end_point))do
+table.add(coords,COORDINATE:NewFromVec2(pt))
+end
+return coords
+end
+function LINE:GetRandomPoint(start_point,end_point)
+start_point=start_point or self:GetStartPoint()
+end_point=end_point or self:GetEndPoint()
+local fraction=math.random()
+local difference={x=end_point.x-start_point.x,y=end_point.y-start_point.y}
+local part_pos={x=difference.x*fraction,y=difference.y*fraction}
+local random_point={x=start_point.x+part_pos.x,y=start_point.y+part_pos.y}
+return random_point
+end
+function LINE:GetRandomCoordinate(start_point,end_point)
+start_point=start_point or self:GetStartPoint()
+end_point=end_point or self:GetEndPoint()
+return COORDINATE:NewFromVec2(self:GetRandomPoint(start_point,end_point))
+end
+function LINE:GetPointsBetweenAsSineWave(amount,start_point,end_point,frequency,phase,amplitude)
+amount=amount or 20
+start_point=start_point or self:GetStartPoint()
+end_point=end_point or self:GetEndPoint()
+frequency=frequency or 1
+phase=phase or 0
+amplitude=amplitude or 100
+local points={}
+local function sine_wave(x)
+return amplitude*math.sin(2*math.pi*frequency*(x-start_point.x)+phase)
+end
+local x=start_point.x
+local step=(end_point.x-start_point.x)/20
+for _=1,amount do
+local y=sine_wave(x)
+x=x+step
+table.add(points,{x=x,y=y})
+end
+return points
+end
+function LINE:GetBoundingBox()
+local min_x,min_y,max_x,max_y=self.Points[1].x,self.Points[1].y,self.Points[2].x,self.Points[2].y
+for i=2,#self.Points do
+local x,y=self.Points[i].x,self.Points[i].y
+if x<min_x then
+min_x=x
+end
+if y<min_y then
+min_y=y
+end
+if x>max_x then
+max_x=x
+end
+if y>max_y then
+max_y=y
+end
+end
+return{
+{x=min_x,y=min_x},{x=max_x,y=min_y},{x=max_x,y=max_y},{x=min_x,y=max_y}
+}
+end
+function LINE:Draw()
+for i=1,#self.Coords-1 do
+local c1=self.Coords[i]
+local c2=self.Coords[i%#self.Coords+1]
+table.add(self.MarkIDs,c1:LineToAll(c2))
+end
+end
+function LINE:RemoveDraw()
+for _,mark_id in pairs(self.MarkIDs)do
+UTILS.RemoveMark(mark_id)
+end
+end
+OVAL={
+ClassName="OVAL",
+MajorAxis=nil,
+MinorAxis=nil,
+Angle=0,
+DrawPoly=nil
+}
+function OVAL:FindOnMap(shape_name)
+local self=BASE:Inherit(self,SHAPE_BASE:FindOnMap(shape_name))
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if string.find(object["name"],shape_name,1,true)then
+if object["polygonMode"]=="oval"then
+self.CenterVec2={x=object["mapX"],y=object["mapY"]}
+self.MajorAxis=object["r1"]
+self.MinorAxis=object["r2"]
+self.Angle=object["angle"]
+end
+end
+end
+end
+return self
+end
+function OVAL:Find(shape_name)
+return _DATABASE:FindShape(shape_name)
+end
+function OVAL:New(vec2,major_axis,minor_axis,angle)
+local self=BASE:Inherit(self,SHAPE_BASE:New())
+self.CenterVec2=vec2
+self.MajorAxis=major_axis
+self.MinorAxis=minor_axis
+self.Angle=angle or 0
+return self
+end
+function OVAL:GetMajorAxis()
+return self.MajorAxis
+end
+function OVAL:GetMinorAxis()
+return self.MinorAxis
+end
+function OVAL:GetAngle()
+return self.Angle
+end
+function OVAL:SetMajorAxis(value)
+self.MajorAxis=value
+end
+function OVAL:SetMinorAxis(value)
+self.MinorAxis=value
+end
+function OVAL:SetAngle(value)
+self.Angle=value
+end
+function OVAL:ContainsPoint(point)
+local cos,sin=math.cos,math.sin
+local dx=point.x-self.CenterVec2.x
+local dy=point.y-self.CenterVec2.y
+local rx=dx*cos(self.Angle)+dy*sin(self.Angle)
+local ry=-dx*sin(self.Angle)+dy*cos(self.Angle)
+return rx*rx/(self.MajorAxis*self.MajorAxis)+ry*ry/(self.MinorAxis*self.MinorAxis)<=1
+end
+function OVAL:GetRandomVec2()
+local theta=math.rad(self.Angle)
+local random_point=math.sqrt(math.random())
+local phi=math.random()*2*math.pi
+local x_c=random_point*math.cos(phi)
+local y_c=random_point*math.sin(phi)
+local x_e=x_c*self.MajorAxis
+local y_e=y_c*self.MinorAxis
+local rx=(x_e*math.cos(theta)-y_e*math.sin(theta))+self.CenterVec2.x
+local ry=(x_e*math.sin(theta)+y_e*math.cos(theta))+self.CenterVec2.y
+return{x=rx,y=ry}
+end
+function OVAL:GetBoundingBox()
+local min_x=self.CenterVec2.x-self.MajorAxis
+local min_y=self.CenterVec2.y-self.MinorAxis
+local max_x=self.CenterVec2.x+self.MajorAxis
+local max_y=self.CenterVec2.y+self.MinorAxis
+return{
+{x=min_x,y=min_x},{x=max_x,y=min_y},{x=max_x,y=max_y},{x=min_x,y=max_y}
+}
+end
+function OVAL:Draw()
+self.DrawPoly=POLYGON:NewFromPoints(self:PointsOnEdge(20))
+self.DrawPoly:Draw(true)
+end
+function OVAL:RemoveDraw()
+self.DrawPoly:RemoveDraw()
+end
+function OVAL:PointsOnEdge(num_points)
+num_points=num_points or 20
+local points={}
+local dtheta=2*math.pi/num_points
+for i=0,num_points-1 do
+local theta=i*dtheta
+local x=self.CenterVec2.x+self.MajorAxis*math.cos(theta)*math.cos(self.Angle)-self.MinorAxis*math.sin(theta)*math.sin(self.Angle)
+local y=self.CenterVec2.y+self.MajorAxis*math.cos(theta)*math.sin(self.Angle)+self.MinorAxis*math.sin(theta)*math.cos(self.Angle)
+table.insert(points,{x=x,y=y})
+end
+return points
+end
+POLYGON={
+ClassName="POLYGON",
+Points={},
+Coords={},
+Triangles={},
+SurfaceArea=0,
+TriangleMarkIDs={},
+OutlineMarkIDs={},
+Angle=nil,
+Heading=nil
+}
+function POLYGON:FindOnMap(shape_name)
+local self=BASE:Inherit(self,SHAPE_BASE:FindOnMap(shape_name))
+for _,layer in pairs(env.mission.drawings.layers)do
+for _,object in pairs(layer["objects"])do
+if object["name"]==shape_name then
+if(object["primitiveType"]=="Line"and object["closed"]==true)or(object["polygonMode"]=="free")then
+for _,point in UTILS.spairs(object["points"])do
+local p={x=object["mapX"]+point["x"],
+y=object["mapY"]+point["y"]}
+local coord=COORDINATE:NewFromVec2(p)
+self.Points[#self.Points+1]=p
+self.Coords[#self.Coords+1]=coord
+end
+elseif object["polygonMode"]=="rect"then
+local angle=object["angle"]
+local half_width=object["width"]/2
+local half_height=object["height"]/2
+local p1=UTILS.RotatePointAroundPivot({x=self.CenterVec2.x-half_height,y=self.CenterVec2.y+half_width},self.CenterVec2,angle)
+local p2=UTILS.RotatePointAroundPivot({x=self.CenterVec2.x+half_height,y=self.CenterVec2.y+half_width},self.CenterVec2,angle)
+local p3=UTILS.RotatePointAroundPivot({x=self.CenterVec2.x+half_height,y=self.CenterVec2.y-half_width},self.CenterVec2,angle)
+local p4=UTILS.RotatePointAroundPivot({x=self.CenterVec2.x-half_height,y=self.CenterVec2.y-half_width},self.CenterVec2,angle)
+self.Points={p1,p2,p3,p4}
+for _,point in pairs(self.Points)do
+self.Coords[#self.Coords+1]=COORDINATE:NewFromVec2(point)
+end
+elseif object["polygonMode"]=="arrow"then
+for _,point in UTILS.spairs(object["points"])do
+local p={x=object["mapX"]+point["x"],
+y=object["mapY"]+point["y"]}
+local coord=COORDINATE:NewFromVec2(p)
+self.Points[#self.Points+1]=p
+self.Coords[#self.Coords+1]=coord
+end
+self.Angle=object["angle"]
+self.Heading=UTILS.ClampAngle(self.Angle+90)
+end
+end
+end
+end
+if#self.Points==0 then
+return nil
+end
+self.CenterVec2=self:GetCentroid()
+self.Triangles=self:Triangulate()
+self.SurfaceArea=self:__CalculateSurfaceArea()
+self.TriangleMarkIDs={}
+self.OutlineMarkIDs={}
+return self
+end
+function POLYGON:FromZone(zone_name)
+for _,zone in pairs(env.mission.triggers.zones)do
+if zone["name"]==zone_name then
+return POLYGON:New(unpack(zone["verticies"]or{}))
+end
+end
+end
+function POLYGON:Find(shape_name)
+return _DATABASE:FindShape(shape_name)
+end
+function POLYGON:New(...)
+local self=BASE:Inherit(self,SHAPE_BASE:New())
+self.Points={...}
+self.Coords={}
+for _,point in UTILS.spairs(self.Points)do
+table.insert(self.Coords,COORDINATE:NewFromVec2(point))
+end
+self.Triangles=self:Triangulate()
+self.SurfaceArea=self:__CalculateSurfaceArea()
+return self
+end
+function POLYGON:GetCentroid()
+local function sum(t)
+local total=0
+for _,value in pairs(t)do
+total=total+value
+end
+return total
+end
+local x_values={}
+local y_values={}
+local length=table.length(self.Points)
+for _,point in pairs(self.Points)do
+table.insert(x_values,point.x)
+table.insert(y_values,point.y)
+end
+local x=sum(x_values)/length
+local y=sum(y_values)/length
+return{
+["x"]=x,
+["y"]=y
+}
+end
+function POLYGON:GetCoordinates()
+return self.Coords
+end
+function POLYGON:GetStartCoordinate()
+return self.Coords[1]
+end
+function POLYGON:GetEndCoordinate()
+return self.Coords[#self.Coords]
+end
+function POLYGON:GetStartPoint()
+return self.Points[1]
+end
+function POLYGON:GetEndPoint()
+return self.Points[#self.Points]
+end
+function POLYGON:GetPoints()
+return self.Points
+end
+function POLYGON:GetSurfaceArea()
+return self.SurfaceArea
+end
+function POLYGON:GetBoundingBox()
+local min_x,min_y,max_x,max_y=self.Points[1].x,self.Points[1].y,self.Points[1].x,self.Points[1].y
+for i=2,#self.Points do
+local x,y=self.Points[i].x,self.Points[i].y
+if x<min_x then
+min_x=x
+end
+if y<min_y then
+min_y=y
+end
+if x>max_x then
+max_x=x
+end
+if y>max_y then
+max_y=y
+end
+end
+return{
+{x=min_x,y=min_x},{x=max_x,y=min_y},{x=max_x,y=max_y},{x=min_x,y=max_y}
+}
+end
+function POLYGON:Triangulate(points)
+points=points or self.Points
+local triangles={}
+local function get_orientation(shape_points)
+local sum=0
+for i=1,#shape_points do
+local j=i%#shape_points+1
+sum=sum+(shape_points[j].x-shape_points[i].x)*(shape_points[j].y+shape_points[i].y)
+end
+return sum>=0 and"clockwise"or"counter-clockwise"
+end
+local function ensure_clockwise(shape_points)
+local orientation=get_orientation(shape_points)
+if orientation=="counter-clockwise"then
+local reversed={}
+for i=#shape_points,1,-1 do
+table.insert(reversed,shape_points[i])
+end
+return reversed
+end
+return shape_points
+end
+local function is_clockwise(p1,p2,p3)
+local cross_product=(p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x)
+return cross_product<0
+end
+local function divide_recursively(shape_points)
+if#shape_points==3 then
+table.insert(triangles,TRIANGLE:New(shape_points[1],shape_points[2],shape_points[3]))
+elseif#shape_points>3 then
+for i,p1 in ipairs(shape_points)do
+local p2=shape_points[(i%#shape_points)+1]
+local p3=shape_points[(i+1)%#shape_points+1]
+local triangle=TRIANGLE:New(p1,p2,p3)
+local is_ear=true
+if not is_clockwise(p1,p2,p3)then
+is_ear=false
+else
+for _,point in ipairs(shape_points)do
+if point~=p1 and point~=p2 and point~=p3 and triangle:ContainsPoint(point)then
+is_ear=false
+break
+end
+end
+end
+if is_ear then
+local is_valid_triangle=true
+for _,point in ipairs(points)do
+if point~=p1 and point~=p2 and point~=p3 and triangle:ContainsPoint(point)then
+is_valid_triangle=false
+break
+end
+end
+if is_valid_triangle then
+table.insert(triangles,triangle)
+local remaining_points={}
+for j,point in ipairs(shape_points)do
+if point~=p2 then
+table.insert(remaining_points,point)
+end
+end
+divide_recursively(remaining_points)
+break
+end
+end
+end
+end
+end
+points=ensure_clockwise(points)
+divide_recursively(points)
+return triangles
+end
+function POLYGON:CovarianceMatrix()
+local cx,cy=self:GetCentroid()
+local covXX,covYY,covXY=0,0,0
+for _,p in ipairs(self.points)do
+covXX=covXX+(p.x-cx)^2
+covYY=covYY+(p.y-cy)^2
+covXY=covXY+(p.x-cx)*(p.y-cy)
+end
+covXX=covXX/(#self.points-1)
+covYY=covYY/(#self.points-1)
+covXY=covXY/(#self.points-1)
+return covXX,covYY,covXY
+end
+function POLYGON:Direction()
+local covXX,covYY,covXY=self:CovarianceMatrix()
+local theta=0.5*math.atan2(2*covXY,covXX-covYY)
+return math.cos(theta),math.sin(theta)
+end
+function POLYGON:GetRandomVec2()
+local weights={}
+for _,triangle in pairs(self.Triangles)do
+weights[triangle]=triangle.SurfaceArea/self.SurfaceArea
+end
+local random_weight=math.random()
+local accumulated_weight=0
+for triangle,weight in pairs(weights)do
+accumulated_weight=accumulated_weight+weight
+if accumulated_weight>=random_weight then
+return triangle:GetRandomVec2()
+end
+end
+end
+function POLYGON:GetRandomNonWeightedVec2()
+return self.Triangles[math.random(1,#self.Triangles)]:GetRandomVec2()
+end
+function POLYGON:ContainsPoint(point,polygon_points)
+local x=point.x
+local y=point.y
+polygon_points=polygon_points or self.Points
+local counter=0
+local num_points=#polygon_points
+for current_index=1,num_points do
+local next_index=(current_index%num_points)+1
+local current_x,current_y=polygon_points[current_index].x,polygon_points[current_index].y
+local next_x,next_y=polygon_points[next_index].x,polygon_points[next_index].y
+if((current_y>y)~=(next_y>y))and(x<(next_x-current_x)*(y-current_y)/(next_y-current_y)+current_x)then
+counter=counter+1
+end
+end
+return counter%2==1
+end
+function POLYGON:Draw(include_inner_triangles)
+include_inner_triangles=include_inner_triangles or false
+for i=1,#self.Coords do
+local c1=self.Coords[i]
+local c2=self.Coords[i%#self.Coords+1]
+table.add(self.OutlineMarkIDs,c1:LineToAll(c2))
+end
+if include_inner_triangles then
+for _,triangle in ipairs(self.Triangles)do
+triangle:Draw()
+end
+end
+end
+function POLYGON:RemoveDraw()
+for _,triangle in pairs(self.Triangles)do
+triangle:RemoveDraw()
+end
+for _,mark_id in pairs(self.OutlineMarkIDs)do
+UTILS.RemoveMark(mark_id)
+end
+end
+function POLYGON:__CalculateSurfaceArea()
+local area=0
+for _,triangle in pairs(self.Triangles)do
+area=area+triangle.SurfaceArea
+end
+return area
+end
+TRIANGLE={
+ClassName="TRIANGLE",
+Points={},
+Coords={},
+SurfaceArea=0
+}
+function TRIANGLE:New(p1,p2,p3)
+local self=BASE:Inherit(self,SHAPE_BASE:New())
+self.Points={p1,p2,p3}
+local center_x=(p1.x+p2.x+p3.x)/3
+local center_y=(p1.y+p2.y+p3.y)/3
+self.CenterVec2={x=center_x,y=center_y}
+for _,pt in pairs({p1,p2,p3})do
+table.add(self.Coords,COORDINATE:NewFromVec2(pt))
+end
+self.SurfaceArea=math.abs((p2.x-p1.x)*(p3.y-p1.y)-(p3.x-p1.x)*(p2.y-p1.y))*0.5
+self.MarkIDs={}
+return self
+end
+function TRIANGLE:ContainsPoint(pt,points)
+points=points or self.Points
+local function sign(p1,p2,p3)
+return(p1.x-p3.x)*(p2.y-p3.y)-(p2.x-p3.x)*(p1.y-p3.y)
+end
+local d1=sign(pt,self.Points[1],self.Points[2])
+local d2=sign(pt,self.Points[2],self.Points[3])
+local d3=sign(pt,self.Points[3],self.Points[1])
+local has_neg=(d1<0)or(d2<0)or(d3<0)
+local has_pos=(d1>0)or(d2>0)or(d3>0)
+return not(has_neg and has_pos)
+end
+function TRIANGLE:GetRandomVec2(points)
+points=points or self.Points
+local pt={math.random(),math.random()}
+table.sort(pt)
+local s=pt[1]
+local t=pt[2]-pt[1]
+local u=1-pt[2]
+return{x=s*points[1].x+t*points[2].x+u*points[3].x,
+y=s*points[1].y+t*points[2].y+u*points[3].y}
+end
+function TRIANGLE:Draw()
+for i=1,#self.Coords do
+local c1=self.Coords[i]
+local c2=self.Coords[i%#self.Coords+1]
+table.add(self.MarkIDs,c1:LineToAll(c2))
+end
+end
+function TRIANGLE:RemoveDraw()
+for _,mark_id in pairs(self.MarkIDs)do
+UTILS.RemoveMark(mark_id)
 end
 end
 do
