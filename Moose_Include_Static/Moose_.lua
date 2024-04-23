@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-23T09:26:11+02:00-76fde11f477447467f38215b9e412fdc5a34feac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-23T10:13:09+02:00-2220f1829fd3fa5a70f5d2a8982cbe4712435249 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56338,7 +56338,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.6",
+version="0.2.7",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56426,6 +56426,10 @@ self.drawzone=DrawZones
 self.markzone=MarkZones
 return self
 end
+function STRATEGO:SetStrategoZone(Zone)
+self.StrategoZone=Zone
+return self
+end
 function STRATEGO:SetWeights(MaxRunways,PortWeight,POIWeight,RouteFactor)
 self:T(self.lid.."SetWeights")
 self.portweight=PortWeight or 3
@@ -56452,10 +56456,17 @@ local debug=self.debug
 local airbasetable=self.airbasetable
 local nonconnectedab=self.nonconnectedab
 local easynames=self.easynames
+local zone=self.StrategoZone
 self.bases:ForEach(
 function(afb)
 local ab=afb
+local abvec2=ab:GetVec2()
 if self.ExcludeShips and ab:IsShip()then return end
+if zone~=nil then
+if not zone:IsVec2InZone(abvec2)then
+return
+end
+end
 local abname=ab:GetName()
 local runways=ab:GetRunways()
 local numrwys=#runways
