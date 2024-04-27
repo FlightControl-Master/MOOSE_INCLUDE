@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-23T23:21:56+02:00-1bfc98fa9903dd39a87b06d46eff1821ccda0a6d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-27T17:29:41+02:00-38c19b144234d114d3c19b1dfb80b06ea1cef117 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30666,6 +30666,9 @@ self.desc=WeaponObject:getDesc()
 self.category=self.desc.category
 if self:IsMissile()and self.desc.missileCategory then
 self.categoryMissile=self.desc.missileCategory
+if self.desc.guidance then
+self.guidance=self.desc.guidance
+end
 end
 self.typeName=WeaponObject:getTypeName()or"Unknown Type"
 self.name=WeaponObject:getName()
@@ -30879,6 +30882,15 @@ return self.category==Weapon.Category.SHELL
 end
 function WEAPON:IsTorpedo()
 return self.category==Weapon.Category.TORPEDO
+end
+function WEAPON:IsFoxOne()
+return self.guidance==Weapon.GuidanceType.RADAR_SEMI_ACTIVE
+end
+function WEAPON:IsFoxTwo()
+return self.guidance==Weapon.GuidanceType.IR
+end
+function WEAPON:IsFoxThree()
+return self.guidance==Weapon.GuidanceType.RADAR_ACTIVE
 end
 function WEAPON:Destroy(Delay)
 if Delay and Delay>0 then
