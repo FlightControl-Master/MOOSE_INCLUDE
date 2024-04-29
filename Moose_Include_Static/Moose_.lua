@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-27T17:29:41+02:00-38c19b144234d114d3c19b1dfb80b06ea1cef117 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-29T10:50:48+02:00-9ce1b90eb148e67b530660ea22ac69c5562b762d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56336,7 +56336,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.7",
+version="0.2.8",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56355,6 +56355,7 @@ Budget=0,
 usebudget=false,
 CaptureUnits=3,
 CaptureThreatlevel=1,
+CaptureObjectCategories={Object.Category.UNIT},
 ExcludeShips=true,
 }
 STRATEGO.Type={
@@ -56441,10 +56442,11 @@ self:T(self.lid.."SetNeutralBenefit")
 self.NeutralBenefit=NeutralBenefit or 100
 return self
 end
-function STRATEGO:SetCaptureOptions(CaptureUnits,CaptureThreatlevel)
+function STRATEGO:SetCaptureOptions(CaptureUnits,CaptureThreatlevel,CaptureCategories)
 self:T(self.lid.."SetCaptureOptions")
 self.CaptureUnits=CaptureUnits or 3
 self.CaptureThreatlevel=CaptureThreatlevel or 1
+self.CaptureObjectCategories=CaptureCategories or{Object.Category.UNIT}
 return self
 end
 function STRATEGO:AnalyseBases()
@@ -56531,6 +56533,7 @@ self:T(self.lid.."GetNewOpsZone")
 local opszone=OPSZONE:New(Zone,Coalition or 0)
 opszone:SetCaptureNunits(self.CaptureUnits)
 opszone:SetCaptureThreatlevel(self.CaptureThreatlevel)
+opszone:SetObjectCategories(self.CaptureObjectCategories)
 opszone:SetDrawZone(self.drawzone)
 opszone:SetMarkZone(self.markzone)
 opszone:Start()
