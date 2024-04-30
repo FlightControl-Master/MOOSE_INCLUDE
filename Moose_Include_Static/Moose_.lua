@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-27T17:28:36+02:00-d3419d218ac5c44529641dd70e5f968ffa719416 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-04-30T09:18:49+02:00-27d36f3e0d82fd46b94fb09e6ebb81b963bc40c0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5618,6 +5618,7 @@ BEACON={
 ClassName="BEACON",
 Positionable=nil,
 name=nil,
+UniqueName=0,
 }
 BEACON.Type={
 NULL=0,
@@ -5777,6 +5778,7 @@ end
 function BEACON:RadioBeacon(FileName,Frequency,Modulation,Power,BeaconDuration)
 self:F({FileName,Frequency,Modulation,Power,BeaconDuration})
 local IsValid=false
+Modulation=Modulation or radio.modulation.AM
 if type(FileName)=="string"then
 if FileName:find(".ogg")or FileName:find(".wav")then
 if not FileName:find("l10n/DEFAULT/")then
@@ -5786,7 +5788,7 @@ IsValid=true
 end
 end
 if not IsValid then
-self:E({"File name invalid. Maybe something wrong with the extension ? ",FileName})
+self:E({"File name invalid. Maybe something wrong with the extension? ",FileName})
 end
 if type(Frequency)~="number"and IsValid then
 self:E({"Frequency invalid. ",Frequency})
@@ -5804,7 +5806,9 @@ end
 Power=math.floor(math.abs(Power))
 if IsValid then
 self:T2({"Activating Beacon on ",Frequency,Modulation})
-trigger.action.radioTransmission(FileName,self.Positionable:GetPositionVec3(),Modulation,true,Frequency,Power,tostring(self.ID))
+BEACON.UniqueName=BEACON.UniqueName+1
+self.BeaconName="MooseBeacon"..tostring(BEACON.UniqueName)
+trigger.action.radioTransmission(FileName,self.Positionable:GetPositionVec3(),Modulation,true,Frequency,Power,self.BeaconName)
 if BeaconDuration then
 SCHEDULER:New(nil,
 function()
@@ -5812,10 +5816,11 @@ self:StopRadioBeacon()
 end,{},BeaconDuration)
 end
 end
+return self
 end
 function BEACON:StopRadioBeacon()
 self:F()
-trigger.action.stopRadioTransmission(tostring(self.ID))
+trigger.action.stopRadioTransmission(self.BeaconName)
 return self
 end
 function BEACON:_TACANToFrequency(TACANChannel,TACANMode)
