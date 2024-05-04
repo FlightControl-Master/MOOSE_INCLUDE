@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-04T13:09:58+02:00-cc17027a7aa52e82354c2b20547ac4bfe7a133f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-04T14:54:20+02:00-044fb66ca064687a743791e5a4a5d02c109ca9c1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18914,11 +18914,12 @@ self.SpawnRandomCallsign=true
 return self
 end
 function SPAWN:InitCallSign(ID,Name,Minor,Major)
+local Name=Name or"Enfield"
 self.SpawnInitCallSign=true
 self.SpawnInitCallSignID=ID or 1
 self.SpawnInitCallSignMinor=Minor or 1
 self.SpawnInitCallSignMajor=Major or 1
-self.SpawnInitCallSignName=string.lower(Name)or"enfield"
+self.SpawnInitCallSignName=string.lower(Name):gsub("^%l",string.upper)
 return self
 end
 function SPAWN:InitPositionCoordinate(Coordinate)
