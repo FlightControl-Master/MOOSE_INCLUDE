@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-06T19:01:24+02:00-b7db1981255405afb40faa78482993b2da3fae14 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-07T14:34:02+02:00-7868a2e9dec2b54077aff75c0e0e1de005b466bd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56398,7 +56398,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.8",
+version="0.2.9",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56565,6 +56565,7 @@ zone=abzone,
 coord=coord,
 type=abtype,
 opszone=opszone,
+connections=0,
 }
 airbasetable[abname]=tbl
 nonconnectedab[abname]=true
@@ -56634,9 +56635,10 @@ zone=zone,
 coord=coord,
 type=Key,
 opszone=opszone,
+connections=0,
 }
-airbasetable[zone:GetName()]=tbl
-nonconnectedab[zone:GetName()]=true
+airbasetable[zname]=tbl
+nonconnectedab[zname]=true
 local name=string.gsub(zname,"[%p%s]",".")
 easynames[name]=zname
 end
@@ -56650,6 +56652,24 @@ local pend=string.gsub(EndPoint,"[%p%s]",".")
 local fromto=pstart..";"..pend
 local tofrom=pend..";"..pstart
 return fromto,tofrom
+end
+function STRATEGO:GetRoutesFromNode(StartPoint)
+self:T(self.lid.."GetRoutesFromNode")
+local pstart=string.gsub(StartPoint,"[%p%s]",".")
+local found=false
+pstart=pstart..";"
+local routes={}
+local listed={}
+for _,_data in pairs(self.routexists)do
+if string.find(_data,pstart,1,true)and not listed[_data]then
+local target=string.gsub(_data,pstart,"")
+local fname=self.easynames[target]
+table.insert(routes,fname)
+found=true
+listed[_data]=true
+end
+end
+return found,routes
 end
 function STRATEGO:AddRoutesManually(Startpoint,Endpoint,Color,Linetype,Draw)
 self:T(self.lid.."AddRoutesManually")
@@ -56673,6 +56693,8 @@ self.nonconnectedab[Startpoint]=false
 local factor=self.airbasetable[Startpoint].baseweight*self.routefactor
 self.airbasetable[Startpoint].weight=self.airbasetable[Startpoint].weight+factor
 self.airbasetable[Endpoint].weight=self.airbasetable[Endpoint].weight+factor
+self.airbasetable[Endpoint].connections=self.airbasetable[Endpoint].connections+2
+self.airbasetable[Startpoint].connections=self.airbasetable[Startpoint].connections+2
 if self.debug or Draw then
 startcoordinate:LineToAll(targetcoordinate,-1,color,1,linetype,nil,string.format("%dkm",dist))
 end
@@ -56704,6 +56726,8 @@ self.nonconnectedab[_data.name]=false
 self.nonconnectedab[startpoint]=false
 self.airbasetable[startpoint].weight=self.airbasetable[startpoint].weight+factor
 self.airbasetable[_data.name].weight=self.airbasetable[_data.name].weight+factor
+self.airbasetable[startpoint].connections=self.airbasetable[startpoint].connections+1
+self.airbasetable[_data.name].connections=self.airbasetable[_data.name].connections+1
 if self.debug then
 startcoord:LineToAll(tgtc,-1,color,1,linetype,nil,string.format("%dkm",dist))
 end
@@ -56740,6 +56764,8 @@ startcoord:LineToAll(closestcoord,-1,Color,1,3,nil,string.format("%dkm",shortest
 end
 self.airbasetable[startpoint].weight=self.airbasetable[startpoint].weight+1
 self.airbasetable[closest].weight=self.airbasetable[closest].weight+1
+self.airbasetable[startpoint].connections=self.airbasetable[startpoint].connections+2
+self.airbasetable[closest].connections=self.airbasetable[closest].connections+2
 local data={
 start=startpoint,
 target=closest,
@@ -57048,6 +57074,7 @@ local dist=self.disttable[_route]
 local tname=string.gsub(_route,name,"")
 local tname=string.gsub(tname,";","")
 local cname=self.easynames[tname]
+if cname then
 local encoa=self.coalition==coalition.side.BLUE and coalition.side.RED or coalition.side.BLUE
 if Enemies==true then
 if self.airbasetable[cname].coalition==encoa then
@@ -57066,13 +57093,16 @@ nearest=cname
 end
 end
 end
+end
 return neighbors,nearest,shortestdist
 end
 function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType)
 self:T(self.lid.."FindRoute")
 local Route={}
+local InRoute={}
 local hops=Hops or 4
 local routecomplete=false
+local reverse=false
 local function Checker(neighbors)
 for _name,_data in pairs(neighbors)do
 if _name==End then
@@ -57083,13 +57113,15 @@ return nil
 end
 local function NextClosest(Start,End)
 local ecoord=self.airbasetable[End].coord
-local nodes=self:FindNeighborNodes(Start)
+local nodes,nearest=self:FindNeighborNodes(Start)
 local closest=nil
 local closedist=1000*1000
 for _name,_dist in pairs(nodes)do
 local kcoord=self.airbasetable[_name].coord
+local nnodes=self.airbasetable[_name].connections>2 and true or false
+if _name==End then nnodes=true end
 local dist=math.floor((kcoord:Get2DDistance(ecoord)/1000)+0.5)
-if dist<closedist then
+if(dist<closedist and nnodes and InRoute[_name]~=true)then
 closedist=dist
 closest=_name
 end
@@ -57110,6 +57142,7 @@ c1:LineToAll(c2,-1,color,1,line)
 end
 end
 Route[#Route+1]=Start
+InRoute[Start]=true
 local nodes=self:FindNeighborNodes(Start)
 local endpoint=Checker(nodes)
 if endpoint then
@@ -57121,6 +57154,7 @@ for i=1,hops do
 local Next=NextClosest(spoint,End)
 if Next then
 Route[#Route+1]=Next
+InRoute[Next]=true
 local nodes=self:FindNeighborNodes(Next)
 local endpoint=Checker(nodes)
 if endpoint then
@@ -57133,8 +57167,46 @@ end
 end
 end
 end
+local function OptimizeRoute(Route)
+local foundcut=false
+local largestcut=0
+local cut={}
+for i=1,#Route do
+local found,nodes=self:GetRoutesFromNode(Route[i])
+for _,_name in pairs(nodes or{})do
+for j=i+2,#Route do
+if _name==Route[j]then
+if j-i>largestcut then
+largestcut=j-i
+cut={i=i,j=j}
+foundcut=true
+end
+end
+end
+end
+end
+if foundcut then
+local newroute={}
+for i=1,#Route do
+if i<=cut.i or i>=cut.j then
+table.insert(newroute,Route[i])
+end
+end
+return newroute
+end
+return Route,foundcut
+end
+if routecomplete==true then
+local foundcut=true
+while foundcut~=false do
+Route,foundcut=OptimizeRoute(Route)
+end
+else
+Route,routecomplete=self:FindRoute(End,Start,Hops,Draw,Color,LineType)
+reverse=true
+end
 if(self.debug or Draw)then DrawRoute(Route)end
-return Route,routecomplete
+return Route,routecomplete,reverse
 end
 function STRATEGO:AddBudget(Number)
 self:T(self.lid.."AddBudget")
