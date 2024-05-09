@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-07T14:34:02+02:00-7868a2e9dec2b54077aff75c0e0e1de005b466bd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-09T16:03:11+02:00-4f25c9a4089d37ac5385d80fa1b6e51c2c1cdb83 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -57824,6 +57824,13 @@ function AIRBOSS:SetLSOCallInterval(TimeInterval)
 self.LSOdT=TimeInterval or 4
 return self
 end
+function AIRBOSS:SetIntoWindLegacy(SwitchOn)
+if SwitchOn==nil then
+SwitchOn=true
+end
+self.intowindold=SwitchOn
+return self
+end
 function AIRBOSS:SetAirbossNiceGuy(Switch)
 if Switch==true or Switch==nil then
 self.airbossnice=true
@@ -59833,7 +59840,7 @@ or flight.actype==AIRBOSS.AircraftCarrier.RHINOE
 or flight.actype==AIRBOSS.AircraftCarrier.RHINOF
 or flight.actype==AIRBOSS.AircraftCarrier.GROWLER then
 Speed=UTILS.KnotsToKmph(200)
-elseif flight.actype==AIRBOSS.AircraftCarrier.E2D then
+elseif flight.actype==AIRBOSS.AircraftCarrier.E2D or flight.actype==AIRBOSS.AircraftCarrier.C2A then
 Speed=UTILS.KnotsToKmph(150)
 elseif flight.actype==AIRBOSS.AircraftCarrier.F14A_AI or flight.actype==AIRBOSS.AircraftCarrier.F14A or flight.actype==AIRBOSS.AircraftCarrier.F14B then
 Speed=UTILS.KnotsToKmph(175)
@@ -62290,7 +62297,14 @@ local vpp=UTILS.VecDot(vT,zc)
 local vabs=UTILS.VecNorm(vT)
 return-vpa,vpp,vabs
 end
-function AIRBOSS:GetHeadingIntoWind_old(magnetic,coord)
+function AIRBOSS:GetHeadingIntoWind(vdeck,magnetic,coord)
+if self.intowindold then
+return self:GetHeadingIntoWind_old(vdeck,magnetic,coord)
+else
+return self:GetHeadingIntoWind_new(vdeck,magnetic,coord)
+end
+end
+function AIRBOSS:GetHeadingIntoWind_old(vdeck,magnetic,coord)
 local function adjustDegreesForWindSpeed(windSpeed)
 local degreesAdjustment=0
 if windSpeed>0 and windSpeed<3 then
@@ -62317,9 +62331,10 @@ end
 if intowind<0 then
 intowind=intowind+360
 end
-return intowind
+local vtot=math.max(vdeck-UTILS.MpsToKnots(vwind),4)
+return intowind,vtot
 end
-function AIRBOSS:GetHeadingIntoWind(vdeck,magnetic,coord)
+function AIRBOSS:GetHeadingIntoWind_new(vdeck,magnetic,coord)
 local Offset=self.carrierparam.rwyangle or 0
 local windfrom,vwind=self:GetWind(18,nil,coord)
 local Vmin=4
@@ -63653,6 +63668,8 @@ elseif actype==AIRBOSS.AircraftCarrier.AV8B then
 nickname="Harrier"
 elseif actype==AIRBOSS.AircraftCarrier.E2D then
 nickname="Hawkeye"
+elseif actype==AIRBOSS.AircraftCarrier.C2A then
+nickname="Greyhound"
 elseif actype==AIRBOSS.AircraftCarrier.F14A_AI or actype==AIRBOSS.AircraftCarrier.F14A or actype==AIRBOSS.AircraftCarrier.F14B then
 nickname="Tomcat"
 elseif actype==AIRBOSS.AircraftCarrier.FA18C or actype==AIRBOSS.AircraftCarrier.HORNET then
