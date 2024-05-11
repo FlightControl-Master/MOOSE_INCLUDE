@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-11T09:37:52+02:00-7081448c40404fe5728062494177073b39818699 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-11T09:51:00+02:00-78ab7547f30386bcaa2cb80c221e0df2c8c44ebc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1044,7 +1044,8 @@ TheChannel="TheChannel",
 Syria="Syria",
 MarianaIslands="MarianaIslands",
 Falklands="Falklands",
-Sinai="SinaiMap"
+Sinai="SinaiMap",
+Kola="Kola"
 }
 CALLSIGN={
 Aircraft={
@@ -2070,6 +2071,8 @@ elseif map==DCSMAP.Falklands then
 declination=12
 elseif map==DCSMAP.Sinai then
 declination=4.8
+elseif map==DCSMAP.Kola then
+declination=15
 else
 declination=0
 end
@@ -58296,6 +58299,9 @@ local eta=UTILS.SecondsToClock(self:_GetETAatNextWP())
 local hdg=self:GetHeading()
 local pos=self:GetCoordinate()
 local speed=self.carrier:GetVelocityKNOTS()
+if require then
+self.magvar=pos:GetMagneticDeclination()
+end
 local collision=false
 local holdtime=0
 if self.holdtimestamp then
