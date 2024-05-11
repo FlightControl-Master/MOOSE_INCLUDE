@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-09T16:57:33+02:00-c7c1bcfff4d08ddfdbe11812bad1199a565f6efe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-11T09:37:52+02:00-7081448c40404fe5728062494177073b39818699 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -69066,7 +69066,7 @@ CTLD.UnitTypeCapabilities={
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 }
-CTLD.version="1.0.52"
+CTLD.version="1.0.53"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70681,7 +70681,7 @@ self:T(self.lid.." _MoveGroupToZone")
 local groupname=Group:GetName()or"none"
 local groupcoord=Group:GetCoordinate()
 local outcome,name,zone,distance=self:IsUnitInZone(Group,CTLD.CargoZoneType.MOVE)
-if(distance<=self.movetroopsdistance)and zone then
+if(distance<=self.movetroopsdistance)and outcome==true and zone~=nil then
 local groupname=Group:GetName()
 local zonecoord=zone:GetRandomCoordinate(20,125)
 local coordinate=zonecoord:GetVec2()
@@ -71312,10 +71312,9 @@ zoneradius=2000
 zonewidth=zoneradius
 end
 local distance=self:_GetDistance(zonecoord,unitcoord)
-if zone:IsVec2InZone(unitVec2)and active then
+self:T("Distance Zone: "..distance)
+if(zone:IsVec2InZone(unitVec2)or Zonetype==CTLD.CargoZoneType.MOVE)and active==true and maxdist>distance then
 outcome=true
-end
-if maxdist>distance then
 maxdist=distance
 zoneret=zone
 zonenameret=zonename
