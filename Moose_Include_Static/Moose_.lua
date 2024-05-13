@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-11T09:51:00+02:00-78ab7547f30386bcaa2cb80c221e0df2c8c44ebc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-13T09:57:06+02:00-983d518a69bed1ce30319b7050878e7057b5243a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26280,7 +26280,7 @@ local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 return DCSGroup
 end
-self:E(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
+self:T2(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
 return nil
 end
 function GROUP:GetPositionVec3()
@@ -75956,7 +75956,7 @@ if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
 end
-self:I(self.lid.."FF Initializing Group")
+self:T(self.lid.."FF Initializing Group")
 local template=Template or self:_GetTemplate()
 self.isAI=true
 self.isLateActivated=template.lateActivation
