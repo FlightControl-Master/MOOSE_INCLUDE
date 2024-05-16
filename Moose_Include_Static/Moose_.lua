@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-11T09:50:01+02:00-2e6957984ff9b29781bb72293c2e693bf15b97ff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T09:54:24+02:00-a3805118a02ab516aff1004e1ceb8759a89b8e47 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18726,7 +18726,8 @@ return self
 end
 function SPAWN:InitKeepUnitNames(KeepUnitNames)
 self:F()
-self.SpawnInitKeepUnitNames=KeepUnitNames or true
+self.SpawnInitKeepUnitNames=false
+if KeepUnitNames==true then self.SpawnInitKeepUnitNames=true end
 return self
 end
 function SPAWN:InitLateActivated(LateActivated)
@@ -19161,8 +19162,6 @@ if not inZone then
 RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
 numTries=numTries+1
 inZone=SpawnZone:IsVec2InZone(RandomVec2)
-self:I("Retrying "..numTries.."spawn "..SpawnTemplate.name.." in Zone "..SpawnZone:GetName().."!")
-self:I(SpawnZone)
 end
 end
 if(not inZone)then
@@ -20013,14 +20012,14 @@ end
 return nil
 end
 function SPAWN:GetSpawnIndexFromGroup(SpawnGroup)
-self:F2({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnGroup})
+self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnGroup})
 local IndexString=string.match(SpawnGroup:GetName(),"#(%d*)$"):sub(2)
 local Index=tonumber(IndexString)
 self:T3(IndexString,Index)
 return Index
 end
 function SPAWN:_GetLastIndex()
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix})
+self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix})
 return self.SpawnMaxGroups
 end
 function SPAWN:_InitializeSpawnGroups(SpawnIndex)
@@ -20118,7 +20117,9 @@ end
 end
 if self.SpawnInitKeepUnitNames==false then
 for UnitID=1,#SpawnTemplate.units do
+if not string.find(SpawnTemplate.units[UnitID].name,"#IFF_",1,true)then
 SpawnTemplate.units[UnitID].name=string.format(SpawnTemplate.name..'-%02d',UnitID)
+end
 SpawnTemplate.units[UnitID].unitId=nil
 end
 else
@@ -20130,11 +20131,9 @@ end
 local UnitPrefix,Rest
 if SpawnInitKeepUnitIFF==false then
 UnitPrefix,Rest=string.match(SpawnTemplate.units[UnitID].name,"^([^#]+)#?"):gsub("^%s*(.-)%s*$","%1")
-self:T({UnitPrefix,Rest})
-else
-UnitPrefix=SpawnTemplate.units[UnitID].name
-end
 SpawnTemplate.units[UnitID].name=string.format('%s#%03d-%02d',UnitPrefix,SpawnIndex,UnitID)
+self:T({UnitPrefix,Rest})
+end
 SpawnTemplate.units[UnitID].unitId=nil
 end
 end
