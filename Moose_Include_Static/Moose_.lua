@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T09:54:53+02:00-ca7949d8c491c9aab894d0375a68622b1691ad5d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T11:50:20+02:00-830dd05514b7d8d9a5bf6e0fc2decf57d72c5eac ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -104351,6 +104351,7 @@ A2GS="Air-To-Ground-Sea",
 AUFTRAG.Type.PRECISIONBOMBING="Precision Bombing"
 AUFTRAG.Type.CTLD="Combat Transport"
 AUFTRAG.Type.CSAR="Combat Rescue"
+AUFTRAG.Type.CONQUER="Conquer"
 PLAYERTASKCONTROLLER.Scores={
 [AUFTRAG.Type.PRECISIONBOMBING]=100,
 [AUFTRAG.Type.CTLD]=100,
@@ -104362,6 +104363,7 @@ PLAYERTASKCONTROLLER.Scores={
 [AUFTRAG.Type.SEAD]=100,
 [AUFTRAG.Type.BOMBING]=100,
 [AUFTRAG.Type.BOMBRUNWAY]=100,
+[AUFTRAG.Type.CONQUER]=100,
 }
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
@@ -105571,9 +105573,10 @@ local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-Threat
 local ThreatLocaleText=self.gettext:GetEntry("THREATTEXT",self.locale)
 text=string.format(ThreatLocaleText,taskname,ThreatGraph,targets,CoordText)
 local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
-local elevationmeasure=self.gettext:GetEntry("METER",self.locale)
-if settings:IsMetric()()then
+local elevationmeasure=self.gettext:GetEntry("FEET",self.locale)
+if settings:IsMetric()then
 elevationmeasure=self.gettext:GetEntry("METER",self.locale)
+else
 Elevation=math.floor(UTILS.MetersToFeet(Elevation))
 end
 local elev=self.gettext:GetEntry("ELEVATION",self.locale)
