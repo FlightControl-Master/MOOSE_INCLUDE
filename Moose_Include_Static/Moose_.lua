@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-13T09:57:06+02:00-983d518a69bed1ce30319b7050878e7057b5243a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T09:34:29+02:00-34fde09c129a03e41ff6758e897e559ed340c839 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -104392,6 +104392,9 @@ THREATHIGH="high",
 THREATMEDIUM="medium",
 THREATLOW="low",
 THREATTEXT="%s\nThreat: %s\nTargets left: %d\nCoord: %s",
+ELEVATION="\nTarget Elevation: %s %s",
+METER="meter",
+FEET="feet",
 THREATTEXTTTS="%s, %s. Target information for %s. Threat level %s. Targets left %d. Target location %s.",
 MARKTASK="%s, %s, copy, task %03d location marked on map!",
 SMOKETASK="%s, %s, copy, task %03d location smoked!",
@@ -104472,6 +104475,9 @@ THREATHIGH="hoch",
 THREATMEDIUM="mittel",
 THREATLOW="niedrig",
 THREATTEXT="%s\nGefahrstufe: %s\nZiele: %d\nKoord: %s",
+ELEVATION="\nZiel Höhe: %s %s",
+METER="Meter",
+FEET="Fuss",
 THREATTEXTTTS="%s, %s. Zielinformation zu %s. Gefahrstufe %s. Ziele %d. Zielposition %s.",
 MARKTASK="%s, %s, verstanden, Zielposition %03d auf der Karte markiert!",
 SMOKETASK="%s, %s, verstanden, Zielposition %03d mit Rauch markiert!",
@@ -104531,7 +104537,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.65"
+PLAYERTASKCONTROLLER.version="0.1.66"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -105545,6 +105551,7 @@ local ttsname=self.gettext:GetEntry("TASKNAMETTS",self.locale)
 local taskname=string.format(tname,task.Type,task.PlayerTaskNr)
 local ttstaskname=string.format(ttsname,task.TTSType,task.PlayerTaskNr)
 local Coordinate=task.Target:GetCoordinate()or COORDINATE:New(0,0,0)
+local Elevation=Coordinate:GetLandHeight()or 0
 local CoordText=""
 local CoordTextLLDM=nil
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
@@ -105564,6 +105571,14 @@ local clientlist,clientcount=task:GetClients()
 local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
 local ThreatLocaleText=self.gettext:GetEntry("THREATTEXT",self.locale)
 text=string.format(ThreatLocaleText,taskname,ThreatGraph,targets,CoordText)
+local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
+local elevationmeasure=self.gettext:GetEntry("METER",self.locale)
+if settings:IsMetric()()then
+elevationmeasure=self.gettext:GetEntry("METER",self.locale)
+Elevation=math.floor(UTILS.MetersToFeet(Elevation))
+end
+local elev=self.gettext:GetEntry("ELEVATION",self.locale)
+text=text..string.format(elev,tostring(math.floor(Elevation)),elevationmeasure)
 if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.precisionbombing then
 if self.LasingDrone and self.LasingDrone.playertask then
 local yes=self.gettext:GetEntry("YES",self.locale)
