@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T09:34:29+02:00-34fde09c129a03e41ff6758e897e559ed340c839 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T09:54:53+02:00-ca7949d8c491c9aab894d0375a68622b1691ad5d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18730,7 +18730,8 @@ return self
 end
 function SPAWN:InitKeepUnitNames(KeepUnitNames)
 self:F()
-self.SpawnInitKeepUnitNames=KeepUnitNames or true
+self.SpawnInitKeepUnitNames=false
+if KeepUnitNames==true then self.SpawnInitKeepUnitNames=true end
 return self
 end
 function SPAWN:InitLateActivated(LateActivated)
@@ -19165,8 +19166,6 @@ if not inZone then
 RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
 numTries=numTries+1
 inZone=SpawnZone:IsVec2InZone(RandomVec2)
-self:I("Retrying "..numTries.."spawn "..SpawnTemplate.name.." in Zone "..SpawnZone:GetName().."!")
-self:I(SpawnZone)
 end
 end
 if(not inZone)then
@@ -20122,7 +20121,9 @@ end
 end
 if self.SpawnInitKeepUnitNames==false then
 for UnitID=1,#SpawnTemplate.units do
+if not string.find(SpawnTemplate.units[UnitID].name,"#IFF_",1,true)then
 SpawnTemplate.units[UnitID].name=string.format(SpawnTemplate.name..'-%02d',UnitID)
+end
 SpawnTemplate.units[UnitID].unitId=nil
 end
 else
@@ -20134,11 +20135,9 @@ end
 local UnitPrefix,Rest
 if SpawnInitKeepUnitIFF==false then
 UnitPrefix,Rest=string.match(SpawnTemplate.units[UnitID].name,"^([^#]+)#?"):gsub("^%s*(.-)%s*$","%1")
-self:T({UnitPrefix,Rest})
-else
-UnitPrefix=SpawnTemplate.units[UnitID].name
-end
 SpawnTemplate.units[UnitID].name=string.format('%s#%03d-%02d',UnitPrefix,SpawnIndex,UnitID)
+self:T({UnitPrefix,Rest})
+end
 SpawnTemplate.units[UnitID].unitId=nil
 end
 end
