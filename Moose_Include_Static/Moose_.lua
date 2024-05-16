@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T09:54:24+02:00-a3805118a02ab516aff1004e1ceb8759a89b8e47 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-16T17:56:14+02:00-07a76ced889fd9ecd08ab8477db69e73254ec843 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52036,6 +52036,7 @@ SuppressedGroups={},
 automode=true,
 autoshorad=true,
 ShoradGroupSet=nil,
+checkforfriendlies=false,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -52561,6 +52562,10 @@ local set=dectset
 if dlink then
 set=self:_PreFilterHeight(height)
 end
+local friendlyset
+if self.checkforfriendlies==true then
+friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterOnce()
+end
 for _,_coord in pairs(set)do
 local coord=_coord
 local targetdistance=samcoordinate:DistanceFromPointVec2(coord)
@@ -52582,7 +52587,14 @@ local text=string.format("Checking SAM at %s | Targetdist %d | Rad %d | Inrange 
 local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
 self:T(self.lid..text)
 end
-if targetdistance<=rad and zonecheck then
+local nofriendlies=true
+if self.checkforfriendlies==true then
+local closestfriend,distance=friendlyset:GetClosestGroup(samcoordinate)
+if closestfriend and distance and distance<rad then
+nofriendlies=false
+end
+end
+if targetdistance<=rad and zonecheck==true and nofriendlies==true then
 return true,targetdistance
 end
 end
