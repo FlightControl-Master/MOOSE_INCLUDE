@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T11:32:31+02:00-d0ca76926e4a075e1253246ac398db9c5bbb8931 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T12:47:31+02:00-aec65209d04fb7147febdc0556af8cd93e928b2a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56662,7 +56662,7 @@ end
 return self
 end
 function STRATEGO:GetToFrom(StartPoint,EndPoint)
-self:T(self.lid.."GetToFrom")
+self:T(self.lid.."GetToFrom "..tostring(StartPoint).." "..tostring(EndPoint))
 local pstart=string.gsub(StartPoint,"[%p%s]",".")
 local pend=string.gsub(EndPoint,"[%p%s]",".")
 local fromto=pstart..";"..pend
@@ -57112,6 +57112,25 @@ end
 end
 return neighbors,nearest,shortestdist
 end
+function STRATEGO:_GetNextClosest(Start,End,InRoute)
+local ecoord=self.airbasetable[End].coord
+local nodes,nearest=self:FindNeighborNodes(Start)
+local closest=nil
+local closedist=1000*1000
+for _name,_dist in pairs(nodes)do
+local kcoord=self.airbasetable[_name].coord
+local nnodes=self.airbasetable[_name].connections>2 and true or false
+if _name==End then nnodes=true end
+if kcoord~=nil and ecoord~=nil and nnodes==true then
+local dist=math.floor((kcoord:Get2DDistance(ecoord)/1000)+0.5)
+if(dist<closedist and InRoute[_name]~=true)then
+closedist=dist
+closest=_name
+end
+end
+end
+return closest
+end
 function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType)
 self:T(self.lid.."FindRoute")
 local Route={}
@@ -57126,25 +57145,6 @@ return End
 end
 end
 return nil
-end
-local function NextClosest(Start,End)
-local ecoord=self.airbasetable[End].coord
-local nodes,nearest=self:FindNeighborNodes(Start)
-local closest=nil
-local closedist=1000*1000
-for _name,_dist in pairs(nodes)do
-local kcoord=self.airbasetable[_name].coord
-local nnodes=self.airbasetable[_name].connections>2 and true or false
-if _name==End then nnodes=true end
-local dist=math.floor((kcoord:Get2DDistance(ecoord)/1000)+0.5)
-if(dist<closedist and nnodes and InRoute[_name]~=true)then
-closedist=dist
-closest=_name
-end
-end
-if closest then
-return closest
-end
 end
 local function DrawRoute(Route)
 for i=1,#Route-1 do
@@ -57167,8 +57167,8 @@ routecomplete=true
 else
 local spoint=Start
 for i=1,hops do
-local Next=NextClosest(spoint,End)
-if Next then
+local Next=self:_GetNextClosest(spoint,End,InRoute)
+if Next~=nil then
 Route[#Route+1]=Next
 InRoute[Next]=true
 local nodes=self:FindNeighborNodes(Next)
@@ -57180,6 +57180,8 @@ break
 else
 spoint=Next
 end
+else
+break
 end
 end
 end
