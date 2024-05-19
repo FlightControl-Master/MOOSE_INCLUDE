@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-18T16:57:28+02:00-3a0d2a5c51084901939d05c4e7675bf870f1030a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T11:32:00+02:00-90b588420f7bca79a1ca753ce1e7268a67bc55d2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2232,6 +2232,8 @@ elseif theatre==DCSMAP.Falklands then
 return-3
 elseif theatre==DCSMAP.Sinai then
 return 2
+elseif theatre==DCSMAP.Kola then
+return 3
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -52225,7 +52227,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.16"
+self.version="0.8.17"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -52564,7 +52566,7 @@ set=self:_PreFilterHeight(height)
 end
 local friendlyset
 if self.checkforfriendlies==true then
-friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterOnce()
+friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterFunction(function(grp)if grp and grp:InAir()then return true else return false end end):FilterOnce()
 end
 for _,_coord in pairs(set)do
 local coord=_coord
