@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T12:47:31+02:00-aec65209d04fb7147febdc0556af8cd93e928b2a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T13:12:09+02:00-9815216bd58514084953f73b23d9b1a7f8f335a9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10037,9 +10037,17 @@ for _,object in pairs(layer["objects"])do
 if object["name"]==DrawingName then
 if(object["primitiveType"]=="Line"and object["closed"]==true)or(object["polygonMode"]=="free")then
 for _,point in UTILS.spairs(object["points"])do
+local skip=false
 local p={x=object["mapX"]+point["x"],
 y=object["mapY"]+point["y"]}
+for _,pt in pairs(points)do
+if pt.x==p.x and pt.y==p.y then
+skip=true
+end
+end
+if not skip then
 table.add(points,p)
+end
 end
 elseif object["polygonMode"]=="rect"then
 local angle=object["angle"]
@@ -56414,7 +56422,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.9",
+version="0.2.10",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -57121,9 +57129,9 @@ for _name,_dist in pairs(nodes)do
 local kcoord=self.airbasetable[_name].coord
 local nnodes=self.airbasetable[_name].connections>2 and true or false
 if _name==End then nnodes=true end
-if kcoord~=nil and ecoord~=nil and nnodes==true then
+if kcoord~=nil and ecoord~=nil and nnodes==true and InRoute[_name]~=true then
 local dist=math.floor((kcoord:Get2DDistance(ecoord)/1000)+0.5)
-if(dist<closedist and InRoute[_name]~=true)then
+if(dist<closedist)then
 closedist=dist
 closest=_name
 end
