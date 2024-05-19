@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T11:32:00+02:00-90b588420f7bca79a1ca753ce1e7268a67bc55d2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T12:46:17+02:00-c985d40ca06d97249971a731c54458665e9712ff ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10037,9 +10037,17 @@ for _,object in pairs(layer["objects"])do
 if object["name"]==DrawingName then
 if(object["primitiveType"]=="Line"and object["closed"]==true)or(object["polygonMode"]=="free")then
 for _,point in UTILS.spairs(object["points"])do
+local skip=false
 local p={x=object["mapX"]+point["x"],
 y=object["mapY"]+point["y"]}
+for _,pt in pairs(points)do
+if pt.x==p.x and pt.y==p.y then
+skip=true
+end
+end
+if not skip then
 table.add(points,p)
+end
 end
 elseif object["polygonMode"]=="rect"then
 local angle=object["angle"]
