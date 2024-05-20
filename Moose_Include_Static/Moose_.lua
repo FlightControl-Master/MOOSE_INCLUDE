@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-19T13:12:09+02:00-9815216bd58514084953f73b23d9b1a7f8f335a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-20T11:16:16+02:00-399f9883a9d2c6f74d66c3deb4e8f896692a4d64 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56422,7 +56422,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.10",
+version="0.2.11",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -57139,7 +57139,7 @@ end
 end
 return closest
 end
-function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType)
+function STRATEGO:FindRoute(Start,End,Hops,Draw,Color,LineType,NoOptimize)
 self:T(self.lid.."FindRoute")
 local Route={}
 local InRoute={}
@@ -57222,7 +57222,7 @@ return newroute
 end
 return Route,foundcut
 end
-if routecomplete==true then
+if routecomplete==true and NoOptimize~=true then
 local foundcut=true
 while foundcut~=false do
 Route,foundcut=OptimizeRoute(Route)
