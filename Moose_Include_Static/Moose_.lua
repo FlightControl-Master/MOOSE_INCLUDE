@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-20T11:16:16+02:00-399f9883a9d2c6f74d66c3deb4e8f896692a4d64 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-21T06:41:28+02:00-9e7caba0893fe6bc75a423b6af5956538a9fe800 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18038,9 +18038,9 @@ _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
 _MESSAGESRS.MSRS:SetProvider(MSRS.Provider.GOOGLE)
 end
 _MESSAGESRS.label=Label or MSRS.Label or"MESSAGE"
-_MESSAGESRS.MSRS:SetLabel(Label or"MESSAGE")
+_MESSAGESRS.MSRS:SetLabel(_MESSAGESRS.label)
 _MESSAGESRS.port=Port or MSRS.port or 5002
-_MESSAGESRS.MSRS:SetPort(Port or 5002)
+_MESSAGESRS.MSRS:SetPort(_MESSAGESRS.port)
 _MESSAGESRS.volume=Volume or MSRS.volume or 1
 _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
 if Voice then _MESSAGESRS.MSRS:SetVoice(Voice)end
