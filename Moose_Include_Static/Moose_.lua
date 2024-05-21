@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-21T06:41:28+02:00-9e7caba0893fe6bc75a423b6af5956538a9fe800 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-21T15:18:31+02:00-42d8a9f59dd7af9c0f75bde1065bd576ef9a0d69 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56422,7 +56422,7 @@ ClassName="STRATEGO",
 debug=false,
 drawzone=false,
 markzone=false,
-version="0.2.11",
+version="0.3.1",
 portweight=3,
 POIweight=1,
 maxrunways=3,
@@ -56808,6 +56808,8 @@ end
 function STRATEGO:GetHighestWeightNodes(Coalition)
 self:T(self.lid.."GetHighestWeightNodes")
 local weight=0
+local highest=0
+local highname=nil
 local airbases={}
 for _name,_data in pairs(self.airbasetable)do
 local okay=true
@@ -56821,8 +56823,12 @@ weight=_data.weight
 if not airbases[weight]then airbases[weight]={}end
 table.insert(airbases[weight],_name)
 end
+if _data.weight>highest and okay then
+highest=_data.weight
+highname=_name
 end
-return airbases[weight],weight
+end
+return airbases[weight],weight,highest,highname
 end
 function STRATEGO:GetNextHighestWeightNodes(Weight,Coalition)
 self:T(self.lid.."GetNextHighestWeightNodes")
@@ -57307,6 +57313,114 @@ return ftarget
 else
 return nil
 end
+end
+function STRATEGO:_FloodNext(next,filled,unfilled)
+local start=self:FindNeighborNodes(next)
+for _name,_ in pairs(start)do
+if filled[_name]~=true then
+self:T("Flooding ".._name)
+filled[_name]=true
+unfilled[_name]=nil
+self:_FloodNext(_name,filled,unfilled)
+end
+end
+return self
+end
+function STRATEGO:_FloodFill(Start,ABTable)
+self:T("Start = "..tostring(Start))
+if Start==nil then return end
+local filled={}
+local unfilled={}
+if ABTable then
+unfilled=ABTable
+else
+for _name,_ in pairs(self.airbasetable)do
+unfilled[_name]=true
+end
+end
+filled[Start]=true
+unfilled[Start]=nil
+local start=self:FindNeighborNodes(Start)
+for _name,_ in pairs(start)do
+if filled[_name]~=true then
+self:T("Flooding ".._name)
+filled[_name]=true
+unfilled[_name]=nil
+self:_FloodNext(_name,filled,unfilled)
+end
+end
+return filled,unfilled
+end
+function STRATEGO:_FloodTest(connect,draw)
+local function GetElastic(bases)
+local vec2table={}
+for _name,_ in pairs(bases)do
+local coord=self.airbasetable[_name].coord
+local vec2=coord:GetVec2()
+table.insert(vec2table,vec2)
+end
+local zone=ZONE_ELASTIC:New("STRATEGO-Floodtest-"..math.random(1,10000),vec2table)
+return zone
+end
+local function DrawElastic(filled,drawit)
+local zone=GetElastic(filled)
+if drawit then
+zone:SetColor({1,1,1},1)
+zone:SetDrawCoalition(-1)
+zone:Update(1,true)
+end
+return zone
+end
+local _,_,weight,name=self:GetHighestWeightNodes()
+local filled,unfilled=self:_FloodFill(name)
+local allin=true
+if table.length(unfilled)>0 then
+MESSAGE:New("There is at least one node island!",15,"STRATEGO"):ToAllIf(self.debug):ToLog()
+allin=false
+if self.debug==true then
+local zone1=DrawElastic(filled,draw)
+local zone2=DrawElastic(unfilled,draw)
+local vertices1=zone1:GetVerticiesVec2()
+local vertices2=zone2:GetVerticiesVec2()
+local corner1=nil
+local corner2=nil
+local mindist=math.huge
+local found=false
+for _,_edge in pairs(vertices1)do
+for _,_edge2 in pairs(vertices2)do
+local dist=UTILS.VecDist2D(_edge,_edge2)
+if dist<mindist then
+mindist=dist
+corner1=_edge
+corner2=_edge2
+found=true
+end
+end
+end
+if found then
+local Corner=COORDINATE:NewFromVec2(corner1)
+local Corner2=COORDINATE:NewFromVec2(corner2)
+Corner:LineToAll(Corner2,-1,{1,1,1},1,1,true,"Island2Island")
+local cornername
+local cornername2
+for _name,_data in pairs(self.airbasetable)do
+local zone=_data.zone
+if zone:IsVec2InZone(corner1)then
+cornername=_name
+self:T("Corner1 = ".._name)
+end
+if zone:IsVec2InZone(corner2)then
+cornername2=_name
+self:T("Corner2 = ".._name)
+end
+if cornername and cornername2 and connect==true then
+self:AddRoutesManually(cornername,cornername2,Color,Linetype,self.debug)
+end
+end
+end
+end
+end
+return allin,filled,unfilled
 end
 AIRBOSS={
 ClassName="AIRBOSS",
