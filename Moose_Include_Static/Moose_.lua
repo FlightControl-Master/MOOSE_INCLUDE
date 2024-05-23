@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-21T19:49:27+02:00-59ceb01d1908e40d1a2c55b2241973df7619e460 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-23T18:13:05+02:00-64be0ffee53ea1b61e81d0e747efbe791e96cf98 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -42297,10 +42297,8 @@ self.instructmsrs:SetLabel("RANGEI")
 self.instructmsrs:SetVolume(Volume or 1.0)
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
 if PathToGoogleKey then
-self.controlmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
-self.controlmsrs:SetProvider(MSRS.Provider.GOOGLE)
-self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
-self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
+self.controlmsrs:SetGoogle(PathToGoogleKey)
+self.instructmsrs:SetGoogle(PathToGoogleKey)
 end
 else
 self:E(self.lid..string.format("ERROR: No SRS path specified!"))
