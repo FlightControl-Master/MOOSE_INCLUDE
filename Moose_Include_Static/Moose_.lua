@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-23T18:13:05+02:00-64be0ffee53ea1b61e81d0e747efbe791e96cf98 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-24T10:03:27+02:00-dade17a67fab8dd1d2306a8475d0f9f712f2c86c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55261,7 +55261,7 @@ alias="",
 debug=false,
 smokemenu=true,
 }
-AUTOLASE.version="0.1.23"
+AUTOLASE.version="0.1.25"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -55329,6 +55329,7 @@ self.blacklistattributes={}
 self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.playermenus={}
 self.smokemenu=true
+self.threatmenu=true
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -55367,6 +55368,13 @@ if self.smokemenu then
 local smoke=(self.smoketargets==true)and"off"or"on"
 local smoketext=string.format("Switch smoke targets to %s",smoke)
 local smokemenu=MENU_GROUP_COMMAND:New(Group,smoketext,lasetopm,self.SetSmokeTargets,self,(not self.smoketargets))
+end
+if self.threatmenu then
+local threatmenutop=MENU_GROUP:New(Group,"Set min lasing threat",lasetopm)
+for i=0,10,2 do
+local text="Threatlevel "..tostring(i)
+local threatmenu=MENU_GROUP_COMMAND:New(Group,text,threatmenutop,self.SetMinThreatLevel,self,i)
+end
 end
 for _,_grp in pairs(self.RecceSet.Set)do
 local grp=_grp
@@ -55523,6 +55531,14 @@ function AUTOLASE:DisableSmokeMenu()
 self.smokemenu=false
 return self
 end
+function AUTOLASE:EnableThreatLevelMenu()
+self.threatmenu=true
+return self
+end
+function AUTOLASE:DisableThreatLevelMenu()
+self.threatmenu=false
+return self
+end
 function AUTOLASE:GetLosFromUnit(Unit)
 local lasedistance=self.LaseDistance
 local unitheight=Unit:GetHeight()
@@ -55627,6 +55643,7 @@ local code=self:GetLaserCode(unit:GetName())
 report:Add(string.format("Recce %s has code %d",name,code))
 end
 end
+report:Add(string.format("Lasing min threat level %d",self.minthreatlevel))
 local lines=0
 for _ind,_entry in pairs(self.CurrentLasing)do
 local entry=_entry
