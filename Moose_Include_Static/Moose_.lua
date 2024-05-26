@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-21T16:50:33+02:00-783e29f189a99026da06255a0d90fee1c55ed0a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-26T12:58:32+02:00-6df4fffafdfaaf1d6e3d7c0f83437164622e4d8f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28856,19 +28856,19 @@ AIRBASE.Sinai={
 ["Wadi_al_Jandali"]="Wadi al Jandali",
 }
 AIRBASE.Kola={
+["Banak"]="Banak",
 ["Bas_100"]="Bas 100",
 ["Bodo"]="Bodo",
 ["Jokkmokk"]="Jokkmokk",
 ["Kalixfors"]="Kalixfors",
 ["Kemi_Tornio"]="Kemi Tornio",
 ["Kiruna"]="Kiruna",
-["Lakselv"]="Lakselv",
 ["Monchegorsk"]="Monchegorsk",
 ["Murmansk_International"]="Murmansk International",
-["Olenegorsk"]="Olenegorsk",
+["Olenya"]="Olenya",
 ["Rovaniemi"]="Rovaniemi",
-["Severomorsk1"]="Severomorsk1",
-["Severomorsk3"]="Severomorsk3",
+["Severomorsk_1"]="Severomorsk-1",
+["Severomorsk_3"]="Severomorsk-3",
 }
 AIRBASE.TerminalType={
 Runway=16,
