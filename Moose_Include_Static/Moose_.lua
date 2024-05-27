@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-27T17:09:11+02:00-7c0605e82f3a010aab76f63c4fc6c07044cf04bf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-27T18:31:14+02:00-09372df86d6f702598f4f3b0d4a4f39b405cc9c9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55355,11 +55355,14 @@ end
 function AUTOLASE:SetPilotMenu()
 if self.usepilotset then
 local pilottable=self.pilotset:GetSetObjects()or{}
+local grouptable={}
 for _,_unit in pairs(pilottable)do
 local Unit=_unit
 if Unit and Unit:IsAlive()then
 local Group=Unit:GetGroup()
+local GroupName=Group:GetName()or"none"
 local unitname=Unit:GetName()
+if not grouptable[GroupName]==true then
 if self.playermenus[unitname]then self.playermenus[unitname]:Remove()end
 local lasetopm=MENU_GROUP:New(Group,"Autolase",nil)
 self.playermenus[unitname]=lasetopm
@@ -55390,6 +55393,8 @@ if _code==code then text=text.."(*)"end
 local changemenu=MENU_GROUP_COMMAND:New(Group,text,unittop,self.SetRecceLaserCode,self,name,_code,true)
 end
 end
+end
+grouptable[GroupName]=true
 end
 end
 end
