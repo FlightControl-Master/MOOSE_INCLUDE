@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-26T12:58:32+02:00-6df4fffafdfaaf1d6e3d7c0f83437164622e4d8f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-27T17:07:26+02:00-778ae1b8e5040544dfad9f99f810ee84d0ce91d6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8441,6 +8441,7 @@ return self
 end
 end
 function MENU_GROUP_DELAYED:Set()
+if not self.GroupID then return end
 do
 if not self.MenuSet then
 missionCommands.addSubMenuForGroup(self.GroupID,self.MenuText,self.MenuParentPath)
