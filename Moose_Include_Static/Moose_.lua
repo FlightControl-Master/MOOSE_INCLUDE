@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-24T10:03:27+02:00-dade17a67fab8dd1d2306a8475d0f9f712f2c86c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-27T17:09:11+02:00-7c0605e82f3a010aab76f63c4fc6c07044cf04bf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8441,6 +8441,7 @@ return self
 end
 end
 function MENU_GROUP_DELAYED:Set()
+if not self.GroupID then return end
 do
 if not self.MenuSet then
 missionCommands.addSubMenuForGroup(self.GroupID,self.MenuText,self.MenuParentPath)
@@ -21719,7 +21720,6 @@ for _,_client in pairs(Set)do
 local client=_client
 if client and client:IsAlive()then
 local playerunit=client:GetName()
-local playergroup=client:GetGroup()
 local playername=client:GetPlayerName()or"none"
 if not knownunits[playerunit]then
 knownunits[playerunit]=true
@@ -29378,19 +29378,19 @@ AIRBASE.Sinai={
 ["Wadi_al_Jandali"]="Wadi al Jandali",
 }
 AIRBASE.Kola={
+["Banak"]="Banak",
 ["Bas_100"]="Bas 100",
 ["Bodo"]="Bodo",
 ["Jokkmokk"]="Jokkmokk",
 ["Kalixfors"]="Kalixfors",
 ["Kemi_Tornio"]="Kemi Tornio",
 ["Kiruna"]="Kiruna",
-["Lakselv"]="Lakselv",
 ["Monchegorsk"]="Monchegorsk",
 ["Murmansk_International"]="Murmansk International",
-["Olenegorsk"]="Olenegorsk",
+["Olenya"]="Olenya",
 ["Rovaniemi"]="Rovaniemi",
-["Severomorsk1"]="Severomorsk1",
-["Severomorsk3"]="Severomorsk3",
+["Severomorsk_1"]="Severomorsk-1",
+["Severomorsk_3"]="Severomorsk-3",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -104954,10 +104954,12 @@ local playername=Client:GetPlayerName()
 local ttsplayername=nil
 if not self.customcallsigns[playername]then
 local playergroup=Client:GetGroup()
+if playergroup~=nil then
 ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
 local newplayername=self:_GetTextForSpeech(ttsplayername)
 self.customcallsigns[playername]=newplayername
 ttsplayername=newplayername
+end
 else
 ttsplayername=self.customcallsigns[playername]
 end
