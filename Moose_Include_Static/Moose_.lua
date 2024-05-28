@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-27T18:31:14+02:00-09372df86d6f702598f4f3b0d4a4f39b405cc9c9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-28T23:54:39+02:00-5fc39daa9deb02a8703601b94818db385690fc61 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -84149,6 +84149,9 @@ self:StrategyChange(Strategy)
 end
 self.strategy=Strategy
 return self
+end
+function CHIEF:GetStrategy()
+return self.strategy
 end
 function CHIEF:GetDefcon(Defcon)
 return self.Defcon
