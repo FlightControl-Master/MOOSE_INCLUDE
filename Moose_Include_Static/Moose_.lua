@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-05-27T17:07:26+02:00-778ae1b8e5040544dfad9f99f810ee84d0ce91d6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-01T07:32:20+02:00-c87e91d8452c29aab7da4e37ba84241a0d3d6dc4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12374,6 +12374,7 @@ self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventOnDeadOrCrash)
 if self.Filter.Zones then
 self.ZoneTimer=TIMER:New(self._ContinousZoneFilter,self)
 local timing=self.ZoneTimerInterval or 30
