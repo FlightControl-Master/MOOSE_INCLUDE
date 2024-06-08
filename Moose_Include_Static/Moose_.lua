@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-07T16:03:45+02:00-333ed629bbe6121b868b36fcf4ab4244de125f27 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-08T11:48:27+02:00-16dc3860f73927432bcc108d674a9b2cdcf7fc6a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52141,6 +52141,7 @@ MANTIS.SamDataCH={
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
 local self=BASE:Inherit(self,FSM:New())
+self.name=name or"mymantis"
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
@@ -52241,7 +52242,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.17"
+self.version="0.8.18"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
