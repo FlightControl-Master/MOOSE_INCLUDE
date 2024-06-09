@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-09T17:58:57+02:00-ceb77e283762923ad2aa0b67d54d8320a76543cb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-09T18:32:10+02:00-4668132b37147cb37b15f6a6bb522078e56b5076 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26275,6 +26275,7 @@ end
 end
 end
 local DCSGroup=Group.getByName(self.GroupName)
+if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()or{}
 for _,_unit in pairs(DCSUnits)do
 if Object.isExist(_unit)then
@@ -26283,6 +26284,7 @@ local point=position.p~=nil and position.p or _unit:GetPoint()
 if point then
 local coord=COORDINATE:NewFromVec3(point)
 return coord
+end
 end
 end
 end
