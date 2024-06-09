@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-09T10:59:58+02:00-137f0251fb52da7b98afd143fa93bbc857bcc492 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-09T17:58:57+02:00-ceb77e283762923ad2aa0b67d54d8320a76543cb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7149,7 +7149,7 @@ Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
 elseif Event.TgtObjectCategory==Object.Category.STATIC then
 Event.TgtDCSUnit=Event.target
-if Event.target:isExist()and Event.id~=33 then
+if Event.target.isExist and Event.target:isExist()and Event.id~=33 then
 Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
 if Event.TgtDCSUnitName and Event.TgtDCSUnitName~=""then
 Event.TgtUnitName=Event.TgtDCSUnitName
