@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-09T18:32:10+02:00-4668132b37147cb37b15f6a6bb522078e56b5076 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-11T09:03:57+02:00-a6de09a0cad2a98f0b7ad4d5751bd63e52343907 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -35883,7 +35883,7 @@ function DETECTION_BASE:onafterStart(From,Event,To)
 self:__Detect(1)
 end
 function DETECTION_BASE:onafterDetect(From,Event,To)
-local DetectDelay=0.1
+local DetectDelay=0.15
 self.DetectionCount=0
 self.DetectionRun=0
 self:UnIdentifyAllDetectedObjects()
@@ -35914,13 +35914,15 @@ self.DetectionSet:ForEachGroupAlive(IteratorFunction,arg)
 return self
 end
 function DETECTION_BASE:onafterDetection(From,Event,To,Detection,DetectionTimeStamp)
+self:I({DetectedObjects=self.DetectedObjects})
 self.DetectionRun=self.DetectionRun+1
 local HasDetectedObjects=false
 if Detection and Detection:IsAlive()then
+self:I({"DetectionGroup is Alive",Detection:GetName()})
 local DetectionGroupName=Detection:GetName()
 local DetectionUnit=Detection:GetUnit(1)
 local DetectedUnits={}
-local DetectedTargets=Detection:GetDetectedTargets(
+local DetectedTargets=DetectionUnit:GetDetectedTargets(
 self.DetectVisual,
 self.DetectOptical,
 self.DetectRadar,
@@ -35928,7 +35930,6 @@ self.DetectIRST,
 self.DetectRWR,
 self.DetectDLINK
 )
-self:F({DetectedTargets=DetectedTargets})
 for DetectionObjectID,Detection in pairs(DetectedTargets)do
 local DetectedObject=Detection.object
 if DetectedObject and DetectedObject:isExist()and DetectedObject.id_<50000000 then
@@ -37857,7 +37858,6 @@ local DetectedItem=self.Detection:GetDetectedItemByIndex(Index)
 local TargetSetUnit=self.Detection:GetDetectedItemSet(DetectedItem)
 local MarkingCount=0
 local MarkedTypes={}
-TargetSetUnit:Flush(self)
 for TargetUnit,RecceData in pairs(self.Recces)do
 local Recce=RecceData
 self:F({TargetUnit=TargetUnit,Recce=Recce:GetName()})
@@ -37882,6 +37882,7 @@ break
 end
 end
 end
+if TargetSetUnit==nil then return end
 if self.AutoLase or(not self.AutoLase and(self.LaseStart+Duration>=timer.getTime()))then
 TargetSetUnit:ForEachUnitPerThreatLevel(10,0,
 function(TargetUnit)
@@ -37908,14 +37909,15 @@ self.LaserCodesUsed[LaserCode]=LaserCodeIndex
 local Spot=RecceUnit:LaseUnit(TargetUnit,LaserCode,Duration)
 local AttackSet=self.AttackSet
 local DesignateName=self.DesignateName
+local typename=TargetUnit:GetTypeName()
 function Spot:OnAfterDestroyed(From,Event,To)
-self.Recce:MessageToSetGroup("Target "..TargetUnit:GetTypeName().." destroyed. "..TargetSetUnit:Count().." targets left.",
+self.Recce:MessageToSetGroup("Target "..typename.." destroyed. "..TargetSetUnit:CountAlive().." targets left.",
 5,AttackSet,self.DesignateName)
 end
 self.Recces[TargetUnit]=RecceUnit
 MarkingCount=MarkingCount+1
 local TargetUnitType=TargetUnit:GetTypeName()
-RecceUnit:MessageToSetGroup("Marking "..TargetUnit:GetTypeName().." with laser "..RecceUnit:GetSpot().LaserCode.." for "..Duration.."s.",
+RecceUnit:MessageToSetGroup("Marking "..TargetUnitType.." with laser "..RecceUnit:GetSpot().LaserCode.." for "..Duration.."s.",
 10,self.AttackSet,DesignateName)
 if not MarkedTypes[TargetUnitType]then
 MarkedTypes[TargetUnitType]=true
@@ -38026,8 +38028,10 @@ end
 end
 end
 function DESIGNATE:onafterDoneSmoking(From,Event,To,Index)
+if self.Designating[Index]~=nil then
 self.Designating[Index]=string.gsub(self.Designating[Index],"S","")
 self:SetDesignateMenu()
+end
 end
 function DESIGNATE:onafterDoneIlluminating(From,Event,To,Index)
 self.Designating[Index]=string.gsub(self.Designating[Index],"I","")
