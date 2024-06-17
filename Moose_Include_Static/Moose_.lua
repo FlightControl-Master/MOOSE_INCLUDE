@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-17T16:11:40+02:00-a778e910f76b14609f0a562955581f6ae533254f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-17T18:08:45+02:00-bdd9efa2cc0ab21a34a4739cb33148af056bcde4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -87003,7 +87003,7 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.6"
+FLIGHTCONTROL.version="0.7.7"
 function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
@@ -87031,6 +87031,7 @@ self:SetRunwayRepairtime()
 self.nosubs=false
 self:SetCallSignOptions(true,true)
 self.msrsqueue=MSRSQUEUE:New(self.alias)
+self:SetTransmitOnlyWithPlayers(true)
 local path=PathToSRS or MSRS.path
 local port=Port or MSRS.port or 5002
 self:SetSRSPort(port)
@@ -87072,6 +87073,10 @@ self.radioOnlyIfPlayers=true
 else
 self.radioOnlyIfPlayers=false
 end
+return self
+end
+function FLIGHTCONTROL:SetTransmitOnlyWithPlayers(Switch)
+self.msrsqueue:SetTransmitOnlyWithPlayers(Switch)
 return self
 end
 function FLIGHTCONTROL:SwitchSubtitlesOn()
