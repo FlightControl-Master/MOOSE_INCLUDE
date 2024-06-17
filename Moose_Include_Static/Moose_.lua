@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-15T08:14:58+02:00-b40331b04e6a718b3c18bfef6d967572a4b2b4d4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-17T16:11:40+02:00-a778e910f76b14609f0a562955581f6ae533254f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -86988,6 +86988,7 @@ Nparkingspots=nil,
 holdingpatterns={},
 hpcounter=0,
 nosubs=false,
+Nplayers=0,
 }
 FLIGHTCONTROL.FlightStatus={
 UNKNOWN="Unknown",
@@ -87002,7 +87003,7 @@ LANDING="Landing",
 TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
-FLIGHTCONTROL.version="0.7.5"
+FLIGHTCONTROL.version="0.7.6"
 function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
@@ -87063,6 +87064,14 @@ return self
 end
 function FLIGHTCONTROL:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
+return self
+end
+function FLIGHTCONTROL:SetRadioOnlyIfPlayers(Switch)
+if Switch==nil or Switch==true then
+self.radioOnlyIfPlayers=true
+else
+self.radioOnlyIfPlayers=false
+end
 return self
 end
 function FLIGHTCONTROL:SwitchSubtitlesOn()
@@ -88720,6 +88729,13 @@ self:T(self.lid..string.format("Removing DEAD flight %s",tostring(flight.groupna
 self:_RemoveFlight(flight)
 end
 end
+self.Nplayers=0
+for _,_flight in pairs(self.flights)do
+local flight=_flight
+if not flight.isAI then
+self.Nplayers=self.Nplayers+1
+end
+end
 if self.speedLimitTaxi then
 for _,_flight in pairs(self.flights)do
 local flight=_flight
@@ -88825,6 +88841,10 @@ self:TransmissionPilot(text,flight)
 return self
 end
 function FLIGHTCONTROL:TransmissionTower(Text,Flight,Delay)
+if self.radioOnlyIfPlayers==true and self.Nplayers==0 then
+self:T(self.lid.."No players ==> skipping TOWER radio transmission")
+return
+end
 local text=self:_GetTextForSpeech(Text)
 local subgroups=nil
 if Flight and not Flight.isAI then
@@ -88839,6 +88859,10 @@ self.Tlastmessage=timer.getAbsTime()+(Delay or 0)
 self:T(self.lid..string.format("Radio Tower: %s",Text))
 end
 function FLIGHTCONTROL:TransmissionPilot(Text,Flight,Delay)
+if self.radioOnlyIfPlayers==true and self.Nplayers==0 then
+self:T(self.lid.."No players ==> skipping PILOT radio transmission")
+return
+end
 local playerData=Flight:_GetPlayerData()
 if playerData==nil or playerData.myvoice then
 local text=self:_GetTextForSpeech(Text)
