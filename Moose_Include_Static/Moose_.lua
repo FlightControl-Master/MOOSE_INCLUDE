@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-15T08:12:54+02:00-2d1fcb9be8bc73ebe983c56f7c4d628ac90f97b9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-18T09:20:59+02:00-5f9d4405b1944551eeb3984b0741ec3f9a8b55ad ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11191,10 +11191,13 @@ end
 return nextoctal
 end
 function DATABASE:GetGroupTemplate(GroupName)
-local GroupTemplate=self.Templates.Groups[GroupName].Template
+local GroupTemplate=nil
+if self.Templates.Groups[GroupName]then
+GroupTemplate=self.Templates.Groups[GroupName].Template
 GroupTemplate.SpawnCoalitionID=self.Templates.Groups[GroupName].CoalitionID
 GroupTemplate.SpawnCategoryID=self.Templates.Groups[GroupName].CategoryID
 GroupTemplate.SpawnCountryID=self.Templates.Groups[GroupName].CountryID
+end
 return GroupTemplate
 end
 function DATABASE:_RegisterStaticTemplate(StaticTemplate,CoalitionID,CategoryID,CountryID)
@@ -26603,7 +26606,11 @@ return nil
 end
 function GROUP:GetTemplate()
 local GroupName=self:GetName()
-return UTILS.DeepCopy(_DATABASE:GetGroupTemplate(GroupName))
+local template=_DATABASE:GetGroupTemplate(GroupName)
+if template then
+return UTILS.DeepCopy(template)
+end
+return nil
 end
 function GROUP:GetTemplateRoutePoints()
 local GroupName=self:GetName()
@@ -59964,8 +59971,10 @@ end
 function AIRBOSS:_GetOnboardNumbers(group,playeronly)
 local groupname=group:GetName()
 local text=string.format("Onboard numbers of group %s:",groupname)
-local units=group:GetTemplate().units
+local template=group:GetTemplate()
 local numbers={}
+if template then
+local units=template.units
 for _,unit in pairs(units)do
 local n=tostring(unit.onboard_num)
 local name=unit.name
@@ -59977,6 +59986,17 @@ end
 numbers[name]=n
 end
 self:T2(self.lid..text)
+else
+if playeronly then
+return 101
+else
+local units=group:GetUnits()
+for i,_unit in pairs(units)do
+local name=_unit:GetName()
+numbers[name]=100+i
+end
+end
+end
 return numbers
 end
 function AIRBOSS:_GetTowerFrequency()
