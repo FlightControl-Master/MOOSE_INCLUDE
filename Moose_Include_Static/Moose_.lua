@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-18T09:21:12+02:00-d83cabbab605f9606793c02292d99fca26e8177b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-18T23:15:50+02:00-3fac5ac9f0530c732e81a23c3f727c506998f7f3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -90199,6 +90199,10 @@ if self:IsEngaging()then
 self:T(self.lid.."Engaging! Group NOT done...")
 return
 end
+if self:IsGoing4Fuel()then
+self:T(self.lid.."Going for FUEL! Group NOT done...")
+return
+end
 local nTasks=self:CountRemainingTasks()
 local nMissions=self:CountRemainingMissison()
 local nTransports=self:CountRemainingTransports()
@@ -90509,10 +90513,12 @@ Coordinate=Coordinate or coordinate:Translate(UTILS.NMToMeters(5),self.group:Get
 local wp0=coordinate:WaypointAir("BARO",COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true)
 local wp9=Coordinate:WaypointAir("BARO",COORDINATE.WaypointType.TurningPoint,COORDINATE.WaypointAction.TurningPoint,Speed,true,nil,DCSTasks,"Refuel")
 self:Route({wp0,wp9},1)
+self.group:SetOption(AI.Option.Air.id.RTB_ON_BINGO,true)
 end
 function FLIGHTGROUP:onafterRefueled(From,Event,To)
 local text=string.format("Flight group finished refuelling")
 self:T(self.lid..text)
+self.group:SetOption(AI.Option.Air.id.RTB_ON_BINGO,false)
 self:_CheckGroupDone(1)
 end
 function FLIGHTGROUP:onafterHolding(From,Event,To)
