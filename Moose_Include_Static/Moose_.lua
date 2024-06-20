@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-18T23:15:50+02:00-3fac5ac9f0530c732e81a23c3f727c506998f7f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-20T08:52:28+02:00-b8f7cf44cc764c32278dd29e1dd11bd1492a8d80 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17222,6 +17222,8 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,true,Tdiff)
 local sunset=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tdiff)
+if sunrise=="N/R"then return false end
+if sunrise=="N/S"then return true end
 local time=UTILS.ClockToSeconds(clock)
 if time>sunrise and time<=sunset then
 return true
