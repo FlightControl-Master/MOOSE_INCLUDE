@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-20T08:51:59+02:00-f9f0a8e86605fb30fd1595642a04bc1d6b4ae2af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-20T18:08:24+02:00-8cdf8677c1ec746f3f5f312adb3098cc81e67197 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1166,6 +1166,44 @@ Trash=10,
 Cargo=11,
 Ascot=12,
 },
+AH64={
+Army_Air=9,
+Apache=10,
+Crow=11,
+Sioux=12,
+Gatling=13,
+Gunslinger=14,
+Hammerhead=15,
+Bootleg=16,
+Palehorse=17,
+Carnivor=18,
+Saber=19,
+},
+Kiowa={
+Anvil=1,
+Azrael=2,
+BamBam=3,
+Blackjack=4,
+Bootleg=5,
+BurninStogie=6,
+Chaos=7,
+CrazyHorse=8,
+Crusader=9,
+Darkhorse=10,
+Eagle=11,
+Lighthorse=12,
+Mustang=13,
+Outcast=14,
+Palehorse=15,
+Pegasus=16,
+Pistol=17,
+Roughneck=18,
+Saber=19,
+Shamus=20,
+Spur=21,
+Stetson=22,
+Wrath=23,
+},
 }
 UTILS={
 _MarkID=1
@@ -2206,6 +2244,16 @@ return name
 end
 end
 for name,value in pairs(CALLSIGN.TransportAircraft)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.AH64)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.Kiowa)do
 if value==Callsign then
 return name
 end
