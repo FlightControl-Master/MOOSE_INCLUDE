@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-20T18:08:55+02:00-796b71474ba82177647b7c93bf74205457a04765 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-22T11:54:19+02:00-97abe32f75f9dde0f546149564ef9005f3f10af1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28071,7 +28071,9 @@ end
 function UNIT:IsPlayer()
 local group=self:GetGroup()
 if not group then return false end
-local units=group:GetTemplate().units
+local template=group:GetTemplate()
+if(template==nil)or(template.units==nil)then return false end
+local units=template.units
 for _,unit in pairs(units)do
 if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
 return true
@@ -28428,17 +28430,17 @@ if Descriptor then
 local Attributes=Descriptor.attributes
 if self:IsGround()then
 local ThreatLevels={
-"Unarmed",
-"Infantry",
-"Old Tanks & APCs",
-"Tanks & IFVs without ATGM",
-"Tanks & IFV with ATGM",
-"Modern Tanks",
-"AAA",
-"IR Guided SAMs",
-"SR SAMs",
-"MR SAMs",
-"LR SAMs"
+[1]="Unarmed",
+[2]="Infantry",
+[3]="Old Tanks & APCs",
+[4]="Tanks & IFVs without ATGM",
+[5]="Tanks & IFV with ATGM",
+[6]="Modern Tanks",
+[7]="AAA",
+[8]="IR Guided SAMs",
+[9]="SR SAMs",
+[10]="MR SAMs",
+[11]="LR SAMs"
 }
 if Attributes["LR SAM"]then ThreatLevel=10
 elseif Attributes["MR SAM"]then ThreatLevel=9
@@ -28459,17 +28461,17 @@ ThreatText=ThreatLevels[ThreatLevel+1]
 end
 if self:IsAir()then
 local ThreatLevels={
-"Unarmed",
-"Tanker",
-"AWACS",
-"Transport Helicopter",
-"UAV",
-"Bomber",
-"Strategic Bomber",
-"Attack Helicopter",
-"Battleplane",
-"Multirole Fighter",
-"Fighter"
+[1]="Unarmed",
+[2]="Tanker",
+[3]="AWACS",
+[4]="Transport Helicopter",
+[5]="UAV",
+[6]="Bomber",
+[7]="Strategic Bomber",
+[8]="Attack Helicopter",
+[9]="Battleplane",
+[10]="Multirole Fighter",
+[11]="Fighter"
 }
 if Attributes["Fighters"]then ThreatLevel=10
 elseif Attributes["Multirole fighters"]then ThreatLevel=9
@@ -28488,17 +28490,17 @@ ThreatText=ThreatLevels[ThreatLevel+1]
 end
 if self:IsShip()then
 local ThreatLevels={
-"Unarmed ship",
-"Light armed ships",
-"Corvettes",
-"",
-"Frigates",
-"",
-"Cruiser",
-"",
-"Destroyer",
-"",
-"Aircraft Carrier"
+[1]="Unarmed ship",
+[2]="Light armed ships",
+[3]="Corvettes",
+[4]="",
+[5]="Frigates",
+[6]="",
+[7]="Cruiser",
+[8]="",
+[9]="Destroyer",
+[10]="",
+[11]="Aircraft Carrier"
 }
 if Attributes["Aircraft Carriers"]then ThreatLevel=10
 elseif Attributes["Destroyers"]then ThreatLevel=8
