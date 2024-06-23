@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-22T11:53:52+02:00-11a05f133370bfc7acbf58d1a94b6d1133bcf50e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-23T19:18:27+02:00-1033b975f8d66fb03e91fd5131a5e96ffa668871 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27730,6 +27730,8 @@ local nrockets=0
 local nmissiles=0
 local nbombs=0
 local narti=0
+local nAPshells=0
+local nHEshells=0
 local unit=self
 local ammotable=unit:GetAmmo()
 if ammotable then
@@ -27746,6 +27748,12 @@ if Category==Weapon.Category.SHELL then
 nshells=nshells+Nammo
 if ammotable[w].desc.warhead and ammotable[w].desc.warhead.explosiveMass and ammotable[w].desc.warhead.explosiveMass>0 then
 narti=narti+Nammo
+end
+if ammotable[w].desc.typeName and string.find(ammotable[w].desc.typeName,"_AP",1,true)then
+nAPshells=nAPshells+Nammo
+end
+if ammotable[w].desc.typeName and string.find(ammotable[w].desc.typeName,"_HE",1,true)then
+nHEshells=nHEshells+Nammo
 end
 elseif Category==Weapon.Category.ROCKET then
 nrockets=nrockets+Nammo
@@ -27769,7 +27777,31 @@ end
 end
 end
 nammo=nshells+nrockets+nmissiles+nbombs
-return nammo,nshells,nrockets,nbombs,nmissiles,narti
+return nammo,nshells,nrockets,nbombs,nmissiles,narti,nAPshells,nHEshells
+end
+function UNIT:HasAPShells()
+local _,_,_,_,_,_,shells=self:GetAmmunition()
+if shells>0 then return true else return false end
+end
+function UNIT:GetAPShells()
+local _,_,_,_,_,_,shells=self:GetAmmunition()
+return shells or 0
+end
+function UNIT:GetHEShells()
+local _,_,_,_,_,_,_,shells=self:GetAmmunition()
+return shells or 0
+end
+function UNIT:HasHEShells()
+local _,_,_,_,_,_,_,shells=self:GetAmmunition()
+if shells>0 then return true else return false end
+end
+function UNIT:HasArtiShells()
+local _,_,_,_,_,shells=self:GetAmmunition()
+if shells>0 then return true else return false end
+end
+function UNIT:GetArtiShells()
+local _,_,_,_,_,shells=self:GetAmmunition()
+return shells or 0
 end
 function UNIT:GetSensors()
 self:F2(self.UnitName)
