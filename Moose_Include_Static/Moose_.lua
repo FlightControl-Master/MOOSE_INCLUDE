@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-23T19:17:32+02:00-bd6d23c7f8842fd49c98c6b3724d453b91e86aa5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-24T23:55:13+02:00-faadbdecfb3fddd7152b12235ba4993c6294794c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11314,13 +11314,25 @@ return nil
 end
 end
 function DATABASE:GetCoalitionFromClientTemplate(ClientName)
+if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CoalitionID
 end
+self:E("ERROR: Template does not exist for client "..tostring(ClientName))
+return nil
+end
 function DATABASE:GetCategoryFromClientTemplate(ClientName)
+if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CategoryID
 end
+self:E("ERROR: Template does not exist for client "..tostring(ClientName))
+return nil
+end
 function DATABASE:GetCountryFromClientTemplate(ClientName)
+if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CountryID
+end
+self:E("ERROR: Template does not exist for client "..tostring(ClientName))
+return nil
 end
 function DATABASE:GetCoalitionFromAirbase(AirbaseName)
 return self.AIRBASES[AirbaseName]:GetCoalition()
@@ -14150,8 +14162,11 @@ if self.Filter.Coalitions and MClientInclude then
 local MClientCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 local ClientCoalitionID=_DATABASE:GetCoalitionFromClientTemplate(MClientName)
+if ClientCoalitionID==nil and MClient:IsAlive()~=nil then
+ClientCoalitionID=MClient:GetCoalition()
+end
 self:T3({"Coalition:",ClientCoalitionID,self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
-if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==ClientCoalitionID then
+if self.FilterMeta.Coalitions[CoalitionName]and ClientCoalitionID and self.FilterMeta.Coalitions[CoalitionName]==ClientCoalitionID then
 MClientCoalition=true
 end
 end
@@ -14162,8 +14177,11 @@ if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
+if ClientCategoryID==nil and MClient:IsAlive()~=nil then
+ClientCategoryID=MClient:GetCategory()
+end
 self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
-if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
 MClientCategory=true
 end
 end
@@ -14185,8 +14203,11 @@ if self.Filter.Countries and MClientInclude then
 local MClientCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
 local ClientCountryID=_DATABASE:GetCountryFromClientTemplate(MClientName)
+if ClientCountryID==nil and MClient:IsAlive()~=nil then
+ClientCountryID=MClient:GetCountry()
+end
 self:T3({"Country:",ClientCountryID,country.id[CountryName],CountryName})
-if country.id[CountryName]and country.id[CountryName]==ClientCountryID then
+if country.id[CountryName]and ClientCountryID and country.id[CountryName]==ClientCountryID then
 MClientCountry=true
 end
 end
@@ -51042,10 +51063,12 @@ if not self.allowSpawnOnClientSpots then
 local clients=_DATABASE.CLIENTS
 for clientname,client in pairs(clients)do
 local template=_DATABASE:GetGroupTemplateFromUnitName(clientname)
+if template then
 local units=template.units
 for i,unit in pairs(units)do
 local coord=COORDINATE:New(unit.x,unit.alt,unit.y)
 coords[unit.name]=coord
+end
 end
 end
 end
