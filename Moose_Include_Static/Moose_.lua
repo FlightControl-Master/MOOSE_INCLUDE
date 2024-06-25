@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-24T23:55:01+02:00-62ef56684b94f5ad8c2d45b146317464de24a027 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-25T10:45:28+02:00-042b82d3a6b3dc498a03e1b56440beddaddd9329 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -44038,7 +44038,7 @@ maxrange=32000,
 reloadtime=540,
 },
 }
-ARTY.version="1.3.0"
+ARTY.version="1.3.1"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -44501,7 +44501,7 @@ self:_EventFromTo("onafterStart",Event,From,To)
 local text=string.format("Started ARTY version %s for group %s.",ARTY.version,Controllable:GetName())
 self:I(self.lid..text)
 MESSAGE:New(text,5):ToAllIf(self.Debug)
-self.Nammo0,self.Nshells0,self.Nrockets0,self.Nmissiles0=self:GetAmmo(self.Debug)
+self.Nammo0,self.Nshells0,self.Nrockets0,self.Nmissiles0,self.Narty0=self:GetAmmo(self.Debug)
 if self.nukerange==nil then
 self.nukerange=1500/75000*self.nukewarhead
 end
@@ -44662,7 +44662,7 @@ function ARTY:_StatusReport(display)
 if display==nil then
 display=false
 end
-local Nammo,Nshells,Nrockets,Nmissiles=self:GetAmmo()
+local Nammo,Nshells,Nrockets,Nmissiles,Narty=self:GetAmmo()
 local Nnukes=self.Nukes
 local Nillu=self.Nillu
 local Nsmoke=self.Nsmoke
@@ -44673,7 +44673,7 @@ text=text..string.format("ARTY group          = %s\n",self.groupname)
 text=text..string.format("Clock               = %s\n",Clock)
 text=text..string.format("FSM state           = %s\n",self:GetState())
 text=text..string.format("Total ammo count    = %d\n",Nammo)
-text=text..string.format("Number of shells    = %d\n",Nshells)
+text=text..string.format("Number of shells    = %d\n",Narty)
 text=text..string.format("Number of rockets   = %d\n",Nrockets)
 text=text..string.format("Number of missiles  = %d\n",Nmissiles)
 text=text..string.format("Number of nukes     = %d\n",Nnukes)
@@ -44766,7 +44766,7 @@ weapon:SetFuncTrack(ARTY._FuncTrack,self,target)
 weapon:SetFuncImpact(ARTY._FuncImpact,self,target)
 weapon:StartTrack(2)
 end
-local _nammo,_nshells,_nrockets,_nmissiles=self:GetAmmo()
+local _nammo,_nshells,_nrockets,_nmissiles,_narty=self:GetAmmo()
 if self.currentTarget.weapontype==ARTY.WeaponType.TacticalNukes then
 self.Nukes=self.Nukes-1
 end
@@ -44783,7 +44783,7 @@ _outofammo=true
 end
 local _partlyoutofammo=self:_CheckOutOfAmmo({self.currentTarget})
 local _weapontype=self:_WeaponTypeName(self.currentTarget.weapontype)
-self:T(self.lid..string.format("Group %s ammo: total=%d, shells=%d, rockets=%d, missiles=%d",self.groupname,_nammo,_nshells,_nrockets,_nmissiles))
+self:T(self.lid..string.format("Group %s ammo: total=%d, shells=%d, rockets=%d, missiles=%d",self.groupname,_nammo,_narty,_nrockets,_nmissiles))
 self:T(self.lid..string.format("Group %s uses weapontype %s for current target.",self.groupname,_weapontype))
 local _ceasefire=false
 local _relocate=false
@@ -45051,7 +45051,7 @@ end
 end
 function ARTY:onafterStatus(Controllable,From,Event,To)
 self:_EventFromTo("onafterStatus",Event,From,To)
-local nammo,nshells,nrockets,nmissiles=self:GetAmmo()
+local nammo,nshells,nrockets,nmissiles,narty=self:GetAmmo()
 if self.iscargo and self.cargogroup then
 if self.cargogroup:IsLoaded()and not self:is("InTransit")then
 self:T(self.lid..string.format("Group %s has been loaded into a carrier and is now transported.",self.alias))
@@ -45062,7 +45062,7 @@ self:UnLoaded()
 end
 end
 local fsmstate=self:GetState()
-self:T(self.lid..string.format("Status %s, Ammo total=%d: shells=%d [smoke=%d, illu=%d, nukes=%d*%.3f kT], rockets=%d, missiles=%d",fsmstate,nammo,nshells,self.Nsmoke,self.Nillu,self.Nukes,self.nukewarhead/1000000,nrockets,nmissiles))
+self:T(self.lid..string.format("Status %s, Ammo total=%d: shells=%d [smoke=%d, illu=%d, nukes=%d*%.3f kT], rockets=%d, missiles=%d",fsmstate,nammo,narty,self.Nsmoke,self.Nillu,self.Nukes,self.nukewarhead/1000000,nrockets,nmissiles))
 if self.Controllable and self.Controllable:IsAlive()then
 if self.Debug then
 self:_StatusReport()
@@ -45114,9 +45114,13 @@ elseif _timedTarget then
 if self.currentTarget then
 self:CeaseFire(self.currentTarget)
 end
+if self:is("CombatReady")then
 self:OpenFire(_timedTarget)
+end
 elseif _normalTarget then
+if self:is("CombatReady")then
 self:OpenFire(_normalTarget)
+end
 end
 local gotsome=false
 if#self.targets>0 then
@@ -45187,14 +45191,14 @@ self.currentTarget=target
 self.currentTarget.Tassigned=timer.getTime()
 end
 local range=Controllable:GetCoordinate():Get2DDistance(target.coord)
-local Nammo,Nshells,Nrockets,Nmissiles=self:GetAmmo()
-local nfire=Nammo
+local Nammo,Nshells,Nrockets,Nmissiles,Narty=self:GetAmmo()
+local nfire=Narty
 local _type="shots"
 if target.weapontype==ARTY.WeaponType.Auto then
-nfire=Nammo
+nfire=Narty
 _type="shots"
 elseif target.weapontype==ARTY.WeaponType.Cannon then
-nfire=Nshells
+nfire=Narty
 _type="shells"
 elseif target.weapontype==ARTY.WeaponType.TacticalNukes then
 nfire=self.Nukes
@@ -45335,7 +45339,7 @@ end
 end
 function ARTY:_CheckRearmed()
 self:F2()
-local nammo,nshells,nrockets,nmissiles=self:GetAmmo()
+local nammo,nshells,nrockets,nmissiles,narty=self:GetAmmo()
 local units=self.Controllable:GetUnits()
 local nunits=0
 if units then
@@ -45445,10 +45449,13 @@ local group=self.Controllable
 if weapontype==ARTY.WeaponType.TacticalNukes or weapontype==ARTY.WeaponType.IlluminationShells or weapontype==ARTY.WeaponType.SmokeShells then
 weapontype=ARTY.WeaponType.Cannon
 end
+if group:HasTask()then
+group:ClearTasks()
+end
 group:OptionROEOpenFire()
 local vec2=coord:GetVec2()
 local fire=group:TaskFireAtPoint(vec2,radius,nshells,weapontype)
-group:SetTask(fire)
+group:SetTask(fire,1)
 end
 function ARTY:_AttackGroup(target)
 local group=self.Controllable
@@ -45456,10 +45463,13 @@ local weapontype=target.weapontype
 if weapontype==ARTY.WeaponType.TacticalNukes or weapontype==ARTY.WeaponType.IlluminationShells or weapontype==ARTY.WeaponType.SmokeShells then
 weapontype=ARTY.WeaponType.Cannon
 end
+if group:HasTask()then
+group:ClearTasks()
+end
 group:OptionROEOpenFire()
 local targetgroup=GROUP:FindByName(target.name)
 local fire=group:TaskAttackGroup(targetgroup,weapontype,AI.Task.WeaponExpend.ONE,1)
-group:SetTask(fire)
+group:SetTask(fire,1)
 end
 function ARTY:_NuclearBlast(_coord)
 local S0=self.nukewarhead
@@ -45578,6 +45588,7 @@ local nammo=0
 local nshells=0
 local nrockets=0
 local nmissiles=0
+local nartyshells=0
 local units=self.Controllable:GetUnits()
 if units==nil then
 return nammo,nshells,nrockets,nmissiles
@@ -45645,6 +45656,8 @@ end
 end
 if _gotshell then
 nshells=nshells+Nammo
+local _,_,_,_,_,shells=unit:GetAmmunition()
+nartyshells=nartyshells+shells
 text=text..string.format("- %d shells of type %s\n",Nammo,_weaponName)
 elseif _gotrocket then
 nrockets=nrockets+Nammo
@@ -45668,7 +45681,7 @@ MESSAGE:New(text,10):ToAllIf(display)
 end
 end
 nammo=nshells+nrockets+nmissiles
-return nammo,nshells,nrockets,nmissiles
+return nammo,nshells,nrockets,nmissiles,nartyshells
 end
 function ARTY:_MissileCategoryName(categorynumber)
 local cat="unknown"
@@ -46117,7 +46130,8 @@ local dt=Tnow-self.currentTarget.Tassigned
 if self.Nshots==0 then
 self:T(self.lid..string.format("%s, waiting for %d seconds for first shot on target %s.",self.groupname,dt,name))
 end
-if dt>self.WaitForShotTime and(self.Nshots==0 or self.currentTarget.nshells>=self.Nshots)then
+self:T(string.format("dt = %d WaitTime = %d | shots = %d TargetShells = %d",dt,self.WaitForShotTime,self.Nshots,self.currentTarget.nshells))
+if(dt>self.WaitForShotTime and self.Nshots==0)or(self.currentTarget.nshells<=self.Nshots)then
 self:T(self.lid..string.format("%s, no shot event after %d seconds. Removing current target %s from list.",self.groupname,self.WaitForShotTime,name))
 self:CeaseFire(self.currentTarget)
 self:RemoveTarget(name)
@@ -46151,13 +46165,13 @@ self:T2(self.lid..string.format("WARNING: Move with name %s could not be found. 
 return nil
 end
 function ARTY:_CheckOutOfAmmo(targets)
-local _nammo,_nshells,_nrockets,_nmissiles=self:GetAmmo()
+local _nammo,_nshells,_nrockets,_nmissiles,_narty=self:GetAmmo()
 local _partlyoutofammo=false
 for _,Target in pairs(targets)do
 if Target.weapontype==ARTY.WeaponType.Auto and _nammo==0 then
 self:T(self.lid..string.format("Group %s, auto weapon requested for target %s but all ammo is empty.",self.groupname,Target.name))
 _partlyoutofammo=true
-elseif Target.weapontype==ARTY.WeaponType.Cannon and _nshells==0 then
+elseif Target.weapontype==ARTY.WeaponType.Cannon and _narty==0 then
 self:T(self.lid..string.format("Group %s, cannons requested for target %s but shells empty.",self.groupname,Target.name))
 _partlyoutofammo=true
 elseif Target.weapontype==ARTY.WeaponType.TacticalNukes and self.Nukes<=0 then
@@ -46180,12 +46194,12 @@ end
 return _partlyoutofammo
 end
 function ARTY:_CheckWeaponTypeAvailable(target)
-local Nammo,Nshells,Nrockets,Nmissiles=self:GetAmmo()
+local Nammo,Nshells,Nrockets,Nmissiles,Narty=self:GetAmmo()
 local nfire=Nammo
 if target.weapontype==ARTY.WeaponType.Auto then
 nfire=Nammo
 elseif target.weapontype==ARTY.WeaponType.Cannon then
-nfire=Nshells
+nfire=Narty
 elseif target.weapontype==ARTY.WeaponType.TacticalNukes then
 nfire=self.Nukes
 elseif target.weapontype==ARTY.WeaponType.IlluminationShells then
