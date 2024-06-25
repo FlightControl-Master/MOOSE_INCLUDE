@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-24T23:55:13+02:00-faadbdecfb3fddd7152b12235ba4993c6294794c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-25T09:38:29+02:00-ba41d6421d49a81f717213d93b2660dfe222ccd0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -90779,10 +90779,7 @@ self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!"
 return
 end
 local group=self.group
-local template=Template or self:_GetTemplate()
 self.isHelo=group:IsHelicopter()
-self.isUncontrolled=template.uncontrolled
-self.isLateActivated=template.lateActivation
 self.speedMax=group:GetSpeedMax()
 if self.speedMax and self.speedMax>3.6 then
 self.isMobile=true
@@ -90793,6 +90790,10 @@ end
 local speedCruiseLimit=self.isHelo and UTILS.KnotsToKmph(110)or UTILS.KnotsToKmph(380)
 self.speedCruise=math.min(self.speedMax*0.7,speedCruiseLimit)
 self.ammo=self:GetAmmoTot()
+local template=Template or self:_GetTemplate()
+self.isUncontrolled=template~=nil and template.uncontrolled or false
+self.isLateActivated=template~=nil and template.lateActivation or false
+if template then
 self.radio.Freq=tonumber(template.frequency)
 self.radio.Modu=tonumber(template.modulation)
 self.radio.On=template.communication
@@ -90807,6 +90808,7 @@ end
 self.callsign.NumberSquad=tonumber(callsign[1])
 self.callsign.NumberGroup=tonumber(callsign[2])
 self.callsign.NameSquad=UTILS.GetCallsignName(self.callsign.NumberSquad)
+end
 if self.isHelo then
 self.optionDefault.Formation=ENUMS.Formation.RotaryWing.EchelonLeft.D300
 else
@@ -101068,8 +101070,13 @@ self:_PassedFinalWaypoint(false,string.format("_AddWaypoint: wpnumber/index %d>%
 end
 end
 function OPSGROUP:_InitWaypoints(WpIndexMin,WpIndexMax)
-self.waypoints0=UTILS.DeepCopy(_DATABASE:GetGroupTemplate(self.groupname).route.points)
 self.waypoints={}
+self.waypoints0={}
+local template=_DATABASE:GetGroupTemplate(self.groupname)
+if template==nil then
+return self
+end
+self.waypoints0=UTILS.DeepCopy(template.route.points)
 WpIndexMin=WpIndexMin or 1
 WpIndexMax=WpIndexMax or#self.waypoints0
 WpIndexMax=math.min(WpIndexMax,#self.waypoints0)
@@ -102262,7 +102269,6 @@ end
 function OPSGROUP:_AddElementByName(unitname)
 local unit=UNIT:FindByName(unitname)
 if unit then
-local unittemplate=unit:GetTemplate()
 local element=self:GetElementByName(unitname)
 if element then
 else
@@ -102278,7 +102284,14 @@ element.uid=element.DCSunit:getID()
 element.controller=element.DCSunit:getController()
 element.Nhit=0
 element.opsgroup=self
-element.skill=unittemplate.skill or"Unknown"
+local unittemplate=unit:GetTemplate()
+if unittemplate==nil then
+if element.DCSunit:getPlayerName()then
+element.skill="Client"
+end
+else
+element.skill=unittemplate~=nil and unittemplate.skill or"Unknown"
+end
 if element.skill=="Client"or element.skill=="Player"then
 element.ai=false
 element.client=CLIENT:FindByName(unitname)
@@ -102311,22 +102324,19 @@ element.cargoBay={}
 element.weightCargo=0
 end
 element.weight=element.weightEmpty+element.weightCargo
-if self.isFlightgroup then
 element.callsign=element.unit:GetCallsign()
+element.fuelmass=element.fuelmass0 or 99999
+element.fuelrel=element.unit:GetFuel()or 1
+if self.isFlightgroup and unittemplate then
 element.modex=unittemplate.onboard_num
 element.payload=unittemplate.payload
 element.pylons=unittemplate.payload and unittemplate.payload.pylons or nil
 element.fuelmass0=unittemplate.payload and unittemplate.payload.fuel or 0
-element.fuelmass=element.fuelmass0
-element.fuelrel=element.unit:GetFuel()
 else
 element.callsign="Peter-1-1"
 element.modex="000"
 element.payload={}
 element.pylons={}
-element.fuelmass0=99999
-element.fuelmass=99999
-element.fuelrel=1
 end
 local text=string.format("Adding element %s: status=%s, skill=%s, life=%.1f/%.1f category=%s (%d), type=%s, size=%.1f (L=%.1f H=%.1f W=%.1f), weight=%.1f/%.1f (cargo=%.1f/%.1f)",
 element.name,element.status,element.skill,element.life,element.life0,element.categoryname,element.category,element.typename,
