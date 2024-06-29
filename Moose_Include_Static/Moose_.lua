@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-28T23:02:24+02:00-4b12b04840973dde03d71db3547fa4fcbc716beb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-29T13:57:51+02:00-c8cdbeac5cf01c5ae5d73d6c9c95bea5c1505eed ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -63785,8 +63785,18 @@ function ATIS:SetLocale(locale)
 self.locale=string.lower(locale)
 return self
 end
-function ATIS:SetSoundfilesPath(path)
-self.soundpath=tostring(path or"ATIS Soundfiles/")
+function ATIS:SetSoundfilesPath(pathMain,pathAirports,pathNato)
+self.soundpath=tostring(pathMain or"ATIS Soundfiles/")
+if pathAirports==nil then
+self.soundpathAirports=self.soundpath..env.mission.theatre.."/"
+else
+self.soundpathAirports=pathAirports
+end
+if pathNato==nil then
+self.soundpathNato=self.soundpath.."NATO Alphabet/"
+else
+self.soundpathNato=pathNato
+end
 self:T(self.lid..string.format("Setting sound files path to %s",self.soundpath))
 return self
 end
@@ -64283,8 +64293,38 @@ local cloudbase=clouds.base
 local cloudceil=clouds.base+clouds.thickness
 local clouddens=clouds.density
 local cloudspreset=clouds.preset or"Nothing"
+env.info("FF cloud preset "..cloudspreset)
 local precepitation=0
-if cloudspreset:find("Preset10")then
+if cloudspreset:find("RainyPreset1")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset2")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset3")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+env.info("Fprecipt "..precepitation)
+elseif cloudspreset:find("RainyPreset")then
+clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("Preset10")then
 clouddens=4
 elseif cloudspreset:find("Preset11")then
 clouddens=4
@@ -64338,34 +64378,8 @@ elseif cloudspreset:find("Preset8")then
 clouddens=4
 elseif cloudspreset:find("Preset9")then
 clouddens=4
-elseif cloudspreset:find("RainyPreset")then
-clouddens=9
-if temperature>5 then
-precepitation=1
 else
-precepitation=3
-end
-elseif cloudspreset:find("RainyPreset1")then
-clouddens=9
-if temperature>5 then
-precepitation=1
-else
-precepitation=3
-end
-elseif cloudspreset:find("RainyPreset2")then
-clouddens=9
-if temperature>5 then
-precepitation=1
-else
-precepitation=3
-end
-elseif cloudspreset:find("RainyPreset3")then
-clouddens=9
-if temperature>5 then
-precepitation=1
-else
-precepitation=3
-end
+self:E(string.format("WARNING! Unknown weather preset: %s",tostring(cloudspreset)))
 end
 local CLOUDBASE=string.format("%d",UTILS.MetersToFeet(cloudbase))
 local CLOUDCEIL=string.format("%d",UTILS.MetersToFeet(cloudceil))
@@ -64411,7 +64425,7 @@ then
 subtitle=subtitle.." "..self.gettext:GetEntry("AIRPORT",self.locale)
 end
 if not self.useSRS then
-self.radioqueue:NewTransmission(string.format("%s/%s.ogg",self.theatre,self.airbasename),3.0,self.soundpath,nil,nil,subtitle,self.subduration)
+self.radioqueue:NewTransmission(string.format("%s.ogg",self.airbasename),3.0,self.soundpathAirports,nil,nil,subtitle,self.subduration)
 end
 local alltext=subtitle
 local information=self.gettext:GetEntry("INFORMATION",self.locale)
@@ -64419,7 +64433,7 @@ subtitle=string.format("%s %s",information,NATO)
 local _INFORMATION=subtitle
 if not self.useSRS then
 self:Transmission(ATIS.Sound.Information,0.5,subtitle)
-self.radioqueue:NewTransmission(string.format("NATO Alphabet/%s.ogg",NATO),0.75,self.soundpath)
+self.radioqueue:NewTransmission(string.format("%s.ogg",NATO),0.75,self.soundpathNato)
 end
 alltext=alltext..";\n"..subtitle
 subtitle=string.format("%s Zulu",ZULU)
@@ -64907,7 +64921,7 @@ subtitle=string.format(tactxt,self.tacan)
 if not self.useSRS then
 self:Transmission(ATIS.Sound.TACANChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(self.tacan),nil,0.2)
-self.radioqueue:NewTransmission("NATO Alphabet/Xray.ogg",0.75,self.soundpath,nil,0.2)
+self.radioqueue:NewTransmission("Xray.ogg",0.75,self.soundpathNato,nil,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
@@ -64937,7 +64951,7 @@ local advtxt=self.gettext:GetEntry("ADVISE",self.locale)
 subtitle=string.format("%s %s",advtxt,NATO)
 if not self.useSRS then
 self:Transmission(ATIS.Sound.AdviceOnInitial,0.5,subtitle)
-self.radioqueue:NewTransmission(string.format("NATO Alphabet/%s.ogg",NATO),0.75,self.soundpath)
+self.radioqueue:NewTransmission(string.format("%s.ogg",NATO),0.75,self.soundpathNato)
 end
 alltext=alltext..";\n"..subtitle
 self:Report(alltext)
