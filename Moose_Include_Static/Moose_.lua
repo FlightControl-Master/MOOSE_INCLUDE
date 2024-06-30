@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-29T13:57:51+02:00-c8cdbeac5cf01c5ae5d73d6c9c95bea5c1505eed ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-30T16:00:49+02:00-9ca30fc00c50bd6b22f1894f67273c9346881fac ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17964,19 +17964,7 @@ return self
 end
 function MESSAGE:ToClient(Client,Settings)
 self:F(Client)
-if Client and Client:GetClientGroupID()then
-if self.MessageType then
-local Settings=Settings or(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
-self.MessageDuration=Settings:GetMessageTime(self.MessageType)
-self.MessageCategory=""
-end
-local Unit=Client:GetClient()
-if self.MessageDuration~=0 then
-local ClientGroupID=Client:GetClientGroupID()
-self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
-trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
-end
-end
+self:ToUnit(Client,Settings)
 return self
 end
 function MESSAGE:ToGroup(Group,Settings)
@@ -64988,7 +64976,7 @@ text=string.gsub(text,"(%d+)(%.)(%d+)","%1 "..delimiter.." %3")
 end
 local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
-local duration=STTS.getSpeechTime(text,0.95)
+local duration=MSRS.getSpeechTime(text,0.95)
 self.msrsQ:NewTransmission(text,duration,self.msrs,nil,2)
 self.SRSText=text
 end
@@ -80484,7 +80472,7 @@ ClassName="SOUNDTEXT",
 function SOUNDTEXT:New(Text,Duration)
 local self=BASE:Inherit(self,BASE:New())
 self:SetText(Text)
-self:SetDuration(Duration or STTS.getSpeechTime(Text))
+self:SetDuration(Duration or MSRS.getSpeechTime(Text))
 self:T(string.format("New SOUNDTEXT: text=%s, duration=%.1f sec",self.text,self.duration))
 return self
 end
