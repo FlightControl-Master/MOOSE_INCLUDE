@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-06-30T16:01:22+02:00-1549ca1cc4fdd21f70aa0e38c931b82f9e6f0a92 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-01T22:15:39+02:00-86508d49eebd5596676d5f6bcff76ed519260a2e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3595,6 +3595,42 @@ Text='<prosody rate="slow">'..Text..'</prosody>'
 end
 Text="MGRS;"..Text
 return Text
+end
+function UTILS.ReadCSV(filename)
+if not UTILS.FileExists(filename)then
+env.error("File does not exist")
+return nil
+end
+local function _loadfile(filename)
+local f=io.open(filename,"rb")
+if f then
+local data=f:read("*all")
+f:close()
+return data
+else
+BASE:E(string.format("WARNING: Could read data from file %s!",tostring(filename)))
+return nil
+end
+end
+local data=_loadfile(filename)
+local lines=UTILS.Split(data,"\n")
+for _,line in pairs(lines)do
+line=string.gsub(line,"[\n\r]","")
+end
+local sep=";"
+local columns=UTILS.Split(lines[1],sep)
+table.remove(lines,1)
+local csvdata={}
+for i,line in pairs(lines)do
+line=string.gsub(line,"[\n\r]","")
+local row={}
+for j,value in pairs(UTILS.Split(line,sep))do
+local key=string.gsub(columns[j],"[\n\r]","")
+row[key]=value
+end
+table.insert(csvdata,row)
+end
+return csvdata
 end
 PROFILER={
 ClassName="PROFILER",
@@ -67363,6 +67399,8 @@ SinaiMap=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
+ActiveRunwayDeparture={filename="ActiveRunwayDeparture.ogg",duration=0.99},
+ActiveRunwayArrival={filename="ActiveRunwayArrival.ogg",duration=0.99},
 AdviceOnInitial={filename="AdviceOnInitial.ogg",duration=3.00},
 Airport={filename="Airport.ogg",duration=0.66},
 Altimeter={filename="Altimeter.ogg",duration=0.68},
@@ -67689,6 +67727,31 @@ end
 self:T(self.lid..string.format("Setting sound files path to %s",self.soundpath))
 return self
 end
+function ATIS:SetSoundfilesInfo(csvfile)
+local function getSound(filename)
+for key,_soundfile in pairs(self.Sound)do
+local soundfile=_soundfile
+if filename==soundfile.filename then
+return soundfile
+end
+end
+return nil
+end
+local data=UTILS.ReadCSV(csvfile)
+if data then
+for i,sound in pairs(data)do
+local soundfile=getSound(sound.filename..".ogg")
+if soundfile then
+soundfile.duration=tonumber(sound.duration)
+else
+self:E(string.format("ERROR: Could not get info for sound file %s",sound.filename))
+end
+end
+else
+self:E(string.format("ERROR: Could not read sound csv file!"))
+end
+return self
+end
 function ATIS:SetRadioRelayUnitName(unitname)
 self.relayunitname=unitname
 self:T(self.lid..string.format("Setting radio relay unit to %s",self.relayunitname))
@@ -67972,16 +68035,16 @@ self.radioqueue=RADIOQUEUE:New(self.frequency,self.modulation,string.format("ATI
 self.radioqueue:SetSenderCoordinate(self.airbase:GetCoordinate())
 self.radioqueue:SetSenderUnitName(self.relayunitname)
 self.radioqueue:SetRadioPower(self.power)
-self.radioqueue:SetDigit(0,ATIS.Sound.N0.filename,ATIS.Sound.N0.duration,self.soundpath)
-self.radioqueue:SetDigit(1,ATIS.Sound.N1.filename,ATIS.Sound.N1.duration,self.soundpath)
-self.radioqueue:SetDigit(2,ATIS.Sound.N2.filename,ATIS.Sound.N2.duration,self.soundpath)
-self.radioqueue:SetDigit(3,ATIS.Sound.N3.filename,ATIS.Sound.N3.duration,self.soundpath)
-self.radioqueue:SetDigit(4,ATIS.Sound.N4.filename,ATIS.Sound.N4.duration,self.soundpath)
-self.radioqueue:SetDigit(5,ATIS.Sound.N5.filename,ATIS.Sound.N5.duration,self.soundpath)
-self.radioqueue:SetDigit(6,ATIS.Sound.N6.filename,ATIS.Sound.N6.duration,self.soundpath)
-self.radioqueue:SetDigit(7,ATIS.Sound.N7.filename,ATIS.Sound.N7.duration,self.soundpath)
-self.radioqueue:SetDigit(8,ATIS.Sound.N8.filename,ATIS.Sound.N8.duration,self.soundpath)
-self.radioqueue:SetDigit(9,ATIS.Sound.N9.filename,ATIS.Sound.N9.duration,self.soundpath)
+self.radioqueue:SetDigit(0,self.Sound.N0.filename,self.Sound.N0.duration,self.soundpath)
+self.radioqueue:SetDigit(1,self.Sound.N1.filename,self.Sound.N1.duration,self.soundpath)
+self.radioqueue:SetDigit(2,self.Sound.N2.filename,self.Sound.N2.duration,self.soundpath)
+self.radioqueue:SetDigit(3,self.Sound.N3.filename,self.Sound.N3.duration,self.soundpath)
+self.radioqueue:SetDigit(4,self.Sound.N4.filename,self.Sound.N4.duration,self.soundpath)
+self.radioqueue:SetDigit(5,self.Sound.N5.filename,self.Sound.N5.duration,self.soundpath)
+self.radioqueue:SetDigit(6,self.Sound.N6.filename,self.Sound.N6.duration,self.soundpath)
+self.radioqueue:SetDigit(7,self.Sound.N7.filename,self.Sound.N7.duration,self.soundpath)
+self.radioqueue:SetDigit(8,self.Sound.N8.filename,self.Sound.N8.duration,self.soundpath)
+self.radioqueue:SetDigit(9,self.Sound.N9.filename,self.Sound.N9.duration,self.soundpath)
 self.radioqueue:Start(1,0.1)
 end
 self:HandleEvent(EVENTS.BaseCaptured)
@@ -68182,7 +68245,6 @@ local cloudbase=clouds.base
 local cloudceil=clouds.base+clouds.thickness
 local clouddens=clouds.density
 local cloudspreset=clouds.preset or"Nothing"
-env.info("FF cloud preset "..cloudspreset)
 local precepitation=0
 if cloudspreset:find("RainyPreset1")then
 clouddens=9
@@ -68205,7 +68267,6 @@ precepitation=1
 else
 precepitation=3
 end
-env.info("Fprecipt "..precepitation)
 elseif cloudspreset:find("RainyPreset")then
 clouddens=9
 if temperature>5 then
@@ -68283,25 +68344,25 @@ CLOUDBASE1000,CLOUDBASE0100=self:_GetThousandsAndHundreds(cloudbase)
 CLOUDCEIL1000,CLOUDCEIL0100=self:_GetThousandsAndHundreds(cloudceil)
 end
 local CloudCover={}
-CloudCover=ATIS.Sound.CloudsNotAvailable
+CloudCover=self.Sound.CloudsNotAvailable
 local CLOUDSsub=self.gettext:GetEntry("NOCLOUDINFO",self.locale)
 if static then
 if clouddens>=9 then
-CloudCover=ATIS.Sound.CloudsOvercast
+CloudCover=self.Sound.CloudsOvercast
 CLOUDSsub=self.gettext:GetEntry("OVERCAST",self.locale)
 elseif clouddens>=7 then
-CloudCover=ATIS.Sound.CloudsBroken
+CloudCover=self.Sound.CloudsBroken
 CLOUDSsub=self.gettext:GetEntry("BROKEN",self.locale)
 elseif clouddens>=4 then
-CloudCover=ATIS.Sound.CloudsScattered
+CloudCover=self.Sound.CloudsScattered
 CLOUDSsub=self.gettext:GetEntry("SCATTERED",self.locale)
 elseif clouddens>=1 then
-CloudCover=ATIS.Sound.CloudsFew
+CloudCover=self.Sound.CloudsFew
 CLOUDSsub=self.gettext:GetEntry("FEWCLOUDS",self.locale)
 else
 CLOUDBASE=nil
 CLOUDCEIL=nil
-CloudCover=ATIS.Sound.CloudsNo
+CloudCover=self.Sound.CloudsNo
 CLOUDSsub=self.gettext:GetEntry("NOCLOUDS",self.locale)
 end
 end
@@ -68321,31 +68382,31 @@ local information=self.gettext:GetEntry("INFORMATION",self.locale)
 subtitle=string.format("%s %s",information,NATO)
 local _INFORMATION=subtitle
 if not self.useSRS then
-self:Transmission(ATIS.Sound.Information,0.5,subtitle)
+self:Transmission(self.Sound.Information,0.5,subtitle)
 self.radioqueue:NewTransmission(string.format("%s.ogg",NATO),0.75,self.soundpathNato)
 end
 alltext=alltext..";\n"..subtitle
 subtitle=string.format("%s Zulu",ZULU)
 if not self.useSRS then
 self.radioqueue:Number2Transmission(ZULU,nil,0.5)
-self:Transmission(ATIS.Sound.Zulu,0.2,subtitle)
+self:Transmission(self.Sound.Zulu,0.2,subtitle)
 end
 alltext=alltext..";\n"..subtitle
 if not self.zulutimeonly then
 local sunrise=self.gettext:GetEntry("SUNRISEAT",self.locale)
 subtitle=string.format(sunrise,SUNRISE)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.SunriseAt,0.5,subtitle)
+self:Transmission(self.Sound.SunriseAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNRISE,nil,0.2)
-self:Transmission(ATIS.Sound.TimeLocal,0.2)
+self:Transmission(self.Sound.TimeLocal,0.2)
 end
 alltext=alltext..";\n"..subtitle
 local sunset=self.gettext:GetEntry("SUNSETAT",self.locale)
 subtitle=string.format(sunset,SUNSET)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.SunsetAt,0.5,subtitle)
+self:Transmission(self.Sound.SunsetAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNSET,nil,0.5)
-self:Transmission(ATIS.Sound.TimeLocal,0.2)
+self:Transmission(self.Sound.TimeLocal,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
@@ -68364,17 +68425,17 @@ subtitle=subtitle..", "..self.gettext:GetEntry("GUSTING",self.locale)
 end
 local _WIND=subtitle
 if not self.useSRS then
-self:Transmission(ATIS.Sound.WindFrom,1.0,subtitle)
+self:Transmission(self.Sound.WindFrom,1.0,subtitle)
 self.radioqueue:Number2Transmission(WINDFROM)
-self:Transmission(ATIS.Sound.At,0.2)
+self:Transmission(self.Sound.At,0.2)
 self.radioqueue:Number2Transmission(WINDSPEED)
 if self.metric then
-self:Transmission(ATIS.Sound.MetersPerSecond,0.2)
+self:Transmission(self.Sound.MetersPerSecond,0.2)
 else
-self:Transmission(ATIS.Sound.Knots,0.2)
+self:Transmission(self.Sound.Knots,0.2)
 end
 if turbulence>0 then
-self:Transmission(ATIS.Sound.Gusting,0.2)
+self:Transmission(self.Sound.Gusting,0.2)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68386,12 +68447,12 @@ local visi=self.gettext:GetEntry("VISISM",self.locale)
 subtitle=string.format(visi,VISIBILITY)
 end
 if not self.useSRS then
-self:Transmission(ATIS.Sound.Visibilty,1.0,subtitle)
+self:Transmission(self.Sound.Visibilty,1.0,subtitle)
 self.radioqueue:Number2Transmission(VISIBILITY)
 if self.metric then
-self:Transmission(ATIS.Sound.Kilometers,0.2)
+self:Transmission(self.Sound.Kilometers,0.2)
 else
-self:Transmission(ATIS.Sound.StatuteMiles,0.2)
+self:Transmission(self.Sound.StatuteMiles,0.2)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68432,21 +68493,21 @@ if wp then
 local phenos=self.gettext:GetEntry("PHENOMENA",self.locale)
 subtitle=string.format("%s: %s",phenos,wpsub)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.WeatherPhenomena,1.0,subtitle)
+self:Transmission(self.Sound.WeatherPhenomena,1.0,subtitle)
 if precepitation==1 then
-self:Transmission(ATIS.Sound.Rain,0.5)
+self:Transmission(self.Sound.Rain,0.5)
 elseif precepitation==2 then
-self:Transmission(ATIS.Sound.ThunderStorm,0.5)
+self:Transmission(self.Sound.ThunderStorm,0.5)
 elseif precepitation==3 then
-self:Transmission(ATIS.Sound.Snow,0.5)
+self:Transmission(self.Sound.Snow,0.5)
 elseif precepitation==4 then
-self:Transmission(ATIS.Sound.SnowStorm,0.5)
+self:Transmission(self.Sound.SnowStorm,0.5)
 end
 if fog then
-self:Transmission(ATIS.Sound.Fog,0.5)
+self:Transmission(self.Sound.Fog,0.5)
 end
 if dust then
-self:Transmission(ATIS.Sound.Dust,0.5)
+self:Transmission(self.Sound.Dust,0.5)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68465,28 +68526,28 @@ local cloudbase=self.gettext:GetEntry("CLOUDBASEFT",self.locale)
 subtitle=string.format(cloudbase,cbase,cceil)
 end
 if not self.useSRS then
-self:Transmission(ATIS.Sound.CloudBase,1.0,subtitle)
+self:Transmission(self.Sound.CloudBase,1.0,subtitle)
 if tonumber(CLOUDBASE1000)>0 then
 self.radioqueue:Number2Transmission(CLOUDBASE1000)
-self:Transmission(ATIS.Sound.Thousand,0.1)
+self:Transmission(self.Sound.Thousand,0.1)
 end
 if tonumber(CLOUDBASE0100)>0 then
 self.radioqueue:Number2Transmission(CLOUDBASE0100)
-self:Transmission(ATIS.Sound.Hundred,0.1)
+self:Transmission(self.Sound.Hundred,0.1)
 end
-self:Transmission(ATIS.Sound.CloudCeiling,0.5)
+self:Transmission(self.Sound.CloudCeiling,0.5)
 if tonumber(CLOUDCEIL1000)>0 then
 self.radioqueue:Number2Transmission(CLOUDCEIL1000)
-self:Transmission(ATIS.Sound.Thousand,0.1)
+self:Transmission(self.Sound.Thousand,0.1)
 end
 if tonumber(CLOUDCEIL0100)>0 then
 self.radioqueue:Number2Transmission(CLOUDCEIL0100)
-self:Transmission(ATIS.Sound.Hundred,0.1)
+self:Transmission(self.Sound.Hundred,0.1)
 end
 if self.metric then
-self:Transmission(ATIS.Sound.Meters,0.1)
+self:Transmission(self.Sound.Meters,0.1)
 else
-self:Transmission(ATIS.Sound.Feet,0.1)
+self:Transmission(self.Sound.Feet,0.1)
 end
 end
 end
@@ -68508,15 +68569,15 @@ end
 end
 local _TEMPERATURE=subtitle
 if not self.useSRS then
-self:Transmission(ATIS.Sound.Temperature,1.0,subtitle)
+self:Transmission(self.Sound.Temperature,1.0,subtitle)
 if temperature<0 then
-self:Transmission(ATIS.Sound.Minus,0.2)
+self:Transmission(self.Sound.Minus,0.2)
 end
 self.radioqueue:Number2Transmission(TEMPERATURE)
 if self.TDegF then
-self:Transmission(ATIS.Sound.DegreesFahrenheit,0.2)
+self:Transmission(self.Sound.DegreesFahrenheit,0.2)
 else
-self:Transmission(ATIS.Sound.DegreesCelsius,0.2)
+self:Transmission(self.Sound.DegreesCelsius,0.2)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68536,15 +68597,15 @@ end
 end
 local _DEWPOINT=subtitle
 if not self.useSRS then
-self:Transmission(ATIS.Sound.DewPoint,1.0,subtitle)
+self:Transmission(self.Sound.DewPoint,1.0,subtitle)
 if dewpoint<0 then
-self:Transmission(ATIS.Sound.Minus,0.2)
+self:Transmission(self.Sound.Minus,0.2)
 end
 self.radioqueue:Number2Transmission(DEWPOINT)
 if self.TDegF then
-self:Transmission(ATIS.Sound.DegreesFahrenheit,0.2)
+self:Transmission(self.Sound.DegreesFahrenheit,0.2)
 else
-self:Transmission(ATIS.Sound.DegreesCelsius,0.2)
+self:Transmission(self.Sound.DegreesCelsius,0.2)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68579,30 +68640,30 @@ end
 end
 local _ALTIMETER=subtitle
 if not self.useSRS then
-self:Transmission(ATIS.Sound.Altimeter,1.0,subtitle)
+self:Transmission(self.Sound.Altimeter,1.0,subtitle)
 if not self.qnhonly then
-self:Transmission(ATIS.Sound.QNH,0.5)
+self:Transmission(self.Sound.QNH,0.5)
 end
 self.radioqueue:Number2Transmission(QNH[1])
 if ATIS.ICAOPhraseology[UTILS.GetDCSMap()]then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 end
 self.radioqueue:Number2Transmission(QNH[2])
 if not self.qnhonly then
-self:Transmission(ATIS.Sound.QFE,0.75)
+self:Transmission(self.Sound.QFE,0.75)
 self.radioqueue:Number2Transmission(QFE[1])
 if ATIS.ICAOPhraseology[UTILS.GetDCSMap()]then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 end
 self.radioqueue:Number2Transmission(QFE[2])
 end
 if self.PmmHg then
-self:Transmission(ATIS.Sound.MillimetersOfMercury,0.1)
+self:Transmission(self.Sound.MillimetersOfMercury,0.1)
 else
 if self.metric then
-self:Transmission(ATIS.Sound.HectoPascal,0.1)
+self:Transmission(self.Sound.HectoPascal,0.1)
 else
-self:Transmission(ATIS.Sound.InchesOfMercury,0.1)
+self:Transmission(self.Sound.InchesOfMercury,0.1)
 end
 end
 end
@@ -68619,6 +68680,15 @@ elseif rwyLandingLeft==false then
 subtitle=subtitle.." "..self.gettext:GetEntry("RIGHT",self.locale)
 end
 alltext=alltext..";\n"..subtitle
+if not self.useSRS then
+self:Transmission(self.Sound.ActiveRunwayArrival,1.0,subtitle)
+self.radioqueue:Number2Transmission(runwayLanding)
+if rwyLandingLeft==true then
+self:Transmission(self.Sound.Left,0.2)
+elseif rwyLandingLeft==false then
+self:Transmission(self.Sound.Right,0.2)
+end
+end
 end
 if runwayTakeoff then
 local actrun=self.gettext:GetEntry("ACTIVERUN",self.locale)
@@ -68628,17 +68698,18 @@ subtitle=subtitle.." "..self.gettext:GetEntry("LEFT",self.locale)
 elseif rwyTakeoffLeft==false then
 subtitle=subtitle.." "..self.gettext:GetEntry("RIGHT",self.locale)
 end
+alltext=alltext..";\n"..subtitle
+if not self.useSRS then
+self:Transmission(self.Sound.ActiveRunwayDeparture,1.0,subtitle)
+self.radioqueue:Number2Transmission(runwayTakeoff)
+if rwyTakeoffLeft==true then
+self:Transmission(self.Sound.Left,0.2)
+elseif rwyTakeoffLeft==false then
+self:Transmission(self.Sound.Right,0.2)
+end
+end
 end
 _RUNACT=subtitle
-if not self.useSRS then
-self:Transmission(ATIS.Sound.ActiveRunway,1.0,subtitle)
-self.radioqueue:Number2Transmission(runwayLanding)
-if rwyLandingLeft==true then
-self:Transmission(ATIS.Sound.Left,0.2)
-elseif rwyLandingLeft==false then
-self:Transmission(ATIS.Sound.Right,0.2)
-end
-end
 alltext=alltext..";\n"..subtitle
 if self.rwylength then
 local runact=self.airbase:GetActiveRunway(self.runwaym2t)
@@ -68657,19 +68728,19 @@ else
 subtitle=subtitle.." "..feet
 end
 if not self.useSRS then
-self:Transmission(ATIS.Sound.RunwayLength,1.0,subtitle)
+self:Transmission(self.Sound.RunwayLength,1.0,subtitle)
 if tonumber(L1000)>0 then
 self.radioqueue:Number2Transmission(L1000)
-self:Transmission(ATIS.Sound.Thousand,0.1)
+self:Transmission(self.Sound.Thousand,0.1)
 end
 if tonumber(L0100)>0 then
 self.radioqueue:Number2Transmission(L0100)
-self:Transmission(ATIS.Sound.Hundred,0.1)
+self:Transmission(self.Sound.Hundred,0.1)
 end
 if self.metric then
-self:Transmission(ATIS.Sound.Meters,0.1)
+self:Transmission(self.Sound.Meters,0.1)
 else
-self:Transmission(ATIS.Sound.Feet,0.1)
+self:Transmission(self.Sound.Feet,0.1)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68691,19 +68762,19 @@ else
 subtitle=subtitle.." "..feet
 end
 if not self.useSRS then
-self:Transmission(ATIS.Sound.Elevation,1.0,subtitle)
+self:Transmission(self.Sound.Elevation,1.0,subtitle)
 if tonumber(L1000)>0 then
 self.radioqueue:Number2Transmission(L1000)
-self:Transmission(ATIS.Sound.Thousand,0.1)
+self:Transmission(self.Sound.Thousand,0.1)
 end
 if tonumber(L0100)>0 then
 self.radioqueue:Number2Transmission(L0100)
-self:Transmission(ATIS.Sound.Hundred,0.1)
+self:Transmission(self.Sound.Hundred,0.1)
 end
 if self.metric then
-self:Transmission(ATIS.Sound.Meters,0.1)
+self:Transmission(self.Sound.Meters,0.1)
 else
-self:Transmission(ATIS.Sound.Feet,0.1)
+self:Transmission(self.Sound.Feet,0.1)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68719,16 +68790,16 @@ end
 local twrfrq=self.gettext:GetEntry("TOWERFREQ",self.locale)
 subtitle=string.format("%s %s",twrfrq,freqs)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.TowerFrequency,1.0,subtitle)
+self:Transmission(self.Sound.TowerFrequency,1.0,subtitle)
 for _,freq in pairs(self.towerfrequency)do
 local f=string.format("%.3f",freq)
 f=UTILS.Split(f,".")
 self.radioqueue:Number2Transmission(f[1],nil,0.5)
 if tonumber(f[2])>0 then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 self.radioqueue:Number2Transmission(f[2])
 end
-self:Transmission(ATIS.Sound.MegaHertz,0.2)
+self:Transmission(self.Sound.MegaHertz,0.2)
 end
 end
 alltext=alltext..";\n"..subtitle
@@ -68738,15 +68809,15 @@ if ils then
 local ilstxt=self.gettext:GetEntry("ILSFREQ",self.locale)
 subtitle=string.format("%s %.2f MHz",ilstxt,ils.frequency)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.ILSFrequency,1.0,subtitle)
+self:Transmission(self.Sound.ILSFrequency,1.0,subtitle)
 local f=string.format("%.2f",ils.frequency)
 f=UTILS.Split(f,".")
 self.radioqueue:Number2Transmission(f[1],nil,0.5)
 if tonumber(f[2])>0 then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 self.radioqueue:Number2Transmission(f[2])
 end
-self:Transmission(ATIS.Sound.MegaHertz,0.2)
+self:Transmission(self.Sound.MegaHertz,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
@@ -68755,15 +68826,15 @@ if ndb then
 local ndbtxt=self.gettext:GetEntry("OUTERNDB",self.locale)
 subtitle=string.format("%s %.2f MHz",ndbtxt,ndb.frequency)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.OuterNDBFrequency,1.0,subtitle)
+self:Transmission(self.Sound.OuterNDBFrequency,1.0,subtitle)
 local f=string.format("%.2f",ndb.frequency)
 f=UTILS.Split(f,".")
 self.radioqueue:Number2Transmission(f[1],nil,0.5)
 if tonumber(f[2])>0 then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 self.radioqueue:Number2Transmission(f[2])
 end
-self:Transmission(ATIS.Sound.MegaHertz,0.2)
+self:Transmission(self.Sound.MegaHertz,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
@@ -68772,15 +68843,15 @@ if ndb then
 local ndbtxt=self.gettext:GetEntry("INNERNDB",self.locale)
 subtitle=string.format("%s %.2f MHz",ndbtxt,ndb.frequency)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.InnerNDBFrequency,1.0,subtitle)
+self:Transmission(self.Sound.InnerNDBFrequency,1.0,subtitle)
 local f=string.format("%.2f",ndb.frequency)
 f=UTILS.Split(f,".")
 self.radioqueue:Number2Transmission(f[1],nil,0.5)
 if tonumber(f[2])>0 then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 self.radioqueue:Number2Transmission(f[2])
 end
-self:Transmission(ATIS.Sound.MegaHertz,0.2)
+self:Transmission(self.Sound.MegaHertz,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
@@ -68792,15 +68863,15 @@ if self.useSRS then
 subtitle=string.format("%s %.2f MHz",vorttstxt,self.vor)
 end
 if not self.useSRS then
-self:Transmission(ATIS.Sound.VORFrequency,1.0,subtitle)
+self:Transmission(self.Sound.VORFrequency,1.0,subtitle)
 local f=string.format("%.2f",self.vor)
 f=UTILS.Split(f,".")
 self.radioqueue:Number2Transmission(f[1],nil,0.5)
 if tonumber(f[2])>0 then
-self:Transmission(ATIS.Sound.Decimal,0.2)
+self:Transmission(self.Sound.Decimal,0.2)
 self.radioqueue:Number2Transmission(f[2])
 end
-self:Transmission(ATIS.Sound.MegaHertz,0.2)
+self:Transmission(self.Sound.MegaHertz,0.2)
 end
 alltext=alltext..";\n"..subtitle
 end
@@ -68808,7 +68879,7 @@ if self.tacan then
 local tactxt=self.gettext:GetEntry("TACANCH",self.locale)
 subtitle=string.format(tactxt,self.tacan)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.TACANChannel,1.0,subtitle)
+self:Transmission(self.Sound.TACANChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(self.tacan),nil,0.2)
 self.radioqueue:NewTransmission("Xray.ogg",0.75,self.soundpathNato,nil,0.2)
 end
@@ -68818,7 +68889,7 @@ if self.rsbn then
 local rsbntxt=self.gettext:GetEntry("RSBNCH",self.locale)
 subtitle=string.format("%s %d",rsbntxt,self.rsbn)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.RSBNChannel,1.0,subtitle)
+self:Transmission(self.Sound.RSBNChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(self.rsbn),nil,0.2)
 end
 alltext=alltext..";\n"..subtitle
@@ -68828,7 +68899,7 @@ if ndb then
 local prmtxt=self.gettext:GetEntry("PRMGCH",self.locale)
 subtitle=string.format("%s %d",prmtxt,ndb.frequency)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.PRMGChannel,1.0,subtitle)
+self:Transmission(self.Sound.PRMGChannel,1.0,subtitle)
 self.radioqueue:Number2Transmission(tostring(ndb.frequency),nil,0.5)
 end
 alltext=alltext..";\n"..subtitle
@@ -68839,7 +68910,7 @@ end
 local advtxt=self.gettext:GetEntry("ADVISE",self.locale)
 subtitle=string.format("%s %s",advtxt,NATO)
 if not self.useSRS then
-self:Transmission(ATIS.Sound.AdviceOnInitial,0.5,subtitle)
+self:Transmission(self.Sound.AdviceOnInitial,0.5,subtitle)
 self.radioqueue:NewTransmission(string.format("%s.ogg",NATO),0.75,self.soundpathNato)
 end
 alltext=alltext..";\n"..subtitle
@@ -119631,6 +119702,9 @@ function SOUNDFILE:GetFileName()
 return self.filename
 end
 function SOUNDFILE:SetDuration(Duration)
+if Duration and type(Duration)=="string"then
+Duration=tonumber(Duration)
+end
 self.duration=Duration or 3
 return self
 end
@@ -119958,7 +120032,7 @@ self:E(self.lid.."ERROR: No duration of transmission specified.")
 return nil
 end
 if type(duration)~="number"then
-self:E(self.lid.."ERROR: Duration specified is NOT a number.")
+self:E(self.lid..string.format("ERROR: Duration specified is NOT a number but type=%s. Filename=%s, duration=%s",type(duration),tostring(filename),tostring(duration)))
 return nil
 end
 local transmission={}
@@ -120002,6 +120076,7 @@ end
 return wait
 end
 function RADIOQUEUE:Broadcast(transmission)
+self:T("Broarcast")
 if((transmission.soundfile and transmission.soundfile.useSRS)or transmission.soundtext)and self.msrs then
 self:_BroadcastSRS(transmission)
 return
@@ -120040,7 +120115,7 @@ local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s
 MESSAGE:New(text,2,"RADIOQUEUE "..self.alias):ToAll()
 end
 else
-self:T(self.lid..string.format("Broadcasting via trigger.action.radioTransmission()."))
+self:T(self.lid..string.format("Broadcasting via trigger.action.radioTransmission()"))
 local vec3=nil
 if self.sendername then
 vec3=self:_GetRadioSenderCoord()
@@ -120056,6 +120131,8 @@ if self.Debugmode then
 local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s",filename,self.frequency/1000000,transmission.duration,transmission.subtitle or"")
 MESSAGE:New(string.format(text,filename,transmission.duration,transmission.subtitle or""),5,"RADIOQUEUE "..self.alias):ToAll()
 end
+else
+self:E("ERROR: Could not get vec3 to determin transmission origin! Did you specify a sender and is it still alive?")
 end
 end
 end
