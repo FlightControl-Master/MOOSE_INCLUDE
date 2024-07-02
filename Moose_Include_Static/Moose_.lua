@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-01T22:14:49+02:00-7e20a0a0dc7f0be7eba01dad4cec462b4ee9fbd0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-02T15:52:44+02:00-8e0446c594cba28d487703d2d12a37de2e9f7c93 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43156,7 +43156,7 @@ if not self.MenuAddedTo[_gid]then
 self.MenuAddedTo[_gid]=true
 local _rangePath=nil
 if RANGE.MenuF10Root then
-_rangePath=MENU_GROUP:New(group,"On the Range")
+_rangePath=MENU_GROUP:New(group,"On the Range",RANGE.MenuF10Root)
 else
 if RANGE.MenuF10[_gid]==nil then
 RANGE.MenuF10[_gid]=MENU_GROUP:New(group,"On the Range")
