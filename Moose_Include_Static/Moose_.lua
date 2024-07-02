@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-01T22:15:39+02:00-86508d49eebd5596676d5f6bcff76ed519260a2e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-02T12:46:50+02:00-6a83b484294718fb131c0c22ba4c4bede8e54f34 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -109418,8 +109418,10 @@ Monitor=false,
 TankerInvisible=true,
 CapFormation=nil,
 ReadyFlightGroups={},
+DespawnAfterLanding=false,
+DespawnAfterHolding=true,
 }
-EASYGCICAP.version="0.1.10"
+EASYGCICAP.version="0.1.11"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -109445,6 +109447,8 @@ self.repeatsonfailure=3
 self.Monitor=false
 self.TankerInvisible=true
 self.CapFormation=ENUMS.Formation.FixedWing.FingerFour.Group
+self.DespawnAfterLanding=false
+self.DespawnAfterHolding=true
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -109466,7 +109470,7 @@ self.TankerInvisible=Switch
 return self
 end
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
-self:T(self.lid.."SetDefaultResurrection")
+self:T(self.lid.."SetMaxAliveMissions")
 self.MaxAliveMissions=Maxiumum or 8
 return self
 end
@@ -109525,6 +109529,18 @@ self:T(self.lid.."SetDefaultOverhead")
 self.overhead=Overhead or 0.75
 return self
 end
+function EASYGCICAP:SetDefaultDespawnAfterLanding()
+self:T(self.lid.."SetDefaultDespawnAfterLanding")
+self.DespawnAfterLanding=true
+self.DespawnAfterHolding=false
+return self
+end
+function EASYGCICAP:SetDefaultDespawnAfterHolding()
+self:T(self.lid.."SetDefaultDespawnAfterLanding")
+self.DespawnAfterLanding=false
+self.DespawnAfterHolding=true
+return self
+end
 function EASYGCICAP:SetCapStartTimeVariation(Start,End)
 self.capOptionVaryStartTime=Start or 5
 self.capOptionVaryEndTime=End or 60
@@ -109551,6 +109567,8 @@ end
 function EASYGCICAP:_AddAirwing(Airbasename,Alias)
 self:T(self.lid.."_AddAirwing "..Airbasename)
 local CapFormation=self.CapFormation
+local DespawnAfterLanding=self.DespawnAfterLanding
+local DespawnAfterHolding=self.DespawnAfterHolding
 local CAP_Wing=AIRWING:New(Airbasename,Alias)
 CAP_Wing:SetVerbosityLevel(0)
 CAP_Wing:SetReportOff()
@@ -109583,7 +109601,11 @@ local Intel=self.Intel
 local TankerInvisible=self.TankerInvisible
 function CAP_Wing:OnAfterFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
+if DespawnAfterLanding then
+flightgroup:SetDespawnAfterLanding()
+elseif DespawnAfterHolding then
 flightgroup:SetDespawnAfterHolding()
+end
 flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
 flightgroup:GetGroup():CommandEPLRS(true,5)
 flightgroup:GetGroup():SetOptionRadarUsingForContinousSearch()
@@ -109606,8 +109628,10 @@ end
 flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetFuelLowRTB(true)
 Intel:AddAgent(flightgroup)
+if DespawnAfterHolding then
 function flightgroup:OnAfterHolding(From,Event,To)
 self:Despawn(1,true)
+end
 end
 end
 if self.noaltert5>0 then
