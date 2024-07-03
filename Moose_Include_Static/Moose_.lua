@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-02T15:52:44+02:00-8e0446c594cba28d487703d2d12a37de2e9f7c93 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-03T09:46:51+02:00-edf7f4677c2c0d7c3fdee329b16a6dced5a9436c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -42185,6 +42185,9 @@ return self
 end
 function RANGE:AddBombingTargetGroup(group,goodhitrange,randommove)
 self:F({group=group,goodhitrange=goodhitrange,randommove=randommove})
+if group and type(group)=="string"then
+group=GROUP:FindByName(group)
+end
 if group then
 local _units=group:GetUnits()
 for _,_unit in pairs(_units)do
@@ -43156,7 +43159,7 @@ if not self.MenuAddedTo[_gid]then
 self.MenuAddedTo[_gid]=true
 local _rangePath=nil
 if RANGE.MenuF10Root then
-_rangePath=MENU_GROUP:New(group,"On the Range",RANGE.MenuF10Root)
+_rangePath=MENU_GROUP:New(group,self.rangename,RANGE.MenuF10Root)
 else
 if RANGE.MenuF10[_gid]==nil then
 RANGE.MenuF10[_gid]=MENU_GROUP:New(group,"On the Range")
