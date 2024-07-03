@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-03T17:45:21+02:00-42979093b89f84727b28d5cebb7dd0ed222c5a6e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-03T23:17:37+02:00-84dd1fa21c2c0846c183f25917fac6b25d75e4c5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43163,10 +43163,10 @@ if not self.MenuAddedTo[_gid]then
 self.MenuAddedTo[_gid]=true
 local _rootMenu=nil
 if self.menuF10root then
-_rootMenu=MENU_GROUP:New(group,self.rangename,self.menuF10root)
+_rootMenu=self.menuF10root
 self:T2(self.lid..string.format("Creating F10 menu for group %s",group:GetName()))
 elseif RANGE.MenuF10Root then
-_rootMenu=MENU_GROUP:New(group,self.rangename,RANGE.MenuF10Root)
+_rootMenu=RANGE.MenuF10Root
 else
 if RANGE.MenuF10[_gid]==nil then
 self:T2(self.lid..string.format("Creating F10 menu 'On the Range' for group %s",group:GetName()))
