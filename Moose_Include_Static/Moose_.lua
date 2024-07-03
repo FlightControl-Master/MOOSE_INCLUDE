@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-03T09:47:07+02:00-0aa78ec0c8626b9bfdfd2598dffe275271719f44 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-03T17:45:33+02:00-64039ae770d89518c3166c4cd353e9c5665f9d6e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -42301,6 +42301,10 @@ self.rangezone:SmokeZone(SMOKECOLOR.White)
 end
 self:__Status(-60)
 end
+function RANGE:SetMenuRoot(menu)
+self.menuF10root=menu
+return self
+end
 function RANGE:SetMaxStrafeAlt(maxalt)
 self.strafemaxalt=maxalt or RANGE.Defaults.strafemaxalt
 return self
@@ -43659,15 +43663,21 @@ local _gid=group:GetID()
 if group and _gid then
 if not self.MenuAddedTo[_gid]then
 self.MenuAddedTo[_gid]=true
-local _rangePath=nil
-if RANGE.MenuF10Root then
-_rangePath=MENU_GROUP:New(group,self.rangename,RANGE.MenuF10Root)
+local _rootMenu=nil
+if self.menuF10root then
+_rootMenu=MENU_GROUP:New(group,self.rangename,self.menuF10root)
+self:T2(self.lid..string.format("Creating F10 menu for group %s",group:GetName()))
+elseif RANGE.MenuF10Root then
+_rootMenu=MENU_GROUP:New(group,self.rangename,RANGE.MenuF10Root)
 else
 if RANGE.MenuF10[_gid]==nil then
-RANGE.MenuF10[_gid]=MENU_GROUP:New(group,"On the Range")
+self:T2(self.lid..string.format("Creating F10 menu 'On the Range' for group %s",group:GetName()))
+else
+self:T2(self.lid..string.format("F10 menu 'On the Range' already EXISTS for group %s",group:GetName()))
 end
-_rangePath=MENU_GROUP:New(group,self.rangename,RANGE.MenuF10[_gid])
+_rootMenu=RANGE.MenuF10[_gid]or MENU_GROUP:New(group,"On the Range")
 end
+local _rangePath=MENU_GROUP:New(group,self.rangename,_rootMenu)
 local _statsPath=MENU_GROUP:New(group,"Statistics",_rangePath)
 local _markPath=MENU_GROUP:New(group,"Mark Targets",_rangePath)
 local _settingsPath=MENU_GROUP:New(group,"My Settings",_rangePath)
