@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-03T23:17:49+02:00-e30fb1c9bdd01d4eb73f9dfbfd93ca85955cb556 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-05T17:54:06+02:00-d25d89afbb0a9fbe788f31d3e274d1f1f014b0aa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7271,7 +7271,7 @@ end
 end
 if Event.weapon then
 Event.Weapon=Event.weapon
-Event.WeaponName=Event.Weapon:getTypeName()
+Event.WeaponName=Event.weapon.getTypeName and Event.weapon:getTypeName()or"Unknown Weapon"
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
 Event.WeaponPlayerName=Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
 Event.WeaponCoalition=Event.WeaponUNIT and Event.Weapon:getCoalition()
