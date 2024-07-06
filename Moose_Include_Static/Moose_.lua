@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-05T21:36:12+02:00-ead7844e5fbcd6c706d4a93d5b5305fc0794edfc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-06T21:51:20+02:00-6f3d9a497a0d4f03bc5805b0076082691bba1325 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -85334,7 +85334,7 @@ transport.commander=self.commander
 end
 return true
 else
-self:E(self.lid..string.format("ERROR: Mission type not supported for OPSZONE! Unrecruiting assets..."))
+self:E(self.lid..string.format("ERROR: Mission type %s not supported for OPSZONE! Unrecruiting assets...",tostring(MissionType)))
 LEGION.UnRecruitAssets(assets)
 return false
 end
