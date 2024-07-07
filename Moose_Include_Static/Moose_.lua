@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-07T11:32:08+02:00-f74c0e29a575770871f66eae5050a01e7a40e0e5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-07T23:15:20+02:00-1a0e2e0ea1f7d770d0897247f47e0b43dcae2908 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -75299,6 +75299,7 @@ self:CheckTANKER()
 self:CheckAWACS()
 self:CheckRescuhelo()
 self:CheckRECON()
+self:_TacticalOverview()
 self:CheckTransportQueue()
 self:CheckMissionQueue()
 if self.verbose>=1 then
@@ -84098,6 +84099,7 @@ supplyzone.mission=AUFTRAG:NewFUELSUPPLY(supplyzone.zone)
 self:AddMission(supplyzone.mission)
 end
 end
+self:_TacticalOverview()
 if self.verbose>=1 then
 local Nmissions=self:CountMissionsInQueue()
 local Npq,Np,Nq=self:CountAssetsOnMission()
@@ -85642,6 +85644,27 @@ end
 end
 return self
 end
+function COHORT:RemoveAssets(N)
+self:T2(self.lid..string.format("Remove %d assets of Cohort",N))
+N=N or 1
+local n=0
+for i=#self.assets,1,-1 do
+local asset=self.assets[i]
+self:T2(self.lid..string.format("Checking removing asset %s",asset.spawngroupname))
+if not(asset.requested or asset.spawned or asset.isReserved)then
+self:T2(self.lid..string.format("Removing asset %s",asset.spawngroupname))
+table.remove(self.assets,i)
+n=n+1
+else
+self:T2(self.lid..string.format("Could NOT Remove asset %s",asset.spawngroupname))
+end
+if n>=N then
+break
+end
+end
+self:T(self.lid..string.format("Removed %d/%d assets. New asset count=%d",n,N,#self.assets))
+return self
+end
 function COHORT:GetName()
 return self.name
 end
@@ -87180,6 +87203,7 @@ self:GetParent(self).onafterStatus(self,From,Event,To)
 local fsmstate=self:GetState()
 self:CheckTransportQueue()
 self:CheckMissionQueue()
+self:_TacticalOverview()
 if self.verbose>=1 then
 local Nmissions=self:CountMissionsInQueue()
 local Npq,Np,Nq=self:CountAssetsOnMission()
@@ -92948,6 +92972,10 @@ function LEGION:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
 return self
 end
+function LEGION:SetTacticalOverviewOn()
+self.tacview=true
+return self
+end
 function LEGION:AddMission(Mission)
 Mission:Queued()
 Mission:SetLegionStatus(self,AUFTRAG.Status.QUEUED)
@@ -93620,6 +93648,35 @@ end
 self:T3(self.lid..text)
 end
 return opsgroup
+end
+function LEGION:_TacticalOverview()
+if self.tacview then
+local NassetsTotal=self:CountAssets(nil)
+local NassetsStock=self:CountAssets(true)
+local NassetsActiv=self:CountAssets(false)
+local NmissionsTotal=#self.missionqueue
+local NmissionsRunni=self:CountMissionsInQueue()
+local text=string.format("Tactical Overview %s\n",self.alias)
+text=text..string.format("===================================\n")
+text=text..string.format("Assets: %d [Active=%d, Stock=%d]\n",NassetsTotal,NassetsActiv,NassetsStock)
+text=text..string.format("Missions: %d [Running=%d]\n",NmissionsTotal,NmissionsRunni)
+for _,mtype in pairs(AUFTRAG.Type)do
+local n=self:CountMissionsInQueue(mtype)
+if n>0 then
+local N=self:CountMissionsInQueue(mtype)
+text=text..string.format("  - %s: %d [Running=%d]\n",mtype,n,N)
+end
+end
+local Ntransports=#self.transportqueue
+if Ntransports>0 then
+text=text..string.format("Transports: %d\n",Ntransports)
+for _,_transport in pairs(self.transportqueue)do
+local transport=_transport
+text=text..string.format(" - %s",transport:GetState())
+end
+end
+MESSAGE:New(text,60,nil,true):ToCoalition(self:GetCoalition())
+end
 end
 function LEGION:IsAssetOnMission(asset,MissionTypes)
 if MissionTypes then
