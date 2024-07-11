@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-09T11:31:33+02:00-c51a6da5ff53f95f4847d9c73810152805262f6e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-11T08:35:32+02:00-32297da2b02f463b8075b6570e84960bcb8ed5e6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79469,7 +79469,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.64",
+version="0.2.65",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -82931,6 +82931,11 @@ end
 local grptxt=self.gettext:GetEntry("GROUP",self.locale)
 local thrt=self.gettext:GetEntry("THREAT",self.locale)
 local text=string.format("%s. %s. %s %s, %s. %s",self.callsigntxt,pilotcallsign,contacttag,grptxt,thrt,BRATExt)
+if string.find(text,"BRAA",1,true)then
+text=string.gsub(text,"BRAA","brah")
+elseif string.find(text,"BRA",1,true)then
+text=string.gsub(text,"BRA","brah")
+end
 if IsSub==false then
 self:_NewRadioEntry(text,text,GID,true,self.debug,true,false,true)
 end
