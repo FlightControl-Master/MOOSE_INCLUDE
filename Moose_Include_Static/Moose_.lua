@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T08:08:32+02:00-c8d49916df2e1f54267132b3e73c5f5015cba9c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T08:09:39+02:00-6e917049af6341667772d2e1c72fe1518bbe97ab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3631,6 +3631,21 @@ end
 table.insert(csvdata,row)
 end
 return csvdata
+end
+function UTILS.LCGRandomSeed(seed)
+UTILS.lcg={
+seed=seed or math.random(1,2^32-1),
+a=1664525,
+c=1013904223,
+m=2^32
+}
+end
+function UTILS.LCGRandom()
+if UTILS.lcg==nil then
+UTILS.LCGRandomSeed()
+end
+UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
+return UTILS.lcg.seed/UTILS.lcg.m
 end
 PROFILER={
 ClassName="PROFILER",
