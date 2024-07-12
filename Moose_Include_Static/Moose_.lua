@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T12:19:58+02:00-e6dda35f3d344d886d816ada685a02266967bfdb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T13:30:29+02:00-ec8bfb32b431c743a1bddca804c610839ef5e1c5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6930,17 +6930,47 @@ Side="I",
 Event="OnEventMissionWinner",
 Text="S_EVENT_MISSION_WINNER"
 },
-[EVENTS.PostponedTakeoff]={
+[EVENTS.RunwayTakeoff]={
 Order=1,
 Side="I",
-Event="OnEventPostponedTakeoff",
-Text="S_EVENT_POSTPONED_TAKEOFF"
+Event="OnEventRunwayTakeoff",
+Text="S_EVENT_RUNWAY_TAKEOFF"
 },
-[EVENTS.PostponedLand]={
+[EVENTS.RunwayTouch]={
 Order=1,
 Side="I",
-Event="OnEventPostponedLand",
-Text="S_EVENT_POSTPONED_LAND"
+Event="OnEventRunwayTouch",
+Text="S_EVENT_RUNWAY_TOUCH"
+},
+[EVENTS.MacLMSRestart]={
+Order=1,
+Side="I",
+Event="OnEventMacLMSRestart",
+Text="S_EVENT_MAC_LMS_RESTART"
+},
+[EVENTS.SimulationFreeze]={
+Order=1,
+Side="I",
+Event="OnEventSimulationFreeze",
+Text="S_EVENT_SIMULATION_FREEZE"
+},
+[EVENTS.SimulationUnfreeze]={
+Order=1,
+Side="I",
+Event="OnEventSimulationUnfreeze",
+Text="S_EVENT_SIMULATION_UNFREEZE"
+},
+[EVENTS.HumanAircraftRepairStart]={
+Order=1,
+Side="I",
+Event="OnEventHumanAircraftRepairStart",
+Text="S_EVENT_HUMAN_AIRCRAFT_REPAIR_START"
+},
+[EVENTS.HumanAircraftRepairFinish]={
+Order=1,
+Side="I",
+Event="OnEventHumanAircraftRepairFinish",
+Text="S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH"
 },
 }
 function EVENT:New()
