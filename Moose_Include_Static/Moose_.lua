@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T13:37:46+02:00-5c54f47527382b31303275c8c6ae2c78e51e1262 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T19:33:17+02:00-ef58cae59fe47d1b825f8212e0da5cd22421ee55 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23976,20 +23976,25 @@ lastWptIndex=LastWptNumber
 }
 return DCSTask
 end
-function CONTROLLABLE:TaskLandAtVec2(Vec2,Duration)
+function CONTROLLABLE:TaskLandAtVec2(Vec2,Duration,CombatLanding,DirectionAfterLand)
 local DCSTask={
 id='Land',
 params={
 point=Vec2,
 durationFlag=Duration and true or false,
 duration=Duration,
+combatLandingFlag=CombatLanding==true and true or false,
 },
 }
+if DirectionAfterLand~=nil and type(DirectionAfterLand)=="number"then
+DCSTask.params.directionEnabled=true
+DCSTask.params.direction=math.rad(DirectionAfterLand)
+end
 return DCSTask
 end
-function CONTROLLABLE:TaskLandAtZone(Zone,Duration,RandomPoint)
+function CONTROLLABLE:TaskLandAtZone(Zone,Duration,RandomPoint,CombatLanding,DirectionAfterLand)
 local Point=RandomPoint and Zone:GetRandomVec2()or Zone:GetVec2()
-local DCSTask=CONTROLLABLE.TaskLandAtVec2(self,Point,Duration)
+local DCSTask=CONTROLLABLE.TaskLandAtVec2(self,Point,Duration,CombatLanding,DirectionAfterLand)
 return DCSTask
 end
 function CONTROLLABLE:TaskFollow(FollowControllable,Vec3,LastWaypointIndex)
@@ -76797,11 +76802,13 @@ mission.categories={AUFTRAG.Category.HELICOPTER}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewLANDATCOORDINATE(Coordinate,OuterRadius,InnerRadius,Time,Speed,MissionAlt)
+function AUFTRAG:NewLANDATCOORDINATE(Coordinate,OuterRadius,InnerRadius,Time,Speed,MissionAlt,CombatLanding,DirectionAfterLand)
 local mission=AUFTRAG:New(AUFTRAG.Type.LANDATCOORDINATE)
 mission:_TargetFromObject(Coordinate)
 mission.stayTime=Time or 300
 mission.stayAt=Coordinate
+mission.combatLand=CombatLanding
+mission.directionAfter=DirectionAfterLand
 self:SetMissionSpeed(Speed or 150)
 self:SetMissionAltitude(MissionAlt or 1000)
 if OuterRadius then
@@ -79348,7 +79355,7 @@ table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.LANDATCOORDINATE then
 local DCStask={}
 local Vec2=self.stayAt:GetVec2()
-local DCStask=CONTROLLABLE.TaskLandAtVec2(nil,Vec2,self.stayTime)
+local DCStask=CONTROLLABLE.TaskLandAtVec2(nil,Vec2,self.stayTime,self.combatLand,self.directionAfter)
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.ONGUARD or self.type==AUFTRAG.Type.ARMOREDGUARD then
 local DCStask={}
