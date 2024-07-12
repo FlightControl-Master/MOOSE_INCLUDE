@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T11:45:53+02:00-0af15699f32b94370e23df25693679be2a0073a3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T12:20:16+02:00-6a31e4770502a904eb301db6c2637d1651919779 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -120258,7 +120258,7 @@ end
 return wait
 end
 function RADIOQUEUE:Broadcast(transmission)
-self:T("Broarcast")
+self:T("Broadcast")
 if((transmission.soundfile and transmission.soundfile.useSRS)or transmission.soundtext)and self.msrs then
 self:_BroadcastSRS(transmission)
 return
@@ -120314,7 +120314,7 @@ local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s
 MESSAGE:New(string.format(text,filename,transmission.duration,transmission.subtitle or""),5,"RADIOQUEUE "..self.alias):ToAll()
 end
 else
-self:E("ERROR: Could not get vec3 to determin transmission origin! Did you specify a sender and is it still alive?")
+self:E("ERROR: Could not get vec3 to determine transmission origin! Did you specify a sender and is it still alive?")
 end
 end
 end
