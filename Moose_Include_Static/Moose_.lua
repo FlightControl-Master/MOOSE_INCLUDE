@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-09T11:30:41+02:00-65c7b0d12f07438da04c2daa217d66d2192fba3d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T08:08:57+02:00-e6484c1598a4b73dfcab07ba222de90e4c6cec06 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3631,6 +3631,21 @@ end
 table.insert(csvdata,row)
 end
 return csvdata
+end
+function UTILS.LCGRandomSeed(seed)
+UTILS.lcg={
+seed=seed or math.random(1,2^32-1),
+a=1664525,
+c=1013904223,
+m=2^32
+}
+end
+function UTILS.LCGRandom()
+if UTILS.lcg==nil then
+UTILS.LCGRandomSeed()
+end
+UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
+return UTILS.lcg.seed/UTILS.lcg.m
 end
 PROFILER={
 ClassName="PROFILER",
@@ -39183,6 +39198,10 @@ elseif DCStype=="Mirage-F1CE"then
 self.aircraft.length=16
 self.aircraft.height=5
 self.aircraft.width=9
+elseif DCStype=="Saab340"then
+self.aircraft.length=19.73
+self.aircraft.height=6.97
+self.aircraft.width=21.44
 end
 self.aircraft.box=math.max(self.aircraft.length,self.aircraft.width)
 local text=string.format("\n******************************************************\n")
