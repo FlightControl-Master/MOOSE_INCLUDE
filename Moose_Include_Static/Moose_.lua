@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T08:09:39+02:00-6e917049af6341667772d2e1c72fe1518bbe97ab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T09:36:29+02:00-df6c97bec853901e474dd4562af1e5ac6bb1251a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -109543,7 +109543,7 @@ ReadyFlightGroups={},
 DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 }
-EASYGCICAP.version="0.1.11"
+EASYGCICAP.version="0.1.12"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -110109,9 +110109,11 @@ local airwing=_data[1]
 local zone=_data[2]
 local zonecoord=zone:GetCoordinate()
 local name=_data[3]
+local coa=AIRBASE:FindByName(name):GetCoalition()
 local distance=position:DistanceFromPointVec2(zonecoord)
 local airframes=airwing:CountAssets(true)
-if distance<bestdistance and airframes>=wingsize then
+local samecoalitionab=coa==self.coalition and true or false
+if distance<bestdistance and airframes>=wingsize and samecoalitionab==true then
 bestdistance=distance
 targetairwing=airwing
 targetawname=name
@@ -110122,9 +110124,11 @@ local data=_data
 local name=data.AirbaseName
 local zonecoord=data.Coordinate
 local airwing=wings[name][1]
+local coa=AIRBASE:FindByName(name):GetCoalition()
+local samecoalitionab=coa==self.coalition and true or false
 local distance=position:DistanceFromPointVec2(zonecoord)
 local airframes=airwing:CountAssets(true)
-if distance<bestdistance and airframes>=wingsize then
+if distance<bestdistance and airframes>=wingsize and samecoalitionab==true then
 bestdistance=distance
 targetairwing=airwing
 targetawname=name
