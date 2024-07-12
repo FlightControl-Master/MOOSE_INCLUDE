@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T13:37:04+02:00-51eb3a2e827de78a647b5d3cdc5f67441413347d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T19:32:55+02:00-8a21fe80def6165d2504307b5b8436768743e882 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23456,20 +23456,25 @@ lastWptIndex=LastWptNumber
 }
 return DCSTask
 end
-function CONTROLLABLE:TaskLandAtVec2(Vec2,Duration)
+function CONTROLLABLE:TaskLandAtVec2(Vec2,Duration,CombatLanding,DirectionAfterLand)
 local DCSTask={
 id='Land',
 params={
 point=Vec2,
 durationFlag=Duration and true or false,
 duration=Duration,
+combatLandingFlag=CombatLanding==true and true or false,
 },
 }
+if DirectionAfterLand~=nil and type(DirectionAfterLand)=="number"then
+DCSTask.params.directionEnabled=true
+DCSTask.params.direction=math.rad(DirectionAfterLand)
+end
 return DCSTask
 end
-function CONTROLLABLE:TaskLandAtZone(Zone,Duration,RandomPoint)
+function CONTROLLABLE:TaskLandAtZone(Zone,Duration,RandomPoint,CombatLanding,DirectionAfterLand)
 local Point=RandomPoint and Zone:GetRandomVec2()or Zone:GetVec2()
-local DCSTask=CONTROLLABLE.TaskLandAtVec2(self,Point,Duration)
+local DCSTask=CONTROLLABLE.TaskLandAtVec2(self,Point,Duration,CombatLanding,DirectionAfterLand)
 return DCSTask
 end
 function CONTROLLABLE:TaskFollow(FollowControllable,Vec3,LastWaypointIndex)
