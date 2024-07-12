@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T09:36:29+02:00-df6c97bec853901e474dd4562af1e5ac6bb1251a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T11:37:27+02:00-5b596516fe6bc8d4a4bfc7bdbd4b86d52b20ce13 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1045,7 +1045,8 @@ Syria="Syria",
 MarianaIslands="MarianaIslands",
 Falklands="Falklands",
 Sinai="SinaiMap",
-Kola="Kola"
+Kola="Kola",
+Afghanistan="Afghanistan",
 }
 CALLSIGN={
 Aircraft={
@@ -1354,6 +1355,11 @@ return s
 end
 end
 end
+function UTILS.TableLength(T)
+local count=0
+for _ in pairs(T or{})do count=count+1 end
+return count
+end
 function UTILS.PrintTableToLog(table,indent,noprint)
 local text="\n"
 if not table or type(table)~="table"then
@@ -1363,7 +1369,7 @@ end
 if not indent then indent=0 end
 for k,v in pairs(table)do
 if string.find(k," ")then k='"'..k..'"'end
-if type(v)=="table"then
+if type(v)=="table"and UTILS.TableLength(v)>0 then
 if not noprint then
 env.info(string.rep("  ",indent)..tostring(k).." = {")
 end
@@ -2111,6 +2117,8 @@ elseif map==DCSMAP.Sinai then
 declination=4.8
 elseif map==DCSMAP.Kola then
 declination=15
+elseif map==DCSMAP.Afghanistan then
+declination=3
 else
 declination=0
 end
@@ -2282,6 +2290,8 @@ elseif theatre==DCSMAP.Sinai then
 return 2
 elseif theatre==DCSMAP.Kola then
 return 3
+elseif theatre==DCSMAP.Afghanistan then
+return 4.5
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -29549,6 +29559,23 @@ AIRBASE.Kola={
 ["Rovaniemi"]="Rovaniemi",
 ["Severomorsk_1"]="Severomorsk-1",
 ["Severomorsk_3"]="Severomorsk-3",
+}
+AIRBASE.Afghanistan={
+["Bost"]="Bost",
+["Camp_Bastion"]="Camp Bastion",
+["Camp_Bastion_Heliport"]="Camp Bastion Heliport",
+["Chaghcharan"]="Chaghcharan",
+["Dwyer"]="Dwyer",
+["Farah"]="Farah",
+["Herat"]="Herat",
+["Kandahar"]="Kandahar",
+["Kandahar_Heliport"]="Kandahar Heliport",
+["Maymana_Zahiraddin_Faryabi"]="Maymana Zahiraddin Faryabi",
+["Nimroz"]="Nimroz",
+["Qala_i_Naw"]="Qala i Naw",
+["Shindand"]="Shindand",
+["Shindand_Heliport"]="Shindand Heliport",
+["Tarinkot"]="Tarinkot",
 }
 AIRBASE.TerminalType={
 Runway=16,
