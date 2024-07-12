@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T11:37:27+02:00-5b596516fe6bc8d4a4bfc7bdbd4b86d52b20ce13 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T11:45:53+02:00-0af15699f32b94370e23df25693679be2a0073a3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6574,8 +6574,13 @@ MacSubtaskScore=world.event.S_EVENT_MAC_SUBTASK_SCORE or-1,
 MacExtraScore=world.event.S_EVENT_MAC_EXTRA_SCORE or-1,
 MissionRestart=world.event.S_EVENT_MISSION_RESTART or-1,
 MissionWinner=world.event.S_EVENT_MISSION_WINNER or-1,
-PostponedTakeoff=world.event.S_EVENT_POSTPONED_TAKEOFF or-1,
-PostponedLand=world.event.S_EVENT_POSTPONED_LAND or-1,
+RunwayTakeoff=world.event.S_EVENT_RUNWAY_TAKEOFF or-1,
+RunwayTouch=world.event.S_EVENT_RUNWAY_TOUCH or-1,
+MacLMSRestart=world.event.S_EVENT_MAC_LMS_RESTART or-1,
+SimulationFreeze=world.event.S_EVENT_SIMULATION_FREEZE or-1,
+SimulationUnfreeze=world.event.S_EVENT_SIMULATION_UNFREEZE or-1,
+HumanAircraftRepairStart=world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_START or-1,
+HumanAircraftRepairFinish=world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH or-1,
 }
 local _EVENTMETA={
 [world.event.S_EVENT_SHOT]={
