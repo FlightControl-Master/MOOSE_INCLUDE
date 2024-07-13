@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-12T19:33:17+02:00-ef58cae59fe47d1b825f8212e0da5cd22421ee55 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-13T15:22:18+02:00-2442adfd2f907ab769bba55096020daa913918f3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6568,9 +6568,8 @@ UnitDeleteTask=world.event.S_EVENT_UNIT_DELETE_TASK or-1,
 SimulationStart=world.event.S_EVENT_SIMULATION_START or-1,
 WeaponRearm=world.event.S_EVENT_WEAPON_REARM or-1,
 WeaponDrop=world.event.S_EVENT_WEAPON_DROP or-1,
-UnitTaskTimeout=world.event.S_EVENT_UNIT_TASK_TIMEOUT or-1,
+UnitTaskComplete=world.event.S_EVENT_UNIT_TASK_COMPLETE or-1,
 UnitTaskStage=world.event.S_EVENT_UNIT_TASK_STAGE or-1,
-MacSubtaskScore=world.event.S_EVENT_MAC_SUBTASK_SCORE or-1,
 MacExtraScore=world.event.S_EVENT_MAC_EXTRA_SCORE or-1,
 MissionRestart=world.event.S_EVENT_MISSION_RESTART or-1,
 MissionWinner=world.event.S_EVENT_MISSION_WINNER or-1,
@@ -6894,23 +6893,11 @@ Side="I",
 Event="OnEventWeaponDrop",
 Text="S_EVENT_WEAPON_DROP"
 },
-[EVENTS.UnitTaskTimeout]={
-Order=1,
-Side="I",
-Event="OnEventUnitTaskTimeout",
-Text="S_EVENT_UNIT_TASK_TIMEOUT "
-},
 [EVENTS.UnitTaskStage]={
 Order=1,
 Side="I",
 Event="OnEventUnitTaskStage",
 Text="S_EVENT_UNIT_TASK_STAGE "
-},
-[EVENTS.MacSubtaskScore]={
-Order=1,
-Side="I",
-Event="OnEventMacSubtaskScore",
-Text="S_EVENT_MAC_SUBTASK_SCORE"
 },
 [EVENTS.MacExtraScore]={
 Order=1,
@@ -10823,6 +10810,7 @@ self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventOnPlayerEnterUnit)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Hit,self.AccountHits)
 self:HandleEvent(EVENTS.NewCargo)
 self:HandleEvent(EVENTS.DeleteCargo)
@@ -10848,6 +10836,7 @@ end
 return self.UNITS[DCSUnitName]
 end
 function DATABASE:DeleteUnit(DCSUnitName)
+self:T("DeleteUnit "..tostring(DCSUnitName))
 self.UNITS[DCSUnitName]=nil
 end
 function DATABASE:AddStatic(DCSStaticName)
@@ -11581,7 +11570,7 @@ end
 else
 if Event.IniObjectCategory==1 then
 if self.UNITS[Event.IniDCSUnitName]then
-self:DeleteUnit(Event.IniDCSUnitName)
+self:ScheduleOnce(1,self.DeleteUnit,self,Event.IniDCSUnitName)
 end
 local client=self.CLIENTS[name]
 if client then
@@ -12537,6 +12526,7 @@ self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventOnDeadOrCrash)
 if self.Filter.Zones then
 self.ZoneTimer=TIMER:New(self._ContinousZoneFilter,self)
@@ -12556,6 +12546,7 @@ self:UnHandleEvent(EVENTS.Birth)
 self:UnHandleEvent(EVENTS.Dead)
 self:UnHandleEvent(EVENTS.Crash)
 self:UnHandleEvent(EVENTS.RemoveUnit)
+self:UnHandleEvent(EVENTS.UnitLost)
 if self.Filter.Zones and self.ZoneTimer and self.ZoneTimer:IsRunning()then
 self.ZoneTimer:Stop()
 end
@@ -13075,6 +13066,7 @@ self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._EventOnDeadOrCrash)
 if self.Filter.Zones then
 self.ZoneTimer=TIMER:New(self._ContinousZoneFilter,self)
 local timing=self.ZoneTimerInterval or 30
@@ -15801,6 +15793,7 @@ self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._EventOnDeadOrCrash)
 end
 return self
 end
@@ -19154,7 +19147,7 @@ function SPAWN:InitPositionVec2(Vec2)
 self:T({self.SpawnTemplatePrefix,Vec2})
 self.SpawnInitPosition=Vec2
 self.SpawnFromNewPosition=true
-self:I("MaxGroups:"..self.SpawnMaxGroups)
+self:T("MaxGroups:"..self.SpawnMaxGroups)
 for SpawnGroupID=1,self.SpawnMaxGroups do
 self:_SetInitialPosition(SpawnGroupID)
 end
@@ -19215,9 +19208,9 @@ self.SpawnGroups[SpawnGroupID].SpawnTemplate.lateActivation=true
 self.SpawnGroups[SpawnGroupID].SpawnTemplate.visible=true
 self.SpawnGroups[SpawnGroupID].Visible=true
 self:HandleEvent(EVENTS.Birth,self._OnBirth)
-self:HandleEvent(EVENTS.Dead,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._OnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._OnDeadOrCrash)
 if self.Repeat then
 self:HandleEvent(EVENTS.Takeoff,self._OnTakeOff)
 self:HandleEvent(EVENTS.Land,self._OnLand)
@@ -19473,8 +19466,8 @@ end
 if not NoBirth then
 self:HandleEvent(EVENTS.Birth,self._OnBirth)
 end
-self:HandleEvent(EVENTS.Dead,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._OnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._OnDeadOrCrash)
 if self.Repeat then
 self:HandleEvent(EVENTS.Takeoff,self._OnTakeOff)
@@ -20600,10 +20593,10 @@ end
 return self
 end
 function SPAWN:_GetSpawnIndex(SpawnIndex)
-self:F2({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnMaxGroups,self.SpawnMaxUnitsAlive,self.AliveUnits,#self.SpawnTemplate.units})
+self:T({template=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,SpawnMaxGroups=self.SpawnMaxGroups,SpawnMaxUnitsAlive=self.SpawnMaxUnitsAlive,AliveUnits=self.AliveUnits,TemplateUnits=#self.SpawnTemplate.units})
 if(self.SpawnMaxGroups==0)or(SpawnIndex<=self.SpawnMaxGroups)then
 if(self.SpawnMaxUnitsAlive==0)or(self.AliveUnits+#self.SpawnTemplate.units<=self.SpawnMaxUnitsAlive)or self.UnControlled==true then
-self:F({SpawnCount=self.SpawnCount,SpawnIndex=SpawnIndex})
+self:T({SpawnCount=self.SpawnCount,SpawnIndex=SpawnIndex})
 if SpawnIndex and SpawnIndex>=self.SpawnCount+1 then
 self.SpawnCount=self.SpawnCount+1
 SpawnIndex=self.SpawnCount
@@ -20635,7 +20628,9 @@ end
 end
 end
 function SPAWN:_OnDeadOrCrash(EventData)
-self:F(self.SpawnTemplatePrefix)
+self:T("Dead or crash event ID "..EventData.id)
+self:T("Dead or crash event for "..self.SpawnTemplatePrefix)
+if EventData.id==EVENTS.Dead then return end
 local unit=UNIT:FindByName(EventData.IniUnitName)
 if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
@@ -31836,7 +31831,7 @@ local unlimited=false
 if N>0 then
 self:RemoveAmount(Type,1)
 local n=self:GetAmount(Type)
-unlimited=n==N
+unlimited=unlimited or n>2^29 or n==N
 if not unlimited then
 self:AddAmount(Type,1)
 end
