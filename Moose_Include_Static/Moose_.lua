@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-14T17:49:25+02:00-3595afe0cc4017e3b807e694edaebffdcbcb7457 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-14T18:48:07+02:00-e6aa34186339f05ef42a07358fca3e59d7ba7478 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -25954,6 +25954,7 @@ local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 return DCSGroup
 end
+self:T2(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
 return nil
 end
 function GROUP:GetPositionVec3()
@@ -27295,7 +27296,7 @@ function GROUP:GetPlayerNames()
 local HasPlayers=false
 local PlayerNames={}
 local Units=self:GetUnits()
-for UnitID,UnitData in pairs(Units)do
+for UnitID,UnitData in pairs(Units or{})do
 local Unit=UnitData
 local PlayerName=Unit:GetPlayerName()
 if PlayerName and PlayerName~=""then
@@ -27678,7 +27679,14 @@ function UNIT:IsPlayer()
 local group=self:GetGroup()
 if not group then return false end
 local template=group:GetTemplate()
-if(template==nil)or(template.units==nil)then return false end
+if(template==nil)or(template.units==nil)then
+local DCSObject=self:GetDCSObject()
+if DCSObject then
+if DCSObject:getPlayerName()~=nil then return true else return false end
+else
+return false
+end
+end
 local units=template.units
 for _,unit in pairs(units)do
 if unit.name==self:GetName()and(unit.skill=="Client"or unit.skill=="Player")then
@@ -65698,7 +65706,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 }
-CTLD.version="1.0.54"
+CTLD.version="1.0.55"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67357,7 +67365,7 @@ local PlayerSet=self.PilotGroups
 local PlayerTable=PlayerSet:GetSetObjects()
 local _UnitList={}
 for _key,_group in pairs(PlayerTable)do
-local _unit=_group:GetUnit(1)
+local _unit=_group:GetFirstUnitAlive()
 if _unit then
 if _unit:IsAlive()and _unit:IsPlayer()then
 if _unit:IsHelicopter()or(self:IsHercules(_unit)and self.enableHercules)then
@@ -69430,7 +69438,7 @@ CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
-CSAR.version="1.0.24"
+CSAR.version="1.0.25"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -70595,7 +70603,7 @@ local allheligroupset=self.allheligroupset
 local _allHeliGroups=allheligroupset:GetSetObjects()
 local _UnitList={}
 for _key,_group in pairs(_allHeliGroups)do
-local _unit=_group:GetUnit(1)
+local _unit=_group:GetFirstUnitAlive()
 if _unit then
 if _unit:IsAlive()and _unit:IsPlayer()then
 local unitName=_unit:GetName()
