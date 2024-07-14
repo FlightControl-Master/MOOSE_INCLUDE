@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-13T15:21:35+02:00-0b21cb687e39a1c8e4aa2ed3a5dd65f82f8b0379 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-14T17:49:25+02:00-3595afe0cc4017e3b807e694edaebffdcbcb7457 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7770,7 +7770,6 @@ function SETTINGS:SetPlayerMenu(PlayerUnit)
 if _SETTINGS.ShowPlayerMenu==true then
 local PlayerGroup=PlayerUnit:GetGroup()
 local PlayerName=PlayerUnit:GetPlayerName()
-local PlayerNames=PlayerGroup:GetPlayerNames()
 local PlayerMenu=MENU_GROUP:New(PlayerGroup,'Settings "'..PlayerName..'"')
 self.PlayerMenu=PlayerMenu
 self:T(string.format("Setting menu for player %s",tostring(PlayerName)))
@@ -10828,8 +10827,8 @@ function DATABASE:FindUnit(UnitName)
 local UnitFound=self.UNITS[UnitName]
 return UnitFound
 end
-function DATABASE:AddUnit(DCSUnitName)
-if not self.UNITS[DCSUnitName]then
+function DATABASE:AddUnit(DCSUnitName,force)
+if not self.UNITS[DCSUnitName]or force==true then
 self:T({"Add UNIT:",DCSUnitName})
 self.UNITS[DCSUnitName]=UNIT:Register(DCSUnitName)
 end
@@ -11128,10 +11127,14 @@ return self.CLIENTS[ClientName]
 end
 function DATABASE:FindGroup(GroupName)
 local GroupFound=self.GROUPS[GroupName]
+if GroupFound==nil and GroupName~=nil then
+self:_RegisterDynamicGroup(GroupName)
+return self.GROUPS[GroupName]
+end
 return GroupFound
 end
-function DATABASE:AddGroup(GroupName)
-if not self.GROUPS[GroupName]then
+function DATABASE:AddGroup(GroupName,force)
+if not self.GROUPS[GroupName]or force==true then
 self:T({"Add GROUP:",GroupName})
 self.GROUPS[GroupName]=GROUP:Register(GroupName)
 end
@@ -11442,6 +11445,22 @@ end
 end
 return self
 end
+function DATABASE:_RegisterDynamicGroup(Groupname)
+local DCSGroup=Group.getByName(Groupname)
+if DCSGroup:isExist()then
+local DCSGroupName=DCSGroup:getName()
+self:I(string.format("Register Group: %s",tostring(DCSGroupName)))
+self:AddGroup(DCSGroupName,true)
+for DCSUnitId,DCSUnit in pairs(DCSGroup:getUnits())do
+local DCSUnitName=DCSUnit:getName()
+self:I(string.format("Register Unit: %s",tostring(DCSUnitName)))
+self:AddUnit(DCSUnitName,true)
+end
+else
+self:E({"Group does not exist: ",DCSGroup})
+end
+return self
+end
 function DATABASE:_RegisterGroupsAndUnits()
 local CoalitionsData={GroupsRed=coalition.getGroups(coalition.side.RED),GroupsBlue=coalition.getGroups(coalition.side.BLUE),GroupsNeutral=coalition.getGroups(coalition.side.NEUTRAL)}
 for CoalitionId,CoalitionData in pairs(CoalitionsData)do
@@ -11530,8 +11549,8 @@ end
 end
 end
 if Event.IniObjectCategory==Object.Category.UNIT then
-Event.IniUnit=self:FindUnit(Event.IniDCSUnitName)
 Event.IniGroup=self:FindGroup(Event.IniDCSGroupName)
+Event.IniUnit=self:FindUnit(Event.IniDCSUnitName)
 local client=self.CLIENTS[Event.IniDCSUnitName]
 if client then
 end
@@ -11545,9 +11564,12 @@ client:AddPlayer(PlayerName)
 if not self.PLAYERS[PlayerName]then
 self:AddPlayer(Event.IniUnitName,PlayerName)
 end
+local function SetPlayerSettings(self,PlayerName,IniUnit)
 local Settings=SETTINGS:Set(PlayerName)
-Settings:SetPlayerMenu(Event.IniUnit)
-self:CreateEventPlayerEnterAircraft(Event.IniUnit)
+Settings:SetPlayerMenu(IniUnit)
+self:CreateEventPlayerEnterAircraft(IniUnit)
+end
+self:ScheduleOnce(1,SetPlayerSettings,self,PlayerName,Event.IniUnit)
 end
 end
 end
