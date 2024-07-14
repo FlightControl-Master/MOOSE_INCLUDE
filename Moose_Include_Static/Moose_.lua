@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-14T18:48:44+02:00-4511a68a2b638b278601e0b6750999b828367a27 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-14T19:16:00+02:00-8a89ed5857c038368d538cb237c5388155800712 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7316,7 +7316,7 @@ Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
 end
 end
-if Event.weapon then
+if Event.weapon and type(Event.weapon)=="table"then
 Event.Weapon=Event.weapon
 Event.WeaponName=Event.weapon:isExist()and Event.weapon:getTypeName()or"Unknown Weapon"
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
