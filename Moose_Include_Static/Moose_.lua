@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-15T14:32:17+02:00-379c31b28a86fc48d079b507866f81e70562de01 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-15T17:24:13+02:00-91a0e992cdf7ad3a7feb0f97b0da61e77dc684c4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -14287,11 +14287,12 @@ if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
+local UnitCategory
 if ClientCategoryID==nil and MClient:IsAlive()~=nil then
-ClientCategoryID=MClient:GetCategory()
+ClientCategoryID,UnitCategory=MClient:GetCategory()
 end
-self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
-if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
+if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
 end
 end
@@ -14556,24 +14557,31 @@ self:F2(MClient)
 local MClientInclude=true
 if MClient then
 local MClientName=MClient.UnitName
-if self.Filter.Coalitions then
+if self.Filter.Coalitions and MClientInclude then
 local MClientCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 local ClientCoalitionID=_DATABASE:GetCoalitionFromClientTemplate(MClientName)
+if ClientCoalitionID==nil and MClient:IsAlive()~=nil then
+ClientCoalitionID=MClient:GetCoalition()
+end
 self:T3({"Coalition:",ClientCoalitionID,self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
-if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==ClientCoalitionID then
+if self.FilterMeta.Coalitions[CoalitionName]and ClientCoalitionID and self.FilterMeta.Coalitions[CoalitionName]==ClientCoalitionID then
 MClientCoalition=true
 end
 end
 self:T({"Evaluated Coalition",MClientCoalition})
 MClientInclude=MClientInclude and MClientCoalition
 end
-if self.Filter.Categories then
+if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
-self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
-if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+local UnitCategory
+if ClientCategoryID==nil and MClient:IsAlive()~=nil then
+ClientCategoryID,UnitCategory=MClient:GetCategory()
+end
+self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
+if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
 end
 end
@@ -22154,11 +22162,11 @@ function IDENTIFIABLE:GetCategory()
 self:F2(self.ObjectName)
 local DCSObject=self:GetDCSObject()
 if DCSObject then
-local ObjectCategory=DCSObject:getCategory()
+local ObjectCategory,UnitCategory=DCSObject:getCategory()
 self:T3(ObjectCategory)
-return ObjectCategory
+return ObjectCategory,UnitCategory
 end
-return nil
+return nil,nil
 end
 function IDENTIFIABLE:GetCategoryName()
 local DCSIdentifiable=self:GetDCSObject()
