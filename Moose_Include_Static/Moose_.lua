@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-14T19:16:00+02:00-8a89ed5857c038368d538cb237c5388155800712 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-15T14:32:17+02:00-379c31b28a86fc48d079b507866f81e70562de01 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19308,17 +19308,29 @@ if SpawnGroup and WayPoints then
 SpawnGroup:WayPointInitialize(WayPoints)
 SpawnGroup:WayPointExecute(1,5)
 end
-if SpawnGroup.ReSpawnFunction then
+if SpawnGroup and SpawnGroup.ReSpawnFunction then
 SpawnGroup:ReSpawnFunction()
 end
-SpawnGroup:ResetEvents()
+if SpawnGroup then SpawnGroup:ResetEvents()end
 return SpawnGroup
 end
 function SPAWN:SetSpawnIndex(SpawnIndex)
 self.SpawnIndex=SpawnIndex or 0
 end
 function SPAWN:SpawnWithIndex(SpawnIndex,NoBirth)
-self:F2({SpawnTemplatePrefix=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,AliveUnits=self.AliveUnits,SpawnMaxGroups=self.SpawnMaxGroups})
+local set=SET_GROUP:New():FilterAlive():FilterPrefixes({self.SpawnTemplatePrefix,self.SpawnAliasPrefix}):FilterOnce()
+local aliveunits=0
+set:ForEachGroupAlive(
+function(grp)
+aliveunits=aliveunits+grp:CountAliveUnits()
+end
+)
+if aliveunits~=self.AliveUnits then
+self.AliveUnits=aliveunits
+self:T("***** self.AliveUnits accounting failure! Corrected! *****")
+end
+set=nil
+self:T({SpawnTemplatePrefix=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,AliveUnits=self.AliveUnits,SpawnMaxGroups=self.SpawnMaxGroups})
 if self:_GetSpawnIndex(SpawnIndex)then
 if self.SpawnFromNewPosition then
 self:_SetInitialPosition(SpawnIndex)
@@ -19358,7 +19370,7 @@ inZone=SpawnZone:IsVec2InZone(RandomVec2)
 end
 end
 if(not inZone)then
-self:I("Could not place unit within zone and within radius!")
+self:T("Could not place unit within zone and within radius!")
 RandomVec2=SpawnZone:GetRandomVec2()
 end
 end
@@ -20651,17 +20663,17 @@ end
 end
 function SPAWN:_OnDeadOrCrash(EventData)
 self:T("Dead or crash event ID "..EventData.id)
-self:T("Dead or crash event for "..self.SpawnTemplatePrefix)
-if EventData.id==EVENTS.Dead then return end
+self:T("Dead or crash event for "..EventData.IniUnitName)
 local unit=UNIT:FindByName(EventData.IniUnitName)
 if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 self:T({"Dead event: "..EventPrefix})
-if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
+self:T(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix,self.SpawnAliasPrefix,self.AliveUnits))
+if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
 self.AliveUnits=self.AliveUnits-1
-self:T("Alive Units: "..self.AliveUnits)
 end
+self:T("New Alive Units: "..self.AliveUnits)
 end
 end
 end
@@ -20740,7 +20752,7 @@ local NewVec2=SpawnUnit:GetVec2()or{x=0,y=0}
 if(Stamp.Vec2.x==NewVec2.x and Stamp.Vec2.y==NewVec2.y)or(SpawnUnit:GetLife()<=1)then
 if Stamp.Time+self.SpawnCleanUpInterval<timer.getTime()then
 self:T({"CleanUp Scheduler:","ReSpawning:",SpawnGroup:GetName()})
-self:ReSpawn(SpawnCursor)
+SCHEDULER:New(nil,self.ReSpawn,{self,SpawnCursor},3)
 Stamp.Vec2=nil
 Stamp.Time=nil
 end
