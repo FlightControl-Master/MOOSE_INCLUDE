@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T08:45:37+02:00-5d6951ae11a3d5487e7cdca95f0c96906af996df ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T13:38:42+02:00-c73d8a6339e2e9b83b27f64f52f3b5ea2510d702 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11127,7 +11127,7 @@ return self.CLIENTS[ClientName]
 end
 function DATABASE:FindGroup(GroupName)
 local GroupFound=self.GROUPS[GroupName]
-if GroupFound==nil and GroupName~=nil then
+if GroupFound==nil and GroupName~=nil and self.Templates.Groups[GroupName]==nil then
 self:_RegisterDynamicGroup(GroupName)
 return self.GROUPS[GroupName]
 end
@@ -11447,7 +11447,7 @@ return self
 end
 function DATABASE:_RegisterDynamicGroup(Groupname)
 local DCSGroup=Group.getByName(Groupname)
-if DCSGroup:isExist()then
+if DCSGroup and DCSGroup:isExist()then
 local DCSGroupName=DCSGroup:getName()
 self:I(string.format("Register Group: %s",tostring(DCSGroupName)))
 self:AddGroup(DCSGroupName,true)
@@ -14287,13 +14287,18 @@ if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
-local UnitCategory
-if ClientCategoryID==nil and MClient:IsAlive()~=nil then
+local UnitCategory=0
+if ClientCategoryID==nil and MClient:IsExist()then
 ClientCategoryID,UnitCategory=MClient:GetCategory()
-end
 self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
+end
+else
+self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
+if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+MClientCategory=true
+end
 end
 end
 self:T({"Evaluated Category",MClientCategory})
@@ -14576,13 +14581,18 @@ if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
-local UnitCategory
-if ClientCategoryID==nil and MClient:IsAlive()~=nil then
+local UnitCategory=0
+if ClientCategoryID==nil and MClient:IsExist()then
 ClientCategoryID,UnitCategory=MClient:GetCategory()
-end
 self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
+end
+else
+self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
+if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+MClientCategory=true
+end
 end
 end
 self:T({"Evaluated Category",MClientCategory})
@@ -28505,7 +28515,7 @@ self.AliveCheckScheduler:NoTrace()
 return self
 end
 function CLIENT:_AliveCheckScheduler(SchedulerName)
-self:F3({SchedulerName,self.ClientName,self.ClientAlive2,self.ClientBriefingShown,self.ClientCallBack})
+self:T2({SchedulerName,self.ClientName,self.ClientAlive2,self.ClientBriefingShown,self.ClientCallBack})
 if self:IsAlive()then
 if self.ClientAlive2==false then
 self:ShowBriefing()
@@ -80752,6 +80762,7 @@ SubtitleDuration=0,
 Power=100,
 Loop=false,
 alias=nil,
+moduhasbeenset=false,
 }
 function RADIO:New(Positionable)
 local self=BASE:Inherit(self,BASE:New())
@@ -80787,12 +80798,13 @@ end
 function RADIO:SetFrequency(Frequency)
 self:F2(Frequency)
 if type(Frequency)=="number"then
-self.Frequency=Frequency*1000000
+self.Frequency=Frequency
+self.HertzFrequency=Frequency*1000000
 if self.Positionable.ClassName=="UNIT"or self.Positionable.ClassName=="GROUP"then
 local commandSetFrequency={
 id="SetFrequency",
 params={
-frequency=self.Frequency,
+frequency=self.HertzFrequency,
 modulation=self.Modulation,
 }
 }
@@ -80809,6 +80821,10 @@ self:F2(Modulation)
 if type(Modulation)=="number"then
 if Modulation==radio.modulation.AM or Modulation==radio.modulation.FM then
 self.Modulation=Modulation
+if self.moduhasbeenset==false and Modulation==radio.modulation.FM then
+self:SetFrequency(self.Frequency)
+end
+self.moduhasbeenset=true
 return self
 end
 end
