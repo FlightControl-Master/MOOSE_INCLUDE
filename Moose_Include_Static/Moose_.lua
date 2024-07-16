@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-15T17:23:30+02:00-214cd3748cb577248c17c5fa6103c21d88789bcb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T08:45:37+02:00-5d6951ae11a3d5487e7cdca95f0c96906af996df ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20673,7 +20673,7 @@ if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 self:T({"Dead event: "..EventPrefix})
-self:T(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix,self.SpawnAliasPrefix,self.AliveUnits))
+self:T(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix or"",self.SpawnAliasPrefix or"",self.AliveUnits or 0))
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
 self.AliveUnits=self.AliveUnits-1
 end
