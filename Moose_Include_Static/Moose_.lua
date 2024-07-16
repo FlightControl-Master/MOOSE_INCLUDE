@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-15T17:24:13+02:00-91a0e992cdf7ad3a7feb0f97b0da61e77dc684c4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T11:54:46+02:00-c040d2fa3fe97aa642a02d50b2298849b49927c8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11447,7 +11447,7 @@ return self
 end
 function DATABASE:_RegisterDynamicGroup(Groupname)
 local DCSGroup=Group.getByName(Groupname)
-if DCSGroup:isExist()then
+if DCSGroup and DCSGroup:isExist()then
 local DCSGroupName=DCSGroup:getName()
 self:I(string.format("Register Group: %s",tostring(DCSGroupName)))
 self:AddGroup(DCSGroupName,true)
@@ -20677,7 +20677,7 @@ if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 self:T({"Dead event: "..EventPrefix})
-self:T(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix,self.SpawnAliasPrefix,self.AliveUnits))
+self:T(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix or"",self.SpawnAliasPrefix or"",self.AliveUnits or 0))
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
 self.AliveUnits=self.AliveUnits-1
 end
