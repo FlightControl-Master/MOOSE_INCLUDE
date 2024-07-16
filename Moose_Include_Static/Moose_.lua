@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T13:38:42+02:00-c73d8a6339e2e9b83b27f64f52f3b5ea2510d702 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T16:02:33+02:00-c4738b24ebc5dd7132eeda4ce6b7d3dc48ef31dc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11119,8 +11119,8 @@ function DATABASE:FindClient(ClientName)
 local ClientFound=self.CLIENTS[ClientName]
 return ClientFound
 end
-function DATABASE:AddClient(ClientName)
-if not self.CLIENTS[ClientName]then
+function DATABASE:AddClient(ClientName,Force)
+if not self.CLIENTS[ClientName]or Force==true then
 self.CLIENTS[ClientName]=CLIENT:Register(ClientName)
 end
 return self.CLIENTS[ClientName]
@@ -11557,8 +11557,8 @@ end
 local PlayerName=Event.IniUnit:GetPlayerName()
 if PlayerName then
 self:I(string.format("Player '%s' joined unit '%s' of group '%s'",tostring(PlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniDCSGroupName)))
-if not client then
-client=self:AddClient(Event.IniDCSUnitName)
+if client==nil or(client and client:CountPlayers()==0)then
+client=self:AddClient(Event.IniDCSUnitName,true)
 end
 client:AddPlayer(PlayerName)
 if not self.PLAYERS[PlayerName]then
@@ -24728,6 +24728,30 @@ self:SetOption(AI.Option.Air.id.PROHIBIT_AB,Prohibit)
 end
 return self
 end
+function CONTROLLABLE:OptionEvasionOfARM(Seconds)
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsGround()then
+if Seconds==nil then Seconds=false end
+Controller:setOption(AI.Option.Ground.id.EVASION_OF_ARM,Seconds)
+end
+end
+return self
+end
+function CONTROLLABLE:OptionFormationInterval(meters)
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsGround()then
+if meters==nil or meters>100 or meters<0 then meters=50 end
+Controller:setOption(30,meters)
+end
+end
+return self
+end
 function CONTROLLABLE:OptionECM(ECMvalue)
 self:F2({self.ControllableName})
 local DCSControllable=self:GetDCSObject()
@@ -28447,6 +28471,9 @@ function CLIENT:AddPlayer(PlayerName)
 table.insert(self.Players,PlayerName)
 return self
 end
+function CLIENT:CountPlayers()
+return#self.Players or 0
+end
 function CLIENT:GetPlayers()
 return self.Players
 end
@@ -31260,7 +31287,7 @@ GASOLINE=1,
 MW50=2,
 DIESEL=3,
 }
-STORAGE.version="0.0.1"
+STORAGE.version="0.0.2"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
@@ -31268,6 +31295,15 @@ if Airbase.getWarehouse then
 self.warehouse=self.airbase:getWarehouse()
 end
 self.lid=string.format("STORAGE %s",AirbaseName)
+return self
+end
+function STORAGE:NewFromStaticCargo(StaticCargoName)
+local self=BASE:Inherit(self,BASE:New())
+self.airbase=StaticObject.getByName(StaticCargoName)
+if Airbase.getWarehouse then
+self.warehouse=Warehouse.getCargoAsWarehouse(self.airbase)
+end
+self.lid=string.format("STORAGE %s",StaticCargoName)
 return self
 end
 function STORAGE:FindByName(AirbaseName)
