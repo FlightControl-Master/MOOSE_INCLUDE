@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T11:54:46+02:00-c040d2fa3fe97aa642a02d50b2298849b49927c8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T13:39:05+02:00-15996b43e65c95d67856141159b444f2dbcc431a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11127,7 +11127,7 @@ return self.CLIENTS[ClientName]
 end
 function DATABASE:FindGroup(GroupName)
 local GroupFound=self.GROUPS[GroupName]
-if GroupFound==nil and GroupName~=nil then
+if GroupFound==nil and GroupName~=nil and self.Templates.Groups[GroupName]==nil then
 self:_RegisterDynamicGroup(GroupName)
 return self.GROUPS[GroupName]
 end
@@ -14287,13 +14287,18 @@ if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
-local UnitCategory
-if ClientCategoryID==nil and MClient:IsAlive()~=nil then
+local UnitCategory=0
+if ClientCategoryID==nil and MClient:IsExist()then
 ClientCategoryID,UnitCategory=MClient:GetCategory()
-end
 self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
+end
+else
+self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
+if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+MClientCategory=true
+end
 end
 end
 self:T({"Evaluated Category",MClientCategory})
@@ -14576,13 +14581,18 @@ if self.Filter.Categories and MClientInclude then
 local MClientCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
-local UnitCategory
-if ClientCategoryID==nil and MClient:IsAlive()~=nil then
+local UnitCategory=0
+if ClientCategoryID==nil and MClient:IsExist()then
 ClientCategoryID,UnitCategory=MClient:GetCategory()
-end
 self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
+end
+else
+self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
+if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
+MClientCategory=true
+end
 end
 end
 self:T({"Evaluated Category",MClientCategory})
@@ -29025,7 +29035,7 @@ self.AliveCheckScheduler:NoTrace()
 return self
 end
 function CLIENT:_AliveCheckScheduler(SchedulerName)
-self:F3({SchedulerName,self.ClientName,self.ClientAlive2,self.ClientBriefingShown,self.ClientCallBack})
+self:T2({SchedulerName,self.ClientName,self.ClientAlive2,self.ClientBriefingShown,self.ClientCallBack})
 if self:IsAlive()then
 if self.ClientAlive2==false then
 self:ShowBriefing()
@@ -120032,6 +120042,7 @@ SubtitleDuration=0,
 Power=100,
 Loop=false,
 alias=nil,
+moduhasbeenset=false,
 }
 function RADIO:New(Positionable)
 local self=BASE:Inherit(self,BASE:New())
@@ -120067,12 +120078,13 @@ end
 function RADIO:SetFrequency(Frequency)
 self:F2(Frequency)
 if type(Frequency)=="number"then
-self.Frequency=Frequency*1000000
+self.Frequency=Frequency
+self.HertzFrequency=Frequency*1000000
 if self.Positionable.ClassName=="UNIT"or self.Positionable.ClassName=="GROUP"then
 local commandSetFrequency={
 id="SetFrequency",
 params={
-frequency=self.Frequency,
+frequency=self.HertzFrequency,
 modulation=self.Modulation,
 }
 }
@@ -120089,6 +120101,10 @@ self:F2(Modulation)
 if type(Modulation)=="number"then
 if Modulation==radio.modulation.AM or Modulation==radio.modulation.FM then
 self.Modulation=Modulation
+if self.moduhasbeenset==false and Modulation==radio.modulation.FM then
+self:SetFrequency(self.Frequency)
+end
+self.moduhasbeenset=true
 return self
 end
 end
