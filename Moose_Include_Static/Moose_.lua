@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-18T14:35:38+02:00-f0e01845d372e0b7504dd6f74be6ab1b37b86e81 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-18T16:08:22+02:00-124262667e9f66b5e7c6ebf573513775e2a641f4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -68889,7 +68889,7 @@ alltext=alltext..";\n"..subtitle
 local _RUNACT
 if not self.ATISforFARPs then
 local subtitle=""
-if runwayLanding then
+if runwayLanding and runwayLanding~=runwayTakeoff then
 local actrun=self.gettext:GetEntry("ACTIVELANDING",self.locale)
 subtitle=string.format("%s %s",actrun,runwayLanding)
 if rwyLandingLeft==true then
