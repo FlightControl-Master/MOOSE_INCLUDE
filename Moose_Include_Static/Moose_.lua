@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-16T16:03:16+02:00-31b76da69d00720da51a5535a78c1cf2a760fd52 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-18T14:35:38+02:00-f0e01845d372e0b7504dd6f74be6ab1b37b86e81 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -42626,8 +42626,10 @@ self.instructmsrs:SetLabel("RANGEI")
 self.instructmsrs:SetVolume(Volume or 1.0)
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
 if PathToGoogleKey then
-self.controlmsrs:SetGoogle(PathToGoogleKey)
-self.instructmsrs:SetGoogle(PathToGoogleKey)
+self.controlmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
+self.controlmsrs:SetProvider(MSRS.Provider.GOOGLE)
+self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
+self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 else
 self:E(self.lid..string.format("ERROR: No SRS path specified!"))
@@ -43283,7 +43285,7 @@ else
 self:E(self.lid..string.format("ERROR: Could not save results to file %s",tostring(filename)))
 end
 end
-local path=lfs.writedir()..[[Logs\]]
+local path=self.targetpath or lfs.writedir()..[[Logs\]]
 local filename=path..string.format("RANGE-%s_BombingResults.csv",self.rangename)
 local scores="Name,Pass,Target,Distance,Radial,Quality,Weapon,Airframe,Mission Time"
 for playername,results in pairs(self.bombPlayerResults)do
@@ -43322,7 +43324,7 @@ self:E(self.lid..string.format("WARNING: Could not load player results from file
 return nil
 end
 end
-local path=lfs.writedir()..[[Logs\]]
+local path=self.targetpath or lfs.writedir()..[[Logs\]]
 local filename=path..string.format("RANGE-%s_BombingResults.csv",self.rangename)
 local text=string.format("Loading player bomb results from file %s",filename)
 self:I(self.lid..text)
@@ -44135,12 +44137,12 @@ local text=""
 if self.targetsheet then
 playerData.targeton=not playerData.targeton
 if playerData and playerData.targeton==true then
-text=string.format("roger, your targetsheets are now SAVED.")
+text=string.format("Roger, your targetsheets are now SAVED.")
 else
-text=string.format("affirm, your targetsheets are NOT SAVED.")
+text=string.format("Affirm, your targetsheets are NOT SAVED.")
 end
 else
-text="negative, target sheet data recorder is broken on this range."
+text="Negative, target sheet data recorder is broken on this range."
 end
 self:_DisplayMessageToGroup(unit,text,5,false,false)
 end
