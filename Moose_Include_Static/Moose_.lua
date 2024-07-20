@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-18T16:08:22+02:00-124262667e9f66b5e7c6ebf573513775e2a641f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-20T12:16:30+02:00-70622413dcdec6d974886419e4332e32a4d6c29c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20680,8 +20680,8 @@ end
 end
 end
 function SPAWN:_OnDeadOrCrash(EventData)
-self:T("Dead or crash event ID "..EventData.id)
-self:T("Dead or crash event for "..EventData.IniUnitName)
+self:T("Dead or crash event ID "..tostring(EventData.id or 0))
+self:T("Dead or crash event for "..tostring(EventData.IniUnitName or"none"))
 local unit=UNIT:FindByName(EventData.IniUnitName)
 if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
