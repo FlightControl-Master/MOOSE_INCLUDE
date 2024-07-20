@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-20T17:55:54+02:00-d07107d937a8c592c4d5e595eed00c58afed8673 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-21T00:29:52+02:00-273170b4f46bdd40b13b95a51fc8fed2a292f838 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23818,10 +23818,10 @@ local DCSTask={
 id='Strafing',
 params={
 point=Vec2,
-weaponType=WeaponType or 1073741822,
+weaponType=WeaponType or 805337088,
 expend=WeaponExpend or"Auto",
 attackQty=AttackQty or 1,
-attackQtyLimit=AttackQty>1 and true or false,
+attackQtyLimit=AttackQty~=nil and true or false,
 direction=Direction and math.rad(Direction)or 0,
 directionEnabled=Direction and true or false,
 groupAttack=GroupAttack or false,
@@ -76752,6 +76752,7 @@ REARMING="Rearming",
 CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
 PATROLRACETRACK="Patrol Racetrack",
+STRAFING="Strafing",
 }
 AUFTRAG.SpecialTask={
 FORMATION="Formation",
@@ -77201,6 +77202,23 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
+function AUFTRAG:NewSTRAFING(Target,Altitude,Length)
+local mission=AUFTRAG:New(AUFTRAG.Type.STRAFING)
+mission:_TargetFromObject(Target)
+mission.engageWeaponType=805337088
+mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
+mission.engageAltitude=UTILS.FeetToMeters(Altitude or 1000)
+mission.engageLength=Length
+mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
+mission.missionAltitude=mission.engageAltitude*0.8
+mission.missionFraction=0.5
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionROT=ENUMS.ROT.NoReaction
+mission.dTevaluate=5*60
+mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
 function AUFTRAG:NewBOMBRUNWAY(Airdrome,Altitude)
 if type(Airdrome)=="string"then
 Airdrome=AIRBASE:FindByName(Airdrome)
@@ -77226,7 +77244,7 @@ mission:_TargetFromObject(Target)
 mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
-mission.engageCarpetLength=CarpetLength or 500
+mission.engageLength=CarpetLength or 500
 mission.engageAsGroup=false
 mission.engageDirection=nil
 mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
@@ -77581,6 +77599,8 @@ elseif MissionType==AUFTRAG.Type.BOMBING then
 mission=self:NewBOMBING(Target,Altitude)
 elseif MissionType==AUFTRAG.Type.BOMBRUNWAY then
 mission=self:NewBOMBRUNWAY(Target,Altitude)
+elseif MissionType==AUFTRAG.Type.STRAFING then
+mission=self:NewSTRAFING(Target,Altitude)
 elseif MissionType==AUFTRAG.Type.CAS then
 mission=self:NewCAS(ZONE_RADIUS:New(Target:GetName(),Target:GetVec2(),1000),Altitude,Speed,Target:GetAverageCoordinate(),Heading,Leg,TargetTypes)
 elseif MissionType==AUFTRAG.Type.CASENHANCED then
@@ -79235,11 +79255,14 @@ self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.BOMBING then
 local DCStask=CONTROLLABLE.TaskBombing(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,Divebomb)
 table.insert(DCStasks,DCStask)
+elseif self.type==AUFTRAG.Type.STRAFING then
+local DCStask=CONTROLLABLE.TaskStrafing(nil,self:GetTargetVec2(),self.engageQuantity,self.engageLength,self.engageWeaponType,self.engageWeaponExpend,self.engageDirection,self.engageAsGroup)
+table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.BOMBRUNWAY then
 local DCStask=CONTROLLABLE.TaskBombingRunway(nil,self.engageTarget:GetObject(),self.engageWeaponType,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAsGroup)
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.BOMBCARPET then
-local DCStask=CONTROLLABLE.TaskCarpetBombing(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,self.engageCarpetLength)
+local DCStask=CONTROLLABLE.TaskCarpetBombing(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,self.engageLength)
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.CAP then
 local DCStask=CONTROLLABLE.EnRouteTaskEngageTargetsInZone(nil,self.engageZone:GetVec2(),self.engageZone:GetRadius(),self.engageTargetTypes,Priority)
