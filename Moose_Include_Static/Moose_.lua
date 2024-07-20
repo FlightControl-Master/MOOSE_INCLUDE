@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-20T12:16:30+02:00-70622413dcdec6d974886419e4332e32a4d6c29c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-20T17:55:54+02:00-d07107d937a8c592c4d5e595eed00c58afed8673 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -94770,6 +94770,13 @@ function NAVYGROUP:SetPathfindingOff()
 self:SetPathfinding(false,self.pathCorridor)
 return self
 end
+function NAVYGROUP:SetIntoWindLegacy(SwitchOn)
+if SwitchOn==nil then
+SwitchOn=true
+end
+self.intowindold=SwitchOn
+return self
+end
 function NAVYGROUP:AddTaskFireAtPoint(Coordinate,Clock,Radius,Nshots,WeaponType,Prio)
 local DCStask=CONTROLLABLE.TaskFireAtPoint(nil,Coordinate:GetVec2(),Radius,Nshots,WeaponType)
 local task=self:AddTask(DCStask,Clock,nil,Prio)
@@ -94828,6 +94835,31 @@ function NAVYGROUP:AddTurnIntoWind(starttime,stoptime,speed,uturn,offset)
 local recovery=self:_CreateTurnIntoWind(starttime,stoptime,speed,uturn,offset)
 table.insert(self.Qintowind,recovery)
 return recovery
+end
+function NAVYGROUP:GetTurnIntoWind(TID)
+if TID then
+for _,_turn in pairs(self.Qintowind)do
+local turn=_turn
+if turn.Id==TID then
+return turn
+end
+end
+else
+return self.intowind
+end
+return nil
+end
+function NAVYGROUP:ExtendTurnIntoWind(Duration,TurnIntoWind)
+Duration=Duration or 300
+local TID=TurnIntoWind and TurnIntoWind.Id or nil
+local turn=self:GetTurnIntoWind(TID)
+if turn then
+turn.Tstop=turn.Tstop+Duration
+self:T(self.lid..string.format("Extending turn into wind by %d seconds. New stop time is %s",Duration,UTILS.SecondsToClock(turn.Tstop)))
+else
+self:E(self.lid.."Could not get turn into wind to extend!")
+end
+return self
 end
 function NAVYGROUP:RemoveTurnIntoWind(IntoWindData)
 if self.intowind and self.intowind.Id==IntoWindData.Id then
@@ -95482,19 +95514,35 @@ local coord=self:GetCoordinate()
 local Wdir,Wspeed=coord:GetWind(Altitude or 18)
 return Wdir,Wspeed
 end
-function NAVYGROUP:GetHeadingIntoWind_old(Offset)
+function NAVYGROUP:GetHeadingIntoWind_old(Offset,vdeck)
+local function adjustDegreesForWindSpeed(windSpeed)
+local degreesAdjustment=0
+if windSpeed>0 and windSpeed<3 then
+degreesAdjustment=30
+elseif windSpeed>=3 and windSpeed<5 then
+degreesAdjustment=20
+elseif windSpeed>=5 and windSpeed<8 then
+degreesAdjustment=8
+elseif windSpeed>=8 and windSpeed<13 then
+degreesAdjustment=4
+elseif windSpeed>=13 then
+degreesAdjustment=0
+end
+return degreesAdjustment
+end
 Offset=Offset or 0
 local windfrom,vwind=self:GetWind()
-local intowind=windfrom-Offset
+local intowind=windfrom-Offset+adjustDegreesForWindSpeed(vwind)
 if vwind<0.1 then
 intowind=self:GetHeading()
 end
 if intowind<0 then
 intowind=intowind+360
 end
-return intowind
+local vtot=math.max(vdeck-UTILS.MpsToKnots(vwind),4)
+return intowind,vtot
 end
-function NAVYGROUP:GetHeadingIntoWind(Offset,vdeck)
+function NAVYGROUP:GetHeadingIntoWind_new(Offset,vdeck)
 Offset=Offset or 0
 local windfrom,vwind=self:GetWind(18)
 vwind=UTILS.MpsToKnots(vwind)
@@ -95523,6 +95571,13 @@ end
 local intowind=(540+(windto+math.deg(theta)))%360
 self:T(self.lid..string.format("Heading into Wind: vship=%.1f, vwind=%.1f, WindTo=%03d°, Theta=%03d°, Heading=%03d",v,vwind,windto,theta,intowind))
 return intowind,v
+end
+function NAVYGROUP:GetHeadingIntoWind(Offset,vdeck)
+if self.intowindold then
+return self:GetHeadingIntoWind_old(Offset,vdeck)
+else
+return self:GetHeadingIntoWind_new(Offset,vdeck)
+end
 end
 function NAVYGROUP:_FindPathToNextWaypoint()
 self:T3(self.lid.."Path finding")
