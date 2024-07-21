@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-20T12:16:08+02:00-ccf3093fe8639d1cd8b6934c084557606dd6cfdb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-21T07:41:36+02:00-c2aa57c60392bd5cf817dc5699dd5b850d5b29a2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9194,7 +9194,7 @@ local FoundUnit=UNIT:FindByName(UnitObject:getName())
 if FoundUnit then
 SetUnit:AddUnit(FoundUnit)
 else
-local FoundStatic=STATIC:FindByName(UnitObject:getName())
+local FoundStatic=STATIC:FindByName(UnitObject:getName(),false)
 if FoundStatic then
 SetUnit:AddUnit(FoundStatic)
 end
