@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T12:42:34+02:00-500fe37ac476b845dee3fdf33a8ac808eebd044d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T13:41:08+02:00-37cbf212f79a27fb0c1e37c9dce1ba934e7e1800 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7769,7 +7769,7 @@ end
 function SETTINGS:SetPlayerMenu(PlayerUnit)
 if _SETTINGS.ShowPlayerMenu==true then
 local PlayerGroup=PlayerUnit:GetGroup()
-local PlayerName=PlayerUnit:GetPlayerName()
+local PlayerName=PlayerUnit:GetPlayerName()or"None"
 local PlayerMenu=MENU_GROUP:New(PlayerGroup,'Settings "'..PlayerName..'"')
 self.PlayerMenu=PlayerMenu
 self:T(string.format("Setting menu for player %s",tostring(PlayerName)))
