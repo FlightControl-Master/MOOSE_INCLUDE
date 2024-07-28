@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T13:41:41+02:00-a63a8c78a8f1c9db15920abe61b9ab076a5571ca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T15:20:54+02:00-5dd4435b7d256f1b90f844d435ce42497cb8ec34 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -105339,7 +105339,7 @@ DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.66"
+PLAYERTASKCONTROLLER.version="0.1.67"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -105653,7 +105653,7 @@ return self
 end
 function PLAYERTASKCONTROLLER:_EventHandler(EventData)
 self:T(self.lid.."_EventHandler: "..EventData.id)
-if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
+if EventData.id==EVENTS.UnitLost or EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
 if EventData.IniPlayerName then
 self:T(self.lid.."Event for player: "..EventData.IniPlayerName)
 local text=""
@@ -107060,6 +107060,7 @@ self:HandleEvent(EVENTS.Ejection,self._EventHandler)
 self:HandleEvent(EVENTS.Crash,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
+self:HandleEvent(EVENTS.UnitLost,self._EventHandler)
 self:SetEventPriority(5)
 return self
 end
