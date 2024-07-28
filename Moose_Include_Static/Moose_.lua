@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T12:43:57+02:00-fb31c25ab73acf9b9f6736c51f7c4e6d11267397 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T13:41:41+02:00-a63a8c78a8f1c9db15920abe61b9ab076a5571ca ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7769,7 +7769,7 @@ end
 function SETTINGS:SetPlayerMenu(PlayerUnit)
 if _SETTINGS.ShowPlayerMenu==true then
 local PlayerGroup=PlayerUnit:GetGroup()
-local PlayerName=PlayerUnit:GetPlayerName()
+local PlayerName=PlayerUnit:GetPlayerName()or"None"
 local PlayerMenu=MENU_GROUP:New(PlayerGroup,'Settings "'..PlayerName..'"')
 self.PlayerMenu=PlayerMenu
 self:T(string.format("Setting menu for player %s",tostring(PlayerName)))
@@ -12859,11 +12859,14 @@ local gmin=nil
 for GroupID,GroupData in pairs(Set)do
 local group=GroupData
 if group and group:IsAlive()and(Coalitions==nil or UTILS.IsAnyInTable(Coalitions,group:GetCoalition()))then
-local coord=group:GetCoord()
-local d=UTILS.VecDist3D(Coordinate,coord)
+local coord=group:GetCoordinate()
+local d
+if coord~=nil then
+d=UTILS.VecDist3D(Coordinate,coord)
 if d<dmin then
 dmin=d
 gmin=group
+end
 end
 end
 end
@@ -21972,7 +21975,7 @@ end
 for _,_client in pairs(Set)do
 local client=_client
 if client and client:IsAlive()then
-local playername=client:GetPlayerName()
+local playername=client:GetPlayerName()or"None"
 local unitname=client:GetName()
 if not knownunits[unitname]then
 knownunits[unitname]=true
