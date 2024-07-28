@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T12:07:34+02:00-03cd390bafef6eb2e9300f11d750afe0d5ce4078 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T12:43:57+02:00-fb31c25ab73acf9b9f6736c51f7c4e6d11267397 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -105513,7 +105513,9 @@ self:T(self.lid.."_SendMessageToClients")
 local seconds=Seconds or 10
 self.ClientSet:ForEachClient(
 function(Client)
+if Client~=nil and Client:IsActive()then
 local m=MESSAGE:New(Text,seconds,"Tasking"):ToClient(Client)
+end
 end
 )
 return self
