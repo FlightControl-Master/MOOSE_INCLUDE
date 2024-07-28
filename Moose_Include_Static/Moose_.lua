@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-21T07:41:36+02:00-c2aa57c60392bd5cf817dc5699dd5b850d5b29a2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T12:42:34+02:00-500fe37ac476b845dee3fdf33a8ac808eebd044d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12859,11 +12859,14 @@ local gmin=nil
 for GroupID,GroupData in pairs(Set)do
 local group=GroupData
 if group and group:IsAlive()and(Coalitions==nil or UTILS.IsAnyInTable(Coalitions,group:GetCoalition()))then
-local coord=group:GetCoord()
-local d=UTILS.VecDist3D(Coordinate,coord)
+local coord=group:GetCoordinate()
+local d
+if coord~=nil then
+d=UTILS.VecDist3D(Coordinate,coord)
 if d<dmin then
 dmin=d
 gmin=group
+end
 end
 end
 end
