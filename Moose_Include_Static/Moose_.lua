@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T15:20:54+02:00-5dd4435b7d256f1b90f844d435ce42497cb8ec34 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T17:25:55+02:00-b4ceafca50ddf9a31558a145d21fdbe65f028875 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -104665,7 +104665,7 @@ self.TaskController=nil
 self.timestamp=timer.getAbsTime()
 self.TTSType=TTSType or"close air support"
 self.lastsmoketime=0
-if Repeat then
+if type(Repeat)=="boolean"and Repeat==true and type(Times)=="number"and Times>1 then
 self.Repeat=true
 self.RepeatNo=Times or 1
 end
