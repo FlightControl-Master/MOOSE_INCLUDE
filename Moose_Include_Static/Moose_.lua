@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-28T17:25:55+02:00-b4ceafca50ddf9a31558a145d21fdbe65f028875 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-29T13:01:42+02:00-4f64ae6057e901ce576e8b90f81b57cedde794a7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -36745,11 +36745,11 @@ self.DetectionSet:ForEachGroupAlive(IteratorFunction,arg)
 return self
 end
 function DETECTION_BASE:onafterDetection(From,Event,To,Detection,DetectionTimeStamp)
-self:I({DetectedObjects=self.DetectedObjects})
+self:T({DetectedObjects=self.DetectedObjects})
 self.DetectionRun=self.DetectionRun+1
 local HasDetectedObjects=false
 if Detection and Detection:IsAlive()then
-self:I({"DetectionGroup is Alive",Detection:GetName()})
+self:T({"DetectionGroup is Alive",Detection:GetName()})
 local DetectionGroupName=Detection:GetName()
 local DetectionUnit=Detection:GetUnit(1)
 local DetectedUnits={}
