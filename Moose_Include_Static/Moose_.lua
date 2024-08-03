@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T13:57:16+02:00-38e10331c94aca3291d6f5b9e48e0962db0c4679 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:30:27+02:00-16655cf070e2afc0b64a2102c13c29e8d65eda00 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2476,8 +2476,12 @@ if type_name=="MH-60R"and(unit:getDrawArgumentValue(403)>0 or unit:getDrawArgume
 BASE:T(unit_name.." cargo door is open")
 return true
 end
-if type_name==" OH-58D"and(unit:getDrawArgumentValue(35)>0 or unit:getDrawArgumentValue(421)==-1)then
+if type_name=="OH-58D"and(unit:getDrawArgumentValue(35)>0 or unit:getDrawArgumentValue(421)==-1)then
 BASE:T(unit_name.." cargo door is open")
+return true
+end
+if type_name=="CH-47Fbl1"and(unit:getDrawArgumentValue(86)>0)then
+BASE:T(unit_name.." rear cargo door is open")
 return true
 end
 return false
@@ -66086,7 +66090,7 @@ CTLD.UnitTypeCapabilities={
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
-["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=33,length=30,cargoweightlimit=3000},
+["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=30,cargoweightlimit=8000},
 }
 CTLD.version="1.0.56"
 function CTLD:New(Coalition,Prefixes,Alias)
@@ -69820,7 +69824,7 @@ CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
-CSAR.AircraftType["CH-47Fbl1"]=30
+CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.version="1.0.26"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
