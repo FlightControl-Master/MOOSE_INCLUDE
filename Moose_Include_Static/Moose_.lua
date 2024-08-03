@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:31:24+02:00-ed82a4715d681c81f313b7cc5371619a71ac66cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:33:52+02:00-ef27584d0b9fc26ed631d6824c254b2f7dcd4462 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -69693,7 +69693,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
-["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
+["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=30,cargoweightlimit=8000},
 }
 CTLD.version="1.0.56"
@@ -73427,7 +73427,7 @@ CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
-CSAR.AircraftType["OH58D"]=2
+CSAR.AircraftType["OH-58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.version="1.0.26"
 function CSAR:New(Coalition,Template,Alias)
