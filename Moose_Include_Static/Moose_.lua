@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-07-30T07:47:50+02:00-27b9f32758114d289ba35370dcb1e382bff10895 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T13:48:40+02:00-d17d263fa314247462e3dbb4c604263cd3189038 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13021,6 +13021,18 @@ end
 function SET_UNIT:FilterActive(Active)
 Active=Active or not(Active==false)
 self.Filter.Active=Active
+return self
+end
+function SET_UNIT:FilterAlive()
+self:FilterFunction(
+function(unit)
+if unit and unit:IsExist()and unit:IsAlive()then
+return true
+else
+return false
+end
+end
+)
 return self
 end
 function SET_UNIT:FilterHasRadar(RadarTypes)
@@ -69676,8 +69688,9 @@ CTLD.UnitTypeCapabilities={
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
+["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=33,length=30,cargoweightlimit=3000},
 }
-CTLD.version="1.0.55"
+CTLD.version="1.0.56"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73409,7 +73422,8 @@ CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
-CSAR.version="1.0.25"
+CSAR.AircraftType["CH-47Fbl1"]=30
+CSAR.version="1.0.26"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
