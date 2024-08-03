@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:02:52+02:00-cb4eccf57fe2b98a57a8499f05812eb2b856a359 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:06:59+02:00-1802d0dc294ee48baac5d8b5de4f9eb3a1fa8153 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18136,6 +18136,7 @@ self.MessageCategory=""
 end
 if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
+local ID=Unit:GetID()
 trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
 end
@@ -21766,7 +21767,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.5a",
+version="0.1.6",
 name=nil,
 clientset=nil,
 menutree={},
@@ -22579,7 +22580,7 @@ local CX=X/2
 local CZ=Z/2
 return math.max(math.max(CX,CZ),boxmin)
 end
-BASE:E({"Cannot GetBoundingRadius",Positionable=self,Alive=self:IsAlive()})
+BASE:T({"Cannot GetBoundingRadius",Positionable=self,Alive=self:IsAlive()})
 return nil
 end
 function POSITIONABLE:GetAltitude()
@@ -52135,7 +52136,6 @@ explosionpower=0.1,
 explosiondist=200,
 explosiondist2=500,
 bigmissilemass=50,
-destroy=nil,
 dt50=5,
 dt10=1,
 dt05=0.5,
@@ -56497,7 +56497,7 @@ end
 TIRESIAS={
 ClassName="TIRESIAS",
 debug=false,
-version="0.0.4",
+version="0.0.5",
 Interval=20,
 GroundSet=nil,
 VehicleSet=nil,
@@ -56544,7 +56544,7 @@ exception=true,
 }
 exceptions:AddGroup(grp,true)
 end
-BASE:I("TIRESIAS: Added exception group: "..grp:GetName())
+BASE:T("TIRESIAS: Added exception group: "..grp:GetName())
 end
 )
 return self
@@ -56690,6 +56690,7 @@ local SwitchAAA=self.SwitchAAA
 if ground:CountAlive()>0 then
 ground:ForEachGroupAlive(
 function(grp)
+local name=grp:GetName()
 if grp.Tiresias and grp.Tiresias.type and(not grp.Tiresias.exception==true)then
 if grp.Tiresias.invisible==true then
 grp:SetCommandInvisible(false)
@@ -56705,7 +56706,7 @@ grp:EnableEmission(true)
 grp.Tiresias.AIOff=false
 end
 else
-BASE:E("TIRESIAS - This group has not been initialized or is an exception!")
+BASE:T("TIRESIAS - This group "..tostring(name).." has not been initialized or is an exception!")
 end
 end
 )
@@ -57839,304 +57840,6 @@ end
 end
 return allin,filled,unfilled
 end
-CLIENTWATCHTools={}
-CLIENTWATCH={}
-CLIENTWATCH.ClassName="CLIENTWATCH"
-CLIENTWATCH.Debug=false
-CLIENTWATCH.lid=nil
-CLIENTWATCH.version="1.0.0"
-function CLIENTWATCH:New(client)
-local self=BASE:Inherit(self,FSM:New())
-self:SetStartState("Idle")
-self:AddTransition("*","Spawn","*")
-if type(client)=="table"or type(client)=="string"then
-if type(client)=="table"then
-if client.ClassName=="CLIENT"then
-self.ClientName=client:GetName()
-self:HandleEvent(EVENTS.Birth)
-function self:OnEventBirth(eventdata)
-if self.ClientName==eventdata.IniUnitName and eventdata.IniCategory<=1 then
-local clientObject=CLIENTWATCHTools:_newClient(eventdata)
-self:Spawn(clientObject)
-end
-end
-else
-local tableValid=true
-for _,entry in pairs(client)do
-if type(entry)~="string"then
-tableValid=false
-self:E({"The base handler failed to start because at least one entry in param1's table is not a string!",InvalidEntry=entry})
-return nil
-end
-end
-if tableValid then
-self:HandleEvent(EVENTS.Birth)
-function self:OnEventBirth(eventdata)
-for _,entry in pairs(client)do
-if string.match(eventdata.IniUnitName,entry)and eventdata.IniCategory==1 then
-local clientObject=CLIENTWATCHTools:_newClient(eventdata)
-self:Spawn(clientObject)
-break
-end
-end
-end
-end
-end
-else
-self:HandleEvent(EVENTS.Birth)
-function self:OnEventBirth(eventdata)
-if string.match(eventdata.IniUnitName,client)and eventdata.IniCategory==1 then
-local clientObject=CLIENTWATCHTools:_newClient(eventdata)
-self:Spawn(clientObject)
-end
-end
-end
-else
-self:E({"The base handler failed to start because param1 is not a CLIENT object or a prefix string!",param1=client})
-return nil
-end
-return self
-end
-function CLIENTWATCHTools:_newClient(eventdata)
-local self=BASE:Inherit(self,FSM:New())
-self:SetStartState("Alive")
-self:AddTransition("Alive","Despawn","Dead")
-self.Unit=eventdata.IniUnit
-self.Group=self.Unit:GetGroup()
-self.Client=self.Unit:GetClient()
-self.PlayerName=self.Unit:GetPlayerName()
-self.UnitName=self.Unit:GetName()
-self.GroupName=self.Group:GetName()
-self:AddTransition("*","Hit","*")
-self:AddTransition("*","Kill","*")
-self:AddTransition("*","Score","*")
-self:AddTransition("*","Shot","*")
-self:AddTransition("*","ShootingStart","*")
-self:AddTransition("*","ShootingEnd","*")
-self:AddTransition("*","Land","*")
-self:AddTransition("*","Takeoff","*")
-self:AddTransition("*","RunwayTakeoff","*")
-self:AddTransition("*","RunwayTouch","*")
-self:AddTransition("*","Refueling","*")
-self:AddTransition("*","RefuelingStop","*")
-self:AddTransition("*","PlayerLeaveUnit","*")
-self:AddTransition("*","Crash","*")
-self:AddTransition("*","Dead","*")
-self:AddTransition("*","PilotDead","*")
-self:AddTransition("*","UnitLost","*")
-self:AddTransition("*","Ejection","*")
-self:AddTransition("*","HumanFailure","*")
-self:AddTransition("*","HumanAircraftRepairFinish","*")
-self:AddTransition("*","HumanAircraftRepairStart","*")
-self:AddTransition("*","EngineShutdown","*")
-self:AddTransition("*","EngineStartup","*")
-self:AddTransition("*","WeaponAdd","*")
-self:AddTransition("*","WeaponDrop","*")
-self:AddTransition("*","WeaponRearm","*")
-self:HandleEvent(EVENTS.Hit)
-self:HandleEvent(EVENTS.Kill)
-self:HandleEvent(EVENTS.Score)
-self:HandleEvent(EVENTS.Shot)
-self:HandleEvent(EVENTS.ShootingStart)
-self:HandleEvent(EVENTS.ShootingEnd)
-self:HandleEvent(EVENTS.Land)
-self:HandleEvent(EVENTS.Takeoff)
-self:HandleEvent(EVENTS.RunwayTakeoff)
-self:HandleEvent(EVENTS.RunwayTouch)
-self:HandleEvent(EVENTS.Refueling)
-self:HandleEvent(EVENTS.RefuelingStop)
-self:HandleEvent(EVENTS.PlayerLeaveUnit)
-self:HandleEvent(EVENTS.Crash)
-self:HandleEvent(EVENTS.Dead)
-self:HandleEvent(EVENTS.PilotDead)
-self:HandleEvent(EVENTS.UnitLost)
-self:HandleEvent(EVENTS.Ejection)
-self:HandleEvent(EVENTS.HumanFailure)
-self:HandleEvent(EVENTS.HumanAircraftRepairFinish)
-self:HandleEvent(EVENTS.HumanAircraftRepairStart)
-self:HandleEvent(EVENTS.EngineShutdown)
-self:HandleEvent(EVENTS.EngineStartup)
-self:HandleEvent(EVENTS.WeaponAdd)
-self:HandleEvent(EVENTS.WeaponDrop)
-self:HandleEvent(EVENTS.WeaponRearm)
-function self:OnEventHit(EventData)
-if EventData.TgtUnitName==self.UnitName then
-self:Hit(EventData)
-end
-end
-function self:OnEventKill(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Kill(EventData)
-end
-end
-function self:OnEventScore(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Score(EventData)
-end
-end
-function self:OnEventShot(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Shot(EventData)
-end
-end
-function self:OnEventShootingStart(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:ShootingStart(EventData)
-end
-end
-function self:OnEventShootingEnd(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:ShootingEnd(EventData)
-end
-end
-function self:OnEventLand(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Land(EventData)
-end
-end
-function self:OnEventTakeoff(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Takeoff(EventData)
-end
-end
-function self:OnEventRunwayTakeoff(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:RunwayTakeoff(EventData)
-end
-end
-function self:OnEventRunwayTouch(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:RunwayTouch(EventData)
-end
-end
-function self:OnEventRefueling(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Refueling(EventData)
-end
-end
-function self:OnEventRefuelingStop(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:RefuelingStop(EventData)
-end
-end
-function self:OnEventPlayerLeaveUnit(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:PlayerLeaveUnit(EventData)
-self._deadRoutine()
-end
-end
-function self:OnEventCrash(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Crash(EventData)
-self._deadRoutine()
-end
-end
-function self:OnEventDead(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Dead(EventData)
-self._deadRoutine()
-end
-end
-function self:OnEventPilotDead(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:PilotDead(EventData)
-self._deadRoutine()
-end
-end
-function self:OnEventUnitLost(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:UnitLost(EventData)
-self._deadRoutine()
-end
-end
-function self:OnEventEjection(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:Ejection(EventData)
-self._deadRoutine()
-end
-end
-function self:OnEventHumanFailure(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:HumanFailure(EventData)
-if not self.Unit:IsAlive()then
-self._deadRoutine()
-end
-end
-end
-function self:OnEventHumanAircraftRepairFinish(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:HumanAircraftRepairFinish(EventData)
-end
-end
-function self:OnEventHumanAircraftRepairStart(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:HumanAircraftRepairStart(EventData)
-end
-end
-function self:OnEventEngineShutdown(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:EngineShutdown(EventData)
-end
-end
-function self:OnEventEngineStartup(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:EngineStartup(EventData)
-end
-end
-function self:OnEventWeaponAdd(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:WeaponAdd(EventData)
-end
-end
-function self:OnEventWeaponDrop(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:WeaponDrop(EventData)
-end
-end
-function self:OnEventWeaponRearm(EventData)
-if EventData.IniUnitName==self.UnitName then
-self:WeaponRearm(EventData)
-end
-end
-self.FallbackTimer=TIMER:New(function()
-if not self.Unit:IsAlive()then
-self._deadRoutine()
-end
-end)
-self.FallbackTimer:Start(5,5)
-function self._deadRoutine()
-self:UnHandleEvent(EVENTS.Hit)
-self:UnHandleEvent(EVENTS.Kill)
-self:UnHandleEvent(EVENTS.Score)
-self:UnHandleEvent(EVENTS.Shot)
-self:UnHandleEvent(EVENTS.ShootingStart)
-self:UnHandleEvent(EVENTS.ShootingEnd)
-self:UnHandleEvent(EVENTS.Land)
-self:UnHandleEvent(EVENTS.Takeoff)
-self:UnHandleEvent(EVENTS.RunwayTakeoff)
-self:UnHandleEvent(EVENTS.RunwayTouch)
-self:UnHandleEvent(EVENTS.Refueling)
-self:UnHandleEvent(EVENTS.RefuelingStop)
-self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
-self:UnHandleEvent(EVENTS.Crash)
-self:UnHandleEvent(EVENTS.Dead)
-self:UnHandleEvent(EVENTS.PilotDead)
-self:UnHandleEvent(EVENTS.UnitLost)
-self:UnHandleEvent(EVENTS.Ejection)
-self:UnHandleEvent(EVENTS.HumanFailure)
-self:UnHandleEvent(EVENTS.HumanAircraftRepairFinish)
-self:UnHandleEvent(EVENTS.HumanAircraftRepairStart)
-self:UnHandleEvent(EVENTS.EngineShutdown)
-self:UnHandleEvent(EVENTS.EngineStartup)
-self:UnHandleEvent(EVENTS.WeaponAdd)
-self:UnHandleEvent(EVENTS.WeaponDrop)
-self:UnHandleEvent(EVENTS.WeaponRearm)
-self.FallbackTimer:Stop()
-self:Despawn()
-end
-self:I({"CLIENT SPAWN EVENT",PlayerName=self.PlayerName,UnitName=self.UnitName,GroupName=self.GroupName})
-return self
-end
 AIRBOSS={
 ClassName="AIRBOSS",
 Debug=false,
@@ -59140,6 +58843,7 @@ self:HandleEvent(EVENTS.Ejection)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._PlayerLeft)
 self:HandleEvent(EVENTS.MissionEnd)
 self:HandleEvent(EVENTS.RemoveUnit)
+self:HandleEvent(EVENTS.UnitLost,self.OnEventRemoveUnit)
 self.StatusTimer=TIMER:New(self._Status,self):Start(2,0.5)
 self:__Status(1)
 end
@@ -76116,6 +75820,7 @@ self:_InitGroup()
 self:HandleEvent(EVENTS.Birth,self.OnEventBirth)
 self:HandleEvent(EVENTS.Dead,self.OnEventDead)
 self:HandleEvent(EVENTS.RemoveUnit,self.OnEventRemoveUnit)
+self:HandleEvent(EVENTS.UnitLost,self.OnEventRemoveUnit)
 self:HandleEvent(EVENTS.Hit,self.OnEventHit)
 self.timerStatus=TIMER:New(self.Status,self):Start(1,30)
 self.timerQueueUpdate=TIMER:New(self._QueueUpdate,self):Start(2,5)
@@ -86375,6 +86080,7 @@ return false
 end
 if Mission.type==AUFTRAG.Type.TANKER then
 if Mission.refuelSystem and Mission.refuelSystem==self.tankerSystem then
+self:T(self.lid..string.format("INFO: Correct refueling system requested=%s != %s=available",tostring(Mission.refuelSystem),tostring(self.tankerSystem)))
 else
 self:T(self.lid..string.format("INFO: Wrong refueling system requested=%s != %s=available",tostring(Mission.refuelSystem),tostring(self.tankerSystem)))
 return false
@@ -95081,6 +94787,7 @@ self:_InitGroup()
 self:HandleEvent(EVENTS.Birth,self.OnEventBirth)
 self:HandleEvent(EVENTS.Dead,self.OnEventDead)
 self:HandleEvent(EVENTS.RemoveUnit,self.OnEventRemoveUnit)
+self:HandleEvent(EVENTS.UnitLost,self.OnEventRemoveUnit)
 self.timerStatus=TIMER:New(self.Status,self):Start(1,30)
 self.timerQueueUpdate=TIMER:New(self._QueueUpdate,self):Start(2,5)
 self.timerCheckZone=TIMER:New(self._CheckInZones,self):Start(2,60)
@@ -115736,7 +115443,7 @@ Attack="A",
 Reconnaissance="R",
 }
 AI_FORMATION.__Enum.ReportType={
-Airborne="*",
+All="*",
 Airborne="A",
 GroundRadar="R",
 Ground="G",
@@ -116006,7 +115713,6 @@ end
 local CVI={
 x=CV2.x+CS*10*math.sin(Ca),
 y=GH2.y+Inclination,
-y=GH2.y,
 z=CV2.z+CS*10*math.cos(Ca),
 }
 local DV={x=CV2.x-CVI.x,y=CV2.y-CVI.y,z=CV2.z-CVI.z}
@@ -121757,7 +121463,7 @@ end
 function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
+self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 else
 Frequencies=Frequencies or self:GetFrequencies()
 Modulations=Modulations or self:GetModulations()
@@ -121892,8 +121598,8 @@ end
 return res
 end
 function MSRS:_DCSgRPCtts(Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate)
-self:F("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
-self:F({Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate})
+self:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
+self:T({Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate})
 local options={}
 local ssml=Text or''
 Frequencies=UTILS.EnsureTable(Frequencies,true)or self:GetFrequencies()
@@ -121905,7 +121611,6 @@ options.position.lat,options.position.lon,options.position.alt=self:_GetLatLongA
 end
 options.coalition=UTILS.GetCoalitionName(self.coalition):lower()
 local provider=self.provider or MSRS.Provider.WINDOWS
-self:F({provider=provider})
 options.provider={}
 options.provider[provider]=self:GetProviderOptions(provider)
 Voice=Voice or self:GetVoice(self.provider)or self.voice
