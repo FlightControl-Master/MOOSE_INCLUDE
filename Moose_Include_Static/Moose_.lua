@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:33:52+02:00-ef27584d0b9fc26ed631d6824c254b2f7dcd4462 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-04T17:35:06+02:00-f53bd8f11af03990045b5fd57334ca71ed081993 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2480,7 +2480,7 @@ if type_name=="OH-58D"and(unit:getDrawArgumentValue(35)>0 or unit:getDrawArgumen
 BASE:T(unit_name.." cargo door is open")
 return true
 end
-if type_name=="CH-47Fbl1"and(unit:getDrawArgumentValue(86)>0)then
+if type_name=="CH-47Fbl1"and(unit:getDrawArgumentValue(86)>0.5)then
 BASE:T(unit_name.." rear cargo door is open")
 return true
 end
@@ -19284,6 +19284,19 @@ SpawnY=SpawnYIndex*SpawnDeltaY
 end
 return self
 end
+function SPAWN:StopRepeat()
+if self.Repeat then
+self:UnHandleEvent(EVENTS.Takeoff)
+self:UnHandleEvent(EVENTS.Land)
+end
+if self.RepeatOnEngineShutDown then
+self:UnHandleEvent(EVENTS.EngineShutdown)
+end
+self.Repeat=false
+self.RepeatOnEngineShutDown=false
+self.RepeatOnLanding=false
+return self
+end
 do
 function SPAWN:InitAIOnOff(AIOnOff)
 self.AIOnOff=AIOnOff
@@ -20852,8 +20865,45 @@ self.InitStaticType=StaticType
 self.InitStaticCategory=StaticCategory
 self.CountryID=CountryID or country.id.USA
 self.SpawnTemplatePrefix=self.InitStaticType
+self.TemplateStaticUnit={}
 self.InitStaticCoordinate=COORDINATE:New(0,0,0)
 self.InitStaticHeading=0
+return self
+end
+function SPAWNSTATIC:_InitResourceTable(CombinedWeight)
+if not self.TemplateStaticUnit.resourcePayload then
+self.TemplateStaticUnit.resourcePayload={
+["weapons"]={},
+["aircrafts"]={},
+["gasoline"]=0,
+["diesel"]=0,
+["methanol_mixture"]=0,
+["jet_fuel"]=0,
+}
+end
+self:InitCargo(true)
+self:InitCargoMass(CombinedWeight or 1)
+return self
+end
+function SPAWNSTATIC:AddCargoResource(Type,Name,Amount,CombinedWeight)
+if not self.TemplateStaticUnit.resourcePayload then
+self:_InitResourceTable(CombinedWeight)
+end
+if Type==STORAGE.Type.LIQUIDS and type(Name)=="string"then
+self.TemplateStaticUnit.resourcePayload[Name]=Amount
+else
+self.TemplateStaticUnit.resourcePayload[Type]={
+[Name]={
+["amount"]=Amount,
+}
+}
+end
+UTILS.PrintTableToLog(self.TemplateStaticUnit)
+return self
+end
+function SPAWNSTATIC:ResetCargoResources()
+self.TemplateStaticUnit.resourcePayload=nil
+self:_InitResourceTable()
 return self
 end
 function SPAWNSTATIC:InitCoordinate(Coordinate)
@@ -20908,6 +20958,15 @@ self.InitLinkUnit=Unit
 self.InitOffsetX=OffsetX or 0
 self.InitOffsetY=OffsetY or 0
 self.InitOffsetAngle=OffsetAngle or 0
+return self
+end
+function SPAWNSTATIC:OnSpawnStatic(SpawnCallBackFunction,...)
+self:F("OnSpawnStatic")
+self.SpawnFunctionHook=SpawnCallBackFunction
+self.SpawnFunctionArguments={}
+if arg then
+self.SpawnFunctionArguments=arg
+end
 return self
 end
 function SPAWNSTATIC:Spawn(Heading,NewName)
@@ -21012,6 +21071,9 @@ else
 self:T("Spawning Static")
 self:T2({Template=Template})
 Static=coalition.addStaticObject(CountryID,Template)
+end
+if self.SpawnFunctionHook then
+self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
 end
 return mystatic
 end
@@ -29369,6 +29431,11 @@ end
 end
 return GroupsFound
 end
+function STATIC:GetStaticStorage()
+local name=self:GetName()
+local storage=STORAGE:NewFromStaticCargo(name)
+return storage
+end
 AIRBASE={
 ClassName="AIRBASE",
 CategoryName={
@@ -29687,7 +29754,6 @@ AIRBASE.Sinai={
 }
 AIRBASE.Kola={
 ["Banak"]="Banak",
-["Bas_100"]="Bas 100",
 ["Bodo"]="Bodo",
 ["Jokkmokk"]="Jokkmokk",
 ["Kalixfors"]="Kalixfors",
@@ -29699,6 +29765,10 @@ AIRBASE.Kola={
 ["Rovaniemi"]="Rovaniemi",
 ["Severomorsk_1"]="Severomorsk-1",
 ["Severomorsk_3"]="Severomorsk-3",
+["Vuojarvi"]="Vuojarvi",
+["Kirkenes"]="Kirkenes",
+["Kallax"]="Kallax",
+["Vidsel"]="Vidsel",
 }
 AIRBASE.Afghanistan={
 ["Bost"]="Bost",
@@ -31827,7 +31897,18 @@ GASOLINE=1,
 MW50=2,
 DIESEL=3,
 }
-STORAGE.version="0.0.2"
+STORAGE.LiquidName={
+GASOLINE="gasoline",
+DIESEL="diesel",
+MW50="methanol_mixture",
+JETFUEL="jet_fuel",
+}
+STORAGE.Type={
+WEAPONS="weapons",
+LIQUIDS="liquids",
+AIRCRAFT="aircrafts",
+}
+STORAGE.version="0.0.3"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
@@ -57844,6 +57925,304 @@ end
 end
 return allin,filled,unfilled
 end
+CLIENTWATCHTools={}
+CLIENTWATCH={}
+CLIENTWATCH.ClassName="CLIENTWATCH"
+CLIENTWATCH.Debug=false
+CLIENTWATCH.lid=nil
+CLIENTWATCH.version="1.0.0"
+function CLIENTWATCH:New(client)
+local self=BASE:Inherit(self,FSM:New())
+self:SetStartState("Idle")
+self:AddTransition("*","Spawn","*")
+if type(client)=="table"or type(client)=="string"then
+if type(client)=="table"then
+if client.ClassName=="CLIENT"then
+self.ClientName=client:GetName()
+self:HandleEvent(EVENTS.Birth)
+function self:OnEventBirth(eventdata)
+if self.ClientName==eventdata.IniUnitName and eventdata.IniCategory<=1 then
+local clientObject=CLIENTWATCHTools:_newClient(eventdata)
+self:Spawn(clientObject)
+end
+end
+else
+local tableValid=true
+for _,entry in pairs(client)do
+if type(entry)~="string"then
+tableValid=false
+self:E({"The base handler failed to start because at least one entry in param1's table is not a string!",InvalidEntry=entry})
+return nil
+end
+end
+if tableValid then
+self:HandleEvent(EVENTS.Birth)
+function self:OnEventBirth(eventdata)
+for _,entry in pairs(client)do
+if string.match(eventdata.IniUnitName,entry)and eventdata.IniCategory==1 then
+local clientObject=CLIENTWATCHTools:_newClient(eventdata)
+self:Spawn(clientObject)
+break
+end
+end
+end
+end
+end
+else
+self:HandleEvent(EVENTS.Birth)
+function self:OnEventBirth(eventdata)
+if string.match(eventdata.IniUnitName,client)and eventdata.IniCategory==1 then
+local clientObject=CLIENTWATCHTools:_newClient(eventdata)
+self:Spawn(clientObject)
+end
+end
+end
+else
+self:E({"The base handler failed to start because param1 is not a CLIENT object or a prefix string!",param1=client})
+return nil
+end
+return self
+end
+function CLIENTWATCHTools:_newClient(eventdata)
+local self=BASE:Inherit(self,FSM:New())
+self:SetStartState("Alive")
+self:AddTransition("Alive","Despawn","Dead")
+self.Unit=eventdata.IniUnit
+self.Group=self.Unit:GetGroup()
+self.Client=self.Unit:GetClient()
+self.PlayerName=self.Unit:GetPlayerName()
+self.UnitName=self.Unit:GetName()
+self.GroupName=self.Group:GetName()
+self:AddTransition("*","Hit","*")
+self:AddTransition("*","Kill","*")
+self:AddTransition("*","Score","*")
+self:AddTransition("*","Shot","*")
+self:AddTransition("*","ShootingStart","*")
+self:AddTransition("*","ShootingEnd","*")
+self:AddTransition("*","Land","*")
+self:AddTransition("*","Takeoff","*")
+self:AddTransition("*","RunwayTakeoff","*")
+self:AddTransition("*","RunwayTouch","*")
+self:AddTransition("*","Refueling","*")
+self:AddTransition("*","RefuelingStop","*")
+self:AddTransition("*","PlayerLeaveUnit","*")
+self:AddTransition("*","Crash","*")
+self:AddTransition("*","Dead","*")
+self:AddTransition("*","PilotDead","*")
+self:AddTransition("*","UnitLost","*")
+self:AddTransition("*","Ejection","*")
+self:AddTransition("*","HumanFailure","*")
+self:AddTransition("*","HumanAircraftRepairFinish","*")
+self:AddTransition("*","HumanAircraftRepairStart","*")
+self:AddTransition("*","EngineShutdown","*")
+self:AddTransition("*","EngineStartup","*")
+self:AddTransition("*","WeaponAdd","*")
+self:AddTransition("*","WeaponDrop","*")
+self:AddTransition("*","WeaponRearm","*")
+self:HandleEvent(EVENTS.Hit)
+self:HandleEvent(EVENTS.Kill)
+self:HandleEvent(EVENTS.Score)
+self:HandleEvent(EVENTS.Shot)
+self:HandleEvent(EVENTS.ShootingStart)
+self:HandleEvent(EVENTS.ShootingEnd)
+self:HandleEvent(EVENTS.Land)
+self:HandleEvent(EVENTS.Takeoff)
+self:HandleEvent(EVENTS.RunwayTakeoff)
+self:HandleEvent(EVENTS.RunwayTouch)
+self:HandleEvent(EVENTS.Refueling)
+self:HandleEvent(EVENTS.RefuelingStop)
+self:HandleEvent(EVENTS.PlayerLeaveUnit)
+self:HandleEvent(EVENTS.Crash)
+self:HandleEvent(EVENTS.Dead)
+self:HandleEvent(EVENTS.PilotDead)
+self:HandleEvent(EVENTS.UnitLost)
+self:HandleEvent(EVENTS.Ejection)
+self:HandleEvent(EVENTS.HumanFailure)
+self:HandleEvent(EVENTS.HumanAircraftRepairFinish)
+self:HandleEvent(EVENTS.HumanAircraftRepairStart)
+self:HandleEvent(EVENTS.EngineShutdown)
+self:HandleEvent(EVENTS.EngineStartup)
+self:HandleEvent(EVENTS.WeaponAdd)
+self:HandleEvent(EVENTS.WeaponDrop)
+self:HandleEvent(EVENTS.WeaponRearm)
+function self:OnEventHit(EventData)
+if EventData.TgtUnitName==self.UnitName then
+self:Hit(EventData)
+end
+end
+function self:OnEventKill(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Kill(EventData)
+end
+end
+function self:OnEventScore(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Score(EventData)
+end
+end
+function self:OnEventShot(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Shot(EventData)
+end
+end
+function self:OnEventShootingStart(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:ShootingStart(EventData)
+end
+end
+function self:OnEventShootingEnd(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:ShootingEnd(EventData)
+end
+end
+function self:OnEventLand(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Land(EventData)
+end
+end
+function self:OnEventTakeoff(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Takeoff(EventData)
+end
+end
+function self:OnEventRunwayTakeoff(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:RunwayTakeoff(EventData)
+end
+end
+function self:OnEventRunwayTouch(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:RunwayTouch(EventData)
+end
+end
+function self:OnEventRefueling(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Refueling(EventData)
+end
+end
+function self:OnEventRefuelingStop(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:RefuelingStop(EventData)
+end
+end
+function self:OnEventPlayerLeaveUnit(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:PlayerLeaveUnit(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventCrash(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Crash(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventDead(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Dead(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventPilotDead(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:PilotDead(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventUnitLost(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:UnitLost(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventEjection(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Ejection(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventHumanFailure(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:HumanFailure(EventData)
+if not self.Unit:IsAlive()then
+self._deadRoutine()
+end
+end
+end
+function self:OnEventHumanAircraftRepairFinish(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:HumanAircraftRepairFinish(EventData)
+end
+end
+function self:OnEventHumanAircraftRepairStart(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:HumanAircraftRepairStart(EventData)
+end
+end
+function self:OnEventEngineShutdown(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:EngineShutdown(EventData)
+end
+end
+function self:OnEventEngineStartup(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:EngineStartup(EventData)
+end
+end
+function self:OnEventWeaponAdd(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:WeaponAdd(EventData)
+end
+end
+function self:OnEventWeaponDrop(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:WeaponDrop(EventData)
+end
+end
+function self:OnEventWeaponRearm(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:WeaponRearm(EventData)
+end
+end
+self.FallbackTimer=TIMER:New(function()
+if not self.Unit:IsAlive()then
+self._deadRoutine()
+end
+end)
+self.FallbackTimer:Start(5,5)
+function self._deadRoutine()
+self:UnHandleEvent(EVENTS.Hit)
+self:UnHandleEvent(EVENTS.Kill)
+self:UnHandleEvent(EVENTS.Score)
+self:UnHandleEvent(EVENTS.Shot)
+self:UnHandleEvent(EVENTS.ShootingStart)
+self:UnHandleEvent(EVENTS.ShootingEnd)
+self:UnHandleEvent(EVENTS.Land)
+self:UnHandleEvent(EVENTS.Takeoff)
+self:UnHandleEvent(EVENTS.RunwayTakeoff)
+self:UnHandleEvent(EVENTS.RunwayTouch)
+self:UnHandleEvent(EVENTS.Refueling)
+self:UnHandleEvent(EVENTS.RefuelingStop)
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.Dead)
+self:UnHandleEvent(EVENTS.PilotDead)
+self:UnHandleEvent(EVENTS.UnitLost)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.HumanFailure)
+self:UnHandleEvent(EVENTS.HumanAircraftRepairFinish)
+self:UnHandleEvent(EVENTS.HumanAircraftRepairStart)
+self:UnHandleEvent(EVENTS.EngineShutdown)
+self:UnHandleEvent(EVENTS.EngineStartup)
+self:UnHandleEvent(EVENTS.WeaponAdd)
+self:UnHandleEvent(EVENTS.WeaponDrop)
+self:UnHandleEvent(EVENTS.WeaponRearm)
+self.FallbackTimer:Stop()
+self:Despawn()
+end
+self:I({"CLIENT SPAWN EVENT",PlayerName=self.PlayerName,UnitName=self.UnitName,GroupName=self.GroupName})
+return self
+end
 AIRBOSS={
 ClassName="AIRBOSS",
 Debug=false,
@@ -69370,11 +69749,19 @@ self.Stock=Stock or nil
 self.Mark=nil
 self.Subcategory=Subcategory or"Other"
 self.DontShowInMenu=DontShowInMenu or false
+self.ResourceMap=nil
 if type(Location)=="string"then
 Location=ZONE:New(Location)
 end
 self.Location=Location
 return self
+end
+function CTLD_CARGO:SetStaticResourceMap(ResourceMap)
+self.ResourceMap=ResourceMap
+return self
+end
+function CTLD_CARGO:GetStaticResourceMap()
+return self.ResourceMap
 end
 function CTLD_CARGO:GetLocation()
 return self.Location
@@ -69694,7 +70081,7 @@ CTLD.UnitTypeCapabilities={
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
-["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=30,cargoweightlimit=8000},
+["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=8000},
 }
 CTLD.version="1.0.56"
 function CTLD:New(Coalition,Prefixes,Alias)
@@ -70343,6 +70730,7 @@ self:_SendMessage("There are enough crates nearby already! Take care of those fi
 return self
 end
 local IsHerc=self:IsHercules(Unit)
+local IsHook=self:IsHook(Unit)
 local cargotype=Cargo
 local number=number or cargotype:GetCratesNeeded()
 local cratesneeded=cargotype:GetCratesNeeded()
@@ -70363,7 +70751,7 @@ local cratedistance=0
 local rheading=0
 local angleOffNose=0
 local addon=0
-if IsHerc then
+if IsHerc or IsHook then
 addon=180
 end
 for i=1,number do
@@ -70407,17 +70795,25 @@ local dist=shipcoord:Get2DDistance(unitcoord)
 dist=dist-(20+math.random(1,10))
 local width=width/2
 local Offy=math.random(-width,width)
-self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
+local spawnstatic=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
 :InitCargoMass(cgomass)
 :InitCargo(self.enableslingload)
 :InitLinkToUnit(Ship,dist,Offy,0)
-:Spawn(270,cratealias)
+if isstatic then
+local map=cargotype:GetStaticResourceMap()
+spawnstatic.TemplateStaticUnit.resourcePayload=map
+end
+self.Spawned_Crates[self.CrateCounter]=spawnstatic:Spawn(270,cratealias)
 else
-self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
+local spawnstatic=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
 :InitCoordinate(cratecoord)
 :InitCargoMass(cgomass)
 :InitCargo(self.enableslingload)
-:Spawn(270,cratealias)
+if isstatic then
+local map=cargotype:GetStaticResourceMap()
+spawnstatic.TemplateStaticUnit.resourcePayload=map
+end
+self.Spawned_Crates[self.CrateCounter]=spawnstatic:Spawn(270,cratealias)
 end
 local templ=cargotype:GetTemplates()
 local sorte=cargotype:GetType()
@@ -70426,9 +70822,13 @@ self.CargoCounter=self.CargoCounter+1
 local realcargo=nil
 if drop then
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,nil,subcat)
+local map=cargotype:GetStaticResourceMap()
+realcargo:SetStaticResourceMap(map)
 table.insert(droppedcargo,realcargo)
 else
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],false,cargotype.PerCrateMass,nil,subcat)
+local map=cargotype:GetStaticResourceMap()
+realcargo:SetStaticResourceMap(map)
 end
 table.insert(self.Spawned_Cargo,realcargo)
 end
@@ -70470,11 +70870,15 @@ if isstatic then
 basetype=cratetemplate
 end
 self.CrateCounter=self.CrateCounter+1
-self.Spawned_Crates[self.CrateCounter]=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
+local spawnstatic=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
 :InitCargoMass(cgomass)
 :InitCargo(self.enableslingload)
 :InitCoordinate(cratecoord)
-:Spawn(270,cratealias)
+if isstatic then
+local map=cargotype:GetStaticResourceMap()
+spawnstatic.TemplateStaticUnit.resourcePayload=map
+end
+self.Spawned_Crates[self.CrateCounter]=spawnstatic:Spawn(270,cratealias)
 local templ=cargotype:GetTemplates()
 local sorte=cargotype:GetType()
 self.CargoCounter=self.CargoCounter+1
@@ -70608,6 +71012,10 @@ local cancrates=capabilities.crates
 local cratelimit=capabilities.cratelimit
 local grounded=not self:IsUnitInAir(Unit)
 local canhoverload=self:CanHoverLoad(Unit)
+if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
+if not self.debug then return self end
+end
 if not cancrates then
 self:_SendMessage("Sorry this chopper cannot carry crates!",10,false,Group)
 elseif self.forcehoverload and not canhoverload then
@@ -70881,6 +71289,13 @@ else
 return false
 end
 end
+function CTLD:IsHook(Unit)
+if string.find(Unit:GetTypeName(),"CH.47")then
+return true
+else
+return false
+end
+end
 function CTLD:_GetUnitPositions(Coordinate,Radius,Heading,Template)
 local Positions={}
 local template=_DATABASE:GetGroupTemplate(Template)
@@ -70917,7 +71332,8 @@ droppingatbase=true
 end
 local hoverunload=self:IsCorrectHover(Unit)
 local IsHerc=self:IsHercules(Unit)
-if IsHerc then
+local IsHook=self:IsHook(Unit)
+if IsHerc and(not IsHook)then
 hoverunload=self:IsCorrectFlightParameters(Unit)
 end
 local grounded=not self:IsUnitInAir(Unit)
@@ -71025,9 +71441,14 @@ return self
 end
 end
 end
+if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
+self:_SendMessage("You need to open the door(s) to drop cargo!",10,false,Group)
+if not self.debug then return self end
+end
 local hoverunload=self:IsCorrectHover(Unit)
 local IsHerc=self:IsHercules(Unit)
-if IsHerc then
+local IsHook=self:IsHook(Unit)
+if IsHerc and(not IsHook)then
 hoverunload=self:IsCorrectFlightParameters(Unit)
 end
 local grounded=not self:IsUnitInAir(Unit)
@@ -71585,7 +72006,13 @@ self:T(self.lid.." AddStaticsCargo")
 self.CargoCounter=self.CargoCounter+1
 local type=CTLD_CARGO.Enum.STATIC
 local template=STATIC:FindByName(Name,true):GetTypeName()
+local unittemplate=_DATABASE:GetStaticUnitTemplate(Name)
+local ResourceMap=nil
+if unittemplate and unittemplate.resourcePayload then
+ResourceMap=UTILS.DeepCopy(unittemplate.resourcePayload)
+end
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
+cargo:SetStaticResourceMap(ResourceMap)
 table.insert(self.Cargo_Statics,cargo)
 return self
 end
@@ -71594,7 +72021,13 @@ self:T(self.lid.." GetStaticsCargoFromTemplate")
 self.CargoCounter=self.CargoCounter+1
 local type=CTLD_CARGO.Enum.STATIC
 local template=STATIC:FindByName(Name,true):GetTypeName()
+local unittemplate=_DATABASE:GetStaticUnitTemplate(Name)
+local ResourceMap=nil
+if unittemplate and unittemplate.resourcePayload then
+ResourceMap=UTILS.DeepCopy(unittemplate.resourcePayload)
+end
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+cargo:SetStaticResourceMap(ResourceMap)
 return cargo
 end
 function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
@@ -72956,6 +73389,8 @@ cargotemplates=UTILS.Split(cargotemplates,";")
 injectstatic=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 elseif cargotype==CTLD_CARGO.Enum.STATIC or cargotype==CTLD_CARGO.Enum.REPAIR then
 injectstatic=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
+local map=cargotype:GetStaticResourceMap()
+injectstatic:SetStaticResourceMap(map)
 end
 if injectstatic then
 self:InjectStatics(dropzone,injectstatic)
@@ -73158,6 +73593,8 @@ local theStatic=SPAWNSTATIC:NewFromType(basetype,"Cargos",self.cratecountry)
 :Spawn(270,_name.."-Container-"..math.random(1,100000))
 self.CTLD.Spawned_Crates[self.CTLD.CrateCounter]=theStatic
 local newCargo=CTLD_CARGO:New(self.CTLD.CargoCounter,theCargo.Name,theCargo.Templates,theCargo.CargoType,true,false,theCargo.CratesNeeded,self.CTLD.Spawned_Crates[self.CTLD.CrateCounter],true,theCargo.PerCrateMass,nil,theCargo.Subcategory)
+local map=theCargo:GetStaticResourceMap()
+newCargo:SetStaticResourceMap(map)
 table.insert(self.CTLD.Spawned_Cargo,newCargo)
 newCargo:SetWasDropped(true)
 newCargo:SetHasMoved(true)
