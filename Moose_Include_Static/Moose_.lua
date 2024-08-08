@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-03T14:33:52+02:00-ef27584d0b9fc26ed631d6824c254b2f7dcd4462 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-08T09:21:27+02:00-6e2787794997f78049dd6502f4b67a6ed6153646 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7325,9 +7325,9 @@ Event.Weapon=Event.weapon
 Event.WeaponName=Event.weapon:isExist()and Event.weapon:getTypeName()or"Unknown Weapon"
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
 Event.WeaponPlayerName=Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
-Event.WeaponCoalition=Event.WeaponUNIT and Event.Weapon:getCoalition()
-Event.WeaponCategory=Event.WeaponUNIT and Event.Weapon:getDesc().category
-Event.WeaponTypeName=Event.WeaponUNIT and Event.Weapon:getTypeName()
+Event.WeaponCoalition=Event.WeaponUNIT and Event.Weapon.getCoalition and Event.Weapon:getCoalition()
+Event.WeaponCategory=Event.WeaponUNIT and Event.Weapon.getDesc and Event.Weapon:getDesc().category
+Event.WeaponTypeName=Event.WeaponUNIT and Event.Weapon.getTypeName and Event.Weapon:getTypeName()
 end
 if Event.place then
 if Event.id==EVENTS.LandingAfterEjection then
