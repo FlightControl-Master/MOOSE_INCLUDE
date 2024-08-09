@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-09T10:12:57+02:00-c1958b62ff1ed79480b6882ee8cf416c62fe8f27 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-09T18:16:18+02:00-bbc539fac66d982739e28c57053829572ae92a2f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53944,12 +53944,12 @@ end
 return self
 end
 end
-CLIENTWATCHTools={}
 CLIENTWATCH={}
 CLIENTWATCH.ClassName="CLIENTWATCH"
 CLIENTWATCH.Debug=false
 CLIENTWATCH.lid=nil
-CLIENTWATCH.version="1.0.0"
+CLIENTWATCHTools={}
+CLIENTWATCH.version="1.0.1"
 function CLIENTWATCH:New(client)
 local self=BASE:Inherit(self,FSM:New())
 self:SetStartState("Idle")
@@ -53960,9 +53960,12 @@ if client.ClassName=="CLIENT"then
 self.ClientName=client:GetName()
 self:HandleEvent(EVENTS.Birth)
 function self:OnEventBirth(eventdata)
-if self.ClientName==eventdata.IniUnitName and eventdata.IniCategory<=1 then
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if self.ClientName==eventdata.IniUnitName then
 local clientObject=CLIENTWATCHTools:_newClient(eventdata)
 self:Spawn(clientObject)
+end
 end
 end
 else
@@ -53977,8 +53980,10 @@ end
 if tableValid then
 self:HandleEvent(EVENTS.Birth)
 function self:OnEventBirth(eventdata)
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
 for _,entry in pairs(client)do
-if string.match(eventdata.IniUnitName,entry)and eventdata.IniCategory==1 then
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if string.match(eventdata.IniUnitName,entry)or string.match(eventdata.IniGroupName,entry)then
 local clientObject=CLIENTWATCHTools:_newClient(eventdata)
 self:Spawn(clientObject)
 break
@@ -53987,12 +53992,16 @@ end
 end
 end
 end
+end
 else
 self:HandleEvent(EVENTS.Birth)
 function self:OnEventBirth(eventdata)
-if string.match(eventdata.IniUnitName,client)and eventdata.IniCategory==1 then
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if string.match(eventdata.IniUnitName,client)or string.match(eventdata.IniGroupName,client)then
 local clientObject=CLIENTWATCHTools:_newClient(eventdata)
 self:Spawn(clientObject)
+end
 end
 end
 end
