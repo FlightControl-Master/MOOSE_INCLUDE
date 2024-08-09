@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-08T19:53:59+02:00-922725297638d774714155a9c72c9ecd6bf5f021 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-09T10:41:21+02:00-bf7c49708f789dab3f15d8812f6ecf31cb751758 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71500,7 +71500,7 @@ end
 end
 else
 self:_SendMessage("Troops have returned to base!",10,false,Group)
-self:__TroopsRTB(1,Group,Unit)
+self:__TroopsRTB(1,Group,Unit,zonename,zone)
 end
 local loaded={}
 loaded.Troopsloaded=0
@@ -73258,7 +73258,7 @@ self:_MoveGroupToZone(Vehicle)
 end
 return self
 end
-function CTLD:onbeforeTroopsRTB(From,Event,To,Group,Unit)
+function CTLD:onbeforeTroopsRTB(From,Event,To,Group,Unit,ZoneName,ZoneObject)
 self:T({From,Event,To})
 return self
 end
