@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T10:17:10+02:00-90fa2abbe8b2b14532dc42b21d18e2bc25ea4067 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T18:04:02+02:00-7b4f7e9295a1d6edbcdf204a8d7ce2e78bd8ac58 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
