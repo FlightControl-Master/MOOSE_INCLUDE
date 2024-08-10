@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T10:15:59+02:00-3c82e6700ded18a0676cb56f60410cb237889eaf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T17:34:45+02:00-8ecfb52c61f8b3aac9627d16da101acd776fe94f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -57961,6 +57961,313 @@ end
 end
 end
 return allin,filled,unfilled
+end
+CLIENTWATCH={}
+CLIENTWATCH.ClassName="CLIENTWATCH"
+CLIENTWATCH.Debug=false
+CLIENTWATCH.lid=nil
+CLIENTWATCHTools={}
+CLIENTWATCH.version="1.0.1"
+function CLIENTWATCH:New(client)
+local self=BASE:Inherit(self,FSM:New())
+self:SetStartState("Idle")
+self:AddTransition("*","Spawn","*")
+if type(client)=="table"or type(client)=="string"then
+if type(client)=="table"then
+if client.ClassName=="CLIENT"then
+self.ClientName=client:GetName()
+self:HandleEvent(EVENTS.Birth)
+function self:OnEventBirth(eventdata)
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if self.ClientName==eventdata.IniUnitName then
+local clientObject=CLIENTWATCHTools:_newClient(eventdata)
+self:Spawn(clientObject)
+end
+end
+end
+else
+local tableValid=true
+for _,entry in pairs(client)do
+if type(entry)~="string"then
+tableValid=false
+self:E({"The base handler failed to start because at least one entry in param1's table is not a string!",InvalidEntry=entry})
+return nil
+end
+end
+if tableValid then
+self:HandleEvent(EVENTS.Birth)
+function self:OnEventBirth(eventdata)
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+for _,entry in pairs(client)do
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if string.match(eventdata.IniUnitName,entry)or string.match(eventdata.IniGroupName,entry)then
+local clientObject=CLIENTWATCHTools:_newClient(eventdata)
+self:Spawn(clientObject)
+break
+end
+end
+end
+end
+end
+end
+else
+self:HandleEvent(EVENTS.Birth)
+function self:OnEventBirth(eventdata)
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if string.match(eventdata.IniUnitName,client)or string.match(eventdata.IniGroupName,client)then
+local clientObject=CLIENTWATCHTools:_newClient(eventdata)
+self:Spawn(clientObject)
+end
+end
+end
+end
+else
+self:E({"The base handler failed to start because param1 is not a CLIENT object or a prefix string!",param1=client})
+return nil
+end
+return self
+end
+function CLIENTWATCHTools:_newClient(eventdata)
+local self=BASE:Inherit(self,FSM:New())
+self:SetStartState("Alive")
+self:AddTransition("Alive","Despawn","Dead")
+self.Unit=eventdata.IniUnit
+self.Group=self.Unit:GetGroup()
+self.Client=self.Unit:GetClient()
+self.PlayerName=self.Unit:GetPlayerName()
+self.UnitName=self.Unit:GetName()
+self.GroupName=self.Group:GetName()
+self:AddTransition("*","Hit","*")
+self:AddTransition("*","Kill","*")
+self:AddTransition("*","Score","*")
+self:AddTransition("*","Shot","*")
+self:AddTransition("*","ShootingStart","*")
+self:AddTransition("*","ShootingEnd","*")
+self:AddTransition("*","Land","*")
+self:AddTransition("*","Takeoff","*")
+self:AddTransition("*","RunwayTakeoff","*")
+self:AddTransition("*","RunwayTouch","*")
+self:AddTransition("*","Refueling","*")
+self:AddTransition("*","RefuelingStop","*")
+self:AddTransition("*","PlayerLeaveUnit","*")
+self:AddTransition("*","Crash","*")
+self:AddTransition("*","Dead","*")
+self:AddTransition("*","PilotDead","*")
+self:AddTransition("*","UnitLost","*")
+self:AddTransition("*","Ejection","*")
+self:AddTransition("*","HumanFailure","*")
+self:AddTransition("*","HumanAircraftRepairFinish","*")
+self:AddTransition("*","HumanAircraftRepairStart","*")
+self:AddTransition("*","EngineShutdown","*")
+self:AddTransition("*","EngineStartup","*")
+self:AddTransition("*","WeaponAdd","*")
+self:AddTransition("*","WeaponDrop","*")
+self:AddTransition("*","WeaponRearm","*")
+self:HandleEvent(EVENTS.Hit)
+self:HandleEvent(EVENTS.Kill)
+self:HandleEvent(EVENTS.Score)
+self:HandleEvent(EVENTS.Shot)
+self:HandleEvent(EVENTS.ShootingStart)
+self:HandleEvent(EVENTS.ShootingEnd)
+self:HandleEvent(EVENTS.Land)
+self:HandleEvent(EVENTS.Takeoff)
+self:HandleEvent(EVENTS.RunwayTakeoff)
+self:HandleEvent(EVENTS.RunwayTouch)
+self:HandleEvent(EVENTS.Refueling)
+self:HandleEvent(EVENTS.RefuelingStop)
+self:HandleEvent(EVENTS.PlayerLeaveUnit)
+self:HandleEvent(EVENTS.Crash)
+self:HandleEvent(EVENTS.Dead)
+self:HandleEvent(EVENTS.PilotDead)
+self:HandleEvent(EVENTS.UnitLost)
+self:HandleEvent(EVENTS.Ejection)
+self:HandleEvent(EVENTS.HumanFailure)
+self:HandleEvent(EVENTS.HumanAircraftRepairFinish)
+self:HandleEvent(EVENTS.HumanAircraftRepairStart)
+self:HandleEvent(EVENTS.EngineShutdown)
+self:HandleEvent(EVENTS.EngineStartup)
+self:HandleEvent(EVENTS.WeaponAdd)
+self:HandleEvent(EVENTS.WeaponDrop)
+self:HandleEvent(EVENTS.WeaponRearm)
+function self:OnEventHit(EventData)
+if EventData.TgtUnitName==self.UnitName then
+self:Hit(EventData)
+end
+end
+function self:OnEventKill(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Kill(EventData)
+end
+end
+function self:OnEventScore(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Score(EventData)
+end
+end
+function self:OnEventShot(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Shot(EventData)
+end
+end
+function self:OnEventShootingStart(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:ShootingStart(EventData)
+end
+end
+function self:OnEventShootingEnd(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:ShootingEnd(EventData)
+end
+end
+function self:OnEventLand(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Land(EventData)
+end
+end
+function self:OnEventTakeoff(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Takeoff(EventData)
+end
+end
+function self:OnEventRunwayTakeoff(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:RunwayTakeoff(EventData)
+end
+end
+function self:OnEventRunwayTouch(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:RunwayTouch(EventData)
+end
+end
+function self:OnEventRefueling(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Refueling(EventData)
+end
+end
+function self:OnEventRefuelingStop(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:RefuelingStop(EventData)
+end
+end
+function self:OnEventPlayerLeaveUnit(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:PlayerLeaveUnit(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventCrash(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Crash(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventDead(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Dead(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventPilotDead(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:PilotDead(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventUnitLost(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:UnitLost(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventEjection(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:Ejection(EventData)
+self._deadRoutine()
+end
+end
+function self:OnEventHumanFailure(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:HumanFailure(EventData)
+if not self.Unit:IsAlive()then
+self._deadRoutine()
+end
+end
+end
+function self:OnEventHumanAircraftRepairFinish(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:HumanAircraftRepairFinish(EventData)
+end
+end
+function self:OnEventHumanAircraftRepairStart(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:HumanAircraftRepairStart(EventData)
+end
+end
+function self:OnEventEngineShutdown(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:EngineShutdown(EventData)
+end
+end
+function self:OnEventEngineStartup(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:EngineStartup(EventData)
+end
+end
+function self:OnEventWeaponAdd(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:WeaponAdd(EventData)
+end
+end
+function self:OnEventWeaponDrop(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:WeaponDrop(EventData)
+end
+end
+function self:OnEventWeaponRearm(EventData)
+if EventData.IniUnitName==self.UnitName then
+self:WeaponRearm(EventData)
+end
+end
+self.FallbackTimer=TIMER:New(function()
+if not self.Unit:IsAlive()then
+self._deadRoutine()
+end
+end)
+self.FallbackTimer:Start(5,5)
+function self._deadRoutine()
+self:UnHandleEvent(EVENTS.Hit)
+self:UnHandleEvent(EVENTS.Kill)
+self:UnHandleEvent(EVENTS.Score)
+self:UnHandleEvent(EVENTS.Shot)
+self:UnHandleEvent(EVENTS.ShootingStart)
+self:UnHandleEvent(EVENTS.ShootingEnd)
+self:UnHandleEvent(EVENTS.Land)
+self:UnHandleEvent(EVENTS.Takeoff)
+self:UnHandleEvent(EVENTS.RunwayTakeoff)
+self:UnHandleEvent(EVENTS.RunwayTouch)
+self:UnHandleEvent(EVENTS.Refueling)
+self:UnHandleEvent(EVENTS.RefuelingStop)
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.Dead)
+self:UnHandleEvent(EVENTS.PilotDead)
+self:UnHandleEvent(EVENTS.UnitLost)
+self:UnHandleEvent(EVENTS.Ejection)
+self:UnHandleEvent(EVENTS.HumanFailure)
+self:UnHandleEvent(EVENTS.HumanAircraftRepairFinish)
+self:UnHandleEvent(EVENTS.HumanAircraftRepairStart)
+self:UnHandleEvent(EVENTS.EngineShutdown)
+self:UnHandleEvent(EVENTS.EngineStartup)
+self:UnHandleEvent(EVENTS.WeaponAdd)
+self:UnHandleEvent(EVENTS.WeaponDrop)
+self:UnHandleEvent(EVENTS.WeaponRearm)
+self.FallbackTimer:Stop()
+self:Despawn()
+end
+self:I({"CLIENT SPAWN EVENT",PlayerName=self.PlayerName,UnitName=self.UnitName,GroupName=self.GroupName})
+return self
 end
 AIRBOSS={
 ClassName="AIRBOSS",
