@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T18:16:46+02:00-a1fc18fd48660411a3c2eee45bcc9093d5643db4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T18:53:45+02:00-90d20076c9e49404f0354cf87920dae97ef70141 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -14160,6 +14160,18 @@ end
 function SET_CLIENT:FilterActive(Active)
 Active=Active or not(Active==false)
 self.Filter.Active=Active
+return self
+end
+function SET_CLIENT:FilterAlive()
+self:FilterFunction(
+function(unit)
+if unit and unit:IsExist()and unit:IsAlive()then
+return true
+else
+return false
+end
+end
+)
 return self
 end
 function SET_CLIENT:FilterZones(Zones)
