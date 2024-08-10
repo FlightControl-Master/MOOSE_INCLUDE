@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T18:04:02+02:00-7b4f7e9295a1d6edbcdf204a8d7ce2e78bd8ac58 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T18:54:46+02:00-8d1adca034e5d2fbd911b5b156d62382c7442584 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -14160,6 +14160,18 @@ end
 function SET_CLIENT:FilterActive(Active)
 Active=Active or not(Active==false)
 self.Filter.Active=Active
+return self
+end
+function SET_CLIENT:FilterAlive()
+self:FilterFunction(
+function(unit)
+if unit and unit:IsExist()and unit:IsAlive()then
+return true
+else
+return false
+end
+end
+)
 return self
 end
 function SET_CLIENT:FilterZones(Zones)
@@ -29760,33 +29772,48 @@ AIRBASE.SouthAtlantic={
 AIRBASE.Sinai={
 ["Abu_Rudeis"]="Abu Rudeis",
 ["Abu_Suwayr"]="Abu Suwayr",
+["Al_Bahr_al_Ahmar"]="Al Bahr al Ahmar",
 ["Al_Ismailiyah"]="Al Ismailiyah",
+["Al_Khatatbah"]="Al Khatatbah",
 ["Al_Mansurah"]="Al Mansurah",
+["Al_Rahmaniyah_Air_Base"]="Al Rahmaniyah Air Base",
 ["As_Salihiyah"]="As Salihiyah",
 ["AzZaqaziq"]="AzZaqaziq",
 ["Baluza"]="Baluza",
 ["Ben_Gurion"]="Ben-Gurion",
+["Beni_Suef"]="Beni Suef",
 ["Bilbeis_Air_Base"]="Bilbeis Air Base",
 ["Bir_Hasanah"]="Bir Hasanah",
+["Birma_Air_Base"]="Birma Air Base",
+["Borj_El_Arab_International_Airport"]="Borj El Arab International Airport",
 ["Cairo_International_Airport"]="Cairo International Airport",
 ["Cairo_West"]="Cairo West",
 ["Difarsuwar_Airfield"]="Difarsuwar Airfield",
 ["El_Arish"]="El Arish",
 ["El_Gora"]="El Gora",
+["El_Minya"]="El Minya",
 ["Fayed"]="Fayed",
+["Gebel_El_Basur_Air_Base"]="Gebel El Basur Air Base",
 ["Hatzerim"]="Hatzerim",
 ["Hatzor"]="Hatzor",
+["Hurghada_International_Airport"]="Hurghada International Airport",
 ["Inshas_Airbase"]="Inshas Airbase",
+["Jiyanklis_Air_Base"]="Jiyanklis Air Base",
 ["Kedem"]="Kedem",
 ["Kibrit_Air_Base"]="Kibrit Air Base",
+["Kom_Awshim"]="Kom Awshim",
 ["Melez"]="Melez",
 ["Nevatim"]="Nevatim",
 ["Ovda"]="Ovda",
-["Palmahim"]="Palmahim",
+["Palmachim"]="Palmachim",
+["Quwaysina"]="Quwaysina",
 ["Ramon_Airbase"]="Ramon Airbase",
+["Ramon_International_Airport"]="Ramon International Airport",
 ["Sde_Dov"]="Sde Dov",
+["Sharm_El_Sheikh_International_Airport"]="Sharm El Sheikh International Airport",
 ["St_Catherine"]="St Catherine",
 ["Tel_Nof"]="Tel Nof",
+["Wadi_Abu_Rish"]="Wadi Abu Rish",
 ["Wadi_al_Jandali"]="Wadi al Jandali",
 }
 AIRBASE.Kola={
