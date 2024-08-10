@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T09:58:49+02:00-50bbea327b3a7c597f46ac792488af6b44e3ca55 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T10:15:59+02:00-3c82e6700ded18a0676cb56f60410cb237889eaf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -69945,7 +69945,7 @@ self.subcatsTroop={}
 self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
-self.enableChinhookGCLoading=true
+self.enableChinookGCLoading=true
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -71634,7 +71634,7 @@ local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local isHook=self:IsHook(_unit)
-local nohookswitch=not(isHook and self.enableChinhookGCLoading)
+local nohookswitch=not(isHook and self.enableChinookGCLoading)
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
 local toptroops=nil
 local topcrates=nil
