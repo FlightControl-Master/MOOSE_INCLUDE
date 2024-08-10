@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-09T10:41:21+02:00-bf7c49708f789dab3f15d8812f6ecf31cb751758 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T10:17:10+02:00-90fa2abbe8b2b14532dc42b21d18e2bc25ea4067 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29470,7 +29470,6 @@ local mass=-1
 if DCSObject then
 mass=DCSObject:getCargoWeight()or 0
 local masstxt=DCSObject:getCargoDisplayName()or"none"
-BASE:I("GetCargoWeight "..tostring(mass).." MassText "..masstxt)
 end
 return mass
 end
@@ -57963,12 +57962,12 @@ end
 end
 return allin,filled,unfilled
 end
-CLIENTWATCHTools={}
 CLIENTWATCH={}
 CLIENTWATCH.ClassName="CLIENTWATCH"
 CLIENTWATCH.Debug=false
 CLIENTWATCH.lid=nil
-CLIENTWATCH.version="1.0.0"
+CLIENTWATCHTools={}
+CLIENTWATCH.version="1.0.1"
 function CLIENTWATCH:New(client)
 local self=BASE:Inherit(self,FSM:New())
 self:SetStartState("Idle")
@@ -57979,9 +57978,12 @@ if client.ClassName=="CLIENT"then
 self.ClientName=client:GetName()
 self:HandleEvent(EVENTS.Birth)
 function self:OnEventBirth(eventdata)
-if self.ClientName==eventdata.IniUnitName and eventdata.IniCategory<=1 then
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if self.ClientName==eventdata.IniUnitName then
 local clientObject=CLIENTWATCHTools:_newClient(eventdata)
 self:Spawn(clientObject)
+end
 end
 end
 else
@@ -57996,8 +57998,10 @@ end
 if tableValid then
 self:HandleEvent(EVENTS.Birth)
 function self:OnEventBirth(eventdata)
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
 for _,entry in pairs(client)do
-if string.match(eventdata.IniUnitName,entry)and eventdata.IniCategory==1 then
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if string.match(eventdata.IniUnitName,entry)or string.match(eventdata.IniGroupName,entry)then
 local clientObject=CLIENTWATCHTools:_newClient(eventdata)
 self:Spawn(clientObject)
 break
@@ -58006,12 +58010,16 @@ end
 end
 end
 end
+end
 else
 self:HandleEvent(EVENTS.Birth)
 function self:OnEventBirth(eventdata)
-if string.match(eventdata.IniUnitName,client)and eventdata.IniCategory==1 then
+if self.Debug then UTILS.PrintTableToLog(eventdata)end
+if eventdata.IniCategory and eventdata.IniCategory<=1 then
+if string.match(eventdata.IniUnitName,client)or string.match(eventdata.IniGroupName,client)then
 local clientObject=CLIENTWATCHTools:_newClient(eventdata)
 self:Spawn(clientObject)
+end
 end
 end
 end
@@ -70244,7 +70252,7 @@ self.subcatsTroop={}
 self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
-self.enableChinhookGCLoading=true
+self.enableChinookGCLoading=true
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -71933,7 +71941,7 @@ local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local isHook=self:IsHook(_unit)
-local nohookswitch=not(isHook and self.enableChinhookGCLoading)
+local nohookswitch=not(isHook and self.enableChinookGCLoading)
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
 local toptroops=nil
 local topcrates=nil
