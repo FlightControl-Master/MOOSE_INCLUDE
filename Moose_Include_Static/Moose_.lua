@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T16:58:42+02:00-402e72f728cead44a9abfe5e36eae83a6fed9f69 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T19:06:54+02:00-a1605f9a2d68cc280dc128b1751eff53820e02c7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26814,12 +26814,15 @@ end
 return nil
 end
 function GROUP:GetCoalition()
-self:F2(self.GroupName)
+if self.GroupCoalition~=nil then
+return self.GroupCoalition
+else
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCoalition=DCSGroup:getCoalition()
-self:T3(GroupCoalition)
+self.GroupCoalition=GroupCoalition
 return GroupCoalition
+end
 end
 return nil
 end
