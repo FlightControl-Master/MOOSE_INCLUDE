@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T10:18:14+02:00-5f7f75b1c9c29403eb3aa0e21ac00284371dc413 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T11:40:43+02:00-ebe6e9fb9fe86ea47524d8a5df4046546f13c64f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71004,6 +71004,7 @@ local unittype="none"
 local capabilities={}
 local maxmass=2000
 local maxloadable=2000
+local IsNoHook=not self:IsHook(_unit)
 if not _ignoreweight then
 maxloadable=self:_GetMaxLoadableMass(_unit)
 end
@@ -71017,14 +71018,14 @@ self:T(self.lid.." Found cargo mass: "..weight)
 local cargoalive=false
 local dcsunit=nil
 local dcsunitpos=nil
-if static.DCSCargoObject then
+if static and static.DCSCargoObject then
 dcsunit=Unit.getByName(static.StaticName)
 if dcsunit then
 cargoalive=dcsunit:isExist()~=nil and true or false
 end
 if cargoalive==true then
 local dcsvec3=dcsunit:getPoint()or dcsunit:getPosition().p or{x=0,y=0,z=0}
-self:I({dcsvec3=dcsunit:getPoint(),dcspos=dcsunit:getPosition().p})
+self:T({dcsvec3=dcsunit:getPoint(),dcspos=dcsunit:getPosition().p})
 if dcsvec3 then
 dcsunitpos=COORDINATE:New(dcsvec3.x,dcsvec3.z,dcsvec3.y)
 end
@@ -71036,8 +71037,9 @@ local landheight=staticpos:GetLandHeight()
 local agl=staticpos.y-landheight
 agl=UTILS.Round(agl,2)
 local GCloaded=agl>0 and true or false
+if IsNoHook==true then GCloaded=false end
 local distance=self:_GetDistance(location,staticpos)
-self:I({name=static:GetName(),agl=agl,GCloaded=GCloaded,distance=string.format("%.2f",distance or 0)})
+self:T({name=static:GetName(),IsNoHook=IsNoHook,agl=agl,GCloaded=GCloaded,distance=string.format("%.2f",distance or 0)})
 if(not GCloaded)and distance<=finddist and static and(weight<=maxloadable or _ignoreweight)then
 index=index+1
 table.insert(found,staticid,cargo)
