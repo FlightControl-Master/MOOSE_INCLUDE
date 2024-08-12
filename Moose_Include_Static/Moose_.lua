@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-10T18:53:45+02:00-90d20076c9e49404f0354cf87920dae97ef70141 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T09:44:13+02:00-b77f179accd738ededaf429695160bbb48fb8a9d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4952,7 +4952,7 @@ message.volume=Volume
 self:SendTable(message)
 return self
 end
-local _TraceOnOff=true
+local _TraceOnOff=false
 local _TraceLevel=1
 local _TraceAll=false
 local _TraceClass={}
@@ -5306,7 +5306,7 @@ end
 end
 end
 function BASE:F(Arguments)
-if BASE.Debug and _TraceOnOff then
+if BASE.Debug and _TraceOnOff==true then
 local DebugInfoCurrent=BASE.Debug.getinfo(2,"nl")
 local DebugInfoFrom=BASE.Debug.getinfo(3,"l")
 if _TraceLevel>=1 then
@@ -5315,7 +5315,7 @@ end
 end
 end
 function BASE:F2(Arguments)
-if BASE.Debug and _TraceOnOff then
+if BASE.Debug and _TraceOnOff==true and _TraceLevel>=2 then
 local DebugInfoCurrent=BASE.Debug.getinfo(2,"nl")
 local DebugInfoFrom=BASE.Debug.getinfo(3,"l")
 if _TraceLevel>=2 then
@@ -5324,7 +5324,7 @@ end
 end
 end
 function BASE:F3(Arguments)
-if BASE.Debug and _TraceOnOff then
+if BASE.Debug and _TraceOnOff==true and _TraceLevel>=3 then
 local DebugInfoCurrent=BASE.Debug.getinfo(2,"nl")
 local DebugInfoFrom=BASE.Debug.getinfo(3,"l")
 if _TraceLevel>=3 then
@@ -5354,7 +5354,7 @@ end
 end
 end
 function BASE:T(Arguments)
-if BASE.Debug and _TraceOnOff then
+if BASE.Debug and _TraceOnOff==true then
 local DebugInfoCurrent=BASE.Debug.getinfo(2,"nl")
 local DebugInfoFrom=BASE.Debug.getinfo(3,"l")
 if _TraceLevel>=1 then
@@ -5363,7 +5363,7 @@ end
 end
 end
 function BASE:T2(Arguments)
-if BASE.Debug and _TraceOnOff then
+if BASE.Debug and _TraceOnOff==true and _TraceLevel>=2 then
 local DebugInfoCurrent=BASE.Debug.getinfo(2,"nl")
 local DebugInfoFrom=BASE.Debug.getinfo(3,"l")
 if _TraceLevel>=2 then
@@ -5372,7 +5372,7 @@ end
 end
 end
 function BASE:T3(Arguments)
-if BASE.Debug and _TraceOnOff then
+if BASE.Debug and _TraceOnOff==true and _TraceLevel>=3 then
 local DebugInfoCurrent=BASE.Debug.getinfo(2,"nl")
 local DebugInfoFrom=BASE.Debug.getinfo(3,"l")
 if _TraceLevel>=3 then
