@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T16:18:20+02:00-459ee724267ecf400c4be7a2da57dae4b83bf3e3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T16:58:42+02:00-402e72f728cead44a9abfe5e36eae83a6fed9f69 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71512,7 +71512,7 @@ return false
 end
 end
 function CTLD:IsHook(Unit)
-if string.find(Unit:GetTypeName(),"CH.47")then
+if Unit and string.find(Unit:GetTypeName(),"CH.47")then
 return true
 else
 return false
