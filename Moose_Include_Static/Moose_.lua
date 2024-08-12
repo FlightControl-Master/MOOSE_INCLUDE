@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T11:40:43+02:00-ebe6e9fb9fe86ea47524d8a5df4046546f13c64f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T16:17:30+02:00-875b5fb34d9071a0fcce92c67de053b2f475ae9c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5146,6 +5146,46 @@ initiator=PlayerUnit:GetDCSObject()
 }
 world.onEvent(Event)
 end
+function BASE:CreateEventNewDynamicCargo(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.NewDynamicCargo,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventDynamicCargoLoaded(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoLoaded,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventDynamicCargoUnloaded(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoUnloaded,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventDynamicCargoRemoved(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoRemoved,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
 function BASE:onEvent(event)
 if self then
 for EventID,EventObject in pairs(self.Events)do
@@ -6515,6 +6555,10 @@ world.event.S_EVENT_NEW_ZONE_GOAL=world.event.S_EVENT_MAX+1004
 world.event.S_EVENT_DELETE_ZONE_GOAL=world.event.S_EVENT_MAX+1005
 world.event.S_EVENT_REMOVE_UNIT=world.event.S_EVENT_MAX+1006
 world.event.S_EVENT_PLAYER_ENTER_AIRCRAFT=world.event.S_EVENT_MAX+1007
+world.event.S_EVENT_NEW_DYNAMIC_CARGO=world.event.S_EVENT_MAX+1008
+world.event.S_EVENT_DYNAMIC_CARGO_LOADED=world.event.S_EVENT_MAX+1009
+world.event.S_EVENT_DYNAMIC_CARGO_UNLOADED=world.event.S_EVENT_MAX+1010
+world.event.S_EVENT_DYNAMIC_CARGO_REMOVED=world.event.S_EVENT_MAX+1011
 EVENTS={
 Shot=world.event.S_EVENT_SHOT,
 Hit=world.event.S_EVENT_HIT,
@@ -6584,6 +6628,10 @@ SimulationFreeze=world.event.S_EVENT_SIMULATION_FREEZE or-1,
 SimulationUnfreeze=world.event.S_EVENT_SIMULATION_UNFREEZE or-1,
 HumanAircraftRepairStart=world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_START or-1,
 HumanAircraftRepairFinish=world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH or-1,
+NewDynamicCargo=world.event.S_EVENT_NEW_DYNAMIC_CARGO or-1,
+DynamicCargoLoaded=world.event.S_EVENT_DYNAMIC_CARGO_LOADED or-1,
+DynamicCargoUnloaded=world.event.S_EVENT_DYNAMIC_CARGO_UNLOADED or-1,
+DynamicCargoRemoved=world.event.S_EVENT_DYNAMIC_CARGO_REMOVED or-1,
 }
 local _EVENTMETA={
 [world.event.S_EVENT_SHOT]={
@@ -6963,6 +7011,30 @@ Side="I",
 Event="OnEventHumanAircraftRepairFinish",
 Text="S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH"
 },
+[EVENTS.NewDynamicCargo]={
+Order=1,
+Side="I",
+Event="OnEventNewDynamicCargo",
+Text="S_EVENT_NEW_DYNAMIC_CARGO"
+},
+[EVENTS.DynamicCargoLoaded]={
+Order=1,
+Side="I",
+Event="OnEventDynamicCargoLoaded",
+Text="S_EVENT_DYNAMIC_CARGO_LOADED"
+},
+[EVENTS.DynamicCargoUnloaded]={
+Order=1,
+Side="I",
+Event="OnEventDynamicCargoUnloaded",
+Text="S_EVENT_DYNAMIC_CARGO_UNLOADED"
+},
+[EVENTS.DynamicCargoRemoved]={
+Order=1,
+Side="I",
+Event="OnEventDynamicCargoRemoved",
+Text="S_EVENT_DYNAMIC_CARGO_REMOVED"
+},
 }
 function EVENT:New()
 local self=BASE:Inherit(self,BASE:New())
@@ -7157,6 +7229,46 @@ initiator=PlayerUnit:GetDCSObject()
 }
 world.onEvent(Event)
 end
+function EVENT:CreateEventNewDynamicCargo(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.NewDynamicCargo,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function EVENT:CreateEventDynamicCargoLoaded(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoLoaded,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function EVENT:CreateEventDynamicCargoUnloaded(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoUnloaded,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function EVENT:CreateEventDynamicCargoRemoved(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoRemoved,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
 end
 function EVENT:onEvent(Event)
 local ErrorHandler=function(errmsg)
@@ -7233,7 +7345,13 @@ elseif Event.IniObjectCategory==Object.Category.CARGO then
 Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit:getName()
 Event.IniUnitName=Event.IniDCSUnitName
+if string.match(Event.IniUnitName,".+|%d%d:%d%d|PKG%d+")then
+Event.IniDynamicCargo=DYNAMICCARGO:FindByName(Event.IniUnitName)
+Event.IniDynamicCargoName=Event.IniUnitName
+Event.IniPlayerName=string.match(Event.IniUnitName,"^(.+)|%d%d:%d%d|PKG%d+")
+else
 Event.IniUnit=CARGO:FindByName(Event.IniDCSUnitName)
+end
 Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
@@ -7350,6 +7468,10 @@ end
 if Event.cargo then
 Event.Cargo=Event.cargo
 Event.CargoName=Event.cargo.Name
+end
+if Event.dynamiccargo then
+Event.IniDynamicCargo=Event.dynamiccargo
+Event.IniDynamicCargoName=Event.IniDynamicCargo.StaticName
 end
 if Event.zone then
 Event.Zone=Event.zone
@@ -10790,6 +10912,7 @@ PATHLINES={},
 STORAGES={},
 STNS={},
 SADL={},
+DYNAMICCARGO={},
 }
 local _DATABASECoalition=
 {
@@ -10820,6 +10943,7 @@ self:HandleEvent(EVENTS.DeleteCargo)
 self:HandleEvent(EVENTS.NewZone)
 self:HandleEvent(EVENTS.DeleteZone)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventOnPlayerLeaveUnit)
+self:HandleEvent(EVENTS.DynamicCargoRemoved,self._EventOnDynamicCargoRemoved)
 self:_RegisterTemplates()
 self:_RegisterGroupsAndUnits()
 self:_RegisterClients()
@@ -10855,6 +10979,21 @@ end
 function DATABASE:FindStatic(StaticName)
 local StaticFound=self.STATICS[StaticName]
 return StaticFound
+end
+function DATABASE:AddDynamicCargo(Name)
+if not self.DYNAMICCARGO[Name]then
+self.DYNAMICCARGO[Name]=DYNAMICCARGO:Register(Name)
+return self.DYNAMICCARGO[Name]
+end
+return nil
+end
+function DATABASE:FindDynamicCargo(DynamicCargoName)
+local StaticFound=self.DYNAMICCARGO[DynamicCargoName]
+return StaticFound
+end
+function DATABASE:DeleteDynamicCargo(DynamicCargoName)
+self.DYNAMICCARGO[DynamicCargoName]=nil
+return self
 end
 function DATABASE:AddAirbase(AirbaseName)
 if not self.AIRBASES[AirbaseName]then
@@ -11388,7 +11527,6 @@ resourcePayload={
 StaticTemplate.CategoryID="static"
 StaticTemplate.CoalitionID=Coalition or coalition.side.BLUE
 StaticTemplate.CountryID=Country or country.id.GERMANY
-UTILS.PrintTableToLog(StaticTemplate)
 return StaticTemplate
 end
 function DATABASE:GetStaticGroupTemplate(StaticName)
@@ -11565,10 +11703,14 @@ end
 return self
 end
 function DATABASE:_EventOnBirth(Event)
-self:F({Event})
+self:T({Event})
 if Event.IniDCSUnit then
 if Event.IniObjectCategory==Object.Category.STATIC then
 self:AddStatic(Event.IniDCSUnitName)
+elseif Event.IniObjectCategory==Object.Category.CARGO and string.match(Event.IniUnitName,".+|%d%d:%d%d|PKG%d+")then
+local cargo=self:AddDynamicCargo(Event.IniDCSUnitName)
+self:I(string.format("Adding dynamic cargo %s",tostring(Event.IniDCSUnitName)))
+self:CreateEventNewDynamicCargo(cargo)
 else
 if Event.IniObjectCategory==Object.Category.UNIT then
 self:AddUnit(Event.IniDCSUnitName)
@@ -11658,6 +11800,12 @@ local Settings=SETTINGS:Set(Event.IniPlayerName)
 Settings:SetPlayerMenu(Event.IniUnit)
 end
 end
+end
+end
+function DATABASE:_EventOnDynamicCargoRemoved(Event)
+self:T({Event})
+if Event.IniDynamicCargoName then
+self:DeleteDynamicCargo(Event.IniDynamicCargoName)
 end
 end
 function DATABASE:_EventOnPlayerLeaveUnit(Event)
@@ -31908,6 +32056,15 @@ if Airbase.getWarehouse then
 self.warehouse=Warehouse.getCargoAsWarehouse(self.airbase)
 end
 self.lid=string.format("STORAGE %s",StaticCargoName)
+return self
+end
+function STORAGE:NewFromDynamicCargo(DynamicCargoName)
+local self=BASE:Inherit(self,BASE:New())
+self.airbase=Unit.getByName(DynamicCargoName)
+if Airbase.getWarehouse then
+self.warehouse=Warehouse.getCargoAsWarehouse(self.airbase)
+end
+self.lid=string.format("STORAGE %s",DynamicCargoName)
 return self
 end
 function STORAGE:FindByName(AirbaseName)
@@ -70266,7 +70423,7 @@ self.PlayerTaskQueue:Push(PlayerTask,PlayerTask.PlayerTaskNr)
 return self
 end
 function CTLD:_EventHandler(EventData)
-self:I(string.format("%s Event = %d",self.lid,EventData.id))
+self:T(string.format("%s Event = %d",self.lid,EventData.id))
 local event=EventData
 if event.id==EVENTS.PlayerEnterAircraft or event.id==EVENTS.PlayerEnterUnit then
 local _coalition=event.IniCoalition
@@ -70310,7 +70467,6 @@ cargotype.Positionable=static
 table.insert(self.Spawned_Cargo,cargotype)
 end
 end
-self:ScheduleOnce(0.5,RegisterDynamicCargo)
 end
 return self
 end
