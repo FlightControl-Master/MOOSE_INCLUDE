@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T09:47:38+02:00-59963e152d6bcc9471a08b0f1ee1f6aa51703fa7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T10:18:14+02:00-5f7f75b1c9c29403eb3aa0e21ac00284371dc413 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18853,7 +18853,6 @@ Cold=4,
 }
 function SPAWN:New(SpawnTemplatePrefix)
 local self=BASE:Inherit(self,BASE:New())
-self:F({SpawnTemplatePrefix})
 local TemplateGroup=GROUP:FindByName(SpawnTemplatePrefix)
 if TemplateGroup then
 self.SpawnTemplatePrefix=SpawnTemplatePrefix
@@ -18895,7 +18894,6 @@ return self
 end
 function SPAWN:NewWithAlias(SpawnTemplatePrefix,SpawnAliasPrefix)
 local self=BASE:Inherit(self,BASE:New())
-self:F({SpawnTemplatePrefix,SpawnAliasPrefix})
 local TemplateGroup=GROUP:FindByName(SpawnTemplatePrefix)
 if TemplateGroup then
 self.SpawnTemplatePrefix=SpawnTemplatePrefix
@@ -18937,7 +18935,6 @@ return self
 end
 function SPAWN:NewFromTemplate(SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix,NoMooseNamingPostfix)
 local self=BASE:Inherit(self,BASE:New())
-self:F({SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix})
 if SpawnTemplatePrefix==nil or SpawnTemplatePrefix==""then
 BASE:I("ERROR: in function NewFromTemplate, required parameter SpawnTemplatePrefix is not set")
 return nil
@@ -18986,7 +18983,6 @@ self.SpawnHookScheduler=SCHEDULER:New(nil)
 return self
 end
 function SPAWN:InitLimit(SpawnMaxUnitsAlive,SpawnMaxGroups)
-self:F({self.SpawnTemplatePrefix,SpawnMaxUnitsAlive,SpawnMaxGroups})
 self.SpawnInitLimit=true
 self.SpawnMaxUnitsAlive=SpawnMaxUnitsAlive
 self.SpawnMaxGroups=SpawnMaxGroups
@@ -18996,25 +18992,21 @@ end
 return self
 end
 function SPAWN:InitKeepUnitNames(KeepUnitNames)
-self:F()
 self.SpawnInitKeepUnitNames=false
 if KeepUnitNames==true then self.SpawnInitKeepUnitNames=true end
 return self
 end
 function SPAWN:InitLateActivated(LateActivated)
-self:F()
 self.LateActivated=LateActivated or true
 return self
 end
 function SPAWN:InitAirbase(AirbaseName,Takeoff,TerminalType)
-self:F()
 self.SpawnInitAirbase=AIRBASE:FindByName(AirbaseName)
 self.SpawnInitTakeoff=Takeoff or SPAWN.Takeoff.Hot
 self.SpawnInitTerminalType=TerminalType
 return self
 end
 function SPAWN:InitHeading(HeadingMin,HeadingMax)
-self:F()
 self.SpawnInitHeadingMin=HeadingMin
 self.SpawnInitHeadingMax=HeadingMax
 return self
@@ -19032,22 +19024,18 @@ self.SpawnInitCoalition=Coalition
 return self
 end
 function SPAWN:InitCountry(Country)
-self:F()
 self.SpawnInitCountry=Country
 return self
 end
 function SPAWN:InitCategory(Category)
-self:F()
 self.SpawnInitCategory=Category
 return self
 end
 function SPAWN:InitLivery(Livery)
-self:F({livery=Livery})
 self.SpawnInitLivery=Livery
 return self
 end
 function SPAWN:InitSkill(Skill)
-self:F({skill=Skill})
 if Skill:lower()=="average"then
 self.SpawnInitSkill="Average"
 elseif Skill:lower()=="good"then
@@ -19062,7 +19050,6 @@ end
 return self
 end
 function SPAWN:InitSTN(Octal)
-self:F({Octal=Octal})
 self.SpawnInitSTN=Octal or 77777
 local num=UTILS.OctalToDecimal(Octal)
 if num==nil or num<1 then
@@ -19075,7 +19062,6 @@ end
 return self
 end
 function SPAWN:InitSADL(Octal)
-self:F({Octal=Octal})
 self.SpawnInitSADL=Octal or 7777
 local num=UTILS.OctalToDecimal(Octal)
 if num==nil or num<1 then
@@ -19088,7 +19074,6 @@ end
 return self
 end
 function SPAWN:InitSpeedMps(MPS)
-self:F({MPS=MPS})
 if MPS==nil or tonumber(MPS)<0 then
 MPS=125
 end
@@ -19096,7 +19081,6 @@ self.InitSpeed=MPS
 return self
 end
 function SPAWN:InitSpeedKnots(Knots)
-self:F({Knots=Knots})
 if Knots==nil or tonumber(Knots)<0 then
 Knots=300
 end
@@ -19104,7 +19088,6 @@ self.InitSpeed=UTILS.KnotsToMps(Knots)
 return self
 end
 function SPAWN:InitSpeedKph(KPH)
-self:F({KPH=KPH})
 if KPH==nil or tonumber(KPH)<0 then
 KPH=UTILS.KnotsToKmph(300)
 end
@@ -19112,17 +19095,14 @@ self.InitSpeed=UTILS.KmphToMps(KPH)
 return self
 end
 function SPAWN:InitRadioCommsOnOff(switch)
-self:F({switch=switch})
 self.SpawnInitRadio=switch or true
 return self
 end
 function SPAWN:InitRadioFrequency(frequency)
-self:F({frequency=frequency})
 self.SpawnInitFreq=frequency
 return self
 end
 function SPAWN:InitRadioModulation(modulation)
-self:F({modulation=modulation})
 if modulation and modulation:lower()=="fm"then
 self.SpawnInitModu=radio.modulation.FM
 else
@@ -19139,7 +19119,6 @@ self.SpawnInitModexPostfix=postfix
 return self
 end
 function SPAWN:InitRandomizeRoute(SpawnStartPoint,SpawnEndPoint,SpawnRadius,SpawnHeight)
-self:F({self.SpawnTemplatePrefix,SpawnStartPoint,SpawnEndPoint,SpawnRadius,SpawnHeight})
 self.SpawnRandomizeRoute=true
 self.SpawnRandomizeRouteStartPoint=SpawnStartPoint
 self.SpawnRandomizeRouteEndPoint=SpawnEndPoint
@@ -19151,7 +19130,6 @@ end
 return self
 end
 function SPAWN:InitRandomizePosition(RandomizePosition,OuterRadius,InnerRadius)
-self:F({self.SpawnTemplatePrefix,RandomizePosition,OuterRadius,InnerRadius})
 self.SpawnRandomizePosition=RandomizePosition or false
 self.SpawnRandomizePositionOuterRadius=OuterRadius or 0
 self.SpawnRandomizePositionInnerRadius=InnerRadius or 0
@@ -19161,7 +19139,6 @@ end
 return self
 end
 function SPAWN:InitRandomizeUnits(RandomizeUnits,OuterRadius,InnerRadius)
-self:F({self.SpawnTemplatePrefix,RandomizeUnits,OuterRadius,InnerRadius})
 self.SpawnRandomizeUnits=RandomizeUnits or false
 self.SpawnOuterRadius=OuterRadius or 0
 self.SpawnInnerRadius=InnerRadius or 0
@@ -19171,19 +19148,16 @@ end
 return self
 end
 function SPAWN:InitSetUnitRelativePositions(Positions)
-self:F({self.SpawnTemplatePrefix,Positions})
 self.SpawnUnitsWithRelativePositions=true
 self.UnitsRelativePositions=Positions
 return self
 end
 function SPAWN:InitSetUnitAbsolutePositions(Positions)
-self:F({self.SpawnTemplatePrefix,Positions})
 self.SpawnUnitsWithAbsolutePositions=true
 self.UnitsAbsolutePositions=Positions
 return self
 end
 function SPAWN:InitRandomizeTemplate(SpawnTemplatePrefixTable)
-self:F({self.SpawnTemplatePrefix,SpawnTemplatePrefixTable})
 local temptable={}
 for _,_temp in pairs(SpawnTemplatePrefixTable)do
 temptable[#temptable+1]=_temp
@@ -19196,24 +19170,20 @@ end
 return self
 end
 function SPAWN:InitRandomizeTemplateSet(SpawnTemplateSet)
-self:F({self.SpawnTemplatePrefix})
 local setnames=SpawnTemplateSet:GetSetNames()
 self:InitRandomizeTemplate(setnames)
 return self
 end
 function SPAWN:InitRandomizeTemplatePrefixes(SpawnTemplatePrefixes)
-self:F({self.SpawnTemplatePrefix})
 local SpawnTemplateSet=SET_GROUP:New():FilterPrefixes(SpawnTemplatePrefixes):FilterOnce()
 self:InitRandomizeTemplateSet(SpawnTemplateSet)
 return self
 end
 function SPAWN:InitGrouping(Grouping)
-self:F({self.SpawnTemplatePrefix,Grouping})
 self.SpawnGrouping=Grouping
 return self
 end
 function SPAWN:InitRandomizeZones(SpawnZoneTable)
-self:F({self.SpawnTemplatePrefix,SpawnZoneTable})
 local temptable={}
 for _,_temp in pairs(SpawnZoneTable)do
 temptable[#temptable+1]=_temp
@@ -19239,59 +19209,54 @@ self.SpawnInitCallSignName=string.lower(Name):gsub("^%l",string.upper)
 return self
 end
 function SPAWN:InitPositionCoordinate(Coordinate)
-self:T({self.SpawnTemplatePrefix,Coordinate:GetVec2()})
+self:T2({self.SpawnTemplatePrefix,Coordinate:GetVec2()})
 self:InitPositionVec2(Coordinate:GetVec2())
 return self
 end
 function SPAWN:InitPositionVec2(Vec2)
-self:T({self.SpawnTemplatePrefix,Vec2})
+self:T2({self.SpawnTemplatePrefix,Vec2})
 self.SpawnInitPosition=Vec2
 self.SpawnFromNewPosition=true
-self:T("MaxGroups:"..self.SpawnMaxGroups)
+self:T2("MaxGroups:"..self.SpawnMaxGroups)
 for SpawnGroupID=1,self.SpawnMaxGroups do
 self:_SetInitialPosition(SpawnGroupID)
 end
 return self
 end
 function SPAWN:InitRepeat()
-self:F({self.SpawnTemplatePrefix,self.SpawnIndex})
 self.Repeat=true
 self.RepeatOnEngineShutDown=false
 self.RepeatOnLanding=true
 return self
 end
 function SPAWN:InitRepeatOnLanding()
-self:F({self.SpawnTemplatePrefix})
 self:InitRepeat()
 self.RepeatOnEngineShutDown=false
 self.RepeatOnLanding=true
 return self
 end
 function SPAWN:InitRepeatOnEngineShutDown()
-self:F({self.SpawnTemplatePrefix})
 self:InitRepeat()
 self.RepeatOnEngineShutDown=true
 self.RepeatOnLanding=false
 return self
 end
 function SPAWN:InitCleanUp(SpawnCleanUpInterval)
-self:F({self.SpawnTemplatePrefix,SpawnCleanUpInterval})
 self.SpawnCleanUpInterval=SpawnCleanUpInterval
 self.SpawnCleanUpTimeStamps={}
 local SpawnGroup,SpawnCursor=self:GetFirstAliveGroup()
-self:T({"CleanUp Scheduler:",SpawnGroup})
+self:T2({"CleanUp Scheduler:",SpawnGroup})
 self.CleanUpScheduler=SCHEDULER:New(self,self._SpawnCleanUpScheduler,{},1,SpawnCleanUpInterval,0.2)
 return self
 end
 function SPAWN:InitArray(SpawnAngle,SpawnWidth,SpawnDeltaX,SpawnDeltaY)
-self:F({self.SpawnTemplatePrefix,SpawnAngle,SpawnWidth,SpawnDeltaX,SpawnDeltaY})
 self.SpawnVisible=true
 local SpawnX=0
 local SpawnY=0
 local SpawnXIndex=0
 local SpawnYIndex=0
 for SpawnGroupID=1,self.SpawnMaxGroups do
-self:T({SpawnX,SpawnY,SpawnXIndex,SpawnYIndex})
+self:T2({SpawnX,SpawnY,SpawnXIndex,SpawnYIndex})
 self.SpawnGroups[SpawnGroupID].Visible=true
 self.SpawnGroups[SpawnGroupID].Spawned=false
 SpawnXIndex=SpawnXIndex+1
@@ -19361,8 +19326,8 @@ function SPAWN:InitDelayOff()
 return self:InitDelayOnOff(false)
 end
 end
-function SPAWN:InitHiddenOnMap()
-self.SpawnHiddenOnMap=true
+function SPAWN:InitHiddenOnMap(OnOff)
+self.SpawnHiddenOnMap=OnOff==false and false or true
 return self
 end
 function SPAWN:InitHiddenOnMFD()
@@ -19374,7 +19339,6 @@ self.SpawnHiddenOnPlanner=true
 return self
 end
 function SPAWN:Spawn()
-self:F({self.SpawnTemplatePrefix,self.SpawnIndex,self.AliveUnits})
 if self.SpawnInitAirbase then
 return self:SpawnAtAirbase(self.SpawnInitAirbase,self.SpawnInitTakeoff,nil,self.SpawnInitTerminalType)
 else
@@ -19382,7 +19346,6 @@ return self:SpawnWithIndex(self.SpawnIndex+1)
 end
 end
 function SPAWN:ReSpawn(SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex})
 if not SpawnIndex then
 SpawnIndex=1
 end
@@ -19418,10 +19381,10 @@ end
 )
 if aliveunits~=self.AliveUnits then
 self.AliveUnits=aliveunits
-self:T("***** self.AliveUnits accounting failure! Corrected! *****")
+self:T2("***** self.AliveUnits accounting failure! Corrected! *****")
 end
 set=nil
-self:T({SpawnTemplatePrefix=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,AliveUnits=self.AliveUnits,SpawnMaxGroups=self.SpawnMaxGroups})
+self:T2({SpawnTemplatePrefix=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,AliveUnits=self.AliveUnits,SpawnMaxGroups=self.SpawnMaxGroups})
 if self:_GetSpawnIndex(SpawnIndex)then
 if self.SpawnFromNewPosition then
 self:_SetInitialPosition(SpawnIndex)
@@ -19431,10 +19394,10 @@ self.SpawnGroups[self.SpawnIndex].Group:Activate()
 else
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 local SpawnZone=self.SpawnGroups[self.SpawnIndex].SpawnZone
-self:T(SpawnTemplate.name)
+self:T2(SpawnTemplate.name)
 if SpawnTemplate then
 local PointVec3=POINT_VEC3:New(SpawnTemplate.route.points[1].x,SpawnTemplate.route.points[1].alt,SpawnTemplate.route.points[1].y)
-self:T({"Current point of ",self.SpawnTemplatePrefix,PointVec3})
+self:T2({"Current point of ",self.SpawnTemplatePrefix,PointVec3})
 if self.SpawnRandomizePosition then
 local RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnRandomizePositionOuterRadius,self.SpawnRandomizePositionInnerRadius)
 local CurrentX=SpawnTemplate.units[1].x
@@ -19444,7 +19407,7 @@ SpawnTemplate.y=RandomVec2.y
 for UnitID=1,#SpawnTemplate.units do
 SpawnTemplate.units[UnitID].x=SpawnTemplate.units[UnitID].x+(RandomVec2.x-CurrentX)
 SpawnTemplate.units[UnitID].y=SpawnTemplate.units[UnitID].y+(RandomVec2.y-CurrentY)
-self:T('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
+self:T2('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 if self.SpawnRandomizeUnits then
@@ -19461,13 +19424,13 @@ inZone=SpawnZone:IsVec2InZone(RandomVec2)
 end
 end
 if(not inZone)then
-self:T("Could not place unit within zone and within radius!")
+self:T2("Could not place unit within zone and within radius!")
 RandomVec2=SpawnZone:GetRandomVec2()
 end
 end
 SpawnTemplate.units[UnitID].x=RandomVec2.x
 SpawnTemplate.units[UnitID].y=RandomVec2.y
-self:T('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
+self:T2('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 local function _Heading(courseDeg)
@@ -19582,7 +19545,7 @@ if self.SpawnHiddenOnMFD then
 SpawnTemplate.hiddenOnMFD=true
 end
 if self.SpawnHiddenOnMap then
-SpawnTemplate.hidden=true
+SpawnTemplate.hidden=self.SpawnHiddenOnMap
 end
 SpawnTemplate.CategoryID=self.SpawnInitCategory or SpawnTemplate.CategoryID
 SpawnTemplate.CountryID=self.SpawnInitCountry or SpawnTemplate.CountryID
@@ -19619,7 +19582,6 @@ end
 return nil
 end
 function SPAWN:SpawnScheduled(SpawnTime,SpawnTimeVariation,WithDelay)
-self:F({SpawnTime,SpawnTimeVariation})
 local SpawnTime=SpawnTime or 60
 local SpawnTimeVariation=SpawnTimeVariation or 0.5
 if SpawnTime~=nil and SpawnTimeVariation~=nil then
@@ -19632,17 +19594,14 @@ end
 return self
 end
 function SPAWN:SpawnScheduleStart()
-self:F({self.SpawnTemplatePrefix})
 self.SpawnScheduler:Start()
 return self
 end
 function SPAWN:SpawnScheduleStop()
-self:F({self.SpawnTemplatePrefix})
 self.SpawnScheduler:Stop()
 return self
 end
 function SPAWN:OnSpawnGroup(SpawnCallBackFunction,...)
-self:F("OnSpawnGroup")
 self.SpawnFunctionHook=SpawnCallBackFunction
 self.SpawnFunctionArguments={}
 if arg then
@@ -19651,21 +19610,17 @@ end
 return self
 end
 function SPAWN:SpawnAtAirbase(SpawnAirbase,Takeoff,TakeoffAltitude,TerminalType,EmergencyAirSpawn,Parkingdata)
-self:F({self.SpawnTemplatePrefix,SpawnAirbase,Takeoff,TakeoffAltitude,TerminalType})
 local PointVec3=SpawnAirbase:GetCoordinate()
 self:T2(PointVec3)
 Takeoff=Takeoff or SPAWN.Takeoff.Hot
 if EmergencyAirSpawn==nil then
 EmergencyAirSpawn=true
 end
-self:F({SpawnIndex=self.SpawnIndex})
 if self:_GetSpawnIndex(self.SpawnIndex+1)then
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
-self:F({SpawnTemplate=SpawnTemplate})
 if SpawnTemplate then
 local GroupAlive=self:GetGroupFromIndex(self.SpawnIndex)
-self:F({GroupAlive=GroupAlive})
-self:T({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
+self:T2({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
 local TemplateGroup=GROUP:FindByName(self.SpawnTemplatePrefix)
 local TemplateUnit=TemplateGroup:GetUnit(1)
 local group=TemplateGroup
@@ -19682,7 +19637,6 @@ SpawnPoint.helipadId=nil
 SpawnPoint.airdromeId=nil
 local AirbaseID=SpawnAirbase:GetID()
 local AirbaseCategory=SpawnAirbase:GetAirbaseCategory()
-self:F({AirbaseCategory=AirbaseCategory})
 if AirbaseCategory==Airbase.Category.SHIP then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
@@ -19696,7 +19650,7 @@ SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[Takeoff][2]
 local spawnonground=not(Takeoff==SPAWN.Takeoff.Air)
-self:T({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
+self:T2({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
 local spawnonship=false
 local spawnonfarp=false
 local spawnonrunway=false
@@ -19734,43 +19688,43 @@ local scanstatics=true
 local scanscenery=false
 local verysafe=false
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+self:T2(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
 if ishelo then
 if termtype==nil then
-self:T(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
+self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
+self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
+self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
 if termtype==nil then
 if isbomber or istransport or istanker or isawacs then
-self:T(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
+self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
+self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
+self:T2(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
+self:T2(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
@@ -19843,18 +19797,18 @@ local TX=PointVec3.x+(SX-BX)
 local TY=PointVec3.z+(SY-BY)
 if spawnonground then
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+self:T2(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=PointVec3.x
 SpawnTemplate.units[UnitID].y=PointVec3.z
 SpawnTemplate.units[UnitID].alt=PointVec3.y
 else
-self:T(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
+self:T2(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
 SpawnTemplate.units[UnitID].x=parkingspots[UnitID].x
 SpawnTemplate.units[UnitID].y=parkingspots[UnitID].z
 SpawnTemplate.units[UnitID].alt=parkingspots[UnitID].y
 end
 else
-self:T(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+self:T2(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=TX
 SpawnTemplate.units[UnitID].y=TY
 SpawnTemplate.units[UnitID].alt=PointVec3.y
@@ -19864,8 +19818,8 @@ UnitTemplate.parking_id=nil
 if parkingindex[UnitID]then
 UnitTemplate.parking=parkingindex[UnitID]
 end
-self:T(string.format("Group %s unit number %d: Parking    = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking)))
-self:T(string.format("Group %s unit number %d: Parking ID = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking_id)))
+self:T2(string.format("Group %s unit number %d: Parking    = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking)))
+self:T2(string.format("Group %s unit number %d: Parking ID = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking_id)))
 self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
@@ -19890,7 +19844,6 @@ end
 return nil
 end
 function SPAWN:SpawnAtParkingSpot(Airbase,Spots,Takeoff)
-self:F({Airbase=Airbase,Spots=Spots,Takeoff=Takeoff})
 if type(Spots)~="table"then
 Spots={Spots}
 end
@@ -19909,7 +19862,7 @@ for _,TerminalID in pairs(Spots)do
 local spot=Airbase:GetParkingSpotData(TerminalID)
 self:T2({spot=spot})
 if spot and spot.Free then
-self:T(string.format("Adding parking spot ID=%d TermType=%d",spot.TerminalID,spot.TerminalType))
+self:T2(string.format("Adding parking spot ID=%d TermType=%d",spot.TerminalID,spot.TerminalType))
 table.insert(Parkingdata,spot)
 end
 end
@@ -19924,14 +19877,13 @@ end
 return nil
 end
 function SPAWN:ParkAircraft(SpawnAirbase,TerminalType,Parkingdata,SpawnIndex)
-self:F({SpawnIndex=SpawnIndex,SpawnMaxGroups=self.SpawnMaxGroups})
 local PointVec3=SpawnAirbase:GetCoordinate()
 self:T2(PointVec3)
 local Takeoff=SPAWN.Takeoff.Cold
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 if SpawnTemplate then
 local GroupAlive=self:GetGroupFromIndex(SpawnIndex)
-self:T({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
+self:T2({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
 local TemplateGroup=GROUP:FindByName(self.SpawnTemplatePrefix)
 local TemplateUnit=TemplateGroup:GetUnit(1)
 local ishelo=TemplateUnit:HasAttribute("Helicopters")
@@ -19945,7 +19897,6 @@ SpawnPoint.helipadId=nil
 SpawnPoint.airdromeId=nil
 local AirbaseID=SpawnAirbase:GetID()
 local AirbaseCategory=SpawnAirbase:GetAirbaseCategory()
-self:F({AirbaseCategory=AirbaseCategory})
 if AirbaseCategory==Airbase.Category.SHIP then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
@@ -19959,7 +19910,7 @@ SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[Takeoff][2]
 local spawnonground=not(Takeoff==SPAWN.Takeoff.Air)
-self:T({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
+self:T2({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
 local spawnonship=false
 local spawnonfarp=false
 local spawnonrunway=false
@@ -19986,43 +19937,43 @@ local scanstatics=true
 local scanscenery=false
 local verysafe=false
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+self:T2(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
 if ishelo then
 if termtype==nil then
-self:T(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
+self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
+self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
+self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
 if termtype==nil then
 if isbomber or istransport then
-self:T(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
+self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
+self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
+self:T2(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
+self:T2(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
@@ -20061,7 +20012,6 @@ end
 if not SpawnTemplate.parked then
 SpawnTemplate.parked=true
 for UnitID=1,nunits do
-self:F('Before Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 local UnitTemplate=SpawnTemplate.units[UnitID]
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
@@ -20071,18 +20021,18 @@ local TX=PointVec3.x+(SX-BX)
 local TY=PointVec3.z+(SY-BY)
 if spawnonground then
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+self:T2(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=PointVec3.x
 SpawnTemplate.units[UnitID].y=PointVec3.z
 SpawnTemplate.units[UnitID].alt=PointVec3.y
 else
-self:T(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
+self:T2(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
 SpawnTemplate.units[UnitID].x=parkingspots[UnitID].x
 SpawnTemplate.units[UnitID].y=parkingspots[UnitID].z
 SpawnTemplate.units[UnitID].alt=parkingspots[UnitID].y
 end
 else
-self:T(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+self:T2(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=TX
 SpawnTemplate.units[UnitID].y=TY
 SpawnTemplate.units[UnitID].alt=PointVec3.y
@@ -20115,7 +20065,6 @@ end
 end
 end
 function SPAWN:ParkAtAirbase(SpawnAirbase,TerminalType,Parkingdata)
-self:F({self.SpawnTemplatePrefix,SpawnAirbase,TerminalType})
 self:ParkAircraft(SpawnAirbase,TerminalType,Parkingdata,1)
 for SpawnIndex=2,self.SpawnMaxGroups do
 self:ParkAircraft(SpawnAirbase,TerminalType,Parkingdata,SpawnIndex)
@@ -20124,7 +20073,6 @@ self:SetSpawnIndex(0)
 return nil
 end
 function SPAWN:SpawnFromVec3(Vec3,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,Vec3,SpawnIndex})
 local PointVec3=POINT_VEC3:NewFromVec3(Vec3)
 self:T2(PointVec3)
 if SpawnIndex then
@@ -20134,7 +20082,7 @@ end
 if self:_GetSpawnIndex(SpawnIndex)then
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 if SpawnTemplate then
-self:T({"Current point of ",self.SpawnTemplatePrefix,Vec3})
+self:T2({"Current point of ",self.SpawnTemplatePrefix,Vec3})
 local TemplateHeight=SpawnTemplate.route and SpawnTemplate.route.points[1].alt or nil
 SpawnTemplate.route=SpawnTemplate.route or{}
 SpawnTemplate.route.points=SpawnTemplate.route.points or{}
@@ -20154,7 +20102,7 @@ SpawnTemplate.units[UnitID].y=TY
 if SpawnTemplate.CategoryID~=Group.Category.SHIP then
 SpawnTemplate.units[UnitID].alt=Vec3.y or TemplateHeight
 end
-self:T('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
+self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 SpawnTemplate.route.points[1].x=Vec3.x
 SpawnTemplate.route.points[1].y=Vec3.z
@@ -20170,15 +20118,12 @@ end
 return nil
 end
 function SPAWN:SpawnFromCoordinate(Coordinate,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex})
 return self:SpawnFromVec3(Coordinate:GetVec3(),SpawnIndex)
 end
 function SPAWN:SpawnFromPointVec3(PointVec3,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex})
 return self:SpawnFromVec3(PointVec3:GetVec3(),SpawnIndex)
 end
 function SPAWN:SpawnFromVec2(Vec2,MinHeight,MaxHeight,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,self.SpawnIndex,Vec2,MinHeight,MaxHeight,SpawnIndex})
 local Height=nil
 if MinHeight and MaxHeight then
 Height=math.random(MinHeight,MaxHeight)
@@ -20186,25 +20131,21 @@ end
 return self:SpawnFromVec3({x=Vec2.x,y=Height,z=Vec2.y},SpawnIndex)
 end
 function SPAWN:SpawnFromPointVec2(PointVec2,MinHeight,MaxHeight,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,self.SpawnIndex})
 return self:SpawnFromVec2(PointVec2:GetVec2(),MinHeight,MaxHeight,SpawnIndex)
 end
 function SPAWN:SpawnFromUnit(HostUnit,MinHeight,MaxHeight,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,HostUnit,MinHeight,MaxHeight,SpawnIndex})
 if HostUnit and HostUnit:IsAlive()~=nil then
 return self:SpawnFromVec2(HostUnit:GetVec2(),MinHeight,MaxHeight,SpawnIndex)
 end
 return nil
 end
 function SPAWN:SpawnFromStatic(HostStatic,MinHeight,MaxHeight,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,HostStatic,MinHeight,MaxHeight,SpawnIndex})
 if HostStatic and HostStatic:IsAlive()then
 return self:SpawnFromVec2(HostStatic:GetVec2(),MinHeight,MaxHeight,SpawnIndex)
 end
 return nil
 end
 function SPAWN:SpawnInZone(Zone,RandomizeGroup,MinHeight,MaxHeight,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,Zone,RandomizeGroup,MinHeight,MaxHeight,SpawnIndex})
 if Zone then
 if RandomizeGroup then
 return self:SpawnFromVec2(Zone:GetRandomVec2(),MinHeight,MaxHeight,SpawnIndex)
@@ -20230,22 +20171,20 @@ end
 return nil
 end
 function SPAWN:SpawnGroupName(SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex})
 local SpawnPrefix=self.SpawnTemplatePrefix
 if self.SpawnAliasPrefix then
 SpawnPrefix=self.SpawnAliasPrefix
 end
 if SpawnIndex then
 local SpawnName=string.format('%s#%03d',SpawnPrefix,SpawnIndex)
-self:T(SpawnName)
+self:T2(SpawnName)
 return SpawnName
 else
-self:T(SpawnPrefix)
+self:T2(SpawnPrefix)
 return SpawnPrefix
 end
 end
 function SPAWN:GetFirstAliveGroup()
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix})
 for SpawnIndex=1,self.SpawnCount do
 local SpawnGroup=self:GetGroupFromIndex(SpawnIndex)
 if SpawnGroup and SpawnGroup:IsAlive()then
@@ -20255,7 +20194,6 @@ end
 return nil,nil
 end
 function SPAWN:GetNextAliveGroup(SpawnIndexStart)
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnIndexStart})
 SpawnIndexStart=SpawnIndexStart+1
 for SpawnIndex=SpawnIndexStart,self.SpawnCount do
 local SpawnGroup=self:GetGroupFromIndex(SpawnIndex)
@@ -20266,7 +20204,6 @@ end
 return nil,nil
 end
 function SPAWN:GetLastAliveGroup()
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix})
 for SpawnIndex=self.SpawnCount,1,-1 do
 local SpawnGroup=self:GetGroupFromIndex(SpawnIndex)
 if SpawnGroup and SpawnGroup:IsAlive()then
@@ -20278,7 +20215,6 @@ self.SpawnIndex=nil
 return nil
 end
 function SPAWN:GetGroupFromIndex(SpawnIndex)
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnIndex})
 if not SpawnIndex then
 SpawnIndex=1
 end
@@ -20308,18 +20244,15 @@ end
 return nil
 end
 function SPAWN:GetSpawnIndexFromGroup(SpawnGroup)
-self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnGroup})
 local IndexString=string.match(SpawnGroup:GetName(),"#(%d*)$"):sub(2)
 local Index=tonumber(IndexString)
 self:T3(IndexString,Index)
 return Index
 end
 function SPAWN:_GetLastIndex()
-self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix})
 return self.SpawnMaxGroups
 end
 function SPAWN:_InitializeSpawnGroups(SpawnIndex)
-self:F3({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnIndex})
 if not self.SpawnGroups[SpawnIndex]then
 self.SpawnGroups[SpawnIndex]={}
 self.SpawnGroups[SpawnIndex].Visible=false
@@ -20350,7 +20283,6 @@ return nil
 end
 end
 function SPAWN:_GetGroupCountryID(SpawnPrefix)
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnPrefix})
 local TemplateGroup=Group.getByName(SpawnPrefix)
 if TemplateGroup then
 local TemplateUnits=TemplateGroup:getUnits()
@@ -20360,13 +20292,11 @@ return nil
 end
 end
 function SPAWN:_GetTemplate(SpawnTemplatePrefix)
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix,SpawnTemplatePrefix})
 local SpawnTemplate=nil
 if _DATABASE.Templates.Groups[SpawnTemplatePrefix]==nil then
 error('No Template exists for SpawnTemplatePrefix = '..SpawnTemplatePrefix)
 end
 local Template=_DATABASE.Templates.Groups[SpawnTemplatePrefix].Template
-self:F({Template=Template})
 SpawnTemplate=UTILS.DeepCopy(_DATABASE.Templates.Groups[SpawnTemplatePrefix].Template)
 if SpawnTemplate==nil then
 error('No Template returned for SpawnTemplatePrefix = '..SpawnTemplatePrefix)
@@ -20375,7 +20305,6 @@ self:T3({SpawnTemplate})
 return SpawnTemplate
 end
 function SPAWN:_Prepare(SpawnTemplatePrefix,SpawnIndex)
-self:F({self.SpawnTemplatePrefix,self.SpawnAliasPrefix})
 local SpawnTemplate
 if self.TweakedTemplate~=nil and self.TweakedTemplate==true then
 BASE:I("WARNING: You are using a tweaked template.")
@@ -20397,7 +20326,6 @@ SpawnTemplate.visible=false
 end
 if self.SpawnGrouping then
 local UnitAmount=#SpawnTemplate.units
-self:F({UnitAmount=UnitAmount,SpawnGrouping=self.SpawnGrouping})
 if UnitAmount>self.SpawnGrouping then
 for UnitID=self.SpawnGrouping+1,UnitAmount do
 SpawnTemplate.units[UnitID]=nil
@@ -20428,7 +20356,7 @@ local UnitPrefix,Rest
 if SpawnInitKeepUnitIFF==false then
 UnitPrefix,Rest=string.match(SpawnTemplate.units[UnitID].name,"^([^#]+)#?"):gsub("^%s*(.-)%s*$","%1")
 SpawnTemplate.units[UnitID].name=string.format('%s#%03d-%02d',UnitPrefix,SpawnIndex,UnitID)
-self:T({UnitPrefix,Rest})
+self:T2({UnitPrefix,Rest})
 end
 SpawnTemplate.units[UnitID].unitId=nil
 end
@@ -20587,7 +20515,6 @@ self:T3({"Template:",SpawnTemplate})
 return SpawnTemplate
 end
 function SPAWN:_RandomizeRoute(SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeRoute,self.SpawnRandomizeRouteStartPoint,self.SpawnRandomizeRouteEndPoint,self.SpawnRandomizeRouteRadius})
 if self.SpawnRandomizeRoute then
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 local RouteCount=#SpawnTemplate.route.points
@@ -20601,14 +20528,13 @@ end
 else
 SpawnTemplate.route.points[t].alt=nil
 end
-self:T('SpawnTemplate.route.points['..t..'].x = '..SpawnTemplate.route.points[t].x..', SpawnTemplate.route.points['..t..'].y = '..SpawnTemplate.route.points[t].y)
+self:T2('SpawnTemplate.route.points['..t..'].x = '..SpawnTemplate.route.points[t].x..', SpawnTemplate.route.points['..t..'].y = '..SpawnTemplate.route.points[t].y)
 end
 end
 self:_RandomizeZones(SpawnIndex)
 return self
 end
 function SPAWN:_RandomizeTemplate(SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeTemplate})
 if self.SpawnRandomizeTemplate then
 self.SpawnGroups[SpawnIndex].SpawnTemplatePrefix=self.SpawnTemplatePrefixTable[math.random(1,#self.SpawnTemplatePrefixTable)]
 self.SpawnGroups[SpawnIndex].SpawnTemplate=self:_Prepare(self.SpawnGroups[SpawnIndex].SpawnTemplatePrefix,SpawnIndex)
@@ -20629,21 +20555,21 @@ self:_RandomizeRoute(SpawnIndex)
 return self
 end
 function SPAWN:_SetInitialPosition(SpawnIndex)
-self:T({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeZones})
+self:T2({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeZones})
 if self.SpawnFromNewPosition then
-self:T("Preparing Spawn at Vec2 ",self.SpawnInitPosition)
+self:T2("Preparing Spawn at Vec2 ",self.SpawnInitPosition)
 local SpawnVec2=self.SpawnInitPosition
-self:T({SpawnVec2=SpawnVec2})
+self:T2({SpawnVec2=SpawnVec2})
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 SpawnTemplate.route=SpawnTemplate.route or{}
 SpawnTemplate.route.points=SpawnTemplate.route.points or{}
 SpawnTemplate.route.points[1]=SpawnTemplate.route.points[1]or{}
 SpawnTemplate.route.points[1].x=SpawnTemplate.route.points[1].x or 0
 SpawnTemplate.route.points[1].y=SpawnTemplate.route.points[1].y or 0
-self:T({Route=SpawnTemplate.route})
+self:T2({Route=SpawnTemplate.route})
 for UnitID=1,#SpawnTemplate.units do
 local UnitTemplate=SpawnTemplate.units[UnitID]
-self:T('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
+self:T2('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
 local BX=SpawnTemplate.route.points[1].x
@@ -20652,7 +20578,7 @@ local TX=SpawnVec2.x+(SX-BX)
 local TY=SpawnVec2.y+(SY-BY)
 UnitTemplate.x=TX
 UnitTemplate.y=TY
-self:T('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
+self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 end
 SpawnTemplate.route.points[1].x=SpawnVec2.x
 SpawnTemplate.route.points[1].y=SpawnVec2.y
@@ -20662,24 +20588,23 @@ end
 return self
 end
 function SPAWN:_RandomizeZones(SpawnIndex)
-self:F({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeZones})
 if self.SpawnRandomizeZones then
 local SpawnZone=nil
 while not SpawnZone do
-self:T({SpawnZoneTableCount=#self.SpawnZoneTable,self.SpawnZoneTable})
+self:T2({SpawnZoneTableCount=#self.SpawnZoneTable,self.SpawnZoneTable})
 local ZoneID=math.random(#self.SpawnZoneTable)
-self:T(ZoneID)
+self:T2(ZoneID)
 SpawnZone=self.SpawnZoneTable[ZoneID]:GetZoneMaybe()
 end
-self:T("Preparing Spawn in Zone",SpawnZone:GetName())
+self:T2("Preparing Spawn in Zone",SpawnZone:GetName())
 local SpawnVec2=SpawnZone:GetRandomVec2()
-self:T({SpawnVec2=SpawnVec2})
+self:T2({SpawnVec2=SpawnVec2})
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 self.SpawnGroups[SpawnIndex].SpawnZone=SpawnZone
-self:T({Route=SpawnTemplate.route})
+self:T2({Route=SpawnTemplate.route})
 for UnitID=1,#SpawnTemplate.units do
 local UnitTemplate=SpawnTemplate.units[UnitID]
-self:T('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
+self:T2('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
 local BX=SpawnTemplate.route.points[1].x
@@ -20688,7 +20613,7 @@ local TX=SpawnVec2.x+(SX-BX)
 local TY=SpawnVec2.y+(SY-BY)
 UnitTemplate.x=TX
 UnitTemplate.y=TY
-self:T('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
+self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 end
 SpawnTemplate.x=SpawnVec2.x
 SpawnTemplate.y=SpawnVec2.y
@@ -20698,7 +20623,6 @@ end
 return self
 end
 function SPAWN:_TranslateRotate(SpawnIndex,SpawnRootX,SpawnRootY,SpawnX,SpawnY,SpawnAngle)
-self:F({self.SpawnTemplatePrefix,SpawnIndex,SpawnRootX,SpawnRootY,SpawnX,SpawnY,SpawnAngle})
 local TranslatedX=SpawnX
 local TranslatedY=SpawnY
 local RotatedX=-TranslatedX*math.cos(math.rad(SpawnAngle))+TranslatedY*math.sin(math.rad(SpawnAngle))
@@ -20718,10 +20642,10 @@ end
 return self
 end
 function SPAWN:_GetSpawnIndex(SpawnIndex)
-self:T({template=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,SpawnMaxGroups=self.SpawnMaxGroups,SpawnMaxUnitsAlive=self.SpawnMaxUnitsAlive,AliveUnits=self.AliveUnits,TemplateUnits=#self.SpawnTemplate.units})
+self:T2({template=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,SpawnMaxGroups=self.SpawnMaxGroups,SpawnMaxUnitsAlive=self.SpawnMaxUnitsAlive,AliveUnits=self.AliveUnits,TemplateUnits=#self.SpawnTemplate.units})
 if(self.SpawnMaxGroups==0)or(SpawnIndex<=self.SpawnMaxGroups)then
 if(self.SpawnMaxUnitsAlive==0)or(self.AliveUnits+#self.SpawnTemplate.units<=self.SpawnMaxUnitsAlive)or self.UnControlled==true then
-self:T({SpawnCount=self.SpawnCount,SpawnIndex=SpawnIndex})
+self:T2({SpawnCount=self.SpawnCount,SpawnIndex=SpawnIndex})
 if SpawnIndex and SpawnIndex>=self.SpawnCount+1 then
 self.SpawnCount=self.SpawnCount+1
 SpawnIndex=self.SpawnCount
@@ -20739,61 +20663,58 @@ end
 return self.SpawnIndex
 end
 function SPAWN:_OnBirth(EventData)
-self:F(self.SpawnTemplatePrefix)
 local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T({"Birth Event:",EventPrefix,self.SpawnTemplatePrefix})
+self:T2({"Birth Event:",EventPrefix,self.SpawnTemplatePrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
 self.AliveUnits=self.AliveUnits+1
-self:T("Alive Units: "..self.AliveUnits)
+self:T2("Alive Units: "..self.AliveUnits)
 end
 end
 end
 end
 function SPAWN:_OnDeadOrCrash(EventData)
-self:T("Dead or crash event ID "..tostring(EventData.id or 0))
-self:T("Dead or crash event for "..tostring(EventData.IniUnitName or"none"))
+self:T2("Dead or crash event ID "..tostring(EventData.id or 0))
+self:T2("Dead or crash event for "..tostring(EventData.IniUnitName or"none"))
 local unit=UNIT:FindByName(EventData.IniUnitName)
 if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
-self:T({"Dead event: "..EventPrefix})
-self:T(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix or"",self.SpawnAliasPrefix or"",self.AliveUnits or 0))
+self:T2({"Dead event: "..EventPrefix})
+self:T2(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix or"",self.SpawnAliasPrefix or"",self.AliveUnits or 0))
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
 self.AliveUnits=self.AliveUnits-1
 end
-self:T("New Alive Units: "..self.AliveUnits)
+self:T2("New Alive Units: "..self.AliveUnits)
 end
 end
 end
 function SPAWN:_OnTakeOff(EventData)
-self:F(self.SpawnTemplatePrefix)
 local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T({"TakeOff event: "..EventPrefix})
+self:T2({"TakeOff event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
-self:T("self.Landed = false")
+self:T2("self.Landed = false")
 SpawnGroup:SetState(SpawnGroup,"Spawn_Landed",false)
 end
 end
 end
 end
 function SPAWN:_OnLand(EventData)
-self:F(self.SpawnTemplatePrefix)
 local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T({"Land event: "..EventPrefix})
+self:T2({"Land event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
 SpawnGroup:SetState(SpawnGroup,"Spawn_Landed",true)
 if self.RepeatOnLanding then
 local SpawnGroupIndex=self:GetSpawnIndexFromGroup(SpawnGroup)
-self:T({"Landed:","ReSpawn:",SpawnGroup:GetName(),SpawnGroupIndex})
+self:T2({"Landed:","ReSpawn:",SpawnGroup:GetName(),SpawnGroupIndex})
 SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},3)
 end
 end
@@ -20801,17 +20722,16 @@ end
 end
 end
 function SPAWN:_OnEngineShutDown(EventData)
-self:F(self.SpawnTemplatePrefix)
 local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T({"EngineShutdown event: "..EventPrefix})
+self:T2({"EngineShutdown event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
 local Landed=SpawnGroup:GetState(SpawnGroup,"Spawn_Landed")
 if Landed and self.RepeatOnEngineShutDown then
 local SpawnGroupIndex=self:GetSpawnIndexFromGroup(SpawnGroup)
-self:T({"EngineShutDown: ","ReSpawn:",SpawnGroup:GetName(),SpawnGroupIndex})
+self:T2({"EngineShutDown: ","ReSpawn:",SpawnGroup:GetName(),SpawnGroupIndex})
 SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},3)
 end
 end
@@ -20824,9 +20744,8 @@ self:Spawn()
 return true
 end
 function SPAWN:_SpawnCleanUpScheduler()
-self:F({"CleanUp Scheduler:",self.SpawnTemplatePrefix})
 local SpawnGroup,SpawnCursor=self:GetFirstAliveGroup()
-self:T({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
+self:T2({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
 local IsHelo=false
 while SpawnGroup do
 IsHelo=SpawnGroup:IsHelicopter()
@@ -20836,13 +20755,13 @@ local SpawnUnit=UnitData
 local SpawnUnitName=SpawnUnit:GetName()
 self.SpawnCleanUpTimeStamps[SpawnUnitName]=self.SpawnCleanUpTimeStamps[SpawnUnitName]or{}
 local Stamp=self.SpawnCleanUpTimeStamps[SpawnUnitName]
-self:T({SpawnUnitName,Stamp})
+self:T2({SpawnUnitName,Stamp})
 if Stamp.Vec2 then
 if(SpawnUnit:InAir()==false and SpawnUnit:GetVelocityKMH()<1)or IsHelo then
 local NewVec2=SpawnUnit:GetVec2()or{x=0,y=0}
 if(Stamp.Vec2.x==NewVec2.x and Stamp.Vec2.y==NewVec2.y)or(SpawnUnit:GetLife()<=1)then
 if Stamp.Time+self.SpawnCleanUpInterval<timer.getTime()then
-self:T({"CleanUp Scheduler:","ReSpawning:",SpawnGroup:GetName()})
+self:T2({"CleanUp Scheduler:","ReSpawning:",SpawnGroup:GetName()})
 SCHEDULER:New(nil,self.ReSpawn,{self,SpawnCursor},3)
 Stamp.Vec2=nil
 Stamp.Time=nil
@@ -20868,7 +20787,7 @@ end
 end
 end
 SpawnGroup,SpawnCursor=self:GetNextAliveGroup(SpawnCursor)
-self:T({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
+self:T2({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
 end
 return true
 end
