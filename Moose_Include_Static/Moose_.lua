@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T19:07:57+02:00-60d68161c458017ac790e235a13254e09918d1f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T19:12:38+02:00-81653cf28907c470f86cca496709c5ca73f47f56 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32212,6 +32212,225 @@ end
 function STORAGE:GetInventory(Item)
 local inventory=self.warehouse:getInventory(Item)
 return inventory.aircraft,inventory.liquids,inventory.weapon
+end
+DYNAMICCARGO={
+ClassName="DYNAMICCARGO",
+verbose=0,
+testing=true,
+Interval=10,
+}
+DYNAMICCARGO.Liquid={
+JETFUEL=0,
+GASOLINE=1,
+MW50=2,
+DIESEL=3,
+}
+DYNAMICCARGO.LiquidName={
+GASOLINE="gasoline",
+DIESEL="diesel",
+MW50="methanol_mixture",
+JETFUEL="jet_fuel",
+}
+DYNAMICCARGO.Type={
+WEAPONS="weapons",
+LIQUIDS="liquids",
+AIRCRAFT="aircrafts",
+}
+DYNAMICCARGO.State={
+NEW="NEW",
+LOADED="LOADED",
+UNLOADED="UNLOADED",
+REMOVED="REMOVED",
+}
+DYNAMICCARGO.AircraftTypes={
+["CH-47Fbl1"]="CH-47Fbl1",
+}
+DYNAMICCARGO.AircraftDimensions={
+["CH-47Fbl1"]={
+["width"]=4,
+["height"]=6,
+["length"]=11,
+["ropelength"]=30,
+},
+}
+DYNAMICCARGO.version="0.0.3"
+function DYNAMICCARGO:Register(CargoName)
+local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
+self.StaticName=CargoName
+self.LastPosition=self:GetCoordinate()
+self.CargoState=DYNAMICCARGO.State.NEW
+self.Interval=DYNAMICCARGO.Interval or 10
+local DCSObject=self:GetDCSObject()
+if DCSObject then
+local warehouse=STORAGE:NewFromDynamicCargo(CargoName)
+self.warehouse=warehouse
+end
+self.lid=string.format("DYNAMICCARGO %s",CargoName)
+self.Owner=string.match(CargoName,"^(.+)|%d%d:%d%d|PKG%d+")or"None"
+self.timer=TIMER:New(DYNAMICCARGO._UpdatePosition,self)
+self.timer:Start(self.Interval,self.Interval)
+if not _DYNAMICCARGO_HELOS then
+_DYNAMICCARGO_HELOS=SET_CLIENT:New():FilterAlive():FilterFunction(DYNAMICCARGO._FilterHeloTypes):FilterStart()
+end
+return self
+end
+function DYNAMICCARGO:GetDCSObject()
+local DCSStatic=Unit.getByName(self.StaticName)
+if DCSStatic then
+return DCSStatic
+end
+return nil
+end
+function DYNAMICCARGO:GetLastPosition()
+return self.Owner
+end
+function DYNAMICCARGO:GetCratesNeeded()
+return 1
+end
+function DYNAMICCARGO:WasDropped()
+return self.CargoState==DYNAMICCARGO.State.UNLOADED and true or false
+end
+function DYNAMICCARGO:GetType()
+return CTLD_CARGO.Enum.GCLOADABLE
+end
+function DYNAMICCARGO:GetLastPosition()
+return self.LastPosition
+end
+function DYNAMICCARGO:GetState()
+return self.CargoState
+end
+function DYNAMICCARGO:FindByName(Name)
+local storage=_DATABASE:FindDynamicCargo(Name)
+return storage
+end
+function DYNAMICCARGO:FindByMatching(Pattern)
+local GroupFound=nil
+for name,static in pairs(_DATABASE.DYNAMICCARGO)do
+if string.match(name,Pattern)then
+GroupFound=static
+break
+end
+end
+return GroupFound
+end
+function DYNAMICCARGO:FindAllByMatching(Pattern)
+local GroupsFound={}
+for name,static in pairs(_DATABASE.DYNAMICCARGO)do
+if string.match(name,Pattern)then
+GroupsFound[#GroupsFound+1]=static
+end
+end
+return GroupsFound
+end
+function DYNAMICCARGO:GetStorageObject()
+return self.warehouse
+end
+function DYNAMICCARGO:GetCargoWeight()
+local DCSObject=self:GetDCSObject()
+if DCSObject then
+local weight=DCSObject:getCargoWeight()
+return weight
+else
+return 0
+end
+end
+function DYNAMICCARGO:GetCargoDisplayName()
+local DCSObject=self:GetDCSObject()
+if DCSObject then
+local weight=DCSObject:getCargoDisplayName()
+return weight
+else
+return self.StaticName
+end
+end
+function DYNAMICCARGO:_GetPossibleHeloNearby(pos,loading)
+local set=_DYNAMICCARGO_HELOS:GetAliveSet()
+local success=false
+local Helo=nil
+local Playername=nil
+for _,_helo in pairs(set or{})do
+local helo=_helo
+local name=helo:GetPlayerName()or"None"
+self:T(self.lid.." Checking: "..name)
+local hpos=helo:GetCoordinate()
+local inair=hpos.y-hpos:GetLandHeight()>4 and true or false
+local typename=helo:GetTypeName()
+if hpos and typename and inair==false then
+local dimensions=DYNAMICCARGO.AircraftDimensions[typename]
+if dimensions then
+local delta2D=hpos:Get2DDistance(pos)
+local delta3D=hpos:Get3DDistance(pos)
+if self.testing then
+self:T(string.format("Cargo relative position: 2D %dm | 3D %dm",delta2D,delta3D))
+self:T(string.format("Helo dimension: length %dm | width %dm | rope %dm",dimensions.length,dimensions.width,dimensions.ropelength))
+end
+if loading~=true and delta2D>dimensions.length or delta2D>dimensions.width or delta3D>dimensions.ropelength then
+success=true
+Helo=helo
+Playername=name
+end
+if loading==true and delta2D<dimensions.length or delta2D<dimensions.width or delta3D<dimensions.ropelength then
+success=true
+Helo=helo
+Playername=name
+end
+end
+end
+end
+return success,Helo,Playername
+end
+function DYNAMICCARGO:_UpdatePosition()
+self:T(self.lid.." _UpdatePositionAndState")
+if self:IsAlive()then
+local pos=self:GetCoordinate()
+if self.testing then
+self:T(string.format("Cargo position: x=%d, y=%d, z=%d",pos.x,pos.y,pos.z))
+self:T(string.format("Last position: x=%d, y=%d, z=%d",self.LastPosition.x,self.LastPosition.y,self.LastPosition.z))
+end
+if UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2)>0.5 then
+if self.CargoState==DYNAMICCARGO.State.NEW then
+local isloaded,client,playername=self:_GetPossibleHeloNearby(pos,true)
+self:T(self.lid.." moved! NEW -> LOADED by "..playername)
+self.CargoState=DYNAMICCARGO.State.LOADED
+self.Owner=playername
+_DATABASE:CreateEventDynamicCargoLoaded(self)
+elseif self.CargoState==DYNAMICCARGO.State.LOADED then
+local count=_DYNAMICCARGO_HELOS:CountAlive()
+local landheight=pos:GetLandHeight()
+local agl=pos.y-landheight
+agl=UTILS.Round(agl,2)
+self:T(self.lid.." AGL: "..agl or-1)
+local isunloaded=true
+local client
+local playername
+if count>0 and(agl>0 or self.testing)then
+self:T(self.lid.." Possible alive helos: "..count or-1)
+if agl~=0 or self.testing then
+isunloaded,client,playername=self:_GetPossibleHeloNearby(pos,false)
+end
+if isunloaded then
+self:T(self.lid.." moved! LOADED -> UNLOADED by "..playername)
+self.CargoState=DYNAMICCARGO.State.UNLOADED
+self.Owner=playername
+_DATABASE:CreateEventDynamicCargoUnloaded(self)
+end
+end
+end
+self.LastPosition=pos
+end
+else
+if self.timer and self.timer:IsRunning()then self.timer:Stop()end
+self:T(self.lid.." dead! "..self.CargoState.."-> REMOVED")
+self.CargoState=DYNAMICCARGO.State.REMOVED
+_DATABASE:CreateEventDynamicCargoRemoved(self)
+end
+return self
+end
+function DYNAMICCARGO._FilterHeloTypes(client)
+if not client then return false end
+local typename=client:GetTypeName()
+local isinclude=DYNAMICCARGO.AircraftTypes[typename]~=nil and true or false
+return isinclude
 end
 CARGOS={}
 do
