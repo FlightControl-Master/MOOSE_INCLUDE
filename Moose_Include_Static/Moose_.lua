@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T10:31:57+02:00-ba5743c057ba26fd29608dc6c38a8f61b09238ac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T19:07:57+02:00-60d68161c458017ac790e235a13254e09918d1f2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7472,6 +7472,7 @@ end
 if Event.dynamiccargo then
 Event.IniDynamicCargo=Event.dynamiccargo
 Event.IniDynamicCargoName=Event.IniDynamicCargo.StaticName
+Event.IniPlayerName=Event.IniDynamicCargo.Owner or string.match(Event.IniUnitName,"^(.+)|%d%d:%d%d|PKG%d+")
 end
 if Event.zone then
 Event.Zone=Event.zone
@@ -10956,11 +10957,13 @@ local UnitFound=self.UNITS[UnitName]
 return UnitFound
 end
 function DATABASE:AddUnit(DCSUnitName,force)
-if not self.UNITS[DCSUnitName]or force==true then
-self:T({"Add UNIT:",DCSUnitName})
-self.UNITS[DCSUnitName]=UNIT:Register(DCSUnitName)
+local DCSunitName=DCSUnitName
+if type(DCSunitName)=="number"then DCSunitName=string.format("%d",DCSUnitName)end
+if not self.UNITS[DCSunitName]or force==true then
+self:T({"Add UNIT:",DCSunitName})
+self.UNITS[DCSunitName]=UNIT:Register(DCSunitName)
 end
-return self.UNITS[DCSUnitName]
+return self.UNITS[DCSunitName]
 end
 function DATABASE:DeleteUnit(DCSUnitName)
 self:T("DeleteUnit "..tostring(DCSUnitName))
@@ -11624,7 +11627,7 @@ self:AddGroup(DCSGroupName,true)
 for DCSUnitId,DCSUnit in pairs(DCSGroup:getUnits())do
 local DCSUnitName=DCSUnit:getName()
 self:I(string.format("Register Unit: %s",tostring(DCSUnitName)))
-self:AddUnit(DCSUnitName,true)
+self:AddUnit(tostring(DCSUnitName),true)
 end
 else
 self:E({"Group does not exist: ",DCSGroup})
@@ -69889,6 +69892,7 @@ CRATE="Crate",
 REPAIR="Repair",
 ENGINEERS="Engineers",
 STATIC="Static",
+GCLOADABLE="GC_Loadable",
 }
 function CTLD_CARGO:New(ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped,PerCrateMass,Stock,Subcategory,DontShowInMenu,Location)
 local self=BASE:Inherit(self,BASE:New())
@@ -70207,6 +70211,7 @@ debug=false,
 wpZones={},
 dropOffZones={},
 pickupZones={},
+DynamicCargo={},
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70241,7 +70246,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=8000},
 }
-CTLD.version="1.0.58"
+CTLD.version="1.1.12"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70459,23 +70464,71 @@ local unitname=event.IniUnitName or"none"
 self.CtldUnits[unitname]=nil
 self.Loaded_Cargo[unitname]=nil
 self.MenusDone[unitname]=nil
-elseif event.id==EVENTS.Birth and event.IniObjectCategory==6 and string.match(event.IniUnitName,".+|%d%d:%d%d|PKG%d+")then
-local function RegisterDynamicCargo()
-local static=_DATABASE:AddStatic(event.IniUnitName)
-if static then
-static.DCSCargoObject=event.IniDCSUnit
-local Mass=event.IniDCSUnit:getCargoWeight()
-local country=event.IniDCSUnit:getCountry()
-local template=_DATABASE:_GetGenericStaticCargoGroupTemplate(event.IniUnitName,event.IniTypeName,Mass,event.IniCoalition,country)
-_DATABASE:_RegisterStaticTemplate(template,event.IniCoalition,"static",country)
-self:I("**** Ground crew created static cargo added: "..event.IniUnitName.." | Weight in kgs: "..Mass)
-local cargotype=self:AddStaticsCargo(event.IniUnitName,Mass,1,nil,true)
-self.CrateCounter=self.CrateCounter+1
-self.Spawned_Crates[self.CrateCounter]=static
-cargotype.Positionable=static
-table.insert(self.Spawned_Cargo,cargotype)
+elseif event.id==EVENTS.NewDynamicCargo then
+self:T(self.lid.."GC New Event "..event.IniDynamicCargoName)
+self.DynamicCargo[event.IniDynamicCargoName]=event.IniDynamicCargo
+elseif event.id==EVENTS.DynamicCargoLoaded then
+self:T(self.lid.."GC Loaded Event "..event.IniDynamicCargoName)
+local dcargo=event.IniDynamicCargo
+local client=CLIENT:FindByPlayerName(dcargo.Owner)
+if client and client:IsAlive()then
+local unitname=client:GetName()or"none"
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+end
+loaded.Cratesloaded=loaded.Cratesloaded+1
+table.insert(loaded.Cargo,dcargo)
+self.Loaded_Cargo[unitname]=nil
+self.Loaded_Cargo[unitname]=loaded
+local Group=client:GetGroup()
+self:_SendMessage(string.format("Crate %s loaded by ground crew!",event.IniDynamicCargoName),10,false,Group)
+self:__CratesPickedUp(1,Group,client,dcargo)
+end
+elseif event.id==EVENTS.DynamicCargoUnloaded then
+self:T(self.lid.."GC Unload Event "..event.IniDynamicCargoName)
+local dcargo=event.IniDynamicCargo
+local client=CLIENT:FindByPlayerName(dcargo.Owner)
+if client and client:IsAlive()then
+local unitname=client:GetName()or"none"
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+loaded.Cratesloaded=loaded.Cratesloaded-1
+if loaded.Cratesloaded<0 then loaded.Cratesloaded=0 end
+local Loaded={}
+for _,_item in pairs(loaded.Cargo or{})do
+self:T(self.lid.."UNLOAD checking: ".._item:GetName())
+self:T(self.lid.."UNLOAD state: "..tostring(_item:WasDropped()))
+if _item and _item:GetType()==CTLD_CARGO.Enum.GCLOADABLE and event.IniDynamicCargoName and event.IniDynamicCargoName~=_item:GetName()and not _item:WasDropped()then
+table.insert(Loaded,_item)
+else
+table.insert(Loaded,_item)
 end
 end
+loaded.Cargo=nil
+loaded.Cargo=Loaded
+self.Loaded_Cargo[unitname]=nil
+self.Loaded_Cargo[unitname]=loaded
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+self.Loaded_Cargo[unitname]=loaded
+end
+local Group=client:GetGroup()
+self:_SendMessage(string.format("Crate %s unloaded by ground crew!",event.IniDynamicCargoName),10,false,Group)
+self:__CratesDropped(1,Group,client,{dcargo})
+end
+elseif event.id==EVENTS.DynamicCargoRemoved then
+self:T(self.lid.."GC Remove Event "..event.IniDynamicCargoName)
+self.DynamicCargo[event.IniDynamicCargoName]=nil
 end
 return self
 end
@@ -71089,7 +71142,7 @@ text:Add("        N O N E")
 end
 text:Add("------------------------------------------------------------")
 if indexgc>0 then
-text:Add("Probably ground crew loaded (F8)")
+text:Add("Probably ground crew loadable (F8)")
 for _,_entry in pairs(loadedbygc)do
 local entry=_entry
 local name=entry:GetName()
@@ -71169,7 +71222,7 @@ local unittype="none"
 local capabilities={}
 local maxmass=2000
 local maxloadable=2000
-local IsNoHook=not self:IsHook(_unit)
+local IsHook=self:IsHook(_unit)
 if not _ignoreweight then
 maxloadable=self:_GetMaxLoadableMass(_unit)
 end
@@ -71180,39 +71233,20 @@ local static=cargo:GetPositionable()
 local weight=cargo:GetMass()
 local staticid=cargo:GetID()
 self:T(self.lid.." Found cargo mass: "..weight)
-local cargoalive=false
-local dcsunit=nil
-local dcsunitpos=nil
-if static and static.DCSCargoObject then
-dcsunit=Unit.getByName(static.StaticName)
-if dcsunit then
-cargoalive=dcsunit:isExist()~=nil and true or false
-end
-if cargoalive==true then
-local dcsvec3=dcsunit:getPoint()or dcsunit:getPosition().p or{x=0,y=0,z=0}
-self:T({dcsvec3=dcsunit:getPoint(),dcspos=dcsunit:getPosition().p})
-if dcsvec3 then
-dcsunitpos=COORDINATE:New(dcsvec3.x,dcsvec3.z,dcsvec3.y)
-end
-end
-end
-if static and(static:IsAlive()or cargoalive)then
-local staticpos=static:GetCoordinate()or dcsunitpos
-local landheight=staticpos:GetLandHeight()
-local agl=staticpos.y-landheight
-agl=UTILS.Round(agl,2)
-local GCloaded=agl>0 and true or false
-if IsNoHook==true then GCloaded=false end
+if static and static:IsAlive()then
+local restricthooktononstatics=self.enableChinookGCLoading and IsHook
+self:T(self.lid.." restricthooktononstatics: "..tostring(restricthooktononstatics))
+local cargoisstatic=cargo:GetType()==CTLD_CARGO.Enum.STATIC and true or false
+self:T(self.lid.." Cargo is static: "..tostring(cargoisstatic))
+local restricted=cargoisstatic and restricthooktononstatics
+self:T(self.lid.." Loading restricted: "..tostring(restricted))
+local staticpos=static:GetCoordinate()
 local distance=self:_GetDistance(location,staticpos)
-self:T({name=static:GetName(),IsNoHook=IsNoHook,agl=agl,GCloaded=GCloaded,distance=string.format("%.2f",distance or 0)})
-if(not GCloaded)and distance<=finddist and static and(weight<=maxloadable or _ignoreweight)then
+self:T(self.lid..string.format("Dist %dm/%dm | weight %dkg | maxloadable %dkg",distance,finddist,weight,maxloadable))
+if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false then
 index=index+1
 table.insert(found,staticid,cargo)
 maxloadable=maxloadable-weight
-end
-if GCloaded==true and distance<10 and static then
-indexg=indexg+1
-table.insert(LoadedbyGC,staticid,cargo)
 end
 end
 end
@@ -71259,10 +71293,10 @@ self:T(self.lid.." Crates found: "..number)
 if number==0 and self.hoverautoloading then
 return self
 elseif number==0 then
-self:_SendMessage("Sorry no loadable crates nearby or max cargo weight reached!",10,false,Group)
+self:_SendMessage("Sorry, no loadable crates nearby or max cargo weight reached!",10,false,Group)
 return self
 elseif numberonboard==cratelimit then
-self:_SendMessage("Sorry no fully loaded!",10,false,Group)
+self:_SendMessage("Sorry, we are fully loaded!",10,false,Group)
 return self
 else
 local capacity=cratelimit-numberonboard
@@ -71341,8 +71375,12 @@ local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
 loadedmass=loadedmass+(cargo.PerCrateMass*cargo:GetCratesNeeded())
 end
-if type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and not cargo:WasDropped()then
+if type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and type~=CTLD_CARGO.Enum.GCLOADABLE and not cargo:WasDropped()then
 loadedmass=loadedmass+cargo.PerCrateMass
+end
+if type==CTLD_CARGO.Enum.GCLOADABLE then
+local mass=cargo:GetCargoWeight()
+loadedmass=loadedmass+mass
 end
 end
 end
@@ -71375,8 +71413,7 @@ local loadedcargo=self.Loaded_Cargo[unitname]or{}
 local loadedmass=self:_GetUnitCargoMass(Unit)
 local maxloadable=self:_GetMaxLoadableMass(Unit)
 local finddist=self.CrateDistance or 35
-local _,_,loadedgc,loadedno=self:_FindCratesNearby(Group,Unit,finddist,true)
-if self.Loaded_Cargo[unitname]or loadedno>0 then
+if self.Loaded_Cargo[unitname]then
 local no_troops=loadedcargo.Troopsloaded or 0
 local no_crates=loadedcargo.Cratesloaded or 0
 local cargotable=loadedcargo.Cargo or{}
@@ -71401,25 +71438,17 @@ local cratecount=0
 for _,_cargo in pairs(cargotable or{})do
 local cargo=_cargo
 local type=cargo:GetType()
-if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS)and(not cargo:WasDropped()or self.allowcratepickupagain)then
+if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and type~=CTLD_CARGO.Enum.GCLOADABLE)and(not cargo:WasDropped()or self.allowcratepickupagain)then
 report:Add(string.format("Crate: %s size 1",cargo:GetName()))
+cratecount=cratecount+1
+end
+if type==CTLD_CARGO.Enum.GCLOADABLE and not cargo:WasDropped()then
+report:Add(string.format("GC loaded Crate: %s size 1",cargo:GetName()))
 cratecount=cratecount+1
 end
 end
 if cratecount==0 then
 report:Add("        N O N E")
-end
-if loadedno>0 then
-report:Add("------------------------------------------------------------")
-report:Add("       -- CRATES loaded via F8 --")
-for _,_cargo in pairs(loadedgc or{})do
-local cargo=_cargo
-local type=cargo:GetType()
-if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS)then
-report:Add(string.format("Crate: %s size 1",cargo:GetName()))
-loadedmass=loadedmass+cargo:GetMass()
-end
-end
 end
 report:Add("------------------------------------------------------------")
 report:Add("Total Mass: "..loadedmass.." kg. Loadable: "..maxloadable.." kg.")
@@ -71690,7 +71719,7 @@ local cargotable=loadedcargo.Cargo
 for _,_cargo in pairs(cargotable)do
 local cargo=_cargo
 local type=cargo:GetType()
-if type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and(not cargo:WasDropped()or self.allowcratepickupagain)then
+if type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and type~=CTLD_CARGO.Enum.GCLOADABLE and(not cargo:WasDropped()or self.allowcratepickupagain)then
 self:_GetCrates(Group,Unit,cargo,1,true)
 cargo:SetWasDropped(true)
 cargo:SetHasMoved(true)
@@ -71707,6 +71736,10 @@ local size=cargo:GetCratesNeeded()
 if type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS then
 table.insert(loaded.Cargo,_cargo)
 loaded.Troopsloaded=loaded.Troopsloaded+size
+end
+if type==CTLD_CARGO.Enum.GCLOADABLE and not cargo:WasDropped()then
+table.insert(loaded.Cargo,_cargo)
+loaded.Cratesloaded=loaded.Cratesloaded+size
 end
 end
 self.Loaded_Cargo[unitname]=nil
@@ -72054,7 +72087,7 @@ local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local isHook=self:IsHook(_unit)
-local nohookswitch=not(isHook and self.enableChinookGCLoading)
+local nohookswitch=true
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
 local toptroops=nil
 local topcrates=nil
@@ -73239,7 +73272,10 @@ self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventHandler)
 self:HandleEvent(EVENTS.UnitLost,self._EventHandler)
-self:HandleEvent(EVENTS.Birth,self._EventHandler)
+self:HandleEvent(EVENTS.NewDynamicCargo,self._EventHandler)
+self:HandleEvent(EVENTS.DynamicCargoLoaded,self._EventHandler)
+self:HandleEvent(EVENTS.DynamicCargoUnloaded,self._EventHandler)
+self:HandleEvent(EVENTS.DynamicCargoRemoved,self._EventHandler)
 self:__Status(-5)
 if self.enableLoadSave then
 local interval=self.saveinterval
@@ -73298,9 +73334,11 @@ return self
 end
 function CTLD:onafterStop(From,Event,To)
 self:T({From,Event,To})
-self:UnhandleEvent(EVENTS.PlayerEnterAircraft)
-self:UnhandleEvent(EVENTS.PlayerEnterUnit)
-self:UnhandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
+self:UnHandleEvent(EVENTS.PlayerEnterUnit)
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
+self:UnHandleEvent(EVENTS.UnitLost)
+self:UnHandleEvent(EVENTS.Shot)
 return self
 end
 function CTLD:onbeforeTroopsPickedUp(From,Event,To,Group,Unit,Cargo)
