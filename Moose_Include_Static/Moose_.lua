@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T09:49:48+02:00-093a60050b1476359f28f892fa62c361b13b45bd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T10:31:57+02:00-ba5743c057ba26fd29608dc6c38a8f61b09238ac ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1826,7 +1826,7 @@ function UTILS.SecondsToClock(seconds,short)
 if seconds==nil then
 return nil
 end
-local seconds=tonumber(seconds)
+local seconds=tonumber(seconds)or 0
 local _seconds=seconds%(60*60*24)
 if seconds<0 then
 return nil
@@ -2352,9 +2352,9 @@ local sinDec=0.39782*sin(L)
 local cosDec=cos(asin(sinDec))
 local cosH=(cos(zenith)-(sinDec*sin(latitude)))/(cosDec*cos(latitude))
 if rising and cosH>1 then
-return"N/R"
-elseif cosH<-1 then
 return"N/S"
+elseif cosH<-1 then
+return"N/R"
 end
 local H
 if rising then
@@ -17596,7 +17596,6 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,true,Tdiff)
 local date=UTILS.GetDCSMissionDate()
-self:I(string.format("Sun rise at lat=%.3f long=%.3f on %s (DayOfYear=%d): %s (%d sec of the day) (GMT %d)",Latitude,Longitude,date,DayOfYear,tostring(UTILS.SecondsToClock(sunrise)),sunrise,Tdiff))
 if InSeconds or type(sunrise)=="string"then
 return sunrise
 else
@@ -17667,7 +17666,6 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tdiff)
 local date=UTILS.GetDCSMissionDate()
-self:I(string.format("Sun set at lat=%.3f long=%.3f on %s (DayOfYear=%d): %s (%d sec of the day) (GMT %d)",Latitude,Longitude,date,DayOfYear,tostring(UTILS.SecondsToClock(sunrise)),sunrise,Tdiff))
 if InSeconds or type(sunrise)=="string"then
 return sunrise
 else
@@ -68963,7 +68961,7 @@ self:T3(string.format("NATO =%s",tostring(NATO)))
 local hours=self.gettext:GetEntry("HOURS",self.locale)
 local sunrise=coord:GetSunrise()
 local SUNRISE="no time"
-if tostring(sunrise)~="N/R"then
+if tostring(sunrise)~="N/S"and tostring(sunrise)~="N/R"then
 sunrise=UTILS.Split(sunrise,":")
 SUNRISE=string.format("%s%s",sunrise[1],sunrise[2])
 if self.useSRS then
@@ -68972,7 +68970,7 @@ end
 end
 local sunset=coord:GetSunset()
 local SUNSET="no time"
-if tostring(sunset)~="N/S"then
+if tostring(sunset)~="N/S"and tostring(sunset)~="N/R"then
 sunset=UTILS.Split(sunset,":")
 SUNSET=string.format("%s%s",sunset[1],sunset[2])
 if self.useSRS then
