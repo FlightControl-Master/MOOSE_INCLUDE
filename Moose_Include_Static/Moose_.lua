@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-12T19:06:54+02:00-a1605f9a2d68cc280dc128b1751eff53820e02c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T09:49:48+02:00-093a60050b1476359f28f892fa62c361b13b45bd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17596,7 +17596,8 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,true,Tdiff)
 local date=UTILS.GetDCSMissionDate()
-if InSeconds then
+self:I(string.format("Sun rise at lat=%.3f long=%.3f on %s (DayOfYear=%d): %s (%d sec of the day) (GMT %d)",Latitude,Longitude,date,DayOfYear,tostring(UTILS.SecondsToClock(sunrise)),sunrise,Tdiff))
+if InSeconds or type(sunrise)=="string"then
 return sunrise
 else
 return UTILS.SecondsToClock(sunrise,true)
@@ -17666,7 +17667,8 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tdiff)
 local date=UTILS.GetDCSMissionDate()
-if InSeconds then
+self:I(string.format("Sun set at lat=%.3f long=%.3f on %s (DayOfYear=%d): %s (%d sec of the day) (GMT %d)",Latitude,Longitude,date,DayOfYear,tostring(UTILS.SecondsToClock(sunrise)),sunrise,Tdiff))
+if InSeconds or type(sunrise)=="string"then
 return sunrise
 else
 return UTILS.SecondsToClock(sunrise,true)
@@ -68960,16 +68962,22 @@ self:T3(string.format("ZULU =%s",tostring(ZULU)))
 self:T3(string.format("NATO =%s",tostring(NATO)))
 local hours=self.gettext:GetEntry("HOURS",self.locale)
 local sunrise=coord:GetSunrise()
+local SUNRISE="no time"
+if tostring(sunrise)~="N/R"then
 sunrise=UTILS.Split(sunrise,":")
-local SUNRISE=string.format("%s%s",sunrise[1],sunrise[2])
+SUNRISE=string.format("%s%s",sunrise[1],sunrise[2])
 if self.useSRS then
 SUNRISE=string.format("%s %s %s",sunrise[1],sunrise[2],hours)
 end
+end
 local sunset=coord:GetSunset()
+local SUNSET="no time"
+if tostring(sunset)~="N/S"then
 sunset=UTILS.Split(sunset,":")
-local SUNSET=string.format("%s%s",sunset[1],sunset[2])
+SUNSET=string.format("%s%s",sunset[1],sunset[2])
 if self.useSRS then
 SUNSET=string.format("%s %s %s",sunset[1],sunset[2],hours)
+end
 end
 local temperature=coord:GetTemperature(height+5)
 local dewpoint=temperature-(100-self.relHumidity)/5
