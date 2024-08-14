@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-14T11:34:57+02:00-c82359f87b1d55e988fd293b3896a8ae98ec99b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-14T15:43:57+02:00-37d321bb5ca29739e5f292d2bd62710f78aa41f8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11578,21 +11578,21 @@ function DATABASE:GetCoalitionFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CoalitionID
 end
-self:E("ERROR: Template does not exist for client "..tostring(ClientName))
+self:E("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCategoryFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CategoryID
 end
-self:E("ERROR: Template does not exist for client "..tostring(ClientName))
+self:E("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCountryFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CountryID
 end
-self:E("ERROR: Template does not exist for client "..tostring(ClientName))
+self:E("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCoalitionFromAirbase(AirbaseName)
@@ -68652,6 +68652,65 @@ TACAN="Tacan",
 FARP="Farp",
 DELIMITER="Punto",
 },
+FR={
+HOURS="Heures",
+TIME="Temps",
+NOCLOUDINFO="Informations sur la couverture nuageuse non disponibles",
+OVERCAST="Ciel couvert",
+BROKEN="Nuages fragmentés",
+SCATTERED="Nuages épars",
+FEWCLOUDS="Nuages rares",
+NOCLOUDS="Clair",
+AIRPORT="Aéroport",
+INFORMATION="Information",
+SUNRISEAT="Levé du soleil à %s heure locale",
+SUNSETAT="Couché du soleil à %s heure locale",
+WINDFROMMS="Vent du %s pour %s mètres par seconde",
+WINDFROMKNOTS="Vent du %s pour %s noeuds",
+GUSTING="Rafale de vent",
+VISIKM="Visibilité %s kilomètres",
+VISISM="Visibilité %s Miles",
+RAIN="Pluie",
+TSTORM="Orage",
+SNOW="Neige",
+SSTROM="Tempête de neige",
+FOG="Brouillard",
+DUST="Poussière",
+PHENOMENA="Phénomène météorologique",
+CLOUDBASEM="Couverture nuageuse de %s à %s mètres",
+CLOUDBASEFT="Couverture nuageuse de %s à %s pieds",
+TEMPERATURE="Température",
+DEWPOINT="Point de rosée",
+ALTIMETER="Altimètre",
+ACTIVERUN="Décollages piste",
+ACTIVELANDING="Atterrissages piste",
+LEFT="Gauche",
+RIGHT="Droite",
+RWYLENGTH="Longueur de piste",
+METERS="Mètre",
+FEET="Pieds",
+ELEVATION="Hauteur",
+TOWERFREQ="Fréquences de la tour",
+ILSFREQ="Fréquences ILS",
+OUTERNDB="Fréquences Outer NDB",
+INNERNDB="Fréquences Inner NDB",
+VORFREQ="Fréquences VOR",
+VORFREQTTS="Fréquences V O R",
+TACANCH="Canal TACAN %d",
+RSBNCH="Canal RSBN",
+PRMGCH="Canal PRMG",
+ADVISE="Informez le contrôle que vous avez copié l'information",
+STATUTE="Statute Miles",
+DEGREES="Degré celcius",
+FAHRENHEIT="Degré Fahrenheit",
+INCHHG="Pouces de mercure",
+MMHG="Millimètres de mercure",
+HECTO="Hectopascals",
+METERSPER="Mètres par seconde",
+TACAN="TAKAN",
+FARP="FARPE",
+DELIMITER="Décimal",
+}
 }
 ATIS.locale="en"
 _ATIS={}
@@ -68691,7 +68750,7 @@ return self
 end
 function ATIS:_InitLocalization()
 self:T(self.lid.."_InitLocalization")
-self.gettext=TEXTANDSOUND:New("AWACS","en")
+self.gettext=TEXTANDSOUND:New("ATIS","en")
 self.locale="en"
 for locale,table in pairs(self.Messages)do
 local Locale=string.lower(tostring(locale))
@@ -121894,11 +121953,11 @@ Microsoft={
 ["David"]="Microsoft David Desktop",
 ["Zira"]="Microsoft Zira Desktop",
 ["Hortense"]="Microsoft Hortense Desktop",
-["de-DE-Hedda"]="Microsoft Hedda Desktop",
-["en-GB-Hazel"]="Microsoft Hazel Desktop",
-["en-US-David"]="Microsoft David Desktop",
-["en-US-Zira"]="Microsoft Zira Desktop",
-["fr-FR-Hortense"]="Microsoft Hortense Desktop",
+["de_DE_Hedda"]="Microsoft Hedda Desktop",
+["en_GB_Hazel"]="Microsoft Hazel Desktop",
+["en_US_David"]="Microsoft David Desktop",
+["en_US_Zira"]="Microsoft Zira Desktop",
+["fr_FR_Hortense"]="Microsoft Hortense Desktop",
 },
 MicrosoftGRPC={
 ["Hazel"]="Hazel",
