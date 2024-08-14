@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-13T10:31:26+02:00-5d98672de516fff356e2e01392cecebed79b47be ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-14T09:47:39+02:00-c0dcd12ada2022ebbe00311d910e65a50710ecbd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29091,7 +29091,10 @@ end
 function UNIT:GetSkill()
 self:F2(self.UnitName)
 local name=self.UnitName
-local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
+local skill="Random"
+if _DATABASE.Templates.Units[name]and _DATABASE.Templates.Units[name].Template and _DATABASE.Templates.Units[name].Template.skill then
+skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
+end
 return skill
 end
 function UNIT:GetSTN()
