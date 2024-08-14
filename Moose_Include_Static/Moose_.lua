@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-14T09:48:21+02:00-d354f025076db547f32e5c55eceac28dd681c91a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-14T11:34:57+02:00-c82359f87b1d55e988fd293b3896a8ae98ec99b7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -44760,7 +44760,7 @@ self:F2(_unitName)
 if _unitName~=nil then
 local multiplayer=false
 local DCSunit=Unit.getByName(_unitName)
-if DCSunit then
+if DCSunit and DCSunit.getPlayerName then
 local playername=DCSunit:getPlayerName()
 local unit=UNIT:Find(DCSunit)
 self:T2({DCSunit=DCSunit,unit=unit,playername=playername})
