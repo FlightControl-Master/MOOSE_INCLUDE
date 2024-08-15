@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-15T12:01:32+02:00-e61856197a8c75e9ed913a19cdbbe5fe726c607b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-15T17:43:30+02:00-c7201580d65968340c7a2fad8568a8b0207b729a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43429,7 +43429,7 @@ function RANGE:OnEventBirth(EventData)
 self:F({eventbirth=EventData})
 if not EventData.IniPlayerName then return end
 local _unitName=EventData.IniUnitName
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit,_playername=self:_GetPlayerUnitAndName(_unitName,EventData.IniPlayerName)
 self:T3(self.lid.."BIRTH: unit   = "..tostring(EventData.IniUnitName))
 self:T3(self.lid.."BIRTH: group  = "..tostring(EventData.IniGroupName))
 self:T3(self.lid.."BIRTH: player = "..tostring(_playername))
@@ -43521,6 +43521,7 @@ end
 end
 end
 function RANGE._OnImpact(weapon,self,playerData,attackHdg,attackAlt,attackVel)
+if not playerData then return end
 local _closetTarget=nil
 local _distance=nil
 local _closeCoord=nil
@@ -43530,8 +43531,8 @@ local _playername=playerData.playername
 local _unit=playerData.unit
 local impactcoord=weapon:GetImpactCoordinate()
 local insidezone=self.rangezone:IsCoordinateInZone(impactcoord)
-if playerData.smokebombimpact and insidezone then
-if playerData.delaysmoke then
+if playerData and playerData.smokebombimpact and insidezone then
+if playerData and playerData.delaysmoke then
 timer.scheduleFunction(self._DelayedSmoke,{coord=impactcoord,color=playerData.smokecolor},timer.getTime()+self.TdelaySmoke)
 else
 impactcoord:Smoke(playerData.smokecolor)
@@ -43614,14 +43615,15 @@ end
 local weapon=WEAPON:New(EventData.weapon)
 local _track=(weapon:IsBomb()and self.trackbombs)or(weapon:IsRocket()and self.trackrockets)or(weapon:IsMissile()and self.trackmissiles)
 local _unitName=EventData.IniUnitName
-local _unit,_playername=self:_GetPlayerUnitAndName(_unitName)
+local _unit,_playername=self:_GetPlayerUnitAndName(_unitName,EventData.IniPlayerName)
 local dPR=self.BombtrackThreshold*2
 if _unit and _playername then
 dPR=_unit:GetCoordinate():Get2DDistance(self.location)
 self:T(self.lid..string.format("Range %s, player %s, player-range distance = %d km.",self.rangename,_playername,dPR/1000))
 end
-if _track and dPR<=self.BombtrackThreshold and _unit and _playername then
+if _track and dPR<=self.BombtrackThreshold and _unit and _playername and self.PlayerSettings[_playername]then
 local playerData=self.PlayerSettings[_playername]
+if not playerData then return end
 local attackHdg=_unit:GetHeading()
 local attackAlt=_unit:GetHeight()
 attackAlt=UTILS.MetersToFeet(attackAlt)
@@ -44773,13 +44775,13 @@ self:T({speed=speed})
 end
 return speed
 end
-function RANGE:_GetPlayerUnitAndName(_unitName)
-self:F2(_unitName)
+function RANGE:_GetPlayerUnitAndName(_unitName,PlayerName)
+self:I(_unitName)
 if _unitName~=nil then
 local multiplayer=false
 local DCSunit=Unit.getByName(_unitName)
 if DCSunit and DCSunit.getPlayerName then
-local playername=DCSunit:getPlayerName()
+local playername=DCSunit:getPlayerName()or PlayerName or"None"
 local unit=UNIT:Find(DCSunit)
 self:T2({DCSunit=DCSunit,unit=unit,playername=playername})
 if DCSunit and unit and playername then
