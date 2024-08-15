@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-14T15:43:57+02:00-37d321bb5ca29739e5f292d2bd62710f78aa41f8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-15T12:01:32+02:00-e61856197a8c75e9ed913a19cdbbe5fe726c607b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11266,10 +11266,12 @@ local ClientFound=self.CLIENTS[ClientName]
 return ClientFound
 end
 function DATABASE:AddClient(ClientName,Force)
-if not self.CLIENTS[ClientName]or Force==true then
-self.CLIENTS[ClientName]=CLIENT:Register(ClientName)
+local DCSUnitName=ClientName
+if type(DCSUnitName)=="number"then DCSUnitName=string.format("%d",ClientName)end
+if not self.CLIENTS[DCSUnitName]or Force==true then
+self.CLIENTS[DCSUnitName]=CLIENT:Register(DCSUnitName)
 end
-return self.CLIENTS[ClientName]
+return self.CLIENTS[DCSUnitName]
 end
 function DATABASE:FindGroup(GroupName)
 local GroupFound=self.GROUPS[GroupName]
@@ -11287,12 +11289,23 @@ end
 return self.GROUPS[GroupName]
 end
 function DATABASE:AddPlayer(UnitName,PlayerName)
+if type(UnitName)=="number"then UnitName=string.format("%d",UnitName)end
 if PlayerName then
-self:T({"Add player for unit:",UnitName,PlayerName})
+self:I({"Add player for unit:",UnitName,PlayerName})
 self.PLAYERS[PlayerName]=UnitName
 self.PLAYERUNITS[PlayerName]=self:FindUnit(UnitName)
 self.PLAYERSJOINED[PlayerName]=PlayerName
 end
+end
+function DATABASE:_FindPlayerNameByUnitName(UnitName)
+if UnitName then
+for playername,unitname in pairs(self.PLAYERS)do
+if unitname==UnitName and self.PLAYERUNITS[playername]and self.PLAYERUNITS[playername]:IsAlive()then
+return playername,self.PLAYERUNITS[playername]
+end
+end
+end
+return nil
 end
 function DATABASE:DeletePlayer(UnitName,PlayerName)
 if PlayerName then
@@ -32219,7 +32232,7 @@ end
 DYNAMICCARGO={
 ClassName="DYNAMICCARGO",
 verbose=0,
-testing=true,
+testing=false,
 Interval=10,
 }
 DYNAMICCARGO.Liquid={
@@ -32256,7 +32269,7 @@ DYNAMICCARGO.AircraftDimensions={
 ["ropelength"]=30,
 },
 }
-DYNAMICCARGO.version="0.0.3"
+DYNAMICCARGO.version="0.0.4"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -32274,6 +32287,10 @@ self.timer=TIMER:New(DYNAMICCARGO._UpdatePosition,self)
 self.timer:Start(self.Interval,self.Interval)
 if not _DYNAMICCARGO_HELOS then
 _DYNAMICCARGO_HELOS=SET_CLIENT:New():FilterAlive():FilterFunction(DYNAMICCARGO._FilterHeloTypes):FilterStart()
+end
+if self.testing then
+BASE:TraceOn()
+BASE:TraceClass("DYNAMICCARGO")
 end
 return self
 end
@@ -32353,10 +32370,11 @@ local Helo=nil
 local Playername=nil
 for _,_helo in pairs(set or{})do
 local helo=_helo
-local name=helo:GetPlayerName()or"None"
+local name=helo:GetPlayerName()or _DATABASE:_FindPlayerNameByUnitName(helo:GetName())or"None"
 self:T(self.lid.." Checking: "..name)
 local hpos=helo:GetCoordinate()
-local inair=hpos.y-hpos:GetLandHeight()>4 and true or false
+local inair=helo:InAir()
+self:T(self.lid.." InAir: AGL/InAir: "..hpos.y-hpos:GetLandHeight().."/"..tostring(inair))
 local typename=helo:GetTypeName()
 if hpos and typename and inair==false then
 local dimensions=DYNAMICCARGO.AircraftDimensions[typename]
@@ -32393,7 +32411,7 @@ end
 if UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2)>0.5 then
 if self.CargoState==DYNAMICCARGO.State.NEW then
 local isloaded,client,playername=self:_GetPossibleHeloNearby(pos,true)
-self:T(self.lid.." moved! NEW -> LOADED by "..playername)
+self:T(self.lid.." moved! NEW -> LOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.LOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoLoaded(self)
@@ -32412,7 +32430,7 @@ if agl~=0 or self.testing then
 isunloaded,client,playername=self:_GetPossibleHeloNearby(pos,false)
 end
 if isunloaded then
-self:T(self.lid.." moved! LOADED -> UNLOADED by "..playername)
+self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.UNLOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoUnloaded(self)
