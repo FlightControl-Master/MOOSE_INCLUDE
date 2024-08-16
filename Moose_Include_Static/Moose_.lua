@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-15T17:43:30+02:00-c7201580d65968340c7a2fad8568a8b0207b729a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T09:41:43+02:00-3d029d8f6fae8f9bc643d830b42b6524101b7b21 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7438,7 +7438,7 @@ Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
 end
 end
-if Event.weapon and type(Event.weapon)=="table"then
+if Event.weapon and type(Event.weapon)=="table"and Event.weapon.isExist and Event.weapon:isExist()then
 Event.Weapon=Event.weapon
 Event.WeaponName=Event.weapon:isExist()and Event.weapon:getTypeName()or"Unknown Weapon"
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
@@ -31885,18 +31885,6 @@ elseif Message and PlayerId then
 net.send_chat_to(Message,tonumber(PlayerId))
 end
 return self
-end
-function NET:LoadMission(Path)
-local outcome=false
-if Path then
-outcome=net.load_mission(Path)
-end
-return outcome
-end
-function NET:LoadNextMission()
-local outcome=false
-outcome=net.load_next_mission()
-return outcome
 end
 function NET:GetPlayerList()
 local plist=nil
