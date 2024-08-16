@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T09:44:00+02:00-ccd190a8b13ace69021b0d8397fc34b98b07e4a3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T15:21:46+02:00-284a770daa309c26eb37753875efaa858bbe4ca0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12074,8 +12074,6 @@ List={},
 Index={},
 Database=nil,
 CallScheduler=nil,
-TimeInterval=nil,
-YieldInterval=nil,
 }
 function SET_BASE:New(Database)
 local self=BASE:Inherit(self,FSM:New())
@@ -12274,11 +12272,6 @@ function SET_BASE:SetDatabase(BaseSet)
 local OtherFilter=UTILS.DeepCopy(BaseSet.Filter)
 self.Filter=OtherFilter
 self.Database=BaseSet:GetSet()
-return self
-end
-function SET_BASE:SetIteratorIntervals(YieldInterval,TimeInterval)
-self.YieldInterval=YieldInterval
-self.TimeInterval=TimeInterval
 return self
 end
 function SET_BASE:SetSomeIteratorLimit(Limit)
@@ -12933,11 +12926,9 @@ end
 return CountG,CountU
 end
 function SET_GROUP:IsIncludeObject(MGroup)
-self:F2(MGroup)
 local MGroupInclude=true
 if self.Filter.Alive==true then
 local MGroupAlive=false
-self:F({Active=self.Filter.Active})
 if MGroup and MGroup:IsAlive()then
 MGroupAlive=true
 end
@@ -12945,7 +12936,6 @@ MGroupInclude=MGroupInclude and MGroupAlive
 end
 if self.Filter.Active~=nil then
 local MGroupActive=false
-self:F({Active=self.Filter.Active})
 if self.Filter.Active==false or(self.Filter.Active==true and MGroup:IsActive()==true)then
 MGroupActive=true
 end
@@ -12954,7 +12944,6 @@ end
 if self.Filter.Coalitions and MGroupInclude then
 local MGroupCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
-self:T3({"Coalition:",MGroup:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==MGroup:GetCoalition()then
 MGroupCoalition=true
 end
@@ -12964,7 +12953,6 @@ end
 if self.Filter.Categories and MGroupInclude then
 local MGroupCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
-self:T3({"Category:",MGroup:GetCategory(),self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==MGroup:GetCategory()then
 MGroupCategory=true
 end
@@ -12974,7 +12962,6 @@ end
 if self.Filter.Countries and MGroupInclude then
 local MGroupCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
-self:T3({"Country:",MGroup:GetCountry(),CountryName})
 if country.id[CountryName]==MGroup:GetCountry()then
 MGroupCountry=true
 end
@@ -12984,7 +12971,6 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-self:T3({"Prefix:",string.find(MGroup:GetName(),GroupPrefix,1),GroupPrefix})
 if string.find(MGroup:GetName(),GroupPrefix:gsub("-","%%-"),1)then
 MGroupPrefix=true
 end
@@ -13005,7 +12991,6 @@ local MGroupFunc=false
 MGroupFunc=self:_EvalFilterFunctions(MGroup)
 MGroupInclude=MGroupInclude and MGroupFunc
 end
-self:T2(MGroupInclude)
 return MGroupInclude
 end
 function SET_GROUP:GetClosestGroup(Coordinate,Coalitions)
@@ -13592,7 +13577,6 @@ end
 return FriendlyUnitCount
 end
 function SET_UNIT:IsIncludeObject(MUnit)
-self:F2({MUnit})
 local MUnitInclude=false
 if MUnit:IsAlive()~=nil then
 MUnitInclude=true
@@ -13606,7 +13590,6 @@ end
 if self.Filter.Coalitions and MUnitInclude then
 local MUnitCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
-self:F({"Coalition:",MUnit:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==MUnit:GetCoalition()then
 MUnitCoalition=true
 end
@@ -13616,7 +13599,6 @@ end
 if self.Filter.Categories and MUnitInclude then
 local MUnitCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
-self:T3({"Category:",MUnit:GetDesc().category,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==MUnit:GetDesc().category then
 MUnitCategory=true
 end
@@ -13626,7 +13608,6 @@ end
 if self.Filter.Types and MUnitInclude then
 local MUnitType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
-self:T3({"Type:",MUnit:GetTypeName(),TypeName})
 if TypeName==MUnit:GetTypeName()then
 MUnitType=true
 end
@@ -13636,7 +13617,6 @@ end
 if self.Filter.Countries and MUnitInclude then
 local MUnitCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
-self:T3({"Country:",MUnit:GetCountry(),CountryName})
 if country.id[CountryName]==MUnit:GetCountry()then
 MUnitCountry=true
 end
@@ -13646,7 +13626,6 @@ end
 if self.Filter.UnitPrefixes and MUnitInclude then
 local MUnitPrefix=false
 for UnitPrefixId,UnitPrefix in pairs(self.Filter.UnitPrefixes)do
-self:T3({"Prefix:",string.find(MUnit:GetName(),UnitPrefix,1),UnitPrefix})
 if string.find(MUnit:GetName(),UnitPrefix,1)then
 MUnitPrefix=true
 end
@@ -13656,10 +13635,8 @@ end
 if self.Filter.RadarTypes and MUnitInclude then
 local MUnitRadar=false
 for RadarTypeID,RadarType in pairs(self.Filter.RadarTypes)do
-self:T3({"Radar:",RadarType})
 if MUnit:HasSensors(Unit.SensorType.RADAR,RadarType)==true then
 if MUnit:GetRadar()==true then
-self:T3("RADAR Found")
 end
 MUnitRadar=true
 end
@@ -13669,7 +13646,6 @@ end
 if self.Filter.SEAD and MUnitInclude then
 local MUnitSEAD=false
 if MUnit:HasSEAD()==true then
-self:T3("SEAD Found")
 MUnitSEAD=true
 end
 MUnitInclude=MUnitInclude and MUnitSEAD
@@ -13678,7 +13654,6 @@ end
 if self.Filter.Zones and MUnitInclude then
 local MGroupZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
-self:T3("Zone:",ZoneName)
 if MUnit:IsInZone(Zone)then
 MGroupZone=true
 end
@@ -13689,7 +13664,6 @@ if self.Filter.Functions and MUnitInclude then
 local MUnitFunc=self:_EvalFilterFunctions(MUnit)
 MUnitInclude=MUnitInclude and MUnitFunc
 end
-self:T2(MUnitInclude)
 return MUnitInclude
 end
 function SET_UNIT:GetTypeNames(Delimiter)
@@ -13852,7 +13826,7 @@ if _DATABASE then
 self:_FilterStart()
 self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
-self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.UnitLost,self._EventOnDeadOrCrash)
 end
 return self
 end
@@ -14440,7 +14414,6 @@ end
 return AliveSet.Set or{}
 end
 function SET_CLIENT:IsIncludeObject(MClient)
-self:F2(MClient)
 local MClientInclude=true
 if MClient then
 local MClientName=MClient.UnitName
@@ -14458,12 +14431,10 @@ local ClientCoalitionID=_DATABASE:GetCoalitionFromClientTemplate(MClientName)
 if ClientCoalitionID==nil and MClient:IsAlive()~=nil then
 ClientCoalitionID=MClient:GetCoalition()
 end
-self:T3({"Coalition:",ClientCoalitionID,self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and ClientCoalitionID and self.FilterMeta.Coalitions[CoalitionName]==ClientCoalitionID then
 MClientCoalition=true
 end
 end
-self:T({"Evaluated Coalition",MClientCoalition})
 MClientInclude=MClientInclude and MClientCoalition
 end
 if self.Filter.Categories and MClientInclude then
@@ -14478,19 +14449,16 @@ if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.
 MClientCategory=true
 end
 else
-self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
 MClientCategory=true
 end
 end
 end
-self:T({"Evaluated Category",MClientCategory})
 MClientInclude=MClientInclude and MClientCategory
 end
 if self.Filter.Types and MClientInclude then
 local MClientType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
-self:T3({"Type:",MClient:GetTypeName(),TypeName})
 if TypeName==MClient:GetTypeName()then
 MClientType=true
 end
@@ -14510,24 +14478,20 @@ if country.id[CountryName]and ClientCountryID and country.id[CountryName]==Clien
 MClientCountry=true
 end
 end
-self:T({"Evaluated Country",MClientCountry})
 MClientInclude=MClientInclude and MClientCountry
 end
 if self.Filter.ClientPrefixes and MClientInclude then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
-self:T3({"Prefix:",string.find(MClient.UnitName,ClientPrefix,1),ClientPrefix})
 if string.find(MClient.UnitName,ClientPrefix,1)then
 MClientPrefix=true
 end
 end
-self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
 if self.Filter.Zones and MClientInclude then
 local MClientZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
-self:T3("Zone:",ZoneName)
 local unit=MClient:GetClientGroupUnit()
 if unit and unit:IsInZone(Zone)then
 MClientZone=true
@@ -14543,7 +14507,6 @@ if playername and string.find(playername,_Playername)then
 MClientPlayername=true
 end
 end
-self:T({"Evaluated Playername",MClientPlayername})
 MClientInclude=MClientInclude and MClientPlayername
 end
 if self.Filter.Callsigns and MClientInclude then
@@ -14554,7 +14517,6 @@ if callsign and string.find(callsign,_Callsign,1,true)then
 MClientCallsigns=true
 end
 end
-self:T({"Evaluated Callsign",MClientCallsigns})
 MClientInclude=MClientInclude and MClientCallsigns
 end
 if self.Filter.Functions and MClientInclude then
@@ -14562,7 +14524,6 @@ local MClientFunc=self:_EvalFilterFunctions(MClient)
 MClientInclude=MClientInclude and MClientFunc
 end
 end
-self:T2(MClientInclude)
 return MClientInclude
 end
 end
@@ -16353,6 +16314,314 @@ local life0=self:GetLife0()
 self:T2(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
 local rlife=math.floor((life/life0)*100)
 return rlife
+end
+end
+do
+SET_DYNAMICCARGO={
+ClassName="SET_DYNAMICCARGO",
+Filter={},
+Set={},
+List={},
+Index={},
+Database=nil,
+CallScheduler=nil,
+Filter={
+Coalitions=nil,
+Types=nil,
+Countries=nil,
+StaticPrefixes=nil,
+Zones=nil,
+},
+FilterMeta={
+Coalitions={
+red=coalition.side.RED,
+blue=coalition.side.BLUE,
+neutral=coalition.side.NEUTRAL,
+}
+},
+ZoneTimerInterval=20,
+ZoneTimer=nil,
+}
+function SET_DYNAMICCARGO:New()
+local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.DYNAMICCARGO))
+return self
+end
+function SET_DYNAMICCARGO:IsIncludeObject(DCargo)
+local DCargoInclude=true
+if self.Filter.Coalitions then
+local DCargoCoalition=false
+for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
+self:I({"Coalition:",DCargo:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
+if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==DCargo:GetCoalition()then
+DCargoCoalition=true
+end
+end
+DCargoInclude=DCargoInclude and DCargoCoalition
+end
+if self.Filter.Types then
+local DCargoType=false
+for TypeID,TypeName in pairs(self.Filter.Types)do
+self:I({"Type:",DCargo:GetTypeName(),TypeName})
+if TypeName==DCargo:GetTypeName()then
+DCargoType=true
+end
+end
+DCargoInclude=DCargoInclude and DCargoType
+end
+if self.Filter.Countries then
+local DCargoCountry=false
+for CountryID,CountryName in pairs(self.Filter.Countries)do
+self:I({"Country:",DCargo:GetCountry(),CountryName})
+if country.id[CountryName]==DCargo:GetCountry()then
+DCargoCountry=true
+end
+end
+DCargoInclude=DCargoInclude and DCargoCountry
+end
+if self.Filter.StaticPrefixes then
+local DCargoPrefix=false
+for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
+self:I({"Prefix:",string.find(DCargo:GetName(),StaticPrefix,1),StaticPrefix})
+if string.find(DCargo:GetName(),StaticPrefix,1)then
+DCargoPrefix=true
+end
+end
+DCargoInclude=DCargoInclude and DCargoPrefix
+end
+if self.Filter.Zones then
+local DCargoZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+self:I("In zone: "..ZoneName)
+if DCargo and DCargo:IsInZone(Zone)then
+DCargoZone=true
+end
+end
+DCargoInclude=DCargoInclude and DCargoZone
+end
+self:I(DCargoInclude)
+return DCargoInclude
+end
+function SET_DYNAMICCARGO:FilterCoalitions(Coalitions)
+if not self.Filter.Coalitions then
+self.Filter.Coalitions={}
+end
+if type(Coalitions)~="table"then
+Coalitions={Coalitions}
+end
+for CoalitionID,Coalition in pairs(Coalitions)do
+self.Filter.Coalitions[Coalition]=Coalition
+end
+return self
+end
+function SET_DYNAMICCARGO:FilterTypes(Types)
+if not self.Filter.Types then
+self.Filter.Types={}
+end
+if type(Types)~="table"then
+Types={Types}
+end
+for TypeID,Type in pairs(Types)do
+self.Filter.Types[Type]=Type
+end
+return self
+end
+function SET_DYNAMICCARGO:FilterCountries(Countries)
+if not self.Filter.Countries then
+self.Filter.Countries={}
+end
+if type(Countries)~="table"then
+Countries={Countries}
+end
+for CountryID,Country in pairs(Countries)do
+self.Filter.Countries[Country]=Country
+end
+return self
+end
+function SET_DYNAMICCARGO:FilterPrefixes(Prefixes)
+if not self.Filter.StaticPrefixes then
+self.Filter.StaticPrefixes={}
+end
+if type(Prefixes)~="table"then
+Prefixes={Prefixes}
+end
+for PrefixID,Prefix in pairs(Prefixes)do
+self.Filter.StaticPrefixes[Prefix]=Prefix
+end
+return self
+end
+function SET_DYNAMICCARGO:FilterNamePattern(Patterns)
+return self:FilterPrefixes(Patterns)
+end
+function SET_DYNAMICCARGO:FilterIsLoaded()
+self:FilterFunction(
+function(cargo)
+if cargo and cargo.CargoState and cargo.CargoState==DYNAMICCARGO.State.LOADED then
+return true
+else
+return false
+end
+end
+)
+return self
+end
+function SET_DYNAMICCARGO:FilterIsUnloaded()
+self:FilterFunction(
+function(cargo)
+if cargo and cargo.CargoState and cargo.CargoState==DYNAMICCARGO.State.UNLOADED then
+return true
+else
+return false
+end
+end
+)
+return self
+end
+function SET_DYNAMICCARGO:FilterIsNew()
+self:FilterFunction(
+function(cargo)
+if cargo and cargo.CargoState and cargo.CargoState==DYNAMICCARGO.State.NEW then
+return true
+else
+return false
+end
+end
+)
+return self
+end
+function SET_DYNAMICCARGO:FilterCurrentOwner(PlayerName)
+self:FilterFunction(
+function(cargo)
+if cargo and cargo.Owner and string.find(cargo.Owner,PlayerName,1,true)then
+return true
+else
+return false
+end
+end
+)
+return self
+end
+function SET_DYNAMICCARGO:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
+return self
+end
+function SET_DYNAMICCARGO:FilterStart()
+if _DATABASE then
+self:HandleEvent(EVENTS.NewDynamicCargo,self._EventHandlerDCAdd)
+self:HandleEvent(EVENTS.DynamicCargoRemoved,self._EventHandlerDCRemove)
+if self.Filter.Zones then
+self.ZoneTimer=TIMER:New(self._ContinousZoneFilter,self)
+local timing=self.ZoneTimerInterval or 30
+self.ZoneTimer:Start(timing,timing)
+end
+self:_FilterStart()
+end
+return self
+end
+function SET_DYNAMICCARGO:FilterStop()
+if _DATABASE then
+self:UnHandleEvent(EVENTS.NewDynamicCargo)
+self:UnHandleEvent(EVENTS.DynamicCargoRemoved)
+if self.ZoneTimer and self.ZoneTimer:IsRunning()then
+self.ZoneTimer:Stop()
+end
+end
+return self
+end
+function SET_DYNAMICCARGO:_ContinousZoneFilter()
+local Database=_DATABASE.DYNAMICCARGO
+for ObjectName,Object in pairs(Database)do
+if self:IsIncludeObject(Object)and self:IsNotInSet(Object)then
+self:Add(ObjectName,Object)
+elseif(not self:IsIncludeObject(Object))and self:IsInSet(Object)then
+self:Remove(ObjectName)
+end
+end
+return self
+end
+function SET_DYNAMICCARGO:_EventHandlerDCAdd(Event)
+if Event.IniDynamicCargo and Event.IniDynamicCargoName then
+if not _DATABASE.DYNAMICCARGO[Event.IniDynamicCargoName]then
+_DATABASE:AddDynamicCargo(Event.IniDynamicCargoName)
+end
+local ObjectName,Object=self:FindInDatabase(Event)
+if Object and self:IsIncludeObject(Object)then
+self:Add(ObjectName,Object)
+end
+end
+return self
+end
+function SET_DYNAMICCARGO:_EventHandlerDCRemove(Event)
+if Event.IniDCSUnitName then
+local ObjectName,Object=self:FindInDatabase(Event)
+if ObjectName then
+self:Remove(ObjectName)
+end
+end
+return self
+end
+function SET_DYNAMICCARGO:FindInDatabase(Event)
+return Event.IniDCSUnitName,self.Set[Event.IniDCSUnitName]
+end
+function SET_DYNAMICCARGO:FilterZoneTimer(Seconds)
+self.ZoneTimerInterval=Seconds or 30
+return self
+end
+function SET_DYNAMICCARGO:FilterDeads()
+return self
+end
+function SET_DYNAMICCARGO:FilterCrashes()
+return self
+end
+function SET_DYNAMICCARGO:GetOwnerNames()
+local owners={}
+self:ForEach(
+function(cargo)
+if cargo and cargo.Owner then
+table.insert(owners,cargo.Owner,cargo.Owner)
+end
+end
+)
+return owners
+end
+function SET_DYNAMICCARGO:GetStorageObjects()
+local owners={}
+self:ForEach(
+function(cargo)
+if cargo and cargo.warehouse then
+table.insert(owners,cargo.StaticName,cargo.warehouse)
+end
+end
+)
+return owners
+end
+function SET_DYNAMICCARGO:GetOwnerClientObjects()
+local owners={}
+self:ForEach(
+function(cargo)
+if cargo and cargo.Owner then
+local client=CLIENT:FindByPlayerName(cargo.Owner)
+if client then
+table.insert(owners,cargo.Owner,client)
+end
+end
+end
+)
+return owners
 end
 end
 do
@@ -31696,7 +31965,7 @@ DYNAMICCARGO.AircraftDimensions={
 ["ropelength"]=30,
 },
 }
-DYNAMICCARGO.version="0.0.4"
+DYNAMICCARGO.version="0.0.5"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -31728,8 +31997,36 @@ return DCSStatic
 end
 return nil
 end
-function DYNAMICCARGO:GetLastPosition()
+function DYNAMICCARGO:GetLastOwner()
 return self.Owner
+end
+function DYNAMICCARGO:IsNew()
+if self.CargoState and self.CargoState==DYNAMICCARGO.State.NEW then
+return true
+else
+return false
+end
+end
+function DYNAMICCARGO:IsLoaded()
+if self.CargoState and self.CargoState==DYNAMICCARGO.State.LOADED then
+return true
+else
+return false
+end
+end
+function DYNAMICCARGO:IsUnloaded()
+if self.CargoState and self.CargoState==DYNAMICCARGO.State.REMOVED then
+return true
+else
+return false
+end
+end
+function DYNAMICCARGO:IsRemoved()
+if self.CargoState and self.CargoState==DYNAMICCARGO.State.UNLOADED then
+return true
+else
+return false
+end
 end
 function DYNAMICCARGO:GetCratesNeeded()
 return 1
