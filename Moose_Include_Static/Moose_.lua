@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T15:21:46+02:00-284a770daa309c26eb37753875efaa858bbe4ca0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T15:46:07+02:00-ad9eaea0109d078cdefd740d6c49dda0e08e0d39 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12120,11 +12120,9 @@ local ObjectFound=self.Set[ObjectName]
 return ObjectFound
 end
 function SET_BASE:GetSet()
-self:F2()
 return self.Set or{}
 end
 function SET_BASE:GetSetNames()
-self:F2()
 local Names={}
 for Name,Object in pairs(self.Set)do
 table.insert(Names,Name)
@@ -12132,7 +12130,6 @@ end
 return Names
 end
 function SET_BASE:GetSetObjects()
-self:F2()
 local Objects={}
 for Name,Object in pairs(self.Set)do
 table.insert(Objects,Object)
@@ -12140,7 +12137,6 @@ end
 return Objects
 end
 function SET_BASE:Remove(ObjectName,NoTriggerEvent)
-self:F2({ObjectName=ObjectName})
 local TriggerEvent=true
 if NoTriggerEvent then
 TriggerEvent=false
@@ -12162,7 +12158,6 @@ end
 end
 end
 function SET_BASE:Add(ObjectName,Object)
-self:T2({ObjectName=ObjectName,Object=Object})
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
@@ -12172,9 +12167,6 @@ self:Added(ObjectName,Object)
 return self
 end
 function SET_BASE:AddObject(Object)
-self:F2(Object.ObjectName)
-self:T(Object.UnitName)
-self:T(Object.ObjectName)
 self:Add(Object.ObjectName,Object)
 end
 function SET_BASE:SortByName()
@@ -12227,22 +12219,18 @@ end
 return SetA
 end
 function SET_BASE:Get(ObjectName)
-self:F(ObjectName)
 local Object=self.Set[ObjectName]
-self:T3({ObjectName,Object})
 return Object
 end
 function SET_BASE:GetFirst()
 local ObjectName=self.Index[1]
 local FirstObject=self.Set[ObjectName]
-self:T3({FirstObject})
 return FirstObject
 end
 function SET_BASE:GetLast()
 local tablemax=table.maxn(self.Index)
 local ObjectName=self.Index[tablemax]
 local LastObject=self.Set[ObjectName]
-self:T3({LastObject})
 return LastObject
 end
 function SET_BASE:GetRandom()
@@ -12251,7 +12239,6 @@ for _,_ind in pairs(self.Index)do
 tablemax=tablemax+1
 end
 local RandomItem=self.Set[self.Index[math.random(1,tablemax)]]
-self:T3({RandomItem})
 return RandomItem
 end
 function SET_BASE:GetRandomSurely()
@@ -12262,7 +12249,6 @@ tablemax=tablemax+1
 sorted[tablemax]=_obj
 end
 local RandomItem=sorted[math.random(1,tablemax)]
-self:T3({RandomItem})
 return RandomItem
 end
 function SET_BASE:Count()
@@ -12320,7 +12306,6 @@ self:UnHandleEvent(EVENTS.Crash)
 return self
 end
 function SET_BASE:FindNearestObjectFromPointVec2(PointVec2)
-self:F2(PointVec2)
 local NearestObject=nil
 local ClosestDistance=nil
 for ObjectID,ObjectData in pairs(self.Set)do
@@ -12338,17 +12323,14 @@ end
 return NearestObject
 end
 function SET_BASE:_EventOnBirth(Event)
-self:F3({Event})
 if Event.IniDCSUnit then
 local ObjectName,Object=self:AddInDatabase(Event)
-self:T3(ObjectName,Object)
 if Object and self:IsIncludeObject(Object)then
 self:Add(ObjectName,Object)
 end
 end
 end
 function SET_BASE:_EventOnDeadOrCrash(Event)
-self:F({Event})
 if Event.IniDCSUnit then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
@@ -12357,14 +12339,12 @@ end
 end
 end
 function SET_BASE:ForEach(IteratorFunction,arg,Set,Function,FunctionArguments)
-self:F3(arg)
 Set=Set or self:GetSet()
 arg=arg or{}
 local function CoRoutine()
 local Count=0
 for ObjectID,ObjectData in pairs(Set)do
 local Object=ObjectData
-self:T3(Object)
 if Function then
 if Function(unpack(FunctionArguments or{}),Object)==true then
 IteratorFunction(Object,unpack(arg))
@@ -12379,7 +12359,6 @@ end
 local co=CoRoutine
 local function Schedule()
 local status,res=co()
-self:T3({status,res})
 if status==false then
 error(res)
 end
@@ -12392,7 +12371,6 @@ Schedule()
 return self
 end
 function SET_BASE:ForSome(IteratorFunction,arg,Set,Function,FunctionArguments)
-self:F3(arg)
 Set=Set or self:GetSet()
 arg=arg or{}
 local Limit=self:GetSomeIteratorLimit()
@@ -12400,7 +12378,6 @@ local function CoRoutine()
 local Count=0
 for ObjectID,ObjectData in pairs(Set)do
 local Object=ObjectData
-self:T3(Object)
 if Function then
 if Function(unpack(FunctionArguments),Object)==true then
 IteratorFunction(Object,unpack(arg))
@@ -12418,7 +12395,6 @@ end
 local co=CoRoutine
 local function Schedule()
 local status,res=co()
-self:T3({status,res})
 if status==false then
 error(res)
 end
@@ -12431,11 +12407,9 @@ Schedule()
 return self
 end
 function SET_BASE:IsIncludeObject(Object)
-self:F3(Object)
 return true
 end
 function SET_BASE:IsInSet(Object)
-self:F3(Object)
 local outcome=false
 local name=Object:GetName()
 self:ForEach(
@@ -12448,11 +12422,9 @@ end
 return outcome
 end
 function SET_BASE:IsNotInSet(Object)
-self:F3(Object)
 return not self:IsInSet(Object)
 end
 function SET_BASE:GetObjectNames()
-self:F3()
 local ObjectNames=""
 for ObjectName,Object in pairs(self.Set)do
 ObjectNames=ObjectNames..ObjectName..", "
@@ -12460,12 +12432,10 @@ end
 return ObjectNames
 end
 function SET_BASE:Flush(MasterObject)
-self:F3()
 local ObjectNames=""
 for ObjectName,Object in pairs(self.Set)do
 ObjectNames=ObjectNames..ObjectName..", "
 end
-self:F({MasterObject=MasterObject and MasterObject:GetClassNameAndID(),"Objects in Set:",ObjectNames})
 return ObjectNames
 end
 end
@@ -12502,7 +12472,6 @@ self:FilterActive(false)
 return self
 end
 function SET_GROUP:GetAliveSet()
-self:F2()
 local AliveSet=SET_GROUP:New()
 for GroupName,GroupObject in pairs(self.Set)do
 local GroupObject=GroupObject
@@ -12515,7 +12484,6 @@ end
 return AliveSet.Set or{}
 end
 function SET_GROUP:GetUnitTypeNames()
-self:F2()
 local MT={}
 local UnitTypes={}
 local ReportUnitTypes=REPORT:New()
@@ -12567,7 +12535,6 @@ local GroupFound=self.Set[GroupName]
 return GroupFound
 end
 function SET_GROUP:FindNearestGroupFromPointVec2(PointVec2)
-self:F2(PointVec2)
 local NearestGroup=nil
 local ClosestDistance=nil
 local Set=self:GetAliveSet()
@@ -12725,7 +12692,6 @@ end
 return self
 end
 function SET_GROUP:_EventOnDeadOrCrash(Event)
-self:F({Event})
 if Event.IniDCSUnit then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
@@ -12740,36 +12706,29 @@ end
 end
 end
 function SET_GROUP:AddInDatabase(Event)
-self:F3({Event})
 if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSGroupName]then
 self.Database[Event.IniDCSGroupName]=GROUP:Register(Event.IniDCSGroupName)
-self:T3(self.Database[Event.IniDCSGroupName])
 end
 end
 return Event.IniDCSGroupName,self.Database[Event.IniDCSGroupName]
 end
 function SET_GROUP:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSGroupName,self.Database[Event.IniDCSGroupName]
 end
 function SET_GROUP:ForEachGroup(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_GROUP:ForSomeGroup(IteratorFunction,...)
-self:F2(arg)
 self:ForSome(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_GROUP:ForEachGroupAlive(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetAliveSet())
 return self
 end
 function SET_GROUP:ForSomeGroupAlive(IteratorFunction,...)
-self:F2(arg)
 self:ForSome(IteratorFunction,arg,self:GetAliveSet())
 return self
 end
@@ -12784,7 +12743,6 @@ end
 return self
 end
 function SET_GROUP:ForEachGroupCompletelyInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,GroupObject)
 if GroupObject:IsCompletelyInZone(ZoneObject)then
@@ -12796,7 +12754,6 @@ end,{ZoneObject})
 return self
 end
 function SET_GROUP:ForEachGroupPartlyInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,GroupObject)
 if GroupObject:IsPartlyInZone(ZoneObject)then
@@ -12808,7 +12765,6 @@ end,{ZoneObject})
 return self
 end
 function SET_GROUP:ForEachGroupNotInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,GroupObject)
 if GroupObject:IsNotInZone(ZoneObject)then
@@ -12820,7 +12776,6 @@ end,{ZoneObject})
 return self
 end
 function SET_GROUP:AllCompletelyInZone(Zone)
-self:F2(Zone)
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
 if not GroupData:IsCompletelyInZone(Zone)then
@@ -12830,7 +12785,6 @@ end
 return true
 end
 function SET_GROUP:ForEachGroupAnyInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,GroupObject)
 if GroupObject:IsAnyInZone(ZoneObject)then
@@ -12842,7 +12796,6 @@ end,{ZoneObject})
 return self
 end
 function SET_GROUP:AnyCompletelyInZone(Zone)
-self:F2(Zone)
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
 if GroupData:IsCompletelyInZone(Zone)then
@@ -12852,7 +12805,6 @@ end
 return false
 end
 function SET_GROUP:AnyInZone(Zone)
-self:F2(Zone)
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
 if GroupData:IsPartlyInZone(Zone)or GroupData:IsCompletelyInZone(Zone)then
@@ -12862,7 +12814,6 @@ end
 return false
 end
 function SET_GROUP:AnyPartlyInZone(Zone)
-self:F2(Zone)
 local IsPartlyInZone=false
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
@@ -12879,7 +12830,6 @@ return false
 end
 end
 function SET_GROUP:NoneInZone(Zone)
-self:F2(Zone)
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
 if not GroupData:IsNotInZone(Zone)then
@@ -12889,7 +12839,6 @@ end
 return true
 end
 function SET_GROUP:CountInZone(Zone)
-self:F2(Zone)
 local Count=0
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
@@ -12900,7 +12849,6 @@ end
 return Count
 end
 function SET_GROUP:CountUnitInZone(Zone)
-self:F2(Zone)
 local Count=0
 local Set=self:GetSet()
 for GroupID,GroupData in pairs(Set)do
@@ -13056,7 +13004,6 @@ self:FilterActive(false)
 return self
 end
 function SET_UNIT:AddUnit(Unit)
-self:F2(Unit:GetName())
 self:Add(Unit:GetName(),Unit)
 if Unit:IsInstanceOf("UNIT")then
 Unit:SetCargoBayWeightLimit()
@@ -13065,7 +13012,6 @@ return self
 end
 function SET_UNIT:AddUnitsByName(AddUnitNames)
 local AddUnitNamesArray=(type(AddUnitNames)=="table")and AddUnitNames or{AddUnitNames}
-self:T(AddUnitNamesArray)
 for AddUnitID,AddUnitName in pairs(AddUnitNamesArray)do
 self:Add(AddUnitName,UNIT:FindByName(AddUnitName))
 end
@@ -13254,17 +13200,14 @@ end
 return self
 end
 function SET_UNIT:AddInDatabase(Event)
-self:F3({Event})
 if Event.IniObjectCategory==Object.Category.UNIT then
 if not self.Database[Event.IniDCSUnitName]then
 self.Database[Event.IniDCSUnitName]=UNIT:Register(Event.IniDCSUnitName)
-self:T3(self.Database[Event.IniDCSUnitName])
 end
 end
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_UNIT:FindInDatabase(Event)
-self:F2({Event.IniDCSUnitName,self.Set[Event.IniDCSUnitName],Event})
 return Event.IniDCSUnitName,self.Set[Event.IniDCSUnitName]
 end
 do
@@ -13272,10 +13215,8 @@ function SET_UNIT:IsPartiallyInZone(ZoneTest)
 local IsPartiallyInZone=false
 local function EvaluateZone(ZoneUnit)
 local ZoneUnitName=ZoneUnit:GetName()
-self:F({ZoneUnitName=ZoneUnitName})
 if self:FindUnit(ZoneUnitName)then
 IsPartiallyInZone=true
-self:F({Found=true})
 return false
 end
 return true
@@ -13298,12 +13239,10 @@ return IsNotInZone
 end
 end
 function SET_UNIT:ForEachUnit(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_UNIT:GetSetPerThreatLevel(FromThreatLevel,ToThreatLevel)
-self:F2(arg)
 local ThreatLevelSet={}
 if self:Count()~=0 then
 for UnitName,UnitObject in pairs(self.Set)do
@@ -13312,12 +13251,10 @@ local ThreatLevel=Unit:GetThreatLevel()
 ThreatLevelSet[ThreatLevel]=ThreatLevelSet[ThreatLevel]or{}
 ThreatLevelSet[ThreatLevel].Set=ThreatLevelSet[ThreatLevel].Set or{}
 ThreatLevelSet[ThreatLevel].Set[UnitName]=UnitObject
-self:F({ThreatLevel=ThreatLevel,ThreatLevelSet=ThreatLevelSet[ThreatLevel].Set})
 end
 local OrderedPerThreatLevelSet={}
 local ThreatLevelIncrement=FromThreatLevel<=ToThreatLevel and 1 or-1
 for ThreatLevel=FromThreatLevel,ToThreatLevel,ThreatLevelIncrement do
-self:F({ThreatLevel=ThreatLevel})
 local ThreatLevelItem=ThreatLevelSet[ThreatLevel]
 if ThreatLevelItem then
 for UnitName,UnitObject in pairs(ThreatLevelItem.Set)do
@@ -13329,7 +13266,6 @@ return OrderedPerThreatLevelSet
 end
 end
 function SET_UNIT:ForEachUnitPerThreatLevel(FromThreatLevel,ToThreatLevel,IteratorFunction,...)
-self:F2(arg)
 local ThreatLevelSet={}
 if self:Count()~=0 then
 for UnitName,UnitObject in pairs(self.Set)do
@@ -13338,11 +13274,9 @@ local ThreatLevel=Unit:GetThreatLevel()
 ThreatLevelSet[ThreatLevel]=ThreatLevelSet[ThreatLevel]or{}
 ThreatLevelSet[ThreatLevel].Set=ThreatLevelSet[ThreatLevel].Set or{}
 ThreatLevelSet[ThreatLevel].Set[UnitName]=UnitObject
-self:F({ThreatLevel=ThreatLevel,ThreatLevelSet=ThreatLevelSet[ThreatLevel].Set})
 end
 local ThreatLevelIncrement=FromThreatLevel<=ToThreatLevel and 1 or-1
 for ThreatLevel=FromThreatLevel,ToThreatLevel,ThreatLevelIncrement do
-self:F({ThreatLevel=ThreatLevel})
 local ThreatLevelItem=ThreatLevelSet[ThreatLevel]
 if ThreatLevelItem then
 self:ForEach(IteratorFunction,arg,ThreatLevelItem.Set)
@@ -13352,7 +13286,6 @@ end
 return self
 end
 function SET_UNIT:ForEachUnitCompletelyInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,UnitObject)
 if UnitObject:IsInZone(ZoneObject)then
@@ -13364,7 +13297,6 @@ end,{ZoneObject})
 return self
 end
 function SET_UNIT:ForEachUnitNotInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,UnitObject)
 if UnitObject:IsNotInZone(ZoneObject)then
@@ -13376,7 +13308,6 @@ end,{ZoneObject})
 return self
 end
 function SET_UNIT:GetUnitTypes()
-self:F2()
 local MT={}
 local UnitTypes={}
 for UnitID,UnitData in pairs(self:GetSet())do
@@ -13396,7 +13327,6 @@ end
 return UnitTypes
 end
 function SET_UNIT:GetUnitTypesText()
-self:F2()
 local MT={}
 local UnitTypes=self:GetUnitTypes()
 for UnitTypeID,UnitType in pairs(UnitTypes)do
@@ -13405,7 +13335,6 @@ end
 return table.concat(MT,", ")
 end
 function SET_UNIT:GetUnitThreatLevels()
-self:F2()
 local UnitThreatLevels={}
 for UnitID,UnitData in pairs(self:GetSet())do
 local ThreatUnit=UnitData
@@ -13431,7 +13360,6 @@ MaxThreatLevelA2G=ThreatLevelA2G
 MaxThreatText=ThreatText
 end
 end
-self:F({MaxThreatLevelA2G=MaxThreatLevelA2G,MaxThreatText=MaxThreatText})
 return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_UNIT:GetCoordinate()
@@ -13468,7 +13396,6 @@ local heading=self:GetHeading()or 0
 local velocity=self:GetVelocity()or 0
 Coordinate:SetHeading(heading)
 Coordinate:SetVelocity(velocity)
-self:T(UTILS.PrintTableToLog(Coordinate))
 end
 return Coordinate
 end
@@ -13483,7 +13410,6 @@ if Velocity~=0 then
 MaxVelocity=(MaxVelocity<Velocity)and Velocity or MaxVelocity
 end
 end
-self:F({MaxVelocity=MaxVelocity})
 return MaxVelocity
 end
 function SET_UNIT:GetHeading()
@@ -13510,7 +13436,6 @@ end
 return HeadingSet
 end
 function SET_UNIT:HasRadar(RadarType)
-self:F2(RadarType)
 local RadarCount=0
 for UnitID,UnitData in pairs(self:GetSet())do
 local UnitSensorTest=UnitData
@@ -13520,7 +13445,6 @@ HasSensors=UnitSensorTest:HasSensors(Unit.SensorType.RADAR,RadarType)
 else
 HasSensors=UnitSensorTest:HasSensors(Unit.SensorType.RADAR)
 end
-self:T3(HasSensors)
 if HasSensors then
 RadarCount=RadarCount+1
 end
@@ -13528,14 +13452,12 @@ end
 return RadarCount
 end
 function SET_UNIT:HasSEAD()
-self:F2()
 local SEADCount=0
 for UnitID,UnitData in pairs(self:GetSet())do
 local UnitSEAD=UnitData
 if UnitSEAD:IsAlive()then
 local UnitSEADAttributes=UnitSEAD:GetDesc().attributes
 local HasSEAD=UnitSEAD:HasSEAD()
-self:T3(HasSEAD)
 if HasSEAD then
 SEADCount=SEADCount+1
 end
@@ -13544,7 +13466,6 @@ end
 return SEADCount
 end
 function SET_UNIT:HasGroundUnits()
-self:F2()
 local GroundUnitCount=0
 for UnitID,UnitData in pairs(self:GetSet())do
 local UnitTest=UnitData
@@ -13555,7 +13476,6 @@ end
 return GroundUnitCount
 end
 function SET_UNIT:HasAirUnits()
-self:F2()
 local AirUnitCount=0
 for UnitID,UnitData in pairs(self:GetSet())do
 local UnitTest=UnitData
@@ -13566,7 +13486,6 @@ end
 return AirUnitCount
 end
 function SET_UNIT:HasFriendlyUnits(FriendlyCoalition)
-self:F2()
 local FriendlyUnitCount=0
 for UnitID,UnitData in pairs(self:GetSet())do
 local UnitTest=UnitData
@@ -13719,13 +13638,11 @@ local self=BASE:Inherit(self,SET_BASE:New(_DATABASE.STATICS))
 return self
 end
 function SET_STATIC:AddStatic(AddStatic)
-self:F2(AddStatic:GetName())
 self:Add(AddStatic:GetName(),AddStatic)
 return self
 end
 function SET_STATIC:AddStaticsByName(AddStaticNames)
 local AddStaticNamesArray=(type(AddStaticNames)=="table")and AddStaticNames or{AddStaticNames}
-self:T(AddStaticNamesArray)
 for AddStaticID,AddStaticName in pairs(AddStaticNamesArray)do
 self:Add(AddStaticName,STATIC:FindByName(AddStaticName))
 end
@@ -13841,17 +13758,14 @@ end
 return CountU
 end
 function SET_STATIC:AddInDatabase(Event)
-self:F3({Event})
 if Event.IniObjectCategory==Object.Category.STATIC then
 if not self.Database[Event.IniDCSUnitName]then
 self.Database[Event.IniDCSUnitName]=STATIC:Register(Event.IniDCSUnitName)
-self:T3(self.Database[Event.IniDCSUnitName])
 end
 end
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_STATIC:FindInDatabase(Event)
-self:F2({Event.IniDCSUnitName,self.Set[Event.IniDCSUnitName],Event})
 return Event.IniDCSUnitName,self.Set[Event.IniDCSUnitName]
 end
 do
@@ -13881,18 +13795,15 @@ Zone:Search(EvaluateZone)
 return IsNotInZone
 end
 function SET_STATIC:ForEachStaticInZone(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 end
 function SET_STATIC:ForEachStatic(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_STATIC:ForEachStaticCompletelyInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,StaticObject)
 if StaticObject:IsInZone(ZoneObject)then
@@ -13904,7 +13815,6 @@ end,{ZoneObject})
 return self
 end
 function SET_STATIC:ForEachStaticNotInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,StaticObject)
 if StaticObject:IsNotInZone(ZoneObject)then
@@ -13916,7 +13826,6 @@ end,{ZoneObject})
 return self
 end
 function SET_STATIC:GetStaticTypes()
-self:F2()
 local MT={}
 local StaticTypes={}
 for StaticID,StaticData in pairs(self:GetSet())do
@@ -13936,7 +13845,6 @@ end
 return StaticTypes
 end
 function SET_STATIC:GetStaticTypesText()
-self:F2()
 local MT={}
 local StaticTypes=self:GetStaticTypes()
 for StaticTypeID,StaticType in pairs(StaticTypes)do
@@ -13978,7 +13886,6 @@ Coordinate.y=(y2-y1)/2+y1
 Coordinate.z=(z2-z1)/2+z1
 Coordinate:SetHeading(AvgHeading)
 Coordinate:SetVelocity(MaxVelocity)
-self:F({Coordinate=Coordinate})
 return Coordinate
 end
 function SET_STATIC:GetVelocity()
@@ -14018,16 +13925,13 @@ MaxThreatLevelA2G=ThreatLevelA2G
 MaxThreatText=ThreatText
 end
 end
-self:F({MaxThreatLevelA2G=MaxThreatLevelA2G,MaxThreatText=MaxThreatText})
 return MaxThreatLevelA2G,MaxThreatText
 end
 function SET_STATIC:IsIncludeObject(MStatic)
-self:F2(MStatic)
 local MStaticInclude=true
 if self.Filter.Coalitions then
 local MStaticCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
-self:T3({"Coalition:",MStatic:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==MStatic:GetCoalition()then
 MStaticCoalition=true
 end
@@ -14037,7 +13941,6 @@ end
 if self.Filter.Categories then
 local MStaticCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
-self:T3({"Category:",MStatic:GetDesc().category,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==MStatic:GetDesc().category then
 MStaticCategory=true
 end
@@ -14047,7 +13950,6 @@ end
 if self.Filter.Types then
 local MStaticType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
-self:T3({"Type:",MStatic:GetTypeName(),TypeName})
 if TypeName==MStatic:GetTypeName()then
 MStaticType=true
 end
@@ -14057,7 +13959,6 @@ end
 if self.Filter.Countries then
 local MStaticCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
-self:T3({"Country:",MStatic:GetCountry(),CountryName})
 if country.id[CountryName]==MStatic:GetCountry()then
 MStaticCountry=true
 end
@@ -14067,7 +13968,6 @@ end
 if self.Filter.StaticPrefixes then
 local MStaticPrefix=false
 for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
-self:T3({"Prefix:",string.find(MStatic:GetName(),StaticPrefix,1),StaticPrefix})
 if string.find(MStatic:GetName(),StaticPrefix,1)then
 MStaticPrefix=true
 end
@@ -14077,14 +13977,12 @@ end
 if self.Filter.Zones then
 local MStaticZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
-self:T3("Zone:",ZoneName)
 if MStatic and MStatic:IsInZone(Zone)then
 MStaticZone=true
 end
 end
 MStaticInclude=MStaticInclude and MStaticZone
 end
-self:T2(MStaticInclude)
 return MStaticInclude
 end
 function SET_STATIC:GetTypeNames(Delimiter)
@@ -14332,11 +14230,9 @@ end
 return self
 end
 function SET_CLIENT:_EventPlayerEnterUnit(Event)
-self:I("_EventPlayerEnterUnit")
 if Event.IniDCSUnit then
 if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:AddInDatabase(Event)
-self:T(ObjectName,UTILS.PrintTableToLog(Object))
 if Object and self:IsIncludeObject(Object)then
 self:Add(ObjectName,Object)
 end
@@ -14345,7 +14241,6 @@ end
 return self
 end
 function SET_CLIENT:_EventPlayerLeaveUnit(Event)
-self:I("_EventPlayerLeaveUnit")
 if Event.IniDCSUnit then
 if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
 local ObjectName,Object=self:FindInDatabase(Event)
@@ -14357,20 +14252,16 @@ end
 return self
 end
 function SET_CLIENT:AddInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_CLIENT:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_CLIENT:ForEachClient(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_CLIENT:ForEachClientInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,ClientObject)
 if ClientObject:IsInZone(ZoneObject)then
@@ -14382,7 +14273,6 @@ end,{ZoneObject})
 return self
 end
 function SET_CLIENT:ForEachClientNotInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,ClientObject)
 if ClientObject:IsNotInZone(ZoneObject)then
@@ -14444,7 +14334,6 @@ local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
 local UnitCategory=0
 if ClientCategoryID==nil and MClient:IsExist()then
 ClientCategoryID,UnitCategory=MClient:GetCategory()
-self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
 end
@@ -14463,7 +14352,6 @@ if TypeName==MClient:GetTypeName()then
 MClientType=true
 end
 end
-self:T({"Evaluated Type",MClientType})
 MClientInclude=MClientInclude and MClientType
 end
 if self.Filter.Countries and MClientInclude then
@@ -14473,7 +14361,6 @@ local ClientCountryID=_DATABASE:GetCountryFromClientTemplate(MClientName)
 if ClientCountryID==nil and MClient:IsAlive()~=nil then
 ClientCountryID=MClient:GetCountry()
 end
-self:T3({"Country:",ClientCountryID,country.id[CountryName],CountryName})
 if country.id[CountryName]and ClientCountryID and country.id[CountryName]==ClientCountryID then
 MClientCountry=true
 end
@@ -14665,20 +14552,16 @@ end
 return self
 end
 function SET_PLAYER:AddInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_PLAYER:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_PLAYER:ForEachPlayer(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_PLAYER:ForEachPlayerInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,ClientObject)
 if ClientObject:IsInZone(ZoneObject)then
@@ -14690,7 +14573,6 @@ end,{ZoneObject})
 return self
 end
 function SET_PLAYER:ForEachPlayerNotInZone(ZoneObject,IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet(),
 function(ZoneObject,ClientObject)
 if ClientObject:IsNotInZone(ZoneObject)then
@@ -14702,7 +14584,6 @@ end,{ZoneObject})
 return self
 end
 function SET_PLAYER:IsIncludeObject(MClient)
-self:F2(MClient)
 local MClientInclude=true
 if MClient then
 local MClientName=MClient.UnitName
@@ -14713,12 +14594,10 @@ local ClientCoalitionID=_DATABASE:GetCoalitionFromClientTemplate(MClientName)
 if ClientCoalitionID==nil and MClient:IsAlive()~=nil then
 ClientCoalitionID=MClient:GetCoalition()
 end
-self:T3({"Coalition:",ClientCoalitionID,self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and ClientCoalitionID and self.FilterMeta.Coalitions[CoalitionName]==ClientCoalitionID then
 MClientCoalition=true
 end
 end
-self:T({"Evaluated Coalition",MClientCoalition})
 MClientInclude=MClientInclude and MClientCoalition
 end
 if self.Filter.Categories and MClientInclude then
@@ -14728,59 +14607,49 @@ local ClientCategoryID=_DATABASE:GetCategoryFromClientTemplate(MClientName)
 local UnitCategory=0
 if ClientCategoryID==nil and MClient:IsExist()then
 ClientCategoryID,UnitCategory=MClient:GetCategory()
-self:T3({"Category:",UnitCategory,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and UnitCategory and self.FilterMeta.Categories[CategoryName]==UnitCategory then
 MClientCategory=true
 end
 else
-self:T3({"Category:",ClientCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and ClientCategoryID and self.FilterMeta.Categories[CategoryName]==ClientCategoryID then
 MClientCategory=true
 end
 end
 end
-self:T({"Evaluated Category",MClientCategory})
 MClientInclude=MClientInclude and MClientCategory
 end
 if self.Filter.Types then
 local MClientType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
-self:T3({"Type:",MClient:GetTypeName(),TypeName})
 if TypeName==MClient:GetTypeName()then
 MClientType=true
 end
 end
-self:T({"Evaluated Type",MClientType})
 MClientInclude=MClientInclude and MClientType
 end
 if self.Filter.Countries then
 local MClientCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
 local ClientCountryID=_DATABASE:GetCountryFromClientTemplate(MClientName)
-self:T3({"Country:",ClientCountryID,country.id[CountryName],CountryName})
 if country.id[CountryName]and country.id[CountryName]==ClientCountryID then
 MClientCountry=true
 end
 end
-self:T({"Evaluated Country",MClientCountry})
 MClientInclude=MClientInclude and MClientCountry
 end
 if self.Filter.ClientPrefixes then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
-self:T3({"Prefix:",string.find(MClient.UnitName,ClientPrefix,1),ClientPrefix})
 if string.find(MClient.UnitName,ClientPrefix,1)then
 MClientPrefix=true
 end
 end
-self:T({"Evaluated Prefix",MClientPrefix})
 MClientInclude=MClientInclude and MClientPrefix
 end
 end
 if self.Filter.Zones then
 local MClientZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
-self:T3("Zone:",ZoneName)
 local unit=MClient:GetClientGroupUnit()
 if unit and unit:IsInZone(Zone)then
 MClientZone=true
@@ -14788,7 +14657,6 @@ end
 end
 MClientInclude=MClientInclude and MClientZone
 end
-self:T2(MClientInclude)
 return MClientInclude
 end
 end
@@ -14843,7 +14711,6 @@ local AirbaseFound=nil
 for AirbaseName,AirbaseObject in pairs(self.Set)do
 local AirbaseCoordinate=AirbaseObject:GetCoordinate()
 local Distance=Coordinate:Get2DDistance(AirbaseCoordinate)
-self:F({Distance=Distance})
 if Distance<=Range then
 AirbaseFound=AirbaseObject
 break
@@ -14912,21 +14779,17 @@ function SET_AIRBASE:AddInDatabase(Event)
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_AIRBASE:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_AIRBASE:ForEachAirbase(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_AIRBASE:FindNearestAirbaseFromPointVec2(PointVec2)
-self:F2(PointVec2)
 local NearestAirbase=self:FindNearestObjectFromPointVec2(PointVec2)
 return NearestAirbase
 end
 function SET_AIRBASE:IsIncludeObject(MAirbase)
-self:F2(MAirbase)
 local MAirbaseInclude=true
 if MAirbase then
 local MAirbaseName=MAirbase:GetName()
@@ -14934,28 +14797,23 @@ if self.Filter.Coalitions then
 local MAirbaseCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 local AirbaseCoalitionID=_DATABASE:GetCoalitionFromAirbase(MAirbaseName)
-self:T3({"Coalition:",AirbaseCoalitionID,self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==AirbaseCoalitionID then
 MAirbaseCoalition=true
 end
 end
-self:T({"Evaluated Coalition",MAirbaseCoalition})
 MAirbaseInclude=MAirbaseInclude and MAirbaseCoalition
 end
 if self.Filter.Categories and MAirbaseInclude then
 local MAirbaseCategory=false
 for CategoryID,CategoryName in pairs(self.Filter.Categories)do
 local AirbaseCategoryID=_DATABASE:GetCategoryFromAirbase(MAirbaseName)
-self:T3({"Category:",AirbaseCategoryID,self.FilterMeta.Categories[CategoryName],CategoryName})
 if self.FilterMeta.Categories[CategoryName]and self.FilterMeta.Categories[CategoryName]==AirbaseCategoryID then
 MAirbaseCategory=true
 end
 end
-self:T({"Evaluated Category",MAirbaseCategory})
 MAirbaseInclude=MAirbaseInclude and MAirbaseCategory
 end
 end
-self:T2(MAirbaseInclude)
 return MAirbaseInclude
 end
 end
@@ -15065,20 +14923,16 @@ self:UnHandleEvent(EVENTS.DeleteCargo)
 return self
 end
 function SET_CARGO:AddInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_CARGO:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_CARGO:ForEachCargo(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_CARGO:FindNearestCargoFromPointVec2(PointVec2)
-self:F2(PointVec2)
 local NearestCargo=self:FindNearestObjectFromPointVec2(PointVec2)
 return NearestCargo
 end
@@ -15119,7 +14973,6 @@ local FirstCargo=self:FirstCargoWithState("Deployed")
 return FirstCargo
 end
 function SET_CARGO:IsIncludeObject(MCargo)
-self:F2(MCargo)
 local MCargoInclude=true
 if MCargo then
 local MCargoName=MCargo:GetName()
@@ -15127,42 +14980,34 @@ if self.Filter.Coalitions then
 local MCargoCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
 local CargoCoalitionID=MCargo:GetCoalition()
-self:T3({"Coalition:",CargoCoalitionID,self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==CargoCoalitionID then
 MCargoCoalition=true
 end
 end
-self:F({"Evaluated Coalition",MCargoCoalition})
 MCargoInclude=MCargoInclude and MCargoCoalition
 end
 if self.Filter.Types then
 local MCargoType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
-self:T3({"Type:",MCargo:GetType(),TypeName})
 if TypeName==MCargo:GetType()then
 MCargoType=true
 end
 end
-self:F({"Evaluated Type",MCargoType})
 MCargoInclude=MCargoInclude and MCargoType
 end
 if self.Filter.CargoPrefixes then
 local MCargoPrefix=false
 for CargoPrefixId,CargoPrefix in pairs(self.Filter.CargoPrefixes)do
-self:T3({"Prefix:",string.find(MCargo.Name,CargoPrefix,1),CargoPrefix})
 if string.find(MCargo.Name,CargoPrefix,1)then
 MCargoPrefix=true
 end
 end
-self:F({"Evaluated Prefix",MCargoPrefix})
 MCargoInclude=MCargoInclude and MCargoPrefix
 end
 end
-self:T2(MCargoInclude)
 return MCargoInclude
 end
 function SET_CARGO:OnEventNewCargo(EventData)
-self:F({"New Cargo",EventData})
 if EventData.Cargo then
 if EventData.Cargo and self:IsIncludeObject(EventData.Cargo)then
 self:Add(EventData.Cargo.Name,EventData.Cargo)
@@ -15170,11 +15015,9 @@ end
 end
 end
 function SET_CARGO:OnEventDeleteCargo(EventData)
-self:F3({EventData})
 if EventData.Cargo then
 local Cargo=_DATABASE:FindCargo(EventData.Cargo.Name)
 if Cargo and Cargo.Name then
-self:F({CargoNoDestroy=Cargo.NoDestroy})
 if Cargo.NoDestroy then
 else
 self:Remove(Cargo.Name)
@@ -15271,15 +15114,12 @@ self:UnHandleEvent(EVENTS.DeleteZone)
 return self
 end
 function SET_ZONE:AddInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_ZONE:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_ZONE:ForEachZone(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
@@ -15310,27 +15150,22 @@ local coord=COORDINATE:New(x,y,z)
 return coord
 end
 function SET_ZONE:IsIncludeObject(MZone)
-self:F2(MZone)
 local MZoneInclude=true
 if MZone then
 local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-self:T2({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
 if string.find(MZoneName,ZonePrefix,1)then
 MZonePrefix=true
 end
 end
-self:T({"Evaluated Prefix",MZonePrefix})
 MZoneInclude=MZoneInclude and MZonePrefix
 end
 end
-self:T2(MZoneInclude)
 return MZoneInclude
 end
 function SET_ZONE:OnEventNewZone(EventData)
-self:F({"New Zone",EventData})
 if EventData.Zone then
 if EventData.Zone and self:IsIncludeObject(EventData.Zone)then
 self:Add(EventData.Zone.ZoneName,EventData.Zone)
@@ -15338,11 +15173,9 @@ end
 end
 end
 function SET_ZONE:OnEventDeleteZone(EventData)
-self:F3({EventData})
 if EventData.Zone then
 local Zone=_DATABASE:FindZone(EventData.Zone.ZoneName)
 if Zone and Zone.ZoneName then
-self:F({ZoneNoDestroy=Zone.NoDestroy})
 if Zone.NoDestroy then
 else
 self:Remove(Zone.ZoneName)
@@ -15519,54 +15352,42 @@ self:UnHandleEvent(EVENTS.DeleteZoneGoal)
 return self
 end
 function SET_ZONE_GOAL:AddInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_ZONE_GOAL:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_ZONE_GOAL:ForEachZone(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_ZONE_GOAL:IsIncludeObject(MZone)
-self:F2(MZone)
 local MZoneInclude=true
 if MZone then
 local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-self:T3({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
 if string.find(MZoneName,ZonePrefix,1)then
 MZonePrefix=true
 end
 end
-self:T({"Evaluated Prefix",MZonePrefix})
 MZoneInclude=MZoneInclude and MZonePrefix
 end
 end
-self:T2(MZoneInclude)
 return MZoneInclude
 end
 function SET_ZONE_GOAL:OnEventNewZoneGoal(EventData)
-self:T({"New Zone Capture Coalition",EventData})
-self:T({"Zone Capture Coalition",EventData.ZoneGoal})
 if EventData.ZoneGoal then
 if EventData.ZoneGoal and self:IsIncludeObject(EventData.ZoneGoal)then
-self:T({"Adding Zone Capture Coalition",EventData.ZoneGoal.ZoneName,EventData.ZoneGoal})
 self:Add(EventData.ZoneGoal.ZoneName,EventData.ZoneGoal)
 end
 end
 end
 function SET_ZONE_GOAL:OnEventDeleteZoneGoal(EventData)
-self:F3({EventData})
 if EventData.ZoneGoal then
 local Zone=_DATABASE:FindZone(EventData.ZoneGoal.ZoneName)
 if Zone and Zone.ZoneName then
-self:F({ZoneNoDestroy=Zone.NoDestroy})
 if Zone.NoDestroy then
 else
 self:Remove(Zone.ZoneName)
@@ -15690,33 +15511,27 @@ self:UnHandleEvent(EVENTS.DeleteZoneGoal)
 return self
 end
 function SET_OPSZONE:AddInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_OPSZONE:FindInDatabase(Event)
-self:F3({Event})
 return Event.IniDCSUnitName,self.Database[Event.IniDCSUnitName]
 end
 function SET_OPSZONE:ForEachZone(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_OPSZONE:IsIncludeObject(MZone)
-self:F2(MZone)
 local MZoneInclude=true
 if MZone then
 local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-self:T3({"Prefix:",string.find(MZoneName,ZonePrefix,1),ZonePrefix})
 if string.find(MZoneName,ZonePrefix,1)then
 MZonePrefix=true
 break
 end
 end
-self:T({"Evaluated Prefix",MZonePrefix})
 MZoneInclude=MZoneInclude and MZonePrefix
 end
 if self.Filter.Coalitions then
@@ -15731,25 +15546,19 @@ end
 MZoneInclude=MZoneInclude and MGroupCoalition
 end
 end
-self:T2(MZoneInclude)
 return MZoneInclude
 end
 function SET_OPSZONE:OnEventNewZoneGoal(EventData)
-self:T({"New Zone Capture Coalition",EventData})
-self:T({"Zone Capture Coalition",EventData.ZoneGoal})
 if EventData.ZoneGoal then
 if EventData.ZoneGoal and self:IsIncludeObject(EventData.ZoneGoal)then
-self:T({"Adding Zone Capture Coalition",EventData.ZoneGoal.ZoneName,EventData.ZoneGoal})
 self:Add(EventData.ZoneGoal.ZoneName,EventData.ZoneGoal)
 end
 end
 end
 function SET_OPSZONE:OnEventDeleteZoneGoal(EventData)
-self:F3({EventData})
 if EventData.ZoneGoal then
 local Zone=_DATABASE:FindZone(EventData.ZoneGoal.ZoneName)
 if Zone and Zone.ZoneName then
-self:F({ZoneNoDestroy=Zone.NoDestroy})
 if Zone.NoDestroy then
 else
 self:Remove(Zone.ZoneName)
@@ -15832,7 +15641,6 @@ end
 return AliveSet.Set or{}
 end
 function SET_OPSGROUP:Add(ObjectName,Object)
-self:T({ObjectName=ObjectName,Object=Object})
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
@@ -15992,7 +15800,6 @@ end
 return self
 end
 function SET_OPSGROUP:_EventOnBirth(Event)
-self:F3({Event})
 if Event.IniDCSUnit and Event.IniDCSGroup then
 local DCSgroup=Event.IniDCSGroup
 if DCSgroup:getInitialSize()==DCSgroup:getSize()then
@@ -16006,7 +15813,6 @@ end
 end
 end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
-self:F({Event})
 if Event.IniDCSUnit then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
@@ -16095,7 +15901,6 @@ local self=BASE:Inherit(self,SET_BASE:New(zoneset))
 local zonenames={}
 if ZoneSet then
 for _,_zone in pairs(ZoneSet.Set)do
-self:T("Zone type handed: "..tostring(_zone.ClassName))
 table.insert(zonenames,_zone:GetName())
 end
 self:AddSceneryByName(zonenames)
@@ -16111,13 +15916,11 @@ zone:Scan({Object.Category.SCENERY})
 return zone:GetScannedSetScenery()
 end
 function SET_SCENERY:AddScenery(AddScenery)
-self:F2(AddScenery:GetName())
 self:Add(AddScenery:GetName(),AddScenery)
 return self
 end
 function SET_SCENERY:AddSceneryByName(AddSceneryNames)
 local AddSceneryNamesArray=(type(AddSceneryNames)=="table")and AddSceneryNames or{AddSceneryNames}
-self:T(AddSceneryNamesArray)
 for AddSceneryID,AddSceneryName in pairs(AddSceneryNamesArray)do
 self:Add(AddSceneryName,SCENERY:FindByZoneName(AddSceneryName))
 end
@@ -16149,7 +15952,6 @@ zones=Zones
 end
 for _,Zone in pairs(zones)do
 local zonename=Zone:GetName()
-self:T(zonename)
 self.Filter.Zones[zonename]=Zone
 end
 return self
@@ -16189,7 +15991,6 @@ end
 return CountU
 end
 function SET_SCENERY:GetAliveSet()
-self:F2()
 local AliveSet=SET_SCENERY:New()
 for GroupName,GroupObject in pairs(self.Set)do
 local GroupObject=GroupObject
@@ -16202,7 +16003,6 @@ end
 return AliveSet.Set or{},AliveSet
 end
 function SET_SCENERY:ForEachScenery(IteratorFunction,...)
-self:F2(arg)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
@@ -16231,23 +16031,19 @@ end
 Coordinate.x=(x2-x1)/2+x1
 Coordinate.y=(y2-y1)/2+y1
 Coordinate.z=(z2-z1)/2+z1
-self:F({Coordinate=Coordinate})
 return Coordinate
 end
 function SET_SCENERY:IsIncludeObject(MScenery)
-self:T(MScenery.SceneryName)
 local MSceneryInclude=true
 if MScenery then
 local MSceneryName=MScenery:GetName()
 if self.Filter.Prefixes then
 local MSceneryPrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-self:T({"Prefix:",string.find(MSceneryName,ZonePrefix,1),ZonePrefix})
 if string.find(MSceneryName,ZonePrefix,1)then
 MSceneryPrefix=true
 end
 end
-self:T({"Evaluated Prefix",MSceneryPrefix})
 MSceneryInclude=MSceneryInclude and MSceneryPrefix
 end
 if self.Filter.Zones then
@@ -16257,7 +16053,6 @@ local coord=MScenery:GetCoordinate()
 if coord and Zone:IsCoordinateInZone(coord)then
 MSceneryZone=true
 end
-self:T({"Evaluated Zone",MSceneryZone})
 end
 MSceneryInclude=MSceneryInclude and MSceneryZone
 end
@@ -16265,21 +16060,17 @@ if self.Filter.SceneryRoles then
 local MSceneryRole=false
 local Role=MScenery:GetProperty("ROLE")or"none"
 for ZoneRoleId,ZoneRole in pairs(self.Filter.SceneryRoles)do
-self:T({"Role:",ZoneRole,Role})
 if ZoneRole==Role then
 MSceneryRole=true
 end
 end
-self:T({"Evaluated Role ",MSceneryRole})
 MSceneryInclude=MSceneryInclude and MSceneryRole
 end
 end
-self:T2(MSceneryInclude)
 return MSceneryInclude
 end
 function SET_SCENERY:FilterOnce()
 for ObjectName,Object in pairs(self:GetSet())do
-self:T(ObjectName)
 if self:IsIncludeObject(Object)then
 self:Add(ObjectName,Object)
 else
@@ -16311,7 +16102,6 @@ end
 function SET_SCENERY:GetRelativeLife()
 local life=self:GetLife()
 local life0=self:GetLife0()
-self:T2(string.format("Set Lifepoints: %d life0 | %d life",life0,life))
 local rlife=math.floor((life/life0)*100)
 return rlife
 end
@@ -16351,7 +16141,6 @@ local DCargoInclude=true
 if self.Filter.Coalitions then
 local DCargoCoalition=false
 for CoalitionID,CoalitionName in pairs(self.Filter.Coalitions)do
-self:I({"Coalition:",DCargo:GetCoalition(),self.FilterMeta.Coalitions[CoalitionName],CoalitionName})
 if self.FilterMeta.Coalitions[CoalitionName]and self.FilterMeta.Coalitions[CoalitionName]==DCargo:GetCoalition()then
 DCargoCoalition=true
 end
@@ -16361,7 +16150,6 @@ end
 if self.Filter.Types then
 local DCargoType=false
 for TypeID,TypeName in pairs(self.Filter.Types)do
-self:I({"Type:",DCargo:GetTypeName(),TypeName})
 if TypeName==DCargo:GetTypeName()then
 DCargoType=true
 end
@@ -16371,7 +16159,6 @@ end
 if self.Filter.Countries then
 local DCargoCountry=false
 for CountryID,CountryName in pairs(self.Filter.Countries)do
-self:I({"Country:",DCargo:GetCountry(),CountryName})
 if country.id[CountryName]==DCargo:GetCountry()then
 DCargoCountry=true
 end
@@ -16381,7 +16168,6 @@ end
 if self.Filter.StaticPrefixes then
 local DCargoPrefix=false
 for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
-self:I({"Prefix:",string.find(DCargo:GetName(),StaticPrefix,1),StaticPrefix})
 if string.find(DCargo:GetName(),StaticPrefix,1)then
 DCargoPrefix=true
 end
@@ -16391,14 +16177,12 @@ end
 if self.Filter.Zones then
 local DCargoZone=false
 for ZoneName,Zone in pairs(self.Filter.Zones)do
-self:I("In zone: "..ZoneName)
 if DCargo and DCargo:IsInZone(Zone)then
 DCargoZone=true
 end
 end
 DCargoInclude=DCargoInclude and DCargoZone
 end
-self:I(DCargoInclude)
 return DCargoInclude
 end
 function SET_DYNAMICCARGO:FilterCoalitions(Coalitions)
