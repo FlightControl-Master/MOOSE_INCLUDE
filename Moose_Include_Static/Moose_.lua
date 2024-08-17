@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-17T14:20:51+02:00-2836d7a40f138255016eaa64009328d4d129e93f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-17T23:56:07+02:00-ad7dba6facda2a7c09cb20104aa0db435c9a62fd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -85645,7 +85645,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.6.0"
+CHIEF.version="0.6.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -86734,6 +86734,7 @@ end
 if MissionType==AUFTRAG.Type.ARMOREDGUARD then
 RangeMax=UTILS.NMToMeters(50)
 end
+self:T(self.lid..string.format("Recruiting assets for zone %s",StratZone.opszone:GetName()))
 self:T(self.lid.."Missiontype="..MissionType)
 self:T({categories=Categories})
 self:T({attributes=Attributes})
@@ -86745,11 +86746,15 @@ self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zo
 local TargetZone=StratZone.opszone.zone
 local TargetCoord=TargetZone:GetCoordinate()
 local transport=nil
+local Ntransports=0
 if Resource.carrierNmin and Resource.carrierNmax and Resource.carrierNmax>0 then
+self:T(self.lid..string.format("Recruiting carrier assets: Nmin=%s, Nmax=%s",tostring(Resource.carrierNmin),tostring(Resource.carrierNmax)))
 local cargoassets=CHIEF._FilterAssets(assets,Resource.Categories,Resource.Attributes,Resource.Properties)
 if#cargoassets>0 then
 recruited,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,cargoassets,
 Resource.carrierNmin,Resource.carrierNmax,TargetZone,nil,Resource.carrierCategories,Resource.carrierAttributes,Resource.carrierProperties)
+Ntransports=transport~=nil and#transport.assets or 0
+self:T(self.lid..string.format("Recruited %d transport carrier assets success=%s",Ntransports,tostring(recruited)))
 end
 end
 if not recruited then
@@ -86808,8 +86813,9 @@ if mission then
 mission:_AddAssets(assets)
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
+mission:SetName(string.format("Stratzone %s-%d",StratZone.opszone:GetName(),mission.auftragsnummer))
 Resource.mission=mission
-if transport then
+if transport and Ntransports>0 then
 mission.opstransport=transport
 transport.opszone=StratZone.opszone
 transport.chief=self
@@ -95636,6 +95642,10 @@ for _,asset in pairs(assets)do
 table.insert(Assets,asset)
 end
 end
+end
+if#Assets==0 then
+env.info(string.format("LEGION.RecruitCohortAssets: No assets could be recruited for mission type %s [Nmin=%s, Nmax=%s]",MissionTypeRecruit,tostring(NreqMin),tostring(NreqMax)))
+return false,{},{}
 end
 LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,false,TotalWeight)
 for _,_asset in pairs(Assets)do
