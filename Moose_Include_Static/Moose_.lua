@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T23:13:22+02:00-2af1483724d7ebdd45ccffdd322405af86cfdd1f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-17T11:36:17+02:00-9de3cb73f7a6e333699f013233d042d0906a59d7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70692,6 +70692,7 @@ wpZones={},
 dropOffZones={},
 pickupZones={},
 DynamicCargo={},
+ChinookTroopCircleRadius=5,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70970,6 +70971,45 @@ local Group=client:GetGroup()
 self:_SendMessage(string.format("Crate %s loaded by ground crew!",event.IniDynamicCargoName),10,false,Group)
 self:__CratesPickedUp(1,Group,client,dcargo)
 end
+elseif event.id==EVENTS.DynamicCargoUnloaded then
+self:T(self.lid.."GC Unload Event "..event.IniDynamicCargoName)
+local dcargo=event.IniDynamicCargo
+local client=CLIENT:FindByPlayerName(dcargo.Owner)
+if client and client:IsAlive()then
+local unitname=client:GetName()or"none"
+local loaded={}
+if self.Loaded_Cargo[unitname]then
+loaded=self.Loaded_Cargo[unitname]
+loaded.Cratesloaded=loaded.Cratesloaded-1
+if loaded.Cratesloaded<0 then loaded.Cratesloaded=0 end
+local Loaded={}
+for _,_item in pairs(loaded.Cargo or{})do
+self:T(self.lid.."UNLOAD checking: ".._item:GetName())
+self:T(self.lid.."UNLOAD state: "..tostring(_item:WasDropped()))
+if _item and _item:GetType()==CTLD_CARGO.Enum.GCLOADABLE and event.IniDynamicCargoName and event.IniDynamicCargoName~=_item:GetName()and not _item:WasDropped()then
+table.insert(Loaded,_item)
+else
+table.insert(Loaded,_item)
+end
+end
+loaded.Cargo=nil
+loaded.Cargo=Loaded
+self.Loaded_Cargo[unitname]=nil
+self.Loaded_Cargo[unitname]=loaded
+else
+loaded={}
+loaded.Troopsloaded=0
+loaded.Cratesloaded=0
+loaded.Cargo={}
+self.Loaded_Cargo[unitname]=loaded
+end
+local Group=client:GetGroup()
+self:_SendMessage(string.format("Crate %s unloaded by ground crew!",event.IniDynamicCargoName),10,false,Group)
+self:__CratesDropped(1,Group,client,{dcargo})
+end
+elseif event.id==EVENTS.DynamicCargoRemoved then
+self:T(self.lid.."GC Remove Event "..event.IniDynamicCargoName)
+self.DynamicCargo[event.IniDynamicCargoName]=nil
 end
 return self
 end
@@ -72066,6 +72106,8 @@ local offset=hoverunload and 1.5 or 5
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
+local ishook=self:IsHook(Unit)
+if ishook then tempcount=self.ChinookTroopCircleRadius or 5 end
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 tempcount=tempcount+1
