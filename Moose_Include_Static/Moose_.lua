@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-16T16:24:16+02:00-1aca7164312544602ec6d4ddb4d6743122d2a2c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-17T11:37:26+02:00-cf322c121e8a8e4078441292a41c8d8e037023b1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70582,6 +70582,7 @@ wpZones={},
 dropOffZones={},
 pickupZones={},
 DynamicCargo={},
+ChinookTroopCircleRadius=5,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -71995,6 +71996,8 @@ local offset=hoverunload and 1.5 or 5
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
+local ishook=self:IsHook(Unit)
+if ishook then tempcount=self.ChinookTroopCircleRadius or 5 end
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 tempcount=tempcount+1
