@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T13:14:13+02:00-3105f7407d8c3222c01a780e0c5fe799ec7ca6a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T13:58:18+02:00-e746617139e4adcaf2f7ec3f411a03e7166db82b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5143,6 +5143,46 @@ local Event={
 id=EVENTS.PlayerEnterAircraft,
 time=timer.getTime(),
 initiator=PlayerUnit:GetDCSObject()
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventNewDynamicCargo(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.NewDynamicCargo,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventDynamicCargoLoaded(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoLoaded,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventDynamicCargoUnloaded(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoUnloaded,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
+}
+world.onEvent(Event)
+end
+function BASE:CreateEventDynamicCargoRemoved(DynamicCargo)
+self:F({DynamicCargo})
+local Event={
+id=EVENTS.DynamicCargoRemoved,
+time=timer.getTime(),
+dynamiccargo=DynamicCargo,
+initiator=DynamicCargo:GetDCSObject(),
 }
 world.onEvent(Event)
 end
@@ -18357,6 +18397,7 @@ self.MessageCategory=""
 end
 if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
+local ID=Unit:GetID()
 trigger.action.outTextForUnit(Unit:GetID(),self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
 end
 end
@@ -18417,8 +18458,11 @@ self:ToCoalition(CoalitionSide)
 end
 return self
 end
-function MESSAGE:ToAll(Settings)
+function MESSAGE:ToAll(Settings,Delay)
 self:F()
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,MESSAGE.ToAll,self,Settings,0)
+else
 if self.MessageType then
 local Settings=Settings or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
@@ -18427,6 +18471,7 @@ end
 if self.MessageDuration~=0 then
 self:T(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$","").." / "..self.MessageDuration)
 trigger.action.outText(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""),self.MessageDuration,self.ClearScreen)
+end
 end
 return self
 end
@@ -22261,7 +22306,7 @@ local CX=X/2
 local CZ=Z/2
 return math.max(math.max(CX,CZ),boxmin)
 end
-BASE:E({"Cannot GetBoundingRadius",Positionable=self,Alive=self:IsAlive()})
+BASE:T({"Cannot GetBoundingRadius",Positionable=self,Alive=self:IsAlive()})
 return nil
 end
 function POSITIONABLE:GetAltitude()
@@ -23515,10 +23560,10 @@ local DCSTask={
 id='Strafing',
 params={
 point=Vec2,
-weaponType=WeaponType or 1073741822,
+weaponType=WeaponType or 805337088,
 expend=WeaponExpend or"Auto",
 attackQty=AttackQty or 1,
-attackQtyLimit=AttackQty>1 and true or false,
+attackQtyLimit=AttackQty~=nil and true or false,
 direction=Direction and math.rad(Direction)or 0,
 directionEnabled=Direction and true or false,
 groupAttack=GroupAttack or false,
@@ -83295,7 +83340,7 @@ end
 function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate})
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,MSRS.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
+self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate)
 else
 Frequencies=Frequencies or self:GetFrequencies()
 Modulations=Modulations or self:GetModulations()
@@ -83430,8 +83475,8 @@ end
 return res
 end
 function MSRS:_DCSgRPCtts(Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate)
-self:F("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
-self:F({Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate})
+self:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
+self:T({Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate})
 local options={}
 local ssml=Text or''
 Frequencies=UTILS.EnsureTable(Frequencies,true)or self:GetFrequencies()
@@ -83443,7 +83488,6 @@ options.position.lat,options.position.lon,options.position.alt=self:_GetLatLongA
 end
 options.coalition=UTILS.GetCoalitionName(self.coalition):lower()
 local provider=self.provider or MSRS.Provider.WINDOWS
-self:F({provider=provider})
 options.provider={}
 options.provider[provider]=self:GetProviderOptions(provider)
 Voice=Voice or self:GetVoice(self.provider)or self.voice
