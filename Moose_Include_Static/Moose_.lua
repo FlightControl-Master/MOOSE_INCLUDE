@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T18:19:05+02:00-c2933b6bed7d0609a24316bc6f575200248a29e1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T19:38:27+02:00-d1a1be1a9e14fef3b0f98661b6ca2b38b7f6f430 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12961,7 +12961,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if string.find(MGroup:GetName(),GroupPrefix:gsub("-","%%-"),1)then
+if string.find(string.lower(MGroup:GetName()),string.lower(GroupPrefix),1)or string.find(string.lower(MGroup:GetName()),string.lower(GroupPrefix),1,true)then
 MGroupPrefix=true
 end
 end
