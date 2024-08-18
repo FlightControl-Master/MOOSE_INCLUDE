@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T13:59:41+02:00-4859ea2fb1ce6a241802bab8a6f63e8792cb6d1a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T19:38:43+02:00-21ec234dd347f4c217aed76c5d88e61923ca2e20 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12959,7 +12959,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if string.find(MGroup:GetName(),GroupPrefix:gsub("-","%%-"),1)then
+if string.find(string.lower(MGroup:GetName()),string.lower(GroupPrefix),1)or string.find(string.lower(MGroup:GetName()),string.lower(GroupPrefix),1,true)then
 MGroupPrefix=true
 end
 end
@@ -26860,7 +26860,6 @@ self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T3(GroupCategory)
 return GroupCategory
 end
 return nil
