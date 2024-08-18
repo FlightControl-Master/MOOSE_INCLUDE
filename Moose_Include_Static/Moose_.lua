@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-17T14:23:25+02:00-d0d709a41003622bb458f24ec6a2b50245e2dc47 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T13:59:41+02:00-4859ea2fb1ce6a241802bab8a6f63e8792cb6d1a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -69545,6 +69545,34 @@ precepitation=3
 end
 elseif cloudspreset:find("RainyPreset3")then
 clouddens=9
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset4")then
+clouddens=5
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset5")then
+clouddens=5
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("RainyPreset6")then
+clouddens=5
+if temperature>5 then
+precepitation=1
+else
+precepitation=3
+end
+elseif cloudspreset:find("NEWRAINPRESET4")then
+clouddens=5
 if temperature>5 then
 precepitation=1
 else
