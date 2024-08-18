@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T13:58:18+02:00-e746617139e4adcaf2f7ec3f411a03e7166db82b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T14:08:46+02:00-af45b0d7099b482ce0135696d8322a9bf875a5a7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7472,7 +7472,9 @@ end
 if Event.dynamiccargo then
 Event.IniDynamicCargo=Event.dynamiccargo
 Event.IniDynamicCargoName=Event.IniDynamicCargo.StaticName
-Event.IniPlayerName=Event.IniDynamicCargo.Owner or string.match(Event.IniUnitName,"^(.+)|%d%d:%d%d|PKG%d+")
+if Event.IniDynamicCargo.Owner or Event.IniUnitName then
+Event.IniPlayerName=Event.IniDynamicCargo.Owner or string.match(Event.IniUnitName or"None|00:00|PKG00","^(.+)|%d%d:%d%d|PKG%d+")
+end
 end
 if Event.zone then
 Event.Zone=Event.zone
