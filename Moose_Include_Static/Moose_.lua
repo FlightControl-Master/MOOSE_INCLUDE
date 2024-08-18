@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T18:06:30+02:00-fc4ba9f21d511987b4f56e408f135d66a462b8e3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T18:19:05+02:00-c2933b6bed7d0609a24316bc6f575200248a29e1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -95675,7 +95675,6 @@ end
 end
 end
 if#Assets==0 then
-env.info(string.format("LEGION.RecruitCohortAssets: No assets could be recruited for mission type %s [Nmin=%s, Nmax=%s]",MissionTypeRecruit,tostring(NreqMin),tostring(NreqMax)))
 return false,{},{}
 end
 LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,false,TotalWeight)
