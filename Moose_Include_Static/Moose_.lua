@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-18T19:38:43+02:00-21ec234dd347f4c217aed76c5d88e61923ca2e20 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T10:48:41+02:00-abb295ecc20b7125b92341d5bce2cfef7209feb6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7472,7 +7472,9 @@ end
 if Event.dynamiccargo then
 Event.IniDynamicCargo=Event.dynamiccargo
 Event.IniDynamicCargoName=Event.IniDynamicCargo.StaticName
-Event.IniPlayerName=Event.IniDynamicCargo.Owner or string.match(Event.IniUnitName,"^(.+)|%d%d:%d%d|PKG%d+")
+if Event.IniDynamicCargo.Owner or Event.IniUnitName then
+Event.IniPlayerName=Event.IniDynamicCargo.Owner or string.match(Event.IniUnitName or"None|00:00|PKG00","^(.+)|%d%d:%d%d|PKG%d+")
+end
 end
 if Event.zone then
 Event.Zone=Event.zone
@@ -23444,6 +23446,7 @@ POSITIONABLE.CargoBayCapacityValues={
 ["HL_KORD"]=6*POSITIONABLE.DefaultInfantryWeight,
 ["HL_DSHK"]=6*POSITIONABLE.DefaultInfantryWeight,
 ["CCKW_353"]=16*POSITIONABLE.DefaultInfantryWeight,
+["MaxxPro_MRAP"]=7*POSITIONABLE.DefaultInfantryWeight,
 }
 }
 function POSITIONABLE:SetCargoBayWeightLimit(WeightLimit)
@@ -70744,6 +70747,8 @@ dropOffZones={},
 pickupZones={},
 DynamicCargo={},
 ChinookTroopCircleRadius=5,
+TroopUnloadDistGround=1.5,
+TroopUnloadDistHover=5,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -72153,7 +72158,7 @@ local heading=Group:GetHeading()or 0
 if hoverunload or grounded then
 randomcoord=Group:GetCoordinate()
 local Angle=(heading+270)%360
-local offset=hoverunload and 1.5 or 5
+local offset=hoverunload and self.TroopUnloadDistGround or self.TroopUnloadDistHover
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
@@ -74659,6 +74664,7 @@ allheligroupset=nil,
 topmenuname="CSAR",
 ADFRadioPwr=1000,
 PilotWeight=80,
+CreateRadioBeacons=true,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -74678,7 +74684,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH-58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.26"
+CSAR.version="1.0.27"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -75643,7 +75649,7 @@ distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
 end
-if _value.frequency==0 then
+if _value.frequency==0 or self.CreateRadioBeacons==false then
 table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %s ",_value.desc,_coordinatesText,distancetext)})
 else
 table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %.2f KHz ADF - %s ",_value.desc,_coordinatesText,_value.frequency/1000,distancetext)})
@@ -75930,6 +75936,7 @@ return clock
 end
 function CSAR:_AddBeaconToGroup(_group,_freq)
 self:T(self.lid.." _AddBeaconToGroup")
+if self.CreateRadioBeacons==false then return end
 local _group=_group
 if _group==nil then
 for _i,_current in ipairs(self.UsedVHFFrequencies)do
@@ -75955,6 +75962,7 @@ return self
 end
 function CSAR:_RefreshRadioBeacons()
 self:T(self.lid.." _RefreshRadioBeacons")
+if self.CreateRadioBeacons==false then return end
 if self:_CountActiveDownedPilots()>0 then
 local PilotTable=self.downedPilots
 for _,_pilot in pairs(PilotTable)do
@@ -85672,7 +85680,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.6.0"
+CHIEF.version="0.6.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -86761,6 +86769,7 @@ end
 if MissionType==AUFTRAG.Type.ARMOREDGUARD then
 RangeMax=UTILS.NMToMeters(50)
 end
+self:T(self.lid..string.format("Recruiting assets for zone %s",StratZone.opszone:GetName()))
 self:T(self.lid.."Missiontype="..MissionType)
 self:T({categories=Categories})
 self:T({attributes=Attributes})
@@ -86772,11 +86781,15 @@ self:T2(self.lid..string.format("Recruited %d assets for %s mission STRATEGIC zo
 local TargetZone=StratZone.opszone.zone
 local TargetCoord=TargetZone:GetCoordinate()
 local transport=nil
+local Ntransports=0
 if Resource.carrierNmin and Resource.carrierNmax and Resource.carrierNmax>0 then
+self:T(self.lid..string.format("Recruiting carrier assets: Nmin=%s, Nmax=%s",tostring(Resource.carrierNmin),tostring(Resource.carrierNmax)))
 local cargoassets=CHIEF._FilterAssets(assets,Resource.Categories,Resource.Attributes,Resource.Properties)
 if#cargoassets>0 then
 recruited,transport=LEGION.AssignAssetsForTransport(self.commander,self.commander.legions,cargoassets,
 Resource.carrierNmin,Resource.carrierNmax,TargetZone,nil,Resource.carrierCategories,Resource.carrierAttributes,Resource.carrierProperties)
+Ntransports=transport~=nil and#transport.assets or 0
+self:T(self.lid..string.format("Recruited %d transport carrier assets success=%s",Ntransports,tostring(recruited)))
 end
 end
 if not recruited then
@@ -86835,8 +86848,9 @@ if mission then
 mission:_AddAssets(assets)
 self:MissionAssign(mission,legions)
 StratZone.opszone:_AddMission(self.coalition,MissionType,mission)
+mission:SetName(string.format("Stratzone %s-%d",StratZone.opszone:GetName(),mission.auftragsnummer))
 Resource.mission=mission
-if transport then
+if transport and Ntransports>0 then
 mission.opstransport=transport
 transport.opszone=StratZone.opszone
 transport.chief=self
@@ -95663,6 +95677,9 @@ for _,asset in pairs(assets)do
 table.insert(Assets,asset)
 end
 end
+end
+if#Assets==0 then
+return false,{},{}
 end
 LEGION._OptimizeAssetSelection(Assets,MissionTypeOpt,TargetVec2,false,TotalWeight)
 for _,_asset in pairs(Assets)do
