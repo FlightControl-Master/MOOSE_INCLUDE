@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T10:56:08+02:00-aee7bd8bb68fb42afaa95a642631888f02603dbe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T18:03:59+02:00-7a0fa629b5ac5ac6277c4b1ffeff1fde6aca6e7f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -460,7 +460,10 @@ weapons={
 missiles={},
 bombs={},
 nurs={},
-containers={},
+containers={
+Gazelle={},
+CH47={},
+},
 droptanks={},
 adapters={},
 torpedoes={},
@@ -1023,6 +1026,25 @@ ENUMS.Storage.weapons.bombs.AGM_62="weapons.bombs.AGM_62"
 ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_WHITE="weapons.containers.{US_M10_SMOKE_TANK_WHITE}"
 ENUMS.Storage.weapons.missiles.MICA_T="weapons.missiles.MICA_T"
 ENUMS.Storage.weapons.containers.HVAR_rocket="weapons.containers.HVAR_rocket"
+ENUMS.Storage.weapons.containers.Gazelle.HMP400_100RDS={4,15,46,1771}
+ENUMS.Storage.weapons.containers.Gazelle.HMP400_200RDS={4,15,46,1770}
+ENUMS.Storage.weapons.containers.Gazelle.HMP400_400RDS={4,15,46,1769}
+ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_AP={4,15,46,1768}
+ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_SAPHEI={4,15,46,1767}
+ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_HE={4,15,46,1766}
+ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_HEAP={4,15,46,1765}
+ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_APHE={4,15,46,1764}
+ENUMS.Storage.weapons.containers.Gazelle.GAZELLE_IR_DEFLECTOR={4,15,47,680}
+ENUMS.Storage.weapons.containers.Gazelle.GAZELLE_FAS_SANDFILTER={4,15,47,679}
+ENUMS.Storage.weapons.containers.CH47.CH47_PORT_M60D={4,15,46,2476}
+ENUMS.Storage.weapons.containers.CH47.CH47_STBD_M60D={4,15,46,2477}
+ENUMS.Storage.weapons.containers.CH47.CH47_AFT_M60D={4,15,46,2478}
+ENUMS.Storage.weapons.containers.CH47.CH47_PORT_M134D={4,15,46,2482}
+ENUMS.Storage.weapons.containers.CH47.CH47_STBD_M134D={4,15,46,2483}
+ENUMS.Storage.weapons.containers.CH47.CH47_AFT_M3M={4,15,46,2484}
+ENUMS.Storage.weapons.containers.CH47.CH47_PORT_M240H={4,15,46,2479}
+ENUMS.Storage.weapons.containers.CH47.CH47_STBD_M240H={4,15,46,2480}
+ENUMS.Storage.weapons.containers.CH47.CH47_AFT_M240H={4,15,46,2481}
 SMOKECOLOR=trigger.smokeColor
 FLARECOLOR=trigger.flareColor
 BIGSMOKEPRESET={
@@ -67148,7 +67170,7 @@ if math.abs(self.holdingoffset)>0 then
 self:_GetZoneArcIn(case):FlareZone(FLARECOLOR.White,45)
 text=text.."\n* arc turn in with WHITE flares"
 self:_GetZoneArcOut(case):FlareZone(FLARECOLOR.White,45)
-text=text.."\n* arc trun out with WHITE flares"
+text=text.."\n* arc turn out with WHITE flares"
 end
 end
 if case==3 then
@@ -67181,7 +67203,7 @@ if math.abs(self.holdingoffset)>0 then
 self:_GetZoneArcIn(case):SmokeZone(SMOKECOLOR.Blue,45)
 text=text.."\n* arc turn in with BLUE smoke"
 self:_GetZoneArcOut(case):SmokeZone(SMOKECOLOR.Blue,45)
-text=text.."\n* arc trun out with BLUE smoke"
+text=text.."\n* arc turn out with BLUE smoke"
 end
 end
 if case==3 then
