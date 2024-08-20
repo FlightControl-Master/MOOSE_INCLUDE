@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T09:35:34+02:00-0496571c923c92b3306fe6245f2ed79685673a82 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T10:47:56+02:00-b1a40407b3ca81aeb2152697c56d58890eeb3ca3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70748,6 +70748,8 @@ dropOffZones={},
 pickupZones={},
 DynamicCargo={},
 ChinookTroopCircleRadius=5,
+TroopUnloadDistGround=1.5,
+TroopUnloadDistHover=5,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -72157,7 +72159,7 @@ local heading=Group:GetHeading()or 0
 if hoverunload or grounded then
 randomcoord=Group:GetCoordinate()
 local Angle=(heading+270)%360
-local offset=hoverunload and 1.5 or 5
+local offset=hoverunload and self.TroopUnloadDistGround or self.TroopUnloadDistHover
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
@@ -74663,6 +74665,7 @@ allheligroupset=nil,
 topmenuname="CSAR",
 ADFRadioPwr=1000,
 PilotWeight=80,
+CreateRadioBeacons=true,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -74682,7 +74685,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH-58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.26"
+CSAR.version="1.0.27"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -75647,7 +75650,7 @@ distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
 end
-if _value.frequency==0 then
+if _value.frequency==0 or self.CreateRadioBeacons==false then
 table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %s ",_value.desc,_coordinatesText,distancetext)})
 else
 table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %.2f KHz ADF - %s ",_value.desc,_coordinatesText,_value.frequency/1000,distancetext)})
@@ -75934,6 +75937,7 @@ return clock
 end
 function CSAR:_AddBeaconToGroup(_group,_freq)
 self:T(self.lid.." _AddBeaconToGroup")
+if self.CreateRadioBeacons==false then return end
 local _group=_group
 if _group==nil then
 for _i,_current in ipairs(self.UsedVHFFrequencies)do
@@ -75959,6 +75963,7 @@ return self
 end
 function CSAR:_RefreshRadioBeacons()
 self:T(self.lid.." _RefreshRadioBeacons")
+if self.CreateRadioBeacons==false then return end
 if self:_CountActiveDownedPilots()>0 then
 local PilotTable=self.downedPilots
 for _,_pilot in pairs(PilotTable)do
