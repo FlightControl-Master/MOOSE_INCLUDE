@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T10:47:56+02:00-b1a40407b3ca81aeb2152697c56d58890eeb3ca3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T10:56:08+02:00-aee7bd8bb68fb42afaa95a642631888f02603dbe ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70748,8 +70748,8 @@ dropOffZones={},
 pickupZones={},
 DynamicCargo={},
 ChinookTroopCircleRadius=5,
-TroopUnloadDistGround=1.5,
-TroopUnloadDistHover=5,
+TroopUnloadDistGround=5,
+TroopUnloadDistHover=1.5,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70784,7 +70784,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=8000},
 }
-CTLD.version="1.1.12"
+CTLD.version="1.1.13"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72159,7 +72159,7 @@ local heading=Group:GetHeading()or 0
 if hoverunload or grounded then
 randomcoord=Group:GetCoordinate()
 local Angle=(heading+270)%360
-local offset=hoverunload and self.TroopUnloadDistGround or self.TroopUnloadDistHover
+local offset=hoverunload and self.TroopUnloadDistHover or self.TroopUnloadDistGround
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
