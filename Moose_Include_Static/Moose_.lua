@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T10:48:41+02:00-abb295ecc20b7125b92341d5bce2cfef7209feb6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-22T17:17:41+02:00-42069c5bbb1e4fd582a713043441695615c68602 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -464,6 +464,8 @@ containers={},
 droptanks={},
 adapters={},
 torpedoes={},
+Gazelle={},
+CH47={},
 }
 }
 ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B="weapons.nurs.SNEB_TYPE253_F1B"
@@ -1023,6 +1025,37 @@ ENUMS.Storage.weapons.bombs.AGM_62="weapons.bombs.AGM_62"
 ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_WHITE="weapons.containers.{US_M10_SMOKE_TANK_WHITE}"
 ENUMS.Storage.weapons.missiles.MICA_T="weapons.missiles.MICA_T"
 ENUMS.Storage.weapons.containers.HVAR_rocket="weapons.containers.HVAR_rocket"
+ENUMS.Storage.weapons.Gazelle.HMP400_100RDS={4,15,46,1771}
+ENUMS.Storage.weapons.Gazelle.HMP400_200RDS={4,15,46,1770}
+ENUMS.Storage.weapons.Gazelle.HMP400_400RDS={4,15,46,1769}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_AP={4,15,46,1768}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_SAPHEI={4,15,46,1767}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_HE={4,15,46,1766}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_HEAP={4,15,46,1765}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_APHE={4,15,46,1764}
+ENUMS.Storage.weapons.Gazelle.GAZELLE_IR_DEFLECTOR={4,15,47,680}
+ENUMS.Storage.weapons.Gazelle.GAZELLE_FAS_SANDFILTER={4,15,47,679}
+ENUMS.Storage.weapons.CH47.CH47_PORT_M60D={4,15,46,2476}
+ENUMS.Storage.weapons.CH47.CH47_STBD_M60D={4,15,46,2477}
+ENUMS.Storage.weapons.CH47.CH47_AFT_M60D={4,15,46,2478}
+ENUMS.Storage.weapons.CH47.CH47_PORT_M134D={4,15,46,2482}
+ENUMS.Storage.weapons.CH47.CH47_STBD_M134D={4,15,46,2483}
+ENUMS.Storage.weapons.CH47.CH47_AFT_M3M={4,15,46,2484}
+ENUMS.Storage.weapons.CH47.CH47_PORT_M240H={4,15,46,2479}
+ENUMS.Storage.weapons.CH47.CH47_STBD_M240H={4,15,46,2480}
+ENUMS.Storage.weapons.CH47.CH47_AFT_M240H={4,15,46,2481}
+ENUMS.FARPType={
+FARP="FARP",
+INVISIBLE="INVISIBLE",
+HELIPADSINGLE="HELIPADSINGLE",
+PADSINGLE="PADSINGLE",
+}
+ENUMS.FARPObjectTypeNamesAndShape={
+[ENUMS.FARPType.FARP]={TypeName="FARP",ShapeName="FARPS"},
+[ENUMS.FARPType.INVISIBLE]={TypeName="Invisible FARP",ShapeName="invisiblefarp"},
+[ENUMS.FARPType.HELIPADSINGLE]={TypeName="SINGLE_HELIPAD",ShapeName="FARP"},
+[ENUMS.FARPType.PADSINGLE]={TypeName="FARP_SINGLE_01",ShapeName="FARP_SINGLE_01"},
+}
 SMOKECOLOR=trigger.smokeColor
 FLARECOLOR=trigger.flareColor
 BIGSMOKEPRESET={
@@ -2502,14 +2535,16 @@ return FreeFMFrequencies
 end
 function UTILS.GenerateVHFrequencies()
 local _skipFrequencies={
-214,274,291.5,295,297.5,
-300.5,304,305,307,309.5,311,312,312.5,316,
-320,324,328,329,330,332,336,337,
-342,343,348,351,352,353,358,
-363,365,368,372.5,374,
-380,381,384,385,389,395,396,
-414,420,430,432,435,440,450,455,462,470,485,
-507,515,520,525,528,540,550,560,570,577,580,
+214,243,264,273,274,288,291.5,295,297.5,
+300.5,304,305,307,309.5,310,311,312,312.5,316,317,
+320,323,324,325,326,328,329,330,332,335,336,337,
+340,342,343,346,348,351,352,353,358,
+360,363,364,365,368,372.5,373,374,
+380,381,384,385,387,389,391,395,396,399,
+403,404,410,412,414,418,420,423,
+430,432,435,440,445,
+450,455,462,470,485,490,
+507,515,520,525,528,540,550,560,563,570,577,580,595,
 602,625,641,662,670,680,682,690,
 705,720,722,730,735,740,745,750,770,795,
 822,830,862,866,
@@ -3660,6 +3695,80 @@ UTILS.LCGRandomSeed()
 end
 UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
 return UTILS.lcg.seed/UTILS.lcg.m
+end
+function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment)
+local farplocation=Coordinate
+local farptype=FARPType or ENUMS.FARPType.FARP
+local Coalition=Coalition or coalition.side.BLUE
+local callsign=CallSign or CALLSIGN.FARP.Berlin
+local freq=Frequency or 127.5
+local mod=Modulation or radio.modulation.AM
+local radius=SpawnRadius or 100
+if radius<0 or radius>150 then radius=100 end
+local liquids=Liquids or 10
+liquids=liquids*1000
+local equip=Equipment or 10
+local statictypes=ENUMS.FARPObjectTypeNamesAndShape[farptype]or{TypeName="FARP",ShapeName="FARPS"}
+local STypeName=statictypes.TypeName
+local SShapeName=statictypes.ShapeName
+local Country=Country or(Coalition==coalition.side.BLUE and country.id.USA or country.id.RUSSIA)
+local ReturnObjects={}
+local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
+newfarp:InitShape(SShapeName)
+newfarp:InitFARP(callsign,freq,freq)
+local spawnedfarp=newfarp:SpawnFromCoordinate(farplocation,0,Name)
+table.insert(ReturnObjects,spawnedfarp)
+local FARPStaticObjectsNato={
+["FUEL"]={TypeName="FARP Fuel Depot",ShapeName="GSM Rus",Category="Fortifications"},
+["AMMO"]={TypeName="FARP Ammo Dump Coating",ShapeName="SetkaKP",Category="Fortifications"},
+["TENT"]={TypeName="FARP Tent",ShapeName="PalatkaB",Category="Fortifications"},
+["WINDSOCK"]={TypeName="Windsock",ShapeName="H-Windsock_RW",Category="Fortifications"},
+}
+local farpobcount=0
+for _name,_object in pairs(FARPStaticObjectsNato)do
+local objloc=farplocation:Translate(100,farpobcount*30)
+local heading=objloc:HeadingTo(farplocation)
+local newobject=SPAWNSTATIC:NewFromType(_object.TypeName,_object.Category,Country)
+newobject:InitShape(_object.ShapeName)
+newobject:InitHeading(heading)
+newobject:SpawnFromCoordinate(objloc,farpobcount*30,_name.." - "..Name)
+table.insert(ReturnObjects,newobject)
+farpobcount=farpobcount+1
+end
+if VehicleTemplate and type(VehicleTemplate)=="string"then
+local vcoordinate=farplocation:Translate(100,farpobcount*30)
+local heading=vcoordinate:HeadingTo(farplocation)
+local vehicles=SPAWN:NewWithAlias(VehicleTemplate,"FARP Vehicles - "..Name)
+vehicles:InitGroupHeading(heading)
+vehicles:InitCountry(Country)
+vehicles:InitCoalition(Coalition)
+vehicles:InitDelayOff()
+local spawnedvehicle=vehicles:SpawnFromCoordinate(vcoordinate)
+table.insert(ReturnObjects,spawnedvehicle)
+end
+local newWH=STORAGE:New(Name)
+if liquids and liquids>0 then
+newWH:SetLiquid(STORAGE.Liquid.DIESEL,liquids)
+newWH:SetLiquid(STORAGE.Liquid.GASOLINE,liquids)
+newWH:SetLiquid(STORAGE.Liquid.JETFUEL,liquids)
+newWH:SetLiquid(STORAGE.Liquid.MW50,liquids)
+end
+if equip and equip>0 then
+for cat,nitem in pairs(ENUMS.Storage.weapons)do
+for name,item in pairs(nitem)do
+newWH:SetItem(item,equip)
+end
+end
+end
+local ADFName
+if ADF and type(ADF)=="number"then
+local ADFFreq=ADF*1000
+local Sound="l10n/DEFAULT/beacon.ogg"
+local vec3=farplocation:GetVec3()
+ADFName=Name.." ADF "..tostring(ADF).."KHz"
+trigger.action.radioTransmission(Sound,vec3,0,true,ADFFreq,250,ADFName)
+end
+return ReturnObjects,ADFName
 end
 PROFILER={
 ClassName="PROFILER",
@@ -67147,7 +67256,7 @@ if math.abs(self.holdingoffset)>0 then
 self:_GetZoneArcIn(case):FlareZone(FLARECOLOR.White,45)
 text=text.."\n* arc turn in with WHITE flares"
 self:_GetZoneArcOut(case):FlareZone(FLARECOLOR.White,45)
-text=text.."\n* arc trun out with WHITE flares"
+text=text.."\n* arc turn out with WHITE flares"
 end
 end
 if case==3 then
@@ -67180,7 +67289,7 @@ if math.abs(self.holdingoffset)>0 then
 self:_GetZoneArcIn(case):SmokeZone(SMOKECOLOR.Blue,45)
 text=text.."\n* arc turn in with BLUE smoke"
 self:_GetZoneArcOut(case):SmokeZone(SMOKECOLOR.Blue,45)
-text=text.."\n* arc trun out with BLUE smoke"
+text=text.."\n* arc turn out with BLUE smoke"
 end
 end
 if case==3 then
@@ -70747,8 +70856,8 @@ dropOffZones={},
 pickupZones={},
 DynamicCargo={},
 ChinookTroopCircleRadius=5,
-TroopUnloadDistGround=1.5,
-TroopUnloadDistHover=5,
+TroopUnloadDistGround=5,
+TroopUnloadDistHover=1.5,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70783,7 +70892,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=8000},
 }
-CTLD.version="1.1.12"
+CTLD.version="1.1.13"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72158,7 +72267,7 @@ local heading=Group:GetHeading()or 0
 if hoverunload or grounded then
 randomcoord=Group:GetCoordinate()
 local Angle=(heading+270)%360
-local offset=hoverunload and self.TroopUnloadDistGround or self.TroopUnloadDistHover
+local offset=hoverunload and self.TroopUnloadDistHover or self.TroopUnloadDistGround
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
@@ -74810,13 +74919,13 @@ self.filepath=nil
 self.saveinterval=600
 return self
 end
-function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
+function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet,BeaconName)
 self:T({"_CreateDownedPilotTrack",Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername})
 local DownedPilot={}
 DownedPilot.desc=Description or""
 DownedPilot.frequency=Frequency or 0
 DownedPilot.index=self.downedpilotcounter
-DownedPilot.name=Groupname or""
+DownedPilot.name=Groupname or Playername or""
 DownedPilot.originalUnit=OriginalUnit or""
 DownedPilot.player=Playername or""
 DownedPilot.side=Side or 0
@@ -74825,6 +74934,7 @@ DownedPilot.group=Group
 DownedPilot.timestamp=0
 DownedPilot.alive=true
 DownedPilot.wetfeet=Wetfeet or false
+DownedPilot.BeaconName=BeaconName
 local PilotTable=self.downedPilots
 local counter=self.downedpilotcounter
 PilotTable[counter]={}
@@ -74937,8 +75047,16 @@ else
 self:_DisplayToAllSAR("Troops In Contact. ".._typeName.." requests CASEVAC. ",self.coalition,self.messageTime)
 end
 end
+local BeaconName
+if _playerName then
+BeaconName=_unitName..math.random(1,10000)
+elseif _unitName then
+BeaconName=_playerName..math.random(1,10000)
+else
+BeaconName="Ghost-1-1"..math.random(1,10000)
+end
 if(_freq and _freq~=0)then
-self:_AddBeaconToGroup(_spawnedGroup,_freq)
+self:_AddBeaconToGroup(_spawnedGroup,_freq,BeaconName)
 end
 self:_AddSpecialOptions(_spawnedGroup)
 local _text=_description
@@ -74959,7 +75077,7 @@ end
 end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
-self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet)
+self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet,BeaconName)
 self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
 return self
 end
@@ -75934,7 +76052,7 @@ if clock>12 then clock=clock-12 end
 end
 return clock
 end
-function CSAR:_AddBeaconToGroup(_group,_freq)
+function CSAR:_AddBeaconToGroup(_group,_freq,_name)
 self:T(self.lid.." _AddBeaconToGroup")
 if self.CreateRadioBeacons==false then return end
 local _group=_group
@@ -75955,7 +76073,7 @@ local Frequency=_freq
 local name=_radioUnit:GetName()
 local Sound="l10n/DEFAULT/"..self.radioSound
 local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
-trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000,name..math.random(1,10000))
+trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000,_name)
 end
 end
 return self
@@ -75970,8 +76088,10 @@ self:T({_pilot.name})
 local pilot=_pilot
 local group=pilot.group
 local frequency=pilot.frequency or 0
+local bname=pilot.BeaconName or pilot.name..math.random(1,100000)
+trigger.action.stopRadioTransmission(bname)
 if group and group:IsAlive()and frequency>0 then
-self:_AddBeaconToGroup(group,frequency)
+self:_AddBeaconToGroup(group,frequency,bname)
 end
 end
 end
