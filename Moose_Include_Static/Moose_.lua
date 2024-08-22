@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-22T17:17:41+02:00-42069c5bbb1e4fd582a713043441695615c68602 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-22T18:27:15+02:00-733251bf0666103d409629be42b6b44fedb0cef9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13070,7 +13070,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if string.find(string.lower(MGroup:GetName()),string.lower(GroupPrefix),1)or string.find(string.lower(MGroup:GetName()),string.lower(GroupPrefix),1,true)then
+if string.find(MGroup:GetName(),string.gsub(GroupPrefix,"-","%%-"),1)then
 MGroupPrefix=true
 end
 end
@@ -70890,7 +70890,7 @@ CTLD.UnitTypeCapabilities={
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
-["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=8000},
+["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
 CTLD.version="1.1.13"
 function CTLD:New(Coalition,Prefixes,Alias)
