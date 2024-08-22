@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-20T18:03:18+02:00-5df0d60135551c5747bda0c0415b5fd31a65a4ba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-22T17:17:10+02:00-016875d724a86d4338da3038d115c453127b9efe ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -460,13 +460,12 @@ weapons={
 missiles={},
 bombs={},
 nurs={},
-containers={
-Gazelle={},
-CH47={},
-},
+containers={},
 droptanks={},
 adapters={},
 torpedoes={},
+Gazelle={},
+CH47={},
 }
 }
 ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B="weapons.nurs.SNEB_TYPE253_F1B"
@@ -1026,25 +1025,37 @@ ENUMS.Storage.weapons.bombs.AGM_62="weapons.bombs.AGM_62"
 ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_WHITE="weapons.containers.{US_M10_SMOKE_TANK_WHITE}"
 ENUMS.Storage.weapons.missiles.MICA_T="weapons.missiles.MICA_T"
 ENUMS.Storage.weapons.containers.HVAR_rocket="weapons.containers.HVAR_rocket"
-ENUMS.Storage.weapons.containers.Gazelle.HMP400_100RDS={4,15,46,1771}
-ENUMS.Storage.weapons.containers.Gazelle.HMP400_200RDS={4,15,46,1770}
-ENUMS.Storage.weapons.containers.Gazelle.HMP400_400RDS={4,15,46,1769}
-ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_AP={4,15,46,1768}
-ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_SAPHEI={4,15,46,1767}
-ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_HE={4,15,46,1766}
-ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_HEAP={4,15,46,1765}
-ENUMS.Storage.weapons.containers.Gazelle.GIAT_M261_APHE={4,15,46,1764}
-ENUMS.Storage.weapons.containers.Gazelle.GAZELLE_IR_DEFLECTOR={4,15,47,680}
-ENUMS.Storage.weapons.containers.Gazelle.GAZELLE_FAS_SANDFILTER={4,15,47,679}
-ENUMS.Storage.weapons.containers.CH47.CH47_PORT_M60D={4,15,46,2476}
-ENUMS.Storage.weapons.containers.CH47.CH47_STBD_M60D={4,15,46,2477}
-ENUMS.Storage.weapons.containers.CH47.CH47_AFT_M60D={4,15,46,2478}
-ENUMS.Storage.weapons.containers.CH47.CH47_PORT_M134D={4,15,46,2482}
-ENUMS.Storage.weapons.containers.CH47.CH47_STBD_M134D={4,15,46,2483}
-ENUMS.Storage.weapons.containers.CH47.CH47_AFT_M3M={4,15,46,2484}
-ENUMS.Storage.weapons.containers.CH47.CH47_PORT_M240H={4,15,46,2479}
-ENUMS.Storage.weapons.containers.CH47.CH47_STBD_M240H={4,15,46,2480}
-ENUMS.Storage.weapons.containers.CH47.CH47_AFT_M240H={4,15,46,2481}
+ENUMS.Storage.weapons.Gazelle.HMP400_100RDS={4,15,46,1771}
+ENUMS.Storage.weapons.Gazelle.HMP400_200RDS={4,15,46,1770}
+ENUMS.Storage.weapons.Gazelle.HMP400_400RDS={4,15,46,1769}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_AP={4,15,46,1768}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_SAPHEI={4,15,46,1767}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_HE={4,15,46,1766}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_HEAP={4,15,46,1765}
+ENUMS.Storage.weapons.Gazelle.GIAT_M261_APHE={4,15,46,1764}
+ENUMS.Storage.weapons.Gazelle.GAZELLE_IR_DEFLECTOR={4,15,47,680}
+ENUMS.Storage.weapons.Gazelle.GAZELLE_FAS_SANDFILTER={4,15,47,679}
+ENUMS.Storage.weapons.CH47.CH47_PORT_M60D={4,15,46,2476}
+ENUMS.Storage.weapons.CH47.CH47_STBD_M60D={4,15,46,2477}
+ENUMS.Storage.weapons.CH47.CH47_AFT_M60D={4,15,46,2478}
+ENUMS.Storage.weapons.CH47.CH47_PORT_M134D={4,15,46,2482}
+ENUMS.Storage.weapons.CH47.CH47_STBD_M134D={4,15,46,2483}
+ENUMS.Storage.weapons.CH47.CH47_AFT_M3M={4,15,46,2484}
+ENUMS.Storage.weapons.CH47.CH47_PORT_M240H={4,15,46,2479}
+ENUMS.Storage.weapons.CH47.CH47_STBD_M240H={4,15,46,2480}
+ENUMS.Storage.weapons.CH47.CH47_AFT_M240H={4,15,46,2481}
+ENUMS.FARPType={
+FARP="FARP",
+INVISIBLE="INVISIBLE",
+HELIPADSINGLE="HELIPADSINGLE",
+PADSINGLE="PADSINGLE",
+}
+ENUMS.FARPObjectTypeNamesAndShape={
+[ENUMS.FARPType.FARP]={TypeName="FARP",ShapeName="FARPS"},
+[ENUMS.FARPType.INVISIBLE]={TypeName="Invisible FARP",ShapeName="invisiblefarp"},
+[ENUMS.FARPType.HELIPADSINGLE]={TypeName="SINGLE_HELIPAD",ShapeName="FARP"},
+[ENUMS.FARPType.PADSINGLE]={TypeName="FARP_SINGLE_01",ShapeName="FARP_SINGLE_01"},
+}
 SMOKECOLOR=trigger.smokeColor
 FLARECOLOR=trigger.flareColor
 BIGSMOKEPRESET={
@@ -2524,14 +2535,16 @@ return FreeFMFrequencies
 end
 function UTILS.GenerateVHFrequencies()
 local _skipFrequencies={
-214,274,291.5,295,297.5,
-300.5,304,305,307,309.5,311,312,312.5,316,
-320,324,328,329,330,332,336,337,
-342,343,348,351,352,353,358,
-363,365,368,372.5,374,
-380,381,384,385,389,395,396,
-414,420,430,432,435,440,450,455,462,470,485,
-507,515,520,525,528,540,550,560,570,577,580,
+214,243,264,273,274,288,291.5,295,297.5,
+300.5,304,305,307,309.5,310,311,312,312.5,316,317,
+320,323,324,325,326,328,329,330,332,335,336,337,
+340,342,343,346,348,351,352,353,358,
+360,363,364,365,368,372.5,373,374,
+380,381,384,385,387,389,391,395,396,399,
+403,404,410,412,414,418,420,423,
+430,432,435,440,445,
+450,455,462,470,485,490,
+507,515,520,525,528,540,550,560,563,570,577,580,595,
 602,625,641,662,670,680,682,690,
 705,720,722,730,735,740,745,750,770,795,
 822,830,862,866,
@@ -3682,6 +3695,80 @@ UTILS.LCGRandomSeed()
 end
 UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
 return UTILS.lcg.seed/UTILS.lcg.m
+end
+function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment)
+local farplocation=Coordinate
+local farptype=FARPType or ENUMS.FARPType.FARP
+local Coalition=Coalition or coalition.side.BLUE
+local callsign=CallSign or CALLSIGN.FARP.Berlin
+local freq=Frequency or 127.5
+local mod=Modulation or radio.modulation.AM
+local radius=SpawnRadius or 100
+if radius<0 or radius>150 then radius=100 end
+local liquids=Liquids or 10
+liquids=liquids*1000
+local equip=Equipment or 10
+local statictypes=ENUMS.FARPObjectTypeNamesAndShape[farptype]or{TypeName="FARP",ShapeName="FARPS"}
+local STypeName=statictypes.TypeName
+local SShapeName=statictypes.ShapeName
+local Country=Country or(Coalition==coalition.side.BLUE and country.id.USA or country.id.RUSSIA)
+local ReturnObjects={}
+local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
+newfarp:InitShape(SShapeName)
+newfarp:InitFARP(callsign,freq,freq)
+local spawnedfarp=newfarp:SpawnFromCoordinate(farplocation,0,Name)
+table.insert(ReturnObjects,spawnedfarp)
+local FARPStaticObjectsNato={
+["FUEL"]={TypeName="FARP Fuel Depot",ShapeName="GSM Rus",Category="Fortifications"},
+["AMMO"]={TypeName="FARP Ammo Dump Coating",ShapeName="SetkaKP",Category="Fortifications"},
+["TENT"]={TypeName="FARP Tent",ShapeName="PalatkaB",Category="Fortifications"},
+["WINDSOCK"]={TypeName="Windsock",ShapeName="H-Windsock_RW",Category="Fortifications"},
+}
+local farpobcount=0
+for _name,_object in pairs(FARPStaticObjectsNato)do
+local objloc=farplocation:Translate(100,farpobcount*30)
+local heading=objloc:HeadingTo(farplocation)
+local newobject=SPAWNSTATIC:NewFromType(_object.TypeName,_object.Category,Country)
+newobject:InitShape(_object.ShapeName)
+newobject:InitHeading(heading)
+newobject:SpawnFromCoordinate(objloc,farpobcount*30,_name.." - "..Name)
+table.insert(ReturnObjects,newobject)
+farpobcount=farpobcount+1
+end
+if VehicleTemplate and type(VehicleTemplate)=="string"then
+local vcoordinate=farplocation:Translate(100,farpobcount*30)
+local heading=vcoordinate:HeadingTo(farplocation)
+local vehicles=SPAWN:NewWithAlias(VehicleTemplate,"FARP Vehicles - "..Name)
+vehicles:InitGroupHeading(heading)
+vehicles:InitCountry(Country)
+vehicles:InitCoalition(Coalition)
+vehicles:InitDelayOff()
+local spawnedvehicle=vehicles:SpawnFromCoordinate(vcoordinate)
+table.insert(ReturnObjects,spawnedvehicle)
+end
+local newWH=STORAGE:New(Name)
+if liquids and liquids>0 then
+newWH:SetLiquid(STORAGE.Liquid.DIESEL,liquids)
+newWH:SetLiquid(STORAGE.Liquid.GASOLINE,liquids)
+newWH:SetLiquid(STORAGE.Liquid.JETFUEL,liquids)
+newWH:SetLiquid(STORAGE.Liquid.MW50,liquids)
+end
+if equip and equip>0 then
+for cat,nitem in pairs(ENUMS.Storage.weapons)do
+for name,item in pairs(nitem)do
+newWH:SetItem(item,equip)
+end
+end
+end
+local ADFName
+if ADF and type(ADF)=="number"then
+local ADFFreq=ADF*1000
+local Sound="l10n/DEFAULT/beacon.ogg"
+local vec3=farplocation:GetVec3()
+ADFName=Name.." ADF "..tostring(ADF).."KHz"
+trigger.action.radioTransmission(Sound,vec3,0,true,ADFFreq,250,ADFName)
+end
+return ReturnObjects,ADFName
 end
 PROFILER={
 ClassName="PROFILER",
