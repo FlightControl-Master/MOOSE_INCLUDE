@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-22T18:27:00+02:00-cce878e759e451e8e2cf9ea40534e90e0e184a6d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-23T12:47:37+02:00-4d3fb2990eacac5c7c8e1e79d96dbf952496b705 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70556,10 +70556,26 @@ self.Mark=nil
 self.Subcategory=Subcategory or"Other"
 self.DontShowInMenu=DontShowInMenu or false
 self.ResourceMap=nil
+self.StaticType=nil
+self.StaticShape=nil
+self.TypeNames=nil
 if type(Location)=="string"then
 Location=ZONE:New(Location)
 end
 self.Location=Location
+return self
+end
+function CTLD_CARGO:SetStaticTypeAndShape(TypeName,ShapeName)
+self.StaticType=TypeName or"container_cargo"
+self.StaticShape=ShapeName
+return self
+end
+function CTLD_CARGO:AddUnitTypeName(UnitTypes)
+if not self.TypeNames then self.TypeNames={}end
+if type(UnitTypes)~="table"then UnitTypes={UnitTypes}end
+for _,_singletype in pairs(UnitTypes or{})do
+self.TypeNames[_singletype]=_singletype
+end
 return self
 end
 function CTLD_CARGO:SetStaticResourceMap(ResourceMap)
@@ -70891,7 +70907,7 @@ CTLD.UnitTypeCapabilities={
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
-["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=8000},
+["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
 CTLD.version="1.1.13"
 function CTLD:New(Coalition,Prefixes,Alias)
@@ -71735,6 +71751,8 @@ local cratetemplate="Container"
 local cratename=cargotype:GetName()
 local cgotype=cargotype:GetType()
 local cgomass=cargotype:GetMass()
+local cratenumber=cargotype:GetCratesNeeded()or 1
+for i=1,cratenumber do
 local cratealias=string.format("%s-%s-%d",cratename,cratetemplate,math.random(1,100000))
 local isstatic=false
 if cgotype==CTLD_CARGO.Enum.STATIC then
@@ -71759,6 +71777,7 @@ local templ=cargotype:GetTemplates()
 local sorte=cargotype:GetType()
 cargotype.Positionable=self.Spawned_Crates[self.CrateCounter]
 table.insert(self.Spawned_Cargo,cargotype)
+end
 return self
 end
 function CTLD:InjectStaticFromTemplate(Zone,Template,Mass)
@@ -72910,7 +72929,7 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTr
 table.insert(self.Cargo_Troops,cargo)
 return self
 end
-function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
+function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,TypeName,ShapeName)
 self:T(self.lid.." AddCratesCargo")
 if not self:_CheckTemplates(Templates)then
 self:E(self.lid.."Crates Cargo for "..Name.." has missing template(s)!")
@@ -72918,6 +72937,12 @@ return self
 end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
+if UnitTypes then
+cargo:AddUnitTypeName(UnitTypes)
+end
+if TypeName then
+cargo:SetStaticTypeAndShape(TypeName,ShapeName)
+end
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
@@ -72950,7 +72975,7 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,ni
 cargo:SetStaticResourceMap(ResourceMap)
 return cargo
 end
-function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
+function CTLD:AddCratesRepair(Name,Template,Type,NoCrates,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,TypeName,ShapeName)
 self:T(self.lid.." AddCratesRepair")
 if not self:_CheckTemplates(Template)then
 self:E(self.lid.."Repair Cargo for "..Name.." has a missing template!")
@@ -72958,6 +72983,12 @@ return self
 end
 self.CargoCounter=self.CargoCounter+1
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCrates,nil,nil,PerCrateMass,Stock,SubCategory,DontShowInMenu,Location)
+if UnitTypes then
+cargo:AddUnitTypeName(UnitTypes)
+end
+if TypeName then
+cargo:SetStaticTypeAndShape(TypeName,ShapeName)
+end
 table.insert(self.Cargo_Crates,cargo)
 return self
 end
