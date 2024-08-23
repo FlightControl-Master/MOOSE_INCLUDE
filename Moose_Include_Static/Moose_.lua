@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-23T12:42:16+02:00-694b7afc71b5641f7c50e2416cbe6a4fc146de6c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-23T14:03:21+02:00-9e293842620cf0f4e34b7c1f5b83597eac4c0c83 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -466,6 +466,8 @@ adapters={},
 torpedoes={},
 Gazelle={},
 CH47={},
+OH58={},
+UH1H={},
 }
 }
 ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B="weapons.nurs.SNEB_TYPE253_F1B"
@@ -1044,6 +1046,24 @@ ENUMS.Storage.weapons.CH47.CH47_AFT_M3M={4,15,46,2484}
 ENUMS.Storage.weapons.CH47.CH47_PORT_M240H={4,15,46,2479}
 ENUMS.Storage.weapons.CH47.CH47_STBD_M240H={4,15,46,2480}
 ENUMS.Storage.weapons.CH47.CH47_AFT_M240H={4,15,46,2481}
+ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right={4,15,46,161}
+ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left={4,15,46,160}
+ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right_Door={4,15,46,175}
+ENUMS.Storage.weapons.UH1H.M60_MG_Right_Door={4,15,46,177}
+ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left_Door={4,15,46,174}
+ENUMS.Storage.weapons.UH1H.M60_MG_Left_Door={4,15,46,176}
+ENUMS.Storage.weapons.OH58.FIM92={4,4,7,446}
+ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2578}
+ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2577}
+ENUMS.Storage.weapons.OH58.MG_M3P300={4,15,46,2576}
+ENUMS.Storage.weapons.OH58.MG_M3P400={4,15,46,2575}
+ENUMS.Storage.weapons.OH58.MG_M3P500={4,15,46,2574}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Blue={4,5,9,484}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Green={4,5,9,485}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Red={4,5,9,483}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Violet={4,5,9,486}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,488}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,487}
 ENUMS.FARPType={
 FARP="FARP",
 INVISIBLE="INVISIBLE",
@@ -70911,7 +70931,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.13"
+CTLD.version="1.1.14"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
