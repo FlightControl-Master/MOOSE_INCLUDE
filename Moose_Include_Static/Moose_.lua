@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-23T16:29:18+02:00-dac637f3605a73ccc6036b5ae7089bf7b8a61213 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-24T18:18:36+02:00-b025abaa880fb071962638249ba13b7962ec9eab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3738,7 +3738,7 @@ local Country=Country or(Coalition==coalition.side.BLUE and country.id.USA or co
 local ReturnObjects={}
 local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
 newfarp:InitShape(SShapeName)
-newfarp:InitFARP(callsign,freq,freq)
+newfarp:InitFARP(callsign,freq,mod)
 local spawnedfarp=newfarp:SpawnFromCoordinate(farplocation,0,Name)
 table.insert(ReturnObjects,spawnedfarp)
 local FARPStaticObjectsNato={
