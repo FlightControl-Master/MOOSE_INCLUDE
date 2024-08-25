@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-24T18:18:08+02:00-ed2d3d856b5fe681508dd3d71966fb68189e5215 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-25T11:22:30+02:00-56d84e7b25443e182aad8af1fb53eea3c21b9b5d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3749,7 +3749,7 @@ local FARPStaticObjectsNato={
 }
 local farpobcount=0
 for _name,_object in pairs(FARPStaticObjectsNato)do
-local objloc=farplocation:Translate(100,farpobcount*30)
+local objloc=farplocation:Translate(radius,farpobcount*30)
 local heading=objloc:HeadingTo(farplocation)
 local newobject=SPAWNSTATIC:NewFromType(_object.TypeName,_object.Category,Country)
 newobject:InitShape(_object.ShapeName)
@@ -3759,7 +3759,7 @@ table.insert(ReturnObjects,newobject)
 farpobcount=farpobcount+1
 end
 if VehicleTemplate and type(VehicleTemplate)=="string"then
-local vcoordinate=farplocation:Translate(100,farpobcount*30)
+local vcoordinate=farplocation:Translate(radius,farpobcount*30)
 local heading=vcoordinate:HeadingTo(farplocation)
 local vehicles=SPAWN:NewWithAlias(VehicleTemplate,"FARP Vehicles - "..Name)
 vehicles:InitGroupHeading(heading)
