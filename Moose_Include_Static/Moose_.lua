@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-26T18:22:32+02:00-668d120d60f9cc65413647ff30a6d639fca16f52 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-26T18:30:41+02:00-68b2b452cc0fd39ce2769b81ab8494846b60694b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -66711,10 +66711,8 @@ return self
 end
 function CTLD_CARGO:UnitCanCarry(Unit)
 local outcome=false
-UTILS.PrintTableToLog(self.TypeNames)
-if(not self.TypeNames)or(not Unit)or(not Unit:IsAlive())then
-return false
-end
+if not self.TypeNames then return true end
+if Unit and Unit:IsAlive()then
 local unittype=Unit:GetTypeName()or"none"
 for _,_typeName in pairs(self.TypeNames or{})do
 if _typeName==unittype then
@@ -66723,6 +66721,8 @@ break
 end
 end
 return outcome
+end
+return true
 end
 function CTLD_CARGO:SetStaticResourceMap(ResourceMap)
 self.ResourceMap=ResourceMap
