@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-26T15:52:50+02:00-7543f31c85221cb738d2236ffd24f176405d036a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-26T18:22:32+02:00-668d120d60f9cc65413647ff30a6d639fca16f52 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -68043,7 +68043,7 @@ self:E({_point1,_point2})
 return-1
 end
 end
-function CTLD:_FindCratesNearby(_group,_unit,_dist,_ignoreweight)
+function CTLD:_FindCratesNearby(_group,_unit,_dist,_ignoreweight,ignoretype)
 self:T(self.lid.." _FindCratesNearby")
 local finddist=_dist
 local location=_group:GetCoordinate()
@@ -68055,7 +68055,6 @@ local LoadedbyGC={}
 local loadedmass=0
 local unittype="none"
 local capabilities={}
-local maxmass=2000
 local maxloadable=2000
 local IsHook=self:IsHook(_unit)
 if not _ignoreweight then
@@ -68074,6 +68073,7 @@ local cargoisstatic=cargo:GetType()==CTLD_CARGO.Enum.STATIC and true or false
 local restricted=cargoisstatic and restricthooktononstatics
 local staticpos=static:GetCoordinate()
 local cando=cargo:UnitCanCarry(_unit)
+if ignoretype==true then cando=true end
 local distance=self:_GetDistance(location,staticpos)
 if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false and cando==true then
 index=index+1
