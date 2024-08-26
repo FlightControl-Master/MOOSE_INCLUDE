@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-26T15:54:02+02:00-c38e357652d4dc122c8a0f574bed4ea7caa68b59 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-26T18:32:12+02:00-d00913cb687034e0e741a4241ed455228faf5259 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70610,10 +70610,8 @@ return self
 end
 function CTLD_CARGO:UnitCanCarry(Unit)
 local outcome=false
-UTILS.PrintTableToLog(self.TypeNames)
-if(not self.TypeNames)or(not Unit)or(not Unit:IsAlive())then
-return false
-end
+if not self.TypeNames then return true end
+if Unit and Unit:IsAlive()then
 local unittype=Unit:GetTypeName()or"none"
 for _,_typeName in pairs(self.TypeNames or{})do
 if _typeName==unittype then
@@ -70622,6 +70620,8 @@ break
 end
 end
 return outcome
+end
+return true
 end
 function CTLD_CARGO:SetStaticResourceMap(ResourceMap)
 self.ResourceMap=ResourceMap
@@ -71942,7 +71942,7 @@ self:E({_point1,_point2})
 return-1
 end
 end
-function CTLD:_FindCratesNearby(_group,_unit,_dist,_ignoreweight)
+function CTLD:_FindCratesNearby(_group,_unit,_dist,_ignoreweight,ignoretype)
 self:T(self.lid.." _FindCratesNearby")
 local finddist=_dist
 local location=_group:GetCoordinate()
@@ -71954,7 +71954,6 @@ local LoadedbyGC={}
 local loadedmass=0
 local unittype="none"
 local capabilities={}
-local maxmass=2000
 local maxloadable=2000
 local IsHook=self:IsHook(_unit)
 if not _ignoreweight then
@@ -71973,6 +71972,7 @@ local cargoisstatic=cargo:GetType()==CTLD_CARGO.Enum.STATIC and true or false
 local restricted=cargoisstatic and restricthooktononstatics
 local staticpos=static:GetCoordinate()
 local cando=cargo:UnitCanCarry(_unit)
+if ignoretype==true then cando=true end
 local distance=self:_GetDistance(location,staticpos)
 if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false and cando==true then
 index=index+1
