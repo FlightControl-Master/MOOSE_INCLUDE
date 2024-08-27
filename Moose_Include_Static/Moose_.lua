@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-27T13:18:53+02:00-30f2097d7acc76acb18c70ad8ba44ffde5ee0ba9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-27T18:37:21+02:00-d74de11b8b9eb6b1801a1b17c1f2f1999e70dd33 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67049,7 +67049,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.15"
+CTLD.version="1.1.16"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -69100,6 +69100,7 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,false,NoC
 if UnitTypes then
 cargo:AddUnitTypeName(UnitTypes)
 end
+cargo:SetStaticTypeAndShape("Cargos",self.basetype)
 if TypeName then
 cargo:SetStaticTypeAndShape(Category,TypeName,ShapeName)
 end
@@ -69146,6 +69147,7 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,Template,Type,false,false,NoCr
 if UnitTypes then
 cargo:AddUnitTypeName(UnitTypes)
 end
+cargo:SetStaticTypeAndShape("cargos",self.basetype)
 if TypeName then
 cargo:SetStaticTypeAndShape(Category,TypeName,ShapeName)
 end
