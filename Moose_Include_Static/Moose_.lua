@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-27T10:56:14+02:00-f90384405992890fb9e0c9382502593b13967862 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-27T13:18:53+02:00-30f2097d7acc76acb18c70ad8ba44ffde5ee0ba9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -62122,7 +62122,7 @@ else
 self:E(self.lid..string.format("ERROR: Unknown radio sender %s!",tostring(sender)))
 return
 end
-local numbers=_split(number)
+local numbers=_split(tostring(number))
 local wait=0
 for i=1,#numbers do
 local n=numbers[i]
@@ -62158,7 +62158,7 @@ if Sender==""then
 self:E(self.lid..string.format("ERROR: Sender unknown!"))
 return
 end
-local numbers=_split(number)
+local numbers=_split(tostring(number))
 local wait=0
 for i=1,#numbers do
 local n=numbers[i]
