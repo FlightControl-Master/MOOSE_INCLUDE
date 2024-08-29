@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-27T18:37:21+02:00-d74de11b8b9eb6b1801a1b17c1f2f1999e70dd33 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-29T10:22:14+02:00-81f8e84ca4f77e1a94a564f2dd4ca3f3062840db ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67049,7 +67049,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.16"
+CTLD.version="1.1.17"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67893,7 +67893,7 @@ end
 self:_SendMessage(text,10,false,Group)
 return self
 end
-function CTLD:InjectStatics(Zone,Cargo,RandomCoord)
+function CTLD:InjectStatics(Zone,Cargo,RandomCoord,FromLoad)
 self:T(self.lid.." InjectStatics")
 local cratecoord=Zone:GetCoordinate()
 if RandomCoord then
@@ -67910,6 +67910,7 @@ local cratename=cargotype:GetName()
 local cgotype=cargotype:GetType()
 local cgomass=cargotype:GetMass()
 local cratenumber=cargotype:GetCratesNeeded()or 1
+if FromLoad==true then cratenumber=1 end
 for i=1,cratenumber do
 local cratealias=string.format("%s-%s-%d",cratename,cratetemplate,math.random(1,100000))
 local isstatic=false
@@ -67946,7 +67947,7 @@ end
 function CTLD:InjectStaticFromTemplate(Zone,Template,Mass)
 self:T(self.lid.." InjectStaticFromTemplate")
 local cargotype=self:GetStaticsCargoFromTemplate(Template,Mass)
-self:InjectStatics(Zone,cargotype,true)
+self:InjectStatics(Zone,cargotype,true,true)
 return self
 end
 function CTLD:_ListCratesNearby(_group,_unit)
@@ -70513,7 +70514,7 @@ local map=cargotype:GetStaticResourceMap()
 injectstatic:SetStaticResourceMap(map)
 end
 if injectstatic then
-self:InjectStatics(dropzone,injectstatic)
+self:InjectStatics(dropzone,injectstatic,false,true)
 end
 end
 end
@@ -70696,7 +70697,7 @@ local position=Cargo_Drop_Position:GetVec2()
 local Zone=ZONE_RADIUS:New("Cargo Static "..math.random(1,10000),position,100)
 if not dead then
 local injectstatic=CTLD_CARGO:New(nil,"Cargo Static Group "..math.random(1,10000),"iso_container",CTLD_CARGO.Enum.STATIC,true,false,1,nil,true,4500,1)
-self.CTLD:InjectStatics(Zone,injectstatic,true)
+self.CTLD:InjectStatics(Zone,injectstatic,true,true)
 end
 return self
 end
