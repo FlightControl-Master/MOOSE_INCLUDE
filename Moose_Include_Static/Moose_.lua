@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-29T10:22:32+02:00-f4b2f076561911c80c1c101f3df8b8771601bea4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-29T10:25:40+02:00-a45856c92532c740a8f5f574b67208b71f44a05e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43378,7 +43378,7 @@ return self
 end
 function RANGE:SetSoundfilesPath(path)
 self.soundpath=tostring(path or"Range Soundfiles/")
-self:I(self.lid..string.format("Setting sound files path to %s",self.soundpath))
+self:T2(self.lid..string.format("Setting sound files path to %s",self.soundpath))
 return self
 end
 function RANGE:SetSoundfilesInfo(csvfile)
@@ -43529,9 +43529,9 @@ if randommove==nil or _isstatic==true then
 randommove=false
 end
 if _isstatic==true then
-self:I(self.lid..string.format("Adding STATIC bombing target %s with good hit range %d. Random move = %s.",name,goodhitrange,tostring(randommove)))
+self:T(self.lid..string.format("Adding STATIC bombing target %s with good hit range %d. Random move = %s.",name,goodhitrange,tostring(randommove)))
 elseif _isstatic==false then
-self:I(self.lid..string.format("Adding UNIT bombing target %s with good hit range %d. Random move = %s.",name,goodhitrange,tostring(randommove)))
+self:T(self.lid..string.format("Adding UNIT bombing target %s with good hit range %d. Random move = %s.",name,goodhitrange,tostring(randommove)))
 else
 self:E(self.lid..string.format("ERROR! No bombing target with name %s could be found. Carefully check all UNIT and STATIC names defined in the mission editor!",name))
 end
@@ -43570,7 +43570,7 @@ function RANGE:AddBombingTargetScenery(scenery,goodhitrange)
 local name=scenery:GetName()
 goodhitrange=goodhitrange or RANGE.Defaults.goodhitrange
 if name then
-self:I(self.lid..string.format("Adding SCENERY bombing target %s with good hit range %d",name,goodhitrange))
+self:T(self.lid..string.format("Adding SCENERY bombing target %s with good hit range %d",name,goodhitrange))
 else
 self:E(self.lid..string.format("ERROR! No bombing target with name %s could be found!",name))
 end
@@ -43862,7 +43862,7 @@ end
 end
 text=text..string.format(", Control %.3f MHz (Relay=%s alive=%s)",self.rangecontrolfreq,tostring(self.rangecontrolrelayname),alive)
 end
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 self:_CheckPlayers()
 self:__Status(-10)
@@ -43973,7 +43973,7 @@ local f=io.open(filename,"wb")
 if f then
 f:write(data)
 f:close()
-self:I(self.lid..string.format("Saving player results to file %s",tostring(filename)))
+self:T(self.lid..string.format("Saving player results to file %s",tostring(filename)))
 else
 self:E(self.lid..string.format("ERROR: Could not save results to file %s",tostring(filename)))
 end
@@ -44020,7 +44020,7 @@ end
 local path=self.targetpath or lfs.writedir()..[[Logs\]]
 local filename=path..string.format("RANGE-%s_BombingResults.csv",self.rangename)
 local text=string.format("Loading player bomb results from file %s",filename)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local data=_loadfile(filename)
 if data then
 local results=UTILS.Split(data,"\n")
@@ -44217,7 +44217,6 @@ function RANGE:_DisplayRangeInfo(_unitname)
 self:F(_unitname)
 local unit,playername,_multiplayer=self:_GetPlayerUnitAndName(_unitname)
 if unit and playername then
-self:I(playername)
 local text=""
 local coord=unit:GetCoordinate()
 if self.location then
@@ -44980,7 +44979,6 @@ end
 return speed
 end
 function RANGE:_GetPlayerUnitAndName(_unitName,PlayerName)
-self:I(_unitName)
 if _unitName~=nil then
 local multiplayer=false
 local DCSunit=Unit.getByName(_unitName)
