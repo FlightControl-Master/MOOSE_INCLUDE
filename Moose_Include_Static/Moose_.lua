@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T12:42:29+02:00-1965e457377ab1244385f79180ab003932d55492 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T13:38:22+02:00-c8b0e9e5d20c1c21901242e84e18bdf7526023fb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -14157,6 +14157,10 @@ end
 end
 MStaticInclude=MStaticInclude and MStaticZone
 end
+if self.Filter.Functions and MStaticInclude then
+local MClientFunc=self:_EvalFilterFunctions(MStatic)
+MStaticInclude=MStaticInclude and MClientFunc
+end
 return MStaticInclude
 end
 function SET_STATIC:GetTypeNames(Delimiter)
@@ -14383,6 +14387,7 @@ if _DATABASE then
 self:UnHandleEvent(EVENTS.Birth)
 self:UnHandleEvent(EVENTS.Dead)
 self:UnHandleEvent(EVENTS.Crash)
+self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
 if self.Filter.Zones and self.ZoneTimer and self.ZoneTimer:IsRunning()then
 self.ZoneTimer:Stop()
 end
@@ -14394,6 +14399,7 @@ if _DATABASE then
 self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventPlayerLeaveUnit)
 if self.Filter.Zones then
 self.ZoneTimer=TIMER:New(self._ContinousZoneFilter,self)
 local timing=self.ZoneTimerInterval or 30
@@ -14416,7 +14422,7 @@ return self
 end
 function SET_CLIENT:_EventPlayerLeaveUnit(Event)
 if Event.IniDCSUnit then
-if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup and Event.IniGroup:IsGround()then
+if Event.IniObjectCategory==Object.Category.UNIT and Event.IniGroup then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 self:Remove(ObjectName)
@@ -14722,6 +14728,7 @@ self:_FilterStart()
 self:HandleEvent(EVENTS.Birth,self._EventOnBirth)
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._EventOnDeadOrCrash)
 end
 return self
 end
@@ -14830,6 +14837,10 @@ MClientZone=true
 end
 end
 MClientInclude=MClientInclude and MClientZone
+end
+if self.Filter.Functions and MClientInclude then
+local MClientFunc=self:_EvalFilterFunctions(MClient)
+MClientInclude=MClientInclude and MClientFunc
 end
 return MClientInclude
 end
@@ -14987,6 +14998,10 @@ end
 end
 MAirbaseInclude=MAirbaseInclude and MAirbaseCategory
 end
+end
+if self.Filter.Functions and MAirbaseInclude then
+local MClientFunc=self:_EvalFilterFunctions(MAirbase)
+MAirbaseInclude=MAirbaseInclude and MClientFunc
 end
 return MAirbaseInclude
 end
@@ -15179,6 +15194,10 @@ end
 MCargoInclude=MCargoInclude and MCargoPrefix
 end
 end
+if self.Filter.Functions and MCargoInclude then
+local MClientFunc=self:_EvalFilterFunctions(MCargo)
+MCargoInclude=MCargoInclude and MClientFunc
+end
 return MCargoInclude
 end
 function SET_CARGO:OnEventNewCargo(EventData)
@@ -15336,6 +15355,10 @@ end
 end
 MZoneInclude=MZoneInclude and MZonePrefix
 end
+end
+if self.Filter.Functions and MZoneInclude then
+local MClientFunc=self:_EvalFilterFunctions(MZone)
+MZoneInclude=MZoneInclude and MClientFunc
 end
 return MZoneInclude
 end
@@ -15549,6 +15572,10 @@ end
 MZoneInclude=MZoneInclude and MZonePrefix
 end
 end
+if self.Filter.Functions and MZoneInclude then
+local MClientFunc=self:_EvalFilterFunctions(MZone)
+MZoneInclude=MZoneInclude and MClientFunc
+end
 return MZoneInclude
 end
 function SET_ZONE_GOAL:OnEventNewZoneGoal(EventData)
@@ -15719,6 +15746,10 @@ end
 end
 MZoneInclude=MZoneInclude and MGroupCoalition
 end
+end
+if self.Filter.Functions and MZoneInclude then
+local MClientFunc=self:_EvalFilterFunctions(MZone)
+MZoneInclude=MZoneInclude and MClientFunc
 end
 return MZoneInclude
 end
@@ -16056,6 +16087,10 @@ end
 end
 MGroupInclude=MGroupInclude and MGroupPrefix
 end
+if self.Filter.Functions and MGroupInclude then
+local MClientFunc=self:_EvalFilterFunctions(MGroup)
+MGroupInclude=MGroupInclude and MClientFunc
+end
 return MGroupInclude
 end
 end
@@ -16241,6 +16276,10 @@ end
 MSceneryInclude=MSceneryInclude and MSceneryRole
 end
 end
+if self.Filter.Functions and MSceneryInclude then
+local MClientFunc=self:_EvalFilterFunctions(MScenery)
+MSceneryInclude=MSceneryInclude and MClientFunc
+end
 return MSceneryInclude
 end
 function SET_SCENERY:FilterOnce()
@@ -16356,6 +16395,10 @@ DCargoZone=true
 end
 end
 DCargoInclude=DCargoInclude and DCargoZone
+end
+if self.Filter.Functions and DCargoInclude then
+local MClientFunc=self:_EvalFilterFunctions(DCargo)
+DCargoInclude=DCargoInclude and MClientFunc
 end
 return DCargoInclude
 end
