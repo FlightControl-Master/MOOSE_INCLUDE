@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-29T10:25:40+02:00-a45856c92532c740a8f5f574b67208b71f44a05e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T08:55:18+02:00-a3102a7381c0fecb5b2a3202d52e55a271d70f8a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71068,6 +71068,7 @@ self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
 self.enableChinookGCLoading=true
+self.ChinookTroopCircleRadius=5
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
