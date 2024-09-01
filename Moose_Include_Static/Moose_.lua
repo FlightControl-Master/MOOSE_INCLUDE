@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T13:36:47+02:00-2c192fba30adf7a209a669c8c3225e201d05b09a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T15:36:41+02:00-d6adcdf8bdc28d71fdfe958760236b3a9cdd27a9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26352,6 +26352,85 @@ local TaskRouteToZone=PatrolGroup:TaskFunction("CONTROLLABLE.PatrolRaceTrack",Po
 PatrolGroup:SetTaskWaypoint(Route[#Route],TaskRouteToZone)
 PatrolGroup:Route(Route,Delay)
 end
+return self
+end
+function CONTROLLABLE:NewIRMarker(EnableImmediately,Runtime)
+if self.ClassName=="GROUP"then
+self.IRMarkerGroup=true
+self.IRMarkerUnit=false
+elseif self.ClassName=="UNIT"then
+self.IRMarkerGroup=false
+self.IRMarkerUnit=true
+end
+self.spot=nil
+self.timer=nil
+self.stoptimer=nil
+if EnableImmediately and EnableImmediately==true then
+self:EnableIRMarker(Runtime)
+end
+return self
+end
+function CONTROLLABLE:EnableIRMarker(Runtime)
+if self.IRMarkerGroup==nil then
+self:NewIRMarker(true,Runtime)
+return
+end
+if(self.IRMarkerGroup==true)then
+self:EnableIRMarkerForGroup()
+return
+end
+self.timer=TIMER:New(CONTROLLABLE._MarkerBlink,self)
+self.timer:Start(nil,1-math.random(1,5)/10/2,Runtime)
+return self
+end
+function CONTROLLABLE:DisableIRMarker()
+if(self.IRMarkerGroup==true)then
+self:DisableIRMarkerForGroup()
+return
+end
+if self.spot then
+self.spot:destroy()
+self.spot=nil
+if self.timer and self.timer:IsRunning()then
+self.timer:Stop()
+self.timer=nil
+end
+end
+return self
+end
+function CONTROLLABLE:EnableIRMarkerForGroup()
+if self.ClassName=="GROUP"then
+local units=self:GetUnits()or{}
+for _,_unit in pairs(units)do
+_unit:EnableIRMarker()
+end
+end
+return self
+end
+function CONTROLLABLE:DisableIRMarkerForGroup()
+if self.ClassName=="GROUP"then
+local units=self:GetUnits()or{}
+for _,_unit in pairs(units)do
+_unit:DisableIRMarker()
+end
+end
+return self
+end
+function CONTROLLABLE:_MarkerBlink()
+if self:IsAlive()~=true then
+self:DisableIRMarker()
+return
+end
+self.timer.dT=1-(math.random(1,2)/10/2)
+local _,_,unitBBHeight,_=self:GetObjectSize()
+local unitPos=self:GetPositionVec3()
+self.spot=Spot.createInfraRed(
+self.DCSUnit,
+{x=0,y=(unitBBHeight+1),z=0},
+{x=unitPos.x,y=(unitPos.y+unitBBHeight),z=unitPos.z}
+)
+local offTimer=TIMER:New(function()if self.spot then self.spot:destroy()end end)
+offTimer:Start(0.5)
 return self
 end
 GROUP={
