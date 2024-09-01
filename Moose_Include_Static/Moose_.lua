@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-08-29T10:26:10+02:00-e42e712e7776c51ea260785c6d09ed923e7fec74 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T12:42:29+02:00-1965e457377ab1244385f79180ab003932d55492 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19962,7 +19962,6 @@ return self
 end
 function SPAWN:SpawnAtAirbase(SpawnAirbase,Takeoff,TakeoffAltitude,TerminalType,EmergencyAirSpawn,Parkingdata)
 local PointVec3=SpawnAirbase:GetCoordinate()
-self:T2(PointVec3)
 Takeoff=Takeoff or SPAWN.Takeoff.Hot
 if EmergencyAirSpawn==nil then
 EmergencyAirSpawn=true
@@ -19971,7 +19970,6 @@ if self:_GetSpawnIndex(self.SpawnIndex+1)then
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 if SpawnTemplate then
 local GroupAlive=self:GetGroupFromIndex(self.SpawnIndex)
-self:T2({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
 local TemplateGroup=GROUP:FindByName(self.SpawnTemplatePrefix)
 local TemplateUnit=TemplateGroup:GetUnit(1)
 local group=TemplateGroup
@@ -20001,7 +19999,6 @@ SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[Takeoff][2]
 local spawnonground=not(Takeoff==SPAWN.Takeoff.Air)
-self:T2({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
 local spawnonship=false
 local spawnonfarp=false
 local spawnonrunway=false
@@ -20039,43 +20036,35 @@ local scanstatics=true
 local scanscenery=false
 local verysafe=false
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T2(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
 if ishelo then
 if termtype==nil then
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
 if termtype==nil then
 if isbomber or istransport or istanker or isawacs then
-self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
@@ -20138,7 +20127,6 @@ end
 if not SpawnTemplate.parked then
 SpawnTemplate.parked=true
 for UnitID=1,nunits do
-self:T2('Before Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 local UnitTemplate=SpawnTemplate.units[UnitID]
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
@@ -20148,18 +20136,15 @@ local TX=PointVec3.x+(SX-BX)
 local TY=PointVec3.z+(SY-BY)
 if spawnonground then
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T2(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=PointVec3.x
 SpawnTemplate.units[UnitID].y=PointVec3.z
 SpawnTemplate.units[UnitID].alt=PointVec3.y
 else
-self:T2(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
 SpawnTemplate.units[UnitID].x=parkingspots[UnitID].x
 SpawnTemplate.units[UnitID].y=parkingspots[UnitID].z
 SpawnTemplate.units[UnitID].alt=parkingspots[UnitID].y
 end
 else
-self:T2(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=TX
 SpawnTemplate.units[UnitID].y=TY
 SpawnTemplate.units[UnitID].alt=PointVec3.y
@@ -20169,9 +20154,6 @@ UnitTemplate.parking_id=nil
 if parkingindex[UnitID]then
 UnitTemplate.parking=parkingindex[UnitID]
 end
-self:T2(string.format("Group %s unit number %d: Parking    = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking)))
-self:T2(string.format("Group %s unit number %d: Parking ID = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking_id)))
-self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 SpawnPoint.x=PointVec3.x
@@ -70946,7 +70928,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.17"
+CTLD.version="1.1.15"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71070,6 +71052,7 @@ self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
 self.enableChinookGCLoading=true
+self.ChinookTroopCircleRadius=5
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
