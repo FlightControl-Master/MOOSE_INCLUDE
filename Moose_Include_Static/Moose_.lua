@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-01T15:37:31+02:00-6afb68390bc06c8f9f75001616833b09209ffc70 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-03T16:47:17+02:00-8695953d5af431b28ac1d5e3bb5f212713b8e121 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8962,20 +8962,16 @@ Checktime=5,
 }
 function ZONE_BASE:New(ZoneName)
 local self=BASE:Inherit(self,FSM:New())
-self:F(ZoneName)
 self.ZoneName=ZoneName
 return self
 end
 function ZONE_BASE:GetName()
-self:F2()
 return self.ZoneName
 end
 function ZONE_BASE:SetName(ZoneName)
-self:F2()
 self.ZoneName=ZoneName
 end
 function ZONE_BASE:IsVec2InZone(Vec2)
-self:F2(Vec2)
 return false
 end
 function ZONE_BASE:IsVec3InZone(Vec3)
@@ -9000,29 +8996,22 @@ function ZONE_BASE:GetVec2()
 return nil
 end
 function ZONE_BASE:GetPointVec2()
-self:F2(self.ZoneName)
 local Vec2=self:GetVec2()
 local PointVec2=POINT_VEC2:NewFromVec2(Vec2)
-self:T2({PointVec2})
 return PointVec2
 end
 function ZONE_BASE:GetVec3(Height)
-self:F2(self.ZoneName)
 Height=Height or 0
 local Vec2=self:GetVec2()
 local Vec3={x=Vec2.x,y=Height and Height or land.getHeight(self:GetVec2()),z=Vec2.y}
-self:T2({Vec3})
 return Vec3
 end
 function ZONE_BASE:GetPointVec3(Height)
-self:F2(self.ZoneName)
 local Vec3=self:GetVec3(Height)
 local PointVec3=POINT_VEC3:NewFromVec3(Vec3)
-self:T2({PointVec3})
 return PointVec3
 end
 function ZONE_BASE:GetCoordinate(Height)
-self:F2(self.ZoneName)
 local Vec3=self:GetVec3(Height)
 if self.Coordinate then
 self.Coordinate.x=Vec3.x
@@ -9064,7 +9053,6 @@ local surface=coord:GetSurfaceType()
 return surface
 end
 function ZONE_BASE:BoundZone()
-self:F2()
 end
 function ZONE_BASE:SetDrawCoalition(Coalition)
 self.drawCoalition=Coalition or-1
@@ -9145,19 +9133,15 @@ function ZONE_BASE:GetDrawID()
 return self.DrawID
 end
 function ZONE_BASE:SmokeZone(SmokeColor)
-self:F2(SmokeColor)
 end
 function ZONE_BASE:SetZoneProbability(ZoneProbability)
-self:F({self:GetName(),ZoneProbability=ZoneProbability})
 self.ZoneProbability=ZoneProbability or 1
 return self
 end
 function ZONE_BASE:GetZoneProbability()
-self:F2()
 return self.ZoneProbability
 end
 function ZONE_BASE:GetZoneMaybe()
-self:F2()
 local Randomization=math.random()
 if Randomization<=self.ZoneProbability then
 return self
@@ -9241,7 +9225,6 @@ ClassName="ZONE_RADIUS",
 }
 function ZONE_RADIUS:New(ZoneName,Vec2,Radius,DoNotRegisterZone)
 local self=BASE:Inherit(self,ZONE_BASE:New(ZoneName))
-self:F({ZoneName,Vec2,Radius})
 self.Radius=Radius
 self.Vec2=Vec2
 if not DoNotRegisterZone then
@@ -9318,7 +9301,6 @@ end
 return self
 end
 function ZONE_RADIUS:SmokeZone(SmokeColor,Points,AddHeight,AngleOffset)
-self:F2(SmokeColor)
 local Point={}
 local Vec2=self:GetVec2()
 AddHeight=AddHeight or 0
@@ -9335,7 +9317,6 @@ end
 return self
 end
 function ZONE_RADIUS:FlareZone(FlareColor,Points,Azimuth,AddHeight)
-self:F2({FlareColor,Azimuth})
 local Point={}
 local Vec2=self:GetVec2()
 AddHeight=AddHeight or 0
@@ -9351,33 +9332,23 @@ end
 return self
 end
 function ZONE_RADIUS:GetRadius()
-self:F2(self.ZoneName)
-self:T2({self.Radius})
 return self.Radius
 end
 function ZONE_RADIUS:SetRadius(Radius)
-self:F2(self.ZoneName)
 self.Radius=Radius
-self:T2({self.Radius})
 return self.Radius
 end
 function ZONE_RADIUS:GetVec2()
-self:F2(self.ZoneName)
-self:T2({self.Vec2})
 return self.Vec2
 end
 function ZONE_RADIUS:SetVec2(Vec2)
-self:F2(self.ZoneName)
 self.Vec2=Vec2
-self:T2({self.Vec2})
 return self.Vec2
 end
 function ZONE_RADIUS:GetVec3(Height)
-self:F2({self.ZoneName,Height})
 Height=Height or 0
 local Vec2=self:GetVec2()
 local Vec3={x=Vec2.x,y=land.getHeight(self:GetVec2())+Height,z=Vec2.y}
-self:T2({Vec3})
 return Vec3
 end
 function ZONE_RADIUS:Scan(ObjectCategories,UnitCategories)
@@ -9416,7 +9387,6 @@ if Include then
 local CoalitionDCSUnit=ZoneObject:getCoalition()
 self.ScanData.Coalitions[CoalitionDCSUnit]=true
 self.ScanData.Units[ZoneObject]=ZoneObject
-self:F2({Name=ZoneObject:getName(),Coalition=CoalitionDCSUnit})
 end
 end
 if ObjectCategory==Object.Category.SCENERY then
@@ -9425,7 +9395,6 @@ local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
 self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(tostring(SceneryName),ZoneObject)
 table.insert(self.ScanData.SceneryTable,self.ScanData.Scenery[SceneryType][SceneryName])
-self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
 end
 end
 return true
@@ -9547,7 +9516,6 @@ function ZONE_RADIUS:SearchZone(EvaluateFunction,ObjectCategories)
 local SearchZoneResult=true
 local ZoneCoord=self:GetCoordinate()
 local ZoneRadius=self:GetRadius()
-self:F({ZoneCoord=ZoneCoord,ZoneRadius=ZoneRadius,ZoneCoordLL=ZoneCoord:ToStringLLDMS()})
 local SphereSearch={
 id=world.VolumeType.SPHERE,
 params={
@@ -9562,7 +9530,6 @@ end
 world.searchObjects(Object.Category.UNIT,SphereSearch,EvaluateZone)
 end
 function ZONE_RADIUS:IsVec2InZone(Vec2)
-self:F2(Vec2)
 if not Vec2 then return false end
 local ZoneVec2=self:GetVec2()
 if ZoneVec2 then
@@ -9573,7 +9540,6 @@ end
 return false
 end
 function ZONE_RADIUS:IsVec3InZone(Vec3)
-self:F2(Vec3)
 if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
@@ -9616,21 +9582,15 @@ end
 return point
 end
 function ZONE_RADIUS:GetRandomPointVec2(inner,outer)
-self:F(self.ZoneName,inner,outer)
 local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2(inner,outer))
-self:T3({PointVec2})
 return PointVec2
 end
 function ZONE_RADIUS:GetRandomVec3(inner,outer)
-self:F(self.ZoneName,inner,outer)
 local Vec2=self:GetRandomVec2(inner,outer)
-self:T3({x=Vec2.x,y=self.y,z=Vec2.y})
 return{x=Vec2.x,y=self.y,z=Vec2.y}
 end
 function ZONE_RADIUS:GetRandomPointVec3(inner,outer)
-self:F(self.ZoneName,inner,outer)
 local PointVec3=POINT_VEC3:NewFromVec2(self:GetRandomVec2(inner,outer))
-self:T3({PointVec3})
 return PointVec3
 end
 function ZONE_RADIUS:GetRandomCoordinate(inner,outer,surfacetypes)
@@ -9717,7 +9677,6 @@ end
 end
 end
 T1=timer.getTime()
-self:T(string.format("Found a coordinate: %s | Iterations: %d | Time: %.3f",tostring(found),iterations,T1-T0))
 if found then return rcoord else return nil end
 end
 ZONE={
@@ -9734,7 +9693,6 @@ env.error("ERROR: Zone "..ZoneName.." does not exist!")
 return nil
 end
 local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,{x=Zone.point.x,y=Zone.point.z},Zone.radius,true))
-self:F(ZoneName)
 self.Color={1,0,0,0.15}
 self.Zone=Zone
 return self
@@ -9760,14 +9718,12 @@ self.rho=Offset.rho or 0.0
 self.theta=(Offset.theta or 0.0)*math.pi/180.0
 self.relative_to_unit=Offset.relative_to_unit or false
 end
-self:F({ZoneName,ZoneUNIT:GetVec2(),Radius})
 self.ZoneUNIT=ZoneUNIT
 self.LastVec2=ZoneUNIT:GetVec2()
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
 function ZONE_UNIT:GetVec2()
-self:F2(self.ZoneName)
 local ZoneVec2=self.ZoneUNIT:GetVec2()
 if ZoneVec2 then
 local heading
@@ -9789,11 +9745,9 @@ return ZoneVec2
 else
 return self.LastVec2
 end
-self:T2({ZoneVec2})
 return nil
 end
 function ZONE_UNIT:GetRandomVec2()
-self:F(self.ZoneName)
 local RandomVec2={}
 local Vec2=self:GetVec2()
 if not Vec2 then
@@ -9802,15 +9756,12 @@ end
 local angle=math.random()*math.pi*2;
 RandomVec2.x=Vec2.x+math.cos(angle)*math.random()*self:GetRadius();
 RandomVec2.y=Vec2.y+math.sin(angle)*math.random()*self:GetRadius();
-self:T({RandomVec2})
 return RandomVec2
 end
 function ZONE_UNIT:GetVec3(Height)
-self:F2(self.ZoneName)
 Height=Height or 0
 local Vec2=self:GetVec2()
 local Vec3={x=Vec2.x,y=land.getHeight(self:GetVec2())+Height,z=Vec2.y}
-self:T2({Vec3})
 return Vec3
 end
 ZONE_GROUP={
@@ -9818,14 +9769,12 @@ ClassName="ZONE_GROUP",
 }
 function ZONE_GROUP:New(ZoneName,ZoneGROUP,Radius)
 local self=BASE:Inherit(self,ZONE_RADIUS:New(ZoneName,ZoneGROUP:GetVec2(),Radius,true))
-self:F({ZoneName,ZoneGROUP:GetVec2(),Radius})
 self._.ZoneGROUP=ZoneGROUP
 self._.ZoneVec2Cache=self._.ZoneGROUP:GetVec2()
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
 function ZONE_GROUP:GetVec2()
-self:F(self.ZoneName)
 local ZoneVec2=nil
 if self._.ZoneGROUP:IsAlive()then
 ZoneVec2=self._.ZoneGROUP:GetVec2()
@@ -9833,23 +9782,18 @@ self._.ZoneVec2Cache=ZoneVec2
 else
 ZoneVec2=self._.ZoneVec2Cache
 end
-self:T({ZoneVec2})
 return ZoneVec2
 end
 function ZONE_GROUP:GetRandomVec2()
-self:F(self.ZoneName)
 local Point={}
 local Vec2=self._.ZoneGROUP:GetVec2()
 local angle=math.random()*math.pi*2;
 Point.x=Vec2.x+math.cos(angle)*math.random()*self:GetRadius();
 Point.y=Vec2.y+math.sin(angle)*math.random()*self:GetRadius();
-self:T({Point})
 return Point
 end
 function ZONE_GROUP:GetRandomPointVec2(inner,outer)
-self:F(self.ZoneName,inner,outer)
 local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
-self:T3({PointVec2})
 return PointVec2
 end
 _ZONE_TRIANGLE={
@@ -9930,7 +9874,6 @@ Borderlines={},
 }
 function ZONE_POLYGON_BASE:New(ZoneName,PointsArray)
 local self=BASE:Inherit(self,ZONE_BASE:New(ZoneName))
-self:F({ZoneName,PointsArray})
 if PointsArray then
 self._.Polygon={}
 for i=1,#PointsArray do
@@ -10046,7 +9989,6 @@ end
 return area
 end
 function ZONE_POLYGON_BASE:GetVec2()
-self:F(self.ZoneName)
 local Bounds=self:GetBoundingSquare()
 return{x=(Bounds.x2+Bounds.x1)/2,y=(Bounds.y2+Bounds.y1)/2}
 end
@@ -10089,8 +10031,6 @@ end
 return coords
 end
 function ZONE_POLYGON_BASE:Flush()
-self:F2()
-self:F({Polygon=self.ZoneName,Coordinates=self._.Polygon})
 return self
 end
 function ZONE_POLYGON_BASE:BoundZone(UnBound)
@@ -10100,7 +10040,6 @@ local Segments=10
 i=1
 j=#self._.Polygon
 while i<=#self._.Polygon do
-self:T({i,j,self._.Polygon[i],self._.Polygon[j]})
 local DeltaX=self._.Polygon[j].x-self._.Polygon[i].x
 local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
@@ -10243,12 +10182,10 @@ local n=world.removeJunk(volume)
 return n
 end
 function ZONE_POLYGON_BASE:SmokeZone(SmokeColor,Segments)
-self:F2(SmokeColor)
 Segments=Segments or 10
 local i=1
 local j=#self._.Polygon
 while i<=#self._.Polygon do
-self:T({i,j,self._.Polygon[i],self._.Polygon[j]})
 local DeltaX=self._.Polygon[j].x-self._.Polygon[i].x
 local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
@@ -10262,13 +10199,11 @@ end
 return self
 end
 function ZONE_POLYGON_BASE:FlareZone(FlareColor,Segments,Azimuth,AddHeight)
-self:F2(FlareColor)
 Segments=Segments or 10
 AddHeight=AddHeight or 0
 local i=1
 local j=#self._.Polygon
 while i<=#self._.Polygon do
-self:T({i,j,self._.Polygon[i],self._.Polygon[j]})
 local DeltaX=self._.Polygon[j].x-self._.Polygon[i].x
 local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
@@ -10282,7 +10217,6 @@ end
 return self
 end
 function ZONE_POLYGON_BASE:IsVec2InZone(Vec2)
-self:F2(Vec2)
 if not Vec2 then return false end
 local Next
 local Prev
@@ -10290,21 +10224,17 @@ local InPolygon=false
 Next=1
 Prev=#self._.Polygon
 while Next<=#self._.Polygon do
-self:T({Next,Prev,self._.Polygon[Next],self._.Polygon[Prev]})
 if(((self._.Polygon[Next].y>Vec2.y)~=(self._.Polygon[Prev].y>Vec2.y))and
 (Vec2.x<(self._.Polygon[Prev].x-self._.Polygon[Next].x)*(Vec2.y-self._.Polygon[Next].y)/(self._.Polygon[Prev].y-self._.Polygon[Next].y)+self._.Polygon[Next].x)
 )then
 InPolygon=not InPolygon
 end
-self:T2({InPolygon=InPolygon})
 Prev=Next
 Next=Next+1
 end
-self:T({InPolygon=InPolygon})
 return InPolygon
 end
 function ZONE_POLYGON_BASE:IsVec3InZone(Vec3)
-self:F2(Vec3)
 if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
@@ -10324,21 +10254,15 @@ end
 end
 end
 function ZONE_POLYGON_BASE:GetRandomPointVec2()
-self:F2()
 local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
-self:T2(PointVec2)
 return PointVec2
 end
 function ZONE_POLYGON_BASE:GetRandomPointVec3()
-self:F2()
 local PointVec3=POINT_VEC3:NewFromVec2(self:GetRandomVec2())
-self:T2(PointVec3)
 return PointVec3
 end
 function ZONE_POLYGON_BASE:GetRandomCoordinate()
-self:F2()
 local Coordinate=COORDINATE:NewFromVec2(self:GetRandomVec2())
-self:T2(Coordinate)
 return Coordinate
 end
 function ZONE_POLYGON_BASE:GetBoundingSquare()
@@ -10347,7 +10271,6 @@ local y1=self._.Polygon[1].y
 local x2=self._.Polygon[1].x
 local y2=self._.Polygon[1].y
 for i=2,#self._.Polygon do
-self:T2({self._.Polygon[i],x1,y1,x2,y2})
 x1=(x1>self._.Polygon[i].x)and self._.Polygon[i].x or x1
 x2=(x2<self._.Polygon[i].x)and self._.Polygon[i].x or x2
 y1=(y1>self._.Polygon[i].y)and self._.Polygon[i].y or y1
@@ -10361,7 +10284,6 @@ local y1=self._.Polygon[1].y
 local x2=self._.Polygon[1].x
 local y2=self._.Polygon[1].y
 for i=2,#self._.Polygon do
-self:T2({self._.Polygon[i],x1,y1,x2,y2})
 x1=(x1>self._.Polygon[i].x)and self._.Polygon[i].x or x1
 x2=(x2<self._.Polygon[i].x)and self._.Polygon[i].x or x2
 y1=(y1>self._.Polygon[i].y)and self._.Polygon[i].y or y1
@@ -10387,7 +10309,6 @@ else
 Limit=#self._.Polygon
 end
 while i<=#self._.Polygon do
-self:T({i,j,self._.Polygon[i],self._.Polygon[j]})
 if j~=Limit then
 local DeltaX=self._.Polygon[j].x-self._.Polygon[i].x
 local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
@@ -10408,13 +10329,11 @@ ClassName="ZONE_POLYGON",
 function ZONE_POLYGON:New(ZoneName,ZoneGroup)
 local GroupPoints=ZoneGroup:GetTaskRoute()
 local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(ZoneName,GroupPoints))
-self:F({ZoneName,ZoneGroup,self._.Polygon})
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
 function ZONE_POLYGON:NewFromPointsArray(ZoneName,PointsArray)
 local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(ZoneName,PointsArray))
-self:F({ZoneName,self._.Polygon})
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
@@ -10422,7 +10341,6 @@ function ZONE_POLYGON:NewFromGroupName(GroupName)
 local ZoneGroup=GROUP:FindByName(GroupName)
 local GroupPoints=ZoneGroup:GetTaskRoute()
 local self=BASE:Inherit(self,ZONE_POLYGON_BASE:New(GroupName,GroupPoints))
-self:F({GroupName,ZoneGroup,self._.Polygon})
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
@@ -10509,7 +10427,6 @@ if Include then
 local CoalitionDCSUnit=ZoneObject:getCoalition()
 self.ScanData.Coalitions[CoalitionDCSUnit]=true
 self.ScanData.Units[ZoneObject]=ZoneObject
-self:F2({Name=ZoneObject:getName(),Coalition=CoalitionDCSUnit})
 end
 end
 if ObjectCategory==Object.Category.SCENERY and self:IsVec3InZone(ZoneObject:getPoint())then
@@ -10518,7 +10435,6 @@ local SceneryName=ZoneObject:getName()
 self.ScanData.Scenery[SceneryType]=self.ScanData.Scenery[SceneryType]or{}
 self.ScanData.Scenery[SceneryType][SceneryName]=SCENERY:Register(SceneryName,ZoneObject)
 table.insert(self.ScanData.SceneryTable,self.ScanData.Scenery[SceneryType][SceneryName])
-self:T({SCENERY=self.ScanData.Scenery[SceneryType][SceneryName]})
 end
 end
 return true
@@ -10678,7 +10594,6 @@ table.insert(self.setGroups,GroupSet)
 return self
 end
 function ZONE_ELASTIC:Update(Delay,Draw)
-self:T(string.format("Updating ZONE_ELASTIC %s",tostring(self.ZoneName)))
 local points=UTILS.DeepCopy(self.points or{})
 if self.setGroups then
 for _,_setGroup in pairs(self.setGroups)do
@@ -10892,7 +10807,6 @@ function ZONE_AIRBASE:GetAirbase()
 return self._.ZoneAirbase
 end
 function ZONE_AIRBASE:GetVec2()
-self:F(self.ZoneName)
 local ZoneVec2=nil
 if self._.ZoneAirbase:IsAlive()then
 ZoneVec2=self._.ZoneAirbase:GetVec2()
@@ -10900,13 +10814,10 @@ self._.ZoneVec2Cache=ZoneVec2
 else
 ZoneVec2=self._.ZoneVec2Cache
 end
-self:T({ZoneVec2})
 return ZoneVec2
 end
 function ZONE_AIRBASE:GetRandomPointVec2(inner,outer)
-self:F(self.ZoneName,inner,outer)
 local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
-self:T3({PointVec2})
 return PointVec2
 end
 end
@@ -19603,15 +19514,12 @@ self.SpawnInitCallSignName=string.lower(Name):gsub("^%l",string.upper)
 return self
 end
 function SPAWN:InitPositionCoordinate(Coordinate)
-self:T2({self.SpawnTemplatePrefix,Coordinate:GetVec2()})
 self:InitPositionVec2(Coordinate:GetVec2())
 return self
 end
 function SPAWN:InitPositionVec2(Vec2)
-self:T2({self.SpawnTemplatePrefix,Vec2})
 self.SpawnInitPosition=Vec2
 self.SpawnFromNewPosition=true
-self:T2("MaxGroups:"..self.SpawnMaxGroups)
 for SpawnGroupID=1,self.SpawnMaxGroups do
 self:_SetInitialPosition(SpawnGroupID)
 end
@@ -19639,7 +19547,6 @@ function SPAWN:InitCleanUp(SpawnCleanUpInterval)
 self.SpawnCleanUpInterval=SpawnCleanUpInterval
 self.SpawnCleanUpTimeStamps={}
 local SpawnGroup,SpawnCursor=self:GetFirstAliveGroup()
-self:T2({"CleanUp Scheduler:",SpawnGroup})
 self.CleanUpScheduler=SCHEDULER:New(self,self._SpawnCleanUpScheduler,{},1,SpawnCleanUpInterval,0.2)
 return self
 end
@@ -19650,7 +19557,6 @@ local SpawnY=0
 local SpawnXIndex=0
 local SpawnYIndex=0
 for SpawnGroupID=1,self.SpawnMaxGroups do
-self:T2({SpawnX,SpawnY,SpawnXIndex,SpawnYIndex})
 self.SpawnGroups[SpawnGroupID].Visible=true
 self.SpawnGroups[SpawnGroupID].Spawned=false
 SpawnXIndex=SpawnXIndex+1
@@ -19667,6 +19573,7 @@ self.SpawnGroups[SpawnGroupID].SpawnTemplate.lateActivation=true
 self.SpawnGroups[SpawnGroupID].SpawnTemplate.visible=true
 self.SpawnGroups[SpawnGroupID].Visible=true
 self:HandleEvent(EVENTS.Birth,self._OnBirth)
+self:HandleEvent(EVENTS.Dead,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.UnitLost,self._OnDeadOrCrash)
@@ -19766,19 +19673,6 @@ function SPAWN:SetSpawnIndex(SpawnIndex)
 self.SpawnIndex=SpawnIndex or 0
 end
 function SPAWN:SpawnWithIndex(SpawnIndex,NoBirth)
-local set=SET_GROUP:New():FilterAlive():FilterPrefixes({self.SpawnTemplatePrefix,self.SpawnAliasPrefix}):FilterOnce()
-local aliveunits=0
-set:ForEachGroupAlive(
-function(grp)
-aliveunits=aliveunits+grp:CountAliveUnits()
-end
-)
-if aliveunits~=self.AliveUnits then
-self.AliveUnits=aliveunits
-self:T2("***** self.AliveUnits accounting failure! Corrected! *****")
-end
-set=nil
-self:T2({SpawnTemplatePrefix=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,AliveUnits=self.AliveUnits,SpawnMaxGroups=self.SpawnMaxGroups})
 if self:_GetSpawnIndex(SpawnIndex)then
 if self.SpawnFromNewPosition then
 self:_SetInitialPosition(SpawnIndex)
@@ -19788,10 +19682,8 @@ self.SpawnGroups[self.SpawnIndex].Group:Activate()
 else
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 local SpawnZone=self.SpawnGroups[self.SpawnIndex].SpawnZone
-self:T2(SpawnTemplate.name)
 if SpawnTemplate then
 local PointVec3=POINT_VEC3:New(SpawnTemplate.route.points[1].x,SpawnTemplate.route.points[1].alt,SpawnTemplate.route.points[1].y)
-self:T2({"Current point of ",self.SpawnTemplatePrefix,PointVec3})
 if self.SpawnRandomizePosition then
 local RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnRandomizePositionOuterRadius,self.SpawnRandomizePositionInnerRadius)
 local CurrentX=SpawnTemplate.units[1].x
@@ -19801,7 +19693,6 @@ SpawnTemplate.y=RandomVec2.y
 for UnitID=1,#SpawnTemplate.units do
 SpawnTemplate.units[UnitID].x=SpawnTemplate.units[UnitID].x+(RandomVec2.x-CurrentX)
 SpawnTemplate.units[UnitID].y=SpawnTemplate.units[UnitID].y+(RandomVec2.y-CurrentY)
-self:T2('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 if self.SpawnRandomizeUnits then
@@ -19818,13 +19709,11 @@ inZone=SpawnZone:IsVec2InZone(RandomVec2)
 end
 end
 if(not inZone)then
-self:T2("Could not place unit within zone and within radius!")
 RandomVec2=SpawnZone:GetRandomVec2()
 end
 end
 SpawnTemplate.units[UnitID].x=RandomVec2.x
 SpawnTemplate.units[UnitID].y=RandomVec2.y
-self:T2('SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 local function _Heading(courseDeg)
@@ -19978,6 +19867,11 @@ end
 function SPAWN:SpawnScheduled(SpawnTime,SpawnTimeVariation,WithDelay)
 local SpawnTime=SpawnTime or 60
 local SpawnTimeVariation=SpawnTimeVariation or 0.5
+if SpawnTime<15 then
+self:E("****SPAWN SCHEDULED****\nWARNING - Setting a very low SpawnTime heavily impacts your mission performance and CPU time, it is NOT useful to check the alive state of an object every "..tostring(SpawnTime).." seconds.\nSetting to 15 second intervals.\n*****")
+SpawnTime=15
+end
+if SpawnTimeVariation>1 or SpawnTimeVariation<0 then SpawnTimeVariation=0.5 end
 if SpawnTime~=nil and SpawnTimeVariation~=nil then
 local InitialDelay=0
 if WithDelay or self.DelayOnOff==true then
@@ -20005,7 +19899,6 @@ return self
 end
 function SPAWN:SpawnAtAirbase(SpawnAirbase,Takeoff,TakeoffAltitude,TerminalType,EmergencyAirSpawn,Parkingdata)
 local PointVec3=SpawnAirbase:GetCoordinate()
-self:T2(PointVec3)
 Takeoff=Takeoff or SPAWN.Takeoff.Hot
 if EmergencyAirSpawn==nil then
 EmergencyAirSpawn=true
@@ -20014,7 +19907,6 @@ if self:_GetSpawnIndex(self.SpawnIndex+1)then
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 if SpawnTemplate then
 local GroupAlive=self:GetGroupFromIndex(self.SpawnIndex)
-self:T2({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
 local TemplateGroup=GROUP:FindByName(self.SpawnTemplatePrefix)
 local TemplateUnit=TemplateGroup:GetUnit(1)
 local group=TemplateGroup
@@ -20044,7 +19936,6 @@ SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[Takeoff][2]
 local spawnonground=not(Takeoff==SPAWN.Takeoff.Air)
-self:T2({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
 local spawnonship=false
 local spawnonfarp=false
 local spawnonrunway=false
@@ -20082,43 +19973,35 @@ local scanstatics=true
 local scanscenery=false
 local verysafe=false
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T2(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
 if ishelo then
 if termtype==nil then
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
 if termtype==nil then
 if isbomber or istransport or istanker or isawacs then
-self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
@@ -20181,7 +20064,6 @@ end
 if not SpawnTemplate.parked then
 SpawnTemplate.parked=true
 for UnitID=1,nunits do
-self:T2('Before Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 local UnitTemplate=SpawnTemplate.units[UnitID]
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
@@ -20191,18 +20073,15 @@ local TX=PointVec3.x+(SX-BX)
 local TY=PointVec3.z+(SY-BY)
 if spawnonground then
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T2(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=PointVec3.x
 SpawnTemplate.units[UnitID].y=PointVec3.z
 SpawnTemplate.units[UnitID].alt=PointVec3.y
 else
-self:T2(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
 SpawnTemplate.units[UnitID].x=parkingspots[UnitID].x
 SpawnTemplate.units[UnitID].y=parkingspots[UnitID].z
 SpawnTemplate.units[UnitID].alt=parkingspots[UnitID].y
 end
 else
-self:T2(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=TX
 SpawnTemplate.units[UnitID].y=TY
 SpawnTemplate.units[UnitID].alt=PointVec3.y
@@ -20212,9 +20091,6 @@ UnitTemplate.parking_id=nil
 if parkingindex[UnitID]then
 UnitTemplate.parking=parkingindex[UnitID]
 end
-self:T2(string.format("Group %s unit number %d: Parking    = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking)))
-self:T2(string.format("Group %s unit number %d: Parking ID = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking_id)))
-self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 SpawnPoint.x=PointVec3.x
@@ -20254,9 +20130,7 @@ end
 local Parkingdata={}
 for _,TerminalID in pairs(Spots)do
 local spot=Airbase:GetParkingSpotData(TerminalID)
-self:T2({spot=spot})
 if spot and spot.Free then
-self:T2(string.format("Adding parking spot ID=%d TermType=%d",spot.TerminalID,spot.TerminalType))
 table.insert(Parkingdata,spot)
 end
 end
@@ -20272,12 +20146,10 @@ return nil
 end
 function SPAWN:ParkAircraft(SpawnAirbase,TerminalType,Parkingdata,SpawnIndex)
 local PointVec3=SpawnAirbase:GetCoordinate()
-self:T2(PointVec3)
 local Takeoff=SPAWN.Takeoff.Cold
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 if SpawnTemplate then
 local GroupAlive=self:GetGroupFromIndex(SpawnIndex)
-self:T2({"Current point of ",self.SpawnTemplatePrefix,SpawnAirbase})
 local TemplateGroup=GROUP:FindByName(self.SpawnTemplatePrefix)
 local TemplateUnit=TemplateGroup:GetUnit(1)
 local ishelo=TemplateUnit:HasAttribute("Helicopters")
@@ -20304,7 +20176,6 @@ SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[Takeoff][2]
 local spawnonground=not(Takeoff==SPAWN.Takeoff.Air)
-self:T2({spawnonground=spawnonground,TOtype=Takeoff,TOair=Takeoff==SPAWN.Takeoff.Air})
 local spawnonship=false
 local spawnonfarp=false
 local spawnonrunway=false
@@ -20331,43 +20202,35 @@ local scanstatics=true
 local scanscenery=false
 local verysafe=false
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T2(string.format("Group %s is spawned on farp/ship/runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
 if ishelo then
 if termtype==nil then
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterOnly))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.HelicopterUsable))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Helo group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),termtype))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
 if termtype==nil then
 if isbomber or istransport then
-self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-self:T2(string.format("Transport/bomber group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.OpenMedOrBig))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Fighter group %s is at %s using terminal type %d.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),AIRBASE.TerminalType.FighterAircraft))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-self:T2(string.format("Plane group %s is at %s using terminal type %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),tostring(termtype)))
 spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
@@ -20415,18 +20278,15 @@ local TX=PointVec3.x+(SX-BX)
 local TY=PointVec3.z+(SY-BY)
 if spawnonground then
 if spawnonship or spawnonfarp or spawnonrunway then
-self:T2(string.format("Group %s spawning at farp, ship or runway %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=PointVec3.x
 SpawnTemplate.units[UnitID].y=PointVec3.z
 SpawnTemplate.units[UnitID].alt=PointVec3.y
 else
-self:T2(string.format("Group %s spawning at airbase %s on parking spot id %d",self.SpawnTemplatePrefix,SpawnAirbase:GetName(),parkingindex[UnitID]))
 SpawnTemplate.units[UnitID].x=parkingspots[UnitID].x
 SpawnTemplate.units[UnitID].y=parkingspots[UnitID].z
 SpawnTemplate.units[UnitID].alt=parkingspots[UnitID].y
 end
 else
-self:T2(string.format("Group %s spawning in air at %s.",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 SpawnTemplate.units[UnitID].x=TX
 SpawnTemplate.units[UnitID].y=TY
 SpawnTemplate.units[UnitID].alt=PointVec3.y
@@ -20436,9 +20296,6 @@ UnitTemplate.parking_id=nil
 if parkingindex[UnitID]then
 UnitTemplate.parking=parkingindex[UnitID]
 end
-self:T2(string.format("Group %s unit number %d: Parking    = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking)))
-self:T2(string.format("Group %s unit number %d: Parking ID = %s",self.SpawnTemplatePrefix,UnitID,tostring(UnitTemplate.parking_id)))
-self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 end
 SpawnPoint.x=PointVec3.x
@@ -20468,7 +20325,6 @@ return nil
 end
 function SPAWN:SpawnFromVec3(Vec3,SpawnIndex)
 local PointVec3=POINT_VEC3:NewFromVec3(Vec3)
-self:T2(PointVec3)
 if SpawnIndex then
 else
 SpawnIndex=self.SpawnIndex+1
@@ -20476,7 +20332,6 @@ end
 if self:_GetSpawnIndex(SpawnIndex)then
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 if SpawnTemplate then
-self:T2({"Current point of ",self.SpawnTemplatePrefix,Vec3})
 local TemplateHeight=SpawnTemplate.route and SpawnTemplate.route.points[1].alt or nil
 SpawnTemplate.route=SpawnTemplate.route or{}
 SpawnTemplate.route.points=SpawnTemplate.route.points or{}
@@ -20496,7 +20351,6 @@ SpawnTemplate.units[UnitID].y=TY
 if SpawnTemplate.CategoryID~=Group.Category.SHIP then
 SpawnTemplate.units[UnitID].alt=Vec3.y or TemplateHeight
 end
-self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..SpawnTemplate.units[UnitID].x..', SpawnTemplate.units['..UnitID..'].y = '..SpawnTemplate.units[UnitID].y)
 end
 SpawnTemplate.route.points[1].x=Vec3.x
 SpawnTemplate.route.points[1].y=Vec3.z
@@ -20571,10 +20425,8 @@ SpawnPrefix=self.SpawnAliasPrefix
 end
 if SpawnIndex then
 local SpawnName=string.format('%s#%03d',SpawnPrefix,SpawnIndex)
-self:T2(SpawnName)
 return SpawnName
 else
-self:T2(SpawnPrefix)
 return SpawnPrefix
 end
 end
@@ -20750,7 +20602,6 @@ local UnitPrefix,Rest
 if SpawnInitKeepUnitIFF==false then
 UnitPrefix,Rest=string.match(SpawnTemplate.units[UnitID].name,"^([^#]+)#?"):gsub("^%s*(.-)%s*$","%1")
 SpawnTemplate.units[UnitID].name=string.format('%s#%03d-%02d',UnitPrefix,SpawnIndex,UnitID)
-self:T2({UnitPrefix,Rest})
 end
 SpawnTemplate.units[UnitID].unitId=nil
 end
@@ -20922,7 +20773,6 @@ end
 else
 SpawnTemplate.route.points[t].alt=nil
 end
-self:T2('SpawnTemplate.route.points['..t..'].x = '..SpawnTemplate.route.points[t].x..', SpawnTemplate.route.points['..t..'].y = '..SpawnTemplate.route.points[t].y)
 end
 end
 self:_RandomizeZones(SpawnIndex)
@@ -20949,21 +20799,16 @@ self:_RandomizeRoute(SpawnIndex)
 return self
 end
 function SPAWN:_SetInitialPosition(SpawnIndex)
-self:T2({self.SpawnTemplatePrefix,SpawnIndex,self.SpawnRandomizeZones})
 if self.SpawnFromNewPosition then
-self:T2("Preparing Spawn at Vec2 ",self.SpawnInitPosition)
 local SpawnVec2=self.SpawnInitPosition
-self:T2({SpawnVec2=SpawnVec2})
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 SpawnTemplate.route=SpawnTemplate.route or{}
 SpawnTemplate.route.points=SpawnTemplate.route.points or{}
 SpawnTemplate.route.points[1]=SpawnTemplate.route.points[1]or{}
 SpawnTemplate.route.points[1].x=SpawnTemplate.route.points[1].x or 0
 SpawnTemplate.route.points[1].y=SpawnTemplate.route.points[1].y or 0
-self:T2({Route=SpawnTemplate.route})
 for UnitID=1,#SpawnTemplate.units do
 local UnitTemplate=SpawnTemplate.units[UnitID]
-self:T2('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
 local BX=SpawnTemplate.route.points[1].x
@@ -20972,7 +20817,6 @@ local TX=SpawnVec2.x+(SX-BX)
 local TY=SpawnVec2.y+(SY-BY)
 UnitTemplate.x=TX
 UnitTemplate.y=TY
-self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 end
 SpawnTemplate.route.points[1].x=SpawnVec2.x
 SpawnTemplate.route.points[1].y=SpawnVec2.y
@@ -20985,20 +20829,14 @@ function SPAWN:_RandomizeZones(SpawnIndex)
 if self.SpawnRandomizeZones then
 local SpawnZone=nil
 while not SpawnZone do
-self:T2({SpawnZoneTableCount=#self.SpawnZoneTable,self.SpawnZoneTable})
 local ZoneID=math.random(#self.SpawnZoneTable)
-self:T2(ZoneID)
 SpawnZone=self.SpawnZoneTable[ZoneID]:GetZoneMaybe()
 end
-self:T2("Preparing Spawn in Zone",SpawnZone:GetName())
 local SpawnVec2=SpawnZone:GetRandomVec2()
-self:T2({SpawnVec2=SpawnVec2})
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 self.SpawnGroups[SpawnIndex].SpawnZone=SpawnZone
-self:T2({Route=SpawnTemplate.route})
 for UnitID=1,#SpawnTemplate.units do
 local UnitTemplate=SpawnTemplate.units[UnitID]
-self:T2('Before Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 local SX=UnitTemplate.x
 local SY=UnitTemplate.y
 local BX=SpawnTemplate.route.points[1].x
@@ -21007,7 +20845,6 @@ local TX=SpawnVec2.x+(SX-BX)
 local TY=SpawnVec2.y+(SY-BY)
 UnitTemplate.x=TX
 UnitTemplate.y=TY
-self:T2('After Translation SpawnTemplate.units['..UnitID..'].x = '..UnitTemplate.x..', SpawnTemplate.units['..UnitID..'].y = '..UnitTemplate.y)
 end
 SpawnTemplate.x=SpawnVec2.x
 SpawnTemplate.y=SpawnVec2.y
@@ -21036,10 +20873,8 @@ end
 return self
 end
 function SPAWN:_GetSpawnIndex(SpawnIndex)
-self:T2({template=self.SpawnTemplatePrefix,SpawnIndex=SpawnIndex,SpawnMaxGroups=self.SpawnMaxGroups,SpawnMaxUnitsAlive=self.SpawnMaxUnitsAlive,AliveUnits=self.AliveUnits,TemplateUnits=#self.SpawnTemplate.units})
 if(self.SpawnMaxGroups==0)or(SpawnIndex<=self.SpawnMaxGroups)then
 if(self.SpawnMaxUnitsAlive==0)or(self.AliveUnits+#self.SpawnTemplate.units<=self.SpawnMaxUnitsAlive)or self.UnControlled==true then
-self:T2({SpawnCount=self.SpawnCount,SpawnIndex=SpawnIndex})
 if SpawnIndex and SpawnIndex>=self.SpawnCount+1 then
 self.SpawnCount=self.SpawnCount+1
 SpawnIndex=self.SpawnCount
@@ -21061,27 +20896,45 @@ local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T2({"Birth Event:",EventPrefix,self.SpawnTemplatePrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
 self.AliveUnits=self.AliveUnits+1
-self:T2("Alive Units: "..self.AliveUnits)
 end
 end
 end
+end
+function SPAWN:_CountAliveUnits()
+local count=0
+if self.SpawnAliasPrefix then
+if not self.SpawnAliasPrefixEscaped then self.SpawnAliasPrefixEscaped=string.gsub(self.SpawnAliasPrefix,"[%p%s]",".")end
+local SpawnAliasPrefix=self.SpawnAliasPrefixEscaped
+local agroups=GROUP:FindAllByMatching(SpawnAliasPrefix)
+for _,_grp in pairs(agroups)do
+local game=self:_GetPrefixFromGroupName(_grp.GroupName)
+if game and game==self.SpawnAliasPrefix then
+count=count+_grp:CountAliveUnits()
+end
+end
+else
+if not self.SpawnTemplatePrefixEscaped then self.SpawnTemplatePrefixEscaped=string.gsub(self.SpawnTemplatePrefix,"[%p%s]",".")end
+local SpawnTemplatePrefix=self.SpawnTemplatePrefixEscaped
+local groups=GROUP:FindAllByMatching(SpawnTemplatePrefix)
+for _,_grp in pairs(groups)do
+local game=self:_GetPrefixFromGroupName(_grp.GroupName)
+if game and game==self.SpawnTemplatePrefix then
+count=count+_grp:CountAliveUnits()
+end
+end
+end
+return count
 end
 function SPAWN:_OnDeadOrCrash(EventData)
-self:T2("Dead or crash event ID "..tostring(EventData.id or 0))
-self:T2("Dead or crash event for "..tostring(EventData.IniUnitName or"none"))
 local unit=UNIT:FindByName(EventData.IniUnitName)
 if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
-self:T2({"Dead event: "..EventPrefix})
-self:T2(string.format("EventPrefix = %s | SpawnAliasPrefix = %s  | Old AliveUnits = %d",EventPrefix or"",self.SpawnAliasPrefix or"",self.AliveUnits or 0))
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
-self.AliveUnits=self.AliveUnits-1
+self.AliveUnits=self:_CountAliveUnits()
 end
-self:T2("New Alive Units: "..self.AliveUnits)
 end
 end
 end
@@ -21090,9 +20943,7 @@ local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T2({"TakeOff event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
-self:T2("self.Landed = false")
 SpawnGroup:SetState(SpawnGroup,"Spawn_Landed",false)
 end
 end
@@ -21103,12 +20954,10 @@ local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T2({"Land event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
 SpawnGroup:SetState(SpawnGroup,"Spawn_Landed",true)
 if self.RepeatOnLanding then
 local SpawnGroupIndex=self:GetSpawnIndexFromGroup(SpawnGroup)
-self:T2({"Landed:","ReSpawn:",SpawnGroup:GetName(),SpawnGroupIndex})
 SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},3)
 end
 end
@@ -21120,12 +20969,10 @@ local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
 if EventPrefix then
-self:T2({"EngineShutdown event: "..EventPrefix})
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)then
 local Landed=SpawnGroup:GetState(SpawnGroup,"Spawn_Landed")
 if Landed and self.RepeatOnEngineShutDown then
 local SpawnGroupIndex=self:GetSpawnIndexFromGroup(SpawnGroup)
-self:T2({"EngineShutDown: ","ReSpawn:",SpawnGroup:GetName(),SpawnGroupIndex})
 SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},3)
 end
 end
@@ -21139,7 +20986,6 @@ return true
 end
 function SPAWN:_SpawnCleanUpScheduler()
 local SpawnGroup,SpawnCursor=self:GetFirstAliveGroup()
-self:T2({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
 local IsHelo=false
 while SpawnGroup do
 IsHelo=SpawnGroup:IsHelicopter()
@@ -21149,13 +20995,11 @@ local SpawnUnit=UnitData
 local SpawnUnitName=SpawnUnit:GetName()
 self.SpawnCleanUpTimeStamps[SpawnUnitName]=self.SpawnCleanUpTimeStamps[SpawnUnitName]or{}
 local Stamp=self.SpawnCleanUpTimeStamps[SpawnUnitName]
-self:T2({SpawnUnitName,Stamp})
 if Stamp.Vec2 then
 if(SpawnUnit:InAir()==false and SpawnUnit:GetVelocityKMH()<1)or IsHelo then
 local NewVec2=SpawnUnit:GetVec2()or{x=0,y=0}
 if(Stamp.Vec2.x==NewVec2.x and Stamp.Vec2.y==NewVec2.y)or(SpawnUnit:GetLife()<=1)then
 if Stamp.Time+self.SpawnCleanUpInterval<timer.getTime()then
-self:T2({"CleanUp Scheduler:","ReSpawning:",SpawnGroup:GetName()})
 SCHEDULER:New(nil,self.ReSpawn,{self,SpawnCursor},3)
 Stamp.Vec2=nil
 Stamp.Time=nil
@@ -21181,7 +21025,6 @@ end
 end
 end
 SpawnGroup,SpawnCursor=self:GetNextAliveGroup(SpawnCursor)
-self:T2({"CleanUp Scheduler:",SpawnGroup,SpawnCursor})
 end
 return true
 end
@@ -27043,31 +26886,27 @@ local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 return DCSGroup
 end
-self:T2(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
+self:E(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
 return nil
 end
 function GROUP:GetPositionVec3()
-self:F2(self.PositionableName)
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local unit=DCSPositionable:getUnits()[1]
 if unit then
 local PositionablePosition=unit:getPosition().p
-self:T3(PositionablePosition)
 return PositionablePosition
 end
 end
 return nil
 end
 function GROUP:IsAlive()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 if DCSGroup:isExist()then
 local DCSUnit=DCSGroup:getUnit(1)
 if DCSUnit then
 local GroupIsAlive=DCSUnit:isActive()
-self:T3(GroupIsAlive)
 return GroupIsAlive
 end
 end
@@ -27075,7 +26914,6 @@ end
 return nil
 end
 function GROUP:IsActive()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup and DCSGroup:isExist()then
 local unit=DCSGroup:getUnit(1)
@@ -27087,7 +26925,6 @@ end
 return nil
 end
 function GROUP:Destroy(GenerateEvent,delay)
-self:F2(self.GroupName)
 if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Destroy,self,GenerateEvent)
 else
@@ -27113,17 +26950,14 @@ end
 return nil
 end
 function GROUP:GetCategory()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T3(GroupCategory)
 return GroupCategory
 end
 return nil
 end
 function GROUP:GetCategoryName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local CategoryNames={
@@ -27134,7 +26968,6 @@ local CategoryNames={
 [Group.Category.TRAIN]="Train",
 }
 local GroupCategory=DCSGroup:getCategory()
-self:T3(GroupCategory)
 return CategoryNames[GroupCategory]
 end
 return nil
@@ -27153,11 +26986,9 @@ end
 return nil
 end
 function GROUP:GetCountry()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCountry=DCSGroup:getUnit(1):getCountry()
-self:T3(GroupCountry)
 return GroupCountry
 end
 return nil
@@ -27187,7 +27018,6 @@ end
 return nil
 end
 function GROUP:GetSpeedMax()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local Units=self:GetUnits()
@@ -27204,7 +27034,6 @@ end
 return nil
 end
 function GROUP:GetRange()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local Units=self:GetUnits()
@@ -27225,7 +27054,6 @@ end
 return nil
 end
 function GROUP:GetUnits()
-self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()or{}
@@ -27240,13 +27068,11 @@ unit=_DATABASE:AddUnit(UnitName)
 Units[#Units+1]=unit
 end
 end
-self:T3(Units)
 return Units
 end
 return nil
 end
 function GROUP:GetPlayerUnits()
-self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()
@@ -27257,7 +27083,6 @@ if PlayerUnit:GetPlayerName()then
 Units[#Units+1]=PlayerUnit
 end
 end
-self:T3(Units)
 return Units
 end
 return nil
@@ -27315,7 +27140,6 @@ end
 return nil
 end
 function GROUP:CountAliveUnits()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local units=self:GetUnits()
@@ -27331,7 +27155,6 @@ end
 return 0
 end
 function GROUP:GetFirstUnitAlive()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local units=self:GetUnits()
@@ -27345,7 +27168,6 @@ end
 return nil
 end
 function GROUP:GetFirstUnit()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local units=self:GetUnits()
@@ -27354,7 +27176,6 @@ end
 return nil
 end
 function GROUP:GetVelocityVec3()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup and DCSGroup:isExist()then
 local GroupUnits=DCSGroup:getUnits()
@@ -27375,11 +27196,9 @@ BASE:E({"Cannot GetVelocityVec3",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetAltitude(FromGround)
-self:F2(self.GroupName)
 return self:GetHeight(FromGround)
 end
 function GROUP:GetHeight(FromGround)
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupUnits=DCSGroup:getUnits()
@@ -27399,27 +27218,22 @@ end
 return nil
 end
 function GROUP:GetInitialSize()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupInitialSize=DCSGroup:getInitialSize()
-self:T3(GroupInitialSize)
 return GroupInitialSize
 end
 return nil
 end
 function GROUP:GetDCSUnits()
-self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()
-self:T3(DCSUnits)
 return DCSUnits
 end
 return nil
 end
 function GROUP:Activate(delay)
-self:F2({self.GroupName})
 if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Activate,self)
 else
@@ -27428,41 +27242,33 @@ end
 return self
 end
 function GROUP:GetTypeName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
-self:T3(GroupTypeName)
 return(GroupTypeName)
 end
 return nil
 end
 function GROUP:GetNatoReportingName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
-self:T3(GroupTypeName)
 return UTILS.GetReportingName(GroupTypeName)
 end
 return"Bogey"
 end
 function GROUP:GetPlayerName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local PlayerName=DCSGroup:getUnit(1):getPlayerName()
-self:T3(PlayerName)
 return(PlayerName)
 end
 return nil
 end
 function GROUP:GetCallsign()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCallSign=DCSGroup:getUnit(1):getCallsign()
-self:T3(GroupCallSign)
 return GroupCallSign
 end
 BASE:E({"Cannot GetCallsign",Positionable=self,Alive=self:IsAlive()})
@@ -27507,11 +27313,9 @@ return self:GetVec3()
 end
 end
 function GROUP:GetPointVec2()
-self:F2(self.GroupName)
 local FirstUnit=self:GetUnit(1)
 if FirstUnit then
 local FirstUnitPointVec2=FirstUnit:GetPointVec2()
-self:T3(FirstUnitPointVec2)
 return FirstUnitPointVec2
 end
 BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
@@ -27564,19 +27368,15 @@ end
 BASE:E({"Cannot GetCoordinate",Group=self,Alive=self:IsAlive()})
 end
 function GROUP:GetRandomVec3(Radius)
-self:F2(self.GroupName)
 local FirstUnit=self:GetUnit(1)
 if FirstUnit then
 local FirstUnitRandomPointVec3=FirstUnit:GetRandomVec3(Radius)
-self:T3(FirstUnitRandomPointVec3)
 return FirstUnitRandomPointVec3
 end
 BASE:E({"Cannot GetRandomVec3",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetHeading()
-self:F2(self.GroupName)
-self:F2(self.GroupName)
 local GroupSize=self:GetSize()
 local HeadingAccumulator=0
 local n=0
@@ -27594,7 +27394,6 @@ BASE:E({"Cannot GetHeading",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetFuelMin()
-self:F3(self.ControllableName)
 if not self:GetDCSObject()then
 BASE:E({"Cannot GetFuel",Group=self,Alive=self:IsAlive()})
 return 0
@@ -27614,7 +27413,6 @@ end
 return min,unit
 end
 function GROUP:GetFuelAvg()
-self:F(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local GroupSize=self:GetSize()
@@ -27622,7 +27420,6 @@ local TotalFuel=0
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
 local UnitFuel=Unit:GetFuel()or 0
-self:F({Fuel=UnitFuel})
 TotalFuel=TotalFuel+UnitFuel
 end
 local GroupFuel=TotalFuel/GroupSize
@@ -27635,7 +27432,6 @@ function GROUP:GetFuel()
 return self:GetFuelAvg()
 end
 function GROUP:GetAmmunition()
-self:F(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 local Ntot=0
 local Nshells=0
@@ -27675,7 +27471,6 @@ end
 return nil
 end
 function GROUP:IsCompletelyInZone(Zone)
-self:F2({self.GroupName,Zone})
 if not self:IsAlive()then return false end
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
@@ -27687,7 +27482,6 @@ end
 return true
 end
 function GROUP:IsPartlyInZone(Zone)
-self:F2({self.GroupName,Zone})
 local IsOneUnitInZone=false
 local IsOneUnitOutsideZone=false
 if not self:IsAlive()then return false end
@@ -27709,7 +27503,6 @@ function GROUP:IsPartlyOrCompletelyInZone(Zone)
 return self:IsPartlyInZone(Zone)or self:IsCompletelyInZone(Zone)
 end
 function GROUP:IsNotInZone(Zone)
-self:F2({self.GroupName,Zone})
 if not self:IsAlive()then return true end
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
@@ -27730,7 +27523,6 @@ end
 return false
 end
 function GROUP:CountInZone(Zone)
-self:F2({self.GroupName,Zone})
 local Count=0
 if not self:IsAlive()then return Count end
 for UnitID,UnitData in pairs(self:GetUnits())do
@@ -27742,57 +27534,46 @@ end
 return Count
 end
 function GROUP:IsAir()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local IsAirResult=DCSGroup:getCategory()==Group.Category.AIRPLANE or DCSGroup:getCategory()==Group.Category.HELICOPTER
-self:T3(IsAirResult)
 return IsAirResult
 end
 return nil
 end
 function GROUP:IsHelicopter()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.HELICOPTER
 end
 return nil
 end
 function GROUP:IsAirPlane()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.AIRPLANE
 end
 return nil
 end
 function GROUP:IsGround()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.GROUND
 end
 return nil
 end
 function GROUP:IsShip()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.SHIP
 end
 return nil
 end
 function GROUP:AllOnGround()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local AllOnGroundResult=true
@@ -27801,7 +27582,6 @@ if UnitData:inAir()then
 AllOnGroundResult=false
 end
 end
-self:T3(AllOnGroundResult)
 return AllOnGroundResult
 end
 return nil
@@ -27827,7 +27607,6 @@ return self:SetAIOnOff(false)
 end
 end
 function GROUP:GetMaxVelocity()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupVelocityMax=0
@@ -27843,7 +27622,6 @@ end
 return nil
 end
 function GROUP:GetMinHeight()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupHeightMin=999999999
@@ -27859,7 +27637,6 @@ end
 return nil
 end
 function GROUP:GetMaxHeight()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupHeightMax=-999999999
@@ -27923,12 +27700,10 @@ self.InitRespawnRandomizePositionInner=InnerRadius
 return self
 end
 function GROUP:InitCoordinate(coordinate)
-self:F({coordinate=coordinate})
 self.InitCoord=coordinate
 return self
 end
 function GROUP:InitRadioCommsOnOff(switch)
-self:F({switch=switch})
 if switch==true or switch==nil then
 self.InitRespawnRadio=true
 else
@@ -27937,12 +27712,10 @@ end
 return self
 end
 function GROUP:InitRadioFrequency(frequency)
-self:F({frequency=frequency})
 self.InitRespawnFreq=frequency
 return self
 end
 function GROUP:InitRadioModulation(modulation)
-self:F({modulation=modulation})
 if modulation and modulation:lower()=="fm"then
 self.InitRespawnModu=radio.modulation.FM
 else
@@ -27951,7 +27724,6 @@ end
 return self
 end
 function GROUP:InitModex(modex)
-self:F({modex=modex})
 if modex then
 self.InitRespawnModex=tonumber(modex)
 end
@@ -27974,13 +27746,10 @@ local Vec3=Zone and Zone:GetVec3()or self:GetVec3()
 local From={x=Template.x,y=Template.y}
 Template.x=Vec3.x
 Template.y=Vec3.z
-self:F(#Template.units)
 if Reset==true then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local GroupUnit=UnitData
-self:F(GroupUnit:GetName())
 if GroupUnit:IsAlive()then
-self:I("FF Alive")
 local GroupUnitVec3=GroupUnit:GetVec3()
 if Zone then
 if self.InitRespawnRandomizePositionZone then
@@ -28006,12 +27775,10 @@ Template.units[UnitID].y=GroupUnitVec3.z
 end
 Template.units[UnitID].heading=_Heading(self.InitRespawnHeading and self.InitRespawnHeading or GroupUnit:GetHeading())
 Template.units[UnitID].psi=-Template.units[UnitID].heading
-self:F({UnitID,Template.units[UnitID],Template.units[UnitID]})
 end
 end
 elseif Reset==false then
 for UnitID,TemplateUnitData in pairs(Template.units)do
-self:F("Reset")
 local GroupUnitVec3={x=TemplateUnitData.x,y=TemplateUnitData.alt,z=TemplateUnitData.y}
 if Zone then
 if self.InitRespawnRandomizePositionZone then
@@ -28031,7 +27798,6 @@ Template.units[UnitID].alt=self.InitRespawnHeight and self.InitRespawnHeight or 
 Template.units[UnitID].x=(Template.units[UnitID].x-From.x)+GroupUnitVec3.x
 Template.units[UnitID].y=(Template.units[UnitID].y-From.y)+GroupUnitVec3.z
 Template.units[UnitID].heading=self.InitRespawnHeading and self.InitRespawnHeading or TemplateUnitData.heading
-self:F({UnitID,Template.units[UnitID],Template.units[UnitID]})
 end
 else
 local units=self:GetUnits()
@@ -28066,17 +27832,14 @@ if self.InitRespawnModu then
 Template.modulation=self.InitRespawnModu
 end
 self:Destroy(false)
-self:T({Template=Template})
 _DATABASE:Spawn(Template)
 self:ResetEvents()
 return self
 end
 function GROUP:RespawnAtCurrentAirbase(SpawnTemplate,Takeoff,Uncontrolled)
-self:F2({SpawnTemplate,Takeoff,Uncontrolled})
 if self and self:IsAlive()then
 local airbase=self:GetCoordinate():GetClosestAirbase()
 if airbase then
-self:F2("Closest airbase = "..airbase:GetName())
 else
 self:E("ERROR: could not find closest airbase!")
 return nil
@@ -28105,7 +27868,6 @@ local y
 for UnitID=1,#units do
 local unit=units[UnitID]
 local Parkingspot,TermialID,Distance=unit:GetCoordinate():GetClosestParkingSpot(airbase)
-self:T2(string.format("Closest parking spot distance = %s, terminal ID=%s",tostring(Distance),tostring(TermialID)))
 local uc=unit:GetCoordinate()
 SpawnTemplate.units[UnitID].x=uc.x
 SpawnTemplate.units[UnitID].y=uc.z
@@ -28139,15 +27901,12 @@ end
 return nil
 end
 function GROUP:GetTaskMission()
-self:F2(self.GroupName)
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template)
 end
 function GROUP:GetTaskRoute()
-self:F2(self.GroupName)
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template.route.points)
 end
 function GROUP:CopyRoute(Begin,End,Randomize,Radius)
-self:F2({Begin,End})
 local Points={}
 local GroupName=string.match(self:GetName(),".*#")
 if GroupName then
@@ -28155,7 +27914,6 @@ GroupName=GroupName:sub(1,-2)
 else
 GroupName=self:GetName()
 end
-self:T3({GroupName})
 local Template=_DATABASE.Templates.Groups[GroupName].Template
 if Template then
 if not Begin then
@@ -28191,7 +27949,6 @@ if ThreatLevelA2G>MaxThreatLevelA2G then
 MaxThreatLevelA2G=ThreatLevelA2G
 end
 end
-self:T3(MaxThreatLevelA2G)
 return MaxThreatLevelA2G
 end
 function GROUP:GetThreatLevel()
@@ -28206,20 +27963,17 @@ end
 return threatlevelMax
 end
 function GROUP:InAir()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnit=DCSGroup:getUnit(1)
 if DCSUnit then
 local GroupInAir=DCSGroup:getUnit(1):inAir()
-self:T3(GroupInAir)
 return GroupInAir
 end
 end
 return nil
 end
 function GROUP:IsAirborne(AllUnits)
-self:F2(self.GroupName)
 local units=self:GetUnits()
 if units then
 if AllUnits then
@@ -28342,7 +28096,6 @@ return attribute
 end
 do
 function GROUP:RouteRTB(RTBAirbase,Speed)
-self:F({RTBAirbase:GetName(),Speed})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 if RTBAirbase then
@@ -28351,7 +28104,6 @@ local coord=self:GetCoordinate()
 local PointFrom=coord:WaypointAirTurningPoint(nil,Speed)
 local PointLanding=RTBAirbase:GetCoordinate():WaypointAirLanding(Speed,RTBAirbase)
 local Points={PointFrom,PointLanding}
-self:T3(Points)
 local Template=self:GetTemplate()
 Template.route.points=Points
 self:Respawn(Template,true)
@@ -28398,7 +28150,6 @@ HasPlayers=true
 end
 end
 if HasPlayers==true then
-self:F2(PlayerNames)
 return PlayerNames
 end
 return nil
@@ -28417,7 +28168,6 @@ return PlayerCount
 end
 end
 function GROUP:EnableEmission(switch)
-self:F2(self.GroupName)
 local switch=switch or false
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
@@ -28429,7 +28179,6 @@ function GROUP:SetCommandInvisible(switch)
 return self:CommandSetInvisible(switch)
 end
 function GROUP:CommandSetInvisible(switch)
-self:F2(self.GroupName)
 if switch==nil then
 switch=false
 end
@@ -28441,7 +28190,6 @@ function GROUP:SetCommandImmortal(switch)
 return self:CommandSetImmortal(switch)
 end
 function GROUP:CommandSetImmortal(switch)
-self:F2(self.GroupName)
 if switch==nil then
 switch=false
 end
@@ -28450,7 +28198,6 @@ self:SetCommand(SetImmortal)
 return self
 end
 function GROUP:GetSkill()
-self:F2(self.GroupName)
 local unit=self:GetUnit(1)
 local name=unit:GetName()
 local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
@@ -28659,19 +28406,14 @@ end
 return nil
 end
 function UNIT:ReSpawnAt(Coordinate,Heading)
-self:T(self:Name())
 local SpawnGroupTemplate=UTILS.DeepCopy(_DATABASE:GetGroupTemplateFromUnitName(self:Name()))
-self:T(SpawnGroupTemplate)
 local SpawnGroup=self:GetGroup()
-self:T({SpawnGroup=SpawnGroup})
 if SpawnGroup then
 local Vec3=SpawnGroup:GetVec3()
 SpawnGroupTemplate.x=Coordinate.x
 SpawnGroupTemplate.y=Coordinate.z
-self:F(#SpawnGroupTemplate.units)
 for UnitID,UnitData in pairs(SpawnGroup:GetUnits()or{})do
 local GroupUnit=UnitData
-self:F(GroupUnit:GetName())
 if GroupUnit:IsAlive()then
 local GroupUnitVec3=GroupUnit:GetVec3()
 local GroupUnitHeading=GroupUnit:GetHeading()
@@ -28679,22 +28421,17 @@ SpawnGroupTemplate.units[UnitID].alt=GroupUnitVec3.y
 SpawnGroupTemplate.units[UnitID].x=GroupUnitVec3.x
 SpawnGroupTemplate.units[UnitID].y=GroupUnitVec3.z
 SpawnGroupTemplate.units[UnitID].heading=GroupUnitHeading
-self:F({UnitID,SpawnGroupTemplate.units[UnitID],SpawnGroupTemplate.units[UnitID]})
 end
 end
 end
 for UnitTemplateID,UnitTemplateData in pairs(SpawnGroupTemplate.units)do
-self:T({UnitTemplateData.name,self:Name()})
 SpawnGroupTemplate.units[UnitTemplateID].unitId=nil
 if UnitTemplateData.name==self:Name()then
-self:T("Adjusting")
 SpawnGroupTemplate.units[UnitTemplateID].alt=Coordinate.y
 SpawnGroupTemplate.units[UnitTemplateID].x=Coordinate.x
 SpawnGroupTemplate.units[UnitTemplateID].y=Coordinate.z
 SpawnGroupTemplate.units[UnitTemplateID].heading=Heading
-self:F({UnitTemplateID,SpawnGroupTemplate.units[UnitTemplateID],SpawnGroupTemplate.units[UnitTemplateID]})
 else
-self:F(SpawnGroupTemplate.units[UnitTemplateID].name)
 local GroupUnit=UNIT:FindByName(SpawnGroupTemplate.units[UnitTemplateID].name)
 if GroupUnit and GroupUnit:IsAlive()then
 local GroupUnitVec3=GroupUnit:GetVec3()
@@ -28705,7 +28442,6 @@ UnitTemplateData.y=GroupUnitVec3.z
 UnitTemplateData.heading=GroupUnitHeading
 else
 if SpawnGroupTemplate.units[UnitTemplateID].name~=self:Name()then
-self:T("nilling")
 SpawnGroupTemplate.units[UnitTemplateID].delete=true
 end
 end
@@ -28714,7 +28450,6 @@ end
 local i=1
 while i<=#SpawnGroupTemplate.units do
 local UnitTemplateData=SpawnGroupTemplate.units[i]
-self:T(UnitTemplateData.name)
 if UnitTemplateData.delete then
 table.remove(SpawnGroupTemplate.units,i)
 else
@@ -28722,11 +28457,9 @@ i=i+1
 end
 end
 SpawnGroupTemplate.groupId=nil
-self:T(SpawnGroupTemplate)
 _DATABASE:Spawn(SpawnGroupTemplate)
 end
 function UNIT:IsActive()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitIsActive=DCSUnit:isActive()
@@ -28743,7 +28476,6 @@ end
 return nil
 end
 function UNIT:IsAlive()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit and DCSUnit:isExist()then
 local UnitIsAlive=DCSUnit:isActive()
@@ -28755,7 +28487,6 @@ function UNIT:IsDead()
 return not self:IsAlive()
 end
 function UNIT:GetCallsign()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitCallSign=DCSUnit:getCallsign()
@@ -28764,7 +28495,6 @@ UnitCallSign=DCSUnit:getName()
 end
 return UnitCallSign
 end
-self:F(self.ClassName.." "..self.UnitName.." not found!")
 return nil
 end
 function UNIT:IsPlayer()
@@ -28788,7 +28518,6 @@ end
 return false
 end
 function UNIT:GetPlayerName()
-self:F(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local PlayerName=DCSUnit:getPlayerName()
@@ -28814,7 +28543,6 @@ local typename=self:GetTypeName()
 return UTILS.GetReportingName(typename)
 end
 function UNIT:GetNumber()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitNumber=DCSUnit:getNumber()
@@ -28823,7 +28551,6 @@ end
 return nil
 end
 function UNIT:GetSpeedMax()
-self:F2(self.UnitName)
 local Desc=self:GetDesc()
 if Desc then
 local SpeedMax=Desc.speedMax
@@ -28832,7 +28559,6 @@ end
 return 0
 end
 function UNIT:GetRange()
-self:F2(self.UnitName)
 local Desc=self:GetDesc()
 if Desc then
 local Range=Desc.range
@@ -28846,7 +28572,6 @@ end
 return nil
 end
 function UNIT:IsRefuelable()
-self:F2(self.UnitName)
 local refuelable=self:HasAttribute("Refuelable")
 local system=nil
 local Desc=self:GetDesc()
@@ -28856,7 +28581,6 @@ end
 return refuelable,system
 end
 function UNIT:IsTanker()
-self:F2(self.UnitName)
 local tanker=self:HasAttribute("Tankers")
 local system=nil
 if tanker then
@@ -28908,7 +28632,6 @@ end
 return false
 end
 function UNIT:GetGroup()
-self:F2(self.UnitName)
 local UnitGroup=GROUP:FindByName(self.GroupName)
 if UnitGroup then
 return UnitGroup
@@ -28925,17 +28648,14 @@ end
 return nil
 end
 function UNIT:GetPrefix()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitPrefix=string.match(self.UnitName,".*#"):sub(1,-2)
-self:T3(UnitPrefix)
 return UnitPrefix
 end
 return nil
 end
 function UNIT:GetAmmo()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitAmmo=DCSUnit:getAmmo()
@@ -29031,7 +28751,6 @@ local _,_,_,_,_,shells=self:GetAmmunition()
 return shells or 0
 end
 function UNIT:GetSensors()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitSensors=DCSUnit:getSensors()
@@ -29040,7 +28759,6 @@ end
 return nil
 end
 function UNIT:HasSensors(...)
-self:F2(arg)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local HasSensors=DCSUnit:hasSensors(unpack(arg))
@@ -29049,7 +28767,6 @@ end
 return nil
 end
 function UNIT:HasSEAD()
-self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitSEADAttributes=DCSUnit:getDesc().attributes
@@ -29065,7 +28782,6 @@ end
 return nil
 end
 function UNIT:GetRadar()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitRadarOn,UnitRadarObject=DCSUnit:getRadar()
@@ -29074,7 +28790,6 @@ end
 return nil,nil
 end
 function UNIT:GetFuel()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitFuel=DCSUnit:getFuel()
@@ -29083,18 +28798,16 @@ end
 return nil
 end
 function UNIT:GetUnits()
-self:F3({self.UnitName})
 local DCSUnit=self:GetDCSObject()
 local Units={}
 if DCSUnit then
 Units[1]=UNIT:Find(DCSUnit)
-self:T3(Units)
+-self:T3(Units)
 return Units
 end
 return nil
 end
 function UNIT:GetLife()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit and DCSUnit:isExist()then
 local UnitLife=DCSUnit:getLife()
@@ -29103,7 +28816,6 @@ end
 return-1
 end
 function UNIT:GetLife0()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitLife0=DCSUnit:getLife0()
@@ -29112,7 +28824,6 @@ end
 return 0
 end
 function UNIT:GetLifeRelative()
-self:F2(self.UnitName)
 if self and self:IsAlive()then
 local life0=self:GetLife0()
 local lifeN=self:GetLife()
@@ -29121,7 +28832,6 @@ end
 return-1
 end
 function UNIT:GetDamageRelative()
-self:F2(self.UnitName)
 if self and self:IsAlive()then
 return 1-self:GetLifeRelative()
 end
@@ -29136,7 +28846,6 @@ end
 return 0
 end
 function UNIT:GetUnitCategory()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 return DCSUnit:getDesc().category
@@ -29144,7 +28853,6 @@ end
 return nil
 end
 function UNIT:GetCategoryName()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local CategoryNames={
@@ -29155,7 +28863,6 @@ local CategoryNames={
 [Unit.Category.STRUCTURE]="Structure",
 }
 local UnitCategory=DCSUnit:getDesc().category
-self:T3(UnitCategory)
 return CategoryNames[UnitCategory]
 end
 return nil
@@ -29266,47 +28973,37 @@ end
 return nil
 end
 function UNIT:OtherUnitInRadius(AwaitUnit,Radius)
-self:F2({self.UnitName,AwaitUnit.UnitName,Radius})
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitVec3=self:GetVec3()
 local AwaitUnitVec3=AwaitUnit:GetVec3()
 if(((UnitVec3.x-AwaitUnitVec3.x)^2+(UnitVec3.z-AwaitUnitVec3.z)^2)^0.5<=Radius)then
-self:T3("true")
 return true
 else
-self:T3("false")
 return false
 end
 end
 return nil
 end
 function UNIT:IsFriendly(FriendlyCoalition)
-self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitCoalition=DCSUnit:getCoalition()
-self:T3({UnitCoalition,FriendlyCoalition})
 local IsFriendlyResult=(UnitCoalition==FriendlyCoalition)
-self:F(IsFriendlyResult)
 return IsFriendlyResult
 end
 return nil
 end
 function UNIT:IsShip()
-self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitDescriptor=DCSUnit:getDesc()
-self:T3({UnitDescriptor.category,Unit.Category.SHIP})
 local IsShipResult=(UnitDescriptor.category==Unit.Category.SHIP)
-self:T3(IsShipResult)
 return IsShipResult
 end
 return nil
 end
 function UNIT:InAir(NoHeloCheck)
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitInAir=DCSUnit:inAir()
@@ -29321,7 +29018,6 @@ if Velocity<1 and Height<=60 then
 UnitInAir=false
 end
 end
-self:T3(UnitInAir)
 return UnitInAir
 end
 return nil
@@ -29406,7 +29102,6 @@ end
 return nil
 end
 function UNIT:EnableEmission(switch)
-self:F2(self.UnitName)
 local switch=switch or false
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
@@ -29415,7 +29110,6 @@ end
 return self
 end
 function UNIT:GetSkill()
-self:F2(self.UnitName)
 local name=self.UnitName
 local skill="Random"
 if _DATABASE.Templates.Units[name]and _DATABASE.Templates.Units[name].Template and _DATABASE.Templates.Units[name].Template.skill then
@@ -29424,7 +29118,6 @@ end
 return skill
 end
 function UNIT:GetSTN()
-self:F2(self.UnitName)
 local STN=nil
 local VCL=nil
 local VCN=nil
