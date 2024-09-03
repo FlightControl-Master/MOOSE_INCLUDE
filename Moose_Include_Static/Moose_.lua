@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-02T13:42:10+02:00-efe3571120484f500cc4f31192c6558cfd2d7add ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-03T12:36:50+02:00-4bafdf940816aa2d5d8d62a78a3cbf4da248c6c1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19662,6 +19662,7 @@ self.SpawnGroups[SpawnGroupID].SpawnTemplate.lateActivation=true
 self.SpawnGroups[SpawnGroupID].SpawnTemplate.visible=true
 self.SpawnGroups[SpawnGroupID].Visible=true
 self:HandleEvent(EVENTS.Birth,self._OnBirth)
+self:HandleEvent(EVENTS.Dead,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.RemoveUnit,self._OnDeadOrCrash)
 self:HandleEvent(EVENTS.UnitLost,self._OnDeadOrCrash)
@@ -19761,17 +19762,6 @@ function SPAWN:SetSpawnIndex(SpawnIndex)
 self.SpawnIndex=SpawnIndex or 0
 end
 function SPAWN:SpawnWithIndex(SpawnIndex,NoBirth)
-local set=SET_GROUP:New():FilterAlive():FilterPrefixes({self.SpawnTemplatePrefix,self.SpawnAliasPrefix}):FilterOnce()
-local aliveunits=0
-set:ForEachGroupAlive(
-function(grp)
-aliveunits=aliveunits+grp:CountAliveUnits()
-end
-)
-if aliveunits~=self.AliveUnits then
-self.AliveUnits=aliveunits
-end
-set=nil
 if self:_GetSpawnIndex(SpawnIndex)then
 if self.SpawnFromNewPosition then
 self:_SetInitialPosition(SpawnIndex)
@@ -19966,6 +19956,11 @@ end
 function SPAWN:SpawnScheduled(SpawnTime,SpawnTimeVariation,WithDelay)
 local SpawnTime=SpawnTime or 60
 local SpawnTimeVariation=SpawnTimeVariation or 0.5
+if SpawnTime<15 then
+self:E("****SPAWN SCHEDULED****\nWARNING - Setting a very low SpawnTime heavily impacts your mission performance and CPU time, it is NOT useful to check the alive state of an object every "..tostring(SpawnTime).." seconds.\nSetting to 15 second intervals.\n*****")
+SpawnTime=15
+end
+if SpawnTimeVariation>1 or SpawnTimeVariation<0 then SpawnTimeVariation=0.5 end
 if SpawnTime~=nil and SpawnTimeVariation~=nil then
 local InitialDelay=0
 if WithDelay or self.DelayOnOff==true then
@@ -20996,13 +20991,38 @@ end
 end
 end
 end
+function SPAWN:_CountAliveUnits()
+local count=0
+if self.SpawnAliasPrefix then
+if not self.SpawnAliasPrefixEscaped then self.SpawnAliasPrefixEscaped=string.gsub(self.SpawnAliasPrefix,"[%p%s]",".")end
+local SpawnAliasPrefix=self.SpawnAliasPrefixEscaped
+local agroups=GROUP:FindAllByMatching(SpawnAliasPrefix)
+for _,_grp in pairs(agroups)do
+local game=self:_GetPrefixFromGroupName(_grp.GroupName)
+if game and game==self.SpawnAliasPrefix then
+count=count+_grp:CountAliveUnits()
+end
+end
+else
+if not self.SpawnTemplatePrefixEscaped then self.SpawnTemplatePrefixEscaped=string.gsub(self.SpawnTemplatePrefix,"[%p%s]",".")end
+local SpawnTemplatePrefix=self.SpawnTemplatePrefixEscaped
+local groups=GROUP:FindAllByMatching(SpawnTemplatePrefix)
+for _,_grp in pairs(groups)do
+local game=self:_GetPrefixFromGroupName(_grp.GroupName)
+if game and game==self.SpawnTemplatePrefix then
+count=count+_grp:CountAliveUnits()
+end
+end
+end
+return count
+end
 function SPAWN:_OnDeadOrCrash(EventData)
 local unit=UNIT:FindByName(EventData.IniUnitName)
 if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
-self.AliveUnits=self.AliveUnits-1
+self.AliveUnits=self:_CountAliveUnits()
 end
 end
 end
