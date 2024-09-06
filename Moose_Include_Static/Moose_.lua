@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-03T16:47:17+02:00-8695953d5af431b28ac1d5e3bb5f212713b8e121 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T13:42:14+02:00-6243137d4caf275cae9b9f1e9f70a7621412c1e3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -37254,7 +37254,7 @@ local HasDetectedObjects=false
 if Detection and Detection:IsAlive()then
 self:T({"DetectionGroup is Alive",Detection:GetName()})
 local DetectionGroupName=Detection:GetName()
-local DetectionUnit=Detection:GetUnit(1)
+local DetectionUnit=Detection:GetFirstUnitAlive()
 local DetectedUnits={}
 local DetectedTargets=DetectionUnit:GetDetectedTargets(
 self.DetectVisual,
@@ -37264,7 +37264,7 @@ self.DetectIRST,
 self.DetectRWR,
 self.DetectDLINK
 )
-for DetectionObjectID,Detection in pairs(DetectedTargets)do
+for DetectionObjectID,Detection in pairs(DetectedTargets or{})do
 local DetectedObject=Detection.object
 if DetectedObject and DetectedObject:isExist()and DetectedObject.id_<50000000 then
 local DetectedObjectName=DetectedObject:getName()
@@ -37275,7 +37275,7 @@ self.DetectedObjects[DetectedObjectName].Object=DetectedObject
 end
 end
 end
-for DetectionObjectName,DetectedObjectData in pairs(self.DetectedObjects)do
+for DetectionObjectName,DetectedObjectData in pairs(self.DetectedObjects or{})do
 local DetectedObject=DetectedObjectData.Object
 if DetectedObject:isExist()then
 local TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity=DetectionUnit:IsTargetDetected(
@@ -51172,7 +51172,6 @@ end
 end
 end
 function WAREHOUSE:_UnitDead(deadunit,deadgroup,request)
-self:F(self.lid.."FF unit dead "..deadunit:GetName())
 local opsgroup=_DATABASE:FindOpsGroup(deadgroup)
 if opsgroup then
 return nil
@@ -65337,7 +65336,7 @@ if u and pn then
 return u,pn
 end
 local DCSunit=Unit.getByName(_unitName)
-if DCSunit then
+if DCSunit and DCSunit.getPlayerName then
 local playername=DCSunit:getPlayerName()
 local unit=UNIT:Find(DCSunit)
 self:T2({DCSunit=DCSunit,unit=unit,playername=playername})
@@ -115326,9 +115325,13 @@ local Dispatcher=AI_A2G_Fsm:GetDispatcher()
 local Squadron=Dispatcher:GetSquadronFromDefender(DefenderGroup)
 if Squadron then
 local FirstUnit=AttackSetUnit:GetRandomSurely()
+if FirstUnit then
 local Coordinate=FirstUnit:GetCoordinate()
 if self.SetSendPlayerMessages then
 Dispatcher:MessageToPlayers(Squadron,DefenderName..", on route to ground target at "..Coordinate:ToStringA2G(DefenderGroup),DefenderGroup)
+end
+else
+return
 end
 end
 self:GetParent(self).onafterEngageRoute(self,DefenderGroup,From,Event,To,AttackSetUnit)
