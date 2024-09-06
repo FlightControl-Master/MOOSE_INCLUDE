@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T13:40:27+02:00-f00d0dc871da851d2f304f6578bf61cbe59bd028 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T16:40:41+02:00-865042a843ebf3d32b8f013e4ac5f89882c227bd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67134,6 +67134,7 @@ DynamicCargo={},
 ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
 TroopUnloadDistHover=1.5,
+UserSetGroup=nil,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -67168,7 +67169,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.15"
+CTLD.version="1.1.16"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67293,6 +67294,7 @@ self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
 self.enableChinookGCLoading=true
 self.ChinookTroopCircleRadius=5
+self.UserSetGroup=nil
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -69717,6 +69719,10 @@ capabilities.cargoweightlimit=Maxcargoweight or maxcargo
 self.UnitTypeCapabilities[unittype]=capabilities
 return self
 end
+function CTLD:SetOwnSetPilotGroups(Set)
+self.UserSetGroup=Set
+return self
+end
 function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
 self:I(self.lid.."This function been replaced with `SetUnitCapabilities()` - pls use the new one going forward!")
 self:SetUnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
@@ -70221,7 +70227,9 @@ end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started ("..self.version..")")
-if self.useprefix or self.enableHercules then
+if self.UserSetGroup then
+self.PilotGroups=self.UserSetGroup
+elseif self.useprefix or self.enableHercules then
 local prefix=self.prefixes
 if self.enableHercules then
 self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterStart()
@@ -71093,6 +71101,7 @@ topmenuname="CSAR",
 ADFRadioPwr=1000,
 PilotWeight=80,
 CreateRadioBeacons=true,
+UserSetGroup=nil,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -71112,7 +71121,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH-58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.27"
+CSAR.version="1.0.28"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -71218,6 +71227,7 @@ self.usewetfeet=false
 self.allowbronco=false
 self.ADFRadioPwr=1000
 self.PilotWeight=80
+self.UserSetGroup=nil
 self.useSRS=false
 self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSchannel=300
@@ -71238,13 +71248,13 @@ self.filepath=nil
 self.saveinterval=600
 return self
 end
-function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet)
+function CSAR:_CreateDownedPilotTrack(Group,Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername,Wetfeet,BeaconName)
 self:T({"_CreateDownedPilotTrack",Groupname,Side,OriginalUnit,Description,Typename,Frequency,Playername})
 local DownedPilot={}
 DownedPilot.desc=Description or""
 DownedPilot.frequency=Frequency or 0
 DownedPilot.index=self.downedpilotcounter
-DownedPilot.name=Groupname or""
+DownedPilot.name=Groupname or Playername or""
 DownedPilot.originalUnit=OriginalUnit or""
 DownedPilot.player=Playername or""
 DownedPilot.side=Side or 0
@@ -71253,6 +71263,7 @@ DownedPilot.group=Group
 DownedPilot.timestamp=0
 DownedPilot.alive=true
 DownedPilot.wetfeet=Wetfeet or false
+DownedPilot.BeaconName=BeaconName
 local PilotTable=self.downedPilots
 local counter=self.downedpilotcounter
 PilotTable[counter]={}
@@ -71365,8 +71376,16 @@ else
 self:_DisplayToAllSAR("Troops In Contact. ".._typeName.." requests CASEVAC. ",self.coalition,self.messageTime)
 end
 end
+local BeaconName
+if _playerName then
+BeaconName=_unitName..math.random(1,10000)
+elseif _unitName then
+BeaconName=_playerName..math.random(1,10000)
+else
+BeaconName="Ghost-1-1"..math.random(1,10000)
+end
 if(_freq and _freq~=0)then
-self:_AddBeaconToGroup(_spawnedGroup,_freq)
+self:_AddBeaconToGroup(_spawnedGroup,_freq,BeaconName)
 end
 self:_AddSpecialOptions(_spawnedGroup)
 local _text=_description
@@ -71387,7 +71406,7 @@ end
 end
 self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
-self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet)
+self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet,BeaconName)
 self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
 return self
 end
@@ -72362,7 +72381,7 @@ if clock>12 then clock=clock-12 end
 end
 return clock
 end
-function CSAR:_AddBeaconToGroup(_group,_freq)
+function CSAR:_AddBeaconToGroup(_group,_freq,_name)
 self:T(self.lid.." _AddBeaconToGroup")
 if self.CreateRadioBeacons==false then return end
 local _group=_group
@@ -72383,7 +72402,7 @@ local Frequency=_freq
 local name=_radioUnit:GetName()
 local Sound="l10n/DEFAULT/"..self.radioSound
 local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
-trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000,name..math.random(1,10000))
+trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000,_name)
 end
 end
 return self
@@ -72398,8 +72417,10 @@ self:T({_pilot.name})
 local pilot=_pilot
 local group=pilot.group
 local frequency=pilot.frequency or 0
+local bname=pilot.BeaconName or pilot.name..math.random(1,100000)
+trigger.action.stopRadioTransmission(bname)
 if group and group:IsAlive()and frequency>0 then
-self:_AddBeaconToGroup(group,frequency)
+self:_AddBeaconToGroup(group,frequency,bname)
 end
 end
 end
@@ -72427,6 +72448,10 @@ else
 return false
 end
 end
+function CSAR:SetOwnSetPilotGroups(Set)
+self.UserSetGroup=Set
+return self
+end
 function CSAR:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started ("..self.version..")")
@@ -72437,7 +72462,9 @@ self:HandleEvent(EVENTS.LandingAfterEjection,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
-if self.allowbronco then
+if self.UserSetGroup then
+self.PilotGroups=self.UserSetGroup
+elseif self.allowbronco then
 local prefixes=self.csarPrefix or{}
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterStart()
 elseif self.useprefix then
