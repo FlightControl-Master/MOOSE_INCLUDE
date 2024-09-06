@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T13:43:19+02:00-8153052eede9038c50df61bfe7f20bffcb94a95e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T16:40:18+02:00-d6ecde96f862cabb9214b43254e348054de21d2d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70727,6 +70727,7 @@ DynamicCargo={},
 ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
 TroopUnloadDistHover=1.5,
+UserSetGroup=nil,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70761,7 +70762,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.15"
+CTLD.version="1.1.16"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70886,6 +70887,7 @@ self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
 self.enableChinookGCLoading=true
 self.ChinookTroopCircleRadius=5
+self.UserSetGroup=nil
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -73310,6 +73312,10 @@ capabilities.cargoweightlimit=Maxcargoweight or maxcargo
 self.UnitTypeCapabilities[unittype]=capabilities
 return self
 end
+function CTLD:SetOwnSetPilotGroups(Set)
+self.UserSetGroup=Set
+return self
+end
 function CTLD:UnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
 self:I(self.lid.."This function been replaced with `SetUnitCapabilities()` - pls use the new one going forward!")
 self:SetUnitCapabilities(Unittype,Cancrates,Cantroops,Cratelimit,Trooplimit,Length,Maxcargoweight)
@@ -73814,7 +73820,9 @@ end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started ("..self.version..")")
-if self.useprefix or self.enableHercules then
+if self.UserSetGroup then
+self.PilotGroups=self.UserSetGroup
+elseif self.useprefix or self.enableHercules then
 local prefix=self.prefixes
 if self.enableHercules then
 self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterStart()
@@ -74686,6 +74694,7 @@ topmenuname="CSAR",
 ADFRadioPwr=1000,
 PilotWeight=80,
 CreateRadioBeacons=true,
+UserSetGroup=nil,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -74705,7 +74714,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH-58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.27"
+CSAR.version="1.0.28"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -74811,6 +74820,7 @@ self.usewetfeet=false
 self.allowbronco=false
 self.ADFRadioPwr=1000
 self.PilotWeight=80
+self.UserSetGroup=nil
 self.useSRS=false
 self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.SRSchannel=300
@@ -76031,6 +76041,10 @@ else
 return false
 end
 end
+function CSAR:SetOwnSetPilotGroups(Set)
+self.UserSetGroup=Set
+return self
+end
 function CSAR:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started ("..self.version..")")
@@ -76041,7 +76055,9 @@ self:HandleEvent(EVENTS.LandingAfterEjection,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
-if self.allowbronco then
+if self.UserSetGroup then
+self.PilotGroups=self.UserSetGroup
+elseif self.allowbronco then
 local prefixes=self.csarPrefix or{}
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterStart()
 elseif self.useprefix then
