@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T16:41:11+02:00-c2aeb1ebcd4da72c29a67c45a8339ebe02184580 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-07T09:03:00+02:00-6bc766e95fed73e05c84ad9aa6404ba71c17932d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -76053,7 +76053,7 @@ self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 if self.UserSetGroup then
-self.PilotGroups=self.UserSetGroup
+self.allheligroupset=self.UserSetGroup
 elseif self.allowbronco then
 local prefixes=self.csarPrefix or{}
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterStart()
