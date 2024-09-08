@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-07T09:03:00+02:00-6bc766e95fed73e05c84ad9aa6404ba71c17932d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-08T11:44:47+02:00-68007306b34c2acd8cd25d998b5c22f857143e2f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26886,7 +26886,6 @@ local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 return DCSGroup
 end
-self:E(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
 return nil
 end
 function GROUP:GetPositionVec3()
@@ -27238,6 +27237,14 @@ if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Activate,self)
 else
 trigger.action.activateGroup(self:GetDCSObject())
+end
+return self
+end
+function GROUP:Deactivate(delay)
+if delay and delay>0 then
+self:ScheduleOnce(delay,GROUP.Deactivate,self)
+else
+trigger.action.deactivateGroup(self:GetDCSObject())
 end
 return self
 end
