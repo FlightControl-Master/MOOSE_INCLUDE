@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-07T09:01:58+02:00-07009630c6548f0c330f4d0914eac0f1773f3be9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-08T11:43:33+02:00-d62025dfe0c455334588cd3c91858a77e25388d9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26527,31 +26527,26 @@ local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 return DCSGroup
 end
-self:T2(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
 return nil
 end
 function GROUP:GetPositionVec3()
-self:F2(self.PositionableName)
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local unit=DCSPositionable:getUnits()[1]
 if unit then
 local PositionablePosition=unit:getPosition().p
-self:T3(PositionablePosition)
 return PositionablePosition
 end
 end
 return nil
 end
 function GROUP:IsAlive()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 if DCSGroup:isExist()then
 local DCSUnit=DCSGroup:getUnit(1)
 if DCSUnit then
 local GroupIsAlive=DCSUnit:isActive()
-self:T3(GroupIsAlive)
 return GroupIsAlive
 end
 end
@@ -26559,7 +26554,6 @@ end
 return nil
 end
 function GROUP:IsActive()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup and DCSGroup:isExist()then
 local unit=DCSGroup:getUnit(1)
@@ -26571,7 +26565,6 @@ end
 return nil
 end
 function GROUP:Destroy(GenerateEvent,delay)
-self:F2(self.GroupName)
 if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Destroy,self,GenerateEvent)
 else
@@ -26597,17 +26590,14 @@ end
 return nil
 end
 function GROUP:GetCategory()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T3(GroupCategory)
 return GroupCategory
 end
 return nil
 end
 function GROUP:GetCategoryName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local CategoryNames={
@@ -26618,7 +26608,6 @@ local CategoryNames={
 [Group.Category.TRAIN]="Train",
 }
 local GroupCategory=DCSGroup:getCategory()
-self:T3(GroupCategory)
 return CategoryNames[GroupCategory]
 end
 return nil
@@ -26637,11 +26626,9 @@ end
 return nil
 end
 function GROUP:GetCountry()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCountry=DCSGroup:getUnit(1):getCountry()
-self:T3(GroupCountry)
 return GroupCountry
 end
 return nil
@@ -26671,7 +26658,6 @@ end
 return nil
 end
 function GROUP:GetSpeedMax()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local Units=self:GetUnits()
@@ -26688,7 +26674,6 @@ end
 return nil
 end
 function GROUP:GetRange()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local Units=self:GetUnits()
@@ -26709,7 +26694,6 @@ end
 return nil
 end
 function GROUP:GetUnits()
-self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()or{}
@@ -26724,13 +26708,11 @@ unit=_DATABASE:AddUnit(UnitName)
 Units[#Units+1]=unit
 end
 end
-self:T3(Units)
 return Units
 end
 return nil
 end
 function GROUP:GetPlayerUnits()
-self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()
@@ -26741,7 +26723,6 @@ if PlayerUnit:GetPlayerName()then
 Units[#Units+1]=PlayerUnit
 end
 end
-self:T3(Units)
 return Units
 end
 return nil
@@ -26799,7 +26780,6 @@ end
 return nil
 end
 function GROUP:CountAliveUnits()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local units=self:GetUnits()
@@ -26815,7 +26795,6 @@ end
 return 0
 end
 function GROUP:GetFirstUnitAlive()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local units=self:GetUnits()
@@ -26829,7 +26808,6 @@ end
 return nil
 end
 function GROUP:GetFirstUnit()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local units=self:GetUnits()
@@ -26838,7 +26816,6 @@ end
 return nil
 end
 function GROUP:GetVelocityVec3()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup and DCSGroup:isExist()then
 local GroupUnits=DCSGroup:getUnits()
@@ -26859,11 +26836,9 @@ BASE:E({"Cannot GetVelocityVec3",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetAltitude(FromGround)
-self:F2(self.GroupName)
 return self:GetHeight(FromGround)
 end
 function GROUP:GetHeight(FromGround)
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupUnits=DCSGroup:getUnits()
@@ -26883,27 +26858,22 @@ end
 return nil
 end
 function GROUP:GetInitialSize()
-self:F3({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupInitialSize=DCSGroup:getInitialSize()
-self:T3(GroupInitialSize)
 return GroupInitialSize
 end
 return nil
 end
 function GROUP:GetDCSUnits()
-self:F2({self.GroupName})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnits=DCSGroup:getUnits()
-self:T3(DCSUnits)
 return DCSUnits
 end
 return nil
 end
 function GROUP:Activate(delay)
-self:F2({self.GroupName})
 if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Activate,self)
 else
@@ -26911,42 +26881,42 @@ trigger.action.activateGroup(self:GetDCSObject())
 end
 return self
 end
+function GROUP:Deactivate(delay)
+if delay and delay>0 then
+self:ScheduleOnce(delay,GROUP.Deactivate,self)
+else
+trigger.action.deactivateGroup(self:GetDCSObject())
+end
+return self
+end
 function GROUP:GetTypeName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
-self:T3(GroupTypeName)
 return(GroupTypeName)
 end
 return nil
 end
 function GROUP:GetNatoReportingName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
-self:T3(GroupTypeName)
 return UTILS.GetReportingName(GroupTypeName)
 end
 return"Bogey"
 end
 function GROUP:GetPlayerName()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local PlayerName=DCSGroup:getUnit(1):getPlayerName()
-self:T3(PlayerName)
 return(PlayerName)
 end
 return nil
 end
 function GROUP:GetCallsign()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCallSign=DCSGroup:getUnit(1):getCallsign()
-self:T3(GroupCallSign)
 return GroupCallSign
 end
 BASE:E({"Cannot GetCallsign",Positionable=self,Alive=self:IsAlive()})
@@ -26991,11 +26961,9 @@ return self:GetVec3()
 end
 end
 function GROUP:GetPointVec2()
-self:F2(self.GroupName)
 local FirstUnit=self:GetUnit(1)
 if FirstUnit then
 local FirstUnitPointVec2=FirstUnit:GetPointVec2()
-self:T3(FirstUnitPointVec2)
 return FirstUnitPointVec2
 end
 BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
@@ -27048,19 +27016,15 @@ end
 BASE:E({"Cannot GetCoordinate",Group=self,Alive=self:IsAlive()})
 end
 function GROUP:GetRandomVec3(Radius)
-self:F2(self.GroupName)
 local FirstUnit=self:GetUnit(1)
 if FirstUnit then
 local FirstUnitRandomPointVec3=FirstUnit:GetRandomVec3(Radius)
-self:T3(FirstUnitRandomPointVec3)
 return FirstUnitRandomPointVec3
 end
 BASE:E({"Cannot GetRandomVec3",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetHeading()
-self:F2(self.GroupName)
-self:F2(self.GroupName)
 local GroupSize=self:GetSize()
 local HeadingAccumulator=0
 local n=0
@@ -27078,7 +27042,6 @@ BASE:E({"Cannot GetHeading",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetFuelMin()
-self:F3(self.ControllableName)
 if not self:GetDCSObject()then
 BASE:E({"Cannot GetFuel",Group=self,Alive=self:IsAlive()})
 return 0
@@ -27098,7 +27061,6 @@ end
 return min,unit
 end
 function GROUP:GetFuelAvg()
-self:F(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local GroupSize=self:GetSize()
@@ -27106,7 +27068,6 @@ local TotalFuel=0
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
 local UnitFuel=Unit:GetFuel()or 0
-self:F({Fuel=UnitFuel})
 TotalFuel=TotalFuel+UnitFuel
 end
 local GroupFuel=TotalFuel/GroupSize
@@ -27119,7 +27080,6 @@ function GROUP:GetFuel()
 return self:GetFuelAvg()
 end
 function GROUP:GetAmmunition()
-self:F(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 local Ntot=0
 local Nshells=0
@@ -27159,7 +27119,6 @@ end
 return nil
 end
 function GROUP:IsCompletelyInZone(Zone)
-self:F2({self.GroupName,Zone})
 if not self:IsAlive()then return false end
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
@@ -27171,7 +27130,6 @@ end
 return true
 end
 function GROUP:IsPartlyInZone(Zone)
-self:F2({self.GroupName,Zone})
 local IsOneUnitInZone=false
 local IsOneUnitOutsideZone=false
 if not self:IsAlive()then return false end
@@ -27193,7 +27151,6 @@ function GROUP:IsPartlyOrCompletelyInZone(Zone)
 return self:IsPartlyInZone(Zone)or self:IsCompletelyInZone(Zone)
 end
 function GROUP:IsNotInZone(Zone)
-self:F2({self.GroupName,Zone})
 if not self:IsAlive()then return true end
 for UnitID,UnitData in pairs(self:GetUnits())do
 local Unit=UnitData
@@ -27214,7 +27171,6 @@ end
 return false
 end
 function GROUP:CountInZone(Zone)
-self:F2({self.GroupName,Zone})
 local Count=0
 if not self:IsAlive()then return Count end
 for UnitID,UnitData in pairs(self:GetUnits())do
@@ -27226,57 +27182,46 @@ end
 return Count
 end
 function GROUP:IsAir()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local IsAirResult=DCSGroup:getCategory()==Group.Category.AIRPLANE or DCSGroup:getCategory()==Group.Category.HELICOPTER
-self:T3(IsAirResult)
 return IsAirResult
 end
 return nil
 end
 function GROUP:IsHelicopter()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.HELICOPTER
 end
 return nil
 end
 function GROUP:IsAirPlane()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.AIRPLANE
 end
 return nil
 end
 function GROUP:IsGround()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.GROUND
 end
 return nil
 end
 function GROUP:IsShip()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupCategory=DCSGroup:getCategory()
-self:T2(GroupCategory)
 return GroupCategory==Group.Category.SHIP
 end
 return nil
 end
 function GROUP:AllOnGround()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local AllOnGroundResult=true
@@ -27285,7 +27230,6 @@ if UnitData:inAir()then
 AllOnGroundResult=false
 end
 end
-self:T3(AllOnGroundResult)
 return AllOnGroundResult
 end
 return nil
@@ -27311,7 +27255,6 @@ return self:SetAIOnOff(false)
 end
 end
 function GROUP:GetMaxVelocity()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupVelocityMax=0
@@ -27327,7 +27270,6 @@ end
 return nil
 end
 function GROUP:GetMinHeight()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupHeightMin=999999999
@@ -27343,7 +27285,6 @@ end
 return nil
 end
 function GROUP:GetMaxHeight()
-self:F2()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupHeightMax=-999999999
@@ -27407,12 +27348,10 @@ self.InitRespawnRandomizePositionInner=InnerRadius
 return self
 end
 function GROUP:InitCoordinate(coordinate)
-self:F({coordinate=coordinate})
 self.InitCoord=coordinate
 return self
 end
 function GROUP:InitRadioCommsOnOff(switch)
-self:F({switch=switch})
 if switch==true or switch==nil then
 self.InitRespawnRadio=true
 else
@@ -27421,12 +27360,10 @@ end
 return self
 end
 function GROUP:InitRadioFrequency(frequency)
-self:F({frequency=frequency})
 self.InitRespawnFreq=frequency
 return self
 end
 function GROUP:InitRadioModulation(modulation)
-self:F({modulation=modulation})
 if modulation and modulation:lower()=="fm"then
 self.InitRespawnModu=radio.modulation.FM
 else
@@ -27435,7 +27372,6 @@ end
 return self
 end
 function GROUP:InitModex(modex)
-self:F({modex=modex})
 if modex then
 self.InitRespawnModex=tonumber(modex)
 end
@@ -27458,13 +27394,10 @@ local Vec3=Zone and Zone:GetVec3()or self:GetVec3()
 local From={x=Template.x,y=Template.y}
 Template.x=Vec3.x
 Template.y=Vec3.z
-self:F(#Template.units)
 if Reset==true then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local GroupUnit=UnitData
-self:F(GroupUnit:GetName())
 if GroupUnit:IsAlive()then
-self:I("FF Alive")
 local GroupUnitVec3=GroupUnit:GetVec3()
 if Zone then
 if self.InitRespawnRandomizePositionZone then
@@ -27490,12 +27423,10 @@ Template.units[UnitID].y=GroupUnitVec3.z
 end
 Template.units[UnitID].heading=_Heading(self.InitRespawnHeading and self.InitRespawnHeading or GroupUnit:GetHeading())
 Template.units[UnitID].psi=-Template.units[UnitID].heading
-self:F({UnitID,Template.units[UnitID],Template.units[UnitID]})
 end
 end
 elseif Reset==false then
 for UnitID,TemplateUnitData in pairs(Template.units)do
-self:F("Reset")
 local GroupUnitVec3={x=TemplateUnitData.x,y=TemplateUnitData.alt,z=TemplateUnitData.y}
 if Zone then
 if self.InitRespawnRandomizePositionZone then
@@ -27515,7 +27446,6 @@ Template.units[UnitID].alt=self.InitRespawnHeight and self.InitRespawnHeight or 
 Template.units[UnitID].x=(Template.units[UnitID].x-From.x)+GroupUnitVec3.x
 Template.units[UnitID].y=(Template.units[UnitID].y-From.y)+GroupUnitVec3.z
 Template.units[UnitID].heading=self.InitRespawnHeading and self.InitRespawnHeading or TemplateUnitData.heading
-self:F({UnitID,Template.units[UnitID],Template.units[UnitID]})
 end
 else
 local units=self:GetUnits()
@@ -27550,17 +27480,14 @@ if self.InitRespawnModu then
 Template.modulation=self.InitRespawnModu
 end
 self:Destroy(false)
-self:T({Template=Template})
 _DATABASE:Spawn(Template)
 self:ResetEvents()
 return self
 end
 function GROUP:RespawnAtCurrentAirbase(SpawnTemplate,Takeoff,Uncontrolled)
-self:F2({SpawnTemplate,Takeoff,Uncontrolled})
 if self and self:IsAlive()then
 local airbase=self:GetCoordinate():GetClosestAirbase()
 if airbase then
-self:F2("Closest airbase = "..airbase:GetName())
 else
 self:E("ERROR: could not find closest airbase!")
 return nil
@@ -27589,7 +27516,6 @@ local y
 for UnitID=1,#units do
 local unit=units[UnitID]
 local Parkingspot,TermialID,Distance=unit:GetCoordinate():GetClosestParkingSpot(airbase)
-self:T2(string.format("Closest parking spot distance = %s, terminal ID=%s",tostring(Distance),tostring(TermialID)))
 local uc=unit:GetCoordinate()
 SpawnTemplate.units[UnitID].x=uc.x
 SpawnTemplate.units[UnitID].y=uc.z
@@ -27623,15 +27549,12 @@ end
 return nil
 end
 function GROUP:GetTaskMission()
-self:F2(self.GroupName)
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template)
 end
 function GROUP:GetTaskRoute()
-self:F2(self.GroupName)
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template.route.points)
 end
 function GROUP:CopyRoute(Begin,End,Randomize,Radius)
-self:F2({Begin,End})
 local Points={}
 local GroupName=string.match(self:GetName(),".*#")
 if GroupName then
@@ -27639,7 +27562,6 @@ GroupName=GroupName:sub(1,-2)
 else
 GroupName=self:GetName()
 end
-self:T3({GroupName})
 local Template=_DATABASE.Templates.Groups[GroupName].Template
 if Template then
 if not Begin then
@@ -27675,7 +27597,6 @@ if ThreatLevelA2G>MaxThreatLevelA2G then
 MaxThreatLevelA2G=ThreatLevelA2G
 end
 end
-self:T3(MaxThreatLevelA2G)
 return MaxThreatLevelA2G
 end
 function GROUP:GetThreatLevel()
@@ -27690,20 +27611,17 @@ end
 return threatlevelMax
 end
 function GROUP:InAir()
-self:F2(self.GroupName)
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local DCSUnit=DCSGroup:getUnit(1)
 if DCSUnit then
 local GroupInAir=DCSGroup:getUnit(1):inAir()
-self:T3(GroupInAir)
 return GroupInAir
 end
 end
 return nil
 end
 function GROUP:IsAirborne(AllUnits)
-self:F2(self.GroupName)
 local units=self:GetUnits()
 if units then
 if AllUnits then
@@ -27826,7 +27744,6 @@ return attribute
 end
 do
 function GROUP:RouteRTB(RTBAirbase,Speed)
-self:F({RTBAirbase:GetName(),Speed})
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 if RTBAirbase then
@@ -27835,7 +27752,6 @@ local coord=self:GetCoordinate()
 local PointFrom=coord:WaypointAirTurningPoint(nil,Speed)
 local PointLanding=RTBAirbase:GetCoordinate():WaypointAirLanding(Speed,RTBAirbase)
 local Points={PointFrom,PointLanding}
-self:T3(Points)
 local Template=self:GetTemplate()
 Template.route.points=Points
 self:Respawn(Template,true)
@@ -27882,7 +27798,6 @@ HasPlayers=true
 end
 end
 if HasPlayers==true then
-self:F2(PlayerNames)
 return PlayerNames
 end
 return nil
@@ -27901,7 +27816,6 @@ return PlayerCount
 end
 end
 function GROUP:EnableEmission(switch)
-self:F2(self.GroupName)
 local switch=switch or false
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
@@ -27913,7 +27827,6 @@ function GROUP:SetCommandInvisible(switch)
 return self:CommandSetInvisible(switch)
 end
 function GROUP:CommandSetInvisible(switch)
-self:F2(self.GroupName)
 if switch==nil then
 switch=false
 end
@@ -27925,7 +27838,6 @@ function GROUP:SetCommandImmortal(switch)
 return self:CommandSetImmortal(switch)
 end
 function GROUP:CommandSetImmortal(switch)
-self:F2(self.GroupName)
 if switch==nil then
 switch=false
 end
@@ -27934,7 +27846,6 @@ self:SetCommand(SetImmortal)
 return self
 end
 function GROUP:GetSkill()
-self:F2(self.GroupName)
 local unit=self:GetUnit(1)
 local name=unit:GetName()
 local skill=_DATABASE.Templates.Units[name].Template.skill or"Random"
