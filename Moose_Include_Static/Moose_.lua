@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-08T11:43:33+02:00-d62025dfe0c455334588cd3c91858a77e25388d9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-08T13:22:10+02:00-7f572a1a9b798813c8428b74a6426f3cfd4894d2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26523,9 +26523,18 @@ end
 return GroupsFound
 end
 function GROUP:GetDCSObject()
+if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
 local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
+self.LastCallDCSObject=timer.getTime()
+self.DCSObject=DCSGroup
 return DCSGroup
+else
+self.DCSObject=nil
+self.LastCallDCSObject=nil
+end
+else
+return self.DCSObject
 end
 return nil
 end
@@ -28033,14 +28042,23 @@ function UNIT:Name()
 return self.UnitName
 end
 function UNIT:GetDCSObject()
+if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
 local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
+self.LastCallDCSObject=timer.getTime()
+self.DCSObject=DCSUnit
 return DCSUnit
+else
+self.DCSObject=nil
+self.LastCallDCSObject=nil
+end
+else
+return self.DCSObject
 end
 return nil
 end
 function UNIT:GetAltitude(FromGround)
-local DCSUnit=Unit.getByName(self.UnitName)
+local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local altitude=0
 local point=DCSUnit:getPoint()
@@ -28054,19 +28072,14 @@ end
 return nil
 end
 function UNIT:ReSpawnAt(Coordinate,Heading)
-self:T(self:Name())
 local SpawnGroupTemplate=UTILS.DeepCopy(_DATABASE:GetGroupTemplateFromUnitName(self:Name()))
-self:T(SpawnGroupTemplate)
 local SpawnGroup=self:GetGroup()
-self:T({SpawnGroup=SpawnGroup})
 if SpawnGroup then
 local Vec3=SpawnGroup:GetVec3()
 SpawnGroupTemplate.x=Coordinate.x
 SpawnGroupTemplate.y=Coordinate.z
-self:F(#SpawnGroupTemplate.units)
 for UnitID,UnitData in pairs(SpawnGroup:GetUnits()or{})do
 local GroupUnit=UnitData
-self:F(GroupUnit:GetName())
 if GroupUnit:IsAlive()then
 local GroupUnitVec3=GroupUnit:GetVec3()
 local GroupUnitHeading=GroupUnit:GetHeading()
@@ -28074,22 +28087,17 @@ SpawnGroupTemplate.units[UnitID].alt=GroupUnitVec3.y
 SpawnGroupTemplate.units[UnitID].x=GroupUnitVec3.x
 SpawnGroupTemplate.units[UnitID].y=GroupUnitVec3.z
 SpawnGroupTemplate.units[UnitID].heading=GroupUnitHeading
-self:F({UnitID,SpawnGroupTemplate.units[UnitID],SpawnGroupTemplate.units[UnitID]})
 end
 end
 end
 for UnitTemplateID,UnitTemplateData in pairs(SpawnGroupTemplate.units)do
-self:T({UnitTemplateData.name,self:Name()})
 SpawnGroupTemplate.units[UnitTemplateID].unitId=nil
 if UnitTemplateData.name==self:Name()then
-self:T("Adjusting")
 SpawnGroupTemplate.units[UnitTemplateID].alt=Coordinate.y
 SpawnGroupTemplate.units[UnitTemplateID].x=Coordinate.x
 SpawnGroupTemplate.units[UnitTemplateID].y=Coordinate.z
 SpawnGroupTemplate.units[UnitTemplateID].heading=Heading
-self:F({UnitTemplateID,SpawnGroupTemplate.units[UnitTemplateID],SpawnGroupTemplate.units[UnitTemplateID]})
 else
-self:F(SpawnGroupTemplate.units[UnitTemplateID].name)
 local GroupUnit=UNIT:FindByName(SpawnGroupTemplate.units[UnitTemplateID].name)
 if GroupUnit and GroupUnit:IsAlive()then
 local GroupUnitVec3=GroupUnit:GetVec3()
@@ -28100,7 +28108,6 @@ UnitTemplateData.y=GroupUnitVec3.z
 UnitTemplateData.heading=GroupUnitHeading
 else
 if SpawnGroupTemplate.units[UnitTemplateID].name~=self:Name()then
-self:T("nilling")
 SpawnGroupTemplate.units[UnitTemplateID].delete=true
 end
 end
@@ -28109,7 +28116,6 @@ end
 local i=1
 while i<=#SpawnGroupTemplate.units do
 local UnitTemplateData=SpawnGroupTemplate.units[i]
-self:T(UnitTemplateData.name)
 if UnitTemplateData.delete then
 table.remove(SpawnGroupTemplate.units,i)
 else
@@ -28117,11 +28123,9 @@ i=i+1
 end
 end
 SpawnGroupTemplate.groupId=nil
-self:T(SpawnGroupTemplate)
 _DATABASE:Spawn(SpawnGroupTemplate)
 end
 function UNIT:IsActive()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitIsActive=DCSUnit:isActive()
@@ -28138,7 +28142,6 @@ end
 return nil
 end
 function UNIT:IsAlive()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit and DCSUnit:isExist()then
 local UnitIsAlive=DCSUnit:isActive()
@@ -28150,7 +28153,6 @@ function UNIT:IsDead()
 return not self:IsAlive()
 end
 function UNIT:GetCallsign()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitCallSign=DCSUnit:getCallsign()
@@ -28159,7 +28161,6 @@ UnitCallSign=DCSUnit:getName()
 end
 return UnitCallSign
 end
-self:F(self.ClassName.." "..self.UnitName.." not found!")
 return nil
 end
 function UNIT:IsPlayer()
@@ -28183,7 +28184,6 @@ end
 return false
 end
 function UNIT:GetPlayerName()
-self:F(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local PlayerName=DCSUnit:getPlayerName()
@@ -28209,7 +28209,6 @@ local typename=self:GetTypeName()
 return UTILS.GetReportingName(typename)
 end
 function UNIT:GetNumber()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitNumber=DCSUnit:getNumber()
@@ -28218,7 +28217,6 @@ end
 return nil
 end
 function UNIT:GetSpeedMax()
-self:F2(self.UnitName)
 local Desc=self:GetDesc()
 if Desc then
 local SpeedMax=Desc.speedMax
@@ -28227,7 +28225,6 @@ end
 return 0
 end
 function UNIT:GetRange()
-self:F2(self.UnitName)
 local Desc=self:GetDesc()
 if Desc then
 local Range=Desc.range
@@ -28241,7 +28238,6 @@ end
 return nil
 end
 function UNIT:IsRefuelable()
-self:F2(self.UnitName)
 local refuelable=self:HasAttribute("Refuelable")
 local system=nil
 local Desc=self:GetDesc()
@@ -28251,7 +28247,6 @@ end
 return refuelable,system
 end
 function UNIT:IsTanker()
-self:F2(self.UnitName)
 local tanker=self:HasAttribute("Tankers")
 local system=nil
 if tanker then
@@ -28303,7 +28298,6 @@ end
 return false
 end
 function UNIT:GetGroup()
-self:F2(self.UnitName)
 local UnitGroup=GROUP:FindByName(self.GroupName)
 if UnitGroup then
 return UnitGroup
@@ -28320,17 +28314,14 @@ end
 return nil
 end
 function UNIT:GetPrefix()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitPrefix=string.match(self.UnitName,".*#"):sub(1,-2)
-self:T3(UnitPrefix)
 return UnitPrefix
 end
 return nil
 end
 function UNIT:GetAmmo()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitAmmo=DCSUnit:getAmmo()
@@ -28426,7 +28417,6 @@ local _,_,_,_,_,shells=self:GetAmmunition()
 return shells or 0
 end
 function UNIT:GetSensors()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitSensors=DCSUnit:getSensors()
@@ -28435,7 +28425,6 @@ end
 return nil
 end
 function UNIT:HasSensors(...)
-self:F2(arg)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local HasSensors=DCSUnit:hasSensors(unpack(arg))
@@ -28444,7 +28433,6 @@ end
 return nil
 end
 function UNIT:HasSEAD()
-self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitSEADAttributes=DCSUnit:getDesc().attributes
@@ -28460,7 +28448,6 @@ end
 return nil
 end
 function UNIT:GetRadar()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitRadarOn,UnitRadarObject=DCSUnit:getRadar()
@@ -28469,7 +28456,6 @@ end
 return nil,nil
 end
 function UNIT:GetFuel()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitFuel=DCSUnit:getFuel()
@@ -28478,18 +28464,16 @@ end
 return nil
 end
 function UNIT:GetUnits()
-self:F3({self.UnitName})
 local DCSUnit=self:GetDCSObject()
 local Units={}
 if DCSUnit then
 Units[1]=UNIT:Find(DCSUnit)
-self:T3(Units)
+-self:T3(Units)
 return Units
 end
 return nil
 end
 function UNIT:GetLife()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit and DCSUnit:isExist()then
 local UnitLife=DCSUnit:getLife()
@@ -28498,7 +28482,6 @@ end
 return-1
 end
 function UNIT:GetLife0()
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitLife0=DCSUnit:getLife0()
@@ -28507,7 +28490,6 @@ end
 return 0
 end
 function UNIT:GetLifeRelative()
-self:F2(self.UnitName)
 if self and self:IsAlive()then
 local life0=self:GetLife0()
 local lifeN=self:GetLife()
@@ -28516,7 +28498,6 @@ end
 return-1
 end
 function UNIT:GetDamageRelative()
-self:F2(self.UnitName)
 if self and self:IsAlive()then
 return 1-self:GetLifeRelative()
 end
@@ -28531,7 +28512,6 @@ end
 return 0
 end
 function UNIT:GetUnitCategory()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 return DCSUnit:getDesc().category
@@ -28539,7 +28519,6 @@ end
 return nil
 end
 function UNIT:GetCategoryName()
-self:F3(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local CategoryNames={
@@ -28550,7 +28529,6 @@ local CategoryNames={
 [Unit.Category.STRUCTURE]="Structure",
 }
 local UnitCategory=DCSUnit:getDesc().category
-self:T3(UnitCategory)
 return CategoryNames[UnitCategory]
 end
 return nil
@@ -28661,47 +28639,37 @@ end
 return nil
 end
 function UNIT:OtherUnitInRadius(AwaitUnit,Radius)
-self:F2({self.UnitName,AwaitUnit.UnitName,Radius})
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitVec3=self:GetVec3()
 local AwaitUnitVec3=AwaitUnit:GetVec3()
 if(((UnitVec3.x-AwaitUnitVec3.x)^2+(UnitVec3.z-AwaitUnitVec3.z)^2)^0.5<=Radius)then
-self:T3("true")
 return true
 else
-self:T3("false")
 return false
 end
 end
 return nil
 end
 function UNIT:IsFriendly(FriendlyCoalition)
-self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitCoalition=DCSUnit:getCoalition()
-self:T3({UnitCoalition,FriendlyCoalition})
 local IsFriendlyResult=(UnitCoalition==FriendlyCoalition)
-self:F(IsFriendlyResult)
 return IsFriendlyResult
 end
 return nil
 end
 function UNIT:IsShip()
-self:F2()
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitDescriptor=DCSUnit:getDesc()
-self:T3({UnitDescriptor.category,Unit.Category.SHIP})
 local IsShipResult=(UnitDescriptor.category==Unit.Category.SHIP)
-self:T3(IsShipResult)
 return IsShipResult
 end
 return nil
 end
 function UNIT:InAir(NoHeloCheck)
-self:F2(self.UnitName)
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
 local UnitInAir=DCSUnit:inAir()
@@ -28716,7 +28684,6 @@ if Velocity<1 and Height<=60 then
 UnitInAir=false
 end
 end
-self:T3(UnitInAir)
 return UnitInAir
 end
 return nil
@@ -28801,7 +28768,6 @@ end
 return nil
 end
 function UNIT:EnableEmission(switch)
-self:F2(self.UnitName)
 local switch=switch or false
 local DCSUnit=self:GetDCSObject()
 if DCSUnit then
@@ -28810,7 +28776,6 @@ end
 return self
 end
 function UNIT:GetSkill()
-self:F2(self.UnitName)
 local name=self.UnitName
 local skill="Random"
 if _DATABASE.Templates.Units[name]and _DATABASE.Templates.Units[name].Template and _DATABASE.Templates.Units[name].Template.skill then
@@ -28819,7 +28784,6 @@ end
 return skill
 end
 function UNIT:GetSTN()
-self:F2(self.UnitName)
 local STN=nil
 local VCL=nil
 local VCN=nil
@@ -71013,6 +70977,8 @@ ADFRadioPwr=1000,
 PilotWeight=80,
 CreateRadioBeacons=true,
 UserSetGroup=nil,
+AllowIRStrobe=false,
+IRStrobeRuntime=300,
 }
 CSAR.AircraftType={}
 CSAR.AircraftType["SA342Mistral"]=2
@@ -71032,7 +70998,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH-58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.28"
+CSAR.version="1.0.29"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -72069,7 +72035,7 @@ _distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
 else
 _distance=string.format("%.1fkm",_closest.distance/1000)
 end
-local _msg=string.format("%s - Popping signal flare at your %s o\'clock. Distance %s",self:_GetCustomCallSign(_unitName),_clockDir,_distance)
+local _msg=string.format("%s - Firing signal flare at your %s o\'clock. Distance %s",self:_GetCustomCallSign(_unitName),_clockDir,_distance)
 self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true,true)
 local _coord=_closest.pilot:GetCoordinate()
 _coord:FlareRed(_clockDir)
@@ -72094,7 +72060,6 @@ local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
 if self.msrs:GetProvider()==MSRS.Provider.WINDOWS then
 voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
 end
-self:F("Voice = "..voice)
 self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
 end
 if ToScreen==true or ToScreen==nil then
@@ -72104,6 +72069,37 @@ if _unit and not self.suppressmessages then
 self:_DisplayMessageToSAR(_unit,_message,_messagetime)
 end
 end
+end
+return self
+end
+function CSAR:_ReqIRStrobe(_unitName)
+self:T(self.lid.." _ReqIRStrobe")
+local _heli=self:_GetSARHeli(_unitName)
+if _heli==nil then
+return
+end
+local smokedist=8000
+if smokedist<self.approachdist_far then smokedist=self.approachdist_far end
+local _closest=self:_GetClosestDownedPilot(_heli)
+if _closest~=nil and _closest.pilot~=nil and _closest.distance>0 and _closest.distance<smokedist then
+local _clockDir=self:_GetClockDirection(_heli,_closest.pilot)
+local _distance=string.format("%.1fkm",_closest.distance/1000)
+if _SETTINGS:IsImperial()then
+_distance=string.format("%.1fnm",UTILS.MetersToNM(_closest.distance))
+else
+_distance=string.format("%.1fkm",_closest.distance/1000)
+end
+local _msg=string.format("%s - IR Strobe active at your %s o\'clock. Distance %s",self:_GetCustomCallSign(_unitName),_clockDir,_distance)
+self:_DisplayMessageToSAR(_heli,_msg,self.messageTime,false,true,true)
+_closest.pilot:NewIRMarker(true,self.IRStrobeRuntime or 300)
+else
+local _distance=string.format("%.1fkm",smokedist/1000)
+if _SETTINGS:IsImperial()then
+_distance=string.format("%.1fnm",UTILS.MetersToNM(smokedist))
+else
+_distance=string.format("%.1fkm",smokedist/1000)
+end
+self:_DisplayMessageToSAR(_heli,string.format("No Pilots within %s",_distance),self.messageTime,false,false,true)
 end
 return self
 end
@@ -72229,7 +72225,12 @@ local _rootPath=MENU_GROUP:New(_group,menuname)
 local _rootMenu1=MENU_GROUP_COMMAND:New(_group,"List Active CSAR",_rootPath,self._DisplayActiveSAR,self,_unitName)
 local _rootMenu2=MENU_GROUP_COMMAND:New(_group,"Check Onboard",_rootPath,self._CheckOnboard,self,_unitName)
 local _rootMenu3=MENU_GROUP_COMMAND:New(_group,"Request Signal Flare",_rootPath,self._SignalFlare,self,_unitName)
-local _rootMenu4=MENU_GROUP_COMMAND:New(_group,"Request Smoke",_rootPath,self._Reqsmoke,self,_unitName):Refresh()
+local _rootMenu4=MENU_GROUP_COMMAND:New(_group,"Request Smoke",_rootPath,self._Reqsmoke,self,_unitName)
+if self.AllowIRStrobe then
+local _rootMenu5=MENU_GROUP_COMMAND:New(_group,"Request IR Strobe",_rootPath,self._ReqIRStrobe,self,_unitName):Refresh()
+else
+_rootMenu4:Refresh()
+end
 end
 end
 end
