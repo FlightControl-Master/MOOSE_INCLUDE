@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-06T16:40:18+02:00-d6ecde96f862cabb9214b43254e348054de21d2d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-08T11:45:22+02:00-f53488e8b07f64b1917778bd6f98050ecb68ebc4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26889,7 +26889,6 @@ local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 return DCSGroup
 end
-self:T2(string.format("ERROR: Could not get DCS group object of group %s because DCS object could not be found!",tostring(self.GroupName)))
 return nil
 end
 function GROUP:GetPositionVec3()
@@ -27241,6 +27240,14 @@ if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Activate,self)
 else
 trigger.action.activateGroup(self:GetDCSObject())
+end
+return self
+end
+function GROUP:Deactivate(delay)
+if delay and delay>0 then
+self:ScheduleOnce(delay,GROUP.Deactivate,self)
+else
+trigger.action.deactivateGroup(self:GetDCSObject())
 end
 return self
 end
@@ -76056,7 +76063,7 @@ self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 if self.UserSetGroup then
-self.PilotGroups=self.UserSetGroup
+self.allheligroupset=self.UserSetGroup
 elseif self.allowbronco then
 local prefixes=self.csarPrefix or{}
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefixes):FilterStart()
