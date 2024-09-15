@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-08T13:18:32+02:00-d58edf7c380c96652d742a79e7647b9c26af84e3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-15T19:25:46+02:00-9ef7a8aa3c26ed90221eee4638a411ead93ff576 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70751,6 +70751,8 @@ pickupZones={},
 DynamicCargo={},
 ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
+TroopUnloadDistGroundHerc=25,
+TroopUnloadDistGroundHook=15,
 TroopUnloadDistHover=1.5,
 UserSetGroup=nil,
 }
@@ -70787,7 +70789,7 @@ CTLD.UnitTypeCapabilities={
 ["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.16"
+CTLD.version="1.1.17"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72188,7 +72190,10 @@ local heading=Group:GetHeading()or 0
 if hoverunload or grounded then
 randomcoord=Group:GetCoordinate()
 local Angle=(heading+270)%360
+if IsHerc or IsHook then Angle=(heading+180)%360 end
 local offset=hoverunload and self.TroopUnloadDistHover or self.TroopUnloadDistGround
+if IsHerc then offset=self.TroopUnloadDistGroundHerc or 25 end
+if IsHook then offset=self.TroopUnloadDistGroundHook or 15 end
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
@@ -72198,7 +72203,7 @@ for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 tempcount=tempcount+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
-local rad=2.5+tempcount
+local rad=2.5+(tempcount*2)
 local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
