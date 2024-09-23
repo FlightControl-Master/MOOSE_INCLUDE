@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-15T19:25:08+02:00-ddc5e0f86e2b2a04660d85fa6c0e00c1546ddee1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-23T10:21:05+02:00-d0f8b1436bfec7f10443727f2057b8082e8ed4ee ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -111168,7 +111168,7 @@ capdir=45,
 capleg=15,
 maxinterceptsize=2,
 missionrange=100,
-noaltert5=4,
+noalert5=4,
 ManagedAW={},
 ManagedSQ={},
 ManagedCP={},
@@ -111189,12 +111189,12 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.13"
+EASYGCICAP.version="0.1.15"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
 self.coalitionname=string.lower(Coalition)or"blue"
-self.coalition=self.coaltitionname=="blue"and coalition.side.BLUE or coalition.side.RED
+self.coalition=self.coalitionname=="blue"and coalition.side.BLUE or coalition.side.RED
 self.wings={}
 self.EWRName=EWRName or self.coalitionname.." EWR"
 self.airbasename=AirbaseName
@@ -111208,7 +111208,7 @@ self.capdir=90
 self.capleg=15
 self.capgrouping=2
 self.missionrange=100
-self.noaltert5=2
+self.noalert5=2
 self.MaxAliveMissions=8
 self.engagerange=50
 self.repeatsonfailure=3
@@ -111283,13 +111283,13 @@ self:T(self.lid.."SetDefaultMissionRange")
 self.missionrange=Range or 100
 return self
 end
-function EASYGCICAP:SetDefaultNumberAlter5Standby(Airframes)
-self:T(self.lid.."SetDefaultNumberAlter5Standby")
-self.noaltert5=math.abs(Airframes)or 2
+function EASYGCICAP:SetDefaultNumberAlert5Standby(Airframes)
+self:T(self.lid.."SetDefaultNumberAlert5Standby")
+self.noalert5=math.abs(Airframes)or 2
 return self
 end
 function EASYGCICAP:SetDefaultEngageRange(Range)
-self:T(self.lid.."SetDefaultNumberAlter5Standby")
+self:T(self.lid.."SetDefaultEngageRange")
 self.engagerange=Range or 50
 return self
 end
@@ -111403,9 +111403,9 @@ self:Despawn(1,true)
 end
 end
 end
-if self.noaltert5>0 then
+if self.noalert5>0 then
 local alert=AUFTRAG:NewALERT5(AUFTRAG.Type.INTERCEPT)
-alert:SetRequiredAssets(self.noaltert5)
+alert:SetRequiredAssets(self.noalert5)
 alert:SetRepeat(99)
 CAP_Wing:AddMission(alert)
 table.insert(self.ListOfAuftrag,alert)
