@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-23T10:21:05+02:00-d0f8b1436bfec7f10443727f2057b8082e8ed4ee ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-23T12:44:14+02:00-48d30250a04dfe9863d885fe9853967501f25ad1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16127,11 +16127,7 @@ self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
 function SET_SCENERY:GetCoordinate()
-local Coordinate=COORDINATE:New({0,0,0})
-local Item=self:GetRandomSurely()
-if Item then
-Coordinate:GetCoordinate()
-end
+local Coordinate=self:GetFirst():GetCoordinate()
 local x1=Coordinate.x
 local x2=Coordinate.x
 local y1=Coordinate.y
@@ -32467,7 +32463,7 @@ agl=UTILS.Round(agl,2)
 self:T(self.lid.." AGL: "..agl or-1)
 local isunloaded=true
 local client
-local playername
+local playername=self.Owner
 if count>0 and(agl>0 or self.testing)then
 self:T(self.lid.." Possible alive helos: "..count or-1)
 if agl~=0 or self.testing then
@@ -32479,6 +32475,11 @@ self.CargoState=DYNAMICCARGO.State.UNLOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
+elseif count>0 and agl==0 then
+self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
+self.CargoState=DYNAMICCARGO.State.UNLOADED
+self.Owner=playername
+_DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
 end
 self.LastPosition=pos
