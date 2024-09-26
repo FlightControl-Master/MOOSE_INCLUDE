@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-23T12:44:14+02:00-48d30250a04dfe9863d885fe9853967501f25ad1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-26T06:54:20+02:00-7cce5745af5c2cbdfaea86514618e1e9f8fcb745 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -75001,9 +75001,9 @@ end
 end
 local BeaconName
 if _playerName then
-BeaconName=_unitName..math.random(1,10000)
-elseif _unitName then
 BeaconName=_playerName..math.random(1,10000)
+elseif _unitName then
+BeaconName=_unitName..math.random(1,10000)
 else
 BeaconName="Ghost-1-1"..math.random(1,10000)
 end
