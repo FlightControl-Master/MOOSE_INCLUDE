@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-23T12:43:51+02:00-1f3df107bf9587350d92fc0b06a8abd6ea77b0f3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-26T09:08:00+02:00-f1b4bb734dd4e5522cf144357ae4e9cab04b14a6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2532,8 +2532,8 @@ if type_name=="MH-60R"and(unit:getDrawArgumentValue(403)>0 or unit:getDrawArgume
 BASE:T(unit_name.." cargo door is open")
 return true
 end
-if type_name=="OH-58D"and(unit:getDrawArgumentValue(35)>0 or unit:getDrawArgumentValue(421)==-1)then
-BASE:T(unit_name.." cargo door is open")
+if type_name=="OH58D"then
+BASE:T(unit_name.." front door(s) are open")
 return true
 end
 if type_name=="CH-47Fbl1"and(unit:getDrawArgumentValue(86)>0.5)then
@@ -32097,7 +32097,7 @@ return self
 end
 function STORAGE:NewFromDynamicCargo(DynamicCargoName)
 local self=BASE:Inherit(self,BASE:New())
-self.airbase=Unit.getByName(DynamicCargoName)
+self.airbase=Unit.getByName(DynamicCargoName)or StaticObject.getByName(DynamicCargoName)
 if Airbase.getWarehouse then
 self.warehouse=Warehouse.getCargoAsWarehouse(self.airbase)
 end
@@ -32310,7 +32310,7 @@ end
 return self
 end
 function DYNAMICCARGO:GetDCSObject()
-local DCSStatic=Unit.getByName(self.StaticName)
+local DCSStatic=StaticObject.getByName(self.StaticName)or Unit.getByName(self.StaticName)
 if DCSStatic then
 return DCSStatic
 end
@@ -70787,7 +70787,7 @@ CTLD.UnitTypeCapabilities={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
-["OH-58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
+["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
 CTLD.version="1.1.17"
@@ -75004,9 +75004,9 @@ end
 end
 local BeaconName
 if _playerName then
-BeaconName=_unitName..math.random(1,10000)
-elseif _unitName then
 BeaconName=_playerName..math.random(1,10000)
+elseif _unitName then
+BeaconName=_unitName..math.random(1,10000)
 else
 BeaconName="Ghost-1-1"..math.random(1,10000)
 end
