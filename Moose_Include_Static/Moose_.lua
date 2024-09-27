@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-26T09:08:00+02:00-f1b4bb734dd4e5522cf144357ae4e9cab04b14a6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-27T11:58:56+02:00-52983bc5f13d88f7a0b70bf515512bfa73ff1bbf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7489,7 +7489,7 @@ Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
 elseif Event.IniObjectCategory==Object.Category.SCENERY then
 Event.IniDCSUnit=Event.initiator
-Event.IniDCSUnitName=Event.IniDCSUnit:getName()
+Event.IniDCSUnitName=Event.IniDCSUnit.getName and Event.IniDCSUnit:getName()or"Scenery no name "..math.random(1,20000)
 Event.IniUnitName=Event.IniDCSUnitName
 Event.IniUnit=SCENERY:Register(Event.IniDCSUnitName,Event.initiator)
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
@@ -35243,10 +35243,11 @@ Excellent={Evade=10,DelayOn={10,30}}
 SEADGroupPrefixes={},
 SuppressedGroups={},
 EngagementRange=75,
-Padding=10,
+Padding=15,
 CallBack=nil,
 UseCallBack=false,
 debug=false,
+WeaponTrack=true,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
@@ -35303,7 +35304,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.6")
+self:I("*** SEAD - Started Version 0.4.7")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -35451,7 +35452,7 @@ local wpndata=SEAD.HarmData[data]
 reach=wpndata[1]*1.1
 local mach=wpndata[2]
 wpnspeed=math.floor(mach*340.29)
-if Weapon then
+if Weapon and Weapon:GetSpeed()>0 then
 wpnspeed=Weapon:GetSpeed()
 self:T(string.format("*** SEAD - Weapon Speed from WEAPON: %f m/s",wpnspeed))
 end
@@ -35529,6 +35530,11 @@ local WeaponWrapper=WEAPON:New(EventData.Weapon)
 self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
 if self:_CheckHarms(SEADWeaponName)then
 self:T('*** SEAD - Weapon Match')
+if self.WeaponTrack==true then
+WeaponWrapper:SetFuncTrack(function(weapon)env.info(string.format("*** Weapon Speed: %d m/s",weapon:GetSpeed()or-1))end)
+WeaponWrapper:StartTrack()
+WeaponWrapper:StopTrack(30)
+end
 local _targetskill="Random"
 local _targetgroupname="none"
 local _target=EventData.Weapon:getTarget()
@@ -35580,7 +35586,7 @@ end
 end
 if SEADGroupFound==true then
 if string.find(SEADWeaponName,"ADM_141",1,true)then
-self:__ManageEvasion(2,_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,0,WeaponWrapper)
+self:__ManageEvasion(2,_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,2,WeaponWrapper)
 else
 self:ManageEvasion(_targetskill,_targetgroup,SEADPlanePos,SEADWeaponName,SEADGroup,0,WeaponWrapper)
 end
