@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-27T11:58:56+02:00-52983bc5f13d88f7a0b70bf515512bfa73ff1bbf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-30T11:37:17+02:00-60ce3685c971391a4f8d383edf38e6a398b089b0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20921,7 +20921,8 @@ count=count+_grp:CountAliveUnits()
 end
 end
 end
-return count
+self.AliveUnits=count
+return self
 end
 function SPAWN:_OnDeadOrCrash(EventData)
 local unit=UNIT:FindByName(EventData.IniUnitName)
@@ -20929,7 +20930,7 @@ if unit then
 local EventPrefix=self:_GetPrefixFromGroupName(unit.GroupName)
 if EventPrefix then
 if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefix==self.SpawnAliasPrefix)and self.AliveUnits>0 then
-self.AliveUnits=self:_CountAliveUnits()
+self:ScheduleOnce(1,self._CountAliveUnits,self)
 end
 end
 end
@@ -35247,7 +35248,7 @@ Padding=15,
 CallBack=nil,
 UseCallBack=false,
 debug=false,
-WeaponTrack=true,
+WeaponTrack=false,
 }
 SEAD.Harms={
 ["AGM_88"]="AGM_88",
@@ -35532,7 +35533,7 @@ if self:_CheckHarms(SEADWeaponName)then
 self:T('*** SEAD - Weapon Match')
 if self.WeaponTrack==true then
 WeaponWrapper:SetFuncTrack(function(weapon)env.info(string.format("*** Weapon Speed: %d m/s",weapon:GetSpeed()or-1))end)
-WeaponWrapper:StartTrack()
+WeaponWrapper:StartTrack(0.1)
 WeaponWrapper:StopTrack(30)
 end
 local _targetskill="Random"
