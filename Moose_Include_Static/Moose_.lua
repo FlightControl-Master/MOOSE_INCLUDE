@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-01T12:08:51+02:00-3524cba4efdeee2132446ef9d0d5a25e11d12acc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-01T12:10:21+02:00-8c0e0de45fd07eea5992ccb0ac996793a8a4ff2c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70952,7 +70952,7 @@ CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
-CSAR.AircraftType["OH-58D"]=2
+CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.version="1.0.29"
 function CSAR:New(Coalition,Template,Alias)
