@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-30T11:35:25+02:00-846aa823d4727946c7f064e61463e988985f0a75 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-01T09:07:51+02:00-5f8d1cf5b0c45fb3a8bdad0364afe84212b1300d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -51703,7 +51703,8 @@ end
 function WAREHOUSE:_GetAttribute(group)
 local attribute=WAREHOUSE.Attribute.OTHER_UNKNOWN
 if group then
-local transportplane=group:HasAttribute("Transports")and group:HasAttribute("Planes")
+local groupCat=group:GetCategory()
+local transportplane=group:HasAttribute("Transports")and group:HasAttribute("Planes")and groupCat==Group.Category.AIRPLANE
 local awacs=group:HasAttribute("AWACS")
 local fighter=group:HasAttribute("Fighters")or group:HasAttribute("Interceptors")or group:HasAttribute("Multirole fighters")or(group:HasAttribute("Bombers")and not group:HasAttribute("Strategic bombers"))
 local bomber=group:HasAttribute("Strategic bombers")
