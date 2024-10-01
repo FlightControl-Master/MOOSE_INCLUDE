@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-01T09:07:51+02:00-5f8d1cf5b0c45fb3a8bdad0364afe84212b1300d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-01T12:08:51+02:00-3524cba4efdeee2132446ef9d0d5a25e11d12acc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11831,8 +11831,15 @@ end
 return self
 end
 function DATABASE:_RegisterAirbase(airbase)
+local IsSyria=UTILS.GetDCSMap()=="Syria"and true or false
+local countHSyria=0
 if airbase then
 local DCSAirbaseName=airbase:getName()
+if IsSyria and DCSAirbaseName=="H"and countHSyria>0 then
+return self
+elseif IsSyria and DCSAirbaseName=="H"and countHSyria==0 then
+countHSyria=countHSyria+1
+end
 local airbaseID=airbase:getID()
 local airbase=self:AddAirbase(DCSAirbaseName)
 local airbaseUID=airbase:GetID(true)
@@ -29369,6 +29376,7 @@ AIRBASE.Syria={
 ["Gaziantep"]="Gaziantep",
 ["Gazipasa"]="Gazipasa",
 ["Gecitkale"]="Gecitkale",
+["H"]="H",
 ["H3"]="H3",
 ["H3_Northwest"]="H3 Northwest",
 ["H3_Southwest"]="H3 Southwest",
@@ -29506,20 +29514,22 @@ AIRBASE.Sinai={
 AIRBASE.Kola={
 ["Banak"]="Banak",
 ["Bodo"]="Bodo",
+["Ivalo"]="Ivalo",
 ["Jokkmokk"]="Jokkmokk",
 ["Kalixfors"]="Kalixfors",
+["Kallax"]="Kallax",
 ["Kemi_Tornio"]="Kemi Tornio",
+["Kirkenes"]="Kirkenes",
 ["Kiruna"]="Kiruna",
+["Kuusamo"]="Kuusamo",
 ["Monchegorsk"]="Monchegorsk",
 ["Murmansk_International"]="Murmansk International",
 ["Olenya"]="Olenya",
 ["Rovaniemi"]="Rovaniemi",
 ["Severomorsk_1"]="Severomorsk-1",
 ["Severomorsk_3"]="Severomorsk-3",
-["Vuojarvi"]="Vuojarvi",
-["Kirkenes"]="Kirkenes",
-["Kallax"]="Kallax",
 ["Vidsel"]="Vidsel",
+["Vuojarvi"]="Vuojarvi",
 }
 AIRBASE.Afghanistan={
 ["Bost"]="Bost",
