@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-03T14:02:14+02:00-2dce709db1604552d85b4b0d50fe5344013d59e1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-03T14:08:32+02:00-508decd91b7c87cfd4ab8f041f0f46477c563c99 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -122374,7 +122374,7 @@ ConfigLoaded=false,
 poptions={},
 UsePowerShell=false,
 }
-MSRS.version="0.3.2"
+MSRS.version="0.3.3"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
