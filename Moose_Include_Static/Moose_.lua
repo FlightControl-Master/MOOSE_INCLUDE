@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-01T12:10:21+02:00-8c0e0de45fd07eea5992ccb0ac996793a8a4ff2c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-03T14:05:51+02:00-d5a406c60f78e13bde4182636aabde8cb2880cc8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -34885,7 +34885,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.7")
+self:I("*** SEAD - Started Version 0.4.8")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -35100,16 +35100,17 @@ return self
 end
 function SEAD:HandleEventShot(EventData)
 self:T({EventData.id})
+local SEADWeapon=EventData.Weapon
+local SEADWeaponName=EventData.WeaponName or"None"
+if self:_CheckHarms(SEADWeaponName)then
 local SEADPlane=EventData.IniUnit
+if not SEADPlane then return self end
 local SEADGroup=EventData.IniGroup
 local SEADPlanePos=SEADPlane:GetCoordinate()
 local SEADUnit=EventData.IniDCSUnit
 local SEADUnitName=EventData.IniDCSUnitName
-local SEADWeapon=EventData.Weapon
-local SEADWeaponName=EventData.WeaponName
 local WeaponWrapper=WEAPON:New(EventData.Weapon)
 self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
-if self:_CheckHarms(SEADWeaponName)then
 self:T('*** SEAD - Weapon Match')
 if self.WeaponTrack==true then
 WeaponWrapper:SetFuncTrack(function(weapon)env.info(string.format("*** Weapon Speed: %d m/s",weapon:GetSpeed()or-1))end)
@@ -83052,8 +83053,9 @@ ConfigFileName="Moose_MSRS.lua",
 ConfigFilePath="Config\\",
 ConfigLoaded=false,
 poptions={},
+UsePowerShell=false,
 }
-MSRS.version="0.3.0"
+MSRS.version="0.3.3"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
@@ -83632,24 +83634,30 @@ label=label or self.Label
 coordinate=coordinate or self.coordinate
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
+local pwsh=string.format('Start-Process -WindowStyle Hidden -WorkingDirectory \"%s\" -FilePath \"%s\" -ArgumentList \'-f "%s" -m "%s" -c %s -p %s -n "%s" -v "%.1f"',path,exe,freqs,modus,coal,port,label,volume)
 local command=string.format('"%s\\%s" -f "%s" -m "%s" -c %s -p %s -n "%s" -v "%.1f"',path,exe,freqs,modus,coal,port,label,volume)
-if voice then
+if voice and self.UsePowerShell~=true then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
+pwsh=pwsh..string.format(" --voice=\"%s\"",tostring(voice))
 else
 if gender and gender~="female"then
 command=command..string.format(" -g %s",tostring(gender))
+pwsh=pwsh..string.format(" -g %s",tostring(gender))
 end
 if culture and culture~="en-GB"then
 command=command..string.format(" -l %s",tostring(culture))
+pwsh=pwsh..string.format(" -l %s",tostring(culture))
 end
 end
 if coordinate then
 local lat,lon,alt=self:_GetLatLongAlt(coordinate)
 command=command..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
+pwsh=pwsh..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
 end
 if self.provider==MSRS.Provider.GOOGLE then
 local pops=self:GetProviderOptions()
 command=command..string.format(' --ssml -G "%s"',pops.credentials)
+pwsh=pwsh..string.format(' --ssml -G "%s"',pops.credentials)
 elseif self.provider==MSRS.Provider.WINDOWS then
 else
 self:E("ERROR: SRS only supports WINWOWS and GOOGLE as TTS providers! Use DCS-gRPC backend for other providers such as ")
@@ -83659,20 +83667,29 @@ self:E("ERROR: MSRS SRS executable does not exist! FullPath="..fullPath)
 command="CommandNotFound"
 end
 self:T("MSRS command from _GetCommand="..command)
+if self.UsePowerShell==true then
+return pwsh
+else
 return command
 end
+end
 function MSRS:_ExecCommand(command)
-self:F({command=command})
+self:T2({command=command})
 if string.find(command,"CommandNotFound")then return 0 end
 local batContent=command.." && exit"
 local filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".bat"
+if self.UsePowerShell==true then
+filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".ps1"
+batContent=command.."\'"
+self:I({batContent=batContent})
+end
 local script=io.open(filename,"w+")
 script:write(batContent)
 script:close()
 self:T("MSRS batch file created: "..filename)
 self:T("MSRS batch content: "..batContent)
 local res=nil
-if true then
+if self.UsePowerShell~=true then
 local filenvbs=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".vbs"
 local script=io.open(filenvbs,"w+")
 script:write(string.format('Dim WinScriptHost\n'))
@@ -83687,16 +83704,13 @@ res=os.execute(runvbs)
 timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
 self:T("MSRS vbs and batch file removed")
-elseif false then
-local filenvbs=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".vbs"
-local script=io.open(filenvbs,"w+")
-script:write(string.format('Set oShell = CreateObject ("Wscript.Shell")\n'))
-script:write(string.format('Dim strArgs\n'))
-script:write(string.format('strArgs = "cmd /c %s"\n',filename))
-script:write(string.format('oShell.Run strArgs, 0, false'))
-script:close()
-local runvbs=string.format('cscript.exe //Nologo //B "%s"',filenvbs)
-res=os.execute(runvbs)
+elseif self.UsePowerShell==true then
+local pwsh=string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+if string.len(pwsh)>255 then
+self:E("[MSRS] - pwsh string too long")
+end
+res=os.execute(pwsh)
+timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 else
 command=string.format('start /b "" "%s"',filename)
 self:T("MSRS execute command="..command)
