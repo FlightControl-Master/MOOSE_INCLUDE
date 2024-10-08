@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-03T14:06:42+02:00-d89ed535b727f9a443f8df1e44e656527e963c85 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-08T10:05:56+02:00-16fb0c30816d4d15c95ba26b2df5427abf2b4a74 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28241,7 +28241,7 @@ return threat,maxtl
 end
 return nil,nil
 end
-function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations)
+function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations,CustomFunction,...)
 local callsign="Ghost 1"
 if self:IsAlive()then
 local IsPlayer=self:IsPlayer()
@@ -28252,6 +28252,12 @@ local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
+local playername=IsPlayer==true and self:GetPlayerName()or shortcallsign
+if CustomFunction and IsPlayer then
+local arguments=arg or{}
+local callsign=CustomFunction(groupname,playername,unpack(arguments))
+return callsign
+end
 if CallsignTranslations and CallsignTranslations[callsignroot]then
 callsignroot=CallsignTranslations[callsignroot]
 elseif IsPlayer and string.find(groupname,"#")then
@@ -28261,8 +28267,8 @@ else
 shortcallsign=string.match(groupname,"#%s*([%a]+)")or"Ghost"
 end
 personalized=true
-elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
-shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
+elseif IsPlayer and string.find(playername,"|")then
+shortcallsign=string.match(playername,"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
 personalized=true
 end
 if personalized then
@@ -81084,7 +81090,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.66",
+version="0.2.67",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -82230,11 +82236,11 @@ return managedgroup.CallSign
 end
 local callsign="Ghost 1"
 if Group and Group:IsAlive()then
-callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations)
+callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations,self.callsignCustomFunc,self.callsignCustomArgs)
 end
 return callsign
 end
-function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations,CallsignCustomFunc,...)
 if not ShortCallsign or ShortCallsign==false then
 self.callsignshort=false
 else
@@ -82242,6 +82248,8 @@ self.callsignshort=true
 end
 self.keepnumber=Keepnumber or false
 self.callsignTranslations=CallsignTranslations
+self.callsignCustomFunc=CallsignCustomFunc
+self.callsignCustomArgs=arg or{}
 return self
 end
 function AWACS:_UpdateContactFromCluster(CID)
