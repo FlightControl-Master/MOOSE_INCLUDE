@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-03T14:08:32+02:00-508decd91b7c87cfd4ab8f041f0f46477c563c99 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-08T10:03:45+02:00-d613f59ca8e4590ae1be02e95e34295e39a25a75 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -81087,7 +81087,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.66",
+version="0.2.67",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -82233,11 +82233,11 @@ return managedgroup.CallSign
 end
 local callsign="Ghost 1"
 if Group and Group:IsAlive()then
-callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations)
+callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations,self.callsignCustomFunc,self.callsignCustomArgs)
 end
 return callsign
 end
-function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations,CallsignCustomFunc,...)
 if not ShortCallsign or ShortCallsign==false then
 self.callsignshort=false
 else
@@ -82245,6 +82245,8 @@ self.callsignshort=true
 end
 self.keepnumber=Keepnumber or false
 self.callsignTranslations=CallsignTranslations
+self.callsignCustomFunc=CallsignCustomFunc
+self.callsignCustomArgs=arg or{}
 return self
 end
 function AWACS:_UpdateContactFromCluster(CID)
