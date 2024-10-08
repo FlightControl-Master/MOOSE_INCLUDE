@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-03T14:05:51+02:00-d5a406c60f78e13bde4182636aabde8cb2880cc8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-08T10:05:31+02:00-168f4301d2dde38a15d9e1f934dbfe46f5529ab7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27814,7 +27814,7 @@ return threat,maxtl
 end
 return nil,nil
 end
-function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations)
+function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations,CustomFunction,...)
 local callsign="Ghost 1"
 if self:IsAlive()then
 local IsPlayer=self:IsPlayer()
@@ -27825,6 +27825,12 @@ local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
+local playername=IsPlayer==true and self:GetPlayerName()or shortcallsign
+if CustomFunction and IsPlayer then
+local arguments=arg or{}
+local callsign=CustomFunction(groupname,playername,unpack(arguments))
+return callsign
+end
 if CallsignTranslations and CallsignTranslations[callsignroot]then
 callsignroot=CallsignTranslations[callsignroot]
 elseif IsPlayer and string.find(groupname,"#")then
@@ -27834,8 +27840,8 @@ else
 shortcallsign=string.match(groupname,"#%s*([%a]+)")or"Ghost"
 end
 personalized=true
-elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
-shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
+elseif IsPlayer and string.find(playername,"|")then
+shortcallsign=string.match(playername,"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
 personalized=true
 end
 if personalized then
