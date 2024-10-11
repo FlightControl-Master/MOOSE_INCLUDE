@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-08T10:06:27+02:00-84e7efc939c4663811beff5ea75b94fb9147e2ad ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-11T08:07:15+02:00-0473276c88e09915e85c9ba6f1351df4c4ee8db4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -59819,7 +59819,7 @@ end
 self:_CheckRecoveryTimes()
 self.Tqueue=timer.getTime()-60
 self:HandleEvent(EVENTS.Birth)
-self:HandleEvent(EVENTS.Land)
+self:HandleEvent(EVENTS.RunwayTouch)
 self:HandleEvent(EVENTS.EngineShutdown)
 self:HandleEvent(EVENTS.Takeoff)
 self:HandleEvent(EVENTS.Crash)
@@ -60167,7 +60167,7 @@ end
 function AIRBOSS:onafterStop(From,Event,To)
 self:I(self.lid..string.format("Stopping airboss script."))
 self:UnHandleEvent(EVENTS.Birth)
-self:UnHandleEvent(EVENTS.Land)
+self:UnHandleEvent(EVENTS.RunwayTouch)
 self:UnHandleEvent(EVENTS.EngineShutdown)
 self:UnHandleEvent(EVENTS.Takeoff)
 self:UnHandleEvent(EVENTS.Crash)
@@ -62274,7 +62274,7 @@ self:_AddF10Commands(_unitName)
 self:ScheduleOnce(1,self._NewPlayer,self,_unitName)
 end
 end
-function AIRBOSS:OnEventLand(EventData)
+function AIRBOSS:OnEventRunwayTouch(EventData)
 self:F3({eventland=EventData})
 if EventData==nil then
 self:E(self.lid.."ERROR: EventData=nil in event LAND!")
