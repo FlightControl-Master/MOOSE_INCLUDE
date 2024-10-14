@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-09-30T11:36:06+02:00-37998fbf1d55b6e1afee39cc9a06fcf9e7ae2c37 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-11T08:06:29+02:00-cf6e026392b9ba995ad53af32de505063ba70305 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11742,8 +11742,15 @@ end
 return self
 end
 function DATABASE:_RegisterAirbase(airbase)
+local IsSyria=UTILS.GetDCSMap()=="Syria"and true or false
+local countHSyria=0
 if airbase then
 local DCSAirbaseName=airbase:getName()
+if IsSyria and DCSAirbaseName=="H"and countHSyria>0 then
+return self
+elseif IsSyria and DCSAirbaseName=="H"and countHSyria==0 then
+countHSyria=countHSyria+1
+end
 local airbaseID=airbase:getID()
 local airbase=self:AddAirbase(DCSAirbaseName)
 local airbaseUID=airbase:GetID(true)
@@ -28234,7 +28241,7 @@ return threat,maxtl
 end
 return nil,nil
 end
-function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations)
+function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations,CustomFunction,...)
 local callsign="Ghost 1"
 if self:IsAlive()then
 local IsPlayer=self:IsPlayer()
@@ -28245,6 +28252,12 @@ local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
+local playername=IsPlayer==true and self:GetPlayerName()or shortcallsign
+if CustomFunction and IsPlayer then
+local arguments=arg or{}
+local callsign=CustomFunction(groupname,playername,unpack(arguments))
+return callsign
+end
 if CallsignTranslations and CallsignTranslations[callsignroot]then
 callsignroot=CallsignTranslations[callsignroot]
 elseif IsPlayer and string.find(groupname,"#")then
@@ -28254,8 +28267,8 @@ else
 shortcallsign=string.match(groupname,"#%s*([%a]+)")or"Ghost"
 end
 personalized=true
-elseif IsPlayer and string.find(self:GetPlayerName(),"|")then
-shortcallsign=string.match(self:GetPlayerName(),"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
+elseif IsPlayer and string.find(playername,"|")then
+shortcallsign=string.match(playername,"|%s*([%a]+)")or string.match(self:GetPlayerName(),"|%s*([%d]+)")or"Ghost"
 personalized=true
 end
 if personalized then
@@ -29796,6 +29809,7 @@ AIRBASE.Syria={
 ["Gaziantep"]="Gaziantep",
 ["Gazipasa"]="Gazipasa",
 ["Gecitkale"]="Gecitkale",
+["H"]="H",
 ["H3"]="H3",
 ["H3_Northwest"]="H3 Northwest",
 ["H3_Southwest"]="H3 Southwest",
@@ -29933,20 +29947,22 @@ AIRBASE.Sinai={
 AIRBASE.Kola={
 ["Banak"]="Banak",
 ["Bodo"]="Bodo",
+["Ivalo"]="Ivalo",
 ["Jokkmokk"]="Jokkmokk",
 ["Kalixfors"]="Kalixfors",
+["Kallax"]="Kallax",
 ["Kemi_Tornio"]="Kemi Tornio",
+["Kirkenes"]="Kirkenes",
 ["Kiruna"]="Kiruna",
+["Kuusamo"]="Kuusamo",
 ["Monchegorsk"]="Monchegorsk",
 ["Murmansk_International"]="Murmansk International",
 ["Olenya"]="Olenya",
 ["Rovaniemi"]="Rovaniemi",
 ["Severomorsk_1"]="Severomorsk-1",
 ["Severomorsk_3"]="Severomorsk-3",
-["Vuojarvi"]="Vuojarvi",
-["Kirkenes"]="Kirkenes",
-["Kallax"]="Kallax",
 ["Vidsel"]="Vidsel",
+["Vuojarvi"]="Vuojarvi",
 }
 AIRBASE.Afghanistan={
 ["Bost"]="Bost",
@@ -35302,7 +35318,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.7")
+self:I("*** SEAD - Started Version 0.4.8")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -35517,16 +35533,17 @@ return self
 end
 function SEAD:HandleEventShot(EventData)
 self:T({EventData.id})
+local SEADWeapon=EventData.Weapon
+local SEADWeaponName=EventData.WeaponName or"None"
+if self:_CheckHarms(SEADWeaponName)then
 local SEADPlane=EventData.IniUnit
+if not SEADPlane then return self end
 local SEADGroup=EventData.IniGroup
 local SEADPlanePos=SEADPlane:GetCoordinate()
 local SEADUnit=EventData.IniDCSUnit
 local SEADUnitName=EventData.IniDCSUnitName
-local SEADWeapon=EventData.Weapon
-local SEADWeaponName=EventData.WeaponName
 local WeaponWrapper=WEAPON:New(EventData.Weapon)
 self:T("*** SEAD - Missile Launched = "..SEADWeaponName)
-if self:_CheckHarms(SEADWeaponName)then
 self:T('*** SEAD - Weapon Match')
 if self.WeaponTrack==true then
 WeaponWrapper:SetFuncTrack(function(weapon)env.info(string.format("*** Weapon Speed: %d m/s",weapon:GetSpeed()or-1))end)
@@ -52111,7 +52128,8 @@ end
 function WAREHOUSE:_GetAttribute(group)
 local attribute=WAREHOUSE.Attribute.OTHER_UNKNOWN
 if group then
-local transportplane=group:HasAttribute("Transports")and group:HasAttribute("Planes")
+local groupCat=group:GetCategory()
+local transportplane=group:HasAttribute("Transports")and group:HasAttribute("Planes")and groupCat==Group.Category.AIRPLANE
 local awacs=group:HasAttribute("AWACS")
 local fighter=group:HasAttribute("Fighters")or group:HasAttribute("Interceptors")or group:HasAttribute("Multirole fighters")or(group:HasAttribute("Bombers")and not group:HasAttribute("Strategic bombers"))
 local bomber=group:HasAttribute("Strategic bombers")
@@ -59798,7 +59816,7 @@ end
 self:_CheckRecoveryTimes()
 self.Tqueue=timer.getTime()-60
 self:HandleEvent(EVENTS.Birth)
-self:HandleEvent(EVENTS.Land)
+self:HandleEvent(EVENTS.RunwayTouch)
 self:HandleEvent(EVENTS.EngineShutdown)
 self:HandleEvent(EVENTS.Takeoff)
 self:HandleEvent(EVENTS.Crash)
@@ -60146,7 +60164,7 @@ end
 function AIRBOSS:onafterStop(From,Event,To)
 self:I(self.lid..string.format("Stopping airboss script."))
 self:UnHandleEvent(EVENTS.Birth)
-self:UnHandleEvent(EVENTS.Land)
+self:UnHandleEvent(EVENTS.RunwayTouch)
 self:UnHandleEvent(EVENTS.EngineShutdown)
 self:UnHandleEvent(EVENTS.Takeoff)
 self:UnHandleEvent(EVENTS.Crash)
@@ -62253,7 +62271,7 @@ self:_AddF10Commands(_unitName)
 self:ScheduleOnce(1,self._NewPlayer,self,_unitName)
 end
 end
-function AIRBOSS:OnEventLand(EventData)
+function AIRBOSS:OnEventRunwayTouch(EventData)
 self:F3({eventland=EventData})
 if EventData==nil then
 self:E(self.lid.."ERROR: EventData=nil in event LAND!")
@@ -74749,7 +74767,7 @@ CSAR.AircraftType["AH-64D_BLK_II"]=2
 CSAR.AircraftType["Bronco-OV-10A"]=2
 CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
-CSAR.AircraftType["OH-58D"]=2
+CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.version="1.0.29"
 function CSAR:New(Coalition,Template,Alias)
@@ -81072,7 +81090,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.65",
+version="0.2.67",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -81169,6 +81187,7 @@ TacticalIncrFreq=0.5,
 TacticalModulation=radio.modulation.AM,
 TacticalInterval=120,
 DetectionSet=nil,
+MaxMissionRange=125,
 }
 AWACS.CallSignClear={
 [1]="Overlord",
@@ -81686,6 +81705,10 @@ self:T(self.lid.."SetLocale")
 self.locale=Locale or"en"
 return self
 end
+function AWACS:SetMaxMissionRange(NM)
+self.MaxMissionRange=NM or 125
+return self
+end
 function AWACS:AddFrequencyAndModulation(Frequency,Modulation)
 self:T(self.lid.."AddFrequencyAndModulation")
 table.insert(self.MultiFrequency,Frequency)
@@ -82076,6 +82099,7 @@ for i=1,self.EscortNumber do
 local escort=AUFTRAG:NewESCORT(group,{x=-100*((i+(i%2))/2),y=0,z=(100+100*((i+(i%2))/2))*(-1)^i},45,{"Air"})
 escort:SetRequiredAssets(1)
 escort:SetTime(nil,timeonstation)
+escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
@@ -82212,11 +82236,11 @@ return managedgroup.CallSign
 end
 local callsign="Ghost 1"
 if Group and Group:IsAlive()then
-callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations)
+callsign=Group:GetCustomCallSign(self.callsignshort,self.keepnumber,self.callsignTranslations,self.callsignCustomFunc,self.callsignCustomArgs)
 end
 return callsign
 end
-function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+function AWACS:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations,CallsignCustomFunc,...)
 if not ShortCallsign or ShortCallsign==false then
 self.callsignshort=false
 else
@@ -82224,6 +82248,8 @@ self.callsignshort=true
 end
 self.keepnumber=Keepnumber or false
 self.callsignTranslations=CallsignTranslations
+self.callsignCustomFunc=CallsignCustomFunc
+self.callsignCustomArgs=arg or{}
 return self
 end
 function AWACS:_UpdateContactFromCluster(CID)
@@ -84650,6 +84676,7 @@ local RejectZoneSet=self.RejectZoneSet
 local intercept=AUFTRAG:NewINTERCEPT(Target.Target)
 intercept:SetWeaponExpend(AI.Task.WeaponExpend.ALL)
 intercept:SetWeaponType(ENUMS.WeaponFlag.Auto)
+intercept:SetMissionRange(self.MaxMissionRange)
 intercept:AddConditionSuccess(
 function(target,zoneset,rzoneset)
 local success=true
@@ -84691,6 +84718,7 @@ local AnchorSpeed=self.CapSpeedBase or 270
 AnchorSpeed=UTILS.KnotsToAltKIAS(AnchorSpeed,Angels)
 local Anchor=self.AnchorStacks:ReadByPointer(Pilot.AnchorStackNo)
 local capauftrag=AUFTRAG:NewCAP(Anchor.StationZone,Angels,AnchorSpeed,Anchor.StationZoneCoordinate,0,15,{})
+capauftrag:SetMissionRange(self.MaxMissionRange)
 capauftrag:SetTime(nil,((self.CAPTimeOnStation*3600)+(15*60)))
 Pilot.FlightGroup:AddMission(capauftrag)
 if currmission then
@@ -84765,6 +84793,7 @@ end
 if not self.GCI then
 local AwacsAW=self.AirWing
 local mission=AUFTRAG:NewORBIT_RACETRACK(self.OrbitZone:GetCoordinate(),self.AwacsAngels*1000,self.Speed,self.Heading,self.Leg)
+mission:SetMissionRange(self.MaxMissionRange)
 local timeonstation=(self.AwacsTimeOnStation+self.ShiftChangeTime)*3600
 mission:SetTime(nil,timeonstation)
 self.CatchAllMissions[#self.CatchAllMissions+1]=mission
@@ -85170,6 +85199,7 @@ if auftrag then
 local auftragtype=auftrag:GetType()
 if auftragtype==AUFTRAG.Type.ALERT5 then
 local capauftrag=AUFTRAG:NewCAP(Anchor.StationZone,Angels*1000,AnchorSpeed,Anchor.StationZone:GetCoordinate(),0,15,{})
+capauftrag:SetMissionRange(self.MaxMissionRange)
 capauftrag:SetTime(nil,((self.CAPTimeOnStation*3600)+(15*60)))
 capauftrag:AddAsset(managedgroup.FlightGroup)
 self.CatchAllMissions[#self.CatchAllMissions+1]=capauftrag
@@ -85414,6 +85444,7 @@ local mission=AUFTRAG:NewORBIT_RACETRACK(self.OrbitZone:GetCoordinate(),self.Awa
 self.CatchAllMissions[#self.CatchAllMissions+1]=mission
 local timeonstation=(self.AwacsTimeOnStation+self.ShiftChangeTime)*3600
 mission:SetTime(nil,timeonstation)
+mission:SetMissionRange(self.MaxMissionRange)
 AwacsAW:AddMission(mission)
 self.AwacsMissionReplacement=mission
 end
@@ -122338,8 +122369,9 @@ ConfigFileName="Moose_MSRS.lua",
 ConfigFilePath="Config\\",
 ConfigLoaded=false,
 poptions={},
+UsePowerShell=false,
 }
-MSRS.version="0.3.0"
+MSRS.version="0.3.3"
 MSRS.Voices={
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
@@ -122918,24 +122950,30 @@ label=label or self.Label
 coordinate=coordinate or self.coordinate
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
+local pwsh=string.format('Start-Process -WindowStyle Hidden -WorkingDirectory \"%s\" -FilePath \"%s\" -ArgumentList \'-f "%s" -m "%s" -c %s -p %s -n "%s" -v "%.1f"',path,exe,freqs,modus,coal,port,label,volume)
 local command=string.format('"%s\\%s" -f "%s" -m "%s" -c %s -p %s -n "%s" -v "%.1f"',path,exe,freqs,modus,coal,port,label,volume)
-if voice then
+if voice and self.UsePowerShell~=true then
 command=command..string.format(" --voice=\"%s\"",tostring(voice))
+pwsh=pwsh..string.format(" --voice=\"%s\"",tostring(voice))
 else
 if gender and gender~="female"then
 command=command..string.format(" -g %s",tostring(gender))
+pwsh=pwsh..string.format(" -g %s",tostring(gender))
 end
 if culture and culture~="en-GB"then
 command=command..string.format(" -l %s",tostring(culture))
+pwsh=pwsh..string.format(" -l %s",tostring(culture))
 end
 end
 if coordinate then
 local lat,lon,alt=self:_GetLatLongAlt(coordinate)
 command=command..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
+pwsh=pwsh..string.format(" -L %.4f -O %.4f -A %d",lat,lon,alt)
 end
 if self.provider==MSRS.Provider.GOOGLE then
 local pops=self:GetProviderOptions()
 command=command..string.format(' --ssml -G "%s"',pops.credentials)
+pwsh=pwsh..string.format(' --ssml -G "%s"',pops.credentials)
 elseif self.provider==MSRS.Provider.WINDOWS then
 else
 self:E("ERROR: SRS only supports WINWOWS and GOOGLE as TTS providers! Use DCS-gRPC backend for other providers such as ")
@@ -122945,20 +122983,29 @@ self:E("ERROR: MSRS SRS executable does not exist! FullPath="..fullPath)
 command="CommandNotFound"
 end
 self:T("MSRS command from _GetCommand="..command)
+if self.UsePowerShell==true then
+return pwsh
+else
 return command
 end
+end
 function MSRS:_ExecCommand(command)
-self:F({command=command})
+self:T2({command=command})
 if string.find(command,"CommandNotFound")then return 0 end
 local batContent=command.." && exit"
 local filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".bat"
+if self.UsePowerShell==true then
+filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".ps1"
+batContent=command.."\'"
+self:I({batContent=batContent})
+end
 local script=io.open(filename,"w+")
 script:write(batContent)
 script:close()
 self:T("MSRS batch file created: "..filename)
 self:T("MSRS batch content: "..batContent)
 local res=nil
-if true then
+if self.UsePowerShell~=true then
 local filenvbs=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".vbs"
 local script=io.open(filenvbs,"w+")
 script:write(string.format('Dim WinScriptHost\n'))
@@ -122973,16 +123020,13 @@ res=os.execute(runvbs)
 timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
 self:T("MSRS vbs and batch file removed")
-elseif false then
-local filenvbs=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".vbs"
-local script=io.open(filenvbs,"w+")
-script:write(string.format('Set oShell = CreateObject ("Wscript.Shell")\n'))
-script:write(string.format('Dim strArgs\n'))
-script:write(string.format('strArgs = "cmd /c %s"\n',filename))
-script:write(string.format('oShell.Run strArgs, 0, false'))
-script:close()
-local runvbs=string.format('cscript.exe //Nologo //B "%s"',filenvbs)
-res=os.execute(runvbs)
+elseif self.UsePowerShell==true then
+local pwsh=string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+if string.len(pwsh)>255 then
+self:E("[MSRS] - pwsh string too long")
+end
+res=os.execute(pwsh)
+timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 else
 command=string.format('start /b "" "%s"',filename)
 self:T("MSRS execute command="..command)
