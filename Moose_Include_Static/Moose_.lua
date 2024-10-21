@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-11T08:06:05+02:00-37f819458a1d266daec74d9bba2b779e8305af55 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-21T11:33:14+02:00-cd178d6a8cd8467af0d09f9669a779d84991ef58 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21658,7 +21658,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition)
+self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_CHANGE then
@@ -21667,7 +21667,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition)
+self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_REMOVED then
