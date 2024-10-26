@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-11T08:07:15+02:00-0473276c88e09915e85c9ba6f1351df4c4ee8db4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-26T18:46:39+02:00-ebc7902775ea3f7c48daebc04c46081677d2216d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21572,7 +21572,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition)
+self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_CHANGE then
@@ -21581,7 +21581,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
-self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition)
+self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
 elseif Event.id==world.event.S_EVENT_MARK_REMOVED then
@@ -23972,9 +23972,12 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=self:GetID(),
+groupId=nil,
 },
 }
+if self:IsGround()then
+CommandEPLRS.params.groupId=self:GetID()
+end
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandEPLRS,{self,SwitchOnOff},Delay)
 else
@@ -24038,9 +24041,12 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=self:GetID(),
+groupId=nil,
 },
 }
+if self:IsGround()then
+CommandEPLRS.params.groupId=self:GetID()
+end
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
 function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
