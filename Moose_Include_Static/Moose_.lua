@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-21T11:33:14+02:00-cd178d6a8cd8467af0d09f9669a779d84991ef58 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-26T18:45:01+02:00-90096163ee353327168d2216f8acd25fb1ed50c7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23542,9 +23542,12 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=self:GetID(),
+groupId=nil,
 },
 }
+if self:IsGround()then
+CommandEPLRS.params.groupId=self:GetID()
+end
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandEPLRS,{self,SwitchOnOff},Delay)
 else
@@ -23608,9 +23611,12 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=self:GetID(),
+groupId=nil,
 },
 }
+if self:IsGround()then
+CommandEPLRS.params.groupId=self:GetID()
+end
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
 function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
