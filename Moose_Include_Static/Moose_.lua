@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-26T18:45:45+02:00-7e727620a487da186c24f9a517ef6bd9ba92870f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-27T13:25:41+01:00-1b3c94cc57f6fc5c99aeb87da923ee5f6525ae08 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5567,7 +5567,7 @@ LineFrom=DebugInfoFrom.currentline
 end
 env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s(%s)",LineCurrent,LineFrom,"E",self.ClassName,self.ClassID,Function,UTILS.BasicSerialize(Arguments)))
 else
-env.info(string.format("%1s:%30s%05d(%s)","E",self.ClassName,self.ClassID,BASE:_Serialize(Arguments)))
+env.info(string.format("%1s:%30s%05d(%s)","E",self.ClassName,self.ClassID,UTILS.BasicSerialize(Arguments)))
 end
 end
 function BASE:I(Arguments)
@@ -5585,7 +5585,7 @@ LineFrom=DebugInfoFrom.currentline
 end
 env.info(string.format("%6d(%6d)/%1s:%30s%05d.%s(%s)",LineCurrent,LineFrom,"I",self.ClassName,self.ClassID,Function,UTILS.BasicSerialize(Arguments)))
 else
-env.info(string.format("%1s:%30s%05d(%s)","I",self.ClassName,self.ClassID,BASE:_Serialize(Arguments)))
+env.info(string.format("%1s:%30s%05d(%s)","I",self.ClassName,self.ClassID,UTILS.BasicSerialize(Arguments)))
 end
 end
 ASTAR={
