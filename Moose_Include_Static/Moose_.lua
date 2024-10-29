@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-29T13:20:25+01:00-6a219ab5472bcdce6a6c02e71c35bac669b5f77f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-29T13:56:28+01:00-20b0902768120d261e0ffe1571da61e4f5a2a3c2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7564,6 +7564,7 @@ end
 elseif Event.TgtObjectCategory==Object.Category.SCENERY then
 Event.TgtDCSUnit=Event.target
 Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
+if Event.TgtDCSUnitName==nil then return end
 Event.TgtUnitName=Event.TgtDCSUnitName
 Event.TgtUnit=SCENERY:Register(Event.TgtDCSUnitName,Event.target)
 Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
