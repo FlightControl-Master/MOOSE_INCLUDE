@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-27T13:25:13+01:00-216ea230a84a4aabfea3b2dcd2d914c05113bb44 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-29T11:37:06+01:00-2fb460c4bbdeeccbd45e6341d666e13852d02196 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -36619,19 +36619,21 @@ NotInRunwayZone=(Client:IsNotInZone(_runwaydata.zone)==true)and NotInRunwayZone 
 end
 end
 if NotInRunwayZone then
-if IsOnGround then
 local Taxi=Client:GetState(self,"Taxi")
+if IsOnGround then
 self:T(Taxi)
 if Taxi==false then
 local Velocity=VELOCITY:New(AirbaseMeta.KickSpeed or self.KickSpeed)
 Client:Message("Welcome to "..AirbaseID..". The maximum taxiing speed is "..
 Velocity:ToString(),20,"ATC")
 Client:SetState(self,"Taxi",true)
+Client:SetState(self,"Speeding",false)
+Client:SetState(self,"Warnings",0)
 end
 local Velocity=VELOCITY_POSITIONABLE:New(Client)
 local IsAboveRunway=Client:IsAboveRunway()
 self:T({IsAboveRunway,IsOnGround,Velocity:Get()})
-if IsOnGround then
+if IsOnGround and not Taxi then
 local Speeding=false
 if AirbaseMeta.MaximumKickSpeed then
 if Velocity:Get()>AirbaseMeta.MaximumKickSpeed then
@@ -36643,11 +36645,11 @@ Speeding=true
 end
 end
 if Speeding==true then
-MESSAGE:New("Penalty! Player "..Client:GetPlayerName()..
-" has been kicked, due to a severe airbase traffic rule violation ...",10,"ATC"):ToAll()
-Client:Destroy()
-Client:SetState(self,"Speeding",false)
-Client:SetState(self,"Warnings",0)
+Client:SetState(self,"Speeding",true)
+local SpeedingWarnings=Client:GetState(self,"Warnings")
+Client:SetState(self,"Warnings",SpeedingWarnings+1)
+Client:Message("Warning "..SpeedingWarnings.."/3! Airbase traffic rule violation! Slow down now! Your speed is "..
+Velocity:ToString(),5,"ATC")
 end
 end
 if IsOnGround then
