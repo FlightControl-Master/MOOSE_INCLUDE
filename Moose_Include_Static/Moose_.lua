@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-29T11:37:44+01:00-54f7627f9c88668e392353629d8844651637011b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-29T13:19:40+01:00-bb5c044a2590284da09aea5f45b01f52078ec3a1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26946,7 +26946,7 @@ function GROUP:Destroy(GenerateEvent,delay)
 if delay and delay>0 then
 self:ScheduleOnce(delay,GROUP.Destroy,self,GenerateEvent)
 else
-local DCSGroup=self:GetDCSObject()
+local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 for Index,UnitData in pairs(DCSGroup:getUnits())do
 if GenerateEvent and GenerateEvent==true then
@@ -70820,7 +70820,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.17"
+CTLD.version="1.1.18"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71386,6 +71386,7 @@ local unitcoord=unit:GetCoordinate()
 local nearestGroup=nil
 local nearestGroupIndex=-1
 local nearestDistance=10000000
+local maxdistance=0
 local nearestList={}
 local distancekeys={}
 local extractdistance=self.CrateDistance*self.ExtractFactor
@@ -71397,6 +71398,11 @@ if distance<=extractdistance and distance~=-1 and(TNow-vtime>300)then
 nearestGroup=v
 nearestGroupIndex=k
 nearestDistance=distance
+if math.floor(distance)>maxdistance then maxdistance=math.floor(distance)end
+if nearestList[math.floor(distance)]then
+distance=maxdistance+1
+maxdistance=distance
+end
 table.insert(nearestList,math.floor(distance),v)
 distancekeys[#distancekeys+1]=math.floor(distance)
 end
@@ -71442,7 +71448,7 @@ self.CargoCounter=self.CargoCounter+1
 nearestGroup.ExtractTime=timer.getTime()
 local loadcargotype=CTLD_CARGO:New(self.CargoCounter,Cargotype.Name,Cargotype.Templates,Cargotype.CargoType,true,true,Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
 self:T({cargotype=loadcargotype})
-local running=math.floor(nearestDistance/4)+10
+local running=math.floor(nearestDistance/4)+20
 loaded.Troopsloaded=loaded.Troopsloaded+troopsize
 table.insert(loaded.Cargo,loadcargotype)
 self.Loaded_Cargo[unitname]=loaded
@@ -71457,24 +71463,29 @@ local heading=unit:GetHeading()or 0
 local Angle=math.floor((heading+160)%360)
 Point=coord:Translate(8,Angle):GetVec2()
 if Point then
-nearestGroup:RouteToVec2(Point,4)
+nearestGroup:RouteToVec2(Point,5)
 end
 end
+local hassecondaries=false
 if type(Cargotype.Templates)=="table"and Cargotype.Templates[2]then
 for _,_key in pairs(Cargotype.Templates)do
 table.insert(secondarygroups,_key)
+hassecondaries=true
 end
 end
-nearestGroup:Destroy(false,running)
+local destroytimer=math.random(10,20)
+nearestGroup:Destroy(false,destroytimer)
 end
 end
 end
+if hassecondaries==true then
 for _,_name in pairs(secondarygroups)do
 for _,_group in pairs(nearestList)do
 if _group and _group:IsAlive()then
 local groupname=string.match(_group:GetName(),"(.+)-(.+)$")
 if _name==groupname then
 _group:Destroy(false,15)
+end
 end
 end
 end
@@ -72160,8 +72171,8 @@ function CTLD:_GetUnitPositions(Coordinate,Radius,Heading,Template)
 local Positions={}
 local template=_DATABASE:GetGroupTemplate(Template)
 local numbertroops=#template.units
-local slightshift=math.abs(math.random(0,200)/100)
-local newcenter=Coordinate:Translate(Radius+slightshift,((Heading+270)%360))
+local slightshift=math.abs(math.random(1,500)/100)
+local newcenter=Coordinate:Translate(Radius+slightshift,((Heading+270+math.random(1,10))%360))
 for i=1,360,math.floor(360/numbertroops)do
 local phead=((Heading+270+i)%360)
 local post=newcenter:Translate(Radius,phead)
