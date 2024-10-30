@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-29T13:57:21+01:00-dfe2ed2a9874d6d7cd6dd58d6a9f51d2169b6249 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-30T17:09:38+01:00-1445ef61a0c23d5160d236b40290b9651603afdd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29323,6 +29323,9 @@ AIRBASE.Normandy={
 ["Villacoublay"]="Villacoublay",
 ["Vrigny"]="Vrigny",
 ["West_Malling"]="West Malling",
+["Eastchurch"]="Eastchurch",
+["Headcorn"]="Headcorn",
+["Hawkinge"]="Hawkinge",
 }
 AIRBASE.PersianGulf={
 ["Abu_Dhabi_Intl"]="Abu Dhabi Intl",
@@ -29437,6 +29440,10 @@ AIRBASE.Syria={
 ["Tha_lah"]="Tha'lah",
 ["Tiyas"]="Tiyas",
 ["Wujah_Al_Hajar"]="Wujah Al Hajar",
+["Ben_Gurion"]="Ben Gurion",
+["Hatzor"]="Hatzor",
+["Palmashim"]="Palmashim",
+["Tel_Nof"]="Tel Nof",
 }
 AIRBASE.MarianaIslands={
 ["Andersen_AFB"]="Andersen AFB",
@@ -29543,6 +29550,8 @@ AIRBASE.Kola={
 ["Severomorsk_3"]="Severomorsk-3",
 ["Vidsel"]="Vidsel",
 ["Vuojarvi"]="Vuojarvi",
+["Andoya"]="Andoya",
+["Alakourtti"]="Alakourtti",
 }
 AIRBASE.Afghanistan={
 ["Bost"]="Bost",
