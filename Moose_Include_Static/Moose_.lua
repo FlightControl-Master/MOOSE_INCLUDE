@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-31T16:05:24+01:00-d51e761b26b7db832200ef9520c2dfd49981422d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-31T18:16:02+01:00-b72124c0d9d36b1a11c953ba99ad5efc7d269c3f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23578,7 +23578,7 @@ power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power})
+SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power},Delay)
 else
 self:SetCommand(CommandSetFrequency)
 end
@@ -23595,7 +23595,7 @@ power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID})
+SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID},Delay)
 else
 self:SetCommand(CommandSetFrequencyForUnit)
 end
