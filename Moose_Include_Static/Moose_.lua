@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-30T17:10:25+01:00-1ebe8b82ecad191321a43af7f73b0ced1663f42b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-31T16:06:00+01:00-0d6a1644e2a7ec990d90f635611de906cc28af86 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23970,12 +23970,9 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=nil,
+groupId=self:GetID(),
 },
 }
-if self:IsGround()then
-CommandEPLRS.params.groupId=self:GetID()
-end
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandEPLRS,{self,SwitchOnOff},Delay)
 else
@@ -24039,12 +24036,9 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=nil,
+groupId=self:GetID(),
 },
 }
-if self:IsGround()then
-CommandEPLRS.params.groupId=self:GetID()
-end
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
 function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
@@ -26893,18 +26887,11 @@ end
 return GroupsFound
 end
 function GROUP:GetDCSObject()
-if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
 local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 self.LastCallDCSObject=timer.getTime()
 self.DCSObject=DCSGroup
 return DCSGroup
-else
-self.DCSObject=nil
-self.LastCallDCSObject=nil
-end
-else
-return self.DCSObject
 end
 return nil
 end
