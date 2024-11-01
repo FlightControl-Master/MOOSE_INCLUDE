@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-30T17:10:25+01:00-1ebe8b82ecad191321a43af7f73b0ced1663f42b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-31T18:16:32+01:00-cd8cbc54c871b97b4e505b89e2f6127a8349066f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23970,12 +23970,9 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=nil,
+groupId=self:GetID(),
 },
 }
-if self:IsGround()then
-CommandEPLRS.params.groupId=self:GetID()
-end
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandEPLRS,{self,SwitchOnOff},Delay)
 else
@@ -24008,7 +24005,7 @@ power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power})
+SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power},Delay)
 else
 self:SetCommand(CommandSetFrequency)
 end
@@ -24025,7 +24022,7 @@ power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID})
+SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID},Delay)
 else
 self:SetCommand(CommandSetFrequencyForUnit)
 end
@@ -24039,12 +24036,9 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=nil,
+groupId=self:GetID(),
 },
 }
-if self:IsGround()then
-CommandEPLRS.params.groupId=self:GetID()
-end
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
 function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
@@ -26893,18 +26887,11 @@ end
 return GroupsFound
 end
 function GROUP:GetDCSObject()
-if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
 local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 self.LastCallDCSObject=timer.getTime()
 self.DCSObject=DCSGroup
 return DCSGroup
-else
-self.DCSObject=nil
-self.LastCallDCSObject=nil
-end
-else
-return self.DCSObject
 end
 return nil
 end
