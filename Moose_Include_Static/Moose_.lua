@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-31T18:16:02+01:00-b72124c0d9d36b1a11c953ba99ad5efc7d269c3f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-04T14:49:56+01:00-f9747d1c4c5d3a5fec6535ec838e1ae34e7abced ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -83727,7 +83727,7 @@ timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
 self:T("MSRS vbs and batch file removed")
 elseif self.UsePowerShell==true then
-local pwsh=string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+local pwsh=string.format('start /min "" powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
 if string.len(pwsh)>255 then
 self:E("[MSRS] - pwsh string too long")
 end
