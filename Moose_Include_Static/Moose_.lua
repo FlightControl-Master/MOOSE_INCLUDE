@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-10-30T17:11:57+01:00-48dcca4b7b9042e26ed9f6c70a87003808fbf1c1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T15:37:14+01:00-112a0b2a8edfcdbe751dbfcca6c024ee1df33e0f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1053,18 +1053,18 @@ ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right_Door={4,15,46,175}
 ENUMS.Storage.weapons.UH1H.M60_MG_Right_Door={4,15,46,177}
 ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left_Door={4,15,46,174}
 ENUMS.Storage.weapons.UH1H.M60_MG_Left_Door={4,15,46,176}
-ENUMS.Storage.weapons.OH58.FIM92={4,4,7,446}
-ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2578}
-ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2577}
-ENUMS.Storage.weapons.OH58.MG_M3P300={4,15,46,2576}
-ENUMS.Storage.weapons.OH58.MG_M3P400={4,15,46,2575}
-ENUMS.Storage.weapons.OH58.MG_M3P500={4,15,46,2574}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Blue={4,5,9,484}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Green={4,5,9,485}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Red={4,5,9,483}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Violet={4,5,9,486}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,488}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,487}
+ENUMS.Storage.weapons.OH58.FIM92={4,4,7,449}
+ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2608}
+ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2607}
+ENUMS.Storage.weapons.OH58.MG_M3P300={4,15,46,2606}
+ENUMS.Storage.weapons.OH58.MG_M3P400={4,15,46,2605}
+ENUMS.Storage.weapons.OH58.MG_M3P500={4,15,46,2604}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Blue={4,5,9,486}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Green={4,5,9,487}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Red={4,5,9,485}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Violet={4,5,9,488}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,490}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,489}
 ENUMS.Storage.weapons.AH64D.AN_APG78={4,15,44,2138}
 ENUMS.Storage.weapons.AH64D.Internal_Aux_FuelTank={1,3,43,1700}
 ENUMS.FARPType={
@@ -23973,12 +23973,9 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=nil,
+groupId=self:GetID(),
 },
 }
-if self:IsGround()then
-CommandEPLRS.params.groupId=self:GetID()
-end
 if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandEPLRS,{self,SwitchOnOff},Delay)
 else
@@ -24011,7 +24008,7 @@ power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power})
+SCHEDULER:New(nil,self.CommandSetFrequency,{self,Frequency,Modulation,Power},Delay)
 else
 self:SetCommand(CommandSetFrequency)
 end
@@ -24028,7 +24025,7 @@ power=Power or 10,
 },
 }
 if Delay and Delay>0 then
-SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID})
+SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID},Delay)
 else
 self:SetCommand(CommandSetFrequencyForUnit)
 end
@@ -24042,12 +24039,9 @@ local CommandEPLRS={
 id='EPLRS',
 params={
 value=SwitchOnOff,
-groupId=nil,
+groupId=self:GetID(),
 },
 }
-if self:IsGround()then
-CommandEPLRS.params.groupId=self:GetID()
-end
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
 function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
@@ -26896,18 +26890,11 @@ end
 return GroupsFound
 end
 function GROUP:GetDCSObject()
-if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
 local DCSGroup=Group.getByName(self.GroupName)
 if DCSGroup then
 self.LastCallDCSObject=timer.getTime()
 self.DCSObject=DCSGroup
 return DCSGroup
-else
-self.DCSObject=nil
-self.LastCallDCSObject=nil
-end
-else
-return self.DCSObject
 end
 return nil
 end
@@ -106171,6 +106158,59 @@ self:AddTransition("*","Stop","Stopped")
 self:__Status(-5)
 return self
 end
+function PLAYERTASK:NewFromTarget(Target,Repeat,Times,TTSType)
+return PLAYERTASK:New(self:_GetTaskTypeForTarget(Target),Target,Repeat,Times,TTSType)
+end
+function PLAYERTASK:_GetTaskTypeForTarget(Target)
+local group=nil
+local auftrag=nil
+if Target:IsInstanceOf("GROUP")then
+group=Target
+elseif Target:IsInstanceOf("SET_GROUP")then
+group=Target:GetFirst()
+elseif Target:IsInstanceOf("UNIT")then
+group=Target:GetGroup()
+elseif Target:IsInstanceOf("SET_UNIT")then
+group=Target:GetFirst():GetGroup()
+elseif Target:IsInstanceOf("AIRBASE")then
+auftrag=AUFTRAG.Type.BOMBRUNWAY
+elseif Target:IsInstanceOf("STATIC")
+or Target:IsInstanceOf("SET_STATIC")
+or Target:IsInstanceOf("SCENERY")
+or Target:IsInstanceOf("SET_SCENERY")then
+auftrag=AUFTRAG.Type.BOMBING
+end
+if group then
+local category=group:GetCategory()
+local attribute=group:GetAttribute()
+if(category==Group.Category.AIRPLANE or category==Group.Category.HELICOPTER)
+and group:InAir()then
+auftrag=AUFTRAG.Type.INTERCEPT
+elseif category==Group.Category.GROUND or category==Group.Category.TRAIN then
+if attribute==GROUP.Attribute.GROUND_SAM
+or attribute==GROUP.Attribute.GROUND_EWR then
+auftrag=AUFTRAG.Type.SEAD
+elseif attribute==GROUP.Attribute.GROUND_AAA
+or attribute==GROUP.Attribute.GROUND_APC
+or attribute==GROUP.Attribute.GROUND_IFV
+or attribute==GROUP.Attribute.GROUND_TRUCK
+or attribute==GROUP.Attribute.GROUND_TRAIN then
+auftrag=AUFTRAG.Type.BAI
+elseif attribute==GROUP.Attribute.GROUND_INFANTRY
+or attribute==GROUP.Attribute.GROUND_ARTILLERY
+or attribute==GROUP.Attribute.GROUND_TANK then
+auftrag=AUFTRAG.Type.CAS
+else
+auftrag=AUFTRAG.Type.BAI
+end
+elseif category==Group.Category.SHIP then
+auftrag=AUFTRAG.Type.ANTISHIP
+else
+self:T(self.lid.."ERROR: Unknown Group category!")
+end
+end
+return auftrag
+end
 function PLAYERTASK:_SetController(Controller)
 self:T(self.lid.."_SetController")
 self.TaskController=Controller
@@ -106227,6 +106267,50 @@ end
 function PLAYERTASK:SetMenuName(Text)
 self:T(self.lid.."SetMenuName")
 self.Target.name=Text
+return self
+end
+function PLAYERTASK:AddStaticObjectSuccessCondition()
+local task=self
+task:AddConditionSuccess(
+function(target)
+if target==nil then return false end
+local isDead=false
+if target:IsInstanceOf("STATIC")
+or target:IsInstanceOf("SCENERY")
+or target:IsInstanceOf("SET_SCENERY")then
+isDead=(not target)or target:GetLife()<1 or target:GetLife()<0.2*target:GetLife0()
+elseif target:IsInstanceOf("SET_STATIC")then
+local deadCount=0
+target:ForEachStatic(function(static)
+if static:GetLife()<1 or static:GetLife()<0.2*static:GetLife0()then
+deadCount=deadCount+1
+end
+end)
+if deadCount==target:Count()then
+isDead=true
+end
+end
+return isDead
+end,task:GetTarget()
+)
+return self
+end
+function PLAYERTASK:AddReconSuccessCondition(minDistance)
+local task=self
+task:AddConditionSuccess(
+function(target)
+local targetLocation=target:GetCoordinate()
+local minD=minDistance or UTILS.NMToMeters(5)
+for _,client in ipairs(task:GetClientObjects())do
+local clientCoord=client:GetCoordinate()
+local distance=clientCoord:Get2DDistance(targetLocation)
+local isLos=land.isVisible(clientCoord:GetVec3(),targetLocation:GetVec3())
+if distance<minD and isLos then
+return true
+end
+end
+return false
+end,task:GetTarget())
 return self
 end
 function PLAYERTASK:AddNextTaskAfterSuccess(Task)
@@ -106637,6 +106721,9 @@ PLAYERTASKCONTROLLER.Scores={
 [AUFTRAG.Type.BOMBING]=100,
 [AUFTRAG.Type.BOMBRUNWAY]=100,
 [AUFTRAG.Type.CONQUER]=100,
+[AUFTRAG.Type.RECON]=100,
+[AUFTRAG.Type.ESCORT]=100,
+[AUFTRAG.Type.CAP]=100,
 }
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
@@ -123061,7 +123148,7 @@ timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
 self:T("MSRS vbs and batch file removed")
 elseif self.UsePowerShell==true then
-local pwsh=string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+local pwsh=string.format('start /min "" powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
 if string.len(pwsh)>255 then
 self:E("[MSRS] - pwsh string too long")
 end
