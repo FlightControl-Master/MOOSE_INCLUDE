@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T13:44:01+01:00-e3fb693cb78cffcc8fab480bf2ee390ef8c2dfd4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T14:56:24+01:00-23080e3cc4090ee1c115107ce03d338e4e2ac6c0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -106155,6 +106155,59 @@ self:AddTransition("*","Stop","Stopped")
 self:__Status(-5)
 return self
 end
+function PLAYERTASK:NewFromTarget(Target,Repeat,Times,TTSType)
+return PLAYERTASK:New(self:_GetTaskTypeForTarget(Target),Target,Repeat,Times,TTSType)
+end
+function PLAYERTASK:_GetTaskTypeForTarget(Target)
+local group=nil
+local auftrag=nil
+if Target:IsInstanceOf("GROUP")then
+group=Target
+elseif Target:IsInstanceOf("SET_GROUP")then
+group=Target:GetFirst()
+elseif Target:IsInstanceOf("UNIT")then
+group=Target:GetGroup()
+elseif Target:IsInstanceOf("SET_UNIT")then
+group=Target:GetFirst():GetGroup()
+elseif Target:IsInstanceOf("AIRBASE")then
+auftrag=AUFTRAG.Type.BOMBRUNWAY
+elseif Target:IsInstanceOf("STATIC")
+or Target:IsInstanceOf("SET_STATIC")
+or Target:IsInstanceOf("SCENERY")
+or Target:IsInstanceOf("SET_SCENERY")then
+auftrag=AUFTRAG.Type.BOMBING
+end
+if group then
+local category=group:GetCategory()
+local attribute=group:GetAttribute()
+if(category==Group.Category.AIRPLANE or category==Group.Category.HELICOPTER)
+and group:InAir()then
+auftrag=AUFTRAG.Type.INTERCEPT
+elseif category==Group.Category.GROUND or category==Group.Category.TRAIN then
+if attribute==GROUP.Attribute.GROUND_SAM
+or attribute==GROUP.Attribute.GROUND_EWR then
+auftrag=AUFTRAG.Type.SEAD
+elseif attribute==GROUP.Attribute.GROUND_AAA
+or attribute==GROUP.Attribute.GROUND_APC
+or attribute==GROUP.Attribute.GROUND_IFV
+or attribute==GROUP.Attribute.GROUND_TRUCK
+or attribute==GROUP.Attribute.GROUND_TRAIN then
+auftrag=AUFTRAG.Type.BAI
+elseif attribute==GROUP.Attribute.GROUND_INFANTRY
+or attribute==GROUP.Attribute.GROUND_ARTILLERY
+or attribute==GROUP.Attribute.GROUND_TANK then
+auftrag=AUFTRAG.Type.CAS
+else
+auftrag=AUFTRAG.Type.BAI
+end
+elseif category==Group.Category.SHIP then
+auftrag=AUFTRAG.Type.ANTISHIP
+else
+self:T(self.lid.."ERROR: Unknown Group category!")
+end
+end
+return auftrag
+end
 function PLAYERTASK:_SetController(Controller)
 self:T(self.lid.."_SetController")
 self.TaskController=Controller
@@ -106211,6 +106264,50 @@ end
 function PLAYERTASK:SetMenuName(Text)
 self:T(self.lid.."SetMenuName")
 self.Target.name=Text
+return self
+end
+function PLAYERTASK:AddStaticObjectSuccessCondition()
+local task=self
+task:AddConditionSuccess(
+function(target)
+if target==nil then return false end
+local isDead=false
+if target:IsInstanceOf("STATIC")
+or target:IsInstanceOf("SCENERY")
+or target:IsInstanceOf("SET_SCENERY")then
+isDead=(not target)or target:GetLife()<1 or target:GetLife()<0.2*target:GetLife0()
+elseif target:IsInstanceOf("SET_STATIC")then
+local deadCount=0
+target:ForEachStatic(function(static)
+if static:GetLife()<1 or static:GetLife()<0.2*static:GetLife0()then
+deadCount=deadCount+1
+end
+end)
+if deadCount==target:Count()then
+isDead=true
+end
+end
+return isDead
+end,task:GetTarget()
+)
+return self
+end
+function PLAYERTASK:AddReconSuccessCondition(minDistance)
+local task=self
+task:AddConditionSuccess(
+function(target)
+local targetLocation=target:GetCoordinate()
+local minD=minDistance or UTILS.NMToMeters(5)
+for _,client in ipairs(task:GetClientObjects())do
+local clientCoord=client:GetCoordinate()
+local distance=clientCoord:Get2DDistance(targetLocation)
+local isLos=land.isVisible(clientCoord:GetVec3(),targetLocation:GetVec3())
+if distance<minD and isLos then
+return true
+end
+end
+return false
+end,task:GetTarget())
 return self
 end
 function PLAYERTASK:AddNextTaskAfterSuccess(Task)
@@ -106621,6 +106718,9 @@ PLAYERTASKCONTROLLER.Scores={
 [AUFTRAG.Type.BOMBING]=100,
 [AUFTRAG.Type.BOMBRUNWAY]=100,
 [AUFTRAG.Type.CONQUER]=100,
+[AUFTRAG.Type.RECON]=100,
+[AUFTRAG.Type.ESCORT]=100,
+[AUFTRAG.Type.CAP]=100,
 }
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
