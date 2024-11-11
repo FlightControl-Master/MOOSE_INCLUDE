@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T14:56:24+01:00-23080e3cc4090ee1c115107ce03d338e4e2ac6c0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-11T12:19:49+01:00-fb2ba1dea086b6ae987e67ab7386ced9d6ce33a8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -106292,12 +106292,12 @@ end,task:GetTarget()
 )
 return self
 end
-function PLAYERTASK:AddReconSuccessCondition(minDistance)
+function PLAYERTASK:AddReconSuccessCondition(MinDistance)
 local task=self
 task:AddConditionSuccess(
 function(target)
 local targetLocation=target:GetCoordinate()
-local minD=minDistance or UTILS.NMToMeters(5)
+local minD=MinDistance or UTILS.NMToMeters(5)
 for _,client in ipairs(task:GetClientObjects())do
 local clientCoord=client:GetCoordinate()
 local distance=clientCoord:Get2DDistance(targetLocation)
