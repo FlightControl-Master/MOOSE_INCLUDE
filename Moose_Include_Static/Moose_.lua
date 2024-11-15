@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-11T12:19:49+01:00-fb2ba1dea086b6ae987e67ab7386ced9d6ce33a8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-15T23:22:00+01:00-09e1883488bd5bd05db2462805811321a29d4b3a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7458,6 +7458,7 @@ if not Event.IniUnit then
 Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
 end
 Event.IniDCSGroupName=Event.IniUnit and Event.IniUnit.GroupName or""
+Event.IniGroupName=Event.IniDCSGroupName
 if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
 Event.IniDCSGroupName=Event.IniDCSGroup:getName()
 Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
@@ -123137,7 +123138,7 @@ timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
 self:T("MSRS vbs and batch file removed")
 elseif self.UsePowerShell==true then
-local pwsh=string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+local pwsh=string.format('start /min "" powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
 if string.len(pwsh)>255 then
 self:E("[MSRS] - pwsh string too long")
 end
