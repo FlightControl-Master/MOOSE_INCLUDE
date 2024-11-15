@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T13:46:00+01:00-6c773786d20df3dff4dedc40165a81808efaa264 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-15T23:21:50+01:00-dce96313990a8a55915a19ba365203bccde2afb4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7458,6 +7458,7 @@ if not Event.IniUnit then
 Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
 end
 Event.IniDCSGroupName=Event.IniUnit and Event.IniUnit.GroupName or""
+Event.IniGroupName=Event.IniDCSGroupName
 if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
 Event.IniDCSGroupName=Event.IniDCSGroup:getName()
 Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
