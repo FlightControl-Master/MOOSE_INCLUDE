@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T15:37:14+01:00-112a0b2a8edfcdbe751dbfcca6c024ee1df33e0f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-17T16:22:32+01:00-cea3ab291e8f44d03c2222e49d8caf7c92876961 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31663,7 +31663,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.1.3",
+Version="0.1.4",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -31681,6 +31681,9 @@ self.BlockedPilots={}
 self.KnownPilots={}
 self:SetBlockMessage()
 self:SetUnblockMessage()
+self.BlockedSides={}
+self.BlockedSides[1]=false
+self.BlockedSides[2]=false
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Run","Running")
 self:AddTransition("*","PlayerJoined","*")
@@ -31696,23 +31699,26 @@ self:Run()
 return self
 end
 function NET:IsAnyBlocked(UCID,Name,PlayerID,PlayerSide,PlayerSlot)
+self:T({UCID,Name,PlayerID,PlayerSide,PlayerSlot})
 local blocked=false
 local TNow=timer.getTime()
 if UCID and self.BlockedUCIDs[UCID]and TNow<self.BlockedUCIDs[UCID]then
-return true
+blocked=true
 end
 if PlayerID and not Name then
 Name=self:GetPlayerIDByName(Name)
 end
 if Name and self.BlockedPilots[Name]and TNow<self.BlockedPilots[Name]then
-return true
+blocked=true
 end
-if PlayerSide and self.BlockedSides[PlayerSide]and TNow<self.BlockedSides[PlayerSide]then
-return true
+self:T({time=self.BlockedSides[PlayerSide]})
+if PlayerSide and type(self.BlockedSides[PlayerSide])=="number"and TNow<self.BlockedSides[PlayerSide]then
+blocked=true
 end
 if PlayerSlot and self.BlockedSlots[PlayerSlot]and TNow<self.BlockedSlots[PlayerSlot]then
-return true
+blocked=true
 end
+self:T("IsAnyBlocke: "..tostring(blocked))
 return blocked
 end
 function NET:_EventHandler(EventData)
@@ -31724,6 +31730,7 @@ local name=data.IniPlayerName and data.IniPlayerName or data.IniUnit:GetPlayerNa
 local ucid=self:GetPlayerUCID(nil,name)or"none"
 local PlayerID=self:GetPlayerIDByName(name)or"none"
 local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
+if not PlayerSide then PlayerSide=EventData.IniCoalition end
 local TNow=timer.getTime()
 self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
@@ -31743,6 +31750,7 @@ side=PlayerSide,
 slot=PlayerSlot,
 timestamp=TNow,
 }
+UTILS.PrintTableToLog(self.KnownPilots[name])
 end
 return self
 end
@@ -31827,7 +31835,6 @@ self.BlockedUCIDs[ucid]=nil
 return self
 end
 function NET:BlockSide(Side,Seconds)
-self:T({Side,Seconds})
 local addon=Seconds or self.BlockTime
 if Side==1 or Side==2 then
 self.BlockedSides[Side]=timer.getTime()+addon
@@ -31835,10 +31842,9 @@ end
 return self
 end
 function NET:UnblockSide(Side,Seconds)
-self:T({Side,Seconds})
 local addon=Seconds or self.BlockTime
 if Side==1 or Side==2 then
-self.BlockedSides[Side]=nil
+self.BlockedSides[Side]=false
 end
 return self
 end
@@ -31905,8 +31911,11 @@ end
 return nil
 end
 function NET:GetPlayerIDFromClient(Client)
+self:T("GetPlayerIDFromClient")
+self:T({Client=Client})
 if Client then
 local name=Client:GetPlayerName()
+self:T({name=name})
 local id=self:GetPlayerIDByName(name)
 return id
 else
@@ -31991,9 +32000,12 @@ return nil
 end
 end
 function NET:GetSlot(Client)
+self:T("NET.GetSlot")
 local PlayerID=self:GetPlayerIDFromClient(Client)
+self:T("NET.GetSlot PlayerID = "..tostring(PlayerID))
 if PlayerID then
 local side,slot=net.get_slot(tonumber(PlayerID))
+self:T("NET.GetSlot side, slot = "..tostring(side)..","..tostring(slot))
 return side,slot
 else
 return nil,nil
@@ -32040,7 +32052,7 @@ self:T({From,Event,To})
 local function HouseHold(tavolo)
 local TNow=timer.getTime()
 for _,entry in pairs(tavolo)do
-if entry>=TNow then entry=nil end
+if type(entry)=="number"and entry>=TNow then entry=false end
 end
 end
 HouseHold(self.BlockedPilots)
