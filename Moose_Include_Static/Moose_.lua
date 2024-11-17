@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-17T16:22:32+01:00-cea3ab291e8f44d03c2222e49d8caf7c92876961 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-17T16:24:12+01:00-1b7dece0a5b73e156ff27a23e5715c84149a9cea ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7458,6 +7458,7 @@ if not Event.IniUnit then
 Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
 end
 Event.IniDCSGroupName=Event.IniUnit and Event.IniUnit.GroupName or""
+Event.IniGroupName=Event.IniDCSGroupName
 if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
 Event.IniDCSGroupName=Event.IniDCSGroup:getName()
 Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
@@ -106307,12 +106308,12 @@ end,task:GetTarget()
 )
 return self
 end
-function PLAYERTASK:AddReconSuccessCondition(minDistance)
+function PLAYERTASK:AddReconSuccessCondition(MinDistance)
 local task=self
 task:AddConditionSuccess(
 function(target)
 local targetLocation=target:GetCoordinate()
-local minD=minDistance or UTILS.NMToMeters(5)
+local minD=MinDistance or UTILS.NMToMeters(5)
 for _,client in ipairs(task:GetClientObjects())do
 local clientCoord=client:GetCoordinate()
 local distance=clientCoord:Get2DDistance(targetLocation)
