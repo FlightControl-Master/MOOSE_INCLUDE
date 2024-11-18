@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-17T16:24:12+01:00-1b7dece0a5b73e156ff27a23e5715c84149a9cea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-18T08:24:36+01:00-c4faf392701bb60697211e746b634a1819acac65 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -106192,6 +106192,9 @@ or Target:IsInstanceOf("SET_STATIC")
 or Target:IsInstanceOf("SCENERY")
 or Target:IsInstanceOf("SET_SCENERY")then
 auftrag=AUFTRAG.Type.BOMBING
+elseif Target:IsInstanceOf("OPSZONE")
+or Target:IsInstanceOf("SET_OPSZONE")then
+auftrag=AUFTRAG.Type.CAPTUREZONE
 end
 if group then
 local category=group:GetCategory()
@@ -106223,6 +106226,26 @@ self:T(self.lid.."ERROR: Unknown Group category!")
 end
 end
 return auftrag
+end
+function PLAYERTASK:_CheckCaptureOpsZoneSuccess(OpsZone,CaptureSquadGroupNamePrefix,Coalition,CheckClientInZone)
+local isClientInZone=true
+if CheckClientInZone then
+isClientInZone=false
+for _,client in ipairs(self:GetClientObjects())do
+local clientCoord=client:GetCoordinate()
+if OpsZone.zone:IsCoordinateInZone(clientCoord)then
+isClientInZone=true
+break
+end
+end
+end
+local isCaptureGroupInZone=false
+OpsZone:GetScannedGroupSet():ForEachGroup(function(group)
+if string.find(group:GetName(),CaptureSquadGroupNamePrefix)then
+isCaptureGroupInZone=true
+end
+end)
+return OpsZone:GetOwner()==Coalition and isClientInZone and isCaptureGroupInZone
 end
 function PLAYERTASK:_SetController(Controller)
 self:T(self.lid.."_SetController")
@@ -106308,6 +106331,34 @@ end,task:GetTarget()
 )
 return self
 end
+function PLAYERTASK:AddOpsZoneCaptureSuccessCondition(CaptureSquadGroupNamePrefix,Coalition)
+local task=self
+task:AddConditionSuccess(
+function(target)
+if target:IsInstanceOf("OPSZONE")then
+return task:_CheckCaptureOpsZoneSuccess(target,CaptureSquadGroupNamePrefix,Coalition,true)
+elseif target:IsInstanceOf("SET_OPSZONE")then
+local successes=0
+local isClientInZone=false
+target:ForEachZone(function(opszone)
+if task:_CheckCaptureOpsZoneSuccess(opszone,CaptureSquadGroupNamePrefix,Coalition)then
+successes=successes+1
+end
+for _,client in ipairs(task:GetClientObjects())do
+local clientCoord=client:GetCoordinate()
+if opszone.zone:IsCoordinateInZone(clientCoord)then
+isClientInZone=true
+break
+end
+end
+end)
+return successes==target:Count()and isClientInZone
+end
+return false
+end,task:GetTarget()
+)
+return self
+end
 function PLAYERTASK:AddReconSuccessCondition(MinDistance)
 local task=self
 task:AddConditionSuccess(
@@ -106324,6 +106375,19 @@ end
 end
 return false
 end,task:GetTarget())
+return self
+end
+function PLAYERTASK:AddTimeLimitFailureCondition(TimeLimit)
+local task=self
+TimeLimit=TimeLimit or 0
+task.StartTime=-1
+task:AddConditionFailure(
+function()
+if task.StartTime==-1 then
+task.StartTime=timer.getTime()
+end
+return TimeLimit>0 and timer.getTime()-task.StartTime>TimeLimit
+end)
 return self
 end
 function PLAYERTASK:AddNextTaskAfterSuccess(Task)
@@ -106737,6 +106801,7 @@ PLAYERTASKCONTROLLER.Scores={
 [AUFTRAG.Type.RECON]=100,
 [AUFTRAG.Type.ESCORT]=100,
 [AUFTRAG.Type.CAP]=100,
+[AUFTRAG.Type.CAPTUREZONE]=100,
 }
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
