@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-18T08:54:10+01:00-7ba360a005b4ac5e2bc39917d1df88f519783d33 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-19T08:44:47+01:00-4511f796090f58aea6b955da785269946e88a54d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -105515,6 +105515,14 @@ self.drawZone=true
 end
 return self
 end
+function OPSZONE:SetDrawZoneForCoalition(Switch)
+if Switch==true then
+self.drawZoneForCoalition=true
+else
+self.drawZoneForCoalition=false
+end
+return self
+end
 function OPSZONE:SetMarkZone(Switch,ReadOnly)
 if Switch then
 self.markZone=true
@@ -105668,7 +105676,11 @@ self.ownerCurrent=NewOwnerCoalition
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
-self.zone:DrawZone(nil,color,1.0,color,0.5)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.5)
 end
 for _,_chief in pairs(self.chiefs)do
 local chief=_chief
@@ -105696,7 +105708,11 @@ self.Tattacked=nil
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
-self.zone:DrawZone(nil,color,1.0,color,0.5)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.5)
 end
 end
 end
@@ -105715,7 +105731,11 @@ end
 if self.drawZone then
 self.zone:UndrawZone()
 local color={1,204/255,204/255}
-self.zone:DrawZone(nil,color,1.0,color,0.5)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.5)
 end
 self:_CleanMissionTable()
 end
@@ -105730,7 +105750,11 @@ end
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
-self.zone:DrawZone(nil,color,1.0,color,0.2)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.2)
 end
 end
 end
