@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-10T14:56:24+01:00-23080e3cc4090ee1c115107ce03d338e4e2ac6c0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-19T06:44:13+01:00-d2c78516f577723ecce3905965172ea926f6921b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7458,6 +7458,7 @@ if not Event.IniUnit then
 Event.IniUnit=CLIENT:FindByName(Event.IniDCSUnitName,'',true)
 end
 Event.IniDCSGroupName=Event.IniUnit and Event.IniUnit.GroupName or""
+Event.IniGroupName=Event.IniDCSGroupName
 if Event.IniDCSGroup and Event.IniDCSGroup:isExist()then
 Event.IniDCSGroupName=Event.IniDCSGroup:getName()
 Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
@@ -105499,6 +105500,14 @@ self.drawZone=true
 end
 return self
 end
+function OPSZONE:SetDrawZoneForCoalition(Switch)
+if Switch==true then
+self.drawZoneForCoalition=true
+else
+self.drawZoneForCoalition=false
+end
+return self
+end
 function OPSZONE:SetMarkZone(Switch,ReadOnly)
 if Switch then
 self.markZone=true
@@ -105652,7 +105661,11 @@ self.ownerCurrent=NewOwnerCoalition
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
-self.zone:DrawZone(nil,color,1.0,color,0.5)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.5)
 end
 for _,_chief in pairs(self.chiefs)do
 local chief=_chief
@@ -105680,7 +105693,11 @@ self.Tattacked=nil
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
-self.zone:DrawZone(nil,color,1.0,color,0.5)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.5)
 end
 end
 end
@@ -105699,7 +105716,11 @@ end
 if self.drawZone then
 self.zone:UndrawZone()
 local color={1,204/255,204/255}
-self.zone:DrawZone(nil,color,1.0,color,0.5)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.5)
 end
 self:_CleanMissionTable()
 end
@@ -105714,7 +105735,11 @@ end
 if self.drawZone then
 self.zone:UndrawZone()
 local color=self:_GetZoneColor()
-self.zone:DrawZone(nil,color,1.0,color,0.2)
+local coalition=nil
+if self.drawZoneForCoalition then
+coalition=self.ownerCurrent
+end
+self.zone:DrawZone(coalition,color,1.0,color,0.2)
 end
 end
 end
@@ -106176,6 +106201,9 @@ or Target:IsInstanceOf("SET_STATIC")
 or Target:IsInstanceOf("SCENERY")
 or Target:IsInstanceOf("SET_SCENERY")then
 auftrag=AUFTRAG.Type.BOMBING
+elseif Target:IsInstanceOf("OPSZONE")
+or Target:IsInstanceOf("SET_OPSZONE")then
+auftrag=AUFTRAG.Type.CAPTUREZONE
 end
 if group then
 local category=group:GetCategory()
@@ -106207,6 +106235,26 @@ self:T(self.lid.."ERROR: Unknown Group category!")
 end
 end
 return auftrag
+end
+function PLAYERTASK:_CheckCaptureOpsZoneSuccess(OpsZone,CaptureSquadGroupNamePrefix,Coalition,CheckClientInZone)
+local isClientInZone=true
+if CheckClientInZone then
+isClientInZone=false
+for _,client in ipairs(self:GetClientObjects())do
+local clientCoord=client:GetCoordinate()
+if OpsZone.zone:IsCoordinateInZone(clientCoord)then
+isClientInZone=true
+break
+end
+end
+end
+local isCaptureGroupInZone=false
+OpsZone:GetScannedGroupSet():ForEachGroup(function(group)
+if string.find(group:GetName(),CaptureSquadGroupNamePrefix)then
+isCaptureGroupInZone=true
+end
+end)
+return OpsZone:GetOwner()==Coalition and isClientInZone and isCaptureGroupInZone
 end
 function PLAYERTASK:_SetController(Controller)
 self:T(self.lid.."_SetController")
@@ -106292,12 +106340,40 @@ end,task:GetTarget()
 )
 return self
 end
-function PLAYERTASK:AddReconSuccessCondition(minDistance)
+function PLAYERTASK:AddOpsZoneCaptureSuccessCondition(CaptureSquadGroupNamePrefix,Coalition)
+local task=self
+task:AddConditionSuccess(
+function(target)
+if target:IsInstanceOf("OPSZONE")then
+return task:_CheckCaptureOpsZoneSuccess(target,CaptureSquadGroupNamePrefix,Coalition,true)
+elseif target:IsInstanceOf("SET_OPSZONE")then
+local successes=0
+local isClientInZone=false
+target:ForEachZone(function(opszone)
+if task:_CheckCaptureOpsZoneSuccess(opszone,CaptureSquadGroupNamePrefix,Coalition)then
+successes=successes+1
+end
+for _,client in ipairs(task:GetClientObjects())do
+local clientCoord=client:GetCoordinate()
+if opszone.zone:IsCoordinateInZone(clientCoord)then
+isClientInZone=true
+break
+end
+end
+end)
+return successes==target:Count()and isClientInZone
+end
+return false
+end,task:GetTarget()
+)
+return self
+end
+function PLAYERTASK:AddReconSuccessCondition(MinDistance)
 local task=self
 task:AddConditionSuccess(
 function(target)
 local targetLocation=target:GetCoordinate()
-local minD=minDistance or UTILS.NMToMeters(5)
+local minD=MinDistance or UTILS.NMToMeters(5)
 for _,client in ipairs(task:GetClientObjects())do
 local clientCoord=client:GetCoordinate()
 local distance=clientCoord:Get2DDistance(targetLocation)
@@ -106308,6 +106384,19 @@ end
 end
 return false
 end,task:GetTarget())
+return self
+end
+function PLAYERTASK:AddTimeLimitFailureCondition(TimeLimit)
+local task=self
+TimeLimit=TimeLimit or 0
+task.StartTime=-1
+task:AddConditionFailure(
+function()
+if task.StartTime==-1 then
+task.StartTime=timer.getTime()
+end
+return TimeLimit>0 and timer.getTime()-task.StartTime>TimeLimit
+end)
 return self
 end
 function PLAYERTASK:AddNextTaskAfterSuccess(Task)
@@ -106721,6 +106810,7 @@ PLAYERTASKCONTROLLER.Scores={
 [AUFTRAG.Type.RECON]=100,
 [AUFTRAG.Type.ESCORT]=100,
 [AUFTRAG.Type.CAP]=100,
+[AUFTRAG.Type.CAPTUREZONE]=100,
 }
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
@@ -123137,7 +123227,7 @@ timer.scheduleFunction(os.remove,filename,timer.getTime()+1)
 timer.scheduleFunction(os.remove,filenvbs,timer.getTime()+1)
 self:T("MSRS vbs and batch file removed")
 elseif self.UsePowerShell==true then
-local pwsh=string.format('powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
+local pwsh=string.format('start /min "" powershell.exe  -ExecutionPolicy Unrestricted -WindowStyle Hidden -Command "%s"',filename)
 if string.len(pwsh)>255 then
 self:E("[MSRS] - pwsh string too long")
 end
