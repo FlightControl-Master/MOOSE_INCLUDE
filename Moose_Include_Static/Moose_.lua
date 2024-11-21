@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-15T23:21:50+01:00-dce96313990a8a55915a19ba365203bccde2afb4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-21T23:13:05+01:00-abb4de46d7d8dee97c1f7beb3879fe0a121692aa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18507,15 +18507,15 @@ Briefing="Briefing Report",
 Overview="Overview Report",
 Detailed="Detailed Report",
 }
-function MESSAGE:New(MessageText,MessageDuration,MessageCategory,ClearScreen)
+function MESSAGE:New(Text,Duration,Category,ClearScreen)
 local self=BASE:Inherit(self,BASE:New())
-self:F({MessageText,MessageDuration,MessageCategory})
+self:F({Text,Duration,Category})
 self.MessageType=nil
-if MessageCategory and MessageCategory~=""then
-if MessageCategory:sub(-1)~="\n"then
-self.MessageCategory=MessageCategory..": "
+if Category and Category~=""then
+if Category:sub(-1)~="\n"then
+self.MessageCategory=Category..": "
 else
-self.MessageCategory=MessageCategory:sub(1,-2)..":\n"
+self.MessageCategory=Category:sub(1,-2)..":\n"
 end
 else
 self.MessageCategory=""
@@ -18524,9 +18524,9 @@ self.ClearScreen=false
 if ClearScreen~=nil then
 self.ClearScreen=ClearScreen
 end
-self.MessageDuration=MessageDuration or 5
+self.MessageDuration=Duration or 5
 self.MessageTime=timer.getTime()
-self.MessageText=MessageText:gsub("^\n","",1):gsub("\n$","",1)
+self.MessageText=Text:gsub("^\n","",1):gsub("\n$","",1)
 self.MessageSent=false
 self.MessageGroup=false
 self.MessageCoalition=false
@@ -24646,7 +24646,7 @@ self:F2(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local DetectionVisual=(DetectVisual and DetectVisual==true)and Controller.Detection.VISUAL or nil
-local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTICAL or nil
+local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTIC or nil
 local DetectionRadar=(DetectRadar and DetectRadar==true)and Controller.Detection.RADAR or nil
 local DetectionIRST=(DetectIRST and DetectIRST==true)and Controller.Detection.IRST or nil
 local DetectionRWR=(DetectRWR and DetectRWR==true)and Controller.Detection.RWR or nil
@@ -24680,15 +24680,15 @@ self:F2(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local DetectionVisual=(DetectVisual and DetectVisual==true)and Controller.Detection.VISUAL or nil
-local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTICAL or nil
+local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTIC or nil
 local DetectionRadar=(DetectRadar and DetectRadar==true)and Controller.Detection.RADAR or nil
 local DetectionIRST=(DetectIRST and DetectIRST==true)and Controller.Detection.IRST or nil
 local DetectionRWR=(DetectRWR and DetectRWR==true)and Controller.Detection.RWR or nil
 local DetectionDLINK=(DetectDLINK and DetectDLINK==true)and Controller.Detection.DLINK or nil
 local Controller=self:_GetController()
-local TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity
+local TargetIsDetected,TargetIsVisible,TargetKnowType,TargetKnowDistance,TargetLastTime,TargetLastPos,TargetLastVelocity
 =Controller:isTargetDetected(DCSObject,DetectionVisual,DetectionOptical,DetectionRadar,DetectionIRST,DetectionRWR,DetectionDLINK)
-return TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity
+return TargetIsDetected,TargetIsVisible,TargetKnowType,TargetKnowDistance,TargetLastTime,TargetLastPos,TargetLastVelocity
 end
 return nil
 end
@@ -36907,7 +36907,7 @@ end
 for DetectionObjectName,DetectedObjectData in pairs(self.DetectedObjects or{})do
 local DetectedObject=DetectedObjectData.Object
 if DetectedObject:isExist()then
-local TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity=DetectionUnit:IsTargetDetected(
+local TargetIsDetected,TargetIsVisible,TargetKnowType,TargetKnowDistance,TargetLastTime,TargetLastPos,TargetLastVelocity=DetectionUnit:IsTargetDetected(
 DetectedObject,
 self.DetectVisual,
 self.DetectOptical,
