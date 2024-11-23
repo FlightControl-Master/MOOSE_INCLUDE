@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-21T23:44:13+01:00-6f724c62fb2bf4f534dce7939728a432abb962c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-23T22:10:26+01:00-6022a3905f58ee7537c6b18e94588feb18fa4c9d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -110476,7 +110476,7 @@ DEAD="Dead",
 DAMAGED="Damaged",
 }
 _TARGETID=0
-TARGET.version="0.7.0"
+TARGET.version="0.7.1"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -110865,6 +110865,7 @@ target.Name=coord:ToStringMGRS()
 target.Coordinate=coord
 target.Life0=1
 target.Life=1
+target.N0=target.N0+1
 elseif Object:IsInstanceOf("ZONE_BASE")then
 local zone=Object
 Object=zone
@@ -110873,6 +110874,7 @@ target.Name=zone:GetName()
 target.Coordinate=zone:GetCoordinate()
 target.Life0=1
 target.Life=1
+target.N0=target.N0+1
 elseif Object:IsInstanceOf("OPSZONE")then
 local zone=Object
 Object=zone
@@ -111386,7 +111388,9 @@ N=N+1
 end
 end
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
+N=N+1
 elseif Target.Type==TARGET.ObjectType.ZONE then
+N=N+1
 elseif Target.Type==TARGET.ObjectType.OPSZONE then
 local target=Target.Object
 if Coalitions==nil or UTILS.IsInTable(Coalitions,target:GetOwner())then
