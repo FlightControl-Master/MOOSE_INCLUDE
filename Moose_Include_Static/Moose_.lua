@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-23T22:10:26+01:00-6022a3905f58ee7537c6b18e94588feb18fa4c9d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-24T21:54:19+01:00-c4d0319bb29d9ed9d1eb798c3766ca6c6e128f66 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28406,7 +28406,7 @@ function UNIT:Name()
 return self.UnitName
 end
 function UNIT:GetDCSObject()
-if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
+if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)or(self.DCSObject==nil)or(self.DCSObject:isExist()==false)then
 local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
 self.LastCallDCSObject=timer.getTime()
