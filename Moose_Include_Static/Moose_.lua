@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-26T08:07:10+01:00-66b6e4475e0bb73da8be317de461653da0363728 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-26T10:40:46+01:00-25740f7e6103f4c736a40030df1a192982128963 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27922,7 +27922,11 @@ function GROUP:GetTaskMission()
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template)
 end
 function GROUP:GetTaskRoute()
+if _DATABASE.Templates.Groups[self.GroupName].Template and _DATABASE.Templates.Groups[self.GroupName].Template.route and _DATABASE.Templates.Groups[self.GroupName].Template.route.points then
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template.route.points)
+else
+return{}
+end
 end
 function GROUP:CopyRoute(Begin,End,Randomize,Radius)
 local Points={}
