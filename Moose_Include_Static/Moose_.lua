@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-19T06:44:13+01:00-d2c78516f577723ecce3905965172ea926f6921b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-28T09:47:43+01:00-4d4138c1e6406c8375ae4fee9f4463efde180d57 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18418,15 +18418,15 @@ Briefing="Briefing Report",
 Overview="Overview Report",
 Detailed="Detailed Report",
 }
-function MESSAGE:New(MessageText,MessageDuration,MessageCategory,ClearScreen)
+function MESSAGE:New(Text,Duration,Category,ClearScreen)
 local self=BASE:Inherit(self,BASE:New())
-self:F({MessageText,MessageDuration,MessageCategory})
+self:F({Text,Duration,Category})
 self.MessageType=nil
-if MessageCategory and MessageCategory~=""then
-if MessageCategory:sub(-1)~="\n"then
-self.MessageCategory=MessageCategory..": "
+if Category and Category~=""then
+if Category:sub(-1)~="\n"then
+self.MessageCategory=Category..": "
 else
-self.MessageCategory=MessageCategory:sub(1,-2)..":\n"
+self.MessageCategory=Category:sub(1,-2)..":\n"
 end
 else
 self.MessageCategory=""
@@ -18435,9 +18435,9 @@ self.ClearScreen=false
 if ClearScreen~=nil then
 self.ClearScreen=ClearScreen
 end
-self.MessageDuration=MessageDuration or 5
+self.MessageDuration=Duration or 5
 self.MessageTime=timer.getTime()
-self.MessageText=MessageText:gsub("^\n","",1):gsub("\n$","",1)
+self.MessageText=Text:gsub("^\n","",1):gsub("\n$","",1)
 self.MessageSent=false
 self.MessageGroup=false
 self.MessageCoalition=false
@@ -25073,7 +25073,7 @@ self:F2(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local DetectionVisual=(DetectVisual and DetectVisual==true)and Controller.Detection.VISUAL or nil
-local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTICAL or nil
+local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTIC or nil
 local DetectionRadar=(DetectRadar and DetectRadar==true)and Controller.Detection.RADAR or nil
 local DetectionIRST=(DetectIRST and DetectIRST==true)and Controller.Detection.IRST or nil
 local DetectionRWR=(DetectRWR and DetectRWR==true)and Controller.Detection.RWR or nil
@@ -25107,15 +25107,15 @@ self:F2(self.ControllableName)
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local DetectionVisual=(DetectVisual and DetectVisual==true)and Controller.Detection.VISUAL or nil
-local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTICAL or nil
+local DetectionOptical=(DetectOptical and DetectOptical==true)and Controller.Detection.OPTIC or nil
 local DetectionRadar=(DetectRadar and DetectRadar==true)and Controller.Detection.RADAR or nil
 local DetectionIRST=(DetectIRST and DetectIRST==true)and Controller.Detection.IRST or nil
 local DetectionRWR=(DetectRWR and DetectRWR==true)and Controller.Detection.RWR or nil
 local DetectionDLINK=(DetectDLINK and DetectDLINK==true)and Controller.Detection.DLINK or nil
 local Controller=self:_GetController()
-local TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity
+local TargetIsDetected,TargetIsVisible,TargetKnowType,TargetKnowDistance,TargetLastTime,TargetLastPos,TargetLastVelocity
 =Controller:isTargetDetected(DCSObject,DetectionVisual,DetectionOptical,DetectionRadar,DetectionIRST,DetectionRWR,DetectionDLINK)
-return TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity
+return TargetIsDetected,TargetIsVisible,TargetKnowType,TargetKnowDistance,TargetLastTime,TargetLastPos,TargetLastVelocity
 end
 return nil
 end
@@ -27919,7 +27919,11 @@ function GROUP:GetTaskMission()
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template)
 end
 function GROUP:GetTaskRoute()
+if _DATABASE.Templates.Groups[self.GroupName].Template and _DATABASE.Templates.Groups[self.GroupName].Template.route and _DATABASE.Templates.Groups[self.GroupName].Template.route.points then
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template.route.points)
+else
+return{}
+end
 end
 function GROUP:CopyRoute(Begin,End,Randomize,Radius)
 local Points={}
@@ -28406,7 +28410,7 @@ function UNIT:Name()
 return self.UnitName
 end
 function UNIT:GetDCSObject()
-if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)then
+if(not self.LastCallDCSObject)or(self.LastCallDCSObject and timer.getTime()-self.LastCallDCSObject>1)or(self.DCSObject==nil)or(self.DCSObject:isExist()==false)then
 local DCSUnit=Unit.getByName(self.UnitName)
 if DCSUnit then
 self.LastCallDCSObject=timer.getTime()
@@ -31661,7 +31665,7 @@ end
 do
 NET={
 ClassName="NET",
-Version="0.1.3",
+Version="0.1.4",
 BlockTime=600,
 BlockedPilots={},
 BlockedUCIDs={},
@@ -31679,6 +31683,9 @@ self.BlockedPilots={}
 self.KnownPilots={}
 self:SetBlockMessage()
 self:SetUnblockMessage()
+self.BlockedSides={}
+self.BlockedSides[1]=false
+self.BlockedSides[2]=false
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Run","Running")
 self:AddTransition("*","PlayerJoined","*")
@@ -31694,23 +31701,26 @@ self:Run()
 return self
 end
 function NET:IsAnyBlocked(UCID,Name,PlayerID,PlayerSide,PlayerSlot)
+self:T({UCID,Name,PlayerID,PlayerSide,PlayerSlot})
 local blocked=false
 local TNow=timer.getTime()
 if UCID and self.BlockedUCIDs[UCID]and TNow<self.BlockedUCIDs[UCID]then
-return true
+blocked=true
 end
 if PlayerID and not Name then
 Name=self:GetPlayerIDByName(Name)
 end
 if Name and self.BlockedPilots[Name]and TNow<self.BlockedPilots[Name]then
-return true
+blocked=true
 end
-if PlayerSide and self.BlockedSides[PlayerSide]and TNow<self.BlockedSides[PlayerSide]then
-return true
+self:T({time=self.BlockedSides[PlayerSide]})
+if PlayerSide and type(self.BlockedSides[PlayerSide])=="number"and TNow<self.BlockedSides[PlayerSide]then
+blocked=true
 end
 if PlayerSlot and self.BlockedSlots[PlayerSlot]and TNow<self.BlockedSlots[PlayerSlot]then
-return true
+blocked=true
 end
+self:T("IsAnyBlocked: "..tostring(blocked))
 return blocked
 end
 function NET:_EventHandler(EventData)
@@ -31722,13 +31732,22 @@ local name=data.IniPlayerName and data.IniPlayerName or data.IniUnit:GetPlayerNa
 local ucid=self:GetPlayerUCID(nil,name)or"none"
 local PlayerID=self:GetPlayerIDByName(name)or"none"
 local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
+if not PlayerSide then PlayerSide=EventData.IniCoalition end
+if not PlayerSlot then PlayerSlot=EventData.IniUnit:GetID()end
 local TNow=timer.getTime()
-self:T(self.lid.."Event for: "..name.." | UCID: "..ucid)
+self:T(self.lid.."Event for: "..name.." | UCID: "..ucid.." | ID/SIDE/SLOT "..PlayerID.."/"..PlayerSide.."/"..PlayerSlot)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
 self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid.." | Event ID: "..data.id)
 local blocked=self:IsAnyBlocked(ucid,name,PlayerID,PlayerSide,PlayerSlot)
-if blocked and PlayerID and tonumber(PlayerID)~=1 then
-local outcome=net.force_player_slot(tonumber(PlayerID),0,'')
+if blocked and PlayerID then
+self:T("Player blocked")
+local outcome=net.force_player_slot(tonumber(PlayerID),PlayerSide,data.IniUnit:GetID())
+self:T({Blocked_worked=outcome})
+if outcome==false then
+local unit=data.IniUnit
+local sched=TIMER:New(unit.Destroy,unit,3):Start(3)
+self:__PlayerBlocked(5,unit,name,1)
+end
 else
 local client=CLIENT:FindByPlayerName(name)or data.IniUnit
 if not self.KnownPilots[name]or(self.KnownPilots[name]and TNow-self.KnownPilots[name].timestamp>3)then
@@ -31825,7 +31844,6 @@ self.BlockedUCIDs[ucid]=nil
 return self
 end
 function NET:BlockSide(Side,Seconds)
-self:T({Side,Seconds})
 local addon=Seconds or self.BlockTime
 if Side==1 or Side==2 then
 self.BlockedSides[Side]=timer.getTime()+addon
@@ -31833,10 +31851,9 @@ end
 return self
 end
 function NET:UnblockSide(Side,Seconds)
-self:T({Side,Seconds})
 local addon=Seconds or self.BlockTime
 if Side==1 or Side==2 then
-self.BlockedSides[Side]=nil
+self.BlockedSides[Side]=false
 end
 return self
 end
@@ -31903,8 +31920,11 @@ end
 return nil
 end
 function NET:GetPlayerIDFromClient(Client)
+self:T("GetPlayerIDFromClient")
+self:T({Client=Client})
 if Client then
 local name=Client:GetPlayerName()
+self:T({name=name})
 local id=self:GetPlayerIDByName(name)
 return id
 else
@@ -31989,9 +32009,12 @@ return nil
 end
 end
 function NET:GetSlot(Client)
+self:T("NET.GetSlot")
 local PlayerID=self:GetPlayerIDFromClient(Client)
+self:T("NET.GetSlot PlayerID = "..tostring(PlayerID))
 if PlayerID then
 local side,slot=net.get_slot(tonumber(PlayerID))
+self:T("NET.GetSlot side, slot = "..tostring(side)..","..tostring(slot))
 return side,slot
 else
 return nil,nil
@@ -31999,14 +32022,16 @@ end
 end
 function NET:ForceSlot(Client,SideID,SlotID)
 local PlayerID=self:GetPlayerIDFromClient(Client)
-if PlayerID and tonumber(PlayerID)~=1 then
-return net.force_player_slot(tonumber(PlayerID),SideID,SlotID or'')
+local SlotID=SlotID or Client:GetID()
+if PlayerID then
+return net.force_player_slot(tonumber(PlayerID),SideID,SlotID)
 else
 return false
 end
 end
 function NET:ReturnToSpectators(Client)
 local outcome=self:ForceSlot(Client,0)
+local sched=TIMER:New(Client.Destroy,Client,1):Start(1)
 return outcome
 end
 function NET.Lua2Json(Lua)
@@ -32038,7 +32063,7 @@ self:T({From,Event,To})
 local function HouseHold(tavolo)
 local TNow=timer.getTime()
 for _,entry in pairs(tavolo)do
-if entry>=TNow then entry=nil end
+if type(entry)=="number"and entry>=TNow then entry=false end
 end
 end
 HouseHold(self.BlockedPilots)
@@ -37334,7 +37359,7 @@ end
 for DetectionObjectName,DetectedObjectData in pairs(self.DetectedObjects or{})do
 local DetectedObject=DetectedObjectData.Object
 if DetectedObject:isExist()then
-local TargetIsDetected,TargetIsVisible,TargetLastTime,TargetKnowType,TargetKnowDistance,TargetLastPos,TargetLastVelocity=DetectionUnit:IsTargetDetected(
+local TargetIsDetected,TargetIsVisible,TargetKnowType,TargetKnowDistance,TargetLastTime,TargetLastPos,TargetLastVelocity=DetectionUnit:IsTargetDetected(
 DetectedObject,
 self.DetectVisual,
 self.DetectOptical,
@@ -110476,7 +110501,7 @@ DEAD="Dead",
 DAMAGED="Damaged",
 }
 _TARGETID=0
-TARGET.version="0.6.0"
+TARGET.version="0.7.1"
 function TARGET:New(TargetObject)
 local self=BASE:Inherit(self,FSM:New())
 _TARGETID=_TARGETID+1
@@ -110498,7 +110523,7 @@ self:AddTransition("*","ObjectDead","*")
 self:AddTransition("*","Damaged","Damaged")
 self:AddTransition("*","Destroyed","Dead")
 self:AddTransition("*","Dead","Dead")
-self:__Start(-1)
+self:__Start(-0.1)
 return self
 end
 function TARGET:AddObject(Object)
@@ -110605,6 +110630,11 @@ function TARGET:IsAlive()
 for _,_target in pairs(self.targets)do
 local target=_target
 if target.Status~=TARGET.ObjectStatus.DEAD then
+if self.isDestroyed then
+self:E(self.lid..string.format("ERROR: target is DESTROYED but target object status is not DEAD but %s for object %s",target.Status,target.Name))
+elseif self:IsDead()then
+self:E(self.lid..string.format("ERROR: target is DEAD but target object status is not DEAD but %s for object %s",target.Status,target.Name))
+end
 return true
 end
 end
@@ -110617,6 +110647,14 @@ function TARGET:IsDead()
 local is=self:Is("Dead")
 return is
 end
+function TARGET:IsTargetDead(TargetObject)
+local isDead=TargetObject.Status==TARGET.ObjectStatus.DEAD
+return isDead
+end
+function TARGET:IsTargetAlive(TargetObject)
+local isAlive=TargetObject.Status==TARGET.ObjectStatus.ALIVE
+return isAlive
+end
 function TARGET:onafterStart(From,Event,To)
 self:T({From,Event,To})
 local text=string.format("Starting Target")
@@ -110628,7 +110666,6 @@ self:__Status(-1)
 return self
 end
 function TARGET:onafterStatus(From,Event,To)
-self:T({From,Event,To})
 local fsmstate=self:GetState()
 local damaged=false
 for i,_target in pairs(self.targets)do
@@ -110642,11 +110679,10 @@ life=target.Life0
 self.life0=self.life0+delta
 end
 if target.Life<life then
-target.Status=TARGET.ObjectStatus.DAMAGED
 self:ObjectDamaged(target)
 damaged=true
 end
-if life<1 and(not target.Status==TARGET.ObjectStatus.DEAD)then
+if target.Life<1 and target.Status~=TARGET.ObjectStatus.DEAD then
 self:E(self.lid..string.format("FF life is zero but no object dead event fired ==> object dead now for target object %s!",tostring(target.Name)))
 self:ObjectDead(target)
 damaged=true
@@ -110656,11 +110692,12 @@ if damaged then
 self:Damaged()
 end
 if self.verbose>=1 then
-local text=string.format("%s: Targets=%d/%d Life=%.1f/%.1f Damage=%.1f",fsmstate,self:CountTargets(),self.N0,self:GetLife(),self:GetLife0(),self:GetDamage())
+local text=string.format("%s: Targets=%d/%d [%d, %d], Life=%.1f/%.1f, Damage=%.1f",
+fsmstate,self:CountTargets(),self.N0,self.Ndestroyed,self.Ndead,self:GetLife(),self:GetLife0(),self:GetDamage())
 if self:CountTargets()==0 or self:GetDamage()>=100 then
-text=text.." Dead!"
+text=text.." - Dead!"
 elseif damaged then
-text=text.." Damaged!"
+text=text.." - Damaged!"
 end
 self:I(self.lid..text)
 end
@@ -110669,15 +110706,27 @@ local text="Target:"
 for i,_target in pairs(self.targets)do
 local target=_target
 local damage=(1-target.Life/target.Life0)*100
-text=text..string.format("\n[%d] %s %s %s: Life=%.1f/%.1f, Damage=%.1f",i,target.Type,target.Name,target.Status,target.Life,target.Life0,damage)
+text=text..string.format("\n[%d] %s %s %s: Life=%.1f/%.1f, Damage=%.1f, N0=%d, Ndestroyed=%d, Ndead=%d",
+i,target.Type,target.Name,target.Status,target.Life,target.Life0,damage,target.N0,target.Ndestroyed,target.Ndead)
 end
 self:I(self.lid..text)
 end
-if self:CountTargets()==0 or self:GetDamage()>=100 then
+if self:IsAlive()and(self:CountTargets()==0 or self:GetDamage()>=100)then
 self:Dead()
+end
+for i,_target in pairs(self.targets)do
+local target=_target
+if target.Ndestroyed>target.N0 then
+self:E(self.lid..string.format("ERROR: Number of destroyed target objects greater than number of initial target objects: %d>%d!",target.Ndestroyed,target.N0))
+end
+if target.Ndestroyed>target.N0 then
+self:E(self.lid..string.format("ERROR: Number of dead target objects greater than number of initial target objects: %d>%d!",target.Ndead,target.N0))
+end
 end
 if self:IsAlive()then
 self:__Status(-self.TStatus)
+else
+self:I(self.lid..string.format("Target is not alive any more ==> no further status updates are carried out"))
 end
 return self
 end
@@ -110690,6 +110739,8 @@ function TARGET:onafterObjectDestroyed(From,Event,To,Target)
 self:T({From,Event,To})
 self:T(self.lid..string.format("Object %s destroyed",Target.Name))
 self.Ndestroyed=self.Ndestroyed+1
+Target.Ndestroyed=Target.Ndestroyed+1
+Target.Life=0
 self:ObjectDead(Target)
 return self
 end
@@ -110697,12 +110748,15 @@ function TARGET:onafterObjectDead(From,Event,To,Target)
 self:T({From,Event,To})
 self:T(self.lid..string.format("Object %s dead",Target.Name))
 Target.Status=TARGET.ObjectStatus.DEAD
+Target.Ndead=Target.Ndead+1
+Target.Life=0
 self.Ndead=self.Ndead+1
 local dead=true
 for _,_target in pairs(self.targets)do
 local target=_target
 if target.Status==TARGET.ObjectStatus.ALIVE then
 dead=false
+break
 end
 end
 if dead then
@@ -110743,14 +110797,16 @@ if not target then
 target=self:GetTargetByName(EventData.IniUnitName)
 end
 if target then
+local Ndead=target.Ndead
+local Ndestroyed=target.Ndestroyed
 if EventData.id==EVENTS.RemoveUnit then
-target.Ndead=target.Ndead+1
+Ndead=Ndead+1
 else
-target.Ndestroyed=target.Ndestroyed+1
-target.Ndead=target.Ndead+1
+Ndestroyed=Ndestroyed+1
+Ndead=Ndead+1
 end
-if target.Ndead==target.N0 then
-if target.Ndestroyed>=target.N0 then
+if Ndead==target.N0 then
+if Ndestroyed>=target.N0 then
 self:T2(self.lid..string.format("EVENT ID=%d: target %s dead/lost ==> destroyed",EventData.id,tostring(target.Name)))
 target.Life=0
 self:ObjectDestroyed(target)
@@ -110834,6 +110890,7 @@ target.Name=coord:ToStringMGRS()
 target.Coordinate=coord
 target.Life0=1
 target.Life=1
+target.N0=target.N0+1
 elseif Object:IsInstanceOf("ZONE_BASE")then
 local zone=Object
 Object=zone
@@ -110842,6 +110899,7 @@ target.Name=zone:GetName()
 target.Coordinate=zone:GetCoordinate()
 target.Life0=1
 target.Life=1
+target.N0=target.N0+1
 elseif Object:IsInstanceOf("OPSZONE")then
 local zone=Object
 Object=zone
@@ -111355,7 +111413,9 @@ N=N+1
 end
 end
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
+N=N+1
 elseif Target.Type==TARGET.ObjectType.ZONE then
+N=N+1
 elseif Target.Type==TARGET.ObjectType.OPSZONE then
 local target=Target.Object
 if Coalitions==nil or UTILS.IsInTable(Coalitions,target:GetOwner())then
