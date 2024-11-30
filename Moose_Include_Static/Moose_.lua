@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-28T09:47:43+01:00-4d4138c1e6406c8375ae4fee9f4463efde180d57 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-30T16:20:14+01:00-c0b09b03d9b92084ee73d9204898c65a2f2761b7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54122,7 +54122,7 @@ MANTISAwacs:Start()
 return MANTISAwacs
 end
 function MANTIS:_GetSAMDataFromUnits(grpname,mod,sma,chm)
-self:T(self.lid.."_GetSAMRangeFromUnits")
+self:T(self.lid.."_GetSAMDataFromUnits")
 local found=false
 local range=self.checkradius
 local height=3000
@@ -54163,7 +54163,7 @@ end
 return range,height,type,blind
 end
 function MANTIS:_GetSAMRange(grpname)
-self:T(self.lid.."_GetSAMRange")
+self:I(self.lid.."_GetSAMRange for "..tostring(grpname))
 local range=self.checkradius
 local height=3000
 local type=MANTIS.SamType.MEDIUM
@@ -54180,8 +54180,8 @@ SMAMod=true
 elseif string.find(grpname,"CHM",1,true)then
 CHMod=true
 end
-if self.automode then
 for idx,entry in pairs(self.SamData)do
+self:T("ID = "..idx)
 if string.find(grpname,idx,1,true)then
 local _entry=entry
 type=_entry.Type
@@ -54189,12 +54189,12 @@ radiusscale=self.radiusscale[type]
 range=_entry.Range*1000*radiusscale
 height=_entry.Height*1000
 blind=_entry.Blindspot
+self:T("Matching Groupname = "..grpname.." Range= "..range)
 found=true
 break
 end
 end
-end
-if(not found and self.automode)or HDSmod or SMAMod or CHMod then
+if(not found)or HDSmod or SMAMod or CHMod then
 range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
