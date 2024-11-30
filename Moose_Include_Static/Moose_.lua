@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-30T12:55:50+01:00-a0f58a95db5f50f83539d6a96f3fd29af9620289 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-30T13:09:58+01:00-116527abfecf6f0eba6f0a135f77b1f9eba2ee53 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17980,25 +17980,9 @@ return self:ToStringMGRS(Settings)
 end
 return nil
 end
-function COORDINATE:ToString(Controllable,Settings,Task)
+function COORDINATE:ToString(Controllable,Settings)
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 local ModeA2A=nil
-if Task then
-if Task:IsInstanceOf(TASK_A2A)then
-ModeA2A=true
-else
-if Task:IsInstanceOf(TASK_A2G)then
-ModeA2A=false
-else
-if Task:IsInstanceOf(TASK_CARGO)then
-ModeA2A=false
-end
-if Task:IsInstanceOf(TASK_CAPTURE_ZONE)then
-ModeA2A=false
-end
-end
-end
-end
 if ModeA2A==nil then
 local IsAir=Controllable and(Controllable:IsAirPlane()or Controllable:IsHelicopter())or false
 if IsAir then
