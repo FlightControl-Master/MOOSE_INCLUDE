@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-30T16:20:14+01:00-c0b09b03d9b92084ee73d9204898c65a2f2761b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-01T14:56:02+01:00-f644d49e71ee069806fed12ea8503489abbc091e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78275,7 +78275,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.2.1"
+AUFTRAG.version="1.2.2"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -78890,7 +78890,7 @@ local params={}
 params.formation=Formation or"Off Road"
 params.zone=mission:GetObjective()
 params.altitude=mission.missionAltitude
-params.speed=mission.missionSpeed
+params.speed=mission.missionSpeed and UTILS.KmphToMps(mission.missionSpeed)or nil
 mission.DCStask.params=params
 return mission
 end
@@ -78910,7 +78910,7 @@ mission.missionFraction=0.70
 mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.categories={AUFTRAG.Category.GROUND}
 mission.DCStask=mission:GetDCSMissionTask()
-mission.DCStask.params.speed=Speed
+mission.DCStask.params.speed=mission.missionSpeed and UTILS.KmphToMps(mission.missionSpeed)or nil
 mission.DCStask.params.formation=Formation or ENUMS.Formation.Vehicle.Vee
 return mission
 end
@@ -80746,7 +80746,7 @@ DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
 local param={}
 param.zone=self:GetObjective()
 param.altitude=self.missionAltitude
-param.speed=self.missionSpeed
+param.speed=self.missionSpeed and UTILS.KmphToMps(self.missionSpeed)or nil
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 local DCSenroute=CONTROLLABLE.EnRouteTaskFAC(self,self.facFreq,self.facModu)
@@ -80773,7 +80773,7 @@ DCStask.id=AUFTRAG.SpecialTask.RECON
 local param={}
 param.target=self.engageTarget
 param.altitude=self.missionAltitude
-param.speed=self.missionSpeed
+param.speed=self.missionSpeed and UTILS.KmphToMps(self.missionSpeed)or nil
 param.lastindex=nil
 DCStask.params=param
 table.insert(DCStasks,DCStask)
@@ -80845,7 +80845,7 @@ DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
 local param={}
 param.zone=self:GetObjective()
 param.altitude=self.missionAltitude
-param.speed=self.missionSpeed
+param.speed=self.missionSpeed and UTILS.KmphToMps(self.missionSpeed)or nil
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.CAPTUREZONE then
@@ -80860,7 +80860,7 @@ DCStask.id=AUFTRAG.SpecialTask.PATROLZONE
 local param={}
 param.zone=self:GetObjective()
 param.altitude=self.missionAltitude
-param.speed=self.missionSpeed
+param.speed=self.missionSpeed and UTILS.KmphToMps(self.missionSpeed)or nil
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.GROUNDATTACK then
@@ -80869,7 +80869,7 @@ DCStask.id=AUFTRAG.SpecialTask.GROUNDATTACK
 local param={}
 param.target=self:GetTargetData()
 param.action="Wedge"
-param.speed=self.missionSpeed
+param.speed=self.missionSpeed and UTILS.KmphToMps(self.missionSpeed)or nil
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.AMMOSUPPLY then
@@ -96668,7 +96668,7 @@ if self:IsEngaging()or not self.passedfinalwp then
 if self.verbose>=10 then
 for i=1,#waypoints do
 local wp=waypoints[i]
-local text=string.format("%s Waypoint [%d] UID=%d speed=%d",self.groupname,i-1,wp.uid or-1,wp.speed)
+local text=string.format("%s Waypoint [%d] UID=%d speed=%d m/s",self.groupname,i-1,wp.uid or-1,wp.speed)
 self:I(self.lid..text)
 COORDINATE:NewFromWaypoint(wp):MarkToAll(text)
 end
@@ -99680,7 +99680,7 @@ elseif Task.dcstask.id==AUFTRAG.SpecialTask.GROUNDATTACK or Task.dcstask.id==AUF
 local target=Task.dcstask.params.target
 local speed=self.speedMax and UTILS.KmphToKnots(self.speedMax)or nil
 if Task.dcstask.params.speed then
-speed=Task.dcstask.params.speed
+speed=UTILS.MpsToKnots(Task.dcstask.params.speed)
 end
 if target then
 self:EngageTarget(target,speed,Task.dcstask.params.formation)
