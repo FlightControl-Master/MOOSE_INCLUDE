@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-11-30T16:19:51+01:00-50ffd9aba6cb3d2d9fc1bb97be8a42a320a46216 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-03T18:07:38+01:00-a30079c45b24979a1cb0d9ba781e5c30af8f4018 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53756,7 +53756,7 @@ end
 return range,height,type,blind
 end
 function MANTIS:_GetSAMRange(grpname)
-self:I(self.lid.."_GetSAMRange for "..tostring(grpname))
+self:T(self.lid.."_GetSAMRange for "..tostring(grpname))
 local range=self.checkradius
 local height=3000
 local type=MANTIS.SamType.MEDIUM
