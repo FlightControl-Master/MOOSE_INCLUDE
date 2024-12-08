@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-05T10:59:08+01:00-e53f1aa68dd8358714db4ec2cc6de28e28fa1bcc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-08T18:56:48+01:00-426297812ed4eeed35747d3126e316102d3c0221 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -15807,9 +15807,15 @@ end
 function SET_OPSGROUP:_EventOnBirth(Event)
 if Event.IniDCSUnit and Event.IniDCSGroup then
 local DCSgroup=Event.IniDCSGroup
+local CountAliveActive=0
+for index,data in pairs(DCSgroup:getUnits())do
+if data:isExist()and data:isActive()then
+CountAliveActive=CountAliveActive+1
+end
+end
 if DCSgroup:getInitialSize()==DCSgroup:getSize()then
 local groupname,group=self:AddInDatabase(Event)
-if group and group:CountAliveUnits()==DCSgroup:getInitialSize()then
+if group and CountAliveActive==DCSgroup:getInitialSize()then
 if group and self:IsIncludeObject(group)then
 self:Add(groupname,group)
 end
@@ -110037,14 +110043,15 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.15"
+EASYGCICAP.version="0.1.16"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
 self.coalitionname=string.lower(Coalition)or"blue"
 self.coalition=self.coalitionname=="blue"and coalition.side.BLUE or coalition.side.RED
 self.wings={}
-self.EWRName=EWRName or self.coalitionname.." EWR"
+if type(EWRName)=="string"then EWRName={EWRName}end
+self.EWRName=EWRName
 self.airbasename=AirbaseName
 self.airbase=AIRBASE:FindByName(self.airbasename)
 self.GoZoneSet=SET_ZONE:New()
@@ -110675,9 +110682,9 @@ end
 function EASYGCICAP:_StartIntel()
 self:T(self.lid.."_StartIntel")
 local BlueAir_DetectionSetGroup=SET_GROUP:New()
-BlueAir_DetectionSetGroup:FilterPrefixes({self.EWRName})
+BlueAir_DetectionSetGroup:FilterPrefixes(self.EWRName)
 BlueAir_DetectionSetGroup:FilterStart()
-local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.EWRName)
+local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.alias)
 BlueIntel:SetClusterAnalysis(true,false,false)
 BlueIntel:SetForgetTime(300)
 BlueIntel:SetAcceptZones(self.GoZoneSet)
