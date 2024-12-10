@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-10T12:12:56+01:00-eca130b3af00d31be9d01f977221a88c3150dfd6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-10T19:30:59+01:00-270eeac08441b6b9e2f4aea46e05d6b259b1b772 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79152,9 +79152,9 @@ function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
-self.missionIngressCoordgressCoord=Coordinate
+self.missionIngressCoord=Coordinate
 if Altitude then
-self.missionIngressCoordgressCoord.y=UTILS.FeetToMeters(Altitude)
+self.missionIngressCoord.y=UTILS.FeetToMeters(Altitude)
 end
 end
 function AUFTRAG:GetMissionEgressCoord()
