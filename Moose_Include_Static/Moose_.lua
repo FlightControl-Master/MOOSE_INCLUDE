@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-08T18:56:28+01:00-7e8555d6b7335559b38bfe76e4efb83a4990563f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-10T19:08:42+01:00-34e248b1c381961f2191c20e71e561d269aae495 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -103050,12 +103050,8 @@ if self:IsFlightgroup()then
 self.homebase=self.homebase or self:GetHomebaseFromWaypoints()
 local destbase=self:GetDestinationFromWaypoints()
 self.destbase=self.destbase or destbase
-self.currbase=self:GetHomebaseFromWaypoints()
 if destbase and#self.waypoints>1 then
 table.remove(self.waypoints,#self.waypoints)
-end
-if self.destbase==nil then
-self.destbase=self.homebase
 end
 end
 if#self.waypoints>0 then
