@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-08T18:56:48+01:00-426297812ed4eeed35747d3126e316102d3c0221 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-10T12:12:56+01:00-eca130b3af00d31be9d01f977221a88c3150dfd6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78603,6 +78603,10 @@ groupdata.waypointcoordinate=coordinate
 end
 return self
 end
+function AUFTRAG:SetIngressCoordinate(coordinate)
+self.missionIngressCoord=coordinate
+return self
+end
 function AUFTRAG:GetGroupWaypointCoordinate(opsgroup)
 local groupdata=self:GetGroupData(opsgroup)
 if groupdata then
@@ -79144,8 +79148,20 @@ if Altitude then
 self.missionEgressCoord.y=UTILS.FeetToMeters(Altitude)
 end
 end
+function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude)
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+Coordinate=Coordinate:GetCoordinate()
+end
+self.missionIngressCoordgressCoord=Coordinate
+if Altitude then
+self.missionIngressCoordgressCoord.y=UTILS.FeetToMeters(Altitude)
+end
+end
 function AUFTRAG:GetMissionEgressCoord()
 return self.missionEgressCoord
+end
+function AUFTRAG:GetMissionIngressCoord()
+return self.missionIngressCoord
 end
 function AUFTRAG:_GetMissionWaypointCoordSet()
 if self.missionWaypointCoord then
@@ -99026,6 +99042,11 @@ local d=currentcoord:Get2DDistance(waypointcoord)
 self:T(self.lid..string.format("Distance to ingress waypoint=%.1f m",d))
 local waypoint=nil
 if self:IsFlightgroup()then
+local ingresscoord=mission:GetMissionIngressCoord()
+if ingresscoord then
+waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(ingresscoord.y or self.altitudeCruise),false)
+uid=waypoint.uid
+end
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 local formation=mission.optionFormation
