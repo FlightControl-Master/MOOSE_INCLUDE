@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-10T19:08:42+01:00-34e248b1c381961f2191c20e71e561d269aae495 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-10T22:50:30+01:00-1fbe78b6672cd17d75c669a6acbce846d2ffa246 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -77228,7 +77228,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="1.0.1"
+ARMYGROUP.version="1.0.3"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -78023,31 +78023,12 @@ self.radio.Modu=radio.modulation.AM
 self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
 self.option.Formation=template.route.points[1].action
 self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
-if self.groupinitialized then
-self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
-return
-end
-self:T(self.lid.."FF Initializing Group")
-local template=Template or self:_GetTemplate()
-self.isAI=true
-self.isLateActivated=template.lateActivation
-self.isUncontrolled=false
-self.speedMax=self.group:GetSpeedMax()
-if self.speedMax>3.6 then
-self.isMobile=true
-else
-self.isMobile=false
-end
-self.speedCruise=self.speedMax*0.7
-self.ammo=self:GetAmmoTot()
-self.radio.On=false
-self.radio.Freq=133
-self.radio.Modu=radio.modulation.AM
-self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
-self.option.Formation=template.route.points[1].action
-self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
 local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
@@ -91057,7 +91038,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="1.0.2"
+FLIGHTGROUP.version="1.0.3"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -92619,7 +92600,10 @@ flightgroup.Twaiting=nil
 flightgroup.dTwait=nil
 flightgroup:_CheckGroupDone(0.1)
 end
-function FLIGHTGROUP:_InitGroup(Template)
+function FLIGHTGROUP:_InitGroup(Template,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,FLIGHTGROUP._InitGroup,self,Template,0)
+else
 if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
@@ -92660,8 +92644,12 @@ self.optionDefault.Formation=ENUMS.Formation.RotaryWing.EchelonLeft.D300
 else
 self.optionDefault.Formation=ENUMS.Formation.FixedWing.EchelonLeft.Group
 end
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
 self.isAI=not self:_IsHuman(group)
 if not self.isAI then
 self.menu=self.menu or{}
@@ -92679,6 +92667,7 @@ for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
 end
 self.groupinitialized=true
+end
 return self
 end
 function FLIGHTGROUP:GetHomebaseFromWaypoints()
@@ -96211,7 +96200,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="1.0.2"
+NAVYGROUP.version="1.0.3"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -96433,7 +96422,7 @@ else
 return false
 end
 end
-function NAVYGROUP:Status(From,Event,To)
+function NAVYGROUP:Status()
 local fsmstate=self:GetState()
 local alive=self:IsAlive()
 local freepath=0
@@ -96532,6 +96521,24 @@ text=text..string.format("\n[%d] ID=%d Start=%s Stop=%s Open=%s Over=%s",i,recov
 end
 self:I(self.lid..text)
 end
+if self.verbose>=2 then
+local text="Elements:"
+for i,_element in pairs(self.elements)do
+local element=_element
+local name=element.name
+local status=element.status
+local unit=element.unit
+local life,life0=self:GetLifePoints(element)
+local life0=element.life0
+local ammo=self:GetAmmoElement(element)
+text=text..string.format("\n[%d] %s: status=%s, life=%.1f/%.1f, guns=%d, rockets=%d, bombs=%d, missiles=%d, cargo=%d/%d kg",
+i,name,status,life,life0,ammo.Guns,ammo.Rockets,ammo.Bombs,ammo.Missiles,element.weightCargo,element.weightMaxCargo)
+end
+if#self.elements==0 then
+text=text.." none!"
+end
+self:I(self.lid..text)
+end
 if self:IsCruising()and self.detectionOn and self.engagedetectedOn then
 local targetgroup,targetdist=self:_GetDetectedTarget()
 if targetgroup then
@@ -96549,7 +96556,7 @@ end
 function NAVYGROUP:onafterSpawned(From,Event,To)
 self:T(self.lid..string.format("Group spawned!"))
 if self.verbose>=1 then
-local text=string.format("Initialized Navy Group %s:\n",self.groupname)
+local text=string.format("Initialized Navy Group %s [GID=%d]:\n",self.groupname,self.group:GetID())
 text=text..string.format("Unit type     = %s\n",self.actype)
 text=text..string.format("Speed max    = %.1f Knots\n",UTILS.KmphToKnots(self.speedMax))
 text=text..string.format("Speed cruise = %.1f Knots\n",UTILS.KmphToKnots(self.speedCruise))
@@ -96892,7 +96899,10 @@ self:__UpdateRoute(-0.01)
 end
 return waypoint
 end
-function NAVYGROUP:_InitGroup(Template)
+function NAVYGROUP:_InitGroup(Template,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,NAVYGROUP._InitGroup,self,Template,0)
+else
 if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
@@ -96915,10 +96925,18 @@ self.radio.Freq=tonumber(template.units[1].frequency)/1000000
 self.radio.Modu=tonumber(template.units[1].modulation)
 self.optionDefault.Formation="Off Road"
 self.option.Formation=self.optionDefault.Formation
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
+if not self.iclsDefault then
 self:SetDefaultICLS(nil,nil,nil,true)
+end
+if not self.icls then
 self.icls=UTILS.DeepCopy(self.iclsDefault)
+end
 local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
@@ -96929,6 +96947,7 @@ for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
 end
 self.groupinitialized=true
+end
 return self
 end
 function NAVYGROUP:_CheckFreePath(DistanceMax,dx)
@@ -97760,7 +97779,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.1"
+OPSGROUP.version="1.0.3"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -101230,13 +101249,22 @@ self.Ndestroyed=self.Ndestroyed+1
 end
 end
 self:Despawn(0,true)
-else
+end
 for _,_element in pairs(self.elements)do
 local element=_element
+if element and element.status~=OPSGROUP.ElementStatus.DEAD then
 self:ElementInUtero(element)
 end
 end
-self:T({Template=Template})
+self:_Spawn(0.01,Template)
+end
+return self
+end
+function OPSGROUP:_Spawn(Delay,Template)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,OPSGROUP._Spawn,self,0,Template)
+else
+self:T2({Template=Template})
 self.group=_DATABASE:Spawn(Template)
 self.dcsgroup=self:GetDCSGroup()
 self.controller=self.dcsgroup:getController()
@@ -101248,9 +101276,8 @@ self.groupinitialized=false
 self.wpcounter=1
 self.currentwp=1
 self:_InitWaypoints()
-self:_InitGroup(Template)
+self:_InitGroup(Template,0.001)
 end
-return self
 end
 function OPSGROUP:onafterInUtero(From,Event,To)
 self:T(self.lid..string.format("Group inutero at t=%.3f",timer.getTime()))
