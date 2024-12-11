@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T14:36:54+01:00-f1445cdbdd6bc05f28f12e95efcf66331657a614 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T16:41:22+01:00-3805ab226b33620075d869b8cd75dc930c561b8e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79192,6 +79192,10 @@ coord.y=self.missionAltitude
 end
 return coord
 end
+if self.missionIngressCoord then
+local coord=self.missionIngressCoord
+return coord
+end
 local waypointcoord=COORDINATE:New(0,0,0)
 local coord=group:GetCoordinate()
 if coord then
@@ -96557,7 +96561,7 @@ self.legionReturn=false
 else
 self.legionReturn=true
 end
-self:T(self.lid..string.format("Setting ReturnToLetion=%s",tostring(self.legionReturn)))
+self:T(self.lid..string.format("Setting ReturnToLegion=%s",tostring(self.legionReturn)))
 return self
 end
 function OPSGROUP:SetDefaultSpeed(Speed)
@@ -99093,8 +99097,8 @@ self:T(self.lid..string.format("Distance to ingress waypoint=%.1f m",d))
 local waypoint=nil
 if self:IsFlightgroup()then
 local ingresscoord=mission:GetMissionIngressCoord()
-if ingresscoord and not self:IsWaiting()then
-waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(ingresscoord.y or self.altitudeCruise),false)
+if ingresscoord and mission:IsReadyToPush()then
+waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(self.altitudeCruise),false)
 uid=waypoint.uid
 end
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
