@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T14:17:14+01:00-c80f128b0f18f76598d62256cf862d793cf3ec09 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T14:36:54+01:00-f1445cdbdd6bc05f28f12e95efcf66331657a614 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -99093,7 +99093,7 @@ self:T(self.lid..string.format("Distance to ingress waypoint=%.1f m",d))
 local waypoint=nil
 if self:IsFlightgroup()then
 local ingresscoord=mission:GetMissionIngressCoord()
-if ingresscoord then
+if ingresscoord and not self:IsWaiting()then
 waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(ingresscoord.y or self.altitudeCruise),false)
 uid=waypoint.uid
 end
