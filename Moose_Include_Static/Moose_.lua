@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T13:54:01+01:00-e4408a964d8793d297301690d47b63b6a0428cec ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T13:57:55+01:00-683fa13bb2e8f013d817c1892490127b6992e1a9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30990,7 +30990,8 @@ local object=self.weapon:getTarget()
 if object then
 local category=Object.getCategory(object)
 local name=object:getName()
-self:T(self.lid..string.format("Got Target Object %s, category=%d",object:getName(),category))
+if name then
+self:T(self.lid..string.format("Got Target Object %s, category=%d",name,category))
 if category==Object.Category.UNIT then
 target=UNIT:FindByName(name)
 elseif category==Object.Category.STATIC then
@@ -30999,6 +31000,7 @@ elseif category==Object.Category.SCENERY then
 self:E(self.lid..string.format("ERROR: Scenery target not implemented yet!"))
 else
 self:E(self.lid..string.format("ERROR: Object category=%d is not implemented yet!",category))
+end
 end
 end
 end
