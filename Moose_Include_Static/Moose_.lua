@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T14:18:51+01:00-874548d1c1e9c5d0c8836bb8c6cb33fe4141bc7f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T16:45:05+01:00-171af5a3c3e61e925b6760eaee579e7cabc3c0f0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78293,7 +78293,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.2.2"
+AUFTRAG.version="1.2.3"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -80072,6 +80072,10 @@ groupdata.waypointcoordinate=coordinate
 end
 return self
 end
+function AUFTRAG:SetIngressCoordinate(coordinate)
+self.missionIngressCoord=coordinate
+return self
+end
 function AUFTRAG:GetGroupWaypointCoordinate(opsgroup)
 local groupdata=self:GetGroupData(opsgroup)
 if groupdata then
@@ -80613,8 +80617,20 @@ if Altitude then
 self.missionEgressCoord.y=UTILS.FeetToMeters(Altitude)
 end
 end
+function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude)
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+Coordinate=Coordinate:GetCoordinate()
+end
+self.missionIngressCoord=Coordinate
+if Altitude then
+self.missionIngressCoord.y=UTILS.FeetToMeters(Altitude)
+end
+end
 function AUFTRAG:GetMissionEgressCoord()
 return self.missionEgressCoord
+end
+function AUFTRAG:GetMissionIngressCoord()
+return self.missionIngressCoord
 end
 function AUFTRAG:_GetMissionWaypointCoordSet()
 if self.missionWaypointCoord then
@@ -80631,6 +80647,10 @@ local coord=self.missionWaypointCoord
 if self.missionAltitude then
 coord.y=self.missionAltitude
 end
+return coord
+end
+if self.missionIngressCoord then
+local coord=self.missionIngressCoord
 return coord
 end
 local waypointcoord=COORDINATE:New(0,0,0)
@@ -97998,7 +98018,7 @@ self.legionReturn=false
 else
 self.legionReturn=true
 end
-self:T(self.lid..string.format("Setting ReturnToLetion=%s",tostring(self.legionReturn)))
+self:T(self.lid..string.format("Setting ReturnToLegion=%s",tostring(self.legionReturn)))
 return self
 end
 function OPSGROUP:SetDefaultSpeed(Speed)
@@ -100533,6 +100553,11 @@ local d=currentcoord:Get2DDistance(waypointcoord)
 self:T(self.lid..string.format("Distance to ingress waypoint=%.1f m",d))
 local waypoint=nil
 if self:IsFlightgroup()then
+local ingresscoord=mission:GetMissionIngressCoord()
+if ingresscoord and mission:IsReadyToPush()then
+waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(self.altitudeCruise),false)
+uid=waypoint.uid
+end
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 local formation=mission.optionFormation
