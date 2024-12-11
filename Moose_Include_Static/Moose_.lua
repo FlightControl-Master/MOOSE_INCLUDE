@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T13:41:47+01:00-1a9827ec313415c829494d4e660683dd908e7870 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T13:59:02+01:00-ef78549af095b5ecadae4cf8690ff9882790225d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31290,7 +31290,8 @@ local object=self.weapon:getTarget()
 if object then
 local category=Object.getCategory(object)
 local name=object:getName()
-self:T(self.lid..string.format("Got Target Object %s, category=%d",object:getName(),category))
+if name then
+self:T(self.lid..string.format("Got Target Object %s, category=%d",name,category))
 if category==Object.Category.UNIT then
 target=UNIT:FindByName(name)
 elseif category==Object.Category.STATIC then
@@ -31299,6 +31300,7 @@ elseif category==Object.Category.SCENERY then
 self:E(self.lid..string.format("ERROR: Scenery target not implemented yet!"))
 else
 self:E(self.lid..string.format("ERROR: Object category=%d is not implemented yet!",category))
+end
 end
 end
 end
@@ -52132,24 +52134,47 @@ MANTIS.SamDataSMA={
 ["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
 MANTIS.SamDataCH={
-["2S38 CH"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
-["PantsirS1 CH"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
-["PantsirS2 CH"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
-["PGL-625 CH"]={Range=10,Blindspot=0.5,Height=5,Type="Short",Radar="PGL_625"},
-["HQ-17A CH"]={Range=20,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
-["M903PAC2 CH"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
-["M903PAC3 CH"]={Range=120,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
-["TorM2 CH"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
-["TorM2K CH"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
-["TorM2M CH"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
-["NASAMS3-AMRAAMER CH"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
-["NASAMS3-AIM9X2 CH"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
-["C-RAM CH"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
-["PGZ-09 CH"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
-["S350-9M100 CH"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
-["S350-9M96D CH"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
-["LAV-AD CH"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
-["HQ-22 CH"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
+["2S38 CHM"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
+["PantsirS1 CHM"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
+["PantsirS2 CHM"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
+["PGL-625 CHM"]={Range=10,Blindspot=0.5,Height=5,Type="Short",Radar="PGL_625"},
+["HQ-17A CHM"]={Range=20,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
+["M903PAC2 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
+["M903PAC3 CHM"]={Range=120,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
+["TorM2 CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
+["TorM2K CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
+["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
+["NASAMS3-AMRAAMER CHM"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
+["NASAMS3-AIM9X2 CHM"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
+["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
+["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
+["S350-9M100 CHM"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
+["S350-9M96D CHM"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
+["LAV-AD CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
+["HQ-22 CHM"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
+["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_PGZ95"},
+["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000_stationary"},
+["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000"},
+["FlaRakRad CHM"]={Range=8,Blindspot=1.5,Height=6,Type="Short",Radar="HQ17A"},
+["IRIS-T SLM CHM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM"},
+["M903PAC2KAT1 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="CH_MIM104_M903_PAC2_KAT1"},
+["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_SkynexHX"},
+["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_Skyshield_Gun"},
+["WieselOzelot CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_Wiesel2Ozelot"},
+["BukM3-9M317M CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317M"},
+["BukM3-9M317MA CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317MA"},
+["SkySabre CHM"]={Range=30,Blindspot=0.5,Height=10,Type="Medium",Radar="CH_SkySabreLN"},
+["Stormer CHM"]={Range=7.5,Blindspot=0.3,Height=7,Type="Short",Radar="CH_StormerHVM"},
+["THAAD CHM"]={Range=200,Blindspot=40,Height=150,Type="Long",Radar="CH_THAAD_M1120"},
+["USInfantryFIM92K CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_USInfantry_FIM92"},
+["RBS98M CHM"]={Range=20,Blindspot=0,Height=8,Type="Short",Radar="RBS-98"},
+["RBS70 CHM"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-70"},
+["RBS90 CHM"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-90"},
+["RBS103A CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
+["RBS103B CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
+["RBS103AM CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
+["RBS103BM CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
+["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
@@ -52255,7 +52280,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.18"
+self.version="0.8.19"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -75771,7 +75796,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="1.0.1"
+ARMYGROUP.version="1.0.3"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -76566,31 +76591,12 @@ self.radio.Modu=radio.modulation.AM
 self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
 self.option.Formation=template.route.points[1].action
 self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
-if self.groupinitialized then
-self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
-return
-end
-self:T(self.lid.."FF Initializing Group")
-local template=Template or self:_GetTemplate()
-self.isAI=true
-self.isLateActivated=template.lateActivation
-self.isUncontrolled=false
-self.speedMax=self.group:GetSpeedMax()
-if self.speedMax>3.6 then
-self.isMobile=true
-else
-self.isMobile=false
-end
-self.speedCruise=self.speedMax*0.7
-self.ammo=self:GetAmmoTot()
-self.radio.On=false
-self.radio.Freq=133
-self.radio.Modu=radio.modulation.AM
-self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
-self.option.Formation=template.route.points[1].action
-self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
 local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
@@ -89616,7 +89622,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="1.0.2"
+FLIGHTGROUP.version="1.0.3"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -91178,7 +91184,10 @@ flightgroup.Twaiting=nil
 flightgroup.dTwait=nil
 flightgroup:_CheckGroupDone(0.1)
 end
-function FLIGHTGROUP:_InitGroup(Template)
+function FLIGHTGROUP:_InitGroup(Template,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,FLIGHTGROUP._InitGroup,self,Template,0)
+else
 if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
@@ -91219,8 +91228,12 @@ self.optionDefault.Formation=ENUMS.Formation.RotaryWing.EchelonLeft.D300
 else
 self.optionDefault.Formation=ENUMS.Formation.FixedWing.EchelonLeft.Group
 end
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
 self.isAI=not self:_IsHuman(group)
 if not self.isAI then
 self.menu=self.menu or{}
@@ -91238,6 +91251,7 @@ for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
 end
 self.groupinitialized=true
+end
 return self
 end
 function FLIGHTGROUP:GetHomebaseFromWaypoints()
@@ -94770,7 +94784,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="1.0.2"
+NAVYGROUP.version="1.0.3"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -94992,7 +95006,7 @@ else
 return false
 end
 end
-function NAVYGROUP:Status(From,Event,To)
+function NAVYGROUP:Status()
 local fsmstate=self:GetState()
 local alive=self:IsAlive()
 local freepath=0
@@ -95091,6 +95105,24 @@ text=text..string.format("\n[%d] ID=%d Start=%s Stop=%s Open=%s Over=%s",i,recov
 end
 self:I(self.lid..text)
 end
+if self.verbose>=2 then
+local text="Elements:"
+for i,_element in pairs(self.elements)do
+local element=_element
+local name=element.name
+local status=element.status
+local unit=element.unit
+local life,life0=self:GetLifePoints(element)
+local life0=element.life0
+local ammo=self:GetAmmoElement(element)
+text=text..string.format("\n[%d] %s: status=%s, life=%.1f/%.1f, guns=%d, rockets=%d, bombs=%d, missiles=%d, cargo=%d/%d kg",
+i,name,status,life,life0,ammo.Guns,ammo.Rockets,ammo.Bombs,ammo.Missiles,element.weightCargo,element.weightMaxCargo)
+end
+if#self.elements==0 then
+text=text.." none!"
+end
+self:I(self.lid..text)
+end
 if self:IsCruising()and self.detectionOn and self.engagedetectedOn then
 local targetgroup,targetdist=self:_GetDetectedTarget()
 if targetgroup then
@@ -95108,7 +95140,7 @@ end
 function NAVYGROUP:onafterSpawned(From,Event,To)
 self:T(self.lid..string.format("Group spawned!"))
 if self.verbose>=1 then
-local text=string.format("Initialized Navy Group %s:\n",self.groupname)
+local text=string.format("Initialized Navy Group %s [GID=%d]:\n",self.groupname,self.group:GetID())
 text=text..string.format("Unit type     = %s\n",self.actype)
 text=text..string.format("Speed max    = %.1f Knots\n",UTILS.KmphToKnots(self.speedMax))
 text=text..string.format("Speed cruise = %.1f Knots\n",UTILS.KmphToKnots(self.speedCruise))
@@ -95451,7 +95483,10 @@ self:__UpdateRoute(-0.01)
 end
 return waypoint
 end
-function NAVYGROUP:_InitGroup(Template)
+function NAVYGROUP:_InitGroup(Template,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,NAVYGROUP._InitGroup,self,Template,0)
+else
 if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
@@ -95474,10 +95509,18 @@ self.radio.Freq=tonumber(template.units[1].frequency)/1000000
 self.radio.Modu=tonumber(template.units[1].modulation)
 self.optionDefault.Formation="Off Road"
 self.option.Formation=self.optionDefault.Formation
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
+if not self.iclsDefault then
 self:SetDefaultICLS(nil,nil,nil,true)
+end
+if not self.icls then
 self.icls=UTILS.DeepCopy(self.iclsDefault)
+end
 local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
@@ -95488,6 +95531,7 @@ for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
 end
 self.groupinitialized=true
+end
 return self
 end
 function NAVYGROUP:_CheckFreePath(DistanceMax,dx)
@@ -96319,7 +96363,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.1"
+OPSGROUP.version="1.0.3"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -99794,13 +99838,22 @@ self.Ndestroyed=self.Ndestroyed+1
 end
 end
 self:Despawn(0,true)
-else
+end
 for _,_element in pairs(self.elements)do
 local element=_element
+if element and element.status~=OPSGROUP.ElementStatus.DEAD then
 self:ElementInUtero(element)
 end
 end
-self:T({Template=Template})
+self:_Spawn(0.01,Template)
+end
+return self
+end
+function OPSGROUP:_Spawn(Delay,Template)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,OPSGROUP._Spawn,self,0,Template)
+else
+self:T2({Template=Template})
 self.group=_DATABASE:Spawn(Template)
 self.dcsgroup=self:GetDCSGroup()
 self.controller=self.dcsgroup:getController()
@@ -99812,9 +99865,8 @@ self.groupinitialized=false
 self.wpcounter=1
 self.currentwp=1
 self:_InitWaypoints()
-self:_InitGroup(Template)
+self:_InitGroup(Template,0.001)
 end
-return self
 end
 function OPSGROUP:onafterInUtero(From,Event,To)
 self:T(self.lid..string.format("Group inutero at t=%.3f",timer.getTime()))
@@ -101614,12 +101666,8 @@ if self:IsFlightgroup()then
 self.homebase=self.homebase or self:GetHomebaseFromWaypoints()
 local destbase=self:GetDestinationFromWaypoints()
 self.destbase=self.destbase or destbase
-self.currbase=self:GetHomebaseFromWaypoints()
 if destbase and#self.waypoints>1 then
 table.remove(self.waypoints,#self.waypoints)
-end
-if self.destbase==nil then
-self.destbase=self.homebase
 end
 end
 if#self.waypoints>0 then
