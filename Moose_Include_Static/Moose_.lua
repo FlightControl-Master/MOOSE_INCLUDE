@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-11T14:17:58+01:00-aadc03c38dd74aff572708b0553670bbf4ae72dd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-12T00:22:44+01:00-0f962461e1e2a88158a1ab82be4cdfd3250a6f74 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1103,6 +1103,7 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
+Iraq="Iraq"
 }
 CALLSIGN={
 Aircraft={
@@ -2175,6 +2176,8 @@ elseif map==DCSMAP.Kola then
 declination=15
 elseif map==DCSMAP.Afghanistan then
 declination=3
+elseif map==DCSMAP.Iraq then
+declination=4.4
 else
 declination=0
 end
@@ -29561,6 +29564,21 @@ AIRBASE.Afghanistan={
 ["Shindand"]="Shindand",
 ["Shindand_Heliport"]="Shindand Heliport",
 ["Tarinkot"]="Tarinkot",
+}
+AIRBASE.Iraq={
+["Baghdad_International_Airport"]="Baghdad International Airport",
+["Sulaimaniyah_International_Airport"]="Sulaimaniyah International Airport",
+["Al_Sahra_Airport"]="Al-Sahra Airport",
+["Erbil_International_Airport"]="Erbil International Airport",
+["Al_Taji_Airport"]="Al-Taji Airport",
+["Al_Asad_Airbase"]="Al-Asad Airbase",
+["Al_Salam_Airbase"]="Al-Salam Airbase",
+["Balad_Airbase"]="Balad Airbase",
+["Kirkuk_International_Airport"]="Kirkuk International Airport",
+["Bashur_Airport"]="Bashur Airport",
+["Al_Taquddum_Airport"]="Al-Taquddum Airport",
+["Qayyarah_Airfield_West"]="Qayyarah Airfield West",
+["K1_Base"]="K1 Base",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -64849,6 +64867,9 @@ Syria=5,
 MarianaIslands=2,
 Falklands=12,
 SinaiMap=5,
+Kola=15,
+Afghanistan=3,
+Iraq=4.4
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -64860,6 +64881,9 @@ Syria=true,
 MarianaIslands=true,
 Falklands=true,
 SinaiMap=true,
+Kola=true,
+Afghanistan=true,
+Iraq=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
