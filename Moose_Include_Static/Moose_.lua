@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-12T13:07:50+01:00-bb43a0e03ce4824d3fb146ae15de69122b4bd8c9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-12T13:15:40+01:00-7dd67bdf0e47fd0fd716c7494cdb1e87593e8e2f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1103,6 +1103,7 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
+Iraq="Iraq"
 }
 CALLSIGN={
 Aircraft={
@@ -2175,6 +2176,8 @@ elseif map==DCSMAP.Kola then
 declination=15
 elseif map==DCSMAP.Afghanistan then
 declination=3
+elseif map==DCSMAP.Iraq then
+declination=4.4
 else
 declination=0
 end
@@ -29861,6 +29864,21 @@ AIRBASE.Afghanistan={
 ["Shindand"]="Shindand",
 ["Shindand_Heliport"]="Shindand Heliport",
 ["Tarinkot"]="Tarinkot",
+}
+AIRBASE.Iraq={
+["Baghdad_International_Airport"]="Baghdad International Airport",
+["Sulaimaniyah_International_Airport"]="Sulaimaniyah International Airport",
+["Al_Sahra_Airport"]="Al-Sahra Airport",
+["Erbil_International_Airport"]="Erbil International Airport",
+["Al_Taji_Airport"]="Al-Taji Airport",
+["Al_Asad_Airbase"]="Al-Asad Airbase",
+["Al_Salam_Airbase"]="Al-Salam Airbase",
+["Balad_Airbase"]="Balad Airbase",
+["Kirkuk_International_Airport"]="Kirkuk International Airport",
+["Bashur_Airport"]="Bashur Airport",
+["Al_Taquddum_Airport"]="Al-Taquddum Airport",
+["Qayyarah_Airfield_West"]="Qayyarah Airfield West",
+["K1_Base"]="K1 Base",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -67206,6 +67224,9 @@ Syria=5,
 MarianaIslands=2,
 Falklands=12,
 SinaiMap=5,
+Kola=15,
+Afghanistan=3,
+Iraq=4.4
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -67217,6 +67238,9 @@ Syria=true,
 MarianaIslands=true,
 Falklands=true,
 SinaiMap=true,
+Kola=true,
+Afghanistan=true,
+Iraq=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
@@ -75120,7 +75144,7 @@ capFormation=nil,
 capOptionVaryStartTime=nil,
 capOptionVaryEndTime=nil,
 }
-AIRWING.version="0.9.5"
+AIRWING.version="0.9.6"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -75674,11 +75698,13 @@ return self
 end
 function AIRWING:CheckRescuhelo()
 local N=self:CountMissionsInQueue({AUFTRAG.Type.RESCUEHELO})
+if self.airbase then
 local name=self.airbase:GetName()
 local carrier=UNIT:FindByName(name)
 for i=1,self.nflightsRescueHelo-N do
 local mission=AUFTRAG:NewRESCUEHELO(carrier)
 self:AddMission(mission)
+end
 end
 return self
 end
@@ -85733,11 +85759,19 @@ descriptors={},
 properties={},
 operations={},
 }
-COHORT.version="0.3.5"
+COHORT.version="0.3.6"
+_COHORTNAMES={}
 function COHORT:New(TemplateGroupName,Ngroups,CohortName)
+local name=tostring(CohortName or TemplateGroupName)
+if UTILS.IsAnyInTable(_COHORTNAMES,name)then
+env.error(string.format('ERROR: cannot create cohort "%s" because another cohort with that name already exists. Names must be unique!',name))
+return nil
+else
+table.insert(_COHORTNAMES,name)
+end
 local self=BASE:Inherit(self,FSM:New())
 self.templatename=TemplateGroupName
-self.name=tostring(CohortName or TemplateGroupName)
+self.name=name
 self.lid=string.format("COHORT %s | ",self.name)
 self.templategroup=GROUP:FindByName(self.templatename)
 if not self.templategroup then
@@ -91427,29 +91461,6 @@ end
 end
 return nil
 end
-function FLIGHTGROUP:InitWaypoints()
-self.waypoints0=self.group:GetTemplateRoutePoints()
-self.waypoints={}
-for index,wp in pairs(self.waypoints0)do
-local waypoint=self:_CreateWaypoint(wp)
-self:_AddWaypoint(waypoint)
-end
-self.homebase=self.homebase or self:GetHomebaseFromWaypoints()
-self.destbase=self.destbase or self:GetDestinationFromWaypoints()
-self.currbase=self:GetHomebaseFromWaypoints()
-if self.destbase and#self.waypoints>1 then
-table.remove(self.waypoints,#self.waypoints)
-else
-self.destbase=self.homebase
-end
-self:T(self.lid..string.format("Initializing %d waypoints. Homebase %s ==> %s Destination",#self.waypoints,self.homebase and self.homebase:GetName()or"unknown",self.destbase and self.destbase:GetName()or"uknown"))
-if#self.waypoints>0 then
-if#self.waypoints==1 then
-self:_PassedFinalWaypoint(true,"FLIGHTGROUP:InitWaypoints #self.waypoints==1")
-end
-end
-return self
-end
 function FLIGHTGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Altitude,Updateroute)
 local coordinate=self:_CoordinateFromObject(Coordinate)
 local wpnumber=self:GetWaypointIndexAfterID(AfterWaypointWithID)
@@ -93249,7 +93260,7 @@ transportqueue={},
 cohorts={},
 }
 LEGION.RandomAssetScore=1
-LEGION.version="0.5.0"
+LEGION.version="0.5.1"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -93938,6 +93949,7 @@ end
 opsgroup:_SetLegion(self)
 opsgroup.cohort=self:_GetCohortOfAsset(asset)
 opsgroup.homebase=self.airbase
+opsgroup.destbase=self.airbase
 opsgroup.homezone=self.spawnzone
 if opsgroup.cohort.weaponData then
 local text="Weapon data for group:"
@@ -101714,8 +101726,12 @@ if self:IsFlightgroup()then
 self.homebase=self.homebase or self:GetHomebaseFromWaypoints()
 local destbase=self:GetDestinationFromWaypoints()
 self.destbase=self.destbase or destbase
+self.currbase=self:GetHomebaseFromWaypoints()
 if destbase and#self.waypoints>1 then
 table.remove(self.waypoints,#self.waypoints)
+end
+if self.destbase==nil then
+self.destbase=self.homebase
 end
 end
 if#self.waypoints>0 then
