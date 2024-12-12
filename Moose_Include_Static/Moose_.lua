@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-06T14:07:09+01:00-0a6bdd6e044578c6e4aa2941617a410dcd5c4058 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-12T13:11:58+01:00-ea55e90e626305e1baec0d3a61e8a1ecfe88a891 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1103,6 +1103,7 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
+Iraq="Iraq"
 }
 CALLSIGN={
 Aircraft={
@@ -2175,6 +2176,8 @@ elseif map==DCSMAP.Kola then
 declination=15
 elseif map==DCSMAP.Afghanistan then
 declination=3
+elseif map==DCSMAP.Iraq then
+declination=4.4
 else
 declination=0
 end
@@ -29995,6 +29998,21 @@ AIRBASE.Afghanistan={
 ["Shindand_Heliport"]="Shindand Heliport",
 ["Tarinkot"]="Tarinkot",
 }
+AIRBASE.Iraq={
+["Baghdad_International_Airport"]="Baghdad International Airport",
+["Sulaimaniyah_International_Airport"]="Sulaimaniyah International Airport",
+["Al_Sahra_Airport"]="Al-Sahra Airport",
+["Erbil_International_Airport"]="Erbil International Airport",
+["Al_Taji_Airport"]="Al-Taji Airport",
+["Al_Asad_Airbase"]="Al-Asad Airbase",
+["Al_Salam_Airbase"]="Al-Salam Airbase",
+["Balad_Airbase"]="Balad Airbase",
+["Kirkuk_International_Airport"]="Kirkuk International Airport",
+["Bashur_Airport"]="Bashur Airport",
+["Al_Taquddum_Airport"]="Al-Taquddum Airport",
+["Qayyarah_Airfield_West"]="Qayyarah Airfield West",
+["K1_Base"]="K1 Base",
+}
 AIRBASE.TerminalType={
 Runway=16,
 HelicopterOnly=40,
@@ -31423,7 +31441,8 @@ local object=self.weapon:getTarget()
 if object then
 local category=Object.getCategory(object)
 local name=object:getName()
-self:T(self.lid..string.format("Got Target Object %s, category=%d",object:getName(),category))
+if name then
+self:T(self.lid..string.format("Got Target Object %s, category=%d",name,category))
 if category==Object.Category.UNIT then
 target=UNIT:FindByName(name)
 elseif category==Object.Category.STATIC then
@@ -31432,6 +31451,7 @@ elseif category==Object.Category.SCENERY then
 self:E(self.lid..string.format("ERROR: Scenery target not implemented yet!"))
 else
 self:E(self.lid..string.format("ERROR: Object category=%d is not implemented yet!",category))
+end
 end
 end
 end
@@ -53589,24 +53609,47 @@ MANTIS.SamDataSMA={
 ["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
 MANTIS.SamDataCH={
-["2S38 CH"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
-["PantsirS1 CH"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
-["PantsirS2 CH"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
-["PGL-625 CH"]={Range=10,Blindspot=0.5,Height=5,Type="Short",Radar="PGL_625"},
-["HQ-17A CH"]={Range=20,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
-["M903PAC2 CH"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
-["M903PAC3 CH"]={Range=120,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
-["TorM2 CH"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
-["TorM2K CH"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
-["TorM2M CH"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
-["NASAMS3-AMRAAMER CH"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
-["NASAMS3-AIM9X2 CH"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
-["C-RAM CH"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
-["PGZ-09 CH"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
-["S350-9M100 CH"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
-["S350-9M96D CH"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
-["LAV-AD CH"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
-["HQ-22 CH"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
+["2S38 CHM"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
+["PantsirS1 CHM"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
+["PantsirS2 CHM"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
+["PGL-625 CHM"]={Range=10,Blindspot=0.5,Height=5,Type="Short",Radar="PGL_625"},
+["HQ-17A CHM"]={Range=20,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
+["M903PAC2 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
+["M903PAC3 CHM"]={Range=120,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
+["TorM2 CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
+["TorM2K CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
+["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
+["NASAMS3-AMRAAMER CHM"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
+["NASAMS3-AIM9X2 CHM"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
+["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
+["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
+["S350-9M100 CHM"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
+["S350-9M96D CHM"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
+["LAV-AD CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
+["HQ-22 CHM"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
+["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_PGZ95"},
+["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000_stationary"},
+["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000"},
+["FlaRakRad CHM"]={Range=8,Blindspot=1.5,Height=6,Type="Short",Radar="HQ17A"},
+["IRIS-T SLM CHM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM"},
+["M903PAC2KAT1 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="CH_MIM104_M903_PAC2_KAT1"},
+["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_SkynexHX"},
+["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_Skyshield_Gun"},
+["WieselOzelot CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_Wiesel2Ozelot"},
+["BukM3-9M317M CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317M"},
+["BukM3-9M317MA CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317MA"},
+["SkySabre CHM"]={Range=30,Blindspot=0.5,Height=10,Type="Medium",Radar="CH_SkySabreLN"},
+["Stormer CHM"]={Range=7.5,Blindspot=0.3,Height=7,Type="Short",Radar="CH_StormerHVM"},
+["THAAD CHM"]={Range=200,Blindspot=40,Height=150,Type="Long",Radar="CH_THAAD_M1120"},
+["USInfantryFIM92K CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_USInfantry_FIM92"},
+["RBS98M CHM"]={Range=20,Blindspot=0,Height=8,Type="Short",Radar="RBS-98"},
+["RBS70 CHM"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-70"},
+["RBS90 CHM"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-90"},
+["RBS103A CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
+["RBS103B CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
+["RBS103AM CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
+["RBS103BM CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
+["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
@@ -53712,7 +53755,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.18"
+self.version="0.8.19"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -68638,6 +68681,9 @@ Syria=5,
 MarianaIslands=2,
 Falklands=12,
 SinaiMap=5,
+Kola=15,
+Afghanistan=3,
+Iraq=4.4
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -68649,6 +68695,9 @@ Syria=true,
 MarianaIslands=true,
 Falklands=true,
 SinaiMap=true,
+Kola=true,
+Afghanistan=true,
+Iraq=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
@@ -70813,6 +70862,7 @@ ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
 TroopUnloadDistGroundHerc=25,
 TroopUnloadDistGroundHook=15,
+TroopUnloadDistHoverHook=5,
 TroopUnloadDistHover=1.5,
 UserSetGroup=nil,
 }
@@ -70849,7 +70899,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.18"
+CTLD.version="1.1.19"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72264,7 +72314,12 @@ local Angle=(heading+270)%360
 if IsHerc or IsHook then Angle=(heading+180)%360 end
 local offset=hoverunload and self.TroopUnloadDistHover or self.TroopUnloadDistGround
 if IsHerc then offset=self.TroopUnloadDistGroundHerc or 25 end
-if IsHook then offset=self.TroopUnloadDistGroundHook or 15 end
+if IsHook then
+offset=self.TroopUnloadDistGroundHook or 15
+if self.TroopUnloadDistHoverHook then
+offset=self.TroopUnloadDistHoverHook or 5
+end
+end
 randomcoord:Translate(offset,Angle,nil,true)
 end
 local tempcount=0
@@ -76546,7 +76601,7 @@ capFormation=nil,
 capOptionVaryStartTime=nil,
 capOptionVaryEndTime=nil,
 }
-AIRWING.version="0.9.5"
+AIRWING.version="0.9.6"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -77100,11 +77155,13 @@ return self
 end
 function AIRWING:CheckRescuhelo()
 local N=self:CountMissionsInQueue({AUFTRAG.Type.RESCUEHELO})
+if self.airbase then
 local name=self.airbase:GetName()
 local carrier=UNIT:FindByName(name)
 for i=1,self.nflightsRescueHelo-N do
 local mission=AUFTRAG:NewRESCUEHELO(carrier)
 self:AddMission(mission)
+end
 end
 return self
 end
@@ -77228,7 +77285,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="1.0.1"
+ARMYGROUP.version="1.0.3"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -78023,31 +78080,12 @@ self.radio.Modu=radio.modulation.AM
 self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
 self.option.Formation=template.route.points[1].action
 self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
-if self.groupinitialized then
-self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
-return
-end
-self:T(self.lid.."FF Initializing Group")
-local template=Template or self:_GetTemplate()
-self.isAI=true
-self.isLateActivated=template.lateActivation
-self.isUncontrolled=false
-self.speedMax=self.group:GetSpeedMax()
-if self.speedMax>3.6 then
-self.isMobile=true
-else
-self.isMobile=false
-end
-self.speedCruise=self.speedMax*0.7
-self.ammo=self:GetAmmoTot()
-self.radio.On=false
-self.radio.Freq=133
-self.radio.Modu=radio.modulation.AM
-self:SetDefaultRadio(self.radio.Freq,self.radio.Modu,self.radio.On)
-self.option.Formation=template.route.points[1].action
-self.optionDefault.Formation=ENUMS.Formation.Vehicle.OnRoad
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
 local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
@@ -78281,7 +78319,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.2.2"
+AUFTRAG.version="1.2.1"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -80060,6 +80098,11 @@ groupdata.waypointcoordinate=coordinate
 end
 return self
 end
+function AUFTRAG:SetIngressCoordinate(coordinate)
+self.missionIngressCoord=coordinate
+self.missionIngressCoordAlt=UTILS.MetersToFeet(coordinate.y)or 10000
+return self
+end
 function AUFTRAG:GetGroupWaypointCoordinate(opsgroup)
 local groupdata=self:GetGroupData(opsgroup)
 if groupdata then
@@ -80599,10 +80642,38 @@ end
 self.missionEgressCoord=Coordinate
 if Altitude then
 self.missionEgressCoord.y=UTILS.FeetToMeters(Altitude)
+self.missionEgressCoordAlt=UTILS.FeetToMeters(Altitude)
+end
+end
+function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude)
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+Coordinate=Coordinate:GetCoordinate()
+end
+self.missionIngressCoord=Coordinate
+if Altitude then
+self.missionIngressCoord.y=UTILS.FeetToMeters(Altitude)
+self.missionIngressCoordAlt=UTILS.FeetToMeters(Altitude or 10000)
+end
+end
+function AUFTRAG:SetMissionHoldingCoord(Coordinate,Altitude,Duration)
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+Coordinate=Coordinate:GetCoordinate()
+end
+self.missionHoldingCoord=Coordinate
+self.missionHoldingDuration=Duration or 900
+if Altitude then
+self.missionHoldingCoord.y=UTILS.FeetToMeters(Altitude)
+self.missionHoldingCoordAlt=UTILS.FeetToMeters(Altitude or 10000)
 end
 end
 function AUFTRAG:GetMissionEgressCoord()
 return self.missionEgressCoord
+end
+function AUFTRAG:GetMissionIngressCoord()
+return self.missionIngressCoord
+end
+function AUFTRAG:GetMissionHoldingCoord()
+return self.missionHoldingCoord
 end
 function AUFTRAG:_GetMissionWaypointCoordSet()
 if self.missionWaypointCoord then
@@ -80621,8 +80692,20 @@ coord.y=self.missionAltitude
 end
 return coord
 end
-local waypointcoord=COORDINATE:New(0,0,0)
 local coord=group:GetCoordinate()
+if self.missionHoldingCoord then
+coord=self.missionHoldingCoord
+if self.missionHoldingCoorddAlt then
+coord:SetAltitude(self.missionHoldingCoordAlt,true)
+end
+end
+if self.missionIngressCoord then
+coord=self.missionIngressCoord
+if self.missionIngressCoordAlt then
+coord:SetAltitude(self.missionIngressCoordAlt,true)
+end
+end
+local waypointcoord=COORDINATE:New(0,0,0)
 if coord then
 waypointcoord=coord:GetIntermediateCoordinate(self:GetTargetCoordinate(),self.missionFraction)
 else
@@ -87133,11 +87216,19 @@ descriptors={},
 properties={},
 operations={},
 }
-COHORT.version="0.3.5"
+COHORT.version="0.3.6"
+_COHORTNAMES={}
 function COHORT:New(TemplateGroupName,Ngroups,CohortName)
+local name=tostring(CohortName or TemplateGroupName)
+if UTILS.IsAnyInTable(_COHORTNAMES,name)then
+env.error(string.format('ERROR: cannot create cohort "%s" because another cohort with that name already exists. Names must be unique!',name))
+return nil
+else
+table.insert(_COHORTNAMES,name)
+end
 local self=BASE:Inherit(self,FSM:New())
 self.templatename=TemplateGroupName
-self.name=tostring(CohortName or TemplateGroupName)
+self.name=name
 self.lid=string.format("COHORT %s | ",self.name)
 self.templategroup=GROUP:FindByName(self.templatename)
 if not self.templategroup then
@@ -91057,7 +91148,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="1.0.2"
+FLIGHTGROUP.version="1.0.3"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -92619,7 +92710,10 @@ flightgroup.Twaiting=nil
 flightgroup.dTwait=nil
 flightgroup:_CheckGroupDone(0.1)
 end
-function FLIGHTGROUP:_InitGroup(Template)
+function FLIGHTGROUP:_InitGroup(Template,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,FLIGHTGROUP._InitGroup,self,Template,0)
+else
 if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
@@ -92660,8 +92754,12 @@ self.optionDefault.Formation=ENUMS.Formation.RotaryWing.EchelonLeft.D300
 else
 self.optionDefault.Formation=ENUMS.Formation.FixedWing.EchelonLeft.Group
 end
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
 self.isAI=not self:_IsHuman(group)
 if not self.isAI then
 self.menu=self.menu or{}
@@ -92679,6 +92777,7 @@ for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
 end
 self.groupinitialized=true
+end
 return self
 end
 function FLIGHTGROUP:GetHomebaseFromWaypoints()
@@ -92818,29 +92917,6 @@ return false
 end
 end
 return nil
-end
-function FLIGHTGROUP:InitWaypoints()
-self.waypoints0=self.group:GetTemplateRoutePoints()
-self.waypoints={}
-for index,wp in pairs(self.waypoints0)do
-local waypoint=self:_CreateWaypoint(wp)
-self:_AddWaypoint(waypoint)
-end
-self.homebase=self.homebase or self:GetHomebaseFromWaypoints()
-self.destbase=self.destbase or self:GetDestinationFromWaypoints()
-self.currbase=self:GetHomebaseFromWaypoints()
-if self.destbase and#self.waypoints>1 then
-table.remove(self.waypoints,#self.waypoints)
-else
-self.destbase=self.homebase
-end
-self:T(self.lid..string.format("Initializing %d waypoints. Homebase %s ==> %s Destination",#self.waypoints,self.homebase and self.homebase:GetName()or"unknown",self.destbase and self.destbase:GetName()or"uknown"))
-if#self.waypoints>0 then
-if#self.waypoints==1 then
-self:_PassedFinalWaypoint(true,"FLIGHTGROUP:InitWaypoints #self.waypoints==1")
-end
-end
-return self
 end
 function FLIGHTGROUP:AddWaypoint(Coordinate,Speed,AfterWaypointWithID,Altitude,Updateroute)
 local coordinate=self:_CoordinateFromObject(Coordinate)
@@ -94641,7 +94717,7 @@ transportqueue={},
 cohorts={},
 }
 LEGION.RandomAssetScore=1
-LEGION.version="0.5.0"
+LEGION.version="0.5.1"
 function LEGION:New(WarehouseName,LegionName)
 local self=BASE:Inherit(self,WAREHOUSE:New(WarehouseName,LegionName))
 if not self then
@@ -95330,6 +95406,7 @@ end
 opsgroup:_SetLegion(self)
 opsgroup.cohort=self:_GetCohortOfAsset(asset)
 opsgroup.homebase=self.airbase
+opsgroup.destbase=self.airbase
 opsgroup.homezone=self.spawnzone
 if opsgroup.cohort.weaponData then
 local text="Weapon data for group:"
@@ -96211,7 +96288,7 @@ Qintowind={},
 pathCorridor=400,
 engage={},
 }
-NAVYGROUP.version="1.0.2"
+NAVYGROUP.version="1.0.3"
 function NAVYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -96433,7 +96510,7 @@ else
 return false
 end
 end
-function NAVYGROUP:Status(From,Event,To)
+function NAVYGROUP:Status()
 local fsmstate=self:GetState()
 local alive=self:IsAlive()
 local freepath=0
@@ -96532,6 +96609,24 @@ text=text..string.format("\n[%d] ID=%d Start=%s Stop=%s Open=%s Over=%s",i,recov
 end
 self:I(self.lid..text)
 end
+if self.verbose>=2 then
+local text="Elements:"
+for i,_element in pairs(self.elements)do
+local element=_element
+local name=element.name
+local status=element.status
+local unit=element.unit
+local life,life0=self:GetLifePoints(element)
+local life0=element.life0
+local ammo=self:GetAmmoElement(element)
+text=text..string.format("\n[%d] %s: status=%s, life=%.1f/%.1f, guns=%d, rockets=%d, bombs=%d, missiles=%d, cargo=%d/%d kg",
+i,name,status,life,life0,ammo.Guns,ammo.Rockets,ammo.Bombs,ammo.Missiles,element.weightCargo,element.weightMaxCargo)
+end
+if#self.elements==0 then
+text=text.." none!"
+end
+self:I(self.lid..text)
+end
 if self:IsCruising()and self.detectionOn and self.engagedetectedOn then
 local targetgroup,targetdist=self:_GetDetectedTarget()
 if targetgroup then
@@ -96549,7 +96644,7 @@ end
 function NAVYGROUP:onafterSpawned(From,Event,To)
 self:T(self.lid..string.format("Group spawned!"))
 if self.verbose>=1 then
-local text=string.format("Initialized Navy Group %s:\n",self.groupname)
+local text=string.format("Initialized Navy Group %s [GID=%d]:\n",self.groupname,self.group:GetID())
 text=text..string.format("Unit type     = %s\n",self.actype)
 text=text..string.format("Speed max    = %.1f Knots\n",UTILS.KmphToKnots(self.speedMax))
 text=text..string.format("Speed cruise = %.1f Knots\n",UTILS.KmphToKnots(self.speedCruise))
@@ -96892,7 +96987,10 @@ self:__UpdateRoute(-0.01)
 end
 return waypoint
 end
-function NAVYGROUP:_InitGroup(Template)
+function NAVYGROUP:_InitGroup(Template,Delay)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,NAVYGROUP._InitGroup,self,Template,0)
+else
 if self.groupinitialized then
 self:T(self.lid.."WARNING: Group was already initialized! Will NOT do it again!")
 return
@@ -96915,10 +97013,18 @@ self.radio.Freq=tonumber(template.units[1].frequency)/1000000
 self.radio.Modu=tonumber(template.units[1].modulation)
 self.optionDefault.Formation="Off Road"
 self.option.Formation=self.optionDefault.Formation
+if not self.tacanDefault then
 self:SetDefaultTACAN(nil,nil,nil,nil,true)
+end
+if not self.tacan then
 self.tacan=UTILS.DeepCopy(self.tacanDefault)
+end
+if not self.iclsDefault then
 self:SetDefaultICLS(nil,nil,nil,true)
+end
+if not self.icls then
 self.icls=UTILS.DeepCopy(self.iclsDefault)
+end
 local units=self.group:GetUnits()
 local dcsgroup=Group.getByName(self.groupname)
 local size0=dcsgroup:getInitialSize()
@@ -96929,6 +97035,7 @@ for _,unit in pairs(units)do
 self:_AddElementByName(unit:GetName())
 end
 self.groupinitialized=true
+end
 return self
 end
 function NAVYGROUP:_CheckFreePath(DistanceMax,dx)
@@ -97760,7 +97867,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.1"
+OPSGROUP.version="1.0.3"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -97948,7 +98055,7 @@ self.legionReturn=false
 else
 self.legionReturn=true
 end
-self:T(self.lid..string.format("Setting ReturnToLetion=%s",tostring(self.legionReturn)))
+self:T(self.lid..string.format("Setting ReturnToLegion=%s",tostring(self.legionReturn)))
 return self
 end
 function OPSGROUP:SetDefaultSpeed(Speed)
@@ -100483,6 +100590,24 @@ local d=currentcoord:Get2DDistance(waypointcoord)
 self:T(self.lid..string.format("Distance to ingress waypoint=%.1f m",d))
 local waypoint=nil
 if self:IsFlightgroup()then
+local ingresscoord=mission:GetMissionIngressCoord()
+local holdingcoord=mission:GetMissionHoldingCoord()
+if holdingcoord then
+waypoint=FLIGHTGROUP.AddWaypoint(self,holdingcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionHoldingCoordAlt or self.altitudeCruise),false)
+uid=waypoint.uid
+self.flaghold:Set(0)
+local TaskOrbit=self.group:TaskOrbit(holdingcoord,mission.missionHoldingCoordAlt)
+local TaskStop=self.group:TaskCondition(nil,self.flaghold.UserFlagName,1,nil,mission.missionHoldingDuration or 900)
+local TaskCntr=self.group:TaskControlled(TaskOrbit,TaskStop)
+local TaskOver=self.group:TaskFunction("FLIGHTGROUP._FinishedWaiting",self)
+local DCSTasks=self.group:TaskCombo({TaskCntr,TaskOver})
+local waypointtask=self:AddTaskWaypoint(DCSTasks,waypoint,"Holding")
+waypointtask.ismission=false
+end
+if ingresscoord then
+waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
+uid=waypoint.uid
+end
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 local formation=mission.optionFormation
@@ -100503,7 +100628,7 @@ local egresscoord=mission:GetMissionEgressCoord()
 if egresscoord then
 local Ewaypoint=nil
 if self:IsFlightgroup()then
-Ewaypoint=FLIGHTGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
+Ewaypoint=FLIGHTGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,UTILS.MetersToFeet(mission.missionEgressCoordAlt or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 Ewaypoint=ARMYGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,mission.optionFormation,false)
 elseif self:IsNavygroup()then
@@ -101230,13 +101355,22 @@ self.Ndestroyed=self.Ndestroyed+1
 end
 end
 self:Despawn(0,true)
-else
+end
 for _,_element in pairs(self.elements)do
 local element=_element
+if element and element.status~=OPSGROUP.ElementStatus.DEAD then
 self:ElementInUtero(element)
 end
 end
-self:T({Template=Template})
+self:_Spawn(0.01,Template)
+end
+return self
+end
+function OPSGROUP:_Spawn(Delay,Template)
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,OPSGROUP._Spawn,self,0,Template)
+else
+self:T2({Template=Template})
 self.group=_DATABASE:Spawn(Template)
 self.dcsgroup=self:GetDCSGroup()
 self.controller=self.dcsgroup:getController()
@@ -101248,9 +101382,8 @@ self.groupinitialized=false
 self.wpcounter=1
 self.currentwp=1
 self:_InitWaypoints()
-self:_InitGroup(Template)
+self:_InitGroup(Template,0.001)
 end
-return self
 end
 function OPSGROUP:onafterInUtero(From,Event,To)
 self:T(self.lid..string.format("Group inutero at t=%.3f",timer.getTime()))
@@ -111500,14 +111633,15 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.15"
+EASYGCICAP.version="0.1.16"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
 self.coalitionname=string.lower(Coalition)or"blue"
 self.coalition=self.coalitionname=="blue"and coalition.side.BLUE or coalition.side.RED
 self.wings={}
-self.EWRName=EWRName or self.coalitionname.." EWR"
+if type(EWRName)=="string"then EWRName={EWRName}end
+self.EWRName=EWRName
 self.airbasename=AirbaseName
 self.airbase=AIRBASE:FindByName(self.airbasename)
 self.GoZoneSet=SET_ZONE:New()
@@ -112138,9 +112272,9 @@ end
 function EASYGCICAP:_StartIntel()
 self:T(self.lid.."_StartIntel")
 local BlueAir_DetectionSetGroup=SET_GROUP:New()
-BlueAir_DetectionSetGroup:FilterPrefixes({self.EWRName})
+BlueAir_DetectionSetGroup:FilterPrefixes(self.EWRName)
 BlueAir_DetectionSetGroup:FilterStart()
-local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.EWRName)
+local BlueIntel=INTEL:New(BlueAir_DetectionSetGroup,self.coalitionname,self.alias)
 BlueIntel:SetClusterAnalysis(true,false,false)
 BlueIntel:SetForgetTime(300)
 BlueIntel:SetAcceptZones(self.GoZoneSet)
