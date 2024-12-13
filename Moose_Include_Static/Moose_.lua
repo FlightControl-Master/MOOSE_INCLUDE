@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-12T13:15:40+01:00-7dd67bdf0e47fd0fd716c7494cdb1e87593e8e2f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-13T12:05:18+01:00-465f8a5cc96ff39a9a575be065901be62f415f74 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -90073,6 +90073,15 @@ if timer.getAbsTime()>self.Twaiting+self.dTwait then
 end
 end
 end
+if mission and mission.missionHoldingCoord and self.isHoldingAtHoldingPoint==true then
+self:T(self.lid.."...yes")
+if mission:IsReadyToPush()then
+self.flaghold:Set(1)
+self.Twaiting=nil
+self.dTwait=nil
+self.isHoldingAtHoldingPoint=false
+end
+end
 if mission and mission.updateDCSTask then
 if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP)and mission.orbitVec2 then
 local vec2=mission:GetTargetVec2()
@@ -99146,6 +99155,7 @@ local TaskOver=self.group:TaskFunction("FLIGHTGROUP._FinishedWaiting",self)
 local DCSTasks=self.group:TaskCombo({TaskCntr,TaskOver})
 local waypointtask=self:AddTaskWaypoint(DCSTasks,waypoint,"Holding")
 waypointtask.ismission=false
+self.isHoldingAtHoldingPoint=true
 end
 if ingresscoord then
 waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
