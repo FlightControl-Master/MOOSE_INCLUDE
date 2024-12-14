@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-14T13:48:40+01:00-ddeca49916af2c953b65ae2a20d51a34e5c709b5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-14T16:54:50+01:00-d8471698ab6ec22c1593ff7b1d54cbd8d3a87c4a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21333,8 +21333,6 @@ Template.unitId=nil
 end
 self.SpawnIndex=self.SpawnIndex+1
 Template.name=self.InitStaticName or string.format("%s#%05d",self.SpawnTemplatePrefix,self.SpawnIndex)
-local mystatic=_DATABASE:AddStatic(Template.name)
-self:T(Template)
 local Static=nil
 if self.InitFarp then
 local TemplateGroup={}
@@ -21359,7 +21357,13 @@ else
 self:T("Spawning Static")
 self:T2({Template=Template})
 Static=coalition.addStaticObject(CountryID,Template)
+if Static then
+self:T(string.format("Succesfully spawned static object \"%s\" ID=%d",Static:getName(),Static:getID()))
+else
+self:E(string.format("ERROR: DCS static object \"%s\" is nil!",tostring(Template.name)))
 end
+end
+local mystatic=_DATABASE:AddStatic(Template.name)
 if self.SpawnFunctionHook then
 self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
 end
