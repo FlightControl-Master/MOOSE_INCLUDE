@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T11:30:01+01:00-6e2a058e6e676696dcf2362dd769056baf019273 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T11:34:17+01:00-5b5bd83d5ad81a0ea4662a7e4835d09c49f6b8ae ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29904,7 +29904,7 @@ self.descriptors=self:GetDesc()
 self.category=self.descriptors and self.descriptors.category or Airbase.Category.AIRDROME
 if self.category==Airbase.Category.AIRDROME then
 self.isAirdrome=true
-elseif self.category==Airbase.Category.HELIPAD then
+elseif self.category==Airbase.Category.HELIPAD or self.descriptors.typeName=="FARP_SINGLE_01"then
 self.isHelipad=true
 elseif self.category==Airbase.Category.SHIP then
 self.isShip=true
