@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T11:42:04+01:00-f151271cb1a359ce195695f897f026771971f172 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T13:35:03+01:00-278f1db9a9915aed8ec6dd03e9355d7ce50596df ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27763,12 +27763,23 @@ h=-math.rad(360-course)
 end
 return h
 end
+local function TransFormRoute(Template,OldPos,NewPos)
+if Template.route and Template.route.points then
+for _,_point in ipairs(Template.route.points)do
+_point.x=_point.x-OldPos.x+NewPos.x
+_point.y=_point.y-OldPos.y+NewPos.y
+end
+end
+return Template
+end
 if self:IsAlive()then
+local OldPos=self:GetVec2()
 local Zone=self.InitRespawnZone
 local Vec3=Zone and Zone:GetVec3()or self:GetVec3()
 local From={x=Template.x,y=Template.y}
 Template.x=Vec3.x
 Template.y=Vec3.z
+local NewPos={x=Vec3.x,y=Vec3.z}
 if Reset==true then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local GroupUnit=UnitData
@@ -27800,6 +27811,7 @@ Template.units[UnitID].heading=_Heading(self.InitRespawnHeading and self.InitRes
 Template.units[UnitID].psi=-Template.units[UnitID].heading
 end
 end
+Template=TransFormRoute(Template,OldPos,NewPos)
 elseif Reset==false then
 for UnitID,TemplateUnitData in pairs(Template.units)do
 local GroupUnitVec3={x=TemplateUnitData.x,y=TemplateUnitData.alt,z=TemplateUnitData.y}
@@ -27822,6 +27834,7 @@ Template.units[UnitID].x=(Template.units[UnitID].x-From.x)+GroupUnitVec3.x
 Template.units[UnitID].y=(Template.units[UnitID].y-From.y)+GroupUnitVec3.z
 Template.units[UnitID].heading=self.InitRespawnHeading and self.InitRespawnHeading or TemplateUnitData.heading
 end
+Template=TransFormRoute(Template,OldPos,NewPos)
 else
 local units=self:GetUnits()
 for UnitID,Unit in pairs(Template.units)do
@@ -27855,9 +27868,13 @@ if self.InitRespawnModu then
 Template.modulation=self.InitRespawnModu
 end
 self:Destroy(false)
-_DATABASE:Spawn(Template)
+self:ScheduleOnce(0.1,_DATABASE.Spawn,_DATABASE,Template)
 self:ResetEvents()
 return self
+end
+function GROUP:Teleport(Coordinate)
+self:InitZone(Coordinate)
+return self:Respawn(nil,false)
 end
 function GROUP:RespawnAtCurrentAirbase(SpawnTemplate,Takeoff,Uncontrolled)
 if self and self:IsAlive()then
