@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-12T13:11:58+01:00-ea55e90e626305e1baec0d3a61e8a1ecfe88a891 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T13:35:03+01:00-278f1db9a9915aed8ec6dd03e9355d7ce50596df ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5105,10 +5105,6 @@ BASE.__={}
 BASE._={
 Schedules={},
 }
-FORMATION={
-Cone="Cone",
-Vee="Vee",
-}
 function BASE:New()
 local self=UTILS.DeepCopy(self)
 _ClassID=_ClassID+1
@@ -7567,12 +7563,13 @@ end
 end
 elseif Event.TgtObjectCategory==Object.Category.SCENERY then
 Event.TgtDCSUnit=Event.target
-Event.TgtDCSUnitName=Event.TgtDCSUnit:getName()
-if Event.TgtDCSUnitName==nil then return end
+Event.TgtDCSUnitName=Event.TgtDCSUnit.getName and Event.TgtDCSUnit.getName()or nil
+if Event.TgtDCSUnitName~=nil then
 Event.TgtUnitName=Event.TgtDCSUnitName
 Event.TgtUnit=SCENERY:Register(Event.TgtDCSUnitName,Event.target)
 Event.TgtCategory=Event.TgtDCSUnit:getDesc().category
 Event.TgtTypeName=Event.TgtDCSUnit:getTypeName()
+end
 end
 end
 if Event.weapon and type(Event.weapon)=="table"and Event.weapon.isExist and Event.weapon:isExist()then
@@ -11022,9 +11019,8 @@ end
 function DATABASE:AddStatic(DCSStaticName)
 if not self.STATICS[DCSStaticName]then
 self.STATICS[DCSStaticName]=STATIC:Register(DCSStaticName)
-return self.STATICS[DCSStaticName]
 end
-return nil
+return self.STATICS[DCSStaticName]
 end
 function DATABASE:DeleteStatic(DCSStaticName)
 self.STATICS[DCSStaticName]=nil
@@ -11036,9 +11032,8 @@ end
 function DATABASE:AddDynamicCargo(Name)
 if not self.DYNAMICCARGO[Name]then
 self.DYNAMICCARGO[Name]=DYNAMICCARGO:Register(Name)
-return self.DYNAMICCARGO[Name]
 end
-return nil
+return self.DYNAMICCARGO[Name]
 end
 function DATABASE:FindDynamicCargo(DynamicCargoName)
 local StaticFound=self.DYNAMICCARGO[DynamicCargoName]
@@ -21256,8 +21251,6 @@ Template.unitId=nil
 end
 self.SpawnIndex=self.SpawnIndex+1
 Template.name=self.InitStaticName or string.format("%s#%05d",self.SpawnTemplatePrefix,self.SpawnIndex)
-local mystatic=_DATABASE:AddStatic(Template.name)
-self:T(Template)
 local Static=nil
 if self.InitFarp then
 local TemplateGroup={}
@@ -21282,7 +21275,13 @@ else
 self:T("Spawning Static")
 self:T2({Template=Template})
 Static=coalition.addStaticObject(CountryID,Template)
+if Static then
+self:T(string.format("Succesfully spawned static object \"%s\" ID=%d",Static:getName(),Static:getID()))
+else
+self:E(string.format("ERROR: DCS static object \"%s\" is nil!",tostring(Template.name)))
 end
+end
+local mystatic=_DATABASE:AddStatic(Template.name)
 if self.SpawnFunctionHook then
 self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
 end
@@ -27764,12 +27763,23 @@ h=-math.rad(360-course)
 end
 return h
 end
+local function TransFormRoute(Template,OldPos,NewPos)
+if Template.route and Template.route.points then
+for _,_point in ipairs(Template.route.points)do
+_point.x=_point.x-OldPos.x+NewPos.x
+_point.y=_point.y-OldPos.y+NewPos.y
+end
+end
+return Template
+end
 if self:IsAlive()then
+local OldPos=self:GetVec2()
 local Zone=self.InitRespawnZone
 local Vec3=Zone and Zone:GetVec3()or self:GetVec3()
 local From={x=Template.x,y=Template.y}
 Template.x=Vec3.x
 Template.y=Vec3.z
+local NewPos={x=Vec3.x,y=Vec3.z}
 if Reset==true then
 for UnitID,UnitData in pairs(self:GetUnits())do
 local GroupUnit=UnitData
@@ -27801,6 +27811,7 @@ Template.units[UnitID].heading=_Heading(self.InitRespawnHeading and self.InitRes
 Template.units[UnitID].psi=-Template.units[UnitID].heading
 end
 end
+Template=TransFormRoute(Template,OldPos,NewPos)
 elseif Reset==false then
 for UnitID,TemplateUnitData in pairs(Template.units)do
 local GroupUnitVec3={x=TemplateUnitData.x,y=TemplateUnitData.alt,z=TemplateUnitData.y}
@@ -27823,6 +27834,7 @@ Template.units[UnitID].x=(Template.units[UnitID].x-From.x)+GroupUnitVec3.x
 Template.units[UnitID].y=(Template.units[UnitID].y-From.y)+GroupUnitVec3.z
 Template.units[UnitID].heading=self.InitRespawnHeading and self.InitRespawnHeading or TemplateUnitData.heading
 end
+Template=TransFormRoute(Template,OldPos,NewPos)
 else
 local units=self:GetUnits()
 for UnitID,Unit in pairs(Template.units)do
@@ -27856,9 +27868,13 @@ if self.InitRespawnModu then
 Template.modulation=self.InitRespawnModu
 end
 self:Destroy(false)
-_DATABASE:Spawn(Template)
+self:ScheduleOnce(0.1,_DATABASE.Spawn,_DATABASE,Template)
 self:ResetEvents()
 return self
+end
+function GROUP:Teleport(Coordinate)
+self:InitZone(Coordinate)
+return self:Respawn(nil,false)
 end
 function GROUP:RespawnAtCurrentAirbase(SpawnTemplate,Takeoff,Uncontrolled)
 if self and self:IsAlive()then
@@ -29487,6 +29503,8 @@ local DCSStatic=StaticObject.getByName(self.StaticName)
 if DCSStatic then
 local Life0=DCSStatic:getLife()or 1
 self.Life0=Life0
+else
+self:E(string.format("Static object %s does not exist!",tostring(self.StaticName)))
 end
 return self
 end
@@ -30037,7 +30055,7 @@ self.descriptors=self:GetDesc()
 self.category=self.descriptors and self.descriptors.category or Airbase.Category.AIRDROME
 if self.category==Airbase.Category.AIRDROME then
 self.isAirdrome=true
-elseif self.category==Airbase.Category.HELIPAD then
+elseif self.category==Airbase.Category.HELIPAD or self.descriptors.typeName=="FARP_SINGLE_01"then
 self.isHelipad=true
 elseif self.category==Airbase.Category.SHIP then
 self.isShip=true
@@ -44237,7 +44255,7 @@ local ca2g=coord:ToStringA2G(_unit,_settings)
 _text=_text..string.format("\n- %s:\n%s @ %s",bombtarget.name or"unknown",ca2g,eltxt)
 end
 end
-self:_DisplayMessageToGroup(_unit,_text,120,true,true,_multiplayer)
+self:_DisplayMessageToGroup(_unit,_text,150,true,true,_multiplayer)
 end
 end
 function RANGE:_DisplayStrafePits(_unitname)
@@ -44497,10 +44515,10 @@ end
 _rootMenu=RANGE.MenuF10[_gid]or MENU_GROUP:New(group,"On the Range")
 end
 local _rangePath=MENU_GROUP:New(group,self.rangename,_rootMenu)
-local _statsPath=MENU_GROUP:New(group,"Statistics",_rangePath)
-local _markPath=MENU_GROUP:New(group,"Mark Targets",_rangePath)
-local _settingsPath=MENU_GROUP:New(group,"My Settings",_rangePath)
 local _infoPath=MENU_GROUP:New(group,"Range Info",_rangePath)
+local _markPath=MENU_GROUP:New(group,"Mark Targets",_rangePath)
+local _statsPath=MENU_GROUP:New(group,"Statistics",_rangePath)
+local _settingsPath=MENU_GROUP:New(group,"My Settings",_rangePath)
 local _mysmokePath=MENU_GROUP:New(group,"Smoke Color",_settingsPath)
 local _myflarePath=MENU_GROUP:New(group,"Flare Color",_settingsPath)
 local _MoMap=MENU_GROUP_COMMAND:New(group,"Mark On Map",_markPath,self._MarkTargetsOnMap,self,_unitName)
@@ -68700,83 +68718,83 @@ Afghanistan=true,
 Iraq=true,
 }
 ATIS.Sound={
-ActiveRunway={filename="ActiveRunway.ogg",duration=0.99},
-ActiveRunwayDeparture={filename="ActiveRunwayDeparture.ogg",duration=0.99},
-ActiveRunwayArrival={filename="ActiveRunwayArrival.ogg",duration=0.99},
-AdviceOnInitial={filename="AdviceOnInitial.ogg",duration=3.00},
-Airport={filename="Airport.ogg",duration=0.66},
-Altimeter={filename="Altimeter.ogg",duration=0.68},
-At={filename="At.ogg",duration=0.41},
-CloudBase={filename="CloudBase.ogg",duration=0.82},
-CloudCeiling={filename="CloudCeiling.ogg",duration=0.61},
-CloudsBroken={filename="CloudsBroken.ogg",duration=1.07},
-CloudsFew={filename="CloudsFew.ogg",duration=0.99},
-CloudsNo={filename="CloudsNo.ogg",duration=1.01},
-CloudsNotAvailable={filename="CloudsNotAvailable.ogg",duration=2.35},
-CloudsOvercast={filename="CloudsOvercast.ogg",duration=0.83},
-CloudsScattered={filename="CloudsScattered.ogg",duration=1.18},
-Decimal={filename="Decimal.ogg",duration=0.54},
-DegreesCelsius={filename="DegreesCelsius.ogg",duration=1.27},
-DegreesFahrenheit={filename="DegreesFahrenheit.ogg",duration=1.23},
-DewPoint={filename="DewPoint.ogg",duration=0.65},
-Dust={filename="Dust.ogg",duration=0.54},
-Elevation={filename="Elevation.ogg",duration=0.78},
-EndOfInformation={filename="EndOfInformation.ogg",duration=1.15},
-Feet={filename="Feet.ogg",duration=0.45},
-Fog={filename="Fog.ogg",duration=0.47},
-Gusting={filename="Gusting.ogg",duration=0.55},
-HectoPascal={filename="HectoPascal.ogg",duration=1.15},
-Hundred={filename="Hundred.ogg",duration=0.47},
-InchesOfMercury={filename="InchesOfMercury.ogg",duration=1.16},
-Information={filename="Information.ogg",duration=0.85},
-Kilometers={filename="Kilometers.ogg",duration=0.78},
-Knots={filename="Knots.ogg",duration=0.59},
-Left={filename="Left.ogg",duration=0.54},
-MegaHertz={filename="MegaHertz.ogg",duration=0.87},
-Meters={filename="Meters.ogg",duration=0.59},
-MetersPerSecond={filename="MetersPerSecond.ogg",duration=1.14},
-Miles={filename="Miles.ogg",duration=0.60},
-MillimetersOfMercury={filename="MillimetersOfMercury.ogg",duration=1.53},
-Minus={filename="Minus.ogg",duration=0.64},
-N0={filename="N-0.ogg",duration=0.55},
-N1={filename="N-1.ogg",duration=0.41},
-N2={filename="N-2.ogg",duration=0.37},
-N3={filename="N-3.ogg",duration=0.41},
-N4={filename="N-4.ogg",duration=0.37},
-N5={filename="N-5.ogg",duration=0.43},
-N6={filename="N-6.ogg",duration=0.55},
-N7={filename="N-7.ogg",duration=0.43},
-N8={filename="N-8.ogg",duration=0.38},
-N9={filename="N-9.ogg",duration=0.55},
-NauticalMiles={filename="NauticalMiles.ogg",duration=1.04},
-None={filename="None.ogg",duration=0.43},
-QFE={filename="QFE.ogg",duration=0.63},
-QNH={filename="QNH.ogg",duration=0.71},
-Rain={filename="Rain.ogg",duration=0.41},
-Right={filename="Right.ogg",duration=0.44},
-Snow={filename="Snow.ogg",duration=0.48},
-SnowStorm={filename="SnowStorm.ogg",duration=0.82},
-StatuteMiles={filename="StatuteMiles.ogg",duration=1.15},
-SunriseAt={filename="SunriseAt.ogg",duration=0.92},
-SunsetAt={filename="SunsetAt.ogg",duration=0.95},
-Temperature={filename="Temperature.ogg",duration=0.64},
-Thousand={filename="Thousand.ogg",duration=0.55},
-ThunderStorm={filename="ThunderStorm.ogg",duration=0.81},
-TimeLocal={filename="TimeLocal.ogg",duration=0.90},
-TimeZulu={filename="TimeZulu.ogg",duration=0.86},
-TowerFrequency={filename="TowerFrequency.ogg",duration=1.19},
-Visibilty={filename="Visibility.ogg",duration=0.79},
-WeatherPhenomena={filename="WeatherPhenomena.ogg",duration=1.07},
-WindFrom={filename="WindFrom.ogg",duration=0.60},
+ActiveRunway={filename="ActiveRunway.ogg",duration=0.85},
+ActiveRunwayDeparture={filename="ActiveRunwayDeparture.ogg",duration=1.50},
+ActiveRunwayArrival={filename="ActiveRunwayArrival.ogg",duration=1.38},
+AdviceOnInitial={filename="AdviceOnInitial.ogg",duration=2.98},
+Airport={filename="Airport.ogg",duration=0.55},
+Altimeter={filename="Altimeter.ogg",duration=0.91},
+At={filename="At.ogg",duration=0.32},
+CloudBase={filename="CloudBase.ogg",duration=0.69},
+CloudCeiling={filename="CloudCeiling.ogg",duration=0.53},
+CloudsBroken={filename="CloudsBroken.ogg",duration=0.81},
+CloudsFew={filename="CloudsFew.ogg",duration=0.74},
+CloudsNo={filename="CloudsNo.ogg",duration=0.69},
+CloudsNotAvailable={filename="CloudsNotAvailable.ogg",duration=2.64},
+CloudsOvercast={filename="CloudsOvercast.ogg",duration=0.82},
+CloudsScattered={filename="CloudsScattered.ogg",duration=0.89},
+Decimal={filename="Decimal.ogg",duration=0.71},
+DegreesCelsius={filename="DegreesCelsius.ogg",duration=1.08},
+DegreesFahrenheit={filename="DegreesFahrenheit.ogg",duration=1.07},
+DewPoint={filename="DewPoint.ogg",duration=0.59},
+Dust={filename="Dust.ogg",duration=0.37},
+Elevation={filename="Elevation.ogg",duration=0.92},
+EndOfInformation={filename="EndOfInformation.ogg",duration=1.24},
+Feet={filename="Feet.ogg",duration=0.34},
+Fog={filename="Fog.ogg",duration=0.41},
+Gusting={filename="Gusting.ogg",duration=0.58},
+HectoPascal={filename="HectoPascal.ogg",duration=0.92},
+Hundred={filename="Hundred.ogg",duration=0.53},
 ILSFrequency={filename="ILSFrequency.ogg",duration=1.30},
-InnerNDBFrequency={filename="InnerNDBFrequency.ogg",duration=1.56},
-OuterNDBFrequency={filename="OuterNDBFrequency.ogg",duration=1.59},
-RunwayLength={filename="RunwayLength.ogg",duration=0.91},
-VORFrequency={filename="VORFrequency.ogg",duration=1.38},
-TACANChannel={filename="TACANChannel.ogg",duration=0.88},
-PRMGChannel={filename="PRMGChannel.ogg",duration=1.18},
-RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
-Zulu={filename="Zulu.ogg",duration=0.62},
+InchesOfMercury={filename="InchesOfMercury.ogg",duration=1.26},
+Information={filename="Information.ogg",duration=0.99},
+InnerNDBFrequency={filename="InnerNDBFrequency.ogg",duration=1.69},
+Kilometers={filename="Kilometers.ogg",duration=0.93},
+Knots={filename="Knots.ogg",duration=0.46},
+Left={filename="Left.ogg",duration=0.41},
+MegaHertz={filename="MegaHertz.ogg",duration=0.83},
+Meters={filename="Meters.ogg",duration=0.55},
+MetersPerSecond={filename="MetersPerSecond.ogg",duration=1.03},
+Miles={filename="Miles.ogg",duration=0.44},
+MillimetersOfMercury={filename="MillimetersOfMercury.ogg",duration=1.59},
+Minus={filename="Minus.ogg",duration=0.55},
+N0={filename="N-0.ogg",duration=0.52},
+N1={filename="N-1.ogg",duration=0.35},
+N2={filename="N-2.ogg",duration=0.41},
+N3={filename="N-3.ogg",duration=0.34},
+N4={filename="N-4.ogg",duration=0.37},
+N5={filename="N-5.ogg",duration=0.40},
+N6={filename="N-6.ogg",duration=0.46},
+N7={filename="N-7.ogg",duration=0.52},
+N8={filename="N-8.ogg",duration=0.36},
+N9={filename="N-9.ogg",duration=0.51},
+NauticalMiles={filename="NauticalMiles.ogg",duration=0.93},
+None={filename="None.ogg",duration=0.33},
+OuterNDBFrequency={filename="OuterNDBFrequency.ogg",duration=1.70},
+PRMGChannel={filename="PRMGChannel.ogg",duration=1.27},
+QFE={filename="QFE.ogg",duration=0.90},
+QNH={filename="QNH.ogg",duration=0.94},
+Rain={filename="Rain.ogg",duration=0.35},
+Right={filename="Right.ogg",duration=0.31},
+RSBNChannel={filename="RSBNChannel.ogg",duration=1.26},
+RunwayLength={filename="RunwayLength.ogg",duration=0.81},
+Snow={filename="Snow.ogg",duration=0.40},
+SnowStorm={filename="SnowStorm.ogg",duration=0.73},
+StatuteMiles={filename="StatuteMiles.ogg",duration=0.90},
+SunriseAt={filename="SunriseAt.ogg",duration=0.82},
+SunsetAt={filename="SunsetAt.ogg",duration=0.87},
+TACANChannel={filename="TACANChannel.ogg",duration=0.81},
+Temperature={filename="Temperature.ogg",duration=0.70},
+Thousand={filename="Thousand.ogg",duration=0.58},
+ThunderStorm={filename="ThunderStorm.ogg",duration=0.79},
+TimeLocal={filename="TimeLocal.ogg",duration=0.83},
+TimeZulu={filename="TimeZulu.ogg",duration=0.83},
+TowerFrequency={filename="TowerFrequency.ogg",duration=1.05},
+Visibilty={filename="Visibility.ogg",duration=1.16},
+VORFrequency={filename="VORFrequency.ogg",duration=1.28},
+WeatherPhenomena={filename="WeatherPhenomena.ogg",duration=1.09},
+WindFrom={filename="WindFrom.ogg",duration=0.63},
+Zulu={filename="Zulu.ogg",duration=0.51},
 }
 ATIS.Messages={
 EN=
@@ -69021,7 +69039,7 @@ DELIMITER="Décimal",
 }
 ATIS.locale="en"
 _ATIS={}
-ATIS.version="1.0.0"
+ATIS.version="1.0.1"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -69576,33 +69594,31 @@ dewpoint=UTILS.CelsiusToFahrenheit(dewpoint)
 end
 local TEMPERATURE=string.format("%d",math.abs(temperature))
 local DEWPOINT=string.format("%d",math.abs(dewpoint))
-local clouds,visibility,turbulence,fog,dust,static=self:GetMissionWeather()
-if fog and fog.thickness<height+25 then
-fog=nil
+local clouds,visibility,turbulence,dustdens,static=self:GetMissionWeather()
+local dust=false
+local fog=false
+if dustdens then
+if UTILS.FeetToMeters(1500)>height+25 then
+dust=true
+visibility=math.min(visibility,dustdens)
 end
-if dust and height+25>UTILS.FeetToMeters(1500)then
-dust=nil
-end
-local visibilitymin=visibility
-if fog then
-if fog.visibility<visibilitymin then
-visibilitymin=fog.visibility
-end
-end
-if dust then
-if dust<visibilitymin then
-visibilitymin=dust
+else
+local fvis=world.weather.getFogVisibilityDistance()
+local fheight=world.weather.getFogThickness()
+if fvis>0 and fheight>height+25 then
+fog=true
+visibility=math.min(visibility,fvis)
 end
 end
 local VISIBILITY=""
 if self.metric then
-local reportedviz=UTILS.Round(visibilitymin/1000)
+local reportedviz=UTILS.Round(visibility/1000)
 if reportedviz>10 then
 reportedviz=10
 end
 VISIBILITY=string.format("%d",reportedviz)
 else
-local reportedviz=UTILS.Round(UTILS.MetersToSM(visibilitymin))
+local reportedviz=UTILS.Round(UTILS.MetersToSM(visibility))
 if reportedviz>10 then
 reportedviz=10
 end
@@ -70462,18 +70478,13 @@ local dust=nil
 if weather.enable_dust==true then
 dust=weather.dust_density
 end
-local fog=nil
-if weather.enable_fog==true then
-fog=weather.fog
-end
 self:T("FF weather:")
 self:T({clouds=clouds})
 self:T({visibility=visibility})
 self:T({turbulence=turbulence})
-self:T({fog=fog})
 self:T({dust=dust})
 self:T({static=static})
-return clouds,visibility,turbulence,fog,dust,static
+return clouds,visibility,turbulence,dust,static
 end
 function ATIS:_GetThousandsAndHundreds(n)
 local N=UTILS.Round(n/1000,1)
@@ -91530,6 +91541,15 @@ if timer.getAbsTime()>self.Twaiting+self.dTwait then
 end
 end
 end
+if mission and mission.missionHoldingCoord and self.isHoldingAtHoldingPoint==true then
+self:T(self.lid.."...yes")
+if mission:IsReadyToPush()then
+self.flaghold:Set(1)
+self.Twaiting=nil
+self.dTwait=nil
+self.isHoldingAtHoldingPoint=false
+end
+end
 if mission and mission.updateDCSTask then
 if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP)and mission.orbitVec2 then
 local vec2=mission:GetTargetVec2()
@@ -100603,6 +100623,7 @@ local TaskOver=self.group:TaskFunction("FLIGHTGROUP._FinishedWaiting",self)
 local DCSTasks=self.group:TaskCombo({TaskCntr,TaskOver})
 local waypointtask=self:AddTaskWaypoint(DCSTasks,waypoint,"Holding")
 waypointtask.ismission=false
+self.isHoldingAtHoldingPoint=true
 end
 if ingresscoord then
 waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
