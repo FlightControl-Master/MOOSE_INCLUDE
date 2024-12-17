@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T13:35:03+01:00-278f1db9a9915aed8ec6dd03e9355d7ce50596df ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-17T12:46:44+01:00-548b80969aa4fb334e3f72c11304b6e92e86fb4c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53773,7 +53773,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.19"
+self.version="0.8.20"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54266,6 +54266,9 @@ range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
+if string.find(grpname,"SHORAD",1,true)then
+type=MANTIS.SamType.SHORT
+end
 return range,height,type,blind
 end
 function MANTIS:SetSAMStartState()
@@ -54383,6 +54386,10 @@ end
 function MANTIS:_CheckLoop(samset,detset,dlink,limit)
 self:T(self.lid.."CheckLoop "..#detset.." Coordinates")
 local switchedon=0
+local statusreport=REPORT:New("\nMANTIS Status")
+local instatusred=0
+local instatusgreen=0
+local SEADactive=0
 for _,_data in pairs(samset)do
 local samcoordinate=_data[2]
 local name=_data[1]
@@ -54418,7 +54425,6 @@ self:__ShoradActivated(1,name,radius,ontime)
 end
 if(self.debug or self.verbose)and switch then
 local text=string.format("SAM %s in alarm state RED!",name)
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
@@ -54435,11 +54441,24 @@ self.SamStateTracker[name]="GREEN"
 end
 if self.debug or self.verbose then
 local text=string.format("SAM %s in alarm state GREEN!",name)
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
 end
+end
+if self.debug then
+for _,_status in pairs(self.SamStateTracker)do
+if _status=="GREEN"then
+instatusgreen=instatusgreen+1
+elseif _status=="RED"then
+instatusred=instatusred+1
+end
+end
+statusreport:Add("+-----------------------------+")
+statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
+statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
+statusreport:Add("+-----------------------------+")
+MESSAGE:New(statusreport:Text(),10,nil,true):ToAll():ToLog()
 end
 return self
 end
@@ -54515,7 +54534,7 @@ else
 self.Detection=self:StartIntelDetection()
 end
 if self.autoshorad then
-self.Shorad=SHORAD:New(self.name.."-SHORAD",self.name.."-SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.coalition,self.UseEmOnOff)
+self.Shorad=SHORAD:New(self.name.."-SHORAD","SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.coalition,self.UseEmOnOff)
 self.Shorad:SetDefenseLimits(80,95)
 self.ShoradLink=true
 self.Shorad.Groupset=self.ShoradGroupSet
