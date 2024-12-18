@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T11:35:13+01:00-014750ea7fe38293703e0eb582eca5fcb209ec92 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T12:34:30+01:00-0427c0d3a71db056948235537a2ea1b98a4e0d94 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67121,7 +67121,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.19"
+CTLD.version="1.1.20"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -69939,6 +69939,20 @@ for _id,_troop in pairs(gentroops)do
 table.insert(Stock,_troop.Name,_troop.Stock or-1)
 end
 return Stock
+end
+function CTLD:GetLoadedCargo(Unit)
+local Troops=0
+local Crates=0
+local Cargo={}
+if Unit and Unit:IsAlive()then
+local name=Unit:GetName()
+if self.Loaded_Cargo[name]then
+Troops=self.Loaded_Cargo[name].Troopsloaded or 0
+Crates=self.Loaded_Cargo[name].Cratesloaded or 0
+Cargo=self.Loaded_Cargo[name].Cargo or{}
+end
+end
+return Troops,Crates,Cargo
 end
 function CTLD:GetStockStatics()
 local Stock={}
