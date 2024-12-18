@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-17T12:45:45+01:00-e4bbfce3147798cb7c2e83fa7426b0d8b9c5a7cd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T11:35:13+01:00-014750ea7fe38293703e0eb582eca5fcb209ec92 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16014,9 +16014,15 @@ end
 function SET_OPSGROUP:_EventOnBirth(Event)
 if Event.IniDCSUnit and Event.IniDCSGroup then
 local DCSgroup=Event.IniDCSGroup
+local CountAliveActive=0
+for index,data in pairs(DCSgroup:getUnits())do
+if data:isExist()and data:isActive()then
+CountAliveActive=CountAliveActive+1
+end
+end
 if DCSgroup:getInitialSize()==DCSgroup:getSize()then
 local groupname,group=self:AddInDatabase(Event)
-if group and group:CountAliveUnits()==DCSgroup:getInitialSize()then
+if group and CountAliveActive==DCSgroup:getInitialSize()then
 if group and self:IsIncludeObject(group)then
 self:Add(groupname,group)
 end
