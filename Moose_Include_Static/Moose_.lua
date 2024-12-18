@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T12:35:32+01:00-aa064a1d0ef0de914370e206d0feb16e7edc61ce ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T22:04:55+01:00-cf86eacb1674020ca61fbfc81633f7b71898221b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52318,7 +52318,6 @@ end
 end
 end
 function WAREHOUSE:_DeleteQueueItem(qitem,queue)
-self:F({qitem=qitem,queue=queue})
 for i=1,#queue do
 local _item=queue[i]
 if _item.uid==qitem.uid then
