@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T12:36:16+01:00-844ad4619eb4635753351127f1dd95eaee9b28c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-19T14:16:10+01:00-d0aa039626fb0093599b8f858fcca9d969ed7540 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52997,9 +52997,18 @@ elseif _status=="RED"then
 instatusred=instatusred+1
 end
 end
+local activeshorads=0
+if self.Shorad then
+for _,_name in pairs(self.Shorad.ActiveGroups or{})do
+activeshorads=activeshorads+1
+end
+end
 statusreport:Add("+-----------------------------+")
 statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
 statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
+if self.Shorad then
+statusreport:Add(string.format("+ SHORAD active: %2d",activeshorads))
+end
 statusreport:Add("+-----------------------------+")
 MESSAGE:New(statusreport:Text(),10,nil,true):ToAll():ToLog()
 end
