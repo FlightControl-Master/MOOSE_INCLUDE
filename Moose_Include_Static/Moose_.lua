@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-17T12:46:44+01:00-548b80969aa4fb334e3f72c11304b6e92e86fb4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-18T22:04:55+01:00-cf86eacb1674020ca61fbfc81633f7b71898221b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52318,7 +52318,6 @@ end
 end
 end
 function WAREHOUSE:_DeleteQueueItem(qitem,queue)
-self:F({qitem=qitem,queue=queue})
 for i=1,#queue do
 local _item=queue[i]
 if _item.uid==qitem.uid then
@@ -70929,7 +70928,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.19"
+CTLD.version="1.1.20"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73747,6 +73746,20 @@ for _id,_troop in pairs(gentroops)do
 table.insert(Stock,_troop.Name,_troop.Stock or-1)
 end
 return Stock
+end
+function CTLD:GetLoadedCargo(Unit)
+local Troops=0
+local Crates=0
+local Cargo={}
+if Unit and Unit:IsAlive()then
+local name=Unit:GetName()
+if self.Loaded_Cargo[name]then
+Troops=self.Loaded_Cargo[name].Troopsloaded or 0
+Crates=self.Loaded_Cargo[name].Cratesloaded or 0
+Cargo=self.Loaded_Cargo[name].Cargo or{}
+end
+end
+return Troops,Crates,Cargo
 end
 function CTLD:GetStockStatics()
 local Stock={}
@@ -80665,7 +80678,7 @@ function AUFTRAG:SetMissionWaypointRandomization(Radius)
 self.missionWaypointRadius=Radius
 return self
 end
-function AUFTRAG:SetMissionEgressCoord(Coordinate,Altitude)
+function AUFTRAG:SetMissionEgressCoord(Coordinate,Altitude,Speed)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
@@ -80674,8 +80687,10 @@ if Altitude then
 self.missionEgressCoord.y=UTILS.FeetToMeters(Altitude)
 self.missionEgressCoordAlt=UTILS.FeetToMeters(Altitude)
 end
+self.missionEgressCoordSpeed=Speed and Speed or nil
+return self
 end
-function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude)
+function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude,Speed)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
@@ -80684,8 +80699,10 @@ if Altitude then
 self.missionIngressCoord.y=UTILS.FeetToMeters(Altitude)
 self.missionIngressCoordAlt=UTILS.FeetToMeters(Altitude or 10000)
 end
+self.missionIngressCoordSpeed=Speed and Speed or nil
+return self
 end
-function AUFTRAG:SetMissionHoldingCoord(Coordinate,Altitude,Duration)
+function AUFTRAG:SetMissionHoldingCoord(Coordinate,Altitude,Speed,Duration)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
@@ -80695,6 +80712,8 @@ if Altitude then
 self.missionHoldingCoord.y=UTILS.FeetToMeters(Altitude)
 self.missionHoldingCoordAlt=UTILS.FeetToMeters(Altitude or 10000)
 end
+self.missionHoldingCoordSpeed=Speed and Speed or nil
+return self
 end
 function AUFTRAG:GetMissionEgressCoord()
 return self.missionEgressCoord
@@ -100632,10 +100651,10 @@ if self:IsFlightgroup()then
 local ingresscoord=mission:GetMissionIngressCoord()
 local holdingcoord=mission:GetMissionHoldingCoord()
 if holdingcoord then
-waypoint=FLIGHTGROUP.AddWaypoint(self,holdingcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionHoldingCoordAlt or self.altitudeCruise),false)
+waypoint=FLIGHTGROUP.AddWaypoint(self,holdingcoord,mission.missionHoldingCoordSpeed or SpeedToMission,uid,UTILS.MetersToFeet(mission.missionHoldingCoordAlt or self.altitudeCruise),false)
 uid=waypoint.uid
 self.flaghold:Set(0)
-local TaskOrbit=self.group:TaskOrbit(holdingcoord,mission.missionHoldingCoordAlt)
+local TaskOrbit=self.group:TaskOrbit(holdingcoord,mission.missionHoldingCoordAlt,UTILS.KnotsToMps(mission.missionHoldingCoordSpeed or SpeedToMission))
 local TaskStop=self.group:TaskCondition(nil,self.flaghold.UserFlagName,1,nil,mission.missionHoldingDuration or 900)
 local TaskCntr=self.group:TaskControlled(TaskOrbit,TaskStop)
 local TaskOver=self.group:TaskFunction("FLIGHTGROUP._FinishedWaiting",self)
@@ -100645,7 +100664,7 @@ waypointtask.ismission=false
 self.isHoldingAtHoldingPoint=true
 end
 if ingresscoord then
-waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
+waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,mission.missionIngressCoordSpeed or SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
 uid=waypoint.uid
 end
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
@@ -100668,7 +100687,7 @@ local egresscoord=mission:GetMissionEgressCoord()
 if egresscoord then
 local Ewaypoint=nil
 if self:IsFlightgroup()then
-Ewaypoint=FLIGHTGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,UTILS.MetersToFeet(mission.missionEgressCoordAlt or self.altitudeCruise),false)
+Ewaypoint=FLIGHTGROUP.AddWaypoint(self,egresscoord,mission.missionEgressCoordSpeed or SpeedToMission,waypoint.uid,UTILS.MetersToFeet(mission.missionEgressCoordAlt or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 Ewaypoint=ARMYGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,mission.optionFormation,false)
 elseif self:IsNavygroup()then
