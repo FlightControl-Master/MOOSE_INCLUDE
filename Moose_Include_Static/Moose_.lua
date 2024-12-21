@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-19T14:16:10+01:00-d0aa039626fb0093599b8f858fcca9d969ed7540 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-21T11:22:52+01:00-f7583dbd56745c3df6cd93b183f5a0ea269c91db ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52316,7 +52316,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.20"
+self.version="0.8.21"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
