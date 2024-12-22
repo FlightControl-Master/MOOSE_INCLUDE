@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-21T11:58:22+01:00-7f323dd3a5e052be1068037afab1d635e0088b00 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-22T13:00:22+01:00-678dc92a660fac5785cb16a4b70e6efa15725b2d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79822,7 +79822,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.67",
+version="0.2.68",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -83526,6 +83526,7 @@ if not self.GCI then
 local AwacsAW=self.AirWing
 local mission=AUFTRAG:NewORBIT_RACETRACK(self.OrbitZone:GetCoordinate(),self.AwacsAngels*1000,self.Speed,self.Heading,self.Leg)
 mission:SetMissionRange(self.MaxMissionRange)
+mission:SetRequiredAttribute({GROUP.Attribute.AIR_AWACS})
 local timeonstation=(self.AwacsTimeOnStation+self.ShiftChangeTime)*3600
 mission:SetTime(nil,timeonstation)
 self.CatchAllMissions[#self.CatchAllMissions+1]=mission
