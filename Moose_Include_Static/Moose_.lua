@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-22T13:00:22+01:00-678dc92a660fac5785cb16a4b70e6efa15725b2d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-26T17:20:56+01:00-9bf2a013d557d01a2f00d97274a50b08f7daf9b6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3795,6 +3795,93 @@ ADFName=Name.." ADF "..tostring(ADF).."KHz"
 trigger.action.radioTransmission(Sound,vec3,0,true,ADFFreq,250,ADFName)
 end
 return ReturnObjects,ADFName
+end
+function UTILS.Vec2toVec3(vec,y)
+if not vec.z then
+if vec.alt and not y then
+y=vec.alt
+elseif not y then
+y=0
+end
+return{x=vec.x,y=y,z=vec.y}
+else
+return{x=vec.x,y=vec.y,z=vec.z}
+end
+end
+function UTILS.GetNorthCorrection(gPoint)
+local point=UTILS.DeepCopy(gPoint)
+if not point.z then
+point.z=point.y
+point.y=0
+end
+local lat,lon=coord.LOtoLL(point)
+local north_posit=coord.LLtoLO(lat+1,lon)
+return math.atan2(north_posit.z-point.z,north_posit.x-point.x)
+end
+function UTILS.GetDHMS(timeInSec)
+if timeInSec and type(timeInSec)=='number'then
+local tbl={d=0,h=0,m=0,s=0}
+if timeInSec>86400 then
+while timeInSec>86400 do
+tbl.d=tbl.d+1
+timeInSec=timeInSec-86400
+end
+end
+if timeInSec>3600 then
+while timeInSec>3600 do
+tbl.h=tbl.h+1
+timeInSec=timeInSec-3600
+end
+end
+if timeInSec>60 then
+while timeInSec>60 do
+tbl.m=tbl.m+1
+timeInSec=timeInSec-60
+end
+end
+tbl.s=timeInSec
+return tbl
+else
+BASE:E("No number handed!")
+return
+end
+end
+function UTILS.GetDirectionRadians(vec,point)
+local dir=math.atan2(vec.z,vec.x)
+if point then
+dir=dir+UTILS.GetNorthCorrection(point)
+end
+if dir<0 then
+dir=dir+2*math.pi
+end
+return dir
+end
+function UTILS.IsPointInPolygon(point,poly,maxalt)
+point=UTILS.Vec2toVec3(point)
+local px=point.x
+local pz=point.z
+local cn=0
+local newpoly=UTILS.DeepCopy(poly)
+if not maxalt or(point.y<=maxalt)then
+local polysize=#newpoly
+newpoly[#newpoly+1]=newpoly[1]
+newpoly[1]=UTILS.Vec2toVec3(newpoly[1])
+for k=1,polysize do
+newpoly[k+1]=UTILS.Vec2toVec3(newpoly[k+1])
+if((newpoly[k].z<=pz)and(newpoly[k+1].z>pz))or((newpoly[k].z>pz)and(newpoly[k+1].z<=pz))then
+local vt=(pz-newpoly[k].z)/(newpoly[k+1].z-newpoly[k].z)
+if(px<newpoly[k].x+vt*(newpoly[k+1].x-newpoly[k].x))then
+cn=cn+1
+end
+end
+end
+return cn%2==1
+else
+return false
+end
+end
+function UTILS.ScalarMult(vec,mult)
+return{x=vec.x*mult,y=vec.y*mult,z=vec.z*mult}
 end
 PROFILER={
 ClassName="PROFILER",
@@ -28261,6 +28348,7 @@ if unit then
 local group=unit:getGroup()
 if group then
 self.GroupName=group:getName()
+self.groupId=group:getID()
 end
 self.DCSUnit=unit
 end
