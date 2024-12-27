@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-26T17:18:28+01:00-9300050573fa18534d166b514d515ff8c7f7a221 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-27T12:26:31+01:00-c7fe42d919b6573f033bdbec640f7329fb1b2cc2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17503,9 +17503,13 @@ trigger.action.illuminationBomb(self:GetVec3(),Power)
 end
 return self
 end
-function COORDINATE:Smoke(SmokeColor)
+function COORDINATE:Smoke(SmokeColor,name)
 self:F2({SmokeColor})
-trigger.action.smoke(self:GetVec3(),SmokeColor)
+self.firename=name or"Smoke-"..math.random(1,100000)
+trigger.action.smoke(self:GetVec3(),SmokeColor,self.firename)
+end
+function COORDINATE:StopSmoke(name)
+self:StopBigSmokeAndFire(name)
 end
 function COORDINATE:SmokeGreen()
 self:F2()
@@ -18191,25 +18195,9 @@ return self:ToStringMGRS(Settings)
 end
 return nil
 end
-function COORDINATE:ToString(Controllable,Settings,Task)
+function COORDINATE:ToString(Controllable,Settings)
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 local ModeA2A=nil
-if Task then
-if Task:IsInstanceOf(TASK_A2A)then
-ModeA2A=true
-else
-if Task:IsInstanceOf(TASK_A2G)then
-ModeA2A=false
-else
-if Task:IsInstanceOf(TASK_CARGO)then
-ModeA2A=false
-end
-if Task:IsInstanceOf(TASK_CAPTURE_ZONE)then
-ModeA2A=false
-end
-end
-end
-end
 if ModeA2A==nil then
 local IsAir=Controllable and(Controllable:IsAirPlane()or Controllable:IsHelicopter())or false
 if IsAir then
@@ -56411,7 +56399,7 @@ alias="",
 debug=false,
 smokemenu=true,
 }
-AUTOLASE.version="0.1.25"
+AUTOLASE.version="0.1.26"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -56796,9 +56784,11 @@ name=string.match(name,"^(.*)#")
 end
 local code=self:GetLaserCode(unit:GetName())
 report:Add(string.format("Recce %s has code %d",name,code))
+report:Add("---------------")
 end
 end
 report:Add(string.format("Lasing min threat level %d",self.minthreatlevel))
+report:Add("---------------")
 local lines=0
 for _ind,_entry in pairs(self.CurrentLasing)do
 local entry=_entry
@@ -56818,7 +56808,7 @@ end
 if playername then
 local settings=_DATABASE:GetPlayerSettings(playername)
 if settings then
-self:I("Get Settings ok!")
+self:T("Get Settings ok!")
 if settings:IsA2G_MGRS()then
 locationstring=entry.coordinate:ToStringMGRS(settings)
 elseif settings:IsA2G_LL_DMS()then
@@ -56828,12 +56818,14 @@ locationstring=entry.coordinate:ToStringBR(Group:GetCoordinate()or Unit:GetCoord
 end
 end
 end
-local text=string.format("%s lasing %s code %d\nat %s",reccename,typename,code,locationstring)
+local text=string.format("+ %s lasing %s code %d\nat %s",reccename,typename,code,locationstring)
 report:Add(text)
+report:Add("---------------")
 lines=lines+1
 end
 if lines==0 then
 report:Add("No targets!")
+report:Add("---------------")
 end
 local reporttime=self.reporttimelong
 if lines==0 then reporttime=self.reporttimeshort end
@@ -71025,7 +71017,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.20"
+CTLD.version="1.1.21"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72442,7 +72434,7 @@ local offset=hoverunload and self.TroopUnloadDistHover or self.TroopUnloadDistGr
 if IsHerc then offset=self.TroopUnloadDistGroundHerc or 25 end
 if IsHook then
 offset=self.TroopUnloadDistGroundHook or 15
-if self.TroopUnloadDistHoverHook then
+if hoverunload and self.TroopUnloadDistHoverHook then
 offset=self.TroopUnloadDistHoverHook or 5
 end
 end
