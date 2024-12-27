@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-26T17:16:43+01:00-6bee1cc88e73e8995f1e1592d0c3a55a461bafb3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-27T12:25:25+01:00-9916afaa49f8ea46c0f5d5c7424e417c4c5c0c7f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17592,9 +17592,13 @@ trigger.action.illuminationBomb(self:GetVec3(),Power)
 end
 return self
 end
-function COORDINATE:Smoke(SmokeColor)
+function COORDINATE:Smoke(SmokeColor,name)
 self:F2({SmokeColor})
-trigger.action.smoke(self:GetVec3(),SmokeColor)
+self.firename=name or"Smoke-"..math.random(1,100000)
+trigger.action.smoke(self:GetVec3(),SmokeColor,self.firename)
+end
+function COORDINATE:StopSmoke(name)
+self:StopBigSmokeAndFire(name)
 end
 function COORDINATE:SmokeGreen()
 self:F2()
@@ -18280,25 +18284,9 @@ return self:ToStringMGRS(Settings)
 end
 return nil
 end
-function COORDINATE:ToString(Controllable,Settings,Task)
+function COORDINATE:ToString(Controllable,Settings)
 local Settings=Settings or(Controllable and _DATABASE:GetPlayerSettings(Controllable:GetPlayerName()))or _SETTINGS
 local ModeA2A=nil
-if Task then
-if Task:IsInstanceOf(TASK_A2A)then
-ModeA2A=true
-else
-if Task:IsInstanceOf(TASK_A2G)then
-ModeA2A=false
-else
-if Task:IsInstanceOf(TASK_CARGO)then
-ModeA2A=false
-end
-if Task:IsInstanceOf(TASK_CAPTURE_ZONE)then
-ModeA2A=false
-end
-end
-end
-end
 if ModeA2A==nil then
 local IsAir=Controllable and(Controllable:IsAirPlane()or Controllable:IsHelicopter())or false
 if IsAir then
@@ -67217,7 +67205,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.20"
+CTLD.version="1.1.21"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -68634,7 +68622,7 @@ local offset=hoverunload and self.TroopUnloadDistHover or self.TroopUnloadDistGr
 if IsHerc then offset=self.TroopUnloadDistGroundHerc or 25 end
 if IsHook then
 offset=self.TroopUnloadDistGroundHook or 15
-if self.TroopUnloadDistHoverHook then
+if hoverunload and self.TroopUnloadDistHoverHook then
 offset=self.TroopUnloadDistHoverHook or 5
 end
 end
