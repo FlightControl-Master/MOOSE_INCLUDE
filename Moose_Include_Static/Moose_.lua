@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-28T09:26:46+01:00-9e1a28f7ca77c8c035cff994a34e0983f9185133 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-28T14:52:54+01:00-3745e6a8d8715cd93376f60cd6603a93f6b21307 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30074,6 +30074,8 @@ AIRBASE.Kola={
 ["Vuojarvi"]="Vuojarvi",
 ["Andoya"]="Andoya",
 ["Alakourtti"]="Alakourtti",
+["Kittila"]="Kittila",
+["Bardufoss"]="Bardufoss",
 }
 AIRBASE.Afghanistan={
 ["Bost"]="Bost",
