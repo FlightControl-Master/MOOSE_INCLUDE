@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-15T13:35:03+01:00-278f1db9a9915aed8ec6dd03e9355d7ce50596df ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-26T17:18:28+01:00-9300050573fa18534d166b514d515ff8c7f7a221 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3795,6 +3795,93 @@ ADFName=Name.." ADF "..tostring(ADF).."KHz"
 trigger.action.radioTransmission(Sound,vec3,0,true,ADFFreq,250,ADFName)
 end
 return ReturnObjects,ADFName
+end
+function UTILS.Vec2toVec3(vec,y)
+if not vec.z then
+if vec.alt and not y then
+y=vec.alt
+elseif not y then
+y=0
+end
+return{x=vec.x,y=y,z=vec.y}
+else
+return{x=vec.x,y=vec.y,z=vec.z}
+end
+end
+function UTILS.GetNorthCorrection(gPoint)
+local point=UTILS.DeepCopy(gPoint)
+if not point.z then
+point.z=point.y
+point.y=0
+end
+local lat,lon=coord.LOtoLL(point)
+local north_posit=coord.LLtoLO(lat+1,lon)
+return math.atan2(north_posit.z-point.z,north_posit.x-point.x)
+end
+function UTILS.GetDHMS(timeInSec)
+if timeInSec and type(timeInSec)=='number'then
+local tbl={d=0,h=0,m=0,s=0}
+if timeInSec>86400 then
+while timeInSec>86400 do
+tbl.d=tbl.d+1
+timeInSec=timeInSec-86400
+end
+end
+if timeInSec>3600 then
+while timeInSec>3600 do
+tbl.h=tbl.h+1
+timeInSec=timeInSec-3600
+end
+end
+if timeInSec>60 then
+while timeInSec>60 do
+tbl.m=tbl.m+1
+timeInSec=timeInSec-60
+end
+end
+tbl.s=timeInSec
+return tbl
+else
+BASE:E("No number handed!")
+return
+end
+end
+function UTILS.GetDirectionRadians(vec,point)
+local dir=math.atan2(vec.z,vec.x)
+if point then
+dir=dir+UTILS.GetNorthCorrection(point)
+end
+if dir<0 then
+dir=dir+2*math.pi
+end
+return dir
+end
+function UTILS.IsPointInPolygon(point,poly,maxalt)
+point=UTILS.Vec2toVec3(point)
+local px=point.x
+local pz=point.z
+local cn=0
+local newpoly=UTILS.DeepCopy(poly)
+if not maxalt or(point.y<=maxalt)then
+local polysize=#newpoly
+newpoly[#newpoly+1]=newpoly[1]
+newpoly[1]=UTILS.Vec2toVec3(newpoly[1])
+for k=1,polysize do
+newpoly[k+1]=UTILS.Vec2toVec3(newpoly[k+1])
+if((newpoly[k].z<=pz)and(newpoly[k+1].z>pz))or((newpoly[k].z>pz)and(newpoly[k+1].z<=pz))then
+local vt=(pz-newpoly[k].z)/(newpoly[k+1].z-newpoly[k].z)
+if(px<newpoly[k].x+vt*(newpoly[k+1].x-newpoly[k].x))then
+cn=cn+1
+end
+end
+end
+return cn%2==1
+else
+return false
+end
+end
+function UTILS.ScalarMult(vec,mult)
+return{x=vec.x*mult,y=vec.y*mult,z=vec.z*mult}
 end
 PROFILER={
 ClassName="PROFILER",
@@ -28394,6 +28481,7 @@ if unit then
 local group=unit:getGroup()
 if group then
 self.GroupName=group:getName()
+self.groupId=group:getID()
 end
 self.DCSUnit=unit
 end
@@ -52318,7 +52406,6 @@ end
 end
 end
 function WAREHOUSE:_DeleteQueueItem(qitem,queue)
-self:F({qitem=qitem,queue=queue})
 for i=1,#queue do
 local _item=queue[i]
 if _item.uid==qitem.uid then
@@ -53773,7 +53860,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.19"
+self.version="0.8.21"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54266,6 +54353,9 @@ range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
+if string.find(grpname,"SHORAD",1,true)then
+type=MANTIS.SamType.SHORT
+end
 return range,height,type,blind
 end
 function MANTIS:SetSAMStartState()
@@ -54383,6 +54473,10 @@ end
 function MANTIS:_CheckLoop(samset,detset,dlink,limit)
 self:T(self.lid.."CheckLoop "..#detset.." Coordinates")
 local switchedon=0
+local statusreport=REPORT:New("\nMANTIS Status")
+local instatusred=0
+local instatusgreen=0
+local SEADactive=0
 for _,_data in pairs(samset)do
 local samcoordinate=_data[2]
 local name=_data[1]
@@ -54418,7 +54512,6 @@ self:__ShoradActivated(1,name,radius,ontime)
 end
 if(self.debug or self.verbose)and switch then
 local text=string.format("SAM %s in alarm state RED!",name)
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
@@ -54435,11 +54528,33 @@ self.SamStateTracker[name]="GREEN"
 end
 if self.debug or self.verbose then
 local text=string.format("SAM %s in alarm state GREEN!",name)
-local m=MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.debug)
 if self.verbose then self:I(self.lid..text)end
 end
 end
 end
+end
+if self.debug then
+for _,_status in pairs(self.SamStateTracker)do
+if _status=="GREEN"then
+instatusgreen=instatusgreen+1
+elseif _status=="RED"then
+instatusred=instatusred+1
+end
+end
+local activeshorads=0
+if self.Shorad then
+for _,_name in pairs(self.Shorad.ActiveGroups or{})do
+activeshorads=activeshorads+1
+end
+end
+statusreport:Add("+-----------------------------+")
+statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
+statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
+if self.Shorad then
+statusreport:Add(string.format("+ SHORAD active: %2d",activeshorads))
+end
+statusreport:Add("+-----------------------------+")
+MESSAGE:New(statusreport:Text(),10,nil,true):ToAll():ToLog()
 end
 return self
 end
@@ -54515,7 +54630,7 @@ else
 self.Detection=self:StartIntelDetection()
 end
 if self.autoshorad then
-self.Shorad=SHORAD:New(self.name.."-SHORAD",self.name.."-SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.coalition,self.UseEmOnOff)
+self.Shorad=SHORAD:New(self.name.."-SHORAD","SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.coalition,self.UseEmOnOff)
 self.Shorad:SetDefenseLimits(80,95)
 self.ShoradLink=true
 self.Shorad.Groupset=self.ShoradGroupSet
@@ -70910,7 +71025,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.19"
+CTLD.version="1.1.20"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73728,6 +73843,20 @@ for _id,_troop in pairs(gentroops)do
 table.insert(Stock,_troop.Name,_troop.Stock or-1)
 end
 return Stock
+end
+function CTLD:GetLoadedCargo(Unit)
+local Troops=0
+local Crates=0
+local Cargo={}
+if Unit and Unit:IsAlive()then
+local name=Unit:GetName()
+if self.Loaded_Cargo[name]then
+Troops=self.Loaded_Cargo[name].Troopsloaded or 0
+Crates=self.Loaded_Cargo[name].Cratesloaded or 0
+Cargo=self.Loaded_Cargo[name].Cargo or{}
+end
+end
+return Troops,Crates,Cargo
 end
 function CTLD:GetStockStatics()
 local Stock={}
@@ -80646,7 +80775,7 @@ function AUFTRAG:SetMissionWaypointRandomization(Radius)
 self.missionWaypointRadius=Radius
 return self
 end
-function AUFTRAG:SetMissionEgressCoord(Coordinate,Altitude)
+function AUFTRAG:SetMissionEgressCoord(Coordinate,Altitude,Speed)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
@@ -80655,8 +80784,10 @@ if Altitude then
 self.missionEgressCoord.y=UTILS.FeetToMeters(Altitude)
 self.missionEgressCoordAlt=UTILS.FeetToMeters(Altitude)
 end
+self.missionEgressCoordSpeed=Speed and Speed or nil
+return self
 end
-function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude)
+function AUFTRAG:SetMissionIngressCoord(Coordinate,Altitude,Speed)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
@@ -80665,8 +80796,10 @@ if Altitude then
 self.missionIngressCoord.y=UTILS.FeetToMeters(Altitude)
 self.missionIngressCoordAlt=UTILS.FeetToMeters(Altitude or 10000)
 end
+self.missionIngressCoordSpeed=Speed and Speed or nil
+return self
 end
-function AUFTRAG:SetMissionHoldingCoord(Coordinate,Altitude,Duration)
+function AUFTRAG:SetMissionHoldingCoord(Coordinate,Altitude,Speed,Duration)
 if Coordinate:IsInstanceOf("ZONE_BASE")then
 Coordinate=Coordinate:GetCoordinate()
 end
@@ -80676,6 +80809,8 @@ if Altitude then
 self.missionHoldingCoord.y=UTILS.FeetToMeters(Altitude)
 self.missionHoldingCoordAlt=UTILS.FeetToMeters(Altitude or 10000)
 end
+self.missionHoldingCoordSpeed=Speed and Speed or nil
+return self
 end
 function AUFTRAG:GetMissionEgressCoord()
 return self.missionEgressCoord
@@ -81232,7 +81367,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.67",
+version="0.2.68",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -84936,6 +85071,7 @@ if not self.GCI then
 local AwacsAW=self.AirWing
 local mission=AUFTRAG:NewORBIT_RACETRACK(self.OrbitZone:GetCoordinate(),self.AwacsAngels*1000,self.Speed,self.Heading,self.Leg)
 mission:SetMissionRange(self.MaxMissionRange)
+mission:SetRequiredAttribute({GROUP.Attribute.AIR_AWACS})
 local timeonstation=(self.AwacsTimeOnStation+self.ShiftChangeTime)*3600
 mission:SetTime(nil,timeonstation)
 self.CatchAllMissions[#self.CatchAllMissions+1]=mission
@@ -100613,10 +100749,10 @@ if self:IsFlightgroup()then
 local ingresscoord=mission:GetMissionIngressCoord()
 local holdingcoord=mission:GetMissionHoldingCoord()
 if holdingcoord then
-waypoint=FLIGHTGROUP.AddWaypoint(self,holdingcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionHoldingCoordAlt or self.altitudeCruise),false)
+waypoint=FLIGHTGROUP.AddWaypoint(self,holdingcoord,mission.missionHoldingCoordSpeed or SpeedToMission,uid,UTILS.MetersToFeet(mission.missionHoldingCoordAlt or self.altitudeCruise),false)
 uid=waypoint.uid
 self.flaghold:Set(0)
-local TaskOrbit=self.group:TaskOrbit(holdingcoord,mission.missionHoldingCoordAlt)
+local TaskOrbit=self.group:TaskOrbit(holdingcoord,mission.missionHoldingCoordAlt,UTILS.KnotsToMps(mission.missionHoldingCoordSpeed or SpeedToMission))
 local TaskStop=self.group:TaskCondition(nil,self.flaghold.UserFlagName,1,nil,mission.missionHoldingDuration or 900)
 local TaskCntr=self.group:TaskControlled(TaskOrbit,TaskStop)
 local TaskOver=self.group:TaskFunction("FLIGHTGROUP._FinishedWaiting",self)
@@ -100626,7 +100762,7 @@ waypointtask.ismission=false
 self.isHoldingAtHoldingPoint=true
 end
 if ingresscoord then
-waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
+waypoint=FLIGHTGROUP.AddWaypoint(self,ingresscoord,mission.missionIngressCoordSpeed or SpeedToMission,uid,UTILS.MetersToFeet(mission.missionIngressCoordAlt or self.altitudeCruise),false)
 uid=waypoint.uid
 end
 waypoint=FLIGHTGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
@@ -100649,7 +100785,7 @@ local egresscoord=mission:GetMissionEgressCoord()
 if egresscoord then
 local Ewaypoint=nil
 if self:IsFlightgroup()then
-Ewaypoint=FLIGHTGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,UTILS.MetersToFeet(mission.missionEgressCoordAlt or self.altitudeCruise),false)
+Ewaypoint=FLIGHTGROUP.AddWaypoint(self,egresscoord,mission.missionEgressCoordSpeed or SpeedToMission,waypoint.uid,UTILS.MetersToFeet(mission.missionEgressCoordAlt or self.altitudeCruise),false)
 elseif self:IsArmygroup()then
 Ewaypoint=ARMYGROUP.AddWaypoint(self,egresscoord,SpeedToMission,waypoint.uid,mission.optionFormation,false)
 elseif self:IsNavygroup()then
