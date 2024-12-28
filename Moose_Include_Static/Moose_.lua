@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-27T14:40:32+01:00-45912911ee8b46e47f451e61de9619e3c44b3cb1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-28T14:52:09+01:00-3b3666c5f775f1653a99f244bdff72a3ad909e14 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1054,17 +1054,17 @@ ENUMS.Storage.weapons.UH1H.M60_MG_Right_Door={4,15,46,177}
 ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left_Door={4,15,46,174}
 ENUMS.Storage.weapons.UH1H.M60_MG_Left_Door={4,15,46,176}
 ENUMS.Storage.weapons.OH58.FIM92={4,4,7,449}
-ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2608}
-ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2607}
-ENUMS.Storage.weapons.OH58.MG_M3P300={4,15,46,2606}
-ENUMS.Storage.weapons.OH58.MG_M3P400={4,15,46,2605}
-ENUMS.Storage.weapons.OH58.MG_M3P500={4,15,46,2604}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Blue={4,5,9,486}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Green={4,5,9,487}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Red={4,5,9,485}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Violet={4,5,9,488}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,490}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,489}
+ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2611}
+ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2610}
+ENUMS.Storage.weapons.OH58.MG_M3P300={4,15,46,2609}
+ENUMS.Storage.weapons.OH58.MG_M3P400={4,15,46,2608}
+ENUMS.Storage.weapons.OH58.MG_M3P500={4,15,46,2607}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Blue={4,5,9,488}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Green={4,5,9,489}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Red={4,5,9,487}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Violet={4,5,9,490}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,492}
+ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,491}
 ENUMS.Storage.weapons.AH64D.AN_APG78={4,15,44,2138}
 ENUMS.Storage.weapons.AH64D.Internal_Aux_FuelTank={1,3,43,1700}
 ENUMS.FARPType={
@@ -29647,6 +29647,8 @@ AIRBASE.Kola={
 ["Vuojarvi"]="Vuojarvi",
 ["Andoya"]="Andoya",
 ["Alakourtti"]="Alakourtti",
+["Kittila"]="Kittila",
+["Bardufoss"]="Bardufoss",
 }
 AIRBASE.Afghanistan={
 ["Bost"]="Bost",
