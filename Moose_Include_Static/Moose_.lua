@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-29T12:52:51+01:00-4a0842bea6b0a5db591fef8dfc9d9a8ac18d0995 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-29T18:04:42+01:00-0f7759d070cb2f4bf87fe3c16d9689b2fc3c73f0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31814,7 +31814,7 @@ WEAPONS="weapons",
 LIQUIDS="liquids",
 AIRCRAFT="aircrafts",
 }
-STORAGE.version="0.0.3"
+STORAGE.version="0.1.4"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
@@ -31848,6 +31848,10 @@ return storage
 end
 function STORAGE:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
+if self.verbose>1 then
+BASE:TraceOn()
+BASE:TraceClass("STORAGE")
+end
 return self
 end
 function STORAGE:AddItem(Name,Amount)
@@ -32000,6 +32004,9 @@ for key,amount in pairs(lq)do
 DataLiquids=DataLiquids..tostring(key).."="..tostring(amount).."\n"
 end
 UTILS.SaveToFile(Path,Filename.."_Liquids.csv",DataLiquids)
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Saving Liquids to "..tostring(Path).."\\"..tostring(Filename).."_Liquids.csv")
+end
 end
 if UTILS.TableLength(ac)>0 then
 DataAircraft=DataAircraft.."Aircraft in Storage:\n"
@@ -32007,6 +32014,9 @@ for key,amount in pairs(ac)do
 DataAircraft=DataAircraft..tostring(key).."="..tostring(amount).."\n"
 end
 UTILS.SaveToFile(Path,Filename.."_Aircraft.csv",DataAircraft)
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Saving Aircraft to "..tostring(Path).."\\"..tostring(Filename).."_Aircraft.csv")
+end
 end
 if UTILS.TableLength(wp)>0 then
 DataWeapons=DataWeapons.."Weapons and Materiel in Storage:\n"
@@ -32034,6 +32044,9 @@ amount=self:GetItemAmount(ENUMS.Storage.weapons.AH64D[key])
 DataWeapons=DataWeapons.."ENUMS.Storage.weapons.AH64D."..tostring(key).."="..tostring(amount).."\n"
 end
 UTILS.SaveToFile(Path,Filename.."_Weapons.csv",DataWeapons)
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Saving Weapons to "..tostring(Path).."\\"..tostring(Filename).."_Weapons.csv")
+end
 end
 return self
 end
@@ -32048,6 +32061,9 @@ end
 if self:IsLimitedLiquids()then
 local Ok,Liquids=UTILS.LoadFromFile(Path,Filename.."_Liquids.csv")
 if Ok then
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Loading Liquids from "..tostring(Path).."\\"..tostring(Filename).."_Liquids.csv")
+end
 for _id,_line in pairs(Liquids)do
 if string.find(_line,"Storage")==nil then
 local tbl=UTILS.Split(_line,"=")
@@ -32063,6 +32079,9 @@ end
 if self:IsLimitedAircraft()then
 local Ok,Aircraft=UTILS.LoadFromFile(Path,Filename.."_Aircraft.csv")
 if Ok then
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Loading Aircraft from "..tostring(Path).."\\"..tostring(Filename).."_Aircraft.csv")
+end
 for _id,_line in pairs(Aircraft)do
 if string.find(_line,"Storage")==nil then
 local tbl=UTILS.Split(_line,"=")
@@ -32078,6 +32097,9 @@ end
 if self:IsLimitedWeapons()()then
 local Ok,Weapons=UTILS.LoadFromFile(Path,Filename.."_Weapons.csv")
 if Ok then
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Loading _eapons from "..tostring(Path).."\\"..tostring(Filename).."_Weapons.csv")
+end
 for _id,_line in pairs(Weapons)do
 if string.find(_line,"Storage")==nil then
 local tbl=UTILS.Split(_line,"=")
@@ -32089,6 +32111,22 @@ end
 else
 self:E("File for Weapons could not be found: "..tostring(Path).."\\"..tostring(Filename"_Weapons.csv"))
 end
+end
+return self
+end
+function STORAGE:StartAutoSave(Path,Filename,Interval,LoadOnce)
+if LoadOnce~=false then
+self:LoadFromFile(Path,Filename)
+end
+local interval=Interval or 300
+self.SaverTimer=TIMER:New(STORAGE.SaveToFile,self,Path,Filename)
+self.SaverTimer:Start(interval,interval)
+return self
+end
+function STORAGE:StopAutoSave()
+if self.SaverTimer and self.SaverTimer:IsRunning()then
+self.SaverTimer:Stop()
+self.SaverTimer=nil
 end
 return self
 end
