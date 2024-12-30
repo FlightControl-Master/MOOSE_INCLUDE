@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-30T11:47:11+01:00-990161729b6efa760b0336b29bf0ce6be94bd23e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-30T13:40:54+01:00-8309768735707f40f3da9ff0620ba90618180587 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -51224,7 +51224,7 @@ else
 coord=parking[i].Coordinate
 terminal=parking[i].TerminalID
 end
-if self.Debug then
+if self.Debug and terminal then
 local text=string.format("Spawnplace unit %s terminal %d.",unit.name,terminal)
 coord:MarkToAll(text)
 env.info(text)
@@ -52264,9 +52264,11 @@ break
 else
 if self.Debug then
 local coord=problem.coord
+if coord then
 local text=string.format("Obstacle %s [type=%s] blocking spot=%d! Size=%.1f m and distance=%.1f m.",problem.name,problem.type,_termid,problem.size,problem.dist)
 self:I(self.lid..text)
-coord:MarkToAll(string.format(text))
+coord:MarkToAll(text)
+end
 else
 self:T(self.lid..string.format("Parking spot %d is occupied or not big enough!",_termid))
 end
