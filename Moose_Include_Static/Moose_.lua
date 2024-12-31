@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-31T15:33:28+01:00-411d20ba264bc20461773ef844b6c9ff456f5cd6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-31T15:36:14+01:00-309010026503716e96b2bd13398557221df4d3ab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -34178,7 +34178,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.8")
+self:I("*** SEAD - Started Version 0.4.9")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -66673,6 +66673,7 @@ self.orientation=self.carrier:GetOrientationX()
 self.orientlast=self.carrier:GetOrientationX()
 self.position=self.carrier:GetCoordinate()
 self:__Status(10)
+return self
 end
 function RECOVERYTANKER:onafterStatus(From,Event,To)
 local time=timer.getTime()
@@ -67311,6 +67312,7 @@ self.formation:SetFollowTimeInterval(self.dtFollow)
 self.formation:SetFlightModeFormation(self.helo)
 self.formation:__Start(delay)
 self:__Status(1)
+return self
 end
 function RESCUEHELO:onafterStatus(From,Event,To)
 local time=timer.getTime()
