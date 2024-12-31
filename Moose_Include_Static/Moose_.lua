@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-28T14:52:54+01:00-3745e6a8d8715cd93376f60cd6603a93f6b21307 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-30T13:40:54+01:00-8309768735707f40f3da9ff0620ba90618180587 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32241,7 +32241,7 @@ WEAPONS="weapons",
 LIQUIDS="liquids",
 AIRCRAFT="aircrafts",
 }
-STORAGE.version="0.0.3"
+STORAGE.version="0.1.4"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
@@ -32262,7 +32262,7 @@ return self
 end
 function STORAGE:NewFromDynamicCargo(DynamicCargoName)
 local self=BASE:Inherit(self,BASE:New())
-self.airbase=Unit.getByName(DynamicCargoName)
+self.airbase=Unit.getByName(DynamicCargoName)or StaticObject.getByName(DynamicCargoName)
 if Airbase.getWarehouse then
 self.warehouse=Warehouse.getCargoAsWarehouse(self.airbase)
 end
@@ -32275,6 +32275,10 @@ return storage
 end
 function STORAGE:SetVerbosity(VerbosityLevel)
 self.verbose=VerbosityLevel or 0
+if self.verbose>1 then
+BASE:TraceOn()
+BASE:TraceClass("STORAGE")
+end
 return self
 end
 function STORAGE:AddItem(Name,Amount)
@@ -32373,7 +32377,7 @@ unlimited=unlimited or n>2^29 or n==N
 if not unlimited then
 self:AddAmount(Type,1)
 end
-self:I(self.lid..string.format("Type=%s: unlimited=%s (N=%d n=%d)",tostring(Type),tostring(unlimited),N,n))
+self:T(self.lid..string.format("Type=%s: unlimited=%s (N=%d n=%d)",tostring(Type),tostring(unlimited),N,n))
 end
 return unlimited
 end
@@ -32408,6 +32412,150 @@ end
 function STORAGE:GetInventory(Item)
 local inventory=self.warehouse:getInventory(Item)
 return inventory.aircraft,inventory.liquids,inventory.weapon
+end
+function STORAGE:SaveToFile(Path,Filename)
+if not io then
+BASE:E("ERROR: io not desanitized. Can't save the files.")
+return false
+end
+if Path==nil and not lfs then
+BASE:E("WARNING: lfs not desanitized. File will be saved in DCS installation root directory rather than your given path.")
+end
+local ac,lq,wp=self:GetInventory()
+local DataAircraft=""
+local DataLiquids=""
+local DataWeapons=""
+if#lq>0 then
+DataLiquids=DataLiquids.."Liquids in Storage:\n"
+for key,amount in pairs(lq)do
+DataLiquids=DataLiquids..tostring(key).."="..tostring(amount).."\n"
+end
+UTILS.SaveToFile(Path,Filename.."_Liquids.csv",DataLiquids)
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Saving Liquids to "..tostring(Path).."\\"..tostring(Filename).."_Liquids.csv")
+end
+end
+if UTILS.TableLength(ac)>0 then
+DataAircraft=DataAircraft.."Aircraft in Storage:\n"
+for key,amount in pairs(ac)do
+DataAircraft=DataAircraft..tostring(key).."="..tostring(amount).."\n"
+end
+UTILS.SaveToFile(Path,Filename.."_Aircraft.csv",DataAircraft)
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Saving Aircraft to "..tostring(Path).."\\"..tostring(Filename).."_Aircraft.csv")
+end
+end
+if UTILS.TableLength(wp)>0 then
+DataWeapons=DataWeapons.."Weapons and Materiel in Storage:\n"
+for key,amount in pairs(wp)do
+DataWeapons=DataWeapons..tostring(key).."="..tostring(amount).."\n"
+end
+for key,amount in pairs(ENUMS.Storage.weapons.Gazelle)do
+amount=self:GetItemAmount(ENUMS.Storage.weapons.Gazelle[key])
+DataWeapons=DataWeapons.."ENUMS.Storage.weapons.Gazelle."..tostring(key).."="..tostring(amount).."\n"
+end
+for key,amount in pairs(ENUMS.Storage.weapons.CH47)do
+amount=self:GetItemAmount(ENUMS.Storage.weapons.CH47[key])
+DataWeapons=DataWeapons.."ENUMS.Storage.weapons.CH47."..tostring(key).."="..tostring(amount).."\n"
+end
+for key,amount in pairs(ENUMS.Storage.weapons.UH1H)do
+amount=self:GetItemAmount(ENUMS.Storage.weapons.UH1H[key])
+DataWeapons=DataWeapons.."ENUMS.Storage.weapons.UH1H."..tostring(key).."="..tostring(amount).."\n"
+end
+for key,amount in pairs(ENUMS.Storage.weapons.OH58)do
+amount=self:GetItemAmount(ENUMS.Storage.weapons.OH58[key])
+DataWeapons=DataWeapons.."ENUMS.Storage.weapons.OH58."..tostring(key).."="..tostring(amount).."\n"
+end
+for key,amount in pairs(ENUMS.Storage.weapons.AH64D)do
+amount=self:GetItemAmount(ENUMS.Storage.weapons.AH64D[key])
+DataWeapons=DataWeapons.."ENUMS.Storage.weapons.AH64D."..tostring(key).."="..tostring(amount).."\n"
+end
+UTILS.SaveToFile(Path,Filename.."_Weapons.csv",DataWeapons)
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Saving Weapons to "..tostring(Path).."\\"..tostring(Filename).."_Weapons.csv")
+end
+end
+return self
+end
+function STORAGE:LoadFromFile(Path,Filename)
+if not io then
+BASE:E("ERROR: io not desanitized. Can't read the files.")
+return false
+end
+if Path==nil and not lfs then
+BASE:E("WARNING: lfs not desanitized. File will be read from DCS installation root directory rather than your give path.")
+end
+if self:IsLimitedLiquids()then
+local Ok,Liquids=UTILS.LoadFromFile(Path,Filename.."_Liquids.csv")
+if Ok then
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Loading Liquids from "..tostring(Path).."\\"..tostring(Filename).."_Liquids.csv")
+end
+for _id,_line in pairs(Liquids)do
+if string.find(_line,"Storage")==nil then
+local tbl=UTILS.Split(_line,"=")
+local lqno=tonumber(tbl[1])
+local lqam=tonumber(tbl[2])
+self:SetLiquid(lqno,lqam)
+end
+end
+else
+self:E("File for Liquids could not be found: "..tostring(Path).."\\"..tostring(Filename"_Liquids.csv"))
+end
+end
+if self:IsLimitedAircraft()then
+local Ok,Aircraft=UTILS.LoadFromFile(Path,Filename.."_Aircraft.csv")
+if Ok then
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Loading Aircraft from "..tostring(Path).."\\"..tostring(Filename).."_Aircraft.csv")
+end
+for _id,_line in pairs(Aircraft)do
+if string.find(_line,"Storage")==nil then
+local tbl=UTILS.Split(_line,"=")
+local acname=tbl[1]
+local acnumber=tonumber(tbl[2])
+self:SetAmount(acname,acnumber)
+end
+end
+else
+self:E("File for Aircraft could not be found: "..tostring(Path).."\\"..tostring(Filename"_Aircraft.csv"))
+end
+end
+if self:IsLimitedWeapons()()then
+local Ok,Weapons=UTILS.LoadFromFile(Path,Filename.."_Weapons.csv")
+if Ok then
+if self.verbose and self.verbose>0 then
+self:I(self.lid.."Loading _eapons from "..tostring(Path).."\\"..tostring(Filename).."_Weapons.csv")
+end
+for _id,_line in pairs(Weapons)do
+if string.find(_line,"Storage")==nil then
+local tbl=UTILS.Split(_line,"=")
+local wpname=tbl[1]
+local wpnumber=tonumber(tbl[2])
+self:SetAmount(wpname,wpnumber)
+end
+end
+else
+self:E("File for Weapons could not be found: "..tostring(Path).."\\"..tostring(Filename"_Weapons.csv"))
+end
+end
+return self
+end
+function STORAGE:StartAutoSave(Path,Filename,Interval,LoadOnce)
+if LoadOnce~=false then
+self:LoadFromFile(Path,Filename)
+end
+local interval=Interval or 300
+self.SaverTimer=TIMER:New(STORAGE.SaveToFile,self,Path,Filename)
+self.SaverTimer:Start(interval,interval)
+return self
+end
+function STORAGE:StopAutoSave()
+if self.SaverTimer and self.SaverTimer:IsRunning()then
+self.SaverTimer:Stop()
+self.SaverTimer=nil
+end
+return self
 end
 DYNAMICCARGO={
 ClassName="DYNAMICCARGO",
@@ -51076,7 +51224,7 @@ else
 coord=parking[i].Coordinate
 terminal=parking[i].TerminalID
 end
-if self.Debug then
+if self.Debug and terminal then
 local text=string.format("Spawnplace unit %s terminal %d.",unit.name,terminal)
 coord:MarkToAll(text)
 env.info(text)
@@ -52116,9 +52264,11 @@ break
 else
 if self.Debug then
 local coord=problem.coord
+if coord then
 local text=string.format("Obstacle %s [type=%s] blocking spot=%d! Size=%.1f m and distance=%.1f m.",problem.name,problem.type,_termid,problem.size,problem.dist)
 self:I(self.lid..text)
-coord:MarkToAll(string.format(text))
+coord:MarkToAll(text)
+end
 else
 self:T(self.lid..string.format("Parking spot %d is occupied or not big enough!",_termid))
 end
