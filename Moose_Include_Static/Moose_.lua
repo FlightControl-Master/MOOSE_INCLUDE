@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-31T14:05:41+01:00-902f6dae11f1ba06e74ecc48a0f6c5c83e25c1d3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-01T14:38:43+01:00-2fbcd9d2b90fb7c430a1510712de96a394a4048c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -35567,6 +35567,7 @@ SEAD.Harms={
 ["AGM_122"]="AGM_122",
 ["AGM_84"]="AGM_84",
 ["AGM_45"]="AGM_45",
+["AGM_65"]="AGM_65",
 ["ALARM"]="ALARM",
 ["LD-10"]="LD-10",
 ["X_58"]="X_58",
@@ -35582,6 +35583,7 @@ SEAD.Harms={
 SEAD.HarmData={
 ["AGM_88"]={150,3},
 ["AGM_45"]={12,2},
+["AGM_65"]={16,0.9},
 ["AGM_122"]={16.5,2.3},
 ["AGM_84"]={280,0.8},
 ["ALARM"]={45,2},
@@ -35617,7 +35619,7 @@ self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
 self:SetStartState("Running")
 self:AddTransition("*","ManageEvasion","*")
 self:AddTransition("*","CalculateHitZone","*")
-self:I("*** SEAD - Started Version 0.4.8")
+self:I("*** SEAD - Started Version 0.4.9")
 return self
 end
 function SEAD:UpdateSet(SEADGroupPrefixes)
@@ -35855,7 +35857,7 @@ local _target=EventData.Weapon:getTarget()
 if not _target or self.debug then
 self:E("***** SEAD - No target data for "..(SEADWeaponName or"None"))
 if string.find(SEADWeaponName,"AGM_88",1,true)or string.find(SEADWeaponName,"AGM_154",1,true)then
-self:I("**** Tracking AGM-88/154 with no target data.")
+self:T("**** Tracking AGM-88/154 with no target data.")
 local pos0=SEADPlane:GetCoordinate()
 local fheight=SEADPlane:GetHeight()
 self:__CalculateHitZone(20,SEADWeapon,pos0,fheight,SEADGroup,SEADWeaponName)
@@ -54000,7 +54002,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.21"
+self.version="0.8.22"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54045,7 +54047,7 @@ self:T(self.lid.."AddZones")
 self.AcceptZones=AcceptZones or{}
 self.RejectZones=RejectZones or{}
 self.ConflictZones=ConflictZones or{}
-if#AcceptZones>0 or#RejectZones>0 or#ConflictZones>0 then
+if#self.AcceptZones>0 or#self.RejectZones>0 or#self.ConflictZones>0 then
 self.usezones=true
 end
 return self
@@ -54337,9 +54339,8 @@ local set=dectset
 if dlink then
 set=self:_PreFilterHeight(height)
 end
-local friendlyset
-if self.checkforfriendlies==true then
-friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterFunction(function(grp)if grp and grp:InAir()then return true else return false end end):FilterOnce()
+if self.checkforfriendlies==true and self.friendlyset==nil then
+self.friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterFunction(function(grp)if grp and grp:InAir()then return true else return false end end):FilterStart()
 end
 for _,_coord in pairs(set)do
 local coord=_coord
@@ -54352,19 +54353,19 @@ if self.usezones then
 zonecheck=self:_CheckCoordinateInZones(coord)
 end
 if self.verbose and self.debug then
-local dectstring=coord:ToStringLLDMS()
-local samstring=samcoordinate:ToStringLLDMS()
+local samstring=samcoordinate:ToStringMGRS({MGRS_Accuracy=0})
+samstring=string.gsub(samstring,"%s","")
 local inrange="false"
 if targetdistance<=rad then
 inrange="true"
 end
-local text=string.format("Checking SAM at %s | Targetdist %d | Rad %d | Inrange %s",samstring,targetdistance,rad,inrange)
+local text=string.format("Checking SAM at %s | Tgtdist %.1fkm | Rad %.1fkm | Inrange %s",samstring,targetdistance/1000,rad/1000,inrange)
 local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
 self:T(self.lid..text)
 end
 local nofriendlies=true
 if self.checkforfriendlies==true then
-local closestfriend,distance=friendlyset:GetClosestGroup(samcoordinate)
+local closestfriend,distance=self.friendlyset:GetClosestGroup(samcoordinate)
 if closestfriend and distance and distance<rad then
 nofriendlies=false
 end
@@ -54613,9 +54614,9 @@ end
 function MANTIS:_CheckLoop(samset,detset,dlink,limit)
 self:T(self.lid.."CheckLoop "..#detset.." Coordinates")
 local switchedon=0
-local statusreport=REPORT:New("\nMANTIS Status")
 local instatusred=0
 local instatusgreen=0
+local activeshorads=0
 local SEADactive=0
 for _,_data in pairs(samset)do
 local samcoordinate=_data[2]
@@ -54626,7 +54627,10 @@ local blind=_data[5]*1.25+1
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
-local activeshorad=self.Shorad.ActiveGroups[name]or false
+local activeshorad=false
+if self.Shorad and self.Shorad.ActiveGroups and self.Shorad.ActiveGroups[name]then
+activeshorad=true
+end
 if IsInZone and not suppressed and not activeshorad then
 if samgroup:IsAlive()then
 local switch=false
@@ -54681,22 +54685,13 @@ elseif _status=="RED"then
 instatusred=instatusred+1
 end
 end
-local activeshorads=0
 if self.Shorad then
 for _,_name in pairs(self.Shorad.ActiveGroups or{})do
 activeshorads=activeshorads+1
 end
 end
-statusreport:Add("+-----------------------------+")
-statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
-statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
-if self.Shorad then
-statusreport:Add(string.format("+ SHORAD active: %2d",activeshorads))
 end
-statusreport:Add("+-----------------------------+")
-MESSAGE:New(statusreport:Text(),10,nil,true):ToAll():ToLog()
-end
-return self
+return instatusred,instatusgreen,activeshorads
 end
 function MANTIS:_Check(detection,dlink)
 self:T(self.lid.."Check")
@@ -54705,16 +54700,30 @@ local rand=math.random(1,100)
 if rand>65 then
 self:_RefreshSAMTable()
 end
+local instatusred=0
+local instatusgreen=0
+local activeshorads=0
 if self.automode then
 local samset=self.SAM_Table_Long
 self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
 local samset=self.SAM_Table_Medium
 self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
 local samset=self.SAM_Table_Short
-self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
 else
 local samset=self:_GetSAMTable()
-self:_CheckLoop(samset,detset,dlink,self.maxclassic)
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxclassic)
+end
+if self.debug or self.verbose then
+local statusreport=REPORT:New("\nMANTIS Status "..self.name)
+statusreport:Add("+-----------------------------+")
+statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
+statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
+if self.Shorad then
+statusreport:Add(string.format("+ SHORAD active: %2d",activeshorads))
+end
+statusreport:Add("+-----------------------------+")
+MESSAGE:New(statusreport:Text(),10):ToAll():ToLog()
 end
 return self
 end
