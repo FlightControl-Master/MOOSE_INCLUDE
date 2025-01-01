@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-31T15:36:14+01:00-309010026503716e96b2bd13398557221df4d3ab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-01T09:15:50+01:00-3b03b03f3c480b734bee8199d3541396e79fa5c7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52561,7 +52561,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.21"
+self.version="0.8.22"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -52606,7 +52606,7 @@ self:T(self.lid.."AddZones")
 self.AcceptZones=AcceptZones or{}
 self.RejectZones=RejectZones or{}
 self.ConflictZones=ConflictZones or{}
-if#AcceptZones>0 or#RejectZones>0 or#ConflictZones>0 then
+if#self.AcceptZones>0 or#self.RejectZones>0 or#self.ConflictZones>0 then
 self.usezones=true
 end
 return self
@@ -53187,7 +53187,10 @@ local blind=_data[5]*1.25+1
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
-local activeshorad=self.Shorad.ActiveGroups[name]or false
+local activeshorad=false
+if self.Shorad and self.Shorad.ActiveGroups and self.Shorad.ActiveGroups[name]then
+activeshorad=true
+end
 if IsInZone and not suppressed and not activeshorad then
 if samgroup:IsAlive()then
 local switch=false
