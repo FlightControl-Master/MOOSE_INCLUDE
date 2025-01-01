@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2024-12-31T15:34:46+01:00-5d192abd259ef768e8833fe8400df4b0140de7ab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-01T08:31:06+01:00-6144a61a2e7d8307ca3581daf32d65be027a4202 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53640,7 +53640,7 @@ self:T(self.lid.."AddZones")
 self.AcceptZones=AcceptZones or{}
 self.RejectZones=RejectZones or{}
 self.ConflictZones=ConflictZones or{}
-if#AcceptZones>0 or#RejectZones>0 or#ConflictZones>0 then
+if#self.AcceptZones>0 or#self.RejectZones>0 or#self.ConflictZones>0 then
 self.usezones=true
 end
 return self
