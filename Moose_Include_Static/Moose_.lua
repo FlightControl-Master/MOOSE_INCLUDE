@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-01T09:15:50+01:00-3b03b03f3c480b734bee8199d3541396e79fa5c7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T11:20:53+01:00-fc8c1c156fe266f8a96b9df942c3555680728240 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52898,9 +52898,8 @@ local set=dectset
 if dlink then
 set=self:_PreFilterHeight(height)
 end
-local friendlyset
-if self.checkforfriendlies==true then
-friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterFunction(function(grp)if grp and grp:InAir()then return true else return false end end):FilterOnce()
+if self.checkforfriendlies==true and self.friendlyset==nil then
+self.friendlyset=SET_GROUP:New():FilterCoalitions(self.Coalition):FilterCategories({"plane","helicopter"}):FilterFunction(function(grp)if grp and grp:InAir()then return true else return false end end):FilterStart()
 end
 for _,_coord in pairs(set)do
 local coord=_coord
@@ -52913,19 +52912,19 @@ if self.usezones then
 zonecheck=self:_CheckCoordinateInZones(coord)
 end
 if self.verbose and self.debug then
-local dectstring=coord:ToStringLLDMS()
-local samstring=samcoordinate:ToStringLLDMS()
+local samstring=samcoordinate:ToStringMGRS({MGRS_Accuracy=0})
+samstring=string.gsub(samstring,"%s","")
 local inrange="false"
 if targetdistance<=rad then
 inrange="true"
 end
-local text=string.format("Checking SAM at %s | Targetdist %d | Rad %d | Inrange %s",samstring,targetdistance,rad,inrange)
+local text=string.format("Checking SAM at %s | Tgtdist %.1fkm | Rad %.1fkm | Inrange %s",samstring,targetdistance/1000,rad/1000,inrange)
 local m=MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
 self:T(self.lid..text)
 end
 local nofriendlies=true
 if self.checkforfriendlies==true then
-local closestfriend,distance=friendlyset:GetClosestGroup(samcoordinate)
+local closestfriend,distance=self.friendlyset:GetClosestGroup(samcoordinate)
 if closestfriend and distance and distance<rad then
 nofriendlies=false
 end
@@ -53174,9 +53173,9 @@ end
 function MANTIS:_CheckLoop(samset,detset,dlink,limit)
 self:T(self.lid.."CheckLoop "..#detset.." Coordinates")
 local switchedon=0
-local statusreport=REPORT:New("\nMANTIS Status")
 local instatusred=0
 local instatusgreen=0
+local activeshorads=0
 local SEADactive=0
 for _,_data in pairs(samset)do
 local samcoordinate=_data[2]
@@ -53245,22 +53244,13 @@ elseif _status=="RED"then
 instatusred=instatusred+1
 end
 end
-local activeshorads=0
 if self.Shorad then
 for _,_name in pairs(self.Shorad.ActiveGroups or{})do
 activeshorads=activeshorads+1
 end
 end
-statusreport:Add("+-----------------------------+")
-statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
-statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
-if self.Shorad then
-statusreport:Add(string.format("+ SHORAD active: %2d",activeshorads))
 end
-statusreport:Add("+-----------------------------+")
-MESSAGE:New(statusreport:Text(),10,nil,true):ToAll():ToLog()
-end
-return self
+return instatusred,instatusgreen,activeshorads
 end
 function MANTIS:_Check(detection,dlink)
 self:T(self.lid.."Check")
@@ -53269,16 +53259,30 @@ local rand=math.random(1,100)
 if rand>65 then
 self:_RefreshSAMTable()
 end
+local instatusred=0
+local instatusgreen=0
+local activeshorads=0
 if self.automode then
 local samset=self.SAM_Table_Long
 self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
 local samset=self.SAM_Table_Medium
 self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
 local samset=self.SAM_Table_Short
-self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
 else
 local samset=self:_GetSAMTable()
-self:_CheckLoop(samset,detset,dlink,self.maxclassic)
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxclassic)
+end
+if self.debug or self.verbose then
+local statusreport=REPORT:New("\nMANTIS Status "..self.name)
+statusreport:Add("+-----------------------------+")
+statusreport:Add(string.format("+ SAM in RED State: %2d",instatusred))
+statusreport:Add(string.format("+ SAM in GREEN State: %2d",instatusgreen))
+if self.Shorad then
+statusreport:Add(string.format("+ SHORAD active: %2d",activeshorads))
+end
+statusreport:Add("+-----------------------------+")
+MESSAGE:New(statusreport:Text(),10):ToAll():ToLog()
 end
 return self
 end
@@ -53718,7 +53722,20 @@ end
 end
 local TDiff=4
 for _,_group in pairs(shoradset)do
-if _group:IsAnyInZone(targetzone)then
+local groupname=_group:GetName()
+if groupname==TargetGroup then
+if self.UseEmOnOff then
+_group:EnableEmission(false)
+end
+_group:OptionAlarmStateGreen()
+self.ActiveGroups[groupname]=nil
+local text=string.format("Shot at SHORAD %s! Evading!",_group:GetName())
+self:T(text)
+local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+if self.shootandscoot then
+self:__ShootAndScoot(1,_group)
+end
+elseif _group:IsAnyInZone(targetzone)then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
@@ -53726,7 +53743,6 @@ if self.UseEmOnOff then
 _group:EnableEmission(true)
 end
 _group:OptionAlarmStateRed()
-local groupname=_group:GetName()
 if self.ActiveGroups[groupname]==nil then
 self.ActiveGroups[groupname]={Timing=ActiveTimer}
 local endtime=timer.getTime()+(ActiveTimer*math.random(75,100)/100)
@@ -104926,7 +104942,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nblu>0 then
-if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
+if not self:IsAttacked()and self.Tblu>=self.threatlevelCapture then
 self:Attacked(coalition.side.BLUE)
 end
 elseif Nblu==0 then
@@ -104951,7 +104967,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nred>0 then
-if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
+if not self:IsAttacked()and self.Tred>=self.threatlevelCapture then
 self:Attacked(coalition.side.RED)
 end
 elseif Nred==0 then
