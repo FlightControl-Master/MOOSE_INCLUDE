@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T11:20:53+01:00-fc8c1c156fe266f8a96b9df942c3555680728240 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T13:15:13+01:00-2cb58bd351035fff451caaf5a6178bf81c32092d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16899,8 +16899,9 @@ return coord
 end
 function COORDINATE:Get2DDistance(TargetCoordinate)
 if not TargetCoordinate then return 1000000 end
-local a={x=TargetCoordinate.x-self.x,y=0,z=TargetCoordinate.z-self.z}
-local norm=UTILS.VecNorm(a)
+local a=self:GetVec2()
+local b=TargetCoordinate:GetVec2()
+local norm=UTILS.VecDist2D(a,b)
 return norm
 end
 function COORDINATE:GetTemperature(height)
@@ -17079,10 +17080,11 @@ else
 return" bearing unknown"
 end
 end
-function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language,MagVar)
+function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language,MagVar,Precision)
 local Settings=Settings or _SETTINGS
+Precision=Precision or 0
 local BearingText=self:GetBearingText(AngleRadians,0,Settings,MagVar)
-local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
+local DistanceText=self:GetDistanceText(Distance,Settings,Language,Precision)
 local BRText=BearingText..DistanceText
 return BRText
 end
@@ -17825,11 +17827,11 @@ delta=sunset+UTILS.SecondsToMidnight()
 end
 return delta/60
 end
-function COORDINATE:ToStringBR(FromCoordinate,Settings,MagVar)
+function COORDINATE:ToStringBR(FromCoordinate,Settings,MagVar,Precision)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(FromCoordinate)
-return"BR, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar)
+return"BR, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar,Precision)
 end
 function COORDINATE:ToStringBRA(FromCoordinate,Settings,MagVar)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
@@ -55130,8 +55132,9 @@ verbose=0,
 alias="",
 debug=false,
 smokemenu=true,
+RoundingPrecision=0,
 }
-AUTOLASE.version="0.1.26"
+AUTOLASE.version="0.1.27"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -55200,6 +55203,7 @@ self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.playermenus={}
 self.smokemenu=true
 self.threatmenu=true
+self.RoundingPrecision=0
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -55398,6 +55402,10 @@ local Message="Smoking targets is now "..smktxt.."!"
 self:NotifyPilots(Message,10)
 return self
 end
+function AUTOLASE:SetRoundingPrecsion(IDP)
+self.RoundingPrecision=IDP or 0
+return self
+end
 function AUTOLASE:EnableSmokeMenu()
 self.smokemenu=true
 return self
@@ -55546,7 +55554,8 @@ locationstring=entry.coordinate:ToStringMGRS(settings)
 elseif settings:IsA2G_LL_DMS()then
 locationstring=entry.coordinate:ToStringLLDMS(settings)
 elseif settings:IsA2G_BR()then
-locationstring=entry.coordinate:ToStringBR(Group:GetCoordinate()or Unit:GetCoordinate(),settings)
+local startcoordinate=Unit:GetCoordinate()or Group:GetCoordinate()
+locationstring=entry.coordinate:ToStringBR(startcoordinate,settings,false,self.RoundingPrecision)
 end
 end
 end
