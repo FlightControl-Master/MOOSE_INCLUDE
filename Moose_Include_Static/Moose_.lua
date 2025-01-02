@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-01T14:38:43+01:00-2fbcd9d2b90fb7c430a1510712de96a394a4048c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T07:31:11+01:00-1c0e6362a143500eacb8d70383eb7419fd725ab4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -106371,7 +106371,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nblu>0 then
-if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
+if not self:IsAttacked()and self.Tblu>=self.threatlevelCapture then
 self:Attacked(coalition.side.BLUE)
 end
 elseif Nblu==0 then
@@ -106396,7 +106396,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nred>0 then
-if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
+if not self:IsAttacked()and self.Tred>=self.threatlevelCapture then
 self:Attacked(coalition.side.RED)
 end
 elseif Nred==0 then
