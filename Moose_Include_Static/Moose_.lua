@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T16:20:47+01:00-3cea1cc78c66635421734d1921c19371e13b6b9a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T17:07:29+01:00-13d5f4ac99d84bf099f871760af4554c7445afbf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32523,7 +32523,7 @@ else
 self:E("File for Aircraft could not be found: "..tostring(Path).."\\"..tostring(Filename"_Aircraft.csv"))
 end
 end
-if self:IsLimitedWeapons()()then
+if self:IsLimitedWeapons()then
 local Ok,Weapons=UTILS.LoadFromFile(Path,Filename.."_Weapons.csv")
 if Ok then
 if self.verbose and self.verbose>0 then
