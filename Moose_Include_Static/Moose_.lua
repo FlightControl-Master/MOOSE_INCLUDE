@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-01T14:38:43+01:00-2fbcd9d2b90fb7c430a1510712de96a394a4048c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T17:22:39+01:00-ac5dfab82fc57038d707fb2c4da70d64ee852ad1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17019,8 +17019,9 @@ return coord
 end
 function COORDINATE:Get2DDistance(TargetCoordinate)
 if not TargetCoordinate then return 1000000 end
-local a={x=TargetCoordinate.x-self.x,y=0,z=TargetCoordinate.z-self.z}
-local norm=UTILS.VecNorm(a)
+local a=self:GetVec2()
+local b=TargetCoordinate:GetVec2()
+local norm=UTILS.VecDist2D(a,b)
 return norm
 end
 function COORDINATE:GetTemperature(height)
@@ -17199,10 +17200,11 @@ else
 return" bearing unknown"
 end
 end
-function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language,MagVar)
+function COORDINATE:GetBRText(AngleRadians,Distance,Settings,Language,MagVar,Precision)
 local Settings=Settings or _SETTINGS
+Precision=Precision or 0
 local BearingText=self:GetBearingText(AngleRadians,0,Settings,MagVar)
-local DistanceText=self:GetDistanceText(Distance,Settings,Language,0)
+local DistanceText=self:GetDistanceText(Distance,Settings,Language,Precision)
 local BRText=BearingText..DistanceText
 return BRText
 end
@@ -17945,11 +17947,11 @@ delta=sunset+UTILS.SecondsToMidnight()
 end
 return delta/60
 end
-function COORDINATE:ToStringBR(FromCoordinate,Settings,MagVar)
+function COORDINATE:ToStringBR(FromCoordinate,Settings,MagVar,Precision)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(FromCoordinate)
-return"BR, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar)
+return"BR, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar,Precision)
 end
 function COORDINATE:ToStringBRA(FromCoordinate,Settings,MagVar)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
@@ -32521,7 +32523,7 @@ else
 self:E("File for Aircraft could not be found: "..tostring(Path).."\\"..tostring(Filename"_Aircraft.csv"))
 end
 end
-if self:IsLimitedWeapons()()then
+if self:IsLimitedWeapons()then
 local Ok,Weapons=UTILS.LoadFromFile(Path,Filename.."_Weapons.csv")
 if Ok then
 if self.verbose and self.verbose>0 then
@@ -55163,7 +55165,20 @@ end
 end
 local TDiff=4
 for _,_group in pairs(shoradset)do
-if _group:IsAnyInZone(targetzone)then
+local groupname=_group:GetName()
+if groupname==TargetGroup then
+if self.UseEmOnOff then
+_group:EnableEmission(false)
+end
+_group:OptionAlarmStateGreen()
+self.ActiveGroups[groupname]=nil
+local text=string.format("Shot at SHORAD %s! Evading!",_group:GetName())
+self:T(text)
+local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+if self.shootandscoot then
+self:__ShootAndScoot(1,_group)
+end
+elseif _group:IsAnyInZone(targetzone)then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
@@ -55171,7 +55186,6 @@ if self.UseEmOnOff then
 _group:EnableEmission(true)
 end
 _group:OptionAlarmStateRed()
-local groupname=_group:GetName()
 if self.ActiveGroups[groupname]==nil then
 self.ActiveGroups[groupname]={Timing=ActiveTimer}
 local endtime=timer.getTime()+(ActiveTimer*math.random(75,100)/100)
@@ -106371,7 +106385,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nblu>0 then
-if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
+if not self:IsAttacked()and self.Tblu>=self.threatlevelCapture then
 self:Attacked(coalition.side.BLUE)
 end
 elseif Nblu==0 then
@@ -106396,7 +106410,7 @@ captured(coalition.side.NEUTRAL)
 end
 else
 if Nred>0 then
-if not self:IsAttacked()and self.Tnut>=self.threatlevelCapture then
+if not self:IsAttacked()and self.Tred>=self.threatlevelCapture then
 self:Attacked(coalition.side.RED)
 end
 elseif Nred==0 then
@@ -109338,7 +109352,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.1.23",
+version="0.1.24",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -109366,7 +109380,8 @@ TForget=600,
 TargetCache=nil,
 smokeownposition=false,
 SmokeOwn={},
-smokeaveragetargetpos=false,
+smokeaveragetargetpos=true,
+reporttostringbullsonly=true,
 }
 PLAYERRECCE.LaserRelativePos={
 ["SA342M"]={x=1.7,y=1.2,z=0},
@@ -109424,6 +109439,7 @@ self.lid=string.format("PlayerForwardController %s %s | ",self.Name,self.version
 self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.lasingtime=60
 self.minthreatlevel=0
+self.reporttostringbullsonly=true
 self.TForget=600
 self.TargetCache=FIFO:New()
 self:SetStartState("Stopped")
@@ -109822,7 +109838,8 @@ self:T("Targetstate: "..target:GetState())
 self:T("Laser State: "..tostring(laser:IsLasing()))
 if(not oldtarget)or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
 laser:LaseOff()
-if target:IsDead()or target:IsDestroyed()or target:GetLife()<2 then
+self:T(self.lid.."Target Life Points: "..target:GetLife()or"none")
+if target:IsDead()or target:IsDestroyed()or target:GetDamage()>79 or target:GetLife()<=1 then
 self:__Shack(-1,client,oldtarget)
 else
 self:__TargetLOSLost(-1,client,oldtarget)
@@ -110063,6 +110080,9 @@ report:Add("Target type: "..target:GetTypeName()or"unknown")
 report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
 if not self.ReferencePoint then
 report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
+if self.reporttostringbullsonly~=true then
+report:Add("Location: "..client:GetCoordinate():ToStringA2G(nil,Settings))
+end
 else
 report:Add("Location: "..client:GetCoordinate():ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings))
 end
@@ -110099,8 +110119,14 @@ report:Add("Target count: "..number)
 report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
 if not self.ReferencePoint then
 report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
+if self.reporttostringbullsonly~=true then
+report:Add("Location: "..client:GetCoordinate():ToStringA2G(nil,Settings))
+end
 else
 report:Add("Location: "..client:GetCoordinate():ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings))
+if self.reporttostringbullsonly~=true then
+report:Add("Location: "..client:GetCoordinate():ToStringA2G(nil,Settings))
+end
 end
 report:Add(string.rep("-",15))
 local text=report:Text()
@@ -110291,6 +110317,11 @@ end
 function PLAYERRECCE:SetMenuName(Name)
 self:T(self.lid.."SetMenuName: "..Name)
 self.MenuName=Name
+return self
+end
+function PLAYERRECCE:SetReportBullsOnly(OnOff)
+self:T(self.lid.."SetReportBullsOnly: "..tostring(OnOff))
+self.reporttostringbullsonly=OnOff
 return self
 end
 function PLAYERRECCE:EnableSmokeOwnPosition()
