@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T07:31:11+01:00-1c0e6362a143500eacb8d70383eb7419fd725ab4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T11:19:16+01:00-aafa37f80d2343827f31bc7c53f7a8fe5f01ef61 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55163,7 +55163,20 @@ end
 end
 local TDiff=4
 for _,_group in pairs(shoradset)do
-if _group:IsAnyInZone(targetzone)then
+local groupname=_group:GetName()
+if groupname==TargetGroup then
+if self.UseEmOnOff then
+_group:EnableEmission(false)
+end
+_group:OptionAlarmStateGreen()
+self.ActiveGroups[groupname]=nil
+local text=string.format("Shot at SHORAD %s! Evading!",_group:GetName())
+self:T(text)
+local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+if self.shootandscoot then
+self:__ShootAndScoot(1,_group)
+end
+elseif _group:IsAnyInZone(targetzone)then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
@@ -55171,7 +55184,6 @@ if self.UseEmOnOff then
 _group:EnableEmission(true)
 end
 _group:OptionAlarmStateRed()
-local groupname=_group:GetName()
 if self.ActiveGroups[groupname]==nil then
 self.ActiveGroups[groupname]={Timing=ActiveTimer}
 local endtime=timer.getTime()+(ActiveTimer*math.random(75,100)/100)
