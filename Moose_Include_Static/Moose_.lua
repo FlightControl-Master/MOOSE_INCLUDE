@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T13:15:13+01:00-2cb58bd351035fff451caaf5a6178bf81c32092d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T17:23:38+01:00-5cc3fd723852ad6eb125ea4ff5f6109f8a7f4eaf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -107918,7 +107918,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.1.23",
+version="0.1.24",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -107946,7 +107946,8 @@ TForget=600,
 TargetCache=nil,
 smokeownposition=false,
 SmokeOwn={},
-smokeaveragetargetpos=false,
+smokeaveragetargetpos=true,
+reporttostringbullsonly=true,
 }
 PLAYERRECCE.LaserRelativePos={
 ["SA342M"]={x=1.7,y=1.2,z=0},
@@ -108004,6 +108005,7 @@ self.lid=string.format("PlayerForwardController %s %s | ",self.Name,self.version
 self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.lasingtime=60
 self.minthreatlevel=0
+self.reporttostringbullsonly=true
 self.TForget=600
 self.TargetCache=FIFO:New()
 self:SetStartState("Stopped")
@@ -108402,7 +108404,8 @@ self:T("Targetstate: "..target:GetState())
 self:T("Laser State: "..tostring(laser:IsLasing()))
 if(not oldtarget)or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
 laser:LaseOff()
-if target:IsDead()or target:IsDestroyed()or target:GetLife()<2 then
+self:T(self.lid.."Target Life Points: "..target:GetLife()or"none")
+if target:IsDead()or target:IsDestroyed()or target:GetDamage()>79 or target:GetLife()<=1 then
 self:__Shack(-1,client,oldtarget)
 else
 self:__TargetLOSLost(-1,client,oldtarget)
@@ -108643,6 +108646,9 @@ report:Add("Target type: "..target:GetTypeName()or"unknown")
 report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
 if not self.ReferencePoint then
 report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
+if self.reporttostringbullsonly~=true then
+report:Add("Location: "..client:GetCoordinate():ToStringA2G(nil,Settings))
+end
 else
 report:Add("Location: "..client:GetCoordinate():ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings))
 end
@@ -108679,8 +108685,14 @@ report:Add("Target count: "..number)
 report:Add("Threat Level: "..ThreatGraph.." ("..ThreatLevelText..")")
 if not self.ReferencePoint then
 report:Add("Location: "..client:GetCoordinate():ToStringBULLS(self.Coalition,Settings))
+if self.reporttostringbullsonly~=true then
+report:Add("Location: "..client:GetCoordinate():ToStringA2G(nil,Settings))
+end
 else
 report:Add("Location: "..client:GetCoordinate():ToStringFromRPShort(self.ReferencePoint,self.RPName,client,Settings))
+if self.reporttostringbullsonly~=true then
+report:Add("Location: "..client:GetCoordinate():ToStringA2G(nil,Settings))
+end
 end
 report:Add(string.rep("-",15))
 local text=report:Text()
@@ -108871,6 +108883,11 @@ end
 function PLAYERRECCE:SetMenuName(Name)
 self:T(self.lid.."SetMenuName: "..Name)
 self.MenuName=Name
+return self
+end
+function PLAYERRECCE:SetReportBullsOnly(OnOff)
+self:T(self.lid.."SetReportBullsOnly: "..tostring(OnOff))
+self.reporttostringbullsonly=OnOff
 return self
 end
 function PLAYERRECCE:EnableSmokeOwnPosition()
