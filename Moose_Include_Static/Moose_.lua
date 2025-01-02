@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T17:07:29+01:00-13d5f4ac99d84bf099f871760af4554c7445afbf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T17:22:39+01:00-ac5dfab82fc57038d707fb2c4da70d64ee852ad1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -109352,7 +109352,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.1.23",
+version="0.1.24",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -109839,7 +109839,7 @@ self:T("Laser State: "..tostring(laser:IsLasing()))
 if(not oldtarget)or targetset:IsNotInSet(oldtarget)or target:IsDead()or target:IsDestroyed()then
 laser:LaseOff()
 self:T(self.lid.."Target Life Points: "..target:GetLife()or"none")
-if target:IsDead()or target:IsDestroyed()or target:GetLife()<2 then
+if target:IsDead()or target:IsDestroyed()or target:GetDamage()>79 or target:GetLife()<=1 then
 self:__Shack(-1,client,oldtarget)
 else
 self:__TargetLOSLost(-1,client,oldtarget)
