@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-04T18:25:32+01:00-9bc067f2e879abf7659ee700519df06eab609990 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-04T19:15:33+01:00-29b992bf817efff8824b022a031e1ab3fea038bf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -42885,6 +42885,8 @@ targetsheet=nil,
 targetpath=nil,
 targetprefix=nil,
 Coalition=nil,
+ceilingaltitude=20000,
+ceilingenabled=false,
 }
 RANGE.Defaults={
 goodhitrange=25,
@@ -43135,6 +43137,26 @@ if zone and type(zone)=="string"then
 zone=ZONE:FindByName(zone)
 end
 self.rangezone=zone
+return self
+end
+function RANGE:SetRangeCeiling(alt)
+self:T(self.lid.."SetRangeCeiling")
+if alt and type(alt)=="number"then
+self.ceilingaltitude=alt
+else
+self:E(self.lid.."Altitude either not provided or is not a number, using default setting (20000).")
+self.ceilingaltitude=20000
+end
+return self
+end
+function RANGE:EnableRangeCeiling(enabled)
+self:T(self.lid.."EnableRangeCeiling")
+if enabled and type(enabled)=="boolean"then
+self.ceilingenabled=enabled
+else
+self:E(self.lid.."Enabled either not provide or is not a boolean, using default setting (false).")
+self.ceilingenabled=false
+end
 return self
 end
 function RANGE:SetBombTargetSmokeColor(colorid)
@@ -44279,7 +44301,9 @@ local playersettings=_playersettings
 local unitname=playersettings.unitname
 local unit=UNIT:FindByName(unitname)
 if unit and unit:IsAlive()then
-if unit:IsInZone(self.rangezone)then
+local unitalt=unit:GetAltitude(false)
+local unitaltinfeet=UTILS.MetersToFeet(unitalt)
+if unit:IsInZone(self.rangezone)and(not self.ceilingenabled or unitaltinfeet<self.ceilingaltitude)then
 if not playersettings.inzone then
 playersettings.inzone=true
 self:EnterRange(playersettings)
