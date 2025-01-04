@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-02T17:23:38+01:00-5cc3fd723852ad6eb125ea4ff5f6109f8a7f4eaf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-04T13:26:43+01:00-9966c5eadff4b25f9c975ac3c63a359a8f5d448b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7449,7 +7449,7 @@ Event.IniDynamicCargo=DYNAMICCARGO:FindByName(Event.IniUnitName)
 Event.IniDynamicCargoName=Event.IniUnitName
 Event.IniPlayerName=string.match(Event.IniUnitName,"^(.+)|%d%d:%d%d|PKG%d+")
 else
-Event.IniUnit=CARGO:FindByName(Event.IniDCSUnitName)
+Event.IniUnit=STATIC:FindByName(Event.IniDCSUnitName,false)
 end
 Event.IniCoalition=Event.IniDCSUnit:getCoalition()
 Event.IniCategory=Event.IniDCSUnit:getDesc().category
@@ -32406,7 +32406,7 @@ else
 self:E("File for Aircraft could not be found: "..tostring(Path).."\\"..tostring(Filename"_Aircraft.csv"))
 end
 end
-if self:IsLimitedWeapons()()then
+if self:IsLimitedWeapons()then
 local Ok,Weapons=UTILS.LoadFromFile(Path,Filename.."_Weapons.csv")
 if Ok then
 if self.verbose and self.verbose>0 then
