@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T10:20:23+01:00-fdcf153b0b2c85c4b047a6361ea8dd6e2cc1f759 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T17:43:12+01:00-e86069d39c19392e213aacadf3e90135e813731a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17226,6 +17226,9 @@ end
 function COORDINATE:Get2DDistance(TargetCoordinate)
 if not TargetCoordinate then return 1000000 end
 local a=self:GetVec2()
+if not TargetCoordinate.ClassName then
+TargetCoordinate=COORDINATE:NewFromVec3(TargetCoordinate)
+end
 local b=TargetCoordinate:GetVec2()
 local norm=UTILS.VecDist2D(a,b)
 return norm
@@ -53543,6 +53546,8 @@ automode=true,
 autoshorad=true,
 ShoradGroupSet=nil,
 checkforfriendlies=false,
+SmokeDecoy=false,
+SmokeDecoyColor=SMOKECOLOR.White,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -53708,6 +53713,8 @@ self.FilterZones=Zones
 self.SkateZones=nil
 self.SkateNumber=3
 self.shootandscoot=false
+self.SmokeDecoy=false
+self.SmokeDecoyColor=SMOKECOLOR.White
 self.UseEmOnOff=true
 if EmOnOff==false then
 self.UseEmOnOff=false
@@ -53755,7 +53762,7 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.22"
+self.version="0.8.23"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -53822,6 +53829,11 @@ if range<0 or range>100 then
 range=95
 end
 self.engagerange=range
+return self
+end
+function MANTIS:SetSmokeDecoy(Onoff,Color)
+self.SmokeDecoy=Onoff
+self.SmokeDecoyColor=Color or SMOKECOLOR.White
 return self
 end
 function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic)
@@ -54275,15 +54287,15 @@ group:OptionEngageRange(engagerange)
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
-table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind,type})
 if type==MANTIS.SamType.LONG then
-table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
 elseif type==MANTIS.SamType.MEDIUM then
-table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
 elseif type==MANTIS.SamType.SHORT then
-table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind,type})
 self.ShoradGroupSet:Add(grpname,group)
 if not self.autoshorad then
 table.insert(SEAD_Grps,grpname)
@@ -54322,14 +54334,14 @@ if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
-table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
 if type==MANTIS.SamType.LONG then
-table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind,type})
 elseif type==MANTIS.SamType.MEDIUM then
-table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind,type})
 elseif type==MANTIS.SamType.SHORT then
-table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind})
+table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind,type})
 self.ShoradGroupSet:Add(grpname,group)
 if self.autoshorad then
 self.Shorad.Groupset=self.ShoradGroupSet
@@ -54377,6 +54389,7 @@ local name=_data[1]
 local radius=_data[3]
 local height=_data[4]
 local blind=_data[5]*1.25+1
+local shortsam=_data[6]==MANTIS.SamType.SHORT and true or false
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
@@ -54399,6 +54412,16 @@ end
 if self.SamStateTracker[name]~="RED"and switch then
 self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
+end
+if shortsam==true and self.SmokeDecoy==true then
+self:I("Smoking")
+local units=samgroup:GetUnits()or{}
+local smoke=self.SmokeDecoyColor or SMOKECOLOR.White
+for _,unit in pairs(units)do
+if unit and unit:IsAlive()then
+unit:GetCoordinate():Smoke(smoke)
+end
+end
 end
 if self.ShoradLink and(Distance<self.ShoradActDistance or Distance<blind)then
 local Shorad=self.Shorad
@@ -71535,7 +71558,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.29"
+CSAR.version="1.0.30"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -72923,6 +72946,18 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
+local staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
+local zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
+if staticmashes:Count()>0 then
+for _,_mash in pairs(staticmashes.Set)do
+self.mash:AddObject(_mash)
+end
+end
+if zonemashes:Count()>0 then
+for _,_mash in pairs(zonemashes.Set)do
+self.mash:AddObject(_mash)
+end
+end
 if not self.coordinate then
 local csarhq=self.mash:GetRandom()
 if csarhq then
