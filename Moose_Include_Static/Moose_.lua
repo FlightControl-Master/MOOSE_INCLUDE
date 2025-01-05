@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-04T18:26:32+01:00-8d603a0cef61e8e8ebef08f35a76268021fa4af3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T10:21:40+01:00-e9db714937d0209fa4b65d10875b14e403ea6688 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -35572,7 +35572,7 @@ self:DestroyUnit(CleanUpUnit)
 end
 end
 end
-if CleanUpUnit and not CleanUpUnit:GetPlayerName()then
+if CleanUpUnit and(CleanUpUnit.GetPlayerName==nil or not CleanUpUnit:GetPlayerName())then
 local CleanUpUnitVelocity=CleanUpUnit:GetVelocityKMH()
 if CleanUpUnitVelocity<1 then
 if CleanUpListData.CleanUpMoved then
@@ -43293,6 +43293,8 @@ targetsheet=nil,
 targetpath=nil,
 targetprefix=nil,
 Coalition=nil,
+ceilingaltitude=20000,
+ceilingenabled=false,
 }
 RANGE.Defaults={
 goodhitrange=25,
@@ -43543,6 +43545,26 @@ if zone and type(zone)=="string"then
 zone=ZONE:FindByName(zone)
 end
 self.rangezone=zone
+return self
+end
+function RANGE:SetRangeCeiling(alt)
+self:T(self.lid.."SetRangeCeiling")
+if alt and type(alt)=="number"then
+self.ceilingaltitude=alt
+else
+self:E(self.lid.."Altitude either not provided or is not a number, using default setting (20000).")
+self.ceilingaltitude=20000
+end
+return self
+end
+function RANGE:EnableRangeCeiling(enabled)
+self:T(self.lid.."EnableRangeCeiling")
+if enabled and type(enabled)=="boolean"then
+self.ceilingenabled=enabled
+else
+self:E(self.lid.."Enabled either not provide or is not a boolean, using default setting (false).")
+self.ceilingenabled=false
+end
 return self
 end
 function RANGE:SetBombTargetSmokeColor(colorid)
@@ -44687,7 +44709,9 @@ local playersettings=_playersettings
 local unitname=playersettings.unitname
 local unit=UNIT:FindByName(unitname)
 if unit and unit:IsAlive()then
-if unit:IsInZone(self.rangezone)then
+local unitalt=unit:GetAltitude(false)
+local unitaltinfeet=UTILS.MetersToFeet(unitalt)
+if unit:IsInZone(self.rangezone)and(not self.ceilingenabled or unitaltinfeet<self.ceilingaltitude)then
 if not playersettings.inzone then
 playersettings.inzone=true
 self:EnterRange(playersettings)
