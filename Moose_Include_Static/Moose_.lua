@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-04T19:15:33+01:00-29b992bf817efff8824b022a031e1ab3fea038bf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T10:20:23+01:00-fdcf153b0b2c85c4b047a6361ea8dd6e2cc1f759 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -35145,7 +35145,7 @@ self:DestroyUnit(CleanUpUnit)
 end
 end
 end
-if CleanUpUnit and not CleanUpUnit:GetPlayerName()then
+if CleanUpUnit and(CleanUpUnit.GetPlayerName==nil or not CleanUpUnit:GetPlayerName())then
 local CleanUpUnitVelocity=CleanUpUnit:GetVelocityKMH()
 if CleanUpUnitVelocity<1 then
 if CleanUpListData.CleanUpMoved then
