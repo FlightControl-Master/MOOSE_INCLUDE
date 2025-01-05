@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-04T18:28:06+01:00-34a11e79b3c79f3b5c8a5364b6aa11644cf6fbb5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T17:45:54+01:00-44a433eadf50c44cabd0c8d8f790715b290dd7fb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17017,6 +17017,9 @@ end
 function COORDINATE:Get2DDistance(TargetCoordinate)
 if not TargetCoordinate then return 1000000 end
 local a=self:GetVec2()
+if not TargetCoordinate.ClassName then
+TargetCoordinate=COORDINATE:NewFromVec3(TargetCoordinate)
+end
 local b=TargetCoordinate:GetVec2()
 local norm=UTILS.VecDist2D(a,b)
 return norm
@@ -21955,7 +21958,7 @@ end
 CLIENTMENU={
 ClassName="CLIENTMENUE",
 lid="",
-version="0.1.2",
+version="0.1.3",
 name=nil,
 path=nil,
 group=nil,
@@ -22144,7 +22147,7 @@ self:I(self.lid.."Created")
 end
 return self
 end
-function CLIENTMENUMANAGER:_EventHandler(EventData)
+function CLIENTMENUMANAGER:_EventHandler(EventData,Retry)
 self:T(self.lid.."_EventHandler: "..EventData.id)
 if EventData.id==EVENTS.PlayerLeaveUnit or EventData.id==EVENTS.Ejection or EventData.id==EVENTS.Crash or EventData.id==EVENTS.PilotDead then
 self:T(self.lid.."Leave event for player: "..tostring(EventData.IniPlayerName))
@@ -22156,6 +22159,9 @@ elseif(EventData.id==EVENTS.PlayerEnterAircraft)and EventData.IniCoalition==self
 if EventData.IniPlayerName and EventData.IniGroup then
 if(not self.clientset:IsIncludeObject(_DATABASE:FindClient(EventData.IniUnitName)))then
 self:T(self.lid.."Client not in SET: "..EventData.IniPlayerName)
+if not Retry then
+self:ScheduleOnce(2,CLIENTMENUMANAGER._EventHandler,self,EventData,true)
+end
 return self
 end
 local player=_DATABASE:FindClient(EventData.IniUnitName)
@@ -22191,7 +22197,7 @@ self:HandleEvent(EVENTS.Crash,self._EventHandler)
 self:HandleEvent(EVENTS.PilotDead,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventHandler)
-self:SetEventPriority(5)
+self:SetEventPriority(6)
 return self
 end
 function CLIENTMENUMANAGER:NewEntry(Text,Parent,Function,...)
@@ -34131,7 +34137,7 @@ self:DestroyUnit(CleanUpUnit)
 end
 end
 end
-if CleanUpUnit and not CleanUpUnit:GetPlayerName()then
+if CleanUpUnit and(CleanUpUnit.GetPlayerName==nil or not CleanUpUnit:GetPlayerName())then
 local CleanUpUnitVelocity=CleanUpUnit:GetVelocityKMH()
 if CleanUpUnitVelocity<1 then
 if CleanUpListData.CleanUpMoved then
@@ -41852,6 +41858,8 @@ targetsheet=nil,
 targetpath=nil,
 targetprefix=nil,
 Coalition=nil,
+ceilingaltitude=20000,
+ceilingenabled=false,
 }
 RANGE.Defaults={
 goodhitrange=25,
@@ -42102,6 +42110,26 @@ if zone and type(zone)=="string"then
 zone=ZONE:FindByName(zone)
 end
 self.rangezone=zone
+return self
+end
+function RANGE:SetRangeCeiling(alt)
+self:T(self.lid.."SetRangeCeiling")
+if alt and type(alt)=="number"then
+self.ceilingaltitude=alt
+else
+self:E(self.lid.."Altitude either not provided or is not a number, using default setting (20000).")
+self.ceilingaltitude=20000
+end
+return self
+end
+function RANGE:EnableRangeCeiling(enabled)
+self:T(self.lid.."EnableRangeCeiling")
+if enabled and type(enabled)=="boolean"then
+self.ceilingenabled=enabled
+else
+self:E(self.lid.."Enabled either not provide or is not a boolean, using default setting (false).")
+self.ceilingenabled=false
+end
 return self
 end
 function RANGE:SetBombTargetSmokeColor(colorid)
@@ -43246,7 +43274,9 @@ local playersettings=_playersettings
 local unitname=playersettings.unitname
 local unit=UNIT:FindByName(unitname)
 if unit and unit:IsAlive()then
-if unit:IsInZone(self.rangezone)then
+local unitalt=unit:GetAltitude(false)
+local unitaltinfeet=UTILS.MetersToFeet(unitalt)
+if unit:IsInZone(self.rangezone)and(not self.ceilingenabled or unitaltinfeet<self.ceilingaltitude)then
 if not playersettings.inzone then
 playersettings.inzone=true
 self:EnterRange(playersettings)
@@ -53353,11 +53383,12 @@ self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
 end
 if shortsam==true and self.SmokeDecoy==true then
+self:I("Smoking")
 local units=samgroup:GetUnits()or{}
 local smoke=self.SmokeDecoyColor or SMOKECOLOR.White
 for _,unit in pairs(units)do
 if unit and unit:IsAlive()then
-unit:Smoke(smoke,2,2)
+unit:GetCoordinate():Smoke(smoke)
 end
 end
 end
@@ -73908,7 +73939,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.29"
+CSAR.version="1.0.30"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -75296,6 +75327,18 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
+local staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
+local zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
+if staticmashes:Count()>0 then
+for _,_mash in pairs(staticmashes.Set)do
+self.mash:AddObject(_mash)
+end
+end
+if zonemashes:Count()>0 then
+for _,_mash in pairs(zonemashes.Set)do
+self.mash:AddObject(_mash)
+end
+end
 if not self.coordinate then
 local csarhq=self.mash:GetRandom()
 if csarhq then
