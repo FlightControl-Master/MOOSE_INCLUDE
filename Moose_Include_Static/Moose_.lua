@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-06T14:19:02+01:00-02decc3901cc74786465ad3a1de4e5883baf2c3f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-06T17:32:29+01:00-04f8f6d512fa7e297fa9ac829ff01514ea8cfa97 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19765,25 +19765,25 @@ end
 self.SpawnTemplatePrefixTable=UTILS.ShuffleTable(temptable)
 self.SpawnRandomizeTemplate=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
-self:_RandomizeTemplate(SpawnGroupID)
+self:_RandomizeTemplate(SpawnGroupID,RandomizePositionInZone)
 end
 return self
 end
-function SPAWN:InitRandomizeTemplateSet(SpawnTemplateSet)
+function SPAWN:InitRandomizeTemplateSet(SpawnTemplateSet,RandomizePositionInZone)
 local setnames=SpawnTemplateSet:GetSetNames()
-self:InitRandomizeTemplate(setnames)
+self:InitRandomizeTemplate(setnames,RandomizePositionInZone)
 return self
 end
-function SPAWN:InitRandomizeTemplatePrefixes(SpawnTemplatePrefixes)
+function SPAWN:InitRandomizeTemplatePrefixes(SpawnTemplatePrefixes,RandomizePositionInZone)
 local SpawnTemplateSet=SET_GROUP:New():FilterPrefixes(SpawnTemplatePrefixes):FilterOnce()
-self:InitRandomizeTemplateSet(SpawnTemplateSet)
+self:InitRandomizeTemplateSet(SpawnTemplateSet,RandomizePositionInZone)
 return self
 end
 function SPAWN:InitGrouping(Grouping)
 self.SpawnGrouping=Grouping
 return self
 end
-function SPAWN:InitRandomizeZones(SpawnZoneTable)
+function SPAWN:InitRandomizeZones(SpawnZoneTable,RandomizePositionInZone)
 local temptable={}
 for _,_temp in pairs(SpawnZoneTable)do
 temptable[#temptable+1]=_temp
@@ -19791,7 +19791,7 @@ end
 self.SpawnZoneTable=UTILS.ShuffleTable(temptable)
 self.SpawnRandomizeZones=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
-self:_RandomizeZones(SpawnGroupID)
+self:_RandomizeZones(SpawnGroupID,RandomizePositionInZone)
 end
 return self
 end
@@ -21120,14 +21120,17 @@ SpawnTemplate.y=SpawnVec2.y
 end
 return self
 end
-function SPAWN:_RandomizeZones(SpawnIndex)
+function SPAWN:_RandomizeZones(SpawnIndex,RandomizePositionInZone)
 if self.SpawnRandomizeZones then
 local SpawnZone=nil
 while not SpawnZone do
 local ZoneID=math.random(#self.SpawnZoneTable)
 SpawnZone=self.SpawnZoneTable[ZoneID]:GetZoneMaybe()
 end
-local SpawnVec2=SpawnZone:GetRandomVec2()
+local SpawnVec2=SpawnZone:GetVec2()
+if RandomizePositionInZone~=false then
+SpawnVec2=SpawnZone:GetRandomVec2()
+end
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 self.SpawnGroups[SpawnIndex].SpawnZone=SpawnZone
 for UnitID=1,#SpawnTemplate.units do
