@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T17:43:12+01:00-e86069d39c19392e213aacadf3e90135e813731a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-06T14:19:02+01:00-02decc3901cc74786465ad3a1de4e5883baf2c3f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43142,10 +43142,10 @@ end
 self.rangezone=zone
 return self
 end
-function RANGE:SetRangeCeiling(alt)
+function RANGE:SetRangeCeiling(altitude)
 self:T(self.lid.."SetRangeCeiling")
-if alt and type(alt)=="number"then
-self.ceilingaltitude=alt
+if altitude and type(altitude)=="number"then
+self.ceilingaltitude=altitude
 else
 self:E(self.lid.."Altitude either not provided or is not a number, using default setting (20000).")
 self.ceilingaltitude=20000
