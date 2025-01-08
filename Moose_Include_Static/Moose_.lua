@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-05T17:45:54+01:00-44a433eadf50c44cabd0c8d8f790715b290dd7fb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-08T13:06:10+01:00-0e91a658b3b1e2153de63b42cded4750a5befb87 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12874,6 +12874,13 @@ if ObjectName then
 local size=1
 if Event.IniDCSGroup then
 size=Event.IniDCSGroup:getSize()
+elseif Event.IniDCSGroupName then
+local grp=Group.getByName(Event.IniDCSGroupName)
+if grp then
+size=grp:getSize()
+end
+elseif Object:IsAlive()then
+size=Object:CountAliveUnits()
 end
 if size==1 then
 self:Remove(ObjectName)
@@ -19556,25 +19563,25 @@ end
 self.SpawnTemplatePrefixTable=UTILS.ShuffleTable(temptable)
 self.SpawnRandomizeTemplate=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
-self:_RandomizeTemplate(SpawnGroupID)
+self:_RandomizeTemplate(SpawnGroupID,RandomizePositionInZone)
 end
 return self
 end
-function SPAWN:InitRandomizeTemplateSet(SpawnTemplateSet)
+function SPAWN:InitRandomizeTemplateSet(SpawnTemplateSet,RandomizePositionInZone)
 local setnames=SpawnTemplateSet:GetSetNames()
-self:InitRandomizeTemplate(setnames)
+self:InitRandomizeTemplate(setnames,RandomizePositionInZone)
 return self
 end
-function SPAWN:InitRandomizeTemplatePrefixes(SpawnTemplatePrefixes)
+function SPAWN:InitRandomizeTemplatePrefixes(SpawnTemplatePrefixes,RandomizePositionInZone)
 local SpawnTemplateSet=SET_GROUP:New():FilterPrefixes(SpawnTemplatePrefixes):FilterOnce()
-self:InitRandomizeTemplateSet(SpawnTemplateSet)
+self:InitRandomizeTemplateSet(SpawnTemplateSet,RandomizePositionInZone)
 return self
 end
 function SPAWN:InitGrouping(Grouping)
 self.SpawnGrouping=Grouping
 return self
 end
-function SPAWN:InitRandomizeZones(SpawnZoneTable)
+function SPAWN:InitRandomizeZones(SpawnZoneTable,RandomizePositionInZone)
 local temptable={}
 for _,_temp in pairs(SpawnZoneTable)do
 temptable[#temptable+1]=_temp
@@ -19582,7 +19589,7 @@ end
 self.SpawnZoneTable=UTILS.ShuffleTable(temptable)
 self.SpawnRandomizeZones=true
 for SpawnGroupID=1,self.SpawnMaxGroups do
-self:_RandomizeZones(SpawnGroupID)
+self:_RandomizeZones(SpawnGroupID,RandomizePositionInZone)
 end
 return self
 end
@@ -20911,14 +20918,17 @@ SpawnTemplate.y=SpawnVec2.y
 end
 return self
 end
-function SPAWN:_RandomizeZones(SpawnIndex)
+function SPAWN:_RandomizeZones(SpawnIndex,RandomizePositionInZone)
 if self.SpawnRandomizeZones then
 local SpawnZone=nil
 while not SpawnZone do
 local ZoneID=math.random(#self.SpawnZoneTable)
 SpawnZone=self.SpawnZoneTable[ZoneID]:GetZoneMaybe()
 end
-local SpawnVec2=SpawnZone:GetRandomVec2()
+local SpawnVec2=SpawnZone:GetVec2()
+if RandomizePositionInZone~=false then
+SpawnVec2=SpawnZone:GetRandomVec2()
+end
 local SpawnTemplate=self.SpawnGroups[SpawnIndex].SpawnTemplate
 self.SpawnGroups[SpawnIndex].SpawnZone=SpawnZone
 for UnitID=1,#SpawnTemplate.units do
@@ -42112,10 +42122,10 @@ end
 self.rangezone=zone
 return self
 end
-function RANGE:SetRangeCeiling(alt)
+function RANGE:SetRangeCeiling(altitude)
 self:T(self.lid.."SetRangeCeiling")
-if alt and type(alt)=="number"then
-self.ceilingaltitude=alt
+if altitude and type(altitude)=="number"then
+self.ceilingaltitude=altitude
 else
 self:E(self.lid.."Altitude either not provided or is not a number, using default setting (20000).")
 self.ceilingaltitude=20000
@@ -56167,7 +56177,7 @@ end
 TIRESIAS={
 ClassName="TIRESIAS",
 debug=false,
-version="0.0.5",
+version="0.0.6",
 Interval=20,
 GroundSet=nil,
 VehicleSet=nil,
@@ -56177,7 +56187,10 @@ ExceptionSet=nil,
 AAARange=60,
 HeloSwitchRange=10,
 PlaneSwitchRange=25,
+SAMSwitchRange=75,
 SwitchAAA=true,
+SwitchSAM=false,
+MantisHandlingSAM=true
 }
 function TIRESIAS:New()
 local self=BASE:Inherit(self,FSM:New())
@@ -56185,16 +56198,16 @@ self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Status","*")
 self:AddTransition("*","Stop","Stopped")
-self.ExceptionSet=SET_GROUP:New():Clear(false)
 self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self.lid=string.format("TIRESIAS %s | ",self.version)
 self:I(self.lid.."Managing ground groups!")
 self:__Start(1)
 return self
 end
-function TIRESIAS:SetActivationRanges(HeloMiles,PlaneMiles)
+function TIRESIAS:SetActivationRanges(HeloMiles,PlaneMiles,SAMMiles)
 self.HeloSwitchRange=HeloMiles or 10
 self.PlaneSwitchRange=PlaneMiles or 25
+self.SAMSwitchRange=SAMMiles or 75
 return self
 end
 function TIRESIAS:SetAAARanges(FiringRange,SwitchAAA)
@@ -56202,8 +56215,18 @@ self.AAARange=FiringRange or 60
 self.SwitchAAA=(SwitchAAA==false)and false or true
 return self
 end
+function TIRESIAS:SetSwitchSAM(OnOff,MantisPresent)
+if OnOff==nil or OnOff==false then
+self.SwitchSAM=false
+else
+self.SwitchSAM=true
+end
+self.MantisHandlingSAM=MantisPresent or true
+return self
+end
 function TIRESIAS:AddExceptionSet(Set)
 self:T(self.lid.."AddExceptionSet")
+if not self.ExceptionSet then self.ExceptionSet=SET_GROUP:New():Clear(false)end
 local exceptions=self.ExceptionSet
 Set:ForEachGroupAlive(
 function(grp)
@@ -56259,6 +56282,7 @@ function TIRESIAS:_InitGroups()
 self:T(self.lid.."_InitGroups")
 local EngageRange=self.AAARange
 local SwitchAAA=self.SwitchAAA
+local SwitchSAM=self.SwitchSAM
 self.AAASet:ForEachGroupAlive(
 function(grp)
 if not grp.Tiresias then
@@ -56276,7 +56300,7 @@ exception=false,
 AIOff=SwitchAAA,
 }
 end
-if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias and(grp.Tiresias.exception==false)then
 if grp.Tiresias.invisible and grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp.Tiresias.invisible=true
@@ -56317,15 +56341,18 @@ grp:SetCommandInvisible(true)
 grp.Tiresias={
 type="SAM",
 invisible=true,
-exception=false,
+exception=not SwitchSAM,
+AIOff=SwitchSAM,
 }
 end
-if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias and(grp.Tiresias.exception==false)then
 if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp.Tiresias.invisible=true
+grp:SetAIOnOff(SwitchSAM)
 end
 end
+BASE:I(string.format("Init/Switch off SAM %s (Exception %s)",grp:GetName(),tostring(grp.Tiresias.exception)))
 end
 )
 return self
@@ -56350,18 +56377,22 @@ end
 function TIRESIAS:_SwitchOnGroups(group,radius)
 self:T(self.lid.."_SwitchOnGroups "..group:GetName().." Radius "..radius.." NM")
 local zone=ZONE_GROUP:New("Zone-"..group:GetName(),group,UTILS.NMToMeters(radius))
+local samzone=ZONE_GROUP:New("ZoneSAM-"..group:GetName(),group,UTILS.NMToMeters(self.SAMSwitchRange))
 local ground=SET_GROUP:New():FilterCategoryGround():FilterZones({zone}):FilterOnce()
+local sam=SET_GROUP:New():FilterFunction(self._FilterSAM):FilterZones({samzone}):FilterOnce()
 local count=ground:CountAlive()
 if self.debug then
 local text=string.format("There are %d groups around this plane or helo!",count)
 self:I(text)
 end
 local SwitchAAA=self.SwitchAAA
+local SwitchSAM=self.SwitchSAM
+local MantisHandling=self.MantisHandlingSAM
 if ground:CountAlive()>0 then
 ground:ForEachGroupAlive(
 function(grp)
 local name=grp:GetName()
-if grp.Tiresias and grp.Tiresias.type and(not grp.Tiresias.exception==true)then
+if grp.Tiresias and grp.Tiresias.exception and(grp.Tiresias.exception==false)then
 if grp.Tiresias.invisible==true then
 grp:SetCommandInvisible(false)
 grp.Tiresias.invisible=false
@@ -56370,13 +56401,35 @@ if grp.Tiresias.type=="Vehicle"and grp.Tiresias.AIOff and grp.Tiresias.AIOff==tr
 grp:SetAIOn()
 grp.Tiresias.AIOff=false
 end
-if SwitchAAA and grp.Tiresias.type=="AAA"and grp.Tiresias.AIOff and grp.Tiresias.AIOff==true then
+if(SwitchAAA)and(grp.Tiresias.type=="AAA")and grp.Tiresias.AIOff and grp.Tiresias.AIOff==true then
 grp:SetAIOn()
 grp:EnableEmission(true)
 grp.Tiresias.AIOff=false
 end
+BASE:I(string.format("TIRESIAS - Switch on %s %s (Exception %s)",tostring(grp.Tiresias.type),grp:GetName(),tostring(grp.Tiresias.exception)))
 else
 BASE:T("TIRESIAS - This group "..tostring(name).." has not been initialized or is an exception!")
+end
+end
+)
+end
+if sam:CountAlive()>0 and self.SwitchSAM==true then
+sam:ForEachGroupAlive(
+function(grp)
+local name=grp:GetName()
+BASE:I(string.format("%s - %s",name,tostring(SwitchSAM)))
+UTILS.PrintTableToLog(grp.Tiresias)
+if SwitchSAM and grp.Tiresias.type=="SAM"and grp.Tiresias.AIOff and grp.Tiresias.AIOff==true then
+BASE:I("First check passed")
+if grp.Tiresias.exception~=true then
+BASE:I("Second check passed")
+grp:SetAIOn()
+if not MantisHandling then
+grp:EnableEmission(true)
+end
+grp.Tiresias.AIOff=false
+BASE:I(string.format("TIRESIAS - Switch on %s %s (Exception %s)",tostring(grp.Tiresias.type),grp:GetName(),tostring(grp.Tiresias.exception)))
+end
 end
 end
 )
@@ -56448,14 +56501,21 @@ AIOff=SwitchAAA,
 }
 end
 end
+local SwitchSAM=self.SwitchSAM
+local MantisManages=self.MantisHandlingSAM
 function SAMSet:OnAfterAdded(From,Event,To,ObjectName,Object)
 if Object and Object:IsAlive()then
 BASE:I("TIRESIAS: SAM Object Added: "..Object:GetName())
 Object:SetCommandInvisible(true)
+if SwitchSAM then
+Object:SetAIOff()
+Object:EnableEmission(not MantisManages)
+end
 Object.Tiresias={
 type="SAM",
 invisible=true,
-exception=false,
+exception=not SwitchSAM,
+AIOff=SwitchSAM,
 }
 end
 end
@@ -77755,10 +77815,10 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewSTRIKE(Target,Altitude)
+function AUFTRAG:NewSTRIKE(Target,Altitude,EngageWeaponType)
 local mission=AUFTRAG:New(AUFTRAG.Type.STRIKE)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.Auto
+mission.engageWeaponType=EngageWeaponType or ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 2000)
 mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
@@ -77770,10 +77830,10 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewBOMBING(Target,Altitude)
+function AUFTRAG:NewBOMBING(Target,Altitude,EngageWeaponType)
 local mission=AUFTRAG:New(AUFTRAG.Type.BOMBING)
 mission:_TargetFromObject(Target)
-mission.engageWeaponType=ENUMS.WeaponFlag.Auto
+mission.engageWeaponType=EngageWeaponType or ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.missionTask=ENUMS.MissionTask.GROUNDATTACK
@@ -110796,6 +110856,16 @@ self:T(self.lid.."SetTankerAndAWACSInvisible")
 self.TankerInvisible=Switch
 return self
 end
+function EASYGCICAP:_CountAliveAuftrags()
+local alive=0
+for _,_auftrag in pairs(self.ListOfAuftrag)do
+local auftrag=_auftrag
+if auftrag and(not(auftrag:IsCancelled()or auftrag:IsDone()or auftrag:IsOver()))then
+alive=alive+1
+end
+end
+return alive
+end
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
 self:T(self.lid.."SetMaxAliveMissions")
 self.MaxAliveMissions=Maxiumum or 8
@@ -111290,7 +111360,7 @@ local maxsize=self.maxinterceptsize
 local repeatsonfailure=self.repeatsonfailure
 local wings=self.wings
 local ctlpts=self.ManagedCP
-local MaxAliveMissions=self.MaxAliveMissions*self.capgrouping
+local MaxAliveMissions=self.MaxAliveMissions
 local nogozoneset=self.NoGoZoneSet
 local ReadyFlightGroups=self.ReadyFlightGroups
 if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
@@ -111344,8 +111414,9 @@ local text=string.format("Closest Airwing is %s",targetawname)
 local m=MESSAGE:New(text,10,"CAPGCI"):ToAllIf(self.debug):ToLog()
 if targetairwing then
 local AssetCount=targetairwing:CountAssetsOnMission(MissionTypes,Cohort)
+local missioncount=self:_CountAliveAuftrags()
 self:T(self.lid.." Assets on Mission "..AssetCount)
-if AssetCount<=MaxAliveMissions then
+if missioncount<MaxAliveMissions then
 local repeats=repeatsonfailure
 local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetMissionRange(150)
@@ -111487,12 +111558,14 @@ local threatcount=#self.Intel.Clusters or 0
 local text="GCICAP "..self.alias
 text=text.."\nWings: "..wings.."\nSquads: "..squads.."\nCapPoints: "..caps.."\nAssets on Mission: "..assets.."\nAssets in Stock: "..instock
 text=text.."\nThreats: "..threatcount
-text=text.."\nMissions: "..capmission+interceptmission
+text=text.."\nAirWing managed Missions: "..capmission+awacsmission+tankermission+reconmission
 text=text.."\n - CAP: "..capmission
-text=text.."\n - Intercept: "..interceptmission
 text=text.."\n - AWACS: "..awacsmission
 text=text.."\n - TANKER: "..tankermission
 text=text.."\n - Recon: "..reconmission
+text=text.."\nSelf managed Missions:"
+text=text.."\n - Mission Limit: "..self.MaxAliveMissions
+text=text.."\n - Alert5+Intercept "..self:_CountAliveAuftrags()
 MESSAGE:New(text,15,"GCICAP"):ToAll():ToLogIf(self.debug)
 end
 self:__Status(30)
