@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-06T17:32:29+01:00-04f8f6d512fa7e297fa9ac829ff01514ea8cfa97 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-08T13:04:30+01:00-63c68d729b0e6be295fb0b346999bb75d1b22e72 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13083,6 +13083,13 @@ if ObjectName then
 local size=1
 if Event.IniDCSGroup then
 size=Event.IniDCSGroup:getSize()
+elseif Event.IniDCSGroupName then
+local grp=Group.getByName(Event.IniDCSGroupName)
+if grp then
+size=grp:getSize()
+end
+elseif Object:IsAlive()then
+size=Object:CountAliveUnits()
 end
 if size==1 then
 self:Remove(ObjectName)
