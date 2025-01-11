@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-08T13:04:30+01:00-63c68d729b0e6be295fb0b346999bb75d1b22e72 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T10:14:44+01:00-30bedb39f1bcdfc4cc734ffec630a34c9a5d8747 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28963,6 +28963,7 @@ local VCL=nil
 local VCN=nil
 local FGL=false
 local template=self:GetTemplate()
+if template then
 if template.AddPropAircraft then
 if template.AddPropAircraft.STN_L16 then
 STN=template.AddPropAircraft.STN_L16
@@ -28977,6 +28978,7 @@ FGL=template.datalinks.Link16.settings.flightLead
 end
 if template.datalinks and template.datalinks.SADL and template.datalinks.SADL.settings then
 FGL=template.datalinks.SADL.settings.flightLead
+end
 end
 return STN,VCL,VCN,FGL
 end
