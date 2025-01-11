@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-08T13:05:28+01:00-5f57c71c62534aa8e6bfe759379d0bd0718f7bb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T10:17:39+01:00-9f1f6af6472855d838daee166bbcd8b90432a0d5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16153,7 +16153,7 @@ end
 end
 end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
-if Event.IniDCSUnit then
+if Event.IniDCSGroup then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 if Event.IniDCSGroup:getSize()==1 then
@@ -29393,6 +29393,7 @@ local VCL=nil
 local VCN=nil
 local FGL=false
 local template=self:GetTemplate()
+if template then
 if template.AddPropAircraft then
 if template.AddPropAircraft.STN_L16 then
 STN=template.AddPropAircraft.STN_L16
@@ -29407,6 +29408,7 @@ FGL=template.datalinks.Link16.settings.flightLead
 end
 if template.datalinks and template.datalinks.SADL and template.datalinks.SADL.settings then
 FGL=template.datalinks.SADL.settings.flightLead
+end
 end
 return STN,VCL,VCN,FGL
 end
