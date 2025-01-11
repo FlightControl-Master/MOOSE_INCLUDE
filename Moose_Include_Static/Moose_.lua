@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-08T13:05:28+01:00-5f57c71c62534aa8e6bfe759379d0bd0718f7bb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T10:04:44+01:00-27571cc22fa81d0c9ef2ae00b8844436d6887632 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16153,7 +16153,7 @@ end
 end
 end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
-if Event.IniDCSUnit then
+if Event.IniDCSGroup then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 if Event.IniDCSGroup:getSize()==1 then
