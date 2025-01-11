@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T10:17:39+01:00-9f1f6af6472855d838daee166bbcd8b90432a0d5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T23:38:15+01:00-acfe1a856ec76d354b4e66608b98b07142b3e110 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -98408,7 +98408,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.3"
+OPSGROUP.version="1.0.4"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -98757,21 +98757,43 @@ return false
 end
 return nil
 end
-function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord)
+function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord,SurfaceTypes)
 local coordInRange=nil
 RefCoord=RefCoord or self:GetCoordinate()
 local weapondata=self:GetWeaponData(WeaponBitType)
+local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30}
+local function _checkSurface(point)
+if SurfaceTypes then
+local stype=land.getSurfaceType(point)
+for _,sf in pairs(SurfaceTypes)do
+if sf==stype then
+return true
+end
+end
+return false
+else
+return true
+end
+end
 if weapondata then
-local heading=RefCoord:HeadingTo(TargetCoord)
+local heading=TargetCoord:HeadingTo(RefCoord)
 local dist=RefCoord:Get2DDistance(TargetCoord)
+local range=nil
 if dist>weapondata.RangeMax then
-local d=(dist-weapondata.RangeMax)*1.05
-coordInRange=RefCoord:Translate(d,heading)
-self:T(self.lid..string.format("Out of max range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(WeaponBitType)))
+range=weapondata.RangeMax
+self:T(self.lid..string.format("Out of max range = %.1f km by %.1f km for weapon %s",weapondata.RangeMax/1000,(weapondata.RangeMax-dist)/1000,tostring(WeaponBitType)))
 elseif dist<weapondata.RangeMin then
-local d=(dist-weapondata.RangeMin)*1.05
-coordInRange=RefCoord:Translate(d,heading)
-self:T(self.lid..string.format("Out of min range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(WeaponBitType)))
+range=weapondata.RangeMin
+self:T(self.lid..string.format("Out of min range = %.1f km by %.1f km for weapon %s",weapondata.RangeMin/1000,(weapondata.RangeMin-dist)/1000,tostring(WeaponBitType)))
+end
+if range then
+for _,delta in pairs(dh)do
+local h=heading+delta
+coordInRange=TargetCoord:Translate(range*1.02,h)
+if _checkSurface(coordInRange)then
+break
+end
+end
 else
 self:T(self.lid..string.format("Already in range for weapon %s",tostring(WeaponBitType)))
 end
@@ -98811,9 +98833,10 @@ end
 self.checkzones:AddZone(CheckZone)
 return self
 end
-function OPSGROUP:AddWeaponRange(RangeMin,RangeMax,BitType)
-RangeMin=UTILS.NMToMeters(RangeMin or 0)
-RangeMax=UTILS.NMToMeters(RangeMax or 10)
+function OPSGROUP:AddWeaponRange(RangeMin,RangeMax,BitType,ConversionToMeters)
+ConversionToMeters=ConversionToMeters or UTILS.NMToMeters
+RangeMin=ConversionToMeters(RangeMin or 0)
+RangeMax=ConversionToMeters(RangeMax or 10)
 local weapon={}
 weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
 weapon.RangeMax=RangeMax
@@ -101111,7 +101134,7 @@ local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType)
 if inRange then
 waypointcoord=self:GetCoordinate(true)
 else
-local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord)
+local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord,surfacetypes)
 if coordInRange then
 local waypoint=nil
 if self:IsFlightgroup()then
@@ -101156,6 +101179,7 @@ local formation=mission.optionFormation
 if d<1000 or mission.type==AUFTRAG.Type.RELOCATECOHORT then
 formation=ENUMS.Formation.Vehicle.OffRoad
 end
+waypointcoord:MarkToAll("Bla Bla")
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,formation,false)
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
