@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T10:14:44+01:00-30bedb39f1bcdfc4cc734ffec630a34c9a5d8747 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-12T17:09:31+01:00-def622a02c01dc15e5f8f68a3458f4f6de27cc83 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67575,7 +67575,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.22"
+CTLD.version="1.1.23"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70546,11 +70546,12 @@ local randomcoord=zone:GetRandomCoordinate(10,30*factor,Surfacetypes):GetVec2()
 if PreciseLocation then
 randomcoord=zone:GetCoordinate():GetVec2()
 end
+local randompositions=not PreciseLocation
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitRandomizeUnits(true,20,2)
+:InitRandomizeUnits(randompositions,20,2)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
 if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
