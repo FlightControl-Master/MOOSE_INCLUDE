@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-12T17:10:32+01:00-93c307d9dd2209225355f88e639e4b4d6b7d94a3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-12T23:54:44+01:00-f6e6dcac9a5a541cf2cf65f890fdeb09161ee742 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79402,6 +79402,7 @@ mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionAlarm=0
 mission.missionFraction=0.0
+mission.missionWaypointRadius=0.0
 mission.dTevaluate=8*60
 mission.categories={AUFTRAG.Category.GROUND,AUFTRAG.Category.NAVAL}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -98762,10 +98763,10 @@ function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord,Surfac
 local coordInRange=nil
 RefCoord=RefCoord or self:GetCoordinate()
 local weapondata=self:GetWeaponData(WeaponBitType)
-local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30}
+local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30,-35,35,-40,40,-45,45,-50,50,-55,55,-60,60,-65,65,-70,70,-75,75,-80,80}
 local function _checkSurface(point)
 if SurfaceTypes then
-local stype=land.getSurfaceType(point)
+local stype=point:GetSurfaceType()
 for _,sf in pairs(SurfaceTypes)do
 if sf==stype then
 return true
@@ -98790,7 +98791,7 @@ end
 if range then
 for _,delta in pairs(dh)do
 local h=heading+delta
-coordInRange=TargetCoord:Translate(range*1.02,h)
+coordInRange=TargetCoord:Translate(range,h)
 if _checkSurface(coordInRange)then
 break
 end
@@ -101131,9 +101132,8 @@ end
 end
 elseif mission.type==AUFTRAG.Type.ARTY then
 local targetcoord=mission:GetTargetCoordinate()
-local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType)
+local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType,waypointcoord)
 if inRange then
-waypointcoord=self:GetCoordinate(true)
 else
 local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord,surfacetypes)
 if coordInRange then
@@ -101180,7 +101180,6 @@ local formation=mission.optionFormation
 if d<1000 or mission.type==AUFTRAG.Type.RELOCATECOHORT then
 formation=ENUMS.Formation.Vehicle.OffRoad
 end
-waypointcoord:MarkToAll("Bla Bla")
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,formation,false)
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
