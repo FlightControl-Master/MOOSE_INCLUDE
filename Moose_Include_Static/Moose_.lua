@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-08T13:06:10+01:00-0e91a658b3b1e2153de63b42cded4750a5befb87 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-12T17:12:09+01:00-c855198634c0553c8468e1727f1c3a528ab37713 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16033,7 +16033,7 @@ end
 end
 end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
-if Event.IniDCSUnit then
+if Event.IniDCSGroup then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 if Event.IniDCSGroup:getSize()==1 then
@@ -29276,6 +29276,7 @@ local VCL=nil
 local VCN=nil
 local FGL=false
 local template=self:GetTemplate()
+if template then
 if template.AddPropAircraft then
 if template.AddPropAircraft.STN_L16 then
 STN=template.AddPropAircraft.STN_L16
@@ -29290,6 +29291,7 @@ FGL=template.datalinks.Link16.settings.flightLead
 end
 if template.datalinks and template.datalinks.SADL and template.datalinks.SADL.settings then
 FGL=template.datalinks.SADL.settings.flightLead
+end
 end
 return STN,VCL,VCN,FGL
 end
@@ -70004,7 +70006,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.22"
+CTLD.version="1.1.23"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72975,11 +72977,12 @@ local randomcoord=zone:GetRandomCoordinate(10,30*factor,Surfacetypes):GetVec2()
 if PreciseLocation then
 randomcoord=zone:GetCoordinate():GetVec2()
 end
+local randompositions=not PreciseLocation
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitRandomizeUnits(true,20,2)
+:InitRandomizeUnits(randompositions,20,2)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
 if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
@@ -97022,7 +97025,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.3"
+OPSGROUP.version="1.0.4"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -97371,21 +97374,43 @@ return false
 end
 return nil
 end
-function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord)
+function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord,SurfaceTypes)
 local coordInRange=nil
 RefCoord=RefCoord or self:GetCoordinate()
 local weapondata=self:GetWeaponData(WeaponBitType)
+local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30}
+local function _checkSurface(point)
+if SurfaceTypes then
+local stype=land.getSurfaceType(point)
+for _,sf in pairs(SurfaceTypes)do
+if sf==stype then
+return true
+end
+end
+return false
+else
+return true
+end
+end
 if weapondata then
-local heading=RefCoord:HeadingTo(TargetCoord)
+local heading=TargetCoord:HeadingTo(RefCoord)
 local dist=RefCoord:Get2DDistance(TargetCoord)
+local range=nil
 if dist>weapondata.RangeMax then
-local d=(dist-weapondata.RangeMax)*1.05
-coordInRange=RefCoord:Translate(d,heading)
-self:T(self.lid..string.format("Out of max range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(WeaponBitType)))
+range=weapondata.RangeMax
+self:T(self.lid..string.format("Out of max range = %.1f km by %.1f km for weapon %s",weapondata.RangeMax/1000,(weapondata.RangeMax-dist)/1000,tostring(WeaponBitType)))
 elseif dist<weapondata.RangeMin then
-local d=(dist-weapondata.RangeMin)*1.05
-coordInRange=RefCoord:Translate(d,heading)
-self:T(self.lid..string.format("Out of min range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(WeaponBitType)))
+range=weapondata.RangeMin
+self:T(self.lid..string.format("Out of min range = %.1f km by %.1f km for weapon %s",weapondata.RangeMin/1000,(weapondata.RangeMin-dist)/1000,tostring(WeaponBitType)))
+end
+if range then
+for _,delta in pairs(dh)do
+local h=heading+delta
+coordInRange=TargetCoord:Translate(range*1.02,h)
+if _checkSurface(coordInRange)then
+break
+end
+end
 else
 self:T(self.lid..string.format("Already in range for weapon %s",tostring(WeaponBitType)))
 end
@@ -97425,9 +97450,10 @@ end
 self.checkzones:AddZone(CheckZone)
 return self
 end
-function OPSGROUP:AddWeaponRange(RangeMin,RangeMax,BitType)
-RangeMin=UTILS.NMToMeters(RangeMin or 0)
-RangeMax=UTILS.NMToMeters(RangeMax or 10)
+function OPSGROUP:AddWeaponRange(RangeMin,RangeMax,BitType,ConversionToMeters)
+ConversionToMeters=ConversionToMeters or UTILS.NMToMeters
+RangeMin=ConversionToMeters(RangeMin or 0)
+RangeMax=ConversionToMeters(RangeMax or 10)
 local weapon={}
 weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
 weapon.RangeMax=RangeMax
@@ -99725,7 +99751,7 @@ local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType)
 if inRange then
 waypointcoord=self:GetCoordinate(true)
 else
-local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord)
+local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord,surfacetypes)
 if coordInRange then
 local waypoint=nil
 if self:IsFlightgroup()then
@@ -99770,6 +99796,7 @@ local formation=mission.optionFormation
 if d<1000 or mission.type==AUFTRAG.Type.RELOCATECOHORT then
 formation=ENUMS.Formation.Vehicle.OffRoad
 end
+waypointcoord:MarkToAll("Bla Bla")
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,formation,false)
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
@@ -113476,6 +113503,135 @@ UsePowerShell=false,
 }
 MSRS.version="0.3.3"
 MSRS.Voices={
+Amazon={
+Generative={
+en_AU={
+Olivia="Olivia",
+},
+en_GB={
+Amy="Amy",
+},
+en_US={
+Danielle="Danielle",
+Joanna="Joanna",
+Ruth="Ruth",
+Stephen="Stephen",
+},
+fr_FR={
+["Léa"]="Léa",
+["Rémi"]="Rémi",
+},
+de_DE={
+Vicki="Vicki",
+Daniel="Daniel",
+},
+it_IT={
+Bianca="Bianca",
+Adriano="Adriano",
+},
+es_ES={
+Lucia="Lucia",
+Sergio="Sergio",
+},
+},
+LongForm={
+en_US={
+Danielle="Danielle",
+Gregory="Gregory",
+Ivy="Ivy",
+Ruth="Ruth",
+Patrick="Patrick",
+},
+es_ES={
+Alba="Alba",
+["Raúl"]="Raúl",
+},
+},
+Neural={
+en_AU={
+Olivia="Olivia",
+},
+en_GB={
+Amy="Amy",
+Emma="Emma",
+Brian="Brian",
+Arthur="Arthur",
+},
+en_US={
+Danielle="Danielle",
+Gregory="Gregory",
+Ivy="Ivy",
+Joanna="Joanna",
+Kendra="Kendra",
+Kimberly="Kimberly",
+Salli="Salli",
+Joey="Joey",
+Kevin="Kevin",
+Ruth="Ruth",
+Stephen="Stephen",
+},
+fr_FR={
+["Léa"]="Léa",
+["Rémi"]="Rémi",
+},
+de_DE={
+Vicki="Vicki",
+Daniel="Daniel",
+},
+it_IT={
+Bianca="Bianca",
+Adriano="Adriano",
+},
+es_ES={
+Lucia="Lucia",
+Sergio="Sergio",
+},
+},
+Standard={
+en_AU={
+Nicole="Nicole",
+Russel="Russel",
+},
+en_GB={
+Amy="Amy",
+Emma="Emma",
+Brian="Brian",
+},
+en_IN={
+Aditi="Aditi",
+Raveena="Raveena",
+},
+en_US={
+Ivy="Ivy",
+Joanna="Joanna",
+Kendra="Kendra",
+Kimberly="Kimberly",
+Salli="Salli",
+Joey="Joey",
+Kevin="Kevin",
+},
+fr_FR={
+Celine="Celine",
+["Léa"]="Léa",
+Mathieu="Mathieu",
+},
+de_DE={
+Marlene="Marlene",
+Vicki="Vicki",
+Hans="Hans",
+},
+it_IT={
+Carla="Carla",
+Bianca="Bianca",
+Giorgio="Giorgio",
+},
+es_ES={
+Conchita="Conchita",
+Lucia="Lucia",
+Enrique="Enrique",
+},
+},
+},
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
 ["Hazel"]="Microsoft Hazel Desktop",
@@ -114099,7 +114255,7 @@ command=command..string.format(' --ssml -G "%s"',pops.credentials)
 pwsh=pwsh..string.format(' --ssml -G "%s"',pops.credentials)
 elseif self.provider==MSRS.Provider.WINDOWS then
 else
-self:E("ERROR: SRS only supports WINWOWS and GOOGLE as TTS providers! Use DCS-gRPC backend for other providers such as ")
+self:E("ERROR: SRS only supports WINDOWS and GOOGLE as TTS providers! Use DCS-gRPC backend for other providers such as AWS and Azure.")
 end
 if not UTILS.FileExists(fullPath)then
 self:E("ERROR: MSRS SRS executable does not exist! FullPath="..fullPath)
