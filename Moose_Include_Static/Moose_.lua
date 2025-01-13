@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T11:46:56+01:00-4953000565cc19540330ee9b5b4d1f5d3b322a8d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T12:38:53+01:00-1b2522072947f5bbfa39d0f95a820dfbfeb7dbd8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -81754,7 +81754,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.69",
+version="0.2.70",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -82721,7 +82721,7 @@ self.MaxAIonCAP=MaxAICap or 4
 self.AICAPCAllName=Callsign or CALLSIGN.Aircraft.Colt
 return self
 end
-function AWACS:SetEscort(EscortNumber,Formation,OffsetVector)
+function AWACS:SetEscort(EscortNumber,Formation,OffsetVector,EscortEngageMaxDistance)
 self:T(self.lid.."SetEscort")
 if EscortNumber and EscortNumber>0 then
 self.HasEscorts=true
@@ -82731,7 +82731,8 @@ self.HasEscorts=false
 self.EscortNumber=0
 end
 self.EscortFormation=Formation
-self.OffsetVec=OffsetVector or{x=500,y=0,z=500}
+self.OffsetVec=OffsetVector or{x=500,y=100,z=500}
+self.EscortEngageMaxDistance=EscortEngageMaxDistance or 45
 return self
 end
 function AWACS:_MessageVector(GID,Tag,Coordinate,Angels)
@@ -82761,17 +82762,8 @@ self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
-local OffsetX=500
-local OffsetY=500
-local OffsetZ=500
-if self.OffsetVec then
-OffsetX=self.OffsetVec.x
-OffsetY=self.OffsetVec.y
-OffsetZ=self.OffsetVec.z
-end
-for i=1,self.EscortNumber do
-local escort=AUFTRAG:NewESCORT(group,{x=-OffsetX*((i+(i%2))/2),y=OffsetY,z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},45,{"Air"})
-escort:SetRequiredAssets(1)
+local escort=AUFTRAG:NewESCORT(group,self.OffsetVec,self.EscortEngageMaxDistance,{"Air"})
+escort:SetRequiredAssets(self.EscortNumber)
 escort:SetTime(nil,timeonstation)
 if self.Escortformation then
 escort:SetFormation(self.Escortformation)
@@ -82780,10 +82772,9 @@ escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
-self.EscortMissionReplacement[i]=escort
+self.EscortMissionReplacement[1]=escort
 else
-self.EscortMission[i]=escort
-end
+self.EscortMission[1]=escort
 end
 return self
 end
