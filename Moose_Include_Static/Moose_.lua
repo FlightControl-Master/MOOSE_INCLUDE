@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-12T17:12:09+01:00-c855198634c0553c8468e1727f1c3a528ab37713 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T11:49:54+01:00-b82e15b2ce768eb2227273f0704e484704e12f16 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78018,6 +78018,7 @@ mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionAlarm=0
 mission.missionFraction=0.0
+mission.missionWaypointRadius=0.0
 mission.dTevaluate=8*60
 mission.categories={AUFTRAG.Category.GROUND,AUFTRAG.Category.NAVAL}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -80369,7 +80370,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.68",
+version="0.2.69",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -81336,7 +81337,7 @@ self.MaxAIonCAP=MaxAICap or 4
 self.AICAPCAllName=Callsign or CALLSIGN.Aircraft.Colt
 return self
 end
-function AWACS:SetEscort(EscortNumber)
+function AWACS:SetEscort(EscortNumber,Formation,OffsetVector)
 self:T(self.lid.."SetEscort")
 if EscortNumber and EscortNumber>0 then
 self.HasEscorts=true
@@ -81345,6 +81346,8 @@ else
 self.HasEscorts=false
 self.EscortNumber=0
 end
+self.EscortFormation=Formation
+self.OffsetVec=OffsetVector or{x=500,y=0,z=500}
 return self
 end
 function AWACS:_MessageVector(GID,Tag,Coordinate,Angels)
@@ -81374,10 +81377,21 @@ self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
+local OffsetX=500
+local OffsetY=500
+local OffsetZ=500
+if self.OffsetVec then
+OffsetX=self.OffsetVec.x
+OffsetY=self.OffsetVec.y
+OffsetZ=self.OffsetVec.z
+end
 for i=1,self.EscortNumber do
-local escort=AUFTRAG:NewESCORT(group,{x=-100*((i+(i%2))/2),y=0,z=(100+100*((i+(i%2))/2))*(-1)^i},45,{"Air"})
+local escort=AUFTRAG:NewESCORT(group,{x=-OffsetX*((i+(i%2))/2),y=OffsetY,z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},45,{"Air"})
 escort:SetRequiredAssets(1)
 escort:SetTime(nil,timeonstation)
+if self.Escortformation then
+escort:SetFormation(self.Escortformation)
+end
 escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
@@ -82605,6 +82619,10 @@ basemenu=basemenu,
 checkin=checkin,
 }
 self.clientmenus:Push(menus,cgrpname)
+local GID,hasentry=self:_GetManagedGrpID(cgrp)
+if hasentry then
+self:_CheckOut(cgrp,GID,true)
+end
 end
 end
 else
@@ -84298,17 +84316,18 @@ else
 report:Add("***** Cannot obtain (yet) this missions OpsGroup!")
 end
 report:Add("====================")
+local RESMission
 if self.ShiftChangeEscortsFlag and self.ShiftChangeEscortsRequested then
-ESmission=self.EscortMissionReplacement[i]
-local esstatus=ESmission:GetState()
-local ESmissiontime=(timer.getTime()-self.EscortsTimeStamp)
-local ESTOSLeft=UTILS.Round((((self.EscortsTimeOnStation+self.ShiftChangeTime)*3600)-ESmissiontime),0)
+RESMission=self.EscortMissionReplacement[i]
+local esstatus=RESMission:GetState()
+local RESMissiontime=(timer.getTime()-self.EscortsTimeStamp)
+local ESTOSLeft=UTILS.Round((((self.EscortsTimeOnStation+self.ShiftChangeTime)*3600)-RESMissiontime),0)
 ESTOSLeft=UTILS.Round(ESTOSLeft/60,0)
 local ChangeTime=UTILS.Round(((self.ShiftChangeTime*3600)/60),0)
 report:Add("ESCORTS REPLACEMENT:")
 report:Add(string.format("Auftrag Status: %s",esstatus))
 report:Add(string.format("TOS Left: %d min",ESTOSLeft))
-local OpsGroups=ESmission:GetOpsGroups()
+local OpsGroups=RESMission:GetOpsGroups()
 local OpsGroup=self:_GetAliveOpsGroupFromTable(OpsGroups)
 if OpsGroup then
 local OpsName=OpsGroup:GetName()or"Unknown"
@@ -84319,11 +84338,11 @@ report:Add(string.format("Mission FG State %s",OpsGroup:GetState()))
 else
 report:Add("***** Cannot obtain (yet) this missions OpsGroup!")
 end
-if ESmission:IsExecuting()then
+if RESMission and RESMission:IsExecuting()then
 self.ShiftChangeEscortsFlag=false
 self.ShiftChangeEscortsRequested=false
 if ESmission and ESmission:IsNotOver()then
-ESmission:Cancel()
+ESmission:__Cancel(1)
 end
 self.EscortMission[i]=self.EscortMissionReplacement[i]
 self.EscortMissionReplacement[i]=nil
@@ -97378,10 +97397,10 @@ function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord,Surfac
 local coordInRange=nil
 RefCoord=RefCoord or self:GetCoordinate()
 local weapondata=self:GetWeaponData(WeaponBitType)
-local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30}
+local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30,-35,35,-40,40,-45,45,-50,50,-55,55,-60,60,-65,65,-70,70,-75,75,-80,80}
 local function _checkSurface(point)
 if SurfaceTypes then
-local stype=land.getSurfaceType(point)
+local stype=point:GetSurfaceType()
 for _,sf in pairs(SurfaceTypes)do
 if sf==stype then
 return true
@@ -97406,7 +97425,7 @@ end
 if range then
 for _,delta in pairs(dh)do
 local h=heading+delta
-coordInRange=TargetCoord:Translate(range*1.02,h)
+coordInRange=TargetCoord:Translate(range,h)
 if _checkSurface(coordInRange)then
 break
 end
@@ -99747,9 +99766,8 @@ end
 end
 elseif mission.type==AUFTRAG.Type.ARTY then
 local targetcoord=mission:GetTargetCoordinate()
-local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType)
+local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType,waypointcoord)
 if inRange then
-waypointcoord=self:GetCoordinate(true)
 else
 local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord,surfacetypes)
 if coordInRange then
@@ -99796,7 +99814,6 @@ local formation=mission.optionFormation
 if d<1000 or mission.type==AUFTRAG.Type.RELOCATECOHORT then
 formation=ENUMS.Formation.Vehicle.OffRoad
 end
-waypointcoord:MarkToAll("Bla Bla")
 waypoint=ARMYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,formation,false)
 elseif self:IsNavygroup()then
 waypoint=NAVYGROUP.AddWaypoint(self,waypointcoord,SpeedToMission,uid,UTILS.MetersToFeet(mission.missionAltitude or self.altitudeCruise),false)
