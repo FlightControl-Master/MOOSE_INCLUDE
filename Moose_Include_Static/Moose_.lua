@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T11:49:54+01:00-b82e15b2ce768eb2227273f0704e484704e12f16 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T18:01:31+01:00-083bf13fe427e250ff4115cdfbc4e12d3a6a980c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -80370,7 +80370,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.69",
+version="0.2.70",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -81337,7 +81337,7 @@ self.MaxAIonCAP=MaxAICap or 4
 self.AICAPCAllName=Callsign or CALLSIGN.Aircraft.Colt
 return self
 end
-function AWACS:SetEscort(EscortNumber,Formation,OffsetVector)
+function AWACS:SetEscort(EscortNumber,Formation,OffsetVector,EscortEngageMaxDistance)
 self:T(self.lid.."SetEscort")
 if EscortNumber and EscortNumber>0 then
 self.HasEscorts=true
@@ -81347,7 +81347,8 @@ self.HasEscorts=false
 self.EscortNumber=0
 end
 self.EscortFormation=Formation
-self.OffsetVec=OffsetVector or{x=500,y=0,z=500}
+self.OffsetVec=OffsetVector or{x=500,y=100,z=500}
+self.EscortEngageMaxDistance=EscortEngageMaxDistance or 45
 return self
 end
 function AWACS:_MessageVector(GID,Tag,Coordinate,Angels)
@@ -81377,17 +81378,8 @@ self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
-local OffsetX=500
-local OffsetY=500
-local OffsetZ=500
-if self.OffsetVec then
-OffsetX=self.OffsetVec.x
-OffsetY=self.OffsetVec.y
-OffsetZ=self.OffsetVec.z
-end
-for i=1,self.EscortNumber do
-local escort=AUFTRAG:NewESCORT(group,{x=-OffsetX*((i+(i%2))/2),y=OffsetY,z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},45,{"Air"})
-escort:SetRequiredAssets(1)
+local escort=AUFTRAG:NewESCORT(group,self.OffsetVec,self.EscortEngageMaxDistance,{"Air"})
+escort:SetRequiredAssets(self.EscortNumber)
 escort:SetTime(nil,timeonstation)
 if self.Escortformation then
 escort:SetFormation(self.Escortformation)
@@ -81396,10 +81388,9 @@ escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
-self.EscortMissionReplacement[i]=escort
+self.EscortMissionReplacement[1]=escort
 else
-self.EscortMission[i]=escort
-end
+self.EscortMission[1]=escort
 end
 return self
 end
@@ -105494,7 +105485,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.24"
+PLAYERTASK.version="0.1.25"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -106148,6 +106139,8 @@ InfoHasCoordinate=false,
 UseTypeNames=false,
 Scoring=nil,
 MenuNoTask=nil,
+InformationMenu=false,
+TaskInfoDuration=30,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -106264,6 +106257,7 @@ FRIGATE="Frigate",
 CRUISER="Cruiser",
 DESTROYER="Destroyer",
 CARRIER="Aircraft Carrier",
+RADIOS="Radios",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -106347,9 +106341,10 @@ FRIGATE="Fregatte",
 CRUISER="Kreuzer",
 DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
+RADIOS="Frequenzen",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.67"
+PLAYERTASKCONTROLLER.version="0.1.69"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -106387,6 +106382,8 @@ self.noflaresmokemenu=false
 self.illumenu=false
 self.ShowMagnetic=true
 self.UseTypeNames=false
+self.InformationMenu=false
+self.TaskInfoDuration=30
 self.IsClientSet=false
 if ClientFilter and type(ClientFilter)=="table"and ClientFilter.ClassName and ClientFilter.ClassName=="SET_CLIENT"then
 self.ClientSet=ClientFilter
@@ -106459,6 +106456,11 @@ self:T(self.lid.."SetAllowFlashDirection")
 self.AllowFlash=OnOff
 return self
 end
+function PLAYERTASKCONTROLLER:SetShowRadioInfoMenu(OnOff)
+self:T(self.lid.."SetAllowRadioInfoMenu")
+self.InformationMenu=OnOff
+return self
+end
 function PLAYERTASKCONTROLLER:SetDisableSmokeFlareTask()
 self:T(self.lid.."SetDisableSmokeFlareTask")
 self.noflaresmokemenu=true
@@ -106519,6 +106521,11 @@ else
 self.repeatonfailed=false
 self.repeattimes=Repeats or 5
 end
+return self
+end
+function PLAYERTASKCONTROLLER:SetBriefingDuration(Seconds)
+self:T(self.lid.."SetBriefingDuration")
+self.TaskInfoDuration=Seconds or 30
 return self
 end
 function PLAYERTASKCONTROLLER:_SendMessageToClients(Text,Seconds)
@@ -107330,6 +107337,26 @@ local m=MESSAGE:New(text,10,"Tasking"):ToClient(Client)
 end
 return self
 end
+function PLAYERTASKCONTROLLER:_ShowRadioInfo(Group,Client)
+self:T(self.lid.."_ShowRadioInfo")
+local playername,ttsplayername=self:_GetPlayerName(Client)
+if self.UseSRS then
+local frequency=self.Frequency
+local freqtext=""
+if type(frequency)=="table"then
+freqtext=self.gettext:GetEntry("FREQUENCIES",self.locale)
+freqtext=freqtext..table.concat(frequency,", ")
+else
+local freqt=self.gettext:GetEntry("FREQUENCY",self.locale)
+freqtext=string.format(freqt,frequency)
+end
+local switchtext=self.gettext:GetEntry("BROADCAST",self.locale)
+playername=ttsplayername or self:_GetTextForSpeech(playername)
+local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2,{Group},text,30,self.BCFrequency,self.BCModulation)
+end
+return self
+end
 function PLAYERTASKCONTROLLER:_FlashInfo()
 self:T(self.lid.."_FlashInfo")
 for _playername,_client in pairs(self.FlashPlayer)do
@@ -107511,7 +107538,7 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
+local m=MESSAGE:New(text,self.TaskInfoDuration or 30,"Tasking"):ToClient(Client)
 end
 return self
 end
@@ -107780,6 +107807,10 @@ end
 if self.TaskQueue:Count()>0 and self.MenuNoTask~=nil then
 JoinTaskMenuTemplate:DeleteGenericEntry(self.MenuNoTask)
 self.MenuNoTask=nil
+end
+if self.InformationMenu then
+local radioinfo=self.gettext:GetEntry("RADIOS",self.locale)
+JoinTaskMenuTemplate:NewEntry(radioinfo,self.JoinTopMenu,self._ShowRadioInfo,self)
 end
 self.JoinTaskMenuTemplate=JoinTaskMenuTemplate
 return self
