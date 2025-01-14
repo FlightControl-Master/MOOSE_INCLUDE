@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T12:38:53+01:00-1b2522072947f5bbfa39d0f95a820dfbfeb7dbd8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-14T10:36:27+01:00-2e7798847365531e49dba0a04bbcd6aa935ac0b2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45819,7 +45819,7 @@ maxrange=32000,
 reloadtime=540,
 },
 }
-ARTY.version="1.3.1"
+ARTY.version="1.3.2"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -46976,7 +46976,7 @@ local Nammo,Nshells,Nrockets,Nmissiles,Narty=self:GetAmmo()
 local nfire=Narty
 local _type="shots"
 if target.weapontype==ARTY.WeaponType.Auto then
-nfire=Narty
+nfire=Nammo
 _type="shots"
 elseif target.weapontype==ARTY.WeaponType.Cannon then
 nfire=Narty
