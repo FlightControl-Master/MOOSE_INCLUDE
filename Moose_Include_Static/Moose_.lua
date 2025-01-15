@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-14T10:36:27+01:00-2e7798847365531e49dba0a04bbcd6aa935ac0b2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-15T15:34:36+01:00-646a2aec6615759abae0404bc79af74f4b544d8c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -82762,8 +82762,16 @@ self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
-local escort=AUFTRAG:NewESCORT(group,self.OffsetVec,self.EscortEngageMaxDistance,{"Air"})
-escort:SetRequiredAssets(self.EscortNumber)
+local OffsetX=500
+local OffsetY=500
+local OffsetZ=500
+if self.OffsetVec then
+OffsetX=self.OffsetVec.x
+OffsetY=self.OffsetVec.y
+OffsetZ=self.OffsetVec.z
+end
+for i=1,self.EscortNumber do
+local escort=AUFTRAG:NewESCORT(group,{x=OffsetX*((i+(i%2))/2),y=OffsetY*((i+(i%2))/2),z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},self.EscortEngageMaxDistance,{"Air"})
 escort:SetTime(nil,timeonstation)
 if self.Escortformation then
 escort:SetFormation(self.Escortformation)
@@ -82772,9 +82780,10 @@ escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
-self.EscortMissionReplacement[1]=escort
+self.EscortMissionReplacement[i]=escort
 else
-self.EscortMission[1]=escort
+self.EscortMission[i]=escort
+end
 end
 return self
 end
