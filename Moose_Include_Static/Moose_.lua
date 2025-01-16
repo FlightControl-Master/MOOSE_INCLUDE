@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-11T10:17:39+01:00-9f1f6af6472855d838daee166bbcd8b90432a0d5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-15T15:34:36+01:00-646a2aec6615759abae0404bc79af74f4b544d8c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45819,7 +45819,7 @@ maxrange=32000,
 reloadtime=540,
 },
 }
-ARTY.version="1.3.1"
+ARTY.version="1.3.2"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -46976,7 +46976,7 @@ local Nammo,Nshells,Nrockets,Nmissiles,Narty=self:GetAmmo()
 local nfire=Narty
 local _type="shots"
 if target.weapontype==ARTY.WeaponType.Auto then
-nfire=Narty
+nfire=Nammo
 _type="shots"
 elseif target.weapontype==ARTY.WeaponType.Cannon then
 nfire=Narty
@@ -71390,7 +71390,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.22"
+CTLD.version="1.1.23"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74361,11 +74361,12 @@ local randomcoord=zone:GetRandomCoordinate(10,30*factor,Surfacetypes):GetVec2()
 if PreciseLocation then
 randomcoord=zone:GetCoordinate():GetVec2()
 end
+local randompositions=not PreciseLocation
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitRandomizeUnits(true,20,2)
+:InitRandomizeUnits(randompositions,20,2)
 :InitDelayOff()
 :SpawnFromVec2(randomcoord)
 if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
@@ -79401,6 +79402,7 @@ mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionAlarm=0
 mission.missionFraction=0.0
+mission.missionWaypointRadius=0.0
 mission.dTevaluate=8*60
 mission.categories={AUFTRAG.Category.GROUND,AUFTRAG.Category.NAVAL}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -81752,7 +81754,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.68",
+version="0.2.70",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -82719,7 +82721,7 @@ self.MaxAIonCAP=MaxAICap or 4
 self.AICAPCAllName=Callsign or CALLSIGN.Aircraft.Colt
 return self
 end
-function AWACS:SetEscort(EscortNumber)
+function AWACS:SetEscort(EscortNumber,Formation,OffsetVector,EscortEngageMaxDistance)
 self:T(self.lid.."SetEscort")
 if EscortNumber and EscortNumber>0 then
 self.HasEscorts=true
@@ -82728,6 +82730,9 @@ else
 self.HasEscorts=false
 self.EscortNumber=0
 end
+self.EscortFormation=Formation
+self.OffsetVec=OffsetVector or{x=500,y=100,z=500}
+self.EscortEngageMaxDistance=EscortEngageMaxDistance or 45
 return self
 end
 function AWACS:_MessageVector(GID,Tag,Coordinate,Angels)
@@ -82757,10 +82762,20 @@ self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
+local OffsetX=500
+local OffsetY=500
+local OffsetZ=500
+if self.OffsetVec then
+OffsetX=self.OffsetVec.x
+OffsetY=self.OffsetVec.y
+OffsetZ=self.OffsetVec.z
+end
 for i=1,self.EscortNumber do
-local escort=AUFTRAG:NewESCORT(group,{x=-100*((i+(i%2))/2),y=0,z=(100+100*((i+(i%2))/2))*(-1)^i},45,{"Air"})
-escort:SetRequiredAssets(1)
+local escort=AUFTRAG:NewESCORT(group,{x=OffsetX*((i+(i%2))/2),y=OffsetY*((i+(i%2))/2),z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},self.EscortEngageMaxDistance,{"Air"})
 escort:SetTime(nil,timeonstation)
+if self.Escortformation then
+escort:SetFormation(self.Escortformation)
+end
 escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
@@ -83988,6 +84003,10 @@ basemenu=basemenu,
 checkin=checkin,
 }
 self.clientmenus:Push(menus,cgrpname)
+local GID,hasentry=self:_GetManagedGrpID(cgrp)
+if hasentry then
+self:_CheckOut(cgrp,GID,true)
+end
 end
 end
 else
@@ -85681,17 +85700,18 @@ else
 report:Add("***** Cannot obtain (yet) this missions OpsGroup!")
 end
 report:Add("====================")
+local RESMission
 if self.ShiftChangeEscortsFlag and self.ShiftChangeEscortsRequested then
-ESmission=self.EscortMissionReplacement[i]
-local esstatus=ESmission:GetState()
-local ESmissiontime=(timer.getTime()-self.EscortsTimeStamp)
-local ESTOSLeft=UTILS.Round((((self.EscortsTimeOnStation+self.ShiftChangeTime)*3600)-ESmissiontime),0)
+RESMission=self.EscortMissionReplacement[i]
+local esstatus=RESMission:GetState()
+local RESMissiontime=(timer.getTime()-self.EscortsTimeStamp)
+local ESTOSLeft=UTILS.Round((((self.EscortsTimeOnStation+self.ShiftChangeTime)*3600)-RESMissiontime),0)
 ESTOSLeft=UTILS.Round(ESTOSLeft/60,0)
 local ChangeTime=UTILS.Round(((self.ShiftChangeTime*3600)/60),0)
 report:Add("ESCORTS REPLACEMENT:")
 report:Add(string.format("Auftrag Status: %s",esstatus))
 report:Add(string.format("TOS Left: %d min",ESTOSLeft))
-local OpsGroups=ESmission:GetOpsGroups()
+local OpsGroups=RESMission:GetOpsGroups()
 local OpsGroup=self:_GetAliveOpsGroupFromTable(OpsGroups)
 if OpsGroup then
 local OpsName=OpsGroup:GetName()or"Unknown"
@@ -85702,11 +85722,11 @@ report:Add(string.format("Mission FG State %s",OpsGroup:GetState()))
 else
 report:Add("***** Cannot obtain (yet) this missions OpsGroup!")
 end
-if ESmission:IsExecuting()then
+if RESMission and RESMission:IsExecuting()then
 self.ShiftChangeEscortsFlag=false
 self.ShiftChangeEscortsRequested=false
 if ESmission and ESmission:IsNotOver()then
-ESmission:Cancel()
+ESmission:__Cancel(1)
 end
 self.EscortMission[i]=self.EscortMissionReplacement[i]
 self.EscortMissionReplacement[i]=nil
@@ -98408,7 +98428,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.3"
+OPSGROUP.version="1.0.4"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -98757,21 +98777,43 @@ return false
 end
 return nil
 end
-function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord)
+function OPSGROUP:GetCoordinateInRange(TargetCoord,WeaponBitType,RefCoord,SurfaceTypes)
 local coordInRange=nil
 RefCoord=RefCoord or self:GetCoordinate()
 local weapondata=self:GetWeaponData(WeaponBitType)
+local dh={0,-5,5,-10,10,-15,15,-20,20,-25,25,-30,30,-35,35,-40,40,-45,45,-50,50,-55,55,-60,60,-65,65,-70,70,-75,75,-80,80}
+local function _checkSurface(point)
+if SurfaceTypes then
+local stype=point:GetSurfaceType()
+for _,sf in pairs(SurfaceTypes)do
+if sf==stype then
+return true
+end
+end
+return false
+else
+return true
+end
+end
 if weapondata then
-local heading=RefCoord:HeadingTo(TargetCoord)
+local heading=TargetCoord:HeadingTo(RefCoord)
 local dist=RefCoord:Get2DDistance(TargetCoord)
+local range=nil
 if dist>weapondata.RangeMax then
-local d=(dist-weapondata.RangeMax)*1.05
-coordInRange=RefCoord:Translate(d,heading)
-self:T(self.lid..string.format("Out of max range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(WeaponBitType)))
+range=weapondata.RangeMax
+self:T(self.lid..string.format("Out of max range = %.1f km by %.1f km for weapon %s",weapondata.RangeMax/1000,(weapondata.RangeMax-dist)/1000,tostring(WeaponBitType)))
 elseif dist<weapondata.RangeMin then
-local d=(dist-weapondata.RangeMin)*1.05
-coordInRange=RefCoord:Translate(d,heading)
-self:T(self.lid..string.format("Out of min range = %.1f km for weapon %s",weapondata.RangeMax/1000,tostring(WeaponBitType)))
+range=weapondata.RangeMin
+self:T(self.lid..string.format("Out of min range = %.1f km by %.1f km for weapon %s",weapondata.RangeMin/1000,(weapondata.RangeMin-dist)/1000,tostring(WeaponBitType)))
+end
+if range then
+for _,delta in pairs(dh)do
+local h=heading+delta
+coordInRange=TargetCoord:Translate(range,h)
+if _checkSurface(coordInRange)then
+break
+end
+end
 else
 self:T(self.lid..string.format("Already in range for weapon %s",tostring(WeaponBitType)))
 end
@@ -98811,9 +98853,10 @@ end
 self.checkzones:AddZone(CheckZone)
 return self
 end
-function OPSGROUP:AddWeaponRange(RangeMin,RangeMax,BitType)
-RangeMin=UTILS.NMToMeters(RangeMin or 0)
-RangeMax=UTILS.NMToMeters(RangeMax or 10)
+function OPSGROUP:AddWeaponRange(RangeMin,RangeMax,BitType,ConversionToMeters)
+ConversionToMeters=ConversionToMeters or UTILS.NMToMeters
+RangeMin=ConversionToMeters(RangeMin or 0)
+RangeMax=ConversionToMeters(RangeMax or 10)
 local weapon={}
 weapon.BitType=BitType or ENUMS.WeaponFlag.Auto
 weapon.RangeMax=RangeMax
@@ -101107,11 +101150,10 @@ end
 end
 elseif mission.type==AUFTRAG.Type.ARTY then
 local targetcoord=mission:GetTargetCoordinate()
-local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType)
+local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType,waypointcoord)
 if inRange then
-waypointcoord=self:GetCoordinate(true)
 else
-local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord)
+local coordInRange=self:GetCoordinateInRange(targetcoord,mission.engageWeaponType,waypointcoord,surfacetypes)
 if coordInRange then
 local waypoint=nil
 if self:IsFlightgroup()then
