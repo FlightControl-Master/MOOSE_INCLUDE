@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:22:32+01:00-0a08e3fdac8957b1ec462bf8a2568c010fd523e8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:56:00+01:00-8f2178a79c7c229f330c301bc73d8186ea86f2db ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56773,8 +56773,9 @@ verbose=0,
 alias="",
 debug=false,
 smokemenu=true,
+RoundingPrecision=0,
 }
-AUTOLASE.version="0.1.26"
+AUTOLASE.version="0.1.27"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -56843,6 +56844,7 @@ self:SetLaserCodes({1688,1130,4785,6547,1465,4578})
 self.playermenus={}
 self.smokemenu=true
 self.threatmenu=true
+self.RoundingPrecision=0
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -57041,6 +57043,10 @@ local Message="Smoking targets is now "..smktxt.."!"
 self:NotifyPilots(Message,10)
 return self
 end
+function AUTOLASE:SetRoundingPrecsion(IDP)
+self.RoundingPrecision=IDP or 0
+return self
+end
 function AUTOLASE:EnableSmokeMenu()
 self.smokemenu=true
 return self
@@ -57188,8 +57194,11 @@ if settings:IsA2G_MGRS()then
 locationstring=entry.coordinate:ToStringMGRS(settings)
 elseif settings:IsA2G_LL_DMS()then
 locationstring=entry.coordinate:ToStringLLDMS(settings)
+elseif settings:IsA2G_LL_DDM()then
+locationstring=entry.coordinate:ToStringLLDDM(settings)
 elseif settings:IsA2G_BR()then
-locationstring=entry.coordinate:ToStringBR(Group:GetCoordinate()or Unit:GetCoordinate(),settings)
+local startcoordinate=Unit:GetCoordinate()or Group:GetCoordinate()
+locationstring=entry.coordinate:ToStringBR(startcoordinate,settings,false,self.RoundingPrecision)
 end
 end
 end
@@ -75677,7 +75686,7 @@ self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet,BeaconName)
 self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
-return self
+return _spawnedGroup,_alias
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
 self:T(self.lid.." _SpawnCsarAtZone")
@@ -76320,7 +76329,7 @@ self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtit
 end
 return self
 end
-function CSAR:_GetPositionOfWounded(_woundedGroup)
+function CSAR:_GetPositionOfWounded(_woundedGroup,_Unit)
 self:T(self.lid.." _GetPositionOfWounded")
 local _coordinate=_woundedGroup:GetCoordinate()
 local _coordinatesText="None"
@@ -76333,6 +76342,25 @@ elseif self.coordtype==2 then
 _coordinatesText=_coordinate:ToStringMGRS()
 else
 _coordinatesText=_coordinate:ToStringBULLS(self.coalition)
+end
+end
+if _Unit and _Unit:GetPlayerName()then
+local playername=_Unit:GetPlayerName()
+if playername then
+local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
+if settings then
+self:T("Get Settings ok!")
+if settings:IsA2G_MGRS()then
+_coordinatesText=_coordinate:ToStringMGRS(settings)
+elseif settings:IsA2G_LL_DMS()then
+_coordinatesText=_coordinate:ToStringLLDMS(settings)
+elseif settings:IsA2G_LL_DDM()then
+_coordinatesText=_coordinate:ToStringLLDDM(settings)
+elseif settings:IsA2G_BR()then
+local startcoordinate=_Unit:GetCoordinate()
+_coordinatesText=_coordinate:ToStringBR(startcoordinate,settings)
+end
+end
 end
 end
 return _coordinatesText
@@ -76354,13 +76382,17 @@ self:T(string.format("Display Active Pilot: %s",tostring(_groupName)))
 self:T({Table=_value})
 local _woundedGroup=_value.group
 if _woundedGroup and _value.alive then
-local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup)
+local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup,_heli)
 local _helicoord=_heli:GetCoordinate()
 local _woundcoord=_woundedGroup:GetCoordinate()
 local _distance=self:_GetDistance(_helicoord,_woundcoord)
 self:T({_distance=_distance})
 local distancetext=""
-if _SETTINGS:IsImperial()then
+local settings=_SETTINGS
+if _heli:GetPlayerName()then
+settings=_DATABASE:GetPlayerSettings(_heli:GetPlayerName())or _SETTINGS
+end
+if settings:IsImperial()then
 distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
@@ -106882,7 +106914,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.24"
+PLAYERTASK.version="0.1.25"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -107170,6 +107202,11 @@ IsDone=true
 end
 return IsDone
 end
+function PLAYERTASK:IsNotDone()
+self:T(self.lid.."IsNotDone?")
+local IsNotDone=not self:IsDone()
+return IsNotDone
+end
 function PLAYERTASK:HasClients()
 self:T(self.lid.."HasClients?")
 local hasclients=self:CountClients()>0 and true or false
@@ -107438,7 +107475,7 @@ if self.TaskController then
 self.TaskController:__TaskCancelled(-1,self)
 end
 self.timestamp=timer.getAbsTime()
-self.FinalState="Cancel"
+self.FinalState="Cancelled"
 self:__Done(-1)
 return self
 end
@@ -107536,6 +107573,8 @@ InfoHasCoordinate=false,
 UseTypeNames=false,
 Scoring=nil,
 MenuNoTask=nil,
+InformationMenu=false,
+TaskInfoDuration=30,
 }
 PLAYERTASKCONTROLLER.Type={
 A2A="Air-To-Air",
@@ -107652,6 +107691,7 @@ FRIGATE="Frigate",
 CRUISER="Cruiser",
 DESTROYER="Destroyer",
 CARRIER="Aircraft Carrier",
+RADIOS="Radios",
 },
 DE={
 TASKABORT="Auftrag abgebrochen!",
@@ -107735,9 +107775,10 @@ FRIGATE="Fregatte",
 CRUISER="Kreuzer",
 DESTROYER="Zerstörer",
 CARRIER="Flugzeugträger",
+RADIOS="Frequenzen",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.67"
+PLAYERTASKCONTROLLER.version="0.1.69"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -107775,6 +107816,8 @@ self.noflaresmokemenu=false
 self.illumenu=false
 self.ShowMagnetic=true
 self.UseTypeNames=false
+self.InformationMenu=false
+self.TaskInfoDuration=30
 self.IsClientSet=false
 if ClientFilter and type(ClientFilter)=="table"and ClientFilter.ClassName and ClientFilter.ClassName=="SET_CLIENT"then
 self.ClientSet=ClientFilter
@@ -107847,6 +107890,11 @@ self:T(self.lid.."SetAllowFlashDirection")
 self.AllowFlash=OnOff
 return self
 end
+function PLAYERTASKCONTROLLER:SetShowRadioInfoMenu(OnOff)
+self:T(self.lid.."SetAllowRadioInfoMenu")
+self.InformationMenu=OnOff
+return self
+end
 function PLAYERTASKCONTROLLER:SetDisableSmokeFlareTask()
 self:T(self.lid.."SetDisableSmokeFlareTask")
 self.noflaresmokemenu=true
@@ -107907,6 +107955,11 @@ else
 self.repeatonfailed=false
 self.repeattimes=Repeats or 5
 end
+return self
+end
+function PLAYERTASKCONTROLLER:SetBriefingDuration(Seconds)
+self:T(self.lid.."SetBriefingDuration")
+self.TaskInfoDuration=Seconds or 30
 return self
 end
 function PLAYERTASKCONTROLLER:_SendMessageToClients(Text,Seconds)
@@ -108718,6 +108771,26 @@ local m=MESSAGE:New(text,10,"Tasking"):ToClient(Client)
 end
 return self
 end
+function PLAYERTASKCONTROLLER:_ShowRadioInfo(Group,Client)
+self:T(self.lid.."_ShowRadioInfo")
+local playername,ttsplayername=self:_GetPlayerName(Client)
+if self.UseSRS then
+local frequency=self.Frequency
+local freqtext=""
+if type(frequency)=="table"then
+freqtext=self.gettext:GetEntry("FREQUENCIES",self.locale)
+freqtext=freqtext..table.concat(frequency,", ")
+else
+local freqt=self.gettext:GetEntry("FREQUENCY",self.locale)
+freqtext=string.format(freqt,frequency)
+end
+local switchtext=self.gettext:GetEntry("BROADCAST",self.locale)
+playername=ttsplayername or self:_GetTextForSpeech(playername)
+local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2,{Group},text,30,self.BCFrequency,self.BCModulation)
+end
+return self
+end
 function PLAYERTASKCONTROLLER:_FlashInfo()
 self:T(self.lid.."_FlashInfo")
 for _playername,_client in pairs(self.FlashPlayer)do
@@ -108899,7 +108972,7 @@ else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
 if not self.NoScreenOutput then
-local m=MESSAGE:New(text,15,"Tasking"):ToClient(Client)
+local m=MESSAGE:New(text,self.TaskInfoDuration or 30,"Tasking"):ToClient(Client)
 end
 return self
 end
@@ -109169,6 +109242,10 @@ if self.TaskQueue:Count()>0 and self.MenuNoTask~=nil then
 JoinTaskMenuTemplate:DeleteGenericEntry(self.MenuNoTask)
 self.MenuNoTask=nil
 end
+if self.InformationMenu then
+local radioinfo=self.gettext:GetEntry("RADIOS",self.locale)
+JoinTaskMenuTemplate:NewEntry(radioinfo,self.JoinTopMenu,self._ShowRadioInfo,self)
+end
 self.JoinTaskMenuTemplate=JoinTaskMenuTemplate
 return self
 end
@@ -109401,7 +109478,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or MSRS.gender or"male"
@@ -109416,7 +109493,7 @@ self.Frequency=Frequency or{127,251}
 self.BCFrequency=self.Frequency
 self.Modulation=Modulation or{radio.modulation.FM,radio.modulation.AM}
 self.BCModulation=self.Modulation
-self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation)
+self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,Backend)
 self.SRS:SetCoalition(self.Coalition)
 self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
