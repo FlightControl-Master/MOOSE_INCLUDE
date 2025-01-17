@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-13T18:01:31+01:00-083bf13fe427e250ff4115cdfbc4e12d3a6a980c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T12:19:42+01:00-2a1234f7ff7f8ea5e4a17c241f96b46d0b9d48f6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -44378,7 +44378,7 @@ maxrange=32000,
 reloadtime=540,
 },
 }
-ARTY.version="1.3.1"
+ARTY.version="1.3.2"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -45535,7 +45535,7 @@ local Nammo,Nshells,Nrockets,Nmissiles,Narty=self:GetAmmo()
 local nfire=Narty
 local _type="shots"
 if target.weapontype==ARTY.WeaponType.Auto then
-nfire=Narty
+nfire=Nammo
 _type="shots"
 elseif target.weapontype==ARTY.WeaponType.Cannon then
 nfire=Narty
@@ -53395,7 +53395,7 @@ self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
 end
 if shortsam==true and self.SmokeDecoy==true then
-self:I("Smoking")
+self:T("Smoking")
 local units=samgroup:GetUnits()or{}
 local smoke=self.SmokeDecoyColor or SMOKECOLOR.White
 for _,unit in pairs(units)do
@@ -55749,6 +55749,8 @@ if settings:IsA2G_MGRS()then
 locationstring=entry.coordinate:ToStringMGRS(settings)
 elseif settings:IsA2G_LL_DMS()then
 locationstring=entry.coordinate:ToStringLLDMS(settings)
+elseif settings:IsA2G_LL_DDM()then
+locationstring=entry.coordinate:ToStringLLDDM(settings)
 elseif settings:IsA2G_BR()then
 local startcoordinate=Unit:GetCoordinate()or Group:GetCoordinate()
 locationstring=entry.coordinate:ToStringBR(startcoordinate,settings,false,self.RoundingPrecision)
@@ -74289,7 +74291,7 @@ self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet,BeaconName)
 self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
-return self
+return _spawnedGroup,_alias
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
 self:T(self.lid.." _SpawnCsarAtZone")
@@ -74932,7 +74934,7 @@ self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtit
 end
 return self
 end
-function CSAR:_GetPositionOfWounded(_woundedGroup)
+function CSAR:_GetPositionOfWounded(_woundedGroup,_Unit)
 self:T(self.lid.." _GetPositionOfWounded")
 local _coordinate=_woundedGroup:GetCoordinate()
 local _coordinatesText="None"
@@ -74945,6 +74947,25 @@ elseif self.coordtype==2 then
 _coordinatesText=_coordinate:ToStringMGRS()
 else
 _coordinatesText=_coordinate:ToStringBULLS(self.coalition)
+end
+end
+if _Unit and _Unit:GetPlayerName()then
+local playername=_Unit:GetPlayerName()
+if playername then
+local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
+if settings then
+self:T("Get Settings ok!")
+if settings:IsA2G_MGRS()then
+_coordinatesText=_coordinate:ToStringMGRS(settings)
+elseif settings:IsA2G_LL_DMS()then
+_coordinatesText=_coordinate:ToStringLLDMS(settings)
+elseif settings:IsA2G_LL_DDM()then
+_coordinatesText=_coordinate:ToStringLLDDM(settings)
+elseif settings:IsA2G_BR()then
+local startcoordinate=_Unit:GetCoordinate()
+_coordinatesText=_coordinate:ToStringBR(startcoordinate,settings)
+end
+end
 end
 end
 return _coordinatesText
@@ -74966,13 +74987,17 @@ self:T(string.format("Display Active Pilot: %s",tostring(_groupName)))
 self:T({Table=_value})
 local _woundedGroup=_value.group
 if _woundedGroup and _value.alive then
-local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup)
+local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup,_heli)
 local _helicoord=_heli:GetCoordinate()
 local _woundcoord=_woundedGroup:GetCoordinate()
 local _distance=self:_GetDistance(_helicoord,_woundcoord)
 self:T({_distance=_distance})
 local distancetext=""
-if _SETTINGS:IsImperial()then
+local settings=_SETTINGS
+if _heli:GetPlayerName()then
+settings=_DATABASE:GetPlayerSettings(_heli:GetPlayerName())or _SETTINGS
+end
+if settings:IsImperial()then
 distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
@@ -81378,8 +81403,16 @@ self:T(self.lid.."_StartEscorts")
 local AwacsFG=self.AwacsFG
 local group=AwacsFG:GetGroup()
 local timeonstation=(self.EscortsTimeOnStation+self.ShiftChangeTime)*3600
-local escort=AUFTRAG:NewESCORT(group,self.OffsetVec,self.EscortEngageMaxDistance,{"Air"})
-escort:SetRequiredAssets(self.EscortNumber)
+local OffsetX=500
+local OffsetY=500
+local OffsetZ=500
+if self.OffsetVec then
+OffsetX=self.OffsetVec.x
+OffsetY=self.OffsetVec.y
+OffsetZ=self.OffsetVec.z
+end
+for i=1,self.EscortNumber do
+local escort=AUFTRAG:NewESCORT(group,{x=OffsetX*((i+(i%2))/2),y=OffsetY*((i+(i%2))/2),z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},self.EscortEngageMaxDistance,{"Air"})
 escort:SetTime(nil,timeonstation)
 if self.Escortformation then
 escort:SetFormation(self.Escortformation)
@@ -81388,9 +81421,10 @@ escort:SetMissionRange(self.MaxMissionRange)
 self.AirWing:AddMission(escort)
 self.CatchAllMissions[#self.CatchAllMissions+1]=escort
 if Shiftchange then
-self.EscortMissionReplacement[1]=escort
+self.EscortMissionReplacement[i]=escort
 else
-self.EscortMission[1]=escort
+self.EscortMission[i]=escort
+end
 end
 return self
 end
@@ -105773,6 +105807,11 @@ IsDone=true
 end
 return IsDone
 end
+function PLAYERTASK:IsNotDone()
+self:T(self.lid.."IsNotDone?")
+local IsNotDone=not self:IsDone()
+return IsNotDone
+end
 function PLAYERTASK:HasClients()
 self:T(self.lid.."HasClients?")
 local hasclients=self:CountClients()>0 and true or false
@@ -106041,7 +106080,7 @@ if self.TaskController then
 self.TaskController:__TaskCancelled(-1,self)
 end
 self.timestamp=timer.getAbsTime()
-self.FinalState="Cancel"
+self.FinalState="Cancelled"
 self:__Done(-1)
 return self
 end
@@ -108044,7 +108083,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or MSRS.gender or"male"
@@ -108059,7 +108098,7 @@ self.Frequency=Frequency or{127,251}
 self.BCFrequency=self.Frequency
 self.Modulation=Modulation or{radio.modulation.FM,radio.modulation.AM}
 self.BCModulation=self.Modulation
-self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation)
+self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,Backend)
 self.SRS:SetCoalition(self.Coalition)
 self.SRS:SetLabel(self.MenuName or self.Name)
 self.SRS:SetGender(self.Gender)
