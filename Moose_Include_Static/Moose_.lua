@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-14T10:36:12+01:00-b2dc7bc232074868fa46ea80871226998802fbb2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:21:48+01:00-b522b38d31e5e4c0373cd83a9a644bc3806a8141 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30748,8 +30748,8 @@ function SCENERY:Register(SceneryName,SceneryObject)
 local self=BASE:Inherit(self,POSITIONABLE:New(SceneryName))
 self.SceneryName=tostring(SceneryName)
 self.SceneryObject=SceneryObject
-if self.SceneryObject then
-self.Life0=self.SceneryObject:getLife()
+if self.SceneryObject and self.SceneryObject.getLife then
+self.Life0=self.SceneryObject:getLife()or 0
 else
 self.Life0=0
 end
@@ -30758,6 +30758,9 @@ return self
 end
 function SCENERY:GetProperty(PropertyName)
 return self.Properties[PropertyName]
+end
+function SCENERY:HasProperty(PropertyName)
+return self.Properties[PropertyName]~=nil and true or false
 end
 function SCENERY:GetAllProperties()
 return self.Properties
@@ -30774,7 +30777,7 @@ return self.SceneryObject
 end
 function SCENERY:GetLife()
 local life=0
-if self.SceneryObject then
+if self.SceneryObject and self.SceneryObject.getLife then
 life=self.SceneryObject:getLife()
 if life>self.Life0 then
 self.Life0=math.floor(life*1.2)
@@ -30802,6 +30805,7 @@ end
 function SCENERY:GetRelativeLife()
 local life=self:GetLife()
 local life0=self:GetLife0()
+if life==0 or life0==0 then return 0 end
 local rlife=math.floor((life/life0)*100)
 return rlife
 end
