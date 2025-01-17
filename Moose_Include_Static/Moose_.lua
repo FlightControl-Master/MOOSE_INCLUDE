@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:21:48+01:00-b522b38d31e5e4c0373cd83a9a644bc3806a8141 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:54:41+01:00-7f7999e3e5264800fc8cf1e07c0d05aa4a8ec53b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71862,7 +71862,7 @@ self:T({_spawnedGroup,_alias})
 local _GroupName=_spawnedGroup:GetName()or _alias
 self:_CreateDownedPilotTrack(_spawnedGroup,_GroupName,_coalition,_unitName,_text,_typeName,_freq,_playerName,wetfeet,BeaconName)
 self:_InitSARForPilot(_spawnedGroup,_unitName,_freq,noMessage,_playerName)
-return self
+return _spawnedGroup,_alias
 end
 function CSAR:_SpawnCsarAtZone(_zone,_coalition,_description,_randomPoint,_nomessage,unitname,typename,forcedesc)
 self:T(self.lid.." _SpawnCsarAtZone")
@@ -72505,7 +72505,7 @@ self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtit
 end
 return self
 end
-function CSAR:_GetPositionOfWounded(_woundedGroup)
+function CSAR:_GetPositionOfWounded(_woundedGroup,_Unit)
 self:T(self.lid.." _GetPositionOfWounded")
 local _coordinate=_woundedGroup:GetCoordinate()
 local _coordinatesText="None"
@@ -72518,6 +72518,25 @@ elseif self.coordtype==2 then
 _coordinatesText=_coordinate:ToStringMGRS()
 else
 _coordinatesText=_coordinate:ToStringBULLS(self.coalition)
+end
+end
+if _Unit and _Unit:GetPlayerName()then
+local playername=_Unit:GetPlayerName()
+if playername then
+local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
+if settings then
+self:T("Get Settings ok!")
+if settings:IsA2G_MGRS()then
+_coordinatesText=_coordinate:ToStringMGRS(settings)
+elseif settings:IsA2G_LL_DMS()then
+_coordinatesText=_coordinate:ToStringLLDMS(settings)
+elseif settings:IsA2G_LL_DDM()then
+_coordinatesText=_coordinate:ToStringLLDDM(settings)
+elseif settings:IsA2G_BR()then
+local startcoordinate=_Unit:GetCoordinate()
+_coordinatesText=_coordinate:ToStringBR(startcoordinate,settings)
+end
+end
 end
 end
 return _coordinatesText
@@ -72539,13 +72558,17 @@ self:T(string.format("Display Active Pilot: %s",tostring(_groupName)))
 self:T({Table=_value})
 local _woundedGroup=_value.group
 if _woundedGroup and _value.alive then
-local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup)
+local _coordinatesText=self:_GetPositionOfWounded(_woundedGroup,_heli)
 local _helicoord=_heli:GetCoordinate()
 local _woundcoord=_woundedGroup:GetCoordinate()
 local _distance=self:_GetDistance(_helicoord,_woundcoord)
 self:T({_distance=_distance})
 local distancetext=""
-if _SETTINGS:IsImperial()then
+local settings=_SETTINGS
+if _heli:GetPlayerName()then
+settings=_DATABASE:GetPlayerSettings(_heli:GetPlayerName())or _SETTINGS
+end
+if settings:IsImperial()then
 distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
