@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T15:30:03+01:00-61b7b3ead66cf4416dbb8d4a3e599740ed9f529e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T22:34:25+01:00-d02b5db6dd21efd302b113e47514eb1da480846d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45288,7 +45288,7 @@ end
 ARTY={
 ClassName="ARTY",
 lid=nil,
-Debug=false,
+Debug=true,
 targets={},
 moves={},
 currentTarget=nil,
@@ -45363,36 +45363,43 @@ SmokeShells=668,
 }
 ARTY.db={
 ["2B11 mortar"]={
+displayname="Mortar 2B11 120mm",
 minrange=500,
 maxrange=7000,
 reloadtime=30,
 },
-["SPH 2S1 Gvozdika"]={
+["SAU Gvozdika"]={
+displayname="SPH 2S1 Gvozdika 122mm",
 minrange=300,
 maxrange=15000,
 reloadtime=nil,
 },
-["SPH 2S19 Msta"]={
+["SAU Msta"]={
+displayname="SPH 2S19 Msta 152mm",
 minrange=300,
 maxrange=23500,
 reloadtime=nil,
 },
-["SPH 2S3 Akatsia"]={
+["SAU Akatsia"]={
+displayname="SPH 2S3 Akatsia 152mm",
 minrange=300,
 maxrange=17000,
 reloadtime=nil,
 },
-["SPH 2S9 Nona"]={
+["SAU 2-C9"]={
+displayname="SPM 2S9 Nona 120mm M",
 minrange=500,
 maxrange=7000,
 reloadtime=nil,
 },
-["SPH M109 Paladin"]={
+["M-109"]={
+displayname="SPH M109 Paladin 155mm",
 minrange=300,
 maxrange=22000,
 reloadtime=nil,
 },
-["SpGH Dana"]={
+["SpGH_Dana"]={
+displayname="SPH Dana vz77 152mm",
 minrange=300,
 maxrange=18700,
 reloadtime=nil,
@@ -45415,6 +45422,29 @@ reloadtime=2160,
 ["MLRS M270"]={
 minrange=10000,
 maxrange=32000,
+reloadtime=540,
+},
+["M12_GMC"]={
+displayname="SPH M12 GMC 155mm",
+minrange=300,
+maxrange=18200,
+reloadtime=nil,
+},
+["Wespe124"]={
+displayname="SPH Sd.Kfz.124 Wespe 105mm",
+minrange=300,
+maxrange=7000,
+reloadtime=nil,
+},
+["T155_Firtina"]={
+displayname="SPH T155 Firtina 155mm",
+minrange=300,
+maxrange=41000,
+reloadtime=nil,
+},
+["LeFH_18-40-105"]={
+minrange=500,
+maxrange=10500,
 reloadtime=540,
 },
 }
@@ -45906,7 +45936,7 @@ else
 self.Nsmoke=0
 self.Nsmoke0=0
 end
-local _dbproperties=self:_CheckDB(self.DisplayName)
+local _dbproperties=self:_CheckDB(self.Type)
 self:T({dbproperties=_dbproperties})
 if _dbproperties~=nil then
 for property,value in pairs(_dbproperties)do
