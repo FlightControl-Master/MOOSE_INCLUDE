@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T15:30:33+01:00-5fbd3d9525f7b381d30dad02be3841435d15da65 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T15:32:08+01:00-8d87531464ecca3c4dce54bce62c9bc2cd529540 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -109689,7 +109689,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.1.24",
+version="0.1.25",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -109735,6 +109735,7 @@ PLAYERRECCE.MaxViewDistance={
 ["SA342L"]=8000,
 ["Ka-50"]=8000,
 ["Ka-50_3"]=8000,
+["OH58D"]=8000,
 }
 PLAYERRECCE.Cameraheight={
 ["SA342M"]=2.85,
