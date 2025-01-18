@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:54:41+01:00-7f7999e3e5264800fc8cf1e07c0d05aa4a8ec53b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T15:30:03+01:00-61b7b3ead66cf4416dbb8d4a3e599740ed9f529e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -22370,6 +22370,9 @@ end
 function POSITIONABLE:GetPosition()
 self:F2(self.PositionableName)
 local DCSPositionable=self:GetDCSObject()
+if self:IsInstanceOf("GROUP")then
+DCSPositionable=self:GetFirstUnitAlive():GetDCSObject()
+end
 if DCSPositionable then
 local PositionablePosition=DCSPositionable:getPosition()
 self:T3(PositionablePosition)
@@ -28046,6 +28049,7 @@ end
 return nil,nil
 end
 function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations,CustomFunction,...)
+self:T("GetCustomCallSign")
 local callsign="Ghost 1"
 if self:IsAlive()then
 local IsPlayer=self:IsPlayer()
@@ -28056,7 +28060,9 @@ local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
-local playername=IsPlayer==true and self:GetPlayerName()or shortcallsign
+local playername=shortcallsign
+if IsPlayer then playername=self:GetPlayerName()end
+self:T2("GetCustomCallSign outcome = "..playername)
 if CustomFunction and IsPlayer then
 local arguments=arg or{}
 local callsign=CustomFunction(groupname,playername,unpack(arguments))
@@ -53119,7 +53125,7 @@ weapon.tracking=false
 end
 function FOX:onafterMissileLaunch(From,Event,To,missile)
 local text=string.format("FOX: Tracking missile %s(%s) - target %s - shooter %s",missile.missileType,missile.missileName,tostring(missile.targetName),missile.shooterName)
-self:I(FOX.lid..text)
+self:T(FOX.lid..text)
 MESSAGE:New(text,10):ToAllIf(self.Debug)
 for _,_player in pairs(self.players)do
 local player=_player
