@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-17T09:56:00+01:00-8f2178a79c7c229f330c301bc73d8186ea86f2db ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T15:32:08+01:00-8d87531464ecca3c4dce54bce62c9bc2cd529540 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -22800,6 +22800,9 @@ end
 function POSITIONABLE:GetPosition()
 self:F2(self.PositionableName)
 local DCSPositionable=self:GetDCSObject()
+if self:IsInstanceOf("GROUP")then
+DCSPositionable=self:GetFirstUnitAlive():GetDCSObject()
+end
 if DCSPositionable then
 local PositionablePosition=DCSPositionable:getPosition()
 self:T3(PositionablePosition)
@@ -28476,6 +28479,7 @@ end
 return nil,nil
 end
 function GROUP:GetCustomCallSign(ShortCallsign,Keepnumber,CallsignTranslations,CustomFunction,...)
+self:T("GetCustomCallSign")
 local callsign="Ghost 1"
 if self:IsAlive()then
 local IsPlayer=self:IsPlayer()
@@ -28486,7 +28490,9 @@ local callnumber=string.match(shortcallsign,"(%d+)$")or"91"
 local callnumbermajor=string.char(string.byte(callnumber,1))
 local callnumberminor=string.char(string.byte(callnumber,2))
 local personalized=false
-local playername=IsPlayer==true and self:GetPlayerName()or shortcallsign
+local playername=shortcallsign
+if IsPlayer then playername=self:GetPlayerName()end
+self:T2("GetCustomCallSign outcome = "..playername)
 if CustomFunction and IsPlayer then
 local arguments=arg or{}
 local callsign=CustomFunction(groupname,playername,unpack(arguments))
@@ -53529,7 +53535,7 @@ weapon.tracking=false
 end
 function FOX:onafterMissileLaunch(From,Event,To,missile)
 local text=string.format("FOX: Tracking missile %s(%s) - target %s - shooter %s",missile.missileType,missile.missileName,tostring(missile.targetName),missile.shooterName)
-self:I(FOX.lid..text)
+self:T(FOX.lid..text)
 MESSAGE:New(text,10):ToAllIf(self.Debug)
 for _,_player in pairs(self.players)do
 local player=_player
@@ -109683,7 +109689,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.1.24",
+version="0.1.25",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -109729,6 +109735,7 @@ PLAYERRECCE.MaxViewDistance={
 ["SA342L"]=8000,
 ["Ka-50"]=8000,
 ["Ka-50_3"]=8000,
+["OH58D"]=8000,
 }
 PLAYERRECCE.Cameraheight={
 ["SA342M"]=2.85,
