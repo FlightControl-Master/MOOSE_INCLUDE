@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T22:34:25+01:00-d02b5db6dd21efd302b113e47514eb1da480846d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T18:22:25+01:00-92a05ca74a44b56c7c7c2cc1ea5c72821be13400 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67615,7 +67615,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.23"
+CTLD.version="1.1.24"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70525,14 +70525,18 @@ local function IsTroopsMatch(cargo)
 local match=false
 local cgotbl=self.Cargo_Troops
 local name=cargo:GetName()
+local CargoObject
+local CargoName
 for _,_cgo in pairs(cgotbl)do
 local cname=_cgo:GetName()
 if name==cname then
 match=true
+CargoObject=_cgo
+CargoName=cname
 break
 end
 end
-return match
+return match,CargoObject,CargoName
 end
 local function Cruncher(group,typename,anzahl)
 local units=group:GetUnits()
@@ -70570,11 +70574,21 @@ end
 end
 end
 end
-if not IsTroopsMatch(cargo)then
+local match,CargoObject,CargoName=IsTroopsMatch(cargo)
+if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
-table.insert(self.Cargo_Troops,cargo)
+table.insert(self.Cargo_Crates,cargo)
+end
+if match and CargoObject then
+local stock=CargoObject:GetStock()
+if stock~=-1 and stock~=nil and stock==0 then
+self:T(self.lid.."Stock of "..CargoName.." is empty. Cannot inject.")
+return
+else
+CargoObject:RemoveStock(1)
+end
 end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)then
@@ -70620,14 +70634,18 @@ local function IsVehicMatch(cargo)
 local match=false
 local cgotbl=self.Cargo_Crates
 local name=cargo:GetName()
+local CargoObject
+local CargoName
 for _,_cgo in pairs(cgotbl)do
 local cname=_cgo:GetName()
 if name==cname then
 match=true
+CargoObject=_cgo
+CargoName=cname
 break
 end
 end
-return match
+return match,CargoObject,CargoName
 end
 local function Cruncher(group,typename,anzahl)
 local units=group:GetUnits()
@@ -70665,11 +70683,21 @@ end
 end
 end
 end
-if not IsVehicMatch(cargo)then
+local match,CargoObject,CargoName=IsVehicMatch(cargo)
+if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
 table.insert(self.Cargo_Crates,cargo)
+end
+if match and CargoObject then
+local stock=CargoObject:GetStock()
+if stock~=-1 and stock~=nil and stock==0 then
+self:T(self.lid.."Stock of "..CargoName.." is empty. Cannot inject.")
+return
+else
+CargoObject:RemoveStock(1)
+end
 end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
