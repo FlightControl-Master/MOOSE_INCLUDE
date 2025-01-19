@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T18:23:19+01:00-7c91b9847bf616523d6f46d650674175eeb9e5d9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T19:18:26+01:00-3a7233b5945f3305a49608699984db225b476247 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45699,7 +45699,7 @@ end
 ARTY={
 ClassName="ARTY",
 lid=nil,
-Debug=true,
+Debug=false,
 targets={},
 moves={},
 currentTarget=nil,
@@ -45773,11 +45773,83 @@ IlluminationShells=667,
 SmokeShells=668,
 }
 ARTY.db={
+["LeFH_18-40-105"]={
+displayname="FH LeFH-18 105mm",
+minrange=500,
+maxrange=10500,
+reloadtime=nil,
+},
+["M2A1-105"]={
+displayname="FH M2A1 105mm",
+minrange=500,
+maxrange=11500,
+reloadtime=nil,
+},
+["Pak40"]={
+displayname="FH Pak 40 75mm",
+minrange=500,
+maxrange=3000,
+reloadtime=nil,
+},
+["L118_Unit"]={
+displayname="L118 Light Artillery Gun",
+minrange=500,
+maxrange=17500,
+reloadtime=nil,
+},
+["Smerch"]={
+displayname="MLRS 9A52 Smerch CM 300mm",
+minrange=20000,
+maxrange=70000,
+reloadtime=2160,
+},
+["Smerch_HE"]={
+displayname="MLRS 9A52 Smerch HE 300mm",
+minrange=20000,
+maxrange=70000,
+reloadtime=2160,
+},
+["Uragan_BM-27"]={
+displayname="MLRS 9K57 Uragan BM-27 220mm",
+minrange=11500,
+maxrange=35800,
+reloadtime=840,
+},
+["Grad-URAL"]={
+displayname="MLRS BM-21 Grad 122mm",
+minrange=5000,
+maxrange=19000,
+reloadtime=420,
+},
+["HL_B8M1"]={
+displayname="MLRS HL with B8M1 80mm",
+minrange=500,
+maxrange=5000,
+reloadtime=nil,
+},
+["tt_B8M1"]={
+displayname="MLRS LC with B8M1 80mm",
+minrange=500,
+maxrange=5000,
+reloadtime=nil,
+},
+["MLRS"]={
+displayname="MLRS M270 227mm",
+minrange=10000,
+maxrange=32000,
+reloadtime=540,
+},
 ["2B11 mortar"]={
 displayname="Mortar 2B11 120mm",
 minrange=500,
 maxrange=7000,
 reloadtime=30,
+},
+["PLZ05"]={
+displayname="PLZ-05",
+minrange=500,
+maxrange=23500,
+reloadtime=nil,
 },
 ["SAU Gvozdika"]={
 displayname="SPH 2S1 Gvozdika 122mm",
@@ -45797,10 +45869,10 @@ minrange=300,
 maxrange=17000,
 reloadtime=nil,
 },
-["SAU 2-C9"]={
-displayname="SPM 2S9 Nona 120mm M",
-minrange=500,
-maxrange=7000,
+["SpGH_Dana"]={
+displayname="SPH Dana vz77 152mm",
+minrange=300,
+maxrange=18700,
 reloadtime=nil,
 },
 ["M-109"]={
@@ -45808,32 +45880,6 @@ displayname="SPH M109 Paladin 155mm",
 minrange=300,
 maxrange=22000,
 reloadtime=nil,
-},
-["SpGH_Dana"]={
-displayname="SPH Dana vz77 152mm",
-minrange=300,
-maxrange=18700,
-reloadtime=nil,
-},
-["MLRS BM-21 Grad"]={
-minrange=5000,
-maxrange=19000,
-reloadtime=420,
-},
-["MLRS 9K57 Uragan BM-27"]={
-minrange=11500,
-maxrange=35800,
-reloadtime=840,
-},
-["MLRS 9A52 Smerch"]={
-minrange=20000,
-maxrange=70000,
-reloadtime=2160,
-},
-["MLRS M270"]={
-minrange=10000,
-maxrange=32000,
-reloadtime=540,
 },
 ["M12_GMC"]={
 displayname="SPH M12 GMC 155mm",
@@ -45853,13 +45899,14 @@ minrange=300,
 maxrange=41000,
 reloadtime=nil,
 },
-["LeFH_18-40-105"]={
+["SAU 2-C9"]={
+displayname="SPM 2S9 Nona 120mm M",
 minrange=500,
-maxrange=10500,
-reloadtime=540,
+maxrange=7000,
+reloadtime=nil,
 },
 }
-ARTY.version="1.3.2"
+ARTY.version="1.3.3"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -45898,7 +45945,7 @@ for id,desc in pairs(self.DCSdesc)do
 self:T3({id=id,desc=desc})
 end
 self.SpeedMax=group:GetSpeedMax()
-if self.SpeedMax>1 then
+if self.SpeedMax>3.6 then
 self.ismobile=true
 else
 self.ismobile=false
@@ -46379,8 +46426,8 @@ text=text..string.format("Artillery attribute = %s\n",tostring(self.IsArtillery)
 text=text..string.format("Type                = %s\n",self.Type)
 text=text..string.format("Display Name        = %s\n",self.DisplayName)
 text=text..string.format("Number of units     = %d\n",self.IniGroupStrength)
-text=text..string.format("Speed max           = %d km/h\n",self.SpeedMax)
-text=text..string.format("Speed default       = %d km/h\n",self.Speed)
+text=text..string.format("Speed max           = %.1f km/h\n",self.SpeedMax)
+text=text..string.format("Speed default       = %.1f km/h\n",self.Speed)
 text=text..string.format("Is mobile           = %s\n",tostring(self.ismobile))
 text=text..string.format("Is cargo            = %s\n",tostring(self.iscargo))
 text=text..string.format("Min range           = %.1f km\n",self.minrange/1000)
