@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T17:41:17+01:00-a3c13c8ceaad834b4cd838ec86885891d36c75ad ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T18:23:19+01:00-7c91b9847bf616523d6f46d650674175eeb9e5d9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45699,7 +45699,7 @@ end
 ARTY={
 ClassName="ARTY",
 lid=nil,
-Debug=false,
+Debug=true,
 targets={},
 moves={},
 currentTarget=nil,
@@ -45774,36 +45774,43 @@ SmokeShells=668,
 }
 ARTY.db={
 ["2B11 mortar"]={
+displayname="Mortar 2B11 120mm",
 minrange=500,
 maxrange=7000,
 reloadtime=30,
 },
-["SPH 2S1 Gvozdika"]={
+["SAU Gvozdika"]={
+displayname="SPH 2S1 Gvozdika 122mm",
 minrange=300,
 maxrange=15000,
 reloadtime=nil,
 },
-["SPH 2S19 Msta"]={
+["SAU Msta"]={
+displayname="SPH 2S19 Msta 152mm",
 minrange=300,
 maxrange=23500,
 reloadtime=nil,
 },
-["SPH 2S3 Akatsia"]={
+["SAU Akatsia"]={
+displayname="SPH 2S3 Akatsia 152mm",
 minrange=300,
 maxrange=17000,
 reloadtime=nil,
 },
-["SPH 2S9 Nona"]={
+["SAU 2-C9"]={
+displayname="SPM 2S9 Nona 120mm M",
 minrange=500,
 maxrange=7000,
 reloadtime=nil,
 },
-["SPH M109 Paladin"]={
+["M-109"]={
+displayname="SPH M109 Paladin 155mm",
 minrange=300,
 maxrange=22000,
 reloadtime=nil,
 },
-["SpGH Dana"]={
+["SpGH_Dana"]={
+displayname="SPH Dana vz77 152mm",
 minrange=300,
 maxrange=18700,
 reloadtime=nil,
@@ -45826,6 +45833,29 @@ reloadtime=2160,
 ["MLRS M270"]={
 minrange=10000,
 maxrange=32000,
+reloadtime=540,
+},
+["M12_GMC"]={
+displayname="SPH M12 GMC 155mm",
+minrange=300,
+maxrange=18200,
+reloadtime=nil,
+},
+["Wespe124"]={
+displayname="SPH Sd.Kfz.124 Wespe 105mm",
+minrange=300,
+maxrange=7000,
+reloadtime=nil,
+},
+["T155_Firtina"]={
+displayname="SPH T155 Firtina 155mm",
+minrange=300,
+maxrange=41000,
+reloadtime=nil,
+},
+["LeFH_18-40-105"]={
+minrange=500,
+maxrange=10500,
 reloadtime=540,
 },
 }
@@ -46317,7 +46347,7 @@ else
 self.Nsmoke=0
 self.Nsmoke0=0
 end
-local _dbproperties=self:_CheckDB(self.DisplayName)
+local _dbproperties=self:_CheckDB(self.Type)
 self:T({dbproperties=_dbproperties})
 if _dbproperties~=nil then
 for property,value in pairs(_dbproperties)do
@@ -71409,7 +71439,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.23"
+CTLD.version="1.1.24"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74319,14 +74349,18 @@ local function IsTroopsMatch(cargo)
 local match=false
 local cgotbl=self.Cargo_Troops
 local name=cargo:GetName()
+local CargoObject
+local CargoName
 for _,_cgo in pairs(cgotbl)do
 local cname=_cgo:GetName()
 if name==cname then
 match=true
+CargoObject=_cgo
+CargoName=cname
 break
 end
 end
-return match
+return match,CargoObject,CargoName
 end
 local function Cruncher(group,typename,anzahl)
 local units=group:GetUnits()
@@ -74364,11 +74398,21 @@ end
 end
 end
 end
-if not IsTroopsMatch(cargo)then
+local match,CargoObject,CargoName=IsTroopsMatch(cargo)
+if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
-table.insert(self.Cargo_Troops,cargo)
+table.insert(self.Cargo_Crates,cargo)
+end
+if match and CargoObject then
+local stock=CargoObject:GetStock()
+if stock~=-1 and stock~=nil and stock==0 then
+self:T(self.lid.."Stock of "..CargoName.." is empty. Cannot inject.")
+return
+else
+CargoObject:RemoveStock(1)
+end
 end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)then
@@ -74414,14 +74458,18 @@ local function IsVehicMatch(cargo)
 local match=false
 local cgotbl=self.Cargo_Crates
 local name=cargo:GetName()
+local CargoObject
+local CargoName
 for _,_cgo in pairs(cgotbl)do
 local cname=_cgo:GetName()
 if name==cname then
 match=true
+CargoObject=_cgo
+CargoName=cname
 break
 end
 end
-return match
+return match,CargoObject,CargoName
 end
 local function Cruncher(group,typename,anzahl)
 local units=group:GetUnits()
@@ -74459,11 +74507,21 @@ end
 end
 end
 end
-if not IsVehicMatch(cargo)then
+local match,CargoObject,CargoName=IsVehicMatch(cargo)
+if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
 table.insert(self.Cargo_Crates,cargo)
+end
+if match and CargoObject then
+local stock=CargoObject:GetStock()
+if stock~=-1 and stock~=nil and stock==0 then
+self:T(self.lid.."Stock of "..CargoName.." is empty. Cannot inject.")
+return
+else
+CargoObject:RemoveStock(1)
+end
 end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
