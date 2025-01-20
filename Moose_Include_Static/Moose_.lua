@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-18T15:32:08+01:00-8d87531464ecca3c4dce54bce62c9bc2cd529540 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T19:18:26+01:00-3a7233b5945f3305a49608699984db225b476247 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -45773,63 +45773,140 @@ IlluminationShells=667,
 SmokeShells=668,
 }
 ARTY.db={
-["2B11 mortar"]={
+["LeFH_18-40-105"]={
+displayname="FH LeFH-18 105mm",
 minrange=500,
-maxrange=7000,
-reloadtime=30,
-},
-["SPH 2S1 Gvozdika"]={
-minrange=300,
-maxrange=15000,
+maxrange=10500,
 reloadtime=nil,
 },
-["SPH 2S19 Msta"]={
-minrange=300,
-maxrange=23500,
-reloadtime=nil,
-},
-["SPH 2S3 Akatsia"]={
-minrange=300,
-maxrange=17000,
-reloadtime=nil,
-},
-["SPH 2S9 Nona"]={
+["M2A1-105"]={
+displayname="FH M2A1 105mm",
 minrange=500,
-maxrange=7000,
+maxrange=11500,
 reloadtime=nil,
 },
-["SPH M109 Paladin"]={
-minrange=300,
-maxrange=22000,
+["Pak40"]={
+displayname="FH Pak 40 75mm",
+minrange=500,
+maxrange=3000,
 reloadtime=nil,
 },
-["SpGH Dana"]={
-minrange=300,
-maxrange=18700,
+["L118_Unit"]={
+displayname="L118 Light Artillery Gun",
+minrange=500,
+maxrange=17500,
 reloadtime=nil,
 },
-["MLRS BM-21 Grad"]={
-minrange=5000,
-maxrange=19000,
-reloadtime=420,
-},
-["MLRS 9K57 Uragan BM-27"]={
-minrange=11500,
-maxrange=35800,
-reloadtime=840,
-},
-["MLRS 9A52 Smerch"]={
+["Smerch"]={
+displayname="MLRS 9A52 Smerch CM 300mm",
 minrange=20000,
 maxrange=70000,
 reloadtime=2160,
 },
-["MLRS M270"]={
+["Smerch_HE"]={
+displayname="MLRS 9A52 Smerch HE 300mm",
+minrange=20000,
+maxrange=70000,
+reloadtime=2160,
+},
+["Uragan_BM-27"]={
+displayname="MLRS 9K57 Uragan BM-27 220mm",
+minrange=11500,
+maxrange=35800,
+reloadtime=840,
+},
+["Grad-URAL"]={
+displayname="MLRS BM-21 Grad 122mm",
+minrange=5000,
+maxrange=19000,
+reloadtime=420,
+},
+["HL_B8M1"]={
+displayname="MLRS HL with B8M1 80mm",
+minrange=500,
+maxrange=5000,
+reloadtime=nil,
+},
+["tt_B8M1"]={
+displayname="MLRS LC with B8M1 80mm",
+minrange=500,
+maxrange=5000,
+reloadtime=nil,
+},
+["MLRS"]={
+displayname="MLRS M270 227mm",
 minrange=10000,
 maxrange=32000,
 reloadtime=540,
 },
+["2B11 mortar"]={
+displayname="Mortar 2B11 120mm",
+minrange=500,
+maxrange=7000,
+reloadtime=30,
+},
+["PLZ05"]={
+displayname="PLZ-05",
+minrange=500,
+maxrange=23500,
+reloadtime=nil,
+},
+["SAU Gvozdika"]={
+displayname="SPH 2S1 Gvozdika 122mm",
+minrange=300,
+maxrange=15000,
+reloadtime=nil,
+},
+["SAU Msta"]={
+displayname="SPH 2S19 Msta 152mm",
+minrange=300,
+maxrange=23500,
+reloadtime=nil,
+},
+["SAU Akatsia"]={
+displayname="SPH 2S3 Akatsia 152mm",
+minrange=300,
+maxrange=17000,
+reloadtime=nil,
+},
+["SpGH_Dana"]={
+displayname="SPH Dana vz77 152mm",
+minrange=300,
+maxrange=18700,
+reloadtime=nil,
+},
+["M-109"]={
+displayname="SPH M109 Paladin 155mm",
+minrange=300,
+maxrange=22000,
+reloadtime=nil,
+},
+["M12_GMC"]={
+displayname="SPH M12 GMC 155mm",
+minrange=300,
+maxrange=18200,
+reloadtime=nil,
+},
+["Wespe124"]={
+displayname="SPH Sd.Kfz.124 Wespe 105mm",
+minrange=300,
+maxrange=7000,
+reloadtime=nil,
+},
+["T155_Firtina"]={
+displayname="SPH T155 Firtina 155mm",
+minrange=300,
+maxrange=41000,
+reloadtime=nil,
+},
+["SAU 2-C9"]={
+displayname="SPM 2S9 Nona 120mm M",
+minrange=500,
+maxrange=7000,
+reloadtime=nil,
+},
 }
-ARTY.version="1.3.2"
+ARTY.version="1.3.3"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -45868,7 +45945,7 @@ for id,desc in pairs(self.DCSdesc)do
 self:T3({id=id,desc=desc})
 end
 self.SpeedMax=group:GetSpeedMax()
-if self.SpeedMax>1 then
+if self.SpeedMax>3.6 then
 self.ismobile=true
 else
 self.ismobile=false
@@ -46317,7 +46394,7 @@ else
 self.Nsmoke=0
 self.Nsmoke0=0
 end
-local _dbproperties=self:_CheckDB(self.DisplayName)
+local _dbproperties=self:_CheckDB(self.Type)
 self:T({dbproperties=_dbproperties})
 if _dbproperties~=nil then
 for property,value in pairs(_dbproperties)do
@@ -46349,8 +46426,8 @@ text=text..string.format("Artillery attribute = %s\n",tostring(self.IsArtillery)
 text=text..string.format("Type                = %s\n",self.Type)
 text=text..string.format("Display Name        = %s\n",self.DisplayName)
 text=text..string.format("Number of units     = %d\n",self.IniGroupStrength)
-text=text..string.format("Speed max           = %d km/h\n",self.SpeedMax)
-text=text..string.format("Speed default       = %d km/h\n",self.Speed)
+text=text..string.format("Speed max           = %.1f km/h\n",self.SpeedMax)
+text=text..string.format("Speed default       = %.1f km/h\n",self.Speed)
 text=text..string.format("Is mobile           = %s\n",tostring(self.ismobile))
 text=text..string.format("Is cargo            = %s\n",tostring(self.iscargo))
 text=text..string.format("Min range           = %.1f km\n",self.minrange/1000)
@@ -71409,7 +71486,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.23"
+CTLD.version="1.1.24"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74319,14 +74396,18 @@ local function IsTroopsMatch(cargo)
 local match=false
 local cgotbl=self.Cargo_Troops
 local name=cargo:GetName()
+local CargoObject
+local CargoName
 for _,_cgo in pairs(cgotbl)do
 local cname=_cgo:GetName()
 if name==cname then
 match=true
+CargoObject=_cgo
+CargoName=cname
 break
 end
 end
-return match
+return match,CargoObject,CargoName
 end
 local function Cruncher(group,typename,anzahl)
 local units=group:GetUnits()
@@ -74364,11 +74445,21 @@ end
 end
 end
 end
-if not IsTroopsMatch(cargo)then
+local match,CargoObject,CargoName=IsTroopsMatch(cargo)
+if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
-table.insert(self.Cargo_Troops,cargo)
+table.insert(self.Cargo_Crates,cargo)
+end
+if match and CargoObject then
+local stock=CargoObject:GetStock()
+if stock~=-1 and stock~=nil and stock==0 then
+self:T(self.lid.."Stock of "..CargoName.." is empty. Cannot inject.")
+return
+else
+CargoObject:RemoveStock(1)
+end
 end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)then
@@ -74414,14 +74505,18 @@ local function IsVehicMatch(cargo)
 local match=false
 local cgotbl=self.Cargo_Crates
 local name=cargo:GetName()
+local CargoObject
+local CargoName
 for _,_cgo in pairs(cgotbl)do
 local cname=_cgo:GetName()
 if name==cname then
 match=true
+CargoObject=_cgo
+CargoName=cname
 break
 end
 end
-return match
+return match,CargoObject,CargoName
 end
 local function Cruncher(group,typename,anzahl)
 local units=group:GetUnits()
@@ -74459,11 +74554,21 @@ end
 end
 end
 end
-if not IsVehicMatch(cargo)then
+local match,CargoObject,CargoName=IsVehicMatch(cargo)
+if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
 table.insert(self.Cargo_Crates,cargo)
+end
+if match and CargoObject then
+local stock=CargoObject:GetStock()
+if stock~=-1 and stock~=nil and stock==0 then
+self:T(self.lid.."Stock of "..CargoName.." is empty. Cannot inject.")
+return
+else
+CargoObject:RemoveStock(1)
+end
 end
 local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
@@ -107934,7 +108039,7 @@ self.InfoHasCoordinate=OnOff
 self.InfoHasLLDDM=LLDDM
 return self
 end
-function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+function PLAYERTASKCONTROLLER:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations,CallsignCustomFunc,...)
 if not ShortCallsign or ShortCallsign==false then
 self.ShortCallsign=false
 else
@@ -107942,6 +108047,8 @@ self.ShortCallsign=true
 end
 self.Keepnumber=Keepnumber or false
 self.CallsignTranslations=CallsignTranslations
+self.CallsignCustomFunc=CallsignCustomFunc
+self.CallsignCustomArgs=arg or{}
 return self
 end
 function PLAYERTASKCONTROLLER:_GetTextForSpeech(text)
@@ -108062,7 +108169,7 @@ local ttsplayername=nil
 if not self.customcallsigns[playername]then
 local playergroup=Client:GetGroup()
 if playergroup~=nil then
-ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+ttsplayername=playergroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local newplayername=self:_GetTextForSpeech(ttsplayername)
 self.customcallsigns[playername]=newplayername
 ttsplayername=newplayername
@@ -108157,7 +108264,7 @@ if EventData.IniGroup then
 if self.customcallsigns[playername]then
 self.customcallsigns[playername]=nil
 end
-playername=EventData.IniGroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber)
+playername=EventData.IniGroup:GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 end
 playername=self:_GetTextForSpeech(playername)
 local text=string.format(switchtext,playername,self.MenuName or self.Name,freqtext)
@@ -108886,7 +108993,7 @@ local player=_player
 local pcoord=player:GetCoordinate()
 if pcoord:Get2DDistance(Coordinate)<=reachdist then
 inreach=true
-local callsign=player:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=player:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local playername=player:GetPlayerName()
 local islasing=no
 if self.PlayerRecce.CanLase[player:GetTypeName()]and self.PlayerRecce.AutoLase[playername]then
@@ -109689,7 +109796,7 @@ PLAYERRECCE={
 ClassName="PLAYERRECCE",
 verbose=true,
 lid=nil,
-version="0.1.25",
+version="0.1.26",
 ViewZone={},
 ViewZoneVisual={},
 ViewZoneLaser={},
@@ -109726,7 +109833,8 @@ PLAYERRECCE.LaserRelativePos={
 ["SA342Minigun"]={x=1.7,y=1.2,z=0},
 ["SA342L"]={x=1.7,y=1.2,z=0},
 ["Ka-50"]={x=6.1,y=-0.85,z=0},
-["Ka-50_3"]={x=6.1,y=-0.85,z=0}
+["Ka-50_3"]={x=6.1,y=-0.85,z=0},
+["OH58D"]={x=0,y=2.8,z=0},
 }
 PLAYERRECCE.MaxViewDistance={
 ["SA342M"]=8000,
@@ -109744,6 +109852,7 @@ PLAYERRECCE.Cameraheight={
 ["SA342L"]=2.85,
 ["Ka-50"]=0.5,
 ["Ka-50_3"]=0.5,
+["OH58D"]=4.25,
 }
 PLAYERRECCE.CanLase={
 ["SA342M"]=true,
@@ -109752,6 +109861,7 @@ PLAYERRECCE.CanLase={
 ["SA342L"]=true,
 ["Ka-50"]=true,
 ["Ka-50_3"]=true,
+["OH58D"]=false,
 }
 PLAYERRECCE.SmokeColor={
 ["highsmoke"]=SMOKECOLOR.Orange,
@@ -109903,11 +110013,38 @@ local vivihorizontal=dcsunit:getDrawArgumentValue(215)or 0
 if vivihorizontal<-0.7 or vivihorizontal>0.7 then
 camera=false
 end
+elseif string.find(typename,"OH58")then
+local dcsunit=Unit.getByName(client:GetName())
+local vivihorizontal=dcsunit:getDrawArgumentValue(528)or 0
+if vivihorizontal<-0.527 or vivihorizontal>0.527 then
+camera=false
+end
 elseif string.find(typename,"Ka-50")then
 camera=true
 end
 end
 return camera
+end
+function PLAYERRECCE:_GetKiowaMMSSight(Kiowa)
+self:T(self.lid.."_GetKiowaMMSSight")
+local unit=Kiowa
+if unit and unit:IsAlive()then
+local dcsunit=Unit.getByName(Kiowa:GetName())
+local mmshorizontal=dcsunit:getDrawArgumentValue(528)or 0
+local mmsvertical=dcsunit:getDrawArgumentValue(527)or 0
+self:T(string.format("Kiowa MMS Arguments Read: H %.3f V %.3f",mmshorizontal,mmsvertical))
+local mmson=true
+if mmshorizontal<-0.527 or mmshorizontal>0.527 then mmson=false end
+local horizontalview=mmshorizontal/0.527*190
+local heading=unit:GetHeading()
+local mmsheading=(heading+horizontalview)%360
+local mmsyaw=math.atan(mmsvertical)*40
+local maxview=self:_GetActualMaxLOSight(unit,mmsheading,mmsyaw,not mmson)
+if maxview>8000 then maxview=8000 end
+self:T(string.format("Kiowa MMS Heading %d, Yaw %d, MaxView %dm MMS On %s",mmsheading,mmsyaw,maxview,tostring(mmson)))
+return mmsheading,mmsyaw,maxview,mmson
+end
+return 0,0,0,false
 end
 function PLAYERRECCE:_GetGazelleVivianneSight(Gazelle)
 self:T(self.lid.."GetGazelleVivianneSight")
@@ -109925,33 +110062,11 @@ vivihorizontal=0.67
 vivioff=true
 return 0,0,0,false
 end
-vivivertical=vivivertical/1.10731
 local horizontalview=vivihorizontal*-180
-local verticalview=vivivertical*30
+local verticalview=math.atan(vivivertical)
 local heading=unit:GetHeading()
 local viviheading=(heading+horizontalview)%360
 local maxview=self:_GetActualMaxLOSight(unit,viviheading,verticalview,vivioff)
-local factor=3.15
-self.GazelleViewFactors={
-[1]=1.18,
-[2]=1.32,
-[3]=1.46,
-[4]=1.62,
-[5]=1.77,
-[6]=1.85,
-[7]=2.05,
-[8]=2.05,
-[9]=2.3,
-[10]=2.3,
-[11]=2.27,
-[12]=2.27,
-[13]=2.43,
-}
-local lfac=UTILS.Round(maxview,-2)
-if lfac<=1300 then
-factor=3.15
-maxview=math.ceil((maxview*factor)/100)*100
-end
 if maxview>8000 then maxview=8000 end
 return viviheading,verticalview,maxview,not vivioff
 end
@@ -109964,20 +110079,20 @@ local maxview=0
 if unit and unit:IsAlive()then
 local typename=unit:GetTypeName()
 maxview=self.MaxViewDistance[typename]or 8000
-local CamHeight=self.Cameraheight[typename]or 0
-if vnod<0 then
+local CamHeight=self.Cameraheight[typename]or 1
+if vnod<-2 then
 local beta=90
-local gamma=math.floor(90-vnod)
-local alpha=math.floor(180-beta-gamma)
+local gamma=90-math.abs(vnod)
+local alpha=90-gamma
 local a=unit:GetHeight()-unit:GetCoordinate():GetLandHeight()+CamHeight
 local b=a/math.sin(math.rad(alpha))
 local c=b*math.sin(math.rad(gamma))
 maxview=c*1.2
 end
 end
-return math.abs(maxview)
+return math.ceil(math.abs(maxview))
 end
-function PLAYERRECCE:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations)
+function PLAYERRECCE:SetCallSignOptions(ShortCallsign,Keepnumber,CallsignTranslations,CallsignCustomFunc,...)
 if not ShortCallsign or ShortCallsign==false then
 self.ShortCallsign=false
 else
@@ -109985,6 +110100,8 @@ self.ShortCallsign=true
 end
 self.Keepnumber=Keepnumber or false
 self.CallsignTranslations=CallsignTranslations
+self.CallsignCustomFunc=CallsignCustomFunc
+self.CallsignCustomArgs=arg or{}
 return self
 end
 function PLAYERRECCE:_GetViewZone(unit,vheading,minview,maxview,angle,camon,laser)
@@ -110085,6 +110202,13 @@ heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
 angle=10
 maxview=self.MaxViewDistance[typename]or 5000
+elseif string.find(typename,"OH58")and camera then
+nod,maxview,camon=0,8000,true
+heading,nod,maxview,camon=self:_GetKiowaMMSSight(unit)
+angle=8
+if maxview==0 then
+maxview=self.MaxViewDistance[typename]or 5000
+end
 else
 heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
@@ -110488,6 +110612,7 @@ for _,_client in pairs(clientset)do
 local client=_client
 if client and client:IsAlive()then
 local playername=client:GetPlayerName()
+self:T("Menu for "..playername)
 if not self.UnitLaserCodes[playername]then
 self:_SetClientLaserCode(nil,nil,playername,1688)
 end
@@ -110496,6 +110621,7 @@ self.SmokeOwn[playername]=self.smokeownposition
 end
 local group=client:GetGroup()
 if not self.ClientMenus[playername]then
+self:T("Start Menubuild for "..playername)
 local canlase=self.CanLase[client:GetTypeName()]
 self.ClientMenus[playername]=MENU_GROUP:New(group,self.MenuName or self.Name or"RECCE")
 local txtonstation=self.OnStation[playername]and"ON"or"OFF"
@@ -110667,6 +110793,11 @@ self:T(self.lid.."EnableSmokeOwnPosition")
 self.smokeownposition=true
 return self
 end
+function PLAYERRECCE:EnableKiowaAutolase()
+self:T(self.lid.."EnableKiowaAutolase")
+self.CanLase.OH58D=true
+return self
+end
 function PLAYERRECCE:DisableSmokeOwnPosition()
 self:T(self.lid.."DisableSmokeOwnPosition")
 self.smokeownposition=false
@@ -110774,7 +110905,7 @@ return self
 end
 function PLAYERRECCE:onafterRecceOnStation(From,Event,To,Client,Playername)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
 if self.ReferencePoint then
@@ -110783,7 +110914,7 @@ coordtext=coord:ToStringFromRPShort(self.ReferencePoint,self.RPName,Client,Setti
 end
 local text1="Party time!"
 local text2=string.format("All stations, FACA %s on station\nat %s!",callsign,coordtext)
-local text2tts=string.format("All stations, FACA %s on station at %s!",callsign,coordtext)
+local text2tts=string.format(" All stations, FACA %s on station at %s!",callsign,coordtext)
 text2tts=self:_GetTextForSpeech(text2tts)
 if self.debug then
 self:T(text2.."\n"..text2tts)
@@ -110805,7 +110936,7 @@ return self
 end
 function PLAYERRECCE:onafterRecceOffStation(From,Event,To,Client,Playername)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
 if self.ReferencePoint then
@@ -110921,7 +111052,7 @@ return self
 end
 function PLAYERRECCE:onafterIllumination(From,Event,To,Client,Playername,TargetSet)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
 if self.AttackSet then
@@ -110954,7 +111085,7 @@ return self
 end
 function PLAYERRECCE:onafterTargetsSmoked(From,Event,To,Client,Playername,TargetSet)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
 if self.AttackSet then
@@ -110987,7 +111118,7 @@ return self
 end
 function PLAYERRECCE:onafterTargetsFlared(From,Event,To,Client,Playername,TargetSet)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition)
 if self.AttackSet then
@@ -111020,7 +111151,7 @@ return self
 end
 function PLAYERRECCE:onafterTargetLasing(From,Event,To,Client,Target,Lasercode,Lasingtime)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
@@ -111058,7 +111189,7 @@ return self
 end
 function PLAYERRECCE:onafterShack(From,Event,To,Client,Target)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
@@ -111096,7 +111227,7 @@ return self
 end
 function PLAYERRECCE:onafterTargetLOSLost(From,Event,To,Client,Target)
 self:T({From,Event,To})
-local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations)
+local callsign=Client:GetGroup():GetCustomCallSign(self.ShortCallsign,self.Keepnumber,self.CallsignTranslations,self.CallsignCustomFunc,self.CallsignCustomArgs)
 local Settings=(Client and _DATABASE:GetPlayerSettings(Client:GetPlayerName()))or _SETTINGS
 local coord=Client:GetCoordinate()
 local coordtext=coord:ToStringBULLS(self.Coalition,Settings)
