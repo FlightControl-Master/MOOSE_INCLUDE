@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T19:18:26+01:00-3a7233b5945f3305a49608699984db225b476247 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-22T09:45:25+01:00-e35d9eb07f4208f887effd90c8d91c424b0e76fe ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9726,7 +9726,7 @@ local SphereSearch={
 id=world.VolumeType.SPHERE,
 params={
 point=ZoneCoord:GetVec3(),
-radius=ZoneRadius/2,
+radius=ZoneRadius,
 }
 }
 local function EvaluateZone(ZoneDCSUnit)
