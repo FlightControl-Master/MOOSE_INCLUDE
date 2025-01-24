@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-19T18:19:54+01:00-f77771ae2557fc9fbedcc0abf7c6d07c2bb4122d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-24T12:26:38+01:00-a11cda4ed1341f242c1bdc3e4073a831dacb7414 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9606,7 +9606,7 @@ local SphereSearch={
 id=world.VolumeType.SPHERE,
 params={
 point=ZoneCoord:GetVec3(),
-radius=ZoneRadius/2,
+radius=ZoneRadius,
 }
 }
 local function EvaluateZone(ZoneDCSUnit)
@@ -31067,8 +31067,8 @@ function SCENERY:Register(SceneryName,SceneryObject)
 local self=BASE:Inherit(self,POSITIONABLE:New(SceneryName))
 self.SceneryName=tostring(SceneryName)
 self.SceneryObject=SceneryObject
-if self.SceneryObject then
-self.Life0=self.SceneryObject:getLife()
+if self.SceneryObject and self.SceneryObject.getLife then
+self.Life0=self.SceneryObject:getLife()or 0
 else
 self.Life0=0
 end
@@ -31077,6 +31077,9 @@ return self
 end
 function SCENERY:GetProperty(PropertyName)
 return self.Properties[PropertyName]
+end
+function SCENERY:HasProperty(PropertyName)
+return self.Properties[PropertyName]~=nil and true or false
 end
 function SCENERY:GetAllProperties()
 return self.Properties
@@ -31093,7 +31096,7 @@ return self.SceneryObject
 end
 function SCENERY:GetLife()
 local life=0
-if self.SceneryObject then
+if self.SceneryObject and self.SceneryObject.getLife then
 life=self.SceneryObject:getLife()
 if life>self.Life0 then
 self.Life0=math.floor(life*1.2)
@@ -31121,6 +31124,7 @@ end
 function SCENERY:GetRelativeLife()
 local life=self:GetLife()
 local life0=self:GetLife0()
+if life==0 or life0==0 then return 0 end
 local rlife=math.floor((life/life0)*100)
 return rlife
 end
@@ -32271,7 +32275,7 @@ STORAGE.version="0.1.5"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
-if Airbase.getWarehouse then
+if Airbase.getWarehouse and self.airbase then
 self.warehouse=self.airbase:getWarehouse()
 end
 self.lid=string.format("STORAGE %s | ",AirbaseName)
@@ -32599,6 +32603,25 @@ self.SaverTimer:Stop()
 self.SaverTimer=nil
 end
 return self
+end
+function STORAGE:FindSyriaHHelipadWarehouse(ZoneName)
+local findzone=ZONE:New(ZoneName)
+local base=world.getAirbases()
+for i=1,#base do
+local info={}
+info.callsign=Airbase.getCallsign(base[i])
+info.id=Airbase.getID(base[i])
+info.point=Airbase.getPoint(base[i])
+info.coordinate=COORDINATE:NewFromVec3(info.point)
+info.DCSObject=base[i]
+if info.callsign=="H"and findzone:IsCoordinateInZone(info.coordinate)then
+info.warehouse=info.DCSObject:getWarehouse()
+info.Storage=STORAGE:New(info.callsign..info.id)
+info.Storage.airbase=info.DCSObject
+info.Storage.warehouse=info.warehouse
+return info.Storage
+end
+end
 end
 DYNAMICCARGO={
 ClassName="DYNAMICCARGO",
@@ -44328,63 +44351,140 @@ IlluminationShells=667,
 SmokeShells=668,
 }
 ARTY.db={
-["2B11 mortar"]={
+["LeFH_18-40-105"]={
+displayname="FH LeFH-18 105mm",
 minrange=500,
-maxrange=7000,
-reloadtime=30,
-},
-["SPH 2S1 Gvozdika"]={
-minrange=300,
-maxrange=15000,
+maxrange=10500,
 reloadtime=nil,
 },
-["SPH 2S19 Msta"]={
-minrange=300,
-maxrange=23500,
-reloadtime=nil,
-},
-["SPH 2S3 Akatsia"]={
-minrange=300,
-maxrange=17000,
-reloadtime=nil,
-},
-["SPH 2S9 Nona"]={
+["M2A1-105"]={
+displayname="FH M2A1 105mm",
 minrange=500,
-maxrange=7000,
+maxrange=11500,
 reloadtime=nil,
 },
-["SPH M109 Paladin"]={
-minrange=300,
-maxrange=22000,
+["Pak40"]={
+displayname="FH Pak 40 75mm",
+minrange=500,
+maxrange=3000,
 reloadtime=nil,
 },
-["SpGH Dana"]={
-minrange=300,
-maxrange=18700,
+["L118_Unit"]={
+displayname="L118 Light Artillery Gun",
+minrange=500,
+maxrange=17500,
 reloadtime=nil,
 },
-["MLRS BM-21 Grad"]={
-minrange=5000,
-maxrange=19000,
-reloadtime=420,
-},
-["MLRS 9K57 Uragan BM-27"]={
-minrange=11500,
-maxrange=35800,
-reloadtime=840,
-},
-["MLRS 9A52 Smerch"]={
+["Smerch"]={
+displayname="MLRS 9A52 Smerch CM 300mm",
 minrange=20000,
 maxrange=70000,
 reloadtime=2160,
 },
-["MLRS M270"]={
+["Smerch_HE"]={
+displayname="MLRS 9A52 Smerch HE 300mm",
+minrange=20000,
+maxrange=70000,
+reloadtime=2160,
+},
+["Uragan_BM-27"]={
+displayname="MLRS 9K57 Uragan BM-27 220mm",
+minrange=11500,
+maxrange=35800,
+reloadtime=840,
+},
+["Grad-URAL"]={
+displayname="MLRS BM-21 Grad 122mm",
+minrange=5000,
+maxrange=19000,
+reloadtime=420,
+},
+["HL_B8M1"]={
+displayname="MLRS HL with B8M1 80mm",
+minrange=500,
+maxrange=5000,
+reloadtime=nil,
+},
+["tt_B8M1"]={
+displayname="MLRS LC with B8M1 80mm",
+minrange=500,
+maxrange=5000,
+reloadtime=nil,
+},
+["MLRS"]={
+displayname="MLRS M270 227mm",
 minrange=10000,
 maxrange=32000,
 reloadtime=540,
 },
+["2B11 mortar"]={
+displayname="Mortar 2B11 120mm",
+minrange=500,
+maxrange=7000,
+reloadtime=30,
+},
+["PLZ05"]={
+displayname="PLZ-05",
+minrange=500,
+maxrange=23500,
+reloadtime=nil,
+},
+["SAU Gvozdika"]={
+displayname="SPH 2S1 Gvozdika 122mm",
+minrange=300,
+maxrange=15000,
+reloadtime=nil,
+},
+["SAU Msta"]={
+displayname="SPH 2S19 Msta 152mm",
+minrange=300,
+maxrange=23500,
+reloadtime=nil,
+},
+["SAU Akatsia"]={
+displayname="SPH 2S3 Akatsia 152mm",
+minrange=300,
+maxrange=17000,
+reloadtime=nil,
+},
+["SpGH_Dana"]={
+displayname="SPH Dana vz77 152mm",
+minrange=300,
+maxrange=18700,
+reloadtime=nil,
+},
+["M-109"]={
+displayname="SPH M109 Paladin 155mm",
+minrange=300,
+maxrange=22000,
+reloadtime=nil,
+},
+["M12_GMC"]={
+displayname="SPH M12 GMC 155mm",
+minrange=300,
+maxrange=18200,
+reloadtime=nil,
+},
+["Wespe124"]={
+displayname="SPH Sd.Kfz.124 Wespe 105mm",
+minrange=300,
+maxrange=7000,
+reloadtime=nil,
+},
+["T155_Firtina"]={
+displayname="SPH T155 Firtina 155mm",
+minrange=300,
+maxrange=41000,
+reloadtime=nil,
+},
+["SAU 2-C9"]={
+displayname="SPM 2S9 Nona 120mm M",
+minrange=500,
+maxrange=7000,
+reloadtime=nil,
+},
 }
-ARTY.version="1.3.2"
+ARTY.version="1.3.3"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -44423,7 +44523,7 @@ for id,desc in pairs(self.DCSdesc)do
 self:T3({id=id,desc=desc})
 end
 self.SpeedMax=group:GetSpeedMax()
-if self.SpeedMax>1 then
+if self.SpeedMax>3.6 then
 self.ismobile=true
 else
 self.ismobile=false
@@ -44872,7 +44972,7 @@ else
 self.Nsmoke=0
 self.Nsmoke0=0
 end
-local _dbproperties=self:_CheckDB(self.DisplayName)
+local _dbproperties=self:_CheckDB(self.Type)
 self:T({dbproperties=_dbproperties})
 if _dbproperties~=nil then
 for property,value in pairs(_dbproperties)do
@@ -44904,8 +45004,8 @@ text=text..string.format("Artillery attribute = %s\n",tostring(self.IsArtillery)
 text=text..string.format("Type                = %s\n",self.Type)
 text=text..string.format("Display Name        = %s\n",self.DisplayName)
 text=text..string.format("Number of units     = %d\n",self.IniGroupStrength)
-text=text..string.format("Speed max           = %d km/h\n",self.SpeedMax)
-text=text..string.format("Speed default       = %d km/h\n",self.Speed)
+text=text..string.format("Speed max           = %.1f km/h\n",self.SpeedMax)
+text=text..string.format("Speed default       = %.1f km/h\n",self.Speed)
 text=text..string.format("Is mobile           = %s\n",tostring(self.ismobile))
 text=text..string.format("Is cargo            = %s\n",tostring(self.iscargo))
 text=text..string.format("Min range           = %.1f km\n",self.minrange/1000)
@@ -52090,7 +52190,7 @@ weapon.tracking=false
 end
 function FOX:onafterMissileLaunch(From,Event,To,missile)
 local text=string.format("FOX: Tracking missile %s(%s) - target %s - shooter %s",missile.missileType,missile.missileName,tostring(missile.targetName),missile.shooterName)
-self:I(FOX.lid..text)
+self:T(FOX.lid..text)
 MESSAGE:New(text,10):ToAllIf(self.Debug)
 for _,_player in pairs(self.players)do
 local player=_player
@@ -69980,6 +70080,8 @@ TroopUnloadDistGroundHook=15,
 TroopUnloadDistHoverHook=5,
 TroopUnloadDistHover=1.5,
 UserSetGroup=nil,
+LoadedGroupsTable={},
+keeploadtable=true,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70014,7 +70116,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.24"
+CTLD.version="1.1.25"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70062,6 +70164,7 @@ self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
 self:AddTransition("*","Load","*")
+self:AddTransition("*","Loaded","*")
 self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
 self.PilotGroups={}
@@ -70131,6 +70234,8 @@ self.enableLoadSave=false
 self.filepath=nil
 self.saveinterval=600
 self.eventoninject=true
+self.keeploadtable=true
+self.LoadedGroupsTable={}
 self.usesubcats=false
 self.subcats={}
 self.subcatsTroop={}
@@ -71449,6 +71554,7 @@ local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
 :InitSetUnitAbsolutePositions(Positions)
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord:GetVec2())
 self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter],type)
 end
@@ -71789,10 +71895,12 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord)
 end
 if Repair then
@@ -72917,7 +73025,7 @@ end
 end
 return self
 end
-function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
+function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure,TimeStamp)
 self:T(self.lid.." InjectTroops")
 local cargo=Cargo
 local function IsTroopsMatch(cargo)
@@ -73006,6 +73114,7 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(randompositions,20,2)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
 self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
@@ -73020,13 +73129,17 @@ end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
 end
+if self.keeploadtables and TimeStamp then
+local cargotype=cargo.CargoType
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
+end
 if self.eventoninject then
 self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter],type)
 end
 end
 return self
 end
-function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
+function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure,TimeStamp)
 self:T(self.lid.." InjectVehicles")
 local cargo=Cargo
 local function IsVehicMatch(cargo)
@@ -73118,14 +73231,20 @@ if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
+end
+if self.keeploadtables and TimeStamp then
+local cargotype=cargo.CargoType
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
 end
 if self.eventoninject then
 self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
@@ -73368,7 +73487,7 @@ if match then break end
 end
 return match,cargo
 end
-local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure,StaticCategory,StaticType,StaticShape\n"
+local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure,StaticCategory,StaticType,StaticShape,SpawnTime\n"
 local n=0
 for _,_grp in pairs(grouptable)do
 local group=_grp
@@ -73397,6 +73516,7 @@ local strucdata=""
 for typen,anzahl in pairs(structure)do
 strucdata=strucdata..typen.."=="..anzahl..";"
 end
+local spawntime=group.spawntime or timer.getTime()+n
 if type(cgotemp)=="table"then
 local templates="{"
 for _,_tmpl in pairs(cgotemp)do
@@ -73406,8 +73526,8 @@ templates=templates.."}"
 cgotemp=templates
 end
 local location=group:GetVec3()
-local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s,%s,%s,%s\n"
-,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata,scat,stype,sshape or"none")
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s,%s,%s,%s,%f\n"
+,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata,scat,stype,sshape or"none",spawntime)
 data=data..txt
 end
 end
@@ -73509,6 +73629,7 @@ loadeddata[#loadeddata+1]=line
 end
 file:close()
 table.remove(loadeddata,1)
+local n=0
 for _id,_entry in pairs(loadeddata)do
 local dataset=UTILS.Split(_entry,",")
 local groupname=dataset[1]
@@ -73523,6 +73644,8 @@ local mass=tonumber(dataset[9])
 local StaticCategory=dataset[11]
 local StaticType=dataset[12]
 local StaticShape=dataset[13]
+n=n+1
+local timestamp=tonumber(dataset[14])or timer.getTime()+n
 if type(groupname)=="string"and groupname~="STATIC"then
 cargotemplates=string.gsub(cargotemplates,"{","")
 cargotemplates=string.gsub(cargotemplates,"}","")
@@ -73536,10 +73659,10 @@ local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
 local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 injectvehicle:SetStaticTypeAndShape(StaticCategory,StaticType,StaticShape)
-self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure)
+self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure)
+self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 end
 elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
@@ -73560,6 +73683,9 @@ if injectstatic then
 self:InjectStatics(dropzone,injectstatic,false,true)
 end
 end
+end
+if self.keeploadtable then
+self:__Loaded(1,self.LoadedGroupsTable)
 end
 return self
 end
