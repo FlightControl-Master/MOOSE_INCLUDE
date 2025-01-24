@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-24T10:29:52+01:00-068a1ab99c2a41ab539299a4d326db831ce94271 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-24T12:21:44+01:00-48bc41873acdcdc02c1bd66fc1e2cde1477976ba ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31962,7 +31962,7 @@ STORAGE.version="0.1.5"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
-if Airbase.getWarehouse then
+if Airbase.getWarehouse and self.airbase then
 self.warehouse=self.airbase:getWarehouse()
 end
 self.lid=string.format("STORAGE %s | ",AirbaseName)
@@ -32290,6 +32290,25 @@ self.SaverTimer:Stop()
 self.SaverTimer=nil
 end
 return self
+end
+function STORAGE:FindSyriaHHelipadWarehouse(ZoneName)
+local findzone=ZONE:New(ZoneName)
+local base=world.getAirbases()
+for i=1,#base do
+local info={}
+info.callsign=Airbase.getCallsign(base[i])
+info.id=Airbase.getID(base[i])
+info.point=Airbase.getPoint(base[i])
+info.coordinate=COORDINATE:NewFromVec3(info.point)
+info.DCSObject=base[i]
+if info.callsign=="H"and findzone:IsCoordinateInZone(info.coordinate)then
+info.warehouse=info.DCSObject:getWarehouse()
+info.Storage=STORAGE:New(info.callsign..info.id)
+info.Storage.airbase=info.DCSObject
+info.Storage.warehouse=info.warehouse
+return info.Storage
+end
+end
 end
 DYNAMICCARGO={
 ClassName="DYNAMICCARGO",
