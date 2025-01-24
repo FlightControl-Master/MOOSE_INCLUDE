@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-22T09:44:27+01:00-6551383070b20effb8b08d05e9138a0104c5e93e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-24T10:29:52+01:00-068a1ab99c2a41ab539299a4d326db831ce94271 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67628,6 +67628,8 @@ TroopUnloadDistGroundHook=15,
 TroopUnloadDistHoverHook=5,
 TroopUnloadDistHover=1.5,
 UserSetGroup=nil,
+LoadedGroupsTable={},
+keeploadtable=true,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -67662,7 +67664,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.24"
+CTLD.version="1.1.25"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67710,6 +67712,7 @@ self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
 self:AddTransition("*","Load","*")
+self:AddTransition("*","Loaded","*")
 self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
 self.PilotGroups={}
@@ -67779,6 +67782,8 @@ self.enableLoadSave=false
 self.filepath=nil
 self.saveinterval=600
 self.eventoninject=true
+self.keeploadtable=true
+self.LoadedGroupsTable={}
 self.usesubcats=false
 self.subcats={}
 self.subcatsTroop={}
@@ -69097,6 +69102,7 @@ local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
 :InitSetUnitAbsolutePositions(Positions)
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord:GetVec2())
 self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter],type)
 end
@@ -69437,10 +69443,12 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord)
 end
 if Repair then
@@ -70565,7 +70573,7 @@ end
 end
 return self
 end
-function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
+function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure,TimeStamp)
 self:T(self.lid.." InjectTroops")
 local cargo=Cargo
 local function IsTroopsMatch(cargo)
@@ -70654,6 +70662,7 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(randompositions,20,2)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
 self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
@@ -70668,13 +70677,17 @@ end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
 end
+if self.keeploadtables and TimeStamp then
+local cargotype=cargo.CargoType
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
+end
 if self.eventoninject then
 self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter],type)
 end
 end
 return self
 end
-function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
+function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure,TimeStamp)
 self:T(self.lid.." InjectVehicles")
 local cargo=Cargo
 local function IsVehicMatch(cargo)
@@ -70766,14 +70779,20 @@ if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
+end
+if self.keeploadtables and TimeStamp then
+local cargotype=cargo.CargoType
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
 end
 if self.eventoninject then
 self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
@@ -71016,7 +71035,7 @@ if match then break end
 end
 return match,cargo
 end
-local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure,StaticCategory,StaticType,StaticShape\n"
+local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure,StaticCategory,StaticType,StaticShape,SpawnTime\n"
 local n=0
 for _,_grp in pairs(grouptable)do
 local group=_grp
@@ -71045,6 +71064,7 @@ local strucdata=""
 for typen,anzahl in pairs(structure)do
 strucdata=strucdata..typen.."=="..anzahl..";"
 end
+local spawntime=group.spawntime or timer.getTime()+n
 if type(cgotemp)=="table"then
 local templates="{"
 for _,_tmpl in pairs(cgotemp)do
@@ -71054,8 +71074,8 @@ templates=templates.."}"
 cgotemp=templates
 end
 local location=group:GetVec3()
-local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s,%s,%s,%s\n"
-,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata,scat,stype,sshape or"none")
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s,%s,%s,%s,%f\n"
+,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata,scat,stype,sshape or"none",spawntime)
 data=data..txt
 end
 end
@@ -71157,6 +71177,7 @@ loadeddata[#loadeddata+1]=line
 end
 file:close()
 table.remove(loadeddata,1)
+local n=0
 for _id,_entry in pairs(loadeddata)do
 local dataset=UTILS.Split(_entry,",")
 local groupname=dataset[1]
@@ -71171,6 +71192,8 @@ local mass=tonumber(dataset[9])
 local StaticCategory=dataset[11]
 local StaticType=dataset[12]
 local StaticShape=dataset[13]
+n=n+1
+local timestamp=tonumber(dataset[14])or timer.getTime()+n
 if type(groupname)=="string"and groupname~="STATIC"then
 cargotemplates=string.gsub(cargotemplates,"{","")
 cargotemplates=string.gsub(cargotemplates,"}","")
@@ -71184,10 +71207,10 @@ local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
 local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 injectvehicle:SetStaticTypeAndShape(StaticCategory,StaticType,StaticShape)
-self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure)
+self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure)
+self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 end
 elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
@@ -71208,6 +71231,9 @@ if injectstatic then
 self:InjectStatics(dropzone,injectstatic,false,true)
 end
 end
+end
+if self.keeploadtable then
+self:__Loaded(1,self.LoadedGroupsTable)
 end
 return self
 end
