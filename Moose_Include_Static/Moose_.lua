@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-24T12:26:38+01:00-a11cda4ed1341f242c1bdc3e4073a831dacb7414 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-25T15:07:38+01:00-5e856b67a1d783cada95c346f87b2c14d03f0ba1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70116,7 +70116,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.25"
+CTLD.version="1.1.26"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73351,6 +73351,25 @@ return self
 end
 function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops)
 self:T({From,Event,To})
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+local dropcoord=Troops:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
 return self
 end
 function CTLD:onbeforeTroopsDeployed(From,Event,To,Group,Unit,Troops)
