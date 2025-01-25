@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-25T15:07:38+01:00-5e856b67a1d783cada95c346f87b2c14d03f0ba1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-25T15:58:06+01:00-ff4f162ca2ce666fa6aada9983349f17516468b6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -73129,7 +73129,8 @@ end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
 end
-if self.keeploadtables and TimeStamp then
+if self.keeploadtable and TimeStamp~=nil then
+self:T2("Inserting: "..cargo.CargoType)
 local cargotype=cargo.CargoType
 table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
 end
@@ -73242,7 +73243,8 @@ end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
 end
-if self.keeploadtables and TimeStamp then
+if self.keeploadtable and TimeStamp~=nil then
+self:T2("Inserting: "..cargo.CargoType)
 local cargotype=cargo.CargoType
 table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
 end
@@ -73664,7 +73666,8 @@ local StaticCategory=dataset[11]
 local StaticType=dataset[12]
 local StaticShape=dataset[13]
 n=n+1
-local timestamp=tonumber(dataset[14])or timer.getTime()+n
+local timestamp=tonumber(dataset[14])or(timer.getTime()+n)
+self:T2("TimeStamp = "..timestamp)
 if type(groupname)=="string"and groupname~="STATIC"then
 cargotemplates=string.gsub(cargotemplates,"{","")
 cargotemplates=string.gsub(cargotemplates,"}","")
