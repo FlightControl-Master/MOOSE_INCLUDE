@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-25T15:55:01+01:00-03cd354f9eea5ab385875c02d4e5a1567490e085 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T08:38:11+01:00-deb0747e66cef7ef25aa43e7621b71708eba5c8c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -89493,7 +89493,9 @@ if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
 MaxWeight=cohort.cargobayLimit
 end
 end
+if MaxWeight then
 self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
+end
 end
 local legions=self.legions
 local cohorts=nil
