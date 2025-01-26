@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T13:54:59+01:00-a47fa3f9fcdab939dc416a561b1c4e83d84ee1de ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T14:54:53+01:00-3433ebd6655973ea02e06dd5152abfb6b56eb833 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71507,7 +71507,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.27"
+CTLD.version="1.1.28"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71630,6 +71630,7 @@ self.LoadedGroupsTable={}
 self.usesubcats=false
 self.subcats={}
 self.subcatsTroop={}
+self.showstockinmenuitems=false
 self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
@@ -73392,7 +73393,7 @@ end
 local menucount=0
 local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
-if not self.MenusDone[_unitName]then
+if(not self.MenusDone[_unitName])or(self.showstockinmenuitems==true)then
 local _unit=UNIT:FindByName(_unitName)
 if _unit then
 local _group=_unit:GetGroup()
@@ -73441,7 +73442,7 @@ local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=entry.Name
-if stock>=0 then
+if stock>=0 and self.showstockinmenuitems==true then
 menutext=menutext.." ["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
@@ -73455,7 +73456,7 @@ local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=entry.Name
-if stock>=0 then
+if stock>=0 and self.showstockinmenuitems==true then
 menutext=menutext.." ["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
@@ -73489,7 +73490,7 @@ local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
 end
-if stock>=0 then
+if stock>=0 and self.showstockinmenuitems==true then
 menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
@@ -73507,7 +73508,7 @@ local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
 end
-if stock>=0 then
+if stock>=0 and self.showstockinmenuitems==true then
 menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
@@ -73525,7 +73526,7 @@ local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
 end
-if stock>=0 then
+if stock>=0 and self.showstockinmenuitems==true then
 menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
@@ -73542,7 +73543,7 @@ local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
 end
-if stock>=0 then
+if stock>=0 and self.showstockinmenuitems==true then
 menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
