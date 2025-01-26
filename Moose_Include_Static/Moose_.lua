@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T13:29:18+01:00-25a9a0120a5e1fe113eb5eda7965a6f8c723f47f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T13:54:28+01:00-4ac57fce7a6c8110f4523d9ec5c2ecb605fb3720 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -68234,6 +68234,7 @@ function CTLD:_ExtractTroops(Group,Unit)
 self:T(self.lid.." _ExtractTroops")
 local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
+local hassecondaries=false
 if not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
 if not self.debug then return self end
@@ -68332,7 +68333,7 @@ if Point then
 nearestGroup:RouteToVec2(Point,5)
 end
 end
-local hassecondaries=false
+hassecondaries=false
 if type(Cargotype.Templates)=="table"and Cargotype.Templates[2]then
 for _,_key in pairs(Cargotype.Templates)do
 table.insert(secondarygroups,_key)
@@ -70591,6 +70592,28 @@ _troop:RemoveStock(number)
 end
 end
 return self
+end
+function CTLD:GetGenericCargoObjectFromGroupName(GroupName)
+local Cargotype=nil
+for k,v in pairs(self.Cargo_Troops)do
+local comparison=""
+if type(v.Templates)=="string"then comparison=v.Templates else comparison=v.Templates[1]end
+if comparison==GroupName then
+Cargotype=v
+break
+end
+end
+if not Cargotype then
+for k,v in pairs(self.Cargo_Crates)do
+local comparison=""
+if type(v.Templates)=="string"then comparison=v.Templates else comparison=v.Templates[1]end
+if comparison==GroupName then
+Cargotype=v
+break
+end
+end
+end
+return Cargotype
 end
 function CTLD:_CheckEngineers()
 self:T(self.lid.." CheckEngineers")
