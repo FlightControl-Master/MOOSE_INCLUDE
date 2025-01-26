@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T08:38:11+01:00-deb0747e66cef7ef25aa43e7621b71708eba5c8c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T13:29:57+01:00-6218b94c9933cd1d74660c77fe2ac39ff8c64497 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71507,7 +71507,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.26"
+CTLD.version="1.1.27"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73436,18 +73436,28 @@ for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
-menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
+local menutext=entry.Name
+if stock>=0 then
+menutext=menutext.." ["..stock.."]"
+end
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
 end
 end
 else
 for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
-menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
+local menutext=entry.Name
+if stock>=0 then
+menutext=menutext.." ["..stock.."]"
+end
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
 end
 end
 end
@@ -73471,11 +73481,15 @@ local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
@@ -73485,11 +73499,15 @@ local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
@@ -73499,11 +73517,15 @@ for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
@@ -73512,11 +73534,15 @@ for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
@@ -74323,7 +74349,7 @@ function CTLD:GetStockCrates()
 local Stock={}
 local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
-table.insert(Stock,_troop.Name,_troop.Stock or-1)
+Stock[_troop.Name]=_troop.Stock or-1
 end
 return Stock
 end
@@ -74331,7 +74357,7 @@ function CTLD:GetStockTroops()
 local Stock={}
 local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
-table.insert(Stock,_troop.Name,_troop.Stock or-1)
+Stock[_troop.Name]=_troop.Stock or-1
 end
 return Stock
 end
@@ -74353,7 +74379,7 @@ function CTLD:GetStockStatics()
 local Stock={}
 local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
-table.insert(Stock,_troop.Name,_troop.Stock or-1)
+Stock[_troop.Name]=_troop.Stock or-1
 end
 return Stock
 end
