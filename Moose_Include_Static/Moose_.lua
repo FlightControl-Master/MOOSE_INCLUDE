@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T14:54:19+01:00-b75fff60c8f00be027ba2a77729a27cd1f8265b2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T17:34:22+01:00-e26caa2f74edf1583dd3dab724b7cc60fd3370df ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8552,13 +8552,14 @@ end
 function MENU_INDEX:HasGroupMenu(Group,Path)
 if Group and Group:IsAlive()then
 local MenuGroupName=Group:GetName()
+if self.Group[MenuGroupName]and self.Group[MenuGroupName].Menus and self.Group[MenuGroupName].Menus[Path]then
 return self.Group[MenuGroupName].Menus[Path]
+end
 end
 return nil
 end
 function MENU_INDEX:SetGroupMenu(Group,Path,Menu)
 local MenuGroupName=Group:GetName()
-Group:F({MenuGroupName=MenuGroupName,Path=Path})
 self.Group[MenuGroupName].Menus[Path]=Menu
 end
 function MENU_INDEX:ClearGroupMenu(Group,Path)
@@ -69580,7 +69581,12 @@ local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local isHook=self:IsHook(_unit)
 local nohookswitch=true
+if _group.CTLDTopmenu then
+_group.CTLDTopmenu:Remove()
+_group.CTLDTopmenu=nil
+end
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
+_group.CTLDTopmenu=topmenu
 local toptroops=nil
 local topcrates=nil
 if cantroops then
@@ -70748,8 +70754,8 @@ BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure
 end
 if self.keeploadtable and TimeStamp~=nil then
 self:T2("Inserting: "..cargo.CargoType)
-local cargotype=cargo.CargoType
-table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
+local cargotype=type
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype,CargoName=name})
 end
 if self.eventoninject then
 self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter],type)
@@ -70862,8 +70868,8 @@ BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure
 end
 if self.keeploadtable and TimeStamp~=nil then
 self:T2("Inserting: "..cargo.CargoType)
-local cargotype=cargo.CargoType
-table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype})
+local cargotype=type
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype,CargoName=name})
 end
 if self.eventoninject then
 self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
