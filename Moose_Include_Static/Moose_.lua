@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T17:35:11+01:00-4656d3e019f8fe83fc9251255d38784bc10195ca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-27T18:48:39+01:00-41dfaab82a7c7f2a5aa20e3598781c415daf010a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -107723,7 +107723,7 @@ end
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
-if self.TaskController.Scoring then
+if self.TaskController and self.TaskController.Scoring then
 local clients,count=self:GetClientObjects()
 if count>0 then
 for _,_client in pairs(clients)do
