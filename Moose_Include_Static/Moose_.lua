@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T17:34:22+01:00-e26caa2f74edf1583dd3dab724b7cc60fd3370df ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-27T18:46:07+01:00-20b8deb6defb29a73ee37a39c7ee51227026a62e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5304,6 +5304,7 @@ Events={},
 States={},
 Debug=debug,
 Scheduler=nil,
+Properties={},
 }
 BASE.__={}
 BASE._={
@@ -5599,6 +5600,17 @@ local ClassNameAndID=Object:GetClassNameAndID()
 if self.States[ClassNameAndID]then
 self.States[ClassNameAndID][StateName]=nil
 end
+end
+function BASE:SetProperty(Key,Value)
+self.Properties=self.Properties or{}
+self.Properties[Key]=Value
+end
+function BASE:GetProperty(Key)
+self.Properties=self.Properties or{}
+return self.Properties[Key]
+end
+function BASE:GetProperties()
+return self.Properties
 end
 function BASE:TraceOn()
 self:TraceOnOff(true)
@@ -68324,7 +68336,8 @@ self.Loaded_Cargo[unitname]=loaded
 self:ScheduleOnce(running,self._SendMessage,self,"Troops boarded!",10,false,Group)
 self:_SendMessage("Troops boarding!",10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
-self:__TroopsExtracted(running,Group,Unit,nearestGroup)
+local groupname=nearestGroup:GetName()
+self:__TroopsExtracted(running,Group,Unit,nearestGroup,groupname)
 local coord=Unit:GetCoordinate()or Group:GetCoordinate()
 local Point
 if coord then
@@ -70709,7 +70722,7 @@ if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
-table.insert(self.Cargo_Crates,cargo)
+table.insert(self.Cargo_Troops,cargo)
 end
 if match and CargoObject then
 local stock=CargoObject:GetStock()
@@ -70974,19 +70987,18 @@ function CTLD:onbeforeCratesPickedUp(From,Event,To,Group,Unit,Cargo)
 self:T({From,Event,To})
 return self
 end
-function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops)
+function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops,Groupname)
 self:T({From,Event,To})
 if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
 local playername=Unit:GetPlayerName()
-local dropcoord=Troops:GetCoordinate()or COORDINATE:New(0,0,0)
-local dropvec2=dropcoord:GetVec2()
 self.PlayerTaskQueue:ForEach(
 function(Task)
 local task=Task
 local subtype=task:GetSubType()
 if Event==subtype and not task:IsDone()then
 local targetzone=task.Target:GetObject()
-if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+local okaygroup=string.find(Groupname,task:GetProperty("ExtractName"),1,true)
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and okaygroup then
 if task.Clients:HasUniqueID(playername)then
 task:__Success(-1)
 end
