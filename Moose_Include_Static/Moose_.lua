@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-22T09:45:25+01:00-e35d9eb07f4208f887effd90c8d91c424b0e76fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T17:35:11+01:00-4656d3e019f8fe83fc9251255d38784bc10195ca ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8552,13 +8552,14 @@ end
 function MENU_INDEX:HasGroupMenu(Group,Path)
 if Group and Group:IsAlive()then
 local MenuGroupName=Group:GetName()
+if self.Group[MenuGroupName]and self.Group[MenuGroupName].Menus and self.Group[MenuGroupName].Menus[Path]then
 return self.Group[MenuGroupName].Menus[Path]
+end
 end
 return nil
 end
 function MENU_INDEX:SetGroupMenu(Group,Path,Menu)
 local MenuGroupName=Group:GetName()
-Group:F({MenuGroupName=MenuGroupName,Path=Path})
 self.Group[MenuGroupName].Menus[Path]=Menu
 end
 function MENU_INDEX:ClearGroupMenu(Group,Path)
@@ -22083,7 +22084,7 @@ point.markerID=nil
 return point
 end
 CLIENTMENU={
-ClassName="CLIENTMENUE",
+ClassName="CLIENTMENU",
 lid="",
 version="0.1.3",
 name=nil,
@@ -32392,7 +32393,7 @@ STORAGE.version="0.1.5"
 function STORAGE:New(AirbaseName)
 local self=BASE:Inherit(self,BASE:New())
 self.airbase=Airbase.getByName(AirbaseName)
-if Airbase.getWarehouse then
+if Airbase.getWarehouse and self.airbase then
 self.warehouse=self.airbase:getWarehouse()
 end
 self.lid=string.format("STORAGE %s | ",AirbaseName)
@@ -32720,6 +32721,25 @@ self.SaverTimer:Stop()
 self.SaverTimer=nil
 end
 return self
+end
+function STORAGE:FindSyriaHHelipadWarehouse(ZoneName)
+local findzone=ZONE:New(ZoneName)
+local base=world.getAirbases()
+for i=1,#base do
+local info={}
+info.callsign=Airbase.getCallsign(base[i])
+info.id=Airbase.getID(base[i])
+info.point=Airbase.getPoint(base[i])
+info.coordinate=COORDINATE:NewFromVec3(info.point)
+info.DCSObject=base[i]
+if info.callsign=="H"and findzone:IsCoordinateInZone(info.coordinate)then
+info.warehouse=info.DCSObject:getWarehouse()
+info.Storage=STORAGE:New(info.callsign..info.id)
+info.Storage.airbase=info.DCSObject
+info.Storage.warehouse=info.warehouse
+return info.Storage
+end
+end
 end
 DYNAMICCARGO={
 ClassName="DYNAMICCARGO",
@@ -71452,6 +71472,8 @@ TroopUnloadDistGroundHook=15,
 TroopUnloadDistHoverHook=5,
 TroopUnloadDistHover=1.5,
 UserSetGroup=nil,
+LoadedGroupsTable={},
+keeploadtable=true,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -71486,7 +71508,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.24"
+CTLD.version="1.1.28"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71534,6 +71556,7 @@ self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
 self:AddTransition("*","Load","*")
+self:AddTransition("*","Loaded","*")
 self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
 self.PilotGroups={}
@@ -71603,9 +71626,12 @@ self.enableLoadSave=false
 self.filepath=nil
 self.saveinterval=600
 self.eventoninject=true
+self.keeploadtable=true
+self.LoadedGroupsTable={}
 self.usesubcats=false
 self.subcats={}
 self.subcatsTroop={}
+self.showstockinmenuitems=false
 self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
 self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
@@ -72034,6 +72060,7 @@ function CTLD:_ExtractTroops(Group,Unit)
 self:T(self.lid.." _ExtractTroops")
 local grounded=not self:IsUnitInAir(Unit)
 local hoverload=self:CanHoverLoad(Unit)
+local hassecondaries=false
 if not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
 if not self.debug then return self end
@@ -72132,7 +72159,7 @@ if Point then
 nearestGroup:RouteToVec2(Point,5)
 end
 end
-local hassecondaries=false
+hassecondaries=false
 if type(Cargotype.Templates)=="table"and Cargotype.Templates[2]then
 for _,_key in pairs(Cargotype.Templates)do
 table.insert(secondarygroups,_key)
@@ -72921,6 +72948,7 @@ local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
 :InitSetUnitAbsolutePositions(Positions)
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord:GetVec2())
 self:__TroopsDeployed(1,Group,Unit,self.DroppedTroops[self.TroopCounter],type)
 end
@@ -73261,10 +73289,12 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 :SpawnFromVec2(randomcoord)
 end
 if Repair then
@@ -73364,7 +73394,7 @@ end
 local menucount=0
 local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
-if not self.MenusDone[_unitName]then
+if(not self.MenusDone[_unitName])or(self.showstockinmenuitems==true)then
 local _unit=UNIT:FindByName(_unitName)
 if _unit then
 local _group=_unit:GetGroup()
@@ -73375,7 +73405,12 @@ local cantroops=capabilities.troops
 local cancrates=capabilities.crates
 local isHook=self:IsHook(_unit)
 local nohookswitch=true
+if _group.CTLDTopmenu then
+_group.CTLDTopmenu:Remove()
+_group.CTLDTopmenu=nil
+end
 local topmenu=MENU_GROUP:New(_group,"CTLD",nil)
+_group.CTLDTopmenu=topmenu
 local toptroops=nil
 local topcrates=nil
 if cantroops then
@@ -73409,18 +73444,28 @@ for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
-menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
+local menutext=entry.Name
+if stock>=0 and self.showstockinmenuitems==true then
+menutext=menutext.." ["..stock.."]"
+end
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._LoadTroops,self,_group,_unit,entry)
 end
 end
 else
 for _,_entry in pairs(self.Cargo_Troops)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
-menus[menucount]=MENU_GROUP_COMMAND:New(_group,entry.Name,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
+local menutext=entry.Name
+if stock>=0 and self.showstockinmenuitems==true then
+menutext=menutext.." ["..stock.."]"
+end
+menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,troopsmenu,self._LoadTroops,self,_group,_unit,entry)
 end
 end
 end
@@ -73444,11 +73489,15 @@ local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 and self.showstockinmenuitems==true then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
@@ -73458,11 +73507,15 @@ local entry=_entry
 local subcat=entry.Subcategory
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 and self.showstockinmenuitems==true then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[subcat],self._GetCrates,self,_group,_unit,entry)
 end
@@ -73472,11 +73525,15 @@ for _,_entry in pairs(self.Cargo_Crates)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 and self.showstockinmenuitems==true then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
@@ -73485,11 +73542,15 @@ for _,_entry in pairs(self.Cargo_Statics)do
 local entry=_entry
 local noshow=entry.DontShowInMenu
 local zone=entry.Location
+local stock=_entry:GetStock()
 if not noshow then
 menucount=menucount+1
 local menutext=string.format("Crate %s (%dkg)",entry.Name,entry.PerCrateMass or 0)
 if zone then
 menutext=string.format("Crate %s (%dkg)[R]",entry.Name,entry.PerCrateMass or 0)
+end
+if stock>=0 and self.showstockinmenuitems==true then
+menutext=menutext.."["..stock.."]"
 end
 menus[menucount]=MENU_GROUP_COMMAND:New(_group,menutext,cratesmenu,self._GetCrates,self,_group,_unit,entry)
 end
@@ -74296,7 +74357,7 @@ function CTLD:GetStockCrates()
 local Stock={}
 local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
-table.insert(Stock,_troop.Name,_troop.Stock or-1)
+Stock[_troop.Name]=_troop.Stock or-1
 end
 return Stock
 end
@@ -74304,7 +74365,7 @@ function CTLD:GetStockTroops()
 local Stock={}
 local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
-table.insert(Stock,_troop.Name,_troop.Stock or-1)
+Stock[_troop.Name]=_troop.Stock or-1
 end
 return Stock
 end
@@ -74326,7 +74387,7 @@ function CTLD:GetStockStatics()
 local Stock={}
 local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
-table.insert(Stock,_troop.Name,_troop.Stock or-1)
+Stock[_troop.Name]=_troop.Stock or-1
 end
 return Stock
 end
@@ -74363,6 +74424,28 @@ end
 end
 return self
 end
+function CTLD:GetGenericCargoObjectFromGroupName(GroupName)
+local Cargotype=nil
+for k,v in pairs(self.Cargo_Troops)do
+local comparison=""
+if type(v.Templates)=="string"then comparison=v.Templates else comparison=v.Templates[1]end
+if comparison==GroupName then
+Cargotype=v
+break
+end
+end
+if not Cargotype then
+for k,v in pairs(self.Cargo_Crates)do
+local comparison=""
+if type(v.Templates)=="string"then comparison=v.Templates else comparison=v.Templates[1]end
+if comparison==GroupName then
+Cargotype=v
+break
+end
+end
+end
+return Cargotype
+end
 function CTLD:_CheckEngineers()
 self:T(self.lid.." CheckEngineers")
 local engtable=self.EngineersInField
@@ -74389,7 +74472,7 @@ end
 end
 return self
 end
-function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
+function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation,Structure,TimeStamp)
 self:T(self.lid.." InjectTroops")
 local cargo=Cargo
 local function IsTroopsMatch(cargo)
@@ -74478,6 +74561,7 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(randompositions,20,2)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 if self.movetroopstowpzone and type~=CTLD_CARGO.Enum.ENGINEERS then
 self:_MoveGroupToZone(self.DroppedTroops[self.TroopCounter])
@@ -74492,13 +74576,18 @@ end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
 end
+if self.keeploadtable and TimeStamp~=nil then
+self:T2("Inserting: "..cargo.CargoType)
+local cargotype=type
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype,CargoName=name})
+end
 if self.eventoninject then
 self:__TroopsDeployed(1,nil,nil,self.DroppedTroops[self.TroopCounter],type)
 end
 end
 return self
 end
-function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure)
+function CTLD:InjectVehicles(Zone,Cargo,Surfacetypes,PreciseLocation,Structure,TimeStamp)
 self:T(self.lid.." InjectVehicles")
 local cargo=Cargo
 local function IsVehicMatch(cargo)
@@ -74590,14 +74679,21 @@ if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 end
 if Structure then
 BASE:ScheduleOnce(0.5,PostSpawn,{self.DroppedTroops[self.TroopCounter],Structure})
+end
+if self.keeploadtable and TimeStamp~=nil then
+self:T2("Inserting: "..cargo.CargoType)
+local cargotype=type
+table.insert(self.LoadedGroupsTable,{Group=self.DroppedTroops[self.TroopCounter],TimeStamp=TimeStamp,CargoType=cargotype,CargoName=name})
 end
 if self.eventoninject then
 self:__CratesBuild(1,nil,nil,self.DroppedTroops[self.TroopCounter])
@@ -74704,6 +74800,25 @@ return self
 end
 function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops)
 self:T({From,Event,To})
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+local dropcoord=Troops:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
 return self
 end
 function CTLD:onbeforeTroopsDeployed(From,Event,To,Group,Unit,Troops)
@@ -74840,7 +74955,7 @@ if match then break end
 end
 return match,cargo
 end
-local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure,StaticCategory,StaticType,StaticShape\n"
+local data="Group,x,y,z,CargoName,CargoTemplates,CargoType,CratesNeeded,CrateMass,Structure,StaticCategory,StaticType,StaticShape,SpawnTime\n"
 local n=0
 for _,_grp in pairs(grouptable)do
 local group=_grp
@@ -74869,6 +74984,7 @@ local strucdata=""
 for typen,anzahl in pairs(structure)do
 strucdata=strucdata..typen.."=="..anzahl..";"
 end
+local spawntime=group.spawntime or timer.getTime()+n
 if type(cgotemp)=="table"then
 local templates="{"
 for _,_tmpl in pairs(cgotemp)do
@@ -74878,8 +74994,8 @@ templates=templates.."}"
 cgotemp=templates
 end
 local location=group:GetVec3()
-local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s,%s,%s,%s\n"
-,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata,scat,stype,sshape or"none")
+local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%d,%d,%s,%s,%s,%s,%f\n"
+,template,location.x,location.y,location.z,cgoname,cgotemp,cgotype,cgoneed,cgomass,strucdata,scat,stype,sshape or"none",spawntime)
 data=data..txt
 end
 end
@@ -74981,6 +75097,7 @@ loadeddata[#loadeddata+1]=line
 end
 file:close()
 table.remove(loadeddata,1)
+local n=0
 for _id,_entry in pairs(loadeddata)do
 local dataset=UTILS.Split(_entry,",")
 local groupname=dataset[1]
@@ -74995,6 +75112,9 @@ local mass=tonumber(dataset[9])
 local StaticCategory=dataset[11]
 local StaticType=dataset[12]
 local StaticShape=dataset[13]
+n=n+1
+local timestamp=tonumber(dataset[14])or(timer.getTime()+n)
+self:T2("TimeStamp = "..timestamp)
 if type(groupname)=="string"and groupname~="STATIC"then
 cargotemplates=string.gsub(cargotemplates,"{","")
 cargotemplates=string.gsub(cargotemplates,"}","")
@@ -75008,10 +75128,10 @@ local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
 local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 injectvehicle:SetStaticTypeAndShape(StaticCategory,StaticType,StaticShape)
-self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure)
+self:InjectVehicles(dropzone,injectvehicle,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure)
+self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 end
 elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
@@ -75032,6 +75152,9 @@ if injectstatic then
 self:InjectStatics(dropzone,injectstatic,false,true)
 end
 end
+end
+if self.keeploadtable then
+self:__Loaded(1,self.LoadedGroupsTable)
 end
 return self
 end
@@ -89426,7 +89549,9 @@ if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
 MaxWeight=cohort.cargobayLimit
 end
 end
+if MaxWeight then
 self:T(self.lid..string.format("Largest cargo bay available=%.1f",MaxWeight))
+end
 end
 local legions=self.legions
 local cohorts=nil
