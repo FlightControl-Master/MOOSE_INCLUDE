@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-28T20:22:57+01:00-725b55a505f61c0d8b23521addb1e1b8eb6dae3c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-28T20:29:04+01:00-b96209666138c0274fedcd512b4a75df0a40cbd4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -41968,11 +41968,16 @@ local status=ratcraft.status
 local active=ratcraft.active
 local Nunits=ratcraft.nunits
 local N0units=group:GetInitialSize()
-local Pnow=coords
-local Dtravel=Pnow:Get2DDistance(ratcraft.Pnow)
-ratcraft.Pnow=Pnow
+local Dtravel=0
+if coords and ratcraft.Pnow then
+local Dtravel=coords:Get2DDistance(ratcraft.Pnow)
+ratcraft.Pnow=coords
+end
 ratcraft.Distance=ratcraft.Distance+Dtravel
-local Ddestination=Pnow:Get2DDistance(ratcraft.destination:GetCoordinate())
+local Ddestination=-1
+if ratcraft.Pnow then
+Ddestination=ratcraft.Pnow:Get2DDistance(ratcraft.destination:GetCoordinate())
+end
 if(forID and spawnindex==forID)or(not forID)then
 local text=string.format("ID %i of flight %s",spawnindex,prefix)
 if N0units>1 then
