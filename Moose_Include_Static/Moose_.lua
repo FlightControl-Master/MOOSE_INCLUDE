@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-28T08:31:33+01:00-1b6945e0b0585d778005f34e5c9fb367ea676fba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-28T20:22:45+01:00-5f7a4f2bbb36ad27d8e23a0520f466bae3e3dafc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27158,6 +27158,11 @@ end
 end
 end
 function GROUP:GetCoordinate()
+local vec3=self:GetVec3()
+if vec3 then
+local coord=COORDINATE:NewFromVec3(vec3)
+return vec3
+end
 local Units=self:GetUnits()or{}
 for _,_unit in pairs(Units)do
 local FirstUnit=_unit
