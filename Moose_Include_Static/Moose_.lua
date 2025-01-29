@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-29T13:24:45+01:00-57552f43006a565ec65c1c0b4221d9c8e0f2be5d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-29T13:58:42+01:00-e307b57e672abb2a87e0c8a70ba37e5dbe277ab5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -35187,7 +35187,7 @@ for CleanUpUnitName,CleanUpListData in pairs(self.CleanUpList)do
 CleanUpCount=CleanUpCount+1
 local CleanUpUnit=CleanUpListData.CleanUpUnit
 local CleanUpGroupName=CleanUpListData.CleanUpGroupName
-if CleanUpUnit:IsAlive()~=nil then
+if CleanUpUnit and CleanUpUnit:IsAlive()~=nil then
 if self:IsInAirbase(CleanUpUnit:GetVec2())then
 if _DATABASE:GetStatusGroup(CleanUpGroupName)~="ReSpawn"then
 local CleanUpCoordinate=CleanUpUnit:GetCoordinate()
@@ -51090,7 +51090,7 @@ local AirbaseID=self.airbase:GetID()
 local AirbaseCategory=self:GetAirbaseCategory()
 if AirbaseCategory==Airbase.Category.HELIPAD or AirbaseCategory==Airbase.Category.SHIP then
 else
-if#parking<#template.units and not airstart then
+if parking and#parking<#template.units and not airstart then
 local text=string.format("ERROR: Not enough parking! Free parking = %d < %d aircraft to be spawned.",#parking,#template.units)
 self:_DebugMessage(text)
 return nil
