@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-28T20:29:35+01:00-d9948d1a19dce8440e32adb1722aa3e539970474 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-29T13:24:45+01:00-57552f43006a565ec65c1c0b4221d9c8e0f2be5d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67748,6 +67748,7 @@ self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
+self:AddTransition("*","HelicopterLost","*")
 self:AddTransition("*","Load","*")
 self:AddTransition("*","Loaded","*")
 self:AddTransition("*","Save","*")
@@ -67922,6 +67923,10 @@ end
 return
 elseif event.id==EVENTS.PlayerLeaveUnit or event.id==EVENTS.UnitLost then
 local unitname=event.IniUnitName or"none"
+if self.CtldUnits[unitname]then
+local lostcargo=UTILS.DeepCopy(self.Loaded_Cargo[unitname]or{})
+self:__HelicopterLost(1,unitname,lostcargo)
+end
 self.CtldUnits[unitname]=nil
 self.Loaded_Cargo[unitname]=nil
 self.MenusDone[unitname]=nil
