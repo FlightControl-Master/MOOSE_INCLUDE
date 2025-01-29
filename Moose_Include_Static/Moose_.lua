@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-28T20:29:04+01:00-b96209666138c0274fedcd512b4a75df0a40cbd4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-29T15:31:29+01:00-4530b74367eb377eff5b411aa038196e7ae7bb67 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27591,7 +27591,7 @@ function GROUP:GetCoordinate()
 local vec3=self:GetVec3()
 if vec3 then
 local coord=COORDINATE:NewFromVec3(vec3)
-return vec3
+return coord
 end
 local Units=self:GetUnits()or{}
 for _,_unit in pairs(Units)do
@@ -35617,7 +35617,7 @@ for CleanUpUnitName,CleanUpListData in pairs(self.CleanUpList)do
 CleanUpCount=CleanUpCount+1
 local CleanUpUnit=CleanUpListData.CleanUpUnit
 local CleanUpGroupName=CleanUpListData.CleanUpGroupName
-if CleanUpUnit:IsAlive()~=nil then
+if CleanUpUnit and CleanUpUnit:IsAlive()~=nil then
 if self:IsInAirbase(CleanUpUnit:GetVec2())then
 if _DATABASE:GetStatusGroup(CleanUpGroupName)~="ReSpawn"then
 local CleanUpCoordinate=CleanUpUnit:GetCoordinate()
@@ -51506,7 +51506,7 @@ local AirbaseID=self.airbase:GetID()
 local AirbaseCategory=self:GetAirbaseCategory()
 if AirbaseCategory==Airbase.Category.HELIPAD or AirbaseCategory==Airbase.Category.SHIP then
 else
-if#parking<#template.units and not airstart then
+if parking and#parking<#template.units and not airstart then
 local text=string.format("ERROR: Not enough parking! Free parking = %d < %d aircraft to be spawned.",#parking,#template.units)
 self:_DebugMessage(text)
 return nil
@@ -71577,6 +71577,7 @@ self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
+self:AddTransition("*","HelicopterLost","*")
 self:AddTransition("*","Load","*")
 self:AddTransition("*","Loaded","*")
 self:AddTransition("*","Save","*")
@@ -71751,6 +71752,10 @@ end
 return
 elseif event.id==EVENTS.PlayerLeaveUnit or event.id==EVENTS.UnitLost then
 local unitname=event.IniUnitName or"none"
+if self.CtldUnits[unitname]then
+local lostcargo=UTILS.DeepCopy(self.Loaded_Cargo[unitname]or{})
+self:__HelicopterLost(1,unitname,lostcargo)
+end
 self.CtldUnits[unitname]=nil
 self.Loaded_Cargo[unitname]=nil
 self.MenusDone[unitname]=nil
