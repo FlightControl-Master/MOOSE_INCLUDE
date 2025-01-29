@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-26T17:35:11+01:00-4656d3e019f8fe83fc9251255d38784bc10195ca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-29T15:31:29+01:00-4530b74367eb377eff5b411aa038196e7ae7bb67 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -5304,6 +5304,7 @@ Events={},
 States={},
 Debug=debug,
 Scheduler=nil,
+Properties={},
 }
 BASE.__={}
 BASE._={
@@ -5599,6 +5600,17 @@ local ClassNameAndID=Object:GetClassNameAndID()
 if self.States[ClassNameAndID]then
 self.States[ClassNameAndID][StateName]=nil
 end
+end
+function BASE:SetProperty(Key,Value)
+self.Properties=self.Properties or{}
+self.Properties[Key]=Value
+end
+function BASE:GetProperty(Key)
+self.Properties=self.Properties or{}
+return self.Properties[Key]
+end
+function BASE:GetProperties()
+return self.Properties
 end
 function BASE:TraceOn()
 self:TraceOnOff(true)
@@ -27576,6 +27588,11 @@ end
 end
 end
 function GROUP:GetCoordinate()
+local vec3=self:GetVec3()
+if vec3 then
+local coord=COORDINATE:NewFromVec3(vec3)
+return coord
+end
 local Units=self:GetUnits()or{}
 for _,_unit in pairs(Units)do
 local FirstUnit=_unit
@@ -35600,7 +35617,7 @@ for CleanUpUnitName,CleanUpListData in pairs(self.CleanUpList)do
 CleanUpCount=CleanUpCount+1
 local CleanUpUnit=CleanUpListData.CleanUpUnit
 local CleanUpGroupName=CleanUpListData.CleanUpGroupName
-if CleanUpUnit:IsAlive()~=nil then
+if CleanUpUnit and CleanUpUnit:IsAlive()~=nil then
 if self:IsInAirbase(CleanUpUnit:GetVec2())then
 if _DATABASE:GetStatusGroup(CleanUpGroupName)~="ReSpawn"then
 local CleanUpCoordinate=CleanUpUnit:GetCoordinate()
@@ -41951,11 +41968,16 @@ local status=ratcraft.status
 local active=ratcraft.active
 local Nunits=ratcraft.nunits
 local N0units=group:GetInitialSize()
-local Pnow=coords
-local Dtravel=Pnow:Get2DDistance(ratcraft.Pnow)
-ratcraft.Pnow=Pnow
+local Dtravel=0
+if coords and ratcraft.Pnow then
+local Dtravel=coords:Get2DDistance(ratcraft.Pnow)
+ratcraft.Pnow=coords
+end
 ratcraft.Distance=ratcraft.Distance+Dtravel
-local Ddestination=Pnow:Get2DDistance(ratcraft.destination:GetCoordinate())
+local Ddestination=-1
+if ratcraft.Pnow then
+Ddestination=ratcraft.Pnow:Get2DDistance(ratcraft.destination:GetCoordinate())
+end
 if(forID and spawnindex==forID)or(not forID)then
 local text=string.format("ID %i of flight %s",spawnindex,prefix)
 if N0units>1 then
@@ -51484,7 +51506,7 @@ local AirbaseID=self.airbase:GetID()
 local AirbaseCategory=self:GetAirbaseCategory()
 if AirbaseCategory==Airbase.Category.HELIPAD or AirbaseCategory==Airbase.Category.SHIP then
 else
-if#parking<#template.units and not airstart then
+if parking and#parking<#template.units and not airstart then
 local text=string.format("ERROR: Not enough parking! Free parking = %d < %d aircraft to be spawned.",#parking,#template.units)
 self:_DebugMessage(text)
 return nil
@@ -71555,6 +71577,7 @@ self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
+self:AddTransition("*","HelicopterLost","*")
 self:AddTransition("*","Load","*")
 self:AddTransition("*","Loaded","*")
 self:AddTransition("*","Save","*")
@@ -71729,6 +71752,10 @@ end
 return
 elseif event.id==EVENTS.PlayerLeaveUnit or event.id==EVENTS.UnitLost then
 local unitname=event.IniUnitName or"none"
+if self.CtldUnits[unitname]then
+local lostcargo=UTILS.DeepCopy(self.Loaded_Cargo[unitname]or{})
+self:__HelicopterLost(1,unitname,lostcargo)
+end
 self.CtldUnits[unitname]=nil
 self.Loaded_Cargo[unitname]=nil
 self.MenusDone[unitname]=nil
@@ -72148,7 +72175,8 @@ self.Loaded_Cargo[unitname]=loaded
 self:ScheduleOnce(running,self._SendMessage,self,"Troops boarded!",10,false,Group)
 self:_SendMessage("Troops boarding!",10,false,Group)
 self:_UpdateUnitCargoMass(Unit)
-self:__TroopsExtracted(running,Group,Unit,nearestGroup)
+local groupname=nearestGroup:GetName()
+self:__TroopsExtracted(running,Group,Unit,nearestGroup,groupname)
 local coord=Unit:GetCoordinate()or Group:GetCoordinate()
 local Point
 if coord then
@@ -74533,7 +74561,7 @@ if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
 cargo.Stock=1
-table.insert(self.Cargo_Crates,cargo)
+table.insert(self.Cargo_Troops,cargo)
 end
 if match and CargoObject then
 local stock=CargoObject:GetStock()
@@ -74798,19 +74826,18 @@ function CTLD:onbeforeCratesPickedUp(From,Event,To,Group,Unit,Cargo)
 self:T({From,Event,To})
 return self
 end
-function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops)
+function CTLD:onbeforeTroopsExtracted(From,Event,To,Group,Unit,Troops,Groupname)
 self:T({From,Event,To})
 if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
 local playername=Unit:GetPlayerName()
-local dropcoord=Troops:GetCoordinate()or COORDINATE:New(0,0,0)
-local dropvec2=dropcoord:GetVec2()
 self.PlayerTaskQueue:ForEach(
 function(Task)
 local task=Task
 local subtype=task:GetSubType()
 if Event==subtype and not task:IsDone()then
 local targetzone=task.Target:GetObject()
-if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+local okaygroup=string.find(Groupname,task:GetProperty("ExtractName"),1,true)
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and okaygroup then
 if task.Clients:HasUniqueID(playername)then
 task:__Success(-1)
 end
@@ -107723,7 +107750,7 @@ end
 if self.TargetMarker then
 self.TargetMarker:Remove()
 end
-if self.TaskController.Scoring then
+if self.TaskController and self.TaskController.Scoring then
 local clients,count=self:GetClientObjects()
 if count>0 then
 for _,_client in pairs(clients)do
