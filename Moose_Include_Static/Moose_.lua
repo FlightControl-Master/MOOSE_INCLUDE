@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-30T09:06:11+01:00-2d49745215b888b4b6d9c7bf16efabfe739e38d9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-30T13:21:17+01:00-1c4c5b5476460d49159505a54a0f9ac1e89ac195 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -69736,6 +69736,7 @@ Positionable=nil,
 HasBeenDropped=false,
 PerCrateMass=0,
 Stock=nil,
+Stock0=nil,
 Mark=nil,
 DontShowInMenu=false,
 Location=nil,
@@ -69764,6 +69765,7 @@ self.Positionable=Positionable or nil
 self.HasBeenDropped=Dropped or false
 self.PerCrateMass=PerCrateMass or 0
 self.Stock=Stock or nil
+self.Stock0=Stock or nil
 self.Mark=nil
 self.Subcategory=Subcategory or"Other"
 self.DontShowInMenu=DontShowInMenu or false
@@ -69863,6 +69865,20 @@ end
 function CTLD_CARGO:GetStock()
 if self.Stock then
 return self.Stock
+else
+return-1
+end
+end
+function CTLD_CARGO:GetStock0()
+if self.Stock0 then
+return self.Stock0
+else
+return-1
+end
+end
+function CTLD_CARGO:GetRelativeStock()
+if self.Stock and self.Stock0 then
+return math.floor((self.Stock/self.Stock0)*100)
 else
 return-1
 end
@@ -70141,7 +70157,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.28"
+CTLD.version="1.1.29"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72926,6 +72942,96 @@ end
 self.EngineersInField=engtable
 return self
 end
+function CTLD:_CountStockPlusInHeloPlusAliveGroups()
+local Troopstable={}
+for _id,_cargo in pairs(self.Cargo_Crates)do
+local generic=_cargo
+local genname=generic:GetName()
+if generic and generic:GetStock0()>0 and not Troopstable[genname]then
+Troopstable[genname]={
+Stock0=generic:GetStock0(),
+Stock=generic:GetStock(),
+StockR=generic:GetRelativeStock(),
+Infield=0,
+Inhelo=0,
+Sum=generic:GetStock(),
+}
+end
+end
+for _id,_cargo in pairs(self.Cargo_Troops)do
+local generic=_cargo
+local genname=generic:GetName()
+if generic and generic:GetStock0()>0 and not Troopstable[genname]then
+Troopstable[genname]={
+Stock0=generic:GetStock0(),
+Stock=generic:GetStock(),
+StockR=generic:GetRelativeStock(),
+Infield=0,
+Inhelo=0,
+Sum=generic:GetStock(),
+}
+end
+end
+for _index,_group in pairs(self.DroppedTroops)do
+if _group and _group:IsAlive()then
+self:T("Looking at ".._group:GetName().." in the field")
+local generic=self:GetGenericCargoObjectFromGroupName(_group:GetName())
+if generic then
+local genname=generic:GetName()
+self:T("Found Generic "..genname.." in the field. Adding.")
+if generic:GetStock0()>0 then
+if not Troopstable[genname]then
+Troopstable[genname]={
+Stock0=generic:GetStock0(),
+Stock=generic:GetStock(),
+StockR=generic:GetRelativeStock(),
+Infield=1,
+Inhelo=0,
+Sum=generic:GetStock()+1,
+}
+else
+Troopstable[genname].Infield=Troopstable[genname].Infield+1
+Troopstable[genname].Sum=Troopstable[genname].Infield+Troopstable[genname].Stock+Troopstable[genname].Inhelo
+end
+end
+else
+self:E(self.lid.."Group without Cargo Generic: ".._group:GetName())
+end
+end
+end
+for _unitname,_loaded in pairs(self.Loaded_Cargo)do
+local _unit=UNIT:FindByName(_unitname)
+if _unit and _unit:IsAlive()then
+local unitname=_unit:GetName()
+local loadedcargo=self.Loaded_Cargo[unitname].Cargo or{}
+for _,_cgo in pairs(loadedcargo)do
+local cargo=_cgo
+local type=cargo.CargoType
+local gname=cargo.Name
+local gcargo=self:_FindCratesCargoObject(gname)or self:_FindTroopsCargoObject(gname)
+self:T("Looking at "..gname.." in the helo - type = "..type)
+if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS or type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
+if gcargo and gcargo:GetStock0()>0 then
+self:T("Adding "..gname.." in the helo - type = "..type)
+if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)then
+Troopstable[gname].Inhelo=Troopstable[gname].Inhelo+1
+end
+if(type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
+local counting=gcargo.CratesNeeded
+local added=1
+if counting>1 then
+added=added/counting
+end
+Troopstable[gname].Inhelo=Troopstable[gname].Inhelo+added
+end
+Troopstable[gname].Sum=Troopstable[gname].Infield+Troopstable[gname].Stock+Troopstable[gname].Inhelo
+end
+end
+end
+end
+end
+return Troopstable
+end
 function CTLD:AddStockTroops(Name,Number)
 local name=Name or"none"
 local number=Number or 1
@@ -73065,10 +73171,15 @@ return self
 end
 function CTLD:GetGenericCargoObjectFromGroupName(GroupName)
 local Cargotype=nil
+local template=GroupName
+if string.find(template,"#")then
+template=string.gsub(GroupName,"#(%d+)$","")
+end
+template=string.gsub(template,"-(%d+)$","")
 for k,v in pairs(self.Cargo_Troops)do
 local comparison=""
 if type(v.Templates)=="string"then comparison=v.Templates else comparison=v.Templates[1]end
-if comparison==GroupName then
+if comparison==template then
 Cargotype=v
 break
 end
@@ -73077,7 +73188,7 @@ if not Cargotype then
 for k,v in pairs(self.Cargo_Crates)do
 local comparison=""
 if type(v.Templates)=="string"then comparison=v.Templates else comparison=v.Templates[1]end
-if comparison==GroupName then
+if comparison==template and v.CargoType~=CTLD_CARGO.Enum.REPAIR then
 Cargotype=v
 break
 end
@@ -73171,7 +73282,6 @@ local match,CargoObject,CargoName=IsTroopsMatch(cargo)
 if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
-cargo.Stock=1
 table.insert(self.Cargo_Troops,cargo)
 end
 if match and CargoObject then
@@ -73286,7 +73396,6 @@ local match,CargoObject,CargoName=IsVehicMatch(cargo)
 if not match then
 self.CargoCounter=self.CargoCounter+1
 cargo.ID=self.CargoCounter
-cargo.Stock=1
 table.insert(self.Cargo_Crates,cargo)
 end
 if match and CargoObject then
