@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-30T13:20:35+01:00-d06a6185820a53ea9d04485dd3a9f5984c49a9a5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-30T18:33:06+01:00-fe0edeb011c0d83d2890ffb29b887118ef765aab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4001,6 +4001,34 @@ end
 end
 function UTILS.ScalarMult(vec,mult)
 return{x=vec.x*mult,y=vec.y*mult,z=vec.z*mult}
+end
+UTILS.Weather={}
+function UTILS.Weather.GetFogThickness()
+return world.weather.getFogThickness()
+end
+function UTILS.Weather.SetFogThickness(Thickness)
+local value=Thickness
+if value<100 then value=100
+elseif value>5000 then value=5000 end
+return world.weather.setFogThickness(value)
+end
+function UTILS.Weather.RemoveFog()
+return world.weather.setFogThickness(0)
+end
+function UTILS.Weather.GetFogVisibilityDistanceMax()
+return world.weather.getFogVisibilityDistance()
+end
+function UTILS.Weather.SetFogVisibilityDistance(Thickness)
+local value=Thickness
+if value<100 then value=100
+elseif value>100000 then value=100000 end
+return world.weather.setFogVisibilityDistance(value)
+end
+function UTILS.Weather.SetFogAnimation(AnimationKeys)
+return world.weather.setFogAnimation(AnimationKeys)
+end
+function UTILS.Weather.StopFogAnimation()
+return world.weather.setFogAnimation({})
 end
 PROFILER={
 ClassName="PROFILER",
@@ -74333,7 +74361,7 @@ end
 self.EngineersInField=engtable
 return self
 end
-function CTLD:_CountStockPlusInHeloPlusAliveGroups()
+function CTLD:_CountStockPlusInHeloPlusAliveGroups(Restock,Threshold)
 local Troopstable={}
 for _id,_cargo in pairs(self.Cargo_Crates)do
 local generic=_cargo
@@ -74347,6 +74375,9 @@ Infield=0,
 Inhelo=0,
 Sum=generic:GetStock(),
 }
+if Restock==true then
+Troopstable[genname].GenericCargo=generic
+end
 end
 end
 for _id,_cargo in pairs(self.Cargo_Troops)do
@@ -74361,6 +74392,9 @@ Infield=0,
 Inhelo=0,
 Sum=generic:GetStock(),
 }
+if Restock==true then
+Troopstable[genname].GenericCargo=generic
+end
 end
 end
 for _index,_group in pairs(self.DroppedTroops)do
@@ -74371,19 +74405,8 @@ if generic then
 local genname=generic:GetName()
 self:T("Found Generic "..genname.." in the field. Adding.")
 if generic:GetStock0()>0 then
-if not Troopstable[genname]then
-Troopstable[genname]={
-Stock0=generic:GetStock0(),
-Stock=generic:GetStock(),
-StockR=generic:GetRelativeStock(),
-Infield=1,
-Inhelo=0,
-Sum=generic:GetStock()+1,
-}
-else
 Troopstable[genname].Infield=Troopstable[genname].Infield+1
 Troopstable[genname].Sum=Troopstable[genname].Infield+Troopstable[genname].Stock+Troopstable[genname].Inhelo
-end
 end
 else
 self:E(self.lid.."Group without Cargo Generic: ".._group:GetName())
@@ -74421,6 +74444,16 @@ end
 end
 end
 end
+if Restock==true then
+local threshold=Threshold or 75
+for _name,_data in pairs(Troopstable)do
+if _data.StockR and _data.StockR<threshold then
+if _data.GenericCargo then
+_data.GenericCargo:SetStock(_data.Stock0)
+end
+end
+end
+end
 return Troopstable
 end
 function CTLD:AddStockTroops(Name,Number)
@@ -74430,6 +74463,7 @@ local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:AddStock(number)
+break
 end
 end
 return self
@@ -74441,6 +74475,7 @@ local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:AddStock(number)
+break
 end
 end
 return self
@@ -74452,6 +74487,7 @@ local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:AddStock(number)
+break
 end
 end
 return self
@@ -74463,6 +74499,7 @@ local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:SetStock(number)
+break
 end
 end
 return self
@@ -74474,6 +74511,7 @@ local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:SetStock(number)
+break
 end
 end
 return self
@@ -74485,6 +74523,7 @@ local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:SetStock(number)
+break
 end
 end
 return self
