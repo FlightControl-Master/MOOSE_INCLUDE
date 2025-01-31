@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-30T18:33:06+01:00-fe0edeb011c0d83d2890ffb29b887118ef765aab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-31T14:27:25+01:00-3fb4cae7b8ea7a8d446f965259feec90deb31a5f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19787,10 +19787,11 @@ self.RepeatOnEngineShutDown=false
 self.RepeatOnLanding=true
 return self
 end
-function SPAWN:InitRepeatOnLanding()
+function SPAWN:InitRepeatOnLanding(WaitingTime)
 self:InitRepeat()
 self.RepeatOnEngineShutDown=false
 self.RepeatOnLanding=true
+self.RepeatOnLandingTime=(WaitingTime and WaitingTime>3)and WaitingTime or 3
 return self
 end
 function SPAWN:InitRepeatOnEngineShutDown()
@@ -21218,7 +21219,7 @@ if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefi
 SpawnGroup:SetState(SpawnGroup,"Spawn_Landed",true)
 if self.RepeatOnLanding then
 local SpawnGroupIndex=self:GetSpawnIndexFromGroup(SpawnGroup)
-SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},3)
+SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},self.RepeatOnLandingTime or 3)
 end
 end
 end
@@ -27359,7 +27360,11 @@ end
 return nil
 end
 function GROUP:IsPlayer()
-return self:GetUnit(1):IsPlayer()
+local unit=self:GetUnit(1)
+if unit then
+return unit:IsPlayer()
+end
+return false
 end
 function GROUP:GetUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
