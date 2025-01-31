@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-30T18:32:39+01:00-d06e44d37b11b3bd6b8f5ac0b3db3c80744c20cd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-31T10:04:01+01:00-8e286edd25fa0b0fb4f423128279aa5f2bd9c99d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26929,7 +26929,11 @@ end
 return nil
 end
 function GROUP:IsPlayer()
-return self:GetUnit(1):IsPlayer()
+local unit=self:GetUnit(1)
+if unit then
+return unit:IsPlayer()
+end
+return false
 end
 function GROUP:GetUnit(UnitNumber)
 local DCSGroup=self:GetDCSObject()
