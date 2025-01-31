@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-31T10:04:01+01:00-8e286edd25fa0b0fb4f423128279aa5f2bd9c99d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-31T14:26:32+01:00-f0fe1b431df2a23a4d8bef6fa7dbf403658279da ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19876,10 +19876,11 @@ self.RepeatOnEngineShutDown=false
 self.RepeatOnLanding=true
 return self
 end
-function SPAWN:InitRepeatOnLanding()
+function SPAWN:InitRepeatOnLanding(WaitingTime)
 self:InitRepeat()
 self.RepeatOnEngineShutDown=false
 self.RepeatOnLanding=true
+self.RepeatOnLandingTime=(WaitingTime and WaitingTime>3)and WaitingTime or 3
 return self
 end
 function SPAWN:InitRepeatOnEngineShutDown()
@@ -21307,7 +21308,7 @@ if EventPrefix==self.SpawnTemplatePrefix or(self.SpawnAliasPrefix and EventPrefi
 SpawnGroup:SetState(SpawnGroup,"Spawn_Landed",true)
 if self.RepeatOnLanding then
 local SpawnGroupIndex=self:GetSpawnIndexFromGroup(SpawnGroup)
-SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},3)
+SCHEDULER:New(nil,self.ReSpawn,{self,SpawnGroupIndex},self.RepeatOnLandingTime or 3)
 end
 end
 end
