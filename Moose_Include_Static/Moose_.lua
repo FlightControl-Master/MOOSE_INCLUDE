@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-31T14:27:25+01:00-3fb4cae7b8ea7a8d446f965259feec90deb31a5f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-01T18:40:44+01:00-ed31b87b2f48a6207193f89c96418ebfee078b5e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18836,7 +18836,7 @@ end
 return self
 end
 _MESSAGESRS={}
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend)
 _MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
@@ -18846,6 +18846,9 @@ _MESSAGESRS.MSRS:SetCoalition(_MESSAGESRS.coalition)
 _MESSAGESRS.coordinate=Coordinate
 if Coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(Coordinate)
+end
+if Backend then
+_MESSAGESRS.MSRS:SetBackend(Backend)
 end
 _MESSAGESRS.Culture=Culture or MSRS.culture or"en-GB"
 _MESSAGESRS.MSRS:SetCulture(Culture)
@@ -111044,7 +111047,7 @@ self:TargetDetected(targetsbyclock,client,playername)
 end
 return self
 end
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or MSRS.gender or"male"
@@ -111065,6 +111068,9 @@ self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVolume(self.Volume)
+if Backend then
+self.SRS:SetBackend(Backend)
+end
 if self.PathToGoogleKey then
 self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.PathToGoogleKey)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
