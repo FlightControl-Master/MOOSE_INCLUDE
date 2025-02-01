@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-01-31T14:28:08+01:00-02b75bf529ac27c378cf1d47450f4a0e221c2b50 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-01T18:39:30+01:00-32e538a27d962f53df310d0181c5bfeb9bfa1cff ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18716,7 +18716,7 @@ end
 return self
 end
 _MESSAGESRS={}
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend)
 _MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
@@ -18726,6 +18726,9 @@ _MESSAGESRS.MSRS:SetCoalition(_MESSAGESRS.coalition)
 _MESSAGESRS.coordinate=Coordinate
 if Coordinate then
 _MESSAGESRS.MSRS:SetCoordinate(Coordinate)
+end
+if Backend then
+_MESSAGESRS.MSRS:SetBackend(Backend)
 end
 _MESSAGESRS.Culture=Culture or MSRS.culture or"en-GB"
 _MESSAGESRS.MSRS:SetCulture(Culture)
@@ -109653,7 +109656,7 @@ self:TargetDetected(targetsbyclock,client,playername)
 end
 return self
 end
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
 self.Gender=Gender or MSRS.gender or"male"
@@ -109674,6 +109677,9 @@ self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVolume(self.Volume)
+if Backend then
+self.SRS:SetBackend(Backend)
+end
 if self.PathToGoogleKey then
 self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.PathToGoogleKey)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
@@ -114812,7 +114818,7 @@ local filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".bat"
 if self.UsePowerShell==true then
 filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".ps1"
 batContent=command.."\'"
-self:I({batContent=batContent})
+self:T({batContent=batContent})
 end
 local script=io.open(filename,"w+")
 script:write(batContent)
@@ -114999,6 +115005,7 @@ end
 return self
 end
 function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate)
+self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
