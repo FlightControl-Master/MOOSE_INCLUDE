@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-01T18:39:30+01:00-32e538a27d962f53df310d0181c5bfeb9bfa1cff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-02T12:56:35+01:00-a5a0d8ab8afa3390e4cfcba7b198746aca979b92 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28514,7 +28514,7 @@ local issam=false
 local units=self:GetUnits()
 for _,_unit in pairs(units or{})do
 local unit=_unit
-if unit:HasSEAD()and unit:IsGround()and(not unit:HasAttribute("Mobile AAA"))then
+if unit:IsSAM()then
 issam=true
 break
 end
@@ -28522,18 +28522,16 @@ end
 return issam
 end
 function GROUP:IsAAA()
-local issam=false
+local isAAA=false
 local units=self:GetUnits()
 for _,_unit in pairs(units or{})do
 local unit=_unit
-local desc=unit:GetDesc()or{}
-local attr=desc.attributes or{}
-if unit:HasSEAD()then return false end
-if attr["AAA"]or attr["SAM related"]then
-issam=true
+if unit:IsAAA()then
+isAAA=true
+break
 end
 end
-return issam
+return isAAA
 end
 UNIT={
 ClassName="UNIT",
@@ -28714,12 +28712,18 @@ return nil
 end
 function UNIT:IsPlayer()
 local group=self:GetGroup()
-if not group then return false end
+if not group then
+return false
+end
 local template=group:GetTemplate()
 if(template==nil)or(template.units==nil)then
 local DCSObject=self:GetDCSObject()
 if DCSObject then
-if DCSObject:getPlayerName()~=nil then return true else return false end
+if DCSObject:getPlayerName()~=nil then
+return true
+else
+return false
+end
 else
 return false
 end
@@ -28943,7 +28947,11 @@ return nammo,nshells,nrockets,nbombs,nmissiles,narti,nAPshells,nHEshells
 end
 function UNIT:HasAPShells()
 local _,_,_,_,_,_,shells=self:GetAmmunition()
-if shells>0 then return true else return false end
+if shells>0 then
+return true
+else
+return false
+end
 end
 function UNIT:GetAPShells()
 local _,_,_,_,_,_,shells=self:GetAmmunition()
@@ -28955,11 +28963,19 @@ return shells or 0
 end
 function UNIT:HasHEShells()
 local _,_,_,_,_,_,_,shells=self:GetAmmunition()
-if shells>0 then return true else return false end
+if shells>0 then
+return true
+else
+return false
+end
 end
 function UNIT:HasArtiShells()
 local _,_,_,_,_,shells=self:GetAmmunition()
-if shells>0 then return true else return false end
+if shells>0 then
+return true
+else
+return false
+end
 end
 function UNIT:GetArtiShells()
 local _,_,_,_,_,shells=self:GetAmmunition()
@@ -29102,20 +29118,30 @@ local ThreatLevels={
 [10]="MR SAMs",
 [11]="LR SAMs"
 }
-if Attributes["LR SAM"]then ThreatLevel=10
-elseif Attributes["MR SAM"]then ThreatLevel=9
+if Attributes["LR SAM"]then
+ThreatLevel=10
+elseif Attributes["MR SAM"]then
+ThreatLevel=9
 elseif Attributes["SR SAM"]and
-not Attributes["IR Guided SAM"]then ThreatLevel=8
+not Attributes["IR Guided SAM"]then
+ThreatLevel=8
 elseif(Attributes["SR SAM"]or Attributes["MANPADS"])and
-Attributes["IR Guided SAM"]then ThreatLevel=7
-elseif Attributes["AAA"]then ThreatLevel=6
-elseif Attributes["Modern Tanks"]then ThreatLevel=5
+Attributes["IR Guided SAM"]then
+ThreatLevel=7
+elseif Attributes["AAA"]then
+ThreatLevel=6
+elseif Attributes["Modern Tanks"]then
+ThreatLevel=5
 elseif(Attributes["Tanks"]or Attributes["IFV"])and
-Attributes["ATGM"]then ThreatLevel=4
+Attributes["ATGM"]then
+ThreatLevel=4
 elseif(Attributes["Tanks"]or Attributes["IFV"])and
-not Attributes["ATGM"]then ThreatLevel=3
-elseif Attributes["Old Tanks"]or Attributes["APC"]or Attributes["Artillery"]then ThreatLevel=2
-elseif Attributes["Infantry"]or Attributes["EWR"]then ThreatLevel=1
+not Attributes["ATGM"]then
+ThreatLevel=3
+elseif Attributes["Old Tanks"]or Attributes["APC"]or Attributes["Artillery"]then
+ThreatLevel=2
+elseif Attributes["Infantry"]or Attributes["EWR"]then
+ThreatLevel=1
 end
 ThreatText=ThreatLevels[ThreatLevel+1]
 end
@@ -29133,18 +29159,30 @@ local ThreatLevels={
 [10]="Multirole Fighter",
 [11]="Fighter"
 }
-if Attributes["Fighters"]then ThreatLevel=10
-elseif Attributes["Multirole fighters"]then ThreatLevel=9
-elseif Attributes["Interceptors"]then ThreatLevel=9
-elseif Attributes["Battleplanes"]then ThreatLevel=8
-elseif Attributes["Battle airplanes"]then ThreatLevel=8
-elseif Attributes["Attack helicopters"]then ThreatLevel=7
-elseif Attributes["Strategic bombers"]then ThreatLevel=6
-elseif Attributes["Bombers"]then ThreatLevel=5
-elseif Attributes["UAVs"]then ThreatLevel=4
-elseif Attributes["Transport helicopters"]then ThreatLevel=3
-elseif Attributes["AWACS"]then ThreatLevel=2
-elseif Attributes["Tankers"]then ThreatLevel=1
+if Attributes["Fighters"]then
+ThreatLevel=10
+elseif Attributes["Multirole fighters"]then
+ThreatLevel=9
+elseif Attributes["Interceptors"]then
+ThreatLevel=9
+elseif Attributes["Battleplanes"]then
+ThreatLevel=8
+elseif Attributes["Battle airplanes"]then
+ThreatLevel=8
+elseif Attributes["Attack helicopters"]then
+ThreatLevel=7
+elseif Attributes["Strategic bombers"]then
+ThreatLevel=6
+elseif Attributes["Bombers"]then
+ThreatLevel=5
+elseif Attributes["UAVs"]then
+ThreatLevel=4
+elseif Attributes["Transport helicopters"]then
+ThreatLevel=3
+elseif Attributes["AWACS"]then
+ThreatLevel=2
+elseif Attributes["Tankers"]then
+ThreatLevel=1
 end
 ThreatText=ThreatLevels[ThreatLevel+1]
 end
@@ -29162,12 +29200,18 @@ local ThreatLevels={
 [10]="",
 [11]="Aircraft Carrier"
 }
-if Attributes["Aircraft Carriers"]then ThreatLevel=10
-elseif Attributes["Destroyers"]then ThreatLevel=8
-elseif Attributes["Cruisers"]then ThreatLevel=6
-elseif Attributes["Frigates"]then ThreatLevel=4
-elseif Attributes["Corvettes"]then ThreatLevel=2
-elseif Attributes["Light armed ships"]then ThreatLevel=1
+if Attributes["Aircraft Carriers"]then
+ThreatLevel=10
+elseif Attributes["Destroyers"]then
+ThreatLevel=8
+elseif Attributes["Cruisers"]then
+ThreatLevel=6
+elseif Attributes["Frigates"]then
+ThreatLevel=4
+elseif Attributes["Corvettes"]then
+ThreatLevel=2
+elseif Attributes["Light armed ships"]then
+ThreatLevel=1
 end
 ThreatText=ThreatLevels[ThreatLevel+1]
 end
@@ -29356,6 +29400,43 @@ FGL=template.datalinks.SADL.settings.flightLead
 end
 end
 return STN,VCL,VCN,FGL
+end
+do
+function UNIT:SetAIOnOff(AIOnOff)
+local DCSUnit=self:GetDCSObject()
+if DCSUnit then
+local DCSController=DCSUnit:getController()
+if DCSController then
+DCSController:setOnOff(AIOnOff)
+return self
+end
+end
+return nil
+end
+function UNIT:SetAIOn()
+return self:SetAIOnOff(true)
+end
+function UNIT:SetAIOff()
+return self:SetAIOnOff(false)
+end
+end
+function UNIT:IsSAM()
+if self:HasSEAD()and self:IsGround()and(not self:HasAttribute("Mobile AAA"))then
+return true
+end
+return false
+end
+function UNIT:IsAAA()
+local unit=self
+local desc=unit:GetDesc()or{}
+local attr=desc.attributes or{}
+if unit:HasSEAD()then
+return false
+end
+if attr["AAA"]or attr["SAM related"]then
+return true
+end
+return false
 end
 CLIENT={
 ClassName="CLIENT",
@@ -56471,8 +56552,8 @@ exception=false,
 AIOff=SwitchAAA,
 }
 end
-if grp.Tiresias and(grp.Tiresias.exception==false)then
-if grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp.Tiresias.invisible=true
 if SwitchAAA then
@@ -56497,10 +56578,11 @@ exception=false,
 }
 end
 if grp.Tiresias and(not grp.Tiresias.exception==true)then
-if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+if grp.Tiresias and grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp:SetAIOff()
 grp.Tiresias.invisible=true
+grp.Tiresias.AIOff=true
 end
 end
 end
@@ -56516,8 +56598,8 @@ exception=not SwitchSAM,
 AIOff=SwitchSAM,
 }
 end
-if grp.Tiresias and(grp.Tiresias.exception==false)then
-if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+if grp.Tiresias and(not grp.Tiresias.exception==true)then
+if grp.Tiresias and grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp.Tiresias.invisible=true
 grp:SetAIOnOff(SwitchSAM)
@@ -56563,7 +56645,8 @@ if ground:CountAlive()>0 then
 ground:ForEachGroupAlive(
 function(grp)
 local name=grp:GetName()
-if grp.Tiresias and grp.Tiresias.exception and(grp.Tiresias.exception==false)then
+if grp:GetCoalition()~=group:GetCoalition()
+and grp.Tiresias and grp.Tiresias.type and(not grp.Tiresias.exception==true)then
 if grp.Tiresias.invisible==true then
 grp:SetCommandInvisible(false)
 grp.Tiresias.invisible=false
@@ -81545,7 +81628,7 @@ if Event.IniCoalition==self.coalition then
 self:_SetClientMenus()
 end
 end
-if Event.id==EVENTS.PlayerLeaveUnit then
+if Event.id==EVENTS.PlayerLeaveUnit and Event.IniGroupName then
 self:T("Player group left  unit: "..Event.IniGroupName)
 self:T("Player name left: "..Event.IniPlayerName)
 self:T("Coalition = "..UTILS.GetCoalitionName(Event.IniCoalition))
