@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-01T18:40:44+01:00-ed31b87b2f48a6207193f89c96418ebfee078b5e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-02T12:53:25+01:00-84e85dd0b573d56b53e3ac52fcaec351384a4adb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -57899,7 +57899,7 @@ AIOff=SwitchAAA,
 }
 end
 if grp.Tiresias and(not grp.Tiresias.exception==true)then
-if grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+if grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp.Tiresias.invisible=true
 if SwitchAAA then
@@ -57924,10 +57924,11 @@ exception=false,
 }
 end
 if grp.Tiresias and(not grp.Tiresias.exception==true)then
-if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+if grp.Tiresias and grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp:SetAIOff()
 grp.Tiresias.invisible=true
+grp.Tiresias.AIOff=true
 end
 end
 end
@@ -57943,7 +57944,7 @@ exception=false,
 }
 end
 if grp.Tiresias and(not grp.Tiresias.exception==true)then
-if grp.Tiresias and grp.Tiresias.invisible and grp.Tiresias.invisible==false then
+if grp.Tiresias and grp.Tiresias.invisible==false then
 grp:SetCommandInvisible(true)
 grp.Tiresias.invisible=true
 end
@@ -57983,7 +57984,8 @@ if ground:CountAlive()>0 then
 ground:ForEachGroupAlive(
 function(grp)
 local name=grp:GetName()
-if grp.Tiresias and grp.Tiresias.type and(not grp.Tiresias.exception==true)then
+if grp:GetCoalition()~=group:GetCoalition()
+and grp.Tiresias and grp.Tiresias.type and(not grp.Tiresias.exception==true)then
 if grp.Tiresias.invisible==true then
 grp:SetCommandInvisible(false)
 grp.Tiresias.invisible=false
@@ -82936,7 +82938,7 @@ if Event.IniCoalition==self.coalition then
 self:_SetClientMenus()
 end
 end
-if Event.id==EVENTS.PlayerLeaveUnit then
+if Event.id==EVENTS.PlayerLeaveUnit and Event.IniGroupName then
 self:T("Player group left  unit: "..Event.IniGroupName)
 self:T("Player name left: "..Event.IniPlayerName)
 self:T("Coalition = "..UTILS.GetCoalitionName(Event.IniCoalition))
