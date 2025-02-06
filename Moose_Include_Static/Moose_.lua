@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-02T12:56:35+01:00-a5a0d8ab8afa3390e4cfcba7b198746aca979b92 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-06T16:35:58+01:00-c6d79db2668d5a807c90c5d0577328a1e0879396 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29426,6 +29426,16 @@ return true
 end
 return false
 end
+function UNIT:IsEWR()
+if self:IsGround()then
+local DCSUnit=self:GetDCSObject()
+if DCSUnit then
+local attrs=DCSUnit:getDesc().attributes
+return attrs["EWR"]==true
+end
+end
+return false
+end
 function UNIT:IsAAA()
 local unit=self
 local desc=unit:GetDesc()or{}
@@ -34274,14 +34284,14 @@ self:T({"CleanUp: Add to CleanUpList: ",CleanUpGroup:GetName(),CleanUpUnitName})
 end
 function CLEANUP_AIRBASE.__:EventAddForCleanUp(Event)
 self:F({Event})
-if Event.IniDCSUnit and Event.IniCategory==Object.Category.UNIT then
+if Event.IniDCSUnit and Event.IniUnit and Event.IniCategory==Object.Category.UNIT then
 if self.CleanUpList[Event.IniDCSUnitName]==nil then
 if self:IsInAirbase(Event.IniUnit:GetVec2())then
 self:AddForCleanUp(Event.IniUnit,Event.IniDCSUnitName)
 end
 end
 end
-if Event.TgtDCSUnit and Event.TgtCategory==Object.Category.UNIT then
+if Event.TgtDCSUnit and Event.TgtUnit and Event.TgtCategory==Object.Category.UNIT then
 if self.CleanUpList[Event.TgtDCSUnitName]==nil then
 if self:IsInAirbase(Event.TgtUnit:GetVec2())then
 self:AddForCleanUp(Event.TgtUnit,Event.TgtDCSUnitName)
@@ -55578,7 +55588,7 @@ debug=false,
 smokemenu=true,
 RoundingPrecision=0,
 }
-AUTOLASE.version="0.1.27"
+AUTOLASE.version="0.1.28"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -55631,6 +55641,7 @@ self.reporttimeshort=10
 self.reporttimelong=30
 self.smoketargets=false
 self.smokecolor=SMOKECOLOR.Red
+self.smokeoffset=nil
 self.notifypilots=true
 self.targetsperrecce={}
 self.RecceUnits={}
@@ -55648,6 +55659,7 @@ self.playermenus={}
 self.smokemenu=true
 self.threatmenu=true
 self.RoundingPrecision=0
+self:EnableSmokeMenu({Angle=math.random(0,359),Distance=math.random(10,20)})
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
 self:AddTransition("*","Lasing","*")
@@ -55850,12 +55862,18 @@ function AUTOLASE:SetRoundingPrecsion(IDP)
 self.RoundingPrecision=IDP or 0
 return self
 end
-function AUTOLASE:EnableSmokeMenu()
+function AUTOLASE:EnableSmokeMenu(Offset)
 self.smokemenu=true
+if Offset then
+self.smokeoffset={}
+self.smokeoffset.Distance=Offset.Distance or math.random(10,20)
+self.smokeoffset.Angle=Offset.Angle or math.random(0,359)
+end
 return self
 end
 function AUTOLASE:DisableSmokeMenu()
 self.smokemenu=false
+self.smokeoffset=nil
 return self
 end
 function AUTOLASE:EnableThreatLevelMenu()
@@ -56224,6 +56242,9 @@ coordinate=unit:GetCoordinate(),
 }
 if self.smoketargets then
 local coord=unit:GetCoordinate()
+if self.smokeoffset then
+coord:Translate(self.smokeoffset.Distance,self.smokeoffset.Angle,true,true)
+end
 local color=self:GetSmokeColor(reccename)
 coord:Smoke(color)
 end
