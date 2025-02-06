@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-03T12:03:04+01:00-a2b650a9e36e356ba69ece087315d43d1e192ea8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-06T12:22:18+01:00-1156971d94637cda83ca8c85e8038f7568e6e8bb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29110,6 +29110,16 @@ end
 function UNIT:IsSAM()
 if self:HasSEAD()and self:IsGround()and(not self:HasAttribute("Mobile AAA"))then
 return true
+end
+return false
+end
+function UNIT:IsEWR()
+if self:IsGround()then
+local DCSUnit=self:GetDCSObject()
+if DCSUnit then
+local attrs=DCSUnit:getDesc().attributes
+return attrs["EWR"]==true
+end
 end
 return false
 end
