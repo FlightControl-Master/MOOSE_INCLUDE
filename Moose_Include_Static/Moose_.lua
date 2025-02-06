@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-06T08:52:20+01:00-b4e6201b68cce72e915dacbb729730cf1f684b42 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-06T16:36:27+01:00-66af360ce60633d93b480207eff0cac9226ccfc1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29543,6 +29543,16 @@ return true
 end
 return false
 end
+function UNIT:IsEWR()
+if self:IsGround()then
+local DCSUnit=self:GetDCSObject()
+if DCSUnit then
+local attrs=DCSUnit:getDesc().attributes
+return attrs["EWR"]==true
+end
+end
+return false
+end
 function UNIT:IsAAA()
 local unit=self
 local desc=unit:GetDesc()or{}
@@ -35715,14 +35725,14 @@ self:T({"CleanUp: Add to CleanUpList: ",CleanUpGroup:GetName(),CleanUpUnitName})
 end
 function CLEANUP_AIRBASE.__:EventAddForCleanUp(Event)
 self:F({Event})
-if Event.IniDCSUnit and Event.IniCategory==Object.Category.UNIT then
+if Event.IniDCSUnit and Event.IniUnit and Event.IniCategory==Object.Category.UNIT then
 if self.CleanUpList[Event.IniDCSUnitName]==nil then
 if self:IsInAirbase(Event.IniUnit:GetVec2())then
 self:AddForCleanUp(Event.IniUnit,Event.IniDCSUnitName)
 end
 end
 end
-if Event.TgtDCSUnit and Event.TgtCategory==Object.Category.UNIT then
+if Event.TgtDCSUnit and Event.TgtUnit and Event.TgtCategory==Object.Category.UNIT then
 if self.CleanUpList[Event.TgtDCSUnitName]==nil then
 if self:IsInAirbase(Event.TgtUnit:GetVec2())then
 self:AddForCleanUp(Event.TgtUnit,Event.TgtDCSUnitName)
