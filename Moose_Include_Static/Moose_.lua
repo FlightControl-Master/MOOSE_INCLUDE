@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T12:05:57+01:00-6d38346eb8620661553adbb80503d65e38071952 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T12:24:41+01:00-aafbd8c297b7db91a26f1cb220cf81508e65cb9a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71688,7 +71688,7 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 }
-CTLD.version="1.1.29"
+CTLD.version="1.1.30"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74035,6 +74035,7 @@ MENU_GROUP_COMMAND:New(theGroup,line,dropTroopsMenu,self._UnloadSingleTroopByID,
 end
 end
 end
+return self
 end
 function CTLD:_CheckTemplates(temptable)
 self:T(self.lid.." _CheckTemplates")
