@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T11:34:58+01:00-fa0ce0927be1d8b70303f54ac4133391b014a7bf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T12:01:57+01:00-c3ccecdd4afa62df1582e6a6fbf825b88ce105dc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -82624,7 +82624,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.70",
+version="0.2.71",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -83636,9 +83636,9 @@ local OffsetX=500
 local OffsetY=500
 local OffsetZ=500
 if self.OffsetVec then
-OffsetX=self.OffsetVec.x
-OffsetY=self.OffsetVec.y
-OffsetZ=self.OffsetVec.z
+OffsetX=self.OffsetVec.x or 500
+OffsetY=self.OffsetVec.y or 500
+OffsetZ=self.OffsetVec.z or 500
 end
 for i=1,self.EscortNumber do
 local escort=AUFTRAG:NewESCORT(group,{x=OffsetX*((i+(i%2))/2),y=OffsetY*((i+(i%2))/2),z=(OffsetZ+OffsetZ*((i+(i%2))/2))*(-1)^i},self.EscortEngageMaxDistance,{"Air"})
