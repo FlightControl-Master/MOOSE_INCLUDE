@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T12:03:23+01:00-91e7c86ba07113b956cbbcfafef05bb32209026b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T12:06:45+01:00-5a94be98fe1404530aea9f4965e9f084e9cb83b3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -72416,10 +72416,6 @@ and cObj:GetName()==CrateName
 then
 table.insert(matched,cObj)
 end
-end
-if#matched<needed then
-self:_SendMessage(string.format("You only have %d of %d %s crates needed!",#matched,needed,CrateName),10,false,Group)
-return self
 end
 local crateToUse=matched[1]
 self:_GetCrates(Group,Unit,crateToUse,needed,true)
