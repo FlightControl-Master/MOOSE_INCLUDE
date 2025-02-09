@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-08T14:29:59+01:00-bc9eee22b71bf85ec76844dc7d3e449ed501b7e6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-09T11:48:22+01:00-96337cc5df289591ca79486b24642cb343f6008e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -68982,6 +68982,7 @@ end
 end
 self.Loaded_Cargo[unitname]=loaded
 self:_UpdateUnitCargoMass(Unit)
+self:_RefreshDropCratesMenu(Group,Unit)
 self:_CleanupTrackedCrates(crateidsloaded)
 end
 end
