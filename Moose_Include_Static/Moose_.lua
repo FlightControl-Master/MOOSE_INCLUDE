@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-10T06:01:30+01:00-9b1abab73ab9a9fe1378aa94575d5342acc69dca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-10T18:02:42+01:00-f44db275651be4898705dbb9eb8756431b3403ed ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -37107,7 +37107,7 @@ return true
 end
 ATC_GROUND_UNIVERSAL={
 ClassName="ATC_GROUND_UNIVERSAL",
-Version="0.0.1",
+Version="0.0.2",
 SetClient=nil,
 Airbases=nil,
 AirbaseList=nil,
@@ -37117,14 +37117,21 @@ function ATC_GROUND_UNIVERSAL:New(AirbaseList)
 local self=BASE:Inherit(self,BASE:New())
 self:T({self.ClassName})
 self.Airbases={}
-for _name,_ in pairs(_DATABASE.AIRBASES)do
-self.Airbases[_name]={}
-end
 self.AirbaseList=AirbaseList
 if not self.AirbaseList then
 self.AirbaseList={}
-for _name,_ in pairs(_DATABASE.AIRBASES)do
+for _name,_base in pairs(_DATABASE.AIRBASES)do
+if _base and _base.isAirdrome==true then
 self.AirbaseList[_name]=_name
+self.Airbases[_name]={}
+end
+end
+else
+for _,_name in pairs(AirbaseList)do
+local airbase=_DATABASE:FindAirbase(_name)
+if airbase and airbase.isAirdrome==true then
+self.Airbases[_name]={}
+end
 end
 end
 self.SetClient=SET_CLIENT:New():FilterCategories("plane"):FilterStart()
