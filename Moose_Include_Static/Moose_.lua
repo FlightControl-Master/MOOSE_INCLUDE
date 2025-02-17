@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-14T06:13:08+01:00-24b320077721d45774acd56b25086ef6bdfb2e5a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-17T07:01:08+01:00-913b2c6d3ffda3f032ab80a1b68f2a3146465d8d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -72961,17 +72961,24 @@ end
 report:Add("------------------------------------------------------------")
 report:Add("       -- CRATES --")
 local cratecount=0
+local accumCrates={}
 for _,_cargo in pairs(cargotable or{})do
 local cargo=_cargo
 local type=cargo:GetType()
 if(type~=CTLD_CARGO.Enum.TROOPS and type~=CTLD_CARGO.Enum.ENGINEERS and type~=CTLD_CARGO.Enum.GCLOADABLE)and(not cargo:WasDropped()or self.allowcratepickupagain)then
-report:Add(string.format("Crate: %s size 1",cargo:GetName()))
-cratecount=cratecount+1
+local cName=cargo:GetName()
+local needed=cargo:GetCratesNeeded()or 1
+accumCrates[cName]=accumCrates[cName]or{count=0,needed=needed}
+accumCrates[cName].count=accumCrates[cName].count+1
 end
 if type==CTLD_CARGO.Enum.GCLOADABLE and not cargo:WasDropped()then
 report:Add(string.format("GC loaded Crate: %s size 1",cargo:GetName()))
 cratecount=cratecount+1
 end
+end
+for cName,data in pairs(accumCrates)do
+cratecount=cratecount+data.count
+report:Add(string.format("Crate: %s %d/%d",cName,data.count,data.needed))
 end
 if cratecount==0 then
 report:Add("        N O N E")
@@ -73797,7 +73804,6 @@ if n==0 then
 MENU_GROUP_COMMAND:New(Group,"No crates found! Rescan?",Group.MyLoadCratesMenu,function()self:_RefreshLoadCratesMenu(Group,Unit)end)
 return
 end
-MENU_GROUP_COMMAND:New(Group,"Rescan?",Group.MyLoadCratesMenu,function()self:_RefreshLoadCratesMenu(Group,Unit)end)
 MENU_GROUP_COMMAND:New(Group,"Load ALL",Group.MyLoadCratesMenu,self._LoadCratesNearby,self,Group,Unit)
 local cargoByName={}
 for _,crate in pairs(nearby)do
@@ -73812,6 +73818,7 @@ local line
 if found>=needed then
 line=string.format("Load %s",cName)
 else
+MENU_GROUP_COMMAND:New(Group,"Rescan?",Group.MyLoadCratesMenu,function()self:_RefreshLoadCratesMenu(Group,Unit)end)
 line=string.format("Load %s (%d/%d)",cName,found,needed)
 end
 MENU_GROUP_COMMAND:New(Group,line,Group.MyLoadCratesMenu,self._LoadSingleCrateSet,self,Group,Unit,cName)
