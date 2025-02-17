@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-17T07:00:18+01:00-cea2f1822840011826ea8d1496dcf409f6af3cf5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-17T08:35:30+01:00-a49bd23a2abe741b07b59ce1f1cc58fe8096e3fd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -37129,7 +37129,7 @@ end
 else
 for _,_name in pairs(AirbaseList)do
 local airbase=_DATABASE:FindAirbase(_name)
-if airbase and airbase.isAirdrome==true then
+if airbase and(airbase.isAirdrome==true)then
 self.Airbases[_name]={}
 end
 end
