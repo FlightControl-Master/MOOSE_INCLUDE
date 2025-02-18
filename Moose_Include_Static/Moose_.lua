@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-17T08:36:24+01:00-3df9b54c012741b133ccd1f690113d0e0a20591c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-18T11:12:14+01:00-d081e115c7b73dfdbf2e96b9c3e5ac68e1405af5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52759,6 +52759,7 @@ SAM_Table={},
 SAM_Table_Long={},
 SAM_Table_Medium={},
 SAM_Table_Short={},
+SAM_Table_PointDef={},
 lid="",
 Detection=nil,
 AWACS_Detection=nil,
@@ -52794,6 +52795,7 @@ ShoradGroupSet=nil,
 checkforfriendlies=false,
 SmokeDecoy=false,
 SmokeDecoyColor=SMOKECOLOR.White,
+checkcounter=1,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -52804,6 +52806,7 @@ MANTIS.SamType={
 SHORT="Short",
 MEDIUM="Medium",
 LONG="Long",
+POINT="Point",
 }
 MANTIS.SamData={
 ["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
@@ -52816,23 +52819,23 @@ MANTIS.SamData={
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
 ["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["Roland"]={Range=5,Blindspot=0,Height=5,Type="Short",Radar="Roland"},
+["Roland"]={Range=5,Blindspot=0,Height=5,Type="Point",Radar="Roland"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
-["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
+["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
 ["SA-19"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Tunguska"},
-["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Short",Radar="Tor 9A331"},
-["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
+["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Point",Radar="Tor 9A331",Point="true"},
+["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Avenger"},
 ["Chaparral"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
-["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Linebacker"},
+["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Linebacker",Point="true"},
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
 ["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
-["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="Igla"},
+["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="Igla",Point="true"},
 ["TAMIR IDFA"]={Range=20,Blindspot=0.6,Height=12.3,Type="Short",Radar="IRON_DOME_LN"},
 ["STUNNER IDFA"]={Range=250,Blindspot=1,Height=45,Type="Long",Radar="DAVID_SLING_LN"},
 }
@@ -52857,7 +52860,7 @@ MANTIS.SamDataSMA={
 ["RBS103B SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
 ["RBS103AM SMA"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
 ["RBS103BM SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
-["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
+["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Point",Radar="LvKv9040",Point="true"},
 }
 MANTIS.SamDataCH={
 ["2S38 CHM"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
@@ -52872,20 +52875,20 @@ MANTIS.SamDataCH={
 ["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
 ["NASAMS3-AMRAAMER CHM"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
 ["NASAMS3-AIM9X2 CHM"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
-["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
-["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
+["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_Centurion_C_RAM",Point="true"},
+["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="CH_PGZ09",Point="true"},
 ["S350-9M100 CHM"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
 ["S350-9M96D CHM"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
 ["LAV-AD CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
 ["HQ-22 CHM"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
-["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_PGZ95"},
-["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000_stationary"},
-["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000"},
+["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_PGZ95",Point="true"},
+["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="CH_LD3000_stationary",Point="true"},
+["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="CH_LD3000",Point="true"},
 ["FlaRakRad CHM"]={Range=8,Blindspot=1.5,Height=6,Type="Short",Radar="HQ17A"},
 ["IRIS-T SLM CHM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM"},
 ["M903PAC2KAT1 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="CH_MIM104_M903_PAC2_KAT1"},
-["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_SkynexHX"},
-["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_Skyshield_Gun"},
+["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Point",Radar="CH_SkynexHX",Point="true"},
+["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Point",Radar="CH_Skyshield_Gun",Point="true"},
 ["WieselOzelot CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_Wiesel2Ozelot"},
 ["BukM3-9M317M CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317M"},
 ["BukM3-9M317MA CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317MA"},
@@ -52900,7 +52903,7 @@ MANTIS.SamDataCH={
 ["RBS103B CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
 ["RBS103AM CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
 ["RBS103BM CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
-["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
+["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Point",Radar="LvKv9040",Point="true"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
@@ -52914,6 +52917,7 @@ self.SAM_Table={}
 self.SAM_Table_Long={}
 self.SAM_Table_Medium={}
 self.SAM_Table_Short={}
+self.SAM_Table_PointDef={}
 self.dynamic=dynamic or false
 self.checkradius=25000
 self.grouping=5000
@@ -52945,6 +52949,7 @@ self.radiusscale={}
 self.radiusscale[MANTIS.SamType.LONG]=1.1
 self.radiusscale[MANTIS.SamType.MEDIUM]=1.2
 self.radiusscale[MANTIS.SamType.SHORT]=1.3
+self.radiusscale[MANTIS.SamType.POINT]=1.4
 self.usezones=false
 self.AcceptZones={}
 self.RejectZones={}
@@ -52952,6 +52957,7 @@ self.ConflictZones={}
 self.maxlongrange=1
 self.maxmidrange=2
 self.maxshortrange=2
+self.maxpointdefrange=6
 self.maxclassic=6
 self.autoshorad=true
 self.ShoradGroupSet=SET_GROUP:New()
@@ -53008,7 +53014,8 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.23"
+self.checkcounter=1
+self.version="0.9.24"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -53082,12 +53089,13 @@ self.SmokeDecoy=Onoff
 self.SmokeDecoyColor=Color or SMOKECOLOR.White
 return self
 end
-function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic)
+function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic,Point)
 self:T(self.lid.."SetMaxActiveSAMs")
 self.maxclassic=Classic or 6
 self.maxlongrange=Long or 1
 self.maxmidrange=Mid or 2
 self.maxshortrange=Short or 2
+self.maxpointdefrange=Point or 6
 return self
 end
 function MANTIS:SetNewSAMRangeWhileRunning(range)
@@ -53464,6 +53472,16 @@ end
 if found then break end
 end
 if not found then
+local grp=GROUP:FindByName(grpname)
+if(grp and grp:IsAlive()and grp:IsAAA())or string.find(grpname,"AAA",1,true)then
+range=2000
+height=2000
+blind=50
+type=MANTIS.SamType.POINT
+found=true
+end
+end
+if not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
 return range,height,type,blind
@@ -53487,7 +53505,7 @@ elseif string.find(grpname,"CHM",1,true)then
 CHMod=true
 end
 for idx,entry in pairs(self.SamData)do
-self:T("ID = "..idx)
+self:T2("ID = "..idx)
 if string.find(grpname,idx,1,true)then
 local _entry=entry
 type=_entry.Type
@@ -53500,13 +53518,23 @@ found=true
 break
 end
 end
+if not found then
+local grp=GROUP:FindByName(grpname)
+if(grp and grp:IsAlive()and grp:IsAAA())or string.find(grpname,"AAA",1,true)then
+range=2000
+height=2000
+blind=50
+type=MANTIS.SamType.POINT
+found=true
+end
+end
 if(not found)or HDSmod or SMAMod or CHMod then
 range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
-if string.find(grpname,"SHORAD",1,true)then
-type=MANTIS.SamType.SHORT
+if found and string.find(grpname,"SHORAD",1,true)then
+type=MANTIS.SamType.POINT
 end
 return range,height,type,blind
 end
@@ -53518,6 +53546,7 @@ local SAM_Tbl={}
 local SAM_Tbl_lg={}
 local SAM_Tbl_md={}
 local SAM_Tbl_sh={}
+local SAM_Tbl_pt={}
 local SEAD_Grps={}
 local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
@@ -53537,11 +53566,18 @@ table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind,type})
 if type==MANTIS.SamType.LONG then
 table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
+self:T("SAM "..grpname.." is type LONG")
 elseif type==MANTIS.SamType.MEDIUM then
 table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
+self:T("SAM "..grpname.." is type MEDIUM")
 elseif type==MANTIS.SamType.SHORT then
 table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind,type})
+table.insert(SEAD_Grps,grpname)
+self:T("SAM "..grpname.." is type SHORT")
+elseif type==MANTIS.SamType.POINT then
+table.insert(SAM_Tbl_pt,{grpname,grpcoord,grprange,grpheight,blind,type})
+self:T("SAM "..grpname.." is type POINT")
 self.ShoradGroupSet:Add(grpname,group)
 if not self.autoshorad then
 table.insert(SEAD_Grps,grpname)
@@ -53554,6 +53590,7 @@ self.SAM_Table=SAM_Tbl
 self.SAM_Table_Long=SAM_Tbl_lg
 self.SAM_Table_Medium=SAM_Tbl_md
 self.SAM_Table_Short=SAM_Tbl_sh
+self.SAM_Table_PointDef=SAM_Tbl_pt
 local mysead=SEAD:New(SEAD_Grps,self.Padding)
 mysead:SetEngagementRange(engagerange)
 mysead:AddCallBack(self)
@@ -53571,6 +53608,7 @@ local SAM_Tbl={}
 local SAM_Tbl_lg={}
 local SAM_Tbl_md={}
 local SAM_Tbl_sh={}
+local SAM_Tbl_pt={}
 local SEAD_Grps={}
 local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
@@ -53580,14 +53618,21 @@ if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
+local radaralive=group:IsSAM()
 table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
-if type==MANTIS.SamType.LONG then
+if type==MANTIS.SamType.LONG and radaralive then
 table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind,type})
-elseif type==MANTIS.SamType.MEDIUM then
+self:T({grpname,grprange,grpheight})
+elseif type==MANTIS.SamType.MEDIUM and radaralive then
 table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind,type})
-elseif type==MANTIS.SamType.SHORT then
+self:T({grpname,grprange,grpheight})
+elseif type==MANTIS.SamType.SHORT and radaralive then
 table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind,type})
+self:T({grpname,grprange,grpheight})
+elseif type==MANTIS.SamType.POINT or(not radaralive)then
+table.insert(SAM_Tbl_pt,{grpname,grpcoord,grprange,grpheight,blind,type})
+self:T({grpname,grprange,grpheight})
 self.ShoradGroupSet:Add(grpname,group)
 if self.autoshorad then
 self.Shorad.Groupset=self.ShoradGroupSet
@@ -53599,6 +53644,7 @@ self.SAM_Table=SAM_Tbl
 self.SAM_Table_Long=SAM_Tbl_lg
 self.SAM_Table_Medium=SAM_Tbl_md
 self.SAM_Table_Short=SAM_Tbl_sh
+self.SAM_Table_PointDef=SAM_Tbl_pt
 if self.mysead~=nil then
 local mysead=self.mysead
 mysead:UpdateSet(SEAD_Grps)
@@ -53636,6 +53682,9 @@ local radius=_data[3]
 local height=_data[4]
 local blind=_data[5]*1.25+1
 local shortsam=_data[6]==MANTIS.SamType.SHORT and true or false
+if not shortsam then
+shortsam=_data[6]==MANTIS.SamType.POINT and true or false
+end
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
@@ -53699,7 +53748,7 @@ end
 end
 end
 end
-if self.debug then
+if self.debug or self.verbose then
 for _,_status in pairs(self.SamStateTracker)do
 if _status=="GREEN"then
 instatusgreen=instatusgreen+1
@@ -53718,20 +53767,22 @@ end
 function MANTIS:_Check(detection,dlink)
 self:T(self.lid.."Check")
 local detset=detection:GetDetectedItemCoordinates()
-local rand=math.random(1,100)
-if rand>65 then
+if self.checkcounter%3==0 then
 self:_RefreshSAMTable()
 end
+self.checkcounter=self.checkcounter+1
 local instatusred=0
 local instatusgreen=0
 local activeshorads=0
 if self.automode then
 local samset=self.SAM_Table_Long
-self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
+local instatusredl,instatusgreenl,activeshoradsl=self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
 local samset=self.SAM_Table_Medium
-self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
+local instatusredm,instatusgreenm,activeshoradsm=self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
 local samset=self.SAM_Table_Short
-instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+local instatusreds,instatusgreens,activeshoradss=self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+local samset=self.SAM_Table_PointDef
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxpointdefrange)
 else
 local samset=self:_GetSAMTable()
 instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxclassic)
@@ -54132,7 +54183,9 @@ local returnname=false
 for _,_groups in pairs(shoradset)do
 local groupname=_groups:GetName()
 if string.find(groupname,tgtgrp,1,true)then
+if _groups:IsSAM()then
 returnname=true
+end
 end
 end
 return returnname
