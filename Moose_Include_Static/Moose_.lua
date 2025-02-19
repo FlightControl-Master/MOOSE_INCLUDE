@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-18T21:37:37+01:00-749c5f87ded3ca8de5cf7b2d5e150355305f247c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-19T17:32:37+01:00-43eeaede656d4cafe07cef6c81371ebad9c0ea99 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12586,6 +12586,11 @@ end
 end
 end
 function SET_BASE:Add(ObjectName,Object)
+if not ObjectName or ObjectName==""then
+self:E("SET_BASE:Add - Invalid ObjectName handed")
+self:E({ObjectName=ObjectName,Object=Object})
+return self
+end
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
@@ -28459,7 +28464,7 @@ end
 function UNIT:GetSpeedMax()
 local Desc=self:GetDesc()
 if Desc then
-local SpeedMax=Desc.speedMax
+local SpeedMax=Desc.speedMax or 0
 return SpeedMax*3.6
 end
 return 0
