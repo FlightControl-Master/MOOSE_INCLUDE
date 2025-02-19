@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-18T11:14:00+01:00-9bb713db1047ac8ad43a712a7994ded18bc6a35d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-19T17:33:17+01:00-5e24e8658b9d19b6493bf37d3b53cfcdc821bee0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12497,6 +12497,11 @@ end
 end
 end
 function SET_BASE:Add(ObjectName,Object)
+if not ObjectName or ObjectName==""then
+self:E("SET_BASE:Add - Invalid ObjectName handed")
+self:E({ObjectName=ObjectName,Object=Object})
+return self
+end
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
@@ -28889,7 +28894,7 @@ end
 function UNIT:GetSpeedMax()
 local Desc=self:GetDesc()
 if Desc then
-local SpeedMax=Desc.speedMax
+local SpeedMax=Desc.speedMax or 0
 return SpeedMax*3.6
 end
 return 0
@@ -44217,7 +44222,7 @@ local _unitID=_unit:GetID()
 local target=EventData.TgtUnit
 local targetname=EventData.TgtUnitName
 local _currentTarget=self.strafeStatus[_unitID]
-if _currentTarget and target:IsAlive()then
+if _currentTarget and target and target:IsAlive()then
 local playerPos=_unit:GetCoordinate()
 local targetPos=target:GetCoordinate()
 for _,_target in pairs(_currentTarget.zone.targets)do
