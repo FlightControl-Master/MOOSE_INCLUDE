@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-19T17:33:17+01:00-5e24e8658b9d19b6493bf37d3b53cfcdc821bee0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-21T10:43:14+01:00-7552309a28231b3be8967b29e9037ff934466a6c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -57093,8 +57093,9 @@ alias="",
 debug=false,
 smokemenu=true,
 RoundingPrecision=0,
+increasegroundawareness=true,
 }
-AUTOLASE.version="0.1.28"
+AUTOLASE.version="0.1.29"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -57165,6 +57166,7 @@ self.playermenus={}
 self.smokemenu=true
 self.threatmenu=true
 self.RoundingPrecision=0
+self.increasegroundawareness=true
 self:EnableSmokeMenu({Angle=math.random(0,359),Distance=math.random(10,20)})
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
@@ -57186,6 +57188,14 @@ return self
 end
 function AUTOLASE:SetLaserCodes(LaserCodes)
 self.LaserCodes=(type(LaserCodes)=="table")and LaserCodes or{LaserCodes}
+return self
+end
+function AUTOLASE:EnableImproveGroundUnitsDetection()
+self.increasegroundawareness=true
+return self
+end
+function AUTOLASE:DisableImproveGroundUnitsDetection()
+self.increasegroundawareness=false
 return self
 end
 function AUTOLASE:SetPilotMenu()
@@ -57419,7 +57429,8 @@ if recce and recce:IsAlive()then
 local unit=recce:GetUnit(1)
 local name=unit:GetName()
 if not self.RecceUnits[name]then
-self.RecceUnits[name]={name=name,unit=unit,cooldown=false,timestamp=timer.getAbsTime()}
+local isground=(unit and unit.IsGround)and unit:IsGround()or false
+self.RecceUnits[name]={name=name,unit=unit,cooldown=false,timestamp=timer.getAbsTime(),isground=isground}
 end
 end
 end
@@ -57621,8 +57632,57 @@ end
 end
 return canlase
 end
+function AUTOLASE:_Prescient()
+for _,_data in pairs(self.RecceUnits)do
+if _data.isground and _data.unit and _data.unit:IsAlive()then
+local unit=_data.unit
+local position=unit:GetCoordinate()
+local needsinit=false
+if position then
+local lastposition=unit:GetProperty("lastposition")
+if not lastposition then
+unit:SetProperty("lastposition",position)
+lastposition=position
+needsinit=true
+end
+local dist=position:Get2DDistance(lastposition)
+local TNow=timer.getAbsTime()
+if dist>10 or needsinit==true or TNow-_data.timestamp>29 then
+local hasunits,hasstatics,_,Units,Statics=position:ScanObjects(self.LaseDistance,true,true,false)
+if hasunits then
+self:T(self.lid.."Checking possibly visible UNITs for Recce "..unit:GetName())
+for _,_target in pairs(Units)do
+local target=_target
+if target and target:GetCoalition()~=self.coalition then
+if unit:IsLOS(target)and(not target:IsUnitDetected(unit))then
+unit:KnowUnit(target,true,true)
+end
+end
+end
+end
+if hasstatics then
+self:T(self.lid.."Checking possibly visible STATICs for Recce "..unit:GetName())
+for _,_static in pairs(Statics)do
+local static=STATIC:Find(_static)
+if static and static:GetCoalition()~=self.coalition then
+local IsLOS=position:IsLOS(static:GetCoordinate())
+if IsLOS then
+unit:KnowUnit(static,true,true)
+end
+end
+end
+end
+end
+end
+end
+end
+return self
+end
 function AUTOLASE:onbeforeMonitor(From,Event,To)
 self:T({From,Event,To})
+if self.increasegroundawareness then
+self:_Prescient()
+end
 self:UpdateIntel()
 return self
 end
@@ -107517,6 +107577,7 @@ self.timerStatus:Start(1,120)
 if self.airbase then
 self:HandleEvent(EVENTS.BaseCaptured)
 end
+return self
 end
 function OPSZONE:onafterStop(From,Event,To)
 self:I(self.lid..string.format("Stopping OPSZONE"))
@@ -112986,9 +113047,23 @@ return 0
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
 return 0
 elseif Target.Type==TARGET.ObjectType.ZONE then
-return 0
+local zone=Target.Object
+local foundunits={}
+if zone:IsInstanceOf("ZONE_RADIUS")or zone:IsInstanceOf("ZONE_POLYGON")then
+zone:Scan({Object.Category.UNIT},{Unit.Category.GROUND_UNIT,Unit.Category.SHIP})
+foundunits=zone:GetScannedSetUnit()
+else
+foundunits=SET_UNIT:New():FilterZones({zone}):FilterOnce()
+end
+local ThreatMax=foundunits:GetThreatLevelMax()or 0
+return ThreatMax
+elseif Target.Type==TARGET.ObjectType.OPSZONE then
+local unitset=Target.Object:GetScannedUnitSet()
+local ThreatMax=unitset:GetThreatLevelMax()
+return ThreatMax
 else
 self:E("ERROR: unknown target object type in GetTargetThreatLevel!")
+return 0
 end
 return self
 end
