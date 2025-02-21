@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-19T17:32:37+01:00-43eeaede656d4cafe07cef6c81371ebad9c0ea99 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-21T10:39:21+01:00-8ef781a9ac6fd1f6ef2bdfe9a716924d3a295ca6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12700,6 +12700,17 @@ end
 function SET_BASE:GetSomeIteratorLimit()
 return self.SomeIteratorLimit or self:Count()
 end
+function SET_BASE:GetThreatLevelMax()
+local ThreatMax=0
+for _,_unit in pairs(self.Set or{})do
+local unit=_unit
+local threat=unit.GetThreatLevel and unit:GetThreatLevel()or 0
+if threat>ThreatMax then
+ThreatMax=threat
+end
+end
+return ThreatMax
+end
 function SET_BASE:FilterOnce()
 for ObjectName,Object in pairs(self.Database)do
 if self:IsIncludeObject(Object)then
@@ -16290,7 +16301,7 @@ end
 end
 end
 function SET_OPSGROUP:_EventOnDeadOrCrash(Event)
-if Event.IniDCSUnit then
+if Event.IniDCSGroup then
 local ObjectName,Object=self:FindInDatabase(Event)
 if ObjectName then
 if Event.IniDCSGroup:getSize()==1 then
