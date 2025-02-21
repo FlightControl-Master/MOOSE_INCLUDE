@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-21T10:43:14+01:00-7552309a28231b3be8967b29e9037ff934466a6c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-21T10:43:45+01:00-a06d099917f1be101ce3e64b1a6c18e2013d9848 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12610,6 +12610,17 @@ return self
 end
 function SET_BASE:GetSomeIteratorLimit()
 return self.SomeIteratorLimit or self:Count()
+end
+function SET_BASE:GetThreatLevelMax()
+local ThreatMax=0
+for _,_unit in pairs(self.Set or{})do
+local unit=_unit
+local threat=unit.GetThreatLevel and unit:GetThreatLevel()or 0
+if threat>ThreatMax then
+ThreatMax=threat
+end
+end
+return ThreatMax
 end
 function SET_BASE:FilterOnce()
 for ObjectName,Object in pairs(self.Database)do
