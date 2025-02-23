@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-17T07:01:08+01:00-913b2c6d3ffda3f032ab80a1b68f2a3146465d8d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-23T16:12:14+01:00-427baa43d709bf092c7a03ee322feb46fb941669 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12497,6 +12497,11 @@ end
 end
 end
 function SET_BASE:Add(ObjectName,Object)
+if not ObjectName or ObjectName==""then
+self:E("SET_BASE:Add - Invalid ObjectName handed")
+self:E({ObjectName=ObjectName,Object=Object})
+return self
+end
 if self.Set[ObjectName]then
 self:Remove(ObjectName,true)
 end
@@ -12605,6 +12610,17 @@ return self
 end
 function SET_BASE:GetSomeIteratorLimit()
 return self.SomeIteratorLimit or self:Count()
+end
+function SET_BASE:GetThreatLevelMax()
+local ThreatMax=0
+for _,_unit in pairs(self.Set or{})do
+local unit=_unit
+local threat=unit.GetThreatLevel and unit:GetThreatLevel()or 0
+if threat>ThreatMax then
+ThreatMax=threat
+end
+end
+return ThreatMax
 end
 function SET_BASE:FilterOnce()
 for ObjectName,Object in pairs(self.Database)do
@@ -14601,6 +14617,12 @@ self:Remove(ObjectName)
 end
 end
 end
+return self
+end
+function SET_CLIENT:HandleCASlots()
+self:HandleEvent(EVENTS.PlayerEnterUnit,SET_CLIENT._EventPlayerEnterUnit)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,SET_CLIENT._EventPlayerLeaveUnit)
+self:FilterFunction(function(client)if client and client:IsAlive()and client:IsGround()then return true else return false end end)
 return self
 end
 function SET_CLIENT:AddInDatabase(Event)
@@ -26046,6 +26068,9 @@ end
 function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation,onland)
 self:F2({self.ControllableName})
 local _coord=self:GetCoordinate()
+if not _coord then
+return self
+end
 local _radius=radius or 500
 local _speed=speed or 20
 local _tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
@@ -28889,7 +28914,7 @@ end
 function UNIT:GetSpeedMax()
 local Desc=self:GetDesc()
 if Desc then
-local SpeedMax=Desc.speedMax
+local SpeedMax=Desc.speedMax or 0
 return SpeedMax*3.6
 end
 return 0
@@ -37559,7 +37584,7 @@ end
 else
 for _,_name in pairs(AirbaseList)do
 local airbase=_DATABASE:FindAirbase(_name)
-if airbase and airbase.isAirdrome==true then
+if airbase and(airbase.isAirdrome==true)then
 self.Airbases[_name]={}
 end
 end
@@ -44217,7 +44242,7 @@ local _unitID=_unit:GetID()
 local target=EventData.TgtUnit
 local targetname=EventData.TgtUnitName
 local _currentTarget=self.strafeStatus[_unitID]
-if _currentTarget and target:IsAlive()then
+if _currentTarget and target and target:IsAlive()then
 local playerPos=_unit:GetCoordinate()
 local targetPos=target:GetCoordinate()
 for _,_target in pairs(_currentTarget.zone.targets)do
@@ -54200,6 +54225,7 @@ SAM_Table={},
 SAM_Table_Long={},
 SAM_Table_Medium={},
 SAM_Table_Short={},
+SAM_Table_PointDef={},
 lid="",
 Detection=nil,
 AWACS_Detection=nil,
@@ -54235,6 +54261,7 @@ ShoradGroupSet=nil,
 checkforfriendlies=false,
 SmokeDecoy=false,
 SmokeDecoyColor=SMOKECOLOR.White,
+checkcounter=1,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -54245,6 +54272,7 @@ MANTIS.SamType={
 SHORT="Short",
 MEDIUM="Medium",
 LONG="Long",
+POINT="Point",
 }
 MANTIS.SamData={
 ["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
@@ -54257,23 +54285,23 @@ MANTIS.SamData={
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
 ["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["Roland"]={Range=5,Blindspot=0,Height=5,Type="Short",Radar="Roland"},
+["Roland"]={Range=5,Blindspot=0,Height=5,Type="Point",Radar="Roland"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
-["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
+["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
 ["SA-19"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Tunguska"},
-["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Short",Radar="Tor 9A331"},
-["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Short",Radar="Strela"},
+["SA-15"]={Range=11,Blindspot=0,Height=6,Type="Point",Radar="Tor 9A331",Point="true"},
+["SA-13"]={Range=5,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["Avenger"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Avenger"},
 ["Chaparral"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
-["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="Linebacker"},
+["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Linebacker",Point="true"},
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
 ["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
-["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="Igla"},
+["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="Igla",Point="true"},
 ["TAMIR IDFA"]={Range=20,Blindspot=0.6,Height=12.3,Type="Short",Radar="IRON_DOME_LN"},
 ["STUNNER IDFA"]={Range=250,Blindspot=1,Height=45,Type="Long",Radar="DAVID_SLING_LN"},
 }
@@ -54298,7 +54326,7 @@ MANTIS.SamDataSMA={
 ["RBS103B SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
 ["RBS103AM SMA"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
 ["RBS103BM SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
-["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
+["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Point",Radar="LvKv9040",Point="true"},
 }
 MANTIS.SamDataCH={
 ["2S38 CHM"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
@@ -54313,20 +54341,20 @@ MANTIS.SamDataCH={
 ["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
 ["NASAMS3-AMRAAMER CHM"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
 ["NASAMS3-AIM9X2 CHM"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
-["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_Centurion_C_RAM"},
-["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Short",Radar="CH_PGZ09"},
+["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_Centurion_C_RAM",Point="true"},
+["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="CH_PGZ09",Point="true"},
 ["S350-9M100 CHM"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
 ["S350-9M96D CHM"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
 ["LAV-AD CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
 ["HQ-22 CHM"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
-["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Short",Radar="CH_PGZ95"},
-["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000_stationary"},
-["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Short",Radar="CH_LD3000"},
+["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_PGZ95",Point="true"},
+["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="CH_LD3000_stationary",Point="true"},
+["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="CH_LD3000",Point="true"},
 ["FlaRakRad CHM"]={Range=8,Blindspot=1.5,Height=6,Type="Short",Radar="HQ17A"},
 ["IRIS-T SLM CHM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM"},
 ["M903PAC2KAT1 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="CH_MIM104_M903_PAC2_KAT1"},
-["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_SkynexHX"},
-["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Short",Radar="CH_Skyshield_Gun"},
+["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Point",Radar="CH_SkynexHX",Point="true"},
+["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Point",Radar="CH_Skyshield_Gun",Point="true"},
 ["WieselOzelot CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_Wiesel2Ozelot"},
 ["BukM3-9M317M CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317M"},
 ["BukM3-9M317MA CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317MA"},
@@ -54341,7 +54369,7 @@ MANTIS.SamDataCH={
 ["RBS103B CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
 ["RBS103AM CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
 ["RBS103BM CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
-["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Short",Radar="LvKv9040"},
+["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Point",Radar="LvKv9040",Point="true"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
@@ -54355,6 +54383,7 @@ self.SAM_Table={}
 self.SAM_Table_Long={}
 self.SAM_Table_Medium={}
 self.SAM_Table_Short={}
+self.SAM_Table_PointDef={}
 self.dynamic=dynamic or false
 self.checkradius=25000
 self.grouping=5000
@@ -54386,6 +54415,7 @@ self.radiusscale={}
 self.radiusscale[MANTIS.SamType.LONG]=1.1
 self.radiusscale[MANTIS.SamType.MEDIUM]=1.2
 self.radiusscale[MANTIS.SamType.SHORT]=1.3
+self.radiusscale[MANTIS.SamType.POINT]=1.4
 self.usezones=false
 self.AcceptZones={}
 self.RejectZones={}
@@ -54393,6 +54423,7 @@ self.ConflictZones={}
 self.maxlongrange=1
 self.maxmidrange=2
 self.maxshortrange=2
+self.maxpointdefrange=6
 self.maxclassic=6
 self.autoshorad=true
 self.ShoradGroupSet=SET_GROUP:New()
@@ -54449,7 +54480,8 @@ end
 if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
-self.version="0.8.23"
+self.checkcounter=1
+self.version="0.9.25"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54523,12 +54555,13 @@ self.SmokeDecoy=Onoff
 self.SmokeDecoyColor=Color or SMOKECOLOR.White
 return self
 end
-function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic)
+function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic,Point)
 self:T(self.lid.."SetMaxActiveSAMs")
 self.maxclassic=Classic or 6
 self.maxlongrange=Long or 1
 self.maxmidrange=Mid or 2
 self.maxshortrange=Short or 2
+self.maxpointdefrange=Point or 6
 return self
 end
 function MANTIS:SetNewSAMRangeWhileRunning(range)
@@ -54669,6 +54702,20 @@ return false
 end
 end
 return self
+end
+function MANTIS:_CheckAnyEWRAlive()
+self:T(self.lid.."_CheckAnyEWRAlive")
+local alive=false
+if self.EWR_Group:CountAlive()>0 then
+alive=true
+end
+if not alive and self.AWACS_Prefix then
+local awacs=GROUP:FindByName(self.AWACS_Prefix)
+if awacs and awacs:IsAlive()then
+alive=true
+end
+end
+return alive
 end
 function MANTIS:_CalcAdvState()
 self:T(self.lid.."CalcAdvState")
@@ -54905,6 +54952,16 @@ end
 if found then break end
 end
 if not found then
+local grp=GROUP:FindByName(grpname)
+if(grp and grp:IsAlive()and grp:IsAAA())or string.find(grpname,"AAA",1,true)then
+range=2000
+height=2000
+blind=50
+type=MANTIS.SamType.POINT
+found=true
+end
+end
+if not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
 return range,height,type,blind
@@ -54928,7 +54985,7 @@ elseif string.find(grpname,"CHM",1,true)then
 CHMod=true
 end
 for idx,entry in pairs(self.SamData)do
-self:T("ID = "..idx)
+self:T2("ID = "..idx)
 if string.find(grpname,idx,1,true)then
 local _entry=entry
 type=_entry.Type
@@ -54941,13 +54998,23 @@ found=true
 break
 end
 end
+if not found then
+local grp=GROUP:FindByName(grpname)
+if(grp and grp:IsAlive()and grp:IsAAA())or string.find(grpname,"AAA",1,true)then
+range=2000
+height=2000
+blind=50
+type=MANTIS.SamType.POINT
+found=true
+end
+end
 if(not found)or HDSmod or SMAMod or CHMod then
 range,height,type=self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
 elseif not found then
 self:E(self.lid..string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
 end
-if string.find(grpname,"SHORAD",1,true)then
-type=MANTIS.SamType.SHORT
+if found and string.find(grpname,"SHORAD",1,true)then
+type=MANTIS.SamType.POINT
 end
 return range,height,type,blind
 end
@@ -54959,6 +55026,7 @@ local SAM_Tbl={}
 local SAM_Tbl_lg={}
 local SAM_Tbl_md={}
 local SAM_Tbl_sh={}
+local SAM_Tbl_pt={}
 local SEAD_Grps={}
 local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
@@ -54978,11 +55046,18 @@ table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind,type})
 if type==MANTIS.SamType.LONG then
 table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
+self:T("SAM "..grpname.." is type LONG")
 elseif type==MANTIS.SamType.MEDIUM then
 table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
+self:T("SAM "..grpname.." is type MEDIUM")
 elseif type==MANTIS.SamType.SHORT then
 table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind,type})
+table.insert(SEAD_Grps,grpname)
+self:T("SAM "..grpname.." is type SHORT")
+elseif type==MANTIS.SamType.POINT then
+table.insert(SAM_Tbl_pt,{grpname,grpcoord,grprange,grpheight,blind,type})
+self:T("SAM "..grpname.." is type POINT")
 self.ShoradGroupSet:Add(grpname,group)
 if not self.autoshorad then
 table.insert(SEAD_Grps,grpname)
@@ -54995,6 +55070,7 @@ self.SAM_Table=SAM_Tbl
 self.SAM_Table_Long=SAM_Tbl_lg
 self.SAM_Table_Medium=SAM_Tbl_md
 self.SAM_Table_Short=SAM_Tbl_sh
+self.SAM_Table_PointDef=SAM_Tbl_pt
 local mysead=SEAD:New(SEAD_Grps,self.Padding)
 mysead:SetEngagementRange(engagerange)
 mysead:AddCallBack(self)
@@ -55012,6 +55088,7 @@ local SAM_Tbl={}
 local SAM_Tbl_lg={}
 local SAM_Tbl_md={}
 local SAM_Tbl_sh={}
+local SAM_Tbl_pt={}
 local SEAD_Grps={}
 local engagerange=self.engagerange
 for _i,_group in pairs(SAM_Grps)do
@@ -55021,14 +55098,21 @@ if group:IsGround()and group:IsAlive()then
 local grpname=group:GetName()
 local grpcoord=group:GetCoordinate()
 local grprange,grpheight,type,blind=self:_GetSAMRange(grpname)
+local radaralive=group:IsSAM()
 table.insert(SAM_Tbl,{grpname,grpcoord,grprange,grpheight,blind,type})
 table.insert(SEAD_Grps,grpname)
-if type==MANTIS.SamType.LONG then
+if type==MANTIS.SamType.LONG and radaralive then
 table.insert(SAM_Tbl_lg,{grpname,grpcoord,grprange,grpheight,blind,type})
-elseif type==MANTIS.SamType.MEDIUM then
+self:T({grpname,grprange,grpheight})
+elseif type==MANTIS.SamType.MEDIUM and radaralive then
 table.insert(SAM_Tbl_md,{grpname,grpcoord,grprange,grpheight,blind,type})
-elseif type==MANTIS.SamType.SHORT then
+self:T({grpname,grprange,grpheight})
+elseif type==MANTIS.SamType.SHORT and radaralive then
 table.insert(SAM_Tbl_sh,{grpname,grpcoord,grprange,grpheight,blind,type})
+self:T({grpname,grprange,grpheight})
+elseif type==MANTIS.SamType.POINT or(not radaralive)then
+table.insert(SAM_Tbl_pt,{grpname,grpcoord,grprange,grpheight,blind,type})
+self:T({grpname,grprange,grpheight})
 self.ShoradGroupSet:Add(grpname,group)
 if self.autoshorad then
 self.Shorad.Groupset=self.ShoradGroupSet
@@ -55040,6 +55124,7 @@ self.SAM_Table=SAM_Tbl
 self.SAM_Table_Long=SAM_Tbl_lg
 self.SAM_Table_Medium=SAM_Tbl_md
 self.SAM_Table_Short=SAM_Tbl_sh
+self.SAM_Table_PointDef=SAM_Tbl_pt
 if self.mysead~=nil then
 local mysead=self.mysead
 mysead:UpdateSet(SEAD_Grps)
@@ -55076,7 +55161,10 @@ local name=_data[1]
 local radius=_data[3]
 local height=_data[4]
 local blind=_data[5]*1.25+1
-local shortsam=_data[6]==MANTIS.SamType.SHORT and true or false
+local shortsam=(_data[6]==MANTIS.SamType.SHORT)and true or false
+if not shortsam then
+shortsam=(_data[6]==MANTIS.SamType.POINT)and true or false
+end
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
 local suppressed=self.SuppressedGroups[name]or false
@@ -55101,7 +55189,7 @@ self:__RedState(1,samgroup)
 self.SamStateTracker[name]="RED"
 end
 if shortsam==true and self.SmokeDecoy==true then
-self:I("Smoking")
+self:T("Smoking")
 local units=samgroup:GetUnits()or{}
 local smoke=self.SmokeDecoyColor or SMOKECOLOR.White
 for _,unit in pairs(units)do
@@ -55140,7 +55228,7 @@ end
 end
 end
 end
-if self.debug then
+if self.debug or self.verbose then
 for _,_status in pairs(self.SamStateTracker)do
 if _status=="GREEN"then
 instatusgreen=instatusgreen+1
@@ -55159,20 +55247,22 @@ end
 function MANTIS:_Check(detection,dlink)
 self:T(self.lid.."Check")
 local detset=detection:GetDetectedItemCoordinates()
-local rand=math.random(1,100)
-if rand>65 then
+if self.checkcounter%3==0 then
 self:_RefreshSAMTable()
 end
+self.checkcounter=self.checkcounter+1
 local instatusred=0
 local instatusgreen=0
 local activeshorads=0
 if self.automode then
 local samset=self.SAM_Table_Long
-self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
+local instatusredl,instatusgreenl,activeshoradsl=self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
 local samset=self.SAM_Table_Medium
-self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
+local instatusredm,instatusgreenm,activeshoradsm=self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
 local samset=self.SAM_Table_Short
-instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+local instatusreds,instatusgreens,activeshoradss=self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+local samset=self.SAM_Table_PointDef
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxpointdefrange)
 else
 local samset=self:_GetSAMTable()
 instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxclassic)
@@ -55258,6 +55348,30 @@ function MANTIS:onbeforeStatus(From,Event,To)
 self:T({From,Event,To})
 if not self.state2flag then
 self:_Check(self.Detection,self.DLink)
+end
+local EWRAlive=self:_CheckAnyEWRAlive()
+local function FindSAMSRTR()
+for i=1,1000 do
+local randomsam=self.SAM_Group:GetRandom()
+if randomsam and randomsam:IsAlive()then
+if randomsam:IsSAM()then return randomsam end
+end
+end
+end
+if not EWRAlive then
+local randomsam=FindSAMSRTR()
+if randomsam and randomsam:IsAlive()then
+if self.UseEmOnOff then
+randomsam:EnableEmission(true)
+else
+randomsam:OptionAlarmStateRed()
+end
+local name=randomsam:GetName()
+if self.SamStateTracker[name]~="RED"then
+self:__RedState(1,randomsam)
+self.SamStateTracker[name]="RED"
+end
+end
 end
 if self.autorelocate then
 local relointerval=self.relointerval
@@ -55573,7 +55687,9 @@ local returnname=false
 for _,_groups in pairs(shoradset)do
 local groupname=_groups:GetName()
 if string.find(groupname,tgtgrp,1,true)then
+if _groups:IsSAM()then
 returnname=true
+end
 end
 end
 return returnname
@@ -57035,8 +57151,9 @@ alias="",
 debug=false,
 smokemenu=true,
 RoundingPrecision=0,
+increasegroundawareness=true,
 }
-AUTOLASE.version="0.1.28"
+AUTOLASE.version="0.1.29"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -57107,6 +57224,7 @@ self.playermenus={}
 self.smokemenu=true
 self.threatmenu=true
 self.RoundingPrecision=0
+self.increasegroundawareness=true
 self:EnableSmokeMenu({Angle=math.random(0,359),Distance=math.random(10,20)})
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
@@ -57128,6 +57246,14 @@ return self
 end
 function AUTOLASE:SetLaserCodes(LaserCodes)
 self.LaserCodes=(type(LaserCodes)=="table")and LaserCodes or{LaserCodes}
+return self
+end
+function AUTOLASE:EnableImproveGroundUnitsDetection()
+self.increasegroundawareness=true
+return self
+end
+function AUTOLASE:DisableImproveGroundUnitsDetection()
+self.increasegroundawareness=false
 return self
 end
 function AUTOLASE:SetPilotMenu()
@@ -57361,7 +57487,8 @@ if recce and recce:IsAlive()then
 local unit=recce:GetUnit(1)
 local name=unit:GetName()
 if not self.RecceUnits[name]then
-self.RecceUnits[name]={name=name,unit=unit,cooldown=false,timestamp=timer.getAbsTime()}
+local isground=(unit and unit.IsGround)and unit:IsGround()or false
+self.RecceUnits[name]={name=name,unit=unit,cooldown=false,timestamp=timer.getAbsTime(),isground=isground}
 end
 end
 end
@@ -57563,8 +57690,57 @@ end
 end
 return canlase
 end
+function AUTOLASE:_Prescient()
+for _,_data in pairs(self.RecceUnits)do
+if _data.isground and _data.unit and _data.unit:IsAlive()then
+local unit=_data.unit
+local position=unit:GetCoordinate()
+local needsinit=false
+if position then
+local lastposition=unit:GetProperty("lastposition")
+if not lastposition then
+unit:SetProperty("lastposition",position)
+lastposition=position
+needsinit=true
+end
+local dist=position:Get2DDistance(lastposition)
+local TNow=timer.getAbsTime()
+if dist>10 or needsinit==true or TNow-_data.timestamp>29 then
+local hasunits,hasstatics,_,Units,Statics=position:ScanObjects(self.LaseDistance,true,true,false)
+if hasunits then
+self:T(self.lid.."Checking possibly visible UNITs for Recce "..unit:GetName())
+for _,_target in pairs(Units)do
+local target=_target
+if target and target:GetCoalition()~=self.coalition then
+if unit:IsLOS(target)and(not target:IsUnitDetected(unit))then
+unit:KnowUnit(target,true,true)
+end
+end
+end
+end
+if hasstatics then
+self:T(self.lid.."Checking possibly visible STATICs for Recce "..unit:GetName())
+for _,_static in pairs(Statics)do
+local static=STATIC:Find(_static)
+if static and static:GetCoalition()~=self.coalition then
+local IsLOS=position:IsLOS(static:GetCoordinate())
+if IsLOS then
+unit:KnowUnit(static,true,true)
+end
+end
+end
+end
+end
+end
+end
+end
+return self
+end
 function AUTOLASE:onbeforeMonitor(From,Event,To)
 self:T({From,Event,To})
+if self.increasegroundawareness then
+self:_Prescient()
+end
 self:UpdateIntel()
 return self
 end
@@ -107459,6 +107635,7 @@ self.timerStatus:Start(1,120)
 if self.airbase then
 self:HandleEvent(EVENTS.BaseCaptured)
 end
+return self
 end
 function OPSZONE:onafterStop(From,Event,To)
 self:I(self.lid..string.format("Stopping OPSZONE"))
@@ -112928,9 +113105,23 @@ return 0
 elseif Target.Type==TARGET.ObjectType.COORDINATE then
 return 0
 elseif Target.Type==TARGET.ObjectType.ZONE then
-return 0
+local zone=Target.Object
+local foundunits={}
+if zone:IsInstanceOf("ZONE_RADIUS")or zone:IsInstanceOf("ZONE_POLYGON")then
+zone:Scan({Object.Category.UNIT},{Unit.Category.GROUND_UNIT,Unit.Category.SHIP})
+foundunits=zone:GetScannedSetUnit()
+else
+foundunits=SET_UNIT:New():FilterZones({zone}):FilterOnce()
+end
+local ThreatMax=foundunits:GetThreatLevelMax()or 0
+return ThreatMax
+elseif Target.Type==TARGET.ObjectType.OPSZONE then
+local unitset=Target.Object:GetScannedUnitSet()
+local ThreatMax=unitset:GetThreatLevelMax()
+return ThreatMax
 else
 self:E("ERROR: unknown target object type in GetTargetThreatLevel!")
+return 0
 end
 return self
 end
@@ -113400,7 +113591,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.16"
+EASYGCICAP.version="0.1.17"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -113449,6 +113640,16 @@ function EASYGCICAP:SetTankerAndAWACSInvisible(Switch)
 self:T(self.lid.."SetTankerAndAWACSInvisible")
 self.TankerInvisible=Switch
 return self
+end
+function EASYGCICAP:_CountAliveAuftrags()
+local alive=0
+for _,_auftrag in pairs(self.ListOfAuftrag)do
+local auftrag=_auftrag
+if auftrag and(not(auftrag:IsCancelled()or auftrag:IsDone()or auftrag:IsOver()))then
+alive=alive+1
+end
+end
+return alive
 end
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
 self:T(self.lid.."SetMaxAliveMissions")
@@ -113580,7 +113781,7 @@ CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
 local Intel=self.Intel
 local TankerInvisible=self.TankerInvisible
-function CAP_Wing:OnAfterFlightOnMission(From,Event,To,Flightgroup,Mission)
+function CAP_Wing:onbeforeFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 if DespawnAfterLanding then
 flightgroup:SetDespawnAfterLanding()
@@ -113610,7 +113811,7 @@ flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetFuelLowRTB(true)
 Intel:AddAgent(flightgroup)
 if DespawnAfterHolding then
-function flightgroup:OnAfterHolding(From,Event,To)
+function flightgroup:onbeforeHolding(From,Event,To)
 self:Despawn(1,true)
 end
 end
@@ -113944,7 +114145,7 @@ local maxsize=self.maxinterceptsize
 local repeatsonfailure=self.repeatsonfailure
 local wings=self.wings
 local ctlpts=self.ManagedCP
-local MaxAliveMissions=self.MaxAliveMissions*self.capgrouping
+local MaxAliveMissions=self.MaxAliveMissions
 local nogozoneset=self.NoGoZoneSet
 local ReadyFlightGroups=self.ReadyFlightGroups
 if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
@@ -113998,8 +114199,9 @@ local text=string.format("Closest Airwing is %s",targetawname)
 local m=MESSAGE:New(text,10,"CAPGCI"):ToAllIf(self.debug):ToLog()
 if targetairwing then
 local AssetCount=targetairwing:CountAssetsOnMission(MissionTypes,Cohort)
+local missioncount=self:_CountAliveAuftrags()
 self:T(self.lid.." Assets on Mission "..AssetCount)
-if AssetCount<=MaxAliveMissions then
+if missioncount<MaxAliveMissions then
 local repeats=repeatsonfailure
 local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetMissionRange(150)
@@ -114054,7 +114256,7 @@ end
 local function AssignCluster(Cluster)
 self:_AssignIntercept(Cluster)
 end
-function BlueIntel:OnAfterNewCluster(From,Event,To,Cluster)
+function BlueIntel:onbeforeNewCluster(From,Event,To,Cluster)
 AssignCluster(Cluster)
 end
 self.Intel=BlueIntel
@@ -114141,12 +114343,14 @@ local threatcount=#self.Intel.Clusters or 0
 local text="GCICAP "..self.alias
 text=text.."\nWings: "..wings.."\nSquads: "..squads.."\nCapPoints: "..caps.."\nAssets on Mission: "..assets.."\nAssets in Stock: "..instock
 text=text.."\nThreats: "..threatcount
-text=text.."\nMissions: "..capmission+interceptmission
+text=text.."\nAirWing managed Missions: "..capmission+awacsmission+tankermission+reconmission
 text=text.."\n - CAP: "..capmission
-text=text.."\n - Intercept: "..interceptmission
 text=text.."\n - AWACS: "..awacsmission
 text=text.."\n - TANKER: "..tankermission
 text=text.."\n - Recon: "..reconmission
+text=text.."\nSelf managed Missions:"
+text=text.."\n - Mission Limit: "..self.MaxAliveMissions
+text=text.."\n - Alert5+Intercept "..self:_CountAliveAuftrags()
 MESSAGE:New(text,15,"GCICAP"):ToAll():ToLogIf(self.debug)
 end
 self:__Status(30)
