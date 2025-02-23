@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-23T08:40:00+01:00-2b0b9d44ebef0136be84971142f75ac85535a8d6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-23T16:10:32+01:00-1c0a8d9380e65344a45005e1f887cabe100f46ee ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -14706,6 +14706,12 @@ self:Remove(ObjectName)
 end
 end
 end
+return self
+end
+function SET_CLIENT:HandleCASlots()
+self:HandleEvent(EVENTS.PlayerEnterUnit,SET_CLIENT._EventPlayerEnterUnit)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,SET_CLIENT._EventPlayerLeaveUnit)
+self:FilterFunction(function(client)if client and client:IsAlive()and client:IsGround()then return true else return false end end)
 return self
 end
 function SET_CLIENT:AddInDatabase(Event)
