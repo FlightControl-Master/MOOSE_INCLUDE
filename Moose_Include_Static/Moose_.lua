@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-22T16:36:15+01:00-12b596a47f92e77ce1e11fec3cc4c4f8b55fe398 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-23T08:40:00+01:00-2b0b9d44ebef0136be84971142f75ac85535a8d6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -25632,6 +25632,9 @@ end
 function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation,onland)
 self:F2({self.ControllableName})
 local _coord=self:GetCoordinate()
+if not _coord then
+return self
+end
 local _radius=radius or 500
 local _speed=speed or 20
 local _tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
