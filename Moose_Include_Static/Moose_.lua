@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-23T16:10:32+01:00-1c0a8d9380e65344a45005e1f887cabe100f46ee ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-02T12:40:00+01:00-41b867a4ca53a4ef1e285c63fb7ac11333e60372 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27222,8 +27222,10 @@ end
 end
 function GROUP:GetCoordinate()
 local vec3=self:GetVec3()
+local coord
 if vec3 then
-local coord=COORDINATE:NewFromVec3(vec3)
+coord=COORDINATE:NewFromVec3(vec3)
+coord.Heading=self:GetHeading()or 0
 return coord
 end
 local Units=self:GetUnits()or{}
@@ -27232,7 +27234,7 @@ local FirstUnit=_unit
 if FirstUnit and FirstUnit:IsAlive()then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
 if FirstUnitCoordinate then
-local Heading=self:GetHeading()
+local Heading=self:GetHeading()or 0
 FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
 end
@@ -27247,6 +27249,11 @@ local position=_unit:getPosition()
 local point=position.p~=nil and position.p or _unit:GetPoint()
 if point then
 local coord=COORDINATE:NewFromVec3(point)
+coord.Heading=0
+local munit=UNIT:Find(_unit)
+if munit then
+coord.Heading=munit:GetHeading()or 0
+end
 return coord
 end
 end
