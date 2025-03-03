@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-02T12:40:00+01:00-41b867a4ca53a4ef1e285c63fb7ac11333e60372 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-03T14:19:45+01:00-e2612b97d7bcbf0414cca57ba7c813fadb6ffe39 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -66618,12 +66618,14 @@ self:T3(string.format("NATO =%s",tostring(NATO)))
 local hours=self.gettext:GetEntry("HOURS",self.locale)
 local sunrise=coord:GetSunrise()
 local SUNRISE="no time"
+local NorthPolar=true
 if tostring(sunrise)~="N/S"and tostring(sunrise)~="N/R"then
 sunrise=UTILS.Split(sunrise,":")
 SUNRISE=string.format("%s%s",sunrise[1],sunrise[2])
 if self.useSRS then
 SUNRISE=string.format("%s %s %s",sunrise[1],sunrise[2],hours)
 end
+NorthPolar=false
 end
 local sunset=coord:GetSunset()
 local SUNSET="no time"
@@ -66633,6 +66635,7 @@ SUNSET=string.format("%s%s",sunset[1],sunset[2])
 if self.useSRS then
 SUNSET=string.format("%s %s %s",sunset[1],sunset[2],hours)
 end
+NorthPolar=false
 end
 local temperature=coord:GetTemperature(height+5)
 local dewpoint=temperature-(100-self.relHumidity)/5
@@ -66854,7 +66857,7 @@ alltext=alltext..";\n"..subtitle
 if not self.zulutimeonly then
 local sunrise=self.gettext:GetEntry("SUNRISEAT",self.locale)
 subtitle=string.format(sunrise,SUNRISE)
-if not self.useSRS then
+if not self.useSRS and NorthPolar==false then
 self:Transmission(self.Sound.SunriseAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNRISE,nil,0.2)
 self:Transmission(self.Sound.TimeLocal,0.2)
@@ -66862,7 +66865,7 @@ end
 alltext=alltext..";\n"..subtitle
 local sunset=self.gettext:GetEntry("SUNSETAT",self.locale)
 subtitle=string.format(sunset,SUNSET)
-if not self.useSRS then
+if not self.useSRS and NorthPolar==false then
 self:Transmission(self.Sound.SunsetAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNSET,nil,0.5)
 self:Transmission(self.Sound.TimeLocal,0.2)
