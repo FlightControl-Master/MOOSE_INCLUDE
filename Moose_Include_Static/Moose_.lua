@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-23T16:12:14+01:00-427baa43d709bf092c7a03ee322feb46fb941669 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-03T14:21:02+01:00-e129eb97a7654739e8b934309c3a0a4036da531c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27652,8 +27652,10 @@ end
 end
 function GROUP:GetCoordinate()
 local vec3=self:GetVec3()
+local coord
 if vec3 then
-local coord=COORDINATE:NewFromVec3(vec3)
+coord=COORDINATE:NewFromVec3(vec3)
+coord.Heading=self:GetHeading()or 0
 return coord
 end
 local Units=self:GetUnits()or{}
@@ -27662,7 +27664,7 @@ local FirstUnit=_unit
 if FirstUnit and FirstUnit:IsAlive()then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
 if FirstUnitCoordinate then
-local Heading=self:GetHeading()
+local Heading=self:GetHeading()or 0
 FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
 end
@@ -27677,6 +27679,11 @@ local position=_unit:getPosition()
 local point=position.p~=nil and position.p or _unit:GetPoint()
 if point then
 local coord=COORDINATE:NewFromVec3(point)
+coord.Heading=0
+local munit=UNIT:Find(_unit)
+if munit then
+coord.Heading=munit:GetHeading()or 0
+end
 return coord
 end
 end
@@ -70513,12 +70520,14 @@ self:T3(string.format("NATO =%s",tostring(NATO)))
 local hours=self.gettext:GetEntry("HOURS",self.locale)
 local sunrise=coord:GetSunrise()
 local SUNRISE="no time"
+local NorthPolar=true
 if tostring(sunrise)~="N/S"and tostring(sunrise)~="N/R"then
 sunrise=UTILS.Split(sunrise,":")
 SUNRISE=string.format("%s%s",sunrise[1],sunrise[2])
 if self.useSRS then
 SUNRISE=string.format("%s %s %s",sunrise[1],sunrise[2],hours)
 end
+NorthPolar=false
 end
 local sunset=coord:GetSunset()
 local SUNSET="no time"
@@ -70528,6 +70537,7 @@ SUNSET=string.format("%s%s",sunset[1],sunset[2])
 if self.useSRS then
 SUNSET=string.format("%s %s %s",sunset[1],sunset[2],hours)
 end
+NorthPolar=false
 end
 local temperature=coord:GetTemperature(height+5)
 local dewpoint=temperature-(100-self.relHumidity)/5
@@ -70749,7 +70759,7 @@ alltext=alltext..";\n"..subtitle
 if not self.zulutimeonly then
 local sunrise=self.gettext:GetEntry("SUNRISEAT",self.locale)
 subtitle=string.format(sunrise,SUNRISE)
-if not self.useSRS then
+if not self.useSRS and NorthPolar==false then
 self:Transmission(self.Sound.SunriseAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNRISE,nil,0.2)
 self:Transmission(self.Sound.TimeLocal,0.2)
@@ -70757,7 +70767,7 @@ end
 alltext=alltext..";\n"..subtitle
 local sunset=self.gettext:GetEntry("SUNSETAT",self.locale)
 subtitle=string.format(sunset,SUNSET)
-if not self.useSRS then
+if not self.useSRS and NorthPolar==false then
 self:Transmission(self.Sound.SunsetAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNSET,nil,0.5)
 self:Transmission(self.Sound.TimeLocal,0.2)
