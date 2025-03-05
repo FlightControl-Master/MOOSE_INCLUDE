@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-03T14:19:45+01:00-e2612b97d7bcbf0414cca57ba7c813fadb6ffe39 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-05T20:48:15+01:00-c808e4a4e21e554314198969517f0ab60818bf8f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30011,6 +30011,7 @@ OpenBig=104,
 OpenMedOrBig=176,
 HelicopterUsable=216,
 FighterAircraft=244,
+FighterAircraftSmall=344,
 }
 AIRBASE.SpotStatus={
 FREE="Free",
@@ -30565,6 +30566,10 @@ if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.Op
 match=true
 end
 elseif termtype==AIRBASE.TerminalType.FighterAircraft then
+if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.OpenBig or Term_Type==AIRBASE.TerminalType.Shelter then
+match=true
+end
+elseif termtype==AIRBASE.TerminalType.FighterAircraftSmall then
 if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.OpenBig or Term_Type==AIRBASE.TerminalType.Shelter or Term_Type==AIRBASE.TerminalType.SmallSizeFighter then
 match=true
 end
