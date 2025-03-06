@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-06T12:27:08+01:00-3585208547fd9e17a5c65736bcc9effba4c698e8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-06T14:52:15+01:00-7f0376561b03bfbc5527f1d1467c91dc81ef4e88 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27075,6 +27075,10 @@ _unit:DisableIRMarker()
 end
 end
 return self
+end
+function CONTROLLABLE:HasIRMarker()
+if self.spot then return true end
+return false
 end
 function CONTROLLABLE:_MarkerBlink()
 if self:IsAlive()~=true then
