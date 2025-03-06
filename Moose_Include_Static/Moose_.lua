@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-02-21T10:44:25+01:00-e2054371edb85757e35e9a7634c07c9e32df1706 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-06T12:28:39+01:00-187a620f372c593f664817c65a20e68f02930d76 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10736,6 +10736,8 @@ end
 end
 end
 self._.Polygon=self:_ConvexHull(points)
+self._Triangles=self:_Triangulate()
+self.SurfaceArea=self:_CalculateSurfaceArea()
 if Draw~=false then
 if self.DrawID or Draw==true then
 self:UndrawZone()
@@ -14497,6 +14499,12 @@ self:Remove(ObjectName)
 end
 end
 end
+return self
+end
+function SET_CLIENT:HandleCASlots()
+self:HandleEvent(EVENTS.PlayerEnterUnit,SET_CLIENT._EventPlayerEnterUnit)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,SET_CLIENT._EventPlayerLeaveUnit)
+self:FilterFunction(function(client)if client and client:IsAlive()and client:IsGround()then return true else return false end end)
 return self
 end
 function SET_CLIENT:AddInDatabase(Event)
@@ -25945,6 +25953,9 @@ end
 function CONTROLLABLE:RelocateGroundRandomInRadius(speed,radius,onroad,shortcut,formation,onland)
 self:F2({self.ControllableName})
 local _coord=self:GetCoordinate()
+if not _coord then
+return self
+end
 local _radius=radius or 500
 local _speed=speed or 20
 local _tocoord=_coord:GetRandomCoordinateInRadius(_radius,100)
@@ -27526,8 +27537,10 @@ end
 end
 function GROUP:GetCoordinate()
 local vec3=self:GetVec3()
+local coord
 if vec3 then
-local coord=COORDINATE:NewFromVec3(vec3)
+coord=COORDINATE:NewFromVec3(vec3)
+coord.Heading=self:GetHeading()or 0
 return coord
 end
 local Units=self:GetUnits()or{}
@@ -27536,7 +27549,7 @@ local FirstUnit=_unit
 if FirstUnit and FirstUnit:IsAlive()then
 local FirstUnitCoordinate=FirstUnit:GetCoordinate()
 if FirstUnitCoordinate then
-local Heading=self:GetHeading()
+local Heading=self:GetHeading()or 0
 FirstUnitCoordinate.Heading=Heading
 return FirstUnitCoordinate
 end
@@ -27551,6 +27564,11 @@ local position=_unit:getPosition()
 local point=position.p~=nil and position.p or _unit:GetPoint()
 if point then
 local coord=COORDINATE:NewFromVec3(point)
+coord.Heading=0
+local munit=UNIT:Find(_unit)
+if munit then
+coord.Heading=munit:GetHeading()or 0
+end
 return coord
 end
 end
@@ -30308,6 +30326,7 @@ OpenBig=104,
 OpenMedOrBig=176,
 HelicopterUsable=216,
 FighterAircraft=244,
+FighterAircraftSmall=344,
 }
 AIRBASE.SpotStatus={
 FREE="Free",
@@ -30862,6 +30881,10 @@ if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.Op
 match=true
 end
 elseif termtype==AIRBASE.TerminalType.FighterAircraft then
+if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.OpenBig or Term_Type==AIRBASE.TerminalType.Shelter then
+match=true
+end
+elseif termtype==AIRBASE.TerminalType.FighterAircraftSmall then
 if Term_Type==AIRBASE.TerminalType.OpenMed or Term_Type==AIRBASE.TerminalType.OpenBig or Term_Type==AIRBASE.TerminalType.Shelter or Term_Type==AIRBASE.TerminalType.SmallSizeFighter then
 match=true
 end
@@ -53031,7 +53054,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.24"
+self.version="0.9.25"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -53252,6 +53275,20 @@ return false
 end
 end
 return self
+end
+function MANTIS:_CheckAnyEWRAlive()
+self:T(self.lid.."_CheckAnyEWRAlive")
+local alive=false
+if self.EWR_Group:CountAlive()>0 then
+alive=true
+end
+if not alive and self.AWACS_Prefix then
+local awacs=GROUP:FindByName(self.AWACS_Prefix)
+if awacs and awacs:IsAlive()then
+alive=true
+end
+end
+return alive
 end
 function MANTIS:_CalcAdvState()
 self:T(self.lid.."CalcAdvState")
@@ -53697,9 +53734,9 @@ local name=_data[1]
 local radius=_data[3]
 local height=_data[4]
 local blind=_data[5]*1.25+1
-local shortsam=_data[6]==MANTIS.SamType.SHORT and true or false
+local shortsam=(_data[6]==MANTIS.SamType.SHORT)and true or false
 if not shortsam then
-shortsam=_data[6]==MANTIS.SamType.POINT and true or false
+shortsam=(_data[6]==MANTIS.SamType.POINT)and true or false
 end
 local samgroup=GROUP:FindByName(name)
 local IsInZone,Distance=self:_CheckObjectInZone(detset,samcoordinate,radius,height,dlink)
@@ -53884,6 +53921,30 @@ function MANTIS:onbeforeStatus(From,Event,To)
 self:T({From,Event,To})
 if not self.state2flag then
 self:_Check(self.Detection,self.DLink)
+end
+local EWRAlive=self:_CheckAnyEWRAlive()
+local function FindSAMSRTR()
+for i=1,1000 do
+local randomsam=self.SAM_Group:GetRandom()
+if randomsam and randomsam:IsAlive()then
+if randomsam:IsSAM()then return randomsam end
+end
+end
+end
+if not EWRAlive then
+local randomsam=FindSAMSRTR()
+if randomsam and randomsam:IsAlive()then
+if self.UseEmOnOff then
+randomsam:EnableEmission(true)
+else
+randomsam:OptionAlarmStateRed()
+end
+local name=randomsam:GetName()
+if self.SamStateTracker[name]~="RED"then
+self:__RedState(1,randomsam)
+self.SamStateTracker[name]="RED"
+end
+end
 end
 if self.autorelocate then
 local relointerval=self.relointerval
@@ -69075,12 +69136,14 @@ self:T3(string.format("NATO =%s",tostring(NATO)))
 local hours=self.gettext:GetEntry("HOURS",self.locale)
 local sunrise=coord:GetSunrise()
 local SUNRISE="no time"
+local NorthPolar=true
 if tostring(sunrise)~="N/S"and tostring(sunrise)~="N/R"then
 sunrise=UTILS.Split(sunrise,":")
 SUNRISE=string.format("%s%s",sunrise[1],sunrise[2])
 if self.useSRS then
 SUNRISE=string.format("%s %s %s",sunrise[1],sunrise[2],hours)
 end
+NorthPolar=false
 end
 local sunset=coord:GetSunset()
 local SUNSET="no time"
@@ -69090,6 +69153,7 @@ SUNSET=string.format("%s%s",sunset[1],sunset[2])
 if self.useSRS then
 SUNSET=string.format("%s %s %s",sunset[1],sunset[2],hours)
 end
+NorthPolar=false
 end
 local temperature=coord:GetTemperature(height+5)
 local dewpoint=temperature-(100-self.relHumidity)/5
@@ -69311,7 +69375,7 @@ alltext=alltext..";\n"..subtitle
 if not self.zulutimeonly then
 local sunrise=self.gettext:GetEntry("SUNRISEAT",self.locale)
 subtitle=string.format(sunrise,SUNRISE)
-if not self.useSRS then
+if not self.useSRS and NorthPolar==false then
 self:Transmission(self.Sound.SunriseAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNRISE,nil,0.2)
 self:Transmission(self.Sound.TimeLocal,0.2)
@@ -69319,7 +69383,7 @@ end
 alltext=alltext..";\n"..subtitle
 local sunset=self.gettext:GetEntry("SUNSETAT",self.locale)
 subtitle=string.format(sunset,SUNSET)
-if not self.useSRS then
+if not self.useSRS and NorthPolar==false then
 self:Transmission(self.Sound.SunsetAt,0.5,subtitle)
 self.radioqueue:Number2Transmission(SUNSET,nil,0.5)
 self:Transmission(self.Sound.TimeLocal,0.2)
@@ -112153,7 +112217,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.16"
+EASYGCICAP.version="0.1.17"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -112343,7 +112407,7 @@ CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
 local Intel=self.Intel
 local TankerInvisible=self.TankerInvisible
-function CAP_Wing:OnAfterFlightOnMission(From,Event,To,Flightgroup,Mission)
+function CAP_Wing:onbeforeFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 if DespawnAfterLanding then
 flightgroup:SetDespawnAfterLanding()
@@ -112373,7 +112437,7 @@ flightgroup:GetGroup():OptionROTEvadeFire()
 flightgroup:SetFuelLowRTB(true)
 Intel:AddAgent(flightgroup)
 if DespawnAfterHolding then
-function flightgroup:OnAfterHolding(From,Event,To)
+function flightgroup:onbeforeHolding(From,Event,To)
 self:Despawn(1,true)
 end
 end
@@ -112818,7 +112882,7 @@ end
 local function AssignCluster(Cluster)
 self:_AssignIntercept(Cluster)
 end
-function BlueIntel:OnAfterNewCluster(From,Event,To,Cluster)
+function BlueIntel:onbeforeNewCluster(From,Event,To,Cluster)
 AssignCluster(Cluster)
 end
 self.Intel=BlueIntel
