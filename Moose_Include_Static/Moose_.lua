@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-05T20:48:28+01:00-908e505ce398215dec1cb22147867ff6f32e6bbf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-06T12:27:08+01:00-3585208547fd9e17a5c65736bcc9effba4c698e8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10856,6 +10856,8 @@ end
 end
 end
 self._.Polygon=self:_ConvexHull(points)
+self._Triangles=self:_Triangulate()
+self.SurfaceArea=self:_CalculateSurfaceArea()
 if Draw~=false then
 if self.DrawID or Draw==true then
 self:UndrawZone()
