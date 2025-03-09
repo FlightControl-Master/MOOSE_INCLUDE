@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-06T12:28:39+01:00-187a620f372c593f664817c65a20e68f02930d76 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-09T14:38:49+01:00-ac750aff10c243b2bfbd9bae8f6c0154907c42eb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1550,7 +1550,7 @@ if not noprint then
 env.info(string.rep("  ",indent)..tostring(k).." = {")
 end
 text=text..string.rep("  ",indent)..tostring(k).." = {\n"
-text=text..tostring(UTILS.PrintTableToLog(v,indent+1)).."\n"
+text=text..tostring(UTILS.PrintTableToLog(v,indent+1),noprint).."\n"
 if not noprint then
 env.info(string.rep("  ",indent).."},")
 end
@@ -10714,6 +10714,24 @@ function ZONE_ELASTIC:AddVertex2D(Vec2)
 table.insert(self.points,Vec2)
 return self
 end
+function ZONE_ELASTIC:RemoveVertex2D(Vec2)
+local found=false
+local findex=0
+for _id,_vec2 in pairs(self.points)do
+if _vec2.x==Vec2.x and _vec2.y==Vec2.y then
+found=true
+findex=_id
+break
+end
+end
+if found==true and findex>0 then
+table.remove(self.points,findex)
+end
+return self
+end
+function ZONE_ELASTIC:RemoveVertex3D(Vec3)
+return self:RemoveVertex2D({x=Vec3.x,y=Vec3.z})
+end
 function ZONE_ELASTIC:AddVertex3D(Vec3)
 table.insert(self.points,{x=Vec3.x,y=Vec3.z})
 return self
@@ -14927,6 +14945,7 @@ ClassName="SET_AIRBASE",
 Airbases={},
 Filter={
 Coalitions=nil,
+Zones=nil,
 },
 FilterMeta={
 Coalitions={
@@ -15007,6 +15026,25 @@ self.Filter.Categories[Category]=Category
 end
 return self
 end
+function SET_AIRBASE:FilterZones(Zones)
+if not self.Filter.Zones then
+self.Filter.Zones={}
+end
+local zones={}
+if Zones.ClassName and Zones.ClassName=="SET_ZONE"then
+zones=Zones.Set
+elseif type(Zones)~="table"or(type(Zones)=="table"and Zones.ClassName)then
+self:E("***** FilterZones needs either a table of ZONE Objects or a SET_ZONE as parameter!")
+return self
+else
+zones=Zones
+end
+for _,Zone in pairs(zones)do
+local zonename=Zone:GetName()
+self.Filter.Zones[zonename]=Zone
+end
+return self
+end
 function SET_AIRBASE:FilterStart()
 if _DATABASE then
 self:HandleEvent(EVENTS.BaseCaptured)
@@ -15073,6 +15111,16 @@ MAirbaseCategory=true
 end
 end
 MAirbaseInclude=MAirbaseInclude and MAirbaseCategory
+end
+if self.Filter.Zones and MAirbaseInclude then
+local MAirbaseZone=false
+for ZoneName,Zone in pairs(self.Filter.Zones)do
+local coord=MAirbase:GetCoordinate()
+if coord and Zone:IsCoordinateInZone(coord)then
+MAirbaseZone=true
+end
+end
+MAirbaseInclude=MAirbaseInclude and MAirbaseZone
 end
 end
 if self.Filter.Functions and MAirbaseInclude then
@@ -26959,6 +27007,10 @@ end
 end
 return self
 end
+function CONTROLLABLE:HasIRMarker()
+if self.spot then return true end
+return false
+end
 function CONTROLLABLE:_MarkerBlink()
 if self:IsAlive()~=true then
 self:DisableIRMarker()
@@ -30343,6 +30395,7 @@ if self.category==Airbase.Category.AIRDROME then
 self.isAirdrome=true
 elseif self.category==Airbase.Category.HELIPAD or self.descriptors.typeName=="FARP_SINGLE_01"then
 self.isHelipad=true
+self.category=Airbase.Category.HELIPAD
 elseif self.category==Airbase.Category.SHIP then
 self.isShip=true
 if self.descriptors.typeName=="Oil rig"or self.descriptors.typeName=="Ga"then
@@ -30355,10 +30408,17 @@ else
 self:E("ERROR: Unknown airbase category!")
 end
 self:_InitRunways()
-if self.isAirdrome then
+local Nrunways=#self.runways
+if Nrunways>0 then
 self:SetActiveRunway()
 end
 self:_InitParkingSpots()
+if self.category==Airbase.Category.AIRDROME and(Nrunways==0 or self.NparkingTotal==self.NparkingTerminal[AIRBASE.TerminalType.HelicopterOnly])then
+self:E(string.format("WARNING: %s identifies as airdrome (category=0) but has no runways or just helo parking ==> will change to helipad (category=1)",self.AirbaseName))
+self.category=Airbase.Category.HELIPAD
+self.isAirdrome=false
+self.isHelipad=true
+end
 local vec2=self:GetVec2()
 self:GetCoordinate()
 self.storage=_DATABASE:AddStorage(AirbaseName)
@@ -30376,6 +30436,35 @@ self:E(string.format("ERROR: Cound not get position Vec2 of airbase %s",AirbaseN
 end
 self:T2(string.format("Registered airbase %s",tostring(self.AirbaseName)))
 return self
+end
+function AIRBASE:_GetCategory()
+local name=self.AirbaseName
+local static=StaticObject.getByName(name)
+local airbase=Airbase.getByName(name)
+local unit=Unit.getByName(name)
+local text=string.format("\n=====================================================")
+text=text..string.format("\nAirbase %s:",name)
+if static then
+local oc,uc=static:getCategory()
+local ex=static:getCategoryEx()
+text=text..string.format("\nSTATIC: oc=%d, uc=%d, ex=%d",oc,uc,ex)
+text=text..string.format("\n--------------------------------------------------")
+end
+if unit then
+local oc,uc=unit:getCategory()
+local ex=unit:getCategoryEx()
+text=text..string.format("\nUNIT: oc=%d, uc=%d, ex=%d",oc,uc,ex)
+text=text..string.format("\n--------------------------------------------------")
+end
+if airbase then
+local oc,uc=airbase:getCategory()
+local ex=airbase:getCategoryEx()
+text=text..string.format("\nAIRBASE: oc=%d, uc=%d, ex=%d",oc,uc,ex)
+text=text..string.format("\n--------------------------------------------------")
+text=text..UTILS.PrintTableToLog(airbase:getDesc(),nil,true)
+end
+text=text..string.format("\n=====================================================")
+env.info(text)
 end
 function AIRBASE:Find(DCSAirbase)
 local AirbaseName=DCSAirbase:getName()
@@ -30637,6 +30726,7 @@ end
 self.parkingByID[park.TerminalID]=park
 table.insert(self.parking,park)
 end
+self.NparkingTotal=self.NparkingTotal-self.NparkingTerminal[AIRBASE.TerminalType.Runway]
 return self
 end
 function AIRBASE:_GetParkingSpotByID(TerminalID)
@@ -30915,10 +31005,6 @@ if IncludeInverse==nil then
 IncludeInverse=true
 end
 local Runways={}
-if self:GetAirbaseCategory()~=Airbase.Category.AIRDROME then
-self.runways={}
-return{}
-end
 local function _createRunway(name,course,width,length,center)
 local bearing=-1*course
 local heading=math.deg(bearing)
@@ -30967,7 +31053,7 @@ local airbase=self:GetDCSObject()
 if airbase then
 local runways=airbase:getRunways()
 self:T2(runways)
-if runways then
+if runways and#runways>0 then
 for _,rwy in pairs(runways)do
 self:T(rwy)
 local runway=_createRunway(rwy.Name,rwy.course,rwy.width,rwy.length,rwy.position)
@@ -30982,6 +31068,9 @@ local runway=_createRunway(name2,rwy.course-math.pi,rwy.width,rwy.length,rwy.pos
 table.insert(Runways,runway)
 end
 end
+else
+self.runways={}
+return{}
 end
 end
 local rpairs={}
