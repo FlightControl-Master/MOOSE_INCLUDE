@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-08T21:37:43+01:00-c00eff8b23af2bacb3b829710598198eee115d78 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-09T14:36:42+01:00-4976cd86f23460924c29a5c02cf0c154c469539e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10833,6 +10833,24 @@ end
 function ZONE_ELASTIC:AddVertex2D(Vec2)
 table.insert(self.points,Vec2)
 return self
+end
+function ZONE_ELASTIC:RemoveVertex2D(Vec2)
+local found=false
+local findex=0
+for _id,_vec2 in pairs(self.points)do
+if _vec2.x==Vec2.x and _vec2.y==Vec2.y then
+found=true
+findex=_id
+break
+end
+end
+if found==true and findex>0 then
+table.remove(self.points,findex)
+end
+return self
+end
+function ZONE_ELASTIC:RemoveVertex3D(Vec3)
+return self:RemoveVertex2D({x=Vec3.x,y=Vec3.z})
 end
 function ZONE_ELASTIC:AddVertex3D(Vec3)
 table.insert(self.points,{x=Vec3.x,y=Vec3.z})
