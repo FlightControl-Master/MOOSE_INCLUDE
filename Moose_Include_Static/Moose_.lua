@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-10T15:32:07+01:00-683388faee2f1a99cf34a1aaf2fe1e02c12ef415 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-10T19:53:24+01:00-ea23162ca9373428d8d04481bbbd798d0be262f9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20307,6 +20307,9 @@ local verysafe=false
 if spawnonship or spawnonfarp or spawnonrunway then
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
+elseif Parkingdata~=nil then
+nfree=#Parkingdata
+spots=Parkingdata
 else
 if ishelo then
 if termtype==nil then
