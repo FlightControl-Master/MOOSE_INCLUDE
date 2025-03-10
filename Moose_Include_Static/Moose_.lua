@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-10T10:57:19+01:00-88842d1c6757fad3253357b25e42db22be2b91bc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-10T15:35:08+01:00-68d02209124b6bd8f469bd3e2df2408d82186ec2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27099,10 +27099,15 @@ end
 if self.spot then
 self.spot:destroy()
 self.spot=nil
+end
 if self.timer and self.timer:IsRunning()then
 self.timer:Stop()
 self.timer=nil
 end
+if self.ClassName=="GROUP"then
+self.IRMarkerGroup=nil
+elseif self.ClassName=="UNIT"then
+self.IRMarkerUnit=nil
 end
 return self
 end
@@ -27121,12 +27126,19 @@ local units=self:GetUnits()or{}
 for _,_unit in pairs(units)do
 _unit:DisableIRMarker()
 end
+self.IRMarkerGroup=nil
 end
 return self
 end
 function CONTROLLABLE:HasIRMarker()
-if self.spot then return true end
+if self.IRMarkerGroup==true or self.IRMarkerUnit==true then return true end
 return false
+end
+function CONTROLLABLE._StopSpot(spot)
+if spot then
+spot:destroy()
+spot=nil
+end
 end
 function CONTROLLABLE:_MarkerBlink()
 if self:IsAlive()~=true then
@@ -27136,13 +27148,17 @@ end
 self.timer.dT=1-(math.random(1,2)/10/2)
 local _,_,unitBBHeight,_=self:GetObjectSize()
 local unitPos=self:GetPositionVec3()
-self.spot=Spot.createInfraRed(
+if not self.spot then
+local spot=Spot.createInfraRed(
 self.DCSUnit,
 {x=0,y=(unitBBHeight+1),z=0},
 {x=unitPos.x,y=(unitPos.y+unitBBHeight),z=unitPos.z}
 )
-local offTimer=TIMER:New(function()if self.spot then self.spot:destroy()end end)
+self.spot=spot
+local offTimer=nil
+local offTimer=TIMER:New(CONTROLLABLE._StopSpot,spot)
 offTimer:Start(0.5)
+end
 return self
 end
 GROUP={
