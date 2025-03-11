@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-10T19:53:51+01:00-9b52b640e6959c515a8bf3e97a4888e69f1a1dfd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-11T10:52:40+01:00-383e953ba17526191edd9502e6df83123713c825 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27066,65 +27066,74 @@ end
 return self
 end
 function CONTROLLABLE:NewIRMarker(EnableImmediately,Runtime)
-if self.ClassName=="GROUP"then
+self:T2("NewIRMarker")
+if self:IsInstanceOf("GROUP")then
+if self.IRMarkerGroup==true then return end
 self.IRMarkerGroup=true
 self.IRMarkerUnit=false
-elseif self.ClassName=="UNIT"then
+elseif self:IsInstanceOf("UNIT")then
+if self.IRMarkerUnit==true then return end
 self.IRMarkerGroup=false
 self.IRMarkerUnit=true
 end
-self.spot=nil
-self.timer=nil
-self.stoptimer=nil
+self.Runtime=Runtime or 60
 if EnableImmediately and EnableImmediately==true then
 self:EnableIRMarker(Runtime)
 end
 return self
 end
 function CONTROLLABLE:EnableIRMarker(Runtime)
+self:T2("EnableIRMarker")
 if self.IRMarkerGroup==nil then
 self:NewIRMarker(true,Runtime)
 return
 end
-if(self.IRMarkerGroup==true)then
-self:EnableIRMarkerForGroup()
+if self:IsInstanceOf("GROUP")then
+self:EnableIRMarkerForGroup(Runtime)
 return
 end
+if self.timer and self.timer:IsRunning()then return self end
+local Runtime=Runtime or self.Runtime
 self.timer=TIMER:New(CONTROLLABLE._MarkerBlink,self)
 self.timer:Start(nil,1-math.random(1,5)/10/2,Runtime)
+self.IRMarkerUnit=true
 return self
 end
 function CONTROLLABLE:DisableIRMarker()
-if(self.IRMarkerGroup==true)then
+self:T2("DisableIRMarker")
+if self:IsInstanceOf("GROUP")then
 self:DisableIRMarkerForGroup()
 return
 end
 if self.spot then
-self.spot:destroy()
 self.spot=nil
 end
 if self.timer and self.timer:IsRunning()then
 self.timer:Stop()
 self.timer=nil
 end
-if self.ClassName=="GROUP"then
+if self:IsInstanceOf("GROUP")then
 self.IRMarkerGroup=nil
-elseif self.ClassName=="UNIT"then
+elseif self:IsInstanceOf("UNIT")then
 self.IRMarkerUnit=nil
 end
 return self
 end
-function CONTROLLABLE:EnableIRMarkerForGroup()
-if self.ClassName=="GROUP"then
+function CONTROLLABLE:EnableIRMarkerForGroup(Runtime)
+self:T2("EnableIRMarkerForGroup")
+if self:IsInstanceOf("GROUP")
+then
 local units=self:GetUnits()or{}
 for _,_unit in pairs(units)do
-_unit:EnableIRMarker()
+_unit:EnableIRMarker(Runtime)
 end
+self.IRMarkerGroup=true
 end
 return self
 end
 function CONTROLLABLE:DisableIRMarkerForGroup()
-if self.ClassName=="GROUP"then
+self:T2("DisableIRMarkerForGroup")
+if self:IsInstanceOf("GROUP")then
 local units=self:GetUnits()or{}
 for _,_unit in pairs(units)do
 _unit:DisableIRMarker()
@@ -27134,16 +27143,17 @@ end
 return self
 end
 function CONTROLLABLE:HasIRMarker()
-if self.IRMarkerGroup==true or self.IRMarkerUnit==true then return true end
+self:T2("HasIRMarker")
+if self.timer and self.timer:IsRunning()then return true end
 return false
 end
 function CONTROLLABLE._StopSpot(spot)
 if spot then
 spot:destroy()
-spot=nil
 end
 end
 function CONTROLLABLE:_MarkerBlink()
+self:T2("_MarkerBlink")
 if self:IsAlive()~=true then
 self:DisableIRMarker()
 return
@@ -27151,7 +27161,8 @@ end
 self.timer.dT=1-(math.random(1,2)/10/2)
 local _,_,unitBBHeight,_=self:GetObjectSize()
 local unitPos=self:GetPositionVec3()
-if not self.spot then
+if self.timer:IsRunning()then
+self:T2("Create Spot")
 local spot=Spot.createInfraRed(
 self.DCSUnit,
 {x=0,y=(unitBBHeight+1),z=0},
