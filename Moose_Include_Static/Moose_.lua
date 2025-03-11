@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-11T10:52:16+01:00-94ee76fe6268f908c2e6a696eb8ebbec6d7301ae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-11T16:29:31+01:00-6e9727e26516b3b3e158abab689340df9836ef0d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26625,7 +26625,12 @@ return self
 end
 function CONTROLLABLE:HasIRMarker()
 self:T2("HasIRMarker")
-if self.timer and self.timer:IsRunning()then return true end
+if self:IsInstanceOf("GROUP")then
+local units=self:GetUnits()or{}
+for _,_unit in pairs(units)do
+if _unit.timer and _unit.timer:IsRunning()then return true end
+end
+elseif self.timer and self.timer:IsRunning()then return true end
 return false
 end
 function CONTROLLABLE._StopSpot(spot)
