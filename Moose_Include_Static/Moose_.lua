@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-12T08:56:13+01:00-31d0410284364c177d7e2eefbe6a30fc3e35a337 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-13T10:50:15+01:00-32f0bb33c3fcfe7a84004869adb3848e9b6e483d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8913,10 +8913,13 @@ self:SetStartState("TriggerStopped")
 self:AddTransition("TriggerStopped","TriggerStart","TriggerRunning")
 self:AddTransition("*","EnteredZone","*")
 self:AddTransition("*","LeftZone","*")
+self:AddTransition("*","ZoneEmpty","*")
+self:AddTransition("*","ObjectDead","*")
 self:AddTransition("*","TriggerRunCheck","*")
 self:AddTransition("*","TriggerStop","TriggerStopped")
 self:TriggerStart()
 self.checkobjects=Objects
+self.ObjectsInZone=false
 if UTILS.IsInstanceOf(Objects,"SET_BASE")then
 self.objectset=Objects.Set
 else
@@ -8931,14 +8934,19 @@ local objectset=self.objectset or{}
 if fromstart then
 for _,_object in pairs(objectset)do
 local obj=_object
-if not obj.TriggerInZone then obj.TriggerInZone={}end
+if not obj.TriggerInZone then
+obj.TriggerInZone={}
+obj.TriggerZoneDeadNotification=false
+end
 if obj and obj:IsAlive()and self:IsCoordinateInZone(obj:GetCoordinate())then
 obj.TriggerInZone[self.ZoneName]=true
+self.ObjectsInZone=true
 else
 obj.TriggerInZone[self.ZoneName]=false
 end
 end
 else
+local objcount=0
 for _,_object in pairs(objectset)do
 local obj=_object
 if obj and obj:IsAlive()then
@@ -8949,15 +8957,33 @@ if not obj.TriggerInZone[self.ZoneName]then
 obj.TriggerInZone[self.ZoneName]=false
 end
 local inzone=self:IsCoordinateInZone(obj:GetCoordinate())
+if inzone and obj.TriggerInZone[self.ZoneName]then
+objcount=objcount+1
+self.ObjectsInZone=true
+obj.TriggerZoneDeadNotification=false
+end
 if inzone and not obj.TriggerInZone[self.ZoneName]then
 self:__EnteredZone(0.5,obj)
 obj.TriggerInZone[self.ZoneName]=true
+objcount=objcount+1
+self.ObjectsInZone=true
+obj.TriggerZoneDeadNotification=false
 elseif(not inzone)and obj.TriggerInZone[self.ZoneName]then
 self:__LeftZone(0.5,obj)
 obj.TriggerInZone[self.ZoneName]=false
 else
 end
+else
+if not obj.TriggerZoneDeadNotification==true then
+obj.TriggerInZone=nil
+self:__ObjectDead(0.5,obj)
+obj.TriggerZoneDeadNotification=true
 end
+end
+end
+if objcount==0 and self.ObjectsInZone==true then
+self.ObjectsInZone=false
+self:__ZoneEmpty(0.5)
 end
 end
 return self
@@ -27550,7 +27576,7 @@ return self
 end
 function GROUP:ResetEvents()
 self:EventDispatcher():Reset(self)
-for UnitID,UnitData in pairs(self:GetUnits())do
+for UnitID,UnitData in pairs(self:GetUnits()or{})do
 UnitData:ResetEvents()
 end
 return self
