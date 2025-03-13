@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-13T10:50:15+01:00-32f0bb33c3fcfe7a84004869adb3848e9b6e483d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-13T16:40:57+01:00-3c57928f4635bdf70df11e73022d449b22462bd8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29884,7 +29884,7 @@ park.ClientSpot,park.ClientName=isClient(park.Coordinate)
 park.AirbaseName=self.AirbaseName
 self.NparkingTotal=self.NparkingTotal+1
 for _,terminalType in pairs(AIRBASE.TerminalType)do
-if self._CheckTerminalType(terminalType,park.TerminalType)then
+if self._CheckTerminalType(park.TerminalType,terminalType)then
 self.NparkingTerminal[terminalType]=self.NparkingTerminal[terminalType]+1
 end
 end
