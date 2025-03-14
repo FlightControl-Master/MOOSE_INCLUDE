@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-13T16:41:25+01:00-11b6bb2638b662efdef92073a61f0a15053bcd8b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-14T10:41:13+01:00-813286f7f304289d604ad3a9676242e955c5ed73 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31844,9 +31844,8 @@ local ucid=self:GetPlayerUCID(nil,name)or"none"
 local PlayerID=self:GetPlayerIDByName(name)or"none"
 local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
 if not PlayerSide then PlayerSide=EventData.IniCoalition end
-if not PlayerSlot then PlayerSlot=EventData.IniUnit:GetID()end
+if not PlayerSlot then PlayerSlot=EventData.IniUnit:GetID()or-1 end
 local TNow=timer.getTime()
-self:T(self.lid.."Event for: "..name.." | UCID: "..ucid.." | ID/SIDE/SLOT "..PlayerID.."/"..PlayerSide.."/"..PlayerSlot)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
 self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid.." | Event ID: "..data.id)
 local blocked=self:IsAnyBlocked(ucid,name,PlayerID,PlayerSide,PlayerSlot)
