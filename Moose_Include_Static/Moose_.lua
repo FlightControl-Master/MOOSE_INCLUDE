@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-13T10:49:11+01:00-8e017f2ce068a06c6e298e8560b9ad7894b8a5dc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-14T10:41:51+01:00-1661872bf86b31e0552aaa537d586b84806aca87 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30406,7 +30406,7 @@ park.ClientSpot,park.ClientName=isClient(park.Coordinate)
 park.AirbaseName=self.AirbaseName
 self.NparkingTotal=self.NparkingTotal+1
 for _,terminalType in pairs(AIRBASE.TerminalType)do
-if self._CheckTerminalType(terminalType,park.TerminalType)then
+if self._CheckTerminalType(park.TerminalType,terminalType)then
 self.NparkingTerminal[terminalType]=self.NparkingTerminal[terminalType]+1
 end
 end
@@ -31847,9 +31847,8 @@ local ucid=self:GetPlayerUCID(nil,name)or"none"
 local PlayerID=self:GetPlayerIDByName(name)or"none"
 local PlayerSide,PlayerSlot=self:GetSlot(data.IniUnit)
 if not PlayerSide then PlayerSide=EventData.IniCoalition end
-if not PlayerSlot then PlayerSlot=EventData.IniUnit:GetID()end
+if not PlayerSlot then PlayerSlot=EventData.IniUnit:GetID()or-1 end
 local TNow=timer.getTime()
-self:T(self.lid.."Event for: "..name.." | UCID: "..ucid.." | ID/SIDE/SLOT "..PlayerID.."/"..PlayerSide.."/"..PlayerSlot)
 if data.id==EVENTS.PlayerEnterUnit or data.id==EVENTS.PlayerEnterAircraft then
 self:T(self.lid.."Pilot Joining: "..name.." | UCID: "..ucid.." | Event ID: "..data.id)
 local blocked=self:IsAnyBlocked(ucid,name,PlayerID,PlayerSide,PlayerSlot)
