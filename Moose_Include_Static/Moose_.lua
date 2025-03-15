@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-14T10:41:13+01:00-813286f7f304289d604ad3a9676242e955c5ed73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T10:56:34+01:00-ca9b2d79cc8146e4cf3359fb54f668097c46fc57 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124484,6 +124484,135 @@ UsePowerShell=false,
 }
 MSRS.version="0.3.3"
 MSRS.Voices={
+Amazon={
+Generative={
+en_AU={
+Olivia="Olivia",
+},
+en_GB={
+Amy="Amy",
+},
+en_US={
+Danielle="Danielle",
+Joanna="Joanna",
+Ruth="Ruth",
+Stephen="Stephen",
+},
+fr_FR={
+["Léa"]="Léa",
+["Rémi"]="Rémi",
+},
+de_DE={
+Vicki="Vicki",
+Daniel="Daniel",
+},
+it_IT={
+Bianca="Bianca",
+Adriano="Adriano",
+},
+es_ES={
+Lucia="Lucia",
+Sergio="Sergio",
+},
+},
+LongForm={
+en_US={
+Danielle="Danielle",
+Gregory="Gregory",
+Ivy="Ivy",
+Ruth="Ruth",
+Patrick="Patrick",
+},
+es_ES={
+Alba="Alba",
+["Raúl"]="Raúl",
+},
+},
+Neural={
+en_AU={
+Olivia="Olivia",
+},
+en_GB={
+Amy="Amy",
+Emma="Emma",
+Brian="Brian",
+Arthur="Arthur",
+},
+en_US={
+Danielle="Danielle",
+Gregory="Gregory",
+Ivy="Ivy",
+Joanna="Joanna",
+Kendra="Kendra",
+Kimberly="Kimberly",
+Salli="Salli",
+Joey="Joey",
+Kevin="Kevin",
+Ruth="Ruth",
+Stephen="Stephen",
+},
+fr_FR={
+["Léa"]="Léa",
+["Rémi"]="Rémi",
+},
+de_DE={
+Vicki="Vicki",
+Daniel="Daniel",
+},
+it_IT={
+Bianca="Bianca",
+Adriano="Adriano",
+},
+es_ES={
+Lucia="Lucia",
+Sergio="Sergio",
+},
+},
+Standard={
+en_AU={
+Nicole="Nicole",
+Russel="Russel",
+},
+en_GB={
+Amy="Amy",
+Emma="Emma",
+Brian="Brian",
+},
+en_IN={
+Aditi="Aditi",
+Raveena="Raveena",
+},
+en_US={
+Ivy="Ivy",
+Joanna="Joanna",
+Kendra="Kendra",
+Kimberly="Kimberly",
+Salli="Salli",
+Joey="Joey",
+Kevin="Kevin",
+},
+fr_FR={
+Celine="Celine",
+["Léa"]="Léa",
+Mathieu="Mathieu",
+},
+de_DE={
+Marlene="Marlene",
+Vicki="Vicki",
+Hans="Hans",
+},
+it_IT={
+Carla="Carla",
+Bianca="Bianca",
+Giorgio="Giorgio",
+},
+es_ES={
+Conchita="Conchita",
+Lucia="Lucia",
+Enrique="Enrique",
+},
+},
+},
 Microsoft={
 ["Hedda"]="Microsoft Hedda Desktop",
 ["Hazel"]="Microsoft Hazel Desktop",
@@ -124984,6 +125113,7 @@ self:ScheduleOnce(Delay,MSRS.PlaySoundFile,self,Soundfile,0)
 else
 local command=self:_GetCommand()
 command=command..' --file="'..tostring(soundfile)..'"'
+command=string.gsub(command,"--ssml","-h")
 self:_ExecCommand(command)
 end
 return self
@@ -125107,7 +125237,7 @@ command=command..string.format(' --ssml -G "%s"',pops.credentials)
 pwsh=pwsh..string.format(' --ssml -G "%s"',pops.credentials)
 elseif self.provider==MSRS.Provider.WINDOWS then
 else
-self:E("ERROR: SRS only supports WINWOWS and GOOGLE as TTS providers! Use DCS-gRPC backend for other providers such as ")
+self:E("ERROR: SRS only supports WINDOWS and GOOGLE as TTS providers! Use DCS-gRPC backend for other providers such as AWS and Azure.")
 end
 if not UTILS.FileExists(fullPath)then
 self:E("ERROR: MSRS SRS executable does not exist! FullPath="..fullPath)
@@ -125128,7 +125258,7 @@ local filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".bat"
 if self.UsePowerShell==true then
 filename=os.getenv('TMP').."\\MSRS-"..MSRS.uuid()..".ps1"
 batContent=command.."\'"
-self:I({batContent=batContent})
+self:T({batContent=batContent})
 end
 local script=io.open(filename,"w+")
 script:write(batContent)
@@ -125315,6 +125445,7 @@ end
 return self
 end
 function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate)
+self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
