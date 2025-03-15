@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-14T10:41:51+01:00-1661872bf86b31e0552aaa537d586b84806aca87 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T10:55:05+01:00-2a6df8434ad301addaf28639b299c2ef77e4a0e8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -115353,6 +115353,7 @@ self:ScheduleOnce(Delay,MSRS.PlaySoundFile,self,Soundfile,0)
 else
 local command=self:_GetCommand()
 command=command..' --file="'..tostring(soundfile)..'"'
+command=string.gsub(command,"--ssml","-h")
 self:_ExecCommand(command)
 end
 return self
