@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T16:29:24+01:00-9ac4f136aade6a49e3de2d5289f1bdcfc2fd2544 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T22:49:43+01:00-23aeef7a202f23d761f09e2b489231cd3536fb62 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19770,16 +19770,14 @@ end
 if self:_GetSpawnIndex(self.SpawnIndex+1)then
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 if SpawnTemplate then
-local GroupAlive=self:GetGroupFromIndex(self.SpawnIndex)
-local TemplateGroup=GROUP:FindByName(self.SpawnTemplatePrefix)
-local TemplateUnit=TemplateGroup:GetUnit(1)
-local group=TemplateGroup
+local group=GROUP:FindByName(self.SpawnTemplatePrefix)
+local unit=group:GetUnit(1)
 local istransport=group:HasAttribute("Transports")and group:HasAttribute("Planes")
 local isawacs=group:HasAttribute("AWACS")
 local isfighter=group:HasAttribute("Fighters")or group:HasAttribute("Interceptors")or group:HasAttribute("Multirole fighters")or(group:HasAttribute("Bombers")and not group:HasAttribute("Strategic bombers"))
 local isbomber=group:HasAttribute("Strategic bombers")
 local istanker=group:HasAttribute("Tankers")
-local ishelo=TemplateUnit:HasAttribute("Helicopters")
+local ishelo=unit:HasAttribute("Helicopters")
 local nunits=#SpawnTemplate.units
 local SpawnPoint=SpawnTemplate.route.points[1]
 SpawnPoint.linkUnit=nil
@@ -19787,32 +19785,23 @@ SpawnPoint.helipadId=nil
 SpawnPoint.airdromeId=nil
 local AirbaseID=SpawnAirbase:GetID()
 local AirbaseCategory=SpawnAirbase:GetAirbaseCategory()
+SpawnPoint.airdromeId=AirbaseID
 if AirbaseCategory==Airbase.Category.SHIP then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
 elseif AirbaseCategory==Airbase.Category.HELIPAD then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
-elseif AirbaseCategory==Airbase.Category.AIRDROME then
-SpawnPoint.airdromeId=AirbaseID
 end
 SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[Takeoff][2]
 local spawnonground=not(Takeoff==SPAWN.Takeoff.Air)
-local spawnonship=false
-local spawnonfarp=false
-local spawnonrunway=false
-local spawnonairport=false
-if spawnonground then
-if AirbaseCategory==Airbase.Category.SHIP then
-spawnonship=true
-elseif AirbaseCategory==Airbase.Category.HELIPAD then
-spawnonfarp=true
-elseif AirbaseCategory==Airbase.Category.AIRDROME then
-spawnonairport=true
-end
-spawnonrunway=Takeoff==SPAWN.Takeoff.Runway
+local autoparking=false
+if SpawnAirbase.isAirdrome then
+autoparking=false
+else
+autoparking=true
 end
 local parkingspots={}
 local parkingindex={}
@@ -19820,8 +19809,8 @@ local spots
 if spawnonground and not SpawnTemplate.parked then
 local nfree=0
 local termtype=TerminalType
-if spawnonrunway then
-if spawnonship then
+if Takeoff==SPAWN.Takeoff.Runway then
+if SpawnAirbase.isShip then
 if ishelo then
 termtype=AIRBASE.TerminalType.HelicopterUsable
 else
@@ -19836,7 +19825,7 @@ local scanunits=true
 local scanstatics=true
 local scanscenery=false
 local verysafe=false
-if spawnonship or spawnonfarp or spawnonrunway then
+if autoparking then
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 elseif Parkingdata~=nil then
@@ -19845,37 +19834,37 @@ spots=Parkingdata
 else
 if ishelo then
 if termtype==nil then
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
 if termtype==nil then
 if isbomber or istransport or istanker or isawacs then
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.OpenBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 if nfree<nunits then
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.OpenMedOrBig,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.FighterAircraft,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 else
-spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,Parkingdata)
 nfree=#spots
 end
 end
 end
 local _notenough=false
-if spawnonship or spawnonfarp or spawnonrunway then
+if autoparking then
 if nfree>=1 then
 for i=1,nunits do
 table.insert(parkingspots,spots[1].Coordinate)
@@ -19885,7 +19874,7 @@ PointVec3=spots[1].Coordinate
 else
 _notenough=true
 end
-elseif spawnonairport then
+else
 if nfree>=nunits then
 for i=1,nunits do
 table.insert(parkingspots,spots[i].Coordinate)
@@ -19898,10 +19887,7 @@ end
 if _notenough then
 if EmergencyAirSpawn and not self.SpawnUnControlled then
 self:E(string.format("WARNING: Group %s has no parking spots at %s ==> air start!",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
-spawnonground=false
-spawnonship=false
-spawnonfarp=false
-spawnonrunway=false
+autoparking=false
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[GROUP.Takeoff.Air][1]
 SpawnPoint.action=GROUPTEMPLATE.Takeoff[GROUP.Takeoff.Air][2]
 PointVec3.x=PointVec3.x+math.random(-500,500)
@@ -19939,7 +19925,7 @@ local BY=SpawnTemplate.route.points[1].y
 local TX=PointVec3.x+(SX-BX)
 local TY=PointVec3.z+(SY-BY)
 if spawnonground then
-if spawnonship or spawnonfarp or spawnonrunway then
+if autoparking then
 SpawnTemplate.units[UnitID].x=PointVec3.x
 SpawnTemplate.units[UnitID].y=PointVec3.z
 SpawnTemplate.units[UnitID].alt=PointVec3.y
@@ -19969,11 +19955,8 @@ SpawnTemplate.uncontrolled=self.SpawnUnControlled
 local GroupSpawned=self:SpawnWithIndex(self.SpawnIndex)
 if Takeoff==GROUP.Takeoff.Air then
 for UnitID,UnitSpawned in pairs(GroupSpawned:GetUnits())do
-SCHEDULER:New(nil,BASE.CreateEventTakeoff,{GroupSpawned,timer.getTime(),UnitSpawned:GetDCSObject()},5)
+self:ScheduleOnce(5,BASE.CreateEventTakeoff,{GroupSpawned,timer.getTime(),UnitSpawned:GetDCSObject()})
 end
-end
-if Takeoff~=SPAWN.Takeoff.Runway and Takeoff~=SPAWN.Takeoff.Air and spawnonairport then
-SCHEDULER:New(nil,AIRBASE.CheckOnRunWay,{SpawnAirbase,GroupSpawned,75,true},1.0)
 end
 return GroupSpawned
 end
@@ -29579,9 +29562,8 @@ self:SetActiveRunway()
 end
 self:_InitParkingSpots()
 if self.category==Airbase.Category.AIRDROME and(Nrunways==0 or self.NparkingTotal==self.NparkingTerminal[AIRBASE.TerminalType.HelicopterOnly])then
-self:E(string.format("WARNING: %s identifies as airdrome (category=0) but has no runways or just helo parking ==> will change to helipad (category=1)",self.AirbaseName))
 self.category=Airbase.Category.HELIPAD
-self.isAirdrome=false
+self.isAirdrome=true
 self.isHelipad=true
 end
 local vec2=self:GetVec2()
