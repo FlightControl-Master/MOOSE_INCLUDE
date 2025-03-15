@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T10:55:05+01:00-2a6df8434ad301addaf28639b299c2ef77e4a0e8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T16:30:44+01:00-a2ccfcf361165bcb9194af4a1a55ca0435d681d3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52622,6 +52622,11 @@ MEDIUM="Medium",
 LONG="Long",
 POINT="Point",
 }
+MANTIS.radiusscale={}
+MANTIS.radiusscale[MANTIS.SamType.LONG]=1.1
+MANTIS.radiusscale[MANTIS.SamType.MEDIUM]=1.2
+MANTIS.radiusscale[MANTIS.SamType.SHORT]=1.75
+MANTIS.radiusscale[MANTIS.SamType.POINT]=3
 MANTIS.SamData={
 ["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
 ["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS"},
@@ -52759,11 +52764,6 @@ self.DLink=false
 self.Padding=Padding or 10
 self.SuppressedGroups={}
 self.automode=true
-self.radiusscale={}
-self.radiusscale[MANTIS.SamType.LONG]=1.1
-self.radiusscale[MANTIS.SamType.MEDIUM]=1.2
-self.radiusscale[MANTIS.SamType.SHORT]=1.3
-self.radiusscale[MANTIS.SamType.POINT]=1.4
 self.usezones=false
 self.AcceptZones={}
 self.RejectZones={}
@@ -52829,7 +52829,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.25"
+self.version="0.9.26"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
