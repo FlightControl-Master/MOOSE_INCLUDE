@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T22:49:57+01:00-784fcb7882080e0ad196f19efc65727103981d8a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T11:02:59+01:00-5329da32eb16b931cfa4cdfe597bfbec5fb8ccad ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56803,8 +56803,9 @@ debug=false,
 smokemenu=true,
 RoundingPrecision=0,
 increasegroundawareness=true,
+MonitorFrequency=30,
 }
-AUTOLASE.version="0.1.29"
+AUTOLASE.version="0.1.30"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -56876,6 +56877,7 @@ self.smokemenu=true
 self.threatmenu=true
 self.RoundingPrecision=0
 self.increasegroundawareness=true
+self.MonitorFrequency=30
 self:EnableSmokeMenu({Angle=math.random(0,359),Distance=math.random(10,20)})
 self.lid=string.format("AUTOLASE %s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self:AddTransition("*","Monitor","*")
@@ -56893,6 +56895,10 @@ end
 self:SetClusterAnalysis(false,false)
 self:__Start(2)
 self:__Monitor(math.random(5,10))
+return self
+end
+function AUTOLASE:SetMonitorFrequency(Seconds)
+self.MonitorFrequency=Seconds or 30
 return self
 end
 function AUTOLASE:SetLaserCodes(LaserCodes)
@@ -57529,7 +57535,7 @@ self:__Lasing(2,laserspot)
 end
 end
 end
-self:__Monitor(-30)
+self:__Monitor(self.MonitorFrequency or 30)
 return self
 end
 function AUTOLASE:onbeforeRecceKIA(From,Event,To,RecceName)
