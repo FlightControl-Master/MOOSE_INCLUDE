@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T13:06:53+01:00-618a8744a22419bd6f71de8216b108b8b24ba50b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T13:58:58+01:00-5ca3e3b2b8fc959650459e953af9d62f22ddb96a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7244,7 +7244,7 @@ Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit.getName and Event.IniDCSUnit:getName()or"Scenery no name "..math.random(1,20000)
 Event.IniUnitName=Event.IniDCSUnitName
 Event.IniUnit=SCENERY:Register(Event.IniDCSUnitName,Event.initiator)
-Event.IniCategory=Event.IniDCSUnit:getDesc().category
+Event.IniCategory=Event.IniDCSUnit.getDesc and Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.initiator:isExist()and Event.IniDCSUnit:getTypeName()or"SCENERY"
 elseif Event.IniObjectCategory==Object.Category.BASE then
 Event.IniDCSUnit=Event.initiator
@@ -54902,7 +54902,7 @@ local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
 if self.shootandscoot then
 self:__ShootAndScoot(1,_group)
 end
-elseif _group:IsAnyInZone(targetzone)then
+elseif _group:IsAnyInZone(targetzone)or groupname==TargetGroup then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
