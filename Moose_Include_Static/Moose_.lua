@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-15T22:49:43+01:00-23aeef7a202f23d761f09e2b489231cd3536fb62 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T13:06:53+01:00-618a8744a22419bd6f71de8216b108b8b24ba50b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54582,7 +54582,7 @@ if self.ShoradLink then
 local Shorad=self.Shorad
 local radius=self.checkradius
 local ontime=self.ShoradTime
-Shorad:WakeUpShorad(Name,radius,ontime)
+Shorad:WakeUpShorad(Name,radius,ontime,nil,true)
 self:__ShoradActivated(1,Name,radius,ontime)
 end
 return self
@@ -54852,7 +54852,7 @@ IsDetected=true
 end
 return IsDetected
 end
-function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat)
+function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat,ShotAt)
 self:T(self.lid.." WakeUpShorad")
 self:T({TargetGroup,Radius,ActiveTimer,TargetCat})
 local targetcat=TargetCat or Object.Category.UNIT
@@ -54890,7 +54890,7 @@ end
 local TDiff=4
 for _,_group in pairs(shoradset)do
 local groupname=_group:GetName()
-if groupname==TargetGroup then
+if groupname==TargetGroup and ShotAt==true then
 if self.UseEmOnOff then
 _group:EnableEmission(false)
 end
@@ -54967,7 +54967,7 @@ _targetgroup=tgtgrp
 _targetgroupname=tgtgrp:GetName()
 _targetskill=tgtgrp:GetUnit(1):GetSkill()
 self:T("*** Found Target = ".._targetgroupname)
-self:WakeUpShorad(_targetgroupname,self.Radius,self.ActiveTimer,Object.Category.UNIT)
+self:WakeUpShorad(_targetgroupname,self.Radius,self.ActiveTimer,Object.Category.UNIT,true)
 end
 end
 end
@@ -55073,7 +55073,7 @@ local shotatus=self:_CheckShotAtShorad(targetgroupname)
 local shotatsams=self:_CheckShotAtSams(targetgroupname)
 if shotatsams or shotatus then
 self:T({shotatsams=shotatsams,shotatus=shotatus})
-self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat)
+self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat,true)
 end
 end
 end
