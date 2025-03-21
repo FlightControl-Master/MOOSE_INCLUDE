@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T11:03:54+01:00-1b29a307609e595d327331317d1f02683aad1444 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-21T09:23:31+01:00-104d0f3d2dd0e7018488f24c47eb4ae91e5af06d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7244,7 +7244,7 @@ Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit.getName and Event.IniDCSUnit:getName()or"Scenery no name "..math.random(1,20000)
 Event.IniUnitName=Event.IniDCSUnitName
 Event.IniUnit=SCENERY:Register(Event.IniDCSUnitName,Event.initiator)
-Event.IniCategory=Event.IniDCSUnit:getDesc().category
+Event.IniCategory=Event.IniDCSUnit.getDesc and Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.initiator:isExist()and Event.IniDCSUnit:getTypeName()or"SCENERY"
 elseif Event.IniObjectCategory==Object.Category.BASE then
 Event.IniDCSUnit=Event.initiator
@@ -16902,7 +16902,7 @@ local Settings=Settings or _SETTINGS
 local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
 local s=string.format('%03d°',AngleDegrees)
 if MagVar then
-local variation=UTILS.GetMagneticDeclination()or 0
+local variation=self:GetMagneticDeclination()or 0
 local AngleMagnetic=AngleDegrees-variation
 if AngleMagnetic<0 then AngleMagnetic=360-AngleMagnetic end
 s=string.format('%03d°M|%03d°',AngleMagnetic,AngleDegrees)
@@ -17740,6 +17740,8 @@ local currentCoord=FromCoordinate
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local bearing=UTILS.Round(UTILS.ToDegree(AngleRadians),0)
+local magnetic=self:GetMagneticDeclination()or 0
+bearing=bearing-magnetic
 local rangeMetres=self:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=self:ToStringAspect(currentCoord)
@@ -52636,7 +52638,6 @@ MANTIS.SamData={
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
-["SHORAD"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="Igla",Point="true"},
 ["TAMIR IDFA"]={Range=20,Blindspot=0.6,Height=12.3,Type="Short",Radar="IRON_DOME_LN"},
 ["STUNNER IDFA"]={Range=250,Blindspot=1,Height=45,Type="Long",Radar="DAVID_SLING_LN"},
 }
@@ -52811,7 +52812,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.26"
+self.version="0.9.27"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -53765,7 +53766,7 @@ if self.ShoradLink then
 local Shorad=self.Shorad
 local radius=self.checkradius
 local ontime=self.ShoradTime
-Shorad:WakeUpShorad(Name,radius,ontime)
+Shorad:WakeUpShorad(Name,radius,ontime,nil,true)
 self:__ShoradActivated(1,Name,radius,ontime)
 end
 return self
@@ -54035,7 +54036,7 @@ IsDetected=true
 end
 return IsDetected
 end
-function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat)
+function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat,ShotAt)
 self:T(self.lid.." WakeUpShorad")
 self:T({TargetGroup,Radius,ActiveTimer,TargetCat})
 local targetcat=TargetCat or Object.Category.UNIT
@@ -54073,7 +54074,7 @@ end
 local TDiff=4
 for _,_group in pairs(shoradset)do
 local groupname=_group:GetName()
-if groupname==TargetGroup then
+if groupname==TargetGroup and ShotAt==true then
 if self.UseEmOnOff then
 _group:EnableEmission(false)
 end
@@ -54085,7 +54086,7 @@ local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
 if self.shootandscoot then
 self:__ShootAndScoot(1,_group)
 end
-elseif _group:IsAnyInZone(targetzone)then
+elseif _group:IsAnyInZone(targetzone)or groupname==TargetGroup then
 local text=string.format("Waking up SHORAD %s",_group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
@@ -54150,7 +54151,7 @@ _targetgroup=tgtgrp
 _targetgroupname=tgtgrp:GetName()
 _targetskill=tgtgrp:GetUnit(1):GetSkill()
 self:T("*** Found Target = ".._targetgroupname)
-self:WakeUpShorad(_targetgroupname,self.Radius,self.ActiveTimer,Object.Category.UNIT)
+self:WakeUpShorad(_targetgroupname,self.Radius,self.ActiveTimer,Object.Category.UNIT,true)
 end
 end
 end
@@ -54256,7 +54257,7 @@ local shotatus=self:_CheckShotAtShorad(targetgroupname)
 local shotatsams=self:_CheckShotAtSams(targetgroupname)
 if shotatsams or shotatus then
 self:T({shotatsams=shotatsams,shotatus=shotatus})
-self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat)
+self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat,true)
 end
 end
 end
