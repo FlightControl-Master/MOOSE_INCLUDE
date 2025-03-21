@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T16:57:11+01:00-be8405b72b83edcaf60eeb99dc97ef5ccf22495f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-21T09:22:08+01:00-a915452e6e98ab23efa8664c03b4d0fe0ccde970 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16902,7 +16902,7 @@ local Settings=Settings or _SETTINGS
 local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
 local s=string.format('%03d°',AngleDegrees)
 if MagVar then
-local variation=UTILS.GetMagneticDeclination()or 0
+local variation=self:GetMagneticDeclination()or 0
 local AngleMagnetic=AngleDegrees-variation
 if AngleMagnetic<0 then AngleMagnetic=360-AngleMagnetic end
 s=string.format('%03d°M|%03d°',AngleMagnetic,AngleDegrees)
@@ -17740,6 +17740,8 @@ local currentCoord=FromCoordinate
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local bearing=UTILS.Round(UTILS.ToDegree(AngleRadians),0)
+local magnetic=self:GetMagneticDeclination()or 0
+bearing=bearing-magnetic
 local rangeMetres=self:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=self:ToStringAspect(currentCoord)
