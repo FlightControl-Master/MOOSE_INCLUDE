@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-21T09:22:36+01:00-e3670219ed6f82a3e6604ba750c6ad6d19be7a5d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-22T10:42:36+01:00-d375e0ce29b8b3e9d08340eca30bb2fb3e202fcf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56806,7 +56806,7 @@ RoundingPrecision=0,
 increasegroundawareness=true,
 MonitorFrequency=30,
 }
-AUTOLASE.version="0.1.30"
+AUTOLASE.version="0.1.31"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -57536,7 +57536,8 @@ self:__Lasing(2,laserspot)
 end
 end
 end
-self:__Monitor(self.MonitorFrequency or 30)
+local nextloop=-self.MonitorFrequency or-30
+self:__Monitor(nextloop)
 return self
 end
 function AUTOLASE:onbeforeRecceKIA(From,Event,To,RecceName)
