@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-21T09:23:31+01:00-104d0f3d2dd0e7018488f24c47eb4ae91e5af06d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-22T14:59:41+01:00-e8e4f6bcb945d024f46798480f7dc9e379dc82c3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30009,21 +30009,31 @@ AIRBASE.Kola={
 ["Bardufoss"]="Bardufoss",
 }
 AIRBASE.Afghanistan={
+["Bagram"]="Bagram",
+["Bamyan"]="Bamyan",
 ["Bost"]="Bost",
 ["Camp_Bastion"]="Camp Bastion",
 ["Camp_Bastion_Heliport"]="Camp Bastion Heliport",
 ["Chaghcharan"]="Chaghcharan",
 ["Dwyer"]="Dwyer",
 ["Farah"]="Farah",
+["Gardez"]="Gardez",
+["Ghazni_Heliport"]="Ghazni Heliport",
 ["Herat"]="Herat",
+["Jalalabad"]="Jalalabad",
+["Kabul"]="Kabul",
 ["Kandahar"]="Kandahar",
 ["Kandahar_Heliport"]="Kandahar Heliport",
+["Khost"]="Khost",
+["Khost_Heliport"]="Khost Heliport",
 ["Maymana_Zahiraddin_Faryabi"]="Maymana Zahiraddin Faryabi",
 ["Nimroz"]="Nimroz",
 ["Qala_i_Naw"]="Qala i Naw",
+["Sharana"]="Sharana",
 ["Shindand"]="Shindand",
 ["Shindand_Heliport"]="Shindand Heliport",
 ["Tarinkot"]="Tarinkot",
+["Urgoon_Heliport"]="Urgoon Heliport",
 }
 AIRBASE.Iraq={
 ["Baghdad_International_Airport"]="Baghdad International Airport",
@@ -55485,7 +55495,7 @@ RoundingPrecision=0,
 increasegroundawareness=true,
 MonitorFrequency=30,
 }
-AUTOLASE.version="0.1.30"
+AUTOLASE.version="0.1.31"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -56215,7 +56225,8 @@ self:__Lasing(2,laserspot)
 end
 end
 end
-self:__Monitor(self.MonitorFrequency or 30)
+local nextloop=-self.MonitorFrequency or-30
+self:__Monitor(nextloop)
 return self
 end
 function AUTOLASE:onbeforeRecceKIA(From,Event,To,RecceName)
