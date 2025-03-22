@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-22T10:42:36+01:00-d375e0ce29b8b3e9d08340eca30bb2fb3e202fcf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-22T14:59:08+01:00-e439bcdd0fed2032a866865e885b680c0ac69f17 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30006,21 +30006,31 @@ AIRBASE.Kola={
 ["Bardufoss"]="Bardufoss",
 }
 AIRBASE.Afghanistan={
+["Bagram"]="Bagram",
+["Bamyan"]="Bamyan",
 ["Bost"]="Bost",
 ["Camp_Bastion"]="Camp Bastion",
 ["Camp_Bastion_Heliport"]="Camp Bastion Heliport",
 ["Chaghcharan"]="Chaghcharan",
 ["Dwyer"]="Dwyer",
 ["Farah"]="Farah",
+["Gardez"]="Gardez",
+["Ghazni_Heliport"]="Ghazni Heliport",
 ["Herat"]="Herat",
+["Jalalabad"]="Jalalabad",
+["Kabul"]="Kabul",
 ["Kandahar"]="Kandahar",
 ["Kandahar_Heliport"]="Kandahar Heliport",
+["Khost"]="Khost",
+["Khost_Heliport"]="Khost Heliport",
 ["Maymana_Zahiraddin_Faryabi"]="Maymana Zahiraddin Faryabi",
 ["Nimroz"]="Nimroz",
 ["Qala_i_Naw"]="Qala i Naw",
+["Sharana"]="Sharana",
 ["Shindand"]="Shindand",
 ["Shindand_Heliport"]="Shindand Heliport",
 ["Tarinkot"]="Tarinkot",
+["Urgoon_Heliport"]="Urgoon Heliport",
 }
 AIRBASE.Iraq={
 ["Baghdad_International_Airport"]="Baghdad International Airport",
