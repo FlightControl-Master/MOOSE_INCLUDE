@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-23T14:11:37+01:00-92e680a276efeb3ddaac9553c948fd878b7d6d73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-23T22:45:15+01:00-47c9e1ba1fd6c820dc3cf718a3a7b9b014518447 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -96299,6 +96299,14 @@ end
 end
 return self
 end
+function LEGION:DelAsset(Asset)
+if Asset.cohort then
+Asset.cohort:DelAsset(Asset)
+else
+self:E(self.lid..string.format("ERROR: Asset has not cohort attached. Cannot remove it from legion!"))
+end
+return self
+end
 function LEGION:RelocateCohort(Cohort,Legion,Delay,NcarriersMin,NcarriersMax,TransportLegions)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,LEGION.RelocateCohort,self,Cohort,Legion,0,NcarriersMin,NcarriersMax,TransportLegions)
@@ -96844,6 +96852,7 @@ self:GetParent(self,LEGION).onafterAssetDead(self,From,Event,To,asset,request)
 if self.commander and self.commander.chief then
 self.commander.chief.detectionset:RemoveGroupsByName({asset.spawngroupname})
 end
+self:DelAsset(asset)
 end
 function LEGION:onafterDestroyed(From,Event,To)
 self:T(self.lid.."Legion warehouse destroyed!")
