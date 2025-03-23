@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-16T16:57:38+01:00-6662a1cf97acca7209765e8697c35b30fe2bd508 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-23T14:11:37+01:00-92e680a276efeb3ddaac9553c948fd878b7d6d73 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16902,7 +16902,7 @@ local Settings=Settings or _SETTINGS
 local AngleDegrees=UTILS.Round(UTILS.ToDegree(AngleRadians),Precision)
 local s=string.format('%03d°',AngleDegrees)
 if MagVar then
-local variation=UTILS.GetMagneticDeclination()or 0
+local variation=self:GetMagneticDeclination()or 0
 local AngleMagnetic=AngleDegrees-variation
 if AngleMagnetic<0 then AngleMagnetic=360-AngleMagnetic end
 s=string.format('%03d°M|%03d°',AngleMagnetic,AngleDegrees)
@@ -17740,6 +17740,8 @@ local currentCoord=FromCoordinate
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local bearing=UTILS.Round(UTILS.ToDegree(AngleRadians),0)
+local magnetic=self:GetMagneticDeclination()or 0
+bearing=bearing-magnetic
 local rangeMetres=self:Get2DDistance(currentCoord)
 local rangeNM=UTILS.Round(UTILS.MetersToNM(rangeMetres),0)
 local aspect=self:ToStringAspect(currentCoord)
@@ -19785,13 +19787,14 @@ SpawnPoint.helipadId=nil
 SpawnPoint.airdromeId=nil
 local AirbaseID=SpawnAirbase:GetID()
 local AirbaseCategory=SpawnAirbase:GetAirbaseCategory()
-SpawnPoint.airdromeId=AirbaseID
 if AirbaseCategory==Airbase.Category.SHIP then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
 elseif AirbaseCategory==Airbase.Category.HELIPAD then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
+else
+SpawnPoint.airdromeId=AirbaseID
 end
 SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
@@ -30004,21 +30007,31 @@ AIRBASE.Kola={
 ["Bardufoss"]="Bardufoss",
 }
 AIRBASE.Afghanistan={
+["Bagram"]="Bagram",
+["Bamyan"]="Bamyan",
 ["Bost"]="Bost",
 ["Camp_Bastion"]="Camp Bastion",
 ["Camp_Bastion_Heliport"]="Camp Bastion Heliport",
 ["Chaghcharan"]="Chaghcharan",
 ["Dwyer"]="Dwyer",
 ["Farah"]="Farah",
+["Gardez"]="Gardez",
+["Ghazni_Heliport"]="Ghazni Heliport",
 ["Herat"]="Herat",
+["Jalalabad"]="Jalalabad",
+["Kabul"]="Kabul",
 ["Kandahar"]="Kandahar",
 ["Kandahar_Heliport"]="Kandahar Heliport",
+["Khost"]="Khost",
+["Khost_Heliport"]="Khost Heliport",
 ["Maymana_Zahiraddin_Faryabi"]="Maymana Zahiraddin Faryabi",
 ["Nimroz"]="Nimroz",
 ["Qala_i_Naw"]="Qala i Naw",
+["Sharana"]="Sharana",
 ["Shindand"]="Shindand",
 ["Shindand_Heliport"]="Shindand Heliport",
 ["Tarinkot"]="Tarinkot",
+["Urgoon_Heliport"]="Urgoon Heliport",
 }
 AIRBASE.Iraq={
 ["Baghdad_International_Airport"]="Baghdad International Airport",
@@ -56804,7 +56817,7 @@ RoundingPrecision=0,
 increasegroundawareness=true,
 MonitorFrequency=30,
 }
-AUTOLASE.version="0.1.30"
+AUTOLASE.version="0.1.31"
 function AUTOLASE:New(RecceSet,Coalition,Alias,PilotSet)
 BASE:T({RecceSet,Coalition,Alias,PilotSet})
 local self=BASE:Inherit(self,BASE:New())
@@ -57534,7 +57547,8 @@ self:__Lasing(2,laserspot)
 end
 end
 end
-self:__Monitor(self.MonitorFrequency or 30)
+local nextloop=-self.MonitorFrequency or-30
+self:__Monitor(nextloop)
 return self
 end
 function AUTOLASE:onbeforeRecceKIA(From,Event,To,RecceName)
