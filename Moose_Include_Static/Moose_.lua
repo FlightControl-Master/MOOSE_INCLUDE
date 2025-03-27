@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-22T14:59:41+01:00-e8e4f6bcb945d024f46798480f7dc9e379dc82c3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-27T11:10:17+01:00-1bfeb0b41b1e4fd089598c63a8f0181727e1294a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19787,13 +19787,14 @@ SpawnPoint.helipadId=nil
 SpawnPoint.airdromeId=nil
 local AirbaseID=SpawnAirbase:GetID()
 local AirbaseCategory=SpawnAirbase:GetAirbaseCategory()
-SpawnPoint.airdromeId=AirbaseID
 if AirbaseCategory==Airbase.Category.SHIP then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
 elseif AirbaseCategory==Airbase.Category.HELIPAD then
 SpawnPoint.linkUnit=AirbaseID
 SpawnPoint.helipadId=AirbaseID
+else
+SpawnPoint.airdromeId=AirbaseID
 end
 SpawnPoint.alt=0
 SpawnPoint.type=GROUPTEMPLATE.Takeoff[Takeoff][1]
@@ -95027,6 +95028,14 @@ end
 end
 return self
 end
+function LEGION:DelAsset(Asset)
+if Asset.cohort then
+Asset.cohort:DelAsset(Asset)
+else
+self:E(self.lid..string.format("ERROR: Asset has not cohort attached. Cannot remove it from legion!"))
+end
+return self
+end
 function LEGION:RelocateCohort(Cohort,Legion,Delay,NcarriersMin,NcarriersMax,TransportLegions)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,LEGION.RelocateCohort,self,Cohort,Legion,0,NcarriersMin,NcarriersMax,TransportLegions)
@@ -95572,6 +95581,7 @@ self:GetParent(self,LEGION).onafterAssetDead(self,From,Event,To,asset,request)
 if self.commander and self.commander.chief then
 self.commander.chief.detectionset:RemoveGroupsByName({asset.spawngroupname})
 end
+self:DelAsset(asset)
 end
 function LEGION:onafterDestroyed(From,Event,To)
 self:T(self.lid.."Legion warehouse destroyed!")
@@ -109773,29 +109783,30 @@ local finalcount=0
 local minview=0
 local typename=unit:GetTypeName()
 local playername=unit:GetPlayerName()
-local maxview=self.MaxViewDistance[typename]or 5000
+local maxview=self.MaxViewDistance[typename]or 8000
 local heading,nod,maxview,angle=0,30,8000,10
 local camon=false
 local name=unit:GetName()
 if string.find(typename,"SA342")and camera then
 heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
 angle=10
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 elseif string.find(typename,"Ka-50")and camera then
 heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
 angle=10
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 elseif string.find(typename,"OH58")and camera then
 nod,maxview,camon=0,8000,true
 heading,nod,maxview,camon=self:_GetKiowaMMSSight(unit)
 angle=8
 if maxview==0 then
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 end
 else
 heading=unit:GetHeading()
-nod,maxview,camon=10,1000,true
+nod,maxview,camon=10,3000,true
+maxview=self.MaxViewDistance[typename]or 3000
 angle=45
 end
 if laser then
