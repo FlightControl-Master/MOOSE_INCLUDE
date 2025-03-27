@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-23T22:45:15+01:00-47c9e1ba1fd6c820dc3cf718a3a7b9b014518447 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-27T11:09:06+01:00-bfd26522d6e4538a58039a4dbe31843e145de7b7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -111054,29 +111054,30 @@ local finalcount=0
 local minview=0
 local typename=unit:GetTypeName()
 local playername=unit:GetPlayerName()
-local maxview=self.MaxViewDistance[typename]or 5000
+local maxview=self.MaxViewDistance[typename]or 8000
 local heading,nod,maxview,angle=0,30,8000,10
 local camon=false
 local name=unit:GetName()
 if string.find(typename,"SA342")and camera then
 heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
 angle=10
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 elseif string.find(typename,"Ka-50")and camera then
 heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
 angle=10
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 elseif string.find(typename,"OH58")and camera then
 nod,maxview,camon=0,8000,true
 heading,nod,maxview,camon=self:_GetKiowaMMSSight(unit)
 angle=8
 if maxview==0 then
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 end
 else
 heading=unit:GetHeading()
-nod,maxview,camon=10,1000,true
+nod,maxview,camon=10,3000,true
+maxview=self.MaxViewDistance[typename]or 3000
 angle=45
 end
 if laser then
