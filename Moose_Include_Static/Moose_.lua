@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-27T11:09:06+01:00-bfd26522d6e4538a58039a4dbe31843e145de7b7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-28T15:05:57+01:00-342e901dd1cf22a157a10b48a999f57149fa3a3c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -118408,12 +118408,20 @@ local OrbitTask=OldAIControllable:TaskOrbitCircle(math.random(self.PatrolFloorAl
 local TimedOrbitTask=OldAIControllable:TaskControlled(OrbitTask,OldAIControllable:TaskCondition(nil,nil,nil,nil,self.PatrolOutOfFuelOrbitTime,nil))
 OldAIControllable:SetTask(TimedOrbitTask,10)
 RTB=true
-else
 end
 local Damage=self.Controllable:GetLife()
 if Damage<=self.PatrolDamageThreshold then
 self:T(self.Controllable:GetName().." is damaged:"..Damage..", RTB!")
 RTB=true
+end
+if self:IsInstanceOf("AI_CAS")or self:IsInstanceOf("AI_BAI")then
+local atotal,shells,rockets,bombs,missiles=self.Controllable:GetAmmunition()
+local arelevant=rockets+bombs
+if arelevant==0 or missiles==0 then
+RTB=true
+self:T({total=atotal,shells=shells,rockets=rockets,bombs=bombs,missiles=missiles})
+self:T(self.Controllable:GetName().." is out of ammo, RTB!")
+end
 end
 if RTB==true then
 self:RTB()
