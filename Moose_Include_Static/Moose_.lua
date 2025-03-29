@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-23T14:11:37+01:00-92e680a276efeb3ddaac9553c948fd878b7d6d73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-28T15:05:57+01:00-342e901dd1cf22a157a10b48a999f57149fa3a3c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -96299,6 +96299,14 @@ end
 end
 return self
 end
+function LEGION:DelAsset(Asset)
+if Asset.cohort then
+Asset.cohort:DelAsset(Asset)
+else
+self:E(self.lid..string.format("ERROR: Asset has not cohort attached. Cannot remove it from legion!"))
+end
+return self
+end
 function LEGION:RelocateCohort(Cohort,Legion,Delay,NcarriersMin,NcarriersMax,TransportLegions)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,LEGION.RelocateCohort,self,Cohort,Legion,0,NcarriersMin,NcarriersMax,TransportLegions)
@@ -96844,6 +96852,7 @@ self:GetParent(self,LEGION).onafterAssetDead(self,From,Event,To,asset,request)
 if self.commander and self.commander.chief then
 self.commander.chief.detectionset:RemoveGroupsByName({asset.spawngroupname})
 end
+self:DelAsset(asset)
 end
 function LEGION:onafterDestroyed(From,Event,To)
 self:T(self.lid.."Legion warehouse destroyed!")
@@ -111045,29 +111054,30 @@ local finalcount=0
 local minview=0
 local typename=unit:GetTypeName()
 local playername=unit:GetPlayerName()
-local maxview=self.MaxViewDistance[typename]or 5000
+local maxview=self.MaxViewDistance[typename]or 8000
 local heading,nod,maxview,angle=0,30,8000,10
 local camon=false
 local name=unit:GetName()
 if string.find(typename,"SA342")and camera then
 heading,nod,maxview,camon=self:_GetGazelleVivianneSight(unit)
 angle=10
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 elseif string.find(typename,"Ka-50")and camera then
 heading=unit:GetHeading()
 nod,maxview,camon=10,1000,true
 angle=10
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 elseif string.find(typename,"OH58")and camera then
 nod,maxview,camon=0,8000,true
 heading,nod,maxview,camon=self:_GetKiowaMMSSight(unit)
 angle=8
 if maxview==0 then
-maxview=self.MaxViewDistance[typename]or 5000
+maxview=self.MaxViewDistance[typename]or 8000
 end
 else
 heading=unit:GetHeading()
-nod,maxview,camon=10,1000,true
+nod,maxview,camon=10,3000,true
+maxview=self.MaxViewDistance[typename]or 3000
 angle=45
 end
 if laser then
@@ -118398,12 +118408,20 @@ local OrbitTask=OldAIControllable:TaskOrbitCircle(math.random(self.PatrolFloorAl
 local TimedOrbitTask=OldAIControllable:TaskControlled(OrbitTask,OldAIControllable:TaskCondition(nil,nil,nil,nil,self.PatrolOutOfFuelOrbitTime,nil))
 OldAIControllable:SetTask(TimedOrbitTask,10)
 RTB=true
-else
 end
 local Damage=self.Controllable:GetLife()
 if Damage<=self.PatrolDamageThreshold then
 self:T(self.Controllable:GetName().." is damaged:"..Damage..", RTB!")
 RTB=true
+end
+if self:IsInstanceOf("AI_CAS")or self:IsInstanceOf("AI_BAI")then
+local atotal,shells,rockets,bombs,missiles=self.Controllable:GetAmmunition()
+local arelevant=rockets+bombs
+if arelevant==0 or missiles==0 then
+RTB=true
+self:T({total=atotal,shells=shells,rockets=rockets,bombs=bombs,missiles=missiles})
+self:T(self.Controllable:GetName().." is out of ammo, RTB!")
+end
 end
 if RTB==true then
 self:RTB()
