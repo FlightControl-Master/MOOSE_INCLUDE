@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-28T15:05:57+01:00-342e901dd1cf22a157a10b48a999f57149fa3a3c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-30T16:51:23+02:00-dd0b2ace6591fcea2d52abd59d4e2d053f06cb01 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -36557,7 +36557,6 @@ end
 function ESCORT:_ReportTargetsScheduler()
 self:F(self.EscortGroup:GetName())
 if self.EscortGroup:IsAlive()and self.EscortClient:IsAlive()then
-if true then
 local EscortGroupName=self.EscortGroup:GetName()
 self.EscortMenuAttackNearbyTargets:RemoveSubMenus()
 if self.EscortMenuTargetAssistance then
@@ -36608,8 +36607,6 @@ else
 self.EscortGroup:MessageToClient("No targets detected.",10,self.EscortClient)
 end
 return true
-else
-end
 end
 return false
 end
@@ -55134,7 +55131,7 @@ shootandscoot=false,
 SkateNumber=3,
 SkateZones=nil,
 minscootdist=100,
-minscootdist=3000,
+maxscootdist=3000,
 scootrandomcoord=false,
 }
 do
@@ -71543,8 +71540,14 @@ CTLD.UnitTypeCapabilities={
 ["OH-6A"]={type="OH-6A",crates=false,troops=true,cratelimit=0,trooplimit=4,length=7,cargoweightlimit=550},
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
+["MosquitoFBMkVI"]={type="MosquitoFBMkVI",crates=true,troops=false,cratelimit=2,trooplimit=0,length=13,cargoweightlimit=1800},
 }
-CTLD.version="1.1.30"
+CTLD.FixedWingTypes={
+["Hercules"]="Hercules",
+["Bronco"]="Bronco",
+["Mosquito"]="Mosquito",
+}
+CTLD.version="1.1.31"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71647,9 +71650,10 @@ self.movetroopstowpzone=true
 self.movetroopsdistance=5000
 self.troopdropzoneradius=100
 self.enableHercules=false
-self.HercMinAngels=165
-self.HercMaxAngels=2000
-self.HercMaxSpeed=77
+self.enableFixedWing=false
+self.FixedMinAngels=165
+self.FixedMaxAngels=2000
+self.FixedMaxSpeed=77
 self.suppressmessages=false
 self.repairtime=300
 self.buildtime=300
@@ -71758,7 +71762,7 @@ local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
-if self:IsHercules(_unit)and self.enableHercules then
+if self:IsFixedWing(_unit)and self.enableFixedWing then
 local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
@@ -71876,6 +71880,17 @@ return cargo
 end
 end
 return nil
+end
+function CTLD:AddAllowedFixedWingType(typename)
+if type(typename)=="string"then
+self.FixedWingTypes[typename]=typename
+elseif typename and typename.ClassName and typename:IsInstanceOf("UNIT")then
+local TypeName=typename:GetTypeName()or"none"
+self.FixedWingTypes[TypeName]=TypeName
+else
+self:E(self.lid.."No valid typename or no UNIT handed!")
+end
+return self
 end
 function CTLD:PreloadTroops(Unit,Troopname)
 self:T(self.lid.." PreloadTroops")
@@ -72289,7 +72304,7 @@ if numbernearby>=canloadcratesno and not drop then
 self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
 return self
 end
-local IsHerc=self:IsHercules(Unit)
+local IsHerc=self:IsFixedWing(Unit)
 local IsHook=self:IsHook(Unit)
 local cargotype=Cargo
 local number=number or cargotype:GetCratesNeeded()
@@ -72600,6 +72615,7 @@ local staticpos=static:GetCoordinate()
 local cando=cargo:UnitCanCarry(_unit)
 if ignoretype==true then cando=true end
 local distance=self:_GetDistance(location,staticpos)
+self:T(self.lid..string.format("Dist %dm/%dm | weight %dkg | maxloadable %dkg",distance,finddist,weight,maxloadable))
 if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false and cando==true then
 index=index+1
 table.insert(found,staticid,cargo)
@@ -72924,12 +72940,14 @@ self:_SendMessage(string.format("Nothing in stock!"),10,false,Group)
 end
 return self
 end
-function CTLD:IsHercules(Unit)
-if Unit:GetTypeName()=="Hercules"or string.find(Unit:GetTypeName(),"Bronco")then
+function CTLD:IsFixedWing(Unit)
+local typename=Unit:GetTypeName()or"none"
+for _,_name in pairs(self.FixedWingTypes or{})do
+if typename==_name or string.find(typename,_name,1,true)then
 return true
-else
-return false
 end
+end
+return false
 end
 function CTLD:IsHook(Unit)
 if Unit and string.find(Unit:GetTypeName(),"CH.47")then
@@ -72973,7 +72991,7 @@ if inzone then
 droppingatbase=true
 end
 local hoverunload=self:IsCorrectHover(Unit)
-local IsHerc=self:IsHercules(Unit)
+local IsHerc=self:IsFixedWing(Unit)
 local IsHook=self:IsHook(Unit)
 if IsHerc and(not IsHook)then
 hoverunload=self:IsCorrectFlightParameters(Unit)
@@ -73100,7 +73118,7 @@ self:_SendMessage("You need to open the door(s) to drop cargo!",10,false,Group)
 if not self.debug then return self end
 end
 local hoverunload=self:IsCorrectHover(Unit)
-local IsHerc=self:IsHercules(Unit)
+local IsHerc=self:IsFixedWing(Unit)
 local IsHook=self:IsHook(Unit)
 if IsHerc and(not IsHook)then
 hoverunload=self:IsCorrectFlightParameters(Unit)
@@ -73151,7 +73169,7 @@ return self
 end
 function CTLD:_BuildCrates(Group,Unit,Engineering)
 self:T(self.lid.." _BuildCrates")
-if self:IsHercules(Unit)and self.enableHercules and not Engineering then
+if self:IsFixedWing(Unit)and self.enableFixedWing and not Engineering then
 local speed=Unit:GetVelocityKMH()
 if speed>1 then
 self:_SendMessage("You need to land / stop to build something, Pilot!",10,false,Group)
@@ -73441,7 +73459,7 @@ for _,groupObj in pairs(PlayerTable)do
 local firstUnit=groupObj:GetFirstUnitAlive()
 if firstUnit then
 if firstUnit:IsPlayer()then
-if firstUnit:IsHelicopter()or(self.enableHercules and self:IsHercules(firstUnit))then
+if firstUnit:IsHelicopter()or(self.enableFixedWing and self:IsFixedWing(firstUnit))then
 local _unit=firstUnit:GetName()
 _UnitList[_unit]=_unit
 end
@@ -73628,7 +73646,7 @@ MENU_GROUP_COMMAND:New(_group,"White smoke",smokeself,self.SmokePositionNow,self
 MENU_GROUP_COMMAND:New(_group,"Flare zones nearby",smoketopmenu,self.SmokeZoneNearBy,self,_unit,true)
 MENU_GROUP_COMMAND:New(_group,"Fire flare now",smoketopmenu,self.SmokePositionNow,self,_unit,true)
 MENU_GROUP_COMMAND:New(_group,"Drop beacon now",smoketopmenu,self.DropBeaconNow,self,_unit):Refresh()
-if self:IsHercules(_unit)then
+if self:IsFixedWing(_unit)then
 MENU_GROUP_COMMAND:New(_group,"Show flight parameters",topmenu,self._ShowFlightParams,self,_group,_unit):Refresh()
 else
 MENU_GROUP_COMMAND:New(_group,"Show hover parameters",topmenu,self._ShowHoverParams,self,_group,_unit):Refresh()
@@ -73803,7 +73821,7 @@ return self
 end
 local grounded=not self:IsUnitInAir(Unit)
 local hoverunload=self:IsCorrectHover(Unit)
-local isHerc=self:IsHercules(Unit)
+local isHerc=self:IsFixedWing(Unit)
 local isHook=self:IsHook(Unit)
 if isHerc and not isHook then
 hoverunload=self:IsCorrectFlightParameters(Unit)
@@ -73933,7 +73951,7 @@ self:_SendMessage("You need to open the door(s) to unload troops!",10,false,Grou
 if not self.debug then return self end
 end
 local hoverunload=self:IsCorrectHover(Unit)
-local isHerc=self:IsHercules(Unit)
+local isHerc=self:IsFixedWing(Unit)
 local isHook=self:IsHook(Unit)
 if isHerc and not isHook then
 hoverunload=self:IsCorrectFlightParameters(Unit)
@@ -74062,7 +74080,7 @@ self.Loaded_Cargo[unitName].Troopsloaded=troopsLoaded
 self.Loaded_Cargo[unitName].Cratesloaded=cratesLoaded
 self:_RefreshDropTroopsMenu(Group,Unit)
 else
-local isHerc=self:IsHercules(Unit)
+local isHerc=self:IsFixedWing(Unit)
 if isHerc then
 self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
 else
@@ -74684,9 +74702,9 @@ return false
 end
 local gheight=ucoord:GetLandHeight()
 local aheight=uheight-gheight
-local minh=self.HercMinAngels
-local maxh=self.HercMaxAngels
-local maxspeed=self.HercMaxSpeed
+local minh=self.FixedMinAngels
+local maxh=self.FixedMaxAngels
+local maxspeed=self.FixedMaxSpeed
 local kmspeed=uspeed*3.6
 local knspeed=kmspeed/1.86
 self:T(string.format("%s Unit parameters: at %dm AGL with %dmps | %dkph | %dkn",self.lid,aheight,uspeed,kmspeed,knspeed))
@@ -74717,12 +74735,12 @@ local htxt="true"
 if not inhover then htxt="false"end
 local text=""
 if _SETTINGS:IsImperial()then
-local minheight=UTILS.MetersToFeet(self.HercMinAngels)
-local maxheight=UTILS.MetersToFeet(self.HercMaxAngels)
+local minheight=UTILS.MetersToFeet(self.FixedMinAngels)
+local maxheight=UTILS.MetersToFeet(self.FixedMaxAngels)
 text=string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s",minheight,maxheight,htxt)
 else
-local minheight=self.HercMinAngels
-local maxheight=self.HercMaxAngels
+local minheight=self.FixedMinAngels
+local maxheight=self.FixedMaxAngels
 text=string.format("Flight parameters (airdrop):\n - Min height %dm \n - Max height %dm \n - In parameter: %s",minheight,maxheight,htxt)
 end
 self:_SendMessage(text,10,false,Group)
@@ -74730,7 +74748,7 @@ return self
 end
 function CTLD:CanHoverLoad(Unit)
 self:T(self.lid.." CanHoverLoad")
-if self:IsHercules(Unit)then return false end
+if self:IsFixedWing(Unit)then return false end
 local outcome=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)and self:IsCorrectHover(Unit)
 if not outcome then
 outcome=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
@@ -74739,7 +74757,7 @@ return outcome
 end
 function CTLD:IsUnitInAir(Unit)
 local minheight=self.minimumHoverHeight
-if self.enableHercules and self:IsHercules(Unit)then
+if self.enableFixedWing and self:IsFixedWing(Unit)then
 minheight=5.1
 end
 local uheight=Unit:GetHeight()
@@ -75372,11 +75390,12 @@ end
 function CTLD:onafterStart(From,Event,To)
 self:T({From,Event,To})
 self:I(self.lid.."Started ("..self.version..")")
+if self.enableHercules then self.enableFixedWing=true end
 if self.UserSetGroup then
 self.PilotGroups=self.UserSetGroup
-elseif self.useprefix or self.enableHercules then
+elseif self.useprefix or self.enableFixedWing then
 local prefix=self.prefixes
-if self.enableHercules then
+if self.enableFixedWing then
 self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterStart()
 else
 self.PilotGroups=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(prefix):FilterCategories("helicopter"):FilterStart()
