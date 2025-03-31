@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-31T12:32:55+02:00-c26220d1fd409c04fe7421ed45fb9630ec2b80d3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-31T14:05:41+02:00-13c16b867432ed6e87adbfe90dfb69a2fd0c87ef ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -103550,7 +103550,7 @@ local element=self:GetElementByName(UnitName)
 if element then
 element.weightCargo=element.weightCargo+Weight
 self:T(self.lid..string.format("%s: Adding %.1f kg cargo weight. New cargo weight=%.1f kg",UnitName,Weight,element.weightCargo))
-if self.isFlightgroup then
+if self.isFlightgroup and element.unit and element.unit:IsAlive()then
 trigger.action.setUnitInternalCargo(element.name,element.weightCargo)
 end
 end
