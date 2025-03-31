@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-30T16:50:43+02:00-dc83af4d0205219d9c2f4640cde60ae386e25cdf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-31T12:31:52+02:00-d783f7be9920c8e941e2b4384872e700700c3e16 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32097,7 +32097,7 @@ DYNAMICCARGO.AircraftDimensions={
 ["ropelength"]=30,
 },
 }
-DYNAMICCARGO.version="0.0.5"
+DYNAMICCARGO.version="0.0.6"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -32147,14 +32147,14 @@ return false
 end
 end
 function DYNAMICCARGO:IsUnloaded()
-if self.CargoState and self.CargoState==DYNAMICCARGO.State.REMOVED then
+if self.CargoState and self.CargoState==DYNAMICCARGO.State.UNLOADED then
 return true
 else
 return false
 end
 end
 function DYNAMICCARGO:IsRemoved()
-if self.CargoState and self.CargoState==DYNAMICCARGO.State.UNLOADED then
+if self.CargoState and self.CargoState==DYNAMICCARGO.State.REMOVED then
 return true
 else
 return false
