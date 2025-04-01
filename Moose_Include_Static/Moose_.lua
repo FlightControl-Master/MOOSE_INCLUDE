@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-03-31T17:36:38+02:00-9862811c16f2db4802a47fe5127088b2127b41a8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-01T14:15:13+02:00-b63185f1b303df8a567a2354a66c02e3ede1eb3b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8752,7 +8752,7 @@ return nil
 end
 function ZONE_BASE:GetPointVec2()
 local Vec2=self:GetVec2()
-local PointVec2=POINT_VEC2:NewFromVec2(Vec2)
+local PointVec2=COORDINATE:NewFromVec2(Vec2)
 return PointVec2
 end
 function ZONE_BASE:GetVec3(Height)
@@ -8763,7 +8763,7 @@ return Vec3
 end
 function ZONE_BASE:GetPointVec3(Height)
 local Vec3=self:GetVec3(Height)
-local PointVec3=POINT_VEC3:NewFromVec3(Vec3)
+local PointVec3=COORDINATE:NewFromVec3(Vec3)
 return PointVec3
 end
 function ZONE_BASE:GetCoordinate(Height)
@@ -9093,7 +9093,7 @@ for Angle=0,360,360/Points do
 local Radial=(Angle+AngleOffset)*RadialBase/360
 Point.x=Vec2.x+math.cos(Radial)*self:GetRadius()
 Point.y=Vec2.y+math.sin(Radial)*self:GetRadius()
-POINT_VEC2:New(Point.x,Point.y,AddHeight):Smoke(SmokeColor)
+COORDINATE:New(Point.x,AddHeight,Point.y):Smoke(SmokeColor)
 end
 return self
 end
@@ -9108,7 +9108,7 @@ for Angle=0,360,360/Points do
 local Radial=Angle*RadialBase/360
 Point.x=Vec2.x+math.cos(Radial)*self:GetRadius()
 Point.y=Vec2.y+math.sin(Radial)*self:GetRadius()
-POINT_VEC2:New(Point.x,Point.y,AddHeight):Flare(FlareColor,Azimuth)
+COORDINATE:New(Point.x,AddHeight,Point.y):Flare(FlareColor,Azimuth)
 end
 return self
 end
@@ -9363,7 +9363,7 @@ end
 return point
 end
 function ZONE_RADIUS:GetRandomPointVec2(inner,outer)
-local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2(inner,outer))
+local PointVec2=COORDINATE:NewFromVec2(self:GetRandomVec2(inner,outer))
 return PointVec2
 end
 function ZONE_RADIUS:GetRandomVec3(inner,outer)
@@ -9371,7 +9371,7 @@ local Vec2=self:GetRandomVec2(inner,outer)
 return{x=Vec2.x,y=self.y,z=Vec2.y}
 end
 function ZONE_RADIUS:GetRandomPointVec3(inner,outer)
-local PointVec3=POINT_VEC3:NewFromVec2(self:GetRandomVec2(inner,outer))
+local PointVec3=COORDINATE:NewFromVec2(self:GetRandomVec2(inner,outer))
 return PointVec3
 end
 function ZONE_RADIUS:GetRandomCoordinate(inner,outer,surfacetypes)
@@ -9574,7 +9574,7 @@ Point.y=Vec2.y+math.sin(angle)*math.random()*self:GetRadius();
 return Point
 end
 function ZONE_GROUP:GetRandomPointVec2(inner,outer)
-local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
+local PointVec2=COORDINATE:NewFromVec2(self:GetRandomVec2())
 return PointVec2
 end
 _ZONE_TRIANGLE={
@@ -9972,7 +9972,7 @@ local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
 local PointX=self._.Polygon[i].x+(Segment*DeltaX/Segments)
 local PointY=self._.Polygon[i].y+(Segment*DeltaY/Segments)
-POINT_VEC2:New(PointX,PointY):Smoke(SmokeColor)
+COORDINATE:New(PointX,0,PointY):Smoke(SmokeColor)
 end
 j=i
 i=i+1
@@ -9990,7 +9990,7 @@ local DeltaY=self._.Polygon[j].y-self._.Polygon[i].y
 for Segment=0,Segments do
 local PointX=self._.Polygon[i].x+(Segment*DeltaX/Segments)
 local PointY=self._.Polygon[i].y+(Segment*DeltaY/Segments)
-POINT_VEC2:New(PointX,PointY,AddHeight):Flare(FlareColor,Azimuth)
+COORDINATE:New(PointX,AddHeight,PointY):Flare(FlareColor,Azimuth)
 end
 j=i
 i=i+1
@@ -10035,11 +10035,11 @@ end
 end
 end
 function ZONE_POLYGON_BASE:GetRandomPointVec2()
-local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
+local PointVec2=COORDINATE:NewFromVec2(self:GetRandomVec2())
 return PointVec2
 end
 function ZONE_POLYGON_BASE:GetRandomPointVec3()
-local PointVec3=POINT_VEC3:NewFromVec2(self:GetRandomVec2())
+local PointVec3=COORDINATE:NewFromVec2(self:GetRandomVec2())
 return PointVec3
 end
 function ZONE_POLYGON_BASE:GetRandomCoordinate()
@@ -10549,10 +10549,10 @@ local ry=(x_e*math.sin(theta)+y_e*math.cos(theta))+self.CenterVec2.y
 return{x=rx,y=ry}
 end
 function ZONE_OVAL:GetRandomPointVec2()
-return POINT_VEC2:NewFromVec2(self:GetRandomVec2())
+return COORDINATE:NewFromVec2(self:GetRandomVec2())
 end
 function ZONE_OVAL:GetRandomPointVec3()
-return POINT_VEC3:NewFromVec3(self:GetRandomVec2())
+return COORDINATE:NewFromVec3(self:GetRandomVec2())
 end
 function ZONE_OVAL:DrawZone(Coalition,Color,Alpha,FillColor,FillAlpha,LineType)
 Coalition=Coalition or self:GetDrawCoalition()
@@ -10618,7 +10618,7 @@ end
 return ZoneVec2
 end
 function ZONE_AIRBASE:GetRandomPointVec2(inner,outer)
-local PointVec2=POINT_VEC2:NewFromVec2(self:GetRandomVec2())
+local PointVec2=COORDINATE:NewFromVec2(self:GetRandomVec2())
 return PointVec2
 end
 end
@@ -10674,7 +10674,7 @@ for Angle=0,360,360/Points do
 local Radial=(Angle+AngleOffset)*RadialBase/360
 Point.x=Vec2.x+math.cos(Radial)*self:GetRadius()
 Point.y=Vec2.y+math.sin(Radial)*self:GetRadius()
-POINT_VEC2:New(Point.x,Point.y,AddHeight):Smoke(SmokeColor)
+COORDINATE:New(Point.x,AddHeight,Point.y):Smoke(SmokeColor)
 end
 return self
 end
@@ -10690,7 +10690,7 @@ for Angle=0,360,360/Points do
 local Radial=Angle*RadialBase/360
 Point.x=Vec2.x+math.cos(Radial)*self:GetRadius()
 Point.y=Vec2.y+math.sin(Radial)*self:GetRadius()
-POINT_VEC2:New(Point.x,Point.y,AddHeight):Flare(FlareColor,Azimuth)
+COORDINATE:New(Point.x,AddHeight,Point.y):Flare(FlareColor,Azimuth)
 end
 return self
 end
@@ -12212,15 +12212,15 @@ self:UnHandleEvent(EVENTS.Dead)
 self:UnHandleEvent(EVENTS.Crash)
 return self
 end
-function SET_BASE:FindNearestObjectFromPointVec2(PointVec2)
+function SET_BASE:FindNearestObjectFromPointVec2(Coordinate)
 local NearestObject=nil
 local ClosestDistance=nil
 for ObjectID,ObjectData in pairs(self.Set)do
 if NearestObject==nil then
 NearestObject=ObjectData
-ClosestDistance=PointVec2:DistanceFromPointVec2(ObjectData:GetCoordinate())
+ClosestDistance=Coordinate:DistanceFromPointVec2(ObjectData:GetCoordinate())
 else
-local Distance=PointVec2:DistanceFromPointVec2(ObjectData:GetCoordinate())
+local Distance=Coordinate:DistanceFromPointVec2(ObjectData:GetCoordinate())
 if Distance<ClosestDistance then
 NearestObject=ObjectData
 ClosestDistance=Distance
@@ -12441,16 +12441,16 @@ function SET_GROUP:FindGroup(GroupName)
 local GroupFound=self.Set[GroupName]
 return GroupFound
 end
-function SET_GROUP:FindNearestGroupFromPointVec2(PointVec2)
+function SET_GROUP:FindNearestGroupFromPointVec2(Coordinate)
 local NearestGroup=nil
 local ClosestDistance=nil
 local Set=self:GetAliveSet()
 for ObjectID,ObjectData in pairs(Set)do
 if NearestGroup==nil then
 NearestGroup=ObjectData
-ClosestDistance=PointVec2:DistanceFromPointVec2(ObjectData:GetCoordinate())
+ClosestDistance=Coordinate:DistanceFromPointVec2(ObjectData:GetCoordinate())
 else
-local Distance=PointVec2:DistanceFromPointVec2(ObjectData:GetCoordinate())
+local Distance=Coordinate:DistanceFromPointVec2(ObjectData:GetCoordinate())
 if Distance<ClosestDistance then
 NearestGroup=ObjectData
 ClosestDistance=Distance
@@ -14736,8 +14736,8 @@ function SET_AIRBASE:ForEachAirbase(IteratorFunction,...)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
-function SET_AIRBASE:FindNearestAirbaseFromPointVec2(PointVec2)
-local NearestAirbase=self:FindNearestObjectFromPointVec2(PointVec2)
+function SET_AIRBASE:FindNearestAirbaseFromPointVec2(Coordinate)
+local NearestAirbase=self:FindNearestObjectFromPointVec2(Coordinate)
 return NearestAirbase
 end
 function SET_AIRBASE:IsIncludeObject(MAirbase)
@@ -14897,8 +14897,8 @@ function SET_CARGO:ForEachCargo(IteratorFunction,...)
 self:ForEach(IteratorFunction,arg,self:GetSet())
 return self
 end
-function SET_CARGO:FindNearestCargoFromPointVec2(PointVec2)
-local NearestCargo=self:FindNearestObjectFromPointVec2(PointVec2)
+function SET_CARGO:FindNearestCargoFromPointVec2(Coordinate)
+local NearestCargo=self:FindNearestObjectFromPointVec2(Coordinate)
 return NearestCargo
 end
 function SET_CARGO:FirstCargoWithState(State)
@@ -16877,6 +16877,79 @@ local point={x=self.x,y=math.max(height or self.y,landheight),z=self.z}
 local vec3=atmosphere.getWindWithTurbulence(point)
 return vec3
 end
+function COORDINATE:GetX()
+return self.x
+end
+function COORDINATE:GetY()
+if self:IsInstanceOf("POINT_VEC2")then
+return self.z
+end
+return self.y
+end
+function COORDINATE:GetZ()
+return self.z
+end
+function COORDINATE:SetX(x)
+self.x=x
+return self
+end
+function COORDINATE:SetY(y)
+if self:IsInstanceOf("POINT_VEC2")then
+self.z=y
+else
+self.y=y
+end
+return self
+end
+function COORDINATE:SetZ(z)
+self.z=z
+return self
+end
+function COORDINATE:AddX(x)
+self.x=self.x+x
+return self
+end
+function COORDINATE:GetLat()
+return self.x
+end
+function COORDINATE:SetLat(x)
+self.x=x
+return self
+end
+function COORDINATE:GetLon()
+return self.z
+end
+function COORDINATE:SetLon(z)
+self.z=z
+return self
+end
+function COORDINATE:GetAlt()
+return self.y~=0 or land.getHeight({x=self.x,y=self.z})
+end
+function COORDINATE:SetAlt(Altitude)
+self.y=Altitude or land.getHeight({x=self.x,y=self.z})
+return self
+end
+function COORDINATE:AddAlt(Altitude)
+self.y=land.getHeight({x=self.x,y=self.z})+Altitude or 0
+return self
+end
+function COORDINATE:GetRandomPointVec2InRadius(OuterRadius,InnerRadius)
+self:F2({OuterRadius,InnerRadius})
+return COORDINATE:NewFromVec2(self:GetRandomVec2InRadius(OuterRadius,InnerRadius))
+end
+function COORDINATE:AddY(y)
+if self:IsInstanceOf("POINT_VEC2")then
+return self:AddZ(y)
+else
+self.y=self.y+y
+end
+return self
+end
+function COORDINATE:AddZ(z)
+self.z=self.z+z
+return self
+end
 function COORDINATE:GetWindText(height,Settings)
 local Direction,Strength=self:GetWind(height)
 local Settings=Settings or _SETTINGS
@@ -18036,6 +18109,9 @@ local steep,elev=self:IsInSteepArea(Radius,Minelevation)
 local flat=not steep
 return flat,elev
 end
+function COORDINATE:GetRandomPointVec3InRadius(OuterRadius,InnerRadius)
+return COORDINATE:NewFromVec3(self:GetRandomVec3InRadius(OuterRadius,InnerRadius))
+end
 end
 do
 POINT_VEC3={
@@ -18058,52 +18134,6 @@ local self=BASE:Inherit(self,COORDINATE:New(x,y,z))
 self:F2(self)
 return self
 end
-function POINT_VEC3:NewFromVec2(Vec2,LandHeightAdd)
-local self=BASE:Inherit(self,COORDINATE:NewFromVec2(Vec2,LandHeightAdd))
-self:F2(self)
-return self
-end
-function POINT_VEC3:NewFromVec3(Vec3)
-local self=BASE:Inherit(self,COORDINATE:NewFromVec3(Vec3))
-self:F2(self)
-return self
-end
-function POINT_VEC3:GetX()
-return self.x
-end
-function POINT_VEC3:GetY()
-return self.y
-end
-function POINT_VEC3:GetZ()
-return self.z
-end
-function POINT_VEC3:SetX(x)
-self.x=x
-return self
-end
-function POINT_VEC3:SetY(y)
-self.y=y
-return self
-end
-function POINT_VEC3:SetZ(z)
-self.z=z
-return self
-end
-function POINT_VEC3:AddX(x)
-self.x=self.x+x
-return self
-end
-function POINT_VEC3:AddY(y)
-self.y=self.y+y
-return self
-end
-function POINT_VEC3:AddZ(z)
-self.z=self.z+z
-return self
-end
-function POINT_VEC3:GetRandomPointVec3InRadius(OuterRadius,InnerRadius)
-return POINT_VEC3:NewFromVec3(self:GetRandomVec3InRadius(OuterRadius,InnerRadius))
-end
 end
 do
 POINT_VEC2={
@@ -18116,76 +18146,6 @@ LandHeight=LandHeight+LandHeightAdd
 local self=BASE:Inherit(self,COORDINATE:New(x,LandHeight,y))
 self:F2(self)
 return self
-end
-function POINT_VEC2:NewFromVec2(Vec2,LandHeightAdd)
-local LandHeight=land.getHeight(Vec2)
-LandHeightAdd=LandHeightAdd or 0
-LandHeight=LandHeight+LandHeightAdd
-local self=BASE:Inherit(self,COORDINATE:NewFromVec2(Vec2,LandHeightAdd))
-self:F2(self)
-return self
-end
-function POINT_VEC2:NewFromVec3(Vec3)
-local self=BASE:Inherit(self,COORDINATE:NewFromVec3(Vec3))
-self:F2(self)
-return self
-end
-function POINT_VEC2:GetX()
-return self.x
-end
-function POINT_VEC2:GetY()
-return self.z
-end
-function POINT_VEC2:SetX(x)
-self.x=x
-return self
-end
-function POINT_VEC2:SetY(y)
-self.z=y
-return self
-end
-function POINT_VEC2:GetLat()
-return self.x
-end
-function POINT_VEC2:SetLat(x)
-self.x=x
-return self
-end
-function POINT_VEC2:GetLon()
-return self.z
-end
-function POINT_VEC2:SetLon(z)
-self.z=z
-return self
-end
-function POINT_VEC2:GetAlt()
-return self.y~=0 or land.getHeight({x=self.x,y=self.z})
-end
-function POINT_VEC2:SetAlt(Altitude)
-self.y=Altitude or land.getHeight({x=self.x,y=self.z})
-return self
-end
-function POINT_VEC2:AddX(x)
-self.x=self.x+x
-return self
-end
-function POINT_VEC2:AddY(y)
-self.z=self.z+y
-return self
-end
-function POINT_VEC2:AddAlt(Altitude)
-self.y=land.getHeight({x=self.x,y=self.z})+Altitude or 0
-return self
-end
-function POINT_VEC2:GetRandomPointVec2InRadius(OuterRadius,InnerRadius)
-self:F2({OuterRadius,InnerRadius})
-return POINT_VEC2:NewFromVec2(self:GetRandomVec2InRadius(OuterRadius,InnerRadius))
-end
-function POINT_VEC2:DistanceFromPointVec2(PointVec2Reference)
-self:F2(PointVec2Reference)
-local Distance=((PointVec2Reference.x-self.x)^2+(PointVec2Reference.z-self.z)^2)^0.5
-self:T2(Distance)
-return Distance
 end
 end
 do
@@ -19549,7 +19509,7 @@ else
 local SpawnTemplate=self.SpawnGroups[self.SpawnIndex].SpawnTemplate
 local SpawnZone=self.SpawnGroups[self.SpawnIndex].SpawnZone
 if SpawnTemplate then
-local PointVec3=POINT_VEC3:New(SpawnTemplate.route.points[1].x,SpawnTemplate.route.points[1].alt,SpawnTemplate.route.points[1].y)
+local PointVec3=COORDINATE:New(SpawnTemplate.route.points[1].x,SpawnTemplate.route.points[1].alt,SpawnTemplate.route.points[1].y)
 if self.SpawnRandomizePosition then
 local RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnRandomizePositionOuterRadius,self.SpawnRandomizePositionInnerRadius)
 local CurrentX=SpawnTemplate.units[1].x
@@ -20177,7 +20137,7 @@ self:SetSpawnIndex(0)
 return nil
 end
 function SPAWN:SpawnFromVec3(Vec3,SpawnIndex)
-local PointVec3=POINT_VEC3:NewFromVec3(Vec3)
+local PointVec3=COORDINATE:NewFromVec3(Vec3)
 if SpawnIndex then
 else
 SpawnIndex=self.SpawnIndex+1
@@ -20885,257 +20845,65 @@ SpawnGroup,SpawnCursor=self:GetNextAliveGroup(SpawnCursor)
 end
 return true
 end
-SPAWNSTATIC={
-ClassName="SPAWNSTATIC",
-SpawnIndex=0,
-}
-function SPAWNSTATIC:NewFromStatic(SpawnTemplateName,SpawnCountryID)
-local self=BASE:Inherit(self,BASE:New())
-local TemplateStatic,CoalitionID,CategoryID,CountryID=_DATABASE:GetStaticGroupTemplate(SpawnTemplateName)
-if TemplateStatic then
-self.SpawnTemplatePrefix=SpawnTemplateName
-self.TemplateStaticUnit=UTILS.DeepCopy(TemplateStatic.units[1])
-self.CountryID=SpawnCountryID or CountryID
-self.CategoryID=CategoryID
-self.CoalitionID=CoalitionID
-self.SpawnIndex=0
-else
-error("SPAWNSTATIC:New: There is no static declared in the mission editor with SpawnTemplatePrefix = '"..tostring(SpawnTemplateName).."'")
-end
-self:SetEventPriority(5)
-return self
-end
-function SPAWNSTATIC:NewFromTemplate(SpawnTemplate,CountryID)
-local self=BASE:Inherit(self,BASE:New())
-self.TemplateStaticUnit=UTILS.DeepCopy(SpawnTemplate)
-self.SpawnTemplatePrefix=SpawnTemplate.name
-self.CountryID=CountryID or country.id.USA
-return self
-end
-function SPAWNSTATIC:NewFromType(StaticType,StaticCategory,CountryID)
-local self=BASE:Inherit(self,BASE:New())
-self.InitStaticType=StaticType
-self.InitStaticCategory=StaticCategory
-self.CountryID=CountryID or country.id.USA
-self.SpawnTemplatePrefix=self.InitStaticType
-self.TemplateStaticUnit={}
-self.InitStaticCoordinate=COORDINATE:New(0,0,0)
-self.InitStaticHeading=0
-return self
-end
-function SPAWNSTATIC:_InitResourceTable(CombinedWeight)
-if not self.TemplateStaticUnit.resourcePayload then
-self.TemplateStaticUnit.resourcePayload={
-["weapons"]={},
-["aircrafts"]={},
-["gasoline"]=0,
-["diesel"]=0,
-["methanol_mixture"]=0,
-["jet_fuel"]=0,
-}
-end
-self:InitCargo(true)
-self:InitCargoMass(CombinedWeight or 1)
-return self
-end
-function SPAWNSTATIC:AddCargoResource(Type,Name,Amount,CombinedWeight)
-if not self.TemplateStaticUnit.resourcePayload then
-self:_InitResourceTable(CombinedWeight)
-end
-if Type==STORAGE.Type.LIQUIDS and type(Name)=="string"then
-self.TemplateStaticUnit.resourcePayload[Name]=Amount
-else
-self.TemplateStaticUnit.resourcePayload[Type]={
-[Name]={
-["amount"]=Amount,
-}
-}
-end
-UTILS.PrintTableToLog(self.TemplateStaticUnit)
-return self
-end
-function SPAWNSTATIC:ResetCargoResources()
-self.TemplateStaticUnit.resourcePayload=nil
-self:_InitResourceTable()
-return self
-end
-function SPAWNSTATIC:InitCoordinate(Coordinate)
-self.InitStaticCoordinate=Coordinate
-return self
-end
-function SPAWNSTATIC:InitHeading(Heading)
-self.InitStaticHeading=Heading
-return self
-end
-function SPAWNSTATIC:InitLivery(LiveryName)
-self.InitStaticLivery=LiveryName
-return self
-end
-function SPAWNSTATIC:InitType(StaticType)
-self.InitStaticType=StaticType
-return self
-end
-function SPAWNSTATIC:InitShape(StaticShape)
-self.InitStaticShape=StaticShape
-return self
-end
-function SPAWNSTATIC:InitFARP(CallsignID,Frequency,Modulation)
-self.InitFarp=true
-self.InitFarpCallsignID=CallsignID or 1
-self.InitFarpFreq=Frequency or 127.5
-self.InitFarpModu=Modulation or 0
-return self
-end
-function SPAWNSTATIC:InitCargoMass(Mass)
-self.InitStaticCargoMass=Mass
-return self
-end
-function SPAWNSTATIC:InitCargo(IsCargo)
-self.InitStaticCargo=IsCargo
-return self
-end
-function SPAWNSTATIC:InitDead(IsDead)
-self.InitStaticDead=IsDead
-return self
-end
-function SPAWNSTATIC:InitCountry(CountryID)
-self.CountryID=CountryID
-return self
-end
-function SPAWNSTATIC:InitNamePrefix(NamePrefix)
-self.SpawnTemplatePrefix=NamePrefix
-return self
-end
-function SPAWNSTATIC:InitLinkToUnit(Unit,OffsetX,OffsetY,OffsetAngle)
-self.InitLinkUnit=Unit
-self.InitOffsetX=OffsetX or 0
-self.InitOffsetY=OffsetY or 0
-self.InitOffsetAngle=OffsetAngle or 0
-return self
-end
-function SPAWNSTATIC:OnSpawnStatic(SpawnCallBackFunction,...)
-self:F("OnSpawnStatic")
-self.SpawnFunctionHook=SpawnCallBackFunction
-self.SpawnFunctionArguments={}
-if arg then
-self.SpawnFunctionArguments=arg
-end
-return self
-end
-function SPAWNSTATIC:Spawn(Heading,NewName)
-if Heading then
-self.InitStaticHeading=Heading
-end
-if NewName then
-self.InitStaticName=NewName
-end
-return self:_SpawnStatic(self.TemplateStaticUnit,self.CountryID)
-end
-function SPAWNSTATIC:SpawnFromPointVec2(PointVec2,Heading,NewName)
-local vec2={x=PointVec2:GetX(),y=PointVec2:GetY()}
-local Coordinate=COORDINATE:NewFromVec2(vec2)
-return self:SpawnFromCoordinate(Coordinate,Heading,NewName)
-end
-function SPAWNSTATIC:SpawnFromCoordinate(Coordinate,Heading,NewName)
-self.InitStaticCoordinate=Coordinate
-if Heading then
-self.InitStaticHeading=Heading
-end
-if NewName then
-self.InitStaticName=NewName
-end
-return self:_SpawnStatic(self.TemplateStaticUnit,self.CountryID)
-end
-function SPAWNSTATIC:SpawnFromZone(Zone,Heading,NewName)
-local Static=self:SpawnFromPointVec2(Zone:GetPointVec2(),Heading,NewName)
-return Static
-end
-function SPAWNSTATIC:_SpawnStatic(Template,CountryID)
-Template=Template or{}
-if not Template.alt then
-Template.alt=land.getHeight({x=Template.x,y=Template.y})
-end
-local CountryID=CountryID or self.CountryID
-if self.InitStaticType then
-Template.type=self.InitStaticType
-end
-if self.InitStaticCategory then
-Template.category=self.InitStaticCategory
-end
-if self.InitStaticCoordinate then
-Template.x=self.InitStaticCoordinate.x
-Template.y=self.InitStaticCoordinate.z
-Template.alt=self.InitStaticCoordinate.y or land.getHeight({x=Template.x,y=Template.z})
-end
-if self.InitStaticHeading then
-Template.heading=math.rad(self.InitStaticHeading)
-end
-if self.InitStaticShape then
-Template.shape_name=self.InitStaticShape
-end
-if self.InitStaticLivery then
-Template.livery_id=self.InitStaticLivery
-end
-if self.InitStaticDead~=nil then
-Template.dead=self.InitStaticDead
-end
-if self.InitStaticCargo~=nil then
-Template.canCargo=self.InitStaticCargo
-end
-if self.InitStaticCargoMass~=nil then
-Template.mass=self.InitStaticCargoMass
-end
-if self.InitLinkUnit then
-Template.linkUnit=self.InitLinkUnit:GetID()
-Template.linkOffset=true
-Template.offsets={}
-Template.offsets.y=self.InitOffsetY
-Template.offsets.x=self.InitOffsetX
-Template.offsets.angle=self.InitOffsetAngle and math.rad(self.InitOffsetAngle)or 0
-end
-if self.InitFarp then
-Template.heliport_callsign_id=self.InitFarpCallsignID
-Template.heliport_frequency=self.InitFarpFreq
-Template.heliport_modulation=self.InitFarpModu
-Template.unitId=nil
-end
-self.SpawnIndex=self.SpawnIndex+1
-Template.name=self.InitStaticName or string.format("%s#%05d",self.SpawnTemplatePrefix,self.SpawnIndex)
-local Static=nil
-if self.InitFarp then
-local TemplateGroup={}
-TemplateGroup.units={}
-TemplateGroup.units[1]=Template
-TemplateGroup.visible=true
-TemplateGroup.hidden=false
-TemplateGroup.x=Template.x
-TemplateGroup.y=Template.y
-TemplateGroup.name=Template.name
-self:T("Spawning FARP")
-self:T({Template=Template})
-self:T({TemplateGroup=TemplateGroup})
-Static=coalition.addGroup(CountryID,-1,TemplateGroup)
-local Event={
-id=EVENTS.Birth,
-time=timer.getTime(),
-initiator=Static
-}
-world.onEvent(Event)
-else
-self:T("Spawning Static")
-self:T2({Template=Template})
-Static=coalition.addStaticObject(CountryID,Template)
-if Static then
-self:T(string.format("Succesfully spawned static object \"%s\" ID=%d",Static:getName(),Static:getID()))
-else
-self:E(string.format("ERROR: DCS static object \"%s\" is nil!",tostring(Template.name)))
+local grp=GROUP:FindByName("IR Blinker")
+grp:NewIRMarker(true,90)
+function DestGroup()
+if grp and grp:IsAlive()then
+grp:Destroy()
 end
 end
-local mystatic=_DATABASE:AddStatic(Template.name)
-if self.SpawnFunctionHook then
-self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
+function DisableMarker()
+if grp and grp:IsAlive()then
+grp:DisableIRMarker()
 end
-return mystatic
+end
+function EnableMarker()
+if grp and grp:IsAlive()then
+grp:EnableIRMarker()
+end
+end
+function RespGroup()
+if grp and not grp:IsAlive()then
+grp:Respawn()
+end
+end
+local mymsrs=MSRS:New(nil,243,0)
+local jammersound=SOUNDFILE:New("beacon.ogg","C:\\Users\\post\\Saved Games\\DCS\\Missions\\",2,true)
+function Play()
+mymsrs:PlaySoundFile(jammersound)
+end
+local topmenu=MENU_COALITION:New(coalition.side.BLUE,"IR Marker Test")
+local startmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Enable IR",topmenu,EnableMarker)
+local stopmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Disable IR",topmenu,DisableMarker)
+local destmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Destroy Group",topmenu,DestGroup)
+local respmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Respawn Group",topmenu,RespGroup)
+local respmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Play Sound",topmenu,Play)
+local testzone=ZONE:New("Testzone")
+testzone:Trigger(grp)
+function testzone:OnAfterObjectDead(From,Event,To,Controllable)
+MESSAGE:New("Object Dead",15,"Test"):ToAll():ToLog()
+end
+function testzone:OnAfterZoneEmpty(From,Event,To)
+MESSAGE:New("Zone Empty",15,"Test"):ToAll():ToLog()
+end
+local BlueBorder=ZONE:New("Blue Border")
+local RedBorder=ZONE:New("Red Border")
+local Conflict=ZONE:New("Conflict")
+BlueBorder:DrawZone(-1,{0,0,1},1,{0,0,1},.2,1,true)
+RedBorder:DrawZone(-1,{1,0,0},1,{1,0,0},.2,1,true)
+Conflict:DrawZone(-1,{1,254/255,1/33},1,{1,254/255,1/33},.2,1,true)
+BASE:TraceOn()
+BASE:TraceClass("SHORAD")
+local mymantis=MANTIS:New("Red Defense","Red SAM","Red EWR",hq,"red",true,awacs,true)
+mymantis:AddZones({RedBorder},{BlueBorder},{Conflict})
+mymantis.verbose=true
+mymantis.debug=true
+mymantis:Start()
+local myctld=CTLD:New()
+function myctld:OnAfterCratesDropped(From,Event,To,Group,Unit,Cargotable)
+if Unit and string.find(Unit:GetTypeName(),"Mosquito",1,true)then
+myctld:_BuildCrates(Group,Unit,true)
+end
 end
 TIMER={
 ClassName="TIMER",
@@ -22524,10 +22292,10 @@ self:F2(self.PositionableName)
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=DCSPositionable:getPosition().p
-local PositionablePointVec2=POINT_VEC2:NewFromVec3(PositionableVec3)
+local PositionablePointVec2=COORDINATE:NewFromVec3(PositionableVec3)
 return PositionablePointVec2
 end
-self:E({"Cannot GetPointVec2",Positionable=self,Alive=self:IsAlive()})
+self:E({"Cannot Coordinate",Positionable=self,Alive=self:IsAlive()})
 return nil
 end
 function POSITIONABLE:GetPointVec3()
@@ -22539,7 +22307,7 @@ self.pointvec3.x=PositionableVec3.x
 self.pointvec3.y=PositionableVec3.y
 self.pointvec3.z=PositionableVec3.z
 else
-self.pointvec3=POINT_VEC3:NewFromVec3(PositionableVec3)
+self.pointvec3=COORDINATE:NewFromVec3(PositionableVec3)
 end
 return self.pointvec3
 end
@@ -27240,7 +27008,7 @@ if FirstUnit then
 local FirstUnitPointVec2=FirstUnit:GetPointVec2()
 return FirstUnitPointVec2
 end
-BASE:E({"Cannot GetPointVec2",Group=self,Alive=self:IsAlive()})
+BASE:E({"Cannot get COORDINATE",Group=self,Alive=self:IsAlive()})
 return nil
 end
 function GROUP:GetAverageCoordinate()
@@ -27701,7 +27469,7 @@ if self.InitRespawnRandomizePositionZone then
 GroupUnitVec3=Zone:GetRandomVec3()
 else
 if self.InitRespawnRandomizePositionInner and self.InitRespawnRandomizePositionOuter then
-GroupUnitVec3=POINT_VEC3:NewFromVec2(From):GetRandomPointVec3InRadius(self.InitRespawnRandomizePositionsOuter,self.InitRespawnRandomizePositionsInner)
+GroupUnitVec3=COORDINATE:NewFromVec3(From):GetRandomVec3InRadius(self.InitRespawnRandomizePositionsOuter,self.InitRespawnRandomizePositionsInner)
 else
 GroupUnitVec3=Zone:GetVec3()
 end
@@ -27731,7 +27499,7 @@ if self.InitRespawnRandomizePositionZone then
 GroupUnitVec3=Zone:GetRandomVec3()
 else
 if self.InitRespawnRandomizePositionInner and self.InitRespawnRandomizePositionOuter then
-GroupUnitVec3=POINT_VEC3:NewFromVec2(From):GetRandomPointVec3InRadius(self.InitRespawnRandomizePositionsOuter,self.InitRespawnRandomizePositionsInner)
+GroupUnitVec3=COORDINATE:NewFromVec2(From):GetRandomPointVec3InRadius(self.InitRespawnRandomizePositionsOuter,self.InitRespawnRandomizePositionsInner)
 else
 GroupUnitVec3=Zone:GetVec3()
 end
