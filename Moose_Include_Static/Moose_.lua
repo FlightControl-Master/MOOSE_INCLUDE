@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-01T14:13:42+02:00-f729b1d358d222fa593a52b152bb72a6c2dd80f8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-01T15:27:55+02:00-f5b1050086867d1723f3ee3639b4a45ab04ec16a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32387,7 +32387,7 @@ DYNAMICCARGO.AircraftDimensions={
 ["ropelength"]=30,
 },
 }
-DYNAMICCARGO.version="0.0.6"
+DYNAMICCARGO.version="0.0.7"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -32413,7 +32413,7 @@ end
 return self
 end
 function DYNAMICCARGO:GetDCSObject()
-local DCSStatic=Unit.getByName(self.StaticName)
+local DCSStatic=StaticObject.getByName(self.StaticName)or Unit.getByName(self.StaticName)
 if DCSStatic then
 return DCSStatic
 end
@@ -32509,6 +32509,27 @@ else
 return self.StaticName
 end
 end
+function DYNAMICCARGO:_HeloHovering(Unit,ropelength)
+local DCSUnit=Unit:GetDCSObject()
+local hovering=false
+local Height=0
+if DCSUnit then
+local UnitInAir=DCSUnit:inAir()
+local UnitCategory=DCSUnit:getDesc().category
+if UnitInAir==true and UnitCategory==Unit.Category.HELICOPTER then
+local VelocityVec3=DCSUnit:getVelocity()
+local Velocity=UTILS.VecNorm(VelocityVec3)
+local Coordinate=DCSUnit:getPoint()
+local LandHeight=land.getHeight({x=Coordinate.x,y=Coordinate.z})
+Height=Coordinate.y-LandHeight
+if Velocity<1 and Height<=ropelength and Height>6 then
+hovering=true
+end
+end
+return hovering,Height
+end
+return false
+end
 function DYNAMICCARGO:_GetPossibleHeloNearby(pos,loading)
 local set=_DYNAMICCARGO_HELOS:GetAliveSet()
 local success=false
@@ -32519,28 +32540,33 @@ local helo=_helo
 local name=helo:GetPlayerName()or _DATABASE:_FindPlayerNameByUnitName(helo:GetName())or"None"
 self:T(self.lid.." Checking: "..name)
 local hpos=helo:GetCoordinate()
-local inair=helo:InAir()
-self:T(self.lid.." InAir: AGL/InAir: "..hpos.y-hpos:GetLandHeight().."/"..tostring(inair))
 local typename=helo:GetTypeName()
-if hpos and typename and inair==false then
 local dimensions=DYNAMICCARGO.AircraftDimensions[typename]
-if dimensions then
+local hovering,height=self:_HeloHovering(helo,dimensions.ropelength)
+local helolanded=not helo:InAir()
+self:T(self.lid.." InAir: AGL/Hovering: "..hpos.y-hpos:GetLandHeight().."/"..tostring(hovering))
+if hpos and typename and dimensions then
 local delta2D=hpos:Get2DDistance(pos)
 local delta3D=hpos:Get3DDistance(pos)
 if self.testing then
 self:T(string.format("Cargo relative position: 2D %dm | 3D %dm",delta2D,delta3D))
 self:T(string.format("Helo dimension: length %dm | width %dm | rope %dm",dimensions.length,dimensions.width,dimensions.ropelength))
+self:T(string.format("Helo hovering: %s at %dm",tostring(hovering),height))
 end
-if loading~=true and delta2D>dimensions.length or delta2D>dimensions.width or delta3D>dimensions.ropelength then
+if loading~=true and(delta2D>dimensions.length or delta2D>dimensions.width)and helolanded then
 success=true
 Helo=helo
 Playername=name
 end
-if loading==true and delta2D<dimensions.length or delta2D<dimensions.width or delta3D<dimensions.ropelength then
+if loading~=true and(delta2D<dimensions.length or delta2D<dimensions.width)and hovering then
 success=true
 Helo=helo
 Playername=name
 end
+if loading==true and(delta2D<dimensions.length or delta2D<dimensions.width or delta3D<dimensions.ropelength)then
+success=true
+Helo=helo
+Playername=name
 end
 end
 end
