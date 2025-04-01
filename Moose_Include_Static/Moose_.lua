@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-01T13:17:48+02:00-76dc0d690a2283cadb43b8e3acce4b9517b756e0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-01T14:13:14+02:00-6c00b0c7ebe6cdf97ab907075262adc9931f84c9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -16881,6 +16881,9 @@ function COORDINATE:GetX()
 return self.x
 end
 function COORDINATE:GetY()
+if self:IsInstanceOf("POINT_VEC2")then
+return self.z
+end
 return self.y
 end
 function COORDINATE:GetZ()
@@ -16891,7 +16894,11 @@ self.x=x
 return self
 end
 function COORDINATE:SetY(y)
+if self:IsInstanceOf("POINT_VEC2")then
+self.z=y
+else
 self.y=y
+end
 return self
 end
 function COORDINATE:SetZ(z)
@@ -16932,7 +16939,11 @@ self:F2({OuterRadius,InnerRadius})
 return COORDINATE:NewFromVec2(self:GetRandomVec2InRadius(OuterRadius,InnerRadius))
 end
 function COORDINATE:AddY(y)
+if self:IsInstanceOf("POINT_VEC2")then
+return self:AddZ(y)
+else
 self.y=self.y+y
+end
 return self
 end
 function COORDINATE:AddZ(z)
