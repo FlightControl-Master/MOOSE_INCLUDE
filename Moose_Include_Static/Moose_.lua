@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-02T09:45:44+02:00-bad9d1ea92f546e649b5faad98e4e157cf875935 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-02T16:13:50+02:00-e7cee4d97bde8b0722e1074c938b0b4e66b29745 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32705,7 +32705,7 @@ local Height=0
 if DCSUnit then
 local UnitInAir=DCSUnit:inAir()
 local UnitCategory=DCSUnit:getDesc().category
-if UnitInAir==true and UnitCategory==Unit.Category.HELICOPTER then
+if UnitInAir==true and UnitCategory==1 then
 local VelocityVec3=DCSUnit:getVelocity()
 local Velocity=UTILS.VecNorm(VelocityVec3)
 local Coordinate=DCSUnit:getPoint()
