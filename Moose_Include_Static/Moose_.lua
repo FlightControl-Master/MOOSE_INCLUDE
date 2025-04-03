@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-02T16:12:06+02:00-b0a192a76722082bd79921da9af389df655a4ba6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T09:29:19+02:00-ddf33da78781af2acb2cd5f74c3c9b0530a41a17 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32228,12 +32228,12 @@ success=true
 Helo=helo
 Playername=name
 end
-if loading~=true and(delta2D<dimensions.length or delta2D<dimensions.width)and hovering then
+if loading~=true and delta3D>dimensions.ropelength then
 success=true
 Helo=helo
 Playername=name
 end
-if loading==true and(delta2D<dimensions.length or delta2D<dimensions.width or delta3D<dimensions.ropelength)then
+if loading==true and((delta2D<dimensions.length and delta2D<dimensions.width and helolanded)or(delta3D==dimensions.ropelength and helo:InAir()))then
 success=true
 Helo=helo
 Playername=name
@@ -32251,12 +32251,13 @@ self:T(string.format("Cargo position: x=%d, y=%d, z=%d",pos.x,pos.y,pos.z))
 self:T(string.format("Last position: x=%d, y=%d, z=%d",self.LastPosition.x,self.LastPosition.y,self.LastPosition.z))
 end
 if UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2)>0.5 then
-if self.CargoState==DYNAMICCARGO.State.NEW then
+if self.CargoState==DYNAMICCARGO.State.NEW or self.CargoState==DYNAMICCARGO.State.UNLOADED then
 local isloaded,client,playername=self:_GetPossibleHeloNearby(pos,true)
 self:T(self.lid.." moved! NEW -> LOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.LOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoLoaded(self)
+end
 elseif self.CargoState==DYNAMICCARGO.State.LOADED then
 local count=_DYNAMICCARGO_HELOS:CountAlive()
 local landheight=pos:GetLandHeight()
@@ -32266,26 +32267,18 @@ self:T(self.lid.." AGL: "..agl or-1)
 local isunloaded=true
 local client
 local playername=self.Owner
-if count>0 and(agl>0 or self.testing)then
+if count>0 then
 self:T(self.lid.." Possible alive helos: "..count or-1)
-if agl~=0 or self.testing then
 isunloaded,client,playername=self:_GetPossibleHeloNearby(pos,false)
-end
 if isunloaded then
 self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.UNLOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
-elseif count>0 and agl==0 then
-self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
-self.CargoState=DYNAMICCARGO.State.UNLOADED
-self.Owner=playername
-_DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
 end
 self.LastPosition=pos
-end
 else
 if self.timer and self.timer:IsRunning()then self.timer:Stop()end
 self:T(self.lid.." dead! "..self.CargoState.."-> REMOVED")
