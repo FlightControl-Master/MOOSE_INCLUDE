@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T11:49:30+02:00-8a185c352e95a2604a15c15a86f8e8dde0f62eff ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T14:22:25+02:00-2921f7a76b8163f4fbddcb2a3f6819a89c8884ab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124116,7 +124116,6 @@ local sender=self:_GetRadioSender()
 local filename=string.format("%s%s",transmission.path,transmission.filename)
 if sender then
 self:T(self.lid..string.format("Broadcasting from aircraft %s",sender:GetName()))
-if not self.senderinit then
 local commandFrequency={
 id="SetFrequency",
 params={
@@ -124125,7 +124124,6 @@ modulation=self.modulation,
 }}
 sender:SetCommand(commandFrequency)
 self.senderinit=true
-end
 local subtitle=nil
 local duration=nil
 if transmission.subtitle and transmission.subduration and transmission.subduration>0 then
