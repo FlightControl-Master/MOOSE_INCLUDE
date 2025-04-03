@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T09:29:19+02:00-ddf33da78781af2acb2cd5f74c3c9b0530a41a17 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T11:48:53+02:00-5b107ce2da85362209bc88f41f6d1f66beb08eab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23328,6 +23328,49 @@ if Delay and Delay>0 then
 SCHEDULER:New(nil,self.CommandSetFrequencyForUnit,{self,Frequency,Modulation,Power,UnitID},Delay)
 else
 self:SetCommand(CommandSetFrequencyForUnit)
+end
+return self
+end
+function CONTROLLABLE:CommandSmokeOnOff(OnOff,Delay)
+local switch=(OnOff==nil)and true or OnOff
+local command={
+id='SMOKE_ON_OFF',
+params={
+value=switch
+}
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandSmokeOnOff,{self,switch},Delay)
+else
+self:SetCommand(command)
+end
+return self
+end
+function CONTROLLABLE:CommandSmokeON(Delay)
+local command={
+id='SMOKE_ON_OFF',
+params={
+value=true
+}
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandSmokeON,{self},Delay)
+else
+self:SetCommand(command)
+end
+return self
+end
+function CONTROLLABLE:CommandSmokeOFF(Delay)
+local command={
+id='SMOKE_ON_OFF',
+params={
+value=false
+}
+}
+if Delay and Delay>0 then
+SCHEDULER:New(nil,self.CommandSmokeOFF,{self},Delay)
+else
+self:SetCommand(command)
 end
 return self
 end
