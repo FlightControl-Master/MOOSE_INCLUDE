@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-01T14:15:13+02:00-b63185f1b303df8a567a2354a66c02e3ede1eb3b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T09:29:38+02:00-367ee31135ac81040b252b045053712a9a49bbb3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20845,65 +20845,254 @@ SpawnGroup,SpawnCursor=self:GetNextAliveGroup(SpawnCursor)
 end
 return true
 end
-local grp=GROUP:FindByName("IR Blinker")
-grp:NewIRMarker(true,90)
-function DestGroup()
-if grp and grp:IsAlive()then
-grp:Destroy()
+SPAWNSTATIC={
+ClassName="SPAWNSTATIC",
+SpawnIndex=0,
+}
+function SPAWNSTATIC:NewFromStatic(SpawnTemplateName,SpawnCountryID)
+local self=BASE:Inherit(self,BASE:New())
+local TemplateStatic,CoalitionID,CategoryID,CountryID=_DATABASE:GetStaticGroupTemplate(SpawnTemplateName)
+if TemplateStatic then
+self.SpawnTemplatePrefix=SpawnTemplateName
+self.TemplateStaticUnit=UTILS.DeepCopy(TemplateStatic.units[1])
+self.CountryID=SpawnCountryID or CountryID
+self.CategoryID=CategoryID
+self.CoalitionID=CoalitionID
+self.SpawnIndex=0
+else
+error("SPAWNSTATIC:New: There is no static declared in the mission editor with SpawnTemplatePrefix = '"..tostring(SpawnTemplateName).."'")
+end
+self:SetEventPriority(5)
+return self
+end
+function SPAWNSTATIC:NewFromTemplate(SpawnTemplate,CountryID)
+local self=BASE:Inherit(self,BASE:New())
+self.TemplateStaticUnit=UTILS.DeepCopy(SpawnTemplate)
+self.SpawnTemplatePrefix=SpawnTemplate.name
+self.CountryID=CountryID or country.id.USA
+return self
+end
+function SPAWNSTATIC:NewFromType(StaticType,StaticCategory,CountryID)
+local self=BASE:Inherit(self,BASE:New())
+self.InitStaticType=StaticType
+self.InitStaticCategory=StaticCategory
+self.CountryID=CountryID or country.id.USA
+self.SpawnTemplatePrefix=self.InitStaticType
+self.TemplateStaticUnit={}
+self.InitStaticCoordinate=COORDINATE:New(0,0,0)
+self.InitStaticHeading=0
+return self
+end
+function SPAWNSTATIC:_InitResourceTable(CombinedWeight)
+if not self.TemplateStaticUnit.resourcePayload then
+self.TemplateStaticUnit.resourcePayload={
+["weapons"]={},
+["aircrafts"]={},
+["gasoline"]=0,
+["diesel"]=0,
+["methanol_mixture"]=0,
+["jet_fuel"]=0,
+}
+end
+self:InitCargo(true)
+self:InitCargoMass(CombinedWeight or 1)
+return self
+end
+function SPAWNSTATIC:AddCargoResource(Type,Name,Amount,CombinedWeight)
+if not self.TemplateStaticUnit.resourcePayload then
+self:_InitResourceTable(CombinedWeight)
+end
+if Type==STORAGE.Type.LIQUIDS and type(Name)=="string"then
+self.TemplateStaticUnit.resourcePayload[Name]=Amount
+else
+self.TemplateStaticUnit.resourcePayload[Type]={
+[Name]={
+["amount"]=Amount,
+}
+}
+end
+UTILS.PrintTableToLog(self.TemplateStaticUnit)
+return self
+end
+function SPAWNSTATIC:ResetCargoResources()
+self.TemplateStaticUnit.resourcePayload=nil
+self:_InitResourceTable()
+return self
+end
+function SPAWNSTATIC:InitCoordinate(Coordinate)
+self.InitStaticCoordinate=Coordinate
+return self
+end
+function SPAWNSTATIC:InitHeading(Heading)
+self.InitStaticHeading=Heading
+return self
+end
+function SPAWNSTATIC:InitLivery(LiveryName)
+self.InitStaticLivery=LiveryName
+return self
+end
+function SPAWNSTATIC:InitType(StaticType)
+self.InitStaticType=StaticType
+return self
+end
+function SPAWNSTATIC:InitShape(StaticShape)
+self.InitStaticShape=StaticShape
+return self
+end
+function SPAWNSTATIC:InitFARP(CallsignID,Frequency,Modulation)
+self.InitFarp=true
+self.InitFarpCallsignID=CallsignID or 1
+self.InitFarpFreq=Frequency or 127.5
+self.InitFarpModu=Modulation or 0
+return self
+end
+function SPAWNSTATIC:InitCargoMass(Mass)
+self.InitStaticCargoMass=Mass
+return self
+end
+function SPAWNSTATIC:InitCargo(IsCargo)
+self.InitStaticCargo=IsCargo
+return self
+end
+function SPAWNSTATIC:InitDead(IsDead)
+self.InitStaticDead=IsDead
+return self
+end
+function SPAWNSTATIC:InitCountry(CountryID)
+self.CountryID=CountryID
+return self
+end
+function SPAWNSTATIC:InitNamePrefix(NamePrefix)
+self.SpawnTemplatePrefix=NamePrefix
+return self
+end
+function SPAWNSTATIC:InitLinkToUnit(Unit,OffsetX,OffsetY,OffsetAngle)
+self.InitLinkUnit=Unit
+self.InitOffsetX=OffsetX or 0
+self.InitOffsetY=OffsetY or 0
+self.InitOffsetAngle=OffsetAngle or 0
+return self
+end
+function SPAWNSTATIC:OnSpawnStatic(SpawnCallBackFunction,...)
+self:F("OnSpawnStatic")
+self.SpawnFunctionHook=SpawnCallBackFunction
+self.SpawnFunctionArguments={}
+if arg then
+self.SpawnFunctionArguments=arg
+end
+return self
+end
+function SPAWNSTATIC:Spawn(Heading,NewName)
+if Heading then
+self.InitStaticHeading=Heading
+end
+if NewName then
+self.InitStaticName=NewName
+end
+return self:_SpawnStatic(self.TemplateStaticUnit,self.CountryID)
+end
+function SPAWNSTATIC:SpawnFromPointVec2(PointVec2,Heading,NewName)
+local vec2={x=PointVec2:GetX(),y=PointVec2:GetY()}
+local Coordinate=COORDINATE:NewFromVec2(vec2)
+return self:SpawnFromCoordinate(Coordinate,Heading,NewName)
+end
+function SPAWNSTATIC:SpawnFromCoordinate(Coordinate,Heading,NewName)
+self.InitStaticCoordinate=Coordinate
+if Heading then
+self.InitStaticHeading=Heading
+end
+if NewName then
+self.InitStaticName=NewName
+end
+return self:_SpawnStatic(self.TemplateStaticUnit,self.CountryID)
+end
+function SPAWNSTATIC:SpawnFromZone(Zone,Heading,NewName)
+local Static=self:SpawnFromPointVec2(Zone:GetPointVec2(),Heading,NewName)
+return Static
+end
+function SPAWNSTATIC:_SpawnStatic(Template,CountryID)
+Template=Template or{}
+local CountryID=CountryID or self.CountryID
+if self.InitStaticType then
+Template.type=self.InitStaticType
+end
+if self.InitStaticCategory then
+Template.category=self.InitStaticCategory
+end
+if self.InitStaticCoordinate then
+Template.x=self.InitStaticCoordinate.x
+Template.y=self.InitStaticCoordinate.z
+Template.alt=self.InitStaticCoordinate.y
+end
+if self.InitStaticHeading then
+Template.heading=math.rad(self.InitStaticHeading)
+end
+if self.InitStaticShape then
+Template.shape_name=self.InitStaticShape
+end
+if self.InitStaticLivery then
+Template.livery_id=self.InitStaticLivery
+end
+if self.InitStaticDead~=nil then
+Template.dead=self.InitStaticDead
+end
+if self.InitStaticCargo~=nil then
+Template.canCargo=self.InitStaticCargo
+end
+if self.InitStaticCargoMass~=nil then
+Template.mass=self.InitStaticCargoMass
+end
+if self.InitLinkUnit then
+Template.linkUnit=self.InitLinkUnit:GetID()
+Template.linkOffset=true
+Template.offsets={}
+Template.offsets.y=self.InitOffsetY
+Template.offsets.x=self.InitOffsetX
+Template.offsets.angle=self.InitOffsetAngle and math.rad(self.InitOffsetAngle)or 0
+end
+if self.InitFarp then
+Template.heliport_callsign_id=self.InitFarpCallsignID
+Template.heliport_frequency=self.InitFarpFreq
+Template.heliport_modulation=self.InitFarpModu
+Template.unitId=nil
+end
+self.SpawnIndex=self.SpawnIndex+1
+Template.name=self.InitStaticName or string.format("%s#%05d",self.SpawnTemplatePrefix,self.SpawnIndex)
+local Static=nil
+if self.InitFarp then
+local TemplateGroup={}
+TemplateGroup.units={}
+TemplateGroup.units[1]=Template
+TemplateGroup.visible=true
+TemplateGroup.hidden=false
+TemplateGroup.x=Template.x
+TemplateGroup.y=Template.y
+TemplateGroup.name=Template.name
+self:T("Spawning FARP")
+self:T({Template=Template})
+self:T({TemplateGroup=TemplateGroup})
+Static=coalition.addGroup(CountryID,-1,TemplateGroup)
+local Event={
+id=EVENTS.Birth,
+time=timer.getTime(),
+initiator=Static
+}
+world.onEvent(Event)
+else
+self:T("Spawning Static")
+self:T2({Template=Template})
+Static=coalition.addStaticObject(CountryID,Template)
+if Static then
+self:T(string.format("Succesfully spawned static object \"%s\" ID=%d",Static:getName(),Static:getID()))
+else
+self:E(string.format("ERROR: DCS static object \"%s\" is nil!",tostring(Template.name)))
 end
 end
-function DisableMarker()
-if grp and grp:IsAlive()then
-grp:DisableIRMarker()
+local mystatic=_DATABASE:AddStatic(Template.name)
+if self.SpawnFunctionHook then
+self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
 end
-end
-function EnableMarker()
-if grp and grp:IsAlive()then
-grp:EnableIRMarker()
-end
-end
-function RespGroup()
-if grp and not grp:IsAlive()then
-grp:Respawn()
-end
-end
-local mymsrs=MSRS:New(nil,243,0)
-local jammersound=SOUNDFILE:New("beacon.ogg","C:\\Users\\post\\Saved Games\\DCS\\Missions\\",2,true)
-function Play()
-mymsrs:PlaySoundFile(jammersound)
-end
-local topmenu=MENU_COALITION:New(coalition.side.BLUE,"IR Marker Test")
-local startmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Enable IR",topmenu,EnableMarker)
-local stopmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Disable IR",topmenu,DisableMarker)
-local destmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Destroy Group",topmenu,DestGroup)
-local respmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Respawn Group",topmenu,RespGroup)
-local respmenu=MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Play Sound",topmenu,Play)
-local testzone=ZONE:New("Testzone")
-testzone:Trigger(grp)
-function testzone:OnAfterObjectDead(From,Event,To,Controllable)
-MESSAGE:New("Object Dead",15,"Test"):ToAll():ToLog()
-end
-function testzone:OnAfterZoneEmpty(From,Event,To)
-MESSAGE:New("Zone Empty",15,"Test"):ToAll():ToLog()
-end
-local BlueBorder=ZONE:New("Blue Border")
-local RedBorder=ZONE:New("Red Border")
-local Conflict=ZONE:New("Conflict")
-BlueBorder:DrawZone(-1,{0,0,1},1,{0,0,1},.2,1,true)
-RedBorder:DrawZone(-1,{1,0,0},1,{1,0,0},.2,1,true)
-Conflict:DrawZone(-1,{1,254/255,1/33},1,{1,254/255,1/33},.2,1,true)
-BASE:TraceOn()
-BASE:TraceClass("SHORAD")
-local mymantis=MANTIS:New("Red Defense","Red SAM","Red EWR",hq,"red",true,awacs,true)
-mymantis:AddZones({RedBorder},{BlueBorder},{Conflict})
-mymantis.verbose=true
-mymantis.debug=true
-mymantis:Start()
-local myctld=CTLD:New()
-function myctld:OnAfterCratesDropped(From,Event,To,Group,Unit,Cargotable)
-if Unit and string.find(Unit:GetTypeName(),"Mosquito",1,true)then
-myctld:_BuildCrates(Group,Unit,true)
-end
+return mystatic
 end
 TIMER={
 ClassName="TIMER",
@@ -32387,7 +32576,7 @@ DYNAMICCARGO.AircraftDimensions={
 ["ropelength"]=30,
 },
 }
-DYNAMICCARGO.version="0.0.6"
+DYNAMICCARGO.version="0.0.7"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -32509,6 +32698,27 @@ else
 return self.StaticName
 end
 end
+function DYNAMICCARGO:_HeloHovering(Unit,ropelength)
+local DCSUnit=Unit:GetDCSObject()
+local hovering=false
+local Height=0
+if DCSUnit then
+local UnitInAir=DCSUnit:inAir()
+local UnitCategory=DCSUnit:getDesc().category
+if UnitInAir==true and UnitCategory==1 then
+local VelocityVec3=DCSUnit:getVelocity()
+local Velocity=UTILS.VecNorm(VelocityVec3)
+local Coordinate=DCSUnit:getPoint()
+local LandHeight=land.getHeight({x=Coordinate.x,y=Coordinate.z})
+Height=Coordinate.y-LandHeight
+if Velocity<1 and Height<=ropelength and Height>6 then
+hovering=true
+end
+end
+return hovering,Height
+end
+return false
+end
 function DYNAMICCARGO:_GetPossibleHeloNearby(pos,loading)
 local set=_DYNAMICCARGO_HELOS:GetAliveSet()
 local success=false
@@ -32519,28 +32729,33 @@ local helo=_helo
 local name=helo:GetPlayerName()or _DATABASE:_FindPlayerNameByUnitName(helo:GetName())or"None"
 self:T(self.lid.." Checking: "..name)
 local hpos=helo:GetCoordinate()
-local inair=helo:InAir()
-self:T(self.lid.." InAir: AGL/InAir: "..hpos.y-hpos:GetLandHeight().."/"..tostring(inair))
 local typename=helo:GetTypeName()
-if hpos and typename and inair==false then
 local dimensions=DYNAMICCARGO.AircraftDimensions[typename]
-if dimensions then
+local hovering,height=self:_HeloHovering(helo,dimensions.ropelength)
+local helolanded=not helo:InAir()
+self:T(self.lid.." InAir: AGL/Hovering: "..hpos.y-hpos:GetLandHeight().."/"..tostring(hovering))
+if hpos and typename and dimensions then
 local delta2D=hpos:Get2DDistance(pos)
 local delta3D=hpos:Get3DDistance(pos)
 if self.testing then
 self:T(string.format("Cargo relative position: 2D %dm | 3D %dm",delta2D,delta3D))
 self:T(string.format("Helo dimension: length %dm | width %dm | rope %dm",dimensions.length,dimensions.width,dimensions.ropelength))
+self:T(string.format("Helo hovering: %s at %dm",tostring(hovering),height))
 end
-if loading~=true and delta2D>dimensions.length or delta2D>dimensions.width or delta3D>dimensions.ropelength then
+if loading~=true and(delta2D>dimensions.length or delta2D>dimensions.width)and helolanded then
 success=true
 Helo=helo
 Playername=name
 end
-if loading==true and delta2D<dimensions.length or delta2D<dimensions.width or delta3D<dimensions.ropelength then
+if loading~=true and delta3D>dimensions.ropelength then
 success=true
 Helo=helo
 Playername=name
 end
+if loading==true and((delta2D<dimensions.length and delta2D<dimensions.width and helolanded)or(delta3D==dimensions.ropelength and helo:InAir()))then
+success=true
+Helo=helo
+Playername=name
 end
 end
 end
@@ -32555,12 +32770,13 @@ self:T(string.format("Cargo position: x=%d, y=%d, z=%d",pos.x,pos.y,pos.z))
 self:T(string.format("Last position: x=%d, y=%d, z=%d",self.LastPosition.x,self.LastPosition.y,self.LastPosition.z))
 end
 if UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2)>0.5 then
-if self.CargoState==DYNAMICCARGO.State.NEW then
+if self.CargoState==DYNAMICCARGO.State.NEW or self.CargoState==DYNAMICCARGO.State.UNLOADED then
 local isloaded,client,playername=self:_GetPossibleHeloNearby(pos,true)
 self:T(self.lid.." moved! NEW -> LOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.LOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoLoaded(self)
+end
 elseif self.CargoState==DYNAMICCARGO.State.LOADED then
 local count=_DYNAMICCARGO_HELOS:CountAlive()
 local landheight=pos:GetLandHeight()
@@ -32570,26 +32786,18 @@ self:T(self.lid.." AGL: "..agl or-1)
 local isunloaded=true
 local client
 local playername=self.Owner
-if count>0 and(agl>0 or self.testing)then
+if count>0 then
 self:T(self.lid.." Possible alive helos: "..count or-1)
-if agl~=0 or self.testing then
 isunloaded,client,playername=self:_GetPossibleHeloNearby(pos,false)
-end
 if isunloaded then
 self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.UNLOADED
 self.Owner=playername
 _DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
-elseif count>0 and agl==0 then
-self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
-self.CargoState=DYNAMICCARGO.State.UNLOADED
-self.Owner=playername
-_DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
 end
 self.LastPosition=pos
-end
 else
 if self.timer and self.timer:IsRunning()then self.timer:Stop()end
 self:T(self.lid.." dead! "..self.CargoState.."-> REMOVED")
