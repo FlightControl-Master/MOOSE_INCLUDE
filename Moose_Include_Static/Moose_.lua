@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-03T14:22:53+02:00-ff5adc29d9d8b3a4f28d63bd4ea41721c0799eb6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-06T15:39:50+02:00-d92a170304d79ede47524d829d1fe63fcca925a1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2662,7 +2662,9 @@ if type_name=="CH-47Fbl1"and(unit:getDrawArgumentValue(86)>0.5)then
 BASE:T(unit_name.." rear cargo door is open")
 return true
 end
-return false
+local UnitDescriptor=unit:getDesc()
+local IsGroundResult=(UnitDescriptor.category==Unit.Category.GROUND_UNIT)
+return IsGroundResult
 end
 return nil
 end
@@ -70457,6 +70459,7 @@ TroopUnloadDistHover=1.5,
 UserSetGroup=nil,
 LoadedGroupsTable={},
 keeploadtable=true,
+allowCATransport=false,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -70491,13 +70494,14 @@ CTLD.UnitTypeCapabilities={
 ["OH58D"]={type="OH58D",crates=false,troops=false,cratelimit=0,trooplimit=0,length=14,cargoweightlimit=400},
 ["CH-47Fbl1"]={type="CH-47Fbl1",crates=true,troops=true,cratelimit=4,trooplimit=31,length=20,cargoweightlimit=10800},
 ["MosquitoFBMkVI"]={type="MosquitoFBMkVI",crates=true,troops=false,cratelimit=2,trooplimit=0,length=13,cargoweightlimit=1800},
+["M 818"]={type="M 818",crates=true,troops=true,cratelimit=4,trooplimit=12,length=9,cargoweightlimit=4500},
 }
 CTLD.FixedWingTypes={
 ["Hercules"]="Hercules",
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.1.31"
+CTLD.version="1.1.32"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70639,6 +70643,8 @@ self.FlareColor=FLARECOLOR.Red
 for i=1,100 do
 math.random()
 end
+self.allowCATransport=false
+self.CATransportSet=nil
 self:_GenerateVHFrequencies()
 self:_GenerateUHFrequencies()
 self:_GenerateFMFrequencies()
@@ -70660,6 +70666,11 @@ capabilities.length=20
 capabilities.cargoweightlimit=0
 end
 return capabilities
+end
+function CTLD:AllowCATransport(OnOff,ClientSet)
+self.allowCATransport=OnOff
+self.CATransportSet=ClientSet
+return self
 end
 function CTLD:_GenerateUHFrequencies()
 self:T(self.lid.." _GenerateUHFrequencies")
@@ -71256,6 +71267,7 @@ return self
 end
 local IsHerc=self:IsFixedWing(Unit)
 local IsHook=self:IsHook(Unit)
+local IsTruck=Unit:IsGround()
 local cargotype=Cargo
 local number=number or cargotype:GetCratesNeeded()
 local cratesneeded=cargotype:GetCratesNeeded()
@@ -71276,7 +71288,7 @@ local cratedistance=0
 local rheading=0
 local angleOffNose=0
 local addon=0
-if IsHerc or IsHook then
+if IsHerc or IsHook or IsTruck then
 addon=180
 end
 heading=(heading+addon)%360
@@ -71550,20 +71562,24 @@ local IsHook=self:IsHook(_unit)
 if not _ignoreweight then
 maxloadable=self:_GetMaxLoadableMass(_unit)
 end
-self:T2(self.lid.." Max loadable mass: "..maxloadable)
+self:T(self.lid.." Max loadable mass: "..maxloadable)
 for _,_cargoobject in pairs(existingcrates)do
 local cargo=_cargoobject
 local static=cargo:GetPositionable()
 local weight=cargo:GetMass()
 local staticid=cargo:GetID()
-self:T2(self.lid.." Found cargo mass: "..weight)
+self:T(self.lid.." Found cargo mass: "..weight)
 if static and static:IsAlive()then
 local restricthooktononstatics=self.enableChinookGCLoading and IsHook
+self:T(self.lid.." restricthooktononstatics: "..tostring(restricthooktononstatics))
 local cargoisstatic=cargo:GetType()==CTLD_CARGO.Enum.STATIC and true or false
+self:T(self.lid.." Cargo is static: "..tostring(cargoisstatic))
 local restricted=cargoisstatic and restricthooktononstatics
+self:T(self.lid.." Loading restricted: "..tostring(restricted))
 local staticpos=static:GetCoordinate()
 local cando=cargo:UnitCanCarry(_unit)
 if ignoretype==true then cando=true end
+self:T(self.lid.." Unit can carry: "..tostring(cando))
 local distance=self:_GetDistance(location,staticpos)
 self:T(self.lid..string.format("Dist %dm/%dm | weight %dkg | maxloadable %dkg",distance,finddist,weight,maxloadable))
 if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false and cando==true then
@@ -72416,6 +72432,15 @@ end
 end
 end
 end
+if self.allowCATransport and self.CATransportSet then
+for _,_clientobj in pairs(self.CATransportSet.Set)do
+local client=_clientobj
+if client:IsGround()then
+local cname=client:GetName()
+_UnitList[cname]=cname
+end
+end
+end
 self.CtldUnits=_UnitList
 if self.usesubcats then
 for _id,_cargo in pairs(self.Cargo_Crates)do
@@ -72442,6 +72467,9 @@ local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
 if(not self.MenusDone[_unitName])or(self.showstockinmenuitems==true)then
 local _unit=UNIT:FindByName(_unitName)
+if not _unit and self.allowCATransport then
+_unit=CLIENT:FindByName(_unitName)
+end
 if _unit and _unit:IsAlive()then
 local _group=_unit:GetGroup()
 if _group then
@@ -73586,9 +73614,8 @@ local unittype=nil
 local unit=nil
 if type(Unittype)=="string"then
 unittype=Unittype
-elseif type(Unittype)=="table"then
-unit=UNIT:FindByName(Unittype)
-unittype=unit:GetTypeName()
+elseif type(Unittype)=="table"and Unittype.ClassName and Unittype:IsInstanceOf("UNIT")then
+unittype=Unittype:GetTypeName()
 else
 return self
 end
@@ -114546,6 +114573,7 @@ local sender=self:_GetRadioSender()
 local filename=string.format("%s%s",transmission.path,transmission.filename)
 if sender then
 self:T(self.lid..string.format("Broadcasting from aircraft %s | sender init: %s",sender:GetName(),tostring(self.senderinit)))
+self:T(self.lid..string.format("Broadcasting from aircraft %s",sender:GetName()))
 local commandFrequency={
 id="SetFrequency",
 params={
