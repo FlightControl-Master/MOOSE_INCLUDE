@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-07T10:40:30+02:00-1856754614d9c3d2fc2d7737d4ad020e89b67b0d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-07T11:57:15+02:00-1a156e7e1204b90f35330dcde53491a89979d678 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67623,7 +67623,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.1.32"
+CTLD.version="1.2.33"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -67846,6 +67846,11 @@ self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 if self:IsFixedWing(_unit)and self.enableFixedWing then
+local unitname=event.IniUnitName or"none"
+self.Loaded_Cargo[unitname]=nil
+self:_RefreshF10Menus()
+end
+if _unit:IsGround()and self.allowCATransport then
 local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
@@ -69500,6 +69505,7 @@ self:T(self.lid.." _MoveGroupToZone")
 local groupname=Group:GetName()or"none"
 local groupcoord=Group:GetCoordinate()
 local outcome,name,zone,distance=self:IsUnitInZone(Group,CTLD.CargoZoneType.MOVE)
+self:T({canmove=outcome,name=name,zone=zone,dist=distance,max=self.movetroopsdistance})
 if(distance<=self.movetroopsdistance)and outcome==true and zone~=nil then
 local groupname=Group:GetName()
 local zonecoord=zone:GetRandomCoordinate(20,125)
@@ -70350,6 +70356,8 @@ elseif ZoneType==CTLD.CargoZoneType.DROP then
 table=self.dropOffZones
 elseif ZoneType==CTLD.CargoZoneType.SHIP then
 table=self.shipZones
+elseif ZoneType==CTLD.CargoZoneType.BEACON then
+table=self.droppedBeacons
 else
 table=self.wpZones
 end
@@ -70656,7 +70664,8 @@ zonewidth=zoneradius
 end
 local distance=self:_GetDistance(zonecoord,unitcoord)
 self:T("Distance Zone: "..distance)
-if(zone:IsVec2InZone(unitVec2)or Zonetype==CTLD.CargoZoneType.MOVE)and active==true and maxdist>distance then
+self:T("Zone Active: "..tostring(active))
+if(zone:IsVec2InZone(unitVec2)or Zonetype==CTLD.CargoZoneType.MOVE)and active==true and distance<maxdist then
 outcome=true
 maxdist=distance
 zoneret=zone
