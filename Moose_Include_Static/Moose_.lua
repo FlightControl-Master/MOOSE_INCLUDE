@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-06T16:19:12+02:00-d707a4775c5846aa0fcae288353d7ef5c61b9878 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-07T10:40:30+02:00-1856754614d9c3d2fc2d7737d4ad020e89b67b0d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13038,6 +13038,30 @@ end
 )
 return self
 end
+function SET_UNIT:FilterGroupPrefixes(Prefixes)
+if type(Prefixes)=="string"then
+Prefixes={Prefixes}
+end
+self:FilterFunction(
+function(unit,prefixes)
+local outcome=false
+if unit then
+local grp=unit:GetGroup()
+local gname=grp~=nil and grp:GetName()or"none"
+for _,_fix in pairs(prefixes or{})do
+if string.find(gname,_fix)then
+outcome=true
+break
+end
+end
+else
+return false
+end
+return outcome
+end,Prefixes
+)
+return self
+end
 function SET_UNIT:FilterHasRadar(RadarTypes)
 self.Filter.RadarTypes=self.Filter.RadarTypes or{}
 if type(RadarTypes)~="table"then
@@ -14071,6 +14095,30 @@ end
 for PrefixID,Prefix in pairs(Prefixes)do
 self.Filter.ClientPrefixes[Prefix]=Prefix
 end
+return self
+end
+function SET_CLIENT:FilterGroupPrefixes(Prefixes)
+if type(Prefixes)=="string"then
+Prefixes={Prefixes}
+end
+self:FilterFunction(
+function(unit,prefixes)
+local outcome=false
+if unit then
+local grp=unit:GetGroup()
+local gname=grp~=nil and grp:GetName()or"none"
+for _,_fix in pairs(prefixes or{})do
+if string.find(gname,_fix)then
+outcome=true
+break
+end
+end
+else
+return false
+end
+return outcome
+end,Prefixes
+)
 return self
 end
 function SET_CLIENT:FilterActive(Active)
@@ -69511,6 +69559,7 @@ for _,_clientobj in pairs(self.CATransportSet.Set)do
 local client=_clientobj
 if client:IsGround()then
 local cname=client:GetName()
+self:T(self.lid.."Adding: "..cname)
 _UnitList[cname]=cname
 end
 end
@@ -69540,6 +69589,7 @@ local menucount=0
 local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
 if(not self.MenusDone[_unitName])or(self.showstockinmenuitems==true)then
+self:T(self.lid.."Menu not done yet for ".._unitName)
 local _unit=UNIT:FindByName(_unitName)
 if not _unit and self.allowCATransport then
 _unit=CLIENT:FindByName(_unitName)
@@ -69547,6 +69597,7 @@ end
 if _unit and _unit:IsAlive()then
 local _group=_unit:GetGroup()
 if _group then
+self:T(self.lid.."Unit and Group exist")
 local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
