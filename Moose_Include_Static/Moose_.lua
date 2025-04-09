@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-06T15:39:50+02:00-d92a170304d79ede47524d829d1fe63fcca925a1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-09T08:17:12+02:00-1456ff37d094664ed9deaa4fe38770bef0da5a4b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13038,6 +13038,30 @@ end
 )
 return self
 end
+function SET_UNIT:FilterGroupPrefixes(Prefixes)
+if type(Prefixes)=="string"then
+Prefixes={Prefixes}
+end
+self:FilterFunction(
+function(unit,prefixes)
+local outcome=false
+if unit then
+local grp=unit:GetGroup()
+local gname=grp~=nil and grp:GetName()or"none"
+for _,_fix in pairs(prefixes or{})do
+if string.find(gname,_fix)then
+outcome=true
+break
+end
+end
+else
+return false
+end
+return outcome
+end,Prefixes
+)
+return self
+end
 function SET_UNIT:FilterHasRadar(RadarTypes)
 self.Filter.RadarTypes=self.Filter.RadarTypes or{}
 if type(RadarTypes)~="table"then
@@ -14071,6 +14095,30 @@ end
 for PrefixID,Prefix in pairs(Prefixes)do
 self.Filter.ClientPrefixes[Prefix]=Prefix
 end
+return self
+end
+function SET_CLIENT:FilterGroupPrefixes(Prefixes)
+if type(Prefixes)=="string"then
+Prefixes={Prefixes}
+end
+self:FilterFunction(
+function(unit,prefixes)
+local outcome=false
+if unit then
+local grp=unit:GetGroup()
+local gname=grp~=nil and grp:GetName()or"none"
+for _,_fix in pairs(prefixes or{})do
+if string.find(gname,_fix)then
+outcome=true
+break
+end
+end
+else
+return false
+end
+return outcome
+end,Prefixes
+)
 return self
 end
 function SET_CLIENT:FilterActive(Active)
@@ -52884,59 +52932,61 @@ MANTIS.SamDataHDS={
 ["HQ-2 HDS"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
 }
 MANTIS.SamDataSMA={
-["RBS98M SMA"]={Range=20,Blindspot=0,Height=8,Type="Short",Radar="RBS-98"},
-["RBS70 SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-70"},
-["RBS70M SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="BV410_RBS70"},
-["RBS90 SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-90"},
-["RBS90M SMA"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="BV410_RBS90"},
-["RBS103A SMA"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
-["RBS103B SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
-["RBS103AM SMA"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
-["RBS103BM SMA"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
-["Lvkv9040M SMA"]={Range=4,Blindspot=0,Height=2.5,Type="Point",Radar="LvKv9040",Point="true"},
+["RBS98M SMA"]={Range=20,Blindspot=0.2,Height=8,Type="Short",Radar="RBS-98"},
+["RBS70 SMA"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="RBS-70"},
+["RBS70M SMA"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="BV410_RBS70"},
+["RBS90 SMA"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="RBS-90"},
+["RBS90M SMA"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="BV410_RBS90"},
+["RBS103A SMA"]={Range=160,Blindspot=1,Height=36,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
+["RBS103B SMA"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103B"},
+["RBS103AM SMA"]={Range=160,Blindspot=1,Height=36,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
+["RBS103BM SMA"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103B"},
+["Lvkv9040M SMA"]={Range=2,Blindspot=0.1,Height=1.2,Type="Point",Radar="LvKv9040",Point="true"},
 }
 MANTIS.SamDataCH={
-["2S38 CHM"]={Range=8,Blindspot=0.5,Height=6,Type="Short",Radar="2S38"},
+["2S38 CHM"]={Range=6,Blindspot=0.1,Height=4.5,Type="Short",Radar="2S38"},
 ["PantsirS1 CHM"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
 ["PantsirS2 CHM"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
-["PGL-625 CHM"]={Range=10,Blindspot=0.5,Height=5,Type="Short",Radar="PGL_625"},
-["HQ-17A CHM"]={Range=20,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
-["M903PAC2 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
-["M903PAC3 CHM"]={Range=120,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
+["PGL-625 CHM"]={Range=10,Blindspot=1,Height=5,Type="Short",Radar="PGL_625"},
+["HQ-17A CHM"]={Range=15,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
+["M903PAC2 CHM"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
+["M903PAC3 CHM"]={Range=160,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
 ["TorM2 CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
 ["TorM2K CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
 ["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
 ["NASAMS3-AMRAAMER CHM"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
 ["NASAMS3-AIM9X2 CHM"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
 ["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_Centurion_C_RAM",Point="true"},
-["PGZ-09 CHM"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="CH_PGZ09",Point="true"},
-["S350-9M100 CHM"]={Range=15,Blindspot=1.5,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
+["PGZ-09 CHM"]={Range=4,Blindspot=0.5,Height=3,Type="Point",Radar="CH_PGZ09",Point="true"},
+["S350-9M100 CHM"]={Range=15,Blindspot=1,Height=8,Type="Short",Radar="CH_S350_50P6_9M100"},
 ["S350-9M96D CHM"]={Range=150,Blindspot=2.5,Height=30,Type="Long",Radar="CH_S350_50P6_9M96D"},
-["LAV-AD CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_LAVAD"},
+["LAV-AD CHM"]={Range=8,Blindspot=0.16,Height=4.8,Type="Short",Radar="CH_LAVAD"},
 ["HQ-22 CHM"]={Range=170,Blindspot=5,Height=27,Type="Long",Radar="CH_HQ22_LN"},
-["PGZ-95 CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_PGZ95",Point="true"},
-["LD-3000 CHM"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="CH_LD3000_stationary",Point="true"},
-["LD-3000M CHM"]={Range=3,Blindspot=0,Height=3,Type="Point",Radar="CH_LD3000",Point="true"},
-["FlaRakRad CHM"]={Range=8,Blindspot=1.5,Height=6,Type="Short",Radar="HQ17A"},
+["PGZ-95 CHM"]={Range=2.5,Blindspot=0.5,Height=2,Type="Point",Radar="CH_PGZ95",Point="true"},
+["LD-3000 CHM"]={Range=2.5,Blindspot=0.1,Height=3,Type="Point",Radar="CH_LD3000_stationary",Point="true"},
+["LD-3000M CHM"]={Range=2.5,Blindspot=0.1,Height=3,Type="Point",Radar="CH_LD3000",Point="true"},
+["FlaRakRad CHM"]={Range=8,Blindspot=1.5,Height=6,Type="Short",Radar="CH_FlaRakRad"},
 ["IRIS-T SLM CHM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM"},
-["M903PAC2KAT1 CHM"]={Range=160,Blindspot=3,Height=24.5,Type="Long",Radar="CH_MIM104_M903_PAC2_KAT1"},
-["Skynex CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Point",Radar="CH_SkynexHX",Point="true"},
-["Skyshield CHM"]={Range=3.5,Blindspot=0,Height=3.5,Type="Point",Radar="CH_Skyshield_Gun",Point="true"},
-["WieselOzelot CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_Wiesel2Ozelot"},
+["M903PAC2KAT1 CHM"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="CH_MIM104_M903_PAC2_KAT1"},
+["Skynex CHM"]={Range=3.5,Blindspot=0.1,Height=3.5,Type="Point",Radar="CH_SkynexHX",Point="true"},
+["Skyshield CHM"]={Range=3.5,Blindspot=0.1,Height=3.5,Type="Point",Radar="CH_Skyshield_Gun",Point="true"},
+["WieselOzelot CHM"]={Range=8,Blindspot=0.16,Height=4.8,Type="Short",Radar="CH_Wiesel2Ozelot"},
 ["BukM3-9M317M CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317M"},
 ["BukM3-9M317MA CHM"]={Range=70,Blindspot=0.25,Height=35,Type="Medium",Radar="CH_BukM3_9A317MA"},
 ["SkySabre CHM"]={Range=30,Blindspot=0.5,Height=10,Type="Medium",Radar="CH_SkySabreLN"},
 ["Stormer CHM"]={Range=7.5,Blindspot=0.3,Height=7,Type="Short",Radar="CH_StormerHVM"},
 ["THAAD CHM"]={Range=200,Blindspot=40,Height=150,Type="Long",Radar="CH_THAAD_M1120"},
-["USInfantryFIM92K CHM"]={Range=8,Blindspot=0.2,Height=4.8,Type="Short",Radar="CH_USInfantry_FIM92"},
-["RBS98M CHM"]={Range=20,Blindspot=0,Height=8,Type="Short",Radar="RBS-98"},
-["RBS70 CHM"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-70"},
-["RBS90 CHM"]={Range=8,Blindspot=0,Height=5.5,Type="Short",Radar="RBS-90"},
-["RBS103A CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
-["RBS103B CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_Rb103B"},
-["RBS103AM CHM"]={Range=150,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
-["RBS103BM CHM"]={Range=35,Blindspot=0,Height=36,Type="Medium",Radar="LvS-103_Lavett103_HX_Rb103B"},
-["Lvkv9040M CHM"]={Range=4,Blindspot=0,Height=2.5,Type="Point",Radar="LvKv9040",Point="true"},
+["USInfantryFIM92K CHM"]={Range=8,Blindspot=0.16,Height=4.8,Type="Short",Radar="CH_USInfantry_FIM92"},
+["RBS98M CHM"]={Range=20,Blindspot=0.2,Height=8,Type="Short",Radar="RBS-98"},
+["RBS70 CHM"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="RBS-70"},
+["RBS70M CHM"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="BV410_RBS70"},
+["RBS90 CHM"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="RBS-90"},
+["RBS90M CHM"]={Range=8,Blindspot=0.25,Height=6,Type="Short",Radar="BV410_RBS90"},
+["RBS103A CHM"]={Range=160,Blindspot=1,Height=36,Type="Long",Radar="LvS-103_Lavett103_Rb103A"},
+["RBS103B CHM"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_Rb103B"},
+["RBS103AM CHM"]={Range=160,Blindspot=1,Height=36,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
+["RBS103BM CHM"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103B"},
+["Lvkv9040M CHM"]={Range=2,Blindspot=0.1,Height=1.2,Type="Point",Radar="LvKv9040",Point="true"},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
@@ -70501,7 +70551,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.1.32"
+CTLD.version="1.2.33"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70724,6 +70774,11 @@ self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
 end
 if self:IsFixedWing(_unit)and self.enableFixedWing then
+local unitname=event.IniUnitName or"none"
+self.Loaded_Cargo[unitname]=nil
+self:_RefreshF10Menus()
+end
+if _unit:IsGround()and self.allowCATransport then
 local unitname=event.IniUnitName or"none"
 self.Loaded_Cargo[unitname]=nil
 self:_RefreshF10Menus()
@@ -72378,6 +72433,7 @@ self:T(self.lid.." _MoveGroupToZone")
 local groupname=Group:GetName()or"none"
 local groupcoord=Group:GetCoordinate()
 local outcome,name,zone,distance=self:IsUnitInZone(Group,CTLD.CargoZoneType.MOVE)
+self:T({canmove=outcome,name=name,zone=zone,dist=distance,max=self.movetroopsdistance})
 if(distance<=self.movetroopsdistance)and outcome==true and zone~=nil then
 local groupname=Group:GetName()
 local zonecoord=zone:GetRandomCoordinate(20,125)
@@ -72437,6 +72493,7 @@ for _,_clientobj in pairs(self.CATransportSet.Set)do
 local client=_clientobj
 if client:IsGround()then
 local cname=client:GetName()
+self:T(self.lid.."Adding: "..cname)
 _UnitList[cname]=cname
 end
 end
@@ -72466,6 +72523,7 @@ local menucount=0
 local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
 if(not self.MenusDone[_unitName])or(self.showstockinmenuitems==true)then
+self:T(self.lid.."Menu not done yet for ".._unitName)
 local _unit=UNIT:FindByName(_unitName)
 if not _unit and self.allowCATransport then
 _unit=CLIENT:FindByName(_unitName)
@@ -72473,6 +72531,7 @@ end
 if _unit and _unit:IsAlive()then
 local _group=_unit:GetGroup()
 if _group then
+self:T(self.lid.."Unit and Group exist")
 local capabilities=self:_GetUnitCapabilities(_unit)
 local cantroops=capabilities.troops
 local cancrates=capabilities.crates
@@ -73225,6 +73284,8 @@ elseif ZoneType==CTLD.CargoZoneType.DROP then
 table=self.dropOffZones
 elseif ZoneType==CTLD.CargoZoneType.SHIP then
 table=self.shipZones
+elseif ZoneType==CTLD.CargoZoneType.BEACON then
+table=self.droppedBeacons
 else
 table=self.wpZones
 end
@@ -73531,7 +73592,8 @@ zonewidth=zoneradius
 end
 local distance=self:_GetDistance(zonecoord,unitcoord)
 self:T("Distance Zone: "..distance)
-if(zone:IsVec2InZone(unitVec2)or Zonetype==CTLD.CargoZoneType.MOVE)and active==true and maxdist>distance then
+self:T("Zone Active: "..tostring(active))
+if(zone:IsVec2InZone(unitVec2)or Zonetype==CTLD.CargoZoneType.MOVE)and active==true and distance<maxdist then
 outcome=true
 maxdist=distance
 zoneret=zone
