@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-09T08:16:20+02:00-4b23c86daa060c8440947bf3dfa9f8869a22b0d2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-12T10:52:39+02:00-ecce2eff9b4217fc90323351220221a568d55efb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7243,11 +7243,12 @@ Event.IniCategory=Event.IniDCSUnit:getDesc().category
 Event.IniTypeName=Event.IniDCSUnit:getTypeName()
 elseif Event.IniObjectCategory==Object.Category.SCENERY then
 Event.IniDCSUnit=Event.initiator
-Event.IniDCSUnitName=Event.IniDCSUnit.getName and Event.IniDCSUnit:getName()or"Scenery no name "..math.random(1,20000)
+Event.IniDCSUnitName=(Event.IniDCSUnit and Event.IniDCSUnit.getName)and Event.IniDCSUnit:getName()or"Scenery no name "..math.random(1,20000)
 Event.IniUnitName=Event.IniDCSUnitName
 Event.IniUnit=SCENERY:Register(Event.IniDCSUnitName,Event.initiator)
-Event.IniCategory=Event.IniDCSUnit.getDesc and Event.IniDCSUnit:getDesc().category
-Event.IniTypeName=Event.initiator:isExist()and Event.IniDCSUnit:getTypeName()or"SCENERY"
+Event.IniCategory=(Event.IniDCSUnit and Event.IniDCSUnit.getDesc)and Event.IniDCSUnit:getDesc().category
+Event.IniTypeName=(Event.initiator and Event.initiator.isExist
+and Event.initiator:isExist()and Event.IniDCSUnit and Event.IniDCSUnit.getTypeName)and Event.IniDCSUnit:getTypeName()or"SCENERY"
 elseif Event.IniObjectCategory==Object.Category.BASE then
 Event.IniDCSUnit=Event.initiator
 Event.IniDCSUnitName=Event.IniDCSUnit:getName()
@@ -16150,7 +16151,6 @@ end
 do
 SET_DYNAMICCARGO={
 ClassName="SET_DYNAMICCARGO",
-Filter={},
 Set={},
 List={},
 Index={},
@@ -27644,8 +27644,12 @@ end
 return nil
 end
 function GROUP:GetTemplateRoutePoints()
+if not self or not self:IsAlive()then return end
 local GroupName=self:GetName()
-return UTILS.DeepCopy(_DATABASE:GetGroupTemplate(GroupName).route.points)
+local template=_DATABASE:GetGroupTemplate(GroupName)
+if template and template.route and template.route.points then
+return UTILS.DeepCopy(template.route.points)
+end
 end
 function GROUP:SetTemplateControlled(Template,Controlled)
 Template.uncontrolled=not Controlled
