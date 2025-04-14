@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-14T11:37:45+02:00-e0092fdba016bb300546eb19a4fb96bde952b10a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-14T12:11:27+02:00-d013bbc7517453bf45cd75645853491c2b501113 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1186,6 +1186,11 @@ ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,492}
 ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,491}
 ENUMS.Storage.weapons.AH64D.AN_APG78={4,15,44,2114}
 ENUMS.Storage.weapons.AH64D.Internal_Aux_FuelTank={1,3,43,1700}
+ENUMS.Storage.weapons.droptanks.FuelTank_610gal={1,3,43,10}
+ENUMS.Storage.weapons.droptanks.FuelTank_370gal={1,3,43,11}
+ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_AP_M79={4,15,46,824}
+ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_HE_M792={4,15,46,825}
+ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_SAPHEI_T={4,15,46,300}
 ENUMS.FARPType={
 FARP="FARP",
 INVISIBLE="INVISIBLE",
