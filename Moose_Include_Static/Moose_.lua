@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-14T12:24:05+02:00-7df7a34c328ab155494e4a3bfd4e66e91c542e12 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-15T11:45:22+02:00-c9414d98dacdf7d656e743448eb3bbe1692fb67e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -112399,6 +112399,7 @@ engagerange=50,
 repeatsonfailure=3,
 GoZoneSet=nil,
 NoGoZoneSet=nil,
+ConflictZoneSet=nil,
 Monitor=false,
 TankerInvisible=true,
 CapFormation=nil,
@@ -112407,7 +112408,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.17"
+EASYGCICAP.version="0.1.18"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -112420,6 +112421,7 @@ self.airbasename=AirbaseName
 self.airbase=AIRBASE:FindByName(self.airbasename)
 self.GoZoneSet=SET_ZONE:New()
 self.NoGoZoneSet=SET_ZONE:New()
+self.ConflictZoneSet=SET_ZONE:New()
 self.resurrection=900
 self.capspeed=300
 self.capalt=25000
@@ -112908,13 +112910,19 @@ wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.AWACS},75)
 return self
 end
 function EASYGCICAP:AddAcceptZone(Zone)
-self:T(self.lid.."AddAcceptZone0")
+self:T(self.lid.."AddAcceptZone")
 self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:AddRejectZone(Zone)
 self:T(self.lid.."AddRejectZone")
 self.NoGoZoneSet:AddZone(Zone)
+return self
+end
+function EASYGCICAP:AddConflictZone(Zone)
+self:T(self.lid.."AddConflictZone")
+self.ConflictZoneSet:AddZone(Zone)
+self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,Group,WingSize)
@@ -112963,6 +112971,7 @@ local wings=self.wings
 local ctlpts=self.ManagedCP
 local MaxAliveMissions=self.MaxAliveMissions
 local nogozoneset=self.NoGoZoneSet
+local conflictzoneset=self.ConflictZoneSet
 local ReadyFlightGroups=self.ReadyFlightGroups
 if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
 local contact=self.Intel:GetHighestThreatContact(Cluster)
@@ -113027,18 +113036,22 @@ local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetMissionAltitude(capalt)
 if nogozoneset:Count()>0 then
 InterceptAuftrag:AddConditionSuccess(
-function(group,zoneset)
+function(group,zoneset,conflictset)
 local success=false
 if group and group:IsAlive()then
 local coord=group:GetCoordinate()
-if coord and zoneset:IsCoordinateInZone(coord)then
+if coord and zoneset:Count()>0 and zoneset:IsCoordinateInZone(coord)then
 success=true
+end
+if coord and conflictset:Count()>0 and conflictset:IsCoordinateInZone(coord)then
+success=false
 end
 end
 return success
 end,
 contact.group,
-nogozoneset
+nogozoneset,
+conflictzoneset
 )
 end
 table.insert(self.ListOfAuftrag,InterceptAuftrag)
@@ -113064,6 +113077,7 @@ BlueIntel:SetClusterAnalysis(true,false,false)
 BlueIntel:SetForgetTime(300)
 BlueIntel:SetAcceptZones(self.GoZoneSet)
 BlueIntel:SetRejectZones(self.NoGoZoneSet)
+BlueIntel:SetConflictZones(self.ConflictZoneSet)
 BlueIntel:SetVerbosity(0)
 BlueIntel:Start()
 if self.debug then
