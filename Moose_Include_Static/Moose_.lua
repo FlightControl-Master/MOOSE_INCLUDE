@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-17T08:44:38+02:00-5d93b33d42d6f83b86e6ec4c01de4b8a6c33c1e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-17T21:19:48+02:00-5da899138b282ae7506baf6d737e4aa18c00527c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1227,7 +1227,8 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
-Iraq="Iraq"
+Iraq="Iraq",
+GermanyCW="GermanyCW",
 }
 CALLSIGN={
 Aircraft={
@@ -2302,6 +2303,8 @@ elseif map==DCSMAP.Afghanistan then
 declination=3
 elseif map==DCSMAP.Iraq then
 declination=4.4
+elseif map==DCSMAP.GermanyCW then
+declination=0.1
 else
 declination=0
 end
@@ -2475,6 +2478,10 @@ elseif theatre==DCSMAP.Kola then
 return 3
 elseif theatre==DCSMAP.Afghanistan then
 return 4.5
+elseif theatre==DCSMAP.Iraq then
+return 3.0
+elseif theatre==DCSMAP.GermanyCW then
+return 1.0
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -65601,7 +65608,8 @@ Falklands=12,
 SinaiMap=5,
 Kola=15,
 Afghanistan=3,
-Iraq=4.4
+Iraq=4.4,
+GermanyCW=0.1,
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -65616,6 +65624,7 @@ SinaiMap=true,
 Kola=true,
 Afghanistan=true,
 Iraq=true,
+GermanyCW=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.85},
