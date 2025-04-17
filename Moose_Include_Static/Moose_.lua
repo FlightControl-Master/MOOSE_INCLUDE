@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-17T08:45:51+02:00-d7d46d4f1b25673a0fa21839f48c1e57fd442003 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-17T21:34:17+02:00-0678ad17f8c81a2974178e44e9674ee770e8d9ab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1227,7 +1227,8 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
-Iraq="Iraq"
+Iraq="Iraq",
+GermanyCW="GermanyCW",
 }
 CALLSIGN={
 Aircraft={
@@ -2302,6 +2303,8 @@ elseif map==DCSMAP.Afghanistan then
 declination=3
 elseif map==DCSMAP.Iraq then
 declination=4.4
+elseif map==DCSMAP.GermanyCW then
+declination=0.1
 else
 declination=0
 end
@@ -2475,6 +2478,10 @@ elseif theatre==DCSMAP.Kola then
 return 3
 elseif theatre==DCSMAP.Afghanistan then
 return 4.5
+elseif theatre==DCSMAP.Iraq then
+return 3.0
+elseif theatre==DCSMAP.GermanyCW then
+return 1.0
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -30112,11 +30119,11 @@ AIRBASE.Iraq={
 AIRBASE.GermanyCW={
 ["Airracing_Frankfurt"]="Airracing Frankfurt",
 ["Airracing_Koblenz"]="Airracing Koblenz",
-["Airracing_Luebeck"]="Airracing Lübeck",
+["Airracing_Luebeck"]="Airracing Lubeck",
 ["Allstedt"]="Allstedt",
 ["Alt_Daber"]="Alt Daber",
 ["Altes_Lager"]="Altes Lager",
-["Bad_Duerkheim"]="Bad Dürkheim",
+["Bad_Duerkheim"]="Bad Durkheim",
 ["Barth"]="Barth",
 ["Bienenfarm"]="Bienenfarm",
 ["Bindersleben"]="Bindersleben",
@@ -30124,8 +30131,8 @@ AIRBASE.GermanyCW={
 ["Braunschweig"]="Braunschweig",
 ["Bremen"]="Bremen",
 ["Briest"]="Briest",
-["Buechel"]="Büchel",
-["Bueckeburg"]="Bückeburg",
+["Buechel"]="Buchel",
+["Bueckeburg"]="Buckeburg",
 ["Celle"]="Celle",
 ["Cochstedt"]="Cochstedt",
 ["Damgarten"]="Damgarten",
@@ -30141,11 +30148,11 @@ AIRBASE.GermanyCW={
 ["Gelnhausen"]="Gelnhausen",
 ["Giebelstadt"]="Giebelstadt",
 ["Glindbruchkippe_"]="Glindbruchkippe ",
-["Gross_Doelln"]="Groß Dölln",
-["Gross_Mohrdorf"]="Groß Mohrdorf",
-["Grosse_Wiese"]="Große Wiese",
-["Gaerz"]="Gärz",
-["Guetersloh"]="Gütersloh",
+["Gross_Doelln"]="Gross Dolln",
+["Gross_Mohrdorf"]="Gross Mohrdorf",
+["Grosse_Wiese"]="Grosse Wiese",
+["Gaerz"]="Garz",
+["Guetersloh"]="Gutersloh",
 ["H_FRG_01"]="H FRG 01",
 ["H_FRG_02"]="H FRG 02",
 ["H_FRG_03"]="H FRG 03",
@@ -30264,31 +30271,31 @@ AIRBASE.GermanyCW={
 ["Hockenheim"]="Hockenheim",
 ["Holzdorf"]="Holzdorf",
 ["Kammermark"]="Kammermark",
-["Koethen"]="Köthen",
+["Koethen"]="Kothen",
 ["Laage"]="Laage",
 ["Langenselbold"]="Langenselbold",
 ["Leipzig_Halle"]="Leipzig Halle",
 ["Leipzig_Mockau"]="Leipzig Mockau",
-["Laerz"]="Lärz",
-["Luebeck"]="Lübeck",
-["Lueneburg"]="Lüneburg",
+["Laerz"]="Larz",
+["Luebeck"]="Lubeck",
+["Lueneburg"]="Luneburg",
 ["Mahlwinkel"]="Mahlwinkel",
 ["Mendig"]="Mendig",
 ["Merseburg"]="Merseburg",
 ["Neubrandenburg"]="Neubrandenburg",
 ["Neuruppin"]="Neuruppin",
 ["Northeim"]="Northeim",
-["Ober_Moerlen"]="Ober-Mörlen",
+["Ober_Moerlen"]="Ober-Morlen",
 ["Obermehler_Schlotheim"]="Obermehler Schlotheim",
 ["Parchim"]="Parchim",
-["Peenemuende"]="Peenemünde",
+["Peenemuende"]="Peenemunde",
 ["Pferdsfeld"]="Pferdsfeld",
 ["Pinnow"]="Pinnow",
-["Pottschutthoehe"]="Pottschutthöhe",
+["Pottschutthoehe"]="Pottschutthohe",
 ["Ramstein"]="Ramstein",
 ["Rinteln"]="Rinteln",
 ["Schweinfurt"]="Schweinfurt",
-["Schoenefeld"]="Schönefeld",
+["Schoenefeld"]="Schonefeld",
 ["Sembach"]="Sembach",
 ["Spangdahlem"]="Spangdahlem",
 ["Sperenberg"]="Sperenberg",
@@ -30303,13 +30310,13 @@ AIRBASE.GermanyCW={
 ["Walldorf"]="Walldorf",
 ["Waren_Vielist"]="Waren Vielist",
 ["Werneuchen"]="Werneuchen",
-["Weser_Wuemme"]="Weser Wümme",
+["Weser_Wuemme"]="Weser Wumme",
 ["Wiesbaden"]="Wiesbaden",
 ["Wismar"]="Wismar",
 ["Worms"]="Worms",
 ["Wunstorf"]="Wunstorf",
 ["Zerbst"]="Zerbst",
-["Zweibruecken"]="Zweibrücken",
+["Zweibruecken"]="Zweibrucken",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -69599,7 +69606,8 @@ Falklands=12,
 SinaiMap=5,
 Kola=15,
 Afghanistan=3,
-Iraq=4.4
+Iraq=4.4,
+GermanyCW=0.1,
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -69614,6 +69622,7 @@ SinaiMap=true,
 Kola=true,
 Afghanistan=true,
 Iraq=true,
+GermanyCW=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.85},
