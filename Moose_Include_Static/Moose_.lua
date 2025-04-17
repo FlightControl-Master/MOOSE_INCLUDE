@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-14T12:23:12+02:00-6fdf9a649fb5ecd13f16c2ea9d54ba75cebfc6ef ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-17T08:44:38+02:00-5d93b33d42d6f83b86e6ec4c01de4b8a6c33c1e2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27130,7 +27130,6 @@ end
 return nil
 end
 function GROUP:GetTemplateRoutePoints()
-if not self or not self:IsAlive()then return end
 local GroupName=self:GetName()
 local template=_DATABASE:GetGroupTemplate(GroupName)
 if template and template.route and template.route.points then
