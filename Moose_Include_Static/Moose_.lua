@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T14:46:45+02:00-66e6a603f1ba97da8dbb0e91a0bc19a281b51edf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T16:02:56+02:00-27cd90a0ce71056895ad9a4b4b7a34ad1d2db358 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30967,7 +30967,6 @@ if self.AirbaseName==AIRBASE.Syria.Beirut_Rafic_Hariri and math.abs(namefromhead
 runway.name=string.format("%02d",tonumber(namefromheading))
 else
 runway.name=string.format("%02d",tonumber(name))
-self:I("RunwayName: "..runway.name)
 end
 runway.magheading=tonumber(runway.name)*10
 runway.heading=heading
