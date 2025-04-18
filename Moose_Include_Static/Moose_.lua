@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T17:46:00+02:00-a293c59d6de30e7dc3690f207950bda8acad47f5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T17:50:11+02:00-02a6d8f2c0ea2d0abb58d9f283ac62241d009caf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30284,7 +30284,7 @@ AIRBASE.GermanyCW={
 ["Neubrandenburg"]="Neubrandenburg",
 ["Neuruppin"]="Neuruppin",
 ["Northeim"]="Northeim",
-["Ober_Morlen"]="Ober-Morlen",
+["Ober_Moerlen"]="Ober-Morlen",
 ["Obermehler_Schlotheim"]="Obermehler Schlotheim",
 ["Parchim"]="Parchim",
 ["Peenemuende"]="Peenemunde",
@@ -30310,7 +30310,7 @@ AIRBASE.GermanyCW={
 ["Walldorf"]="Walldorf",
 ["Waren_Vielist"]="Waren Vielist",
 ["Werneuchen"]="Werneuchen",
-["Weser_Wumme"]="Weser Wumme",
+["Weser_Wuemme"]="Weser Wumme",
 ["Wiesbaden"]="Wiesbaden",
 ["Wismar"]="Wismar",
 ["Wittstock"]="Wittstock",
