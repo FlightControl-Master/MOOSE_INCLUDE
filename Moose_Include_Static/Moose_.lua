@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-15T11:45:22+02:00-c9414d98dacdf7d656e743448eb3bbe1692fb67e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T19:46:20+02:00-5d6e0c333b48b237ee995ba8dafc35f031dacdc8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1227,7 +1227,8 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
-Iraq="Iraq"
+Iraq="Iraq",
+GermanyCW="GermanyCW",
 }
 CALLSIGN={
 Aircraft={
@@ -2302,6 +2303,8 @@ elseif map==DCSMAP.Afghanistan then
 declination=3
 elseif map==DCSMAP.Iraq then
 declination=4.4
+elseif map==DCSMAP.GermanyCW then
+declination=0.1
 else
 declination=0
 end
@@ -2475,6 +2478,10 @@ elseif theatre==DCSMAP.Kola then
 return 3
 elseif theatre==DCSMAP.Afghanistan then
 return 4.5
+elseif theatre==DCSMAP.Iraq then
+return 3.0
+elseif theatre==DCSMAP.GermanyCW then
+return 1.0
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -27649,7 +27656,6 @@ end
 return nil
 end
 function GROUP:GetTemplateRoutePoints()
-if not self or not self:IsAlive()then return end
 local GroupName=self:GetName()
 local template=_DATABASE:GetGroupTemplate(GroupName)
 if template and template.route and template.route.points then
@@ -30113,11 +30119,10 @@ AIRBASE.Iraq={
 AIRBASE.GermanyCW={
 ["Airracing_Frankfurt"]="Airracing Frankfurt",
 ["Airracing_Koblenz"]="Airracing Koblenz",
-["Airracing_Luebeck"]="Airracing Lübeck",
+["Airracing_Luebeck"]="Airracing Lubeck",
 ["Allstedt"]="Allstedt",
-["Alt_Daber"]="Alt Daber",
 ["Altes_Lager"]="Altes Lager",
-["Bad_Duerkheim"]="Bad Dürkheim",
+["Bad_Duerkheim"]="Bad Durkheim",
 ["Barth"]="Barth",
 ["Bienenfarm"]="Bienenfarm",
 ["Bindersleben"]="Bindersleben",
@@ -30125,8 +30130,8 @@ AIRBASE.GermanyCW={
 ["Braunschweig"]="Braunschweig",
 ["Bremen"]="Bremen",
 ["Briest"]="Briest",
-["Buechel"]="Büchel",
-["Bueckeburg"]="Bückeburg",
+["Buechel"]="Buchel",
+["Bueckeburg"]="Buckeburg",
 ["Celle"]="Celle",
 ["Cochstedt"]="Cochstedt",
 ["Damgarten"]="Damgarten",
@@ -30138,15 +30143,14 @@ AIRBASE.GermanyCW={
 ["Fritzlar"]="Fritzlar",
 ["Fulda"]="Fulda",
 ["Gardelegen"]="Gardelegen",
+["Garz"]="Garz",
 ["Gatow"]="Gatow",
 ["Gelnhausen"]="Gelnhausen",
 ["Giebelstadt"]="Giebelstadt",
-["Glindbruchkippe_"]="Glindbruchkippe ",
-["Gross_Doelln"]="Groß Dölln",
-["Gross_Mohrdorf"]="Groß Mohrdorf",
-["Grosse_Wiese"]="Große Wiese",
-["Gaerz"]="Gärz",
-["Guetersloh"]="Gütersloh",
+["Glindbruchkippe"]="Glindbruchkippe ",
+["Gross_Mohrdorf"]="Gross Mohrdorf",
+["Grosse_Wiese"]="Grosse Wiese",
+["Guetersloh"]="Gutersloh",
 ["H_FRG_01"]="H FRG 01",
 ["H_FRG_02"]="H FRG 02",
 ["H_FRG_03"]="H FRG 03",
@@ -30217,10 +30221,11 @@ AIRBASE.GermanyCW={
 ["H_GDR_31"]="H GDR 31",
 ["H_GDR_32"]="H GDR 32",
 ["H_GDR_33"]="H GDR 33",
+["H_GDR_34"]="H GDR 34",
+["H_Med_FRG_01"]="H Med FRG 01",
 ["H_Med_FRG_02"]="H Med FRG 02",
 ["H_Med_FRG_04"]="H Med FRG 04",
 ["H_Med_FRG_06"]="H Med FRG 06",
-["H_Med_FRG_09"]="H Med FRG 09",
 ["H_Med_FRG_11"]="H Med FRG 11",
 ["H_Med_FRG_12"]="H Med FRG 12",
 ["H_Med_FRG_13"]="H Med FRG 13",
@@ -30265,37 +30270,38 @@ AIRBASE.GermanyCW={
 ["Hockenheim"]="Hockenheim",
 ["Holzdorf"]="Holzdorf",
 ["Kammermark"]="Kammermark",
-["Koethen"]="Köthen",
+["Koethen"]="Kothen",
 ["Laage"]="Laage",
 ["Langenselbold"]="Langenselbold",
+["Laerz"]="Larz",
 ["Leipzig_Halle"]="Leipzig Halle",
 ["Leipzig_Mockau"]="Leipzig Mockau",
-["Laerz"]="Lärz",
-["Luebeck"]="Lübeck",
-["Lueneburg"]="Lüneburg",
+["Luebeck"]="Lubeck",
+["Lueneburg"]="Luneburg",
 ["Mahlwinkel"]="Mahlwinkel",
 ["Mendig"]="Mendig",
 ["Merseburg"]="Merseburg",
 ["Neubrandenburg"]="Neubrandenburg",
 ["Neuruppin"]="Neuruppin",
 ["Northeim"]="Northeim",
-["Ober_Moerlen"]="Ober-Mörlen",
+["Ober_Moerlen"]="Ober-Morlen",
 ["Obermehler_Schlotheim"]="Obermehler Schlotheim",
 ["Parchim"]="Parchim",
-["Peenemuende"]="Peenemünde",
+["Peenemuende"]="Peenemunde",
 ["Pferdsfeld"]="Pferdsfeld",
 ["Pinnow"]="Pinnow",
-["Pottschutthoehe"]="Pottschutthöhe",
+["Pottschutthoehe"]="Pottschutthohe",
 ["Ramstein"]="Ramstein",
 ["Rinteln"]="Rinteln",
+["Schoenefeld"]="Schonefeld",
 ["Schweinfurt"]="Schweinfurt",
-["Schoenefeld"]="Schönefeld",
 ["Sembach"]="Sembach",
 ["Spangdahlem"]="Spangdahlem",
 ["Sperenberg"]="Sperenberg",
 ["Stendal"]="Stendal",
 ["Tegel"]="Tegel",
 ["Tempelhof"]="Tempelhof",
+["Templin"]="Templin",
 ["Tutow"]="Tutow",
 ["Uelzen"]="Uelzen",
 ["Uetersen"]="Uetersen",
@@ -30304,13 +30310,14 @@ AIRBASE.GermanyCW={
 ["Walldorf"]="Walldorf",
 ["Waren_Vielist"]="Waren Vielist",
 ["Werneuchen"]="Werneuchen",
-["Weser_Wuemme"]="Weser Wümme",
+["Weser_Wuemme"]="Weser Wumme",
 ["Wiesbaden"]="Wiesbaden",
 ["Wismar"]="Wismar",
+["Wittstock"]="Wittstock",
 ["Worms"]="Worms",
 ["Wunstorf"]="Wunstorf",
 ["Zerbst"]="Zerbst",
-["Zweibruecken"]="Zweibrücken",
+["Zweibruecken"]="Zweibrucken",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -30959,7 +30966,6 @@ if self.AirbaseName==AIRBASE.Syria.Beirut_Rafic_Hariri and math.abs(namefromhead
 runway.name=string.format("%02d",tonumber(namefromheading))
 else
 runway.name=string.format("%02d",tonumber(name))
-self:T("RunwayName: "..runway.name)
 end
 runway.magheading=tonumber(runway.name)*10
 runway.heading=heading
@@ -68326,7 +68332,8 @@ Falklands=12,
 SinaiMap=5,
 Kola=15,
 Afghanistan=3,
-Iraq=4.4
+Iraq=4.4,
+GermanyCW=0.1,
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -68341,6 +68348,7 @@ SinaiMap=true,
 Kola=true,
 Afghanistan=true,
 Iraq=true,
+GermanyCW=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.85},
