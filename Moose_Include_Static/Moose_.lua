@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-12T10:52:39+02:00-ecce2eff9b4217fc90323351220221a568d55efb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T14:46:45+02:00-66e6a603f1ba97da8dbb0e91a0bc19a281b51edf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1186,6 +1186,11 @@ ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,492}
 ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,491}
 ENUMS.Storage.weapons.AH64D.AN_APG78={4,15,44,2114}
 ENUMS.Storage.weapons.AH64D.Internal_Aux_FuelTank={1,3,43,1700}
+ENUMS.Storage.weapons.droptanks.FuelTank_610gal={1,3,43,10}
+ENUMS.Storage.weapons.droptanks.FuelTank_370gal={1,3,43,11}
+ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_AP_M79={4,15,46,824}
+ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_HE_M792={4,15,46,825}
+ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_SAPHEI_T={4,15,46,300}
 ENUMS.FARPType={
 FARP="FARP",
 INVISIBLE="INVISIBLE",
@@ -1222,7 +1227,8 @@ Falklands="Falklands",
 Sinai="SinaiMap",
 Kola="Kola",
 Afghanistan="Afghanistan",
-Iraq="Iraq"
+Iraq="Iraq",
+GermanyCW="GermanyCW",
 }
 CALLSIGN={
 Aircraft={
@@ -2297,6 +2303,8 @@ elseif map==DCSMAP.Afghanistan then
 declination=3
 elseif map==DCSMAP.Iraq then
 declination=4.4
+elseif map==DCSMAP.GermanyCW then
+declination=0.1
 else
 declination=0
 end
@@ -2470,6 +2478,10 @@ elseif theatre==DCSMAP.Kola then
 return 3
 elseif theatre==DCSMAP.Afghanistan then
 return 4.5
+elseif theatre==DCSMAP.Iraq then
+return 3.0
+elseif theatre==DCSMAP.GermanyCW then
+return 1.0
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -27644,7 +27656,6 @@ end
 return nil
 end
 function GROUP:GetTemplateRoutePoints()
-if not self or not self:IsAlive()then return end
 local GroupName=self:GetName()
 local template=_DATABASE:GetGroupTemplate(GroupName)
 if template and template.route and template.route.points then
@@ -30105,6 +30116,210 @@ AIRBASE.Iraq={
 ["Qayyarah_Airfield_West"]="Qayyarah Airfield West",
 ["K1_Base"]="K1 Base",
 }
+AIRBASE.GermanyCW={
+["Airracing_Frankfurt"]="Airracing Frankfurt",
+["Airracing_Koblenz"]="Airracing Koblenz",
+["Airracing_Lubeck"]="Airracing Lubeck",
+["Allstedt"]="Allstedt",
+["Altes_Lager"]="Altes Lager",
+["Bad_Durkheim"]="Bad Durkheim",
+["Barth"]="Barth",
+["Bienenfarm"]="Bienenfarm",
+["Bindersleben"]="Bindersleben",
+["Bitburg"]="Bitburg",
+["Braunschweig"]="Braunschweig",
+["Bremen"]="Bremen",
+["Briest"]="Briest",
+["Buchel"]="Buchel",
+["Buckeburg"]="Buckeburg",
+["Celle"]="Celle",
+["Cochstedt"]="Cochstedt",
+["Damgarten"]="Damgarten",
+["Dedelow"]="Dedelow",
+["Dessau"]="Dessau",
+["Fassberg"]="Fassberg",
+["Finow"]="Finow",
+["Frankfurt"]="Frankfurt",
+["Fritzlar"]="Fritzlar",
+["Fulda"]="Fulda",
+["Gardelegen"]="Gardelegen",
+["Garz"]="Garz",
+["Gatow"]="Gatow",
+["Gelnhausen"]="Gelnhausen",
+["Giebelstadt"]="Giebelstadt",
+["Glindbruchkippe_"]="Glindbruchkippe ",
+["Gross_Mohrdorf"]="Gross Mohrdorf",
+["Grosse_Wiese"]="Grosse Wiese",
+["Gutersloh"]="Gutersloh",
+["H_FRG_01"]="H FRG 01",
+["H_FRG_02"]="H FRG 02",
+["H_FRG_03"]="H FRG 03",
+["H_FRG_04"]="H FRG 04",
+["H_FRG_05"]="H FRG 05",
+["H_FRG_06"]="H FRG 06",
+["H_FRG_07"]="H FRG 07",
+["H_FRG_08"]="H FRG 08",
+["H_FRG_09"]="H FRG 09",
+["H_FRG_10"]="H FRG 10",
+["H_FRG_11"]="H FRG 11",
+["H_FRG_12"]="H FRG 12",
+["H_FRG_13"]="H FRG 13",
+["H_FRG_14"]="H FRG 14",
+["H_FRG_15"]="H FRG 15",
+["H_FRG_16"]="H FRG 16",
+["H_FRG_17"]="H FRG 17",
+["H_FRG_18"]="H FRG 18",
+["H_FRG_19"]="H FRG 19",
+["H_FRG_20"]="H FRG 20",
+["H_FRG_21"]="H FRG 21",
+["H_FRG_23"]="H FRG 23",
+["H_FRG_25"]="H FRG 25",
+["H_FRG_27"]="H FRG 27",
+["H_FRG_30"]="H FRG 30",
+["H_FRG_31"]="H FRG 31",
+["H_FRG_32"]="H FRG 32",
+["H_FRG_34"]="H FRG 34",
+["H_FRG_38"]="H FRG 38",
+["H_FRG_39"]="H FRG 39",
+["H_FRG_40"]="H FRG 40",
+["H_FRG_41"]="H FRG 41",
+["H_FRG_42"]="H FRG 42",
+["H_FRG_43"]="H FRG 43",
+["H_FRG_44"]="H FRG 44",
+["H_FRG_45"]="H FRG 45",
+["H_FRG_46"]="H FRG 46",
+["H_FRG_47"]="H FRG 47",
+["H_FRG_48"]="H FRG 48",
+["H_FRG_49"]="H FRG 49",
+["H_FRG_50"]="H FRG 50",
+["H_FRG_51"]="H FRG 51",
+["H_GDR_01"]="H GDR 01",
+["H_GDR_02"]="H GDR 02",
+["H_GDR_03"]="H GDR 03",
+["H_GDR_04"]="H GDR 04",
+["H_GDR_05"]="H GDR 05",
+["H_GDR_06"]="H GDR 06",
+["H_GDR_07"]="H GDR 07",
+["H_GDR_08"]="H GDR 08",
+["H_GDR_09"]="H GDR 09",
+["H_GDR_10"]="H GDR 10",
+["H_GDR_11"]="H GDR 11",
+["H_GDR_12"]="H GDR 12",
+["H_GDR_13"]="H GDR 13",
+["H_GDR_14"]="H GDR 14",
+["H_GDR_15"]="H GDR 15",
+["H_GDR_16"]="H GDR 16",
+["H_GDR_17"]="H GDR 17",
+["H_GDR_18"]="H GDR 18",
+["H_GDR_19"]="H GDR 19",
+["H_GDR_21"]="H GDR 21",
+["H_GDR_22"]="H GDR 22",
+["H_GDR_24"]="H GDR 24",
+["H_GDR_25"]="H GDR 25",
+["H_GDR_26"]="H GDR 26",
+["H_GDR_30"]="H GDR 30",
+["H_GDR_31"]="H GDR 31",
+["H_GDR_32"]="H GDR 32",
+["H_GDR_33"]="H GDR 33",
+["H_GDR_34"]="H GDR 34",
+["H_Med_FRG_01"]="H Med FRG 01",
+["H_Med_FRG_02"]="H Med FRG 02",
+["H_Med_FRG_04"]="H Med FRG 04",
+["H_Med_FRG_06"]="H Med FRG 06",
+["H_Med_FRG_11"]="H Med FRG 11",
+["H_Med_FRG_12"]="H Med FRG 12",
+["H_Med_FRG_13"]="H Med FRG 13",
+["H_Med_FRG_14"]="H Med FRG 14",
+["H_Med_FRG_15"]="H Med FRG 15",
+["H_Med_FRG_16"]="H Med FRG 16",
+["H_Med_FRG_17"]="H Med FRG 17",
+["H_Med_FRG_21"]="H Med FRG 21",
+["H_Med_FRG_24"]="H Med FRG 24",
+["H_Med_FRG_26"]="H Med FRG 26",
+["H_Med_FRG_27"]="H Med FRG 27",
+["H_Med_FRG_29"]="H Med FRG 29",
+["H_Med_GDR_01"]="H Med GDR 01",
+["H_Med_GDR_02"]="H Med GDR 02",
+["H_Med_GDR_03"]="H Med GDR 03",
+["H_Med_GDR_08"]="H Med GDR 08",
+["H_Med_GDR_09"]="H Med GDR 09",
+["H_Med_GDR_10"]="H Med GDR 10",
+["H_Med_GDR_11"]="H Med GDR 11",
+["H_Med_GDR_12"]="H Med GDR 12",
+["H_Med_GDR_13"]="H Med GDR 13",
+["H_Med_GDR_14"]="H Med GDR 14",
+["H_Med_GDR_16"]="H Med GDR 16",
+["H_Radar_FRG_02"]="H Radar FRG 02",
+["H_Radar_GDR_01"]="H Radar GDR 01",
+["H_Radar_GDR_02"]="H Radar GDR 02",
+["H_Radar_GDR_03"]="H Radar GDR 03",
+["H_Radar_GDR_04"]="H Radar GDR 04",
+["H_Radar_GDR_05"]="H Radar GDR 05",
+["H_Radar_GDR_06"]="H Radar GDR 06",
+["H_Radar_GDR_07"]="H Radar GDR 07",
+["H_Radar_GDR_08"]="H Radar GDR 08",
+["H_Radar_GDR_09"]="H Radar GDR 09",
+["Hahn"]="Hahn",
+["Haina"]="Haina",
+["Hamburg"]="Hamburg",
+["Hamburg_Finkenwerder"]="Hamburg Finkenwerder",
+["Hannover"]="Hannover",
+["Hasselfelde"]="Hasselfelde",
+["Herrenteich"]="Herrenteich",
+["Hildesheim"]="Hildesheim",
+["Hockenheim"]="Hockenheim",
+["Holzdorf"]="Holzdorf",
+["Kammermark"]="Kammermark",
+["Kothen"]="Kothen",
+["Laage"]="Laage",
+["Langenselbold"]="Langenselbold",
+["Larz"]="Larz",
+["Leipzig_Halle"]="Leipzig Halle",
+["Leipzig_Mockau"]="Leipzig Mockau",
+["Lubeck"]="Lubeck",
+["Luneburg"]="Luneburg",
+["Mahlwinkel"]="Mahlwinkel",
+["Mendig"]="Mendig",
+["Merseburg"]="Merseburg",
+["Neubrandenburg"]="Neubrandenburg",
+["Neuruppin"]="Neuruppin",
+["Northeim"]="Northeim",
+["Ober_Morlen"]="Ober-Morlen",
+["Obermehler_Schlotheim"]="Obermehler Schlotheim",
+["Parchim"]="Parchim",
+["Peenemunde"]="Peenemunde",
+["Pferdsfeld"]="Pferdsfeld",
+["Pinnow"]="Pinnow",
+["Pottschutthohe"]="Pottschutthohe",
+["Ramstein"]="Ramstein",
+["Rinteln"]="Rinteln",
+["Schonefeld"]="Schonefeld",
+["Schweinfurt"]="Schweinfurt",
+["Schoenefeld"]="Schonefeld",
+["Sembach"]="Sembach",
+["Spangdahlem"]="Spangdahlem",
+["Sperenberg"]="Sperenberg",
+["Stendal"]="Stendal",
+["Tegel"]="Tegel",
+["Tempelhof"]="Tempelhof",
+["Templin"]="Templin",
+["Tutow"]="Tutow",
+["Uelzen"]="Uelzen",
+["Uetersen"]="Uetersen",
+["Ummern"]="Ummern",
+["Verden_Scharnhorst"]="Verden-Scharnhorst",
+["Walldorf"]="Walldorf",
+["Waren_Vielist"]="Waren Vielist",
+["Werneuchen"]="Werneuchen",
+["Weser_Wumme"]="Weser Wumme",
+["Wiesbaden"]="Wiesbaden",
+["Wismar"]="Wismar",
+["Wittstock"]="Wittstock",
+["Worms"]="Worms",
+["Wunstorf"]="Wunstorf",
+["Zerbst"]="Zerbst",
+["Zweibrucken"]="Zweibrucken",
+}
 AIRBASE.TerminalType={
 Runway=16,
 HelicopterOnly=40,
@@ -30728,6 +30943,7 @@ if Name then
 for _,_runway in pairs(self.runways)do
 local runway=_runway
 local name=self:GetRunwayName(runway)
+self:T("Check Runway Name: "..name)
 if name==Name:upper()then
 return runway
 end
@@ -30742,6 +30958,7 @@ IncludeInverse=true
 end
 local Runways={}
 local function _createRunway(name,course,width,length,center)
+self:T("Create Runway: name = "..name)
 local bearing=-1*course
 local heading=math.deg(bearing)
 local runway={}
@@ -30750,6 +30967,7 @@ if self.AirbaseName==AIRBASE.Syria.Beirut_Rafic_Hariri and math.abs(namefromhead
 runway.name=string.format("%02d",tonumber(namefromheading))
 else
 runway.name=string.format("%02d",tonumber(name))
+self:I("RunwayName: "..runway.name)
 end
 runway.magheading=tonumber(runway.name)*10
 runway.heading=heading
@@ -30937,6 +31155,7 @@ runway.idx=idx
 runway.length=c1:Get2DDistance(c2)
 runway.position=c1
 runway.endpoint=c2
+self:T(string.format("Airbase %s: Adding runway id=%s, heading=%03d, length=%d m i=%d j=%d",self:GetName(),runway.idx,runway.heading,runway.length,i,j))
 if mark then
 runway.position:MarkToAll(string.format("Runway %s: true heading=%03d (magvar=%d), length=%d m, i=%d, j=%d",runway.idx,runway.heading,magvar,runway.length,i,j))
 end
@@ -69389,7 +69608,8 @@ Falklands=12,
 SinaiMap=5,
 Kola=15,
 Afghanistan=3,
-Iraq=4.4
+Iraq=4.4,
+GermanyCW=0.1,
 }
 ATIS.ICAOPhraseology={
 Caucasus=true,
@@ -69404,6 +69624,7 @@ SinaiMap=true,
 Kola=true,
 Afghanistan=true,
 Iraq=true,
+GermanyCW=true,
 }
 ATIS.Sound={
 ActiveRunway={filename="ActiveRunway.ogg",duration=0.85},
@@ -113462,6 +113683,7 @@ engagerange=50,
 repeatsonfailure=3,
 GoZoneSet=nil,
 NoGoZoneSet=nil,
+ConflictZoneSet=nil,
 Monitor=false,
 TankerInvisible=true,
 CapFormation=nil,
@@ -113470,7 +113692,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.17"
+EASYGCICAP.version="0.1.18"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -113483,6 +113705,7 @@ self.airbasename=AirbaseName
 self.airbase=AIRBASE:FindByName(self.airbasename)
 self.GoZoneSet=SET_ZONE:New()
 self.NoGoZoneSet=SET_ZONE:New()
+self.ConflictZoneSet=SET_ZONE:New()
 self.resurrection=900
 self.capspeed=300
 self.capalt=25000
@@ -113971,13 +114194,19 @@ wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.AWACS},75)
 return self
 end
 function EASYGCICAP:AddAcceptZone(Zone)
-self:T(self.lid.."AddAcceptZone0")
+self:T(self.lid.."AddAcceptZone")
 self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:AddRejectZone(Zone)
 self:T(self.lid.."AddRejectZone")
 self.NoGoZoneSet:AddZone(Zone)
+return self
+end
+function EASYGCICAP:AddConflictZone(Zone)
+self:T(self.lid.."AddConflictZone")
+self.ConflictZoneSet:AddZone(Zone)
+self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,Group,WingSize)
@@ -114026,6 +114255,7 @@ local wings=self.wings
 local ctlpts=self.ManagedCP
 local MaxAliveMissions=self.MaxAliveMissions
 local nogozoneset=self.NoGoZoneSet
+local conflictzoneset=self.ConflictZoneSet
 local ReadyFlightGroups=self.ReadyFlightGroups
 if Cluster.ctype~=INTEL.Ctype.AIRCRAFT then return end
 local contact=self.Intel:GetHighestThreatContact(Cluster)
@@ -114090,18 +114320,22 @@ local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetMissionAltitude(capalt)
 if nogozoneset:Count()>0 then
 InterceptAuftrag:AddConditionSuccess(
-function(group,zoneset)
+function(group,zoneset,conflictset)
 local success=false
 if group and group:IsAlive()then
 local coord=group:GetCoordinate()
-if coord and zoneset:IsCoordinateInZone(coord)then
+if coord and zoneset:Count()>0 and zoneset:IsCoordinateInZone(coord)then
 success=true
+end
+if coord and conflictset:Count()>0 and conflictset:IsCoordinateInZone(coord)then
+success=false
 end
 end
 return success
 end,
 contact.group,
-nogozoneset
+nogozoneset,
+conflictzoneset
 )
 end
 table.insert(self.ListOfAuftrag,InterceptAuftrag)
@@ -114127,6 +114361,7 @@ BlueIntel:SetClusterAnalysis(true,false,false)
 BlueIntel:SetForgetTime(300)
 BlueIntel:SetAcceptZones(self.GoZoneSet)
 BlueIntel:SetRejectZones(self.NoGoZoneSet)
+BlueIntel:SetConflictZones(self.ConflictZoneSet)
 BlueIntel:SetVerbosity(0)
 BlueIntel:Start()
 if self.debug then
