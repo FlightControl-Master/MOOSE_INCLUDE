@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T17:50:11+02:00-02a6d8f2c0ea2d0abb58d9f283ac62241d009caf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-19T17:53:07+02:00-9364579a18e51086084f285a3c8e5a989ba966f6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -107427,12 +107427,13 @@ Tblu=0,
 Tnut=0,
 chiefs={},
 Missions={},
+UpdateSeconds=120,
 }
 OPSZONE.ZoneType={
 Circular="Circular",
 Polygon="Polygon",
 }
-OPSZONE.version="0.6.1"
+OPSZONE.version="0.6.2"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -107666,7 +107667,8 @@ end
 function OPSZONE:onafterStart(From,Event,To)
 self:I(self.lid..string.format("Starting OPSZONE v%s",OPSZONE.version))
 self.timerStatus=self.timerStatus or TIMER:New(OPSZONE.Status,self)
-self.timerStatus:Start(1,120)
+local EveryUpdateIn=self.UpdateSeconds or 120
+self.timerStatus:Start(1,EveryUpdateIn)
 if self.airbase then
 self:HandleEvent(EVENTS.BaseCaptured)
 end
@@ -113690,7 +113692,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.18"
+EASYGCICAP.version="0.1.20"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -113881,6 +113883,9 @@ CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
 local Intel=self.Intel
 local TankerInvisible=self.TankerInvisible
+local engagerange=self.engagerange
+local GoZoneSet=self.GoZoneSet
+local NoGoZoneSet=self.NoGoZoneSet
 function CAP_Wing:onbeforeFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 if DespawnAfterLanding then
@@ -113893,7 +113898,7 @@ flightgroup:GetGroup():CommandEPLRS(true,5)
 flightgroup:GetGroup():SetOptionRadarUsingForContinousSearch()
 if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mission.type~=AUFTRAG.Type.RECON then
 flightgroup:SetDetection(true)
-flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
+flightgroup:SetEngageDetectedOn(engagerange,{"Air"},GoZoneSet,NoGoZoneSet)
 flightgroup:SetOutOfAAMRTB()
 if CapFormation then
 flightgroup:GetGroup():SetOption(AI.Option.Air.id.FORMATION,CapFormation)
