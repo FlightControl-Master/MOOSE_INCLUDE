@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-19T17:53:07+02:00-9364579a18e51086084f285a3c8e5a989ba966f6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-20T15:52:30+02:00-9705b49dbeeeaed9273aa4e6110fa14f46d85812 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -109047,7 +109047,7 @@ CARRIER="Flugzeugträger",
 RADIOS="Frequenzen",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.69"
+PLAYERTASKCONTROLLER.version="0.1.70"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -109285,7 +109285,7 @@ self:EnablePrecisionBombing(group,LaserCode,HoldingPoint,Alt,Speed,MaxTravelDist
 end
 )
 else
-self:E(self.lid.."No FLIGHTGROUP object passed or FLIGHTGROUP is not alive!")
+self:E(self.lid.."No OPSGROUP/SET_OPSGROUP object passed or object is not alive!")
 end
 else
 self.autolase=nil
@@ -110280,7 +110280,6 @@ Text=string.gsub(Text,"0","zero")
 Text=string.gsub(Text,"9","niner")
 CoordText="MGRS;"..Text
 if self.PathToGoogleKey then
-CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordText)
 end
 end
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
@@ -110709,6 +110708,24 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
+function PLAYERTASKCONTROLLER:AddConflictZone(ConflictZone)
+self:T(self.lid.."AddConflictZone")
+if self.Intel then
+self.Intel:AddConflictZone(ConflictZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddConflictZoneSet(ConflictZoneSet)
+self:T(self.lid.."AddConflictZoneSet")
+if self.Intel then
+self.Intel.conflictzoneset:AddSet(ConflictZoneSet)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
 function PLAYERTASKCONTROLLER:RemoveAcceptZone(AcceptZone)
 self:T(self.lid.."RemoveAcceptZone")
 if self.Intel then
@@ -110718,10 +110735,19 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:RemoveRejectZoneSet(RejectZone)
+function PLAYERTASKCONTROLLER:RemoveRejectZone(RejectZone)
 self:T(self.lid.."RemoveRejectZone")
 if self.Intel then
 self.Intel:RemoveRejectZone(RejectZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:RemoveConflictZone(ConflictZone)
+self:T(self.lid.."RemoveConflictZone")
+if self.Intel then
+self.Intel:RemoveConflictZone(ConflictZone)
 else
 self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
