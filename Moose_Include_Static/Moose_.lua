@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T17:50:01+02:00-2c10943cb18c2c48d231f476adb25bb0201274a0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-20T17:49:25+02:00-0f6439cf9fe6d8cc38a2919adce2dedf031100c4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53751,6 +53751,7 @@ MANTIS.SamData={
 ["Chaparral"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
 ["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Linebacker",Point="true"},
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
+["HEMTT_C-RAM_Phalanx"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="HEMTT_C-RAM_Phalanx",Point="true"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
 ["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
@@ -53932,7 +53933,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.27"
+self.version="0.9.28"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
