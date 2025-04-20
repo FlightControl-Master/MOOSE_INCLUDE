@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T19:46:20+02:00-5d6e0c333b48b237ee995ba8dafc35f031dacdc8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-20T17:51:08+02:00-52c45364fc9bcdace794d923ea9842179a136917 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52931,6 +52931,7 @@ MANTIS.SamData={
 ["Chaparral"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
 ["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Linebacker",Point="true"},
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
+["HEMTT_C-RAM_Phalanx"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="HEMTT_C-RAM_Phalanx",Point="true"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
 ["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
@@ -53112,7 +53113,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.27"
+self.version="0.9.28"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -106153,12 +106154,13 @@ Tblu=0,
 Tnut=0,
 chiefs={},
 Missions={},
+UpdateSeconds=120,
 }
 OPSZONE.ZoneType={
 Circular="Circular",
 Polygon="Polygon",
 }
-OPSZONE.version="0.6.1"
+OPSZONE.version="0.6.2"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -106392,7 +106394,8 @@ end
 function OPSZONE:onafterStart(From,Event,To)
 self:I(self.lid..string.format("Starting OPSZONE v%s",OPSZONE.version))
 self.timerStatus=self.timerStatus or TIMER:New(OPSZONE.Status,self)
-self.timerStatus:Start(1,120)
+local EveryUpdateIn=self.UpdateSeconds or 120
+self.timerStatus:Start(1,EveryUpdateIn)
 if self.airbase then
 self:HandleEvent(EVENTS.BaseCaptured)
 end
@@ -107771,7 +107774,7 @@ CARRIER="Flugzeugträger",
 RADIOS="Frequenzen",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.69"
+PLAYERTASKCONTROLLER.version="0.1.70"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -109004,7 +109007,6 @@ Text=string.gsub(Text,"0","zero")
 Text=string.gsub(Text,"9","niner")
 CoordText="MGRS;"..Text
 if self.PathToGoogleKey then
-CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordText)
 end
 end
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
@@ -109433,6 +109435,24 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
+function PLAYERTASKCONTROLLER:AddConflictZone(ConflictZone)
+self:T(self.lid.."AddConflictZone")
+if self.Intel then
+self.Intel:AddConflictZone(ConflictZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddConflictZoneSet(ConflictZoneSet)
+self:T(self.lid.."AddConflictZoneSet")
+if self.Intel then
+self.Intel.conflictzoneset:AddSet(ConflictZoneSet)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
 function PLAYERTASKCONTROLLER:RemoveAcceptZone(AcceptZone)
 self:T(self.lid.."RemoveAcceptZone")
 if self.Intel then
@@ -109442,10 +109462,19 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:RemoveRejectZoneSet(RejectZone)
+function PLAYERTASKCONTROLLER:RemoveRejectZone(RejectZone)
 self:T(self.lid.."RemoveRejectZone")
 if self.Intel then
 self.Intel:RemoveRejectZone(RejectZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:RemoveConflictZone(ConflictZone)
+self:T(self.lid.."RemoveConflictZone")
+if self.Intel then
+self.Intel:RemoveConflictZone(ConflictZone)
 else
 self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
@@ -112416,7 +112445,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.18"
+EASYGCICAP.version="0.1.20"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -112607,6 +112636,9 @@ CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
 local Intel=self.Intel
 local TankerInvisible=self.TankerInvisible
+local engagerange=self.engagerange
+local GoZoneSet=self.GoZoneSet
+local NoGoZoneSet=self.NoGoZoneSet
 function CAP_Wing:onbeforeFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 if DespawnAfterLanding then
@@ -112619,7 +112651,7 @@ flightgroup:GetGroup():CommandEPLRS(true,5)
 flightgroup:GetGroup():SetOptionRadarUsingForContinousSearch()
 if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mission.type~=AUFTRAG.Type.RECON then
 flightgroup:SetDetection(true)
-flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
+flightgroup:SetEngageDetectedOn(engagerange,{"Air"},GoZoneSet,NoGoZoneSet)
 flightgroup:SetOutOfAAMRTB()
 if CapFormation then
 flightgroup:GetGroup():SetOption(AI.Option.Air.id.FORMATION,CapFormation)
