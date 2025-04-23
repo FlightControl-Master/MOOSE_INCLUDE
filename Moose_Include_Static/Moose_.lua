@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-23T06:28:13+02:00-82c409d77a82fd29ca308862b71c0a173eb7ff5c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-23T09:03:54+02:00-460d2768ff9c7055ad9cb3eb7850cd0ba7df4475 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43801,7 +43801,12 @@ result.rangename=self.rangename
 result.attackHdg=attackHdg
 result.attackVel=attackVel
 result.attackAlt=attackAlt
-result.date=os and os.date()or"n/a"
+if os and os.date then
+result.date=os.date()
+else
+self:E(self.lid.."os or os.date() not available")
+result.date="n/a"
+end
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
