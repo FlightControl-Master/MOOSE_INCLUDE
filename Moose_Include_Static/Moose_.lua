@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-23T09:24:02+02:00-68a539923f487e1a54ad81dcd69ead5b434d0211 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-23T14:23:04+02:00-0db9c27f7e79fb30e37ea3af1a74e566bc7d7d3e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60072,6 +60072,7 @@ self:SetBeaconRefresh()
 self:SetMaxLandingPattern()
 self:SetMaxMarshalStacks()
 self:SetMaxSectionSize()
+self:SetMaxSectionDistance()
 self:SetMaxFlightsPerStack()
 self:SetHandleAION()
 self:SetExtraVoiceOvers(false)
@@ -60700,6 +60701,17 @@ nmax=nmax or 2
 nmax=math.max(nmax,1)
 nmax=math.min(nmax,4)
 self.NmaxSection=nmax-1
+return self
+end
+function AIRBOSS:SetMaxSectionDistance(dmax)
+if dmax then
+if dmax<10 then
+dmax=10
+elseif dmax>5000 then
+dmax=5000
+end
+end
+self.maxsectiondistance=dmax or 100
 return self
 end
 function AIRBOSS:SetMaxFlightsPerStack(nmax)
@@ -67562,7 +67574,7 @@ if _unit and _playername then
 local playerData=self.players[_playername]
 if playerData then
 local mycoord=_unit:GetCoordinate()
-local dmax=100
+local dmax=self.maxsectiondistance
 local text
 if self.NmaxSection==0 then
 text=string.format("negative, setting sections is disabled in this mission. You stay alone.")
