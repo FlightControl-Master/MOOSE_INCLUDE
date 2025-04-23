@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-21T19:38:24+02:00-326e27327d0138ccef896bdea5044ce23f5e0f42 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-23T06:29:32+02:00-344272552527440920f33b5f02ae89b5b35606a6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18346,7 +18346,7 @@ return self
 end
 function MESSAGE:ToGroup(Group,Settings)
 self:F(Group.GroupName)
-if Group then
+if Group and Group:IsAlive()then
 if self.MessageType then
 local Settings=Settings or(Group and _DATABASE:GetPlayerSettings(Group:GetPlayerName()))or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
@@ -18361,7 +18361,7 @@ return self
 end
 function MESSAGE:ToUnit(Unit,Settings)
 self:F(Unit.IdentifiableName)
-if Unit then
+if Unit and Unit:IsAlive()then
 if self.MessageType then
 local Settings=Settings or(Unit and _DATABASE:GetPlayerSettings(Unit:GetPlayerName()))or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
