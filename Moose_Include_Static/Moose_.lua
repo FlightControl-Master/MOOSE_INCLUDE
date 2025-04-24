@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-23T14:23:04+02:00-0db9c27f7e79fb30e37ea3af1a74e566bc7d7d3e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-24T14:48:17+02:00-e21236655ac0ba7725518a1c3c0bec60a5fdf12e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -108206,7 +108206,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.25"
+PLAYERTASK.version="0.1.26"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -108659,6 +108659,10 @@ self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
 if status=="Stopped"then return self end
+if self.TargetMarker then
+local coordinate=self.Target:GetCoordinate()
+self.TargetMarker:UpdateCoordinate(coordinate,0.5)
+end
 local targetdead=false
 if self.Type~=AUFTRAG.Type.CTLD and self.Type~=AUFTRAG.Type.CSAR then
 if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
