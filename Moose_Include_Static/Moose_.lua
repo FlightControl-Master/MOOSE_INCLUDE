@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-20T17:51:08+02:00-52c45364fc9bcdace794d923ea9842179a136917 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-24T14:49:44+02:00-e38dc77c4bb1ad545e94aeb4173f8395c9adc873 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18346,7 +18346,7 @@ return self
 end
 function MESSAGE:ToGroup(Group,Settings)
 self:F(Group.GroupName)
-if Group then
+if Group and Group:IsAlive()then
 if self.MessageType then
 local Settings=Settings or(Group and _DATABASE:GetPlayerSettings(Group:GetPlayerName()))or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
@@ -18361,7 +18361,7 @@ return self
 end
 function MESSAGE:ToUnit(Unit,Settings)
 self:F(Unit.IdentifiableName)
-if Unit then
+if Unit and Unit:IsAlive()then
 if self.MessageType then
 local Settings=Settings or(Unit and _DATABASE:GetPlayerSettings(Unit:GetPlayerName()))or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
@@ -30073,6 +30073,11 @@ AIRBASE.Kola={
 ["Alakourtti"]="Alakourtti",
 ["Kittila"]="Kittila",
 ["Bardufoss"]="Bardufoss",
+["Alta"]="Alta",
+["Sodankyla"]="Sodankyla",
+["Enontekio"]="Enontekio",
+["Evenes"]="Evenes",
+["Hosio"]="Hosio",
 }
 AIRBASE.Afghanistan={
 ["Bagram"]="Bagram",
@@ -42977,7 +42982,12 @@ result.rangename=self.rangename
 result.attackHdg=attackHdg
 result.attackVel=attackVel
 result.attackAlt=attackAlt
-result.date=os and os.date()or"n/a"
+if os and os.date then
+result.date=os.date()
+else
+self:E(self.lid.."os or os.date() not available")
+result.date="n/a"
+end
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
@@ -58788,6 +58798,7 @@ self:SetBeaconRefresh()
 self:SetMaxLandingPattern()
 self:SetMaxMarshalStacks()
 self:SetMaxSectionSize()
+self:SetMaxSectionDistance()
 self:SetMaxFlightsPerStack()
 self:SetHandleAION()
 self:SetExtraVoiceOvers(false)
@@ -59416,6 +59427,17 @@ nmax=nmax or 2
 nmax=math.max(nmax,1)
 nmax=math.min(nmax,4)
 self.NmaxSection=nmax-1
+return self
+end
+function AIRBOSS:SetMaxSectionDistance(dmax)
+if dmax then
+if dmax<10 then
+dmax=10
+elseif dmax>5000 then
+dmax=5000
+end
+end
+self.maxsectiondistance=dmax or 100
 return self
 end
 function AIRBOSS:SetMaxFlightsPerStack(nmax)
@@ -66278,7 +66300,7 @@ if _unit and _playername then
 local playerData=self.players[_playername]
 if playerData then
 local mycoord=_unit:GetCoordinate()
-local dmax=100
+local dmax=self.maxsectiondistance
 local text
 if self.NmaxSection==0 then
 text=string.format("negative, setting sections is disabled in this mission. You stay alone.")
@@ -106910,7 +106932,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.25"
+PLAYERTASK.version="0.1.26"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -107363,6 +107385,10 @@ self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
 if status=="Stopped"then return self end
+if self.TargetMarker then
+local coordinate=self.Target:GetCoordinate()
+self.TargetMarker:UpdateCoordinate(coordinate,0.5)
+end
 local targetdead=false
 if self.Type~=AUFTRAG.Type.CTLD and self.Type~=AUFTRAG.Type.CSAR then
 if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
