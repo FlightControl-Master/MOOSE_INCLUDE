@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-26T23:39:34+02:00-f177d0a2571259f48fe5e13c6282345fd03d6e31 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-26T23:55:13+02:00-5c3b7312c06631a6e0e990b7dc29b71a52db9985 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43564,7 +43564,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.8.0"
+RANGE.version="2.8.1"
 function RANGE:New(RangeName,Coalition)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
@@ -44262,10 +44262,10 @@ local _unit=playerData.unit
 local impactcoord=weapon:GetImpactCoordinate()
 local insidezone=self.rangezone:IsCoordinateInZone(impactcoord)
 if playerData and playerData.smokebombimpact and insidezone then
-if playerData and playerData.delaysmoke then
-timer.scheduleFunction(self._DelayedSmoke,{coord=impactcoord,color=playerData.smokecolor},timer.getTime()+self.TdelaySmoke)
+if playerData.delaysmoke then
+impactcoord:Smoke(playerData.smokecolor,30,self.TdelaySmoke)
 else
-impactcoord:Smoke(playerData.smokecolor)
+impactcoord:Smoke(playerData.smokecolor,30)
 end
 end
 for _,_bombtarget in pairs(self.bombingTargets)do
@@ -44618,9 +44618,6 @@ date=os.date()
 end
 data=data..string.format("%s,%s,%d,%d,%s,%s,%s,%s",_playername,target,roundsFired,roundsHit,strafeResult,airframe,time,date)
 _savefile(filename,data)
-end
-function RANGE._DelayedSmoke(_args)
-_args.coord:Smoke(_args.color)
 end
 function RANGE:_DisplayMyStrafePitResults(_unitName)
 self:F(_unitName)
