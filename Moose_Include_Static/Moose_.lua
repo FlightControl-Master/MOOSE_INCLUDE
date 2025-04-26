@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-24T14:48:17+02:00-e21236655ac0ba7725518a1c3c0bec60a5fdf12e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-26T07:53:01+02:00-c49b56eefc16542320090f33b8966a650a1b7c38 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -73282,7 +73282,7 @@ end
 function CTLD:IsFixedWing(Unit)
 local typename=Unit:GetTypeName()or"none"
 for _,_name in pairs(self.FixedWingTypes or{})do
-if typename==_name or string.find(typename,_name,1,true)then
+if _name and(typename==_name or string.find(typename,_name,1,true))then
 return true
 end
 end
