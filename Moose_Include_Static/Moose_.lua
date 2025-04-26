@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-26T07:53:01+02:00-c49b56eefc16542320090f33b8966a650a1b7c38 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-26T23:39:34+02:00-f177d0a2571259f48fe5e13c6282345fd03d6e31 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1431,7 +1431,7 @@ local objectreturn=_copy(object)
 return objectreturn
 end
 UTILS.OneLineSerialize=function(tbl)
-lookup_table={}
+local lookup_table={}
 local function _Serialize(tbl)
 if type(tbl)=='table'then
 if lookup_table[tbl]then
@@ -17414,83 +17414,93 @@ trigger.action.illuminationBomb(self:GetVec3(),Power)
 end
 return self
 end
-function COORDINATE:Smoke(SmokeColor,name)
-self:F2({SmokeColor})
-self.firename=name or"Smoke-"..math.random(1,100000)
+function COORDINATE:Smoke(SmokeColor,Duration,Delay,Name)
+self:F2({SmokeColor,Name,Duration,Delay})
+SmokeColor=SmokeColor or SMOKECOLOR.Green
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COORDINATE.Smoke,self,SmokeColor,Duration,0,Name)
+else
+self.firename=Name or"Smoke-"..math.random(1,100000)
 trigger.action.smoke(self:GetVec3(),SmokeColor,self.firename)
+if Duration and Duration>0 then
+self:ScheduleOnce(Duration,COORDINATE.StopSmoke,self,self.firename)
+end
+end
+return self
 end
 function COORDINATE:StopSmoke(name)
 self:StopBigSmokeAndFire(name)
 end
-function COORDINATE:SmokeGreen()
-self:F2()
-self:Smoke(SMOKECOLOR.Green)
+function COORDINATE:SmokeGreen(Duration,Delay)
+self:Smoke(SMOKECOLOR.Green,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeRed()
-self:F2()
-self:Smoke(SMOKECOLOR.Red)
+function COORDINATE:SmokeRed(Duration,Delay)
+self:Smoke(SMOKECOLOR.Red,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeWhite()
-self:F2()
-self:Smoke(SMOKECOLOR.White)
+function COORDINATE:SmokeWhite(Duration,Delay)
+self:Smoke(SMOKECOLOR.White,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeOrange()
-self:F2()
-self:Smoke(SMOKECOLOR.Orange)
+function COORDINATE:SmokeOrange(Duration,Delay)
+self:Smoke(SMOKECOLOR.Orange,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeBlue()
-self:F2()
-self:Smoke(SMOKECOLOR.Blue)
+function COORDINATE:SmokeBlue(Duration,Delay)
+self:Smoke(SMOKECOLOR.Blue,Duration,Delay)
+return self
 end
-function COORDINATE:BigSmokeAndFire(preset,density,name)
-self:F2({preset=preset,density=density})
-density=density or 0.5
-self.firename=name or"Fire-"..math.random(1,10000)
-trigger.action.effectSmokeBig(self:GetVec3(),preset,density,self.firename)
+function COORDINATE:BigSmokeAndFire(Preset,Density,Duration,Delay,Name)
+self:F2({preset=Preset,density=Density})
+Preset=Preset or BIGSMOKEPRESET.SmallSmokeAndFire
+Density=Density or 0.5
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COORDINATE.BigSmokeAndFire,self,Preset,Density,Duration,0,Name)
+else
+self.firename=Name or"Fire-"..math.random(1,10000)
+trigger.action.effectSmokeBig(self:GetVec3(),Preset,Density,self.firename)
+if Duration and Duration>0 then
+self:ScheduleOnce(Duration,COORDINATE.StopBigSmokeAndFire,self,self.firename)
+end
+end
+return self
 end
 function COORDINATE:StopBigSmokeAndFire(name)
 name=name or self.firename
 trigger.action.effectSmokeStop(name)
 end
-function COORDINATE:BigSmokeAndFireSmall(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireSmall(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireMedium(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireMedium(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireLarge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireLarge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireHuge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireHuge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeSmall(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density,name)
+function COORDINATE:BigSmokeSmall(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeMedium(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density,name)
+function COORDINATE:BigSmokeMedium(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeLarge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density,name)
+function COORDINATE:BigSmokeLarge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeHuge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density,name)
+function COORDINATE:BigSmokeHuge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,Density,Duration,Delay,Name)
+return self
 end
 function COORDINATE:Flare(FlareColor,Azimuth)
 self:F2({FlareColor})
