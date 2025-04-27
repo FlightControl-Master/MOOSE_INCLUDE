@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-24T14:49:44+02:00-e38dc77c4bb1ad545e94aeb4173f8395c9adc873 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-27T11:27:59+02:00-9721f743a0743e21009fe80afca617b00ebb0c2d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1431,7 +1431,7 @@ local objectreturn=_copy(object)
 return objectreturn
 end
 UTILS.OneLineSerialize=function(tbl)
-lookup_table={}
+local lookup_table={}
 local function _Serialize(tbl)
 if type(tbl)=='table'then
 if lookup_table[tbl]then
@@ -17414,83 +17414,93 @@ trigger.action.illuminationBomb(self:GetVec3(),Power)
 end
 return self
 end
-function COORDINATE:Smoke(SmokeColor,name)
-self:F2({SmokeColor})
-self.firename=name or"Smoke-"..math.random(1,100000)
+function COORDINATE:Smoke(SmokeColor,Duration,Delay,Name)
+self:F2({SmokeColor,Name,Duration,Delay})
+SmokeColor=SmokeColor or SMOKECOLOR.Green
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COORDINATE.Smoke,self,SmokeColor,Duration,0,Name)
+else
+self.firename=Name or"Smoke-"..math.random(1,100000)
 trigger.action.smoke(self:GetVec3(),SmokeColor,self.firename)
+if Duration and Duration>0 then
+self:ScheduleOnce(Duration,COORDINATE.StopSmoke,self,self.firename)
+end
+end
+return self
 end
 function COORDINATE:StopSmoke(name)
 self:StopBigSmokeAndFire(name)
 end
-function COORDINATE:SmokeGreen()
-self:F2()
-self:Smoke(SMOKECOLOR.Green)
+function COORDINATE:SmokeGreen(Duration,Delay)
+self:Smoke(SMOKECOLOR.Green,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeRed()
-self:F2()
-self:Smoke(SMOKECOLOR.Red)
+function COORDINATE:SmokeRed(Duration,Delay)
+self:Smoke(SMOKECOLOR.Red,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeWhite()
-self:F2()
-self:Smoke(SMOKECOLOR.White)
+function COORDINATE:SmokeWhite(Duration,Delay)
+self:Smoke(SMOKECOLOR.White,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeOrange()
-self:F2()
-self:Smoke(SMOKECOLOR.Orange)
+function COORDINATE:SmokeOrange(Duration,Delay)
+self:Smoke(SMOKECOLOR.Orange,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeBlue()
-self:F2()
-self:Smoke(SMOKECOLOR.Blue)
+function COORDINATE:SmokeBlue(Duration,Delay)
+self:Smoke(SMOKECOLOR.Blue,Duration,Delay)
+return self
 end
-function COORDINATE:BigSmokeAndFire(preset,density,name)
-self:F2({preset=preset,density=density})
-density=density or 0.5
-self.firename=name or"Fire-"..math.random(1,10000)
-trigger.action.effectSmokeBig(self:GetVec3(),preset,density,self.firename)
+function COORDINATE:BigSmokeAndFire(Preset,Density,Duration,Delay,Name)
+self:F2({preset=Preset,density=Density})
+Preset=Preset or BIGSMOKEPRESET.SmallSmokeAndFire
+Density=Density or 0.5
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COORDINATE.BigSmokeAndFire,self,Preset,Density,Duration,0,Name)
+else
+self.firename=Name or"Fire-"..math.random(1,10000)
+trigger.action.effectSmokeBig(self:GetVec3(),Preset,Density,self.firename)
+if Duration and Duration>0 then
+self:ScheduleOnce(Duration,COORDINATE.StopBigSmokeAndFire,self,self.firename)
+end
+end
+return self
 end
 function COORDINATE:StopBigSmokeAndFire(name)
 name=name or self.firename
 trigger.action.effectSmokeStop(name)
 end
-function COORDINATE:BigSmokeAndFireSmall(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireSmall(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireMedium(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireMedium(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireLarge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireLarge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireHuge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireHuge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeSmall(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density,name)
+function COORDINATE:BigSmokeSmall(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeMedium(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density,name)
+function COORDINATE:BigSmokeMedium(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeLarge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density,name)
+function COORDINATE:BigSmokeLarge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeHuge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density,name)
+function COORDINATE:BigSmokeHuge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,Density,Duration,Delay,Name)
+return self
 end
 function COORDINATE:Flare(FlareColor,Azimuth)
 self:F2({FlareColor})
@@ -42230,7 +42240,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.8.0"
+RANGE.version="2.8.1"
 function RANGE:New(RangeName,Coalition)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
@@ -42928,10 +42938,10 @@ local _unit=playerData.unit
 local impactcoord=weapon:GetImpactCoordinate()
 local insidezone=self.rangezone:IsCoordinateInZone(impactcoord)
 if playerData and playerData.smokebombimpact and insidezone then
-if playerData and playerData.delaysmoke then
-timer.scheduleFunction(self._DelayedSmoke,{coord=impactcoord,color=playerData.smokecolor},timer.getTime()+self.TdelaySmoke)
+if playerData.delaysmoke then
+impactcoord:Smoke(playerData.smokecolor,30,self.TdelaySmoke)
 else
-impactcoord:Smoke(playerData.smokecolor)
+impactcoord:Smoke(playerData.smokecolor,30)
 end
 end
 for _,_bombtarget in pairs(self.bombingTargets)do
@@ -43284,9 +43294,6 @@ date=os.date()
 end
 data=data..string.format("%s,%s,%d,%d,%s,%s,%s,%s",_playername,target,roundsFired,roundsHit,strafeResult,airframe,time,date)
 _savefile(filename,data)
-end
-function RANGE._DelayedSmoke(_args)
-_args.coord:Smoke(_args.color)
 end
 function RANGE:_DisplayMyStrafePitResults(_unitName)
 self:F(_unitName)
@@ -52922,7 +52929,7 @@ MANTIS.radiusscale[MANTIS.SamType.POINT]=3
 MANTIS.SamData={
 ["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
 ["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS"},
-["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot"},
+["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot str"},
 ["Rapier"]={Range=10,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
 ["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="S_75M_Volhov"},
 ["SA-3"]={Range=18,Blindspot=6,Height=18,Type="Short",Radar="5p73 s-125 ln"},
@@ -52930,7 +52937,8 @@ MANTIS.SamData={
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
 ["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["Roland"]={Range=5,Blindspot=0,Height=5,Type="Point",Radar="Roland"},
+["Roland"]={Range=6,Blindspot=0,Height=5,Type="Short",Radar="Roland"},
+["Gepard"]={Range=5,Blindspot=0,Height=4,Type="Point",Radar="Gepard"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
 ["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
@@ -72008,7 +72016,7 @@ end
 function CTLD:IsFixedWing(Unit)
 local typename=Unit:GetTypeName()or"none"
 for _,_name in pairs(self.FixedWingTypes or{})do
-if typename==_name or string.find(typename,_name,1,true)then
+if _name and(typename==_name or string.find(typename,_name,1,true))then
 return true
 end
 end
@@ -91750,7 +91758,7 @@ og:I(og.lid..string.format("WARNING: OPS group already exists in data base!"))
 return og
 end
 local self=BASE:Inherit(self,OPSGROUP:New(group))
-self.lid=string.format("FLIGHTGROUP %s | ",self.groupname)
+self.lid=string.format("FLIGHTGROUP %s | ",self.groupname or"N/A")
 self:SetDefaultROE()
 self:SetDefaultROT()
 self:SetDefaultEPLRS(self.isEPLRS)
