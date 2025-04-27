@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-26T23:55:13+02:00-5c3b7312c06631a6e0e990b7dc29b71a52db9985 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-27T11:26:51+02:00-b678e2cde1b8bf856c6ff09ba48330678cf0df3e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54253,7 +54253,7 @@ MANTIS.radiusscale[MANTIS.SamType.POINT]=3
 MANTIS.SamData={
 ["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
 ["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS"},
-["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot"},
+["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot str"},
 ["Rapier"]={Range=10,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
 ["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="S_75M_Volhov"},
 ["SA-3"]={Range=18,Blindspot=6,Height=18,Type="Short",Radar="5p73 s-125 ln"},
@@ -54261,7 +54261,8 @@ MANTIS.SamData={
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
 ["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["Roland"]={Range=5,Blindspot=0,Height=5,Type="Point",Radar="Roland"},
+["Roland"]={Range=6,Blindspot=0,Height=5,Type="Short",Radar="Roland"},
+["Gepard"]={Range=5,Blindspot=0,Height=4,Type="Point",Radar="Gepard"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
 ["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
@@ -93031,7 +93032,7 @@ og:I(og.lid..string.format("WARNING: OPS group already exists in data base!"))
 return og
 end
 local self=BASE:Inherit(self,OPSGROUP:New(group))
-self.lid=string.format("FLIGHTGROUP %s | ",self.groupname)
+self.lid=string.format("FLIGHTGROUP %s | ",self.groupname or"N/A")
 self:SetDefaultROE()
 self:SetDefaultROT()
 self:SetDefaultEPLRS(self.isEPLRS)
