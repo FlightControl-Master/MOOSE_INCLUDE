@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-27T11:25:46+02:00-3ad60a95cecc59e5699261228ee4d1e6bf2cc1f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-28T09:20:58+02:00-069c0aa03f5cabab614c63dde4d6d46e1313d30b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70905,6 +70905,7 @@ local zonewidth=20
 if Zonetype==CTLD.CargoZoneType.SHIP then
 self:T("Checking Type Ship: "..zonename)
 local ZoneUNIT=UNIT:FindByName(zonename)
+if not ZoneUNIT then return false end
 zonecoord=ZoneUNIT:GetCoordinate()
 zoneradius=czone.shiplength
 zonewidth=czone.shipwidth
