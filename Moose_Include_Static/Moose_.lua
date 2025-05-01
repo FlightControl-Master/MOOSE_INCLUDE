@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-28T09:20:58+02:00-069c0aa03f5cabab614c63dde4d6d46e1313d30b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-01T22:11:43+02:00-f97ef251049d8048e34ad2300237d296582b1f1a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28348,7 +28348,6 @@ local DCSUnit=self:GetDCSObject()
 local Units={}
 if DCSUnit then
 Units[1]=UNIT:Find(DCSUnit)
--self:T3(Units)
 return Units
 end
 return nil
