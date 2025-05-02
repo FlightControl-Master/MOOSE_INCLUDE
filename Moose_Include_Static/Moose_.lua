@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-27T11:27:59+02:00-9721f743a0743e21009fe80afca617b00ebb0c2d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-02T09:35:22+02:00-dc51f83249ac2c23675515ac6b763da57cad7609 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28867,7 +28867,6 @@ local DCSUnit=self:GetDCSObject()
 local Units={}
 if DCSUnit then
 Units[1]=UNIT:Find(DCSUnit)
--self:T3(Units)
 return Units
 end
 return nil
@@ -73626,6 +73625,7 @@ local zonewidth=20
 if Zonetype==CTLD.CargoZoneType.SHIP then
 self:T("Checking Type Ship: "..zonename)
 local ZoneUNIT=UNIT:FindByName(zonename)
+if not ZoneUNIT then return false end
 zonecoord=ZoneUNIT:GetCoordinate()
 zoneradius=czone.shiplength
 zonewidth=czone.shipwidth
@@ -76600,12 +76600,15 @@ local afb,distance=position:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
 end
 for _,_mashUnit in pairs(_mashes)do
-if _mashUnit and _mashUnit:IsAlive()then
-local _mashcoord=_mashUnit:GetCoordinate()
+local _mashcoord
+if _mashUnit and(not _mashUnit:IsInstanceOf("ZONE_BASE"))and _mashUnit:IsAlive()then
+_mashcoord=_mashUnit:GetCoordinate()
+elseif _mashUnit and _mashUnit:IsInstanceOf("ZONE_BASE")then
+_mashcoord=_mashUnit:GetCoordinate()
+end
 _distance=self:_GetDistance(_helicoord,_mashcoord)
 if _distance~=nil and(_shortestDistance==-1 or _distance<_shortestDistance)then
 _shortestDistance=_distance
-end
 end
 end
 if _shortestDistance~=-1 then
