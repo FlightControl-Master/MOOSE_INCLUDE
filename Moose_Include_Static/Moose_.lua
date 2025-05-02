@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-01T22:11:43+02:00-f97ef251049d8048e34ad2300237d296582b1f1a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-02T10:53:02+02:00-0c90e90c180b0c7808081b4aae1905b5cb2bc6fc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -72690,7 +72690,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.30"
+CSAR.version="1.0.31"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -73854,7 +73854,10 @@ end
 function CSAR:_GetClosestMASH(_heli)
 self:T(self.lid.." _GetClosestMASH")
 local _mashset=self.mash
-local _mashes=_mashset:GetSetObjects()
+local MashSets={}
+table.insert(MashSets,_mashset.Set)
+table.insert(MashSets,self.zonemashes.Set)
+table.insert(MashSets,self.staticmashes.Set)
 local _shortestDistance=-1
 local _distance=0
 local _helicoord=_heli:GetCoordinate()
@@ -73878,9 +73881,14 @@ local position=_heli:GetCoordinate()
 local afb,distance=position:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
 end
-for _,_mashUnit in pairs(_mashes)do
-if _mashUnit and _mashUnit:IsAlive()then
-local _mashcoord=_mashUnit:GetCoordinate()
+for _,_mashes in pairs(MashSets)do
+for _,_mashUnit in pairs(_mashes or{})do
+local _mashcoord
+if _mashUnit and(not _mashUnit:IsInstanceOf("ZONE_BASE"))and _mashUnit:IsAlive()then
+_mashcoord=_mashUnit:GetCoordinate()
+elseif _mashUnit and _mashUnit:IsInstanceOf("ZONE_BASE")then
+_mashcoord=_mashUnit:GetCoordinate()
+end
 _distance=self:_GetDistance(_helicoord,_mashcoord)
 if _distance~=nil and(_shortestDistance==-1 or _distance<_shortestDistance)then
 _shortestDistance=_distance
@@ -74101,18 +74109,8 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
-local staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
-local zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
-if staticmashes:Count()>0 then
-for _,_mash in pairs(staticmashes.Set)do
-self.mash:AddObject(_mash)
-end
-end
-if zonemashes:Count()>0 then
-for _,_mash in pairs(zonemashes.Set)do
-self.mash:AddObject(_mash)
-end
-end
+self.staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
+self.zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
 if not self.coordinate then
 local csarhq=self.mash:GetRandom()
 if csarhq then
