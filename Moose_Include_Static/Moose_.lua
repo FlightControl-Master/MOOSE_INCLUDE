@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-03T17:01:02+02:00-a6b622ed312fc3e7f7a7bde89bf68724ca8ba421 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-03T20:32:40+02:00-36c9f551d9136045c92303f59758048a9e8750fc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70024,8 +70024,8 @@ if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
 local mSet=MENU_GROUP:New(_group,txt,subcatmenus[cargoObj.Subcategory])
+MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get only",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 end
 end
 for _,cargoObj in pairs(self.Cargo_Statics)do
@@ -70035,8 +70035,8 @@ if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
 local mSet=MENU_GROUP:New(_group,txt,subcatmenus[cargoObj.Subcategory])
+MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get only",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 end
 end
 else
@@ -70047,8 +70047,8 @@ if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
 local mSet=MENU_GROUP:New(_group,txt,cratesmenu)
+MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get only",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 end
 end
 for _,cargoObj in pairs(self.Cargo_Statics)do
@@ -70058,8 +70058,8 @@ if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
 local mSet=MENU_GROUP:New(_group,txt,cratesmenu)
+MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get only",mSet,self._GetCrates,self,_group,_unit,cargoObj)
 end
 end
 end
@@ -70122,9 +70122,9 @@ local removecratesmenu=MENU_GROUP:New(_group,"Remove crates",topcrates)
 MENU_GROUP_COMMAND:New(_group,"Remove crates nearby",removecratesmenu,self._RemoveCratesNearby,self,_group,_unit)
 if self.onestepmenu then
 local mPack=MENU_GROUP:New(_group,"Pack crates",topcrates)
+MENU_GROUP_COMMAND:New(_group,"Pack",mPack,self._PackCratesNearby,self,_group,_unit)
 MENU_GROUP_COMMAND:New(_group,"Pack and Load",mPack,self._PackAndLoad,self,_group,_unit)
 MENU_GROUP_COMMAND:New(_group,"Pack and Remove",mPack,self._PackAndRemove,self,_group,_unit)
-MENU_GROUP_COMMAND:New(_group,"Pack only",mPack,self._PackCratesNearby,self,_group,_unit)
 MENU_GROUP_COMMAND:New(_group,"List crates nearby",topcrates,self._ListCratesNearby,self,_group,_unit)
 else
 MENU_GROUP_COMMAND:New(_group,"Pack crates",topcrates,self._PackCratesNearby,self,_group,_unit)
@@ -70461,8 +70461,8 @@ end
 end
 else
 local mAll=MENU_GROUP:New(Group,"Drop ALL crates",dropCratesMenu)
+MENU_GROUP_COMMAND:New(Group,"Drop",mAll,self._UnloadCrates,self,Group,Unit)
 MENU_GROUP_COMMAND:New(Group,"Drop and build",mAll,self._DropAndBuild,self,Group,Unit)
-MENU_GROUP_COMMAND:New(Group,"Drop only",mAll,self._UnloadCrates,self,Group,Unit)
 self.CrateGroupList=self.CrateGroupList or{}
 self.CrateGroupList[Unit:GetName()]={}
 local lineIndex=1
@@ -70481,8 +70481,8 @@ local label=string.format("%d. %s",lineIndex,cName)
 table.insert(self.CrateGroupList[Unit:GetName()],chunk)
 local setIndex=#self.CrateGroupList[Unit:GetName()]
 local mSet=MENU_GROUP:New(Group,label,dropCratesMenu)
+MENU_GROUP_COMMAND:New(Group,"Drop",mSet,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
 MENU_GROUP_COMMAND:New(Group,"Drop and build",mSet,self._DropSingleAndBuild,self,Group,Unit,setIndex)
-MENU_GROUP_COMMAND:New(Group,"Drop only",mSet,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
 i=i+needed
 else
 local chunk={}
