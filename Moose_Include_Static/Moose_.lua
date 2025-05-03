@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-04-18T14:46:45+02:00-66e6a603f1ba97da8dbb0e91a0bc19a281b51edf ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-02T10:53:29+02:00-f999e4532375272d61ad0c2c06b3326d55ec3e74 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1431,7 +1431,7 @@ local objectreturn=_copy(object)
 return objectreturn
 end
 UTILS.OneLineSerialize=function(tbl)
-lookup_table={}
+local lookup_table={}
 local function _Serialize(tbl)
 if type(tbl)=='table'then
 if lookup_table[tbl]then
@@ -17414,83 +17414,93 @@ trigger.action.illuminationBomb(self:GetVec3(),Power)
 end
 return self
 end
-function COORDINATE:Smoke(SmokeColor,name)
-self:F2({SmokeColor})
-self.firename=name or"Smoke-"..math.random(1,100000)
+function COORDINATE:Smoke(SmokeColor,Duration,Delay,Name)
+self:F2({SmokeColor,Name,Duration,Delay})
+SmokeColor=SmokeColor or SMOKECOLOR.Green
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COORDINATE.Smoke,self,SmokeColor,Duration,0,Name)
+else
+self.firename=Name or"Smoke-"..math.random(1,100000)
 trigger.action.smoke(self:GetVec3(),SmokeColor,self.firename)
+if Duration and Duration>0 then
+self:ScheduleOnce(Duration,COORDINATE.StopSmoke,self,self.firename)
+end
+end
+return self
 end
 function COORDINATE:StopSmoke(name)
 self:StopBigSmokeAndFire(name)
 end
-function COORDINATE:SmokeGreen()
-self:F2()
-self:Smoke(SMOKECOLOR.Green)
+function COORDINATE:SmokeGreen(Duration,Delay)
+self:Smoke(SMOKECOLOR.Green,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeRed()
-self:F2()
-self:Smoke(SMOKECOLOR.Red)
+function COORDINATE:SmokeRed(Duration,Delay)
+self:Smoke(SMOKECOLOR.Red,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeWhite()
-self:F2()
-self:Smoke(SMOKECOLOR.White)
+function COORDINATE:SmokeWhite(Duration,Delay)
+self:Smoke(SMOKECOLOR.White,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeOrange()
-self:F2()
-self:Smoke(SMOKECOLOR.Orange)
+function COORDINATE:SmokeOrange(Duration,Delay)
+self:Smoke(SMOKECOLOR.Orange,Duration,Delay)
+return self
 end
-function COORDINATE:SmokeBlue()
-self:F2()
-self:Smoke(SMOKECOLOR.Blue)
+function COORDINATE:SmokeBlue(Duration,Delay)
+self:Smoke(SMOKECOLOR.Blue,Duration,Delay)
+return self
 end
-function COORDINATE:BigSmokeAndFire(preset,density,name)
-self:F2({preset=preset,density=density})
-density=density or 0.5
-self.firename=name or"Fire-"..math.random(1,10000)
-trigger.action.effectSmokeBig(self:GetVec3(),preset,density,self.firename)
+function COORDINATE:BigSmokeAndFire(Preset,Density,Duration,Delay,Name)
+self:F2({preset=Preset,density=Density})
+Preset=Preset or BIGSMOKEPRESET.SmallSmokeAndFire
+Density=Density or 0.5
+if Delay and Delay>0 then
+self:ScheduleOnce(Delay,COORDINATE.BigSmokeAndFire,self,Preset,Density,Duration,0,Name)
+else
+self.firename=Name or"Fire-"..math.random(1,10000)
+trigger.action.effectSmokeBig(self:GetVec3(),Preset,Density,self.firename)
+if Duration and Duration>0 then
+self:ScheduleOnce(Duration,COORDINATE.StopBigSmokeAndFire,self,self.firename)
+end
+end
+return self
 end
 function COORDINATE:StopBigSmokeAndFire(name)
 name=name or self.firename
 trigger.action.effectSmokeStop(name)
 end
-function COORDINATE:BigSmokeAndFireSmall(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireSmall(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireMedium(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireMedium(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireLarge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireLarge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeAndFireHuge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,density,name)
+function COORDINATE:BigSmokeAndFireHuge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmokeAndFire,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeSmall(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,density,name)
+function COORDINATE:BigSmokeSmall(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.SmallSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeMedium(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,density,name)
+function COORDINATE:BigSmokeMedium(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.MediumSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeLarge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,density,name)
+function COORDINATE:BigSmokeLarge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.LargeSmoke,Density,Duration,Delay,Name)
+return self
 end
-function COORDINATE:BigSmokeHuge(density,name)
-self:F2({density=density})
-density=density or 0.5
-self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,density,name)
+function COORDINATE:BigSmokeHuge(Density,Duration,Delay,Name)
+self:BigSmokeAndFire(BIGSMOKEPRESET.HugeSmoke,Density,Duration,Delay,Name)
+return self
 end
 function COORDINATE:Flare(FlareColor,Azimuth)
 self:F2({FlareColor})
@@ -18346,7 +18356,7 @@ return self
 end
 function MESSAGE:ToGroup(Group,Settings)
 self:F(Group.GroupName)
-if Group then
+if Group and Group:IsAlive()then
 if self.MessageType then
 local Settings=Settings or(Group and _DATABASE:GetPlayerSettings(Group:GetPlayerName()))or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
@@ -18361,7 +18371,7 @@ return self
 end
 function MESSAGE:ToUnit(Unit,Settings)
 self:F(Unit.IdentifiableName)
-if Unit then
+if Unit and Unit:IsAlive()then
 if self.MessageType then
 local Settings=Settings or(Unit and _DATABASE:GetPlayerSettings(Unit:GetPlayerName()))or _SETTINGS
 self.MessageDuration=Settings:GetMessageTime(self.MessageType)
@@ -28857,7 +28867,6 @@ local DCSUnit=self:GetDCSObject()
 local Units={}
 if DCSUnit then
 Units[1]=UNIT:Find(DCSUnit)
--self:T3(Units)
 return Units
 end
 return nil
@@ -30073,6 +30082,11 @@ AIRBASE.Kola={
 ["Alakourtti"]="Alakourtti",
 ["Kittila"]="Kittila",
 ["Bardufoss"]="Bardufoss",
+["Alta"]="Alta",
+["Sodankyla"]="Sodankyla",
+["Enontekio"]="Enontekio",
+["Evenes"]="Evenes",
+["Hosio"]="Hosio",
 }
 AIRBASE.Afghanistan={
 ["Bagram"]="Bagram",
@@ -30119,10 +30133,10 @@ AIRBASE.Iraq={
 AIRBASE.GermanyCW={
 ["Airracing_Frankfurt"]="Airracing Frankfurt",
 ["Airracing_Koblenz"]="Airracing Koblenz",
-["Airracing_Lubeck"]="Airracing Lubeck",
+["Airracing_Luebeck"]="Airracing Lubeck",
 ["Allstedt"]="Allstedt",
 ["Altes_Lager"]="Altes Lager",
-["Bad_Durkheim"]="Bad Durkheim",
+["Bad_Duerkheim"]="Bad Durkheim",
 ["Barth"]="Barth",
 ["Bienenfarm"]="Bienenfarm",
 ["Bindersleben"]="Bindersleben",
@@ -30130,8 +30144,8 @@ AIRBASE.GermanyCW={
 ["Braunschweig"]="Braunschweig",
 ["Bremen"]="Bremen",
 ["Briest"]="Briest",
-["Buchel"]="Buchel",
-["Buckeburg"]="Buckeburg",
+["Buechel"]="Buchel",
+["Bueckeburg"]="Buckeburg",
 ["Celle"]="Celle",
 ["Cochstedt"]="Cochstedt",
 ["Damgarten"]="Damgarten",
@@ -30147,10 +30161,10 @@ AIRBASE.GermanyCW={
 ["Gatow"]="Gatow",
 ["Gelnhausen"]="Gelnhausen",
 ["Giebelstadt"]="Giebelstadt",
-["Glindbruchkippe_"]="Glindbruchkippe ",
+["Glindbruchkippe"]="Glindbruchkippe ",
 ["Gross_Mohrdorf"]="Gross Mohrdorf",
 ["Grosse_Wiese"]="Grosse Wiese",
-["Gutersloh"]="Gutersloh",
+["Guetersloh"]="Gutersloh",
 ["H_FRG_01"]="H FRG 01",
 ["H_FRG_02"]="H FRG 02",
 ["H_FRG_03"]="H FRG 03",
@@ -30270,32 +30284,31 @@ AIRBASE.GermanyCW={
 ["Hockenheim"]="Hockenheim",
 ["Holzdorf"]="Holzdorf",
 ["Kammermark"]="Kammermark",
-["Kothen"]="Kothen",
+["Koethen"]="Kothen",
 ["Laage"]="Laage",
 ["Langenselbold"]="Langenselbold",
-["Larz"]="Larz",
+["Laerz"]="Larz",
 ["Leipzig_Halle"]="Leipzig Halle",
 ["Leipzig_Mockau"]="Leipzig Mockau",
-["Lubeck"]="Lubeck",
-["Luneburg"]="Luneburg",
+["Luebeck"]="Lubeck",
+["Lueneburg"]="Luneburg",
 ["Mahlwinkel"]="Mahlwinkel",
 ["Mendig"]="Mendig",
 ["Merseburg"]="Merseburg",
 ["Neubrandenburg"]="Neubrandenburg",
 ["Neuruppin"]="Neuruppin",
 ["Northeim"]="Northeim",
-["Ober_Morlen"]="Ober-Morlen",
+["Ober_Moerlen"]="Ober-Morlen",
 ["Obermehler_Schlotheim"]="Obermehler Schlotheim",
 ["Parchim"]="Parchim",
-["Peenemunde"]="Peenemunde",
+["Peenemuende"]="Peenemunde",
 ["Pferdsfeld"]="Pferdsfeld",
 ["Pinnow"]="Pinnow",
-["Pottschutthohe"]="Pottschutthohe",
+["Pottschutthoehe"]="Pottschutthohe",
 ["Ramstein"]="Ramstein",
 ["Rinteln"]="Rinteln",
-["Schonefeld"]="Schonefeld",
-["Schweinfurt"]="Schweinfurt",
 ["Schoenefeld"]="Schonefeld",
+["Schweinfurt"]="Schweinfurt",
 ["Sembach"]="Sembach",
 ["Spangdahlem"]="Spangdahlem",
 ["Sperenberg"]="Sperenberg",
@@ -30311,14 +30324,14 @@ AIRBASE.GermanyCW={
 ["Walldorf"]="Walldorf",
 ["Waren_Vielist"]="Waren Vielist",
 ["Werneuchen"]="Werneuchen",
-["Weser_Wumme"]="Weser Wumme",
+["Weser_Wuemme"]="Weser Wumme",
 ["Wiesbaden"]="Wiesbaden",
 ["Wismar"]="Wismar",
 ["Wittstock"]="Wittstock",
 ["Worms"]="Worms",
 ["Wunstorf"]="Wunstorf",
 ["Zerbst"]="Zerbst",
-["Zweibrucken"]="Zweibrucken",
+["Zweibruecken"]="Zweibrucken",
 }
 AIRBASE.TerminalType={
 Runway=16,
@@ -30967,7 +30980,6 @@ if self.AirbaseName==AIRBASE.Syria.Beirut_Rafic_Hariri and math.abs(namefromhead
 runway.name=string.format("%02d",tonumber(namefromheading))
 else
 runway.name=string.format("%02d",tonumber(name))
-self:I("RunwayName: "..runway.name)
 end
 runway.magheading=tonumber(runway.name)*10
 runway.heading=heading
@@ -43551,7 +43563,7 @@ IRExitRange={filename="IR-ExitRange.ogg",duration=3.10},
 RANGE.Names={}
 RANGE.MenuF10={}
 RANGE.MenuF10Root=nil
-RANGE.version="2.8.0"
+RANGE.version="2.8.1"
 function RANGE:New(RangeName,Coalition)
 local self=BASE:Inherit(self,FSM:New())
 self.rangename=RangeName or"Practice Range"
@@ -44249,10 +44261,10 @@ local _unit=playerData.unit
 local impactcoord=weapon:GetImpactCoordinate()
 local insidezone=self.rangezone:IsCoordinateInZone(impactcoord)
 if playerData and playerData.smokebombimpact and insidezone then
-if playerData and playerData.delaysmoke then
-timer.scheduleFunction(self._DelayedSmoke,{coord=impactcoord,color=playerData.smokecolor},timer.getTime()+self.TdelaySmoke)
+if playerData.delaysmoke then
+impactcoord:Smoke(playerData.smokecolor,30,self.TdelaySmoke)
 else
-impactcoord:Smoke(playerData.smokecolor)
+impactcoord:Smoke(playerData.smokecolor,30)
 end
 end
 for _,_bombtarget in pairs(self.bombingTargets)do
@@ -44303,7 +44315,12 @@ result.rangename=self.rangename
 result.attackHdg=attackHdg
 result.attackVel=attackVel
 result.attackAlt=attackAlt
-result.date=os and os.date()or"n/a"
+if os and os.date then
+result.date=os.date()
+else
+self:E(self.lid.."os or os.date() not available")
+result.date="n/a"
+end
 table.insert(_results,result)
 self:Impact(result,playerData)
 elseif insidezone then
@@ -44600,9 +44617,6 @@ date=os.date()
 end
 data=data..string.format("%s,%s,%d,%d,%s,%s,%s,%s",_playername,target,roundsFired,roundsHit,strafeResult,airframe,time,date)
 _savefile(filename,data)
-end
-function RANGE._DelayedSmoke(_args)
-_args.coord:Smoke(_args.color)
 end
 function RANGE:_DisplayMyStrafePitResults(_unitName)
 self:F(_unitName)
@@ -54238,7 +54252,7 @@ MANTIS.radiusscale[MANTIS.SamType.POINT]=3
 MANTIS.SamData={
 ["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
 ["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS"},
-["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot"},
+["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot str"},
 ["Rapier"]={Range=10,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
 ["SA-2"]={Range=40,Blindspot=7,Height=25,Type="Medium",Radar="S_75M_Volhov"},
 ["SA-3"]={Range=18,Blindspot=6,Height=18,Type="Short",Radar="5p73 s-125 ln"},
@@ -54246,7 +54260,8 @@ MANTIS.SamData={
 ["SA-6"]={Range=25,Blindspot=0,Height=8,Type="Medium",Radar="1S91"},
 ["SA-10"]={Range=119,Blindspot=0,Height=18,Type="Long",Radar="S-300PS 4"},
 ["SA-11"]={Range=35,Blindspot=0,Height=20,Type="Medium",Radar="SA-11"},
-["Roland"]={Range=5,Blindspot=0,Height=5,Type="Point",Radar="Roland"},
+["Roland"]={Range=6,Blindspot=0,Height=5,Type="Short",Radar="Roland"},
+["Gepard"]={Range=5,Blindspot=0,Height=4,Type="Point",Radar="Gepard"},
 ["HQ-7"]={Range=12,Blindspot=0,Height=3,Type="Short",Radar="HQ-7"},
 ["SA-9"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Strela",Point="true"},
 ["SA-8"]={Range=10,Blindspot=0,Height=5,Type="Short",Radar="Osa 9A33"},
@@ -54257,6 +54272,7 @@ MANTIS.SamData={
 ["Chaparral"]={Range=8,Blindspot=0,Height=3,Type="Short",Radar="Chaparral"},
 ["Linebacker"]={Range=4,Blindspot=0,Height=3,Type="Point",Radar="Linebacker",Point="true"},
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
+["HEMTT_C-RAM_Phalanx"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="HEMTT_C-RAM_Phalanx",Point="true"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
 ["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
@@ -54438,7 +54454,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.27"
+self.version="0.9.28"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -60063,6 +60079,7 @@ self:SetBeaconRefresh()
 self:SetMaxLandingPattern()
 self:SetMaxMarshalStacks()
 self:SetMaxSectionSize()
+self:SetMaxSectionDistance()
 self:SetMaxFlightsPerStack()
 self:SetHandleAION()
 self:SetExtraVoiceOvers(false)
@@ -60691,6 +60708,17 @@ nmax=nmax or 2
 nmax=math.max(nmax,1)
 nmax=math.min(nmax,4)
 self.NmaxSection=nmax-1
+return self
+end
+function AIRBOSS:SetMaxSectionDistance(dmax)
+if dmax then
+if dmax<10 then
+dmax=10
+elseif dmax>5000 then
+dmax=5000
+end
+end
+self.maxsectiondistance=dmax or 100
 return self
 end
 function AIRBOSS:SetMaxFlightsPerStack(nmax)
@@ -67553,7 +67581,7 @@ if _unit and _playername then
 local playerData=self.players[_playername]
 if playerData then
 local mycoord=_unit:GetCoordinate()
-local dmax=100
+local dmax=self.maxsectiondistance
 local text
 if self.NmaxSection==0 then
 text=string.format("negative, setting sections is disabled in this mission. You stay alone.")
@@ -73261,7 +73289,7 @@ end
 function CTLD:IsFixedWing(Unit)
 local typename=Unit:GetTypeName()or"none"
 for _,_name in pairs(self.FixedWingTypes or{})do
-if typename==_name or string.find(typename,_name,1,true)then
+if _name and(typename==_name or string.find(typename,_name,1,true))then
 return true
 end
 end
@@ -74871,6 +74899,7 @@ local zonewidth=20
 if Zonetype==CTLD.CargoZoneType.SHIP then
 self:T("Checking Type Ship: "..zonename)
 local ZoneUNIT=UNIT:FindByName(zonename)
+if not ZoneUNIT then return false end
 zonecoord=ZoneUNIT:GetCoordinate()
 zoneradius=czone.shiplength
 zonewidth=czone.shipwidth
@@ -76656,7 +76685,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.30"
+CSAR.version="1.0.31"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -77820,7 +77849,10 @@ end
 function CSAR:_GetClosestMASH(_heli)
 self:T(self.lid.." _GetClosestMASH")
 local _mashset=self.mash
-local _mashes=_mashset:GetSetObjects()
+local MashSets={}
+table.insert(MashSets,_mashset.Set)
+table.insert(MashSets,self.zonemashes.Set)
+table.insert(MashSets,self.staticmashes.Set)
 local _shortestDistance=-1
 local _distance=0
 local _helicoord=_heli:GetCoordinate()
@@ -77844,9 +77876,14 @@ local position=_heli:GetCoordinate()
 local afb,distance=position:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
 end
-for _,_mashUnit in pairs(_mashes)do
-if _mashUnit and _mashUnit:IsAlive()then
-local _mashcoord=_mashUnit:GetCoordinate()
+for _,_mashes in pairs(MashSets)do
+for _,_mashUnit in pairs(_mashes or{})do
+local _mashcoord
+if _mashUnit and(not _mashUnit:IsInstanceOf("ZONE_BASE"))and _mashUnit:IsAlive()then
+_mashcoord=_mashUnit:GetCoordinate()
+elseif _mashUnit and _mashUnit:IsInstanceOf("ZONE_BASE")then
+_mashcoord=_mashUnit:GetCoordinate()
+end
 _distance=self:_GetDistance(_helicoord,_mashcoord)
 if _distance~=nil and(_shortestDistance==-1 or _distance<_shortestDistance)then
 _shortestDistance=_distance
@@ -78067,18 +78104,8 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
-local staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
-local zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
-if staticmashes:Count()>0 then
-for _,_mash in pairs(staticmashes.Set)do
-self.mash:AddObject(_mash)
-end
-end
-if zonemashes:Count()>0 then
-for _,_mash in pairs(zonemashes.Set)do
-self.mash:AddObject(_mash)
-end
-end
+self.staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
+self.zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
 if not self.coordinate then
 local csarhq=self.mash:GetRandom()
 if csarhq then
@@ -93003,7 +93030,7 @@ og:I(og.lid..string.format("WARNING: OPS group already exists in data base!"))
 return og
 end
 local self=BASE:Inherit(self,OPSGROUP:New(group))
-self.lid=string.format("FLIGHTGROUP %s | ",self.groupname)
+self.lid=string.format("FLIGHTGROUP %s | ",self.groupname or"N/A")
 self:SetDefaultROE()
 self:SetDefaultROT()
 self:SetDefaultEPLRS(self.isEPLRS)
@@ -107429,12 +107456,13 @@ Tblu=0,
 Tnut=0,
 chiefs={},
 Missions={},
+UpdateSeconds=120,
 }
 OPSZONE.ZoneType={
 Circular="Circular",
 Polygon="Polygon",
 }
-OPSZONE.version="0.6.1"
+OPSZONE.version="0.6.2"
 function OPSZONE:New(Zone,CoalitionOwner)
 local self=BASE:Inherit(self,FSM:New())
 if Zone then
@@ -107668,7 +107696,8 @@ end
 function OPSZONE:onafterStart(From,Event,To)
 self:I(self.lid..string.format("Starting OPSZONE v%s",OPSZONE.version))
 self.timerStatus=self.timerStatus or TIMER:New(OPSZONE.Status,self)
-self.timerStatus:Start(1,120)
+local EveryUpdateIn=self.UpdateSeconds or 120
+self.timerStatus:Start(1,EveryUpdateIn)
 if self.airbase then
 self:HandleEvent(EVENTS.BaseCaptured)
 end
@@ -108183,7 +108212,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.25"
+PLAYERTASK.version="0.1.26"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -108636,6 +108665,10 @@ self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
 if status=="Stopped"then return self end
+if self.TargetMarker then
+local coordinate=self.Target:GetCoordinate()
+self.TargetMarker:UpdateCoordinate(coordinate,0.5)
+end
 local targetdead=false
 if self.Type~=AUFTRAG.Type.CTLD and self.Type~=AUFTRAG.Type.CSAR then
 if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
@@ -109047,7 +109080,7 @@ CARRIER="Flugzeugträger",
 RADIOS="Frequenzen",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.69"
+PLAYERTASKCONTROLLER.version="0.1.70"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -109285,7 +109318,7 @@ self:EnablePrecisionBombing(group,LaserCode,HoldingPoint,Alt,Speed,MaxTravelDist
 end
 )
 else
-self:E(self.lid.."No FLIGHTGROUP object passed or FLIGHTGROUP is not alive!")
+self:E(self.lid.."No OPSGROUP/SET_OPSGROUP object passed or object is not alive!")
 end
 else
 self.autolase=nil
@@ -110280,7 +110313,6 @@ Text=string.gsub(Text,"0","zero")
 Text=string.gsub(Text,"9","niner")
 CoordText="MGRS;"..Text
 if self.PathToGoogleKey then
-CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordText)
 end
 end
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
@@ -110709,6 +110741,24 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
+function PLAYERTASKCONTROLLER:AddConflictZone(ConflictZone)
+self:T(self.lid.."AddConflictZone")
+if self.Intel then
+self.Intel:AddConflictZone(ConflictZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddConflictZoneSet(ConflictZoneSet)
+self:T(self.lid.."AddConflictZoneSet")
+if self.Intel then
+self.Intel.conflictzoneset:AddSet(ConflictZoneSet)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
 function PLAYERTASKCONTROLLER:RemoveAcceptZone(AcceptZone)
 self:T(self.lid.."RemoveAcceptZone")
 if self.Intel then
@@ -110718,10 +110768,19 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
-function PLAYERTASKCONTROLLER:RemoveRejectZoneSet(RejectZone)
+function PLAYERTASKCONTROLLER:RemoveRejectZone(RejectZone)
 self:T(self.lid.."RemoveRejectZone")
 if self.Intel then
 self.Intel:RemoveRejectZone(RejectZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:RemoveConflictZone(ConflictZone)
+self:T(self.lid.."RemoveConflictZone")
+if self.Intel then
+self.Intel:RemoveConflictZone(ConflictZone)
 else
 self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
@@ -113692,7 +113751,7 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={}
 }
-EASYGCICAP.version="0.1.18"
+EASYGCICAP.version="0.1.20"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -113883,6 +113942,9 @@ CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
 local Intel=self.Intel
 local TankerInvisible=self.TankerInvisible
+local engagerange=self.engagerange
+local GoZoneSet=self.GoZoneSet
+local NoGoZoneSet=self.NoGoZoneSet
 function CAP_Wing:onbeforeFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 if DespawnAfterLanding then
@@ -113895,7 +113957,7 @@ flightgroup:GetGroup():CommandEPLRS(true,5)
 flightgroup:GetGroup():SetOptionRadarUsingForContinousSearch()
 if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mission.type~=AUFTRAG.Type.RECON then
 flightgroup:SetDetection(true)
-flightgroup:SetEngageDetectedOn(self.engagerange,{"Air"},self.GoZoneSet,self.NoGoZoneSet)
+flightgroup:SetEngageDetectedOn(engagerange,{"Air"},GoZoneSet,NoGoZoneSet)
 flightgroup:SetOutOfAAMRTB()
 if CapFormation then
 flightgroup:GetGroup():SetOption(AI.Option.Air.id.FORMATION,CapFormation)
