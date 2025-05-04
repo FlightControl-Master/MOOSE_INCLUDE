@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-03T20:32:40+02:00-36c9f551d9136045c92303f59758048a9e8750fc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-04T10:47:28+02:00-7eba1349aea9a3ff70cd5c99fd2826dd8b13b695 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52916,7 +52916,6 @@ explosionpower=0.1,
 explosiondist=200,
 explosiondist2=500,
 bigmissilemass=50,
-destroy=nil,
 dt50=5,
 dt10=1,
 dt05=0.5,
@@ -79524,7 +79523,6 @@ Attack="A",
 Reconnaissance="R",
 }
 AI_FORMATION.__Enum.ReportType={
-Airborne="*",
 Airborne="A",
 GroundRadar="R",
 Ground="G",
@@ -79794,7 +79792,6 @@ end
 local CVI={
 x=CV2.x+CS*10*math.sin(Ca),
 y=GH2.y+Inclination,
-y=GH2.y,
 z=CV2.z+CS*10*math.cos(Ca),
 }
 local DV={x=CV2.x-CVI.x,y=CV2.y-CVI.y,z=CV2.z-CVI.z}
@@ -82976,7 +82973,7 @@ self.DisplayCount=self.DisplayCount+1
 end
 return true
 end
-function ACT_ACCOUNT:onafterEvent(ProcessUnit,From,Event,To,Event)
+function ACT_ACCOUNT:onafterEvent(ProcessUnit,From,Event,To)
 self:__NoMore(1)
 end
 end
