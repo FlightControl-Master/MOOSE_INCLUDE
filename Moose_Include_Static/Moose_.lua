@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-04T10:47:28+02:00-7eba1349aea9a3ff70cd5c99fd2826dd8b13b695 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-12T07:00:19+02:00-5b8b8a55669c19271cd0eabf07eb9d25d46dd824 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71174,6 +71174,7 @@ zone=AIRBASE:FindByName(zonename):GetZone()
 end
 end
 local zonecoord=zone:GetCoordinate()
+if zonecoord then
 local active=CZone.active
 local color=CZone.color
 local distance=self:_GetDistance(zonecoord,unitcoord)
@@ -71188,6 +71189,7 @@ local txt="smoking"
 if Flare then txt="flaring"end
 self:_SendMessage(string.format("Roger, %s zone %s!",txt,zonename),10,false,Group)
 smoked=true
+end
 end
 end
 end
