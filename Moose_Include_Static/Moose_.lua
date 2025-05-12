@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-12T07:01:15+02:00-67ef6c6e7b3530fa9e597825ee5d111ef5c03658 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-12T17:51:12+02:00-acbcb14cba8b8e7513f9b2b97652688df360d105 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -76060,11 +76060,16 @@ local task=Task
 local subtype=task:GetSubType()
 if Event==subtype and not task:IsDone()then
 local targetzone=task.Target:GetObject()
+self:T2({Name=Groupname,Property=task:GetProperty("ExtractName")})
+if task:GetProperty("ExtractName")then
 local okaygroup=string.find(Groupname,task:GetProperty("ExtractName"),1,true)
 if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and okaygroup then
 if task.Clients:HasUniqueID(playername)then
 task:__Success(-1)
 end
+end
+else
+self:T({Text="'ExtractName' Property not set",Name=Groupname,Property=task.Type})
 end
 end
 end
