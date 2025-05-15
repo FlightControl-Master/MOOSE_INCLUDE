@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T06:42:07+02:00-ea4a1f9ff91e54e8653c1da6762d73be5ae88f97 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T08:51:30+02:00-db869bcb6d08134392c235166f007c1df71c697d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53730,6 +53730,7 @@ checkforfriendlies=false,
 SmokeDecoy=false,
 SmokeDecoyColor=SMOKECOLOR.White,
 checkcounter=1,
+DLinkCacheTime=120,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -53913,6 +53914,7 @@ self.advAwacs=true
 else
 self.advAwacs=false
 end
+self:SetDLinkCacheTime()
 self.lid=string.format("MANTIS %s | ",self.name)
 if self.debug then
 BASE:TraceOnOff(true)
@@ -53952,7 +53954,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.28"
+self.version="0.9.29"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54095,6 +54097,10 @@ self.HQ_CC=group
 self.HQ_Template_CC=group:GetName()
 end
 end
+return self
+end
+function MANTIS:SetDLinkCacheTime(seconds)
+self.DLinkCacheTime=math.abs(seconds or 120)
 return self
 end
 function MANTIS:SetDetectInterval(interval)
@@ -54366,7 +54372,8 @@ local IntelOne=INTEL:New(groupset,self.Coalition,self.name.." IntelOne")
 IntelOne:Start()
 local IntelTwo=INTEL:New(samset,self.Coalition,self.name.." IntelTwo")
 IntelTwo:Start()
-local IntelDlink=INTEL_DLINK:New({IntelOne,IntelTwo},self.name.." DLINK",22,300)
+local CacheTime=self.DLinkCacheTime or 120
+local IntelDlink=INTEL_DLINK:New({IntelOne,IntelTwo},self.name.." DLINK",22,CacheTime)
 IntelDlink:__Start(1)
 self:SetUsingDLink(IntelDlink)
 table.insert(self.intelset,IntelOne)
