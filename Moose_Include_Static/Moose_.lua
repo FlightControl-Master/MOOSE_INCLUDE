@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T08:52:18+02:00-f4cdbec376e00691aaf223992e0ef541a07a2038 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T10:05:11+02:00-ebb94c07b34962cbe8cc00be3ff4929ef42ce9a6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -96704,9 +96704,9 @@ self.alias=tostring(Alias)
 else
 self.alias="SPECTRE"
 end
-self:SetDLinkCacheTime(Cachetime or 120)
 self.interval=Interval or 20
 self.lid=string.format("INTEL_DLINK %s | ",self.alias)
+self:SetDLinkCacheTime(Cachetime or 120)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Collect","*")
