@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T11:39:42+02:00-1231541053c898d445cf99c532341ca7eb6ee72f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T18:24:45+02:00-9a10b3493341b7fc7180344e279957abcb056dec ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -112692,9 +112692,10 @@ CapFormation=nil,
 ReadyFlightGroups={},
 DespawnAfterLanding=false,
 DespawnAfterHolding=true,
-ListOfAuftrag={}
+ListOfAuftrag={},
+defaulttakeofftype="hot",
 }
-EASYGCICAP.version="0.1.20"
+EASYGCICAP.version="0.1.21"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -112725,6 +112726,7 @@ self.CapFormation=ENUMS.Formation.FixedWing.FingerFour.Group
 self.DespawnAfterLanding=false
 self.DespawnAfterHolding=true
 self.ListOfAuftrag={}
+self.defaulttakeofftype="hot"
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -112768,6 +112770,11 @@ end
 function EASYGCICAP:SetDefaultRepeatOnFailure(Retries)
 self:T(self.lid.."SetDefaultRepeatOnFailure")
 self.repeatsonfailure=Retries or 3
+return self
+end
+function EASYGCICAP:SetDefaultTakeOffType(Takeoff)
+self:T(self.lid.."SetDefaultTakeOffType")
+self.defaulttakeofftype=Takeoff or"hot"
 return self
 end
 function EASYGCICAP:SetDefaultCAPSpeed(Speed)
@@ -112879,7 +112886,7 @@ end
 if#self.ManagedREC>0 then
 CAP_Wing:SetNumberRecon(1)
 end
-CAP_Wing:SetTakeoffHot()
+CAP_Wing:SetTakeoffType(self.defaulttakeofftype)
 CAP_Wing:SetLowFuelThreshold(0.3)
 CAP_Wing.RandomAssetScore=math.random(50,100)
 CAP_Wing:Start()
