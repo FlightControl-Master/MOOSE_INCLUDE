@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T08:53:09+02:00-5a96a6078a0c0ea95197904e40da0c32fb7b2eb2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T11:39:42+02:00-1231541053c898d445cf99c532341ca7eb6ee72f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53279,6 +53279,7 @@ return self
 end
 function MANTIS:SetDLinkCacheTime(seconds)
 self.DLinkCacheTime=math.abs(seconds or 120)
+if self.DLinkCacheTime<5 then self.DLinkCacheTime=5 end
 return self
 end
 function MANTIS:SetDetectInterval(interval)
@@ -95430,9 +95431,9 @@ self.alias=tostring(Alias)
 else
 self.alias="SPECTRE"
 end
-self:SetDLinkCacheTime(Cachetime or 120)
 self.interval=Interval or 20
 self.lid=string.format("INTEL_DLINK %s | ",self.alias)
+self:SetDLinkCacheTime(Cachetime or 120)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
 self:AddTransition("*","Collect","*")
@@ -107364,17 +107365,17 @@ end,task:GetTarget()
 )
 return self
 end
-function PLAYERTASK:AddOpsZoneCaptureSuccessCondition(CaptureSquadGroupNamePrefix,Coalition)
+function PLAYERTASK:AddOpsZoneCaptureSuccessCondition(CaptureSquadGroupNamePrefix,Coalition,CheckClientInZone)
 local task=self
 task:AddConditionSuccess(
 function(target)
 if target:IsInstanceOf("OPSZONE")then
-return task:_CheckCaptureOpsZoneSuccess(target,CaptureSquadGroupNamePrefix,Coalition,true)
+return task:_CheckCaptureOpsZoneSuccess(target,CaptureSquadGroupNamePrefix,Coalition,CheckClientInZone or true)
 elseif target:IsInstanceOf("SET_OPSZONE")then
 local successes=0
 local isClientInZone=false
 target:ForEachZone(function(opszone)
-if task:_CheckCaptureOpsZoneSuccess(opszone,CaptureSquadGroupNamePrefix,Coalition)then
+if task:_CheckCaptureOpsZoneSuccess(opszone,CaptureSquadGroupNamePrefix,Coalition,CheckClientInZone or true)then
 successes=successes+1
 end
 for _,client in ipairs(task:GetClientObjects())do
