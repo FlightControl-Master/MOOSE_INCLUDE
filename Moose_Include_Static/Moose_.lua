@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T06:52:23+02:00-36a0cfd6350c34ad658231556e8005e0f6a809e4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T08:52:18+02:00-f4cdbec376e00691aaf223992e0ef541a07a2038 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54232,6 +54232,7 @@ checkforfriendlies=false,
 SmokeDecoy=false,
 SmokeDecoyColor=SMOKECOLOR.White,
 checkcounter=1,
+DLinkCacheTime=120,
 }
 MANTIS.AdvancedState={
 GREEN=0,
@@ -54415,6 +54416,7 @@ self.advAwacs=true
 else
 self.advAwacs=false
 end
+self:SetDLinkCacheTime()
 self.lid=string.format("MANTIS %s | ",self.name)
 if self.debug then
 BASE:TraceOnOff(true)
@@ -54454,7 +54456,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.28"
+self.version="0.9.29"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54597,6 +54599,10 @@ self.HQ_CC=group
 self.HQ_Template_CC=group:GetName()
 end
 end
+return self
+end
+function MANTIS:SetDLinkCacheTime(seconds)
+self.DLinkCacheTime=math.abs(seconds or 120)
 return self
 end
 function MANTIS:SetDetectInterval(interval)
@@ -54868,7 +54874,8 @@ local IntelOne=INTEL:New(groupset,self.Coalition,self.name.." IntelOne")
 IntelOne:Start()
 local IntelTwo=INTEL:New(samset,self.Coalition,self.name.." IntelTwo")
 IntelTwo:Start()
-local IntelDlink=INTEL_DLINK:New({IntelOne,IntelTwo},self.name.." DLINK",22,300)
+local CacheTime=self.DLinkCacheTime or 120
+local IntelDlink=INTEL_DLINK:New({IntelOne,IntelTwo},self.name.." DLINK",22,CacheTime)
 IntelDlink:__Start(1)
 self:SetUsingDLink(IntelDlink)
 table.insert(self.intelset,IntelOne)
@@ -96679,13 +96686,13 @@ ClassName="INTEL_DLINK",
 verbose=0,
 lid=nil,
 alias=nil,
-cachetime=300,
+cachetime=120,
 interval=20,
 contacts={},
 clusters={},
 contactcoords={},
 }
-INTEL_DLINK.version="0.0.1"
+INTEL_DLINK.version="0.0.2"
 function INTEL_DLINK:New(Intels,Alias,Interval,Cachetime)
 local self=BASE:Inherit(self,FSM:New())
 self.intels=Intels or{}
@@ -96697,7 +96704,7 @@ self.alias=tostring(Alias)
 else
 self.alias="SPECTRE"
 end
-self.cachetime=Cachetime or 300
+self:SetDLinkCacheTime(Cachetime or 120)
 self.interval=Interval or 20
 self.lid=string.format("INTEL_DLINK %s | ",self.alias)
 self:SetStartState("Stopped")
@@ -96719,6 +96726,11 @@ self:T({From,Event,To})
 local text=string.format("Version %s started.",self.version)
 self:I(self.lid..text)
 self:__Collect(-math.random(1,10))
+return self
+end
+function INTEL_DLINK:SetDLinkCacheTime(seconds)
+self.cachetime=math.abs(seconds or 120)
+self:I(self.lid.."Caching for "..self.cachetime.." seconds.")
 return self
 end
 function INTEL_DLINK:onbeforeCollect(From,Event,To)
