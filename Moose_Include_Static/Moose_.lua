@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T08:51:30+02:00-db869bcb6d08134392c235166f007c1df71c697d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-15T11:42:05+02:00-d7defe6f7fa5b9732ae3c37575c7f33b1d4f9a05 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54101,6 +54101,7 @@ return self
 end
 function MANTIS:SetDLinkCacheTime(seconds)
 self.DLinkCacheTime=math.abs(seconds or 120)
+if self.DLinkCacheTime<5 then self.DLinkCacheTime=5 end
 return self
 end
 function MANTIS:SetDetectInterval(interval)
