@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-16T12:00:32+02:00-1e0c27f599b903d2fe6f83d547713942c71b842d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-16T13:43:27+02:00-fa676cc75061ec8470be2ab600c48635fc3fd969 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55213,7 +55213,7 @@ end
 end
 end
 end
-if self.debug or self.verbose then
+if self.debug or self.verbose or self.logsamstatus then
 for _,_status in pairs(self.SamStateTracker)do
 if _status=="GREEN"then
 instatusgreen=instatusgreen+1
