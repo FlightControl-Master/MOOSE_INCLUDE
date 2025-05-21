@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-21T10:04:58+02:00-997baf21a0af023916a8b20221daa0e8dfda28f9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-21T10:21:48+02:00-a4feafab8e9d4da5100238ebf21d80924b7cd90e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2542,9 +2542,9 @@ local sinDec=0.39782*sin(L)
 local cosDec=cos(asin(sinDec))
 local cosH=(cos(zenith)-(sinDec*sin(latitude)))/(cosDec*cos(latitude))
 if rising and cosH>1 then
-return"N/S"
-elseif cosH<-1 then
 return"N/R"
+elseif cosH<-1 then
+return"N/S"
 end
 local H
 if rising then
@@ -17806,8 +17806,10 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,true,Tdiff)
 local sunset=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tdiff)
+if type(sunrise)=="string"or type(sunset)=="string"then
 if sunrise=="N/R"then return false end
-if sunrise=="N/S"then return true end
+if sunset=="N/S"then return true end
+end
 local time=UTILS.ClockToSeconds(clock)
 if time>sunrise and time<=sunset then
 return true
@@ -17817,6 +17819,10 @@ end
 else
 local sunrise=self:GetSunrise(true)
 local sunset=self:GetSunset(true)
+if type(sunrise)=="string"or type(sunset)=="string"then
+if sunrise=="N/R"then return false end
+if sunset=="N/S"then return true end
+end
 local time=UTILS.SecondsOfToday()
 if time>sunrise and time<=sunset then
 return true
