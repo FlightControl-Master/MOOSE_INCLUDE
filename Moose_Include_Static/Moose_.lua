@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-16T13:43:27+02:00-fa676cc75061ec8470be2ab600c48635fc3fd969 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-21T10:05:30+02:00-309eedd1655d795c806756f76faacae5a609c201 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -76908,7 +76908,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.31"
+CSAR.version="1.0.32"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -77012,7 +77012,7 @@ self.csarUsePara=false
 self.wetfeettemplate=nil
 self.usewetfeet=false
 self.allowbronco=false
-self.ADFRadioPwr=1000
+self.ADFRadioPwr=500
 self.PilotWeight=80
 self.UserSetGroup=nil
 self.useSRS=false
@@ -78234,7 +78234,7 @@ if clock>12 then clock=clock-12 end
 end
 return clock
 end
-function CSAR:_AddBeaconToGroup(_group,_freq,_name)
+function CSAR:_AddBeaconToGroup(_group,_freq,BeaconName)
 self:T(self.lid.." _AddBeaconToGroup")
 if self.CreateRadioBeacons==false then return end
 local _group=_group
@@ -78252,10 +78252,10 @@ local _radioUnit=_group:GetUnit(1)
 if _radioUnit then
 local name=_radioUnit:GetName()
 local Frequency=_freq
-local name=_radioUnit:GetName()
 local Sound="l10n/DEFAULT/"..self.radioSound
 local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
-trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000,_name)
+self:I(self.lid..string.format("Added Radio Beacon %d Hertz | Name %s | Position {%d,%d,%d}",Frequency,BeaconName,vec3.x,vec3.y,vec3.z))
+trigger.action.radioTransmission(Sound,vec3,0,true,Frequency,self.ADFRadioPwr or 500,BeaconName)
 end
 end
 return self
@@ -78271,9 +78271,11 @@ local pilot=_pilot
 local group=pilot.group
 local frequency=pilot.frequency or 0
 local bname=pilot.BeaconName or pilot.name..math.random(1,100000)
-trigger.action.stopRadioTransmission(bname)
 if group and group:IsAlive()and frequency>0 then
-self:_AddBeaconToGroup(group,frequency,bname)
+else
+if frequency>0 then
+trigger.action.stopRadioTransmission(bname)
+end
 end
 end
 end
