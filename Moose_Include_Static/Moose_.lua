@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-24T12:50:44+02:00-432fc0ef4b99dcd3be141c6eae2a113156a98d09 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-24T15:54:14+02:00-b3f944e82e78952f9ed5c091fdba9bc526bb4fd9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71086,7 +71086,6 @@ end
 end
 end
 _RUNACT=subtitle
-alltext=alltext..";\n"..subtitle
 if self.rwylength then
 local runact=self.airbase:GetActiveRunway(self.runwaym2t)
 local length=runact.length
