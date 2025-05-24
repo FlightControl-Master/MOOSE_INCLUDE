@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-16T11:56:23+02:00-5ff314d8e0d9b09694a6ab2f06bcfb75cce50142 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-24T14:31:55+02:00-ac7cdb7d163ef97d04f1f41293acaff2eddeb4dd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2542,9 +2542,9 @@ local sinDec=0.39782*sin(L)
 local cosDec=cos(asin(sinDec))
 local cosH=(cos(zenith)-(sinDec*sin(latitude)))/(cosDec*cos(latitude))
 if rising and cosH>1 then
-return"N/S"
-elseif cosH<-1 then
 return"N/R"
+elseif cosH<-1 then
+return"N/S"
 end
 local H
 if rising then
@@ -17806,8 +17806,10 @@ local Latitude,Longitude=self:GetLLDDM()
 local Tdiff=UTILS.GMTToLocalTimeDifference()
 local sunrise=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,true,Tdiff)
 local sunset=UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tdiff)
+if type(sunrise)=="string"or type(sunset)=="string"then
 if sunrise=="N/R"then return false end
-if sunrise=="N/S"then return true end
+if sunset=="N/S"then return true end
+end
 local time=UTILS.ClockToSeconds(clock)
 if time>sunrise and time<=sunset then
 return true
@@ -17817,6 +17819,10 @@ end
 else
 local sunrise=self:GetSunrise(true)
 local sunset=self:GetSunset(true)
+if type(sunrise)=="string"or type(sunset)=="string"then
+if sunrise=="N/R"then return false end
+if sunset=="N/S"then return true end
+end
 local time=UTILS.SecondsOfToday()
 if time>sunrise and time<=sunset then
 return true
@@ -53833,7 +53839,7 @@ local activeshorad=false
 if self.Shorad and self.Shorad.ActiveGroups and self.Shorad.ActiveGroups[name]then
 activeshorad=true
 end
-if IsInZone and not suppressed and not activeshorad then
+if IsInZone and(not suppressed)and(not activeshorad)then
 if samgroup:IsAlive()then
 local switch=false
 if self.UseEmOnOff and switchedon<limit then
@@ -53889,7 +53895,7 @@ end
 end
 end
 end
-if self.debug or self.verbose then
+if self.debug or self.verbose or self.logsamstatus then
 for _,_status in pairs(self.SamStateTracker)do
 if _status=="GREEN"then
 instatusgreen=instatusgreen+1
@@ -75634,7 +75640,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.31"
+CSAR.version="1.0.32"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -75738,7 +75744,7 @@ self.csarUsePara=false
 self.wetfeettemplate=nil
 self.usewetfeet=false
 self.allowbronco=false
-self.ADFRadioPwr=1000
+self.ADFRadioPwr=500
 self.PilotWeight=80
 self.UserSetGroup=nil
 self.useSRS=false
@@ -76960,7 +76966,7 @@ if clock>12 then clock=clock-12 end
 end
 return clock
 end
-function CSAR:_AddBeaconToGroup(_group,_freq,_name)
+function CSAR:_AddBeaconToGroup(_group,_freq,BeaconName)
 self:T(self.lid.." _AddBeaconToGroup")
 if self.CreateRadioBeacons==false then return end
 local _group=_group
@@ -76978,10 +76984,10 @@ local _radioUnit=_group:GetUnit(1)
 if _radioUnit then
 local name=_radioUnit:GetName()
 local Frequency=_freq
-local name=_radioUnit:GetName()
 local Sound="l10n/DEFAULT/"..self.radioSound
 local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
-trigger.action.radioTransmission(Sound,vec3,0,false,Frequency,self.ADFRadioPwr or 1000,_name)
+self:I(self.lid..string.format("Added Radio Beacon %d Hertz | Name %s | Position {%d,%d,%d}",Frequency,BeaconName,vec3.x,vec3.y,vec3.z))
+trigger.action.radioTransmission(Sound,vec3,0,true,Frequency,self.ADFRadioPwr or 500,BeaconName)
 end
 end
 return self
@@ -76997,9 +77003,11 @@ local pilot=_pilot
 local group=pilot.group
 local frequency=pilot.frequency or 0
 local bname=pilot.BeaconName or pilot.name..math.random(1,100000)
-trigger.action.stopRadioTransmission(bname)
 if group and group:IsAlive()and frequency>0 then
-self:_AddBeaconToGroup(group,frequency,bname)
+else
+if frequency>0 then
+trigger.action.stopRadioTransmission(bname)
+end
 end
 end
 end
@@ -81605,8 +81613,11 @@ table.insert(self.enrouteTasks,DCStask)
 elseif self.type==AUFTRAG.Type.BAI then
 self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.BOMBING then
-local DCStask=CONTROLLABLE.TaskBombing(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,Divebomb)
+local coords=self.engageTarget:GetCoordinates()
+for _,coord in pairs(coords)do
+local DCStask=CONTROLLABLE.TaskBombing(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
 table.insert(DCStasks,DCStask)
+end
 elseif self.type==AUFTRAG.Type.STRAFING then
 local DCStask=CONTROLLABLE.TaskStrafing(nil,self:GetTargetVec2(),self.engageQuantity,self.engageLength,self.engageWeaponType,self.engageWeaponExpend,self.engageDirection,self.engageAsGroup)
 table.insert(DCStasks,DCStask)
@@ -81671,8 +81682,11 @@ table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.SEAD then
 self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.STRIKE then
-local DCStask=CONTROLLABLE.TaskAttackMapObject(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
+local coords=self.engageTarget:GetCoordinates()
+for _,coord in pairs(coords)do
+local DCStask=CONTROLLABLE.TaskAttackMapObject(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
 table.insert(DCStasks,DCStask)
+end
 elseif self.type==AUFTRAG.Type.TANKER or self.type==AUFTRAG.Type.RECOVERYTANKER then
 local DCStask=CONTROLLABLE.EnRouteTaskTanker(nil)
 table.insert(self.enrouteTasks,DCStask)
@@ -112455,6 +112469,17 @@ end
 self:E(self.lid..string.format("ERROR: Cannot get average coordinate of target %s",tostring(self.name)))
 return nil
 end
+function TARGET:GetCoordinates()
+local coordinates={}
+for _,_target in pairs(self.targets)do
+local target=_target
+local coordinate=self:GetTargetCoordinate(target)
+if coordinate then
+table.insert(coordinates,coordinate)
+end
+end
+return coordinates
+end
 function TARGET:GetHeading()
 for _,_target in pairs(self.targets)do
 local Target=_target
@@ -112583,6 +112608,14 @@ if target then
 return target.Object
 end
 return nil
+end
+function TARGET:GetObjects()
+local objects={}
+for _,_target in pairs(self.targets)do
+local target=_target
+table.insert(objects,target.Object)
+end
+return objects
 end
 function TARGET:CountObjectives(Target,Coalitions)
 local N=0
