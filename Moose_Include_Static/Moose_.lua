@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-21T10:22:16+02:00-d0449265c17ba905f7c4eceb6aafcbf12c5c7de9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-24T12:50:44+02:00-432fc0ef4b99dcd3be141c6eae2a113156a98d09 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -82887,8 +82887,11 @@ table.insert(self.enrouteTasks,DCStask)
 elseif self.type==AUFTRAG.Type.BAI then
 self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.BOMBING then
-local DCStask=CONTROLLABLE.TaskBombing(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,Divebomb)
+local coords=self.engageTarget:GetCoordinates()
+for _,coord in pairs(coords)do
+local DCStask=CONTROLLABLE.TaskBombing(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
 table.insert(DCStasks,DCStask)
+end
 elseif self.type==AUFTRAG.Type.STRAFING then
 local DCStask=CONTROLLABLE.TaskStrafing(nil,self:GetTargetVec2(),self.engageQuantity,self.engageLength,self.engageWeaponType,self.engageWeaponExpend,self.engageDirection,self.engageAsGroup)
 table.insert(DCStasks,DCStask)
@@ -82953,8 +82956,11 @@ table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.SEAD then
 self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.STRIKE then
-local DCStask=CONTROLLABLE.TaskAttackMapObject(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
+local coords=self.engageTarget:GetCoordinates()
+for _,coord in pairs(coords)do
+local DCStask=CONTROLLABLE.TaskAttackMapObject(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
 table.insert(DCStasks,DCStask)
+end
 elseif self.type==AUFTRAG.Type.TANKER or self.type==AUFTRAG.Type.RECOVERYTANKER then
 local DCStask=CONTROLLABLE.EnRouteTaskTanker(nil)
 table.insert(self.enrouteTasks,DCStask)
@@ -113737,6 +113743,17 @@ end
 self:E(self.lid..string.format("ERROR: Cannot get average coordinate of target %s",tostring(self.name)))
 return nil
 end
+function TARGET:GetCoordinates()
+local coordinates={}
+for _,_target in pairs(self.targets)do
+local target=_target
+local coordinate=self:GetTargetCoordinate(target)
+if coordinate then
+table.insert(coordinates,coordinate)
+end
+end
+return coordinates
+end
 function TARGET:GetHeading()
 for _,_target in pairs(self.targets)do
 local Target=_target
@@ -113865,6 +113882,14 @@ if target then
 return target.Object
 end
 return nil
+end
+function TARGET:GetObjects()
+local objects={}
+for _,_target in pairs(self.targets)do
+local target=_target
+table.insert(objects,target.Object)
+end
+return objects
 end
 function TARGET:CountObjectives(Target,Coalitions)
 local N=0
