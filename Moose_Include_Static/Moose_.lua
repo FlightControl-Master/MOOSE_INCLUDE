@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-24T15:54:14+02:00-b3f944e82e78952f9ed5c091fdba9bc526bb4fd9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-25T09:12:50+02:00-0d1a7c770b0fe92861f265138421de51ccb5adb9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27172,13 +27172,16 @@ function GROUP:GetVelocityVec3()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup and DCSGroup:isExist()then
 local GroupUnits=DCSGroup:getUnits()
-local GroupCount=#GroupUnits
+local GroupCount=0
 local VelocityVec3={x=0,y=0,z=0}
 for _,DCSUnit in pairs(GroupUnits)do
+if DCSUnit:isExist()and DCSUnit:isActive()then
 local UnitVelocityVec3=DCSUnit:getVelocity()
 VelocityVec3.x=VelocityVec3.x+UnitVelocityVec3.x
 VelocityVec3.y=VelocityVec3.y+UnitVelocityVec3.y
 VelocityVec3.z=VelocityVec3.z+UnitVelocityVec3.z
+GroupCount=GroupCount+1
+end
 end
 VelocityVec3.x=VelocityVec3.x/GroupCount
 VelocityVec3.y=VelocityVec3.y/GroupCount
@@ -27624,10 +27627,12 @@ local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupVelocityMax=0
 for Index,UnitData in pairs(DCSGroup:getUnits())do
+if UnitData:isExist()and UnitData:isActive()then
 local UnitVelocityVec3=UnitData:getVelocity()
 local UnitVelocity=math.abs(UnitVelocityVec3.x)+math.abs(UnitVelocityVec3.y)+math.abs(UnitVelocityVec3.z)
 if UnitVelocity>GroupVelocityMax then
 GroupVelocityMax=UnitVelocity
+end
 end
 end
 return GroupVelocityMax
