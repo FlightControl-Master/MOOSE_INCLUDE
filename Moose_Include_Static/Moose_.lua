@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T18:36:33+02:00-638f0837292190c25931fe8d2b08bf0346da71a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T20:51:04+02:00-fca6faa3a81188fbaa2fff28f3e859a2102f4c51 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -108478,7 +108478,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.26"
+PLAYERTASK.version="0.1.27"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -109371,7 +109371,7 @@ self.lasttaskcount=0
 self.taskinfomenu=false
 self.activehasinfomenu=false
 self.MenuName=nil
-self.menuitemlimit=5
+self.menuitemlimit=6
 self.holdmenutime=30
 self.MarkerReadOnly=false
 self.repeatonfailed=true
@@ -109674,7 +109674,7 @@ self.activehasinfomenu=InfoMenu or false
 if self.activehasinfomenu then
 self:EnableTaskInfoMenu()
 end
-self.menuitemlimit=ItemLimit or 5
+self.menuitemlimit=ItemLimit+1 or 6
 self.holdmenutime=HoldTime or 30
 return self
 end
