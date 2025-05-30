@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T11:14:33+02:00-793adafda743d0d3806985809b53b8d11ee64bfc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T18:36:33+02:00-638f0837292190c25931fe8d2b08bf0346da71a7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -76891,6 +76891,7 @@ rescues=0,
 rescuedpilots=0,
 limitmaxdownedpilots=true,
 maxdownedpilots=10,
+useFIFOLimitReplacement=false,
 allheligroupset=nil,
 topmenuname="CSAR",
 ADFRadioPwr=1000,
@@ -77362,11 +77363,6 @@ if self:_DoubleEjection(_unitname)then
 self:T("Double Ejection!")
 return self
 end
-if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
-self:T("Maxed Downed Pilot!")
-return self
-end
-local wetfeet=false
 local initdcscoord=nil
 local initcoord=nil
 if _event.id==EVENTS.Ejection then
@@ -77378,6 +77374,27 @@ initdcscoord=_event.IniDCSUnit:getPoint()
 initcoord=COORDINATE:NewFromVec3(initdcscoord)
 self:T({initdcscoord})
 end
+if _event.IniPlayerName then
+local PilotTable=self.downedPilots
+local _foundPilot=nil
+for _,_pilot in pairs(PilotTable)do
+if _pilot.player==_event.IniPlayerName and _pilot.alive==true then
+_foundPilot=_pilot
+break
+end
+end
+if _foundPilot then
+self:T("Downed pilot already exists!")
+_foundPilot.group:Destroy(false)
+self:_RemoveNameFromDownedPilots(_foundPilot.name)
+self:_CheckDownedPilotTable()
+end
+end
+if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
+self:T("Maxed Downed Pilot!")
+return self
+end
+local wetfeet=false
 local surface=initcoord:GetSurfaceType()
 if surface==land.SurfaceType.WATER then
 self:T("Wet feet!")
@@ -78296,6 +78313,21 @@ local limit=self.maxdownedpilots
 local islimited=self.limitmaxdownedpilots
 local count=self:_CountActiveDownedPilots()
 if islimited and(count>=limit)then
+if self.useFIFOLimitReplacement then
+local oldIndex=-1
+local oldDownedPilot=nil
+for _index,_downedpilot in pairs(self.downedPilots)do
+oldIndex=_index
+oldDownedPilot=_downedpilot
+break
+end
+if oldDownedPilot then
+oldDownedPilot.group:Destroy(false)
+oldDownedPilot.alive=false
+self:_CheckDownedPilotTable()
+return false
+end
+end
 return true
 else
 return false
