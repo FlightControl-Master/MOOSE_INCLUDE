@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-24T14:31:55+02:00-ac7cdb7d163ef97d04f1f41293acaff2eddeb4dd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T19:39:58+02:00-ca3fb4e479ff947c8569254f3170c4158cd1516c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -24171,7 +24171,6 @@ groupsForEmbarking=g4e,
 return Disembarking
 end
 function CONTROLLABLE:TaskOrbitCircleAtVec2(Point,Altitude,Speed)
-self:F2({self.ControllableName,Point,Altitude,Speed})
 local DCSTask={
 id='Orbit',
 params={
@@ -27172,13 +27171,16 @@ function GROUP:GetVelocityVec3()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup and DCSGroup:isExist()then
 local GroupUnits=DCSGroup:getUnits()
-local GroupCount=#GroupUnits
+local GroupCount=0
 local VelocityVec3={x=0,y=0,z=0}
 for _,DCSUnit in pairs(GroupUnits)do
+if DCSUnit:isExist()and DCSUnit:isActive()then
 local UnitVelocityVec3=DCSUnit:getVelocity()
 VelocityVec3.x=VelocityVec3.x+UnitVelocityVec3.x
 VelocityVec3.y=VelocityVec3.y+UnitVelocityVec3.y
 VelocityVec3.z=VelocityVec3.z+UnitVelocityVec3.z
+GroupCount=GroupCount+1
+end
 end
 VelocityVec3.x=VelocityVec3.x/GroupCount
 VelocityVec3.y=VelocityVec3.y/GroupCount
@@ -27624,10 +27626,12 @@ local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local GroupVelocityMax=0
 for Index,UnitData in pairs(DCSGroup:getUnits())do
+if UnitData:isExist()and UnitData:isActive()then
 local UnitVelocityVec3=UnitData:getVelocity()
 local UnitVelocity=math.abs(UnitVelocityVec3.x)+math.abs(UnitVelocityVec3.y)+math.abs(UnitVelocityVec3.z)
 if UnitVelocity>GroupVelocityMax then
 GroupVelocityMax=UnitVelocity
+end
 end
 end
 return GroupVelocityMax
@@ -69812,7 +69816,6 @@ end
 end
 end
 _RUNACT=subtitle
-alltext=alltext..";\n"..subtitle
 if self.rwylength then
 local runact=self.airbase:GetActiveRunway(self.runwaym2t)
 local length=runact.length
@@ -75613,6 +75616,7 @@ rescues=0,
 rescuedpilots=0,
 limitmaxdownedpilots=true,
 maxdownedpilots=10,
+useFIFOLimitReplacement=false,
 allheligroupset=nil,
 topmenuname="CSAR",
 ADFRadioPwr=1000,
@@ -75640,7 +75644,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.32"
+CSAR.version="1.0.33"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -76084,11 +76088,6 @@ if self:_DoubleEjection(_unitname)then
 self:T("Double Ejection!")
 return self
 end
-if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
-self:T("Maxed Downed Pilot!")
-return self
-end
-local wetfeet=false
 local initdcscoord=nil
 local initcoord=nil
 if _event.id==EVENTS.Ejection then
@@ -76100,6 +76099,27 @@ initdcscoord=_event.IniDCSUnit:getPoint()
 initcoord=COORDINATE:NewFromVec3(initdcscoord)
 self:T({initdcscoord})
 end
+if _event.IniPlayerName then
+local PilotTable=self.downedPilots
+local _foundPilot=nil
+for _,_pilot in pairs(PilotTable)do
+if _pilot.player==_event.IniPlayerName and _pilot.alive==true then
+_foundPilot=_pilot
+break
+end
+end
+if _foundPilot then
+self:T("Downed pilot already exists!")
+_foundPilot.group:Destroy(false)
+self:_RemoveNameFromDownedPilots(_foundPilot.name)
+self:_CheckDownedPilotTable()
+end
+end
+if self.limitmaxdownedpilots and self:_ReachedPilotLimit()then
+self:T("Maxed Downed Pilot!")
+return self
+end
+local wetfeet=false
 local surface=initcoord:GetSurfaceType()
 if surface==land.SurfaceType.WATER then
 self:T("Wet feet!")
@@ -76811,25 +76831,12 @@ table.insert(MashSets,self.staticmashes.Set)
 local _shortestDistance=-1
 local _distance=0
 local _helicoord=_heli:GetCoordinate()
-local function GetCloseAirbase(coordinate,Coalition,Category)
-local a=coordinate:GetVec3()
-local distmin=math.huge
-local airbase=nil
-for DCSairbaseID,DCSairbase in pairs(world.getAirbases(Coalition))do
-local b=DCSairbase:getPoint()
-local c=UTILS.VecSubstract(a,b)
-local dist=UTILS.VecNorm(c)
-if dist<distmin and(Category==nil or Category==DCSairbase:getDesc().category)then
-distmin=dist
-airbase=DCSairbase
-end
-end
-return distmin
-end
+local MashName=nil
 if self.allowFARPRescue then
 local position=_heli:GetCoordinate()
 local afb,distance=position:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
+MashName=(afb~=nil)and afb:GetName()or"Unknown"
 end
 for _,_mashes in pairs(MashSets)do
 for _,_mashUnit in pairs(_mashes or{})do
@@ -76842,11 +76849,12 @@ end
 _distance=self:_GetDistance(_helicoord,_mashcoord)
 if _distance~=nil and(_shortestDistance==-1 or _distance<_shortestDistance)then
 _shortestDistance=_distance
+MashName=_mashUnit:GetName()or"Unknown"
 end
 end
 end
 if _shortestDistance~=-1 then
-return _shortestDistance
+return _shortestDistance,MashName
 else
 return-1
 end
@@ -77030,6 +77038,21 @@ local limit=self.maxdownedpilots
 local islimited=self.limitmaxdownedpilots
 local count=self:_CountActiveDownedPilots()
 if islimited and(count>=limit)then
+if self.useFIFOLimitReplacement then
+local oldIndex=-1
+local oldDownedPilot=nil
+for _index,_downedpilot in pairs(self.downedPilots)do
+oldIndex=_index
+oldDownedPilot=_downedpilot
+break
+end
+if oldDownedPilot then
+oldDownedPilot.group:Destroy(false)
+oldDownedPilot.alive=false
+self:_CheckDownedPilotTable()
+return false
+end
+end
 return true
 else
 return false
@@ -79479,6 +79502,24 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
+function AUFTRAG:NewSEADInZone(TargetZone,Altitude,TargetTypes,Duration)
+local mission=AUFTRAG:New(AUFTRAG.Type.SEAD)
+mission:_TargetFromObject(TargetZone)
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
+mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
+mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
+mission.engageZone=TargetZone
+mission.engageTargetTypes=TargetTypes or{"Air defence"}
+mission.missionTask=ENUMS.MissionTask.SEAD
+mission.missionAltitude=mission.engageAltitude
+mission.missionFraction=0.7
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionROT=ENUMS.ROT.EvadeFire
+mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+mission:SetDuration(Duration or 1800)
+return mission
+end
 function AUFTRAG:NewSTRIKE(Target,Altitude,EngageWeaponType)
 local mission=AUFTRAG:New(AUFTRAG.Type.STRIKE)
 mission:_TargetFromObject(Target)
@@ -80996,6 +81037,10 @@ if self:IsStarted()and self:CountOpsGroups()==0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] but count of alive OPSGROUP is zero. Mission DONE!",self.status,self:GetState()))
 return true
 end
+if(self:IsStarted()or self:IsExecuting())and self:CountOpsGroups()>0 then
+self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] and count of alive OPSGROUP > zero. Mission NOT DONE!",self.status,self:GetState()))
+return true
+end
 return true
 end
 function AUFTRAG:OnEventUnitLost(EventData)
@@ -81680,7 +81725,23 @@ param.lastindex=nil
 DCStask.params=param
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.SEAD then
+if self.engageZone then
+self.engageZone:Scan({Object.Category.UNIT},{Unit.Category.GROUND_UNIT})
+local ScanUnitSet=self.engageZone:GetScannedSetUnit()
+local SeadUnitSet=SET_UNIT:New()
+for _,_unit in pairs(ScanUnitSet.Set)do
+local unit=_unit
+if unit and unit:IsAlive()and unit:HasSEAD()then
+self:T("Adding UNIT for SEAD: "..unit:GetName())
+local task=CONTROLLABLE.TaskAttackUnit(nil,unit,GroupAttack,AI.Task.WeaponExpend.ALL,1,Direction,self.engageAltitude,4161536)
+table.insert(DCStasks,task)
+SeadUnitSet:AddUnit(unit)
+end
+end
+self.engageTarget=TARGET:New(SeadUnitSet)
+else
 self:_GetDCSAttackTask(self.engageTarget,DCStasks)
+end
 elseif self.type==AUFTRAG.Type.STRIKE then
 local coords=self.engageTarget:GetCoordinates()
 for _,coord in pairs(coords)do
