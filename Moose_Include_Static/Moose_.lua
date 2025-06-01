@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T20:51:04+02:00-fca6faa3a81188fbaa2fff28f3e859a2102f4c51 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-01T12:20:08+02:00-95767c5ef45ebfdb97423c5461a4da519de6eb2a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60604,8 +60604,7 @@ self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
 self.SRS:SetVolume(Volume or 1)
 if GoogleCreds then
-self.SRS:SetProviderOptionsGoogle(GoogleCreds,GoogleCreds)
-self.SRS:SetProvider(MSRS.Provider.GOOGLE)
+self.SRS:SetGoogle(GoogleCreds)
 end
 if Voice then
 self.SRS:SetVoice(Voice)
@@ -60885,7 +60884,6 @@ self:HandleEvent(EVENTS.Ejection)
 self:HandleEvent(EVENTS.PlayerLeaveUnit,self._PlayerLeft)
 self:HandleEvent(EVENTS.MissionEnd)
 self:HandleEvent(EVENTS.RemoveUnit)
-self:HandleEvent(EVENTS.UnitLost,self.OnEventRemoveUnit)
 self.StatusTimer=TIMER:New(self._Status,self):Start(2,0.5)
 self:__Status(1)
 end
@@ -63558,13 +63556,13 @@ end
 function AIRBOSS:OnEventRemoveUnit(EventData)
 self:F3({eventland=EventData})
 if EventData==nil then
-self:E(self.lid.."ERROR: EventData=nil in event REMOVEUNIT!")
-self:E(EventData)
+self:T(self.lid.."ERROR: EventData=nil in event REMOVEUNIT!")
+self:T(EventData)
 return
 end
 if EventData.IniUnit==nil then
-self:E(self.lid.."ERROR: EventData.IniUnit=nil in event REMOVEUNIT!")
-self:E(EventData)
+self:T(self.lid.."ERROR: EventData.IniUnit=nil in event REMOVEUNIT!")
+self:T(EventData)
 return
 end
 local _unitName=EventData.IniUnitName
