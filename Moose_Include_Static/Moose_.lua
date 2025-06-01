@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-05-30T18:37:50+02:00-c1997d9f70e44639b3d2fc055804026e961c1c6c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-01T12:19:42+02:00-f5881eda533a97bae379e3b5d5b81cd6895fa0d1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -59562,13 +59562,13 @@ end
 function AIRBOSS:OnEventRemoveUnit(EventData)
 self:F3({eventland=EventData})
 if EventData==nil then
-self:E(self.lid.."ERROR: EventData=nil in event REMOVEUNIT!")
-self:E(EventData)
+self:T(self.lid.."ERROR: EventData=nil in event REMOVEUNIT!")
+self:T(EventData)
 return
 end
 if EventData.IniUnit==nil then
-self:E(self.lid.."ERROR: EventData.IniUnit=nil in event REMOVEUNIT!")
-self:E(EventData)
+self:T(self.lid.."ERROR: EventData.IniUnit=nil in event REMOVEUNIT!")
+self:T(EventData)
 return
 end
 local _unitName=EventData.IniUnitName
