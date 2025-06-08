@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-01T12:20:08+02:00-95767c5ef45ebfdb97423c5461a4da519de6eb2a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-08T18:43:35+02:00-62816f217b659990bf908553696f07b4df9624b2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17415,19 +17415,67 @@ trigger.action.illuminationBomb(self:GetVec3(),Power)
 end
 return self
 end
-function COORDINATE:Smoke(SmokeColor,Duration,Delay,Name)
-self:F2({SmokeColor,Name,Duration,Delay})
+function COORDINATE:Smoke(SmokeColor,Duration,Delay,Name,Offset,Direction,Distance)
+self:F2({SmokeColor,Name,Duration,Delay,Offset})
 SmokeColor=SmokeColor or SMOKECOLOR.Green
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,COORDINATE.Smoke,self,SmokeColor,Duration,0,Name)
+self:ScheduleOnce(Delay,COORDINATE.Smoke,self,SmokeColor,Duration,0,Name,Direction,Distance)
 else
 self.firename=Name or"Smoke-"..math.random(1,100000)
+if Offset or self.SmokeOffset then
+local Angle=Direction or self:GetSmokeOffsetDirection()
+local Distance=Distance or self:GetSmokeOffsetDistance()
+local newpos=self:Translate(Distance,Angle,true,false)
+local newvec3=newpos:GetVec3()
+trigger.action.smoke(newvec3,SmokeColor,self.firename)
+else
 trigger.action.smoke(self:GetVec3(),SmokeColor,self.firename)
+end
 if Duration and Duration>0 then
 self:ScheduleOnce(Duration,COORDINATE.StopSmoke,self,self.firename)
 end
 end
 return self
+end
+function COORDINATE:GetSmokeOffsetDirection()
+local direction=self.SmokeOffsetDirection or math.random(1,359)
+return direction
+end
+function COORDINATE:SetSmokeOffsetDirection(Direction)
+if self then
+self.SmokeOffsetDirection=Direction or math.random(1,359)
+return self
+else
+COORDINATE.SmokeOffsetDirection=Direction or math.random(1,359)
+end
+end
+function COORDINATE:GetSmokeOffsetDistance()
+local distance=self.SmokeOffsetDistance or math.random(10,20)
+return distance
+end
+function COORDINATE:SetSmokeOffsetDistance(Distance)
+if self then
+self.SmokeOffsetDistance=Distance or math.random(10,20)
+return self
+else
+COORDINATE.SmokeOffsetDistance=Distance or math.random(10,20)
+end
+end
+function COORDINATE:SwitchSmokeOffsetOn()
+if self then
+self.SmokeOffset=true
+return self
+else
+COORDINATE.SmokeOffset=true
+end
+end
+function COORDINATE:SwitchSmokeOffsetOff()
+if self then
+self.SmokeOffset=false
+return self
+else
+COORDINATE.SmokeOffset=false
+end
 end
 function COORDINATE:StopSmoke(name)
 self:StopBigSmokeAndFire(name)
