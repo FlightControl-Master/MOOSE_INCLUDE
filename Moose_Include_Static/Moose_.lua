@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-10T10:02:37+02:00-2c15d7ed00880d48aa0024139223318968db1ab3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-10T18:05:19+02:00-14300229fb306af8e9576154f1e97753cb3303db ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2378,6 +2378,11 @@ end
 end
 function UTILS.GetReportingName(Typename)
 local typename=string.lower(Typename)
+if string.find(typename,"ka-50",1,true)then
+return"Shark"
+elseif string.find(typename,"a-50",1,true)then
+return"Mainstay"
+end
 for name,value in pairs(ENUMS.ReportingName.NATO)do
 local svalue=string.lower(value)
 if string.find(typename,svalue,1,true)then
