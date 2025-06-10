@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-10T18:05:58+02:00-3aeec78f79dd0f74597758f849ce95f45f2ab4e5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-10T21:58:21+02:00-f6a8317c4212e08b8f9e15e85a682318c2d3d1b6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -94038,6 +94038,7 @@ self:__ElementAirborne(0.01,Element)
 end
 function FLIGHTGROUP:onafterElementAirborne(From,Event,To,Element)
 self:T2(self.lid..string.format("Element airborne %s",Element.name))
+self:_SetElementParkingFree(Element)
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.AIRBORNE)
 end
 function FLIGHTGROUP:onafterElementLanded(From,Event,To,Element,airbase)
@@ -102552,6 +102553,7 @@ function OPSGROUP:onafterUnpauseMission(From,Event,To)
 local mission=self:_GetPausedMission()
 if mission then
 self:T(self.lid..string.format("Unpausing mission %s [%s]",mission:GetName(),mission:GetType()))
+mission.unpaused=true
 self:MissionStart(mission)
 for i,mid in pairs(self.pausedmissions)do
 if mid==mission.auftragsnummer then
@@ -102878,7 +102880,7 @@ self:T(self.lid.."Already within 25 meters of mission waypoint ==> TaskExecute()
 self:TaskExecute(waypointtask)
 return
 end
-if self.speedMax<=3.6 or mission.teleport then
+if(self.speedMax<=3.6 or mission.teleport)and not mission.unpaused then
 self:Teleport(waypointcoord,nil,true)
 self:__TaskExecute(-1,waypointtask)
 else
