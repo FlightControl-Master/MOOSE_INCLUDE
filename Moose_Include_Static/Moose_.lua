@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-10T21:58:21+02:00-f6a8317c4212e08b8f9e15e85a682318c2d3d1b6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-12T09:09:38+02:00-52cbb7202c3b1265cbeb63a22b81c03fc9777f9e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -114090,7 +114090,7 @@ DespawnAfterHolding=true,
 ListOfAuftrag={},
 defaulttakeofftype="hot",
 }
-EASYGCICAP.version="0.1.22"
+EASYGCICAP.version="0.1.23"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -114404,6 +114404,11 @@ function EASYGCICAP:_SetTankerPatrolPoints()
 self:T(self.lid.."_SetTankerPatrolPoints")
 for _,_data in pairs(self.ManagedTK)do
 local data=_data
+self:T("Airbasename = "..data.AirbaseName)
+if not self.wings[data.AirbaseName]then
+MESSAGE:New(self.lid.."You are trying to create a TANKER point for which there is no wing! "..tostring(data.AirbaseName),30,"CHECK"):ToAllIf(self.debug):ToLog()
+return
+end
 local Wing=self.wings[data.AirbaseName][1]
 local Coordinate=data.Coordinate
 local Altitude=data.Altitude
@@ -114418,6 +114423,11 @@ function EASYGCICAP:_SetAwacsPatrolPoints()
 self:T(self.lid.."_SetAwacsPatrolPoints")
 for _,_data in pairs(self.ManagedEWR)do
 local data=_data
+self:T("Airbasename = "..data.AirbaseName)
+if not self.wings[data.AirbaseName]then
+MESSAGE:New(self.lid.."You are trying to create an AWACS point for which there is no wing! "..tostring(data.AirbaseName),30,"CHECK"):ToAllIf(self.debug):ToLog()
+return
+end
 local Wing=self.wings[data.AirbaseName][1]
 local Coordinate=data.Coordinate
 local Altitude=data.Altitude
@@ -114451,6 +114461,11 @@ function EASYGCICAP:_SetReconPatrolPoints()
 self:T(self.lid.."_SetReconPatrolPoints")
 for _,_data in pairs(self.ManagedREC)do
 local data=_data
+self:T("Airbasename = "..data.AirbaseName)
+if not self.wings[data.AirbaseName]then
+MESSAGE:New(self.lid.."You are trying to create a RECON point for which there is no wing! "..tostring(data.AirbaseName),30,"CHECK"):ToAllIf(self.debug):ToLog()
+return
+end
 local Wing=self.wings[data.AirbaseName][1]
 local Coordinate=data.Coordinate
 local Altitude=data.Altitude
