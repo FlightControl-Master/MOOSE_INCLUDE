@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T15:42:57+02:00-c19713949d40d912ecd8d93aad85e3ef65359c44 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T17:02:35+02:00-93a8d8bc2d12e7e2e89241a9644b4c77f2b0899b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71955,7 +71955,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.3.34"
+CTLD.version="1.3.35"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -75240,15 +75240,20 @@ for index,cargozone in pairs(zones[i])do
 local CZone=cargozone
 local zonename=CZone.name
 local zone=nil
+local airbasezone=false
 if i==4 then
 zone=UNIT:FindByName(zonename)
 else
 zone=ZONE:FindByName(zonename)
 if not zone then
 zone=AIRBASE:FindByName(zonename):GetZone()
+airbasezone=true
 end
 end
 local zonecoord=zone:GetCoordinate()
+if(i==1 or 1==3)and airbasezone==true and zone:IsInstanceOf("ZONE_BASE")then
+zonecoord=zone:GetRandomCoordinate(inner,outer,{land.SurfaceType.LAND})
+end
 if zonecoord then
 local active=CZone.active
 local color=CZone.color
