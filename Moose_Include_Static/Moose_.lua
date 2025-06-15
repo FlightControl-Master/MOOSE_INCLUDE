@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-12T09:10:07+02:00-8717faf7a11684d7535ba1e4422b916bc88b396b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T15:43:48+02:00-2e31c62efbbb4b86098b440b80bf5b0ba06863bb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29972,7 +29972,6 @@ AIRBASE.Syria={
 ["Al_Dumayr"]="Al-Dumayr",
 ["Al_Qusayr"]="Al Qusayr",
 ["Aleppo"]="Aleppo",
-["Amman"]="Amman",
 ["An_Nasiriyah"]="An Nasiriyah",
 ["At_Tanf"]="At Tanf",
 ["Bassel_Al_Assad"]="Bassel Al-Assad",
@@ -30004,6 +30003,7 @@ AIRBASE.Syria={
 ["Kuweires"]="Kuweires",
 ["Lakatamia"]="Lakatamia",
 ["Larnaca"]="Larnaca",
+["Marka"]="Marka",
 ["Marj_Ruhayyil"]="Marj Ruhayyil",
 ["Marj_as_Sultan_North"]="Marj as Sultan North",
 ["Marj_as_Sultan_South"]="Marj as Sultan South",
@@ -30034,9 +30034,8 @@ AIRBASE.Syria={
 ["Wujah_Al_Hajar"]="Wujah Al Hajar",
 ["Ben_Gurion"]="Ben Gurion",
 ["Hatzor"]="Hatzor",
-["Palmashim"]="Palmashim",
+["Palmachim"]="Palmachim",
 ["Tel_Nof"]="Tel Nof",
-["Marka"]="Marka",
 }
 AIRBASE.MarianaIslands={
 ["Andersen_AFB"]="Andersen AFB",
@@ -30093,7 +30092,7 @@ AIRBASE.Sinai={
 ["Bilbeis_Air_Base"]="Bilbeis Air Base",
 ["Bir_Hasanah"]="Bir Hasanah",
 ["Birma_Air_Base"]="Birma Air Base",
-["Borj_El_Arab_International_Airport"]="Borj El Arab International Airport",
+["Borg_El_Arab_International_Airport"]="Borg El Arab International Airport",
 ["Cairo_International_Airport"]="Cairo International Airport",
 ["Cairo_West"]="Cairo West",
 ["Difarsuwar_Airfield"]="Difarsuwar Airfield",
@@ -77135,8 +77134,8 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
-self.staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
-self.zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
+self.staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
+self.zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterStart()
 if not self.coordinate then
 local csarhq=self.mash:GetRandom()
 if csarhq then
@@ -79424,7 +79423,7 @@ Altitude=Altitude or 10000
 local mission=AUFTRAG:NewORBIT(Coordinate or ZoneCAP:GetCoordinate(),Altitude,Speed or 350,Heading,Leg)
 mission.type=AUFTRAG.Type.CAP
 mission:_SetLogID()
-mission.engageZone=ZoneCAP
+mission.engageZone=ZoneCAP or Coordinate
 mission.engageTargetTypes=TargetTypes or{"Air"}
 mission.missionTask=ENUMS.MissionTask.CAP
 mission.optionROE=ENUMS.ROE.OpenFire
@@ -81724,7 +81723,14 @@ elseif self.type==AUFTRAG.Type.BOMBCARPET then
 local DCStask=CONTROLLABLE.TaskCarpetBombing(nil,self:GetTargetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,self.engageLength)
 table.insert(DCStasks,DCStask)
 elseif self.type==AUFTRAG.Type.CAP then
-local DCStask=CONTROLLABLE.EnRouteTaskEngageTargetsInZone(nil,self.engageZone:GetVec2(),self.engageZone:GetRadius(),self.engageTargetTypes,Priority)
+local Vec2=self.engageZone:GetVec2()
+local Radius
+if self.engageZone:IsInstanceOf("COORDINATE")then
+Radius=UTILS.NMToMeters(20)
+else
+Radius=self.engageZone:GetRadius()
+end
+local DCStask=CONTROLLABLE.EnRouteTaskEngageTargetsInZone(nil,Vec2,Radius,self.engageTargetTypes,Priority)
 table.insert(self.enrouteTasks,DCStask)
 elseif self.type==AUFTRAG.Type.CAS then
 local DCStask=CONTROLLABLE.EnRouteTaskEngageTargetsInZone(nil,self.engageZone:GetVec2(),self.engageZone:GetRadius(),self.engageTargetTypes,Priority)
@@ -92801,6 +92807,7 @@ self:__ElementAirborne(0.01,Element)
 end
 function FLIGHTGROUP:onafterElementAirborne(From,Event,To,Element)
 self:T2(self.lid..string.format("Element airborne %s",Element.name))
+self:_SetElementParkingFree(Element)
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.AIRBORNE)
 end
 function FLIGHTGROUP:onafterElementLanded(From,Event,To,Element,airbase)
@@ -101315,6 +101322,7 @@ function OPSGROUP:onafterUnpauseMission(From,Event,To)
 local mission=self:_GetPausedMission()
 if mission then
 self:T(self.lid..string.format("Unpausing mission %s [%s]",mission:GetName(),mission:GetType()))
+mission.unpaused=true
 self:MissionStart(mission)
 for i,mid in pairs(self.pausedmissions)do
 if mid==mission.auftragsnummer then
@@ -101641,7 +101649,7 @@ self:T(self.lid.."Already within 25 meters of mission waypoint ==> TaskExecute()
 self:TaskExecute(waypointtask)
 return
 end
-if self.speedMax<=3.6 or mission.teleport then
+if(self.speedMax<=3.6 or mission.teleport)and not mission.unpaused then
 self:Teleport(waypointcoord,nil,true)
 self:__TaskExecute(-1,waypointtask)
 else
