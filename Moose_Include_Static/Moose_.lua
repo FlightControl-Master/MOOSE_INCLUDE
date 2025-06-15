@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-12T09:09:38+02:00-52cbb7202c3b1265cbeb63a22b81c03fc9777f9e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T10:19:19+02:00-83447a3fb4889e2116ddd01fb8672e17ba376c56 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78410,8 +78410,8 @@ else
 self.allheligroupset=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterCategoryHelicopter():FilterStart()
 end
 self.mash=SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
-self.staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterOnce()
-self.zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterOnce()
+self.staticmashes=SET_STATIC:New():FilterCoalitions(self.coalitiontxt):FilterPrefixes(self.mashprefix):FilterStart()
+self.zonemashes=SET_ZONE:New():FilterPrefixes(self.mashprefix):FilterStart()
 if not self.coordinate then
 local csarhq=self.mash:GetRandom()
 if csarhq then
