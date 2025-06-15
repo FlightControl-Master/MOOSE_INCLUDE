@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T13:14:05+02:00-a53763221c4cd17246ae550e6ca8c489289a4b6f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T15:38:12+02:00-382b049c5fe5f77c423cafdacaf75bca1b656f7e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29454,7 +29454,6 @@ AIRBASE.Syria={
 ["Al_Dumayr"]="Al-Dumayr",
 ["Al_Qusayr"]="Al Qusayr",
 ["Aleppo"]="Aleppo",
-["Amman"]="Amman",
 ["An_Nasiriyah"]="An Nasiriyah",
 ["At_Tanf"]="At Tanf",
 ["Bassel_Al_Assad"]="Bassel Al-Assad",
@@ -29486,6 +29485,7 @@ AIRBASE.Syria={
 ["Kuweires"]="Kuweires",
 ["Lakatamia"]="Lakatamia",
 ["Larnaca"]="Larnaca",
+["Marka"]="Marka",
 ["Marj_Ruhayyil"]="Marj Ruhayyil",
 ["Marj_as_Sultan_North"]="Marj as Sultan North",
 ["Marj_as_Sultan_South"]="Marj as Sultan South",
@@ -29516,9 +29516,8 @@ AIRBASE.Syria={
 ["Wujah_Al_Hajar"]="Wujah Al Hajar",
 ["Ben_Gurion"]="Ben Gurion",
 ["Hatzor"]="Hatzor",
-["Palmashim"]="Palmashim",
+["Palmachim"]="Palmachim",
 ["Tel_Nof"]="Tel Nof",
-["Marka"]="Marka",
 }
 AIRBASE.MarianaIslands={
 ["Andersen_AFB"]="Andersen AFB",
