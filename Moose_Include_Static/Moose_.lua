@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T17:01:58+02:00-cbcc893ce5448885818c2bd43fd8d998ef7a7535 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-18T14:19:50+02:00-eb2c6ac6f2f4123265127eefba68e6fdae5b1205 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -85380,7 +85380,7 @@ Wavenet={
 ["en_GB_Wavenet_F"]='en-GB-Wavenet-N',
 ["en_GB_Wavenet_O"]='en-GB-Wavenet-O',
 ["en_GB_Wavenet_N"]='en-GB-Wavenet-N',
-["en_US_Wavenet_A"]='en-US-Wavenet-N',
+["en_US_Wavenet_A"]='en-US-Wavenet-A',
 ["en_US_Wavenet_B"]='en-US-Wavenet-B',
 ["en_US_Wavenet_C"]='en-US-Wavenet-C',
 ["en_US_Wavenet_D"]='en-US-Wavenet-D',
