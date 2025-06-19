@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-18T14:29:34+02:00-8ec86973c66a37871dde49f90ddc38d0989b52a2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-19T09:15:42+02:00-2594c5bbf0be4bb7864406ec888a4f3488397842 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6417,7 +6417,7 @@ function SCHEDULEDISPATCHER:Stop(Scheduler,CallID)
 self:F2({Stop=CallID,Scheduler=Scheduler})
 if CallID then
 local Schedule=self.Schedule[Scheduler][CallID]
-if Schedule.ScheduleID then
+if Schedule and Schedule.ScheduleID then
 self:T(string.format("SCHEDULEDISPATCHER stopping scheduler CallID=%s, ScheduleID=%s",tostring(CallID),tostring(Schedule.ScheduleID)))
 timer.removeFunction(Schedule.ScheduleID)
 Schedule.ScheduleID=nil
