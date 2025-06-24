@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-23T22:41:16+02:00-6d9c3fd0aac3bc91aa57c088ce94d80a422880bb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-24T18:22:18+02:00-9fd6729967cd415938544a68c2ffde58b3f5b732 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -29528,6 +29528,20 @@ AIRBASE.MarianaIslands={
 ["Rota_Intl"]="Rota Intl",
 ["Saipan_Intl"]="Saipan Intl",
 ["Tinian_Intl"]="Tinian Intl",
+}
+AIRBASE.MarianaIslandsWWII=
+{
+["Agana"]="Agana",
+["Airfield_3"]="Airfield 3",
+["Charon_Kanoa"]="Charon Kanoa",
+["Gurguan_Point"]="Gurguan Point",
+["Isley"]="Isley",
+["Kagman"]="Kagman",
+["Marpi"]="Marpi",
+["Orote"]="Orote",
+["Pagan"]="Pagan",
+["Rota"]="Rota",
+["Ushi"]="Ushi",
 }
 AIRBASE.SouthAtlantic={
 ["Almirante_Schroeders"]="Almirante Schroeders",
