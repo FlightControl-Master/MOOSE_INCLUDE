@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-15T15:43:48+02:00-2e31c62efbbb4b86098b440b80bf5b0ba06863bb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-24T18:49:45+02:00-e8f30fc98bbb858f7006eb8e47049d83cceaacdb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6417,7 +6417,7 @@ function SCHEDULEDISPATCHER:Stop(Scheduler,CallID)
 self:F2({Stop=CallID,Scheduler=Scheduler})
 if CallID then
 local Schedule=self.Schedule[Scheduler][CallID]
-if Schedule.ScheduleID then
+if Schedule and Schedule.ScheduleID then
 self:T(string.format("SCHEDULEDISPATCHER stopping scheduler CallID=%s, ScheduleID=%s",tostring(CallID),tostring(Schedule.ScheduleID)))
 timer.removeFunction(Schedule.ScheduleID)
 Schedule.ScheduleID=nil
@@ -11618,7 +11618,7 @@ if client then
 end
 local PlayerName=Event.IniUnit:GetPlayerName()
 if PlayerName then
-self:I(string.format("Player '%s' joined unit '%s' of group '%s'",tostring(PlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniDCSGroupName)))
+self:I(string.format("Player '%s' joined unit '%s' (%s) of group '%s'",tostring(PlayerName),tostring(Event.IniDCSUnitName),tostring(Event.IniTypeName),tostring(Event.IniDCSGroupName)))
 if client==nil or(client and client:CountPlayers()==0)then
 client=self:AddClient(Event.IniDCSUnitName,true)
 end
@@ -21139,7 +21139,7 @@ end
 return self:_SpawnStatic(self.TemplateStaticUnit,self.CountryID)
 end
 function SPAWNSTATIC:SpawnFromZone(Zone,Heading,NewName)
-local Static=self:SpawnFromPointVec2(Zone:GetPointVec2(),Heading,NewName)
+local Static=self:SpawnFromCoordinate(Zone:GetCoordinate(),Heading,NewName)
 return Static
 end
 function SPAWNSTATIC:_SpawnStatic(Template,CountryID)
@@ -30047,6 +30047,20 @@ AIRBASE.MarianaIslands={
 ["Saipan_Intl"]="Saipan Intl",
 ["Tinian_Intl"]="Tinian Intl",
 }
+AIRBASE.MarianaIslandsWWII=
+{
+["Agana"]="Agana",
+["Airfield_3"]="Airfield 3",
+["Charon_Kanoa"]="Charon Kanoa",
+["Gurguan_Point"]="Gurguan Point",
+["Isley"]="Isley",
+["Kagman"]="Kagman",
+["Marpi"]="Marpi",
+["Orote"]="Orote",
+["Pagan"]="Pagan",
+["Rota"]="Rota",
+["Ushi"]="Ushi",
+}
 AIRBASE.SouthAtlantic={
 ["Almirante_Schroeders"]="Almirante Schroeders",
 ["Comandante_Luis_Piedrabuena"]="Comandante Luis Piedrabuena",
@@ -30151,6 +30165,12 @@ AIRBASE.Kola={
 ["Enontekio"]="Enontekio",
 ["Evenes"]="Evenes",
 ["Hosio"]="Hosio",
+["Kilpyavr"]="Kilpyavr",
+["Afrikanda"]="Afrikanda",
+["Kalevala"]="Kalevala",
+["Koshka_Yavr"]="Koshka Yavr",
+["Poduzhemye"]="Poduzhemye",
+["Luostari_Pechenga"]="Luostari Pechenga",
 }
 AIRBASE.Afghanistan={
 ["Bagram"]="Bagram",
@@ -58786,6 +58806,8 @@ C2A="C2A_Greyhound",
 RHINOE="FA-18E",
 RHINOF="FA-18F",
 GROWLER="EA-18G",
+CORSAIR="F4U-1D",
+CORSAIR_CW="F4U-1D CW",
 }
 AIRBOSS.CarrierType={
 ROOSEVELT="CVN_71",
@@ -58795,6 +58817,7 @@ TRUMAN="CVN_75",
 STENNIS="Stennis",
 FORRESTAL="Forrestal",
 VINSON="VINSON",
+ESSEX="Essex",
 HERMES="HERMES81",
 INVINCIBLE="hms_invincible",
 TARAWA="LHA_Tarawa",
@@ -58851,7 +58874,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.3.3"
+AIRBOSS.version="1.4.0"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -58932,6 +58955,8 @@ elseif self.carriertype==AIRBOSS.CarrierType.FORRESTAL then
 self:_InitForrestal()
 elseif self.carriertype==AIRBOSS.CarrierType.VINSON then
 self:_InitStennis()
+elseif self.carriertype==AIRBOSS.CarrierType.ESSEX then
+self:_InitEssex()
 elseif self.carriertype==AIRBOSS.CarrierType.HERMES then
 self:_InitHermes()
 elseif self.carriertype==AIRBOSS.CarrierType.INVINCIBLE then
@@ -59257,7 +59282,12 @@ self.Tmessage=Duration or 10
 return self
 end
 function AIRBOSS:SetGlideslopeErrorThresholds(_max,_min,High,HIGH,Low,LOW)
-if self.carriertype==AIRBOSS.CarrierType.INVINCIBLE or self.carriertype==AIRBOSS.CarrierType.HERMES or self.carriertype==AIRBOSS.CarrierType.TARAWA or self.carriertype==AIRBOSS.CarrierType.AMERICA or self.carriertype==AIRBOSS.CarrierType.JCARLOS or self.carriertype==AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype==AIRBOSS.CarrierType.INVINCIBLE or
+self.carriertype==AIRBOSS.CarrierType.HERMES or
+self.carriertype==AIRBOSS.CarrierType.TARAWA or
+self.carriertype==AIRBOSS.CarrierType.AMERICA or
+self.carriertype==AIRBOSS.CarrierType.JCARLOS or
+self.carriertype==AIRBOSS.CarrierType.CANBERRA then
 self.gle._max=_max or 0.7
 self.gle.High=High or 1.4
 self.gle.HIGH=HIGH or 1.9
@@ -60155,6 +60185,33 @@ self.carrierparam.wire3=64
 self.carrierparam.wire4=74
 self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
 end
+function AIRBOSS:_InitEssex()
+self:_InitNimitz()
+self.carrierparam.sterndist=-126
+self.carrierparam.deckheight=19.27
+self.carrierparam.totlength=268
+self.carrierparam.totwidthport=23
+self.carrierparam.totwidthstarboard=23
+self.carrierparam.rwyangle=0.0
+self.carrierparam.rwylength=265
+self.carrierparam.rwywidth=20
+self.carrierparam.wire1=21.9
+self.carrierparam.wire2=28.3
+self.carrierparam.wire3=34.7
+self.carrierparam.wire4=41.1
+self.carrierparam.wire5=47.4
+self.carrierparam.wire6=53.7
+self.carrierparam.wire7=59.0
+self.carrierparam.wire8=64.1
+self.carrierparam.wire9=72.7
+self.carrierparam.wire10=78.0
+self.carrierparam.wire11=85.5
+self.carrierparam.wire12=105.9
+self.carrierparam.wire13=113.3
+self.carrierparam.wire14=121.0
+self.carrierparam.wire15=128.5
+self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
+end
 function AIRBOSS:_InitHermes()
 self:_InitStennis()
 self.carrierparam.sterndist=-105
@@ -60659,6 +60716,7 @@ local goshawk=playerData.actype==AIRBOSS.AircraftCarrier.T45C
 local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
 local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+local corsair=playerData.actype==AIRBOSS.AircraftCarrier.CORSAIR or playerData.actype==AIRBOSS.AircraftCarrier.CORSAIR_CW
 local aoa={}
 if hornet then
 aoa.SLOW=9.8
@@ -60700,6 +60758,14 @@ aoa.OnSpeed=10.0
 aoa.OnSpeedMin=9.5
 aoa.Fast=8.0
 aoa.FAST=7.5
+elseif corsair then
+aoa.SLOW=16.0
+aoa.Slow=13.5
+aoa.OnSpeedMax=12.5
+aoa.OnSpeed=10.0
+aoa.OnSpeedMin=9.5
+aoa.Fast=8.0
+aoa.FAST=7.5
 end
 return aoa
 end
@@ -60733,6 +60799,7 @@ local skyhawk=playerData.actype==AIRBOSS.AircraftCarrier.A4EC
 local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 local harrier=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
 local goshawk=playerData.actype==AIRBOSS.AircraftCarrier.T45C
+local corsair=playerData.actype==AIRBOSS.AircraftCarrier.CORSAIR or playerData.actype==AIRBOSS.AircraftCarrier.CORSAIR_CW
 local alt
 local aoa
 local dist
@@ -60769,6 +60836,9 @@ speed=UTILS.KnotsToMps(250)
 elseif goshawk then
 alt=UTILS.FeetToMeters(800)
 speed=UTILS.KnotsToMps(300)
+elseif corsair then
+alt=UTILS.FeetToMeters(300)
+speed=UTILS.KnotsToMps(120)
 end
 elseif step==AIRBOSS.PatternStep.BREAKENTRY then
 if hornet or tomcat or harrier then
@@ -60780,24 +60850,36 @@ speed=UTILS.KnotsToMps(250)
 elseif goshawk then
 alt=UTILS.FeetToMeters(800)
 speed=UTILS.KnotsToMps(300)
+elseif corsair then
+alt=UTILS.FeetToMeters(200)
+speed=UTILS.KnotsToMps(110)
 end
 elseif step==AIRBOSS.PatternStep.EARLYBREAK then
 if hornet or tomcat or harrier or goshawk then
 alt=UTILS.FeetToMeters(800)
 elseif skyhawk then
 alt=UTILS.FeetToMeters(600)
+elseif corsair then
+alt=UTILS.FeetToMeters(200)
+speed=UTILS.KnotsToMps(100)
 end
 elseif step==AIRBOSS.PatternStep.LATEBREAK then
 if hornet or tomcat or harrier or goshawk then
 alt=UTILS.FeetToMeters(800)
 elseif skyhawk then
 alt=UTILS.FeetToMeters(600)
+elseif corsair then
+alt=UTILS.FeetToMeters(150)
+speed=UTILS.KnotsToMps(100)
 end
 elseif step==AIRBOSS.PatternStep.ABEAM then
 if hornet or tomcat or harrier or goshawk then
 alt=UTILS.FeetToMeters(600)
 elseif skyhawk then
 alt=UTILS.FeetToMeters(500)
+elseif corsair then
+alt=UTILS.FeetToMeters(150)
+speed=UTILS.KnotsToMps(90)
 end
 aoa=aoaac.OnSpeed
 if goshawk then
@@ -60816,6 +60898,9 @@ elseif skyhawk then
 alt=UTILS.FeetToMeters(500)
 elseif harrier then
 alt=UTILS.FeetToMeters(425)
+elseif corsair then
+alt=UTILS.FeetToMeters(90)
+speed=UTILS.KnotsToMps(90)
 end
 aoa=aoaac.OnSpeed
 elseif step==AIRBOSS.PatternStep.WAKE then
@@ -60825,6 +60910,8 @@ elseif tomcat then
 alt=UTILS.FeetToMeters(430)
 elseif skyhawk then
 alt=UTILS.FeetToMeters(370)
+elseif corsair then
+alt=UTILS.FeetToMeters(80)
 end
 aoa=aoaac.OnSpeed
 elseif step==AIRBOSS.PatternStep.FINAL then
@@ -60836,6 +60923,8 @@ elseif skyhawk then
 alt=UTILS.FeetToMeters(300)
 elseif harrier then
 alt=UTILS.FeetToMeters(312)
+elseif corsair then
+alt=UTILS.FeetToMeters(80)
 end
 aoa=aoaac.OnSpeed
 end
@@ -61226,6 +61315,8 @@ elseif flight.actype==AIRBOSS.AircraftCarrier.F14A_AI or flight.actype==AIRBOSS.
 Speed=UTILS.KnotsToKmph(175)
 elseif flight.actype==AIRBOSS.AircraftCarrier.S3B or flight.actype==AIRBOSS.AircraftCarrier.S3BTANKER then
 Speed=UTILS.KnotsToKmph(140)
+elseif flight.actype==AIRBOSS.AircraftCarrier.CORSAIR or flight.actype==AIRBOSS.AircraftCarrier.CORSAIR_CW then
+Speed=UTILS.KnotsToKmph(100)
 end
 local Carrier=self:GetCoordinate()
 local hdg=self:GetHeading()
@@ -63110,6 +63201,8 @@ elseif self.carriertype==AIRBOSS.CarrierType.STENNIS then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(7,FB+90,true,true)
 elseif self.carriertype==AIRBOSS.CarrierType.FORRESTAL then
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(7.5,FB+90,true,true)
+elseif self.carriertype==AIRBOSS.CarrierType.ESSEX then
+self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(-1,FB+90,true,true)
 else
 self.sterncoord:Translate(self.carrierparam.sterndist,hdg,true,true):Translate(9.5,FB+90,true,true)
 end
@@ -70680,7 +70773,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.3.34"
+CTLD.version="1.3.35"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70920,6 +71013,9 @@ if self.CtldUnits[unitname]then
 local _group=event.IniGroup
 local _unit=event.IniUnit
 self:_RefreshLoadCratesMenu(_group,_unit)
+if self:IsFixedWing(_unit)and self.enableFixedWing then
+self:_RefreshDropCratesMenu(_group,_unit)
+end
 end
 elseif event.id==EVENTS.PlayerLeaveUnit or event.id==EVENTS.UnitLost then
 local unitname=event.IniUnitName or"none"
@@ -73169,6 +73265,17 @@ for _,cObj in ipairs(chunk)do
 cObj:SetWasDropped(true)
 cObj:SetHasMoved(true)
 end
+local cname=crateObj:GetName()or"Unknown"
+local count=#chunk
+if needed>1 then
+if count==needed then
+self:_SendMessage(string.format("Dropped %d %s.",1,cname),10,false,Group)
+else
+self:_SendMessage(string.format("Dropped %d/%d crate(s) of %s.",count,needed,cname),15,false,Group)
+end
+else
+self:_SendMessage(string.format("Dropped %d %s(s).",count,cname),10,false,Group)
+end
 local loadedData=self.Loaded_Cargo[unitName]
 if loadedData and loadedData.Cargo then
 local newList={}
@@ -73261,7 +73368,9 @@ end
 else
 local mAll=MENU_GROUP:New(Group,"Drop ALL crates",dropCratesMenu)
 MENU_GROUP_COMMAND:New(Group,"Drop",mAll,self._UnloadCrates,self,Group,Unit)
+if not(self:IsUnitInAir(Unit)and self:IsFixedWing(Unit))then
 MENU_GROUP_COMMAND:New(Group,"Drop and build",mAll,self._DropAndBuild,self,Group,Unit)
+end
 self.CrateGroupList=self.CrateGroupList or{}
 self.CrateGroupList[Unit:GetName()]={}
 local lineIndex=1
@@ -73281,7 +73390,9 @@ table.insert(self.CrateGroupList[Unit:GetName()],chunk)
 local setIndex=#self.CrateGroupList[Unit:GetName()]
 local mSet=MENU_GROUP:New(Group,label,dropCratesMenu)
 MENU_GROUP_COMMAND:New(Group,"Drop",mSet,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
+if not(self:IsUnitInAir(Unit)and self:IsFixedWing(Unit))then
 MENU_GROUP_COMMAND:New(Group,"Drop and build",mSet,self._DropSingleAndBuild,self,Group,Unit,setIndex)
+end
 i=i+needed
 else
 local chunk={}
@@ -73390,6 +73501,8 @@ end
 foundCargo:SetWasDropped(true)
 if cType==CTLD_CARGO.Enum.ENGINEERS then
 self.Engineers=self.Engineers+1
+local grpname=self.DroppedTroops[self.TroopCounter]:GetName()
+self.EngineersInField[self.Engineers]=CTLD_ENGINEERING:New(name,grpname)
 self:_SendMessage(string.format("Dropped Engineers %s into action!",name),10,false,Group)
 else
 self:_SendMessage(string.format("Dropped Troops %s into action!",name),10,false,Group)
@@ -73965,15 +74078,20 @@ for index,cargozone in pairs(zones[i])do
 local CZone=cargozone
 local zonename=CZone.name
 local zone=nil
+local airbasezone=false
 if i==4 then
 zone=UNIT:FindByName(zonename)
 else
 zone=ZONE:FindByName(zonename)
 if not zone then
 zone=AIRBASE:FindByName(zonename):GetZone()
+airbasezone=true
 end
 end
 local zonecoord=zone:GetCoordinate()
+if(i==1 or 1==3)and airbasezone==true and zone:IsInstanceOf("ZONE_BASE")then
+zonecoord=zone:GetRandomCoordinate(inner,outer,{land.SurfaceType.LAND})
+end
 if zonecoord then
 local active=CZone.active
 local color=CZone.color
@@ -115815,7 +115933,7 @@ Wavenet={
 ["en_GB_Wavenet_F"]='en-GB-Wavenet-N',
 ["en_GB_Wavenet_O"]='en-GB-Wavenet-O',
 ["en_GB_Wavenet_N"]='en-GB-Wavenet-N',
-["en_US_Wavenet_A"]='en-US-Wavenet-N',
+["en_US_Wavenet_A"]='en-US-Wavenet-A',
 ["en_US_Wavenet_B"]='en-US-Wavenet-B',
 ["en_US_Wavenet_C"]='en-US-Wavenet-C',
 ["en_US_Wavenet_D"]='en-US-Wavenet-D',
