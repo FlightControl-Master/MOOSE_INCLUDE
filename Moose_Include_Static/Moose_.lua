@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-24T18:23:19+02:00-7ec7228cb8815ceb14eb5bb0dd77cc3b190ffadb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-24T19:28:33+02:00-73f393c542959e5bd215411b8e033cebe7c8c7fc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -72861,7 +72861,11 @@ local cratealias=string.format("%s-%s-%d",cratename,cratetemplate,math.random(1,
 if not self.placeCratesAhead or drop==true then
 cratedistance=(i-1)*2.5+capabilities.length
 if cratedistance>self.CrateDistance then cratedistance=self.CrateDistance end
+if self:IsUnitInAir(Unit)and self:IsFixedWing(Unit)then
+rheading=math.random(20,60)
+else
 rheading=UTILS.RandomGaussian(0,30,-90,90,100)
+end
 rheading=math.fmod((heading+rheading),360)
 cratecoord=position:Translate(cratedistance,rheading)
 else
@@ -73804,7 +73808,7 @@ if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
 self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
-self:__CratesBuildStarted(1,Group,Unit)
+self:__CratesBuildStarted(1,Group,Unit,build.Name)
 self:_RefreshDropTroopsMenu(Group,Unit)
 else
 self:_BuildObjectFromCrates(Group,Unit,build,false,nil,MultiDrop)
