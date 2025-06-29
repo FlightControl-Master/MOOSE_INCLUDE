@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-24T19:28:33+02:00-73f393c542959e5bd215411b8e033cebe7c8c7fc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-29T15:50:24+02:00-0ab6a10ec4a64704607625be05ca81f9b554c6ff ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -83534,7 +83534,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.71",
+version="0.2.72",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -83995,6 +83995,8 @@ self:AddTransition("*","FlightOnMission","*")
 self:AddTransition("*","Intercept","*")
 self:AddTransition("*","InterceptSuccess","*")
 self:AddTransition("*","InterceptFailure","*")
+self:AddTransition("*","VIDSuccess","*")
+self:AddTransition("*","VIDFailure","*")
 self:AddTransition("*","Stop","Stopped")
 local text=string.format("%sAWACS Version %s Initiated",self.lid,self.version)
 self:I(text)
@@ -85267,11 +85269,13 @@ self.Contacts:Push(cluster,CID)
 local vidpos=self.gettext:GetEntry("VIDPOS",self.locale)
 text=string.format(vidpos,Callsign,self.callsigntxt,Declaration)
 self:T(text)
+self:__VIDSuccess(3,GID,group,cluster)
 else
 self:T("Contact VID not close enough")
 local vidneg=self.gettext:GetEntry("VIDNEG",self.locale)
 text=string.format(vidneg,Callsign,self.callsigntxt)
 self:T(text)
+self:__VIDFailure(3,GID,group,cluster)
 end
 self:_NewRadioEntry(text,text,GID,Outcome,true,true,false,true)
 end
