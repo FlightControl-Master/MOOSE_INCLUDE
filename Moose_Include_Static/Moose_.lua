@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-06-24T19:26:36+02:00-a467fabdc8869215f7404c343245a274bd5808d6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T10:48:54+02:00-068d21612f0e42b0a00b079d6ef734a9918dd6fc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4048,6 +4048,34 @@ return world.weather.setFogAnimation(AnimationKeys)
 end
 function UTILS.Weather.StopFogAnimation()
 return world.weather.setFogAnimation({})
+end
+function UTILS.GetEnvZone(name)
+for _,v in ipairs(env.mission.triggers.zones)do
+if v.name==name then
+return v
+end
+end
+end
+function UTILS.ShowHelperGate(pos,heading)
+net.dostring_in("mission",string.format("a_show_helper_gate(%s, %s, %s, %f)",pos.x,pos.y,pos.z,math.rad(heading)))
+end
+function UTILS.ShellZone(name,power,count)
+local z=UTILS.GetEnvZone(name)
+if z then
+net.dostring_in("mission",string.format("a_shelling_zone(%d, %d, %d)",z.zoneId,power,count))
+end
+end
+function UTILS.RemoveObjects(name,type)
+local z=UTILS.GetEnvZone(name)
+if z then
+net.dostring_in("mission",string.format("a_remove_scene_objects(%d, %d)",z.zoneId,type))
+end
+end
+function UTILS.DestroyScenery(name,level)
+local z=UTILS.GetEnvZone(name)
+if z then
+net.dostring_in("mission",string.format("a_scenery_destruction_zone(%d, %d)",z.zoneId,level))
+end
 end
 PROFILER={
 ClassName="PROFILER",
@@ -21471,7 +21499,7 @@ MARKEROPS_BASE={
 ClassName="MARKEROPS",
 Tag="mytag",
 Keywords={},
-version="0.1.3",
+version="0.1.4",
 debug=false,
 Casesensitive=true,
 }
@@ -21505,8 +21533,8 @@ self:E("Skipping onEvent. Event or Event.idx unknown.")
 return true
 end
 local vec3={y=Event.pos.y,x=Event.pos.x,z=Event.pos.z}
-local coord=COORDINATE:NewFromVec3(vec3)
 if self.debug then
+local coord=COORDINATE:NewFromVec3(vec3)
 local coordtext=coord:ToStringLLDDM()
 local text=tostring(Event.text)
 local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
@@ -21518,6 +21546,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
+local coord=COORDINATE:NewFromVec3(vec3)
 self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
@@ -21527,6 +21556,7 @@ local Eventtext=tostring(Event.text)
 if Eventtext~=nil then
 if self:_MatchTag(Eventtext)then
 local matchtable=self:_MatchKeywords(Eventtext)
+local coord=COORDINATE:NewFromVec3(vec3)
 self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
@@ -28826,6 +28856,9 @@ if attr["AAA"]or attr["SAM related"]then
 return true
 end
 return false
+end
+function UNIT:SetLife(Percent)
+net.dostring_in("mission",string.format("a_unit_set_life_percentage(%d, %f)",self:GetID(),Percent))
 end
 CLIENT={
 ClassName="CLIENT",
