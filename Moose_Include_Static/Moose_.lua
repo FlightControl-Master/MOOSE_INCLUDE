@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T10:52:40+02:00-dc2511942ccd04e287a1efa3247040714c2ae2d2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T11:58:44+02:00-6a4bddde99ba5fea69bcd5805ae69939302bf180 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12390,6 +12390,17 @@ ObjectNames=ObjectNames..ObjectName..", "
 end
 return ObjectNames
 end
+function SET_BASE:GetAliveSet()
+local AliveSet={}
+for ObjectName,Object in pairs(self.Set)do
+if Object then
+if Object:IsAlive()then
+table.insert(AliveSet,ObjectName,Object)
+end
+end
+end
+return AliveSet or{}
+end
 end
 do
 SET_GROUP={
@@ -12424,16 +12435,16 @@ self:FilterActive(false)
 return self
 end
 function SET_GROUP:GetAliveSet()
-local AliveSet=SET_GROUP:New()
+local AliveSet={}
 for GroupName,GroupObject in pairs(self.Set)do
 local GroupObject=GroupObject
 if GroupObject then
 if GroupObject:IsAlive()then
-AliveSet:Add(GroupName,GroupObject)
+table.insert(AliveSet,GroupName,GroupObject)
 end
 end
 end
-return AliveSet.Set or{}
+return AliveSet or{}
 end
 function SET_GROUP:GetUnitTypeNames()
 local MT={}
@@ -13132,7 +13143,6 @@ end
 function SET_UNIT:GetAliveSet()
 local AliveSet=SET_UNIT:New()
 for GroupName,GroupObject in pairs(self.Set)do
-local GroupObject=GroupObject
 if GroupObject and GroupObject:IsAlive()then
 AliveSet:Add(GroupName,GroupObject)
 end
@@ -14313,14 +14323,13 @@ end
 return CountU
 end
 function SET_CLIENT:GetAliveSet()
-local AliveSet=SET_CLIENT:New()
+local AliveSet={}
 for GroupName,GroupObject in pairs(self.Set)do
-local GroupObject=GroupObject
 if GroupObject and GroupObject:IsAlive()then
-AliveSet:Add(GroupName,GroupObject)
+table.insert(AliveSet,GroupName,GroupObject)
 end
 end
-return AliveSet.Set or{}
+return AliveSet or{}
 end
 function SET_CLIENT:IsIncludeObject(MClient)
 local MClientInclude=true
