@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T11:59:23+02:00-dcdea379ef62a75f3b0962d1607c1175d0656bb9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T14:59:14+02:00-d7431478d11c6d7e21823863f04eff49e33e561c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -22641,6 +22641,14 @@ function POSITIONABLE:GetVec3()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local vec3=DCSPositionable:getPoint()
+if not vec3 then
+local pos=DCSPositionable:getPosition()
+if pos and pos.p then
+vec3=pos.p
+else
+self:E({"Cannot get the position from DCS Object for GetVec3",Positionable=self,Alive=self:IsAlive()})
+end
+end
 return vec3
 end
 self:E({"Cannot get the Positionable DCS Object for GetVec3",Positionable=self,Alive=self:IsAlive()})
@@ -22700,10 +22708,12 @@ function POSITIONABLE:GetCoordinate()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=self:GetVec3()
+if PositionableVec3 then
 local coord=COORDINATE:NewFromVec3(PositionableVec3)
 local heading=self:GetHeading()
 coord.Heading=heading
 return coord
+end
 end
 self:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
 return nil
