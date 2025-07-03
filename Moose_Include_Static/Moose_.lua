@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T14:57:48+02:00-4489efff941b174df4bbd1c9325c2d3a2832f76e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T15:14:11+02:00-33e63a4819c53f3a581a6c657d071eda43bda38a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21537,13 +21537,6 @@ if Event==nil or Event.idx==nil then
 self:E("Skipping onEvent. Event or Event.idx unknown.")
 return true
 end
-if self.debug then
-local vec3={y=Event.pos.y,x=Event.pos.x,z=Event.pos.z}
-local coord=COORDINATE:NewFromVec3(vec3)
-local coordtext=coord:ToStringLLDDM()
-local text=tostring(Event.text)
-local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
-end
 local coalition=Event.MarkCoalition
 if Event.id==world.event.S_EVENT_MARK_ADDED then
 self:T({event="S_EVENT_MARK_ADDED",carrier=Event.IniGroupName,vec3=Event.pos})
@@ -21557,7 +21550,6 @@ local text=tostring(Event.text)
 local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
 end
 local matchtable=self:_MatchKeywords(Eventtext)
-local coord=COORDINATE:NewFromVec3(vec3)
 self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
@@ -21570,10 +21562,9 @@ local coord=COORDINATE:NewFromVec3({y=Event.pos.y,x=Event.pos.x,z=Event.pos.z})
 if self.debug then
 local coordtext=coord:ToStringLLDDM()
 local text=tostring(Event.text)
-local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
+local m=MESSAGE:New(string.format("Mark changed at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
 end
 local matchtable=self:_MatchKeywords(Eventtext)
-local coord=COORDINATE:NewFromVec3(vec3)
 self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
