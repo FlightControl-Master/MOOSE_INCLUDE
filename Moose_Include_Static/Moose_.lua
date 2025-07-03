@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T12:00:12+02:00-744782fd0bea91be0437cd76e30795d8a02aac24 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T15:16:40+02:00-ff02063d547b49438419443126da2e6ad5eada10 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21537,13 +21537,6 @@ if Event==nil or Event.idx==nil then
 self:E("Skipping onEvent. Event or Event.idx unknown.")
 return true
 end
-if self.debug then
-local vec3={y=Event.pos.y,x=Event.pos.x,z=Event.pos.z}
-local coord=COORDINATE:NewFromVec3(vec3)
-local coordtext=coord:ToStringLLDDM()
-local text=tostring(Event.text)
-local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
-end
 local coalition=Event.MarkCoalition
 if Event.id==world.event.S_EVENT_MARK_ADDED then
 self:T({event="S_EVENT_MARK_ADDED",carrier=Event.IniGroupName,vec3=Event.pos})
@@ -21557,7 +21550,6 @@ local text=tostring(Event.text)
 local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
 end
 local matchtable=self:_MatchKeywords(Eventtext)
-local coord=COORDINATE:NewFromVec3(vec3)
 self:MarkAdded(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
@@ -21570,10 +21562,9 @@ local coord=COORDINATE:NewFromVec3({y=Event.pos.y,x=Event.pos.x,z=Event.pos.z})
 if self.debug then
 local coordtext=coord:ToStringLLDDM()
 local text=tostring(Event.text)
-local m=MESSAGE:New(string.format("Mark added at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
+local m=MESSAGE:New(string.format("Mark changed at %s with text: %s",coordtext,text),10,"Info",false):ToAll()
 end
 local matchtable=self:_MatchKeywords(Eventtext)
-local coord=COORDINATE:NewFromVec3(vec3)
 self:MarkChanged(Eventtext,matchtable,coord,Event.idx,coalition,Event.PlayerName,Event)
 end
 end
@@ -22641,6 +22632,14 @@ function POSITIONABLE:GetVec3()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local vec3=DCSPositionable:getPoint()
+if not vec3 then
+local pos=DCSPositionable:getPosition()
+if pos and pos.p then
+vec3=pos.p
+else
+self:E({"Cannot get the position from DCS Object for GetVec3",Positionable=self,Alive=self:IsAlive()})
+end
+end
 return vec3
 end
 self:E({"Cannot get the Positionable DCS Object for GetVec3",Positionable=self,Alive=self:IsAlive()})
@@ -22700,10 +22699,12 @@ function POSITIONABLE:GetCoordinate()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=self:GetVec3()
+if PositionableVec3 then
 local coord=COORDINATE:NewFromVec3(PositionableVec3)
 local heading=self:GetHeading()
 coord.Heading=heading
 return coord
+end
 end
 self:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
 return nil
