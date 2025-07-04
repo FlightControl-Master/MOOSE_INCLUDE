@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T16:39:55+02:00-1e9c45c11529a81a1ff0e287109c6301e45fa8c4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-04T16:22:55+02:00-429db73854fd251a48c747acf2dcb6aa1ea43b35 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -81000,6 +81000,24 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
+function AUFTRAG:NewSEADInZone(TargetZone,Altitude,TargetTypes,Duration)
+local mission=AUFTRAG:New(AUFTRAG.Type.SEAD)
+mission:_TargetFromObject(TargetZone)
+mission.engageWeaponType=ENUMS.WeaponFlag.Auto
+mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
+mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
+mission.engageZone=TargetZone
+mission.engageTargetTypes=TargetTypes or{"Air defence"}
+mission.missionTask=ENUMS.MissionTask.SEAD
+mission.missionAltitude=mission.engageAltitude
+mission.missionFraction=0.2
+mission.optionROE=ENUMS.ROE.OpenFire
+mission.optionROT=ENUMS.ROT.EvadeFire
+mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+mission:SetDuration(Duration or 1800)
+return mission
+end
 function AUFTRAG:NewSTRIKE(Target,Altitude,EngageWeaponType)
 local mission=AUFTRAG:New(AUFTRAG.Type.STRIKE)
 mission:_TargetFromObject(Target)
@@ -82519,9 +82537,9 @@ return true
 end
 if(self:IsStarted()or self:IsExecuting())and self:CountOpsGroups()>0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] and count of alive OPSGROUP > zero. Mission NOT DONE!",self.status,self:GetState()))
-return true
+return false
 end
-return true
+return false
 end
 function AUFTRAG:OnEventUnitLost(EventData)
 if EventData and EventData.IniGroup and EventData.IniUnit then
@@ -83220,7 +83238,7 @@ for _,_unit in pairs(ScanUnitSet.Set)do
 local unit=_unit
 if unit and unit:IsAlive()and unit:HasSEAD()then
 self:T("Adding UNIT for SEAD: "..unit:GetName())
-local task=CONTROLLABLE.TaskAttackUnit(nil,unit,GroupAttack,AI.Task.WeaponExpend.ALL,1,Direction,self.engageAltitude,4161536)
+local task=CONTROLLABLE.TaskAttackUnit(nil,unit,GroupAttack,AI.Task.WeaponExpend.ALL,1,Direction,self.engageAltitude,2956984318)
 table.insert(DCStasks,task)
 SeadUnitSet:AddUnit(unit)
 end
