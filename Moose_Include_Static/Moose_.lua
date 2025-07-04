@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-04T16:22:55+02:00-429db73854fd251a48c747acf2dcb6aa1ea43b35 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-04T18:47:08+02:00-69b3e9abad7110f6c72026c4f8eca3cb7c9d95ab ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -81007,7 +81007,7 @@ mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.engageZone=TargetZone
-mission.engageTargetTypes=TargetTypes or{"Air defence"}
+mission.engageTargetTypes=TargetTypes or{"Air Defence"}
 mission.missionTask=ENUMS.MissionTask.SEAD
 mission.missionAltitude=mission.engageAltitude
 mission.missionFraction=0.2
