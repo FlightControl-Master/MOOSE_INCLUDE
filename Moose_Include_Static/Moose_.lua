@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-05T18:56:59+02:00-da70f4ce6c76e3dd40e2bd66c74a84e2c75ff816 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-09T12:16:29+02:00-f0a4c5b0083d48240af2bb9a5da49dcedd6f4fe7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -24930,6 +24930,18 @@ if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
 Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.PASSIVE_DEFENCE)
+end
+return self
+end
+return nil
+end
+function CONTROLLABLE:OptionPreferVerticalLanding()
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsAir()then
+Controller:setOption(AI.Option.Air.id.PREFER_VERTICAL,true)
 end
 return self
 end
