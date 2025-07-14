@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-05T18:57:27+02:00-77286091654623a507ff77d147c188726e6463a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-14T10:13:38+02:00-2e8875dd2f39a46d88f88b383937378668403579 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -82565,7 +82565,7 @@ if(self:IsStarted()or self:IsExecuting())and self:CountOpsGroups()>0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] and count of alive OPSGROUP > zero. Mission NOT DONE!",self.status,self:GetState()))
 return false
 end
-return false
+return true
 end
 function AUFTRAG:OnEventUnitLost(EventData)
 if EventData and EventData.IniGroup and EventData.IniUnit then
