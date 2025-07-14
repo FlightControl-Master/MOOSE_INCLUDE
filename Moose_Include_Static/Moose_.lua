@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-14T10:13:38+02:00-2e8875dd2f39a46d88f88b383937378668403579 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-14T19:18:05+02:00-5e4f9f035bb6a5e2b15a6bbc354b235cceb1d694 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -82520,6 +82520,7 @@ return groupdata.waypointEgressUID
 end
 end
 function AUFTRAG:CheckGroupsDone()
+local fsmState=self:GetState()
 for groupname,data in pairs(self.groupdata)do
 local groupdata=data
 if groupdata then
@@ -82561,7 +82562,7 @@ if self:IsStarted()and self:CountOpsGroups()==0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] but count of alive OPSGROUP is zero. Mission DONE!",self.status,self:GetState()))
 return true
 end
-if(self:IsStarted()or self:IsExecuting())and self:CountOpsGroups()>0 then
+if(self:IsStarted()or self:IsExecuting())and(fsmState==AUFTRAG.Status.STARTED or fsmState==AUFTRAG.Status.EXECUTING)and self:CountOpsGroups()>0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] and count of alive OPSGROUP > zero. Mission NOT DONE!",self.status,self:GetState()))
 return false
 end
