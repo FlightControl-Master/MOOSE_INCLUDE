@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-03T16:40:37+02:00-e842e11b8871d1a327dce1528727e6dc21fd913c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-15T11:21:30+02:00-dbe96fa931cb9f77cdeb0f2e77cafa9963b17bfe ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3860,7 +3860,7 @@ end
 UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
 return UTILS.lcg.seed/UTILS.lcg.m
 end
-function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment)
+function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment,Airframes,F10Text,DynamicSpawns,HotStart)
 local farplocation=Coordinate
 local farptype=FARPType or ENUMS.FARPType.FARP
 local Coalition=Coalition or coalition.side.BLUE
@@ -3872,6 +3872,7 @@ if radius<0 or radius>150 then radius=100 end
 local liquids=Liquids or 10
 liquids=liquids*1000
 local equip=Equipment or 10
+local airframes=Airframes or 10
 local statictypes=ENUMS.FARPObjectTypeNamesAndShape[farptype]or{TypeName="FARP",ShapeName="FARPS"}
 local STypeName=statictypes.TypeName
 local SShapeName=statictypes.ShapeName
@@ -3879,7 +3880,7 @@ local Country=Country or(Coalition==coalition.side.BLUE and country.id.USA or co
 local ReturnObjects={}
 local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
 newfarp:InitShape(SShapeName)
-newfarp:InitFARP(callsign,freq,mod)
+newfarp:InitFARP(callsign,freq,mod,DynamicSpawns,HotStart)
 local spawnedfarp=newfarp:SpawnFromCoordinate(farplocation,0,Name)
 table.insert(ReturnObjects,spawnedfarp)
 local FARPStaticObjectsNato={
@@ -3924,6 +3925,11 @@ newWH:SetItem(item,equip)
 end
 end
 end
+if airframes and airframes>0 then
+for typename in pairs(CSAR.AircraftType)do
+newWH:SetItem(typename,airframes)
+end
+end
 local ADFName
 if ADF and type(ADF)=="number"then
 local ADFFreq=ADF*1000
@@ -3932,7 +3938,19 @@ local vec3=farplocation:GetVec3()
 ADFName=Name.." ADF "..tostring(ADF).."KHz"
 trigger.action.radioTransmission(Sound,vec3,0,true,ADFFreq,250,ADFName)
 end
-return ReturnObjects,ADFName
+local MarkerID=nil
+if F10Text then
+local Color={0,0,1}
+if Coalition==coalition.side.RED then
+Color={1,0,0}
+elseif Coalition==coalition.side.NEUTRAL then
+Color={0,1,0}
+end
+local Alpha=0.75
+local coordinate=Coordinate:Translate(600,0)
+MarkerID=coordinate:TextToAll(F10Text,Coalition,Color,1,{1,1,1},Alpha,14,true)
+end
+return ReturnObjects,ADFName,MarkerID
 end
 function UTILS.Vec2toVec3(vec,y)
 if not vec.z then
@@ -21104,11 +21122,13 @@ function SPAWNSTATIC:InitShape(StaticShape)
 self.InitStaticShape=StaticShape
 return self
 end
-function SPAWNSTATIC:InitFARP(CallsignID,Frequency,Modulation)
+function SPAWNSTATIC:InitFARP(CallsignID,Frequency,Modulation,DynamicSpawns,DynamicHotStarts)
 self.InitFarp=true
 self.InitFarpCallsignID=CallsignID or 1
 self.InitFarpFreq=Frequency or 127.5
 self.InitFarpModu=Modulation or 0
+self.InitFarpDynamicSpawns=DynamicSpawns
+self.InitFarpDynamicHotStarts=(DynamicSpawns==true and DynamicHotStarts==true)and true or nil
 return self
 end
 function SPAWNSTATIC:InitCargoMass(Mass)
@@ -21233,6 +21253,12 @@ TemplateGroup.hidden=false
 TemplateGroup.x=Template.x
 TemplateGroup.y=Template.y
 TemplateGroup.name=Template.name
+if self.InitFarpDynamicSpawns==true then
+TemplateGroup.units[1].dynamicSpawn=true
+if self.InitFarpDynamicHotStarts==true then
+TemplateGroup.units[1].allowHotStart=true
+end
+end
 self:T("Spawning FARP")
 self:T({Template=Template})
 self:T({TemplateGroup=TemplateGroup})
@@ -25427,6 +25453,18 @@ return self
 end
 return nil
 end
+function CONTROLLABLE:OptionPreferVerticalLanding()
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsAir()then
+Controller:setOption(AI.Option.Air.id.PREFER_VERTICAL,true)
+end
+return self
+end
+return nil
+end
 function CONTROLLABLE:OptionROTEvadeFirePossible()
 self:F2({self.ControllableName})
 local DCSControllable=self:GetDCSObject()
@@ -26916,6 +26954,7 @@ GROUND_TRAIN="Ground_Train",
 GROUND_EWR="Ground_EWR",
 GROUND_AAA="Ground_AAA",
 GROUND_SAM="Ground_SAM",
+GROUND_SHORAD="Ground_SHORAD",
 GROUND_OTHER="Ground_OtherGround",
 NAVAL_AIRCRAFTCARRIER="Naval_AircraftCarrier",
 NAVAL_WARSHIP="Naval_WarShip",
