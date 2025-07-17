@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-15T10:35:36+02:00-b9197d65d538fbddcb4728610aa6a480affd0a73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-17T07:38:43+02:00-d675e34f379cdd377bbc43520c5d3eb0c45f6b23 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -91106,7 +91106,10 @@ local cohorts={}
 if(Legions and#Legions>0)or(Cohorts and#Cohorts>0)then
 for _,_legion in pairs(Legions or{})do
 local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+local Runway=true
+if legion:IsAirwing()then
+Runway=legion:IsRunwayOperational()and legion.airbase and legion.airbase:GetCoalition()==legion:GetCoalition()
+end
 if legion:IsRunning()and Runway then
 for _,_cohort in pairs(legion.cohorts)do
 local cohort=_cohort
@@ -91125,7 +91128,10 @@ end
 else
 for _,_legion in pairs(self.legions)do
 local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+local Runway=true
+if legion:IsAirwing()then
+Runway=legion:IsRunwayOperational()and legion.airbase and legion.airbase:GetCoalition()==legion:GetCoalition()
+end
 if legion:IsRunning()and Runway then
 for _,_cohort in pairs(legion.cohorts)do
 local cohort=_cohort
@@ -98215,7 +98221,10 @@ local cohorts={}
 if(Legions and#Legions>0)or(Cohorts and#Cohorts>0)then
 for _,_legion in pairs(Legions or{})do
 local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+local Runway=true
+if legion:IsAirwing()then
+Runway=legion:IsRunwayOperational()and legion.airbase and legion.airbase:GetCoalition()==legion:GetCoalition()
+end
 if legion:IsRunning()and Runway then
 for _,_cohort in pairs(legion.cohorts)do
 local cohort=_cohort
