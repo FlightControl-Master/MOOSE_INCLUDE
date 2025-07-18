@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-18T09:24:58+02:00-00de8d911c80bcd87a0117965fdb7be73c6eb045 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-18T18:10:43+02:00-1b57af88a0ed308a3b8ffd13f6b36541909b5ebb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21042,6 +21042,7 @@ self.CountryID=SpawnCountryID or CountryID
 self.CategoryID=CategoryID
 self.CoalitionID=CoalitionID
 self.SpawnIndex=0
+self.StaticCopyFrom=SpawnTemplateName
 else
 error("SPAWNSTATIC:New: There is no static declared in the mission editor with SpawnTemplatePrefix = '"..tostring(SpawnTemplateName).."'")
 end
@@ -21282,6 +21283,18 @@ end
 local mystatic=_DATABASE:AddStatic(Template.name)
 if self.SpawnFunctionHook then
 self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
+end
+if self.StaticCopyFrom~=nil then
+mystatic.StaticCopyFrom=self.StaticCopyFrom
+if not _DATABASE.Templates.Statics[Template.name]then
+local TemplateGroup={}
+TemplateGroup.units={}
+TemplateGroup.units[1]=Template
+TemplateGroup.x=Template.x
+TemplateGroup.y=Template.y
+TemplateGroup.name=Template.name
+_DATABASE:_RegisterStaticTemplate(TemplateGroup,self.CoalitionID,self.CategoryID,CountryID)
+end
 end
 return mystatic
 end
@@ -25449,6 +25462,18 @@ if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
 Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.PASSIVE_DEFENCE)
+end
+return self
+end
+return nil
+end
+function CONTROLLABLE:OptionPreferVerticalLanding()
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsAir()then
+Controller:setOption(AI.Option.Air.id.PREFER_VERTICAL,true)
 end
 return self
 end
