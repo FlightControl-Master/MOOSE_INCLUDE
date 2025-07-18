@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-15T11:21:30+02:00-dbe96fa931cb9f77cdeb0f2e77cafa9963b17bfe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-18T09:26:48+02:00-d18cd0e643e2da5a44a1b250142e673365b7baf6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79771,10 +79771,10 @@ mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
 mission.engageZone=TargetZone
-mission.engageTargetTypes=TargetTypes or{"Air defence"}
+mission.engageTargetTypes=TargetTypes or{"Air Defence"}
 mission.missionTask=ENUMS.MissionTask.SEAD
 mission.missionAltitude=mission.engageAltitude
-mission.missionFraction=0.7
+mission.missionFraction=0.2
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.EvadeFire
 mission.categories={AUFTRAG.Category.AIRCRAFT}
@@ -81258,6 +81258,7 @@ return groupdata.waypointEgressUID
 end
 end
 function AUFTRAG:CheckGroupsDone()
+local fsmState=self:GetState()
 for groupname,data in pairs(self.groupdata)do
 local groupdata=data
 if groupdata then
@@ -81299,9 +81300,9 @@ if self:IsStarted()and self:CountOpsGroups()==0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] but count of alive OPSGROUP is zero. Mission DONE!",self.status,self:GetState()))
 return true
 end
-if(self:IsStarted()or self:IsExecuting())and self:CountOpsGroups()>0 then
+if(self:IsStarted()or self:IsExecuting())and(fsmState==AUFTRAG.Status.STARTED or fsmState==AUFTRAG.Status.EXECUTING)and self:CountOpsGroups()>0 then
 self:T(self.lid..string.format("CheckGroupsDone: Mission is STARTED state %s [FSM=%s] and count of alive OPSGROUP > zero. Mission NOT DONE!",self.status,self:GetState()))
-return true
+return false
 end
 return true
 end
@@ -82002,7 +82003,7 @@ for _,_unit in pairs(ScanUnitSet.Set)do
 local unit=_unit
 if unit and unit:IsAlive()and unit:HasSEAD()then
 self:T("Adding UNIT for SEAD: "..unit:GetName())
-local task=CONTROLLABLE.TaskAttackUnit(nil,unit,GroupAttack,AI.Task.WeaponExpend.ALL,1,Direction,self.engageAltitude,4161536)
+local task=CONTROLLABLE.TaskAttackUnit(nil,unit,GroupAttack,AI.Task.WeaponExpend.ALL,1,Direction,self.engageAltitude,2956984318)
 table.insert(DCStasks,task)
 SeadUnitSet:AddUnit(unit)
 end
@@ -89842,7 +89843,10 @@ local cohorts={}
 if(Legions and#Legions>0)or(Cohorts and#Cohorts>0)then
 for _,_legion in pairs(Legions or{})do
 local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+local Runway=true
+if legion:IsAirwing()then
+Runway=legion:IsRunwayOperational()and legion.airbase and legion.airbase:GetCoalition()==legion:GetCoalition()
+end
 if legion:IsRunning()and Runway then
 for _,_cohort in pairs(legion.cohorts)do
 local cohort=_cohort
@@ -89861,7 +89865,10 @@ end
 else
 for _,_legion in pairs(self.legions)do
 local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+local Runway=true
+if legion:IsAirwing()then
+Runway=legion:IsRunwayOperational()and legion.airbase and legion.airbase:GetCoalition()==legion:GetCoalition()
+end
 if legion:IsRunning()and Runway then
 for _,_cohort in pairs(legion.cohorts)do
 local cohort=_cohort
@@ -96951,7 +96958,10 @@ local cohorts={}
 if(Legions and#Legions>0)or(Cohorts and#Cohorts>0)then
 for _,_legion in pairs(Legions or{})do
 local legion=_legion
-local Runway=legion:IsAirwing()and legion:IsRunwayOperational()or true
+local Runway=true
+if legion:IsAirwing()then
+Runway=legion:IsRunwayOperational()and legion.airbase and legion.airbase:GetCoalition()==legion:GetCoalition()
+end
 if legion:IsRunning()and Runway then
 for _,_cohort in pairs(legion.cohorts)do
 local cohort=_cohort
