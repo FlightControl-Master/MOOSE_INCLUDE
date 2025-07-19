@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-18T09:26:48+02:00-d18cd0e643e2da5a44a1b250142e673365b7baf6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-19T16:06:36+02:00-1c48a71ceca4831aad25226dd7e19daecde301e2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18586,7 +18586,7 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend)
-_MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+_MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
 _MESSAGESRS.MSRS=MSRS:New(_MESSAGESRS.PathToSRS,_MESSAGESRS.frequency,_MESSAGESRS.modulation)
@@ -21042,6 +21042,7 @@ self.CountryID=SpawnCountryID or CountryID
 self.CategoryID=CategoryID
 self.CoalitionID=CoalitionID
 self.SpawnIndex=0
+self.StaticCopyFrom=SpawnTemplateName
 else
 error("SPAWNSTATIC:New: There is no static declared in the mission editor with SpawnTemplatePrefix = '"..tostring(SpawnTemplateName).."'")
 end
@@ -21282,6 +21283,18 @@ end
 local mystatic=_DATABASE:AddStatic(Template.name)
 if self.SpawnFunctionHook then
 self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionArguments))
+end
+if self.StaticCopyFrom~=nil then
+mystatic.StaticCopyFrom=self.StaticCopyFrom
+if not _DATABASE.Templates.Statics[Template.name]then
+local TemplateGroup={}
+TemplateGroup.units={}
+TemplateGroup.units[1]=Template
+TemplateGroup.x=Template.x
+TemplateGroup.y=Template.y
+TemplateGroup.name=Template.name
+_DATABASE:_RegisterStaticTemplate(TemplateGroup,self.CoalitionID,self.CategoryID,CountryID)
+end
 end
 return mystatic
 end
@@ -54776,7 +54789,7 @@ end
 end
 AICSAR={
 ClassName="AICSAR",
-version="0.1.16",
+version="0.1.18",
 lid="",
 coalition=coalition.side.BLUE,
 template="",
@@ -54821,6 +54834,8 @@ Speed=100,
 Altitude=1500,
 UseEventEject=false,
 Delay=100,
+UseRescueZone=false,
+RescueZone=nil,
 }
 AICSAR.Messages={
 EN={
@@ -54864,7 +54879,7 @@ PILOTRESCUED=3.5,
 PILOTINHELO=2.6,
 },
 }
-function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone)
+function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone,Helonumber)
 local self=BASE:Inherit(self,FSM:New())
 if Coalition and type(Coalition)=="string"then
 if Coalition=="blue"then
@@ -54919,7 +54934,7 @@ self.DCSRadioGroup=nil
 self.DCSRadioQueue=nil
 self.MGRS_Accuracy=2
 self.limithelos=true
-self.helonumber=3
+self.helonumber=Helonumber or 3
 self:InitLocalization()
 self.lid=string.format("%s (%s) | ",self.alias,self.coalition and UTILS.GetCoalitionName(self.coalition)or"unknown")
 self.PilotStore=FIFO:New()
@@ -54961,12 +54976,17 @@ self.gettext:AddEntry("de","PILOTRESCUED",AICSAR.Messages.DE.PILOTRESCUED,AICSAR
 self.locale="en"
 return self
 end
+function AICSAR:SetUsingRescueZone(Zone)
+self.UseRescueZone=true
+self.RescueZone=Zone
+return self
+end
 function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath,Port)
 self:T(self.lid.."SetSRSRadio")
 self.SRSRadio=OnOff and true
 self.SRSTTSRadio=false
 self.SRSFrequency=Frequency or 243
-self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.SRS:SetLabel("ACSR")
 self.SRS:SetCoalition(self.coalition)
 self.SRSModulation=Modulation or radio.modulation.AM
@@ -54984,7 +55004,7 @@ self:T(self.lid.."SetSRSTTSRadio")
 self.SRSTTSRadio=OnOff and true
 self.SRSRadio=false
 self.SRSFrequency=Frequency or 243
-self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.SRSModulation=Modulation or radio.modulation.AM
 self.SRSPort=Port or MSRS.port or 5002
 if OnOff then
@@ -55070,7 +55090,6 @@ if self.UseEventEject then
 local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
 local _country=_event.initiator:getCountry()
 local _coalition=coalition.getCountryCoalition(_country)
-local data=UTILS.DeepCopy(EventData)
 Unit.destroy(_event.initiator)
 self:ScheduleOnce(self.Delay,self._DelayedSpawnPilot,self,_LandingPos,_coalition)
 end
@@ -55079,6 +55098,13 @@ return self
 end
 function AICSAR:_DelayedSpawnPilot(_LandingPos,_coalition)
 local distancetofarp=_LandingPos:Get2DDistance(self.farp:GetCoordinate())
+if self.UseRescueZone==true and self.RescueZone~=nil then
+if self.RescueZone:IsCoordinateInZone(_LandingPos)then
+distancetofarp=self.maxdistance-10
+else
+distancetofarp=self.maxdistance+10
+end
+end
 local Text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTDOWN",self.locale)
 local text=""
 local setting={}
@@ -55145,6 +55171,13 @@ local _LandingPos=COORDINATE:NewFromVec3(_event.initiator:getPosition().p)
 local _country=_event.initiator:getCountry()
 local _coalition=coalition.getCountryCoalition(_country)
 local distancetofarp=_LandingPos:Get2DDistance(self.farp:GetCoordinate())
+if self.UseRescueZone==true and self.RescueZone~=nil then
+if self.RescueZone:IsCoordinateInZone(_LandingPos)then
+distancetofarp=self.maxdistance-10
+else
+distancetofarp=self.maxdistance+10
+end
+end
 local Text,Soundfile,Soundlength,Subtitle=self.gettext:GetEntry("PILOTDOWN",self.locale)
 local text=""
 local setting={}
@@ -55206,6 +55239,7 @@ local newhelo=SPAWN:NewWithAlias(self.helotemplate,self.helotemplate..math.rando
 :InitUnControlled(true)
 :OnSpawnGroup(
 function(Group)
+Group:OptionPreferVerticalLanding()
 self:__HeloOnDuty(1,Group)
 end
 )
@@ -55244,6 +55278,9 @@ function helo:OnAfterUnloaded(From,Event,To,OpsGroupCargo)
 AICHeloUnloaded(helo,OpsGroupCargo)
 helo:__UnloadingDone(5)
 end
+function helo:OnAfterLandAtAirbase(From,Event,To,airbase)
+helo:Despawn(2)
+end
 self.helos[Index]=helo
 return self
 end
@@ -55274,7 +55311,8 @@ local state=helo:GetState()
 local name=helo:GetName()
 self:T("Helo group "..name.." in state "..state)
 if state=="Arrived"then
-helo:__Stop(5)
+helo.OnAfterDead=nil
+helo:Despawn(35)
 self.helos[_index]=nil
 end
 else
@@ -55303,7 +55341,6 @@ local flightgroup=self.helos[_index]
 if self:_CheckInMashZone(_pilot)then
 self:T("Pilot".._pilot.GroupName.." rescued!")
 if OpsGroup then
-OpsGroup:Despawn(10)
 else
 _pilot:Destroy(true,10)
 end
@@ -56197,7 +56234,7 @@ end
 function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
 if OnOff then
 self.useSRS=true
-self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.SRSFreq=Frequency or 271
 self.SRSMod=Modulation or radio.modulation.AM
 self.Gender=Gender or MSRS.gender or"male"
@@ -76014,7 +76051,7 @@ self.ADFRadioPwr=500
 self.PilotWeight=80
 self.UserSetGroup=nil
 self.useSRS=false
-self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
 self.SRSport=5002
@@ -82740,7 +82777,7 @@ self.HasEscorts=false
 self.EscortTemplate=""
 self.EscortMission={}
 self.EscortMissionReplacement={}
-self.PathToSRS="C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.PathToSRS="C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender="female"
 self.Culture="en-GB"
 self.Voice=nil
@@ -83293,7 +83330,7 @@ return self
 end
 function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend)
 self:T(self.lid.."SetSRS")
-self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
 self.Culture=Culture or MSRS.culture or"en-US"
 self.Port=Port or MSRS.port or 5002
@@ -93574,7 +93611,7 @@ if self:IsAlive()then
 local allowed=true
 local Tsuspend=nil
 if airbase==nil then
-self:T(self.lid.."ERROR: Airbase is nil in LandAtAirase() call!")
+self:T(self.lid.."ERROR: Airbase is nil in LandAtAirbase() call!")
 allowed=false
 end
 if airbase and airbase:GetCoalition()~=self.group:GetCoalition()and airbase:GetCoalition()>0 then
@@ -110186,7 +110223,7 @@ return self
 end
 function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
 self:T(self.lid.."SetSRS")
-self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
 self.Culture=Culture or MSRS.culture or"en-US"
 self.Port=Port or MSRS.port or 5002
@@ -111333,7 +111370,7 @@ return self
 end
 function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend)
 self:T(self.lid.."SetSRS")
-self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
 self.Culture=Culture or MSRS.culture or"en-US"
 self.Port=Port or MSRS.port or 5002
@@ -116172,7 +116209,7 @@ return self.backend
 end
 function MSRS:SetPath(Path)
 self:F({Path=Path})
-self.path=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.path=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 local n=1;local nmax=1000
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
 self.path=self.path:sub(1,#self.path-1)
@@ -116667,7 +116704,7 @@ env.info("FF reading config file")
 assert(loadfile(path..file))()
 if MSRS_Config then
 local Self=self or MSRS
-Self.path=MSRS_Config.Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+Self.path=MSRS_Config.Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 Self.port=MSRS_Config.Port or 5002
 Self.backend=MSRS_Config.Backend or MSRS.Backend.SRSEXE
 Self.frequencies=MSRS_Config.Frequency or{127,243}
