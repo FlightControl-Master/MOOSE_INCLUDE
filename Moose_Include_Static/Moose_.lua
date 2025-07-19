@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-18T18:09:57+02:00-be40d7be9a20cef1f587a797c15b17b2c54999f2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-19T16:04:49+02:00-0e836973fd3e925a47d8a0eac976a0b21f131cb8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -18586,7 +18586,7 @@ return self
 end
 _MESSAGESRS={}
 function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend)
-_MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+_MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
 _MESSAGESRS.MSRS=MSRS:New(_MESSAGESRS.PathToSRS,_MESSAGESRS.frequency,_MESSAGESRS.modulation)
@@ -73308,7 +73308,7 @@ self.ADFRadioPwr=500
 self.PilotWeight=80
 self.UserSetGroup=nil
 self.useSRS=false
-self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.SRSPath="E:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.SRSchannel=300
 self.SRSModulation=radio.modulation.AM
 self.SRSport=5002
@@ -85731,7 +85731,7 @@ return self.backend
 end
 function MSRS:SetPath(Path)
 self:F({Path=Path})
-self.path=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+self.path=Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 local n=1;local nmax=1000
 while(self.path:sub(-1)=="/"or self.path:sub(-1)==[[\]])and n<=nmax do
 self.path=self.path:sub(1,#self.path-1)
@@ -86226,7 +86226,7 @@ env.info("FF reading config file")
 assert(loadfile(path..file))()
 if MSRS_Config then
 local Self=self or MSRS
-Self.path=MSRS_Config.Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone"
+Self.path=MSRS_Config.Path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 Self.port=MSRS_Config.Port or 5002
 Self.backend=MSRS_Config.Backend or MSRS.Backend.SRSEXE
 Self.frequencies=MSRS_Config.Frequency or{127,243}
