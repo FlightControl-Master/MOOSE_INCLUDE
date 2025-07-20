@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-19T18:36:03+02:00-c9ac6d73e638dddddba46cb473aa206691d2bc03 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-20T14:03:33+02:00-1b18ae15972a9137eb254a61a3a8dceabb159ac0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53870,6 +53870,7 @@ end
 MANTIS={
 ClassName="MANTIS",
 name="mymantis",
+version="0.9.32",
 SAM_Templates_Prefix="",
 SAM_Group=nil,
 EWR_Templates_Prefix="",
@@ -53962,7 +53963,7 @@ MANTIS.SamData={
 ["Silkworm"]={Range=90,Blindspot=1,Height=0.2,Type="Long",Radar="Silkworm"},
 ["HEMTT_C-RAM_Phalanx"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="HEMTT_C-RAM_Phalanx",Point="true"},
 ["SA-10B"]={Range=75,Blindspot=0,Height=18,Type="Medium",Radar="SA-10B"},
-["SA-17"]={Range=50,Blindspot=3,Height=30,Type="Medium",Radar="SA-17"},
+["SA-17"]={Range=50,Blindspot=3,Height=50,Type="Medium",Radar="SA-17"},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1"},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2"},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
@@ -53974,11 +53975,15 @@ MANTIS.SamDataHDS={
 ["SA-3 HDS"]={Range=20,Blindspot=6,Height=30,Type="Short",Radar="V-601P"},
 ["SA-10B HDS"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85CE ln"},
 ["SA-10C HDS"]={Range=75,Blindspot=5,Height=25,Type="Long",Radar="5P85SE ln"},
+["SA-17 HDS"]={Range=50,Blindspot=3,Height=50,Type="Medium",Radar="SA-17 "},
 ["SA-12 HDS 2"]={Range=100,Blindspot=13,Height=30,Type="Long",Radar="S-300V 9A82 l"},
 ["SA-12 HDS 1"]={Range=75,Blindspot=6,Height=25,Type="Long",Radar="S-300V 9A83 l"},
 ["SA-23 HDS 2"]={Range=200,Blindspot=5,Height=37,Type="Long",Radar="S-300VM 9A82ME"},
 ["SA-23 HDS 1"]={Range=100,Blindspot=1,Height=50,Type="Long",Radar="S-300VM 9A83ME"},
 ["HQ-2 HDS"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
+["SAMPT Block 1 HDS"]={Range=120,Blindspot=1,Height=20,Type="long",Radar="SAMPT_MLT_Blk1"},
+["SAMPT Block 1INT HDS"]={Range=150,Blindspot=1,Height=25,Type="long",Radar="SAMPT_MLT_Blk1NT"},
+["SAMPT Block 2 HDS"]={Range=200,Blindspot=10,Height=70,Type="long",Radar="SAMPT_MLT_Blk2"},
 }
 MANTIS.SamDataSMA={
 ["RBS98M SMA"]={Range=20,Blindspot=0.2,Height=8,Type="Short",Radar="RBS-98"},
@@ -54144,7 +54149,6 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.31"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -55073,7 +55077,7 @@ self:T({From,Event,To})
 if self.debug and self.verbose then
 self:I(self.lid.."Status Report")
 for _name,_state in pairs(self.SamStateTracker)do
-self:I(string.format("Site %s\tStatus %s",_name,_state))
+self:I(string.format("Site %s | Status %s",_name,_state))
 end
 end
 local interval=self.detectinterval*-1
