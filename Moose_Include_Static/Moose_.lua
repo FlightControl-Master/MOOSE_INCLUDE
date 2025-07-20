@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-19T18:36:40+02:00-18a08288ecdd7351a754b9c509c19e750706e98d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-20T11:51:57+02:00-bd20e8fc81a7088125fcb29275141c6ac4db0177 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -80609,6 +80609,7 @@ conditionFailure={},
 conditionPush={},
 conditionSuccessSet=false,
 conditionFailureSet=false,
+repeatDelay=1,
 }
 _AUFTRAGSNR=0
 AUFTRAG.Type={
@@ -81703,6 +81704,10 @@ function AUFTRAG:SetRepeat(Nrepeat)
 self.Nrepeat=Nrepeat or 0
 return self
 end
+function AUFTRAG:SetRepeatDelay(RepeatDelay)
+self.repeatDelay=RepeatDelay
+return self
+end
 function AUFTRAG:SetRepeatOnFailure(Nrepeat)
 self.NrepeatFailure=Nrepeat or 0
 return self
@@ -82756,7 +82761,7 @@ if repeatme then
 self.repeatedSuccess=self.repeatedSuccess+1
 local N=math.max(self.NrepeatSuccess,self.Nrepeat)
 self:T(self.lid..string.format("Mission SUCCESS! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
-self:Repeat()
+self:__Repeat(self.repeatDelay)
 else
 self:T(self.lid..string.format("Mission SUCCESS! Number of max repeats %d reached  ==> Stopping mission!",self.repeated+1))
 self:Stop()
@@ -82776,7 +82781,7 @@ if repeatme then
 self.repeatedFailure=self.repeatedFailure+1
 local N=math.max(self.NrepeatFailure,self.Nrepeat)
 self:T(self.lid..string.format("Mission FAILED! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
-self:Repeat()
+self:__Repeat(self.repeatDelay)
 else
 self:T(self.lid..string.format("Mission FAILED! Number of max repeats %d reached ==> Stopping mission!",self.repeated+1))
 self:Stop()
@@ -95541,6 +95546,10 @@ end
 function FLIGHTGROUP:GetParkingSpot(element,maxdist,airbase)
 local coord=element.unit:GetCoordinate()
 airbase=airbase or self:GetClosestAirbase()
+if airbase==nil then
+self:T(self.lid.."No airbase found for element "..element.name)
+return nil
+end
 local parking=airbase.parking
 if airbase and airbase:IsShip()then
 if#parking>1 then
