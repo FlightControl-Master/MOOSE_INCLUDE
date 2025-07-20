@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-20T11:51:57+02:00-bd20e8fc81a7088125fcb29275141c6ac4db0177 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-20T12:28:36+02:00-8dcc3cbe8fbeb45514abe7cffa236acb32c12215 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -90478,6 +90478,7 @@ gcicapZones={},
 awacsZones={},
 tankerZones={},
 limitMission={},
+MaxMissionsAssignPerCycle=1,
 }
 COMMANDER.version="0.1.4"
 function COMMANDER:New(Coalition,Alias)
@@ -91102,6 +91103,7 @@ if mission.importance and mission.importance<vip then
 vip=mission.importance
 end
 end
+local missionsAssigned=0
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
 if mission:IsPlanned()and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)and self:_CheckMissionLimit(mission.type)then
@@ -91125,11 +91127,18 @@ self:MissionAssign(mission,legions)
 else
 LEGION.UnRecruitAssets(assets,mission)
 end
+missionsAssigned=missionsAssigned+1
+if missionsAssigned>=self.maxMissionsAssignPerCycle then
 return
+end
 end
 else
 end
 end
+end
+function COMMANDER:SetMaxMissionsAssignPerCycle(MaxMissionsAssignPerCycle)
+self.maxMissionsAssignPerCycle=MaxMissionsAssignPerCycle or 1
+return self
 end
 function COMMANDER:_GetCohorts(Legions,Cohorts,Operation)
 local function CheckOperation(LegionOrCohort)
