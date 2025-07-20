@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-19T16:06:36+02:00-1c48a71ceca4831aad25226dd7e19daecde301e2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-20T12:30:51+02:00-504c531266e4baf5448a79f46a403f926ee63d6f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -53149,10 +53149,10 @@ MANTIS.SamData={
 MANTIS.SamDataHDS={
 ["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
 ["SA-3 HDS"]={Range=20,Blindspot=6,Height=30,Type="Short",Radar="V-601P"},
-["SA-10C HDS 2"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85DE ln"},
-["SA-10C HDS 1"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85CE ln"},
-["SA-12 HDS 2"]={Range=100,Blindspot=10,Height=25,Type="Long",Radar="S-300V 9A82 l"},
-["SA-12 HDS 1"]={Range=75,Blindspot=1,Height=25,Type="Long",Radar="S-300V 9A83 l"},
+["SA-10B HDS"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85CE ln"},
+["SA-10C HDS"]={Range=75,Blindspot=5,Height=25,Type="Long",Radar="5P85SE ln"},
+["SA-12 HDS 2"]={Range=100,Blindspot=13,Height=30,Type="Long",Radar="S-300V 9A82 l"},
+["SA-12 HDS 1"]={Range=75,Blindspot=6,Height=25,Type="Long",Radar="S-300V 9A83 l"},
 ["SA-23 HDS 2"]={Range=200,Blindspot=5,Height=37,Type="Long",Radar="S-300VM 9A82ME"},
 ["SA-23 HDS 1"]={Range=100,Blindspot=1,Height=50,Type="Long",Radar="S-300VM 9A83ME"},
 ["HQ-2 HDS"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
@@ -53321,7 +53321,7 @@ if self.HQ_Template_CC then
 self.HQ_CC=GROUP:FindByName(self.HQ_Template_CC)
 end
 self.checkcounter=1
-self.version="0.9.30"
+self.version="0.9.31"
 self:I(string.format("***** Starting MANTIS Version %s *****",self.version))
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -54250,7 +54250,7 @@ self:T({From,Event,To})
 if self.debug and self.verbose then
 self:I(self.lid.."Status Report")
 for _name,_state in pairs(self.SamStateTracker)do
-self:I(string.format("Site %s\tStatus %s",_name,_state))
+self:I(string.format("Site %s | Status %s",_name,_state))
 end
 end
 local interval=self.detectinterval*-1
@@ -79334,6 +79334,7 @@ conditionFailure={},
 conditionPush={},
 conditionSuccessSet=false,
 conditionFailureSet=false,
+repeatDelay=1,
 }
 _AUFTRAGSNR=0
 AUFTRAG.Type={
@@ -80428,6 +80429,10 @@ function AUFTRAG:SetRepeat(Nrepeat)
 self.Nrepeat=Nrepeat or 0
 return self
 end
+function AUFTRAG:SetRepeatDelay(RepeatDelay)
+self.repeatDelay=RepeatDelay
+return self
+end
 function AUFTRAG:SetRepeatOnFailure(Nrepeat)
 self.NrepeatFailure=Nrepeat or 0
 return self
@@ -81481,7 +81486,7 @@ if repeatme then
 self.repeatedSuccess=self.repeatedSuccess+1
 local N=math.max(self.NrepeatSuccess,self.Nrepeat)
 self:T(self.lid..string.format("Mission SUCCESS! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
-self:Repeat()
+self:__Repeat(self.repeatDelay)
 else
 self:T(self.lid..string.format("Mission SUCCESS! Number of max repeats %d reached  ==> Stopping mission!",self.repeated+1))
 self:Stop()
@@ -81501,7 +81506,7 @@ if repeatme then
 self.repeatedFailure=self.repeatedFailure+1
 local N=math.max(self.NrepeatFailure,self.Nrepeat)
 self:T(self.lid..string.format("Mission FAILED! Repeating mission for the %d time (max %d times) ==> Repeat mission!",self.repeated+1,N))
-self:Repeat()
+self:__Repeat(self.repeatDelay)
 else
 self:T(self.lid..string.format("Mission FAILED! Number of max repeats %d reached ==> Stopping mission!",self.repeated+1))
 self:Stop()
@@ -89198,6 +89203,7 @@ gcicapZones={},
 awacsZones={},
 tankerZones={},
 limitMission={},
+MaxMissionsAssignPerCycle=1,
 }
 COMMANDER.version="0.1.4"
 function COMMANDER:New(Coalition,Alias)
@@ -89822,6 +89828,7 @@ if mission.importance and mission.importance<vip then
 vip=mission.importance
 end
 end
+local missionsAssigned=0
 for _,_mission in pairs(self.missionqueue)do
 local mission=_mission
 if mission:IsPlanned()and mission:IsReadyToGo()and(mission.importance==nil or mission.importance<=vip)and self:_CheckMissionLimit(mission.type)then
@@ -89845,11 +89852,18 @@ self:MissionAssign(mission,legions)
 else
 LEGION.UnRecruitAssets(assets,mission)
 end
+missionsAssigned=missionsAssigned+1
+if missionsAssigned>=self.maxMissionsAssignPerCycle then
 return
+end
 end
 else
 end
 end
+end
+function COMMANDER:SetMaxMissionsAssignPerCycle(MaxMissionsAssignPerCycle)
+self.maxMissionsAssignPerCycle=MaxMissionsAssignPerCycle or 1
+return self
 end
 function COMMANDER:_GetCohorts(Legions,Cohorts,Operation)
 local function CheckOperation(LegionOrCohort)
@@ -94266,6 +94280,10 @@ end
 function FLIGHTGROUP:GetParkingSpot(element,maxdist,airbase)
 local coord=element.unit:GetCoordinate()
 airbase=airbase or self:GetClosestAirbase()
+if airbase==nil then
+self:T(self.lid.."No airbase found for element "..element.name)
+return nil
+end
 local parking=airbase.parking
 if airbase and airbase:IsShip()then
 if#parking>1 then
