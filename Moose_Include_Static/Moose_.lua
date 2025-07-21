@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-21T09:09:54+02:00-096f2caf9c2a946d0aaf34c33c26dfd11da822da ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-21T14:50:08+02:00-8c92a578ed14c0456cfe52055da429bd9af67a65 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3951,6 +3951,71 @@ local coordinate=Coordinate:Translate(600,0)
 MarkerID=coordinate:TextToAll(F10Text,Coalition,Color,1,{1,1,1},Alpha,14,true)
 end
 return ReturnObjects,ADFName,MarkerID
+end
+function UTILS.SpawnMASHStatics(Name,Coordinate,Country,ADF,Livery,Templates)
+local MASHTemplates={
+[1]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=0.000000,y=0.000000,},
+[2]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=0.313533,y=8.778935,},
+[3]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=16.303737,y=20.379671,},
+[4]={category='Helicopters',type='CH-47Fbl1',shape_name='none',heading=0,x=-20.047735,y=-63.166179,livery_id="us army dark green",},
+[5]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=26.650339,y=20.066138,},
+[6]={category='Heliports',type='FARP_SINGLE_01',shape_name='FARP_SINGLE_01',heading=0,x=-25.432292,y=9.077099,},
+[7]={category='Heliports',type='FARP_SINGLE_01',shape_name='FARP_SINGLE_01',heading=0,x=-12.717421,y=-3.216114,},
+[8]={category='Heliports',type='FARP_SINGLE_01',shape_name='FARP_SINGLE_01',heading=0,x=-25.439281,y=-3.216114,},
+[9]={category='Heliports',type='FARP_SINGLE_01',shape_name='FARP_SINGLE_01',heading=0,x=-12.717421,y=9.155603,},
+[10]={category='Fortifications',type='TACAN_beacon',shape_name='none',heading=0,x=-2.329847,y=-16.579903,},
+[11]={category='Fortifications',type='FARP Fuel Depot',shape_name='GSM Rus',heading=0,x=2.222011,y=4.487030,},
+[12]={category='Fortifications',type='APFC fuel',shape_name='M92_APFCfuel',heading=0,x=3.614927,y=0.367838,},
+[13]={category='Fortifications',type='Camouflage03',shape_name='M92_Camouflage03',heading=0,x=21.544148,y=21.998879,},
+[14]={category='Fortifications',type='Container_generator',shape_name='M92_Container_generator',heading=0,x=20.989192,y=37.314334,},
+[15]={category='Fortifications',type='FireExtinguisher02',shape_name='M92_FireExtinguisher02',heading=0,x=3.988003,y=8.362333,},
+[16]={category='Fortifications',type='FireExtinguisher02',shape_name='M92_FireExtinguisher02',heading=0,x=-3.953195,y=12.945844,},
+[17]={category='Fortifications',type='Windsock',shape_name='H-Windsock_RW',heading=0,x=-18.944173,y=-33.042196,},
+[18]={category='Fortifications',type='Tent04',shape_name='M92_Tent04',heading=0,x=21.220671,y=30.247529,},
+}
+if Templates then MASHTemplates=Templates end
+local name=Name or"Florence Nightingale"
+local positionVec2
+local positionVec3
+local ReturnStatics={}
+local CountryID=Country or country.id.USA
+local livery="us army dark green"
+if type(Coordinate)=="table"then
+if Coordinate:IsInstanceOf("COORDINATE")or Coordinate:IsInstanceOf("ZONE_BASE")then
+positionVec2=Coordinate:GetVec2()
+positionVec3=Coordinate:GetVec3()
+end
+else
+BASE:E("Spawn MASH - no ZONE or COORDINATE handed!")
+return
+end
+local BaseX=positionVec2.x
+local BaseY=positionVec2.y
+for id,object in pairs(MASHTemplates)do
+local NewName=string.format("%s#%3d",name,id)
+local vec2={x=BaseX+object.x,y=BaseY+object.y}
+local Coordinate=COORDINATE:NewFromVec2(vec2)
+local static=SPAWNSTATIC:NewFromType(object.type,object.category,CountryID)
+if object.shape_name and object.shape_name~="none"then
+static:InitShape(object.shape_name)
+end
+if object.category=="Helicopters"then
+if object.livery_id~=nil then
+livery=object.livery_id
+end
+static:InitLivery(livery)
+end
+static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,static)
+end
+local ADFName
+if ADF and type(ADF)=="number"then
+local ADFFreq=ADF*1000
+local Sound="l10n/DEFAULT/beacon.ogg"
+ADFName=Name.." ADF "..tostring(ADF).."KHz"
+trigger.action.radioTransmission(Sound,positionVec3,0,true,ADFFreq,250,ADFName)
+end
+return ReturnStatics,ADFName
 end
 function UTILS.Vec2toVec3(vec,y)
 if not vec.z then
