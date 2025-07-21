@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-20T14:04:24+02:00-bdad38e707f4a6cc5c84e3106005ffb44b601a69 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-21T09:11:12+02:00-992f09d9badcb62673388f4098dcc2a0f52f59d9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60257,6 +60257,7 @@ GROOVE_IM="Groove In the Middle",
 GROOVE_IC="Groove In Close",
 GROOVE_AR="Groove At the Ramp",
 GROOVE_IW="Groove In the Wires",
+GROOVE_IWs="Groove In the Wires stopped?",
 GROOVE_AL="Groove Abeam Landing Spot",
 GROOVE_LC="Groove Level Cross",
 BOLTER="Bolter Pattern",
@@ -61497,7 +61498,7 @@ self.BreakEntry.LimitZmin=nil
 self.BreakEntry.LimitZmax=nil
 self.BreakEarly.name="Early Break"
 self.BreakEarly.Xmin=-UTILS.NMToMeters(1)
-self.BreakEarly.Xmax=UTILS.NMToMeters(5)
+self.BreakEarly.Xmax=UTILS.NMToMeters(7)
 self.BreakEarly.Zmin=-UTILS.NMToMeters(2)
 self.BreakEarly.Zmax=UTILS.NMToMeters(1)
 self.BreakEarly.LimitXmin=0
@@ -61506,7 +61507,7 @@ self.BreakEarly.LimitZmin=-UTILS.NMToMeters(0.2)
 self.BreakEarly.LimitZmax=nil
 self.BreakLate.name="Late Break"
 self.BreakLate.Xmin=-UTILS.NMToMeters(1)
-self.BreakLate.Xmax=UTILS.NMToMeters(5)
+self.BreakLate.Xmax=UTILS.NMToMeters(7)
 self.BreakLate.Zmin=-UTILS.NMToMeters(2)
 self.BreakLate.Zmax=UTILS.NMToMeters(1)
 self.BreakLate.LimitXmin=0
@@ -61515,7 +61516,7 @@ self.BreakLate.LimitZmin=-UTILS.NMToMeters(0.8)
 self.BreakLate.LimitZmax=nil
 self.Abeam.name="Abeam Position"
 self.Abeam.Xmin=-UTILS.NMToMeters(5)
-self.Abeam.Xmax=UTILS.NMToMeters(5)
+self.Abeam.Xmax=UTILS.NMToMeters(7)
 self.Abeam.Zmin=-UTILS.NMToMeters(2)
 self.Abeam.Zmax=500
 self.Abeam.LimitXmin=-200
@@ -61572,7 +61573,7 @@ self.carrierparam.rwywidth=25
 self.carrierparam.wire1=55
 self.carrierparam.wire2=67
 self.carrierparam.wire3=79
-self.carrierparam.wire4=92
+self.carrierparam.wire4=96
 self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
 end
 function AIRBOSS:_InitForrestal()
@@ -61890,6 +61891,7 @@ self.LSOCall.N7.duration=0.51
 self.LSOCall.N8.duration=0.38
 self.LSOCall.N9.duration=0.34
 self.LSOCall.PADDLESCONTACT.duration=0.91
+self.LSOCall.POWERsoft.duration=0.9
 self.LSOCall.POWER.duration=0.45
 self.LSOCall.RADIOCHECK.duration=0.90
 self.LSOCall.RIGHTFORLINEUP.duration=0.70
@@ -61937,6 +61939,7 @@ self.LSOCall.N8.duration=0.37
 self.LSOCall.N9.duration=0.40
 self.LSOCall.PADDLESCONTACT.duration=1.00
 self.LSOCall.POWER.duration=0.50
+self.LSOCall.POWERsoft.duration=0.9
 self.LSOCall.RADIOCHECK.duration=1.10
 self.LSOCall.RIGHTFORLINEUP.duration=0.80
 self.LSOCall.ROGERBALL.duration=1.00
@@ -62009,6 +62012,7 @@ RIGHTFORLINEUP={file="LSO-RightForLineup",suffix="ogg",loud=true,subtitle="Right
 HIGH={file="LSO-High",suffix="ogg",loud=true,subtitle="You're high",duration=0.65,subduration=1},
 LOW={file="LSO-Low",suffix="ogg",loud=true,subtitle="You're low",duration=0.50,subduration=1},
 POWER={file="LSO-Power",suffix="ogg",loud=true,subtitle="Power",duration=0.50,subduration=1},
+POWERsoft={file="LSO-Power-soft",suffix="ogg",loud=false,subtitle="Power-soft",duration=0.90,subduration=1},
 SLOW={file="LSO-Slow",suffix="ogg",loud=true,subtitle="You're slow",duration=0.65,subduration=1},
 FAST={file="LSO-Fast",suffix="ogg",loud=true,subtitle="You're fast",duration=0.70,subduration=1},
 ROGERBALL={file="LSO-RogerBall",suffix="ogg",loud=false,subtitle="Roger ball",duration=1.00,subduration=2},
@@ -62133,13 +62137,13 @@ aoa.OnSpeedMin=7.4
 aoa.Fast=6.9
 aoa.FAST=6.3
 elseif tomcat then
-aoa.SLOW=self:_AoAUnit2Deg(playerData,17.0)
-aoa.Slow=self:_AoAUnit2Deg(playerData,16.0)
-aoa.OnSpeedMax=self:_AoAUnit2Deg(playerData,15.5)
+aoa.SLOW=self:_AoAUnit2Deg(playerData,17.5)
+aoa.Slow=self:_AoAUnit2Deg(playerData,16.5)
+aoa.OnSpeedMax=self:_AoAUnit2Deg(playerData,16.0)
 aoa.OnSpeed=self:_AoAUnit2Deg(playerData,15.0)
-aoa.OnSpeedMin=self:_AoAUnit2Deg(playerData,14.5)
-aoa.Fast=self:_AoAUnit2Deg(playerData,14.0)
-aoa.FAST=self:_AoAUnit2Deg(playerData,13.0)
+aoa.OnSpeedMin=self:_AoAUnit2Deg(playerData,14.0)
+aoa.Fast=self:_AoAUnit2Deg(playerData,13.5)
+aoa.FAST=self:_AoAUnit2Deg(playerData,12.5)
 elseif goshawk then
 aoa.SLOW=8.00
 aoa.Slow=7.75
@@ -62149,13 +62153,13 @@ aoa.OnSpeedMin=6.75
 aoa.Fast=6.25
 aoa.FAST=6.00
 elseif skyhawk then
-aoa.SLOW=9.50
-aoa.Slow=9.25
-aoa.OnSpeedMax=9.00
+aoa.SLOW=10.50
+aoa.Slow=9.50
+aoa.OnSpeedMax=9.25
 aoa.OnSpeed=8.75
-aoa.OnSpeedMin=8.50
-aoa.Fast=8.25
-aoa.FAST=8.00
+aoa.OnSpeedMin=8.25
+aoa.Fast=8.00
+aoa.FAST=7.00
 elseif harrier then
 aoa.SLOW=16.0
 aoa.Slow=13.5
@@ -63449,6 +63453,28 @@ if playerData then
 local unit=playerData.unit
 if unit and unit:IsAlive()then
 if unit:IsInZone(self.zoneCCA)then
+if playerData.step==AIRBOSS.PatternStep.WAKE then
+if math.abs(playerData.unit:GetRoll())>35 and math.abs(playerData.unit:GetRoll())<=40 then
+playerData.wrappedUpAtWakeLittle=true
+elseif math.abs(playerData.unit:GetRoll())>40 and math.abs(playerData.unit:GetRoll())<=45 then
+playerData.wrappedUpAtWakeFull=true
+elseif math.abs(playerData.unit:GetRoll())>45 then
+playerData.wrappedUpAtWakeUnderline=true
+elseif math.abs(playerData.unit:GetRoll())<20 and math.abs(playerData.unit:GetRoll())>=10 then
+playerData.AAatWakeLittle=true
+elseif math.abs(playerData.unit:GetRoll())<10 and math.abs(playerData.unit:GetRoll())>=2 then
+playerData.AAatWakeFull=true
+elseif math.abs(playerData.unit:GetRoll())<2 then
+playerData.AAatWakeUnderline=true
+else
+end
+if math.abs(playerData.unit:GetAoA())>=15 then
+playerData.AFU=true
+elseif math.abs(playerData.unit:GetAoA())<=5 then
+playerData.AFU=true
+else
+end
+end
 if playerData.attitudemonitor then
 self:_AttitudeMonitor(playerData)
 end
@@ -63550,7 +63576,7 @@ end
 end
 function AIRBOSS:_SetTimeInGroove(playerData)
 if playerData.TIG0 then
-playerData.Tgroove=timer.getTime()-playerData.TIG0
+playerData.Tgroove=timer.getTime()-playerData.TIG0-1.5
 else
 playerData.Tgroove=999
 end
@@ -64121,7 +64147,17 @@ function AIRBOSS:_DirtyUp(playerData)
 self:_CheckCorridor(playerData)
 local inzone=playerData.unit:IsInZone(self:_GetZoneDirtyUp(playerData.case))
 if inzone then
-self:_PlayerHint(playerData)
+playerData.Tgroove=timer.getTime()-playerData.TIG0-1.5
+playerData.wrappedUpAtWakeLittle=false
+playerData.wrappedUpAtWakeFull=false
+playerData.wrappedUpAtWakeUnderline=false
+playerData.wrappedUpAtStartLittle=false
+playerData.wrappedUpAtStartFull=false
+playerData.wrappedUpAtStartUnderline=false
+playerData.AAatWakeLittle=false
+playerData.AAatWakeFull=false
+playerData.AAatWakeUnderline=false
+playerData.AFU=false
 if playerData.actype==AIRBOSS.AircraftCarrier.HORNET
 or playerData.actype==AIRBOSS.AircraftCarrier.F14A
 or playerData.actype==AIRBOSS.AircraftCarrier.F14B
@@ -64181,9 +64217,77 @@ if self:_CheckAbort(X,Z,self.BreakEntry)then
 self:_AbortPattern(playerData,X,Z,self.BreakEntry,true)
 return
 end
+local stern=self:_GetSternCoord()
+local coord=playerData.unit:GetCoordinate()
+local dist=coord:Get2DDistance(stern)
+local playerCallsign=playerData.unit:GetCallsign()
+local playerName=playerData.name
+local unit=playerData.unit
+local unitClient=Unit.getByName(unit:GetName())
+local hookArgument=unitClient:getDrawArgumentValue(25)
+local hookArgument_Tomcat=unitClient:getDrawArgumentValue(1305)
+local speedMPS=playerData.unit:GetVelocityMPS()
+local speedKTS=UTILS.MpsToKnots(speedMPS)
+local player_alt=playerData.unit:GetAltitude()
+player_alt_feet=player_alt*3.28
+player_alt_feet=player_alt_feet/10
+player_alt_feet=math.floor(player_alt_feet)*10
+local player_velocity_round=speedKTS*1.00
+player_velocity_round=player_velocity_round/10
+player_velocity_round=math.floor(player_velocity_round)*10
+local player_alt_feet=player_alt*3.28
+player_alt_feet=player_alt_feet/10
+player_alt_feet=math.floor(player_alt_feet)*10
+local Play_SH_Sound=USERSOUND:New("Airboss Soundfiles/GreatBallsOfFire.ogg")
+local Play_666SH_Sound=USERSOUND:New("Airboss Soundfiles/Runninwiththedevil.ogg")
+local playerType=playerData.actype
+if dist<1000 and clientSHBFlag==false then
+if speedKTS>450 and speedKTS<590 then
+if player_alt_feet<1500 then
+if hookArgument>0 or hookArgument_Tomcat>0 then
+playerData.shb=true
+trigger.action.outText(playerName..' performing a Sierra Hotel Break in a '..playerType,10)
+local sh_message_to_discord=('**'..playerName..' is performing a Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
+HypeMan.sendBotMessage(sh_message_to_discord)
+Play_SH_Sound:ToAll()
+clientSHBFlag=true
+else
+playerData.shb=false
+end
+else
+end
+elseif speedKTS>589 then
+if player_alt_feet<625 and player_alt_feet>575 then
+if hookArgument>0 or hookArgument_Tomcat>0 then
+playerData.shb=true
+trigger.action.outText(playerName..' performing a 666 Sierra Hotel Break in a '..playerType,10)
+local sh_message_to_discord=('**'..playerName..' is performing a 666 Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
+HypeMan.sendBotMessage(sh_message_to_discord)
+Play_666SH_Sound:ToAll()
+clientSHBFlag=true
+else
+playerData.shb=false
+end
+else
+if hookArgument>0 or hookArgument_Tomcat>0 then
+playerData.shb=true
+trigger.action.outText(playerName..' performing a Sierra Hotel Break in a '..playerType,10)
+local sh_message_to_discord=('**'..playerName..' is performing a Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
+HypeMan.sendBotMessage(sh_message_to_discord)
+Play_SH_Sound:ToAll()
+clientSHBFlag=true
+else
+playerData.shb=false
+end
+end
+else
+end
+else
+end
 if self:_CheckLimits(X,Z,self.BreakEntry)then
 self:_PlayerHint(playerData)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.EARLYBREAK)
+clientSHBFlag=false
 end
 end
 function AIRBOSS:_Break(playerData,part)
@@ -64255,6 +64359,16 @@ self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.NINETY)
 end
 end
 function AIRBOSS:_Ninety(playerData)
+playerData.wrappedUpAtWakeLittle=false
+playerData.wrappedUpAtWakeFull=false
+playerData.wrappedUpAtWakeUnderline=false
+playerData.wrappedUpAtStartLittle=false
+playerData.wrappedUpAtStartFull=false
+playerData.wrappedUpAtStartUnderline=false
+playerData.AAatWakeLittle=false
+playerData.AAatWakeFull=false
+playerData.AAatWakeUnderline=false
+playerData.AFU=false
 local X,Z=self:_GetDistances(playerData.unit)
 if self:_CheckAbort(X,Z,self.Ninety)then
 self:_AbortPattern(playerData,X,Z,self.Ninety,true)
@@ -64307,6 +64421,9 @@ groovedata.Alt=self:_GetAltCarrier(playerData.unit)
 groovedata.AoA=playerData.unit:GetAoA()
 groovedata.GSE=self:_Glideslope(playerData.unit)
 groovedata.LUE=self:_Lineup(playerData.unit,true)
+groovedata.LUEwire=self:_LineupWIRE(playerData.unit,true)
+groovedata.LeftNozzle=self:_NozzleArgumentLeft(playerData.unit)
+groovedata.RightNozzle=self:_NozzleArgumentRight(playerData.unit)
 groovedata.Roll=playerData.unit:GetRoll()
 groovedata.Pitch=playerData.unit:GetPitch()
 groovedata.Yaw=playerData.unit:GetYaw()
@@ -64345,6 +64462,7 @@ local RXX=UTILS.NMToMeters(0.750)
 local RIM=UTILS.NMToMeters(0.500)
 local RIC=UTILS.NMToMeters(0.250)
 local RAR=UTILS.NMToMeters(0.040)
+local RIW=UTILS.NMToMeters(-0.020)
 local groovedata=self:_GetGrooveData(playerData)
 table.insert(playerData.trapsheet,groovedata)
 local X=groovedata.X
@@ -64357,7 +64475,7 @@ local rho=groovedata.Rho
 local lineupError=groovedata.LUE
 local glideslopeError=groovedata.GSE
 local AoA=groovedata.AoA
-if rho<=RXX and playerData.step==AIRBOSS.PatternStep.GROOVE_XX and(math.abs(groovedata.Roll)<=4.0 and playerData.unit:IsInZone(self:_GetZoneLineup()))then
+if rho<=RXX and playerData.step==AIRBOSS.PatternStep.GROOVE_XX and(math.abs(groovedata.Roll)<=3.5 or playerData.unit:IsInZone(self:_GetZoneLineup()))then
 playerData.TIG0=timer.getTime()
 self:RadioTransmission(self.LSORadio,self.LSOCall.CALLTHEBALL,nil,nil,nil,true)
 playerData.Tlso=timer.getTime()
@@ -64378,6 +64496,8 @@ self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.GROOVE_AL)
 else
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.GROOVE_IW)
 end
+elseif rho<=RIW and playerData.step==AIRBOSS.PatternStep.GROOVE_IW then
+playerData.groove.IW=UTILS.DeepCopy(groovedata)
 elseif rho<=RAR and playerData.step==AIRBOSS.PatternStep.GROOVE_AL then
 playerData.groove.AL=UTILS.DeepCopy(groovedata)
 local ZoneALS=self:_GetZoneAbeamLandingSpot()
@@ -64421,6 +64541,37 @@ local gd=playerData.groove[gs]
 if gd then
 self:T3(gd)
 local d=UTILS.MetersToNM(rho)
+if playerData.case~=3 then
+if playerData.wrappedUpAtWakeUnderline==true or playerData.wrappedUpAtStartUnderline==true then
+gd.WrappedUp="_WU_"
+elseif playerData.wrappedUpAtWakeUnderline==false and playerData.wrappedUpAtStartUnderline==false then
+if playerData.wrappedUpAtWakeFull==true or playerData.wrappedUpAtStartFull==true then
+gd.WrappedUp="WU"
+elseif playerData.wrappedUpAtStartFull==false then
+if playerData.wrappedUpAtWakeLittle==true or playerData.wrappedUpAtStartLittle==true then
+gd.WrappedUp="(WU)"
+end
+end
+else
+end
+if playerData.AAatWakeUnderline==true then
+gd.AngledApch="_AA_"
+elseif playerData.AAatWakeUnderline==false then
+if playerData.AAatWakeFull==true then
+gd.AngledApch="AA"
+elseif playerData.AAatWakeFull==false then
+if playerData.AAatWakeLittle==true then
+gd.AngledApch="(AA)"
+end
+end
+else
+end
+if playerData.AFU==true then
+gd.AFU="AFU"
+else
+end
+else
+end
 if rho>=RAR and rho<=RIM then
 if gd.LUE>0.22 and lineupError<-0.22 then
 env.info" Drift Right across centre ==> DR-"
@@ -64711,13 +64862,13 @@ end
 playerData.wire=wire
 local text=string.format("Trapped %d-wire.",wire)
 if wire==3 then
-text=text.." Well done!"
+text=text.." "
 elseif wire==2 then
-text=text.." Not bad, maybe you even get the 3rd next time."
+text=text.." "
 elseif wire==4 then
-text=text.." That was scary. You can do better than this!"
+text=text.." "
 elseif wire==1 then
-text=text.." Try harder next time!"
+text=text.." "
 end
 self:MessageToPlayer(playerData,text,"LSO","")
 local hint=string.format("Trapped %d-wire.",wire)
@@ -65047,6 +65198,33 @@ else
 text=text..string.format("\nR=%.2f NM | X=%d Z=%d m",UTILS.MetersToNM(rho),dx,dz)
 text=text..string.format("\nGamma=%.1f° | Rho=%.1f°",relhead,phi)
 end
+local lueWire=self:_LineupWIRE(playerData.unit,true)
+text=text..string.format("\nLineUpForWireCalls=%.2f° | lineup for Groove calls=%.2f°",lueWire or 0,lue or 0)
+local unitClient=Unit.getByName(unit:GetName())
+local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+if hornet then
+local nozzlePosL=0
+local burnerPosL=unitClient:getDrawArgumentValue(28)
+if burnerPosL<0.2 then
+nozzlePosL=unitClient:getDrawArgumentValue(89)
+else
+nozzlePosL=0
+end
+local nozzlePosR=0
+local burnerPosR=unitClient:getDrawArgumentValue(29)
+if burnerPosR<0.2 then
+nozzlePosR=unitClient:getDrawArgumentValue(90)
+else
+nozzlePosR=0
+end
+text=text..string.format("\n Left Nozzle position=%.2f | Right Nozzle position=%.2f ",nozzlePosL,nozzlePosR)
+end
+if tomcat then
+local nozzlePosL=unitClient:getDrawArgumentValue(434)
+local nozzlePosR=unitClient:getDrawArgumentValue(433)
+text=text..string.format("\n Left Nozzle position=%.2f | Right Nozzle position=%.2f ",nozzlePosL,nozzlePosR)
+end
 MESSAGE:New(text,1,nil,true):ToClient(playerData.client)
 end
 function AIRBOSS:_Glideslope(unit,optangle)
@@ -65107,6 +65285,61 @@ local z=UTILS.VecDot(Z,C)
 local lineup=math.deg(math.atan2(z,x))
 return lineup
 end
+function AIRBOSS:_LineupWIRE(unit,runway)
+local landingcoord=self:_GetOptLandingCoordinateWIRE()
+local A=landingcoord:GetVec3()
+local B=unit:GetVec3()
+local C=UTILS.VecSubstract(A,B)
+C.y=0.0
+local X=self.carrier:GetOrientationX()
+X.y=0.0
+if runway then
+X=UTILS.Rotate2D(X,-self.carrierparam.rwyangle)
+end
+local x=UTILS.VecDot(X,C)
+local Z=self.carrier:GetOrientationZ()
+Z.y=0.0
+if runway then
+Z=UTILS.Rotate2D(Z,-self.carrierparam.rwyangle)
+end
+local z=UTILS.VecDot(Z,C)
+local lineup=math.deg(math.atan2(z,x))
+return lineup
+end
+function AIRBOSS:_NozzleArgumentLeft(unit)
+local unitClient=Unit.getByName(unit:GetName())
+local typeName=unit:GetTypeName()
+local nozzlePosL=0
+local burnerPosL=0
+if typeName=="FA-18C_hornet"then
+burnerPosL=unitClient:getDrawArgumentValue(28)
+if burnerPosL<0.2 then
+nozzlePosL=unitClient:getDrawArgumentValue(89)
+else
+nozzlePosL=0
+end
+elseif typeName=="F-14A-135-GR"or typeName=="F-14B"then
+nozzlePosL=unitClient:getDrawArgumentValue(434)
+end
+return nozzlePosL
+end
+function AIRBOSS:_NozzleArgumentRight(unit)
+local unitClient=Unit.getByName(unit:GetName())
+local typeName=unit:GetTypeName()
+local nozzlePosR=0
+local burnerPosR=0
+if typeName=="FA-18C_hornet"then
+burnerPosR=unitClient:getDrawArgumentValue(29)
+if burnerPosR<0.2 then
+nozzlePosR=unitClient:getDrawArgumentValue(90)
+else
+nozzlePosR=0
+end
+elseif typeName=="F-14A-135-GR"or typeName=="F-14B"then
+nozzlePosR=unitClient:getDrawArgumentValue(433)
+end
+return nozzlePosR
+end
 function AIRBOSS:_GetAltCarrier(unit)
 local h=unit:GetAltitude()-self.carrierparam.deckheight-2
 return h
@@ -65129,6 +65362,16 @@ self.landingcoord:Translate(self.carrierparam.wire3,FB,true,true)
 end
 self.landingcoord.y=self.landingcoord.y+2
 end
+return self.landingcoord
+end
+function AIRBOSS:_GetOptLandingCoordinateWIRE()
+self.landingcoord:UpdateFromCoordinate(self:_GetSternCoord())
+local FB=self:GetFinalBearing(false)
+local case=self.case
+if self.carrierparam.wire3 then
+self.landingcoord:Translate(self.carrierparam.wire3+500,FB,true,true)
+end
+self.landingcoord.y=self.landingcoord.y+2
 return self.landingcoord
 end
 function AIRBOSS:_GetLandingSpotCoordinate()
@@ -65244,7 +65487,7 @@ theta=math.asin(vdeck*math.sin(alpha)/vwind)
 v=vdeck*math.cos(alpha)-vwind*math.cos(theta)
 end
 local magvar=magnetic and self.magvar or 0
-local intowind=(540+(windto-magvar+math.deg(theta)))%360
+local intowind=self:GetHeadingIntoWind_old(vdeck)
 return intowind,v
 end
 function AIRBOSS:GetBRCintoWind(vdeck)
@@ -65355,6 +65598,9 @@ advice=advice+self.LSOCall.POWER.duration
 elseif glideslopeError<self.gle.Low then
 self:RadioTransmission(self.LSORadio,self.LSOCall.POWER,false,nil,nil,true)
 advice=advice+self.LSOCall.POWER.duration
+elseif glideslopeError<self.gle._min then
+self:RadioTransmission(self.LSORadio,self.LSOCall.POWER,false,nil,nil,true)
+advice=advice+self.LSOCall.POWERsoft.duration
 else
 end
 if lineupError<self.lue.LEFT then
@@ -65397,12 +65643,18 @@ local t=playerData.Tgroove
 local grade=""
 if t<9 then
 grade="_NESA_"
-elseif t<15 then
+elseif t<12 then
 grade="NESA"
+elseif t<15 then
+grade="(NESA)"
 elseif t<19 then
-grade="OK Groove"
-elseif t<=24 then
+grade=""
+elseif t<22 then
 grade="(LIG)"
+elseif t<25 then
+grade="LIG"
+elseif t>=25 then
+grade="_LIG_"
 elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<55 then
 grade="FAST V/STOL Groove"
 elseif playerData.actype==AIRBOSS.AircraftCarrier.AV8B and t<75 then
@@ -65412,7 +65664,7 @@ grade="SLOW V/STOL Groove"
 else
 grade="LIG"
 end
-if t>=16.4 and t<=16.6 then
+if t>=16.49 and t<=16.6 then
 grade="_OK_"
 end
 if playerData.actype==AIRBOSS.AircraftCarrier.AV8B and(t>=60.0 and t<=65.0)then
@@ -65424,25 +65676,42 @@ function AIRBOSS:_LSOgrade(playerData)
 local function count(base,pattern)
 return select(2,string.gsub(base,pattern,""))
 end
+local TIG=""
+if playerData.Tgroove and playerData.Tgroove<=360 and playerData.case<3 then
+TIG=self:_EvalGrooveTime(playerData)
+end
 local GXX,nXX=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.XX)
 local GIM,nIM=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IM)
 local GIC,nIC=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IC)
 local GAR,nAR=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.AR)
+local GIW,nIW=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IW)
 local vtol=playerData.actype==AIRBOSS.AircraftCarrier.AV8B
-local G=GXX.." "..GIM.." ".." "..GIC.." "..GAR
-local N=nXX+nIM+nIC+nAR
+local G=GXX.." "..GIM.." ".." "..GIC.." "..GAR.." "..GIW.." "..TIG
+local gradeWithDeviations=GXX.."["..nXX.."] "..GIM.."["..nIM.."] "..GIC.."["..nIC.."] "..GAR.."["..nAR.."] "..GIW.."["..nIW.."]"
+env.info("LSO Grade [with deviation count]: "..gradeWithDeviations)
+local N=nXX+nIM+nIC+nAR+nIW
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
 local Tgroove=playerData.Tgroove
-local TgrooveUnicorn=Tgroove and(Tgroove>=15.0 and Tgroove<=18.99)or false
+local TgrooveUnicorn=Tgroove and(Tgroove>=16.49 and Tgroove<=16.59)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
 local grade
 local points
-if N==0 and(TgrooveUnicorn or TgrooveVstolUnicorn or playerData.case==3)then
+if N==0 and TgrooveVstolUnicorn then
 grade="_OK_"
 points=5.0
 G="Unicorn"
+end
+if N==0 and TgrooveUnicorn then
+if playerData.wire==3 then
+grade="_OK_"
+points=5.0
+G="Unicorn"
+else
+grade="OK"
+points=4.0
+end
 else
 if vtol then
 local Gb=GXX.." "..GIM
@@ -65488,6 +65757,7 @@ text=text.."# of large deviations _ = "..nL.."\n"
 text=text.."# of normal deviations  = "..nN.."\n"
 text=text.."# of small deviations ( = "..nS.."\n"
 self:T2(self.lid..text)
+env.info(text)
 if playerData.wop then
 if playerData.lig then
 grade="WO"
@@ -65530,6 +65800,16 @@ grade="CUT"
 points=0.0
 end
 end
+if playerData.wire==1 and points>1 then
+if points==4 then
+points=3
+grade="(OK)"
+elseif points==3 then
+points=2
+grade="--"
+end
+end
+env.info("Returning: "..grade.."  "..points.."  "..G)
 return grade,points,G
 end
 function AIRBOSS:_Flightdata2Text(playerData,groovestep)
@@ -65548,20 +65828,24 @@ local step=fdata.Step
 local AOA=fdata.AoA
 local GSE=fdata.GSE
 local LUE=fdata.LUE
+local LUEwire=fdata.LUEwire
+local Lnoz=fdata.LeftNozzle
+local Rnoz=fdata.RightNozzle
 local ROL=fdata.Roll
+local GT=fdata.GT
 local acaoa=self:_GetAircraftAoA(playerData)
 local P=nil
-if step==AIRBOSS.PatternStep.GROOVE_XX and ROL<=4.0 and playerData.case<3 then
-if LUE>self.lue.RIGHT then
-P=underline("AA")
-elseif LUE>self.lue.RightMed then
-P="AA "
-elseif LUE>self.lue.Right then
-P=little("AA")
+if step==AIRBOSS.PatternStep.GROOVE_XX and ROL<=3.5 and playerData.case<3 then
+if LUE>3.2 then
+P=underline("LUL")
+elseif LUE>2.2 then
+P="LUL"
+elseif LUE>1.2 then
+P=little("LUL")
 end
 end
 local O=nil
-if step==AIRBOSS.PatternStep.GROOVE_XX then
+if step==AIRBOSS.PatternStep.GROOVE_XX and playerData.case<3 then
 if LUE<self.lue.LEFT then
 O=underline("OS")
 elseif LUE<self.lue.Left then
@@ -65571,6 +65855,9 @@ O=little("OS")
 end
 end
 local S=nil
+if step~=AIRBOSS.PatternStep.GROOVE_IW then
+if AIRBOSS.PatternStep.GROOVE_AR and playerData.waveoff==true and playerData.owo==true then
+else
 if AOA>acaoa.SLOW then
 S=underline("SLO")
 elseif AOA>acaoa.Slow then
@@ -65598,57 +65885,139 @@ A="LO"
 elseif GSE<self.gle._min then
 A=little("LO")
 end
+end
+end
+local stepMod=self:_GS(step)
 local D=nil
-if LUE>self.lue.RIGHT then
+local DW=nil
+local Rol=nil
+local Noz=nil
+if AIRBOSS.PatternStep.GROOVE_AR and playerData.waveoff==true and playerData.owo==true then
+else
+if LUE>self.lue.RIGHT and step~=AIRBOSS.PatternStep.GROOVE_XX and step~=AIRBOSS.PatternStep.GROOVE_IW then
 D=underline("LUL")
-elseif LUE>self.lue.Right then
+elseif LUE>self.lue.Right and step~=AIRBOSS.PatternStep.GROOVE_XX and step~=AIRBOSS.PatternStep.GROOVE_IW then
 D="LUL"
-elseif LUE>self.lue._max then
+elseif LUE>self.lue._max and step~=AIRBOSS.PatternStep.GROOVE_XX and step~=AIRBOSS.PatternStep.GROOVE_IW then
 D=little("LUL")
-elseif playerData.case<3 then
-if LUE<self.lue.LEFT and step~=AIRBOSS.PatternStep.GROOVE_XX then
+elseif LUE<self.lue.LEFT and step~=AIRBOSS.PatternStep.GROOVE_XX and step~=AIRBOSS.PatternStep.GROOVE_IW then
 D=underline("LUR")
-elseif LUE<self.lue.Left and step~=AIRBOSS.PatternStep.GROOVE_XX then
+elseif LUE<self.lue.Left and step~=AIRBOSS.PatternStep.GROOVE_XX and step~=AIRBOSS.PatternStep.GROOVE_IW then
 D="LUR"
-elseif LUE<self.lue._min and step~=AIRBOSS.PatternStep.GROOVE_XX then
+elseif LUE<self.lue._min and step~=AIRBOSS.PatternStep.GROOVE_XX and step~=AIRBOSS.PatternStep.GROOVE_IW then
 D=little("LUR")
 end
-elseif playerData.case==3 then
-if LUE<self.lue.LEFT then
-D=underline("LUR")
-elseif LUE<self.lue.Left then
-D="LUR"
-elseif LUE<self.lue._min then
-D=little("LUR")
+end
+if step==AIRBOSS.PatternStep.GROOVE_IW and playerData.waveoff==false and playerData.owo==false then
+if LUEwire>1.2 then
+DW=underline("LL")
+elseif LUEwire>0.4 then
+DW="LL"
+elseif LUEwire>0.25 then
+DW=little("LL")
+elseif LUEwire<-1.17 then
+DW=underline("LR")
+elseif LUEwire<-0.46 then
+DW="LR"
+elseif LUEwire<-0.25 then
+DW=little("LR")
+else
+end
+if ROL>5 and ROL<=10 then
+Rol=little("LRWD")
+elseif ROL>10 and ROL<=15 then
+Rol=("LRWD")
+elseif ROL>15 then
+Rol=underline("LRWD")
+elseif ROL<-5 and ROL>=-10 then
+Rol=little("LLWD")
+elseif ROL<-10 and ROL>=-15 then
+Rol=("LLWD")
+elseif ROL<-15 then
+Rol=underline("LLWD")
+else
+end
+local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+if hornet then
+if Lnoz>0.6 and Rnoz>0.6 then
+Noz=underline("EG")
+else
+end
+end
+if playerData.Tgroove and playerData.Tgroove<=360 and playerData.case<3 then
+local grooveTime=playerData.Tgroove
+if grooveTime>19 or grooveTime<15 then
+GT=""
+end
 end
 end
 local G=""
 local n=0
+if stepMod=="XX"then
+if playerData.case<3 then
+if fdata.WrappedUp then
+env.info("Adding WrappedUp deviation.")
+G=G..fdata.WrappedUp
+n=n+1
+end
+if fdata.AngledApch then
+env.info("Adding AngledApch deviation.")
+G=G..fdata.AngledApch
+n=n+1
+end
+if fdata.AFU then
+env.info("Adding AFU deviation.")
+G=G..fdata.AFU
+n=n+1
+end
+end
+end
 if fdata.FlyThrough then
 G=G..fdata.FlyThrough
 end
-if P then
-G=G..P
-n=n
-end
 if S then
+env.info("Adding speed deviation.")
 G=G..S
 n=n+1
 end
 if A then
+env.info("Adding altitude deviation.")
 G=G..A
 n=n+1
 end
 if D then
+env.info("Adding line up deviation.")
 G=G..D
 n=n+1
 end
 if fdata.Drift then
+env.info("Adding drift deviation.")
 G=G..fdata.Drift
 n=n
 end
 if O then
+env.info("Adding overshoot deviation.")
 G=G..O
+n=n+1
+end
+if DW then
+env.info("Adding landed L/R deviation.")
+G=G..DW
+n=n+1
+end
+if Rol then
+env.info("Adding landed rol deviation.")
+G=G..Rol
+n=n+1
+end
+if Noz then
+env.info("Adding eased guns deviation.")
+G=G..Noz
+n=n+1
+end
+if GT then
+G=G..GT
 n=n+1
 end
 local step=self:_GS(step)
@@ -66119,7 +66488,7 @@ if playerData.wire and playerData.wire<=4 then
 text=text..string.format(" %d-wire",playerData.wire)
 end
 if playerData.Tgroove and playerData.Tgroove<=360 and playerData.case<3 then
-text=text..string.format("\nTime in the groove %.1f seconds: %s",playerData.Tgroove,self:_EvalGrooveTime(playerData))
+text=text..string.format("\nTime in the groove %.1f seconds.",playerData.Tgroove)
 end
 end
 playerData.lastdebrief=UTILS.DeepCopy(playerData.debrief)
@@ -67716,6 +68085,15 @@ text=string.format("negative, you are not airborne. Request denied!")
 end
 else
 text="affirmative, you can bypass the pattern and are cleared for final approach!"
+playerData.wrappedUpAtWakeLittle=false
+playerData.wrappedUpAtWakeFull=false
+playerData.wrappedUpAtWakeUnderline=false
+playerData.wrappedUpAtStartLittle=false
+playerData.wrappedUpAtStartFull=false
+playerData.wrappedUpAtStartUnderline=false
+playerData.AAatWakeLittle=false
+playerData.AAatWakeFull=false
+playerData.AAatWakeUnderline=false
 local lead=self:_GetFlightLead(playerData)
 self:_SetPlayerStep(lead,AIRBOSS.PatternStep.EMERGENCY)
 for _,sec in pairs(lead.section)do
