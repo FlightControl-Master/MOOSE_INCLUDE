@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-21T15:03:22+02:00-b39a83ad6e997aed31f8994370560dda2911c926 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-22T13:09:48+02:00-f23a2267cf82b75883bb172f114d00679a866960 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3952,7 +3952,7 @@ MarkerID=coordinate:TextToAll(F10Text,Coalition,Color,1,{1,1,1},Alpha,14,true)
 end
 return ReturnObjects,ADFName,MarkerID
 end
-function UTILS.SpawnMASHStatics(Name,Coordinate,Country,ADF,Livery,Templates)
+function UTILS.SpawnMASHStatics(Name,Coordinate,Country,ADF,Livery,DeployHelo,MASHRadio,MASHRadioModulation,MASHCallsign,Templates)
 local MASHTemplates={
 [1]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=0.000000,y=0.000000,},
 [2]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=0.313533,y=8.778935,},
@@ -3980,6 +3980,9 @@ local positionVec3
 local ReturnStatics={}
 local CountryID=Country or country.id.USA
 local livery="us army dark green"
+local MASHRadio=MASHRadio or 127.5
+local MASHRadioModulation=MASHRadioModulation or radio.modulation.AM
+local MASHCallsign=MASHCallsign or CALLSIGN.FARP.Berlin
 if type(Coordinate)=="table"then
 if Coordinate:IsInstanceOf("COORDINATE")or Coordinate:IsInstanceOf("ZONE_BASE")then
 positionVec2=Coordinate:GetVec2()
@@ -3999,14 +4002,21 @@ local static=SPAWNSTATIC:NewFromType(object.type,object.category,CountryID)
 if object.shape_name and object.shape_name~="none"then
 static:InitShape(object.shape_name)
 end
-if object.category=="Helicopters"then
+if object.category=="Helicopters"and DeployHelo==true then
 if object.livery_id~=nil then
 livery=object.livery_id
 end
 static:InitLivery(livery)
+local newstatic=static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,newstatic)
+elseif object.category=="Heliports"then
+static:InitFARP(MASHCallsign,MASHRadio,MASHRadioModulation,false,false)
+local newstatic=static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,newstatic)
+elseif object.category~="Helicopters"and object.category~="Heliports"then
+local newstatic=static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,newstatic)
 end
-static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
-table.insert(ReturnStatics,static)
 end
 local ADFName
 if ADF and type(ADF)=="number"then
@@ -60346,7 +60356,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.4.0"
+AIRBOSS.version="1.4.1"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -72622,7 +72632,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.3.35"
+CTLD.version="1.3.36"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72669,6 +72679,7 @@ self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
+self:AddTransition("*","CratesPacked","*")
 self:AddTransition("*","HelicopterLost","*")
 self:AddTransition("*","Load","*")
 self:AddTransition("*","Loaded","*")
@@ -74407,6 +74418,7 @@ if(_entry.Templates[1]==_Template.GroupName)then
 _Group:Destroy()
 self:_GetCrates(Group,Unit,_entry,nil,false,true)
 self:_RefreshLoadCratesMenu(Group,Unit)
+self:__CratesPacked(1,Group,Unit,_entry)
 return true
 end
 end
