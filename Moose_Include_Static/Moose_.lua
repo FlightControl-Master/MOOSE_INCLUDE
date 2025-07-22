@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-22T13:09:48+02:00-f23a2267cf82b75883bb172f114d00679a866960 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-22T18:55:50+02:00-dad91cca8c850863fdbea032120f398ef2dc4d64 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -90937,7 +90937,7 @@ gcicapZones={},
 awacsZones={},
 tankerZones={},
 limitMission={},
-MaxMissionsAssignPerCycle=1,
+maxMissionsAssignPerCycle=1,
 }
 COMMANDER.version="0.1.4"
 function COMMANDER:New(Coalition,Alias)
@@ -91587,7 +91587,7 @@ else
 LEGION.UnRecruitAssets(assets,mission)
 end
 missionsAssigned=missionsAssigned+1
-if missionsAssigned>=self.maxMissionsAssignPerCycle then
+if missionsAssigned>=(self.maxMissionsAssignPerCycle or 1)then
 return
 end
 end
