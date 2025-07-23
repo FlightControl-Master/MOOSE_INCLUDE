@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T12:36:05+02:00-9d8d0c21551907c7845450058be04e3ab6283c2a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T15:48:26+02:00-179cb5f5892e8b205a83a6783bf01d6215b63522 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31492,10 +31492,10 @@ end
 for i,j in pairs(rpairs)do
 local ri=runways[i]
 local rj=runways[j]
-local c0=ri.center
+local c0=ri.position
 local a=UTILS.VecTranslate(c0,1000,ri.heading)
-local b=UTILS.VecSubstract(rj.center,ri.center)
-b=UTILS.VecAdd(ri.center,b)
+local b=UTILS.VecSubstract(rj.position,ri.position)
+b=UTILS.VecAdd(ri.position,b)
 local left=isLeft(c0,a,b)
 if left then
 ri.isLeft=false
