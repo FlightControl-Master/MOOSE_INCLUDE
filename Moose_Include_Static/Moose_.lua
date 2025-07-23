@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-22T13:08:46+02:00-ada38fa3ea593eebfd0028a9764ac3b18fb63d5a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T12:34:52+02:00-11b0ce6275a931467e241e7e1badb9d3b994b5b9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30726,6 +30726,7 @@ else
 runway.name=string.format("%02d",tonumber(name))
 end
 runway.magheading=tonumber(runway.name)*10
+runway.idx=runway.magheading
 runway.heading=heading
 runway.width=width or 0
 runway.length=length or 0
@@ -30908,6 +30909,7 @@ local idx=string.format("%02d",UTILS.Round((hdg-magvar)/10,0))
 local runway={}
 runway.heading=hdg
 runway.idx=idx
+runway.magheading=idx
 runway.length=c1:Get2DDistance(c2)
 runway.position=c1
 runway.endpoint=c2
@@ -30916,6 +30918,37 @@ if mark then
 runway.position:MarkToAll(string.format("Runway %s: true heading=%03d (magvar=%d), length=%d m, i=%d, j=%d",runway.idx,runway.heading,magvar,runway.length,i,j))
 end
 table.insert(runways,runway)
+end
+local rpairs={}
+for i,_ri in pairs(runways)do
+local ri=_ri
+for j,_rj in pairs(runways)do
+local rj=_rj
+if i<j then
+if ri.name==rj.name then
+rpairs[i]=j
+end
+end
+end
+end
+local function isLeft(a,b,c)
+return((b.z-a.z)*(c.x-a.x)-(b.x-a.x)*(c.z-a.z))>0
+end
+for i,j in pairs(rpairs)do
+local ri=runways[i]
+local rj=runways[j]
+local c0=ri.center
+local a=UTILS.VecTranslate(c0,1000,ri.heading)
+local b=UTILS.VecSubstract(rj.center,ri.center)
+b=UTILS.VecAdd(ri.center,b)
+local left=isLeft(c0,a,b)
+if left then
+ri.isLeft=false
+rj.isLeft=true
+else
+ri.isLeft=true
+rj.isLeft=false
+end
 end
 return runways
 end
