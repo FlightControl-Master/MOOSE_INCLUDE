@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T12:34:52+02:00-11b0ce6275a931467e241e7e1badb9d3b994b5b9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T12:35:16+02:00-326b20b08d2f96347a0d35a30452ffc8541dc2cf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4169,6 +4169,9 @@ local z=UTILS.GetEnvZone(name)
 if z then
 net.dostring_in("mission",string.format("a_scenery_destruction_zone(%d, %d)",z.zoneId,level))
 end
+end
+function UTILS.GetSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
+return Disposition.getSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
 end
 PROFILER={
 ClassName="PROFILER",
@@ -9465,6 +9468,30 @@ function ZONE_RADIUS:IsVec3InZone(Vec3)
 if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
+end
+function ZONE_RADIUS:GetClearZonePositions(PosRadius,NumPositions)
+local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),self:GetRadius(),PosRadius,NumPositions)
+if clearPositions or#clearPositions>0 then
+local validZones={}
+for _,vec2 in pairs(clearPositions)do
+if self:IsVec2InZone(vec2)then
+table.insert(validZones,vec2)
+end
+end
+if#validZones>0 then
+return validZones
+end
+end
+return nil
+end
+function ZONE_RADIUS:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
+local radius=PosRadius or math.min(self.Radius/10,200)
+local clearPositions=self:GetClearZonePositions(radius,NumPositions or 50)
+if clearPositions or#clearPositions>0 then
+local randomPosition=clearPositions[math.random(1,#clearPositions)]
+return COORDINATE:NewFromVec2(randomPosition),radius
+end
+return nil
 end
 function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
@@ -18369,6 +18396,15 @@ return flat,elev
 end
 function COORDINATE:GetRandomPointVec3InRadius(OuterRadius,InnerRadius)
 return COORDINATE:NewFromVec3(self:GetRandomVec3InRadius(OuterRadius,InnerRadius))
+end
+function COORDINATE:GetSimpleZones(SearchRadius,PosRadius,NumPositions)
+local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),SearchRadius,PosRadius,NumPositions)
+local coords={}
+for _,pos in ipairs(clearPositions)do
+local coord=COORDINATE:NewFromVec2(pos)
+table.insert(coords,coord)
+end
+return coords
 end
 end
 do
