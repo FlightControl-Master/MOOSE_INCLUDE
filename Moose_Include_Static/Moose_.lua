@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-21T15:04:23+02:00-2cd071acb272fa08aa7bff5365785bf7842f4ab9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T12:37:02+02:00-19ab249d775267c1fa93b6ad4ef4dfae232e190d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3952,7 +3952,7 @@ MarkerID=coordinate:TextToAll(F10Text,Coalition,Color,1,{1,1,1},Alpha,14,true)
 end
 return ReturnObjects,ADFName,MarkerID
 end
-function UTILS.SpawnMASHStatics(Name,Coordinate,Country,ADF,Livery,Templates)
+function UTILS.SpawnMASHStatics(Name,Coordinate,Country,ADF,Livery,DeployHelo,MASHRadio,MASHRadioModulation,MASHCallsign,Templates)
 local MASHTemplates={
 [1]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=0.000000,y=0.000000,},
 [2]={category='Infantry',type='Soldier M4',shape_name='none',heading=0,x=0.313533,y=8.778935,},
@@ -3980,6 +3980,9 @@ local positionVec3
 local ReturnStatics={}
 local CountryID=Country or country.id.USA
 local livery="us army dark green"
+local MASHRadio=MASHRadio or 127.5
+local MASHRadioModulation=MASHRadioModulation or radio.modulation.AM
+local MASHCallsign=MASHCallsign or CALLSIGN.FARP.Berlin
 if type(Coordinate)=="table"then
 if Coordinate:IsInstanceOf("COORDINATE")or Coordinate:IsInstanceOf("ZONE_BASE")then
 positionVec2=Coordinate:GetVec2()
@@ -3999,14 +4002,21 @@ local static=SPAWNSTATIC:NewFromType(object.type,object.category,CountryID)
 if object.shape_name and object.shape_name~="none"then
 static:InitShape(object.shape_name)
 end
-if object.category=="Helicopters"then
+if object.category=="Helicopters"and DeployHelo==true then
 if object.livery_id~=nil then
 livery=object.livery_id
 end
 static:InitLivery(livery)
+local newstatic=static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,newstatic)
+elseif object.category=="Heliports"then
+static:InitFARP(MASHCallsign,MASHRadio,MASHRadioModulation,false,false)
+local newstatic=static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,newstatic)
+elseif object.category~="Helicopters"and object.category~="Heliports"then
+local newstatic=static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
+table.insert(ReturnStatics,newstatic)
 end
-static:SpawnFromCoordinate(Coordinate,object.heading,NewName)
-table.insert(ReturnStatics,static)
 end
 local ADFName
 if ADF and type(ADF)=="number"then
@@ -4159,6 +4169,9 @@ local z=UTILS.GetEnvZone(name)
 if z then
 net.dostring_in("mission",string.format("a_scenery_destruction_zone(%d, %d)",z.zoneId,level))
 end
+end
+function UTILS.GetSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
+return Disposition.getSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
 end
 PROFILER={
 ClassName="PROFILER",
@@ -9455,6 +9468,30 @@ function ZONE_RADIUS:IsVec3InZone(Vec3)
 if not Vec3 then return false end
 local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
+end
+function ZONE_RADIUS:GetClearZonePositions(PosRadius,NumPositions)
+local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),self:GetRadius(),PosRadius,NumPositions)
+if clearPositions or#clearPositions>0 then
+local validZones={}
+for _,vec2 in pairs(clearPositions)do
+if self:IsVec2InZone(vec2)then
+table.insert(validZones,vec2)
+end
+end
+if#validZones>0 then
+return validZones
+end
+end
+return nil
+end
+function ZONE_RADIUS:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
+local radius=PosRadius or math.min(self.Radius/10,200)
+local clearPositions=self:GetClearZonePositions(radius,NumPositions or 50)
+if clearPositions or#clearPositions>0 then
+local randomPosition=clearPositions[math.random(1,#clearPositions)]
+return COORDINATE:NewFromVec2(randomPosition),radius
+end
+return nil
 end
 function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
@@ -18359,6 +18396,15 @@ return flat,elev
 end
 function COORDINATE:GetRandomPointVec3InRadius(OuterRadius,InnerRadius)
 return COORDINATE:NewFromVec3(self:GetRandomVec3InRadius(OuterRadius,InnerRadius))
+end
+function COORDINATE:GetSimpleZones(SearchRadius,PosRadius,NumPositions)
+local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),SearchRadius,PosRadius,NumPositions)
+local coords={}
+for _,pos in ipairs(clearPositions)do
+local coord=COORDINATE:NewFromVec2(pos)
+table.insert(coords,coord)
+end
+return coords
 end
 end
 do
@@ -31234,6 +31280,7 @@ else
 runway.name=string.format("%02d",tonumber(name))
 end
 runway.magheading=tonumber(runway.name)*10
+runway.idx=runway.magheading
 runway.heading=heading
 runway.width=width or 0
 runway.length=length or 0
@@ -31416,6 +31463,7 @@ local idx=string.format("%02d",UTILS.Round((hdg-magvar)/10,0))
 local runway={}
 runway.heading=hdg
 runway.idx=idx
+runway.magheading=idx
 runway.length=c1:Get2DDistance(c2)
 runway.position=c1
 runway.endpoint=c2
@@ -31424,6 +31472,37 @@ if mark then
 runway.position:MarkToAll(string.format("Runway %s: true heading=%03d (magvar=%d), length=%d m, i=%d, j=%d",runway.idx,runway.heading,magvar,runway.length,i,j))
 end
 table.insert(runways,runway)
+end
+local rpairs={}
+for i,_ri in pairs(runways)do
+local ri=_ri
+for j,_rj in pairs(runways)do
+local rj=_rj
+if i<j then
+if ri.name==rj.name then
+rpairs[i]=j
+end
+end
+end
+end
+local function isLeft(a,b,c)
+return((b.z-a.z)*(c.x-a.x)-(b.x-a.x)*(c.z-a.z))>0
+end
+for i,j in pairs(rpairs)do
+local ri=runways[i]
+local rj=runways[j]
+local c0=ri.center
+local a=UTILS.VecTranslate(c0,1000,ri.heading)
+local b=UTILS.VecSubstract(rj.center,ri.center)
+b=UTILS.VecAdd(ri.center,b)
+local left=isLeft(c0,a,b)
+if left then
+ri.isLeft=false
+rj.isLeft=true
+else
+ri.isLeft=true
+rj.isLeft=false
+end
 end
 return runways
 end
@@ -59071,7 +59150,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.4.0"
+AIRBOSS.version="1.4.1"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -71347,7 +71426,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.3.35"
+CTLD.version="1.3.36"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71394,6 +71473,7 @@ self:AddTransition("*","CratesBuild","*")
 self:AddTransition("*","CratesRepaired","*")
 self:AddTransition("*","CratesBuildStarted","*")
 self:AddTransition("*","CratesRepairStarted","*")
+self:AddTransition("*","CratesPacked","*")
 self:AddTransition("*","HelicopterLost","*")
 self:AddTransition("*","Load","*")
 self:AddTransition("*","Loaded","*")
@@ -73132,6 +73212,7 @@ if(_entry.Templates[1]==_Template.GroupName)then
 _Group:Destroy()
 self:_GetCrates(Group,Unit,_entry,nil,false,true)
 self:_RefreshLoadCratesMenu(Group,Unit)
+self:__CratesPacked(1,Group,Unit,_entry)
 return true
 end
 end
@@ -89650,7 +89731,7 @@ gcicapZones={},
 awacsZones={},
 tankerZones={},
 limitMission={},
-MaxMissionsAssignPerCycle=1,
+maxMissionsAssignPerCycle=1,
 }
 COMMANDER.version="0.1.4"
 function COMMANDER:New(Coalition,Alias)
@@ -90300,7 +90381,7 @@ else
 LEGION.UnRecruitAssets(assets,mission)
 end
 missionsAssigned=missionsAssigned+1
-if missionsAssigned>=self.maxMissionsAssignPerCycle then
+if missionsAssigned>=(self.maxMissionsAssignPerCycle or 1)then
 return
 end
 end
