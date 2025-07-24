@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T15:47:56+02:00-367014ebf3ee7c195c842bee35551a6289c2c510 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T09:39:09+02:00-4bbf20ca4e52106208e9070be96328b147a99892 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9471,7 +9471,7 @@ return InZone
 end
 function ZONE_RADIUS:GetClearZonePositions(PosRadius,NumPositions)
 local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),self:GetRadius(),PosRadius,NumPositions)
-if clearPositions or#clearPositions>0 then
+if clearPositions and#clearPositions>0 then
 local validZones={}
 for _,vec2 in pairs(clearPositions)do
 if self:IsVec2InZone(vec2)then
@@ -9487,7 +9487,7 @@ end
 function ZONE_RADIUS:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
 local radius=PosRadius or math.min(self.Radius/10,200)
 local clearPositions=self:GetClearZonePositions(radius,NumPositions or 50)
-if clearPositions or#clearPositions>0 then
+if clearPositions and#clearPositions>0 then
 local randomPosition=clearPositions[math.random(1,#clearPositions)]
 return COORDINATE:NewFromVec2(randomPosition),radius
 end
@@ -18399,12 +18399,15 @@ return COORDINATE:NewFromVec3(self:GetRandomVec3InRadius(OuterRadius,InnerRadius
 end
 function COORDINATE:GetSimpleZones(SearchRadius,PosRadius,NumPositions)
 local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),SearchRadius,PosRadius,NumPositions)
+if clearPositions and#clearPositions>0 then
 local coords={}
-for _,pos in ipairs(clearPositions)do
+for _,pos in pairs(clearPositions)do
 local coord=COORDINATE:NewFromVec2(pos)
 table.insert(coords,coord)
 end
 return coords
+end
+return nil
 end
 end
 do
