@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T09:40:00+02:00-0ac156f2b53bf1d7e671199cbb40f6e471bebf6f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T16:21:24+02:00-31c40c96f2bf2fa2be52f1523b2229d6a0eec880 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79900,6 +79900,26 @@ function AIRWING:SetTakeoffAir()
 self:SetTakeoffType("Air")
 return self
 end
+function AIRWING:SetLandingStraightIn()
+self.OptionLandingStraightIn=true
+return self
+end
+function AIRWING:SetLandingForcePair()
+self.OptionLandingForcePair=true
+return self
+end
+function AIRWING:SetLandingRestrictPair()
+self.OptionLandingRestrictPair=true
+return self
+end
+function AIRWING:SetLandingOverheadBreak()
+self.OptionLandingOverheadBreak=true
+return self
+end
+function AIRWING:SetOptionPreferVerticalLanding()
+self.OptionPreferVerticalLanding=true
+return self
+end
 function AIRWING:SetDespawnAfterLanding(Switch)
 if Switch then
 self.despawnAfterLanding=Switch
@@ -80135,6 +80155,18 @@ function AIRWING:onafterFlightOnMission(From,Event,To,FlightGroup,Mission)
 self:T(self.lid..string.format("Group %s on %s mission %s",FlightGroup:GetName(),Mission:GetType(),Mission:GetName()))
 if self.UseConnectedOpsAwacs and self.ConnectedOpsAwacs then
 self.ConnectedOpsAwacs:__FlightOnMission(2,FlightGroup,Mission)
+end
+if self.OptionLandingForcePair then
+FlightGroup:SetOptionLandingForcePair()
+elseif self.OptionLandingOverheadBreak then
+FlightGroup:SetOptionLandingOverheadBreak()
+elseif self.OptionLandingRestrictPair then
+FlightGroup:SetOptionLandingRestrictPair()
+elseif self.OptionLandingStraightIn then
+FlightGroup:SetOptionLandingStraightIn()
+end
+if self.OptionPreferVerticalLanding then
+FlightGroup:SetOptionPreferVertical()
 end
 end
 function AIRWING:CountPayloadsInStock(MissionTypes,UnitTypes,Payloads)
@@ -81641,7 +81673,7 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewBOMBING(Target,Altitude,EngageWeaponType)
+function AUFTRAG:NewBOMBING(Target,Altitude,EngageWeaponType,Divebomb)
 local mission=AUFTRAG:New(AUFTRAG.Type.BOMBING)
 mission:_TargetFromObject(Target)
 mission.engageWeaponType=EngageWeaponType or ENUMS.WeaponFlag.Auto
@@ -81652,6 +81684,7 @@ mission.missionAltitude=mission.engageAltitude*0.8
 mission.missionFraction=0.5
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.NoReaction
+mission.optionDivebomb=Divebomb or nil
 mission.dTevaluate=5*60
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -83771,7 +83804,7 @@ self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.BOMBING then
 local coords=self.engageTarget:GetCoordinates()
 for _,coord in pairs(coords)do
-local DCStask=CONTROLLABLE.TaskBombing(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
+local DCStask=CONTROLLABLE.TaskBombing(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,self.optionDivebomb)
 table.insert(DCStasks,DCStask)
 end
 elseif self.type==AUFTRAG.Type.STRAFING then
@@ -94298,6 +94331,41 @@ function FLIGHTGROUP:SetJettisonWeapons(Switch)
 self.jettisonWeapons=not Switch
 if self:GetGroup():IsAlive()then
 self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_JETT,not Switch)
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingStraightIn()
+self.OptionLandingStraightIn=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingStraightIn()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingForcePair()
+self.OptionLandingForcePair=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingForcePair()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingRestrictPair()
+self.OptionLandingRestrictPair=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingRestrictPair()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingOverheadBreak()
+self.OptionLandingOverheadBreak=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingOverheadBreak()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionPreferVertical()
+self.OptionPreferVertical=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():OptionPreferVerticalLanding()
 end
 return self
 end
