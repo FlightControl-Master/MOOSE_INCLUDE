@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T09:39:09+02:00-4bbf20ca4e52106208e9070be96328b147a99892 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T16:17:09+02:00-4e56078d2a0bc6b8eab33b4fcfc1d660dc30e578 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23906,7 +23906,6 @@ groupsForEmbarking=g4e,
 return Disembarking
 end
 function CONTROLLABLE:TaskOrbitCircleAtVec2(Point,Altitude,Speed)
-self:F2({self.ControllableName,Point,Altitude,Speed})
 local DCSTask={
 id='Orbit',
 params={
@@ -25386,6 +25385,34 @@ end
 return self
 end
 return nil
+end
+function CONTROLLABLE:SetOptionLandingStraightIn()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","0")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingForcePair()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","1")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingRestrictPair()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","2")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingOverheadBreak()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","3")
+end
+return self
 end
 function CONTROLLABLE:SetOptionRadarUsing(Option)
 self:F2({self.ControllableName})
