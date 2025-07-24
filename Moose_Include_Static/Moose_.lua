@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T16:17:09+02:00-4e56078d2a0bc6b8eab33b4fcfc1d660dc30e578 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T18:27:44+02:00-40253ea8bb02298e0fff0a4e3e0050616a887ef8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11411,7 +11411,7 @@ if stn==nil or stn<1 then
 self:E("WARNING: Invalid STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
 else
 self.STNS[stn]=UnitTemplate.name
-self:I("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+self:T("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
 end
 end
 if UnitTemplate.AddPropAircraft.SADL_TN then
@@ -11420,7 +11420,7 @@ if sadl==nil or sadl<1 then
 self:E("WARNING: Invalid SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
 else
 self.SADL[sadl]=UnitTemplate.name
-self:I("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
+self:T("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
 end
 end
 end
@@ -11600,21 +11600,21 @@ function DATABASE:GetCoalitionFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CoalitionID
 end
-self:E("WARNING: Template does not exist for client "..tostring(ClientName))
+self:T("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCategoryFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CategoryID
 end
-self:E("WARNING: Template does not exist for client "..tostring(ClientName))
+self:T("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCountryFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CountryID
 end
-self:E("WARNING: Template does not exist for client "..tostring(ClientName))
+self:T("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCoalitionFromAirbase(AirbaseName)
