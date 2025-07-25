@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T14:57:58+02:00-7d3fc1740a16553105a0fd9505bdbf44d7a1d989 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T19:05:01+02:00-23ff128ac894447f96a3e1c647fc2fb96c524eae ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6497,7 +6497,7 @@ local Source=Info.source or"?"
 local Line=Info.currentline or"?"
 local Name=Info.name or"?"
 local ErrorHandler=function(errmsg)
-env.info("Error in timer function: "..errmsg)
+env.info("Error in timer function: "..errmsg or"")
 if BASE.Debug~=nil then
 env.info(BASE.Debug.traceback())
 end
@@ -9084,6 +9084,14 @@ return self
 end
 function ZONE_BASE:GetZoneProbability()
 return self.ZoneProbability
+end
+function ZONE_BASE:FindNearestCoordinateOnRadius(Outsidecoordinate)
+local Vec1=self:GetVec2()
+local Radius=self:GetRadius()
+local Vec2=Outsidecoordinate:GetVec2()
+local Point=UTILS.FindNearestPointOnCircle(Vec1,Radius,Vec2)
+local rc=COORDINATE:NewFromVec2(Point)
+return rc
 end
 function ZONE_BASE:GetZoneMaybe()
 local Randomization=math.random()
