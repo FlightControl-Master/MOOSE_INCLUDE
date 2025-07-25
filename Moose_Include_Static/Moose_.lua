@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T14:47:08+02:00-ebecc70693011833c9641e54793d370b55049720 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T14:57:58+02:00-7d3fc1740a16553105a0fd9505bdbf44d7a1d989 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4196,6 +4196,27 @@ local randomPosition,radius=clearPositions[math.random(1,#clearPositions)]
 return COORDINATE:NewFromVec2(randomPosition),radius
 end
 return nil
+end
+function UTILS.FindNearestPointOnCircle(Vec1,Radius,Vec2)
+local r=Radius
+local cx=Vec1.x or 1
+local cy=Vec1.y or 1
+local px=Vec2.x or 1
+local py=Vec2.y or 1
+local dx=px-cx
+local dy=py-cy
+local dist=math.sqrt(dx*dx+dy*dy)
+if dist==0 then
+return{x=cx+r,y=cy}
+end
+local norm_dx=dx/dist
+local norm_dy=dy/dist
+local qx=cx+r*norm_dx
+local qy=cy+r*norm_dy
+local shift_factor=1
+qx=qx+shift_factor*norm_dx
+qy=qy+shift_factor*norm_dy
+return{x=qx,y=qy}
 end
 PROFILER={
 ClassName="PROFILER",
