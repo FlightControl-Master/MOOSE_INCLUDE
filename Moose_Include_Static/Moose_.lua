@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T18:27:44+02:00-40253ea8bb02298e0fff0a4e3e0050616a887ef8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T14:47:08+02:00-ebecc70693011833c9641e54793d370b55049720 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4172,6 +4172,30 @@ end
 end
 function UTILS.GetSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
 return Disposition.getSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
+end
+function UTILS.GetClearZonePositions(Zone,PosRadius,NumPositions)
+local radius=PosRadius or math.min(Zone:GetRadius()/10,200)
+local clearPositions=UTILS.GetSimpleZones(Zone:GetVec3(),Zone:GetRadius(),radius,NumPositions or 50)
+if clearPositions and#clearPositions>0 then
+local validZones={}
+for _,vec2 in pairs(clearPositions)do
+if Zone:IsVec2InZone(vec2)then
+table.insert(validZones,vec2)
+end
+end
+if#validZones>0 then
+return validZones,radius
+end
+end
+return nil
+end
+function UTILS.GetRandomClearZoneCoordinate(Zone,PosRadius,NumPositions)
+local clearPositions=UTILS.GetClearZonePositions(Zone,PosRadius,NumPositions)
+if clearPositions and#clearPositions>0 then
+local randomPosition,radius=clearPositions[math.random(1,#clearPositions)]
+return COORDINATE:NewFromVec2(randomPosition),radius
+end
+return nil
 end
 PROFILER={
 ClassName="PROFILER",
@@ -9470,28 +9494,10 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_RADIUS:GetClearZonePositions(PosRadius,NumPositions)
-local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),self:GetRadius(),PosRadius,NumPositions)
-if clearPositions and#clearPositions>0 then
-local validZones={}
-for _,vec2 in pairs(clearPositions)do
-if self:IsVec2InZone(vec2)then
-table.insert(validZones,vec2)
-end
-end
-if#validZones>0 then
-return validZones
-end
-end
-return nil
+return UTILS.GetClearZonePositions(self,PosRadius,NumPositions)
 end
 function ZONE_RADIUS:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
-local radius=PosRadius or math.min(self.Radius/10,200)
-local clearPositions=self:GetClearZonePositions(radius,NumPositions or 50)
-if clearPositions and#clearPositions>0 then
-local randomPosition=clearPositions[math.random(1,#clearPositions)]
-return COORDINATE:NewFromVec2(randomPosition),radius
-end
-return nil
+return UTILS.GetRandomClearZoneCoordinate(self,PosRadius,NumPositions)
 end
 function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
@@ -9981,6 +9987,12 @@ return coords
 end
 function ZONE_POLYGON_BASE:Flush()
 return self
+end
+function ZONE_POLYGON_BASE:GetClearZonePositions(PosRadius,NumPositions)
+return UTILS.GetClearZonePositions(self,PosRadius,NumPositions)
+end
+function ZONE_POLYGON_BASE:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
+return UTILS.GetRandomClearZoneCoordinate(self,PosRadius,NumPositions)
 end
 function ZONE_POLYGON_BASE:BoundZone(UnBound)
 local i
