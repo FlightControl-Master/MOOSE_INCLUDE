@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-23T12:37:02+02:00-19ab249d775267c1fa93b6ad4ef4dfae232e190d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T15:00:05+02:00-54ad4495c4887d1df76360ddc9da606bbc0b4c37 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4172,6 +4172,51 @@ end
 end
 function UTILS.GetSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
 return Disposition.getSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
+end
+function UTILS.GetClearZonePositions(Zone,PosRadius,NumPositions)
+local radius=PosRadius or math.min(Zone:GetRadius()/10,200)
+local clearPositions=UTILS.GetSimpleZones(Zone:GetVec3(),Zone:GetRadius(),radius,NumPositions or 50)
+if clearPositions and#clearPositions>0 then
+local validZones={}
+for _,vec2 in pairs(clearPositions)do
+if Zone:IsVec2InZone(vec2)then
+table.insert(validZones,vec2)
+end
+end
+if#validZones>0 then
+return validZones,radius
+end
+end
+return nil
+end
+function UTILS.GetRandomClearZoneCoordinate(Zone,PosRadius,NumPositions)
+local clearPositions=UTILS.GetClearZonePositions(Zone,PosRadius,NumPositions)
+if clearPositions and#clearPositions>0 then
+local randomPosition,radius=clearPositions[math.random(1,#clearPositions)]
+return COORDINATE:NewFromVec2(randomPosition),radius
+end
+return nil
+end
+function UTILS.FindNearestPointOnCircle(Vec1,Radius,Vec2)
+local r=Radius
+local cx=Vec1.x or 1
+local cy=Vec1.y or 1
+local px=Vec2.x or 1
+local py=Vec2.y or 1
+local dx=px-cx
+local dy=py-cy
+local dist=math.sqrt(dx*dx+dy*dy)
+if dist==0 then
+return{x=cx+r,y=cy}
+end
+local norm_dx=dx/dist
+local norm_dy=dy/dist
+local qx=cx+r*norm_dx
+local qy=cy+r*norm_dy
+local shift_factor=1
+qx=qx+shift_factor*norm_dx
+qy=qy+shift_factor*norm_dy
+return{x=qx,y=qy}
 end
 PROFILER={
 ClassName="PROFILER",
@@ -9470,28 +9515,10 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_RADIUS:GetClearZonePositions(PosRadius,NumPositions)
-local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),self:GetRadius(),PosRadius,NumPositions)
-if clearPositions or#clearPositions>0 then
-local validZones={}
-for _,vec2 in pairs(clearPositions)do
-if self:IsVec2InZone(vec2)then
-table.insert(validZones,vec2)
-end
-end
-if#validZones>0 then
-return validZones
-end
-end
-return nil
+return UTILS.GetClearZonePositions(self,PosRadius,NumPositions)
 end
 function ZONE_RADIUS:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
-local radius=PosRadius or math.min(self.Radius/10,200)
-local clearPositions=self:GetClearZonePositions(radius,NumPositions or 50)
-if clearPositions or#clearPositions>0 then
-local randomPosition=clearPositions[math.random(1,#clearPositions)]
-return COORDINATE:NewFromVec2(randomPosition),radius
-end
-return nil
+return UTILS.GetRandomClearZoneCoordinate(self,PosRadius,NumPositions)
 end
 function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
@@ -9981,6 +10008,12 @@ return coords
 end
 function ZONE_POLYGON_BASE:Flush()
 return self
+end
+function ZONE_POLYGON_BASE:GetClearZonePositions(PosRadius,NumPositions)
+return UTILS.GetClearZonePositions(self,PosRadius,NumPositions)
+end
+function ZONE_POLYGON_BASE:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
+return UTILS.GetRandomClearZoneCoordinate(self,PosRadius,NumPositions)
 end
 function ZONE_POLYGON_BASE:BoundZone(UnBound)
 local i
@@ -11411,7 +11444,7 @@ if stn==nil or stn<1 then
 self:E("WARNING: Invalid STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
 else
 self.STNS[stn]=UnitTemplate.name
-self:I("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
+self:T("Register STN "..tostring(UnitTemplate.AddPropAircraft.STN_L16).." for "..UnitTemplate.name)
 end
 end
 if UnitTemplate.AddPropAircraft.SADL_TN then
@@ -11420,7 +11453,7 @@ if sadl==nil or sadl<1 then
 self:E("WARNING: Invalid SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
 else
 self.SADL[sadl]=UnitTemplate.name
-self:I("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
+self:T("Register SADL "..tostring(UnitTemplate.AddPropAircraft.SADL_TN).." for "..UnitTemplate.name)
 end
 end
 end
@@ -11600,21 +11633,21 @@ function DATABASE:GetCoalitionFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CoalitionID
 end
-self:E("WARNING: Template does not exist for client "..tostring(ClientName))
+self:T("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCategoryFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CategoryID
 end
-self:E("WARNING: Template does not exist for client "..tostring(ClientName))
+self:T("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCountryFromClientTemplate(ClientName)
 if self.Templates.ClientsByName[ClientName]then
 return self.Templates.ClientsByName[ClientName].CountryID
 end
-self:E("WARNING: Template does not exist for client "..tostring(ClientName))
+self:T("WARNING: Template does not exist for client "..tostring(ClientName))
 return nil
 end
 function DATABASE:GetCoalitionFromAirbase(AirbaseName)
@@ -18399,12 +18432,15 @@ return COORDINATE:NewFromVec3(self:GetRandomVec3InRadius(OuterRadius,InnerRadius
 end
 function COORDINATE:GetSimpleZones(SearchRadius,PosRadius,NumPositions)
 local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),SearchRadius,PosRadius,NumPositions)
+if clearPositions and#clearPositions>0 then
 local coords={}
-for _,pos in ipairs(clearPositions)do
+for _,pos in pairs(clearPositions)do
 local coord=COORDINATE:NewFromVec2(pos)
 table.insert(coords,coord)
 end
 return coords
+end
+return nil
 end
 end
 do
@@ -25902,6 +25938,34 @@ return self
 end
 return nil
 end
+function CONTROLLABLE:SetOptionLandingStraightIn()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","0")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingForcePair()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","1")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingRestrictPair()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","2")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingOverheadBreak()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","3")
+end
+return self
+end
 function CONTROLLABLE:SetOptionRadarUsing(Option)
 self:F2({self.ControllableName})
 if self:IsAir()then
@@ -31491,10 +31555,10 @@ end
 for i,j in pairs(rpairs)do
 local ri=runways[i]
 local rj=runways[j]
-local c0=ri.center
+local c0=ri.position
 local a=UTILS.VecTranslate(c0,1000,ri.heading)
-local b=UTILS.VecSubstract(rj.center,ri.center)
-b=UTILS.VecAdd(ri.center,b)
+local b=UTILS.VecSubstract(rj.position,ri.position)
+b=UTILS.VecAdd(ri.position,b)
 local left=isLeft(c0,a,b)
 if left then
 ri.isLeft=false
@@ -78622,6 +78686,26 @@ function AIRWING:SetTakeoffAir()
 self:SetTakeoffType("Air")
 return self
 end
+function AIRWING:SetLandingStraightIn()
+self.OptionLandingStraightIn=true
+return self
+end
+function AIRWING:SetLandingForcePair()
+self.OptionLandingForcePair=true
+return self
+end
+function AIRWING:SetLandingRestrictPair()
+self.OptionLandingRestrictPair=true
+return self
+end
+function AIRWING:SetLandingOverheadBreak()
+self.OptionLandingOverheadBreak=true
+return self
+end
+function AIRWING:SetOptionPreferVerticalLanding()
+self.OptionPreferVerticalLanding=true
+return self
+end
 function AIRWING:SetDespawnAfterLanding(Switch)
 if Switch then
 self.despawnAfterLanding=Switch
@@ -78857,6 +78941,18 @@ function AIRWING:onafterFlightOnMission(From,Event,To,FlightGroup,Mission)
 self:T(self.lid..string.format("Group %s on %s mission %s",FlightGroup:GetName(),Mission:GetType(),Mission:GetName()))
 if self.UseConnectedOpsAwacs and self.ConnectedOpsAwacs then
 self.ConnectedOpsAwacs:__FlightOnMission(2,FlightGroup,Mission)
+end
+if self.OptionLandingForcePair then
+FlightGroup:SetOptionLandingForcePair()
+elseif self.OptionLandingOverheadBreak then
+FlightGroup:SetOptionLandingOverheadBreak()
+elseif self.OptionLandingRestrictPair then
+FlightGroup:SetOptionLandingRestrictPair()
+elseif self.OptionLandingStraightIn then
+FlightGroup:SetOptionLandingStraightIn()
+end
+if self.OptionPreferVerticalLanding then
+FlightGroup:SetOptionPreferVertical()
 end
 end
 function AIRWING:CountPayloadsInStock(MissionTypes,UnitTypes,Payloads)
@@ -80363,7 +80459,7 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
-function AUFTRAG:NewBOMBING(Target,Altitude,EngageWeaponType)
+function AUFTRAG:NewBOMBING(Target,Altitude,EngageWeaponType,Divebomb)
 local mission=AUFTRAG:New(AUFTRAG.Type.BOMBING)
 mission:_TargetFromObject(Target)
 mission.engageWeaponType=EngageWeaponType or ENUMS.WeaponFlag.Auto
@@ -80374,6 +80470,7 @@ mission.missionAltitude=mission.engageAltitude*0.8
 mission.missionFraction=0.5
 mission.optionROE=ENUMS.ROE.OpenFire
 mission.optionROT=ENUMS.ROT.NoReaction
+mission.optionDivebomb=Divebomb or nil
 mission.dTevaluate=5*60
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
@@ -82493,7 +82590,7 @@ self:_GetDCSAttackTask(self.engageTarget,DCStasks)
 elseif self.type==AUFTRAG.Type.BOMBING then
 local coords=self.engageTarget:GetCoordinates()
 for _,coord in pairs(coords)do
-local DCStask=CONTROLLABLE.TaskBombing(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
+local DCStask=CONTROLLABLE.TaskBombing(nil,coord:GetVec2(),self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType,self.optionDivebomb)
 table.insert(DCStasks,DCStask)
 end
 elseif self.type==AUFTRAG.Type.STRAFING then
@@ -93020,6 +93117,41 @@ function FLIGHTGROUP:SetJettisonWeapons(Switch)
 self.jettisonWeapons=not Switch
 if self:GetGroup():IsAlive()then
 self:GetGroup():SetOption(AI.Option.Air.id.PROHIBIT_JETT,not Switch)
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingStraightIn()
+self.OptionLandingStraightIn=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingStraightIn()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingForcePair()
+self.OptionLandingForcePair=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingForcePair()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingRestrictPair()
+self.OptionLandingRestrictPair=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingRestrictPair()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionLandingOverheadBreak()
+self.OptionLandingOverheadBreak=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():SetOptionLandingOverheadBreak()
+end
+return self
+end
+function FLIGHTGROUP:SetOptionPreferVertical()
+self.OptionPreferVertical=true
+if self:GetGroup():IsAlive()then
+self:GetGroup():OptionPreferVerticalLanding()
 end
 return self
 end
