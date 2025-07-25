@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-24T18:26:28+02:00-7279da7f09c465dcb5c6f840e81a55f919337457 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T14:58:41+02:00-3749142670444c7b0b17ed2ba10bc4a8d0aec393 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4172,6 +4172,51 @@ end
 end
 function UTILS.GetSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
 return Disposition.getSimpleZones(Vec3,SearchRadius,PosRadius,NumPositions)
+end
+function UTILS.GetClearZonePositions(Zone,PosRadius,NumPositions)
+local radius=PosRadius or math.min(Zone:GetRadius()/10,200)
+local clearPositions=UTILS.GetSimpleZones(Zone:GetVec3(),Zone:GetRadius(),radius,NumPositions or 50)
+if clearPositions and#clearPositions>0 then
+local validZones={}
+for _,vec2 in pairs(clearPositions)do
+if Zone:IsVec2InZone(vec2)then
+table.insert(validZones,vec2)
+end
+end
+if#validZones>0 then
+return validZones,radius
+end
+end
+return nil
+end
+function UTILS.GetRandomClearZoneCoordinate(Zone,PosRadius,NumPositions)
+local clearPositions=UTILS.GetClearZonePositions(Zone,PosRadius,NumPositions)
+if clearPositions and#clearPositions>0 then
+local randomPosition,radius=clearPositions[math.random(1,#clearPositions)]
+return COORDINATE:NewFromVec2(randomPosition),radius
+end
+return nil
+end
+function UTILS.FindNearestPointOnCircle(Vec1,Radius,Vec2)
+local r=Radius
+local cx=Vec1.x or 1
+local cy=Vec1.y or 1
+local px=Vec2.x or 1
+local py=Vec2.y or 1
+local dx=px-cx
+local dy=py-cy
+local dist=math.sqrt(dx*dx+dy*dy)
+if dist==0 then
+return{x=cx+r,y=cy}
+end
+local norm_dx=dx/dist
+local norm_dy=dy/dist
+local qx=cx+r*norm_dx
+local qy=cy+r*norm_dy
+local shift_factor=1
+qx=qx+shift_factor*norm_dx
+qy=qy+shift_factor*norm_dy
+return{x=qx,y=qy}
 end
 PROFILER={
 ClassName="PROFILER",
@@ -9470,28 +9515,10 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_RADIUS:GetClearZonePositions(PosRadius,NumPositions)
-local clearPositions=UTILS.GetSimpleZones(self:GetVec3(),self:GetRadius(),PosRadius,NumPositions)
-if clearPositions and#clearPositions>0 then
-local validZones={}
-for _,vec2 in pairs(clearPositions)do
-if self:IsVec2InZone(vec2)then
-table.insert(validZones,vec2)
-end
-end
-if#validZones>0 then
-return validZones
-end
-end
-return nil
+return UTILS.GetClearZonePositions(self,PosRadius,NumPositions)
 end
 function ZONE_RADIUS:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
-local radius=PosRadius or math.min(self.Radius/10,200)
-local clearPositions=self:GetClearZonePositions(radius,NumPositions or 50)
-if clearPositions and#clearPositions>0 then
-local randomPosition=clearPositions[math.random(1,#clearPositions)]
-return COORDINATE:NewFromVec2(randomPosition),radius
-end
-return nil
+return UTILS.GetRandomClearZoneCoordinate(self,PosRadius,NumPositions)
 end
 function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
@@ -9981,6 +10008,12 @@ return coords
 end
 function ZONE_POLYGON_BASE:Flush()
 return self
+end
+function ZONE_POLYGON_BASE:GetClearZonePositions(PosRadius,NumPositions)
+return UTILS.GetClearZonePositions(self,PosRadius,NumPositions)
+end
+function ZONE_POLYGON_BASE:GetRandomClearZoneCoordinate(PosRadius,NumPositions)
+return UTILS.GetRandomClearZoneCoordinate(self,PosRadius,NumPositions)
 end
 function ZONE_POLYGON_BASE:BoundZone(UnBound)
 local i
@@ -24425,7 +24458,6 @@ groupsForEmbarking=g4e,
 return Disembarking
 end
 function CONTROLLABLE:TaskOrbitCircleAtVec2(Point,Altitude,Speed)
-self:F2({self.ControllableName,Point,Altitude,Speed})
 local DCSTask={
 id='Orbit',
 params={
@@ -25905,6 +25937,34 @@ end
 return self
 end
 return nil
+end
+function CONTROLLABLE:SetOptionLandingStraightIn()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","0")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingForcePair()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","1")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingRestrictPair()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","2")
+end
+return self
+end
+function CONTROLLABLE:SetOptionLandingOverheadBreak()
+self:F2({self.ControllableName})
+if self:IsAir()then
+self:SetOption("36","3")
+end
+return self
 end
 function CONTROLLABLE:SetOptionRadarUsing(Option)
 self:F2({self.ControllableName})
