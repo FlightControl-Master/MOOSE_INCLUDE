@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-25T19:05:01+02:00-23ff128ac894447f96a3e1c647fc2fb96c524eae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-26T09:01:02+02:00-f172f6efebb963da4ec6beeb7a08b00e418fb930 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4148,6 +4148,19 @@ if v.name==name then
 return v
 end
 end
+end
+function UTILS.DoStringIn(State,DoString)
+return net.dostring_in(State,DoString)
+end
+function UTILS.ShowPicture(FileName,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture(getValueResourceByKey(\"%s\"), %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FileName,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
 end
 function UTILS.ShowHelperGate(pos,heading)
 net.dostring_in("mission",string.format("a_show_helper_gate(%s, %s, %s, %f)",pos.x,pos.y,pos.z,math.rad(heading)))
@@ -16990,6 +17003,17 @@ end
 function COORDINATE:GetLandHeight()
 local Vec2={x=self.x,y=self.z}
 return land.getHeight(Vec2)
+end
+function COORDINATE:GetLandProfileVec3(Destination)
+return land.profile(self:GetVec3(),Destination)
+end
+function COORDINATE:GetLandProfileCoordinates(Destination)
+local points=self:GetLandProfileVec3(Destination:GetVec3())
+local coords={}
+for _,point in ipairs(points)do
+table.insert(coords,COORDINATE:NewFromVec3(point))
+end
+return coords
 end
 function COORDINATE:SetHeading(Heading)
 self.Heading=Heading
