@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-27T14:51:32+02:00-e947367fca3b1d9c8bf61489cc087103d95a5e31 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-27T19:23:47+02:00-3768d57639a55f92806fad71736801fb482aa4ed ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -57212,7 +57212,7 @@ end
 TIRESIAS={
 ClassName="TIRESIAS",
 debug=true,
-version=" 0.0.6-OPT",
+version=" 0.0.7-OPT",
 Interval=20,
 GroundSet=nil,
 VehicleSet=nil,
@@ -57224,6 +57224,7 @@ HeloSwitchRange=10,
 PlaneSwitchRange=25,
 SwitchAAA=true,
 _cached_zones={},
+_cached_groupsets={},
 }
 function TIRESIAS:New()
 local self=BASE:Inherit(self,FSM:New())
@@ -57406,13 +57407,19 @@ self:T(self.lid.." _SwitchOnGroups "..group:GetName().."  Radius "..radius.."  N
 local group_name=group:GetName()
 local cache_key=group_name.." _"..radius
 local zone=self._cached_zones[cache_key]
+local ground=self._cached_groupsets[cache_key]
 if not zone then
 zone=ZONE_GROUP:New(" Zone-"..group_name,group,UTILS.NMToMeters(radius))
 self._cached_zones[cache_key]=zone
 else
 zone:UpdateFromGroup(group)
 end
-local ground=SET_GROUP:New():FilterCategoryGround():FilterZones({zone}):FilterOnce()
+if not ground then
+ground=SET_GROUP:New():FilterCategoryGround():FilterZones({zone}):FilterOnce()
+self._cached_groupsets[cache_key]=ground
+else
+ground:FilterZones({zone},true):FilterOnce()
+end
 local count=ground:CountAlive()
 if self.debug then
 self:I(string.format(" There are %d groups around this plane or helo!",count))
