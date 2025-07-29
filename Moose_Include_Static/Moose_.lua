@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T13:04:46+02:00-7149226283168e048cff7d8ee44e0376f23cde1c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T17:38:35+02:00-f735f1eb53c120ab168f359ff671f6c8ebf30019 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70729,8 +70729,8 @@ local formation=self:_GetVehicleFormation()
 Group:SetAIOn()
 Group:OptionAlarmStateAuto()
 Group:OptionDisperseOnAttack(30)
-Group:OptionROEOpenFireWeaponFree()
-Group:RouteGroundTo(zonecoord,5,formation)
+Group:OptionROEOpenFire()
+Group:RouteGroundTo(zonecoord,25,formation)
 end
 return self
 end
