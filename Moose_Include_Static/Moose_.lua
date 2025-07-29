@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T10:03:34+02:00-b3100d2f5e8e6e398203e9cf0b3ff95b648948ac ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T12:05:29+02:00-bd054b26c065af76ea3067554f9f5578f4636ea3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -72792,6 +72792,7 @@ UserSetGroup=nil,
 LoadedGroupsTable={},
 keeploadtable=true,
 allowCATransport=false,
+VehicleMoveFormation=AI.Task.VehicleFormation.VEE,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -72833,7 +72834,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.3.36"
+CTLD.version="1.3.37"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72936,6 +72937,7 @@ self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
 self.troopdropzoneradius=100
+self.VehicleMoveFormation=AI.Task.VehicleFormation.VEE
 self.enableHercules=false
 self.enableFixedWing=false
 self.FixedMinAngels=165
@@ -74752,6 +74754,13 @@ self:T(self.lid.."Group KIA while building!")
 end
 return self
 end
+function CTLD:_GetVehicleFormation()
+local VehicleMoveFormation=self.VehicleMoveFormation or AI.Task.VehicleFormation.VEE
+if type(self.VehicleMoveFormation)=="table"then
+VehicleMoveFormation=self.VehicleMoveFormation[math.random(1,#self.VehicleMoveFormation)]
+end
+return VehicleMoveFormation
+end
 function CTLD:_MoveGroupToZone(Group)
 self:T(self.lid.." _MoveGroupToZone")
 local groupname=Group:GetName()or"none"
@@ -74761,12 +74770,12 @@ self:T({canmove=outcome,name=name,zone=zone,dist=distance,max=self.movetroopsdis
 if(distance<=self.movetroopsdistance)and outcome==true and zone~=nil then
 local groupname=Group:GetName()
 local zonecoord=zone:GetRandomCoordinate(20,125)
-local coordinate=zonecoord:GetVec2()
+local formation=self:_GetVehicleFormation()
 Group:SetAIOn()
 Group:OptionAlarmStateAuto()
 Group:OptionDisperseOnAttack(30)
-Group:OptionROEOpenFirePossible()
-Group:RouteToVec2(coordinate,5)
+Group:OptionROEOpenFireWeaponFree()
+Group:RouteGroundTo(zonecoord,5,formation)
 end
 return self
 end
@@ -76971,6 +76980,14 @@ local interval=self.saveinterval
 local filename=self.filename
 local filepath=self.filepath
 self:__Save(interval,filepath,filename)
+end
+if type(self.VehicleMoveFormation)=="table"then
+local Formations={}
+for _,_formation in pairs(self.VehicleMoveFormation)do
+table.insert(Formations,_formation)
+end
+self.VehicleMoveFormation=nil
+self.VehicleMoveFormation=Formations
 end
 return self
 end
