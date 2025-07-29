@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T12:05:29+02:00-bd054b26c065af76ea3067554f9f5578f4636ea3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T17:39:08+02:00-b9d738c1ad0404b39a0bb8af9114d296118793f8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4152,7 +4152,7 @@ end
 function UTILS.DoStringIn(State,DoString)
 return net.dostring_in(State,DoString)
 end
-function UTILS.ShowPicture(FileName,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+function UTILS.ShowPicture(FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
 ClearView=ClearView or false
 StartDelay=StartDelay or 0
 HorizontalAlign=HorizontalAlign or 1
@@ -4160,7 +4160,7 @@ VerticalAlign=VerticalAlign or 1
 Size=Size or 100
 SizeUnits=SizeUnits or 0
 if ClearView then ClearView="true"else ClearView="false"end
-net.dostring_in("mission",string.format("a_out_picture(getValueResourceByKey(\"%s\"), %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FileName,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+net.dostring_in("mission",string.format("a_out_picture(\"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
 end
 function UTILS.LoadMission(FileName)
 net.dostring_in("mission",string.format("a_load_mission(\"%s\")",FileName))
@@ -4170,7 +4170,7 @@ Text=Text or""
 Text=Text:gsub("\n","\\n")
 Picture=Picture or""
 local coalName=string.lower(UTILS.GetCoalitionName(Coalition))
-net.dostring_in("mission",string.format("a_set_briefing(\"%s\", getValueResourceByKey(\"%s\"), \"%s\")",coalName,Picture,Text))
+net.dostring_in("mission",string.format("a_set_briefing(\"%s\", \"%s\", \"%s\")",coalName,Picture,Text))
 end
 function UTILS.ShowHelperGate(pos,heading)
 net.dostring_in("mission",string.format("a_show_helper_gate(%s, %s, %s, %f)",pos.x,pos.y,pos.z,math.rad(heading)))
@@ -74774,8 +74774,8 @@ local formation=self:_GetVehicleFormation()
 Group:SetAIOn()
 Group:OptionAlarmStateAuto()
 Group:OptionDisperseOnAttack(30)
-Group:OptionROEOpenFireWeaponFree()
-Group:RouteGroundTo(zonecoord,5,formation)
+Group:OptionROEOpenFire()
+Group:RouteGroundTo(zonecoord,25,formation)
 end
 return self
 end
