@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T12:04:41+02:00-f094716b73771caf0ad6525a33e91b7176a5b79a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T13:04:46+02:00-7149226283168e048cff7d8ee44e0376f23cde1c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4152,7 +4152,7 @@ end
 function UTILS.DoStringIn(State,DoString)
 return net.dostring_in(State,DoString)
 end
-function UTILS.ShowPicture(FileName,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+function UTILS.ShowPicture(FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
 ClearView=ClearView or false
 StartDelay=StartDelay or 0
 HorizontalAlign=HorizontalAlign or 1
@@ -4160,7 +4160,7 @@ VerticalAlign=VerticalAlign or 1
 Size=Size or 100
 SizeUnits=SizeUnits or 0
 if ClearView then ClearView="true"else ClearView="false"end
-net.dostring_in("mission",string.format("a_out_picture(getValueResourceByKey(\"%s\"), %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FileName,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+net.dostring_in("mission",string.format("a_out_picture(\"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
 end
 function UTILS.LoadMission(FileName)
 net.dostring_in("mission",string.format("a_load_mission(\"%s\")",FileName))
@@ -4170,7 +4170,7 @@ Text=Text or""
 Text=Text:gsub("\n","\\n")
 Picture=Picture or""
 local coalName=string.lower(UTILS.GetCoalitionName(Coalition))
-net.dostring_in("mission",string.format("a_set_briefing(\"%s\", getValueResourceByKey(\"%s\"), \"%s\")",coalName,Picture,Text))
+net.dostring_in("mission",string.format("a_set_briefing(\"%s\", \"%s\", \"%s\")",coalName,Picture,Text))
 end
 function UTILS.ShowHelperGate(pos,heading)
 net.dostring_in("mission",string.format("a_show_helper_gate(%s, %s, %s, %f)",pos.x,pos.y,pos.z,math.rad(heading)))
