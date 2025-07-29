@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-27T19:24:43+02:00-f4cd214823f5bbf3eb423a4efa7bc2ba97d13ffd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T10:03:34+02:00-b3100d2f5e8e6e398203e9cf0b3ff95b648948ac ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78361,7 +78361,7 @@ wetfeet=true
 end
 if self.csarUsePara==false or(self.csarUsePara and wetfeet)then
 local _freq=self:_GenerateADFFrequency()
-self:_AddCsar(_coalition,_unit:GetCountry(),initcoord,_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,false,"none")
+self:_AddCsar(_coalition,_unit:GetCountry(),initcoord,_unit:GetTypeName(),_unit:GetName(),_event.IniPlayerName,_freq,self.suppressmessages,"none")
 return self
 end
 elseif _event.id==EVENTS.Land then
@@ -78409,7 +78409,7 @@ self:T("Country = ".._country.." Coalition = ".._coalition)
 if _coalition==self.coalition then
 local _freq=self:_GenerateADFFrequency()
 self:I({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
-self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,false,"none")
+self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,self.suppressmessages,"none")
 Unit.destroy(_event.initiator)
 end
 end
@@ -79640,7 +79640,7 @@ local description=dataset[7]
 local typeName=dataset[8]
 local unitName=dataset[9]
 local freq=tonumber(dataset[10])
-self:_AddCsar(coalition,country,point,typeName,unitName,playerName,freq,nil,description,nil)
+self:_AddCsar(coalition,country,point,typeName,unitName,playerName,freq,false,description,nil)
 end
 return self
 end
