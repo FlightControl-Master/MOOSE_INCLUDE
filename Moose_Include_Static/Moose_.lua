@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T09:27:03+02:00-1af4d44ca5c7b4c8474e5e4ab6b098b6efc37727 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T09:48:23+02:00-1248006f3d619db3445236e10e5a66b7f4811a47 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60788,6 +60788,10 @@ self:AddTransition("*","LSOGrade","*")
 self:AddTransition("*","Marshal","*")
 self:AddTransition("*","Save","*")
 self:AddTransition("*","Stop","Stopped")
+return self
+end
+function AIRBOSS:SetCarrierIllumination(Mode)
+self.carrier:SetCarrierIlluminationMode(Mode)
 return self
 end
 function AIRBOSS:SetWelcomePlayers(Switch)
