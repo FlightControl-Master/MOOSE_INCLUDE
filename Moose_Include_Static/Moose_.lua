@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T17:39:08+02:00-b9d738c1ad0404b39a0bb8af9114d296118793f8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T09:27:03+02:00-1af4d44ca5c7b4c8474e5e4ab6b098b6efc37727 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4152,7 +4152,7 @@ end
 function UTILS.DoStringIn(State,DoString)
 return net.dostring_in(State,DoString)
 end
-function UTILS.ShowPicture(FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+function UTILS.ShowPictureToAll(FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
 ClearView=ClearView or false
 StartDelay=StartDelay or 0
 HorizontalAlign=HorizontalAlign or 1
@@ -4161,6 +4161,47 @@ Size=Size or 100
 SizeUnits=SizeUnits or 0
 if ClearView then ClearView="true"else ClearView="false"end
 net.dostring_in("mission",string.format("a_out_picture(\"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToCoalition(Coalition,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+local coalName=string.lower(UTILS.GetCoalitionName(Coalition))
+net.dostring_in("mission",string.format("a_out_picture_s(\"%s\", \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",coalName,FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToCountry(Country,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture_c(%d, \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",Country,FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToGroup(Group,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture_g(%d, \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",Group:GetID(),FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToUnit(Unit,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture_u(%d, \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",Unit:GetID(),FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
 end
 function UTILS.LoadMission(FileName)
 net.dostring_in("mission",string.format("a_load_mission(\"%s\")",FileName))
@@ -4174,6 +4215,12 @@ net.dostring_in("mission",string.format("a_set_briefing(\"%s\", \"%s\", \"%s\")"
 end
 function UTILS.ShowHelperGate(pos,heading)
 net.dostring_in("mission",string.format("a_show_helper_gate(%s, %s, %s, %f)",pos.x,pos.y,pos.z,math.rad(heading)))
+end
+function UTILS.ShowHelperGateForUnit(Unit,Flag)
+net.dostring_in("mission",string.format("a_show_route_gates_for_unit(%d, \"%d\")",Unit:GetID(),Flag))
+end
+function UTILS.SetCarrierIlluminationMode(UnitID,Mode)
+net.dostring_in("mission",string.format("a_set_carrier_illumination_mode(%d, %d)",UnitID,Mode))
 end
 function UTILS.ShellZone(name,power,count)
 local z=UTILS.GetEnvZone(name)
@@ -29664,6 +29711,9 @@ return false
 end
 function UNIT:SetLife(Percent)
 net.dostring_in("mission",string.format("a_unit_set_life_percentage(%d, %f)",self:GetID(),Percent))
+end
+function UNIT:SetCarrierIlluminationMode(Mode)
+UTILS.SetCarrierIlluminationMode(self:GetID(),Mode)
 end
 CLIENT={
 ClassName="CLIENT",
