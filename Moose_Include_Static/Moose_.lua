@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T09:48:23+02:00-1248006f3d619db3445236e10e5a66b7f4811a47 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T12:35:40+02:00-4e024f7173901ff2cab104f8903ca3f0496e2c04 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -115213,8 +115213,10 @@ DespawnAfterLanding=false,
 DespawnAfterHolding=true,
 ListOfAuftrag={},
 defaulttakeofftype="hot",
+FuelLowThreshold=25,
+FuelCriticalThreshold=10,
 }
-EASYGCICAP.version="0.1.23"
+EASYGCICAP.version="0.1.25"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -115246,6 +115248,8 @@ self.DespawnAfterLanding=false
 self.DespawnAfterHolding=true
 self.ListOfAuftrag={}
 self.defaulttakeofftype="hot"
+self.FuelLowThreshold=25
+self.FuelCriticalThreshold=10
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -115254,6 +115258,31 @@ self:AddTransition("*","Status","*")
 self:AddAirwing(self.airbasename,self.alias,self.CapZoneName)
 self:I(self.lid.."Created new instance (v"..self.version..")")
 self:__Start(math.random(6,12))
+return self
+end
+function EASYGCICAP:GetAirwing(AirbaseName)
+self:T(self.lid.."GetAirwing")
+if self.wings[AirbaseName]then
+return self.wings[AirbaseName][1]
+end
+return nil
+end
+function EASYGCICAP:GetAirwingTable()
+self:T(self.lid.."GetAirwingTable")
+local Wingtable={}
+for _,_object in pairs(self.wings or{})do
+table.insert(Wingtable,_object[1])
+end
+return Wingtable
+end
+function EASYGCICAP:SetFuelLow(Percent)
+self:T(self.lid.."SetFuelLow")
+self.FuelLowThreshold=Percent or 25
+return self
+end
+function EASYGCICAP:SetFuelCritical(Percent)
+self:T(self.lid.."SetFuelCritical")
+self.FuelCriticalThreshold=Percent or 10
 return self
 end
 function EASYGCICAP:SetCAPFormation(Formation)
@@ -115419,6 +115448,8 @@ local TankerInvisible=self.TankerInvisible
 local engagerange=self.engagerange
 local GoZoneSet=self.GoZoneSet
 local NoGoZoneSet=self.NoGoZoneSet
+local FuelLow=self.FuelLowThreshold or 25
+local FuelCritical=self.FuelCriticalThreshold or 10
 function CAP_Wing:onbeforeFlightOnMission(From,Event,To,Flightgroup,Mission)
 local flightgroup=Flightgroup
 if DespawnAfterLanding then
@@ -115429,10 +115460,15 @@ end
 flightgroup:SetDestinationbase(AIRBASE:FindByName(Airbasename))
 flightgroup:GetGroup():CommandEPLRS(true,5)
 flightgroup:GetGroup():SetOptionRadarUsingForContinousSearch()
+flightgroup:GetGroup():SetOptionLandingOverheadBreak()
 if Mission.type~=AUFTRAG.Type.TANKER and Mission.type~=AUFTRAG.Type.AWACS and Mission.type~=AUFTRAG.Type.RECON then
 flightgroup:SetDetection(true)
 flightgroup:SetEngageDetectedOn(engagerange,{"Air"},GoZoneSet,NoGoZoneSet)
 flightgroup:SetOutOfAAMRTB()
+flightgroup:SetFuelLowRTB(true)
+flightgroup:SetFuelLowThreshold(FuelLow)
+flightgroup:SetFuelCriticalRTB(true)
+flightgroup:SetFuelCriticalThreshold(FuelCritical)
 if CapFormation then
 flightgroup:GetGroup():SetOption(AI.Option.Air.id.FORMATION,CapFormation)
 end
@@ -116029,6 +116065,9 @@ end
 function EASYGCICAP:onafterStop(From,Event,To)
 self:T({From,Event,To})
 self.Intel:Stop()
+for _,_wing in pairs(self.wings or{})do
+_wing:Stop()
+end
 return self
 end
 AI_BALANCER={
