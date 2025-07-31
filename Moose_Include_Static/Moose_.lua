@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-29T10:04:28+02:00-413fa31534f2b1165b81b8a5aee8ad524b2cd4a7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T09:39:38+02:00-ac410e9a562135286049a7c3db4e0a641ab7b555 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4152,7 +4152,7 @@ end
 function UTILS.DoStringIn(State,DoString)
 return net.dostring_in(State,DoString)
 end
-function UTILS.ShowPicture(FileName,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+function UTILS.ShowPictureToAll(FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
 ClearView=ClearView or false
 StartDelay=StartDelay or 0
 HorizontalAlign=HorizontalAlign or 1
@@ -4160,7 +4160,48 @@ VerticalAlign=VerticalAlign or 1
 Size=Size or 100
 SizeUnits=SizeUnits or 0
 if ClearView then ClearView="true"else ClearView="false"end
-net.dostring_in("mission",string.format("a_out_picture(getValueResourceByKey(\"%s\"), %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FileName,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+net.dostring_in("mission",string.format("a_out_picture(\"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToCoalition(Coalition,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+local coalName=string.lower(UTILS.GetCoalitionName(Coalition))
+net.dostring_in("mission",string.format("a_out_picture_s(\"%s\", \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",coalName,FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToCountry(Country,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture_c(%d, \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",Country,FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToGroup(Group,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture_g(%d, \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",Group:GetID(),FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
+end
+function UTILS.ShowPictureToUnit(Unit,FilePath,Duration,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits)
+ClearView=ClearView or false
+StartDelay=StartDelay or 0
+HorizontalAlign=HorizontalAlign or 1
+VerticalAlign=VerticalAlign or 1
+Size=Size or 100
+SizeUnits=SizeUnits or 0
+if ClearView then ClearView="true"else ClearView="false"end
+net.dostring_in("mission",string.format("a_out_picture_u(%d, \"%s\", %d, %s, %d, \"%d\", \"%d\", %d, \"%d\")",Unit:GetID(),FilePath,Duration or 10,ClearView,StartDelay,HorizontalAlign,VerticalAlign,Size,SizeUnits))
 end
 function UTILS.LoadMission(FileName)
 net.dostring_in("mission",string.format("a_load_mission(\"%s\")",FileName))
@@ -4170,10 +4211,16 @@ Text=Text or""
 Text=Text:gsub("\n","\\n")
 Picture=Picture or""
 local coalName=string.lower(UTILS.GetCoalitionName(Coalition))
-net.dostring_in("mission",string.format("a_set_briefing(\"%s\", getValueResourceByKey(\"%s\"), \"%s\")",coalName,Picture,Text))
+net.dostring_in("mission",string.format("a_set_briefing(\"%s\", \"%s\", \"%s\")",coalName,Picture,Text))
 end
 function UTILS.ShowHelperGate(pos,heading)
 net.dostring_in("mission",string.format("a_show_helper_gate(%s, %s, %s, %f)",pos.x,pos.y,pos.z,math.rad(heading)))
+end
+function UTILS.ShowHelperGateForUnit(Unit,Flag)
+net.dostring_in("mission",string.format("a_show_route_gates_for_unit(%d, \"%d\")",Unit:GetID(),Flag))
+end
+function UTILS.SetCarrierIlluminationMode(UnitID,Mode)
+net.dostring_in("mission",string.format("a_set_carrier_illumination_mode(%d, %d)",UnitID,Mode))
 end
 function UTILS.ShellZone(name,power,count)
 local z=UTILS.GetEnvZone(name)
@@ -9437,6 +9484,7 @@ return SetUnit
 end
 function ZONE_RADIUS:GetScannedSetGroup()
 self.ScanSetGroup=self.ScanSetGroup or SET_GROUP:New()
+self.ScanSetGroup:Clear(false)
 self.ScanSetGroup.Set={}
 if self.ScanData then
 for ObjectID,UnitObject in pairs(self.ScanData.Units)do
@@ -29664,6 +29712,9 @@ return false
 end
 function UNIT:SetLife(Percent)
 net.dostring_in("mission",string.format("a_unit_set_life_percentage(%d, %f)",self:GetID(),Percent))
+end
+function UNIT:SetCarrierIlluminationMode(Mode)
+UTILS.SetCarrierIlluminationMode(self:GetID(),Mode)
 end
 CLIENT={
 ClassName="CLIENT",
@@ -57212,7 +57263,7 @@ end
 TIRESIAS={
 ClassName="TIRESIAS",
 debug=true,
-version=" 0.0.7-OPT",
+version=" 0.0.7a-OPT",
 Interval=20,
 GroundSet=nil,
 VehicleSet=nil,
@@ -57407,19 +57458,14 @@ self:T(self.lid.." _SwitchOnGroups "..group:GetName().."  Radius "..radius.."  N
 local group_name=group:GetName()
 local cache_key=group_name.." _"..radius
 local zone=self._cached_zones[cache_key]
-local ground=self._cached_groupsets[cache_key]
 if not zone then
 zone=ZONE_GROUP:New(" Zone-"..group_name,group,UTILS.NMToMeters(radius))
 self._cached_zones[cache_key]=zone
 else
 zone:UpdateFromGroup(group)
 end
-if not ground then
-ground=SET_GROUP:New():FilterCategoryGround():FilterZones({zone}):FilterOnce()
-self._cached_groupsets[cache_key]=ground
-else
-ground:FilterZones({zone},true):FilterOnce()
-end
+zone:Scan({Object.Category.UNIT},{Unit.Category.GROUND_UNIT})
+local ground=zone:GetScannedSetGroup()
 local count=ground:CountAlive()
 if self.debug then
 self:I(string.format(" There are %d groups around this plane or helo!",count))
@@ -71468,6 +71514,7 @@ UserSetGroup=nil,
 LoadedGroupsTable={},
 keeploadtable=true,
 allowCATransport=false,
+VehicleMoveFormation=AI.Task.VehicleFormation.VEE,
 }
 CTLD.RadioModulation={
 AM=0,
@@ -71509,7 +71556,7 @@ CTLD.FixedWingTypes={
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
 }
-CTLD.version="1.3.36"
+CTLD.version="1.3.37"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -71612,6 +71659,7 @@ self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
 self.troopdropzoneradius=100
+self.VehicleMoveFormation=AI.Task.VehicleFormation.VEE
 self.enableHercules=false
 self.enableFixedWing=false
 self.FixedMinAngels=165
@@ -73428,6 +73476,13 @@ self:T(self.lid.."Group KIA while building!")
 end
 return self
 end
+function CTLD:_GetVehicleFormation()
+local VehicleMoveFormation=self.VehicleMoveFormation or AI.Task.VehicleFormation.VEE
+if type(self.VehicleMoveFormation)=="table"then
+VehicleMoveFormation=self.VehicleMoveFormation[math.random(1,#self.VehicleMoveFormation)]
+end
+return VehicleMoveFormation
+end
 function CTLD:_MoveGroupToZone(Group)
 self:T(self.lid.." _MoveGroupToZone")
 local groupname=Group:GetName()or"none"
@@ -73437,12 +73492,12 @@ self:T({canmove=outcome,name=name,zone=zone,dist=distance,max=self.movetroopsdis
 if(distance<=self.movetroopsdistance)and outcome==true and zone~=nil then
 local groupname=Group:GetName()
 local zonecoord=zone:GetRandomCoordinate(20,125)
-local coordinate=zonecoord:GetVec2()
+local formation=self:_GetVehicleFormation()
 Group:SetAIOn()
 Group:OptionAlarmStateAuto()
 Group:OptionDisperseOnAttack(30)
-Group:OptionROEOpenFirePossible()
-Group:RouteToVec2(coordinate,5)
+Group:OptionROEOpenFire()
+Group:RouteGroundTo(zonecoord,25,formation)
 end
 return self
 end
@@ -75647,6 +75702,14 @@ local interval=self.saveinterval
 local filename=self.filename
 local filepath=self.filepath
 self:__Save(interval,filepath,filename)
+end
+if type(self.VehicleMoveFormation)=="table"then
+local Formations={}
+for _,_formation in pairs(self.VehicleMoveFormation)do
+table.insert(Formations,_formation)
+end
+self.VehicleMoveFormation=nil
+self.VehicleMoveFormation=Formations
 end
 return self
 end
