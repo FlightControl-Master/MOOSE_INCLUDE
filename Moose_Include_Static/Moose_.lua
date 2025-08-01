@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-07-31T12:35:40+02:00-4e024f7173901ff2cab104f8903ca3f0496e2c04 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-01T09:23:40+02:00-c3dc055fb246aa51a1441d410352777f334e7374 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -96428,10 +96428,12 @@ local clients=_DATABASE.CLIENTS
 local coords={}
 for clientname,client in pairs(clients)do
 local template=_DATABASE:GetGroupTemplateFromUnitName(clientname)
+if template then
 local units=template.units
 for i,unit in pairs(units)do
 local coord=COORDINATE:New(unit.x,unit.alt,unit.y)
 coords[unit.name]=coord
+end
 end
 end
 return coords
