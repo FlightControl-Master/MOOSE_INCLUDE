@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-01T14:03:29+02:00-1e7203320f30bb778ea13af7f4ef9f5247ccaada ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-02T18:35:43+02:00-72d8b29699b1624fbb9c52faacdb4620ed0eac27 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9196,6 +9196,10 @@ self:_TriggerCheck(true)
 self:__TriggerRunCheck(self.Checktime)
 return self
 end
+function ZONE_BASE:SetPartlyInside(state)
+self.PartlyInside=state or not(state==false)
+return self
+end
 function ZONE_BASE:_TriggerCheck(fromstart)
 local objectset=self.objectset or{}
 if fromstart then
@@ -9223,7 +9227,12 @@ end
 if not obj.TriggerInZone[self.ZoneName]then
 obj.TriggerInZone[self.ZoneName]=false
 end
-local inzone=self:IsCoordinateInZone(obj:GetCoordinate())
+local inzone
+if self.PartlyInside and obj.ClassName=="GROUP"then
+inzone=obj:IsAnyInZone(self)
+else
+inzone=self:IsCoordinateInZone(obj:GetCoordinate())
+end
 if inzone and obj.TriggerInZone[self.ZoneName]then
 objcount=objcount+1
 self.ObjectsInZone=true
@@ -15532,6 +15541,14 @@ self:_TriggerCheck(true)
 self:__TriggerRunCheck(self.Checktime)
 return self
 end
+function SET_ZONE:SetPartlyInside(state)
+for _,Zone in pairs(self.Set)do
+if Zone.SetPartlyInside then
+Zone:SetPartlyInside(state)
+end
+end
+return self
+end
 function SET_ZONE:_TriggerCheck(fromstart)
 if fromstart then
 for _,_object in pairs(self.objectset)do
@@ -15558,7 +15575,12 @@ end
 if not obj.TriggerInZone[_zone.ZoneName]then
 obj.TriggerInZone[_zone.ZoneName]=false
 end
-local inzone=_zone:IsCoordinateInZone(obj:GetCoordinate())
+local inzone
+if _zone.PartlyInside and obj.ClassName=="GROUP"then
+inzone=obj:IsAnyInZone(_zone)
+else
+inzone=_zone:IsCoordinateInZone(obj:GetCoordinate())
+end
 if inzone and not obj.TriggerInZone[_zone.ZoneName]then
 self:__EnteredZone(0.5,obj,_zone)
 obj.TriggerInZone[_zone.ZoneName]=true
