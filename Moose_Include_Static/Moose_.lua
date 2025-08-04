@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-01T14:04:16+02:00-c6b78b9e42f1d3a3e01d43ee3470f9053e45694b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-04T16:15:06+02:00-4c8a93f63f0723939cfb0c58591614b1468955b3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9196,6 +9196,10 @@ self:_TriggerCheck(true)
 self:__TriggerRunCheck(self.Checktime)
 return self
 end
+function ZONE_BASE:SetPartlyInside(state)
+self.PartlyInside=state or not(state==false)
+return self
+end
 function ZONE_BASE:_TriggerCheck(fromstart)
 local objectset=self.objectset or{}
 if fromstart then
@@ -9223,7 +9227,12 @@ end
 if not obj.TriggerInZone[self.ZoneName]then
 obj.TriggerInZone[self.ZoneName]=false
 end
-local inzone=self:IsCoordinateInZone(obj:GetCoordinate())
+local inzone
+if self.PartlyInside and obj.ClassName=="GROUP"then
+inzone=obj:IsAnyInZone(self)
+else
+inzone=self:IsCoordinateInZone(obj:GetCoordinate())
+end
 if inzone and obj.TriggerInZone[self.ZoneName]then
 objcount=objcount+1
 self.ObjectsInZone=true
@@ -15533,6 +15542,14 @@ self:_TriggerCheck(true)
 self:__TriggerRunCheck(self.Checktime)
 return self
 end
+function SET_ZONE:SetPartlyInside(state)
+for _,Zone in pairs(self.Set)do
+if Zone.SetPartlyInside then
+Zone:SetPartlyInside(state)
+end
+end
+return self
+end
 function SET_ZONE:_TriggerCheck(fromstart)
 if fromstart then
 for _,_object in pairs(self.objectset)do
@@ -15559,7 +15576,12 @@ end
 if not obj.TriggerInZone[_zone.ZoneName]then
 obj.TriggerInZone[_zone.ZoneName]=false
 end
-local inzone=_zone:IsCoordinateInZone(obj:GetCoordinate())
+local inzone
+if _zone.PartlyInside and obj.ClassName=="GROUP"then
+inzone=obj:IsAnyInZone(_zone)
+else
+inzone=_zone:IsCoordinateInZone(obj:GetCoordinate())
+end
 if inzone and not obj.TriggerInZone[_zone.ZoneName]then
 self:__EnteredZone(0.5,obj,_zone)
 obj.TriggerInZone[_zone.ZoneName]=true
@@ -30495,15 +30517,19 @@ AIRBASE.Sinai={
 ["Kibrit_Air_Base"]="Kibrit Air Base",
 ["Kom_Awshim"]="Kom Awshim",
 ["Melez"]="Melez",
+["Mezzeh_Air_Base"]="Mezzeh Air Base",
 ["Nevatim"]="Nevatim",
 ["Ovda"]="Ovda",
 ["Palmachim"]="Palmachim",
 ["Quwaysina"]="Quwaysina",
+["Rafic_Hariri_Intl"]="Rafic Hariri Intl",
+["Ramat_David"]="Ramat David",
 ["Ramon_Airbase"]="Ramon Airbase",
 ["Ramon_International_Airport"]="Ramon International Airport",
 ["Sde_Dov"]="Sde Dov",
 ["Sharm_El_Sheikh_International_Airport"]="Sharm El Sheikh International Airport",
 ["St_Catherine"]="St Catherine",
+["Tabuk"]="Tabuk",
 ["Tel_Nof"]="Tel Nof",
 ["Wadi_Abu_Rish"]="Wadi Abu Rish",
 ["Wadi_al_Jandali"]="Wadi al Jandali",
