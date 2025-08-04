@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-02T18:35:43+02:00-72d8b29699b1624fbb9c52faacdb4620ed0eac27 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-04T16:12:01+02:00-eb6eba25f3e6a4842bc9e8fa85fb4f96e00dac51 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30516,15 +30516,19 @@ AIRBASE.Sinai={
 ["Kibrit_Air_Base"]="Kibrit Air Base",
 ["Kom_Awshim"]="Kom Awshim",
 ["Melez"]="Melez",
+["Mezzeh_Air_Base"]="Mezzeh Air Base",
 ["Nevatim"]="Nevatim",
 ["Ovda"]="Ovda",
 ["Palmachim"]="Palmachim",
 ["Quwaysina"]="Quwaysina",
+["Rafic_Hariri_Intl"]="Rafic Hariri Intl",
+["Ramat_David"]="Ramat David",
 ["Ramon_Airbase"]="Ramon Airbase",
 ["Ramon_International_Airport"]="Ramon International Airport",
 ["Sde_Dov"]="Sde Dov",
 ["Sharm_El_Sheikh_International_Airport"]="Sharm El Sheikh International Airport",
 ["St_Catherine"]="St Catherine",
+["Tabuk"]="Tabuk",
 ["Tel_Nof"]="Tel Nof",
 ["Wadi_Abu_Rish"]="Wadi Abu Rish",
 ["Wadi_al_Jandali"]="Wadi al Jandali",
