@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-04T16:11:00+02:00-e9194c59f46d706d50f6b7f00ff8e33a8ad6975e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-07T11:16:29+02:00-c75c3d8777922102d1214f1bace519876b800e40 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -34850,6 +34850,7 @@ local TargetType=nil
 local TargetUnitCoalition=nil
 local TargetUnitCategory=nil
 local TargetUnitType=nil
+local TargetIsScenery=false
 if Event.IniDCSUnit then
 InitUnit=Event.IniDCSUnit
 InitUNIT=Event.IniUnit
@@ -34875,6 +34876,10 @@ TargetPlayerName=Event.TgtPlayerName
 TargetCoalition=Event.TgtCoalition
 TargetCategory=Event.TgtCategory
 TargetType=Event.TgtTypeName
+if(not TargetCategory)and TargetUNIT~=nil and TargetUnit:IsInstanceOf("SCENERY")then
+TargetCategory=Unit.Category.STRUCTURE
+TargetIsScenery=true
+end
 TargetUnitCoalition=_SCORINGCoalition[TargetCoalition]
 TargetUnitCategory=_SCORINGCategory[TargetCategory]
 TargetUnitType=TargetType
@@ -34944,9 +34949,14 @@ MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit en
 MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
-else
+elseif TargetIsScenery~=true then
 MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit enemy target "..TargetUnitCategory.." ( "..TargetType.." ) "..PlayerHit.ScoreHit.." times. "..
 "Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
+MESSAGE.Type.Update)
+:ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
+:ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
+elseif TargetIsScenery==true then
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit scenery object.".." Score: "..PlayerHit.Score..".  Score Total:"..Player.Score-Player.Penalty,
 MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
@@ -34954,7 +34964,7 @@ end
 self:ScoreCSV(InitPlayerName,TargetPlayerName,"HIT_SCORE",1,1,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,TargetUnitCoalition,TargetUnitCategory,TargetUnitType)
 end
 else
-MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit scenery object.",
+MESSAGE:NewType(self.DisplayMessagePrefix.."Player '"..InitPlayerName.."' hit nothing special.",
 MESSAGE.Type.Update)
 :ToAllIf(self:IfMessagesHit()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesHit()and self:IfMessagesToCoalition())
