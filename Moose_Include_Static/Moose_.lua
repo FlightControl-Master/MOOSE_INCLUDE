@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-07T11:16:29+02:00-c75c3d8777922102d1214f1bace519876b800e40 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-07T11:30:44+02:00-674c6eec81a5492c6d21a38be32964efc83af116 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9611,6 +9611,9 @@ function ZONE_RADIUS:GetRandomVec2(inner,outer,surfacetypes)
 local Vec2=self:GetVec2()
 local _inner=inner or 0
 local _outer=outer or self:GetRadius()
+math.random()
+math.random()
+math.random()
 if surfacetypes and type(surfacetypes)~="table"then
 surfacetypes={surfacetypes}
 end
@@ -10309,6 +10312,9 @@ local InZone=self:IsVec2InZone({x=Vec3.x,y=Vec3.z})
 return InZone
 end
 function ZONE_POLYGON_BASE:GetRandomVec2()
+math.random()
+math.random()
+math.random()
 local weights={}
 for _,triangle in pairs(self._Triangles)do
 weights[triangle]=triangle.SurfaceArea/self.SurfaceArea
@@ -17049,6 +17055,9 @@ return coord
 end
 function COORDINATE:GetRandomVec2InRadius(OuterRadius,InnerRadius)
 self:F2({OuterRadius,InnerRadius})
+math.random()
+math.random()
+math.random()
 local Theta=2*math.pi*math.random()
 local Radials=math.random()+math.random()
 if Radials>1 then
@@ -84443,12 +84452,18 @@ end
 return true
 end
 function CIRCLE:GetRandomVec2()
+math.random()
+math.random()
+math.random()
 local angle=math.random()*2*math.pi
 local rx=math.random(0,self.Radius)*math.cos(angle)+self.CenterVec2.x
 local ry=math.random(0,self.Radius)*math.sin(angle)+self.CenterVec2.y
 return{x=rx,y=ry}
 end
 function CIRCLE:GetRandomVec2OnBorder()
+math.random()
+math.random()
+math.random()
 local angle=math.random()*2*math.pi
 local rx=self.Radius*math.cos(angle)+self.CenterVec2.x
 local ry=self.Radius*math.sin(angle)+self.CenterVec2.y
@@ -85131,6 +85146,9 @@ local has_pos=(d1>0)or(d2>0)or(d3>0)
 return not(has_neg and has_pos)
 end
 function TRIANGLE:GetRandomVec2(points)
+math.random()
+math.random()
+math.random()
 points=points or self.Points
 local pt={math.random(),math.random()}
 table.sort(pt)
