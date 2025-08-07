@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-07T11:31:54+02:00-32e61a7a0981c92628b2e029da80d33f76448fde ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-07T18:47:49+02:00-f075c02db5ced680bb23f3dc9a97f9762093bc3c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -115265,7 +115265,7 @@ defaulttakeofftype="hot",
 FuelLowThreshold=25,
 FuelCriticalThreshold=10,
 }
-EASYGCICAP.version="0.1.25"
+EASYGCICAP.version="0.1.26"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -115459,7 +115459,7 @@ self:T(self.lid.."_AddAirwing "..Airbasename)
 local CapFormation=self.CapFormation
 local DespawnAfterLanding=self.DespawnAfterLanding
 local DespawnAfterHolding=self.DespawnAfterHolding
-local check=STATIC:FindByName(Airbasename,false)
+local check=STATIC:FindByName(Airbasename,false)or UNIT:FindByName(Airbasename)
 if check==nil then
 MESSAGE:New(self.lid.."There's no warehouse static on the map (wrong naming?) for airbase "..tostring(Airbasename).."!",30,"CHECK"):ToAllIf(self.debug):ToLog()
 return
