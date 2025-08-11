@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-10T13:35:24+02:00-8cac4dbf9e5ea138c73185c9be3eb471e8722fcb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-11T12:58:30+02:00-38dcd04334f2184313f342fdfc408b08971bdad1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -115576,16 +115576,21 @@ return self
 end
 function EASYGCICAP:AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
 self:T(self.lid.."AddPatrolPointCAP")
+local coordinate=Coordinate
 local EntryCAP={}
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+coordinate=Coordinate:GetCoordinate()
+EntryCAP.Zone=Coordinate
+end
 EntryCAP.AirbaseName=AirbaseName
-EntryCAP.Coordinate=Coordinate
+EntryCAP.Coordinate=coordinate
 EntryCAP.Altitude=Altitude or 25000
 EntryCAP.Speed=Speed or 300
 EntryCAP.Heading=Heading or 90
 EntryCAP.LegLength=LegLength or 15
 self.ManagedCP[#self.ManagedCP+1]=EntryCAP
 if self.debug then
-local mark=MARKER:New(Coordinate,self.lid.."Patrol Point"):ToAll()
+local mark=MARKER:New(coordinate,self.lid.."Patrol Point"):ToAll()
 end
 return self
 end
@@ -115687,7 +115692,12 @@ local Altitude=data.Altitude
 local Speed=data.Speed
 local Heading=data.Heading
 local LegLength=data.LegLength
+local Zone=_data.Zone
+if Zone then
+Wing:AddPatrolPointCAP(Zone,Altitude,Speed,Heading,LegLength)
+else
 Wing:AddPatrolPointCAP(Coordinate,Altitude,Speed,Heading,LegLength)
+end
 end
 return self
 end
@@ -115876,19 +115886,19 @@ self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,Group,WingSize)
-self:I("_TryAssignIntercept for size "..WingSize or 1)
+self:T("_TryAssignIntercept for size "..WingSize or 1)
 local assigned=false
 local wingsize=WingSize or 1
 local mindist=0
 local disttable={}
 if Group and Group:IsAlive()then
 local gcoord=Group:GetCoordinate()or COORDINATE:New(0,0,0)
-self:I(self.lid..string.format("Assignment for %s",Group:GetName()))
+self:T(self.lid..string.format("Assignment for %s",Group:GetName()))
 for _name,_FG in pairs(ReadyFlightGroups or{})do
 local FG=_FG
 local fcoord=FG:GetCoordinate()
 local dist=math.floor(UTILS.Round(fcoord:Get2DDistance(gcoord)/1000,1))
-self:I(self.lid..string.format("FG %s Distance %dkm",_name,dist))
+self:T(self.lid..string.format("FG %s Distance %dkm",_name,dist))
 disttable[#disttable+1]={FG=FG,dist=dist}
 if dist>mindist then mindist=dist end
 end
@@ -115902,7 +115912,7 @@ FG:AddMission(InterceptAuftrag)
 local cm=FG:GetMissionCurrent()
 if cm then cm:Cancel()end
 wingsize=wingsize-1
-self:I(self.lid..string.format("Assigned to FG %s Distance %dkm",FG:GetName(),_entry.dist))
+self:T(self.lid..string.format("Assigned to FG %s Distance %dkm",FG:GetName(),_entry.dist))
 if wingsize==0 then
 assigned=true
 break
@@ -115959,6 +115969,9 @@ for _,_data in pairs(ctlpts)do
 local data=_data
 local name=data.AirbaseName
 local zonecoord=data.Coordinate
+if data.Zone then
+zonecoord=data.Zone:GetCoordinate()
+end
 local airwing=wings[name][1]
 local coa=AIRBASE:FindByName(name):GetCoalition()
 local samecoalitionab=coa==self.coalition and true or false
