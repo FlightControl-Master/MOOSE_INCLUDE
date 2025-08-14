@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-14T09:13:32+02:00-5ef6383c63f3a0a9b7a0cf583aea0e54a7d4f855 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-14T17:18:03+02:00-8efcad123c0de2e93b3473a3da65eb8846bee246 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54817,8 +54817,8 @@ MANTIS.SamData={
 ["STUNNER IDFA"]={Range=250,Blindspot=1,Height=45,Type="Long",Radar="DAVID_SLING_LN"},
 ["NIKE"]={Range=155,Blindspot=6,Height=30,Type="Long",Radar="HIPAR"},
 ["Dog Ear"]={Range=11,Blindspot=0,Height=9,Type="Point",Radar="Dog Ear",Point="true"},
-["Pantsir S1"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
-["Tor M2"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
+["Pantsir S1"]={Range=20,Blindspot=1.2,Height=15,Type="Point",Radar="PantsirS1",Point="true"},
+["Tor M2"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2",Point="true"},
 ["IRIS-T SLM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM"},
 }
 MANTIS.SamDataHDS={
@@ -54850,15 +54850,15 @@ MANTIS.SamDataSMA={
 }
 MANTIS.SamDataCH={
 ["2S38 CHM"]={Range=6,Blindspot=0.1,Height=4.5,Type="Short",Radar="2S38"},
-["PantsirS1 CHM"]={Range=20,Blindspot=1.2,Height=15,Type="Short",Radar="PantsirS1"},
+["PantsirS1 CHM"]={Range=20,Blindspot=1.2,Height=15,Type="Point",Radar="PantsirS1",Point="true"},
 ["PantsirS2 CHM"]={Range=30,Blindspot=1.2,Height=18,Type="Medium",Radar="PantsirS2"},
 ["PGL-625 CHM"]={Range=10,Blindspot=1,Height=5,Type="Short",Radar="PGL_625"},
 ["HQ-17A CHM"]={Range=15,Blindspot=1.5,Height=10,Type="Short",Radar="HQ17A"},
 ["M903PAC2 CHM"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="MIM104_M903_PAC2"},
 ["M903PAC3 CHM"]={Range=160,Blindspot=1,Height=40,Type="Long",Radar="MIM104_M903_PAC3"},
-["TorM2 CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2"},
-["TorM2K CHM"]={Range=12,Blindspot=1,Height=10,Type="Short",Radar="TorM2K"},
-["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Short",Radar="TorM2M"},
+["TorM2 CHM"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2",Point="true"},
+["TorM2K CHM"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2K",Point="true"},
+["TorM2M CHM"]={Range=16,Blindspot=1,Height=10,Type="Point",Radar="TorM2M",Point="true"},
 ["NASAMS3-AMRAAMER CHM"]={Range=50,Blindspot=2,Height=35.7,Type="Medium",Radar="CH_NASAMS3_LN_AMRAAM_ER"},
 ["NASAMS3-AIM9X2 CHM"]={Range=20,Blindspot=0.2,Height=18,Type="Short",Radar="CH_NASAMS3_LN_AIM9X2"},
 ["C-RAM CHM"]={Range=2,Blindspot=0,Height=2,Type="Point",Radar="CH_Centurion_C_RAM",Point="true"},
@@ -55044,7 +55044,11 @@ self:T(self.lid.."AddZones")
 self.AcceptZones=AcceptZones or{}
 self.RejectZones=RejectZones or{}
 self.ConflictZones=ConflictZones or{}
-if#self.AcceptZones>0 or#self.RejectZones>0 or#self.ConflictZones>0 then
+self.AcceptZonesNo=UTILS.TableLength(self.AcceptZones)
+self.RejectZonesNo=UTILS.TableLength(self.RejectZones)
+self.ConflictZonesNo=UTILS.TableLength(self.ConflictZones)
+self:T(string.format("AcceptZonesNo = %d | RejectZonesNo = %d | ConflictZonesNo = %d",self.AcceptZonesNo,self.RejectZonesNo,self.ConflictZonesNo))
+if self.AcceptZonesNo>0 or self.RejectZonesNo>0 or self.ConflictZonesNo>0 then
 self.usezones=true
 end
 return self
@@ -55305,7 +55309,8 @@ end
 function MANTIS:_CheckCoordinateInZones(coord)
 self:T(self.lid.."_CheckCoordinateInZones")
 local inzone=false
-if#self.AcceptZones>0 then
+self:T(string.format("AcceptZonesNo = %d | RejectZonesNo = %d | ConflictZonesNo = %d",self.AcceptZonesNo,self.RejectZonesNo,self.ConflictZonesNo))
+if self.AcceptZonesNo>0 then
 for _,_zone in pairs(self.AcceptZones)do
 local zone=_zone
 if zone:IsCoordinateInZone(coord)then
@@ -55315,7 +55320,7 @@ break
 end
 end
 end
-if#self.RejectZones>0 then
+if self.RejectZonesNo>0 then
 for _,_zone in pairs(self.RejectZones)do
 local zone=_zone
 if zone:IsCoordinateInZone(coord)then
@@ -55325,7 +55330,7 @@ break
 end
 end
 end
-if#self.ConflictZones>0 then
+if self.ConflictZonesNo>0 then
 for _,_zone in pairs(self.ConflictZones)do
 local zone=_zone
 if zone:IsCoordinateInZone(coord)then
@@ -55371,6 +55376,7 @@ if not targetdistance then
 targetdistance=samcoordinate:Get2DDistance(coord)
 end
 local zonecheck=true
+self:T("self.usezones = "..tostring(self.usezones))
 if self.usezones then
 zonecheck=self:_CheckCoordinateInZones(coord)
 end
