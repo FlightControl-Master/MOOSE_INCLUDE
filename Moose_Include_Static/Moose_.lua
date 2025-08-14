@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-14T17:15:43+02:00-4a04d7cce7b178ff4ea48cb480d705a331e2030e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-14T17:17:34+02:00-b9cf1e46afcee679aa09b480d3451864da72a5e3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -54242,7 +54242,7 @@ adv_ratio=100,
 adv_state=0,
 AWACS_Prefix="",
 advAwacs=false,
-verbose=true,
+verbose=false,
 awacsrange=250000,
 Shorad=nil,
 ShoradLink=false,
@@ -54415,7 +54415,7 @@ self.autorelocateunits={HQ=false,EWR=false}
 self.advanced=false
 self.adv_ratio=100
 self.adv_state=0
-self.verbose=true
+self.verbose=false
 self.Adv_EWR_Group=nil
 self.AWACS_Prefix=awacs or nil
 self.awacsrange=250000
