@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-07T18:00:35+02:00-25143386d58f41ead0bbca31e9232cb1a415b650 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-14T08:33:47+02:00-3c85b920cd541021b856948545c6a95f521e108d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78451,7 +78451,7 @@ capFormation=nil,
 capOptionVaryStartTime=nil,
 capOptionVaryEndTime=nil,
 }
-AIRWING.version="0.9.6"
+AIRWING.version="0.9.7"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -78745,19 +78745,29 @@ point.type,point.noccupied,point.heading,point.leg,point.altitude,point.speed)
 return text
 end
 function AIRWING:UpdatePatrolPointMarker(point)
-if self.markpoints then
+if self and self.markpoints then
 local text=string.format("%s Occupied=%d\nheading=%03d, leg=%d NM, alt=%d ft, speed=%d kts",
 point.type,point.noccupied,point.heading,point.leg,point.altitude,point.speed)
+if point.IsZonePoint and point.IsZonePoint==true and point.patrolzone then
+local Coordinate=point.patrolzone:GetCoordinate()
+point.marker:UpdateCoordinate(Coordinate)
+point.marker:UpdateText(text,1.5)
+else
 point.marker:UpdateText(text,1)
 end
 end
-function AIRWING:NewPatrolPoint(Type,Coordinate,Altitude,Speed,Heading,LegLength,RefuelSystem)
-if Coordinate and Coordinate:IsInstanceOf("ZONE_BASE")then
-Coordinate=Coordinate:GetCoordinate()
 end
+function AIRWING:NewPatrolPoint(Type,Coordinate,Altitude,Speed,Heading,LegLength,RefuelSystem)
 local patrolpoint={}
 patrolpoint.type=Type or"Unknown"
 patrolpoint.coord=Coordinate or self:GetCoordinate():Translate(UTILS.NMToMeters(math.random(10,15)),math.random(360))
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+patrolpoint.IsZonePoint=true
+patrolpoint.patrolzone=Coordinate
+patrolpoint.coord=patrolpoint.patrolzone:GetCoordinate()
+else
+patrolpoint.IsZonePoint=false
+end
 patrolpoint.heading=Heading or math.random(360)
 patrolpoint.leg=LegLength or 15
 patrolpoint.altitude=Altitude or math.random(10,20)*1000
@@ -78766,7 +78776,7 @@ patrolpoint.noccupied=0
 patrolpoint.refuelsystem=RefuelSystem
 if self.markpoints then
 patrolpoint.marker=MARKER:New(Coordinate,"New Patrol Point"):ToAll()
-AIRWING.UpdatePatrolPointMarker(patrolpoint)
+self:UpdatePatrolPointMarker(patrolpoint)
 end
 return patrolpoint
 end
@@ -78910,6 +78920,9 @@ if PatrolPoints and#PatrolPoints>0 then
 table.sort(PatrolPoints,sort)
 for _,_patrolpoint in pairs(PatrolPoints)do
 local patrolpoint=_patrolpoint
+if patrolpoint.IsZonePoint and patrolpoint.IsZonePoint==true and patrolpoint.patrolzone then
+patrolpoint.coord=patrolpoint.patrolzone:GetCoordinate()
+end
 if(RefuelSystem and patrolpoint.refuelsystem and RefuelSystem==patrolpoint.refuelsystem)or RefuelSystem==nil or patrolpoint.refuelsystem==nil then
 return patrolpoint
 end
@@ -78940,7 +78953,7 @@ missionCAP:SetTime(ClockStart)
 end
 missionCAP.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
-if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
+if self.markpoints then self:UpdatePatrolPointMarker(patrol)end
 self:AddMission(missionCAP)
 end
 return self
@@ -78966,7 +78979,7 @@ local missionRECON=AUFTRAG:NewRECON(ZoneSet,patrol.speed,patrol.altitude,true)
 missionRECON.patroldata=patrol
 missionRECON.categories={AUFTRAG.Category.AIRCRAFT}
 patrol.noccupied=patrol.noccupied+1
-if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
+if self.markpoints then self:UpdatePatrolPointMarker(patrol)end
 self:AddMission(missionRECON)
 end
 return self
@@ -78990,7 +79003,7 @@ local altitude=patrol.altitude+1000*patrol.noccupied
 local mission=AUFTRAG:NewTANKER(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg,Unit.RefuelingSystem.BOOM_AND_RECEPTACLE)
 mission.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
-if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
+if self.markpoints then self:UpdatePatrolPointMarker(patrol)end
 self:AddMission(mission)
 end
 for i=1,self.nflightsTANKERprobe-Nprob do
@@ -78999,7 +79012,7 @@ local altitude=patrol.altitude+1000*patrol.noccupied
 local mission=AUFTRAG:NewTANKER(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg,Unit.RefuelingSystem.PROBE_AND_DROGUE)
 mission.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
-if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
+if self.markpoints then self:UpdatePatrolPointMarker(patrol)end
 self:AddMission(mission)
 end
 return self
@@ -79018,7 +79031,7 @@ local altitude=patrol.altitude+1000*patrol.noccupied
 local mission=AUFTRAG:NewAWACS(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg)
 mission.patroldata=patrol
 patrol.noccupied=patrol.noccupied+1
-if self.markpoints then AIRWING.UpdatePatrolPointMarker(patrol)end
+if self.markpoints then self:UpdatePatrolPointMarker(patrol)end
 self:AddMission(mission)
 end
 return self
@@ -80561,7 +80574,6 @@ return mission
 end
 function AUFTRAG:NewSEADInZone(TargetZone,Altitude,TargetTypes,Duration)
 local mission=AUFTRAG:New(AUFTRAG.Type.SEAD)
-mission:_TargetFromObject(TargetZone)
 mission.engageWeaponType=ENUMS.WeaponFlag.Auto
 mission.engageWeaponExpend=AI.Task.WeaponExpend.ALL
 mission.engageAltitude=UTILS.FeetToMeters(Altitude or 25000)
@@ -102448,7 +102460,7 @@ end
 self:_RemoveMissionWaypoints(Mission)
 if Mission.patroldata then
 Mission.patroldata.noccupied=Mission.patroldata.noccupied-1
-AIRWING.UpdatePatrolPointMarker(Mission.patroldata)
+AIRWING.UpdatePatrolPointMarker(self,Mission.patroldata)
 end
 if Mission.engagedetectedOn then
 self:SetEngageDetectedOff()
@@ -113936,8 +113948,9 @@ ListOfAuftrag={},
 defaulttakeofftype="hot",
 FuelLowThreshold=25,
 FuelCriticalThreshold=10,
+showpatrolpointmarks=false,
 }
-EASYGCICAP.version="0.1.25"
+EASYGCICAP.version="0.1.27"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -113971,6 +113984,7 @@ self.ListOfAuftrag={}
 self.defaulttakeofftype="hot"
 self.FuelLowThreshold=25
 self.FuelCriticalThreshold=10
+self.showpatrolpointmarks=false
 self.lid=string.format("EASYGCICAP %s | ",self.alias)
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
@@ -113999,6 +114013,14 @@ end
 function EASYGCICAP:SetFuelLow(Percent)
 self:T(self.lid.."SetFuelLow")
 self.FuelLowThreshold=Percent or 25
+return self
+end
+function EASYGCICAP:ShowPatrolPointMarkers(onoff)
+if onoff then
+self.showpatrolpointmarks=true
+else
+self.showpatrolpointmarks=false
+end
 return self
 end
 function EASYGCICAP:SetFuelCritical(Percent)
@@ -114131,7 +114153,7 @@ self:T(self.lid.."_AddAirwing "..Airbasename)
 local CapFormation=self.CapFormation
 local DespawnAfterLanding=self.DespawnAfterLanding
 local DespawnAfterHolding=self.DespawnAfterHolding
-local check=STATIC:FindByName(Airbasename,false)
+local check=STATIC:FindByName(Airbasename,false)or UNIT:FindByName(Airbasename)
 if check==nil then
 MESSAGE:New(self.lid.."There's no warehouse static on the map (wrong naming?) for airbase "..tostring(Airbasename).."!",30,"CHECK"):ToAllIf(self.debug):ToLog()
 return
@@ -114144,6 +114166,9 @@ CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
 CAP_Wing:SetNumberCAP(self.capgrouping)
 CAP_Wing:SetCapCloseRaceTrack(true)
+if self.showpatrolpointmarks then
+CAP_Wing:ShowPatrolPointMarkers(true)
+end
 if self.capOptionVaryStartTime then
 CAP_Wing:SetCapStartTimeVariation(self.capOptionVaryStartTime,self.capOptionVaryEndTime)
 end
@@ -114222,17 +114247,22 @@ self.wings[Airbasename]={CAP_Wing,AIRBASE:FindByName(Airbasename):GetZone(),Airb
 return self
 end
 function EASYGCICAP:AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
-self:T(self.lid.."AddPatrolPointCAP "..Coordinate:ToStringLLDDM())
+self:T(self.lid.."AddPatrolPointCAP")
+local coordinate=Coordinate
 local EntryCAP={}
+if Coordinate:IsInstanceOf("ZONE_BASE")then
+coordinate=Coordinate:GetCoordinate()
+EntryCAP.Zone=Coordinate
+end
 EntryCAP.AirbaseName=AirbaseName
-EntryCAP.Coordinate=Coordinate
+EntryCAP.Coordinate=coordinate
 EntryCAP.Altitude=Altitude or 25000
 EntryCAP.Speed=Speed or 300
 EntryCAP.Heading=Heading or 90
 EntryCAP.LegLength=LegLength or 15
 self.ManagedCP[#self.ManagedCP+1]=EntryCAP
 if self.debug then
-local mark=MARKER:New(Coordinate,self.lid.."Patrol Point"):ToAll()
+local mark=MARKER:New(coordinate,self.lid.."Patrol Point"):ToAll()
 end
 return self
 end
@@ -114334,7 +114364,12 @@ local Altitude=data.Altitude
 local Speed=data.Speed
 local Heading=data.Heading
 local LegLength=data.LegLength
+local Zone=_data.Zone
+if Zone then
+Wing:AddPatrolPointCAP(Zone,Altitude,Speed,Heading,LegLength)
+else
 Wing:AddPatrolPointCAP(Coordinate,Altitude,Speed,Heading,LegLength)
+end
 end
 return self
 end
@@ -114523,19 +114558,19 @@ self.GoZoneSet:AddZone(Zone)
 return self
 end
 function EASYGCICAP:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,Group,WingSize)
-self:I("_TryAssignIntercept for size "..WingSize or 1)
+self:T("_TryAssignIntercept for size "..WingSize or 1)
 local assigned=false
 local wingsize=WingSize or 1
 local mindist=0
 local disttable={}
 if Group and Group:IsAlive()then
 local gcoord=Group:GetCoordinate()or COORDINATE:New(0,0,0)
-self:I(self.lid..string.format("Assignment for %s",Group:GetName()))
+self:T(self.lid..string.format("Assignment for %s",Group:GetName()))
 for _name,_FG in pairs(ReadyFlightGroups or{})do
 local FG=_FG
 local fcoord=FG:GetCoordinate()
 local dist=math.floor(UTILS.Round(fcoord:Get2DDistance(gcoord)/1000,1))
-self:I(self.lid..string.format("FG %s Distance %dkm",_name,dist))
+self:T(self.lid..string.format("FG %s Distance %dkm",_name,dist))
 disttable[#disttable+1]={FG=FG,dist=dist}
 if dist>mindist then mindist=dist end
 end
@@ -114549,7 +114584,7 @@ FG:AddMission(InterceptAuftrag)
 local cm=FG:GetMissionCurrent()
 if cm then cm:Cancel()end
 wingsize=wingsize-1
-self:I(self.lid..string.format("Assigned to FG %s Distance %dkm",FG:GetName(),_entry.dist))
+self:T(self.lid..string.format("Assigned to FG %s Distance %dkm",FG:GetName(),_entry.dist))
 if wingsize==0 then
 assigned=true
 break
@@ -114606,6 +114641,9 @@ for _,_data in pairs(ctlpts)do
 local data=_data
 local name=data.AirbaseName
 local zonecoord=data.Coordinate
+if data.Zone then
+zonecoord=data.Zone:GetCoordinate()
+end
 local airwing=wings[name][1]
 local coa=AIRBASE:FindByName(name):GetCoalition()
 local samecoalitionab=coa==self.coalition and true or false
@@ -116878,13 +116916,15 @@ Standard={
 ["en_IN_Standard_B"]='en-IN-Standard-B',
 ["en_IN_Standard_C"]='en-IN-Standard-C',
 ["en_IN_Standard_D"]='en-IN-Standard-D',
-["en_GB_Standard_A"]='en-GB-Standard-N',
-["en_GB_Standard_B"]='en-GB-Standard-O',
-["en_GB_Standard_C"]='en-GB-Standard-N',
-["en_GB_Standard_D"]='en-GB-Standard-O',
-["en_GB_Standard_F"]='en-GB-Standard-N',
-["en_GB_Standard_O"]='en-GB-Standard-O',
+["en_IN_Standard_E"]='en-IN-Standard-E',
+["en_IN_Standard_F"]='en-IN-Standard-F',
+["en_GB_Standard_A"]='en-GB-Standard-A',
+["en_GB_Standard_B"]='en-GB-Standard-B',
+["en_GB_Standard_C"]='en-GB-Standard-C',
+["en_GB_Standard_D"]='en-GB-Standard-D',
+["en_GB_Standard_F"]='en-GB-Standard-F',
 ["en_GB_Standard_N"]='en-GB-Standard-N',
+["en_GB_Standard_O"]='en-GB-Standard-O',
 ["en_US_Standard_A"]='en-US-Standard-A',
 ["en_US_Standard_B"]='en-US-Standard-B',
 ["en_US_Standard_C"]='en-US-Standard-C',
@@ -116902,14 +116942,14 @@ Standard={
 ["fr_FR_Standard_E"]="fr-FR-Standard-F",
 ["fr_FR_Standard_G"]="fr-FR-Standard-G",
 ["fr_FR_Standard_F"]="fr-FR-Standard-F",
-["de_DE_Standard_A"]="de-DE-Standard-G",
-["de_DE_Standard_B"]="de-DE-Standard-H",
-["de_DE_Standard_C"]="de-DE-Standard-G",
-["de_DE_Standard_D"]="de-DE-Standard-H",
-["de_DE_Standard_E"]="de-DE-Standard-H",
-["de_DE_Standard_F"]="de-DE-Standard-G",
-["de_DE_Standard_H"]="de-DE-Standard-H",
-["de_DE_Standard_G"]="de-DE-Standard-G",
+["de_DE_Standard_A"]='de-DE-Standard-A',
+["de_DE_Standard_B"]='de-DE-Standard-B',
+["de_DE_Standard_C"]='de-DE-Standard-C',
+["de_DE_Standard_D"]='de-DE-Standard-D',
+["de_DE_Standard_E"]='de-DE-Standard-E',
+["de_DE_Standard_F"]='de-DE-Standard-F',
+["de_DE_Standard_G"]='de-DE-Standard-G',
+["de_DE_Standard_H"]='de-DE-Standard-H',
 ["es_ES_Standard_A"]="es-ES-Standard-E",
 ["es_ES_Standard_B"]="es-ES-Standard-F",
 ["es_ES_Standard_C"]="es-ES-Standard-E",
@@ -116932,11 +116972,13 @@ Wavenet={
 ["en_IN_Wavenet_B"]='en-IN-Wavenet-B',
 ["en_IN_Wavenet_C"]='en-IN-Wavenet-C',
 ["en_IN_Wavenet_D"]='en-IN-Wavenet-D',
-["en_GB_Wavenet_A"]='en-GB-Wavenet-N',
-["en_GB_Wavenet_B"]='en-GB-Wavenet-O',
-["en_GB_Wavenet_C"]='en-GB-Wavenet-N',
-["en_GB_Wavenet_D"]='en-GB-Wavenet-O',
-["en_GB_Wavenet_F"]='en-GB-Wavenet-N',
+["en_IN_Wavenet_E"]='en-IN-Wavenet-E',
+["en_IN_Wavenet_F"]='en-IN-Wavenet-F',
+["en_GB_Wavenet_A"]='en-GB-Wavenet-A',
+["en_GB_Wavenet_B"]='en-GB-Wavenet-B',
+["en_GB_Wavenet_C"]='en-GB-Wavenet-C',
+["en_GB_Wavenet_D"]='en-GB-Wavenet-D',
+["en_GB_Wavenet_F"]='en-GB-Wavenet-F',
 ["en_GB_Wavenet_O"]='en-GB-Wavenet-O',
 ["en_GB_Wavenet_N"]='en-GB-Wavenet-N',
 ["en_US_Wavenet_A"]='en-US-Wavenet-A',
@@ -116956,14 +116998,14 @@ Wavenet={
 ["fr_FR_Wavenet_E"]="fr-FR-Wavenet-F",
 ["fr_FR_Wavenet_G"]="fr-FR-Wavenet-G",
 ["fr_FR_Wavenet_F"]="fr-FR-Wavenet-F",
-["de_DE_Wavenet_A"]="de-DE-Wavenet-G",
-["de_DE_Wavenet_B"]="de-DE-Wavenet-H",
-["de_DE_Wavenet_C"]="de-DE-Wavenet-G",
-["de_DE_Wavenet_D"]="de-DE-Wavenet-H",
-["de_DE_Wavenet_E"]="de-DE-Wavenet-H",
-["de_DE_Wavenet_F"]="de-DE-Wavenet-G",
-["de_DE_Wavenet_H"]="de-DE-Wavenet-H",
-["de_DE_Wavenet_G"]="de-DE-Wavenet-G",
+["de_DE_Wavenet_A"]='de-DE-Wavenet-A',
+["de_DE_Wavenet_B"]='de-DE-Wavenet-B',
+["de_DE_Wavenet_C"]='de-DE-Wavenet-C',
+["de_DE_Wavenet_D"]='de-DE-Wavenet-D',
+["de_DE_Wavenet_E"]='de-DE-Wavenet-E',
+["de_DE_Wavenet_F"]='de-DE-Wavenet-F',
+["de_DE_Wavenet_G"]='de-DE-Wavenet-G',
+["de_DE_Wavenet_H"]='de-DE-Wavenet-H',
 ["es_ES_Wavenet_B"]="es-ES-Wavenet-E",
 ["es_ES_Wavenet_C"]="es-ES-Wavenet-F",
 ["es_ES_Wavenet_D"]="es-ES-Wavenet-E",
@@ -116976,6 +117018,117 @@ Wavenet={
 ["it_IT_Wavenet_E"]="it-IT-Wavenet-E",
 ["it_IT_Wavenet_F"]="it-IT-Wavenet-F",
 },
+Chirp3HD={
+["en_GB_Chirp3_HD_Aoede"]='en-GB-Chirp3-HD-Aoede',
+["en_GB_Chirp3_HD_Charon"]='en-GB-Chirp3-HD-Charon',
+["en_GB_Chirp3_HD_Fenrir"]='en-GB-Chirp3-HD-Fenrir',
+["en_GB_Chirp3_HD_Kore"]='en-GB-Chirp3-HD-Kore',
+["en_GB_Chirp3_HD_Leda"]='en-GB-Chirp3-HD-Leda',
+["en_GB_Chirp3_HD_Orus"]='en-GB-Chirp3-HD-Orus',
+["en_GB_Chirp3_HD_Puck"]='en-GB-Chirp3-HD-Puck',
+["en_GB_Chirp3_HD_Zephyr"]='en-GB-Chirp3-HD-Zephyr',
+["en_US_Chirp3_HD_Charon"]='en-US-Chirp3-HD-Charon',
+["en_US_Chirp3_HD_Fenrir"]='en-US-Chirp3-HD-Fenrir',
+["en_US_Chirp3_HD_Kore"]='en-US-Chirp3-HD-Kore',
+["en_US_Chirp3_HD_Leda"]='en-US-Chirp3-HD-Leda',
+["en_US_Chirp3_HD_Orus"]='en-US-Chirp3-HD-Orus',
+["en_US_Chirp3_HD_Puck"]='en-US-Chirp3-HD-Puck',
+["de_DE_Chirp3_HD_Aoede"]='de-DE-Chirp3-HD-Aoede',
+["de_DE_Chirp3_HD_Charon"]='de-DE-Chirp3-HD-Charon',
+["de_DE_Chirp3_HD_Fenrir"]='de-DE-Chirp3-HD-Fenrir',
+["de_DE_Chirp3_HD_Kore"]='de-DE-Chirp3-HD-Kore',
+["de_DE_Chirp3_HD_Leda"]='de-DE-Chirp3-HD-Leda',
+["de_DE_Chirp3_HD_Orus"]='de-DE-Chirp3-HD-Orus',
+["de_DE_Chirp3_HD_Puck"]='de-DE-Chirp3-HD-Puck',
+["de_DE_Chirp3_HD_Zephyr"]='de-DE-Chirp3-HD-Zephyr',
+["en_AU_Chirp3_HD_Aoede"]='en-AU-Chirp3-HD-Aoede',
+["en_AU_Chirp3_HD_Charon"]='en-AU-Chirp3-HD-Charon',
+["en_AU_Chirp3_HD_Fenrir"]='en-AU-Chirp3-HD-Fenrir',
+["en_AU_Chirp3_HD_Kore"]='en-AU-Chirp3-HD-Kore',
+["en_AU_Chirp3_HD_Leda"]='en-AU-Chirp3-HD-Leda',
+["en_AU_Chirp3_HD_Orus"]='en-AU-Chirp3-HD-Orus',
+["en_AU_Chirp3_HD_Puck"]='en-AU-Chirp3-HD-Puck',
+["en_AU_Chirp3_HD_Zephyr"]='en-AU-Chirp3-HD-Zephyr',
+["en_IN_Chirp3_HD_Aoede"]='en-IN-Chirp3-HD-Aoede',
+["en_IN_Chirp3_HD_Charon"]='en-IN-Chirp3-HD-Charon',
+["en_IN_Chirp3_HD_Fenrir"]='en-IN-Chirp3-HD-Fenrir',
+["en_IN_Chirp3_HD_Kore"]='en-IN-Chirp3-HD-Kore',
+["en_IN_Chirp3_HD_Leda"]='en-IN-Chirp3-HD-Leda',
+["en_IN_Chirp3_HD_Orus"]='en-IN-Chirp3-HD-Orus',
+},
+ChirpHD={
+["en_US_Chirp_HD_D"]='en-US-Chirp-HD-D',
+["en_US_Chirp_HD_F"]='en-US-Chirp-HD-F',
+["en_US_Chirp_HD_O"]='en-US-Chirp-HD-O',
+["de_DE_Chirp_HD_D"]='de-DE-Chirp-HD-D',
+["de_DE_Chirp_HD_F"]='de-DE-Chirp-HD-F',
+["de_DE_Chirp_HD_O"]='de-DE-Chirp-HD-O',
+["en_AU_Chirp_HD_D"]='en-AU-Chirp-HD-D',
+["en_AU_Chirp_HD_F"]='en-AU-Chirp-HD-F',
+["en_AU_Chirp_HD_O"]='en-AU-Chirp-HD-O',
+["en_IN_Chirp_HD_D"]='en-IN-Chirp-HD-D',
+["en_IN_Chirp_HD_F"]='en-IN-Chirp-HD-F',
+["en_IN_Chirp_HD_O"]='en-IN-Chirp-HD-O',
+},
+},
+Neural2={
+["en_GB_Neural2_A"]='en-GB-Neural2-A',
+["en_GB_Neural2_B"]='en-GB-Neural2-B',
+["en_GB_Neural2_C"]='en-GB-Neural2-C',
+["en_GB_Neural2_D"]='en-GB-Neural2-D',
+["en_GB_Neural2_F"]='en-GB-Neural2-F',
+["en_GB_Neural2_N"]='en-GB-Neural2-N',
+["en_GB_Neural2_O"]='en-GB-Neural2-O',
+["en_US_Neural2_A"]='en-US-Neural2-A',
+["en_US_Neural2_C"]='en-US-Neural2-C',
+["en_US_Neural2_D"]='en-US-Neural2-D',
+["en_US_Neural2_E"]='en-US-Neural2-E',
+["en_US_Neural2_F"]='en-US-Neural2-F',
+["en_US_Neural2_G"]='en-US-Neural2-G',
+["en_US_Neural2_H"]='en-US-Neural2-H',
+["en_US_Neural2_I"]='en-US-Neural2-I',
+["en_US_Neural2_J"]='en-US-Neural2-J',
+["de_DE_Neural2_G"]='de-DE-Neural2-G',
+["de_DE_Neural2_H"]='de-DE-Neural2-H',
+["en_AU_Neural2_A"]='en-AU-Neural2-A',
+["en_AU_Neural2_B"]='en-AU-Neural2-B',
+["en_AU_Neural2_C"]='en-AU-Neural2-C',
+["en_AU_Neural2_D"]='en-AU-Neural2-D',
+["en_IN_Neural2_A"]='en-IN-Neural2-A',
+["en_IN_Neural2_B"]='en-IN-Neural2-B',
+["en_IN_Neural2_C"]='en-IN-Neural2-C',
+["en_IN_Neural2_D"]='en-IN-Neural2-D',
+},
+News={
+["en_GB_News_G"]='en-GB-News-G',
+["en_GB_News_H"]='en-GB-News-H',
+["en_GB_News_I"]='en-GB-News-I',
+["en_GB_News_J"]='en-GB-News-J',
+["en_GB_News_K"]='en-GB-News-K',
+["en_GB_News_L"]='en-GB-News-L',
+["en_GB_News_M"]='en-GB-News-M',
+["en_US_News_K"]='en-US-News-K',
+["en_US_News_L"]='en-US-News-L',
+["en_US_News_N"]='en-US-News-N',
+["en_AU_News_E"]='en-AU-News-E',
+["en_AU_News_F"]='en-AU-News-F',
+["en_AU_News_G"]='en-AU-News-G',
+},
+Casual={
+["en_US_Casual_K"]='en-US-Casual-K',
+},
+Polyglot={
+["en_US_Polyglot_1"]='en-US-Polyglot-1',
+["de_DE_Polyglot_1"]='de-DE-Polyglot-1',
+["en_AU_Polyglot_1"]='en-AU-Polyglot-1',
+},
+Studio={
+["en_GB_Studio_B"]='en-GB-Studio-B',
+["en_GB_Studio_C"]='en-GB-Studio-C',
+["en_US_Studio_O"]='en-US-Studio-O',
+["en_US_Studio_Q"]='en-US-Studio-Q',
+["de_DE_Studio_B"]='de-DE-Studio-B',
+["de_DE_Studio_C"]='de-DE-Studio-C',
 },
 }
 MSRS.Backend={
