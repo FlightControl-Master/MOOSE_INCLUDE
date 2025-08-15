@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-14T17:18:03+02:00-8efcad123c0de2e93b3473a3da65eb8846bee246 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-15T14:26:41+02:00-1b169f007c317a2250a62681de846a61bcddc4e7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -80098,7 +80098,7 @@ function AIRWING:NewPatrolPoint(Type,Coordinate,Altitude,Speed,Heading,LegLength
 local patrolpoint={}
 patrolpoint.type=Type or"Unknown"
 patrolpoint.coord=Coordinate or self:GetCoordinate():Translate(UTILS.NMToMeters(math.random(10,15)),math.random(360))
-if Coordinate:IsInstanceOf("ZONE_BASE")then
+if Coordinate and Coordinate:IsInstanceOf("ZONE_BASE")then
 patrolpoint.IsZonePoint=true
 patrolpoint.patrolzone=Coordinate
 patrolpoint.coord=patrolpoint.patrolzone:GetCoordinate()
