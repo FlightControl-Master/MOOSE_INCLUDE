@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-24T15:25:46+02:00-0a566246573b5f68ec035c769d89f9cf624bd644 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-24T16:36:33+02:00-c96249906e5ea14cf623631b7940ad90e1d3ec08 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4328,20 +4328,9 @@ local closestSpot
 for _,spot in pairs(spots)do
 local dist=UTILS.VecDist2D(pos,spot)
 if dist<closestDist then
-local skip=false
-for _,unit2 in pairs(units)do
-local pos2={x=unit2.x,y=unit2.z or unit2.y}
-local dist2=UTILS.VecDist2D(spot,pos2)
-if dist2<spacing and isOnLand then
-skip=true
-break
-end
-end
-if not skip then
 closestDist=dist
 closestSpot=spot
 sid=si
-end
 end
 si=si+1
 end
