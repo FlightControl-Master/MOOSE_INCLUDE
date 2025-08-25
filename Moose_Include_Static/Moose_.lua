@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-24T16:36:33+02:00-c96249906e5ea14cf623631b7940ad90e1d3ec08 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-25T12:09:30+02:00-c30d517a00b3fd3b89c0b4e14673c7dacf499027 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4288,7 +4288,7 @@ qx=qx+shift_factor*norm_dx
 qy=qy+shift_factor*norm_dy
 return{x=qx,y=qy}
 end
-function UTILS.ValidateAndRepositionGroundUnits(Anchor,Positions,MaxRadius,Spacing)
+function UTILS.ValidateAndRepositionGroundUnits(Positions,Anchor,MaxRadius,Spacing)
 local units=Positions
 Anchor=Anchor or UTILS.GetCenterPoint(units)
 local gPos={x=Anchor.x,y=Anchor.z or Anchor.y}
@@ -20207,7 +20207,7 @@ end
 if self.SpawnValidateAndRepositionGroundUnits then
 local units=SpawnTemplate.units
 local gPos={x=SpawnTemplate.x,y=SpawnTemplate.y}
-UTILS.ValidateAndRepositionGroundUnits(gPos,units,self.SpawnValidateAndRepositionGroundUnitsRadius,self.SpawnValidateAndRepositionGroundUnitsSpacing)
+UTILS.ValidateAndRepositionGroundUnits(units,gPos,self.SpawnValidateAndRepositionGroundUnitsRadius,self.SpawnValidateAndRepositionGroundUnitsSpacing)
 end
 SpawnTemplate.CategoryID=self.SpawnInitCategory or SpawnTemplate.CategoryID
 SpawnTemplate.CountryID=self.SpawnInitCountry or SpawnTemplate.CountryID
@@ -51418,6 +51418,9 @@ self:I(self.lid..text)
 self:T({DCSdesc=asset.DCSdesc})
 self:T3({Template=asset.template})
 end
+function WAREHOUSE:SetValidateAndRepositionGroundUnits(Enabled)
+self.ValidateAndRepositionGroundUnits=Enabled
+end
 function WAREHOUSE:onafterNewAsset(From,Event,To,asset,assignment)
 self:T(self.lid..string.format("New asset %s id=%d with assignment %s.",tostring(asset.templatename),asset.uid,tostring(assignment)))
 end
@@ -52233,6 +52236,9 @@ template.route.points[1].y=coord.z
 template.x=coord.x
 template.y=coord.z
 template.alt=coord.y
+if self.ValidateAndRepositionGroundUnits then
+UTILS.ValidateAndRepositionGroundUnits(template.units)
+end
 local group=_DATABASE:Spawn(template)
 return group
 end
