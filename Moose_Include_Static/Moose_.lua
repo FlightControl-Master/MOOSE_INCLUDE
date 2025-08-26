@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-25T12:08:27+02:00-27fe314c1ee5c85877e95e1e2cd8daf48195d679 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-26T06:22:57+02:00-417caf1b625c95018389de13f9847ea3d3b6ce6a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27897,6 +27897,9 @@ if self.InitRespawnModu then
 Template.modulation=self.InitRespawnModu
 end
 self:Destroy(false)
+if self.ValidateAndRepositionGroundUnits then
+UTILS.ValidateAndRepositionGroundUnits(Template.units)
+end
 self:ScheduleOnce(0.1,_DATABASE.Spawn,_DATABASE,Template)
 self:ResetEvents()
 return self
@@ -28410,6 +28413,9 @@ end
 end
 return isAAA
 end
+function GROUP:SetValidateAndRepositionGroundUnits(Enabled)
+self.ValidateAndRepositionGroundUnits=Enabled
+end
 UNIT={
 ClassName="UNIT",
 UnitName=nil,
@@ -28547,6 +28553,9 @@ i=i+1
 end
 end
 SpawnGroupTemplate.groupId=nil
+if self.ValidateAndRepositionGroundUnits then
+UTILS.ValidateAndRepositionGroundUnits(SpawnGroupTemplate.units)
+end
 _DATABASE:Spawn(SpawnGroupTemplate)
 end
 function UNIT:IsActive()
@@ -29329,6 +29338,9 @@ net.dostring_in("mission",string.format("a_unit_set_life_percentage(%d, %f)",sel
 end
 function UNIT:SetCarrierIlluminationMode(Mode)
 UTILS.SetCarrierIlluminationMode(self:GetID(),Mode)
+end
+function UNIT:SetValidateAndRepositionGroundUnits(Enabled)
+self.ValidateAndRepositionGroundUnits=Enabled
 end
 CLIENT={
 ClassName="CLIENT",
