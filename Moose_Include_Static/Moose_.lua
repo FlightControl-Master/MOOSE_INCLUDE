@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-26T06:23:46+02:00-7b7a8c1babc14ee24ae0579ca16561495027685c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-26T18:38:41+02:00-527c4d0de4f5a5f17a1c9fc75cc6f0deafb17846 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -104930,6 +104930,7 @@ if self:IsArmygroup()and self.ValidateAndRepositionGroundUnits then
 UTILS.ValidateAndRepositionGroundUnits(Template.units)
 end
 self.group=_DATABASE:Spawn(Template)
+self.group:SetValidateAndRepositionGroundUnits(self.ValidateAndRepositionGroundUnits)
 self.dcsgroup=self:GetDCSGroup()
 self.controller=self.dcsgroup:getController()
 self.isLateActivated=Template.lateActivation
