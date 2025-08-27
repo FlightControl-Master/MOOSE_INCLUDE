@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-26T18:38:41+02:00-527c4d0de4f5a5f17a1c9fc75cc6f0deafb17846 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-27T14:24:43+02:00-9f1777ca9b5530431f26ee5aa859323598bb13b0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60725,8 +60725,12 @@ WASHINGTON="CVN_73",
 TRUMAN="CVN_75",
 STENNIS="Stennis",
 FORRESTAL="Forrestal",
+ENTERPRISE66="USS Enterprise 1966",
+ENTERPRISEMODERN="cvn-65",
 VINSON="VINSON",
 ESSEX="Essex",
+BONHOMMERICHARD="USS Bon Homme Richard",
+ESSEXSCB125="essex_scb125",
 HERMES="HERMES81",
 INVINCIBLE="hms_invincible",
 TARAWA="LHA_Tarawa",
@@ -60863,10 +60867,18 @@ elseif self.carriertype==AIRBOSS.CarrierType.TRUMAN then
 self:_InitNimitz()
 elseif self.carriertype==AIRBOSS.CarrierType.FORRESTAL then
 self:_InitForrestal()
+elseif self.carriertype==AIRBOSS.CarrierType.ENTERPRISE66 then
+self:_InitEnterprise()
+elseif self.carriertype==AIRBOSS.CarrierType.ENTERPRISEMODERN then
+self:_InitEnterprise()
 elseif self.carriertype==AIRBOSS.CarrierType.VINSON then
 self:_InitStennis()
 elseif self.carriertype==AIRBOSS.CarrierType.ESSEX then
 self:_InitEssex()
+elseif self.carriertype==AIRBOSS.CarrierType.BONHOMMERICHARD then
+self:_InitBonHommeRichard()
+elseif self.carriertype==AIRBOSS.CarrierType.ESSEXSCB125 then
+self:_InitEssexSCB125()
 elseif self.carriertype==AIRBOSS.CarrierType.HERMES then
 self:_InitHermes()
 elseif self.carriertype==AIRBOSS.CarrierType.INVINCIBLE then
@@ -62099,6 +62111,17 @@ self.carrierparam.wire3=64
 self.carrierparam.wire4=74
 self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
 end
+function AIRBOSS:_InitEnterprise()
+self:_InitForrestal()
+self.carrierparam.sterndist=-164.30
+self.carrierparam.deckheight=19.52
+self.carrierparam.totlength=335
+self.carrierparam.rwylength=223
+self.carrierparam.wire1=57.7
+self.carrierparam.wire2=69.6
+self.carrierparam.wire3=79.5
+self.carrierparam.wire4=90.0
+end
 function AIRBOSS:_InitEssex()
 self:_InitNimitz()
 self.carrierparam.sterndist=-126
@@ -62125,6 +62148,20 @@ self.carrierparam.wire13=113.3
 self.carrierparam.wire14=121.0
 self.carrierparam.wire15=128.5
 self.carrierparam.landingdist=self.carrierparam.sterndist+self.carrierparam.wire3
+end
+function AIRBOSS:_InitBonHommeRichard()
+self:_InitEssex()
+self.carrierparam.deckheight=16.95
+self.carrierparam.rwyangle=-11.4
+self.carrierparam.rwylength=97
+self.carrierparam.rwywidth=20
+self.carrierparam.wire1=40.4
+self.carrierparam.wire2=45
+self.carrierparam.wire3=51
+self.carrierparam.wire4=58.1
+end
+function AIRBOSS:_InitEssexSCB125()
+self:_InitBonHommeRichard()
 end
 function AIRBOSS:_InitHermes()
 self:_InitStennis()
