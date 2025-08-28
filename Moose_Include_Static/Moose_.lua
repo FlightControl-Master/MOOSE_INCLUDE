@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-27T14:24:43+02:00-9f1777ca9b5530431f26ee5aa859323598bb13b0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-28T11:13:56+02:00-ee23daa651b37bceec2abe1edf334b5c4200ebdb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -81904,7 +81904,12 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 return mission
 end
 function AUFTRAG:NewTANKER(Coordinate,Altitude,Speed,Heading,Leg,RefuelSystem)
-local mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
+local mission
+if Leg==0 then
+mission=AUFTRAG:NewORBIT_CIRCLE(Coordinate,Altitude,Speed)
+else
+mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
+end
 mission.type=AUFTRAG.Type.TANKER
 mission:_SetLogID()
 mission.refuelSystem=RefuelSystem
