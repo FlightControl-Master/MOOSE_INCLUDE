@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-28T11:14:42+02:00-3ce0a8a45e3b143922b592e7ae588463ce73eed1 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-28T13:18:18+02:00-f400d0212add95f532c806006f5fe129533ce2ea ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -89283,7 +89283,7 @@ descriptors={},
 properties={},
 operations={},
 }
-COHORT.version="0.3.6"
+COHORT.version="0.3.7"
 _COHORTNAMES={}
 function COHORT:New(TemplateGroupName,Ngroups,CohortName)
 local name=tostring(CohortName or TemplateGroupName)
@@ -89434,9 +89434,10 @@ function COHORT:SetMissionRange(Range)
 self.engageRange=UTILS.NMToMeters(Range or 150)
 return self
 end
-function COHORT:SetCallsign(Callsign,Index)
+function COHORT:SetCallsign(Callsign,Index,CallsignString)
 self.callsignName=Callsign
 self.callsignIndex=Index
+self.callsignClearName=CallsignString
 self.callsign={}
 self.callsign.NumberSquad=Callsign
 self.callsign.NumberGroup=Index
@@ -89536,6 +89537,9 @@ self.callsigncounter=self.callsigncounter+2
 else
 self.callsigncounter=self.callsigncounter+1
 end
+callsign["name"]=self.callsignClearName or UTILS.GetCallsignName(self.callsignName)or"None"
+callsign["name"]=string.format("%s%d%d",callsign["name"],callsign[2],callsign[3])
+callsign[4]=callsign["name"]
 Asset.callsign[i]=callsign
 self:T3({callsign=callsign})
 end
