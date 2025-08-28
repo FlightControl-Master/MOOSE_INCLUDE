@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-27T14:25:53+02:00-da7bc301ea1a8b004c7d5a2fb850ad98db003cb8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-28T11:14:42+02:00-3ce0a8a45e3b143922b592e7ae588463ce73eed1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -80484,7 +80484,12 @@ mission.categories={AUFTRAG.Category.AIRCRAFT}
 return mission
 end
 function AUFTRAG:NewTANKER(Coordinate,Altitude,Speed,Heading,Leg,RefuelSystem)
-local mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
+local mission
+if Leg==0 then
+mission=AUFTRAG:NewORBIT_CIRCLE(Coordinate,Altitude,Speed)
+else
+mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
+end
 mission.type=AUFTRAG.Type.TANKER
 mission:_SetLogID()
 mission.refuelSystem=RefuelSystem
@@ -97542,6 +97547,7 @@ if self:IsAirwing()then
 opsgroup=FLIGHTGROUP:New(asset.spawngroupname)
 elseif self:IsBrigade()then
 opsgroup=ARMYGROUP:New(asset.spawngroupname)
+opsgroup:SetValidateAndRepositionGroundUnits(self.ValidateAndRepositionGroundUnits)
 elseif self:IsFleet()then
 opsgroup=NAVYGROUP:New(asset.spawngroupname)
 else
@@ -103542,7 +103548,11 @@ if Delay and Delay>0 then
 self:ScheduleOnce(Delay,OPSGROUP._Spawn,self,0,Template)
 else
 self:T2({Template=Template})
+if self:IsArmygroup()and self.ValidateAndRepositionGroundUnits then
+UTILS.ValidateAndRepositionGroundUnits(Template.units)
+end
 self.group=_DATABASE:Spawn(Template)
+self.group:SetValidateAndRepositionGroundUnits(self.ValidateAndRepositionGroundUnits)
 self.dcsgroup=self:GetDCSGroup()
 self.controller=self.dcsgroup:getController()
 self.isLateActivated=Template.lateActivation
@@ -106667,6 +106677,9 @@ end
 end
 end
 return targetgroup,targetdist
+end
+function OPSGROUP:SetValidateAndRepositionGroundUnits(Enabled)
+self.ValidateAndRepositionGroundUnits=Enabled
 end
 OPSTRANSPORT={
 ClassName="OPSTRANSPORT",
