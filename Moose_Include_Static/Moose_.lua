@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-31T13:28:00+02:00-2f46a630411ff7a85f12d883afd89bce1083d076 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-31T18:22:41+02:00-5d3f5dac1e240fe6c951031d1c34067d0903278e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -60838,7 +60838,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.4.1"
+AIRBOSS.version="1.4.2"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -61381,8 +61381,7 @@ self.SRS:SetCoalition(self:GetCoalition())
 self.SRS:SetCoordinate(self:GetCoordinate())
 self.SRS:SetCulture(Culture or"en-US")
 self.SRS:SetGender(Gender or"male")
-self.SRS:SetPath(PathToSRS)
-self.SRS:SetPort(Port or 5002)
+self.SRS:SetPort(Port or MSRS.port or 5002)
 self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
 self.SRS:SetVolume(Volume or 1)
@@ -61392,7 +61391,9 @@ end
 if Voice then
 self.SRS:SetVoice(Voice)
 end
-self.SRS:SetVolume(Volume or 1.0)
+if(not Voice)and self.SRS and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
+self.SRS.voice=MSRS.poptions["gcloud"].voice or MSRS.Voices.Google.Standard.en_US_Standard_B
+end
 self.SRSQ=MSRSQUEUE:New("AIRBOSS")
 self.SRSQ:SetTransmitOnlyWithPlayers(true)
 if not self.PilotRadio then
