@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-28T13:18:18+02:00-f400d0212add95f532c806006f5fe129533ce2ea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-31T13:29:33+02:00-6e01df753fcaeb50ddd36dfcc6a4901a5a51bbba ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4287,6 +4287,135 @@ local shift_factor=1
 qx=qx+shift_factor*norm_dx
 qy=qy+shift_factor*norm_dy
 return{x=qx,y=qy}
+end
+function UTILS.ValidateAndRepositionGroundUnits(Positions,Anchor,MaxRadius,Spacing)
+local units=Positions
+Anchor=Anchor or UTILS.GetCenterPoint(units)
+local gPos={x=Anchor.x,y=Anchor.z or Anchor.y}
+local maxRadius=0
+local unitCount=0
+for _,unit in pairs(units)do
+local pos={x=unit.x,y=unit.z or unit.y}
+local dist=UTILS.VecDist2D(pos,gPos)
+if dist>maxRadius then
+maxRadius=dist
+end
+unitCount=unitCount+1
+end
+maxRadius=MaxRadius or math.max(maxRadius*2,10)
+local spacing=Spacing or math.max(maxRadius*0.05,5)
+if unitCount>0 and maxRadius>5 then
+local spots=UTILS.GetSimpleZones(UTILS.Vec2toVec3(gPos),maxRadius,spacing,1000)
+if spots and#spots>0 then
+local validSpots={}
+for _,spot in pairs(spots)do
+if land.getSurfaceType(spot)==land.SurfaceType.LAND then
+table.insert(validSpots,spot)
+end
+end
+spots=validSpots
+end
+local step=spacing
+for _,unit in pairs(units)do
+local pos={x=unit.x,y=unit.z or unit.y}
+local isOnLand=land.getSurfaceType(pos)==land.SurfaceType.LAND
+local isValid=false
+if spots and#spots>0 then
+local si=1
+local sid=0
+local closestDist=100000000
+local closestSpot
+for _,spot in pairs(spots)do
+local dist=UTILS.VecDist2D(pos,spot)
+if dist<closestDist then
+closestDist=dist
+closestSpot=spot
+sid=si
+end
+si=si+1
+end
+if closestSpot then
+if closestDist>=spacing then
+pos=closestSpot
+end
+isValid=true
+table.remove(spots,sid)
+end
+end
+if not isValid and not isOnLand then
+local h=UTILS.HdgTo(pos,gPos)
+local retries=0
+while not isValid and retries<500 do
+local dist=UTILS.VecDist2D(pos,gPos)
+pos=UTILS.Vec2Translate(pos,step,h)
+local skip=false
+for _,unit2 in pairs(units)do
+if unit~=unit2 then
+local pos2={x=unit2.x,y=unit2.z or unit2.y}
+local dist2=UTILS.VecDist2D(pos,pos2)
+if dist2<12 then
+isValid=false
+skip=true
+break
+end
+end
+end
+if not skip and dist>step and land.getSurfaceType(pos)==land.SurfaceType.LAND then
+isValid=true
+break
+elseif dist<=step then
+break
+end
+retries=retries+1
+end
+end
+if isValid then
+unit.x=pos.x
+if unit.z then
+unit.z=pos.y
+else
+unit.y=pos.y
+end
+end
+end
+end
+end
+function UTILS.ValidateAndRepositionStatic(Country,Category,Type,Position,ShapeName,MaxRadius)
+local coord=COORDINATE:NewFromVec2(Position)
+local st=SPAWNSTATIC:NewFromType(Type,Category,Country)
+if ShapeName then
+st:InitShape(ShapeName)
+end
+local sName="s-"..timer.getTime().."-"..math.random(1,10000)
+local tempStatic=st:SpawnFromCoordinate(coord,0,sName)
+if tempStatic then
+local sRadius=tempStatic:GetBoundingRadius(2)or 3
+tempStatic:Destroy()
+sRadius=sRadius*0.5
+MaxRadius=MaxRadius or math.max(sRadius*10,100)
+local positions=UTILS.GetSimpleZones(coord:GetVec3(),MaxRadius,sRadius,20)
+if positions and#positions>0 then
+local closestSpot
+local closestDist=math.huge
+for _,spot in pairs(positions)do
+if land.getSurfaceType(spot)==land.SurfaceType.LAND then
+local dist=UTILS.VecDist2D(Position,spot)
+if dist<closestDist then
+closestDist=dist
+closestSpot=spot
+end
+end
+end
+if closestSpot then
+if closestDist>=sRadius then
+return closestSpot
+else
+return Position
+end
+end
+end
+end
+return nil
 end
 PROFILER={
 ClassName="PROFILER",
@@ -21438,6 +21567,11 @@ self.InitOffsetY=OffsetY or 0
 self.InitOffsetAngle=OffsetAngle or 0
 return self
 end
+function SPAWNSTATIC:InitValidateAndRepositionStatic(OnOff,MaxRadius)
+self.ValidateAndRepositionStatic=OnOff
+self.ValidateAndRepositionStaticMaxRadius=MaxRadius
+return self
+end
 function SPAWNSTATIC:OnSpawnStatic(SpawnCallBackFunction,...)
 self:F("OnSpawnStatic")
 self.SpawnFunctionHook=SpawnCallBackFunction
@@ -21524,6 +21658,13 @@ end
 self.SpawnIndex=self.SpawnIndex+1
 Template.name=self.InitStaticName or string.format("%s#%05d",self.SpawnTemplatePrefix,self.SpawnIndex)
 local Static=nil
+if self.ValidateAndRepositionStatic then
+local validPos=UTILS.ValidateAndRepositionStatic(CountryID,Template.category,Template.type,Template,Template.shape_name,self.ValidateAndRepositionStaticMaxRadius)
+if validPos then
+Template.x=validPos.x
+Template.y=validPos.y
+end
+end
 if self.InitFarp then
 local TemplateGroup={}
 TemplateGroup.units={}
@@ -30534,6 +30675,7 @@ AIRBASE.Sinai={
 ["Borg_El_Arab_International_Airport"]="Borg El Arab International Airport",
 ["Cairo_International_Airport"]="Cairo International Airport",
 ["Cairo_West"]="Cairo West",
+["Damascus_Intl"]="Damascus Intl",
 ["Difarsuwar_Airfield"]="Difarsuwar Airfield",
 ["El_Arish"]="El Arish",
 ["El_Gora"]="El Gora",
