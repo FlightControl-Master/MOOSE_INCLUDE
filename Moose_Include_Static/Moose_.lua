@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-31T18:22:17+02:00-873879ff794237212fe6f76f723a8d47506a00a3 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-01T10:57:48+02:00-a917ee8f1e2e435feef2f4a4560f09d38eb8a6b5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2189,7 +2189,7 @@ local delta=UTILS.VecAngle(v1,v2)
 return math.abs(delta)
 end
 function UTILS.HdgTo(a,b)
-local dz=b.z-a.z
+local dz=(b.z or b.y)-(a.z or a.y)
 local dx=b.x-a.x
 local heading=math.deg(math.atan2(dz,dx))
 if heading<0 then
