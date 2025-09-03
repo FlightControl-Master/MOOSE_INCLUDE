@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-01T10:59:59+02:00-e531f12f94e7683590f2aeb9fb5ef69f226fa012 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-03T10:37:03+02:00-a90e321a91a5a30bb10e60a53d77ff4b70e220e0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28983,6 +28983,41 @@ return isAAA
 end
 function GROUP:SetValidateAndRepositionGroundUnits(Enabled)
 self.ValidateAndRepositionGroundUnits=Enabled
+end
+function GROUP:GetBoundingBox()
+local bbox={min={x=math.huge,y=math.huge,z=math.huge},
+max={x=-math.huge,y=-math.huge,z=-math.huge}
+}
+local Units=self:GetUnits()or{}
+if#Units==0 then
+return nil
+end
+for _,unit in pairs(Units)do
+if unit and unit:IsAlive()then
+local ubox=unit:GetBoundingBox()
+if ubox then
+if ubox.min.x<bbox.min.x then
+bbox.min.x=ubox.min.x
+end
+if ubox.min.y<bbox.min.y then
+bbox.min.y=ubox.min.y
+end
+if ubox.min.z<bbox.min.z then
+bbox.min.z=ubox.min.z
+end
+if ubox.max.x>bbox.max.x then
+bbox.max.x=ubox.max.x
+end
+if ubox.max.y>bbox.max.y then
+bbox.max.y=ubox.max.y
+end
+if ubox.max.z>bbox.max.z then
+bbox.max.z=ubox.max.z
+end
+end
+end
+end
+return bbox
 end
 UNIT={
 ClassName="UNIT",
