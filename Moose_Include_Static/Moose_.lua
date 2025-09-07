@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-08-31T13:29:33+02:00-6e01df753fcaeb50ddd36dfcc6a4901a5a51bbba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-07T18:58:32+02:00-c197c842e88072ca94c2306dfabdc30e363ec59c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2189,7 +2189,7 @@ local delta=UTILS.VecAngle(v1,v2)
 return math.abs(delta)
 end
 function UTILS.HdgTo(a,b)
-local dz=b.z-a.z
+local dz=(b.z or b.y)-(a.z or a.y)
 local dx=b.x-a.x
 local heading=math.deg(math.atan2(dz,dx))
 if heading<0 then
@@ -22479,7 +22479,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.6",
+version="0.1.7",
 name=nil,
 clientset=nil,
 menutree={},
@@ -22752,6 +22752,10 @@ self.rootentries={}
 self.menutree=nil
 self.menutree={}
 return self
+end
+function CLIENTMENUMANAGER:DeleteEntry(Entry,Client)
+self:T(self.lid.."DeleteEntry")
+return self:DeleteF10Entry(Entry,Client)
 end
 function CLIENTMENUMANAGER:DeleteF10Entry(Entry,Client)
 self:T(self.lid.."DeleteF10Entry")
@@ -59510,7 +59514,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.4.1"
+AIRBOSS.version="1.4.2"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -60053,8 +60057,7 @@ self.SRS:SetCoalition(self:GetCoalition())
 self.SRS:SetCoordinate(self:GetCoordinate())
 self.SRS:SetCulture(Culture or"en-US")
 self.SRS:SetGender(Gender or"male")
-self.SRS:SetPath(PathToSRS)
-self.SRS:SetPort(Port or 5002)
+self.SRS:SetPort(Port or MSRS.port or 5002)
 self.SRS:SetLabel(self.AirbossRadio.alias or"AIRBOSS")
 self.SRS:SetCoordinate(self.carrier:GetCoordinate())
 self.SRS:SetVolume(Volume or 1)
@@ -60064,7 +60067,9 @@ end
 if Voice then
 self.SRS:SetVoice(Voice)
 end
-self.SRS:SetVolume(Volume or 1.0)
+if(not Voice)and self.SRS and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
+self.SRS.voice=MSRS.poptions["gcloud"].voice or MSRS.Voices.Google.Standard.en_US_Standard_B
+end
 self.SRSQ=MSRSQUEUE:New("AIRBOSS")
 self.SRSQ:SetTransmitOnlyWithPlayers(true)
 if not self.PilotRadio then
