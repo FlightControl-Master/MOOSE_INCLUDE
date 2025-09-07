@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-03T10:37:03+02:00-a90e321a91a5a30bb10e60a53d77ff4b70e220e0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-07T18:58:47+02:00-9c3c27f8098f59e40f200d4199ecf6165c38c2ac ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -22478,7 +22478,7 @@ end
 CLIENTMENUMANAGER={
 ClassName="CLIENTMENUMANAGER",
 lid="",
-version="0.1.6",
+version="0.1.7",
 name=nil,
 clientset=nil,
 menutree={},
@@ -22751,6 +22751,10 @@ self.rootentries={}
 self.menutree=nil
 self.menutree={}
 return self
+end
+function CLIENTMENUMANAGER:DeleteEntry(Entry,Client)
+self:T(self.lid.."DeleteEntry")
+return self:DeleteF10Entry(Entry,Client)
 end
 function CLIENTMENUMANAGER:DeleteF10Entry(Entry,Client)
 self:T(self.lid.."DeleteF10Entry")
