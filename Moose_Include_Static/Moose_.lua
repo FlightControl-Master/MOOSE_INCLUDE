@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-03T10:35:42+02:00-e38d73df8b957fd68f6601b10b2f549429346248 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-11T05:13:50+02:00-cda1432d048f5a8946e42833f7f560db16f57248 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26896,6 +26896,7 @@ GROUND_EWR="Ground_EWR",
 GROUND_AAA="Ground_AAA",
 GROUND_SAM="Ground_SAM",
 GROUND_SHORAD="Ground_SHORAD",
+GROUND_BALLISTICMISSILE="Ground_BallisticMissile",
 GROUND_OTHER="Ground_OtherGround",
 NAVAL_AIRCRAFTCARRIER="Naval_AircraftCarrier",
 NAVAL_WARSHIP="Naval_WarShip",
@@ -28153,6 +28154,8 @@ local infantry=self:HasAttribute("Infantry")
 local artillery=self:HasAttribute("Artillery")
 local tank=self:HasAttribute("Old Tanks")or self:HasAttribute("Modern Tanks")or self:HasAttribute("Tanks")
 local aaa=self:HasAttribute("AAA")and(not self:HasAttribute("SAM elements"))
+local ballisticMissile=artillery and self:HasAttribute("SS_missile")
+local shorad=self:HasAttribute("SR SAM")
 local ewr=self:HasAttribute("EWR")
 local ifv=self:HasAttribute("IFV")
 local sam=self:HasAttribute("SAM elements")or self:HasAttribute("Optical Tracker")
@@ -28183,6 +28186,8 @@ elseif sam then
 attribute=GROUP.Attribute.GROUND_SAM
 elseif aaa then
 attribute=GROUP.Attribute.GROUND_AAA
+elseif artillery and ballisticMissile then
+attribute=GROUP.Attribute.GROUND_BALLISTICMISSILE
 elseif artillery then
 attribute=GROUP.Attribute.GROUND_ARTILLERY
 elseif tank then
@@ -73121,6 +73126,7 @@ self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(randompositions,20,2)
+:InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :InitDelayOff()
 :OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
@@ -73238,12 +73244,14 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
+:InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :InitDelayOff()
 :OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
 end
