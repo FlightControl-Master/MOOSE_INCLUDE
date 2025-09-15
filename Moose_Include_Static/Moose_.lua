@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-07T18:58:32+02:00-c197c842e88072ca94c2306dfabdc30e363ec59c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-15T09:27:44+02:00-6abd76a40b07052e895b9c8b49a9dbb9af83a09e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28988,6 +28988,41 @@ return isAAA
 end
 function GROUP:SetValidateAndRepositionGroundUnits(Enabled)
 self.ValidateAndRepositionGroundUnits=Enabled
+end
+function GROUP:GetBoundingBox()
+local bbox={min={x=math.huge,y=math.huge,z=math.huge},
+max={x=-math.huge,y=-math.huge,z=-math.huge}
+}
+local Units=self:GetUnits()or{}
+if#Units==0 then
+return nil
+end
+for _,unit in pairs(Units)do
+if unit and unit:IsAlive()then
+local ubox=unit:GetBoundingBox()
+if ubox then
+if ubox.min.x<bbox.min.x then
+bbox.min.x=ubox.min.x
+end
+if ubox.min.y<bbox.min.y then
+bbox.min.y=ubox.min.y
+end
+if ubox.min.z<bbox.min.z then
+bbox.min.z=ubox.min.z
+end
+if ubox.max.x>bbox.max.x then
+bbox.max.x=ubox.max.x
+end
+if ubox.max.y>bbox.max.y then
+bbox.max.y=ubox.max.y
+end
+if ubox.max.z>bbox.max.z then
+bbox.max.z=ubox.max.z
+end
+end
+end
+end
+return bbox
 end
 UNIT={
 ClassName="UNIT",
@@ -114194,7 +114229,7 @@ FuelLowThreshold=25,
 FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 }
-EASYGCICAP.version="0.1.27"
+EASYGCICAP.version="0.1.28"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -114763,7 +114798,9 @@ Squadron_One:SetLivery(Livery)
 Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
 Squadron_One:SetMissionRange(self.missionrange)
 Squadron_One:SetRadio(Frequency,Modulation)
+if TACAN then
 Squadron_One:AddTacanChannel(TACAN,TACAN)
+end
 local wing=self.wings[AirbaseName][1]
 wing:AddSquadron(Squadron_One)
 wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.TANKER},75)
