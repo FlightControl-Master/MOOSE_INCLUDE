@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-15T09:29:47+02:00-0cc315055880aee097f731cb8d2c05b9ac81fbc9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-18T16:38:43+02:00-905b2a7a98da6b07bf4052a4ebd948939771d19c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7726,7 +7726,9 @@ if Event.id==EVENTS.LandingAfterEjection then
 else
 if Event.place:isExist()and Object.getCategory(Event.place)~=Object.Category.SCENERY then
 Event.Place=AIRBASE:Find(Event.place)
+if Event.Place then
 Event.PlaceName=Event.Place:GetName()
+end
 end
 end
 end
@@ -84331,7 +84333,9 @@ self:T(self.lid.."SetAdditionalZone")
 self.BorderZone=Zone
 if self.debug then
 Zone:DrawZone(self.coalition,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
+if self.AllowMarkers then
 MARKER:New(Zone:GetCoordinate(),"Defensive Zone"):ToCoalition(self.coalition)
+end
 elseif Draw then
 Zone:DrawZone(self.coalition,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
 end
@@ -84344,7 +84348,9 @@ if Draw then
 Zone:DrawZone(self.coalition,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
 elseif self.debug then
 Zone:DrawZone(self.coalition,{1,0.64,0},1,{1,0.64,0},0.2,1,true)
+if self.AllowMarkers then
 MARKER:New(Zone:GetCoordinate(),"Rejection Zone"):ToCoalition(self.coalition)
+end
 end
 return self
 end
@@ -85822,10 +85828,14 @@ AnchorStackOne.StationName=newname
 if self.debug then
 AnchorStackOne.StationZone:DrawZone(self.coalition,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 else
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 end
 self.AnchorStacks:Push(AnchorStackOne,newname)
 self.PlayerStationName=newname
@@ -85855,10 +85865,14 @@ AnchorStackOne.StationName=newname
 if self.debug then
 AnchorStackOne.StationZone:DrawZone(self.coalition,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 else
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 end
 self.AnchorStacks:Push(AnchorStackOne,newname)
 else
@@ -85880,10 +85894,14 @@ AnchorStackOne.StationName=newname
 if self.debug then
 AnchorStackOne.StationZone:DrawZone(self.coalition,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 else
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 end
 self.AnchorStacks:Push(AnchorStackOne,newname)
 end
@@ -86515,10 +86533,14 @@ AnchorStackOne.StationName=newname
 if self.debug then
 AnchorStackOne.StationZone:DrawZone(self.coalition,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 else
 local stationtag=string.format("Station: %s\nCoordinate: %s",newname,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 AnchorStackOne.AnchorMarker=MARKER:New(AnchorStackOne.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 end
 self.AnchorStacks:Push(AnchorStackOne,newname)
 AirWing.HasOwnStation=true
@@ -87158,23 +87180,35 @@ self.ControlZone:DrawZone(self.coalition,{0,1,0},1,{1,0,0},0.05,3,true)
 self.OpsZone:DrawZone(self.coalition,{1,0,0},1,{1,0,0},0.2,5,true)
 local AOCoordString=self.AOCoordinate:ToStringLLDDM()
 local Rocktag=string.format("FEZ: %s\nBulls Coordinate: %s",self.AOName,AOCoordString)
+if self.AllowMarkers then
 MARKER:New(self.AOCoordinate,Rocktag):ToCoalition(self.coalition)
+end
 self.StationZone:DrawZone(self.coalition,{0,0,1},1,{0,0,1},0.2,5,true)
 local stationtag=string.format("Station: %s\nCoordinate: %s",self.StationZoneName,self.StationZone:GetCoordinate():ToStringLLDDM())
 if not self.GCI then
+if self.AllowMarkers then
 MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 self.OrbitZone:DrawZone(self.coalition,{0,1,0},1,{0,1,0},0.2,5,true)
+if self.AllowMarkers then
 MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToCoalition(self.coalition)
+end
 end
 else
 local AOCoordString=self.AOCoordinate:ToStringLLDDM()
 local Rocktag=string.format("FEZ: %s\nBulls Coordinate: %s",self.AOName,AOCoordString)
+if self.AllowMarkers then
 MARKER:New(self.AOCoordinate,Rocktag):ToCoalition(self.coalition)
+end
 if not self.GCI then
+if self.AllowMarkers then
 MARKER:New(self.OrbitZone:GetCoordinate(),"AIC Orbit Zone"):ToCoalition(self.coalition)
 end
+end
 local stationtag=string.format("Station: %s\nCoordinate: %s",self.StationZoneName,self.StationZone:GetCoordinate():ToStringLLDDM())
+if self.AllowMarkers then
 MARKER:New(self.StationZone:GetCoordinate(),stationtag):ToCoalition(self.coalition)
+end
 end
 if not self.GCI then
 local AwacsAW=self.AirWing
@@ -108675,7 +108709,7 @@ NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
 }
-PLAYERTASK.version="0.1.27"
+PLAYERTASK.version="0.1.28"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -109280,7 +109314,10 @@ if self.TargetMarker then
 self.TargetMarker:Remove()
 end
 self.FinalState="Failed"
-self:__Done(-1)
+if self.TaskController then
+self.TaskController:__TaskFailed(-1,self)
+end
+self:__Done(-1.5)
 end
 if self.TaskController.Scoring then
 local clients,count=self:GetClientObjects()
@@ -110529,9 +110566,15 @@ self:E(self.lid.."***** NO valid PAYERTASK object sent!")
 end
 return self
 end
+function PLAYERTASKCONTROLLER:CanJoinTask(Task,Group,Client)
+return true
+end
 function PLAYERTASKCONTROLLER:_JoinTask(Task,Force,Group,Client)
 self:T({Force,Group,Client})
 self:T(self.lid.."_JoinTask")
+if not self:CanJoinTask(Task,Group,Client)then
+return self
+end
 local force=false
 if type(Force)=="boolean"then
 force=Force
