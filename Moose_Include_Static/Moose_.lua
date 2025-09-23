@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-18T16:38:43+02:00-905b2a7a98da6b07bf4052a4ebd948939771d19c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-23T18:10:37+02:00-0ea6f5f71b769f612fb8b86aa3642c94d67ed2ba ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30817,19 +30817,25 @@ AIRBASE.Afghanistan={
 ["Urgoon_Heliport"]="Urgoon Heliport",
 }
 AIRBASE.Iraq={
-["Baghdad_International_Airport"]="Baghdad International Airport",
-["Sulaimaniyah_International_Airport"]="Sulaimaniyah International Airport",
-["Al_Sahra_Airport"]="Al-Sahra Airport",
-["Erbil_International_Airport"]="Erbil International Airport",
-["Al_Taji_Airport"]="Al-Taji Airport",
 ["Al_Asad_Airbase"]="Al-Asad Airbase",
+["Al_Kut_Airport"]="Al-Kut Airport",
+["Al_Sahra_Airport"]="Al-Sahra Airport",
 ["Al_Salam_Airbase"]="Al-Salam Airbase",
-["Balad_Airbase"]="Balad Airbase",
-["Kirkuk_International_Airport"]="Kirkuk International Airport",
-["Bashur_Airport"]="Bashur Airport",
+["Al_Taji_Airport"]="Al-Taji Airport",
 ["Al_Taquddum_Airport"]="Al-Taquddum Airport",
-["Qayyarah_Airfield_West"]="Qayyarah Airfield West",
+["Baghdad_International_Airport"]="Baghdad International Airport",
+["Balad_Airbase"]="Balad Airbase",
+["Bashur_Airport"]="Bashur Airport",
+["Erbil_International_Airport"]="Erbil International Airport",
+["H2_Airbase"]="H-2 Airbase",
+["H3_Main_Airbase"]="H-3 Main Airbase",
+["H3_Northwest_Airbase"]="H-3 Northwest Airbase",
+["H3_Southwest_Airbase"]="H-3 Southwest Airbase",
 ["K1_Base"]="K1 Base",
+["Kirkuk_International_Airport"]="Kirkuk International Airport",
+["Mosul_International_Airport"]="Mosul International Airport",
+["Qayyarah_Airfield_West"]="Qayyarah Airfield West",
+["Sulaimaniyah_International_Airport"]="Sulaimaniyah International Airport",
 }
 AIRBASE.GermanyCW={
 ["Airracing_Frankfurt"]="Airracing Frankfurt",
@@ -33511,7 +33517,7 @@ self:SetLiquid(lqno,lqam)
 end
 end
 else
-self:E("File for Liquids could not be found: "..tostring(Path).."\\"..tostring(Filename"_Liquids.csv"))
+self:E("File for Liquids could not be found: "..tostring(Path).."\\"..tostring(Filename).."_Liquids.csv")
 end
 end
 if self:IsLimitedAircraft()then
@@ -33529,7 +33535,7 @@ self:SetAmount(acname,acnumber)
 end
 end
 else
-self:E("File for Aircraft could not be found: "..tostring(Path).."\\"..tostring(Filename"_Aircraft.csv"))
+self:E("File for Aircraft could not be found: "..tostring(Path).."\\"..tostring(Filename).."_Aircraft.csv")
 end
 end
 if self:IsLimitedWeapons()then
@@ -33558,7 +33564,7 @@ end
 end
 end
 else
-self:E("File for Weapons could not be found: "..tostring(Path).."\\"..tostring(Filename"_Weapons.csv"))
+self:E("File for Weapons could not be found: "..tostring(Path).."\\"..tostring(Filename).."_Weapons.csv")
 end
 end
 return self
@@ -108835,6 +108841,9 @@ end
 end)
 return OpsZone:GetOwner()==Coalition and isClientInZone and isCaptureGroupInZone
 end
+function PLAYERTASK:CanJoinTask(Group,Client)
+return true
+end
 function PLAYERTASK:_SetController(Controller)
 self:T(self.lid.."_SetController")
 self.TaskController=Controller
@@ -110573,6 +110582,9 @@ function PLAYERTASKCONTROLLER:_JoinTask(Task,Force,Group,Client)
 self:T({Force,Group,Client})
 self:T(self.lid.."_JoinTask")
 if not self:CanJoinTask(Task,Group,Client)then
+return self
+end
+if not Task:CanJoinTask(Group,Client)then
 return self
 end
 local force=false
