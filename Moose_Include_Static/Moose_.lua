@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-26T15:52:30+02:00-5be1832c09a22067372327c26e9315b41564b974 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-01T15:25:45+02:00-58f1bc5531d4ae1c54d25c61a4f377e7d00a04d4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11392,11 +11392,17 @@ local ZoneName=objectData.name or"Unknown rect Polygon Drawing"
 local vec2={x=objectData.mapX,y=objectData.mapY}
 local w=objectData.width
 local h=objectData.height
-local points={}
-points[1]={x=vec2.x-h/2,y=vec2.y+w/2}
-points[2]={x=vec2.x+h/2,y=vec2.y+w/2}
-points[3]={x=vec2.x+h/2,y=vec2.y-w/2}
-points[4]={x=vec2.x-h/2,y=vec2.y-w/2}
+local rotation=UTILS.ToRadian(objectData.angle or 0)
+local sinRot=math.sin(rotation)
+local cosRot=math.cos(rotation)
+local dx=h/2
+local dy=w/2
+local points={
+{x=-dx*cosRot-(-dy*sinRot)+vec2.x,y=-dx*sinRot+(-dy*cosRot)+vec2.y},
+{x=dx*cosRot-(-dy*sinRot)+vec2.x,y=dx*sinRot+(-dy*cosRot)+vec2.y},
+{x=dx*cosRot-(dy*sinRot)+vec2.x,y=dx*sinRot+(dy*cosRot)+vec2.y},
+{x=-dx*cosRot-(dy*sinRot)+vec2.x,y=-dx*sinRot+(dy*cosRot)+vec2.y},
+}
 self:I(string.format("Register ZONE: %s (Polygon (rect) drawing with %d vertices)",ZoneName,#points))
 local Zone=ZONE_POLYGON:NewFromPointsArray(ZoneName,points)
 Zone:SetColor({1,0,0},0.15)
@@ -16159,6 +16165,18 @@ for RemoveGroupID,RemoveGroupName in pairs(RemoveGroupNamesArray)do
 self:Remove(RemoveGroupName)
 end
 return self
+end
+function SET_OPSGROUP:CountAlive()
+local CountG=0
+local CountU=0
+local Set=self:GetSet()
+for GroupID,GroupData in pairs(Set)do
+if GroupData and GroupData:IsAlive()then
+CountG=CountG+1
+CountU=CountU+GroupData:GetGroup():CountAliveUnits()
+end
+end
+return CountG,CountU
 end
 function SET_OPSGROUP:FindGroup(GroupName)
 local GroupFound=self.Set[GroupName]
@@ -22624,12 +22642,14 @@ function POSITIONABLE:GetCoord()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=self:GetVec3()
+if PositionableVec3 then
 if self.coordinate then
 self.coordinate:UpdateFromVec3(PositionableVec3)
 else
 self.coordinate=COORDINATE:NewFromVec3(PositionableVec3)
 end
 return self.coordinate
+end
 end
 BASE:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
 return nil
