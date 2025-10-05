@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-01T15:25:45+02:00-58f1bc5531d4ae1c54d25c61a4f377e7d00a04d4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-05T13:52:22+02:00-db138be5f3da8aa05384e142a22e8f2dd63003f4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -34751,7 +34751,9 @@ end
 end)
 self.AutoSavePath=SavePath
 self.AutoSave=AutoSave or true
+if self.AutoSave==true then
 self:OpenCSV(GameName)
+end
 return self
 end
 function SCORING:SetDisplayMessagePrefix(DisplayMessagePrefix)
@@ -35775,7 +35777,7 @@ TargetUnitCoalition=TargetUnitCoalition or""
 TargetUnitCategory=TargetUnitCategory or""
 TargetUnitType=TargetUnitType or""
 TargetUnitName=TargetUnitName or""
-if lfs and io and os and self.AutoSave then
+if lfs and io and os and self.AutoSave==true and self.CSVFile~=nil then
 self.CSVFile:write(
 '"'..self.GameName..'"'..','..
 '"'..self.RunTime..'"'..','..
@@ -74246,7 +74248,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.33"
+CSAR.version="1.0.34"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -74759,7 +74761,10 @@ return self
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
 self:__Landed(2,_event.IniUnitName,_place)
-self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true,true)
+local IsHeloBase=false
+local ABName=_place:GetName()
+if ABName and string.find(ABName,"^H")then IsHeloBase=true end
+self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true,true,IsHeloBase)
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
@@ -75114,7 +75119,7 @@ else
 return false
 end
 end
-function CSAR:_ScheduledSARFlight(heliname,groupname,isairport,noreschedule)
+function CSAR:_ScheduledSARFlight(heliname,groupname,isairport,noreschedule,IsHeloBase)
 self:T(self.lid.." _ScheduledSARFlight")
 self:T({heliname,groupname})
 local _heliUnit=self:_GetSARHeli(heliname)
@@ -75132,7 +75137,7 @@ self:T(self.lid.."[Drop off debug] Check distance to MASH for "..heliname.." Dis
 return
 end
 self:T(self.lid.."[Drop off debug] Check distance to MASH for "..heliname.." Distance km: "..math.floor(_dist/1000))
-if(_dist<self.FARPRescueDistance or isairport)and _heliUnit:InAir()==false then
+if(_dist<self.FARPRescueDistance or isairport)and((_heliUnit:InAir()==false)or(IsHeloBase==true))then
 self:T(self.lid.."[Drop off debug] Distance ok, door check")
 if self.pilotmustopendoors and self:_IsLoadingDoorOpen(heliname)==false then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me out!",self.messageTime,true,true)
@@ -75145,7 +75150,7 @@ end
 end
 if not noreschedule then
 self:__Returning(5,heliname,_woundedGroupName,isairport)
-self:ScheduleOnce(5,self._ScheduledSARFlight,self,heliname,groupname,isairport,noreschedule)
+self:ScheduleOnce(5,self._ScheduledSARFlight,self,heliname,groupname,isairport,noreschedule,IsHeloBase)
 end
 return self
 end
