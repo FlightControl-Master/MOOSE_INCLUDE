@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-05T13:52:22+02:00-db138be5f3da8aa05384e142a22e8f2dd63003f4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-05T18:04:09+02:00-3df79aedb186cfc91dfaf8e2cccaf986341c7aa4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21723,7 +21723,7 @@ self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionA
 end
 if self.StaticCopyFrom~=nil then
 mystatic.StaticCopyFrom=self.StaticCopyFrom
-if not _DATABASE.Templates.Statics[Template.name]then
+end
 local TemplateGroup={}
 TemplateGroup.units={}
 TemplateGroup.units[1]=Template
@@ -21731,8 +21731,6 @@ TemplateGroup.x=Template.x
 TemplateGroup.y=Template.y
 TemplateGroup.name=Template.name
 _DATABASE:_RegisterStaticTemplate(TemplateGroup,self.CoalitionID,self.CategoryID,CountryID)
-end
-end
 return mystatic
 end
 TIMER={
