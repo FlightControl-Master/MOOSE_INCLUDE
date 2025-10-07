@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T10:15:02+02:00-a8a69fdbcada8c649267e9fc86ec3b6410a301d6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T11:41:00+02:00-8cb91477cfb4dfad01f6e1634f54f7f57f50d864 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -84740,7 +84740,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.72",
+version="0.2.73",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -85355,6 +85355,11 @@ end
 function AWACS:SetLocale(Locale)
 self:T(self.lid.."SetLocale")
 self.locale=Locale or"en"
+return self
+end
+function AWACS:SetBullsCoordinate(Coordinate)
+self:T(self.lid.."SetBullsCoordinate")
+self.AOCoordinate=Coordinate
 return self
 end
 function AWACS:SetMaxMissionRange(NM)
