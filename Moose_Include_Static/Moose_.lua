@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-09-27T14:51:53+02:00-b803371d0b261ea1015ba85fb2ba793bd5ca2cdd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T11:39:27+02:00-488996fadbafebf68d763102e7e53847da413503 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -11393,11 +11393,17 @@ local ZoneName=objectData.name or"Unknown rect Polygon Drawing"
 local vec2={x=objectData.mapX,y=objectData.mapY}
 local w=objectData.width
 local h=objectData.height
-local points={}
-points[1]={x=vec2.x-h/2,y=vec2.y+w/2}
-points[2]={x=vec2.x+h/2,y=vec2.y+w/2}
-points[3]={x=vec2.x+h/2,y=vec2.y-w/2}
-points[4]={x=vec2.x-h/2,y=vec2.y-w/2}
+local rotation=UTILS.ToRadian(objectData.angle or 0)
+local sinRot=math.sin(rotation)
+local cosRot=math.cos(rotation)
+local dx=h/2
+local dy=w/2
+local points={
+{x=-dx*cosRot-(-dy*sinRot)+vec2.x,y=-dx*sinRot+(-dy*cosRot)+vec2.y},
+{x=dx*cosRot-(-dy*sinRot)+vec2.x,y=dx*sinRot+(-dy*cosRot)+vec2.y},
+{x=dx*cosRot-(dy*sinRot)+vec2.x,y=dx*sinRot+(dy*cosRot)+vec2.y},
+{x=-dx*cosRot-(dy*sinRot)+vec2.x,y=-dx*sinRot+(dy*cosRot)+vec2.y},
+}
 self:I(string.format("Register ZONE: %s (Polygon (rect) drawing with %d vertices)",ZoneName,#points))
 local Zone=ZONE_POLYGON:NewFromPointsArray(ZoneName,points)
 Zone:SetColor({1,0,0},0.15)
@@ -16160,6 +16166,18 @@ for RemoveGroupID,RemoveGroupName in pairs(RemoveGroupNamesArray)do
 self:Remove(RemoveGroupName)
 end
 return self
+end
+function SET_OPSGROUP:CountAlive()
+local CountG=0
+local CountU=0
+local Set=self:GetSet()
+for GroupID,GroupData in pairs(Set)do
+if GroupData and GroupData:IsAlive()then
+CountG=CountG+1
+CountU=CountU+GroupData:GetGroup():CountAliveUnits()
+end
+end
+return CountG,CountU
 end
 function SET_OPSGROUP:FindGroup(GroupName)
 local GroupFound=self.Set[GroupName]
@@ -21706,7 +21724,7 @@ self:ScheduleOnce(0.3,self.SpawnFunctionHook,mystatic,unpack(self.SpawnFunctionA
 end
 if self.StaticCopyFrom~=nil then
 mystatic.StaticCopyFrom=self.StaticCopyFrom
-if not _DATABASE.Templates.Statics[Template.name]then
+end
 local TemplateGroup={}
 TemplateGroup.units={}
 TemplateGroup.units[1]=Template
@@ -21714,8 +21732,6 @@ TemplateGroup.x=Template.x
 TemplateGroup.y=Template.y
 TemplateGroup.name=Template.name
 _DATABASE:_RegisterStaticTemplate(TemplateGroup,self.CoalitionID,self.CategoryID,CountryID)
-end
-end
 return mystatic
 end
 TIMER={
@@ -23148,12 +23164,14 @@ function POSITIONABLE:GetCoord()
 local DCSPositionable=self:GetDCSObject()
 if DCSPositionable then
 local PositionableVec3=self:GetVec3()
+if PositionableVec3 then
 if self.coordinate then
 self.coordinate:UpdateFromVec3(PositionableVec3)
 else
 self.coordinate=COORDINATE:NewFromVec3(PositionableVec3)
 end
 return self.coordinate
+end
 end
 BASE:E({"Cannot GetCoordinate",Positionable=self,Alive=self:IsAlive()})
 return nil
@@ -33931,7 +33949,9 @@ end
 end)
 self.AutoSavePath=SavePath
 self.AutoSave=AutoSave or true
+if self.AutoSave==true then
 self:OpenCSV(GameName)
+end
 return self
 end
 function SCORING:SetDisplayMessagePrefix(DisplayMessagePrefix)
@@ -34955,7 +34975,7 @@ TargetUnitCoalition=TargetUnitCoalition or""
 TargetUnitCategory=TargetUnitCategory or""
 TargetUnitType=TargetUnitType or""
 TargetUnitName=TargetUnitName or""
-if lfs and io and os and self.AutoSave then
+if lfs and io and os and self.AutoSave==true and self.CSVFile~=nil then
 self.CSVFile:write(
 '"'..self.GameName..'"'..','..
 '"'..self.RunTime..'"'..','..
@@ -62141,6 +62161,7 @@ brc=self:GetBRCintoWind(self.recoverywindow.SPEED)
 end
 flight.Tcharlie=self:_GetCharlieTime(flight)
 local Ccharlie=UTILS.SecondsToClock(flight.Tcharlie)
+brc=brc%360
 self:_MarshalCallArrived(flight.onboard,flight.case,brc,alt,Ccharlie,P)
 if self.TACANon and(not flight.ai)and flight.difficulty==AIRBOSS.Difficulty.EASY then
 local radial=self:GetRadial(flight.case,true,true,true)
@@ -62504,7 +62525,7 @@ playerData.stable=false
 playerData.landed=false
 playerData.Tlso=timer.getTime()
 playerData.Tgroove=nil
-playerData.TIG0=nil
+playerData.TIG0=0
 playerData.wire=nil
 playerData.flag=-100
 playerData.debriefschedulerID=nil
@@ -63534,77 +63555,9 @@ if self:_CheckAbort(X,Z,self.BreakEntry)then
 self:_AbortPattern(playerData,X,Z,self.BreakEntry,true)
 return
 end
-local stern=self:_GetSternCoord()
-local coord=playerData.unit:GetCoordinate()
-local dist=coord:Get2DDistance(stern)
-local playerCallsign=playerData.unit:GetCallsign()
-local playerName=playerData.name
-local unit=playerData.unit
-local unitClient=Unit.getByName(unit:GetName())
-local hookArgument=unitClient:getDrawArgumentValue(25)
-local hookArgument_Tomcat=unitClient:getDrawArgumentValue(1305)
-local speedMPS=playerData.unit:GetVelocityMPS()
-local speedKTS=UTILS.MpsToKnots(speedMPS)
-local player_alt=playerData.unit:GetAltitude()
-player_alt_feet=player_alt*3.28
-player_alt_feet=player_alt_feet/10
-player_alt_feet=math.floor(player_alt_feet)*10
-local player_velocity_round=speedKTS*1.00
-player_velocity_round=player_velocity_round/10
-player_velocity_round=math.floor(player_velocity_round)*10
-local player_alt_feet=player_alt*3.28
-player_alt_feet=player_alt_feet/10
-player_alt_feet=math.floor(player_alt_feet)*10
-local Play_SH_Sound=USERSOUND:New("Airboss Soundfiles/GreatBallsOfFire.ogg")
-local Play_666SH_Sound=USERSOUND:New("Airboss Soundfiles/Runninwiththedevil.ogg")
-local playerType=playerData.actype
-if dist<1000 and clientSHBFlag==false then
-if speedKTS>450 and speedKTS<590 then
-if player_alt_feet<1500 then
-if hookArgument>0 or hookArgument_Tomcat>0 then
-playerData.shb=true
-trigger.action.outText(playerName..' performing a Sierra Hotel Break in a '..playerType,10)
-local sh_message_to_discord=('**'..playerName..' is performing a Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
-HypeMan.sendBotMessage(sh_message_to_discord)
-Play_SH_Sound:ToAll()
-clientSHBFlag=true
-else
-playerData.shb=false
-end
-else
-end
-elseif speedKTS>589 then
-if player_alt_feet<625 and player_alt_feet>575 then
-if hookArgument>0 or hookArgument_Tomcat>0 then
-playerData.shb=true
-trigger.action.outText(playerName..' performing a 666 Sierra Hotel Break in a '..playerType,10)
-local sh_message_to_discord=('**'..playerName..' is performing a 666 Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
-HypeMan.sendBotMessage(sh_message_to_discord)
-Play_666SH_Sound:ToAll()
-clientSHBFlag=true
-else
-playerData.shb=false
-end
-else
-if hookArgument>0 or hookArgument_Tomcat>0 then
-playerData.shb=true
-trigger.action.outText(playerName..' performing a Sierra Hotel Break in a '..playerType,10)
-local sh_message_to_discord=('**'..playerName..' is performing a Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
-HypeMan.sendBotMessage(sh_message_to_discord)
-Play_SH_Sound:ToAll()
-clientSHBFlag=true
-else
-playerData.shb=false
-end
-end
-else
-end
-else
-end
 if self:_CheckLimits(X,Z,self.BreakEntry)then
 self:_PlayerHint(playerData)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.EARLYBREAK)
-clientSHBFlag=false
 end
 end
 function AIRBOSS:_Break(playerData,part)
@@ -63892,19 +63845,19 @@ end
 if rho>=RAR and rho<=RIM then
 if gd.LUE>0.22 and lineupError<-0.22 then
 env.info" Drift Right across centre ==> DR-"
-gd.Drift=" DR"
+gd.Drift="DR"
 self:T(self.lid..string.format("Got Drift Right across centre step %s, d=%.3f: Max LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 elseif gd.LUE<-0.22 and lineupError>0.22 then
 env.info" Drift Left ==> DL-"
-gd.Drift=" DL"
+gd.Drift="DL"
 self:T(self.lid..string.format("Got Drift Left across centre at step %s, d=%.3f: Min LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 elseif gd.LUE>0.13 and lineupError<-0.14 then
 env.info" Little Drift Right across centre ==> (DR-)"
-gd.Drift=" (DR)"
+gd.Drift="(DR)"
 self:T(self.lid..string.format("Got Little Drift Right across centre at step %s, d=%.3f: Max LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 elseif gd.LUE<-0.13 and lineupError>0.14 then
 env.info" Little Drift Left across centre ==> (DL-)"
-gd.Drift=" (DL)"
+gd.Drift="(DL)"
 self:E(self.lid..string.format("Got Little Drift Left across centre at step %s, d=%.3f: Min LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 end
 end
@@ -64703,9 +64656,7 @@ local hdg=self.carrier:GetHeading()
 if magnetic then
 hdg=hdg-self.magvar
 end
-if hdg<0 then
-hdg=hdg+360
-end
+hdg=hdg%360
 return hdg
 end
 function AIRBOSS:GetBRC()
@@ -64995,7 +64946,7 @@ return select(2,string.gsub(base,pattern,""))
 end
 local TIG=""
 if playerData.Tgroove and playerData.Tgroove<=360 and playerData.case<3 then
-TIG=self:_EvalGrooveTime(playerData)
+TIG=self:_EvalGrooveTime(playerData)or"N/A"
 end
 local GXX,nXX=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.XX)
 local GIM,nIM=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IM)
@@ -65117,14 +65068,8 @@ grade="CUT"
 points=0.0
 end
 end
-if playerData.wire==1 and points>1 then
-if points==4 then
-points=3
-grade="(OK)"
-elseif points==3 then
-points=2
-grade="--"
-end
+if playerData.wire==1 and points>=3 and N>4 then
+points=points-1
 end
 env.info("Returning: "..grade.."  "..points.."  "..G)
 return grade,points,G
@@ -65172,6 +65117,7 @@ O=little("OS")
 end
 end
 local S=nil
+local A=nil
 if step~=AIRBOSS.PatternStep.GROOVE_IW then
 if AIRBOSS.PatternStep.GROOVE_AR and playerData.waveoff==true and playerData.owo==true then
 else
@@ -65188,7 +65134,6 @@ S="F"
 elseif AOA<acaoa.OnSpeedMin then
 S=little("F")
 end
-local A=nil
 if GSE>self.gle.HIGH then
 A=underline("H")
 elseif GSE>self.gle.High then
@@ -76947,7 +76892,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.33"
+CSAR.version="1.0.34"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -77460,7 +77405,10 @@ return self
 end
 if _place:GetCoalition()==self.coalition or _place:GetCoalition()==coalition.side.NEUTRAL then
 self:__Landed(2,_event.IniUnitName,_place)
-self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true,true)
+local IsHeloBase=false
+local ABName=_place:GetName()
+if ABName and string.find(ABName,"^H")then IsHeloBase=true end
+self:_ScheduledSARFlight(_event.IniUnitName,_event.IniGroupName,true,true,IsHeloBase)
 else
 self:T(string.format("Airfield %d, Unit %d",_place:GetCoalition(),_unit:GetCoalition()))
 end
@@ -77815,7 +77763,7 @@ else
 return false
 end
 end
-function CSAR:_ScheduledSARFlight(heliname,groupname,isairport,noreschedule)
+function CSAR:_ScheduledSARFlight(heliname,groupname,isairport,noreschedule,IsHeloBase)
 self:T(self.lid.." _ScheduledSARFlight")
 self:T({heliname,groupname})
 local _heliUnit=self:_GetSARHeli(heliname)
@@ -77833,7 +77781,7 @@ self:T(self.lid.."[Drop off debug] Check distance to MASH for "..heliname.." Dis
 return
 end
 self:T(self.lid.."[Drop off debug] Check distance to MASH for "..heliname.." Distance km: "..math.floor(_dist/1000))
-if(_dist<self.FARPRescueDistance or isairport)and _heliUnit:InAir()==false then
+if(_dist<self.FARPRescueDistance or isairport)and((_heliUnit:InAir()==false)or(IsHeloBase==true))then
 self:T(self.lid.."[Drop off debug] Distance ok, door check")
 if self.pilotmustopendoors and self:_IsLoadingDoorOpen(heliname)==false then
 self:_DisplayMessageToSAR(_heliUnit,"Open the door to let me out!",self.messageTime,true,true)
@@ -77846,7 +77794,7 @@ end
 end
 if not noreschedule then
 self:__Returning(5,heliname,_woundedGroupName,isairport)
-self:ScheduleOnce(5,self._ScheduledSARFlight,self,heliname,groupname,isairport,noreschedule)
+self:ScheduleOnce(5,self._ScheduledSARFlight,self,heliname,groupname,isairport,noreschedule,IsHeloBase)
 end
 return self
 end
@@ -83464,7 +83412,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.72",
+version="0.2.73",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -84079,6 +84027,11 @@ end
 function AWACS:SetLocale(Locale)
 self:T(self.lid.."SetLocale")
 self.locale=Locale or"en"
+return self
+end
+function AWACS:SetBullsCoordinate(Coordinate)
+self:T(self.lid.."SetBullsCoordinate")
+self.AOCoordinate=Coordinate
 return self
 end
 function AWACS:SetMaxMissionRange(NM)
