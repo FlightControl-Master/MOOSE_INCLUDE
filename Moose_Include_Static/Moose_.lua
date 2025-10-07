@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T10:14:31+02:00-a1aebf057564b55e5692c70a2ae75f7dfdebc89b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T15:51:44+02:00-0bd35727f4ed39b21f80eb89cf6a899eb8d54cf6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -469,6 +469,7 @@ CH47={},
 OH58={},
 UH1H={},
 AH64D={},
+UH60L={},
 }
 }
 ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B="weapons.nurs.SNEB_TYPE253_F1B"
@@ -1172,6 +1173,12 @@ ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right_Door={4,15,46,175}
 ENUMS.Storage.weapons.UH1H.M60_MG_Right_Door={4,15,46,177}
 ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left_Door={4,15,46,174}
 ENUMS.Storage.weapons.UH1H.M60_MG_Left_Door={4,15,46,176}
+ENUMS.Storage.weapons.UH60L.M151_HYDRA={4,7,33,147}
+ENUMS.Storage.weapons.UH60L.M156_HYDRA={4,7,33,148}
+ENUMS.Storage.weapons.UH60L.M229_HYDRA={4,7,33,148}
+ENUMS.Storage.weapons.UH60L.M257_HYDRA={4,7,33,151}
+ENUMS.Storage.weapons.UH60L.M259_HYDRA={4,7,33,151}
+ENUMS.Storage.weapons.UH60L.M274_HYDRA={4,7,33,150}
 ENUMS.Storage.weapons.OH58.FIM92={4,4,7,449}
 ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2611}
 ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2610}
@@ -30599,6 +30606,13 @@ self:E(string.format("ERROR: Cound not get position Vec2 of airbase %s",AirbaseN
 end
 self:T2(string.format("Registered airbase %s",tostring(self.AirbaseName)))
 return self
+end
+function AIRBASE:GetVec2()
+local runways=self:GetRunways()
+if runways and#runways>0 then
+return runways[1].center:GetVec2()
+end
+return self:GetCoordinate():GetVec2()
 end
 function AIRBASE:_GetCategory()
 local name=self.AirbaseName
