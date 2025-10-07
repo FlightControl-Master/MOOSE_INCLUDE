@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-05T18:04:09+02:00-3df79aedb186cfc91dfaf8e2cccaf986341c7aa4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T10:14:31+02:00-a1aebf057564b55e5692c70a2ae75f7dfdebc89b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -59440,6 +59440,7 @@ brc=self:GetBRCintoWind(self.recoverywindow.SPEED)
 end
 flight.Tcharlie=self:_GetCharlieTime(flight)
 local Ccharlie=UTILS.SecondsToClock(flight.Tcharlie)
+brc=brc%360
 self:_MarshalCallArrived(flight.onboard,flight.case,brc,alt,Ccharlie,P)
 if self.TACANon and(not flight.ai)and flight.difficulty==AIRBOSS.Difficulty.EASY then
 local radial=self:GetRadial(flight.case,true,true,true)
@@ -59803,7 +59804,7 @@ playerData.stable=false
 playerData.landed=false
 playerData.Tlso=timer.getTime()
 playerData.Tgroove=nil
-playerData.TIG0=nil
+playerData.TIG0=0
 playerData.wire=nil
 playerData.flag=-100
 playerData.debriefschedulerID=nil
@@ -60833,77 +60834,9 @@ if self:_CheckAbort(X,Z,self.BreakEntry)then
 self:_AbortPattern(playerData,X,Z,self.BreakEntry,true)
 return
 end
-local stern=self:_GetSternCoord()
-local coord=playerData.unit:GetCoordinate()
-local dist=coord:Get2DDistance(stern)
-local playerCallsign=playerData.unit:GetCallsign()
-local playerName=playerData.name
-local unit=playerData.unit
-local unitClient=Unit.getByName(unit:GetName())
-local hookArgument=unitClient:getDrawArgumentValue(25)
-local hookArgument_Tomcat=unitClient:getDrawArgumentValue(1305)
-local speedMPS=playerData.unit:GetVelocityMPS()
-local speedKTS=UTILS.MpsToKnots(speedMPS)
-local player_alt=playerData.unit:GetAltitude()
-player_alt_feet=player_alt*3.28
-player_alt_feet=player_alt_feet/10
-player_alt_feet=math.floor(player_alt_feet)*10
-local player_velocity_round=speedKTS*1.00
-player_velocity_round=player_velocity_round/10
-player_velocity_round=math.floor(player_velocity_round)*10
-local player_alt_feet=player_alt*3.28
-player_alt_feet=player_alt_feet/10
-player_alt_feet=math.floor(player_alt_feet)*10
-local Play_SH_Sound=USERSOUND:New("Airboss Soundfiles/GreatBallsOfFire.ogg")
-local Play_666SH_Sound=USERSOUND:New("Airboss Soundfiles/Runninwiththedevil.ogg")
-local playerType=playerData.actype
-if dist<1000 and clientSHBFlag==false then
-if speedKTS>450 and speedKTS<590 then
-if player_alt_feet<1500 then
-if hookArgument>0 or hookArgument_Tomcat>0 then
-playerData.shb=true
-trigger.action.outText(playerName..' performing a Sierra Hotel Break in a '..playerType,10)
-local sh_message_to_discord=('**'..playerName..' is performing a Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
-HypeMan.sendBotMessage(sh_message_to_discord)
-Play_SH_Sound:ToAll()
-clientSHBFlag=true
-else
-playerData.shb=false
-end
-else
-end
-elseif speedKTS>589 then
-if player_alt_feet<625 and player_alt_feet>575 then
-if hookArgument>0 or hookArgument_Tomcat>0 then
-playerData.shb=true
-trigger.action.outText(playerName..' performing a 666 Sierra Hotel Break in a '..playerType,10)
-local sh_message_to_discord=('**'..playerName..' is performing a 666 Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
-HypeMan.sendBotMessage(sh_message_to_discord)
-Play_666SH_Sound:ToAll()
-clientSHBFlag=true
-else
-playerData.shb=false
-end
-else
-if hookArgument>0 or hookArgument_Tomcat>0 then
-playerData.shb=true
-trigger.action.outText(playerName..' performing a Sierra Hotel Break in a '..playerType,10)
-local sh_message_to_discord=('**'..playerName..' is performing a Sierra Hotel Break in a '..playerType..' at '..player_velocity_round..' knots and '..player_alt_feet..' feet!**')
-HypeMan.sendBotMessage(sh_message_to_discord)
-Play_SH_Sound:ToAll()
-clientSHBFlag=true
-else
-playerData.shb=false
-end
-end
-else
-end
-else
-end
 if self:_CheckLimits(X,Z,self.BreakEntry)then
 self:_PlayerHint(playerData)
 self:_SetPlayerStep(playerData,AIRBOSS.PatternStep.EARLYBREAK)
-clientSHBFlag=false
 end
 end
 function AIRBOSS:_Break(playerData,part)
@@ -61191,19 +61124,19 @@ end
 if rho>=RAR and rho<=RIM then
 if gd.LUE>0.22 and lineupError<-0.22 then
 env.info" Drift Right across centre ==> DR-"
-gd.Drift=" DR"
+gd.Drift="DR"
 self:T(self.lid..string.format("Got Drift Right across centre step %s, d=%.3f: Max LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 elseif gd.LUE<-0.22 and lineupError>0.22 then
 env.info" Drift Left ==> DL-"
-gd.Drift=" DL"
+gd.Drift="DL"
 self:T(self.lid..string.format("Got Drift Left across centre at step %s, d=%.3f: Min LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 elseif gd.LUE>0.13 and lineupError<-0.14 then
 env.info" Little Drift Right across centre ==> (DR-)"
-gd.Drift=" (DR)"
+gd.Drift="(DR)"
 self:T(self.lid..string.format("Got Little Drift Right across centre at step %s, d=%.3f: Max LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 elseif gd.LUE<-0.13 and lineupError>0.14 then
 env.info" Little Drift Left across centre ==> (DL-)"
-gd.Drift=" (DL)"
+gd.Drift="(DL)"
 self:E(self.lid..string.format("Got Little Drift Left across centre at step %s, d=%.3f: Min LUE=%.3f, lower LUE=%.3f",gs,d,gd.LUE,lineupError))
 end
 end
@@ -62002,9 +61935,7 @@ local hdg=self.carrier:GetHeading()
 if magnetic then
 hdg=hdg-self.magvar
 end
-if hdg<0 then
-hdg=hdg+360
-end
+hdg=hdg%360
 return hdg
 end
 function AIRBOSS:GetBRC()
@@ -62294,7 +62225,7 @@ return select(2,string.gsub(base,pattern,""))
 end
 local TIG=""
 if playerData.Tgroove and playerData.Tgroove<=360 and playerData.case<3 then
-TIG=self:_EvalGrooveTime(playerData)
+TIG=self:_EvalGrooveTime(playerData)or"N/A"
 end
 local GXX,nXX=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.XX)
 local GIM,nIM=self:_Flightdata2Text(playerData,AIRBOSS.GroovePos.IM)
@@ -62416,14 +62347,8 @@ grade="CUT"
 points=0.0
 end
 end
-if playerData.wire==1 and points>1 then
-if points==4 then
-points=3
-grade="(OK)"
-elseif points==3 then
-points=2
-grade="--"
-end
+if playerData.wire==1 and points>=3 and N>4 then
+points=points-1
 end
 env.info("Returning: "..grade.."  "..points.."  "..G)
 return grade,points,G
@@ -62471,6 +62396,7 @@ O=little("OS")
 end
 end
 local S=nil
+local A=nil
 if step~=AIRBOSS.PatternStep.GROOVE_IW then
 if AIRBOSS.PatternStep.GROOVE_AR and playerData.waveoff==true and playerData.owo==true then
 else
@@ -62487,7 +62413,6 @@ S="F"
 elseif AOA<acaoa.OnSpeedMin then
 S=little("F")
 end
-local A=nil
 if GSE>self.gle.HIGH then
 A=underline("H")
 elseif GSE>self.gle.High then
