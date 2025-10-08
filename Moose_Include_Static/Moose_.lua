@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T13:24:57+02:00-9c148625e43828882a3ae522c6588f2187a0b2bb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T16:01:21+02:00-405235a59d8e44d2216562b6f8ec783d1c42cc53 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -25705,7 +25705,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if Controller then
-if self:IsGround()()then
+if self:IsGround()then
 self:SetOption(27,meters)
 end
 end
@@ -25720,7 +25720,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if Controller then
-if self:IsGround()()then
+if self:IsGround()then
 self:SetOption(29,meters)
 end
 end
