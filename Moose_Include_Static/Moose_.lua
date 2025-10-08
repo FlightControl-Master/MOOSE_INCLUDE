@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T12:32:32+02:00-ecc94b6b5e916a01fda59805b42c34a5402ceb4b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T15:51:04+02:00-d0d22142b91e3d9ed24bcd921099d7865855213e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -74920,7 +74920,12 @@ self:E(self.lid.."**** Ship does not exist: "..Name)
 return self
 end
 end
-local ctldzone={}
+local exists=true
+local ctldzone=self:GetCTLDZone(Name,Type)
+if not ctldzone then
+exists=false
+ctldzone={}
+end
 ctldzone.active=Active or false
 ctldzone.color=Color or SMOKECOLOR.Red
 ctldzone.name=Name or"NONE"
@@ -74943,8 +74948,44 @@ if Type==CTLD.CargoZoneType.SHIP then
 ctldzone.shiplength=Shiplength or 100
 ctldzone.shipwidth=Shipwidth or 10
 end
+if not exists then
 self:AddZone(ctldzone)
+end
 return self
+end
+function CTLD:GetCTLDZone(Name,Type)
+if Type==CTLD.CargoZoneType.LOAD then
+for _,z in pairs(self.pickupZones)do
+if z.name==Name then
+return z
+end
+end
+elseif Type==CTLD.CargoZoneType.DROP then
+for _,z in pairs(self.dropOffZones)do
+if z.name==Name then
+return z
+end
+end
+elseif Type==CTLD.CargoZoneType.SHIP then
+for _,z in pairs(self.shipZones)do
+if z.name==Name then
+return z
+end
+end
+elseif Type==CTLD.CargoZoneType.BEACON then
+for _,z in pairs(self.droppedBeacons)do
+if z.name==Name then
+return z
+end
+end
+else
+for _,z in pairs(self.wpZones)do
+if z.name==Name then
+return z
+end
+end
+end
+return nil
 end
 function CTLD:AddCTLDZoneFromAirbase(AirbaseName,Type,Color,Active,HasBeacon)
 self:T(self.lid.." AddCTLDZoneFromAirbase")
@@ -77392,11 +77433,11 @@ return self
 end
 local initdcscoord=nil
 local initcoord=nil
-if _event.id==EVENTS.Ejection then
+if _event.id==EVENTS.Ejection and _event.TgtDCSUnit then
 initdcscoord=_event.TgtDCSUnit:getPoint()
 initcoord=COORDINATE:NewFromVec3(initdcscoord)
 self:T({initdcscoord})
-else
+elseif _event.IniDCSUnit then
 initdcscoord=_event.IniDCSUnit:getPoint()
 initcoord=COORDINATE:NewFromVec3(initdcscoord)
 self:T({initdcscoord})
