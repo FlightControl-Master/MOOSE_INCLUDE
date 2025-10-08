@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T18:06:20+02:00-1e60a0a32a7e84d1532a6aa340f8d3e2fe94e599 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T12:29:59+02:00-3260279cb79cad1aaccebd49afce479816c84b89 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -25697,6 +25697,46 @@ end
 return self
 end
 return nil
+end
+function CONTROLLABLE:OptionAAAMinFiringHeightMeters(meters)
+self:F2({self.ControllableName})
+local meters=meters or 20
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if Controller then
+if self:IsGround()()then
+self:SetOption(27,meters)
+end
+end
+return self
+end
+return nil
+end
+function CONTROLLABLE:OptionAAAMaxFiringHeightMeters(meters)
+self:F2({self.ControllableName})
+local meters=meters or 1000
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if Controller then
+if self:IsGround()()then
+self:SetOption(29,meters)
+end
+end
+return self
+end
+return nil
+end
+function CONTROLLABLE:OptionAAAMinFiringHeightFeet(feet)
+self:F2({self.ControllableName})
+local feet=feet or 60
+return self:OptionAAAMinFiringHeightMeters(UTILS.FeetToMeters(feet))
+end
+function CONTROLLABLE:OptionAAAMaxFiringHeightfeet(feet)
+self:F2({self.ControllableName})
+local feet=feet or 3000
+return self:OptionAAAMaxFiringHeightMeters(UTILS.FeetToMeters(feet))
 end
 function CONTROLLABLE:OptionEngageRange(EngageRange)
 self:F2({self.ControllableName})
