@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-07T11:39:27+02:00-488996fadbafebf68d763102e7e53847da413503 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T12:32:32+02:00-ecc94b6b5e916a01fda59805b42c34a5402ceb4b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -469,6 +469,7 @@ CH47={},
 OH58={},
 UH1H={},
 AH64D={},
+UH60L={},
 }
 }
 ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B="weapons.nurs.SNEB_TYPE253_F1B"
@@ -1172,6 +1173,12 @@ ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right_Door={4,15,46,175}
 ENUMS.Storage.weapons.UH1H.M60_MG_Right_Door={4,15,46,177}
 ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left_Door={4,15,46,174}
 ENUMS.Storage.weapons.UH1H.M60_MG_Left_Door={4,15,46,176}
+ENUMS.Storage.weapons.UH60L.M151_HYDRA={4,7,33,147}
+ENUMS.Storage.weapons.UH60L.M156_HYDRA={4,7,33,148}
+ENUMS.Storage.weapons.UH60L.M229_HYDRA={4,7,33,148}
+ENUMS.Storage.weapons.UH60L.M257_HYDRA={4,7,33,151}
+ENUMS.Storage.weapons.UH60L.M259_HYDRA={4,7,33,151}
+ENUMS.Storage.weapons.UH60L.M274_HYDRA={4,7,33,150}
 ENUMS.Storage.weapons.OH58.FIM92={4,4,7,449}
 ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2611}
 ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2610}
@@ -26215,6 +26222,46 @@ return self
 end
 return nil
 end
+function CONTROLLABLE:OptionAAAMinFiringHeightMeters(meters)
+self:F2({self.ControllableName})
+local meters=meters or 20
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if Controller then
+if self:IsGround()()then
+self:SetOption(27,meters)
+end
+end
+return self
+end
+return nil
+end
+function CONTROLLABLE:OptionAAAMaxFiringHeightMeters(meters)
+self:F2({self.ControllableName})
+local meters=meters or 1000
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if Controller then
+if self:IsGround()()then
+self:SetOption(29,meters)
+end
+end
+return self
+end
+return nil
+end
+function CONTROLLABLE:OptionAAAMinFiringHeightFeet(feet)
+self:F2({self.ControllableName})
+local feet=feet or 60
+return self:OptionAAAMinFiringHeightMeters(UTILS.FeetToMeters(feet))
+end
+function CONTROLLABLE:OptionAAAMaxFiringHeightfeet(feet)
+self:F2({self.ControllableName})
+local feet=feet or 3000
+return self:OptionAAAMaxFiringHeightMeters(UTILS.FeetToMeters(feet))
+end
 function CONTROLLABLE:OptionEngageRange(EngageRange)
 self:F2({self.ControllableName})
 EngageRange=EngageRange or 100
@@ -31123,6 +31170,13 @@ self:E(string.format("ERROR: Cound not get position Vec2 of airbase %s",AirbaseN
 end
 self:T2(string.format("Registered airbase %s",tostring(self.AirbaseName)))
 return self
+end
+function AIRBASE:GetVec2()
+local runways=self:GetRunways()
+if runways and#runways>0 then
+return runways[1].center:GetVec2()
+end
+return self:GetCoordinate():GetVec2()
 end
 function AIRBASE:_GetCategory()
 local name=self.AirbaseName
@@ -81890,6 +81944,15 @@ function AUFTRAG:IsOver()
 local over=self.status==AUFTRAG.Status.DONE or self.status==AUFTRAG.Status.CANCELLED or self.status==AUFTRAG.Status.SUCCESS or self.status==AUFTRAG.Status.FAILED
 return over
 end
+function AUFTRAG:IsRepeatable()
+local repeatmeS=self.repeatedSuccess<self.NrepeatSuccess or self.repeated<self.Nrepeat
+local repeatmeF=self.repeatedFailure<self.NrepeatFailure or self.repeated<self.Nrepeat
+if repeatmeS==true or repeatmeF==true then return true else return false end
+return false
+end
+function AUFTRAG:IsNotRepeatable()
+return not self:IsRepeatable()
+end
 function AUFTRAG:IsNotOver()
 return not self:IsOver()
 end
@@ -95633,7 +95696,7 @@ if self.verbose>=2 then
 local text=string.format("Updating MENU: State=%s, ATC=%s [%s]",self:GetState(),
 self.flightcontrol and self.flightcontrol.airbasename or"None",self.flightcontrol and self.flightcontrol:GetFlightStatus(self)or"Unknown")
 MESSAGE:New(text,5):ToGroup(self.group)
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 local position=self:GetCoordinate(nil,player.name)
 local fc={}
@@ -97226,6 +97289,13 @@ local mission=_mission
 if mission:IsNotOver()and mission:IsReadyToCancel()then
 mission:Cancel()
 end
+local TNow=timer.getTime()
+if mission:IsOver()and mission:IsNotRepeatable()and mission.DeletionTimstamp==nil then
+mission.DeletionTimstamp=TNow
+end
+if mission.DeletionTimstamp~=nil and TNow-mission.DeletionTimstamp>1800 then
+mission=nil
+end
 end
 if self:IsAirwing()then
 if self:IsRunwayOperational()==false then
@@ -97281,7 +97351,7 @@ if EscortAvail and TransportAvail then
 self:MissionRequest(mission,assets)
 if reinforce then
 mission.reinforce=mission.reinforce-#assets
-self:I(self.lid..string.format("Reinforced with N=%d Nreinforce=%d",#assets,mission.reinforce))
+self:T(self.lid..string.format("Reinforced with N=%d Nreinforce=%d",#assets,mission.reinforce))
 end
 return true
 else
@@ -103588,7 +103658,7 @@ self.Ndestroyed=self.Ndestroyed+1
 self:ElementDead(Element)
 end
 function OPSGROUP:onafterElementDead(From,Event,To,Element)
-self:I(self.lid..string.format("Element dead %s at t=%.3f",Element.name,timer.getTime()))
+self:T(self.lid..string.format("Element dead %s at t=%.3f",Element.name,timer.getTime()))
 self:_UpdateStatus(Element,OPSGROUP.ElementStatus.DEAD)
 if self.spot.On and self.spot.element.name==Element.name then
 self:LaserOff()
@@ -103861,7 +103931,7 @@ local text=string.format("WARNING: Group is still alive! Current state=%s. Life 
 self:T(self.lid..text)
 end
 _DATABASE.FLIGHTGROUPS[self.groupname]=nil
-self:I(self.lid.."STOPPED! Unhandled events, cleared scheduler and removed from _DATABASE")
+self:T(self.lid.."STOPPED! Unhandled events, cleared scheduler and removed from _DATABASE")
 end
 function OPSGROUP:onafterOutOfAmmo(From,Event,To)
 self:T(self.lid..string.format("Group is out of ammo at t=%.3f",timer.getTime()))
