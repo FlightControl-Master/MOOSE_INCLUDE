@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-09T17:40:03+02:00-efde321616d6c9a8c6d1acd062d90ae836eb61af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-09T17:41:07+02:00-b2cc3e532908aa78614bec496301f56c8dfaf1d0 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -69254,6 +69254,7 @@ self.dropAsCargoCrate=false
 self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
+self.returntroopstobase=true
 self.troopdropzoneradius=100
 self.VehicleMoveFormation=AI.Task.VehicleFormation.VEE
 self.enableHercules=false
@@ -70626,7 +70627,7 @@ if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
 end
 if inzone then
-droppingatbase=true
+droppingatbase=self.returntroopstobase
 end
 local hoverunload=self:IsCorrectHover(Unit)
 local IsHerc=self:IsFixedWing(Unit)
@@ -71816,7 +71817,7 @@ if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
 end
 if inzone then
-droppingatbase=true
+droppingatbase=self.returntroopstobase
 end
 if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
 self:_SendMessage("You need to open the door(s) to unload troops!",10,false,Group)
