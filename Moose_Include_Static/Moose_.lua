@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-09T17:41:07+02:00-b2cc3e532908aa78614bec496301f56c8dfaf1d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-10T11:41:52+02:00-ef8c7c908448e21675dbc141a156cf32e02c39c9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -2675,6 +2675,14 @@ BASE:T(unit_name.." cargo door is open")
 return true
 end
 if type_name=="UH-60L"and(unit:getDrawArgumentValue(38)>0 or unit:getDrawArgumentValue(400)==1)then
+BASE:T(unit_name.." front door(s) are open")
+return true
+end
+if type_name=="UH-60L_DAP"and(unit:getDrawArgumentValue(401)==1 or unit:getDrawArgumentValue(402)==1)then
+BASE:T(unit_name.." cargo door is open")
+return true
+end
+if type_name=="UH-60L_DAP"and(unit:getDrawArgumentValue(38)>0 or unit:getDrawArgumentValue(400)==1)then
 BASE:T(unit_name.." front door(s) are open")
 return true
 end
