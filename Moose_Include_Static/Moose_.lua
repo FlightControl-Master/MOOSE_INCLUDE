@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-10T11:41:52+02:00-ef8c7c908448e21675dbc141a156cf32e02c39c9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-12T17:23:54+02:00-69e649765504ae323bc73c23206eae64efc4ea15 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71366,7 +71366,7 @@ end
 end
 end
 else
-if self.usesubcats then
+if self.usesubcats==true then
 local subcatmenus={}
 for catName,_ in pairs(self.subcats)do
 subcatmenus[catName]=MENU_GROUP:New(_group,catName,cratesmenu)
