@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-12T19:14:59+02:00-2e0d1fd90f2669977a38e1e6e57454afebf3d786 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-13T18:51:22+02:00-f7d58a0b76b0e1e1b3f183eb3ecd9eb38f5d1495 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -9946,6 +9946,16 @@ self.LastVec2=ZoneUNIT:GetVec2()
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
+function ZONE_UNIT:UpdateFromUnit(Unit)
+if Unit and Unit:IsAlive()then
+local vec2=Unit:GetVec2()
+self.LastVec2=vec2
+elseif self.ZoneUNIT and self.ZoneUNIT:IsAlive()then
+local ZoneVec2=self.ZoneUNIT:GetVec2()
+self.LastVec2=ZoneVec2
+end
+return self
+end
 function ZONE_UNIT:GetVec2()
 local ZoneVec2=self.ZoneUNIT:GetVec2()
 if ZoneVec2 then
@@ -10006,6 +10016,17 @@ else
 ZoneVec2=self._.ZoneVec2Cache
 end
 return ZoneVec2
+end
+function ZONE_GROUP:UpdateFromGroup(Group)
+if Group and Group:IsAlive()then
+local vec2=Group:GetVec2()
+self.Vec2=vec2
+elseif self._.ZoneGROUP and self._.ZoneGROUP:IsAlive()then
+local ZoneVec2=self._.ZoneGROUP:GetVec2()
+self.Vec2=ZoneVec2
+self._.ZoneVec2Cache=ZoneVec2
+end
+return self
 end
 function ZONE_GROUP:GetRandomVec2()
 local Point={}
