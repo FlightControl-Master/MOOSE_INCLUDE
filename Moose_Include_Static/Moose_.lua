@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-08T15:51:04+02:00-d0d22142b91e3d9ed24bcd921099d7865855213e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-13T18:53:04+02:00-e223084014d4bf9d15f99d119dbad69cc4b7f4a8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1179,6 +1179,18 @@ ENUMS.Storage.weapons.UH60L.M229_HYDRA={4,7,33,148}
 ENUMS.Storage.weapons.UH60L.M257_HYDRA={4,7,33,151}
 ENUMS.Storage.weapons.UH60L.M259_HYDRA={4,7,33,151}
 ENUMS.Storage.weapons.UH60L.M274_HYDRA={4,7,33,150}
+ENUMS.Storage.weapons.UH60L.M134_DOOR_GUN={4,15,46,3031}
+ENUMS.Storage.weapons.UH60L.M3M={4,15,46,2496}
+ENUMS.Storage.weapons.UH60L.M3M_DOOR_GUN={4,15,46,3032}
+ENUMS.Storage.weapons.UH60L.M60_DOOR_GUN={4,15,46,3033}
+ENUMS.Storage.weapons.UH60L.FUEL_TANK_200={1,3,43,3023}
+ENUMS.Storage.weapons.UH60L.FUEL_TANK_230={1,3,43,3024}
+ENUMS.Storage.weapons.UH60L.FUEL_TANK_450={1,3,43,3025}
+ENUMS.Storage.weapons.UH60L.FUEL_TANK_DUAL_AUX={1,3,43,3026}
+ENUMS.Storage.weapons.UH60L.CARGO_SEAT_REAR_ROW={1,3,43,3030}
+ENUMS.Storage.weapons.UH60L.CARGO_SEAT_THREE_ROWS={1,3,43,3029}
+ENUMS.Storage.weapons.UH60L.EMPTY_GUNNER_SEAT_1={1,3,43,3027}
+ENUMS.Storage.weapons.UH60L.EMPTY_GUNNER_SEAT_2={1,3,43,3028}
 ENUMS.Storage.weapons.OH58.FIM92={4,4,7,449}
 ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2611}
 ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2610}
@@ -2663,6 +2675,14 @@ BASE:T(unit_name.." cargo door is open")
 return true
 end
 if type_name=="UH-60L"and(unit:getDrawArgumentValue(38)>0 or unit:getDrawArgumentValue(400)==1)then
+BASE:T(unit_name.." front door(s) are open")
+return true
+end
+if type_name=="UH-60L_DAP"and(unit:getDrawArgumentValue(401)==1 or unit:getDrawArgumentValue(402)==1)then
+BASE:T(unit_name.." cargo door is open")
+return true
+end
+if type_name=="UH-60L_DAP"and(unit:getDrawArgumentValue(38)>0 or unit:getDrawArgumentValue(400)==1)then
 BASE:T(unit_name.." front door(s) are open")
 return true
 end
@@ -9927,6 +9947,16 @@ self.LastVec2=ZoneUNIT:GetVec2()
 _EVENTDISPATCHER:CreateEventNewZone(self)
 return self
 end
+function ZONE_UNIT:UpdateFromUnit(Unit)
+if Unit and Unit:IsAlive()then
+local vec2=Unit:GetVec2()
+self.LastVec2=vec2
+elseif self.ZoneUNIT and self.ZoneUNIT:IsAlive()then
+local ZoneVec2=self.ZoneUNIT:GetVec2()
+self.LastVec2=ZoneVec2
+end
+return self
+end
 function ZONE_UNIT:GetVec2()
 local ZoneVec2=self.ZoneUNIT:GetVec2()
 if ZoneVec2 then
@@ -9987,6 +10017,17 @@ else
 ZoneVec2=self._.ZoneVec2Cache
 end
 return ZoneVec2
+end
+function ZONE_GROUP:UpdateFromGroup(Group)
+if Group and Group:IsAlive()then
+local vec2=Group:GetVec2()
+self.Vec2=vec2
+elseif self._.ZoneGROUP and self._.ZoneGROUP:IsAlive()then
+local ZoneVec2=self._.ZoneGROUP:GetVec2()
+self.Vec2=ZoneVec2
+self._.ZoneVec2Cache=ZoneVec2
+end
+return self
 end
 function ZONE_GROUP:GetRandomVec2()
 local Point={}
@@ -26229,7 +26270,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if Controller then
-if self:IsGround()()then
+if self:IsGround()then
 self:SetOption(27,meters)
 end
 end
@@ -26244,7 +26285,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if Controller then
-if self:IsGround()()then
+if self:IsGround()then
 self:SetOption(29,meters)
 end
 end
@@ -33705,6 +33746,8 @@ REMOVED="REMOVED",
 }
 DYNAMICCARGO.AircraftTypes={
 ["CH-47Fbl1"]="CH-47Fbl1",
+["Mi-8MTV2"]="CH-47Fbl1",
+["Mi-8MT"]="CH-47Fbl1",
 }
 DYNAMICCARGO.AircraftDimensions={
 ["CH-47Fbl1"]={
@@ -33713,8 +33756,20 @@ DYNAMICCARGO.AircraftDimensions={
 ["length"]=11,
 ["ropelength"]=30,
 },
+["Mi-8MTV2"]={
+["width"]=6,
+["height"]=6,
+["length"]=15,
+["ropelength"]=30,
+},
+["Mi-8MT"]={
+["width"]=6,
+["height"]=6,
+["length"]=15,
+["ropelength"]=30,
+},
 }
-DYNAMICCARGO.version="0.0.7"
+DYNAMICCARGO.version="0.0.9"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -71977,6 +72032,7 @@ self.dropAsCargoCrate=false
 self.smokedistance=2000
 self.movetroopstowpzone=true
 self.movetroopsdistance=5000
+self.returntroopstobase=true
 self.troopdropzoneradius=100
 self.VehicleMoveFormation=AI.Task.VehicleFormation.VEE
 self.enableHercules=false
@@ -73349,7 +73405,7 @@ if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
 end
 if inzone then
-droppingatbase=true
+droppingatbase=self.returntroopstobase
 end
 local hoverunload=self:IsCorrectHover(Unit)
 local IsHerc=self:IsFixedWing(Unit)
@@ -74080,7 +74136,7 @@ end
 end
 end
 else
-if self.usesubcats then
+if self.usesubcats==true then
 local subcatmenus={}
 for catName,_ in pairs(self.subcats)do
 subcatmenus[catName]=MENU_GROUP:New(_group,catName,cratesmenu)
@@ -74539,7 +74595,7 @@ if not inzone then
 inzone,zonename,zone,distance=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
 end
 if inzone then
-droppingatbase=true
+droppingatbase=self.returntroopstobase
 end
 if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
 self:_SendMessage("You need to open the door(s) to unload troops!",10,false,Group)
