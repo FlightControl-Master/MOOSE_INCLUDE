@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-22T07:23:37+02:00-e8246b3b906e95b5a4ff841623896acaca8117af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-23T08:10:26+02:00-8432f46e484daaec415537a5bbec3a3e51b2ab70 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -62129,7 +62129,7 @@ theta=math.asin(vdeck*math.sin(alpha)/vwind)
 v=vdeck*math.cos(alpha)-vwind*math.cos(theta)
 end
 local magvar=magnetic and self.magvar or 0
-local intowind=self:GetHeadingIntoWind_old(vdeck)
+local intowind=self:GetHeadingIntoWind_old(vdeck,magnetic)
 return intowind,v
 end
 function AIRBOSS:GetBRCintoWind(vdeck)
