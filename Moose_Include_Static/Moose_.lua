@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-23T08:10:26+02:00-8432f46e484daaec415537a5bbec3a3e51b2ab70 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-23T12:10:05+02:00-0f270a6a35ebcfe2430659092d934beeb495d489 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3887,7 +3887,55 @@ end
 UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
 return UTILS.lcg.seed/UTILS.lcg.m
 end
-function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment,Airframes,F10Text,DynamicSpawns,HotStart)
+function UTILS.GenerateGridPoints(startVec2,n,spacingX,spacingY)
+local points={}
+local gridSize=math.ceil(math.sqrt(n))
+local count=0
+local n=n or 1
+local spacingX=spacingX or 100
+local spacingY=spacingY or 100
+local startX=startVec2.x or 100
+local startY=startVec2.y or 100
+for row=0,gridSize-1 do
+for col=0,gridSize-1 do
+if count>=n then
+break
+end
+local point={
+x=startX+(col*spacingX),
+y=startY+(row*spacingY)
+}
+table.insert(points,point)
+count=count+1
+end
+if count>=n then
+break
+end
+end
+return points
+end
+function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment,Airframes,F10Text,DynamicSpawns,HotStart,NumberPads,SpacingX,SpacingY)
+local function PopulateStorage(Name,liquids,equip,airframes)
+local newWH=STORAGE:New(Name)
+if liquids and liquids>0 then
+newWH:SetLiquid(STORAGE.Liquid.DIESEL,liquids)
+newWH:SetLiquid(STORAGE.Liquid.GASOLINE,liquids)
+newWH:SetLiquid(STORAGE.Liquid.JETFUEL,liquids)
+newWH:SetLiquid(STORAGE.Liquid.MW50,liquids)
+end
+if equip and equip>0 then
+for cat,nitem in pairs(ENUMS.Storage.weapons)do
+for name,item in pairs(nitem)do
+newWH:SetItem(item,equip)
+end
+end
+end
+if airframes and airframes>0 then
+for typename in pairs(CSAR.AircraftType)do
+newWH:SetItem(typename,airframes)
+end
+end
+end
 local farplocation=Coordinate
 local farptype=FARPType or ENUMS.FARPType.FARP
 local Coalition=Coalition or coalition.side.BLUE
@@ -3905,11 +3953,29 @@ local STypeName=statictypes.TypeName
 local SShapeName=statictypes.ShapeName
 local Country=Country or(Coalition==coalition.side.BLUE and country.id.USA or country.id.RUSSIA)
 local ReturnObjects={}
+local NumberPads=NumberPads or 1
+local SpacingX=SpacingX or 100
+local SpacingY=SpacingY or 100
+local FarpVec2=Coordinate:GetVec2()
+if NumberPads>1 then
+local Grid=UTILS.GenerateGridPoints(FarpVec2,NumberPads,SpacingX,SpacingY)
+for id,gridpoint in ipairs(Grid)do
+local location=COORDINATE:NewFromVec2(gridpoint)
+local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
+newfarp:InitShape(SShapeName)
+newfarp:InitFARP(callsign,freq,mod,DynamicSpawns,HotStart)
+local spawnedfarp=newfarp:SpawnFromCoordinate(location,0,Name.."-"..id)
+table.insert(ReturnObjects,spawnedfarp)
+PopulateStorage(Name.."-"..id,liquids,equip,airframes)
+end
+else
 local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
 newfarp:InitShape(SShapeName)
 newfarp:InitFARP(callsign,freq,mod,DynamicSpawns,HotStart)
 local spawnedfarp=newfarp:SpawnFromCoordinate(farplocation,0,Name)
 table.insert(ReturnObjects,spawnedfarp)
+PopulateStorage(Name,liquids,equip,airframes)
+end
 local FARPStaticObjectsNato={
 ["FUEL"]={TypeName="FARP Fuel Depot",ShapeName="GSM Rus",Category="Fortifications"},
 ["AMMO"]={TypeName="FARP Ammo Dump Coating",ShapeName="SetkaKP",Category="Fortifications"},
@@ -3937,25 +4003,6 @@ vehicles:InitCoalition(Coalition)
 vehicles:InitDelayOff()
 local spawnedvehicle=vehicles:SpawnFromCoordinate(vcoordinate)
 table.insert(ReturnObjects,spawnedvehicle)
-end
-local newWH=STORAGE:New(Name)
-if liquids and liquids>0 then
-newWH:SetLiquid(STORAGE.Liquid.DIESEL,liquids)
-newWH:SetLiquid(STORAGE.Liquid.GASOLINE,liquids)
-newWH:SetLiquid(STORAGE.Liquid.JETFUEL,liquids)
-newWH:SetLiquid(STORAGE.Liquid.MW50,liquids)
-end
-if equip and equip>0 then
-for cat,nitem in pairs(ENUMS.Storage.weapons)do
-for name,item in pairs(nitem)do
-newWH:SetItem(item,equip)
-end
-end
-end
-if airframes and airframes>0 then
-for typename in pairs(CSAR.AircraftType)do
-newWH:SetItem(typename,airframes)
-end
 end
 local ADFName
 if ADF and type(ADF)=="number"then
