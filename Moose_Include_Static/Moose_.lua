@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-25T16:56:16+02:00-7d4e1036602f291330260e47f9c99f3efcfcae81 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-26T07:27:37+01:00-55242edbde03d158747c8f829b78643ecc81113b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -62209,7 +62209,7 @@ theta=math.asin(vdeck*math.sin(alpha)/vwind)
 v=vdeck*math.cos(alpha)-vwind*math.cos(theta)
 end
 local magvar=magnetic and self.magvar or 0
-local intowind=self:GetHeadingIntoWind_old(vdeck,magnetic)
+local intowind=(540+(windto-magvar+math.deg(theta)))%360
 return intowind,v
 end
 function AIRBOSS:GetBRCintoWind(vdeck)
@@ -62415,6 +62415,7 @@ local N=nXX+nIM+nIC+nAR+nIW
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
+if TIG=="_OK_"then nL=nL-1 end
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=16.49 and Tgroove<=16.59)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
