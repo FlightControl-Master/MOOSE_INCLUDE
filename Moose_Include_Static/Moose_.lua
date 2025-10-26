@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-26T07:27:37+01:00-55242edbde03d158747c8f829b78643ecc81113b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-26T16:19:10+01:00-8392788cdb43295355f30deab0ad201d60edf061 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3986,7 +3986,7 @@ for id,gridpoint in ipairs(Grid)do
 local UnitTemplate=UTILS.DeepCopy(unitData)
 UnitTemplate.x=gridpoint.x
 UnitTemplate.y=gridpoint.y
-UnitTemplate.name=Name.."-"..id
+if id>1 then UnitTemplate.name=Name.."-"..id end
 table.insert(groupData.units,UnitTemplate)
 if id==1 then
 groupData.x=gridpoint.x
@@ -17752,6 +17752,7 @@ local AirbaseCategory=airbase:GetAirbaseCategory()
 if AirbaseCategory==Airbase.Category.SHIP or AirbaseCategory==Airbase.Category.HELIPAD then
 RoutePoint.linkUnit=AirbaseID
 RoutePoint.helipadId=AirbaseID
+RoutePoint.airdromeId=airbase:IsAirdrome()and AirbaseID or nil
 elseif AirbaseCategory==Airbase.Category.AIRDROME then
 RoutePoint.airdromeId=AirbaseID
 else
@@ -34937,8 +34938,8 @@ self:SetScoringMenu(PlayerUnit:GetGroup())
 end
 end)
 self.AutoSavePath=SavePath
-self.AutoSave=AutoSave or true
-if self.AutoSave==true then
+self.AutoSave=(AutoSave==nil or AutoSave==true)and true or false
+if self.AutoSavePath and self.AutoSave==true then
 self:OpenCSV(GameName)
 end
 return self
