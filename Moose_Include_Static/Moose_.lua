@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-26T16:19:10+01:00-8392788cdb43295355f30deab0ad201d60edf061 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-29T07:02:10+01:00-6058160160f29d7bd91aba0825259b0535881980 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -23558,6 +23558,7 @@ POSITIONABLE.CargoBayCapacityValues={
 ["HL_DSHK"]=6*POSITIONABLE.DefaultInfantryWeight,
 ["CCKW_353"]=16*POSITIONABLE.DefaultInfantryWeight,
 ["MaxxPro_MRAP"]=7*POSITIONABLE.DefaultInfantryWeight,
+["Sd_Kfz_251"]=10*POSITIONABLE.DefaultInfantryWeight,
 }
 }
 function POSITIONABLE:SetCargoBayWeightLimit(WeightLimit)
