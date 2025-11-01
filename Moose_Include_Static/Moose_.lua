@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-31T06:28:04+01:00-2047e818efb46a9d47b5ab5b960efd58ac18044e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-01T17:20:08+01:00-07a14bc17679ad4c03f481b9b5be562254fd156d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -58936,14 +58936,11 @@ aoa.OnSpeed=self:_AoAUnit2Deg(playerData,15.0)
 aoa.OnSpeedMin=self:_AoAUnit2Deg(playerData,14.0)
 aoa.Fast=self:_AoAUnit2Deg(playerData,13.5)
 aoa.FAST=self:_AoAUnit2Deg(playerData,12.5)
-elseif goshawk then
-aoa.SLOW=8.00
-aoa.Slow=7.75
-aoa.OnSpeedMax=7.25
-aoa.OnSpeed=7.00
-aoa.OnSpeedMin=6.75
-aoa.Fast=6.25
-aoa.FAST=6.00
+local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
+local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 elseif skyhawk then
 aoa.SLOW=10.50
 aoa.Slow=9.50
@@ -60246,7 +60243,12 @@ if playerData then
 local unit=playerData.unit
 if unit and unit:IsAlive()then
 if unit:IsInZone(self.zoneCCA)then
-if playerData.step==AIRBOSS.PatternStep.WAKE then
+local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
+local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+if playerData.step==AIRBOSS.PatternStep.WAKE and hornet then
 if math.abs(playerData.unit:GetRoll())>35 and math.abs(playerData.unit:GetRoll())<=40 then
 playerData.wrappedUpAtWakeLittle=true
 elseif math.abs(playerData.unit:GetRoll())>40 and math.abs(playerData.unit:GetRoll())<=45 then
@@ -60256,6 +60258,28 @@ playerData.wrappedUpAtWakeUnderline=true
 elseif math.abs(playerData.unit:GetRoll())<20 and math.abs(playerData.unit:GetRoll())>=10 then
 playerData.AAatWakeLittle=true
 elseif math.abs(playerData.unit:GetRoll())<10 and math.abs(playerData.unit:GetRoll())>=2 then
+playerData.AAatWakeFull=true
+elseif math.abs(playerData.unit:GetRoll())<2 then
+playerData.AAatWakeUnderline=true
+else
+end
+if math.abs(playerData.unit:GetAoA())>=15 then
+playerData.AFU=true
+elseif math.abs(playerData.unit:GetAoA())<=5 then
+playerData.AFU=true
+else
+end
+end
+if playerData.step==AIRBOSS.PatternStep.WAKE and tomcat then
+if math.abs(playerData.unit:GetRoll())>35 and math.abs(playerData.unit:GetRoll())<=40 then
+playerData.wrappedUpAtWakeLittle=true
+elseif math.abs(playerData.unit:GetRoll())>40 and math.abs(playerData.unit:GetRoll())<=45 then
+playerData.wrappedUpAtWakeFull=true
+elseif math.abs(playerData.unit:GetRoll())>45 then
+playerData.wrappedUpAtWakeUnderline=true
+elseif math.abs(playerData.unit:GetRoll())<12 and math.abs(playerData.unit:GetRoll())>=5 then
+playerData.AAatWakeLittle=true
+elseif math.abs(playerData.unit:GetRoll())<5 and math.abs(playerData.unit:GetRoll())>=2 then
 playerData.AAatWakeFull=true
 elseif math.abs(playerData.unit:GetRoll())<2 then
 playerData.AAatWakeUnderline=true
