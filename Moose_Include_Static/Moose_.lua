@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-10-25T16:57:09+02:00-8251879162eee3dee589de47a9c5f46573bee1c8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-02T09:54:16+01:00-b07accdb3d1ba0ed129485260fc35f5685502235 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3986,7 +3986,7 @@ for id,gridpoint in ipairs(Grid)do
 local UnitTemplate=UTILS.DeepCopy(unitData)
 UnitTemplate.x=gridpoint.x
 UnitTemplate.y=gridpoint.y
-UnitTemplate.name=Name.."-"..id
+if id>1 then UnitTemplate.name=Name.."-"..id end
 table.insert(groupData.units,UnitTemplate)
 if id==1 then
 groupData.x=gridpoint.x
@@ -14785,8 +14785,7 @@ end
 return self
 end
 function SET_CLIENT:HandleCASlots()
-self:HandleEvent(EVENTS.PlayerEnterUnit,SET_CLIENT._EventPlayerEnterUnit)
-self:HandleEvent(EVENTS.PlayerLeaveUnit,SET_CLIENT._EventPlayerLeaveUnit)
+self:HandleEvent(EVENTS.PlayerEnterUnit,self._EventPlayerEnterUnit)
 self:FilterFunction(function(client)if client and client:IsAlive()and client:IsGround()then return true else return false end end)
 return self
 end
@@ -17753,6 +17752,7 @@ local AirbaseCategory=airbase:GetAirbaseCategory()
 if AirbaseCategory==Airbase.Category.SHIP or AirbaseCategory==Airbase.Category.HELIPAD then
 RoutePoint.linkUnit=AirbaseID
 RoutePoint.helipadId=AirbaseID
+RoutePoint.airdromeId=airbase:IsAirdrome()and AirbaseID or nil
 elseif AirbaseCategory==Airbase.Category.AIRDROME then
 RoutePoint.airdromeId=AirbaseID
 else
@@ -24081,6 +24081,7 @@ POSITIONABLE.CargoBayCapacityValues={
 ["HL_DSHK"]=6*POSITIONABLE.DefaultInfantryWeight,
 ["CCKW_353"]=16*POSITIONABLE.DefaultInfantryWeight,
 ["MaxxPro_MRAP"]=7*POSITIONABLE.DefaultInfantryWeight,
+["Sd_Kfz_251"]=10*POSITIONABLE.DefaultInfantryWeight,
 }
 }
 function POSITIONABLE:SetCargoBayWeightLimit(WeightLimit)
@@ -34137,8 +34138,8 @@ self:SetScoringMenu(PlayerUnit:GetGroup())
 end
 end)
 self.AutoSavePath=SavePath
-self.AutoSave=AutoSave or true
-if self.AutoSave==true then
+self.AutoSave=(AutoSave==nil or AutoSave==true)and true or false
+if self.AutoSavePath and self.AutoSave==true then
 self:OpenCSV(GameName)
 end
 return self
@@ -61667,14 +61668,11 @@ aoa.OnSpeed=self:_AoAUnit2Deg(playerData,15.0)
 aoa.OnSpeedMin=self:_AoAUnit2Deg(playerData,14.0)
 aoa.Fast=self:_AoAUnit2Deg(playerData,13.5)
 aoa.FAST=self:_AoAUnit2Deg(playerData,12.5)
-elseif goshawk then
-aoa.SLOW=8.00
-aoa.Slow=7.75
-aoa.OnSpeedMax=7.25
-aoa.OnSpeed=7.00
-aoa.OnSpeedMin=6.75
-aoa.Fast=6.25
-aoa.FAST=6.00
+local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
+local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
 elseif skyhawk then
 aoa.SLOW=10.50
 aoa.Slow=9.50
@@ -62977,7 +62975,12 @@ if playerData then
 local unit=playerData.unit
 if unit and unit:IsAlive()then
 if unit:IsInZone(self.zoneCCA)then
-if playerData.step==AIRBOSS.PatternStep.WAKE then
+local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
+or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
+or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
+local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+if playerData.step==AIRBOSS.PatternStep.WAKE and hornet then
 if math.abs(playerData.unit:GetRoll())>35 and math.abs(playerData.unit:GetRoll())<=40 then
 playerData.wrappedUpAtWakeLittle=true
 elseif math.abs(playerData.unit:GetRoll())>40 and math.abs(playerData.unit:GetRoll())<=45 then
@@ -62987,6 +62990,28 @@ playerData.wrappedUpAtWakeUnderline=true
 elseif math.abs(playerData.unit:GetRoll())<20 and math.abs(playerData.unit:GetRoll())>=10 then
 playerData.AAatWakeLittle=true
 elseif math.abs(playerData.unit:GetRoll())<10 and math.abs(playerData.unit:GetRoll())>=2 then
+playerData.AAatWakeFull=true
+elseif math.abs(playerData.unit:GetRoll())<2 then
+playerData.AAatWakeUnderline=true
+else
+end
+if math.abs(playerData.unit:GetAoA())>=15 then
+playerData.AFU=true
+elseif math.abs(playerData.unit:GetAoA())<=5 then
+playerData.AFU=true
+else
+end
+end
+if playerData.step==AIRBOSS.PatternStep.WAKE and tomcat then
+if math.abs(playerData.unit:GetRoll())>35 and math.abs(playerData.unit:GetRoll())<=40 then
+playerData.wrappedUpAtWakeLittle=true
+elseif math.abs(playerData.unit:GetRoll())>40 and math.abs(playerData.unit:GetRoll())<=45 then
+playerData.wrappedUpAtWakeFull=true
+elseif math.abs(playerData.unit:GetRoll())>45 then
+playerData.wrappedUpAtWakeUnderline=true
+elseif math.abs(playerData.unit:GetRoll())<12 and math.abs(playerData.unit:GetRoll())>=5 then
+playerData.AAatWakeLittle=true
+elseif math.abs(playerData.unit:GetRoll())<5 and math.abs(playerData.unit:GetRoll())>=2 then
 playerData.AAatWakeFull=true
 elseif math.abs(playerData.unit:GetRoll())<2 then
 playerData.AAatWakeUnderline=true
@@ -64941,7 +64966,7 @@ theta=math.asin(vdeck*math.sin(alpha)/vwind)
 v=vdeck*math.cos(alpha)-vwind*math.cos(theta)
 end
 local magvar=magnetic and self.magvar or 0
-local intowind=self:GetHeadingIntoWind_old(vdeck,magnetic)
+local intowind=(540+(windto-magvar+math.deg(theta)))%360
 return intowind,v
 end
 function AIRBOSS:GetBRCintoWind(vdeck)
@@ -65147,6 +65172,7 @@ local N=nXX+nIM+nIC+nAR+nIW
 local nL=count(G,'_')/2
 local nS=count(G,'%(')
 local nN=N-nS-nL
+if TIG=="_OK_"then nL=nL-1 end
 local Tgroove=playerData.Tgroove
 local TgrooveUnicorn=Tgroove and(Tgroove>=16.49 and Tgroove<=16.59)or false
 local TgrooveVstolUnicorn=Tgroove and(Tgroove>=60.0 and Tgroove<=65.0)and playerData.actype==AIRBOSS.AircraftCarrier.AV8B or false
@@ -77665,7 +77691,7 @@ end
 self.takenOff[_event.IniUnitName]=nil
 local _place=_event.Place
 if _place==nil then
-self:T(self.lid.." Landing Place Nil")
+self:T(self.lid.." Landing Place nil")
 return self
 end
 if self.inTransitGroups[_event.IniUnitName]==nil then
