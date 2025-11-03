@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-02T17:57:09+01:00-645c4a4dbcd38622098d945a1c88183587559190 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-03T06:29:14+01:00-5a088a740e93922abb2235b324361535f52ab776 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -58936,11 +58936,14 @@ aoa.OnSpeed=self:_AoAUnit2Deg(playerData,15.0)
 aoa.OnSpeedMin=self:_AoAUnit2Deg(playerData,14.0)
 aoa.Fast=self:_AoAUnit2Deg(playerData,13.5)
 aoa.FAST=self:_AoAUnit2Deg(playerData,12.5)
-local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
-or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
-or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
-or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
-local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+elseif goshawk then
+aoa.SLOW=9.5
+aoa.Slow=9.25
+aoa.OnSpeedMax=9.0
+aoa.OnSpeed=8.5
+aoa.OnSpeedMin=8.25
+aoa.Fast=7.75
+aoa.FAST=5.5
 elseif skyhawk then
 aoa.SLOW=10.50
 aoa.Slow=9.50
