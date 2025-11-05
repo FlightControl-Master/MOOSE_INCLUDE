@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-04T13:24:09+01:00-b72899b500a78b5325a9c86ef5333a9c59a57317 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-05T06:22:03+01:00-0e82cb977e5ca034c9259fa16c1e33a77a3426a8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -71702,12 +71702,12 @@ for _,_build in pairs(buildables)do
 local build=_build
 if build.CanBuild then
 self:_CleanUpCrates(crates,build,number)
+self:_RefreshLoadCratesMenu(Group,Unit)
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
 self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
-self:_RefreshDropTroopsMenu(Group,Unit)
 else
 self:_BuildObjectFromCrates(Group,Unit,build,false,nil,MultiDrop)
 end
