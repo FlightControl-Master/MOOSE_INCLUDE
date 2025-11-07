@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-05T06:22:03+01:00-0e82cb977e5ca034c9259fa16c1e33a77a3426a8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-07T21:53:26+01:00-da516a01677cad763c1b7745a120916df7199410 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -22991,6 +22991,15 @@ end
 self:F(self.ClassName.." "..self.IdentifiableName.." not found!")
 return nil
 end
+function IDENTIFIABLE:IsRed()
+return self:GetCoalition()==coalition.side.RED
+end
+function IDENTIFIABLE:IsBlue()
+return self:GetCoalition()==coalition.side.BLUE
+end
+function IDENTIFIABLE:IsNeutral()
+return self:GetCoalition()==coalition.side.NEUTRAL
+end
 function IDENTIFIABLE:GetCoalitionName()
 self:F2(self.IdentifiableName)
 local DCSIdentifiable=self:GetDCSObject()
@@ -27954,32 +27963,44 @@ end
 function GROUP:GetTypeName()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local GroupTypeName=unit:getTypeName()
 return(GroupTypeName)
+end
 end
 return nil
 end
 function GROUP:GetNatoReportingName()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local GroupTypeName=unit:getTypeName()
 return UTILS.GetReportingName(GroupTypeName)
+end
 end
 return"Bogey"
 end
 function GROUP:GetPlayerName()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local PlayerName=DCSGroup:getUnit(1):getPlayerName()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local PlayerName=unit:getPlayerName()
 return(PlayerName)
+end
 end
 return nil
 end
 function GROUP:GetCallsign()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local GroupCallSign=DCSGroup:getUnit(1):getCallsign()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local GroupCallSign=unit:getCallsign()
 return GroupCallSign
+end
 end
 BASE:E({"Cannot GetCallsign",Positionable=self,Alive=self:IsAlive()})
 return nil
