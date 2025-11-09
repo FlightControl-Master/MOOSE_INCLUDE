@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-02T09:54:16+01:00-b07accdb3d1ba0ed129485260fc35f5685502235 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-09T14:44:12+01:00-aa2cff69e980ce3dff0f9d5e71d85a41294ec5e2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -461,6 +461,8 @@ missiles={},
 bombs={},
 nurs={},
 containers={},
+shells={},
+gunmounts={},
 droptanks={},
 adapters={},
 torpedoes={},
@@ -472,744 +474,1180 @@ AH64D={},
 UH60L={},
 }
 }
-ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B="weapons.nurs.SNEB_TYPE253_F1B"
-ENUMS.Storage.weapons.missiles.P_24T="weapons.missiles.P_24T"
-ENUMS.Storage.weapons.bombs.BLU_3B_OLD="weapons.bombs.BLU-3B_OLD"
-ENUMS.Storage.weapons.missiles.AGM_154="weapons.missiles.AGM_154"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M151_M433="weapons.nurs.HYDRA_70_M151_M433"
-ENUMS.Storage.weapons.bombs.SAM_Avenger_M1097_Skid_7090lb="weapons.bombs.SAM Avenger M1097 Skid [7090lb]"
-ENUMS.Storage.weapons.bombs.British_GP_250LB_Bomb_Mk5="weapons.bombs.British_GP_250LB_Bomb_Mk5"
-ENUMS.Storage.weapons.containers.OV10_SMOKE="weapons.containers.{OV10_SMOKE}"
-ENUMS.Storage.weapons.bombs.BLU_4B_OLD="weapons.bombs.BLU-4B_OLD"
-ENUMS.Storage.weapons.bombs.FAB_500M54="weapons.bombs.FAB-500M54"
-ENUMS.Storage.weapons.bombs.GBU_38="weapons.bombs.GBU_38"
-ENUMS.Storage.weapons.containers.F_15E_AXQ_14_DATALINK="weapons.containers.F-15E_AXQ-14_DATALINK"
-ENUMS.Storage.weapons.bombs.BEER_BOMB="weapons.bombs.BEER_BOMB"
-ENUMS.Storage.weapons.bombs.P_50T="weapons.bombs.P-50T"
-ENUMS.Storage.weapons.nurs.C_8CM_GN="weapons.nurs.C_8CM_GN"
-ENUMS.Storage.weapons.bombs.FAB_500SL="weapons.bombs.FAB-500SL"
-ENUMS.Storage.weapons.bombs.KAB_1500Kr="weapons.bombs.KAB_1500Kr"
-ENUMS.Storage.weapons.bombs.two50_2="weapons.bombs.250-2"
-ENUMS.Storage.weapons.droptanks.Spitfire_tank_1="weapons.droptanks.Spitfire_tank_1"
-ENUMS.Storage.weapons.missiles.AGM_65G="weapons.missiles.AGM_65G"
-ENUMS.Storage.weapons.missiles.AGM_65A="weapons.missiles.AGM_65A"
-ENUMS.Storage.weapons.containers.Hercules_JATO="weapons.containers.Hercules_JATO"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M259="weapons.nurs.HYDRA_70_M259"
-ENUMS.Storage.weapons.missiles.AGM_84E="weapons.missiles.AGM_84E"
-ENUMS.Storage.weapons.bombs.AN_M30A1="weapons.bombs.AN_M30A1"
-ENUMS.Storage.weapons.nurs.C_25="weapons.nurs.C_25"
-ENUMS.Storage.weapons.containers.AV8BNA_ALQ164="weapons.containers.AV8BNA_ALQ164"
-ENUMS.Storage.weapons.containers.lav_25="weapons.containers.lav-25"
-ENUMS.Storage.weapons.missiles.P_60="weapons.missiles.P_60"
-ENUMS.Storage.weapons.bombs.FAB_1500="weapons.bombs.FAB_1500"
-ENUMS.Storage.weapons.droptanks.FuelTank_350L="weapons.droptanks.FuelTank_350L"
-ENUMS.Storage.weapons.bombs.AAA_Vulcan_M163_Skid_21577lb="weapons.bombs.AAA Vulcan M163 Skid [21577lb]"
-ENUMS.Storage.weapons.missiles.Kormoran="weapons.missiles.Kormoran"
-ENUMS.Storage.weapons.droptanks.HB_F14_EXT_DROPTANK_EMPTY="weapons.droptanks.HB_F14_EXT_DROPTANK_EMPTY"
-ENUMS.Storage.weapons.droptanks.FuelTank_150L="weapons.droptanks.FuelTank_150L"
-ENUMS.Storage.weapons.missiles.Rb_15F_for_A_I="weapons.missiles.Rb 15F (for A.I.)"
-ENUMS.Storage.weapons.missiles.RB75T="weapons.missiles.RB75T"
-ENUMS.Storage.weapons.missiles.Vikhr_M="weapons.missiles.Vikhr_M"
-ENUMS.Storage.weapons.nurs.FFAR_M156_WP="weapons.nurs.FFAR M156 WP"
-ENUMS.Storage.weapons.nurs.British_HE_60LBSAPNo2_3INCHNo1="weapons.nurs.British_HE_60LBSAPNo2_3INCHNo1"
-ENUMS.Storage.weapons.missiles.DWS39_MJ2="weapons.missiles.DWS39_MJ2"
-ENUMS.Storage.weapons.bombs.HEBOMBD="weapons.bombs.HEBOMBD"
-ENUMS.Storage.weapons.missiles.CATM_9M="weapons.missiles.CATM_9M"
-ENUMS.Storage.weapons.bombs.Mk_81="weapons.bombs.Mk_81"
-ENUMS.Storage.weapons.droptanks.Drop_Tank_300_Liter="weapons.droptanks.Drop_Tank_300_Liter"
-ENUMS.Storage.weapons.containers.HMMWV_M1025="weapons.containers.HMMWV_M1025"
-ENUMS.Storage.weapons.bombs.SAM_CHAPARRAL_Air_21624lb="weapons.bombs.SAM CHAPARRAL Air [21624lb]"
-ENUMS.Storage.weapons.missiles.AGM_154A="weapons.missiles.AGM_154A"
-ENUMS.Storage.weapons.bombs.Mk_84AIR_TP="weapons.bombs.Mk_84AIR_TP"
-ENUMS.Storage.weapons.bombs.GBU_31_V_3B="weapons.bombs.GBU_31_V_3B"
-ENUMS.Storage.weapons.nurs.C_8CM_WH="weapons.nurs.C_8CM_WH"
-ENUMS.Storage.weapons.missiles.Matra_Super_530D="weapons.missiles.Matra Super 530D"
-ENUMS.Storage.weapons.nurs.ARF8M3TPSM="weapons.nurs.ARF8M3TPSM"
-ENUMS.Storage.weapons.missiles.TGM_65H="weapons.missiles.TGM_65H"
-ENUMS.Storage.weapons.nurs.M8rocket="weapons.nurs.M8rocket"
-ENUMS.Storage.weapons.bombs.GBU_27="weapons.bombs.GBU_27"
-ENUMS.Storage.weapons.missiles.AGR_20A="weapons.missiles.AGR_20A"
-ENUMS.Storage.weapons.missiles.LS_6_250="weapons.missiles.LS-6-250"
-ENUMS.Storage.weapons.droptanks.M2KC_RPL_522_EMPTY="weapons.droptanks.M2KC_RPL_522_EMPTY"
-ENUMS.Storage.weapons.droptanks.M2KC_02_RPL541="weapons.droptanks.M2KC_02_RPL541"
-ENUMS.Storage.weapons.missiles.AGM_45="weapons.missiles.AGM_45"
-ENUMS.Storage.weapons.missiles.AGM_84A="weapons.missiles.AGM_84A"
-ENUMS.Storage.weapons.bombs.APC_BTR_80_Air_23936lb="weapons.bombs.APC BTR-80 Air [23936lb]"
-ENUMS.Storage.weapons.missiles.P_33E="weapons.missiles.P_33E"
-ENUMS.Storage.weapons.missiles.Ataka_9M120="weapons.missiles.Ataka_9M120"
-ENUMS.Storage.weapons.bombs.MK76="weapons.bombs.MK76"
-ENUMS.Storage.weapons.bombs.AB_250_2_SD_2="weapons.bombs.AB_250_2_SD_2"
-ENUMS.Storage.weapons.missiles.Rb_05A="weapons.missiles.Rb 05A"
-ENUMS.Storage.weapons.bombs.ART_GVOZDIKA_34720lb="weapons.bombs.ART GVOZDIKA [34720lb]"
-ENUMS.Storage.weapons.bombs.Generic_Crate_20000lb="weapons.bombs.Generic Crate [20000lb]"
-ENUMS.Storage.weapons.bombs.FAB_100SV="weapons.bombs.FAB_100SV"
-ENUMS.Storage.weapons.bombs.BetAB_500="weapons.bombs.BetAB_500"
-ENUMS.Storage.weapons.droptanks.M2KC_02_RPL541_EMPTY="weapons.droptanks.M2KC_02_RPL541_EMPTY"
-ENUMS.Storage.weapons.droptanks.PTB600_MIG15="weapons.droptanks.PTB600_MIG15"
-ENUMS.Storage.weapons.missiles.Rb_24J="weapons.missiles.Rb 24J"
-ENUMS.Storage.weapons.nurs.C_8CM_BU="weapons.nurs.C_8CM_BU"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE259E_F1B="weapons.nurs.SNEB_TYPE259E_F1B"
-ENUMS.Storage.weapons.nurs.WGr21="weapons.nurs.WGr21"
-ENUMS.Storage.weapons.bombs.SAMP250HD="weapons.bombs.SAMP250HD"
-ENUMS.Storage.weapons.containers.alq_184long="weapons.containers.alq-184long"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE259E_H1="weapons.nurs.SNEB_TYPE259E_H1"
-ENUMS.Storage.weapons.bombs.British_SAP_250LB_Bomb_Mk5="weapons.bombs.British_SAP_250LB_Bomb_Mk5"
-ENUMS.Storage.weapons.bombs.Transport_UAZ_469_Air_3747lb="weapons.bombs.Transport UAZ-469 Air [3747lb]"
-ENUMS.Storage.weapons.bombs.Mk_83CT="weapons.bombs.Mk_83CT"
-ENUMS.Storage.weapons.missiles.AIM_7P="weapons.missiles.AIM-7P"
-ENUMS.Storage.weapons.missiles.AT_6="weapons.missiles.AT_6"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE254_H1_GREEN="weapons.nurs.SNEB_TYPE254_H1_GREEN"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE250_F1B="weapons.nurs.SNEB_TYPE250_F1B"
-ENUMS.Storage.weapons.containers.U22A="weapons.containers.U22A"
-ENUMS.Storage.weapons.bombs.British_GP_250LB_Bomb_Mk1="weapons.bombs.British_GP_250LB_Bomb_Mk1"
-ENUMS.Storage.weapons.bombs.CBU_105="weapons.bombs.CBU_105"
-ENUMS.Storage.weapons.droptanks.FW_190_Fuel_Tank="weapons.droptanks.FW-190_Fuel-Tank"
-ENUMS.Storage.weapons.missiles.X_58="weapons.missiles.X_58"
-ENUMS.Storage.weapons.missiles.BK90_MJ1_MJ2="weapons.missiles.BK90_MJ1_MJ2"
-ENUMS.Storage.weapons.missiles.TGM_65D="weapons.missiles.TGM_65D"
-ENUMS.Storage.weapons.containers.BRD_4_250="weapons.containers.BRD-4-250"
-ENUMS.Storage.weapons.missiles.P_73="weapons.missiles.P_73"
-ENUMS.Storage.weapons.bombs.AN_M66="weapons.bombs.AN_M66"
-ENUMS.Storage.weapons.bombs.APC_LAV_25_Air_22520lb="weapons.bombs.APC LAV-25 Air [22520lb]"
-ENUMS.Storage.weapons.missiles.AIM_7MH="weapons.missiles.AIM-7MH"
-ENUMS.Storage.weapons.containers.MB339_TravelPod="weapons.containers.MB339_TravelPod"
-ENUMS.Storage.weapons.bombs.GBU_12="weapons.bombs.GBU_12"
-ENUMS.Storage.weapons.bombs.SC_250_T3_J="weapons.bombs.SC_250_T3_J"
-ENUMS.Storage.weapons.missiles.KD_20="weapons.missiles.KD-20"
-ENUMS.Storage.weapons.missiles.AGM_86C="weapons.missiles.AGM_86C"
-ENUMS.Storage.weapons.missiles.X_35="weapons.missiles.X_35"
-ENUMS.Storage.weapons.bombs.MK106="weapons.bombs.MK106"
-ENUMS.Storage.weapons.bombs.BETAB_500S="weapons.bombs.BETAB-500S"
-ENUMS.Storage.weapons.nurs.C_5="weapons.nurs.C_5"
-ENUMS.Storage.weapons.nurs.S_24B="weapons.nurs.S-24B"
-ENUMS.Storage.weapons.bombs.British_MC_500LB_Bomb_Mk2="weapons.bombs.British_MC_500LB_Bomb_Mk2"
-ENUMS.Storage.weapons.containers.ANAWW_13="weapons.containers.ANAWW_13"
-ENUMS.Storage.weapons.droptanks.droptank_108_gal="weapons.droptanks.droptank_108_gal"
-ENUMS.Storage.weapons.droptanks.DFT_300_GAL_A4E_LR="weapons.droptanks.DFT_300_GAL_A4E_LR"
-ENUMS.Storage.weapons.bombs.CBU_87="weapons.bombs.CBU_87"
-ENUMS.Storage.weapons.missiles.GAR_8="weapons.missiles.GAR-8"
-ENUMS.Storage.weapons.bombs.BELOUGA="weapons.bombs.BELOUGA"
-ENUMS.Storage.weapons.containers.EclairM_33="weapons.containers.{EclairM_33}"
-ENUMS.Storage.weapons.bombs.ART_2S9_NONA_Air_19140lb="weapons.bombs.ART 2S9 NONA Air [19140lb]"
-ENUMS.Storage.weapons.bombs.BR_250="weapons.bombs.BR_250"
-ENUMS.Storage.weapons.bombs.IAB_500="weapons.bombs.IAB-500"
-ENUMS.Storage.weapons.containers.AN_ASQ_228="weapons.containers.AN_ASQ_228"
-ENUMS.Storage.weapons.missiles.P_27P="weapons.missiles.P_27P"
-ENUMS.Storage.weapons.bombs.SD_250_Stg="weapons.bombs.SD_250_Stg"
-ENUMS.Storage.weapons.missiles.R_530F_IR="weapons.missiles.R_530F_IR"
-ENUMS.Storage.weapons.bombs.British_SAP_500LB_Bomb_Mk5="weapons.bombs.British_SAP_500LB_Bomb_Mk5"
-ENUMS.Storage.weapons.bombs.FAB_250M54="weapons.bombs.FAB-250M54"
-ENUMS.Storage.weapons.containers.M2KC_AAF="weapons.containers.{M2KC_AAF}"
-ENUMS.Storage.weapons.missiles.CM_802AKG_AI="weapons.missiles.CM-802AKG_AI"
-ENUMS.Storage.weapons.bombs.CBU_103="weapons.bombs.CBU_103"
-ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_RED="weapons.containers.{US_M10_SMOKE_TANK_RED}"
-ENUMS.Storage.weapons.missiles.X_29T="weapons.missiles.X_29T"
-ENUMS.Storage.weapons.bombs.HEMTT_TFFT_34400lb="weapons.bombs.HEMTT TFFT [34400lb]"
-ENUMS.Storage.weapons.missiles.C_701IR="weapons.missiles.C-701IR"
-ENUMS.Storage.weapons.containers.fullCargoSeats="weapons.containers.fullCargoSeats"
-ENUMS.Storage.weapons.bombs.GBU_15_V_31_B="weapons.bombs.GBU_15_V_31_B"
-ENUMS.Storage.weapons.bombs.APC_M1043_HMMWV_Armament_Air_7023lb="weapons.bombs.APC M1043 HMMWV Armament Air [7023lb]"
-ENUMS.Storage.weapons.missiles.PL_5EII="weapons.missiles.PL-5EII"
-ENUMS.Storage.weapons.bombs.SC_250_T1_L2="weapons.bombs.SC_250_T1_L2"
-ENUMS.Storage.weapons.torpedoes.mk46torp_name="weapons.torpedoes.mk46torp_name"
-ENUMS.Storage.weapons.containers.F_15E_AAQ_33_XR_ATP_SE="weapons.containers.F-15E_AAQ-33_XR_ATP-SE"
-ENUMS.Storage.weapons.missiles.AIM_7="weapons.missiles.AIM_7"
-ENUMS.Storage.weapons.missiles.AGM_122="weapons.missiles.AGM_122"
-ENUMS.Storage.weapons.bombs.HEBOMB="weapons.bombs.HEBOMB"
-ENUMS.Storage.weapons.bombs.CBU_97="weapons.bombs.CBU_97"
-ENUMS.Storage.weapons.bombs.MK_81SE="weapons.bombs.MK-81SE"
-ENUMS.Storage.weapons.nurs.Zuni_127="weapons.nurs.Zuni_127"
-ENUMS.Storage.weapons.containers.M2KC_AGF="weapons.containers.{M2KC_AGF}"
-ENUMS.Storage.weapons.droptanks.Hercules_ExtFuelTank="weapons.droptanks.Hercules_ExtFuelTank"
-ENUMS.Storage.weapons.containers.SMOKE_WHITE="weapons.containers.{SMOKE_WHITE}"
-ENUMS.Storage.weapons.droptanks.droptank_150_gal="weapons.droptanks.droptank_150_gal"
-ENUMS.Storage.weapons.nurs.HYDRA_70_WTU1B="weapons.nurs.HYDRA_70_WTU1B"
-ENUMS.Storage.weapons.missiles.GB_6_SFW="weapons.missiles.GB-6-SFW"
-ENUMS.Storage.weapons.missiles.KD_63="weapons.missiles.KD-63"
-ENUMS.Storage.weapons.bombs.GBU_28="weapons.bombs.GBU_28"
-ENUMS.Storage.weapons.nurs.C_8CM_YE="weapons.nurs.C_8CM_YE"
-ENUMS.Storage.weapons.droptanks.HB_F14_EXT_DROPTANK="weapons.droptanks.HB_F14_EXT_DROPTANK"
-ENUMS.Storage.weapons.missiles.Super_530F="weapons.missiles.Super_530F"
-ENUMS.Storage.weapons.missiles.Ataka_9M220="weapons.missiles.Ataka_9M220"
-ENUMS.Storage.weapons.bombs.BDU_33="weapons.bombs.BDU_33"
-ENUMS.Storage.weapons.bombs.British_GP_250LB_Bomb_Mk4="weapons.bombs.British_GP_250LB_Bomb_Mk4"
-ENUMS.Storage.weapons.missiles.TOW="weapons.missiles.TOW"
-ENUMS.Storage.weapons.bombs.ATGM_M1045_HMMWV_TOW_Air_7183lb="weapons.bombs.ATGM M1045 HMMWV TOW Air [7183lb]"
-ENUMS.Storage.weapons.missiles.X_25MR="weapons.missiles.X_25MR"
-ENUMS.Storage.weapons.droptanks.fueltank230="weapons.droptanks.fueltank230"
-ENUMS.Storage.weapons.droptanks.PTB_490C_MIG21="weapons.droptanks.PTB-490C-MIG21"
-ENUMS.Storage.weapons.bombs.M1025_HMMWV_Air_6160lb="weapons.bombs.M1025 HMMWV Air [6160lb]"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE254_F1B_GREEN="weapons.nurs.SNEB_TYPE254_F1B_GREEN"
-ENUMS.Storage.weapons.missiles.R_550="weapons.missiles.R_550"
-ENUMS.Storage.weapons.bombs.KAB_1500LG="weapons.bombs.KAB_1500LG"
-ENUMS.Storage.weapons.missiles.AGM_84D="weapons.missiles.AGM_84D"
-ENUMS.Storage.weapons.missiles.YJ_83K="weapons.missiles.YJ-83K"
-ENUMS.Storage.weapons.missiles.AIM_54C_Mk47="weapons.missiles.AIM_54C_Mk47"
-ENUMS.Storage.weapons.missiles.BRM_1_90MM="weapons.missiles.BRM-1_90MM"
-ENUMS.Storage.weapons.missiles.Ataka_9M120F="weapons.missiles.Ataka_9M120F"
-ENUMS.Storage.weapons.droptanks.Eleven00L_Tank="weapons.droptanks.1100L Tank"
-ENUMS.Storage.weapons.bombs.BAP_100="weapons.bombs.BAP_100"
-ENUMS.Storage.weapons.adapters.lau_88="weapons.adapters.lau-88"
-ENUMS.Storage.weapons.missiles.P_40T="weapons.missiles.P_40T"
-ENUMS.Storage.weapons.missiles.GB_6="weapons.missiles.GB-6"
-ENUMS.Storage.weapons.bombs.FAB_250M54TU="weapons.bombs.FAB-250M54TU"
-ENUMS.Storage.weapons.missiles.DWS39_MJ1="weapons.missiles.DWS39_MJ1"
-ENUMS.Storage.weapons.missiles.CM_802AKG="weapons.missiles.CM-802AKG"
-ENUMS.Storage.weapons.bombs.FAB_250="weapons.bombs.FAB_250"
-ENUMS.Storage.weapons.missiles.C_802AK="weapons.missiles.C_802AK"
-ENUMS.Storage.weapons.bombs.SD_500_A="weapons.bombs.SD_500_A"
-ENUMS.Storage.weapons.bombs.GBU_32_V_2B="weapons.bombs.GBU_32_V_2B"
-ENUMS.Storage.weapons.containers.marder="weapons.containers.marder"
-ENUMS.Storage.weapons.missiles.ADM_141B="weapons.missiles.ADM_141B"
-ENUMS.Storage.weapons.bombs.ROCKEYE="weapons.bombs.ROCKEYE"
-ENUMS.Storage.weapons.missiles.BK90_MJ1="weapons.missiles.BK90_MJ1"
-ENUMS.Storage.weapons.containers.BTR_80="weapons.containers.BTR-80"
-ENUMS.Storage.weapons.bombs.SAM_ROLAND_ADS_34720lb="weapons.bombs.SAM ROLAND ADS [34720lb]"
-ENUMS.Storage.weapons.containers.wmd7="weapons.containers.wmd7"
-ENUMS.Storage.weapons.missiles.C_701T="weapons.missiles.C-701T"
-ENUMS.Storage.weapons.missiles.AIM_7E_2="weapons.missiles.AIM-7E-2"
-ENUMS.Storage.weapons.nurs.HVAR="weapons.nurs.HVAR"
-ENUMS.Storage.weapons.containers.HMMWV_M1043="weapons.containers.HMMWV_M1043"
-ENUMS.Storage.weapons.droptanks.PTB_800_MIG21="weapons.droptanks.PTB-800-MIG21"
-ENUMS.Storage.weapons.missiles.AGM_114="weapons.missiles.AGM_114"
-ENUMS.Storage.weapons.bombs.APC_M1126_Stryker_ICV_29542lb="weapons.bombs.APC M1126 Stryker ICV [29542lb]"
-ENUMS.Storage.weapons.bombs.APC_M113_Air_21624lb="weapons.bombs.APC M113 Air [21624lb]"
-ENUMS.Storage.weapons.bombs.M_117="weapons.bombs.M_117"
-ENUMS.Storage.weapons.missiles.AGM_65D="weapons.missiles.AGM_65D"
-ENUMS.Storage.weapons.droptanks.MB339_TT320_L="weapons.droptanks.MB339_TT320_L"
-ENUMS.Storage.weapons.missiles.AGM_86="weapons.missiles.AGM_86"
-ENUMS.Storage.weapons.bombs.BDU_45LGB="weapons.bombs.BDU_45LGB"
-ENUMS.Storage.weapons.missiles.AGM_65H="weapons.missiles.AGM_65H"
-ENUMS.Storage.weapons.nurs.RS_82="weapons.nurs.RS-82"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE252_F1B="weapons.nurs.SNEB_TYPE252_F1B"
-ENUMS.Storage.weapons.bombs.BL_755="weapons.bombs.BL_755"
-ENUMS.Storage.weapons.containers.F_15E_AAQ_28_LITENING="weapons.containers.F-15E_AAQ-28_LITENING"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE256_F1B="weapons.nurs.SNEB_TYPE256_F1B"
-ENUMS.Storage.weapons.missiles.AGM_84H="weapons.missiles.AGM_84H"
-ENUMS.Storage.weapons.missiles.AIM_54="weapons.missiles.AIM_54"
-ENUMS.Storage.weapons.missiles.X_31A="weapons.missiles.X_31A"
-ENUMS.Storage.weapons.bombs.KAB_500Kr="weapons.bombs.KAB_500Kr"
-ENUMS.Storage.weapons.containers.SPS_141_100="weapons.containers.SPS-141-100"
-ENUMS.Storage.weapons.missiles.BK90_MJ2="weapons.missiles.BK90_MJ2"
-ENUMS.Storage.weapons.missiles.Super_530D="weapons.missiles.Super_530D"
-ENUMS.Storage.weapons.bombs.CBU_52B="weapons.bombs.CBU_52B"
-ENUMS.Storage.weapons.droptanks.PTB_450="weapons.droptanks.PTB-450"
-ENUMS.Storage.weapons.bombs.IFV_MCV_80_34720lb="weapons.bombs.IFV MCV-80 [34720lb]"
-ENUMS.Storage.weapons.containers.Two_c9="weapons.containers.2-c9"
-ENUMS.Storage.weapons.missiles.AIM_9JULI="weapons.missiles.AIM-9JULI"
-ENUMS.Storage.weapons.droptanks.MB339_TT500_R="weapons.droptanks.MB339_TT500_R"
-ENUMS.Storage.weapons.nurs.C_8CM="weapons.nurs.C_8CM"
-ENUMS.Storage.weapons.containers.BARAX="weapons.containers.BARAX"
-ENUMS.Storage.weapons.missiles.P_40R="weapons.missiles.P_40R"
-ENUMS.Storage.weapons.missiles.YJ_12="weapons.missiles.YJ-12"
-ENUMS.Storage.weapons.missiles.CM_802AKG="weapons.missiles.CM_802AKG"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE254_H1_YELLOW="weapons.nurs.SNEB_TYPE254_H1_YELLOW"
-ENUMS.Storage.weapons.bombs.Durandal="weapons.bombs.Durandal"
-ENUMS.Storage.weapons.droptanks.i16_eft="weapons.droptanks.i16_eft"
-ENUMS.Storage.weapons.droptanks.AV8BNA_AERO1D_EMPTY="weapons.droptanks.AV8BNA_AERO1D_EMPTY"
-ENUMS.Storage.weapons.containers.Hercules_Battle_Station_TGP="weapons.containers.Hercules_Battle_Station_TGP"
-ENUMS.Storage.weapons.nurs.C_8CM_VT="weapons.nurs.C_8CM_VT"
-ENUMS.Storage.weapons.missiles.PL_12="weapons.missiles.PL-12"
-ENUMS.Storage.weapons.missiles.R_3R="weapons.missiles.R-3R"
-ENUMS.Storage.weapons.bombs.GBU_54_V_1B="weapons.bombs.GBU_54_V_1B"
-ENUMS.Storage.weapons.droptanks.MB339_TT320_R="weapons.droptanks.MB339_TT320_R"
-ENUMS.Storage.weapons.bombs.RN_24="weapons.bombs.RN-24"
-ENUMS.Storage.weapons.containers.Twoc6m="weapons.containers.2c6m"
-ENUMS.Storage.weapons.bombs.ARV_BRDM_2_Air_12320lb="weapons.bombs.ARV BRDM-2 Air [12320lb]"
-ENUMS.Storage.weapons.bombs.ARV_BRDM_2_Skid_12210lb="weapons.bombs.ARV BRDM-2 Skid [12210lb]"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE251_F1B="weapons.nurs.SNEB_TYPE251_F1B"
-ENUMS.Storage.weapons.missiles.X_41="weapons.missiles.X_41"
-ENUMS.Storage.weapons.containers.MIG21_SMOKE_WHITE="weapons.containers.{MIG21_SMOKE_WHITE}"
-ENUMS.Storage.weapons.bombs.MK_82AIR="weapons.bombs.MK_82AIR"
-ENUMS.Storage.weapons.missiles.R_530F_EM="weapons.missiles.R_530F_EM"
-ENUMS.Storage.weapons.bombs.SAMP400LD="weapons.bombs.SAMP400LD"
-ENUMS.Storage.weapons.bombs.FAB_50="weapons.bombs.FAB_50"
-ENUMS.Storage.weapons.bombs.AB_250_2_SD_10A="weapons.bombs.AB_250_2_SD_10A"
-ENUMS.Storage.weapons.missiles.ADM_141A="weapons.missiles.ADM_141A"
-ENUMS.Storage.weapons.containers.KBpod="weapons.containers.KBpod"
-ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk4="weapons.bombs.British_GP_500LB_Bomb_Mk4"
-ENUMS.Storage.weapons.missiles.AGM_65E="weapons.missiles.AGM_65E"
-ENUMS.Storage.weapons.containers.sa342_dipole_antenna="weapons.containers.sa342_dipole_antenna"
-ENUMS.Storage.weapons.bombs.OFAB_100_Jupiter="weapons.bombs.OFAB-100 Jupiter"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE257_F1B="weapons.nurs.SNEB_TYPE257_F1B"
-ENUMS.Storage.weapons.missiles.Rb_04E_for_A_I="weapons.missiles.Rb 04E (for A.I.)"
-ENUMS.Storage.weapons.bombs.AN_M66A2="weapons.bombs.AN-M66A2"
-ENUMS.Storage.weapons.missiles.P_27T="weapons.missiles.P_27T"
-ENUMS.Storage.weapons.droptanks.LNS_VIG_XTANK="weapons.droptanks.LNS_VIG_XTANK"
-ENUMS.Storage.weapons.missiles.R_55="weapons.missiles.R-55"
-ENUMS.Storage.weapons.torpedoes.YU_6="weapons.torpedoes.YU-6"
-ENUMS.Storage.weapons.bombs.British_MC_250LB_Bomb_Mk2="weapons.bombs.British_MC_250LB_Bomb_Mk2"
-ENUMS.Storage.weapons.droptanks.PTB_120_F86F35="weapons.droptanks.PTB_120_F86F35"
-ENUMS.Storage.weapons.missiles.PL_8B="weapons.missiles.PL-8B"
-ENUMS.Storage.weapons.droptanks.F_15E_Drop_Tank_Empty="weapons.droptanks.F-15E_Drop_Tank_Empty"
-ENUMS.Storage.weapons.nurs.British_HE_60LBFNo1_3INCHNo1="weapons.nurs.British_HE_60LBFNo1_3INCHNo1"
-ENUMS.Storage.weapons.missiles.P_77="weapons.missiles.P_77"
-ENUMS.Storage.weapons.torpedoes.LTF_5B="weapons.torpedoes.LTF_5B"
-ENUMS.Storage.weapons.missiles.R_3S="weapons.missiles.R-3S"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE253_H1="weapons.nurs.SNEB_TYPE253_H1"
-ENUMS.Storage.weapons.missiles.PL_8A="weapons.missiles.PL-8A"
-ENUMS.Storage.weapons.bombs.APC_BTR_82A_Skid_24888lb="weapons.bombs.APC BTR-82A Skid [24888lb]"
-ENUMS.Storage.weapons.containers.Sborka="weapons.containers.Sborka"
-ENUMS.Storage.weapons.missiles.AGM_65L="weapons.missiles.AGM_65L"
-ENUMS.Storage.weapons.missiles.X_28="weapons.missiles.X_28"
-ENUMS.Storage.weapons.missiles.TGM_65G="weapons.missiles.TGM_65G"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE257_H1="weapons.nurs.SNEB_TYPE257_H1"
-ENUMS.Storage.weapons.missiles.RB75B="weapons.missiles.RB75B"
-ENUMS.Storage.weapons.missiles.X_25ML="weapons.missiles.X_25ML"
-ENUMS.Storage.weapons.droptanks.FPU_8A="weapons.droptanks.FPU_8A"
-ENUMS.Storage.weapons.bombs.BLG66="weapons.bombs.BLG66"
-ENUMS.Storage.weapons.nurs.C_8CM_RD="weapons.nurs.C_8CM_RD"
-ENUMS.Storage.weapons.containers.EclairM_06="weapons.containers.{EclairM_06}"
-ENUMS.Storage.weapons.bombs.RBK_500AO="weapons.bombs.RBK_500AO"
-ENUMS.Storage.weapons.missiles.AIM_9P="weapons.missiles.AIM-9P"
-ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk4_Short="weapons.bombs.British_GP_500LB_Bomb_Mk4_Short"
-ENUMS.Storage.weapons.containers.MB339_Vinten="weapons.containers.MB339_Vinten"
-ENUMS.Storage.weapons.missiles.Rb_15F="weapons.missiles.Rb 15F"
-ENUMS.Storage.weapons.nurs.ARAKM70BHE="weapons.nurs.ARAKM70BHE"
-ENUMS.Storage.weapons.bombs.AAA_Vulcan_M163_Air_21666lb="weapons.bombs.AAA Vulcan M163 Air [21666lb]"
-ENUMS.Storage.weapons.missiles.X_29L="weapons.missiles.X_29L"
-ENUMS.Storage.weapons.containers.F14_LANTIRN_TP="weapons.containers.{F14-LANTIRN-TP}"
-ENUMS.Storage.weapons.bombs.FAB_250_M62="weapons.bombs.FAB-250-M62"
-ENUMS.Storage.weapons.missiles.AIM_120C="weapons.missiles.AIM_120C"
-ENUMS.Storage.weapons.bombs.EWR_SBORKA_Air_21624lb="weapons.bombs.EWR SBORKA Air [21624lb]"
-ENUMS.Storage.weapons.bombs.SAMP250LD="weapons.bombs.SAMP250LD"
-ENUMS.Storage.weapons.droptanks.Spitfire_slipper_tank="weapons.droptanks.Spitfire_slipper_tank"
-ENUMS.Storage.weapons.missiles.LS_6_500="weapons.missiles.LS-6-500"
-ENUMS.Storage.weapons.bombs.GBU_31_V_4B="weapons.bombs.GBU_31_V_4B"
-ENUMS.Storage.weapons.droptanks.PTB400_MIG15="weapons.droptanks.PTB400_MIG15"
-ENUMS.Storage.weapons.containers.m_113="weapons.containers.m-113"
-ENUMS.Storage.weapons.bombs.SPG_M1128_Stryker_MGS_33036lb="weapons.bombs.SPG M1128 Stryker MGS [33036lb]"
-ENUMS.Storage.weapons.missiles.AIM_9L="weapons.missiles.AIM-9L"
-ENUMS.Storage.weapons.missiles.AIM_9X="weapons.missiles.AIM_9X"
-ENUMS.Storage.weapons.nurs.C_8="weapons.nurs.C_8"
-ENUMS.Storage.weapons.bombs.SAM_CHAPARRAL_Skid_21516lb="weapons.bombs.SAM CHAPARRAL Skid [21516lb]"
-ENUMS.Storage.weapons.missiles.P_27TE="weapons.missiles.P_27TE"
-ENUMS.Storage.weapons.bombs.ODAB_500PM="weapons.bombs.ODAB-500PM"
-ENUMS.Storage.weapons.bombs.MK77mod1_WPN="weapons.bombs.MK77mod1-WPN"
-ENUMS.Storage.weapons.droptanks.PTB400_MIG19="weapons.droptanks.PTB400_MIG19"
-ENUMS.Storage.weapons.torpedoes.Mark_46="weapons.torpedoes.Mark_46"
-ENUMS.Storage.weapons.containers.rightSeat="weapons.containers.rightSeat"
-ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_ORANGE="weapons.containers.{US_M10_SMOKE_TANK_ORANGE}"
-ENUMS.Storage.weapons.bombs.SAB_100MN="weapons.bombs.SAB_100MN"
-ENUMS.Storage.weapons.nurs.FFAR_Mk5_HEAT="weapons.nurs.FFAR Mk5 HEAT"
-ENUMS.Storage.weapons.bombs.IFV_TPZ_FUCH_33440lb="weapons.bombs.IFV TPZ FUCH [33440lb]"
-ENUMS.Storage.weapons.bombs.IFV_M2A2_Bradley_34720lb="weapons.bombs.IFV M2A2 Bradley [34720lb]"
-ENUMS.Storage.weapons.bombs.MK77mod0_WPN="weapons.bombs.MK77mod0-WPN"
-ENUMS.Storage.weapons.containers.ASO_2="weapons.containers.ASO-2"
-ENUMS.Storage.weapons.bombs.Mk_84AIR_GP="weapons.bombs.Mk_84AIR_GP"
-ENUMS.Storage.weapons.nurs.S_24A="weapons.nurs.S-24A"
-ENUMS.Storage.weapons.bombs.RBK_250_275_AO_1SCH="weapons.bombs.RBK_250_275_AO_1SCH"
-ENUMS.Storage.weapons.bombs.Transport_Tigr_Skid_15730lb="weapons.bombs.Transport Tigr Skid [15730lb]"
-ENUMS.Storage.weapons.missiles.AIM_7F="weapons.missiles.AIM-7F"
-ENUMS.Storage.weapons.bombs.CBU_99="weapons.bombs.CBU_99"
-ENUMS.Storage.weapons.bombs.LUU_2B="weapons.bombs.LUU_2B"
-ENUMS.Storage.weapons.bombs.FAB_500TA="weapons.bombs.FAB-500TA"
-ENUMS.Storage.weapons.missiles.AGR_20_M282="weapons.missiles.AGR_20_M282"
-ENUMS.Storage.weapons.droptanks.MB339_FT330="weapons.droptanks.MB339_FT330"
-ENUMS.Storage.weapons.bombs.SAMP125LD="weapons.bombs.SAMP125LD"
-ENUMS.Storage.weapons.missiles.X_25MP="weapons.missiles.X_25MP"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE252_H1="weapons.nurs.SNEB_TYPE252_H1"
-ENUMS.Storage.weapons.missiles.AGM_65F="weapons.missiles.AGM_65F"
-ENUMS.Storage.weapons.missiles.AIM_9P5="weapons.missiles.AIM-9P5"
-ENUMS.Storage.weapons.bombs.Transport_Tigr_Air_15900lb="weapons.bombs.Transport Tigr Air [15900lb]"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE254_H1_RED="weapons.nurs.SNEB_TYPE254_H1_RED"
-ENUMS.Storage.weapons.nurs.FFAR_Mk1_HE="weapons.nurs.FFAR Mk1 HE"
-ENUMS.Storage.weapons.nurs.SPRD_99="weapons.nurs.SPRD-99"
-ENUMS.Storage.weapons.bombs.BIN_200="weapons.bombs.BIN_200"
-ENUMS.Storage.weapons.bombs.BLU_4B_GROUP="weapons.bombs.BLU_4B_GROUP"
-ENUMS.Storage.weapons.bombs.GBU_24="weapons.bombs.GBU_24"
-ENUMS.Storage.weapons.missiles.Rb_04E="weapons.missiles.Rb 04E"
-ENUMS.Storage.weapons.missiles.Rb_74="weapons.missiles.Rb 74"
-ENUMS.Storage.weapons.containers.leftSeat="weapons.containers.leftSeat"
-ENUMS.Storage.weapons.bombs.LS_6_100="weapons.bombs.LS-6-100"
-ENUMS.Storage.weapons.bombs.Transport_URAL_375_14815lb="weapons.bombs.Transport URAL-375 [14815lb]"
-ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_GREEN="weapons.containers.{US_M10_SMOKE_TANK_GREEN}"
-ENUMS.Storage.weapons.missiles.X_22="weapons.missiles.X_22"
-ENUMS.Storage.weapons.containers.FAS="weapons.containers.FAS"
-ENUMS.Storage.weapons.nurs.S_25_O="weapons.nurs.S-25-O"
-ENUMS.Storage.weapons.droptanks.para="weapons.droptanks.para"
-ENUMS.Storage.weapons.droptanks.F_15E_Drop_Tank="weapons.droptanks.F-15E_Drop_Tank"
-ENUMS.Storage.weapons.droptanks.M2KC_08_RPL541_EMPTY="weapons.droptanks.M2KC_08_RPL541_EMPTY"
-ENUMS.Storage.weapons.missiles.X_31P="weapons.missiles.X_31P"
-ENUMS.Storage.weapons.bombs.RBK_500U="weapons.bombs.RBK_500U"
-ENUMS.Storage.weapons.missiles.AIM_54A_Mk47="weapons.missiles.AIM_54A_Mk47"
-ENUMS.Storage.weapons.droptanks.oiltank="weapons.droptanks.oiltank"
-ENUMS.Storage.weapons.missiles.AGM_154B="weapons.missiles.AGM_154B"
-ENUMS.Storage.weapons.containers.MB339_SMOKE_POD="weapons.containers.MB339_SMOKE-POD"
-ENUMS.Storage.weapons.containers.ECM_POD_L_175V="weapons.containers.{ECM_POD_L_175V}"
-ENUMS.Storage.weapons.droptanks.PTB_580G_F1="weapons.droptanks.PTB_580G_F1"
-ENUMS.Storage.weapons.containers.EclairM_15="weapons.containers.{EclairM_15}"
-ENUMS.Storage.weapons.containers.F_15E_AAQ_13_LANTIRN="weapons.containers.F-15E_AAQ-13_LANTIRN"
-ENUMS.Storage.weapons.droptanks.Eight00L_Tank_Empty="weapons.droptanks.800L Tank Empty"
-ENUMS.Storage.weapons.containers.One6c_hts_pod="weapons.containers.16c_hts_pod"
-ENUMS.Storage.weapons.bombs.AN_M81="weapons.bombs.AN-M81"
-ENUMS.Storage.weapons.droptanks.Mosquito_Drop_Tank_100gal="weapons.droptanks.Mosquito_Drop_Tank_100gal"
-ENUMS.Storage.weapons.droptanks.Mosquito_Drop_Tank_50gal="weapons.droptanks.Mosquito_Drop_Tank_50gal"
-ENUMS.Storage.weapons.droptanks.DFT_150_GAL_A4E="weapons.droptanks.DFT_150_GAL_A4E"
-ENUMS.Storage.weapons.missiles.AIM_9="weapons.missiles.AIM_9"
-ENUMS.Storage.weapons.bombs.IFV_BTR_D_Air_18040lb="weapons.bombs.IFV BTR-D Air [18040lb]"
-ENUMS.Storage.weapons.containers.EclairM_42="weapons.containers.{EclairM_42}"
-ENUMS.Storage.weapons.bombs.KAB_1500T="weapons.bombs.KAB_1500T"
-ENUMS.Storage.weapons.droptanks.PTB_490_MIG21="weapons.droptanks.PTB-490-MIG21"
-ENUMS.Storage.weapons.droptanks.PTB_200_F86F35="weapons.droptanks.PTB_200_F86F35"
-ENUMS.Storage.weapons.droptanks.PTB760_MIG19="weapons.droptanks.PTB760_MIG19"
-ENUMS.Storage.weapons.bombs.GBU_43_B_MOAB="weapons.bombs.GBU-43/B(MOAB)"
-ENUMS.Storage.weapons.torpedoes.G7A_T1="weapons.torpedoes.G7A_T1"
-ENUMS.Storage.weapons.bombs.IFV_BMD_1_Air_18040lb="weapons.bombs.IFV BMD-1 Air [18040lb]"
-ENUMS.Storage.weapons.bombs.SAM_LINEBACKER_34720lb="weapons.bombs.SAM LINEBACKER [34720lb]"
-ENUMS.Storage.weapons.containers.ais_pod_t50_r="weapons.containers.ais-pod-t50_r"
-ENUMS.Storage.weapons.containers.CE2_SMOKE_WHITE="weapons.containers.{CE2_SMOKE_WHITE}"
-ENUMS.Storage.weapons.droptanks.fuel_tank_230="weapons.droptanks.fuel_tank_230"
-ENUMS.Storage.weapons.droptanks.M2KC_RPL_522="weapons.droptanks.M2KC_RPL_522"
-ENUMS.Storage.weapons.missiles.AGM_130="weapons.missiles.AGM_130"
-ENUMS.Storage.weapons.droptanks.Eight00L_Tank="weapons.droptanks.800L Tank"
-ENUMS.Storage.weapons.bombs.IFV_BTR_D_Skid_17930lb="weapons.bombs.IFV BTR-D Skid [17930lb]"
-ENUMS.Storage.weapons.containers.bmp_1="weapons.containers.bmp-1"
-ENUMS.Storage.weapons.bombs.GBU_31="weapons.bombs.GBU_31"
-ENUMS.Storage.weapons.containers.aaq_28LEFT_litening="weapons.containers.aaq-28LEFT litening"
-ENUMS.Storage.weapons.missiles.Kh_66_Grom="weapons.missiles.Kh-66_Grom"
-ENUMS.Storage.weapons.containers.MIG21_SMOKE_RED="weapons.containers.{MIG21_SMOKE_RED}"
-ENUMS.Storage.weapons.containers.U22="weapons.containers.U22"
-ENUMS.Storage.weapons.bombs.IFV_BMD_1_Skid_17930lb="weapons.bombs.IFV BMD-1 Skid [17930lb]"
-ENUMS.Storage.weapons.droptanks.Bidon="weapons.droptanks.Bidon"
-ENUMS.Storage.weapons.bombs.GBU_31_V_2B="weapons.bombs.GBU_31_V_2B"
-ENUMS.Storage.weapons.bombs.Mk_82Y="weapons.bombs.Mk_82Y"
-ENUMS.Storage.weapons.containers.pl5eii="weapons.containers.pl5eii"
-ENUMS.Storage.weapons.bombs.RBK_500U_OAB_2_5RT="weapons.bombs.RBK_500U_OAB_2_5RT"
-ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk5="weapons.bombs.British_GP_500LB_Bomb_Mk5"
-ENUMS.Storage.weapons.containers.Eclair="weapons.containers.{Eclair}"
-ENUMS.Storage.weapons.nurs.S5MO_HEFRAG_FFAR="weapons.nurs.S5MO_HEFRAG_FFAR"
-ENUMS.Storage.weapons.bombs.BETAB_500M="weapons.bombs.BETAB-500M"
-ENUMS.Storage.weapons.bombs.Transport_M818_16000lb="weapons.bombs.Transport M818 [16000lb]"
-ENUMS.Storage.weapons.bombs.British_MC_250LB_Bomb_Mk1="weapons.bombs.British_MC_250LB_Bomb_Mk1"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE251_H1="weapons.nurs.SNEB_TYPE251_H1"
-ENUMS.Storage.weapons.bombs.TYPE_200A="weapons.bombs.TYPE-200A"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M151="weapons.nurs.HYDRA_70_M151"
-ENUMS.Storage.weapons.bombs.IFV_BMP_3_32912lb="weapons.bombs.IFV BMP-3 [32912lb]"
-ENUMS.Storage.weapons.bombs.APC_MTLB_Air_26400lb="weapons.bombs.APC MTLB Air [26400lb]"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M229="weapons.nurs.HYDRA_70_M229"
-ENUMS.Storage.weapons.bombs.BDU_45="weapons.bombs.BDU_45"
-ENUMS.Storage.weapons.bombs.OFAB_100_120TU="weapons.bombs.OFAB-100-120TU"
-ENUMS.Storage.weapons.missiles.AIM_9J="weapons.missiles.AIM-9J"
-ENUMS.Storage.weapons.nurs.ARF8M3API="weapons.nurs.ARF8M3API"
-ENUMS.Storage.weapons.bombs.BetAB_500ShP="weapons.bombs.BetAB_500ShP"
-ENUMS.Storage.weapons.nurs.C_8OFP2="weapons.nurs.C_8OFP2"
-ENUMS.Storage.weapons.bombs.GBU_10="weapons.bombs.GBU_10"
-ENUMS.Storage.weapons.bombs.APC_MTLB_Skid_26290lb="weapons.bombs.APC MTLB Skid [26290lb]"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE254_F1B_RED="weapons.nurs.SNEB_TYPE254_F1B_RED"
-ENUMS.Storage.weapons.missiles.X_65="weapons.missiles.X_65"
-ENUMS.Storage.weapons.missiles.R_550_M1="weapons.missiles.R_550_M1"
-ENUMS.Storage.weapons.missiles.AGM_65K="weapons.missiles.AGM_65K"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE254_F1B_YELLOW="weapons.nurs.SNEB_TYPE254_F1B_YELLOW"
-ENUMS.Storage.weapons.missiles.AGM_88="weapons.missiles.AGM_88"
-ENUMS.Storage.weapons.nurs.C_8OM="weapons.nurs.C_8OM"
-ENUMS.Storage.weapons.bombs.SAM_ROLAND_LN_34720b="weapons.bombs.SAM ROLAND LN [34720b]"
-ENUMS.Storage.weapons.missiles.AIM_120="weapons.missiles.AIM_120"
-ENUMS.Storage.weapons.missiles.HOT3_MBDA="weapons.missiles.HOT3_MBDA"
-ENUMS.Storage.weapons.missiles.R_13M="weapons.missiles.R-13M"
-ENUMS.Storage.weapons.missiles.AIM_54C_Mk60="weapons.missiles.AIM_54C_Mk60"
-ENUMS.Storage.weapons.bombs.AAA_GEPARD_34720lb="weapons.bombs.AAA GEPARD [34720lb]"
-ENUMS.Storage.weapons.missiles.R_13M1="weapons.missiles.R-13M1"
-ENUMS.Storage.weapons.bombs.APC_Cobra_Air_10912lb="weapons.bombs.APC Cobra Air [10912lb]"
-ENUMS.Storage.weapons.bombs.RBK_250="weapons.bombs.RBK_250"
-ENUMS.Storage.weapons.bombs.SC_500_J="weapons.bombs.SC_500_J"
-ENUMS.Storage.weapons.missiles.AGM_114K="weapons.missiles.AGM_114K"
-ENUMS.Storage.weapons.missiles.ALARM="weapons.missiles.ALARM"
-ENUMS.Storage.weapons.bombs.Mk_83="weapons.bombs.Mk_83"
-ENUMS.Storage.weapons.missiles.AGM_65B="weapons.missiles.AGM_65B"
-ENUMS.Storage.weapons.bombs.MK_82SNAKEYE="weapons.bombs.MK_82SNAKEYE"
-ENUMS.Storage.weapons.nurs.HYDRA_70_MK1="weapons.nurs.HYDRA_70_MK1"
-ENUMS.Storage.weapons.bombs.BLG66_BELOUGA="weapons.bombs.BLG66_BELOUGA"
-ENUMS.Storage.weapons.containers.EclairM_51="weapons.containers.{EclairM_51}"
-ENUMS.Storage.weapons.missiles.AIM_54A_Mk60="weapons.missiles.AIM_54A_Mk60"
-ENUMS.Storage.weapons.droptanks.DFT_300_GAL_A4E="weapons.droptanks.DFT_300_GAL_A4E"
-ENUMS.Storage.weapons.bombs.ATGM_M1134_Stryker_30337lb="weapons.bombs.ATGM M1134 Stryker [30337lb]"
-ENUMS.Storage.weapons.bombs.BAT_120="weapons.bombs.BAT-120"
-ENUMS.Storage.weapons.missiles.DWS39_MJ1_MJ2="weapons.missiles.DWS39_MJ1_MJ2"
-ENUMS.Storage.weapons.containers.SPRD="weapons.containers.SPRD"
-ENUMS.Storage.weapons.bombs.BR_500="weapons.bombs.BR_500"
-ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk1="weapons.bombs.British_GP_500LB_Bomb_Mk1"
-ENUMS.Storage.weapons.bombs.BDU_50HD="weapons.bombs.BDU_50HD"
-ENUMS.Storage.weapons.missiles.RS2US="weapons.missiles.RS2US"
-ENUMS.Storage.weapons.bombs.IFV_BMP_2_25168lb="weapons.bombs.IFV BMP-2 [25168lb]"
-ENUMS.Storage.weapons.bombs.SAMP400HD="weapons.bombs.SAMP400HD"
-ENUMS.Storage.weapons.containers.Hercules_Battle_Station="weapons.containers.Hercules_Battle_Station"
-ENUMS.Storage.weapons.bombs.AN_M64="weapons.bombs.AN_M64"
-ENUMS.Storage.weapons.containers.rearCargoSeats="weapons.containers.rearCargoSeats"
-ENUMS.Storage.weapons.bombs.Mk_82="weapons.bombs.Mk_82"
-ENUMS.Storage.weapons.missiles.AKD_10="weapons.missiles.AKD-10"
-ENUMS.Storage.weapons.bombs.BDU_50LGB="weapons.bombs.BDU_50LGB"
-ENUMS.Storage.weapons.missiles.SD_10="weapons.missiles.SD-10"
-ENUMS.Storage.weapons.containers.IRDeflector="weapons.containers.IRDeflector"
-ENUMS.Storage.weapons.bombs.FAB_500="weapons.bombs.FAB_500"
-ENUMS.Storage.weapons.bombs.KAB_500="weapons.bombs.KAB_500"
-ENUMS.Storage.weapons.nurs.S_5M="weapons.nurs.S-5M"
-ENUMS.Storage.weapons.missiles.MICA_R="weapons.missiles.MICA_R"
-ENUMS.Storage.weapons.missiles.X_59M="weapons.missiles.X_59M"
-ENUMS.Storage.weapons.nurs.UG_90MM="weapons.nurs.UG_90MM"
-ENUMS.Storage.weapons.bombs.LYSBOMB="weapons.bombs.LYSBOMB"
-ENUMS.Storage.weapons.nurs.R4M="weapons.nurs.R4M"
-ENUMS.Storage.weapons.containers.dlpod_akg="weapons.containers.dlpod_akg"
-ENUMS.Storage.weapons.missiles.LD_10="weapons.missiles.LD-10"
-ENUMS.Storage.weapons.bombs.SC_50="weapons.bombs.SC_50"
-ENUMS.Storage.weapons.nurs.HYDRA_70_MK5="weapons.nurs.HYDRA_70_MK5"
-ENUMS.Storage.weapons.bombs.FAB_100M="weapons.bombs.FAB_100M"
-ENUMS.Storage.weapons.missiles.Rb_24="weapons.missiles.Rb 24"
-ENUMS.Storage.weapons.bombs.BDU_45B="weapons.bombs.BDU_45B"
-ENUMS.Storage.weapons.missiles.GB_6_HE="weapons.missiles.GB-6-HE"
-ENUMS.Storage.weapons.missiles.KD_63B="weapons.missiles.KD-63B"
-ENUMS.Storage.weapons.missiles.P_27PE="weapons.missiles.P_27PE"
-ENUMS.Storage.weapons.droptanks.PTB300_MIG15="weapons.droptanks.PTB300_MIG15"
-ENUMS.Storage.weapons.bombs.Two50_3="weapons.bombs.250-3"
-ENUMS.Storage.weapons.bombs.SC_500_L2="weapons.bombs.SC_500_L2"
-ENUMS.Storage.weapons.containers.HMMWV_M1045="weapons.containers.HMMWV_M1045"
-ENUMS.Storage.weapons.bombs.FAB_500M54TU="weapons.bombs.FAB-500M54TU"
-ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_YELLOW="weapons.containers.{US_M10_SMOKE_TANK_YELLOW}"
-ENUMS.Storage.weapons.containers.EclairM_60="weapons.containers.{EclairM_60}"
-ENUMS.Storage.weapons.bombs.SAB_250_200="weapons.bombs.SAB_250_200"
-ENUMS.Storage.weapons.bombs.FAB_100="weapons.bombs.FAB_100"
-ENUMS.Storage.weapons.bombs.KAB_500S="weapons.bombs.KAB_500S"
-ENUMS.Storage.weapons.missiles.AGM_45A="weapons.missiles.AGM_45A"
-ENUMS.Storage.weapons.missiles.Kh25MP_PRGS1VP="weapons.missiles.Kh25MP_PRGS1VP"
-ENUMS.Storage.weapons.nurs.S5M1_HEFRAG_FFAR="weapons.nurs.S5M1_HEFRAG_FFAR"
-ENUMS.Storage.weapons.containers.kg600="weapons.containers.kg600"
-ENUMS.Storage.weapons.bombs.AN_M65="weapons.bombs.AN_M65"
-ENUMS.Storage.weapons.bombs.AN_M57="weapons.bombs.AN_M57"
-ENUMS.Storage.weapons.bombs.BLU_3B_GROUP="weapons.bombs.BLU_3B_GROUP"
-ENUMS.Storage.weapons.bombs.BAP_100="weapons.bombs.BAP-100"
-ENUMS.Storage.weapons.containers.HEMTT="weapons.containers.HEMTT"
-ENUMS.Storage.weapons.bombs.British_MC_500LB_Bomb_Mk1_Short="weapons.bombs.British_MC_500LB_Bomb_Mk1_Short"
-ENUMS.Storage.weapons.nurs.ARAKM70BAP="weapons.nurs.ARAKM70BAP"
-ENUMS.Storage.weapons.missiles.AGM_119="weapons.missiles.AGM_119"
-ENUMS.Storage.weapons.missiles.MMagicII="weapons.missiles.MMagicII"
-ENUMS.Storage.weapons.bombs.AB_500_1_SD_10A="weapons.bombs.AB_500_1_SD_10A"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M282="weapons.nurs.HYDRA_70_M282"
-ENUMS.Storage.weapons.droptanks.DFT_400_GAL_A4E="weapons.droptanks.DFT_400_GAL_A4E"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M257="weapons.nurs.HYDRA_70_M257"
-ENUMS.Storage.weapons.droptanks.AV8BNA_AERO1D="weapons.droptanks.AV8BNA_AERO1D"
-ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_BLUE="weapons.containers.{US_M10_SMOKE_TANK_BLUE}"
-ENUMS.Storage.weapons.nurs.ARF8M3HEI="weapons.nurs.ARF8M3HEI"
-ENUMS.Storage.weapons.bombs.RN_28="weapons.bombs.RN-28"
-ENUMS.Storage.weapons.bombs.Squad_30_x_Soldier_7950lb="weapons.bombs.Squad 30 x Soldier [7950lb]"
-ENUMS.Storage.weapons.containers.uaz_469="weapons.containers.uaz-469"
-ENUMS.Storage.weapons.containers.Otokar_Cobra="weapons.containers.Otokar_Cobra"
-ENUMS.Storage.weapons.bombs.APC_BTR_82A_Air_24998lb="weapons.bombs.APC BTR-82A Air [24998lb]"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M274="weapons.nurs.HYDRA_70_M274"
-ENUMS.Storage.weapons.missiles.P_24R="weapons.missiles.P_24R"
-ENUMS.Storage.weapons.nurs.HYDRA_70_MK61="weapons.nurs.HYDRA_70_MK61"
-ENUMS.Storage.weapons.missiles.Igla_1E="weapons.missiles.Igla_1E"
-ENUMS.Storage.weapons.missiles.C_802AK="weapons.missiles.C-802AK"
-ENUMS.Storage.weapons.nurs.C_24="weapons.nurs.C_24"
-ENUMS.Storage.weapons.droptanks.M2KC_08_RPL541="weapons.droptanks.M2KC_08_RPL541"
-ENUMS.Storage.weapons.nurs.C_13="weapons.nurs.C_13"
-ENUMS.Storage.weapons.droptanks.droptank_110_gal="weapons.droptanks.droptank_110_gal"
-ENUMS.Storage.weapons.bombs.Mk_84="weapons.bombs.Mk_84"
-ENUMS.Storage.weapons.missiles.Sea_Eagle="weapons.missiles.Sea_Eagle"
-ENUMS.Storage.weapons.droptanks.PTB_1200_F1="weapons.droptanks.PTB_1200_F1"
-ENUMS.Storage.weapons.nurs.SNEB_TYPE256_H1="weapons.nurs.SNEB_TYPE256_H1"
-ENUMS.Storage.weapons.containers.MATRA_PHIMAT="weapons.containers.MATRA-PHIMAT"
-ENUMS.Storage.weapons.containers.smoke_pod="weapons.containers.smoke_pod"
-ENUMS.Storage.weapons.containers.F_15E_AAQ_14_LANTIRN="weapons.containers.F-15E_AAQ-14_LANTIRN"
-ENUMS.Storage.weapons.containers.EclairM_24="weapons.containers.{EclairM_24}"
-ENUMS.Storage.weapons.bombs.GBU_16="weapons.bombs.GBU_16"
-ENUMS.Storage.weapons.nurs.HYDRA_70_M156="weapons.nurs.HYDRA_70_M156"
-ENUMS.Storage.weapons.missiles.R_60="weapons.missiles.R-60"
-ENUMS.Storage.weapons.containers.zsu_23_4="weapons.containers.zsu-23-4"
-ENUMS.Storage.weapons.missiles.RB75="weapons.missiles.RB75"
-ENUMS.Storage.weapons.missiles.Mistral="weapons.missiles.Mistral"
-ENUMS.Storage.weapons.droptanks.MB339_TT500_L="weapons.droptanks.MB339_TT500_L"
-ENUMS.Storage.weapons.bombs.SAM_SA_13_STRELA_21624lb="weapons.bombs.SAM SA-13 STRELA [21624lb]"
-ENUMS.Storage.weapons.bombs.SAM_Avenger_M1097_Air_7200lb="weapons.bombs.SAM Avenger M1097 Air [7200lb]"
-ENUMS.Storage.weapons.droptanks.Eleven00L_Tank_Empty="weapons.droptanks.1100L Tank Empty"
-ENUMS.Storage.weapons.bombs.AN_M88="weapons.bombs.AN-M88"
-ENUMS.Storage.weapons.missiles.S_25L="weapons.missiles.S_25L"
-ENUMS.Storage.weapons.nurs.British_AP_25LBNo1_3INCHNo1="weapons.nurs.British_AP_25LBNo1_3INCHNo1"
-ENUMS.Storage.weapons.bombs.BDU_50LD="weapons.bombs.BDU_50LD"
-ENUMS.Storage.weapons.bombs.AGM_62="weapons.bombs.AGM_62"
-ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_WHITE="weapons.containers.{US_M10_SMOKE_TANK_WHITE}"
-ENUMS.Storage.weapons.missiles.MICA_T="weapons.missiles.MICA_T"
-ENUMS.Storage.weapons.containers.HVAR_rocket="weapons.containers.HVAR_rocket"
-ENUMS.Storage.weapons.containers.LANTIRN="weapons.containers.LANTIRN"
-ENUMS.Storage.weapons.missiles.AGM_78B="weapons.missiles.AGM_78B"
-ENUMS.Storage.weapons.containers.uh_60l_pilot="weapons.containers.uh-60l_pilot"
-ENUMS.Storage.weapons.missiles.AIM_92E="weapons.missiles.AIM-92E"
-ENUMS.Storage.weapons.missiles.KD_63B="weapons.missiles.KD_63B"
-ENUMS.Storage.weapons.bombs.Type_200A="weapons.bombs.Type_200A"
-ENUMS.Storage.weapons.missiles.HB_AIM_7E_2="weapons.missiles.HB-AIM-7E-2"
-ENUMS.Storage.weapons.containers.Spear="weapons.containers.Spear"
-ENUMS.Storage.weapons.missiles.LS_6="weapons.missiles.LS_6"
-ENUMS.Storage.weapons.containers.HB_ALE_40_0_120="weapons.containers.HB_ALE_40_0_120"
-ENUMS.Storage.weapons.containers.Fantasm="weapons.containers.Fantasm"
-ENUMS.Storage.weapons.nurs.FFAR_Mk61="weapons.nurs.FFAR_Mk61"
-ENUMS.Storage.weapons.bombs.HB_F4E_GBU15V1="weapons.bombs.HB_F4E_GBU15V1"
-ENUMS.Storage.weapons.containers.HB_F14_EXT_AN_APQ_167="weapons.containers.HB_F14_EXT_AN_APQ-167"
-ENUMS.Storage.weapons.nurs.LWL_RP="weapons.nurs.LWL_RP"
-ENUMS.Storage.weapons.bombs.AGM_62_I="weapons.bombs.AGM_62_I"
-ENUMS.Storage.weapons.containers.ETHER="weapons.containers.ETHER"
-ENUMS.Storage.weapons.containers.TANGAZH="weapons.containers.TANGAZH"
-ENUMS.Storage.weapons.bombs.LYSBOMB_11086="weapons.bombs.LYSBOMB 11086"
-ENUMS.Storage.weapons.containers.Stub_Wing="weapons.containers.Stub_Wing"
-ENUMS.Storage.weapons.missiles.AIM_9E="weapons.missiles.AIM-9E"
-ENUMS.Storage.weapons.missiles.C_701T="weapons.missiles.C_701T"
-ENUMS.Storage.weapons.bombs.BAP_100="weapons.bombs.BAP_100"
-ENUMS.Storage.weapons.missiles.CM_802AKG="weapons.missiles.CM-802AKG"
-ENUMS.Storage.weapons.missiles.CM_400AKG="weapons.missiles.CM-400AKG"
-ENUMS.Storage.weapons.missiles.C_802AK="weapons.missiles.C_802AK"
-ENUMS.Storage.weapons.missiles.KD_63="weapons.missiles.KD_63"
-ENUMS.Storage.weapons.containers.HB_ORD_Pave_Spike_Fast="weapons.containers.HB_ORD_Pave_Spike_Fast"
-ENUMS.Storage.weapons.missiles.SPIKE_ER2="weapons.missiles.SPIKE_ER2"
-ENUMS.Storage.weapons.containers.KINGAL="weapons.containers.KINGAL"
-ENUMS.Storage.weapons.containers.LANTIRN_F14_TARGET="weapons.containers.LANTIRN-F14-TARGET"
-ENUMS.Storage.weapons.containers.SPS_141="weapons.containers.SPS-141"
-ENUMS.Storage.weapons.bombs.BLU_3B_GROUP="weapons.bombs.BLU-3B_GROUP"
-ENUMS.Storage.weapons.containers.HB_ALE_40_30_0="weapons.containers.HB_ALE_40_30_0"
-ENUMS.Storage.weapons.droptanks.HB_HIGH_PERFORMANCE_CENTERLINE_600_GAL="weapons.droptanks.HB_HIGH_PERFORMANCE_CENTERLINE_600_GAL"
-ENUMS.Storage.weapons.containers.ALQ_184="weapons.containers.ALQ-184"
-ENUMS.Storage.weapons.missiles.AGM_45B="weapons.missiles.AGM_45B"
-ENUMS.Storage.weapons.bombs.BLU_3_GROUP="weapons.bombs.BLU-3_GROUP"
-ENUMS.Storage.weapons.missiles.SPIKE_ER="weapons.missiles.SPIKE_ER"
-ENUMS.Storage.weapons.nurs.ARAKM70BAPPX="weapons.nurs.ARAKM70BAPPX"
-ENUMS.Storage.weapons.bombs.LYSBOMB_11088="weapons.bombs.LYSBOMB 11088"
-ENUMS.Storage.weapons.bombs.LYSBOMB_11087="weapons.bombs.LYSBOMB 11087"
-ENUMS.Storage.weapons.missiles.KD_20="weapons.missiles.KD_20"
-ENUMS.Storage.weapons.droptanks.HB_F_4E_EXT_WingTank="weapons.droptanks.HB_F-4E_EXT_WingTank"
-ENUMS.Storage.weapons.missiles.Rb_04="weapons.missiles.Rb_04"
-ENUMS.Storage.weapons.containers.AAQ_33="weapons.containers.AAQ-33"
-ENUMS.Storage.weapons.droptanks.HB_F_4E_EXT_Center_Fuel_Tank_EMPTY="weapons.droptanks.HB_F-4E_EXT_Center_Fuel_Tank_EMPTY"
-ENUMS.Storage.weapons.droptanks.HB_F_4E_EXT_WingTank_R_EMPTY="weapons.droptanks.HB_F-4E_EXT_WingTank_R_EMPTY"
-ENUMS.Storage.weapons.droptanks.HB_F_4E_EXT_WingTank_EMPTY="weapons.droptanks.HB_F-4E_EXT_WingTank_EMPTY"
-ENUMS.Storage.weapons.containers.uh_60l_copilot="weapons.containers.uh-60l_copilot"
-ENUMS.Storage.weapons.droptanks.JAYHAWK_80gal_Fuel_Tankv2="weapons.droptanks.JAYHAWK_80gal_Fuel_Tankv2"
-ENUMS.Storage.weapons.containers.supply_m134="weapons.containers.supply_m134"
-ENUMS.Storage.weapons.containers.Seahawk_Pylon="weapons.containers.Seahawk_Pylon"
-ENUMS.Storage.weapons.nurs.LWL_MPP="weapons.nurs.LWL_MPP"
-ENUMS.Storage.weapons.nurs.S_5KP="weapons.nurs.S_5KP"
-ENUMS.Storage.weapons.missiles.AIM_92J="weapons.missiles.AIM-92J"
-ENUMS.Storage.weapons.missiles.HB_AIM_7E="weapons.missiles.HB-AIM-7E"
-ENUMS.Storage.weapons.containers.ALQ_131="weapons.containers.ALQ-131"
-ENUMS.Storage.weapons.containers.HB_F14_EXT_TARPS="weapons.containers.HB_F14_EXT_TARPS"
-ENUMS.Storage.weapons.containers.MH60_SOAR="weapons.containers.MH60_SOAR"
-ENUMS.Storage.weapons.missiles.YJ_83="weapons.missiles.YJ-83"
-ENUMS.Storage.weapons.bombs.GBU_8_B="weapons.bombs.GBU_8_B"
-ENUMS.Storage.weapons.containers.HB_F14_EXT_ECA="weapons.containers.HB_F14_EXT_ECA"
-ENUMS.Storage.weapons.bombs.BAP_100="weapons.bombs.BAP-100"
-ENUMS.Storage.weapons.nurs.M261_MPSM_Rocket="weapons.nurs.M261_MPSM_Rocket"
-ENUMS.Storage.weapons.droptanks.SEAHAWK_120_Fuel_Tank="weapons.droptanks.SEAHAWK_120_Fuel_Tank"
-ENUMS.Storage.weapons.containers.SHPIL="weapons.containers.SHPIL"
-ENUMS.Storage.weapons.bombs.GBU_39="weapons.bombs.GBU_39"
-ENUMS.Storage.weapons.nurs.S_5M="weapons.nurs.S_5M"
-ENUMS.Storage.weapons.containers.HB_ALE_40_15_90="weapons.containers.HB_ALE_40_15_90"
-ENUMS.Storage.weapons.missiles.AIM_7E="weapons.missiles.AIM-7E"
-ENUMS.Storage.weapons.missiles.AIM_9P3="weapons.missiles.AIM-9P3"
-ENUMS.Storage.weapons.missiles.AGM_12B="weapons.missiles.AGM_12B"
-ENUMS.Storage.weapons.missiles.CM_802AKG="weapons.missiles.CM_802AKG"
-ENUMS.Storage.weapons.droptanks.JAYHAWK_120_Fuel_Dual_Tank="weapons.droptanks.JAYHAWK_120_Fuel_Dual_Tank"
-ENUMS.Storage.weapons.droptanks.HB_F_4E_EXT_Center_Fuel_Tank="weapons.droptanks.HB_F-4E_EXT_Center_Fuel_Tank"
-ENUMS.Storage.weapons.containers.PAVETACK="weapons.containers.PAVETACK"
-ENUMS.Storage.weapons.missiles.LS_6_500="weapons.missiles.LS_6_500"
-ENUMS.Storage.weapons.bombs.LYSBOMB_11089="weapons.bombs.LYSBOMB 11089"
-ENUMS.Storage.weapons.bombs.BLU_4B_GROUP="weapons.bombs.BLU-4B_GROUP"
-ENUMS.Storage.weapons.containers.ah_64d_radar="weapons.containers.ah-64d_radar"
-ENUMS.Storage.weapons.containers.F_18_LDT_POD="weapons.containers.F-18-LDT-POD"
-ENUMS.Storage.weapons.containers.HB_ALE_40_30_60="weapons.containers.HB_ALE_40_30_60"
-ENUMS.Storage.weapons.bombs.LS_6_100="weapons.bombs.LS_6_100"
-ENUMS.Storage.weapons.droptanks.HB_F_4E_EXT_WingTank_R="weapons.droptanks.HB_F-4E_EXT_WingTank_R"
-ENUMS.Storage.weapons.containers.SORBCIJA_R="weapons.containers.SORBCIJA_R"
-ENUMS.Storage.weapons.missiles.CATM_65K="weapons.missiles.CATM_65K"
-ENUMS.Storage.weapons.containers.HB_ORD_Pave_Spike="weapons.containers.HB_ORD_Pave_Spike"
-ENUMS.Storage.weapons.containers.RobbieTank1="weapons.containers.RobbieTank1"
-ENUMS.Storage.weapons.containers.SKY_SHADOW="weapons.containers.SKY_SHADOW"
-ENUMS.Storage.weapons.containers.SORBCIJA_L="weapons.containers.SORBCIJA_L"
-ENUMS.Storage.weapons.containers.Pavehawk="weapons.containers.Pavehawk"
-ENUMS.Storage.weapons.bombs.BLG66_EG="weapons.bombs.BLG66_EG"
-ENUMS.Storage.weapons.missiles.AGM_12C_ED="weapons.missiles.AGM_12C_ED"
-ENUMS.Storage.weapons.missiles.AIM_92C="weapons.missiles.AIM-92C"
-ENUMS.Storage.weapons.containers.MPS_410="weapons.containers.MPS-410"
-ENUMS.Storage.weapons.missiles.HJ_12="weapons.missiles.HJ-12"
-ENUMS.Storage.weapons.containers.AAQ_28_LITENING="weapons.containers.AAQ-28_LITENING"
-ENUMS.Storage.weapons.containers.F_18_FLIR_POD="weapons.containers.F-18-FLIR-POD"
-ENUMS.Storage.weapons.bombs.BLU_3B_GROUP="weapons.bombs.BLU_3B_GROUP"
-ENUMS.Storage.weapons.containers.UH60L_Jayhawk="weapons.containers.UH60L_Jayhawk"
-ENUMS.Storage.weapons.containers.BOZ_100="weapons.containers.BOZ-100"
-ENUMS.Storage.weapons.missiles.AGM_78A="weapons.missiles.AGM_78A"
-ENUMS.Storage.weapons.missiles.LAU_61_APKWS_M282="weapons.missiles.LAU_61_APKWS_M282"
-ENUMS.Storage.weapons.bombs.BAP_100="weapons.bombs.BAP-100"
-ENUMS.Storage.weapons.missiles.CM_802AKG="weapons.missiles.CM-802AKG"
-ENUMS.Storage.weapons.bombs.BLU_3B_GROUP="weapons.bombs.BLU_3B_GROUP"
-ENUMS.Storage.weapons.bombs.BLU_4B_GROUP="weapons.bombs.BLU-4B_GROUP"
-ENUMS.Storage.weapons.nurs.S_5M="weapons.nurs.S_5M"
-ENUMS.Storage.weapons.missiles.AGM_12A="weapons.missiles.AGM_12A"
-ENUMS.Storage.weapons.droptanks.JAYHAWK_120_Fuel_Tank="weapons.droptanks.JAYHAWK_120_Fuel_Tank"
-ENUMS.Storage.weapons.bombs.GBU_15_V_1_B="weapons.bombs.GBU_15_V_1_B"
-ENUMS.Storage.weapons.missiles.HYDRA_70_M151_APKWS={4,4,8,292}
-ENUMS.Storage.weapons.missiles.HYDRA_70_M282_APKWS={4,4,8,293}
-ENUMS.Storage.weapons.bombs.BAP100="weapons.bombs.BAP_100"
-ENUMS.Storage.weapons.bombs.BLU3B_GROUP="weapons.bombs.BLU-3B_GROUP"
-ENUMS.Storage.weapons.missiles.CM_802AKG="weapons.missiles.CM_802AKG"
-ENUMS.Storage.weapons.bombs.BLU_4B_GROUP="weapons.bombs.BLU_4B_GROUP"
-ENUMS.Storage.weapons.nurs.S5M="weapons.nurs.S-5M"
-ENUMS.Storage.weapons.Gazelle.HMP400_100RDS={4,15,46,1771}
-ENUMS.Storage.weapons.Gazelle.HMP400_200RDS={4,15,46,1770}
-ENUMS.Storage.weapons.Gazelle.HMP400_400RDS={4,15,46,1769}
-ENUMS.Storage.weapons.Gazelle.GIAT_M261_AP={4,15,46,1768}
-ENUMS.Storage.weapons.Gazelle.GIAT_M261_SAPHEI={4,15,46,1767}
-ENUMS.Storage.weapons.Gazelle.GIAT_M261_HE={4,15,46,1766}
-ENUMS.Storage.weapons.Gazelle.GIAT_M261_HEAP={4,15,46,1765}
-ENUMS.Storage.weapons.Gazelle.GIAT_M261_APHE={4,15,46,1764}
-ENUMS.Storage.weapons.Gazelle.GAZELLE_IR_DEFLECTOR={4,15,47,680}
-ENUMS.Storage.weapons.Gazelle.GAZELLE_FAS_SANDFILTER={4,15,47,679}
-ENUMS.Storage.weapons.CH47.CH47_PORT_M60D={4,15,46,2489}
-ENUMS.Storage.weapons.CH47.CH47_STBD_M60D={4,15,46,2488}
-ENUMS.Storage.weapons.CH47.CH47_AFT_M60D={4,15,46,2490}
-ENUMS.Storage.weapons.CH47.CH47_PORT_M134D={4,15,46,2494}
-ENUMS.Storage.weapons.CH47.CH47_STBD_M134D={4,15,46,2495}
-ENUMS.Storage.weapons.CH47.CH47_AFT_M3M={4,15,46,2496}
-ENUMS.Storage.weapons.CH47.CH47_PORT_M240H={4,15,46,2492}
-ENUMS.Storage.weapons.CH47.CH47_STBD_M240H={4,15,46,2491}
-ENUMS.Storage.weapons.CH47.CH47_AFT_M240H={4,15,46,2493}
-ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right={4,15,46,161}
-ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left={4,15,46,160}
-ENUMS.Storage.weapons.UH1H.M134_MiniGun_Right_Door={4,15,46,175}
-ENUMS.Storage.weapons.UH1H.M60_MG_Right_Door={4,15,46,177}
-ENUMS.Storage.weapons.UH1H.M134_MiniGun_Left_Door={4,15,46,174}
-ENUMS.Storage.weapons.UH1H.M60_MG_Left_Door={4,15,46,176}
-ENUMS.Storage.weapons.UH60L.M151_HYDRA={4,7,33,147}
-ENUMS.Storage.weapons.UH60L.M156_HYDRA={4,7,33,148}
-ENUMS.Storage.weapons.UH60L.M229_HYDRA={4,7,33,148}
-ENUMS.Storage.weapons.UH60L.M257_HYDRA={4,7,33,151}
-ENUMS.Storage.weapons.UH60L.M259_HYDRA={4,7,33,151}
-ENUMS.Storage.weapons.UH60L.M274_HYDRA={4,7,33,150}
-ENUMS.Storage.weapons.UH60L.M134_DOOR_GUN={4,15,46,3031}
-ENUMS.Storage.weapons.UH60L.M3M={4,15,46,2496}
-ENUMS.Storage.weapons.UH60L.M3M_DOOR_GUN={4,15,46,3032}
-ENUMS.Storage.weapons.UH60L.M60_DOOR_GUN={4,15,46,3033}
-ENUMS.Storage.weapons.UH60L.FUEL_TANK_200={1,3,43,3023}
-ENUMS.Storage.weapons.UH60L.FUEL_TANK_230={1,3,43,3024}
-ENUMS.Storage.weapons.UH60L.FUEL_TANK_450={1,3,43,3025}
-ENUMS.Storage.weapons.UH60L.FUEL_TANK_DUAL_AUX={1,3,43,3026}
-ENUMS.Storage.weapons.UH60L.CARGO_SEAT_REAR_ROW={1,3,43,3030}
-ENUMS.Storage.weapons.UH60L.CARGO_SEAT_THREE_ROWS={1,3,43,3029}
-ENUMS.Storage.weapons.UH60L.EMPTY_GUNNER_SEAT_1={1,3,43,3027}
-ENUMS.Storage.weapons.UH60L.EMPTY_GUNNER_SEAT_2={1,3,43,3028}
-ENUMS.Storage.weapons.OH58.FIM92={4,4,7,449}
-ENUMS.Storage.weapons.OH58.MG_M3P100={4,15,46,2611}
-ENUMS.Storage.weapons.OH58.MG_M3P200={4,15,46,2610}
-ENUMS.Storage.weapons.OH58.MG_M3P300={4,15,46,2609}
-ENUMS.Storage.weapons.OH58.MG_M3P400={4,15,46,2608}
-ENUMS.Storage.weapons.OH58.MG_M3P500={4,15,46,2607}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Blue={4,5,9,488}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Green={4,5,9,489}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Red={4,5,9,487}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Violet={4,5,9,490}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_White={4,5,9,492}
-ENUMS.Storage.weapons.OH58.Smk_Grenade_Yellow={4,5,9,491}
-ENUMS.Storage.weapons.AH64D.AN_APG78={4,15,44,2114}
-ENUMS.Storage.weapons.AH64D.Internal_Aux_FuelTank={1,3,43,1700}
-ENUMS.Storage.weapons.droptanks.FuelTank_610gal={1,3,43,10}
-ENUMS.Storage.weapons.droptanks.FuelTank_370gal={1,3,43,11}
-ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_AP_M79={4,15,46,824}
-ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_HE_M792={4,15,46,825}
-ENUMS.Storage.weapons.containers.AV8BNA_GAU_12_SAPHEI_T={4,15,46,300}
+ENUMS.Storage.weapons.containers.APK9='weapons.containers.APK-9'
+ENUMS.Storage.weapons.shells.KDA_35_FAPDS='weapons.shells.KDA_35_FAPDS'
+ENUMS.Storage.weapons.shells.BR_354N='weapons.shells.BR_354N'
+ENUMS.Storage.weapons.droptanks.HB_F4E_EXT_WingTank_EMPTY='weapons.droptanks.HB_F-4E_EXT_WingTank_EMPTY'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M151_M433='weapons.nurs.HYDRA_70_M151_M433'
+ENUMS.Storage.weapons.shells.Rh202_20_HE='weapons.shells.Rh202_20_HE'
+ENUMS.Storage.weapons.bombs.GBU_38='weapons.bombs.GBU_38'
+ENUMS.Storage.weapons.containers._16c_hts_pod='weapons.containers.16c_hts_pod'
+ENUMS.Storage.weapons.missiles.AGM_65G='weapons.missiles.AGM_65G'
+ENUMS.Storage.weapons.gunmounts.NR30='weapons.gunmounts.NR-30'
+ENUMS.Storage.weapons.gunmounts.MB339_ANM3_L='weapons.gunmounts.{MB339_ANM3_L}'
+ENUMS.Storage.weapons.adapters.UB13='weapons.adapters.UB-13'
+ENUMS.Storage.weapons.shells.N37_37x155_HEI_T='weapons.shells.N37_37x155_HEI_T'
+ENUMS.Storage.weapons.bombs.AN_M30A1='weapons.bombs.AN_M30A1'
+ENUMS.Storage.weapons.adapters.APU601='weapons.adapters.APU-60-1'
+ENUMS.Storage.weapons.adapters.M2000C_AUF2='weapons.adapters.M-2000C_AUF2'
+ENUMS.Storage.weapons.shells.MG_20x82_API='weapons.shells.MG_20x82_API'
+ENUMS.Storage.weapons.adapters.Carrier_N1_EM_EF='weapons.adapters.Carrier_N-1_EM_EF'
+ENUMS.Storage.weapons.gunmounts.OH58D_M3P_L500='weapons.gunmounts.OH58D_M3P_L500'
+ENUMS.Storage.weapons.adapters.RB15pylon='weapons.adapters.RB15pylon'
+ENUMS.Storage.weapons.bombs.AGM_62='weapons.bombs.AGM_62'
+ENUMS.Storage.weapons.shells.GSH23_23_AP='weapons.shells.GSH23_23_AP'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_S_m_K_Ub_m_Zerl='weapons.shells.Mauser7.92x57_S.m.K._Ub.m.Zerl.'
+ENUMS.Storage.weapons.shells.M2_12_7='weapons.shells.M2_12_7'
+ENUMS.Storage.weapons.shells.M230_HEDPM789='weapons.shells.M230_HEDP M789'
+ENUMS.Storage.weapons.adapters.UB_32A='weapons.adapters.UB_32A'
+ENUMS.Storage.weapons.shells.L23A1_APFSDS='weapons.shells.L23A1_APFSDS'
+ENUMS.Storage.weapons.shells.DEFA553_30HE='weapons.shells.DEFA553_30HE'
+ENUMS.Storage.weapons.bombs.LYSBOMB11087='weapons.bombs.LYSBOMB 11087'
+ENUMS.Storage.weapons.shells.KS19_100HE='weapons.shells.KS19_100HE'
+ENUMS.Storage.weapons.droptanks.M2KC_RPL_522_EMPTY='weapons.droptanks.M2KC_RPL_522_EMPTY'
+ENUMS.Storage.weapons.droptanks.M2KC_08_RPL541='weapons.droptanks.M2KC_08_RPL541'
+ENUMS.Storage.weapons.shells._50Browning_API_M8_Corsair='weapons.shells.50Browning_API_M8_Corsair'
+ENUMS.Storage.weapons.adapters.OH58D_M260='weapons.adapters.OH58D_M260'
+ENUMS.Storage.weapons.missiles.Rb05A='weapons.missiles.Rb 05A'
+ENUMS.Storage.weapons.adapters.HB_F14_EXT_SHOULDER_PHX_L='weapons.adapters.HB_F14_EXT_SHOULDER_PHX_L'
+ENUMS.Storage.weapons.shells.MG_13x64_HEI_T='weapons.shells.MG_13x64_HEI_T'
+ENUMS.Storage.weapons.droptanks.M2KC_08_RPL541_EMPTY='weapons.droptanks.M2KC_08_RPL541_EMPTY'
+ENUMS.Storage.weapons.missiles.HQ16='weapons.missiles.HQ-16'
+ENUMS.Storage.weapons.nurs.SMERCH_9M55F='weapons.nurs.SMERCH_9M55F'
+ENUMS.Storage.weapons.nurs.M26='weapons.nurs.M26'
+ENUMS.Storage.weapons.shells._2A38_30_AP='weapons.shells.2A38_30_AP'
+ENUMS.Storage.weapons.missiles.LS_6='weapons.missiles.LS_6'
+ENUMS.Storage.weapons.containers.EclairM_60='weapons.containers.{EclairM_60}'
+ENUMS.Storage.weapons.bombs.FAB_100='weapons.bombs.FAB_100'
+ENUMS.Storage.weapons.missiles.MALUTKA='weapons.missiles.MALUTKA'
+ENUMS.Storage.weapons.containers.HB_ALE_40_0_120='weapons.containers.HB_ALE_40_0_120'
+ENUMS.Storage.weapons.bombs.M485_FLARE='weapons.bombs.M485_FLARE'
+ENUMS.Storage.weapons.nurs.AGR_20_M282_unguided='weapons.nurs.AGR_20_M282_unguided'
+ENUMS.Storage.weapons.droptanks.F15E_Drop_Tank='weapons.droptanks.F-15E_Drop_Tank'
+ENUMS.Storage.weapons.shells._20mm_M70LD_SAPHEI='weapons.shells.20mm_M70LD_SAPHEI'
+ENUMS.Storage.weapons.adapters.CHAP_Mi28N_ataka='weapons.adapters.CHAP_Mi28N_ataka'
+ENUMS.Storage.weapons.bombs.GBU_30='weapons.bombs.GBU_30'
+ENUMS.Storage.weapons.bombs.AGM_62_I='weapons.bombs.AGM_62_I'
+ENUMS.Storage.weapons.bombs.BETAB500S='weapons.bombs.BETAB-500S'
+ENUMS.Storage.weapons.shells.ZTZ_125_HE='weapons.shells.ZTZ_125_HE'
+ENUMS.Storage.weapons.shells.HP30_30_AP='weapons.shells.HP30_30_AP'
+ENUMS.Storage.weapons.missiles.SM_6='weapons.missiles.SM_6'
+ENUMS.Storage.weapons.gunmounts.MINIGUN='weapons.gunmounts.MINIGUN'
+ENUMS.Storage.weapons.bombs.CBU_87='weapons.bombs.CBU_87'
+ENUMS.Storage.weapons.adapters.B8V20A='weapons.adapters.B-8V20A'
+ENUMS.Storage.weapons.containers.AN_ASQ_228='weapons.containers.AN_ASQ_228'
+ENUMS.Storage.weapons.missiles.Sea_Dart='weapons.missiles.Sea_Dart'
+ENUMS.Storage.weapons.adapters.apu13mt='weapons.adapters.apu-13mt'
+ENUMS.Storage.weapons.adapters.HB_ORD_Missile_Well_Adapter='weapons.adapters.HB_ORD_Missile_Well_Adapter'
+ENUMS.Storage.weapons.shells.AK176_76='weapons.shells.AK176_76'
+ENUMS.Storage.weapons.missiles.X_29T='weapons.missiles.X_29T'
+ENUMS.Storage.weapons.nurs.HYDRA_70_MK61='weapons.nurs.HYDRA_70_MK61'
+ENUMS.Storage.weapons.shells.M393A3_105_HE='weapons.shells.M393A3_105_HE'
+ENUMS.Storage.weapons.bombs.AN_M57='weapons.bombs.AN_M57'
+ENUMS.Storage.weapons.missiles.AIM_7='weapons.missiles.AIM_7'
+ENUMS.Storage.weapons.gunmounts.GIAT_M621_SAPHEI='weapons.gunmounts.{GIAT_M621_SAPHEI}'
+ENUMS.Storage.weapons.containers.MATRAPHIMAT='weapons.containers.MATRA-PHIMAT'
+ENUMS.Storage.weapons.shells.M61_20_AP='weapons.shells.M61_20_AP'
+ENUMS.Storage.weapons.droptanks.droptank_150_gal='weapons.droptanks.droptank_150_gal'
+ENUMS.Storage.weapons.missiles.SA48H6E2='weapons.missiles.SA48H6E2'
+ENUMS.Storage.weapons.nurs.HVARUSNMk28Mod4='weapons.nurs.HVAR USN Mk28 Mod4'
+ENUMS.Storage.weapons.adapters.KMGU2='weapons.adapters.KMGU-2'
+ENUMS.Storage.weapons.missiles.C_701T='weapons.missiles.C_701T'
+ENUMS.Storage.weapons.shells.DM53_120_AP='weapons.shells.DM53_120_AP'
+ENUMS.Storage.weapons.adapters._9M114PYLON_EMPTY='weapons.adapters.9M114-PYLON_EMPTY'
+ENUMS.Storage.weapons.missiles.P_500='weapons.missiles.P_500'
+ENUMS.Storage.weapons.bombs.S_8OM_FLARE='weapons.bombs.S_8OM_FLARE'
+ENUMS.Storage.weapons.adapters.LAU115C2_LAU127='weapons.adapters.LAU-115C+2_LAU127'
+ENUMS.Storage.weapons.shells.M256_120_HE='weapons.shells.M256_120_HE'
+ENUMS.Storage.weapons.shells._7_62x51tr='weapons.shells.7_62x51tr'
+ENUMS.Storage.weapons.adapters.adapter_gdj_kd63='weapons.adapters.adapter_gdj_kd63'
+ENUMS.Storage.weapons.missiles.CM802AKG='weapons.missiles.CM-802AKG'
+ENUMS.Storage.weapons.missiles.C_802AK='weapons.missiles.C_802AK'
+ENUMS.Storage.weapons.bombs.GBU_39='weapons.bombs.GBU_39'
+ENUMS.Storage.weapons.bombs.BETAB500M='weapons.bombs.BETAB-500M'
+ENUMS.Storage.weapons.adapters.LAU117='weapons.adapters.LAU-117'
+ENUMS.Storage.weapons.missiles.BK90_MJ1='weapons.missiles.BK90_MJ1'
+ENUMS.Storage.weapons.missiles.R60='weapons.missiles.R-60'
+ENUMS.Storage.weapons.shells.PJ26_76_PFHE='weapons.shells.PJ26_76_PFHE'
+ENUMS.Storage.weapons.nurs.AGR_20_M151_unguided='weapons.nurs.AGR_20_M151_unguided'
+ENUMS.Storage.weapons.shells.HEDPM430='weapons.shells.HEDPM430'
+ENUMS.Storage.weapons.shells.GSH_23_HE='weapons.shells.GSH_23_HE'
+ENUMS.Storage.weapons.gunmounts.CC420_GUN_POD='weapons.gunmounts.{CC420_GUN_POD}'
+ENUMS.Storage.weapons.shells.Hispano_Mk_II_SAPI='weapons.shells.Hispano_Mk_II_SAP/I'
+ENUMS.Storage.weapons.adapters.Spitfire_pilon2L='weapons.adapters.Spitfire_pilon2L'
+ENUMS.Storage.weapons.bombs.RBK_500SOAB='weapons.bombs.RBK_500SOAB'
+ENUMS.Storage.weapons.bombs.M_117='weapons.bombs.M_117'
+ENUMS.Storage.weapons.missiles.SPIKE_ER2='weapons.missiles.SPIKE_ER2'
+ENUMS.Storage.weapons.bombs.BDU_45LGB='weapons.bombs.BDU_45LGB'
+ENUMS.Storage.weapons.missiles.AGM_65H='weapons.missiles.AGM_65H'
+ENUMS.Storage.weapons.adapters.adapter_df4b='weapons.adapters.adapter_df4b'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE252_F1B='weapons.nurs.SNEB_TYPE252_F1B'
+ENUMS.Storage.weapons.droptanks._800LTank='weapons.droptanks.800L Tank'
+ENUMS.Storage.weapons.missiles.X_31A='weapons.missiles.X_31A'
+ENUMS.Storage.weapons.containers.LANTIRNF14TARGET='weapons.containers.LANTIRN-F14-TARGET'
+ENUMS.Storage.weapons.bombs.CBU_52B='weapons.bombs.CBU_52B'
+ENUMS.Storage.weapons.adapters.b52mbd_mk84='weapons.adapters.b52-mbd_mk84'
+ENUMS.Storage.weapons.adapters.J11A_twinpylon_l='weapons.adapters.J-11A_twinpylon_l'
+ENUMS.Storage.weapons.gunmounts.MB339_DEFA553_R='weapons.gunmounts.{MB339_DEFA553_R}'
+ENUMS.Storage.weapons.containers.BARAX='weapons.containers.BARAX'
+ENUMS.Storage.weapons.shells.DEFA554_30_HE='weapons.shells.DEFA554_30_HE'
+ENUMS.Storage.weapons.droptanks.i16_eft='weapons.droptanks.i16_eft'
+ENUMS.Storage.weapons.bombs.BLU3B_GROUP='weapons.bombs.BLU-3B_GROUP'
+ENUMS.Storage.weapons.missiles.Sea_Cat='weapons.missiles.Sea_Cat'
+ENUMS.Storage.weapons.adapters.aero3b='weapons.adapters.aero-3b'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE251_F1B='weapons.nurs.SNEB_TYPE251_F1B'
+ENUMS.Storage.weapons.missiles.FIM_92C='weapons.missiles.FIM_92C'
+ENUMS.Storage.weapons.missiles.SM_2ER='weapons.missiles.SM_2ER'
+ENUMS.Storage.weapons.missiles.AGM_114K='weapons.missiles.AGM_114K'
+ENUMS.Storage.weapons.bombs.AB_250_2_SD_10A='weapons.bombs.AB_250_2_SD_10A'
+ENUMS.Storage.weapons.missiles.X_65='weapons.missiles.X_65'
+ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk4='weapons.bombs.British_GP_500LB_Bomb_Mk4'
+ENUMS.Storage.weapons.shells._50Browning_Ball_M2='weapons.shells.50Browning_Ball_M2'
+ENUMS.Storage.weapons.containers.HB_F14_EXT_TARPS='weapons.containers.HB_F14_EXT_TARPS'
+ENUMS.Storage.weapons.gunmounts.PKT_7_62='weapons.gunmounts.PKT_7_62'
+ENUMS.Storage.weapons.shells._50Browning_I_M1='weapons.shells.50Browning_I_M1'
+ENUMS.Storage.weapons.shells.British303_Ball_Mk8='weapons.shells.British303_Ball_Mk8'
+ENUMS.Storage.weapons.adapters.F4PILON='weapons.adapters.F4-PILON'
+ENUMS.Storage.weapons.missiles.P_77='weapons.missiles.P_77'
+ENUMS.Storage.weapons.missiles.SA9M338K='weapons.missiles.SA9M338K'
+ENUMS.Storage.weapons.shells.ZTZ_7_62='weapons.shells.ZTZ_7_62'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_B='weapons.shells.Mauser7.92x57_B.'
+ENUMS.Storage.weapons.missiles.X_28='weapons.missiles.X_28'
+ENUMS.Storage.weapons.missiles.KD_20='weapons.missiles.KD_20'
+ENUMS.Storage.weapons.missiles.TGM_65G='weapons.missiles.TGM_65G'
+ENUMS.Storage.weapons.adapters.mbd4='weapons.adapters.mbd-4'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_S_m_K_='weapons.shells.Mauser7.92x57_S.m.K.'
+ENUMS.Storage.weapons.missiles.M39A1='weapons.missiles.M39A1'
+ENUMS.Storage.weapons.adapters.m559='weapons.adapters.m559'
+ENUMS.Storage.weapons.missiles.AGM_12B='weapons.missiles.AGM_12B'
+ENUMS.Storage.weapons.shells.M39_20_HEI='weapons.shells.M39_20_HEI'
+ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk4_Short='weapons.bombs.British_GP_500LB_Bomb_Mk4_Short'
+ENUMS.Storage.weapons.missiles.Rb15F='weapons.missiles.Rb 15F'
+ENUMS.Storage.weapons.missiles.AIM_120C='weapons.missiles.AIM_120C'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_SmK_Lspurweiss="weapons.shells.Mauser7.92x57_S.m.K._L'spur(weiss)"
+ENUMS.Storage.weapons.nurs.S_5KP='weapons.nurs.S_5KP'
+ENUMS.Storage.weapons.bombs.GBU_31_V_4B='weapons.bombs.GBU_31_V_4B'
+ENUMS.Storage.weapons.missiles.HQ7B='weapons.missiles.HQ-7B'
+ENUMS.Storage.weapons.bombs.ODAB500PM='weapons.bombs.ODAB-500PM'
+ENUMS.Storage.weapons.bombs.BAP100='weapons.bombs.BAP-100'
+ENUMS.Storage.weapons.shells.MK_108_MGsch='weapons.shells.MK_108_MGsch'
+ENUMS.Storage.weapons.bombs.British_MC_500LB_Bomb_Mk1_Short='weapons.bombs.British_MC_500LB_Bomb_Mk1_Short'
+ENUMS.Storage.weapons.adapters.BRU42_LS_LAU131='weapons.adapters.BRU-42_LS_(LAU-131)'
+ENUMS.Storage.weapons.containers.SHPIL='weapons.containers.SHPIL'
+ENUMS.Storage.weapons.torpedoes.Mark_46='weapons.torpedoes.Mark_46'
+ENUMS.Storage.weapons.bombs.SAB_100MN='weapons.bombs.SAB_100MN'
+ENUMS.Storage.weapons.missiles.SA3M9M='weapons.missiles.SA3M9M'
+ENUMS.Storage.weapons.adapters.LAU61='weapons.adapters.LAU-61'
+ENUMS.Storage.weapons.adapters.mer2='weapons.adapters.mer2'
+ENUMS.Storage.weapons.shells.ship_Bofors_40mm_HE='weapons.shells.ship_Bofors_40mm_HE'
+ENUMS.Storage.weapons.nurs.S24A='weapons.nurs.S-24A'
+ENUMS.Storage.weapons.shells.GSh_30_2K_AP_Tr='weapons.shells.GSh_30_2K_AP_Tr'
+ENUMS.Storage.weapons.missiles.AIM7F='weapons.missiles.AIM-7F'
+ENUMS.Storage.weapons.shells.M383='weapons.shells.M383'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M257='weapons.nurs.HYDRA_70_M257'
+ENUMS.Storage.weapons.droptanks.PTB_580G_F1='weapons.droptanks.PTB_580G_F1'
+ENUMS.Storage.weapons.gunmounts.C101DEFA553='weapons.gunmounts.{C-101-DEFA553}'
+ENUMS.Storage.weapons.missiles.MICA_R='weapons.missiles.MICA_R'
+ENUMS.Storage.weapons.shells.M53_APT_RED='weapons.shells.M53_APT_RED'
+ENUMS.Storage.weapons.missiles.AIM9P5='weapons.missiles.AIM-9P5'
+ENUMS.Storage.weapons.adapters._306M2='weapons.adapters.30-6-M2'
+ENUMS.Storage.weapons.shells._75mm_AA_JAP='weapons.shells.75mm_AA_JAP'
+ENUMS.Storage.weapons.nurs.TinyTim='weapons.nurs.Tiny Tim'
+ENUMS.Storage.weapons.missiles.X_22='weapons.missiles.X_22'
+ENUMS.Storage.weapons.nurs.S25O='weapons.nurs.S-25-O'
+ENUMS.Storage.weapons.missiles.X_101='weapons.missiles.X_101'
+ENUMS.Storage.weapons.missiles.AIM_54A_Mk47='weapons.missiles.AIM_54A_Mk47'
+ENUMS.Storage.weapons.containers.ECM_POD_L_175V='weapons.containers.{ECM_POD_L_175V}'
+ENUMS.Storage.weapons.shells._2A28_73='weapons.shells.2A28_73'
+ENUMS.Storage.weapons.shells.GAU8_30_AP='weapons.shells.GAU8_30_AP'
+ENUMS.Storage.weapons.shells.British303_Ball_Mk1c='weapons.shells.British303_Ball_Mk1c'
+ENUMS.Storage.weapons.missiles.AIM_9='weapons.missiles.AIM_9'
+ENUMS.Storage.weapons.missiles.SD10='weapons.missiles.SD-10'
+ENUMS.Storage.weapons.droptanks.M2KC_RPL_522='weapons.droptanks.M2KC_RPL_522'
+ENUMS.Storage.weapons.missiles.AGM_130='weapons.missiles.AGM_130'
+ENUMS.Storage.weapons.gunmounts.defa_553='weapons.gunmounts.defa_553'
+ENUMS.Storage.weapons.nurs.BRM1_90MM_UG='weapons.nurs.BRM1_90MM_UG'
+ENUMS.Storage.weapons.gunmounts.CH47_STBD_M60D='weapons.gunmounts.{CH47_STBD_M60D}'
+ENUMS.Storage.weapons.adapters.LAU10='weapons.adapters.LAU-10'
+ENUMS.Storage.weapons.shells.L31_120mm_HESH='weapons.shells.L31_120mm_HESH'
+ENUMS.Storage.weapons.gunmounts.CH47_AFT_M60D='weapons.gunmounts.{CH47_AFT_M60D}'
+ENUMS.Storage.weapons.shells._20mm_M53_API='weapons.shells.20mm_M53_API'
+ENUMS.Storage.weapons.adapters.HB_F14_EXT_LAU7='weapons.adapters.HB_F14_EXT_LAU-7'
+ENUMS.Storage.weapons.shells.CHAP_76_PFHE='weapons.shells.CHAP_76_PFHE'
+ENUMS.Storage.weapons.bombs.KAB_500KrOD='weapons.bombs.KAB_500KrOD'
+ENUMS.Storage.weapons.adapters.PU_9S846_STRELEC='weapons.adapters.PU_9S846_STRELEC'
+ENUMS.Storage.weapons.containers.EclairM_51='weapons.containers.{EclairM_51}'
+ENUMS.Storage.weapons.containers.HB_ORD_Pave_Spike='weapons.containers.HB_ORD_Pave_Spike'
+ENUMS.Storage.weapons.shells.MINGR55_NO_TRC='weapons.shells.MINGR55_NO_TRC'
+ENUMS.Storage.weapons.nurs.PG_9V='weapons.nurs.PG_9V'
+ENUMS.Storage.weapons.gunmounts.M61A1='weapons.gunmounts.M-61A1'
+ENUMS.Storage.weapons.nurs.PG_16V='weapons.nurs.PG_16V'
+ENUMS.Storage.weapons.shells.British303_G_Mk4='weapons.shells.British303_G_Mk4'
+ENUMS.Storage.weapons.missiles.SA5B55='weapons.missiles.SA5B55'
+ENUMS.Storage.weapons.adapters.b52_CSRL_ALCM='weapons.adapters.b-52_CSRL_ALCM'
+ENUMS.Storage.weapons.adapters._9M114PILON='weapons.adapters.9M114-PILON'
+ENUMS.Storage.weapons.shells._50Browning_APIT_M20_Corsair='weapons.shells.50Browning_APIT_M20_Corsair'
+ENUMS.Storage.weapons.shells.PJ87_100_PFHE='weapons.shells.PJ87_100_PFHE'
+ENUMS.Storage.weapons.bombs._2503='weapons.bombs.250-3'
+ENUMS.Storage.weapons.shells._2A42_30_AP='weapons.shells.2A42_30_AP'
+ENUMS.Storage.weapons.shells._37mm_Type_100_JAP='weapons.shells.37mm_Type_100_JAP'
+ENUMS.Storage.weapons.droptanks.oiltank='weapons.droptanks.oiltank'
+ENUMS.Storage.weapons.droptanks.AV8BNA_AERO1D='weapons.droptanks.AV8BNA_AERO1D'
+ENUMS.Storage.weapons.containers.smoke_pod='weapons.containers.smoke_pod'
+ENUMS.Storage.weapons.missiles.AGM_12A='weapons.missiles.AGM_12A'
+ENUMS.Storage.weapons.missiles.MICA_T='weapons.missiles.MICA_T'
+ENUMS.Storage.weapons.droptanks._1100LTankEmpty='weapons.droptanks.1100L Tank Empty'
+ENUMS.Storage.weapons.adapters.CHAP_Mi28N_igla='weapons.adapters.CHAP_Mi28N_igla'
+ENUMS.Storage.weapons.bombs.GBU_15_V_1_B='weapons.bombs.GBU_15_V_1_B'
+ENUMS.Storage.weapons.missiles.Rb24='weapons.missiles.Rb 24'
+ENUMS.Storage.weapons.missiles.RB75='weapons.missiles.RB75'
+ENUMS.Storage.weapons.shells.M2_12_7_T='weapons.shells.M2_12_7_T'
+ENUMS.Storage.weapons.shells._2A42_30_HE='weapons.shells.2A42_30_HE'
+ENUMS.Storage.weapons.containers.HVAR_rocket='weapons.containers.HVAR_rocket'
+ENUMS.Storage.weapons.gunmounts.GIAT_M621_APHE='weapons.gunmounts.{GIAT_M621_APHE}'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE253_F1B='weapons.nurs.SNEB_TYPE253_F1B'
+ENUMS.Storage.weapons.shells.M230_HEIM799='weapons.shells.M230_HEI M799'
+ENUMS.Storage.weapons.containers.HB_F14_EXT_BRU34='weapons.containers.HB_F14_EXT_BRU34'
+ENUMS.Storage.weapons.shells.Sprgr_34_L48='weapons.shells.Sprgr_34_L48'
+ENUMS.Storage.weapons.shells._7_62x39='weapons.shells.7_62x39'
+ENUMS.Storage.weapons.containers.LANTIRN='weapons.containers.LANTIRN'
+ENUMS.Storage.weapons.shells.GSH23_23_HE='weapons.shells.GSH23_23_HE'
+ENUMS.Storage.weapons.bombs.KAB_1500Kr='weapons.bombs.KAB_1500Kr'
+ENUMS.Storage.weapons.bombs.British_MC_250LB_Bomb_Mk1='weapons.bombs.British_MC_250LB_Bomb_Mk1'
+ENUMS.Storage.weapons.gunmounts.ANM3='weapons.gunmounts.{AN-M3}'
+ENUMS.Storage.weapons.droptanks.Spitfire_tank_1='weapons.droptanks.Spitfire_tank_1'
+ENUMS.Storage.weapons.missiles.AGM_78B='weapons.missiles.AGM_78B'
+ENUMS.Storage.weapons.adapters.hj12launchertube='weapons.adapters.hj12-launcher-tube'
+ENUMS.Storage.weapons.shells.M242_25_HE_M792='weapons.shells.M242_25_HE_M792'
+ENUMS.Storage.weapons.shells.M46='weapons.shells.M46'
+ENUMS.Storage.weapons.droptanks.HB_F14_EXT_DROPTANK_EMPTY='weapons.droptanks.HB_F14_EXT_DROPTANK_EMPTY'
+ENUMS.Storage.weapons.missiles.AIM_120='weapons.missiles.AIM_120'
+ENUMS.Storage.weapons.missiles.Rb15FforA_I__='weapons.missiles.Rb 15F (for A.I.)'
+ENUMS.Storage.weapons.gunmounts.NR23='weapons.gunmounts.NR-23'
+ENUMS.Storage.weapons.missiles.Vikhr_M='weapons.missiles.Vikhr_M'
+ENUMS.Storage.weapons.bombs.Mk_83='weapons.bombs.Mk_83'
+ENUMS.Storage.weapons.adapters._9m114pilon='weapons.adapters.9m114-pilon'
+ENUMS.Storage.weapons.bombs.RBK_500U_OAB_2_5RT='weapons.bombs.RBK_500U_OAB_2_5RT'
+ENUMS.Storage.weapons.shells._50Browning_AP_M2_Corsair='weapons.shells.50Browning_AP_M2_Corsair'
+ENUMS.Storage.weapons.shells.British303_G_Mk2='weapons.shells.British303_G_Mk2'
+ENUMS.Storage.weapons.gunmounts.UPK_23_25='weapons.gunmounts.UPK_23_25'
+ENUMS.Storage.weapons.shells.M242_25_AP_M919='weapons.shells.M242_25_AP_M919'
+ENUMS.Storage.weapons.bombs.Type_200A='weapons.bombs.Type_200A'
+ENUMS.Storage.weapons.containers.SORBCIJA_L='weapons.containers.SORBCIJA_L'
+ENUMS.Storage.weapons.shells.M322_120_AP='weapons.shells.M322_120_AP'
+ENUMS.Storage.weapons.missiles.AGR_20A='weapons.missiles.AGR_20A'
+ENUMS.Storage.weapons.missiles._9M723='weapons.missiles.9M723'
+ENUMS.Storage.weapons.bombs.BKF_AO2_5RT='weapons.bombs.BKF_AO2_5RT'
+ENUMS.Storage.weapons.missiles.P_33E='weapons.missiles.P_33E'
+ENUMS.Storage.weapons.adapters.b52mbd_m117='weapons.adapters.b52-mbd_m117'
+ENUMS.Storage.weapons.missiles.Ataka_9M120='weapons.missiles.Ataka_9M120'
+ENUMS.Storage.weapons.bombs.MK76='weapons.bombs.MK76'
+ENUMS.Storage.weapons.bombs.AB_250_2_SD_2='weapons.bombs.AB_250_2_SD_2'
+ENUMS.Storage.weapons.adapters.OH58D_HRACK_R='weapons.adapters.OH58D_HRACK_R'
+ENUMS.Storage.weapons.missiles.AGM_78A='weapons.missiles.AGM_78A'
+ENUMS.Storage.weapons.bombs.FAB_100SV='weapons.bombs.FAB_100SV'
+ENUMS.Storage.weapons.adapters.F4E_dual_LAU7='weapons.adapters.F4E_dual_LAU7'
+ENUMS.Storage.weapons.shells.CHAP_76_HE_T='weapons.shells.CHAP_76_HE_T'
+ENUMS.Storage.weapons.adapters.HB_F14_EXT_SPARROW_PYLON='weapons.adapters.HB_F14_EXT_SPARROW_PYLON'
+ENUMS.Storage.weapons.missiles.P_27PE='weapons.missiles.P_27PE'
+ENUMS.Storage.weapons.shells._2A38_30_HE='weapons.shells.2A38_30_HE'
+ENUMS.Storage.weapons.nurs.WGr21='weapons.nurs.WGr21'
+ENUMS.Storage.weapons.droptanks.HB_F4E_EXT_WingTank_R_EMPTY='weapons.droptanks.HB_F-4E_EXT_WingTank_R_EMPTY'
+ENUMS.Storage.weapons.shells.British303_G_Mk5='weapons.shells.British303_G_Mk5'
+ENUMS.Storage.weapons.gunmounts.SUU_23_POD='weapons.gunmounts.{SUU_23_POD}'
+ENUMS.Storage.weapons.bombs.British_GP_250LB_Bomb_Mk1='weapons.bombs.British_GP_250LB_Bomb_Mk1'
+ENUMS.Storage.weapons.bombs.RBK_500U_BETAB_M='weapons.bombs.RBK_500U_BETAB_M'
+ENUMS.Storage.weapons.gunmounts.SA342_M134_SIDE_R='weapons.gunmounts.{SA342_M134_SIDE_R}'
+ENUMS.Storage.weapons.adapters.LAU_127='weapons.adapters.LAU_127'
+ENUMS.Storage.weapons.missiles.TGM_65D='weapons.missiles.TGM_65D'
+ENUMS.Storage.weapons.shells.ZTZ_125_AP='weapons.shells.ZTZ_125_AP'
+ENUMS.Storage.weapons.missiles.P_73='weapons.missiles.P_73'
+ENUMS.Storage.weapons.gunmounts.M134_R='weapons.gunmounts.M134_R'
+ENUMS.Storage.weapons.shells.M39_20_TP='weapons.shells.M39_20_TP'
+ENUMS.Storage.weapons.shells.GAU8_30_HE='weapons.shells.GAU8_30_HE'
+ENUMS.Storage.weapons.bombs.GBU_12='weapons.bombs.GBU_12'
+ENUMS.Storage.weapons.bombs.SC_250_T3_J='weapons.bombs.SC_250_T3_J'
+ENUMS.Storage.weapons.gunmounts.OH_58_BRAUNING='weapons.gunmounts.OH_58_BRAUNING'
+ENUMS.Storage.weapons.shells.KDA_35_AP='weapons.shells.KDA_35_AP'
+ENUMS.Storage.weapons.shells.CL3143_120_AP='weapons.shells.CL3143_120_AP'
+ENUMS.Storage.weapons.shells.M61_20_TP_T='weapons.shells.M61_20_TP_T'
+ENUMS.Storage.weapons.containers.ANAWW_13='weapons.containers.ANAWW_13'
+ENUMS.Storage.weapons.droptanks.droptank_108_gal='weapons.droptanks.droptank_108_gal'
+ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_BLUE='weapons.containers.{US_M10_SMOKE_TANK_BLUE}'
+ENUMS.Storage.weapons.missiles.GAR8='weapons.missiles.GAR-8'
+ENUMS.Storage.weapons.missiles.ASM_N_2='weapons.missiles.ASM_N_2'
+ENUMS.Storage.weapons.bombs.BR_250='weapons.bombs.BR_250'
+ENUMS.Storage.weapons.containers.F18FLIRPOD='weapons.containers.F-18-FLIR-POD'
+ENUMS.Storage.weapons.containers.EclairM_42='weapons.containers.{EclairM_42}'
+ENUMS.Storage.weapons.missiles.P_27P='weapons.missiles.P_27P'
+ENUMS.Storage.weapons.bombs.British_SAP_500LB_Bomb_Mk5='weapons.bombs.British_SAP_500LB_Bomb_Mk5'
+ENUMS.Storage.weapons.shells.NR23_23x115_API='weapons.shells.NR23_23x115_API'
+ENUMS.Storage.weapons.shells.KPVT_14_5='weapons.shells.KPVT_14_5'
+ENUMS.Storage.weapons.gunmounts.M60_SIDE_L='weapons.gunmounts.M60_SIDE_L'
+ENUMS.Storage.weapons.nurs.S5M1_HEFRAG_FFAR='weapons.nurs.S5M1_HEFRAG_FFAR'
+ENUMS.Storage.weapons.bombs.SAB_100_FLARE='weapons.bombs.SAB_100_FLARE'
+ENUMS.Storage.weapons.adapters.HB_F4E_BRU42='weapons.adapters.HB_F-4E_BRU-42'
+ENUMS.Storage.weapons.containers.F15E_AAQ33_XR_ATPSE='weapons.containers.F-15E_AAQ-33_XR_ATP-SE'
+ENUMS.Storage.weapons.adapters.MBD267='weapons.adapters.MBD-2-67'
+ENUMS.Storage.weapons.adapters.OH58D_SRACK_R='weapons.adapters.OH58D_SRACK_R'
+ENUMS.Storage.weapons.adapters.UB16='weapons.adapters.UB-16'
+ENUMS.Storage.weapons.nurs.HYDRA_70_WTU1B='weapons.nurs.HYDRA_70_WTU1B'
+ENUMS.Storage.weapons.shells.L14A2_30_APDS='weapons.shells.L14A2_30_APDS'
+ENUMS.Storage.weapons.missiles.SVIR='weapons.missiles.SVIR'
+ENUMS.Storage.weapons.adapters.APU170='weapons.adapters.APU-170'
+ENUMS.Storage.weapons.missiles.AIM9E='weapons.missiles.AIM-9E'
+ENUMS.Storage.weapons.adapters.adapter_df4a='weapons.adapters.adapter_df4a'
+ENUMS.Storage.weapons.missiles.Super_530F='weapons.missiles.Super_530F'
+ENUMS.Storage.weapons.adapters.Rocket_Launcher_4_5inch='weapons.adapters.Rocket_Launcher_4_5inch'
+ENUMS.Storage.weapons.adapters.JF17_PF12_twin='weapons.adapters.JF-17_PF12_twin'
+ENUMS.Storage.weapons.adapters.CLB_30='weapons.adapters.CLB_30'
+ENUMS.Storage.weapons.gunmounts.KORD_12_7_MI24_R='weapons.gunmounts.KORD_12_7_MI24_R'
+ENUMS.Storage.weapons.gunmounts.KORD_12_7_MI24_L='weapons.gunmounts.KORD_12_7_MI24_L'
+ENUMS.Storage.weapons.adapters._9M120_pylon='weapons.adapters.9M120_pylon'
+ENUMS.Storage.weapons.missiles.REFLEX='weapons.missiles.REFLEX'
+ENUMS.Storage.weapons.adapters.oro57k_edm='weapons.adapters.oro-57k.edm'
+ENUMS.Storage.weapons.bombs.GBU_31_V_2B='weapons.bombs.GBU_31_V_2B'
+ENUMS.Storage.weapons.missiles.P_40T='weapons.missiles.P_40T'
+ENUMS.Storage.weapons.adapters.suu25='weapons.adapters.suu-25'
+ENUMS.Storage.weapons.missiles.GB6='weapons.missiles.GB-6'
+ENUMS.Storage.weapons.missiles.DWS39_MJ1='weapons.missiles.DWS39_MJ1'
+ENUMS.Storage.weapons.bombs.FAB_250='weapons.bombs.FAB_250'
+ENUMS.Storage.weapons.bombs.SD_500_A='weapons.bombs.SD_500_A'
+ENUMS.Storage.weapons.gunmounts.M60_SIDE_R='weapons.gunmounts.M60_SIDE_R'
+ENUMS.Storage.weapons.shells.L21A1_30_HE='weapons.shells.L21A1_30_HE'
+ENUMS.Storage.weapons.missiles.KD_63='weapons.missiles.KD_63'
+ENUMS.Storage.weapons.gunmounts.GAU_12_Equalizer_HE='weapons.gunmounts.{GAU_12_Equalizer_HE}'
+ENUMS.Storage.weapons.bombs.ROCKEYE='weapons.bombs.ROCKEYE'
+ENUMS.Storage.weapons.shells.GSh_30_2K_HE='weapons.shells.GSh_30_2K_HE'
+ENUMS.Storage.weapons.adapters.LAU3='weapons.adapters.LAU-3'
+ENUMS.Storage.weapons.shells.M39_20_API='weapons.shells.M39_20_API'
+ENUMS.Storage.weapons.nurs.HVAR='weapons.nurs.HVAR'
+ENUMS.Storage.weapons.adapters.F15E_LAU117='weapons.adapters.F-15E_LAU-117'
+ENUMS.Storage.weapons.adapters.SA342_LAU_HOT3_2x='weapons.adapters.SA342_LAU_HOT3_2x'
+ENUMS.Storage.weapons.droptanks.PTB800MIG21='weapons.droptanks.PTB-800-MIG21'
+ENUMS.Storage.weapons.missiles.AGM_114='weapons.missiles.AGM_114'
+ENUMS.Storage.weapons.shells._2A46M_125_AP='weapons.shells.2A46M_125_AP'
+ENUMS.Storage.weapons.droptanks.MB339_TT320_L='weapons.droptanks.MB339_TT320_L'
+ENUMS.Storage.weapons.shells.M61_20_HEIT_RED='weapons.shells.M61_20_HEIT_RED'
+ENUMS.Storage.weapons.shells.KS19_100AP='weapons.shells.KS19_100AP'
+ENUMS.Storage.weapons.containers.KINGAL='weapons.containers.KINGAL'
+ENUMS.Storage.weapons.nurs.RS82='weapons.nurs.RS-82'
+ENUMS.Storage.weapons.missiles.HOT2='weapons.missiles.HOT2'
+ENUMS.Storage.weapons.adapters.Schloss_500XIIC='weapons.adapters.Schloss_500XIIC'
+ENUMS.Storage.weapons.droptanks.fueltank450='weapons.droptanks.fueltank450'
+ENUMS.Storage.weapons.missiles.X_59M='weapons.missiles.X_59M'
+ENUMS.Storage.weapons.droptanks.PTB450='weapons.droptanks.PTB-450'
+ENUMS.Storage.weapons.containers.SPS141='weapons.containers.SPS-141'
+ENUMS.Storage.weapons.adapters.mbd3='weapons.adapters.mbd-3'
+ENUMS.Storage.weapons.bombs.OFAB100120TU='weapons.bombs.OFAB-100-120TU'
+ENUMS.Storage.weapons.shells._20mm_M56_HEI='weapons.shells.20mm_M56_HEI'
+ENUMS.Storage.weapons.containers.HB_ALE_40_30_0='weapons.containers.HB_ALE_40_30_0'
+ENUMS.Storage.weapons.droptanks.HB_HIGH_PERFORMANCE_CENTERLINE_600_GAL='weapons.droptanks.HB_HIGH_PERFORMANCE_CENTERLINE_600_GAL'
+ENUMS.Storage.weapons.shells.M61='weapons.shells.M61'
+ENUMS.Storage.weapons.missiles.PL12='weapons.missiles.PL-12'
+ENUMS.Storage.weapons.missiles.R3R='weapons.missiles.R-3R'
+ENUMS.Storage.weapons.bombs.GBU_54_V_1B='weapons.bombs.GBU_54_V_1B'
+ENUMS.Storage.weapons.droptanks.MB339_TT320_R='weapons.droptanks.MB339_TT320_R'
+ENUMS.Storage.weapons.bombs.GBU_10='weapons.bombs.GBU_10'
+ENUMS.Storage.weapons.adapters.b52mbd_agm86='weapons.adapters.b52-mbd_agm86'
+ENUMS.Storage.weapons.adapters.Spitfire_pilon2R='weapons.adapters.Spitfire_pilon2R'
+ENUMS.Storage.weapons.adapters.apu602_R='weapons.adapters.apu-60-2_R'
+ENUMS.Storage.weapons.shells._50Browning_APIT_M20='weapons.shells.50Browning_APIT_M20'
+ENUMS.Storage.weapons.bombs.FAB_50='weapons.bombs.FAB_50'
+ENUMS.Storage.weapons.shells._2A46M_125_HE='weapons.shells.2A46M_125_HE'
+ENUMS.Storage.weapons.containers.sa342_dipole_antenna='weapons.containers.sa342_dipole_antenna'
+ENUMS.Storage.weapons.shells._50Browning_T_M1='weapons.shells.50Browning_T_M1'
+ENUMS.Storage.weapons.bombs.OFAB100Jupiter='weapons.bombs.OFAB-100 Jupiter'
+ENUMS.Storage.weapons.adapters.MER5E='weapons.adapters.MER-5E'
+ENUMS.Storage.weapons.shells.NR30_30x155_APT='weapons.shells.NR30_30x155_APT'
+ENUMS.Storage.weapons.containers.ALQ184='weapons.containers.ALQ-184'
+ENUMS.Storage.weapons.missiles.AGM_45B='weapons.missiles.AGM_45B'
+ENUMS.Storage.weapons.containers.SKY_SHADOW='weapons.containers.SKY_SHADOW'
+ENUMS.Storage.weapons.gunmounts.FN_HMP400_200='weapons.gunmounts.{FN_HMP400_200}'
+ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_GREEN='weapons.containers.{US_M10_SMOKE_TANK_GREEN}'
+ENUMS.Storage.weapons.bombs.BLU3_GROUP='weapons.bombs.BLU-3_GROUP'
+ENUMS.Storage.weapons.adapters.gdjiv1='weapons.adapters.gdj-iv1'
+ENUMS.Storage.weapons.missiles.SPIKE_ER='weapons.missiles.SPIKE_ER'
+ENUMS.Storage.weapons.shells.AK630_30_AP='weapons.shells.AK630_30_AP'
+ENUMS.Storage.weapons.missiles.AGM_65L='weapons.missiles.AGM_65L'
+ENUMS.Storage.weapons.gunmounts.MG_151_20='weapons.gunmounts.MG_151_20'
+ENUMS.Storage.weapons.droptanks.PTB490MIG21='weapons.droptanks.PTB-490-MIG21'
+ENUMS.Storage.weapons.shells.MG_20x82_HEI_T='weapons.shells.MG_20x82_HEI_T'
+ENUMS.Storage.weapons.adapters._143M2='weapons.adapters.14-3-M2'
+ENUMS.Storage.weapons.adapters.OH58D_Gorgona='weapons.adapters.OH-58D_Gorgona'
+ENUMS.Storage.weapons.missiles.Rb_04='weapons.missiles.Rb_04'
+ENUMS.Storage.weapons.nurs.C_8CM_RD='weapons.nurs.C_8CM_RD'
+ENUMS.Storage.weapons.missiles.AKD10='weapons.missiles.AKD-10'
+ENUMS.Storage.weapons.missiles.X_29L='weapons.missiles.X_29L'
+ENUMS.Storage.weapons.containers.F14LANTIRNTP='weapons.containers.{F14-LANTIRN-TP}'
+ENUMS.Storage.weapons.adapters.apu6='weapons.adapters.apu-6'
+ENUMS.Storage.weapons.bombs.AO_2_5RT='weapons.bombs.AO_2_5RT'
+ENUMS.Storage.weapons.shells.L23_120_AP='weapons.shells.L23_120_AP'
+ENUMS.Storage.weapons.missiles.AIM9L='weapons.missiles.AIM-9L'
+ENUMS.Storage.weapons.containers.ALQ131='weapons.containers.ALQ-131'
+ENUMS.Storage.weapons.shells._25mm_AA_JAP='weapons.shells.25mm_AA_JAP'
+ENUMS.Storage.weapons.nurs.C_8='weapons.nurs.C_8'
+ENUMS.Storage.weapons.missiles.YJ83='weapons.missiles.YJ-83'
+ENUMS.Storage.weapons.shells.MK_108_HEI='weapons.shells.MK_108_HEI'
+ENUMS.Storage.weapons.droptanks.PTB400_MIG19='weapons.droptanks.PTB400_MIG19'
+ENUMS.Storage.weapons.adapters.BRU42_LS='weapons.adapters.BRU-42_LS'
+ENUMS.Storage.weapons.adapters.M299_AGM114='weapons.adapters.M299_AGM114'
+ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_ORANGE='weapons.containers.{US_M10_SMOKE_TANK_ORANGE}'
+ENUMS.Storage.weapons.adapters.B1B_Conventional_Rotary_Launcher='weapons.adapters.B-1B_Conventional_Rotary_Launcher'
+ENUMS.Storage.weapons.nurs.S_5M='weapons.nurs.S_5M'
+ENUMS.Storage.weapons.shells.MG_13x64_I_T='weapons.shells.MG_13x64_I_T'
+ENUMS.Storage.weapons.bombs.CBU_99='weapons.bombs.CBU_99'
+ENUMS.Storage.weapons.bombs.LUU_2B='weapons.bombs.LUU_2B'
+ENUMS.Storage.weapons.containers.aaq28LEFTlitening='weapons.containers.aaq-28LEFT litening'
+ENUMS.Storage.weapons.containers.F4PILON='weapons.containers.F4-PILON'
+ENUMS.Storage.weapons.missiles.X_25MP='weapons.missiles.X_25MP'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE252_H1='weapons.nurs.SNEB_TYPE252_H1'
+ENUMS.Storage.weapons.adapters.LAU105='weapons.adapters.LAU-105'
+ENUMS.Storage.weapons.nurs.FFARMk1HE='weapons.nurs.FFAR Mk1 HE'
+ENUMS.Storage.weapons.shells.M39_20_TP_T='weapons.shells.M39_20_TP_T'
+ENUMS.Storage.weapons.containers.FAS='weapons.containers.FAS'
+ENUMS.Storage.weapons.missiles.X_31P='weapons.missiles.X_31P'
+ENUMS.Storage.weapons.missiles.R13M='weapons.missiles.R-13M'
+ENUMS.Storage.weapons.missiles.AGM_154B='weapons.missiles.AGM_154B'
+ENUMS.Storage.weapons.bombs.BAT120='weapons.bombs.BAT-120'
+ENUMS.Storage.weapons.shells.OF_350='weapons.shells.OF_350'
+ENUMS.Storage.weapons.adapters.BRU42_LS_LAU68='weapons.adapters.BRU-42_LS_(LAU-68)'
+ENUMS.Storage.weapons.shells.M134_7_62_T='weapons.shells.M134_7_62_T'
+ENUMS.Storage.weapons.shells.DM33_120_AP='weapons.shells.DM33_120_AP'
+ENUMS.Storage.weapons.shells.M256_120_HE_L55='weapons.shells.M256_120_HE_L55'
+ENUMS.Storage.weapons.shells.Hispano_Mk_II_Mk_Z_Ball='weapons.shells.Hispano_Mk_II_Mk_Z_Ball'
+ENUMS.Storage.weapons.containers.aispodt50_r='weapons.containers.ais-pod-t50_r'
+ENUMS.Storage.weapons.bombs.GBU_11='weapons.bombs.GBU_11'
+ENUMS.Storage.weapons.gunmounts.m3_browning='weapons.gunmounts.m3_browning'
+ENUMS.Storage.weapons.containers.ah64d_radar='weapons.containers.ah-64d_radar'
+ENUMS.Storage.weapons.shells.YakB_12_7='weapons.shells.YakB_12_7'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M151='weapons.nurs.HYDRA_70_M151'
+ENUMS.Storage.weapons.droptanks.fueltank200='weapons.droptanks.fueltank200'
+ENUMS.Storage.weapons.adapters.ER4_Rack='weapons.adapters.ER4_Rack'
+ENUMS.Storage.weapons.containers.HB_ALE_40_30_60='weapons.containers.HB_ALE_40_30_60'
+ENUMS.Storage.weapons.bombs.LS_6_100='weapons.bombs.LS_6_100'
+ENUMS.Storage.weapons.containers.SORBCIJA_R='weapons.containers.SORBCIJA_R'
+ENUMS.Storage.weapons.missiles.R13M1='weapons.missiles.R-13M1'
+ENUMS.Storage.weapons.missiles.ALARM='weapons.missiles.ALARM'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC='weapons.gunmounts.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.missiles.RS2US='weapons.missiles.RS2US'
+ENUMS.Storage.weapons.shells.M230_30='weapons.shells.M230_30'
+ENUMS.Storage.weapons.bombs.BLG66_EG='weapons.bombs.BLG66_EG'
+ENUMS.Storage.weapons.bombs.FAB_500='weapons.bombs.FAB_500'
+ENUMS.Storage.weapons.adapters.lau118a='weapons.adapters.lau-118a'
+ENUMS.Storage.weapons.missiles.BGM_109B='weapons.missiles.BGM_109B'
+ENUMS.Storage.weapons.missiles.LD10='weapons.missiles.LD-10'
+ENUMS.Storage.weapons.shells._120_EXPL_F1_120mm_HE='weapons.shells.120_EXPL_F1_120mm_HE'
+ENUMS.Storage.weapons.missiles.ROLAND_R='weapons.missiles.ROLAND_R'
+ENUMS.Storage.weapons.droptanks.PTB300_MIG15='weapons.droptanks.PTB300_MIG15'
+ENUMS.Storage.weapons.missiles.SPIKE_ERA='weapons.missiles.SPIKE_ERA'
+ENUMS.Storage.weapons.adapters.b52_suu67='weapons.adapters.b-52_suu67'
+ENUMS.Storage.weapons.shells.VOG17='weapons.shells.VOG17'
+ENUMS.Storage.weapons.adapters.JF17_GDJII19L='weapons.adapters.JF-17_GDJ-II19L'
+ENUMS.Storage.weapons.containers.F4U1D_SMOKE_WHITE='weapons.containers.{F4U1D_SMOKE_WHITE}'
+ENUMS.Storage.weapons.shells.GSh_30_2K_AP='weapons.shells.GSh_30_2K_AP'
+ENUMS.Storage.weapons.shells.M61_20_PGU30='weapons.shells.M61_20_PGU30'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M274='weapons.nurs.HYDRA_70_M274'
+ENUMS.Storage.weapons.bombs.Mk_84='weapons.bombs.Mk_84'
+ENUMS.Storage.weapons.bombs.BDU_50LD='weapons.bombs.BDU_50LD'
+ENUMS.Storage.weapons.gunmounts.A20_TopTurret_M2_R='weapons.gunmounts.A20_TopTurret_M2_R'
+ENUMS.Storage.weapons.gunmounts.MG_131='weapons.gunmounts.MG_131'
+ENUMS.Storage.weapons.adapters.AUF2_RACK='weapons.adapters.AUF2_RACK'
+ENUMS.Storage.weapons.missiles.Mistral='weapons.missiles.Mistral'
+ENUMS.Storage.weapons.bombs.LUU_2BB='weapons.bombs.LUU_2BB'
+ENUMS.Storage.weapons.adapters.JF17_GDJII19R='weapons.adapters.JF-17_GDJ-II19R'
+ENUMS.Storage.weapons.shells.PGU32_SAPHEI_T='weapons.shells.PGU32_SAPHEI_T'
+ENUMS.Storage.weapons.adapters.F15E_LAU88='weapons.adapters.F-15E_LAU-88'
+ENUMS.Storage.weapons.missiles.AGM_154='weapons.missiles.AGM_154'
+ENUMS.Storage.weapons.gunmounts.A20_TopTurret_M2_L='weapons.gunmounts.A20_TopTurret_M2_L'
+ENUMS.Storage.weapons.missiles.TOW2='weapons.missiles.TOW2'
+ENUMS.Storage.weapons.shells.British303_B_Mk6z='weapons.shells.British303_B_Mk6z'
+ENUMS.Storage.weapons.bombs.P50T='weapons.bombs.P-50T'
+ENUMS.Storage.weapons.shells._5_56x45_NOtr='weapons.shells.5_56x45_NOtr'
+ENUMS.Storage.weapons.missiles.SA9M333='weapons.missiles.SA9M333'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M259='weapons.nurs.HYDRA_70_M259'
+ENUMS.Storage.weapons.shells._50Browning_API_M8='weapons.shells.50Browning_API_M8'
+ENUMS.Storage.weapons.missiles.AGM_84E='weapons.missiles.AGM_84E'
+ENUMS.Storage.weapons.droptanks.FuelTank_350L='weapons.droptanks.FuelTank_350L'
+ENUMS.Storage.weapons.adapters._9k121='weapons.adapters.9k121'
+ENUMS.Storage.weapons.missiles.KD_63B='weapons.missiles.KD_63B'
+ENUMS.Storage.weapons.droptanks.FuelTank_150L='weapons.droptanks.FuelTank_150L'
+ENUMS.Storage.weapons.shells._5_45x39='weapons.shells.5_45x39'
+ENUMS.Storage.weapons.missiles.AIM_54C_Mk60='weapons.missiles.AIM_54C_Mk60'
+ENUMS.Storage.weapons.missiles.CATM_9M='weapons.missiles.CATM_9M'
+ENUMS.Storage.weapons.droptanks.Drop_Tank_300_Liter='weapons.droptanks.Drop_Tank_300_Liter'
+ENUMS.Storage.weapons.gunmounts.GUV_VOG='weapons.gunmounts.GUV_VOG'
+ENUMS.Storage.weapons.bombs.Mk_83AIR='weapons.bombs.Mk_83AIR'
+ENUMS.Storage.weapons.adapters.MAK79_VAR_4='weapons.adapters.MAK-79_VAR_4'
+ENUMS.Storage.weapons.shells.M39_20_HEI_T='weapons.shells.M39_20_HEI_T'
+ENUMS.Storage.weapons.bombs.Mk_84AIR_TP='weapons.bombs.Mk_84AIR_TP'
+ENUMS.Storage.weapons.bombs.GBU_31_V_3B='weapons.bombs.GBU_31_V_3B'
+ENUMS.Storage.weapons.shells.CHAP_125_3BM69_APFSDS_T='weapons.shells.CHAP_125_3BM69_APFSDS_T'
+ENUMS.Storage.weapons.adapters.BRU_42A='weapons.adapters.BRU_42A'
+ENUMS.Storage.weapons.missiles.TGM_65H='weapons.missiles.TGM_65H'
+ENUMS.Storage.weapons.bombs.GBU_27='weapons.bombs.GBU_27'
+ENUMS.Storage.weapons.adapters.APU1240='weapons.adapters.APU-12-40'
+ENUMS.Storage.weapons.droptanks.F4U1D_Drop_Tank_Aux='weapons.droptanks.F4U-1D_Drop_Tank_Aux'
+ENUMS.Storage.weapons.shells.DM12_L55_120mm_HEAT_MP_T='weapons.shells.DM12_L55_120mm_HEAT_MP_T'
+ENUMS.Storage.weapons.shells.British303_O_Mk1='weapons.shells.British303_O_Mk1'
+ENUMS.Storage.weapons.missiles.HBAIM7E2='weapons.missiles.HB-AIM-7E-2'
+ENUMS.Storage.weapons.containers.Spear='weapons.containers.Spear'
+ENUMS.Storage.weapons.bombs.BetAB_500='weapons.bombs.BetAB_500'
+ENUMS.Storage.weapons.adapters.HB_F14_EXT_BRU34='weapons.adapters.HB_F14_EXT_BRU34'
+ENUMS.Storage.weapons.missiles.Rb24J='weapons.missiles.Rb 24J'
+ENUMS.Storage.weapons.shells.M256_120_AP='weapons.shells.M256_120_AP'
+ENUMS.Storage.weapons.bombs.SAMP250HD='weapons.bombs.SAMP250HD'
+ENUMS.Storage.weapons.containers.alq184long='weapons.containers.alq-184long'
+ENUMS.Storage.weapons.shells.UOF412_100HE='weapons.shells.UOF412_100HE'
+ENUMS.Storage.weapons.bombs.Mk_83CT='weapons.bombs.Mk_83CT'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE254_F1B_YELLOW='weapons.nurs.SNEB_TYPE254_F1B_YELLOW'
+ENUMS.Storage.weapons.missiles.AT_6='weapons.missiles.AT_6'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE254_H1_GREEN='weapons.nurs.SNEB_TYPE254_H1_GREEN'
+ENUMS.Storage.weapons.gunmounts.HispanoMkII='weapons.gunmounts.HispanoMkII'
+ENUMS.Storage.weapons.missiles.C_701IR='weapons.missiles.C_701IR'
+ENUMS.Storage.weapons.missiles.P_9M133='weapons.missiles.P_9M133'
+ENUMS.Storage.weapons.containers.HB_ALE_40_0_0='weapons.containers.HB_ALE_40_0_0'
+ENUMS.Storage.weapons.missiles.KONKURS='weapons.missiles.KONKURS'
+ENUMS.Storage.weapons.bombs.HB_F4E_GBU15V1='weapons.bombs.HB_F4E_GBU15V1'
+ENUMS.Storage.weapons.bombs.SC_50='weapons.bombs.SC_50'
+ENUMS.Storage.weapons.bombs.AN_M66='weapons.bombs.AN_M66'
+ENUMS.Storage.weapons.adapters.UB32='weapons.adapters.UB-32'
+ENUMS.Storage.weapons.adapters.HB_ORD_LAU88='weapons.adapters.HB_ORD_LAU-88'
+ENUMS.Storage.weapons.bombs.RBK_250='weapons.bombs.RBK_250'
+ENUMS.Storage.weapons.shells._6_5mm_Type_91_JAP='weapons.shells.6_5mm_Type_91_JAP'
+ENUMS.Storage.weapons.gunmounts.ADEN_GUNPOD='weapons.gunmounts.{ADEN_GUNPOD}'
+ENUMS.Storage.weapons.bombs.MK106='weapons.bombs.MK106'
+ENUMS.Storage.weapons.bombs.RBK_250S='weapons.bombs.RBK_250S'
+ENUMS.Storage.weapons.shells.M61_20_PGU28='weapons.shells.M61_20_PGU28'
+ENUMS.Storage.weapons.gunmounts.OH58D_M3P='weapons.gunmounts.OH58D_M3P'
+ENUMS.Storage.weapons.containers.EclairM_15='weapons.containers.{EclairM_15}'
+ENUMS.Storage.weapons.containers.EclairM_33='weapons.containers.{EclairM_33}'
+ENUMS.Storage.weapons.shells.NR30_30x155_APHE='weapons.shells.NR30_30x155_APHE'
+ENUMS.Storage.weapons.gunmounts.GAU_12_Equalizer='weapons.gunmounts.{GAU_12_Equalizer}'
+ENUMS.Storage.weapons.bombs.IAB500='weapons.bombs.IAB-500'
+ENUMS.Storage.weapons.bombs.OH58D_Green_Smoke_Grenade='weapons.bombs.OH58D_Green_Smoke_Grenade'
+ENUMS.Storage.weapons.adapters.ptab2_5ko_block1='weapons.adapters.ptab-2_5ko_block1'
+ENUMS.Storage.weapons.shells._7_7mm_Type_97_JAP='weapons.shells.7_7mm_Type_97_JAP'
+ENUMS.Storage.weapons.missiles.R_530F_IR='weapons.missiles.R_530F_IR'
+ENUMS.Storage.weapons.bombs.FAB250M54='weapons.bombs.FAB-250M54'
+ENUMS.Storage.weapons.missiles.RIM_116A='weapons.missiles.RIM_116A'
+ENUMS.Storage.weapons.shells.PINK_PROJECTILE='weapons.shells.PINK_PROJECTILE'
+ENUMS.Storage.weapons.shells.CHAP_76_HESH_T='weapons.shells.CHAP_76_HESH_T'
+ENUMS.Storage.weapons.bombs.CBU_103='weapons.bombs.CBU_103'
+ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_RED='weapons.containers.{US_M10_SMOKE_TANK_RED}'
+ENUMS.Storage.weapons.missiles.Sea_Eagle='weapons.missiles.Sea_Eagle'
+ENUMS.Storage.weapons.shells.PKT_7_62='weapons.shells.PKT_7_62'
+ENUMS.Storage.weapons.missiles.PL5EII='weapons.missiles.PL-5EII'
+ENUMS.Storage.weapons.bombs.GBU_16='weapons.bombs.GBU_16'
+ENUMS.Storage.weapons.shells.OFL_120F2_AP='weapons.shells.OFL_120F2_AP'
+ENUMS.Storage.weapons.missiles.AIM_54A_Mk60='weapons.missiles.AIM_54A_Mk60'
+ENUMS.Storage.weapons.bombs.CBU_97='weapons.bombs.CBU_97'
+ENUMS.Storage.weapons.adapters.XM158='weapons.adapters.XM158'
+ENUMS.Storage.weapons.containers.M2KC_AGF='weapons.containers.{M2KC_AGF}'
+ENUMS.Storage.weapons.adapters.CBLS200='weapons.adapters.CBLS-200'
+ENUMS.Storage.weapons.containers.SPRD99='weapons.containers.SPRD-99'
+ENUMS.Storage.weapons.missiles.DWS39_MJ1_MJ2='weapons.missiles.DWS39_MJ1_MJ2'
+ENUMS.Storage.weapons.bombs.BDU_33='weapons.bombs.BDU_33'
+ENUMS.Storage.weapons.missiles.TOW='weapons.missiles.TOW'
+ENUMS.Storage.weapons.gunmounts.OH58D_M3P_L400='weapons.gunmounts.OH58D_M3P_L400'
+ENUMS.Storage.weapons.bombs.KAB_1500LG='weapons.bombs.KAB_1500LG'
+ENUMS.Storage.weapons.shells.MK45_127mm_AP_Essex='weapons.shells.MK45_127mm_AP_Essex'
+ENUMS.Storage.weapons.shells.M61_20_HE_gr='weapons.shells.M61_20_HE_gr'
+ENUMS.Storage.weapons.missiles.BRM1_90MM='weapons.missiles.BRM-1_90MM'
+ENUMS.Storage.weapons.missiles.Ataka_9M120F='weapons.missiles.Ataka_9M120F'
+ENUMS.Storage.weapons.adapters.lau88='weapons.adapters.lau-88'
+ENUMS.Storage.weapons.missiles.Sea_Wolf='weapons.missiles.Sea_Wolf'
+ENUMS.Storage.weapons.shells.M61_20_PGU27='weapons.shells.M61_20_PGU27'
+ENUMS.Storage.weapons.missiles.CM400AKG='weapons.missiles.CM-400AKG'
+ENUMS.Storage.weapons.containers.F15E_AAQ14_LANTIRN='weapons.containers.F-15E_AAQ-14_LANTIRN'
+ENUMS.Storage.weapons.containers.wmd7='weapons.containers.wmd7'
+ENUMS.Storage.weapons.missiles.AIM7E2='weapons.missiles.AIM-7E-2'
+ENUMS.Storage.weapons.shells.Utes_12_7x108='weapons.shells.Utes_12_7x108'
+ENUMS.Storage.weapons.containers.HB_ORD_Pave_Spike_Fast='weapons.containers.HB_ORD_Pave_Spike_Fast'
+ENUMS.Storage.weapons.adapters.MAK79_VAR_2='weapons.adapters.MAK-79_VAR_2'
+ENUMS.Storage.weapons.missiles.AGM_65D='weapons.missiles.AGM_65D'
+ENUMS.Storage.weapons.missiles.AGM_86='weapons.missiles.AGM_86'
+ENUMS.Storage.weapons.shells.British303_G_Mk3='weapons.shells.British303_G_Mk3'
+ENUMS.Storage.weapons.shells.M61_20_AP_gr='weapons.shells.M61_20_AP_gr'
+ENUMS.Storage.weapons.adapters.UB_32A_24='weapons.adapters.UB_32A_24'
+ENUMS.Storage.weapons.containers.F15E_AAQ28_LITENING='weapons.containers.F-15E_AAQ-28_LITENING'
+ENUMS.Storage.weapons.bombs.OH58D_Blue_Smoke_Grenade='weapons.bombs.OH58D_Blue_Smoke_Grenade'
+ENUMS.Storage.weapons.bombs.KAB_500Kr='weapons.bombs.KAB_500Kr'
+ENUMS.Storage.weapons.containers.SPS141100='weapons.containers.SPS-141-100'
+ENUMS.Storage.weapons.missiles.AIM9JULI='weapons.missiles.AIM-9JULI'
+ENUMS.Storage.weapons.droptanks.MB339_TT500_R='weapons.droptanks.MB339_TT500_R'
+ENUMS.Storage.weapons.adapters.towpilon='weapons.adapters.tow-pilon'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE254_H1_YELLOW='weapons.nurs.SNEB_TYPE254_H1_YELLOW'
+ENUMS.Storage.weapons.missiles.M30='weapons.missiles.M30'
+ENUMS.Storage.weapons.bombs.Durandal='weapons.bombs.Durandal'
+ENUMS.Storage.weapons.adapters.apu7='weapons.adapters.apu-7'
+ENUMS.Storage.weapons.nurs.C_8CM_VT='weapons.nurs.C_8CM_VT'
+ENUMS.Storage.weapons.containers.aispodt50='weapons.containers.ais-pod-t50'
+ENUMS.Storage.weapons.shells.M485_155_IL='weapons.shells.M485_155_IL'
+ENUMS.Storage.weapons.bombs.RN24='weapons.bombs.RN-24'
+ENUMS.Storage.weapons.shells._2A64_152='weapons.shells.2A64_152'
+ENUMS.Storage.weapons.containers._='weapons.containers.'
+ENUMS.Storage.weapons.shells.M61_20_HE='weapons.shells.M61_20_HE'
+ENUMS.Storage.weapons.gunmounts.CPG_M4='weapons.gunmounts.CPG_M4'
+ENUMS.Storage.weapons.shells._57mm_Type_90_JAP='weapons.shells.57mm_Type_90_JAP'
+ENUMS.Storage.weapons.missiles.ADM_141A='weapons.missiles.ADM_141A'
+ENUMS.Storage.weapons.containers.KBpod='weapons.containers.KBpod'
+ENUMS.Storage.weapons.shells.DEFA554_30_HE_TRACERS='weapons.shells.DEFA554_30_HE_TRACERS'
+ENUMS.Storage.weapons.missiles.SA_IRIS_T_SL='weapons.missiles.SA_IRIS_T_SL'
+ENUMS.Storage.weapons.missiles.R55='weapons.missiles.R-55'
+ENUMS.Storage.weapons.adapters.BRU42_HS='weapons.adapters.BRU-42_HS'
+ENUMS.Storage.weapons.shells.Hispano_Mk_II_MKIIZ_AP='weapons.shells.Hispano_Mk_II_MKIIZ_AP'
+ENUMS.Storage.weapons.missiles.SA2V755='weapons.missiles.SA2V755'
+ENUMS.Storage.weapons.missiles.PL8B='weapons.missiles.PL-8B'
+ENUMS.Storage.weapons.droptanks.Mosquito_Drop_Tank_100gal='weapons.droptanks.Mosquito_Drop_Tank_100gal'
+ENUMS.Storage.weapons.shells.MG_13x64_HE='weapons.shells.MG_13x64_HE'
+ENUMS.Storage.weapons.shells.Hispano_Mk_II_Tracer_G='weapons.shells.Hispano_Mk_II_Tracer_G'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE253_H1='weapons.nurs.SNEB_TYPE253_H1'
+ENUMS.Storage.weapons.nurs.ARAKM70BAPPX='weapons.nurs.ARAKM70BAPPX'
+ENUMS.Storage.weapons.adapters.TER9A='weapons.adapters.TER-9A'
+ENUMS.Storage.weapons.missiles._9M317='weapons.missiles.9M317'
+ENUMS.Storage.weapons.adapters.LAU115C='weapons.adapters.LAU-115C'
+ENUMS.Storage.weapons.gunmounts.M134_L='weapons.gunmounts.M134_L'
+ENUMS.Storage.weapons.shells._20mm_M220_Tracer='weapons.shells.20mm_M220_Tracer'
+ENUMS.Storage.weapons.containers.EclairM_06='weapons.containers.{EclairM_06}'
+ENUMS.Storage.weapons.bombs.RBK_500AO='weapons.bombs.RBK_500AO'
+ENUMS.Storage.weapons.shells.Bofors_40mm_Essex='weapons.shells.Bofors_40mm_Essex'
+ENUMS.Storage.weapons.containers.MB339_Vinten='weapons.containers.MB339_Vinten'
+ENUMS.Storage.weapons.nurs.ARAKM70BHE='weapons.nurs.ARAKM70BHE'
+ENUMS.Storage.weapons.bombs.FAB250M62='weapons.bombs.FAB-250-M62'
+ENUMS.Storage.weapons.missiles.Rb04E='weapons.missiles.Rb 04E'
+ENUMS.Storage.weapons.droptanks.PTB400_MIG15='weapons.droptanks.PTB400_MIG15'
+ENUMS.Storage.weapons.bombs.PTAB_2_5KO='weapons.bombs.PTAB_2_5KO'
+ENUMS.Storage.weapons.adapters.M2000C_LRF4_edm='weapons.adapters.M-2000C_LRF4.edm'
+ENUMS.Storage.weapons.missiles.AIM_9X='weapons.missiles.AIM_9X'
+ENUMS.Storage.weapons.shells.MG_13x64_I='weapons.shells.MG_13x64_I'
+ENUMS.Storage.weapons.bombs.GBU_8_B='weapons.bombs.GBU_8_B'
+ENUMS.Storage.weapons.missiles.SA9M31='weapons.missiles.SA9M31'
+ENUMS.Storage.weapons.containers.rightSeat='weapons.containers.rightSeat'
+ENUMS.Storage.weapons.shells.Pzgr_3940='weapons.shells.Pzgr_39/40'
+ENUMS.Storage.weapons.shells._2A60_120='weapons.shells.2A60_120'
+ENUMS.Storage.weapons.bombs.GBU_17='weapons.bombs.GBU_17'
+ENUMS.Storage.weapons.missiles.HHQ9='weapons.missiles.HHQ-9'
+ENUMS.Storage.weapons.bombs.Mk_84AIR_GP='weapons.bombs.Mk_84AIR_GP'
+ENUMS.Storage.weapons.bombs.RBK_250_275_AO_1SCH='weapons.bombs.RBK_250_275_AO_1SCH'
+ENUMS.Storage.weapons.missiles.AIM7E='weapons.missiles.AIM-7E'
+ENUMS.Storage.weapons.missiles.AGR_20_M282='weapons.missiles.AGR_20_M282'
+ENUMS.Storage.weapons.droptanks.MB339_FT330='weapons.droptanks.MB339_FT330'
+ENUMS.Storage.weapons.shells.MK_108_MGsch_T='weapons.shells.MK_108_MGsch_T'
+ENUMS.Storage.weapons.missiles.GB6HE='weapons.missiles.GB-6-HE'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE254_H1_RED='weapons.nurs.SNEB_TYPE254_H1_RED'
+ENUMS.Storage.weapons.shells.HP30_30_HE='weapons.shells.HP30_30_HE'
+ENUMS.Storage.weapons.bombs.RN28='weapons.bombs.RN-28'
+ENUMS.Storage.weapons.shells.L31A7_HESH='weapons.shells.L31A7_HESH'
+ENUMS.Storage.weapons.shells.GSH301_30_AP='weapons.shells.GSH301_30_AP'
+ENUMS.Storage.weapons.bombs.RBK_500U='weapons.bombs.RBK_500U'
+ENUMS.Storage.weapons.droptanks.HB_F4E_EXT_Center_Fuel_Tank='weapons.droptanks.HB_F-4E_EXT_Center_Fuel_Tank'
+ENUMS.Storage.weapons.containers.F15E_AAQ13_LANTIRN='weapons.containers.F-15E_AAQ-13_LANTIRN'
+ENUMS.Storage.weapons.droptanks._800LTankEmpty='weapons.droptanks.800L Tank Empty'
+ENUMS.Storage.weapons.missiles.MIM_104='weapons.missiles.MIM_104'
+ENUMS.Storage.weapons.shells.MG_13x64_API='weapons.shells.MG_13x64_API'
+ENUMS.Storage.weapons.shells.M61_20_TP='weapons.shells.M61_20_TP'
+ENUMS.Storage.weapons.bombs.LUU_19='weapons.bombs.LUU_19'
+ENUMS.Storage.weapons.shells.M55A2_TP_RED='weapons.shells.M55A2_TP_RED'
+ENUMS.Storage.weapons.adapters.su27twinpylon='weapons.adapters.su-27-twinpylon'
+ENUMS.Storage.weapons.nurs.M26HE='weapons.nurs.M26HE'
+ENUMS.Storage.weapons.bombs.BLU4B_GROUP='weapons.bombs.BLU-4B_GROUP'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M156='weapons.nurs.HYDRA_70_M156'
+ENUMS.Storage.weapons.shells.DM23_105_AP='weapons.shells.DM23_105_AP'
+ENUMS.Storage.weapons.missiles.SM_1='weapons.missiles.SM_1'
+ENUMS.Storage.weapons.missiles.OH58D_FIM_92='weapons.missiles.OH58D_FIM_92'
+ENUMS.Storage.weapons.containers.F18LDTPOD='weapons.containers.F-18-LDT-POD'
+ENUMS.Storage.weapons.missiles.AGM_65K='weapons.missiles.AGM_65K'
+ENUMS.Storage.weapons.shells.Bofors_40mm_HE='weapons.shells.Bofors_40mm_HE'
+ENUMS.Storage.weapons.missiles.HAWK_RAKETA='weapons.missiles.HAWK_RAKETA'
+ENUMS.Storage.weapons.shells._7_62x54='weapons.shells.7_62x54'
+ENUMS.Storage.weapons.shells.DM12_120mm_HEAT_MP_T='weapons.shells.DM12_120mm_HEAT_MP_T'
+ENUMS.Storage.weapons.bombs.AN_M64='weapons.bombs.AN_M64'
+ENUMS.Storage.weapons.containers.rearCargoSeats='weapons.containers.rearCargoSeats'
+ENUMS.Storage.weapons.bombs.AN_M65='weapons.bombs.AN_M65'
+ENUMS.Storage.weapons.missiles.Rb74='weapons.missiles.Rb 74'
+ENUMS.Storage.weapons.shells.DEFA553_30AP='weapons.shells.DEFA553_30AP'
+ENUMS.Storage.weapons.nurs.S5M='weapons.nurs.S-5M'
+ENUMS.Storage.weapons.gunmounts.M134_SIDE_R='weapons.gunmounts.M134_SIDE_R'
+ENUMS.Storage.weapons.missiles.HJ12='weapons.missiles.HJ-12'
+ENUMS.Storage.weapons.shells.PLZ_155_HE='weapons.shells.PLZ_155_HE'
+ENUMS.Storage.weapons.adapters.BRU_33A='weapons.adapters.BRU_33A'
+ENUMS.Storage.weapons.nurs.ARAKM70BAP='weapons.nurs.ARAKM70BAP'
+ENUMS.Storage.weapons.missiles.MMagicII='weapons.missiles.MMagicII'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M282='weapons.nurs.HYDRA_70_M282'
+ENUMS.Storage.weapons.nurs.ARF8M3HEI='weapons.nurs.ARF8M3HEI'
+ENUMS.Storage.weapons.shells._76mm_AA_JAP='weapons.shells.76mm_AA_JAP'
+ENUMS.Storage.weapons.missiles.Igla_1E='weapons.missiles.Igla_1E'
+ENUMS.Storage.weapons.nurs.SMERCH_9M55K='weapons.nurs.SMERCH_9M55K'
+ENUMS.Storage.weapons.nurs.C_24='weapons.nurs.C_24'
+ENUMS.Storage.weapons.shells.GSH301_30_HE='weapons.shells.GSH301_30_HE'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE256_H1='weapons.nurs.SNEB_TYPE256_H1'
+ENUMS.Storage.weapons.adapters.T45_PMBR='weapons.adapters.T45_PMBR'
+ENUMS.Storage.weapons.containers.EclairM_24='weapons.containers.{EclairM_24}'
+ENUMS.Storage.weapons.droptanks.MB339_TT500_L='weapons.droptanks.MB339_TT500_L'
+ENUMS.Storage.weapons.bombs.BKF_PTAB2_5KO='weapons.bombs.BKF_PTAB2_5KO'
+ENUMS.Storage.weapons.shells.Br303='weapons.shells.Br303'
+ENUMS.Storage.weapons.shells.DANA_152='weapons.shells.DANA_152'
+ENUMS.Storage.weapons.nurs.S5MO_HEFRAG_FFAR='weapons.nurs.S5MO_HEFRAG_FFAR'
+ENUMS.Storage.weapons.missiles.AIM9P3='weapons.missiles.AIM-9P3'
+ENUMS.Storage.weapons.gunmounts.GAU_12='weapons.gunmounts.GAU_12'
+ENUMS.Storage.weapons.shells.MK45_127='weapons.shells.MK45_127'
+ENUMS.Storage.weapons.nurs.C_8CM_GN='weapons.nurs.C_8CM_GN'
+ENUMS.Storage.weapons.nurs.C_13='weapons.nurs.C_13'
+ENUMS.Storage.weapons.gunmounts.OH58D_M3P_L300='weapons.gunmounts.OH58D_M3P_L300'
+ENUMS.Storage.weapons.missiles.AGM_65A='weapons.missiles.AGM_65A'
+ENUMS.Storage.weapons.containers.AV8BNA_ALQ164='weapons.containers.AV8BNA_ALQ164'
+ENUMS.Storage.weapons.bombs.OH58D_Red_Smoke_Grenade='weapons.bombs.OH58D_Red_Smoke_Grenade'
+ENUMS.Storage.weapons.bombs.FAB_1500='weapons.bombs.FAB_1500'
+ENUMS.Storage.weapons.shells.M230_TPM788='weapons.shells.M230_TP M788'
+ENUMS.Storage.weapons.containers.leftSeat='weapons.containers.leftSeat'
+ENUMS.Storage.weapons.missiles.Kormoran='weapons.missiles.Kormoran'
+ENUMS.Storage.weapons.adapters.boz100='weapons.adapters.boz-100'
+ENUMS.Storage.weapons.nurs.HYDRA_70_MK1='weapons.nurs.HYDRA_70_MK1'
+ENUMS.Storage.weapons.shells.Utes_12_7x108_T='weapons.shells.Utes_12_7x108_T'
+ENUMS.Storage.weapons.missiles.AGM_154A='weapons.missiles.AGM_154A'
+ENUMS.Storage.weapons.adapters.MBD3LAU68='weapons.adapters.MBD-3-LAU-68'
+ENUMS.Storage.weapons.nurs.C_8CM_WH='weapons.nurs.C_8CM_WH'
+ENUMS.Storage.weapons.missiles.MatraSuper530D='weapons.missiles.Matra Super 530D'
+ENUMS.Storage.weapons.bombs.BDU_50HD='weapons.bombs.BDU_50HD'
+ENUMS.Storage.weapons.adapters.M2000c_BAP_Rack='weapons.adapters.M-2000c_BAP_Rack'
+ENUMS.Storage.weapons.shells._7_92x57sS='weapons.shells.7_92x57sS'
+ENUMS.Storage.weapons.shells.M20_50_aero_APIT='weapons.shells.M20_50_aero_APIT'
+ENUMS.Storage.weapons.bombs.KAB_500='weapons.bombs.KAB_500'
+ENUMS.Storage.weapons.gunmounts.AKAN='weapons.gunmounts.{AKAN}'
+ENUMS.Storage.weapons.shells._20MM_M242_HEIT='weapons.shells.20MM_M242_HEI-T'
+ENUMS.Storage.weapons.gunmounts.GAU_12_Equalizer_AP='weapons.gunmounts.{GAU_12_Equalizer_AP}'
+ENUMS.Storage.weapons.gunmounts.FN_HMP400='weapons.gunmounts.{FN_HMP400}'
+ENUMS.Storage.weapons.containers.dlpod_akg='weapons.containers.dlpod_akg'
+ENUMS.Storage.weapons.droptanks.PTB600_MIG15='weapons.droptanks.PTB600_MIG15'
+ENUMS.Storage.weapons.adapters.apu602_L='weapons.adapters.apu-60-2_L'
+ENUMS.Storage.weapons.missiles.SeaSparrow='weapons.missiles.SeaSparrow'
+ENUMS.Storage.weapons.droptanks._='weapons.droptanks.'
+ENUMS.Storage.weapons.adapters.lau117='weapons.adapters.lau-117'
+ENUMS.Storage.weapons.shells.M197_20='weapons.shells.M197_20'
+ENUMS.Storage.weapons.shells.Br303_tr='weapons.shells.Br303_tr'
+ENUMS.Storage.weapons.adapters.MBD3LAU61='weapons.adapters.MBD-3-LAU-61'
+ENUMS.Storage.weapons.bombs.British_SAP_250LB_Bomb_Mk5='weapons.bombs.British_SAP_250LB_Bomb_Mk5'
+ENUMS.Storage.weapons.adapters.apu68m3='weapons.adapters.apu-68m3'
+ENUMS.Storage.weapons.shells.British303_Ball_Mk6='weapons.shells.British303_Ball_Mk6'
+ENUMS.Storage.weapons.shells._7_62x54_NOTRACER='weapons.shells.7_62x54_NOTRACER'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE250_F1B='weapons.nurs.SNEB_TYPE250_F1B'
+ENUMS.Storage.weapons.shells.ZTZ_14_5='weapons.shells.ZTZ_14_5'
+ENUMS.Storage.weapons.bombs.CBU_105='weapons.bombs.CBU_105'
+ENUMS.Storage.weapons.droptanks.FW190_FuelTank='weapons.droptanks.FW-190_Fuel-Tank'
+ENUMS.Storage.weapons.missiles.X_58='weapons.missiles.X_58'
+ENUMS.Storage.weapons.bombs.LYSBOMB11089='weapons.bombs.LYSBOMB 11089'
+ENUMS.Storage.weapons.containers.PAVETACK='weapons.containers.PAVETACK'
+ENUMS.Storage.weapons.bombs.GBU_24='weapons.bombs.GBU_24'
+ENUMS.Storage.weapons.gunmounts.FN_HMP400_100='weapons.gunmounts.{FN_HMP400_100}'
+ENUMS.Storage.weapons.missiles.AIM7MH='weapons.missiles.AIM-7MH'
+ENUMS.Storage.weapons.adapters.rb05pylon='weapons.adapters.rb05pylon'
+ENUMS.Storage.weapons.shells.DEFA553_30APIT='weapons.shells.DEFA553_30APIT'
+ENUMS.Storage.weapons.shells.Flak18_Sprgr_39='weapons.shells.Flak18_Sprgr_39'
+ENUMS.Storage.weapons.missiles.X_35='weapons.missiles.X_35'
+ENUMS.Storage.weapons.bombs.BL_755='weapons.bombs.BL_755'
+ENUMS.Storage.weapons.containers.ETHER='weapons.containers.ETHER'
+ENUMS.Storage.weapons.droptanks.F4U1D_Drop_Tank_Mk5='weapons.droptanks.F4U-1D_Drop_Tank_Mk5'
+ENUMS.Storage.weapons.containers.CE2_SMOKE_WHITE='weapons.containers.{CE2_SMOKE_WHITE}'
+ENUMS.Storage.weapons.bombs.Mk_82Y='weapons.bombs.Mk_82Y'
+ENUMS.Storage.weapons.bombs.British_MC_500LB_Bomb_Mk2='weapons.bombs.British_MC_500LB_Bomb_Mk2'
+ENUMS.Storage.weapons.adapters.HB_ORD_SUU_7='weapons.adapters.HB_ORD_SUU_7'
+ENUMS.Storage.weapons.shells.MK75_76='weapons.shells.MK75_76'
+ENUMS.Storage.weapons.shells.M68_105_AP='weapons.shells.M68_105_AP'
+ENUMS.Storage.weapons.missiles.SA57E6='weapons.missiles.SA57E6'
+ENUMS.Storage.weapons.missiles.AGM_86C='weapons.missiles.AGM_86C'
+ENUMS.Storage.weapons.missiles.P_24T='weapons.missiles.P_24T'
+ENUMS.Storage.weapons.adapters.OH58D_HRACK_L='weapons.adapters.OH58D_HRACK_L'
+ENUMS.Storage.weapons.gunmounts.MK_108='weapons.gunmounts.MK_108'
+ENUMS.Storage.weapons.adapters.APU68='weapons.adapters.APU-68'
+ENUMS.Storage.weapons.shells.British303_G_Mk6z='weapons.shells.British303_G_Mk6z'
+ENUMS.Storage.weapons.containers.aispodt50_l='weapons.containers.ais-pod-t50_l'
+ENUMS.Storage.weapons.gunmounts.N37='weapons.gunmounts.N-37'
+ENUMS.Storage.weapons.missiles.X_555='weapons.missiles.X_555'
+ENUMS.Storage.weapons.bombs.FAB500M54='weapons.bombs.FAB-500M54'
+ENUMS.Storage.weapons.containers.AN_AAQ_33='weapons.containers.AN_AAQ_33'
+ENUMS.Storage.weapons.containers.M2KC_AAF='weapons.containers.{M2KC_AAF}'
+ENUMS.Storage.weapons.shells.NR23_23x115_HEI_T='weapons.shells.NR23_23x115_HEI_T'
+ENUMS.Storage.weapons.shells.KPVT_14_5_T='weapons.shells.KPVT_14_5_T'
+ENUMS.Storage.weapons.shells.M56A3_HE_RED='weapons.shells.M56A3_HE_RED'
+ENUMS.Storage.weapons.bombs.FAB500SL='weapons.bombs.FAB-500SL'
+ENUMS.Storage.weapons.bombs.KAB_500S='weapons.bombs.KAB_500S'
+ENUMS.Storage.weapons.bombs.SAMP400LD='weapons.bombs.SAMP400LD'
+ENUMS.Storage.weapons.bombs.BDU_45B='weapons.bombs.BDU_45B'
+ENUMS.Storage.weapons.adapters.APU73='weapons.adapters.APU-73'
+ENUMS.Storage.weapons.missiles._9M723_HE='weapons.missiles.9M723_HE'
+ENUMS.Storage.weapons.bombs.GBU_15_V_31_B='weapons.bombs.GBU_15_V_31_B'
+ENUMS.Storage.weapons.adapters.CHAP_Tu95MS_rotary_launcher='weapons.adapters.CHAP_Tu95MS_rotary_launcher'
+ENUMS.Storage.weapons.droptanks.HB_F4E_EXT_WingTank='weapons.droptanks.HB_F-4E_EXT_WingTank'
+ENUMS.Storage.weapons.bombs.SC_250_T1_L2='weapons.bombs.SC_250_T1_L2'
+ENUMS.Storage.weapons.torpedoes.mk46torp_name='weapons.torpedoes.mk46torp_name'
+ENUMS.Storage.weapons.nurs.C_25='weapons.nurs.C_25'
+ENUMS.Storage.weapons.adapters.MAK79_VAR_3='weapons.adapters.MAK-79_VAR_3'
+ENUMS.Storage.weapons.adapters._9m120='weapons.adapters.9m120'
+ENUMS.Storage.weapons.shells.GSh_30_2K_HE_Tr='weapons.shells.GSh_30_2K_HE_Tr'
+ENUMS.Storage.weapons.adapters.hf20_pod='weapons.adapters.hf20_pod'
+ENUMS.Storage.weapons.missiles.AGM_122='weapons.missiles.AGM_122'
+ENUMS.Storage.weapons.missiles.P_60='weapons.missiles.P_60'
+ENUMS.Storage.weapons.shells.K307_155HE='weapons.shells.K307_155HE'
+ENUMS.Storage.weapons.shells.A222_130='weapons.shells.A222_130'
+ENUMS.Storage.weapons.nurs.Zuni_127='weapons.nurs.Zuni_127'
+ENUMS.Storage.weapons.missiles.AIM9J='weapons.missiles.AIM-9J'
+ENUMS.Storage.weapons.shells.BK_27='weapons.shells.BK_27'
+ENUMS.Storage.weapons.adapters.M272_AGM114='weapons.adapters.M272_AGM114'
+ENUMS.Storage.weapons.shells.M242_25_AP_M791='weapons.shells.M242_25_AP_M791'
+ENUMS.Storage.weapons.adapters.HB_F14_EXT_SHOULDER_PHX_R='weapons.adapters.HB_F14_EXT_SHOULDER_PHX_R'
+ENUMS.Storage.weapons.gunmounts.OH58D_M3P_L100='weapons.gunmounts.OH58D_M3P_L100'
+ENUMS.Storage.weapons.bombs.BetAB_500ShP='weapons.bombs.BetAB_500ShP'
+ENUMS.Storage.weapons.nurs.British_HE_60LBSAPNo2_3INCHNo1='weapons.nurs.British_HE_60LBSAPNo2_3INCHNo1'
+ENUMS.Storage.weapons.missiles.DWS39_MJ2='weapons.missiles.DWS39_MJ2'
+ENUMS.Storage.weapons.bombs.HEBOMBD='weapons.bombs.HEBOMBD'
+ENUMS.Storage.weapons.missiles.Ataka_9M220='weapons.missiles.Ataka_9M220'
+ENUMS.Storage.weapons.adapters.rb04pylon='weapons.adapters.rb04pylon'
+ENUMS.Storage.weapons.bombs.GBU_28='weapons.bombs.GBU_28'
+ENUMS.Storage.weapons.nurs.C_8CM_YE='weapons.nurs.C_8CM_YE'
+ENUMS.Storage.weapons.droptanks.HB_F14_EXT_DROPTANK='weapons.droptanks.HB_F14_EXT_DROPTANK'
+ENUMS.Storage.weapons.adapters.M2000C_LRF4='weapons.adapters.M-2000C_LRF4'
+ENUMS.Storage.weapons.shells.HESH_105='weapons.shells.HESH_105'
+ENUMS.Storage.weapons.gunmounts.CH47_PORT_M240H='weapons.gunmounts.{CH47_PORT_M240H}'
+ENUMS.Storage.weapons.containers.SMOKE_WHITE='weapons.containers.{SMOKE_WHITE}'
+ENUMS.Storage.weapons.bombs.British_GP_250LB_Bomb_Mk4='weapons.bombs.British_GP_250LB_Bomb_Mk4'
+ENUMS.Storage.weapons.gunmounts.GIAT_M621_HEAP='weapons.gunmounts.{GIAT_M621_HEAP}'
+ENUMS.Storage.weapons.nurs.ARF8M3TPSM='weapons.nurs.ARF8M3TPSM'
+ENUMS.Storage.weapons.nurs.M8rocket='weapons.nurs.M8rocket'
+ENUMS.Storage.weapons.missiles.X_25MR='weapons.missiles.X_25MR'
+ENUMS.Storage.weapons.droptanks.fueltank230='weapons.droptanks.fueltank230'
+ENUMS.Storage.weapons.droptanks.PTB490CMIG21='weapons.droptanks.PTB-490C-MIG21'
+ENUMS.Storage.weapons.droptanks.M2KC_02_RPL541='weapons.droptanks.M2KC_02_RPL541'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE254_F1B_GREEN='weapons.nurs.SNEB_TYPE254_F1B_GREEN'
+ENUMS.Storage.weapons.adapters.mbd='weapons.adapters.mbd'
+ENUMS.Storage.weapons.droptanks.HB_F4E_EXT_Center_Fuel_Tank_EMPTY='weapons.droptanks.HB_F-4E_EXT_Center_Fuel_Tank_EMPTY'
+ENUMS.Storage.weapons.missiles.AGM_84D='weapons.missiles.AGM_84D'
+ENUMS.Storage.weapons.bombs.M257_FLARE='weapons.bombs.M257_FLARE'
+ENUMS.Storage.weapons.missiles.AGM_84A='weapons.missiles.AGM_84A'
+ENUMS.Storage.weapons.gunmounts.GIAT_M621_HE='weapons.gunmounts.{GIAT_M621_HE}'
+ENUMS.Storage.weapons.missiles.AIM_54C_Mk47='weapons.missiles.AIM_54C_Mk47'
+ENUMS.Storage.weapons.containers.MPS410='weapons.containers.MPS-410'
+ENUMS.Storage.weapons.missiles.HY2='weapons.missiles.HY-2'
+ENUMS.Storage.weapons.bombs.Mk_81='weapons.bombs.Mk_81'
+ENUMS.Storage.weapons.shells.Oerlikon_20mm_Essex='weapons.shells.Oerlikon_20mm_Essex'
+ENUMS.Storage.weapons.adapters.PylonM71='weapons.adapters.PylonM71'
+ENUMS.Storage.weapons.droptanks._1100LTank='weapons.droptanks.1100L Tank'
+ENUMS.Storage.weapons.bombs.BAP_100='weapons.bombs.BAP_100'
+ENUMS.Storage.weapons.gunmounts.PK3='weapons.gunmounts.{PK-3}'
+ENUMS.Storage.weapons.adapters.b52_CRL_mod1='weapons.adapters.b-52_CRL_mod1'
+ENUMS.Storage.weapons.adapters._9m120m='weapons.adapters.9m120m'
+ENUMS.Storage.weapons.droptanks.M2KC_02_RPL541_EMPTY='weapons.droptanks.M2KC_02_RPL541_EMPTY'
+ENUMS.Storage.weapons.bombs.BR_500='weapons.bombs.BR_500'
+ENUMS.Storage.weapons.adapters._9K114_Shturm='weapons.adapters.9K114_Shturm'
+ENUMS.Storage.weapons.adapters.f4pilon='weapons.adapters.f4-pilon'
+ENUMS.Storage.weapons.gunmounts.SPPU_22='weapons.gunmounts.SPPU_22'
+ENUMS.Storage.weapons.gunmounts.GSh232taildefense='weapons.gunmounts.GSh-23-2 tail defense'
+ENUMS.Storage.weapons.bombs.FAB250M54TU='weapons.bombs.FAB-250M54TU'
+ENUMS.Storage.weapons.nurs.HYDRA_70_M229='weapons.nurs.HYDRA_70_M229'
+ENUMS.Storage.weapons.shells.M185_155='weapons.shells.M185_155'
+ENUMS.Storage.weapons.adapters.sa342_ATAM_Tube_2x='weapons.adapters.sa342_ATAM_Tube_2x'
+ENUMS.Storage.weapons.shells._53UBR281U='weapons.shells.53-UBR-281U'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE259E_H1='weapons.nurs.SNEB_TYPE259E_H1'
+ENUMS.Storage.weapons.bombs.SAB_250_200='weapons.bombs.SAB_250_200'
+ENUMS.Storage.weapons.missiles.ADM_141B='weapons.missiles.ADM_141B'
+ENUMS.Storage.weapons.adapters.kmgu2='weapons.adapters.kmgu-2'
+ENUMS.Storage.weapons.adapters.B20='weapons.adapters.B-20'
+ENUMS.Storage.weapons.containers.U22A='weapons.containers.U22A'
+ENUMS.Storage.weapons.shells.M246_20_HE_gr='weapons.shells.M246_20_HE_gr'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE251_H1='weapons.nurs.SNEB_TYPE251_H1'
+ENUMS.Storage.weapons.missiles.Kh25MP_PRGS1VP='weapons.missiles.Kh25MP_PRGS1VP'
+ENUMS.Storage.weapons.adapters.BR21Gerat='weapons.adapters.BR21-Gerat'
+ENUMS.Storage.weapons.adapters.apu13u2='weapons.adapters.apu-13u-2'
+ENUMS.Storage.weapons.shells.Hispano_Mk_II_MKI_HEI='weapons.shells.Hispano_Mk_II_MKI_HE/I'
+ENUMS.Storage.weapons.nurs.FFAR_Mk61='weapons.nurs.FFAR_Mk61'
+ENUMS.Storage.weapons.containers.BRD4250='weapons.containers.BRD-4-250'
+ENUMS.Storage.weapons.containers.HB_ORD_MER='weapons.containers.HB_ORD_MER'
+ENUMS.Storage.weapons.droptanks.PTB_1200_F1='weapons.droptanks.PTB_1200_F1'
+ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk1='weapons.bombs.British_GP_500LB_Bomb_Mk1'
+ENUMS.Storage.weapons.missiles.AGM_119='weapons.missiles.AGM_119'
+ENUMS.Storage.weapons.shells._3BM59_125_AP='weapons.shells.3BM59_125_AP'
+ENUMS.Storage.weapons.shells.M2_50_aero_AP='weapons.shells.M2_50_aero_AP'
+ENUMS.Storage.weapons.adapters.LAU68='weapons.adapters.LAU-68'
+ENUMS.Storage.weapons.nurs.C_5='weapons.nurs.C_5'
+ENUMS.Storage.weapons.nurs.S24B='weapons.nurs.S-24B'
+ENUMS.Storage.weapons.adapters.HB_F4E_LAU34='weapons.adapters.HB_F-4E_LAU-34'
+ENUMS.Storage.weapons.shells._2A18_122='weapons.shells.2A18_122'
+ENUMS.Storage.weapons.missiles.SCUD_RAKETA='weapons.missiles.SCUD_RAKETA'
+ENUMS.Storage.weapons.adapters.b52_HSAB='weapons.adapters.b-52_HSAB'
+ENUMS.Storage.weapons.nurs.R4M='weapons.nurs.R4M'
+ENUMS.Storage.weapons.bombs.LYSBOMB11086='weapons.bombs.LYSBOMB 11086'
+ENUMS.Storage.weapons.bombs.SD_250_Stg='weapons.bombs.SD_250_Stg'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE256_F1B='weapons.nurs.SNEB_TYPE256_F1B'
+ENUMS.Storage.weapons.missiles.AGM_84H='weapons.missiles.AGM_84H'
+ENUMS.Storage.weapons.missiles.AIM_54='weapons.missiles.AIM_54'
+ENUMS.Storage.weapons.bombs.AB_500_1_SD_10A='weapons.bombs.AB_500_1_SD_10A'
+ENUMS.Storage.weapons.containers.Eclair='weapons.containers.{Eclair}'
+ENUMS.Storage.weapons.gunmounts.MB339_ANM3_R='weapons.gunmounts.{MB339_ANM3_R}'
+ENUMS.Storage.weapons.shells.N37_37x155_API_T='weapons.shells.N37_37x155_API_T'
+ENUMS.Storage.weapons.shells.MG_20x82_MGsch='weapons.shells.MG_20x82_MGsch'
+ENUMS.Storage.weapons.containers.fullCargoSeats='weapons.containers.fullCargoSeats'
+ENUMS.Storage.weapons.shells.British303_G_Mk1='weapons.shells.British303_G_Mk1'
+ENUMS.Storage.weapons.adapters.LR25='weapons.adapters.LR-25'
+ENUMS.Storage.weapons.gunmounts.CH47_PORT_M134D='weapons.gunmounts.{CH47_PORT_M134D}'
+ENUMS.Storage.weapons.containers.MIG21_SMOKE_RED='weapons.containers.{MIG21_SMOKE_RED}'
+ENUMS.Storage.weapons.shells.M53_AP_RED='weapons.shells.M53_AP_RED'
+ENUMS.Storage.weapons.gunmounts.GIAT_M621_AP='weapons.gunmounts.{GIAT_M621_AP}'
+ENUMS.Storage.weapons.nurs.C_8CM='weapons.nurs.C_8CM'
+ENUMS.Storage.weapons.missiles.P_40R='weapons.missiles.P_40R'
+ENUMS.Storage.weapons.missiles.YJ12='weapons.missiles.YJ-12'
+ENUMS.Storage.weapons.missiles.CM_802AKG='weapons.missiles.CM_802AKG'
+ENUMS.Storage.weapons.missiles.SA9M38M1='weapons.missiles.SA9M38M1'
+ENUMS.Storage.weapons.droptanks.AV8BNA_AERO1D_EMPTY='weapons.droptanks.AV8BNA_AERO1D_EMPTY'
+ENUMS.Storage.weapons.bombs.British_GP_250LB_Bomb_Mk5='weapons.bombs.British_GP_250LB_Bomb_Mk5'
+ENUMS.Storage.weapons.shells.British303_Ball_Mk7='weapons.shells.British303_Ball_Mk7'
+ENUMS.Storage.weapons.bombs.GBU_43='weapons.bombs.GBU_43'
+ENUMS.Storage.weapons.missiles.AGM_88='weapons.missiles.AGM_88'
+ENUMS.Storage.weapons.droptanks.droptank_110_gal='weapons.droptanks.droptank_110_gal'
+ENUMS.Storage.weapons.missiles.GB6SFW='weapons.missiles.GB-6-SFW'
+ENUMS.Storage.weapons.bombs.SAB_250_FLARE='weapons.bombs.SAB_250_FLARE'
+ENUMS.Storage.weapons.adapters.ao2_5rt_block1='weapons.adapters.ao-2_5rt_block1'
+ENUMS.Storage.weapons.shells._7_62x51='weapons.shells.7_62x51'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC='weapons.gunmounts.AKAN_NO_TRC'
+ENUMS.Storage.weapons.bombs.LYSBOMB11088='weapons.bombs.LYSBOMB 11088'
+ENUMS.Storage.weapons.shells.PKT_7_62_T='weapons.shells.PKT_7_62_T'
+ENUMS.Storage.weapons.gunmounts.BrowningM2='weapons.gunmounts.BrowningM2'
+ENUMS.Storage.weapons.containers.MIG21_SMOKE_WHITE='weapons.containers.{MIG21_SMOKE_WHITE}'
+ENUMS.Storage.weapons.adapters.BRU_57='weapons.adapters.BRU_57'
+ENUMS.Storage.weapons.bombs.MK_82AIR='weapons.bombs.MK_82AIR'
+ENUMS.Storage.weapons.missiles.R_550='weapons.missiles.R_550'
+ENUMS.Storage.weapons.shells.Hispano_Mk_II_APT='weapons.shells.Hispano_Mk_II_AP/T'
+ENUMS.Storage.weapons.adapters.MAK79_VAR_1='weapons.adapters.MAK-79_VAR_1'
+ENUMS.Storage.weapons.nurs.GRAD_9M22U='weapons.nurs.GRAD_9M22U'
+ENUMS.Storage.weapons.gunmounts.CH47_AFT_M240H='weapons.gunmounts.{CH47_AFT_M240H}'
+ENUMS.Storage.weapons.shells.GSH_23_AP='weapons.shells.GSH_23_AP'
+ENUMS.Storage.weapons.missiles.SA9M33='weapons.missiles.SA9M33'
+ENUMS.Storage.weapons.missiles.YJ83K='weapons.missiles.YJ-83K'
+ENUMS.Storage.weapons.shells.MG_13x64_APT='weapons.shells.MG_13x64_APT'
+ENUMS.Storage.weapons.missiles.AIM7P='weapons.missiles.AIM-7P'
+ENUMS.Storage.weapons.shells._50Browning_Ball_M2_Corsair='weapons.shells.50Browning_Ball_M2_Corsair'
+ENUMS.Storage.weapons.nurs.C_8CM_BU='weapons.nurs.C_8CM_BU'
+ENUMS.Storage.weapons.bombs.OH58D_Yellow_Smoke_Grenade='weapons.bombs.OH58D_Yellow_Smoke_Grenade'
+ENUMS.Storage.weapons.bombs.GBU_32_V_2B='weapons.bombs.GBU_32_V_2B'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE257_F1B='weapons.nurs.SNEB_TYPE257_F1B'
+ENUMS.Storage.weapons.missiles.Rb04EforA_I__='weapons.missiles.Rb 04E (for A.I.)'
+ENUMS.Storage.weapons.containers.MB339_SMOKEPOD='weapons.containers.MB339_SMOKE-POD'
+ENUMS.Storage.weapons.containers.HB_F14_EXT_LAU7='weapons.containers.HB_F14_EXT_LAU-7'
+ENUMS.Storage.weapons.missiles.P_27T='weapons.missiles.P_27T'
+ENUMS.Storage.weapons.adapters.B1B_28store_Conventional_Bomb_Module='weapons.adapters.B-1B_28-store_Conventional_Bomb_Module'
+ENUMS.Storage.weapons.shells.GAU8_30_TP='weapons.shells.GAU8_30_TP'
+ENUMS.Storage.weapons.droptanks.LNS_VIG_XTANK='weapons.droptanks.LNS_VIG_XTANK'
+ENUMS.Storage.weapons.shells._2A7_23_HE='weapons.shells.2A7_23_HE'
+ENUMS.Storage.weapons.shells.MINGR55='weapons.shells.MINGR55'
+ENUMS.Storage.weapons.gunmounts.M230='weapons.gunmounts.M230'
+ENUMS.Storage.weapons.shells.MK45_127mm_Essex='weapons.shells.MK45_127mm_Essex'
+ENUMS.Storage.weapons.droptanks.F15E_Drop_Tank_Empty='weapons.droptanks.F-15E_Drop_Tank_Empty'
+ENUMS.Storage.weapons.nurs.British_HE_60LBFNo1_3INCHNo1='weapons.nurs.British_HE_60LBFNo1_3INCHNo1'
+ENUMS.Storage.weapons.torpedoes.LTF_5B='weapons.torpedoes.LTF_5B'
+ENUMS.Storage.weapons.adapters.HB_F4E_LAU117='weapons.adapters.HB_F4E_LAU117'
+ENUMS.Storage.weapons.containers.HB_ORD_Missile_Well_Adapter='weapons.containers.HB_ORD_Missile_Well_Adapter'
+ENUMS.Storage.weapons.bombs.SC_500_J='weapons.bombs.SC_500_J'
+ENUMS.Storage.weapons.adapters.AKU58='weapons.adapters.AKU-58'
+ENUMS.Storage.weapons.missiles.PL8A='weapons.missiles.PL-8A'
+ENUMS.Storage.weapons.gunmounts.MB339_DEFA553_L='weapons.gunmounts.{MB339_DEFA553_L}'
+ENUMS.Storage.weapons.adapters.UB1657UMP='weapons.adapters.UB-16-57UMP'
+ENUMS.Storage.weapons.droptanks.fuel_tank_230='weapons.droptanks.fuel_tank_230'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE257_H1='weapons.nurs.SNEB_TYPE257_H1'
+ENUMS.Storage.weapons.missiles.RB75B='weapons.missiles.RB75B'
+ENUMS.Storage.weapons.shells.NR30_30x155_HEI_T='weapons.shells.NR30_30x155_HEI_T'
+ENUMS.Storage.weapons.adapters.apu68um3='weapons.adapters.apu-68um3'
+ENUMS.Storage.weapons.missiles.R_550_M1='weapons.missiles.R_550_M1'
+ENUMS.Storage.weapons.adapters.OH58D_SRACK_L='weapons.adapters.OH58D_SRACK_L'
+ENUMS.Storage.weapons.gunmounts.M61='weapons.gunmounts.M-61'
+ENUMS.Storage.weapons.missiles.X_41='weapons.missiles.X_41'
+ENUMS.Storage.weapons.gunmounts.GSH_23='weapons.gunmounts.GSH_23'
+ENUMS.Storage.weapons.missiles.R_530F_EM='weapons.missiles.R_530F_EM'
+ENUMS.Storage.weapons.containers.kg600='weapons.containers.kg600'
+ENUMS.Storage.weapons.missiles.M31='weapons.missiles.M31'
+ENUMS.Storage.weapons.bombs._2502='weapons.bombs.250-2'
+ENUMS.Storage.weapons.gunmounts.M134_SIDE_L='weapons.gunmounts.M134_SIDE_L'
+ENUMS.Storage.weapons.missiles.AGM_65B='weapons.missiles.AGM_65B'
+ENUMS.Storage.weapons.adapters.BRD4250='weapons.adapters.BRD-4-250'
+ENUMS.Storage.weapons.bombs.SAMP250LD='weapons.bombs.SAMP250LD'
+ENUMS.Storage.weapons.containers.AAQ28_LITENING='weapons.containers.AAQ-28_LITENING'
+ENUMS.Storage.weapons.droptanks.Mosquito_Drop_Tank_50gal='weapons.droptanks.Mosquito_Drop_Tank_50gal'
+ENUMS.Storage.weapons.shells._7_92x57_Smkl='weapons.shells.7_92x57_Smkl'
+ENUMS.Storage.weapons.shells.M68_105_HE='weapons.shells.M68_105_HE'
+ENUMS.Storage.weapons.containers.SPRD_99Twin='weapons.containers.SPRD_99Twin'
+ENUMS.Storage.weapons.missiles.HBAIM7E='weapons.missiles.HB-AIM-7E'
+ENUMS.Storage.weapons.shells.M2_12_7_TG='weapons.shells.M2_12_7_TG'
+ENUMS.Storage.weapons.torpedoes.YU6='weapons.torpedoes.YU-6'
+ENUMS.Storage.weapons.bombs.British_MC_250LB_Bomb_Mk2='weapons.bombs.British_MC_250LB_Bomb_Mk2'
+ENUMS.Storage.weapons.droptanks.PTB_120_F86F35='weapons.droptanks.PTB_120_F86F35'
+ENUMS.Storage.weapons.shells.M256_120_AP_L55='weapons.shells.M256_120_AP_L55'
+ENUMS.Storage.weapons.gunmounts.GUV_YakB_GSHP='weapons.gunmounts.GUV_YakB_GSHP'
+ENUMS.Storage.weapons.bombs.GBU_29='weapons.bombs.GBU_29'
+ENUMS.Storage.weapons.gunmounts.GIAT_M261='weapons.gunmounts.GIAT_M261'
+ENUMS.Storage.weapons.missiles.R3S='weapons.missiles.R-3S'
+ENUMS.Storage.weapons.adapters.LAU131='weapons.adapters.LAU-131'
+ENUMS.Storage.weapons.gunmounts.KORD_12_7='weapons.gunmounts.KORD_12_7'
+ENUMS.Storage.weapons.shells.M230_ADEMDEFA='weapons.shells.M230_ADEM/DEFA'
+ENUMS.Storage.weapons.missiles.SM_2='weapons.missiles.SM_2'
+ENUMS.Storage.weapons.gunmounts.CH47_STBD_M134D='weapons.gunmounts.{CH47_STBD_M134D}'
+ENUMS.Storage.weapons.missiles.P_27TE='weapons.missiles.P_27TE'
+ENUMS.Storage.weapons.missiles.X_25ML='weapons.missiles.X_25ML'
+ENUMS.Storage.weapons.containers.lau105='weapons.containers.lau-105'
+ENUMS.Storage.weapons.droptanks.FPU_8A='weapons.droptanks.FPU_8A'
+ENUMS.Storage.weapons.bombs.BLG66='weapons.bombs.BLG66'
+ENUMS.Storage.weapons.shells._2A33_152='weapons.shells.2A33_152'
+ENUMS.Storage.weapons.nurs.MO_10104M='weapons.nurs.MO_10104M'
+ENUMS.Storage.weapons.shells.M825A1_155_SM='weapons.shells.M825A1_155_SM'
+ENUMS.Storage.weapons.gunmounts.AKAN='weapons.gunmounts.AKAN'
+ENUMS.Storage.weapons.gunmounts.Browning303MkII='weapons.gunmounts.Browning303MkII'
+ENUMS.Storage.weapons.nurs.URAGAN_9M27F='weapons.nurs.URAGAN_9M27F'
+ENUMS.Storage.weapons.nurs.FFARMk5HEAT='weapons.nurs.FFAR Mk5 HEAT'
+ENUMS.Storage.weapons.nurs.ARF8M3API='weapons.nurs.ARF8M3API'
+ENUMS.Storage.weapons.shells._3UBM11_100mm_AP='weapons.shells.3UBM11_100mm_AP'
+ENUMS.Storage.weapons.containers.ASO2='weapons.containers.ASO-2'
+ENUMS.Storage.weapons.shells.DEFA552_30='weapons.shells.DEFA552_30'
+ENUMS.Storage.weapons.gunmounts.DEFA_553='weapons.gunmounts.DEFA_553'
+ENUMS.Storage.weapons.missiles.AGM_45A='weapons.missiles.AGM_45A'
+ENUMS.Storage.weapons.missiles.Super_530D='weapons.missiles.Super_530D'
+ENUMS.Storage.weapons.adapters.mbd3u668='weapons.adapters.mbd3-u6-68'
+ENUMS.Storage.weapons.adapters.BRU_55='weapons.adapters.BRU_55'
+ENUMS.Storage.weapons.adapters.SA342_Telson8='weapons.adapters.SA342_Telson8'
+ENUMS.Storage.weapons.adapters.c25pu='weapons.adapters.c-25pu'
+ENUMS.Storage.weapons.bombs.FAB500TA='weapons.bombs.FAB-500TA'
+ENUMS.Storage.weapons.bombs.SAMP125LD='weapons.bombs.SAMP125LD'
+ENUMS.Storage.weapons.bombs.LYSBOMB_CANDLE='weapons.bombs.LYSBOMB_CANDLE'
+ENUMS.Storage.weapons.missiles.AGM_65F='weapons.missiles.AGM_65F'
+ENUMS.Storage.weapons.shells._50Browning_AP_M2='weapons.shells.50Browning_AP_M2'
+ENUMS.Storage.weapons.shells._5_56x45='weapons.shells.5_56x45'
+ENUMS.Storage.weapons.adapters.MatraF1Rocket='weapons.adapters.Matra-F1-Rocket'
+ENUMS.Storage.weapons.missiles.LS_6_500='weapons.missiles.LS_6_500'
+ENUMS.Storage.weapons.missiles.SA9M311='weapons.missiles.SA9M311'
+ENUMS.Storage.weapons.shells.AK100_100='weapons.shells.AK100_100'
+ENUMS.Storage.weapons.bombs.BLG66_BELOUGA='weapons.bombs.BLG66_BELOUGA'
+ENUMS.Storage.weapons.bombs.BIN_200='weapons.bombs.BIN_200'
+ENUMS.Storage.weapons.containers.pl5eii='weapons.containers.pl5eii'
+ENUMS.Storage.weapons.gunmounts.CH47_STBD_M240H='weapons.gunmounts.{CH47_STBD_M240H}'
+ENUMS.Storage.weapons.droptanks.Spitfire_slipper_tank='weapons.droptanks.Spitfire_slipper_tank'
+ENUMS.Storage.weapons.missiles.HOT3_MBDA='weapons.missiles.HOT3_MBDA'
+ENUMS.Storage.weapons.shells._53UOR281U='weapons.shells.53-UOR-281U'
+ENUMS.Storage.weapons.bombs.BDU_50LGB='weapons.bombs.BDU_50LGB'
+ENUMS.Storage.weapons.gunmounts.SHKAS_GUN='weapons.gunmounts.SHKAS_GUN'
+ENUMS.Storage.weapons.shells.British303_W_Mk1z='weapons.shells.British303_W_Mk1z'
+ENUMS.Storage.weapons.adapters.J11A_twinpylon_r='weapons.adapters.J-11A_twinpylon_r'
+ENUMS.Storage.weapons.missiles.P_700='weapons.missiles.P_700'
+ENUMS.Storage.weapons.missiles.SA5V28='weapons.missiles.SA5V28'
+ENUMS.Storage.weapons.missiles.MIM_72G='weapons.missiles.MIM_72G'
+ENUMS.Storage.weapons.adapters.CLB_4='weapons.adapters.CLB_4'
+ENUMS.Storage.weapons.droptanks.PTB_200_F86F35='weapons.droptanks.PTB_200_F86F35'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_SmK_Lspurgelb="weapons.shells.Mauser7.92x57_S.m.K._L'spur(gelb)"
+ENUMS.Storage.weapons.droptanks.PTB_1500_MIG29A='weapons.droptanks.PTB_1500_MIG29A'
+ENUMS.Storage.weapons.bombs.GBU_31='weapons.bombs.GBU_31'
+ENUMS.Storage.weapons.missiles.Kh66_Grom='weapons.missiles.Kh-66_Grom'
+ENUMS.Storage.weapons.containers.HB_ALE_40_15_90='weapons.containers.HB_ALE_40_15_90'
+ENUMS.Storage.weapons.containers.U22='weapons.containers.U22'
+ENUMS.Storage.weapons.adapters.Spitfire_pilon1='weapons.adapters.Spitfire_pilon1'
+ENUMS.Storage.weapons.bombs.OH58D_Violet_Smoke_Grenade='weapons.bombs.OH58D_Violet_Smoke_Grenade'
+ENUMS.Storage.weapons.adapters.adapter_gdj_yj83k='weapons.adapters.adapter_gdj_yj83k'
+ENUMS.Storage.weapons.adapters.M299='weapons.adapters.M299'
+ENUMS.Storage.weapons.adapters.HB_ORD_MER='weapons.adapters.HB_ORD_MER'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_SmKH='weapons.shells.Mauser7.92x57_S.m.K.H.'
+ENUMS.Storage.weapons.gunmounts.HMP400='weapons.gunmounts.HMP400'
+ENUMS.Storage.weapons.containers.F15E_AXQ14_DATALINK='weapons.containers.F-15E_AXQ-14_DATALINK'
+ENUMS.Storage.weapons.adapters._9m114_pylon2='weapons.adapters.9m114_pylon2'
+ENUMS.Storage.weapons.bombs.BEER_BOMB='weapons.bombs.BEER_BOMB'
+ENUMS.Storage.weapons.nurs.C_8OFP2='weapons.nurs.C_8OFP2'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE254_F1B_RED='weapons.nurs.SNEB_TYPE254_F1B_RED'
+ENUMS.Storage.weapons.nurs.C_8OM='weapons.nurs.C_8OM'
+ENUMS.Storage.weapons.shells.M61_20_HE_INVIS='weapons.shells.M61_20_HE_INVIS'
+ENUMS.Storage.weapons.droptanks.HB_F4E_EXT_WingTank_R='weapons.droptanks.HB_F-4E_EXT_WingTank_R'
+ENUMS.Storage.weapons.missiles.CATM_65K='weapons.missiles.CATM_65K'
+ENUMS.Storage.weapons.nurs.FFARM156WP='weapons.nurs.FFAR M156 WP'
+ENUMS.Storage.weapons.bombs.MK_82SNAKEYE='weapons.bombs.MK_82SNAKEYE'
+ENUMS.Storage.weapons.shells.Rh202_20_AP='weapons.shells.Rh202_20_AP'
+ENUMS.Storage.weapons.adapters.M261='weapons.adapters.M261'
+ENUMS.Storage.weapons.bombs.KAB_1500T='weapons.bombs.KAB_1500T'
+ENUMS.Storage.weapons.shells.M339_120mm_HEAT_MP_T='weapons.shells.M339_120mm_HEAT_MP_T'
+ENUMS.Storage.weapons.shells.UOF_17_100HE='weapons.shells.UOF_17_100HE'
+ENUMS.Storage.weapons.nurs.SNEB_TYPE259E_F1B='weapons.nurs.SNEB_TYPE259E_F1B'
+ENUMS.Storage.weapons.shells._5_45x39_NOtr='weapons.shells.5_45x39_NOtr'
+ENUMS.Storage.weapons.gunmounts.CH47_AFT_M3M='weapons.gunmounts.{CH47_AFT_M3M}'
+ENUMS.Storage.weapons.containers.Fantasm='weapons.containers.Fantasm'
+ENUMS.Storage.weapons.missiles.AGM_12C_ED='weapons.missiles.AGM_12C_ED'
+ENUMS.Storage.weapons.droptanks.PTB760_MIG19='weapons.droptanks.PTB760_MIG19'
+ENUMS.Storage.weapons.missiles.SA9M330='weapons.missiles.SA9M330'
+ENUMS.Storage.weapons.missiles.BK90_MJ1_MJ2='weapons.missiles.BK90_MJ1_MJ2'
+ENUMS.Storage.weapons.containers.HB_F14_EXT_AN_APQ167='weapons.containers.HB_F14_EXT_AN_APQ-167'
+ENUMS.Storage.weapons.containers.MB339_TravelPod='weapons.containers.MB339_TravelPod'
+ENUMS.Storage.weapons.gunmounts.OH58D_M3P_L200='weapons.gunmounts.OH58D_M3P_L200'
+ENUMS.Storage.weapons.adapters.B1B_10store_Conventional_Bomb_Module='weapons.adapters.B-1B_10-store_Conventional_Bomb_Module'
+ENUMS.Storage.weapons.shells.GSH23_23_HE_T='weapons.shells.GSH23_23_HE_T'
+ENUMS.Storage.weapons.containers.TANGAZH='weapons.containers.TANGAZH'
+ENUMS.Storage.weapons.nurs.HYDRA_70_MK5='weapons.nurs.HYDRA_70_MK5'
+ENUMS.Storage.weapons.bombs.FAB_100M='weapons.bombs.FAB_100M'
+ENUMS.Storage.weapons.gunmounts.CH47_PORT_M60D='weapons.gunmounts.{CH47_PORT_M60D}'
+ENUMS.Storage.weapons.missiles.M48='weapons.missiles.M48'
+ENUMS.Storage.weapons.shells.MAUZER30_30='weapons.shells.MAUZER30_30'
+ENUMS.Storage.weapons.adapters.tu22m3mbd='weapons.adapters.tu-22m3-mbd'
+ENUMS.Storage.weapons.gunmounts.DEFA554='weapons.gunmounts.DEFA 554'
+ENUMS.Storage.weapons.droptanks.F4U1D_Drop_Tank_Mk6='weapons.droptanks.F4U-1D_Drop_Tank_Mk6'
+ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_YELLOW='weapons.containers.{US_M10_SMOKE_TANK_YELLOW}'
+ENUMS.Storage.weapons.bombs.HEBOMB='weapons.bombs.HEBOMB'
+ENUMS.Storage.weapons.nurs.Rkt_901_HE='weapons.nurs.Rkt_90-1_HE'
+ENUMS.Storage.weapons.adapters.HB_F14_EXT_BRU42='weapons.adapters.HB_F14_EXT_BRU42'
+ENUMS.Storage.weapons.missiles.YJ62='weapons.missiles.YJ-62'
+ENUMS.Storage.weapons.shells.KDA_35_HE='weapons.shells.KDA_35_HE'
+ENUMS.Storage.weapons.shells._2A7_23_AP='weapons.shells.2A7_23_AP'
+ENUMS.Storage.weapons.adapters.SA342_LAU_HOT3_1x='weapons.adapters.SA342_LAU_HOT3_1x'
+ENUMS.Storage.weapons.missiles.P_9M117='weapons.missiles.P_9M117'
+ENUMS.Storage.weapons.adapters.MBD267U='weapons.adapters.MBD-2-67U'
+ENUMS.Storage.weapons.shells.AK630_30_HE='weapons.shells.AK630_30_HE'
+ENUMS.Storage.weapons.bombs.British_GP_500LB_Bomb_Mk5='weapons.bombs.British_GP_500LB_Bomb_Mk5'
+ENUMS.Storage.weapons.bombs.LUU_2AB='weapons.bombs.LUU_2AB'
+ENUMS.Storage.weapons.missiles.BK90_MJ2='weapons.missiles.BK90_MJ2'
+ENUMS.Storage.weapons.shells.British303_B_Mk4z='weapons.shells.British303_B_Mk4z'
+ENUMS.Storage.weapons.adapters.BRU_41A='weapons.adapters.BRU_41A'
+ENUMS.Storage.weapons.bombs.BDU_45='weapons.bombs.BDU_45'
+ENUMS.Storage.weapons.adapters.b20='weapons.adapters.b-20'
+ENUMS.Storage.weapons.missiles.Rapier='weapons.missiles.Rapier'
+ENUMS.Storage.weapons.missiles.P_24R='weapons.missiles.P_24R'
+ENUMS.Storage.weapons.missiles.AGM_84S='weapons.missiles.AGM_84S'
+ENUMS.Storage.weapons.adapters.C25PU='weapons.adapters.C-25PU'
+ENUMS.Storage.weapons.containers.BOZ100='weapons.containers.BOZ-100'
+ENUMS.Storage.weapons.missiles.AGM_65E='weapons.missiles.AGM_65E'
+ENUMS.Storage.weapons.adapters._9M120_pylon2='weapons.adapters.9M120_pylon2'
+ENUMS.Storage.weapons.shells.YakB_12_7_T='weapons.shells.YakB_12_7_T'
+ENUMS.Storage.weapons.containers.IRDeflector='weapons.containers.IRDeflector'
+ENUMS.Storage.weapons.missiles.AIM9P='weapons.missiles.AIM-9P'
+ENUMS.Storage.weapons.missiles.SA5B27='weapons.missiles.SA5B27'
+ENUMS.Storage.weapons.bombs.SC_500_L2='weapons.bombs.SC_500_L2'
+ENUMS.Storage.weapons.containers.HB_F14_EXT_ECA='weapons.containers.HB_F14_EXT_ECA'
+ENUMS.Storage.weapons.bombs.SAMP400HD='weapons.bombs.SAMP400HD'
+ENUMS.Storage.weapons.adapters.ARAKM70B='weapons.adapters.ARAKM70B'
+ENUMS.Storage.weapons.adapters.M260='weapons.adapters.M260'
+ENUMS.Storage.weapons.shells.Mauser7_92x57_PmK='weapons.shells.Mauser7.92x57_P.m.K.'
+ENUMS.Storage.weapons.missiles.RB75T='weapons.missiles.RB75T'
+ENUMS.Storage.weapons.missiles.YJ82='weapons.missiles.YJ-82'
+ENUMS.Storage.weapons.bombs.FAB500M54TU='weapons.bombs.FAB-500M54TU'
+ENUMS.Storage.weapons.bombs.OH58D_White_Smoke_Grenade='weapons.bombs.OH58D_White_Smoke_Grenade'
+ENUMS.Storage.weapons.missiles.X_29TE='weapons.missiles.X_29TE'
+ENUMS.Storage.weapons.missiles.S_25L='weapons.missiles.S_25L'
+ENUMS.Storage.weapons.nurs.British_AP_25LBNo1_3INCHNo1='weapons.nurs.British_AP_25LBNo1_3INCHNo1'
+ENUMS.Storage.weapons.adapters.lau105='weapons.adapters.lau-105'
+ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_WHITE='weapons.containers.{US_M10_SMOKE_TANK_WHITE}'
+ENUMS.Storage.weapons.bombs.Mk_82='weapons.bombs.Mk_82'
+ENUMS.Storage.weapons.adapters.BRU42_LS_SUU25='weapons.adapters.BRU-42_LS_(SUU-25)'
+ENUMS.Storage.weapons.gunmounts.UH60LGAU19='weapons.gunmounts.UH-60L GAU-19'
+ENUMS.Storage.weapons.gunmounts.UH60L_M134='weapons.gunmounts.UH60L_M134'
+ENUMS.Storage.weapons.gunmounts.UH60_M134='weapons.gunmounts.UH60_M134'
+ENUMS.Storage.weapons.adapters.uh60l_lwl12='weapons.adapters.uh60l_lwl12'
+ENUMS.Storage.weapons.droptanks.uh60l_iafts='weapons.droptanks.uh60l_iafts'
+ENUMS.Storage.weapons.gunmounts.UH60_GAU19_LEFT='weapons.gunmounts.{UH60_GAU19_LEFT}'
+ENUMS.Storage.weapons.gunmounts.UH60_GAU19_RIGHT='weapons.gunmounts.{UH60_GAU19_RIGHT}'
+ENUMS.Storage.weapons.gunmounts.UH60_M134_LEFT='weapons.gunmounts.{UH60_M134_LEFT}'
+ENUMS.Storage.weapons.gunmounts.UH60_M134_RIGHT='weapons.gunmounts.{UH60_M134_RIGHT}'
+ENUMS.Storage.weapons.gunmounts.UH60L_M134_GUNNER='weapons.gunmounts.{UH60L_M134_GUNNER}'
+ENUMS.Storage.weapons.gunmounts.UH60L_M60_GUNNER='weapons.gunmounts.{UH60L_M60_GUNNER}'
+ENUMS.Storage.weapons.gunmounts.UH60L_M2_GUNNER='weapons.gunmounts.{UH60L_M2_GUNNER}'
+ENUMS.Storage.weapons.gunmounts.UH60_M230_LEFT='weapons.gunmounts.{UH60_M230_LEFT}'
+ENUMS.Storage.weapons.gunmounts.UH60_M230_RIGHT='weapons.gunmounts.{UH60_M230_RIGHT}'
 ENUMS.FARPType={
 FARP="FARP",
 INVISIBLE="INVISIBLE",
@@ -23077,6 +23515,15 @@ end
 self:F(self.ClassName.." "..self.IdentifiableName.." not found!")
 return nil
 end
+function IDENTIFIABLE:IsRed()
+return self:GetCoalition()==coalition.side.RED
+end
+function IDENTIFIABLE:IsBlue()
+return self:GetCoalition()==coalition.side.BLUE
+end
+function IDENTIFIABLE:IsNeutral()
+return self:GetCoalition()==coalition.side.NEUTRAL
+end
 function IDENTIFIABLE:GetCoalitionName()
 self:F2(self.IdentifiableName)
 local DCSIdentifiable=self:GetDCSObject()
@@ -28040,32 +28487,44 @@ end
 function GROUP:GetTypeName()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local GroupTypeName=unit:getTypeName()
 return(GroupTypeName)
+end
 end
 return nil
 end
 function GROUP:GetNatoReportingName()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local GroupTypeName=DCSGroup:getUnit(1):getTypeName()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local GroupTypeName=unit:getTypeName()
 return UTILS.GetReportingName(GroupTypeName)
+end
 end
 return"Bogey"
 end
 function GROUP:GetPlayerName()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local PlayerName=DCSGroup:getUnit(1):getPlayerName()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local PlayerName=unit:getPlayerName()
 return(PlayerName)
+end
 end
 return nil
 end
 function GROUP:GetCallsign()
 local DCSGroup=self:GetDCSObject()
 if DCSGroup then
-local GroupCallSign=DCSGroup:getUnit(1):getCallsign()
+local unit=DCSGroup:getUnit(1)
+if unit then
+local GroupCallSign=unit:getCallsign()
 return GroupCallSign
+end
 end
 BASE:E({"Cannot GetCallsign",Positionable=self,Alive=self:IsAlive()})
 return nil
@@ -33827,8 +34286,9 @@ REMOVED="REMOVED",
 }
 DYNAMICCARGO.AircraftTypes={
 ["CH-47Fbl1"]="CH-47Fbl1",
-["Mi-8MTV2"]="CH-47Fbl1",
-["Mi-8MT"]="CH-47Fbl1",
+["Mi-8MTV2"]="Mi-8MTV2",
+["Mi-8MT"]="Mi-8MT",
+["C-130J-30"]="C-130J-30",
 }
 DYNAMICCARGO.AircraftDimensions={
 ["CH-47Fbl1"]={
@@ -33849,8 +34309,14 @@ DYNAMICCARGO.AircraftDimensions={
 ["length"]=15,
 ["ropelength"]=30,
 },
+["C-130J-30"]={
+["width"]=4,
+["height"]=12,
+["length"]=35,
+["ropelength"]=0,
+},
 }
-DYNAMICCARGO.version="0.0.9"
+DYNAMICCARGO.version="0.1.0"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -61668,11 +62134,14 @@ aoa.OnSpeed=self:_AoAUnit2Deg(playerData,15.0)
 aoa.OnSpeedMin=self:_AoAUnit2Deg(playerData,14.0)
 aoa.Fast=self:_AoAUnit2Deg(playerData,13.5)
 aoa.FAST=self:_AoAUnit2Deg(playerData,12.5)
-local hornet=playerData.actype==AIRBOSS.AircraftCarrier.HORNET
-or playerData.actype==AIRBOSS.AircraftCarrier.RHINOE
-or playerData.actype==AIRBOSS.AircraftCarrier.RHINOF
-or playerData.actype==AIRBOSS.AircraftCarrier.GROWLER
-local tomcat=playerData.actype==AIRBOSS.AircraftCarrier.F14A or playerData.actype==AIRBOSS.AircraftCarrier.F14B
+elseif goshawk then
+aoa.SLOW=9.5
+aoa.Slow=9.25
+aoa.OnSpeedMax=9.0
+aoa.OnSpeed=8.5
+aoa.OnSpeedMin=8.25
+aoa.Fast=7.75
+aoa.FAST=5.5
 elseif skyhawk then
 aoa.SLOW=10.50
 aoa.Slow=9.50
@@ -72017,6 +72486,7 @@ CTLD.UnitTypeCapabilities={
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
+["C-130J-30"]={type="C-130J-30",crates=true,troops=true,cratelimit=7,trooplimit=64,length=35,cargoweightlimit=21500},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["UH-60L_DAP"]={type="UH-60L_DAP",crates=false,troops=true,cratelimit=0,trooplimit=2,length=16,cargoweightlimit=500},
 ["MH-60R"]={type="MH-60R",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
@@ -72033,8 +72503,9 @@ CTLD.FixedWingTypes={
 ["Hercules"]="Hercules",
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
+["C-130J-30"]="C-130J-30",
 }
-CTLD.version="1.3.38"
+CTLD.version="1.3.39"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -72138,6 +72609,8 @@ self.movetroopstowpzone=true
 self.movetroopsdistance=5000
 self.returntroopstobase=true
 self.troopdropzoneradius=100
+self.buildPairSeparation=25
+self.loadSavedCrates=true
 self.VehicleMoveFormation=AI.Task.VehicleFormation.VEE
 self.enableHercules=false
 self.enableFixedWing=false
@@ -72164,6 +72637,7 @@ self.usesubcats=false
 self.subcats={}
 self.subcatsTroop={}
 self.showstockinmenuitems=false
+self.maxCrateMenuQuantity=5
 self.onestepmenu=false
 self.nobuildinloadzones=true
 self.movecratesbeforebuild=true
@@ -72316,6 +72790,7 @@ self.Loaded_Cargo[unitname]=loaded
 local Group=client:GetGroup()
 self:_SendMessage(string.format("Crate %s loaded by ground crew!",event.IniDynamicCargoName),10,false,Group)
 self:__CratesPickedUp(1,Group,client,dcargo)
+self:_RefreshCrateQuantityMenus(Group,client,nil)
 end
 elseif event.id==EVENTS.DynamicCargoUnloaded then
 self:T(self.lid.."GC Unload Event "..event.IniDynamicCargoName)
@@ -72352,6 +72827,7 @@ end
 local Group=client:GetGroup()
 self:_SendMessage(string.format("Crate %s unloaded by ground crew!",event.IniDynamicCargoName),10,false,Group)
 self:__CratesDropped(1,Group,client,{dcargo})
+self:_RefreshCrateQuantityMenus(Group,client,nil)
 end
 elseif event.id==EVENTS.DynamicCargoRemoved then
 self:T(self.lid.."GC Remove Event "..event.IniDynamicCargoName)
@@ -72535,6 +73011,7 @@ self:_RefreshDropTroopsMenu(Group,Unit)
 self:__TroopsPickedUp(1,Group,Unit,Cargotype)
 self:_UpdateUnitCargoMass(Unit)
 Cargotype:RemoveStock()
+self:_RefreshTroopQuantityMenus(Group,Unit,Cargotype)
 end
 return self
 end
@@ -72759,14 +73236,189 @@ end
 self:CleanDroppedTroops()
 return self
 end
-function CTLD:_GetCrates(Group,Unit,Cargo,number,drop,pack)
+function CTLD:_LoadTroopsQuantity(Group,Unit,Cargo,quantity)
+local n=math.max(1,tonumber(quantity)or 1)
+local prevSuppress=self.suppressmessages
+self.suppressmessages=true
+for i=1,n do
+timer.scheduleFunction(function()self:_LoadTroops(Group,Unit,Cargo,true)end,{},timer.getTime()+0.2*i)
+end
+timer.scheduleFunction(function()
+self.suppressmessages=prevSuppress
+local dname=Cargo:GetName()
+self:_SendMessage(string.format("Loaded %d %s.",n,dname),10,false,Group)
+end,{},timer.getTime()+0.2*n+0.05)
+return self
+end
+function CTLD:_AddTroopQuantityMenus(Group,Unit,parentMenu,cargoObj)
+local stock=cargoObj:GetStock()
+local maxQuantity=self.maxCrateMenuQuantity or 1
+if type(stock)=="number"and stock>=0 and stock<maxQuantity then maxQuantity=stock end
+maxQuantity=math.floor(maxQuantity)
+if maxQuantity<1 then maxQuantity=1 end
+local caps=self:_GetUnitCapabilities(Unit)
+local trooplimit=caps and caps.trooplimit or 0
+local troopsize=cargoObj:GetCratesNeeded()or 1
+if troopsize<1 then troopsize=1 end
+local ld=self.Loaded_Cargo and self.Loaded_Cargo[Unit:GetName()]or nil
+local onboard=(ld and type(ld.Troopsloaded)=="number")and ld.Troopsloaded or 0
+if trooplimit>0 then
+local space=trooplimit-onboard
+if space<troopsize then
+local msg="Troop limit reached"
+if type(stock)=="number"and stock==0 then msg="Out of stock"end
+MENU_GROUP_COMMAND:New(Group,msg,parentMenu,function()end)
+return self
+end
+local capacitySets=math.floor(space/troopsize)
+if capacitySets<maxQuantity then maxQuantity=capacitySets end
+end
+for quantity=1,maxQuantity do
+local m=MENU_GROUP:New(Group,tostring(quantity),parentMenu)
+if quantity==1 then
+MENU_GROUP_COMMAND:New(Group,"Load",m,self._LoadTroops,self,Group,Unit,cargoObj)
+else
+MENU_GROUP_COMMAND:New(Group,"Load",m,self._LoadTroopsQuantity,self,Group,Unit,cargoObj,quantity)
+end
+end
+return self
+end
+function CTLD:_GetCrateQuantity(Group,Unit,cargoObj,quantity)
+local needed=cargoObj and cargoObj:GetCratesNeeded()or 1
+local count=math.max(1,tonumber(quantity)or 1)
+local total=needed*count
+self:_GetCrates(Group,Unit,cargoObj,total,false,false,true)
+return self
+end
+function CTLD:_AddCrateQuantityMenus(Group,Unit,parentMenu,cargoObj,stockSummary)
+local needed=cargoObj:GetCratesNeeded()or 1
+local stockEntry=self:_GetCrateStockEntry(cargoObj,stockSummary)
+local stock=nil
+if stockEntry and type(stockEntry.Stock)=="number"then
+stock=stockEntry.Stock
+else
+stock=cargoObj:GetStock()
+end
+local maxQuantity=self.maxCrateMenuQuantity or 1
+local availableSets=nil
+if type(stock)=="number"and stock>=0 then
+availableSets=math.floor(stock)
+if availableSets<=0 then
+MENU_GROUP_COMMAND:New(Group,"Out of stock",parentMenu,function()end)
+return self
+end
+if availableSets<maxQuantity then
+maxQuantity=availableSets
+end
+end
+maxQuantity=math.floor(maxQuantity)
+if maxQuantity<1 then
+return self
+end
+local capacitySets=nil
+if Unit then
+local capabilities=self:_GetUnitCapabilities(Unit)
+local capacity=capabilities and capabilities.cratelimit or 0
+if capacity>0 then
+local loadedData=nil
+if self.Loaded_Cargo then
+loadedData=self.Loaded_Cargo[Unit:GetName()]
+end
+local loadedCount=0
+if loadedData and type(loadedData.Cratesloaded)=="number"then
+loadedCount=loadedData.Cratesloaded
+end
+local space=capacity-loadedCount
+if space<0 then
+space=0
+end
+local perSet=needed>0 and needed or 1
+capacitySets=math.floor(space/perSet)
+end
+end
+local allowLoad=true
+if type(capacitySets)=="number"then
+if capacitySets>=1 then
+if capacitySets<maxQuantity then
+maxQuantity=capacitySets
+end
+else
+allowLoad=false
+maxQuantity=1
+end
+end
+local maxMassSets=nil
+if Unit then
+local maxload=self:_GetMaxLoadableMass(Unit)
+local perCrateMass=(cargoObj.GetMass and cargoObj:GetMass())or cargoObj.PerCrateMass or 0
+local setMass=perCrateMass*(needed>0 and needed or 1)
+if type(maxload)=="number"and maxload>0 and setMass>0 then
+maxMassSets=math.floor(maxload/setMass)
+if maxMassSets<1 then
+maxQuantity=1
+allowLoad=false
+elseif maxMassSets<maxQuantity then
+maxQuantity=maxMassSets
+end
+end
+end
+if maxQuantity<1 then
+return self
+end
+if maxQuantity==1 then
+MENU_GROUP_COMMAND:New(Group,"Get",parentMenu,self._GetCrateQuantity,self,Group,Unit,cargoObj,1)
+local canLoad=(allowLoad and(not capacitySets or capacitySets>=1)and(not maxMassSets or maxMassSets>=1))
+if canLoad then
+MENU_GROUP_COMMAND:New(Group,"Get and Load",parentMenu,self._GetAndLoad,self,Group,Unit,cargoObj,1)
+else
+local msg
+if maxMassSets and(not capacitySets or capacitySets>=1)and maxMassSets<1 then
+msg="Weight limit reached"
+else
+msg="Crate limit reached"
+end
+MENU_GROUP_COMMAND:New(Group,msg,parentMenu,self._SendMessage,self,msg,10,false,Group)
+end
+return self
+end
+for quantity=1,maxQuantity do
+local label=tostring(quantity)
+local qMenu=MENU_GROUP:New(Group,label,parentMenu)
+MENU_GROUP_COMMAND:New(Group,"Get",qMenu,self._GetCrateQuantity,self,Group,Unit,cargoObj,quantity)
+local canLoad=(allowLoad and(not capacitySets or capacitySets>=quantity)and(not maxMassSets or maxMassSets>=quantity))
+if canLoad then
+MENU_GROUP_COMMAND:New(Group,"Get and Load",qMenu,self._GetAndLoad,self,Group,Unit,cargoObj,quantity)
+else
+local msg
+if maxMassSets and(not capacitySets or capacitySets>=quantity)and maxMassSets<quantity then
+msg="Weight limit reached"
+else
+msg="Crate limit reached"
+end
+MENU_GROUP_COMMAND:New(Group,msg,qMenu,self._SendMessage,self,msg,10,false,Group)
+end
+end
+return self
+end
+function CTLD:_GetCrates(Group,Unit,Cargo,number,drop,pack,quiet)
 self:T(self.lid.." _GetCrates")
+local perSet=Cargo:GetCratesNeeded()or 1
+if perSet<1 then perSet=1 end
+local requestNumber=tonumber(number)
+if requestNumber then
+requestNumber=math.floor(requestNumber)
+if requestNumber<1 then requestNumber=perSet end
+else
+requestNumber=perSet
+end
+local requestedSets=math.floor((requestNumber+perSet-1)/perSet)
+if requestedSets<1 then requestedSets=1 end
 if not drop and not pack then
 local cgoname=Cargo:GetName()
 local instock=Cargo:GetStock()
 if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
 self:_SendMessage(string.format("Sorry, we ran out of %s",cgoname),10,false,Group)
-return self
+return false
 end
 end
 local inzone=false
@@ -72809,13 +73461,13 @@ local loaddist=self.CrateDistance or 35
 local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist,true,true)
 if numbernearby>=canloadcratesno and not drop then
 self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
-return self
+return false
 end
 local IsHerc=self:IsFixedWing(Unit)
 local IsHook=self:IsHook(Unit)
 local IsTruck=Unit:IsGround()
 local cargotype=Cargo
-local number=number or cargotype:GetCratesNeeded()
+local number=requestNumber
 local cratesneeded=cargotype:GetCratesNeeded()
 local cratename=cargotype:GetName()
 local cratetemplate="Container"
@@ -72919,8 +73571,8 @@ if drop then
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,nil,subcat)
 local map=cargotype:GetStaticResourceMap()
 realcargo:SetStaticResourceMap(map)
-local CCat,CType,CShape=cargotype:GetStaticTypeAndShape()
-realcargo:SetStaticTypeAndShape(CCat,CType,CShape)
+local CCat3,CType3,CShape3=cargotype:GetStaticTypeAndShape()
+realcargo:SetStaticTypeAndShape(CCat3,CType3,CShape3)
 if cargotype.TypeNames then
 realcargo.TypeNames=UTILS.DeepCopy(cargotype.TypeNames)
 end
@@ -72933,22 +73585,25 @@ if cargotype.TypeNames then
 realcargo.TypeNames=UTILS.DeepCopy(cargotype.TypeNames)
 end
 end
-local CCat,CType,CShape=cargotype:GetStaticTypeAndShape()
-realcargo:SetStaticTypeAndShape(CCat,CType,CShape)
+local CCat4,CType4,CShape4=cargotype:GetStaticTypeAndShape()
+realcargo:SetStaticTypeAndShape(CCat4,CType4,CShape4)
 table.insert(self.Spawned_Cargo,realcargo)
 end
 if not(drop or pack)then
-Cargo:RemoveStock()
+Cargo:RemoveStock(requestedSets)
+self:_RefreshCrateQuantityMenus(Group,Unit,Cargo)
 end
 local text=string.format("Crates for %s have been positioned near you!",cratename)
 if drop then
 text=string.format("Crates for %s have been dropped!",cratename)
 self:__CratesDropped(1,Group,Unit,droppedcargo)
 else
+if not quiet then
 self:_SendMessage(text,10,false,Group)
 end
+end
 self:_RefreshLoadCratesMenu(Group,Unit)
-return self
+return true
 end
 function CTLD:InjectStatics(Zone,Cargo,RandomCoord,FromLoad)
 self:T(self.lid.." InjectStatics")
@@ -73069,7 +73724,15 @@ text:Add("        N O N E")
 end
 text:Add("------------------------------------------------------------")
 self:_SendMessage(text:Text(),30,true,_group)
-self:_CleanupTrackedCrates(removedIDs)
+local done={}
+for _,e in pairs(crates)do
+local n=e:GetName()or"none"
+if not done[n]then
+local object=self:_FindCratesCargoObject(n)
+if object then self:_RefreshCrateQuantityMenus(_group,_unit,object)end
+done[n]=true
+end
+end
 self:_RefreshLoadCratesMenu(_group,_unit)
 else
 self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist),10,false,_group)
@@ -73242,6 +73905,7 @@ self:_RefreshDropCratesMenu(Group,Unit)
 self:_RefreshLoadCratesMenu(Group,Unit)
 self:_CleanupTrackedCrates(crateidsloaded)
 self:__CratesPickedUp(1,Group,Unit,loaded.Cargo)
+self:_RefreshCrateQuantityMenus(Group,Unit,nil)
 end
 end
 return self
@@ -73605,7 +74269,10 @@ local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 local stock=_troop:GetStock()
-if stock and tonumber(stock)>=0 then _troop:AddStock()end
+if stock and tonumber(stock)>=0 then
+_troop:AddStock()
+self:_RefreshTroopQuantityMenus(Group,Unit,_troop)
+end
 end
 end
 end
@@ -73615,6 +74282,7 @@ self.Loaded_Cargo[unitname]=nil
 self.Loaded_Cargo[unitname]=loaded
 self:_RefreshDropTroopsMenu(Group,Unit)
 self:_UpdateUnitCargoMass(Unit)
+self:_RefreshTroopQuantityMenus(Group,Unit,nil)
 else
 if IsHerc then
 self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
@@ -73703,6 +74371,7 @@ self.Loaded_Cargo[unitname]=nil
 self.Loaded_Cargo[unitname]=loaded
 self:_UpdateUnitCargoMass(Unit)
 self:_RefreshDropCratesMenu(Group,Unit)
+self:_RefreshCrateQuantityMenus(Group,Unit,nil)
 else
 if IsHerc then
 self:_SendMessage("Nothing loaded or not within airdrop parameters!",10,false,Group)
@@ -73792,18 +74461,54 @@ else
 self:T(text)
 end
 if canbuild then
+local notified=false
 for _,_build in pairs(buildables)do
 local build=_build
 if build.CanBuild then
-self:_CleanUpCrates(crates,build,number)
+local required=build.Required or 1
+if required<1 then required=1 end
+local full=math.floor((build.Found or 0)/required)
+if full<1 then full=1 end
+local sep=self.buildPairSeparation or 25
+local hdg=(Unit:GetHeading()+180)%360
+local lat=(hdg+90)%360
+local base=Unit:GetCoordinate():Translate(20,hdg)
+if full==1 then
+local cratesNow,numberNow=self:_FindCratesNearby(Group,Unit,finddist,true,true)
+self:_CleanUpCrates(cratesNow,build,numberNow)
+self:_RefreshLoadCratesMenu(Group,Unit)
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
+if not notified then
 self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
+notified=true
+end
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
-self:_RefreshDropTroopsMenu(Group,Unit)
 else
 self:_BuildObjectFromCrates(Group,Unit,build,false,nil,MultiDrop)
+end
+else
+local start=-((full-1)*sep)/2
+for n=1,full do
+local cratesNow,numberNow=self:_FindCratesNearby(Group,Unit,finddist,true,true)
+self:_CleanUpCrates(cratesNow,build,numberNow)
+self:_RefreshLoadCratesMenu(Group,Unit)
+local off=start+(n-1)*sep
+local coord=base:Translate(off,lat):GetVec2()
+local b={Name=build.Name,Required=build.Required,Template=build.Template,CanBuild=true,Type=build.Type,Coord=coord}
+if self.buildtime and self.buildtime>0 then
+local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,b,false,Group:GetCoordinate(),MultiDrop)
+buildtimer:Start(self.buildtime)
+if not notified then
+self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
+notified=true
+end
+self:__CratesBuildStarted(1,Group,Unit,build.Name)
+else
+self:_BuildObjectFromCrates(Group,Unit,b,false,nil,MultiDrop)
+end
+end
 end
 end
 end
@@ -73817,23 +74522,31 @@ function CTLD:_PackCratesNearby(Group,Unit)
 self:T(self.lid.." _PackCratesNearby")
 local location=Group:GetCoordinate()
 local nearestGroups=SET_GROUP:New():FilterCoalitions("blue"):FilterZones({ZONE_RADIUS:New("TempZone",location:GetVec2(),self.PackDistance,false)}):FilterOnce()
+local packedAny=false
 for _,_Group in pairs(nearestGroups.Set)do
+local didPackThisGroup=false
 for _,_Template in pairs(_DATABASE.Templates.Groups)do
-if(string.match(_Group:GetName(),_Template.GroupName))then
+if string.match(_Group:GetName(),_Template.GroupName)then
 for _,_entry in pairs(self.Cargo_Crates)do
-if(_entry.Templates[1]==_Template.GroupName)then
+if _entry.Templates[1]==_Template.GroupName then
 _Group:Destroy()
 self:_GetCrates(Group,Unit,_entry,nil,false,true)
 self:_RefreshLoadCratesMenu(Group,Unit)
 self:__CratesPacked(1,Group,Unit,_entry)
-return true
+packedAny=true
+didPackThisGroup=true
+break
 end
 end
 end
+if didPackThisGroup then break end
 end
 end
+if not packedAny then
 self:_SendMessage("Nothing to pack at this distance pilot!",10,false,Group)
 return false
+end
+return true
 end
 function CTLD:_RepairCrates(Group,Unit,Engineering)
 self:T(self.lid.." _RepairCrates")
@@ -74002,7 +74715,8 @@ local thisID=nowcrate:GetID()
 if name==nametype then
 table.insert(destIDs,thisID)
 found=found+1
-nowcrate:GetPositionable():Destroy(false)
+local pos=nowcrate:GetPositionable()
+if pos then pos:Destroy(false)end
 nowcrate.Positionable=nil
 nowcrate.HasBeenDropped=false
 end
@@ -74049,13 +74763,40 @@ end
 timer.scheduleFunction(function()self:_RemoveCratesNearby(Group,Unit)end,{},timer.getTime()+1)
 return self
 end
-function CTLD:_GetAndLoad(Group,Unit,cargoObj)
+function CTLD:_GetAndLoad(Group,Unit,cargoObj,quantity)
 if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
 self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
 return self
 end
-self:_GetCrates(Group,Unit,cargoObj)
-timer.scheduleFunction(function()self:_LoadSingleCrateSet(Group,Unit,cargoObj.Name)end,{},timer.getTime()+1)
+local needed=cargoObj and cargoObj:GetCratesNeeded()or 1
+local count=math.max(1,tonumber(quantity)or 1)
+local capacitySets=nil
+local cap=self:_GetUnitCapabilities(Unit)
+local limit=cap and cap.cratelimit or 0
+if limit>0 then
+local ld=self.Loaded_Cargo and self.Loaded_Cargo[Unit:GetName()]or nil
+local loaded=(ld and type(ld.Cratesloaded)=="number")and ld.Cratesloaded or 0
+local space=limit-loaded
+if space<0 then space=0 end
+local perSet=needed>0 and needed or 1
+capacitySets=math.floor(space/perSet)
+if capacitySets<1 then
+self:_SendMessage("No capacity to load more now!",10,false,Group)
+return self
+end
+if count>capacitySets then count=capacitySets end
+end
+local total=needed*count
+local ok=self:_GetCrates(Group,Unit,cargoObj,total,false,false,true)
+if ok then
+local uname=Unit:GetName()
+self._batchCrateLoad=self._batchCrateLoad or{}
+self._batchCrateLoad[uname]={remaining=count,group=Group,cname=cargoObj.Name,loaded=0,partials=0}
+for i=1,count do
+timer.scheduleFunction(function()self:_LoadSingleCrateSet(Group,Unit,cargoObj.Name)end,{},timer.getTime()+0.2*i)
+end
+end
+return self
 end
 function CTLD:_GetAllAndLoad(Group,Unit)
 if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName())then
@@ -74063,6 +74804,236 @@ self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
 return self
 end
 timer.scheduleFunction(function()self:_LoadCratesNearby(Group,Unit)end,{},timer.getTime()+1)
+end
+function CTLD:_GetCrateStockEntry(cargoObj,stockSummary)
+if not cargoObj or not stockSummary then
+return nil
+end
+local name=cargoObj:GetName()
+if not name then
+return nil
+end
+return stockSummary[name]
+end
+function CTLD:_FormatCrateStockSuffix(cargoObj,stockSummary)
+if not cargoObj then
+return nil
+end
+local stockEntry=self:_GetCrateStockEntry(cargoObj,stockSummary)
+local available=nil
+if stockEntry and type(stockEntry.Stock)=="number"then
+available=stockEntry.Stock
+end
+if type(available)~="number"then
+local direct=cargoObj:GetStock()
+if type(direct)=="number"then
+available=direct
+end
+end
+if type(available)~="number"or available<0 then
+return nil
+end
+local rounded=math.floor(available+0.5)
+local total=nil
+if stockEntry and type(stockEntry.Stock0)=="number"and stockEntry.Stock0>=0 then
+total=math.floor(stockEntry.Stock0+0.5)
+elseif stockEntry and type(stockEntry.Sum)=="number"and stockEntry.Sum>=0 then
+total=math.floor(stockEntry.Sum+0.5)
+end
+if type(total)~="number"then
+local baseTotal=cargoObj.GetStock0 and cargoObj:GetStock0()or nil
+if type(baseTotal)=="number"and baseTotal>=0 then
+total=math.floor(baseTotal+0.5)
+end
+end
+if type(total)=="number"and total>0 and total~=rounded then
+return string.format("[%d/%d]",rounded,total)
+else
+return string.format("[%d]",rounded)
+end
+end
+function CTLD:_RefreshCrateQuantityMenus(Group,Unit,CargoObj)
+if not Group and Unit then Group=Unit:GetGroup()end
+if Group and Unit then
+local uname=Unit:GetName()or"none"
+self._qtySnap=self._qtySnap or{}
+self._qtySnap[uname]=self._qtySnap[uname]or{}
+if Group.CTLD_CrateMenus then
+local present={}
+for item,_ in pairs(Group.CTLD_CrateMenus)do present["C:"..tostring(item)]=true end
+for key,_ in pairs(self._qtySnap[uname])do
+if string.sub(key,1,2)=="C:"and not present[key]then
+self._qtySnap[uname][key]=nil
+end
+end
+local stockSummary=self.showstockinmenuitems and self:_CountStockPlusInHeloPlusAliveGroups(false)or nil
+for item,menu in pairs(Group.CTLD_CrateMenus)do
+menu:RemoveSubMenus()
+local obj=self:_FindCratesCargoObject(item)
+if obj then self:_AddCrateQuantityMenus(Group,Unit,menu,obj,stockSummary)end
+end
+end
+end
+if CargoObj and Group and Unit then
+local uname=Unit:GetName()or"none"
+local cap=(self:_GetUnitCapabilities(Unit).cratelimit or 0)
+local loaded=(self.Loaded_Cargo[uname]and self.Loaded_Cargo[uname].Cratesloaded)or 0
+local avail=math.max(0,cap-loaded)
+local per=CargoObj:GetCratesNeeded()or 1
+if per<1 then per=1 end
+local unitAvail=math.max(0,math.min(self.maxCrateMenuQuantity or 1,math.floor(avail/per)))
+local s=CargoObj:GetStock()
+self._qtySnap=self._qtySnap or{}
+self._qtySnap[uname]=self._qtySnap[uname]or{}
+local k="C:"..(CargoObj:GetName()or"none")
+local snap=tostring(type(s)=="number"and s or-1)..":"..tostring(unitAvail)
+if self._qtySnap[uname][k]~=snap then
+self._qtySnap[uname][k]=snap
+if type(s)=="number"and s>=0 and s<unitAvail then
+self:_RefreshQuantityMenusForGroup(Group,Unit)
+end
+end
+end
+return self
+end
+function CTLD:_RefreshTroopQuantityMenus(Group,Unit,CargoObj)
+if not Group and Unit then Group=Unit:GetGroup()end
+if Group and Unit then
+local uname=Unit:GetName()or"none"
+self._qtySnap=self._qtySnap or{}
+self._qtySnap[uname]=self._qtySnap[uname]or{}
+if Group.CTLD_TroopMenus then
+local present={}
+for item,_ in pairs(Group.CTLD_TroopMenus)do present["T:"..tostring(item)]=true end
+for key,_ in pairs(self._qtySnap[uname])do
+if string.sub(key,1,2)=="T:"and not present[key]then
+self._qtySnap[uname][key]=nil
+end
+end
+for item,menu in pairs(Group.CTLD_TroopMenus)do
+menu:RemoveSubMenus()
+local obj=self:_FindTroopsCargoObject(item)
+if obj then self:_AddTroopQuantityMenus(Group,Unit,menu,obj)end
+end
+end
+end
+if CargoObj and Group and Unit then
+local uname=Unit:GetName()or"none"
+local cap=(self:_GetUnitCapabilities(Unit).trooplimit or 0)
+local loaded=(self.Loaded_Cargo[uname]and self.Loaded_Cargo[uname].Troopsloaded)or 0
+local avail=math.max(0,cap-loaded)
+local per=CargoObj:GetCratesNeeded()or 1
+if per<1 then per=1 end
+local unitAvail=math.max(0,math.min(self.maxCrateMenuQuantity or 1,math.floor(avail/per)))
+local s=CargoObj:GetStock()
+self._qtySnap=self._qtySnap or{}
+self._qtySnap[uname]=self._qtySnap[uname]or{}
+local k="T:"..(CargoObj:GetName()or"none")
+local snap=tostring(type(s)=="number"and s or-1)..":"..tostring(unitAvail)
+if self._qtySnap[uname][k]~=snap then
+self._qtySnap[uname][k]=snap
+if type(s)=="number"and s>=0 and s<unitAvail then
+self:_RefreshQuantityMenusForGroup(Group,Unit)
+end
+end
+end
+return self
+end
+function CTLD:_RefreshQuantityMenusForGroup(_group,_unit)
+if _group and _unit then
+local stockSummary=self.showstockinmenuitems and self:_CountStockPlusInHeloPlusAliveGroups(false)or nil
+if _group.CTLD_CrateMenus then
+for item,menu in pairs(_group.CTLD_CrateMenus)do
+if menu and menu.RemoveSubMenus then
+menu:RemoveSubMenus()
+local obj=self:_FindCratesCargoObject(item)
+if obj then self:_AddCrateQuantityMenus(_group,_unit,menu,obj,stockSummary)end
+end
+end
+end
+if _group.CTLD_TroopMenus then
+for item,menu in pairs(_group.CTLD_TroopMenus)do
+if menu and menu.RemoveSubMenus then
+menu:RemoveSubMenus()
+local obj=self:_FindTroopsCargoObject(item)
+if obj then self:_AddTroopQuantityMenus(_group,_unit,menu,obj)end
+end
+end
+end
+return self
+end
+self._qtySnap=self._qtySnap or{}
+for uname,_ in pairs(self._qtySnap)do
+if not(self.CtldUnits and self.CtldUnits[uname])then
+self._qtySnap[uname]=nil
+end
+end
+for name,_ in pairs(self.CtldUnits or{})do
+local u=UNIT:FindByName(name)or CLIENT:FindByName(name)
+if u and u:IsAlive()then
+local g=u:GetGroup()
+if g then
+local caps=self:_GetUnitCapabilities(u)
+local needCrate,needTroop=false,false
+if g.CTLD_CrateMenus then
+local cap=caps.cratelimit or 0
+for item,_ in pairs(g.CTLD_CrateMenus)do
+local obj=self:_FindCratesCargoObject(item)
+if obj then
+local per=obj:GetCratesNeeded()or 1
+if per<1 then per=1 end
+local uname=u:GetName()or"none"
+local cap=caps.cratelimit or 0
+local loaded=(self.Loaded_Cargo[uname]and self.Loaded_Cargo[uname].Cratesloaded)or 0
+local avail=math.max(0,cap-loaded)
+local unitAvail=math.max(0,math.min(self.maxCrateMenuQuantity or 1,math.floor(avail/per)))
+local s=obj:GetStock()
+if type(s)=="number"and s>=0 and s<unitAvail then needCrate=true break end
+end
+end
+end
+if g.CTLD_TroopMenus then
+local cap=caps.trooplimit or 0
+for item,_ in pairs(g.CTLD_TroopMenus)do
+local obj=self:_FindTroopsCargoObject(item)
+if obj then
+local per=obj:GetCratesNeeded()or 1
+if per<1 then per=1 end
+local uname=u:GetName()or"none"
+local cap=caps.trooplimit or 0
+local loaded=(self.Loaded_Cargo[uname]and self.Loaded_Cargo[uname].Troopsloaded)or 0
+local avail=math.max(0,cap-loaded)
+local unitAvail=math.max(0,math.min(self.maxCrateMenuQuantity or 1,math.floor(avail/per)))
+local s=obj:GetStock()
+if type(s)=="number"and s>=0 and s<unitAvail then needTroop=true break end
+end
+end
+end
+if needCrate or needTroop then
+local stockSummary=self.showstockinmenuitems and self:_CountStockPlusInHeloPlusAliveGroups(false)or nil
+if needCrate and g.CTLD_CrateMenus then
+for item,menu in pairs(g.CTLD_CrateMenus)do
+if menu and menu.RemoveSubMenus then
+menu:RemoveSubMenus()
+local obj=self:_FindCratesCargoObject(item)
+if obj then self:_AddCrateQuantityMenus(g,u,menu,obj,stockSummary)end
+end
+end
+end
+if needTroop and g.CTLD_TroopMenus then
+for item,menu in pairs(g.CTLD_TroopMenus)do
+if menu and menu.RemoveSubMenus then
+menu:RemoveSubMenus()
+local obj=self:_FindTroopsCargoObject(item)
+if obj then self:_AddTroopQuantityMenus(g,u,menu,obj)end
+end
+end
+end
+end
+end
+end
+end
+return self
 end
 function CTLD:_RefreshF10Menus()
 self:T(self.lid.." _RefreshF10Menus")
@@ -74117,6 +75088,7 @@ local menus={}
 for _,_unitName in pairs(self.CtldUnits)do
 if(not self.MenusDone[_unitName])or(self.showstockinmenuitems==true)then
 self:T(self.lid.."Menu not done yet for ".._unitName)
+local firstBuild=not self.MenusDone[_unitName]
 local _unit=UNIT:FindByName(_unitName)
 if not _unit and self.allowCATransport then
 _unit=CLIENT:FindByName(_unitName)
@@ -74143,6 +75115,7 @@ if cantroops then
 local toptroops=MENU_GROUP:New(_group,"Manage Troops",topmenu)
 local troopsmenu=MENU_GROUP:New(_group,"Load troops",toptroops)
 _group.MyTopTroopsMenu=toptroops
+_group.CTLD_TroopMenus={}
 if self.usesubcats then
 local subcatmenus={}
 for catName,_ in pairs(self.subcatsTroop)do
@@ -74150,19 +75123,20 @@ subcatmenus[catName]=MENU_GROUP:New(_group,catName,troopsmenu)
 end
 for _,cargoObj in pairs(self.Cargo_Troops)do
 if not cargoObj.DontShowInMenu then
-local stock=cargoObj:GetStock()
 local menutext=cargoObj.Name
-if(stock>=0)and(self.showstockinmenuitems==true)then menutext=menutext.." ["..stock.."]"end
-MENU_GROUP_COMMAND:New(_group,menutext,subcatmenus[cargoObj.Subcategory],self._LoadTroops,self,_group,_unit,cargoObj)
+local parent=subcatmenus[cargoObj.Subcategory]or troopsmenu
+local mSet=MENU_GROUP:New(_group,menutext,parent)
+_group.CTLD_TroopMenus[cargoObj.Name]=mSet
+self:_AddTroopQuantityMenus(_group,_unit,mSet,cargoObj)
 end
 end
 else
 for _,cargoObj in pairs(self.Cargo_Troops)do
 if not cargoObj.DontShowInMenu then
-local stock=cargoObj:GetStock()
 local menutext=cargoObj.Name
-if(stock>=0)and(self.showstockinmenuitems==true)then menutext=menutext.." ["..stock.."]"end
-MENU_GROUP_COMMAND:New(_group,menutext,troopsmenu,self._LoadTroops,self,_group,_unit,cargoObj)
+local mSet=MENU_GROUP:New(_group,menutext,troopsmenu)
+_group.CTLD_TroopMenus[cargoObj.Name]=mSet
+self:_AddTroopQuantityMenus(_group,_unit,mSet,cargoObj)
 end
 end
 end
@@ -74188,59 +75162,43 @@ local topcrates=MENU_GROUP:New(_group,"Manage Crates",topmenu)
 _group.MyTopCratesMenu=topcrates
 local cratesmenu=MENU_GROUP:New(_group,"Get Crates",topcrates)
 if self.onestepmenu then
+_group.CTLD_CrateMenus={}
+local crateStockSummary=nil
+if self.showstockinmenuitems then
+crateStockSummary=self:_CountStockPlusInHeloPlusAliveGroups(false)
+end
+local function addCrateMenuEntry(cargoObj,parentMenu)
+if cargoObj.DontShowInMenu then
+return
+end
+local needed=cargoObj:GetCratesNeeded()or 1
+local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+if cargoObj.Location then txt=txt.."[R]"end
+if self.showstockinmenuitems then
+local suffix=self:_FormatCrateStockSuffix(cargoObj,crateStockSummary)
+if suffix then txt=txt..suffix end
+end
+local mSet=MENU_GROUP:New(_group,txt,parentMenu)
+_group.CTLD_CrateMenus[cargoObj.Name]=mSet
+self:_AddCrateQuantityMenus(_group,_unit,mSet,cargoObj,crateStockSummary)
+end
 if self.usesubcats then
 local subcatmenus={}
 for catName,_ in pairs(self.subcats)do
 subcatmenus[catName]=MENU_GROUP:New(_group,catName,cratesmenu)
 end
 for _,cargoObj in pairs(self.Cargo_Crates)do
-if not cargoObj.DontShowInMenu then
-local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
-if cargoObj.Location then txt=txt.."[R]"end
-local stock=cargoObj:GetStock()
-if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
-local mSet=MENU_GROUP:New(_group,txt,subcatmenus[cargoObj.Subcategory])
-MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-end
+addCrateMenuEntry(cargoObj,subcatmenus[cargoObj.Subcategory]or cratesmenu)
 end
 for _,cargoObj in pairs(self.Cargo_Statics)do
-if not cargoObj.DontShowInMenu then
-local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
-if cargoObj.Location then txt=txt.."[R]"end
-local stock=cargoObj:GetStock()
-if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
-local mSet=MENU_GROUP:New(_group,txt,subcatmenus[cargoObj.Subcategory])
-MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-end
+addCrateMenuEntry(cargoObj,subcatmenus[cargoObj.Subcategory]or cratesmenu)
 end
 else
 for _,cargoObj in pairs(self.Cargo_Crates)do
-if not cargoObj.DontShowInMenu then
-local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
-if cargoObj.Location then txt=txt.."[R]"end
-local stock=cargoObj:GetStock()
-if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
-local mSet=MENU_GROUP:New(_group,txt,cratesmenu)
-MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-end
+addCrateMenuEntry(cargoObj,cratesmenu)
 end
 for _,cargoObj in pairs(self.Cargo_Statics)do
-if not cargoObj.DontShowInMenu then
-local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
-if cargoObj.Location then txt=txt.."[R]"end
-local stock=cargoObj:GetStock()
-if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
-local mSet=MENU_GROUP:New(_group,txt,cratesmenu)
-MENU_GROUP_COMMAND:New(_group,"Get",mSet,self._GetCrates,self,_group,_unit,cargoObj)
-MENU_GROUP_COMMAND:New(_group,"Get and Load",mSet,self._GetAndLoad,self,_group,_unit,cargoObj)
-end
+addCrateMenuEntry(cargoObj,cratesmenu)
 end
 end
 else
@@ -74354,6 +75312,8 @@ end
 self.MenusDone[_unitName]=true
 self:_RefreshLoadCratesMenu(_group,_unit)
 self:_RefreshDropCratesMenu(_group,_unit)
+if firstBuild then menucount=menucount+1 end
+if firstBuild and not self.showstockinmenuitems then self:_RefreshQuantityMenusForGroup(_group,_unit)end
 end
 end
 else
@@ -74429,6 +75389,9 @@ self:_SendMessage(string.format("No \"%s\" crates found in range!",cargoName),10
 return self
 end
 local found=#matchingCrates
+local batch=self._batchCrateLoad and self._batchCrateLoad[Unit:GetName()]or nil
+local prevSuppress=self.suppressmessages
+if batch and batch.cname==cargoName then self.suppressmessages=true end
 local unitName=Unit:GetName()
 local loadedData=self.Loaded_Cargo[unitName]or{Troopsloaded=0,Cratesloaded=0,Cargo={}}
 local capabilities=self:_GetUnitCapabilities(Unit)
@@ -74473,6 +75436,7 @@ end
 end
 self.Spawned_Cargo=newSpawned
 local loadedHere=toLoad
+if not batch then
 if loadedHere<needed and loadedData.Cratesloaded>=capacity then
 self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s. Cargo limit is now reached!",loadedHere,needed,cargoName),10,false,Group)
 else
@@ -74490,8 +75454,27 @@ else
 self:_SendMessage(string.format("Loaded %d %s(s).",loadedHere,cargoName),10,false,Group)
 end
 end
+end
 self:_RefreshLoadCratesMenu(Group,Unit)
 self:_RefreshDropCratesMenu(Group,Unit)
+self:_RefreshCrateQuantityMenus(Group,Unit,self:_FindCratesCargoObject(cargoName))
+if batch and batch.cname==cargoName then
+local setsLoaded=math.floor((loadedHere or 0)/(needed or 1))
+batch.loaded=(batch.loaded or 0)+(setsLoaded or 0)
+if loadedHere<(needed or 1)then batch.partials=(batch.partials or 0)+1 end
+batch.remaining=(batch.remaining or 1)-1
+if batch.remaining<=0 then
+self.suppressmessages=prevSuppress
+local txt=string.format("Loaded %d %s.",batch.loaded,cargoName)
+if batch.partials and batch.partials>0 then
+txt=txt.." Some sets could not be fully loaded."
+end
+self:_SendMessage(txt,10,false,batch.group)
+self._batchCrateLoad[Unit:GetName()]=nil
+else
+self.suppressmessages=prevSuppress
+end
+end
 return self
 end
 function CTLD:_UnloadSingleCrateSet(Group,Unit,setIndex)
@@ -74585,6 +75568,7 @@ end
 self:_UpdateUnitCargoMass(Unit)
 self:_RefreshDropCratesMenu(Group,Unit)
 self:_RefreshLoadCratesMenu(Group,Unit)
+self:_RefreshCrateQuantityMenus(Group,Unit,nil)
 return self
 end
 function CTLD:_RefreshDropCratesMenu(Group,Unit)
@@ -74628,29 +75612,62 @@ for cName,list in pairs(cargoByName)do
 local needed=list[1]:GetCratesNeeded()or 1
 table.sort(list,function(a,b)return a:GetID()<b:GetID()end)
 local i=1
-while i<=#list do
-local left=(#list-i+1)
-if left>=needed then
+local sets=math.floor(#list/(needed>0 and needed or 1))
+if sets>0 then
+local parentLabel=string.format("%d. %s (%d SET)",lineIndex,cName,sets)
+local parentMenu=MENU_GROUP:New(Group,parentLabel,dropCratesMenu)
+for s=1,sets do
 local chunk={}
-for n=i,i+needed-1 do
-table.insert(chunk,list[n])
-end
-local label=string.format("%d. %s",lineIndex,cName)
+for n=i,i+needed-1 do table.insert(chunk,list[n])end
 table.insert(self.CrateGroupList[Unit:GetName()],chunk)
-local setIndex=#self.CrateGroupList[Unit:GetName()]
-MENU_GROUP_COMMAND:New(Group,label,dropCratesMenu,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
 i=i+needed
-else
-local chunk={}
-for n=i,#list do
-table.insert(chunk,list[n])
 end
-local label=string.format("%d. %s %d/%d",lineIndex,cName,left,needed)
+if sets==1 then
+MENU_GROUP_COMMAND:New(Group,"Drop",parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+local uName=UnitArg:GetName()
+for k=1,qty do
+local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
+if not lst then break end
+local idx=nil
+for j=1,#lst do
+local ch=lst[j]
+local first=ch and ch[1]
+if first and(not first:WasDropped())and first:GetName()==cNameArg and#ch>=neededArg then idx=j break end
+end
+if not idx then break end
+selfArg:_UnloadSingleCrateSet(GroupArg,UnitArg,idx)
+end
+end,self,Group,Unit,cName,needed,1)
+else
+for q=1,sets do
+local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and"s"or""),parentMenu)
+MENU_GROUP_COMMAND:New(Group,"Drop",qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+local uName=UnitArg:GetName()
+for k=1,qty do
+local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
+if not lst then break end
+local idx=nil
+for j=1,#lst do
+local ch=lst[j]
+local first=ch and ch[1]
+if first and(not first:WasDropped())and first:GetName()==cNameArg and#ch>=neededArg then idx=j break end
+end
+if not idx then break end
+selfArg:_UnloadSingleCrateSet(GroupArg,UnitArg,idx)
+end
+end,self,Group,Unit,cName,needed,q)
+end
+end
+lineIndex=lineIndex+1
+end
+if i<=#list then
+local left=#list-i+1
+local chunk={}
+for n=i,#list do table.insert(chunk,list[n])end
 table.insert(self.CrateGroupList[Unit:GetName()],chunk)
 local setIndex=#self.CrateGroupList[Unit:GetName()]
+local label=string.format("%d. %s %d/%d",lineIndex,cName,left,needed)
 MENU_GROUP_COMMAND:New(Group,label,dropCratesMenu,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
-i=#list+1
-end
 lineIndex=lineIndex+1
 end
 end
@@ -74667,33 +75684,98 @@ for cName,list in pairs(cargoByName)do
 local needed=list[1]:GetCratesNeeded()or 1
 table.sort(list,function(a,b)return a:GetID()<b:GetID()end)
 local i=1
-while i<=#list do
-local left=(#list-i+1)
-if left>=needed then
+local sets=math.floor(#list/(needed>0 and needed or 1))
+if sets>0 then
+local parentLabel=string.format("%d. %s (%d SET)",lineIndex,cName,sets)
+local parentMenu=MENU_GROUP:New(Group,parentLabel,dropCratesMenu)
+for s=1,sets do
 local chunk={}
-for n=i,i+needed-1 do
-table.insert(chunk,list[n])
-end
-local label=string.format("%d. %s",lineIndex,cName)
+for n=i,i+needed-1 do table.insert(chunk,list[n])end
 table.insert(self.CrateGroupList[Unit:GetName()],chunk)
-local setIndex=#self.CrateGroupList[Unit:GetName()]
-local mSet=MENU_GROUP:New(Group,label,dropCratesMenu)
-MENU_GROUP_COMMAND:New(Group,"Drop",mSet,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
-if not(self:IsUnitInAir(Unit)and self:IsFixedWing(Unit))then
-MENU_GROUP_COMMAND:New(Group,"Drop and build",mSet,self._DropSingleAndBuild,self,Group,Unit,setIndex)
-end
 i=i+needed
-else
-local chunk={}
-for n=i,#list do
-table.insert(chunk,list[n])
 end
-local label=string.format("%d. %s %d/%d",lineIndex,cName,left,needed)
+if sets==1 then
+MENU_GROUP_COMMAND:New(Group,"Drop",parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+local uName=UnitArg:GetName()
+for k=1,qty do
+local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
+if not lst then break end
+local idx=nil
+for j=1,#lst do
+local ch=lst[j]
+local first=ch and ch[1]
+if first and(not first:WasDropped())and first:GetName()==cNameArg and#ch>=neededArg then idx=j break end
+end
+if not idx then break end
+selfArg:_UnloadSingleCrateSet(GroupArg,UnitArg,idx)
+end
+end,self,Group,Unit,cName,needed,1)
+if not(self:IsUnitInAir(Unit)and self:IsFixedWing(Unit))then
+MENU_GROUP_COMMAND:New(Group,"Drop and build",parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+local uName=UnitArg:GetName()
+for k=1,qty do
+local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
+if not lst then break end
+local idx=nil
+for j=1,#lst do
+local ch=lst[j]
+local first=ch and ch[1]
+if first and(not first:WasDropped())and first:GetName()==cNameArg and#ch>=neededArg then idx=j break end
+end
+if not idx then break end
+selfArg:_UnloadSingleCrateSet(GroupArg,UnitArg,idx)
+end
+selfArg:_BuildCrates(GroupArg,UnitArg)
+end,self,Group,Unit,cName,needed,1)
+end
+else
+for q=1,sets do
+local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and"s"or""),parentMenu)
+MENU_GROUP_COMMAND:New(Group,"Drop",qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+local uName=UnitArg:GetName()
+for k=1,qty do
+local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
+if not lst then break end
+local idx=nil
+for j=1,#lst do
+local ch=lst[j]
+local first=ch and ch[1]
+if first and(not first:WasDropped())and first:GetName()==cNameArg and#ch>=neededArg then idx=j break end
+end
+if not idx then break end
+selfArg:_UnloadSingleCrateSet(GroupArg,UnitArg,idx)
+end
+end,self,Group,Unit,cName,needed,q)
+if not(self:IsUnitInAir(Unit)and self:IsFixedWing(Unit))then
+MENU_GROUP_COMMAND:New(Group,"Drop and build",qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+local uName=UnitArg:GetName()
+for k=1,qty do
+local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
+if not lst then break end
+local idx=nil
+for j=1,#lst do
+local ch=lst[j]
+local first=ch and ch[1]
+if first and(not first:WasDropped())and first:GetName()==cNameArg and#ch>=neededArg then idx=j break end
+end
+if not idx then break end
+selfArg:_UnloadSingleCrateSet(GroupArg,UnitArg,idx)
+end
+selfArg:_BuildCrates(GroupArg,UnitArg)
+end,self,Group,Unit,cName,needed,q)
+end
+end
+end
+lineIndex=lineIndex+1
+end
+if i<=#list then
+local left=#list-i+1
+local chunk={}
+for n=i,#list do table.insert(chunk,list[n])end
 table.insert(self.CrateGroupList[Unit:GetName()],chunk)
 local setIndex=#self.CrateGroupList[Unit:GetName()]
+local label=string.format("%d. %s %d/%d",lineIndex,cName,left,needed)
 MENU_GROUP_COMMAND:New(Group,label,dropCratesMenu,self._UnloadSingleCrateSet,self,Group,Unit,setIndex)
-i=#list+1
-end
 lineIndex=lineIndex+1
 end
 end
@@ -74815,6 +75897,7 @@ if _troop.Name==cName then
 local st=_troop:GetStock()
 if st and tonumber(st)>=0 then
 _troop:AddStock()
+self:_RefreshTroopQuantityMenus(Group,Unit,_troop)
 end
 end
 end
@@ -74845,6 +75928,7 @@ end
 self.Loaded_Cargo[unitName].Troopsloaded=troopsLoaded
 self.Loaded_Cargo[unitName].Cratesloaded=cratesLoaded
 self:_RefreshDropTroopsMenu(Group,Unit)
+self:_RefreshTroopQuantityMenus(Group,Unit,nil)
 else
 local isHerc=self:IsFixedWing(Unit)
 if isHerc then
@@ -75815,6 +76899,7 @@ local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:AddStock(number)
+self:_RefreshTroopQuantityMenus(nil,nil,_troop)
 break
 end
 end
@@ -75827,6 +76912,7 @@ local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:AddStock(number)
+self:_RefreshCrateQuantityMenus(nil,nil,_troop)
 break
 end
 end
@@ -75839,6 +76925,7 @@ local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:AddStock(number)
+self:_RefreshQuantityMenusForGroup()
 break
 end
 end
@@ -75851,6 +76938,7 @@ local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:SetStock(number)
+self:_RefreshCrateQuantityMenus(nil,nil,_troop)
 break
 end
 end
@@ -75863,6 +76951,7 @@ local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:SetStock(number)
+self:_RefreshTroopQuantityMenus(nil,nil,_troop)
 break
 end
 end
@@ -75875,6 +76964,7 @@ local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:SetStock(number)
+self:_RefreshQuantityMenusForGroup()
 break
 end
 end
@@ -75925,6 +77015,7 @@ local gentroops=self.Cargo_Troops
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:RemoveStock(number)
+self:_RefreshTroopQuantityMenus(nil,nil,_troop)
 end
 end
 return self
@@ -75936,6 +77027,7 @@ local gentroops=self.Cargo_Crates
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:RemoveStock(number)
+self:_RefreshQuantityMenusForGroup()
 end
 end
 return self
@@ -75947,6 +77039,7 @@ local gentroops=self.Cargo_Statics
 for _id,_troop in pairs(gentroops)do
 if _troop.Name==name then
 _troop:RemoveStock(number)
+self:_RefreshQuantityMenusForGroup()
 end
 end
 return self
@@ -76396,6 +77489,7 @@ function CTLD:onafterTroopsDeployed(From,Event,To,Group,Unit,Troops,Type)
 self:T({From,Event,To})
 if self.movetroopstowpzone and Type~=CTLD_CARGO.Enum.ENGINEERS then
 self:_MoveGroupToZone(Troops)
+if not Group or not Unit then self:_RefreshQuantityMenusForGroup()end
 end
 return self
 end
@@ -76434,6 +77528,7 @@ if not(cg and(cg.NoMoveToZone or(self.nomovetozone_names and self.nomovetozone_n
 self:_MoveGroupToZone(Vehicle)
 end
 end
+if not Group or not Unit then self:_RefreshQuantityMenusForGroup()end
 return self
 end
 function CTLD:onbeforeTroopsRTB(From,Event,To,Group,Unit,ZoneName,ZoneObject)
@@ -76684,7 +77779,7 @@ elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 self:InjectTroops(dropzone,injecttroops,self.surfacetypes,self.useprecisecoordloads,structure,timestamp)
 end
-elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
+elseif self.loadSavedCrates and(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local dropzone=ZONE_RADIUS:New("DropZone",vec2,20)
 local injectstatic=nil
 if cargotype==CTLD_CARGO.Enum.VEHICLE or cargotype==CTLD_CARGO.Enum.FOB then
@@ -108984,8 +110079,10 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 PreviousCount=0,
+CanSmoke=true,
+ShowThreatDetails=true,
 }
-PLAYERTASK.version="0.1.28"
+PLAYERTASK.version="0.1.29"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -109148,6 +110245,16 @@ end
 function PLAYERTASK:SetSubType(Type)
 self:T(self.lid.."AddSubType")
 self.TaskSubType=Type
+return self
+end
+function PLAYERTASK:SetCanSmoke(OnOff)
+self:T(self.lid.."AddSSetCanSmokeubType")
+self.CanSmoke=OnOff
+return self
+end
+function PLAYERTASK:SetShowThreatDetails(OnOff)
+self:T(self.lid.."SetShowThreatDetails")
+self.ShowThreatDetails=OnOff
 return self
 end
 function PLAYERTASK:GetSubType()
@@ -109547,10 +110654,10 @@ self.timestamp=timer.getAbsTime()
 self:__Stop(-1)
 return self
 end
-function PLAYERTASK:onafterCancel(From,Event,To)
+function PLAYERTASK:onafterCancel(From,Event,To,Silent)
 self:T({From,Event,To})
 if self.TaskController then
-self.TaskController:__TaskCancelled(-1,self)
+self.TaskController:__TaskCancelled(-1,self,Silent)
 end
 self.timestamp=timer.getAbsTime()
 self.FinalState="Cancelled"
@@ -109712,12 +110819,15 @@ THREATHIGH="high",
 THREATMEDIUM="medium",
 THREATLOW="low",
 THREATTEXT="%s\nThreat: %s\nTargets left: %d\nCoord: %s",
+NOTHREATTEXT="%s\nNo target information available.",
 ELEVATION="\nTarget Elevation: %s %s",
 METER="meter",
 FEET="feet",
 THREATTEXTTTS="%s, %s. Target information for %s. Threat level %s. Targets left %d. Target location %s.",
+NOTHREATTEXTTTS="%s, %s. No target information available.",
 MARKTASK="%s, %s, copy, task %03d location marked on map!",
 SMOKETASK="%s, %s, copy, task %03d location smoked!",
+NOSMOKETASK="%s, %s, negative, task %03d location cannot be smoked!",
 FLARETASK="%s, %s, copy, task %03d location illuminated!",
 ABORTTASK="All stations, %s, %s has aborted %s task %03d!",
 UNKNOWN="Unknown",
@@ -109796,12 +110906,15 @@ THREATHIGH="hoch",
 THREATMEDIUM="mittel",
 THREATLOW="niedrig",
 THREATTEXT="%s\nGefahrstufe: %s\nZiele: %d\nKoord: %s",
+NOTHREATTEXT="%s\nKeine Zielinformation verfügbar.",
 ELEVATION="\nZiel Höhe: %s %s",
 METER="Meter",
 FEET="Fuss",
 THREATTEXTTTS="%s, %s. Zielinformation zu %s. Gefahrstufe %s. Ziele %d. Zielposition %s.",
+NOTHREATTEXTTTS="%s, %s. Keine Zielinformation verfügbar.",
 MARKTASK="%s, %s, verstanden, Zielposition %03d auf der Karte markiert!",
 SMOKETASK="%s, %s, verstanden, Zielposition %03d mit Rauch markiert!",
+NOSMOKETASK="%s, %s, negativ, Zielposition %03d kann nicht markiert werden!",
 FLARETASK="%s, %s, verstanden, Zielposition %03d beleuchtet!",
 ABORTTASK="%s, an alle, %s hat Auftrag %s %03d abgebrochen!",
 UNKNOWN="Unbekannt",
@@ -109859,7 +110972,7 @@ CARRIER="Flugzeugträger",
 RADIOS="Frequenzen",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.70"
+PLAYERTASKCONTROLLER.version="0.1.71"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -110285,9 +111398,9 @@ self.ClusterRadius=Radius or 0.5
 self.usecluster=true
 return self
 end
-function PLAYERTASKCONTROLLER:CancelTask(Task)
+function PLAYERTASKCONTROLLER:CancelTask(Task,Silent)
 self:T(self.lid.."CancelTask")
-Task:__Cancel(-1)
+Task:__Cancel(-1,Silent)
 return self
 end
 function PLAYERTASKCONTROLLER:SwitchUseGroupNames(OnOff)
@@ -110984,6 +112097,7 @@ local Coordinate=task.Target:GetCoordinate()or COORDINATE:New(0,0,0)
 local Elevation=Coordinate:GetLandHeight()or 0
 local CoordText=""
 local CoordTextLLDM=nil
+local ShowThreatInfo=task.ShowThreatDetails
 local LasingDrone=self:_FindLasingDroneForTaskID(task.PlayerTaskNr)
 if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
 CoordText=Coordinate:ToStringA2G(Client,nil,self.ShowMagnetic)
@@ -111001,7 +112115,12 @@ local targets=task.Target:CountTargets()or 0
 local clientlist,clientcount=task:GetClients()
 local ThreatGraph="["..string.rep("■",ThreatLevel)..string.rep("□",10-ThreatLevel).."]: "..ThreatLevel
 local ThreatLocaleText=self.gettext:GetEntry("THREATTEXT",self.locale)
+if ShowThreatInfo==true then
 text=string.format(ThreatLocaleText,taskname,ThreatGraph,targets,CoordText)
+else
+ThreatLocaleText=self.gettext:GetEntry("NOTHREATTEXT",self.locale)
+text=string.format(ThreatLocaleText,taskname)
+end
 local settings=_DATABASE:GetPlayerSettings(playername)or _SETTINGS
 local elevationmeasure=self.gettext:GetEntry("FEET",self.locale)
 if settings:IsMetric()then
@@ -111103,8 +112222,14 @@ CoordText="MGRS;"..Text
 if self.PathToGoogleKey then
 end
 end
+local ttstext
 local ThreatLocaleTextTTS=self.gettext:GetEntry("THREATTEXTTTS",self.locale)
-local ttstext=string.format(ThreatLocaleTextTTS,ttsplayername,self.MenuName or self.Name,ttstaskname,ThreatLevelText,targets,CoordText)
+if ShowThreatInfo==true then
+ttstext=string.format(ThreatLocaleTextTTS,ttsplayername,self.MenuName or self.Name,ttstaskname,ThreatLevelText,targets,CoordText)
+else
+ThreatLocaleTextTTS=self.gettext:GetEntry("NOTHREATTEXTTTS",self.locale)
+ttstext=string.format(ThreatLocaleTextTTS,ttsplayername,self.MenuName or self.Name)
+end
 if task.Type==AUFTRAG.Type.PRECISIONBOMBING and self.precisionbombing then
 if LasingDrone and LasingDrone.playertask.inreach and LasingDrone:IsLasing()then
 local lasingtext=self.gettext:GetEntry("POINTERTARGETLASINGTTS",self.locale)
@@ -111157,6 +112282,7 @@ local playername,ttsplayername=self:_GetPlayerName(Client)
 local text=""
 if self.TasksPerPlayer:HasUniqueID(playername)then
 local task=self.TasksPerPlayer:ReadByID(playername)
+if task.CanSmoke==true then
 task:SmokeTarget()
 local textmark=self.gettext:GetEntry("SMOKETASK",self.locale)
 text=string.format(textmark,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
@@ -111165,6 +112291,14 @@ if self.UseSRS then
 self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
 end
 self:__TaskTargetSmoked(5,task)
+else
+local textmark=self.gettext:GetEntry("NOSMOKETASK",self.locale)
+text=string.format(textmark,ttsplayername,self.MenuName or self.Name,task.PlayerTaskNr)
+self:T(self.lid..text)
+if self.UseSRS then
+self.SRSQueue:NewTransmission(text,nil,self.SRS,nil,2)
+end
+end
 else
 text=self.gettext:GetEntry("NOACTIVETASK",self.locale)
 end
@@ -111753,18 +112887,20 @@ self:T({From,Event,To})
 self:T(self.lid.."TaskDone")
 return self
 end
-function PLAYERTASKCONTROLLER:onafterTaskCancelled(From,Event,To,Task)
+function PLAYERTASKCONTROLLER:onafterTaskCancelled(From,Event,To,Task,Silent)
 self:T({From,Event,To})
 self:T(self.lid.."TaskCancelled")
+if Silent~=true then
 local canceltxt=self.gettext:GetEntry("TASKCANCELLED",self.locale)
 local canceltxttts=self.gettext:GetEntry("TASKCANCELLEDTTS",self.locale)
 local taskname=string.format(canceltxt,Task.PlayerTaskNr,tostring(Task.Type))
-if not self.NoScreenOutput then
+if self.NoScreenOutput~=true then
 self:_SendMessageToClients(taskname,15)
 end
 if self.UseSRS then
 taskname=string.format(canceltxttts,self.MenuName or self.Name,Task.PlayerTaskNr,tostring(Task.TTSType))
 self.SRSQueue:NewTransmission(taskname,nil,self.SRS,nil,2)
+end
 end
 local clients=Task:GetClientObjects()
 for _,client in pairs(clients)do
