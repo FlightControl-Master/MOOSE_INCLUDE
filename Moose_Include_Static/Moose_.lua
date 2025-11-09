@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-09T09:24:48+01:00-98d02d753253b352a2ca92b4e234f2658cb21c7c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-09T14:43:11+01:00-22097987dc2e5c3df22583534935d31863d67cbd ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -33762,8 +33762,9 @@ REMOVED="REMOVED",
 }
 DYNAMICCARGO.AircraftTypes={
 ["CH-47Fbl1"]="CH-47Fbl1",
-["Mi-8MTV2"]="CH-47Fbl1",
-["Mi-8MT"]="CH-47Fbl1",
+["Mi-8MTV2"]="Mi-8MTV2",
+["Mi-8MT"]="Mi-8MT",
+["C-130J-30"]="C-130J-30",
 }
 DYNAMICCARGO.AircraftDimensions={
 ["CH-47Fbl1"]={
@@ -33784,8 +33785,14 @@ DYNAMICCARGO.AircraftDimensions={
 ["length"]=15,
 ["ropelength"]=30,
 },
+["C-130J-30"]={
+["width"]=4,
+["height"]=12,
+["length"]=35,
+["ropelength"]=0,
+},
 }
-DYNAMICCARGO.version="0.0.9"
+DYNAMICCARGO.version="0.1.0"
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
@@ -69747,6 +69754,7 @@ CTLD.UnitTypeCapabilities={
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
+["C-130J-30"]={type="C-130J-30",crates=true,troops=true,cratelimit=7,trooplimit=64,length=35,cargoweightlimit=21500},
 ["UH-60L"]={type="UH-60L",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
 ["UH-60L_DAP"]={type="UH-60L_DAP",crates=false,troops=true,cratelimit=0,trooplimit=2,length=16,cargoweightlimit=500},
 ["MH-60R"]={type="MH-60R",crates=true,troops=true,cratelimit=2,trooplimit=20,length=16,cargoweightlimit=3500},
@@ -69763,8 +69771,9 @@ CTLD.FixedWingTypes={
 ["Hercules"]="Hercules",
 ["Bronco"]="Bronco",
 ["Mosquito"]="Mosquito",
+["C-130J-30"]="C-130J-30",
 }
-CTLD.version="1.3.38"
+CTLD.version="1.3.39"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
