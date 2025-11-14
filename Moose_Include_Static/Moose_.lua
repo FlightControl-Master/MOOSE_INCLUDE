@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-11T12:54:42+01:00-704bb8668f3d8e38c4ce46141aeb57ade2c9a6ef ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-14T13:45:22+01:00-0c0d1cc79456bff1d38362383b7b17fbda1fc4a5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30297,6 +30297,7 @@ self.Life0=Life0
 else
 self:E(string.format("Static object %s does not exist!",tostring(self.StaticName)))
 end
+self._vec3=self:GetVec3()
 return self
 end
 function STATIC:GetLife0()
@@ -30308,6 +30309,20 @@ if DCSStatic then
 return DCSStatic:getLife()or 1
 end
 return nil
+end
+function STATIC:GetVec2Cached()
+local vec2=self:GetVec2()
+if not vec2 and self._vec3 then
+vec2={x=self._vec3.x,y=self._vec3.z}
+end
+return vec2
+end
+function STATIC:GetVec3Cached()
+local vec3=self:GetVec3()
+if not vec3 and self._vec3 then
+vec3=self._vec3
+end
+return vec3
 end
 function STATIC:Find(DCSStatic)
 local StaticName=DCSStatic:getName()
@@ -30374,6 +30389,7 @@ SCHEDULER:New(nil,self.SpawnAt,{self,Coordinate,Heading},Delay)
 else
 local SpawnStatic=SPAWNSTATIC:NewFromStatic(self.StaticName)
 SpawnStatic:SpawnFromPointVec2(Coordinate,Heading,self.StaticName)
+self._vec3=self:GetVec3()
 end
 return self
 end
@@ -30384,6 +30400,7 @@ else
 CountryID=CountryID or self:GetCountry()
 local SpawnStatic=SPAWNSTATIC:NewFromStatic(self.StaticName,CountryID)
 SpawnStatic:Spawn(nil,self.StaticName)
+self._vec3=self:GetVec3()
 end
 return self
 end
@@ -30393,6 +30410,7 @@ SCHEDULER:New(nil,self.ReSpawnAt,{self,Coordinate,Heading},Delay)
 else
 local SpawnStatic=SPAWNSTATIC:NewFromStatic(self.StaticName,self:GetCountry())
 SpawnStatic:SpawnFromCoordinate(Coordinate,Heading,self.StaticName)
+self._vec3=self:GetVec3()
 end
 return self
 end
