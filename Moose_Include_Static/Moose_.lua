@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-23T19:38:32+01:00-7a3c23527f2cbc0d903fa8fb6916a8924cda2fca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-23T20:39:19+01:00-88396b5a5e1e055be7de286f41215781cd11ebb6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4961,6 +4961,89 @@ end
 end
 end
 return nil
+end
+function UTILS.CreateAirbaseEnum()
+local function _savefile(filename,data)
+local file=lfs.writedir()..filename
+local f=io.open(file,"wb")
+if f then
+f:write(data)
+f:close()
+env.info(string.format("Saving to file %s",tostring(file)))
+else
+env.info(string.format("ERROR: Could not save results to file %s",tostring(file)))
+end
+end
+local airbases=world.getAirbases()
+local mapname=env.mission.theatre
+local myab={}
+for i,_airbase in pairs(airbases)do
+local airbase=_airbase
+local cat=airbase:getDesc().category
+if cat==Airbase.Category.AIRDROME then
+local name=airbase:getName()
+local key=name
+if name=="Airracing Lubeck"then
+key="Airracing_Luebeck"
+elseif name=="Bad Durkheim"then
+key="Bad_Duerkheim"
+elseif name=="Buchel"then
+key="Buechel"
+elseif name=="Buckeburg"then
+key="Bueckeburg"
+elseif name=="Dusseldorf"then
+key="Duesseldorf"
+elseif name=="Gutersloh"then
+key="Guetersloh"
+elseif name=="Kothen"then
+key="Koethen"
+elseif name=="Larz"then
+key="Laerz"
+elseif name=="Lubeck"then
+key="Luebeck"
+elseif name=="Luneburg"then
+key="Lueneburg"
+elseif name=="Norvenich"then
+key="Noervenich"
+elseif name=="Ober-Morlen"then
+key="Ober_Moerlen"
+elseif name=="Peenemunde"then
+key="Peenemuende"
+elseif name=="Pottschutthohe"then
+key="Pottschutthoehe"
+elseif name=="Schonefeld"then
+key="Schoenefeld"
+elseif name=="Weser Wumme"then
+key="Weser_Wuemme"
+elseif name=="Zollschen"then
+key="Zoellschen"
+elseif name=="Zweibrucken"then
+key="Zweibruecken"
+end
+key=key:gsub(" ","_")
+key=key:gsub("-","_")
+key=key:gsub("'","_")
+key=UTILS.ReplaceIllegalCharacters(key,"_")
+local entry={}
+entry.key=key
+entry.name=name
+table.insert(myab,entry)
+end
+end
+table.sort(myab,function(a,b)return a.name<b.name end)
+local text=string.format("\n--- Airbases of the %s map",mapname)
+text=text.."\n--"
+for _,ab in pairs(myab)do
+text=text..string.format("\n-- * `AIRBASE.%s.%s` %s",mapname,ab.key,ab.name)
+end
+text=text.."\n--"
+text=text..string.format("\n-- @field %s",mapname)
+text=text..string.format("\nAIRBASE.%s = {",mapname)
+for _,ab in pairs(myab)do
+text=text..string.format('\n\t["%s"] = "%s",',ab.key,ab.name)
+end
+text=text.."\n}"
+_savefile(string.format("%s-enums.txt",env.mission.theatre),text)
 end
 PROFILER={
 ClassName="PROFILER",
@@ -30501,6 +30584,7 @@ AIRBASE.Nevada={
 }
 AIRBASE.Normandy={
 ["Abbeville_Drucat"]="Abbeville Drucat",
+["Alderney"]="Alderney",
 ["Amiens_Glisy"]="Amiens-Glisy",
 ["Argentan"]="Argentan",
 ["Avranches_Le_Val_Saint_Pere"]="Avranches Le Val-Saint-Pere",
@@ -30509,6 +30593,7 @@ AIRBASE.Normandy={
 ["Bazenville"]="Bazenville",
 ["Beaumont_le_Roger"]="Beaumont-le-Roger",
 ["Beauvais_Tille"]="Beauvais-Tille",
+["Bembridg"]="Bembridg",
 ["Beny_sur_Mer"]="Beny-sur-Mer",
 ["Bernay_Saint_Martin"]="Bernay Saint Martin",
 ["Beuzeville"]="Beuzeville",
@@ -30531,6 +30616,7 @@ AIRBASE.Normandy={
 ["Deux_Jumeaux"]="Deux Jumeaux",
 ["Dinan_Trelivan"]="Dinan-Trelivan",
 ["Dunkirk_Mardyck"]="Dunkirk-Mardyck",
+["Eastchurch"]="Eastchurch",
 ["Essay"]="Essay",
 ["Evreux"]="Evreux",
 ["Farnborough"]="Farnborough",
@@ -30541,12 +30627,18 @@ AIRBASE.Normandy={
 ["Funtington"]="Funtington",
 ["Goulet"]="Goulet",
 ["Gravesend"]="Gravesend",
+["Guernsey"]="Guernsey",
 ["Guyancourt"]="Guyancourt",
 ["Hauterive"]="Hauterive",
+["Hawkinge"]="Hawkinge",
+["Headcorn"]="Headcorn",
 ["Heathrow"]="Heathrow",
 ["High_Halden"]="High Halden",
+["Holmsley_South"]="Holmsley South",
+["Jersey"]="Jersey",
 ["Kenley"]="Kenley",
 ["Lantheuil"]="Lantheuil",
+["Lashenden"]="Lashenden",
 ["Le_Molay"]="Le Molay",
 ["Lessay"]="Lessay",
 ["Lignerolles"]="Lignerolles",
@@ -30559,6 +30651,7 @@ AIRBASE.Normandy={
 ["Meautis"]="Meautis",
 ["Merville_Calonne"]="Merville Calonne",
 ["Needs_Oar_Point"]="Needs Oar Point",
+["Northolt"]="Northolt",
 ["Odiham"]="Odiham",
 ["Orly"]="Orly",
 ["Picauville"]="Picauville",
@@ -30566,10 +30659,11 @@ AIRBASE.Normandy={
 ["Ronai"]="Ronai",
 ["Rouen_Boos"]="Rouen-Boos",
 ["Rucqueville"]="Rucqueville",
+["Saint_Pierre_du_Mont"]="Saint Pierre du Mont",
 ["Saint_Andre_de_lEure"]="Saint-Andre-de-lEure",
 ["Saint_Aubin"]="Saint-Aubin",
 ["Saint_Omer_Wizernes"]="Saint-Omer Wizernes",
-["Saint_Pierre_du_Mont"]="Saint Pierre du Mont",
+["Saint_Pol_Bryas"]="Saint-Pol-Bryas",
 ["Sainte_Croix_sur_Mer"]="Sainte-Croix-sur-Mer",
 ["Sainte_Laurent_sur_Mer"]="Sainte-Laurent-sur-Mer",
 ["Sommervieu"]="Sommervieu",
@@ -30579,18 +30673,15 @@ AIRBASE.Normandy={
 ["Villacoublay"]="Villacoublay",
 ["Vrigny"]="Vrigny",
 ["West_Malling"]="West Malling",
-["Eastchurch"]="Eastchurch",
-["Headcorn"]="Headcorn",
-["Hawkinge"]="Hawkinge",
 }
 AIRBASE.PersianGulf={
 ["Abu_Dhabi_Intl"]="Abu Dhabi Intl",
 ["Abu_Musa_Island"]="Abu Musa Island",
 ["Al_Ain_Intl"]="Al Ain Intl",
-["Al_Bateen"]="Al-Bateen",
 ["Al_Dhafra_AFB"]="Al Dhafra AFB",
 ["Al_Maktoum_Intl"]="Al Maktoum Intl",
 ["Al_Minhad_AFB"]="Al Minhad AFB",
+["Al_Bateen"]="Al-Bateen",
 ["Bandar_Abbas_Intl"]="Bandar Abbas Intl",
 ["Bandar_Lengeh"]="Bandar Lengeh",
 ["Bandar_e_Jask"]="Bandar-e-Jask",
@@ -30633,13 +30724,14 @@ AIRBASE.Syria={
 ["Abu_al_Duhur"]="Abu al-Duhur",
 ["Adana_Sakirpasa"]="Adana Sakirpasa",
 ["Akrotiri"]="Akrotiri",
-["Al_Dumayr"]="Al-Dumayr",
 ["Al_Qusayr"]="Al Qusayr",
+["Al_Dumayr"]="Al-Dumayr",
 ["Aleppo"]="Aleppo",
 ["An_Nasiriyah"]="An Nasiriyah",
 ["At_Tanf"]="At Tanf",
 ["Bassel_Al_Assad"]="Bassel Al-Assad",
 ["Beirut_Rafic_Hariri"]="Beirut-Rafic Hariri",
+["Ben_Gurion"]="Ben Gurion",
 ["Damascus"]="Damascus",
 ["Deir_ez_Zor"]="Deir ez-Zor",
 ["Ercan"]="Ercan",
@@ -30655,6 +30747,7 @@ AIRBASE.Syria={
 ["Haifa"]="Haifa",
 ["Hama"]="Hama",
 ["Hatay"]="Hatay",
+["Hatzor"]="Hatzor",
 ["Herzliya"]="Herzliya",
 ["Incirlik"]="Incirlik",
 ["Jirah"]="Jirah",
@@ -30667,16 +30760,17 @@ AIRBASE.Syria={
 ["Kuweires"]="Kuweires",
 ["Lakatamia"]="Lakatamia",
 ["Larnaca"]="Larnaca",
-["Marka"]="Marka",
 ["Marj_Ruhayyil"]="Marj Ruhayyil",
 ["Marj_as_Sultan_North"]="Marj as Sultan North",
 ["Marj_as_Sultan_South"]="Marj as Sultan South",
+["Marka"]="Marka",
 ["Megiddo"]="Megiddo",
 ["Mezzeh"]="Mezzeh",
 ["Minakh"]="Minakh",
 ["Muwaffaq_Salti"]="Muwaffaq Salti",
 ["Naqoura"]="Naqoura",
 ["Nicosia"]="Nicosia",
+["Palmachim"]="Palmachim",
 ["Palmyra"]="Palmyra",
 ["Paphos"]="Paphos",
 ["Pinarbashi"]="Pinarbashi",
@@ -30693,17 +30787,14 @@ AIRBASE.Syria={
 ["Tabqa"]="Tabqa",
 ["Taftanaz"]="Taftanaz",
 ["Tal_Siman"]="Tal Siman",
+["Tel_Nof"]="Tel Nof",
 ["Tha_lah"]="Tha'lah",
 ["Tiyas"]="Tiyas",
 ["Wujah_Al_Hajar"]="Wujah Al Hajar",
-["Ben_Gurion"]="Ben Gurion",
-["Hatzor"]="Hatzor",
-["Palmachim"]="Palmachim",
-["Tel_Nof"]="Tel Nof",
 }
 AIRBASE.MarianaIslands={
 ["Andersen_AFB"]="Andersen AFB",
-["Antonio_B_Won_Pat_Intl"]="Antonio B. Won Pat Intl",
+["Antonio_B._Won_Pat_Intl"]="Antonio B. Won Pat Intl",
 ["North_West_Field"]="North West Field",
 ["Olf_Orote"]="Olf Orote",
 ["Pagan_Airstrip"]="Pagan Airstrip",
@@ -30711,8 +30802,7 @@ AIRBASE.MarianaIslands={
 ["Saipan_Intl"]="Saipan Intl",
 ["Tinian_Intl"]="Tinian Intl",
 }
-AIRBASE.MarianaIslandsWWII=
-{
+AIRBASE.MarianaIslandsWWII={
 ["Agana"]="Agana",
 ["Airfield_3"]="Airfield 3",
 ["Charon_Kanoa"]="Charon Kanoa",
@@ -30775,6 +30865,7 @@ AIRBASE.Sinai={
 ["Cairo_West"]="Cairo West",
 ["Damascus_Intl"]="Damascus Intl",
 ["Difarsuwar_Airfield"]="Difarsuwar Airfield",
+["Ein_Shamer"]="Ein Shamer",
 ["El_Arish"]="El Arish",
 ["El_Gora"]="El Gora",
 ["El_Minya"]="El Minya",
@@ -30786,8 +30877,11 @@ AIRBASE.Sinai={
 ["Inshas_Airbase"]="Inshas Airbase",
 ["Jiyanklis_Air_Base"]="Jiyanklis Air Base",
 ["Kedem"]="Kedem",
+["Khalkhalah_Air_Base"]="Khalkhalah Air Base",
 ["Kibrit_Air_Base"]="Kibrit Air Base",
+["King_Feisal_Air_Base"]="King Feisal Air Base",
 ["Kom_Awshim"]="Kom Awshim",
+["Megiddo"]="Megiddo",
 ["Melez"]="Melez",
 ["Mezzeh_Air_Base"]="Mezzeh Air Base",
 ["Nevatim"]="Nevatim",
@@ -30801,45 +30895,50 @@ AIRBASE.Sinai={
 ["Sde_Dov"]="Sde Dov",
 ["Sharm_El_Sheikh_International_Airport"]="Sharm El Sheikh International Airport",
 ["St_Catherine"]="St Catherine",
+["Taba_International_Airport"]="Taba International Airport",
 ["Tabuk"]="Tabuk",
+["TabukHeliBase"]="TabukHeliBase",
 ["Tel_Nof"]="Tel Nof",
 ["Wadi_Abu_Rish"]="Wadi Abu Rish",
 ["Wadi_al_Jandali"]="Wadi al Jandali",
 }
 AIRBASE.Kola={
+["Afrikanda"]="Afrikanda",
+["Alakurtti"]="Alakurtti",
+["Alta"]="Alta",
+["Andoya"]="Andoya",
+["Arvidsjaur"]="Arvidsjaur",
 ["Banak"]="Banak",
+["Bardufoss"]="Bardufoss",
+["Boden_Heli_Base"]="Boden Heli Base",
 ["Bodo"]="Bodo",
+["Enontekio"]="Enontekio",
+["Evenes"]="Evenes",
+["Hemavan"]="Hemavan",
+["Hosio"]="Hosio",
 ["Ivalo"]="Ivalo",
 ["Jokkmokk"]="Jokkmokk",
+["Kalevala"]="Kalevala",
 ["Kalixfors"]="Kalixfors",
 ["Kallax"]="Kallax",
 ["Kemi_Tornio"]="Kemi Tornio",
+["Kilpyavr"]="Kilpyavr",
 ["Kirkenes"]="Kirkenes",
 ["Kiruna"]="Kiruna",
+["Kittila"]="Kittila",
+["Koshka_Yavr"]="Koshka Yavr",
 ["Kuusamo"]="Kuusamo",
+["Luostari_Pechenga"]="Luostari Pechenga",
 ["Monchegorsk"]="Monchegorsk",
 ["Murmansk_International"]="Murmansk International",
 ["Olenya"]="Olenya",
+["Poduzhemye"]="Poduzhemye",
 ["Rovaniemi"]="Rovaniemi",
 ["Severomorsk_1"]="Severomorsk-1",
 ["Severomorsk_3"]="Severomorsk-3",
+["Sodankyla"]="Sodankyla",
 ["Vidsel"]="Vidsel",
 ["Vuojarvi"]="Vuojarvi",
-["Andoya"]="Andoya",
-["Alakurtti"]="Alakurtti",
-["Kittila"]="Kittila",
-["Bardufoss"]="Bardufoss",
-["Alta"]="Alta",
-["Sodankyla"]="Sodankyla",
-["Enontekio"]="Enontekio",
-["Evenes"]="Evenes",
-["Hosio"]="Hosio",
-["Kilpyavr"]="Kilpyavr",
-["Afrikanda"]="Afrikanda",
-["Kalevala"]="Kalevala",
-["Koshka_Yavr"]="Koshka Yavr",
-["Poduzhemye"]="Poduzhemye",
-["Luostari_Pechenga"]="Luostari Pechenga",
 }
 AIRBASE.Afghanistan={
 ["Bagram"]="Bagram",
@@ -30849,6 +30948,10 @@ AIRBASE.Afghanistan={
 ["Camp_Bastion_Heliport"]="Camp Bastion Heliport",
 ["Chaghcharan"]="Chaghcharan",
 ["Dwyer"]="Dwyer",
+["FOB_Camp_Dubs"]="FOB Camp Dubs",
+["FOB_Clark"]="FOB Clark",
+["FOB_Salerno"]="FOB Salerno",
+["FOB_Thunder"]="FOB Thunder",
 ["Farah"]="Farah",
 ["Gardez"]="Gardez",
 ["Ghazni_Heliport"]="Ghazni Heliport",
@@ -30858,7 +30961,6 @@ AIRBASE.Afghanistan={
 ["Kandahar"]="Kandahar",
 ["Kandahar_Heliport"]="Kandahar Heliport",
 ["Khost"]="Khost",
-["Khost_Heliport"]="Khost Heliport",
 ["Maymana_Zahiraddin_Faryabi"]="Maymana Zahiraddin Faryabi",
 ["Nimroz"]="Nimroz",
 ["Qala_i_Naw"]="Qala i Naw",
@@ -30879,10 +30981,10 @@ AIRBASE.Iraq={
 ["Balad_Airbase"]="Balad Airbase",
 ["Bashur_Airport"]="Bashur Airport",
 ["Erbil_International_Airport"]="Erbil International Airport",
-["H2_Airbase"]="H-2 Airbase",
-["H3_Main_Airbase"]="H-3 Main Airbase",
-["H3_Northwest_Airbase"]="H-3 Northwest Airbase",
-["H3_Southwest_Airbase"]="H-3 Southwest Airbase",
+["H_2_Airbase"]="H-2 Airbase",
+["H_3_Main_Airbase"]="H-3 Main Airbase",
+["H_3_Northwest_Airbase"]="H-3 Northwest Airbase",
+["H_3_Southwest_Airbase"]="H-3 Southwest Airbase",
 ["K1_Base"]="K1 Base",
 ["Kirkuk_International_Airport"]="Kirkuk International Airport",
 ["Mosul_International_Airport"]="Mosul International Airport",
@@ -30890,6 +30992,7 @@ AIRBASE.Iraq={
 ["Sulaimaniyah_International_Airport"]="Sulaimaniyah International Airport",
 }
 AIRBASE.GermanyCW={
+["Adelsheim"]="Adelsheim",
 ["Airracing_Frankfurt"]="Airracing Frankfurt",
 ["Airracing_Koblenz"]="Airracing Koblenz",
 ["Airracing_Luebeck"]="Airracing Lubeck",
@@ -30900,16 +31003,23 @@ AIRBASE.GermanyCW={
 ["Bienenfarm"]="Bienenfarm",
 ["Bindersleben"]="Bindersleben",
 ["Bitburg"]="Bitburg",
+["Bornholm"]="Bornholm",
+["Brand"]="Brand",
+["Brandis"]="Brandis",
 ["Braunschweig"]="Braunschweig",
 ["Bremen"]="Bremen",
 ["Briest"]="Briest",
 ["Buechel"]="Buchel",
 ["Bueckeburg"]="Buckeburg",
 ["Celle"]="Celle",
+["Chojna"]="Chojna",
 ["Cochstedt"]="Cochstedt",
+["Cologne"]="Cologne",
 ["Damgarten"]="Damgarten",
 ["Dedelow"]="Dedelow",
 ["Dessau"]="Dessau",
+["Duesseldorf"]="Dusseldorf",
+["Falkenberg"]="Falkenberg",
 ["Fassberg"]="Fassberg",
 ["Finow"]="Finow",
 ["Frankfurt"]="Frankfurt",
@@ -30920,7 +31030,7 @@ AIRBASE.GermanyCW={
 ["Gatow"]="Gatow",
 ["Gelnhausen"]="Gelnhausen",
 ["Giebelstadt"]="Giebelstadt",
-["Glindbruchkippe"]="Glindbruchkippe ",
+["Glindbruchkippe"]="Glindbruchkippe",
 ["Gross_Mohrdorf"]="Gross Mohrdorf",
 ["Grosse_Wiese"]="Grosse Wiese",
 ["Guetersloh"]="Gutersloh",
@@ -31038,43 +31148,60 @@ AIRBASE.GermanyCW={
 ["Hamburg_Finkenwerder"]="Hamburg Finkenwerder",
 ["Hannover"]="Hannover",
 ["Hasselfelde"]="Hasselfelde",
+["Heidelberg"]="Heidelberg",
 ["Herrenteich"]="Herrenteich",
 ["Hildesheim"]="Hildesheim",
 ["Hockenheim"]="Hockenheim",
 ["Holzdorf"]="Holzdorf",
 ["Kammermark"]="Kammermark",
+["Kastrup"]="Kastrup",
+["Kiel"]="Kiel",
 ["Koethen"]="Kothen",
 ["Laage"]="Laage",
+["Landstuhl"]="Landstuhl",
 ["Langenselbold"]="Langenselbold",
 ["Laerz"]="Larz",
-["Leipzig_Halle"]="Leipzig Halle",
 ["Leipzig_Mockau"]="Leipzig Mockau",
 ["Luebeck"]="Lubeck",
 ["Lueneburg"]="Luneburg",
 ["Mahlwinkel"]="Mahlwinkel",
+["Mainz_Finthen"]="Mainz Finthen",
+["Marxwalde"]="Marxwalde",
 ["Mendig"]="Mendig",
 ["Merseburg"]="Merseburg",
 ["Neubrandenburg"]="Neubrandenburg",
 ["Neuruppin"]="Neuruppin",
+["Nordholz"]="Nordholz",
 ["Northeim"]="Northeim",
+["Noervenich"]="Norvenich",
 ["Ober_Moerlen"]="Ober-Morlen",
 ["Obermehler_Schlotheim"]="Obermehler Schlotheim",
+["Oranienburg"]="Oranienburg",
 ["Parchim"]="Parchim",
 ["Peenemuende"]="Peenemunde",
+["Perwenitz"]="Perwenitz",
 ["Pferdsfeld"]="Pferdsfeld",
 ["Pinnow"]="Pinnow",
 ["Pottschutthoehe"]="Pottschutthohe",
 ["Ramstein"]="Ramstein",
+["Revinge"]="Revinge",
 ["Rinteln"]="Rinteln",
+["Schkeuditz"]="Schkeuditz",
 ["Schoenefeld"]="Schonefeld",
 ["Schweinfurt"]="Schweinfurt",
 ["Sembach"]="Sembach",
+["Sittensen"]="Sittensen",
 ["Spangdahlem"]="Spangdahlem",
 ["Sperenberg"]="Sperenberg",
+["Sprendlingen"]="Sprendlingen",
 ["Stendal"]="Stendal",
+["Sturup"]="Sturup",
+["Szczecin_Goleniow"]="Szczecin-Goleniow",
+["Tagra"]="Tagra",
 ["Tegel"]="Tegel",
 ["Tempelhof"]="Tempelhof",
 ["Templin"]="Templin",
+["Thurland"]="Thurland",
 ["Tutow"]="Tutow",
 ["Uelzen"]="Uelzen",
 ["Uetersen"]="Uetersen",
@@ -31090,6 +31217,7 @@ AIRBASE.GermanyCW={
 ["Worms"]="Worms",
 ["Wunstorf"]="Wunstorf",
 ["Zerbst"]="Zerbst",
+["Zoellschen"]="Zollschen",
 ["Zweibruecken"]="Zweibrucken",
 }
 AIRBASE.TerminalType={
