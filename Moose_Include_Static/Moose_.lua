@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-22T15:17:26+01:00-5955c2d61f8208b6230cb993f9d26294393f2229 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-23T19:38:32+01:00-7a3c23527f2cbc0d903fa8fb6916a8924cda2fca ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -32120,6 +32120,12 @@ self.SceneryZone=SceneryZone
 if SceneryZone then
 self.Vec3=SceneryZone:GetVec3()
 self.Vec2=SceneryZone:GetVec2()
+self.Vector=(self.Vec3 and VECTOR)and VECTOR:NewFromVec(self.Vec3)or nil
+end
+if SceneryObject then
+local vec3=SceneryObject:getPoint()
+self.Vec3={x=vec3.x,y=vec3.y,z=vec3.z}
+self.Vec2={x=vec3.x,y=vec3.z}
 self.Vector=(self.Vec3 and VECTOR)and VECTOR:NewFromVec(self.Vec3)or nil
 end
 if self.SceneryObject and self.SceneryObject.getLife then
