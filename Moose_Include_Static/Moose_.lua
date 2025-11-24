@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-23T20:39:19+01:00-88396b5a5e1e055be7de286f41215781cd11ebb6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-24T09:24:37+01:00-dacf5125bfbdd10a9661ff54518687805713c0e5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -33310,7 +33310,7 @@ function NET:GetPlayerIDByName(Name)
 if not Name then return nil end
 local playerList=net.get_player_list()
 for i=1,#playerList do
-local playerName=net.get_name(i)
+local playerName=net.get_name(playerList[i])
 if playerName==Name then
 return playerList[i]
 end
