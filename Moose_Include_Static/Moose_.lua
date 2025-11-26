@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-24T09:24:37+01:00-dacf5125bfbdd10a9661ff54518687805713c0e5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-26T10:10:10+01:00-4e342a59bec9f922d0dff9cf25d92c21c6d19449 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -47201,7 +47201,7 @@ maxrange=7000,
 reloadtime=nil,
 },
 }
-ARTY.version="1.3.3"
+ARTY.version="1.3.4"
 function ARTY:New(group,alias)
 local self=BASE:Inherit(self,FSM_CONTROLLABLE:New())
 if type(group)=="string"then
@@ -47881,7 +47881,7 @@ _destroyweapon=true
 end
 elseif target.weapontype==ARTY.WeaponType.SmokeShells then
 if _dist<target.radius then
-local _cr=_coord:GetRandomCoordinateInRadius(_data.target.radius)
+local _cr=_coord:GetRandomCoordinateInRadius(target.radius)
 _cr:Smoke(self.smokeColor)
 _destroyweapon=true
 end
