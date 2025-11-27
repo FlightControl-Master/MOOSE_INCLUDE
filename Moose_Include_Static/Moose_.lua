@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-26T10:10:10+01:00-4e342a59bec9f922d0dff9cf25d92c21c6d19449 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-27T09:21:17+01:00-6ed031762b77c57a9d2e45950c5dfbc922258f35 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3768,6 +3768,16 @@ elseif Heading>=292 and Heading<=338 then return"North-West"
 elseif Heading>=339 then return"North"
 end
 end
+function UTILS.AdjustHeading360(Heading)
+while Heading>=360 or Heading<0 do
+if Heading>=360 then
+Heading=Heading-360
+elseif Heading<0 then
+Heading=Heading+360
+end
+end
+return Heading
+end
 function UTILS.ToStringBRAANATO(FromGrp,ToGrp)
 local BRAANATO="Merged."
 local GroupNumber=ToGrp:GetSize()
@@ -4355,6 +4365,7 @@ end
 function UTILS.SpawnFARPAndFunctionalStatics(Name,Coordinate,FARPType,Coalition,Country,CallSign,Frequency,Modulation,ADF,SpawnRadius,VehicleTemplate,Liquids,Equipment,Airframes,F10Text,DynamicSpawns,HotStart,NumberPads,SpacingX,SpacingY)
 local function PopulateStorage(Name,liquids,equip,airframes)
 local newWH=STORAGE:New(Name)
+if newWH then
 if liquids and liquids>0 then
 newWH:SetLiquid(STORAGE.Liquid.DIESEL,liquids)
 newWH:SetLiquid(STORAGE.Liquid.GASOLINE,liquids)
@@ -4371,6 +4382,7 @@ end
 if airframes and airframes>0 then
 for typename in pairs(CSAR.AircraftType)do
 newWH:SetItem(typename,airframes)
+end
 end
 end
 end
@@ -4438,15 +4450,14 @@ time=timer.getTime(),
 initiator=Static
 }
 world.onEvent(Event)
-PopulateStorage(Name.."-1",liquids,equip,airframes)
 else
 local newfarp=SPAWNSTATIC:NewFromType(STypeName,"Heliports",Country)
 newfarp:InitShape(SShapeName)
 newfarp:InitFARP(callsign,freq,mod,DynamicSpawns,HotStart)
 local spawnedfarp=newfarp:SpawnFromCoordinate(farplocation,0,Name)
 table.insert(ReturnObjects,spawnedfarp)
-PopulateStorage(Name,liquids,equip,airframes)
 end
+PopulateStorage(Name,liquids,equip,airframes)
 local FARPStaticObjectsNato={
 ["FUEL"]={TypeName="FARP Fuel Depot",ShapeName="GSM Rus",Category="Fortifications"},
 ["AMMO"]={TypeName="FARP Ammo Dump Coating",ShapeName="SetkaKP",Category="Fortifications"},
@@ -20688,6 +20699,9 @@ SpawnTemplate.units[UnitID].y=SpawnTemplate.units[UnitID].y+(RandomVec2.y-Curren
 end
 end
 if self.SpawnRandomizeUnits then
+if self.SpawnRandomizePosition then
+PointVec3=COORDINATE:New(SpawnTemplate.x,SpawnTemplate.route.points[1].alt,SpawnTemplate.y)
+end
 for UnitID=1,#SpawnTemplate.units do
 local RandomVec2=PointVec3:GetRandomVec2InRadius(self.SpawnOuterRadius,self.SpawnInnerRadius)
 if(SpawnZone)then
@@ -44953,12 +44967,18 @@ self.controlmsrs:SetPort(Port or MSRS.port)
 self.controlmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.controlmsrs:SetLabel("RANGEC")
 self.controlmsrs:SetVolume(Volume or 1.0)
+if self.rangezone then
+self.controlmsrs:SetCoordinate(self.rangezone:GetCoordinate())
+end
 self.controlsrsQ=MSRSQUEUE:New("CONTROL")
 self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM)
 self.instructmsrs:SetPort(Port or MSRS.port)
 self.instructmsrs:SetCoalition(Coalition or coalition.side.BLUE)
 self.instructmsrs:SetLabel("RANGEI")
 self.instructmsrs:SetVolume(Volume or 1.0)
+if self.rangezone then
+self.instructmsrs:SetCoordinate(self.rangezone:GetCoordinate())
+end
 self.instructsrsQ=MSRSQUEUE:New("INSTRUCT")
 if PathToGoogleKey then
 self.controlmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
@@ -44985,8 +45005,13 @@ self.controlmsrs:SetGender(gender or"female")
 self.rangecontrol=true
 if relayunitname then
 local unit=UNIT:FindByName(relayunitname)
+if unit then
 local Coordinate=unit:GetCoordinate()
 self.rangecontrolrelayname=relayunitname
+self.controlmsrs:SetCoordinate(Coordinate)
+else
+MESSAGE:New("RANGE: Control Relay Unit "..relayunitname.." not found!",15,"ERROR"):ToAllIf(self.Debug):ToLog()
+end
 end
 return self
 end
@@ -45004,9 +45029,13 @@ self.instructmsrs:SetGender(gender or"male")
 self.instructor=true
 if relayunitname then
 local unit=UNIT:FindByName(relayunitname)
+if unit then
 local Coordinate=unit:GetCoordinate()
 self.instructmsrs:SetCoordinate(Coordinate)
 self.instructorrelayname=relayunitname
+else
+MESSAGE:New("RANGE: Instructor Relay Unit "..relayunitname.." not found!",15,"ERROR"):ToAllIf(self.Debug):ToLog()
+end
 end
 return self
 end
