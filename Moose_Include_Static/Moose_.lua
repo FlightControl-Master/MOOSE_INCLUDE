@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-27T09:21:17+01:00-6ed031762b77c57a9d2e45950c5dfbc922258f35 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-27T18:06:41+01:00-edb42bbbe956ac0ae5aa0904fdc54b5a8f23b69d ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -403,7 +403,8 @@ Tornado="Tornado",
 Atlas="A400",
 Lancer="B1-B",
 Stratofortress="B-52H",
-Hercules="C-130",
+Herc="C-130",
+Hercules="C-130J-30",
 Super_Hercules="Hercules",
 Globemaster="C-17",
 Greyhound="C-2A",
@@ -3090,6 +3091,18 @@ return true
 end
 if string.find(type_name,"SA342")and(unit:getDrawArgumentValue(34)==1)then
 BASE:T(unit_name.." front door(s) are open or doors removed")
+return true
+end
+if type_name=="C-130J-30"and(unit:getDrawArgumentValue(86)==1)then
+BASE:T(unit_name.." rear doors are open")
+return true
+end
+if type_name=="C-130J-30"and(unit:getDrawArgumentValue(87)==1)then
+BASE:T(unit_name.." Side door(s) are open")
+return true
+end
+if type_name=="C-130J-30"and(unit:getDrawArgumentValue(88)==1)then
+BASE:T(unit_name.." Paratroop door(s) are open")
 return true
 end
 if string.find(type_name,"Hercules")and(unit:getDrawArgumentValue(1215)==1 and unit:getDrawArgumentValue(1216)==1)then
