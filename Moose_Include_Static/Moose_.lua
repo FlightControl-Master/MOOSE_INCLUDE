@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-27T18:06:41+01:00-edb42bbbe956ac0ae5aa0904fdc54b5a8f23b69d ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-28T10:19:46+01:00-fb3ca6d9d57865d6227260e94ca68e46262209ef ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -36015,7 +36015,6 @@ TargetIsScenery=true
 TargetType="Scenery"
 TargetSceneryObject=TargetUNIT
 self:T("***** Target is Scenery and TargetUNIT is SCENERY object!")
-UTILS.PrintTableToLog(TargetSceneryObject)
 end
 TargetUnitCoalition=_SCORINGCoalition[TargetCoalition]
 TargetUnitCategory=_SCORINGCategory[TargetCategory]
@@ -36174,6 +36173,7 @@ local Score=ScoreZoneData.Score
 if TargetUNIT and ScoreZone:IsVec2InZone(TargetUNIT:GetVec2())then
 local PlayerName=Event.IniPlayerName or"Ghost"
 local Player=self.Players[PlayerName]
+if Player then
 Player.Score=Player.Score+Score
 Player.Score=Player.Score+self.ScoreIncrementOnHit
 MESSAGE:NewType(self.DisplayMessagePrefix.."hit in zone '"..ScoreZone:GetName().."'."..
@@ -36182,6 +36182,7 @@ MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesZone()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesZone()and self:IfMessagesToCoalition())
 self:ScoreCSV(PlayerName,"","HIT_SCORE",1,Score,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,"","Zone",TargetUnitType)
+end
 end
 end
 end
