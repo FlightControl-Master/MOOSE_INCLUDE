@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-02T10:36:01+01:00-e1b5c7f9c21a19916fc9d26920f562e38a31f5a2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-06T11:43:09+01:00-75c01fbe864902753b1739df3ce1727c7afa2770 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13088,7 +13088,6 @@ List={},
 Index={},
 Database=nil,
 CallScheduler=nil,
-Filter={},
 FilterCoalitionNumbers={
 [coalition.side.RED+1]="red",
 [coalition.side.BLUE+1]="blue",
@@ -32301,7 +32300,7 @@ self.Vec3=SceneryZone:GetVec3()
 self.Vec2=SceneryZone:GetVec2()
 self.Vector=(self.Vec3 and VECTOR)and VECTOR:NewFromVec(self.Vec3)or nil
 end
-if SceneryObject then
+if SceneryObject and SceneryObject.getPoint then
 local vec3=SceneryObject:getPoint()
 self.Vec3={x=vec3.x,y=vec3.y,z=vec3.z}
 self.Vec2={x=vec3.x,y=vec3.z}
@@ -57061,6 +57060,7 @@ self:T({EventData})
 self:T(self.lid.." HandleEventShot")
 local ShootingWeapon=EventData.Weapon
 local ShootingWeaponName=EventData.WeaponName
+if not EventData.IniGroup then return self end
 local weaponcoalition=EventData.IniGroup:GetCoalition()
 if self:_CheckCoalition(weaponcoalition)then
 local IsDetected=self:_ShotIsDetected()
