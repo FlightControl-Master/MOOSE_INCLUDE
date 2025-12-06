@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-11-28T08:48:17+01:00-40fee25da5ed135a9864ff9087b2b65fef5339ea ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-06T11:55:22+01:00-e72bd1738ca6a931058670a05f28f462b26ff41a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -1635,6 +1635,30 @@ ENUMS.Storage.weapons.adapters.lau105='weapons.adapters.lau-105'
 ENUMS.Storage.weapons.containers.US_M10_SMOKE_TANK_WHITE='weapons.containers.{US_M10_SMOKE_TANK_WHITE}'
 ENUMS.Storage.weapons.bombs.Mk_82='weapons.bombs.Mk_82'
 ENUMS.Storage.weapons.adapters.BRU42_LS_SUU25='weapons.adapters.BRU-42_LS_(SUU-25)'
+ENUMS.Storage.weapons.missiles.Aster_30_Blk_1='weapons.missiles.Aster 30 Blk 1'
+ENUMS.Storage.weapons.missiles.Aster_30_Blk_1NT='weapons.missiles.Aster 30 Blk 1NT'
+ENUMS.Storage.weapons.missiles.Aster_30_Blk_2='weapons.missiles.Aster 30 Blk 2'
+ENUMS.Storage.weapons.missiles.SA9M83M='weapons.missiles.SA9M83M'
+ENUMS.Storage.weapons.gunmounts.C130_M4_Rifle='weapons.gunmounts.C130_M4_Rifle'
+ENUMS.Storage.weapons.gunmounts.C130_M18_Sidearm_='weapons.gunmounts.{C130-M18-Sidearm}'
+ENUMS.Storage.weapons.gunmounts.C130_Cargo_Bay_M4='weapons.gunmounts.{C130-Cargo-Bay-M4}'
+ENUMS.Storage.weapons.gunmounts.C130_M18_Sidearm='weapons.gunmounts.C130_M18_Sidearm'
+ENUMS.Storage.weapons.droptanks.C130J_Ext_Tank_R='weapons.droptanks.C130J_Ext_Tank_R'
+ENUMS.Storage.weapons.droptanks.C130J_Ext_Tank_L='weapons.droptanks.C130J_Ext_Tank_L'
+ENUMS.Storage.weapons.missiles.SAHQ2='weapons.missiles.SAHQ2'
+ENUMS.Storage.weapons.missiles.Strela_2='weapons.missiles.Strela-2'
+ENUMS.Storage.weapons.missiles.Strela_2M='weapons.missiles.Strela-2M'
+ENUMS.Storage.weapons.missiles.Strela_3='weapons.missiles.Strela-3'
+ENUMS.Storage.weapons.missiles.SA9M83='weapons.missiles.SA9M83'
+ENUMS.Storage.weapons.missiles.SAV601P='weapons.missiles.SAV601P'
+ENUMS.Storage.weapons.missiles.SA2V759='weapons.missiles.SA2V759'
+ENUMS.Storage.weapons.missiles.SA9M317='weapons.missiles.SA9M317'
+ENUMS.Storage.weapons.missiles.SA9M82M='weapons.missiles.SA9M82M'
+ENUMS.Storage.weapons.missiles.SA9M82='weapons.missiles.SA9M82'
+ENUMS.Storage.weapons.missiles.Igla_S='weapons.missiles.Igla_S'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC='weapons.gunmounts.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.gunmounts.AKAN='weapons.gunmounts.{AKAN}'
+ENUMS.Storage.weapons.shells.M882_9x19='weapons.shells.9x19_m882'
 ENUMS.Storage.weapons.gunmounts.UH60LGAU19='weapons.gunmounts.UH-60L GAU-19'
 ENUMS.Storage.weapons.gunmounts.UH60L_M134='weapons.gunmounts.UH60L_M134'
 ENUMS.Storage.weapons.gunmounts.UH60_M134='weapons.gunmounts.UH60_M134'
@@ -13059,7 +13083,6 @@ List={},
 Index={},
 Database=nil,
 CallScheduler=nil,
-Filter={},
 FilterCoalitionNumbers={
 [coalition.side.RED+1]="red",
 [coalition.side.BLUE+1]="blue",
@@ -32643,7 +32666,7 @@ self.Vec3=SceneryZone:GetVec3()
 self.Vec2=SceneryZone:GetVec2()
 self.Vector=(self.Vec3 and VECTOR)and VECTOR:NewFromVec(self.Vec3)or nil
 end
-if SceneryObject then
+if SceneryObject and SceneryObject.getPoint then
 local vec3=SceneryObject:getPoint()
 self.Vec3={x=vec3.x,y=vec3.y,z=vec3.z}
 self.Vec2={x=vec3.x,y=vec3.z}
@@ -35057,7 +35080,6 @@ TargetIsScenery=true
 TargetType="Scenery"
 TargetSceneryObject=TargetUNIT
 self:T("***** Target is Scenery and TargetUNIT is SCENERY object!")
-UTILS.PrintTableToLog(TargetSceneryObject)
 end
 TargetUnitCoalition=_SCORINGCoalition[TargetCoalition]
 TargetUnitCategory=_SCORINGCategory[TargetCategory]
@@ -35216,6 +35238,7 @@ local Score=ScoreZoneData.Score
 if TargetUNIT and ScoreZone:IsVec2InZone(TargetUNIT:GetVec2())then
 local PlayerName=Event.IniPlayerName or"Ghost"
 local Player=self.Players[PlayerName]
+if Player then
 Player.Score=Player.Score+Score
 Player.Score=Player.Score+self.ScoreIncrementOnHit
 MESSAGE:NewType(self.DisplayMessagePrefix.."hit in zone '"..ScoreZone:GetName().."'."..
@@ -35224,6 +35247,7 @@ MESSAGE.Type.Information)
 :ToAllIf(self:IfMessagesZone()and self:IfMessagesToAll())
 :ToCoalitionIf(InitCoalition,self:IfMessagesZone()and self:IfMessagesToCoalition())
 self:ScoreCSV(PlayerName,"","HIT_SCORE",1,Score,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,"","Zone",TargetUnitType)
+end
 end
 end
 end
@@ -56048,6 +56072,7 @@ self:T({EventData})
 self:T(self.lid.." HandleEventShot")
 local ShootingWeapon=EventData.Weapon
 local ShootingWeaponName=EventData.WeaponName
+if not EventData.IniGroup then return self end
 local weaponcoalition=EventData.IniGroup:GetCoalition()
 if self:_CheckCoalition(weaponcoalition)then
 local IsDetected=self:_ShotIsDetected()
@@ -70355,7 +70380,7 @@ self.helo=Spawn
 UsesAliveGroup=true
 delay=1
 else
-local Spawn=SPAWN:NewWithAlias(self.helogroupname,self.alias)
+Spawn=SPAWN:NewWithAlias(self.helogroupname,self.alias)
 Spawn:InitModex(self.modex)
 end
 if UsesAliveGroup==false and self.takeoff==SPAWN.Takeoff.Air then
@@ -70375,6 +70400,7 @@ else
 self:E(string.format("ERROR: No uncontrolled (alive) rescue helo group with name %s could be found!",self.helogroupname))
 return
 end
+end
 elseif UsesAliveGroup==false then
 self.helo=Spawn:SpawnAtAirbase(self.airbase,self.takeoff,nil,AIRBASE.TerminalType.HelicopterUsable)
 if self.takeoff==SPAWN.Takeoff.Runway then
@@ -70383,7 +70409,6 @@ elseif self.takeoff==SPAWN.Takeoff.Hot then
 delay=30
 elseif self.takeoff==SPAWN.Takeoff.Cold then
 delay=60
-end
 end
 end
 self.followset=SET_GROUP:New()
@@ -72849,7 +72874,7 @@ CTLD.FixedWingTypes={
 ["Mosquito"]="Mosquito",
 ["C-130J-30"]="C-130J-30",
 }
-CTLD.version="1.3.39"
+CTLD.version="1.3.40"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -73201,6 +73226,12 @@ function CTLD:_FindCratesCargoObject(Name)
 self:T(self.lid.." _FindCratesCargoObject")
 local cargo=nil
 for _,_cargo in pairs(self.Cargo_Crates)do
+local cargo=_cargo
+if cargo.Name==Name then
+return cargo
+end
+end
+for _,_cargo in pairs(self.Cargo_Statics)do
 local cargo=_cargo
 if cargo.Name==Name then
 return cargo
@@ -73635,14 +73666,16 @@ self:_GetCrates(Group,Unit,cargoObj,total,false,false,true)
 return self
 end
 function CTLD:_AddCrateQuantityMenus(Group,Unit,parentMenu,cargoObj,stockSummary)
+self:T("_AddCrateQuantityMenus "..cargoObj.Name)
 local needed=cargoObj:GetCratesNeeded()or 1
 local stockEntry=self:_GetCrateStockEntry(cargoObj,stockSummary)
-local stock=nil
+local stock=0
 if stockEntry and type(stockEntry.Stock)=="number"then
 stock=stockEntry.Stock
 else
 stock=cargoObj:GetStock()
 end
+self:T("_AddCrateQuantityMenus "..cargoObj.Name.." Stock: "..tostring(stock))
 local maxQuantity=self.maxCrateMenuQuantity or 1
 local availableSets=nil
 if type(stock)=="number"and stock>=0 then
@@ -73656,6 +73689,7 @@ maxQuantity=availableSets
 end
 end
 maxQuantity=math.floor(maxQuantity)
+self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity)
 if maxQuantity<1 then
 return self
 end
@@ -73691,6 +73725,7 @@ allowLoad=false
 maxQuantity=1
 end
 end
+self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." allowLoad "..tostring(allowLoad))
 local maxMassSets=nil
 if Unit then
 local maxload=self:_GetMaxLoadableMass(Unit)
@@ -73706,10 +73741,12 @@ maxQuantity=maxMassSets
 end
 end
 end
+self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." allowLoad "..tostring(allowLoad))
 if maxQuantity<1 then
 return self
 end
 if maxQuantity==1 then
+self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." Menu for MaxQ=1 ".."parentMenu.MenuText = "..parentMenu.MenuText)
 MENU_GROUP_COMMAND:New(Group,"Get",parentMenu,self._GetCrateQuantity,self,Group,Unit,cargoObj,1)
 local canLoad=(allowLoad and(not capacitySets or capacitySets>=1)and(not maxMassSets or maxMassSets>=1))
 if canLoad then
@@ -73723,10 +73760,13 @@ msg="Crate limit reached"
 end
 MENU_GROUP_COMMAND:New(Group,msg,parentMenu,self._SendMessage,self,msg,10,false,Group)
 end
+parentMenu:Refresh()
 return self
 end
 for quantity=1,maxQuantity do
+self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." Menu for MaxQ>1")
 local label=tostring(quantity)
+self:T("_AddCrateQuantityMenus Label "..label)
 local qMenu=MENU_GROUP:New(Group,label,parentMenu)
 MENU_GROUP_COMMAND:New(Group,"Get",qMenu,self._GetCrateQuantity,self,Group,Unit,cargoObj,quantity)
 local canLoad=(allowLoad and(not capacitySets or capacitySets>=quantity)and(not maxMassSets or maxMassSets>=quantity))
@@ -75516,7 +75556,12 @@ if cargoObj.DontShowInMenu then
 return
 end
 local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+local txt
+if needed>1 then
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+else
+txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+end
 if cargoObj.Location then txt=txt.."[R]"end
 if self.showstockinmenuitems then
 local suffix=self:_FormatCrateStockSuffix(cargoObj,crateStockSummary)
@@ -75526,7 +75571,7 @@ local mSet=MENU_GROUP:New(_group,txt,parentMenu)
 _group.CTLD_CrateMenus[cargoObj.Name]=mSet
 self:_AddCrateQuantityMenus(_group,_unit,mSet,cargoObj,crateStockSummary)
 end
-if self.usesubcats then
+if self.usesubcats==true then
 local subcatmenus={}
 for catName,_ in pairs(self.subcats)do
 subcatmenus[catName]=MENU_GROUP:New(_group,catName,cratesmenu)
@@ -75554,7 +75599,12 @@ end
 for _,cargoObj in pairs(self.Cargo_Crates)do
 if not cargoObj.DontShowInMenu then
 local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+local txt
+if needed>1 then
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+else
+txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
@@ -75564,7 +75614,12 @@ end
 for _,cargoObj in pairs(self.Cargo_Statics)do
 if not cargoObj.DontShowInMenu then
 local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+local txt
+if needed>1 then
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+else
+txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
@@ -75575,7 +75630,12 @@ else
 for _,cargoObj in pairs(self.Cargo_Crates)do
 if not cargoObj.DontShowInMenu then
 local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+local txt
+if needed>1 then
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+else
+txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
@@ -75585,7 +75645,12 @@ end
 for _,cargoObj in pairs(self.Cargo_Statics)do
 if not cargoObj.DontShowInMenu then
 local needed=cargoObj:GetCratesNeeded()or 1
-local txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+local txt
+if needed>1 then
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+else
+txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
 if stock>=0 and self.showstockinmenuitems then txt=txt.."["..stock.."]"end
@@ -77165,10 +77230,10 @@ local cargo=_cgo
 local type=cargo.CargoType
 local gname=cargo.Name
 local gcargo=self:_FindCratesCargoObject(gname)or self:_FindTroopsCargoObject(gname)
-self:T("Looking at "..gname.." in the helo - type = "..type)
+self:T("Looking at "..gname.." in the helo - type = "..tostring(type))
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS or type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
 if gcargo and gcargo:GetStock0()>0 then
-self:T("Adding "..gname.." in the helo - type = "..type)
+self:T("Adding "..gname.." in the helo - type = "..tostring(type))
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)then
 Troopstable[gname].Inhelo=Troopstable[gname].Inhelo+1
 end
