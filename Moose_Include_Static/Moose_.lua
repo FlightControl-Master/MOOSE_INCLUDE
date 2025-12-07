@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-07T13:02:17+01:00-049529ecf09a9b405790b6c86dc34b7ee29d4855 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-07T13:39:23+01:00-3327c3b24da81daa0a3bbdafaac74a05883ff7b2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -28719,7 +28719,7 @@ function GROUP:GetTaskMission()
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template)
 end
 function GROUP:GetTaskRoute()
-if _DATABASE.Templates.Groups[self.GroupName].Template and _DATABASE.Templates.Groups[self.GroupName].Template.route and _DATABASE.Templates.Groups[self.GroupName].Template.route.points then
+if _DATABASE.Templates.Groups[self.GroupName]and _DATABASE.Templates.Groups[self.GroupName].Template and _DATABASE.Templates.Groups[self.GroupName].Template.route and _DATABASE.Templates.Groups[self.GroupName].Template.route.points then
 return UTILS.DeepCopy(_DATABASE.Templates.Groups[self.GroupName].Template.route.points)
 else
 return{}
@@ -28733,7 +28733,7 @@ GroupName=GroupName:sub(1,-2)
 else
 GroupName=self:GetName()
 end
-local Template=_DATABASE.Templates.Groups[GroupName].Template
+local Template=_DATABASE.Templates.Groups[GroupName]and _DATABASE.Templates.Groups[GroupName].Template or nil
 if Template then
 if not Begin then
 Begin=0
@@ -28755,7 +28755,7 @@ end
 end
 return Points
 else
-error("Template not found for Group : "..GroupName)
+BASE:E("Template not found for Group : "..GroupName)
 end
 return nil
 end
