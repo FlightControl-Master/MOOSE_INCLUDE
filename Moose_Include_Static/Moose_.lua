@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-06T11:43:19+01:00-04f7bb7cc733c84724f4afe1775cc56dcfe03a95 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-07T13:02:17+01:00-049529ecf09a9b405790b6c86dc34b7ee29d4855 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -70060,7 +70060,7 @@ CTLD.FixedWingTypes={
 ["Mosquito"]="Mosquito",
 ["C-130J-30"]="C-130J-30",
 }
-CTLD.version="1.3.40"
+CTLD.version="1.3.41"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -70668,7 +70668,7 @@ end
 function CTLD:_ExtractTroops(Group,Unit)
 self:T(self.lid.." _ExtractTroops")
 local grounded=not self:IsUnitInAir(Unit)
-local hoverload=self:CanHoverLoad(Unit)
+local hoverload=self:IsCorrectHover(Unit)
 local hassecondaries=false
 if not grounded and not hoverload then
 self:_SendMessage("You need to land or hover in position to load!",10,false,Group)
@@ -74195,6 +74195,7 @@ return self
 end
 function CTLD:IsCorrectHover(Unit)
 self:T(self.lid.." IsCorrectHover")
+if self:IsFixedWing(Unit)then return false end
 local outcome=false
 if self:IsUnitInAir(Unit)then
 local uspeed=Unit:GetVelocityMPS()
