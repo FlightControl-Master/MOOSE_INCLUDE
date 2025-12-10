@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-09T20:07:07+01:00-76b977ff984479d7a737b937988bc5724202c55f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-10T09:48:16+01:00-223c1650d93e72fdd4dc5a9e9a5f4dfa4b1da95b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -50457,7 +50457,7 @@ eventsmoose=true,
 reportplayername=false,
 }
 PSEUDOATC.id="PseudoATC | "
-PSEUDOATC.version="0.10.5"
+PSEUDOATC.version="0.10.6"
 function PSEUDOATC:New()
 local self=BASE:Inherit(self,BASE:New())
 self:E(PSEUDOATC.id..string.format("PseudoATC version %s",PSEUDOATC.version))
@@ -50704,6 +50704,9 @@ local pos=AIRBASE:FindByName(name):GetCoordinate()
 local submenu=missionCommands.addSubMenuForGroup(GID,name,self.group[GID].player[UID].menu_airports)
 missionCommands.addCommandForGroup(GID,"Weather Report",submenu,self.ReportWeather,self,GID,UID,pos,name)
 missionCommands.addCommandForGroup(GID,"Request BR",submenu,self.ReportBR,self,GID,UID,pos,name)
+if self.radios then
+missionCommands.addCommandForGroup(GID,"Radios",submenu,self.ReportRadios,self,GID,UID,pos,name)
+end
 self:T(string.format(PSEUDOATC.id.."Creating airport menu item %s for ID %d",name,GID))
 end
 end
@@ -50763,6 +50766,20 @@ Vs=string.format('%.1f m/s',Vel)
 end
 local text=text..string.format("%s, Wind from %s at %s (%s).",self.group[GID].player[UID].playername,Ds,Vs,Bd)
 self:_DisplayMessageToGroup(self.group[GID].player[UID].unit,text,self.mdur,true)
+end
+function PSEUDOATC:ReportRadios(GID,UID,position,location)
+self:F({GID=GID,UID=UID,position=position,location=location})
+if self.radios then
+local Text=""
+local radio=self.radios:GetClosestRadio(position,9)
+if radio then
+Text=self.radios:_GetMarkerText(radio)
+else
+Text=self.group[GID].player[UID].playername..", no radio information found!"
+end
+self:_DisplayMessageToGroup(self.group[GID].player[UID].unit,Text,self.mdur,true)
+end
+return self
 end
 function PSEUDOATC:ReportBR(GID,UID,position,location)
 self:F({GID=GID,UID=UID,position=position,location=location})
@@ -50895,6 +50912,14 @@ local unit=UNIT:FindByName(unitname)
 local pname=unit:GetPlayerName()
 local csign=unit:GetCallsign()
 return string.format("%s (%s)",csign,pname)
+end
+function PSEUDOATC:SetUsingRadioInformationFromMap(path)
+if RADIOS and lfs and io then
+self.radios=RADIOS:NewFromFile(path)
+else
+self:E("PSEUDOATC:SetUsingRadioInformationFromMap Needs `lfs`and `io` to be desanitized in the `MissionScripting.lua` in `<DCS_Install_Directory>/Scripts`")
+end
+return self
 end
 WAREHOUSE={
 ClassName="WAREHOUSE",
