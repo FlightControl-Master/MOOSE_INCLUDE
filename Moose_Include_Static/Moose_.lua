@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-15T09:43:41+01:00-ec41d7310b4d40c6ccdb5083d5e88c22470c32fb ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-16T08:41:03+01:00-19e94a7fb9489211d4ab7970466486b6c484835a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10272,7 +10272,9 @@ function ZONE_RADIUS:GetScannedUnits()
 return self.ScanData.Units
 end
 function ZONE_RADIUS:GetScannedSetUnit(Coalition)
-local SetUnit=SET_UNIT:New()
+self.SetUnit=self.SetUnit or SET_UNIT:New()
+self.SetUnit:Clear(false)
+self.SetUnit.Set={}
 if self.ScanData then
 for ObjectID,UnitObject in pairs(self.ScanData.Units)do
 local UnitObject=UnitObject
@@ -10283,17 +10285,17 @@ local includeoncoalition=true
 if Coalition~=nil and FoundCoalition==Coalition then includeoncoalition=true else includeoncoalition=false end
 if Coalition==nil then includeoncoalition=true end
 if FoundUnit and includeoncoalition then
-SetUnit:AddUnit(FoundUnit)
+self.SetUnit:AddUnit(FoundUnit)
 else
 local FoundStatic=STATIC:FindByName(UnitObject:getName(),false)
 if FoundStatic then
-SetUnit:AddUnit(FoundStatic)
+self.SetUnit:AddUnit(FoundStatic)
 end
 end
 end
 end
 end
-return SetUnit
+return self.SetUnit
 end
 function ZONE_RADIUS:GetScannedSetGroup(Coalition)
 self.ScanSetGroup=self.ScanSetGroup or SET_GROUP:New()
@@ -54532,7 +54534,7 @@ MANTIS.SamData={
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
 ["TAMIR IDFA"]={Range=20,Blindspot=0.6,Height=12.3,Type="Short",Radar="IRON_DOME_LN"},
 ["STUNNER IDFA"]={Range=250,Blindspot=1,Height=45,Type="Long",Radar="DAVID_SLING_LN"},
-["NIKE"]={Range=155,Blindspot=6,Height=30,Type="Long",Radar="HIPAR"},
+["Nike"]={Range=155,Blindspot=6,Height=30,Type="Long",Radar="HIPAR"},
 ["Dog Ear"]={Range=11,Blindspot=0,Height=9,Type="Point",Radar="Dog Ear",Point="true"},
 ["Pantsir S1"]={Range=20,Blindspot=1.2,Height=15,Type="Point",Radar="PantsirS1",Point="true"},
 ["Tor M2"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2",Point="true"},
@@ -54611,13 +54613,14 @@ MANTIS.SamDataCH={
 ["Lvkv9040M CHM"]={Range=2,Blindspot=0.1,Height=1.2,Type="Point",Radar="LvKv9040",Point="true"},
 }
 do
-function MANTIS:New(name,samprefix,ewrprefix,hq,coalition,dynamic,awacs,EmOnOff,Padding,Zones)
+function MANTIS:New(name,samprefix,ewrprefix,hq,Coalition,dynamic,awacs,EmOnOff,Padding,Zones)
 local self=BASE:Inherit(self,FSM:New())
 self.name=name or"mymantis"
 self.SAM_Templates_Prefix=samprefix or"Red SAM"
 self.EWR_Templates_Prefix=ewrprefix or"Red EWR"
 self.HQ_Template_CC=hq or nil
-self.Coalition=coalition or"red"
+self.Coalition=Coalition or"red"
+self.coalition=Coalition=="blue"and coalition.side.BLUE or coalition.side.RED
 self.SAM_Table={}
 self.SAM_Table_Long={}
 self.SAM_Table_Medium={}
@@ -55176,11 +55179,19 @@ if grp:IsAlive()then
 local coord=grp:GetCoordinate()
 local dist=0
 local include=true
+if grp:IsGround()then include=false end
+if grp:GetCoalition()==self.coalition then include=false end
 if coord and SamCoordinate and grp:IsHelicopter()then
 dist=coord:Get2DDistance(SamCoordinate)or 0
 if dist>self.ShoradActDistance then include=false end
 end
-if grp:GetHeight(true)<height and include==true then
+if self.debug then
+local text="Looking at Group: "..grp:GetName()or"N/A"
+text=text.." Include = "..tostring(include)
+MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.verbose):ToLog()
+end
+local grpalt=grp:GetHeight(true)
+if grpalt<height and grpalt>10 and include==true then
 table.insert(set,coord)
 end
 end
@@ -55248,12 +55259,12 @@ self:T(self.lid.."Starting Intel Detection")
 local groupset=self.EWR_Group
 local samset=self.SAM_Group
 self.intelset={}
-local IntelOne=INTEL:New(groupset,self.Coalition,self.name.." IntelOne")
+local IntelOne=INTEL:New(groupset,self.coalition,self.name.." IntelOne")
 IntelOne.DetectAccoustic=self.DetectAccoustic
 IntelOne.DetectAccousticRadius=self.DetectAccousticRadius or 2000
 IntelOne.DetectAccousticUnitTypes=self.DetectAccousticCategories or{Unit.Category.HELICOPTER}
 IntelOne:Start()
-local IntelTwo=INTEL:New(samset,self.Coalition,self.name.." IntelTwo")
+local IntelTwo=INTEL:New(samset,self.coalition,self.name.." IntelTwo")
 IntelTwo.DetectAccoustic=self.DetectAccoustic
 IntelTwo.DetectAccousticRadius=self.DetectAccousticRadius or 2000
 IntelTwo.DetectAccousticUnitTypes=self.DetectAccousticCategories or{Unit.Category.HELICOPTER}
@@ -55567,7 +55578,7 @@ end
 if self.SamStateTracker[name]~="RED"and switch then
 self:__RedState(1,samgroup)
 end
-if shortsam==true and self.SmokeDecoy==true and Distance<self.DetectAccousticRadius*2 then
+if shortsam==true and self.SmokeDecoy==true and Distance<self.DetectAccousticRadius*1.5 then
 self:T("Smoking")
 self:_SmokeUnits(samgroup)
 end
@@ -55712,7 +55723,7 @@ else
 self.Detection=self:StartIntelDetection()
 end
 if self.autoshorad then
-self.Shorad=SHORAD:New(self.name.."-SHORAD","SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.coalition,self.UseEmOnOff)
+self.Shorad=SHORAD:New(self.name.."-SHORAD","SHORAD",self.SAM_Group,self.ShoradActDistance,self.ShoradTime,self.Coalition,self.UseEmOnOff,self.SmokeDecoy,self.SmokeDecoyColor)
 self.Shorad:SetDefenseLimits(80,95)
 self.ShoradLink=true
 self.Shorad.Groupset=self.ShoradGroupSet
@@ -55855,6 +55866,8 @@ SkateZones=nil,
 minscootdist=100,
 maxscootdist=3000,
 scootrandomcoord=false,
+SmokeDecoy=false,
+SmokeDecoyColor=SMOKECOLOR.White
 }
 do
 SHORAD.Harms={
@@ -55880,13 +55893,14 @@ SHORAD.Mavs={
 ["Kh31"]="Kh31",
 ["Kh66"]="Kh66",
 }
-function SHORAD:New(Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition,UseEmOnOff)
+function SHORAD:New(Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition,UseEmOnOff,SmokeDecoy,SmokeDecoyColor)
 local self=BASE:Inherit(self,FSM:New())
 self:T({Name,ShoradPrefix,Samset,Radius,ActiveTimer,Coalition})
 local GroupSet=SET_GROUP:New():FilterPrefixes(ShoradPrefix):FilterCoalitions(Coalition):FilterCategoryGround():FilterStart()
 self.name=Name or"MyShorad"
 self.Prefixes=ShoradPrefix or"SAM SHORAD"
 self.Radius=Radius or 20000
+if type(Coalition)=="number"then Coalition=string.lower(UTILS.GetCoalitionName(Coalition))end
 self.Coalition=Coalition or"blue"
 self.Samset=Samset or GroupSet
 self.ActiveTimer=ActiveTimer or 600
@@ -55898,7 +55912,11 @@ self.DefenseLowProb=70
 self.DefenseHighProb=90
 self.UseEmOnOff=true
 if UseEmOnOff==false then self.UseEmOnOff=UseEmOnOff end
-self:I("*** SHORAD - Started Version 0.3.4")
+if SmokeDecoy then
+self.SmokeDecoy=SmokeDecoy
+self.SmokeDecoyColor=SmokeDecoyColor or SMOKECOLOR.White
+end
+self:I("*** SHORAD - Started Version 0.3.5")
 self.lid=string.format("SHORAD %s | ",self.name)
 self:_InitState()
 self:HandleEvent(EVENTS.Shot,self.HandleEventShot)
@@ -56076,6 +56094,27 @@ end
 end
 return returnname
 end
+function SHORAD:_SmokeUnits(Group)
+if self.SmokeDecoy==true then
+if Group and Group:IsAlive()then
+local units=Group:GetUnits()
+for _,_unit in pairs(units)do
+local unit=_unit
+if unit and unit:IsAlive()then
+local coordinate=unit:GetCoordinate()
+if coordinate then
+coordinate:SwitchSmokeOffsetOn()
+coordinate:Smoke(self.SmokeDecoyColor,Duration,nil,Name,true,1,20)
+coordinate:Smoke(self.SmokeDecoyColor,Duration,nil,Name,true,180,20)
+coordinate:Smoke(self.SmokeDecoyColor,Duration,nil,Name,true,270,20)
+coordinate:Smoke(self.SmokeDecoyColor,Duration,nil,Name,true,90,20)
+end
+end
+end
+end
+end
+return self
+end
 function SHORAD:_ShotIsDetected()
 self:T(self.lid.." _ShotIsDetected")
 if self.debug then return true end
@@ -56134,6 +56173,7 @@ self.ActiveGroups[groupname]=nil
 local text=string.format("Shot at SHORAD %s! Evading!",_group:GetName())
 self:T(text)
 local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+self:_SmokeUnits(_group)
 if self.shootandscoot then
 self:__ShootAndScoot(1,_group)
 end
@@ -56145,6 +56185,7 @@ if self.UseEmOnOff then
 _group:EnableEmission(true)
 end
 _group:OptionAlarmStateRed()
+self:_SmokeUnits(_group)
 if self.ActiveGroups[groupname]==nil then
 self.ActiveGroups[groupname]={Timing=ActiveTimer}
 local endtime=timer.getTime()+(ActiveTimer*math.random(75,100)/100)
@@ -72646,6 +72687,9 @@ self.Subcategory=Subcategory or"Other"
 self.DontShowInMenu=DontShowInMenu or false
 self.ResourceMap=nil
 self.StaticType="container_cargo"
+if self:IsStatic()then
+self.StaticType=self.Templates
+end
 self.StaticShape=nil
 self.TypeNames=nil
 self.StaticCategory="Cargos"
@@ -77753,7 +77797,7 @@ local loadedcargo=self.Loaded_Cargo[unitname].Cargo or{}
 for _,_cgo in pairs(loadedcargo)do
 local cargo=_cgo
 local type=cargo.CargoType
-local gname=cargo.Name
+local gname=cargo:GetName()
 local gcargo=self:_FindCratesCargoObject(gname)or self:_FindTroopsCargoObject(gname)
 self:T("Looking at "..gname.." in the helo - type = "..tostring(type))
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS or type==CTLD_CARGO.Enum.VEHICLE or type==CTLD_CARGO.Enum.FOB)then
@@ -78797,8 +78841,12 @@ injectstatic:SetStaticTypeAndShape(StaticCategory,StaticType,StaticShape)
 elseif cargotype==CTLD_CARGO.Enum.STATIC or cargotype==CTLD_CARGO.Enum.REPAIR then
 injectstatic=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
 injectstatic:SetStaticTypeAndShape(StaticCategory,StaticType,StaticShape)
-local map=cargotype:GetStaticResourceMap()
-injectstatic:SetStaticResourceMap(map)
+local unittemplate=_DATABASE:GetStaticUnitTemplate(cargoname)
+local ResourceMap=nil
+if unittemplate and unittemplate.resourcePayload then
+ResourceMap=UTILS.DeepCopy(unittemplate.resourcePayload)
+end
+injectstatic:SetStaticResourceMap(ResourceMap)
 end
 if injectstatic then
 self:InjectStatics(dropzone,injectstatic,false,true)
@@ -98363,7 +98411,7 @@ prediction=300,
 detectStatics=false,
 DetectAccoustic=false,
 DetectAccousticRadius=1000,
-DetectAccousticUnitTypes={Unit.Category.GROUND_UNIT,Unit.Category.HELICOPTER},
+DetectAccousticUnitTypes={Unit.Category.HELICOPTER},
 }
 INTEL.Ctype={
 GROUND="Ground",
@@ -98434,7 +98482,7 @@ end
 function INTEL:SetAccousticDetectionOn(Radius,UnitCategories)
 self.DetectAccoustic=true
 self.DetectAccousticRadius=Radius or 1000
-self.DetectAccousticUnitTypes=UnitCategories or{Unit.Category.GROUND_UNIT,Unit.Category.HELICOPTER}
+self.DetectAccousticUnitTypes=UnitCategories or{Unit.Category.HELICOPTER}
 return self
 end
 function INTEL:SetAccousticDetectionOff()
@@ -98646,7 +98694,7 @@ if not detectionzone then
 detectionzone=ZONE_GROUP:New(group.IdentifiableName.."INTEL_DETECT_ACCZONE",group,self.DetectAccousticRadius or 2000)
 group:SetProperty("INTEL_DETECT_ACCZONE",detectionzone)
 end
-if recce then
+if recce and recce:IsGround()then
 self:GetDetectedUnitsAccoustic(recce,DetectedUnits,RecceDetecting,detectionzone)
 end
 end
@@ -98910,18 +98958,18 @@ local othercoalition=self.coalition==coalition.side.BLUE and coalition.side.RED 
 self:T("Other coalition = "..othercoalition)
 if detectionzone then
 local reccename=Recce:GetName()
-detectionzone:Scan({Object.Category.UNIT},self.DetectAccousticUnitTypes)
+local DetectAccousticUnitTypes=self.DetectAccousticUnitTypes or{Unit.Category.HELICOPTER}
+detectionzone:Scan({Object.Category.UNIT},DetectAccousticUnitTypes)
 local unitset=detectionzone:GetScannedSetUnit(othercoalition)
 self:T("Accoustic detection found #Units "..unitset:CountAlive())
 for _,_unit in pairs(unitset.Set or{})do
-if _unit and _unit:IsAlive()then
+if _unit and _unit:IsAlive()and _unit:GetCoalition()~=self.coalition then
 local name=_unit:GetName()or"none"
 DetectedUnits[name]=_unit
 RecceDetecting[name]=reccename
 self:T("Unit name = "..name)
 end
 end
-unitset=nil
 end
 end
 function INTEL:onafterNewContact(From,Event,To,Contact)
