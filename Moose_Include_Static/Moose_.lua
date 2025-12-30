@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-21T12:49:00+01:00-fc9e31199ee1aab179a7b19204042d778ff89eab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2025-12-30T09:43:45+01:00-a96c617b01909e5bd2db5d77d0ca78ddac16a613 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -417,6 +417,7 @@ Extender="KC-10",
 Orion="P-3C",
 Viking="S-3B",
 Osprey="V-22",
+Intruder="A6E",
 Badger="H6-J",
 Bear_J="Tu-142",
 Bear="Tu-95",
@@ -1881,6 +1882,23 @@ Spur=21,
 Stetson=22,
 Wrath=23,
 },
+Intruder={
+Raygun=4,
+Heartless=5,
+Viceroy=6,
+Cupcake=7,
+["Flying Tiger"]=8,
+["Flying Ace"]=9,
+Buckeye=10,
+Goldplate=11,
+Phoenix=12,
+Electron=13,
+Rustler=14,
+Vixen=15,
+Jackal=16,
+Milestone=17,
+Devil=18,
+},
 }
 UTILS={
 _MarkID=1
@@ -2947,6 +2965,11 @@ return name
 end
 end
 for name,value in pairs(CALLSIGN.Kiowa)do
+if value==Callsign then
+return name
+end
+end
+for name,value in pairs(CALLSIGN.Intruder)do
 if value==Callsign then
 return name
 end
@@ -5104,6 +5127,102 @@ text=text..string.format('\n\t["%s"] = "%s",',ab.key,ab.name)
 end
 text=text.."\n}"
 _savefile(string.format("%s-enums.txt",env.mission.theatre),text)
+end
+function UTILS.GetCenterAndRadius(points)
+if#points==0 then
+return nil,nil
+end
+local sumX,sumY=0,0
+for _,p in ipairs(points)do
+sumX=sumX+p.x
+sumY=sumY+p.y
+end
+local center={
+x=sumX/#points,
+y=sumY/#points
+}
+local maxDist=0
+for _,p in ipairs(points)do
+local dx=p.x-center.x
+local dy=p.y-center.y
+local dist=math.sqrt(dx*dx+dy*dy)
+if dist>maxDist then
+maxDist=dist
+end
+end
+return center,maxDist
+end
+function UTILS.GetMinimumBoundingCircle(points)
+if#points==0 then
+return nil,nil
+end
+local function distance(p1,p2)
+local dx=p2.x-p1.x
+local dy=p2.y-p1.y
+return math.sqrt(dx*dx+dy*dy)
+end
+local function circleFrom2Points(p1,p2)
+local center={
+x=(p1.x+p2.x)/2,
+y=(p1.y+p2.y)/2
+}
+local radius=distance(p1,p2)/2
+return center,radius
+end
+local function circleFrom3Points(p1,p2,p3)
+local ax,ay=p1.x,p1.y
+local bx,by=p2.x,p2.y
+local cx,cy=p3.x,p3.y
+local d=2*(ax*(by-cy)+bx*(cy-ay)+cx*(ay-by))
+if math.abs(d)<0.0001 then
+return circleFrom2Points(p1,p3)
+end
+local aSq=ax*ax+ay*ay
+local bSq=bx*bx+by*by
+local cSq=cx*cx+cy*cy
+local ux=(aSq*(by-cy)+bSq*(cy-ay)+cSq*(ay-by))/d
+local uy=(aSq*(cx-bx)+bSq*(ax-cx)+cSq*(bx-ax))/d
+local center={x=ux,y=uy}
+local radius=distance(center,p1)
+return center,radius
+end
+local function isInside(center,radius,point,tolerance)
+tolerance=tolerance or 0.0001
+return distance(center,point)<=radius+tolerance
+end
+local function welzlHelper(pts,n,boundary)
+if n==0 or#boundary==3 then
+if#boundary==0 then
+return{x=0,y=0},0
+elseif#boundary==1 then
+return{x=boundary[1].x,y=boundary[1].y},0
+elseif#boundary==2 then
+return circleFrom2Points(boundary[1],boundary[2])
+else
+return circleFrom3Points(boundary[1],boundary[2],boundary[3])
+end
+end
+local p=pts[n]
+local center,radius=welzlHelper(pts,n-1,boundary)
+if isInside(center,radius,p)then
+return center,radius
+end
+local newBoundary={}
+for i=1,#boundary do
+newBoundary[i]=boundary[i]
+end
+table.insert(newBoundary,p)
+return welzlHelper(pts,n-1,newBoundary)
+end
+local pts={}
+for i,p in ipairs(points)do
+pts[i]={x=p.x,y=p.y}
+end
+for i=#pts,2,-1 do
+local j=math.random(1,i)
+pts[i],pts[j]=pts[j],pts[i]
+end
+return welzlHelper(pts,#pts,{})
 end
 PROFILER={
 ClassName="PROFILER",
@@ -21449,6 +21568,11 @@ min=9
 max=18
 ctable=CALLSIGN.F15E
 end
+if SpawnTemplate.units[1].type=="A6E"then
+min=4
+max=18
+ctable=CALLSIGN.Intruder
+end
 local callsignnr=math.random(min,max)
 local callsignname="Enfield"
 for name,value in pairs(ctable)do
@@ -21964,6 +22088,18 @@ function SPAWNSTATIC:InitCargo(IsCargo)
 self.InitStaticCargo=IsCargo
 return self
 end
+function SPAWNSTATIC:InitHiddenOnMap(OnOff)
+self.SpawnHiddenOnMap=OnOff==false and false or true
+return self
+end
+function SPAWNSTATIC:InitHiddenOnMFD()
+self.SpawnHiddenOnMFD=true
+return self
+end
+function SPAWNSTATIC:InitHiddenOnPlanner()
+self.SpawnHiddenOnPlanner=true
+return self
+end
 function SPAWNSTATIC:InitDead(IsDead)
 self.InitStaticDead=IsDead
 return self
@@ -22056,6 +22192,15 @@ Template.canCargo=self.InitStaticCargo
 end
 if self.InitStaticCargoMass~=nil then
 Template.mass=self.InitStaticCargoMass
+end
+if self.SpawnHiddenOnPlanner then
+Template.hiddenOnPlanner=true
+end
+if self.SpawnHiddenOnMFD then
+Template.hiddenOnMFD=true
+end
+if self.SpawnHiddenOnMap then
+Template.hidden=self.SpawnHiddenOnMap
 end
 if self.InitLinkUnit then
 Template.linkUnit=self.InitLinkUnit:GetID()
@@ -31726,6 +31871,9 @@ end
 else
 self:E(string.format("ERROR: Cound not get position Vec2 of airbase %s",AirbaseName))
 end
+if Nrunways>0 then
+self:GetMinimumBoundingCircleFromParkingSpots()
+end
 self:T2(string.format("Registered airbase %s",tostring(self.AirbaseName)))
 return self
 end
@@ -31981,6 +32129,33 @@ table.insert(spots,_coord)
 end
 end
 return spots
+end
+function AIRBASE:GetParkingSpotsVec2s(termtype)
+local parkingdata=self:GetParkingData(false)
+local spots={}
+for _,parkingspot in ipairs(parkingdata)do
+if AIRBASE._CheckTerminalType(parkingspot.Term_Type,termtype)then
+local vec2={x=parkingspot.vTerminalPos.x,y=parkingspot.vTerminalPos.z}
+table.insert(spots,vec2)
+end
+end
+return spots
+end
+function AIRBASE:GetMinimumBoundingCircleFromParkingSpots(mark)
+if self.isAirdrome then
+if not self.parkingCircle then
+local spots=self:GetParkingSpotsVec2s()
+if#spots==0 then return self.AirbaseZone end
+local center,radius=UTILS.GetMinimumBoundingCircle(spots)
+self.parkingCircle=ZONE_RADIUS:New(self.AirbaseName.." ParkingCircle",center,radius+50)
+if mark==true then
+self.parkingCircle:DrawZone(-1,{1,0,0},1,{0,1,0},0.2,3)
+end
+end
+return self.parkingCircle
+else
+return self.AirbaseZone
+end
 end
 function AIRBASE:_InitParkingSpots()
 local parkingdata=self:GetParkingData(false)
@@ -34628,8 +34803,10 @@ ClassName="SCORING",
 ClassID=0,
 Players={},
 AutoSave=true,
-version="1.18.4",
+version="1.18.5",
 ScoringScenery=nil,
+SceneryHitsInZone=false,
+LoadSave=false,
 }
 local _SCORINGCoalition={
 [1]="Red",
@@ -34642,12 +34819,12 @@ local _SCORINGCategory={
 [Unit.Category.SHIP]="Ship",
 [Unit.Category.STRUCTURE]="Structure",
 }
-function SCORING:New(GameName,SavePath,AutoSave)
+function SCORING:New(GameName,SavePath,AutoSave,LoadSave)
 local self=BASE:Inherit(self,BASE:New())
 if GameName then
 self.GameName=GameName
 else
-error("A game name must be given to register the scoring results")
+error("A game name must be given to register the scoring results!")
 end
 self.ScoringObjects={}
 self.ScoringZones={}
@@ -34664,6 +34841,10 @@ self.penaltyonfratricide=true
 self:SetCoalitionChangePenalty(self.ScaleDestroyPenalty)
 self.penaltyoncoalitionchange=true
 self:SetDisplayMessagePrefix()
+self.SceneryHitsInZone=false
+if LoadSave then
+self.LoadSave=LoadSave
+end
 self:HandleEvent(EVENTS.Dead,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Crash,self._EventOnDeadOrCrash)
 self:HandleEvent(EVENTS.Hit,self._EventOnHit)
@@ -34681,6 +34862,48 @@ if self.AutoSavePath and self.AutoSave==true then
 self:OpenCSV(GameName)
 end
 self:I("SCORING "..tostring(GameName).." started! v"..self.version)
+if LoadSave==true then
+self:_LoadPlayerSummaryScore()
+end
+return self
+end
+function SCORING:_LoadPlayerSummaryScore()
+if lfs and io and self.LoadSave==true then
+local path=self.AutoSavePath or lfs.writedir()..[[Logs\]]
+local filename=self.GameName or"PlayerScoresSummary"
+filename=filename..".csv"
+if UTILS.CheckFileExists(path,filename)then
+local ok,data=UTILS.LoadFromFile(path,filename)
+table.remove(data,1)
+for _,_data in pairs(data)do
+local line=UTILS.Split(_data,";;")
+local playername=tostring(line[1])
+local score=tonumber(line[2])
+local penalty=tonumber(line[3])
+self:I(string.format("Player %s Score %d Penalty %d",playername,score,penalty))
+local PlayerData=self.Players[playername]
+if not PlayerData then
+PlayerData={}
+PlayerData.Hit={}
+PlayerData.Destroy={}
+PlayerData.Goals={}
+PlayerData.Goals[self.GameName]={Score=score,Penalty=penalty}
+PlayerData.Mission={}
+PlayerData.HitPlayers={}
+PlayerData.Score=score
+PlayerData.Penalty=penalty
+PlayerData.PenaltyCoalition=0
+PlayerData.PenaltyWarning=0
+self.Players[playername]=PlayerData
+else
+PlayerData.Score=score
+PlayerData.Penalty=penalty
+self.Players[playername]=PlayerData
+PlayerData.Goals[self.GameName]={Score=score,Penalty=penalty}
+end
+end
+end
+end
 return self
 end
 function SCORING:SetDisplayMessagePrefix(DisplayMessagePrefix)
@@ -34792,6 +35015,14 @@ local ZoneName=ScoreZone:GetName()
 self.ScoringZones[ZoneName]={}
 self.ScoringZones[ZoneName].ScoreZone=ScoreZone
 self.ScoringZones[ZoneName].Score=Score
+return self
+end
+function SCORING:EnableSceneryHitsinZones()
+self.SceneryHitsInZone=true
+return self
+end
+function SCORING:DisableSceneryHitsinZones()
+self.SceneryHitsInZone=false
 return self
 end
 function SCORING:AddZoneScoreSet(ScoreZoneSet,Score)
@@ -34939,6 +35170,20 @@ function SCORING:AddGoalScorePlayer(PlayerName,GoalTag,Text,Score)
 self:F({PlayerName,PlayerName,GoalTag,Text,Score})
 if PlayerName then
 local PlayerData=self.Players[PlayerName]
+if not PlayerData then
+PlayerData={}
+PlayerData.Goals={}
+PlayerData.Hit={}
+PlayerData.Destroy={}
+PlayerData.Goals={}
+PlayerData.Mission={}
+PlayerData.HitPlayers={}
+PlayerData.Score=0
+PlayerData.Penalty=0
+PlayerData.PenaltyCoalition=0
+PlayerData.PenaltyWarning=0
+self.Players[PlayerName]=PlayerData
+end
 PlayerData.Goals[GoalTag]=PlayerData.Goals[GoalTag]or{Score=0}
 PlayerData.Goals[GoalTag].Score=PlayerData.Goals[GoalTag].Score+Score
 PlayerData.Score=PlayerData.Score+Score
@@ -35414,6 +35659,7 @@ end
 end
 end
 else
+if self.SceneryHitsInZone==true then
 for ZoneName,ScoreZoneData in pairs(self.ScoringZones)do
 self:F({ScoringZone=ScoreZoneData})
 local ScoreZone=ScoreZoneData.ScoreZone
@@ -35428,6 +35674,7 @@ MESSAGE.Type.Information)
 :ToCoalitionIf(InitCoalition,self:IfMessagesZone()and self:IfMessagesToCoalition())
 self:ScoreCSV(PlayerName,"","DESTROY_SCORE",1,Score,InitUnitName,InitUnitCoalition,InitUnitCategory,InitUnitType,TargetUnitName,"","Scenery",TargetUnitType)
 Destroyed=true
+end
 end
 end
 end
@@ -35669,8 +35916,9 @@ MESSAGE:NewType(PlayerMessage,MESSAGE.Type.Detailed):ToGroup(PlayerGroup)
 end
 end
 end
-function SCORING:ReportScoreAllSummary(PlayerGroup)
+function SCORING:ReportScoreAllSummary(PlayerGroup,JustScore)
 local PlayerMessage=""
+local ReportTable={}
 self:T({"Summary Score Report of All Players",Players=self.Players})
 for PlayerName,PlayerData in pairs(self.Players)do
 self:T({PlayerName=PlayerName,PlayerGroup=PlayerGroup})
@@ -35692,6 +35940,7 @@ ReportMissions=ReportMissions~=""and"\n- "..ReportMissions or ReportMissions
 self:F({ReportMissions,ScoreMissions,PenaltyMissions})
 local PlayerScore=ScoreHits+ScoreDestroys+ScoreCoalitionChanges+ScoreGoals+ScoreMissions
 local PlayerPenalty=PenaltyHits+PenaltyDestroys+PenaltyCoalitionChanges+PenaltyGoals+PenaltyMissions
+if JustScore~=true then
 PlayerMessage=
 string.format("Player '%s' Score = %d ( %d Score, -%d Penalties )",
 PlayerName,
@@ -35700,8 +35949,12 @@ PlayerScore,
 PlayerPenalty
 )
 MESSAGE:NewType(PlayerMessage,MESSAGE.Type.Overview):ToGroup(PlayerGroup)
+else
+ReportTable[PlayerName]={["Score"]=PlayerScore,["Penalty"]=PlayerPenalty}
 end
 end
+end
+return ReportTable
 end
 function SCORING:SecondsToClock(sSeconds)
 local nSeconds=sSeconds
@@ -35788,6 +36041,17 @@ self.CSVFile:write(
 ''..ScoreAmount
 )
 self.CSVFile:write("\n")
+end
+if lfs and io and self.LoadSave==true then
+local path=self.AutoSavePath or lfs.writedir()..[[Logs\]]
+local filename=self.GameName or"PlayerScoresSummary"
+filename=filename..".csv"
+local data=self:ReportScoreAllSummary("",true)
+local text="-- Playername;;Score;;Penalty\n"
+for _playername,_data in pairs(data or{})do
+text=text..string.format("%s;;%d;;%d\n")
+end
+UTILS.SaveToFile(path,filename,text)
 end
 end
 function SCORING:CloseCSV()
@@ -50945,7 +51209,7 @@ local templategroupname=group:GetName()
 local unit=group:GetUnit(1)
 local Descriptors=(unit and unit:IsAlive())and unit:GetDesc()or{}
 local Category=group:GetCategory()
-local TypeName=group:GetTypeName()
+local TypeName=group:GetTypeName()or"none"
 local SpeedMax=group:GetSpeedMax()
 local RangeMin=group:GetRange()
 local smax,sx,sy,sz=_GetObjectSize(Descriptors)
@@ -54893,6 +55157,69 @@ self.usezones=true
 end
 return self
 end
+function MANTIS:AddRejectZone(Zone)
+if Zone and Zone:IsInstanceOf("ZONE_BASE")then
+table.insert(self.RejectZones,Zone)
+self.usezones=true
+end
+return self
+end
+function MANTIS:AddAcceptZone(Zone)
+if Zone and Zone:IsInstanceOf("ZONE_BASE")then
+table.insert(self.AcceptZones,Zone)
+self.usezones=true
+end
+return self
+end
+function MANTIS:AddConflictZone(Zone)
+if Zone and Zone:IsInstanceOf("ZONE_BASE")then
+table.insert(self.ConflictZones,Zone)
+self.usezones=true
+end
+return self
+end
+function MANTIS:SetCorridorZones(CorridorZones)
+self:T(self.lid.."SetCorridorZones")
+if CorridorZones and CorridorZones:IsInstanceOf("SET_ZONE")then
+self.corridorzones=CorridorZones
+self.usecorridors=true
+elseif CorridorZones and CorridorZones:IsInstanceOf("ZONE_BASE")then
+if not self.corridorzones then self.corridorzones=SET_ZONE:New()end
+self.corridorzones:AddZone(CorridorZones)
+self.usecorridors=true
+end
+if self.intelset then
+for _,_intel in pairs(self.intelset)do
+_intel:SetCorridorZones(self.corridorzones)
+end
+end
+return self
+end
+function MANTIS:AddCorridorZone(CorridorZone)
+self:T(self.lid.."AddCorridorZone")
+self:SetCorridorZones(CorridorZone)
+return self
+end
+function MANTIS:SetCorridorZoneFloorAndCeiling(Floor,Ceiling)
+self.corridorfloor=UTILS.FeetToMeters(Floor)
+self.corridorceiling=UTILS.FeetToMeters(Ceiling)
+if self.intelset then
+for _,_intel in pairs(self.intelset)do
+_intel:SetCorridorLimits(self.corridorfloor,self.corridorceiling)
+end
+end
+return self
+end
+function MANTIS:SetCorridorZoneFloorAndCeilingMeters(Floor,Ceiling)
+self.corridorfloor=Floor
+self.corridorceiling=Ceiling
+if self.intelset then
+for _,_intel in pairs(self.intelset)do
+_intel:SetCorridorLimits(self.corridorfloor,self.corridorceiling)
+end
+end
+return self
+end
 function MANTIS:SetEWRRange(radius)
 self:T(self.lid.."SetEWRRange")
 return self
@@ -55278,11 +55605,23 @@ local IntelOne=INTEL:New(groupset,self.coalition,self.name.." IntelOne")
 IntelOne.DetectAccoustic=self.DetectAccoustic
 IntelOne.DetectAccousticRadius=self.DetectAccousticRadius or 2000
 IntelOne.DetectAccousticUnitTypes=self.DetectAccousticCategories or{Unit.Category.HELICOPTER}
+if self.usecorridors==true then
+IntelOne:SetCorridorZones(self.corridorzones)
+if self.corridorfloor or self.corridorceiling then
+IntelOne:SetCorridorLimits(self.corridorfloor,self.corridorceiling)
+end
+end
 IntelOne:Start()
 local IntelTwo=INTEL:New(samset,self.coalition,self.name.." IntelTwo")
 IntelTwo.DetectAccoustic=self.DetectAccoustic
 IntelTwo.DetectAccousticRadius=self.DetectAccousticRadius or 2000
 IntelTwo.DetectAccousticUnitTypes=self.DetectAccousticCategories or{Unit.Category.HELICOPTER}
+if self.usecorridors==true then
+IntelTwo:SetCorridorZones(self.corridorzones)
+if self.corridorfloor or self.corridorceiling then
+IntelTwo:SetCorridorLimits(self.corridorfloor,self.corridorceiling)
+end
+end
 IntelTwo:Start()
 local CacheTime=self.DLinkCacheTime or 120
 local IntelDlink=INTEL_DLINK:New({IntelOne,IntelTwo},self.name.." DLINK",22,CacheTime)
@@ -73108,7 +73447,7 @@ CTLD.FixedWingTypes={
 ["Mosquito"]="Mosquito",
 ["C-130J-30"]="C-130J-30",
 }
-CTLD.version="1.3.41"
+CTLD.version="1.3.42"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74176,6 +74515,9 @@ end
 self:_SendMessage(string.format("%s have been deployed near you!",cfg.Name or"selection"),10,false,Group)
 return self
 end
+function CTLD:CanGetCrates(Group,Unit,Cargo,number,drop,pack,quiet,suppressGetEvent)
+return true
+end
 function CTLD:_GetCrates(Group,Unit,Cargo,number,drop,pack,quiet,suppressGetEvent)
 self:T(self.lid.." _GetCrates")
 local perSet=Cargo:GetCratesNeeded()or 1
@@ -74228,7 +74570,7 @@ local unitcoord=Unit:GetCoordinate()or Group:GetCoordinate()
 if unitcoord then
 if not location:IsCoordinateInZone(unitcoord)then
 self:_SendMessage("The requested cargo is not available in this zone!",10,false,Group)
-if not self.debug then return self end
+if not self.debug then return false end
 end
 end
 end
@@ -74238,6 +74580,9 @@ local loaddist=self.CrateDistance or 35
 local nearcrates,numbernearby=self:_FindCratesNearby(Group,Unit,loaddist,true,true)
 if numbernearby>=canloadcratesno and not drop then
 self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
+return false
+end
+if not self:CanGetCrates(Group,Unit,Cargo,requestNumber,drop,pack,quiet,suppressGetEvent)then
 return false
 end
 local IsHerc=self:IsFixedWing(Unit)
@@ -75249,6 +75594,9 @@ end
 end
 return self
 end
+function CTLD:CanBuildCrates(Group,Unit,crates,number,Engineering,MultiDrop)
+return true
+end
 function CTLD:_BuildCrates(Group,Unit,Engineering,MultiDrop)
 self:T(self.lid.." _BuildCrates")
 if self:IsFixedWing(Unit)and self.enableFixedWing and not Engineering then
@@ -75275,6 +75623,9 @@ local crates,number=self:_FindCratesNearby(Group,Unit,finddist,true,true)
 local buildables={}
 local foundbuilds=false
 local canbuild=false
+if not self:CanBuildCrates(Group,Unit,crates,number,Engineering,MultiDrop)then
+return self
+end
 if number>0 then
 for _,_crate in pairs(crates)do
 local Crate=_crate
@@ -75673,6 +76024,18 @@ count=1
 elseif count>capacitySets then
 count=capacitySets
 end
+end
+local inzone=self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+if not inzone then
+local ship=nil
+local width=20
+local distance=nil
+local zone=nil
+inzone,ship,zone,distance,width=self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
+end
+if not inzone then
+self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
+return self
 end
 local total=needed*count
 local ok=self:_GetCrates(Group,Unit,cargoObj,total,false,false,true,true)
@@ -78613,13 +78976,37 @@ return self
 end
 function CTLD:onbeforeCratesDropped(From,Event,To,Group,Unit,Cargotable)
 self:T({From,Event,To})
+if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
+local playername=Unit:GetPlayerName()
+for _,_cargo in pairs(Cargotable)do
+local Vehicle=_cargo.Positionable
+if Vehicle then
+local dropcoord=Vehicle:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropvec2=dropcoord:GetVec2()
+self.PlayerTaskQueue:ForEach(
+function(Task)
+local task=Task
+local subtype=task:GetSubType()
+if Event==subtype and not task:IsDone()then
+local targetzone=task.Target:GetObject()
+if targetzone and targetzone.ClassName and string.match(targetzone.ClassName,"ZONE")and targetzone:IsVec2InZone(dropvec2)then
+if task.Clients:HasUniqueID(playername)then
+task:__Success(-1)
+end
+end
+end
+end
+)
+end
+end
+end
 return self
 end
-function CTLD:onaftergetcrates(From,Event,To,Group,Unit,Cargotable)
+function CTLD:OnAfterGetCrates(From,Event,To,Group,Unit,Cargotable)
 self:T({From,Event,To})
 return self
 end
-function CTLD:onafterremovecratesnearby(From,Event,To,Group,Unit,Cargotable)
+function CTLD:OnAfterRemoveCratesNearby(From,Event,To,Group,Unit,Cargotable)
 self:T({From,Event,To})
 return self
 end
@@ -79424,7 +79811,7 @@ CSAR.AircraftType["MH-60R"]=10
 CSAR.AircraftType["OH-6A"]=2
 CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
-CSAR.version="1.0.34"
+CSAR.version="1.0.35"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -79687,6 +80074,9 @@ elseif _unitName then
 BeaconName=_unitName..math.random(1,10000)
 else
 BeaconName="Ghost-1-1"..math.random(1,10000)
+end
+if _playerName==nil or _playerName==""then
+_playerName="AI MIA"
 end
 if(_freq and _freq~=0)then
 self:_AddBeaconToGroup(_spawnedGroup,_freq,BeaconName)
@@ -79958,7 +80348,7 @@ local _coalition=coalition.getCountryCoalition(_country)
 self:T("Country = ".._country.." Coalition = ".._coalition)
 if _coalition==self.coalition then
 local _freq=self:_GenerateADFFrequency()
-self:I({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
+self:T({coalition=_coalition,country=_country,coord=_LandingPos,name=_unitname,player=_event.IniPlayerName,freq=_freq})
 self:_AddCsar(_coalition,_country,_LandingPos,nil,_unitname,_event.IniPlayerName,_freq,self.suppressmessages,"none")
 Unit.destroy(_event.initiator)
 end
@@ -80655,16 +81045,15 @@ local _helicoord=_heli:GetCoordinate()
 local MashName=nil
 local Coordinate=nil
 if self.allowFARPRescue then
-local position=_heli:GetCoordinate()
-local afb,distance=position:GetClosestAirbase(nil,self.coalition)
+local afb,distance=_helicoord:GetClosestAirbase(nil,self.coalition)
 _shortestDistance=distance
 MashName=(afb~=nil)and afb:GetName()or"Unknown"
 Coordinate=(afb~=nil)and afb:GetCoordinate()
 if afb then
-local afbzone=afb:GetZone()
+local afbzone=afb:GetMinimumBoundingCircleFromParkingSpots()
 if afbzone then
-if afbzone:IsCoordinateInZone(Coordinate)and distance>self.FARPRescueDistance then
-distance=100
+if afbzone:IsCoordinateInZone(_helicoord)and distance>self.FARPRescueDistance*1.1 then
+_shortestDistance=100
 end
 end
 end
@@ -80758,6 +81147,7 @@ self:T(self.lid.." _GetDistance")
 if _point1 and _point2 then
 local distance1=_point1:Get2DDistance(_point2)
 local distance2=_point1:DistanceFromPointVec2(_point2)
+MESSAGE:New(string.format("_GetDistance: d1 = %dm | d2 = %dm",distance1,distance2)):ToAllIf(self.verbose>1):ToLogIf(self.verbose>1)
 if distance1 and type(distance1)=="number"then
 return distance1
 elseif distance2 and type(distance2)=="number"then
@@ -80829,7 +81219,7 @@ local name=_radioUnit:GetName()
 local Frequency=_freq
 local Sound="l10n/DEFAULT/"..self.radioSound
 local vec3=_radioUnit:GetVec3()or _radioUnit:GetPositionVec3()or{x=0,y=0,z=0}
-self:I(self.lid..string.format("Added Radio Beacon %d Hertz | Name %s | Position {%d,%d,%d}",Frequency,BeaconName,vec3.x,vec3.y,vec3.z))
+self:T(self.lid..string.format("Added Radio Beacon %d Hertz | Name %s | Position {%d,%d,%d}",Frequency,BeaconName,vec3.x,vec3.y,vec3.z))
 trigger.action.radioTransmission(Sound,vec3,0,true,Frequency,self.ADFRadioPwr or 500,BeaconName)
 end
 end
@@ -81139,6 +81529,7 @@ for _,_grp in pairs(pilots)do
 local DownedPilot=_grp
 if DownedPilot and DownedPilot.alive then
 local playerName=DownedPilot.player
+if playerName==nil or playerName==""then playerName="AI MIA"end
 local group=DownedPilot.group
 local coalition=group:GetCoalition()
 local country=group:GetCountry()
@@ -81148,7 +81539,7 @@ local freq=DownedPilot.frequency
 local location=group:GetVec3()
 local unitName=DownedPilot.originalUnit
 local txt=string.format("%s,%d,%d,%d,%s,%s,%s,%s,%s,%d\n",playerName,location.x,location.y,location.z,coalition,country,description,typeName,unitName,freq)
-self:I(self.lid.."Saving to CSAR File: "..txt)
+self:T(self.lid.."Saving to CSAR File: "..txt)
 data=data..txt
 end
 end
@@ -81219,7 +81610,7 @@ filename=path.."\\"..filename
 end
 local text=string.format("Loading CSAR state from file %s",filename)
 MESSAGE:New(text,10):ToAllIf(self.verbose>0)
-self:I(self.lid..text)
+self:T(self.lid..text)
 local file=assert(io.open(filename,"rb"))
 local loadeddata={}
 for line in file:lines()do
@@ -81293,6 +81684,23 @@ self:NewPayload(Squadron.templategroup,-1,AUFTRAG.Type.RELOCATECOHORT,0)
 Squadron:SetAirwing(self)
 if Squadron:IsStopped()then
 Squadron:Start()
+end
+local airbasename=self:GetAirbaseName()
+if airbasename then
+local group=GROUP:FindByName(Squadron.templategroup)
+local Nunits=1
+local units
+if group then units=group:GetUnits()end
+if units then Nunits=#units end
+local typename=Squadron.aircrafttype or"none"
+local NAssets=Squadron.Ngroups*Nunits
+local storage=STORAGE:New(airbasename)
+if storage and storage.warehouse and storage:IsLimitedAircraft()and typename~="none"then
+local NInStore=storage:GetItemAmount(typename)or 0
+if NAssets>NInStore then
+storage:AddItem(typename,NAssets)
+end
+end
 end
 return self
 end
@@ -86039,7 +86447,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.73",
+version="0.2.74",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -86939,6 +87347,33 @@ if self.AllowMarkers then
 MARKER:New(Zone:GetCoordinate(),"Rejection Zone"):ToCoalition(self.coalition)
 end
 end
+return self
+end
+function AWACS:SetCorridorZones(CorridorZones)
+self:T(self.lid.."SetCorridorZones")
+if CorridorZones and CorridorZones:IsInstanceOf("SET_ZONE")then
+self.corridorzones=CorridorZones
+self.usecorridors=true
+elseif CorridorZones and CorridorZones:IsInstanceOf("ZONE_BASE")then
+if not self.corridorzones then self.corridorzones=SET_ZONE:New()end
+self.corridorzones:AddZone(CorridorZones)
+self.usecorridors=true
+end
+return self
+end
+function AWACS:AddCorridorZone(CorridorZone)
+self:T(self.lid.."AddCorridorZone")
+self:SetCorridorZones(CorridorZone)
+return self
+end
+function AWACS:SetCorridorZoneFloorAndCeiling(Floor,Ceiling)
+self.corridorfloor=UTILS.FeetToMeters(Floor)
+self.corridorceiling=UTILS.FeetToMeters(Ceiling)
+return self
+end
+function AWACS:SetCorridorZoneFloorAndCeilingMeters(Floor,Ceiling)
+self.corridorfloor=Floor
+self.corridorceiling=Ceiling
 return self
 end
 function AWACS:DrawFEZ()
@@ -88576,6 +89011,12 @@ if self.NoHelos then
 intel:SetFilterCategory({Unit.Category.AIRPLANE})
 else
 intel:SetFilterCategory({Unit.Category.AIRPLANE,Unit.Category.HELICOPTER})
+end
+if self.usecorridors==true then
+intel:SetCorridorZones(self.corridorzones)
+if self.corridorceiling or self.corridorfloor then
+intel:SetCorridorLimits(self.corridorfloor,self.corridorceiling)
+end
 end
 local function NewCluster(Cluster)
 self:__NewCluster(5,Cluster)
@@ -90899,7 +91340,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.7.0"
+CHIEF.version="0.7.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -90915,6 +91356,8 @@ local self=BASE:Inherit(self,INTEL:New(AgentSet,Coalition,Alias))
 self:SetBorderZones()
 self:SetConflictZones()
 self:SetAttackZones()
+self:SetCorridorZones()
+self:SetRejectZones()
 self:SetThreatLevelRange()
 self.Defcon=CHIEF.DEFCON.GREEN
 self.strategy=CHIEF.Strategy.DEFENSIVE
@@ -98560,7 +99003,7 @@ NAVAL="Naval",
 AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
-INTEL.version="0.3.7"
+INTEL.version="0.3.10"
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -98613,6 +99056,7 @@ self:AddTransition("*","LostCluster","*")
 self:SetForgetTime()
 self:SetAcceptZones()
 self:SetRejectZones()
+self:SetCorridorZones()
 self:SetConflictZones()
 return self
 end
@@ -98660,6 +99104,30 @@ return self
 end
 function INTEL:RemoveConflictZone(ConflictZone)
 self.conflictzoneset:Remove(ConflictZone:GetName(),true)
+return self
+end
+function INTEL:SetCorridorZones(CorridorZoneSet)
+self.corridorzoneset=CorridorZoneSet or SET_ZONE:New()
+return self
+end
+function INTEL:AddCorridorZone(CorridorZone)
+self.corridorzoneset:AddZone(CorridorZone)
+return self
+end
+function INTEL:RemoveCorridorZone(CorridorZone)
+self.corridorzoneset:Remove(CorridorZone:GetName(),true)
+return self
+end
+function INTEL:SetCorridorLimits(Floor,Ceiling)
+self.corridorceiling=Ceiling or 10000
+self.corridorfloor=Floor or 1
+return self
+end
+function INTEL:SetCorridorLimitsFeet(Floor,Ceiling)
+local Ceiling=Ceiling or 25000
+local Floor=Floor or 15000
+self.corridorceiling=UTILS.FeetToMeters(Ceiling)
+self.corridorfloor=UTILS.FeetToMeters(Floor)
 return self
 end
 function INTEL:SetForgetTime(TimeInterval)
@@ -98877,6 +99345,33 @@ break
 end
 end
 if inzone and(not inconflictzone)then
+table.insert(remove,unitname)
+end
+end
+if self.corridorzoneset:Count()>0 then
+self:T("Corridorzone Check for unit "..unit:GetName())
+local inzone=false
+for _,_zone in pairs(self.corridorzoneset.Set)do
+local zone=_zone
+if unit:IsInZone(zone)then
+local corridorfloor=zone:GetProperty("CorridorFloor")or self.corridorfloor
+local corridorceiling=zone:GetProperty("CorridorCeiling")or self.corridorceiling
+local debugtext="Corridorzone Check for unit "..unit:GetName().."\n"
+debugtext=debugtext..string.format("IsAir %s | Alt %dft | Floor %dft | Ceil %dft",tostring(unit:IsAir()),tonumber(UTILS.MetersToFeet(unit:GetAltitude())),
+tonumber(UTILS.MetersToFeet(corridorfloor)),tonumber(UTILS.MetersToFeet(corridorceiling)))
+MESSAGE:New(debugtext,15,"INTEL"):ToAllIf(self.verbose>1):ToLogIf(self.verbose>1)
+if unit:IsAir()and(corridorfloor~=nil or corridorceiling~=nil)then
+local alt=unit:GetAltitude()
+if corridorfloor and alt>corridorfloor then inzone=true end
+if corridorceiling and(inzone==true or corridorfloor==nil)and alt<corridorceiling then inzone=true else inzone=false end
+if inzone==true then break end
+else
+inzone=true
+break
+end
+end
+end
+if inzone then
 table.insert(remove,unitname)
 end
 end
@@ -111476,7 +111971,7 @@ CanSmoke=true,
 ShowThreatDetails=true,
 PersistMe=false,
 }
-PLAYERTASK.version="0.1.30"
+PLAYERTASK.version="0.1.31"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -112199,6 +112694,7 @@ PLAYERTASKCONTROLLER.TasksPersistable={
 [AUFTRAG.Type.PRECISIONBOMBING]=true,
 [AUFTRAG.Type.BOMBING]=true,
 [AUFTRAG.Type.ARTY]=true,
+[AUFTRAG.Type.SEAD]=true,
 }
 PLAYERTASKCONTROLLER.SeadAttributes={
 SAM=GROUP.Attribute.GROUND_SAM,
@@ -112452,7 +112948,7 @@ self:AddTransition("*","PlayerJoinedTask","*")
 self:AddTransition("*","PlayerAbortedTask","*")
 self:AddTransition("*","Stop","Stopped")
 self:__Start(2)
-local starttime=math.random(5,10)
+local starttime=math.random(10,15)
 self:__Status(starttime)
 self:I(self.lid..self.version.." Started.")
 return self
@@ -113474,7 +113970,7 @@ if self.TasksPerPlayer:HasUniqueID(_playername)then
 local task=self.TasksPerPlayer:ReadByID(_playername)
 local Coordinate=task.Target:GetCoordinate()
 local CoordText=""
-if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A and task.Type~=AUFTRAG.Type.INTERCEPT then
 CoordText=Coordinate:ToStringA2G(_client,nil,self.ShowMagnetic)
 else
 CoordText=Coordinate:ToStringA2A(_client,nil,self.ShowMagnetic)
@@ -113519,7 +114015,7 @@ local CoordText=""
 local CoordTextLLDM=nil
 local ShowThreatInfo=task.ShowThreatDetails
 local LasingDrone=self:_FindLasingDroneForTaskID(task.PlayerTaskNr)
-if self.Type~=PLAYERTASKCONTROLLER.Type.A2A then
+if self.Type~=PLAYERTASKCONTROLLER.Type.A2A and task.Type~=AUFTRAG.Type.INTERCEPT then
 CoordText=Coordinate:ToStringA2G(Client,nil,self.ShowMagnetic)
 else
 CoordText=Coordinate:ToStringA2A(Client,nil,self.ShowMagnetic)
@@ -114128,6 +114624,49 @@ self:E(self.lid.."*****NO detection has been set up (yet)!")
 end
 return self
 end
+function PLAYERTASKCONTROLLER:AddCorridorZone(CorridorZone)
+self:T(self.lid.."AddCorridorZone")
+if self.Intel then
+self.Intel:AddCorridorZone(CorridorZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:AddCorridorZoneSet(CorridorZoneSet)
+self:T(self.lid.."AddCorridorZoneSet")
+if self.Intel then
+self.Intel.corridorzoneset:AddSet(CorridorZoneSet)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:RemoveCorridorZone(CorridorZone)
+self:T(self.lid.."RemoveCorridorZone")
+if self.Intel then
+self.Intel:RemoveCorridorZone(CorridorZone)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:SetCorridorZoneFloorAndCeiling(Floor,Ceiling)
+if self.Intel then
+self.Intel:SetCorridorLimitsFeet(Floor,Ceiling)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
+function PLAYERTASKCONTROLLER:SetCorridorZoneFloorAndCeilingMeters(Floor,Ceiling)
+if self.Intel then
+self.Intel:SetCorridorLimits(Floor,Ceiling)
+else
+self:E(self.lid.."*****NO detection has been set up (yet)!")
+end
+return self
+end
 function PLAYERTASKCONTROLLER:SetMenuName(Name)
 self:T(self.lid.."SetMenuName: "..Name)
 self.MenuName=Name
@@ -114372,7 +114911,7 @@ self:HandleEvent(EVENTS.PlayerEnterAircraft,self._EventHandler)
 self:HandleEvent(EVENTS.UnitLost,self._EventHandler)
 self:SetEventPriority(5)
 if self.TaskPersistanceSwitch==true then
-self:_LoadTasksPersisted()
+self:ScheduleOnce(5,self._LoadTasksPersisted,self)
 end
 return self
 end
@@ -117235,7 +117774,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Air"},
 }
-EASYGCICAP.version="0.1.32"
+EASYGCICAP.version="0.1.33"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -117871,6 +118410,33 @@ self.ConflictZoneSet:AddZone(Zone)
 self.GoZoneSet:AddZone(Zone)
 return self
 end
+function EASYGCICAP:SetCorridorZones(CorridorZones)
+self:T(self.lid.."SetCorridorZones")
+if CorridorZones and CorridorZones:IsInstanceOf("SET_ZONE")then
+self.corridorzones=CorridorZones
+self.usecorridors=true
+elseif CorridorZones and CorridorZones:IsInstanceOf("ZONE_BASE")then
+if not self.corridorzones then self.corridorzones=SET_ZONE:New()end
+self.corridorzones:AddZone(CorridorZones)
+self.usecorridors=true
+end
+return self
+end
+function EASYGCICAP:AddCorridorZone(CorridorZone)
+self:T(self.lid.."AddCorridorZone")
+self:SetCorridorZones(CorridorZone)
+return self
+end
+function EASYGCICAP:SetCorridorZoneFloorAndCeiling(Floor,Ceiling)
+self.corridorfloor=UTILS.FeetToMeters(Floor)
+self.corridorceiling=UTILS.FeetToMeters(Ceiling)
+return self
+end
+function EASYGCICAP:SetCorridorZoneFloorAndCeilingMeters(Floor,Ceiling)
+self.corridorfloor=Floor
+self.corridorceiling=Ceiling
+return self
+end
 function EASYGCICAP:_TryAssignIntercept(ReadyFlightGroups,InterceptAuftrag,Group,WingSize)
 self:T("_TryAssignIntercept for size "..WingSize or 1)
 local assigned=false
@@ -118037,6 +118603,12 @@ BlueIntel:SetAcceptZones(self.GoZoneSet)
 BlueIntel:SetRejectZones(self.NoGoZoneSet)
 BlueIntel:SetConflictZones(self.ConflictZoneSet)
 BlueIntel:SetVerbosity(0)
+if self.usecorridors==true then
+BlueIntel:SetCorridorZones(self.corridorzones)
+if self.corridorfloor or self.corridorceiling then
+BlueIntel:SetCorridorLimitsFeet(self.corridorfloor,self.corridorceiling)
+end
+end
 BlueIntel:Start()
 if self.debug then
 BlueIntel.debug=true
@@ -118178,7 +118750,7 @@ ManagedTK={},
 ManagedEWR={},
 ManagedREC={},
 MaxAliveMissions=8,
-debug=true,
+debug=false,
 engagerange=50,
 repeatsonfailure=3,
 GoZoneSet=nil,
@@ -118197,7 +118769,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Ground"},
 }
-EASYA2G.version="0.0.2"
+EASYA2G.version="0.1.3"
 function EASYA2G:New(Alias,AirbaseName,Coalition,ScoutName)
 local self=BASE:Inherit(self,EASYGCICAP:New(Alias,AirbaseName,Coalition,ScoutName))
 self.alias=Alias or AirbaseName.." A2G Wing"
@@ -118515,6 +119087,12 @@ BlueIntel:SetAcceptZones(self.GoZoneSet)
 BlueIntel:SetRejectZones(self.NoGoZoneSet)
 BlueIntel:SetConflictZones(self.ConflictZoneSet)
 BlueIntel:SetVerbosity(0)
+if self.usecorridors==true then
+BlueIntel:SetCorridorZones(self.corridorzones)
+if self.corridorfloor or self.corridorceiling then
+BlueIntel:SetCorridorLimitsFeet(self.corridorfloor,self.corridorceiling)
+end
+end
 BlueIntel:Start()
 if self.debug then
 BlueIntel.debug=true
@@ -118592,7 +119170,6 @@ if FG then
 local name=FG:GetName()
 local engage=FG:IsEngaging()
 local hasmissiles=FG:CanAirToGround()
-self:T("Is Alert5? "..tostring(FG:GetMissionCurrent().type))
 local isalert5=(FG:GetMissionCurrent()~=nil and FG:GetMissionCurrent().type==AUFTRAG.Type.ALERT5)and true or false
 local ready=hasmissiles and FG:IsFuelGood()and(FG:IsAirborne()or isalert5)
 self:T(string.format("Flightgroup %s Engaging = %s Ready = %s (HasAmmo = %s HasFuel = %s Alert5 = %s)",tostring(name),tostring(engage),tostring(ready),tostring(hasmissiles),tostring(FG:IsFuelGood()),tostring(isalert5)))
