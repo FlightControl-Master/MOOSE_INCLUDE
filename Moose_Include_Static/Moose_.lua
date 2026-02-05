@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-01-28T14:42:20+01:00-e996b5fc16e7efbfd87a4de97e91daac04492508 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-05T12:21:31+01:00-63ba2580857a083badd2d9ed24722219a3f2d4aa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -31178,8 +31178,7 @@ elseif Attributes["Infantry"]or Attributes["EWR"]then
 ThreatLevel=1
 end
 ThreatText=ThreatLevels[ThreatLevel+1]
-end
-if self:IsAir()then
+elseif self:IsAir()then
 local ThreatLevels={
 [1]="Unarmed",
 [2]="Tanker",
@@ -31219,8 +31218,7 @@ elseif Attributes["Tankers"]then
 ThreatLevel=1
 end
 ThreatText=ThreatLevels[ThreatLevel+1]
-end
-if self:IsShip()then
+elseif self:IsShip()then
 local ThreatLevels={
 [1]="Unarmed ship",
 [2]="Light armed ships",
@@ -60618,7 +60616,7 @@ end
 function AUTOLASE:GetLosFromUnit(Unit)
 local lasedistance=self.LaseDistance
 local unitheight=Unit:GetHeight()
-local coord=Unit:GetCoordinate()
+local coord=Unit:GetCoord()
 local landheight=coord:GetLandHeight()
 local asl=unitheight-landheight
 if asl>100 then
@@ -60750,7 +60748,7 @@ locationstring=entry.coordinate:ToStringLLDMS(settings)
 elseif settings:IsA2G_LL_DDM()then
 locationstring=entry.coordinate:ToStringLLDDM(settings)
 elseif settings:IsA2G_BR()then
-local startcoordinate=Unit:GetCoordinate()or Group:GetCoordinate()
+local startcoordinate=Unit:GetCoord()or Group:GetCoord()
 locationstring=entry.coordinate:ToStringBR(startcoordinate,settings,false,self.RoundingPrecision)
 end
 end
@@ -60836,8 +60834,8 @@ else
 self.RecceUnits[name].cooldown=false
 end
 end
-local reccecoord=Recce:GetCoordinate()
-local unitcoord=Unit:GetCoordinate()
+local reccecoord=Recce:GetCoord()
+local unitcoord=Unit:GetCoord()
 local islos=reccecoord:IsLOS(unitcoord,2.5)
 local distance=math.floor(reccecoord:Get3DDistance(unitcoord))
 local lasedistance=self:GetLosFromUnit(Recce)
@@ -60879,8 +60877,8 @@ if hasstatics then
 self:T(self.lid.."Checking possibly visible STATICs for Recce "..unit:GetName())
 for _,_static in pairs(Statics)do
 local static=STATIC:Find(_static)
-if static and static:GetCoalition()~=self.coalition and static:GetCoordinate()then
-local IsLOS=position:IsLOS(static:GetCoordinate())
+if static and static:GetCoalition()~=self.coalition and static:GetCoord()then
+local IsLOS=position:IsLOS(static:GetCoord())
 if IsLOS then
 unit:KnowUnit(static,true,true)
 end
@@ -60917,7 +60915,7 @@ local reccename=contact.recce or"none"
 local threat=contact.threatlevel or 0
 local reccegrp=UNIT:FindByName(reccename)
 if reccegrp then
-local reccecoord=reccegrp:GetCoordinate()
+local reccecoord=reccegrp:GetCoord()
 local distance=math.floor(reccecoord:Get3DDistance(coord))
 local text=string.format("%s of %s | Distance %d km | Threatlevel %d",contact.attribute,contact.groupname,math.floor(distance/1000),contact.threatlevel)
 report:Add(text)
@@ -60950,7 +60948,6 @@ for _,_unit in pairs(units)do
 local unit=_unit
 if unit and unit:IsAlive()then
 local threat=unit:GetThreatLevel()
-local coord=unit:GetCoordinate()
 if threat>=self.minthreatlevel then
 local unitname=unit:GetName()
 if unit:HasAttribute("RADAR_BAND1_FOR_ARM")or unit:HasAttribute("RADAR_BAND2_FOR_ARM")or unit:HasAttribute("Optical Tracker")then
@@ -60998,16 +60995,16 @@ targets=targets+1
 local code=self:GetLaserCode(reccename)
 local spot=SPOT:New(recce)
 spot:LaseOn(unit,code,self.LaseDuration)
-local locationstring=unit:GetCoordinate():ToStringLLDDM()
+local locationstring=unit:GetCoord():ToStringLLDDM()
 if _SETTINGS:IsA2G_MGRS()then
 local precision=_SETTINGS:GetMGRS_Accuracy()
 local settings={}
 settings.MGRS_Accuracy=precision
-locationstring=unit:GetCoordinate():ToStringMGRS(settings)
+locationstring=unit:GetCoord():ToStringMGRS(settings)
 elseif _SETTINGS:IsA2G_LL_DMS()then
-locationstring=unit:GetCoordinate():ToStringLLDMS(_SETTINGS)
+locationstring=unit:GetCoord():ToStringLLDMS(_SETTINGS)
 elseif _SETTINGS:IsA2G_BR()then
-locationstring=unit:GetCoordinate():ToStringBULLS(self.coalition,_SETTINGS)
+locationstring=unit:GetCoord():ToStringBULLS(self.coalition,_SETTINGS)
 end
 local laserspot={
 laserspot=spot,
@@ -61019,7 +61016,7 @@ timestamp=timer.getAbsTime(),
 unitname=unitname,
 reccename=reccename,
 unittype=unit:GetTypeName(),
-coordinate=unit:GetCoordinate(),
+coordinate=unit:GetCoord(),
 }
 if self.smoketargets then
 local coord=unit:GetCoordinate()
@@ -75681,7 +75678,7 @@ if ind>0 then
 local crate=ctable[1]
 local static=crate:GetPositionable()
 local crate_pos=static:GetCoordinate()
-local gpos=group:GetCoordinate()
+local gpos=group:GetCoord()
 local distance=self:_GetDistance(gpos,crate_pos)
 self:T(string.format("%s Distance to crate: %d",self.lid,distance))
 if distance>30 and distance~=-1 and self:IsStatus("Searching")then
@@ -75701,7 +75698,7 @@ self:T(self.lid.."Move")
 self:SetStatus("Moving")
 local group=self.Group
 local tgtpos=self.currwpt
-local gpos=group:GetCoordinate()
+local gpos=group:GetCoord()
 local distance=self:_GetDistance(gpos,tgtpos)
 self:T(string.format("%s Distance remaining: %d",self.lid,distance))
 if distance<=30 and distance~=-1 then
@@ -93813,7 +93810,7 @@ self:SetThreatLevelRange()
 self.Defcon=CHIEF.DEFCON.GREEN
 self.strategy=CHIEF.Strategy.DEFENSIVE
 self.TransportCategories={Group.Category.HELICOPTER}
-self.commander=COMMANDER:New(Coalition)
+self.commander=COMMANDER:New(Coalition,Alias)
 self:AddTransition("*","MissionAssign","*")
 self:AddTransition("*","MissionCancel","*")
 self:AddTransition("*","TransportCancel","*")
@@ -95026,6 +95023,9 @@ return true
 end
 end
 return false
+end
+function CHIEF:CanMission(Mission)
+return self.commander and self.commander:CanStartMission(Mission)
 end
 COHORT={
 ClassName="COHORT",
@@ -96561,6 +96561,43 @@ end
 end
 end
 return cohorts
+end
+function COMMANDER:CanMission(Mission)
+local commander=self
+local TargetVec2=Mission:GetTargetVec2()
+local MaxWeight=nil
+if Mission.NcarriersMin then
+local legions=commander.legions
+local cohorts=nil
+if Mission.transportLegions or Mission.transportCohorts then
+legions=Mission.transportLegions
+cohorts=Mission.transportCohorts
+end
+local Cohorts=LEGION._GetCohorts(legions,cohorts)
+local transportcohorts={}
+for _,_cohort in pairs(Cohorts)do
+local cohort=_cohort
+local can=LEGION._CohortCan(cohort,AUFTRAG.Type.OPSTRANSPORT,Mission.carrierCategories,Mission.carrierAttributes,Mission.carrierProperties,nil,TargetVec2)
+if can and(MaxWeight==nil or cohort.cargobayLimit>MaxWeight)then
+MaxWeight=cohort.cargobayLimit
+end
+end
+end
+local legions=commander.legions
+local cohorts=nil
+if Mission.specialLegions or Mission.specialCohorts then
+legions=Mission.specialLegions
+cohorts=Mission.specialCohorts
+end
+local Cohorts=LEGION._GetCohorts(legions,cohorts,Mission.operation,commander.opsqueue)
+for _,_cohort in pairs(Cohorts)do
+local cohort=_cohort
+local can=LEGION._CohortCan(cohort,Mission.type,nil,Mission.attributes,Mission.properties,{Mission.engageWeaponType},TargetVec2,Mission.engageRange,Mission.refuelSystem,nil,MaxWeight)
+if can then
+return true
+end
+end
+return false
 end
 function COMMANDER:RecruitAssetsForMission(Mission)
 self:T2(self.lid..string.format("Recruiting assets for mission \"%s\" [%s]",Mission:GetName(),Mission:GetType()))
@@ -101941,7 +101978,7 @@ item.attribute="Static"
 item.category=3
 item.categoryname=static:GetCategoryName()or"Unknown"
 item.threatlevel=static:GetThreatLevel()or 0
-item.position=static:GetCoordinate()
+item.position=static:GetCoord()
 item.velocity=static:GetVelocityVec3()
 item.speed=0
 item.recce=RecceName
@@ -101992,14 +102029,14 @@ local unit=UNIT:FindByName(name)
 if unit and unit:IsAlive()then
 local DetectionAccepted=true
 if self.RadarAcceptRange then
-local reccecoord=Unit:GetCoordinate()
-local coord=unit:GetCoordinate()
+local reccecoord=Unit:GetCoord()
+local coord=unit:GetCoord()
 local dist=math.floor(coord:Get2DDistance(reccecoord)/1000)
 if dist>self.RadarAcceptRangeKilometers then DetectionAccepted=false end
 end
 if self.RadarBlur then
-local reccecoord=Unit:GetCoordinate()
-local coord=unit:GetCoordinate()
+local reccecoord=Unit:GetCoord()
+local coord=unit:GetCoord()
 local dist=math.floor(coord:Get2DDistance(reccecoord)/1000)
 local AGL=unit:GetAltitude(true)
 local minheight=self.RadarBlurMinHeight or 250
