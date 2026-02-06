@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-06T16:28:11+01:00-1830b4c752d21f7d38b3a99423daa3904be184fb ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-06T17:28:42+01:00-d5b7a2e1687ee16743977a91ac0ccec5505ec91c ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -14374,6 +14374,38 @@ end
 
 do -- Event Creation
 
+  -- TODO Remove old Cargo event  
+  --- Creation of a New Cargo Event.
+  -- @param #EVENT self
+  -- @param AI.AI_Cargo#AI_CARGO Cargo The Cargo created.
+  function EVENT:CreateEventNewCargo( Cargo )
+    self:F( { Cargo } )
+
+    local Event = {
+      id = EVENTS.NewCargo,
+      time = timer.getTime(),
+      cargo = Cargo,
+      }
+
+    world.onEvent( Event )
+  end
+  
+  -- TODO Remove old Cargo event  
+  --- Creation of a Cargo Deletion Event.
+  -- @param #EVENT self
+  -- @param AI.AI_Cargo#AI_CARGO Cargo The Cargo created.
+  function EVENT:CreateEventDeleteCargo( Cargo )
+    self:F( { Cargo } )
+
+    local Event = {
+      id = EVENTS.DeleteCargo,
+      time = timer.getTime(),
+      cargo = Cargo,
+      }
+
+    world.onEvent( Event )
+  end
+  
   --- Creation of a New Zone Event.
   -- @param #EVENT self
   -- @param Core.Zone#ZONE_BASE Zone The Zone created.
