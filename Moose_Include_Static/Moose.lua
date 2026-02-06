@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-06T14:29:19+01:00-1781f5e7d679b63aa7dc7c3d03d75b1a1053cb3c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-06T16:28:11+01:00-1830b4c752d21f7d38b3a99423daa3904be184fb ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -54678,6 +54678,46 @@ function CONTROLLABLE:OptionPreferVerticalLanding()
 
     if self:IsAir() then
       Controller:setOption( AI.Option.Air.id.PREFER_VERTICAL, true )
+    end
+
+    return self
+  end
+
+  return nil
+end
+
+--- Air - Allow formation side swap
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:OptionAllowFormationSideSwap()
+  self:F2( { self.ControllableName } )
+
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = self:_GetController()
+
+    if self:IsAir() then
+      Controller:setOption( AI.Option.Air.id.ALLOW_FORMATION_SIDE_SWAP, true )
+    end
+
+    return self
+  end
+
+  return nil
+end
+
+--- Air - Allow formation takeoff, if enough space
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:OptionAIRunwayLineUp()
+  self:F2( { self.ControllableName } )
+
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = self:_GetController()
+
+    if self:IsAir() then
+      Controller:setOption( 37, true )
     end
 
     return self
@@ -159481,7 +159521,6 @@ end
 
 --- (Internal) Housekeeping - Cleanup crates when build
 -- @param #CTLD self
--- 
 -- @param #table Crates Table of #CTLD_CARGO objects near the unit.
 -- @param #CTLD.Buildable Build Table build object.
 -- @param #number Number Number of objects in Crates (found) to limit search.
