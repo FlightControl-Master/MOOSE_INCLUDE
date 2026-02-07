@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-07T09:09:19+01:00-d3ad70b019b70098dda79702ab8424c6f5b42a30 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-07T16:57:53+01:00-7ec43c991343783fb3532bb1d42ad51884d44124 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -53244,7 +53244,8 @@ function CONTROLLABLE:TaskFunction( FunctionString, ... )
     local ArgumentKey = '_' .. tostring( arg ):match( "table: (.*)" )
     self:SetState( self, ArgumentKey, arg )
     DCSScript[#DCSScript + 1] = "local Arguments = MissionControllable:GetState( MissionControllable, '" .. ArgumentKey .. "' ) "
-    DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable, unpack( Arguments ) )"
+    --DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable, unpack( Arguments ) )"
+    DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable, ((type(Arguments)=='table') and unpack(Arguments) or nil))"
   else
     DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable )"
   end
