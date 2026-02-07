@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-06T17:28:42+01:00-d5b7a2e1687ee16743977a91ac0ccec5505ec91c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-07T09:09:19+01:00-d3ad70b019b70098dda79702ab8424c6f5b42a30 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -43984,6 +43984,13 @@ local Pdestination
 if landing==RAT.wp.air then
 local vec2=destination:GetRandomVec2()
 Pdestination=COORDINATE:NewFromVec2(vec2)
+elseif destination:IsShip()then
+local _ship=UNIT:FindByName(destination:GetName())
+local _shipHeading=_ship:GetHeading()
+Pdestination=destination:GetCoordinate()
+local _transitTime=Pdeparture:Get2DDistance(Pdestination)/VxCruise
+Pdestination.x=Pdestination.x+(_ship:GetGroundSpeed()*math.cos(math.rad(_shipHeading))*_transitTime)
+Pdestination.z=Pdestination.z+(_ship:GetGroundSpeed()*math.sin(math.rad(_shipHeading))*_transitTime)
 else
 Pdestination=destination:GetCoordinate()
 end
