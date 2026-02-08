@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-07T16:57:53+01:00-7ec43c991343783fb3532bb1d42ad51884d44124 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-08T12:06:13+01:00-3b4b3854180da37b038b9fede14da2b2a831a199 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52250,7 +52250,7 @@ Assets={},
 WarehouseID=0,
 Warehouses={}
 }
-WAREHOUSE.version="1.0.2a"
+WAREHOUSE.version="2.0.0"
 function WAREHOUSE:New(warehouse,alias)
 local self=BASE:Inherit(self,FSM:New())
 if type(warehouse)=="string"then
@@ -52931,10 +52931,12 @@ local athomebase=self.airbase and self.airbase:GetName()==airbase
 local onground=not group:InAir()
 local inspawnzone=group:IsPartlyOrCompletelyInZone(self.spawnzone)
 local ishome=false
-if category==Group.Category.GROUND or category==Group.Category.HELICOPTER then
-ishome=inspawnzone and onground and notmoving
+if category==Group.Category.GROUND then
+ishome=inspawnzone and notmoving
 elseif category==Group.Category.AIRPLANE then
 ishome=athomebase and onground and notmoving
+elseif category==Group.Category.HELICOPTER then
+ishome=(athomebase or inspawnzone)and onground and notmoving
 end
 local text=string.format("Group %s: speed=%d km/h, onground=%s , airbase=%s, spawnzone=%s ==> ishome=%s",group:GetName(),speed,tostring(onground),airbase,tostring(inspawnzone),tostring(ishome))
 self:T(self.lid..text)
@@ -53439,76 +53441,25 @@ end
 Request.transportgroupset=TransportGroupSet
 return
 end
-local _boardradius=500
-if Request.transporttype==WAREHOUSE.TransportType.AIRPLANE then
-_boardradius=5000
-elseif Request.transporttype==WAREHOUSE.TransportType.HELICOPTER then
-elseif Request.transporttype==WAREHOUSE.TransportType.APC then
-elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER
-or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
-_boardradius=6000
-end
-local CargoGroups=SET_CARGO:New()
-for _,_group in pairs(CargoGroupSet:GetSetObjects())do
-local asset=self:FindAssetInDB(_group)
-local cargogroup=CARGO_GROUP:New(_group,_cargotype,_group:GetName(),_boardradius,asset.loadradius)
-cargogroup:SetWeight(asset.weight)
-CargoGroups:AddCargo(cargogroup)
-end
 local CargoTransport
 if Request.transporttype==WAREHOUSE.TransportType.AIRPLANE then
-local PickupAirbaseSet=SET_ZONE:New():AddZone(ZONE_AIRBASE:New(self.airbase:GetName()))
-local DeployAirbaseSet=SET_ZONE:New():AddZone(ZONE_AIRBASE:New(Request.airbase:GetName()))
-CargoTransport=AI_CARGO_DISPATCHER_AIRPLANE:New(TransportGroupSet,CargoGroups,PickupAirbaseSet,DeployAirbaseSet)
-CargoTransport:SetHomeZone(ZONE_AIRBASE:New(self.airbase:GetName()))
+CargoTransport=OPSTRANSPORT:New(CargoGroupSet,ZONE_AIRBASE:New(self.airbase:GetName()),ZONE_AIRBASE:New(Request.airbase:GetName()))
+CargoTransport:SetEmbarkZone(self.spawnzone)
+CargoTransport:SetDisembarkZone(Request.warehouse.spawnzone)
 elseif Request.transporttype==WAREHOUSE.TransportType.HELICOPTER then
-local PickupZoneSet=SET_ZONE:New():AddZone(self.spawnzone)
-local DeployZoneSet=SET_ZONE:New():AddZone(Request.warehouse.spawnzone)
-CargoTransport=AI_CARGO_DISPATCHER_HELICOPTER:New(TransportGroupSet,CargoGroups,PickupZoneSet,DeployZoneSet)
-CargoTransport:SetHomeZone(self.spawnzone)
+CargoTransport=OPSTRANSPORT:New(CargoGroupSet,self.spawnzone,Request.warehouse.spawnzone)
 elseif Request.transporttype==WAREHOUSE.TransportType.APC then
-local PickupZoneSet=SET_ZONE:New():AddZone(self.spawnzone)
-local DeployZoneSet=SET_ZONE:New():AddZone(Request.warehouse.spawnzone)
-CargoTransport=AI_CARGO_DISPATCHER_APC:New(TransportGroupSet,CargoGroups,PickupZoneSet,DeployZoneSet,0)
-CargoTransport:SetHomeZone(self.spawnzone)
+CargoTransport=OPSTRANSPORT:New(CargoGroupSet,self.spawnzone,Request.warehouse.spawnzone)
 elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER
 or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
-local PickupZoneSet=SET_ZONE:New():AddZone(self.portzone)
-PickupZoneSet:AddZone(self.harborzone)
-local DeployZoneSet=SET_ZONE:New():AddZone(Request.warehouse.harborzone)
+CargoTransport=OPSTRANSPORT:New(CargoGroupSet,self.portzone,Request.warehouse.portzone)
+CargoTransport:SetEmbarkZone(self.spawnzone)
+CargoTransport:SetDisembarkZone(Request.warehouse.spawnzone)
 local remotename=Request.warehouse.warehouse:GetName()
 local ShippingLane=self.shippinglanes[remotename][math.random(#self.shippinglanes[remotename])]
-CargoTransport=AI_CARGO_DISPATCHER_SHIP:New(TransportGroupSet,CargoGroups,PickupZoneSet,DeployZoneSet,ShippingLane)
-CargoTransport:SetHomeZone(self.portzone)
 else
 self:E(self.lid.."ERROR: Unknown transporttype!")
 end
-local pickupouter=200
-local pickupinner=0
-local deployouter=200
-local deployinner=0
-if Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER
-or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
-pickupouter=1000
-pickupinner=20
-deployouter=1000
-deployinner=0
-else
-pickupouter=200
-pickupinner=0
-if self.spawnzone.Radius~=nil then
-pickupouter=self.spawnzone.Radius
-pickupinner=20
-end
-deployouter=200
-deployinner=0
-if self.spawnzone.Radius~=nil then
-deployouter=Request.warehouse.spawnzone.Radius
-deployinner=20
-end
-end
-CargoTransport:SetPickupRadius(pickupouter,pickupinner)
-CargoTransport:SetDeployRadius(deployouter,deployinner)
 Request.carriercargo={}
 for _,carriergroup in pairs(TransportGroupSet:GetSetObjects())do
 local asset=self:FindAssetInDB(carriergroup)
@@ -53520,44 +53471,32 @@ carrierunit:SetCargoBayWeightLimit(cargobay)
 self:T2(self.lid..string.format("Cargo bay weight limit of carrier unit %s: %.1f kg.",carrierunit:GetName(),carrierunit:GetCargoBayFreeWeight()))
 end
 end
-function CargoTransport:OnAfterPickedUp(From,Event,To,Carrier,PickupZone)
-local warehouse=Carrier:GetState(Carrier,"WAREHOUSE")
-local text=string.format("Carrier group %s picked up at pickup zone %s.",Carrier:GetName(),PickupZone:GetName())
-warehouse:T(warehouse.lid..text)
-end
-function CargoTransport:OnAfterDeployed(From,Event,To,Carrier,DeployZone)
-local warehouse=Carrier:GetState(Carrier,"WAREHOUSE")
-end
-function CargoTransport:OnAfterHome(From,Event,To,Carrier,Coordinate,Speed,Height,HomeZone)
-local warehouse=Carrier:GetState(Carrier,"WAREHOUSE")
-local text=string.format("Carrier group %s going home to zone %s.",Carrier:GetName(),HomeZone:GetName())
-warehouse:T(warehouse.lid..text)
-end
-function CargoTransport:OnAfterLoaded(From,Event,To,Carrier,Cargo,CarrierUnit,PickupZone)
-local warehouse=Carrier:GetState(Carrier,"WAREHOUSE")
-local text=string.format("Carrier group %s loaded cargo %s into unit %s in pickup zone %s",Carrier:GetName(),Cargo:GetName(),CarrierUnit:GetName(),PickupZone:GetName())
-warehouse:T(warehouse.lid..text)
-local group=Cargo:GetObject()
+CargoTransport.warehouse=self
+function CargoTransport:OnAfterLoaded(From,Event,To,OpsGroupCargo,OpsGroupCarrier,CarrierElement)
+local warehouse=CargoTransport.warehouse
+local group=OpsGroupCargo:GetGroup()
 local request=warehouse:_GetRequestOfGroup(group,warehouse.pending)
-table.insert(request.carriercargo[CarrierUnit:GetName()],warehouse:_GetNameWithOut(Cargo:GetName()))
+table.insert(request.carriercargo[CarrierElement.name],warehouse:_GetNameWithOut(group:GetName()))
 end
-function CargoTransport:OnAfterUnloaded(From,Event,To,Carrier,Cargo,CarrierUnit,DeployZone)
-local warehouse=Carrier:GetState(Carrier,"WAREHOUSE")
-local group=Cargo:GetObject()
-local text=string.format("Cargo group %s was unloaded from carrier unit %s.",tostring(group:GetName()),tostring(CarrierUnit:GetName()))
+function CargoTransport:OnAfterUnloaded(From,Event,To,OpsGroupCargo,OpsGroupCarrier)
+local warehouse=CargoTransport.warehouse
+local group=OpsGroupCargo:GetGroup()
+local text=string.format("Cargo group %s was unloaded from carrier group %s.",tostring(group:GetName()),tostring(OpsGroupCarrier:GetName()))
 warehouse:T(warehouse.lid..text)
 warehouse:Arrived(group)
 end
-function CargoTransport:OnAfterBackHome(From,Event,To,Carrier)
-local carrier=Carrier
-local warehouse=carrier:GetState(carrier,"WAREHOUSE")
-carrier:SmokeWhite()
-local text=string.format("Carrier %s is back home at warehouse %s.",tostring(Carrier:GetName()),tostring(warehouse.warehouse:GetName()))
-MESSAGE:New(text,5):ToAllIf(warehouse.Debug)
-warehouse:I(warehouse.lid..text)
-warehouse:__Arrived(1,Carrier)
+for _,carriergroup in pairs(TransportGroupSet:GetSetObjects())do
+local opsgroup=nil
+if Request.transporttype==WAREHOUSE.TransportType.AIRPLANE or Request.transporttype==WAREHOUSE.TransportType.HELICOPTER then
+opsgroup=FLIGHTGROUP:New(carriergroup)
+elseif Request.transporttype==WAREHOUSE.TransportType.APC then
+opsgroup=ARMYGROUP:New(carriergroup)
+elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER
+or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
+opsgroup=NAVYGROUP:New(carriergroup)
 end
-CargoTransport:__Start(5)
+opsgroup:AddOpsTransport(CargoTransport)
+end
 end
 function WAREHOUSE:onafterUnloaded(From,Event,To,group)
 self:_DebugMessage(string.format("Cargo %s unloaded!",tostring(group:GetName())),5)
@@ -105600,7 +105539,7 @@ ASSIGNED="assigned to carrier",
 BOARDING="boarding",
 LOADED="loaded",
 }
-OPSGROUP.version="1.0.4"
+OPSGROUP.version="1.0.5"
 function OPSGROUP:New(group)
 local self=BASE:Inherit(self,FSM:New())
 if type(group)=="string"then
@@ -106683,6 +106622,12 @@ return self.outofMissiles
 end
 function OPSGROUP:IsOutOfTorpedos()
 return self.outofTorpedos
+end
+function OPSGROUP:IsOutOfA2GAmmo()
+if(self.outofMissilesAG and self.outofBombs and self.outofGuns)or self.outofAmmo then
+return true
+end
+return false
 end
 function OPSGROUP:IsLasing()
 return self.spot.On
@@ -107844,7 +107789,6 @@ self:Cruise()
 end
 if Task.description=="Task_Land_At"then
 self:T(self.lid.."Taske DONE Task_Land_At ==> Wait")
-self:Cruise()
 self:Wait(20,100)
 else
 self:T(self.lid.."Task Done but NO mission found ==> _CheckGroupDone in 1 sec")
@@ -109395,7 +109339,8 @@ gotcargo=true
 end
 end
 end
-if gotcargo and self.cargoTransport:_CheckRequiredCargos(self.cargoTZC,self)and not boarding then
+local required=self.cargoTransport:_CheckRequiredCargos(self.cargoTZC,self)
+if gotcargo and required and not boarding then
 self:T(self.lid.."Boarding/loading finished ==> Loaded")
 self.Tloading=nil
 self:LoadingDone()
@@ -110197,6 +110142,9 @@ self:TaskCancel(Task)
 else
 self:T(self.lid.."ERROR: No current task but landed at?!")
 end
+end
+if self:IsWaiting()then
+self:__Cruise(-10)
 end
 elseif self:IsArmygroup()then
 local path=self.cargoTransport:_GetPathTransport(self.category,self.cargoTZC)
@@ -112342,7 +112290,7 @@ OPSGROUP="OPSGROUP",
 STORAGE="STORAGE",
 }
 _OPSTRANSPORTID=0
-OPSTRANSPORT.version="0.8.0"
+OPSTRANSPORT.version="0.9.0"
 function OPSTRANSPORT:New(CargoGroups,PickupZone,DeployZone)
 local self=BASE:Inherit(self,FSM:New())
 _OPSTRANSPORTID=_OPSTRANSPORTID+1
@@ -113120,7 +113068,9 @@ else
 requiredCargos={}
 for _,_cargo in pairs(TransportZoneCombo.Cargos)do
 local cargo=_cargo
+if not cargo.delivered then
 table.insert(requiredCargos,cargo.opsgroup)
+end
 end
 end
 if requiredCargos==nil or#requiredCargos==0 then
