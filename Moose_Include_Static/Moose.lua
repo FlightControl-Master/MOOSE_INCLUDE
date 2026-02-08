@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-08T14:16:11+01:00-176d614d86b56fb08d4ad8417f9530d21746d9f0 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-08T15:07:09+01:00-1729c14acc07ec6b3c6e4d82ee8c7f042434ac5b ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -1850,6 +1850,8 @@ ENUMS.Storage.weapons.missiles.Igla_S = 'weapons.missiles.Igla_S'
 ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.{AKAN_NO_TRC}'
 ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.{AKAN}'
 ENUMS.Storage.weapons.shells.M882_9x19 = 'weapons.shells.9x19_m882'
+ENUMS.Storage.weapons.droptanks.fuel_tank_370gal = "weapons.droptanks.fuel_tank_370gal"
+ENUMS.Storage.weapons.droptanks.fuel_tank_300gal  = "weapons.droptanks.fuel_tank_300gal"
 
 -- UH-60L Mod
 ENUMS.Storage.weapons.gunmounts.UH60LGAU19 = 'weapons.gunmounts.UH-60L GAU-19'
