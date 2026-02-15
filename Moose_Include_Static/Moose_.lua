@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-10T15:33:24+01:00-fa163d2a42b85d920c6f6a8196c1600548eb751b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-15T13:33:27+01:00-982b5392ab0a55effd6898286ebdc55f1de5558c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -73443,6 +73443,7 @@ CTLD_CARGO={
 ClassName="CTLD_CARGO",
 ID=0,
 Name="none",
+DisplayName="none",
 Templates={},
 CargoType="none",
 HasBeenMoved=false,
@@ -73472,6 +73473,7 @@ local self=BASE:Inherit(self,BASE:New())
 self:T({ID,Name,Templates,Sorte,HasBeenMoved,LoadDirectly,CratesNeeded,Positionable,Dropped})
 self.ID=ID or math.random(100000,1000000)
 self.Name=Name or"none"
+self.DisplayName=Name or"none"
 self.Templates=Templates or{}
 self.CargoType=Sorte or"type"
 self.HasBeenMoved=HasBeenMoved or false
@@ -73548,6 +73550,17 @@ return self.PerCrateMass
 end
 function CTLD_CARGO:GetName()
 return self.Name
+end
+function CTLD_CARGO:SetDisplayName(DisplayName)
+if type(DisplayName)=="string"and DisplayName~=""then
+self.DisplayName=DisplayName
+else
+self.DisplayName=self.Name
+end
+return self
+end
+function CTLD_CARGO:GetDisplayName()
+return self.DisplayName or self.Name
 end
 function CTLD_CARGO:GetTemplates()
 return self.Templates
@@ -74076,6 +74089,30 @@ capabilities.length=20
 capabilities.cargoweightlimit=0
 end
 return capabilities
+end
+function CTLD:_GetCargoDisplayName(Cargo)
+if type(Cargo)=="table"then
+if Cargo.GetDisplayName then
+local dname=Cargo:GetDisplayName()
+if type(dname)=="string"and dname~=""then
+return dname
+end
+end
+if Cargo.GetName then
+local name=Cargo:GetName()
+if type(name)=="string"and name~=""then
+return name
+end
+end
+if type(Cargo.Name)=="string"and Cargo.Name~=""then
+return Cargo.Name
+end
+return"Unknown"
+end
+if type(Cargo)=="string"and Cargo~=""then
+return Cargo
+end
+return"Unknown"
 end
 function CTLD:AllowCATransport(OnOff,ClientSet)
 self.allowCATransport=OnOff
@@ -75002,7 +75039,7 @@ end
 local requestedSets=math.floor((requestNumber+perSet-1)/perSet)
 if requestedSets<1 then requestedSets=1 end
 if not drop and not pack then
-local cgoname=Cargo:GetName()
+local cgoname=self:_GetCargoDisplayName(Cargo)
 local instock=Cargo:GetStock()
 if type(instock)=="number"and tonumber(instock)<=0 and tonumber(instock)~=-1 then
 self:_SendMessage(string.format("Sorry, we ran out of %s",cgoname),10,false,Group)
@@ -75052,7 +75089,7 @@ if numbernearby>=canloadcratesno and not drop then
 self:_SendMessage("There are enough crates nearby already! Take care of those first!",10,false,Group)
 return false
 end
-if not self:CanGetCrates(Group,Unit,Cargo,requestNumber,drop,pack,quiet,suppressGetEvent)then
+if not drop and not self:CanGetCrates(Group,Unit,Cargo,requestNumber,drop,pack,quiet,suppressGetEvent)then
 return false
 end
 local IsHerc=self:IsFixedWing(Unit)
@@ -75062,6 +75099,7 @@ local cargotype=Cargo
 local number=requestNumber
 local cratesneeded=cargotype:GetCratesNeeded()
 local cratename=cargotype:GetName()
+local cratedisplayname=self:_GetCargoDisplayName(cargotype)
 local cratetemplate="Container"
 local cgotype=cargotype:GetType()
 local cgomass=cargotype:GetMass()
@@ -75166,6 +75204,7 @@ self.CargoCounter=self.CargoCounter+1
 local realcargo=nil
 if drop then
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,nil,subcat)
+realcargo:SetDisplayName(cargotype:GetDisplayName())
 local map=cargotype:GetStaticResourceMap()
 realcargo:SetStaticResourceMap(map)
 local CCat3,CType3,CShape3=cargotype:GetStaticTypeAndShape()
@@ -75176,6 +75215,7 @@ end
 table.insert(droppedcargo,realcargo)
 else
 realcargo=CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],false,cargotype.PerCrateMass,nil,subcat)
+realcargo:SetDisplayName(cargotype:GetDisplayName())
 local map=cargotype:GetStaticResourceMap()
 realcargo:SetStaticResourceMap(map)
 if cargotype.TypeNames then
@@ -75196,9 +75236,9 @@ if not(drop or pack)then
 Cargo:RemoveStock(requestedSets)
 self:_RefreshCrateQuantityMenus(Group,Unit,Cargo)
 end
-local text=string.format("%d crates for %s have been positioned near you!",number,cratename)
+local text=string.format("%d crates for %s have been positioned near you!",number,cratedisplayname)
 if drop then
-text=string.format("%d crates for %s have been dropped!",number,cratename)
+text=string.format("%d crates for %s have been dropped!",number,cratedisplayname)
 self:__CratesDropped(1,Group,Unit,droppedcargo)
 else
 if not quiet then
@@ -76862,7 +76902,7 @@ end
 end
 for _,cargoObj in pairs(self.Cargo_Troops)do
 if not cargoObj.DontShowInMenu then
-local menutext=cargoObj.Name
+local menutext=self:_GetCargoDisplayName(cargoObj)
 local parent=troopsmenu
 if useTroopSubcats and cargoObj.Subcategory and subcatmenus[cargoObj.Subcategory]then
 parent=subcatmenus[cargoObj.Subcategory]
@@ -76875,7 +76915,7 @@ end
 else
 for _,cargoObj in pairs(self.Cargo_Troops)do
 if not cargoObj.DontShowInMenu then
-local menutext=cargoObj.Name
+local menutext=self:_GetCargoDisplayName(cargoObj)
 local mSet=MENU_GROUP:New(_group,menutext,troopsmenu)
 _group.CTLD_TroopMenus[cargoObj.Name]=mSet
 self:_AddTroopQuantityMenus(_group,_unit,mSet,cargoObj)
@@ -76890,7 +76930,7 @@ local loadedData=self.Loaded_Cargo[uName]
 if loadedData and loadedData.Cargo then
 for i,cargoObj in ipairs(loadedData.Cargo)do
 if cargoObj and(cargoObj:GetType()==CTLD_CARGO.Enum.TROOPS or cargoObj:GetType()==CTLD_CARGO.Enum.ENGINEERS)and not cargoObj:WasDropped()then
-local name=cargoObj:GetName()or"Unknown"
+local name=self:_GetCargoDisplayName(cargoObj)
 local needed=cargoObj:GetCratesNeeded()or 1
 local cID=cargoObj:GetID()
 local line=string.format("Drop: %s",name,needed,cID)
@@ -76930,10 +76970,11 @@ end
 end
 local needed=cargoObj:GetCratesNeeded()or 1
 local txt
+local cargoLabel=self:_GetCargoDisplayName(cargoObj)
 if needed>1 then
-txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoLabel,cargoObj.PerCrateMass or 0)
 else
-txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
 end
 if cargoObj.Location then txt=txt.."[R]"end
 if self.showstockinmenuitems then
@@ -76974,10 +77015,11 @@ for _,cargoObj in pairs(self.Cargo_Crates)do
 if not cargoObj.DontShowInMenu then
 local needed=cargoObj:GetCratesNeeded()or 1
 local txt
+local cargoLabel=self:_GetCargoDisplayName(cargoObj)
 if needed>1 then
-txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoLabel,cargoObj.PerCrateMass or 0)
 else
-txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
 end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
@@ -76989,10 +77031,11 @@ for _,cargoObj in pairs(self.Cargo_Statics)do
 if(not cargoObj.DontShowInMenu)and(not cargoObj.UnitCanCarry or cargoObj:UnitCanCarry(_unit))then
 local needed=cargoObj:GetCratesNeeded()or 1
 local txt
+local cargoLabel=self:_GetCargoDisplayName(cargoObj)
 if needed>1 then
-txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoLabel,cargoObj.PerCrateMass or 0)
 else
-txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
 end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
@@ -77005,10 +77048,11 @@ for _,cargoObj in pairs(self.Cargo_Crates)do
 if not cargoObj.DontShowInMenu then
 local needed=cargoObj:GetCratesNeeded()or 1
 local txt
+local cargoLabel=self:_GetCargoDisplayName(cargoObj)
 if needed>1 then
-txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoLabel,cargoObj.PerCrateMass or 0)
 else
-txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
 end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
@@ -77020,10 +77064,11 @@ for _,cargoObj in pairs(self.Cargo_Statics)do
 if(not cargoObj.DontShowInMenu)and(not cargoObj.UnitCanCarry or cargoObj:UnitCanCarry(_unit))then
 local needed=cargoObj:GetCratesNeeded()or 1
 local txt
+local cargoLabel=self:_GetCargoDisplayName(cargoObj)
 if needed>1 then
-txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%d crate%s %s (%dkg)",needed,needed==1 and""or"s",cargoLabel,cargoObj.PerCrateMass or 0)
 else
-txt=string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+txt=string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
 end
 if cargoObj.Location then txt=txt.."[R]"end
 local stock=cargoObj:GetStock()
@@ -77063,12 +77108,13 @@ for _,cgo in pairs(loadedData.Cargo)do
 if cgo and(not cgo:WasDropped())then
 local cname=cgo:GetName()
 local cneeded=cgo:GetCratesNeeded()
-cargoByName[cname]=cargoByName[cname]or{count=0,needed=cneeded}
+local cdisplay=self:_GetCargoDisplayName(cgo)
+cargoByName[cname]=cargoByName[cname]or{count=0,needed=cneeded,display=cdisplay}
 cargoByName[cname].count=cargoByName[cname].count+1
 end
 end
 for name,info in pairs(cargoByName)do
-local line=string.format("Drop %s (%d/%d)",name,info.count,info.needed)
+local line=string.format("Drop %s (%d/%d)",info.display or name,info.count,info.needed)
 MENU_GROUP_COMMAND:New(_group,line,dropCratesMenu,self._UnloadSingleCrateSet,self,_group,_unit,name)
 end
 end
@@ -77102,7 +77148,7 @@ subcatmenus[cargoObj.SubCategory]=sub
 end
 parent=sub
 end
-local menutext=cargoObj.Name
+local menutext=self:_GetCargoDisplayName(cargoObj)
 if type(cargoObj.Stock)=="number"and cargoObj.Stock>=0 and self.showstockinmenuitems then
 menutext=menutext.."["..cargoObj.Stock.."]"
 end
@@ -77940,7 +77986,7 @@ self.nomovetozone_names[Name]=true
 if SubCategory and self.usesubcats~=true then self.usesubcats=true end
 return self
 end
-function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes)
+function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,DisplayName)
 self:T(self.lid.." AddStaticsCargo")
 self.CargoCounter=self.CargoCounter+1
 local type=CTLD_CARGO.Enum.STATIC
@@ -77954,12 +78000,32 @@ local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,ni
 if UnitTypes then
 cargo:AddUnitTypeName(UnitTypes)
 end
+cargo:SetDisplayName(DisplayName or Name)
 cargo:SetStaticResourceMap(ResourceMap)
 table.insert(self.Cargo_Statics,cargo)
 if SubCategory and self.usesubcats~=true then self.usesubcats=true end
 return cargo
 end
-function CTLD:GetStaticsCargoFromTemplate(Name,Mass)
+function CTLD:AddStaticsCargoFromType(Name,TypeName,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,Category,ShapeName,ResourceMap,DisplayName)
+self:T(self.lid.." AddStaticsCargoFromType")
+self.CargoCounter=self.CargoCounter+1
+local type=CTLD_CARGO.Enum.STATIC
+local template=TypeName or self.basetype or"container_cargo"
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
+if UnitTypes then
+cargo:AddUnitTypeName(UnitTypes)
+end
+cargo:SetStaticTypeAndShape(Category or"Cargos",template,ShapeName)
+cargo:SetDisplayName(DisplayName or Name)
+if ResourceMap then
+ResourceMap=UTILS.DeepCopy(ResourceMap)
+end
+cargo:SetStaticResourceMap(ResourceMap)
+table.insert(self.Cargo_Statics,cargo)
+if SubCategory and self.usesubcats~=true then self.usesubcats=true end
+return cargo
+end
+function CTLD:GetStaticsCargoFromTemplate(Name,Mass,DisplayName)
 self:T(self.lid.." GetStaticsCargoFromTemplate")
 self.CargoCounter=self.CargoCounter+1
 local type=CTLD_CARGO.Enum.STATIC
@@ -77970,6 +78036,21 @@ if unittemplate and unittemplate.resourcePayload then
 ResourceMap=UTILS.DeepCopy(unittemplate.resourcePayload)
 end
 local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+cargo:SetDisplayName(DisplayName or Name)
+cargo:SetStaticResourceMap(ResourceMap)
+return cargo
+end
+function CTLD:GetStaticsCargoFromType(Name,TypeName,Mass,Category,ShapeName,ResourceMap,DisplayName)
+self:T(self.lid.." GetStaticsCargoFromType")
+self.CargoCounter=self.CargoCounter+1
+local type=CTLD_CARGO.Enum.STATIC
+local template=TypeName or self.basetype or"container_cargo"
+local cargo=CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+cargo:SetStaticTypeAndShape(Category or"Cargos",template,ShapeName)
+cargo:SetDisplayName(DisplayName or Name)
+if ResourceMap then
+ResourceMap=UTILS.DeepCopy(ResourceMap)
+end
 cargo:SetStaticResourceMap(ResourceMap)
 return cargo
 end
