@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-15T13:33:27+01:00-982b5392ab0a55effd6898286ebdc55f1de5558c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-18T11:40:05+01:00-c31e8e81305a774d0b6379d08fdd922024316fc6 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -63581,7 +63581,7 @@ AIRBASE.Syria = {
 --- Airbases of the Mariana Islands map
 --
 -- * `AIRBASE.MarianaIslands.Andersen_AFB` Andersen AFB
--- * `AIRBASE.MarianaIslands.Antonio_B._Won_Pat_Intl` Antonio B. Won Pat Intl
+-- * `AIRBASE.MarianaIslands.Antonio_B_Won_Pat_Intl` Antonio B. Won Pat Intl
 -- * `AIRBASE.MarianaIslands.North_West_Field` North West Field
 -- * `AIRBASE.MarianaIslands.Olf_Orote` Olf Orote
 -- * `AIRBASE.MarianaIslands.Pagan_Airstrip` Pagan Airstrip
@@ -63592,7 +63592,7 @@ AIRBASE.Syria = {
 -- @field MarianaIslands
 AIRBASE.MarianaIslands = {
   ["Andersen_AFB"] = "Andersen AFB",
-  ["Antonio_B._Won_Pat_Intl"] = "Antonio B. Won Pat Intl",
+  ["Antonio_B_Won_Pat_Intl"] = "Antonio B. Won Pat Intl",
   ["North_West_Field"] = "North West Field",
   ["Olf_Orote"] = "Olf Orote",
   ["Pagan_Airstrip"] = "Pagan Airstrip",
