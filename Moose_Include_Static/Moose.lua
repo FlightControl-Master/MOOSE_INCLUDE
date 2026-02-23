@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-01-24T15:10:59+01:00-9322b4df99798c7580ef7aa430645019067e0114 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-23T18:11:28+01:00-12e71f44546f9535e8f82e4f729dda3a0dad510f ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -1850,6 +1850,276 @@ ENUMS.Storage.weapons.missiles.Igla_S = 'weapons.missiles.Igla_S'
 ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.{AKAN_NO_TRC}'
 ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.{AKAN}'
 ENUMS.Storage.weapons.shells.M882_9x19 = 'weapons.shells.9x19_m882'
+ENUMS.Storage.weapons.droptanks.fuel_tank_370gal = "weapons.droptanks.fuel_tank_370gal"
+ENUMS.Storage.weapons.droptanks.fuel_tank_300gal  = "weapons.droptanks.fuel_tank_300gal"
+
+-- NEW
+ENUMS.Storage.weapons.adapters.HB_F_4E_ORD_LAU_77 = 'weapons.adapters.HB_F-4E_ORD_LAU_77'
+ENUMS.Storage.weapons.adapters.hb_a_6e_lau7_adu299 = 'weapons.adapters.hb_a-6e_lau7_adu299'
+
+ENUMS.Storage.weapons.bombs.AH6_SMOKE_BLUE = 'weapons.bombs.AH6_SMOKE_BLUE'
+ENUMS.Storage.weapons.bombs.AH6_SMOKE_GREEN = 'weapons.bombs.AH6_SMOKE_GREEN'
+ENUMS.Storage.weapons.bombs.AH6_SMOKE_RED = 'weapons.bombs.AH6_SMOKE_RED'
+ENUMS.Storage.weapons.bombs.AH6_SMOKE_YELLOW = 'weapons.bombs.AH6_SMOKE_YELLOW'
+
+ENUMS.Storage.weapons.missiles.HB_AGM_78 = 'weapons.missiles.HB_AGM_78'
+ENUMS.Storage.weapons.missiles.V_1 = 'weapons.missiles.V-1'
+
+ENUMS.Storage.weapons.shells.Oerlikon_20mm_HE = 'weapons.shells.Oerlikon_20mm_HE'
+ENUMS.Storage.weapons.shells.RM_15cm_HE = 'weapons.shells.RM_15cm_HE'
+ENUMS.Storage.weapons.shells.HE_T_MkII_40mm = 'weapons.shells.HE_T_MkII_40mm'
+ENUMS.Storage.weapons.shells.APCBC = 'weapons.shells.APCBC'
+ENUMS.Storage.weapons.shells.Sprgr_43_L71 = 'weapons.shells.Sprgr_43_L71'
+ENUMS.Storage.weapons.shells.Mk_20_HE_shell = 'weapons.shells.Mk_20_HE_shell'
+ENUMS.Storage.weapons.shells.Pzgr_39_42 = 'weapons.shells.Pzgr_39/42'
+ENUMS.Storage.weapons.shells.M1_37mm_37AP_T = 'weapons.shells.M1_37mm_37AP-T'
+ENUMS.Storage.weapons.shells.Sprgr_38 = 'weapons.shells.Sprgr_38'
+ENUMS.Storage.weapons.shells.Sprgr_39 = 'weapons.shells.Sprgr_39'
+ENUMS.Storage.weapons.shells.Pzgr_39_43 = 'weapons.shells.Pzgr_39/43'
+ENUMS.Storage.weapons.shells.Pzgr_39_5cm = 'weapons.shells.Pzgr_39_5cm'
+ENUMS.Storage.weapons.shells.AP_2A20_115mm = 'weapons.shells.2A20_115mm_AP'
+ENUMS.Storage.weapons.shells.AP_T_MkI_40mm = 'weapons.shells.AP_T_MkI_40mm'
+ENUMS.Storage.weapons.shells.AP_37x263 = 'weapons.shells.37x263_AP'
+ENUMS.Storage.weapons.shells.AP_20x138B = 'weapons.shells.20x138B_AP'
+ENUMS.Storage.weapons.shells.Besa7_92x57T = 'weapons.shells.Besa7_92x57T'
+ENUMS.Storage.weapons.shells.Sprgr_34_L70 = 'weapons.shells.Sprgr_34_L70'
+ENUMS.Storage.weapons.shells.QF94_AA_HE = 'weapons.shells.QF94_AA_HE'
+ENUMS.Storage.weapons.shells.AH_6762x51mm_M62 = 'weapons.shells.AH-6 7.62x51mm M62'
+ENUMS.Storage.weapons.shells.AH_6762x51mm_M80 = 'weapons.shells.AH-6 7.62x51mm M80'
+ENUMS.Storage.weapons.shells.AH_6_762x51mm_M61 = 'weapons.shells.AH-6 7.62x51mm M61'
+ENUMS.Storage.weapons.shells.leFH18_105HE = 'weapons.shells.leFH18_105HE'
+ENUMS.Storage.weapons.shells.M63_37HE = 'weapons.shells.M63_37HE'
+ENUMS.Storage.weapons.shells.QF95_206R_fixed = 'weapons.shells.QF95_206R_fixed'
+ENUMS.Storage.weapons.shells.UBR_365_85AP = 'weapons.shells.UBR_365_85AP'
+ENUMS.Storage.weapons.shells.M101 = 'weapons.shells.M101'
+ENUMS.Storage.weapons.shells.HE_M1_Shell = 'weapons.shells.HE_M1_Shell'
+ENUMS.Storage.weapons.shells.UO_365K_85HE = 'weapons.shells.UO_365K_85HE'
+ENUMS.Storage.weapons.shells.Flak41_Sprgr_39 = 'weapons.shells.Flak41_Sprgr_39'
+ENUMS.Storage.weapons.shells.M1_37mm_HE_T = 'weapons.shells.M1_37mm_HE-T'
+ENUMS.Storage.weapons.shells.QF17_HE = 'weapons.shells.QF17_HE'
+ENUMS.Storage.weapons.shells.Pzgr_39 = 'weapons.shells.Pzgr_39'
+ENUMS.Storage.weapons.shells.Besa7_92x57 = 'weapons.shells.Besa7_92x57'
+ENUMS.Storage.weapons.shells.I_Gr_33 = 'weapons.shells.I_Gr_33'
+ENUMS.Storage.weapons.shells.M62_APC = 'weapons.shells.M62_APC'
+ENUMS.Storage.weapons.shells.Mk_12_HE_shell = 'weapons.shells.Mk_12_HE_shell'
+ENUMS.Storage.weapons.shells.M51_37AP = 'weapons.shells.M51_37AP'
+ENUMS.Storage.weapons.shells.M42A1_HE = 'weapons.shells.M42A1_HE'
+ENUMS.Storage.weapons.shells.HE_20x138B = 'weapons.shells.20x138B_HE'
+ENUMS.Storage.weapons.shells.HE_37x263 = 'weapons.shells.37x263_HE'
+ENUMS.Storage.weapons.shells.HE_2A20_115mm = 'weapons.shells.2A20_115mm_HE'
+
+ENUMS.Storage.weapons.gunmounts.B17_TailTurret_M2_L = 'weapons.gunmounts.B17_TailTurret_M2_L'
+ENUMS.Storage.weapons.gunmounts.AH6_M134L = 'weapons.gunmounts.{AH6_M134L}'
+ENUMS.Storage.weapons.gunmounts.B17_Left_Nose_M2 = 'weapons.gunmounts.B17_Left_Nose_M2'
+ENUMS.Storage.weapons.gunmounts.Ju88_Turret_Top_Right_MG_81 = 'weapons.gunmounts.Ju88_Turret_Top_Right_MG_81'
+ENUMS.Storage.weapons.gunmounts.Ju88_Turret_Bottom_MG_81_L = 'weapons.gunmounts.Ju88_Turret_Bottom_MG_81_L'
+ENUMS.Storage.weapons.gunmounts.B17_ChinTurret_M2_R = 'weapons.gunmounts.B17_ChinTurret_M2_R'
+ENUMS.Storage.weapons.gunmounts.B17_Waist_Right_M2 = 'weapons.gunmounts.B17_Waist_Right_M2'
+ENUMS.Storage.weapons.gunmounts.AH_6_Door_Gun = 'weapons.gunmounts.AH-6_Door_Gun'
+ENUMS.Storage.weapons.gunmounts.B17_BallTurret_M2_L = 'weapons.gunmounts.B17_BallTurret_M2_L'
+ENUMS.Storage.weapons.gunmounts.B17_BallTurret_M2_R = 'weapons.gunmounts.B17_BallTurret_M2_R'
+ENUMS.Storage.weapons.gunmounts.B17_TopTurret_M2_R = 'weapons.gunmounts.B17_TopTurret_M2_R'
+ENUMS.Storage.weapons.gunmounts.B17_Right_Nose_M2 = 'weapons.gunmounts.B17_Right_Nose_M2'
+ENUMS.Storage.weapons.gunmounts.Ju88_Turret_Bottom_MG_81_R = 'weapons.gunmounts.Ju88_Turret_Bottom_MG_81_R'
+ENUMS.Storage.weapons.gunmounts.B17_TopTurret_M2_L = 'weapons.gunmounts.B17_TopTurret_M2_L'
+ENUMS.Storage.weapons.gunmounts.B17_Waist_Left_M2 = 'weapons.gunmounts.B17_Waist_Left_M2'
+ENUMS.Storage.weapons.gunmounts.Ju88_Turret_ahead_MG_81 = 'weapons.gunmounts.Ju88_Turret_ahead_MG_81'
+ENUMS.Storage.weapons.gunmounts.AH6_M134R = 'weapons.gunmounts.{AH6_M134R}'
+ENUMS.Storage.weapons.gunmounts.Ju88_Turret_Top_Left_MG_81 = 'weapons.gunmounts.Ju88_Turret_Top_Left_MG_81'
+ENUMS.Storage.weapons.gunmounts.B17_TailTurret_M2_R = 'weapons.gunmounts.B17_TailTurret_M2_R'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.AKAN_NO_TRC'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.AKAN'
+ENUMS.Storage.weapons.gunmounts.B17_ChinTurret_M2_L = 'weapons.gunmounts.B17_ChinTurret_M2_L'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.AKAN'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.AKAN_NO_TRC'
+ENUMS.Storage.weapons.gunmounts.AH_6_Door = 'weapons.gunmounts.{AH-6_Door}'
+ENUMS.Storage.weapons.gunmounts.AH_6_FN_HMP400 = 'weapons.gunmounts.{AH-6_FN_HMP400}'
+ENUMS.Storage.weapons.gunmounts.AH_6_M134L = 'weapons.gunmounts.AH-6_M134L'
+ENUMS.Storage.weapons.gunmounts.AH_6_M134R = 'weapons.gunmounts.AH-6_M134R'
+ENUMS.Storage.weapons.gunmounts.AH_6_HMP400 = 'weapons.gunmounts.AH-6_HMP400'
+
+ENUMS.Storage.weapons.droptanks.PTB_800 = 'weapons.droptanks.PTB-800'
+ENUMS.Storage.weapons.droptanks.PTB_275 = 'weapons.droptanks.PTB-275'
+ENUMS.Storage.weapons.droptanks.HB_A6E_AERO1D_EMPTY = 'weapons.droptanks.HB_A6E_AERO1D_EMPTY'
+ENUMS.Storage.weapons.droptanks.Drop_tank_75gal = 'weapons.droptanks.Drop tank 75gal'
+ENUMS.Storage.weapons.droptanks.S_3_PTB = 'weapons.droptanks.S-3-PTB'
+ENUMS.Storage.weapons.droptanks.PTB_3000 = 'weapons.droptanks.PTB-3000'
+ENUMS.Storage.weapons.droptanks.HB_A6E_D704 = 'weapons.droptanks.HB_A6E_D704'
+ENUMS.Storage.weapons.droptanks.PTB_1150_29 = 'weapons.droptanks.PTB-1150-29'
+ENUMS.Storage.weapons.droptanks.f_18c_ptb = 'weapons.droptanks.f-18c-ptb'
+ENUMS.Storage.weapons.droptanks.F4_BAK_L = 'weapons.droptanks.F4-BAK-L'
+ENUMS.Storage.weapons.droptanks.HB_A6E_AERO1D = 'weapons.droptanks.HB_A6E_AERO1D'
+ENUMS.Storage.weapons.droptanks.IAFS_ComboPak_100 = 'weapons.droptanks.{IAFS_ComboPak_100}'
+ENUMS.Storage.weapons.droptanks.PTB_2000 = 'weapons.droptanks.PTB-2000'
+ENUMS.Storage.weapons.droptanks.M2000_PTB = 'weapons.droptanks.M2000-PTB'
+ENUMS.Storage.weapons.droptanks.PTB_150 = 'weapons.droptanks.PTB-150'
+ENUMS.Storage.weapons.droptanks.PTB_1150 = 'weapons.droptanks.PTB-1150'
+ENUMS.Storage.weapons.droptanks.fuel_tank_300gal = 'weapons.droptanks.fuel_tank_300gal'
+ENUMS.Storage.weapons.droptanks.MIG_25_PTB = 'weapons.droptanks.MIG-25-PTB'
+ENUMS.Storage.weapons.droptanks.PTB_1500 = 'weapons.droptanks.PTB-1500'
+ENUMS.Storage.weapons.droptanks.MIG_23_PTB = 'weapons.droptanks.MIG-23-PTB'
+ENUMS.Storage.weapons.droptanks.FT600 = 'weapons.droptanks.FT600'
+ENUMS.Storage.weapons.droptanks.F15_PTB = 'weapons.droptanks.F15-PTB'
+ENUMS.Storage.weapons.droptanks.ah6_auxtank = 'weapons.droptanks.ah6_auxtank'
+ENUMS.Storage.weapons.droptanks.T_PTB = 'weapons.droptanks.T-PTB'
+ENUMS.Storage.weapons.droptanks.fuel_tank_370gal = 'weapons.droptanks.fuel_tank_370gal'
+ENUMS.Storage.weapons.droptanks.F4_BAK_C = 'weapons.droptanks.F4-BAK-C'
+ENUMS.Storage.weapons.droptanks.F16_PTB_N2 = 'weapons.droptanks.F-16-PTB-N2'
+ENUMS.Storage.weapons.droptanks.PTB_800 = 'weapons.droptanks.PTB-800'
+ENUMS.Storage.weapons.droptanks.PTB_275 = 'weapons.droptanks.PTB-275'
+ENUMS.Storage.weapons.droptanks.T_PTB = 'weapons.droptanks.T-PTB'
+ENUMS.Storage.weapons.droptanks.F16_PTB_N2 = 'weapons.droptanks.F-16-PTB-N2'
+ENUMS.Storage.weapons.droptanks.F4_BAK_C = 'weapons.droptanks.F4-BAK-C'
+ENUMS.Storage.weapons.droptanks.PTB_1150_29 = 'weapons.droptanks.PTB-1150-29'
+ENUMS.Storage.weapons.droptanks.PTB_1150 = 'weapons.droptanks.PTB-1150'
+ENUMS.Storage.weapons.droptanks.fuel_tank_300gal = 'weapons.droptanks.fuel_tank_300gal'
+ENUMS.Storage.weapons.droptanks.MIG_25_PTB = 'weapons.droptanks.MIG-25-PTB'
+ENUMS.Storage.weapons.droptanks.PTB_1500 = 'weapons.droptanks.PTB-1500'
+ENUMS.Storage.weapons.droptanks.FT600 = 'weapons.droptanks.FT600'
+ENUMS.Storage.weapons.droptanks.Drop_tank_75gal = 'weapons.droptanks.Drop tank 75gal'
+ENUMS.Storage.weapons.droptanks.F15_PTB = 'weapons.droptanks.F15-PTB'
+ENUMS.Storage.weapons.droptanks.M2000_PTB = 'weapons.droptanks.M2000-PTB'
+ENUMS.Storage.weapons.droptanks.PTB_150 = 'weapons.droptanks.PTB-150'
+ENUMS.Storage.weapons.droptanks.F4_BAK_L = 'weapons.droptanks.F4-BAK-L'
+ENUMS.Storage.weapons.droptanks.PTB_3000 = 'weapons.droptanks.PTB-3000'
+ENUMS.Storage.weapons.droptanks.PTB_2000 = 'weapons.droptanks.PTB-2000'
+ENUMS.Storage.weapons.droptanks.S_3_PTB = 'weapons.droptanks.S-3-PTB'
+ENUMS.Storage.weapons.droptanks.fuel_tank_370gal = 'weapons.droptanks.fuel_tank_370gal'
+ENUMS.Storage.weapons.droptanks.MIG_23_PTB = 'weapons.droptanks.MIG-23-PTB'
+ENUMS.Storage.weapons.droptanks.f_18c_ptb = 'weapons.droptanks.f-18c-ptb'
+
+ENUMS.Storage.weapons.containers.FN_HMP400_100 = 'weapons.containers.{FN_HMP400_100}'
+ENUMS.Storage.weapons.containers.AN_M3 = 'weapons.containers.{AN-M3}'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L500 = 'weapons.containers.OH58D_M3P_L500'
+ENUMS.Storage.weapons.containers.GIAT_M621_HE = 'weapons.containers.{GIAT_M621_HE}'
+ENUMS.Storage.weapons.containers.KORD_12_7_MI24_L = 'weapons.containers.KORD_12_7_MI24_L'
+ENUMS.Storage.weapons.containers.CH47_STBD_M240H = 'weapons.containers.{CH47_STBD_M240H}'
+ENUMS.Storage.weapons.containers.CH47_AFT_M60D = 'weapons.containers.{CH47_AFT_M60D}'
+ENUMS.Storage.weapons.containers.UPK_23_250_MiG_21 = 'weapons.containers.{UPK-23-250 MiG-21}'
+ENUMS.Storage.weapons.containers.CH47_STBD_M134D = 'weapons.containers.{CH47_STBD_M134D}'
+ENUMS.Storage.weapons.containers.GAU_12_Equalizer = 'weapons.containers.{GAU_12_Equalizer}'
+ENUMS.Storage.weapons.containers.PKT_7_62 = 'weapons.containers.PKT_7_62'
+ENUMS.Storage.weapons.containers.CH47_AFT_M240H = 'weapons.containers.{CH47_AFT_M240H}'
+ENUMS.Storage.weapons.containers.GIAT_M621_SAPHEI = 'weapons.containers.{GIAT_M621_SAPHEI}'
+ENUMS.Storage.weapons.containers.ADEN_GUNPOD = 'weapons.containers.{ADEN_GUNPOD}'
+ENUMS.Storage.weapons.containers.GAU_12_Equalizer_HE = 'weapons.containers.{GAU_12_Equalizer_HE}'
+ENUMS.Storage.weapons.containers.M60_SIDE_L = 'weapons.containers.M60_SIDE_L'
+ENUMS.Storage.weapons.containers.KORD_12_7_MI24_R = 'weapons.containers.KORD_12_7_MI24_R'
+ENUMS.Storage.weapons.containers.GIAT_M621_APHE = 'weapons.containers.{GIAT_M621_APHE}'
+ENUMS.Storage.weapons.containers.MB339_ANM3_L = 'weapons.containers.{MB339_ANM3_L}'
+ENUMS.Storage.weapons.containers.FN_HMP400 = 'weapons.containers.{FN_HMP400}'
+ENUMS.Storage.weapons.containers.AH_6_Door = 'weapons.containers.{AH-6_Door}'
+ENUMS.Storage.weapons.containers.MB339_DEFA553_L = 'weapons.containers.{MB339_DEFA553_L}'
+ENUMS.Storage.weapons.containers.MB339_ANM3_R = 'weapons.containers.{MB339_ANM3_R}'
+ENUMS.Storage.weapons.containers.PK_3 = 'weapons.containers.{PK-3}'
+ENUMS.Storage.weapons.containers.GUV_VOG = 'weapons.containers.GUV_VOG'
+ENUMS.Storage.weapons.containers.SA342_M134_SIDE_R = 'weapons.containers.{SA342_M134_SIDE_R}'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L100 = 'weapons.containers.OH58D_M3P_L100'
+ENUMS.Storage.weapons.containers.MXU_648 = 'weapons.containers.MXU-648'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L400 = 'weapons.containers.OH58D_M3P_L400'
+ENUMS.Storage.weapons.containers.FN_HMP400_200 = 'weapons.containers.{FN_HMP400_200}'
+ENUMS.Storage.weapons.containers.GIAT_M621_HE = 'weapons.containers.{GIAT_M621_HE}'
+ENUMS.Storage.weapons.containers.M134_L = 'weapons.containers.M134_L'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L200 = 'weapons.containers.OH58D_M3P_L200'
+ENUMS.Storage.weapons.containers.GIAT_M621_AP = 'weapons.containers.{GIAT_M621_AP}'
+ENUMS.Storage.weapons.containers.CH47_STBD_M134D = 'weapons.containers.{CH47_STBD_M134D}'
+ENUMS.Storage.weapons.containers.PKT_7_62 = 'weapons.containers.PKT_7_62'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L300 = 'weapons.containers.OH58D_M3P_L300'
+ENUMS.Storage.weapons.containers.GIAT_M621_SAPHEI = 'weapons.containers.{GIAT_M621_SAPHEI}'
+ENUMS.Storage.weapons.containers.M60_SIDE_L = 'weapons.containers.M60_SIDE_L'
+ENUMS.Storage.weapons.containers.CH47_PORT_M134D = 'weapons.containers.{CH47_PORT_M134D}'
+ENUMS.Storage.weapons.containers.CH47_PORT_M60D = 'weapons.containers.{CH47_PORT_M60D}'
+ENUMS.Storage.weapons.containers.ADEN_GUNPOD = 'weapons.containers.{ADEN_GUNPOD}'
+ENUMS.Storage.weapons.containers.C_101_DEFA553 = 'weapons.containers.{C-101-DEFA553}'
+ENUMS.Storage.weapons.containers.MB339_ANM3_R = 'weapons.containers.{MB339_ANM3_R}'
+ENUMS.Storage.weapons.containers.CH47_AFT_M60D = 'weapons.containers.{CH47_AFT_M60D}'
+ENUMS.Storage.weapons.containers.KORD_12_7 = 'weapons.containers.KORD_12_7'
+ENUMS.Storage.weapons.containers.GIAT_M621_HEAP = 'weapons.containers.{GIAT_M621_HEAP}'
+ENUMS.Storage.weapons.containers.CH47_AFT_M3M = 'weapons.containers.{CH47_AFT_M3M}'
+ENUMS.Storage.weapons.containers.GUV_YakB_GSHP = 'weapons.containers.GUV_YakB_GSHP'
+ENUMS.Storage.weapons.containers.R_73U = 'weapons.containers.R-73U'
+ENUMS.Storage.weapons.containers.GUV_VOG = 'weapons.containers.GUV_VOG'
+ENUMS.Storage.weapons.containers.KORD_12_7_MI24_L = 'weapons.containers.KORD_12_7_MI24_L'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L100 = 'weapons.containers.OH58D_M3P_L100'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L400 = 'weapons.containers.OH58D_M3P_L400'
+ENUMS.Storage.weapons.containers.CH47_STBD_M240H = 'weapons.containers.{CH47_STBD_M240H}'
+ENUMS.Storage.weapons.containers.CH47_PORT_M240H = 'weapons.containers.{CH47_PORT_M240H}'
+ENUMS.Storage.weapons.containers.CC420_GUN_POD = 'weapons.containers.{CC420_GUN_POD}'
+ENUMS.Storage.weapons.containers.FN_HMP400_100 = 'weapons.containers.{FN_HMP400_100}'
+ENUMS.Storage.weapons.containers.MB339_ANM3_L = 'weapons.containers.{MB339_ANM3_L}'
+ENUMS.Storage.weapons.containers.MB339_DEFA553_R = 'weapons.containers.{MB339_DEFA553_R}'
+ENUMS.Storage.weapons.containers.GAU_12_Equalizer_HE = 'weapons.containers.{GAU_12_Equalizer_HE}'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L500 = 'weapons.containers.OH58D_M3P_L500'
+ENUMS.Storage.weapons.containers.SUU_23_POD = 'weapons.containers.{SUU_23_POD}'
+ENUMS.Storage.weapons.containers.PK_3 = 'weapons.containers.{PK-3}'
+ENUMS.Storage.weapons.containers.AKAN = 'weapons.containers.{AKAN}'
+ENUMS.Storage.weapons.containers.CH47_STBD_M60D = 'weapons.containers.{CH47_STBD_M60D}'
+ENUMS.Storage.weapons.containers.SA342_M134_SIDE_R = 'weapons.containers.{SA342_M134_SIDE_R}'
+ENUMS.Storage.weapons.containers.M60_SIDE_R = 'weapons.containers.M60_SIDE_R'
+ENUMS.Storage.weapons.containers.GAU_12_Equalizer_AP = 'weapons.containers.{GAU_12_Equalizer_AP}'
+ENUMS.Storage.weapons.containers.GAU_12_Equalizer = 'weapons.containers.{GAU_12_Equalizer}'
+ENUMS.Storage.weapons.containers.KORD_12_7_MI24_R = 'weapons.containers.KORD_12_7_MI24_R'
+ENUMS.Storage.weapons.containers.M134_SIDE_R = 'weapons.containers.M134_SIDE_R'
+ENUMS.Storage.weapons.containers.AKAN_NO_TRC = 'weapons.containers.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.containers.oh_58_brauning = 'weapons.containers.oh-58-brauning'
+ENUMS.Storage.weapons.containers.MXU_648 = 'weapons.containers.MXU-648'
+ENUMS.Storage.weapons.containers.M134_R = 'weapons.containers.M134_R'
+ENUMS.Storage.weapons.containers.AN_M3 = 'weapons.containers.{AN-M3}'
+ENUMS.Storage.weapons.containers.GIAT_M621_APHE = 'weapons.containers.{GIAT_M621_APHE}'
+ENUMS.Storage.weapons.containers.AIM_9S = 'weapons.containers.AIM-9S'
+ENUMS.Storage.weapons.containers.CH47_AFT_M240H = 'weapons.containers.{CH47_AFT_M240H}'
+ENUMS.Storage.weapons.containers.FN_HMP400 = 'weapons.containers.{FN_HMP400}'
+ENUMS.Storage.weapons.containers.M134_SIDE_L = 'weapons.containers.M134_SIDE_L'
+ENUMS.Storage.weapons.containers.MB339_DEFA553_L = 'weapons.containers.{MB339_DEFA553_L}'
+ENUMS.Storage.weapons.containers.MISC_1 = 'weapons.containers.{05544F1A-C39C-466b-BC37-5BD1D52E57BB}'
+ENUMS.Storage.weapons.containers.MISC_2 = 'weapons.containers.{E92CBFE5-C153-11d8-9897-000476191836}'
+ENUMS.Storage.weapons.containers.hvar_SmokeGenerator = 'weapons.containers.hvar_SmokeGenerator'
+ENUMS.Storage.weapons.containers.INV_SMOKE_RED = 'weapons.containers.{INV-SMOKE-RED}'
+ENUMS.Storage.weapons.containers.INV_SMOKE_YELLOW = 'weapons.containers.{INV-SMOKE-YELLOW}'
+ENUMS.Storage.weapons.containers.INV_SMOKE_BLUE = 'weapons.containers.{INV-SMOKE-BLUE}'
+ENUMS.Storage.weapons.containers.INV_SMOKE_GREEN = 'weapons.containers.{INV-SMOKE-GREEN}'
+ENUMS.Storage.weapons.containers.INV_SMOKE_WHITE = 'weapons.containers.{INV-SMOKE-WHITE}'
+ENUMS.Storage.weapons.containers.INV_SMOKE_ORANGE = 'weapons.containers.{INV-SMOKE-ORANGE}'
+ENUMS.Storage.weapons.containers.GAU_12_Equalizer_AP = 'weapons.containers.{GAU_12_Equalizer_AP}'
+ENUMS.Storage.weapons.containers.AH_6_Gunners = 'weapons.containers.{AH-6_Gunners}'
+ENUMS.Storage.weapons.containers.AH_6_FN_HMP400 = 'weapons.containers.{AH-6_FN_HMP400}'
+ENUMS.Storage.weapons.containers.R_73U = 'weapons.containers.R-73U'
+ENUMS.Storage.weapons.containers.M60_SIDE_R = 'weapons.containers.M60_SIDE_R'
+ENUMS.Storage.weapons.containers.CH47_AFT_M3M = 'weapons.containers.{CH47_AFT_M3M}'
+ENUMS.Storage.weapons.containers.GUV_YakB_GSHP = 'weapons.containers.GUV_YakB_GSHP'
+ENUMS.Storage.weapons.containers.RKL609_L = 'weapons.containers.{RKL609_L}'
+ENUMS.Storage.weapons.containers.CH47_PORT_M134D = 'weapons.containers.{CH47_PORT_M134D}'
+ENUMS.Storage.weapons.containers.CH47_PORT_M60D = 'weapons.containers.{CH47_PORT_M60D}'
+ENUMS.Storage.weapons.containers.RKL609_R = 'weapons.containers.{RKL609_R}'
+ENUMS.Storage.weapons.containers.C_101_DEFA553 = 'weapons.containers.{C-101-DEFA553}'
+ENUMS.Storage.weapons.containers.AH6_M134L = 'weapons.containers.{AH6_M134L}'
+ENUMS.Storage.weapons.containers.KORD_12_7 = 'weapons.containers.KORD_12_7'
+ENUMS.Storage.weapons.containers.C130_M18_Sidearm = 'weapons.containers.{C130-M18-Sidearm}'
+ENUMS.Storage.weapons.containers.GIAT_M621_HEAP = 'weapons.containers.{GIAT_M621_HEAP}'
+ENUMS.Storage.weapons.containers.BRU_42_LS = 'weapons.containers.BRU-42_LS'
+ENUMS.Storage.weapons.containers.CH47_STBD_M60D = 'weapons.containers.{CH47_STBD_M60D}'
+ENUMS.Storage.weapons.containers.SUU_23_POD = 'weapons.containers.{SUU_23_POD}'
+ENUMS.Storage.weapons.containers.M134_SIDE_R = 'weapons.containers.M134_SIDE_R'
+ENUMS.Storage.weapons.containers.AKAN_NO_TRC = 'weapons.containers.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.containers.oh_58_brauning = 'weapons.containers.oh-58-brauning'
+ENUMS.Storage.weapons.containers.AH_6_DOORS = 'weapons.containers.{AH-6_DOORS}'
+ENUMS.Storage.weapons.containers.CC420_GUN_POD = 'weapons.containers.{CC420_GUN_POD}'
+ENUMS.Storage.weapons.containers.CH47_PORT_M240H = 'weapons.containers.{CH47_PORT_M240H}'
+ENUMS.Storage.weapons.containers.MB339_DEFA553_R = 'weapons.containers.{MB339_DEFA553_R}'
+ENUMS.Storage.weapons.containers.AIM_9S = 'weapons.containers.AIM-9S'
+ENUMS.Storage.weapons.containers.hvar_SmokeGenerator = 'weapons.containers.hvar_SmokeGenerator'
+ENUMS.Storage.weapons.containers.M134_L = 'weapons.containers.M134_L'
+ENUMS.Storage.weapons.containers.AKAN = 'weapons.containers.{AKAN}'
+ENUMS.Storage.weapons.containers.C130_Cargo_Bay_M4 = 'weapons.containers.{C130-Cargo-Bay-M4}'
+ENUMS.Storage.weapons.containers.M134_SIDE_L = 'weapons.containers.M134_SIDE_L'
+ENUMS.Storage.weapons.containers.FN_HMP400_200 = 'weapons.containers.{FN_HMP400_200}'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L200 = 'weapons.containers.OH58D_M3P_L200'
+ENUMS.Storage.weapons.containers.GIAT_M621_AP = 'weapons.containers.{GIAT_M621_AP}'
+ENUMS.Storage.weapons.containers.M134_R = 'weapons.containers.M134_R'
+ENUMS.Storage.weapons.containers.OH58D_M3P_L300 = 'weapons.containers.OH58D_M3P_L300'
+ENUMS.Storage.weapons.containers.AH6_M134R = 'weapons.containers.{AH6_M134R}'
+
+ENUMS.Storage.weapons.torpedoes.G7A_T1 = 'weapons.torpedoes.G7A_T1'
 
 -- UH-60L Mod
 ENUMS.Storage.weapons.gunmounts.UH60LGAU19 = 'weapons.gunmounts.UH-60L GAU-19'
@@ -1866,6 +2136,15 @@ ENUMS.Storage.weapons.gunmounts.UH60L_M60_GUNNER = 'weapons.gunmounts.{UH60L_M60
 ENUMS.Storage.weapons.gunmounts.UH60L_M2_GUNNER = 'weapons.gunmounts.{UH60L_M2_GUNNER}'
 ENUMS.Storage.weapons.gunmounts.UH60_M230_LEFT = 'weapons.gunmounts.{UH60_M230_LEFT}'
 ENUMS.Storage.weapons.gunmounts.UH60_M230_RIGHT = 'weapons.gunmounts.{UH60_M230_RIGHT}'
+ENUMS.Storage.weapons.containers.UH60_M134_RIGHT = 'weapons.containers.{UH60_M134_RIGHT}'
+ENUMS.Storage.weapons.containers.UH60_M134_LEFT = 'weapons.containers.{UH60_M134_LEFT}'
+ENUMS.Storage.weapons.containers.UH60_M230_LEFT = 'weapons.containers.{UH60_M230_LEFT}'
+ENUMS.Storage.weapons.containers.UH60L_M134_GUNNER = 'weapons.containers.{UH60L_M134_GUNNER}'
+ENUMS.Storage.weapons.containers.UH60_GAU19_LEFT = 'weapons.containers.{UH60_GAU19_LEFT}'
+ENUMS.Storage.weapons.containers.UH60L_M60_GUNNER = 'weapons.containers.{UH60L_M60_GUNNER}'
+ENUMS.Storage.weapons.containers.UH60_GAU19_RIGHT = 'weapons.containers.{UH60_GAU19_RIGHT}'
+ENUMS.Storage.weapons.containers.UH60_M230_RIGHT = 'weapons.containers.{UH60_M230_RIGHT}'
+ENUMS.Storage.weapons.containers.UH60L_M2_GUNNER = 'weapons.containers.{UH60L_M2_GUNNER}'
 
 ---
 -- @type ENUMS.FARPType
@@ -4844,16 +5123,27 @@ end
 -- @param #boolean Cinematic (Optional, needs Structured = true) If true, place a fire/smoke effect on the dead static position.
 -- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
 -- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #boolean Resurrection If true, dead units can be restored on load. Defaults to false.
+-- @param #number ResurrectPercentage Use this percentage of probability to resurrect a unit. [0..100], defaults to 25.
+-- @param #number Healmin If set, life points of a resurrected unit will be randomly restored to min this percentage. [0..100], defaults to 25.
+-- @param #number Healmax If set, life points of a resurrected unit will be randomly restored to max this percentage. [0..100], defaults to 75.
 -- @return #table Table of data objects (tables) containing groupname, coordinate and group object. Returns nil when file cannot be read.
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
-function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce,Structured,Cinematic,Effect,Density)
-
+function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce,Structured,Cinematic,Effect,Density,Resurrection,ResurrectPercentage,Healmin,Healmax)
+    
+  local healmin = Healmin or 25
+  local healmax = Healmax or 75
+  local resurrection = (Resurrection == true) and true or false  
+  local resurrectpercentage = ResurrectPercentage or 25
+  
   local fires = {}
 
+  ---
+  -- @param Core.Point#COORDINATE coord
   local function Smokers(name,coord,effect,density)
     local eff = math.random(8)
     if type(effect) == "number" then eff = effect end
-    coord:BigSmokeAndFire(eff,density,name)
+    coord:BigSmokeAndFire( eff, Density, 300, 1, name )
     table.insert(fires,name)
   end
 
@@ -4868,7 +5158,16 @@ function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce,Structured,Cinema
           local name = _unit:GetName()
           Smokers(name,coordinate,Effect,Density)
         end
-        _unit:Destroy(false)
+        -- TODO Resurrection logic
+        local resurectok = math.random(1,100)
+        BASE:E(string.format("Load Group | Resurrection | Resurrect %s | Thresh %d | Random %d",tostring(resurrection),resurrectpercentage,resurectok))
+        if resurrection == true and (resurectok < resurrectpercentage) then
+          local heallife = math.random(healmin,healmax)
+          BASE:E("Load Group | Resurrection | Life "..heallife)
+          _unit:SetLife(heallife)
+        else
+          _unit:Destroy(false)
+        end
         reduced = reduced + 1
         if reduced == anzahl then break end
       end
@@ -7422,7 +7721,7 @@ end
 function UTILS.CalculateInterceptBearing(A1, V1, A2, V2_speed)
     
     local function berechne_bearing(richtung)
-      local bearing = math.deg(math.atan2(richtung.x, richtung.y))
+      local bearing = math.deg(math.atan2(richtung.x, richtung.z))
       if bearing < 0 then
           bearing = bearing + 360
       end
@@ -13470,21 +13769,20 @@ EVENT = {
   ClassName = "EVENT",
   ClassID = 0,
   MissionEnd = false,
+  CreateMarkCoordinateOnEvent = false,
 }
 
-world.event.S_EVENT_NEW_CARGO = world.event.S_EVENT_MAX + 1000
-world.event.S_EVENT_DELETE_CARGO = world.event.S_EVENT_MAX + 1001
-world.event.S_EVENT_NEW_ZONE = world.event.S_EVENT_MAX + 1002
-world.event.S_EVENT_DELETE_ZONE = world.event.S_EVENT_MAX + 1003
-world.event.S_EVENT_NEW_ZONE_GOAL = world.event.S_EVENT_MAX + 1004
-world.event.S_EVENT_DELETE_ZONE_GOAL = world.event.S_EVENT_MAX + 1005
-world.event.S_EVENT_REMOVE_UNIT = world.event.S_EVENT_MAX + 1006
-world.event.S_EVENT_PLAYER_ENTER_AIRCRAFT = world.event.S_EVENT_MAX + 1007
+world.event.S_EVENT_NEW_ZONE = world.event.S_EVENT_MAX + 1000
+world.event.S_EVENT_DELETE_ZONE = world.event.S_EVENT_MAX + 1001
+world.event.S_EVENT_NEW_ZONE_GOAL = world.event.S_EVENT_MAX + 1002
+world.event.S_EVENT_DELETE_ZONE_GOAL = world.event.S_EVENT_MAX + 1003
+world.event.S_EVENT_REMOVE_UNIT = world.event.S_EVENT_MAX + 1004
+world.event.S_EVENT_PLAYER_ENTER_AIRCRAFT = world.event.S_EVENT_MAX + 1005
 -- dynamic cargo
-world.event.S_EVENT_NEW_DYNAMIC_CARGO = world.event.S_EVENT_MAX + 1008
-world.event.S_EVENT_DYNAMIC_CARGO_LOADED = world.event.S_EVENT_MAX + 1009
-world.event.S_EVENT_DYNAMIC_CARGO_UNLOADED = world.event.S_EVENT_MAX + 1010
-world.event.S_EVENT_DYNAMIC_CARGO_REMOVED = world.event.S_EVENT_MAX + 1011
+world.event.S_EVENT_NEW_DYNAMIC_CARGO = world.event.S_EVENT_MAX + 1006
+world.event.S_EVENT_DYNAMIC_CARGO_LOADED = world.event.S_EVENT_MAX + 1007
+world.event.S_EVENT_DYNAMIC_CARGO_UNLOADED = world.event.S_EVENT_MAX + 1008
+world.event.S_EVENT_DYNAMIC_CARGO_REMOVED = world.event.S_EVENT_MAX + 1009
 
 
 --- The different types of events supported by MOOSE.
@@ -13519,8 +13817,6 @@ EVENTS = {
   MarkChange =        world.event.S_EVENT_MARK_CHANGE,
   MarkRemoved =       world.event.S_EVENT_MARK_REMOVED,
   -- Moose Events
-  NewCargo =          world.event.S_EVENT_NEW_CARGO,
-  DeleteCargo =       world.event.S_EVENT_DELETE_CARGO,
   NewZone =           world.event.S_EVENT_NEW_ZONE,
   DeleteZone =        world.event.S_EVENT_DELETE_ZONE,
   NewZoneGoal =       world.event.S_EVENT_NEW_ZONE_GOAL,
@@ -13625,14 +13921,18 @@ EVENTS = {
 -- @field #string WeaponName Name of the weapon.
 -- @field DCS#Unit WeaponTgtDCSUnit Target DCS unit of the weapon.
 --
--- @field Cargo.Cargo#CARGO Cargo The cargo object.
--- @field #string CargoName The name of the cargo object.
---
 -- @field Core.Zone#ZONE Zone The zone object.
 -- @field #string ZoneName The name of the zone.
 -- 
 -- @field Wrapper.DynamicCargo#DYNAMICCARGO IniDynamicCargo The dynamic cargo object.
 -- @field #string IniDynamicCargoName The dynamic cargo unit name.
+-- 
+-- @field #number MarkCoalition Coalition of a marker (if any)
+-- @field DCS#Vec3 MarkVec3 Position of a marker
+-- @field #string MarkText Text content of a marker, if any
+-- @field #number MarkID ID of the marker, for deletion
+-- @field #number MarkGroupID Group ID of the group that created the marker
+-- @field Core.Point#COORDINATE Coordinate object of the marker, only filled if EVENT.CreateMarkCoordinateOnEvent is set to true (off by default)
 
 
 
@@ -13792,16 +14092,6 @@ local _EVENTMETA = {
      Side = "I",
      Event = "OnEventMarkRemoved",
      Text = "S_EVENT_MARK_REMOVED"
-   },
-   [EVENTS.NewCargo] = {
-     Order = 1,
-     Event = "OnEventNewCargo",
-     Text = "S_EVENT_NEW_CARGO"
-   },
-   [EVENTS.DeleteCargo] = {
-     Order = 1,
-     Event = "OnEventDeleteCargo",
-     Text = "S_EVENT_DELETE_CARGO"
    },
    [EVENTS.NewZone] = {
      Order = 1,
@@ -14617,7 +14907,6 @@ function EVENT:onEvent( Event )
             Event.IniDynamicCargoName = Event.IniUnitName
             Event.IniPlayerName = string.match(Event.IniUnitName,"^(.+)|%d%d:%d%d|PKG%d+")
           else
-            --Event.IniUnit = CARGO:FindByName( Event.IniDCSUnitName )
             Event.IniUnit = STATIC:FindByName( Event.IniDCSUnitName, false )
           end
           Event.IniCoalition = Event.IniDCSUnit:getCoalition()
@@ -14631,7 +14920,9 @@ function EVENT:onEvent( Event )
           Event.IniDCSUnit = Event.initiator
           Event.IniDCSUnitName = ( Event.IniDCSUnit and Event.IniDCSUnit.getName ) and Event.IniDCSUnit:getName() or "Scenery no name "..math.random(1,20000)
           Event.IniUnitName = Event.IniDCSUnitName
-          Event.IniUnit = SCENERY:Register( Event.IniDCSUnitName, Event.initiator )
+          local ID = (Event.IniDCSUnit and Event.IniDCSUnit.getID) and Event.IniDCSUnit:getID() or Event.IniDCSUnitName
+          Event.IniUnit = (_SCENERY ~= nil) and _SCENERY[ID] or nil
+          --Event.IniUnit = SCENERY:Register( Event.IniDCSUnitName, Event.initiator )
           Event.IniCategory =  (Event.IniDCSUnit and Event.IniDCSUnit.getDesc ) and Event.IniDCSUnit:getDesc().category
           Event.IniTypeName = (Event.initiator and Event.initiator.isExist          
           and Event.initiator:isExist() and Event.IniDCSUnit and Event.IniDCSUnit.getTypeName) and Event.IniDCSUnit:getTypeName() or "SCENERY"
@@ -14735,11 +15026,11 @@ function EVENT:onEvent( Event )
           Event.TgtDCSUnitName = Event.TgtDCSUnit.getName and Event.TgtDCSUnit:getName() or nil
           if Event.TgtDCSUnitName~=nil then
             Event.TgtUnitName = Event.TgtDCSUnitName
-            Event.TgtUnit = SCENERY:Register( Event.TgtDCSUnitName, Event.target )
+            local ID = (Event.TgtDCSUnit and Event.TgtDCSUnit.getID) and Event.TgtDCSUnit:getID() or Event.TgtDCSUnitName
+            --Event.TgtUnit = SCENERY:Register( Event.TgtDCSUnitName, Event.target )
+            Event.TgtUnit = (_SCENERY ~= nil) and _SCENERY[ID] or nil
             Event.TgtCategory = Event.TgtDCSUnit:getDesc().category
             Event.TgtTypeName = Event.TgtDCSUnit:getTypeName()
-            --self:I("Event Registered for Scenery Object ".. Event.TgtDCSUnitName)
-            --UTILS.PrintTableToLog(Event.TgtUnit)
           end
         end
       end
@@ -14778,19 +15069,15 @@ function EVENT:onEvent( Event )
       if Event.idx then
         Event.MarkID=Event.idx
         Event.MarkVec3=Event.pos
-        Event.MarkCoordinate=COORDINATE:NewFromVec3(Event.pos)
+        if self.CreateMarkCoordinateOnEvent == true then
+          Event.MarkCoordinate=COORDINATE:NewFromVec3(Event.pos)
+        end
         Event.MarkText=Event.text
         Event.MarkCoalition=Event.coalition
         Event.IniCoalition=Event.coalition
         Event.MarkGroupID = Event.groupID
       end
 
-      -- Cargo object.
-      if Event.cargo then
-        Event.Cargo = Event.cargo
-        Event.CargoName = Event.cargo.Name
-      end
-      
       -- Dynamic cargo Object
       if Event.dynamiccargo then
         Event.IniDynamicCargo = Event.dynamiccargo
@@ -14952,15 +15239,6 @@ function EVENT:onEvent( Event )
         end
       end
 
-      -- When cargo was deleted, it may probably be because of an S_EVENT_DEAD.
-      -- However, in the loading logic, an S_EVENT_DEAD is also generated after a Destroy() call.
-      -- And this is a problem because it will remove all entries from the SET_CARGOs.
-      -- To prevent this from happening, the Cargo object has a flag NoDestroy.
-      -- When true, the SET_CARGO won't Remove the Cargo object from the set.
-      -- But we need to switch that flag off after the event handlers have been called.
-      if Event.id == EVENTS.DeleteCargo then
-        Event.Cargo.NoDestroy = nil
-      end
     else
       self:T( { EventMeta.Text, Event } )
     end
@@ -21787,7 +22065,6 @@ end
 --  * AIRBASES
 --  * PLAYERSJOINED
 --  * PLAYERS
---  * CARGOS
 --  * STORAGES (DCS warehouses)
 --  * DYNAMICCARGO
 --
@@ -21814,7 +22091,6 @@ DATABASE = {
   PLAYERSJOINED = {},
   PLAYERUNITS = {},
   CLIENTS = {},
-  CARGOS = {},
   AIRBASES = {},
   COUNTRY_ID = {},
   COUNTRY_NAME = {},
@@ -21874,8 +22150,6 @@ function DATABASE:New()
   self:HandleEvent( EVENTS.RemoveUnit, self._EventOnDeadOrCrash )
   self:HandleEvent( EVENTS.UnitLost, self._EventOnDeadOrCrash )  -- DCS 2.7.1 for Aerial units no dead event ATM
   self:HandleEvent( EVENTS.Hit, self.AccountHits )
-  self:HandleEvent( EVENTS.NewCargo )
-  self:HandleEvent( EVENTS.DeleteCargo )
   self:HandleEvent( EVENTS.NewZone )
   self:HandleEvent( EVENTS.DeleteZone )
   --self:HandleEvent( EVENTS.PlayerEnterUnit, self._EventOnPlayerEnterUnit ) -- This is not working anymore!, handling this through the birth event.
@@ -22478,102 +22752,6 @@ do -- OpsZone
   end
 
 end -- OpsZone
-
-do -- cargo
-
-  --- Adds a Cargo based on the Cargo Name in the DATABASE.
-  -- @param #DATABASE self
-  -- @param #string CargoName The name of the airbase
-  function DATABASE:AddCargo( Cargo )
-
-    if not self.CARGOS[Cargo.Name] then
-      self.CARGOS[Cargo.Name] = Cargo
-    end
-  end
-
-
-  --- Deletes a Cargo from the DATABASE based on the Cargo Name.
-  -- @param #DATABASE self
-  -- @param #string CargoName The name of the airbase
-  function DATABASE:DeleteCargo( CargoName )
-
-    self.CARGOS[CargoName] = nil
-  end
-
-  --- Finds an CARGO based on the CargoName.
-  -- @param #DATABASE self
-  -- @param #string CargoName
-  -- @return Cargo.Cargo#CARGO The found CARGO.
-  function DATABASE:FindCargo( CargoName )
-
-    local CargoFound = self.CARGOS[CargoName]
-    return CargoFound
-  end
-
-  --- Checks if the Template name has a #CARGO tag.
-  -- If yes, the group is a cargo.
-  -- @param #DATABASE self
-  -- @param #string TemplateName
-  -- @return #boolean
-  function DATABASE:IsCargo( TemplateName )
-
-    TemplateName = env.getValueDictByKey( TemplateName )
-
-    local Cargo = TemplateName:match( "#(CARGO)" )
-
-    return Cargo and Cargo == "CARGO"
-  end
-
-  --- Private method that registers new Static Templates within the DATABASE Object.
-  -- @param #DATABASE self
-  -- @return #DATABASE self
-  function DATABASE:_RegisterCargos()
-
-    local Groups = UTILS.DeepCopy( self.GROUPS ) -- This is a very important statement. CARGO_GROUP:New creates a new _DATABASE.GROUP entry, which will confuse the loop. I searched 4 hours on this to find the bug!
-
-    for CargoGroupName, CargoGroup in pairs( Groups ) do
-      if self:IsCargo( CargoGroupName ) then
-        local CargoInfo = CargoGroupName:match("#CARGO(.*)")
-        local CargoParam = CargoInfo and CargoInfo:match( "%((.*)%)")
-        local CargoName1 = CargoGroupName:match("(.*)#CARGO%(.*%)")
-        local CargoName2 = CargoGroupName:match(".*#CARGO%(.*%)(.*)")
-        local CargoName = CargoName1 .. ( CargoName2 or "" )
-        local Type = CargoParam and CargoParam:match( "T=([%a%d ]+),?")
-        local Name = CargoParam and CargoParam:match( "N=([%a%d]+),?") or CargoName
-        local LoadRadius = CargoParam and tonumber( CargoParam:match( "RR=([%a%d]+),?") )
-        local NearRadius = CargoParam and tonumber( CargoParam:match( "NR=([%a%d]+),?") )
-
-        self:I({"Register CargoGroup:",Type=Type,Name=Name,LoadRadius=LoadRadius,NearRadius=NearRadius})
-        CARGO_GROUP:New( CargoGroup, Type, Name, LoadRadius, NearRadius )
-      end
-    end
-
-    for CargoStaticName, CargoStatic in pairs( self.STATICS ) do
-      if self:IsCargo( CargoStaticName ) then
-        local CargoInfo = CargoStaticName:match("#CARGO(.*)")
-        local CargoParam = CargoInfo and CargoInfo:match( "%((.*)%)")
-        local CargoName = CargoStaticName:match("(.*)#CARGO")
-        local Type = CargoParam and CargoParam:match( "T=([%a%d ]+),?")
-        local Category = CargoParam and CargoParam:match( "C=([%a%d ]+),?")
-        local Name = CargoParam and CargoParam:match( "N=([%a%d]+),?") or CargoName
-        local LoadRadius = CargoParam and tonumber( CargoParam:match( "RR=([%a%d]+),?") )
-        local NearRadius = CargoParam and tonumber( CargoParam:match( "NR=([%a%d]+),?") )
-
-        if Category == "SLING" then
-          self:I({"Register CargoSlingload:",Type=Type,Name=Name,LoadRadius=LoadRadius,NearRadius=NearRadius})
-          CARGO_SLINGLOAD:New( CargoStatic, Type, Name, LoadRadius, NearRadius )
-        else
-          if Category == "CRATE" then
-            self:I({"Register CargoCrate:",Type=Type,Name=Name,LoadRadius=LoadRadius,NearRadius=NearRadius})
-            CARGO_CRATE:New( CargoStatic, Type, Name, LoadRadius, NearRadius )
-          end
-        end
-      end
-    end
-
-  end
-
-end -- cargo
 
 --- Finds a CLIENT based on the ClientName.
 -- @param #DATABASE self
@@ -23783,19 +23961,6 @@ function DATABASE:ForEachClient( IteratorFunction, FinalizeFunction, ... )
   return self
 end
 
---- Iterate the DATABASE and call an iterator function for each CARGO, providing the CARGO object to the function and optional parameters.
--- @param #DATABASE self
--- @param #function IteratorFunction The function that will be called for each object in the database. The function needs to accept a CLIENT parameter.
--- @return #DATABASE self
-function DATABASE:ForEachCargo( IteratorFunction, FinalizeFunction, ... )
-  self:F2( arg )
-
-  self:ForEach( IteratorFunction, FinalizeFunction, arg, self.CARGOS )
-
-  return self
-end
-
-
 --- Handles the OnEventNewCargo event.
 -- @param #DATABASE self
 -- @param Core.Event#EVENTDATA EventData
@@ -24147,7 +24312,6 @@ end
 --   * @{#SET_STATIC}: Defines a collection of @{Wrapper.Static}s filtered by filter criteria.
 --   * @{#SET_CLIENT}: Defines a collection of @{Wrapper.Client}s filtered by filter criteria.
 --   * @{#SET_AIRBASE}: Defines a collection of @{Wrapper.Airbase}s filtered by filter criteria.
---   * @{#SET_CARGO}: Defines a collection of @{Cargo.Cargo}s filtered by filter criteria.
 --   * @{#SET_ZONE}: Defines a collection of @{Core.Zone}s filtered by filter criteria.
 --   * @{#SET_SCENERY}: Defines a collection of @{Wrapper.Scenery}s added via a filtered @{#SET_ZONE}.
 --   * @{#SET_DYNAMICCARGO}: Defines a collection of @{Wrapper.DynamicCargo}s filtered by filter criteria.
@@ -30200,14 +30364,6 @@ do -- SET_ZONE
     if EventData.Zone then
       local Zone = _DATABASE:FindZone(EventData.Zone.ZoneName)
       if Zone and Zone.ZoneName then
-
-        -- When cargo was deleted, it may probably be because of an S_EVENT_DEAD.
-        -- However, in the loading logic, an S_EVENT_DEAD is also generated after a Destroy() call.
-        -- And this is a problem because it will remove all entries from the SET_ZONEs.
-        -- To prevent this from happening, the Zone object has a flag NoDestroy.
-        -- When true, the SET_ZONE won't Remove the Zone object from the set.
-        -- This flag is switched off after the event handlers have been called in the EVENT class.
-        --self:F({ ZoneNoDestroy = Zone.NoDestroy })
         if Zone.NoDestroy then
         else
           self:Remove(Zone.ZoneName)
@@ -30722,14 +30878,6 @@ do -- SET_ZONE_GOAL
     if EventData.ZoneGoal then
       local Zone = _DATABASE:FindZone(EventData.ZoneGoal.ZoneName)
       if Zone and Zone.ZoneName then
-
-        -- When cargo was deleted, it may probably be because of an S_EVENT_DEAD.
-        -- However, in the loading logic, an S_EVENT_DEAD is also generated after a Destroy() call.
-        -- And this is a problem because it will remove all entries from the SET_ZONE_GOALs.
-        -- To prevent this from happening, the Zone object has a flag NoDestroy.
-        -- When true, the SET_ZONE_GOAL won't Remove the Zone object from the set.
-        -- This flag is switched off after the event handlers have been called in the EVENT class.
-        --self:F({ ZoneNoDestroy = Zone.NoDestroy })
         if Zone.NoDestroy then
         else
           self:Remove(Zone.ZoneName)
@@ -31118,14 +31266,6 @@ do -- SET_OPSZONE
     if EventData.ZoneGoal then
       local Zone = _DATABASE:FindZone(EventData.ZoneGoal.ZoneName)
       if Zone and Zone.ZoneName then
-
-        -- When cargo was deleted, it may probably be because of an S_EVENT_DEAD.
-        -- However, in the loading logic, an S_EVENT_DEAD is also generated after a Destroy() call.
-        -- And this is a problem because it will remove all entries from the SET_OPSZONEs.
-        -- To prevent this from happening, the Zone object has a flag NoDestroy.
-        -- When true, the SET_OPSZONE won't Remove the Zone object from the set.
-        -- This flag is switched off after the event handlers have been called in the EVENT class.
-        --self:F({ ZoneNoDestroy = Zone.NoDestroy })
         if Zone.NoDestroy then
         else
           self:Remove(Zone.ZoneName)
@@ -36554,25 +36694,6 @@ do -- COORDINATE
 
     local ModeA2A = nil
     
-    --[[
-    if Task then
-      if Task:IsInstanceOf( TASK_A2A ) then
-        ModeA2A = true
-      else
-        if Task:IsInstanceOf( TASK_A2G ) then
-          ModeA2A = false
-        else
-          if Task:IsInstanceOf( TASK_CARGO ) then
-            ModeA2A = false
-          end
-            if Task:IsInstanceOf( TASK_CAPTURE_ZONE ) then
-              ModeA2A = false
-            end
-        end
-      end
-    end
-    --]]
-
     if ModeA2A == nil then
       local IsAir = Controllable and ( Controllable:IsAirPlane() or Controllable:IsHelicopter() ) or false
       if IsAir  then
@@ -38348,6 +38469,16 @@ do -- FSM
       return self._handler( self, EventName, ... )
     end
   end
+  
+  --- Clear scheduled FSM event.
+  -- @param #FSM self
+  -- @param #string EventName Event name.
+  function FSM:_ClearFSMEvent( EventName )
+    if self._EventSchedules[EventName] then
+      self.CallScheduler:Remove( self._EventSchedules[EventName] )
+      self._EventSchedules[EventName]=nil
+    end  
+  end  
 
   --- Go sub.
   -- @param #FSM self
@@ -46580,6 +46711,1387 @@ end
 -- End ClientMenu
 --
 ----------------------------------------------------------------------------------------------------------------
+--- **CORE** - Vector algebra.
+--
+-- **Main Features:**
+--
+--    * Easy vector algebra function
+--    * Redefinition of `+`, `-`, `*`, `/`, `%` operators to be compatible with vectors
+--    * Interface to DCS API functions
+--    * Reduced confusion of DCS coordinate system
+--    * Better performance than related classes (COORDINATE, POINT_VEC)
+-- 
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [github](https://github.com/FlightControl-Master/MOOSE_MISSIONS/tree/develop/Core%20-%20Vector).
+-- 
+-- ===
+--
+-- ### Author: **funkyfranky**
+-- 
+-- ===
+-- @module Core.Vector
+-- @image CORE_Vector.png
+
+
+--- VECTOR class.
+-- @type VECTOR
+-- @field #string ClassName Name of the class.
+-- @field #number verbose Verbosity of output.
+-- @field #number x Component pointing North if > 0 and South if < 0.
+-- @field #number y Component pointing up if >0 and down if < 0. This describes the altitude above main sea level.
+-- @field #number z Component pointing East if > 0 and West if < 0.
+
+--- *Mathematics knows no races or geographic boundaries; for mathematics, the cultural world is one country.* --David Hilbert
+--
+-- ===
+--
+-- # The VECTOR Concept
+--
+-- The VECTOR class has a great concept!
+-- 
+-- https://github.com/automattf/vector.lua/blob/master/vector.lua
+-- 
+-- # The DCS Coordinate System
+-- 
+-- DCS has a rather unconventional way to define the coordinate system. The definition even depends whether you work with a 2D vector or a 3D vector.
+-- The good think is, that you usually do not need to worry about this unless you directly call the DCS API functions. Plus, this class tries to
+-- hide the differences between 2D and 3D conventions as good as possible with internal if-cases.
+-- 
+-- Still, it is important to unterstand the differences. So let us explain:
+-- 
+-- Usually, we draw a coordinate system in 2D and label the horizonal axis (pointing right) as the x-axis. The vertical axis (poining up on a piece of paper)
+-- 
+-- ## 3D
+-- 
+-- The x-axis points North. The z-axis points East. The y-axis points upwards and defines the altitue with respect to the mean sea level.
+-- 
+-- ## 2D
+-- 
+-- The x-axis points North (just like in the 3D) case. The y-axis points East.
+-- 
+-- # Constructors
+-- 
+-- There are different ways to create a new instance of a VECTOR. All methods start with `New`.
+-- 
+-- ## From Components
+-- 
+-- ## From 2D or 3D Vectors
+-- 
+-- ## From Polar Coordinates
+-- 
+-- ## From Spherical Coordinates
+-- 
+-- 
+-- # Operators
+-- 
+-- ## Addition [MATH] `+`
+-- 
+-- ## Subtraction [MATH] `-`
+-- 
+-- ## Multiplication [MATH] `*`
+-- 
+-- ## Devision [MATH] `/`
+-- 
+-- ## Modulo [MATH] `%`
+-- 
+-- 
+-- # DCS API Interface
+-- 
+-- This class offers easy and convenient ways to access all vector related DCS API functions.
+-- 
+-- ## Land and Surface
+-- 
+-- ## Atmosphere
+-- 
+-- ## Effects and Actions
+-- 
+-- ## Map Markings
+-- 
+-- ## Coordinates
+-- 
+-- # Inferface to other MOOSE Classes
+-- 
+-- Of course, this class is interfaced with other MOOSE classes in the sense that you can obtain and work with VECTOR instances from MOOSE objects, from which a position or direction
+-- vector can be derived.
+-- 
+-- ## GROUP
+-- 
+-- ## UNIT
+-- 
+-- ## STATIC
+-- 
+-- ## SCENERY
+-- 
+-- ## ZONE
+-- 
+-- # Examples
+-- 
+-- A new `VECTOR` object can be created with the @{#VECTOR.New} function.
+-- Here we create two vectors, a and b, and add them to create a new vector c. 
+-- 
+--     local a=VECTOR:New(1, 0)
+--     local b=VECTOR:New(0, 1)
+--     local c=a+b
+--     
+-- This is how it works.
+--
+-- @field #VECTOR
+VECTOR = {
+  ClassName       = "VECTOR",
+  verbose         =        0,
+}
+
+--- VECTOR class version.
+-- @field #string version
+VECTOR.version="0.1.0"
+
+--- VECTOR unique ID
+_VECTORID=0
+
+--- VECTOR private index.
+-- @field #VECTOR __index
+VECTOR.__index = VECTOR
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ToDo list
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- TODO: 3D rotation
+-- DONE: Markers
+-- TODO: Documentation
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Constructor
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Create a new VECTOR class instance from given cartesian coordinates `x`, `y` and `z`, where `z` is optional.
+-- **Note** that whether the `z` component is passed or nil has great impact on the interpretation of the `y` component.
+-- If `z` is not given (`nil`), then `y` is used as `z` (the coordinate pointing East) because we always constuct a 3D vector.
+-- If `z` is given (not `nil`), then `y` is used as coordinate pointing up (out of plane) as for all 3D DCS vectors.
+-- @param #VECTOR self
+-- @param #number x Component of vector along x-axis (pointing North in both 2D and 3D).
+-- @param #number y Component of vector along y-axis (pointing East in 2D and Up in 3D).
+-- @param #number z (Optional) Component of the z-axis (pointing East in 3D).
+-- @return #VECTOR self
+function VECTOR:New(x, y, z)
+
+  if z==nil then
+    -- z-component is not given ==> 2D ==> we take y as z and set y=0.
+    self=setmetatable({x=x or 0, y=0, z=y or 0}, VECTOR)
+  else
+    self=setmetatable({x=x or 0, y=y or 0, z=z or 0}, VECTOR)
+  end
+  
+  _VECTORID=_VECTORID+1
+  
+  self.uid=_VECTORID
+
+  return self
+end
+
+--- Create a new VECTOR class instance from given 2D or 3D vector object.
+-- @param #VECTOR self
+-- @param DCS#Vec3 Vec Vector object with `x`, `y` and optionally `z` components. Can be a DCS#Vec2, DCS#Vec3, `COORDINATE`, `VECTOR` object.
+-- @return #VECTOR self
+function VECTOR:NewFromVec(Vec)
+
+  -- The :New function takes care whether this is a 2D or 3D vector.
+  local vector=VECTOR:New(Vec.x, Vec.y, Vec.z)
+  
+  return vector
+end
+
+--- Create a new VECTOR class instance from polar coordinates (r, phi).
+-- @param #VECTOR self
+-- @param #number r Distance.
+-- @param #number phi Angle in Degrees. Note that 0° corresponds to North, 90° East etc.
+-- @return #VECTOR self
+function VECTOR:NewFromPolar(r, phi)
+
+  -- Convert deg to rad.
+  local Phi=math.rad(phi)
+
+  -- Polar coordinates. What we want in DCS is:
+  -- North: Phi=0   ==> x= 1, y= 0
+  -- East : Phi=90  ==> x= 0, y= 1
+  -- South: Phi=180 ==> x=-1, y= 0
+  -- West : Phi=270 ==> x= 0, y=-1
+  
+  -- sin(0)=0 sin(90)=1, sin(180)=0, sin(270)=-1 ==> y
+  -- cos(0)=1 cos(90)=0, cos(180)=-1, cos(270)=0 ==> x
+  
+  local x=r*math.cos(phi)
+  local y=r*math.sin(phi)
+  
+  -- Create new vector. As z is nil, the 2D character is taken care of.
+  local v=VECTOR:New(x, y)
+   
+  return self
+end
+
+--- Create a new VECTOR class instance from spherical coordinates (r, theta, phi).
+-- @param #VECTOR self
+-- @param #number r Distance in meters with r>=0.
+-- @param #number theta Polar angle in Degrees measured from a fixed polar axis or zenith direction. This angle is in [0°, 180°].
+-- @param #number phi Azimuthal angle in Degrees. This angle is in [0°, 360°).
+-- @return #VECTOR self
+function VECTOR:NewFromSpherical(r, theta, phi)
+
+  local sinPhi=math.sin(math.rad(phi))
+  local cosPhi=math.cos(math.rad(phi))
+  local sinTheta=math.sin(math.rad(theta))
+  local cosTheta=math.cos(math.rad(theta))
+
+  --TODO: Check x,y,z convention for DCS.
+  local x=r*sinTheta*cosPhi
+  local y=r*sinTheta*sinPhi
+  local z=r*cosTheta
+  
+  local v=VECTOR:New(x, y, z)
+   
+  return self
+end
+
+--- Get the directional vector that points from a given vector `a` to another given vector `b`.
+-- The vector is `c=-a+b=b-a`.
+-- @param #VECTOR self
+-- @param #VECTOR a Vector a. This can also be given as any table with x, y and z components (z optional).
+-- @param #VECTOR b Vector b. This can also be given as any table with x, y and z components (z optional).
+-- @return #VECTOR Directional vector from a to b.
+function VECTOR:NewDirectionalVector(a, b)
+
+  local x=b.x-a.x
+  local y
+  local z
+    
+  if a.z and b.z then
+    -- Both given vectors are 3D
+    y=b.y-a.y
+    z=b.z-a.z
+  elseif b.z then
+    -- a is 2D and b is 3D
+    y=b.y-0
+    z=b.z-a.y
+  elseif a.z then
+    -- a is 3D and b is 2D
+    y=0-a.y
+    z=b.y-a.z
+  else
+    -- a is 2D and b is 2D
+    y=b.y-a.y
+    z=nil --We leave z=nil, so the New function takes care of the 2D character.
+  end
+  
+  local c=VECTOR:New(x, y, z)
+   
+  return c
+end
+
+
+--- Creates a new VECTOR instance from given the latitude and longitude in decimal degrees (DD).
+-- @param #VECTOR self
+-- @param #number Latitude Latitude in decimal degrees.
+-- @param #number Longitude Longitude in decimal degrees.
+-- @param #number Altitude (Optional) Altitude in meters. Default is the land height at the 2D position.
+-- @return #VECTOR self
+function VECTOR:NewFromLLDD(Latitude, Longitude, Altitude)
+
+  -- Returns a point from latitude and longitude in the vec3 format.
+  local vec3=coord.LLtoLO(Latitude, Longitude)
+
+  -- Convert vec3 to coordinate object.
+  self=VECTOR:NewFromVec(vec3)
+  
+  -- Adjust height
+  if Altitude then
+    self.y=Altitude
+  end
+
+  return self
+end
+
+--- Creates a new VECTOR instance from given latitude and longitude in degrees, minutes and seconds (DMS).
+-- **Note** that latitude and longitude are passed as strings and the characters `°`, `'` and `"` are important.
+-- @param #VECTOR self
+-- @param #string Latitude Latitude in DMS as string, e.g. "`42° 24' 14.3"`".
+-- @param #string Longitude Longitude in DMS as string, e.g. "`42° 24' 14.3"`".
+-- @param #number Altitude (Optional) Altitude in meters. Default is the land height at the coordinate.
+-- @return #VECTOR
+function VECTOR:NewFromLLDMS(Latitude, Longitude, Altitude)
+
+  local lat=UTILS.LLDMSstringToDD(Latitude)
+  local lon=UTILS.LLDMSstringToDD(Longitude)
+  
+  self=VECTOR:NewFromLLDD(lat, lon, Altitude)
+
+  return self
+end  
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- User Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get 2D vector as simple table.
+-- @param #VECTOR self
+-- @return DCS#Vec2 2D array {x, y}.
+function VECTOR:GetVec2()
+
+  local vec={x=self.x, y=self.z}
+  
+  return vec
+end
+
+--- Get 3D vector as simple table.
+-- @param #VECTOR self
+-- @param #boolean OnSurface If `true`, the `y` component is set the land height [m] of the 2D position.
+-- @return DCS#Vec3 3D array {x=x, y=y, z=z}.
+function VECTOR:GetVec3(OnSurface)
+
+  local x=self.x
+  local y=OnSurface and land.getHeight({x=self.x, y=self.z}) or self.y
+  local z=self.z
+
+  local vec={x=x, y=y, z=z} --DCS#Vec3
+  
+  return vec
+end
+
+--- Get a COORDINATE object.
+-- @param #VECTOR self
+-- @param #boolean OnSurface If `true`, the `y` component is set the land height [m] of the 2D position.
+-- @return Core.Point#COORDINATE The COORDINATE object.
+function VECTOR:GetCoordinate(OnSurface)
+
+  local vec3=self:GetVec3(OnSurface)
+  
+  local coordinate=COORDINATE:NewFromVec3(vec3)
+  
+  return coordinate
+end
+
+--- Get the distance from this vector to another vector.
+-- @param #VECTOR self
+-- @param #VECTOR Vector Vector to which the distance is requested.
+-- @param #boolean Only2D If `true`, calculate only the projected 2D distance. 
+-- @return #number Distance in meters.
+function VECTOR:GetDistance(Vector, Only2D)
+
+  local dx=self.x-Vector.x
+  local dy=0
+  local dz=0
+  
+  if Vector.z then
+    if not Only2D then
+      dy=self.y-Vector.y
+    end    
+    dz=self.z-Vector.z
+  else
+    -- Given vector is 2D.
+    dy=0
+    dz=self.z-Vector.y
+  end
+
+  -- Calculate the distance.
+  local dist=math.sqrt( dx*dx + dy*dy + dz*dz )
+  
+  return dist
+end
+
+--- Get the directional vector that points from this VECTOR to another VECTOR `a`.
+-- @param #VECTOR self
+-- @param #VECTOR a Vector `a`. This can also be given as any table with `x`, `y` and `z` components, where `z` is optional.
+-- @return #VECTOR Directional vector from this vector to `a`.
+function VECTOR:GetDirectionalVectorTo(a)
+
+  local x=a.x-self.x
+  local y=0
+  local z=nil
+    
+  if a.z then
+    -- a is 3D
+    y=a.y-self.y
+    z=a.z-self.z
+  else
+  -- a is 2D
+    y=a.y-self.z
+    z=nil --We leave z=nil, so the New function takes care of the 2D character.
+  end
+  
+  local c=VECTOR:New(x, y, z)
+   
+  return c
+end
+
+--- Get the directional vector that points from another VECTOR `a` to this VECTOR.
+-- @param #VECTOR self
+-- @param #VECTOR a Vector a. This can also be given as any table with x,y and z components (z optional).
+-- @return #VECTOR Directional vector from self to a.
+function VECTOR:GetDirectionalVectorFrom(a)
+  
+  local x=self.x-a.x
+  local y
+  local z
+    
+  if a.z then
+    -- a is 3D
+    y=self.y-a.y
+    z=self.z-a.z
+  else
+  -- a is 2D ==> we work in 2D and take z component of self
+    y=self.z-a.y
+    z=nil --We leave z=nil, so the New function takes care of the 2D character.
+  end
+  
+  local c=VECTOR:New(x, y, z)
+   
+  return c
+end
+
+--- Get length/norm/magnitude of this vector.
+-- @param #VECTOR self
+-- @return #number Length of vector.
+function VECTOR:GetLength()
+
+  local l=math.sqrt(self.x*self.x+self.y*self.y+self.z*self.z)
+
+  return l
+end
+
+--- Get heading of vector.
+-- Note that a heading of
+--  
+-- * 000° = North
+-- * 090° = East
+-- * 180° = South
+-- * 270° = West.
+-- 
+-- @param #VECTOR self
+-- @param #boolean To360 If `true` or `nil`, adjust heading to [0,360) range. If `false`, headings not in this range can occur.
+-- @return #number Heading in degrees.
+function VECTOR:GetHeading(To360)
+
+  -- Get heading.
+  local heading=math.atan2(self.z, self.x)
+  
+  -- Convert to degrees.
+  heading=math.deg(heading)
+  
+  
+  if To360==nil or To360==true then
+    -- Adjust heading so it is in [0,360).
+    heading=UTILS.AdjustHeading360(heading)
+  else
+    -- Just make sure 360 is returned a 0.
+    if heading==360.0 then
+      heading=0.0
+    end  
+  end
+
+  return heading
+end
+
+--- Get the heading from this vector to another given vector.
+-- @param #VECTOR self
+-- @param #VECTOR Vector Vector to which the heading is requested.
+-- @return #number Heading from this vector to the other vector in degrees.
+function VECTOR:GetHeadingTo(Vector)
+
+  -- Get directional vector from given vector to this vector.
+  local a=self:GetDirectionalVectorTo(Vector)
+  
+  -- Get heading of directional vector.
+  local heading=math.deg(math.atan2(a.z, a.x))  
+  
+  -- Adjust heading so it is in [0,360).
+  heading=UTILS.AdjustHeading360(heading)
+  
+  return heading
+end
+
+--- Get the heading from a given vector to this vector.
+-- @param #VECTOR self
+-- @param #VECTOR Vector Vector from which the heading is requested.
+-- @return #number Heading from the other vector to this vector in degrees.
+function VECTOR:GetHeadingFrom(Vector)
+
+  -- Get directional vector from given vector to this vector.
+  local a=self:GetDirectionalVectorFrom(Vector)
+  
+  -- Get heading of directional vector.
+  local heading=math.deg(math.atan2(a.z, a.x))
+
+  -- Adjust heading so it is in [0,360).
+  heading=UTILS.AdjustHeading360(heading)
+  
+  return heading
+end
+
+
+--- Get latitude and longitude of this vector.
+-- @param #VECTOR self
+-- @return #number Latitude in decimal degrees (DD).
+-- @return #number Longitude in decimal degrees (DD).
+function VECTOR:GetLatitudeLongitude()
+
+  local vec3=self:GetVec3()
+
+  local latitude, longitude, altitude=coord.LOtoLL(vec3)
+  
+  return latitude, longitude
+end
+
+
+--- Get MGRS information of this vector.
+-- 
+-- `MGRS = {UTMZone = string, MGRSDigraph = string, Easting = number, Northing = number}`
+-- 
+-- @param #VECTOR self
+-- @return #table MGRS table with `UTMZone`, `MGRSDiGraph`, `Easting` and `Northing` keys.
+function VECTOR:GetMGRS()
+
+  local lat, long=self:GetLatitudeLongitude()
+
+  local mgrs=coord.LLtoMGRS(lat, long)
+
+  -- Example table returned by coord.LLtoMGRS
+  --[[
+  MGRS = {
+    UTMZone = string,
+    MGRSDigraph = string,
+    Easting = number,
+    Northing = number
+  }
+  ]]
+  
+  return mgrs
+end
+
+--- Get the difference of the heading of this vector w.
+-- 
+-- **Example 1:**
+-- This vector has a heading of 90° (pointing East) and the other vector has a heading of 225° (pointing South-West),
+-- we would optain a delta of 225°-90°=135°.
+-- 
+-- **Example 2:**
+-- This vector has a heading of 180 (pointing South) and the other vector has a heading of 90° (pointing East),
+-- we would optain a delta of 90°-180°=-90°.
+-- 
+-- @param #VECTOR self
+-- @param #VECTOR Vector Vector to which the heading is requested.
+-- @return #number Heading from this vector to the other vector in degrees.
+function VECTOR:GetHeadingDelta(Vector)
+
+  local h1=self:GetHeading(false)
+  
+  local h2=Vector:GetHeading(false)
+
+  local delta=h2-h1
+  
+  return delta
+end
+
+--- Return an intermediate VECTOR between this and another given vector.
+-- @param #VECTOR self
+-- @param #VECTOR Vector The destination vector.
+-- @param #number Fraction The fraction (0,1) where the new vector is created. Default 0.5, *i.e.* in the middle.
+-- @return #VECTOR Vector between this and the other vector.
+function VECTOR:GetIntermediateVector(Vector, Fraction)
+
+  local f=Fraction or 0.5
+
+  -- Get the directional vector to the given Vector.
+  local vec=self:GetDirectionalVectorTo(Vector)
+  
+  -- Get the length of the vector.
+  local length=vec:GetLength()
+  
+  -- Set/scale the length.
+  vec:SetLength(f*length)
+ 
+  -- Get to the desired position.
+  vec=self+vec
+  
+  return vec
+end
+
+
+
+--- Set length/norm/magnitude of this vector.
+-- @param #VECTOR self
+-- @param #number Length Desired length of vector.
+function VECTOR:SetLength(Length)
+
+  -- Normalize this vector to a length of 1.
+  self:Normalize()
+  
+  -- Scale the vector to the desired length.
+  local v=self*Length
+  
+  -- Replace with scaled version.
+  self:Replace(v)
+  
+  return self
+end
+
+--- Set x-component of vector. The x-axis points to the North.
+-- @param #VECTOR self
+-- @param #number x Value of x. Default 0.
+-- @return #VECTOR self
+function VECTOR:SetX(x)
+  self.x=x or 0
+  return self
+end
+
+--- Set y-component of vector. The y-axis points to the upwards and describes the altitude above mean sea level.
+-- @param #VECTOR self
+-- @param #number y Value of y. Default land/surface height at this point.
+-- @return #VECTOR self
+function VECTOR:SetY(y)
+
+  if y==nil then
+    y=self:GetSurfaceHeight()
+  end
+  self.y=y
+  return self
+end
+
+--- Set z-component of vector. The z-axis points to the East.
+-- @param #VECTOR self
+-- @param #number z Value of z. Default 0.
+-- @return #VECTOR self
+function VECTOR:SetZ(z)
+  self.z=z or 0
+  return self
+end
+
+
+--- Add a vector to this. This function works for DCS#Vec2, DCS#Vec3, VECTOR, COORDINATE objects.
+-- Note that if you want to add a VECTOR, you can also simply use the `+` operator.
+-- @param #VECTOR self
+-- @param DCS#Vec3 Vec Vector to add. Can also be a DCS#Vec2, DCS#Vec3, COORDINATE or VECTOR object.
+-- @return #VECTOR self
+function VECTOR:AddVec(Vec)
+
+  self.x=self.x+Vec.x
+  
+  if Vec.z then
+    self.y=self.y+Vec.y
+    self.z=self.z+Vec.z
+  else
+    -- Vec is 2D ==> we take its y-component.
+    self.z=self.z+Vec.y  
+  end
+  
+  return self
+end
+
+--- Subtract a vector from this one. This function works for DCS#Vec2, DCS#Vec3, VECTOR, COORDINATE objects.
+-- 
+-- **Note** that if you want to add a VECTOR, you can also simply use the `-` operator.
+-- @param #VECTOR self
+-- @param DCS#Vec3 Vec Vector to substract. Can also be a DCS#Vec2, DCS#Vec3, COORDINATE or VECTOR object.
+-- @return #VECTOR self
+function VECTOR:SubVec(Vec)
+
+  self.x=self.x-Vec.x
+  
+  if Vec.z then
+    self.y=self.y-Vec.y
+    self.z=self.z-Vec.z
+  else
+    -- Vec is 2D ==> we take its y-component.
+    self.z=self.z-Vec.y  
+  end
+   
+  return self
+end
+
+--- Calculate the dot product of this VECTOR with another vector. This function works for DCS#Vec2, DCS#Vec3, VECTOR, COORDINATE objects.
+-- @param #VECTOR self
+-- @param DCS#Vec3 Vec The other vector. Can also be a DCS#Vec2, DCS#Vec3, COORDINATE or VECTOR object.
+-- @return #number Dot product Sum_i(a[i]*b[i]). Note that this is a **scalar** and not a vector any more!
+function VECTOR:Dot(Vec)
+
+  local dot=self.x*Vec.x
+  if Vec.z then
+    dot=dot+self.y*Vec.y+self.z*Vec.z
+  else
+    -- Vec is 2D ==> we take its y-component for z.
+    dot=dot+self.z*Vec.y
+  end
+   
+  return dot
+end
+
+--- Calculate the rotation or cross product of this VECTOR with another vector. This function works for DCS#Vec2, DCS#Vec3, VECTOR, COORDINATE objects.
+-- @param #VECTOR self
+-- @param DCS#Vec3 Vec The other vector. Can also be a DCS#Vec2, DCS#Vec3, COORDINATE or VECTOR object.
+-- @return #VECTOR The cross product vector.
+function VECTOR:Rot(Vec)
+
+  -- TODO:
+  local dot=self.x*Vec.x
+  if Vec.z then
+    dot=dot+self.y*Vec.y+self.z*Vec.z
+  else
+    -- Vec is 2D ==> we take its y-component for z.
+    dot=dot+self.z*Vec.y
+  end
+   
+  return dot
+end
+
+
+--- Get a clone (deep copy) of this vector.
+-- @param #VECTOR self
+-- @return #VECTOR Copy of the vector.
+function VECTOR:Copy()
+  
+  local c=VECTOR:New(self.x, self.y, self.z)
+   
+  return c
+end
+
+--- Replace this vector with another one.
+-- If the given vector is 2D, we 
+-- @param #VECTOR self
+-- @param #VECTOR Vector The vector that is used to replace this vector.
+-- @param #boolean Project2D If `true` and the given vector is 2D, we project the updated vector to 2D (`y=0`). Otherwise, we leave `y` untouched.
+-- @return #VECTOR self updated
+function VECTOR:Replace(Vector, Project2D)
+  
+  self.x=Vector.x
+  
+  if Vector.z then
+    -- Given vector is 3D
+    self.y=Vector.y
+    self.z=Vector.z
+  else
+    -- Given vector is 2D
+    if Project2D then
+      self.y=0
+    end
+    self.z=Vector.y
+  end
+
+  return self
+end
+
+--- Normalize this vector, so that has a length of 1.
+-- @param #VECTOR self
+-- @return #VECTOR self
+function VECTOR:Normalize()
+
+  local l=self:GetLength()
+  
+  if l~=0 then
+    self:Replace(self/l)
+  end
+   
+  return self
+end
+
+--- Translate the vector by a given distance and angle.
+-- @param #VECTOR self
+-- @param #number Distance Distance in meters. Default 1000 meters.
+-- @param #number Heading Heading angle in degrees. Default 0° = North.
+-- @param #boolean Copy Create a copy of the VECTOR so the original stays unchanged.
+-- @return #VECTOR The translated vector or a copy of it.
+function VECTOR:Translate(Distance, Heading, Copy)
+
+  -- Set default distance if not passed.
+  Distance=Distance or 1000
+
+  -- Angle in rad.
+  local alpha = math.rad(Heading or 0)
+  
+  -- Create a copy if requested.
+  local vector=Copy and self:Copy() or self
+
+  -- Set new coordinates.
+  vector.x = Distance * math.cos(alpha) + vector.x  -- New x
+  vector.z = Distance * math.sin(alpha) + vector.z  -- New z
+     
+  return vector
+end
+
+--- Rotate the VECTOR clockwise in the 2D (x,z) plane.
+-- @param #VECTOR self
+-- @param #number Angle Rotation angle in degrees). Default 0.
+-- @param #boolean Copy Create a copy of the VECTOR so the original stays unchanged.
+-- @return #VECTOR The translated vector or a copy of it.
+function VECTOR:Rotate2D(Angle, Copy)
+
+  -- Angle in rad.
+  local phi = -math.rad(Angle or 0)
+
+  -- Sin/Cos of angle.
+  local sinPhi = math.sin(phi)
+  local cosPhi = math.cos(phi)
+  
+  -- Get more convenient notation.
+  local X=self.z
+  local Y=self.x
+  
+  -- Apply rotation matrix.
+  local z = X*cosPhi - Y*sinPhi 
+  local x = X*sinPhi + Y*cosPhi
+  
+  -- Create new vector.
+  if Copy then
+    local vector=VECTOR:New(x, self.y, z)
+    return vector
+  else
+    self:SetX(x)
+    self:SetZ(z)
+    return self
+  end
+end
+
+
+
+--- Provides an MGRS string.
+-- @param #VECTOR self
+-- @param Core.Settings#SETTINGS Settings (Optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
+-- @return #string The MGRS text.
+function VECTOR:ToStringMGRS(Settings)
+
+  -- Get Accuracy.
+  local MGRS_Accuracy = Settings and Settings.MGRS_Accuracy or _SETTINGS.MGRS_Accuracy
+  
+  local lat, lon = coord.LOtoLL( self:GetVec3() )
+  
+  local MGRS = coord.LLtoMGRS( lat, lon )
+  
+  local text="MGRS " .. UTILS.tostringMGRS( MGRS, MGRS_Accuracy )
+  
+  return text
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- DCS API Wrapper Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get the surface type at the vector.
+-- 
+-- * LAND = 1
+-- * SHALLOW_WATER = 2
+-- * WATER = 3
+-- * ROAD = 4
+-- * RUNWAY = 5
+-- 
+-- @param #VECTOR self
+-- @return #number Surface type
+function VECTOR:GetSurfaceType()
+
+  local vec2=self:GetVec2()
+  
+  local s=land.getSurfaceType(vec2)
+   
+  return s
+end
+
+
+--- Get the name of surface type at the vector.
+-- 
+-- * LAND = 1
+-- * SHALLOW_WATER = 2
+-- * WATER = 3
+-- * ROAD = 4
+-- * RUNWAY = 5
+-- 
+-- @param #VECTOR self
+-- @return #string Surface type name
+function VECTOR:GetSurfaceTypeName()
+
+  local vec2=self:GetVec2()
+  
+  local s=land.getSurfaceType(vec2)
+  
+  for name,id in land.SurfaceType() do
+    if id==s then
+      return name
+    end
+  end
+   
+  return "unknown"
+end
+
+--- Check if a given vector has line of sight with this vector.
+-- @param #VECTOR self
+-- @param #VECTOR Vec The other vector.
+-- @return #number Surface Type
+function VECTOR:IsVisible(Vec)
+
+  local vec1=self:GetVec3()
+  
+  local vec2={x=Vec.x, Vec.y, Vec.z}
+  
+  local los=land.isVisible(vec1, vec2)
+
+  return los
+end
+
+--- Get a vector on the closest road.
+-- @param #VECTOR self
+-- @return #VECTOR Closest vector to a road.
+function VECTOR:GetClosestRoad()
+
+  local vec2=self:GetVec2()
+
+  local x,y=land.getClosestPointOnRoads('roads', vec2.x, vec2.y)
+  
+  local road=nil  
+  if x and y then
+    road=VECTOR:New(x, y)
+  end
+
+  return road
+end
+
+--- Get a vector on the closest railroad.
+-- @param #VECTOR self
+-- @return #VECTOR Closest vector to a railroad.
+function VECTOR:GetClosestRailroad()
+
+  local vec2=self:GetVec2()
+
+  local x,y=land.getClosestPointOnRoads('railroads', vec2.x, vec2.y)
+  
+  local road=nil  
+  if x and y then
+    road=VECTOR:New(x, y)
+  end
+
+  return road
+end
+
+
+--- Get the path on road from this vector to a given other vector.
+-- @param #VECTOR self
+-- @param #VECTOR Vec The destination vector.
+-- @return Core.Pathline#PATHLINE Pathline with points on road.
+function VECTOR:GetPathOnRoad(Vec)
+
+  local vec1=self:GetVec2()
+  local vec2=Vec:GetVec2()
+  
+  local vec2points=land.findPathOnRoads("roads", vec1.x , vec1.y, vec2.x, vec2.y)
+  
+  local path=nil  
+  if vec2points then    
+    path=PATHLINE:NewFromVec2Array("Road", vec2points)
+  end
+
+  return path
+end
+
+
+--- Get profile of the land between the two passed points.
+-- @param #VECTOR self
+-- @param #VECTOR Vec3 The 3D destination vector. If a 2D vector is passed, `y` is set to the land height.
+-- @return Core.Pathline#PATHLINE Pathline with points of the profile.
+function VECTOR:GetProfile(Vec3)
+
+  local vec3=self:GetVec3()
+
+  -- Get profile
+  local vec3s=land.profile(vec3, Vec3)
+
+  local profile=nil
+  if vec3s then
+  
+    profile=PATHLINE:NewFromVec3Array("Profile", vec3s)
+  
+  end
+
+  return profile
+end
+
+--- Returns an intercept point at which a ray drawn from the this vector in the passed normalized direction for a specified distance.
+-- @param #VECTOR self
+-- @param DCS#Vec3 DirectionVector Directional vector.
+-- @param #number Distance Distance in meters. Default 1000 m.
+-- @return #VECTOR Intercept vector. Can be `nil` if no intercept point is found.
+function VECTOR:GetInterceptPoint(DirectionVector, Distance)
+
+  local vec3=self:GetVec3()
+
+  local ip3=land.getIP(vec3, DirectionVector, Distance or 1000) --DCS#Vec3
+  
+  local ipvector=nil
+  
+  if ip3 then
+    ipvector=VECTOR:New(ip3.x, ip3.y , ip3.z)
+  end
+
+  return ipvector
+end
+
+--- Returns the distance from sea level at this vector.
+-- @param #VECTOR self
+-- @return #number Distance above sea leavel in meters.
+function VECTOR:GetSurfaceHeight()
+
+  local vec2=self:GetVec2()
+
+  local h=land.getHeight(vec2)
+  
+  return h
+end
+
+
+--- Returns the distance from sea level at this vector.
+-- @param #VECTOR self
+-- @return #number Heigh above sea leavel in meters.
+-- @return #number Depth (positive) at this point in meters.
+function VECTOR:GetSurfaceHeightAndDepth()
+
+  local vec2=self:GetVec2()
+
+  local h,d=land.getSurfaceHeightWithSeabed(vec2)
+
+  return h,d
+end
+
+--- Returns a velocity vector of the wind at this vector. Turbolences can be optionally be included.
+-- @param #VECTOR self
+-- @param #boolean WithTurbulence If `true`, return wind including turbulence.
+-- @return #VECTOR Velocity 3D vector [m/s] the wind is blowing to.
+function VECTOR:GetWindVector(WithTurbulence)
+
+  local vec3=self:GetVec3()
+
+  local wind=nil
+  if WithTurbulence then
+    wind=atmosphere.getWindWithTurbulence(vec3)
+    
+  else
+    wind=atmosphere.getWind(vec3)
+  end
+  
+  local vector=VECTOR:New(wind)
+
+  return vector
+end
+
+--- Returns a temperature and pressure at this vector.
+-- @param #VECTOR self
+-- @return #number Temperatur in Kelvin.
+-- @return #number Pressure in Pascals.
+function VECTOR:GetTemperaturAndPressure()
+
+  local vec3=self:GetVec3()
+
+  local t,p=atmosphere.getTemperatureAndPressure(vec3)
+
+  return t,p
+end
+
+--- Creates a smoke at this vector.
+-- @param #VECTOR self
+-- @param #number Color Color of the smoke: 0=Green, 1=Red, 2=White, 3=Orange, 4=Blue. Default 0.
+-- @param #number Duration (Optional) Duration of the smoke in seconds. Default nil.
+-- @return #string Name of the smoke object. Can be used to stop it. 
+function VECTOR:Smoke(Color, Duration)
+
+  local vec3=self:GetVec3()
+  
+  Color=Color or 0
+
+  -- Create a name for the smoke object
+  local name=string.format("Vector-Smoke-%d", self.uid)
+  
+  -- Create smoke at this position
+  trigger.action.smoke(vec3, Color, name)
+  
+  if Duration and Duration>0 then
+    self:StopSmoke(name, Duration)
+  end
+
+  return name
+end
+
+
+--- Creates a large smoke and fire effect of a specified type and density at this vector.
+-- 
+-- * 1 = small smoke and fire
+-- * 2 = medium smoke and fire
+-- * 3 = large smoke and fire
+-- * 4 = huge smoke and fire
+-- * 5 = small smoke
+-- * 6 = medium smoke 
+-- * 7 = large smoke
+-- * 8 = huge smoke
+-- 
+-- @param #VECTOR self
+-- @param #number Preset Preset of smoke. Default `BIGSMOKEPRESET.LargeSmokeAndFire`.
+-- @param #number Density Density between [0,1]. Default 0.5.
+-- @param #number Duration (Optional) Duration of the smoke and fire in seconds.
+-- @return #string Name of the smoke. Can be used to stop it. 
+function VECTOR:SmokeAndFire(Preset, Density, Duration)
+
+  Preset=Preset or BIGSMOKEPRESET.LargeSmokeAndFire
+  Density=Density or 0.5
+
+  local vec3=self:GetVec3()
+  
+  -- Get a name of this smoke & fire object
+  local name=string.format("Vector-Fire-%d", self.uid)
+
+  trigger.action.effectSmokeBig(vec3, Preset, Density, name)
+  
+  if Duration and Duration>0 then
+    self:StopSmoke(name, Duration)
+  end  
+
+  return name
+end
+
+--- Stop smoke or fire effect.
+-- @param #VECTOR self
+-- @param #string Name Name of the smoke object.
+-- @param #number Delay Delay in seconds before the smoke is stopped.
+-- @return #VECTOR self
+function VECTOR:StopSmoke(Name, Delay)
+
+  if Delay and Delay>0 then
+    TIMER:New(VECTOR.StopSmoke, self, Name):Start(Delay)
+  else
+    if Name then
+      trigger.action.effectSmokeStop(Name)
+    else
+      env.error(string.format("No name provided in VECTOR.StopSmoke function!"))
+    end
+  end
+  
+  return self
+end
+
+
+--- Creates an illumination bomb at the specified point.
+-- @param #VECTOR self
+-- @param #number Power The power in Candela (cd). Should be between 1 and 1000000. Default 1000 cd.
+-- @param #number Altitude (Optional) Altitude [m] at which the illumination bomb is created.
+-- @return #VECTOR self
+function VECTOR:IlluminationBomb(Power, Altitude)
+
+  local vec3=self:GetVec3()
+  
+  if Altitude then
+    vec3.y=Altitude
+  end
+
+  -- Create an illumination bomb.
+  trigger.action.illuminationBomb(vec3, Power or 1000)
+
+  return self
+end
+
+--- Creates an explosion at a given point at the specified power.
+-- @param #VECTOR self
+-- @param #number Power The power in kg TNT. Default 100 kg.
+-- @return #VECTOR self
+function VECTOR:Explosion(Power)
+
+  local vec3=self:GetVec3()
+
+  trigger.action.explosion(vec3, Power or 100)
+
+  return self
+end
+
+--- Creates a signal flare at the given point in the specified color. The flare will be launched in the direction of the azimuth angle.
+-- @param #VECTOR self
+-- @param #number Color Color of flare. Default Green.
+-- @param #number Azimuth Azimuth angle in degrees. Default 0.
+-- @return #VECTOR self
+function VECTOR:Flare(Color, Azimuth)
+
+  local vec3=self:GetVec3()
+
+  trigger.action.signalFlare(vec3, Color or 0, math.rad(Azimuth or 0))
+
+  return self
+end
+
+
+--- Creates a arrow from this VECTOR to another vector on the F10 map.
+-- @param #VECTOR self
+-- @param #VECTOR Vector The vector defining the endpoint.
+-- @param #number Coalition Coalition Id: -1=All, 0=Neutral, 1=Red, 2=Blue. Default -1.
+-- @param #table Color RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.7}.
+-- @param #table FillColor RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.5}.
+-- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot Dash, 5=Long Dash, 6=Two Dash. Default 1.
+-- @return #number Marker ID. Can be used to remove the drawing.
+function VECTOR:ArrowTo(Vector, Coalition, Color, FillColor, LineType)
+
+  local vec3End=self:GetVec3()
+  local vec3Start=Vector:GetVec3()
+  
+  local id=UTILS.GetMarkID()
+  
+  Coalition=Coalition or -1
+  Color=Color or {1,0,0,0.7}
+  FillColor=FillColor or {1,0,0,0.5}
+  LineType=LineType or 1
+  
+  local readOnly=false
+  
+  trigger.action.arrowToAll(Coalition , id, vec3Start, vec3End, Color, FillColor , LineType, readOnly, "")
+
+  return id
+end
+
+
+--- Create mark on F10 map.
+-- @param #VECTOR self
+-- @param #string MarkText Free format text that shows the marking clarification.
+-- @param #number Recipient Recipient of the mark: -1=All (default), 0=Neutral, 1=Red, 2=Blue. Can also be a `GROUP` object.
+-- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
+-- @return #number Mark ID.
+function VECTOR:Mark(MarkText, Recipient, ReadOnly)
+
+  Recipient=Recipient or -1
+
+  if type(Recipient)=="number" then
+  
+    local MarkID = UTILS.GetMarkID()
+  
+    if Recipient==-1 then
+      trigger.action.markToAll(MarkID, MarkText, self:GetVec3(), ReadOnly, "")
+    elseif Recipient==0 then
+      trigger.action.markToCoalition(MarkID, MarkText, self:GetVec3(), coalition.side.NEUTRAL, ReadOnly, "")
+    elseif Recipient==1 then
+      trigger.action.markToCoalition(MarkID, MarkText, self:GetVec3(), coalition.side.RED, ReadOnly, "")
+    elseif Recipient==2 then
+      trigger.action.markToCoalition(MarkID, MarkText, self:GetVec3(), coalition.side.BLUE, ReadOnly, "")
+    end
+  
+    return MarkID
+      
+  elseif type(Recipient)=="table" then
+  
+    local MarkID = UTILS.GetMarkID()
+    
+    local group=Recipient --Wrapper.Group#GROUP
+    
+    trigger.action.markToGroup( MarkID, MarkText, self:GetVec3(), group:GetID(), ReadOnly, "")
+    
+    return MarkID
+    
+  end
+
+  return nil
+end
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Private Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Check if passed object is a Vector.
+-- @param #table t The object to be tested. 
+-- @return #boolean Returns `true` if `t` is a #VECTOR and `false` otherwise.
+function VECTOR._IsVector(t)
+  return getmetatable(t) == VECTOR
+end
+
+--- Meta function to add vectors together.
+-- @param #VECTOR a Vector a.
+-- @param #VECTOR b Vector b.
+-- @return #VECTOR Returns a new VECTOR c with c[i]=a[i]+b[i] for i=x,y,z.
+function VECTOR.__add(a,b)
+
+  assert(VECTOR._IsVector(a) and VECTOR._IsVector(b), "ERROR in VECTOR.__add: wrong argument types! (expected <vector> and <vector>)")
+  
+  local c=VECTOR:New(a.x+b.x, a.y+b.y, a.z+b.z)
+  
+  return c
+end
+
+--- Meta function to subtract vectors.
+-- @param #VECTOR a Vector a.
+-- @param #VECTOR b Vector b.
+-- @return #VECTOR Returns a new VECTOR c with c[i]=a[i]-b[i] for i=x,y,z.
+function VECTOR.__sub(a,b)
+
+  assert(VECTOR._IsVector(a) and VECTOR._IsVector(b), "ERROR in VECTOR.__sub: wrong argument types: (expected <vector> and <vector>)")
+  
+  local c=VECTOR:New(a.x-b.x, a.y-b.y, a.z-b.z)
+   
+  return c
+end
+
+
+--- Meta function to multiplicate vector by another vector or a scalar.
+-- @param #VECTOR a Vector a. Can also be a #number.
+-- @param #VECTOR b Vector b. Can also be a #number.
+-- @return #VECTOR Returns a new VECTOR c with c[i]=a[i]*b[i] for i=x,y,z.
+function VECTOR.__mul(a, b)
+
+  local c=nil --#VECTOR
+  
+  if type(a)=='number' then
+    c=VECTOR:New(a*b.x, a*b.y, a*b.z)
+  elseif type(b)=='number' then
+    c=VECTOR:New(b*a.x, b*a.y, b*a.z)
+  else
+    c=VECTOR:New(a.x*b.x, a.y*b.y, a.z*b.z)
+  end
+   
+  return c
+end
+
+--- Meta function for dividing a vector by a scalar or by another vector.
+-- @param #VECTOR a Vector a.
+-- @param #VECTOR b Vector b. Can also be a #number.
+-- @return #VECTOR Returns a new VECTOR c with c[i]=a[i]/b or c[i]=a[i]/b[i] for i=x,y,z.
+function VECTOR.__div(a, b)
+
+  assert(VECTOR._IsVector(a) and (type(b) == "number" or VECTOR._IsVector(b)), "div: wrong argument types (expected <vector> and (<number> or <vector>))")
+
+  local c=nil --#VECTOR
+
+  if type(b) == "number" then
+    c=VECTOR:New(a.x/b, a.y/b, a.z/b)
+  else
+    c=VECTOR:New(a.x/b.x, a.y/b.y, a.z/b.z)
+  end
+
+  return c
+end
+
+--- Meta function to make vectors negative.
+-- @param #VECTOR v Vector v.
+function VECTOR.__unm(v)
+  local c=VECTOR:New(-v.x, -v.y, -v.z)
+  return c
+end
+
+--- Meta function to check if two vectors are equal.
+-- @param #VECTOR a Vector a.
+-- @param #VECTOR b Vector b.
+-- @return #boolean If `true`, both vectors are equal
+function VECTOR.__eq(a, b)
+  return a.x==b.x and a.y==b.y and a.z==b.z
+end
+
+
+--- Meta function to change how vectors appear as string.
+-- @param #VECTOR self
+-- @return #string String representation of vector.
+function VECTOR:__tostring()
+  local text=string.format("VECTOR: x=%.1f, y=%.1f, z=%.1f |v|=%.1f Phi=%4.1f°", self.x, self.y, self.z, self:GetLength(), self:GetHeading(false))
+  return text
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --- **Wrapper** - OBJECT wraps the DCS Object derived objects.
 -- 
 -- ===
@@ -51321,6 +52833,7 @@ function CONTROLLABLE:TaskFunction( FunctionString, ... )
     self:SetState( self, ArgumentKey, arg )
     DCSScript[#DCSScript + 1] = "local Arguments = MissionControllable:GetState( MissionControllable, '" .. ArgumentKey .. "' ) "
     DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable, unpack( Arguments ) )"
+    --DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable, ((type(Arguments)=='table') and unpack(Arguments) or nil))" -- this doesn't work
   else
     DCSScript[#DCSScript + 1] = FunctionString .. "( MissionControllable )"
   end
@@ -52786,6 +54299,46 @@ function CONTROLLABLE:OptionPreferVerticalLanding()
 
     if self:IsAir() then
       Controller:setOption( AI.Option.Air.id.PREFER_VERTICAL, true )
+    end
+
+    return self
+  end
+
+  return nil
+end
+
+--- Air - Allow formation side swap
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:OptionAllowFormationSideSwap()
+  self:F2( { self.ControllableName } )
+
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = self:_GetController()
+
+    if self:IsAir() then
+      Controller:setOption( AI.Option.Air.id.ALLOW_FORMATION_SIDE_SWAP, true )
+    end
+
+    return self
+  end
+
+  return nil
+end
+
+--- Air - Allow formation takeoff, if enough space
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:OptionAIRunwayLineUp()
+  self:F2( { self.ControllableName } )
+
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = self:_GetController()
+
+    if self:IsAir() then
+      Controller:setOption( 37, true )
     end
 
     return self
@@ -59777,9 +61330,7 @@ function UNIT:GetThreatLevel()
             end
 
             ThreatText = ThreatLevels[ThreatLevel + 1]
-        end
-
-        if self:IsAir() then
+        elseif self:IsAir() then
 
             local ThreatLevels = {
                 [1] = "Unarmed",
@@ -59822,9 +61373,7 @@ function UNIT:GetThreatLevel()
             end
 
             ThreatText = ThreatLevels[ThreatLevel + 1]
-        end
-
-        if self:IsShip() then
+        elseif self:IsShip() then
 
             --["Aircraft Carriers"] = {"Heavy armed ships",},
             --["Cruisers"] = {"Heavy armed ships",},
@@ -60551,7 +62100,7 @@ function CLIENT:FindByName( ClientName, ClientBriefing, Error )
   end
 end
 
---- Transport defines that the Client is a Transport. Transports show cargo.
+--- Register a client.
 -- @param #CLIENT self
 -- @param #string ClientName Name of the client unit.
 -- @return #CLIENT self
@@ -60908,15 +62457,6 @@ function CLIENT:GetClientGroupDCSUnit()
     self:T2( ClientDCSUnit )
     return ClientDCSUnit
   end
-end
-
-
---- Evaluates if the CLIENT is a transport.
--- @param #CLIENT self
--- @return #boolean true is a transport.
-function CLIENT:IsTransport()
-  self:F()
-  return self.ClientTransport
 end
 
 --- The main message driver for the CLIENT.
@@ -61994,7 +63534,7 @@ AIRBASE.Syria = {
 --- Airbases of the Mariana Islands map
 --
 -- * `AIRBASE.MarianaIslands.Andersen_AFB` Andersen AFB
--- * `AIRBASE.MarianaIslands.Antonio_B._Won_Pat_Intl` Antonio B. Won Pat Intl
+-- * `AIRBASE.MarianaIslands.Antonio_B_Won_Pat_Intl` Antonio B. Won Pat Intl
 -- * `AIRBASE.MarianaIslands.North_West_Field` North West Field
 -- * `AIRBASE.MarianaIslands.Olf_Orote` Olf Orote
 -- * `AIRBASE.MarianaIslands.Pagan_Airstrip` Pagan Airstrip
@@ -62005,7 +63545,7 @@ AIRBASE.Syria = {
 -- @field MarianaIslands
 AIRBASE.MarianaIslands = {
   ["Andersen_AFB"] = "Andersen AFB",
-  ["Antonio_B._Won_Pat_Intl"] = "Antonio B. Won Pat Intl",
+  ["Antonio_B_Won_Pat_Intl"] = "Antonio B. Won Pat Intl",
   ["North_West_Field"] = "North West Field",
   ["Olf_Orote"] = "Olf Orote",
   ["Pagan_Airstrip"] = "Pagan Airstrip",
@@ -72387,7 +73927,7 @@ function SEAD:New( SEADGroupPrefixes, Padding )
   self:AddTransition("*",             "ManageEvasion",                "*")
   self:AddTransition("*",             "CalculateHitZone",             "*")
   
-  self:I("*** SEAD - Started Version 0.4.10")
+  self:I("*** SEAD - Started Version 0.4.11")
   return self
 end
 
@@ -72672,19 +74212,12 @@ function SEAD:onafterManageEvasion(From,Event,To,_targetskill,_targetgroup,SEADP
         local SuppressionStartTime = timer.getTime() + delay
         local SuppressionEndTime = timer.getTime() + delay + _tti + self.Padding + delay
         local _targetgroupname = _targetgroup:GetName()
-        if not self.SuppressedGroups[_targetgroupname] then
+        local shoradactive = _targetgroup:GetProperty("SHORAD_ACTIVE")
+        if not self.SuppressedGroups[_targetgroupname] and shoradactive ~= true then
           -- TODO: ask callback if suppression is allowed BEFORE scheduling timers
           local allow = true
           if self.UseCallBack and self.CallBack and self.CallBack.SeadAllowSuppression then
-            allow = self.CallBack:SeadAllowSuppression(
-              _targetgroup,
-              _targetgroupname,
-              SEADGroup,
-              SEADWeaponName,
-              Weapon,
-              _tti,
-              delay
-            )
+            allow = self.CallBack:SeadAllowSuppression(_targetgroup,_targetgroupname,SEADGroup,SEADWeaponName,Weapon,_tti,delay)
           end
           if not allow then
             self:T(string.format("*** SEAD - %s | Suppression vetoed by callback", _targetgroupname))
@@ -74039,742 +75572,6 @@ function ESCORT:_ReportTargetsScheduler()
   end
   
   return false
-end
---- **Functional** - Train missile defence and deflection.
---
--- ===
---
--- ## Features:
---
---   * Track the missiles fired at you and other players, providing bearing and range information of the missiles towards the airplanes.
---   * Provide alerts of missile launches, including detailed information of the units launching, including bearing, range
---   * Provide alerts when a missile would have killed your aircraft.
---   * Provide alerts when the missile self destructs.
---   * Enable / Disable and Configure the Missile Trainer using the various menu options.
---
--- ===
---
--- ## Missions:
---
--- [MIT - Missile Trainer](https://github.com/FlightControl-Master/MOOSE_MISSIONS/tree/master/Functional/MissileTrainer)
---
--- ===
---
--- Uses the MOOSE messaging system to be alerted of any missiles fired, and when a missile would hit your aircraft,
--- the class will destroy the missile within a certain range, to avoid damage to your aircraft.
---
--- When running a mission where the missile trainer is used, the following radio menu structure ( 'Radio Menu' -> 'Other (F10)' -> 'MissileTrainer' ) options are available for the players:
---
---  * **Messages**: Menu to configure all messages.
---     * **Messages On**: Show all messages.
---     * **Messages Off**: Disable all messages.
---  * **Tracking**: Menu to configure missile tracking messages.
---     * **To All**: Shows missile tracking messages to all players.
---     * **To Target**: Shows missile tracking messages only to the player where the missile is targeted at.
---     * **Tracking On**: Show missile tracking messages.
---     * **Tracking Off**: Disable missile tracking messages.
---     * **Frequency Increase**: Increases the missile tracking message frequency with one second.
---     * **Frequency Decrease**: Decreases the missile tracking message frequency with one second.
---  * **Alerts**: Menu to configure alert messages.
---     * **To All**: Shows alert messages to all players.
---     * **To Target**: Shows alert messages only to the player where the missile is (was) targeted at.
---     * **Hits On**: Show missile hit alert messages.
---     * **Hits Off**: Disable missile hit alert messages.
---     * **Launches On**: Show missile launch messages.
---     * **Launches Off**: Disable missile launch messages.
---  * **Details**: Menu to configure message details.
---     * **Range On**: Shows range information when a missile is fired to a target.
---     * **Range Off**: Disable range information when a missile is fired to a target.
---     * **Bearing On**: Shows bearing information when a missile is fired to a target.
---     * **Bearing Off**: Disable bearing information when a missile is fired to a target.
---  * **Distance**: Menu to configure the distance when a missile needs to be destroyed when near to a player, during tracking. This will improve/influence hit calculation accuracy, but has the risk of damaging the aircraft when the missile reaches the aircraft before the distance is measured.
---     * **50 meter**: Destroys the missile when the distance to the aircraft is below or equal to 50 meter.
---     * **100 meter**: Destroys the missile when the distance to the aircraft is below or equal to 100 meter.
---     * **150 meter**: Destroys the missile when the distance to the aircraft is below or equal to 150 meter.
---     * **200 meter**: Destroys the missile when the distance to the aircraft is below or equal to 200 meter.
---     
--- # Developer Note
--- 
--- ![Banner Image](..\Images\deprecated.png)
--- 
--- Note while this class still works, it is no longer supported as the original author stopped active development of MOOSE.
--- Therefore, this class is considered to be deprecated and superseded by the [Functional.Fox](https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Functional.Fox.html) class, which provides the same functionality.
---
--- ===
---
--- ### Authors: **FlightControl**
---
--- ### Contributions:
---
---    * **Stuka (Danny)**: Who you can search on the Eagle Dynamics Forums. Working together with Danny has resulted in the MISSILETRAINER class.
---      Danny has shared his ideas and together we made a design.
---      Together with the **476 virtual team**, we tested the MISSILETRAINER class, and got much positive feedback!
---    * **132nd Squadron**: Testing and optimizing the logic.
---
--- ===
---
--- @module Functional.MissileTrainer
--- @image Missile_Trainer.JPG
-
----
--- @type MISSILETRAINER
--- @field Core.Set#SET_CLIENT DBClients
--- @extends Core.Base#BASE
-
-
----
---
--- # Constructor:
---
--- Create a new MISSILETRAINER object with the @{#MISSILETRAINER.New} method:
---
---   * @{#MISSILETRAINER.New}: Creates a new MISSILETRAINER object taking the maximum distance to your aircraft to evaluate when a missile needs to be destroyed.
---
--- MISSILETRAINER will collect each unit declared in the mission with a skill level "Client" and "Player", and will monitor the missiles shot at those.
---
--- # Initialization:
---
--- A MISSILETRAINER object will behave differently based on the usage of initialization methods:
---
---  * @{#MISSILETRAINER.InitMessagesOnOff}: Sets by default the display of any message to be ON or OFF.
---  * @{#MISSILETRAINER.InitTrackingToAll}: Sets by default the missile tracking report for all players or only for those missiles targeted to you.
---  * @{#MISSILETRAINER.InitTrackingOnOff}: Sets by default the display of missile tracking report to be ON or OFF.
---  * @{#MISSILETRAINER.InitTrackingFrequency}: Increases, decreases the missile tracking message display frequency with the provided time interval in seconds.
---  * @{#MISSILETRAINER.InitAlertsToAll}: Sets by default the display of alerts to be shown to all players or only to you.
---  * @{#MISSILETRAINER.InitAlertsHitsOnOff}: Sets by default the display of hit alerts ON or OFF.
---  * @{#MISSILETRAINER.InitAlertsLaunchesOnOff}: Sets by default the display of launch alerts ON or OFF.
---  * @{#MISSILETRAINER.InitRangeOnOff}: Sets by default the display of range information of missiles ON of OFF.
---  * @{#MISSILETRAINER.InitBearingOnOff}: Sets by default the display of bearing information of missiles ON of OFF.
---  * @{#MISSILETRAINER.InitMenusOnOff}: Allows to configure the options through the radio menu.
---  
--- # Developer Note
--- 
--- Note while this class still works, it is no longer supported as the original author stopped active development of MOOSE.
--- Therefore, this class is considered to be deprecated and superseded by the [Functional.Fox](https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Functional.Fox.html) class, which provides the same functionality.
---
--- @field #MISSILETRAINER
-MISSILETRAINER = {
-  ClassName = "MISSILETRAINER",
-  TrackingMissiles = {},
-}
-
-function MISSILETRAINER._Alive( Client, self )
-
-  if self.Briefing then
-    Client:Message( self.Briefing, 15, "Trainer" )
-  end
-
-  if self.MenusOnOff == true then
-    Client:Message( "Use the 'Radio Menu' -> 'Other (F10)' -> 'Missile Trainer' menu options to change the Missile Trainer settings (for all players).", 15, "Trainer" )
-
-    Client.MainMenu = MENU_GROUP:New( Client:GetGroup(), "Missile Trainer", nil ) -- Menu#MENU_GROUP
-
-    Client.MenuMessages = MENU_GROUP:New( Client:GetGroup(), "Messages", Client.MainMenu )
-    Client.MenuOn = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Messages On", Client.MenuMessages, self._MenuMessages, { MenuSelf = self, MessagesOnOff = true } )
-    Client.MenuOff = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Messages Off", Client.MenuMessages, self._MenuMessages, { MenuSelf = self, MessagesOnOff = false } )
-
-    Client.MenuTracking = MENU_GROUP:New( Client:GetGroup(), "Tracking", Client.MainMenu )
-    Client.MenuTrackingToAll = MENU_GROUP_COMMAND:New( Client:GetGroup(), "To All", Client.MenuTracking, self._MenuMessages, { MenuSelf = self, TrackingToAll = true } )
-    Client.MenuTrackingToTarget = MENU_GROUP_COMMAND:New( Client:GetGroup(), "To Target", Client.MenuTracking, self._MenuMessages, { MenuSelf = self, TrackingToAll = false } )
-    Client.MenuTrackOn = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Tracking On", Client.MenuTracking, self._MenuMessages, { MenuSelf = self, TrackingOnOff = true } )
-    Client.MenuTrackOff = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Tracking Off", Client.MenuTracking, self._MenuMessages, { MenuSelf = self, TrackingOnOff = false } )
-    Client.MenuTrackIncrease = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Frequency Increase", Client.MenuTracking, self._MenuMessages, { MenuSelf = self, TrackingFrequency = -1 } )
-    Client.MenuTrackDecrease = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Frequency Decrease", Client.MenuTracking, self._MenuMessages, { MenuSelf = self, TrackingFrequency = 1 } )
-
-    Client.MenuAlerts = MENU_GROUP:New( Client:GetGroup(), "Alerts", Client.MainMenu )
-    Client.MenuAlertsToAll = MENU_GROUP_COMMAND:New( Client:GetGroup(), "To All", Client.MenuAlerts, self._MenuMessages, { MenuSelf = self, AlertsToAll = true } )
-    Client.MenuAlertsToTarget = MENU_GROUP_COMMAND:New( Client:GetGroup(), "To Target", Client.MenuAlerts, self._MenuMessages, { MenuSelf = self, AlertsToAll = false } )
-    Client.MenuHitsOn = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Hits On", Client.MenuAlerts, self._MenuMessages, { MenuSelf = self, AlertsHitsOnOff = true } )
-    Client.MenuHitsOff = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Hits Off", Client.MenuAlerts, self._MenuMessages, { MenuSelf = self, AlertsHitsOnOff = false } )
-    Client.MenuLaunchesOn = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Launches On", Client.MenuAlerts, self._MenuMessages, { MenuSelf = self, AlertsLaunchesOnOff = true } )
-    Client.MenuLaunchesOff = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Launches Off", Client.MenuAlerts, self._MenuMessages, { MenuSelf = self, AlertsLaunchesOnOff = false } )
-
-    Client.MenuDetails = MENU_GROUP:New( Client:GetGroup(), "Details", Client.MainMenu )
-    Client.MenuDetailsDistanceOn = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Range On", Client.MenuDetails, self._MenuMessages, { MenuSelf = self, DetailsRangeOnOff = true } )
-    Client.MenuDetailsDistanceOff = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Range Off", Client.MenuDetails, self._MenuMessages, { MenuSelf = self, DetailsRangeOnOff = false } )
-    Client.MenuDetailsBearingOn = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Bearing On", Client.MenuDetails, self._MenuMessages, { MenuSelf = self, DetailsBearingOnOff = true } )
-    Client.MenuDetailsBearingOff = MENU_GROUP_COMMAND:New( Client:GetGroup(), "Bearing Off", Client.MenuDetails, self._MenuMessages, { MenuSelf = self, DetailsBearingOnOff = false } )
-
-    Client.MenuDistance = MENU_GROUP:New( Client:GetGroup(), "Set distance to plane", Client.MainMenu )
-    Client.MenuDistance50 = MENU_GROUP_COMMAND:New( Client:GetGroup(), "50 meter", Client.MenuDistance, self._MenuMessages, { MenuSelf = self, Distance = 50 / 1000 } )
-    Client.MenuDistance100 = MENU_GROUP_COMMAND:New( Client:GetGroup(), "100 meter", Client.MenuDistance, self._MenuMessages, { MenuSelf = self, Distance = 100 / 1000 } )
-    Client.MenuDistance150 = MENU_GROUP_COMMAND:New( Client:GetGroup(), "150 meter", Client.MenuDistance, self._MenuMessages, { MenuSelf = self, Distance = 150 / 1000 } )
-    Client.MenuDistance200 = MENU_GROUP_COMMAND:New( Client:GetGroup(), "200 meter", Client.MenuDistance, self._MenuMessages, { MenuSelf = self, Distance = 200 / 1000 } )
-  else
-    if Client.MainMenu then
-      Client.MainMenu:Remove()
-    end
-  end
-
-  local ClientID = Client:GetID()
-  self:T( ClientID )
-  if not self.TrackingMissiles[ClientID] then
-    self.TrackingMissiles[ClientID] = {}
-  end
-  self.TrackingMissiles[ClientID].Client = Client
-  if not self.TrackingMissiles[ClientID].MissileData then
-    self.TrackingMissiles[ClientID].MissileData = {}
-  end
-end
-
---- Creates the main object which is handling missile tracking.
--- When a missile is fired a SCHEDULER is set off that follows the missile. When near a certain a client player, the missile will be destroyed.
--- @param #MISSILETRAINER self
--- @param #number Distance The distance in meters when a tracked missile needs to be destroyed when close to a player.
--- @param #string Briefing (Optional) Will show a text to the players when starting their mission. Can be used for briefing purposes.
--- @return #MISSILETRAINER
-function MISSILETRAINER:New( Distance, Briefing )
-  local self = BASE:Inherit( self, BASE:New() )
-  self:F( Distance )
-
-  if Briefing then
-    self.Briefing = Briefing
-  end
-
-  self.Schedulers = {}
-  self.SchedulerID = 0
-
-  self.MessageInterval = 2
-  self.MessageLastTime = timer.getTime()
-
-  self.Distance = Distance / 1000
-
-  self:HandleEvent( EVENTS.Shot )
-
-  self.DBClients = SET_CLIENT:New():FilterStart()
-
-
---  for ClientID, Client in pairs( self.DBClients.Database ) do
---      self:F( "ForEach:" .. Client.UnitName )
---      Client:Alive( self._Alive, self )
---  end
---
-  self.DBClients:ForEachClient(
-    function( Client )
-      self:F( "ForEach:" .. Client.UnitName )
-      Client:Alive( self._Alive, self )
-    end
-  )
-
-
-
---  	self.DB:ForEachClient(
---  	 -- @param Wrapper.Client#CLIENT Client
---  	 function( Client )
---
---        ... actions ...
---
---  	 end
---  	)
-
-  self.MessagesOnOff = true
-
-  self.TrackingToAll = false
-  self.TrackingOnOff = true
-  self.TrackingFrequency = 3
-
-  self.AlertsToAll = true
-  self.AlertsHitsOnOff = true
-  self.AlertsLaunchesOnOff = true
-
-  self.DetailsRangeOnOff = true
-  self.DetailsBearingOnOff = true
-
-  self.MenusOnOff = true
-
-  self.TrackingMissiles = {}
-
-  self.TrackingScheduler = SCHEDULER:New( self, self._TrackMissiles, {}, 0.5, 0.05, 0 )
-
-  return self
-end
-
--- Initialization methods.
-
-
-
---- Sets by default the display of any message to be ON or OFF.
--- @param #MISSILETRAINER self
--- @param #boolean MessagesOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitMessagesOnOff( MessagesOnOff )
-  self:F( MessagesOnOff )
-
-  self.MessagesOnOff = MessagesOnOff
-  if self.MessagesOnOff == true then
-    MESSAGE:New( "Messages ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Messages OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the missile tracking report for all players or only for those missiles targeted to you.
--- @param #MISSILETRAINER self
--- @param #boolean TrackingToAll true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitTrackingToAll( TrackingToAll )
-  self:F( TrackingToAll )
-
-  self.TrackingToAll = TrackingToAll
-  if self.TrackingToAll == true then
-    MESSAGE:New( "Missile tracking to all players ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Missile tracking to all players OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the display of missile tracking report to be ON or OFF.
--- @param #MISSILETRAINER self
--- @param #boolean TrackingOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitTrackingOnOff( TrackingOnOff )
-  self:F( TrackingOnOff )
-
-  self.TrackingOnOff = TrackingOnOff
-  if self.TrackingOnOff == true then
-    MESSAGE:New( "Missile tracking ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Missile tracking OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Increases, decreases the missile tracking message display frequency with the provided time interval in seconds.
--- The default frequency is a 3 second interval, so the Tracking Frequency parameter specifies the increase or decrease from the default 3 seconds or the last frequency update.
--- @param #MISSILETRAINER self
--- @param #number TrackingFrequency Provide a negative or positive value in seconds to incraese or decrease the display frequency.
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitTrackingFrequency( TrackingFrequency )
-  self:F( TrackingFrequency )
-
-  self.TrackingFrequency = self.TrackingFrequency + TrackingFrequency
-  if self.TrackingFrequency < 0.5 then
-    self.TrackingFrequency = 0.5
-  end
-  if self.TrackingFrequency then
-    MESSAGE:New( "Missile tracking frequency is " .. self.TrackingFrequency .. " seconds.", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the display of alerts to be shown to all players or only to you.
--- @param #MISSILETRAINER self
--- @param #boolean AlertsToAll true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitAlertsToAll( AlertsToAll )
-  self:F( AlertsToAll )
-
-  self.AlertsToAll = AlertsToAll
-  if self.AlertsToAll == true then
-    MESSAGE:New( "Alerts to all players ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Alerts to all players OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the display of hit alerts ON or OFF.
--- @param #MISSILETRAINER self
--- @param #boolean AlertsHitsOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitAlertsHitsOnOff( AlertsHitsOnOff )
-  self:F( AlertsHitsOnOff )
-
-  self.AlertsHitsOnOff = AlertsHitsOnOff
-  if self.AlertsHitsOnOff == true then
-    MESSAGE:New( "Alerts Hits ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Alerts Hits OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the display of launch alerts ON or OFF.
--- @param #MISSILETRAINER self
--- @param #boolean AlertsLaunchesOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitAlertsLaunchesOnOff( AlertsLaunchesOnOff )
-  self:F( AlertsLaunchesOnOff )
-
-  self.AlertsLaunchesOnOff = AlertsLaunchesOnOff
-  if self.AlertsLaunchesOnOff == true then
-    MESSAGE:New( "Alerts Launches ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Alerts Launches OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the display of range information of missiles ON of OFF.
--- @param #MISSILETRAINER self
--- @param #boolean DetailsRangeOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitRangeOnOff( DetailsRangeOnOff )
-  self:F( DetailsRangeOnOff )
-
-  self.DetailsRangeOnOff = DetailsRangeOnOff
-  if self.DetailsRangeOnOff == true then
-    MESSAGE:New( "Range display ON", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Range display OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Sets by default the display of bearing information of missiles ON of OFF.
--- @param #MISSILETRAINER self
--- @param #boolean DetailsBearingOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitBearingOnOff( DetailsBearingOnOff )
-  self:F( DetailsBearingOnOff )
-
-  self.DetailsBearingOnOff = DetailsBearingOnOff
-  if self.DetailsBearingOnOff == true then
-    MESSAGE:New( "Bearing display OFF", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Bearing display OFF", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
---- Enables / Disables the menus.
--- @param #MISSILETRAINER self
--- @param #boolean MenusOnOff true or false
--- @return #MISSILETRAINER self
-function MISSILETRAINER:InitMenusOnOff( MenusOnOff )
-  self:F( MenusOnOff )
-
-  self.MenusOnOff = MenusOnOff
-  if self.MenusOnOff == true then
-    MESSAGE:New( "Menus are ENABLED (only when a player rejoins a slot)", 15, "Menu" ):ToAll()
-  else
-    MESSAGE:New( "Menus are DISABLED", 15, "Menu" ):ToAll()
-  end
-
-  return self
-end
-
-
--- Menu functions
-
-function MISSILETRAINER._MenuMessages( MenuParameters )
-
-  local self = MenuParameters.MenuSelf
-
-  if MenuParameters.MessagesOnOff ~= nil then
-    self:InitMessagesOnOff( MenuParameters.MessagesOnOff )
-  end
-
-  if MenuParameters.TrackingToAll ~= nil then
-    self:InitTrackingToAll( MenuParameters.TrackingToAll )
-  end
-
-  if MenuParameters.TrackingOnOff ~= nil then
-    self:InitTrackingOnOff( MenuParameters.TrackingOnOff )
-  end
-
-  if MenuParameters.TrackingFrequency ~= nil then
-    self:InitTrackingFrequency( MenuParameters.TrackingFrequency )
-  end
-
-  if MenuParameters.AlertsToAll ~= nil then
-    self:InitAlertsToAll( MenuParameters.AlertsToAll )
-  end
-
-  if MenuParameters.AlertsHitsOnOff ~= nil then
-    self:InitAlertsHitsOnOff( MenuParameters.AlertsHitsOnOff )
-  end
-
-  if MenuParameters.AlertsLaunchesOnOff ~= nil then
-    self:InitAlertsLaunchesOnOff( MenuParameters.AlertsLaunchesOnOff )
-  end
-
-  if MenuParameters.DetailsRangeOnOff ~= nil then
-    self:InitRangeOnOff( MenuParameters.DetailsRangeOnOff )
-  end
-
-  if MenuParameters.DetailsBearingOnOff ~= nil then
-    self:InitBearingOnOff( MenuParameters.DetailsBearingOnOff )
-  end
-
-  if MenuParameters.Distance ~= nil then
-    self.Distance = MenuParameters.Distance
-    MESSAGE:New( "Hit detection distance set to " .. ( self.Distance * 1000 ) .. " meters", 15, "Menu" ):ToAll()
-  end
-
-end
-
---- Detects if an SA site was shot with an anti radiation missile. In this case, take evasive actions based on the skill level set within the ME.
--- @param #MISSILETRAINER self
--- @param Core.Event#EVENTDATA EventData
-function MISSILETRAINER:OnEventShot( EVentData )
-  self:F( { EVentData } )
-
-  local TrainerSourceDCSUnit = EVentData.IniDCSUnit
-  local TrainerSourceDCSUnitName = EVentData.IniDCSUnitName
-  local TrainerWeapon = EVentData.Weapon -- Identify the weapon fired
-  local TrainerWeaponName = EVentData.WeaponName	-- return weapon type
-
-  self:T( "Missile Launched = " .. TrainerWeaponName )
-
-  local TrainerTargetDCSUnit = TrainerWeapon:getTarget() -- Identify target
-  if TrainerTargetDCSUnit then
-    local TrainerTargetDCSUnitName = Unit.getName( TrainerTargetDCSUnit )
-    local TrainerTargetSkill =  _DATABASE.Templates.Units[TrainerTargetDCSUnitName].Template.skill
-
-    self:T(TrainerTargetDCSUnitName )
-
-    local Client = self.DBClients:FindClient( TrainerTargetDCSUnitName )
-    if Client then
-
-      local TrainerSourceUnit = UNIT:Find( TrainerSourceDCSUnit )
-      local TrainerTargetUnit = UNIT:Find( TrainerTargetDCSUnit )
-
-      if self.MessagesOnOff == true and self.AlertsLaunchesOnOff == true then
-
-        local Message = MESSAGE:New(
-          string.format( "%s launched a %s",
-            TrainerSourceUnit:GetTypeName(),
-            TrainerWeaponName
-          ) .. self:_AddRange( Client, TrainerWeapon ) .. self:_AddBearing( Client, TrainerWeapon ), 5, "Launch Alert" )
-
-        if self.AlertsToAll then
-          Message:ToAll()
-        else
-          Message:ToClient( Client )
-        end
-      end
-
-      local ClientID = Client:GetID()
-      self:T( ClientID )
-      local MissileData = {}
-      MissileData.TrainerSourceUnit = TrainerSourceUnit
-      MissileData.TrainerWeapon = TrainerWeapon
-      MissileData.TrainerTargetUnit = TrainerTargetUnit
-      MissileData.TrainerWeaponTypeName = TrainerWeapon:getTypeName()
-      MissileData.TrainerWeaponLaunched = true
-      table.insert( self.TrackingMissiles[ClientID].MissileData, MissileData )
-      --self:T( self.TrackingMissiles )
-    end
-  else
-     -- TODO: some weapons don't know the target unit... Need to develop a workaround for this.
- if ( TrainerWeapon:getTypeName() == "9M311" ) then
-		SCHEDULER:New( TrainerWeapon, TrainerWeapon.destroy, {}, 1 )
-		else
-		end
-  end
-end
-
-function MISSILETRAINER:_AddRange( Client, TrainerWeapon )
-
-  local RangeText = ""
-
-  if self.DetailsRangeOnOff then
-
-    local PositionMissile = TrainerWeapon:getPoint()
-    local TargetVec3 = Client:GetVec3()
-
-    local Range = ( ( PositionMissile.x - TargetVec3.x )^2 +
-      ( PositionMissile.y - TargetVec3.y )^2 +
-      ( PositionMissile.z - TargetVec3.z )^2
-      ) ^ 0.5 / 1000
-
-    RangeText = string.format( ", at %4.2fkm", Range )
-  end
-
-  return RangeText
-end
-
-function MISSILETRAINER:_AddBearing( Client, TrainerWeapon )
-
-  local BearingText = ""
-
-  if self.DetailsBearingOnOff then
-
-    local PositionMissile = TrainerWeapon:getPoint()
-    local TargetVec3 = Client:GetVec3()
-
-    self:T2( { TargetVec3, PositionMissile })
-
-    local DirectionVector = { x = PositionMissile.x - TargetVec3.x, y = PositionMissile.y - TargetVec3.y, z = PositionMissile.z - TargetVec3.z }
-    local DirectionRadians = math.atan2( DirectionVector.z, DirectionVector.x )
-
-    if DirectionRadians < 0 then
-      DirectionRadians = DirectionRadians + 2 * math.pi
-    end
-    local DirectionDegrees = DirectionRadians * 180 / math.pi
-
-    BearingText = string.format( ", %d degrees", DirectionDegrees )
-  end
-
-  return BearingText
-end
-
-
-function MISSILETRAINER:_TrackMissiles()
-  self:F2()
-
-
-  local ShowMessages = false
-  if self.MessagesOnOff and self.MessageLastTime + self.TrackingFrequency <= timer.getTime() then
-    self.MessageLastTime = timer.getTime()
-    ShowMessages = true
-  end
-
-  -- ALERTS PART
-
-  -- Loop for all Player Clients to check the alerts and deletion of missiles.
-  for ClientDataID, ClientData in pairs( self.TrackingMissiles ) do
-
-    local Client = ClientData.Client
-
-    if Client and Client:IsAlive() then
-
-      for MissileDataID, MissileData in pairs( ClientData.MissileData ) do
-        self:T3( MissileDataID )
-
-        local TrainerSourceUnit = MissileData.TrainerSourceUnit
-        local TrainerWeapon = MissileData.TrainerWeapon
-        local TrainerTargetUnit = MissileData.TrainerTargetUnit
-        local TrainerWeaponTypeName = MissileData.TrainerWeaponTypeName
-        local TrainerWeaponLaunched = MissileData.TrainerWeaponLaunched
-
-        if Client and Client:IsAlive() and TrainerSourceUnit and TrainerSourceUnit:IsAlive() and TrainerWeapon and TrainerWeapon:isExist() and TrainerTargetUnit and TrainerTargetUnit:IsAlive() then
-          local PositionMissile = TrainerWeapon:getPosition().p
-          local TargetVec3 = Client:GetVec3()
-
-          local Distance = ( ( PositionMissile.x - TargetVec3.x )^2 +
-            ( PositionMissile.y - TargetVec3.y )^2 +
-            ( PositionMissile.z - TargetVec3.z )^2
-            ) ^ 0.5 / 1000
-
-          if Distance <= self.Distance then
-            -- Hit alert
-            TrainerWeapon:destroy()
-            if self.MessagesOnOff == true and self.AlertsHitsOnOff == true then
-
-              self:T( "killed" )
-
-              local Message = MESSAGE:New(
-                string.format( "%s launched by %s killed %s",
-                  TrainerWeapon:getTypeName(),
-                  TrainerSourceUnit:GetTypeName(),
-                  TrainerTargetUnit:GetPlayerName()
-                ), 15, "Hit Alert" )
-
-              if self.AlertsToAll == true then
-                Message:ToAll()
-              else
-                Message:ToClient( Client )
-              end
-
-              MissileData = nil
-              table.remove( ClientData.MissileData, MissileDataID )
-              self:T(ClientData.MissileData)
-            end
-          end
-        else
-          if not ( TrainerWeapon and TrainerWeapon:isExist() ) then
-            if self.MessagesOnOff == true and self.AlertsLaunchesOnOff == true then
-              -- Weapon does not exist anymore. Delete from Table
-              local Message = MESSAGE:New(
-                string.format( "%s launched by %s self destructed!",
-                  TrainerWeaponTypeName,
-                  TrainerSourceUnit:GetTypeName()
-                ), 5, "Tracking" )
-
-              if self.AlertsToAll == true then
-                Message:ToAll()
-              else
-                Message:ToClient( Client )
-              end
-            end
-            MissileData = nil
-            table.remove( ClientData.MissileData, MissileDataID )
-            self:T( ClientData.MissileData )
-          end
-        end
-      end
-    else
-      self.TrackingMissiles[ClientDataID] = nil
-    end
-  end
-
-  if ShowMessages == true and self.MessagesOnOff == true and self.TrackingOnOff == true then -- Only do this when tracking information needs to be displayed.
-
-    -- TRACKING PART
-
-    -- For the current client, the missile range and bearing details are displayed To the Player Client.
-    -- For the other clients, the missile range and bearing details are displayed To the other Player Clients.
-    -- To achieve this, a cross loop is done for each Player Client <-> Other Player Client missile information.
-
-    -- Main Player Client loop
-    for ClientDataID, ClientData in pairs( self.TrackingMissiles ) do
-
-      local Client = ClientData.Client
-      --self:T2( { Client:GetName() } )
-
-
-      ClientData.MessageToClient = ""
-      ClientData.MessageToAll = ""
-
-      -- Other Players Client loop
-      for TrackingDataID, TrackingData in pairs( self.TrackingMissiles ) do
-
-        for MissileDataID, MissileData in pairs( TrackingData.MissileData ) do
-          --self:T3( MissileDataID )
-
-          local TrainerSourceUnit = MissileData.TrainerSourceUnit
-          local TrainerWeapon = MissileData.TrainerWeapon
-          local TrainerTargetUnit = MissileData.TrainerTargetUnit
-          local TrainerWeaponTypeName = MissileData.TrainerWeaponTypeName
-          local TrainerWeaponLaunched = MissileData.TrainerWeaponLaunched
-
-          if Client and Client:IsAlive() and TrainerSourceUnit and TrainerSourceUnit:IsAlive() and TrainerWeapon and TrainerWeapon:isExist() and TrainerTargetUnit and TrainerTargetUnit:IsAlive() then
-
-            if ShowMessages == true then
-              local TrackingTo
-              TrackingTo = string.format( "  -> %s",
-                TrainerWeaponTypeName
-              )
-
-              if ClientDataID == TrackingDataID then
-                if ClientData.MessageToClient == "" then
-                  ClientData.MessageToClient = "Missiles to You:\n"
-                end
-                ClientData.MessageToClient = ClientData.MessageToClient .. TrackingTo .. self:_AddRange( ClientData.Client, TrainerWeapon ) .. self:_AddBearing( ClientData.Client, TrainerWeapon ) .. "\n"
-              else
-                if self.TrackingToAll == true then
-                  if ClientData.MessageToAll == "" then
-                    ClientData.MessageToAll = "Missiles to other Players:\n"
-                  end
-                  ClientData.MessageToAll = ClientData.MessageToAll .. TrackingTo .. self:_AddRange( ClientData.Client, TrainerWeapon ) .. self:_AddBearing( ClientData.Client, TrainerWeapon ) .. " ( " .. TrainerTargetUnit:GetPlayerName()  ..   " )\n"
-                end
-              end
-            end
-          end
-        end
-      end
-
-      -- Once the Player Client and the Other Player Client tracking messages are prepared, show them.
-      if ClientData.MessageToClient ~= "" or ClientData.MessageToAll ~= "" then
-        local Message = MESSAGE:New( ClientData.MessageToClient .. ClientData.MessageToAll, 1, "Tracking" ):ToClient( Client )
-      end
-    end
-  end
-
-  return true
 end
 --- **Functional** - Monitor airbase traffic and regulate speed while taxiing.
 --
@@ -83107,6 +83904,17 @@ function RAT:SetMaxCruiseSpeed(speed)
   return self
 end
 
+--- Set the minimum cruise speed of the aircraft.
+-- @param #RAT self
+-- @param #number speed Speed in km/h.
+-- @return #RAT RAT self object.
+function RAT:SetMinCruiseSpeed(speed)
+  self:F2(speed)
+  -- Convert to m/s.
+  self.Vcruisemin=speed/3.6
+  return self
+end
+
 --- Set the climb rate. This automatically sets the climb angle.
 -- @param #RAT self
 -- @param #number rate Climb rate in ft/min. Default is 1500 ft/min. Minimum is 100 ft/min. Maximum is 15,000 ft/min.
@@ -83437,10 +84245,18 @@ function RAT:_InitAircraft(DCSgroup)
     self.aircraft.length=16
     self.aircraft.height=5
     self.aircraft.width=9
-  elseif DCStype == "Saab340" then      --   <- These lines added
-    self.aircraft.length=19.73          --   <- These lines added
-    self.aircraft.height=6.97           --   <- These lines added
-    self.aircraft.width=21.44           --   <- These lines added
+  elseif DCStype == "Saab340" then
+    self.aircraft.length=19.73
+    self.aircraft.height=6.97
+    self.aircraft.width=21.44
+  elseif DCStype == "vwv_l-1049" then
+    self.aircraft.length=35.41
+    self.aircraft.height=7.54
+    self.aircraft.width=38.47
+  elseif DCStype == "uh2b" then
+    self.aircraft.length=11.48          
+    self.aircraft.height=4.11
+    self.aircraft.width=13.41
   end
 
   self.aircraft.box=math.max(self.aircraft.length,self.aircraft.width)
@@ -84115,9 +84931,15 @@ function RAT:_SetRoute(takeoff, landing, _departure, _destination, _waypoint)
     -- Max cruise speed 90% of Vmax or 900 km/h whichever is lower.
     VxCruiseMax = math.min(self.aircraft.Vmax*0.90, 250)
   end
-
-  -- Min cruise speed 70% of max cruise or 600 km/h whichever is lower.
-  local VxCruiseMin = math.min(VxCruiseMax*0.70, 166)
+  
+    -- Min cruise speed.
+  local VxCruiseMin
+  if self.Vcruisemin then
+    VxCruiseMin = self.Vcruisemin
+  else
+    -- Min cruise speed 70% of max cruise or 600 km/h whichever is lower.
+    VxCruiseMin = math.min(VxCruiseMax*0.70, 166)
+  end
 
   -- Cruise speed (randomized). Expectation value at midpoint between min and max.
   local VxCruise = UTILS.RandomGaussian((VxCruiseMax-VxCruiseMin)/2+VxCruiseMin, (VxCruiseMax-VxCruiseMax)/4, VxCruiseMin, VxCruiseMax)
@@ -84319,6 +85141,14 @@ function RAT:_SetRoute(takeoff, landing, _departure, _destination, _waypoint)
   if landing==RAT.wp.air then
     local vec2=destination:GetRandomVec2()
     Pdestination=COORDINATE:NewFromVec2(vec2)
+  elseif destination:IsShip() then
+    -- Crudely predict where the ship will be
+    local _ship = UNIT:FindByName(destination:GetName())
+    local _shipHeading = _ship:GetHeading()
+    Pdestination=destination:GetCoordinate()
+    local _transitTime = Pdeparture:Get2DDistance(Pdestination) / VxCruise
+    Pdestination.x = Pdestination.x + (_ship:GetGroundSpeed() * math.cos(math.rad(_shipHeading)) * _transitTime)
+    Pdestination.z = Pdestination.z + (_ship:GetGroundSpeed() * math.sin(math.rad(_shipHeading)) * _transitTime)
   else
     Pdestination=destination:GetCoordinate()
   end
@@ -93637,6 +94467,7 @@ end
 --     -- Start ARTY process.
 --     normandy:Start()
 --
+--
 -- @field #ARTY
 ARTY={
   ClassName="ARTY",
@@ -94336,37 +95167,6 @@ function ARTY:New(group, alias)
 
   return self
 end
-
---- Creates a new ARTY object from a MOOSE CARGO_GROUP object.
--- @param #ARTY self
--- @param Cargo.CargoGroup#CARGO_GROUP cargogroup The CARGO GROUP object for which artillery tasks should be assigned.
--- @param alias (Optional) Alias name the group will be calling itself when sending messages. Default is the group name.
--- @return #ARTY ARTY object or nil if group does not exist or is not a ground or naval group.
-function ARTY:NewFromCargoGroup(cargogroup, alias)
-
-  if cargogroup then
-    BASE:T(string.format("ARTY script version %s. Added CARGO group %s.", ARTY.version, cargogroup:GetName()))
-  else
-    BASE:E("ERROR: Requested ARTY CARGO GROUP does not exist! (Has to be a MOOSE CARGO(!) group.)")
-    return nil
-  end
-
-  -- Get group belonging to the cargo group.
-  local group=cargogroup:GetObject()
-
-  -- Create ARTY object.
-  local arty=ARTY:New(group,alias)
-
-  -- Set iscargo flag.
-  arty.iscargo=true
-
-  -- Set cargo group object.
-  arty.cargogroup=cargogroup
-
-  return arty
-end
-
-
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- User Functions
@@ -101583,7 +102383,6 @@ end
 -- ===
 --
 -- ### Author: **funkyfranky**
--- ### Co-author: FlightControl (cargo dispatcher classes)
 --
 -- ===
 --
@@ -101680,14 +102479,7 @@ end
 -- a reasonable degree in DCS at the moment and hence cannot be used yet.
 --
 -- Furthermore, ground assets can be transferred between warehouses by transport units. These are APCs, helicopters and airplanes. The transportation process is modeled
--- in a realistic way by using the corresponding cargo dispatcher classes, i.e.
---
--- * @{AI.AI_Cargo_Dispatcher_APC#AI_DISPATCHER_APC}
--- * @{AI.AI_Cargo_Dispatcher_Helicopter#AI_DISPATCHER_HELICOPTER}
--- * @{AI.AI_Cargo_Dispatcher_Airplane#AI_DISPATCHER_AIRPLANE}
---
--- Depending on which cargo dispatcher is used (ground or airbore), similar considerations like in the self propelled case are necessary. Howver, note that
--- the dispatchers as of yet cannot use user defined off road paths for example since they are classes of their own and use a different routing logic.
+-- in a realistic way by using the @{Ops.OpsTransport#OPSTRANSPORT} class.
 --
 -- ===
 --
@@ -101778,18 +102570,6 @@ end
 --  of 630 kg. This is important as groups cannot be split between carrier units when transporting, i.e. the total weight of the whole group must be smaller than the
 --  cargo bay of the transport carrier.
 --
--- ### Setting the Load Radius
--- Boading and loading of cargo into a carrier is modeled in a realistic fashion in the AI\_CARGO\DISPATCHER classes, which are used inernally by the WAREHOUSE class.
--- Meaning that troops (cargo) will board, i.e. run or drive to the carrier, and only once they are in close proximity to the transporter they will be loaded (disappear).
---
--- Unfortunately, there are some situations where problems can occur. For example, in DCS tanks have the strong tentendcy not to drive around obstacles but rather to roll over them.
--- I have seen cases where an aircraft of the same coalition as the tank was in its way and the tank drove right through the plane waiting on a parking spot and destroying it.
---
--- As a workaround it is possible to set a larger load radius so that the cargo units are despawned further away from the carrier via the optional **loadradius** parameter:
---
---     warehouseBatumi:AddAsset("Leopard 2", nil, nil, nil, nil, 250)
---
--- Adding the asset like this will cause the units to be loaded into the carrier already at a distance of 250 meters.
 --
 -- ### Setting the AI Skill
 --
@@ -102034,7 +102814,7 @@ end
 -- and the road connection is less than 3 km.
 --
 -- The user can set the road connection manually with the @{#WAREHOUSE.SetRoadConnection} function. This is only functional for self propelled assets at the moment
--- and not if using the AI dispatcher classes since these have a different logic to find the route.
+-- and not if using the OPSTRANSPORT class since this has a different logic to find the route.
 --
 -- ## Off Road Connections
 --
@@ -102143,7 +102923,7 @@ end
 --
 -- ## Cargo Bay and Weight Limitations
 --
--- The transportation of cargo is handled by the AI\_Dispatcher classes. These take the cargo bay of a carrier and the weight of
+-- The transportation of cargo is handled by the `OPSTRANSPORT` class. This takes the cargo bay of a carrier and the weight of
 -- the cargo into account so that a carrier can only load a realistic amount of cargo.
 --
 -- However, if troops are supposed to be transported between warehouses, there is one important limitations one has to keep in mind.
@@ -103346,12 +104126,13 @@ _WAREHOUSEDB  = {
 
 --- Warehouse class version.
 -- @field #string version
-WAREHOUSE.version="1.0.2a"
+WAREHOUSE.version="2.0.0"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO: Warehouse todo list.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+-- DONE: Switch from AI Dispatchers to OPSTRANSPORT
 -- TODO: Add check if assets "on the move" are stationary. Can happen if ground units get stuck in buildings. If stationary auto complete transport by adding assets to request warehouse? Time?
 -- TODO: Optimize findpathonroad. Do it only once (first time) and safe paths between warehouses similar to off-road paths.
 -- NOGO: Spawn assets only virtually, i.e. remove requested assets from stock but do NOT spawn them ==> Interface to A2A dispatcher! Maybe do a negative sign on asset number?
@@ -105291,12 +106072,15 @@ function WAREHOUSE:_JobDone()
   
               -- Check conditions for being back home.
               local ishome=false
-              if category==Group.Category.GROUND or category==Group.Category.HELICOPTER then
-                -- Units go back to the spawn zone, helicopters land and they should not move any more.
-                ishome=inspawnzone and onground and notmoving
+              if category==Group.Category.GROUND then
+                -- Ground units go back to the spawn zone and they should not move any more.
+                ishome=inspawnzone and notmoving
               elseif category==Group.Category.AIRPLANE then
                 -- Planes need to be on ground at their home airbase and should not move any more.
                 ishome=athomebase and onground and notmoving
+              elseif category==Group.Category.HELICOPTER then
+                -- Helicopters go back to their airbase or spawn zone and should not move any more.
+                ishome=(athomebase or inspawnzone) and onground and notmoving
               end
   
               -- Debug text.
@@ -106245,135 +107029,47 @@ function WAREHOUSE:onafterRequestSpawned(From, Event, To, Request, CargoGroupSet
   ------------------------------------------------------------------------------------------------------------------------------------
   -- Prepare cargo groups for transport
   ------------------------------------------------------------------------------------------------------------------------------------
+  
+  -- TODO: set asset.weight for cargos
 
-  -- Board radius, i.e. when the cargo will begin to board the carrier
-  local _boardradius=500
+  -------------------------
+  -- Create OPSTRANSPORT --
+  -------------------------
 
-  if Request.transporttype==WAREHOUSE.TransportType.AIRPLANE then
-    _boardradius=5000
-  elseif Request.transporttype==WAREHOUSE.TransportType.HELICOPTER then
-    --_loadradius=1000
-    --_boardradius=nil
-  elseif Request.transporttype==WAREHOUSE.TransportType.APC then
-    --_boardradius=nil
-  elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER 
-      or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
-    _boardradius=6000
-  end
-
-  -- Empty cargo group set.
-  local CargoGroups=SET_CARGO:New()
-
-  -- Add cargo groups to set.
-  for _,_group in pairs(CargoGroupSet:GetSetObjects()) do
-
-    -- Find asset belonging to this group.
-    local asset=self:FindAssetInDB(_group)
-    -- New cargo group object.
-    local cargogroup=CARGO_GROUP:New(_group, _cargotype,_group:GetName(),_boardradius, asset.loadradius)
-
-    -- Set weight for this group.
-    cargogroup:SetWeight(asset.weight)
-
-    -- Add group to group set.
-    CargoGroups:AddCargo(cargogroup)
-
-  end
-
-  ------------------------
-  -- Create Dispatchers --
-  ------------------------
-
-  -- Cargo dispatcher.
-  local CargoTransport --AI.AI_Cargo_Dispatcher#AI_CARGO_DISPATCHER
+  -- OPSTRANSPORT
+  local CargoTransport --Ops.OpsTransport#OPSTRANSPORT
 
   if Request.transporttype==WAREHOUSE.TransportType.AIRPLANE then
 
-    -- Pickup and deploy zones.
-    local PickupAirbaseSet = SET_ZONE:New():AddZone(ZONE_AIRBASE:New(self.airbase:GetName()))
-    local DeployAirbaseSet = SET_ZONE:New():AddZone(ZONE_AIRBASE:New(Request.airbase:GetName()))
-
-    -- Define dispatcher for this task.
-    CargoTransport = AI_CARGO_DISPATCHER_AIRPLANE:New(TransportGroupSet, CargoGroups, PickupAirbaseSet, DeployAirbaseSet)
-
-    -- Set home zone.
-    CargoTransport:SetHomeZone(ZONE_AIRBASE:New(self.airbase:GetName()))
+    CargoTransport = OPSTRANSPORT:New(CargoGroupSet, ZONE_AIRBASE:New(self.airbase:GetName()), ZONE_AIRBASE:New(Request.airbase:GetName()))
+    CargoTransport:SetEmbarkZone(self.spawnzone)
+    CargoTransport:SetDisembarkZone(Request.warehouse.spawnzone)
 
   elseif Request.transporttype==WAREHOUSE.TransportType.HELICOPTER then
-
-    -- Pickup and deploy zones.
-    local PickupZoneSet = SET_ZONE:New():AddZone(self.spawnzone)
-    local DeployZoneSet = SET_ZONE:New():AddZone(Request.warehouse.spawnzone)
-
-    -- Define dispatcher for this task.
-    CargoTransport = AI_CARGO_DISPATCHER_HELICOPTER:New(TransportGroupSet, CargoGroups, PickupZoneSet, DeployZoneSet)
-
-    -- Home zone.
-    CargoTransport:SetHomeZone(self.spawnzone)
+    
+    CargoTransport = OPSTRANSPORT:New(CargoGroupSet, self.spawnzone, Request.warehouse.spawnzone)
 
   elseif Request.transporttype==WAREHOUSE.TransportType.APC then
 
-    -- Pickup and deploy zones.
-    local PickupZoneSet = SET_ZONE:New():AddZone(self.spawnzone)
-    local DeployZoneSet = SET_ZONE:New():AddZone(Request.warehouse.spawnzone)
-
-    -- Define dispatcher for this task.
-    CargoTransport = AI_CARGO_DISPATCHER_APC:New(TransportGroupSet, CargoGroups, PickupZoneSet, DeployZoneSet, 0)
-
-    -- Set home zone.
-    CargoTransport:SetHomeZone(self.spawnzone)
+    CargoTransport = OPSTRANSPORT:New(CargoGroupSet, self.spawnzone, Request.warehouse.spawnzone)
 
   elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER 
-      or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
-
-    -- Pickup and deploy zones.
-    local PickupZoneSet = SET_ZONE:New():AddZone(self.portzone)
-    PickupZoneSet:AddZone(self.harborzone)
-    local DeployZoneSet = SET_ZONE:New():AddZone(Request.warehouse.harborzone)
-
+      or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then    
+    
+    CargoTransport = OPSTRANSPORT:New(CargoGroupSet, self.portzone, Request.warehouse.portzone)
+    CargoTransport:SetEmbarkZone(self.spawnzone)
+    CargoTransport:SetDisembarkZone(Request.warehouse.spawnzone)    
 
     -- Get the shipping lane to use and pass it to the Dispatcher
     local remotename = Request.warehouse.warehouse:GetName()
     local ShippingLane = self.shippinglanes[remotename][math.random(#self.shippinglanes[remotename])]
-
-    -- Define dispatcher for this task.
-    CargoTransport = AI_CARGO_DISPATCHER_SHIP:New(TransportGroupSet, CargoGroups, PickupZoneSet, DeployZoneSet, ShippingLane)
-
-    -- Set home zone
-    CargoTransport:SetHomeZone(self.portzone)
+    
+    -- TODO: Add shipping lane
+    -- CargoTransport:AddPathTransport(PathGroup)
 
   else
     self:E(self.lid.."ERROR: Unknown transporttype!")
   end
-
-  -- Set pickup and deploy radii.
-  -- The 20 m inner radius are to ensure that the helo does not land on the warehouse itself in the middle of the default spawn zone.
-  local pickupouter = 200
-  local pickupinner = 0
-  local deployouter = 200
-  local deployinner = 0
-  if Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER 
-    or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
-    pickupouter=1000
-    pickupinner=20
-    deployouter=1000
-    deployinner=0
-  else 
-    pickupouter=200
-    pickupinner=0
-    if self.spawnzone.Radius~=nil then
-      pickupouter=self.spawnzone.Radius
-      pickupinner=20
-    end
-    deployouter=200
-    deployinner=0
-    if self.spawnzone.Radius~=nil then
-      deployouter=Request.warehouse.spawnzone.Radius
-      deployinner=20
-    end
-  end
-  CargoTransport:SetPickupRadius(pickupouter, pickupinner)
-  CargoTransport:SetDeployRadius(deployouter, deployinner)
 
 
   -- Adjust carrier units. This has to come AFTER the dispatchers have been defined because they set the cargobay free weight!
@@ -106395,110 +107091,62 @@ function WAREHOUSE:onafterRequestSpawned(From, Event, To, Request, CargoGroupSet
     end
   end
 
-  --------------------------------
-  -- Dispatcher Event Functions --
-  --------------------------------
+  ----------------------------------
+  -- Opstransport Event Functions --
+  ----------------------------------
 
-  --- Function called after carrier picked up something.
-  function CargoTransport:OnAfterPickedUp(From, Event, To, Carrier, PickupZone)
-
-    -- Get warehouse state.
-    local warehouse=Carrier:GetState(Carrier, "WAREHOUSE") --#WAREHOUSE
-
-    -- Debug message.
-    local text=string.format("Carrier group %s picked up at pickup zone %s.", Carrier:GetName(), PickupZone:GetName())
-    warehouse:T(warehouse.lid..text)
-
-  end
-
-  --- Function called if something was deployed.
-  function CargoTransport:OnAfterDeployed(From, Event, To, Carrier, DeployZone)
-
-    -- Get warehouse state.
-    local warehouse=Carrier:GetState(Carrier, "WAREHOUSE") --#WAREHOUSE
-
-    -- Debug message.
-    -- TODO: Depoloy zone is nil!
-    --local text=string.format("Carrier group %s deployed at deploy zone %s.", Carrier:GetName(), DeployZone:GetName())
-    --warehouse:T(warehouse.lid..text)
-
-  end
-
-  --- Function called if carrier group is going home.
-  function CargoTransport:OnAfterHome(From, Event, To, Carrier, Coordinate, Speed, Height, HomeZone)
-
-    -- Get warehouse state.
-    local warehouse=Carrier:GetState(Carrier, "WAREHOUSE") --#WAREHOUSE
-
-    -- Debug message.
-    local text=string.format("Carrier group %s going home to zone %s.", Carrier:GetName(), HomeZone:GetName())
-    warehouse:T(warehouse.lid..text)
-
-  end
+  CargoTransport.warehouse = self
 
   --- Function called when a carrier unit has loaded a cargo group.
-  function CargoTransport:OnAfterLoaded(From, Event, To, Carrier, Cargo, CarrierUnit, PickupZone)
+  function CargoTransport:OnAfterLoaded(From, Event, To, OpsGroupCargo, OpsGroupCarrier, CarrierElement)
 
     -- Get warehouse state.
-    local warehouse=Carrier:GetState(Carrier, "WAREHOUSE") --#WAREHOUSE
-
-    -- Debug message.
-    local text=string.format("Carrier group %s loaded cargo %s into unit %s in pickup zone %s", Carrier:GetName(), Cargo:GetName(), CarrierUnit:GetName(), PickupZone:GetName())
-    warehouse:T(warehouse.lid..text)
+    local warehouse=CargoTransport.warehouse --#WAREHOUSE
 
     -- Get cargo group object.
-    local group=Cargo:GetObject() --Wrapper.Group#GROUP
+    local group=OpsGroupCargo:GetGroup() --Cargo:GetObject() --Wrapper.Group#GROUP
 
      -- Get request.
     local request=warehouse:_GetRequestOfGroup(group, warehouse.pending)
 
     -- Add cargo group to this carrier.
-    table.insert(request.carriercargo[CarrierUnit:GetName()], warehouse:_GetNameWithOut(Cargo:GetName()))
+    table.insert(request.carriercargo[CarrierElement.name], warehouse:_GetNameWithOut(group:GetName()))
 
   end
 
   --- Function called when cargo has arrived and was unloaded.
-  function CargoTransport:OnAfterUnloaded(From, Event, To, Carrier, Cargo, CarrierUnit, DeployZone)
+  function CargoTransport:OnAfterUnloaded(From, Event, To, OpsGroupCargo, OpsGroupCarrier)
 
     -- Get warehouse state.
-    local warehouse=Carrier:GetState(Carrier, "WAREHOUSE") --#WAREHOUSE
+    local warehouse=CargoTransport.warehouse --Carrier:GetState(Carrier, "WAREHOUSE") --#WAREHOUSE
 
     -- Get group obejet.
-    local group=Cargo:GetObject() --Wrapper.Group#GROUP
+    local group=OpsGroupCargo:GetGroup() --Cargo:GetObject() --Wrapper.Group#GROUP
 
     -- Debug message.
-    local text=string.format("Cargo group %s was unloaded from carrier unit %s.", tostring(group:GetName()), tostring(CarrierUnit:GetName()))
+    local text=string.format("Cargo group %s was unloaded from carrier group %s.", tostring(group:GetName()), tostring(OpsGroupCarrier:GetName()))
     warehouse:T(warehouse.lid..text)
-
-    -- Load the cargo in the warehouse.
-    --Cargo:Load(warehouse.warehouse)
 
     -- Trigger Arrived event.
     warehouse:Arrived(group)
   end
+  
+  -- TODO: Probably can also add some cargo/carrier dead functions here to simplify things at other places
 
-  --- On after BackHome event.
-  function CargoTransport:OnAfterBackHome(From, Event, To, Carrier)
 
-    -- Intellisense.
-    local carrier=Carrier --Wrapper.Group#GROUP
-
-    -- Get warehouse state.
-    local warehouse=carrier:GetState(carrier, "WAREHOUSE") --#WAREHOUSE
-    carrier:SmokeWhite()
-
-    -- Debug info.
-    local text=string.format("Carrier %s is back home at warehouse %s.", tostring(Carrier:GetName()), tostring(warehouse.warehouse:GetName()))
-    MESSAGE:New(text, 5):ToAllIf(warehouse.Debug)
-    warehouse:I(warehouse.lid..text)
-
-    -- Call arrived event for carrier.
-    warehouse:__Arrived(1, Carrier)
-
+  -- Assign cargo to carriers  
+  for _,carriergroup in pairs(TransportGroupSet:GetSetObjects()) do
+    local opsgroup=nil
+    if Request.transporttype==WAREHOUSE.TransportType.AIRPLANE or Request.transporttype==WAREHOUSE.TransportType.HELICOPTER then
+      opsgroup=FLIGHTGROUP:New(carriergroup)
+    elseif Request.transporttype==WAREHOUSE.TransportType.APC then
+      opsgroup=ARMYGROUP:New(carriergroup)
+    elseif Request.transporttype==WAREHOUSE.TransportType.SHIP or Request.transporttype==WAREHOUSE.TransportType.AIRCRAFTCARRIER 
+        or Request.transporttype==WAREHOUSE.TransportType.ARMEDSHIP or Request.transporttype==WAREHOUSE.TransportType.WARSHIP then
+      opsgroup=NAVYGROUP:New(carriergroup)
+    end  
+    opsgroup:AddOpsTransport(CargoTransport)
   end
-
-  -- Start dispatcher.
-  CargoTransport:__Start(5)
 
 end
 
@@ -112980,7 +113628,7 @@ end
 MANTIS = {
   ClassName             = "MANTIS",
   name                  = "mymantis",
-  version               = "0.9.43",
+  version               = "0.9.44",
   SAM_Templates_Prefix  = "",
   SAM_Group             = nil,
   EWR_Templates_Prefix  = "",
@@ -113097,10 +113745,10 @@ MANTIS.SamData = {
   ["Silkworm"] = { Range=90, Blindspot=1, Height=0.2, Type="Long", Radar="Silkworm" },
   ["C-RAM"] = { Range=2, Blindspot=0, Height=2, Type="Point", Radar="HEMTT_C-RAM_Phalanx", Point="true" },
   -- units from HDS Mod, multi launcher options is tricky
-  ["SA-10B"] = { Range=75, Blindspot=0, Height=18, Type="Medium" , Radar="SA-10B"},
-  ["SA-17"] = { Range=50, Blindspot=3, Height=50, Type="Medium", Radar="SA-17", ARMCapacity=3 },
-  ["SA-20A"] = { Range=150, Blindspot=5, Height=27, Type="Long" , Radar="S-300PMU1"},
-  ["SA-20B"] = { Range=200, Blindspot=4, Height=27, Type="Long" , Radar="S-300PMU2"},
+  ["SA-10B"] = { Range=75, Blindspot=0, Height=18, Type="Medium" , Radar="SA-10B", ARMCapacity=4},
+  ["SA-17"] = { Range=50, Blindspot=3, Height=50, Type="Medium", Radar="SA-17", ARMCapacity=4 },
+  ["SA-20A"] = { Range=150, Blindspot=5, Height=27, Type="Long" , Radar="S-300PMU1", ARMCapacity=16},
+  ["SA-20B"] = { Range=200, Blindspot=4, Height=27, Type="Long" , Radar="S-300PMU2", ARMCapacity=18},
   ["SA-21"] = { Range=380, Blindspot=5, Height=30, Type="Long" , Radar="92N6E"},
   ["S-300VM"] = { Range=200, Blindspot=5, Height=30, Type="Long" , Radar="9S32M", ARMCapacity=4},
   ["S-300V4"] = { Range=380, Blindspot=5, Height=30, Type="Long" , Radar="9S32M", ARMCapacity=4},
@@ -113111,9 +113759,9 @@ MANTIS.SamData = {
   ["Nike"] = { Range=155, Blindspot=6, Height=30, Type="Long", Radar="HIPAR" },
   ["Dog Ear"] = { Range=11, Blindspot=0, Height=9, Type="Point", Radar="Dog Ear", Point="true" },
   -- CH Added to DCS core 2.9.19.x
-  ["Pantsir S1"] = { Range=20, Blindspot=1.2, Height=15, Type="Point", Radar="PantsirS1" , Point="true" }, 
+  ["Pantsir S1"] = { Range=20, Blindspot=1.2, Height=15, Type="Point", Radar="PantsirS1" , Point="true", ARMCapacity=3 }, 
   ["Tor M2"] = { Range=12, Blindspot=1, Height=10, Type="Point", Radar="TorM2", Point="true", ARMCapacity=4  },
-  ["IRIS-T SLM"] = { Range=40, Blindspot=0.5, Height=20, Type="Medium", Radar="CH_IRIST_SLM" }, 
+  ["IRIS-T SLM"] = { Range=40, Blindspot=0.5, Height=20, Type="Medium", Radar="CH_IRIST_SLM", ARMCapacity=12  }, -- 4 per starter, usually 3 starters in a battery
 }
 
 --- SAM data HDS
@@ -113129,13 +113777,13 @@ MANTIS.SamDataHDS = {
   -- group name MUST contain HDS to ID launcher type correctly!
   ["SA-2 HDS"] = { Range=56, Blindspot=7, Height=30, Type="Medium", Radar="V759" }, 
   ["SA-3 HDS"] = { Range=20, Blindspot=6, Height=30, Type="Short", Radar="V-601P" },  
-  ["SA-10B HDS"] = { Range=90, Blindspot=5, Height=25, Type="Long" , Radar="5P85CE ln"}, -- V55RUD
+  ["SA-10B HDS"] = { Range=90, Blindspot=5, Height=25, Type="Long" , Radar="5P85CE ln", ARMCapacity=8}, -- V55RUD
   ["SA-10C HDS"] = { Range=75, Blindspot=5, Height=25, Type="Long" , Radar="5P85SE ln", ARMCapacity=3}, -- V55RUD
-  ["SA-17 HDS"] = { Range=50, Blindspot=3, Height=50, Type="Medium", Radar="SA-17 " },
-  ["SA-12 HDS 2"] = { Range=100, Blindspot=13, Height=30, Type="Long" , Radar="S-300V 9A82 l"},
-  ["SA-12 HDS 1"] = { Range=75, Blindspot=6, Height=25, Type="Long" , Radar="S-300V 9A83 l"},
-  ["SA-23 HDS 2"] = { Range=200, Blindspot=5, Height=37, Type="Long", Radar="S-300VM 9A82ME" },
-  ["SA-23 HDS 1"] = { Range=100, Blindspot=1, Height=50, Type="Long", Radar="S-300VM 9A83ME" },
+  ["SA-17 HDS"] = { Range=50, Blindspot=3, Height=50, Type="Medium", Radar="SA-17", ARMCapacity=4 },
+  ["SA-12 HDS 2"] = { Range=100, Blindspot=13, Height=30, Type="Long" , Radar="S-300V 9A82 l", ARMCapacity=12},
+  ["SA-12 HDS 1"] = { Range=75, Blindspot=6, Height=25, Type="Long" , Radar="S-300V 9A83 l", ARMCapacity=12},
+  ["SA-23 HDS 2"] = { Range=200, Blindspot=5, Height=37, Type="Long", Radar="S-300VM 9A82ME", ARMCapacity=14 },
+  ["SA-23 HDS 1"] = { Range=100, Blindspot=1, Height=50, Type="Long", Radar="S-300VM 9A83ME", ARMCapacity=14 },
   ["HQ-2 HDS"] = { Range=50, Blindspot=6, Height=35, Type="Medium", Radar="HQ_2_Guideline_LN" },
   ["SAMPT Block 1 HDS"] = { Range=120, Blindspot=1, Height=20, Type="long", Radar="SAMPT_MLT_Blk1" }, -- Block 1 Launcher
   ["SAMPT Block 1INT HDS"] = { Range=150, Blindspot=1, Height=25, Type="long", Radar="SAMPT_MLT_Blk1NT" }, -- Block 1-INT Launcher
@@ -113180,20 +113828,20 @@ MANTIS.SamDataCH = {
     -- group name MUST contain CHM to ID launcher type correctly!
    ["2S38 CHM"] = { Range=6, Blindspot=0.1, Height=4.5, Type="Short", Radar="2S38" },
    ["PantsirS1 CHM"] = { Range=20, Blindspot=1.2, Height=15, Type="Point", Radar="PantsirS1", Point="true", ARMCapacity=3 }, 
-   ["PantsirS2 CHM"] = { Range=30, Blindspot=1.2, Height=18, Type="Medium", Radar="PantsirS2" }, 
+   ["PantsirS2 CHM"] = { Range=30, Blindspot=1.2, Height=18, Type="Medium", Radar="PantsirS2", ARMCapacity=4 }, 
    ["PGL-625 CHM"] = { Range=10, Blindspot=1, Height=5, Type="Short", Radar="PGL_625" }, 
    ["HQ-17A CHM"] = { Range=15, Blindspot=1.5, Height=10, Type="Short", Radar="HQ17A" }, 
    ["M903PAC2 CHM"] = { Range=120, Blindspot=3, Height=24.5, Type="Long", Radar="MIM104_M903_PAC2" },
    ["M903PAC3 CHM"] = { Range=160, Blindspot=1, Height=40, Type="Long", Radar="MIM104_M903_PAC3" }, 
-   ["TorM2 CHM"] = { Range=12, Blindspot=1, Height=10, Type="Point", Radar="TorM2", Point="true"  },
-   ["TorM2K CHM"] = { Range=12, Blindspot=1, Height=10, Type="Point", Radar="TorM2K", Point="true"  },
-   ["TorM2M CHM"] = { Range=16, Blindspot=1, Height=10, Type="Point", Radar="TorM2M", Point="true"  }, 
+   ["TorM2 CHM"] = { Range=12, Blindspot=1, Height=10, Type="Point", Radar="TorM2", Point="true", ARMCapacity=3  },
+   ["TorM2K CHM"] = { Range=12, Blindspot=1, Height=10, Type="Point", Radar="TorM2K", Point="true", ARMCapacity=4  },
+   ["TorM2M CHM"] = { Range=16, Blindspot=1, Height=10, Type="Point", Radar="TorM2M", Point="true", ARMCapacity=4  }, 
    ["NASAMS3-AMRAAMER CHM"] = { Range=50, Blindspot=2, Height=35.7, Type="Medium", Radar="CH_NASAMS3_LN_AMRAAM_ER" }, 
    ["NASAMS3-AIM9X2 CHM"] = { Range=20, Blindspot=0.2, Height=18, Type="Short", Radar="CH_NASAMS3_LN_AIM9X2" },
    ["C-RAM CHM"] = { Range=2, Blindspot=0, Height=2, Type="Point", Radar="CH_Centurion_C_RAM", Point="true" }, 
    ["PGZ-09 CHM"] = { Range=4, Blindspot=0.5, Height=3, Type="Point", Radar="CH_PGZ09", Point="true" },
-   ["S350-9M100 CHM"] = { Range=15, Blindspot=1, Height=8, Type="Short", Radar="CH_S350_50P6_9M100" },
-   ["S350-9M96D CHM"] = { Range=150, Blindspot=2.5, Height=30, Type="Long", Radar="CH_S350_50P6_9M96D" },
+   ["S350-9M100 CHM"] = { Range=15, Blindspot=1, Height=8, Type="Short", Radar="CH_S350_50P6_9M100", ARMCapacity=20 },
+   ["S350-9M96D CHM"] = { Range=150, Blindspot=2.5, Height=30, Type="Long", Radar="CH_S350_50P6_9M96D", ARMCapacity=20 },
    ["LAV-AD CHM"] = { Range=8, Blindspot=0.16, Height=4.8, Type="Short", Radar="CH_LAVAD" }, 
    ["HQ-22 CHM"] = { Range=170, Blindspot=5, Height=27, Type="Long", Radar="CH_HQ22_LN" }, 
    ["PGZ-95 CHM"] = { Range=2.5, Blindspot=0.5, Height=2, Type="Point", Radar="CH_PGZ95",Point="true" },
@@ -113205,8 +113853,8 @@ MANTIS.SamDataCH = {
    ["Skynex CHM"] = { Range=3.5, Blindspot=0.1, Height=3.5, Type="Point", Radar="CH_SkynexHX", Point="true" },
    ["Skyshield CHM"] = { Range=3.5, Blindspot=0.1, Height=3.5, Type="Point", Radar="CH_Skyshield_Gun", Point="true" },
    ["WieselOzelot CHM"] = { Range=8, Blindspot=0.16, Height=4.8, Type="Short", Radar="CH_Wiesel2Ozelot" }, 
-   ["BukM3-9M317M CHM"] = { Range=70, Blindspot=0.25, Height=35, Type="Medium", Radar="CH_BukM3_9A317M" },  
-   ["BukM3-9M317MA CHM"] = { Range=70, Blindspot=0.25, Height=35, Type="Medium", Radar="CH_BukM3_9A317MA" },  
+   ["BukM3-9M317M CHM"] = { Range=70, Blindspot=0.25, Height=35, Type="Medium", Radar="CH_BukM3_9A317M", ARMCapacity=20 },  
+   ["BukM3-9M317MA CHM"] = { Range=70, Blindspot=0.25, Height=35, Type="Medium", Radar="CH_BukM3_9A317MA",  ARMCapacity=20 },  
    ["SkySabre CHM"] = { Range=30, Blindspot=0.5, Height=10, Type="Medium", Radar="CH_SkySabreLN" },  
    ["Stormer CHM"] = { Range=7.5, Blindspot=0.3, Height=7, Type="Short", Radar="CH_StormerHVM" },  
    ["THAAD CHM"] = { Range=200, Blindspot=40, Height=150, Type="Long", Radar="CH_THAAD_M1120" },  
@@ -114506,6 +115154,7 @@ do
     local group = GROUP:FindByName(grpname) -- Wrapper.Group#GROUP
     local units = group:GetUnits()
     local SAMData = self.SamData
+    local ARMCapacity
     if mod then
       SAMData = self.SamDataHDS
     elseif sma then
@@ -114513,22 +115162,23 @@ do
     elseif chm then
       SAMData = self.SamDataCH
     end
-    --self:I("Looking to auto-match for "..grpname)
+    self:T("Looking to auto-match for "..grpname)
     for _,_unit in pairs(units) do
       local unit = _unit -- Wrapper.Unit#UNIT
-      local type = string.lower(unit:GetTypeName())
-      --self:I(string.format("Matching typename: %s",type))
+      local typename = string.lower(unit:GetTypeName())
+      self:T(string.format("Matching typename: %s",typename))
       for idx,entry in pairs(SAMData) do
         local _entry = entry -- #MANTIS.SamData
         local _radar = string.lower(_entry.Radar)
-        --self:I(string.format("Trying typename: %s",_radar))
-        if string.find(type,_radar,1,true) then
+        self:T(string.format("Trying typename: %s",_radar))
+        if string.find(typename,_radar,1,true) then
           type = _entry.Type
           radiusscale = self.radiusscale[type]
           range = _entry.Range * 1000 * radiusscale -- max firing range used as switch-on
           height = _entry.Height * 1000 -- max firing height
-          blind = _entry.Blindspot * 100 -- blind spot range 
-          --self:I(string.format("Match: %s - %s",_radar,type))
+          blind = _entry.Blindspot * 100 -- blind spot range
+          ARMCapacity = _entry.ARMCapacity 
+          self:T(string.format("Match: %s - %s",_radar,type))
           found = true
           break
         end
@@ -114549,7 +115199,7 @@ do
     if not found then
       self:E(self.lid .. string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
     end
-    return range, height, type, blind
+    return range, height, type, blind, ARMCapacity
   end
   
   --- [Internal] Function to get SAM firing data
@@ -114608,7 +115258,7 @@ do
     end
     --- Tertiary filter if not found
     if (not found) or HDSmod or SMAMod or CHMod then
-      range, height, type = self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
+      range, height, type, blind, ARMCapacity = self:_GetSAMDataFromUnits(grpname,HDSmod,SMAMod,CHMod)
     elseif not found then
       self:E(self.lid .. string.format("*****Could not match radar data for %s! Will default to midrange values!",grpname))
     end
@@ -114651,6 +115301,7 @@ do
         local grpname = group:GetName()
         local grpcoord = group:GetCoordinate()
         local grprange,grpheight,type,blind,ARMCapacity  = self:_GetSAMRange(grpname)
+        if ARMCapacity and ARMCapacity>0 then _group:SetProperty("ARMCapacity",ARMCapacity) end
         table.insert( SAM_Tbl, {grpname, grpcoord, grprange, grpheight, blind, type, ARMCapacity})
         --table.insert( SEAD_Grps, grpname )
         if type == MANTIS.SamType.LONG then
@@ -114718,9 +115369,12 @@ do
           local grprange, grpheight,type,blind, ARMCapacity  = self:_GetSAMRange(grpname)
           -- TODO the below might stop working at some point after some hours, needs testing
           --local radaralive = group:IsSAM()
+          if ARMCapacity and ARMCapacity>0 then _group:SetProperty("ARMCapacity",ARMCapacity) end
           local radaralive = true
           table.insert( SAM_Tbl, {grpname, grpcoord, grprange, grpheight, blind, type, ARMCapacity}) -- make the table lighter, as I don't really use the zone here
-          table.insert( SEAD_Grps, grpname )
+          if type ~= MANTIS.SamType.POINT then
+            table.insert( SEAD_Grps, grpname )
+          end
           if type == MANTIS.SamType.LONG and radaralive then
             table.insert( SAM_Tbl_lg, {grpname, grpcoord, grprange, grpheight, blind, type})
             self:T({grpname,grprange, grpheight})
@@ -114807,7 +115461,7 @@ do
 -- @param #MANTIS self
 -- @param Wrapper.Group#GROUP targetGroup
 -- @param #string targetName
--- @param Wrapper.Group#GROUPattackerGroup
+-- @param Wrapper.Group#GROUP attackerGroup
 -- @param #string weaponName
 -- @param Wrapper.Weapon#WEAPON weaponWrapper
 -- @param #number tti
@@ -114826,12 +115480,14 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
   ----------------------------------------------------------------
   -- LOOK UP ARM CAPACITY FOR THIS SAM
   ----------------------------------------------------------------
-  local armcap = nil
-
-  for _, sam in pairs(self.SAM_Table or {}) do
-    if sam[1] == targetName then
-      armcap = sam[7] -- ARMCapacity
-      break
+  local armcap = targetGroup:GetProperty("ARMCapacity")
+  
+  if not armcap then
+    for _, sam in pairs(self.SAM_Table or {}) do
+      if sam[1] == targetName then
+        armcap = sam[7] -- ARMCapacity
+        break
+      end
     end
   end
 
@@ -114925,6 +115581,7 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       if self.Shorad and self.Shorad.ActiveGroups and self.Shorad.ActiveGroups[name] then
        activeshorad = true
       end
+      if samgroup:GetProperty("SHORAD_ACTIVE") == true and activeshorad == false then activeshorad = true end
       if IsInZone and (not suppressed) and (not activeshorad) then --check any target in zone and not currently managed by SEAD
         if samgroup:IsAlive() then
           -- switch on SAM
@@ -115157,6 +115814,7 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       self.ShoradLink = true
       self.Shorad.Groupset=self.ShoradGroupSet
       self.Shorad.debug = self.debug
+      self.Shorad:AddCallBack(self)
     end
     if self.shootandscoot and self.SkateZones and self.Shorad then
       self.Shorad:AddScootZones(self.SkateZones,self.SkateNumber or 3,self.ScootRandom,self.ScootFormation)
@@ -115408,7 +116066,7 @@ end
 -- @image Functional.Shorad.jpg
 --
 -- Date: Nov 2021
--- Last Update: Jan 2025
+-- Last Update: Jan 2026
 
 -------------------------------------------------------------------------
 --- **SHORAD** class, extends Core.Base#BASE
@@ -115583,7 +116241,7 @@ do
       self.SmokeDecoyColor = SmokeDecoyColor or SMOKECOLOR.White
     end
     
-    self:I("*** SHORAD - Started Version 0.3.5")
+    self:I("*** SHORAD - Started Version 0.3.6")
     -- Set the string id for output to DCS.log file.
     self.lid=string.format("SHORAD %s | ", self.name)
     self:_InitState()
@@ -115852,6 +116510,17 @@ do
     return returnname
   end
   
+  --- Set an object to call back when going evasive.
+  -- @param #SHORAD self
+  -- @param #table Object The object to call. 
+  -- @return #SHORAD self
+  function SHORAD:AddCallBack(Object)
+    self:T({Class=Object.ClassName})
+    self.CallBack = Object
+    self.UseCallBack = true
+    return self
+  end
+  
   --- Smoke a SHORAD Group
   -- @param #SHORAD self
   -- @param Wrapper.Group#GROUP Group The Shorad Group to Smoke
@@ -115911,7 +116580,56 @@ do
   -- mymantis:Start()
   function SHORAD:onafterWakeUpShorad(From, Event, To, TargetGroup, Radius, ActiveTimer, TargetCat, ShotAt)
     self:T(self.lid .. " WakeUpShorad")
-    self:T({TargetGroup, Radius, ActiveTimer, TargetCat})
+    --self:T({TargetGroup, Radius, ActiveTimer, TargetCat})
+    
+    local TDiff = 4
+    
+    -- local function to switch off shorad again
+    local function SleepShorad(group)
+      if group and group:IsAlive() then
+        local groupname = group:GetName()
+        self.ActiveGroups[groupname] = nil
+        if self.UseEmOnOff then
+          group:EnableEmission(false)
+        else
+          group:OptionAlarmStateGreen()
+        end
+        group:SetProperty("SHORAD_ACTIVE",false)
+        local text = string.format("Sleeping SHORAD %s", group:GetName())
+        self:T(text)
+        local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+        --Shoot and Scoot
+        if self.shootandscoot then
+          self:__ShootAndScoot(1,group)
+        else
+          --group:RelocateGroundRandomInRadius(30,500,false,true,"Diamond",true)
+        end
+      end
+    end
+    
+    local function WakeUp(_group,groupname)
+      -- shot at a group we protect
+      local text = string.format("Waking up SHORAD %s", _group:GetName())
+      self:T(text)
+      local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+      if self.UseEmOnOff then
+        _group:EnableEmission(true)
+      end
+      _group:OptionAlarmStateRed()
+      _group:SetProperty("SHORAD_ACTIVE",true)
+      self:_SmokeUnits(_group)
+      if self.ActiveGroups[groupname] == nil then -- no timer yet for this group
+        self.ActiveGroups[groupname] = { Timing = ActiveTimer }
+        local endtime = timer.getTime() + (ActiveTimer * math.random(75,100) / 100 ) -- randomize wakeup a bit
+        self.ActiveGroups[groupname].Timer = TIMER:New(SleepShorad,_group):Start(endtime)
+        --Shoot and Scoot
+        if self.shootandscoot then
+          self:__ShootAndScoot(TDiff,_group)
+          TDiff=TDiff+1
+        end
+      end
+    end   
+    
     local targetcat = TargetCat or Object.Category.UNIT
     local targetgroup = TargetGroup
     local targetvec2 = nil
@@ -115928,70 +116646,41 @@ do
     local groupset = self.Groupset --Core.Set#SET_GROUP
     local shoradset = groupset:GetAliveSet() --#table
     
-    -- local function to switch off shorad again
-    local function SleepShorad(group)
-      if group and group:IsAlive() then
-        local groupname = group:GetName()
-        self.ActiveGroups[groupname] = nil
-        if self.UseEmOnOff then
-          group:EnableEmission(false)
-        else
-          group:OptionAlarmStateGreen()
-        end
-        local text = string.format("Sleeping SHORAD %s", group:GetName())
-        self:T(text)
-        local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
-        --Shoot and Scoot
-        if self.shootandscoot then
-          self:__ShootAndScoot(1,group)
-        end
-      end
-    end
-    
     -- go through set and find the one(s) to activate
-    local TDiff = 4
+   
     for _,_group in pairs (shoradset) do
       
       local groupname = _group:GetName()
       
       if groupname == TargetGroup and ShotAt==true then
         -- Shot at a SHORAD group
-        if self.UseEmOnOff then
-          _group:EnableEmission(false)
+        local allow = false
+        if self.CallBack and self.UseCallBack == true then
+          allow = self.CallBack:SeadAllowSuppression(_group,groupname)
         end
-        _group:OptionAlarmStateGreen()
-        self.ActiveGroups[groupname] = nil
-        local text = string.format("Shot at SHORAD %s! Evading!", _group:GetName())
-        self:T(text)
-        local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
-        self:_SmokeUnits(_group)
-        --Shoot and Scoot
-        if self.shootandscoot then
-          self:__ShootAndScoot(1,_group)
-        end
-        
-      elseif _group:IsAnyInZone(targetzone) or groupname == TargetGroup then
-        -- shot at a group we protect
-        local text = string.format("Waking up SHORAD %s", _group:GetName())
-        self:T(text)
-        local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
-        if self.UseEmOnOff then
-          _group:EnableEmission(true)
-        end
-        _group:OptionAlarmStateRed()
-        self:_SmokeUnits(_group)
-        if self.ActiveGroups[groupname] == nil then -- no timer yet for this group
-          self.ActiveGroups[groupname] = { Timing = ActiveTimer }
-          local endtime = timer.getTime() + (ActiveTimer * math.random(75,100) / 100 ) -- randomize wakeup a bit
-          self.ActiveGroups[groupname].Timer = TIMER:New(SleepShorad,_group):Start(endtime)
+        if allow == true then
+          if self.UseEmOnOff then
+            _group:EnableEmission(false)
+          end
+          _group:OptionAlarmStateGreen()
+          self.ActiveGroups[groupname] = nil
+          local text = string.format("Shot at SHORAD %s! Evading!", _group:GetName())
+          self:T(text)
+          local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+          self:_SmokeUnits(_group)
           --Shoot and Scoot
           if self.shootandscoot then
-            self:__ShootAndScoot(TDiff,_group)
-            TDiff=TDiff+1
+            self:__ShootAndScoot(1,_group)
+          else
+            _group:RelocateGroundRandomInRadius(30,500,false,true,"Diamond",true)
           end
+        else
+          WakeUp(_group,groupname)
         end
-      end
-    end
+      elseif _group:IsAnyInZone(targetzone) or groupname == TargetGroup then
+        WakeUp(_group,groupname)
+      end -- end if
+    end -- end in pairs
     return self
   end
   
@@ -116107,7 +116796,7 @@ do
   -- @param Core.Event#EVENTDATA EventData The event details table data set
   -- @return #SHORAD self 
   function SHORAD:HandleEventShot( EventData )
-    self:T( { EventData } )
+    --self:T( { EventData.id } )
     self:T(self.lid .. " HandleEventShot")
     local ShootingWeapon = EventData.Weapon -- Identify the weapon fired
     local ShootingWeaponName = EventData.WeaponName -- return weapon type
@@ -116132,7 +116821,7 @@ do
         -- Is there target data?
         if not targetdata or self.debug then 
           if string.find(ShootingWeaponName,"AGM_88",1,true) then
-            self:I("**** Tracking AGM-88 with no target data.")
+            self:T("**** Tracking AGM-88 with no target data.")
             local pos0 = EventData.IniUnit:GetCoordinate()
             local fheight = EventData.IniUnit:GetHeight()
             self:__CalculateHitZone(20,ShootingWeapon,pos0,fheight,EventData.IniGroup)
@@ -119077,7 +119766,7 @@ end
 function AUTOLASE:GetLosFromUnit(Unit)
   local lasedistance = self.LaseDistance
   local unitheight = Unit:GetHeight()
-  local coord = Unit:GetCoordinate()
+  local coord = Unit:GetCoord()
   local landheight = coord:GetLandHeight()
   local asl = unitheight - landheight
   if asl > 100 then
@@ -119229,7 +119918,7 @@ function AUTOLASE:ShowStatus(Group,Unit)
          locationstring = entry.coordinate:ToStringLLDDM(settings)
         elseif settings:IsA2G_BR() then
           -- attention this is the distance from the ASKING unit to target, not from RECCE to target!
-          local startcoordinate = Unit:GetCoordinate() or Group:GetCoordinate()
+          local startcoordinate = Unit:GetCoord() or Group:GetCoord()
           locationstring = entry.coordinate:ToStringBR(startcoordinate,settings,false,self.RoundingPrecision)
         end
       end
@@ -119347,8 +120036,8 @@ function AUTOLASE:CanLase(Recce,Unit)
       end
     end
     -- calculate LOS
-    local reccecoord = Recce:GetCoordinate()
-    local unitcoord = Unit:GetCoordinate()
+    local reccecoord = Recce:GetCoord()
+    local unitcoord = Unit:GetCoord()
     local islos = reccecoord:IsLOS(unitcoord,2.5)
     -- calculate distance
     local distance = math.floor(reccecoord:Get3DDistance(unitcoord))
@@ -119404,8 +120093,8 @@ function AUTOLASE:_Prescient()
            self:T(self.lid.."Checking possibly visible STATICs for Recce "..unit:GetName())
             for _,_static in pairs(Statics) do -- DCS static object here
               local static = STATIC:Find(_static)
-              if static and static:GetCoalition() ~= self.coalition and static:GetCoordinate() then
-                local IsLOS = position:IsLOS(static:GetCoordinate())
+              if static and static:GetCoalition() ~= self.coalition and static:GetCoord() then
+                local IsLOS = position:IsLOS(static:GetCoord())
                 if IsLOS then
                   unit:KnowUnit(static,true,true)
                 end
@@ -119465,7 +120154,7 @@ function AUTOLASE:onafterMonitor(From, Event, To)
     local threat = contact.threatlevel or 0
     local reccegrp = UNIT:FindByName(reccename)
     if reccegrp then
-      local reccecoord = reccegrp:GetCoordinate()
+      local reccecoord = reccegrp:GetCoord()
       local distance = math.floor(reccecoord:Get3DDistance(coord))
       local text = string.format("%s of %s | Distance %d km | Threatlevel %d",contact.attribute, contact.groupname, math.floor(distance/1000), contact.threatlevel)
       report:Add(text)
@@ -119504,7 +120193,6 @@ function AUTOLASE:onafterMonitor(From, Event, To)
         local unit = _unit -- Wrapper.Unit#UNIT
         if unit and unit:IsAlive() then
           local threat = unit:GetThreatLevel()
-          local coord = unit:GetCoordinate()
           if threat >= self.minthreatlevel then
             local unitname = unit:GetName()
             -- prefer radar units
@@ -119560,16 +120248,16 @@ function AUTOLASE:onafterMonitor(From, Event, To)
         local code = self:GetLaserCode(reccename)
         local spot = SPOT:New(recce)
         spot:LaseOn(unit,code,self.LaseDuration)
-        local locationstring = unit:GetCoordinate():ToStringLLDDM()    
+        local locationstring = unit:GetCoord():ToStringLLDDM()
         if _SETTINGS:IsA2G_MGRS() then
           local precision = _SETTINGS:GetMGRS_Accuracy()
           local settings = {}
           settings.MGRS_Accuracy = precision
-          locationstring = unit:GetCoordinate():ToStringMGRS(settings)
+          locationstring = unit:GetCoord():ToStringMGRS(settings)
         elseif _SETTINGS:IsA2G_LL_DMS() then
-          locationstring = unit:GetCoordinate():ToStringLLDMS(_SETTINGS)
+          locationstring = unit:GetCoord():ToStringLLDMS(_SETTINGS)
         elseif _SETTINGS:IsA2G_BR() then
-          locationstring = unit:GetCoordinate():ToStringBULLS(self.coalition,_SETTINGS)
+          locationstring = unit:GetCoord():ToStringBULLS(self.coalition,_SETTINGS)
         end
   
         local laserspot = { -- #AUTOLASE.LaserSpot
@@ -119582,7 +120270,7 @@ function AUTOLASE:onafterMonitor(From, Event, To)
           unitname = unitname,
           reccename = reccename,
           unittype = unit:GetTypeName(),
-          coordinate = unit:GetCoordinate(),
+          coordinate = unit:GetCoord(),
           }
        if self.smoketargets then
           local coord = unit:GetCoordinate()
@@ -119715,464 +120403,6 @@ end
 -------------------------------------------------------------------
 -- End Functional.Autolase.lua
 -------------------------------------------------------------------
---- **Functional** - Base class that models processes to achieve goals involving a Zone and Cargo.
---
--- ===
--- 
--- ZONE_GOAL_CARGO models processes that have a Goal with a defined achievement involving a Zone and Cargo.  
--- Derived classes implement the ways how the achievements can be realized.
---
--- # Developer Note
--- 
--- ![Banner Image](..\Images\deprecated.png)
--- 
--- Note while this class still works, it is no longer supported as the original author stopped active development of MOOSE
--- Therefore, this class is considered to be deprecated
---
--- ===
--- 
--- ### Author: **FlightControl**
--- 
--- ===
--- 
--- @module Functional.ZoneGoalCargo
--- @image MOOSE.JPG
-
-do -- ZoneGoal
-
-  -- @type ZONE_GOAL_CARGO
-  -- @extends Functional.ZoneGoal#ZONE_GOAL
-
-
-  --- Models processes that have a Goal with a defined achievement involving a Zone and Cargo.  
-  -- Derived classes implement the ways how the achievements can be realized.
-  -- 
-  -- ## 1. ZONE_GOAL_CARGO constructor
-  --   
-  --   * @{#ZONE_GOAL_CARGO.New}(): Creates a new ZONE_GOAL_CARGO object.
-  -- 
-  -- ## 2. ZONE_GOAL_CARGO is a finite state machine (FSM).
-  -- 
-  -- ### 2.1 ZONE_GOAL_CARGO States
-  --  
-  --   * **Deployed**: The Zone has been captured by an other coalition.
-  --   * **Airborne**: The Zone is currently intruded by an other coalition. There are units of the owning coalition and an other coalition in the Zone.
-  --   * **Loaded**: The Zone is guarded by the owning coalition. There is no other unit of an other coalition in the Zone.
-  --   * **Empty**: The Zone is empty. There is not valid unit in the Zone.
-  -- 
-  -- ### 2.2 ZONE_GOAL_CARGO Events
-  -- 
-  --   * **Capture**: The Zone has been captured by an other coalition.
-  --   * **Attack**: The Zone is currently intruded by an other coalition. There are units of the owning coalition and an other coalition in the Zone.
-  --   * **Guard**: The Zone is guarded by the owning coalition. There is no other unit of an other coalition in the Zone.
-  --   * **Empty**: The Zone is empty. There is not valid unit in the Zone.
-  --   
-  -- ### 2.3 ZONE_GOAL_CARGO State Machine
-  -- 
-  -- @field #ZONE_GOAL_CARGO
-  ZONE_GOAL_CARGO = {
-    ClassName = "ZONE_GOAL_CARGO",
-  }
-  
-  -- @field #table ZONE_GOAL_CARGO.States
-  ZONE_GOAL_CARGO.States = {}
-  
-  --- ZONE_GOAL_CARGO Constructor.
-  -- @param #ZONE_GOAL_CARGO self
-  -- @param Core.Zone#ZONE Zone A @{Core.Zone} object with the goal to be achieved.
-  -- @param #number Coalition The initial coalition owning the zone.
-  -- @return #ZONE_GOAL_CARGO
-  function ZONE_GOAL_CARGO:New( Zone, Coalition )
-  
-    local self = BASE:Inherit( self, ZONE_GOAL:New( Zone ) ) -- #ZONE_GOAL_CARGO
-    self:F( { Zone = Zone, Coalition  = Coalition  } )
-
-    self:SetCoalition( Coalition )
-
-    do 
-    
-      --- Captured State Handler OnLeave for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnLeaveCaptured
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-      -- @return #boolean
-  
-      --- Captured State Handler OnEnter for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnEnterCaptured
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-  
-    end
-  
-  
-    do 
-    
-      --- Attacked State Handler OnLeave for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnLeaveAttacked
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-      -- @return #boolean
-  
-      --- Attacked State Handler OnEnter for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnEnterAttacked
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-  
-    end
-
-    do 
-    
-      --- Guarded State Handler OnLeave for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnLeaveGuarded
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-      -- @return #boolean
-  
-      --- Guarded State Handler OnEnter for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnEnterGuarded
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-  
-    end
-  
-
-    do 
-    
-      --- Empty State Handler OnLeave for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnLeaveEmpty
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-      -- @return #boolean
-  
-      --- Empty State Handler OnEnter for ZONE_GOAL_CARGO
-      -- @function [parent=#ZONE_GOAL_CARGO] OnEnterEmpty
-      -- @param #ZONE_GOAL_CARGO self
-      -- @param #string From
-      -- @param #string Event
-      -- @param #string To
-  
-    end
-  
-    self:AddTransition( "*", "Guard", "Guarded" )
-    
-    --- Guard Handler OnBefore for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnBeforeGuard
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    -- @return #boolean
-    
-    --- Guard Handler OnAfter for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnAfterGuard
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    
-    --- Guard Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] Guard
-    -- @param #ZONE_GOAL_CARGO self
-    
-    --- Guard Asynchronous Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] __Guard
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #number Delay
-    
-    self:AddTransition( "*", "Empty", "Empty" )
-    
-    --- Empty Handler OnBefore for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnBeforeEmpty
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    -- @return #boolean
-    
-    --- Empty Handler OnAfter for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnAfterEmpty
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    
-    --- Empty Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] Empty
-    -- @param #ZONE_GOAL_CARGO self
-    
-    --- Empty Asynchronous Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] __Empty
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #number Delay
-    
-    
-    self:AddTransition( {  "Guarded", "Empty" }, "Attack", "Attacked" )
-  
-    --- Attack Handler OnBefore for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnBeforeAttack
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    -- @return #boolean
-    
-    --- Attack Handler OnAfter for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnAfterAttack
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    
-    --- Attack Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] Attack
-    -- @param #ZONE_GOAL_CARGO self
-    
-    --- Attack Asynchronous Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] __Attack
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #number Delay
-    
-    self:AddTransition( { "Guarded", "Attacked", "Empty" }, "Capture", "Captured" )
-   
-    --- Capture Handler OnBefore for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnBeforeCapture
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    -- @return #boolean
-    
-    --- Capture Handler OnAfter for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] OnAfterCapture
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #string From
-    -- @param #string Event
-    -- @param #string To
-    
-    --- Capture Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] Capture
-    -- @param #ZONE_GOAL_CARGO self
-    
-    --- Capture Asynchronous Trigger for ZONE_GOAL_CARGO
-    -- @function [parent=#ZONE_GOAL_CARGO] __Capture
-    -- @param #ZONE_GOAL_CARGO self
-    -- @param #number Delay
-
-    return self
-  end
-  
-
-  --- Set the owning coalition of the zone.
-  -- @param #ZONE_GOAL_CARGO self
-  -- @param #number Coalition
-  function ZONE_GOAL_CARGO:SetCoalition( Coalition )
-    self.Coalition = Coalition
-  end
-  
-  
-  --- Get the owning coalition of the zone.
-  -- @param #ZONE_GOAL_CARGO self
-  -- @return #number Coalition.
-  function ZONE_GOAL_CARGO:GetCoalition()
-    return self.Coalition
-  end
-
-  
-  --- Get the owning coalition name of the zone.
-  -- @param #ZONE_GOAL_CARGO self
-  -- @return #string Coalition name.
-  function ZONE_GOAL_CARGO:GetCoalitionName()
-  
-    if self.Coalition == coalition.side.BLUE then
-      return "Blue"
-    end
-    
-    if self.Coalition == coalition.side.RED then
-      return "Red"
-    end
-    
-    if self.Coalition == coalition.side.NEUTRAL then
-      return "Neutral"
-    end
-    
-    return ""
-  end
-
-
-  function ZONE_GOAL_CARGO:IsGuarded()
-  
-    local IsGuarded = self.Zone:IsAllInZoneOfCoalition( self.Coalition )
-    self:F( { IsGuarded = IsGuarded } )
-    return IsGuarded
-  end
-
-
-  function ZONE_GOAL_CARGO:IsEmpty()
-  
-    local IsEmpty = self.Zone:IsNoneInZone()
-    self:F( { IsEmpty = IsEmpty } )
-    return IsEmpty
-  end
-
-
-  function ZONE_GOAL_CARGO:IsCaptured()
-  
-    local IsCaptured = self.Zone:IsAllInZoneOfOtherCoalition( self.Coalition )
-    self:F( { IsCaptured = IsCaptured } )
-    return IsCaptured
-  end
-  
-  
-  function ZONE_GOAL_CARGO:IsAttacked()
-  
-    local IsAttacked = self.Zone:IsSomeInZoneOfCoalition( self.Coalition )
-    self:F( { IsAttacked = IsAttacked } )
-    return IsAttacked
-  end
-  
-  
-
-  --- Mark.
-  -- @param #ZONE_GOAL_CARGO self
-  function ZONE_GOAL_CARGO:Mark()
-  
-    local Coord = self.Zone:GetCoordinate()
-    local ZoneName = self:GetZoneName()
-    local State = self:GetState()
-    
-    if self.MarkRed and self.MarkBlue then
-      self:F( { MarkRed = self.MarkRed, MarkBlue = self.MarkBlue } )
-      Coord:RemoveMark( self.MarkRed )
-      Coord:RemoveMark( self.MarkBlue )
-    end
-    
-    if self.Coalition == coalition.side.BLUE then
-      self.MarkBlue = Coord:MarkToCoalitionBlue( "Guard Zone: " .. ZoneName .. "\nStatus: " .. State )  
-      self.MarkRed = Coord:MarkToCoalitionRed( "Capture Zone: " .. ZoneName .. "\nStatus: " .. State )  
-    else
-      self.MarkRed = Coord:MarkToCoalitionRed( "Guard Zone: " .. ZoneName .. "\nStatus: " .. State )  
-      self.MarkBlue = Coord:MarkToCoalitionBlue( "Capture Zone: " .. ZoneName .. "\nStatus: " .. State )  
-    end
-  end
-
-  --- Bound.
-  -- @param #ZONE_GOAL_CARGO self
-  function ZONE_GOAL_CARGO:onenterGuarded()
-  
-    --self:GetParent( self ):onenterGuarded()
-  
-    if self.Coalition == coalition.side.BLUE then
-      --elf.ProtectZone:BoundZone( 12, country.id.USA )
-    else
-      --self.ProtectZone:BoundZone( 12, country.id.RUSSIA )
-    end
-    
-    self:Mark()
-    
-  end
-  
-  function ZONE_GOAL_CARGO:onenterCaptured()
-  
-    --self:GetParent( self ):onenterCaptured()
-
-    local NewCoalition = self.Zone:GetCoalition()
-    self:F( { NewCoalition = NewCoalition } )
-    self:SetCoalition( NewCoalition )
-  
-    self:Mark()
-  end
-  
-  
-  function ZONE_GOAL_CARGO:onenterEmpty()
-
-    --self:GetParent( self ):onenterEmpty()
-  
-    self:Mark()
-  end
-  
-  
-  function ZONE_GOAL_CARGO:onenterAttacked()
-  
-    --self:GetParent( self ):onenterAttacked()
-  
-    self:Mark()
-  end
-
-
-  --- When started, check the Coalition status.
-  -- @param #ZONE_GOAL_CARGO self
-  function ZONE_GOAL_CARGO:onafterGuard()
-  
-    --self:F({BASE:GetParent( self )})
-    --BASE:GetParent( self ).onafterGuard( self )
-  
-    if not self.SmokeScheduler then
-      self.SmokeScheduler = self:ScheduleRepeat( 1, 1, 0.1, nil, self.StatusSmoke, self )
-    end
-    if not self.ScheduleStatusZone then
-      self.ScheduleStatusZone = self:ScheduleRepeat( 15, 15, 0.1, nil, self.StatusZone, self )
-    end
-  end
-
-
-  function ZONE_GOAL_CARGO:IsCaptured()
-  
-    local IsCaptured = self.Zone:IsAllInZoneOfOtherCoalition( self.Coalition )
-    self:F( { IsCaptured = IsCaptured } )
-    return IsCaptured
-  end
-  
-  
-  function ZONE_GOAL_CARGO:IsAttacked()
-  
-    local IsAttacked = self.Zone:IsSomeInZoneOfCoalition( self.Coalition )
-    self:F( { IsAttacked = IsAttacked } )
-    return IsAttacked
-  end
-  
-  --- Check status Coalition ownership.
-  -- @param #ZONE_GOAL_CARGO self
-  function ZONE_GOAL_CARGO:StatusZone()
-  
-    local State = self:GetState()
-    self:F( { State = self:GetState() } )
-  
-    self.Zone:Scan()
-  
-    if State ~= "Guarded" and self:IsGuarded() then
-      self:Guard()
-    end
-    
-    if State ~= "Empty" and self:IsEmpty() then  
-      self:Empty()
-    end
-
-    if State ~= "Attacked" and self:IsAttacked() then
-      self:Attack()
-    end
-    
-    if State ~= "Captured" and self:IsCaptured() then  
-      self:Capture()
-    end
-    
-  end
-  
-end
-
 ----- **Functional** - TIRESIAS - manages AI behaviour (OPTIMIZED VERSION).
 
 ----  ===
@@ -127325,7 +127555,10 @@ function AIRBOSS:EnableSRS(PathToSRS,Port,Culture,Gender,Voice,GoogleCreds,Volum
     self.SRS:SetVoice(Voice)
   end
   if (not Voice) and self.SRS and self.SRS:GetProvider() == MSRS.Provider.GOOGLE then
-    self.SRS.voice = MSRS.poptions["gcloud"].voice or MSRS.Voices.Google.Standard.en_US_Standard_B
+    self.SRS.voice = MSRS.Voices.Google.Standard.en_US_Standard_B
+    if MSRS.poptions and MSRS.poptions["gcloud"] and MSRS.poptions["gcloud"].voice then
+      self.SRS.voice = MSRS.poptions["gcloud"].voice
+    end
   end
   --self.SRS:SetVolume(Volume or 1.0)
   -- SRSQUEUE
@@ -150029,6 +150262,7 @@ do
 -- @field #string ClassName Class name.
 -- @field #number ID ID of this cargo.
 -- @field #string Name Name for menu.
+-- @field #string DisplayName Display name for menu/messages.
 -- @field #table Templates Table of #POSITIONABLE objects.
 -- @field #string CargoType Enumerator of Type.
 -- @field #boolean HasBeenMoved Flag for moving.
@@ -150055,6 +150289,7 @@ CTLD_CARGO = {
   ClassName = "CTLD_CARGO",
   ID = 0,
   Name = "none",
+  DisplayName = "none",
   Templates = {},
   CargoType = "none",
   HasBeenMoved = false,
@@ -150114,6 +150349,7 @@ CTLD_CARGO = {
     self:T({ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped})
     self.ID = ID or math.random(100000,1000000)
     self.Name = Name or "none" -- #string
+    self.DisplayName = Name or "none" -- #string
     self.Templates = Templates or {} -- #table
     self.CargoType = Sorte or "type" -- #CTLD_CARGO.Enum
     self.HasBeenMoved = HasBeenMoved or false -- #boolean
@@ -150241,6 +150477,26 @@ CTLD_CARGO = {
   -- @return #string Name
   function CTLD_CARGO:GetName()
     return self.Name
+  end
+
+  --- Set display name.
+  -- @param #CTLD_CARGO self
+  -- @param #string DisplayName Display label used in menus/messages (optional).
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:SetDisplayName(DisplayName)
+    if type(DisplayName) == "string" and DisplayName ~= "" then
+      self.DisplayName = DisplayName
+    else
+      self.DisplayName = self.Name
+    end
+    return self
+  end
+
+  --- Query display name.
+  -- @param #CTLD_CARGO self
+  -- @return #string Display name, or Name if not set
+  function CTLD_CARGO:GetDisplayName()
+    return self.DisplayName or self.Name
   end
   
   --- Query Templates.
@@ -150627,7 +150883,7 @@ CTLD_ENGINEERING = {
       local crate = ctable[1] -- Ops.CTLD#CTLD_CARGO
       local static = crate:GetPositionable() -- Wrapper.Static#STATIC
       local crate_pos = static:GetCoordinate() -- Core.Point#COORDINATE
-      local gpos = group:GetCoordinate() -- Core.Point#COORDINATE
+      local gpos = group:GetCoord() -- Core.Point#COORDINATE
       -- see how far we are from the crate
       local distance = self:_GetDistance(gpos,crate_pos)
       self:T(string.format("%s Distance to crate: %d", self.lid, distance))
@@ -150656,7 +150912,7 @@ CTLD_ENGINEERING = {
     --local COps = self.C_Ops -- Ops.CTLD#CTLD
     local group = self.Group -- Wrapper.Group#GROUP
     local tgtpos = self.currwpt -- Core.Point#COORDINATE
-    local gpos = group:GetCoordinate() -- Core.Point#COORDINATE
+    local gpos = group:GetCoord() -- Core.Point#COORDINATE
     -- see how far we are from the crate
     local distance = self:_GetDistance(gpos,tgtpos)
     self:T(string.format("%s Distance remaining: %d", self.lid, distance))
@@ -152126,6 +152382,35 @@ function CTLD:_GetUnitCapabilities(Unit)
   return capabilities
 end
 
+--- (Internal) Resolve cargo label for menus/messages.
+-- @param #CTLD self
+-- @param #CTLD_CARGO Cargo Cargo object or cargo name.
+-- @return #string Cargo label
+function CTLD:_GetCargoDisplayName(Cargo)
+  if type(Cargo) == "table" then
+    if Cargo.GetDisplayName then
+      local dname = Cargo:GetDisplayName()
+      if type(dname) == "string" and dname ~= "" then
+        return dname
+      end
+    end
+    if Cargo.GetName then
+      local name = Cargo:GetName()
+      if type(name) == "string" and name ~= "" then
+        return name
+      end
+    end
+    if type(Cargo.Name) == "string" and Cargo.Name ~= "" then
+      return Cargo.Name
+    end
+    return "Unknown"
+  end
+  if type(Cargo) == "string" and Cargo ~= "" then
+    return Cargo
+  end
+  return "Unknown"
+end
+
 --- (User) Function to allow transport via Combined Arms Trucks.
 -- @param #CTLD self
 -- @param #boolean OnOff Switch on (true) or off (false).
@@ -153324,7 +153609,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   local requestedSets = math.floor((requestNumber + perSet - 1) / perSet)
   if requestedSets < 1 then requestedSets = 1 end
   if not drop and not pack then
-    local cgoname = Cargo:GetName()
+    local cgoname = self:_GetCargoDisplayName(Cargo)
     local instock = Cargo:GetStock()
     if type(instock) == "number" and tonumber(instock) <= 0 and tonumber(instock) ~= -1 then
       -- nothing left over
@@ -153385,7 +153670,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     return false
   end
 
-  if not self:CanGetCrates(Group, Unit, Cargo, requestNumber, drop, pack, quiet, suppressGetEvent) then
+  if not drop and not self:CanGetCrates(Group, Unit, Cargo, requestNumber, drop, pack, quiet, suppressGetEvent) then
     return false
   end
   -- spawn crates in front of helicopter
@@ -153396,6 +153681,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   local number = requestNumber --#number
   local cratesneeded = cargotype:GetCratesNeeded() --#number
   local cratename = cargotype:GetName()
+  local cratedisplayname = self:_GetCargoDisplayName(cargotype)
   local cratetemplate = "Container"-- #string
   local cgotype = cargotype:GetType()
   local cgomass = cargotype:GetMass()
@@ -153510,6 +153796,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     if drop then
                 --CTLD_CARGO:New(ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped, PerCrateMass, Stock, Subcategory)
       realcargo = CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,nil,subcat) -- #CTLD_CARGO
+      realcargo:SetDisplayName(cargotype:GetDisplayName())
       local map=cargotype:GetStaticResourceMap()
       realcargo:SetStaticResourceMap(map)
       local CCat3, CType3, CShape3 = cargotype:GetStaticTypeAndShape()
@@ -153520,6 +153807,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
       table.insert(droppedcargo,realcargo)
     else
       realcargo = CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],false,cargotype.PerCrateMass,nil,subcat)
+      realcargo:SetDisplayName(cargotype:GetDisplayName())
       local map=cargotype:GetStaticResourceMap()
       realcargo:SetStaticResourceMap(map) 
       if cargotype.TypeNames then
@@ -153541,9 +153829,9 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     Cargo:RemoveStock(requestedSets)
     self:_RefreshCrateQuantityMenus(Group, Unit, Cargo)
   end
-  local text = string.format("%d crates for %s have been positioned near you!",number,cratename)
+  local text = string.format("%d crates for %s have been positioned near you!",number,cratedisplayname)
   if drop then
-    text = string.format("%d crates for %s have been dropped!",number,cratename)
+    text = string.format("%d crates for %s have been dropped!",number,cratedisplayname)
     self:__CratesDropped(1, Group, Unit, droppedcargo)
   else
     if not quiet then
@@ -155042,7 +155330,6 @@ end
 
 --- (Internal) Housekeeping - Cleanup crates when build
 -- @param #CTLD self
--- 
 -- @param #table Crates Table of #CTLD_CARGO objects near the unit.
 -- @param #CTLD.Buildable Build Table build object.
 -- @param #number Number Number of objects in Crates (found) to limit search.
@@ -155582,7 +155869,7 @@ function CTLD:_RefreshF10Menus()
                 end
                 for _, cargoObj in pairs(self.Cargo_Troops) do
                   if not cargoObj.DontShowInMenu then
-                    local menutext = cargoObj.Name
+                    local menutext = self:_GetCargoDisplayName(cargoObj)
                     local parent = troopsmenu
                     if useTroopSubcats and cargoObj.Subcategory and subcatmenus[cargoObj.Subcategory] then
                       parent = subcatmenus[cargoObj.Subcategory]
@@ -155595,7 +155882,7 @@ function CTLD:_RefreshF10Menus()
               else
                 for _, cargoObj in pairs(self.Cargo_Troops) do
                   if not cargoObj.DontShowInMenu then
-                    local menutext = cargoObj.Name
+                    local menutext = self:_GetCargoDisplayName(cargoObj)
                     local mSet = MENU_GROUP:New(_group, menutext, troopsmenu)
                     _group.CTLD_TroopMenus[cargoObj.Name] = mSet
                     self:_AddTroopQuantityMenus(_group,_unit,mSet,cargoObj)
@@ -155610,7 +155897,7 @@ function CTLD:_RefreshF10Menus()
               if loadedData and loadedData.Cargo then
                 for i,cargoObj in ipairs(loadedData.Cargo) do
                   if cargoObj and (cargoObj:GetType()==CTLD_CARGO.Enum.TROOPS or cargoObj:GetType()==CTLD_CARGO.Enum.ENGINEERS) and not cargoObj:WasDropped() then
-                    local name=cargoObj:GetName() or "Unknown"
+                      local name=self:_GetCargoDisplayName(cargoObj)
                     local needed=cargoObj:GetCratesNeeded() or 1
                     local cID=cargoObj:GetID()
                     local line=string.format("Drop: %s",name,needed,cID)
@@ -155663,10 +155950,11 @@ function CTLD:_RefreshF10Menus()
                   local needed = cargoObj:GetCratesNeeded() or 1
 
                   local txt
+                  local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                   if needed > 1 then
-                    txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                    txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
                   else
-                    txt = string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                    txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                   end
                   if cargoObj.Location then txt = txt.."[R]" end
                   if self.showstockinmenuitems then
@@ -155711,10 +155999,11 @@ function CTLD:_RefreshF10Menus()
                     if not cargoObj.DontShowInMenu then
                       local needed = cargoObj:GetCratesNeeded() or 1
                       local txt
+                      local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
                       else
-                        txt = string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
                       if cargoObj.Location then txt = txt.."[R]" end
                       local stock = cargoObj:GetStock()
@@ -155726,10 +156015,11 @@ function CTLD:_RefreshF10Menus()
                     if (not cargoObj.DontShowInMenu) and (not cargoObj.UnitCanCarry or cargoObj:UnitCanCarry(_unit)) then
                       local needed = cargoObj:GetCratesNeeded() or 1
                       local txt
+                      local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
                       else
-                        txt = string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
                       if cargoObj.Location then txt = txt.."[R]" end
                       local stock = cargoObj:GetStock()
@@ -155742,10 +156032,11 @@ function CTLD:_RefreshF10Menus()
                     if not cargoObj.DontShowInMenu then
                       local needed = cargoObj:GetCratesNeeded() or 1
                       local txt
+                      local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
                       else
-                        txt = string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
                       if cargoObj.Location then txt = txt.."[R]" end
                       local stock = cargoObj:GetStock()
@@ -155757,10 +156048,11 @@ function CTLD:_RefreshF10Menus()
                     if (not cargoObj.DontShowInMenu) and (not cargoObj.UnitCanCarry or cargoObj:UnitCanCarry(_unit)) then
                       local needed = cargoObj:GetCratesNeeded() or 1
                       local txt
+                      local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
                       else
-                        txt = string.format("%s (%dkg)",cargoObj.Name,cargoObj.PerCrateMass or 0)
+                        txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
                       if cargoObj.Location then txt = txt.."[R]" end
                       local stock = cargoObj:GetStock()
@@ -155806,12 +156098,13 @@ function CTLD:_RefreshF10Menus()
                   if cgo and (not cgo:WasDropped()) then
                     local cname   = cgo:GetName()
                     local cneeded = cgo:GetCratesNeeded()
-                    cargoByName[cname] = cargoByName[cname] or { count=0, needed=cneeded }
+                    local cdisplay = self:_GetCargoDisplayName(cgo)
+                    cargoByName[cname] = cargoByName[cname] or { count=0, needed=cneeded, display=cdisplay }
                     cargoByName[cname].count = cargoByName[cname].count + 1
                   end
                 end
                 for name, info in pairs(cargoByName) do
-                  local line = string.format("Drop %s (%d/%d)", name, info.count, info.needed)
+                  local line = string.format("Drop %s (%d/%d)", info.display or name, info.count, info.needed)
                   MENU_GROUP_COMMAND:New(_group, line, dropCratesMenu, self._UnloadSingleCrateSet, self, _group, _unit, name)
                 end
               end
@@ -155847,7 +156140,7 @@ function CTLD:_RefreshF10Menus()
                     end
                     parent = sub
                   end
-                  local menutext = cargoObj.Name
+                  local menutext = self:_GetCargoDisplayName(cargoObj)
                   if type(cargoObj.Stock) == "number" and cargoObj.Stock >= 0 and self.showstockinmenuitems then
                     menutext = menutext.."["..cargoObj.Stock.."]"
                   end
@@ -156663,11 +156956,13 @@ function CTLD:_RefreshDropTroopsMenu(Group, Unit)
   if not theGroup.CTLDTopmenu then return end
   local topTroops = theGroup.MyTopTroopsMenu
   if not topTroops then return end
-  if topTroops.DropTroopsMenu then
-    topTroops.DropTroopsMenu:Remove()
+  local dropTroopsMenu = topTroops.DropTroopsMenu
+  if dropTroopsMenu then
+    dropTroopsMenu:RemoveSubMenus()
+  else
+    dropTroopsMenu = MENU_GROUP:New(theGroup, "Drop Troops", topTroops)
+    topTroops.DropTroopsMenu = dropTroopsMenu
   end
-  local dropTroopsMenu = MENU_GROUP:New(theGroup, "Drop Troops", topTroops)
-  topTroops.DropTroopsMenu = dropTroopsMenu
   MENU_GROUP_COMMAND:New(theGroup, "Drop ALL troops", dropTroopsMenu, self._UnloadTroops, self, theGroup, theUnit)
 
   local loadedData = self.Loaded_Cargo[theUnit:GetName()]
@@ -156903,8 +157198,10 @@ end
 -- @param #string SubCategory Name of sub-category (optional).
 -- @param #boolean DontShowInMenu (optional) If set to "true" this won't show up in the menu.
 -- @param Core.Zone#ZONE Location (optional) If set, the cargo item is **only** available here. Can be a #ZONE object or the name of a zone as #string.
+-- @param #string UnitTypes Unit type names (optional). If set, only these unit types can pick up the cargo, e.g. "UH-1H" or {"UH-1H","OH58D"}.
+-- @param #string DisplayName Display name shown in menus/messages (optional). Falls back to `Name`.
 -- @return #CTLD_CARGO CargoObject
-function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes)
+function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,DisplayName)
   self:T(self.lid .. " AddStaticsCargo")
   self.CargoCounter = self.CargoCounter + 1
   local type = CTLD_CARGO.Enum.STATIC
@@ -156919,6 +157216,43 @@ function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Locatio
   if UnitTypes then
     cargo:AddUnitTypeName(UnitTypes)
   end
+  cargo:SetDisplayName(DisplayName or Name)
+  cargo:SetStaticResourceMap(ResourceMap)
+  table.insert(self.Cargo_Statics,cargo)
+  if SubCategory and self.usesubcats ~= true then self.usesubcats=true end
+  return cargo
+end
+
+--- User function - Add *generic* static-type loadable as cargo from a static **type name**.
+-- This variant does **not** require a matching mission-editor static template.
+-- @param #CTLD self
+-- @param #string Name Unique cargo identifier for this type.
+-- @param #string TypeName Static type name to spawn, e.g. "ammo_cargo", "iso_container_small".
+-- @param #number Mass Mass in kg of each static in kg, e.g. 100.
+-- @param #number Stock Number of groups in stock. Nil for unlimited.
+-- @param #string SubCategory Name of sub-category (optional).
+-- @param #boolean DontShowInMenu (optional) If set to "true" this won't show up in the menu.
+-- @param Core.Zone#ZONE Location (optional) If set, the cargo item is **only** available here. Can be a #ZONE object or the name of a zone as #string.
+-- @param #string UnitTypes Unit type names (optional). If set, only these unit types can pick up the cargo, e.g. "UH-1H" or {"UH-1H","OH58D"}.
+-- @param #string Category Static category name (optional). Default is "Cargos".
+-- @param #string ShapeName Static shape name (optional). If set, force a specific shape, e.g. "iso_container_small_cargo".
+-- @param #table ResourceMap Resource map payload (optional) for static cargo.
+-- @param #string DisplayName Display name shown in menus/messages (optional). Falls back to `Name`.
+-- @return #CTLD_CARGO CargoObject
+function CTLD:AddStaticsCargoFromType(Name,TypeName,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,Category,ShapeName,ResourceMap,DisplayName)
+  self:T(self.lid .. " AddStaticsCargoFromType")
+  self.CargoCounter = self.CargoCounter + 1
+  local type = CTLD_CARGO.Enum.STATIC
+  local template = TypeName or self.basetype or "container_cargo"
+  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
+  if UnitTypes then
+    cargo:AddUnitTypeName(UnitTypes)
+  end
+  cargo:SetStaticTypeAndShape(Category or "Cargos", template, ShapeName)
+  cargo:SetDisplayName(DisplayName or Name)
+  if ResourceMap then
+    ResourceMap = UTILS.DeepCopy(ResourceMap)
+  end
   cargo:SetStaticResourceMap(ResourceMap)
   table.insert(self.Cargo_Statics,cargo)
   if SubCategory and self.usesubcats ~= true then self.usesubcats=true end
@@ -156929,8 +157263,9 @@ end
 -- @param #CTLD self
 -- @param #string Name Unique Unit(!) name of this type of cargo as set in the mission editor (not: GROUP name!), e.g. "Ammunition-1".
 -- @param #number Mass Mass in kg of each static in kg, e.g. 100.
+-- @param #string DisplayName Display name shown in menus/messages (optional). Falls back to `Name`.
 -- @return #CTLD_CARGO Cargo object
-function CTLD:GetStaticsCargoFromTemplate(Name,Mass)
+function CTLD:GetStaticsCargoFromTemplate(Name,Mass,DisplayName)
   self:T(self.lid .. " GetStaticsCargoFromTemplate")
   self.CargoCounter = self.CargoCounter + 1
   local type = CTLD_CARGO.Enum.STATIC
@@ -156942,8 +157277,34 @@ function CTLD:GetStaticsCargoFromTemplate(Name,Mass)
   end
   -- Crates are not directly loadable
   local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+  cargo:SetDisplayName(DisplayName or Name)
   cargo:SetStaticResourceMap(ResourceMap)
   --table.insert(self.Cargo_Statics,cargo)
+  return cargo
+end
+
+--- User function - Get a *generic* static-type loadable cargo from a static **type name**.
+-- @param #CTLD self
+-- @param #string Name Unique name of this type of cargo.
+-- @param #string TypeName Static type name, e.g. "ammo_cargo", "iso_container_small".
+-- @param #number Mass Mass in kg of each static in kg, e.g. 100.
+-- @param #string Category Static category name (optional). Default is "Cargos".
+-- @param #string ShapeName Static shape name (optional).
+-- @param #table ResourceMap Resource map payload (optional) for static cargo.
+-- @param #string DisplayName Display name shown in menus/messages (optional). Falls back to `Name`.
+-- @return #CTLD_CARGO Cargo object
+function CTLD:GetStaticsCargoFromType(Name,TypeName,Mass,Category,ShapeName,ResourceMap,DisplayName)
+  self:T(self.lid .. " GetStaticsCargoFromType")
+  self.CargoCounter = self.CargoCounter + 1
+  local type = CTLD_CARGO.Enum.STATIC
+  local template = TypeName or self.basetype or "container_cargo"
+  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+  cargo:SetStaticTypeAndShape(Category or "Cargos", template, ShapeName)
+  cargo:SetDisplayName(DisplayName or Name)
+  if ResourceMap then
+    ResourceMap = UTILS.DeepCopy(ResourceMap)
+  end
+  cargo:SetStaticResourceMap(ResourceMap)
   return cargo
 end
 
@@ -167798,6 +168159,7 @@ _AUFTRAGSNR=0
 -- @field #string NOTHING Nothing.
 -- @field #string PATROLRACETRACK Patrol Racetrack.
 -- @field #string STRAFING Strafing run.
+-- @field #string FREIGHTTRANSPORT Freight transport.
 AUFTRAG.Type={
   ANTISHIP="Anti Ship",
   AWACS="AWACS",
@@ -167846,6 +168208,7 @@ AUFTRAG.Type={
   NOTHING="Nothing",
   PATROLRACETRACK="Patrol Racetrack",
   STRAFING="Strafing",
+  FREIGHTTRANSPORT="FREIGHTTRANSPORT",
 }
 
 --- Special task description.
@@ -169508,6 +169871,58 @@ function AUFTRAG:NewCARGOTRANSPORT(StaticCargo, DropZone)
   mission.DCStask.params.zoneId=DropZone.ZoneID
   mission.DCStask.params.zone=DropZone
   mission.DCStask.params.cargo=StaticCargo
+  
+  return mission
+end
+
+--- **[AIR]** Create a FREIGHT TRANSPORT mission.
+-- This mission type can be used to transport cargo items internally via suitable transport aircraft (planes and helicopters), e.g. C-130 or CH-47.
+-- It supports transporting one or multiple cargos (weight limits are not checked).
+-- @param #AUFTRAG self
+-- @param Wrapper.Static#STATIC StaticCargo Static cargo object. Can also be passed as a `SET_STATIC` object.
+-- @param Wrapper.Airbase#AIRBASE Destination Destination airbase, where the cargo is unloaded.
+-- @return #AUFTRAG self
+function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
+
+  -- Check if Destination is given
+  if Destination==nil then
+    self:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
+    return nil
+  elseif type(Destination)=="string" then
+    Destination=AIRBASE:FindByName(Destination)
+  end
+  
+  -- Check if Cargo is given
+  if StaticCargo==nil then
+    self:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
+    return nil  
+  elseif type(StaticCargo)=="string" then
+    StaticCargo=STATIC:FindByName(StaticCargo)
+  end
+  
+  -- Convert static to a set if necessary
+  if StaticCargo:IsInstanceOf("STATIC") then
+    local StaticCargoSet=SET_STATIC:New() --Core.Set#SET_STATIC
+    StaticCargoSet:AddCargo(StaticCargo)
+    StaticCargo=StaticCargoSet
+  end
+  
+  local mission=AUFTRAG:New(AUFTRAG.Type.FREIGHTTRANSPORT)
+
+  mission:_TargetFromObject(StaticCargo)
+
+  mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.FREIGHTTRANSPORT)
+
+  -- Set ROE and ROT.
+  mission.optionROE=ENUMS.ROE.ReturnFire
+  mission.optionROT=ENUMS.ROT.PassiveDefense
+
+  mission.categories={AUFTRAG.Category.HELICOPTER, AUFTRAG.Category.AIRCRAFT}
+
+  mission.DCStask=mission:GetDCSMissionTask()
+  
+  mission.DCStask.params.cargo=StaticCargo
+  mission.DCStask.params.destination=Destination
   
   return mission
 end
@@ -173541,8 +173956,9 @@ end
 
 --- Get DCS task table for the given mission.
 -- @param #AUFTRAG self
+-- @param Wrapper.Group#GROUP MissionGroup (Optional) Group that is supposed to carry out the mission. This might not exist when the AUFTRAG is created but only when the AUFTRAG is passed to a certain group.
 -- @return DCS#Task The DCS task table. If multiple tasks are necessary, this is returned as a combo task.
-function AUFTRAG:GetDCSMissionTask()
+function AUFTRAG:GetDCSMissionTask(MissionGroup)
 
   local DCStasks={}
 
@@ -173884,6 +174300,34 @@ function AUFTRAG:GetDCSMissionTask()
     }
     
     table.insert(DCStasks, TaskCargoTransportation)
+
+  elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+
+    ------------------------------
+    -- FREIGHTTRANSPORT Mission --
+    ------------------------------
+        
+    local statics=self.engageTarget:GetObjects()
+    
+    for _, StaticObject in pairs(statics) do
+      local static=StaticObject --Wrapper.Static#STATIC
+      
+      self:T(static)
+    
+      -- Task to unload the cargo     
+      local TaskCargoUnload={
+        ["id"] = "CargoUnloadPlane",
+        ["params"] = 
+        {
+          ["groupId"] = static:GetID(),
+          ["unitId"]  = static:GetID(),
+        }
+      }        
+    
+    
+      table.insert(DCStasks, TaskCargoUnload)
+      
+    end
 
   elseif self.type==AUFTRAG.Type.RESCUEHELO then
 
@@ -174449,6 +174893,8 @@ function AUFTRAG:GetMissionTaskforMissionType(MissionType)
     mtask=ENUMS.MissionTask.TRANSPORT
   elseif MissionType==AUFTRAG.Type.CARGOTRANSPORT then
     mtask=ENUMS.MissionTask.TRANSPORT
+  elseif MissionType==AUFTRAG.Type.FREIGHTTRANSPORT then
+    mtask=ENUMS.MissionTask.TRANSPORT    
   elseif MissionType==AUFTRAG.Type.ARMORATTACK then
     mtask=ENUMS.MissionTask.NOTHING
   elseif MissionType==AUFTRAG.Type.HOVER then
@@ -182825,7 +183271,8 @@ function CHIEF:New(Coalition, AgentSet, Alias)
   self.TransportCategories = {Group.Category.HELICOPTER}
   
   -- Create a new COMMANDER.
-  self.commander=COMMANDER:New(Coalition)  
+  self.commander=COMMANDER:New(Coalition, Alias)
+
 
   -- Add FSM transitions.
   --                 From State   -->    Event                     -->    To State
@@ -185784,6 +186231,15 @@ function CHIEF._CheckAssetProperties(Asset, Properties)
   end
 
   return false
+end
+
+
+--- Checks whether or not any of the legions con run a mission.
+-- @param #CHIEF self
+-- @param Ops.Auftrag#AUFTRAG Mission The mission.
+-- @return #boolean If `true`, one of the cohorts can run the mission.
+function CHIEF:CanMission(Mission)
+    return self.commander and self.commander:CanMission(Mission)
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -189212,6 +189668,70 @@ function COMMANDER:_GetCohorts(Legions, Cohorts, Operation)
   end
 
   return cohorts
+end
+
+--- Checks whether or not any of the legions con run a mission.
+-- @param #COMMANDER self
+-- @param Ops.Auftrag#AUFTRAG Mission The mission.
+-- @return #boolean If `true`, one of the cohorts can run the mission.
+function COMMANDER:CanMission(Mission)
+    local commander = self
+
+    -- Target position.
+    local TargetVec2 = Mission:GetTargetVec2()
+
+    local MaxWeight = nil
+
+    if Mission.NcarriersMin then
+
+        local legions = commander.legions
+        local cohorts = nil
+        if Mission.transportLegions or Mission.transportCohorts then
+            legions = Mission.transportLegions
+            cohorts = Mission.transportCohorts
+        end
+
+        -- Get transport cohorts.
+        local Cohorts = LEGION._GetCohorts(legions, cohorts)
+
+        -- Filter cohorts that can actually perform transport missions.
+        local transportcohorts = {}
+        for _, _cohort in pairs(Cohorts) do
+            local cohort = _cohort --Ops.Cohort#COHORT
+
+            -- Check if cohort can perform transport to target.
+            local can = LEGION._CohortCan(cohort, AUFTRAG.Type.OPSTRANSPORT, Mission.carrierCategories, Mission.carrierAttributes, Mission.carrierProperties, nil, TargetVec2)
+
+            -- MaxWeight of cargo assets is limited by the largets available cargo bay. We don't want to select, e.g., tanks that cannot be transported by APCs or helos.
+            if can and (MaxWeight == nil or cohort.cargobayLimit > MaxWeight) then
+                MaxWeight = cohort.cargobayLimit
+            end
+        end
+
+    end
+
+    local legions = commander.legions
+    local cohorts = nil
+    if Mission.specialLegions or Mission.specialCohorts then
+        legions = Mission.specialLegions
+        cohorts = Mission.specialCohorts
+    end
+
+    -- Get cohorts.
+    local Cohorts = LEGION._GetCohorts(legions, cohorts, Mission.operation, commander.opsqueue)
+
+    for _, _cohort in pairs(Cohorts) do
+        local cohort = _cohort --Ops.Cohort#COHORT
+
+        -- Check if cohort can do the mission.
+        local can = LEGION._CohortCan(cohort, Mission.type, nil, Mission.attributes, Mission.properties, { Mission.engageWeaponType }, TargetVec2, Mission.engageRange, Mission.refuelSystem, nil, MaxWeight)
+        if can then
+            return true
+        end
+
+    end
+
+    return false
 end
 
 --- Recruit assets for a given mission.
@@ -197632,7 +198152,7 @@ function FLIGHTGROUP:onafterUpdateRoute(From, Event, To, n, N)
   -- Set current waypoint or we get problem that the _PassingWaypoint function is triggered too early, i.e. right now and not when passing the next WP.
   local current=self:GetCoordinate():WaypointAir(COORDINATE.WaypointAltType.BARO, waypointType, waypointAction, speed, true, nil, {}, "Current")
   table.insert(wp, current)
-
+  
   -- Add remaining waypoints to route.
   for i=n, N do
     table.insert(wp, self.waypoints[i])
@@ -201560,7 +202080,7 @@ function INTEL:_CreateContact(Positionable, RecceName)
       item.category=3 --static:GetCategory()
       item.categoryname=static:GetCategoryName() or "Unknown"
       item.threatlevel=static:GetThreatLevel() or 0
-      item.position=static:GetCoordinate()
+      item.position=static:GetCoord()
       item.velocity=static:GetVelocityVec3()
       item.speed=0
       item.recce=RecceName
@@ -201667,15 +202187,15 @@ function INTEL:GetDetectedUnits(Unit, DetectedUnits, RecceDetecting, DetectVisua
           local DetectionAccepted = true
           
           if self.RadarAcceptRange then
-            local reccecoord = Unit:GetCoordinate()
-            local coord = unit:GetCoordinate()
+            local reccecoord = Unit:GetCoord()
+            local coord = unit:GetCoord()
             local dist = math.floor(coord:Get2DDistance(reccecoord)/1000) -- km
             if dist > self.RadarAcceptRangeKilometers then DetectionAccepted = false end
           end
           
           if self.RadarBlur then
-            local reccecoord = Unit:GetCoordinate()
-            local coord = unit:GetCoordinate()
+            local reccecoord = Unit:GetCoord()
+            local coord = unit:GetCoord()
             local dist = math.floor(coord:Get2DDistance(reccecoord)/1000) -- km
             local AGL = unit:GetAltitude(true)
             local minheight = self.RadarBlurMinHeight or 250 -- meters
@@ -210984,7 +211504,7 @@ OPSGROUP.CargoStatus={
 
 --- OpsGroup version.
 -- @field #string version
-OPSGROUP.version="1.0.4"
+OPSGROUP.version="1.0.5"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -215570,7 +216090,7 @@ function OPSGROUP:onafterTaskDone(From, Event, To, Task)
     
     if Task.description=="Task_Land_At" then
       self:T(self.lid.."Taske DONE Task_Land_At ==> Wait")
-      self:Cruise()
+      -- After the land task, we set the helo to wait. This is because of an issue that the passing waypoint function is triggered immidiately if we do not do this!
       self:Wait(20, 100)
     else
       self:T(self.lid.."Task Done but NO mission found ==> _CheckGroupDone in 1 sec")
@@ -216416,6 +216936,9 @@ function OPSGROUP:RouteToMission(mission, delay)
 
     -- Debug info.
     self:T(self.lid..string.format("Route To Mission"))
+	
+	-- Delay in seconds before cruise or updateroute is called.
+	local delayGo=-1
 
     -- Catch dead or stopped groups.
     if self:IsDead() or self:IsStopped() then
@@ -216620,7 +217143,65 @@ function OPSGROUP:RouteToMission(mission, delay)
         end
 
       end
-
+	  
+	elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+	
+		---
+		-- FREIGHTTRANSPORT
+		---
+	
+		local destination=mission.DCStask.params.destination
+		local cargo=mission.DCStask.params.cargo
+		
+		-- Set the waypoint coordinate directly above the airbase.
+		-- The only way to ensure the cargo is delivered there, because when the task is executed, the cargo is delivered to the closest airbase.
+		-- Hopefully, ED will change the behaviour of this task but at the moment, it is what it is.
+		waypointcoord=destination:GetCoordinate()
+				
+		-- Get additional parameters
+		mission.DCStask.params.destination=destination --Wrapper.Airbase#AIRBASE
+		mission.DCStask.params.cargo=cargo --Core.Set#SET_STATIC
+		
+		-- Get transport unit
+		local unit=self.group:GetFirstUnit()
+		local unitIdTransport=unit:GetID()
+		local vec2=unit:GetVec2()
+		
+		-- Create tasks to load/transport statics cargos
+		local tasks={}		
+		for StaticName, StaticObject in pairs(cargo:GetSet()) do
+      local static=StaticObject --Wrapper.Static#STATIC
+  		
+  		-- Task to transport cargo.
+  		local TaskCargoTransportation={
+        id = "CargoTransportationPlane",
+        params = {
+          x=vec2.x,
+          y=vec2.y,
+          unitIdTransport=unitIdTransport,
+          groupId=static:GetID(),
+          unitId=static:GetID(),
+        }
+      }
+      
+      table.insert(tasks, TaskCargoTransportation)
+		end
+		
+		-- If we have multiple tasks, we create a combo task
+		local TaskCargo=nil
+		if #tasks==1 then
+		  TaskCargo=tasks[1]
+		else
+		  TaskCargo=CONTROLLABLE.TaskCombo(nil, tasks)
+		end
+		
+		-- We set the task to load the cargo into the aircraft.
+		-- We must be careful when calling updateroute because there the task is overwritten.
+		-- We also clear present "UpdateRoute" FSM events
+		self:_ClearFSMEvent( "UpdateRoute" )
+		delayGo=-30
+		self.group:SetTask(TaskCargo)
+				
     elseif mission.type==AUFTRAG.Type.ARTY then
 
       ---
@@ -216779,7 +217360,7 @@ function OPSGROUP:RouteToMission(mission, delay)
       elseif self:IsNavygroup() then
         self:Cruise(SpeedToMission)
       elseif self:IsFlightgroup() then
-        self:UpdateRoute()
+        self:__UpdateRoute(delayGo)
       end
           
     end
@@ -218801,7 +219382,8 @@ function OPSGROUP:_CheckCargoTransport()
       end
 
       -- Boarding finished ==> Transport cargo.
-      if gotcargo and self.cargoTransport:_CheckRequiredCargos(self.cargoTZC, self) and not boarding then
+	  local required=self.cargoTransport:_CheckRequiredCargos(self.cargoTZC, self)
+      if gotcargo and required and not boarding then
         self:T(self.lid.."Boarding/loading finished ==> Loaded")
         self.Tloading=nil
         self:LoadingDone()
@@ -220437,6 +221019,10 @@ function OPSGROUP:onafterTransport(From, Event, To)
           self:T(self.lid.."ERROR: No current task but landed at?!")
         end
       end
+	  
+      if self:IsWaiting() then
+        self:__Cruise(-10)
+      end	  
 
     elseif self:IsArmygroup() then
 
@@ -224770,7 +225356,7 @@ _OPSTRANSPORTID=0
 
 --- Army Group version.
 -- @field #string version
-OPSTRANSPORT.version="0.8.0"
+OPSTRANSPORT.version="0.9.0"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -226653,7 +227239,9 @@ function OPSTRANSPORT:_CheckRequiredCargos(TransportZoneCombo, CarrierGroup)
     requiredCargos={}
     for _,_cargo in pairs(TransportZoneCombo.Cargos) do
       local cargo=_cargo --Ops.OpsGroup#OPSGROUP.CargoGroup
-      table.insert(requiredCargos, cargo.opsgroup)
+      if not cargo.delivered then
+        table.insert(requiredCargos, cargo.opsgroup)
+      end
     end
   end 
   
@@ -239389,6 +239977,10 @@ function EASYGCICAP:New(Alias, AirbaseName, Coalition, EWRName)
   
   -- defaults
   self.alias = Alias or AirbaseName.." CAP Wing"
+      
+  -- Set some string id for output to DCS.log file.
+  self.lid=string.format("EASYGCICAP %s | ", self.alias)
+  
   self.coalitionname = string.lower(Coalition) or "blue"
   self.coalition = self.coalitionname == "blue" and coalition.side.BLUE or coalition.side.RED
   self.wings = {}
@@ -239424,9 +240016,6 @@ function EASYGCICAP:New(Alias, AirbaseName, Coalition, EWRName)
   self.EngageTargetTypes = {"Air"}
   self:SetDefaultTurnoverTime()
   
-  -- Set some string id for output to DCS.log file.
-  self.lid=string.format("EASYGCICAP %s | ", self.alias)
-
   -- Add FSM transitions.
   --               From State  -->   Event      -->      To State
   self:SetStartState("Stopped")
@@ -241199,6 +241788,10 @@ function EASYA2G:New(Alias, AirbaseName, Coalition, ScoutName)
   
   -- defaults
   self.alias = Alias or AirbaseName.." A2G Wing"
+  
+  -- Set some string id for output to DCS.log file.
+  self.lid=string.format("EASYA2G %s | ", self.alias)
+  
   self.coalitionname = string.lower(Coalition) or "blue"
   self.coalition = self.coalitionname == "blue" and coalition.side.BLUE or coalition.side.RED
   self.wings = {}
@@ -241234,9 +241827,6 @@ function EASYA2G:New(Alias, AirbaseName, Coalition, ScoutName)
   self.EngageTargetTypes = {"Ground"}
   self:SetDefaultTurnoverTime()
   
-  -- Set some string id for output to DCS.log file.
-  self.lid=string.format("EASYA2G %s | ", self.alias)
-
   -- Add FSM transitions.
   --               From State  -->   Event      -->      To State
   self:SetStartState("Stopped")
@@ -243714,7 +244304,7 @@ end--- **Sound** - Sound output classes.
 
 do -- Sound Base
 
-  -- @type SOUNDBASE
+  --- @type SOUNDBASE
   -- @field #string ClassName Name of the class.
   -- @extends Core.Base#BASE
 
@@ -243790,7 +244380,7 @@ end
 
 do -- Sound File
 
-  -- @type SOUNDFILE
+  --- @type SOUNDFILE
   -- @field #string ClassName Name of the class
   -- @field #string filename Name of the flag.
   -- @field #string path Directory path, where the sound file is located. This includes the final slash "/".
@@ -243990,6 +244580,7 @@ do -- Text-To-Speech
   -- @field #string gender Gender: "male", "female".
   -- @field #string culture Culture, e.g. "en-GB".
   -- @field #string voice Specific voice to use. Overrules `gender` and `culture` settings.
+  -- @field #number speed Specific speed to be used.
   -- @extends Core.Base#BASE
 
 
@@ -244053,7 +244644,7 @@ do -- Text-To-Speech
     self:SetDuration(Duration or MSRS.getSpeechTime(Text))
     --self:SetGender()
     --self:SetCulture()
-    
+    self:SetSpeed()
     -- Debug info:
     self:T(string.format("New SOUNDTEXT: text=%s, duration=%.1f sec", self.text, self.duration))
 
@@ -244112,6 +244703,17 @@ do -- Text-To-Speech
   function SOUNDTEXT:SetVoice(VoiceName)
     
     self.voice=VoiceName
+                  
+    return self
+  end
+  
+    --- Set to use a specific speed.
+  -- @param #SOUNDTEXT self
+  -- @param #number Speed
+  -- @return #SOUNDTEXT self
+  function SOUNDTEXT:SetSpeed(Speed)
+    
+    self.speed = Speed or 1.0
                   
     return self
   end
@@ -245621,8 +246223,8 @@ end
 -- @field #string ConfigFilePath Path to the standard config file.
 -- @field #boolean ConfigLoaded If `true` if config file was loaded.
 -- @field #table poptions Provider options. Each element is a data structure of type `MSRS.ProvierOptions`.
--- @field #string provider Provider of TTS (win, gcloud, azure, amazon).
--- @field #string backend Backend used as interface to SRS (MSRS.Backend.SRSEXE or MSRS.Backend.GRPC).
+-- @field #string provider Provider of TTS (win, gcloud, azure, amazon, ...).
+-- @field #string backend Backend used as interface to SRS (MSRS.Backend.SRSEXE, MSRS.Backend.HOUND or MSRS.Backend.GRPC).
 -- @field #boolean UsePowerShell Use PowerShell to execute the command and not cmd.exe
 -- @extends Core.Base#BASE
 
@@ -245638,7 +246240,8 @@ end
 --
 -- * This script needs SRS version >= 1.9.6
 -- * You need to de-sanitize os, io and lfs in the missionscripting.lua
--- * Optional: DCS-gRPC as backend to communicate with SRS (vide infra)
+-- * Optional: DCS-gRPC as backend to communicate with SRS (via infra)
+-- * Optional: HOUNDTTS as backend to communicate with SRS (via infra)
 --
 -- ## Knwon Issues
 --
@@ -245648,7 +246251,7 @@ end
 -- expecially in VR but unavoidable (if you have a solution, please feel free to share!).
 --
 -- NOTE that this is not an issue if the mission is running on a server.
--- Also NOTE that using DCS-gRPC as backend will avoid the pop-up window.
+-- Also NOTE that using DCS-gRPC and Hound-TTS as backend create no pop-up window.
 --
 -- # Play Sound Files
 --
@@ -245759,14 +246362,31 @@ end
 -- The default interface to SRS is via calling the 'DCS-SR-ExternalAudio.exe'. As noted above, this has the unavoidable drawback that a pop-up briefly appears
 -- and DCS might be put out of focus.
 --
+-- ## Hound TTS as an alternative to 'DCS-SR-ExternalAudio.exe' for TTS
+-- 
+-- An alternative interface to SRS is [Hound-TTS](https://github.com/uriba107/HoundTTS/releases). This does not call an exe file and therefore avoids the annoying pop-up window.
+-- In addition to Windows and Google cloud, it also offers Piper local voice creation and others as providers for TTS.
+--
+-- Use @{#MSRS.SetDefaultBackendHound} to enable [Hound-TTS](https://github.com/uriba107/HoundTTS/releases) as an alternate backend.
+-- This can be useful if the popup should be avoided or to use Piper or others for TTS. Please note, only text-to-speech is supported and it it cannot be used to transmit audio files.
+--
+-- Hound TTS must be installed and configured per the [Hound TTS](https://github.com/uriba107/HoundTTS#installation) prior to use. 
+-- If a cloud TTS provider is being used, the API key(s) must be set as per the documentation.
+-- Hound TTS can be used both with DCS dedicated server and regular DCS installations.
+--
+-- To use the default local Windows TTS with Hound TTS, Windows 2019 Server (or newer) or Windows 10/11 are required.  Voices for non-local languages and dialects may need to
+-- be explicitly installed.
+--
+-- To set the MSRS class to use the Hound TTS backend for all future instances, call the function `MSRS.SetDefaultBackendHound()`.
+-- 
 -- ## DCS-gRPC as an alternative to 'DCS-SR-ExternalAudio.exe' for TTS
 --
 -- Another interface to SRS is [DCS-gRPC](https://github.com/DCS-gRPC/rust-server). This does not call an exe file and therefore avoids the annoying pop-up window.
 -- In addition to Windows and Google cloud, it also offers Microsoft Azure and Amazon Web Service as providers for TTS.
 --
--- Use @{#MSRS.SetDefaultBackendGRPC} to enable [DCS-gRPC](https://github.com/DCS-gRPC/rust-server) as an alternate backend for transmitting text-to-speech over SRS.
--- This can be useful if 'DCS-SR-ExternalAudio.exe' cannot be used in the environment or to use Azure or AWS clouds for TTS.  Note that DCS-gRPC does not (yet?) support
--- all of the features and options available with 'DCS-SR-ExternalAudio.exe'. Of note, only text-to-speech is supported and it it cannot be used to transmit audio files.
+-- Use @{#MSRS.SetDefaultBackendGRPC} to enable [DCS-gRPC](https://github.com/DCS-gRPC/rust-server) as an alternate backend.
+-- This can be useful if 'DCS-SR-ExternalAudio.exe' cannot be used in the environment or to use Azure or AWS clouds for TTS.  Note that DCS-gRPC does not support
+-- all of the features and options available with 'DCS-SR-ExternalAudio.exe'. Also note, only text-to-speech is supported and it it cannot be used to transmit audio files.
 --
 -- DCS-gRPC must be installed and configured per the [DCS-gRPC documentation](https://github.com/DCS-gRPC/rust-server) and already running via either the 'autostart' mechanism
 -- or a Lua call to 'GRPC.load()' prior to use of the alternate DCS-gRPC backend. If a cloud TTS provider is being used, the API key must be set via the 'Config\dcs-grpc.lua'
@@ -245783,20 +246403,20 @@ end
 -- Basic Play Text-To-Speech example using alternate DCS-gRPC backend (DCS-gRPC not previously started):
 --
 --     -- Start DCS-gRPC
---     GRPC.load()
+--     GRPC.load() -- not needed if you set gRPC to auto-start
 --     -- Select the alternate DCS-gRPC backend for new MSRS instances
 --     MSRS.SetDefaultBackendGRPC()
 --     -- Create a SOUNDTEXT object.
 --     local text=SOUNDTEXT:New("All Enemies destroyed")
 --     -- MOOSE SRS
---     local msrs=MSRS:New('', 305.0)
+--     local msrs=MSRS:New('ExampleInstance', 305.0)
 --     -- Text-to speech with default voice after 30 seconds.
 --     msrs:PlaySoundText(text, 30)
 --
 -- Basic example of using another class (ATIS) with SRS and the DCS-gRPC backend (DCS-gRPC not previously started):
 --
 --     -- Start DCS-gRPC
---     GRPC.load()
+--     GRPC.load() -- not needed if you set gRPC to auto-start
 --     -- Select the alternate DCS-gRPC backend for new MSRS instances
 --     MSRS.SetDefaultBackendGRPC()
 --     -- Create new ATIS as usual
@@ -245833,7 +246453,7 @@ MSRS = {
 
 --- MSRS class version.
 -- @field #string version
-MSRS.version="0.3.3"
+MSRS.version="0.3.4"
 
 --- Voices
 -- @type MSRS.Voices
@@ -246270,9 +246890,11 @@ MSRS.Voices = {
 -- @type MSRS.Backend
 -- @field #string SRSEXE Use `DCS-SR-ExternalAudio.exe`.
 -- @field #string GRPC Use DCS-gRPC.
+-- @field #string GRPC Use Hound-TTS.
 MSRS.Backend = {
   SRSEXE = "srsexe",
   GRPC   = "grpc",
+  HOUND  = "hound",
 }
 
 --- Text-to-speech providers. These are compatible with the DCS-gRPC conventions.
@@ -246281,11 +246903,13 @@ MSRS.Backend = {
 -- @field #string GOOGLE Google (`gcloud`).
 -- @field #string AZURE Microsoft Azure (`azure`). Only possible with DCS-gRPC backend.
 -- @field #string AMAZON Amazon Web Service (`aws`). Only possible with DCS-gRPC backend.
+-- @field #string PIPER Piper local voice service. Only possible with Hound-TTS backend.
 MSRS.Provider = {
   WINDOWS = "win",
   GOOGLE  = "gcloud",
   AZURE   = "azure",
   AMAZON  = "aws",
+  PIPER   = "piper",
 }
 
 --- Function for UUID.
@@ -246331,6 +246955,7 @@ end
 -- DONE: Add google.
 -- DONE: Add gRPC google options
 -- DONE: Add loading default config file
+-- DONE: Add Hound TTS
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Constructor
@@ -246445,6 +247070,16 @@ function MSRS:SetBackendGRPC()
   return self
 end
 
+--- Set Hound-TTS as backend to communicate with SRS.
+-- @param #MSRS self
+-- @return #MSRS self
+function MSRS:SetBackendHound()
+  self:F()
+  self:SetBackend(MSRS.Backend.HOUND)
+
+  return self
+end
+
 --- Set `DCS-SR-ExternalAudio.exe` as backend to communicate with SRS.
 -- @param #MSRS self
 -- @return #MSRS self
@@ -246465,6 +247100,12 @@ end
 -- @param #MSRS self
 function MSRS.SetDefaultBackendGRPC()
   MSRS.backend=MSRS.Backend.GRPC
+end
+
+--- Set Hound-TTS to be the default backend.
+-- @param #MSRS self
+function MSRS.SetDefaultBackendHound()
+  MSRS.backend=MSRS.Backend.HOUND
 end
 
 --- Get currently set backend.
@@ -246718,6 +247359,16 @@ function MSRS:SetVoiceGoogle(Voice)
   return self
 end
 
+--- Set to use a specific voice if Piper is used as provider (only Hound-TTS backend). Note that this will override any gender and culture settings.
+-- @param #MSRS self
+-- @param #string Voice [Piper Voices](https://rhasspy.github.io/piper-samples/). Default `"en_US-ryan-low"`.
+-- @return #MSRS self
+function MSRS:SetVoicePiper(Voice)
+  self:F( {Voice=Voice} )
+  self:SetVoiceProvider(Voice or "en_US-ryan-low", MSRS.Provider.PIPER)
+
+  return self
+end
 
 --- Set to use a specific voice if Microsoft Azure is use as provider (only DCS-gRPC backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
@@ -246812,9 +247463,10 @@ end
 -- - `MSRS.Provider.WINDOWS`: Microsoft Windows (default)
 -- - `MSRS.Provider.GOOGLE`: Google Cloud
 -- - `MSRS.Provider.AZURE`: Microsoft Azure (only with DCS-gRPC backend)
--- - `MSRS.Provier.AMAZON`: Amazon Web Service (only with DCS-gRPC backend)
+-- - `MSRS.Provider.AMAZON`: Amazon Web Service (only with DCS-gRPC backend)
+-- - `MSRS.Provider.PIPER`: Piper Voices (only with Hound-TTS backend)
 --
--- Note that all providers except Microsoft Windows need as additonal information the credentials of your account.
+-- Note that all providers except Microsoft Windows and Piper need as additonal information the credentials of your account.
 --
 -- @param #MSRS self
 -- @param #string Provider
@@ -246961,6 +247613,15 @@ function MSRS:SetTTSProviderAmazon()
   return self
 end
 
+--- Use Piper to provide text-to-speech. Only supported if used in combination with Hound-TTS as backend.
+-- @param #MSRS self
+-- @return #MSRS self
+function MSRS:SetTTSProviderPiper()
+  self:F()
+  self:SetProvider(MSRS.Provider.PIPER)
+  return self
+end
+
 
 --- Print SRS help to DCS log file.
 -- @param #MSRS self
@@ -247043,9 +247704,12 @@ function MSRS:PlaySoundText(SoundText, Delay)
   if Delay and Delay>0 then
     self:ScheduleOnce(Delay, MSRS.PlaySoundText, self, SoundText, 0)
   else
-
+    
+    -- TODO Insert HOUND option
     if self.backend==MSRS.Backend.GRPC then
       self:_DCSgRPCtts(SoundText.text, nil, SoundText.gender, SoundText.culture, SoundText.voice, SoundText.volume, SoundText.label, SoundText.coordinate)
+    elseif self.backend == MSRS.Backend.HOUND then
+      self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice)
     else
 
       -- Get command.
@@ -247069,8 +247733,9 @@ end
 -- @param #string Text Text message.
 -- @param #number Delay Delay in seconds, before the message is played.
 -- @param Core.Point#COORDINATE Coordinate Coordinate.
+-- @param #number Speed
 -- @return #MSRS self
-function MSRS:PlayText(Text, Delay, Coordinate)
+function MSRS:PlayText(Text, Delay, Coordinate, Speed)
   self:F( {Text, Delay, Coordinate} )
 
   if Delay and Delay>0 then
@@ -247080,8 +247745,10 @@ function MSRS:PlayText(Text, Delay, Coordinate)
     if self.backend==MSRS.Backend.GRPC then
       self:T(self.lid.."Transmitting")
       self:_DCSgRPCtts(Text, nil, nil , nil, nil, nil, nil, Coordinate)
+    elseif self.backend==MSRS.Backend.HOUND then
+      self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed)
     else
-      self:PlayTextExt(Text, Delay, nil, nil, nil, nil, nil, nil, nil, Coordinate)
+      self:PlayTextExt(Text, Delay, nil, nil, nil, nil, nil, nil, nil, Coordinate, Speed)
     end
 
   end
@@ -247101,12 +247768,13 @@ end
 -- @param #number Volume Volume.
 -- @param #string Label Label.
 -- @param Core.Point#COORDINATE Coordinate Coordinate.
+-- @param #number Speed Speed.
 -- @return #MSRS self
-function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate)
-  self:T({Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate} )
+function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate,Speed)
+  self:T({Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed} )
 
   if Delay and Delay>0 then
-    self:ScheduleOnce(Delay, self.PlayTextExt, self, Text, 0, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate)
+    self:ScheduleOnce(Delay, self.PlayTextExt, self, Text, 0, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed)
   else
 
     Frequencies = Frequencies or self:GetFrequencies()
@@ -247127,7 +247795,14 @@ function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture
       --BASE:I("MSRS.Backend.GRPC")
 
       self:_DCSgRPCtts(Text, Frequencies, Gender, Culture, Voice, Volume, Label, Coordinate)
-
+      
+    elseif self.backend==MSRS.Backend.HOUND then
+      -- BASE:I("MSRS.Backend.HOUND")
+      
+      local UseGoogle = (self.provider == MSRS.Provider.GOOGLE) and true or nil
+      
+      self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle)
+      
     end
 
   end
@@ -247442,7 +248117,7 @@ end
 function MSRS:_DCSgRPCtts(Text, Frequencies, Gender, Culture, Voice, Volume, Label, Coordinate)
 
   -- Debug info.
-  self:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts()")
+  self:T("MSRS_BACKEND_DCSGRPC:_DCSgRPCtts")
   self:T({Text, Frequencies, Gender, Culture, Voice, Volume, Label, Coordinate})
 
   local options = {} -- #MSRS.GRPCOptions
@@ -247452,7 +248127,7 @@ function MSRS:_DCSgRPCtts(Text, Frequencies, Gender, Culture, Voice, Volume, Lab
   -- Get frequenceies.
   Frequencies = UTILS.EnsureTable(Frequencies, true) or self:GetFrequencies()
 
-  -- Plain text (not really used.
+  -- Plain text - not really used.
   options.plaintext=Text
 
   -- Name shows as sender.
@@ -247510,6 +248185,156 @@ function MSRS:_DCSgRPCtts(Text, Frequencies, Gender, Culture, Voice, Volume, Lab
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Hound-TTS Backend Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Hound TTS Function Wrapper
+-- @param #MSRS self
+-- @param #string Message The text to speak.
+-- @param #table Frequencies The table of frequencies to use.
+-- @param #table Modulations The table of modulations to use.
+-- @param #number Volume The volume to use, defaults to 1.0.
+-- @param #string Label The label to use, defaults to "MSRS".
+-- @param #number Coalition The coalition to use.
+-- @param Core.Point#COORDINATE Point (Optional) The point from which the voice is sent.
+-- @param #number Speed (Optional) How fast to speak, defaults to 1.0.
+-- @param #string Gender (Optional) Gender to use.
+-- @param #string Culture (Optional) Culture to use.
+-- @param #string Voice (Optional) Voice to use.
+-- @param #boolean UseGoogle (Optional) If to use Google TTS.
+-- @return SpeechTime Speech time in seconds.
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle)
+  self:I(self.lid.."_HoundTextToSpeech")
+  
+  local ffs = {}
+  for _,_f in pairs(Frequencies or self.frequencies) do
+    table.insert(ffs,string.format("%.1f",_f))
+  end
+  
+  local freqs = table.concat(ffs, ",")
+  local modus = table.concat(Modulations or self.modulations, ",")
+
+  local coal=Coalition or self.coalition
+  local gender=Gender or self.gender
+  local voice=Voice or self:GetVoice(self.provider) or self.voice
+  local culture=Culture or self.culture
+  local volume=Volume or self.volume or 1.0
+  local speed=Speed or self.speed or 1.0
+  local label=Label or self.Label or "MSRS"
+  local coordinate=Point or self.coordinate
+  local point = (coordinate ~= nil) and coordinate:GetVec3() or nil
+  local port = self.port or 5002
+
+  -- Replace modulation
+  modus=modus:gsub("0", "AM")
+  modus=modus:gsub("1", "FM")
+  
+  self:I({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
+  
+  if (UseGoogle ~= true) and self.provider == MSRS.Provider.GOOGLE then
+    UseGoogle = true
+  end
+  
+  local provider = self.provider
+  provider=provider:gsub("gcloud", "google")
+  provider=provider:gsub("win", "sapi")
+  
+  local TransmissionP = {
+    freqs = freqs,
+    modulations = modus,
+    coalition = coal,
+    name = label,
+    point = point,
+    volume = volume,
+    port = port,
+  }
+  local ProviderP = {
+    provider = provider,
+    voice = voice,
+    speed = speed,
+    culture = culture,
+    gender = gender,
+  }
+  
+  local speechtime = HoundTTS.Transmit(Message, TransmissionP, ProviderP)
+  
+  return speechtime
+end
+
+--- Hound Transmit Function Wrapper
+-- @param #MSRS self
+-- @param #string Message The message to speak
+-- @param #table Transmission_params Transmission parameter table, see below
+-- @param #table Provider_params Provider parameter table, see below
+-- @return SpeechTime Speech time in seconds.
+-- @usage
+-- -- #table Transmission_params
+--   | Field       | Type     | Default             | Description                              |
+--   | ----------- | -------- | ------------------- | ---------------------------------------- |
+--   | transmitter | string   | `"srs"`             | Transmitter type. Currently only `"srs"` |
+--   | freqs       | string   | `"251.0"`           | Frequency in MHz, comma-separated        |
+--   | modulations | string   | `"AM"`              | `AM` or `FM`, comma-separated            |
+--   | coalition   | number   | `0`                 | 0=spectator, 1=red, 2=blue               |
+--   | name        | string   | `"HoundTTS"`        | Client name shown in SRS                 |
+--   | point       | Vec3/nil | `nil`               | DCS position for geo-location            |
+--   | volume      | number   | `1.0`               | 0.0 – 1.0                                |
+--   | encrypt     | boolean  | `false`             | Enable SRS encryption                    |
+--   | encKey      | number   | `0`                 | Encryption key (0–255, must match SRS)   |
+--   | host        | string   | `HoundTTS.SRS_HOST` | SRS server IP                            |
+--   | port        | number   | `HoundTTS.SRS_PORT` | SRS server port                          |
+--
+-- -- #table Provider_params
+--   | Field    | Type   | Default                     | Description                                                                        |
+--   | -------- | ------ | --------------------------- | ---------------------------------------------------------------------------------- |
+--   | provider | string | `HoundTTS.DEFAULT_PROVIDER` | `"piper"` / `"sapi"` / `"azure"` / `"google"` / `"elevenlabs"`                     |
+--   | voice    | string | `HoundTTS.DEFAULT_VOICE`    | Piper model name, SAPI voice name, Azure/Google voice name, or ElevenLabs voice ID |
+--   | culture  | string | `HoundTTS.DEFAULT_CULTURE`  | BCP-47 locale e.g. `"en-US"`, `"en-GB"` (used by SAPI, Azure, Google)              |
+--   | gender   | string | `HoundTTS.DEFAULT_GENDER`   | `"male"` / `"female"` (used by SAPI, Google)                                       |
+--   | speed    | number | `1.0`                       | Speech rate (0.5 = half speed, 1.0 = normal, 2.0 = double speed)                   |
+--   
+function MSRS:_HoundTransmit(Message, Transmission_params, Provider_params)
+  self:I(self.lid.."_HoundTransmit")
+  self:I({Message,Transmission_params,Provider_params})
+  local speechtime = HoundTTS.Transmit(Message, Transmission_params, Provider_params)
+  return speechtime
+end
+
+--- Hound Test Tone function, sends a 2-second 440 Hz sine wave tone directly over SRS, bypassing the TTS engine entirely. 
+-- Use this to verify the SRS connection is working before debugging TTS issues.
+--  @param MSRS self
+--  @param #table Frequencies The table of frequencies to use.
+--  @param #table Modulations The table of modulations to use.
+--  @param #number Coalition The coalition to use.
+function MSRS:_HoundTestTone(Frequencies, Modulations, Coalition)
+ self:I(self.lid.."_HoundTestTone")
+ 
+ local ffs = {}
+  for _,_f in pairs(Frequencies or self.frequencies) do
+    table.insert(ffs,string.format("%.1f",_f))
+  end
+  
+ local freqs = table.concat(ffs, ",")
+ local modus = table.concat(Modulations or self.modulations, ",")
+ -- Replace modulation
+ modus=modus:gsub("0", "AM")
+ modus=modus:gsub("1", "FM")
+ local coal=Coalition or self.coalition
+ HoundTTS.TestTone(freqs, modus, coal)
+ return self
+end
+
+--- Hound speech time calculator. Use to determine how long it takes to speak something out.
+--  @param MSRS self
+--  @param #string Message The message to measure. Can also be handed as string lenght.
+--  @param #number Speed The speed to use, defaults to 1.0.
+--  @param #boolean UseGoogle If to use google. Default: no.
+function MSRS:_HoundSpeechTime(Message,Speed,UseGoogle)
+  local speed = Speed or 1.0
+  local speechtime = HoundTTS.getSpeechTime(Message, speed, UseGoogle)
+  return speechtime
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Config File
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -247528,7 +248353,7 @@ end
 --     MSRS_Config = {
 --       Path = "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio", -- Path to SRS install directory.
 --       Port = 5002,            -- Port of SRS server. Default 5002.
---       Backend = "srsexe",     -- Interface to SRS: "srsexe" or "grpc".
+--       Backend = "srsexe",     -- Interface to SRS: "srsexe" or "grpc" or "hound".
 --       Frequency = {127, 243}, -- Default frequences. Must be a table 1..n entries!
 --       Modulation = {0,0},     -- Default modulations. Must be a table, 1..n entries, one for each frequency!
 --       Volume = 1.0,           -- Default volume [0,1].
@@ -247538,7 +248363,7 @@ end
 --       Gender = "male",
 --       Voice = "Microsoft Hazel Desktop", -- Voice that is used if no explicit provider voice is specified.
 --       Label = "MSRS",   
---       Provider = "win", --Provider for generating TTS (win, gcloud, azure, aws).      
+--       Provider = "win", --Provider for generating TTS (win, gcloud, azure, aws, piper).      
 --       -- Windows
 --       win = {
 --         voice = "Microsoft Hazel Desktop",
@@ -247663,31 +248488,38 @@ end
 -- @param #boolean isGoogle We're using Google TTS
 function MSRS.getSpeechTime(length,speed,isGoogle)
 
-  local maxRateRatio = 3
-
-  speed = speed or 1.0
-  isGoogle = isGoogle or false
-
-  local speedFactor = 1.0
-  if isGoogle then
-    speedFactor = speed
+  if MSRS.backend == MSRS.Backend.HOUND then
+    local speechtime = HoundTTS.getSpeechTime(length, speed, isGoogle)
+    return speechtime
   else
-    if speed ~= 0 then
-      speedFactor = math.abs( speed ) * (maxRateRatio - 1) / 10 + 1
+
+    local maxRateRatio = 3
+  
+    speed = speed or 1.0
+    isGoogle = isGoogle or false
+  
+    local speedFactor = 1.0
+    if isGoogle then
+      speedFactor = speed
+    else
+      if speed ~= 0 then
+        speedFactor = math.abs( speed ) * (maxRateRatio - 1) / 10 + 1
+      end
+      if speed < 0 then
+        speedFactor = 1 / speedFactor
+      end
     end
-    if speed < 0 then
-      speedFactor = 1 / speedFactor
+  
+    local wpm = math.ceil( 100 * speedFactor )
+    local cps = math.floor( (wpm * 5) / 60 )
+  
+    if type( length ) == "string" then
+      length = string.len( length )
     end
+  
+    return length/cps --math.ceil(length/cps)
+  
   end
-
-  local wpm = math.ceil( 100 * speedFactor )
-  local cps = math.floor( (wpm * 5) / 60 )
-
-  if type( length ) == "string" then
-    length = string.len( length )
-  end
-
-  return length/cps --math.ceil(length/cps)
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -247739,6 +248571,7 @@ MSRSQUEUE = {
 -- @field #number volume Volume
 -- @field #string label Label to be used
 -- @field Core.Point#COORDINATE coordinate Coordinate for this transmission
+-- @field #number speed Speed to be used
 
 --- Create a new MSRSQUEUE object for a given radio frequency/modulation.
 -- @param #MSRSQUEUE self
@@ -247823,9 +248656,10 @@ end
 -- @param #number volume Volume setting
 -- @param #string label Label to be used
 -- @param Core.Point#COORDINATE coordinate Coordinate to be used
+-- @param #number speed Speed to be used
 -- @return #MSRSQUEUE.Transmission Radio transmission table.
-function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate)
-  self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label})
+function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed)
+  self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label, S=speed})
   if self.TransmitOnlyWithPlayers then
     if self.PlayerSet and self.PlayerSet:CountAlive() == 0 then
       return self
@@ -247865,6 +248699,7 @@ function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgr
   transmission.volume = volume or msrs.volume
   transmission.label = label or msrs.Label
   transmission.coordinate = coordinate or msrs.coordinate
+  transmission.speed = speed or 1.0
  
   -- Add transmission to queue.
   self:AddTransmission(transmission)
@@ -247879,9 +248714,9 @@ function MSRSQUEUE:Broadcast(transmission)
   self:T(self.lid.."Broadcast")
   
   if transmission.frequency then
-    transmission.msrs:PlayTextExt(transmission.text, nil, transmission.frequency, transmission.modulation, transmission.gender, transmission.culture, transmission.voice, transmission.volume, transmission.label, transmission.coordinate)
+    transmission.msrs:PlayTextExt(transmission.text, nil, transmission.frequency, transmission.modulation, transmission.gender, transmission.culture, transmission.voice, transmission.volume, transmission.label, transmission.coordinate, transmission.speed)
   else
-    transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate)
+    transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed)
   end
 
   local function texttogroup(gid)
@@ -248084,6 +248919,1797 @@ MSRS.LoadConfigFile()
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- **NAVIGATION** - Navigation Airspace Points, Fixes and Aids.
+--
+-- **Main Features:**
+--
+--    * Navigation Fixes
+--    * Navigation Aids
+-- 
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [github](https://github.com/FlightControl-Master/MOOSE_MISSIONS/tree/develop/Navigation%20-%20NavFix).
+-- 
+-- ===
+--
+-- ### Author: **funkyfranky**
+-- 
+-- ===
+-- @module Navigation.Point
+-- @image MOOSE.JPG
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- NAVFIX class.
+-- @type NAVFIX
+-- 
+-- @field #string ClassName Name of the class.
+-- @field #number verbose Verbosity of output.
+-- @field #string name Name of the point.
+-- @field #string typePoint Type of the point, *e.g. "Intersection", "VOR", "Airport".
+-- @field Core.Vector#VECTOR vector Position vector of the fix.
+-- @field Wrapper.Marker#MARKER marker Marker on F10 map.
+-- @field #number altMin Minimum altitude in meters.
+-- @field #number altMax Maximum altitude in meters.
+-- @field #number speedMin Minimum speed in knots.
+-- @field #number speedMax Maximum speed in knots.
+-- 
+-- @field #boolean isCompulsory Is this a compulsory fix.
+-- @field #boolean isFlyover Is this a flyover fix (`true`) or turning point otherwise.
+-- @field #boolean isFAF Is this a final approach fix.
+-- @field #boolean isIAF Is this an initial approach fix.
+-- @field #boolean isIF Is this an initial fix.
+-- @field #boolean isMAF Is this an initial fix.
+-- 
+-- @extends Core.Base#BASE
+
+--- *A fleet of British ships at war are the best negotiators.* -- Horatio Nelson
+--
+-- ===
+--
+-- # The NAVFIX Concept
+--
+-- The NAVFIX class has a great concept!
+-- 
+-- A NAVFIX describes a geo position and can, *e.g.*, be part of a FLIGHTPLAN. It has a unique name and is of a certain type, *e.g.* "Intersection", "VOR", "Airbase" etc.
+-- It can also have further properties as min/max altitudes and speeds that aircraft need to obey when they pass the point.
+-- 
+-- # Basic Setup
+-- 
+-- A new `NAVFIX` object can be created with the @{#NAVFIX.New}() function.
+-- 
+--     myNavPoint=NAVFIX:New()
+--     myTemplate:SetXYZ(X, Y, Z)
+--     
+-- This is how it works.
+--
+-- @field #NAVFIX
+NAVFIX = {
+  ClassName       = "NAVFIX",
+  verbose         =          0,
+}
+
+--- Type of point.
+-- @type NAVFIX.Type
+-- @field #string POINT Waypoint.
+-- @field #string INTERSECTION Intersection of airway.
+-- @field #string AIRPORT Airport.
+-- @field #string VOR Very High Frequency Omnidirectional Range Station.
+-- @field #string DME Distance Measuring Equipment.
+-- @field #string NDB Non-Directional Beacon.
+-- @field #string VORDME Combined VHF omnidirectional range (VOR) with a distance-measuring equipment (DME).
+-- @field #string LOC Localizer.
+-- @field #string ILS Instrument Landing System.
+-- @field #string TACAN TACtical Air Navigation System (TACAN).
+NAVFIX.Type={
+  POINT="Point",
+  INTERSECTION="Intersection",
+  AIRPORT="Airport",
+  NDB="NDB",
+  VOR="VOR",
+  DME="DME",
+  VORDME="VOR/DME",
+  LOC="Localizer",
+  ILS="ILS",
+  TACAN="TACAN"
+}
+
+--- NAVFIX class version.
+-- @field #string version
+NAVFIX.version="0.1.0"
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ToDo list
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- TODO: A lot...
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Constructor(s)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Create a new NAVFIX class instance from a given VECTOR.
+-- @param #NAVFIX self
+-- @param #string Name Name/ident of the point. Should be unique!
+-- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param Core.Vector#VECTOR Vector Position vector of the navpoint.
+-- @return #NAVFIX self
+function NAVFIX:NewFromVector(Name, Type, Vector)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #NAVFIX
+  
+  -- Vector of point.
+  self.vector=Vector
+  
+  -- Name of point.
+  self.name=Name
+  
+  -- Type of the point.
+  self.typePoint=Type or NAVFIX.Type.POINT
+  
+  local coord=COORDINATE:NewFromVec3(self.vector)
+  
+  -- Marker on F10.
+  self.marker=MARKER:New(coord, self:_GetMarkerText())
+  
+  -- Log ID string.
+  self.lid=string.format("NAVFIX %s [%s] | ", tostring(self.name), tostring(self.typePoint))
+  
+  -- Debug info.
+  self:I(self.lid..string.format("Created NAVFIX"))
+
+  return self
+end
+
+
+--- Create a new NAVFIX class instance from a given COORDINATE.
+-- @param #NAVFIX self
+-- @param #string Name Name of the fix. Should be unique!
+-- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param Core.Point#COORDINATE Coordinate Coordinate of the point.
+-- @return #NAVFIX self
+function NAVFIX:NewFromCoordinate(Name, Type, Coordinate)
+
+  -- Create a VECTOR from the coordinate.
+  local Vector=VECTOR:NewFromVec(Coordinate)
+  
+  -- Create NAVFIX.
+  self=NAVFIX:NewFromVector(Name, Type, Vector)
+  
+  return self
+end
+
+
+--- Create a new NAVFIX instance from given latitude and longitude in degrees, minutes and seconds (DMS).
+-- @param #NAVFIX self
+-- @param #string Name Name of the fix. Should be unique!
+-- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Latitude Latitude in DMS as string.
+-- @param #string Longitude Longitude in DMS as string.
+-- @return #NAVFIX self
+function NAVFIX:NewFromLLDMS(Name, Type, Latitude, Longitude)
+
+  -- Create a VECTOR from the coordinate.
+  local Vector=VECTOR:NewFromLLDMS(Latitude, Longitude)
+
+  -- Create NAVFIX.
+  self=NAVFIX:NewFromVector(Name, Type, Vector)
+  
+  return self  
+end
+
+--- Create a new NAVFIX instance from given latitude and longitude in decimal degrees (DD).
+-- @param #NAVFIX self
+-- @param #string Name Name of the fix. Should be unique!
+-- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #number Latitude Latitude in DD.
+-- @param #number Longitude Longitude in DD.
+-- @return #NAVFIX self
+function NAVFIX:NewFromLLDD(Name, Type, Latitude, Longitude)
+
+  -- Create a VECTOR from the coordinate.
+  local Vector=VECTOR:NewFromLLDD(Latitude, Longitude)
+
+  -- Create NAVFIX.
+  self=NAVFIX:NewFromVector(Name, Type, Vector)
+  
+  return self  
+end
+
+
+--- Create a new NAVFIX class instance relative to a given other NAVFIX.
+-- You have to specify the distance and bearing from the new point to the given point. *E.g.*, for a distance of 5 NM and a bearing of 090° (West), the
+-- new nav point is created 5 NM East of the given nav point. The reason is that this corresponts to convention used in most maps.
+-- You can, however, use the `Reciprocal` switch to create the new point in the direction you specify.
+-- @param #NAVFIX self
+-- @param #string Name Name of the fix. Should be unique!
+-- @param #string Type Type of navfix.
+-- @param #NAVFIX NavFix The given/existing navigation fix relative to which the new fix is created.
+-- @param #number Distance Distance from the given to the new point in nautical miles.
+-- @param #number Bearing Bearing [Deg] from the new point to the given one.
+-- @param #boolean Reciprocal If `true` the reciprocal `Bearing` is taken so it specifies the direction from the given point to the new one. 
+-- @return #NAVFIX self
+function NAVFIX:NewFromNavFix(Name, Type, NavFix, Distance, Bearing, Reciprocal)
+
+  -- Convert magnetic to true bearing by adding magnetic declination, e.g. mag. bearing 10°M ==> true bearing 16°M (for 6° variation on Caucasus map)
+  Bearing=Bearing+UTILS.GetMagneticDeclination()
+
+  if Reciprocal then
+    Bearing=Bearing-180
+  end
+  
+  -- Translate.
+  local Vector=NavFix.vector:Translate(UTILS.NMToMeters(Distance), Bearing, true)
+  
+  self=NAVFIX:NewFromVector(Name, Type, Vector)
+  
+  return self
+end
+
+--- Create a new NAVFIX class instance from  BEACONS.Beacon data.
+-- @param #NAVFIX self
+-- @param Navigation.Beacons#BEACONS.Beacon Beacon The beacon data.
+-- @return #NAVFIX self
+function NAVFIX:NewFromBeacon(Beacon)
+  local frequency, unit = BEACONS:_GetFrequency(Beacon.frequency)
+  frequency = string.format("%.3f",frequency)
+  if Beacon.typeName == "TACAN" then
+    frequency = Beacon.channel
+    unit = "X"
+  end
+  self = NAVFIX:NewFromVector(string.format("%s %s %s",Beacon.typeName,frequency,unit),Beacon.typeName,Beacon.vec3)
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- User Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Set whether this is the intermediate fix (IF).
+-- @param #NAVFIX self
+-- @return #NAVFIX self
+function NAVFIX:SetIntermediateFix(IntermediateFix)
+  self.isIF=IntermediateFix
+  return self
+end
+
+--- Set whether this is an initial approach fix (IAF).
+-- The IAF is the point where the initial approach segment of an instrument approach begins.
+-- It is usually a designated intersection, VHF omidirectional range (VOR) non-directional beacon (NDB)
+-- or distance measuring equipment (DME) fix.
+-- The IAF may be collocated with the intermediate fix (IF) of the instrument apprach an in such case they designate the
+-- beginning of the intermediate segment of the approach. When the IAF and the IF are combined, there is no inital approach segment.
+-- @param #NAVFIX self
+-- @param #boolean IntermediateFix If `true`, this is an intermediate fix.
+-- @return #NAVFIX self
+function NAVFIX:SetInitialApproachFix(IntermediateFix)
+  self.isIAF=IntermediateFix
+  return self
+end
+
+
+--- Set whether this is the final approach fix (FAF).
+-- @param #NAVFIX self
+-- @param #boolean FinalApproachFix If `true`, this is a final approach fix.
+-- @return #NAVFIX self
+function NAVFIX:SetFinalApproachFix(FinalApproachFix)
+  self.isFAF=FinalApproachFix
+  return self
+end
+
+--- Set whether this is the final approach fix (FAF).
+-- @param #NAVFIX self
+-- @param #boolean FinalApproachFix If `true`, this is a final approach fix.
+-- @return #NAVFIX self
+function NAVFIX:SetMissedApproachFix(MissedApproachFix)
+  self.isMAF=MissedApproachFix
+  return self
+end
+
+
+--- Set minimum altitude.
+-- @param #NAVFIX self
+-- @param #number Altitude Min altitude in feet.
+-- @return #NAVFIX self
+function NAVFIX:SetAltMin(Altitude)
+
+  self.altMin=Altitude
+
+  return self
+end
+
+--- Set maximum altitude.
+-- @param #NAVFIX self
+-- @param #number Altitude Max altitude in feet.
+-- @return #NAVFIX self
+function NAVFIX:SetAltMax(Altitude)
+
+  self.altMax=Altitude
+
+  return self
+end
+
+--- Set mandatory altitude (min alt = max alt).
+-- @param #NAVFIX self
+-- @param #number Altitude Altitude in feet.
+-- @return #NAVFIX self
+function NAVFIX:SetAltMandatory(Altitude)
+
+  self.altMin=Altitude
+  self.altMax=Altitude
+
+  return self
+end
+
+--- Set minimum allowed speed at this fix.
+-- @param #NAVFIX self
+-- @param #number Speed Min speed in knots.
+-- @return #NAVFIX self
+function NAVFIX:SetSpeedMin(Speed)
+
+  self.speedMin=Speed
+
+  return self
+end
+
+--- Set maximum allowed speed at this fix.
+-- @param #NAVFIX self
+-- @param #number Speed Max speed in knots.
+-- @return #NAVFIX self
+function NAVFIX:SetSpeedMax(Speed)
+
+  self.speedMax=Speed
+
+  return self
+end
+
+--- Set mandatory speed (min speed = max speed) at this fix.
+-- @param #NAVFIX self
+-- @param #number Speed Mandatory speed in knots.
+-- @return #NAVFIX self
+function NAVFIX:SetSpeedMandatory(Speed)
+
+  self.speedMin=Speed
+  self.speedMax=Speed
+
+  return self
+end
+
+
+--- Set whether this fix is compulsory.
+-- @param #NAVFIX self
+-- @param #boolean Compulsory If `true`, this is a compulsory fix. If `false` or nil, it is non-compulsory.
+-- @return #NAVFIX self
+function NAVFIX:SetCompulsory(Compulsory)
+  self.isCompulsory=Compulsory
+  return self
+end
+
+--- Set whether this is a fly-over fix fix.
+-- @param #NAVFIX self
+-- @param #boolean FlyOver If `true`, this is a fly over fix. If `false` or nil, it is not.
+-- @return #NAVFIX self
+function NAVFIX:SetFlyOver(FlyOver)
+  self.isFlyover=FlyOver
+  return self
+end
+
+
+--- Get the altitude in feet MSL. If min and max altitudes are set, it will return a random altitude between min and max.
+-- @param #NAVFIX self
+-- @return #number Altitude in feet MSL. Can be `nil`, if neither min nor max altitudes have beeen set. 
+function NAVFIX:GetAltitude()
+
+  local alt=nil
+  if self.altMin and self.altMax and self.altMin~=self.altMax then
+    alt=math.random(self.altMin, self.altMax)
+  elseif self.altMin then
+    alt=self.altMin
+  elseif self.altMax then
+    alt=self.altMax
+  end
+
+  return alt
+end
+
+
+--- Get the speed. If min and max speeds are set, it will return a random speed between min and max.
+-- @param #NAVFIX self
+-- @return #number Speed in knots. Can be `nil`, if neither min nor max speeds have beeen set. 
+function NAVFIX:GetSpeed()
+
+  local speed=nil
+  if self.speedMin and self.speedMax and self.speedMin~=self.speedMax then
+    speed=math.random(self.speedMin, self.speedMax)
+  elseif self.speedMin then
+    speed=self.speedMin
+  elseif self.speedMax then
+    speed=self.speedMax
+  end
+
+  return speed
+end
+
+
+
+--- Add marker the NAVFIX on the F10 map.
+-- @param #NAVFIX self
+-- @return #NAVFIX self
+function NAVFIX:MarkerShow()
+
+  self.marker:ToAll()
+
+  return self
+end
+
+--- Remove marker of the NAVFIX from the F10 map.
+-- @param #NAVFIX self
+-- @return #NAVFIX self
+function NAVFIX:MarkerRemove()
+
+  self.marker:Remove()
+
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Private Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get text displayed in the F10 marker.
+-- @param #NAVFIX self
+-- @return #string Marker text.
+function NAVFIX:_GetMarkerText()
+
+  local altmin=self.altMin and tostring(self.altMin) or ""
+  local altmax=self.altMax and tostring(self.altMax) or ""
+  local speedmin=self.speedMin and tostring(self.speedMin) or ""
+  local speedmax=self.speedMax and tostring(self.speedMax) or ""
+
+
+  local text=string.format("NAVFIX %s", self.name)
+  if self.isIAF then
+    text=text..string.format(" (IAF)")
+  end
+  if self.isIF then
+    text=text..string.format(" (IF)")
+  end
+  text=text..string.format("\nAltitude [ft]: %s - %s", altmin, altmax)
+  text=text..string.format("\nSpeed [knots]: %s - %s", speedmin, speedmax)
+  text=text..string.format("\nCompulsory: %s", tostring(self.isCompulsory))
+  text=text..string.format("\nFly Over: %s", tostring(self.isFlyover))
+  
+  return text
+end
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- NAVAID class.
+-- @type NAVAID
+-- @field #string ClassName Name of the class.
+-- @field #number verbose Verbosity of output.
+-- @extends Navigation.Point#NAVFIX
+
+--- *A fleet of British ships at war are the best negotiators.* -- Horatio Nelson
+--
+-- ===
+--
+-- # The NAVAID Concept
+--
+-- A NAVAID consists of one or multiple FLOTILLAs. These flotillas "live" in a WAREHOUSE that has a phyiscal struction (STATIC or UNIT) and can be captured or destroyed.
+-- 
+-- # Basic Setup
+-- 
+-- A new `NAVAID` object can be created with the @{#NAVAID.New}(`WarehouseName`, `FleetName`) function, where `WarehouseName` is the name of the static or unit object hosting the fleet
+-- and `FleetName` is the name you want to give the fleet. This must be *unique*!
+-- 
+--     myFleet=NAVAID:New("myWarehouseName", "1st Fleet")
+--     myFleet:SetPortZone(ZonePort1stFleet)
+--     myFleet:Start()
+--     
+-- A fleet needs a *port zone*, which is set via the @{#NAVAID.SetPortZone}(`PortZone`) function. This is the zone where the naval assets are spawned and return to.
+-- 
+-- Finally, the fleet needs to be started using the @{#NAVAID.Start}() function. If the fleet is not started, it will not process any requests.
+--
+-- @field #NAVAID
+NAVAID = {
+  ClassName       = "NAVAID",
+  verbose         =       0,
+}
+  
+--- NAVAID class version.
+-- @field #string version
+NAVAID.version="0.1.0"
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ToDo list
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- TODO: Add frequencies. Which unit MHz, kHz, Hz?
+-- TODO: Add radial function
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Constructor
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Create a new NAVAID class instance.
+-- @param #NAVAID self
+-- @param #string Name Name/ident of this navaid.
+-- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string ZoneName Name of the zone to scan the scenery.
+-- @param #string SceneryName Name of the scenery object.
+-- @return #NAVAID self
+function NAVAID:NewFromScenery(Name, Type, ZoneName, SceneryName)
+
+  -- Get the zone.
+  local zone=ZONE:FindByName(ZoneName)
+  
+  -- Get coordinate.
+  local Coordinate=zone:GetCoordinate()
+
+  -- Inherit everything from NAVFIX class.
+  self=BASE:Inherit(self, NAVFIX:NewFromCoordinate(Name, Type, Coordinate)) -- #NAVAID
+
+  -- Set zone.
+  self.zone=ZONE:FindByName(ZoneName)
+
+  -- Try to get the scenery object. Note not all can be found unfortunately.
+  if SceneryName then
+    self.scenery=SCENERY:FindByNameInZone(SceneryName, ZoneName)
+    if not self.scenery then
+      self:E(string.format("ERROR: Could not find scenery object %s in zone %s", SceneryName, ZoneName))
+    end
+  end
+  
+  -- Alias.  
+  self.alias=string.format("%s %s %s", tostring(ZoneName), tostring(SceneryName), tostring(Type))
+  
+  -- Set some string id for output to DCS.log file.
+  self.lid=string.format("NAVAID %s | ", self.alias)
+  
+  -- Debug info.
+  self:I(self.lid..string.format("Created NAVAID!"))
+
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- User Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Set frequency the beacon transmits on.
+-- @param #NAVAID self
+-- @param #number Frequency Frequency in Hz.
+-- @return #NAVAID self
+function NAVAID:SetFrequency(Frequency)
+
+  self.frequency=Frequency
+
+  return self
+end
+
+--- Set channel of, *e.g.*, TACAN beacons.
+-- @param #NAVAID self
+-- @param #number Channel The channel.
+-- @param #string Band The band either `"X"` (default) or `"Y"`. 
+-- @return #NAVAID self
+function NAVAID:SetChannel(Channel, Band)
+
+  self.channel=Channel
+  self.band=Band or "X"
+
+  return self
+end
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Private Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Add private CLASS functions here.
+-- No private NAVAID functions yet.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- **NAVIGATION** - Beacons of the map/theatre.
+--
+-- **Main Features:**
+--
+--    * Access beacons of the map
+--    * Find closest beacon
+--    * Get frequencies and channels
+-- 
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [github](https://github.com/FlightControl-Master/MOOSE_MISSIONS/tree/develop/Navigation%20-%20Beacons).
+-- 
+-- ===
+--
+-- ### Author: **funkyfranky**
+-- 
+-- ===
+-- @module Navigation.Beacons
+-- @image MOOSE.JPG
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- BEACONS class.
+-- @type BEACONS
+-- 
+-- @field #string ClassName Name of the class.
+-- @field #number verbose Verbosity of output.
+-- @field #table beacons Beacons.
+-- 
+-- @extends Core.Base#BASE
+
+--- *Hope is the beacon that guides lost ships back to the shore.*
+--
+-- ===
+--
+-- # The BEACONS Concept
+--
+-- This class is designed to make information about beacons of a map/theatre easier accessible. The information contains location, type and frequencies of all or specific beacons of the map.
+-- 
+-- **Note** that try to avoid hard coding stuff in Moose since DCS is updated frequently and things change. Therefore, the main source of information is either a file `beacons.lua` that can be
+-- found in the installation directory of DCS for each map or a table that the user needs to provide.
+-- **Note** your `MissionScripting` environment needs to be desanitized to read this data. `Package` als needs to be available.
+-- 
+-- # Basic Setup
+-- 
+-- A new `BEACONS` object can be created with the @{#BEACONS.NewFromFile}(*beacons_lua_file*) function.
+-- 
+--     local beacons=BEACONS:NewFromFile("<DCS_Install_Directory>\Mods\terrains\<Map_Name>\beacons.lua")
+--     beacons:MarkerShow()
+-- 
+-- This will load the beacons from the `<DCS_Install_Directory>` for the specific map and place markers on the F10 map. This is the first step you should do to ensure that the file
+-- you provided is correct and all relevant beacons are present.
+-- 
+-- # User Functions
+-- 
+-- ## F10 Map Markers
+-- 
+-- ## Position
+-- 
+-- ## Get Closest Beacon
+-- 
+--
+-- @field #BEACONS
+BEACONS = {
+  ClassName  = "BEACONS",
+  verbose    =         1,
+  beacons    =        {},
+}
+
+--- Mission capability.
+-- @type BEACONS.Beacon
+-- @field #function display_name Function that returns the localized name.
+-- @field #number type Beacon type.
+-- @field #string beaconId Beacon ID.
+-- @field #string callsign Call sign.
+-- @field #number frequency Frequency in Hz.
+-- @field #number channel TACAN, RSBN or PRMG channel depending on type.
+-- @field #table position Position table.
+-- @field #number direction Direction in degrees.
+-- @field #table positionGeo Table with latitude and longitude.
+-- @field #table sceneObjects Table with scenery objects, e.g. `{t:393396742}`.
+-- @field #number chartOffsetX No idea what this offset is?!
+-- @field DCS#Vec3 vec3 Position vector 3D.
+-- @field #number markerID ID for the F10 marker.
+-- @field #string typeName Name of becon type.
+-- @field Wrapper.Scenery#SCENERY scenery The scenery object.
+
+--- BEACONS class version.
+-- @field #string version
+BEACONS.version="0.1.0"
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ToDo list
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- TODO: A lot...
+-- DONE: TACAN channel from frequency (was already in beacon.lua as channel)
+-- DONE: Scenery object
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Constructor(s)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Create a new BEACONS class instance from a given table.
+-- @param #BEACONS self
+-- @param #table BeaconTable Table with beacon info.
+-- @return #BEACONS self
+function BEACONS:NewFromTable(BeaconTable)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #BEACONS
+  
+  for _,_beacon in pairs(BeaconTable) do
+    local beacon=_beacon --#BEACONS.Beacon
+    
+    -- Get 3D vector
+    beacon.vec3={x=beacon.position[1], y=beacon.position[2], z=beacon.position[3]}
+    
+    -- Get coordinate
+    beacon.coordinate=COORDINATE:NewFromVec3(beacon.vec3)
+    
+    -- Get type name
+    beacon.typeName=self:_GetTypeName(beacon.type)
+    
+    -- Find closest scenery object from scan
+    beacon.scenery=beacon.coordinate:FindClosestScenery(20)
+    
+    -- Debug stuff for scenery object
+    if false then
+      if beacon.scenery then
+        env.info(string.format("FF Beacon %s %s %s got scenery object %s, %s", beacon.callsign, beacon.beaconId, beacon.typeName, beacon.scenery:GetName(), beacon.scenery:GetTypeName() ))
+        UTILS.PrintTableToLog(beacon.scenery.SceneryObject)
+        UTILS.PrintTableToLog(beacon.sceneObjects)
+      else
+        env.info(string.format("FF NO scenery object  %s %s %s ", beacon.callsign, beacon.beaconId, beacon.typeName))
+      end
+    end
+    
+    -- Add to table
+    table.insert(self.beacons, beacon)
+  end
+  
+  -- Debug output
+  self:I(string.format("Added %d beacons", #self.beacons))
+  
+  if self.verbose > 0 then
+    local text="Beacon types:"
+    for typeName,typeID in pairs(BEACON.Type) do
+      local n=self:CountBeacons(typeID)
+      text=text..string.format("\n%s = %d", typeName, n)      
+    end
+    self:I(text)
+  end
+  
+  return self
+end
+
+
+--- Create a new BEACONS class instance from a given file.
+-- @param #BEACONS self
+-- @param #string FileName Full path to the file containing the map beacons.
+-- @return #BEACONS self
+function BEACONS:NewFromFile(FileName)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #BEACONS
+  
+  local exists=UTILS.FileExists(FileName)
+  
+  if exists==false then
+    self:E(string.format("ERROR: file with beacon info does not exist!"))
+    return nil
+  end
+
+  -- This will create a global table `beacons`  
+  dofile(FileName)
+
+  -- Get beacons from table.
+  self=self:NewFromTable(beacons)
+  
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- User Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get 3D position vector of a specific beacon.
+-- @param #BEACONS self
+-- @param #BEACONS.Beacon beacon The beacon data structure.
+-- @return DCS#Vec3 Position vector.
+function BEACONS:GetVec3(beacon)
+  return beacon.vec3
+end
+
+--- Get COORDINATE of a specific beacon.
+-- @param #BEACONS self
+-- @param #BEACONS.Beacon beacon The beacon data structure.
+-- @return Core.Point#COORDINATE The coordinate.
+function BEACONS:GetCoordinate(beacon)
+  local coordinate=COORDINATE:NewFromVec3(beacon.vec3)
+  return coordinate
+end
+
+--- Find closest beacon to a given coordinate.
+-- @param #BEACONS self
+-- @param Core.Point#COORDINATE Coordinate The reference coordinate.
+-- @param #number TypeID (Optional) Only search for specific beacon types, *e.g.* `BEACON.Type.TACAN`.
+-- @param #number DistMax (Optional) Max search distance in meters.
+-- @param #table ExcludeList (Optional) List of beacons to exclude.
+-- @return #BEACONS.Beacon The closest beacon.
+function BEACONS:GetClosestBeacon(Coordinate, TypeID, DistMax, ExcludeList)
+
+  local beacon=nil --#BEACONS.Beacon
+  local distmin=math.huge
+  
+  ExcludeList=ExcludeList or {}
+  
+  for _,_beacon in pairs(self.beacons) do
+    local bc=_beacon --#BEACONS.Beacon
+    
+    if (TypeID==nil or TypeID==bc.type) and (not UTILS.IsInTable(ExcludeList, bc, "beaconId")) then
+    
+      local dist=Coordinate:Get2DDistance(bc.vec3)
+      
+      if dist<distmin and (DistMax==nil or dist<=DistMax) then
+        distmin=dist
+        beacon=bc
+      end
+      
+    end
+    
+  end  
+  
+  return beacon
+end
+
+--- Find closest beacons to a given coordinate.
+-- @param #BEACONS self
+-- @param Core.Point#COORDINATE Coordinate The reference coordinate.
+-- @param #number Nmax Max number of beacons. Default 5.
+-- @param #number TypeID (Optional) Only search for specific beacon types, *e.g.* `BEACON.Type.TACAN`.
+-- @param #number DistMax (Optional) Max search distance in meters.
+-- @return #table Table of #BEACONS.Beacon closest beacons.
+function BEACONS:GetClosestBeacons(Coordinate, Nmax, TypeID, DistMax)
+
+    Nmax=Nmax or 5
+    
+    local closest={}
+    for i=1,Nmax do
+    
+      local beacon=self:GetClosestBeacon(Coordinate, TypeID, DistMax, closest)
+      
+      if beacon then
+        table.insert(closest, beacon)
+      else
+        break
+      end
+      
+    end
+
+  return closest
+end
+
+--- Get table of all beacons, optionally of a given type.
+-- @param #BEACONS self
+-- @param #number TypeID (Optional) Only return specific beacon types, *e.g.* `BEACON.Type.TACAN`. Can be handed in as tanle of beacon types.
+-- @return #table Table of beacons. Each element is of type #BEACON.Beacon.
+function BEACONS:GetBeacons(TypeID)
+
+  local beacons={}
+  local keys = {}
+  
+  if TypeID~=nil and type(TypeID) ~= "table" then 
+    TypeID = {TypeID}
+  end
+  
+  for _,_typeid in pairs(TypeID or {}) do
+    if _typeid ~= nil then
+      keys[_typeid] = _typeid
+    end
+  end
+
+  for _,_beacon in pairs(self.beacons) do
+    local bc=_beacon --#BEACONS.Beacon
+    
+    if TypeID==nil or keys[bc.type] ~= nil then
+      table.insert(beacons, bc)
+    end
+    
+  end  
+
+  return beacons
+end
+
+--- Count beacons, optionally of a given type.
+-- @param #BEACONS self
+-- @param #number TypeID (Optional) Only count specific beacon types, *e.g.* `BEACON.Type.TACAN`.
+-- @return #number Number of beacons.
+function BEACONS:CountBeacons(TypeID)
+
+  local n=0
+  
+  if TypeID then
+    for _,_beacon in pairs(self.beacons) do
+      local bc=_beacon --#BEACONS.Beacon
+      
+      if TypeID==bc.type then
+        n=n+1
+      end 
+    end
+  else
+    n=#self.beacons
+  end
+
+  return n
+end
+
+--- Add markers for all beacons on the F10 map. Optionally, only a specific beacon or a certain beacon type can be marked.
+-- @param #BEACONS self
+-- @param #BEACONS.Beacon Beacon (Optional) Only this specifc beacon.
+-- @param #number TypeID (Optional) Only show specific beacon types, *e.g.* `BEACON.Type.TACAN`.
+-- @return #BEACONS self
+function BEACONS:MarkerShow(Beacon, TypeID)
+
+  for _,_beacon in pairs(self.beacons) do
+    local beacon=_beacon --#BEACONS.Beacon
+    if Beacon==nil or Beacon.beaconId==beacon.beaconId then
+      if TypeID==nil or beacon.type==TypeID then
+        local text=self:_GetMarkerText(beacon)
+        local coord=COORDINATE:NewFromVec3(beacon.vec3)
+        if beacon.markerID then
+          UTILS.RemoveMark(beacon.markerID)
+        end
+        beacon.markerID=coord:MarkToAll(text)
+      end
+    end
+  end
+
+  return self
+end
+
+--- Remove markers of all beacons from the F10 map. Optionally, remove only marker of a specific beacon or a certain beacon type.
+-- @param #BEACONS self
+-- @param #BEACONS.Beacon Beacon (Optional) Only this specifc beacon.
+-- @param #number TypeID (Optional) Only show specific beacon types, *e.g.* `BEACON.Type.TACAN`.
+-- @return #BEACONS self
+function BEACONS:MarkerRemove(Beacon, TypeID)
+
+  for _,_beacon in pairs(self.beacons) do
+    local beacon=_beacon --#BEACONS.Beacon
+    if Beacon==nil or Beacon.beaconId==beacon.beaconId then    
+      if TypeID==nil or beacon.type==TypeID then    
+        if beacon.markerID then
+          UTILS.RemoveMark(beacon.markerID)
+          beacon.markerID=nil
+        end
+      end
+    end
+  end
+
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Private Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get text displayed in the F10 marker.
+-- @param #BEACONS self
+-- @param #BEACONS.Beacon beacon The beacon data structure.
+-- @return #string Marker text.
+function BEACONS:_GetMarkerText(beacon)
+
+  local frequency, funit=self:_GetFrequency(beacon.frequency)
+  local direction=beacon.direction~=nil and beacon.direction or -1
+
+  local text=string.format("Beacon %s [ID=%s]", tostring(beacon.typeName), tostring(beacon.beaconId))  
+  text=text..string.format("\nCallsign: %s", tostring(beacon.callsign))
+  if UTILS.IsInTable({BEACON.Type.TACAN, BEACON.Type.RSBN, BEACON.Type.PRMG_GLIDESLOPE, BEACON.Type.PRMG_LOCALIZER}, beacon.type) then
+    text=text..string.format("\nChannel: %s", tostring(beacon.channel))
+  end
+  text=text..string.format("\nFrequency: %.3f %s", frequency, funit)
+  text=text..string.format("\nDirection: %.1f°", direction)
+  
+  return text
+end
+
+
+--- Get converted frequency.
+-- @param #BEACONS self
+-- @param #number freq Frequency in Hz.
+-- @return #number Frequency in better unit.
+-- @return #string Unit ("Hz", "kHz", "MHz").
+function BEACONS:_GetFrequency(freq)
+
+  freq=freq or 0
+  local unit="Hz"
+  
+  if freq>=1e6 then
+    freq=freq/1e6
+    unit="MHz"
+  elseif freq>=1e3 then
+    freq=freq/1e3
+    unit="kHz"
+  end
+
+  return freq, unit
+end
+
+--- Get name of beacon type.
+-- @param #BEACONS self
+-- @param #number typeID Beacon type number.
+-- @return #string Type name.
+function BEACONS:_GetTypeName(typeID)
+
+  if typeID~=nil then  
+    for typeName,_typeID in pairs(BEACON.Type) do
+      if _typeID==typeID then
+        return typeName
+      end  
+    end
+  end
+
+  return "Unknown"
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- **NAVIGATION** - Airbase radios.
+--
+-- **Main Features:**
+--
+--    * Get radio frequencies of airbases
+--    * Find closest airbase radios
+--    * Mark radio frequencies on F10 map
+-- 
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [github](https://github.com/FlightControl-Master/MOOSE_MISSIONS/tree/develop/Navigation%20-%20Radios).
+-- 
+-- ===
+--
+-- ### Author: **funkyfranky**
+-- 
+-- ===
+-- @module Navigation.Radios
+-- @image MOOSE.JPG
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- RADIOS class.
+-- @type RADIOS
+-- 
+-- @field #string ClassName Name of the class.
+-- @field #number verbose Verbosity of output.
+-- @field #table radios Radios.
+-- 
+-- @extends Core.Base#BASE
+
+--- *It's not true I had nothing on, I had the radio on.* -- *Marilyn Monroe*
+--
+-- ===
+--
+-- # The RADIOS Concept
+--
+-- This class is designed to make information about radios of a map/theatre easier accessible. The information contains mostly the frequencies of airbases of the map.
+-- 
+-- **Note** that try to avoid hard coding stuff in Moose since DCS is updated frequently and things change. Therefore, the main source of information is either a file `radio.lua` that can be
+-- found in the installation directory of DCS for each map or a table that the user needs to provide.
+-- **Note** your `MissionScripting` environment needs to be desanitized to read this data.
+-- 
+-- # Basic Setup
+-- 
+-- A new `RADIOS` object can be created with the @{#RADIOS.NewFromFile}(*radio_lua_file*) function.
+-- 
+--     local radios=RADIOS:NewFromFile("<DCS_Install_Directory>\Mods\terrains\<Map_Name>\Radio.lua")
+--     radios:MarkerShow()
+-- 
+-- This will load the radios from the `<DCS_Install_Directory>` for the specific map and place markers on the F10 map. This is the first step you should do to ensure that the file
+-- you provided is correct and all relevant radios are present.
+-- 
+-- # User Functions
+-- 
+-- ## F10 Map Markers
+-- 
+-- ## Position
+-- 
+-- ## Closest Radio
+-- 
+--
+-- @field #RADIOS
+RADIOS = {
+  ClassName  = "RADIOS",
+  verbose    =        0,
+  radios    =        {},
+}
+
+--- Radio item data structure.
+-- @type RADIOS.Radio
+-- @field #string radioId Radio ID.
+-- @field #table role Roles of the radio (usually {"ground", "tower", "approach"}).
+-- @field #table callsign Callsigns of the radio (usually the airbase name).
+-- @field #table frequency Frequencies of the radios.
+-- @field #table position Position table.
+-- @field #table sceneObjects Scenery objects.
+-- @field #string name Name of the airbase.
+-- @field Wrapper.Airbase#AIRBASE airbase Airbase.
+-- @field Core.Point#COORDINATE coordinate The COORDINATE of the radio.
+-- @field DCS#Vec3 vec3 3D vector.
+-- @field #number markerID Marker ID.
+
+--- Radio item data structure.
+-- @type RADIOS.Frequency
+-- @field #number modu Modulation type.
+-- @field #number freq Frequency in Hz.
+
+
+--- RADIOS class version.
+-- @field #string version
+RADIOS.version="0.1.0"
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ToDo list
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- TODO: A lot...
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Constructor(s)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Create a new RADIOS class instance from a given table.
+-- @param #RADIOS self
+-- @param #table RadioTable Table with radios info.
+-- @return #RADIOS self
+function RADIOS:NewFromTable(RadioTable)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #RADIOS
+  
+  --local airbasenames=AIRBASE.GetAllAirbaseNames()
+  
+  -- Get all airdromes
+  local airdromes=AIRBASE.GetAllAirbases(nil, Airbase.Category.AIRDROME)
+  
+  for _,_radio in pairs(RadioTable) do
+    local radio=_radio --#RADIOS.Radio
+
+    -- The table structure of callsign is a bit awkward. We need to get the airbase name.
+    -- Note that unfortunately, the callsign does not always correspond to the airbase name.
+    if false then
+      local cs=radio.callsign[1]
+      if cs and cs.common then
+        radio.name=cs.common[1]
+      elseif cs and cs.nato then
+        radio.name=cs.nato[1]
+      else
+        radio.name="Unknown"
+      end
+      radio.name=self:_GetAirbaseName(airbasenames, radio.name)    
+      radio.airbase=AIRBASE:FindByName(radio.name)
+    end
+    
+    -- Each radio item has a key radioId = 'airfield106_0', where 106 is the UID of the airbase.
+    -- So we can use that to get the airbase.
+    local aid = tonumber(string.match(radio.radioId, "airfield(%d+)_"))
+    
+    -- Get airbase
+    radio.airbase=self:_GetAirbaseByID(airdromes, aid)
+    
+    -- Set other stuff
+    if radio.airbase then
+      radio.coordinate=radio.airbase:GetCoordinate()
+      radio.vec3=radio.airbase:GetVec3()
+      radio.name=radio.airbase:GetName()
+    end
+    
+    -- Add to table
+    table.insert(self.radios, radio)
+  end
+  
+  -- Debug output
+  self:I(string.format("Added %d radios", #self.radios))
+  
+  return self
+end
+
+
+--- Create a new RADIOS class instance from a given file.
+-- @param #RADIOS self
+-- @param #string FileName Full path to the file containing the map radios.
+-- @return #RADIOS self
+function RADIOS:NewFromFile(FileName)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #RADIOS
+  
+  local exists=UTILS.FileExists(FileName)
+  
+  if exists==false then
+    self:E(string.format("ERROR: file with radios info does not exist! File=%s", tostring(FileName)))
+    return nil
+  end
+  
+  -- Backup DCS radio table
+  local radiobak=UTILS.DeepCopy(radio)
+
+  -- This will create a global table `radio`  
+  dofile(FileName)
+
+  -- Get radios from table.
+  self=self:NewFromTable(radio)
+  
+  -- Restore DCS radio table
+  radio=UTILS.DeepCopy(radiobak)
+  
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- User Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get 3D position vector of a specific radio.
+-- @param #RADIOS self
+-- @param #RADIOS.Radio radio The radio data structure.
+-- @return DCS#Vec3 Position vector.
+function RADIOS:GetVec3(radio)
+  return radio.vec3
+end
+
+--- Get COORDINATE of a specific radio.
+-- @param #RADIOS self
+-- @param #RADIOS.Radio radio The radio data structure.
+-- @return Core.Point#COORDINATE The coordinate.
+function RADIOS:GetCoordinate(radio)
+  return radio.coordinate
+end
+
+
+--- Find closest radio to a given coordinate.
+-- @param #RADIOS self
+-- @param Core.Point#COORDINATE Coordinate The reference coordinate.
+-- @param #number DistMax (Optional) Max search distance in meters.
+-- @param #table ExcludeList (Optional) List of radios to exclude.
+-- @return #RADIOS.Radio The closest radio.
+function RADIOS:GetClosestRadio(Coordinate, DistMax, ExcludeList)
+
+  local radio=nil --#RADIOS.Radio
+  local distmin=math.huge
+  
+  ExcludeList=ExcludeList or {}
+  
+  for _,_radio in pairs(self.radios) do
+    local ra=_radio --#RADIOS.Radio
+    
+    if (not UTILS.IsInTable(ExcludeList, ra, "radioId")) then
+    
+      local dist=Coordinate:Get2DDistance(ra.coordinate)
+      
+      if dist<distmin and (DistMax==nil or dist<=DistMax) then
+        distmin=dist
+        radio=ra
+      end
+      
+    end
+    
+  end  
+  
+  return radio
+end
+
+--- Find closest radios to a given coordinate.
+-- @param #RADIOS self
+-- @param Core.Point#COORDINATE Coordinate The reference coordinate.
+-- @param #number Nmax Max number of radios. Default 5.
+-- @param #number DistMax (Optional) Max search distance in meters.
+-- @return #table Table of #RADIOS.Radio closest radios.
+function RADIOS:GetClosestRadios(Coordinate, Nmax, DistMax)
+
+    Nmax=Nmax or 5
+    
+    local closest={}
+    for i=1,Nmax do
+    
+      local radio=self:GetClosestRadio(Coordinate, DistMax, closest)
+      
+      if radio then
+        table.insert(closest, radio)
+      else
+        break
+      end
+      
+    end
+
+  return closest
+end
+
+
+--- Add markers for all radios on the F10 map.
+-- @param #RADIOS self
+-- @param #RADIOS.Radio Radio (Optional) Only this specifc radio.
+-- @return #RADIOS self
+function RADIOS:MarkerShow(Radio)
+
+  for _,_radio in pairs(self.radios) do
+    local radio=_radio --#RADIOS.Radio
+    if Radio==nil or Radio.radioId==radio.radioId then
+      local coord=self:GetCoordinate(radio)
+      if coord then
+        local text=self:_GetMarkerText(radio)
+        if radio.markerID then
+          UTILS.RemoveMark(radio.markerID)
+        end
+        radio.markerID=coord:MarkToAll(text)
+      end
+    end
+  end
+
+  return self
+end
+
+--- Remove markers of all radios from the F10 map.
+-- @param #RADIOS self
+-- @param #RADIOS.Radio Radio (Optional) Only this specifc radio.
+-- @return #RADIOS self
+function RADIOS:MarkerRemove(Radio)
+
+  for _,_radio in pairs(self.radios) do
+    local radio=_radio --#RADIOS.Radio
+    if Radio==nil or Radio.radioId==radio.radioId then    
+      if radio.markerID then
+        UTILS.RemoveMark(radio.markerID)
+        radio.markerID=nil
+      end
+    end
+  end
+
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Private Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get text displayed in the F10 marker.
+-- @param #RADIOS self
+-- @param #RADIOS.Radio radio The radio data structure.
+-- @return #string Marker text.
+function RADIOS:_GetMarkerText(radio)
+
+  local text=string.format("Radio %s", tostring(radio.name))
+  for b,f in pairs(radio.frequency) do
+    local frequency=f --#RADIOS.Frequency
+    local mod=frequency[1]
+    local fre=frequency[2]
+    local freq, funit=self:_GetFrequency(fre)
+    --UTILS.PrintTableToLog(frequency)
+    local band=self:_GetBandName(b)
+    text=text..string.format("\n%s: %.3f %s", band, freq, funit)
+  end
+    
+  return text
+end
+
+
+--- Get converted frequency.
+-- @param #RADIOS self
+-- @param #number freq Frequency in Hz.
+-- @return #number Frequency in better unit.
+-- @return #string Unit ("Hz", "kHz", "MHz").
+function RADIOS:_GetFrequency(freq)
+
+  freq=freq or 0
+  local unit="Hz"
+  
+  if freq>=1e6 then
+    freq=freq/1e6
+    unit="MHz"
+  elseif freq>=1e3 then
+    freq=freq/1e3
+    unit="kHz"
+  end
+
+  return freq, unit
+end
+
+--- Get name of frequency band.
+-- @param #RADIOS self
+-- @param #number BandNumber Band as number.
+-- @return #string Band name.
+function RADIOS:_GetBandName(BandNumber)
+
+  if BandNumber~=nil then  
+    for bandName,bandNumber in pairs(ENUMS.FrequencyBand) do
+      if bandNumber==BandNumber then
+        return bandName
+      end  
+    end
+  end
+
+  return "Unknown"
+end
+
+--- Get name of frequency band.
+-- @param #RADIOS self
+-- @param #table airbasenames Names of all airbases.
+-- @param #string name Name of airbase.
+-- @return #string Name of airbase
+function RADIOS:_GetAirbaseName(airbasenames, name)
+
+  local airbase=AIRBASE:FindByName(name)
+  
+  if airbase then
+    return name    
+  else
+    for _,airbasename in pairs(airbasenames) do
+      if string.find(airbasename, name) then
+        return airbasename
+      end    
+    end
+  end
+
+  return "Unknown"
+end
+
+--- Get name of frequency band.
+-- @param #RADIOS self
+-- @param #table airbases Table of airbases.
+-- @param #number aid Airbase ID.
+-- @return Wrapper.Airbase#AIRBASE Airbase matching the ID or nil.
+function RADIOS:_GetAirbaseByID(airbases, aid)
+
+  for _,_airbase in pairs(airbases) do
+    local airbase=_airbase --Wrapper.Airbase#AIRBASE
+    local id=airbase:GetID(true)
+    if id==aid then
+      return airbase
+    end
+  end
+
+  return nil
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- **NAVIGATION** - Towns of the map/theatre.
+--
+-- **Main Features:**
+--
+--    * Find towns of map
+--    * Road and rail connections
+--    * Find closest town to a given coordinate
+-- 
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [github](https://github.com/FlightControl-Master/MOOSE_MISSIONS/tree/develop/Navigation%20-%20Towns).
+-- 
+-- ===
+--
+-- ### Author: **funkyfranky**
+-- 
+-- ===
+-- @module Navigation.Towns
+-- @image MOOSE.JPG
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- TOWNS class.
+-- @type TOWNS
+-- 
+-- @field #string ClassName Name of the class.
+-- @field #number verbose Verbosity of output.
+-- @field #table towns Towns.
+-- 
+-- @extends Core.Base#BASE
+
+--- *Hope is the beacon that guides lost ships back to the shore.*
+--
+-- ===
+--
+-- # The TOWNS Concept
+--
+-- This class is designed to make information about towns of a map/theatre easier accessible. The information contains location and road/rail connections of the towns.
+-- 
+-- **Note** that try to avoid hard coding stuff in Moose since DCS is updated frequently and things change. Therefore, the main source of information is either a file `towns.lua` that can be
+-- found in the installation directory of DCS for each map or a table that the user needs to provide.
+-- **Note** your `MissionScripting` environment needs to be desanitized to read this data.
+-- 
+-- # Basic Setup
+-- 
+-- A new `TOWNS` object can be created with the @{#TOWNS.NewFromFile}(*towns_lua_file*) function.
+-- 
+--     local towns=TOWNS:NewFromFile("<DCS_Install_Directory>\Mods\terrains\<Map_Name>\map\towns.lua")
+--     towns:MarkerShow()
+-- 
+-- This will load the towns from the `<DCS_Install_Directory>` for the specific map and place markers on the F10 map. This is the first step you should do to ensure that the file
+-- you provided is correct and all relevant towns are present.
+-- 
+-- # User Functions
+-- 
+-- ## F10 Map Markers
+-- 
+-- ## Position
+-- 
+-- ## Get Closest Town
+-- 
+--
+-- @field #TOWNS
+TOWNS = {
+  ClassName  =   "TOWNS",
+  verbose    =         0,
+  towns      =        {},
+}
+
+--- Town data.
+-- @type TOWNS.Town
+-- @field #string display_name Displayed name.
+-- @field #string name Name of the town.
+-- @field #number latitude Latitude.
+-- @field #number longitude Longitude
+-- @field DCS#Vec3 vec3 Position vector 3D.
+-- @field Core.Point#COORDINATE coordinate The coordinate.
+-- @field Core.Point#COORDINATE coordRoad The coordinate of the closest road.
+-- @field Core.Point#COORDINATE coordRail The coordinate of the closest railway.
+-- @field #number markerID ID for the F10 marker.
+
+--- TOWNS class version.
+-- @field #string version
+TOWNS.version="0.1.0"
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ToDo list
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- TODO: A lot...
+-- DONE: Road connection
+-- DONE: Rail connection
+-- DONE: Connection between towns
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Constructor(s)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Create a new TOWNS class instance from a given table.
+-- @param #TOWNS self
+-- @param #table TownTable Table with all towns data.
+-- @return #TOWNS self
+function TOWNS:NewFromTable(TownTable)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #TOWNS
+  
+  for TownName,_town in pairs(TownTable) do
+    local town=_town --#TOWNS.Town
+    
+    town.name=TownName    
+
+    -- Get coordinate
+    town.coordinate=COORDINATE:NewFromLLDD(town.latitude, town.longitude)
+    
+    -- Get coordinate of closest road
+    town.coordRoad=town.coordinate:GetClosestPointToRoad()
+    
+    -- Get coordinate of closest rail
+    town.coordRail=town.coordinate:GetClosestPointToRoad(true)
+    
+    -- Add to table
+    table.insert(self.towns, town)
+  end
+  
+  -- Debug output
+  self:I(string.format("Added %d towns", #self.towns))
+  
+  return self
+end
+
+
+--- Create a new TOWNS class instance from a given file.
+-- @param #TOWNS self
+-- @param #string FileName Full path to the file containing the towns data.
+-- @return #TOWNS self
+function TOWNS:NewFromFile(FileName)
+
+  -- Inherit everything from BASE class.
+  self=BASE:Inherit(self, BASE:New()) -- #TOWNS
+  
+  local exists=UTILS.FileExists(FileName)
+  
+  if exists==false then
+    self:E(string.format("ERROR: file with towns info does not exist!"))
+    return nil
+  end
+
+  -- This will create a global table `towns`  
+  dofile(FileName)
+
+  -- Get towns from table.
+  self=self:NewFromTable(towns)
+  
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- User Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get 3D position vector of a specific town.
+-- @param #TOWNS self
+-- @param #TOWNS.Town town The town data structure.
+-- @return DCS#Vec3 Position vector.
+function TOWNS:GetVec3(town)
+  return town.vec3
+end
+
+--- Get COORDINATE of a specific town.
+-- @param #TOWNS self
+-- @param #TOWNS.Town town The town data structure.
+-- @return Core.Point#COORDINATE The coordinate.
+function TOWNS:GetCoordinate(town)
+  return town.coordinate
+end
+
+--- Get closest road coordinate of a town.
+-- @param #TOWNS self
+-- @param #TOWNS.Town town The town data structure.
+-- @return Core.Point#COORDINATE The closest road coordinate.
+function TOWNS:GetCoordRoad(town)
+  return town.coordRoad
+end
+
+--- Get closest rail coordinate of a town.
+-- @param #TOWNS self
+-- @param #TOWNS.Town town The town data structure.
+-- @return Core.Point#COORDINATE The closest rail coordinate.
+function TOWNS:GetCoordRail(town)
+  return town.coordRail
+end
+
+--- Get road or rail connection between two towns.
+-- @param #TOWNS self
+-- @param #TOWNS.Town townA The town data structure.
+-- @param #TOWNS.Town townB The town data structure.
+-- @param #boolean Railroad If `true`, find rail road connection
+-- @return Core.Pathline#PATHLINE Pathline connecting the two towns on road.
+function TOWNS:GetConnectionRoad(townA, townB, Railroad)
+
+  local path=townA.coordRoad:GetPathlineOnRoad(townB.coordRoad, false, Railroad)
+
+  return path
+end
+
+--- Find closest town to a given coordinate.
+-- @param #TOWNS self
+-- @param Core.Point#COORDINATE Coordinate The reference coordinate.
+-- @param #number DistMax (Optional) Max search distance in meters.
+-- @param #table ExcludeList (Optional) List of towns excluded from the search.
+-- @return #TOWNS.Town The closest town.
+function TOWNS:GetClosestTown(Coordinate, DistMax, ExcludeList)
+
+  local Town=nil --#TOWNS.Town
+  local distmin=math.huge
+  ExcludeList=ExcludeList or {}
+  
+  for _,_town in pairs(self.towns) do
+    local town=_town --#TOWNS.Town
+    
+    if (not UTILS.IsInTable(ExcludeList, town, "name")) then
+    
+      local dist=Coordinate:Get2DDistance(town.coordinate)
+      
+      if dist<distmin then
+        distmin=dist
+        Town=town
+      end
+    end    
+  end
+  
+  return Town
+end
+
+--- Find closest towns to a given coordinate.
+-- @param #TOWNS self
+-- @param Core.Point#COORDINATE Coordinate The reference coordinate.
+-- @param #number Nmax Max number of towns. Default 5.
+-- @param #number DistMax (Optional) Max search distance in meters.
+-- @return #table Table of #TOWNS.Town closest towns.
+function TOWNS:GetClosestTowns(Coordinate, Nmax, DistMax)
+
+    Nmax=Nmax or 5
+    
+    local closest={}
+    for i=1,Nmax do
+    
+      local town=self:GetClosestTown(Coordinate, DistMax, closest)
+      
+      if town then
+        table.insert(closest, town)
+      else
+        break
+      end
+      
+    end
+
+  return closest
+end
+
+
+--- Get table of all towns, optionally of a given type.
+-- @param #TOWNS self
+-- @return #table Table of towns. Each element is of type #TOWN.Town.
+function TOWNS:GetTowns()
+  return self.towns
+end
+
+--- Add markers for all towns on the F10 map.
+-- @param #TOWNS self
+-- @param #TOWNS.Town Town (Optional) Only this specifc town.
+-- @return #TOWNS self
+function TOWNS:MarkerShow(Town)
+
+  for _,_town in pairs(self.towns) do
+    local town=_town --#TOWNS.Town
+    if Town==nil or Town.name==town.name then
+      local text=self:_GetMarkerText(town)
+      local coord=town.coordinate
+      if town.markerID then
+        UTILS.RemoveMark(town.markerID)
+      end
+      town.markerID=coord:MarkToAll(text)
+    end
+  end
+
+  return self
+end
+
+--- Remove markers of all towns from the F10 map.
+-- @param #TOWNS self
+-- @param #TOWNS.Town Town (Optional) Only this specifc town.
+-- @return #TOWNS self
+function TOWNS:MarkerRemove(Town)
+
+  for _,_town in pairs(self.towns) do
+    local town=_town --#TOWNS.Town
+    if Town==nil or Town.name==town.name then    
+      if town.markerID then
+        UTILS.RemoveMark(town.markerID)
+        town.markerID=nil
+      end
+    end
+  end
+
+  return self
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Private Functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--- Get text displayed in the F10 marker.
+-- @param #TOWNS self
+-- @param #TOWNS.Town town The town data structure.
+-- @return #string Marker text.
+function TOWNS:_GetMarkerText(town)
+
+  local text=string.format("Town %s", town.name)  
+  --text=text..string.format("\nCallsign: %s", tostring(beacon.callsign))
+  
+  return text
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --- GLOBALS: The order of the declarations is important here. Don't touch it.
 
 --- Declare the event dispatcher based on the EVENT class
@@ -248098,9 +250724,6 @@ _DATABASE = DATABASE:New() -- Core.Database#DATABASE
 --- Settings
 _SETTINGS = SETTINGS:Set() -- Core.Settings#SETTINGS
 _SETTINGS:SetPlayerMenuOn()
-
---- Register cargos.
-_DATABASE:_RegisterCargos()
 
 --- Register zones.
 _DATABASE:_RegisterZones()
