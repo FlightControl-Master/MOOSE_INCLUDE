@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-26T15:44:14+01:00-486dc6d2188201d7f69b3bc58a2ee6038abe81ba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-26T23:39:57+01:00-e28d24bfe3d9f5b68ccea25b67ed3bdf4910d877 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -98,12 +98,20 @@ AnyAutonomousMissile=36012032,
 AnyMissile=268402688,
 Cannons=805306368,
 Torpedo=4294967296,
-Auto=3221225470,
+Decoys=8589934592,
+SmokeShell=17179869184,
+IlluminationShell=34359738368,
+MarkerShell=51539607552,
+MarkerWeapon=51539620864,
+SubmunitionDispenserShell=68719476736,
+ConventionalShell=206963736576,
+Auto=265214230526,
 AutoDCS=1073741822,
 AnyAG=2956984318,
 AnyAA=264241152,
 AnyUnguided=2952822768,
 AnyGuided=268402702,
+AnyShell=258503344128,
 }
 ENUMS.WeaponType={}
 ENUMS.WeaponType.Bomb={
@@ -163,7 +171,7 @@ ENUMS.WeaponType.Torpedo={
 Torpedo=4294967296,
 }
 ENUMS.WeaponType.Any={
-Weapon=3221225470,
+Weapon=265214230526,
 AG=2956984318,
 AA=264241152,
 Unguided=2952822768,
@@ -13884,6 +13892,18 @@ ObjectNames=ObjectNames..ObjectName..", "
 end
 return ObjectNames
 end
+function SET_BASE:IsInZone(Zone,Any)
+for ObjectName,Object in pairs(self.Set)do
+local object=Object
+local inzone=object:IsInZone(Zone)
+if inzone and Any then
+return true
+elseif not inzone then
+return false
+end
+end
+return true
+end
 function SET_BASE:Flush(MasterObject)
 local ObjectNames=""
 for ObjectName,Object in pairs(self.Set)do
@@ -20099,6 +20119,12 @@ end
 function FSM:_create_transition(EventName)
 return function(self,...)
 return self._handler(self,EventName,...)
+end
+end
+function FSM:_ClearFSMEvent(EventName)
+if self._EventSchedules[EventName]then
+self.CallScheduler:Remove(self._EventSchedules[EventName])
+self._EventSchedules[EventName]=nil
 end
 end
 function FSM:_gosub(ParentFrom,ParentEvent)
@@ -84338,6 +84364,7 @@ CAPTUREZONE="Capture Zone",
 NOTHING="Nothing",
 PATROLRACETRACK="Patrol Racetrack",
 STRAFING="Strafing",
+FREIGHTTRANSPORT="FREIGHTTRANSPORT",
 }
 AUFTRAG.SpecialTask={
 FORMATION="Formation",
@@ -84400,7 +84427,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.3.0"
+AUFTRAG.version="1.4.0"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -84968,6 +84995,35 @@ mission.DCStask.params.groupId=StaticCargo:GetID()
 mission.DCStask.params.zoneId=DropZone.ZoneID
 mission.DCStask.params.zone=DropZone
 mission.DCStask.params.cargo=StaticCargo
+return mission
+end
+function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo,Destination)
+if Destination==nil then
+self:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
+return nil
+elseif type(Destination)=="string"then
+Destination=AIRBASE:FindByName(Destination)
+end
+if StaticCargo==nil then
+self:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
+return nil
+elseif type(StaticCargo)=="string"then
+StaticCargo=STATIC:FindByName(StaticCargo)
+end
+if StaticCargo:IsInstanceOf("STATIC")then
+local StaticCargoSet=SET_STATIC:New()
+StaticCargoSet:AddCargo(StaticCargo)
+StaticCargo=StaticCargoSet
+end
+local mission=AUFTRAG:New(AUFTRAG.Type.FREIGHTTRANSPORT)
+mission:_TargetFromObject(StaticCargo)
+mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.FREIGHTTRANSPORT)
+mission.optionROE=ENUMS.ROE.ReturnFire
+mission.optionROT=ENUMS.ROT.PassiveDefense
+mission.categories={AUFTRAG.Category.HELICOPTER,AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+mission.DCStask.params.cargo=StaticCargo
+mission.DCStask.params.destination=Destination
 return mission
 end
 function AUFTRAG:NewARTY(Target,Nshots,Radius,Altitude)
@@ -85929,6 +85985,19 @@ local startme=self:EvalConditionsAll(self.conditionStart)
 if not startme then
 return false
 end
+if self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+local cargoset=self.DCStask.params.cargo
+for _,_opsgroup in pairs(self:GetOpsGroups())do
+local opsgroup=_opsgroup
+local vec2=opsgroup.group:GetFirstUnitAlive():GetVec2()
+local zone=ZONE_RADIUS:New("Freighttransport",vec2,40,true)
+local inzone=cargoset:IsInZone(zone)
+if not inzone then
+self:T(self.lid.."FREIGHTTRANSPORT: cargo is not inside zone ==> mission not ready to start yet!")
+return false
+end
+end
+end
 return true
 end
 function AUFTRAG:IsReadyToCancel()
@@ -86093,6 +86162,15 @@ local cargo=self.DCStask.params.cargo
 if cargo and zone then
 failed=not cargo:IsInZone(zone)
 else
+failed=true
+end
+elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+local cargoset=self.DCStask.params.cargo
+local dest=self.DCStask.params.destination
+local zone=dest:GetZone()
+local inzone=cargoset:IsInZone(zone,true)
+if not inzone then
+self:I(self.lid.."FF Freight/cargo not delivered to airbase zone")
 failed=true
 end
 elseif self.type==AUFTRAG.Type.RESCUEHELO then
@@ -86640,6 +86718,20 @@ else
 return 0
 end
 end
+function AUFTRAG:GetCargoSet()
+if self.type==AUFTRAG.Type.CARGOTRANSPORT then
+local set=SET_STATIC:New()
+set:AddObject(self.DCStask.params.cargo)
+return set
+elseif self.type==AUFTRAG.Type.TROOPTRANSPORT then
+return self.transportGroupSet
+elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+return self.DCStask.params.cargo
+else
+self:E(self.lid.."ERROR: GetCargoSet() is only for transport types!")
+return nil
+end
+end
 function AUFTRAG:GetTargetData()
 return self.engageTarget
 end
@@ -86943,7 +87035,7 @@ end
 end
 return self
 end
-function AUFTRAG:GetDCSMissionTask()
+function AUFTRAG:GetDCSMissionTask(MissionGroup)
 local DCStasks={}
 if self.type==AUFTRAG.Type.ANTISHIP then
 local DCStask=CONTROLLABLE.EnRouteTaskAntiShip(nil)
@@ -87072,6 +87164,21 @@ id="CargoTransportation",
 params={}
 }
 table.insert(DCStasks,TaskCargoTransportation)
+elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+local statics=self.engageTarget:GetObjects()
+for _,StaticObject in pairs(statics)do
+local static=StaticObject
+self:T(static)
+local TaskCargoUnload={
+["id"]="CargoUnloadPlane",
+["params"]=
+{
+["groupId"]=static:GetID(),
+["unitId"]=static:GetID(),
+}
+}
+table.insert(DCStasks,TaskCargoUnload)
+end
 elseif self.type==AUFTRAG.Type.RESCUEHELO then
 local DCStask={}
 DCStask.id=AUFTRAG.SpecialTask.FORMATION
@@ -87355,6 +87462,8 @@ mtask=ENUMS.MissionTask.REFUELING
 elseif MissionType==AUFTRAG.Type.TROOPTRANSPORT then
 mtask=ENUMS.MissionTask.TRANSPORT
 elseif MissionType==AUFTRAG.Type.CARGOTRANSPORT then
+mtask=ENUMS.MissionTask.TRANSPORT
+elseif MissionType==AUFTRAG.Type.FREIGHTTRANSPORT then
 mtask=ENUMS.MissionTask.TRANSPORT
 elseif MissionType==AUFTRAG.Type.ARMORATTACK then
 mtask=ENUMS.MissionTask.NOTHING
@@ -107110,6 +107219,7 @@ if delay and delay>0 then
 self:ScheduleOnce(delay,OPSGROUP.RouteToMission,self,mission)
 else
 self:T(self.lid..string.format("Route To Mission"))
+local delayGo=-1
 if self:IsDead()or self:IsStopped()then
 self:T(self.lid..string.format("Route To Mission: I am DEAD or STOPPED! Ooops..."))
 return
@@ -107210,6 +107320,39 @@ local DCSTask=group:TaskEmbarkToTransport(pcoord,pradius)
 group:SetTask(DCSTask,5)
 end
 end
+elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+local destination=mission.DCStask.params.destination
+local cargo=mission.DCStask.params.cargo
+waypointcoord=destination:GetCoordinate()
+mission.DCStask.params.destination=destination
+mission.DCStask.params.cargo=cargo
+local unit=self.group:GetFirstUnit()
+local unitIdTransport=unit:GetID()
+local vec2=unit:GetVec2()
+local tasks={}
+for StaticName,StaticObject in pairs(cargo:GetSet())do
+local static=StaticObject
+local TaskCargoTransportation={
+id="CargoTransportationPlane",
+params={
+x=vec2.x,
+y=vec2.y,
+unitIdTransport=unitIdTransport,
+groupId=static:GetID(),
+unitId=static:GetID(),
+}
+}
+table.insert(tasks,TaskCargoTransportation)
+end
+local TaskCargo=nil
+if#tasks==1 then
+TaskCargo=tasks[1]
+else
+TaskCargo=CONTROLLABLE.TaskCombo(nil,tasks)
+end
+self:_ClearFSMEvent("UpdateRoute")
+delayGo=-30
+self.group:SetTask(TaskCargo)
 elseif mission.type==AUFTRAG.Type.ARTY then
 local targetcoord=mission:GetTargetCoordinate()
 local inRange=self:InWeaponRange(targetcoord,mission.engageWeaponType,waypointcoord)
@@ -107303,7 +107446,7 @@ self:Cruise(SpeedToMission)
 elseif self:IsNavygroup()then
 self:Cruise(SpeedToMission)
 elseif self:IsFlightgroup()then
-self:UpdateRoute()
+self:__UpdateRoute(delayGo)
 end
 end
 self:_SetMissionOptions(mission)

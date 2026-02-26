@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-26T15:44:14+01:00-486dc6d2188201d7f69b3bc58a2ee6038abe81ba ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-26T23:39:57+01:00-e28d24bfe3d9f5b68ccea25b67ed3bdf4910d877 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -183,14 +183,24 @@ ENUMS.WeaponFlag={
   Cannons              =  805306368, -- GUN_POD + BuiltInCannon
   --- Torpedo
   Torpedo              = 4294967296,
+  --- Decoy
+  Decoys               = 8589934592,
+  --- Shell  
+  SmokeShell                =  17179869184,
+  IlluminationShell         =  34359738368,
+  MarkerShell               =  51539607552,
+  MarkerWeapon              =  51539620864,
+  SubmunitionDispenserShell =  68719476736,
+  ConventionalShell         = 206963736576,
   ---
   -- Even More Genral
-  Auto                 = 3221225470, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons)
-  AutoDCS              = 1073741822, -- Something if often see
-  AnyAG                = 2956984318, -- Any Air-To-Ground Weapon
-  AnyAA                =  264241152, -- Any Air-To-Air Weapon
-  AnyUnguided          = 2952822768, -- Any Unguided Weapon
-  AnyGuided            =  268402702, -- Any Guided Weapon
+  Auto                 = 265214230526, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons + Torpedos)
+  AutoDCS              =   1073741822, -- Something if often see
+  AnyAG                =   2956984318, -- Any Air-To-Ground Weapon
+  AnyAA                =    264241152, -- Any Air-To-Air Weapon
+  AnyUnguided          =   2952822768, -- Any Unguided Weapon
+  AnyGuided            =    268402702, -- Any Guided Weapon
+  AnyShell             = 258503344128, -- Any Shell
 }
 
 --- Weapon types by category. See the [Weapon Flag](https://wiki.hoggitworld.com/view/DCS_enum_weapon_flag) enumerator on hoggit wiki.
@@ -272,11 +282,11 @@ ENUMS.WeaponType.Torpedo={
 }
 ENUMS.WeaponType.Any={
   -- General combinations
-  Weapon               = 3221225470, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons)
-  AG                   = 2956984318, -- Any Air-To-Ground Weapon
-  AA                   =  264241152, -- Any Air-To-Air Weapon
-  Unguided             = 2952822768, -- Any Unguided Weapon
-  Guided               =  268402702, -- Any Guided Weapon
+  Weapon               = 265214230526, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons + Torpedos)
+  AG                   =   2956984318, -- Any Air-To-Ground Weapon
+  AA                   =    264241152, -- Any Air-To-Air Weapon
+  Unguided             =   2952822768, -- Any Unguided Weapon
+  Guided               =    268402702, -- Any Guided Weapon
 }
 
 
@@ -25267,6 +25277,28 @@ do -- SET_BASE
 
     return ObjectNames
   end
+  
+  --- Checks whether all or optionally any objects is inside a given zone.
+  -- @param #SET_BASE self
+  -- @param Core.Zone#ZONE Zone The zone.
+  -- @param #boolean Any If `true`, at least one object has to be inside the zone. If `false` or `nil`, all objects need to be in the zone.
+  -- @return #boolean Retruns `true` if objects are in the zone and `false` otherwise.
+  function SET_BASE:IsInZone(Zone, Any)
+  
+    for ObjectName, Object in pairs(self.Set) do
+      local object=Object --Wrapper.Positionable#POSITIONABLE
+      local inzone=object:IsInZone(Zone)
+      if inzone and Any then
+        -- We want at least one and this one is
+        return true
+      elseif not inzone then
+        -- We want all but at least one is not
+        return false
+      end
+    end    
+  
+    return true
+  end  
 
   --- Flushes the current SET_BASE contents in the log ... (for debugging reasons).
   -- @param #SET_BASE self
@@ -38526,6 +38558,16 @@ do -- FSM
       return self._handler( self, EventName, ... )
     end
   end
+  
+  --- Clear scheduled FSM event.
+  -- @param #FSM self
+  -- @param #string EventName Event name.
+  function FSM:_ClearFSMEvent( EventName )
+    if self._EventSchedules[EventName] then
+      self.CallScheduler:Remove( self._EventSchedules[EventName] )
+      self._EventSchedules[EventName]=nil
+    end  
+  end  
 
   --- Go sub.
   -- @param #FSM self
@@ -168634,6 +168676,7 @@ _AUFTRAGSNR=0
 -- @field #string NOTHING Nothing.
 -- @field #string PATROLRACETRACK Patrol Racetrack.
 -- @field #string STRAFING Strafing run.
+-- @field #string FREIGHTTRANSPORT Freight transport.
 AUFTRAG.Type={
   ANTISHIP="Anti Ship",
   AWACS="AWACS",
@@ -168682,6 +168725,7 @@ AUFTRAG.Type={
   NOTHING="Nothing",
   PATROLRACETRACK="Patrol Racetrack",
   STRAFING="Strafing",
+  FREIGHTTRANSPORT="FREIGHTTRANSPORT",
 }
 
 --- Special task description.
@@ -168850,7 +168894,7 @@ AUFTRAG.Category={
 
 --- AUFTRAG class version.
 -- @field #string version
-AUFTRAG.version="1.3.0"
+AUFTRAG.version="1.4.0"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -170317,6 +170361,7 @@ function AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet, DropoffCoordinate, PickupC
 end
 
 --- **[AIR ROTARY]** Create a CARGO TRANSPORT mission.
+-- This mission is for helicopters only, which transport cargo externally via slingload.
 -- **Important Note:**
 -- The dropoff zone has to be a zone defined in the Mission Editor. This is due to a restriction in the used DCS task, which takes the zone ID as input.
 -- Only ME zones have an ID that can be referenced.
@@ -170344,6 +170389,63 @@ function AUFTRAG:NewCARGOTRANSPORT(StaticCargo, DropZone)
   mission.DCStask.params.zoneId=DropZone.ZoneID
   mission.DCStask.params.zone=DropZone
   mission.DCStask.params.cargo=StaticCargo
+  
+  return mission
+end
+
+--- **[AIR]** Create a FREIGHT TRANSPORT mission.
+-- This mission type can be used to transport cargo items internally via suitable transport aircraft (planes and helicopters), e.g. C-130 or CH-47.
+-- It supports transporting one or multiple cargos (weight limits are not checked).
+-- 
+-- All cargo must be within a 40 meter radius around the transport aircraft for the mission to start.
+-- The mission is successful if any cargo item is delivered to the destination.
+-- 
+-- This mission type uses the underlying DCS tasks: "Cargo Transportation (internal)", "Cargo Unload"
+-- @param #AUFTRAG self
+-- @param Wrapper.Static#STATIC StaticCargo Static cargo object. Can also be passed as a `SET_STATIC` object.
+-- @param Wrapper.Airbase#AIRBASE Destination Destination airbase, where the cargo is unloaded.
+-- @return #AUFTRAG self
+function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
+
+  -- Check if Destination is given
+  if Destination==nil then
+    self:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
+    return nil
+  elseif type(Destination)=="string" then
+    Destination=AIRBASE:FindByName(Destination)
+  end
+  
+  -- Check if Cargo is given
+  if StaticCargo==nil then
+    self:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
+    return nil  
+  elseif type(StaticCargo)=="string" then
+    StaticCargo=STATIC:FindByName(StaticCargo)
+  end
+  
+  -- Convert static to a set if necessary
+  if StaticCargo:IsInstanceOf("STATIC") then
+    local StaticCargoSet=SET_STATIC:New() --Core.Set#SET_STATIC
+    StaticCargoSet:AddCargo(StaticCargo)
+    StaticCargo=StaticCargoSet
+  end
+  
+  local mission=AUFTRAG:New(AUFTRAG.Type.FREIGHTTRANSPORT)
+
+  mission:_TargetFromObject(StaticCargo)
+
+  mission.missionTask=mission:GetMissionTaskforMissionType(AUFTRAG.Type.FREIGHTTRANSPORT)
+
+  -- Set ROE and ROT.
+  mission.optionROE=ENUMS.ROE.ReturnFire
+  mission.optionROT=ENUMS.ROT.PassiveDefense
+
+  mission.categories={AUFTRAG.Category.HELICOPTER, AUFTRAG.Category.AIRCRAFT}
+
+  mission.DCStask=mission:GetDCSMissionTask()
+  
+  mission.DCStask.params.cargo=StaticCargo
+  mission.DCStask.params.destination=Destination
   
   return mission
 end
@@ -171236,7 +171338,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set the repeat delay in seconds after a mission is successful/failed. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Repeat delay in seconds. Default 1.
+-- @param #number RepeatDelay Repeat delay in seconds. Default 1.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatDelay(RepeatDelay)
   self.repeatDelay = RepeatDelay
@@ -172349,6 +172451,28 @@ function AUFTRAG:IsReadyToGo()
   if not startme then
     return false
   end
+  
+  if self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+  
+    local cargoset=self.DCStask.params.cargo --Core.Set#SET_STATIC
+    
+    for _,_opsgroup in pairs(self:GetOpsGroups()) do
+      local opsgroup=_opsgroup --Ops.OpsGroup#OPSGROUP
+      
+      local vec2=opsgroup.group:GetFirstUnitAlive():GetVec2()
+      
+      local zone=ZONE_RADIUS:New("Freighttransport", vec2, 40, true)
+    
+      local inzone=cargoset:IsInZone(zone)
+      
+      if not inzone then
+        self:T(self.lid.."FREIGHTTRANSPORT: cargo is not inside zone ==> mission not ready to start yet!")
+        return false
+      end
+      
+    end
+    
+  end
 
 
   -- We're good to go!
@@ -172691,6 +172815,22 @@ function AUFTRAG:Evaluate()
       if cargo and zone then
         failed=not cargo:IsInZone(zone)
       else
+        failed=true
+      end
+      
+    elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+    
+      local cargoset=self.DCStask.params.cargo --Core.Set#SET_STATIC
+      
+      -- Get the destination airbase zone
+      local dest=self.DCStask.params.destination --Wrapper.Airbase#AIRBASE
+      local zone=dest:GetZone()
+    
+      -- Check if ANY cargo is inside the zone (might want to make it optional that all cargo needs to be)
+      local inzone=cargoset:IsInZone(zone, true)
+      
+      if not inzone then
+        self:I(self.lid.."FF Freight/cargo not delivered to airbase zone")
         failed=true
       end
 
@@ -173789,6 +173929,27 @@ function AUFTRAG:GetTargetLife()
   end
 end
 
+--- Get cargo items as set SET object.
+-- This returns the cargo item(s) as set `SET` object for mission types `CARGOTRANSPORT`, `TROOPTRANSPORT` and `FREIGHTTRANSPORT`.
+-- @param #AUFTRAG self
+-- @return Core.Set#SET_BASE The cargo set.
+function AUFTRAG:GetCargoSet()
+
+  if self.type==AUFTRAG.Type.CARGOTRANSPORT then
+    local set=SET_STATIC:New()
+    set:AddObject(self.DCStask.params.cargo)
+    return set  
+  elseif self.type==AUFTRAG.Type.TROOPTRANSPORT then
+    return self.transportGroupSet  
+  elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+    return self.DCStask.params.cargo  
+  else
+    self:E(self.lid.."ERROR: GetCargoSet() is only for transport types!")
+    return nil
+  end
+
+end
+
 --- Get target.
 -- @param #AUFTRAG self
 -- @return Ops.Target#TARGET The target object. Could be many things.
@@ -174377,8 +174538,9 @@ end
 
 --- Get DCS task table for the given mission.
 -- @param #AUFTRAG self
+-- @param Wrapper.Group#GROUP MissionGroup (Optional) Group that is supposed to carry out the mission. This might not exist when the AUFTRAG is created but only when the AUFTRAG is passed to a certain group.
 -- @return DCS#Task The DCS task table. If multiple tasks are necessary, this is returned as a combo task.
-function AUFTRAG:GetDCSMissionTask()
+function AUFTRAG:GetDCSMissionTask(MissionGroup)
 
   local DCStasks={}
 
@@ -174720,6 +174882,34 @@ function AUFTRAG:GetDCSMissionTask()
     }
     
     table.insert(DCStasks, TaskCargoTransportation)
+
+  elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+
+    ------------------------------
+    -- FREIGHTTRANSPORT Mission --
+    ------------------------------
+        
+    local statics=self.engageTarget:GetObjects()
+    
+    for _, StaticObject in pairs(statics) do
+      local static=StaticObject --Wrapper.Static#STATIC
+      
+      self:T(static)
+    
+      -- Task to unload the cargo     
+      local TaskCargoUnload={
+        ["id"] = "CargoUnloadPlane",
+        ["params"] = 
+        {
+          ["groupId"] = static:GetID(),
+          ["unitId"]  = static:GetID(),
+        }
+      }        
+    
+    
+      table.insert(DCStasks, TaskCargoUnload)
+      
+    end
 
   elseif self.type==AUFTRAG.Type.RESCUEHELO then
 
@@ -175285,6 +175475,8 @@ function AUFTRAG:GetMissionTaskforMissionType(MissionType)
     mtask=ENUMS.MissionTask.TRANSPORT
   elseif MissionType==AUFTRAG.Type.CARGOTRANSPORT then
     mtask=ENUMS.MissionTask.TRANSPORT
+  elseif MissionType==AUFTRAG.Type.FREIGHTTRANSPORT then
+    mtask=ENUMS.MissionTask.TRANSPORT    
   elseif MissionType==AUFTRAG.Type.ARMORATTACK then
     mtask=ENUMS.MissionTask.NOTHING
   elseif MissionType==AUFTRAG.Type.HOVER then
@@ -217324,6 +217516,9 @@ function OPSGROUP:RouteToMission(mission, delay)
 
     -- Debug info.
     self:T(self.lid..string.format("Route To Mission"))
+	
+	-- Delay in seconds before cruise or updateroute is called.
+	local delayGo=-1
 
     -- Catch dead or stopped groups.
     if self:IsDead() or self:IsStopped() then
@@ -217528,7 +217723,65 @@ function OPSGROUP:RouteToMission(mission, delay)
         end
 
       end
-
+	  
+	elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+	
+		---
+		-- FREIGHTTRANSPORT
+		---
+	
+		local destination=mission.DCStask.params.destination
+		local cargo=mission.DCStask.params.cargo
+		
+		-- Set the waypoint coordinate directly above the airbase.
+		-- The only way to ensure the cargo is delivered there, because when the task is executed, the cargo is delivered to the closest airbase.
+		-- Hopefully, ED will change the behaviour of this task but at the moment, it is what it is.
+		waypointcoord=destination:GetCoordinate()
+				
+		-- Get additional parameters
+		mission.DCStask.params.destination=destination --Wrapper.Airbase#AIRBASE
+		mission.DCStask.params.cargo=cargo --Core.Set#SET_STATIC
+		
+		-- Get transport unit
+		local unit=self.group:GetFirstUnit()
+		local unitIdTransport=unit:GetID()
+		local vec2=unit:GetVec2()
+		
+		-- Create tasks to load/transport statics cargos
+		local tasks={}		
+		for StaticName, StaticObject in pairs(cargo:GetSet()) do
+      local static=StaticObject --Wrapper.Static#STATIC
+  		
+  		-- Task to transport cargo.
+  		local TaskCargoTransportation={
+        id = "CargoTransportationPlane",
+        params = {
+          x=vec2.x,
+          y=vec2.y,
+          unitIdTransport=unitIdTransport,
+          groupId=static:GetID(),
+          unitId=static:GetID(),
+        }
+      }
+      
+      table.insert(tasks, TaskCargoTransportation)
+		end
+		
+		-- If we have multiple tasks, we create a combo task
+		local TaskCargo=nil
+		if #tasks==1 then
+		  TaskCargo=tasks[1]
+		else
+		  TaskCargo=CONTROLLABLE.TaskCombo(nil, tasks)
+		end
+		
+		-- We set the task to load the cargo into the aircraft.
+		-- We must be careful when calling updateroute because there the task is overwritten.
+		-- We also clear present "UpdateRoute" FSM events
+		self:_ClearFSMEvent( "UpdateRoute" )
+		delayGo=-30
+		self.group:SetTask(TaskCargo)
+				
     elseif mission.type==AUFTRAG.Type.ARTY then
 
       ---
@@ -217687,7 +217940,7 @@ function OPSGROUP:RouteToMission(mission, delay)
       elseif self:IsNavygroup() then
         self:Cruise(SpeedToMission)
       elseif self:IsFlightgroup() then
-        self:UpdateRoute()
+        self:__UpdateRoute(delayGo)
       end
           
     end
