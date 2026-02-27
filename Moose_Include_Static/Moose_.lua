@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-26T23:39:57+01:00-e28d24bfe3d9f5b68ccea25b67ed3bdf4910d877 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-27T09:21:09+01:00-bed8196f1089815cb6634b55c35a96283ac4f7dc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -80648,6 +80648,12 @@ MENUSMOKE="Request Smoke",
 MENUSTROBE="Request IR Strobe",
 MENUMASH="Smoke Closest MASH",
 BOARDED="Onboard - RTB to FARP/Airfield or MASH: ",
+MAYDAY="MAYDAY MAYDAY! %s is down. ",
+CONTACT="Troops In Contact. %s requests CASEVAC. ",
+PICKUPZONE="Pickup Zone at %s.",
+REQUESTSAR="%s requests SAR at %s, beacon at %.2f KHz!",
+REQUESTSARBEACON="%s requests SAR at %s, beacon at %.2f KHz!",
+KHZ="kilo hertz",
 },
 DE={
 HEARYOULONG="%s: %s. Ich höre Sie! Endlich, das ist Musik in meinen Ohren!\nIch zünde eine Rauchgranate, wenn Sie %s entfernt sind.\nLanden Sie oder hovern Sie beim Rauch.",
@@ -80679,6 +80685,12 @@ TAKECLINIC="%s: Die %d Pilot(en) wurden ins\nLazarett gebracht. Gute Arbeit!",
 KILOMETERS=" Kilometer",
 NAUTMILES=" Meilen",
 BOARDED="An Bord - RTB zu FARP/Flugplatz oder Lazarett: ",
+MAYDAY="MAYDAY MAYDAY! %s ist abgestürzt. ",
+CONTACT="Truppen im Kontakt. %s fordern CASEVAC an. ",
+PICKUPZONE="Aufnahmezone bei %s.",
+REQUESTSAR="%s fordert SAR bei %s an, ADF %.2f KHz!",
+REQUESTSARBEACON="%s fordert SAR bei %s an, ADF %.2f KHz!",
+KHZ="Kilohertz",
 },
 FR={
 HEARYOULONG="%s: %s. Je vous entends! Enfin, c'est de la musique dans mes oreilles!\nJe lancerai une fumée quand vous serez à %s.\nAtterrissez ou survolez la fumée.",
@@ -80694,8 +80706,8 @@ OPENTHEDOOROUT="Ouvrez la porte pour me laisser sortir!",
 FIRINGFLARE="%s - Tir d'une fusée éclairante à vos %s heures. Distance %s",
 NOPILOTSINRANGE="Aucun pilote dans un rayon de %s",
 IRSTROBE="%s - Stroboscope IR actif à vos %s heures. Distance %s",
-POPPINGSMOKE="%s -  Lancement de fumée à vos %s heures. Distance %s",
-POPPINGSMOKEMASH="%s - Lancement de fumée au point de sauvetage le plus proche: %s",
+POPPINGSMOKE="%s -  Lancement de fumigène à vos %s heures. Distance %s",
+POPPINGSMOKEMASH="%s - Lancement de fumigène au point de sauvetage le plus proche: %s",
 NORESCUEPOINTWITHIN="Aucun point de sauvetage dans un rayon de %s",
 NOPILOTSONBOARD="Aucun pilote secouru à bord",
 MENUTOP="CSAR",
@@ -80710,6 +80722,12 @@ TAKECLINIC="%s: Les %d pilote(s) ont été transportés à \n l'hôpital. Bon tr
 KILOMETERS=" kilomètres",
 NAUTMILES=" milles nautiques",
 BOARDED="À bord - RTB vers FARP/Aérodrome ou MASH: ",
+MAYDAY="MAYDAY MAYDAY ! %s est à terre. ",
+CONTACT="Troupes au contact. %s demande un CASEVAC. ",
+PICKUPZONE="Zone de ramassage à %s.",
+REQUESTSAR="%s demande un SAR à %s, balise à %.2f KHz!",
+REQUESTSARBEACON="%s demande un SAR à %s, balise à %.2f KHz!",
+KHZ="kilohertz",
 },
 }
 CSAR.AircraftType={}
@@ -80733,7 +80751,7 @@ CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.AircraftType["AH-6J"]=2
 CSAR.AircraftType["MH-6J"]=2
-CSAR.version="1.1.37"
+CSAR.version="1.1.38"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -81001,9 +81019,13 @@ local _spawnedGroup,_alias=self:_SpawnPilotInField(_country,_point,_freq,wetfeet
 local _typeName=_typeName or"Pilot"
 if not noMessage then
 if _freq~=0 then
-self:_DisplayToAllSAR("MAYDAY MAYDAY! ".._typeName.." is down. ",self.coalition,self.messageTime)
+local text=self.gettext:GetEntry("MAYDAY",self.locale)
+text=string.format(text,_typeName)
+self:_DisplayToAllSAR(text,self.coalition,self.messageTime)
 else
-self:_DisplayToAllSAR("Troops In Contact. ".._typeName.." requests CASEVAC. ",self.coalition,self.messageTime)
+local text=self.gettext:GetEntry("CONTACT",self.locale)
+text=string.format(text,_typeName)
+self:_DisplayToAllSAR(text,self.coalition,self.messageTime)
 end
 end
 local BeaconName
@@ -81303,23 +81325,26 @@ local _coordinatesText=self:_GetPositionOfWounded(_downedGroup)
 local _leadername=_leader:GetName()
 if not _nomessage then
 if _freq~=0 then
-local _text=string.format("%s requests SAR at %s, beacon at %.2f KHz",_groupName,_coordinatesText,_freqk)
+local request=self.gettext:GetEntry("REQUESTSAR",self.locale)
+local _text=string.format(request,_groupName,_coordinatesText,_freqk)
 if self.coordtype~=2 then
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
 else
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,false,true)
 local coordtext=UTILS.MGRSStringToSRSFriendly(_coordinatesText,true)
-local _text=string.format("%s requests SAR at %s, beacon at %.2f kilo hertz",_groupName,coordtext,_freqk)
+local request=self.gettext:GetEntry("REQUESTSARBEACON",self.locale)
+local _text=string.format(request,_groupName,coordtext,_freqk)
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false)
 end
 else
-local _text=string.format("Pickup Zone at %s.",_coordinatesText)
+local request=self.gettext:GetEntry("PICKUPZONE",self.locale)
+local _text=string.format(request,_coordinatesText)
 if self.coordtype~=2 then
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
 else
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,false,true)
 local coordtext=UTILS.MGRSStringToSRSFriendly(_coordinatesText,true)
-local _text=string.format("Pickup Zone at %s.",coordtext)
+local _text=string.format(request,coordtext)
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false)
 end
 end
@@ -81884,6 +81909,8 @@ local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
 if self.msrs:GetProvider()==MSRS.Provider.WINDOWS then
 voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
 end
+local kilohertz=self.gettext:GetEntry("KHZ",self.locale)
+_message=string.gsub(_message,"KHz",kilohertz)
 self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
 end
 if ToScreen==true or ToScreen==nil then
