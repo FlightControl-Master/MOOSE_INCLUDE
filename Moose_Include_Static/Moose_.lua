@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-27T09:21:09+01:00-bed8196f1089815cb6634b55c35a96283ac4f7dc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-27T09:34:19+01:00-ebd61a70b0ed64be7eb7eab4cb7ab39e13378ddc ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4617,7 +4617,7 @@ end
 local clockPos=math.ceil((relativeAngle%360)/30)
 return clockPos.." o'clock"
 end
-function UTILS.MGRSStringToSRSFriendly(Text,Slow)
+function UTILS.MGRSStringToSRSFriendly(Text,Slow,Backend)
 local Text=string.gsub(Text,"MGRS ","")
 Text=string.gsub(Text,"%s+","")
 Text=string.gsub(Text,"([%a%d])","%1;")
@@ -4649,7 +4649,7 @@ Text=string.gsub(Text,"Y","Yankee")
 Text=string.gsub(Text,"Z","Zulu")
 Text=string.gsub(Text,"0","zero")
 Text=string.gsub(Text,"9","niner")
-if Slow then
+if Slow and Backend~=nil and Backend~=MSRS.Backend.HOUND then
 Text='<prosody rate="slow">'..Text..'</prosody>'
 end
 Text="MGRS;"..Text
@@ -91884,7 +91884,7 @@ frequency=self.TacticalSubscribers[name]
 end
 end
 local gtext=RadioEntry.TextTTS
-if self.PathToGoogleKey then
+if self.PathToGoogleKey and self.Backend~=MSRS.Backend.HOUND then
 gtext=string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
 end
 self.TacticalSRSQ:NewTransmission(gtext,nil,self.TacticalSRS,nil,0.5,nil,nil,nil,frequency,self.TacticalModulation)
@@ -91924,7 +91924,7 @@ self:__CheckRadioQueue(-5)
 return self
 end
 if not RadioEntry.FromAI then
-if self.PathToGoogleKey then
+if self.PathToGoogleKey and self.Backend~=MSRS.Backend.HOUND then
 local gtext=RadioEntry.TextTTS
 gtext=string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
 self.AwacsSRS:PlayTextExt(gtext,nil,self.MultiFrequency,self.MultiModulation,self.Gender,self.Culture,self.Voice,self.Volume,"AWACS")
@@ -91936,7 +91936,7 @@ else
 if RadioEntry.GroupID and RadioEntry.GroupID~=0 then
 local managedgroup=self.ManagedGrps[RadioEntry.GroupID]
 if managedgroup and managedgroup.FlightGroup and managedgroup.FlightGroup:IsAlive()then
-if self.PathToGoogleKey then
+if self.PathToGoogleKey and self.Backend~=MSRS.Backend.HOUND then
 local gtext=RadioEntry.TextTTS
 gtext=string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
 managedgroup.FlightGroup:RadioTransmission(gtext,1,false)

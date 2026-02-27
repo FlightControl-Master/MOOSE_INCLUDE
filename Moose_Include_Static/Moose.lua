@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-27T09:21:09+01:00-bed8196f1089815cb6634b55c35a96283ac4f7dc ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-27T09:34:19+01:00-ebd61a70b0ed64be7eb7eab4cb7ab39e13378ddc ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -6322,9 +6322,10 @@ end
 
 --- Get a NATO abbreviated MGRS text for SRS use, optionally with prosody slow tag
 -- @param #string Text The input string, e.g. "MGRS 4Q FJ 12345 67890"
--- @param #boolean Slow Optional - add slow tags
+-- @param #boolean Slow Optional - add slow tags, if the backend is not Hound
+-- @param #string Backend The TTS Backend used
 -- @return #string Output for (Slow) spelling in SRS TTS e.g. "MGRS;<prosody rate="slow">4;Quebec;Foxtrot;Juliett;1;2;3;4;5;6;7;8;niner;zero;</prosody>"
-function UTILS.MGRSStringToSRSFriendly(Text,Slow)
+function UTILS.MGRSStringToSRSFriendly(Text,Slow,Backend)
     local Text = string.gsub(Text,"MGRS ","")
     Text = string.gsub(Text,"%s+","")
     Text = string.gsub(Text,"([%a%d])","%1;") -- "0;5;1;"
@@ -6356,7 +6357,7 @@ function UTILS.MGRSStringToSRSFriendly(Text,Slow)
     Text = string.gsub(Text,"Z","Zulu")
     Text = string.gsub(Text,"0","zero")
     Text = string.gsub(Text,"9","niner")
-    if Slow then
+    if Slow and Backend ~= nil and Backend ~= MSRS.Backend.HOUND then
       Text = '<prosody rate="slow">'..Text..'</prosody>'
     end
     Text = "MGRS;"..Text
@@ -175624,7 +175625,7 @@ end
 -- ===
 --
 -- ### Author: **applevangelist**
--- @date Last Update July 2025
+-- @date Last Update Feb 2026
 -- @module Ops.AWACS
 -- @image OPS_AWACS.jpg
 
@@ -182462,7 +182463,7 @@ function AWACS:onafterCheckTacticalQueue(From,Event,To)
     end
     -- AI AWACS Speaking
     local gtext = RadioEntry.TextTTS
-    if self.PathToGoogleKey then
+    if self.PathToGoogleKey and self.Backend ~= MSRS.Backend.HOUND then
       gtext = string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
     end
     self.TacticalSRSQ:NewTransmission(gtext,nil,self.TacticalSRS,nil,0.5,nil,nil,nil,frequency,self.TacticalModulation)
@@ -182521,7 +182522,7 @@ function AWACS:onafterCheckRadioQueue(From,Event,To)
   
   if not RadioEntry.FromAI then
     -- AI AWACS Speaking
-    if self.PathToGoogleKey then
+    if self.PathToGoogleKey and self.Backend ~= MSRS.Backend.HOUND then
       local gtext = RadioEntry.TextTTS
       gtext = string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
       self.AwacsSRS:PlayTextExt(gtext,nil,self.MultiFrequency,self.MultiModulation,self.Gender,self.Culture,self.Voice,self.Volume,"AWACS")
@@ -182534,7 +182535,7 @@ function AWACS:onafterCheckRadioQueue(From,Event,To)
     if RadioEntry.GroupID and RadioEntry.GroupID ~= 0 then
       local managedgroup = self.ManagedGrps[RadioEntry.GroupID] -- #AWACS.ManagedGroup
       if managedgroup and managedgroup.FlightGroup and managedgroup.FlightGroup:IsAlive() then
-        if self.PathToGoogleKey then
+        if self.PathToGoogleKey and self.Backend ~= MSRS.Backend.HOUND then
           local gtext = RadioEntry.TextTTS
           gtext = string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
           managedgroup.FlightGroup:RadioTransmission(gtext,1,false)
