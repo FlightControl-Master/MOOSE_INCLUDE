@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-02-28T18:33:35+01:00-fe0f0a0190cadcc1ec1dfd270542488158553d26 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-01T14:03:13+01:00-3d6bd4ea5472d47cd83003602d7b055e075a3eca ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19225,7 +19225,7 @@ function COORDINATE:ToStringBR(FromCoordinate,Settings,MagVar,Precision)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
 local AngleRadians=self:GetAngleRadians(DirectionVec3)
 local Distance=self:Get2DDistance(FromCoordinate)
-return"BR, "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar,Precision)
+return"BR "..self:GetBRText(AngleRadians,Distance,Settings,nil,MagVar,Precision)
 end
 function COORDINATE:ToStringBearing(FromCoordinate,Settings,MagVar,Precision)
 local DirectionVec3=FromCoordinate:GetDirectionVec3(self)
@@ -77177,11 +77177,12 @@ local i=1
 while i<=#list do
 local left=#list-i+1
 local label
+local loadkey=self.gettext:GetEntry("MENU_LOAD_SINGLE",self.locale)
 if left>=needed then
-label=string.format("%d. Load %s",lineIndex,cName)
+label=string.format("%d. %s %s",lineIndex,loadkey,cName)
 i=i+needed
 else
-label=string.format("%d. Load %s (%d/%d)",lineIndex,cName,left,needed)
+label=string.format("%d. %s %s (%d/%d)",lineIndex,loadkey,cName,left,needed)
 i=#list+1
 end
 MENU_GROUP_COMMAND:New(Group,label,Group.MyLoadCratesMenu,self._LoadSingleCrateSet,self,Group,Unit,cName)
@@ -81403,6 +81404,8 @@ PICKUPZONE="Pickup Zone at %s.",
 REQUESTSAR="%s requests SAR at %s, beacon at %.2f KHz!",
 REQUESTSARBEACON="%s requests SAR at %s, beacon at %.2f KHz!",
 KHZ="kilo hertz",
+FILLAT="at",
+FILLFOR="for",
 },
 DE={
 HEARYOULONG="%s: %s. Ich höre Sie! Endlich, das ist Musik in meinen Ohren!\nIch zünde eine Rauchgranate, wenn Sie %s entfernt sind.\nLanden Sie oder hovern Sie beim Rauch.",
@@ -81440,6 +81443,8 @@ PICKUPZONE="Aufnahmezone bei %s.",
 REQUESTSAR="%s fordert SAR bei %s an, ADF %.2f KHz!",
 REQUESTSARBEACON="%s fordert SAR bei %s an, ADF %.2f KHz!",
 KHZ="Kilohertz",
+FILLAT="bei",
+FILLFOR="für",
 },
 FR={
 HEARYOULONG="%s: %s. Je vous entends! Enfin, c'est de la musique dans mes oreilles!\nJe lancerai une fumée quand vous serez à %s.\nAtterrissez ou survolez la fumée.",
@@ -81477,6 +81482,8 @@ PICKUPZONE="Zone de ramassage à %s.",
 REQUESTSAR="%s demande un SAR à %s, balise à %.2f KHz!",
 REQUESTSARBEACON="%s demande un SAR à %s, balise à %.2f KHz!",
 KHZ="kilohertz",
+FILLAT="au",
+FILLFOR="pour",
 },
 }
 CSAR.AircraftType={}
@@ -82080,10 +82087,10 @@ if self.coordtype~=2 then
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
 else
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,false,true)
-local coordtext=UTILS.MGRSStringToSRSFriendly(_coordinatesText,true)
+local coordtext=UTILS.MGRSStringToSRSFriendly(_coordinatesText,true,self.SRSBackend)
 local request=self.gettext:GetEntry("REQUESTSARBEACON",self.locale)
 local _text=string.format(request,_groupName,coordtext,_freqk)
-self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false)
+self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false,self.SRSBackend)
 end
 else
 local request=self.gettext:GetEntry("PICKUPZONE",self.locale)
@@ -82092,7 +82099,7 @@ if self.coordtype~=2 then
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
 else
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,false,true)
-local coordtext=UTILS.MGRSStringToSRSFriendly(_coordinatesText,true)
+local coordtext=UTILS.MGRSStringToSRSFriendly(_coordinatesText,true,self.SRSBackend)
 local _text=string.format(request,coordtext)
 self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false)
 end
@@ -82531,6 +82538,8 @@ _coordinatesText=_coordinate:ToStringLLDDM(settings)
 elseif settings:IsA2G_BR()then
 local startcoordinate=_Unit:GetCoordinate()
 _coordinatesText=_coordinate:ToStringBR(startcoordinate,settings)
+local fillfor=self.gettext:GetEntry("FILLFOR",self.locale)
+_coordinatesText=string.gsub(_coordinatesText,"for","")
 end
 end
 end
@@ -82569,10 +82578,11 @@ distancetext=string.format("%.1fnm",UTILS.MetersToNM(_distance))
 else
 distancetext=string.format("%.1fkm",_distance/1000.0)
 end
+local fillat=self.gettext:GetEntry("FILLAT",self.locale)
 if _value.frequency==0 or self.CreateRadioBeacons==false then
-table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %s ",_value.desc,_coordinatesText,distancetext)})
+table.insert(_csarList,{dist=_distance,msg=string.format("%s %s %s - %s ",_value.desc,fillat,_coordinatesText,distancetext)})
 else
-table.insert(_csarList,{dist=_distance,msg=string.format("%s at %s - %.2f KHz ADF - %s ",_value.desc,_coordinatesText,_value.frequency/1000,distancetext)})
+table.insert(_csarList,{dist=_distance,msg=string.format("%s %s %s - %.2f KHz ADF - %s ",_value.desc,fillat,_coordinatesText,_value.frequency/1000,distancetext)})
 end
 end
 end
