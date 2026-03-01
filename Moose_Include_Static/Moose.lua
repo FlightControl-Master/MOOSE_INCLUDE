@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-01T14:03:13+01:00-3d6bd4ea5472d47cd83003602d7b055e075a3eca ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-01T15:36:27+01:00-e02a1f705bafcb3f565b4fb403e4bbabe96762a6 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -24353,7 +24353,7 @@ end
 
 do -- SET_BASE
   
-  ---
+  --- SET_BASE class.
   -- @type SET_BASE
   -- @field #table Filter Table of filters.
   -- @field #table Set Table of objects.
@@ -24361,6 +24361,7 @@ do -- SET_BASE
   -- @field #table List Unused table.
   -- @field Core.Scheduler#SCHEDULER CallScheduler
   -- @field #SET_BASE.Filters Filter Filters
+  -- @field #booleaen filterNoRegex If true, FilterPrefix ignores special characters and evaluates plain string.
   -- @extends Core.Base#BASE
 
   --- The @{Core.Set#SET_BASE} class defines the core functions that define a collection of objects.
@@ -24399,6 +24400,7 @@ do -- SET_BASE
         ["neutral"] = coalition.side.NEUTRAL,
         },
       },
+    filterNoRegex=false,
   }
 
   --- Filters
@@ -24542,6 +24544,26 @@ do -- SET_BASE
     local ObjectFound = self.Set[ObjectName]
     return ObjectFound
   end
+
+
+  --- Compares string for FilterPrefix function.
+  -- @param #SET_BASE self
+  -- @param #string Name The Name of the object.
+  -- @param #string Pattern The pattern that is contained in the Name.
+  -- @param #boolean NoRegex If `true`, special characters in the Name are interpreted as plain text and not regular expressions. Default is `self.filterNoregex`. 
+  -- @param #boolean ReplaceDash If `true`, dashes are not used as regex.
+  -- @return #boolean Returns `true`, if the pattern is contained in the name and false otherwise.
+  function SET_BASE:_SearchPattern(Name, Pattern, NoRegex, ReplaceDash)
+    NoRegex=NoRegex or self.filterNoRegex
+    if ReplaceDash==true then
+      -- Not sure why "-" is replaced by "%-" ?! - So we can still match group names with a dash in them
+      -- reason is that the string is interpreted as a pattern and "-" is a special character then. For interpreting it as a string, fourth parameter needs to be set to true.
+      Pattern=Pattern:gsub("-", "%%-")
+    end
+    local contain=string.find(Name, Pattern, 1, NoRegex)
+    return contain
+  end  
+  
 
   --- Gets the Set.
   -- @param #SET_BASE self
@@ -26417,19 +26439,16 @@ do
     if self.Filter.GroupPrefixes and MGroupInclude then
       local MGroupPrefix = false
       for GroupPrefixId, GroupPrefix in pairs(self.Filter.GroupPrefixes) do
-        --self:I({ "Prefix:", MGroup:GetName(), GroupPrefix })
-        if string.find(MGroup:GetName(), string.gsub(GroupPrefix,"-","%%-"),1) then
+        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, false, true) then
           MGroupPrefix = true
         end
       end
       MGroupInclude = MGroupInclude and MGroupPrefix
-      --self:I("Is Included: "..tostring(MGroupInclude))
     end
     
     if self.Filter.Zones and MGroupInclude then
       local MGroupZone = false
       for ZoneName, Zone in pairs(self.Filter.Zones) do
-        --self:T("Zone:", ZoneName)
         if MGroup:IsInZone(Zone) then
           MGroupZone = true
         end
@@ -26443,7 +26462,6 @@ do
       MGroupInclude = MGroupInclude and MGroupFunc
     end
      
-    --self:I(MGroupInclude)
     return MGroupInclude
   end
 
@@ -27674,9 +27692,8 @@ do -- SET_UNIT
 
       if self.Filter.UnitPrefixes and MUnitInclude then
         local MUnitPrefix = false
-        for UnitPrefixId, UnitPrefix in pairs(self.Filter.UnitPrefixes) do
-          --self:T3({ "Prefix:", string.find(MUnit:GetName(), UnitPrefix, 1), UnitPrefix })
-          if string.find(MUnit:GetName(), UnitPrefix, 1) then
+        for UnitPrefixId, UnitPrefix in pairs(self.Filter.UnitPrefixes) do          
+          if self:_SearchPattern(MUnit:GetName(), UnitPrefix, false, true) then
             MUnitPrefix = true
           end
         end
@@ -28447,8 +28464,7 @@ do -- SET_STATIC
     if self.Filter.StaticPrefixes then
       local MStaticPrefix = false
       for StaticPrefixId, StaticPrefix in pairs(self.Filter.StaticPrefixes) do
-        --self:T(3({ "Prefix:", string.find(MStatic:GetName(), StaticPrefix, 1), StaticPrefix })
-        if string.find(MStatic:GetName(), StaticPrefix, 1) then
+        if self:_SearchPattern(MStatic:GetName(), StaticPrefix, false, true) then
           MStaticPrefix = true
         end
       end
@@ -29231,12 +29247,10 @@ do -- SET_CLIENT
       if self.Filter.ClientPrefixes and MClientInclude then
         local MClientPrefix = false
         for ClientPrefixId, ClientPrefix in pairs(self.Filter.ClientPrefixes) do
-          --self:T3({ "Prefix:", string.find(MClient.UnitName, ClientPrefix, 1), ClientPrefix })
-          if string.find(MClient.UnitName, ClientPrefix, 1) then
+          if self:_SearchPattern(MClient.UnitName, ClientPrefix) then          
             MClientPrefix = true
           end
         end
-        --self:T({ "Evaluated Prefix", MClientPrefix })
         MClientInclude = MClientInclude and MClientPrefix
       end
 
@@ -29257,7 +29271,7 @@ do -- SET_CLIENT
       local playername = MClient:GetPlayerName() or "Unknown"
       --self:T(playername)
       for _,_Playername in pairs(self.Filter.Playernames) do
-        if playername and string.find(playername,_Playername) then
+        if playername and self:_SearchPattern(playername,_Playername) then
           MClientPlayername = true
         end
       end
@@ -29270,7 +29284,7 @@ do -- SET_CLIENT
       local callsign = MClient:GetCallsign()
       --self:I(callsign)
       for _,_Callsign in pairs(self.Filter.Callsigns) do
-        if callsign and string.find(callsign,_Callsign,1,true) then
+        if callsign and self:_SearchPattern(callsign,_Callsign, true) then
           MClientCallsigns = true
         end
       end
@@ -29691,12 +29705,10 @@ do -- SET_PLAYER
       if self.Filter.ClientPrefixes then
         local MClientPrefix = false
         for ClientPrefixId, ClientPrefix in pairs(self.Filter.ClientPrefixes) do
-          --self:T(3({ "Prefix:", string.find(MClient.UnitName, ClientPrefix, 1), ClientPrefix })
-          if string.find(MClient.UnitName, ClientPrefix, 1) then
+          if self:_SearchPattern(MClient.UnitName,ClientPrefix) then
             MClientPrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MClientPrefix })
         MClientInclude = MClientInclude and MClientPrefix
       end
     end
@@ -30400,12 +30412,10 @@ do -- SET_ZONE
       if self.Filter.Prefixes then
         local MZonePrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          --self:T(2({ "Prefix:", string.find(MZoneName, ZonePrefix, 1), ZonePrefix })
-          if string.find(MZoneName, ZonePrefix, 1) then
+          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then
             MZonePrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MZonePrefix })
         MZoneInclude = MZoneInclude and MZonePrefix
       end
     end
@@ -30911,12 +30921,10 @@ do -- SET_ZONE_GOAL
       if self.Filter.Prefixes then
         local MZonePrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          --self:T(3({ "Prefix:", string.find(MZoneName, ZonePrefix, 1), ZonePrefix })
-          if string.find(MZoneName, ZonePrefix, 1) then
+          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then          
             MZonePrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MZonePrefix })
         MZoneInclude = MZoneInclude and MZonePrefix
       end
     end
@@ -31273,17 +31281,13 @@ do -- SET_OPSZONE
         -- Loop over prefixes.
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
         
-          -- Prifix
-          --self:T(3({ "Prefix:", string.find(MZoneName, ZonePrefix, 1), ZonePrefix })
-          
-          if string.find(MZoneName, ZonePrefix, 1) then
+          -- Prefix
+          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then
             MZonePrefix = true
             break --Break the loop as we found the prefix.
           end
           
         end
-        
-        --self:T(({ "Evaluated Prefix", MZonePrefix })
         
         MZoneInclude = MZoneInclude and MZonePrefix
       end
@@ -32072,7 +32076,7 @@ function SET_OPSGROUP:_EventOnBirth(Event)
       local MGroupPrefix = false
       
       for GroupPrefixId, GroupPrefix in pairs(self.Filter.GroupPrefixes) do
-        if string.find(MGroup:GetName(), GroupPrefix:gsub ("-", "%%-"), 1) then --Not sure why "-" is replaced by "%-" ?! - So we can still match group names with a dash in them
+        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, false, true) then
           MGroupPrefix = true
         end
       end
@@ -32406,12 +32410,10 @@ do -- SET_SCENERY
       if self.Filter.Prefixes then
         local MSceneryPrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          --self:T(({ "Prefix:", string.find(MSceneryName, ZonePrefix, 1), ZonePrefix })
-          if string.find(MSceneryName, ZonePrefix, 1) then
+          if self:_SearchPattern(MSceneryName, ZonePrefix, false, true) then
             MSceneryPrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MSceneryPrefix })
         MSceneryInclude = MSceneryInclude and MSceneryPrefix
       end
       
@@ -32679,8 +32681,7 @@ do -- SET_DYNAMICCARGO
     if self.Filter.StaticPrefixes then
       local DCargoPrefix = false
       for StaticPrefixId, StaticPrefix in pairs(self.Filter.StaticPrefixes) do
-        --self:T2({ "Prefix:", string.find(DCargo:GetName(), StaticPrefix, 1), StaticPrefix })
-        if string.find(DCargo:GetName(), StaticPrefix, 1) then
+        if self:_SearchPattern(DCargo:GetName(), StaticPrefix, false, true) then
           DCargoPrefix = true
         end
       end
@@ -32848,7 +32849,7 @@ do -- SET_DYNAMICCARGO
   function SET_DYNAMICCARGO:FilterCurrentOwner(PlayerName)
     self:FilterFunction(
       function(cargo)
-        if cargo and cargo.Owner and string.find(cargo.Owner,PlayerName,1,true) then
+        if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner, PlayerName, true) then
           return true
         else
           return false
@@ -51837,11 +51838,9 @@ end
 -- @param #number AttackQty (optional) This parameter limits maximal quantity of attack. The aircraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aircraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param DCS#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param DCS#Distance Altitude (optional) Desired attack start altitude. Controllable/aircraft will make its attacks from the altitude. If the altitude is too low or too high to use weapon aircraft/controllable will choose closest altitude to the desired attack start altitude. If the desired altitude is defined controllable/aircraft will not attack from safe altitude.
--- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackGroup" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
 -- @param #boolean GroupAttack (Optional) If true, attack as group.
 -- @return DCS#Task The DCS task structure.
-function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit, GroupAttack )
-  -- self:F2( { self.ControllableName, AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit } )
+function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, GroupAttack )
 
   --  AttackGroup = {
   --   id = 'AttackGroup',
@@ -51862,7 +51861,7 @@ function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, At
   local DCSTask = { id = 'AttackGroup',
     params = {
       groupId          = AttackGroup:GetID(),
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.Auto,
       expend           = WeaponExpend or "Auto",
       attackQtyLimit   = AttackQty and true or false,
       attackQty        = AttackQty or 1,
@@ -51901,7 +51900,7 @@ function CONTROLLABLE:TaskAttackUnit( AttackUnit, GroupAttack, WeaponExpend, Att
       altitude         = Altitude,
       attackQtyLimit   = AttackQty and true or false,
       attackQty        = AttackQty,
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.Auto,
     },
   }
 
@@ -51935,7 +51934,7 @@ function CONTROLLABLE:TaskBombing( Vec2, GroupAttack, WeaponExpend, AttackQty, D
       direction        = Direction and math.rad(Direction) or 0,
       altitudeEnabled  = Altitude and true or false,
       altitude         = Altitude or 2000,
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.AnyBomb,
       attackType       = Divebomb and "Dive" or nil,
       },
   }
@@ -51987,7 +51986,7 @@ end
 -- @param #number AttackQty (Optional) This parameter limits maximal quantity of attack. The aircraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aircraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param DCS#Azimuth Direction (Optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param #number Altitude (Optional) The altitude [meters] from where to attack. Default 30 m.
--- @param #number WeaponType (Optional) The WeaponType. Default Auto=1073741822.
+-- @param #number WeaponType (Optional) The WeaponType. Default `ENUMS.WeaponFlag.Auto`.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskAttackMapObject( Vec2, GroupAttack, WeaponExpend, AttackQty, Direction, Altitude, WeaponType )
 
@@ -52004,7 +52003,7 @@ function CONTROLLABLE:TaskAttackMapObject( Vec2, GroupAttack, WeaponExpend, Atta
       direction        = Direction and math.rad(Direction) or 0,
       altitudeEnabled  = Altitude and true or false,
       altitude         = Altitude,
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.Auto,
     },
   }
 
@@ -176597,7 +176596,7 @@ function AUFTRAG:_GetDCSAttackTask(Target, DCStasks)
 
     elseif target.Type==TARGET.ObjectType.UNIT or target.Type==TARGET.ObjectType.STATIC then
 
-      local DCStask=CONTROLLABLE.TaskAttackUnit(nil, target.Object, self.engageAsGroup, self.WeaponExpend, self.engageQuantity, self.engageDirection, self.engageAltitude, self.engageWeaponType)
+      local DCStask=CONTROLLABLE.TaskAttackUnit(nil, target.Object, self.engageAsGroup, self.engageWeaponExpend, self.engageQuantity, self.engageDirection, self.engageAltitude, self.engageWeaponType)
 
       table.insert(DCStasks, DCStask)
 

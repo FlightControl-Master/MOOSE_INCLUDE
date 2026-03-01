@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-01T14:03:13+01:00-3d6bd4ea5472d47cd83003602d7b055e075a3eca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-01T15:36:27+01:00-e02a1f705bafcb3f565b4fb403e4bbabe96762a6 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13504,6 +13504,7 @@ Coalitions={
 ["neutral"]=coalition.side.NEUTRAL,
 },
 },
+filterNoRegex=false,
 }
 function SET_BASE:New(Database)
 local self=BASE:Inherit(self,FSM:New())
@@ -13562,6 +13563,14 @@ end
 function SET_BASE:_Find(ObjectName)
 local ObjectFound=self.Set[ObjectName]
 return ObjectFound
+end
+function SET_BASE:_SearchPattern(Name,Pattern,NoRegex,ReplaceDash)
+NoRegex=NoRegex or self.filterNoRegex
+if ReplaceDash==true then
+Pattern=Pattern:gsub("-","%%-")
+end
+local contain=string.find(Name,Pattern,1,NoRegex)
+return contain
 end
 function SET_BASE:GetSet()
 return self.Set or{}
@@ -14400,7 +14409,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if string.find(MGroup:GetName(),string.gsub(GroupPrefix,"-","%%-"),1)then
+if self:_SearchPattern(MGroup:GetName(),GroupPrefix,false,true)then
 MGroupPrefix=true
 end
 end
@@ -15039,7 +15048,7 @@ end
 if self.Filter.UnitPrefixes and MUnitInclude then
 local MUnitPrefix=false
 for UnitPrefixId,UnitPrefix in pairs(self.Filter.UnitPrefixes)do
-if string.find(MUnit:GetName(),UnitPrefix,1)then
+if self:_SearchPattern(MUnit:GetName(),UnitPrefix,false,true)then
 MUnitPrefix=true
 end
 end
@@ -15450,7 +15459,7 @@ end
 if self.Filter.StaticPrefixes then
 local MStaticPrefix=false
 for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
-if string.find(MStatic:GetName(),StaticPrefix,1)then
+if self:_SearchPattern(MStatic:GetName(),StaticPrefix,false,true)then
 MStaticPrefix=true
 end
 end
@@ -15874,7 +15883,7 @@ end
 if self.Filter.ClientPrefixes and MClientInclude then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
-if string.find(MClient.UnitName,ClientPrefix,1)then
+if self:_SearchPattern(MClient.UnitName,ClientPrefix)then
 MClientPrefix=true
 end
 end
@@ -15894,7 +15903,7 @@ if self.Filter.Playernames and MClientInclude then
 local MClientPlayername=false
 local playername=MClient:GetPlayerName()or"Unknown"
 for _,_Playername in pairs(self.Filter.Playernames)do
-if playername and string.find(playername,_Playername)then
+if playername and self:_SearchPattern(playername,_Playername)then
 MClientPlayername=true
 end
 end
@@ -15904,7 +15913,7 @@ if self.Filter.Callsigns and MClientInclude then
 local MClientCallsigns=false
 local callsign=MClient:GetCallsign()
 for _,_Callsign in pairs(self.Filter.Callsigns)do
-if callsign and string.find(callsign,_Callsign,1,true)then
+if callsign and self:_SearchPattern(callsign,_Callsign,true)then
 MClientCallsigns=true
 end
 end
@@ -16133,7 +16142,7 @@ end
 if self.Filter.ClientPrefixes then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
-if string.find(MClient.UnitName,ClientPrefix,1)then
+if self:_SearchPattern(MClient.UnitName,ClientPrefix)then
 MClientPrefix=true
 end
 end
@@ -16466,7 +16475,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if string.find(MZoneName,ZonePrefix,1)then
+if self:_SearchPattern(MZoneName,ZonePrefix,false,true)then
 MZonePrefix=true
 end
 end
@@ -16695,7 +16704,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if string.find(MZoneName,ZonePrefix,1)then
+if self:_SearchPattern(MZoneName,ZonePrefix,false,true)then
 MZonePrefix=true
 end
 end
@@ -16848,7 +16857,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if string.find(MZoneName,ZonePrefix,1)then
+if self:_SearchPattern(MZoneName,ZonePrefix,false,true)then
 MZonePrefix=true
 break
 end
@@ -17207,7 +17216,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if string.find(MGroup:GetName(),GroupPrefix:gsub("-","%%-"),1)then
+if self:_SearchPattern(MGroup:GetName(),GroupPrefix,false,true)then
 MGroupPrefix=true
 end
 end
@@ -17371,7 +17380,7 @@ local MSceneryName=MScenery:GetName()
 if self.Filter.Prefixes then
 local MSceneryPrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if string.find(MSceneryName,ZonePrefix,1)then
+if self:_SearchPattern(MSceneryName,ZonePrefix,false,true)then
 MSceneryPrefix=true
 end
 end
@@ -17502,7 +17511,7 @@ end
 if self.Filter.StaticPrefixes then
 local DCargoPrefix=false
 for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
-if string.find(DCargo:GetName(),StaticPrefix,1)then
+if self:_SearchPattern(DCargo:GetName(),StaticPrefix,false,true)then
 DCargoPrefix=true
 end
 end
@@ -17601,7 +17610,7 @@ end
 function SET_DYNAMICCARGO:FilterCurrentOwner(PlayerName)
 self:FilterFunction(
 function(cargo)
-if cargo and cargo.Owner and string.find(cargo.Owner,PlayerName,1,true)then
+if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner,PlayerName,true)then
 return true
 else
 return false
@@ -26028,11 +26037,11 @@ groupId=self:GetID(),
 }
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
-function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
+function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,GroupAttack)
 local DCSTask={id='AttackGroup',
 params={
 groupId=AttackGroup:GetID(),
-weaponType=WeaponType or 1073741822,
+weaponType=WeaponType or ENUMS.WeaponFlag.Auto,
 expend=WeaponExpend or"Auto",
 attackQtyLimit=AttackQty and true or false,
 attackQty=AttackQty or 1,
@@ -26058,7 +26067,7 @@ altitudeEnabled=Altitude and true or false,
 altitude=Altitude,
 attackQtyLimit=AttackQty and true or false,
 attackQty=AttackQty,
-weaponType=WeaponType or 1073741822,
+weaponType=WeaponType or ENUMS.WeaponFlag.Auto,
 },
 }
 return DCSTask
@@ -26078,7 +26087,7 @@ directionEnabled=Direction and true or false,
 direction=Direction and math.rad(Direction)or 0,
 altitudeEnabled=Altitude and true or false,
 altitude=Altitude or 2000,
-weaponType=WeaponType or 1073741822,
+weaponType=WeaponType or ENUMS.WeaponFlag.AnyBomb,
 attackType=Divebomb and"Dive"or nil,
 },
 }
@@ -26115,7 +26124,7 @@ directionEnabled=Direction and true or false,
 direction=Direction and math.rad(Direction)or 0,
 altitudeEnabled=Altitude and true or false,
 altitude=Altitude,
-weaponType=WeaponType or 1073741822,
+weaponType=WeaponType or ENUMS.WeaponFlag.Auto,
 },
 }
 return DCSTask
@@ -88195,7 +88204,7 @@ if target.Type==TARGET.ObjectType.GROUP then
 local DCStask=CONTROLLABLE.TaskAttackGroup(nil,target.Object,self.engageWeaponType,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageAsGroup)
 table.insert(DCStasks,DCStask)
 elseif target.Type==TARGET.ObjectType.UNIT or target.Type==TARGET.ObjectType.STATIC then
-local DCStask=CONTROLLABLE.TaskAttackUnit(nil,target.Object,self.engageAsGroup,self.WeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
+local DCStask=CONTROLLABLE.TaskAttackUnit(nil,target.Object,self.engageAsGroup,self.engageWeaponExpend,self.engageQuantity,self.engageDirection,self.engageAltitude,self.engageWeaponType)
 table.insert(DCStasks,DCStask)
 end
 end
