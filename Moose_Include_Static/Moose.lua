@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-01T15:36:27+01:00-e02a1f705bafcb3f565b4fb403e4bbabe96762a6 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-01T23:11:36+01:00-216d023c45703575b45a67a68198918c7aa4b32a ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -160808,6 +160808,7 @@ CTLD.Messages = {
         MENU_SHOW_LOADABLE_CRATES       = "Show loadable crates",
         MENU_NO_CRATES_FOUND_RESCAN     = "No crates found! Rescan?",
         MENU_USE_C130_LOAD              = "Use C-130 Load system",
+        MENU_LOAD_SINGLE                = "Load",
         -- ============================================================
         -- Menu labels - Crates: Drop
         -- ============================================================
@@ -161057,6 +161058,7 @@ CTLD.Messages = {
         MENU_SHOW_LOADABLE_CRATES       = "Ladbare Kisten anzeigen",
         MENU_NO_CRATES_FOUND_RESCAN     = "Keine Kisten gefunden! Neu scannen?",
         MENU_USE_C130_LOAD              = "C-130-Ladesystem verwenden",
+        MENU_LOAD_SINGLE                = "Lade",
         -- ============================================================
         -- Menübezeichnungen - Kisten: Abwerfen
         -- ============================================================
@@ -161306,6 +161308,7 @@ FR = {
         MENU_SHOW_LOADABLE_CRATES       = "Afficher caisses chargeables",
         MENU_NO_CRATES_FOUND_RESCAN     = "Aucune caisse trouvée ! Rescanner ?",
         MENU_USE_C130_LOAD              = "Utiliser le système de chargement C-130",
+        MENU_LOAD_SINGLE                = "Charger",
         -- ============================================================
         -- Libellés de menu - Caisses : Larguer
         -- ============================================================
@@ -170080,7 +170083,7 @@ AUFTRAG.Category={
 
 --- AUFTRAG class version.
 -- @field #string version
-AUFTRAG.version="1.4.0"
+AUFTRAG.version="1.4.1"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -171595,7 +171598,7 @@ function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
 
   -- Check if Destination is given
   if Destination==nil then
-    self:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
+    BASE:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
     return nil
   elseif type(Destination)=="string" then
     Destination=AIRBASE:FindByName(Destination)
@@ -171603,7 +171606,7 @@ function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
   
   -- Check if Cargo is given
   if StaticCargo==nil then
-    self:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
+    BASE:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
     return nil  
   elseif type(StaticCargo)=="string" then
     StaticCargo=STATIC:FindByName(StaticCargo)
@@ -171617,6 +171620,15 @@ function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
   end
   
   local mission=AUFTRAG:New(AUFTRAG.Type.FREIGHTTRANSPORT)
+  
+  -- Check that the set is not empty
+  local Ncargo=StaticCargo:Count()
+  if Ncargo==0 then
+    mission:E(mission.lid..string.format("ERROR: No cargo items in set!"))
+    return nil
+  else
+    mission:T(mission.lid..string.format("FREIGHTTRANSPORT with N=%d cargo items in set", Ncargo))
+  end  
 
   mission:_TargetFromObject(StaticCargo)
 
@@ -213270,7 +213282,7 @@ OPSGROUP.CargoStatus={
 
 --- OpsGroup version.
 -- @field #string version
-OPSGROUP.version="1.0.5"
+OPSGROUP.version="1.0.6"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -218910,63 +218922,63 @@ function OPSGROUP:RouteToMission(mission, delay)
 
       end
 	  
-	elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+    elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
 	
-		---
-		-- FREIGHTTRANSPORT
-		---
-	
-		local destination=mission.DCStask.params.destination
-		local cargo=mission.DCStask.params.cargo
-		
-		-- Set the waypoint coordinate directly above the airbase.
-		-- The only way to ensure the cargo is delivered there, because when the task is executed, the cargo is delivered to the closest airbase.
-		-- Hopefully, ED will change the behaviour of this task but at the moment, it is what it is.
-		waypointcoord=destination:GetCoordinate()
-				
-		-- Get additional parameters
-		mission.DCStask.params.destination=destination --Wrapper.Airbase#AIRBASE
-		mission.DCStask.params.cargo=cargo --Core.Set#SET_STATIC
-		
-		-- Get transport unit
-		local unit=self.group:GetFirstUnit()
-		local unitIdTransport=unit:GetID()
-		local vec2=unit:GetVec2()
-		
-		-- Create tasks to load/transport statics cargos
-		local tasks={}		
-		for StaticName, StaticObject in pairs(cargo:GetSet()) do
-      local static=StaticObject --Wrapper.Static#STATIC
+  		---
+  		-- FREIGHTTRANSPORT
+  		---
+  	
+  		local destination=mission.DCStask.params.destination
+  		local cargo=mission.DCStask.params.cargo
   		
-  		-- Task to transport cargo.
-  		local TaskCargoTransportation={
-        id = "CargoTransportationPlane",
-        params = {
-          x=vec2.x,
-          y=vec2.y,
-          unitIdTransport=unitIdTransport,
-          groupId=static:GetID(),
-          unitId=static:GetID(),
+  		-- Set the waypoint coordinate directly above the airbase.
+  		-- The only way to ensure the cargo is delivered there, because when the task is executed, the cargo is delivered to the closest airbase.
+  		-- Hopefully, ED will change the behaviour of this task but at the moment, it is what it is.
+  		waypointcoord=destination:GetCoordinate()
+  				
+  		-- Get additional parameters
+  		mission.DCStask.params.destination=destination --Wrapper.Airbase#AIRBASE
+  		mission.DCStask.params.cargo=cargo --Core.Set#SET_STATIC
+  		
+  		-- Get transport unit
+  		local unit=self.group:GetFirstUnit()
+  		local unitIdTransport=unit:GetID()
+  		local vec2=unit:GetVec2()
+  		
+  		-- Create tasks to load/transport statics cargos
+  		local tasks={}		
+  		for StaticName, StaticObject in pairs(cargo:GetSet()) do
+        local static=StaticObject --Wrapper.Static#STATIC
+    		
+    		-- Task to transport cargo.
+    		local TaskCargoTransportation={
+          id = "CargoTransportationPlane",
+          params = {
+            x=vec2.x,
+            y=vec2.y,
+            unitIdTransport=unitIdTransport,
+            groupId=static:GetID(),
+            unitId=static:GetID(),
+          }
         }
-      }
-      
-      table.insert(tasks, TaskCargoTransportation)
-		end
-		
-		-- If we have multiple tasks, we create a combo task
-		local TaskCargo=nil
-		if #tasks==1 then
-		  TaskCargo=tasks[1]
-		else
-		  TaskCargo=CONTROLLABLE.TaskCombo(nil, tasks)
-		end
-		
-		-- We set the task to load the cargo into the aircraft.
-		-- We must be careful when calling updateroute because there the task is overwritten.
-		-- We also clear present "UpdateRoute" FSM events
-		self:_ClearFSMEvent( "UpdateRoute" )
-		delayGo=-30
-		self.group:SetTask(TaskCargo)
+        
+        table.insert(tasks, TaskCargoTransportation)
+  		end
+  		
+  		-- If we have multiple tasks, we create a combo task
+  		local TaskCargo=nil
+  		if #tasks==1 then
+  		  TaskCargo=tasks[1]
+  		else
+  		  TaskCargo=CONTROLLABLE.TaskCombo(nil, tasks)
+  		end
+  		
+  		-- We set the task to load the cargo into the aircraft.
+  		-- We must be careful when calling updateroute because there the task is overwritten.
+  		-- We also clear present "UpdateRoute" FSM events
+  		self:_ClearFSMEvent( "UpdateRoute" )
+  		delayGo=-50  --30 sec was not enough for CH-47 to load more than one cargo item
+  		self.group:SetTask(TaskCargo)
 				
     elseif mission.type==AUFTRAG.Type.ARTY then
 
