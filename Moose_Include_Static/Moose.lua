@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-01T23:11:36+01:00-216d023c45703575b45a67a68198918c7aa4b32a ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-02T06:41:37+01:00-33773950b0b82f9dd2d2cf760c6c69dcbf209d07 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -11121,9 +11121,11 @@ end
 
 --- Set valid neighbours to be in a certain distance.
 -- @param #ASTAR self
--- @param #number MaxDistance Max distance between nodes in meters. Default is 2000 m.
+-- @param #number MaxDistance (Optional) Max distance between nodes in meters. Default is 2000 m.
 -- @return #ASTAR self
 function ASTAR:SetValidNeighbourDistance(MaxDistance)
+
+  MaxDistance = MaxDistance or 2000
 
   self:SetValidNeighbourFunction(ASTAR.DistMax, MaxDistance)
 
@@ -11132,9 +11134,11 @@ end
 
 --- Set valid neighbours to be in a certain distance.
 -- @param #ASTAR self
--- @param #number MaxDistance Max distance between nodes in meters. Default is 2000 m.
+-- @param #number MaxDistance (Optional) Max distance between nodes in meters. Default is 2000 m.
 -- @return #ASTAR self
 function ASTAR:SetValidNeighbourRoad(MaxDistance)
+
+  MaxDistance = MaxDistance or 2000
 
   self:SetValidNeighbourFunction(ASTAR.Road, MaxDistance)
 
@@ -11198,10 +11202,10 @@ end
 -- The coordinate system is oriented along the line between start and end point.
 -- @param #ASTAR self
 -- @param #table ValidSurfaceTypes Valid surface types. By default is all surfaces are allowed.
--- @param #number BoxHY Box "height" in meters along the y-coordinate. Default 40000 meters (40 km).
--- @param #number SpaceX Additional space in meters before start and after end coordinate. Default 10000 meters (10 km).
--- @param #number deltaX Increment in the direction of start to end coordinate in meters. Default 2000 meters.
--- @param #number deltaY Increment perpendicular to the direction of start to end coordinate in meters. Default is same as deltaX.
+-- @param #number BoxHY (Optional) Box "height" in meters along the y-coordinate. Default 40000 meters (40 km).
+-- @param #number SpaceX (Optional) Additional space in meters before start and after end coordinate. Default 10000 meters (10 km).
+-- @param #number deltaX (Optional) Increment in the direction of start to end coordinate in meters. Default 2000 meters.
+-- @param #number deltaY (Optional) Increment perpendicular to the direction of start to end coordinate in meters. Default is same as deltaX.
 -- @param #boolean MarkGrid If true, create F10 map markers at grid nodes.
 -- @return #ASTAR self
 function ASTAR:CreateGrid(ValidSurfaceTypes, BoxHY, SpaceX, deltaX, deltaY, MarkGrid)
@@ -11348,7 +11352,7 @@ end
 --- Function to check if distance between two nodes is less than a threshold distance.
 -- @param #ASTAR.Node nodeA First node.
 -- @param #ASTAR.Node nodeB Other node.
--- @param #number distmax Max distance in meters. Default is 2000 m.
+-- @param #number distmax (Optional) Max distance in meters. Default is 2000 m.
 -- @return #boolean If true, distance between the two nodes is below threshold.
 function ASTAR.DistMax(nodeA, nodeB, distmax)
 
@@ -12488,7 +12492,7 @@ end
 
 --- Evaluate conditon functions.
 -- @param #CONDITION self
--- @param #boolean AnyTrue If `true`, evaluation return `true` if *any* condition function returns `true`. By default, *all* condition functions must return true.
+-- @param #boolean AnyTrue (Optional) If `true`, evaluation return `true` if *any* condition function returns `true`. By default, *all* condition functions must return true.
 -- @return #boolean Result of condition functions.
 function CONDITION:Evaluate(AnyTrue)
 
@@ -12632,7 +12636,7 @@ end
 
 --- Condition to check if time is greater than a given threshold time.
 -- @param #number Time Time in seconds.
--- @param #boolean Absolute If `true`, abs. mission time from `timer.getAbsTime()` is checked. Default is relative mission time from `timer.getTime()`.
+-- @param #boolean Absolute (Optional) If `true`, abs. mission time from `timer.getAbsTime()` is checked. Default is relative mission time from `timer.getTime()`.
 -- @return #boolean Returns `true` if time is greater than give the time.
 function CONDITION.IsTimeGreater(Time, Absolute)
 
@@ -12655,7 +12659,7 @@ end
 
 --- Function that returns `true` (success) with a certain probability. For example, if you specify `Probability=80` there is an 80% chance that `true` is returned.
 -- Technically, a random number between 0 and 100 is created. If the given success probability is less then this number, `true` is returned.
--- @param #number Probability Success probability in percent. Default 50 %.
+-- @param #number Probability (Optional) Success probability in percent. Default 50 %.
 -- @return #boolean Returns `true` for success and `false` otherwise.
 function CONDITION.IsRandomSuccess(Probability)
 
@@ -13137,7 +13141,7 @@ end
 -- @param #number Repeat Specifies the time interval in seconds when the scheduler will call the event function.
 -- @param #number RandomizeFactor Specifies a randomization factor between 0 and 1 to randomize the Repeat.
 -- @param #number Stop Time interval in seconds after which the scheduler will be stopped.
--- @param #number TraceLevel Trace level [0,3]. Default 3.
+-- @param #number TraceLevel (Optional) Trace level [0,3]. Default 3.
 -- @param Core.Fsm#FSM Fsm Finite state model.
 -- @return #string The Schedule ID of the planned schedule.
 function SCHEDULER:Schedule( MasterObject, SchedulerFunction, SchedulerArguments, Start, Repeat, RandomizeFactor, Stop, TraceLevel, Fsm )
@@ -17969,7 +17973,7 @@ end
 
 --- Set draw coalition of zone.
 -- @param #ZONE_BASE self
--- @param #number Coalition Coalition. Default -1.
+-- @param #number (Optional) Coalition Coalition. Default -1.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetDrawCoalition(Coalition)
   self.drawCoalition=Coalition or -1
@@ -17985,8 +17989,8 @@ end
 
 --- Set color of zone.
 -- @param #ZONE_BASE self
--- @param #table RGBcolor RGB color table. Default `{1, 0, 0}`.
--- @param #number Alpha Transparency between 0 and 1. Default 0.15.
+-- @param #table RGBcolor (Optional) RGB color table. Default `{1, 0, 0}`.
+-- @param #number Alpha (Optional) Transparency between 0 and 1. Default 0.15.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetColor(RGBcolor, Alpha)
 
@@ -18032,8 +18036,8 @@ end
 
 --- Set fill color of zone.
 -- @param #ZONE_BASE self
--- @param #table RGBcolor RGB color table. Default `{1, 0, 0}`.
--- @param #number Alpha Transparacy between 0 and 1. Default 0.15.
+-- @param #table RGBcolor (Optional) RGB color table. Default `{1, 0, 0}`.
+-- @param #number Alpha (Optional) Transparacy between 0 and 1. Default 0.15.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetFillColor(RGBcolor, Alpha)
 
@@ -18186,7 +18190,7 @@ end
 
 --- Set the check time for ZONE:Trigger()
 -- @param #ZONE_BASE self
--- @param #number seconds Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
+-- @param #number seconds (Optional) Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetCheckTime(seconds)
   self.Checktime = seconds or 5
@@ -18462,7 +18466,7 @@ ZONE_RADIUS = {
 -- @param #string ZoneName Name of the zone.
 -- @param DCS#Vec2 Vec2 The location of the zone.
 -- @param DCS#Distance Radius The radius of the zone.
--- @param DCS#Boolean DoNotRegisterZone Determines if the Zone should not be registered in the _Database Table. Default=false
+-- @param DCS#Boolean DoNotRegisterZone (Optional) Determines if the Zone should not be registered in the _Database Table. Default=false
 -- @return #ZONE_RADIUS self
 function ZONE_RADIUS:New( ZoneName, Vec2, Radius, DoNotRegisterZone )
 
@@ -18546,12 +18550,12 @@ end
 
 --- Draw the zone circle on the F10 map.
 -- @param #ZONE_RADIUS self
--- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
--- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
--- @param #number FillAlpha Transparency [0,1]. Default 0.15.
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+-- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+-- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
 -- @return #ZONE_RADIUS self
 function ZONE_RADIUS:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType, ReadOnly)
@@ -20106,7 +20110,7 @@ end
 
 --- Get a vertex of the polygon.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Index Index of the vertex. Default 1.
+-- @param #number Index (Optional) Index of the vertex. Default 1.
 -- @return DCS#Vec2 Vertex of the polygon.
 function ZONE_POLYGON_BASE:GetVertexVec2(Index)
   return self._.Polygon[Index or 1]
@@ -20114,7 +20118,7 @@ end
 
 --- Get a vertex of the polygon.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Index Index of the vertex. Default 1.
+-- @param #number Index (Optional) Index of the vertex. Default 1.
 -- @return DCS#Vec3 Vertex of the polygon.
 function ZONE_POLYGON_BASE:GetVertexVec3(Index)
   local vec2=self:GetVertexVec2(Index)
@@ -20127,7 +20131,7 @@ end
 
 --- Get a vertex of the polygon.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Index Index of the vertex. Default 1.
+-- @param #number Index (Optional) Index of the vertex. Default 1.
 -- @return Core.Point#COORDINATE Vertex of the polygon.
 function ZONE_POLYGON_BASE:GetVertexCoordinate(Index)
   local vec2=self:GetVertexVec2(Index)
@@ -20257,12 +20261,12 @@ end
 --- Draw the zone on the F10 map.  Infinite number of points supported
 --- ported from https://github.com/nielsvaes/CCMOOSE/blob/master/Moose%20Development/Moose/Shapes/Polygon.lua
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
--- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
--- @param #number FillAlpha Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+-- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
+-- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.s
 -- @return #ZONE_POLYGON_BASE self
 function ZONE_POLYGON_BASE:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType, ReadOnly, IncludeTriangles)
@@ -20310,7 +20314,7 @@ end
 --- Change/Re-fill a Polygon Zone
 -- @param #ZONE_POLYGON_BASE self
 -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
 -- @return #ZONE_POLYGON_BASE self
 function ZONE_POLYGON_BASE:ReFill(Color,Alpha)
   local color = Color or self:GetFillColorRGB() or {1,0,0}
@@ -20340,8 +20344,8 @@ end
 --- Change/Re-draw the border of a Polygon Zone
 -- @param #ZONE_POLYGON_BASE self
 -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @return #ZONE_POLYGON_BASE
 function ZONE_POLYGON_BASE:ReDrawBorderline(Color, Alpha, LineType)
   local color = Color or self:GetFillColorRGB() or {1,0,0}
@@ -20440,7 +20444,7 @@ end
 
 --- Remove junk inside the zone. Due to DCS limitations, this works only for rectangular zones. So we get the smallest rectangular zone encompassing all points points of the polygon zone.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Height Height of the box in meters. Default 1000.
+-- @param #number Height (Optional) Height of the box in meters. Default 1000.
 -- @return #number Number of removed objects.
 function ZONE_POLYGON_BASE:RemoveJunk(Height)
 
@@ -21361,8 +21365,8 @@ do -- ZONE_ELASTIC
   --- Update the convex hull of the polygon.
   -- This uses the [Graham scan](https://en.wikipedia.org/wiki/Graham_scan).
   -- @param #ZONE_ELASTIC self
-  -- @param #number Delay Delay in seconds before the zone is updated. Default 0.
-  -- @param #boolean Draw Draw the zone. Default `nil`.
+  -- @param #number Delay (Optional) Delay in seconds before the zone is updated. Default 0.
+  -- @param #boolean Draw (Optional) Draw the zone. Default `nil`.
   -- @return #ZONE_ELASTIC self
   function ZONE_ELASTIC:Update(Delay, Draw)
 
@@ -21403,9 +21407,9 @@ do -- ZONE_ELASTIC
   --- Start the updating scheduler.
   -- @param #ZONE_ELASTIC self
   -- @param #number Tstart Time in seconds before the updating starts.
-  -- @param #number dT Time interval in seconds between updates. Default 60 sec.
-  -- @param #number Tstop Time in seconds after which the updating stops. Default `nil`.
-  -- @param #boolean Draw Draw the zone. Default `nil`.
+  -- @param #number dT (Optional) Time interval in seconds between updates. Default 60 sec.
+  -- @param #number Tstop (Optional) Time in seconds after which the updating stops. Default `nil`.
+  -- @param #boolean Draw (Optional) Draw the zone. Default `nil`.
   -- @return #ZONE_ELASTIC self
   function ZONE_ELASTIC:StartUpdate(Tstart, dT, Tstop, Draw)
 
@@ -21416,7 +21420,7 @@ do -- ZONE_ELASTIC
 
   --- Stop the updating scheduler.
   -- @param #ZONE_ELASTIC self
-  -- @param #number Delay Delay in seconds before the scheduler will be stopped. Default 0.
+  -- @param #number Delay (Optional) Delay in seconds before the scheduler will be stopped. Default 0.
   -- @return #ZONE_ELASTIC self
   function ZONE_ELASTIC:StopUpdate(Delay)
 
@@ -21666,12 +21670,12 @@ end
 --- Draw the zone on the F10 map.
 --- ported from https://github.com/nielsvaes/CCMOOSE/blob/master/Moose%20Development/Moose/Shapes/Oval.lua
 -- @param #ZONE_OVAL self
--- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
--- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
--- @param #number FillAlpha Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+-- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
+-- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
 -- @return #ZONE_OVAL self
 function ZONE_OVAL:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType)
@@ -23200,10 +23204,10 @@ end
 --- Get a generic static cargo group template from scratch for dynamic cargo spawns register. Does not register the template!
 -- @param #DATABASE self
 -- @param #string Name Name of the static.
--- @param #string Typename Typename of the static. Defaults to "container_cargo".
--- @param #number Mass Mass of the static. Defaults to 0.
--- @param #number Coalition Coalition of the static. Defaults to coalition.side.BLUE.
--- @param #number Country Country of the static. Defaults to country.id.GERMANY.
+-- @param #string Typename (Optional) Typename of the static. Defaults to "container_cargo".
+-- @param #number Mass (Optional) Mass of the static. Defaults to 0.
+-- @param #number Coalition (Optional) Coalition of the static. Defaults to coalition.side.BLUE.
+-- @param #number Country (Optional) Country of the static. Defaults to country.id.GERMANY.
 -- @return #table Static template table.
 function DATABASE:_GetGenericStaticCargoGroupTemplate(Name,Typename,Mass,Coalition,Country)
   local StaticTemplate = {}
@@ -24550,7 +24554,7 @@ do -- SET_BASE
   -- @param #SET_BASE self
   -- @param #string Name The Name of the object.
   -- @param #string Pattern The pattern that is contained in the Name.
-  -- @param #boolean NoRegex If `true`, special characters in the Name are interpreted as plain text and not regular expressions. Default is `self.filterNoregex`. 
+  -- @param #boolean NoRegex (Optional) If `true`, special characters in the Name are interpreted as plain text and not regular expressions. Default is `self.filterNoregex`. 
   -- @param #boolean ReplaceDash If `true`, dashes are not used as regex.
   -- @return #boolean Returns `true`, if the pattern is contained in the name and false otherwise.
   function SET_BASE:_SearchPattern(Name, Pattern, NoRegex, ReplaceDash)
@@ -24872,7 +24876,7 @@ do -- SET_BASE
 
   --- Define the SET iterator **"limit"**.
   -- @param #SET_BASE self
-  -- @param #number Limit Defines how many objects are evaluated of the set as part of the Some iterators. The default is 1.
+  -- @param #number Limit (Optional) Defines how many objects are evaluated of the set as part of the Some iterators. The default is 1.
   -- @return #SET_BASE self
   function SET_BASE:SetSomeIteratorLimit(Limit)
 
@@ -25901,7 +25905,7 @@ do
   
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_GROUP self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_GROUP self
   function SET_GROUP:FilterZoneTimer(Seconds)
@@ -27000,7 +27004,7 @@ do -- SET_UNIT
   
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_UNIT self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_UNIT self
   function SET_UNIT:FilterZoneTimer(Seconds)
@@ -28921,7 +28925,7 @@ do -- SET_CLIENT
 
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_CLIENT self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_CLIENT self
   function SET_CLIENT:FilterZoneTimer(Seconds)
@@ -30356,12 +30360,12 @@ do -- SET_ZONE
 
   --- Draw all zones in the set on the F10 map.
   -- @param #SET_ZONE self
-  -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+  -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
   -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
-  -- @param #number Alpha Transparency [0,1]. Default 1.
-  -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-  -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-  -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+  -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+  -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+  -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+  -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
   -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
   -- @return #SET_ZONE self
   function SET_ZONE:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType, ReadOnly)
@@ -30501,7 +30505,7 @@ do -- SET_ZONE
   
   --- Set the check time for SET_ZONE:Trigger()
   -- @param #SET_ZONE self
-  -- @param #number seconds Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
+  -- @param #number seconds (Optional) Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
   -- @return #SET_ZONE self
   function SET_ZONE:SetCheckTime(seconds)
     self.Checktime = seconds or 5
@@ -32975,7 +32979,7 @@ do -- SET_DYNAMICCARGO
   
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_DYNAMICCARGO self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Objects are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Objects are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_DYNAMICCARGO self
   function SET_DYNAMICCARGO:FilterZoneTimer(Seconds) 
@@ -33658,7 +33662,7 @@ do -- COORDINATE
 
   --- Find the closest static to the COORDINATE within a certain radius.
   -- @param #COORDINATE self
-  -- @param #number radius Scan radius in meters. Default 100 m.
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
   -- @return Wrapper.Static#STATIC The closest static or #nil if no unit is inside the given radius.
   function COORDINATE:FindClosestStatic(radius)
 
@@ -33681,7 +33685,7 @@ do -- COORDINATE
 
   --- Find the closest unit to the COORDINATE within a certain radius.
   -- @param #COORDINATE self
-  -- @param #number radius Scan radius in meters. Default 100 m.
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
   -- @return Wrapper.Unit#UNIT The closest unit or #nil if no unit is inside the given radius.
   function COORDINATE:FindClosestUnit(radius)
 
@@ -33726,7 +33730,7 @@ do -- COORDINATE
 
   --- Find the closest scenery to the COORDINATE within a certain radius.
   -- @param #COORDINATE self
-  -- @param #number radius Scan radius in meters. Default 100 m.
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
   -- @return Wrapper.Scenery#SCENERY The closest scenery or #nil if no object is inside the given radius.
   function COORDINATE:FindClosestScenery(radius)
 
@@ -33764,8 +33768,8 @@ do -- COORDINATE
   --- Add a Distance in meters from the COORDINATE orthonormal plane, with the given angle, and calculate the new COORDINATE.
   -- @param #COORDINATE self
   -- @param DCS#Distance Distance The Distance to be added in meters.
-  -- @param DCS#Angle Angle The Angle in degrees. Defaults to 0 if not specified (nil).
-  -- @param #boolean Keepalt If true, keep altitude of original coordinate. Default is that the new coordinate is created at the translated land height.
+  -- @param DCS#Angle Angle (Optional) The Angle in degrees. Defaults to 0 if not specified (nil).
+  -- @param #boolean Keepalt (Optional) If true, keep altitude of original coordinate. Default is that the new coordinate is created at the translated land height.
   -- @param #boolean Overwrite If true, overwrite the original COORDINATE with the translated one. Otherwise, create a new COORDINATE.
   -- @return #COORDINATE The new calculated COORDINATE.
   function COORDINATE:Translate( Distance, Angle, Keepalt, Overwrite )
@@ -34006,7 +34010,7 @@ do -- COORDINATE
   --- Return an intermediate COORDINATE between this an another coordinate.
   -- @param #COORDINATE self
   -- @param #COORDINATE ToCoordinate The other coordinate.
-  -- @param #number Fraction The fraction (0,1) where the new coordinate is created. Default 0.5, i.e. in the middle.
+  -- @param #number Fraction (Optional) The fraction (0,1) where the new coordinate is created. Default 0.5, i.e. in the middle.
   -- @return #COORDINATE Coordinate between this and the other coordinate.
   function COORDINATE:GetIntermediateCoordinate( ToCoordinate, Fraction )
 
@@ -34562,7 +34566,7 @@ do -- COORDINATE
   -- @param Core.Settings#SETTINGS Settings
   -- @param #string Language (Optional) Language "en" or "ru"
   -- @param #boolean MagVar If true, also state angle in magnetic
-  -- @param #number Precision Rounding precision, defaults to 0
+  -- @param #number Precision (Optional) Rounding precision, defaults to 0
   -- @return #string The BR Text
   function COORDINATE:GetBRText( AngleRadians, Distance, Settings, Language, MagVar, Precision )
 
@@ -34603,7 +34607,7 @@ do -- COORDINATE
   --- Set altitude.
   -- @param #COORDINATE self
   -- @param #number altitude New altitude in meters.
-  -- @param #boolean asl Altitude above sea level. Default is above ground level.
+  -- @param #boolean asl (Optional) Altitude above sea level. Default is above ground level.
   -- @return #COORDINATE The COORDINATE with adjusted altitude.
   function COORDINATE:SetAltitude(altitude, asl)
     local alt=altitude
@@ -34629,7 +34633,7 @@ do -- COORDINATE
   -- @param #COORDINATE.WaypointAltType AltType The altitude type.
   -- @param #COORDINATE.WaypointType Type The route point type.
   -- @param #COORDINATE.WaypointAction Action The route point action.
-  -- @param DCS#Speed Speed Airspeed in km/h. Default is 500 km/h.
+  -- @param DCS#Speed Speed (Optional) Airspeed in km/h. Default is 500 km/h.
   -- @param #boolean SpeedLocked true means the speed is locked.
   -- @param Wrapper.Airbase#AIRBASE airbase The airbase for takeoff and landing points.
   -- @param #table DCSTasks A table of @{DCS#Task} items which are executed at the waypoint.
@@ -34789,7 +34793,7 @@ do -- COORDINATE
   -- @param #COORDINATE self
   -- @param DCS#Speed Speed Airspeed in km/h.
   -- @param Wrapper.Airbase#AIRBASE airbase The airbase for takeoff and landing points.
-  -- @param #number timeReFuAr Time in minutes, the aircraft stays at the airbase. Default 10 min.
+  -- @param #number timeReFuAr (Optional) Time in minutes, the aircraft stays at the airbase. Default 10 min.
   -- @param #table DCSTasks A table of @{DCS#Task} items which are executed at the waypoint.
   -- @param #string description A text description of the waypoint, which will be shown on the F10 map.
   -- @return #table The route point.
@@ -35196,7 +35200,7 @@ do -- COORDINATE
 
   --- Creates an explosion at the point of a certain intensity.
   -- @param #COORDINATE self
-  -- @param #number ExplosionIntensity Intensity of the explosion in kg TNT. Default 100 kg.
+  -- @param #number ExplosionIntensity (Optional) Intensity of the explosion in kg TNT. Default 100 kg.
   -- @param #number Delay (Optional) Delay before explosion is triggered in seconds.
   -- @return #COORDINATE self
   function COORDINATE:Explosion( ExplosionIntensity, Delay )
@@ -35211,7 +35215,7 @@ do -- COORDINATE
 
   --- Creates an illumination bomb at the point.
   -- @param #COORDINATE self
-  -- @param #number Power Power of illumination bomb in Candela. Default 1000 cd.
+  -- @param #number Power (Optional) Power of illumination bomb in Candela. Default 1000 cd.
   -- @param #number Delay (Optional) Delay before bomb is ignited in seconds.
   -- @return #COORDINATE self
   function COORDINATE:IlluminationBomb(Power, Delay)
@@ -35670,10 +35674,10 @@ do -- COORDINATE
     -- Creates a line on the F10 map from one point to another.
     -- @param #COORDINATE self
     -- @param #COORDINATE Endpoint COORDINATE to where the line is drawn.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35694,13 +35698,13 @@ do -- COORDINATE
     --- Circle to all.
     -- Creates a circle on the map with a given radius, color, fill color, and outline.
     -- @param #COORDINATE self
-    -- @param #number Radius Radius in meters. Default 1000 m.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Radius (Optional) Radius in meters. Default 1000 m.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35734,12 +35738,12 @@ do -- COORDINATE
     -- Creates a line on the F10 map from one point to another.
     -- @param #COORDINATE self
     -- @param #COORDINATE Endpoint COORDINATE in the opposite corner.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35770,12 +35774,12 @@ do -- COORDINATE
     -- @param #COORDINATE Coord2 Second COORDINATE of the quad shape.
     -- @param #COORDINATE Coord3 Third COORDINATE of the quad shape.
     -- @param #COORDINATE Coord4 Fourth COORDINATE of the quad shape.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35807,12 +35811,12 @@ do -- COORDINATE
     --- Creates a free form shape on the F10 map. The first point is the current COORDINATE. The remaining points need to be specified.
     -- @param #COORDINATE self
     -- @param #table Coordinates Table of coordinates of the remaining points of the shape.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35913,12 +35917,12 @@ do -- COORDINATE
     --- Text to all. Creates a text imposed on the map at the COORDINATE. Text scales with the map.
     -- @param #COORDINATE self
     -- @param #string Text Text displayed on the F10 map.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.3.
-    -- @param #number FontSize Font size. Default 14.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.3.
+    -- @param #number FontSize (Optional) Font size. Default 14.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
     function COORDINATE:TextToAll(Text, Coalition, Color, Alpha, FillColor, FillAlpha, FontSize, ReadOnly)
@@ -35943,12 +35947,12 @@ do -- COORDINATE
     --- Arrow to all. Creates an arrow from the COORDINATE to the endpoint COORDINATE on the F10 map. There is no control over other dimensions of the arrow.
     -- @param #COORDINATE self
     -- @param #COORDINATE Endpoint COORDINATE where the tip of the arrow is pointing at.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35978,7 +35982,7 @@ do -- COORDINATE
   --- Returns if a Coordinate has Line of Sight (LOS) with the ToCoordinate.
   -- @param #COORDINATE self
   -- @param #COORDINATE ToCoordinate
-  -- @param #number Offset Height offset in meters. Default 2 m.
+  -- @param #number Offset (Optional) Height offset in meters. Default 2 m.
   -- @return #boolean true If the ToCoordinate has LOS with the Coordinate, otherwise false.
   function COORDINATE:IsLOS( ToCoordinate, Offset )
 
@@ -36334,7 +36338,7 @@ do -- COORDINATE
   -- @param #COORDINATE FromCoordinate The coordinate to measure the distance and the bearing from.
   -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @param #boolean MagVar If true, also get angle in MagVar for BR/BRA
-  -- @param #number Precision Rounding precision, currently full km as default (=0)
+  -- @param #number Precision (Optional) Rounding precision, currently full km as default (=0)
   -- @return #string The BR text.
   function COORDINATE:ToStringBR( FromCoordinate, Settings, MagVar, Precision )
     local DirectionVec3 = FromCoordinate:GetDirectionVec3( self )
@@ -36348,7 +36352,7 @@ do -- COORDINATE
   -- @param #COORDINATE FromCoordinate The coordinate to measure the distance and the bearing from.
   -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @param #boolean MagVar If true, also get angle in MagVar for BR/BRA
-  -- @param #number Precision Rounding precision, currently full km as default (=0)
+  -- @param #number Precision (Optional) Rounding precision, currently full km as default (=0)
   -- @return #string The BR text.
   function COORDINATE:ToStringBearing( FromCoordinate, Settings, MagVar, Precision )
     local DirectionVec3 = FromCoordinate:GetDirectionVec3( self )
@@ -36762,8 +36766,8 @@ do -- COORDINATE
   --   * Uses default settings in COORDINATE.
   --   * Can be overridden if for a GROUP containing x clients, a menu was selected to override the default.
   -- @param #COORDINATE self
-  -- @param Wrapper.Controllable#CONTROLLABLE Controllable The controllable to retrieve the settings from, otherwise the default settings will be chosen.
-  -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
+  -- @param Wrapper.Controllable#CONTROLLABLE Controllable (Optional) The controllable to retrieve the settings from, otherwise the default settings will be chosen.
+  -- @param Core.Settings#SETTINGS Settings (Optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @return #string The coordinate Text in the configured coordinate system.
   function COORDINATE:ToString( Controllable, Settings )
 
@@ -36798,7 +36802,7 @@ do -- COORDINATE
   --   * Can be overridden if for a GROUP containing x clients, a menu was selected to override the default.
   -- @param #COORDINATE self
   -- @param Wrapper.Controllable#CONTROLLABLE Controllable
-  -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
+  -- @param Core.Settings#SETTINGS Settings (Optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @return #string The pressure text in the configured measurement system.
   function COORDINATE:ToStringPressure( Controllable, Settings ) 
 
@@ -37307,7 +37311,7 @@ end
 --- Sends a MESSAGE to a Group.
 -- @param #MESSAGE self
 -- @param Wrapper.Group#GROUP Group to which the message is displayed.
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToGroup( Group, Settings )
   self:F( Group.GroupName )
@@ -37332,7 +37336,7 @@ end
 --- Sends a MESSAGE to a Unit. 
 -- @param #MESSAGE self
 -- @param Wrapper.Unit#UNIT Unit to which the message is displayed.
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToUnit( Unit, Settings )
   self:F( Unit.IdentifiableName )
@@ -37358,7 +37362,7 @@ end
 --- Sends a MESSAGE to a Country. 
 -- @param #MESSAGE self
 -- @param #number Country to which the message is displayed, e.g. country.id.GERMANY. For all country numbers see here: [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_country)
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToCountry( Country, Settings )
   self:F(Country )
@@ -37380,7 +37384,7 @@ end
 -- @param #MESSAGE self
 -- @param #number Country to which the message is displayed, , e.g. country.id.GERMANY. For all country numbers see here: [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_country)
 -- @param #boolean Condition Sends the message only if the condition is true.
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToCountryIf( Country, Condition, Settings )
   self:F(Country )
@@ -37485,7 +37489,7 @@ end
 
 --- Sends a MESSAGE to all players. 
 -- @param #MESSAGE self
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @param #number Delay (Optional) Delay in seconds before the message is send. Default instantly (`nil`).
 -- @return #MESSAGE self
 -- @usage
@@ -40473,7 +40477,7 @@ end
 
 --- Respawn group after landing.
 -- @param #SPAWN self
--- @param #number WaitingTime Wait this many seconds before despawning the alive group after landing. Defaults to 3 .
+-- @param #number WaitingTime (Optional) Wait this many seconds before despawning the alive group after landing. Defaults to 3 .
 -- @return #SPAWN self
 -- @usage
 --
@@ -40779,7 +40783,7 @@ end
 -- This method can be used to "reset" the spawn counter to a specific index number.
 -- This will actually enable a respawn of groups from the specific index.
 -- @param #SPAWN self
--- @param #string SpawnIndex The index of the group from where the spawning will start again. The default value would be 0, which means a complete reset of the spawnindex.
+-- @param #string SpawnIndex (Optional) The index of the group from where the spawning will start again. The default value would be 0, which means a complete reset of the spawnindex.
 -- @return #SPAWN self
 function SPAWN:SetSpawnIndex( SpawnIndex )
   self.SpawnIndex = SpawnIndex or 0
@@ -43500,7 +43504,7 @@ end
 --- Creates the main object to spawn a @{Wrapper.Static} given a template table.
 -- @param #SPAWNSTATIC self
 -- @param #table SpawnTemplate Template used for spawning.
--- @param DCS#country.id CountryID The ID of the country. Default `country.id.USA`.
+-- @param DCS#country.id CountryID (Optional) The ID of the country. Default `country.id.USA`.
 -- @return #SPAWNSTATIC self
 function SPAWNSTATIC:NewFromTemplate(SpawnTemplate, CountryID)
 
@@ -43518,7 +43522,7 @@ end
 -- @param #SPAWNSTATIC self
 -- @param #string StaticType Type of the static.
 -- @param #string StaticCategory Category of the static, e.g. "Planes".
--- @param DCS#country.id CountryID The ID of the country. Default `country.id.USA`.
+-- @param DCS#country.id CountryID (Optional) The ID of the country. Default `country.id.USA`.
 -- @return #SPAWNSTATIC self
 function SPAWNSTATIC:NewFromType(StaticType, StaticCategory, CountryID)
 
@@ -43539,7 +43543,7 @@ end
 --- (Internal/Cargo) Init the resource table for STATIC object that should be spawned containing storage objects.
 -- NOTE that you have to init many other parameters as the resources.
 -- @param #SPAWNSTATIC self
--- @param #number CombinedWeight The weight this cargo object should have (some have fixed weights!), defaults to 1kg.
+-- @param #number CombinedWeight (Optional) The weight this cargo object should have (some have fixed weights!), defaults to 1kg.
 -- @return #SPAWNSTATIC self
 function SPAWNSTATIC:_InitResourceTable(CombinedWeight)
   if not self.TemplateStaticUnit.resourcePayload then
@@ -43638,9 +43642,9 @@ end
 
 --- Initialize parameters for spawning FARPs.
 -- @param #SPAWNSTATIC self
--- @param #number CallsignID Callsign ID. Default 1 (="London").
--- @param #number Frequency Frequency in MHz. Default 127.5 MHz.
--- @param #number Modulation Modulation 0=AM, 1=FM.
+-- @param #number CallsignID (Optional) Callsign ID. Default 1 (="London").
+-- @param #number Frequency (Optional) Frequency in MHz. Default 127.5 MHz.
+-- @param #number Modulation Modulation 0=AM, 1=FM. Defaults to 0
 -- @param #boolean DynamicSpawns If true, allow Dynamic Spawns
 -- @param #boolean DynamicHotStarts If true, and DynamicSpawns is true, then allow Dynamic Spawns with hot starts.
 -- @return #SPAWNSTATIC self
@@ -44905,7 +44909,7 @@ do
   
   --- Set laser start position relative to the lasing unit.
   -- @param #SPOT self
-  -- @param #table position Start position of the laser relative to the lasing unit. Default is { x = 0, y = 2, z = 0 }
+  -- @param #table position (Optional) Start position of the laser relative to the lasing unit. Default is { x = 0, y = 2, z = 0 }
   -- @return #SPOT self
   -- @usage
   --      -- Set lasing position to be the position of the optics of the Gazelle M:
@@ -45677,7 +45681,7 @@ end
 
 --- Get the n-th point of the pathline.
 -- @param #PATHLINE self
--- @param #number n The index of the point. Default is the first point.
+-- @param #number n (optional) The index of the point. Default is the first point.
 -- @return #PATHLINE.Point Point.
 function PATHLINE:GetPointFromIndex(n)
 
@@ -45699,7 +45703,7 @@ end
 --- Get the 3D position of the n-th point.
 -- @param #PATHLINE self
 -- @param #number n The n-th point.
--- @return DCS#VEC3 Position in 3D.
+-- @return DCS#Vec3 Position in 3D.
 function PATHLINE:GetPoint3DFromIndex(n)
 
   local point=self:GetPointFromIndex(n)
@@ -45714,7 +45718,7 @@ end
 --- Get the 2D position of the n-th point.
 -- @param #PATHLINE self
 -- @param #number n The n-th point.
--- @return DCS#VEC2 Position in 3D.
+-- @return DCS#Vec2 Position in 3D.
 function PATHLINE:GetPoint2DFromIndex(n)
 
   local point=self:GetPointFromIndex(n)
@@ -45784,8 +45788,8 @@ end
 --- Draw line on F10 map.
 -- @param #PATHLINE self
 -- @param #number Recipient Recipent of the line: -1=All.
--- @param #table Color Color as RGB table plus alpha value. Default {1, 0, 0, 1.0}.
--- @param #number LineType Line type: 1=Solid (default).
+-- @param #table Color (optional) Color as RGB table plus alpha value. Default {1, 0, 0, 1.0}.
+-- @param #number LineType (optional) Line type: 1=Solid (default).
 -- @return #PATHLINE self
 function PATHLINE:DrawLine(Recipient, Color, LineType)
   
@@ -47387,7 +47391,7 @@ end
 --- Return an intermediate VECTOR between this and another given vector.
 -- @param #VECTOR self
 -- @param #VECTOR Vector The destination vector.
--- @param #number Fraction The fraction (0,1) where the new vector is created. Default 0.5, *i.e.* in the middle.
+-- @param #number Fraction (Optional) The fraction (0,1) where the new vector is created. Default 0.5, *i.e.* in the middle.
 -- @return #VECTOR Vector between this and the other vector.
 function VECTOR:GetIntermediateVector(Vector, Fraction)
 
@@ -47429,7 +47433,7 @@ end
 
 --- Set x-component of vector. The x-axis points to the North.
 -- @param #VECTOR self
--- @param #number x Value of x. Default 0.
+-- @param #number x (Optional) Value of x. Default 0.
 -- @return #VECTOR self
 function VECTOR:SetX(x)
   self.x=x or 0
@@ -47438,7 +47442,7 @@ end
 
 --- Set y-component of vector. The y-axis points to the upwards and describes the altitude above mean sea level.
 -- @param #VECTOR self
--- @param #number y Value of y. Default land/surface height at this point.
+-- @param #number y (Optional) Value of y. Default land/surface height at this point.
 -- @return #VECTOR self
 function VECTOR:SetY(y)
 
@@ -47451,7 +47455,7 @@ end
 
 --- Set z-component of vector. The z-axis points to the East.
 -- @param #VECTOR self
--- @param #number z Value of z. Default 0.
+-- @param #number z (Optional) Value of z. Default 0.
 -- @return #VECTOR self
 function VECTOR:SetZ(z)
   self.z=z or 0
@@ -47587,8 +47591,8 @@ end
 
 --- Translate the vector by a given distance and angle.
 -- @param #VECTOR self
--- @param #number Distance Distance in meters. Default 1000 meters.
--- @param #number Heading Heading angle in degrees. Default 0° = North.
+-- @param #number Distance (Optional) Distance in meters. Default 1000 meters.
+-- @param #number Heading (Optional) Heading angle in degrees. Default 0° = North.
 -- @param #boolean Copy Create a copy of the VECTOR so the original stays unchanged.
 -- @return #VECTOR The translated vector or a copy of it.
 function VECTOR:Translate(Distance, Heading, Copy)
@@ -47611,7 +47615,7 @@ end
 
 --- Rotate the VECTOR clockwise in the 2D (x,z) plane.
 -- @param #VECTOR self
--- @param #number Angle Rotation angle in degrees). Default 0.
+-- @param #number Angle (Optional) Rotation angle in degrees). Default 0.
 -- @param #boolean Copy Create a copy of the VECTOR so the original stays unchanged.
 -- @return #VECTOR The translated vector or a copy of it.
 function VECTOR:Rotate2D(Angle, Copy)
@@ -47805,7 +47809,7 @@ end
 --- Returns an intercept point at which a ray drawn from the this vector in the passed normalized direction for a specified distance.
 -- @param #VECTOR self
 -- @param DCS#Vec3 DirectionVector Directional vector.
--- @param #number Distance Distance in meters. Default 1000 m.
+-- @param #number Distance (Optional) Distance in meters. Default 1000 m.
 -- @return #VECTOR Intercept vector. Can be `nil` if no intercept point is found.
 function VECTOR:GetInterceptPoint(DirectionVector, Distance)
 
@@ -47884,7 +47888,7 @@ end
 
 --- Creates a smoke at this vector.
 -- @param #VECTOR self
--- @param #number Color Color of the smoke: 0=Green, 1=Red, 2=White, 3=Orange, 4=Blue. Default 0.
+-- @param #number Color (Optional) Color of the smoke: 0=Green, 1=Red, 2=White, 3=Orange, 4=Blue. Default 0.
 -- @param #number Duration (Optional) Duration of the smoke in seconds. Default nil.
 -- @return #string Name of the smoke object. Can be used to stop it. 
 function VECTOR:Smoke(Color, Duration)
@@ -47919,8 +47923,8 @@ end
 -- * 8 = huge smoke
 -- 
 -- @param #VECTOR self
--- @param #number Preset Preset of smoke. Default `BIGSMOKEPRESET.LargeSmokeAndFire`.
--- @param #number Density Density between [0,1]. Default 0.5.
+-- @param #number Preset (Optional) Preset of smoke. Default `BIGSMOKEPRESET.LargeSmokeAndFire`.
+-- @param #number Density (Optional) Density between [0,1]. Default 0.5.
 -- @param #number Duration (Optional) Duration of the smoke and fire in seconds.
 -- @return #string Name of the smoke. Can be used to stop it. 
 function VECTOR:SmokeAndFire(Preset, Density, Duration)
@@ -47965,7 +47969,7 @@ end
 
 --- Creates an illumination bomb at the specified point.
 -- @param #VECTOR self
--- @param #number Power The power in Candela (cd). Should be between 1 and 1000000. Default 1000 cd.
+-- @param #number Power (Optional) The power in Candela (cd). Should be between 1 and 1000000. Default 1000 cd.
 -- @param #number Altitude (Optional) Altitude [m] at which the illumination bomb is created.
 -- @return #VECTOR self
 function VECTOR:IlluminationBomb(Power, Altitude)
@@ -47984,7 +47988,7 @@ end
 
 --- Creates an explosion at a given point at the specified power.
 -- @param #VECTOR self
--- @param #number Power The power in kg TNT. Default 100 kg.
+-- @param #number Power (Optional) The power in kg TNT. Default 100 kg.
 -- @return #VECTOR self
 function VECTOR:Explosion(Power)
 
@@ -47997,8 +48001,8 @@ end
 
 --- Creates a signal flare at the given point in the specified color. The flare will be launched in the direction of the azimuth angle.
 -- @param #VECTOR self
--- @param #number Color Color of flare. Default Green.
--- @param #number Azimuth Azimuth angle in degrees. Default 0.
+-- @param #number Color (Optional) Color of flare. Default Green.
+-- @param #number Azimuth (Optional) Azimuth angle in degrees. Default 0.
 -- @return #VECTOR self
 function VECTOR:Flare(Color, Azimuth)
 
@@ -48013,10 +48017,10 @@ end
 --- Creates a arrow from this VECTOR to another vector on the F10 map.
 -- @param #VECTOR self
 -- @param #VECTOR Vector The vector defining the endpoint.
--- @param #number Coalition Coalition Id: -1=All, 0=Neutral, 1=Red, 2=Blue. Default -1.
--- @param #table Color RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.7}.
--- @param #table FillColor RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.5}.
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot Dash, 5=Long Dash, 6=Two Dash. Default 1.
+-- @param #number Coalition (Optional) Coalition Id: -1=All, 0=Neutral, 1=Red, 2=Blue. Default -1.
+-- @param #table Color (Optional) RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.7}.
+-- @param #table FillColor (Optional) RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.5}.
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot Dash, 5=Long Dash, 6=Two Dash. Default 1.
 -- @return #number Marker ID. Can be used to remove the drawing.
 function VECTOR:ArrowTo(Vector, Coalition, Color, FillColor, LineType)
 
@@ -48041,7 +48045,7 @@ end
 --- Create mark on F10 map.
 -- @param #VECTOR self
 -- @param #string MarkText Free format text that shows the marking clarification.
--- @param #number Recipient Recipient of the mark: -1=All (default), 0=Neutral, 1=Red, 2=Blue. Can also be a `GROUP` object.
+-- @param #number Recipient (Optional) Recipient of the mark: -1=All (default), 0=Neutral, 1=Red, 2=Blue. Can also be a `GROUP` object.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
 -- @return #number Mark ID.
 function VECTOR:Mark(MarkText, Recipient, ReadOnly)

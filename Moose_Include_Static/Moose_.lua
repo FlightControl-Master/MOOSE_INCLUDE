@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-01T23:11:36+01:00-216d023c45703575b45a67a68198918c7aa4b32a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-02T06:41:37+01:00-33773950b0b82f9dd2d2cf760c6c69dcbf209d07 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6970,10 +6970,12 @@ self:SetValidNeighbourFunction(ASTAR.LoS,CorridorWidth)
 return self
 end
 function ASTAR:SetValidNeighbourDistance(MaxDistance)
+MaxDistance=MaxDistance or 2000
 self:SetValidNeighbourFunction(ASTAR.DistMax,MaxDistance)
 return self
 end
 function ASTAR:SetValidNeighbourRoad(MaxDistance)
+MaxDistance=MaxDistance or 2000
 self:SetValidNeighbourFunction(ASTAR.Road,MaxDistance)
 return self
 end
