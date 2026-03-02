@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-02T06:41:37+01:00-33773950b0b82f9dd2d2cf760c6c69dcbf209d07 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-02T06:42:38+01:00-ee002fa470479809f62846c4295fc1ff8d20a885 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -217539,7 +217539,7 @@ function OPSGROUP:_UpdateTask(Task, Mission)
         local tvec2=UTILS.Vec2Translate(vec2, distance, heading)
         
         -- Debug info.
-        self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%dÂ°, heading=%03dÂ°, distance=%d m", tostring(param.shots), Altitude, Alpha, heading, distance))
+        self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%d°, heading=%03d°, distance=%d m", tostring(param.shots), Altitude, Alpha, heading, distance))
         
         -- Set fire at point task.
         DCSTask=CONTROLLABLE.TaskFireAtPoint(nil, tvec2, param.radius, param.shots, param.weaponType, Altitude)
