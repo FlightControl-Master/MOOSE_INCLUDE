@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-02T12:22:13+01:00-877ca7176afdeb4f48f25ae9309230da467e507b ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-02T16:24:29+01:00-c346eb7acc23eb5bbcb131bf90cda1607324d9a9 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -156073,8 +156073,10 @@ function CTLD:_RefreshLoadCratesMenu(Group,Unit)
     local cargoByName={}
     for _,crate in pairs(nearby) do
       local name=crate:GetName()
-      cargoByName[name]=cargoByName[name] or{}
-      table.insert(cargoByName[name],crate)
+      if name then
+          cargoByName[name]=cargoByName[name] or{}
+          table.insert(cargoByName[name],crate)
+      end
     end
   
     local lineIndex=1
@@ -156087,7 +156089,7 @@ function CTLD:_RefreshLoadCratesMenu(Group,Unit)
         local label
         local loadkey = self.gettext:GetEntry("MENU_LOAD_SINGLE",self.locale)
         if left>=needed then          
-          label=string.format("%d. %s %s",lineIndex,loadkey, cName)
+          label=string.format("%d. %s %s",cName, lineIndex,loadkey)
           i=i+needed
         else
           label=string.format("%d. %s %s (%d/%d)",lineIndex,loadkey, cName,left,needed)
