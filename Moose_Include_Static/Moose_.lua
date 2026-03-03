@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-03T06:25:56+01:00-8968add1266a5a1fdc5ee969d3dda647fc289e73 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-03T19:57:32+01:00-f01a1fb6b97a0d349eebdf57ec8753177c35f12f ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -35434,7 +35434,16 @@ DYNAMICCARGO={
 ClassName="DYNAMICCARGO",
 verbose=0,
 testing=false,
-Interval=10,
+Interval=5,
+C130AttachDistance=10,
+C130DetachDistance=14,
+C130AirborneAGL=8,
+C130LandedAGL=0.5,
+C130StabilityEpsilon=0.05,
+C130RequireAirborne=true,
+C130OwnerResolveMove2D=10,
+C130OwnerResolveNear2D=4,
+C130OwnerResolveMax3D=250,
 }
 DYNAMICCARGO.Liquid={
 JETFUEL=0,
@@ -35463,6 +35472,10 @@ DYNAMICCARGO.AircraftTypes={
 ["CH-47Fbl1"]="CH-47Fbl1",
 ["Mi-8MTV2"]="Mi-8MTV2",
 ["Mi-8MT"]="Mi-8MT",
+["UH-1H"]="UH-1H",
+["Mi-24P"]="Mi-24P",
+["UH-60L"]="UH-60L",
+["UH-60L_DAP"]="UH-60L_DAP",
 ["C-130J-30"]="C-130J-30",
 }
 DYNAMICCARGO.AircraftDimensions={
@@ -35484,19 +35497,57 @@ DYNAMICCARGO.AircraftDimensions={
 ["length"]=15,
 ["ropelength"]=30,
 },
+["UH-1H"]={
+["width"]=4,
+["height"]=4,
+["length"]=9,
+["ropelength"]=25,
+},
+["Mi-24P"]={
+["width"]=4,
+["height"]=5,
+["length"]=11,
+["ropelength"]=25,
+},
+["UH-60L"]={
+["width"]=4,
+["height"]=5,
+["length"]=10,
+["ropelength"]=25,
+},
+["UH-60L_DAP"]={
+["width"]=4,
+["height"]=5,
+["length"]=10,
+["ropelength"]=25,
+},
 ["C-130J-30"]={
 ["width"]=4,
 ["height"]=12,
 ["length"]=35,
 ["ropelength"]=0,
+["attach"]=10,
+["detach"]=14,
 },
 }
 DYNAMICCARGO.version="0.1.0"
+DYNAMICCARGO._TrackedCargo=DYNAMICCARGO._TrackedCargo or{}
+DYNAMICCARGO._GlobalTimer=DYNAMICCARGO._GlobalTimer or nil
+DYNAMICCARGO._GlobalTimerInterval=DYNAMICCARGO._GlobalTimerInterval or nil
 function DYNAMICCARGO:Register(CargoName)
 local self=BASE:Inherit(self,POSITIONABLE:New(CargoName))
 self.StaticName=CargoName
 self.LastPosition=self:GetCoordinate()
+self._spawnVec3=self.LastPosition and self.LastPosition:GetVec3()or nil
 self.CargoState=DYNAMICCARGO.State.NEW
+self._attached=false
+self._detached=false
+self._wasAirborne=false
+self._landAglConfirm=nil
+self._ownerResolved=false
+self._carrierUnitName=nil
+self._carrierGroupName=nil
+self._carrierTypeName=nil
 self.Interval=DYNAMICCARGO.Interval or 10
 local DCSObject=self:GetDCSObject()
 if DCSObject then
@@ -35505,8 +35556,8 @@ self.warehouse=warehouse
 end
 self.lid=string.format("DYNAMICCARGO %s",CargoName)
 self.Owner=string.match(CargoName,"^(.+)|%d%d:%d%d|PKG%d+")or"None"
-self.timer=TIMER:New(DYNAMICCARGO._UpdatePosition,self)
-self.timer:Start(self.Interval,self.Interval)
+self.timer=nil
+DYNAMICCARGO._TrackCargo(self)
 if not _DYNAMICCARGO_HELOS then
 _DYNAMICCARGO_HELOS=SET_CLIENT:New():FilterAlive():FilterFunction(DYNAMICCARGO._FilterHeloTypes):FilterStart()
 end
@@ -35553,6 +35604,27 @@ return true
 else
 return false
 end
+end
+function DYNAMICCARGO:IsAttached()
+return self._attached==true
+end
+function DYNAMICCARGO:IsDetached()
+return self._detached==true
+end
+function DYNAMICCARGO:WasAirborneTransport()
+return self._wasAirborne==true
+end
+function DYNAMICCARGO:IsLandedStable()
+return self.CargoState==DYNAMICCARGO.State.UNLOADED and self._detached==true
+end
+function DYNAMICCARGO:GetCarrierUnitName()
+return self._carrierUnitName
+end
+function DYNAMICCARGO:GetCarrierTypeName()
+return self._carrierTypeName
+end
+function DYNAMICCARGO:GetCarrierGroupName()
+return self._carrierGroupName
 end
 function DYNAMICCARGO:GetCratesNeeded()
 return 1
@@ -35613,6 +35685,289 @@ else
 return self.StaticName
 end
 end
+function DYNAMICCARGO:_IsC130Type(TypeName)
+return TypeName=="C-130J-30"
+end
+function DYNAMICCARGO:_GetAGL(Coord)
+if not Coord then return-1 end
+return(Coord.y or 0)-Coord:GetLandHeight()
+end
+function DYNAMICCARGO:_GetPlayerNameForClient(Client)
+if not Client then return self.Owner or"None"end
+return Client:GetPlayerName()or _DATABASE:_FindPlayerNameByUnitName(Client:GetName())or self.Owner or"None"
+end
+function DYNAMICCARGO:_SetCarrierFromClient(Client,PlayerName)
+if not Client then return self end
+self._carrierUnitName=Client:GetName()or self._carrierUnitName
+self._carrierTypeName=Client:GetTypeName()or self._carrierTypeName
+local grp=Client:GetGroup()
+if grp then
+self._carrierGroupName=grp:GetName()or self._carrierGroupName
+end
+self.Owner=PlayerName or self:_GetPlayerNameForClient(Client)
+return self
+end
+function DYNAMICCARGO._GetSchedulerInterval()
+return DYNAMICCARGO.Interval or 5
+end
+function DYNAMICCARGO._CountTracked()
+local n=0
+for _,_ in pairs(DYNAMICCARGO._TrackedCargo or{})do
+n=n+1
+end
+return n
+end
+function DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+if DYNAMICCARGO._CountTracked()>0 then
+return
+end
+if DYNAMICCARGO._GlobalTimer and DYNAMICCARGO._GlobalTimer:IsRunning()then
+DYNAMICCARGO._GlobalTimer:Stop()
+end
+DYNAMICCARGO._GlobalTimer=nil
+DYNAMICCARGO._GlobalTimerInterval=nil
+end
+function DYNAMICCARGO._EnsureGlobalScheduler()
+local interval=DYNAMICCARGO._GetSchedulerInterval()
+if DYNAMICCARGO._GlobalTimer and DYNAMICCARGO._GlobalTimer:IsRunning()then
+if DYNAMICCARGO._GlobalTimerInterval==interval then
+return
+end
+DYNAMICCARGO._GlobalTimer:Stop()
+DYNAMICCARGO._GlobalTimer=nil
+DYNAMICCARGO._GlobalTimerInterval=nil
+end
+if DYNAMICCARGO._CountTracked()<1 then
+return
+end
+DYNAMICCARGO._GlobalTimer=TIMER:New(DYNAMICCARGO._UpdateAllTracked)
+DYNAMICCARGO._GlobalTimer:Start(interval,interval)
+DYNAMICCARGO._GlobalTimerInterval=interval
+end
+function DYNAMICCARGO._TrackCargo(Cargo)
+if not Cargo or not Cargo.StaticName then
+return
+end
+DYNAMICCARGO._TrackedCargo=DYNAMICCARGO._TrackedCargo or{}
+DYNAMICCARGO._TrackedCargo[Cargo.StaticName]=Cargo
+DYNAMICCARGO._EnsureGlobalScheduler()
+end
+function DYNAMICCARGO._UntrackCargo(CargoName)
+if not CargoName or not DYNAMICCARGO._TrackedCargo then
+DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+return
+end
+DYNAMICCARGO._TrackedCargo[CargoName]=nil
+DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+end
+function DYNAMICCARGO._UpdateAllTracked()
+local tracked=DYNAMICCARGO._TrackedCargo or{}
+local names={}
+for name,_ in pairs(tracked)do
+names[#names+1]=name
+end
+for _,name in ipairs(names)do
+local cargo=tracked[name]
+if cargo then
+cargo:_UpdatePosition()
+end
+end
+DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+end
+function DYNAMICCARGO:_FindClientByUnitName(UnitName)
+if not UnitName or UnitName==""or not _DYNAMICCARGO_HELOS then return nil end
+for _,_helo in pairs(_DYNAMICCARGO_HELOS:GetAliveSet()or{})do
+local helo=_helo
+if helo and helo:IsAlive()and helo:GetName()==UnitName then
+return helo
+end
+end
+return nil
+end
+function DYNAMICCARGO:_GetKnownCarrierClient()
+local client=nil
+if self._carrierUnitName then
+client=self:_FindClientByUnitName(self._carrierUnitName)
+end
+if(not client)and self.Owner and self.Owner~="None"then
+local byPlayer=CLIENT:FindByPlayerName(self.Owner)
+if byPlayer and byPlayer:IsAlive()then
+client=byPlayer
+end
+end
+return client
+end
+function DYNAMICCARGO:_FindNearestC130(Pos,Max3D)
+if not Pos or not _DYNAMICCARGO_HELOS then return nil,nil,nil,nil end
+local bestClient=nil
+local bestName=nil
+local best2D=math.huge
+local best3D=math.huge
+local bestOwnerMatch=false
+local max3D=Max3D or DYNAMICCARGO.C130OwnerResolveMax3D
+local preferredOwner=self.Owner
+if preferredOwner==""or preferredOwner=="None"then
+preferredOwner=nil
+end
+for _,_helo in pairs(_DYNAMICCARGO_HELOS:GetAliveSet()or{})do
+local helo=_helo
+if helo and helo:IsAlive()then
+local typename=helo:GetTypeName()
+if self:_IsC130Type(typename)then
+local hpos=helo:GetCoordinate()
+if hpos then
+local d3=hpos:Get3DDistance(Pos)
+if d3<=max3D then
+local d2=hpos:Get2DDistance(Pos)
+local pname=self:_GetPlayerNameForClient(helo)
+local ownerMatch=preferredOwner and pname and pname==preferredOwner or false
+if(ownerMatch and not bestOwnerMatch)or((ownerMatch==bestOwnerMatch)and d3<best3D)then
+bestClient=helo
+bestName=pname
+best2D=d2
+best3D=d3
+bestOwnerMatch=ownerMatch
+end
+end
+end
+end
+end
+end
+return bestClient,bestName,best2D,best3D
+end
+function DYNAMICCARGO:_ResolveC130Owner(Pos)
+if not Pos or not self._spawnVec3 then return nil end
+local moved2D=UTILS.VecDist2D(Pos,self._spawnVec3)
+if moved2D<(DYNAMICCARGO.C130OwnerResolveMove2D or 10)then
+return nil
+end
+local max3D=DYNAMICCARGO.C130OwnerResolveMax3D or 250
+local known=self:_GetKnownCarrierClient()
+if known and known:IsAlive()and self:_IsC130Type(known:GetTypeName())then
+local kpos=known:GetCoordinate()
+if kpos and kpos:Get3DDistance(Pos)<=max3D then
+self:_SetCarrierFromClient(known)
+return known
+end
+end
+local nearest,playerName,d2=self:_FindNearestC130(Pos,DYNAMICCARGO.C130OwnerResolveMax3D)
+if nearest and d2 and d2<=(DYNAMICCARGO.C130OwnerResolveNear2D or 4)then
+self:_SetCarrierFromClient(nearest,playerName)
+self._ownerResolved=true
+self:T(self.lid.." C130 owner re-resolved to "..tostring(self._carrierUnitName).." / "..tostring(self.Owner))
+return nearest
+end
+return nil
+end
+function DYNAMICCARGO:_ShouldUseC130State(Pos)
+if self:_IsC130Type(self._carrierTypeName)then
+return true
+end
+local known=self:_GetKnownCarrierClient()
+if known and self:_IsC130Type(known:GetTypeName())then
+self:_SetCarrierFromClient(known)
+return true
+end
+if self._attached or self._detached or self._wasAirborne then
+return true
+end
+if self.CargoState==DYNAMICCARGO.State.NEW or self.CargoState==DYNAMICCARGO.State.UNLOADED then
+local nearest,_,d2=self:_FindNearestC130(Pos,DYNAMICCARGO.C130AttachDistance+50)
+if nearest and d2 and d2<=(DYNAMICCARGO.C130AttachDistance+5)then
+return true
+end
+end
+return false
+end
+function DYNAMICCARGO:_UpdatePositionC130(Pos)
+local attachDist=DYNAMICCARGO.C130AttachDistance or 10
+local detachDist=DYNAMICCARGO.C130DetachDistance or 14
+local airborneAgl=DYNAMICCARGO.C130AirborneAGL or 8
+local landedAgl=DYNAMICCARGO.C130LandedAGL or 0.5
+local stableEps=DYNAMICCARGO.C130StabilityEpsilon or 0.05
+local requireAirborne=DYNAMICCARGO.C130RequireAirborne~=false
+local cargoAgl=self:_GetAGL(Pos)
+local carrier=self:_GetKnownCarrierClient()
+if carrier and not self:_IsC130Type(carrier:GetTypeName())then
+carrier=nil
+end
+if not carrier then
+carrier=self:_ResolveC130Owner(Pos)
+end
+if(self.CargoState==DYNAMICCARGO.State.NEW or self.CargoState==DYNAMICCARGO.State.UNLOADED)and(not self._attached)then
+if not carrier then
+local nearest,pname,d2=self:_FindNearestC130(Pos,DYNAMICCARGO.C130OwnerResolveMax3D)
+if nearest and d2 and d2<=attachDist and not nearest:InAir()then
+carrier=nearest
+self:_SetCarrierFromClient(nearest,pname)
+end
+end
+if carrier and carrier:IsAlive()then
+local hpos=carrier:GetCoordinate()
+if hpos and(not carrier:InAir())and hpos:Get2DDistance(Pos)<=attachDist then
+self._attached=true
+self._detached=false
+self._wasAirborne=false
+self._landAglConfirm=nil
+self:_SetCarrierFromClient(carrier)
+if self.CargoState~=DYNAMICCARGO.State.LOADED then
+self.CargoState=DYNAMICCARGO.State.LOADED
+self:T(self.lid.." C130 attach: "..tostring(self.Owner))
+_DATABASE:CreateEventDynamicCargoLoaded(self)
+end
+end
+end
+end
+if self.CargoState==DYNAMICCARGO.State.LOADED then
+if not carrier then
+carrier=self:_ResolveC130Owner(Pos)
+end
+local carrierInAir=false
+local dist2D=math.huge
+local carrierAgl=-1
+if carrier and carrier:IsAlive()then
+local hpos=carrier:GetCoordinate()
+if hpos then
+dist2D=hpos:Get2DDistance(Pos)
+carrierAgl=self:_GetAGL(hpos)
+end
+carrierInAir=carrier:InAir()
+self:_SetCarrierFromClient(carrier)
+end
+if cargoAgl>=airborneAgl or carrierAgl>=airborneAgl then
+self._wasAirborne=true
+end
+if self._attached and carrierInAir and dist2D>detachDist then
+self._attached=false
+self._detached=true
+self._landAglConfirm=nil
+self:T(self.lid.." C130 detach at d2="..tostring(UTILS.Round(dist2D,2)))
+end
+if self._attached and(not carrier or not carrier:IsAlive())and self._wasAirborne and cargoAgl<=airborneAgl then
+self._attached=false
+self._detached=true
+self._landAglConfirm=nil
+self:T(self.lid.." C130 detach fallback (carrier stale)")
+end
+local canUnload=self._detached and((not requireAirborne)or self._wasAirborne)
+if canUnload then
+local moved3D=self.LastPosition and UTILS.VecDist3D(Pos,self.LastPosition)or math.huge
+local stable=moved3D<=stableEps
+if cargoAgl<=landedAgl and stable then
+if self._landAglConfirm then
+self.CargoState=DYNAMICCARGO.State.UNLOADED
+self:T(self.lid.." C130 landed-stable unload by "..tostring(self.Owner))
+_DATABASE:CreateEventDynamicCargoUnloaded(self)
+else
+self._landAglConfirm=true
+end
+else
+self._landAglConfirm=nil
+end
+end
+end
+return self
+end
 function DYNAMICCARGO:_HeloHovering(Unit,ropelength)
 local DCSUnit=Unit:GetDCSObject()
 local hovering=false
@@ -35645,11 +36000,12 @@ local name=helo:GetPlayerName()or _DATABASE:_FindPlayerNameByUnitName(helo:GetNa
 self:T(self.lid.." Checking: "..name)
 local hpos=helo:GetCoordinate()
 local typename=helo:GetTypeName()
+if not self:_IsC130Type(typename)then
 local dimensions=DYNAMICCARGO.AircraftDimensions[typename]
+if hpos and typename and dimensions then
 local hovering,height=self:_HeloHovering(helo,dimensions.ropelength)
 local helolanded=not helo:InAir()
 self:T(self.lid.." InAir: AGL/Hovering: "..hpos.y-hpos:GetLandHeight().."/"..tostring(hovering))
-if hpos and typename and dimensions then
 local delta2D=hpos:Get2DDistance(pos)
 local delta3D=hpos:Get3DDistance(pos)
 if self.testing then
@@ -35674,6 +36030,7 @@ Playername=name
 end
 end
 end
+end
 return success,Helo,Playername
 end
 function DYNAMICCARGO:_UpdatePosition()
@@ -35684,14 +36041,24 @@ if self.testing then
 self:T(string.format("Cargo position: x=%d, y=%d, z=%d",pos.x,pos.y,pos.z))
 self:T(string.format("Last position: x=%d, y=%d, z=%d",self.LastPosition.x,self.LastPosition.y,self.LastPosition.z))
 end
-if UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2)>0.5 then
+local moved=UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2)>0.5
+if self:_ShouldUseC130State(pos)then
+self:_UpdatePositionC130(pos)
+self.LastPosition=pos
+elseif moved then
 if self.CargoState==DYNAMICCARGO.State.NEW or self.CargoState==DYNAMICCARGO.State.UNLOADED then
 local isloaded,client,playername=self:_GetPossibleHeloNearby(pos,true)
+if isloaded then
 self:T(self.lid.." moved! NEW -> LOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.LOADED
 self.Owner=playername
+if client then
+self:_SetCarrierFromClient(client,playername)
+end
 _DATABASE:CreateEventDynamicCargoLoaded(self)
 end
+end
+self.LastPosition=pos
 elseif self.CargoState==DYNAMICCARGO.State.LOADED then
 local count=_DYNAMICCARGO_HELOS:CountAlive()
 local landheight=pos:GetLandHeight()
@@ -35708,19 +36075,21 @@ if isunloaded then
 self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
 self.CargoState=DYNAMICCARGO.State.UNLOADED
 self.Owner=playername
+if client then
+self:_SetCarrierFromClient(client,playername)
+end
 _DATABASE:CreateEventDynamicCargoUnloaded(self)
 end
 end
 end
-self.LastPosition=pos
 else
-if self.timer and self.timer:IsRunning()then
-self.timer:Stop()
+if self.CargoState~=DYNAMICCARGO.State.REMOVED then
+DYNAMICCARGO._UntrackCargo(self.StaticName)
 self.timer=nil
-end
 self:T(self.lid.." dead! "..self.CargoState.."-> REMOVED")
 self.CargoState=DYNAMICCARGO.State.REMOVED
 _DATABASE:CreateEventDynamicCargoRemoved(self)
+end
 end
 return self
 end
@@ -73520,6 +73889,8 @@ wpZones={},
 dropOffZones={},
 pickupZones={},
 DynamicCargo={},
+UseC130DynamicCargoAutoBuild=false,
+C130DynamicCargoAutoBuildMergeSeconds=10,
 ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
 TroopUnloadDistGroundHerc=25,
@@ -73663,6 +74034,12 @@ self._cargoByTemplate={}
 self.Loaded_Cargo={}
 self.Spawned_Crates={}
 self.Spawned_Cargo={}
+self._c130DcAutoSets={}
+self._c130DcAutoMap={}
+self._c130DcAutoBatches={}
+self._c130DcAutoSeq=0
+self._c130DcAutoTimer=nil
+self._c130DcAutoActiveSetId=nil
 self.MenusDone={}
 self.DroppedTroops={}
 self.DroppedCrates={}
@@ -73735,6 +74112,8 @@ self.enableslingload=false
 self.basetype="container_cargo"
 self.C130basetype="cds_crate"
 self.UseC130LoadAndUnload=false
+self.UseC130DynamicCargoAutoBuild=false
+self.C130DynamicCargoAutoBuildMergeSeconds=10
 self.SmokeColor=SMOKECOLOR.Red
 self.FlareColor=FLARECOLOR.Red
 for i=1,100 do
@@ -73885,6 +74264,685 @@ end
 self.PlayerTaskQueue:Push(PlayerTask,PlayerTask.PlayerTaskNr)
 return self
 end
+function CTLD:_C130DcAutoIsBuildableCargo(Cargo)
+if not Cargo then return false end
+local ctype=Cargo:GetType()
+return ctype==CTLD_CARGO.Enum.VEHICLE or ctype==CTLD_CARGO.Enum.FOB
+end
+function CTLD:_C130DcAutoEnsureState()
+self._c130DcAutoSets=self._c130DcAutoSets or{}
+self._c130DcAutoMap=self._c130DcAutoMap or{}
+self._c130DcAutoBatches=self._c130DcAutoBatches or{}
+self._c130DcAutoSeq=self._c130DcAutoSeq or 0
+return self
+end
+function CTLD:_C130DcAutoFilterCrates(Crates,SetIdOrScope)
+if not SetIdOrScope then
+local t=Crates or{}
+local n=0
+for _,_ in pairs(t)do
+n=n+1
+end
+return t,n
+end
+local scopeIds={}
+if type(SetIdOrScope)=="table"then
+for k,v in pairs(SetIdOrScope)do
+if type(k)=="number"and type(v)=="string"then
+scopeIds[v]=true
+elseif type(k)=="string"and v then
+scopeIds[k]=true
+end
+end
+elseif type(SetIdOrScope)=="string"then
+scopeIds[SetIdOrScope]=true
+end
+if not next(scopeIds)then
+return{},0
+end
+local allowedIds={}
+local allowedNames={}
+for setId,_ in pairs(scopeIds)do
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[setId]or nil
+if setData then
+for _,entry in ipairs(setData.entries or{})do
+if entry.cargoId then
+allowedIds[entry.cargoId]=true
+end
+if entry.cargoObject and entry.cargoObject.GetID then
+local id=entry.cargoObject:GetID()
+if id then
+allowedIds[id]=true
+end
+end
+if entry.proxyCargo and entry.proxyCargo.GetID then
+local id=entry.proxyCargo:GetID()
+if id then
+allowedIds[id]=true
+end
+end
+if entry.spawnName then
+allowedNames[entry.spawnName]=true
+end
+if entry.dynamicName then
+allowedNames[entry.dynamicName]=true
+end
+end
+end
+end
+local filtered={}
+for _,_crate in pairs(Crates or{})do
+local crate=_crate
+local include=false
+if crate then
+local cid=crate.GetID and crate:GetID()or nil
+if cid and allowedIds[cid]then
+include=true
+else
+local pos=crate.GetPositionable and crate:GetPositionable()or nil
+local pname=pos and pos.GetName and pos:GetName()or nil
+if pname and allowedNames[pname]then
+include=true
+end
+end
+end
+if include then
+filtered[#filtered+1]=crate
+end
+end
+return filtered,#filtered
+end
+function CTLD:_C130DcAutoRegisterDynamicCargo(Positionable)
+if not Positionable or not _DATABASE then return nil end
+local pname=Positionable.GetName and Positionable:GetName()or nil
+if not pname or pname==""then return nil end
+local dcargo=_DATABASE:FindDynamicCargo(pname)
+if not dcargo then
+dcargo=_DATABASE:AddDynamicCargo(pname)
+if dcargo then
+self:T(self.lid.." C130DcAuto RegisterDynamicCargo "..pname)
+_DATABASE:CreateEventNewDynamicCargo(dcargo)
+end
+end
+return dcargo
+end
+function CTLD:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+if not DynamicCargo then return nil end
+if DynamicCargo.GetCarrierUnitName then
+local uname=DynamicCargo:GetCarrierUnitName()
+if uname and uname~=""then
+return uname
+end
+end
+local owner=DynamicCargo.Owner
+if owner and owner~=""and owner~="None"then
+local byPlayer=CLIENT:FindByPlayerName(owner)
+if byPlayer and byPlayer:IsAlive()then
+return byPlayer:GetName()
+end
+end
+return nil
+end
+function CTLD:_C130DcAutoGetCarrierGroupName(DynamicCargo)
+if not DynamicCargo then return nil end
+if DynamicCargo.GetCarrierGroupName then
+local gname=DynamicCargo:GetCarrierGroupName()
+if gname and gname~=""then
+return gname
+end
+end
+local uname=self:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+if uname then
+local unit=UNIT:FindByName(uname)
+if unit and unit:IsAlive()then
+local grp=unit:GetGroup()
+if grp then
+return grp:GetName()
+end
+end
+end
+return nil
+end
+function CTLD:_C130DcAutoIsC130Event(DynamicCargo)
+if not DynamicCargo then return false end
+if DynamicCargo.GetCarrierTypeName then
+local tname=DynamicCargo:GetCarrierTypeName()
+if tname and tname~=""then
+return tname=="C-130J-30"
+end
+end
+local uname=self:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+if uname then
+local unit=UNIT:FindByName(uname)
+if unit then
+local utype=unit:GetTypeName()or"none"
+if self.C130JTypes and self.C130JTypes[utype]then
+return true
+end
+return utype=="C-130J-30"
+end
+end
+return false
+end
+function CTLD:_C130DcAutoRegisterSet(Group,Unit,Cargo,PickupZone)
+if not Group or not Unit or not Cargo then return nil end
+if not self.UseC130LoadAndUnload or not self.UseC130DynamicCargoAutoBuild then return nil end
+if not self:IsC130J(Unit)then return nil end
+if not self:_C130DcAutoIsBuildableCargo(Cargo)then return nil end
+self:_C130DcAutoEnsureState()
+self._c130DcAutoSeq=self._c130DcAutoSeq+1
+local seq=self._c130DcAutoSeq
+local setId=string.format("%s|%s|%d",Unit:GetName()or"none",Cargo:GetName()or"cargo",seq)
+local cc,ct,cs=Cargo:GetStaticTypeAndShape()
+local recipe={
+cargoName=Cargo:GetName(),
+cargoDisplayName=Cargo:GetDisplayName(),
+templates=UTILS.DeepCopy(Cargo:GetTemplates()),
+cargoType=Cargo:GetType(),
+cratesNeeded=Cargo:GetCratesNeeded(),
+perCrateMass=Cargo:GetMass(),
+subcategory=Cargo.Subcategory,
+staticCategory=cc,
+staticType=ct,
+staticShape=cs,
+resourceMap=UTILS.DeepCopy(Cargo:GetStaticResourceMap()),
+typeNames=UTILS.DeepCopy(Cargo.TypeNames),
+}
+local now=timer.getTime()
+local setData={
+id=setId,
+created=now,
+ttl=now+3600,
+groupName=Group:GetName(),
+unitName=Unit:GetName(),
+pickupZoneName=(PickupZone and PickupZone.GetName and PickupZone:GetName())or(type(PickupZone)=="string"and PickupZone or nil),
+recipe=recipe,
+entries={},
+completed=false,
+failed=false,
+buildStarted=false,
+handoffClaimed=false,
+helperGroupName=nil,
+helperUnitName=nil,
+cleanupAt=nil,
+}
+self._c130DcAutoSets[setId]=setData
+self:T(self.lid.." C130DcAuto RegisterSet "..setId)
+return setId
+end
+function CTLD:_C130DcAutoRegisterEntry(SetId,Cargo)
+if not SetId or not Cargo then return false end
+self:_C130DcAutoEnsureState()
+local setData=self._c130DcAutoSets[SetId]
+if not setData then return false end
+local pos=Cargo:GetPositionable()
+local pname=pos and pos.GetName and pos:GetName()or nil
+local pcoord=pos and pos.GetCoordinate and pos:GetCoordinate()or nil
+local entryId=string.format("%s#%d",SetId,#setData.entries+1)
+local entry={
+id=entryId,
+state="pending",
+cargoId=Cargo:GetID(),
+cargoObject=Cargo,
+cargoName=Cargo:GetName(),
+spawnName=pname,
+dynamicName=nil,
+spawnVec2=pcoord and pcoord:GetVec2()or nil,
+spawnVec3=pcoord and pcoord:GetVec3()or nil,
+landedVec2=nil,
+landedVec3=nil,
+proxyCargo=nil,
+proxyAdded=false,
+}
+setData.entries[#setData.entries+1]=entry
+if pname then
+self._c130DcAutoMap[pname]={setId=SetId,entryId=entryId}
+end
+return true
+end
+function CTLD:_C130DcAutoGetMappedEntry(DynamicCargoName)
+if not DynamicCargoName or not self._c130DcAutoMap then return nil,nil end
+local link=self._c130DcAutoMap[DynamicCargoName]
+if not link then return nil,nil end
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[link.setId]or nil
+if not setData then return nil,nil end
+for _,entry in ipairs(setData.entries or{})do
+if entry.id==link.entryId then
+return setData,entry
+end
+end
+return nil,nil
+end
+function CTLD:_C130DcAutoResolveEntry(DynamicCargo,PreferLoaded)
+local cargoCoord=DynamicCargo and DynamicCargo.GetLastPosition and DynamicCargo:GetLastPosition()or nil
+local unitName=self:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+local groupName=self:_C130DcAutoGetCarrierGroupName(DynamicCargo)
+local bestSet=nil
+local bestEntry=nil
+local bestDist=math.huge
+for _,setData in pairs(self._c130DcAutoSets or{})do
+if not setData.completed and not setData.failed then
+local ownerMatch=false
+if unitName and setData.unitName and setData.unitName==unitName then
+ownerMatch=true
+elseif groupName and setData.groupName and setData.groupName==groupName then
+ownerMatch=true
+end
+if ownerMatch then
+for _,entry in ipairs(setData.entries or{})do
+local stateOk=false
+if PreferLoaded then
+stateOk=entry.state=="loaded"
+else
+stateOk=entry.state=="pending"or entry.state=="loaded"
+end
+if stateOk then
+local dist=0
+if cargoCoord and entry.spawnVec2 then
+local dx=(cargoCoord.x or 0)-(entry.spawnVec2.x or 0)
+local dz=(cargoCoord.z or 0)-(entry.spawnVec2.y or 0)
+dist=math.sqrt(dx*dx+dz*dz)
+elseif cargoCoord and entry.landedVec2 then
+local dx=(cargoCoord.x or 0)-(entry.landedVec2.x or 0)
+local dz=(cargoCoord.z or 0)-(entry.landedVec2.y or 0)
+dist=math.sqrt(dx*dx+dz*dz)
+else
+dist=999999
+end
+if dist<bestDist then
+bestDist=dist
+bestSet=setData
+bestEntry=entry
+end
+end
+end
+end
+end
+end
+if bestSet and bestEntry and bestDist<=200 then
+return bestSet,bestEntry
+end
+return nil,nil
+end
+function CTLD:_C130DcAutoCreateProxyCargo(SetData,Entry,DynamicCargo)
+if not SetData or not Entry or not DynamicCargo then return nil end
+if Entry.proxyAdded and Entry.proxyCargo then return Entry.proxyCargo end
+local original=Entry.cargoObject
+if original then
+original.Positionable=DynamicCargo
+original:SetWasDropped(true,true)
+Entry.proxyCargo=original
+Entry.proxyAdded=true
+return original
+end
+local recipe=SetData.recipe or{}
+self.CargoCounter=self.CargoCounter+1
+local proxy=CTLD_CARGO:New(
+self.CargoCounter,
+recipe.cargoName,
+UTILS.DeepCopy(recipe.templates),
+recipe.cargoType,
+true,
+false,
+recipe.cratesNeeded,
+DynamicCargo,
+true,
+recipe.perCrateMass,
+nil,
+recipe.subcategory
+)
+proxy:SetDisplayName(recipe.cargoDisplayName)
+proxy:SetStaticTypeAndShape(recipe.staticCategory,recipe.staticType,recipe.staticShape)
+proxy:SetStaticResourceMap(UTILS.DeepCopy(recipe.resourceMap))
+if recipe.typeNames then
+proxy.TypeNames=UTILS.DeepCopy(recipe.typeNames)
+end
+proxy:SetWasDropped(true,true)
+table.insert(self.Spawned_Cargo,proxy)
+Entry.proxyCargo=proxy
+Entry.proxyAdded=true
+return proxy
+end
+function CTLD:_C130DcAutoGetOwnerKey(SetData)
+if not SetData then return nil end
+return SetData.unitName or SetData.groupName
+end
+function CTLD:_C130DcAutoSpawnBuildHelperForSets(OwnerKey,SetIds)
+if not SetIds or#SetIds<1 then return false end
+local sx=0
+local sy=0
+local count=0
+local validSetIds={}
+for _,setId in ipairs(SetIds)do
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[setId]or nil
+if setData and not setData.failed and not setData.completed and not setData.buildStarted then
+validSetIds[#validSetIds+1]=setId
+for _,entry in ipairs(setData.entries or{})do
+local vec2=entry.landedVec2 or entry.spawnVec2
+if vec2 then
+sx=sx+vec2.x
+sy=sy+vec2.y
+count=count+1
+end
+end
+end
+end
+if#validSetIds<1 or count<1 then
+return false
+end
+local center={x=sx/count,y=sy/count}
+local helperGroupName=string.format("CTLD_C130_AUTOBUILD_HELPER_%d",math.random(100000,999999))
+local helperUnitName=helperGroupName.."_1"
+local isRed=self.coalition==coalition.side.RED
+local helperCountry=isRed and country.id.RUSSIA or country.id.USA
+local helperType=isRed and"Infantry AK"or"Soldier M4"
+local groupData={
+visible=false,
+task="Ground Nothing",
+tasks={},
+route={
+points={
+[1]={
+x=center.x,
+y=center.y,
+action="Off Road",
+speed=0,
+task={id="ComboTask",params={tasks={}}},
+}
+}
+},
+units={
+[1]={
+x=center.x,
+y=center.y,
+type=helperType,
+name=helperUnitName,
+heading=0,
+skill="Excellent",
+}
+},
+name=helperGroupName,
+}
+coalition.addGroup(helperCountry,Group.Category.GROUND,groupData)
+local helperGroup=GROUP:FindByName(helperGroupName)
+local helperUnit=helperGroup and helperGroup:GetUnit(1)or nil
+if not helperGroup or not helperUnit then
+self:T(self.lid.." C130DcAuto helper spawn failed for owner "..tostring(OwnerKey))
+for _,setId in ipairs(validSetIds)do
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[setId]or nil
+if setData then
+setData.handoffClaimed=false
+end
+end
+return false
+end
+local cleanupAt=timer.getTime()+math.max(5,(self.buildtime or 0)+5)
+for _,setId in ipairs(validSetIds)do
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[setId]or nil
+if setData then
+setData.buildStarted=true
+setData.completed=true
+setData.helperGroupName=helperGroupName
+setData.helperUnitName=helperUnitName
+setData.cleanupAt=cleanupAt
+end
+end
+self:T(self.lid.." C130DcAuto build handoff for owner "..tostring(OwnerKey).." sets="..table.concat(validSetIds,","))
+local prevScope=self._c130DcAutoActiveSetId
+self._c130DcAutoActiveSetId=validSetIds
+self:_BuildCrates(helperGroup,helperUnit,true,true)
+self._c130DcAutoActiveSetId=prevScope
+return true
+end
+function CTLD:_C130DcAutoFlushOwnerBatch(OwnerKey)
+local batch=self._c130DcAutoBatches and self._c130DcAutoBatches[OwnerKey]or nil
+if not batch then return self end
+if batch.timer and batch.timer.IsRunning and batch.timer:IsRunning()then
+batch.timer:Stop()
+end
+batch.timer=nil
+local setIds={}
+local failedSetIds={}
+for setId,_ in pairs(batch.setIds or{})do
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[setId]or nil
+if setData and not setData.failed and not setData.completed and not setData.buildStarted then
+local total=0
+local landed=0
+local failed=false
+for _,entry in ipairs(setData.entries or{})do
+total=total+1
+if entry.state=="failed"then
+failed=true
+break
+end
+if entry.state=="landed"then
+landed=landed+1
+end
+end
+if failed then
+setData.failed=true
+failedSetIds[#failedSetIds+1]=setId
+elseif total>0 and landed==total and setData.handoffClaimed then
+setIds[#setIds+1]=setId
+else
+setData.handoffClaimed=false
+end
+end
+end
+self._c130DcAutoBatches[OwnerKey]=nil
+for _,setId in ipairs(failedSetIds)do
+self:_C130DcAutoCleanupSet(setId,"failed")
+end
+if#setIds<1 then
+return self
+end
+table.sort(setIds)
+local ok=self:_C130DcAutoSpawnBuildHelperForSets(OwnerKey,setIds)
+if not ok then
+for _,setId in ipairs(setIds)do
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[setId]or nil
+if setData and not setData.failed then
+setData.handoffClaimed=false
+end
+end
+end
+return self
+end
+function CTLD:_C130DcAutoQueueReadySet(SetId)
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[SetId]or nil
+if not setData or setData.failed then return false end
+if setData.completed or setData.buildStarted or setData.handoffClaimed then return true end
+local ownerKey=self:_C130DcAutoGetOwnerKey(setData)or SetId
+local window=tonumber(self.C130DynamicCargoAutoBuildMergeSeconds)or 10
+if window<0 then
+window=0
+end
+setData.handoffClaimed=true
+setData.readyAt=timer.getTime()
+local batch=self._c130DcAutoBatches[ownerKey]
+if not batch then
+batch={
+ownerKey=ownerKey,
+setIds={},
+created=timer.getTime(),
+dueAt=timer.getTime()+window,
+timer=nil
+}
+self._c130DcAutoBatches[ownerKey]=batch
+end
+batch.setIds[SetId]=true
+if window<=0 then
+self:_C130DcAutoFlushOwnerBatch(ownerKey)
+return true
+end
+if not batch.timer or(batch.timer.IsRunning and not batch.timer:IsRunning())then
+batch.timer=TIMER:New(CTLD._C130DcAutoFlushOwnerBatch,self,ownerKey)
+batch.timer:Start(window)
+self:T(self.lid.." C130DcAuto queue set "..SetId.." owner="..tostring(ownerKey).." merge="..tostring(window))
+else
+self:T(self.lid.." C130DcAuto merge set "..SetId.." owner="..tostring(ownerKey))
+end
+return true
+end
+function CTLD:_C130DcAutoCleanupSet(SetId,Result)
+self:_C130DcAutoEnsureState()
+local setData=self._c130DcAutoSets[SetId]
+if not setData then return self end
+if setData.helperGroupName then
+local helper=GROUP:FindByName(setData.helperGroupName)
+if helper and helper:IsAlive()then
+helper:Destroy(false)
+end
+end
+for _,entry in ipairs(setData.entries or{})do
+if entry.spawnName then
+self._c130DcAutoMap[entry.spawnName]=nil
+end
+if entry.dynamicName then
+self._c130DcAutoMap[entry.dynamicName]=nil
+end
+end
+local batchRemove={}
+for ownerKey,batch in pairs(self._c130DcAutoBatches or{})do
+if batch.setIds and batch.setIds[SetId]then
+batch.setIds[SetId]=nil
+if not next(batch.setIds)then
+if batch.timer and batch.timer.IsRunning and batch.timer:IsRunning()then
+batch.timer:Stop()
+end
+batchRemove[#batchRemove+1]=ownerKey
+end
+end
+end
+for _,ownerKey in ipairs(batchRemove)do
+self._c130DcAutoBatches[ownerKey]=nil
+end
+self._c130DcAutoSets[SetId]=nil
+self:T(self.lid.." C130DcAuto CleanupSet "..SetId.." result="..tostring(Result))
+return self
+end
+function CTLD:_C130DcAutoTryCompleteSet(SetId)
+local setData=self._c130DcAutoSets and self._c130DcAutoSets[SetId]or nil
+if not setData or setData.failed then return false end
+if setData.completed or setData.buildStarted or setData.handoffClaimed then return true end
+local total=0
+local landed=0
+for _,entry in ipairs(setData.entries or{})do
+total=total+1
+if entry.state=="failed"then
+setData.failed=true
+self:_C130DcAutoCleanupSet(SetId,"failed")
+return false
+end
+if entry.state=="landed"then
+landed=landed+1
+end
+end
+if total>0 and landed==total then
+return self:_C130DcAutoQueueReadySet(SetId)
+end
+return false
+end
+function CTLD:_C130DcAutoOnDynamicLoaded(EventData)
+self:_C130DcAutoEnsureState()
+local dcargo=EventData.IniDynamicCargo
+if not dcargo then return false end
+local setData,entry=self:_C130DcAutoGetMappedEntry(EventData.IniDynamicCargoName)
+if not setData or not entry then
+setData,entry=self:_C130DcAutoResolveEntry(dcargo,false)
+end
+if not setData or not entry then
+return false
+end
+if not self:_C130DcAutoIsC130Event(dcargo)then
+return false
+end
+entry.state="loaded"
+entry.dynamicName=EventData.IniDynamicCargoName
+self._c130DcAutoMap[EventData.IniDynamicCargoName]={setId=setData.id,entryId=entry.id}
+local unitName=self:_C130DcAutoGetCarrierUnitName(dcargo)
+local groupName=self:_C130DcAutoGetCarrierGroupName(dcargo)
+if unitName then setData.unitName=unitName end
+if groupName then setData.groupName=groupName end
+setData.ttl=timer.getTime()+3600
+self:T(self.lid.." C130DcAuto mapped loaded "..EventData.IniDynamicCargoName.." set="..setData.id)
+return true
+end
+function CTLD:_C130DcAutoOnDynamicUnloaded(EventData)
+self:_C130DcAutoEnsureState()
+local dcargo=EventData.IniDynamicCargo
+if not dcargo then return false end
+local setData,entry=self:_C130DcAutoGetMappedEntry(EventData.IniDynamicCargoName)
+if not setData or not entry then
+setData,entry=self:_C130DcAutoResolveEntry(dcargo,true)
+end
+if not setData or not entry then
+return false
+end
+if not self:_C130DcAutoIsC130Event(dcargo)then
+return false
+end
+if setData.completed or setData.buildStarted or setData.handoffClaimed then
+return true
+end
+if entry.state=="landed"then
+return true
+end
+if dcargo.IsDetached and not dcargo:IsDetached()then
+return false
+end
+if dcargo.IsLandedStable and not dcargo:IsLandedStable()then
+return false
+end
+if DYNAMICCARGO and DYNAMICCARGO.C130RequireAirborne and dcargo.WasAirborneTransport and not dcargo:WasAirborneTransport()then
+return false
+end
+entry.state="landed"
+entry.dynamicName=EventData.IniDynamicCargoName
+self._c130DcAutoMap[EventData.IniDynamicCargoName]={setId=setData.id,entryId=entry.id}
+local dpos=dcargo.GetLastPosition and dcargo:GetLastPosition()or nil
+if dpos then
+entry.landedVec2=dpos:GetVec2()
+entry.landedVec3=dpos:GetVec3()
+end
+self:_C130DcAutoCreateProxyCargo(setData,entry,dcargo)
+setData.ttl=timer.getTime()+3600
+self:T(self.lid.." C130DcAuto mapped unloaded "..EventData.IniDynamicCargoName.." set="..setData.id)
+self:_C130DcAutoTryCompleteSet(setData.id)
+return true
+end
+function CTLD:_C130DcAutoOnDynamicRemoved(EventData)
+self:_C130DcAutoEnsureState()
+local setData,entry=self:_C130DcAutoGetMappedEntry(EventData.IniDynamicCargoName)
+if not setData or not entry then return false end
+if entry.state~="landed"then
+entry.state="failed"
+setData.failed=true
+self:T(self.lid.." C130DcAuto entry failed/removed "..EventData.IniDynamicCargoName.." set="..setData.id)
+self:_C130DcAutoCleanupSet(setData.id,"removed")
+end
+return true
+end
+function CTLD:_C130DcAutoTick()
+self:_C130DcAutoEnsureState()
+local now=timer.getTime()
+local cleanup={}
+for setId,setData in pairs(self._c130DcAutoSets or{})do
+if setData.failed then
+cleanup[#cleanup+1]={setId=setId,reason="failed"}
+elseif setData.completed then
+if setData.cleanupAt and now>=setData.cleanupAt then
+cleanup[#cleanup+1]={setId=setId,reason="completed"}
+end
+elseif setData.ttl and now>setData.ttl then
+cleanup[#cleanup+1]={setId=setId,reason="ttl"}
+end
+end
+for _,entry in ipairs(cleanup)do
+self:_C130DcAutoCleanupSet(entry.setId,entry.reason)
+end
+return self
+end
 function CTLD:_EventHandler(EventData)
 self:T(string.format("%s Event = %d",self.lid,EventData.id))
 local event=EventData
@@ -73947,6 +75005,12 @@ self:T(self.lid.."GC New Event "..event.IniDynamicCargoName)
 self.DynamicCargo[event.IniDynamicCargoName]=event.IniDynamicCargo
 elseif event.id==EVENTS.DynamicCargoLoaded then
 self:T(self.lid.."GC Loaded Event "..event.IniDynamicCargoName)
+if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+local handled=self:_C130DcAutoOnDynamicLoaded(event)
+if handled then
+return self
+end
+end
 local dcargo=event.IniDynamicCargo
 local client=CLIENT:FindByPlayerName(dcargo.Owner)
 if client and client:IsAlive()then
@@ -73973,6 +75037,12 @@ self:_RefreshCrateQuantityMenus(Group,client,nil)
 end
 elseif event.id==EVENTS.DynamicCargoUnloaded then
 self:T(self.lid.."GC Unload Event "..event.IniDynamicCargoName)
+if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+local handled=self:_C130DcAutoOnDynamicUnloaded(event)
+if handled then
+return self
+end
+end
 local dcargo=event.IniDynamicCargo
 local client=CLIENT:FindByPlayerName(dcargo.Owner)
 if client and client:IsAlive()then
@@ -74012,6 +75082,9 @@ self:_RefreshCrateQuantityMenus(Group,client,nil)
 end
 elseif event.id==EVENTS.DynamicCargoRemoved then
 self:T(self.lid.."GC Remove Event "..event.IniDynamicCargoName)
+if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+self:_C130DcAutoOnDynamicRemoved(event)
+end
 self.DynamicCargo[event.IniDynamicCargoName]=nil
 end
 return self
@@ -74972,6 +76045,10 @@ fwBatchIndex=fwBatchState.batch or 0
 end
 local fwZeroAngleSetHeading=nil
 local fwNonZeroAngleSetHeading=nil
+local c130DcAutoSetId=nil
+if not drop and not pack and self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild and self:IsC130J(Unit)and self:_C130DcAutoIsBuildableCargo(cargotype)then
+c130DcAutoSetId=self:_C130DcAutoRegisterSet(Group,Unit,cargotype,zone)
+end
 for i=1,number do
 local currentAngleOffset=0
 local cratealias=string.format("%s-%d",cratename,math.random(1,100000))
@@ -75144,6 +76221,10 @@ table.insert(obtainedcargo,realcargo)
 end
 local CCat4,CType4,CShape4=cargotype:GetStaticTypeAndShape()
 realcargo:SetStaticTypeAndShape(CCat4,CType4,CShape4)
+if c130DcAutoSetId and realcargo then
+self:_C130DcAutoRegisterDynamicCargo(realcargo:GetPositionable())
+self:_C130DcAutoRegisterEntry(c130DcAutoSetId,realcargo)
+end
 table.insert(self.Spawned_Cargo,realcargo)
 end
 if(IsHerc or IsHelo)and fwBatchState and fwBatchKey and not drop then
@@ -76079,7 +77160,7 @@ end
 function CTLD:CanBuildCrates(Group,Unit,crates,number,Engineering,MultiDrop)
 return true
 end
-function CTLD:_BuildCrates(Group,Unit,Engineering,MultiDrop)
+function CTLD:_BuildCrates(Group,Unit,Engineering,MultiDrop,NotifyGroup)
 self:T(self.lid.." _BuildCrates")
 if self:IsFixedWing(Unit)and self.enableFixedWing and not Engineering then
 local speed=Unit:GetVelocityKMH()
@@ -76103,6 +77184,38 @@ if Engineering and self.EngineerSearch and self.EngineerSearch>baseDist then
 finddist=self.EngineerSearch
 end
 local crates,number=self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering)
+local activeSetId=Engineering and self._c130DcAutoActiveSetId or nil
+local notifyGroup=(not Engineering)and Group or nil
+if activeSetId then
+crates,number=self:_C130DcAutoFilterCrates(crates,activeSetId)
+local notifySetId=nil
+if type(activeSetId)=="table"then
+notifySetId=activeSetId[1]or next(activeSetId)
+else
+notifySetId=activeSetId
+end
+local setData=notifySetId and self._c130DcAutoSets and self._c130DcAutoSets[notifySetId]or nil
+if setData and setData.groupName then
+notifyGroup=GROUP:FindByName(setData.groupName)or notifyGroup
+end
+local scopeText=tostring(activeSetId)
+if type(activeSetId)=="table"then
+local ids={}
+for k,v in pairs(activeSetId)do
+if type(k)=="number"then
+ids[#ids+1]=tostring(v)
+else
+ids[#ids+1]=tostring(k)
+end
+end
+table.sort(ids)
+scopeText=table.concat(ids,",")
+end
+self:T(self.lid.." C130DcAuto engineer scope set="..scopeText.." crates="..tostring(number))
+end
+if NotifyGroup then
+notifyGroup=NotifyGroup
+end
 local buildables={}
 local foundbuilds=false
 local canbuild=false
@@ -76171,7 +77284,9 @@ end
 report:Add("------------------------------------------------------------")
 local text=report:Text()
 if not Engineering then
-self:_SendMessage(text,30,true,Group,true)
+self:_SendMessage(text,30,true,notifyGroup or Group,true)
+elseif notifyGroup then
+self:_SendMessage(text,30,true,notifyGroup,true)
 else
 self:T(text)
 end
@@ -76190,6 +77305,9 @@ local lat=(hdg+90)%360
 local base=Unit:GetCoordinate():Translate(20,hdg)
 if full==1 then
 local cratesNow,numberNow=self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering)
+if activeSetId then
+cratesNow,numberNow=self:_C130DcAutoFilterCrates(cratesNow,activeSetId)
+end
 self:_CleanUpCrates(cratesNow,build,numberNow)
 self:_RefreshLoadCratesMenu(Group,Unit)
 if self.buildtime and self.buildtime>0 then
@@ -76198,7 +77316,8 @@ buildtimer:Start(self.buildtime)
 if not notified then
 local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
 msg=string.format(msg,self.buildtime)
-self:_SendMessage(msg,15,false,Group)
+local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
+self:_SendMessage(msg,15,false,startMsgGroup)
 notified=true
 end
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
@@ -76209,6 +77328,9 @@ else
 local start=-((full-1)*sep)/2
 for n=1,full do
 local cratesNow,numberNow=self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering)
+if activeSetId then
+cratesNow,numberNow=self:_C130DcAutoFilterCrates(cratesNow,activeSetId)
+end
 self:_CleanUpCrates(cratesNow,build,numberNow)
 self:_RefreshLoadCratesMenu(Group,Unit)
 local off=start+(n-1)*sep
@@ -76220,7 +77342,10 @@ buildtimer:Start(self.buildtime)
 if not notified then
 local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
 msg=string.format(msg,self.buildtime)
-self:_SendMessage(msg,15,false,Group)
+local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
+if startMsgGroup then
+self:_SendMessage(msg,15,false,startMsgGroup)
+end
 notified=true
 end
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
@@ -77212,7 +78337,7 @@ local left=#list-i+1
 local label
 local loadkey=self.gettext:GetEntry("MENU_LOAD_SINGLE",self.locale)
 if left>=needed then
-label=string.format("%d. %s %s",cName,lineIndex,loadkey)
+label=string.format("%d. %s %s",lineIndex,loadkey,cName)
 i=i+needed
 else
 label=string.format("%d. %s %s (%d/%d)",lineIndex,loadkey,cName,left,needed)
@@ -79538,6 +80663,19 @@ self:HandleEvent(EVENTS.DynamicCargoUnloaded,self._EventHandler)
 self:HandleEvent(EVENTS.DynamicCargoRemoved,self._EventHandler)
 self:HandleEvent(EVENTS.Land,self._EventHandler)
 self:HandleEvent(EVENTS.Takeoff,self._EventHandler)
+self:_C130DcAutoEnsureState()
+self._c130DcAutoSets={}
+self._c130DcAutoMap={}
+self._c130DcAutoBatches={}
+self._c130DcAutoActiveSetId=nil
+if self._c130DcAutoTimer and self._c130DcAutoTimer:IsRunning()then
+self._c130DcAutoTimer:Stop()
+end
+self._c130DcAutoTimer=nil
+if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+self._c130DcAutoTimer=TIMER:New(CTLD._C130DcAutoTick,self)
+self._c130DcAutoTimer:Start(30,30)
+end
 self:__Status(-5)
 if self.enableLoadSave then
 local interval=self.saveinterval
@@ -79604,6 +80742,26 @@ return self
 end
 function CTLD:onafterStop(From,Event,To)
 self:T({From,Event,To})
+if self._c130DcAutoTimer and self._c130DcAutoTimer:IsRunning()then
+self._c130DcAutoTimer:Stop()
+end
+self._c130DcAutoTimer=nil
+local cleanup={}
+for setId,_ in pairs(self._c130DcAutoSets or{})do
+cleanup[#cleanup+1]=setId
+end
+for _,setId in ipairs(cleanup)do
+self:_C130DcAutoCleanupSet(setId,"stop")
+end
+for _,batch in pairs(self._c130DcAutoBatches or{})do
+if batch.timer and batch.timer.IsRunning and batch.timer:IsRunning()then
+batch.timer:Stop()
+end
+end
+self._c130DcAutoSets={}
+self._c130DcAutoMap={}
+self._c130DcAutoBatches={}
+self._c130DcAutoActiveSetId=nil
 self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
 self:UnHandleEvent(EVENTS.PlayerEnterUnit)
 self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
