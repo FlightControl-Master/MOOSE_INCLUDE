@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-02T16:24:29+01:00-c346eb7acc23eb5bbcb131bf90cda1607324d9a9 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-03T06:25:56+01:00-8968add1266a5a1fdc5ee969d3dda647fc289e73 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -2733,9 +2733,10 @@ end
 
 --- Print a table to log in a nice format
 -- @param #table t The table to print
--- @param #number indent Number of indents
+-- @param #number indent (Optional) Number of indents. Defaults to 0.
 -- @param #boolean noprint Don't log but return text
--- @param #number maxDepth Only cycle this deep, defaults to 5.
+-- @param #number maxDepth (Optional) Only cycle this deep, defaults to 5.
+-- @param #table seen (Optional) 
 -- @return #string text Text created on the fly of the log output
 function UTILS.PrintTableToLog(t, indent, noprint, maxDepth, seen)
   maxDepth = maxDepth or 5
@@ -3582,7 +3583,7 @@ function UTILS.ClockToSeconds(clock)
 end
 
 --- Display clock and mission time on screen as a message to all.
--- @param #number duration Duration in seconds how long the time is displayed. Default is 5 seconds.
+-- @param #number duration (Optional) Duration in seconds how long the time is displayed. Default is 5 seconds.
 function UTILS.DisplayMissionTime(duration)
   duration=duration or 5
   local Tnow=timer.getAbsTime()
@@ -3596,7 +3597,7 @@ end
 
 --- Replace illegal characters [<>|/?*:\\] in a string.
 -- @param #string Text Input text.
--- @param #string ReplaceBy Replace illegal characters by this character or string. Default underscore "_".
+-- @param #string ReplaceBy (Optional) Replace illegal characters by this character or string. Default underscore "_".
 -- @return #string The input text with illegal chars replaced.
 function UTILS.ReplaceIllegalCharacters(Text, ReplaceBy)
   ReplaceBy=ReplaceBy or "_"
@@ -4470,7 +4471,7 @@ function UTILS.GetSunRiseAndSet(DayOfYear, Latitude, Longitude, Rising, Tlocal)
 -- @param #number Latitude Latitude.
 -- @param #number Longitude Longitude.
 -- @param #boolean Rising If true, calc sun rise, or sun set otherwise.
--- @param #number Tlocal Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
+-- @param #number Tlocal (Optional) Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
 -- @return #number Sun rise in seconds of the day.
 function UTILS.GetSunrise(Day, Month, Year, Latitude, Longitude, Tlocal)
 
@@ -4486,7 +4487,7 @@ end
 -- @param #number Latitude Latitude.
 -- @param #number Longitude Longitude.
 -- @param #boolean Rising If true, calc sun rise, or sun set otherwise.
--- @param #number Tlocal Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
+-- @param #number Tlocal (Optional) Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
 -- @return #number Sun rise in seconds of the day.
 function UTILS.GetSunset(Day, Month, Year, Latitude, Longitude, Tlocal)
 
@@ -5164,12 +5165,12 @@ end
 -- @param #boolean Reduce If false, existing loaded groups will not be reduced to fit the saved number.
 -- @param #boolean Structured (Optional, needs Reduce = true) If true, and the data has been saved as structure before, remove the correct unit types as per the saved list.
 -- @param #boolean Cinematic (Optional, needs Structured = true) If true, place a fire/smoke effect on the dead static position.
--- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
--- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
--- @param #boolean Resurrection If true, dead units can be restored on load. Defaults to false.
--- @param #number ResurrectPercentage Use this percentage of probability to resurrect a unit. [0..100], defaults to 25.
--- @param #number Healmin If set, life points of a resurrected unit will be randomly restored to min this percentage. [0..100], defaults to 25.
--- @param #number Healmax If set, life points of a resurrected unit will be randomly restored to max this percentage. [0..100], defaults to 75.
+-- @param #number Effect (Optional) (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
+-- @param #number Density (Optional) (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #boolean Resurrection (Optional) If true, dead units can be restored on load. Defaults to false.
+-- @param #number ResurrectPercentage (Optional) Use this percentage of probability to resurrect a unit. [0..100], defaults to 25.
+-- @param #number Healmin (Optional) If set, life points of a resurrected unit will be randomly restored to min this percentage. [0..100], defaults to 25.
+-- @param #number Healmax (Optional) If set, life points of a resurrected unit will be randomly restored to max this percentage. [0..100], defaults to 75.
 -- @return #table Table of data objects (tables) containing groupname, coordinate and group object. Returns nil when file cannot be read.
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
 function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce,Structured,Cinematic,Effect,Density,Resurrection,ResurrectPercentage,Healmin,Healmax)
@@ -5292,8 +5293,8 @@ end
 -- @param #boolean Spawn If set to false, do not re-spawn the groups loaded in location and reduce to size.
 -- @param #boolean Structured (Optional, needs Spawn=true)If true, and the data has been saved as structure before, remove the correct unit types as per the saved list.
 -- @param #boolean Cinematic (Optional, needs Structured=true) If true, place a fire/smoke effect on the dead static position.
--- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
--- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #number Effect (Optional) (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
+-- @param #number Density (Optional) (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
 -- @return Core.Set#SET_GROUP Set of GROUP objects.
 -- Returns nil when file cannot be read. Returns a table of data entries if Spawn is false: `{ groupname=groupname, size=size, coordinate=coordinate, template=template }`
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
@@ -5478,8 +5479,8 @@ end
 -- @param #boolean Reduce If false, do not destroy the units with size=0.
 -- @param #boolean Dead (Optional, needs Reduce = true) If Dead is true, re-spawn the dead object as dead and do not just delete it.
 -- @param #boolean Cinematic (Optional, needs Dead = true) If true, place a fire/smoke effect on the dead static position.
--- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
--- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #number Effect (Optional) (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
+-- @param #number Density (Optional) (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
 -- @return #table Table of data objects (tables) containing staticname, size (0=dead else 1), coordinate and the static object. Dead objects will have coordinate points `{x=0,y=0,z=0}`
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
 -- Returns nil when file cannot be read.
@@ -5648,13 +5649,13 @@ end
 --- Helper function to plot a racetrack on the F10 Map - curtesy of Buur.
 -- @param Core.Point#COORDINATE Coordinate
 -- @param #number Altitude Altitude in feet
--- @param #number Speed Speed in knots
--- @param #number Heading Heading in degrees
--- @param #number Leg Leg in NM
--- @param #number Coalition Coalition side, e.g. coaltion.side.RED or coaltion.side.BLUE
--- @param #table Color Color of the line in RGB, e.g. {1,0,0} for red
--- @param #number Alpha Transparency factor, between 0.1 and 1
--- @param #number LineType Line type to be used, line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Speed (Optional) Speed in knots. Defaults to 350.
+-- @param #number Heading (Optional) Heading in degrees. Defaults to 270.
+-- @param #number Leg (Optional) Leg in NM. Defaults to 10nm.
+-- @param #number Coalition (Optional) Coalition side, e.g. coaltion.side.RED or coaltion.side.BLUE. Defaults to -1.
+-- @param #table Color (Optional) Color of the line in RGB, e.g. {1,0,0} for red, Defaults to {1,0,0}.
+-- @param #number Alpha (Optional) Transparency factor, between 0.1 and 1. Defaults to 1.
+-- @param #number LineType (Optional) Line type to be used, line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly
 function UTILS.PlotRacetrack(Coordinate, Altitude, Speed, Heading, Leg, Coalition, Color, Alpha, LineType, ReadOnly)
     local fix_coordinate = Coordinate
@@ -6457,7 +6458,7 @@ function UTILS.ReadCSV(filename)
 end
 
 --- Seed the LCG random number generator.
--- @param #number seed Seed value. Default is a random number using math.random()
+-- @param #number seed (Optional) Seed value. Default is a random number using math.random()
 function UTILS.LCGRandomSeed(seed)
   UTILS.lcg = {
     seed = seed or math.random(1, 2^32 - 1),
@@ -6521,24 +6522,24 @@ end
 -- References: [DCS Forum Topic](https://forum.dcs.world/topic/282989-farp-equipment-to-run-it)
 -- @param #string Name Name of this FARP installation. Must be unique. 
 -- @param Core.Point#COORDINATE Coordinate Where to spawn the FARP.
--- @param #string FARPType Type of FARP, can be one of the known types ENUMS.FARPType.FARP, ENUMS.FARPType.INVISIBLE, ENUMS.FARPType.HELIPADSINGLE, ENUMS.FARPType.PADSINGLE. Defaults to ENUMS.FARPType.FARP.
--- @param #number Coalition Coalition of this FARP, i.e. coalition.side.BLUE or coalition.side.RED, defaults to coalition.side.BLUE.
--- @param #number Country Country of this FARP, defaults to country.id.USA (blue) or country.id.RUSSIA (red).
--- @param #number CallSign Callsign of the FARP ATC, defaults to CALLSIGN.FARP.Berlin.
--- @param #number Frequency Frequency of the FARP ATC Radio, defaults to 127.5 (MHz).
--- @param #number Modulation Modulation of the FARP ATC Radio, defaults to radio.modulation.AM.
+-- @param #string FARPType (Optional) Type of FARP, can be one of the known types ENUMS.FARPType.FARP, ENUMS.FARPType.INVISIBLE, ENUMS.FARPType.HELIPADSINGLE, ENUMS.FARPType.PADSINGLE. Defaults to ENUMS.FARPType.FARP.
+-- @param #number Coalition (Optional) Coalition of this FARP, i.e. coalition.side.BLUE or coalition.side.RED, defaults to coalition.side.BLUE.
+-- @param #number Country (Optional) Country of this FARP, defaults to country.id.USA (blue) or country.id.RUSSIA (red).
+-- @param #number CallSign (Optional) Callsign of the FARP ATC, defaults to CALLSIGN.FARP.Berlin.
+-- @param #number Frequency (Optional) Frequency of the FARP ATC Radio, defaults to 127.5 (MHz).
+-- @param #number Modulation (Optional) Modulation of the FARP ATC Radio, defaults to radio.modulation.AM.
 -- @param #number ADF ADF Beacon (FM) Frequency in KHz, e.g. 428. If not nil, creates an VHF/FM ADF Beacon for this FARP. Requires a sound called "beacon.ogg" to be in the mission (trigger "sound to" ...)
--- @param #number SpawnRadius Radius of the FARP, i.e. where the FARP objects will be placed in meters, not more than 150m away. Defaults to 100.
+-- @param #number SpawnRadius (Optional) Radius of the FARP, i.e. where the FARP objects will be placed in meters, not more than 150m away. Defaults to 100.
 -- @param #string VehicleTemplate, template name for additional vehicles. Can be nil for no additional vehicles.
--- @param #number Liquids Tons of fuel to be added initially to the FARP. Defaults to 10 (tons). Set to 0 for no fill.
--- @param #number Equipment Number of equipment items per known item to be added initially to the FARP. Defaults to 10 (items). Set to 0 for no fill.
+-- @param #number Liquids (Optional) Tons of fuel to be added initially to the FARP. Defaults to 10 (tons). Set to 0 for no fill.
+-- @param #number Equipment(Optional)  Number of equipment items per known item to be added initially to the FARP. Defaults to 10 (items). Set to 0 for no fill.
 -- @param #number Airframes Number of helicopter airframes per known type in Ops.CSAR#CSAR.AircraftType to be added initially to the FARP. Set to 0 for no airframes.
 -- @param #string F10Text Text to display on F10 map if given. Handy to post things like the ADF beacon Frequency, Callsign and ATC Frequency.
 -- @param #boolean DynamicSpawns If true, allow Dynamic Spawns from this FARP.
 -- @param #boolean HotStart If true and DynamicSpawns is true, allow hot starts for Dynamic Spawns from this FARP.
 -- @param #number NumberPads If given, spawn this number of pads.
--- @param #number SpacingX For NumberPads > 1, space this many meters horizontally. Defaults to 100.
--- @param #number SpacingY For NumberPads > 1, space this many meters vertically. Defaults to 100.
+-- @param #number SpacingX (Optional) For NumberPads > 1, space this many meters horizontally. Defaults to 100.
+-- @param #number SpacingY (Optional) For NumberPads > 1, space this many meters vertically. Defaults to 100.
 -- @return #list<Wrapper.Static#STATIC> Table of spawned objects and vehicle object (if given).
 -- @return #string ADFBeaconName Name of the ADF beacon, to be able to remove/stop it later.
 -- @return #number MarkerID ID of the F10 Text, to be able to remove it later.
@@ -6723,9 +6724,9 @@ end
 -- @param #number ADF (Optional) ADF Frequency in kHz (Kilohertz), if given activate an ADF Beacon at the location of the MASH.
 -- @param #string Livery (Optional) The livery of the static CH-47, defaults to dark green.
 -- @param #boolean DeployHelo (Optional) If true, deploy the helicopter static.
--- @param #number MASHRadio MASH Radio Frequency, defaults to 127.5.
--- @param #number MASHRadioModulation MASH Radio Modulation, defaults to radio.modulation.AM.
--- @param #number MASHCallsign Defaults to CALLSIGN.FARP.Berlin.
+-- @param #number MASHRadio (Optional) MASH Radio Frequency, defaults to 127.5.
+-- @param #number MASHRadioModulation (Optional) MASH Radio Modulation, defaults to radio.modulation.AM.
+-- @param #number MASHCallsign (Optional) Defaults to CALLSIGN.FARP.Berlin.
 -- @param #table Templates (Optional) You can hand in your own template table of numbered(!) entries. Each entry consist of a relative(!) x,y position and data of a 
 -- static, shape_name is optional. Also, livery_id is optional, but is applied to the helicopter static only.
 -- @return #table Table of Wrapper.Static#STATIC objects that were spawned.
@@ -7069,13 +7070,13 @@ end
 
 --- Show a picture on the screen to all
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToAll(FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7092,13 +7093,13 @@ end
 --- Show a picture on the screen to Coalition
 -- @param #number Coalition Coalition ID, can be coalition.side.BLUE, coalition.side.RED or coalition.side.NEUTRAL
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToCoalition(Coalition, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7117,13 +7118,13 @@ end
 --- Show a picture on the screen to Country
 -- @param #number Country Country ID, can be country.id.USA, country.id.RUSSIA, etc.
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size(Optional)  Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToCountry(Country, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7140,13 +7141,13 @@ end
 --- Show a picture on the screen to Group
 -- @param Wrapper.Group#GROUP Group Group to show the picture to
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToGroup(Group, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7163,13 +7164,13 @@ end
 --- Show a picture on the screen to Unit
 -- @param Wrapper.Unit#UNIT Unit Unit to show the picture to
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToUnit(Unit, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7191,8 +7192,8 @@ end
 
 --- Set the mission briefing for a coalition.
 -- @param #number Coalition Briefing coalition ID, can be coalition.side.BLUE, coalition.side.RED or coalition.side.NEUTRAL
--- @param #string Text Briefing text, can contain newlines, will be converted formatted properly for DCS
--- @param #string Picture Picture file path, can be a file in the DEFAULT folder inside the .miz
+-- @param #string Text Briefing text, can contain newlines, will be converted formatted properly for DCS.
+-- @param #string Picture (Optional) Picture file path, can be a file in the DEFAULT folder inside the .miz. Defaults to "".
 function UTILS.SetMissionBriefing(Coalition, Text, Picture)
     Text = Text or ""
     Text = Text:gsub("\n", "\\n")
@@ -7977,8 +7978,8 @@ PROFILER = {
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --- Start profiler.
--- @param #number Delay Delay in seconds before profiler is stated. Default is immediately.
--- @param #number Duration Duration in (game) seconds before the profiler is stopped. Default is when mission ends.
+-- @param #number Delay (Optional) Delay in seconds before profiler is stated. Default is immediately.
+-- @param #number Duration (Optional) Duration in (game) seconds before the profiler is stopped. Default is when mission ends.
 function PROFILER.Start( Delay, Duration )
 
   -- Check if os, io and lfs are available.
@@ -9256,8 +9257,8 @@ SOCKET.version="0.3.0"
 
 --- Create a new SOCKET object.
 -- @param #SOCKET self
--- @param #number Port UDP port. Default `10042`.
--- @param #string Host Host. Default `"127.0.0.1"`.
+-- @param #number Port (Optional) UDP port. Default `10042`.
+-- @param #string Host (Optional) Host. Default `"127.0.0.1"`.
 -- @return #SOCKET self
 function SOCKET:New(Port, Host)
 
@@ -9282,7 +9283,7 @@ end
 
 --- Set port.
 -- @param #SOCKET self
--- @param #number Port Port. Default 10042.
+-- @param #number Port (Optional) Port. Default 10042.
 -- @return #SOCKET self
 function SOCKET:SetPort(Port)
   self.port=Port or 10042
@@ -9290,7 +9291,7 @@ end
 
 --- Set host.
 -- @param #SOCKET self
--- @param #string Host Host. Default `"127.0.0.1"`.
+-- @param #string Host (Optional) Host. Default `"127.0.0.1"`.
 -- @return #SOCKET self
 function SOCKET:SetHost(Host)
   self.host=Host or "127.0.0.1"
@@ -9338,11 +9339,11 @@ end
 --- Send a text-to-speech message.
 -- @param #SOCKET self
 -- @param #string Text The text message to speek.
--- @param #number Provider The TTS provider: 0=Microsoft (default), 1=Google.
+-- @param #number Provider (Optional) The TTS provider: 0=Microsoft (default), 1=Google.
 -- @param #string Voice The specific voice to use, e.g. `"Microsoft David Desktop"` or "`en-US-Standard-A`". If not set, the service will choose a voice based on the other parameters such as culture and gender.
 -- @param #string Culture The Culture or language code, *e.g.* `"en-US"`.
--- @param #string Gender The Gender, *i.e.* "male", "female". Default "female".
--- @param #number Volume The volume. Microsoft: [0,100] default 50, Google: [-96, 10] default 0.
+-- @param #string Gender (Optional) The Gender, *i.e.* "male", "female". Default "female".
+-- @param #number Volume (Optional) The volume. Microsoft: [0,100] default 50, Google: [-96, 10] default 0.
 -- @return #SOCKET self
 function SOCKET:SendTextToSpeech(Text, Provider, Voice, Culture, Gender, Volume)
 
@@ -18006,7 +18007,7 @@ end
 
 --- Set draw coalition of zone.
 -- @param #ZONE_BASE self
--- @param #number (Optional) Coalition Coalition. Default -1.
+-- @param #number Coalition (Optional) Coalition. Default -1.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetDrawCoalition(Coalition)
   self.drawCoalition=Coalition or -1
@@ -43677,7 +43678,7 @@ end
 -- @param #SPAWNSTATIC self
 -- @param #number CallsignID (Optional) Callsign ID. Default 1 (="London").
 -- @param #number Frequency (Optional) Frequency in MHz. Default 127.5 MHz.
--- @param #number Modulation Modulation 0=AM, 1=FM. Defaults to 0
+-- @param #number Modulation (Optional) Modulation 0=AM, 1=FM. Defaults to 0
 -- @param #boolean DynamicSpawns If true, allow Dynamic Spawns
 -- @param #boolean DynamicHotStarts If true, and DynamicSpawns is true, then allow Dynamic Spawns with hot starts.
 -- @return #SPAWNSTATIC self
@@ -49070,7 +49071,7 @@ end
 
 --- Triggers an explosion at the coordinates of the positionable.
 -- @param #POSITIONABLE self
--- @param #number power Power of the explosion in kg TNT. Default 100 kg TNT.
+-- @param #number power (Optional) Power of the explosion in kg TNT. Default 100 kg TNT.
 -- @param #number delay (Optional) Delay of explosion in seconds.
 -- @return #POSITIONABLE self
 function POSITIONABLE:Explode(power, delay)
@@ -49098,9 +49099,9 @@ end
 
 --- Returns a COORDINATE object, which is offset with respect to the orientation of the POSITIONABLE.
 -- @param #POSITIONABLE self
--- @param #number x Offset in the direction "the nose" of the unit is pointing in meters. Default 0 m.
--- @param #number y Offset "above" the unit in meters. Default 0 m.
--- @param #number z Offset in the direction "the wing" of the unit is pointing in meters. z>0 starboard, z<0 port. Default 0 m.
+-- @param #number x (Optional) Offset in the direction "the nose" of the unit is pointing in meters. Default 0 m.
+-- @param #number y (Optional) Offset "above" the unit in meters. Default 0 m.
+-- @param #number z(Optional)  Offset in the direction "the wing" of the unit is pointing in meters. z>0 starboard, z<0 port. Default 0 m.
 -- @return Core.Point#COORDINATE The COORDINATE of the offset with respect to the orientation of the  POSITIONABLE.
 function POSITIONABLE:GetOffsetCoordinate( x, y, z )
 
@@ -49139,9 +49140,9 @@ end
 
 --- Returns a COORDINATE object, which is transformed to be relative to the POSITIONABLE. Inverse of @{#POSITIONABLE.GetOffsetCoordinate}.
 -- @param #POSITIONABLE self
--- @param #number x Offset along the world x-axis in meters. Default 0 m.
--- @param #number y Offset along the world y-axis in meters. Default 0 m.
--- @param #number z Offset along the world z-axis in meters. Default 0 m.
+-- @param #number x (Optional) Offset along the world x-axis in meters. Default 0 m.
+-- @param #number y (Optional) Offset along the world y-axis in meters. Default 0 m.
+-- @param #number z (Optional) Offset along the world z-axis in meters. Default 0 m.
 -- @return Core.Point#COORDINATE The relative COORDINATE with respect to the orientation of the  POSITIONABLE.
 function POSITIONABLE:GetRelativeCoordinate( x, y, z )
 
@@ -51560,7 +51561,7 @@ end
 
 --- Activate LINK4 system of the CONTROLLABLE. The controllable should be an aircraft carrier!
 -- @param #CONTROLLABLE self
--- @param #number Frequency Link4 Frequency in MHz, e.g. 336 (defaults to 336 MHz)
+-- @param #number Frequency (Optional) Link4 Frequency in MHz, e.g. 336 (defaults to 336 MHz)
 -- @param #number UnitID (Optional) The DCS UNIT ID of the unit the LINK4 system is attached to. Defaults to the UNIT itself.
 -- @param #string Callsign (Optional) Morse code identification callsign.
 -- @param #number Delay (Optional) Delay in seconds before the LINK4 is activated.
@@ -51651,7 +51652,7 @@ end
 --- Set callsign of the CONTROLLABLE. See [DCS command setCallsign](https://wiki.hoggitworld.com/view/DCS_command_setCallsign)
 -- @param #CONTROLLABLE self
 -- @param DCS#CALLSIGN CallName Number corresponding the the callsign identifier you wish this group to be called.
--- @param #number CallNumber The number value the group will be referred to as. Only valid numbers are 1-9. For example Uzi **5**-1. Default 1.
+-- @param #number CallNumber (Optional) The number value the group will be referred to as. Only valid numbers are 1-9. For example Uzi **5**-1. Default 1.
 -- @param #number Delay (Optional) Delay in seconds before the callsign is set. Default is immediately.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:CommandSetCallsign( CallName, CallNumber, Delay )
@@ -51729,7 +51730,7 @@ end
 --- Set radio frequency. See [DCS command SetFrequency](https://wiki.hoggitworld.com/view/DCS_command_setFrequency)
 -- @param #CONTROLLABLE self
 -- @param #number Frequency Radio frequency in MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
 -- @param #number Power (Optional) Power of the Radio in Watts. Defaults to 10.
 -- @param #number Delay (Optional) Delay in seconds before the frequency is set. Default is immediately.
 -- @return #CONTROLLABLE self
@@ -51756,7 +51757,7 @@ end
 --- [AIR] Set radio frequency. See [DCS command SetFrequencyForUnit](https://wiki.hoggitworld.com/view/DCS_command_setFrequencyForUnit)
 -- @param #CONTROLLABLE self
 -- @param #number Frequency Radio frequency in MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
 -- @param #number Power (Optional) Power of the Radio in Watts. Defaults to 10.
 -- @param #number UnitID (Optional, if your object is a UNIT) The UNIT ID this is for.
 -- @param #number Delay (Optional) Delay in seconds before the frequency is set. Default is immediately.
@@ -51781,7 +51782,7 @@ end
 
 --- [AIR] Set smoke on or off. See [DCS command smoke on off](https://wiki.hoggitworld.com/view/DCS_command_smoke_on_off)
 -- @param #CONTROLLABLE self
--- @param #boolean OnOff Set to true for on and false for off. Defaults to true.
+-- @param #boolean OnOff (Optional) Set to true for on and false for off. Defaults to true.
 -- @param #number Delay (Optional) Delay the command by this many seconds.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:CommandSmokeOnOff(OnOff, Delay)
@@ -51841,7 +51842,7 @@ end
 --- Set EPLRS data link on/off.
 -- @param #CONTROLLABLE self
 -- @param #boolean SwitchOnOff If true (or nil) switch EPLRS on. If false switch off.
--- @param #number idx Task index. Default 1.
+-- @param #number idx (Optional) Task index. Default 1.
 -- @return #table Task wrapped action.
 function CONTROLLABLE:TaskEPLRS( SwitchOnOff, idx )
 
@@ -52159,7 +52160,7 @@ end
 -- The controllable has to be an infantry group!
 -- @param #CONTROLLABLE self
 -- @param Core.Point#COORDINATE Coordinate Coordinates where AI is expecting to be picked up.
--- @param #number Radius Radius in meters. Default 200 m.
+-- @param #number Radius (Optional) Radius in meters. Default 200 m.
 -- @param #string UnitType The unit type name of the carrier, e.g. "UH-1H". Must not be specified.
 -- @return DCS#Task Embark to transport task.
 function CONTROLLABLE:TaskEmbarkToTransport( Coordinate, Radius, UnitType )
@@ -52233,8 +52234,8 @@ end
 --- (AIR) Orbit at a position with at a given altitude and speed. Optionally, a race track pattern can be specified.
 -- @param #CONTROLLABLE self
 -- @param Core.Point#COORDINATE Coord Coordinate at which the CONTROLLABLE orbits. Can also be given as a `DCS#Vec3` or `DCS#Vec2` object.
--- @param #number Altitude Altitude in meters of the orbit pattern. Default y component of Coord.
--- @param #number Speed Speed [m/s] flying the orbit pattern. Default 128 m/s = 250 knots.
+-- @param #number Altitude (Optional) Altitude in meters of the orbit pattern. Default y component of Coord.
+-- @param #number Speed (Optional) Speed [m/s] flying the orbit pattern. Default 128 m/s = 250 knots.
 -- @param Core.Point#COORDINATE CoordRaceTrack (Optional) If this coordinate is specified, the CONTROLLABLE will fly a race-track pattern using this and the initial coordinate.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:TaskOrbit( Coord, Altitude, Speed, CoordRaceTrack )
@@ -52304,11 +52305,11 @@ end
 --
 -- @param #CONTROLLABLE self
 -- @param Wrapper.Airbase#AIRBASE Airbase Airbase to attack.
--- @param #number WeaponType (optional) Bitmask of weapon types those allowed to use. See [DCS enum weapon flag](https://wiki.hoggitworld.com/view/DCS_enum_weapon_flag). Default 2147485694 = AnyBomb (GuidedBomb + AnyUnguidedBomb).
--- @param DCS#AI.Task.WeaponExpend WeaponExpend Enum AI.Task.WeaponExpend that defines how much munitions the AI will expend per attack run. Default "ALL".
--- @param #number AttackQty Number of times the group will attack if the target. Default 1.
--- @param DCS#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
--- @param #boolean GroupAttack (optional) Flag indicates that the target must be engaged by all aircrafts of the controllable. Has effect only if the task is assigned to a group and not to a single aircraft.
+-- @param #number WeaponType (Optional) Bitmask of weapon types those allowed to use. See [DCS enum weapon flag](https://wiki.hoggitworld.com/view/DCS_enum_weapon_flag). Default 2147485694 = AnyBomb (GuidedBomb + AnyUnguidedBomb).
+-- @param DCS#AI.Task.WeaponExpend (Optional) WeaponExpend Enum AI.Task.WeaponExpend that defines how much munitions the AI will expend per attack run. Default "ALL".
+-- @param #number AttackQty (Optional) Number of times the group will attack if the target. Default 1.
+-- @param DCS#Azimuth Direction (Optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
+-- @param #boolean GroupAttack (Optional) Flag indicates that the target must be engaged by all aircrafts of the controllable. Has effect only if the task is assigned to a group and not to a single aircraft.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskBombingRunway( Airbase, WeaponType, WeaponExpend, AttackQty, Direction, GroupAttack )
 
@@ -52499,7 +52500,7 @@ end
 -- @param DCS#Vec3 Vec3 Position of the unit / lead unit of the controllable relative lead unit of another controllable in frame reference oriented by course of lead unit of another controllable. If another controllable is on land the unit / controllable will orbit around.
 -- @param #number LastWaypointIndex Detach waypoint of another controllable. Once reached the unit / controllable Escort task is finished.
 -- @param #number EngagementDistance Maximal distance from escorted controllable to threat in meters. If the threat is already engaged by escort escort will disengage if the distance becomes greater than 1.5 * engagementDistMax.
--- @param DCS#AttributeNameArray TargetTypes Array of AttributeName that is contains threat categories allowed to engage. Default {"Air"}. See https://wiki.hoggit.us/view/DCS_enum_attributes
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of AttributeName that is contains threat categories allowed to engage. Default {"Air"}. See https://wiki.hoggit.us/view/DCS_enum_attributes
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskEscort( FollowControllable, Vec3, LastWaypointIndex, EngagementDistance, TargetTypes )
 
@@ -52539,7 +52540,7 @@ end
 -- @param #number AmmoCount (optional) Quantity of ammunition to expand (omit to fire until ammunition is depleted).
 -- @param #number WeaponType (optional) Enum for weapon type ID. This value is only required if you want the group firing to use a specific weapon, for instance using the task on a ship to force it to fire guided missiles at targets within cannon range. See http://wiki.hoggit.us/view/DCS_enum_weapon_flag
 -- @param #number Altitude (Optional) Altitude in meters.
--- @param #number ASL Altitude is above mean sea level. Default is above ground level.
+-- @param #number ASL (Optional) Altitude is above mean sea level. Default is above ground level.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskFireAtPoint( Vec2, Radius, AmmoCount, WeaponType, Altitude, ASL )
 
@@ -52592,11 +52593,11 @@ end
 -- It's important to note that depending on the type of unit that is being assigned the task (AIR or GROUND), you must choose the correct type of callsign enumerator. For airborne controllables use CALLSIGN.Aircraft and for ground based use CALLSIGN.JTAC enumerators.
 -- @param #CONTROLLABLE self
 -- @param Wrapper.Group#GROUP AttackGroup Target GROUP object.
--- @param #number WeaponType Bitmask of weapon types, which are allowed to use.
--- @param DCS#AI.Task.Designation Designation (Optional) Designation type.
+-- @param #number WeaponType (Optional) Bitmask of weapon types, which are allowed to use. Defaults tp ENUMS.WeaponFlag.AutoDCS.
+-- @param DCS#AI.Task.Designation Designation (Optional) Designation type. Defaults to Auto.
 -- @param #boolean Datalink (Optional) Allows to use datalink to send the target information to attack aircraft. Enabled by default.
--- @param #number Frequency Frequency in MHz used to communicate with the FAC. Default 133 MHz.
--- @param #number Modulation Modulation of radio for communication. Default 0=AM.
+-- @param #number Frequency (Optional) Frequency in MHz used to communicate with the FAC. Default 133 MHz.
+-- @param #number Modulation (Optional) Modulation of radio for communication. Default 0=AM.
 -- @param #number CallsignName Callsign enumerator name of the FAC. (CALLSIGN.Aircraft.{name} for airborne controllables, CALLSIGN.JTACS.{name} for ground units)
 -- @param #number CallsignNumber Callsign number, e.g. Axeman-**1**.
 -- @return DCS#Task The DCS task structure.
@@ -52622,8 +52623,8 @@ end
 --- (AIR) Engaging targets of defined types.
 -- @param #CONTROLLABLE self
 -- @param DCS#Distance Distance Maximal distance from the target to a route leg. If the target is on a greater distance it will be ignored.
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage.
--- @param #number Priority All enroute tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Defaults to {"Air"}.
+-- @param #number Priority (Optional) All enroute tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskEngageTargets( Distance, TargetTypes, Priority )
 
@@ -52664,7 +52665,7 @@ end
 
 --- (AIR) Enroute anti-ship task.
 -- @param #CONTROLLABLE self
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage. Default `{"Ships"}`.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Default `{"Ships"}`.
 -- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskAntiShip(TargetTypes, Priority)
@@ -52685,7 +52686,7 @@ end
 
 --- (AIR) Enroute SEAD task.
 -- @param #CONTROLLABLE self
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage. Default `{"Air Defence"}`.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Default `{"Air Defence"}`.
 -- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskSEAD(TargetTypes, Priority)
@@ -52706,7 +52707,7 @@ end
 
 --- (AIR) Enroute CAP task.
 -- @param #CONTROLLABLE self
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage. Default `{"Air"}`.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Default `{"Air"}`.
 -- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskCAP(TargetTypes, Priority)
@@ -52879,11 +52880,11 @@ end
 -- Target designation is set to auto and is dependent on the circumstances.
 -- See [hoggit](https://wiki.hoggitworld.com/view/DCS_task_fac).
 -- @param #CONTROLLABLE self
--- @param #number Frequency Frequency in MHz. Default 133 MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
+-- @param #number Frequency (Optional) Frequency in MHz. Default 133 MHz.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
 -- @param #number CallsignID CallsignID, e.g. `CALLSIGN.JTAC.Anvil` for ground or `CALLSIGN.Aircraft.Ford` for air.
 -- @param #number CallsignNumber Callsign first number, e.g. 2 for `Ford-2`.
--- @param #number Priority All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first.
+-- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Defaults to 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskFAC( Frequency, Modulation, CallsignID, CallsignNumber, Priority )
 
@@ -53113,8 +53114,8 @@ do -- Patrol methods
   -- @param #table ZoneList Table of zones.
   -- @param #number Speed Speed in km/h the group moves at.
   -- @param #string Formation (Optional) Formation the group should use.
-  -- @param #number DelayMin Delay in seconds before the group progresses to the next route point. Default 1 sec.
-  -- @param #number DelayMax Max. delay in seconds. Actual delay is randomly chosen between DelayMin and DelayMax. Default equal to DelayMin.
+  -- @param #number DelayMin (Optional) Delay in seconds before the group progresses to the next route point. Default 1 sec.
+  -- @param #number DelayMax (Optional) Max. delay in seconds. Actual delay is randomly chosen between DelayMin and DelayMax. Default equal to DelayMin.
   -- @return #CONTROLLABLE
   function CONTROLLABLE:PatrolZones( ZoneList, Speed, Formation, DelayMin, DelayMax )
 
@@ -53629,7 +53630,7 @@ do -- Route methods
   -- @param #CONTROLLABLE self
   -- @param Core.Zone#ZONE Zone The zone where to route to.
   -- @param #boolean Randomize Defines whether to target point gets randomized within the Zone.
-  -- @param #number Speed The speed in m/s. Default is 5.555 m/s = 20 km/h.
+  -- @param #number Speed (Optional) The speed in m/s. Default is 5.555 m/s = 20 km/h.
   -- @param DCS#FORMATION Formation The formation string.
   function CONTROLLABLE:TaskRouteToZone( Zone, Randomize, Speed, Formation )
     self:F2( Zone )
@@ -53689,7 +53690,7 @@ do -- Route methods
   -- A given formation can be given.
   -- @param #CONTROLLABLE self
   -- @param DCS#Vec2 Vec2 The Vec2 where to route to.
-  -- @param #number Speed The speed in m/s. Default is 5.555 m/s = 20 km/h.
+  -- @param #number Speed (Optional) The speed in m/s. Default is 5.555 m/s = 20 km/h.
   -- @param DCS#FORMATION Formation The formation string.
   function CONTROLLABLE:TaskRouteToVec2( Vec2, Speed, Formation )
 
@@ -54621,7 +54622,7 @@ end
 
 --- Set RTB on bingo fuel.
 -- @param #CONTROLLABLE self
--- @param #boolean RTB true if RTB on bingo fuel (default), false if no RTB on bingo fuel.
+-- @param #boolean RTB (Optional) true if RTB on bingo fuel (default), false if no RTB on bingo fuel.
 -- Warning! When you switch this option off, the airborne group will continue to fly until all fuel has been consumed, and will crash.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionRTBBingoFuel( RTB ) -- R2.2
@@ -54748,7 +54749,7 @@ end
 
 --- [Ground] Option that defines the vehicle spacing when in an on road and off road formation. 
 -- @param #CONTROLLABLE self
--- @param #number meters Can be zero to 100 meters. Defaults to 50 meters.
+-- @param #number meters (Optional) Can be zero to 100 meters. Defaults to 50 meters.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionFormationInterval(meters)
   self:F2( { self.ControllableName } )
@@ -54769,7 +54770,7 @@ end
 
 --- [Air] Defines the usage of Electronic Counter Measures by airborne forces.
 -- @param #CONTROLLABLE self
--- @param #number ECMvalue Can be - 0=Never on, 1=if locked by radar, 2=if detected by radar, 3=always on, defaults to 1
+-- @param #number ECMvalue (Optional) Can be - 0=Never on, 1=if locked by radar, 2=if detected by radar, 3=always on, defaults to 1
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionECM( ECMvalue )
   self:F2( { self.ControllableName } )
@@ -55065,7 +55066,7 @@ end
 
 --- Defines the range at which a GROUND unit/group is allowed to use its weapons automatically.
 -- @param #CONTROLLABLE self
--- @param #number EngageRange Engage range limit in percent (a number between 0 and 100). Default 100.
+-- @param #number EngageRange (Optional) Engage range limit in percent (a number between 0 and 100). Default 100.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionEngageRange( EngageRange )
   self:F2( { self.ControllableName } )
@@ -55215,7 +55216,7 @@ end
 
 --- [AIR] Set the AI to report contact for certain types of objects.
 -- @param #CONTROLLABLE self
--- @param #table Objects Table of attribute names for which AI reports contact. Defaults to {"Air"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #table Objects (Optional) Table of attribute names for which AI reports contact. Defaults to {"Air"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOptionRadioContact(Objects)
  self:F2( { self.ControllableName } )
@@ -55229,7 +55230,7 @@ end
 
 --- [AIR] Set the AI to report engaging certain types of objects.
 -- @param #CONTROLLABLE self
--- @param #table Objects Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #table Objects (Optional) Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOptionRadioEngage(Objects)
  self:F2( { self.ControllableName } )
@@ -55243,7 +55244,7 @@ end
 
 --- [AIR] Set the AI to report killing certain types of objects.
 -- @param #CONTROLLABLE self
--- @param #table Objects Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #table Objects (Optional) Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOptionRadioKill(Objects)
  self:F2( { self.ControllableName } )
@@ -55257,12 +55258,12 @@ end
 
 --- (GROUND) Relocate controllable to a random point within a given radius; use e.g.for evasive actions; Note that not all ground controllables can actually drive, also the alarm state of the controllable might stop it from moving.
 -- @param #CONTROLLABLE self
--- @param #number speed Speed of the controllable, default 20
--- @param #number radius Radius of the relocation zone, default 500
--- @param #boolean onroad If true, route on road (less problems with AI way finding), default true
--- @param #boolean shortcut If true and onroad is set, take a shorter route - if available - off road, default false
--- @param #string formation Formation string as in the mission editor, e.g. "Vee", "Diamond", "Line abreast", etc. Defaults to "Off Road"
--- @param #boolean onland (optional) If true, try up to 50 times to get a coordinate on land.SurfaceType.LAND. Note - this descriptor value is not reliably implemented on all maps.
+-- @param #number speed (Optional) Speed of the controllable, default 20
+-- @param #number radius (Optional) Radius of the relocation zone, default 500
+-- @param #boolean onroad (Optional) If true, route on road (less problems with AI way finding), default true
+-- @param #boolean shortcut (Optional) If true and onroad is set, take a shorter route - if available - off road, default false
+-- @param #string formation (Optional) Formation string as in the mission editor, e.g. "Vee", "Diamond", "Line abreast", etc. Defaults to "Off Road"
+-- @param #boolean onland (Optional) If true, try up to 50 times to get a coordinate on land.SurfaceType.LAND. Note - this descriptor value is not reliably implemented on all maps.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:RelocateGroundRandomInRadius( speed, radius, onroad, shortcut, formation, onland )
   self:F2( { self.ControllableName } )
@@ -56645,8 +56646,8 @@ end
 
 --- [GROUND] Create and enable a new IR Marker for the given controllable UNIT or GROUP.
 -- @param #CONTROLLABLE self
--- @param #boolean EnableImmediately (Optionally) If true start up the IR Marker immediately. Else you need to call `myobject:EnableIRMarker()` later on.
--- @param #number Runtime (Optionally) Run this IR Marker for the given number of seconds, then stop. Use in conjunction with EnableImmediately. Defaults to 60 seconds.
+-- @param #boolean EnableImmediately (Optional) If true start up the IR Marker immediately. Else you need to call `myobject:EnableIRMarker()` later on.
+-- @param #number Runtime (Optional) Run this IR Marker for the given number of seconds, then stop. Use in conjunction with EnableImmediately. Defaults to 60 seconds.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:NewIRMarker(EnableImmediately, Runtime)
   self:T2("NewIRMarker")
@@ -57409,7 +57410,7 @@ end
 -- See [hoggit documentation](https://wiki.hoggitworld.com/view/DCS_func_hasAttribute).
 -- @param #GROUP self
 -- @param #string attribute The name of the attribute the group is supposed to have. Valid attributes can be found in the "db_attributes.lua" file which is located at in "C:\Program Files\Eagle Dynamics\DCS World\Scripts\Database".
--- @param #boolean all If true, all units of the group must have the attribute in order to return true. Default is only one unit of a heterogenious group needs to have the attribute.
+-- @param #boolean all (Optional) If true, all units of the group must have the attribute in order to return true. Default is only one unit of a heterogenious group needs to have the attribute.
 -- @return #boolean Group has this attribute.
 function GROUP:HasAttribute(attribute, all)
 
@@ -61549,7 +61550,7 @@ end
 
 --- Triggers an explosion at the coordinates of the unit.
 -- @param #UNIT self
--- @param #number power Power of the explosion in kg TNT. Default 100 kg TNT.
+-- @param #number power (Optional) Power of the explosion in kg TNT. Default 100 kg TNT.
 -- @param #number delay (Optional) Delay of explosion in seconds.
 -- @return #UNIT self
 function UNIT:Explode(power, delay)
@@ -62195,7 +62196,7 @@ end
 -- @param #CLIENT self
 -- @param #string ClientName Name of the DCS **Unit** as defined within the Mission Editor.
 -- @param #string ClientBriefing Text that describes the briefing of the mission when a Player logs into the Client.
--- @param #boolean Error A flag that indicates whether an error should be raised if the CLIENT cannot be found. By default an error will be raised.
+-- @param #boolean Error (Optional) A flag that indicates whether an error should be raised if the CLIENT cannot be found. By default an error will be raised.
 -- @return #CLIENT
 -- @usage
 -- -- Create new Clients.
@@ -62910,7 +62911,7 @@ end
 --- Spawn the @{Wrapper.Static} at a specific coordinate and heading.
 -- @param #STATIC self
 -- @param Core.Point#COORDINATE Coordinate The coordinate where to spawn the new Static.
--- @param #number Heading The heading of the static respawn in degrees. Default is 0 deg.
+-- @param #number Heading (Optional) The heading of the static respawn in degrees. Default is 0 deg.
 -- @param #number Delay Delay in seconds before the static is spawned.
 function STATIC:SpawnAt(Coordinate, Heading, Delay)
 
@@ -65218,7 +65219,7 @@ end
 
 --- Get number of parking spots at an airbase. Optionally, a specific terminal type can be requested.
 -- @param #AIRBASE self
--- @param #AIRBASE.TerminalType termtype Terminal type of which the number of spots is counted. Default all spots but spawn points on runway.
+-- @param #AIRBASE.TerminalType termtype (Optional) Terminal type of which the number of spots is counted. Default all spots but spawn points on runway.
 -- @return #number Number of parking spots at this airbase.
 function AIRBASE:GetParkingSpotsNumber(termtype)
 
@@ -65238,7 +65239,7 @@ end
 --- Get number of free parking spots at an airbase.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type.
--- @param #boolean allowTOAC If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
+-- @param #boolean allowTOAC (Optional) If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
 -- @return #number Number of free parking spots at this airbase.
 function AIRBASE:GetFreeParkingSpotsNumber(termtype, allowTOAC)
 
@@ -65261,7 +65262,7 @@ end
 --- Get the coordinates of free parking spots at an airbase.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type.
--- @param #boolean allowTOAC If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
+-- @param #boolean allowTOAC (Optional) If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
 -- @return #table Table of coordinates of the free parking spots.
 function AIRBASE:GetFreeParkingSpotsCoordinates(termtype, allowTOAC)
 
@@ -65488,7 +65489,7 @@ end
 --- Get a table containing the coordinates, terminal index and terminal type of free parking spots at an airbase.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type.
--- @param #boolean allowTOAC If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
+-- @param #boolean allowTOAC (Optional) If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
 -- @return #table Table free parking spots. Table has the elements ".Coordinate, ".TerminalID", ".TerminalType", ".TOAC", ".Free", ".TerminalID0", ".DistToRwy".
 function AIRBASE:GetFreeParkingSpotsTable(termtype, allowTOAC)
 
@@ -65540,7 +65541,7 @@ end
 --- Place markers of parking spots on the F10 map.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type for which marks should be placed.
--- @param #boolean mark If false, do not place markers but only give output to DCS.log file. Default true.
+-- @param #boolean mark (Optional) If false, do not place markers but only give output to DCS.log file. Default true.
 function AIRBASE:MarkParkingSpots(termtype, mark)
 
   -- Default is true.
@@ -66320,7 +66321,7 @@ end
 --- Set the active runway for landing and takeoff.
 -- @param #AIRBASE self
 -- @param #string Name Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 function AIRBASE:SetActiveRunway(Name, PreferLeft)
 
   self:SetActiveRunwayTakeoff(Name, PreferLeft)
@@ -66332,7 +66333,7 @@ end
 --- Set the active runway for landing.
 -- @param #AIRBASE self
 -- @param #string Name Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 -- @return #AIRBASE.Runway The active runway for landing.
 function AIRBASE:SetActiveRunwayLanding(Name, PreferLeft)
 
@@ -66380,7 +66381,7 @@ end
 --- Set the active runway for takeoff.
 -- @param #AIRBASE self
 -- @param #string Name Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 -- @return #AIRBASE.Runway The active runway for landing.
 function AIRBASE:SetActiveRunwayTakeoff(Name, PreferLeft)
 
@@ -66405,7 +66406,7 @@ end
 --- Get the runway where aircraft would be taking of or landing into the direction of the wind.
 -- NOTE that this requires the wind to be non-zero as set in the mission editor.
 -- @param #AIRBASE self
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 -- @return #AIRBASE.Runway Active runway data table.
 function AIRBASE:GetRunwayIntoWind(PreferLeft)
 
@@ -66461,7 +66462,7 @@ end
 
 --- Get name of a given runway, e.g. "31L".
 -- @param #AIRBASE self
--- @param #AIRBASE.Runway Runway The runway. Default is the active runway.
+-- @param #AIRBASE.Runway Runway (Optional) The runway. Default is the active runway.
 -- @param #boolean LongLeftRight If `true`, return "Left" or "Right" instead of "L" or "R".
 -- @return #string Name of the runway or "XX" if it could not be found.
 function AIRBASE:GetRunwayName(Runway, LongLeftRight)
@@ -66492,7 +66493,7 @@ end
 --- Function that checks if at leat one unit of a group has been spawned close to a spawn point on the runway.
 -- @param #AIRBASE self
 -- @param Wrapper.Group#GROUP group Group to be checked.
--- @param #number radius Radius around the spawn point to be checked. Default is 50 m.
+-- @param #number radius (Optional) Radius around the spawn point to be checked. Default is 50 m.
 -- @param #boolean despawn If true, the group is destroyed.
 -- @return #boolean True if group is within radius around spawn points on runway.
 function AIRBASE:CheckOnRunWay(group, radius, despawn)
@@ -67611,7 +67612,7 @@ end
 
 --- Set text that is displayed in the marker panel. Note this does not show the marker.
 -- @param #MARKER self
--- @param #string Text Marker text. Default is an empty string "".
+-- @param #string (Optional) Text Marker text. Default is an empty string "".
 -- @return #MARKER self
 function MARKER:SetText( Text )
   self.text = Text and tostring( Text ) or ""
@@ -68061,7 +68062,7 @@ end
 
 --- Set verbosity level.
 -- @param #WEAPON self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #WEAPON self
 function WEAPON:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -68070,7 +68071,7 @@ end
 
 --- Set track position time step.
 -- @param #WEAPON self
--- @param #number TimeStep Time step in seconds when the position is updated. Default 0.01 sec ==> 100 evaluations per second.
+-- @param #number TimeStep (Optional) Time step in seconds when the position is updated. Default 0.01 sec ==> 100 evaluations per second.
 -- @return #WEAPON self
 function WEAPON:SetTimeStepTrack(TimeStep)
   self.dtTrack=TimeStep or 0.01
@@ -68083,7 +68084,7 @@ end
 -- a good result on the impact point.
 -- It uses the DCS function [getIP](https://wiki.hoggitworld.com/view/DCS_func_getIP).
 -- @param #WEAPON self
--- @param #number Distance Distance in meters. Default is 50 m. Set to 0 to deactivate.
+-- @param #number Distance (Optional) Distance in meters. Default is 50 m. Set to 0 to deactivate.
 -- @return #WEAPON self
 function WEAPON:SetDistanceInterceptPoint(Distance)
   self.distIP=Distance or 50
@@ -68109,7 +68110,7 @@ end
 --- Put smoke on impact point. This requires that the tracking has been started.
 -- @param #WEAPON self
 -- @param #boolean Switch If `true` or nil, impact is smoked.
--- @param #number SmokeColor Color of smoke. Default is `SMOKECOLOR.Red`.
+-- @param #number SmokeColor (Optional) Color of smoke. Default is `SMOKECOLOR.Red`.
 -- @return #WEAPON self
 function WEAPON:SetSmokeImpact(Switch, SmokeColor)
 
@@ -68520,7 +68521,7 @@ end
 -- the (approximate) impact point. Of course, the smaller the time step, the better the position can be determined. However, this can hit the performance as many
 -- calculations per second need to be carried out.
 -- @param #WEAPON self
--- @param #number Delay Delay in seconds before the tracking starts. Default 0.001 sec.
+-- @param #number Delay (Optional) Delay in seconds before the tracking starts. Default 0.001 sec.
 -- @return #WEAPON self
 function WEAPON:StartTrack(Delay)
 
@@ -68706,7 +68707,7 @@ end
 
 --- Compute estimated intercept/impact point (IP) based on last known position and direction.
 -- @param #WEAPON self
--- @param #number Distance Distance in meters. Default 50 m.
+-- @param #number Distance (Optional) Distance in meters. Default 50 m.
 -- @return DCS#Vec3 Estimated intercept/impact point. Can also return `nil`, if no IP can be determined.
 function WEAPON:_GetIP(Distance)
 
@@ -69178,7 +69179,7 @@ end
 
 --- Set block time in seconds.
 -- @param #NET self
--- @param #number Seconds Numnber of seconds this block will last. Defaults to 600.
+-- @param #number Seconds (Optional) Numnber of seconds this block will last. Defaults to 600.
 -- @return #NET self
 function NET:SetBlockTime(Seconds)
   self.BlockTime = Seconds or 600
@@ -69881,7 +69882,7 @@ end
 
 --- Set verbosity level.
 -- @param #STORAGE self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #STORAGE self
 function STORAGE:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -70405,7 +70406,7 @@ end
 -- @param #STORAGE self
 -- @param #string Path The path to use. Use double backslashes \\\\ on Windows filesystems.
 -- @param #string Filename The name of the file.
--- @param #number Interval The interval, start after this many seconds and repeat every interval seconds. Defaults to 300.
+-- @param #number Interval (Optional) The interval, start after this many seconds and repeat every interval seconds. Defaults to 300.
 -- @param #boolean LoadOnce If LoadOnce is true or nil, we try to load saved storage first.
 -- @return #STORAGE self
 function STORAGE:StartAutoSave(Path,Filename,Interval,LoadOnce)
@@ -71015,7 +71016,7 @@ end
 
 --- [USER] Destroy a DYNAMICCARGO object.
 -- @param #DYNAMICCARGO self
--- @param #boolean GenerateEvent Set to false to remove an item silently. Defaults to true.
+-- @param #boolean GenerateEvent (Optional) Set to false to remove an item silently. Defaults to true.
 -- @return #boolean Return Returns nil if the object could not be found, else returns true.
 function DYNAMICCARGO:Destroy(GenerateEvent)
   local DCSObject = self:GetDCSObject()
@@ -71440,7 +71441,7 @@ end
 
 --- Set a prefix string that will be displayed at each scoring message sent.
 -- @param #SCORING self
--- @param #string DisplayMessagePrefix (Default="Scoring: ") The scoring prefix string.
+-- @param #string DisplayMessagePrefix (Optional) (Default="Scoring: ") The scoring prefix string.
 -- @return #SCORING
 function SCORING:SetDisplayMessagePrefix( DisplayMessagePrefix )
   self.DisplayMessagePrefix = DisplayMessagePrefix or ""
@@ -73489,7 +73490,7 @@ end
 -- Note, one can also use the method @{#CLEANUP_AIRBASE.RemoveAirbase}() to remove the airbase from the control process as a whole,
 -- when an enemy unit is near. That is also an option...
 -- @param #CLEANUP_AIRBASE self
--- @param #string CleanMissiles (Default=true) If true, missiles fired are immediately destroyed. If false missiles are not controlled.
+-- @param #boolean CleanMissiles (Optional) (Default=true) If true, missiles fired are immediately destroyed. If false missiles are not controlled.
 -- @return #CLEANUP_AIRBASE
 function CLEANUP_AIRBASE:SetCleanMissiles( CleanMissiles )
 
@@ -74078,7 +74079,7 @@ end
 
 --- Sets the engagement range of the SAMs. Defaults to 75% to make it more deadly. Feature Request #1355
 -- @param #SEAD self
--- @param #number range Set the engagement range in percent, e.g. 55 (default 75)
+-- @param #number range (Optional) Set the engagement range in percent, e.g. 55 (default 75)
 -- @return #SEAD self
 function SEAD:SetEngagementRange(range)
   self:T( { range } )
@@ -74093,7 +74094,7 @@ end
 
 --- Set the padding in seconds, which extends the radar off time calculated by SEAD
 -- @param #SEAD self
--- @param #number Padding Extra number of seconds to add for the switch-on (default 10 seconds)
+-- @param #number Padding (Optional) Extra number of seconds to add for the switch-on (default 10 seconds)
 -- @return #SEAD self
 function SEAD:SetPadding(Padding)
   self:T( { Padding } )
@@ -74638,7 +74639,7 @@ ESCORT = {
 -- @param Wrapper.Client#CLIENT EscortClient The client escorted by the EscortGroup.
 -- @param Wrapper.Group#GROUP EscortGroup The group AI escorting the EscortClient.
 -- @param #string EscortName Name of the escort.
--- @param #string EscortBriefing A text showing the ESCORT briefing to the player. Note that if no EscortBriefing is provided, the default briefing will be shown.
+-- @param #string EscortBriefing (Optional) A text showing the ESCORT briefing to the player. Note that if no EscortBriefing is provided, the default briefing will be shown.
 -- @return #ESCORT self
 -- @usage
 -- -- Declare a new EscortPlanes object as follows:
@@ -74792,9 +74793,9 @@ end
 --- Defines a menu slot to let the escort hold at their current position and stay low with a specified height during a specified time in seconds.
 -- This menu will appear under **Hold position**.
 -- @param #ESCORT self
--- @param DCS#Distance Height Optional parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
--- @param DCS#Time Seconds Optional parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. The text string is formatted, and should contain two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
+-- @param DCS#Distance Height (Optional) parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
+-- @param DCS#Time Seconds (Optional) parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. The text string is formatted, and should contain two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
 -- @return #ESCORT
 -- TODO: Implement Seconds parameter. Challenge is to first develop the "continue from last activity" function.
 function ESCORT:MenuHoldAtEscortPosition( Height, Seconds, MenuTextFormat )
@@ -74853,9 +74854,9 @@ end
 --- Defines a menu slot to let the escort hold at the client position and stay low with a specified height during a specified time in seconds.
 -- This menu will appear under **Navigation**.
 -- @param #ESCORT self
--- @param DCS#Distance Height Optional parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
--- @param DCS#Time Seconds Optional parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
+-- @param DCS#Distance Height (Optional)  parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
+-- @param DCS#Time Seconds (Optional)  parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
+-- @param #string MenuTextFormat (Optional)  parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
 -- @return #ESCORT
 -- TODO: Implement Seconds parameter. Challenge is to first develop the "continue from last activity" function.
 function ESCORT:MenuHoldAtLeaderPosition( Height, Seconds, MenuTextFormat )
@@ -74914,9 +74915,9 @@ end
 --- Defines a menu slot to let the escort scan for targets at a certain height for a certain time in seconds.
 -- This menu will appear under **Scan targets**.
 -- @param #ESCORT self
--- @param DCS#Distance Height Optional parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
--- @param DCS#Time Seconds Optional parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
+-- @param DCS#Distance Height (Optional) parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
+-- @param DCS#Time Seconds (Optional) parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
 -- @return #ESCORT
 function ESCORT:MenuScanForTargets( Height, Seconds, MenuTextFormat )
   self:F( { Height, Seconds, MenuTextFormat } )
@@ -74973,7 +74974,7 @@ end
 -- This menu will appear under **Navigation**.
 -- The flare will be fired from the first unit in the group.
 -- @param #ESCORT self
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. If no text is given, the default text will be displayed.
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. If no text is given, the default text will be displayed.
 -- @return #ESCORT
 function ESCORT:MenuFlare( MenuTextFormat )
   self:F()
@@ -75005,7 +75006,7 @@ end
 -- Note that smoke menu options will only be displayed for ships and ground units. Not for air units.
 -- The smoke will be fired from the first unit in the group.
 -- @param #ESCORT self
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. If no text is given, the default text will be displayed.
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. If no text is given, the default text will be displayed.
 -- @return #ESCORT
 function ESCORT:MenuSmoke( MenuTextFormat )
   self:F()
@@ -75039,7 +75040,7 @@ end
 -- This menu will appear under **Report targets**.
 -- Note that if a report targets menu is not specified, no targets will be detected by the escort, and the attack and assisted attack menus will not be displayed.
 -- @param #ESCORT self
--- @param DCS#Time Seconds Optional parameter that lets the escort report their current detected targets after specified time interval in seconds. The default time is 30 seconds.
+-- @param DCS#Time Seconds (Optional) parameter that lets the escort report their current detected targets after specified time interval in seconds. The default time is 30 seconds.
 -- @return #ESCORT
 function ESCORT:MenuReportTargets( Seconds )
   self:F( { Seconds } )
@@ -78320,9 +78321,9 @@ do -- DETECTION_BASE
     --- Method to make the radar detection less accurate, e.g. for WWII scenarios.
     -- @param #DETECTION_BASE self
     -- @param #number minheight Minimum flight height to be detected, in meters AGL (above ground)
-    -- @param #number thresheight Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
-    -- @param #number thresblur Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
-    -- @param #number closing Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
+    -- @param #number thresheight (Optional) Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
+    -- @param #number thresblur (Optional) Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
+    -- @param #number closing (Optional) Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
     -- @return #DETECTION_BASE self
     function DETECTION_BASE:SetRadarBlur(minheight,thresheight,thresblur,closing)
       self.RadarBlur = true
@@ -78372,11 +78373,13 @@ do -- DETECTION_BASE
 
     --- Set the parameters to calculate to optimal intercept point.
     -- @param #DETECTION_BASE self
-    -- @param #boolean Intercept Intercept is true if an intercept point is calculated. Intercept is false if it is disabled. The default Intercept is false.
+    -- @param #boolean Intercept (Optional) Intercept is true if an intercept point is calculated. Intercept is false if it is disabled. The default Intercept is false.
     -- @param #number InterceptDelay If Intercept is true, then InterceptDelay is the average time it takes to get airplanes airborne.
     -- @return #DETECTION_BASE self
     function DETECTION_BASE:SetIntercept( Intercept, InterceptDelay )
       self:F2()
+
+      Intercept = Intercept or false
 
       self.Intercept = Intercept
       self.InterceptDelay = InterceptDelay
@@ -78879,8 +78882,8 @@ do -- DETECTION_BASE
   -- The DetectedItem is a table and contains a SET_UNIT in the field Set.
   -- @param #DETECTION_BASE self
   -- @param #string ItemPrefix Prefix of detected item.
-  -- @param #number DetectedItemKey The key of the DetectedItem. Default self.DetectedItemMax. Could also be a string in principle.
-  -- @param Core.Set#SET_UNIT Set (optional) The Set of Units to be added.
+  -- @param #number DetectedItemKey (Optional) The key of the DetectedItem. Default self.DetectedItemMax. Could also be a string in principle.
+  -- @param Core.Set#SET_UNIT Set (Optional) The Set of Units to be added.
   -- @return #DETECTION_BASE.DetectedItem
   function DETECTION_BASE:AddDetectedItem( ItemPrefix, DetectedItemKey, Set )
 
@@ -79804,7 +79807,7 @@ do -- DETECTION_AREAS
   --- DETECTION_AREAS constructor.
   -- @param #DETECTION_AREAS self
   -- @param Core.Set#SET_GROUP DetectionSetGroup The @{Core.Set} of GROUPs in the Forward Air Controller role.
-  -- @param #number DetectionZoneRange The range in meters within which targets are grouped upon the first detected target. Default 5000m.
+  -- @param #number DetectionZoneRange (Optional) The range in meters within which targets are grouped upon the first detected target. Default 5000m.
   -- @return #DETECTION_AREAS
   function DETECTION_AREAS:New( DetectionSetGroup, DetectionZoneRange )
 
@@ -81417,7 +81420,7 @@ do -- DESIGNATE
   
   --- Set the lase duration for designations.
   -- @param #DESIGNATE self
-  -- @param #number LaseDuration The time in seconds a lase will continue to hold on target. The default is 120 seconds.
+  -- @param #number LaseDuration (Optional) The time in seconds a lase will continue to hold on target. The default is 120 seconds.
   -- @return #DESIGNATE
   function DESIGNATE:SetLaseDuration( LaseDuration )
     self.LaseDuration = LaseDuration or 120
@@ -83268,7 +83271,7 @@ end
 
 --- Set the friendly coalitions from which the airports can be used as departure and destination.
 -- @param #RAT self
--- @param #string friendly "same"=own coalition+neutral (default), "sameonly"=own coalition only, "neutral"=all neutral airports.
+-- @param #string friendly (Optional) "same"=own coalition+neutral (default), "sameonly"=own coalition only, "neutral"=all neutral airports.
 -- Default is "same", so aircraft will use airports of the coalition their spawn template has plus all neutral airports.
 -- @return #RAT RAT self object.
 -- @usage yak:SetCoalition("neutral") will spawn aircraft randomly on all neutral airports.
@@ -83350,7 +83353,7 @@ end
 
 --- Set the scan radius around parking spots. Parking spot is considered to be occupied if any obstacle is found with the radius.
 -- @param #RAT self
--- @param #number radius Radius in meters. Default 50 m.
+-- @param #number radius (Optional) Radius in meters. Default 50 m.
 -- @return #RAT RAT self object.
 function RAT:SetParkingScanRadius(radius)
   self:F2(radius)
@@ -83716,7 +83719,7 @@ end
 
 --- Set the delay before first group is spawned.
 -- @param #RAT self
--- @param #number delay Delay in seconds. Default is 5 seconds. Minimum delay is 0.5 seconds.
+-- @param #number delay (Optional) Delay in seconds. Default is 5 seconds. Minimum delay is 0.5 seconds.
 -- @return #RAT RAT self object.
 function RAT:SetSpawnDelay(delay)
   self:F2(delay)
@@ -83727,7 +83730,7 @@ end
 
 --- Set the interval between spawnings of the template group.
 -- @param #RAT self
--- @param #number interval Interval in seconds. Default is 5 seconds. Minimum is 0.5 seconds.
+-- @param #number interval (Optional) Interval in seconds. Default is 5 seconds. Minimum is 0.5 seconds.
 -- @return #RAT RAT self object.
 function RAT:SetSpawnInterval(interval)
   self:F2(interval)
@@ -83738,7 +83741,7 @@ end
 
 --- Set max number of groups that will be spawned. When this limit is reached, no more RAT groups are spawned.
 -- @param #RAT self
--- @param #number Nmax Max number of groups. Default `nil`=unlimited.
+-- @param #number Nmax (Optional) Max number of groups. Default `nil`=unlimited.
 -- @return #RAT RAT self object.
 function RAT:SetSpawnLimit(Nmax)
   self.NspawnMax=Nmax
@@ -83758,7 +83761,7 @@ end
 
 --- Sets the delay between despawning and respawning aircraft.
 -- @param #RAT self
--- @param #number delay Delay in seconds until respawn happens. Default is 1 second. Minimum is 1 second.
+-- @param #number delay (Optional) Delay in seconds until respawn happens. Default is 1 second. Minimum is 1 second.
 -- @return #RAT RAT self object.
 function RAT:SetRespawnDelay(delay)
   self:F2(delay)
@@ -83779,7 +83782,7 @@ end
 
 --- Number of tries to respawn an aircraft in case it has accidentally been spawned on runway.
 -- @param #RAT self
--- @param #number n Number of retries. Default is 3.
+-- @param #number n (Optional) Number of retries. Default is 3.
 -- @return #RAT RAT self object.
 function RAT:SetMaxRespawnTriedWhenSpawnedOnRunway(n)
   self:F2(n)
@@ -83837,7 +83840,7 @@ end
 --- Check if aircraft have accidentally been spawned on the runway. If so they will be removed immediately.
 -- @param #RAT self
 -- @param #boolean switch If true, check is performed. If false, this check is omitted.
--- @param #number radius Distance in meters until a unit is considered to have spawned accidentally on the runway. Default is 75 m.
+-- @param #number radius (Optional) Distance in meters until a unit is considered to have spawned accidentally on the runway. Default is 75 m.
 -- @return #RAT RAT self object.
 function RAT:CheckOnRunway(switch, distance)
   self:F2(switch)
@@ -83852,7 +83855,7 @@ end
 --- Check if aircraft have accidentally been spawned on top of each other. If yes, they will be removed immediately.
 -- @param #RAT self
 -- @param #boolean switch If true, check is performed. If false, this check is omitted.
--- @param #number radius Radius in meters until which a unit is considered to be on top of each other. Default is 2 m.
+-- @param #number radius (Optional) Radius in meters until which a unit is considered to be on top of each other. Default is 2 m.
 -- @return #RAT RAT self object.
 function RAT:CheckOnTop(switch, radius)
   self:F2(switch)
@@ -83968,10 +83971,10 @@ end
 
 --- Define how aircraft that are spawned in uncontrolled state are activate.
 -- @param #RAT self
--- @param #number maxactivated Maximal numnber of activated aircraft. Absolute maximum will be the number of spawned groups. Default is 1.
--- @param #number delay Time delay in seconds before (first) aircraft is activated. Default is 1 second.
--- @param #number delta Time difference in seconds before next aircraft is activated. Default is 1 second.
--- @param #number frand Factor [0,...,1] for randomization of time difference between aircraft activations. Default is 0, i.e. no randomization.
+-- @param #number maxactivated (Optional) Maximal numnber of activated aircraft. Absolute maximum will be the number of spawned groups. Default is 1.
+-- @param #number delay (Optional) Time delay in seconds before (first) aircraft is activated. Default is 1 second.
+-- @param #number delta (Optional) Time difference in seconds before next aircraft is activated. Default is 1 second.
+-- @param #number frand (Optional) Factor [0,...,1] for randomization of time difference between aircraft activations. Default is 0, i.e. no randomization.
 -- @return #RAT RAT self object.
 function RAT:ActivateUncontrolled(maxactivated, delay, delta, frand)
   self:F2({max=maxactivated, delay=delay, delta=delta, rand=frand})
@@ -83997,7 +84000,7 @@ end
 
 --- Set the time after which inactive groups will be destroyed.
 -- @param #RAT self
--- @param #number time Time in seconds. Default is 600 seconds = 10 minutes. Minimum is 60 seconds.
+-- @param #number time (Optional) Time in seconds. Default is 600 seconds = 10 minutes. Minimum is 60 seconds.
 -- @return #RAT RAT self object.
 function RAT:TimeDestroyInactive(time)
   self:F2(time)
@@ -84031,7 +84034,7 @@ end
 
 --- Set the climb rate. This automatically sets the climb angle.
 -- @param #RAT self
--- @param #number rate Climb rate in ft/min. Default is 1500 ft/min. Minimum is 100 ft/min. Maximum is 15,000 ft/min.
+-- @param #number rate (Optional) Climb rate in ft/min. Default is 1500 ft/min. Minimum is 100 ft/min. Maximum is 15,000 ft/min.
 -- @return #RAT RAT self object.
 function RAT:SetClimbRate(rate)
   self:F2(rate)
@@ -84125,7 +84128,7 @@ end
 
 --- Max number of planes that get landing clearance of the RAT ATC. This setting effects all RAT objects and groups!
 -- @param #RAT self
--- @param #number n Number of aircraft that are allowed to land simultaniously. Default is 2.
+-- @param #number n (Optional) Number of aircraft that are allowed to land simultaniously. Default is 2.
 -- @return #RAT RAT self object.
 function RAT:ATC_Clearance(n)
   self:F2(n)
@@ -84135,7 +84138,7 @@ end
 
 --- Delay between granting landing clearance for simultanious landings. This setting effects all RAT objects and groups!
 -- @param #RAT self
--- @param #number time Delay time when the next aircraft will get landing clearance event if the previous one did not land yet. Default is 240 sec.
+-- @param #number time (Optional) Delay time when the next aircraft will get landing clearance event if the previous one did not land yet. Default is 240 sec.
 -- @return #RAT RAT self object.
 function RAT:ATC_Delay(time)
   self:F2(time)
@@ -84980,7 +84983,7 @@ end
 --- Despawn group. The `FLIGHTGROUP` is despawned and stopped. The ratcraft is removed from the self.ratcraft table. Menues are removed.
 -- @param #RAT self
 -- @param Wrapper.Group#GROUP group Group to be despawned.
--- @param #number delay Delay in seconds before the despawn happens. Default is immidiately.
+-- @param #number delay (Optional) Delay in seconds before the despawn happens. Default is immidiately.
 function RAT:_Despawn(group, delay)
 
   if delay and delay>0 then
@@ -86918,7 +86921,7 @@ end
 
 --- Anticipated group name from alias and spawn index.
 -- @param #RAT self
--- @param #number index Spawnindex of group if given or self.SpawnIndex+1 by default.
+-- @param #number index (Optional) Spawnindex of group if given or self.SpawnIndex+1 by default.
 -- @return #string Name the group will get after it is spawned.
 function RAT:_AnticipatedGroupName(index)
   local index=index or self.SpawnIndex+1
@@ -88226,7 +88229,7 @@ end
 --- Adds a RAT object to the RAT manager. Parameter min specifies the limit how many RAT groups are at least alive.
 -- @param #RATMANAGER self
 -- @param #RAT ratobject RAT object to be managed.
--- @param #number min Minimum number of groups for this RAT object. Default is 1.
+-- @param #number min (Optional) Minimum number of groups for this RAT object. Default is 1.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:Add(ratobject,min)
 
@@ -88254,7 +88257,7 @@ end
 
 --- Starts the RAT manager and spawns the initial random number RAT groups for each RAT object.
 -- @param #RATMANAGER self
--- @param #number delay Time delay in seconds after which the RAT manager is started. Default is 5 seconds.
+-- @param #number delay (Optional) Time delay in seconds after which the RAT manager is started. Default is 5 seconds.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:Start(delay)
 
@@ -88327,7 +88330,7 @@ end
 
 --- Stops the RAT manager.
 -- @param #RATMANAGER self
--- @param #number delay Delay in seconds before the manager is stopped. Default is 1 second.
+-- @param #number delay (Optional) Delay in seconds before the manager is stopped. Default is 1 second.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:Stop(delay)
   delay=delay or 1
@@ -88363,7 +88366,7 @@ end
 
 --- Sets the time interval between spawning of groups.
 -- @param #RATMANAGER self
--- @param #number dt Time interval in seconds. Default is 1 second.
+-- @param #number dt (Optional) Time interval in seconds. Default is 1 second.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:SetTspawn(dt)
   self.dTspawn=dt or 1.0
@@ -89493,7 +89496,7 @@ end
 
 --- Set maximal strafing altitude. Player entering a strafe pit above that altitude are not registered for a valid pass.
 -- @param #RANGE self
--- @param #number maxalt Maximum altitude in meters AGL. Default is 914 m = 3000 ft.
+-- @param #number maxalt (Optional) Maximum altitude in meters AGL. Default is 914 m = 3000 ft.
 -- @return #RANGE self
 function RANGE:SetMaxStrafeAlt( maxalt )
   self.strafemaxalt = maxalt or RANGE.Defaults.strafemaxalt
@@ -89502,7 +89505,7 @@ end
 
 --- Set time interval for tracking bombs. A smaller time step increases accuracy but needs more CPU time.
 -- @param #RANGE self
--- @param #number dt Time interval in seconds. Default is 0.005 s.
+-- @param #number dt (Optional) Time interval in seconds. Default is 0.005 s.
 -- @return #RANGE self
 function RANGE:SetBombtrackTimestep( dt )
   self.dtBombtrack = dt or RANGE.Defaults.dtBombtrack
@@ -89511,7 +89514,7 @@ end
 
 --- Set time how long (most) messages are displayed.
 -- @param #RANGE self
--- @param #number time Time in seconds. Default is 30 s.
+-- @param #number time (Optional) Time in seconds. Default is 30 s.
 -- @return #RANGE self
 function RANGE:SetMessageTimeDuration( time )
   self.Tmsg = time or RANGE.Defaults.Tmsg
@@ -89553,8 +89556,8 @@ end
 --- Set FunkMan socket. Bombing and strafing results will be send to your Discord bot.
 -- **Requires running FunkMan program**.
 -- @param #RANGE self
--- @param #number Port Port. Default `10042`.
--- @param #string Host Host. Default "127.0.0.1".
+-- @param #number Port (Optional) Port. Default `10042`.
+-- @param #string Host (Optional) Host. Default "127.0.0.1".
 -- @return #RANGE self
 function RANGE:SetFunkManOn(Port, Host)
 
@@ -89576,7 +89579,7 @@ end
 
 --- Set max number of player results that are displayed.
 -- @param #RANGE self
--- @param #number nmax Number of results. Default is 10.
+-- @param #number nmax (Optional) Number of results. Default is 10.
 -- @return #RANGE self
 function RANGE:SetDisplayedMaxPlayerResults( nmax )
   self.ndisplayresult = nmax or RANGE.Defaults.ndisplayresult
@@ -89585,7 +89588,7 @@ end
 
 --- Set range radius. Defines the area in which e.g. bomb impacts are smoked.
 -- @param #RANGE self
--- @param #number radius Radius in km. Default 5 km.
+-- @param #number radius (Optional) Radius in km. Default 5 km.
 -- @return #RANGE self
 function RANGE:SetRangeRadius( radius )
   self.rangeradius = radius * 1000 or RANGE.Defaults.rangeradius
@@ -89594,7 +89597,7 @@ end
 
 --- Set player setting whether bomb impact points are smoked or not.
 -- @param #RANGE self
--- @param #boolean switch If true nor nil default is to smoke impact points of bombs.
+-- @param #boolean switch (Optional) If true nor nil default is to smoke impact points of bombs.
 -- @return #RANGE self
 function RANGE:SetDefaultPlayerSmokeBomb( switch )
   if switch == true or switch == nil then
@@ -89607,7 +89610,7 @@ end
 
 --- Set bomb track threshold distance. Bombs/rockets/missiles are only tracked if player-range distance is less than this distance. Default 25 km.
 -- @param #RANGE self
--- @param #number distance Threshold distance in km. Default 25 km.
+-- @param #number distance (Optional) Threshold distance in km. Default 25 km.
 -- @return #RANGE self
 function RANGE:SetBombtrackThreshold( distance )
   self.BombtrackThreshold = (distance or 25) * 1000
@@ -89654,7 +89657,7 @@ end
 
 --- Enable range ceiling. Aircraft must be below the ceiling altitude to be considered in the range zone. 
 -- @param #RANGE self
--- @param #boolean enabled True if you would like to enable the ceiling check.  If no value give, will Default to false.
+-- @param #boolean enabled (Optional) True if you would like to enable the ceiling check.  If no value give, will Default to false.
 -- @return #RANGE self
 function RANGE:EnableRangeCeiling( enabled )
   self:T(self.lid.."EnableRangeCeiling")
@@ -89670,7 +89673,7 @@ end
 
 --- Set smoke color for marking bomb targets. By default bomb targets are marked by red smoke.
 -- @param #RANGE self
--- @param Utilities.Utils#SMOKECOLOR colorid Color id. Default `SMOKECOLOR.Red`.
+-- @param Utilities.Utils#SMOKECOLOR colorid (Optional) Color id. Default `SMOKECOLOR.Red`.
 -- @return #RANGE self
 function RANGE:SetBombTargetSmokeColor( colorid )
   self.BombSmokeColor = colorid or SMOKECOLOR.Red
@@ -89679,7 +89682,7 @@ end
 
 --- Set score bomb distance.
 -- @param #RANGE self
--- @param #number distance Distance in meters. Default 1000 m.
+-- @param #number distance (Optional) Distance in meters. Default 1000 m.
 -- @return #RANGE self
 function RANGE:SetScoreBombDistance( distance )
   self.scorebombdistance = distance or 1000
@@ -89688,7 +89691,7 @@ end
 
 --- Set smoke color for marking strafe targets. By default strafe targets are marked by green smoke.
 -- @param #RANGE self
--- @param Utilities.Utils#SMOKECOLOR colorid Color id. Default `SMOKECOLOR.Green`.
+-- @param Utilities.Utils#SMOKECOLOR colorid (Optional) Color id. Default `SMOKECOLOR.Green`.
 -- @return #RANGE self
 function RANGE:SetStrafeTargetSmokeColor( colorid )
   self.StrafeSmokeColor = colorid or SMOKECOLOR.Green
@@ -89697,7 +89700,7 @@ end
 
 --- Set smoke color for marking strafe pit approach boxes. By default strafe pit boxes are marked by white smoke.
 -- @param #RANGE self
--- @param Utilities.Utils#SMOKECOLOR colorid Color id. Default `SMOKECOLOR.White`.
+-- @param Utilities.Utils#SMOKECOLOR colorid (Optional) Color id. Default `SMOKECOLOR.White`.
 -- @return #RANGE self
 function RANGE:SetStrafePitSmokeColor( colorid )
   self.StrafePitSmokeColor = colorid or SMOKECOLOR.White
@@ -89706,7 +89709,7 @@ end
 
 --- Set time delay between bomb impact and starting to smoke the impact point.
 -- @param #RANGE self
--- @param #number delay Time delay in seconds. Default is 3 seconds.
+-- @param #number delay (Optional) Time delay in seconds. Default is 3 seconds.
 -- @return #RANGE self
 function RANGE:SetSmokeTimeDelay( delay )
   self.TdelaySmoke = delay or RANGE.Defaults.TdelaySmoke
@@ -89796,11 +89799,11 @@ end
 --- Use SRS Simple-Text-To-Speech for transmissions. No sound files necessary.
 -- @param #RANGE self
 -- @param #string PathToSRS Path to SRS directory.
--- @param #number Port SRS port. Default 5002.
--- @param #number Coalition Coalition side, e.g. `coalition.side.BLUE` or `coalition.side.RED`. Default `coalition.side.BLUE`.
--- @param #number Frequency Frequency to use. Default is 256 MHz for range control and 305 MHz for instructor. If given, both control and instructor get this frequency.
--- @param #number Modulation Modulation to use, defaults to radio.modulation.AM
--- @param #number Volume Volume, between 0.0 and 1.0. Defaults to 1.0
+-- @param #number Port (Optional) SRS port. Default 5002.
+-- @param #number Coalition (Optional) Coalition side, e.g. `coalition.side.BLUE` or `coalition.side.RED`. Default `coalition.side.BLUE`.
+-- @param #number Frequency (Optional) Frequency to use. Default is 256 MHz for range control and 305 MHz for instructor. If given, both control and instructor get this frequency.
+-- @param #number Modulation (Optional) Modulation to use, defaults to radio.modulation.AM
+-- @param #number Volume (Optional) Volume, between 0.0 and 1.0. Defaults to 1.0
 -- @param #string PathToGoogleKey Path to Google TTS credentials.
 -- @return #RANGE self
 function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey)
@@ -89844,11 +89847,11 @@ end
 
 --- (SRS) Set range control frequency and voice. Use `RANGE:SetSRS()` once first before using this function.
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 256 MHz.
--- @param #number modulation Modulation, defaults to radio.modulation.AM.
+-- @param #number frequency (Optional) Frequency in MHz. Default 256 MHz.
+-- @param #number modulation (Optional) Modulation, defaults to radio.modulation.AM.
 -- @param #string voice Voice.
--- @param #string culture Culture, defaults to "en-US".
--- @param #string gender Gender, defaults to "female".
+-- @param #string culture (Optional) Culture, defaults to "en-US".
+-- @param #string gender (Optional) Gender, defaults to "female".
 -- @param #string relayunitname Name of the unit used for transmission location.
 -- @return #RANGE self
 function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender, relayunitname )
@@ -89878,11 +89881,11 @@ end
 
 --- (SRS) Set range instructor frequency and voice. Use `RANGE:SetSRS()` once first before using this function.
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 305 MHz.
--- @param #number modulation Modulation, defaults to radio.modulation.AM.
+-- @param #number frequency (Optional) Frequency in MHz. Default 305 MHz.
+-- @param #number modulation (Optional) Modulation, defaults to radio.modulation.AM.
 -- @param #string voice Voice.
--- @param #string culture Culture, defaults to "en-US".
--- @param #string gender Gender, defaults to "male".
+-- @param #string culture (Optional) Culture, defaults to "en-US".
+-- @param #string gender (Optional) Gender, defaults to "male".
 -- @param #string relayunitname Name of the unit used for transmission location.
 -- @return #RANGE self
 function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gender, relayunitname )
@@ -89912,7 +89915,7 @@ end
 
 --- Enable range control and set frequency (non-SRS).
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 256 MHz.
+-- @param #number frequency (Optional) Frequency in MHz. Default 256 MHz.
 -- @param #string relayunitname Name of the unit used for transmission.
 -- @return #RANGE self
 function RANGE:SetRangeControl( frequency, relayunitname )
@@ -89923,7 +89926,7 @@ end
 
 --- Enable instructor radio and set frequency (non-SRS).
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 305 MHz.
+-- @param #number frequency (Optional) Frequency in MHz. Default 305 MHz.
 -- @param #string relayunitname Name of the unit used for transmission.
 -- @return #RANGE self
 function RANGE:SetInstructorRadio( frequency, relayunitname )
@@ -89934,7 +89937,7 @@ end
 
 --- Set sound files folder within miz file.
 -- @param #RANGE self
--- @param #string path Path for sound files. Default "Range Soundfiles/". Mind the slash "/" at the end!
+-- @param #string path (Optional) Path for sound files. Default "Range Soundfiles/". Mind the slash "/" at the end!
 -- @return #RANGE self
 function RANGE:SetSoundfilesPath( path )
   self.soundpath = tostring( path or "Range Soundfiles/" )
@@ -90174,10 +90177,12 @@ end
 -- @param #RANGE self
 -- @param #table targetnames Single or multiple (Table) names of unit or static objects serving as bomb targets.
 -- @param #number goodhitrange (Optional) Max distance from target unit (in meters) which is considered as a good hit. Default is 25 m.
--- @param #boolean randommove If true, unit will move randomly within the range. Default is false.
+-- @param #boolean randommove (Optional) If true, unit will move randomly within the range. Default is false.
 -- @return #RANGE self
 function RANGE:AddBombingTargets( targetnames, goodhitrange, randommove )
   self:F( { targetnames = targetnames, goodhitrange = goodhitrange, randommove = randommove } )
+
+  randommove = randommove or false
 
   -- Create a table if necessary.
   if type( targetnames ) ~= "table" then
@@ -90213,7 +90218,7 @@ end
 -- @param #RANGE self
 -- @param Wrapper.Positionable#POSITIONABLE unit Positionable (unit or static) of the bombing target.
 -- @param #number goodhitrange Max distance from unit which is considered as a good hit.
--- @param #boolean randommove If true, unit will move randomly within the range. Default is false.
+-- @param #boolean randommove (Optional) If true, unit will move randomly within the range. Default is false.
 -- @return #RANGE self
 function RANGE:AddBombingTargetUnit( unit, goodhitrange, randommove )
   self:F( { unit = unit, goodhitrange = goodhitrange, randommove = randommove } )
@@ -90329,7 +90334,7 @@ end
 -- @param #RANGE self
 -- @param Wrapper.Group#GROUP group Group of bombing targets. Can also be given as group name.
 -- @param #number goodhitrange Max distance from unit which is considered as a good hit.
--- @param #boolean randommove If true, unit will move randomly within the range. Default is false.
+-- @param #boolean randommove (Optional) If true, unit will move randomly within the range. Default is false.
 -- @return #RANGE self
 function RANGE:AddBombingTargetGroup( group, goodhitrange, randommove )
   self:F( { group = group, goodhitrange = goodhitrange, randommove = randommove } )
@@ -93028,8 +93033,8 @@ do -- ZoneGoal
   --- ZONE_GOAL_COALITION Constructor.
   -- @param #ZONE_GOAL_COALITION self
   -- @param Core.Zone#ZONE Zone A @{Core.Zone} object with the goal to be achieved.
-  -- @param #number Coalition The initial coalition owning the zone. Default coalition.side.NEUTRAL.
-  -- @param #table UnitCategories Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
+  -- @param #number Coalition (Optional) The initial coalition owning the zone. Default coalition.side.NEUTRAL.
+  -- @param #table UnitCategories (Optional) Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
   -- @return #ZONE_GOAL_COALITION
   function ZONE_GOAL_COALITION:New( Zone, Coalition, UnitCategories )
 
@@ -93064,7 +93069,7 @@ do -- ZoneGoal
 
   --- Set the owning coalition of the zone.
   -- @param #ZONE_GOAL_COALITION self
-  -- @param #table UnitCategories Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
+  -- @param #table UnitCategories (Optional) Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
   -- @return #ZONE_GOAL_COALITION
   function ZONE_GOAL_COALITION:SetUnitCategories( UnitCategories )
 
@@ -93079,7 +93084,7 @@ do -- ZoneGoal
 
   --- Set the owning coalition of the zone.
   -- @param #ZONE_GOAL_COALITION self
-  -- @param #table ObjectCategories Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
+  -- @param #table ObjectCategories (Optional) Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
   -- @return #ZONE_GOAL_COALITION
   function ZONE_GOAL_COALITION:SetObjectCategories( ObjectCategories )
 
@@ -93500,8 +93505,8 @@ do -- ZONE_CAPTURE_COALITION
   -- @param #ZONE_CAPTURE_COALITION self
   -- @param Core.Zone#ZONE Zone A @{Core.Zone} object with the goal to be achieved. Alternatively, can be handed as the name of late activated group describing a @{Core.Zone#ZONE_POLYGON} with its waypoints.
   -- @param #number Coalition The initial coalition owning the zone.
-  -- @param #table UnitCategories Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
-  -- @param #table ObjectCategories Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
+  -- @param #table UnitCategories (Optional) Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
+  -- @param #table ObjectCategories (Optional) Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
   -- @return #ZONE_CAPTURE_COALITION
   -- @usage
   -- 
@@ -95477,7 +95482,7 @@ end
 -- @param #ARTY self
 -- @param Core.Point#COORDINATE coord Coordinates of the new position.
 -- @param #string time (Optional) Day time at which the group should start moving. Passed as a string in format "08:13:45". Default is now.
--- @param #number speed (Optinal) Speed in km/h the group should move at. Default 70% of max posible speed of group.
+-- @param #number speed (Optional) Speed in km/h the group should move at. Default 70% of max posible speed of group.
 -- @param #boolean onroad (Optional) If true, group will mainly use roads. Default off, i.e. go directly towards the specified coordinate.
 -- @param #boolean cancel (Optional) If true, cancel any running attack when move should begin. Default is false.
 -- @param #string name (Optional) Name of the coordinate. Default is LL DMS string of the coordinate. If the name was already given, the numbering "#01", "#02",... is appended automatically.
@@ -95588,7 +95593,7 @@ end
 
 --- Set minimum firing range. Targets closer than this distance are not engaged.
 -- @param #ARTY self
--- @param #number range Min range in kilometers. Default is 0.1 km.
+-- @param #number range (Optional) Min range in kilometers. Default is 0.1 km.
 -- @return self
 function ARTY:SetMinFiringRange(range)
   self:F({range=range})
@@ -95598,7 +95603,7 @@ end
 
 --- Set maximum firing range. Targets further away than this distance are not engaged.
 -- @param #ARTY self
--- @param #number range Max range in kilometers. Default is 1000 km.
+-- @param #number range (Optional) Max range in kilometers. Default is 1000 km.
 -- @return self
 function ARTY:SetMaxFiringRange(range)
   self:F({range=range})
@@ -95608,7 +95613,7 @@ end
 
 --- Set time interval between status updates. During the status check, new events are triggered.
 -- @param #ARTY self
--- @param #number interval Time interval in seconds. Default 10 seconds.
+-- @param #number interval (Optional) Time interval in seconds. Default 10 seconds.
 -- @return self
 function ARTY:SetStatusInterval(interval)
   self:F({interval=interval})
@@ -95618,7 +95623,7 @@ end
 
 --- Set time interval for weapon tracking.
 -- @param #ARTY self
--- @param #number interval Time interval in seconds. Default 0.2 seconds.
+-- @param #number interval (Optional) Time interval in seconds. Default 0.2 seconds.
 -- @return self
 function ARTY:SetTrackInterval(interval)
   self.dtTrack=interval or 0.2
@@ -95627,7 +95632,7 @@ end
 
 --- Set time how it is waited a unit the first shot event happens. If no shot is fired after this time, the task to fire is aborted and the target removed.
 -- @param #ARTY self
--- @param #number waittime Time in seconds. Default 300 seconds.
+-- @param #number waittime (Optional) Time in seconds. Default 300 seconds.
 -- @return self
 function ARTY:SetWaitForShotTime(waittime)
   self:F({waittime=waittime})
@@ -95637,7 +95642,7 @@ end
 
 --- Define the safe distance between ARTY group and rearming unit or rearming place at which rearming process is possible.
 -- @param #ARTY self
--- @param #number distance Safe distance in meters. Default is 100 m.
+-- @param #number distance (Optional) Safe distance in meters. Default is 100 m.
 -- @return self
 function ARTY:SetRearmingDistance(distance)
   self:F({distance=distance})
@@ -95899,7 +95904,7 @@ end
 
 --- Set nuclear warhead explosion strength.
 -- @param #ARTY self
--- @param #number strength Explosion strength in kilo tons TNT. Default is 0.075 kt.
+-- @param #number strength (Optional) Explosion strength in kilo tons TNT. Default is 0.075 kt.
 -- @return self
 function ARTY:SetTacNukeWarhead(strength)
   self.nukewarhead=strength or 0.075
@@ -97989,7 +97994,7 @@ end
 
 --- Get the number of shells a unit or group currently has. For a group the ammo count of all units is summed up.
 -- @param #ARTY self
--- @param #boolean display Display ammo table as message to all. Default false.
+-- @param #boolean display (Optional) Display ammo table as message to all. Default false.
 -- @return #number Total amount of ammo the whole group has left.
 -- @return #number Number of shells the group has left.
 -- @return #number Number of rockets the group has left.
@@ -100069,7 +100074,7 @@ end
 
 --- Set average, minimum and maximum time a unit is suppressed each time it gets hit.
 -- @param #SUPPRESSION self
--- @param #number Tave Average time [seconds] a group will be suppressed. Default is 15 seconds.
+-- @param #number Tave (Optional) Average time [seconds] a group will be suppressed. Default is 15 seconds.
 -- @param #number Tmin (Optional) Minimum time [seconds] a group will be suppressed. Default is 5 seconds.
 -- @param #number Tmax (Optional) Maximum time a group will be suppressed. Default is 25 seconds.
 function SUPPRESSION:SetSuppressionTime(Tave, Tmin, Tmax)
@@ -100124,7 +100129,7 @@ end
 
 --- Set the formation a group uses for fall back, hide or retreat.
 -- @param #SUPPRESSION self
--- @param #string formation Formation of the group. Default "Vee".
+-- @param #string formation (Optional) Formation of the group. Default "Vee".
 function SUPPRESSION:SetFormation(formation)
   self:F(formation)
   self.Formation=formation or "Vee"
@@ -100132,7 +100137,7 @@ end
 
 --- Set speed a group moves at for fall back, hide or retreat.
 -- @param #SUPPRESSION self
--- @param #number speed Speed in km/h of group. Default max speed the group can do.
+-- @param #number speed (Optional) Speed in km/h of group. Default max speed the group can do.
 function SUPPRESSION:SetSpeed(speed)
   self:F(speed)
   self.Speed=speed or self.SpeedMax
@@ -100220,7 +100225,7 @@ end
 -- If the group consists of only a singe unit, this referrs to the life of the unit.
 -- If the group consists of more than one unit, this referrs to the group strength relative to its initial strength.
 -- @param #SUPPRESSION self
--- @param #number damage Damage in percent. If group gets damaged above this value, the group will retreat. Default 50 %.
+-- @param #number damage (Optional) Damage in percent. If group gets damaged above this value, the group will retreat. Default 50 %.
 function SUPPRESSION:SetRetreatDamage(damage)
   self:F(damage)
   self.RetreatDamage=damage or 50
@@ -100228,7 +100233,7 @@ end
 
 --- Set time a group waits in the retreat zone before it resumes its mission. Default is two hours.
 -- @param #SUPPRESSION self
--- @param #number time Time in seconds. Default 7200 seconds = 2 hours.
+-- @param #number time (Optional) Time in seconds. Default 7200 seconds = 2 hours.
 function SUPPRESSION:SetRetreatWait(time)
   self:F(time)
   self.RetreatWait=time or 7200
@@ -100236,7 +100241,7 @@ end
 
 --- Set alarm state a group will get after it returns from a fall back or take cover.
 -- @param #SUPPRESSION self
--- @param #string alarmstate Alarm state. Possible "Auto", "Green", "Red". Default is "Auto".
+-- @param #string alarmstate (Optional) Alarm state. Possible "Auto", "Green", "Red". Default is "Auto".
 function SUPPRESSION:SetDefaultAlarmState(alarmstate)
   self:F(alarmstate)
   if alarmstate:lower()=="auto" then
@@ -100252,7 +100257,7 @@ end
 
 --- Set Rules of Engagement (ROE) a group will get when it recovers from suppression.
 -- @param #SUPPRESSION self
--- @param #string roe ROE after suppression. Possible "Free", "Hold" or "Return". Default "Free".
+-- @param #string roe (Optional) ROE after suppression. Possible "Free", "Hold" or "Return". Default "Free".
 function SUPPRESSION:SetDefaultROE(roe)
   self:F(roe)
   if roe:lower()=="free" then
@@ -100268,7 +100273,7 @@ end
 
 --- Create an F10 menu entry for the suppressed group. The menu is mainly for Debugging purposes.
 -- @param #SUPPRESSION self
--- @param #boolean switch Enable=true or disable=false menu group. Default is true.
+-- @param #boolean switch (Optional) Enable=true or disable=false menu group. Default is true.
 function SUPPRESSION:MenuOn(switch)
   self:F(switch)
   if switch==nil then
@@ -101109,9 +101114,9 @@ end
 --- Make group run/drive to a certain point. We put in several intermediate waypoints because sometimes the group stops before it arrived at the desired point.
 --@param #SUPPRESSION self
 --@param Core.Point#COORDINATE fin Coordinate where we want to go.
---@param #number speed Speed of group. Default is 20.
---@param #string formation Formation of group. Default is "Vee".
---@param #number wait Time the group will wait/hold at final waypoint. Default is 30 seconds.
+--@param #number speed (Optional) Speed of group. Default is 20.
+--@param #string formation (Optional) Formation of group. Default is "Vee".
+--@param #number wait (Optional) Time the group will wait/hold at final waypoint. Default is 30 seconds.
 function SUPPRESSION:_Run(fin, speed, formation, wait)
 
   speed=speed or 20
@@ -101373,7 +101378,7 @@ end
 
 --- Sets the ROE for the group and updates the current ROE variable.
 -- @param #SUPPRESSION self
--- @param #string roe ROE the group will get. Possible "Free", "Hold", "Return". Default is self.DefaultROE.
+-- @param #string roe (Optional) ROE the group will get. Possible "Free", "Hold", "Return". Default is self.DefaultROE.
 function SUPPRESSION:_SetROE(roe)
   local group=self.Controllable --Wrapper.Controllable#CONTROLLABLE
   
@@ -101402,7 +101407,7 @@ end
 
 --- Sets the alarm state of the group and updates the current alarm state variable.
 -- @param #SUPPRESSION self
--- @param #string state Alarm state the group will get. Possible "Auto", "Green", "Red". Default is self.DefaultAlarmState.
+-- @param #string state (Optional) Alarm state the group will get. Possible "Auto", "Green", "Red". Default is self.DefaultAlarmState.
 function SUPPRESSION:_SetAlarmState(state)
   local group=self.Controllable --Wrapper.Controllable#CONTROLLABLE
   
@@ -101616,7 +101621,7 @@ end
 
 --- Set duration how long messages are displayed.
 -- @param #PSEUDOATC self
--- @param #number duration Time in seconds. Default is 30 sec.
+-- @param #number duration (Optional) Time in seconds. Default is 30 sec.
 function PSEUDOATC:SetMessageDuration(duration)
   self.mdur=duration or 30
 end
@@ -101630,21 +101635,21 @@ end
 
 --- Set time interval after which the F10 radio menu is refreshed.
 -- @param #PSEUDOATC self
--- @param #number interval Interval in seconds. Default is every 120 sec.
+-- @param #number interval (Optional) Interval in seconds. Default is every 120 sec.
 function PSEUDOATC:SetMenuRefresh(interval)
   self.mrefresh=interval or 120
 end
 
 --- [Deprecated] Enable/disable event handling by MOOSE or DCS.
 -- @param #PSEUDOATC self
--- @param #boolean switch If true, events are handled by MOOSE (default). If false, events are handled directly by DCS.
+-- @param #boolean switch (Optional) If true, events are handled by MOOSE (default). If false, events are handled directly by DCS.
 function PSEUDOATC:SetEventsMoose(switch)
   self.eventsmoose=switch
 end
 
 --- Set time interval for reporting altitude until touchdown.
 -- @param #PSEUDOATC self
--- @param #number interval Interval in seconds. Default is every 3 sec.
+-- @param #number interval (Optional) Interval in seconds. Default is every 3 sec.
 function PSEUDOATC:SetReportAltInterval(interval)
   self.talt=interval or 3
 end
@@ -104937,14 +104942,14 @@ function WAREHOUSE:New(warehouse, alias)
   --- Triggers the FSM event "Save" when the warehouse assets are saved to file on disk.
   -- @function [parent=#WAREHOUSE] Save
   -- @param #WAREHOUSE self
-  -- @param #string path Path where the file is saved. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is saved. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- Triggers the FSM event "Save" with a delay when the warehouse assets are saved to a file.
   -- @function [parent=#WAREHOUSE] __Save
   -- @param #WAREHOUSE self
   -- @param #number delay Delay in seconds.
-  -- @param #string path Path where the file is saved. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is saved. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- On after "Save" event user function. Called when the warehouse assets are saved to disk.
@@ -104953,21 +104958,21 @@ function WAREHOUSE:New(warehouse, alias)
   -- @param #string From From state.
   -- @param #string Event Event.
   -- @param #string To To state.
-  -- @param #string path Path where the file is saved. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is saved. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
 
   --- Triggers the FSM event "Load" when the warehouse is loaded from a file on disk.
   -- @function [parent=#WAREHOUSE] Load
   -- @param #WAREHOUSE self
-  -- @param #string path Path where the file is located. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is located. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- Triggers the FSM event "Load" with a delay when the warehouse assets are loaded from disk.
   -- @function [parent=#WAREHOUSE] __Load
   -- @param #WAREHOUSE self
   -- @param #number delay Delay in seconds.
-  -- @param #string path Path where the file is located. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is located. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- On after "Load" event user function. Called when the warehouse assets are loaded from disk.
@@ -104976,7 +104981,7 @@ function WAREHOUSE:New(warehouse, alias)
   -- @param #string From From state.
   -- @param #string Event Event.
   -- @param #string To To state.
-  -- @param #string path Path where the file is located. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is located. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
 
@@ -105046,7 +105051,7 @@ end
 
 --- Set low fuel threshold. If one unit of an asset has less fuel than this number, the event AssetLowFuel will be fired.
 -- @param #WAREHOUSE self
--- @param #number threshold Relative low fuel threshold, i.e. a number in [0,1]. Default 0.15 (15%).
+-- @param #number threshold (Optional) Relative low fuel threshold, i.e. a number in [0,1]. Default 0.15 (15%).
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetLowFuelThreshold(threshold)
   self.lowfuelthresh=threshold or 0.15
@@ -105064,7 +105069,7 @@ end
 
 --- Set verbosity level.
 -- @param #WAREHOUSE self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetVerbosityLevel(VerbosityLevel)
   self.verbosity=VerbosityLevel or 0
@@ -105175,7 +105180,7 @@ end
 --- Enable auto save of warehouse assets at mission end event.
 -- @param #WAREHOUSE self
 -- @param #string path Path where to save the asset data file.
--- @param #string filename File name. Default is generated automatically from warehouse id.
+-- @param #string filename (Optional) File name. Default is generated automatically from warehouse id.
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetSaveOnMissionEnd(path, filename)
   self.autosave=true
@@ -105819,7 +105824,7 @@ end
 -- Note that this is the time, the DCS engine uses not something we can control on a user level or we could get via scripting.
 -- You need to input the value. On the DCS forum it was stated that this is currently one hour. Hence this is the default value.
 -- @param #WAREHOUSE self
--- @param #number RepairTime Time in seconds until the runway is repaired. Default 3600 sec (one hour).
+-- @param #number RepairTime (Optional) Time in seconds until the runway is repaired. Default 3600 sec (one hour).
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetRunwayRepairtime(RepairTime)
   self.runwayrepairtime=RepairTime or 3600
@@ -106361,7 +106366,7 @@ end
 -- @param #string Event Event.
 -- @param #string To To state.
 -- @param Wrapper.Group#GROUP group Group or template group to be added to the warehouse stock.
--- @param #number ngroups Number of groups to add to the warehouse stock. Default is 1.
+-- @param #number ngroups (Optional) Number of groups to add to the warehouse stock. Default is 1.
 -- @param #WAREHOUSE.Attribute forceattribute (Optional) Explicitly force a generalized attribute for the asset. This has to be an @{#WAREHOUSE.Attribute}.
 -- @param #number forcecargobay (Optional) Explicitly force cargobay weight limit in kg for cargo carriers. This is for each *unit* of the group.
 -- @param #number forceweight (Optional) Explicitly force weight in kg of each unit in the group.
@@ -108696,7 +108701,7 @@ end
 -- @param #WAREHOUSE self
 -- @param Wrapper.Group#GROUP Group The train group.
 -- @param Core.Point#COORDINATE Coordinate of the destination. Tail will be routed to the closest point
--- @param #number Speed Speed in km/h to drive to the destination coordinate. Default is 60% of max possible speed the unit can go.
+-- @param #number Speed (Optional) Speed in km/h to drive to the destination coordinate. Default is 60% of max possible speed the unit can go.
 function WAREHOUSE:_RouteTrain(Group, Coordinate, Speed)
 
   if Group and Group:IsAlive() then
@@ -111253,7 +111258,7 @@ end
 --- Info Message. Message send to coalition if reports or debug mode activated (and duration > 0). Text self:I(text) added to DCS.log file.
 -- @param #WAREHOUSE self
 -- @param #string text The text of the error message.
--- @param #number duration Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
+-- @param #number duration (Optional) Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
 function WAREHOUSE:_InfoMessage(text, duration)
   duration=duration or 20
   if duration>0 and self.Debug or self.Report then
@@ -111266,7 +111271,7 @@ end
 --- Debug message. Message send to all if debug mode is activated (and duration > 0). Text self:T(text) added to DCS.log file.
 -- @param #WAREHOUSE self
 -- @param #string text The text of the error message.
--- @param #number duration Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
+-- @param #number duration (Optional) Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
 function WAREHOUSE:_DebugMessage(text, duration)
   duration=duration or 20
   if self.Debug and duration>0 then
@@ -111278,7 +111283,7 @@ end
 --- Error message. Message send to all (if duration > 0). Text self:E(text) added to DCS.log file.
 -- @param #WAREHOUSE self
 -- @param #string text The text of the error message.
--- @param #number duration Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
+-- @param #number duration (Optional) Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
 function WAREHOUSE:_ErrorMessage(text, duration)
   duration=duration or 20
   if duration>0 then
@@ -112089,7 +112094,7 @@ end
 --- Set explosion power. This is an "artificial" explosion generated when the missile is destroyed. Just for the visual effect.
 -- Don't set the explosion power too big or it will harm the aircraft in the vicinity.
 -- @param #FOX self
--- @param #number power Explosion power in kg TNT. Default 0.1 kg.
+-- @param #number power (Optional) Explosion power in kg TNT. Default 0.1 kg.
 -- @return #FOX self
 function FOX:SetExplosionPower(power)
 
@@ -112100,7 +112105,7 @@ end
 
 --- Set missile-player distance when missile is destroyed.
 -- @param #FOX self
--- @param #number distance Distance in meters. Default 200 m.
+-- @param #number distance (Optional) Distance in meters. Default 200 m.
 -- @return #FOX self
 function FOX:SetExplosionDistance(distance)
 
@@ -112111,8 +112116,8 @@ end
 
 --- Set missile-player distance when BIG missiles are destroyed.
 -- @param #FOX self
--- @param #number distance Distance in meters. Default 500 m.
--- @param #number explosivemass Explosive mass of missile threshold in kg TNT. Default 50 kg.
+-- @param #number distance (Optional) Distance in meters. Default 500 m.
+-- @param #number explosivemass (Optional) Explosive mass of missile threshold in kg TNT. Default 50 kg.
 -- @return #FOX self
 function FOX:SetExplosionDistanceBigMissiles(distance, explosivemass)
 
@@ -112146,7 +112151,7 @@ end
 
 --- Set verbosity level.
 -- @param #FOX self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #FOX self
 function FOX:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -114339,8 +114344,8 @@ do
 
   --- Set to accept accoustic detection. Set this *before* MANTIS starts!
   -- @param #MANTIS self
-  -- @param #number Radius Radius in which we can "hear" units. Defaults to 2000 meters.
-  -- @param #table UnitCategories Set what Unit Categories we can "hear". Defaults to `{Unit.Category.HELICOPTER}`
+  -- @param #number Radius (Optional) Radius in which we can "hear" units. Defaults to 2000 meters.
+  -- @param #table UnitCategories (Optional) Set what Unit Categories we can "hear". Defaults to `{Unit.Category.HELICOPTER}`
   -- @return #MANTIS self
   function MANTIS:SetAccousticDetectionOn(Radius,UnitCategories)
     self.DetectAccoustic = true
@@ -114499,9 +114504,9 @@ do
   --- Add a SET_ZONE of zones for Shoot&Scoot - SHORAD units will move around
   -- @param #MANTIS self
   -- @param Core.Set#SET_ZONE ZoneSet Set of zones to be used. Units will move around to the next (random) zone between 100m and 3000m away.
-  -- @param #number Number Number of closest zones to be considered, defaults to 3.
+  -- @param #number Number (Optional) Number of closest zones to be considered, defaults to 3.
   -- @param #boolean Random If true, use a random coordinate inside the next zone to scoot to.
-  -- @param #string Formation Formation to use, defaults to "Cone". See mission editor dropdown for options.
+  -- @param #string Formation (Optional) Formation to use, defaults to "Cone". See mission editor dropdown for options.
   -- @return #MANTIS self
   function MANTIS:AddScootZones(ZoneSet, Number, Random, Formation)
     self:T(self.lid .. " AddScootZones")
@@ -114682,11 +114687,11 @@ do
   
     --- Function to set number of SAMs going active on a valid, detected thread
     -- @param #MANTIS self
-    -- @param #number Short Number of short-range systems activated, defaults to 1.
-    -- @param #number Mid Number of mid-range systems activated, defaults to 2.
-    -- @param #number Long Number of long-range systems activated, defaults to 2.
-    -- @param #number Classic (non-automode) Number of overall systems activated, defaults to 6.
-    -- @param #number Point Number of point defense and AAA systems activated, defaults to 6.
+    -- @param #number Short (Optional) Number of short-range systems activated, defaults to 2.
+    -- @param #number Mid (Optional) Number of mid-range systems activated, defaults to 2.
+    -- @param #number Long (Optional) Number of long-range systems activated, defaults to 1.
+    -- @param #number Classic (Optional) (non-automode) Number of overall systems activated, defaults to 6.
+    -- @param #number Point (Optional) Number of point defense and AAA systems activated, defaults to 6.
     -- @return #MANTIS self
   function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic,Point)
     self:T(self.lid .. "SetMaxActiveSAMs")
@@ -114808,7 +114813,7 @@ do
   --- Function to set Advanded Mode
   -- @param #MANTIS self
   -- @param #boolean onoff If true, will activate Advanced Mode
-  -- @param #number ratio [optional] Percentage to use for advanced mode, defaults to 100%
+  -- @param #number ratio (Optional)  Percentage to use for advanced mode, defaults to 100%
   -- @usage Advanced mode will *decrease* reactivity of MANTIS, if HQ and/or EWR network dies.  Set SAMs to RED state if both are dead.  Requires usage of an **HQ** object and the **dynamic** option.
   -- E.g. `mymantis:SetAdvancedMode(true, 90)`
   function MANTIS:SetAdvancedMode(onoff, ratio)
@@ -116325,15 +116330,15 @@ do
   
   --- Instantiates a new SHORAD object
   -- @param #SHORAD self
-  -- @param #string Name Name of this SHORAD
-  -- @param #string ShoradPrefix Filter for the Shorad #SET_GROUP
-  -- @param Core.Set#SET_GROUP Samset The #SET_GROUP of SAM sites to defend
-  -- @param #number Radius Defense radius in meters, used to switch on SHORAD groups **within** this radius
-  -- @param #number ActiveTimer Determines how many seconds the systems stay on red alert after wake-up call
+  -- @param #string Name (Optional) Name of this SHORAD. Default "MyShorad"
+  -- @param #string ShoradPrefix (Optional) Filter for the Shorad #SET_GROUP. Default "SAM SHORAD"
+  -- @param Core.Set#SET_GROUP Samset (Optional) The #SET_GROUP of SAM sites to defend. Default is based on default ShoradPrefix and default Coalition.
+  -- @param #number Radius (Optional) Defense radius in meters, used to switch on SHORAD groups **within** this radius. Default is 20000m.
+  -- @param #number ActiveTimer (Optional) Determines how many seconds the systems stay on red alert after wake-up call. Default 600s
   -- @param #string Coalition Coalition, i.e. "blue", "red", or "neutral"
   -- @param #boolean UseEmOnOff Use Emissions On/Off rather than Alarm State Red/Green (default: use Emissions switch)
-  -- @param #boolean SmokeDecoy Throw smoke decoy when getting activated. Defaults to false.
-  -- @param #number SmokeDecoyColor SMOLECOLOR to use. Defaults to SMOLECOLOR.White
+  -- @param #boolean SmokeDecoy (Optional) Throw smoke decoy when getting activated. Defaults to false.
+  -- @param #number SmokeDecoyColor (Optional) SMOLECOLOR to use. Defaults to SMOLECOLOR.White
   -- @return #SHORAD self
   function SHORAD:New(Name, ShoradPrefix, Samset, Radius, ActiveTimer, Coalition, UseEmOnOff, SmokeDecoy, SmokeDecoyColor) 
     local self = BASE:Inherit( self, FSM:New() )
@@ -116407,9 +116412,9 @@ do
   --- Add a SET_ZONE of zones for Shoot&Scoot
   -- @param #SHORAD self
   -- @param Core.Set#SET_ZONE ZoneSet Set of zones to be used. Units will move around to the next (random) zone between 100m and 3000m away.
-  -- @param #number Number Number of closest zones to be considered, defaults to 3.
+  -- @param #number Number (Optional) Number of closest zones to be considered, defaults to 3.
   -- @param #boolean Random If true, use a random coordinate inside the next zone to scoot to.
-  -- @param #string Formation Formation to use, defaults to "Cone". See mission editor dropdown for options.
+  -- @param #string Formation (Optional) Formation to use, defaults to "Cone". See mission editor dropdown for options.
   -- @return #SHORAD self
   function SHORAD:AddScootZones(ZoneSet, Number, Random, Formation)
     self:T(self.lid .. " AddScootZones")
@@ -117320,7 +117325,7 @@ AICSAR.RadioLength = {
 -- @param #string Helotemplate Helicopter template name.
 -- @param Wrapper.Airbase#AIRBASE FARP FARP object or Airbase from where to start.
 -- @param Core.Zone#ZONE MASHZone Zone where to drop pilots after rescue.
--- @param #number Helonumber Max number of alive Ai Helos at the same time. Defaults to three.
+-- @param #number Helonumber (Optional) Max number of alive Ai Helos at the same time. Defaults to 3.
 -- @return #AICSAR self
 function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone,Helonumber)
   -- Inherit everything from FSM class.
@@ -117555,10 +117560,10 @@ end
 -- @param #AICSAR self
 -- @param #boolean OnOff Switch on (true) or off (false).
 -- @param #string Path Path to your SRS Server External Audio Component, e.g. "C:\\\\Program Files\\\\DCS-SimpleRadio-Standalone\\\\ExternalAudio"
--- @param #number Frequency Defaults to 243 (guard)
--- @param #number Modulation Radio modulation. Defaults to radio.modulation.AM
--- @param #string SoundPath Where to find the audio files. Defaults to nil, i.e. add messages via "Sound to..." in the Mission Editor.
--- @param #number Port Port of the SRS, defaults to 5002.
+-- @param #number Frequency (Optional) Defaults to 243 (guard)
+-- @param #number Modulation (Optional) Radio modulation. Defaults to radio.modulation.AM
+-- @param #string SoundPath (Optional) Where to find the audio files. Defaults to nil, i.e. add messages via "Sound to..." in the Mission Editor.
+-- @param #number Port (Optional) Port of the SRS, defaults to 5002.
 -- @return #AICSAR self
 function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath,Port)
   self:T(self.lid .. "SetSRSRadio")
@@ -117669,8 +117674,8 @@ end
 --- [User] Switch sound output on and use normale (DCS) radio
 -- @param #AICSAR self
 -- @param #boolean OnOff Switch on (true) or off (false).
--- @param #number Frequency Defaults to 243 (guard).
--- @param #number Modulation Radio modulation. Defaults to radio.modulation.AM.
+-- @param #number Frequency(Optional)  Defaults to 243 (guard).
+-- @param #number Modulation (Optional) Radio modulation. Defaults to radio.modulation.AM.
 -- @param Wrapper.Group#GROUP Group The group to use as sending station.
 -- @return #AICSAR self
 function AICSAR:SetDCSRadio(OnOff,Frequency,Modulation,Group)
@@ -119622,7 +119627,7 @@ end
 
 --- (User) Set minimum threat level for target selection, can be 0 (lowest) to 10 (highest).
 -- @param #AUTOLASE self
--- @param #number Level Level used for filtering, defaults to 0. SAM systems and manpads have level 7 to 10, AAA level 6, MTBs and armoured vehicles level 3 to 5, APC, Artillery, Infantry and EWR level 1 to 2.
+-- @param #number Level (Optional) Level used for filtering, defaults to 0. SAM systems and manpads have level 7 to 10, AAA level 6, MTBs and armoured vehicles level 3 to 5, APC, Artillery, Infantry and EWR level 1 to 2.
 -- @return #AUTOLASE self
 -- @usage Filter for level 3 and above:
 --            `myautolase:SetMinThreatLevel(3)`
@@ -119788,8 +119793,8 @@ end
 
 --- (User) Function to force laser cooldown and cool down time
 -- @param #AUTOLASE self
--- @param #boolean OnOff Switch cool down on (true) or off (false) - defaults to true
--- @param #number Seconds Number of seconds for cooldown - dafaults to 60 seconds
+-- @param #boolean OnOff (Optional) Switch cool down on (true) or off (false) - defaults to true
+-- @param #number Seconds (Optional) Number of seconds for cooldown - dafaults to 60 seconds
 -- @return #AUTOLASE self 
 function AUTOLASE:SetLaserCoolDown(OnOff, Seconds)
   self.forcecooldown = OnOff and true
@@ -119810,8 +119815,8 @@ end
 
 --- (User) Function to set lasing distance in meters and duration in seconds
 -- @param #AUTOLASE self
--- @param #number Distance (Max) distance for lasing in meters - default 5000 meters
--- @param #number Duration (Max) duration for lasing in seconds - default 300 secs
+-- @param #number Distance (Optional) Max distance for lasing in meters - default 5000 meters
+-- @param #number Duration (Optional) Max duration for lasing in seconds - default 300 secs
 -- @return #AUTOLASE self 
 function AUTOLASE:SetLasingParameters(Distance, Duration)
   self.LaseDistance = Distance or 5000
@@ -119835,7 +119840,7 @@ end
 
 --- (User) Function to set rounding precision for BR distance output.
 -- @param #AUTOLASE self
--- @param #number IDP Rounding precision before/after the decimal sign. Defaults to zero. Positive values round right of the decimal sign, negative ones left of the decimal sign. 
+-- @param #number IDP (Optional) Rounding precision before/after the decimal sign. Defaults to zero. Positive values round right of the decimal sign, negative ones left of the decimal sign. 
 -- @return #AUTOLASE self 
 function AUTOLASE:SetRoundingPrecsion(IDP)
   self.RoundingPrecision = IDP or 0
@@ -120708,8 +120713,8 @@ end
 
 --- [USER] Set activation radius for Helos and Planes in Nautical Miles.
 --  @param #TIRESIAS self
---  @param #number HeloMiles Radius around a Helicopter in which AI ground units will be activated. Defaults to 10NM.
---  @param #number PlaneMiles Radius around an Airplane in which AI ground units will be activated. Defaults to 25NM.
+--  @param #number HeloMiles (Optional) Radius around a Helicopter in which AI ground units will be activated. Defaults to 10NM.
+--  @param #number PlaneMiles (Optional) Radius around an Airplane in which AI ground units will be activated. Defaults to 25NM.
 --  @return #TIRESIAS self
 function TIRESIAS:SetActivationRanges(HeloMiles, PlaneMiles)
   self.HeloSwitchRange = HeloMiles or 10
@@ -120721,8 +120726,8 @@ end
 
 ---[USER] Set AAA Ranges - AAA equals non-SAM systems which qualify as AAA in DCS world.
 --  @param #TIRESIAS self
---  @param #number FiringRange The engagement range that AAA units will be set to. Can be 0 to 100 (percent). Defaults to 60.
---  @param #boolean SwitchAAA Decide if these system will have their AI switched off, too. Defaults to true.
+--  @param #number FiringRange (Optional) The engagement range that AAA units will be set to. Can be 0 to 100 (percent). Defaults to 60.
+--  @param #boolean SwitchAAA (Optional) Decide if these system will have their AI switched off, too. Defaults to true.
 --  @return #TIRESIAS self
 function TIRESIAS:SetAAARanges(FiringRange, SwitchAAA)
   self.AAARange = FiringRange or 60
@@ -121454,7 +121459,7 @@ STRATEGO.Type = {
 -- @param #STRATEGO self
 -- @param #string Name Name of the Adviser.
 -- @param #number Coalition Coalition, e.g. coalition.side.BLUE.
--- @param #number MaxDist Maximum distance of a single route in kilometers, defaults to 150.
+-- @param #number MaxDist (Optional) Maximum distance of a single route in kilometers, defaults to 150.
 -- @return #STRATEGO self 
 function STRATEGO:New(Name,Coalition,MaxDist)
   -- Inherit everything from FSM class.
@@ -121565,7 +121570,7 @@ end
 --- [USER] Set up usage of budget and set an initial budget in points.
 -- @param #STRATEGO self
 -- @param #boolean Usebudget If true, use budget for advisory calculations.
--- @param #number StartBudget Initial budget to be used, defaults to 500.
+-- @param #number StartBudget (Optional) Initial budget to be used, defaults to 500.
 function STRATEGO:SetUsingBudget(Usebudget,StartBudget)
   self:T(self.lid.."SetUsingBudget")
   self.usebudget = Usebudget
@@ -121597,10 +121602,10 @@ end
 
 --- [USER] Set weights for nodes and routes to determine their importance.
 -- @param #STRATEGO self
--- @param #number MaxRunways Set the maximum number of runways the big (equals strategic) airbases on the map have. Defaults to 3. The weight of an airbase node hence equals the number of runways.
--- @param #number PortWeight Set what weight a port node has. Defaults to 3.
--- @param #number POIWeight Set what weight a POI node has. Defaults to 1.
--- @param #number RouteFactor Defines which weight each route between two defined nodes gets: Weight * RouteFactor.
+-- @param #number MaxRunways (Optional) Set the maximum number of runways the big (equals strategic) airbases on the map have. Defaults to 3. The weight of an airbase node hence equals the number of runways.
+-- @param #number PortWeight (Optional) Set what weight a port node has. Defaults to 3.
+-- @param #number POIWeight (Optional) Set what weight a POI node has. Defaults to 1.
+-- @param #number RouteFactor (Optional) Defines which weight each route between two defined nodes gets: Weight * RouteFactor. Defaults to 5.
 -- @return #STRATEGO self
 function STRATEGO:SetWeights(MaxRunways,PortWeight,POIWeight,RouteFactor)
   self:T(self.lid.."SetWeights")
@@ -121613,7 +121618,7 @@ end
 
 --- [USER] Set neutral benefit, i.e. how many points it is cheaper to decide for a neutral vs an enemy node when taking decisions.
 -- @param #STRATEGO self
--- @param #number NeutralBenefit Pointsm defaults to 100.
+-- @param #number NeutralBenefit (Optional) Pointsm defaults to 100.
 -- @return #STRATEGO self
 function STRATEGO:SetNeutralBenefit(NeutralBenefit)
   self:T(self.lid.."SetNeutralBenefit")
@@ -121623,9 +121628,9 @@ end
 
 --- [USER] Set how many units of which minimum threat level are needed to capture one node (i.e. the underlying OpsZone).
 -- @param #STRATEGO self
--- @param #number CaptureUnits Number of units needed, defaults to three.
--- @param #number CaptureThreatlevel Threat level needed, can be 0..10, defaults to one.
--- @param #table CaptureCategories Table of object categories which can capture a node, defaults to `{Object.Category.UNIT}`.
+-- @param #number CaptureUnits (Optional) Number of units needed, defaults to 3.
+-- @param #number CaptureThreatlevel (Optional) Threat level needed, can be 0..10, defaults to 1.
+-- @param #table CaptureCategories (Optional) Table of object categories which can capture a node, defaults to `{Object.Category.UNIT}`.
 -- @return #STRATEGO self
 function STRATEGO:SetCaptureOptions(CaptureUnits,CaptureThreatlevel,CaptureCategories)
   self:T(self.lid.."SetCaptureOptions")
@@ -124050,7 +124055,7 @@ end
 
 --- Set time interval between updates of the formation.
 -- @param #FORMATION self
--- @param #number dt Time step in seconds between formation updates. Default is every 0.5 seconds.
+-- @param #number dt (Optional) Time step in seconds between formation updates. Default is every 0.5 seconds.
 -- @return #FORMATION
 function FORMATION:SetFollowTimeInterval(dt)
   self.dtFollow=dt or 0.5
@@ -126990,7 +126995,7 @@ end
 --- Set carrier controlled area (CCA).
 -- This is a large zone around the carrier, which is constantly updated wrt the carrier position.
 -- @param #AIRBOSS self
--- @param #number Radius Radius of zone in nautical miles (NM). Default 50 NM.
+-- @param #number Radius (Optional) Radius of zone in nautical miles (NM). Default 50 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetCarrierControlledArea( Radius )
 
@@ -127004,7 +127009,7 @@ end
 --- Set carrier controlled zone (CCZ).
 -- This is a small zone (usually 5 NM radius) around the carrier, which is constantly updated wrt the carrier position.
 -- @param #AIRBOSS self
--- @param #number Radius Radius of zone in nautical miles (NM). Default 5 NM.
+-- @param #number Radius (Optional) Radius of zone in nautical miles (NM). Default 5 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetCarrierControlledZone( Radius )
 
@@ -127017,7 +127022,7 @@ end
 
 --- Set distance up to which water ahead is scanned for collisions.
 -- @param #AIRBOSS self
--- @param #number Distance Distance in NM. Default 5 NM.
+-- @param #number Distance (Optional) Distance in NM. Default 5 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetCollisionDistance( Distance )
   self.collisiondist = UTILS.NMToMeters( Distance or 5 )
@@ -127026,7 +127031,7 @@ end
 
 --- Set the default recovery case.
 -- @param #AIRBOSS self
--- @param #number Case Case of recovery. Either 1, 2 or 3. Default 1.
+-- @param #number Case (Optional) Case of recovery. Either 1, 2 or 3. Default 1.
 -- @return #AIRBOSS self
 function AIRBOSS:SetRecoveryCase( Case )
 
@@ -127043,7 +127048,7 @@ end
 -- Usually, this is +-15 or +-30 degrees. You should not use and offset angle >= 90 degrees, because this will cause a devision by zero in some of the equations used to calculate the approach corridor.
 -- So best stick to the defaults up to 30 degrees.
 -- @param #AIRBOSS self
--- @param #number Offset Offset angle in degrees. Default 0.
+-- @param #number Offset (Optional) Offset angle in degrees. Default 0.
 -- @return #AIRBOSS self
 function AIRBOSS:SetHoldingOffsetAngle( Offset )
 
@@ -127058,10 +127063,10 @@ end
 
 --- Enable F10 menu to manually start recoveries.
 -- @param #AIRBOSS self
--- @param #number Duration Default duration of the recovery in minutes. Default 30 min.
--- @param #number WindOnDeck Default wind on deck in knots. Default 25 knots.
--- @param #boolean Uturn U-turn after recovery window closes on=true or off=false/nil. Default off.
--- @param #number Offset Relative Marshal radial in degrees for Case II/III recoveries. Default 30°.
+-- @param #number Duration (Optional) Default duration of the recovery in minutes. Default 30 min.
+-- @param #number WindOnDeck(Optional)  Default wind on deck in knots. Default 25 knots.
+-- @param #boolean Uturn (Optional) U-turn after recovery window closes on=true or off=false/nil. Default off.
+-- @param #number Offset (Optional) Relative Marshal radial in degrees for Case II/III recoveries. Default 30°.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMenuRecovery( Duration, WindOnDeck, Uturn, Offset )
 
@@ -127081,13 +127086,13 @@ end
 
 --- Add aircraft recovery time window and recovery case.
 -- @param #AIRBOSS self
--- @param #string starttime Start time, e.g. "8:00" for eight o'clock. Default now.
--- @param #string stoptime Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
--- @param #number case Recovery case for that time slot. Number between one and three.
--- @param #number holdingoffset Only for CASE II/III: Angle in degrees the holding pattern is offset.
+-- @param #string starttime (Optional) Start time, e.g. "8:00" for eight o'clock. Default now.
+-- @param #string stoptime (Optional) Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
+-- @param #number case (Optional) Recovery case for that time slot. Number between one and three. Defaults to 1.
+-- @param #number holdingoffset (Optional) Only for CASE II/III: Angle in degrees the holding pattern is offset. Defaults to 0.
 -- @param #boolean turnintowind If true, carrier will turn into the wind 5 minutes before the recovery window opens.
--- @param #number speed Speed in knots during turn into wind leg.
--- @param #boolean uturn If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
+-- @param #number speed (Optional) Speed in knots during turn into wind leg. Default is 20.
+-- @param #boolean uturn (Optional) If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
 -- @return #AIRBOSS.Recovery Recovery window.
 function AIRBOSS:AddRecoveryWindow( starttime, stoptime, case, holdingoffset, turnintowind, speed, uturn )
 
@@ -127269,7 +127274,7 @@ end
 
 --- Set time before carrier turns and recovery window opens.
 -- @param #AIRBOSS self
--- @param #number Interval Time interval in seconds. Default 300 sec.
+-- @param #number Interval (Optional) Time interval in seconds. Default 300 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetRecoveryTurnTime( Interval )
   self.dTturn = Interval or 300
@@ -127278,7 +127283,7 @@ end
 
 --- Set multiplayer environment wire correction.
 -- @param #AIRBOSS self
--- @param #number Dcorr Correction distance in meters. Default 12 m.
+-- @param #number Dcorr (Optional) Correction distance in meters. Default 12 m.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMPWireCorrection( Dcorr )
   self.mpWireCorrection = Dcorr or 12
@@ -127287,7 +127292,7 @@ end
 
 --- Set time interval for updating queues and other stuff.
 -- @param #AIRBOSS self
--- @param #number TimeInterval Time interval in seconds. Default 30 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds. Default 30 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetQueueUpdateTime( TimeInterval )
   self.dTqueue = TimeInterval or 30
@@ -127296,7 +127301,7 @@ end
 
 --- Set time interval between LSO calls. Optimal time in the groove is ~16 seconds. So the default of 4 seconds gives around 3-4 correction calls in the groove.
 -- @param #AIRBOSS self
--- @param #number TimeInterval Time interval in seconds between LSO calls. Default 4 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds between LSO calls. Default 4 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetLSOCallInterval( TimeInterval )
   self.LSOdT = TimeInterval or 4
@@ -127369,7 +127374,7 @@ end
 
 --- Give AI aircraft the refueling task if a recovery tanker is present or send them to the nearest divert airfield.
 -- @param #AIRBOSS self
--- @param #number LowFuelThreshold Low fuel threshold in percent. AI will go refueling if their fuel level drops below this value. Default 10 %.
+-- @param #number LowFuelThreshold (Optional) Low fuel threshold in percent. AI will go refueling if their fuel level drops below this value. Default 10 %.
 -- @return #AIRBOSS self
 function AIRBOSS:SetRefuelAI( LowFuelThreshold )
   self.lowfuelAI = LowFuelThreshold or 10
@@ -127378,7 +127383,7 @@ end
 
 --- Set max altitude to register flights in the initial zone. Aircraft above this altitude will not be registerered.
 -- @param #AIRBOSS self
--- @param #number MaxAltitude Max altitude in feet. Default 1300 ft.
+-- @param #number MaxAltitude (Optional) Max altitude in feet. Default 1300 ft.
 -- @return #AIRBOSS self
 function AIRBOSS:SetInitialMaxAlt( MaxAltitude )
   self.initialmaxalt = UTILS.FeetToMeters( MaxAltitude or 1300 )
@@ -127412,7 +127417,7 @@ end
 
 --- Set time interval for updating player status and other things.
 -- @param #AIRBOSS self
--- @param #number TimeInterval Time interval in seconds. Default 0.5 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds. Default 0.5 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetStatusUpdateTime( TimeInterval )
   self.dTstatus = TimeInterval or 0.5
@@ -127421,7 +127426,7 @@ end
 
 --- Set duration how long messages are displayed to players.
 -- @param #AIRBOSS self
--- @param #number Duration Duration in seconds. Default 10 sec.
+-- @param #number Duration (Optional) Duration in seconds. Default 10 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetDefaultMessageDuration( Duration )
   self.Tmessage = Duration or 10
@@ -127512,7 +127517,7 @@ end
 --- Set Case I Marshal radius. This is the radius of the valid zone around "the post" aircraft are supposed to be holding in the Case I Marshal stack.
 -- The post is 2.5 NM port of the carrier.
 -- @param #AIRBOSS self
--- @param #number Radius Radius in NM. Default 2.8 NM, which gives a diameter of 5.6 NM.
+-- @param #number Radius (Optional) Radius in NM. Default 2.8 NM, which gives a diameter of 5.6 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMarshalRadius( Radius )
   self.marshalradius = UTILS.NMToMeters( Radius or 2.8 )
@@ -127646,9 +127651,9 @@ end
 --- Set up SRS for usage without sound files
 -- @param #AIRBOSS self
 -- @param #string PathToSRS Path to SRS folder, e.g. "C:\\Program Files\\DCS-SimpleRadio\\ExternalAudio".
--- @param #number Port Port of the SRS server, defaults to 5002.
--- @param #string Culture (Optional, Airboss Culture)  Culture, defaults to "en-US".
--- @param #string Gender (Optional, Airboss Gender)  Gender, e.g. "male" or "female". Defaults to "male".
+-- @param #number Port (Optional) Port of the SRS server, defaults to 5002.
+-- @param #string Culture (Optional) (Optional, Airboss Culture)  Culture, defaults to "en-US".
+-- @param #string Gender (Optional) (Optional, Airboss Gender)  Gender, e.g. "male" or "female". Defaults to "male".
 -- @param #string Voice (Optional, Airboss Voice) Set to use a specific voice. Will **override gender and culture** settings.
 -- @param #string GoogleCreds (Optional) Path to Google credentials, e.g. "C:\\Program Files\\DCS-SimpleRadio-Standalone\\yourgooglekey.json".
 -- @param #number Volume (Optional) E.g. 0.75. Defaults to 1.0 (loudest).
@@ -127896,7 +127901,7 @@ end
 
 --- Set number of aircraft units, which can be in the landing pattern before the pattern is full.
 -- @param #AIRBOSS self
--- @param #number nmax Max number. Default 4. Minimum is 1, maximum is 6.
+-- @param #number nmax (Optional) Max number. Default 4. Minimum is 1, maximum is 6.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxLandingPattern( nmax )
   nmax = nmax or 4
@@ -127909,7 +127914,7 @@ end
 --- Set number available Case I Marshal stacks. If Marshal stacks are full, flights requesting Marshal will be told to hold outside 10 NM zone until a stack becomes available again.
 -- Marshal stacks for Case II/III are unlimited.
 -- @param #AIRBOSS self
--- @param #number nmax Max number of stacks available to players and AI flights. Default 3, i.e. angels 2, 3, 4. Minimum is 1.
+-- @param #number nmax (Optional) Max number of stacks available to players and AI flights. Default 3, i.e. angels 2, 3, 4. Minimum is 1.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxMarshalStacks( nmax )
   self.Nmaxmarshal = nmax or 3
@@ -127931,7 +127936,7 @@ end
 
 --- Set maximum distance up to which section members are allowed (default: 100 meters).
 -- @param #AIRBOSS self
--- @param #number dmax Max distance in meters (default 100 m). Minimum is 10 m, maximum is 5000 m.
+-- @param #number dmax (Optional) Max distance in meters (default 100 m). Minimum is 10 m, maximum is 5000 m.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxSectionDistance( dmax )
     if dmax then
@@ -127947,7 +127952,7 @@ end
 
 --- Set max number of flights per stack. All members of a section count as one "flight".
 -- @param #AIRBOSS self
--- @param #number nmax Number of max allowed flights per stack. Default is two. Minimum is one, maximum is 4.
+-- @param #number nmax (Optional) Number of max allowed flights per stack. Default is two. Minimum is one, maximum is 4.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxFlightsPerStack( nmax )
   nmax = nmax or 2
@@ -127967,7 +127972,7 @@ end
 
 --- Will play the inbound calls, commencing, initial, etc. from the player when requesteing marshal
 -- @param #AIRBOSS self
--- @param #AIRBOSS status Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
+-- @param #AIRBOSS status (Optional) Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
 -- @return #AIRBOSS self
 function AIRBOSS:SetExtraVoiceOvers(status)
   self.xtVoiceOvers=status
@@ -127976,7 +127981,7 @@ end
 
 --- Will simulate the inbound call, commencing, initial, etc from the AI when requested by Airboss
 -- @param #AIRBOSS self
--- @param #AIRBOSS status Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
+-- @param #AIRBOSS status (Optional) Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
 -- @return #AIRBOSS self
 function AIRBOSS:SetExtraVoiceOversAI(status)
   self.xtVoiceOversAI=status
@@ -128015,7 +128020,7 @@ end
 -- * "Naval Aviator" = @{#AIRBOSS.Difficulty.Normal}
 -- * "TOPGUN Graduate" = @{#AIRBOSS.Difficulty.Hard}
 -- @param #AIRBOSS self
--- @param #string skill Player skill. Default "Naval Aviator".
+-- @param #string skill (Optional) Player skill. Default "Naval Aviator".
 -- @return #AIRBOSS self
 function AIRBOSS:SetDefaultPlayerSkill( skill )
 
@@ -128041,8 +128046,8 @@ end
 
 --- Enable auto save of player results each time a player is *finally* graded. *Finally* means after the player landed on the carrier! After intermediate passes (bolter or waveoff) the stats are *not* saved.
 -- @param #AIRBOSS self
--- @param #string path Path where to save the asset data file. Default is the DCS root installation directory or your "Saved Games\\DCS" folder if lfs was desanitized.
--- @param #string filename File name. Default is generated automatically from airboss carrier name/alias.
+-- @param #string path (Optional) Path where to save the asset data file. Default is the DCS root installation directory or your "Saved Games\\DCS" folder if lfs was desanitized.
+-- @param #string filename (Optional) File name. Default is generated automatically from airboss carrier name/alias.
 -- @return #AIRBOSS self
 function AIRBOSS:SetAutoSave( path, filename )
   self.autosave = true
@@ -128074,7 +128079,7 @@ end
 
 --- Set the magnetic declination (or variation). By default this is set to the standard declination of the map.
 -- @param #AIRBOSS self
--- @param #number declination Declination in degrees or nil for default declination of the map.
+-- @param #number declination (Optional) Declination in degrees or nil for default declination of the map.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMagneticDeclination( declination )
   self.magvar = declination or UTILS.GetMagneticDeclination()
@@ -128093,8 +128098,8 @@ end
 --- Set FunkMan socket. LSO grades and trap sheets will be send to your Discord bot.
 -- **Requires running FunkMan program**.
 -- @param #AIRBOSS self
--- @param #number Port Port. Default `10042`.
--- @param #string Host Host. Default `"127.0.0.1"`.
+-- @param #number Port (Optional) Port. Default `10042`.
+-- @param #string Host (Optional) Host. Default `"127.0.0.1"`.
 -- @return #AIRBOSS self
 function AIRBOSS:SetFunkManOn(Port, Host)
 
@@ -128105,7 +128110,7 @@ end
 
 --- Get next time the carrier will start recovering aircraft.
 -- @param #AIRBOSS self
--- @param #boolean InSeconds If true, abs. mission time seconds is returned. Default is a clock #string.
+-- @param #boolean InSeconds (Optional) If true, abs. mission time seconds is returned. Default is a clock #string.
 -- @return #string Clock start (or start time in abs. seconds).
 -- @return #string Clock stop (or stop time in abs. seconds).
 function AIRBOSS:GetNextRecoveryTime( InSeconds )
@@ -131268,7 +131273,7 @@ end
 --- Get marshal altitude and two positions of a counter-clockwise race track pattern.
 -- @param #AIRBOSS self
 -- @param #number stack Assigned stack number. Counting starts at one, i.e. stack=1 is the first stack.
--- @param #number case Recovery case. Default is self.case.
+-- @param #number case (Optional) Recovery case. Default is self.case.
 -- @return #number Holding altitude in meters.
 -- @return Core.Point#COORDINATE First race track coordinate.
 -- @return Core.Point#COORDINATE Second race track coordinate.
@@ -131629,8 +131634,8 @@ end
 --- Get next free Marshal stack. Depending on AI/human and recovery case.
 -- @param #AIRBOSS self
 -- @param #boolean ai If true, get a free stack for an AI flight group.
--- @param #number case Recovery case. Default current (self) case in progress.
--- @param #boolean empty Return lowest stack that is completely empty.
+-- @param #number case (Optional) Recovery case. Default current (self) case in progress.
+-- @param #boolean empty (Optional) Return lowest stack that is completely empty.
 -- @return #number Lowest free stack available for the given case or nil if all Case I stacks are taken.
 function AIRBOSS:_GetFreeStack( ai, case, empty )
 
@@ -131719,7 +131724,7 @@ end
 --- Get next free Marshal stack. Depending on AI/human and recovery case.
 -- @param #AIRBOSS self
 -- @param #boolean ai If true, get a free stack for an AI flight group.
--- @param #number case Recovery case. Default current (self) case in progress.
+-- @param #number case (Optional) Recovery case. Default current (self) case in progress.
 -- @param #boolean empty Return lowest stack that is completely empty.
 -- @return #number Lowest free stack available for the given case or nil if all Case I stacks are taken.
 function AIRBOSS:_GetFreeStack_Old( ai, case, empty )
@@ -131787,7 +131792,7 @@ end
 --- Get number of (airborne) units in a flight.
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.FlightGroup flight The flight group.
--- @param #boolean onground If true, include units on the ground. By default only airborne units are counted.
+-- @param #boolean onground (Optional) If true, include units on the ground. By default only airborne units are counted.
 -- @return #number Number of units in flight including section members.
 -- @return #number Number of units in flight excluding section members.
 -- @return #number Number of section members.
@@ -135492,9 +135497,9 @@ end
 
 --- Get groove zone.
 -- @param #AIRBOSS self
--- @param #number l Length of the groove in NM. Default 1.5 NM.
--- @param #number w Width of the groove in NM. Default 0.25 NM.
--- @param #number b Width of the beginning in NM. Default 0.10 NM.
+-- @param #number l (Optional) Length of the groove in NM. Default 1.5 NM.
+-- @param #number w (Optional) Width of the groove in NM. Default 0.25 NM.
+-- @param #number b (Optional) Width of the beginning in NM. Default 0.10 NM.
 -- @return Core.Zone#ZONE_POLYGON_BASE Groove zone.
 function AIRBOSS:_GetZoneGroove( l, w, b )
 
@@ -135665,7 +135670,7 @@ end
 --- Get approach corridor zone. Shape depends on recovery case.
 -- @param #AIRBOSS self
 -- @param #number case Recovery case.
--- @param #number l Length of the zone in NM. Default 31 (=21+10) NM.
+-- @param #number l (Optional) Length of the zone in NM. Default 31 (=21+10) NM.
 -- @return Core.Zone#ZONE_POLYGON_BASE Box zone.
 function AIRBOSS:_GetZoneCorridor( case, l )
 
@@ -136511,7 +136516,7 @@ end
 
 --- Get true (or magnetic) heading of carrier.
 -- @param #AIRBOSS self
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @return #number Carrier heading in degrees.
 function AIRBOSS:GetHeading( magnetic )
   self:F3( { magnetic = magnetic } )
@@ -136544,8 +136549,8 @@ end
 
 --- Get wind direction and speed at carrier position.
 -- @param #AIRBOSS self
--- @param #number alt Altitude ASL in meters. Default 18 m.
--- @param #boolean magnetic Direction including magnetic declination.
+-- @param #number alt (Optional) Altitude ASL in meters. Default 18 m.
+-- @param #boolean magnetic (Optional) Direction including magnetic declination.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate at which to get the wind. Default is current carrier position.
 -- @return #number Direction the wind is blowing **from** in degrees.
 -- @return #number Wind speed in m/s.
@@ -136571,7 +136576,7 @@ end
 
 --- Get wind speed on carrier deck parallel and perpendicular to runway.
 -- @param #AIRBOSS self
--- @param #number alt Altitude in meters. Default 18 m.
+-- @param #number alt (Optional) Altitude in meters. Default 18 m.
 -- @return #number Wind component parallel to runway im m/s.
 -- @return #number Wind component perpendicular to runway in m/s.
 -- @return #number Total wind strength in m/s.
@@ -136617,7 +136622,7 @@ end
 --- Get true (or magnetic) heading of carrier into the wind. This accounts for the angled runway.
 -- @param #AIRBOSS self
 -- @param #number vdeck Desired wind velocity over deck in knots.
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate from which heading is calculated. Default is current carrier position.
 -- @return #number Carrier heading in degrees.
 -- @return #number Carrier speed in knots to reach desired wind speed on deck.
@@ -136637,7 +136642,7 @@ end
 --- Get true (or magnetic) heading of carrier into the wind. This accounts for the angled runway.
 -- @param #AIRBOSS self
 -- @param #number vdeck Desired wind velocity over deck in knots.
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate from which heading is calculated. Default is current carrier position.
 -- @return #number Carrier heading in degrees.
 function AIRBOSS:GetHeadingIntoWind_old( vdeck, magnetic, coord )
@@ -136710,7 +136715,7 @@ end
 -- Implementation based on [Mags & Bambi](https://magwo.github.io/carrier-cruise/).
 -- @param #AIRBOSS self
 -- @param #number vdeck Desired wind velocity over deck in knots.
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate from which heading is calculated. Default is current carrier position.
 -- @return #number Carrier heading in degrees.
 -- @return #number Carrier speed in knots to reach desired wind speed on deck.
@@ -136841,9 +136846,9 @@ end
 --
 -- @param #AIRBOSS self
 -- @param #number case Recovery case.
--- @param #boolean magnetic If true, magnetic radial is returned. Default is true radial.
--- @param #boolean offset If true, inlcude holding offset.
--- @param #boolean inverse Return inverse, i.e. radial-180 degrees.
+-- @param #boolean magnetic (Optional) If true, magnetic radial is returned. Default is true radial.
+-- @param #boolean offset (Optional) If true, inlcude holding offset.
+-- @param #boolean inverse (Optional) Return inverse, i.e. radial-180 degrees.
 -- @return #number Radial in degrees.
 function AIRBOSS:GetRadial( case, magnetic, offset, inverse )
 
@@ -137789,7 +137794,7 @@ end
 --- Get short name of the grove step.
 -- @param #AIRBOSS self
 -- @param #string step Player step.
--- @param #number n Use -1 for previous or +1 for next. Default 0.
+-- @param #number n (Optional) Use -1 for previous or +1 for next. Default 0.
 -- @return #string Shortcut name "X", "RB", "IM", "AR", "IW".
 function AIRBOSS:_GS( step, n )
   local gp
@@ -137988,7 +137993,7 @@ end
 --- Display hint to player.
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.PlayerData playerData Player data table.
--- @param #number delay Delay before playing sound messages. Default 0 sec.
+-- @param #number delay (Optional) Delay before playing sound messages. Default 0 sec.
 -- @param #boolean soundoff If true, don't play and sound hint.
 function AIRBOSS:_PlayerHint( playerData, delay, soundoff )
 
@@ -138810,7 +138815,7 @@ end
 
 --- Check Collision.
 -- @param #AIRBOSS self
--- @param Core.Point#COORDINATE fromcoord Coordinate from which the path to the next WP is calculated. Default current carrier position.
+-- @param Core.Point#COORDINATE fromcoord (Optional) Coordinate from which the path to the next WP is calculated. Default current carrier position.
 -- @return #boolean If true, surface type ahead is not deep water.
 function AIRBOSS:_CheckFreePathToNextWP( fromcoord )
 
@@ -138888,9 +138893,9 @@ end
 --- Let the carrier make a detour to a given point. When it reaches the point, it will resume its normal route.
 -- @param #AIRBOSS self
 -- @param Core.Point#COORDINATE coord Coordinate of the detour.
--- @param #number speed Speed in knots. Default is current carrier velocity.
+-- @param #number speed (Optional) Speed in knots. Default is current carrier velocity.
 -- @param #boolean uturn (Optional) If true, carrier will go back to where it came from before it resumes its route to the next waypoint.
--- @param #number uspeed Speed in knots after U-turn. Default is same as before.
+-- @param #number uspeed (Optional) Speed in knots after U-turn. Default is same as before.
 -- @param Core.Point#COORDINATE tcoord Additional coordinate to make turn smoother.
 -- @return #AIRBOSS self
 function AIRBOSS:CarrierDetour( coord, speed, uturn, uspeed, tcoord )
@@ -140624,11 +140629,11 @@ end
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.PlayerData playerData Player data.
 -- @param #string message The message to send.
--- @param #string sender The person who sends the message or nil.
--- @param #string receiver The person who receives the message. Default player's onboard number. Set to "" for no receiver.
--- @param #number duration Display message duration. Default 10 seconds.
--- @param #boolean clear If true, clear screen from previous messages.
--- @param #number delay Delay in seconds, before the message is displayed.
+-- @param #string sender (Optional) The person who sends the message or nil. Defaults to nil.
+-- @param #string receiver (Optional) The person who receives the message. Default player's onboard number. Set to "" for no receiver.
+-- @param #number duration (Optional) Display message duration. Default 10 seconds.
+-- @param #boolean clear I(Optional) f true, clear screen from previous messages. Defaults to false.
+-- @param #number delay (Optional) Delay in seconds, before the message is displayed.
 function AIRBOSS:MessageToPlayer( playerData, message, sender, receiver, duration, clear, delay )
   self:T({sender,receiver,message})
   if playerData and message and message ~= "" then
@@ -140752,11 +140757,11 @@ end
 -- Message format will be "SENDER: RECCEIVER, MESSAGE".
 -- @param #AIRBOSS self
 -- @param #string message The message to send.
--- @param #string sender The person who sends the message or nil.
--- @param #string receiver The person who receives the message. Default player's onboard number. Set to "" for no receiver.
--- @param #number duration Display message duration. Default 10 seconds.
--- @param #boolean clear If true, clear screen from previous messages.
--- @param #number delay Delay in seconds, before the message is displayed.
+-- @param #string sender (Optional) The person who sends the message or nil. Defaults to "LSO".
+-- @param #string receiver (Optional) The person who receives the message. Default player's onboard number. Set to "" for no receiver.
+-- @param #number duration (Optional) Display message duration. Default 10 seconds.
+-- @param #boolean clear (Optional) If true, clear screen from previous messages.
+-- @param #number delay (Optional) Delay in seconds, before the message is displayed.
 function AIRBOSS:MessageToPattern( message, sender, receiver, duration, clear, delay )
 
   -- Create new (fake) radio call to show the subtitile.
@@ -140771,11 +140776,11 @@ end
 -- Message format will be "SENDER: RECCEIVER, MESSAGE".
 -- @param #AIRBOSS self
 -- @param #string message The message to send.
--- @param #string sender The person who sends the message or nil.
--- @param #string receiver The person who receives the message. Default player's onboard number. Set to "" for no receiver.
--- @param #number duration Display message duration. Default 10 seconds.
--- @param #boolean clear If true, clear screen from previous messages.
--- @param #number delay Delay in seconds, before the message is displayed.
+-- @param #string sender (Optional) The person who sends the message or nil. Defaults to "Marshal".
+-- @param #string receiver (Optional) The person who receives the message. Default player's onboard number. Set to "" for no receiver.
+-- @param #number duration (Optional) Display message duration. Default 10 seconds.
+-- @param #boolean clear (Optional) If true, clear screen from previous messages.
+-- @param #number delay (Optional) Delay in seconds, before the message is displayed.
 function AIRBOSS:MessageToMarshal( message, sender, receiver, duration, clear, delay )
 
   -- Create new (fake) radio call to show the subtitile.
@@ -140789,11 +140794,11 @@ end
 --- Generate a new radio call (deepcopy) from an existing default call.
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.RadioCall call Radio call to be enhanced.
--- @param #string sender Sender of the message. Default is the radio alias.
--- @param #string subtitle Subtitle of the message. Default from original radio call. Use "" for no subtitle.
--- @param #number subduration Time in seconds the subtitle is displayed. Default 10 seconds.
--- @param #string modexreceiver Onboard number of the receiver or nil.
--- @param #string modexsender Onboard number of the sender or nil.
+-- @param #string sender (Optional) Sender of the message. Default is the radio alias.
+-- @param #string subtitle (Optional) Subtitle of the message. Default from original radio call. Use "" for no subtitle.
+-- @param #number subduration (Optional) Time in seconds the subtitle is displayed. Default 10 seconds.
+-- @param #string modexreceiver (Optional) Onboard number of the receiver or nil.
+-- @param #string modexsender (Optional) Onboard number of the sender or nil.
 function AIRBOSS:_NewRadioCall( call, sender, subtitle, subduration, modexreceiver, modexsender )
 
   -- Create a new call
@@ -143735,7 +143740,7 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #string path Path where the file is loaded from. Default is the DCS root installation folder or your "Saved Games\\DCS" folder if lfs was desanizied.
+-- @param #string path (Optional) Path where the file is loaded from. Default is the DCS root installation folder or your "Saved Games\\DCS" folder if lfs was desanizied.
 -- @param #string filename (Optional) File name for saving the player grades. Default is "AIRBOSS-<ALIAS>_LSOgrades.csv".
 function AIRBOSS:onafterLoad( From, Event, To, path, filename )
 
@@ -144453,7 +144458,7 @@ end
 
 --- Set the speed the tanker flys in its orbit pattern.
 -- @param #RECOVERYTANKER self
--- @param #number speed True air speed (TAS) in knots. Default 274 knots, which results in ~250 KIAS.
+-- @param #number speed (Optional) True air speed (TAS) in knots. Default 274 knots, which results in ~250 KIAS.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetSpeed(speed)
   self.speed=UTILS.KnotsToMps(speed or 274)
@@ -144462,7 +144467,7 @@ end
 
 --- Set orbit pattern altitude of the tanker.
 -- @param #RECOVERYTANKER self
--- @param #number altitude Tanker altitude in feet. Default 6000 ft.
+-- @param #number altitude (Optional) Tanker altitude in feet. Default 6000 ft.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetAltitude(altitude)
   self.altitude=UTILS.FeetToMeters(altitude or 6000)
@@ -144471,8 +144476,8 @@ end
 
 --- Set race-track distances.
 -- @param #RECOVERYTANKER self
--- @param #number distbow Distance [NM] in front of the carrier. Default 10 NM.
--- @param #number diststern Distance [NM] behind the carrier. Default 4 NM.
+-- @param #number distbow (Optional) Distance [NM] in front of the carrier. Default 10 NM.
+-- @param #number diststern (Optional) Distance [NM] behind the carrier. Default 4 NM.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetRacetrackDistances(distbow, diststern)
   self.distBow=UTILS.NMToMeters(distbow or 10)
@@ -144482,7 +144487,7 @@ end
 
 --- Set minimum pattern update interval. After a pattern update this time interval has to pass before the next update is allowed.
 -- @param #RECOVERYTANKER self
--- @param #number interval Min interval in minutes. Default is 10 minutes.
+-- @param #number interval(Optional)  Min interval in minutes. Default is 10 minutes.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetPatternUpdateInterval(interval)
   self.dTupdate=(interval or 10)*60
@@ -144491,7 +144496,7 @@ end
 
 --- Set pattern update distance threshold. Tanker will update its pattern when the carrier changes its position by more than this distance.
 -- @param #RECOVERYTANKER self
--- @param #number distancechange Distance threshold in NM. Default 5 NM (=9.62 km).
+-- @param #number distancechange (Optional) Distance threshold in NM. Default 5 NM (=9.62 km).
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetPatternUpdateDistance(distancechange)
   self.Dupdate=UTILS.NMToMeters(distancechange or 5)
@@ -144500,7 +144505,7 @@ end
 
 --- Set pattern update heading threshold. Tanker will update its pattern when the carrier changes its heading by more than this value.
 -- @param #RECOVERYTANKER self
--- @param #number headingchange Heading threshold in degrees. Default 5 degrees.
+-- @param #number headingchange (Optional) Heading threshold in degrees. Default 5 degrees.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetPatternUpdateHeading(headingchange)
   self.Hupdate=headingchange or 5
@@ -144509,7 +144514,7 @@ end
 
 --- Set low fuel state of tanker. When fuel is below this threshold, the tanker will RTB or be respawned if takeoff type is in air.
 -- @param #RECOVERYTANKER self
--- @param #number fuelthreshold Low fuel threshold in percent. Default 10 % of max fuel.
+-- @param #number fuelthreshold (Optional) Low fuel threshold in percent. Default 10 % of max fuel.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetLowFuelThreshold(fuelthreshold)
   self.lowfuel=fuelthreshold or 10
@@ -144683,9 +144688,9 @@ end
 
 --- Set TACAN channel of tanker. Note that mode is automatically set to "Y" for AA TACAN since only that works.
 -- @param #RECOVERYTANKER self
--- @param #number channel TACAN channel. Default 1.
--- @param #string morse TACAN morse code identifier. Three letters. Default "TKR".
--- @param #string mode TACAN mode, which can be either "Y" (default) or "X".
+-- @param #number channel (Optional) TACAN channel. Default 1.
+-- @param #string morse (Optional) TACAN morse code identifier. Three letters. Default "TKR".
+-- @param #string mode (Optional) TACAN mode, which can be either "Y" (default) or "X".
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetTACAN(channel, morse, mode)
   self.TACANchannel=channel or 1
@@ -144697,8 +144702,8 @@ end
 
 --- Set radio frequency and optionally modulation of the tanker.
 -- @param #RECOVERYTANKER self
--- @param #number frequency Radio frequency in MHz. Default 251 MHz.
--- @param #string modulation Radio modulation, either "AM" or "FM". Default "AM".
+-- @param #number frequency (Optional) Radio frequency in MHz. Default 251 MHz.
+-- @param #string modulation (Optional) Radio modulation, either "AM" or "FM". Default "AM".
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetRadio(frequency, modulation)
   self.RadioFreq=frequency or 251
@@ -145426,8 +145431,8 @@ end
 
 --- Init waypoint after spawn. Tanker is first guided to a position astern the carrier and starts its racetrack pattern from there.
 -- @param #RECOVERYTANKER self
--- @param #number dist Distance [NM] of initial waypoint astern carrier. Default 8 NM.
--- @param #number delay Delay before routing in seconds. Default 1 second.
+-- @param #number dist (Optional) Distance [NM] of initial waypoint astern carrier. Default 8 NM.
+-- @param #number delay (Optional) Delay before routing in seconds. Default 1 second.
 function RECOVERYTANKER:_InitRoute(dist, delay)
 
   -- Defaults.
@@ -146092,7 +146097,7 @@ end
 
 --- Set low fuel state of helo. When fuel is below this threshold, the helo will RTB or be respawned if takeoff type is in air.
 -- @param #RESCUEHELO self
--- @param #number threshold Low fuel threshold in percent. Default 5%.
+-- @param #number threshold (Optional) Low fuel threshold in percent. Default 5%.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetLowFuelThreshold(threshold)
   self.lowfuel=threshold or 5
@@ -146117,7 +146122,7 @@ end
 
 --- Set rescue zone radius. Crashed or ejected units inside this radius of the carrier will be rescued if possible.
 -- @param #RESCUEHELO self
--- @param #number radius Radius of rescue zone in nautical miles. Default is 15 NM.
+-- @param #number radius (Optional) Radius of rescue zone in nautical miles. Default is 15 NM.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetRescueZone(radius)
   radius=UTILS.NMToMeters(radius or 15)
@@ -146127,7 +146132,7 @@ end
 
 --- Set rescue hover speed.
 -- @param #RESCUEHELO self
--- @param #number speed Speed in knots. Default 5 kts.
+-- @param #number speed (Optional) Speed in knots. Default 5 kts.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetRescueHoverSpeed(speed)
   self.rescuespeed=UTILS.KnotsToMps(speed or 5)
@@ -146136,7 +146141,7 @@ end
 
 --- Set rescue duration. This is the time it takes to rescue a pilot at the crash site.
 -- @param #RESCUEHELO self
--- @param #number duration Duration in minutes. Default 5 min.
+-- @param #number duration (Optional) Duration in minutes. Default 5 min.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetRescueDuration(duration)
   self.rescueduration=(duration or 5)*60
@@ -146178,7 +146183,7 @@ end
 
 --- Set takeoff type.
 -- @param #RESCUEHELO self
--- @param #number takeofftype Takeoff type. Default SPAWN.Takeoff.Hot.
+-- @param #number takeofftype (Optional) Takeoff type. Default SPAWN.Takeoff.Hot.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetTakeoff(takeofftype)
   self.takeoff=takeofftype or SPAWN.Takeoff.Hot
@@ -146211,7 +146216,7 @@ end
 
 --- Set altitude of helo.
 -- @param #RESCUEHELO self
--- @param #number alt Altitude in meters. Default 70 m.
+-- @param #number alt (Optional) Altitude in meters. Default 70 m.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetAltitude(alt)
   self.altitude=alt or 70
@@ -146220,7 +146225,7 @@ end
 
 --- Set offset parallel to orientation of carrier.
 -- @param #RESCUEHELO self
--- @param #number distance Offset distance in meters. Default 200 m (~660 ft).
+-- @param #number distance (Optional) Offset distance in meters. Default 200 m (~660 ft).
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetOffsetX(distance)
   self.offsetX=distance or 200
@@ -146229,7 +146234,7 @@ end
 
 --- Set offset perpendicular to orientation to carrier.
 -- @param #RESCUEHELO self
--- @param #number distance Offset distance in meters. Default 240 m (~780 ft).
+-- @param #number distance (Optional) Offset distance in meters. Default 240 m (~780 ft).
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetOffsetZ(distance)
   self.offsetZ=distance or 240
@@ -146287,7 +146292,7 @@ end
 
 --- Set follow time update interval.
 -- @param #RESCUEHELO self
--- @param #number dt Time interval in seconds. Default 1.0 sec.
+-- @param #number dt (Optional) Time interval in seconds. Default 1.0 sec.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetFollowTimeInterval(dt)
   self.dtFollow=dt or 1.0
@@ -147946,8 +147951,8 @@ ATIS.version = "1.0.1"
 --- Create a new ATIS class object for a specific airbase.
 -- @param #ATIS self
 -- @param #string AirbaseName Name of the airbase.
--- @param #number Frequency Radio frequency in MHz. Default 143.00 MHz. When using **SRS** this can be passed as a table of multiple frequencies.
--- @param #number Modulation Radio modulation: 0=AM, 1=FM. Default 0=AM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. When using **SRS** this can be passed as a table of multiple modulations.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 143.00 MHz. When using **SRS** this can be passed as a table of multiple frequencies.
+-- @param #number Modulation (Optional) Radio modulation: 0=AM, 1=FM. Default 0=AM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. When using **SRS** this can be passed as a table of multiple modulations.
 -- @return #ATIS self
 function ATIS:New(AirbaseName, Frequency, Modulation)
 
@@ -148104,9 +148109,9 @@ end
 
 --- Set sound files folder within miz file (not your local hard drive!).
 -- @param #ATIS self
--- @param #string pathMain Path to folder containing main sound files. Default "ATIS Soundfiles/". Mind the slash "/" at the end!
--- @param #string pathAirports Path folder containing the airport names sound files. Default is `"ATIS Soundfiles/<Map Name>"`, *e.g.* `"ATIS Soundfiles/Caucasus/"`.
--- @param #string pathNato Path folder containing the NATO alphabet sound files. Default is "ATIS Soundfiles/NATO Alphabet/".
+-- @param #string pathMain (Optional) Path to folder containing main sound files. Default "ATIS Soundfiles/". Mind the slash "/" at the end!
+-- @param #string pathAirports (Optional) Path folder containing the airport names sound files. Default is `"ATIS Soundfiles/<Map Name>"`, *e.g.* `"ATIS Soundfiles/Caucasus/"`.
+-- @param #string pathNato (Optional) Path folder containing the NATO alphabet sound files. Default is "ATIS Soundfiles/NATO Alphabet/".
 -- @return #ATIS self
 function ATIS:SetSoundfilesPath( pathMain, pathAirports, pathNato )
   self.soundpath = tostring( pathMain or "ATIS Soundfiles/" )
@@ -148226,8 +148231,8 @@ end
 
 --- Set the active runway for landing.
 -- @param #ATIS self
--- @param #string runway : Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean preferleft : If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
+-- @param #string runway (Optional) Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
+-- @param #boolean preferleft (Optional) If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
 -- @return #ATIS self
 function ATIS:SetActiveRunwayLanding(runway, preferleft)
   self.airbase:SetActiveRunwayLanding(runway,preferleft)
@@ -148237,7 +148242,7 @@ end
 --- Set the active runway for take-off.
 -- @param #ATIS self
 -- @param #string runway : Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean preferleft : If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
+-- @param #boolean preferleft (Optional) If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
 -- @return #ATIS self
 function ATIS:SetActiveRunwayTakeoff(runway,preferleft)
   self.airbase:SetActiveRunwayTakeoff(runway,preferleft)
@@ -148271,7 +148276,7 @@ end
 
 --- Set radio power. Note that this only applies if no relay unit is used.
 -- @param #ATIS self
--- @param #number power Radio power in Watts. Default 100 W.
+-- @param #number power (Optional) Radio power in Watts. Default 100 W.
 -- @return #ATIS self
 function ATIS:SetRadioPower( power )
   self.power = power or 100
@@ -148280,7 +148285,7 @@ end
 
 --- Use F10 map mark points.
 -- @param #ATIS self
--- @param #boolean switch If *true* or *nil*, marks are placed on F10 map. If *false* this feature is set to off (default).
+-- @param #boolean switch (Optional) If *true* or *nil*, marks are placed on F10 map. If *false* this feature is set to off (default).
 -- @return #ATIS self
 function ATIS:SetMapMarks( switch )
   if switch == nil or switch == true then
@@ -148349,7 +148354,7 @@ end
 
 --- Set duration how long subtitles are displayed.
 -- @param #ATIS self
--- @param #number duration Duration in seconds. Default 10 seconds.
+-- @param #number duration (Optional) Duration in seconds. Default 10 seconds.
 -- @return #ATIS self
 function ATIS:SetSubtitleDuration( duration )
   self.subduration = tonumber( duration or 10 )
@@ -148392,7 +148397,7 @@ end
 --- Set relative humidity. This is used to approximately calculate the dew point.
 -- Note that the dew point is only an artificial information as DCS does not have an atmospheric model that includes humidity (yet).
 -- @param #ATIS self
--- @param #number Humidity Relative Humidity, i.e. a number between 0 and 100 %. Default is 50 %.
+-- @param #number Humidity (Optional) Relative Humidity, i.e. a number between 0 and 100 %. Default is 50 %.
 -- @return #ATIS self
 function ATIS:SetRelativeHumidity( Humidity )
   self.relHumidity = Humidity or 50
@@ -148467,7 +148472,7 @@ end
 -- Or you make your life simple and just include the sign so you don't have to bother about East/West.
 --
 -- @param #ATIS self
--- @param #number magvar Magnetic variation in degrees. Positive for easterly and negative for westerly variation. Default is magnatic declinaton of the used map, c.f. @{Utilities.Utils#UTILS.GetMagneticDeclination}.
+-- @param #number magvar (Optional) Magnetic variation in degrees. Positive for easterly and negative for westerly variation. Default is magnatic declinaton of the used map, c.f. @{Utilities.Utils#UTILS.GetMagneticDeclination}.
 -- @return #ATIS self
 function ATIS:SetMagneticDeclination( magvar )
   self.magvar = magvar or UTILS.GetMagneticDeclination()
@@ -148597,7 +148602,7 @@ end
 
 --- Place marks with runway data on the F10 map.
 -- @param #ATIS self
--- @param #boolean markall If true, mark all runways of the map. By default only the current ATIS runways are marked.
+-- @param #boolean markall (Optional) If true, mark all runways of the map. By default only the current ATIS runways are marked.
 function ATIS:MarkRunways( markall )
   local airbases = AIRBASE.GetAllAirbases()
   for _, _airbase in pairs( airbases ) do
@@ -148610,11 +148615,11 @@ end
 
 --- Use SRS Simple-Text-To-Speech for transmissions. No sound files necessary.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #ATIS self
--- @param #string PathToSRS Path to SRS directory (only necessary if SRS exe backend is used).
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
--- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Port SRS port. Default 5002.
+-- @param #string PathToSRS (Optional) Path to SRS directory (only necessary if SRS exe backend is used).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
+-- @param #string Voice (Optional) Specific voice. Overrides `Gender` and `Culture`.
+-- @param #number Port (Optional) SRS port. Default 5002.
 -- @param #string GoogleKey Path to Google JSON-Key (SRS exe backend) or Google API key (DCS-gRPC backend).
 -- @return #ATIS self
 function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey)
@@ -148670,7 +148675,7 @@ end
 
 --- Set the time interval between radio queue updates.
 -- @param #ATIS self
--- @param #number TimeInterval Interval in seconds. Default 5 sec.
+-- @param #number TimeInterval (Optional) Interval in seconds. Default 5 sec.
 -- @return #ATIS self
 function ATIS:SetQueueUpdateTime( TimeInterval )
   self.dTQueueCheck = TimeInterval or 5
@@ -150138,7 +150143,7 @@ end
 
 --- Get active runway runway.
 -- @param #ATIS self
--- @param #boolean Takeoff If `true`, get runway for takeoff. Default is for landing.
+-- @param #boolean Takeoff (Optional) If `true`, get runway for takeoff. Default is for landing.
 -- @return #string Active runway, e.g. "31" for 310 deg.
 -- @return #boolean Use Left=true, Right=false, or nil.
 function ATIS:GetActiveRunway(Takeoff)
@@ -150248,7 +150253,7 @@ end
 -- @param #ATIS.Soundfile sound ATIS sound object.
 -- @param #number interval Interval in seconds after the last transmission finished.
 -- @param #string subtitle Subtitle of the transmission.
--- @param #string path Path to sound file. Default `self.soundpath`.
+-- @param #string path (Optional) Path to sound file. Default `self.soundpath`.
 function ATIS:Transmission( sound, interval, subtitle, path )
   self.radioqueue:NewTransmission( sound.filename, sound.duration, path or self.soundpath, nil, interval, subtitle, self.subduration )
 end
@@ -151791,9 +151796,9 @@ end
 
 --- [User] Set SRS TTS details - see @{Sound.SRS} for details.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #CTLD self
--- @param #number Frequency Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 30 or {30,124.5}. Defaults to {30,124.5}. There needs to be exactly the same number of modulations!
--- @param #number Modulation Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #number Frequency (Optional) Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 30 or {30,124.5}. Defaults to {30,124.5}. There needs to be exactly the same number of modulations!
+-- @param #number Modulation (Optional) Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 -- @param #string Gender (Optional) Defaults to "male"
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #number Port (Optional) Defaults to 5002
@@ -157980,12 +157985,12 @@ end
   --- User - Function to add/adjust unittype capabilities.
   -- @param #CTLD self
   -- @param #string Unittype The unittype to adjust. If passed as Wrapper.Unit#UNIT, it will search for the unit in the mission.
-  -- @param #boolean Cancrates Unit can load crates. Default false.
-  -- @param #boolean Cantroops Unit can load troops. Default false.
-  -- @param #number Cratelimit Unit can carry number of crates. Default 0.
-  -- @param #number Trooplimit Unit can carry number of troops. Default 0.
-  -- @param #number Length Unit lenght (in metres) for the load radius. Default 20.
-  -- @param #number Maxcargoweight Maxmimum weight in kgs this helo can carry. Default 500.
+  -- @param #boolean Cancrates (Optional) Unit can load crates. Default false.
+  -- @param #boolean Cantroops (Optional) Unit can load troops. Default false.
+  -- @param #number Cratelimit (Optional) Unit can carry number of crates. Default 0.
+  -- @param #number Trooplimit (Optional) Unit can carry number of troops. Default 0.
+  -- @param #number Length (Optional) Unit lenght (in metres) for the load radius. Default 20.
+  -- @param #number Maxcargoweight (Optional) Maxmimum weight in kgs this helo can carry. Default 500.
   function CTLD:SetUnitCapabilities(Unittype, Cancrates, Cantroops, Cratelimit, Trooplimit, Length, Maxcargoweight)
     self:T(self.lid .. " UnitCapabilities")
     local unittype =  nil
@@ -158030,12 +158035,12 @@ end
   --- [Deprecated] - Function to add/adjust unittype capabilities. Has been replaced with `SetUnitCapabilities()` - pls use the new one going forward!
   -- @param #CTLD self
   -- @param #string Unittype The unittype to adjust. If passed as Wrapper.Unit#UNIT, it will search for the unit in the mission.
-  -- @param #boolean Cancrates Unit can load crates. Default false.
-  -- @param #boolean Cantroops Unit can load troops. Default false.
-  -- @param #number Cratelimit Unit can carry number of crates. Default 0.
-  -- @param #number Trooplimit Unit can carry number of troops. Default 0.
-  -- @param #number Length Unit lenght (in metres) for the load radius. Default 20.
-  -- @param #number Maxcargoweight Maxmimum weight in kgs this helo can carry. Default 500.
+  -- @param #boolean Cancrates (Optional) Unit can load crates. Default false.
+  -- @param #boolean Cantroops (Optional) Unit can load troops. Default false.
+  -- @param #number Cratelimit (Optional) Unit can carry number of crates. Default 0.
+  -- @param #number Trooplimit (Optional) Unit can carry number of troops. Default 0.
+  -- @param #number Length (Optional) Unit lenght (in metres) for the load radius. Default 20.
+  -- @param #number Maxcargoweight (Optional) Maxmimum weight in kgs this helo can carry. Default 500.
   function CTLD:UnitCapabilities(Unittype, Cancrates, Cantroops, Cratelimit, Trooplimit, Length, Maxcargoweight)
     self:I(self.lid.."This function been replaced with `SetUnitCapabilities()` - pls use the new one going forward!")
     self:SetUnitCapabilities(Unittype, Cancrates, Cantroops, Cratelimit, Trooplimit, Length, Maxcargoweight)
@@ -158265,7 +158270,7 @@ end
   --- User - Count both the stock and groups in the field for available cargo types. Counts only limited cargo items and only troops and vehicle/FOB crates!
   -- @param #CTLD self
   -- @param #boolean Restock If true, restock the cargo and troop items.
-  -- @param #number Threshold Percentage below which to restock, used in conjunction with Restock (must be true). Defaults to 75 (percent).
+  -- @param #number Threshold (Optional) Percentage below which to restock, used in conjunction with Restock (must be true). Defaults to 75 (percent).
   -- @return #table Table A table of contents with numbers.
   -- @usage
   --      The index is the unique cargo name.
@@ -160022,8 +160027,8 @@ CTLD_CARGO = {
   -- @param #number PerCrateMass Mass in kg
   -- @param #number Stock Number of builds available, nil for unlimited
   -- @param #string Subcategory Name of subcategory, handy if using > 10 types to load.
-  -- @param #boolean DontShowInMenu Show this item in menu or not (default: false == show it).
-  -- @param Core.Zone#ZONE Location (optional) Where the cargo is available (one location only).
+  -- @param #boolean DontShowInMenu (Optional) Show this item in menu or not (default: false == show it).
+  -- @param Core.Zone#ZONE Location (Optional) Where the cargo is available (one location only).
   -- @return #CTLD_CARGO self
   function CTLD_CARGO:New(ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped, PerCrateMass, Stock, Subcategory, DontShowInMenu, Location)
     -- Inherit everything from BASE class.
@@ -165779,9 +165784,9 @@ end
 --- Add a **new** payload to the airwing resources.
 -- @param #AIRWING self
 -- @param Wrapper.Unit#UNIT Unit The unit, the payload is extracted from. Can also be given as *#string* name of the unit.
--- @param #number Npayloads Number of payloads to add to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
+-- @param #number Npayloads (Optional) Number of payloads to add to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
 -- @param #table MissionTypes Mission types this payload can be used for.
--- @param #number Performance A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
+-- @param #number Performance (Optional) A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
 -- @return #AIRWING.Payload The payload table or nil if the unit does not exist.
 function AIRWING:NewPayload(Unit, Npayloads, MissionTypes,  Performance)
 
@@ -165864,7 +165869,7 @@ end
 --- Set the number of payload available.
 -- @param #AIRWING self
 -- @param #AIRWING.Payload Payload The payload table created by the `:NewPayload` function.
--- @param #number Navailable Number of payloads available to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
+-- @param #number Navailable (Optional) Number of payloads available to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
 -- @return #AIRWING self
 function AIRWING:SetPayloadAmount(Payload, Navailable)
 
@@ -165887,7 +165892,7 @@ end
 --- Increase or decrease the amount of available payloads. Unlimited playloads first need to be set to a limited number with the `SetPayloadAmount` function.
 -- @param #AIRWING self
 -- @param #AIRWING.Payload Payload The payload table created by the `:NewPayload` function.
--- @param #number N Number of payloads to be added. Use negative number to decrease amount. Default 1.
+-- @param #number N (Optional) Number of payloads to be added. Use negative number to decrease amount. Default 1.
 -- @return #AIRWING self
 function AIRWING:IncreasePayloadAmount(Payload, N)
 
@@ -165926,7 +165931,7 @@ end
 -- @param #AIRWING self
 -- @param #AIRWING.Payload Payload The payload table to which the capability should be added.
 -- @param #table MissionTypes Mission types to be added.
--- @param #number Performance A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
+-- @param #number Performance (Optional) A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
 -- @return #AIRWING self
 function AIRWING:AddPayloadCapability(Payload, MissionTypes, Performance)
 
@@ -166149,7 +166154,7 @@ end
 
 --- Set number of CAP flights constantly carried out.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberCAP(n)
   self.nflightsCAP=n or 1
@@ -166167,7 +166172,7 @@ end
 
 --- Set CAP close race track.We'll utilize the AUFTRAG PatrolRaceTrack instead of a standard race track orbit task.
 -- @param #AIRWING self
--- @param #boolean OnOff If true, switch this on, else switch off. Off by default.
+-- @param #boolean OnOff (Optional) If true, switch this on, else switch off. Off by default.
 -- @return #AIRWING self
 function AIRWING:SetCapCloseRaceTrack(OnOff)
   self.capOptionPatrolRaceTrack = OnOff
@@ -166187,7 +166192,7 @@ end
 
 --- Set number of TANKER flights with Boom constantly in the air.
 -- @param #AIRWING self
--- @param #number Nboom Number of flights. Default 1.
+-- @param #number Nboom (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberTankerBoom(Nboom)
   self.nflightsTANKERboom=Nboom or 1
@@ -166209,7 +166214,7 @@ end
 
 --- Set number of TANKER flights with Probe constantly in the air.
 -- @param #AIRWING self
--- @param #number Nprobe Number of flights. Default 1.
+-- @param #number Nprobe (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberTankerProbe(Nprobe)
   self.nflightsTANKERprobe=Nprobe or 1
@@ -166218,7 +166223,7 @@ end
 
 --- Set number of AWACS flights constantly in the air.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberAWACS(n)
   self.nflightsAWACS=n or 1
@@ -166227,7 +166232,7 @@ end
 
 --- Set number of RECON flights constantly in the air.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberRecon(n)
   self.nflightsRecon=n or 1
@@ -166236,7 +166241,7 @@ end
 
 --- Set number of Rescue helo flights constantly in the air.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberRescuehelo(n)
   self.nflightsRescueHelo=n or 1
@@ -166278,13 +166283,13 @@ end
 
 --- Create a new generic patrol point.
 -- @param #AIRWING self
--- @param #string Type Patrol point type, e.g. "CAP" or "AWACS". Default "Unknown".
--- @param Core.Point#COORDINATE Coordinate Coordinate of the patrol point. Default 10-15 NM away from the location of the airwing. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Orbit altitude in feet. Default random between Angels 10 and 20.
--- @param #number Heading Heading in degrees. Default random (0, 360] degrees.
--- @param #number LegLength Length of race-track orbit in NM. Default 15 NM.
--- @param #number Speed Orbit speed in knots. Default 350 knots.
--- @param #number RefuelSystem Refueling system: 0=Boom, 1=Probe. Default nil=any.
+-- @param #string Type (Optional) Patrol point type, e.g. "CAP" or "AWACS". Default "Unknown".
+-- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate of the patrol point. Default 10-15 NM away from the location of the airwing. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default random between Angels 10 and 20.
+-- @param #number Heading (Optional) Heading in degrees. Default random (0, 360] degrees.
+-- @param #number LegLength (Optional) Length of race-track orbit in NM. Default 15 NM.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 knots.
+-- @param #number RefuelSystem (Optional) Refueling system: 0=Boom, 1=Probe. Default nil=any.
 -- @return #AIRWING.PatrolData Patrol point table.
 function AIRWING:NewPatrolPoint(Type, Coordinate, Altitude, Speed, Heading, LegLength, RefuelSystem)
 
@@ -166354,7 +166359,7 @@ end
 -- @param #number Speed Orbit speed in knots.
 -- @param #number Heading Heading in degrees.
 -- @param #number LegLength Length of race-track orbit in NM.
--- @param #number RefuelSystem Set refueling system of tanker: 0=boom, 1=probe. Default any (=nil).
+-- @param #number RefuelSystem (Optional) Set refueling system of tanker: 0=boom, 1=probe. Default any (=nil).
 -- @return #AIRWING self
 function AIRWING:AddPatrolPointTANKER(Coordinate, Altitude, Speed, Heading, LegLength, RefuelSystem)
 
@@ -166394,7 +166399,7 @@ end
 --- Set takeoff type. All assets of this airwing will be spawned with this takeoff type.
 -- Spawning on runways is not supported.
 -- @param #AIRWING self
--- @param #string TakeoffType Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
+-- @param #string TakeoffType (Optional) Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
 -- @return #AIRWING self
 function AIRWING:SetTakeoffType(TakeoffType)
   TakeoffType=TakeoffType or "Cold"
@@ -166477,7 +166482,7 @@ end
 --- Set despawn after landing. Aircraft will be despawned after the landing event.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #AIRWING self
--- @param #boolean Switch If `true` (default), activate despawn after landing.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after landing.
 -- @return #AIRWING self
 function AIRWING:SetDespawnAfterLanding(Switch)
   if Switch then
@@ -166491,7 +166496,7 @@ end
 --- Set despawn after holding. Aircraft will be despawned when they arrive at their holding position at the airbase.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #AIRWING self
--- @param #boolean Switch If `true` (default), activate despawn after landing.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after landing.
 -- @return #AIRWING self
 function AIRWING:SetDespawnAfterHolding(Switch)
   if Switch then
@@ -166991,9 +166996,9 @@ end
 
 --- Count payloads in stock.
 -- @param #AIRWING self
--- @param #table MissionTypes Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
--- @param #table UnitTypes Types of units.
--- @param #table Payloads Specific payloads to be counted only.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
+-- @param #table UnitTypes (Optional) Types of units.
+-- @param #table Payloads (Optional) Specific payloads to be counted only.
 -- @return #number Count of available payloads in stock.
 function AIRWING:CountPayloadsInStock(MissionTypes, UnitTypes, Payloads)
 
@@ -167572,10 +167577,10 @@ end
 -- @param #ARMYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
 -- @param #string Clock Time when to start the attack.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskFireAtPoint(Coordinate, Clock, Radius, Nshots, WeaponType, Prio)
 
@@ -167594,10 +167599,10 @@ end
 -- @param #number Heading Heading min in Degrees.
 -- @param #number Alpha Shooting angle in Degrees.
 -- @param #number Altitude Altitude in meters.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default nil.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default nil.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskBarrage(Clock, Heading, Alpha, Altitude, Radius, Nshots, WeaponType, Prio)
 
@@ -167625,11 +167630,11 @@ end
 --- Add a *waypoint* task to fire at a given coordinate.
 -- @param #ARMYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
--- @param Ops.OpsGroup#OPSGROUP.Waypoint Waypoint Where the task is executed. Default is next waypoint.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
+-- @param Ops.OpsGroup#OPSGROUP.Waypoint Waypoint (Optional) Where the task is executed. Default is next waypoint.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskWaypointFireAtPoint(Coordinate, Waypoint, Radius, Nshots, WeaponType, Prio)
 
@@ -167647,10 +167652,10 @@ end
 --- Add a *scheduled* task.
 -- @param #ARMYGROUP self
 -- @param Wrapper.Group#GROUP TargetGroup Target group.
--- @param #number WeaponExpend How much weapons does are used.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #string Clock Time when to start the attack.
--- @param #number Prio Priority of the task.
+-- @param #number WeaponExpend (Optional) How much weapons does are used. Defaults to "Auto".
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #string Clock (Optional) Time when to start the attack. Defaults to 5.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskAttackGroup(TargetGroup, WeaponExpend, WeaponType, Clock, Prio)
 
@@ -167683,7 +167688,7 @@ end
 
 --- Define a set of possible retreat zones.
 -- @param #ARMYGROUP self
--- @param Core.Set#SET_ZONE RetreatZoneSet The retreat zone set. Default is an empty set.
+-- @param Core.Set#SET_ZONE RetreatZoneSet (Optional) The retreat zone set. Default is an empty set.
 -- @return #ARMYGROUP self
 function ARMYGROUP:SetRetreatZones(RetreatZoneSet)
   self.retreatZones=RetreatZoneSet or SET_ZONE:New()
@@ -167701,7 +167706,7 @@ end
 
 --- Set suppression on. average, minimum and maximum time a unit is suppressed each time it gets hit.
 -- @param #ARMYGROUP self
--- @param #number Tave Average time [seconds] a group will be suppressed. Default is 15 seconds.
+-- @param #number Tave (Optional) Average time [seconds] a group will be suppressed. Default is 15 seconds.
 -- @param #number Tmin (Optional) Minimum time [seconds] a group will be suppressed. Default is 5 seconds.
 -- @param #number Tmax (Optional) Maximum time a group will be suppressed. Default is 25 seconds.
 -- @return #ARMYGROUP self
@@ -168104,10 +168109,10 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
--- @param #number Speed Speed in knots. Default cruise speed.
--- @param #number Formation Formation of the group.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N (Optional) Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number Speed (Optional) Speed in knots. Default cruise speed.
+-- @param #number Formation (Optional) Formation of the group.
 function ARMYGROUP:onbeforeUpdateRoute(From, Event, To, n, N, Speed, Formation)
 
   -- Is transition allowed? We assume yes until proven otherwise.
@@ -168191,10 +168196,10 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
--- @param #number Speed Speed in knots. Default cruise speed.
--- @param #number Formation Formation of the group.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N (Optional) Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number Speed (Optional) Speed in knots. Default cruise speed.
+-- @param #number Formation (Optional) Formation of the group.
 function ARMYGROUP:onafterUpdateRoute(From, Event, To, n, N, Speed, Formation)
 
   -- Update route from this waypoint number onwards.
@@ -168467,7 +168472,7 @@ end
 -- @param #string Event Event.
 -- @param #string To To state.
 -- @param Core.Point#COORDINATE Coordinate Coordinate where to go.
--- @param #number Speed Speed in knots. Default cruise speed.
+-- @param #number Speed (Optional) Speed in knots. Default cruise speed.
 -- @param #number Formation Formation of the group.
 -- @param #number ResumeRoute If true, resume route after detour point was reached. If false, the group will stop at the detour point and wait for futher commands.
 function ARMYGROUP:onafterDetour(From, Event, To, Coordinate, Speed, Formation, ResumeRoute)
@@ -168847,7 +168852,7 @@ end
 -- @param #string To To state.
 -- @param Wrapper.Group#GROUP Group the group to be engaged.
 -- @param #number Speed Speed in knots.
--- @param #string Formation Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
+-- @param #string Formation (Optional) Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
 function ARMYGROUP:onbeforeEngageTarget(From, Event, To, Target, Speed, Formation)
 
   local dt=nil
@@ -168888,7 +168893,7 @@ end
 -- @param #string To To state.
 -- @param Ops.Target#TARGET Target The target to be engaged. Can also be a group or unit.
 -- @param #number Speed Attack speed in knots.
--- @param #string Formation Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
+-- @param #string Formation (Optional) Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
 function ARMYGROUP:onafterEngageTarget(From, Event, To, Target, Speed, Formation)
   self:T(self.lid.."Engaging Target")
 
@@ -169092,10 +169097,10 @@ end
 --- Add an a waypoint to the route.
 -- @param #ARMYGROUP self
 -- @param Core.Point#COORDINATE Coordinate The coordinate of the waypoint.
--- @param #number Speed Speed in knots. Default is default cruise speed or 70% of max speed.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #string Formation Formation the group will use.
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default is default cruise speed or 70% of max speed.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #string Formation (Optional) Formation the group will use.
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function ARMYGROUP:AddWaypoint(Coordinate, Speed, AfterWaypointWithID, Formation, Updateroute)
 
@@ -169156,8 +169161,8 @@ end
 
 --- Initialize group parameters. Also initializes waypoints if self.waypoints is nil.
 -- @param #ARMYGROUP self
--- @param #table Template Template used to init the group. Default is `self.template`.
--- @param #number Delay Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
+-- @param #table Template (Optional) Template used to init the group. Default is `self.template`.
+-- @param #number Delay (Optional) Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
 -- @return #ARMYGROUP self
 function ARMYGROUP:_InitGroup(Template, Delay)
 
@@ -169254,9 +169259,9 @@ end
 
 --- Switch to a specific formation.
 -- @param #ARMYGROUP self
--- @param #number Formation New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
--- @param #boolean Permanently If true, formation always used from now on.
--- @param #boolean NoRouteUpdate If true, route is not updated.
+-- @param #number Formation (Optional) New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
+-- @param #boolean Permanently (Optional) If true, formation always used from now on. Defaults to false.
+-- @param #boolean NoRouteUpdate (Optional) If true, route is not updated. Defaults to false.
 -- @return #ARMYGROUP self
 function ARMYGROUP:SwitchFormation(Formation, Permanently, NoRouteUpdate)
 
@@ -169300,7 +169305,7 @@ end
 
 --- Find the neares ammo supply group within a given radius.
 -- @param #ARMYGROUP self
--- @param #number Radius Search radius in NM. Default 30 NM.
+-- @param #number Radius (Optional) Search radius in NM. Default 30 NM.
 -- @return Wrapper.Group#GROUP Closest ammo supplying group or `nil` if no group is in the given radius.
 -- @return #number Distance to closest group in meters.
 function ARMYGROUP:FindNearestAmmoSupply(Radius)
@@ -170454,7 +170459,7 @@ end
 --- **[AIR]** Create an ANTI-SHIP mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be passed as a @{Wrapper.Group#GROUP} or @{Wrapper.Unit#UNIT} object.
--- @param #number Altitude Engage altitude in feet. Default 2000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 2000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewANTISHIP(Target, Altitude)
 
@@ -170484,10 +170489,10 @@ end
 --- **[AIR ROTARY]** Create an HOVER mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to hover.
--- @param #number Altitude Hover altitude in feet AGL. Default is 50 feet above ground.
--- @param #number Time Time in seconds to hold the hover. Default 300 seconds.
--- @param #number Speed Speed in knots to fly to the target coordinate. Default 150kn.
--- @param #number MissionAlt Altitude to fly towards the mission in feet AGL. Default 1000ft.
+-- @param #number Altitude (Optional) Hover altitude in feet AGL. Default is 50 feet above ground.
+-- @param #number Time (Optional) Time in seconds to hold the hover. Default 300 seconds.
+-- @param #number Speed (Optional) Speed in knots to fly to the target coordinate. Default 150kn.
+-- @param #number MissionAlt (Optional) Altitude to fly towards the mission in feet AGL. Default 1000ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewHOVER(Coordinate, Altitude, Time, Speed, MissionAlt)
 
@@ -170524,9 +170529,9 @@ end
 -- @param Core.Point#COORDINATE Coordinate Where to land.
 -- @param #number OuterRadius (Optional) Vary the coordinate by this many feet, e.g. get a new random coordinate between OuterRadius and (optionally) avoiding InnerRadius of the coordinate.
 -- @param #number InnerRadius (Optional) Vary the coordinate by this many feet, e.g. get a new random coordinate between OuterRadius and (optionally) avoiding InnerRadius of the coordinate.
--- @param #number Time Time in seconds to stay. Default 300 seconds.
--- @param #number Speed Speed in knots to fly to the target coordinate. Default 150kn.
--- @param #number MissionAlt Altitude to fly towards the mission in feet AGL. Default 1000ft.
+-- @param #number Time (Optional) Time in seconds to stay. Default 300 seconds.
+-- @param #number Speed (Optional) Speed in knots to fly to the target coordinate. Default 150kn.
+-- @param #number MissionAlt A(Optional) ltitude to fly towards the mission in feet AGL. Default 1000ft.
 -- @param #boolean CombatLanding (Optional) If true, set the Combat Landing option.
 -- @param #number DirectionAfterLand (Optional) Heading after landing in degrees.
 -- @return #AUFTRAG self
@@ -170614,10 +170619,10 @@ end
 --- **[AIR]** Create an ORBIT mission, which can be either a circular orbit or a race-track pattern.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet above sea level. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. If not specified, a circular orbit is performed.
--- @param #number Leg Length of race-track in NM. If not specified, a circular orbit is performed.
+-- @param #number Altitude (Optional) Orbit altitude in feet above sea level. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. If not specified, a circular orbit is performed.
+-- @param #number Leg (Optional) Length of race-track in NM. If not specified, a circular orbit is performed.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -170668,8 +170673,8 @@ end
 --- **[AIR]** Create an ORBIT mission, where the aircraft will go in a circle around the specified coordinate.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Position where to orbit around.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT_CIRCLE(Coordinate, Altitude, Speed)
 
@@ -170681,10 +170686,10 @@ end
 --- **[AIR]** Create an ORBIT mission, where the aircraft will fly a race-track pattern.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
--- @param #number Leg Length of race-track in NM. Default 10 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT_RACETRACK(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -170699,12 +170704,12 @@ end
 --- **[AIR]** Create an ORBIT mission, where the aircraft will fly a circular or race-track pattern over a given group or unit.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP Group Group where to orbit around. Can also be a UNIT object.
--- @param #number Altitude Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Leg Length of race-track in NM. Default nil.
--- @param #number Heading Heading of race-track pattern in degrees. Default is heading of the group.
--- @param DCS#Vec2 OffsetVec2 Offset 2D-vector {x=0, y=0} in NM with respect to the group. Default directly overhead. Can also be given in polar coordinates `{r=5, phi=45}`.
--- @param #number Distance Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Leg (Optional) Length of race-track in NM. Default nil.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default is heading of the group.
+-- @param DCS#Vec2 OffsetVec2 (Optional) Offset 2D-vector {x=0, y=0} in NM with respect to the group. Default directly overhead. Can also be given in polar coordinates `{r=5, phi=45}`.
+-- @param #number Distance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT_GROUP(Group, Altitude, Speed, Leg, Heading, OffsetVec2, Distance)
 
@@ -170747,10 +170752,10 @@ end
 -- themselfs. They wait for the CHIEF to tell them whom to engage.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
--- @param #number Leg Length of race-track in NM. Default 10 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewGCICAP(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -170774,10 +170779,10 @@ end
 --- **[AIR]** Create a TANKER mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 10 NM. Set to 0 for a simple circular orbit.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM. Set to 0 for a simple circular orbit.
 -- @param #number RefuelSystem Refueling system (0=boom, 1=probe). This info is *only* for AIRWINGs so they launch the right tanker type.
 -- @return #AUFTRAG self
 function AUFTRAG:NewTANKER(Coordinate, Altitude, Speed, Heading, Leg, RefuelSystem)
@@ -170813,10 +170818,10 @@ end
 --- **[AIR]** Create a AWACS mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit. Altitude is also taken from the coordinate.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit speed in knots. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 10 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewAWACS(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -170868,12 +170873,12 @@ end
 --- **[AIR]** Create a CAP mission.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE_RADIUS ZoneCAP Circular CAP zone. Detected targets in this zone will be engaged.
--- @param #number Altitude Altitude at which to orbit in feet. Default is 10,000 ft.
--- @param #number Speed Orbit speed in knots. Default 350 kts.
--- @param Core.Point#COORDINATE Coordinate Where to orbit. Default is the center of the CAP zone.
--- @param #number Heading Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
--- @param #number Leg Length of race-track in NM. If not specified, a simple circular orbit is performed.
--- @param #table TargetTypes Table of target types. Default {"Air"}.
+-- @param #number Altitude (Optional) Altitude at which to orbit in feet. Default is 10,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 kts.
+-- @param Core.Point#COORDINATE Coordinate (Optional) Where to orbit. Default is the center of the CAP zone.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
+-- @param #number Leg (Optional) Length of race-track in NM. If not specified, a simple circular orbit is performed.
+-- @param #table TargetTypes (Optional) Table of target types. Default {"Air"}.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAP(ZoneCAP, Altitude, Speed, Coordinate, Heading, Leg, TargetTypes)
 
@@ -170910,15 +170915,15 @@ end
 --- **[AIR]** Create a CAP mission over a (moving) group.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP Grp The grp to perform the CAP over.
--- @param #number Altitude Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed Orbit speed in knots. Default 250 KIAS.
--- @param #number RelHeading Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
--- @param #number Leg Length of race-track in NM. Default 14 NM.
--- @param #number OffsetDist Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
--- @param #number OffsetAngle Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
--- @param #number UpdateDistance Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
+-- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
+-- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
+-- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
+-- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
 -- @param #table TargetTypes (Optional) Table of target types. Default `{"Air"}`.
--- @param #number EngageRange Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
+-- @param #number EngageRange (Optional) Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAPGROUP(Grp, Altitude, Speed, RelHeading, Leg, OffsetDist, OffsetAngle, UpdateDistance, TargetTypes, EngageRange)
 
@@ -170963,11 +170968,11 @@ end
 --- **[AIR]** Create a CAS mission.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE_RADIUS ZoneCAS Circular CAS zone. Detected targets in this zone will be engaged.
--- @param #number Altitude Altitude at which to orbit. Default is 10,000 ft.
--- @param #number Speed Orbit speed in knots. Default 350 KIAS.
--- @param Core.Point#COORDINATE Coordinate Where to orbit. Default is the center of the CAS zone.
--- @param #number Heading Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
--- @param #number Leg Length of race-track in NM. If not specified, a simple circular orbit is performed.
+-- @param #number Altitude (Optional) Altitude at which to orbit. Default is 10,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 KIAS.
+-- @param Core.Point#COORDINATE Coordinate (Optional) Where to orbit. Default is the center of the CAS zone.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
+-- @param #number Leg (Optional) Length of race-track in NM. If not specified, a simple circular orbit is performed.
 -- @param #table TargetTypes (Optional) Table of target types. Default `{"Helicopters", "Ground Units", "Light armed ships"}`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAS(ZoneCAS, Altitude, Speed, Coordinate, Heading, Leg, TargetTypes)
@@ -171001,11 +171006,11 @@ end
 --- **[AIR]** Create a CASENHANCED mission. Group(s) will go to the zone and patrol it randomly.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE CasZone The CAS zone.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
--- @param #number Speed Speed in knots.
--- @param #number RangeMax Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
--- @param Core.Set#SET_ZONE NoEngageZoneSet Set of zones in which targets are *not* engaged. Default is nowhere.
--- @param #table TargetTypes Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default `{"Helicopters", "Ground Units", "Light armed ships"}`.
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #number Speed (Optional) Speed in knots.
+-- @param #number RangeMax (Optional) Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
+-- @param Core.Set#SET_ZONE NoEngageZoneSet (Optional) Set of zones in which targets are *not* engaged. Default is nowhere.
+-- @param #table TargetTypes (Optional) Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default `{"Helicopters", "Ground Units", "Light armed ships"}`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCASENHANCED(CasZone, Altitude, Speed, RangeMax, NoEngageZoneSet, TargetTypes)
 
@@ -171043,11 +171048,10 @@ end
 --- **[AIR, GROUND]** Create a FAC mission. Group(s) will go to the zone and patrol it randomly and act as FAC for detected units.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE FacZone The FAC zone (or name of zone) where to patrol.
--- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL. 
--- @param #number Frequency Frequency in MHz.
--- @param #number Modulation Modulation.
--- @return #AUFTRAG self
+-- @param #number Speed (Optional) Speed in knots.
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL. 
+-- @param #number Frequency (Optional) Frequency in MHz. Defaults to 133Mhz.
+-- @param #number Modulation (Optional) Modulation. Defaults to radio.modulation.AM
 function AUFTRAG:NewFAC(FacZone, Speed, Altitude, Frequency, Modulation)
 
   local mission=AUFTRAG:New(AUFTRAG.Type.FAC)
@@ -171084,10 +171088,10 @@ end
 --- **[AIR]** Create a FACA mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP Target Target group. Must be a GROUP object.
--- @param #string Designation Designation of target. See `AI.Task.Designation`. Default `AI.Task.Designation.AUTO`.
--- @param #boolean DataLink Enable data link. Default `true`.
--- @param #number Frequency Radio frequency in MHz the FAC uses for communication. Default is 133 MHz.
--- @param #number Modulation Radio modulation band. Default 0=AM. Use 1 for FM. See radio.modulation.AM or radio.modulaton.FM.
+-- @param #string Designation (Optional) Designation of target. See `AI.Task.Designation`. Default `AI.Task.Designation.AUTO`.
+-- @param #boolean DataLink (Optional) Enable data link. Default `true`.
+-- @param #number Frequency (Optional) Radio frequency in MHz the FAC uses for communication. Default is 133 MHz.
+-- @param #number Modulation (Optional) Radio modulation band. Default 0=AM. Use 1 for FM. See radio.modulation.AM or radio.modulaton.FM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewFACA(Target, Designation, DataLink, Frequency, Modulation)
 
@@ -171121,7 +171125,7 @@ end
 --- **[AIR]** Create a BAI mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP, UNIT or STATIC object.
--- @param #number Altitude Engage altitude in feet. Default 5000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 5000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBAI(Target, Altitude)
 
@@ -171151,7 +171155,7 @@ end
 --- **[AIR]** Create a SEAD mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP or UNIT object.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSEAD(Target, Altitude)
 
@@ -171181,9 +171185,9 @@ end
 --- **[AIR]** Create a SEAD in Zone mission.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE TargetZone The target zone to attack.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
--- @param #table TargetTypes Table of string of DCS known target types, defaults to {"Air Defence"}. See [DCS Target Attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
--- @param #number Duration Engage this much time when the AUFTRAG starts executing.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
+-- @param #table TargetTypes (Optional) Table of string of DCS known target types, defaults to {"Air Defence"}. See [DCS Target Attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #number Duration (Optional) Engage this much time when the AUFTRAG starts executing. Default is 1800.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSEADInZone(TargetZone, Altitude, TargetTypes, Duration)
 
@@ -171217,8 +171221,8 @@ end
 --- **[AIR]** Create a STRIKE mission. Flight will attack the closest map object to the specified coordinate.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target The target coordinate. Can also be given as a GROUP, UNIT, STATIC, SET_GROUP, SET_UNIT, SET_STATIC or TARGET object.
--- @param #number Altitude Engage altitude in feet. Default 2000 ft.
--- @param #number EngageWeaponType Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 2000 ft.
+-- @param #number EngageWeaponType (Optional) Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSTRIKE(Target, Altitude, EngageWeaponType)
 
@@ -171249,9 +171253,9 @@ end
 -- See [DCS task bombing](https://wiki.hoggitworld.com/view/DCS_task_bombing).
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Target coordinate. Can also be specified as a GROUP, UNIT, STATIC, SET_GROUP, SET_UNIT, SET_STATIC or TARGET object.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
--- @param #number EngageWeaponType Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
--- @param #boolean Divebomb If true, use a dive bombing attack approach.
+-- @param #number Altitude Engage (Optional) altitude in feet. Default 25000 ft.
+-- @param #number EngageWeaponType (Optional) Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
+-- @param #boolean Divebomb (Optional) If true, use a dive bombing attack approach.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBOMBING(Target, Altitude, EngageWeaponType, Divebomb)
 
@@ -171287,8 +171291,8 @@ end
 -- See [DCS task strafing](https://wiki.hoggitworld.com/view/DCS_task_strafing).
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Target coordinate. Can also be specified as a GROUP, UNIT, STATIC or TARGET object.
--- @param #number Altitude Engage altitude in feet. Default 1000 ft.
--- @param #number Length The total length of the strafing target in meters. Default `nil`.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 1000 ft.
+-- @param #number Length (Optional) The total length of the strafing target in meters. Default `nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSTRAFING(Target, Altitude, Length)
 
@@ -171324,7 +171328,7 @@ end
 --- **[AIR]** Create a BOMBRUNWAY mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Airbase#AIRBASE Airdrome The airbase to bomb. This must be an airdrome (not a FARP or ship) as these do not have a runway.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBOMBRUNWAY(Airdrome, Altitude)
 
@@ -171362,8 +171366,8 @@ end
 --- **[AIR]** Create a CARPET BOMBING mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Target coordinate. Can also be specified as a GROUP, UNIT or STATIC object.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
--- @param #number CarpetLength Length of bombing carpet in meters. Default 500 m.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
+-- @param #number CarpetLength (Optional) Length of bombing carpet in meters. Default 500 m.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBOMBCARPET(Target, Altitude, CarpetLength)
 
@@ -171400,8 +171404,8 @@ end
 --- **[AIR/HELO]** Create a GROUNDESCORT (or FOLLOW) mission. Helo will escort a **ground** group and automatically engage certain target types.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP EscortGroup The ground group to escort.
--- @param #number OrbitDistance Orbit to/from the lead unit this many NM. Defaults to 1.5 NM.
--- @param #table TargetTypes Types of targets to engage automatically. Default is {"Ground vehicles"}, i.e. all enemy ground units. Use an empty set {} for a simple "FOLLOW" mission.
+-- @param #number OrbitDistance(Optional)  Orbit to/from the lead unit this many NM. Defaults to 1.5 NM.
+-- @param #table TargetTypes (Optional) Types of targets to engage automatically. Default is {"Ground vehicles"}, i.e. all enemy ground units. Use an empty set {} for a simple "FOLLOW" mission.
 -- @return #AUFTRAG self
 function AUFTRAG:NewGROUNDESCORT(EscortGroup, OrbitDistance, TargetTypes)
 
@@ -171438,9 +171442,9 @@ end
 --- **[AIR]** Create an ESCORT (or FOLLOW) mission. Flight will escort another group and automatically engage certain target types.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP EscortGroup The group to escort.
--- @param DCS#Vec3 OffsetVector A table with x, y and z components specifying the offset of the flight to the escorted group. Default {x=-100, y=0, z=200} for z=200 meters to the right, same alitude (y=0), x=-100 meters behind.
--- @param #number EngageMaxDistance Max engage distance of targets in nautical miles. Default auto 32 NM.
--- @param #table TargetTypes Types of targets to engage automatically. Default is {"Air"}, i.e. all enemy airborne units. Use an empty set {} for a simple "FOLLOW" mission.
+-- @param DCS#Vec3 OffsetVector (Optional) A table with x, y and z components specifying the offset of the flight to the escorted group. Default {x=-100, y=0, z=200} for z=200 meters to the right, same alitude (y=0), x=-100 meters behind.
+-- @param #number EngageMaxDistance (Optional) Max engage distance of targets in nautical miles. Default auto 32 NM.
+-- @param #table TargetTypes (Optional) Types of targets to engage automatically. Default is {"Air"}, i.e. all enemy airborne units. Use an empty set {} for a simple "FOLLOW" mission.
 -- @return #AUFTRAG self
 function AUFTRAG:NewESCORT(EscortGroup, OffsetVector, EngageMaxDistance, TargetTypes)
 
@@ -171499,13 +171503,13 @@ end
 --- **[AIRPANE]** Create a RECOVERY TANKER mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Unit#UNIT Carrier The carrier unit.
--- @param #number Altitude Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed Orbit speed in knots. Default 250 KIAS.
--- @param #number Leg Length of race-track in NM. Default 14 NM.
--- @param #number RelHeading Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
--- @param #number OffsetDist Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
--- @param #number OffsetAngle Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
--- @param #number UpdateDistance Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
+-- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
+-- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
+-- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
+-- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewRECOVERYTANKER(Carrier, Altitude, Speed, Leg, RelHeading, OffsetDist, OffsetAngle, UpdateDistance)
  
@@ -171547,8 +171551,8 @@ end
 -- @param #AUFTRAG self
 -- @param Core.Set#SET_GROUP TransportGroupSet The set group(s) to be transported.
 -- @param Core.Point#COORDINATE DropoffCoordinate Coordinate where the helo will land drop off the the troops.
--- @param Core.Point#COORDINATE PickupCoordinate Coordinate where the helo will land to pick up the the cargo. Default is the first transport group.
--- @param #number PickupRadius Radius around the pickup coordinate in meters. Default 100 m.
+-- @param Core.Point#COORDINATE PickupCoordinate(Optional)  Coordinate where the helo will land to pick up the the cargo. Default is the first transport group.
+-- @param #number PickupRadius (Optional) Radius around the pickup coordinate in meters. Default 100 m.
 -- @return #AUFTRAG self
 function AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet, DropoffCoordinate, PickupCoordinate, PickupRadius)
 
@@ -171733,9 +171737,9 @@ end
 -- **Note** that it is recommended to set the weapon range via the `OPSGROUP:AddWeaponRange()` function as this cannot be retrieved from the DCS API.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Center of the firing solution.
--- @param #number Nshots Number of shots to be fired. Default `#nil`. If value is in (0,1), it is interpreted as per cent of available ammo.
--- @param #number Radius Radius of the shells in meters. Default 100 meters.
--- @param #number Altitude Altitude in meters. Can be used to setup a Barrage. Default `#nil`.
+-- @param #number Nshots (Optional) Number of shots to be fired. Default `#nil`. If value is in (0,1), it is interpreted as per cent of available ammo.
+-- @param #number Radius (Optional) Radius of the shells in meters. Default 100 meters.
+-- @param #number Altitude (Optional) Altitude in meters. Can be used to setup a Barrage. Default `#nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewARTY(Target, Nshots, Radius, Altitude)
 
@@ -171768,11 +171772,11 @@ end
 --- **[GROUND, NAVAL]** Create an BARRAGE mission. Assigned groups will move to a random coordinate within a given zone and start firing into the air.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE Zone The zone where the unit will go.
--- @param #number Heading Heading in degrees. Default random heading [0, 360).
--- @param #number Angle Shooting angle in degrees. Default random [45, 85].
--- @param #number Radius Radius of the shells in meters. Default 100 meters.
--- @param #number Altitude Altitude in meters. Default 500 m.
--- @param #number Nshots Number of shots to be fired. Default is until ammo is empty (`#nil`).
+-- @param #number Heading (Optional) Heading in degrees. Default random heading [0, 360).
+-- @param #number Angle (Optional) Shooting angle in degrees. Default random [45, 85].
+-- @param #number Radius (Optional) Radius of the shells in meters. Default 100 meters.
+-- @param #number Altitude (Optional) Altitude in meters. Default 500 m.
+-- @param #number Nshots (Optional) Number of shots to be fired. Default is until ammo is empty (`#nil`).
 -- @return #AUFTRAG self
 function AUFTRAG:NewBARRAGE(Zone, Heading, Angle, Radius, Altitude, Nshots)
 
@@ -171807,8 +171811,8 @@ end
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE Zone The patrol zone.
 -- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
--- @param #string Formation Formation used by ground units during patrol. Default "Off Road".
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #string Formation (Optional) Formation used by ground units during patrol. Default "Off Road".
 -- @return #AUFTRAG self
 function AUFTRAG:NewPATROLZONE(Zone, Speed, Altitude, Formation)
 
@@ -171845,8 +171849,8 @@ end
 -- @param Ops.OpsZone#OPSZONE OpsZone The OPS zone to capture.
 -- @param #number Coalition The coalition which should capture the zone for the mission to be successful.
 -- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
--- @param #string Formation Formation used by ground units during patrol. Default "Off Road".
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #string Formation (Optional) Formation used by ground units during patrol. Default "Off Road".
 -- @param #number StayInZoneTime Stay this many seconds in the zone when done, only then drive back.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAPTUREZONE(OpsZone, Coalition, Speed, Altitude, Formation, StayInZoneTime)
@@ -171910,8 +171914,8 @@ end
 -- Therefore, we resort to this workaround, which guides the attacking group to the vicinity of the target. Then they start shooting on their own, once they detect the target.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP, UNIT or STATIC object.
--- @param #number Speed Speed in knots. Default max.
--- @param #string Formation The attack formation, e.g. "Wedge", "Vee" etc. Default `ENUMS.Formation.Vehicle.Vee`. Only working for ground, not naval!
+-- @param #number Speed (Optional) Speed in knots. Default max.
+-- @param #string Formation (Optional) The attack formation, e.g. "Wedge", "Vee" etc. Default `ENUMS.Formation.Vehicle.Vee`. Only working for ground, not naval!
 -- @return #AUFTRAG self
 function AUFTRAG:NewGROUNDATTACK(Target, Speed, Formation)
 
@@ -171943,8 +171947,8 @@ end
 -- Therefore, we resort to this workaround, which guides the attacking group to the vicinity of the target. Then they start shooting on their own, once they detect the target.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP, UNIT or STATIC object.
--- @param #number Speed Speed in knots. Default max.
--- @param #number Depth The attack depth in meters. Only for submarines!
+-- @param #number Speed (Optional) Speed in knots. Default max.
+-- @param #number Depth (Optional) The attack depth in meters. Only for submarines! Defaults to 0.
 -- @return #AUFTRAG self
 function AUFTRAG:NewNAVALENGAGEMENT(Target, Speed, Depth)
 
@@ -171973,8 +171977,8 @@ end
 --- **[AIR, GROUND, NAVAL]** Create a RECON mission.
 -- @param #AUFTRAG self
 -- @param Core.Set#SET_ZONE ZoneSet The recon zones.
--- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #number Speed (Optional) Speed in knots.
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
 -- @param #boolean Adinfinitum If `true`, the group will start over again after reaching the final zone.
 -- @param #boolean Randomly If `true`, the group will select a random zone.
 -- @param #string Formation Formation used during recon route.
@@ -172466,7 +172470,7 @@ end
 
 --- Set mission start and stop time.
 -- @param #AUFTRAG self
--- @param #string ClockStart Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
+-- @param #string ClockStart (Optional) Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
 -- @param #string ClockStop (Optional) Time the mission is stopped, e.g. "13:00" for 1 pm. If mission could not be started at that time, it will be removed from the queue. If specified as a #number it will be relative (in seconds) to the current mission time.
 -- @return #AUFTRAG self
 function AUFTRAG:SetTime(ClockStart, ClockStop)
@@ -172552,9 +172556,9 @@ end
 
 --- Set mission priority and (optional) urgency. Urgent missions can cancel other running missions.
 -- @param #AUFTRAG self
--- @param #number Prio Priority 1=high, 100=low. Default 50.
+-- @param #number Prio (Optional) Priority 1=high, 100=low. Default 50.
 -- @param #boolean Urgent If *true*, another running mission might be cancelled if it has a lower priority.
--- @param #number Importance Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
+-- @param #number Importance (Optional) Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetPriority(Prio, Urgent, Importance)
   self.prio=Prio or 50
@@ -172565,7 +172569,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set how many times the mission is repeated. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Number of repeats. Default 0.
+-- @param #number Nrepeat (Optional) Number of repeats. Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeat(Nrepeat)
   self.Nrepeat=Nrepeat or 0
@@ -172575,7 +172579,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set the repeat delay in seconds after a mission is successful/failed. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number RepeatDelay Repeat delay in seconds. Default 1.
+-- @param #number RepeatDelay (Optional) Repeat delay in seconds. Default 1.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatDelay(RepeatDelay)
   self.repeatDelay = RepeatDelay
@@ -172584,7 +172588,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set how many times the mission is repeated if it fails. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Number of repeats. Default 0.
+-- @param #number Nrepeat (Optional) Number of repeats. Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatOnFailure(Nrepeat)
   self.NrepeatFailure=Nrepeat or 0
@@ -172593,7 +172597,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set how many times the mission is repeated if it was successful. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Number of repeats. Default 0.
+-- @param #number Nrepeat (Optional) Number of repeats. Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatOnSuccess(Nrepeat)
   self.NrepeatSuccess=Nrepeat or 0
@@ -172614,8 +172618,8 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Define how many assets are required to do the job. Only used if the mission is handled by a **LEGION** (AIRWING, BRIGADE, ...) or higher level.
 -- @param #AUFTRAG self
--- @param #number NassetsMin Minimum number of asset groups. Default 1.
--- @param #number NassetsMax Maximum Number of asset groups. Default is same as `NassetsMin`.
+-- @param #number NassetsMin (Optional) Minimum number of asset groups. Default 1.
+-- @param #number NassetsMax (Optional) Maximum Number of asset groups. Default is same as `NassetsMin`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRequiredAssets(NassetsMin, NassetsMax)
 
@@ -172682,11 +172686,11 @@ end
 --- **[LEGION, COMMANDER, CHIEF]** Define how many assets are required that escort the mission assets. 
 -- Only used if the mission is handled by a **LEGION** (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number NescortMin Minimum number of asset groups. Default 1.
--- @param #number NescortMax Maximum Number of asset groups. Default is same as `NassetsMin`.
--- @param #string MissionType Mission type assets will be optimized for and payload selected, *e.g.* `AUFTRAG.Type.SEAD`. Default nil.
--- @param #table TargetTypes Target Types that will be engaged by the escort group(s). Default `{"Air"}` for aircraft and `{"Ground Units"}` for helos. Set, *e.g.*, `{"Air Defence"}` for SEAD.
--- @param #number EngageRange Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
+-- @param #number NescortMin (Optional) Minimum number of asset groups. Default 1.
+-- @param #number NescortMax (Optional) Maximum Number of asset groups. Default is same as `NassetsMin`.
+-- @param #string MissionType (Optional) Mission type assets will be optimized for and payload selected, *e.g.* `AUFTRAG.Type.SEAD`. Default nil.
+-- @param #table TargetTypes (Optional) Target Types that will be engaged by the escort group(s). Default `{"Air"}` for aircraft and `{"Ground Units"}` for helos. Set, *e.g.*, `{"Air Defence"}` for SEAD.
+-- @param #number EngageRange (Optional) Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
 -- @return #AUFTRAG self
 function AUFTRAG:SetRequiredEscorts(NescortMin, NescortMax, MissionType, TargetTypes, EngageRange)
 
@@ -172712,7 +172716,7 @@ end
 
 --- Set mission name.
 -- @param #AUFTRAG self
--- @param #string Name Name of the mission. Default is "Auftrag Nr. X", where X is a running number, which is automatically increased.
+-- @param #string Name (Optional) Name of the mission. Default is "Auftrag Nr. X", where X is a running number, which is automatically increased.
 -- @return #AUFTRAG self
 function AUFTRAG:SetName(Name)
   self.name=Name or string.format("Auftrag Nr. %d", self.auftragsnummer)
@@ -172721,7 +172725,7 @@ end
 
 --- Enable markers, which dispay the mission status on the F10 map.
 -- @param #AUFTRAG self
--- @param #number Coalition The coaliton side to which the markers are dispayed. Default is to all.
+-- @param #number Coalition (Optional) The coaliton side to which the markers are dispayed. Default is to all.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEnableMarkers(Coalition)
   self.markerOn=true
@@ -172731,7 +172735,7 @@ end
 
 --- Set verbosity level.
 -- @param #AUFTRAG self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -172740,7 +172744,7 @@ end
 
 --- Set weapon type used for the engagement.
 -- @param #AUFTRAG self
--- @param #number WeaponType Weapon type. Default is `ENUMS.WeaponFlag.Auto`.
+-- @param #number WeaponType (Optional) Weapon type. Default is `ENUMS.WeaponFlag.Auto`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetWeaponType(WeaponType)
 
@@ -172754,7 +172758,7 @@ end
 
 --- Set number of weapons to expend.
 -- @param #AUFTRAG self
--- @param #number WeaponExpend How much of the weapon load is expended during the attack, e.g. `AI.Task.WeaponExpend.ALL`. Default "Auto".
+-- @param #number WeaponExpend (Optional) How much of the weapon load is expended during the attack, e.g. `AI.Task.WeaponExpend.ALL`. Default "Auto".
 -- @return #AUFTRAG self
 function AUFTRAG:SetWeaponExpend(WeaponExpend)
 
@@ -172786,7 +172790,7 @@ end
 
 --- Set engage altitude. This is the altitude passed to the DCS task. In the ME it is the tickbox ALTITUDE ABOVE.
 -- @param #AUFTRAG self
--- @param #string Altitude Altitude in feet. Default 6000 ft.
+-- @param #string Altitude (Optional) Altitude in feet. Default 6000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEngageAltitude(Altitude)
 
@@ -172800,10 +172804,10 @@ end
 
 --- Enable to automatically engage detected targets.
 -- @param #AUFTRAG self
--- @param #number RangeMax Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
--- @param #table TargetTypes Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
--- @param Core.Set#SET_ZONE EngageZoneSet Set of zones in which targets are engaged. Default is anywhere.
--- @param Core.Set#SET_ZONE NoEngageZoneSet Set of zones in which targets are *not* engaged. Default is nowhere.
+-- @param #number RangeMax (Optional) Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
+-- @param #table TargetTypes (Optional) Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
+-- @param Core.Set#SET_ZONE EngageZoneSet (Optional) Set of zones in which targets are engaged. Default is anywhere.
+-- @param Core.Set#SET_ZONE NoEngageZoneSet (Optional) Set of zones in which targets are *not* engaged. Default is nowhere.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEngageDetected(RangeMax, TargetTypes, EngageZoneSet, NoEngageZoneSet)
 
@@ -172856,7 +172860,7 @@ end
 
 --- Set max mission range. Only applies if the AUFTRAG is handled by an AIRWING or CHIEF. This is the max allowed distance from the airbase to the target.
 -- @param #AUFTRAG self
--- @param #number Range Max range in NM. Default 100 NM.
+-- @param #number Range (Optional) Max range in NM. Default 100 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:SetMissionRange(Range)
   self.engageRange=UTILS.NMToMeters(Range or 100)
@@ -172882,8 +172886,8 @@ end
 --- **[LEGION, COMMANDER, CHIEF]** Attach OPS transport to the mission. Mission assets will be transported before the mission is started at the OPSGROUP level.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE DeployZone Zone where assets are deployed.
--- @param #number NcarriersMin Number of carriers *at least* required. Default 1.
--- @param #number NcarriersMax Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
+-- @param #number NcarriersMin (Optional) Number of carriers *at least* required. Default 1.
+-- @param #number NcarriersMax (Optional) Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
 -- @param Core.Zone#ZONE DisembarkZone Zone where assets are disembarked to.
 -- @param #table Categories Group categories.
 -- @param #table Attributes Generalizes group attributes.
@@ -172945,8 +172949,8 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set number of required carrier groups if an OPSTRANSPORT assignment is required.
 -- @param #AUFTRAG self
--- @param #number NcarriersMin Number of carriers *at least* required. Default 1.
--- @param #number NcarriersMax Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
+-- @param #number NcarriersMin (Optional) Number of carriers *at least* required. Default 1.
+-- @param #number NcarriersMax (Optional) Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
 -- @param #table Categories Group categories.
 -- @param #table Attributes Group attributes. See `GROUP.Attribute.`
 -- @param #table Properties DCS attributes.
@@ -173211,7 +173215,7 @@ end
 --- Set radio frequency and modulation for this mission.
 -- @param #AUFTRAG self
 -- @param #number Frequency Frequency in MHz.
--- @param #number Modulation Radio modulation. Default 0=AM.
+-- @param #number Modulation (Optional) Radio modulation. Default 0=AM.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRadio(Frequency, Modulation)
 
@@ -173225,9 +173229,9 @@ end
 --- Set TACAN beacon channel and Morse code for this mission.
 -- @param #AUFTRAG self
 -- @param #number Channel TACAN channel.
--- @param #string Morse Morse code. Default "XXX".
--- @param #string UnitName Name of the unit in the group for which acts as TACAN beacon. Default is the first unit in the group.
--- @param #string Band Tacan channel mode ("X" or "Y"). Default is "X" for ground/naval and "Y" for aircraft.
+-- @param #string Morse (Optional) Morse code. Default "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group for which acts as TACAN beacon. Default is the first unit in the group.
+-- @param #string Band (Optional) Tacan channel mode ("X" or "Y"). Default is "X" for ground/naval and "Y" for aircraft.
 -- @return #AUFTRAG self
 function AUFTRAG:SetTACAN(Channel, Morse, UnitName, Band)
 
@@ -173243,8 +173247,8 @@ end
 --- Set ICLS beacon channel and Morse code for this mission.
 -- @param #AUFTRAG self
 -- @param #number Channel ICLS channel.
--- @param #string Morse Morse code. Default "XXX".
--- @param #string UnitName Name of the unit in the group for which acts as ICLS beacon. Default is the first unit in the group.
+-- @param #string Morse (Optional) Morse code. Default "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group for which acts as ICLS beacon. Default is the first unit in the group.
 -- @return #AUFTRAG self
 function AUFTRAG:SetICLS(Channel, Morse, UnitName)
 
@@ -173258,7 +173262,7 @@ end
 
 --- Set time interval between mission done and success/failure evaluation.
 -- @param #AUFTRAG self
--- @param #number Teval Time in seconds before the mission result is evaluated. Default depends on mission type.
+-- @param #number Teval (Optional) Time in seconds before the mission result is evaluated. Default depends on mission type.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEvaluationTime(Teval)
 
@@ -175456,7 +175460,7 @@ end
 
 --- Set randomization of the mission waypoint coordinate. Each assigned group will get a random ingress coordinate, where the mission is executed.
 -- @param #AUFTRAG self
--- @param #number Radius Distance in meters. Default `#nil`.
+-- @param #number Radius (Optional) Distance in meters. Default `#nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetMissionWaypointRandomization(Radius)
   self.missionWaypointRadius=Radius
@@ -178221,9 +178225,9 @@ end
 
 --- [User] Set the tactical information option, create 10 radio channels groups can subscribe and get Bogey Dope on a specific frequency automatically. You **need** to set up SRS first before using this!
 -- @param #AWACS self
--- @param #number BaseFreq Base Frequency to use, defaults to 130.
--- @param #number Increase Increase to use, defaults to 0.5, thus channels created are 130, 130.5, 131 .. etc.
--- @param #number Modulation Modulation to use, defaults to radio.modulation.AM.
+-- @param #number BaseFreq (Optional) Base Frequency to use, defaults to 130.
+-- @param #number Increase (Optional) Increase to use, defaults to 0.5, thus channels created are 130, 130.5, 131 .. etc.
+-- @param #number Modulation (Optional) Modulation to use, defaults to radio.modulation.AM.
 -- @param #number Interval Seconds between each update call.
 -- @param #number Number Number of Frequencies to create, can be 1..10.
 -- @return #AWACS self
@@ -178505,8 +178509,8 @@ end
 
 --- [User] Set TOS Time-on-Station in Hours
 -- @param #AWACS self
--- @param #number AICHours AWACS stays this number of hours on station before shift change, default is 4.
--- @param #number CapHours (optional) CAP stays this number of hours on station before shift change, default is 4.
+-- @param #number AICHours (Optional) AWACS stays this number of hours on station before shift change, default is 4.
+-- @param #number CapHours (Optional) CAP stays this number of hours on station before shift change, default is 4.
 -- @return #AWACS self
 function AWACS:SetTOS(AICHours,CapHours)
   self:T(self.lid.."SetTOS")
@@ -178801,7 +178805,7 @@ end
 
 --- [User] Set AWACS Player Guidance - influences missile callout and the "New" label in group callouts. 
 -- @param #AWACS self
--- @param #boolean Switch If true (default) it is on, if false, it is off.
+-- @param #boolean Switch (Optional) If true (default) it is on, if false, it is off.
 -- @return #AWACS self
 function AWACS:SetPlayerGuidance(Switch)
   if (Switch == nil) or (Switch == true) then
@@ -178821,9 +178825,9 @@ end
 
 --- [User] Set AWACS intercept timeline support distance.
 -- @param #AWACS self
--- @param #number TacDistance Distance for TAC call, default 45nm
--- @param #number MeldDistance Distance for Meld call, default 35nm
--- @param #number ThreatDistance Distance for Threat call, default 25nm
+-- @param #number TacDistance (Optional) Distance for TAC call, default 45nm
+-- @param #number MeldDistance (Optional) Distance for Meld call, default 35nm
+-- @param #number ThreatDistance (Optional) Distance for Threat call, default 25nm
 -- @return #AWACS self
 function AWACS:SetInterceptTimeline(TacDistance, MeldDistance, ThreatDistance)
   self.TacDistance = TacDistance or 45
@@ -178930,12 +178934,12 @@ end
 
 --- [User] Set AWACS flight details
 -- @param #AWACS self
--- @param #number CallSign Defaults to CALLSIGN.AWACS.Magic
--- @param #number CallSignNo Defaults to 1
--- @param #number Angels Defaults to 25 (i.e. 25000 ft)
--- @param #number Speed Defaults to 250kn
--- @param #number Heading Defaults to 0 (North)
--- @param #number Leg Defaults to 25nm
+-- @param #number CallSign (Optional) Defaults to CALLSIGN.AWACS.Magic
+-- @param #number CallSignNo (Optional) Defaults to 1
+-- @param #number Angels (Optional) Defaults to 25 (i.e. 25000 ft)
+-- @param #number Speed (Optional) Defaults to 250kn
+-- @param #number Heading (Optional) Defaults to 0 (North)
+-- @param #number Leg (Optional) Defaults to 25nm
 -- @return #AWACS self
 function AWACS:SetAwacsDetails(CallSign,CallSignNo,Angels,Speed,Heading,Leg)
   self:T(self.lid.."SetAwacsDetails")
@@ -178987,13 +178991,13 @@ end
 
 --- [User] Set AWACS SRS TTS details - see @{Sound.SRS} for details. `SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #AWACS self
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
--- @param #string Gender Defaults to "male"
--- @param #string Culture Defaults to "en-US"
--- @param #number Port Defaults to 5002
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #string Gender (Optional) Defaults to "male"
+-- @param #string Culture (Optional) Defaults to "en-US"
+-- @param #number Port (Optional) Defaults to 5002
 -- @param #string Voice (Optional) Use a specifc voice with the @{Sound.SRS#SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
--- @param #number Volume Volume - between 0.0 (silent) and 1.0 (loudest)
+-- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest) Defaults to 1.0.
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) Your MSRS Backend if different from your config file settings, e.g. MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
@@ -179034,8 +179038,8 @@ end
 
 --- [User] Set AWACS Voice Details for AI CAP Planes  - SRS TTS - see @{Sound.SRS} for details
 -- @param #AWACS self
--- @param #string Gender Defaults to "male"
--- @param #string Culture Defaults to "en-US"
+-- @param #string Gender (Optional) Defaults to "male"
+-- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #string Voice (Optional) Use a specifc voice with the @{#MSRS.SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
 -- @return #AWACS self
@@ -179049,10 +179053,10 @@ end
 
 --- [User] Set AI CAP Plane Details
 -- @param #AWACS self
--- @param #number Callsign Callsign name of AI CAP, e.g. CALLSIGN.Aircraft.Dodge. Defaults to CALLSIGN.Aircraft.Colt. Note that not all available callsigns work for all plane types.
--- @param #number MaxAICap Maximum number of AI CAP planes on station that AWACS will set up automatically. Default to 4.
--- @param #number TOS Time on station, in  hours. AI planes might go back to base earlier if they run out of fuel or missiles.
--- @param #number Speed Airspeed to be used in knots. Will be adjusted to flight height automatically. Defaults to 270.
+-- @param #number Callsign (Optional) Callsign name of AI CAP, e.g. CALLSIGN.Aircraft.Dodge. Defaults to CALLSIGN.Aircraft.Colt. Note that not all available callsigns work for all plane types.
+-- @param #number MaxAICap (Optional) Maximum number of AI CAP planes on station that AWACS will set up automatically. Default to 4.
+-- @param #number TOS (Optional) Time on station, in  hours. AI planes might go back to base earlier if they run out of fuel or missiles. Defaults to 4.
+-- @param #number Speed (Optional) Airspeed to be used in knots. Will be adjusted to flight height automatically. Defaults to 270.
 -- @return #AWACS self
 function AWACS:SetAICAPDetails(Callsign,MaxAICap,TOS,Speed)
   self:T(self.lid.."SetAICAPDetails")
@@ -179068,7 +179072,7 @@ end
 -- @param #number EscortNumber Number of fighther plane GROUPs to accompany this AWACS. 0 or nil means no escorts. If you want >1 plane in an escort group, you can either set the respective squadron grouping to the desired number, or use a template for escorts with >1 unit.
 -- @param #number Formation Formation the escort should take (if more than one plane), e.g. `ENUMS.Formation.FixedWing.FingerFour.Group`. Formation is used on GROUP level, multiple groups of one unit will NOT conform to this formation.
 -- @param #table OffsetVector Offset the escorts should fly behind the AWACS, given as table, distance in meters, e.g. `{x=-500,y=0,z=500}` - 500m behind (negative value) and to the right (negative for left), no vertical separation (positive over, negative under the AWACS flight). For multiple groups, the vectors will be slightly changed to avoid collisions.
--- @param #number EscortEngageMaxDistance Escorts engage air targets max this NM away, defaults to 45NM.
+-- @param #number EscortEngageMaxDistance (Optional) Escorts engage air targets max this NM away, defaults to 45NM.
 -- @return #AWACS self
 function AWACS:SetEscort(EscortNumber,Formation,OffsetVector,EscortEngageMaxDistance)
   self:T(self.lid.."SetEscort")
@@ -185054,8 +185058,8 @@ CHIEF.version="0.7.0"
 --- Create a new CHIEF object and start the FSM.
 -- @param #CHIEF self
 -- @param #number Coalition Coalition side, e.g. `coaliton.side.BLUE`. Can also be passed as a string "red", "blue" or "neutral".
--- @param Core.Set#SET_GROUP AgentSet Set of agents (groups) providing intel. Default is an empty set.
--- @param #string Alias An *optional* alias how this object is called in the logs etc.
+-- @param Core.Set#SET_GROUP AgentSet (Optional) Set of agents (groups) providing intel. Default is an empty set.
+-- @param #string Alias (Optional) An *optional* alias how this object is called in the logs etc.
 -- @return #CHIEF self
 function CHIEF:New(Coalition, AgentSet, Alias)
 
@@ -185431,8 +185435,8 @@ end
 --- Set a threat level range that will be engaged. Threat level is a number between 0 and 10, where 10 is a very dangerous threat.
 -- Targets with threat level 0 are usually harmless.
 -- @param #CHIEF self
--- @param #number ThreatLevelMin Min threat level. Default 1.
--- @param #number ThreatLevelMax Max threat level. Default 10.
+-- @param #number ThreatLevelMin (Optional) Min threat level. Default 1.
+-- @param #number ThreatLevelMax (Optional) Max threat level. Default 10.
 -- @return #CHIEF self
 function CHIEF:SetThreatLevelRange(ThreatLevelMin, ThreatLevelMax)
 
@@ -185474,10 +185478,10 @@ end
 --- Create a new resource list of required assets.
 -- @param #CHIEF self
 -- @param #string MissionType The mission type.
--- @param #number Nmin Min number of required assets. Default 1.
--- @param #number Nmax Max number of requried assets. Default 1.
--- @param #table Attributes Generalized attribute(s). Default `nil`.
--- @param #table Properties DCS attribute(s). Default `nil`.
+-- @param #number Nmin (Optional) Min number of required assets. Default 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default 1.
+-- @param #table Attributes (Optional) Generalized attribute(s). Default `nil`.
+-- @param #table Properties (Optional) DCS attribute(s). Default `nil`.
 -- @param #table Categories Group categories.
 -- @return #CHIEF.Resources The newly created resource list table.
 -- @return #CHIEF.Resource The resource object that was added.
@@ -185494,8 +185498,8 @@ end
 -- @param #CHIEF self
 -- @param #CHIEF.Resources Resource List of resources.
 -- @param #string MissionType Mission Type.
--- @param #number Nmin Min number of required assets. Default 1.
--- @param #number Nmax Max number of requried assets. Default equal `Nmin`.
+-- @param #number Nmin (Optional) Min number of required assets. Default 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default equal `Nmin`.
 -- @param #table Attributes Generalized attribute(s).
 -- @param #table Properties DCS attribute(s). Default `nil`.
 -- @param #table Categories Group categories.
@@ -185537,8 +185541,8 @@ end
 --- Define which assets will be transported and define the number and attributes/properties of the cargo carrier assets.
 -- @param #CHIEF self
 -- @param #CHIEF.Resource Resource Resource table.
--- @param #number Nmin Min number of required assets. Default 1.
--- @param #number Nmax Max number of requried assets. Default is equal to `Nmin`.
+-- @param #number Nmin (Optional) Min number of required assets. Default 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default is equal to `Nmin`.
 -- @param #table CarrierAttributes Generalized attribute(s) of the carrier assets.
 -- @param #table CarrierProperties DCS attribute(s) of the carrier assets.
 -- @param #table CarrierCategories Group categories of the carrier assets.
@@ -185576,12 +185580,12 @@ end
 
 --- Set number of assets requested for detected targets.
 -- @param #CHIEF self
--- @param #number NassetsMin Min number of assets. Should be at least 1. Default 1.
--- @param #number NassetsMax Max number of assets. Default is same as `NassetsMin`.
--- @param #number ThreatLevel Only apply this setting if the target threat level is greater or equal this number. Default 0.
+-- @param #number NassetsMin (Optional) Min number of assets. Should be at least 1. Default 1.
+-- @param #number NassetsMax (Optional) Max number of assets. Default is same as `NassetsMin`.
+-- @param #number ThreatLevel (Optional) Only apply this setting if the target threat level is greater or equal this number. Default 0.
 -- @param #string TargetCategory Only apply this setting if the target is of this category, e.g. `TARGET.Category.AIRCRAFT`.
 -- @param #string MissionType Only apply this setting for this mission type, e.g. `AUFTRAG.Type.INTERCEPT`.
--- @param #string Nunits Only apply this setting if the number of enemy units is greater or equal this number.
+-- @param #string Nunits (Optional) Only apply this setting if the number of enemy units is greater or equal this number. Defaults to 1.
 -- @param #string Defcon Only apply this setting if this defense condition is in place.
 -- @param #string Strategy Only apply this setting if this strategy is in currently. place.
 -- @return #CHIEF self
@@ -185730,8 +185734,8 @@ end
 
 --- Set limit for number of total or specific missions to be executed simultaniously.
 -- @param #CHIEF self
--- @param #number Limit Number of max. mission of this type. Default 10.
--- @param #string MissionType Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
+-- @param #number Limit (Optional) Number of max. mission of this type. Default 10.
+-- @param #string MissionType (Optional) Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
 -- @return #CHIEF self
 function CHIEF:SetLimitMission(Limit, MissionType)
   self.commander:SetLimitMission(Limit, MissionType)
@@ -185757,7 +185761,7 @@ end
 
 --- Set strategy.
 -- @param #CHIEF self
--- @param #string Strategy Strategy. See @{#CHIEF.strategy}, e.g. `CHIEF.Strategy.DEFENSIVE` (default).
+-- @param #string Strategy (Optional) Strategy. See @{#CHIEF.strategy}, e.g. `CHIEF.Strategy.DEFENSIVE` (default).
 -- @return #CHIEF self
 function CHIEF:SetStrategy(Strategy)
 
@@ -185987,8 +185991,8 @@ end
 -- 
 -- @param #CHIEF self
 -- @param Ops.OpsZone#OPSZONE OpsZone OPS zone object.
--- @param #number Priority Priority. Default 50.
--- @param #number Importance Importance. Default `#nil`.
+-- @param #number Priority (Optional) Priority. Default 50.
+-- @param #number Importance (Optional) Importance. Default `#nil`.
 -- @param #CHIEF.Resources ResourceOccupied (Optional) Resources used then zone is occupied by the enemy.
 -- @param #CHIEF.Resources ResourceEmpty (Optional) Resources used then zone is empty.
 -- @return #CHIEF.StrategicZone The strategic zone.
@@ -186085,7 +186089,7 @@ end
 --- Remove strategically important zone. All runing missions are cancelled.
 -- @param #CHIEF self
 -- @param Ops.OpsZone#OPSZONE OpsZone OPS zone object.
--- @param #number Delay Delay in seconds before the zone is removed. Default immidiately.
+-- @param #number Delay (Optional) Delay in seconds before the zone is removed. Default immidiately.
 -- @return #CHIEF self
 function CHIEF:RemoveStrategicZone(OpsZone, Delay)
 
@@ -186159,10 +186163,10 @@ end
 --- Add a CAP zone. Flights will engage detected targets inside this zone. 
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone CAP Zone. Has to be a circular zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading(Optional)  Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function CHIEF:AddCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -186175,10 +186179,10 @@ end
 --- Add a GCI CAP.
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone Zone, where the flight orbits.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function CHIEF:AddGciCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -186202,10 +186206,10 @@ end
 --- Add an AWACS zone.
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The AWACS zone data.
 function CHIEF:AddAwacsZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -186229,10 +186233,10 @@ end
 --- Add a refuelling tanker zone.
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @param #number RefuelSystem Refuelling system.
 -- @return Ops.Airwing#AIRWING.TankerZone The tanker zone data.
 function CHIEF:AddTankerZone(Zone, Altitude, Speed, Heading, Leg, RefuelSystem)
@@ -188173,8 +188177,8 @@ _COHORTNAMES={}
 --- Create a new COHORT object and start the FSM.
 -- @param #COHORT self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this Cohort. Default 3.
--- @param #string CohortName Name of the cohort.
+-- @param #number Ngroups (Optional) Number of asset groups of this Cohort. Default 3.
+-- @param #string CohortName (Optional) Name of the cohort. Defaults to TemplateGroupName.
 -- @return #COHORT self
 function COHORT:New(TemplateGroupName, Ngroups, CohortName)
 
@@ -188421,7 +188425,7 @@ end
 
 --- Set verbosity level.
 -- @param #COHORT self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #COHORT self
 function COHORT:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -188430,8 +188434,8 @@ end
 
 --- Set turnover and repair time. If an asset returns from a mission, it will need some time until the asset is available for further missions.
 -- @param #COHORT self
--- @param #number MaintenanceTime Time in minutes it takes until a flight is combat ready again. Default is 0 min.
--- @param #number RepairTime Time in minutes it takes to repair a flight for each life point taken. Default is 0 min.
+-- @param #number MaintenanceTime (Optional) Time in minutes it takes until a flight is combat ready again. Default is 0 min.
+-- @param #number RepairTime (Optional) Time in minutes it takes to repair a flight for each life point taken. Default is 0 min.
 -- @return #COHORT self
 function COHORT:SetTurnoverTime(MaintenanceTime, RepairTime)
   self.maintenancetime=MaintenanceTime and MaintenanceTime*60 or 0
@@ -188441,8 +188445,8 @@ end
 
 --- Set radio frequency and modulation the cohort uses.
 -- @param #COHORT self
--- @param #number Frequency Radio frequency in MHz. Default 251 MHz.
--- @param #number Modulation Radio modulation. Default 0=AM.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 251 MHz.
+-- @param #number Modulation (Optional) Radio modulation. Default 0=AM.
 -- @return #COHORT self
 function COHORT:SetRadio(Frequency, Modulation)
   self.radioFreq=Frequency or 251
@@ -188452,7 +188456,7 @@ end
 
 --- Set number of units in groups.
 -- @param #COHORT self
--- @param #number nunits Number of units. Default 2.
+-- @param #number nunits (Optional) Number of units. Default 2.
 -- @return #COHORT self
 function COHORT:SetGrouping(nunits)
   self.ngrouping=nunits or 2
@@ -188462,7 +188466,7 @@ end
 --- Set mission types this cohort is able to perform.
 -- @param #COHORT self
 -- @param #table MissionTypes Table of mission types. Can also be passed as a #string if only one type.
--- @param #number Performance Performance describing how good this mission can be performed. Higher is better. Default 50. Max 100.
+-- @param #number Performance (Optional) Performance describing how good this mission can be performed. Higher is better. Default 50. Max 100.
 -- @return #COHORT self
 function COHORT:AddMissionCapability(MissionTypes, Performance)
 
@@ -188569,7 +188573,7 @@ end
 
 --- Set max mission range. Only missions in a circle of this radius around the cohort base are executed.
 -- @param #COHORT self
--- @param #number Range Range in NM. Default 150 NM.
+-- @param #number Range (Optional) Range in NM. Default 150 NM.
 -- @return #COHORT self
 function COHORT:SetMissionRange(Range)
   self.engageRange=UTILS.NMToMeters(Range or 150)
@@ -188692,8 +188696,8 @@ end
 
 --- Remove assets from pool. Not that assets must not be spawned or already reserved or requested.
 -- @param #COHORT self
--- @param #number N Number of assets to be removed. Default 1.
--- @param #number Delay Delay in seconds before assets are removed.
+-- @param #number N (Optional) Number of assets to be removed. Default 1.
+-- @param #number Delay (Optional) Delay in seconds before assets are removed. Defaults to 0.
 -- @return #COHORT self
 function COHORT:RemoveAssets(N, Delay)
   self:T2(self.lid..string.format("Remove %d assets of Cohort", N))
@@ -188882,9 +188886,9 @@ end
 
 --- Add a weapon range for ARTY missions (@{Ops.Auftrag#AUFTRAG}).
 -- @param #COHORT self
--- @param #number RangeMin Minimum range in nautical miles. Default 0 NM.
--- @param #number RangeMax Maximum range in nautical miles. Default 10 NM.
--- @param #number BitType Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
+-- @param #number RangeMin (Optional) Minimum range in nautical miles. Default 0 NM.
+-- @param #number RangeMax (Optional) Maximum range in nautical miles. Default 10 NM.
+-- @param #number BitType (Optional) Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
 -- @return #COHORT self
 function COHORT:AddWeaponRange(RangeMin, RangeMax, BitType)
 
@@ -190128,7 +190132,7 @@ end
 
 --- Set verbosity level.
 -- @param #COMMANDER self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #COMMANDER self
 function COMMANDER:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -190137,8 +190141,8 @@ end
 
 --- Set limit for number of total or specific missions to be executed simultaniously.
 -- @param #COMMANDER self
--- @param #number Limit Number of max. mission of this type. Default 10.
--- @param #string MissionType Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
+-- @param #number Limit (Optional) Number of max. mission of this type. Default 10.
+-- @param #string MissionType (Optional) Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
 -- @return #COMMANDER self
 function COMMANDER:SetLimitMission(Limit, MissionType)
   MissionType=MissionType or "Total"
@@ -190403,10 +190407,10 @@ end
 --- Add a CAP zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone CapZone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function COMMANDER:AddCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -190429,10 +190433,10 @@ end
 --- Add a GCICAP zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone CapZone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function COMMANDER:AddGciCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -190475,10 +190479,10 @@ end
 --- Add an AWACS zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The AWACS zone data.
 function COMMANDER:AddAwacsZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -190522,10 +190526,10 @@ end
 --- Add a refuelling tanker zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @param #number RefuelSystem Refuelling system.
 -- @return Ops.Airwing#AIRWING.TankerZone The tanker zone data.
 function COMMANDER:AddTankerZone(Zone, Altitude, Speed, Heading, Leg, RefuelSystem)
@@ -190590,10 +190594,10 @@ end
 -- @param #COMMANDER self
 -- @param Ops.Cohort#COHORT Cohort The cohort to be relocated.
 -- @param Ops.Legion#LEGION Legion The legion where the cohort is relocated to.
--- @param #number Delay Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
--- @param #number NcarriersMin Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
+-- @param #number Delay (Optional) Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
+-- @param #number NcarriersMin (Optional) Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
 -- @param #number NcarriersMax Max number of transport carriers.
--- @param #table TransportLegions Legion(s) assigned for transportation. Default is all legions of the commander.
+-- @param #table TransportLegions (Optional) Legion(s) assigned for transportation. Default is all legions of the commander.
 -- @return #COMMANDER self
 function COMMANDER:RelocateCohort(Cohort, Legion, Delay, NcarriersMin, NcarriersMax, TransportLegions)
 
@@ -191359,7 +191363,7 @@ end
 --- Set how many missions can be assigned in a single status iteration. (eg. This is useful for persistent missions where you need to load all AUFTRAGs on mission start and then change it back to default)
 --- Warning: Increasing this value will increase the number of missions started per iteration and thus may lead to performance issues if too many missions are started at once.
 -- @param #COMMANDER self
--- @param #number Number of missions assigned per status iteration. Default is 1.
+-- @param #number MaxMissionsAssignPerCycle (Optional) Number of missions assigned per status iteration. Default is 1.
 -- @return #COMMANDER self.
 function COMMANDER:SetMaxMissionsAssignPerCycle(MaxMissionsAssignPerCycle)
   self.maxMissionsAssignPerCycle = MaxMissionsAssignPerCycle or 1
@@ -191968,7 +191972,7 @@ end
 
 --- Get assets on given mission or missions.
 -- @param #COMMANDER self
--- @param #table MissionTypes Types on mission to be checked. Default all.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
 -- @return #table Assets on pending requests.
 function COMMANDER:GetAssetsOnMission(MissionTypes)
 
@@ -192782,11 +192786,11 @@ FLIGHTCONTROL.version="0.7.7"
 --- Create a new FLIGHTCONTROL class object for an associated airbase.
 -- @param #FLIGHTCONTROL self
 -- @param #string AirbaseName Name of the airbase.
--- @param #number Frequency Radio frequency in MHz. Default 143.00 MHz. Can also be given as a `#table` of multiple frequencies.
--- @param #number Modulation Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a `#table` of multiple modulations.
--- @param #string PathToSRS Path to the directory, where SRS is located.
--- @param #number Port Port of SRS Server, defaults to 5002
--- @param #string GoogleKey Path to the Google JSON-Key.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 143.00 MHz. Can also be given as a `#table` of multiple frequencies.
+-- @param #number Modulation (Optional) Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a `#table` of multiple modulations.
+-- @param #string PathToSRS (Optional) Path to the directory, where SRS is located.
+-- @param #number Port (Optional) Port of SRS Server, defaults to 5002
+-- @param #string GoogleKey (Optional) Path to the Google JSON-Key.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:New(AirbaseName, Frequency, Modulation, PathToSRS, Port, GoogleKey)
 
@@ -192993,7 +192997,7 @@ end
 
 --- Set verbosity level.
 -- @param #FLIGHTCONTROL self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -193043,8 +193047,8 @@ end
 
 --- Set the tower frequency.
 -- @param #FLIGHTCONTROL self
--- @param #number Frequency Frequency in MHz. Default 305 MHz.
--- @param #number Modulation Modulation `radio.modulation.AM`=0, `radio.modulation.FM`=1. Default `radio.modulation.AM`.
+-- @param #number Frequency (Optional) Frequency in MHz. Default 305 MHz.
+-- @param #number Modulation (Optional) Modulation `radio.modulation.AM`=0, `radio.modulation.FM`=1. Default `radio.modulation.AM`.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetFrequency(Frequency, Modulation)
 
@@ -193066,7 +193070,7 @@ end
 
 --- Set the SRS server port.
 -- @param #FLIGHTCONTROL self
--- @param #number Port Port to be used. Defaults to 5002.
+-- @param #number Port (Optional) Port to be used. Defaults to 5002.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetSRSPort(Port)
   self.Port = Port or 5002
@@ -193076,13 +193080,13 @@ end
 --- Set SRS options for a given MSRS object.
 -- @param #FLIGHTCONTROL self
 -- @param Sound.SRS#MSRS msrs Moose SRS object.
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Volume Volume. Default 1.0.
+-- @param #number Volume (Optional) Volume. Default 1.0.
 -- @param #string Label Name under which SRS transmits.
--- @param #string PathToGoogleCredentials Path to google credentials json file.
--- @param #number Port Server port for SRS
+-- @param #string PathToGoogleCredentials (Optional) Path to google credentials json file.
+-- @param #number Port (Optional) Server port for SRS. Defaults to 5002.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Label, PathToGoogleCredentials, Port)
 
@@ -193106,11 +193110,11 @@ end
 
 --- Set SRS options for tower voice.
 -- @param #FLIGHTCONTROL self
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`. See [Google Voices](https://cloud.google.com/text-to-speech/docs/voices).
--- @param #number Volume Volume. Default 1.0.
--- @param #string Label Name under which SRS transmits. Default `self.alias`.
+-- @param #number Volume (Optional) Volume. Default 1.0.
+-- @param #string Label (Optional) Name under which SRS transmits. Default `self.alias`.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetSRSTower(Gender, Culture, Voice, Volume, Label)
 
@@ -193123,11 +193127,11 @@ end
 
 --- Set SRS options for pilot voice.
 -- @param #FLIGHTCONTROL self
--- @param #string Gender Gender: "male" (default) or "female".
--- @param #string Culture Culture, e.g. "en-US" (default).
+-- @param #string Gender (Optional) Gender: "male" (default) or "female".
+-- @param #string Culture (Optional) Culture, e.g. "en-US" (default).
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Volume Volume. Default 1.0.
--- @param #string Label Name under which SRS transmits. Default "Pilot".
+-- @param #number Volume (Optional) Volume. Default 1.0.
+-- @param #string Label (Optional) Name under which SRS transmits. Default "Pilot".
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetSRSPilot(Gender, Culture, Voice, Volume, Label)
 
@@ -193149,8 +193153,8 @@ end
 -- in cases where simultaneous takeoffs and landings are unproblematic. Note that only because there are multiple runways, it does not mean the AI uses them.
 --  
 -- @param #FLIGHTCONTROL self
--- @param #number Nlanding Max number of aircraft landing simultaneously. Default 2.
--- @param #number Ntakeoff Allowed number of aircraft taking off for groups to get landing clearance. Default 0. 
+-- @param #number Nlanding (Optional) Max number of aircraft landing simultaneously. Default 2.
+-- @param #number Ntakeoff (Optional) Allowed number of aircraft taking off for groups to get landing clearance. Default 0. 
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetLimitLanding(Nlanding, Ntakeoff)
 
@@ -193163,7 +193167,7 @@ end
 
 --- Set time interval between landing clearance of groups.
 -- @param #FLIGHTCONTROL self
--- @param #number dt Time interval in seconds. Default 180 sec (3 min).
+-- @param #number dt (Optional) Time interval in seconds. Default 180 sec (3 min).
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetLandingInterval(dt)
 
@@ -193186,9 +193190,9 @@ end
 -- NOTE that human players are *not* restricted as they should behave better (hopefully) than the AI.
 -- 
 -- @param #FLIGHTCONTROL self
--- @param #number Ntaxi Max number of groups allowed to taxi. Default 2.
+-- @param #number Ntaxi (Optional) Max number of groups allowed to taxi. Default 2.
 -- @param #boolean IncludeInbound If `true`, the above
--- @param #number Nlanding Max number of landing flights. Default 0.
+-- @param #number Nlanding (Optional) Max number of landing flights. Default 0.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetLimitTaxi(Ntaxi, IncludeInbound, Nlanding)
 
@@ -193206,10 +193210,10 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param Core.Zone#ZONE ArrivalZone Zone where planes arrive.
 -- @param #number Heading Heading in degrees.
--- @param #number Length Length in nautical miles. Default 15 NM.
--- @param #number FlightlevelMin Min flight level. Default 5.
--- @param #number FlightlevelMax Max flight level. Default 15.
--- @param #number Prio Priority. Lower is higher. Default 50.
+-- @param #number Length (Optional) Length in nautical miles. Default 15 NM.
+-- @param #number FlightlevelMin (Optional) Min flight level. Default 5.
+-- @param #number FlightlevelMax (Optional) Max flight level. Default 15.
+-- @param #number Prio (Optional) Priority. Lower is higher. Default 50.
 -- @return #FLIGHTCONTROL.HoldingPattern Holding pattern table.
 function FLIGHTCONTROL:AddHoldingPattern(ArrivalZone, Heading, Length, FlightlevelMin, FlightlevelMax, Prio)
 
@@ -193369,7 +193373,7 @@ end
 -- Note that this is the time, the DCS engine uses not something we can control on a user level or we could get via scripting.
 -- You need to input the value. On the DCS forum it was stated that this is currently one hour. Hence this is the default value.
 -- @param #FLIGHTCONTROL self
--- @param #number RepairTime Time in seconds until the runway is repaired. Default 3600sec (one hour).
+-- @param #number RepairTime (Optional) Time in seconds until the runway is repaired. Default 3600sec (one hour).
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetRunwayRepairtime(RepairTime)
   self.runwayrepairtime=RepairTime or 3600
@@ -194443,7 +194447,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Status Return only flights in this flightcontrol status, e.g. `FLIGHTCONTROL.Status.XXX`.
 -- @param #string GroupStatus Return only flights in this FSM status, e.g. `OPSGROUP.GroupStatus.TAXIING`.
--- @param #boolean AI If `true` only AI flights are returned. If `false`, only flights with clients are returned. If `nil` (default), all flights are returned.
+-- @param #boolean AI (Optional) If `true` only AI flights are returned. If `false`, only flights with clients are returned. If `nil` (default), all flights are returned.
 -- @return #table Table of flights.
 function FLIGHTCONTROL:GetFlights(Status, GroupStatus, AI)
 
@@ -194477,7 +194481,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Status Return only flights in this status.
 -- @param #string GroupStatus Count only flights in this FSM status, e.g. `OPSGROUP.GroupStatus.TAXIING`.
--- @param #boolean AI If `true` only AI flights are counted. If `false`, only flights with clients are counted. If `nil` (default), all flights are counted.
+-- @param #boolean AI (Optional) If `true` only AI flights are counted. If `false`, only flights with clients are counted. If `nil` (default), all flights are counted.
 -- @return #number Number of flights.
 function FLIGHTCONTROL:CountFlights(Status, GroupStatus, AI)
   
@@ -194524,7 +194528,7 @@ end
 
 --- Get the name of the active runway.
 -- @param #FLIGHTCONTROL self
--- @param #boolean Takeoff If true, return takeoff runway name. Default is landing.
+-- @param #boolean Takeoff (Optional) If true, return takeoff runway name. Default is landing.
 -- @return #string Runway text, e.g. "31L" or "09".
 function FLIGHTCONTROL:GetActiveRunwayText(Takeoff)
 
@@ -194666,7 +194670,7 @@ end
 --- Set parking spot to RESERVED and update F10 marker.
 -- @param #FLIGHTCONTROL self
 -- @param Wrapper.Airbase#AIRBASE.ParkingSpot spot The parking spot data table.
--- @param #string unitname Name of the unit occupying the spot. Default "unknown". 
+-- @param #string unitname (Optional) Name of the unit occupying the spot. Default "unknown". 
 function FLIGHTCONTROL:SetParkingReserved(spot, unitname)
 
   -- Get spot.
@@ -194686,7 +194690,7 @@ end
 --- Set parking spot to OCCUPIED and update F10 marker.
 -- @param #FLIGHTCONTROL self
 -- @param Wrapper.Airbase#AIRBASE.ParkingSpot spot The parking spot data table.
--- @param #string unitname Name of the unit occupying the spot. Default "unknown".
+-- @param #string unitname (Optional) Name of the unit occupying the spot. Default "unknown".
 function FLIGHTCONTROL:SetParkingOccupied(spot, unitname)
 
   -- Get spot.
@@ -196774,7 +196778,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Text The text to transmit.
 -- @param Ops.FlightGroup#FLIGHTGROUP Flight The flight.
--- @param #number Delay Delay in seconds before the text is transmitted. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before the text is transmitted. Default 0 sec.
 function FLIGHTCONTROL:TransmissionTower(Text, Flight, Delay)
 
   if self.radioOnlyIfPlayers==true and self.Nplayers==0 then
@@ -196810,7 +196814,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Text The text to transmit.
 -- @param Ops.FlightGroup#FLIGHTGROUP Flight The flight.
--- @param #number Delay Delay in seconds before the text is transmitted. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before the text is transmitted. Default 0 sec.
 function FLIGHTCONTROL:TransmissionPilot(Text, Flight, Delay)
 
   if self.radioOnlyIfPlayers==true and self.Nplayers==0 then
@@ -196868,9 +196872,9 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Text The text to transmit.
 -- @param Ops.FlightGroup#FLIGHTGROUP Flight The flight.
--- @param #number Duration Duration in seconds. Default 5.
+-- @param #number Duration (Optional) Duration in seconds. Default 5.
 -- @param #boolean Clear Clear screen.
--- @param #number Delay Delay in seconds before the text is transmitted. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before the text is transmitted. Default 0 sec.
 function FLIGHTCONTROL:TextMessageToFlight(Text, Flight, Duration, Clear, Delay)
 
   if Delay and Delay>0 then
@@ -197014,8 +197018,8 @@ end
 
 --- [User] Set callsign options for TTS output. See @{Wrapper.Group#GROUP.GetCustomCallSign}() on how to set customized callsigns.
 -- @param #FLIGHTCONTROL self
--- @param #boolean ShortCallsign If true, only call out the major flight number. Default = `true`.
--- @param #boolean Keepnumber If true, keep the **customized callsign** in the #GROUP name for players as-is, no amendments or numbers. Default = `true`.
+-- @param #boolean ShortCallsign (Optional) If true, only call out the major flight number. Default = `true`.
+-- @param #boolean Keepnumber (Optional) If true, keep the **customized callsign** in the #GROUP name for players as-is, no amendments or numbers. Default = `true`.
 -- @param #table CallsignTranslations (optional) Table to translate between DCS standard callsigns and bespoke ones. Does not apply if using customized
 -- callsigns from playername or group name.
 -- @return #FLIGHTCONTROL self
@@ -198024,7 +198028,7 @@ end
 --- Set if group is ready for taxi/takeoff if controlled by a `FLIGHTCONTROL`.
 -- @param #FLIGHTGROUP self
 -- @param #boolean ReadyTO If `true`, flight is ready for takeoff.
--- @param #number Delay Delay in seconds before value is set. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before value is set. Default 0 sec.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:SetReadyForTakeoff(ReadyTO, Delay)
   if Delay and Delay>0 then
@@ -198109,7 +198113,7 @@ end
 
 --- Set low fuel threshold. Triggers event "FuelLow" and calls event function "OnAfterFuelLow".
 -- @param #FLIGHTGROUP self
--- @param #number threshold Fuel threshold in percent. Default 25 %.
+-- @param #number threshold (Optional) Fuel threshold in percent. Default 25 %.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:SetFuelLowThreshold(threshold)
   self.fuellowthresh=threshold or 25
@@ -198170,7 +198174,7 @@ end
 
 --- Set fuel critical threshold. Triggers event "FuelCritical" and event function "OnAfterFuelCritical".
 -- @param #FLIGHTGROUP self
--- @param #number threshold Fuel threshold in percent. Default 10 %.
+-- @param #number threshold (Optional) Fuel threshold in percent. Default 10 %.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:SetFuelCriticalThreshold(threshold)
   self.fuelcriticalthresh=threshold or 10
@@ -199816,8 +199820,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N(Optional)  Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
 -- @return #boolean Transision allowed?
 function FLIGHTGROUP:onbeforeUpdateRoute(From, Event, To, n, N)
 
@@ -199939,8 +199943,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N (Optional) Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
 function FLIGHTGROUP:onafterUpdateRoute(From, Event, To, n, N)
 
   -- Update route from this waypoint number onwards.
@@ -200287,9 +200291,9 @@ end
 -- @param #string Event Event.
 -- @param #string To To state.
 -- @param Wrapper.Airbase#AIRBASE airbase The airbase to hold at.
--- @param #number SpeedTo Speed used for traveling from current position to holding point in knots. Default 75% of max speed.
--- @param #number SpeedHold Holding speed in knots. Default 250 kts.
--- @param #number SpeedLand Landing speed in knots. Default 170 kts.
+-- @param #number SpeedTo (Optional) Speed used for traveling from current position to holding point in knots. Default 75% of max speed.
+-- @param #number SpeedHold (Optional) Holding speed in knots. Default 250 kts.
+-- @param #number SpeedLand (Optional) Landing speed in knots. Default 170 kts.
 function FLIGHTGROUP:onafterRTB(From, Event, To, airbase, SpeedTo, SpeedHold, SpeedLand)
 
   -- Debug info.
@@ -200382,9 +200386,9 @@ end
 --- Land at an airbase.
 -- @param #FLIGHTGROUP self
 -- @param Wrapper.Airbase#AIRBASE airbase Airbase where the group shall land.
--- @param #number SpeedTo Speed used for travelling from current position to holding point in knots.
--- @param #number SpeedHold Holding speed in knots.
--- @param #number SpeedLand Landing speed in knots. Default 170 kts.
+-- @param #number (Optional) SpeedTo Speed used for travelling from current position to holding point in knots. Defaults to speedCruise.
+-- @param #number (Optional) SpeedHold Holding speed in knots. Defaults to 250kts.
+-- @param #number (Optional) SpeedLand Landing speed in knots. Default 170 kts.
 function FLIGHTGROUP:_LandAtAirbase(airbase, SpeedTo, SpeedHold, SpeedLand)
 
   -- Set current airbase.
@@ -200568,9 +200572,9 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number Duration Duration how long the group will be waiting in seconds. Default `nil` (=forever).
--- @param #number Altitude Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
--- @param #number Speed Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
+-- @param #number Duration (Optional) Duration how long the group will be waiting in seconds. Default `nil` (=forever).
+-- @param #number Altitude (Optional) Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
+-- @param #number Speed (Optional) Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
 function FLIGHTGROUP:onbeforeWait(From, Event, To, Duration, Altitude, Speed)
 
   local allowed=true
@@ -200604,9 +200608,9 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number Duration Duration how long the group will be waiting in seconds. Default `nil` (=forever).
--- @param #number Altitude Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
--- @param #number Speed Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
+-- @param #number Duration (Optional) Duration how long the group will be waiting in seconds. Default `nil` (=forever).
+-- @param #number Altitude (Optional) Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
+-- @param #number Speed (Optional) Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
 function FLIGHTGROUP:onafterWait(From, Event, To, Duration, Altitude, Speed)
 
   -- Group will orbit at its current position.
@@ -200883,8 +200887,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param Core.Point#COORDINATE Coordinate The coordinate where to land. Default is current position.
--- @param #number Duration The duration in seconds to remain on ground. Default 600 sec (10 min).
+-- @param Core.Point#COORDINATE (Optional) Coordinate The coordinate where to land. Default is current position.
+-- @param #number Duration (Optional) The duration in seconds to remain on ground. Default 600 sec (10 min).
 function FLIGHTGROUP:onbeforeLandAt(From, Event, To, Coordinate, Duration)
   return self.isHelo
 end
@@ -200894,8 +200898,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param Core.Point#COORDINATE Coordinate The coordinate where to land. Default is current position.
--- @param #number Duration The duration in seconds to remain on ground. Default `nil` = forever.
+-- @param Core.Point#COORDINATE (Optional) Coordinate The coordinate where to land. Default is current position.
+-- @param #number Duration (Optional) The duration in seconds to remain on ground. Default `nil` = forever.
 function FLIGHTGROUP:onafterLandAt(From, Event, To, Coordinate, Duration)
 
   -- Duration.
@@ -201066,8 +201070,8 @@ end
 
 --- Initialize group parameters. Also initializes waypoints if self.waypoints is nil.
 -- @param #FLIGHTGROUP self
--- @param #table Template Template used to init the group. Default is `self.template`.
--- @param #number Delay Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
+-- @param #table Template (Optional) Template used to init the group. Default is `self.template`.
+-- @param #number Delay (Optional) Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:_InitGroup(Template, Delay)
 
@@ -201227,7 +201231,7 @@ end
 
 --- Find the nearest friendly airbase (same or neutral coalition).
 -- @param #FLIGHTGROUP self
--- @param #number Radius Search radius in NM. Default 50 NM.
+-- @param #number Radius (Optional) Search radius in NM. Default 50 NM.
 -- @return Wrapper.Airbase#AIRBASE Closest tanker group #nil.
 function FLIGHTGROUP:FindNearestAirbase(Radius)
 
@@ -201262,7 +201266,7 @@ end
 
 --- Find the nearest tanker.
 -- @param #FLIGHTGROUP self
--- @param #number Radius Search radius in NM. Default 50 NM.
+-- @param #number Radius (Optional) Search radius in NM. Default 50 NM.
 -- @return Wrapper.Group#GROUP Closest tanker group or `nil` if no tanker is in the given radius.
 function FLIGHTGROUP:FindNearestTanker(Radius)
 
@@ -201413,7 +201417,7 @@ end
 
 --- Check if the final waypoint is in the air.
 -- @param #FLIGHTGROUP self
--- @param #table wp Waypoint. Default final waypoint.
+-- @param #table wp (Optional) Waypoint. Default final waypoint.
 -- @return #boolean If `true` final waypoint is a turning or flyover but not a landing type waypoint.
 function FLIGHTGROUP:IsLandingAir(wp)
 
@@ -201434,7 +201438,7 @@ end
 
 --- Check if the final waypoint is at an airbase.
 -- @param #FLIGHTGROUP self
--- @param #table wp Waypoint. Default final waypoint.
+-- @param #table wp (Optional) Waypoint. Default final waypoint.
 -- @return #boolean If `true`, final waypoint is a landing waypoint at an airbase.
 function FLIGHTGROUP:IsLandingAirbase(wp)
 
@@ -201457,10 +201461,10 @@ end
 --- Add an AIR waypoint to the flight plan.
 -- @param #FLIGHTGROUP self
 -- @param Core.Point#COORDINATE Coordinate The coordinate of the waypoint. Use COORDINATE:SetAltitude(altitude) to define the altitude.
--- @param #number Speed Speed in knots. Default is cruise speed.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #number Altitude Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default is cruise speed.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #number Altitude (Optional) Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function FLIGHTGROUP:AddWaypoint(Coordinate, Speed, AfterWaypointWithID, Altitude, Updateroute)
 
@@ -201510,10 +201514,10 @@ end
 --- Add an LANDING waypoint to the flight plan.
 -- @param #FLIGHTGROUP self
 -- @param Wrapper.Airbase#AIRBASE Airbase The airbase where the group should land.
--- @param #number Speed Speed in knots. Default 350 kts.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #number Altitude Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default 350 kts.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #number Altitude (Optional) Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function FLIGHTGROUP:AddWaypointLanding(Airbase, Speed, AfterWaypointWithID, Altitude, Updateroute)
 
@@ -201728,7 +201732,7 @@ end
 --- Returns the parking spot of the element.
 -- @param #FLIGHTGROUP self
 -- @param Ops.OpsGroup#OPSGROUP.Element element Element of the flight group.
--- @param #number maxdist Distance threshold in meters. Default 5 m.
+-- @param #number maxdist (Optional) Distance threshold in meters. Default 5 m.
 -- @param Wrapper.Airbase#AIRBASE airbase (Optional) The airbase to check for parking. Default is closest airbase to the element.
 -- @return Wrapper.Airbase#AIRBASE.ParkingSpot Parking spot or nil if no spot is within distance threshold.
 function FLIGHTGROUP:GetParkingSpot(element, maxdist, airbase)
@@ -202603,7 +202607,7 @@ FLOTILLA.version="0.1.0"
 --- Create a new FLOTILLA object and start the FSM.
 -- @param #FLOTILLA self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this flotilla. Default 3.
+-- @param #number Ngroups (Optional) Number of asset groups of this flotilla. Default 3.
 -- @param #string FlotillaName Name of the flotilla. Must be **unique**!
 -- @return #FLOTILLA self
 function FLOTILLA:New(TemplateGroupName, Ngroups, FlotillaName)
@@ -203133,8 +203137,8 @@ end
 
 --- Set to accept accoustic detection.
 -- @param #INTEL self
--- @param #number Radius Radius in which we can "hear" units. Defaults to 1000 meters.
--- @param #table UnitCategories Set what Unit Categories we can "hear". Defaults to `{Unit.Category.GROUND_UNIT,Unit.Category.HELICOPTER}`
+-- @param #number Radius (Optional) Radius in which we can "hear" units. Defaults to 1000 meters.
+-- @param #table UnitCategories(Optional)  Set what Unit Categories we can "hear". Defaults to `{Unit.Category.GROUND_UNIT,Unit.Category.HELICOPTER}`
 -- @return #INTEL self
 function INTEL:SetAccousticDetectionOn(Radius,UnitCategories)
   self.DetectAccoustic = true
@@ -203294,7 +203298,7 @@ end
 -- Previously known contacts that are not detected any more, are "lost" after this time.
 -- This avoids fast oscillations between a contact being detected and undetected.
 -- @param #INTEL self
--- @param #number TimeInterval Time interval in seconds. Default is 120 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds. Default is 120 sec.
 -- @return #INTEL self
 function INTEL:SetForgetTime(TimeInterval)
   return self
@@ -203329,10 +203333,10 @@ end
 
 --- Method to make the radar detection less accurate, e.g. for WWII scenarios.
 -- @param #INTEL self
--- @param #number minheight Minimum flight height to be detected, in meters AGL (above ground)
--- @param #number thresheight Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
--- @param #number thresblur Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
--- @param #number closing Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
+-- @param #number minheight (Optional) Minimum flight height to be detected, in meters AGL (above ground). Defaults to 250m.
+-- @param #number thresheight (Optional) Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
+-- @param #number thresblur (Optional) Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
+-- @param #number closing (Optional) Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
 -- @return #INTEL self
 function INTEL:SetRadarBlur(minheight,thresheight,thresblur,closing)
   self.RadarBlur = true
@@ -203459,7 +203463,7 @@ end
 
 --- Change radius of the Clusters.
 -- @param #INTEL self
--- @param #number radius The radius of the clusters in kilometers. Default 15 km.
+-- @param #number radius (Optional) The radius of the clusters in kilometers. Default 15 km.
 -- @return #INTEL self
 function INTEL:SetClusterRadius(radius)
   self.clusterradius = (radius or 15)*1000
@@ -204167,7 +204171,7 @@ end
 -- @param #INTEL self
 -- @param Wrapper.Positionable#POSITIONABLE Positionable Group or static object.
 -- @param #string RecceName Name of the recce group that detected this object.
--- @param #number Tdetected Abs. mission time in seconds, when the object is detected. Default now.
+-- @param #number Tdetected (Optional) Abs. mission time in seconds, when the object is detected. Default now.
 -- @return #INTEL self
 function INTEL:KnowObject(Positionable, RecceName, Tdetected)
 
@@ -204738,7 +204742,7 @@ end
 --- Calculate cluster future position after given seconds.
 -- @param #INTEL self
 -- @param #INTEL.Cluster cluster The cluster of contacts.
--- @param #number seconds Time interval in seconds. Default is `self.prediction`.
+-- @param #number seconds (Optional) Time interval in seconds. Default is `self.prediction`.
 -- @return Core.Point#COORDINATE Calculated future position of the cluster.
 function INTEL:CalcClusterFuturePosition(cluster, seconds)
 
@@ -204980,7 +204984,7 @@ end
 --- Get the coordinate of a cluster.
 -- @param #INTEL self
 -- @param #INTEL.Cluster Cluster The cluster.
--- @param #boolean Update If `true`, update the coordinate. Default is to just return the last stored position.
+-- @param #boolean Update (Optional) If `true`, update the coordinate. Default is to just return the last stored position.
 -- @return Core.Point#COORDINATE The coordinate of this cluster.
 function INTEL:GetClusterCoordinate(Cluster, Update)
 
@@ -205031,8 +205035,8 @@ end
 --- Check if the coordindate of the cluster changed.
 -- @param #INTEL self
 -- @param #INTEL.Cluster Cluster The cluster.
--- @param #number Threshold in meters. Default 100 m.
--- @param Core.Point#COORDINATE Coordinate Reference coordinate. Default is the last known coordinate of the cluster.
+-- @param #number (Optional) Threshold in meters. Default 100 m.
+-- @param Core.Point#COORDINATE Coordinate (Optional) Reference coordinate. Default is the last known coordinate of the cluster.
 -- @return #boolean If `true`, the coordinate changed by more than the given threshold.
 function INTEL:_CheckClusterCoordinateChanged(Cluster, Coordinate, Threshold)
 
@@ -205363,7 +205367,7 @@ end
 
   --- Function to set how long INTEL DLINK remembers contacts.
   -- @param #INTEL_DLINK self
-  -- @param #number seconds Remember this many seconds. Defaults to 180.
+  -- @param #number seconds (Optional) Remember this many seconds. Defaults to 120.
   -- @return #INTEL_DLINK self
   function INTEL_DLINK:SetDLinkCacheTime(seconds)
     self.cachetime = math.abs(seconds or 120)
@@ -205806,7 +205810,7 @@ end
 
 --- Set verbosity level.
 -- @param #LEGION self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #LEGION self
 function LEGION:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -205958,10 +205962,10 @@ end
 -- @param #LEGION self
 -- @param Ops.Cohort#COHORT Cohort The cohort to be relocated.
 -- @param Ops.Legion#LEGION Legion The legion where the cohort is relocated to.
--- @param #number Delay Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
--- @param #number NcarriersMin Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
+-- @param #number Delay (Optional) Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
+-- @param #number NcarriersMin (Optional) Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
 -- @param #number NcarriersMax Max number of transport carriers.
--- @param #table TransportLegions Legion(s) assigned for transportation. Default is that transport assets can only be recruited from this legion.
+-- @param #table TransportLegions (Optional) Legion(s) assigned for transportation. Default is that transport assets can only be recruited from this legion.
 -- @return #LEGION self
 function LEGION:RelocateCohort(Cohort, Legion, Delay, NcarriersMin, NcarriersMax, TransportLegions)
 
@@ -207417,7 +207421,7 @@ end
 --- Check if an asset is currently on a mission (STARTED or EXECUTING).
 -- @param #LEGION self
 -- @param Functional.Warehouse#WAREHOUSE.Assetitem asset The asset.
--- @param #table MissionTypes Types on mission to be checked. Default all.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
 -- @return #boolean If true, asset has at least one mission of that type in the queue.
 function LEGION:IsAssetOnMission(asset, MissionTypes)
 
@@ -207470,7 +207474,7 @@ end
 
 --- Count payloads in stock.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
 -- @param #table UnitTypes Types of units.
 -- @param #table Payloads Specific payloads to be counted only.
 -- @return #number Count of available payloads in stock.
@@ -207546,7 +207550,7 @@ end
 
 --- Count missions in mission queue.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
 -- @param #boolean OnlyRunning If `true`, only count running missions.
 -- @return #number Number of missions that are not over yet.
 function LEGION:CountMissionsInQueue(MissionTypes, OnlyRunning)
@@ -207661,8 +207665,8 @@ end
 
 --- Count assets on mission.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default all.
--- @param Ops.Cohort#COHORT Cohort Only count assets of this cohort. Default count assets of all cohorts.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
+-- @param Ops.Cohort#COHORT Cohort (Optional) Only count assets of this cohort. Default count assets of all cohorts.
 -- @return #number Number of pending and queued assets.
 -- @return #number Number of pending assets.
 -- @return #number Number of queued assets.
@@ -207705,7 +207709,7 @@ end
 
 --- Get assets on mission.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default all.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
 -- @return #table Assets on pending requests.
 function LEGION:GetAssetsOnMission(MissionTypes)
 
@@ -207738,7 +207742,7 @@ end
 --- Get the unit types of this legion. These are the unit types of all assigned cohorts.
 -- @param #LEGION self
 -- @param #boolean onlyactive Count only the active ones.
--- @param #table cohorts Table of cohorts. Default all.
+-- @param #table cohorts (Optional) Table of cohorts. Default all.
 -- @return #table Table of unit types.
 function LEGION:GetAircraftTypes(onlyactive, cohorts)
 
@@ -208279,7 +208283,7 @@ end
 --- Recruit assets from Cohorts for the given parameters. **NOTE** that we set the `asset.isReserved=true` flag so it cannot be recruited by anyone else.
 -- @param #table Cohorts Cohorts included.
 -- @param #string MissionTypeRecruit Mission type for recruiting the cohort assets.
--- @param #string MissionTypeOpt Mission type for which the assets are optimized. Default is the same as `MissionTypeRecruit`.
+-- @param #string MissionTypeOpt (Optional) Mission type for which the assets are optimized. Default is the same as `MissionTypeRecruit`.
 -- @param #number NreqMin Minimum number of required assets.
 -- @param #number NreqMax Maximum number of required assets.
 -- @param DCS#Vec2 TargetVec2 Target position as 2D vector.
@@ -209408,7 +209412,7 @@ end
 --- Enable/disable pathfinding.
 -- @param #NAVYGROUP self
 -- @param #boolean Switch If true, enable pathfinding.
--- @param #number CorridorWidth Corridor with in meters. Default 400 m.
+-- @param #number CorridorWidth (Optional) Corridor with in meters. Default 400 m.
 -- @return #NAVYGROUP self
 function NAVYGROUP:SetPathfinding(Switch, CorridorWidth)
   self.pathfindingOn=Switch
@@ -209418,7 +209422,7 @@ end
 
 --- Enable pathfinding.
 -- @param #NAVYGROUP self
--- @param #number CorridorWidth Corridor with in meters. Default 400 m.
+-- @param #number CorridorWidth (Optional) Corridor with in meters. Default 400 m.
 -- @return #NAVYGROUP self
 function NAVYGROUP:SetPathfindingOn(CorridorWidth)
   self:SetPathfinding(true, CorridorWidth)
@@ -209450,9 +209454,9 @@ end
 -- @param #NAVYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
 -- @param #string Clock Time when to start the attack.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
 -- @param #number Prio Priority of the task.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task data.
 function NAVYGROUP:AddTaskFireAtPoint(Coordinate, Clock, Radius, Nshots, WeaponType, Prio)
@@ -209467,12 +209471,12 @@ end
 --- Add a *waypoint* task.
 -- @param #NAVYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
--- @param Ops.OpsGroup#OPSGROUP.Waypoint Waypoint Where the task is executed. Default is next waypoint.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
--- @param #number Duration Duration in seconds after which the task is cancelled. Default *never*.
+-- @param Ops.OpsGroup#OPSGROUP.Waypoint (Optional) Waypoint Where the task is executed. Default is next waypoint.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
+-- @param #number Duration (Optional) Duration in seconds after which the task is cancelled. Default *never*.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function NAVYGROUP:AddTaskWaypointFireAtPoint(Coordinate, Waypoint, Radius, Nshots, WeaponType, Prio, Duration)
 
@@ -209489,10 +209493,10 @@ end
 --- Add a *scheduled* task.
 -- @param #NAVYGROUP self
 -- @param Wrapper.Group#GROUP TargetGroup Target group.
--- @param #number WeaponExpend How much weapons does are used.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #string Clock Time when to start the attack.
--- @param #number Prio Priority of the task.
+-- @param #number WeaponExpend (Optional) How much weapons does are used.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #string Clock (Optional) Time when to start the attack.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task data.
 function NAVYGROUP:AddTaskAttackGroup(TargetGroup, WeaponExpend, WeaponType, Clock, Prio)
 
@@ -209505,11 +209509,11 @@ end
 
 --- Create a turn into wind window. Note that this is not executed as it not added to the queue.
 -- @param #NAVYGROUP self
--- @param #string starttime Start time, e.g. "8:00" for eight o'clock. Default now.
--- @param #string stoptime Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
--- @param #number speed Speed in knots during turn into wind leg.
--- @param #boolean uturn If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
--- @param #number offset Offset angle in degrees, e.g. to account for an angled runway. Default 0 deg.
+-- @param #string starttime (Optional) Start time, e.g. "8:00" for eight o'clock. Default now.
+-- @param #string stoptime (Optional) Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
+-- @param #number speed (Optional) Speed in knots during turn into wind leg. Defaults to 20.
+-- @param #boolean uturn (Optional) If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
+-- @param #number offset (Optional) Offset angle in degrees, e.g. to account for an angled runway. Default 0 deg.
 -- @return #NAVYGROUP.IntoWind Recovery window.
 function NAVYGROUP:_CreateTurnIntoWind(starttime, stoptime, speed, uturn, offset)
 
@@ -209572,11 +209576,11 @@ end
 
 --- Add a time window, where the groups steams into the wind.
 -- @param #NAVYGROUP self
--- @param #string starttime Start time, e.g. "8:00" for eight o'clock. Default now.
--- @param #string stoptime Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
--- @param #number speed Wind speed on deck in knots during turn into wind leg. Default 20 knots.
--- @param #boolean uturn If `true` (or `nil`), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
--- @param #number offset Offset angle clock-wise in degrees, *e.g.* to account for an angled runway. Default 0 deg. Use around -9.1° for US carriers.
+-- @param #string starttime (Optional) Start time, e.g. "8:00" for eight o'clock. Default now.
+-- @param #string stoptime (Optional) Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
+-- @param #number speed (Optional) Wind speed on deck in knots during turn into wind leg. Default 20 knots.
+-- @param #boolean uturn (Optional) If `true` (or `nil`), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
+-- @param #number offset (Optional) Offset angle clock-wise in degrees, *e.g.* to account for an angled runway. Default 0 deg. Use around -9.1° for US carriers.
 -- @return #NAVYGROUP.IntoWind Turn into window data table.
 function NAVYGROUP:AddTurnIntoWind(starttime, stoptime, speed, uturn, offset)
 
@@ -209618,7 +209622,7 @@ end
 
 --- Extend duration of turn into wind.
 -- @param #NAVYGROUP self
--- @param #number Duration Duration in seconds. Default 300 sec.
+-- @param #number Duration (Optional) Duration in seconds. Default 300 sec.
 -- @param #NAVYGROUP.IntoWind TurnIntoWind (Optional) Turn into window data table. If not given, the currently open one is used (if there is any).
 -- @return #NAVYGROUP self
 function NAVYGROUP:ExtendTurnIntoWind(Duration, TurnIntoWind)
@@ -210806,10 +210810,10 @@ end
 --- Add an a waypoint to the route.
 -- @param #NAVYGROUP self
 -- @param Core.Point#COORDINATE Coordinate The coordinate of the waypoint. Use `COORDINATE:SetAltitude()` to define the altitude.
--- @param #number Speed Speed in knots. Default is default cruise speed or 70% of max speed.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #number Depth Depth at waypoint in feet. Only for submarines.
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default is default cruise speed or 70% of max speed.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #number Depth (Optional) Depth at waypoint in feet. Only for submarines.
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function NAVYGROUP:AddWaypoint(Coordinate, Speed, AfterWaypointWithID, Depth, Updateroute)
 
@@ -210849,8 +210853,8 @@ end
 
 --- Initialize group parameters. Also initializes waypoints if self.waypoints is nil.
 -- @param #NAVYGROUP self
--- @param #table Template Template used to init the group. Default is `self.template`.
--- @param #number Delay Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous. 
+-- @param #table Template (Optional) Template used to init the group. Default is `self.template`.
+-- @param #number Delay (Optional) Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous. 
 -- @return #NAVYGROUP self
 function NAVYGROUP:_InitGroup(Template, Delay)
 
@@ -210955,7 +210959,7 @@ end
 
 --- Check for possible collisions between two coordinates.
 -- @param #NAVYGROUP self
--- @param #number DistanceMax Max distance in meters ahead to check. Default 5000.
+-- @param #number DistanceMax (Optional) Max distance in meters ahead to check. Default 5000.
 -- @param #number dx
 -- @return #number Free distance in meters.
 function NAVYGROUP:_CheckFreePath(DistanceMax, dx)
@@ -211141,7 +211145,7 @@ end
 
 --- Get wind direction and speed at current position.
 -- @param #NAVYGROUP self
--- @param #number Altitude Altitude in meters above main sea level at which the wind is calculated. Default 18 meters.
+-- @param #number Altitude (Optional) Altitude in meters above main sea level at which the wind is calculated. Default 18 meters.
 -- @return #number Direction the wind is blowing **from** in degrees.
 -- @return #number Wind speed in m/s.
 function NAVYGROUP:GetWind(Altitude)
@@ -211575,7 +211579,7 @@ OPERATION.version="0.2.0"
 
 --- Create a new generic OPERATION object.
 -- @param #OPERATION self
--- @param #string Name Name of the operation. Be creative! Default "Operation-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the operation. Be creative! Default "Operation-01" where the last number is a running number.
 -- @return #OPERATION self
 function OPERATION:New(Name)
 
@@ -211779,7 +211783,7 @@ end
 
 --- Set verbosity level.
 -- @param #OPERATION self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #OPERATION self
 function OPERATION:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -211788,7 +211792,7 @@ end
 
 --- Set start and stop time of the operation.
 -- @param #OPERATION self
--- @param #string ClockStart Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
+-- @param #string ClockStart (Optional) Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
 -- @param #string ClockStop (Optional) Time the mission is stopped, e.g. "13:00" for 1 pm. If mission could not be started at that time, it will be removed from the queue. If specified as a #number it will be relative (in seconds) to the current mission time.
 -- @return #OPERATION self
 function OPERATION:SetTime(ClockStart, ClockStop)
@@ -211845,9 +211849,9 @@ end
 
 --- Add a new phase to the operation. This is added add the end of all previously added phases (if any).
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
--- @param #OPERATION.Branch Branch The branch to which this phase is added. Default is the master branch.
--- @param #number Duration Duration in seconds how long the phase will last. Default `nil`=forever.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #OPERATION.Branch Branch (Optional) The branch to which this phase is added. Default is the master branch.
+-- @param #number Duration (Optional) Duration in seconds how long the phase will last. Default `nil`=forever.
 -- @return #OPERATION.Phase Phase table object.
 function OPERATION:AddPhase(Name, Branch, Duration)
 
@@ -211875,7 +211879,7 @@ end
 ---Insert a new phase after an already defined phase of the operation.
 -- @param #OPERATION self
 -- @param #OPERATION.Phase PhaseAfter The phase after which the new phase is inserted.
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Phase Phase table object.
 function OPERATION:InsertPhaseAfter(PhaseAfter, Name)
 
@@ -211902,7 +211906,7 @@ end
 
 --- Get a phase by its name.
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Phase Phase table object or nil if phase could not be found.
 function OPERATION:GetPhaseByName(Name)
 
@@ -212040,7 +212044,7 @@ end
 
 --- Get name of a phase.
 -- @param #OPERATION self
--- @param #OPERATION.Phase Phase The phase of which the name is returned. Default is the currently active phase.
+-- @param #OPERATION.Phase Phase (Optional) The phase of which the name is returned. Default is the currently active phase.
 -- @return #string The name of the phase or "None" if no phase is given or active.
 function OPERATION:GetPhaseName(Phase)
 
@@ -212182,7 +212186,7 @@ end
 
 --- Get name of the branch.
 -- @param #OPERATION self
--- @param #OPERATION.Branch Branch The branch of which the name is requested. Default is the currently active or master branch.
+-- @param #OPERATION.Branch (Optional) Branch The branch of which the name is requested. Default is the currently active or master branch.
 -- @return #string Name Name or "None"
 function OPERATION:GetBranchName(Branch)
   Branch=Branch or self:GetBranchActive()
@@ -212766,7 +212770,7 @@ end
 
 --- Create a new phase object.
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Phase Phase table object.
 function OPERATION:_CreatePhase(Name)
 
@@ -212786,7 +212790,7 @@ end
 
 --- Create a new branch object.
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Branch Branch table object.
 function OPERATION:_CreateBranch(Name)
 
@@ -213823,7 +213827,7 @@ end
 
 --- Set verbosity level.
 -- @param #OPSGROUP self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #OPSGROUP self
 function OPSGROUP:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -213875,7 +213879,7 @@ end
 
 --- Set default cruise altitude.
 -- @param #OPSGROUP self
--- @param #number Altitude Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
+-- @param #number Altitude (Optional) Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultAltitude(Altitude)
   if Altitude then
@@ -213904,7 +213908,7 @@ end
 
 --- Set current altitude.
 -- @param #OPSGROUP self
--- @param #number Altitude Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
+-- @param #number Altitude (Optional) Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
 -- @param #boolean Keep If `true` the group will maintain that speed on passing waypoints. If `nil` or `false` the group will return to the speed as defined by their route.
 -- @return #OPSGROUP self
 function OPSGROUP:SetAltitude(Altitude, Keep, RadarAlt)
@@ -213954,7 +213958,7 @@ end
 
 --- Set current speed.
 -- @param #OPSGROUP self
--- @param #number Speed Speed in knots. Default is 70% of max speed.
+-- @param #number Speed (Optional) Speed in knots. Default is 70% of max speed.
 -- @param #boolean Keep If `true` the group will maintain that speed on passing waypoints. If `nil` or `false` the group will return to the speed as defined by their route.
 -- @param #boolean AltCorrected If `true`, use altitude corrected indicated air speed.
 -- @return #OPSGROUP self
@@ -213983,7 +213987,7 @@ end
 --- Set detection on or off.
 -- If detection is on, detected targets of the group will be evaluated and FSM events triggered.
 -- @param #OPSGROUP self
--- @param #boolean Switch If `true`, detection is on. If `false` or `nil`, detection is off. Default is off.
+-- @param #boolean Switch (Optional) If `true`, detection is on. If `false` or `nil`, detection is off. Default is off.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDetection(Switch)
   self:T(self.lid..string.format("Detection is %s", tostring(Switch)))
@@ -214142,7 +214146,7 @@ end
 -- @param Core.Point#COORDINATE TargetCoord Coordinate of the target.
 -- @param #number WeaponBitType Weapon type.
 -- @param Core.Point#COORDINATE RefCoord Reference coordinate.
--- @param #table SurfaceTypes Valid surfaces types of the coordinate. Default any (nil).
+-- @param #table SurfaceTypes (Optional) Valid surfaces types of the coordinate. Default any (nil).
 -- @return Core.Point#COORDINATE Coordinate in weapon range
 function OPSGROUP:GetCoordinateInRange(TargetCoord, WeaponBitType, RefCoord, SurfaceTypes)
 
@@ -214218,10 +214222,10 @@ end
 
 --- Set LASER parameters.
 -- @param #OPSGROUP self
--- @param #number Code Laser code. Default 1688.
--- @param #boolean CheckLOS Check if lasing unit has line of sight to target coordinate. Default is `true`.
+-- @param #number Code (Optional) Laser code. Default 1688.
+-- @param #boolean CheckLOS (Optional) Check if lasing unit has line of sight to target coordinate. Default is `true`.
 -- @param #boolean IROff If true, then dont switch on the additional IR pointer.
--- @param #number UpdateTime Time interval in seconds the beam gets up for moving targets. Default every 0.5 sec.
+-- @param #number UpdateTime (Optional) Time interval in seconds the beam gets up for moving targets. Default every 0.5 sec.
 -- @return #OPSGROUP self
 function OPSGROUP:SetLaser(Code, CheckLOS, IROff, UpdateTime)
   self.spot.Code=Code or 1688
@@ -214280,10 +214284,10 @@ end
 
 --- Add a weapon range for ARTY auftrag.
 -- @param #OPSGROUP self
--- @param #number RangeMin Minimum range in nautical miles. Default 0 NM.
--- @param #number RangeMax Maximum range in nautical miles. Default 10 NM.
--- @param #number BitType Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
--- @param #function ConversionToMeters Function that converts input units of ranges to meters. Defaul `UTILS.NMToMeters`.
+-- @param #number RangeMin (Optional) Minimum range in nautical miles. Default 0 NM.
+-- @param #number RangeMax (Optional) Maximum range in nautical miles. Default 10 NM.
+-- @param #number BitType (Optional) Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
+-- @param #function ConversionToMeters (Optional) Function that converts input units of ranges to meters. Defaul `UTILS.NMToMeters`.
 -- @return #OPSGROUP self
 function OPSGROUP:AddWeaponRange(RangeMin, RangeMax, BitType, ConversionToMeters)
 
@@ -214343,8 +214347,8 @@ end
 
 --- Get highest detected threat. Detection must be turned on. The threat level is a number between 0 and 10, where 0 is the lowest, e.g. unarmed units.
 -- @param #OPSGROUP self
--- @param #number ThreatLevelMin Only consider threats with level greater or equal to this number. Default 1 (so unarmed units wont be considered).
--- @param #number ThreatLevelMax Only consider threats with level smaller or queal to this number. Default 10.
+-- @param #number ThreatLevelMin (Optional) Only consider threats with level greater or equal to this number. Default 1 (so unarmed units wont be considered).
+-- @param #number ThreatLevelMax (Optional) Only consider threats with level smaller or queal to this number. Default 10.
 -- @return Wrapper.Unit#UNIT Highest threat unit detected by the group or `nil` if no threat is currently detected.
 -- @return #number Threat level.
 function OPSGROUP:GetThreat(ThreatLevelMin, ThreatLevelMax)
@@ -214400,10 +214404,10 @@ end
 
 --- Enable to automatically engage detected targets.
 -- @param #OPSGROUP self
--- @param #number RangeMax Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
--- @param #table TargetTypes Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
--- @param Core.Set#SET_ZONE EngageZoneSet Set of zones in which targets are engaged. Default is anywhere.
--- @param Core.Set#SET_ZONE NoEngageZoneSet Set of zones in which targets are *not* engaged. Default is nowhere.
+-- @param #number RangeMax (Optional) Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
+-- @param #table TargetTypes (Optional) Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
+-- @param Core.Set#SET_ZONE EngageZoneSet (Optional) Set of zones in which targets are engaged. Default is anywhere.
+-- @param Core.Set#SET_ZONE NoEngageZoneSet (Optional) Set of zones in which targets are *not* engaged. Default is nowhere.
 -- @return #OPSGROUP self
 function OPSGROUP:SetEngageDetectedOn(RangeMax, TargetTypes, EngageZoneSet, NoEngageZoneSet)
 
@@ -214590,7 +214594,7 @@ end
 
 --- Get MOOSE UNIT object.
 -- @param #OPSGROUP self
--- @param #number UnitNumber Number of the unit in the group. Default first unit.
+-- @param #number UnitNumber (Optional) Number of the unit in the group. Default first unit.
 -- @return Wrapper.Unit#UNIT The MOOSE UNIT object.
 function OPSGROUP:GetUnit(UnitNumber)
 
@@ -214606,7 +214610,7 @@ end
 
 --- Get DCS GROUP object.
 -- @param #OPSGROUP self
--- @param #number UnitNumber Number of the unit in the group. Default first unit.
+-- @param #number UnitNumber (Optional) Number of the unit in the group. Default first unit.
 -- @return DCS#Unit DCS group object.
 function OPSGROUP:GetDCSUnit(UnitNumber)
 
@@ -214866,8 +214870,8 @@ end
 --- Despawn a unit of the group. A "Remove Unit" event is generated by default.
 -- @param #OPSGROUP self
 -- @param #string UnitName Name of the unit
--- @param #number Delay Delay in seconds before the group will be despawned. Default immediately.
--- @param #boolean NoEventRemoveUnit If true, no event "Remove Unit" is generated.
+-- @param #number Delay (Optional) Delay in seconds before the group will be despawned. Default immediately.
+-- @param #boolean NoEventRemoveUnit (Optional) If true, no event "Remove Unit" is generated.
 -- @return #OPSGROUP self
 function OPSGROUP:DespawnUnit(UnitName, Delay, NoEventRemoveUnit)
 
@@ -214903,8 +214907,8 @@ end
 --- Despawn an element/unit of the group.
 -- @param #OPSGROUP self
 -- @param #OPSGROUP.Element Element The element that will be despawned.
--- @param #number Delay Delay in seconds before the element will be despawned. Default immediately.
--- @param #boolean NoEventRemoveUnit If true, no event "Remove Unit" is generated.
+-- @param #number Delay (Optional) Delay in seconds before the element will be despawned. Default immediately.
+-- @param #boolean NoEventRemoveUnit (Optional) If true, no event "Remove Unit" is generated.
 -- @return #OPSGROUP self
 function OPSGROUP:DespawnElement(Element, Delay, NoEventRemoveUnit)
 
@@ -214940,7 +214944,7 @@ end
 -- If no `Remove Unit` event should be generated, the second optional parameter needs to be set to `true`.
 -- If this group belongs to an AIRWING, BRIGADE or FLEET, it will be added to the warehouse stock if the `NoEventRemoveUnit` parameter is `false` or `nil`.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the group will be despawned. Default immediately.
+-- @param #number Delay (Optional) Delay in seconds before the group will be despawned. Default immediately.
 -- @param #boolean NoEventRemoveUnit If `true`, **no** event "Remove Unit" is generated.
 -- @return #OPSGROUP self
 function OPSGROUP:Despawn(Delay, NoEventRemoveUnit)
@@ -214983,7 +214987,7 @@ end
 --- Return group back to the legion it belongs to.
 -- Group is despawned and added back to the stock.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the group will be despawned. Default immediately
+-- @param #number Delay (Optional) Delay in seconds before the group will be despawned. Default immediately
 -- @return #OPSGROUP self
 function OPSGROUP:ReturnToLegion(Delay)
 
@@ -215007,7 +215011,7 @@ end
 --- Destroy a unit of the group. A *Unit Lost* for aircraft or *Dead* event for ground/naval units is generated.
 -- @param #OPSGROUP self
 -- @param #string UnitName Name of the unit which should be destroyed.
--- @param #number Delay Delay in seconds before the group will be destroyed. Default immediately.
+-- @param #number Delay (Optional) Delay in seconds before the group will be destroyed. Default immediately.
 -- @return #OPSGROUP self
 function OPSGROUP:DestroyUnit(UnitName, Delay)
 
@@ -215039,7 +215043,7 @@ end
 
 --- Destroy group. The whole group is despawned and a *Unit Lost* for aircraft or *Dead* event for ground/naval units is generated for all current units.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the group will be destroyed. Default immediately.
+-- @param #number Delay (Optional) Delay in seconds before the group will be destroyed. Default immediately.
 -- @return #OPSGROUP self
 function OPSGROUP:Destroy(Delay)
 
@@ -215123,9 +215127,9 @@ end
 
 --- Self destruction of group. An explosion is created at the position of each element.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds. Default now.
+-- @param #number Delay (Optional) Delay in seconds. Default now.
 -- @param #number ExplosionPower (Optional) Explosion power in kg TNT. Default 100 kg.
--- @param #string ElementName Name of the element that should be destroyed. Default is all elements.
+-- @param #string ElementName (Optional) Name of the element that should be destroyed. Default is all elements.
 -- @return #OPSGROUP self
 function OPSGROUP:SelfDestruction(Delay, ExplosionPower, ElementName)
 
@@ -215155,13 +215159,13 @@ end
 --- Use SRS Simple-Text-To-Speech for transmissions.
 -- @param #OPSGROUP self
 -- @param #string PathToSRS Path to SRS directory.
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
--- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Port SRS port. Default 5002.
--- @param #string PathToGoogleKey Full path to the google credentials JSON file, e.g. `"C:\Users\myUsername\Downloads\key.json"`.
--- @param #string Label Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
--- @param #number Volume Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
+-- @param #string Voice (Optional) Specific voice. Overrides `Gender` and `Culture`.
+-- @param #number Port (Optional) SRS port. Default 5002.
+-- @param #string PathToGoogleKey (Optional) Full path to the google credentials JSON file, e.g. `"C:\Users\myUsername\Downloads\key.json"`.
+-- @param #string Label (Optional) Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
+-- @param #number Volume (Optional) Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
 -- @return #OPSGROUP self
 function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume)
   self.useSRS=true
@@ -215186,8 +215190,8 @@ end
 -- @param #OPSGROUP self
 -- @param #string Text Text of transmission.
 -- @param #number Delay Delay in seconds before the transmission is started.
--- @param #boolean SayCallsign If `true`, the callsign is prepended to the given text. Default `false`.
--- @param #number Frequency Override sender frequency, helpful when you need multiple radios from the same sender. Default is the frequency set for the OpsGroup.
+-- @param #boolean SayCallsign (Optional) If `true`, the callsign is prepended to the given text. Default `false`.
+-- @param #number Frequency (Optional) Override sender frequency, helpful when you need multiple radios from the same sender. Default is the frequency set for the OpsGroup.
 -- @return #OPSGROUP self
 function OPSGROUP:RadioTransmission(Text, Delay, SayCallsign, Frequency)
 
@@ -215228,8 +215232,8 @@ end
 
 --- Set that this carrier is an all aspect loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderAllAspect(Length, Width)
   self.carrierLoader.type="front"
@@ -215240,8 +215244,8 @@ end
 
 --- Set that this carrier is a front loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderFront(Length, Width)
   self.carrierLoader.type="front"
@@ -215252,8 +215256,8 @@ end
 
 --- Set that this carrier is a back loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderBack(Length, Width)
   self.carrierLoader.type="back"
@@ -215264,8 +215268,8 @@ end
 
 --- Set that this carrier is a starboard (right side) loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderStarboard(Length, Width)
   self.carrierLoader.type="right"
@@ -215276,8 +215280,8 @@ end
 
 --- Set that this carrier is a port (left side) loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderPort(Length, Width)
   self.carrierLoader.type="left"
@@ -215289,8 +215293,8 @@ end
 
 --- Set that this carrier is an all aspect unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderAllAspect(Length, Width)
   self.carrierUnloader.type="front"
@@ -215301,8 +215305,8 @@ end
 
 --- Set that this carrier is a front unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderFront(Length, Width)
   self.carrierUnloader.type="front"
@@ -215313,8 +215317,8 @@ end
 
 --- Set that this carrier is a back unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderBack(Length, Width)
   self.carrierUnloader.type="back"
@@ -215325,8 +215329,8 @@ end
 
 --- Set that this carrier is a starboard (right side) unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderStarboard(Length, Width)
   self.carrierUnloader.type="right"
@@ -215337,8 +215341,8 @@ end
 
 --- Set that this carrier is a port (left side) unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderPort(Length, Width)
   self.carrierUnloader.type="left"
@@ -215883,7 +215887,7 @@ end
 
 --- Mark waypoints on F10 map.
 -- @param #OPSGROUP self
--- @param #number Duration Duration in seconds how long the waypoints are displayed before they are automatically removed. Default is that they are never removed.
+-- @param #number Duration (Optional) Duration in seconds how long the waypoints are displayed before they are automatically removed. Default is that they are never removed.
 -- @return #OPSGROUP self
 function OPSGROUP:MarkWaypoints(Duration)
 
@@ -215913,7 +215917,7 @@ end
 
 --- Remove waypoints markers on the F10 map.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the markers are removed. Default is immediately.
+-- @param #number Delay (Optional) Delay in seconds before the markers are removed. Default is immediately.
 -- @return #OPSGROUP self
 function OPSGROUP:RemoveWaypointMarkers(Delay)
 
@@ -216003,8 +216007,8 @@ end
 
 --- Get next waypoint index.
 -- @param #OPSGROUP self
--- @param #boolean cyclic If `true`, return first waypoint if last waypoint was reached. Default is patrol ad infinitum value set.
--- @param #number i Waypoint index from which the next index is returned. Default is the last waypoint passed.
+-- @param #boolean cyclic (Optional) If `true`, return first waypoint if last waypoint was reached. Default is patrol ad infinitum value set.
+-- @param #number i (Optional) Waypoint index from which the next index is returned. Default is the last waypoint passed.
 -- @return #number Next waypoint index.
 function OPSGROUP:GetWaypointIndexNext(cyclic, i)
 
@@ -216039,7 +216043,7 @@ end
 
 --- Get waypoint index after waypoint with given ID. So if the waypoint has index 3 it will return 4.
 -- @param #OPSGROUP self
--- @param #number uid Unique ID of the waypoint. Default is new waypoint index after the last current one.
+-- @param #number uid (Optional) Unique ID of the waypoint. Default is new waypoint index after the last current one.
 -- @return #number Index after waypoint with given ID.
 function OPSGROUP:GetWaypointIndexAfterID(uid)
 
@@ -216176,7 +216180,7 @@ end
 
 --- Get distance to waypoint.
 -- @param #OPSGROUP self
--- @param #number indx Waypoint index. Default is the next waypoint.
+-- @param #number indx (Optional) Waypoint index. Default is the next waypoint.
 -- @return #number Distance in meters.
 function OPSGROUP:GetDistanceToWaypoint(indx)
   local dist=0
@@ -216201,7 +216205,7 @@ end
 
 --- Get time to waypoint based on current velocity.
 -- @param #OPSGROUP self
--- @param #number indx Waypoint index. Default is the next waypoint.
+-- @param #number indx (Optional) Waypoint index. Default is the next waypoint.
 -- @return #number Time in seconds. If velocity is 0
 function OPSGROUP:GetTimeToWaypoint(indx)
 
@@ -216654,10 +216658,10 @@ end
 --- Add a *scheduled* task.
 -- @param #OPSGROUP self
 -- @param #table task DCS task table structure.
--- @param #string clock Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
+-- @param #string clock (Optional) Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
 -- @param #string description Brief text describing the task, e.g. "Attack SAM".
--- @param #number prio Priority of the task.
--- @param #number duration Duration before task is cancelled in seconds counted after task started. Default never.
+-- @param #number prio (Optional) Priority of the task. Default is 50.
+-- @param #number duration (Optional) Duration before task is cancelled in seconds counted after task started. Default never.
 -- @return #OPSGROUP.Task The task structure.
 function OPSGROUP:AddTask(task, clock, description, prio, duration)
 
@@ -216676,10 +216680,10 @@ end
 --- Create a *scheduled* task.
 -- @param #OPSGROUP self
 -- @param #table task DCS task table structure.
--- @param #string clock Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
+-- @param #string clock (Optional) Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
 -- @param #string description Brief text describing the task, e.g. "Attack SAM".
--- @param #number prio Priority of the task.
--- @param #number duration Duration before task is cancelled in seconds counted after task started. Default never.
+-- @param #number prio (Optional) Priority of the task. Default is 50.
+-- @param #number duration (Optional) Duration before task is cancelled in seconds counted after task started. Default never.
 -- @return #OPSGROUP.Task The task structure.
 function OPSGROUP:NewTaskScheduled(task, clock, description, prio, duration)
 
@@ -216716,10 +216720,10 @@ end
 --- Add a *waypoint* task.
 -- @param #OPSGROUP self
 -- @param #table task DCS task table structure.
--- @param #OPSGROUP.Waypoint Waypoint where the task is executed. Default is the at *next* waypoint.
+-- @param #OPSGROUP.Waypoint Waypoint (Optional) where the task is executed. Default is the at *next* waypoint.
 -- @param #string description Brief text describing the task, e.g. "Attack SAM".
--- @param #number prio Priority of the task. Number between 1 and 100. Default is 50.
--- @param #number duration Duration before task is cancelled in seconds counted after task started. Default never.
+-- @param #number prio (Optional) Priority of the task. Number between 1 and 100. Default is 50.
+-- @param #number duration(Optional)  Duration before task is cancelled in seconds counted after task started. Default never.
 -- @return #OPSGROUP.Task The task structure.
 function OPSGROUP:AddTaskWaypoint(task, Waypoint, description, prio, duration)
 
@@ -217649,8 +217653,8 @@ end
 -- @param #OPSGROUP self
 -- @param DCS#Task DCSTask The DCS task.
 -- @param Ops.OpsGroup#OPSGROUP.Task Task
--- @param #boolean SetTask Set task instead of pushing it.
--- @param #number Delay Delay in seconds. Default nil.
+-- @param #boolean SetTask (Optional) Set task instead of pushing it. Default is to push it.
+-- @param #number Delay (Optional) Delay in seconds. Default nil.
 function OPSGROUP:_SandwitchDCSTask(DCSTask, Task, SetTask, Delay)
 
   if Delay and Delay>0 then
@@ -217703,7 +217707,7 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #OPSGROUP.Task Task The task to cancel. Default is the current task (if any).
+-- @param #OPSGROUP.Task Task (Optional) The task to cancel. Default is the current task (if any).
 function OPSGROUP:onafterTaskCancel(From, Event, To, Task)
 
   -- Get current task.
@@ -220579,8 +220583,8 @@ end
 --- Teleport the group to a different location.
 -- @param #OPSGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate where the group is teleported to.
--- @param #number Delay Delay in seconds before respawn happens. Default 0.
--- @param #boolean NoPauseMission If `true`, dont pause a running mission.
+-- @param #number Delay (Optional) Delay in seconds before respawn happens. Default 0.
+-- @param #boolean NoPauseMission (Optional) If `true`, dont pause a running mission.
 -- @return #OPSGROUP self
 function OPSGROUP:Teleport(Coordinate, Delay, NoPauseMission)
     
@@ -220668,9 +220672,9 @@ end
 
 --- Respawn the group.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before respawn happens. Default 0.
--- @param DCS#Template Template (optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
--- @param #boolean Reset Reset waypoints and reinit group if `true`.
+-- @param #number Delay (Optional) Delay in seconds before respawn happens. Default 0.
+-- @param DCS#Template Template (Optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
+-- @param #boolean Reset (Optional) Reset waypoints and reinit group if `true`.
 -- @return #OPSGROUP self
 function OPSGROUP:_Respawn(Delay, Template, Reset)
 
@@ -220763,8 +220767,8 @@ end
 
 --- Spawn group from a given template.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before respawn happens. Default 0.
--- @param DCS#Template Template (optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
+-- @param #number Delay (Optional) Delay in seconds before respawn happens. Default 0.
+-- @param DCS#Template Template (Optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
 -- @return #OPSGROUP self
 function OPSGROUP:_Spawn(Delay, Template)
   if Delay and Delay>0 then
@@ -221767,8 +221771,8 @@ end
 
 --- Get total weight of the group including cargo. Optionally, the total weight of a specific unit can be requested.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Total weight in kg.
 function OPSGROUP:GetWeightTotal(UnitName, IncludeReserved)
 
@@ -221803,8 +221807,8 @@ end
 
 --- Get free cargo bay weight.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Free cargo bay in kg.
 function OPSGROUP:GetFreeCargobay(UnitName, IncludeReserved)
 
@@ -221825,8 +221829,8 @@ end
 
 --- Get relative free cargo bay in percent.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Free cargo bay in percent.
 function OPSGROUP:GetFreeCargobayRelative(UnitName, IncludeReserved)
 
@@ -221841,8 +221845,8 @@ end
 
 --- Get relative used (loaded) cargo bay in percent.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Used cargo bay in percent.
 function OPSGROUP:GetUsedCargobayRelative(UnitName, IncludeReserved)
   local free=self:GetFreeCargobayRelative(UnitName, IncludeReserved)
@@ -221882,8 +221886,8 @@ end
 
 --- Get weight of the internal cargo the group is carriing right now.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Cargo weight in kg.
 function OPSGROUP:GetWeightCargo(UnitName, IncludeReserved)
 
@@ -221932,7 +221936,7 @@ end
 
 --- Get max weight of the internal cargo the group can carry. Optionally, the max cargo weight of a specific unit can be requested.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
 -- @return #number Max cargo weight in kg. This does **not** include any cargo loaded or reserved currently.
 function OPSGROUP:GetWeightCargoMax(UnitName)
 
@@ -221970,7 +221974,7 @@ end
 
 --- Add weight to the internal cargo of an element of the group.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
 -- @param #number Weight Cargo weight to be added in kg.
 function OPSGROUP:AddWeightCargo(UnitName, Weight)
 
@@ -224336,7 +224340,7 @@ end
 --- Initialize Mission Editor waypoints.
 -- @param #OPSGROUP self
 -- @param #OPSGROUP.Waypoint waypoint Waypoint data.
--- @param #number wpnumber Waypoint index/number. Default is as last waypoint.
+-- @param #number wpnumber (Optional) Waypoint index/number. Default is as last waypoint.
 function OPSGROUP:_AddWaypoint(waypoint, wpnumber)
 
   -- Index.
@@ -224806,7 +224810,7 @@ end
 
 --- Set the default ROE for the group. This is the ROE state gets when the group is spawned or to which it defaults back after a mission.
 -- @param #OPSGROUP self
--- @param #number roe ROE of group. Default is `ENUMS.ROE.ReturnFire`.
+-- @param #number roe (Optional) ROE of group. Default is `ENUMS.ROE.ReturnFire`.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultROE(roe)
   self.optionDefault.ROE=roe or ENUMS.ROE.ReturnFire
@@ -224815,7 +224819,7 @@ end
 
 --- Set current ROE for the group.
 -- @param #OPSGROUP self
--- @param #string roe ROE of group. Default is value set in `SetDefaultROE` (usually `ENUMS.ROE.ReturnFire`).
+-- @param #string roe (Optional) ROE of group. Default is value set in `SetDefaultROE` (usually `ENUMS.ROE.ReturnFire`).
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchROE(roe)
 
@@ -224868,7 +224872,7 @@ end
 
 --- Set the default ROT for the group. This is the ROT state gets when the group is spawned or to which it defaults back after a mission.
 -- @param #OPSGROUP self
--- @param #number rot ROT of group. Default is `ENUMS.ROT.PassiveDefense`.
+-- @param #number rot (Optional) ROT of group. Default is `ENUMS.ROT.PassiveDefense`.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultROT(rot)
   self.optionDefault.ROT=rot or ENUMS.ROT.PassiveDefense
@@ -224877,7 +224881,7 @@ end
 
 --- Set ROT for the group.
 -- @param #OPSGROUP self
--- @param #string rot ROT of group. Default is value set in `:SetDefaultROT` (usually `ENUMS.ROT.PassiveDefense`).
+-- @param #string rot (Optional) ROT of group. Default is value set in `:SetDefaultROT` (usually `ENUMS.ROT.PassiveDefense`).
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchROT(rot)
 
@@ -224917,7 +224921,7 @@ end
 
 --- Set the default Alarm State for the group. This is the state gets when the group is spawned or to which it defaults back after a mission.
 -- @param #OPSGROUP self
--- @param #number alarmstate Alarm state of group. Default is `AI.Option.Ground.val.ALARM_STATE.AUTO` (0).
+-- @param #number alarmstate (Optional) Alarm state of group. Default is `AI.Option.Ground.val.ALARM_STATE.AUTO` (0).
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultAlarmstate(alarmstate)
   self.optionDefault.Alarm=alarmstate or 0
@@ -224931,7 +224935,7 @@ end
 -- * 2 = "Red"
 --
 -- @param #OPSGROUP self
--- @param #number alarmstate Alarm state of group. Default is 0="Auto".
+-- @param #number alarmstate (Optional) Alarm state of group. Default is 0="Auto".
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchAlarmstate(alarmstate)
 
@@ -224978,7 +224982,7 @@ end
 
 --- Set the default EPLRS for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
+-- @param #boolean OnOffSwitch (Optional) If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultEPLRS(OnOffSwitch)
 
@@ -225033,7 +225037,7 @@ end
 
 --- Set the default emission state for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
+-- @param #boolean OnOffSwitch (Optional) If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultEmission(OnOffSwitch)
 
@@ -225088,7 +225092,7 @@ end
 
 --- Set the default invisible for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, group is ivisible by default.
+-- @param #boolean OnOffSwitch (Optional) If `true`, group is ivisible by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultInvisible(OnOffSwitch)
 
@@ -225137,7 +225141,7 @@ end
 
 --- Set the default immortal for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, group is immortal by default.
+-- @param #boolean OnOffSwitch (Optional) If `true`, group is immortal by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultImmortal(OnOffSwitch)
 
@@ -225189,11 +225193,11 @@ end
 
 --- Set default TACAN parameters.
 -- @param #OPSGROUP self
--- @param #number Channel TACAN channel. Default is 74.
--- @param #string Morse Morse code. Default "XXX".
+-- @param #number Channel (Optional) TACAN channel. Default is 74.
+-- @param #string Morse(Optional)  Morse code. Default "XXX".
 -- @param #string UnitName Name of the unit acting as beacon.
--- @param #string Band TACAN mode. Default is "X" for ground and "Y" for airborne units.
--- @param #boolean OffSwitch If true, TACAN is off by default.
+-- @param #string Band (Optional) TACAN mode. Default is "X" for ground and "Y" for airborne units.
+-- @param #boolean OffSwitch (Optional) If true, TACAN is off by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultTACAN(Channel, Morse, UnitName, Band, OffSwitch)
 
@@ -225222,7 +225226,7 @@ end
 
 --- Activate/switch TACAN beacon settings.
 -- @param #OPSGROUP self
--- @param #OPSGROUP.Beacon Tacan TACAN data table. Default is the default TACAN settings.
+-- @param #OPSGROUP.Beacon Tacan (Optional) TACAN data table. Default is the default TACAN settings.
 -- @return #OPSGROUP self
 function OPSGROUP:_SwitchTACAN(Tacan)
 
@@ -225245,9 +225249,9 @@ end
 --- Activate/switch TACAN beacon settings.
 -- @param #OPSGROUP self
 -- @param #number Channel TACAN Channel.
--- @param #string Morse TACAN morse code. Default is the value set in @{#OPSGROUP.SetDefaultTACAN} or if not set "XXX".
--- @param #string UnitName Name of the unit in the group which should activate the TACAN beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
--- @param #string Band TACAN channel mode "X" or "Y". Default is "Y" for aircraft and "X" for ground and naval groups.
+-- @param #string Morse (Optional) TACAN morse code. Default is the value set in @{#OPSGROUP.SetDefaultTACAN} or if not set "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group which should activate the TACAN beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
+-- @param #string Band (Optional) TACAN channel mode "X" or "Y". Default is "Y" for aircraft and "X" for ground and naval groups.
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchTACAN(Channel, Morse, UnitName, Band)
 
@@ -225354,10 +225358,10 @@ end
 
 --- Set default ICLS parameters.
 -- @param #OPSGROUP self
--- @param #number Channel ICLS channel. Default is 1.
--- @param #string Morse Morse code. Default "XXX".
+-- @param #number Channel (Optional) ICLS channel. Default is 1.
+-- @param #string Morse (Optional) Morse code. Default "XXX".
 -- @param #string UnitName Name of the unit acting as beacon.
--- @param #boolean OffSwitch If true, TACAN is off by default.
+-- @param #boolean OffSwitch (Optional) If true, TACAN is off by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultICLS(Channel, Morse, UnitName, OffSwitch)
 
@@ -225400,9 +225404,9 @@ end
 
 --- Activate/switch ICLS beacon settings.
 -- @param #OPSGROUP self
--- @param #number Channel ICLS Channel. Default is what is set in `SetDefaultICLS()` so usually channel 1.
--- @param #string Morse ICLS morse code. Default is what is set in `SetDefaultICLS()` so usually "XXX".
--- @param #string UnitName Name of the unit in the group which should activate the ICLS beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
+-- @param #number Channel (Optional) ICLS Channel. Default is what is set in `SetDefaultICLS()` so usually channel 1.
+-- @param #string Morse (Optional) ICLS morse code. Default is what is set in `SetDefaultICLS()` so usually "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group which should activate the ICLS beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchICLS(Channel, Morse, UnitName)
 
@@ -225476,9 +225480,9 @@ end
 
 --- Set default Radio frequency and modulation.
 -- @param #OPSGROUP self
--- @param #number Frequency Radio frequency in MHz. Default 251 MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
--- @param #boolean OffSwitch If true, radio is OFF by default.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 251 MHz.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
+-- @param #boolean OffSwitch (Optional) If true, radio is OFF by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultRadio(Frequency, Modulation, OffSwitch)
 
@@ -225505,8 +225509,8 @@ end
 
 --- Turn radio on or switch frequency/modulation.
 -- @param #OPSGROUP self
--- @param #number Frequency Radio frequency in MHz. Default is value set in `SetDefaultRadio` (usually 251 MHz).
--- @param #number Modulation Radio modulation. Default is value set in `SetDefaultRadio` (usually `radio.modulation.AM`).
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default is value set in `SetDefaultRadio` (usually 251 MHz).
+-- @param #number Modulation (Optional) Radio modulation. Default is value set in `SetDefaultRadio` (usually `radio.modulation.AM`).
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchRadio(Frequency, Modulation)
 
@@ -225585,7 +225589,7 @@ end
 
 --- Switch to a specific formation.
 -- @param #OPSGROUP self
--- @param #number Formation New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
+-- @param #number Formation (Optional) New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchFormation(Formation)
 
@@ -225622,7 +225626,7 @@ end
 --- Set default callsign.
 -- @param #OPSGROUP self
 -- @param #number CallsignName Callsign name.
--- @param #number CallsignNumber Callsign number. Default 1.
+-- @param #number CallsignNumber (Optional) Callsign number. Default 1.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultCallsign(CallsignName, CallsignNumber)
 
@@ -226347,7 +226351,7 @@ end
 --- Get the number of shells a unit or group currently has. For a group the ammo count of all units is summed up.
 -- @param #OPSGROUP self
 -- @param Wrapper.Unit#UNIT unit The unit object.
--- @param #boolean display Display ammo table as message to all. Default false.
+-- @param #boolean display (Optional) Display ammo table as message to all. Default false.
 -- @return #OPSGROUP.Ammo Ammo data.
 function OPSGROUP:GetAmmoUnit(unit, display)
 
@@ -226782,7 +226786,7 @@ end
 
 --- Set the template of the group.
 -- @param #OPSGROUP self
--- @param #table Template Template to set. Default is from the GROUP.
+-- @param #table Template (Optional) Template to set. Default is from the GROUP.
 -- @return #OPSGROUP self
 function OPSGROUP:_SetTemplate(Template)
 
@@ -226819,8 +226823,8 @@ end
 
 --- Clear waypoints.
 -- @param #OPSGROUP self
--- @param #number IndexMin Clear waypoints up to this min WP index. Default 1.
--- @param #number IndexMax Clear waypoints up to this max WP index. Default `#self.waypoints`.
+-- @param #number IndexMin (Optional) Clear waypoints up to this min WP index. Default 1.
+-- @param #number IndexMax (Optional) Clear waypoints up to this max WP index. Default `#self.waypoints`.
 function OPSGROUP:ClearWaypoints(IndexMin, IndexMax)
 
   IndexMin=IndexMin or 1
@@ -227495,7 +227499,7 @@ end
 -- @param #OPSTRANSPORT self
 -- @param Core.Set#SET_GROUP GroupSet Set of groups to be transported. Can also be passed as a single GROUP or OPSGROUP object.
 -- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport zone combo.
--- @param #boolean DisembarkActivation If `true`, cargo group is activated when disembarked. If `false`, cargo groups are late activated when disembarked. Default `nil` (usually activated).
+-- @param #boolean DisembarkActivation (Optional) If `true`, cargo group is activated when disembarked. If `false`, cargo groups are late activated when disembarked. Default `nil` (usually activated).
 -- @param Core.Zone#ZONE DisembarkZone Zone where the groups disembark to.
 -- @param Core.Set#SET_OPSGROUP DisembarkCarriers Carrier groups where the cargo directly disembarks to.
 -- @return #OPSTRANSPORT self
@@ -227573,8 +227577,8 @@ end
 -- @param Wrapper.Storage#STORAGE StorageTo Storage warehouse to which the cargo is delivered.
 -- @param #string CargoType Type of cargo, *e.g.* `"weapons.bombs.Mk_84"` or liquid type as #number.
 -- @param #number CargoAmount Amount of cargo. Liquids in kg.
--- @param #number CargoWeight Weight of a single cargo item in kg. Default 1 kg.
--- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport zone combo if other than default.
+-- @param #number CargoWeight (Optional) Weight of a single cargo item in kg. Default 1 kg.
+-- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo (Optional) Transport zone combo if other than default.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:AddCargoStorage(StorageFrom, StorageTo, CargoType, CargoAmount, CargoWeight, TransportZoneCombo)
 
@@ -227981,8 +227985,8 @@ end
 
 --- Set number of required carrier groups for an OPSTRANSPORT assignment. Only used if transport is assigned at **LEGION** or higher level.
 -- @param #OPSTRANSPORT self
--- @param #number NcarriersMin Number of carriers *at least* required. Default 1.
--- @param #number NcarriersMax Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
+-- @param #number NcarriersMin (Optional) Number of carriers *at least* required. Default 1.
+-- @param #number NcarriersMax (Optional) Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetRequiredCarriers(NcarriersMin, NcarriersMax)
 
@@ -228187,7 +228191,7 @@ end
 
 --- Set transport start and stop time.
 -- @param #OPSTRANSPORT self
--- @param #string ClockStart Time the transport is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
+-- @param #string ClockStart (Optional) Time the transport is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
 -- @param #string ClockStop (Optional) Time the transport is stopped, e.g. "13:00" for 1 pm. If mission could not be started at that time, it will be removed from the queue. If specified as a #number it will be relative (in seconds) to the current mission time.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetTime(ClockStart, ClockStop)
@@ -228223,9 +228227,9 @@ end
 
 --- Set mission priority and (optional) urgency. Urgent missions can cancel other running missions. 
 -- @param #OPSTRANSPORT self
--- @param #number Prio Priority 1=high, 100=low. Default 50.
--- @param #number Importance Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
--- @param #boolean Urgent If *true*, another running mission might be cancelled if it has a lower priority.
+-- @param #number Prio (Optional) Priority 1=high, 100=low. Default 50.
+-- @param #number Importance (Optional) Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
+-- @param #boolean Urgent (Optional) If *true*, another running mission might be cancelled if it has a lower priority.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetPriority(Prio, Importance, Urgent)
   self.prio=Prio or 50
@@ -228236,7 +228240,7 @@ end
 
 --- Set verbosity. 
 -- @param #OPSTRANSPORT self
--- @param #number Verbosity Be more verbose. Default 0
+-- @param #number Verbosity (Optional) Be more verbose. Default 0
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetVerbosity(Verbosity)
   self.verbose=Verbosity or 0
@@ -228274,8 +228278,8 @@ end
 -- path. 
 -- @param #OPSTRANSPORT self
 -- @param Wrapper.Group#GROUP PathGroup A (late activated) GROUP defining a transport path by their waypoints.
--- @param #number Radius Randomization radius in meters. Default 0 m.
--- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport Zone combo.
+-- @param #number Radius (Optional) Randomization radius in meters. Default 0 m.
+-- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo (Optional) Transport Zone combo.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:AddPathTransport(PathGroup, Reversed, Radius, TransportZoneCombo)
 
@@ -228660,7 +228664,7 @@ end
 
 --- Check if all cargo was delivered (or is dead).
 -- @param #OPSTRANSPORT self
--- @param #number Nmin Number of groups that must be actually delivered (and are not dead). Default 0.
+-- @param #number Nmin (Optional) Number of groups that must be actually delivered (and are not dead). Default 0.
 -- @return #boolean If true, all possible cargo was delivered. 
 function OPSTRANSPORT:IsDelivered(Nmin)
   local is=self:is(OPSTRANSPORT.Status.DELIVERED)
@@ -229227,7 +229231,7 @@ end
 -- @param Wrapper.Storage#STORAGE StorageTo Storage to.
 -- @param #string CargoType Type of cargo.
 -- @param #number CargoAmount Total amount of cargo that should be transported. Liquids in kg.
--- @param #number CargoWeight Weight of a single cargo item in kg. Default 1 kg.
+-- @param #number CargoWeight (Optional) Weight of a single cargo item in kg. Default 1 kg.
 -- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport zone combo.
 -- @return Ops.OpsGroup#OPSGROUP.CargoGroup Cargo group data.
 function OPSTRANSPORT:_CreateCargoStorage(StorageFrom, StorageTo, CargoType, CargoAmount, CargoWeight, TransportZoneCombo)
@@ -229598,7 +229602,7 @@ OPSZONE.version="0.6.2"
 --- Create a new OPSZONE class object.
 -- @param #OPSZONE self
 -- @param Core.Zone#ZONE Zone The zone. Can be passed as ZONE\_RADIUS, ZONE_POLYGON, ZONE\_AIRBASE or simply as the name of the airbase.
--- @param #number CoalitionOwner Initial owner of the coaliton. Default `coalition.side.NEUTRAL`.
+-- @param #number CoalitionOwner (Optional) Initial owner of the coaliton. Default `coalition.side.NEUTRAL`.
 -- @return #OPSZONE self
 -- @usage
 -- myopszone = OPSZONE:New(ZONE:FindByName("OpsZoneOne"), coalition.side.RED) -- base zone from the mission editor
@@ -229862,7 +229866,7 @@ end
 
 --- Set verbosity level.
 -- @param #OPSZONE self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #OPSZONE self
 function OPSZONE:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -229877,7 +229881,7 @@ end
 -- Which units can capture zones can be further refined by `:SetUnitCategories()`.
 -- 
 -- @param #OPSZONE self
--- @param #table Categories Object categories. Default is `{Object.Category.UNIT, Object.Category.STATIC}`.
+-- @param #table Categories (Optional) Object categories. Default is `{Object.Category.UNIT, Object.Category.STATIC}`.
 -- @return #OPSZONE self
 function OPSZONE:SetObjectCategories(Categories)
 
@@ -229894,7 +229898,7 @@ end
 
 --- Set categories of units that can capture or hold the zone. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit).
 -- @param #OPSZONE self
--- @param #table Categories Table of unit categories. Default `{Unit.Category.GROUND_UNIT}`.
+-- @param #table Categories (Optional) Table of unit categories. Default `{Unit.Category.GROUND_UNIT}`.
 -- @return #OPSZONE self
 function OPSZONE:SetUnitCategories(Categories)
 
@@ -229912,7 +229916,7 @@ end
 --- Set threat level threshold that the offending units must have to capture a zone.
 -- The reason why you might want to set this is that unarmed units (*e.g.* fuel trucks) should not be able to capture a zone as they do not pose a threat.
 -- @param #OPSZONE self
--- @param #number Threatlevel Threat level threshold. Default 0.
+-- @param #number Threatlevel (Optional) Threat level threshold. Default 0.
 -- @return #OPSZONE self
 function OPSZONE:SetCaptureThreatlevel(Threatlevel)
 
@@ -229923,7 +229927,7 @@ end
 
 --- Set how many units must be present in a zone to capture it. By default, one unit is enough.
 -- @param #OPSZONE self
--- @param #number Nunits Number of units. Default 1.
+-- @param #number Nunits (Optional) Number of units. Default 1.
 -- @return #OPSZONE self
 function OPSZONE:SetCaptureNunits(Nunits)
 
@@ -229937,7 +229941,7 @@ end
 
 --- Set time how long an attacking coalition must have troops inside a zone before it captures the zone.
 -- @param #OPSZONE self
--- @param #number Tcapture Time in seconds. Default 0.
+-- @param #number Tcapture (Optional) Time in seconds. Default 0.
 -- @return #OPSZONE self
 function OPSZONE:SetCaptureTime(Tcapture)
 
@@ -231200,7 +231204,7 @@ PLATOON.version="0.1.0"
 --- Create a new PLATOON object and start the FSM.
 -- @param #PLATOON self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this platoon. Default 3.
+-- @param #number Ngroups (Optional) Number of asset groups of this platoon. Default 3.
 -- @param #string PlatoonName Name of the platoon. Must be **unique**!
 -- @return #PLATOON self
 function PLATOON:New(TemplateGroupName, Ngroups, PlatoonName)
@@ -231435,9 +231439,9 @@ PLAYERTASK.version="0.1.31"
 -- @param #PLAYERTASK self
 -- @param Ops.Auftrag#AUFTRAG.Type Type Type of this task
 -- @param Ops.Target#TARGET Target Target for this task
--- @param #boolean Repeat Repeat this task if true (default = false)
--- @param #number Times Repeat on failure this many times if Repeat is true (default = 1)
--- @param #string TTSType TTS friendly task type name
+-- @param #boolean Repeat (Optional) Repeat this task if true (default = false)
+-- @param #number Times (Optional) Repeat on failure this many times if Repeat is true (default = 1)
+-- @param #string TTSType (Optional) TTS friendly task type name. Defaultsto "close air support".
 -- @return #PLAYERTASK self
 function PLAYERTASK:New(Type, Target, Repeat, Times, TTSType)
 
@@ -231592,8 +231596,8 @@ end
 --- Constructor that automatically determines the task type based on the target.
 -- @param #PLAYERTASK self
 -- @param Ops.Target#TARGET Target Target for this task
--- @param #boolean Repeat Repeat this task if true (default = false)
--- @param #number Times Repeat on failure this many times if Repeat is true (default = 1)
+-- @param #boolean Repeat (Optional) Repeat this task if true (default = false)
+-- @param #number Times (Optional) Repeat on failure this many times if Repeat is true (default = 1)
 -- @param #string TTSType TTS friendly task type name
 -- @return #PLAYERTASK self
 function PLAYERTASK:NewFromTarget(Target, Repeat, Times, TTSType)
@@ -231806,7 +231810,7 @@ end
 
 --- [USER] Set if a task can have a smoke marker.
 -- @param #PLAYERTASK self
--- @param #boolean OnOff If true (default) it can be smoke, false if not.
+-- @param #boolean OnOff (Optional) If true (default) it can be smoke, false if not.
 -- @return #PLAYERTASK self
 function PLAYERTASK:SetCanSmoke(OnOff)
   self:T(self.lid.."AddSSetCanSmokeubType")
@@ -231816,7 +231820,7 @@ end
 
 --- [USER] Set if a task can show threat details.
 -- @param #PLAYERTASK self
--- @param #boolean OnOff If true (default) it can be shown, false if not.
+-- @param #boolean OnOff (Optional) If true (default) it can be shown, false if not.
 -- @return #PLAYERTASK self
 function PLAYERTASK:SetShowThreatDetails(OnOff)
   self:T(self.lid.."SetShowThreatDetails")
@@ -232006,7 +232010,7 @@ end
 
 --- [USER] Adds a time limit for the task to be completed.
 -- @param #PLAYERTASK self
--- @param #number TimeLimit Time limit in seconds for the task to be completed. (Default 0 = no time limit)
+-- @param #number TimeLimit (Optional) Time limit in seconds for the task to be completed. (Default 0 = no time limit)
 -- @return #PLAYERTASK self
 -- @usage
 -- local mytask = PLAYERTASK:New(AUFTRAG.Type.RECON, ZONE:New("WF Zone"), true, 50, "Deep Earth")
@@ -232212,7 +232216,7 @@ end
 
 --- [User] Smoke Target
 -- @param #PLAYERTASK self
--- @param #number Color, defaults to SMOKECOLOR.Red
+-- @param #number Color (Optional) Color, defaults to SMOKECOLOR.Red
 -- @return #PLAYERTASK self
 function PLAYERTASK:SmokeTarget(Color)
   self:T(self.lid.."SmokeTarget")
@@ -232231,7 +232235,7 @@ end
 
 --- [User] Flare Target
 -- @param #PLAYERTASK self
--- @param #number Color, defaults to FLARECOLOR.Red
+-- @param #number Color (Optional) Color, defaults to FLARECOLOR.Red
 -- @return #PLAYERTASK self
 function PLAYERTASK:FlareTarget(Color)
   self:T(self.lid.."SmokeTarget")
@@ -232247,8 +232251,8 @@ end
 
 --- [User] Illuminate Target Area
 -- @param #PLAYERTASK self
--- @param #number Power Power of illumination bomb in Candela. Default 1000 cd.
--- @param #number Height Height above target used to release the bomb, default 150m.
+-- @param #number Power (Optional) Power of illumination bomb in Candela. Default 1000 cd.
+-- @param #number Height (Optional) Height above target used to release the bomb, default 150m.
 -- @return #PLAYERTASK self
 function PLAYERTASK:IlluminateTarget(Power,Height)
   self:T(self.lid.."IlluminateTarget")
@@ -233341,9 +233345,9 @@ PLAYERTASKCONTROLLER.version="0.1.73"
 --- Create and run a new TASKCONTROLLER instance.
 -- @param #PLAYERTASKCONTROLLER self
 -- @param #string Name Name of this controller
--- @param #number Coalition of this controller, e.g. coalition.side.BLUE
--- @param #string Type Type of the tasks controlled, defaults to PLAYERTASKCONTROLLER.Type.A2G
--- @param #string ClientFilter (optional) Additional prefix filter for the SET_CLIENT. Can be handed as @{Core.Set#SET_CLIENT} also.
+-- @param #number Coalition (Optional) Coalition of this controller. Defaults to coalition.side.BLUE
+-- @param #string Type (Optional) Type of the tasks controlled, defaults to PLAYERTASKCONTROLLER.Type.A2G
+-- @param #string ClientFilter (Optional) Additional prefix filter for the SET_CLIENT. Can be handed as @{Core.Set#SET_CLIENT} also.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:New(Name, Coalition, Type, ClientFilter)
   
@@ -233637,7 +233641,7 @@ end
 
 --- [User] Set flash directions option for player (player based info)
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff Set to `true` to switch on and `false` to switch off. Default is OFF.
+-- @param #boolean OnOff (Optional) Set to `true` to switch on and `false` to switch off. Default is OFF.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetAllowFlashDirection(OnOff)
   self:T(self.lid.."SetAllowFlashDirection")
@@ -233647,7 +233651,7 @@ end
 
 --- [User] Set to show a menu entry to retrieve the radio frequencies used.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff Set to `true` to switch on and `false` to switch off. Default is OFF.
+-- @param #boolean OnOff (Optional) Set to `true` to switch on and `false` to switch off. Default is OFF.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetShowRadioInfoMenu(OnOff)
   self:T(self.lid.."SetAllowRadioInfoMenu")
@@ -233756,8 +233760,8 @@ end
 
 --- [User] Set repetition options for tasks.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff Set to `true` to switch on and `false` to switch off (defaults to true)
--- @param #number Repeats Number of repeats (defaults to 5)
+-- @param #boolean OnOff (Optional) Set to `true` to switch on and `false` to switch off (defaults to true)
+-- @param #number Repeats (Optional) Number of repeats (defaults to 5)
 -- @return #PLAYERTASKCONTROLLER self
 -- @usage `taskmanager:SetTaskRepetition(true, 5)`
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff, Repeats)
@@ -233774,7 +233778,7 @@ end
 
 --- [User] Set how long the briefing is shown on screen.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Seconds Duration in seconds. Defaults to 30 seconds.
+-- @param #number Seconds (Optional) Duration in seconds. Defaults to 30 seconds.
 -- @return #PLAYERTASKCONTROLLER self 
 function PLAYERTASKCONTROLLER:SetBriefingDuration(Seconds)
   self:T(self.lid.."SetBriefingDuration")
@@ -233804,7 +233808,7 @@ end
 -- @param #PLAYERTASKCONTROLLER self
 -- @param Ops.FlightGroup#FLIGHTGROUP FlightGroup The FlightGroup (e.g. drone) to be used for lasing (one unit in one group only).
 -- Can optionally be handed as Ops.ArmyGroup#ARMYGROUP - **Note** might not find an LOS spot or get lost on the way. Cannot island-hop.
--- @param #number LaserCode The lasercode to be used. Defaults to 1688.
+-- @param #number LaserCode (Optional) The lasercode to be used. Defaults to 1688.
 -- @param Core.Point#COORDINATE HoldingPoint (Optional) Point where the drone should initially circle. If not set, defaults to BullsEye of the coalition.
 -- @param #number Alt (Optional) Altitude in feet. Only applies if using a FLIGHTGROUP object! Defaults to 10000.
 -- @param #number Speed (Optional) Speed in knots. Only applies if using a FLIGHTGROUP object! Defaults to 120.
@@ -233887,7 +233891,7 @@ end
 -- @param #PLAYERTASKCONTROLLER self
 -- @param Ops.FlightGroup#FLIGHTGROUP FlightGroup The FlightGroup (e.g. drone) to be used for lasing (one unit in one group only).
 -- Can optionally be handed as Ops.ArmyGroup#ARMYGROUP - **Note** might not find an LOS spot or get lost on the way. Cannot island-hop.
--- @param #number LaserCode The lasercode to be used. Defaults to 1688.
+-- @param #number LaserCode (Optional) The lasercode to be used. Defaults to 1688.
 -- @param Core.Point#COORDINATE HoldingPoint (Optional) Point where the drone should initially circle. If not set, defaults to BullsEye of the coalition.
 -- @param #number Alt (Optional) Altitude in feet. Only applies if using a FLIGHTGROUP object! Defaults to 10000.
 -- @param #number Speed (Optional) Speed in knots. Only applies if using a FLIGHTGROUP object! Defaults to 120.
@@ -234024,8 +234028,8 @@ end
 -- @param #PLAYERTASKCONTROLLER self
 -- @param #boolean InfoMenu If `true` this option will allow to show the Task Info-Menu also when a player has an active task. 
 -- Since the menu isn't refreshed if a player holds an active task, the info in there might be stale.
--- @param #number ItemLimit Number of items per task type to show, default 5. 
--- @param #number HoldTime Minimum number of seconds between menu refreshes (called every 30 secs) if a player has **no active task**.
+-- @param #number ItemLimit (Optional) Number of items per task type to show, default 5. 
+-- @param #number HoldTime (Optional) Minimum number of seconds between menu refreshes (called every 30 secs) if a player has **no active task**.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetMenuOptions(InfoMenu,ItemLimit,HoldTime)
   self:T(self.lid.."SetMenuOptions")
@@ -234160,7 +234164,7 @@ end
 
 --- [User] Set target radius. Determines the zone radius to distinguish CAS from BAI tasks and to find enemies if the TARGET object is a COORDINATE.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Radius Radius to use in meters. Defaults to 500 meters.
+-- @param #number Radius (Optional) Radius to use in meters. Defaults to 500 meters.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetTargetRadius(Radius)
   self:T(self.lid.."SetTargetRadius")
@@ -234171,7 +234175,7 @@ end
 --- [User] Set the cluster radius if you want to use target clusters rather than single group detection. 
 -- Note that for a controller type A2A target clustering is on by default. Also remember that the diameter of the resulting zone is double the radius.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Radius Target cluster radius in kilometers. Default is 0.5km.
+-- @param #number Radius (Optional) Target cluster radius in kilometers. Default is 0.5km.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetClusterRadius(Radius)
   self:T(self.lid.."SetClusterRadius")
@@ -234193,7 +234197,7 @@ end
 
 --- [User] Switch usage of target names for menu entries on or off
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff If true, set to on (default), if nil or false, set to off
+-- @param #boolean OnOff (Optional) If true, set to on (default), if nil or false, set to off
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SwitchUseGroupNames(OnOff)
   self:T(self.lid.."SwitchUseGroupNames")
@@ -234207,7 +234211,7 @@ end
 
 --- [User] Switch showing additional magnetic angles
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff If true, set to on (default), if nil or false, set to off
+-- @param #boolean OnOff (Optional) If true, set to on (default), if nil or false, set to off
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SwitchMagenticAngles(OnOff)
   self:T(self.lid.."SwitchMagenticAngles")
@@ -235102,7 +235106,7 @@ end
 --- Calculate group future position after given seconds.
 -- @param #PLAYERTASKCONTROLLER self
 -- @param Wrapper.Group#GROUP group The group to calculate for.
--- @param #number seconds Time interval in seconds. Default is `self.prediction`.
+-- @param #number seconds (Optional) Time interval in seconds. Default is `self.prediction`.
 -- @return Core.Point#COORDINATE Calculated future position of the cluster.
 function PLAYERTASKCONTROLLER:_CalcGroupFuturePosition(group, seconds)
 
@@ -236218,9 +236222,9 @@ end
 
 --- [User] Set SRS TTS details - see @{Sound.SRS} for details.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Frequency Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
--- @param #number Modulation Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #number Frequency (Optional) Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
+-- @param #number Modulation (Optional) Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 -- @param #string Gender (Optional) Defaults to "male"
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #number Port (Optional) Defaults to 5002
@@ -236229,7 +236233,7 @@ end
 -- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest)
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
--- @param Core.Point#COORDINATE Coordinate Coordinate from which the controller radio is sending
+-- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate from which the controller radio is sending
 -- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, hand in nil here.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
@@ -238228,9 +238232,9 @@ end
 
 --- [User] Set SRS TTS details - see @{Sound.SRS} for details
 -- @param #PLAYERRECCE self
--- @param #number Frequency Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
--- @param #number Modulation Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #number Frequency (Optional) Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
+-- @param #number Modulation (Optional) Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 -- @param #string Gender (Optional) Defaults to "male"
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #number Port (Optional) Defaults to 5002
@@ -239092,7 +239096,7 @@ SQUADRON.version="0.8.1"
 --- Create a new SQUADRON object and start the FSM.
 -- @param #SQUADRON self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this squadron. Default 3.
+-- @param #number Ngroups (Optional) Number of asset groups of this squadron. Default 3.
 -- @param #string SquadronName Name of the squadron, e.g. "VFA-37". Must be **unique**!
 -- @return #SQUADRON self
 function SQUADRON:New(TemplateGroupName, Ngroups, SquadronName)
@@ -239125,7 +239129,7 @@ end
 
 --- Set number of units in groups.
 -- @param #SQUADRON self
--- @param #number nunits Number of units. Must be >=1 and <=4. Default 2.
+-- @param #number nunits (Optional) Number of units. Must be >=1 and <=4. Default 2.
 -- @return #SQUADRON self
 function SQUADRON:SetGrouping(nunits)
   self.ngrouping=nunits or 2
@@ -239150,7 +239154,7 @@ end
 --- Set takeoff type. All assets of this squadron will be spawned with cold (default) or hot engines.
 -- Spawning on runways is not supported.
 -- @param #SQUADRON self
--- @param #string TakeoffType Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
+-- @param #string TakeoffType (Optional) Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
 -- @return #SQUADRON self
 function SQUADRON:SetTakeoffType(TakeoffType)
   TakeoffType=TakeoffType or "Cold"
@@ -239193,7 +239197,7 @@ end
 --- Set despawn after landing. Aircraft will be despawned after the landing event.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #SQUADRON self
--- @param #boolean Switch If `true` (default), activate despawn after landing.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after landing.
 -- @return #SQUADRON self
 function SQUADRON:SetDespawnAfterLanding(Switch)
   if Switch then
@@ -239207,7 +239211,7 @@ end
 --- Set despawn after holding. Aircraft will be despawned when they arrive at their holding position at the airbase.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #SQUADRON self
--- @param #boolean Switch If `true` (default), activate despawn after holding.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after holding.
 -- @return #SQUADRON self
 function SQUADRON:SetDespawnAfterHolding(Switch)
   if Switch then
@@ -239221,7 +239225,7 @@ end
 
 --- Set low fuel threshold.
 -- @param #SQUADRON self
--- @param #number LowFuel Low fuel threshold in percent. Default 25.
+-- @param #number LowFuel (Optional) Low fuel threshold in percent. Default 25.
 -- @return #SQUADRON self
 function SQUADRON:SetFuelLowThreshold(LowFuel)
   self.fuellow=LowFuel or 25
@@ -239724,7 +239728,7 @@ end
 
 --- Set priority of the target.
 -- @param #TARGET self
--- @param #number Priority Priority of the target. Default 50.
+-- @param #number Priority (Optional) Priority of the target. Default 50.
 -- @return #TARGET self
 function TARGET:SetPriority(Priority)
   self.prio=Priority or 50
@@ -239733,7 +239737,7 @@ end
 
 --- Set importance of the target.
 -- @param #TARGET self
--- @param #number Importance Importance of the target. Default `nil`.
+-- @param #number Importance (Optional) Importance of the target. Default `nil`.
 -- @return #TARGET self
 function TARGET:SetImportance(Importance)
   self.importance=Importance
@@ -239832,10 +239836,10 @@ end
 --- Add mission type and number of required assets to resource.
 -- @param #TARGET self
 -- @param #string MissionType Mission Type.
--- @param #number Nmin Min number of required assets.
--- @param #number Nmax Max number of requried assets.
+-- @param #number Nmin (Optional) Min number of required assets. Default is 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default is 1.
 -- @param #table Attributes Generalized attribute(s).
--- @param #table Properties DCS attribute(s). Default `nil`.
+-- @param #table Properties (Optional) DCS attribute(s). Default `nil`.
 -- @return #TARGET.Resource The resource table.
 function TARGET:AddResource(MissionType, Nmin, Nmax, Attributes, Properties)
   
@@ -241929,7 +241933,7 @@ end
 
 --- Set "fuel low" threshold for CAP and INTERCEPT flights.
 -- @param #EASYGCICAP self
--- @param #number Percent RTB if fuel at this percent. Values: 1..100, defaults to 25.
+-- @param #number Percent (Optional) RTB if fuel at this percent. Values: 1..100, defaults to 25.
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetFuelLow(Percent)
   self:T(self.lid.."SetFuelLow")
@@ -241952,7 +241956,7 @@ end
 
 --- Set "fuel critical" threshold for CAP and INTERCEPT flights.
 -- @param #EASYGCICAP self
--- @param #number Percent RTB if fuel at this percent. Values: 1..100, defaults to 10.
+-- @param #number Percent (Optional) RTB if fuel at this percent. Values: 1..100, defaults to 10.
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetFuelCritical(Percent)
   self:T(self.lid.."SetFuelCritical")
@@ -241962,7 +241966,7 @@ end
 
 --- Set CAP formation.
 -- @param #EASYGCICAP self
--- @param #number Formation Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
+-- @param #number Formation (Optional) Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetCAPFormation(Formation)
   self:T(self.lid.."SetCAPFormation")
@@ -241996,7 +242000,7 @@ end
 
 --- Set Maximum of alive missions created by this instance to stop airplanes spamming the map
 -- @param #EASYGCICAP self
--- @param #number Maxiumum Maxmimum number of parallel missions allowed. Count is Intercept-Missions + Alert5-Missions, default is 8
+-- @param #number Maxiumum (Optional) Maxmimum number of parallel missions allowed. Count is Intercept-Missions + Alert5-Missions, default is 8
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
   self:T(self.lid.."SetMaxAliveMissions")
@@ -242006,7 +242010,7 @@ end
 
 --- Add default time to resurrect Airwing building if destroyed
 -- @param #EASYGCICAP self
--- @param #number Seconds Seconds, defaults to 900
+-- @param #number Seconds (Optional) Seconds, defaults to 900
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetDefaultResurrection(Seconds)
   self:T(self.lid.."SetDefaultResurrection")
@@ -242016,7 +242020,7 @@ end
 
 --- Add default repeat attempts if an Intruder intercepts fails.
 -- @param #EASYGCICAP self
--- @param #number Retries Retries, defaults to 3
+-- @param #number Retries (Optional) Retries, defaults to 3
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetDefaultRepeatOnFailure(Retries)
   self:T(self.lid.."SetDefaultRepeatOnFailure")
@@ -242026,7 +242030,7 @@ end
 
 --- Add default take off type for the airwings.
 -- @param #EASYGCICAP self
--- @param #string Takeoff Can be "hot", "cold", or "air" - default is "hot".
+-- @param #string Takeoff (Optional) Can be "hot", "cold", or "air" - default is "hot".
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetDefaultTakeOffType(Takeoff)
   self:T(self.lid.."SetDefaultTakeOffType")
@@ -242036,7 +242040,7 @@ end
 
 --- Set default CAP Speed in knots
 -- @param #EASYGCICAP self
--- @param #number Speed Speed defaults to 300
+-- @param #number Speed (Optional) Speed defaults to 300
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPSpeed(Speed)
   self:T(self.lid.."SetDefaultSpeed")
@@ -242046,7 +242050,7 @@ end
 
 --- Set default CAP Altitude in feet
 -- @param #EASYGCICAP self
--- @param #number Altitude Altitude defaults to 25000
+-- @param #number Altitude (Optional) Altitude defaults to 25000
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPAlt(Altitude)
   self:T(self.lid.."SetDefaultAltitude")
@@ -242056,7 +242060,7 @@ end
 
 --- Set default CAP lieg initial direction in degrees
 -- @param #EASYGCICAP self
--- @param #number Direction Direction defaults to 90 (East)
+-- @param #number Direction (Optional) Direction defaults to 90 (East)
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPDirection(Direction)
   self:T(self.lid.."SetDefaultDirection")
@@ -242066,7 +242070,7 @@ end
 
 --- Set default leg length in NM
 -- @param #EASYGCICAP self
--- @param #number Leg Leg defaults to 15
+-- @param #number Leg (Optional) Leg defaults to 15
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPLeg(Leg)
   self:T(self.lid.."SetDefaultLeg")
@@ -242076,7 +242080,7 @@ end
 
 --- Set default grouping, i.e. how many airplanes per CAP point
 -- @param #EASYGCICAP self
--- @param #number Grouping Grouping defaults to 2
+-- @param #number Grouping (Optional) Grouping defaults to 2
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPGrouping(Grouping)
  self:T(self.lid.."SetDefaultCAPGrouping")
@@ -242086,7 +242090,7 @@ end
 
 --- Set default range planes can fly from their homebase in NM
 -- @param #EASYGCICAP self
--- @param #number Range Range defaults to 100 NM
+-- @param #number Range (Optional) Range defaults to 100 NM
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultMissionRange(Range)
   self:T(self.lid.."SetDefaultMissionRange")
@@ -242096,8 +242100,8 @@ end
 
 --- Set default turnover times for squadrons in minutes
 -- @param #EASYGCICAP self
--- @param #number MaintenanceTime Time in minutes it takes until a flight is combat ready again. Default is 5 min.
--- @param #number RepairTime Time in minutes it takes to repair a flight for each life point taken. Default is 10 min.
+-- @param #number MaintenanceTime (Optional) Time in minutes it takes until a flight is combat ready again. Default is 5 min.
+-- @param #number RepairTime (Optional) Time in minutes it takes to repair a flight for each life point taken. Default is 10 min.
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultTurnoverTime(MaintenanceTime,RepairTime)
   self:T(self.lid.."SetDefaultTurnoverTime")
@@ -242108,7 +242112,7 @@ end
 
 --- Set default number of airframes standing by for intercept tasks (visible on the airfield)
 -- @param #EASYGCICAP self
--- @param #number Airframes defaults to 2
+-- @param #number Airframes (Optional) defaults to 2
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultNumberAlert5Standby(Airframes)
   self:T(self.lid.."SetDefaultNumberAlert5Standby")
@@ -242118,7 +242122,7 @@ end
 
 --- Set default engage range for intruders detected by CAP flights in NM.
 -- @param #EASYGCICAP self
--- @param #number Range defaults to 50NM
+-- @param #number Range (Optional) defaults to 50NM
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultEngageRange(Range)
   self:T(self.lid.."SetDefaultEngageRange")
@@ -242171,7 +242175,7 @@ end
 
 --- Set which target types CAP flights will prefer to engage, defaults to {"Air"}
 -- @param #EASYGCICAP self
--- @param #table types Table of comma separated #string entries, defaults to {"Air"} (everything that flies and is not a weapon). Useful other options are e.g. {"Bombers"}, {"Fighters"}, 
+-- @param #table types (Optional) Table of comma separated #string entries, defaults to {"Air"} (everything that flies and is not a weapon). Useful other options are e.g. {"Bombers"}, {"Fighters"}, 
 -- or {"Helicopters"} or combinations like {"Bombers", "Fighters", "UAVs"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes).
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetCAPEngageTargetTypes(types)
@@ -242342,10 +242346,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet ASL.
--- @param #number Speed  Defaults to 300 knots TAS.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet ASL.
+-- @param #number Speed  (Optional) Defaults to 300 knots TAS.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength(Optional)  Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointCAP")--..Coordinate:ToStringLLDDM())
@@ -242373,10 +242377,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet.
--- @param #number Speed  Defaults to 300 knots.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet.
+-- @param #number Speed  (Optional) Defaults to 300 knots.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointRecon(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointRecon "..Coordinate:ToStringLLDDM())
@@ -242398,10 +242402,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet.
--- @param #number Speed  Defaults to 300 knots.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet.
+-- @param #number Speed  (Optional) Defaults to 300 knots.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointTanker(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointTanker "..Coordinate:ToStringLLDDM())
@@ -242423,10 +242427,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet.
--- @param #number Speed  Defaults to 300 knots.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet.
+-- @param #number Speed  (Optional) Defaults to 300 knots.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointAwacs(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointAwacs "..Coordinate:ToStringLLDDM())
@@ -243694,7 +243698,7 @@ end
 
 --- Set Tanker and Scouts to be invisible to enemy AI eyes
 -- @param #EASYA2G self
--- @param #boolean Switch Set to true or false, by default this is set to true already
+-- @param #boolean Switch (Optional) Set to true or false, by default this is set to true already
 -- @return #EASYA2G self 
 function EASYA2G:SetTankerAndScoutsInvisible(Switch)
   self:T(self.lid.."SetTankerAndScoutsInvisible")
@@ -243704,7 +243708,7 @@ end
 
 --- Set default A2G Speed in knots
 -- @param #EASYA2G self
--- @param #number Speed Speed defaults to 300
+-- @param #number Speed (Optional) Speed defaults to 300
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GSpeed(Speed)
   self:T(self.lid.."SetDefaultSpeed")
@@ -243714,7 +243718,7 @@ end
 
 --- Set A2G Flight formation.
 -- @param #EASYA2G self
--- @param #number Formation Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
+-- @param #number Formation (Optional) Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
 -- @return #EASYA2G self
 function EASYA2G:SetA2GFormation(Formation)
   self:T(self.lid.."SetA2GFormation")
@@ -243724,7 +243728,7 @@ end
 
 --- Set default A2G Altitude in feet
 -- @param #EASYA2G self
--- @param #number Altitude Altitude defaults to 25000
+-- @param #number Altitude (Optional) Altitude defaults to 25000
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GAlt(Altitude)
   self:T(self.lid.."SetDefaultAltitude")
@@ -243734,7 +243738,7 @@ end
 
 --- Set default A2G lieg initial direction in degrees
 -- @param #EASYA2G self
--- @param #number Direction Direction defaults to 90 (East)
+-- @param #number Direction (Optional) Direction defaults to 90 (East)
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GDirection(Direction)
   self:T(self.lid.."SetDefaultDirection")
@@ -243744,7 +243748,7 @@ end
 
 --- Set default leg length in NM
 -- @param #EASYA2G self
--- @param #number Leg Leg defaults to 5
+-- @param #number Leg (Optional) Leg defaults to 5
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GLeg(Leg)
   self:T(self.lid.."SetDefaultLeg")
@@ -243754,7 +243758,7 @@ end
 
 --- Set default grouping, i.e. how many airplanes per A2G point
 -- @param #EASYA2G self
--- @param #number Grouping Grouping defaults to 2
+-- @param #number Grouping (Optional) Grouping defaults to 2
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GGrouping(Grouping)
  self:T(self.lid.."SetDefaultA2GGrouping")
@@ -243775,7 +243779,7 @@ end
 
 --- Set which target types A2G flights will prefer to engage, defaults to {"Ground"}
 -- @param #EASYA2G self
--- @param #table types Table of comma separated #string entries, defaults to {"Ground"} (everything that is ground and is not a weapon). Useful other options are e.g. {"Armored vehicles"}, {"Tanks"}, 
+-- @param #table types (Optional) Table of comma separated #string entries, defaults to {"Ground"} (everything that is ground and is not a weapon). Useful other options are e.g. {"Armored vehicles"}, {"Tanks"}, 
 -- or {"APC"} or combinations like {"APC", "Tanks", "Artillery"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes).
 -- @return #EASYA2G self
 function EASYA2G:SetA2GEngageTargetTypes(types)
@@ -243787,10 +243791,10 @@ end
 -- @param #EASYA2G self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet ASL.
--- @param #number Speed  Defaults to 300 knots TAS.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet ASL.
+-- @param #number Speed  (Optional) Defaults to 300 knots TAS.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYA2G self
 function EASYA2G:AddHoldingPointA2G(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddHoldingPointA2G")--..Coordinate:ToStringLLDDM())
@@ -246158,7 +246162,7 @@ do -- Sound Base
   -- * (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
   -- 
   -- @param #string Text The text string to analyze.
-  -- @param #number Speed Speed factor. Default 1.
+  -- @param #number Speed (Optional) Speed factor. Default 1.
   -- @param #boolean isGoogle If true, google text-to-speech is used.
   function SOUNDBASE:GetSpeechTime(length,speed,isGoogle)
   
@@ -246255,9 +246259,9 @@ do -- Sound File
   --- Constructor to create a new SOUNDFILE object.
   -- @param #SOUNDFILE self
   -- @param #string FileName The name of the sound file, e.g. "Hello World.ogg".
-  -- @param #string Path The path of the directory, where the sound file is located. Default is "l10n/DEFAULT/" within the miz file.
-  -- @param #number Duration Duration in seconds, how long it takes to play the sound file. Default is 3 seconds.
-  -- @param #boolean UseSrs Set if SRS should be used to play this file. Default is false.
+  -- @param #string Path (Optional) The path of the directory, where the sound file is located. Default is "l10n/DEFAULT/" within the miz file.
+  -- @param #number Duration (Optional) Duration in seconds, how long it takes to play the sound file. Default is 3 seconds.
+  -- @param #boolean UseSrs (Optional) Set if SRS should be used to play this file. Default is false.
   -- @return #SOUNDFILE self
   function SOUNDFILE:New(FileName, Path, Duration, UseSrs)
 
@@ -246284,7 +246288,7 @@ do -- Sound File
 
   --- Set path, where the sound file is located.
   -- @param #SOUNDFILE self
-  -- @param #string Path Path to the directory, where the sound file is located. In case this is nil, it defaults to the DCS mission temp directory.
+  -- @param #string Path (Optional) Path to the directory, where the sound file is located. In case this is nil, it defaults to the DCS mission temp directory.
   -- @return #SOUNDFILE self
   function SOUNDFILE:SetPath(Path)
     self:F( {Path} )
@@ -246325,7 +246329,7 @@ do -- Sound File
 
   --- Set sound file name. This must be a .ogg or .mp3 file!
   -- @param #SOUNDFILE self
-  -- @param #string FileName Name of the file. Default is "Hello World.mp3".
+  -- @param #string FileName (Optional) Name of the file. Default is "Hello World.mp3".
   -- @return #SOUNDFILE self
   function SOUNDFILE:SetFileName(FileName)
     --TODO: check that sound file is really .ogg or .mp3
@@ -246343,7 +246347,7 @@ do -- Sound File
 
   --- Set duration how long it takes to play the sound file.
   -- @param #SOUNDFILE self
-  -- @param #string Duration Duration in seconds. Default 3 seconds.
+  -- @param #string Duration (Optional) Duration in seconds. Default 3 seconds.
   -- @return #SOUNDFILE self
   function SOUNDFILE:SetDuration(Duration)
     if Duration and type(Duration)=="string" then
@@ -246450,7 +246454,7 @@ do -- Text-To-Speech
   --- Constructor to create a new SOUNDTEXT object.
   -- @param #SOUNDTEXT self
   -- @param #string Text The text to speak.
-  -- @param #number Duration Duration in seconds, how long it takes to play the text. Default is 3 seconds.
+  -- @param #number Duration (Optional) Duration in seconds, how long it takes to play the text. Default is 3 seconds.
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:New(Text, Duration)
   
@@ -246470,7 +246474,7 @@ do -- Text-To-Speech
   
   --- Set text.
   -- @param #SOUNDTEXT self
-  -- @param #string Text Text to speak. Default "Hello World!".
+  -- @param #string Text (Optional) Text to speak. Default "Hello World!".
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetText(Text)
     
@@ -246481,7 +246485,7 @@ do -- Text-To-Speech
   
   --- Set duration, how long it takes to speak the text.
   -- @param #SOUNDTEXT self
-  -- @param #number Duration Duration in seconds. Default 3 seconds.
+  -- @param #number Duration (Optional) Duration in seconds. Default 3 seconds.
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetDuration(Duration)
     
@@ -246492,7 +246496,7 @@ do -- Text-To-Speech
   
   --- Set gender.
   -- @param #SOUNDTEXT self
-  -- @param #string Gender Gender: "male" or "female" (default).
+  -- @param #string Gender (Optional) Gender: "male" or "female" (default).
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetGender(Gender)
     
@@ -246503,7 +246507,7 @@ do -- Text-To-Speech
   
   --- Set TTS culture - local for the voice.
   -- @param #SOUNDTEXT self
-  -- @param #string Culture TTS culture. Default "en-GB".
+  -- @param #string Culture (Optional) TTS culture. Default "en-GB".
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetCulture(Culture)
     
@@ -247111,7 +247115,7 @@ end
 
 --- Set radio power. Note that this only applies if no relay unit is used.
 -- @param #RADIOQUEUE self
--- @param #number power Radio power in Watts. Default 100 W.
+-- @param #number power (Optional) Radio power in Watts. Default 100 W.
 -- @return #RADIOQUEUE self The RADIOQUEUE object.
 function RADIOQUEUE:SetRadioPower(power)
   self.power=power or 100
@@ -247120,8 +247124,8 @@ end
 
 --- Set SRS.
 -- @param #RADIOQUEUE self
--- @param #string PathToSRS Path to SRS.
--- @param #number Port SRS port. Default 5002.
+-- @param #string PathToSRS (Optional) Path to SRS.
+-- @param #number Port (Optional) SRS port. Default 5002.
 -- @return #RADIOQUEUE self The RADIOQUEUE object.
 function RADIOQUEUE:SetSRS(PathToSRS, Port)
   local path = PathToSRS or MSRS.path
@@ -247136,9 +247140,9 @@ end
 -- @param #number digit The digit 0-9.
 -- @param #string filename The name of the sound file.
 -- @param #number duration The duration of the sound file in seconds.
--- @param #string path The directory within the miz file where the sound is located. Default "l10n/DEFAULT/".
+-- @param #string path (Optional) The directory within the miz file where the sound is located. Default "l10n/DEFAULT/".
 -- @param #string subtitle Subtitle of the transmission.
--- @param #number subduration Duration [sec] of the subtitle being displayed. Default 5 sec.
+-- @param #number subduration (Optional) Duration [sec] of the subtitle being displayed. Default 5 sec.
 -- @return #RADIOQUEUE self The RADIOQUEUE object.
 function RADIOQUEUE:SetDigit(digit, filename, duration, path, subtitle, subduration)
 
@@ -247186,11 +247190,11 @@ end
 -- @param #RADIOQUEUE self
 -- @param #string filename Name of the sound file. Usually an ogg or wav file type.
 -- @param #number duration Duration in seconds the file lasts.
--- @param #number path Directory path inside the miz file where the sound file is located. Default "l10n/DEFAULT/".
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number path (Optional) Directory path inside the miz file where the sound file is located. Default "l10n/DEFAULT/".
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished. Defaults to 0.
 -- @param #string subtitle Subtitle of the transmission.
--- @param #number subduration Duration [sec] of the subtitle being displayed. Default 5 sec.
+-- @param #number subduration (Optional) Duration [sec] of the subtitle being displayed. Default 5 sec.
 -- @return #RADIOQUEUE.Transmission Radio transmission table.
 function RADIOQUEUE:NewTransmission(filename, duration, path, tstart, interval, subtitle, subduration)
 
@@ -247236,8 +247240,8 @@ end
 --- Add a SOUNDFILE to the radio queue.
 -- @param #RADIOQUEUE self
 -- @param Sound.SoundOutput#SOUNDFILE soundfile Sound file object to be added.
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished. Defaults to 0.
 -- @return #RADIOQUEUE self
 function RADIOQUEUE:AddSoundFile(soundfile, tstart, interval)
   --env.info(string.format("FF add soundfile: name=%s%s", soundfile:GetPath(), soundfile:GetFileName()))
@@ -247249,8 +247253,8 @@ end
 --- Add a SOUNDTEXT to the radio queue.
 -- @param #RADIOQUEUE self
 -- @param Sound.SoundOutput#SOUNDTEXT soundtext Text-to-speech text.
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished. Defaults to 0.
 -- @return #RADIOQUEUE self
 function RADIOQUEUE:AddSoundText(soundtext, tstart, interval)
 
@@ -248781,10 +248785,10 @@ end
 -- set the path to the exe file via @{#MSRS.SetPath}.
 --
 -- @param #MSRS self
--- @param #string Path Path to SRS directory. Default `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
--- @param #number Frequency Radio frequency in MHz. Default 143.00 MHz. Can also be given as a #table of multiple frequencies.
--- @param #number Modulation Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a #table of multiple modulations.
--- @param #string Backend Backend used: `MSRS.Backend.SRSEXE` (default) or `MSRS.Backend.GRPC`.
+-- @param #string Path (Optional) Path to SRS directory. Default `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 143.00 MHz. Can also be given as a #table of multiple frequencies.
+-- @param #number Modulation (Optional) Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a #table of multiple modulations.
+-- @param #string Backend (Optional) Backend used: `MSRS.Backend.SRSEXE` (default) or `MSRS.Backend.GRPC`.
 -- @return #MSRS self
 function MSRS:New(Path, Frequency, Modulation, Backend)
 
@@ -248854,7 +248858,7 @@ end
 -- - `MSRS.Backend.GRPC`: Via DCS-gRPC.
 --
 -- @param #MSRS self
--- @param #string Backend Backend used. Default is `MSRS.Backend.SRSEXE`.
+-- @param #string Backend (Optional) Backend used. Default is `MSRS.Backend.SRSEXE`.
 -- @return #MSRS self
 function MSRS:SetBackend(Backend)
   self:F( {Backend=Backend} )
@@ -248932,7 +248936,7 @@ end
 
 --- Set path to SRS install directory. More precisely, path to where the `DCS-SR-ExternalAudio.exe` is located.
 -- @param #MSRS self
--- @param #string Path Path to the directory, where the sound file is located. Default is `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
+-- @param #string Path (Optional) Path to the directory, where the sound file is located. Default is `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
 -- @return #MSRS self
 function MSRS:SetPath(Path)
   self:F( {Path=Path} )
@@ -248981,7 +248985,7 @@ end
 
 --- Set label.
 -- @param #MSRS self
--- @param #number Label. Default "ROBOT"
+-- @param #number Label (Optional) Label. Default "ROBOT"
 -- @return #MSRS self
 function MSRS:SetLabel(Label)
   self:F( {Label=Label} )
@@ -248998,7 +249002,7 @@ end
 
 --- Set port.
 -- @param #MSRS self
--- @param #number Port Port. Default 5002.
+-- @param #number Port (Optional) Port. Default 5002.
 -- @return #MSRS self
 function MSRS:SetPort(Port)
   self:F( {Port=Port} )
@@ -249016,7 +249020,7 @@ end
 
 --- Set coalition.
 -- @param #MSRS self
--- @param #number Coalition Coalition. Default 0.
+-- @param #number Coalition (Optional) Coalition. Default 0.
 -- @return #MSRS self
 function MSRS:SetCoalition(Coalition)
   self:F( {Coalition=Coalition} )
@@ -249102,7 +249106,7 @@ end
 
 --- Set gender.
 -- @param #MSRS self
--- @param #string Gender Gender: "male" or "female" (default).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
 -- @return #MSRS self
 function MSRS:SetGender(Gender)
   self:F( {Gender=Gender} )
@@ -249141,7 +249145,7 @@ end
 --- Set to use a specific voice for a given provider. Note that this will override any gender and culture settings.
 -- @param #MSRS self
 -- @param #string Voice Voice.
--- @param #string Provider Provider. Default is as set by @{#MSRS.SetProvider}, which itself defaults to `MSRS.Provider.WINDOWS` if not set.
+-- @param #string Provider (Optional) Provider. Default is as set by @{#MSRS.SetProvider}, which itself defaults to `MSRS.Provider.WINDOWS` if not set.
 -- @return #MSRS self
 function MSRS:SetVoiceProvider(Voice, Provider)
   self:F( {Voice=Voice, Provider=Provider} )
@@ -249154,7 +249158,7 @@ end
 
 --- Set to use a specific voice if Microsoft Windows' native TTS is use as provider. Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice Voice. Default `"Microsoft Hazel Desktop"`.
+-- @param #string Voice (Optional) Voice. Default `"Microsoft Hazel Desktop"`.
 -- @return #MSRS self
 function MSRS:SetVoiceWindows(Voice)
   self:F( {Voice=Voice} )
@@ -249165,7 +249169,7 @@ end
 
 --- Set to use a specific voice if Google is use as provider. Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice Voice. Default `MSRS.Voices.Google.Standard.en_GB_Standard_A`.
+-- @param #string Voice (Optional) Voice. Default `MSRS.Voices.Google.Standard.en_GB_Standard_A`.
 -- @return #MSRS self
 function MSRS:SetVoiceGoogle(Voice)
   self:F( {Voice=Voice} )
@@ -249176,7 +249180,7 @@ end
 
 --- Set to use a specific voice if Piper is used as provider (only Hound-TTS backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice [Piper Voices](https://rhasspy.github.io/piper-samples/). Default `"en_US-ryan-low"`.
+-- @param #string Voice (Optional) [Piper Voices](https://rhasspy.github.io/piper-samples/). Default `"en_US-ryan-low"`.
 -- @return #MSRS self
 function MSRS:SetVoicePiper(Voice)
   self:F( {Voice=Voice} )
@@ -249187,7 +249191,7 @@ end
 
 --- Set to use a specific voice if Microsoft Azure is use as provider (only DCS-gRPC backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice [Azure Voice](https://learn.microsoft.com/azure/cognitive-services/speech-service/language-support). Default `"en-US-AriaNeural"`.
+-- @param #string Voice (Optional) [Azure Voice](https://learn.microsoft.com/azure/cognitive-services/speech-service/language-support). Default `"en-US-AriaNeural"`.
 -- @return #MSRS self
 function MSRS:SetVoiceAzure(Voice)
   self:F( {Voice=Voice} )
@@ -249198,7 +249202,7 @@ end
 
 --- Set to use a specific voice if Amazon Web Service is use as provider (only DCS-gRPC backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice [AWS Voice](https://docs.aws.amazon.com/polly/latest/dg/voicelist.html). Default `"Brian"`.
+-- @param #string Voice (Optional) [AWS Voice](https://docs.aws.amazon.com/polly/latest/dg/voicelist.html). Default `"Brian"`.
 -- @return #MSRS self
 function MSRS:SetVoiceAmazon(Voice)
   self:F( {Voice=Voice} )
@@ -249209,7 +249213,7 @@ end
 
 --- Get voice.
 -- @param #MSRS self
--- @param #string Provider Provider. Default is the currently set provider (`self.provider`).
+-- @param #string Provider (Optional) Provider. Default is the currently set provider (`self.provider`).
 -- @return #string Voice.
 function MSRS:GetVoice(Provider)
 
@@ -249384,7 +249388,7 @@ end
 
 --- Get provider options.
 -- @param #MSRS self
--- @param #string Provider Provider. Default is as set via @{#MSRS.SetProvider}.
+-- @param #string Provider (Optional) Provider. Default is as set via @{#MSRS.SetProvider}.
 -- @return #MSRS.ProviderOptions Provider options.
 function MSRS:GetProviderOptions(Provider)
   return self.poptions[Provider or self.provider] or {}
@@ -249706,7 +249710,7 @@ end
 -- @param #number volume Volume.
 -- @param #number speed Speed.
 -- @param #number port Port.
--- @param #string label Label, defaults to "ROBOT" (displayed sender name in the radio overlay of SRS) - No spaces allowed!
+-- @param #string label (Optional) Label, defaults to "ROBOT" (displayed sender name in the radio overlay of SRS) - No spaces allowed!
 -- @param Core.Point#COORDINATE coordinate Coordinate.
 -- @return #string Command.
 function MSRS:_GetCommand(freqs, modus, coal, gender, voice, culture, volume, speed, port, label, coordinate)
@@ -250008,9 +250012,9 @@ end
 -- @param #string Message The text to speak.
 -- @param #table Frequencies The table of frequencies to use.
 -- @param #table Modulations The table of modulations to use.
--- @param #number Volume The volume to use, defaults to 1.0.
--- @param #string Label The label to use, defaults to "MSRS".
--- @param #number Coalition The coalition to use.
+-- @param #number Volume (Optional) The volume to use, defaults to 1.0.
+-- @param #string Label (Optional) The label to use, defaults to "MSRS".
+-- @param #number Coalition (Optional) The coalition to use.
 -- @param Core.Point#COORDINATE Point (Optional) The point from which the voice is sent.
 -- @param #number Speed (Optional) How fast to speak, defaults to 1.0.
 -- @param #string Gender (Optional) Gender to use.
@@ -250150,8 +250154,8 @@ end
 --- Hound speech time calculator. Use to determine how long it takes to speak something out.
 --  @param MSRS self
 --  @param #string Message The message to measure. Can also be handed as string lenght.
---  @param #number Speed The speed to use, defaults to 1.0.
---  @param #boolean UseGoogle If to use google. Default: no.
+--  @param #number Speed (Optional) The speed to use, defaults to 1.0.
+--  @param #boolean UseGoogle (Optional) If to use google. Default: no.
 function MSRS:_HoundSpeechTime(Message,Speed,UseGoogle)
   local speed = Speed or 1.0
   local speechtime = HoundTTS.getSpeechTime(Message, speed, UseGoogle)
@@ -250164,8 +250168,8 @@ end
 
 --- Get central SRS configuration to be able to play tts over SRS radio using the `DCS-SR-ExternalAudio.exe`.
 -- @param #MSRS self
--- @param #string Path Path to config file, defaults to "C:\Users\<yourname>\Saved Games\DCS\Config"
--- @param #string Filename File to load, defaults to "Moose_MSRS.lua"
+-- @param #string Path (Optional) Path to config file, defaults to "C:\Users\<yourname>\Saved Games\DCS\Config"
+-- @param #string Filename (Optional) File to load, defaults to "Moose_MSRS.lua"
 -- @return #boolean success
 -- @usage
 --  0) Benefits: Centralize configuration of SRS, keep paths and keys out of the mission source code, making it safer and easier to move missions to/between servers,
@@ -250308,7 +250312,7 @@ end
 -- * (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 --
 -- @param #number length can also be passed as #string
--- @param #number speed Defaults to 1.0
+-- @param #number speed (Optional) Defaults to 1.0
 -- @param #boolean isGoogle We're using Google TTS
 function MSRS.getSpeechTime(length,speed,isGoogle)
 
@@ -250465,22 +250469,22 @@ end
 --- Create a new transmission and add it to the radio queue.
 -- @param #MSRSQUEUE self
 -- @param #string text Text to play.
--- @param #number duration Duration in seconds the file lasts. Default is determined by number of characters of the text message.
+-- @param #number duration (Optional) Duration in seconds the file lasts. Default is determined by number of characters of the text message.
 -- @param Sound.SRS#MSRS msrs MOOSE SRS object.
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished.
 -- @param #table subgroups Groups that should receive the subtiltle.
 -- @param #string subtitle Subtitle displayed when the message is played.
--- @param #number subduration Duration [sec] of the subtitle being displayed. Default 5 sec.
--- @param #number frequency Radio frequency if other than MSRS default.
--- @param #number modulation Radio modulation if other then MSRS default.
--- @param #string gender Gender of the voice
--- @param #string culture Culture of the voice
--- @param #string voice Specific voice
--- @param #number volume Volume setting
--- @param #string label Label to be used
--- @param Core.Point#COORDINATE coordinate Coordinate to be used
--- @param #number speed Speed to be used
+-- @param #number subduration (Optional) Duration [sec] of the subtitle being displayed. Default 5 sec.
+-- @param #number frequency (Optional) Radio frequency if other than MSRS default.
+-- @param #number modulation (Optional) Radio modulation if other then MSRS default.
+-- @param #string gender (Optional) Gender of the voice
+-- @param #string culture C(Optional) ulture of the voice
+-- @param #string voice (Optional) Specific voice
+-- @param #number volume (Optional) Volume setting
+-- @param #string label (Optional) Label to be used
+-- @param Core.Point#COORDINATE coordinate (Optional) Coordinate to be used
+-- @param #number speed (Optional) Speed to be used
 -- @return #MSRSQUEUE.Transmission Radio transmission table.
 function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed)
   self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label, S=speed})
@@ -250860,7 +250864,7 @@ NAVFIX.version="0.1.0"
 --- Create a new NAVFIX class instance from a given VECTOR.
 -- @param #NAVFIX self
 -- @param #string Name Name/ident of the point. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param Core.Vector#VECTOR Vector Position vector of the navpoint.
 -- @return #NAVFIX self
 function NAVFIX:NewFromVector(Name, Type, Vector)
@@ -250895,7 +250899,7 @@ end
 --- Create a new NAVFIX class instance from a given COORDINATE.
 -- @param #NAVFIX self
 -- @param #string Name Name of the fix. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the point.
 -- @return #NAVFIX self
 function NAVFIX:NewFromCoordinate(Name, Type, Coordinate)
@@ -250913,7 +250917,7 @@ end
 --- Create a new NAVFIX instance from given latitude and longitude in degrees, minutes and seconds (DMS).
 -- @param #NAVFIX self
 -- @param #string Name Name of the fix. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param #string Latitude Latitude in DMS as string.
 -- @param #string Longitude Longitude in DMS as string.
 -- @return #NAVFIX self
@@ -250931,7 +250935,7 @@ end
 --- Create a new NAVFIX instance from given latitude and longitude in decimal degrees (DD).
 -- @param #NAVFIX self
 -- @param #string Name Name of the fix. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param #number Latitude Latitude in DD.
 -- @param #number Longitude Longitude in DD.
 -- @return #NAVFIX self
@@ -251268,7 +251272,7 @@ NAVAID.version="0.1.0"
 --- Create a new NAVAID class instance.
 -- @param #NAVAID self
 -- @param #string Name Name/ident of this navaid.
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param #string ZoneName Name of the zone to scan the scenery.
 -- @param #string SceneryName Name of the scenery object.
 -- @return #NAVAID self
@@ -251324,7 +251328,7 @@ end
 --- Set channel of, *e.g.*, TACAN beacons.
 -- @param #NAVAID self
 -- @param #number Channel The channel.
--- @param #string Band The band either `"X"` (default) or `"Y"`. 
+-- @param #string Band (Optional) The band either `"X"` (default) or `"Y"`. 
 -- @return #NAVAID self
 function NAVAID:SetChannel(Channel, Band)
 
@@ -251589,7 +251593,7 @@ end
 --- Find closest beacons to a given coordinate.
 -- @param #BEACONS self
 -- @param Core.Point#COORDINATE Coordinate The reference coordinate.
--- @param #number Nmax Max number of beacons. Default 5.
+-- @param #number Nmax (Optional) Max number of beacons. Default 5.
 -- @param #number TypeID (Optional) Only search for specific beacon types, *e.g.* `BEACON.Type.TACAN`.
 -- @param #number DistMax (Optional) Max search distance in meters.
 -- @return #table Table of #BEACONS.Beacon closest beacons.
@@ -252030,7 +252034,7 @@ end
 --- Find closest radios to a given coordinate.
 -- @param #RADIOS self
 -- @param Core.Point#COORDINATE Coordinate The reference coordinate.
--- @param #number Nmax Max number of radios. Default 5.
+-- @param #number Nmax (Optional) Max number of radios. Default 5.
 -- @param #number DistMax (Optional) Max search distance in meters.
 -- @return #table Table of #RADIOS.Radio closest radios.
 function RADIOS:GetClosestRadios(Coordinate, Nmax, DistMax)
@@ -252444,7 +252448,7 @@ end
 --- Find closest towns to a given coordinate.
 -- @param #TOWNS self
 -- @param Core.Point#COORDINATE Coordinate The reference coordinate.
--- @param #number Nmax Max number of towns. Default 5.
+-- @param #number Nmax (Optional) Max number of towns. Default 5.
 -- @param #number DistMax (Optional) Max search distance in meters.
 -- @return #table Table of #TOWNS.Town closest towns.
 function TOWNS:GetClosestTowns(Coordinate, Nmax, DistMax)

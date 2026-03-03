@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-02T16:24:29+01:00-c346eb7acc23eb5bbcb131bf90cda1607324d9a9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-03T06:25:56+01:00-8968add1266a5a1fdc5ee969d3dda647fc289e73 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -39269,6 +39269,7 @@ end
 do
 function DETECTION_BASE:SetIntercept(Intercept,InterceptDelay)
 self:F2()
+Intercept=Intercept or false
 self.Intercept=Intercept
 self.InterceptDelay=InterceptDelay
 return self
@@ -45121,6 +45122,7 @@ return self
 end
 function RANGE:AddBombingTargets(targetnames,goodhitrange,randommove)
 self:F({targetnames=targetnames,goodhitrange=goodhitrange,randommove=randommove})
+randommove=randommove or false
 if type(targetnames)~="table"then
 targetnames={targetnames}
 end
