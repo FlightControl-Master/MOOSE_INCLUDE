@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-04T12:01:31+01:00-2d4d4e3865f804299ccbcb3750d3a3af144978ef ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-04T13:53:23+01:00-ca3ccce3f273253aa70ec590bf080cafc34a5911 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19718,6 +19718,24 @@ end
 function MESSAGE:ToClient(Client,Settings)
 self:F(Client)
 self:ToUnit(Client,Settings)
+return self
+end
+function MESSAGE:ToSet(Set,Settings)
+for _,_obj in pairs(Set:GetSetObjects()or{})do
+if _obj and _obj:IsAlive()then
+if _obj:IsInstanceOf("SET_GROUP")then
+self:ToGroup(_obj,Settings)
+elseif _obj:IsInstanceOf("SET_CLIENT")or _obj:IsInstanceOf("SET_UNIT")then
+self:ToUnit(_obj,Settings)
+end
+end
+end
+return self
+end
+function MESSAGE:ToSetIf(Set,Condition,Settings)
+if Set and Condition==true then
+self:ToSet(Set,Settings)
+end
 return self
 end
 function MESSAGE:ToGroup(Group,Settings)

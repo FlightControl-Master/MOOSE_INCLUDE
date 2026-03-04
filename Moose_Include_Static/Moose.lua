@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-04T12:01:31+01:00-2d4d4e3865f804299ccbcb3750d3a3af144978ef ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-04T13:53:23+01:00-ca3ccce3f273253aa70ec590bf080cafc34a5911 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -37340,6 +37340,37 @@ function MESSAGE:ToClient( Client, Settings )
   self:F( Client )
   self:ToUnit(Client,Settings)
   return self
+end
+
+--- Sends a MESSAGE to a SET_GROUP, SET_UNIT, or SET_CLIENT.
+-- @param #MESSAGE self
+-- @param Core.Set#SET_GROUP Set The set to send to.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
+-- @return self
+function MESSAGE:ToSet(Set, Settings)
+ for _,_obj in pairs (Set:GetSetObjects() or {}) do
+    if _obj and _obj:IsAlive() then
+        if _obj:IsInstanceOf("SET_GROUP") then
+         self:ToGroup(_obj, Settings)
+        elseif _obj:IsInstanceOf("SET_CLIENT") or _obj:IsInstanceOf("SET_UNIT") then
+         self:ToUnit(_obj, Settings)
+        end
+    end
+ end
+ return self
+end
+
+--- Sends a MESSAGE to a SET_GROUP, SET_UNIT, or SET_CLIENT if a condition is true.
+-- @param #MESSAGE self
+-- @param Core.Set#SET_GROUP Set The set to send to.
+-- @param #boolean Condition The condition which needs to be true.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
+-- @return self
+function MESSAGE:ToSetIf(Set, Condition, Settings)
+    if Set and Condition == true then
+        self:ToSet(Set, Settings)
+    end
+ return self
 end
 
 --- Sends a MESSAGE to a Group.
