@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-04T14:11:03+01:00-52b152616315708655784559e96e77007c84e1c9 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-05T06:55:17+01:00-f3bc71a4eec94f060e9df274a28800bb443a52d6 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -151105,7 +151105,6 @@ do
 --
 -- ## 2.2 C-130J-30 support and cargo airdrop auto-build.
 --
--- ### Important
 --  **Important:** This auto-build flow only applies to cargo obtained via CTLD **Get Crates**.
 --  Cargo spawned from the C-130 **Loadsheet** is **not** tracked by this feature.
 --
@@ -151129,20 +151128,18 @@ do
 --         my_ctld:AddCratesCargoNoMove("IRIS T System", {"CTLD_CARGO_IRISTSLM_System"}, CTLD_CARGO.Enum.FOB, 3, 2800, 10, "SAM/AAA", nil,nil,nil,nil,"cds_crate",nil, "iso_container_small")
 --
 -- In the example above:
--- - `AddCratesCargoNoMove` means the built unit/group will not receive an auto-move command after spawn.
--- - `IRIS T System` is the menu/display name.
--- - `CTLD_CARGO_IRISTSLM_System` is the mission editor template.
--- - `CTLD_CARGO.Enum.FOB` defines the cargo/build type. FOB builds keep the mission-editor orientation.
--- - `3` is crates required, `2800` is per-crate mass (kg), and `10` is stock.
--- - `SAM/AAA` is the submenu label (used when `my_ctld.usesubcats = true`).
--- - `cds_crate` is the default cargo shape for non-C130 aircraft when provided; if omitted, CTLD falls back to `my_ctld.basetype`.
--- - `iso_container_small` is the C-130-specific cargo shape override, even if `my_ctld.C130basetype` is set to something else.
--- - **Important:** If you do not want to set stock (the `10` parameter), pass `nil` in that position. Keep `nil` placeholders for skipped parameters before later values.
 --
+-- * `AddCratesCargoNoMove` means the built unit/group will not receive an auto-move command after spawn.
+-- * `IRIS T System` is the menu/display name.
+-- * `CTLD_CARGO_IRISTSLM_System` is the mission editor template.
+-- * `CTLD_CARGO.Enum.FOB` defines the cargo/build type. FOB builds keep the mission-editor orientation.
+-- * `3` is crates required, `2800` is per-crate mass (kg), and `10` is stock.
+-- * `SAM/AAA` is the submenu label (used when `my_ctld.usesubcats = true`).
+-- * `cds_crate` is the default cargo shape for non-C130 aircraft when provided; if omitted, CTLD falls back to `my_ctld.basetype`.
+-- * `iso_container_small` is the C-130-specific cargo shape override, even if `my_ctld.C130basetype` is set to something else.
+-- * **Important:** If you do not want to set stock (the `10` parameter), pass `nil` in that position.
+--   Keep `nil` placeholders for skipped parameters before later values.
 --
--- Notes:
--- - This is a C-130J-30 workflow.
--- - Regular CTLD behavior for other aircraft remains unchanged.
 --
 -- ## 2.3 User functions
 -- 
