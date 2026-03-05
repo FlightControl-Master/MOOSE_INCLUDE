@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-02-23T18:11:28+01:00-12e71f44546f9535e8f82e4f729dda3a0dad510f ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-05T09:56:12+01:00-9afd5161825a2b71f2b0bc5e7c704324b58ef148 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -183,14 +183,24 @@ ENUMS.WeaponFlag={
   Cannons              =  805306368, -- GUN_POD + BuiltInCannon
   --- Torpedo
   Torpedo              = 4294967296,
+  --- Decoy
+  Decoys               = 8589934592,
+  --- Shell  
+  SmokeShell                =  17179869184,
+  IlluminationShell         =  34359738368,
+  MarkerShell               =  51539607552,
+  MarkerWeapon              =  51539620864,
+  SubmunitionDispenserShell =  68719476736,
+  ConventionalShell         = 206963736576,
   ---
   -- Even More Genral
-  Auto                 = 3221225470, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons)
-  AutoDCS              = 1073741822, -- Something if often see
-  AnyAG                = 2956984318, -- Any Air-To-Ground Weapon
-  AnyAA                =  264241152, -- Any Air-To-Air Weapon
-  AnyUnguided          = 2952822768, -- Any Unguided Weapon
-  AnyGuided            =  268402702, -- Any Guided Weapon
+  Auto                 = 265214230526, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons + Torpedos)
+  AutoDCS              =   1073741822, -- Something if often see
+  AnyAG                =   2956984318, -- Any Air-To-Ground Weapon
+  AnyAA                =    264241152, -- Any Air-To-Air Weapon
+  AnyUnguided          =   2952822768, -- Any Unguided Weapon
+  AnyGuided            =    268402702, -- Any Guided Weapon
+  AnyShell             = 258503344128, -- Any Shell
 }
 
 --- Weapon types by category. See the [Weapon Flag](https://wiki.hoggitworld.com/view/DCS_enum_weapon_flag) enumerator on hoggit wiki.
@@ -272,11 +282,11 @@ ENUMS.WeaponType.Torpedo={
 }
 ENUMS.WeaponType.Any={
   -- General combinations
-  Weapon               = 3221225470, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons)
-  AG                   = 2956984318, -- Any Air-To-Ground Weapon
-  AA                   =  264241152, -- Any Air-To-Air Weapon
-  Unguided             = 2952822768, -- Any Unguided Weapon
-  Guided               =  268402702, -- Any Guided Weapon
+  Weapon               = 265214230526, -- Any Weapon (AnyBomb + AnyRocket + AnyMissile + Cannons + Torpedos)
+  AG                   =   2956984318, -- Any Air-To-Ground Weapon
+  AA                   =    264241152, -- Any Air-To-Air Weapon
+  Unguided             =   2952822768, -- Any Unguided Weapon
+  Guided               =    268402702, -- Any Guided Weapon
 }
 
 
@@ -2722,43 +2732,77 @@ function UTILS.TableLength(T)
 end
 
 --- Print a table to log in a nice format
--- @param #table table The table to print
--- @param #number indent Number of indents
+-- @param #table t The table to print
+-- @param #number indent (Optional) Number of indents. Defaults to 0.
 -- @param #boolean noprint Don't log but return text
+-- @param #number maxDepth (Optional) Only cycle this deep, defaults to 5.
+-- @param #table seen (Optional) 
 -- @return #string text Text created on the fly of the log output
-function UTILS.PrintTableToLog(table, indent, noprint)
-  local text = "\n"
-  if not table or type(table) ~= "table" then
+function UTILS.PrintTableToLog(t, indent, noprint, maxDepth, seen)
+  maxDepth = maxDepth or 5
+  indent   = indent or 0
+  seen     = seen or {}
+
+  if not t or type(t) ~= "table" then
     env.warning("No table passed!")
     return nil
   end
-  if not indent then indent = 0 end
-  for k, v in pairs(table) do
-    if string.find(k," ") then k='"'..k..'"'end
-    if type(v) == "table" and UTILS.TableLength(v) > 0 then
+
+  -- Max depth guard
+  if indent > maxDepth then
+    local msg = string.rep("  ", indent) .. "<max depth reached>\n"
+    if not noprint then env.info(msg) end
+    return msg
+  end
+
+  -- Cycle / repeated reference guard
+  if seen[t] then
+    local msg = string.rep("  ", indent) .. "<cycle>\n"
+    if not noprint then env.info(msg) end
+    return msg
+  end
+  seen[t] = true
+
+  local text = "\n"
+
+  for k, v in pairs(t) do
+    local key = k
+    if type(key) == "string" and key:find(" ", 1, true) then
+      key = '"' .. key .. '"'
+    else
+      key = tostring(key)
+    end
+
+    if type(v) == "table" and next(v) ~= nil then
       if not noprint then
-        env.info(string.rep("  ", indent) .. tostring(k) .. " = {")
+        env.info(string.rep("  ", indent) .. key .. " = {")
       end
-      text = text ..string.rep("  ", indent) .. tostring(k) .. " = {\n"
-      text = text .. tostring(UTILS.PrintTableToLog(v, indent + 1), noprint).."\n"
+
+      text = text .. string.rep("  ", indent) .. key .. " = {\n"
+      text = text .. UTILS.PrintTableToLog(v, indent + 1, noprint, maxDepth, seen)
+      text = text .. string.rep("  ", indent) .. "},\n"
+
       if not noprint then
         env.info(string.rep("  ", indent) .. "},")
       end
-      text = text .. string.rep("  ", indent) .. "},\n"
+
     elseif type(v) == "function" then
+      -- skip functions (optional: log "<function>")
     else
       local value
-      if tostring(v) == "true" or tostring(v) == "false" or tonumber(v) ~= nil then
-        value=v
+      if type(v) == "boolean" or type(v) == "number" then
+        value = tostring(v)
       else
-        value = '"'..tostring(v)..'"'
+        value = '"' .. tostring(v) .. '"'
       end
+
       if not noprint then
-        env.info(string.rep("  ", indent) .. tostring(k) .. " = " .. tostring(value)..",\n")
+        env.info(string.rep("  ", indent) .. key .. " = " .. value .. ",")
       end
-      text = text .. string.rep("  ", indent) .. tostring(k) .. " = " .. tostring(value)..",\n"
+      text = text .. string.rep("  ", indent) .. key .. " = " .. value .. ",\n"
     end
   end
+
   return text
 end
 
@@ -3539,7 +3583,7 @@ function UTILS.ClockToSeconds(clock)
 end
 
 --- Display clock and mission time on screen as a message to all.
--- @param #number duration Duration in seconds how long the time is displayed. Default is 5 seconds.
+-- @param #number duration (Optional) Duration in seconds how long the time is displayed. Default is 5 seconds.
 function UTILS.DisplayMissionTime(duration)
   duration=duration or 5
   local Tnow=timer.getAbsTime()
@@ -3553,7 +3597,7 @@ end
 
 --- Replace illegal characters [<>|/?*:\\] in a string.
 -- @param #string Text Input text.
--- @param #string ReplaceBy Replace illegal characters by this character or string. Default underscore "_".
+-- @param #string ReplaceBy (Optional) Replace illegal characters by this character or string. Default underscore "_".
 -- @return #string The input text with illegal chars replaced.
 function UTILS.ReplaceIllegalCharacters(Text, ReplaceBy)
   ReplaceBy=ReplaceBy or "_"
@@ -4427,7 +4471,7 @@ function UTILS.GetSunRiseAndSet(DayOfYear, Latitude, Longitude, Rising, Tlocal)
 -- @param #number Latitude Latitude.
 -- @param #number Longitude Longitude.
 -- @param #boolean Rising If true, calc sun rise, or sun set otherwise.
--- @param #number Tlocal Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
+-- @param #number Tlocal (Optional) Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
 -- @return #number Sun rise in seconds of the day.
 function UTILS.GetSunrise(Day, Month, Year, Latitude, Longitude, Tlocal)
 
@@ -4443,7 +4487,7 @@ end
 -- @param #number Latitude Latitude.
 -- @param #number Longitude Longitude.
 -- @param #boolean Rising If true, calc sun rise, or sun set otherwise.
--- @param #number Tlocal Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
+-- @param #number Tlocal (Optional) Local time offset in hours. E.g. +4 for a location which has GMT+4. Default 0.
 -- @return #number Sun rise in seconds of the day.
 function UTILS.GetSunset(Day, Month, Year, Latitude, Longitude, Tlocal)
 
@@ -5121,12 +5165,12 @@ end
 -- @param #boolean Reduce If false, existing loaded groups will not be reduced to fit the saved number.
 -- @param #boolean Structured (Optional, needs Reduce = true) If true, and the data has been saved as structure before, remove the correct unit types as per the saved list.
 -- @param #boolean Cinematic (Optional, needs Structured = true) If true, place a fire/smoke effect on the dead static position.
--- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
--- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
--- @param #boolean Resurrection If true, dead units can be restored on load. Defaults to false.
--- @param #number ResurrectPercentage Use this percentage of probability to resurrect a unit. [0..100], defaults to 25.
--- @param #number Healmin If set, life points of a resurrected unit will be randomly restored to min this percentage. [0..100], defaults to 25.
--- @param #number Healmax If set, life points of a resurrected unit will be randomly restored to max this percentage. [0..100], defaults to 75.
+-- @param #number Effect (Optional) (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
+-- @param #number Density (Optional) (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #boolean Resurrection (Optional) If true, dead units can be restored on load. Defaults to false.
+-- @param #number ResurrectPercentage (Optional) Use this percentage of probability to resurrect a unit. [0..100], defaults to 25.
+-- @param #number Healmin (Optional) If set, life points of a resurrected unit will be randomly restored to min this percentage. [0..100], defaults to 25.
+-- @param #number Healmax (Optional) If set, life points of a resurrected unit will be randomly restored to max this percentage. [0..100], defaults to 75.
 -- @return #table Table of data objects (tables) containing groupname, coordinate and group object. Returns nil when file cannot be read.
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
 function UTILS.LoadStationaryListOfGroups(Path,Filename,Reduce,Structured,Cinematic,Effect,Density,Resurrection,ResurrectPercentage,Healmin,Healmax)
@@ -5249,8 +5293,8 @@ end
 -- @param #boolean Spawn If set to false, do not re-spawn the groups loaded in location and reduce to size.
 -- @param #boolean Structured (Optional, needs Spawn=true)If true, and the data has been saved as structure before, remove the correct unit types as per the saved list.
 -- @param #boolean Cinematic (Optional, needs Structured=true) If true, place a fire/smoke effect on the dead static position.
--- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
--- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #number Effect (Optional) (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
+-- @param #number Density (Optional) (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
 -- @return Core.Set#SET_GROUP Set of GROUP objects.
 -- Returns nil when file cannot be read. Returns a table of data entries if Spawn is false: `{ groupname=groupname, size=size, coordinate=coordinate, template=template }`
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
@@ -5435,8 +5479,8 @@ end
 -- @param #boolean Reduce If false, do not destroy the units with size=0.
 -- @param #boolean Dead (Optional, needs Reduce = true) If Dead is true, re-spawn the dead object as dead and do not just delete it.
 -- @param #boolean Cinematic (Optional, needs Dead = true) If true, place a fire/smoke effect on the dead static position.
--- @param #number Effect (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
--- @param #number Density (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
+-- @param #number Effect (Optional) (Optional for Cinematic) What effect to use. Defaults to a random effect. Smoke presets are: 1=small smoke and fire, 2=medium smoke and fire, 3=large smoke and fire, 4=huge smoke and fire, 5=small smoke, 6=medium smoke, 7=large smoke, 8=huge smoke.
+-- @param #number Density (Optional) (Optional for Cinematic) What smoke density to use, can be 0 to 1. Defaults to 0.5.
 -- @return #table Table of data objects (tables) containing staticname, size (0=dead else 1), coordinate and the static object. Dead objects will have coordinate points `{x=0,y=0,z=0}`
 -- @return #table When using Cinematic: table of names of smoke and fire objects, so they can be extinguished with `COORDINATE.StopBigSmokeAndFire( name )`
 -- Returns nil when file cannot be read.
@@ -5605,13 +5649,13 @@ end
 --- Helper function to plot a racetrack on the F10 Map - curtesy of Buur.
 -- @param Core.Point#COORDINATE Coordinate
 -- @param #number Altitude Altitude in feet
--- @param #number Speed Speed in knots
--- @param #number Heading Heading in degrees
--- @param #number Leg Leg in NM
--- @param #number Coalition Coalition side, e.g. coaltion.side.RED or coaltion.side.BLUE
--- @param #table Color Color of the line in RGB, e.g. {1,0,0} for red
--- @param #number Alpha Transparency factor, between 0.1 and 1
--- @param #number LineType Line type to be used, line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Speed (Optional) Speed in knots. Defaults to 350.
+-- @param #number Heading (Optional) Heading in degrees. Defaults to 270.
+-- @param #number Leg (Optional) Leg in NM. Defaults to 10nm.
+-- @param #number Coalition (Optional) Coalition side, e.g. coaltion.side.RED or coaltion.side.BLUE. Defaults to -1.
+-- @param #table Color (Optional) Color of the line in RGB, e.g. {1,0,0} for red, Defaults to {1,0,0}.
+-- @param #number Alpha (Optional) Transparency factor, between 0.1 and 1. Defaults to 1.
+-- @param #number LineType (Optional) Line type to be used, line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly
 function UTILS.PlotRacetrack(Coordinate, Altitude, Speed, Heading, Leg, Coalition, Color, Alpha, LineType, ReadOnly)
     local fix_coordinate = Coordinate
@@ -6312,9 +6356,10 @@ end
 
 --- Get a NATO abbreviated MGRS text for SRS use, optionally with prosody slow tag
 -- @param #string Text The input string, e.g. "MGRS 4Q FJ 12345 67890"
--- @param #boolean Slow Optional - add slow tags
+-- @param #boolean Slow Optional - add slow tags, if the backend is not Hound
+-- @param #string Backend The TTS Backend used
 -- @return #string Output for (Slow) spelling in SRS TTS e.g. "MGRS;<prosody rate="slow">4;Quebec;Foxtrot;Juliett;1;2;3;4;5;6;7;8;niner;zero;</prosody>"
-function UTILS.MGRSStringToSRSFriendly(Text,Slow)
+function UTILS.MGRSStringToSRSFriendly(Text,Slow,Backend)
     local Text = string.gsub(Text,"MGRS ","")
     Text = string.gsub(Text,"%s+","")
     Text = string.gsub(Text,"([%a%d])","%1;") -- "0;5;1;"
@@ -6346,7 +6391,7 @@ function UTILS.MGRSStringToSRSFriendly(Text,Slow)
     Text = string.gsub(Text,"Z","Zulu")
     Text = string.gsub(Text,"0","zero")
     Text = string.gsub(Text,"9","niner")
-    if Slow then
+    if Slow and Backend ~= nil and Backend ~= MSRS.Backend.HOUND then
       Text = '<prosody rate="slow">'..Text..'</prosody>'
     end
     Text = "MGRS;"..Text
@@ -6413,7 +6458,7 @@ function UTILS.ReadCSV(filename)
 end
 
 --- Seed the LCG random number generator.
--- @param #number seed Seed value. Default is a random number using math.random()
+-- @param #number seed (Optional) Seed value. Default is a random number using math.random()
 function UTILS.LCGRandomSeed(seed)
   UTILS.lcg = {
     seed = seed or math.random(1, 2^32 - 1),
@@ -6477,24 +6522,24 @@ end
 -- References: [DCS Forum Topic](https://forum.dcs.world/topic/282989-farp-equipment-to-run-it)
 -- @param #string Name Name of this FARP installation. Must be unique. 
 -- @param Core.Point#COORDINATE Coordinate Where to spawn the FARP.
--- @param #string FARPType Type of FARP, can be one of the known types ENUMS.FARPType.FARP, ENUMS.FARPType.INVISIBLE, ENUMS.FARPType.HELIPADSINGLE, ENUMS.FARPType.PADSINGLE. Defaults to ENUMS.FARPType.FARP.
--- @param #number Coalition Coalition of this FARP, i.e. coalition.side.BLUE or coalition.side.RED, defaults to coalition.side.BLUE.
--- @param #number Country Country of this FARP, defaults to country.id.USA (blue) or country.id.RUSSIA (red).
--- @param #number CallSign Callsign of the FARP ATC, defaults to CALLSIGN.FARP.Berlin.
--- @param #number Frequency Frequency of the FARP ATC Radio, defaults to 127.5 (MHz).
--- @param #number Modulation Modulation of the FARP ATC Radio, defaults to radio.modulation.AM.
+-- @param #string FARPType (Optional) Type of FARP, can be one of the known types ENUMS.FARPType.FARP, ENUMS.FARPType.INVISIBLE, ENUMS.FARPType.HELIPADSINGLE, ENUMS.FARPType.PADSINGLE. Defaults to ENUMS.FARPType.FARP.
+-- @param #number Coalition (Optional) Coalition of this FARP, i.e. coalition.side.BLUE or coalition.side.RED, defaults to coalition.side.BLUE.
+-- @param #number Country (Optional) Country of this FARP, defaults to country.id.USA (blue) or country.id.RUSSIA (red).
+-- @param #number CallSign (Optional) Callsign of the FARP ATC, defaults to CALLSIGN.FARP.Berlin.
+-- @param #number Frequency (Optional) Frequency of the FARP ATC Radio, defaults to 127.5 (MHz).
+-- @param #number Modulation (Optional) Modulation of the FARP ATC Radio, defaults to radio.modulation.AM.
 -- @param #number ADF ADF Beacon (FM) Frequency in KHz, e.g. 428. If not nil, creates an VHF/FM ADF Beacon for this FARP. Requires a sound called "beacon.ogg" to be in the mission (trigger "sound to" ...)
--- @param #number SpawnRadius Radius of the FARP, i.e. where the FARP objects will be placed in meters, not more than 150m away. Defaults to 100.
+-- @param #number SpawnRadius (Optional) Radius of the FARP, i.e. where the FARP objects will be placed in meters, not more than 150m away. Defaults to 100.
 -- @param #string VehicleTemplate, template name for additional vehicles. Can be nil for no additional vehicles.
--- @param #number Liquids Tons of fuel to be added initially to the FARP. Defaults to 10 (tons). Set to 0 for no fill.
--- @param #number Equipment Number of equipment items per known item to be added initially to the FARP. Defaults to 10 (items). Set to 0 for no fill.
+-- @param #number Liquids (Optional) Tons of fuel to be added initially to the FARP. Defaults to 10 (tons). Set to 0 for no fill.
+-- @param #number Equipment(Optional)  Number of equipment items per known item to be added initially to the FARP. Defaults to 10 (items). Set to 0 for no fill.
 -- @param #number Airframes Number of helicopter airframes per known type in Ops.CSAR#CSAR.AircraftType to be added initially to the FARP. Set to 0 for no airframes.
 -- @param #string F10Text Text to display on F10 map if given. Handy to post things like the ADF beacon Frequency, Callsign and ATC Frequency.
 -- @param #boolean DynamicSpawns If true, allow Dynamic Spawns from this FARP.
 -- @param #boolean HotStart If true and DynamicSpawns is true, allow hot starts for Dynamic Spawns from this FARP.
 -- @param #number NumberPads If given, spawn this number of pads.
--- @param #number SpacingX For NumberPads > 1, space this many meters horizontally. Defaults to 100.
--- @param #number SpacingY For NumberPads > 1, space this many meters vertically. Defaults to 100.
+-- @param #number SpacingX (Optional) For NumberPads > 1, space this many meters horizontally. Defaults to 100.
+-- @param #number SpacingY (Optional) For NumberPads > 1, space this many meters vertically. Defaults to 100.
 -- @return #list<Wrapper.Static#STATIC> Table of spawned objects and vehicle object (if given).
 -- @return #string ADFBeaconName Name of the ADF beacon, to be able to remove/stop it later.
 -- @return #number MarkerID ID of the F10 Text, to be able to remove it later.
@@ -6679,9 +6724,9 @@ end
 -- @param #number ADF (Optional) ADF Frequency in kHz (Kilohertz), if given activate an ADF Beacon at the location of the MASH.
 -- @param #string Livery (Optional) The livery of the static CH-47, defaults to dark green.
 -- @param #boolean DeployHelo (Optional) If true, deploy the helicopter static.
--- @param #number MASHRadio MASH Radio Frequency, defaults to 127.5.
--- @param #number MASHRadioModulation MASH Radio Modulation, defaults to radio.modulation.AM.
--- @param #number MASHCallsign Defaults to CALLSIGN.FARP.Berlin.
+-- @param #number MASHRadio (Optional) MASH Radio Frequency, defaults to 127.5.
+-- @param #number MASHRadioModulation (Optional) MASH Radio Modulation, defaults to radio.modulation.AM.
+-- @param #number MASHCallsign (Optional) Defaults to CALLSIGN.FARP.Berlin.
 -- @param #table Templates (Optional) You can hand in your own template table of numbered(!) entries. Each entry consist of a relative(!) x,y position and data of a 
 -- static, shape_name is optional. Also, livery_id is optional, but is applied to the helicopter static only.
 -- @return #table Table of Wrapper.Static#STATIC objects that were spawned.
@@ -7025,13 +7070,13 @@ end
 
 --- Show a picture on the screen to all
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToAll(FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7048,13 +7093,13 @@ end
 --- Show a picture on the screen to Coalition
 -- @param #number Coalition Coalition ID, can be coalition.side.BLUE, coalition.side.RED or coalition.side.NEUTRAL
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToCoalition(Coalition, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7073,13 +7118,13 @@ end
 --- Show a picture on the screen to Country
 -- @param #number Country Country ID, can be country.id.USA, country.id.RUSSIA, etc.
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size(Optional)  Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToCountry(Country, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7096,13 +7141,13 @@ end
 --- Show a picture on the screen to Group
 -- @param Wrapper.Group#GROUP Group Group to show the picture to
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToGroup(Group, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7119,13 +7164,13 @@ end
 --- Show a picture on the screen to Unit
 -- @param Wrapper.Unit#UNIT Unit Unit to show the picture to
 -- @param #string FileName File name of the picture
--- @param #number Duration Duration in seconds, defaults to 10
--- @param #boolean ClearView If true, clears the view before showing the picture, defaults to false
--- @param #number StartDelay Delay in seconds before showing the picture, defaults to 0
--- @param #number HorizontalAlign Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right
--- @param #number VerticalAlign Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom
--- @param #number Size Size of the picture in percent, defaults to 100
--- @param #number SizeUnits Size units, 0 for % of original picture size, and 1 for % of window size
+-- @param #number Duration (Optional) Duration in seconds, defaults to 10
+-- @param #boolean ClearView (Optional) If true, clears the view before showing the picture, defaults to false
+-- @param #number StartDelay (Optional) Delay in seconds before showing the picture, defaults to 0
+-- @param #number HorizontalAlign (Optional) Horizontal alignment of the picture, 0: Left, 1: Center, 2: Right. Defaults to 1.
+-- @param #number VerticalAlign (Optional) Vertical alignment of the picture, 0: Top, 1: Center, 2: Bottom. Defaults to 1.
+-- @param #number Size (Optional) Size of the picture in percent, defaults to 100
+-- @param #number SizeUnits (Optional) Size units, 0 for % of original picture size, and 1 for % of window size. Defaults to 0.
 function UTILS.ShowPictureToUnit(Unit, FilePath, Duration, ClearView, StartDelay, HorizontalAlign, VerticalAlign, Size, SizeUnits)
     ClearView = ClearView or false
     StartDelay = StartDelay or 0
@@ -7147,8 +7192,8 @@ end
 
 --- Set the mission briefing for a coalition.
 -- @param #number Coalition Briefing coalition ID, can be coalition.side.BLUE, coalition.side.RED or coalition.side.NEUTRAL
--- @param #string Text Briefing text, can contain newlines, will be converted formatted properly for DCS
--- @param #string Picture Picture file path, can be a file in the DEFAULT folder inside the .miz
+-- @param #string Text Briefing text, can contain newlines, will be converted formatted properly for DCS.
+-- @param #string Picture (Optional) Picture file path, can be a file in the DEFAULT folder inside the .miz. Defaults to "".
 function UTILS.SetMissionBriefing(Coalition, Text, Picture)
     Text = Text or ""
     Text = Text:gsub("\n", "\\n")
@@ -7933,8 +7978,8 @@ PROFILER = {
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --- Start profiler.
--- @param #number Delay Delay in seconds before profiler is stated. Default is immediately.
--- @param #number Duration Duration in (game) seconds before the profiler is stopped. Default is when mission ends.
+-- @param #number Delay (Optional) Delay in seconds before profiler is stated. Default is immediately.
+-- @param #number Duration (Optional) Duration in (game) seconds before the profiler is stopped. Default is when mission ends.
 function PROFILER.Start( Delay, Duration )
 
   -- Check if os, io and lfs are available.
@@ -9212,8 +9257,8 @@ SOCKET.version="0.3.0"
 
 --- Create a new SOCKET object.
 -- @param #SOCKET self
--- @param #number Port UDP port. Default `10042`.
--- @param #string Host Host. Default `"127.0.0.1"`.
+-- @param #number Port (Optional) UDP port. Default `10042`.
+-- @param #string Host (Optional) Host. Default `"127.0.0.1"`.
 -- @return #SOCKET self
 function SOCKET:New(Port, Host)
 
@@ -9238,7 +9283,7 @@ end
 
 --- Set port.
 -- @param #SOCKET self
--- @param #number Port Port. Default 10042.
+-- @param #number Port (Optional) Port. Default 10042.
 -- @return #SOCKET self
 function SOCKET:SetPort(Port)
   self.port=Port or 10042
@@ -9246,7 +9291,7 @@ end
 
 --- Set host.
 -- @param #SOCKET self
--- @param #string Host Host. Default `"127.0.0.1"`.
+-- @param #string Host (Optional) Host. Default `"127.0.0.1"`.
 -- @return #SOCKET self
 function SOCKET:SetHost(Host)
   self.host=Host or "127.0.0.1"
@@ -9294,11 +9339,11 @@ end
 --- Send a text-to-speech message.
 -- @param #SOCKET self
 -- @param #string Text The text message to speek.
--- @param #number Provider The TTS provider: 0=Microsoft (default), 1=Google.
+-- @param #number Provider (Optional) The TTS provider: 0=Microsoft (default), 1=Google.
 -- @param #string Voice The specific voice to use, e.g. `"Microsoft David Desktop"` or "`en-US-Standard-A`". If not set, the service will choose a voice based on the other parameters such as culture and gender.
 -- @param #string Culture The Culture or language code, *e.g.* `"en-US"`.
--- @param #string Gender The Gender, *i.e.* "male", "female". Default "female".
--- @param #number Volume The volume. Microsoft: [0,100] default 50, Google: [-96, 10] default 0.
+-- @param #string Gender (Optional) The Gender, *i.e.* "male", "female". Default "female".
+-- @param #number Volume (Optional) The volume. Microsoft: [0,100] default 50, Google: [-96, 10] default 0.
 -- @return #SOCKET self
 function SOCKET:SendTextToSpeech(Text, Provider, Voice, Culture, Gender, Volume)
 
@@ -11110,9 +11155,11 @@ end
 
 --- Set valid neighbours to be in a certain distance.
 -- @param #ASTAR self
--- @param #number MaxDistance Max distance between nodes in meters. Default is 2000 m.
+-- @param #number MaxDistance (Optional) Max distance between nodes in meters. Default is 2000 m.
 -- @return #ASTAR self
 function ASTAR:SetValidNeighbourDistance(MaxDistance)
+
+  MaxDistance = MaxDistance or 2000
 
   self:SetValidNeighbourFunction(ASTAR.DistMax, MaxDistance)
 
@@ -11121,9 +11168,11 @@ end
 
 --- Set valid neighbours to be in a certain distance.
 -- @param #ASTAR self
--- @param #number MaxDistance Max distance between nodes in meters. Default is 2000 m.
+-- @param #number MaxDistance (Optional) Max distance between nodes in meters. Default is 2000 m.
 -- @return #ASTAR self
 function ASTAR:SetValidNeighbourRoad(MaxDistance)
+
+  MaxDistance = MaxDistance or 2000
 
   self:SetValidNeighbourFunction(ASTAR.Road, MaxDistance)
 
@@ -11187,10 +11236,10 @@ end
 -- The coordinate system is oriented along the line between start and end point.
 -- @param #ASTAR self
 -- @param #table ValidSurfaceTypes Valid surface types. By default is all surfaces are allowed.
--- @param #number BoxHY Box "height" in meters along the y-coordinate. Default 40000 meters (40 km).
--- @param #number SpaceX Additional space in meters before start and after end coordinate. Default 10000 meters (10 km).
--- @param #number deltaX Increment in the direction of start to end coordinate in meters. Default 2000 meters.
--- @param #number deltaY Increment perpendicular to the direction of start to end coordinate in meters. Default is same as deltaX.
+-- @param #number BoxHY (Optional) Box "height" in meters along the y-coordinate. Default 40000 meters (40 km).
+-- @param #number SpaceX (Optional) Additional space in meters before start and after end coordinate. Default 10000 meters (10 km).
+-- @param #number deltaX (Optional) Increment in the direction of start to end coordinate in meters. Default 2000 meters.
+-- @param #number deltaY (Optional) Increment perpendicular to the direction of start to end coordinate in meters. Default is same as deltaX.
 -- @param #boolean MarkGrid If true, create F10 map markers at grid nodes.
 -- @return #ASTAR self
 function ASTAR:CreateGrid(ValidSurfaceTypes, BoxHY, SpaceX, deltaX, deltaY, MarkGrid)
@@ -11337,7 +11386,7 @@ end
 --- Function to check if distance between two nodes is less than a threshold distance.
 -- @param #ASTAR.Node nodeA First node.
 -- @param #ASTAR.Node nodeB Other node.
--- @param #number distmax Max distance in meters. Default is 2000 m.
+-- @param #number distmax (Optional) Max distance in meters. Default is 2000 m.
 -- @return #boolean If true, distance between the two nodes is below threshold.
 function ASTAR.DistMax(nodeA, nodeB, distmax)
 
@@ -12477,7 +12526,7 @@ end
 
 --- Evaluate conditon functions.
 -- @param #CONDITION self
--- @param #boolean AnyTrue If `true`, evaluation return `true` if *any* condition function returns `true`. By default, *all* condition functions must return true.
+-- @param #boolean AnyTrue (Optional) If `true`, evaluation return `true` if *any* condition function returns `true`. By default, *all* condition functions must return true.
 -- @return #boolean Result of condition functions.
 function CONDITION:Evaluate(AnyTrue)
 
@@ -12621,7 +12670,7 @@ end
 
 --- Condition to check if time is greater than a given threshold time.
 -- @param #number Time Time in seconds.
--- @param #boolean Absolute If `true`, abs. mission time from `timer.getAbsTime()` is checked. Default is relative mission time from `timer.getTime()`.
+-- @param #boolean Absolute (Optional) If `true`, abs. mission time from `timer.getAbsTime()` is checked. Default is relative mission time from `timer.getTime()`.
 -- @return #boolean Returns `true` if time is greater than give the time.
 function CONDITION.IsTimeGreater(Time, Absolute)
 
@@ -12644,7 +12693,7 @@ end
 
 --- Function that returns `true` (success) with a certain probability. For example, if you specify `Probability=80` there is an 80% chance that `true` is returned.
 -- Technically, a random number between 0 and 100 is created. If the given success probability is less then this number, `true` is returned.
--- @param #number Probability Success probability in percent. Default 50 %.
+-- @param #number Probability (Optional) Success probability in percent. Default 50 %.
 -- @return #boolean Returns `true` for success and `false` otherwise.
 function CONDITION.IsRandomSuccess(Probability)
 
@@ -13126,7 +13175,7 @@ end
 -- @param #number Repeat Specifies the time interval in seconds when the scheduler will call the event function.
 -- @param #number RandomizeFactor Specifies a randomization factor between 0 and 1 to randomize the Repeat.
 -- @param #number Stop Time interval in seconds after which the scheduler will be stopped.
--- @param #number TraceLevel Trace level [0,3]. Default 3.
+-- @param #number TraceLevel (Optional) Trace level [0,3]. Default 3.
 -- @param Core.Fsm#FSM Fsm Finite state model.
 -- @return #string The Schedule ID of the planned schedule.
 function SCHEDULER:Schedule( MasterObject, SchedulerFunction, SchedulerArguments, Start, Repeat, RandomizeFactor, Stop, TraceLevel, Fsm )
@@ -17958,7 +18007,7 @@ end
 
 --- Set draw coalition of zone.
 -- @param #ZONE_BASE self
--- @param #number Coalition Coalition. Default -1.
+-- @param #number Coalition (Optional) Coalition. Default -1.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetDrawCoalition(Coalition)
   self.drawCoalition=Coalition or -1
@@ -17974,8 +18023,8 @@ end
 
 --- Set color of zone.
 -- @param #ZONE_BASE self
--- @param #table RGBcolor RGB color table. Default `{1, 0, 0}`.
--- @param #number Alpha Transparency between 0 and 1. Default 0.15.
+-- @param #table RGBcolor (Optional) RGB color table. Default `{1, 0, 0}`.
+-- @param #number Alpha (Optional) Transparency between 0 and 1. Default 0.15.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetColor(RGBcolor, Alpha)
 
@@ -18021,8 +18070,8 @@ end
 
 --- Set fill color of zone.
 -- @param #ZONE_BASE self
--- @param #table RGBcolor RGB color table. Default `{1, 0, 0}`.
--- @param #number Alpha Transparacy between 0 and 1. Default 0.15.
+-- @param #table RGBcolor (Optional) RGB color table. Default `{1, 0, 0}`.
+-- @param #number Alpha (Optional) Transparacy between 0 and 1. Default 0.15.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetFillColor(RGBcolor, Alpha)
 
@@ -18175,7 +18224,7 @@ end
 
 --- Set the check time for ZONE:Trigger()
 -- @param #ZONE_BASE self
--- @param #number seconds Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
+-- @param #number seconds (Optional) Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
 -- @return #ZONE_BASE self
 function ZONE_BASE:SetCheckTime(seconds)
   self.Checktime = seconds or 5
@@ -18451,7 +18500,7 @@ ZONE_RADIUS = {
 -- @param #string ZoneName Name of the zone.
 -- @param DCS#Vec2 Vec2 The location of the zone.
 -- @param DCS#Distance Radius The radius of the zone.
--- @param DCS#Boolean DoNotRegisterZone Determines if the Zone should not be registered in the _Database Table. Default=false
+-- @param DCS#Boolean DoNotRegisterZone (Optional) Determines if the Zone should not be registered in the _Database Table. Default=false
 -- @return #ZONE_RADIUS self
 function ZONE_RADIUS:New( ZoneName, Vec2, Radius, DoNotRegisterZone )
 
@@ -18535,12 +18584,12 @@ end
 
 --- Draw the zone circle on the F10 map.
 -- @param #ZONE_RADIUS self
--- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
--- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
--- @param #number FillAlpha Transparency [0,1]. Default 0.15.
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+-- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+-- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
 -- @return #ZONE_RADIUS self
 function ZONE_RADIUS:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType, ReadOnly)
@@ -20095,7 +20144,7 @@ end
 
 --- Get a vertex of the polygon.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Index Index of the vertex. Default 1.
+-- @param #number Index (Optional) Index of the vertex. Default 1.
 -- @return DCS#Vec2 Vertex of the polygon.
 function ZONE_POLYGON_BASE:GetVertexVec2(Index)
   return self._.Polygon[Index or 1]
@@ -20103,7 +20152,7 @@ end
 
 --- Get a vertex of the polygon.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Index Index of the vertex. Default 1.
+-- @param #number Index (Optional) Index of the vertex. Default 1.
 -- @return DCS#Vec3 Vertex of the polygon.
 function ZONE_POLYGON_BASE:GetVertexVec3(Index)
   local vec2=self:GetVertexVec2(Index)
@@ -20116,7 +20165,7 @@ end
 
 --- Get a vertex of the polygon.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Index Index of the vertex. Default 1.
+-- @param #number Index (Optional) Index of the vertex. Default 1.
 -- @return Core.Point#COORDINATE Vertex of the polygon.
 function ZONE_POLYGON_BASE:GetVertexCoordinate(Index)
   local vec2=self:GetVertexVec2(Index)
@@ -20246,12 +20295,12 @@ end
 --- Draw the zone on the F10 map.  Infinite number of points supported
 --- ported from https://github.com/nielsvaes/CCMOOSE/blob/master/Moose%20Development/Moose/Shapes/Polygon.lua
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
--- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
--- @param #number FillAlpha Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+-- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
+-- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.s
 -- @return #ZONE_POLYGON_BASE self
 function ZONE_POLYGON_BASE:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType, ReadOnly, IncludeTriangles)
@@ -20299,7 +20348,7 @@ end
 --- Change/Re-fill a Polygon Zone
 -- @param #ZONE_POLYGON_BASE self
 -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
 -- @return #ZONE_POLYGON_BASE self
 function ZONE_POLYGON_BASE:ReFill(Color,Alpha)
   local color = Color or self:GetFillColorRGB() or {1,0,0}
@@ -20329,8 +20378,8 @@ end
 --- Change/Re-draw the border of a Polygon Zone
 -- @param #ZONE_POLYGON_BASE self
 -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @return #ZONE_POLYGON_BASE
 function ZONE_POLYGON_BASE:ReDrawBorderline(Color, Alpha, LineType)
   local color = Color or self:GetFillColorRGB() or {1,0,0}
@@ -20429,7 +20478,7 @@ end
 
 --- Remove junk inside the zone. Due to DCS limitations, this works only for rectangular zones. So we get the smallest rectangular zone encompassing all points points of the polygon zone.
 -- @param #ZONE_POLYGON_BASE self
--- @param #number Height Height of the box in meters. Default 1000.
+-- @param #number Height (Optional) Height of the box in meters. Default 1000.
 -- @return #number Number of removed objects.
 function ZONE_POLYGON_BASE:RemoveJunk(Height)
 
@@ -21350,8 +21399,8 @@ do -- ZONE_ELASTIC
   --- Update the convex hull of the polygon.
   -- This uses the [Graham scan](https://en.wikipedia.org/wiki/Graham_scan).
   -- @param #ZONE_ELASTIC self
-  -- @param #number Delay Delay in seconds before the zone is updated. Default 0.
-  -- @param #boolean Draw Draw the zone. Default `nil`.
+  -- @param #number Delay (Optional) Delay in seconds before the zone is updated. Default 0.
+  -- @param #boolean Draw (Optional) Draw the zone. Default `nil`.
   -- @return #ZONE_ELASTIC self
   function ZONE_ELASTIC:Update(Delay, Draw)
 
@@ -21392,9 +21441,9 @@ do -- ZONE_ELASTIC
   --- Start the updating scheduler.
   -- @param #ZONE_ELASTIC self
   -- @param #number Tstart Time in seconds before the updating starts.
-  -- @param #number dT Time interval in seconds between updates. Default 60 sec.
-  -- @param #number Tstop Time in seconds after which the updating stops. Default `nil`.
-  -- @param #boolean Draw Draw the zone. Default `nil`.
+  -- @param #number dT (Optional) Time interval in seconds between updates. Default 60 sec.
+  -- @param #number Tstop (Optional) Time in seconds after which the updating stops. Default `nil`.
+  -- @param #boolean Draw (Optional) Draw the zone. Default `nil`.
   -- @return #ZONE_ELASTIC self
   function ZONE_ELASTIC:StartUpdate(Tstart, dT, Tstop, Draw)
 
@@ -21405,7 +21454,7 @@ do -- ZONE_ELASTIC
 
   --- Stop the updating scheduler.
   -- @param #ZONE_ELASTIC self
-  -- @param #number Delay Delay in seconds before the scheduler will be stopped. Default 0.
+  -- @param #number Delay (Optional) Delay in seconds before the scheduler will be stopped. Default 0.
   -- @return #ZONE_ELASTIC self
   function ZONE_ELASTIC:StopUpdate(Delay)
 
@@ -21655,12 +21704,12 @@ end
 --- Draw the zone on the F10 map.
 --- ported from https://github.com/nielsvaes/CCMOOSE/blob/master/Moose%20Development/Moose/Shapes/Oval.lua
 -- @param #ZONE_OVAL self
--- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
--- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
--- @param #number Alpha Transparency [0,1]. Default 1.
--- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
--- @param #number FillAlpha Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+-- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+-- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red.
+-- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+-- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value. -- doesn't seem to work
+-- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.                                                 -- doesn't seem to work
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
 -- @return #ZONE_OVAL self
 function ZONE_OVAL:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType)
@@ -23189,10 +23238,10 @@ end
 --- Get a generic static cargo group template from scratch for dynamic cargo spawns register. Does not register the template!
 -- @param #DATABASE self
 -- @param #string Name Name of the static.
--- @param #string Typename Typename of the static. Defaults to "container_cargo".
--- @param #number Mass Mass of the static. Defaults to 0.
--- @param #number Coalition Coalition of the static. Defaults to coalition.side.BLUE.
--- @param #number Country Country of the static. Defaults to country.id.GERMANY.
+-- @param #string Typename (Optional) Typename of the static. Defaults to "container_cargo".
+-- @param #number Mass (Optional) Mass of the static. Defaults to 0.
+-- @param #number Coalition (Optional) Coalition of the static. Defaults to coalition.side.BLUE.
+-- @param #number Country (Optional) Country of the static. Defaults to country.id.GERMANY.
 -- @return #table Static template table.
 function DATABASE:_GetGenericStaticCargoGroupTemplate(Name,Typename,Mass,Coalition,Country)
   local StaticTemplate = {}
@@ -24342,7 +24391,7 @@ end
 
 do -- SET_BASE
   
-  ---
+  --- SET_BASE class.
   -- @type SET_BASE
   -- @field #table Filter Table of filters.
   -- @field #table Set Table of objects.
@@ -24350,6 +24399,7 @@ do -- SET_BASE
   -- @field #table List Unused table.
   -- @field Core.Scheduler#SCHEDULER CallScheduler
   -- @field #SET_BASE.Filters Filter Filters
+  -- @field #booleaen filterNoRegex If true, FilterPrefix ignores special characters and evaluates plain string.
   -- @extends Core.Base#BASE
 
   --- The @{Core.Set#SET_BASE} class defines the core functions that define a collection of objects.
@@ -24388,6 +24438,7 @@ do -- SET_BASE
         ["neutral"] = coalition.side.NEUTRAL,
         },
       },
+    filterNoRegex=false,
   }
 
   --- Filters
@@ -24531,6 +24582,26 @@ do -- SET_BASE
     local ObjectFound = self.Set[ObjectName]
     return ObjectFound
   end
+
+
+  --- Compares string for FilterPrefix function.
+  -- @param #SET_BASE self
+  -- @param #string Name The Name of the object.
+  -- @param #string Pattern The pattern that is contained in the Name.
+  -- @param #boolean NoRegex (Optional) If `true`, special characters in the Name are interpreted as plain text and not regular expressions. Default is `self.filterNoregex`. 
+  -- @param #boolean ReplaceDash If `true`, dashes are not used as regex.
+  -- @return #boolean Returns `true`, if the pattern is contained in the name and false otherwise.
+  function SET_BASE:_SearchPattern(Name, Pattern, NoRegex, ReplaceDash)
+    NoRegex=NoRegex or self.filterNoRegex
+    if ReplaceDash==true then
+      -- Not sure why "-" is replaced by "%-" ?! - So we can still match group names with a dash in them
+      -- reason is that the string is interpreted as a pattern and "-" is a special character then. For interpreting it as a string, fourth parameter needs to be set to true.
+      Pattern=Pattern:gsub("-", "%%-")
+    end
+    local contain=string.find(Name, Pattern, 1, NoRegex)
+    return contain
+  end  
+  
 
   --- Gets the Set.
   -- @param #SET_BASE self
@@ -24839,7 +24910,7 @@ do -- SET_BASE
 
   --- Define the SET iterator **"limit"**.
   -- @param #SET_BASE self
-  -- @param #number Limit Defines how many objects are evaluated of the set as part of the Some iterators. The default is 1.
+  -- @param #number Limit (Optional) Defines how many objects are evaluated of the set as part of the Some iterators. The default is 1.
   -- @return #SET_BASE self
   function SET_BASE:SetSomeIteratorLimit(Limit)
 
@@ -25267,6 +25338,28 @@ do -- SET_BASE
 
     return ObjectNames
   end
+  
+  --- Checks whether all or optionally any objects is inside a given zone.
+  -- @param #SET_BASE self
+  -- @param Core.Zone#ZONE Zone The zone.
+  -- @param #boolean Any If `true`, at least one object has to be inside the zone. If `false` or `nil`, all objects need to be in the zone.
+  -- @return #boolean Retruns `true` if objects are in the zone and `false` otherwise.
+  function SET_BASE:IsInZone(Zone, Any)
+  
+    for ObjectName, Object in pairs(self.Set) do
+      local object=Object --Wrapper.Positionable#POSITIONABLE
+      local inzone=object:IsInZone(Zone)
+      if inzone and Any then
+        -- We want at least one and this one is
+        return true
+      elseif not inzone then
+        -- We want all but at least one is not
+        return false
+      end
+    end    
+  
+    return true
+  end  
 
   --- Flushes the current SET_BASE contents in the log ... (for debugging reasons).
   -- @param #SET_BASE self
@@ -25822,7 +25915,7 @@ do
   
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_GROUP self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_GROUP self
   function SET_GROUP:FilterZoneTimer(Seconds)
@@ -26360,19 +26453,16 @@ do
     if self.Filter.GroupPrefixes and MGroupInclude then
       local MGroupPrefix = false
       for GroupPrefixId, GroupPrefix in pairs(self.Filter.GroupPrefixes) do
-        --self:I({ "Prefix:", MGroup:GetName(), GroupPrefix })
-        if string.find(MGroup:GetName(), string.gsub(GroupPrefix,"-","%%-"),1) then
+        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, false, true) then
           MGroupPrefix = true
         end
       end
       MGroupInclude = MGroupInclude and MGroupPrefix
-      --self:I("Is Included: "..tostring(MGroupInclude))
     end
     
     if self.Filter.Zones and MGroupInclude then
       local MGroupZone = false
       for ZoneName, Zone in pairs(self.Filter.Zones) do
-        --self:T("Zone:", ZoneName)
         if MGroup:IsInZone(Zone) then
           MGroupZone = true
         end
@@ -26386,7 +26476,6 @@ do
       MGroupInclude = MGroupInclude and MGroupFunc
     end
      
-    --self:I(MGroupInclude)
     return MGroupInclude
   end
 
@@ -26903,7 +26992,7 @@ do -- SET_UNIT
   
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_UNIT self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_UNIT self
   function SET_UNIT:FilterZoneTimer(Seconds)
@@ -27595,9 +27684,8 @@ do -- SET_UNIT
 
       if self.Filter.UnitPrefixes and MUnitInclude then
         local MUnitPrefix = false
-        for UnitPrefixId, UnitPrefix in pairs(self.Filter.UnitPrefixes) do
-          --self:T3({ "Prefix:", string.find(MUnit:GetName(), UnitPrefix, 1), UnitPrefix })
-          if string.find(MUnit:GetName(), UnitPrefix, 1) then
+        for UnitPrefixId, UnitPrefix in pairs(self.Filter.UnitPrefixes) do          
+          if self:_SearchPattern(MUnit:GetName(), UnitPrefix, false, true) then
             MUnitPrefix = true
           end
         end
@@ -28368,8 +28456,7 @@ do -- SET_STATIC
     if self.Filter.StaticPrefixes then
       local MStaticPrefix = false
       for StaticPrefixId, StaticPrefix in pairs(self.Filter.StaticPrefixes) do
-        --self:T(3({ "Prefix:", string.find(MStatic:GetName(), StaticPrefix, 1), StaticPrefix })
-        if string.find(MStatic:GetName(), StaticPrefix, 1) then
+        if self:_SearchPattern(MStatic:GetName(), StaticPrefix, false, true) then
           MStaticPrefix = true
         end
       end
@@ -28826,7 +28913,7 @@ do -- SET_CLIENT
 
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_CLIENT self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Groups are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_CLIENT self
   function SET_CLIENT:FilterZoneTimer(Seconds)
@@ -29152,12 +29239,10 @@ do -- SET_CLIENT
       if self.Filter.ClientPrefixes and MClientInclude then
         local MClientPrefix = false
         for ClientPrefixId, ClientPrefix in pairs(self.Filter.ClientPrefixes) do
-          --self:T3({ "Prefix:", string.find(MClient.UnitName, ClientPrefix, 1), ClientPrefix })
-          if string.find(MClient.UnitName, ClientPrefix, 1) then
+          if self:_SearchPattern(MClient.UnitName, ClientPrefix) then          
             MClientPrefix = true
           end
         end
-        --self:T({ "Evaluated Prefix", MClientPrefix })
         MClientInclude = MClientInclude and MClientPrefix
       end
 
@@ -29178,7 +29263,7 @@ do -- SET_CLIENT
       local playername = MClient:GetPlayerName() or "Unknown"
       --self:T(playername)
       for _,_Playername in pairs(self.Filter.Playernames) do
-        if playername and string.find(playername,_Playername) then
+        if playername and self:_SearchPattern(playername,_Playername) then
           MClientPlayername = true
         end
       end
@@ -29191,7 +29276,7 @@ do -- SET_CLIENT
       local callsign = MClient:GetCallsign()
       --self:I(callsign)
       for _,_Callsign in pairs(self.Filter.Callsigns) do
-        if callsign and string.find(callsign,_Callsign,1,true) then
+        if callsign and self:_SearchPattern(callsign,_Callsign, true) then
           MClientCallsigns = true
         end
       end
@@ -29612,12 +29697,10 @@ do -- SET_PLAYER
       if self.Filter.ClientPrefixes then
         local MClientPrefix = false
         for ClientPrefixId, ClientPrefix in pairs(self.Filter.ClientPrefixes) do
-          --self:T(3({ "Prefix:", string.find(MClient.UnitName, ClientPrefix, 1), ClientPrefix })
-          if string.find(MClient.UnitName, ClientPrefix, 1) then
+          if self:_SearchPattern(MClient.UnitName,ClientPrefix) then
             MClientPrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MClientPrefix })
         MClientInclude = MClientInclude and MClientPrefix
       end
     end
@@ -30266,12 +30349,12 @@ do -- SET_ZONE
 
   --- Draw all zones in the set on the F10 map.
   -- @param #SET_ZONE self
-  -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+  -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
   -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red.
-  -- @param #number Alpha Transparency [0,1]. Default 1.
-  -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-  -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-  -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+  -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+  -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+  -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+  -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
   -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
   -- @return #SET_ZONE self
   function SET_ZONE:DrawZone(Coalition, Color, Alpha, FillColor, FillAlpha, LineType, ReadOnly)
@@ -30322,12 +30405,10 @@ do -- SET_ZONE
       if self.Filter.Prefixes then
         local MZonePrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          --self:T(2({ "Prefix:", string.find(MZoneName, ZonePrefix, 1), ZonePrefix })
-          if string.find(MZoneName, ZonePrefix, 1) then
+          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then
             MZonePrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MZonePrefix })
         MZoneInclude = MZoneInclude and MZonePrefix
       end
     end
@@ -30413,7 +30494,7 @@ do -- SET_ZONE
   
   --- Set the check time for SET_ZONE:Trigger()
   -- @param #SET_ZONE self
-  -- @param #number seconds Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
+  -- @param #number seconds (Optional) Check every seconds for objects entering or leaving the zone. Defaults to 5 secs.
   -- @return #SET_ZONE self
   function SET_ZONE:SetCheckTime(seconds)
     self.Checktime = seconds or 5
@@ -30833,12 +30914,10 @@ do -- SET_ZONE_GOAL
       if self.Filter.Prefixes then
         local MZonePrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          --self:T(3({ "Prefix:", string.find(MZoneName, ZonePrefix, 1), ZonePrefix })
-          if string.find(MZoneName, ZonePrefix, 1) then
+          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then          
             MZonePrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MZonePrefix })
         MZoneInclude = MZoneInclude and MZonePrefix
       end
     end
@@ -31195,17 +31274,13 @@ do -- SET_OPSZONE
         -- Loop over prefixes.
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
         
-          -- Prifix
-          --self:T(3({ "Prefix:", string.find(MZoneName, ZonePrefix, 1), ZonePrefix })
-          
-          if string.find(MZoneName, ZonePrefix, 1) then
+          -- Prefix
+          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then
             MZonePrefix = true
             break --Break the loop as we found the prefix.
           end
           
         end
-        
-        --self:T(({ "Evaluated Prefix", MZonePrefix })
         
         MZoneInclude = MZoneInclude and MZonePrefix
       end
@@ -31994,7 +32069,7 @@ function SET_OPSGROUP:_EventOnBirth(Event)
       local MGroupPrefix = false
       
       for GroupPrefixId, GroupPrefix in pairs(self.Filter.GroupPrefixes) do
-        if string.find(MGroup:GetName(), GroupPrefix:gsub ("-", "%%-"), 1) then --Not sure why "-" is replaced by "%-" ?! - So we can still match group names with a dash in them
+        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, false, true) then
           MGroupPrefix = true
         end
       end
@@ -32328,12 +32403,10 @@ do -- SET_SCENERY
       if self.Filter.Prefixes then
         local MSceneryPrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          --self:T(({ "Prefix:", string.find(MSceneryName, ZonePrefix, 1), ZonePrefix })
-          if string.find(MSceneryName, ZonePrefix, 1) then
+          if self:_SearchPattern(MSceneryName, ZonePrefix, false, true) then
             MSceneryPrefix = true
           end
         end
-        --self:T(({ "Evaluated Prefix", MSceneryPrefix })
         MSceneryInclude = MSceneryInclude and MSceneryPrefix
       end
       
@@ -32601,8 +32674,7 @@ do -- SET_DYNAMICCARGO
     if self.Filter.StaticPrefixes then
       local DCargoPrefix = false
       for StaticPrefixId, StaticPrefix in pairs(self.Filter.StaticPrefixes) do
-        --self:T2({ "Prefix:", string.find(DCargo:GetName(), StaticPrefix, 1), StaticPrefix })
-        if string.find(DCargo:GetName(), StaticPrefix, 1) then
+        if self:_SearchPattern(DCargo:GetName(), StaticPrefix, false, true) then
           DCargoPrefix = true
         end
       end
@@ -32770,7 +32842,7 @@ do -- SET_DYNAMICCARGO
   function SET_DYNAMICCARGO:FilterCurrentOwner(PlayerName)
     self:FilterFunction(
       function(cargo)
-        if cargo and cargo.Owner and string.find(cargo.Owner,PlayerName,1,true) then
+        if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner, PlayerName, true) then
           return true
         else
           return false
@@ -32896,7 +32968,7 @@ do -- SET_DYNAMICCARGO
   
   --- Set filter timer interval for FilterZones if using active filtering with FilterStart().
   -- @param #SET_DYNAMICCARGO self
-  -- @param #number Seconds Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Objects are usually not moving fast enough
+  -- @param #number Seconds (Optional) Seconds between check intervals, defaults to 30. **Caution** - do not be too agressive with timing! Objects are usually not moving fast enough
   -- to warrant a check of below 10 seconds.
   -- @return #SET_DYNAMICCARGO self
   function SET_DYNAMICCARGO:FilterZoneTimer(Seconds) 
@@ -33579,7 +33651,7 @@ do -- COORDINATE
 
   --- Find the closest static to the COORDINATE within a certain radius.
   -- @param #COORDINATE self
-  -- @param #number radius Scan radius in meters. Default 100 m.
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
   -- @return Wrapper.Static#STATIC The closest static or #nil if no unit is inside the given radius.
   function COORDINATE:FindClosestStatic(radius)
 
@@ -33602,7 +33674,7 @@ do -- COORDINATE
 
   --- Find the closest unit to the COORDINATE within a certain radius.
   -- @param #COORDINATE self
-  -- @param #number radius Scan radius in meters. Default 100 m.
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
   -- @return Wrapper.Unit#UNIT The closest unit or #nil if no unit is inside the given radius.
   function COORDINATE:FindClosestUnit(radius)
 
@@ -33647,7 +33719,7 @@ do -- COORDINATE
 
   --- Find the closest scenery to the COORDINATE within a certain radius.
   -- @param #COORDINATE self
-  -- @param #number radius Scan radius in meters. Default 100 m.
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
   -- @return Wrapper.Scenery#SCENERY The closest scenery or #nil if no object is inside the given radius.
   function COORDINATE:FindClosestScenery(radius)
 
@@ -33685,8 +33757,8 @@ do -- COORDINATE
   --- Add a Distance in meters from the COORDINATE orthonormal plane, with the given angle, and calculate the new COORDINATE.
   -- @param #COORDINATE self
   -- @param DCS#Distance Distance The Distance to be added in meters.
-  -- @param DCS#Angle Angle The Angle in degrees. Defaults to 0 if not specified (nil).
-  -- @param #boolean Keepalt If true, keep altitude of original coordinate. Default is that the new coordinate is created at the translated land height.
+  -- @param DCS#Angle Angle (Optional) The Angle in degrees. Defaults to 0 if not specified (nil).
+  -- @param #boolean Keepalt (Optional) If true, keep altitude of original coordinate. Default is that the new coordinate is created at the translated land height.
   -- @param #boolean Overwrite If true, overwrite the original COORDINATE with the translated one. Otherwise, create a new COORDINATE.
   -- @return #COORDINATE The new calculated COORDINATE.
   function COORDINATE:Translate( Distance, Angle, Keepalt, Overwrite )
@@ -33927,7 +33999,7 @@ do -- COORDINATE
   --- Return an intermediate COORDINATE between this an another coordinate.
   -- @param #COORDINATE self
   -- @param #COORDINATE ToCoordinate The other coordinate.
-  -- @param #number Fraction The fraction (0,1) where the new coordinate is created. Default 0.5, i.e. in the middle.
+  -- @param #number Fraction (Optional) The fraction (0,1) where the new coordinate is created. Default 0.5, i.e. in the middle.
   -- @return #COORDINATE Coordinate between this and the other coordinate.
   function COORDINATE:GetIntermediateCoordinate( ToCoordinate, Fraction )
 
@@ -34483,7 +34555,7 @@ do -- COORDINATE
   -- @param Core.Settings#SETTINGS Settings
   -- @param #string Language (Optional) Language "en" or "ru"
   -- @param #boolean MagVar If true, also state angle in magnetic
-  -- @param #number Precision Rounding precision, defaults to 0
+  -- @param #number Precision (Optional) Rounding precision, defaults to 0
   -- @return #string The BR Text
   function COORDINATE:GetBRText( AngleRadians, Distance, Settings, Language, MagVar, Precision )
 
@@ -34524,7 +34596,7 @@ do -- COORDINATE
   --- Set altitude.
   -- @param #COORDINATE self
   -- @param #number altitude New altitude in meters.
-  -- @param #boolean asl Altitude above sea level. Default is above ground level.
+  -- @param #boolean asl (Optional) Altitude above sea level. Default is above ground level.
   -- @return #COORDINATE The COORDINATE with adjusted altitude.
   function COORDINATE:SetAltitude(altitude, asl)
     local alt=altitude
@@ -34550,7 +34622,7 @@ do -- COORDINATE
   -- @param #COORDINATE.WaypointAltType AltType The altitude type.
   -- @param #COORDINATE.WaypointType Type The route point type.
   -- @param #COORDINATE.WaypointAction Action The route point action.
-  -- @param DCS#Speed Speed Airspeed in km/h. Default is 500 km/h.
+  -- @param DCS#Speed Speed (Optional) Airspeed in km/h. Default is 500 km/h.
   -- @param #boolean SpeedLocked true means the speed is locked.
   -- @param Wrapper.Airbase#AIRBASE airbase The airbase for takeoff and landing points.
   -- @param #table DCSTasks A table of @{DCS#Task} items which are executed at the waypoint.
@@ -34710,7 +34782,7 @@ do -- COORDINATE
   -- @param #COORDINATE self
   -- @param DCS#Speed Speed Airspeed in km/h.
   -- @param Wrapper.Airbase#AIRBASE airbase The airbase for takeoff and landing points.
-  -- @param #number timeReFuAr Time in minutes, the aircraft stays at the airbase. Default 10 min.
+  -- @param #number timeReFuAr (Optional) Time in minutes, the aircraft stays at the airbase. Default 10 min.
   -- @param #table DCSTasks A table of @{DCS#Task} items which are executed at the waypoint.
   -- @param #string description A text description of the waypoint, which will be shown on the F10 map.
   -- @return #table The route point.
@@ -35117,7 +35189,7 @@ do -- COORDINATE
 
   --- Creates an explosion at the point of a certain intensity.
   -- @param #COORDINATE self
-  -- @param #number ExplosionIntensity Intensity of the explosion in kg TNT. Default 100 kg.
+  -- @param #number ExplosionIntensity (Optional) Intensity of the explosion in kg TNT. Default 100 kg.
   -- @param #number Delay (Optional) Delay before explosion is triggered in seconds.
   -- @return #COORDINATE self
   function COORDINATE:Explosion( ExplosionIntensity, Delay )
@@ -35132,7 +35204,7 @@ do -- COORDINATE
 
   --- Creates an illumination bomb at the point.
   -- @param #COORDINATE self
-  -- @param #number Power Power of illumination bomb in Candela. Default 1000 cd.
+  -- @param #number Power (Optional) Power of illumination bomb in Candela. Default 1000 cd.
   -- @param #number Delay (Optional) Delay before bomb is ignited in seconds.
   -- @return #COORDINATE self
   function COORDINATE:IlluminationBomb(Power, Delay)
@@ -35591,10 +35663,10 @@ do -- COORDINATE
     -- Creates a line on the F10 map from one point to another.
     -- @param #COORDINATE self
     -- @param #COORDINATE Endpoint COORDINATE to where the line is drawn.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35615,13 +35687,13 @@ do -- COORDINATE
     --- Circle to all.
     -- Creates a circle on the map with a given radius, color, fill color, and outline.
     -- @param #COORDINATE self
-    -- @param #number Radius Radius in meters. Default 1000 m.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Radius (Optional) Radius in meters. Default 1000 m.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35655,12 +35727,12 @@ do -- COORDINATE
     -- Creates a line on the F10 map from one point to another.
     -- @param #COORDINATE self
     -- @param #COORDINATE Endpoint COORDINATE in the opposite corner.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35691,12 +35763,12 @@ do -- COORDINATE
     -- @param #COORDINATE Coord2 Second COORDINATE of the quad shape.
     -- @param #COORDINATE Coord3 Third COORDINATE of the quad shape.
     -- @param #COORDINATE Coord4 Fourth COORDINATE of the quad shape.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35728,12 +35800,12 @@ do -- COORDINATE
     --- Creates a free form shape on the F10 map. The first point is the current COORDINATE. The remaining points need to be specified.
     -- @param #COORDINATE self
     -- @param #table Coordinates Table of coordinates of the remaining points of the shape.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35834,12 +35906,12 @@ do -- COORDINATE
     --- Text to all. Creates a text imposed on the map at the COORDINATE. Text scales with the map.
     -- @param #COORDINATE self
     -- @param #string Text Text displayed on the F10 map.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.3.
-    -- @param #number FontSize Font size. Default 14.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.3.
+    -- @param #number FontSize (Optional) Font size. Default 14.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
     function COORDINATE:TextToAll(Text, Coalition, Color, Alpha, FillColor, FillAlpha, FontSize, ReadOnly)
@@ -35864,12 +35936,12 @@ do -- COORDINATE
     --- Arrow to all. Creates an arrow from the COORDINATE to the endpoint COORDINATE on the F10 map. There is no control over other dimensions of the arrow.
     -- @param #COORDINATE self
     -- @param #COORDINATE Endpoint COORDINATE where the tip of the arrow is pointing at.
-    -- @param #number Coalition Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
-    -- @param #table Color RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
-    -- @param #number Alpha Transparency [0,1]. Default 1.
-    -- @param #table FillColor RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
-    -- @param #number FillAlpha Transparency [0,1]. Default 0.15.
-    -- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
+    -- @param #number Coalition (Optional) Coalition: All=-1, Neutral=0, Red=1, Blue=2. Default -1=All.
+    -- @param #table Color (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red (default).
+    -- @param #number Alpha (Optional) Transparency [0,1]. Default 1.
+    -- @param #table FillColor (Optional) RGB color table {r, g, b}, e.g. {1,0,0} for red. Default is same as `Color` value.
+    -- @param #number FillAlpha (Optional) Transparency [0,1]. Default 0.15.
+    -- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot dash, 5=Long dash, 6=Two dash. Default 1=Solid.
     -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
     -- @param #string Text (Optional) Text displayed when mark is added. Default none.
     -- @return #number The resulting Mark ID, which is a number. Can be used to remove the object again.
@@ -35899,7 +35971,7 @@ do -- COORDINATE
   --- Returns if a Coordinate has Line of Sight (LOS) with the ToCoordinate.
   -- @param #COORDINATE self
   -- @param #COORDINATE ToCoordinate
-  -- @param #number Offset Height offset in meters. Default 2 m.
+  -- @param #number Offset (Optional) Height offset in meters. Default 2 m.
   -- @return #boolean true If the ToCoordinate has LOS with the Coordinate, otherwise false.
   function COORDINATE:IsLOS( ToCoordinate, Offset )
 
@@ -36255,13 +36327,13 @@ do -- COORDINATE
   -- @param #COORDINATE FromCoordinate The coordinate to measure the distance and the bearing from.
   -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @param #boolean MagVar If true, also get angle in MagVar for BR/BRA
-  -- @param #number Precision Rounding precision, currently full km as default (=0)
+  -- @param #number Precision (Optional) Rounding precision, currently full km as default (=0)
   -- @return #string The BR text.
   function COORDINATE:ToStringBR( FromCoordinate, Settings, MagVar, Precision )
     local DirectionVec3 = FromCoordinate:GetDirectionVec3( self )
     local AngleRadians =  self:GetAngleRadians( DirectionVec3 )
     local Distance = self:Get2DDistance( FromCoordinate )
-    return "BR, " .. self:GetBRText( AngleRadians, Distance, Settings, nil, MagVar, Precision )
+    return "BR " .. self:GetBRText( AngleRadians, Distance, Settings, nil, MagVar, Precision )
   end
   
   --- Return a Bearing string from a COORDINATE to the (self) COORDINATE.
@@ -36269,7 +36341,7 @@ do -- COORDINATE
   -- @param #COORDINATE FromCoordinate The coordinate to measure the distance and the bearing from.
   -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @param #boolean MagVar If true, also get angle in MagVar for BR/BRA
-  -- @param #number Precision Rounding precision, currently full km as default (=0)
+  -- @param #number Precision (Optional) Rounding precision, currently full km as default (=0)
   -- @return #string The BR text.
   function COORDINATE:ToStringBearing( FromCoordinate, Settings, MagVar, Precision )
     local DirectionVec3 = FromCoordinate:GetDirectionVec3( self )
@@ -36683,8 +36755,8 @@ do -- COORDINATE
   --   * Uses default settings in COORDINATE.
   --   * Can be overridden if for a GROUP containing x clients, a menu was selected to override the default.
   -- @param #COORDINATE self
-  -- @param Wrapper.Controllable#CONTROLLABLE Controllable The controllable to retrieve the settings from, otherwise the default settings will be chosen.
-  -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
+  -- @param Wrapper.Controllable#CONTROLLABLE Controllable (Optional) The controllable to retrieve the settings from, otherwise the default settings will be chosen.
+  -- @param Core.Settings#SETTINGS Settings (Optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @return #string The coordinate Text in the configured coordinate system.
   function COORDINATE:ToString( Controllable, Settings )
 
@@ -36719,7 +36791,7 @@ do -- COORDINATE
   --   * Can be overridden if for a GROUP containing x clients, a menu was selected to override the default.
   -- @param #COORDINATE self
   -- @param Wrapper.Controllable#CONTROLLABLE Controllable
-  -- @param Core.Settings#SETTINGS Settings (optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
+  -- @param Core.Settings#SETTINGS Settings (Optional) The settings. Can be nil, and in this case the default settings are used. If you want to specify your own settings, use the _SETTINGS object.
   -- @return #string The pressure text in the configured measurement system.
   function COORDINATE:ToStringPressure( Controllable, Settings ) 
 
@@ -37225,10 +37297,41 @@ function MESSAGE:ToClient( Client, Settings )
   return self
 end
 
+--- Sends a MESSAGE to a SET_GROUP, SET_UNIT, or SET_CLIENT.
+-- @param #MESSAGE self
+-- @param Core.Set#SET_GROUP Set The set to send to.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
+-- @return self
+function MESSAGE:ToSet(Set, Settings)
+ for _,_obj in pairs (Set:GetSetObjects() or {}) do
+    if _obj and _obj:IsAlive() then
+        if _obj:IsInstanceOf("SET_GROUP") then
+         self:ToGroup(_obj, Settings)
+        elseif _obj:IsInstanceOf("SET_CLIENT") or _obj:IsInstanceOf("SET_UNIT") then
+         self:ToUnit(_obj, Settings)
+        end
+    end
+ end
+ return self
+end
+
+--- Sends a MESSAGE to a SET_GROUP, SET_UNIT, or SET_CLIENT if a condition is true.
+-- @param #MESSAGE self
+-- @param Core.Set#SET_GROUP Set The set to send to.
+-- @param #boolean Condition The condition which needs to be true.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
+-- @return self
+function MESSAGE:ToSetIf(Set, Condition, Settings)
+    if Set and Condition == true then
+        self:ToSet(Set, Settings)
+    end
+ return self
+end
+
 --- Sends a MESSAGE to a Group.
 -- @param #MESSAGE self
 -- @param Wrapper.Group#GROUP Group to which the message is displayed.
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToGroup( Group, Settings )
   self:F( Group.GroupName )
@@ -37253,7 +37356,7 @@ end
 --- Sends a MESSAGE to a Unit. 
 -- @param #MESSAGE self
 -- @param Wrapper.Unit#UNIT Unit to which the message is displayed.
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToUnit( Unit, Settings )
   self:F( Unit.IdentifiableName )
@@ -37279,7 +37382,7 @@ end
 --- Sends a MESSAGE to a Country. 
 -- @param #MESSAGE self
 -- @param #number Country to which the message is displayed, e.g. country.id.GERMANY. For all country numbers see here: [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_country)
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToCountry( Country, Settings )
   self:F(Country )
@@ -37301,7 +37404,7 @@ end
 -- @param #MESSAGE self
 -- @param #number Country to which the message is displayed, , e.g. country.id.GERMANY. For all country numbers see here: [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_country)
 -- @param #boolean Condition Sends the message only if the condition is true.
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @return #MESSAGE Message object.
 function MESSAGE:ToCountryIf( Country, Condition, Settings )
   self:F(Country )
@@ -37406,7 +37509,7 @@ end
 
 --- Sends a MESSAGE to all players. 
 -- @param #MESSAGE self
--- @param Core.Settings#Settings Settings (Optional) Settings for message display.
+-- @param Core.Settings#SETTINGS Settings (Optional) Settings for message display.
 -- @param #number Delay (Optional) Delay in seconds before the message is send. Default instantly (`nil`).
 -- @return #MESSAGE self
 -- @usage
@@ -40382,7 +40485,7 @@ end
 
 --- Respawn group after landing.
 -- @param #SPAWN self
--- @param #number WaitingTime Wait this many seconds before despawning the alive group after landing. Defaults to 3 .
+-- @param #number WaitingTime (Optional) Wait this many seconds before despawning the alive group after landing. Defaults to 3 .
 -- @return #SPAWN self
 -- @usage
 --
@@ -40688,7 +40791,7 @@ end
 -- This method can be used to "reset" the spawn counter to a specific index number.
 -- This will actually enable a respawn of groups from the specific index.
 -- @param #SPAWN self
--- @param #string SpawnIndex The index of the group from where the spawning will start again. The default value would be 0, which means a complete reset of the spawnindex.
+-- @param #string SpawnIndex (Optional) The index of the group from where the spawning will start again. The default value would be 0, which means a complete reset of the spawnindex.
 -- @return #SPAWN self
 function SPAWN:SetSpawnIndex( SpawnIndex )
   self.SpawnIndex = SpawnIndex or 0
@@ -43409,7 +43512,7 @@ end
 --- Creates the main object to spawn a @{Wrapper.Static} given a template table.
 -- @param #SPAWNSTATIC self
 -- @param #table SpawnTemplate Template used for spawning.
--- @param DCS#country.id CountryID The ID of the country. Default `country.id.USA`.
+-- @param DCS#country.id CountryID (Optional) The ID of the country. Default `country.id.USA`.
 -- @return #SPAWNSTATIC self
 function SPAWNSTATIC:NewFromTemplate(SpawnTemplate, CountryID)
 
@@ -43427,7 +43530,7 @@ end
 -- @param #SPAWNSTATIC self
 -- @param #string StaticType Type of the static.
 -- @param #string StaticCategory Category of the static, e.g. "Planes".
--- @param DCS#country.id CountryID The ID of the country. Default `country.id.USA`.
+-- @param DCS#country.id CountryID (Optional) The ID of the country. Default `country.id.USA`.
 -- @return #SPAWNSTATIC self
 function SPAWNSTATIC:NewFromType(StaticType, StaticCategory, CountryID)
 
@@ -43448,7 +43551,7 @@ end
 --- (Internal/Cargo) Init the resource table for STATIC object that should be spawned containing storage objects.
 -- NOTE that you have to init many other parameters as the resources.
 -- @param #SPAWNSTATIC self
--- @param #number CombinedWeight The weight this cargo object should have (some have fixed weights!), defaults to 1kg.
+-- @param #number CombinedWeight (Optional) The weight this cargo object should have (some have fixed weights!), defaults to 1kg.
 -- @return #SPAWNSTATIC self
 function SPAWNSTATIC:_InitResourceTable(CombinedWeight)
   if not self.TemplateStaticUnit.resourcePayload then
@@ -43547,9 +43650,9 @@ end
 
 --- Initialize parameters for spawning FARPs.
 -- @param #SPAWNSTATIC self
--- @param #number CallsignID Callsign ID. Default 1 (="London").
--- @param #number Frequency Frequency in MHz. Default 127.5 MHz.
--- @param #number Modulation Modulation 0=AM, 1=FM.
+-- @param #number CallsignID (Optional) Callsign ID. Default 1 (="London").
+-- @param #number Frequency (Optional) Frequency in MHz. Default 127.5 MHz.
+-- @param #number Modulation (Optional) Modulation 0=AM, 1=FM. Defaults to 0
 -- @param #boolean DynamicSpawns If true, allow Dynamic Spawns
 -- @param #boolean DynamicHotStarts If true, and DynamicSpawns is true, then allow Dynamic Spawns with hot starts.
 -- @return #SPAWNSTATIC self
@@ -44814,7 +44917,7 @@ do
   
   --- Set laser start position relative to the lasing unit.
   -- @param #SPOT self
-  -- @param #table position Start position of the laser relative to the lasing unit. Default is { x = 0, y = 2, z = 0 }
+  -- @param #table position (Optional) Start position of the laser relative to the lasing unit. Default is { x = 0, y = 2, z = 0 }
   -- @return #SPOT self
   -- @usage
   --      -- Set lasing position to be the position of the optics of the Gazelle M:
@@ -45586,7 +45689,7 @@ end
 
 --- Get the n-th point of the pathline.
 -- @param #PATHLINE self
--- @param #number n The index of the point. Default is the first point.
+-- @param #number n (optional) The index of the point. Default is the first point.
 -- @return #PATHLINE.Point Point.
 function PATHLINE:GetPointFromIndex(n)
 
@@ -45608,7 +45711,7 @@ end
 --- Get the 3D position of the n-th point.
 -- @param #PATHLINE self
 -- @param #number n The n-th point.
--- @return DCS#VEC3 Position in 3D.
+-- @return DCS#Vec3 Position in 3D.
 function PATHLINE:GetPoint3DFromIndex(n)
 
   local point=self:GetPointFromIndex(n)
@@ -45623,7 +45726,7 @@ end
 --- Get the 2D position of the n-th point.
 -- @param #PATHLINE self
 -- @param #number n The n-th point.
--- @return DCS#VEC2 Position in 3D.
+-- @return DCS#Vec2 Position in 3D.
 function PATHLINE:GetPoint2DFromIndex(n)
 
   local point=self:GetPointFromIndex(n)
@@ -45693,8 +45796,8 @@ end
 --- Draw line on F10 map.
 -- @param #PATHLINE self
 -- @param #number Recipient Recipent of the line: -1=All.
--- @param #table Color Color as RGB table plus alpha value. Default {1, 0, 0, 1.0}.
--- @param #number LineType Line type: 1=Solid (default).
+-- @param #table Color (optional) Color as RGB table plus alpha value. Default {1, 0, 0, 1.0}.
+-- @param #number LineType (optional) Line type: 1=Solid (default).
 -- @return #PATHLINE self
 function PATHLINE:DrawLine(Recipient, Color, LineType)
   
@@ -47296,7 +47399,7 @@ end
 --- Return an intermediate VECTOR between this and another given vector.
 -- @param #VECTOR self
 -- @param #VECTOR Vector The destination vector.
--- @param #number Fraction The fraction (0,1) where the new vector is created. Default 0.5, *i.e.* in the middle.
+-- @param #number Fraction (Optional) The fraction (0,1) where the new vector is created. Default 0.5, *i.e.* in the middle.
 -- @return #VECTOR Vector between this and the other vector.
 function VECTOR:GetIntermediateVector(Vector, Fraction)
 
@@ -47338,7 +47441,7 @@ end
 
 --- Set x-component of vector. The x-axis points to the North.
 -- @param #VECTOR self
--- @param #number x Value of x. Default 0.
+-- @param #number x (Optional) Value of x. Default 0.
 -- @return #VECTOR self
 function VECTOR:SetX(x)
   self.x=x or 0
@@ -47347,7 +47450,7 @@ end
 
 --- Set y-component of vector. The y-axis points to the upwards and describes the altitude above mean sea level.
 -- @param #VECTOR self
--- @param #number y Value of y. Default land/surface height at this point.
+-- @param #number y (Optional) Value of y. Default land/surface height at this point.
 -- @return #VECTOR self
 function VECTOR:SetY(y)
 
@@ -47360,7 +47463,7 @@ end
 
 --- Set z-component of vector. The z-axis points to the East.
 -- @param #VECTOR self
--- @param #number z Value of z. Default 0.
+-- @param #number z (Optional) Value of z. Default 0.
 -- @return #VECTOR self
 function VECTOR:SetZ(z)
   self.z=z or 0
@@ -47496,8 +47599,8 @@ end
 
 --- Translate the vector by a given distance and angle.
 -- @param #VECTOR self
--- @param #number Distance Distance in meters. Default 1000 meters.
--- @param #number Heading Heading angle in degrees. Default 0° = North.
+-- @param #number Distance (Optional) Distance in meters. Default 1000 meters.
+-- @param #number Heading (Optional) Heading angle in degrees. Default 0° = North.
 -- @param #boolean Copy Create a copy of the VECTOR so the original stays unchanged.
 -- @return #VECTOR The translated vector or a copy of it.
 function VECTOR:Translate(Distance, Heading, Copy)
@@ -47520,7 +47623,7 @@ end
 
 --- Rotate the VECTOR clockwise in the 2D (x,z) plane.
 -- @param #VECTOR self
--- @param #number Angle Rotation angle in degrees). Default 0.
+-- @param #number Angle (Optional) Rotation angle in degrees). Default 0.
 -- @param #boolean Copy Create a copy of the VECTOR so the original stays unchanged.
 -- @return #VECTOR The translated vector or a copy of it.
 function VECTOR:Rotate2D(Angle, Copy)
@@ -47714,7 +47817,7 @@ end
 --- Returns an intercept point at which a ray drawn from the this vector in the passed normalized direction for a specified distance.
 -- @param #VECTOR self
 -- @param DCS#Vec3 DirectionVector Directional vector.
--- @param #number Distance Distance in meters. Default 1000 m.
+-- @param #number Distance (Optional) Distance in meters. Default 1000 m.
 -- @return #VECTOR Intercept vector. Can be `nil` if no intercept point is found.
 function VECTOR:GetInterceptPoint(DirectionVector, Distance)
 
@@ -47793,7 +47896,7 @@ end
 
 --- Creates a smoke at this vector.
 -- @param #VECTOR self
--- @param #number Color Color of the smoke: 0=Green, 1=Red, 2=White, 3=Orange, 4=Blue. Default 0.
+-- @param #number Color (Optional) Color of the smoke: 0=Green, 1=Red, 2=White, 3=Orange, 4=Blue. Default 0.
 -- @param #number Duration (Optional) Duration of the smoke in seconds. Default nil.
 -- @return #string Name of the smoke object. Can be used to stop it. 
 function VECTOR:Smoke(Color, Duration)
@@ -47828,8 +47931,8 @@ end
 -- * 8 = huge smoke
 -- 
 -- @param #VECTOR self
--- @param #number Preset Preset of smoke. Default `BIGSMOKEPRESET.LargeSmokeAndFire`.
--- @param #number Density Density between [0,1]. Default 0.5.
+-- @param #number Preset (Optional) Preset of smoke. Default `BIGSMOKEPRESET.LargeSmokeAndFire`.
+-- @param #number Density (Optional) Density between [0,1]. Default 0.5.
 -- @param #number Duration (Optional) Duration of the smoke and fire in seconds.
 -- @return #string Name of the smoke. Can be used to stop it. 
 function VECTOR:SmokeAndFire(Preset, Density, Duration)
@@ -47874,7 +47977,7 @@ end
 
 --- Creates an illumination bomb at the specified point.
 -- @param #VECTOR self
--- @param #number Power The power in Candela (cd). Should be between 1 and 1000000. Default 1000 cd.
+-- @param #number Power (Optional) The power in Candela (cd). Should be between 1 and 1000000. Default 1000 cd.
 -- @param #number Altitude (Optional) Altitude [m] at which the illumination bomb is created.
 -- @return #VECTOR self
 function VECTOR:IlluminationBomb(Power, Altitude)
@@ -47893,7 +47996,7 @@ end
 
 --- Creates an explosion at a given point at the specified power.
 -- @param #VECTOR self
--- @param #number Power The power in kg TNT. Default 100 kg.
+-- @param #number Power (Optional) The power in kg TNT. Default 100 kg.
 -- @return #VECTOR self
 function VECTOR:Explosion(Power)
 
@@ -47906,8 +48009,8 @@ end
 
 --- Creates a signal flare at the given point in the specified color. The flare will be launched in the direction of the azimuth angle.
 -- @param #VECTOR self
--- @param #number Color Color of flare. Default Green.
--- @param #number Azimuth Azimuth angle in degrees. Default 0.
+-- @param #number Color (Optional) Color of flare. Default Green.
+-- @param #number Azimuth (Optional) Azimuth angle in degrees. Default 0.
 -- @return #VECTOR self
 function VECTOR:Flare(Color, Azimuth)
 
@@ -47922,10 +48025,10 @@ end
 --- Creates a arrow from this VECTOR to another vector on the F10 map.
 -- @param #VECTOR self
 -- @param #VECTOR Vector The vector defining the endpoint.
--- @param #number Coalition Coalition Id: -1=All, 0=Neutral, 1=Red, 2=Blue. Default -1.
--- @param #table Color RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.7}.
--- @param #table FillColor RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.5}.
--- @param #number LineType Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot Dash, 5=Long Dash, 6=Two Dash. Default 1.
+-- @param #number Coalition (Optional) Coalition Id: -1=All, 0=Neutral, 1=Red, 2=Blue. Default -1.
+-- @param #table Color (Optional) RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.7}.
+-- @param #table FillColor (Optional) RGB color with alpha {r, g, b, alpha}. Default {1, 0, 0, 0.5}.
+-- @param #number LineType (Optional) Line type: 0=No line, 1=Solid, 2=Dashed, 3=Dotted, 4=Dot Dash, 5=Long Dash, 6=Two Dash. Default 1.
 -- @return #number Marker ID. Can be used to remove the drawing.
 function VECTOR:ArrowTo(Vector, Coalition, Color, FillColor, LineType)
 
@@ -47950,7 +48053,7 @@ end
 --- Create mark on F10 map.
 -- @param #VECTOR self
 -- @param #string MarkText Free format text that shows the marking clarification.
--- @param #number Recipient Recipient of the mark: -1=All (default), 0=Neutral, 1=Red, 2=Blue. Can also be a `GROUP` object.
+-- @param #number Recipient (Optional) Recipient of the mark: -1=All (default), 0=Neutral, 1=Red, 2=Blue. Can also be a `GROUP` object.
 -- @param #boolean ReadOnly (Optional) Mark is readonly and cannot be removed by users. Default false.
 -- @return #number Mark ID.
 function VECTOR:Mark(MarkText, Recipient, ReadOnly)
@@ -48942,7 +49045,7 @@ end
 
 --- Triggers an explosion at the coordinates of the positionable.
 -- @param #POSITIONABLE self
--- @param #number power Power of the explosion in kg TNT. Default 100 kg TNT.
+-- @param #number power (Optional) Power of the explosion in kg TNT. Default 100 kg TNT.
 -- @param #number delay (Optional) Delay of explosion in seconds.
 -- @return #POSITIONABLE self
 function POSITIONABLE:Explode(power, delay)
@@ -48970,9 +49073,9 @@ end
 
 --- Returns a COORDINATE object, which is offset with respect to the orientation of the POSITIONABLE.
 -- @param #POSITIONABLE self
--- @param #number x Offset in the direction "the nose" of the unit is pointing in meters. Default 0 m.
--- @param #number y Offset "above" the unit in meters. Default 0 m.
--- @param #number z Offset in the direction "the wing" of the unit is pointing in meters. z>0 starboard, z<0 port. Default 0 m.
+-- @param #number x (Optional) Offset in the direction "the nose" of the unit is pointing in meters. Default 0 m.
+-- @param #number y (Optional) Offset "above" the unit in meters. Default 0 m.
+-- @param #number z(Optional)  Offset in the direction "the wing" of the unit is pointing in meters. z>0 starboard, z<0 port. Default 0 m.
 -- @return Core.Point#COORDINATE The COORDINATE of the offset with respect to the orientation of the  POSITIONABLE.
 function POSITIONABLE:GetOffsetCoordinate( x, y, z )
 
@@ -49011,9 +49114,9 @@ end
 
 --- Returns a COORDINATE object, which is transformed to be relative to the POSITIONABLE. Inverse of @{#POSITIONABLE.GetOffsetCoordinate}.
 -- @param #POSITIONABLE self
--- @param #number x Offset along the world x-axis in meters. Default 0 m.
--- @param #number y Offset along the world y-axis in meters. Default 0 m.
--- @param #number z Offset along the world z-axis in meters. Default 0 m.
+-- @param #number x (Optional) Offset along the world x-axis in meters. Default 0 m.
+-- @param #number y (Optional) Offset along the world y-axis in meters. Default 0 m.
+-- @param #number z (Optional) Offset along the world z-axis in meters. Default 0 m.
 -- @return Core.Point#COORDINATE The relative COORDINATE with respect to the orientation of the  POSITIONABLE.
 function POSITIONABLE:GetRelativeCoordinate( x, y, z )
 
@@ -51523,7 +51626,7 @@ end
 --- Set callsign of the CONTROLLABLE. See [DCS command setCallsign](https://wiki.hoggitworld.com/view/DCS_command_setCallsign)
 -- @param #CONTROLLABLE self
 -- @param DCS#CALLSIGN CallName Number corresponding the the callsign identifier you wish this group to be called.
--- @param #number CallNumber The number value the group will be referred to as. Only valid numbers are 1-9. For example Uzi **5**-1. Default 1.
+-- @param #number CallNumber (Optional) The number value the group will be referred to as. Only valid numbers are 1-9. For example Uzi **5**-1. Default 1.
 -- @param #number Delay (Optional) Delay in seconds before the callsign is set. Default is immediately.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:CommandSetCallsign( CallName, CallNumber, Delay )
@@ -51601,7 +51704,7 @@ end
 --- Set radio frequency. See [DCS command SetFrequency](https://wiki.hoggitworld.com/view/DCS_command_setFrequency)
 -- @param #CONTROLLABLE self
 -- @param #number Frequency Radio frequency in MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
 -- @param #number Power (Optional) Power of the Radio in Watts. Defaults to 10.
 -- @param #number Delay (Optional) Delay in seconds before the frequency is set. Default is immediately.
 -- @return #CONTROLLABLE self
@@ -51628,7 +51731,7 @@ end
 --- [AIR] Set radio frequency. See [DCS command SetFrequencyForUnit](https://wiki.hoggitworld.com/view/DCS_command_setFrequencyForUnit)
 -- @param #CONTROLLABLE self
 -- @param #number Frequency Radio frequency in MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
 -- @param #number Power (Optional) Power of the Radio in Watts. Defaults to 10.
 -- @param #number UnitID (Optional, if your object is a UNIT) The UNIT ID this is for.
 -- @param #number Delay (Optional) Delay in seconds before the frequency is set. Default is immediately.
@@ -51653,7 +51756,7 @@ end
 
 --- [AIR] Set smoke on or off. See [DCS command smoke on off](https://wiki.hoggitworld.com/view/DCS_command_smoke_on_off)
 -- @param #CONTROLLABLE self
--- @param #boolean OnOff Set to true for on and false for off. Defaults to true.
+-- @param #boolean OnOff (Optional) Set to true for on and false for off. Defaults to true.
 -- @param #number Delay (Optional) Delay the command by this many seconds.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:CommandSmokeOnOff(OnOff, Delay)
@@ -51713,7 +51816,7 @@ end
 --- Set EPLRS data link on/off.
 -- @param #CONTROLLABLE self
 -- @param #boolean SwitchOnOff If true (or nil) switch EPLRS on. If false switch off.
--- @param #number idx Task index. Default 1.
+-- @param #number idx (Optional) Task index. Default 1.
 -- @return #table Task wrapped action.
 function CONTROLLABLE:TaskEPLRS( SwitchOnOff, idx )
 
@@ -51747,32 +51850,14 @@ end
 -- @param #number AttackQty (optional) This parameter limits maximal quantity of attack. The aircraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aircraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param DCS#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param DCS#Distance Altitude (optional) Desired attack start altitude. Controllable/aircraft will make its attacks from the altitude. If the altitude is too low or too high to use weapon aircraft/controllable will choose closest altitude to the desired attack start altitude. If the desired altitude is defined controllable/aircraft will not attack from safe altitude.
--- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackGroup" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
 -- @param #boolean GroupAttack (Optional) If true, attack as group.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit, GroupAttack )
   -- self:F2( { self.ControllableName, AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit } )
-
-  --  AttackGroup = {
-  --   id = 'AttackGroup',
-  --   params = {
-  --     groupId = Group.ID,
-  --     weaponType = number,
-  --     expend = enum AI.Task.WeaponExpend,
-  --     attackQty = number,
-  --     directionEnabled = boolean,
-  --     direction = Azimuth,
-  --     altitudeEnabled = boolean,
-  --     altitude = Distance,
-  --     attackQtyLimit = boolean,
-  --   }
-  -- }
-
-
   local DCSTask = { id = 'AttackGroup',
     params = {
       groupId          = AttackGroup:GetID(),
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.Auto,
       expend           = WeaponExpend or "Auto",
       attackQtyLimit   = AttackQty and true or false,
       attackQty        = AttackQty or 1,
@@ -51783,7 +51868,6 @@ function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, At
       groupAttack      = GroupAttack and true or false,
     },
   }
-
   return DCSTask
 end
 
@@ -51811,7 +51895,7 @@ function CONTROLLABLE:TaskAttackUnit( AttackUnit, GroupAttack, WeaponExpend, Att
       altitude         = Altitude,
       attackQtyLimit   = AttackQty and true or false,
       attackQty        = AttackQty,
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.Auto,
     },
   }
 
@@ -51845,7 +51929,7 @@ function CONTROLLABLE:TaskBombing( Vec2, GroupAttack, WeaponExpend, AttackQty, D
       direction        = Direction and math.rad(Direction) or 0,
       altitudeEnabled  = Altitude and true or false,
       altitude         = Altitude or 2000,
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.AnyBomb,
       attackType       = Divebomb and "Dive" or nil,
       },
   }
@@ -51897,7 +51981,7 @@ end
 -- @param #number AttackQty (Optional) This parameter limits maximal quantity of attack. The aircraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aircraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param DCS#Azimuth Direction (Optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param #number Altitude (Optional) The altitude [meters] from where to attack. Default 30 m.
--- @param #number WeaponType (Optional) The WeaponType. Default Auto=1073741822.
+-- @param #number WeaponType (Optional) The WeaponType. Default `ENUMS.WeaponFlag.Auto`.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskAttackMapObject( Vec2, GroupAttack, WeaponExpend, AttackQty, Direction, Altitude, WeaponType )
 
@@ -51914,7 +51998,7 @@ function CONTROLLABLE:TaskAttackMapObject( Vec2, GroupAttack, WeaponExpend, Atta
       direction        = Direction and math.rad(Direction) or 0,
       altitudeEnabled  = Altitude and true or false,
       altitude         = Altitude,
-      weaponType       = WeaponType or 1073741822,
+      weaponType       = WeaponType or ENUMS.WeaponFlag.Auto,
     },
   }
 
@@ -52033,7 +52117,7 @@ end
 -- The controllable has to be an infantry group!
 -- @param #CONTROLLABLE self
 -- @param Core.Point#COORDINATE Coordinate Coordinates where AI is expecting to be picked up.
--- @param #number Radius Radius in meters. Default 200 m.
+-- @param #number Radius (Optional) Radius in meters. Default 200 m.
 -- @param #string UnitType The unit type name of the carrier, e.g. "UH-1H". Must not be specified.
 -- @return DCS#Task Embark to transport task.
 function CONTROLLABLE:TaskEmbarkToTransport( Coordinate, Radius, UnitType )
@@ -52107,8 +52191,8 @@ end
 --- (AIR) Orbit at a position with at a given altitude and speed. Optionally, a race track pattern can be specified.
 -- @param #CONTROLLABLE self
 -- @param Core.Point#COORDINATE Coord Coordinate at which the CONTROLLABLE orbits. Can also be given as a `DCS#Vec3` or `DCS#Vec2` object.
--- @param #number Altitude Altitude in meters of the orbit pattern. Default y component of Coord.
--- @param #number Speed Speed [m/s] flying the orbit pattern. Default 128 m/s = 250 knots.
+-- @param #number Altitude (Optional) Altitude in meters of the orbit pattern. Default y component of Coord.
+-- @param #number Speed (Optional) Speed [m/s] flying the orbit pattern. Default 128 m/s = 250 knots.
 -- @param Core.Point#COORDINATE CoordRaceTrack (Optional) If this coordinate is specified, the CONTROLLABLE will fly a race-track pattern using this and the initial coordinate.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:TaskOrbit( Coord, Altitude, Speed, CoordRaceTrack )
@@ -52178,11 +52262,11 @@ end
 --
 -- @param #CONTROLLABLE self
 -- @param Wrapper.Airbase#AIRBASE Airbase Airbase to attack.
--- @param #number WeaponType (optional) Bitmask of weapon types those allowed to use. See [DCS enum weapon flag](https://wiki.hoggitworld.com/view/DCS_enum_weapon_flag). Default 2147485694 = AnyBomb (GuidedBomb + AnyUnguidedBomb).
--- @param DCS#AI.Task.WeaponExpend WeaponExpend Enum AI.Task.WeaponExpend that defines how much munitions the AI will expend per attack run. Default "ALL".
--- @param #number AttackQty Number of times the group will attack if the target. Default 1.
--- @param DCS#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
--- @param #boolean GroupAttack (optional) Flag indicates that the target must be engaged by all aircrafts of the controllable. Has effect only if the task is assigned to a group and not to a single aircraft.
+-- @param #number WeaponType (Optional) Bitmask of weapon types those allowed to use. See [DCS enum weapon flag](https://wiki.hoggitworld.com/view/DCS_enum_weapon_flag). Default 2147485694 = AnyBomb (GuidedBomb + AnyUnguidedBomb).
+-- @param DCS#AI.Task.WeaponExpend (Optional) WeaponExpend Enum AI.Task.WeaponExpend that defines how much munitions the AI will expend per attack run. Default "ALL".
+-- @param #number AttackQty (Optional) Number of times the group will attack if the target. Default 1.
+-- @param DCS#Azimuth Direction (Optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
+-- @param #boolean GroupAttack (Optional) Flag indicates that the target must be engaged by all aircrafts of the controllable. Has effect only if the task is assigned to a group and not to a single aircraft.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskBombingRunway( Airbase, WeaponType, WeaponExpend, AttackQty, Direction, GroupAttack )
 
@@ -52373,7 +52457,7 @@ end
 -- @param DCS#Vec3 Vec3 Position of the unit / lead unit of the controllable relative lead unit of another controllable in frame reference oriented by course of lead unit of another controllable. If another controllable is on land the unit / controllable will orbit around.
 -- @param #number LastWaypointIndex Detach waypoint of another controllable. Once reached the unit / controllable Escort task is finished.
 -- @param #number EngagementDistance Maximal distance from escorted controllable to threat in meters. If the threat is already engaged by escort escort will disengage if the distance becomes greater than 1.5 * engagementDistMax.
--- @param DCS#AttributeNameArray TargetTypes Array of AttributeName that is contains threat categories allowed to engage. Default {"Air"}. See https://wiki.hoggit.us/view/DCS_enum_attributes
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of AttributeName that is contains threat categories allowed to engage. Default {"Air"}. See https://wiki.hoggit.us/view/DCS_enum_attributes
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskEscort( FollowControllable, Vec3, LastWaypointIndex, EngagementDistance, TargetTypes )
 
@@ -52413,7 +52497,7 @@ end
 -- @param #number AmmoCount (optional) Quantity of ammunition to expand (omit to fire until ammunition is depleted).
 -- @param #number WeaponType (optional) Enum for weapon type ID. This value is only required if you want the group firing to use a specific weapon, for instance using the task on a ship to force it to fire guided missiles at targets within cannon range. See http://wiki.hoggit.us/view/DCS_enum_weapon_flag
 -- @param #number Altitude (Optional) Altitude in meters.
--- @param #number ASL Altitude is above mean sea level. Default is above ground level.
+-- @param #number ASL (Optional) Altitude is above mean sea level. Default is above ground level.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:TaskFireAtPoint( Vec2, Radius, AmmoCount, WeaponType, Altitude, ASL )
 
@@ -52466,11 +52550,11 @@ end
 -- It's important to note that depending on the type of unit that is being assigned the task (AIR or GROUND), you must choose the correct type of callsign enumerator. For airborne controllables use CALLSIGN.Aircraft and for ground based use CALLSIGN.JTAC enumerators.
 -- @param #CONTROLLABLE self
 -- @param Wrapper.Group#GROUP AttackGroup Target GROUP object.
--- @param #number WeaponType Bitmask of weapon types, which are allowed to use.
--- @param DCS#AI.Task.Designation Designation (Optional) Designation type.
+-- @param #number WeaponType (Optional) Bitmask of weapon types, which are allowed to use. Defaults tp ENUMS.WeaponFlag.AutoDCS.
+-- @param DCS#AI.Task.Designation Designation (Optional) Designation type. Defaults to Auto.
 -- @param #boolean Datalink (Optional) Allows to use datalink to send the target information to attack aircraft. Enabled by default.
--- @param #number Frequency Frequency in MHz used to communicate with the FAC. Default 133 MHz.
--- @param #number Modulation Modulation of radio for communication. Default 0=AM.
+-- @param #number Frequency (Optional) Frequency in MHz used to communicate with the FAC. Default 133 MHz.
+-- @param #number Modulation (Optional) Modulation of radio for communication. Default 0=AM.
 -- @param #number CallsignName Callsign enumerator name of the FAC. (CALLSIGN.Aircraft.{name} for airborne controllables, CALLSIGN.JTACS.{name} for ground units)
 -- @param #number CallsignNumber Callsign number, e.g. Axeman-**1**.
 -- @return DCS#Task The DCS task structure.
@@ -52496,8 +52580,8 @@ end
 --- (AIR) Engaging targets of defined types.
 -- @param #CONTROLLABLE self
 -- @param DCS#Distance Distance Maximal distance from the target to a route leg. If the target is on a greater distance it will be ignored.
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage.
--- @param #number Priority All enroute tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Defaults to {"Air"}.
+-- @param #number Priority (Optional) All enroute tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskEngageTargets( Distance, TargetTypes, Priority )
 
@@ -52538,7 +52622,7 @@ end
 
 --- (AIR) Enroute anti-ship task.
 -- @param #CONTROLLABLE self
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage. Default `{"Ships"}`.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Default `{"Ships"}`.
 -- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskAntiShip(TargetTypes, Priority)
@@ -52559,7 +52643,7 @@ end
 
 --- (AIR) Enroute SEAD task.
 -- @param #CONTROLLABLE self
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage. Default `{"Air Defence"}`.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Default `{"Air Defence"}`.
 -- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskSEAD(TargetTypes, Priority)
@@ -52580,7 +52664,7 @@ end
 
 --- (AIR) Enroute CAP task.
 -- @param #CONTROLLABLE self
--- @param DCS#AttributeNameArray TargetTypes Array of target categories allowed to engage. Default `{"Air"}`.
+-- @param DCS#AttributeNameArray TargetTypes (Optional) Array of target categories allowed to engage. Default `{"Air"}`.
 -- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Default 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskCAP(TargetTypes, Priority)
@@ -52753,11 +52837,11 @@ end
 -- Target designation is set to auto and is dependent on the circumstances.
 -- See [hoggit](https://wiki.hoggitworld.com/view/DCS_task_fac).
 -- @param #CONTROLLABLE self
--- @param #number Frequency Frequency in MHz. Default 133 MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
+-- @param #number Frequency (Optional) Frequency in MHz. Default 133 MHz.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
 -- @param #number CallsignID CallsignID, e.g. `CALLSIGN.JTAC.Anvil` for ground or `CALLSIGN.Aircraft.Ford` for air.
 -- @param #number CallsignNumber Callsign first number, e.g. 2 for `Ford-2`.
--- @param #number Priority All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first.
+-- @param #number Priority (Optional) All en-route tasks have the priority parameter. This is a number (less value - higher priority) that determines actions related to what task will be performed first. Defaults to 0.
 -- @return DCS#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskFAC( Frequency, Modulation, CallsignID, CallsignNumber, Priority )
 
@@ -52987,8 +53071,8 @@ do -- Patrol methods
   -- @param #table ZoneList Table of zones.
   -- @param #number Speed Speed in km/h the group moves at.
   -- @param #string Formation (Optional) Formation the group should use.
-  -- @param #number DelayMin Delay in seconds before the group progresses to the next route point. Default 1 sec.
-  -- @param #number DelayMax Max. delay in seconds. Actual delay is randomly chosen between DelayMin and DelayMax. Default equal to DelayMin.
+  -- @param #number DelayMin (Optional) Delay in seconds before the group progresses to the next route point. Default 1 sec.
+  -- @param #number DelayMax (Optional) Max. delay in seconds. Actual delay is randomly chosen between DelayMin and DelayMax. Default equal to DelayMin.
   -- @return #CONTROLLABLE
   function CONTROLLABLE:PatrolZones( ZoneList, Speed, Formation, DelayMin, DelayMax )
 
@@ -53503,7 +53587,7 @@ do -- Route methods
   -- @param #CONTROLLABLE self
   -- @param Core.Zone#ZONE Zone The zone where to route to.
   -- @param #boolean Randomize Defines whether to target point gets randomized within the Zone.
-  -- @param #number Speed The speed in m/s. Default is 5.555 m/s = 20 km/h.
+  -- @param #number Speed (Optional) The speed in m/s. Default is 5.555 m/s = 20 km/h.
   -- @param DCS#FORMATION Formation The formation string.
   function CONTROLLABLE:TaskRouteToZone( Zone, Randomize, Speed, Formation )
     self:F2( Zone )
@@ -53563,7 +53647,7 @@ do -- Route methods
   -- A given formation can be given.
   -- @param #CONTROLLABLE self
   -- @param DCS#Vec2 Vec2 The Vec2 where to route to.
-  -- @param #number Speed The speed in m/s. Default is 5.555 m/s = 20 km/h.
+  -- @param #number Speed (Optional) The speed in m/s. Default is 5.555 m/s = 20 km/h.
   -- @param DCS#FORMATION Formation The formation string.
   function CONTROLLABLE:TaskRouteToVec2( Vec2, Speed, Formation )
 
@@ -54495,7 +54579,7 @@ end
 
 --- Set RTB on bingo fuel.
 -- @param #CONTROLLABLE self
--- @param #boolean RTB true if RTB on bingo fuel (default), false if no RTB on bingo fuel.
+-- @param #boolean RTB (Optional) true if RTB on bingo fuel (default), false if no RTB on bingo fuel.
 -- Warning! When you switch this option off, the airborne group will continue to fly until all fuel has been consumed, and will crash.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionRTBBingoFuel( RTB ) -- R2.2
@@ -54622,7 +54706,7 @@ end
 
 --- [Ground] Option that defines the vehicle spacing when in an on road and off road formation. 
 -- @param #CONTROLLABLE self
--- @param #number meters Can be zero to 100 meters. Defaults to 50 meters.
+-- @param #number meters (Optional) Can be zero to 100 meters. Defaults to 50 meters.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionFormationInterval(meters)
   self:F2( { self.ControllableName } )
@@ -54643,7 +54727,7 @@ end
 
 --- [Air] Defines the usage of Electronic Counter Measures by airborne forces.
 -- @param #CONTROLLABLE self
--- @param #number ECMvalue Can be - 0=Never on, 1=if locked by radar, 2=if detected by radar, 3=always on, defaults to 1
+-- @param #number ECMvalue (Optional) Can be - 0=Never on, 1=if locked by radar, 2=if detected by radar, 3=always on, defaults to 1
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionECM( ECMvalue )
   self:F2( { self.ControllableName } )
@@ -54939,7 +55023,7 @@ end
 
 --- Defines the range at which a GROUND unit/group is allowed to use its weapons automatically.
 -- @param #CONTROLLABLE self
--- @param #number EngageRange Engage range limit in percent (a number between 0 and 100). Default 100.
+-- @param #number EngageRange (Optional) Engage range limit in percent (a number between 0 and 100). Default 100.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:OptionEngageRange( EngageRange )
   self:F2( { self.ControllableName } )
@@ -55089,7 +55173,7 @@ end
 
 --- [AIR] Set the AI to report contact for certain types of objects.
 -- @param #CONTROLLABLE self
--- @param #table Objects Table of attribute names for which AI reports contact. Defaults to {"Air"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #table Objects (Optional) Table of attribute names for which AI reports contact. Defaults to {"Air"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOptionRadioContact(Objects)
  self:F2( { self.ControllableName } )
@@ -55103,7 +55187,7 @@ end
 
 --- [AIR] Set the AI to report engaging certain types of objects.
 -- @param #CONTROLLABLE self
--- @param #table Objects Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #table Objects (Optional) Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOptionRadioEngage(Objects)
  self:F2( { self.ControllableName } )
@@ -55117,7 +55201,7 @@ end
 
 --- [AIR] Set the AI to report killing certain types of objects.
 -- @param #CONTROLLABLE self
--- @param #table Objects Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #table Objects (Optional) Table of attribute names for which AI reports contact. Defaults to {"Air"}, see [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOptionRadioKill(Objects)
  self:F2( { self.ControllableName } )
@@ -55131,12 +55215,12 @@ end
 
 --- (GROUND) Relocate controllable to a random point within a given radius; use e.g.for evasive actions; Note that not all ground controllables can actually drive, also the alarm state of the controllable might stop it from moving.
 -- @param #CONTROLLABLE self
--- @param #number speed Speed of the controllable, default 20
--- @param #number radius Radius of the relocation zone, default 500
--- @param #boolean onroad If true, route on road (less problems with AI way finding), default true
--- @param #boolean shortcut If true and onroad is set, take a shorter route - if available - off road, default false
--- @param #string formation Formation string as in the mission editor, e.g. "Vee", "Diamond", "Line abreast", etc. Defaults to "Off Road"
--- @param #boolean onland (optional) If true, try up to 50 times to get a coordinate on land.SurfaceType.LAND. Note - this descriptor value is not reliably implemented on all maps.
+-- @param #number speed (Optional) Speed of the controllable, default 20
+-- @param #number radius (Optional) Radius of the relocation zone, default 500
+-- @param #boolean onroad (Optional) If true, route on road (less problems with AI way finding), default true
+-- @param #boolean shortcut (Optional) If true and onroad is set, take a shorter route - if available - off road, default false
+-- @param #string formation (Optional) Formation string as in the mission editor, e.g. "Vee", "Diamond", "Line abreast", etc. Defaults to "Off Road"
+-- @param #boolean onland (Optional) If true, try up to 50 times to get a coordinate on land.SurfaceType.LAND. Note - this descriptor value is not reliably implemented on all maps.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:RelocateGroundRandomInRadius( speed, radius, onroad, shortcut, formation, onland )
   self:F2( { self.ControllableName } )
@@ -56519,8 +56603,8 @@ end
 
 --- [GROUND] Create and enable a new IR Marker for the given controllable UNIT or GROUP.
 -- @param #CONTROLLABLE self
--- @param #boolean EnableImmediately (Optionally) If true start up the IR Marker immediately. Else you need to call `myobject:EnableIRMarker()` later on.
--- @param #number Runtime (Optionally) Run this IR Marker for the given number of seconds, then stop. Use in conjunction with EnableImmediately. Defaults to 60 seconds.
+-- @param #boolean EnableImmediately (Optional) If true start up the IR Marker immediately. Else you need to call `myobject:EnableIRMarker()` later on.
+-- @param #number Runtime (Optional) Run this IR Marker for the given number of seconds, then stop. Use in conjunction with EnableImmediately. Defaults to 60 seconds.
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:NewIRMarker(EnableImmediately, Runtime)
   self:T2("NewIRMarker")
@@ -57283,7 +57367,7 @@ end
 -- See [hoggit documentation](https://wiki.hoggitworld.com/view/DCS_func_hasAttribute).
 -- @param #GROUP self
 -- @param #string attribute The name of the attribute the group is supposed to have. Valid attributes can be found in the "db_attributes.lua" file which is located at in "C:\Program Files\Eagle Dynamics\DCS World\Scripts\Database".
--- @param #boolean all If true, all units of the group must have the attribute in order to return true. Default is only one unit of a heterogenious group needs to have the attribute.
+-- @param #boolean all (Optional) If true, all units of the group must have the attribute in order to return true. Default is only one unit of a heterogenious group needs to have the attribute.
 -- @return #boolean Group has this attribute.
 function GROUP:HasAttribute(attribute, all)
 
@@ -61423,7 +61507,7 @@ end
 
 --- Triggers an explosion at the coordinates of the unit.
 -- @param #UNIT self
--- @param #number power Power of the explosion in kg TNT. Default 100 kg TNT.
+-- @param #number power (Optional) Power of the explosion in kg TNT. Default 100 kg TNT.
 -- @param #number delay (Optional) Delay of explosion in seconds.
 -- @return #UNIT self
 function UNIT:Explode(power, delay)
@@ -62069,7 +62153,7 @@ end
 -- @param #CLIENT self
 -- @param #string ClientName Name of the DCS **Unit** as defined within the Mission Editor.
 -- @param #string ClientBriefing Text that describes the briefing of the mission when a Player logs into the Client.
--- @param #boolean Error A flag that indicates whether an error should be raised if the CLIENT cannot be found. By default an error will be raised.
+-- @param #boolean Error (Optional) A flag that indicates whether an error should be raised if the CLIENT cannot be found. By default an error will be raised.
 -- @return #CLIENT
 -- @usage
 -- -- Create new Clients.
@@ -62784,7 +62868,7 @@ end
 --- Spawn the @{Wrapper.Static} at a specific coordinate and heading.
 -- @param #STATIC self
 -- @param Core.Point#COORDINATE Coordinate The coordinate where to spawn the new Static.
--- @param #number Heading The heading of the static respawn in degrees. Default is 0 deg.
+-- @param #number Heading (Optional) The heading of the static respawn in degrees. Default is 0 deg.
 -- @param #number Delay Delay in seconds before the static is spawned.
 function STATIC:SpawnAt(Coordinate, Heading, Delay)
 
@@ -65092,7 +65176,7 @@ end
 
 --- Get number of parking spots at an airbase. Optionally, a specific terminal type can be requested.
 -- @param #AIRBASE self
--- @param #AIRBASE.TerminalType termtype Terminal type of which the number of spots is counted. Default all spots but spawn points on runway.
+-- @param #AIRBASE.TerminalType termtype (Optional) Terminal type of which the number of spots is counted. Default all spots but spawn points on runway.
 -- @return #number Number of parking spots at this airbase.
 function AIRBASE:GetParkingSpotsNumber(termtype)
 
@@ -65112,7 +65196,7 @@ end
 --- Get number of free parking spots at an airbase.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type.
--- @param #boolean allowTOAC If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
+-- @param #boolean allowTOAC (Optional) If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
 -- @return #number Number of free parking spots at this airbase.
 function AIRBASE:GetFreeParkingSpotsNumber(termtype, allowTOAC)
 
@@ -65135,7 +65219,7 @@ end
 --- Get the coordinates of free parking spots at an airbase.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type.
--- @param #boolean allowTOAC If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
+-- @param #boolean allowTOAC (Optional) If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
 -- @return #table Table of coordinates of the free parking spots.
 function AIRBASE:GetFreeParkingSpotsCoordinates(termtype, allowTOAC)
 
@@ -65362,7 +65446,7 @@ end
 --- Get a table containing the coordinates, terminal index and terminal type of free parking spots at an airbase.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type.
--- @param #boolean allowTOAC If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
+-- @param #boolean allowTOAC (Optional) If true, spots are considered free even though TO_AC is true. Default is off which is saver to avoid spawning aircraft on top of each other. Option might be enabled for FARPS and ships.
 -- @return #table Table free parking spots. Table has the elements ".Coordinate, ".TerminalID", ".TerminalType", ".TOAC", ".Free", ".TerminalID0", ".DistToRwy".
 function AIRBASE:GetFreeParkingSpotsTable(termtype, allowTOAC)
 
@@ -65414,7 +65498,7 @@ end
 --- Place markers of parking spots on the F10 map.
 -- @param #AIRBASE self
 -- @param #AIRBASE.TerminalType termtype Terminal type for which marks should be placed.
--- @param #boolean mark If false, do not place markers but only give output to DCS.log file. Default true.
+-- @param #boolean mark (Optional) If false, do not place markers but only give output to DCS.log file. Default true.
 function AIRBASE:MarkParkingSpots(termtype, mark)
 
   -- Default is true.
@@ -66194,7 +66278,7 @@ end
 --- Set the active runway for landing and takeoff.
 -- @param #AIRBASE self
 -- @param #string Name Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 function AIRBASE:SetActiveRunway(Name, PreferLeft)
 
   self:SetActiveRunwayTakeoff(Name, PreferLeft)
@@ -66206,7 +66290,7 @@ end
 --- Set the active runway for landing.
 -- @param #AIRBASE self
 -- @param #string Name Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 -- @return #AIRBASE.Runway The active runway for landing.
 function AIRBASE:SetActiveRunwayLanding(Name, PreferLeft)
 
@@ -66254,7 +66338,7 @@ end
 --- Set the active runway for takeoff.
 -- @param #AIRBASE self
 -- @param #string Name Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 -- @return #AIRBASE.Runway The active runway for landing.
 function AIRBASE:SetActiveRunwayTakeoff(Name, PreferLeft)
 
@@ -66279,7 +66363,7 @@ end
 --- Get the runway where aircraft would be taking of or landing into the direction of the wind.
 -- NOTE that this requires the wind to be non-zero as set in the mission editor.
 -- @param #AIRBASE self
--- @param #boolean PreferLeft If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
+-- @param #boolean PreferLeft (Optional) If `true`, perfer the left runway. If `false`, prefer the right runway. If `nil` (default), do not care about left or right.
 -- @return #AIRBASE.Runway Active runway data table.
 function AIRBASE:GetRunwayIntoWind(PreferLeft)
 
@@ -66335,7 +66419,7 @@ end
 
 --- Get name of a given runway, e.g. "31L".
 -- @param #AIRBASE self
--- @param #AIRBASE.Runway Runway The runway. Default is the active runway.
+-- @param #AIRBASE.Runway Runway (Optional) The runway. Default is the active runway.
 -- @param #boolean LongLeftRight If `true`, return "Left" or "Right" instead of "L" or "R".
 -- @return #string Name of the runway or "XX" if it could not be found.
 function AIRBASE:GetRunwayName(Runway, LongLeftRight)
@@ -66366,7 +66450,7 @@ end
 --- Function that checks if at leat one unit of a group has been spawned close to a spawn point on the runway.
 -- @param #AIRBASE self
 -- @param Wrapper.Group#GROUP group Group to be checked.
--- @param #number radius Radius around the spawn point to be checked. Default is 50 m.
+-- @param #number radius (Optional) Radius around the spawn point to be checked. Default is 50 m.
 -- @param #boolean despawn If true, the group is destroyed.
 -- @return #boolean True if group is within radius around spawn points on runway.
 function AIRBASE:CheckOnRunWay(group, radius, despawn)
@@ -67485,7 +67569,7 @@ end
 
 --- Set text that is displayed in the marker panel. Note this does not show the marker.
 -- @param #MARKER self
--- @param #string Text Marker text. Default is an empty string "".
+-- @param #string (Optional) Text Marker text. Default is an empty string "".
 -- @return #MARKER self
 function MARKER:SetText( Text )
   self.text = Text and tostring( Text ) or ""
@@ -67935,7 +68019,7 @@ end
 
 --- Set verbosity level.
 -- @param #WEAPON self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #WEAPON self
 function WEAPON:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -67944,7 +68028,7 @@ end
 
 --- Set track position time step.
 -- @param #WEAPON self
--- @param #number TimeStep Time step in seconds when the position is updated. Default 0.01 sec ==> 100 evaluations per second.
+-- @param #number TimeStep (Optional) Time step in seconds when the position is updated. Default 0.01 sec ==> 100 evaluations per second.
 -- @return #WEAPON self
 function WEAPON:SetTimeStepTrack(TimeStep)
   self.dtTrack=TimeStep or 0.01
@@ -67957,7 +68041,7 @@ end
 -- a good result on the impact point.
 -- It uses the DCS function [getIP](https://wiki.hoggitworld.com/view/DCS_func_getIP).
 -- @param #WEAPON self
--- @param #number Distance Distance in meters. Default is 50 m. Set to 0 to deactivate.
+-- @param #number Distance (Optional) Distance in meters. Default is 50 m. Set to 0 to deactivate.
 -- @return #WEAPON self
 function WEAPON:SetDistanceInterceptPoint(Distance)
   self.distIP=Distance or 50
@@ -67983,7 +68067,7 @@ end
 --- Put smoke on impact point. This requires that the tracking has been started.
 -- @param #WEAPON self
 -- @param #boolean Switch If `true` or nil, impact is smoked.
--- @param #number SmokeColor Color of smoke. Default is `SMOKECOLOR.Red`.
+-- @param #number SmokeColor (Optional) Color of smoke. Default is `SMOKECOLOR.Red`.
 -- @return #WEAPON self
 function WEAPON:SetSmokeImpact(Switch, SmokeColor)
 
@@ -68394,7 +68478,7 @@ end
 -- the (approximate) impact point. Of course, the smaller the time step, the better the position can be determined. However, this can hit the performance as many
 -- calculations per second need to be carried out.
 -- @param #WEAPON self
--- @param #number Delay Delay in seconds before the tracking starts. Default 0.001 sec.
+-- @param #number Delay (Optional) Delay in seconds before the tracking starts. Default 0.001 sec.
 -- @return #WEAPON self
 function WEAPON:StartTrack(Delay)
 
@@ -68580,7 +68664,7 @@ end
 
 --- Compute estimated intercept/impact point (IP) based on last known position and direction.
 -- @param #WEAPON self
--- @param #number Distance Distance in meters. Default 50 m.
+-- @param #number Distance (Optional) Distance in meters. Default 50 m.
 -- @return DCS#Vec3 Estimated intercept/impact point. Can also return `nil`, if no IP can be determined.
 function WEAPON:_GetIP(Distance)
 
@@ -69052,7 +69136,7 @@ end
 
 --- Set block time in seconds.
 -- @param #NET self
--- @param #number Seconds Numnber of seconds this block will last. Defaults to 600.
+-- @param #number Seconds (Optional) Numnber of seconds this block will last. Defaults to 600.
 -- @return #NET self
 function NET:SetBlockTime(Seconds)
   self.BlockTime = Seconds or 600
@@ -69755,7 +69839,7 @@ end
 
 --- Set verbosity level.
 -- @param #STORAGE self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #STORAGE self
 function STORAGE:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -70279,7 +70363,7 @@ end
 -- @param #STORAGE self
 -- @param #string Path The path to use. Use double backslashes \\\\ on Windows filesystems.
 -- @param #string Filename The name of the file.
--- @param #number Interval The interval, start after this many seconds and repeat every interval seconds. Defaults to 300.
+-- @param #number Interval (Optional) The interval, start after this many seconds and repeat every interval seconds. Defaults to 300.
 -- @param #boolean LoadOnce If LoadOnce is true or nil, we try to load saved storage first.
 -- @return #STORAGE self
 function STORAGE:StartAutoSave(Path,Filename,Interval,LoadOnce)
@@ -70370,9 +70454,9 @@ end
 -- @field #string version.
 -- @field #string CargoState.
 -- @field #table DCS#Vec3 LastPosition.
--- @field #number Interval Check Interval. 20 secs default.
+-- @field #number Interval Check interval. 5 secs default.
 -- @field #boolean testing
--- @field Core.Timer#TIMER timer Timmer to run intervals
+-- @field Core.Timer#TIMER timer Compatibility field; updates are handled by one class-wide scheduler.
 -- @field #string Owner The playername who has created, loaded or unloaded this cargo. Depends on state.
 -- @extends Wrapper.Positionable#POSITIONABLE
 
@@ -70392,7 +70476,16 @@ DYNAMICCARGO = {
   ClassName          = "DYNAMICCARGO",
   verbose            = 0,
   testing            = false,
-  Interval           = 10,
+  Interval           = 5,
+  C130AttachDistance = 10,
+  C130DetachDistance = 14,
+  C130AirborneAGL = 8,
+  C130LandedAGL = 0.5,
+  C130StabilityEpsilon = 0.05,
+  C130RequireAirborne = true,
+  C130OwnerResolveMove2D = 10,
+  C130OwnerResolveNear2D = 4,
+  C130OwnerResolveMax3D = 250,
   
 }
 
@@ -70452,6 +70545,10 @@ DYNAMICCARGO.AircraftTypes = {
   ["CH-47Fbl1"] = "CH-47Fbl1",
   ["Mi-8MTV2"] = "Mi-8MTV2",
   ["Mi-8MT"] = "Mi-8MT",
+  ["UH-1H"] = "UH-1H",
+  ["Mi-24P"] = "Mi-24P",
+  ["UH-60L"] = "UH-60L",
+  ["UH-60L_DAP"] = "UH-60L_DAP",
   ["C-130J-30"] = "C-130J-30",
 }
 
@@ -70477,17 +70574,46 @@ DYNAMICCARGO.AircraftDimensions = {
     ["length"] = 15,
     ["ropelength"] = 30,
   },
+  ["UH-1H"] = {
+    ["width"] = 4,
+    ["height"] = 4,
+    ["length"] = 9,
+    ["ropelength"] = 25,
+  },
+  ["Mi-24P"] = {
+    ["width"] = 4,
+    ["height"] = 5,
+    ["length"] = 11,
+    ["ropelength"] = 25,
+  },
+  ["UH-60L"] = {
+    ["width"] = 4,
+    ["height"] = 5,
+    ["length"] = 10,
+    ["ropelength"] = 25,
+  },
+  ["UH-60L_DAP"] = {
+    ["width"] = 4,
+    ["height"] = 5,
+    ["length"] = 10,
+    ["ropelength"] = 25,
+  },
   ["C-130J-30"] = {
     ["width"] = 4,
     ["height"] = 12,
     ["length"] = 35,
     ["ropelength"] = 0,
+    ["attach"] = 10,
+    ["detach"] = 14,
   },
 }
 
 --- DYNAMICCARGO class version.
 -- @field #string version
 DYNAMICCARGO.version="0.1.0"
+DYNAMICCARGO._TrackedCargo = DYNAMICCARGO._TrackedCargo or {}
+DYNAMICCARGO._GlobalTimer = DYNAMICCARGO._GlobalTimer or nil
+DYNAMICCARGO._GlobalTimerInterval = DYNAMICCARGO._GlobalTimerInterval or nil
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -70512,8 +70638,17 @@ function DYNAMICCARGO:Register(CargoName)
   self.StaticName = CargoName
   
   self.LastPosition = self:GetCoordinate()
+  self._spawnVec3 = self.LastPosition and self.LastPosition:GetVec3() or nil
   
   self.CargoState = DYNAMICCARGO.State.NEW
+  self._attached = false
+  self._detached = false
+  self._wasAirborne = false
+  self._landAglConfirm = nil
+  self._ownerResolved = false
+  self._carrierUnitName = nil
+  self._carrierGroupName = nil
+  self._carrierTypeName = nil
   
   self.Interval = DYNAMICCARGO.Interval or 10
   
@@ -70527,9 +70662,10 @@ function DYNAMICCARGO:Register(CargoName)
   self.lid = string.format("DYNAMICCARGO %s", CargoName)
   
   self.Owner = string.match(CargoName,"^(.+)|%d%d:%d%d|PKG%d+") or "None"
-  
-  self.timer = TIMER:New(DYNAMICCARGO._UpdatePosition,self)
-  self.timer:Start(self.Interval,self.Interval)
+
+  -- Keep a compatibility field, while updates are driven by one class-wide scheduler.
+  self.timer = nil
+  DYNAMICCARGO._TrackCargo(self)
   
   if not _DYNAMICCARGO_HELOS then
       _DYNAMICCARGO_HELOS = SET_CLIENT:New():FilterAlive():FilterFunction(DYNAMICCARGO._FilterHeloTypes):FilterStart()
@@ -70607,6 +70743,55 @@ function DYNAMICCARGO:IsRemoved()
   else
     return false
   end
+end
+
+--- Returns true if this cargo is attached to a detected carrier.
+-- @param #DYNAMICCARGO self
+-- @return #boolean Outcome
+function DYNAMICCARGO:IsAttached()
+  return self._attached == true
+end
+
+--- Returns true if this cargo was detached from a detected carrier.
+-- @param #DYNAMICCARGO self
+-- @return #boolean Outcome
+function DYNAMICCARGO:IsDetached()
+  return self._detached == true
+end
+
+--- Returns true if this cargo has seen airborne transport in this cycle.
+-- @param #DYNAMICCARGO self
+-- @return #boolean Outcome
+function DYNAMICCARGO:WasAirborneTransport()
+  return self._wasAirborne == true
+end
+
+--- Returns true if this cargo has reached landed stable confirmation.
+-- @param #DYNAMICCARGO self
+-- @return #boolean Outcome
+function DYNAMICCARGO:IsLandedStable()
+  return self.CargoState == DYNAMICCARGO.State.UNLOADED and self._detached == true
+end
+
+--- Returns last known carrier unit name.
+-- @param #DYNAMICCARGO self
+-- @return #string Unit name
+function DYNAMICCARGO:GetCarrierUnitName()
+  return self._carrierUnitName
+end
+
+--- Returns last known carrier type name.
+-- @param #DYNAMICCARGO self
+-- @return #string Type name
+function DYNAMICCARGO:GetCarrierTypeName()
+  return self._carrierTypeName
+end
+
+--- Returns last known carrier group name.
+-- @param #DYNAMICCARGO self
+-- @return #string Group name
+function DYNAMICCARGO:GetCarrierGroupName()
+  return self._carrierGroupName
 end
 
 --- [CTLD] Get number of crates this DYNAMICCARGO consists of. Always one.
@@ -70740,6 +70925,372 @@ end
 -- Private Functions
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+--- [Internal] Check whether an aircraft typename is a C-130J for special handling.
+-- @param #DYNAMICCARGO self
+-- @param #string TypeName
+-- @return #boolean Outcome
+function DYNAMICCARGO:_IsC130Type(TypeName)
+  return TypeName == "C-130J-30"
+end
+
+--- [Internal] Safe AGL calculation helper.
+-- @param #DYNAMICCARGO self
+-- @param Core.Point#COORDINATE Coord
+-- @return #number AGL in meters
+function DYNAMICCARGO:_GetAGL(Coord)
+  if not Coord then return -1 end
+  return (Coord.y or 0) - Coord:GetLandHeight()
+end
+
+--- [Internal] Resolve player name for a client.
+-- @param #DYNAMICCARGO self
+-- @param Wrapper.Client#CLIENT Client
+-- @return #string Player name
+function DYNAMICCARGO:_GetPlayerNameForClient(Client)
+  if not Client then return self.Owner or "None" end
+  return Client:GetPlayerName() or _DATABASE:_FindPlayerNameByUnitName(Client:GetName()) or self.Owner or "None"
+end
+
+--- [Internal] Store current carrier identity fields.
+-- @param #DYNAMICCARGO self
+-- @param Wrapper.Client#CLIENT Client
+-- @param #string PlayerName
+-- @return #DYNAMICCARGO self
+function DYNAMICCARGO:_SetCarrierFromClient(Client, PlayerName)
+  if not Client then return self end
+  self._carrierUnitName = Client:GetName() or self._carrierUnitName
+  self._carrierTypeName = Client:GetTypeName() or self._carrierTypeName
+  local grp = Client:GetGroup()
+  if grp then
+    self._carrierGroupName = grp:GetName() or self._carrierGroupName
+  end
+  self.Owner = PlayerName or self:_GetPlayerNameForClient(Client)
+  return self
+end
+
+--- [Internal] Get scheduler interval for global dynamic cargo updates.
+-- @return #number Interval in seconds
+function DYNAMICCARGO._GetSchedulerInterval()
+  return DYNAMICCARGO.Interval or 5
+end
+
+--- [Internal] Count currently tracked dynamic cargo objects.
+-- @return #number Count
+function DYNAMICCARGO._CountTracked()
+  local n = 0
+  for _,_ in pairs(DYNAMICCARGO._TrackedCargo or {}) do
+    n = n + 1
+  end
+  return n
+end
+
+--- [Internal] Stop global scheduler when no tracked cargo remains.
+function DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+  if DYNAMICCARGO._CountTracked() > 0 then
+    return
+  end
+  if DYNAMICCARGO._GlobalTimer and DYNAMICCARGO._GlobalTimer:IsRunning() then
+    DYNAMICCARGO._GlobalTimer:Stop()
+  end
+  DYNAMICCARGO._GlobalTimer = nil
+  DYNAMICCARGO._GlobalTimerInterval = nil
+end
+
+--- [Internal] Ensure global scheduler is running for tracked cargo updates.
+function DYNAMICCARGO._EnsureGlobalScheduler()
+  local interval = DYNAMICCARGO._GetSchedulerInterval()
+  if DYNAMICCARGO._GlobalTimer and DYNAMICCARGO._GlobalTimer:IsRunning() then
+    if DYNAMICCARGO._GlobalTimerInterval == interval then
+      return
+    end
+    DYNAMICCARGO._GlobalTimer:Stop()
+    DYNAMICCARGO._GlobalTimer = nil
+    DYNAMICCARGO._GlobalTimerInterval = nil
+  end
+  if DYNAMICCARGO._CountTracked() < 1 then
+    return
+  end
+  DYNAMICCARGO._GlobalTimer = TIMER:New(DYNAMICCARGO._UpdateAllTracked)
+  DYNAMICCARGO._GlobalTimer:Start(interval, interval)
+  DYNAMICCARGO._GlobalTimerInterval = interval
+end
+
+--- [Internal] Add one dynamic cargo object to global tracking.
+-- @param #DYNAMICCARGO Cargo
+function DYNAMICCARGO._TrackCargo(Cargo)
+  if not Cargo or not Cargo.StaticName then
+    return
+  end
+  DYNAMICCARGO._TrackedCargo = DYNAMICCARGO._TrackedCargo or {}
+  DYNAMICCARGO._TrackedCargo[Cargo.StaticName] = Cargo
+  DYNAMICCARGO._EnsureGlobalScheduler()
+end
+
+--- [Internal] Remove one dynamic cargo object from global tracking.
+-- @param #string CargoName
+function DYNAMICCARGO._UntrackCargo(CargoName)
+  if not CargoName or not DYNAMICCARGO._TrackedCargo then
+    DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+    return
+  end
+  DYNAMICCARGO._TrackedCargo[CargoName] = nil
+  DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+end
+
+--- [Internal] Update all tracked dynamic cargo objects in one scheduler tick.
+function DYNAMICCARGO._UpdateAllTracked()
+  local tracked = DYNAMICCARGO._TrackedCargo or {}
+  local names = {}
+  for name,_ in pairs(tracked) do
+    names[#names + 1] = name
+  end
+  for _,name in ipairs(names) do
+    local cargo = tracked[name]
+    if cargo then
+      cargo:_UpdatePosition()
+    end
+  end
+  DYNAMICCARGO._StopGlobalSchedulerIfIdle()
+end
+
+--- [Internal] Find tracked client by unit name in current dynamic cargo helo set.
+-- @param #DYNAMICCARGO self
+-- @param #string UnitName
+-- @return Wrapper.Client#CLIENT Client
+function DYNAMICCARGO:_FindClientByUnitName(UnitName)
+  if not UnitName or UnitName == "" or not _DYNAMICCARGO_HELOS then return nil end
+  for _,_helo in pairs(_DYNAMICCARGO_HELOS:GetAliveSet() or {}) do
+    local helo = _helo -- Wrapper.Client#CLIENT
+    if helo and helo:IsAlive() and helo:GetName() == UnitName then
+      return helo
+    end
+  end
+  return nil
+end
+
+--- [Internal] Get best known carrier client from stored names/owner.
+-- @param #DYNAMICCARGO self
+-- @return Wrapper.Client#CLIENT Client
+function DYNAMICCARGO:_GetKnownCarrierClient()
+  local client = nil
+  if self._carrierUnitName then
+    client = self:_FindClientByUnitName(self._carrierUnitName)
+  end
+  if (not client) and self.Owner and self.Owner ~= "None" then
+    local byPlayer = CLIENT:FindByPlayerName(self.Owner)
+    if byPlayer and byPlayer:IsAlive() then
+      client = byPlayer
+    end
+  end
+  return client
+end
+
+--- [Internal] Find nearest live C-130 client.
+-- @param #DYNAMICCARGO self
+-- @param Core.Point#COORDINATE Pos
+-- @param #number Max3D Maximum 3D distance
+-- @return Wrapper.Client#CLIENT Client
+-- @return #string PlayerName
+-- @return #number Dist2D
+-- @return #number Dist3D
+function DYNAMICCARGO:_FindNearestC130(Pos, Max3D)
+  if not Pos or not _DYNAMICCARGO_HELOS then return nil, nil, nil, nil end
+  local bestClient = nil
+  local bestName = nil
+  local best2D = math.huge
+  local best3D = math.huge
+  local bestOwnerMatch = false
+  local max3D = Max3D or DYNAMICCARGO.C130OwnerResolveMax3D
+  local preferredOwner = self.Owner
+  if preferredOwner == "" or preferredOwner == "None" then
+    preferredOwner = nil
+  end
+  for _,_helo in pairs(_DYNAMICCARGO_HELOS:GetAliveSet() or {}) do
+    local helo = _helo -- Wrapper.Client#CLIENT
+    if helo and helo:IsAlive() then
+      local typename = helo:GetTypeName()
+      if self:_IsC130Type(typename) then
+        local hpos = helo:GetCoordinate()
+        if hpos then
+          local d3 = hpos:Get3DDistance(Pos)
+          if d3 <= max3D then
+            local d2 = hpos:Get2DDistance(Pos)
+            local pname = self:_GetPlayerNameForClient(helo)
+            local ownerMatch = preferredOwner and pname and pname == preferredOwner or false
+            if (ownerMatch and not bestOwnerMatch) or ((ownerMatch == bestOwnerMatch) and d3 < best3D) then
+              bestClient = helo
+              bestName = pname
+              best2D = d2
+              best3D = d3
+              bestOwnerMatch = ownerMatch
+            end
+          end
+        end
+      end
+    end
+  end
+  return bestClient, bestName, best2D, best3D
+end
+
+--- [Internal] Resolve/rebind owner to nearest valid C-130 after movement from spawn.
+-- @param #DYNAMICCARGO self
+-- @param Core.Point#COORDINATE Pos
+-- @return Wrapper.Client#CLIENT Client
+function DYNAMICCARGO:_ResolveC130Owner(Pos)
+  if not Pos or not self._spawnVec3 then return nil end
+  local moved2D = UTILS.VecDist2D(Pos, self._spawnVec3)
+  if moved2D < (DYNAMICCARGO.C130OwnerResolveMove2D or 10) then
+    return nil
+  end
+  local max3D = DYNAMICCARGO.C130OwnerResolveMax3D or 250
+  local known = self:_GetKnownCarrierClient()
+  if known and known:IsAlive() and self:_IsC130Type(known:GetTypeName()) then
+    local kpos = known:GetCoordinate()
+    if kpos and kpos:Get3DDistance(Pos) <= max3D then
+      self:_SetCarrierFromClient(known)
+      return known
+    end
+  end
+  local nearest, playerName, d2 = self:_FindNearestC130(Pos, DYNAMICCARGO.C130OwnerResolveMax3D)
+  if nearest and d2 and d2 <= (DYNAMICCARGO.C130OwnerResolveNear2D or 4) then
+    self:_SetCarrierFromClient(nearest, playerName)
+    self._ownerResolved = true
+    self:T(self.lid.." C130 owner re-resolved to "..tostring(self._carrierUnitName).." / "..tostring(self.Owner))
+    return nearest
+  end
+  return nil
+end
+
+--- [Internal] Determine whether to run C-130 transport-state handling for this cargo tick.
+-- @param #DYNAMICCARGO self
+-- @param Core.Point#COORDINATE Pos
+-- @return #boolean Outcome
+function DYNAMICCARGO:_ShouldUseC130State(Pos)
+  if self:_IsC130Type(self._carrierTypeName) then
+    return true
+  end
+  local known = self:_GetKnownCarrierClient()
+  if known and self:_IsC130Type(known:GetTypeName()) then
+    self:_SetCarrierFromClient(known)
+    return true
+  end
+  if self._attached or self._detached or self._wasAirborne then
+    return true
+  end
+  if self.CargoState == DYNAMICCARGO.State.NEW or self.CargoState == DYNAMICCARGO.State.UNLOADED then
+    local nearest, _, d2 = self:_FindNearestC130(Pos, DYNAMICCARGO.C130AttachDistance + 50)
+    if nearest and d2 and d2 <= (DYNAMICCARGO.C130AttachDistance + 5) then
+      return true
+    end
+  end
+  return false
+end
+
+--- [Internal] C-130-specific transport state update.
+-- @param #DYNAMICCARGO self
+-- @param Core.Point#COORDINATE Pos
+-- @return #DYNAMICCARGO self
+function DYNAMICCARGO:_UpdatePositionC130(Pos)
+  local attachDist = DYNAMICCARGO.C130AttachDistance or 10
+  local detachDist = DYNAMICCARGO.C130DetachDistance or 14
+  local airborneAgl = DYNAMICCARGO.C130AirborneAGL or 8
+  local landedAgl = DYNAMICCARGO.C130LandedAGL or 0.5
+  local stableEps = DYNAMICCARGO.C130StabilityEpsilon or 0.05
+  local requireAirborne = DYNAMICCARGO.C130RequireAirborne ~= false
+
+  local cargoAgl = self:_GetAGL(Pos)
+  local carrier = self:_GetKnownCarrierClient()
+  if carrier and not self:_IsC130Type(carrier:GetTypeName()) then
+    carrier = nil
+  end
+  if not carrier then
+    carrier = self:_ResolveC130Owner(Pos)
+  end
+
+  -- Attach detection: grounded C-130 close to cargo.
+  if (self.CargoState == DYNAMICCARGO.State.NEW or self.CargoState == DYNAMICCARGO.State.UNLOADED) and (not self._attached) then
+    if not carrier then
+      local nearest, pname, d2 = self:_FindNearestC130(Pos, DYNAMICCARGO.C130OwnerResolveMax3D)
+      if nearest and d2 and d2 <= attachDist and not nearest:InAir() then
+        carrier = nearest
+        self:_SetCarrierFromClient(nearest, pname)
+      end
+    end
+    if carrier and carrier:IsAlive() then
+      local hpos = carrier:GetCoordinate()
+      if hpos and (not carrier:InAir()) and hpos:Get2DDistance(Pos) <= attachDist then
+        self._attached = true
+        self._detached = false
+        self._wasAirborne = false
+        self._landAglConfirm = nil
+        self:_SetCarrierFromClient(carrier)
+        if self.CargoState ~= DYNAMICCARGO.State.LOADED then
+          self.CargoState = DYNAMICCARGO.State.LOADED
+          self:T(self.lid.." C130 attach: "..tostring(self.Owner))
+          _DATABASE:CreateEventDynamicCargoLoaded(self)
+        end
+      end
+    end
+  end
+
+  if self.CargoState == DYNAMICCARGO.State.LOADED then
+    if not carrier then
+      carrier = self:_ResolveC130Owner(Pos)
+    end
+    local carrierInAir = false
+    local dist2D = math.huge
+    local carrierAgl = -1
+    if carrier and carrier:IsAlive() then
+      local hpos = carrier:GetCoordinate()
+      if hpos then
+        dist2D = hpos:Get2DDistance(Pos)
+        carrierAgl = self:_GetAGL(hpos)
+      end
+      carrierInAir = carrier:InAir()
+      self:_SetCarrierFromClient(carrier)
+    end
+
+    if cargoAgl >= airborneAgl or carrierAgl >= airborneAgl then
+      self._wasAirborne = true
+    end
+
+    -- Detach only when actually airborne and separated.
+    if self._attached and carrierInAir and dist2D > detachDist then
+      self._attached = false
+      self._detached = true
+      self._landAglConfirm = nil
+      self:T(self.lid.." C130 detach at d2="..tostring(UTILS.Round(dist2D,2)))
+    end
+
+    -- Fallback detach if carrier reference is stale but cargo already transitioned airborne.
+    if self._attached and (not carrier or not carrier:IsAlive()) and self._wasAirborne and cargoAgl <= airborneAgl then
+      self._attached = false
+      self._detached = true
+      self._landAglConfirm = nil
+      self:T(self.lid.." C130 detach fallback (carrier stale)")
+    end
+
+    local canUnload = self._detached and ((not requireAirborne) or self._wasAirborne)
+    if canUnload then
+      local moved3D = self.LastPosition and UTILS.VecDist3D(Pos, self.LastPosition) or math.huge
+      local stable = moved3D <= stableEps
+      if cargoAgl <= landedAgl and stable then
+        if self._landAglConfirm then
+          self.CargoState = DYNAMICCARGO.State.UNLOADED
+          self:T(self.lid.." C130 landed-stable unload by "..tostring(self.Owner))
+          _DATABASE:CreateEventDynamicCargoUnloaded(self)
+        else
+          self._landAglConfirm = true
+        end
+      else
+        self._landAglConfirm = nil
+      end
+    end
+  end
+
+  return self
+end
+
 --- [Internal] _Get helo hovering intel
 -- @param #DYNAMICCARGO self
 -- @param Wrapper.Unit#UNIT Unit The Unit to test
@@ -70786,35 +71337,37 @@ function DYNAMICCARGO:_GetPossibleHeloNearby(pos,loading)
     local hpos = helo:GetCoordinate()
     -- TODO Check unloading via sling load?
     local typename = helo:GetTypeName()
-    local dimensions = DYNAMICCARGO.AircraftDimensions[typename]
-    local hovering, height = self:_HeloHovering(helo,dimensions.ropelength)
-    local helolanded = not helo:InAir()
-    self:T(self.lid.." InAir: AGL/Hovering: "..hpos.y-hpos:GetLandHeight().."/"..tostring(hovering))
-    if hpos and typename and dimensions then
-      local delta2D = hpos:Get2DDistance(pos)
-      local delta3D = hpos:Get3DDistance(pos)
-      if self.testing then
-        self:T(string.format("Cargo relative position: 2D %dm | 3D %dm",delta2D,delta3D))
-        self:T(string.format("Helo dimension: length %dm | width %dm | rope %dm",dimensions.length,dimensions.width,dimensions.ropelength))
-        self:T(string.format("Helo hovering: %s at %dm",tostring(hovering),height))
-      end
-      -- unloading from ground
-      if loading~=true and (delta2D > dimensions.length or delta2D > dimensions.width) and helolanded then  -- Theoretically the cargo could still be attached to the sling if landed next to the cargo. But once moved again it would go back into loaded state once lifted again.
-        success = true
-        Helo = helo
-        Playername = name
-      end
-      -- unloading from hover/rope
-      if loading~=true and delta3D > dimensions.ropelength then     
-        success = true
-        Helo = helo
-        Playername = name
-      end
-      -- loading
-      if loading == true and ((delta2D < dimensions.length and delta2D < dimensions.width and helolanded) or (delta3D == dimensions.ropelength and helo:InAir())) then -- Loaded via ground or sling                  
-        success = true
-        Helo = helo
-        Playername = name
+    if not self:_IsC130Type(typename) then
+      local dimensions = DYNAMICCARGO.AircraftDimensions[typename]
+      if hpos and typename and dimensions then
+        local hovering, height = self:_HeloHovering(helo,dimensions.ropelength)
+        local helolanded = not helo:InAir()
+        self:T(self.lid.." InAir: AGL/Hovering: "..hpos.y-hpos:GetLandHeight().."/"..tostring(hovering))
+        local delta2D = hpos:Get2DDistance(pos)
+        local delta3D = hpos:Get3DDistance(pos)
+        if self.testing then
+          self:T(string.format("Cargo relative position: 2D %dm | 3D %dm",delta2D,delta3D))
+          self:T(string.format("Helo dimension: length %dm | width %dm | rope %dm",dimensions.length,dimensions.width,dimensions.ropelength))
+          self:T(string.format("Helo hovering: %s at %dm",tostring(hovering),height))
+        end
+        -- unloading from ground
+        if loading~=true and (delta2D > dimensions.length or delta2D > dimensions.width) and helolanded then  -- Theoretically the cargo could still be attached to the sling if landed next to the cargo. But once moved again it would go back into loaded state once lifted again.
+          success = true
+          Helo = helo
+          Playername = name
+        end
+        -- unloading from hover/rope
+        if loading~=true and delta3D > dimensions.ropelength then     
+          success = true
+          Helo = helo
+          Playername = name
+        end
+        -- loading
+        if loading == true and ((delta2D < dimensions.length and delta2D < dimensions.width and helolanded) or (delta3D == dimensions.ropelength and helo:InAir())) then -- Loaded via ground or sling                  
+          success = true
+          Helo = helo
+          Playername = name
+        end
       end
     end
   end
@@ -70832,21 +71385,31 @@ function DYNAMICCARGO:_UpdatePosition()
       self:T(string.format("Cargo position: x=%d, y=%d, z=%d",pos.x,pos.y,pos.z))
       self:T(string.format("Last position: x=%d, y=%d, z=%d",self.LastPosition.x,self.LastPosition.y,self.LastPosition.z))
     end
-    if UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2) > 0.5 then      -- This checks if the cargo has moved more than 0.5m since last check. If so then the cargo is loaded
-      ---------------
-      -- LOAD Cargo
-      ---------------
-      if self.CargoState == DYNAMICCARGO.State.NEW or self.CargoState == DYNAMICCARGO.State.UNLOADED then
-        local isloaded, client, playername = self:_GetPossibleHeloNearby(pos,true)         
-        self:T(self.lid.." moved! NEW -> LOADED by "..tostring(playername))
-        self.CargoState = DYNAMICCARGO.State.LOADED
-        self.Owner = playername
-        _DATABASE:CreateEventDynamicCargoLoaded(self)        
-      end  
+    local moved = UTILS.Round(UTILS.VecDist3D(pos,self.LastPosition),2) > 0.5
+    if self:_ShouldUseC130State(pos) then
+      self:_UpdatePositionC130(pos)
+      self.LastPosition = pos
+    elseif moved then      -- This checks if the cargo has moved more than 0.5m since last check. If so then the cargo is loaded
+        ---------------
+        -- LOAD Cargo
+        ---------------
+        if self.CargoState == DYNAMICCARGO.State.NEW or self.CargoState == DYNAMICCARGO.State.UNLOADED then
+          local isloaded, client, playername = self:_GetPossibleHeloNearby(pos,true)
+          if isloaded then
+            self:T(self.lid.." moved! NEW -> LOADED by "..tostring(playername))
+            self.CargoState = DYNAMICCARGO.State.LOADED
+            self.Owner = playername
+            if client then
+              self:_SetCarrierFromClient(client, playername)
+            end
+            _DATABASE:CreateEventDynamicCargoLoaded(self)
+          end
+        end
+        self.LastPosition = pos
       ---------------
       -- UNLOAD Cargo
       ---------------
-      --  If the cargo is stationary then we need to end this condition here to check whether it is unloaded or still onboard or still hooked if anyone can hover that precisly   
+      --  If the cargo is stationary then we need to end this condition here to check whether it is unloaded or still onboard or still hooked if anyone can hover that precisly
     elseif self.CargoState == DYNAMICCARGO.State.LOADED then
         -- TODO add checker if we are in flight somehow
         -- ensure not just the helo is moving
@@ -70860,29 +71423,30 @@ function DYNAMICCARGO:_UpdatePosition()
         local client
         local playername = self.Owner
         if count > 0 then
-          self:T(self.lid.." Possible alive helos: "..count or -1)          
-            isunloaded, client, playername = self:_GetPossibleHeloNearby(pos,false)       
+          self:T(self.lid.." Possible alive helos: "..count or -1)
+            isunloaded, client, playername = self:_GetPossibleHeloNearby(pos,false)
           if isunloaded then
             self:T(self.lid.." moved! LOADED -> UNLOADED by "..tostring(playername))
             self.CargoState = DYNAMICCARGO.State.UNLOADED
             self.Owner = playername
+            if client then
+              self:_SetCarrierFromClient(client, playername)
+            end
             _DATABASE:CreateEventDynamicCargoUnloaded(self)
-          end        
+          end
         end
       end
-      self.LastPosition = pos
-    --end
   else
     ---------------
     -- REMOVED Cargo
     --------------- 
-    if self.timer and self.timer:IsRunning() then 
-            self.timer:Stop()
-            self.timer=nil
+    if self.CargoState ~= DYNAMICCARGO.State.REMOVED then
+      DYNAMICCARGO._UntrackCargo(self.StaticName)
+      self.timer=nil
+      self:T(self.lid.." dead! " ..self.CargoState.."-> REMOVED")
+      self.CargoState = DYNAMICCARGO.State.REMOVED
+      _DATABASE:CreateEventDynamicCargoRemoved(self)
     end
-    self:T(self.lid.." dead! " ..self.CargoState.."-> REMOVED")
-    self.CargoState = DYNAMICCARGO.State.REMOVED
-    _DATABASE:CreateEventDynamicCargoRemoved(self)
   end
   return self
 end
@@ -71314,7 +71878,7 @@ end
 
 --- Set a prefix string that will be displayed at each scoring message sent.
 -- @param #SCORING self
--- @param #string DisplayMessagePrefix (Default="Scoring: ") The scoring prefix string.
+-- @param #string DisplayMessagePrefix (Optional) (Default="Scoring: ") The scoring prefix string.
 -- @return #SCORING
 function SCORING:SetDisplayMessagePrefix( DisplayMessagePrefix )
   self.DisplayMessagePrefix = DisplayMessagePrefix or ""
@@ -73363,7 +73927,7 @@ end
 -- Note, one can also use the method @{#CLEANUP_AIRBASE.RemoveAirbase}() to remove the airbase from the control process as a whole,
 -- when an enemy unit is near. That is also an option...
 -- @param #CLEANUP_AIRBASE self
--- @param #string CleanMissiles (Default=true) If true, missiles fired are immediately destroyed. If false missiles are not controlled.
+-- @param #boolean CleanMissiles (Optional) (Default=true) If true, missiles fired are immediately destroyed. If false missiles are not controlled.
 -- @return #CLEANUP_AIRBASE
 function CLEANUP_AIRBASE:SetCleanMissiles( CleanMissiles )
 
@@ -73952,7 +74516,7 @@ end
 
 --- Sets the engagement range of the SAMs. Defaults to 75% to make it more deadly. Feature Request #1355
 -- @param #SEAD self
--- @param #number range Set the engagement range in percent, e.g. 55 (default 75)
+-- @param #number range (Optional) Set the engagement range in percent, e.g. 55 (default 75)
 -- @return #SEAD self
 function SEAD:SetEngagementRange(range)
   self:T( { range } )
@@ -73967,7 +74531,7 @@ end
 
 --- Set the padding in seconds, which extends the radar off time calculated by SEAD
 -- @param #SEAD self
--- @param #number Padding Extra number of seconds to add for the switch-on (default 10 seconds)
+-- @param #number Padding (Optional) Extra number of seconds to add for the switch-on (default 10 seconds)
 -- @return #SEAD self
 function SEAD:SetPadding(Padding)
   self:T( { Padding } )
@@ -74512,7 +75076,7 @@ ESCORT = {
 -- @param Wrapper.Client#CLIENT EscortClient The client escorted by the EscortGroup.
 -- @param Wrapper.Group#GROUP EscortGroup The group AI escorting the EscortClient.
 -- @param #string EscortName Name of the escort.
--- @param #string EscortBriefing A text showing the ESCORT briefing to the player. Note that if no EscortBriefing is provided, the default briefing will be shown.
+-- @param #string EscortBriefing (Optional) A text showing the ESCORT briefing to the player. Note that if no EscortBriefing is provided, the default briefing will be shown.
 -- @return #ESCORT self
 -- @usage
 -- -- Declare a new EscortPlanes object as follows:
@@ -74526,7 +75090,7 @@ ESCORT = {
 function ESCORT:New( EscortClient, EscortGroup, EscortName, EscortBriefing )
   
   local self = BASE:Inherit( self, BASE:New() ) -- #ESCORT
-  --self:F( { EscortClient, EscortGroup, EscortName } )
+  self:F( { EscortClient, EscortGroup, EscortName } )
 
   self.EscortClient = EscortClient -- Wrapper.Client#CLIENT
   self.EscortGroup = EscortGroup -- Wrapper.Group#GROUP
@@ -74535,7 +75099,7 @@ function ESCORT:New( EscortClient, EscortGroup, EscortName, EscortBriefing )
  
   self.EscortSetGroup = SET_GROUP:New()
   self.EscortSetGroup:AddObject( self.EscortGroup )
-  --self.EscortSetGroup:Flush()
+  self.EscortSetGroup:Flush()
   self.Detection = DETECTION_UNITS:New( self.EscortSetGroup, 15000 )
   
   self.EscortGroup.Detection = self.Detection
@@ -74575,11 +75139,12 @@ function ESCORT:New( EscortClient, EscortGroup, EscortName, EscortBriefing )
   self.CT1 = 0
   self.GT1 = 0
 
-  self.FollowScheduler, self.FollowSchedule = SCHEDULER:New( self, self._FollowScheduler, {}, 1, 2, .01 )
+  self.FollowScheduler, self.FollowSchedule = SCHEDULER:New( self, self._FollowScheduler, {}, 1, .5, .01 )
   self.FollowScheduler:Stop( self.FollowSchedule )
 
   self.EscortMode = ESCORT.MODE.MISSION
-   
+  
+ 
   return self
 end
 
@@ -74605,11 +75170,12 @@ function ESCORT:TestSmokeDirectionVector( SmokeDirection )
   self.SmokeDirectionVector = ( SmokeDirection == true ) and true or false
 end
 
+
 --- Defines the default menus
 -- @param #ESCORT self
--- @return #ESCORT self
+-- @return #ESCORT
 function ESCORT:Menus()
-  --self:F()
+  self:F()
 
   self:MenuFollowAt( 100 )
   self:MenuFollowAt( 200 )
@@ -74630,16 +75196,19 @@ function ESCORT:Menus()
   self:MenuEvasion()
   self:MenuResumeMission()
 
+
   return self
 end
+
+
 
 --- Defines a menu slot to let the escort Join and Follow you at a certain distance.
 -- This menu will appear under **Navigation**.
 -- @param #ESCORT self
 -- @param DCS#Distance Distance The distance in meters that the escort needs to follow the client.
--- @return #ESCORT self
+-- @return #ESCORT
 function ESCORT:MenuFollowAt( Distance )
-  --self:F(Distance)
+  self:F(Distance)
 
   if self.EscortGroup:IsAir() then
     if not self.EscortMenuReportNavigation then
@@ -74661,13 +75230,13 @@ end
 --- Defines a menu slot to let the escort hold at their current position and stay low with a specified height during a specified time in seconds.
 -- This menu will appear under **Hold position**.
 -- @param #ESCORT self
--- @param DCS#Distance Height Optional parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
--- @param DCS#Time Seconds Optional parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. The text string is formatted, and should contain two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
--- @return #ESCORT self
+-- @param DCS#Distance Height (Optional) parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
+-- @param DCS#Time Seconds (Optional) parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. The text string is formatted, and should contain two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
+-- @return #ESCORT
 -- TODO: Implement Seconds parameter. Challenge is to first develop the "continue from last activity" function.
 function ESCORT:MenuHoldAtEscortPosition( Height, Seconds, MenuTextFormat )
-  --self:F( { Height, Seconds, MenuTextFormat } )
+  self:F( { Height, Seconds, MenuTextFormat } )
 
   if self.EscortGroup:IsAir() then
 
@@ -74718,16 +75287,17 @@ function ESCORT:MenuHoldAtEscortPosition( Height, Seconds, MenuTextFormat )
   return self
 end
 
+
 --- Defines a menu slot to let the escort hold at the client position and stay low with a specified height during a specified time in seconds.
 -- This menu will appear under **Navigation**.
 -- @param #ESCORT self
--- @param DCS#Distance Height Optional parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
--- @param DCS#Time Seconds Optional parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
--- @return #ESCORT self
+-- @param DCS#Distance Height (Optional)  parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
+-- @param DCS#Time Seconds (Optional)  parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
+-- @param #string MenuTextFormat (Optional)  parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
+-- @return #ESCORT
 -- TODO: Implement Seconds parameter. Challenge is to first develop the "continue from last activity" function.
 function ESCORT:MenuHoldAtLeaderPosition( Height, Seconds, MenuTextFormat )
-  --self:F( { Height, Seconds, MenuTextFormat } )
+  self:F( { Height, Seconds, MenuTextFormat } )
 
   if self.EscortGroup:IsAir() then
 
@@ -74782,12 +75352,12 @@ end
 --- Defines a menu slot to let the escort scan for targets at a certain height for a certain time in seconds.
 -- This menu will appear under **Scan targets**.
 -- @param #ESCORT self
--- @param DCS#Distance Height Optional parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
--- @param DCS#Time Seconds Optional parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
--- @return #ESCORT self
+-- @param DCS#Distance Height (Optional) parameter that sets the height in meters to let the escort orbit at the current location. The default value is 30 meters.
+-- @param DCS#Time Seconds (Optional) parameter that lets the escort orbit at the current position for a specified time. (not implemented yet). The default value is 0 seconds, meaning, that the escort will orbit forever until a sequent command is given.
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. The text string is formatted, and should contain one or two %d tokens in the string. The first for the Height, the second for the Time (if given). If no text is given, the default text will be displayed.
+-- @return #ESCORT
 function ESCORT:MenuScanForTargets( Height, Seconds, MenuTextFormat )
-  --self:F( { Height, Seconds, MenuTextFormat } )
+  self:F( { Height, Seconds, MenuTextFormat } )
 
   if self.EscortGroup:IsAir() then
     if not self.EscortMenuScan then
@@ -74835,14 +75405,16 @@ function ESCORT:MenuScanForTargets( Height, Seconds, MenuTextFormat )
   return self
 end
 
+
+
 --- Defines a menu slot to let the escort disperse a flare in a certain color.
 -- This menu will appear under **Navigation**.
 -- The flare will be fired from the first unit in the group.
 -- @param #ESCORT self
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. If no text is given, the default text will be displayed.
--- @return #ESCORT self
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. If no text is given, the default text will be displayed.
+-- @return #ESCORT
 function ESCORT:MenuFlare( MenuTextFormat )
-  ----self:F()
+  self:F()
 
   if not self.EscortMenuReportNavigation then
     self.EscortMenuReportNavigation = MENU_GROUP:New( self.EscortClient:GetGroup(), "Navigation", self.EscortMenu )
@@ -74871,10 +75443,10 @@ end
 -- Note that smoke menu options will only be displayed for ships and ground units. Not for air units.
 -- The smoke will be fired from the first unit in the group.
 -- @param #ESCORT self
--- @param #string MenuTextFormat Optional parameter that shows the menu option text. If no text is given, the default text will be displayed.
--- @return #ESCORT self
+-- @param #string MenuTextFormat (Optional) parameter that shows the menu option text. If no text is given, the default text will be displayed.
+-- @return #ESCORT
 function ESCORT:MenuSmoke( MenuTextFormat )
-  ----self:F()
+  self:F()
 
   if not self.EscortGroup:IsAir() then
     if not self.EscortMenuReportNavigation then
@@ -74905,10 +75477,10 @@ end
 -- This menu will appear under **Report targets**.
 -- Note that if a report targets menu is not specified, no targets will be detected by the escort, and the attack and assisted attack menus will not be displayed.
 -- @param #ESCORT self
--- @param DCS#Time Seconds Optional parameter that lets the escort report their current detected targets after specified time interval in seconds. The default time is 30 seconds.
--- @return #ESCORT self
+-- @param DCS#Time Seconds (Optional) parameter that lets the escort report their current detected targets after specified time interval in seconds. The default time is 30 seconds.
+-- @return #ESCORT
 function ESCORT:MenuReportTargets( Seconds )
-  --self:F( { Seconds } )
+  self:F( { Seconds } )
 
   if not self.EscortMenuReportNearbyTargets then
     self.EscortMenuReportNearbyTargets = MENU_GROUP:New( self.EscortClient:GetGroup(), "Report targets", self.EscortMenu )
@@ -74926,6 +75498,7 @@ function ESCORT:MenuReportTargets( Seconds )
   -- Attack Targets
   self.EscortMenuAttackNearbyTargets = MENU_GROUP:New( self.EscortClient:GetGroup(), "Attack targets", self.EscortMenu )
 
+
   self.ReportTargetsScheduler, self.ReportTargetsSchedulerID = SCHEDULER:New( self, self._ReportTargetsScheduler, {}, 1, Seconds )
 
   return self
@@ -74935,9 +75508,9 @@ end
 -- This menu will appear under **Request assistance from**.
 -- Note that this method needs to be preceded with the method MenuReportTargets.
 -- @param #ESCORT self
--- @return #ESCORT self
+-- @return #ESCORT
 function ESCORT:MenuAssistedAttack()
-  --self:F()
+  self:F()
 
   -- Request assistance from other escorts.
   -- This is very useful to let f.e. an escorting ship attack a target detected by an escorting plane...
@@ -74949,9 +75522,9 @@ end
 --- Defines a menu to let the escort set its rules of engagement.
 -- All rules of engagement will appear under the menu **ROE**.
 -- @param #ESCORT self
--- @return #ESCORT self
+-- @return #ESCORT
 function ESCORT:MenuROE( MenuTextFormat )
-  --self:F( MenuTextFormat )
+  self:F( MenuTextFormat )
 
   if not self.EscortMenuROE then
     -- Rules of Engagement
@@ -74973,12 +75546,13 @@ function ESCORT:MenuROE( MenuTextFormat )
   return self
 end
 
+
 --- Defines a menu to let the escort set its evasion when under threat.
 -- All rules of engagement will appear under the menu **Evasion**.
 -- @param #ESCORT self
--- @return #ESCORT self
+-- @return #ESCORT
 function ESCORT:MenuEvasion( MenuTextFormat )
-  --self:F( MenuTextFormat )
+  self:F( MenuTextFormat )
 
   if self.EscortGroup:IsAir() then
     if not self.EscortMenuEvasion then
@@ -75005,9 +75579,9 @@ end
 --- Defines a menu to let the escort resume its mission from a waypoint on its route.
 -- All rules of engagement will appear under the menu **Resume mission from**.
 -- @param #ESCORT self
--- @return #ESCORT self
+-- @return #ESCORT
 function ESCORT:MenuResumeMission()
-  --self:F()
+  self:F()
 
   if not self.EscortMenuResumeMission then
     -- Mission Resume Menu Root
@@ -75017,8 +75591,7 @@ function ESCORT:MenuResumeMission()
   return self
 end
 
----
--- @param #ESCORT self
+
 -- @param #MENUPARAM MenuParam
 function ESCORT:_HoldPosition( OrbitGroup, OrbitHeight, OrbitSeconds )
 
@@ -75059,8 +75632,6 @@ function ESCORT:_HoldPosition( OrbitGroup, OrbitHeight, OrbitSeconds )
 
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_JoinUpAndFollow( Distance )
 
@@ -75078,7 +75649,7 @@ end
 -- @param Wrapper.Client#CLIENT EscortClient
 -- @param DCS#Distance Distance
 function ESCORT:JoinUpAndFollow( EscortGroup, EscortClient, Distance )
-  --self:F( { EscortGroup, EscortClient, Distance } )
+  self:F( { EscortGroup, EscortClient, Distance } )
 
   self.FollowScheduler:Stop( self.FollowSchedule )
 
@@ -75094,8 +75665,6 @@ function ESCORT:JoinUpAndFollow( EscortGroup, EscortClient, Distance )
   EscortGroup:MessageToClient( "Rejoining and Following at " .. Distance .. "!", 30, EscortClient )
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_Flare( Color, Message )
 
@@ -75106,8 +75675,6 @@ function ESCORT:_Flare( Color, Message )
   EscortGroup:MessageToClient( Message, 10, EscortClient )
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_Smoke( Color, Message )
 
@@ -75118,8 +75685,7 @@ function ESCORT:_Smoke( Color, Message )
   EscortGroup:MessageToClient( Message, 10, EscortClient )
 end
 
----
--- @param #ESCORT self
+
 -- @param #MENUPARAM MenuParam
 function ESCORT:_ReportNearbyTargetsNow()
 
@@ -75130,8 +75696,6 @@ function ESCORT:_ReportNearbyTargetsNow()
 
 end
 
----
--- @param #ESCORT self
 function ESCORT:_SwitchReportNearbyTargets( ReportTargets )
 
   local EscortGroup = self.EscortGroup
@@ -75149,8 +75713,6 @@ function ESCORT:_SwitchReportNearbyTargets( ReportTargets )
   end
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_ScanTargets( ScanDuration )
 
@@ -75181,27 +75743,24 @@ function ESCORT:_ScanTargets( ScanDuration )
 
 end
 
----
--- @param #ESCORT self
 -- @param Wrapper.Group#GROUP EscortGroup
 function _Resume( EscortGroup )
-  --env.info( '_Resume' )
+  env.info( '_Resume' )
 
   local Escort = EscortGroup:GetState( EscortGroup, "Escort" )
-  --env.info( "EscortMode = "  .. Escort.EscortMode )
+  env.info( "EscortMode = "  .. Escort.EscortMode )
   if Escort.EscortMode == ESCORT.MODE.FOLLOW then
     Escort:JoinUpAndFollow( EscortGroup, Escort.EscortClient, Escort.Distance )
   end
 
 end
 
----
 -- @param #ESCORT self
 -- @param Functional.Detection#DETECTION_BASE.DetectedItem DetectedItem
 function ESCORT:_AttackTarget( DetectedItem )
 
   local EscortGroup = self.EscortGroup -- Wrapper.Group#GROUP
-  --self:F( EscortGroup )
+  self:F( EscortGroup )
   
   local EscortClient = self.EscortClient
 
@@ -75321,8 +75880,6 @@ function ESCORT:_AssistTarget( EscortGroupAttack, DetectedItem )
 
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_ROE( EscortROEFunction, EscortROEMessage )
 
@@ -75333,8 +75890,6 @@ function ESCORT:_ROE( EscortROEFunction, EscortROEMessage )
   EscortGroup:MessageToClient( EscortROEMessage, 10, EscortClient )
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_ROT( EscortROTFunction, EscortROTMessage )
 
@@ -75345,8 +75900,6 @@ function ESCORT:_ROT( EscortROTFunction, EscortROTMessage )
   EscortGroup:MessageToClient( EscortROTMessage, 10, EscortClient )
 end
 
----
--- @param #ESCORT self
 -- @param #MENUPARAM MenuParam
 function ESCORT:_ResumeMission( WayPoint )
 
@@ -75371,7 +75924,7 @@ end
 -- @param #ESCORT self
 -- @return #table
 function ESCORT:RegisterRoute()
-  --self:F()
+  self:F()
 
   local EscortGroup = self.EscortGroup -- Wrapper.Group#GROUP
 
@@ -75382,11 +75935,9 @@ function ESCORT:RegisterRoute()
   return TaskPoints
 end
 
----
--- @param #ESCORT self
 -- @param Functional.Escort#ESCORT self
 function ESCORT:_FollowScheduler()
-  --self:F( { self.FollowDistance } )
+  self:F( { self.FollowDistance } )
 
   self:T( {self.EscortClient.UnitName, self.EscortGroup.GroupName } )
   if self.EscortGroup:IsAlive() and self.EscortClient:IsAlive() then
@@ -75492,10 +76043,11 @@ function ESCORT:_FollowScheduler()
   return false
 end
 
+
 --- Report Targets Scheduler.
 -- @param #ESCORT self
 function ESCORT:_ReportTargetsScheduler()
-  --self:F( self.EscortGroup:GetName() )
+  self:F( self.EscortGroup:GetName() )
 
   if self.EscortGroup:IsAlive() and self.EscortClient:IsAlive() then
 
@@ -75508,7 +76060,7 @@ function ESCORT:_ReportTargetsScheduler()
       end
 
       local DetectedItems = self.Detection:GetDetectedItems()
-      --self:F( DetectedItems )
+      self:F( DetectedItems )
 
       local DetectedTargets = false
   
@@ -75520,7 +76072,7 @@ function ESCORT:_ReportTargetsScheduler()
         --local EscortUnit = EscortGroupData:GetUnit( 1 )
 
         for DetectedItemIndex, DetectedItem in pairs( DetectedItems ) do
-          --self:F( { DetectedItemIndex, DetectedItem } )
+          self:F( { DetectedItemIndex, DetectedItem } )
           -- Remove the sub menus of the Attack menu of the Escort for the EscortGroup.
   
           local DetectedItemReportSummary = self.Detection:DetectedItemReportSummary( DetectedItem, EscortGroupData.EscortGroup, _DATABASE:GetPlayerSettings( self.EscortClient:GetPlayerName() ) )
@@ -75561,7 +76113,7 @@ function ESCORT:_ReportTargetsScheduler()
                   
         end
       end
-      --self:F( DetectedMsgs )
+      self:F( DetectedMsgs )
       if DetectedTargets then
         self.EscortGroup:MessageToClient( "Reporting detected targets:\n" .. table.concat( DetectedMsgs, "\n" ), 20, self.EscortClient )
       else
@@ -78206,9 +78758,9 @@ do -- DETECTION_BASE
     --- Method to make the radar detection less accurate, e.g. for WWII scenarios.
     -- @param #DETECTION_BASE self
     -- @param #number minheight Minimum flight height to be detected, in meters AGL (above ground)
-    -- @param #number thresheight Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
-    -- @param #number thresblur Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
-    -- @param #number closing Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
+    -- @param #number thresheight (Optional) Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
+    -- @param #number thresblur (Optional) Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
+    -- @param #number closing (Optional) Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
     -- @return #DETECTION_BASE self
     function DETECTION_BASE:SetRadarBlur(minheight,thresheight,thresblur,closing)
       self.RadarBlur = true
@@ -78258,11 +78810,13 @@ do -- DETECTION_BASE
 
     --- Set the parameters to calculate to optimal intercept point.
     -- @param #DETECTION_BASE self
-    -- @param #boolean Intercept Intercept is true if an intercept point is calculated. Intercept is false if it is disabled. The default Intercept is false.
+    -- @param #boolean Intercept (Optional) Intercept is true if an intercept point is calculated. Intercept is false if it is disabled. The default Intercept is false.
     -- @param #number InterceptDelay If Intercept is true, then InterceptDelay is the average time it takes to get airplanes airborne.
     -- @return #DETECTION_BASE self
     function DETECTION_BASE:SetIntercept( Intercept, InterceptDelay )
       self:F2()
+
+      Intercept = Intercept or false
 
       self.Intercept = Intercept
       self.InterceptDelay = InterceptDelay
@@ -78765,8 +79319,8 @@ do -- DETECTION_BASE
   -- The DetectedItem is a table and contains a SET_UNIT in the field Set.
   -- @param #DETECTION_BASE self
   -- @param #string ItemPrefix Prefix of detected item.
-  -- @param #number DetectedItemKey The key of the DetectedItem. Default self.DetectedItemMax. Could also be a string in principle.
-  -- @param Core.Set#SET_UNIT Set (optional) The Set of Units to be added.
+  -- @param #number DetectedItemKey (Optional) The key of the DetectedItem. Default self.DetectedItemMax. Could also be a string in principle.
+  -- @param Core.Set#SET_UNIT Set (Optional) The Set of Units to be added.
   -- @return #DETECTION_BASE.DetectedItem
   function DETECTION_BASE:AddDetectedItem( ItemPrefix, DetectedItemKey, Set )
 
@@ -79690,7 +80244,7 @@ do -- DETECTION_AREAS
   --- DETECTION_AREAS constructor.
   -- @param #DETECTION_AREAS self
   -- @param Core.Set#SET_GROUP DetectionSetGroup The @{Core.Set} of GROUPs in the Forward Air Controller role.
-  -- @param #number DetectionZoneRange The range in meters within which targets are grouped upon the first detected target. Default 5000m.
+  -- @param #number DetectionZoneRange (Optional) The range in meters within which targets are grouped upon the first detected target. Default 5000m.
   -- @return #DETECTION_AREAS
   function DETECTION_AREAS:New( DetectionSetGroup, DetectionZoneRange )
 
@@ -80922,12 +81476,11 @@ do -- DESIGNATE
 
   --- DESIGNATE Constructor. This class is an abstract class and should not be instantiated.
   -- @param #DESIGNATE self
-  -- @param Tasking.CommandCenter#COMMANDCENTER CC
+  -- @param Wrapper.Group#GROUP CC Group as Commandcenter standin. Currently unused (03/2026)
   -- @param Functional.Detection#DETECTION_BASE Detection
   -- @param Core.Set#SET_GROUP AttackSet The Attack collection of GROUP objects to designate and report for.
-  -- @param Tasking.Mission#MISSION Mission (Optional) The Mission where the menu needs to be attached.
   -- @return #DESIGNATE
-  function DESIGNATE:New( CC, Detection, AttackSet, Mission )
+  function DESIGNATE:New( CC, Detection, AttackSet )
   
     local self = BASE:Inherit( self, FSM:New() ) -- #DESIGNATE
     self:F( { Detection } )
@@ -81089,7 +81642,7 @@ do -- DESIGNATE
     -- @param #DESIGNATE  self
     -- @param #number Delay
     
-    self.CC = CC
+    --self.CC = CC
     self.Detection = Detection
     self.AttackSet = AttackSet
     self.RecceSet = Detection:GetDetectionSet()
@@ -81101,7 +81654,7 @@ do -- DESIGNATE
     
     self:SetFlashStatusMenu( false )
     self:SetFlashDetectionMessages( true )
-    self:SetMission( Mission )
+    --self:SetMission( Mission )
     
     self:SetLaserCodes( { 1688, 1130, 4785, 6547, 1465, 4578 } ) -- set self.LaserCodes
     self:SetAutoLase( false, false ) -- set self.Autolase and don't send message.
@@ -81303,7 +81856,7 @@ do -- DESIGNATE
   
   --- Set the lase duration for designations.
   -- @param #DESIGNATE self
-  -- @param #number LaseDuration The time in seconds a lase will continue to hold on target. The default is 120 seconds.
+  -- @param #number LaseDuration (Optional) The time in seconds a lase will continue to hold on target. The default is 120 seconds.
   -- @return #DESIGNATE
   function DESIGNATE:SetLaseDuration( LaseDuration )
     self.LaseDuration = LaseDuration or 120
@@ -81375,10 +81928,12 @@ do -- DESIGNATE
     
     if Message then
       local AutoLaseOnOff = ( self.AutoLase == true ) and "On" or "Off"
-      local CC = self.CC:GetPositionable()
-      if CC then
-        CC:MessageToSetGroup( self.DesignateName .. ": Auto Lase " .. AutoLaseOnOff .. ".", 15, self.AttackSet )
-      end
+
+      MESSAGE:New(self.DesignateName .. ": Auto Lase " .. AutoLaseOnOff .. ".",15):ToSet(self.AttackSet)
+      --local CC = self.CC:GetPositionable()
+      --if CC then
+        --CC:MessageToSetGroup( self.DesignateName .. ": Auto Lase " .. AutoLaseOnOff .. ".", 15, self.AttackSet )
+      --end
     end
 
     self:CoordinateLase()
@@ -81398,14 +81953,14 @@ do -- DESIGNATE
     return self
   end
   
-  --- Set the MISSION object for which designate will function.
+  --- [DEPRECATED DO NOT USE] Set the MISSION object for which designate will function.
   -- When a MISSION object is assigned, the menu for the designation will be located at the Mission Menu.
   -- @param #DESIGNATE self
   -- @param Tasking.Mission#MISSION Mission The MISSION object.
   -- @return #DESIGNATE
   function DESIGNATE:SetMission( Mission ) --R2.2
 
-    self.Mission = Mission
+    --self.Mission = Mission
 
     return self
   end
@@ -81451,7 +82006,8 @@ do -- DESIGNATE
             function( AttackGroup )
               if AttackGroup:IsAlive() == true then
                 local DetectionText = self.Detection:DetectedItemReportSummary( DetectedItem, AttackGroup ):Text( ", " )
-                self.CC:GetPositionable():MessageToGroup( "Targets out of LOS\n" .. DetectionText, 10, AttackGroup, self.DesignateName )
+                --self.CC:GetPositionable():MessageToGroup( "Targets out of LOS\n" .. DetectionText, 10, AttackGroup, self.DesignateName )
+                MESSAGE:New("Targets out of LOS\n" .. DetectionText,10,self.DesignateName):ToGroup(AttackGroup)
               end
             end
           )
@@ -81476,7 +82032,8 @@ do -- DESIGNATE
                 function( AttackGroup )
                   if self.FlashDetectionMessage[AttackGroup] == true then
                     local DetectionText = self.Detection:DetectedItemReportSummary( DetectedItem, AttackGroup ):Text( ", " )
-                    self.CC:GetPositionable():MessageToGroup( "Targets detected at \n" .. DetectionText, 10, AttackGroup, self.DesignateName )
+                    --self.CC:GetPositionable():MessageToGroup( "Targets detected at \n" .. DetectionText, 10, AttackGroup, self.DesignateName )
+                    MESSAGE:New( "Targets detected at \n" .. DetectionText,10,self.DesignateName):ToGroup(AttackGroup)
                   end
                 end
               )
@@ -81550,9 +82107,10 @@ do -- DESIGNATE
             end
           end
           
-          local CC = self.CC:GetPositionable()
+         -- local CC = self.CC:GetPositionable()
       
-          CC:MessageTypeToGroup( DetectedReport:Text( "\n" ), MESSAGE.Type.Information, AttackGroup, self.DesignateName )
+          --CC:MessageTypeToGroup( DetectedReport:Text( "\n" ), MESSAGE.Type.Information, AttackGroup, self.DesignateName )
+          MESSAGE:New( DetectedReport:Text( "\n" ),15,self.DesignateName):ToGroup(AttackGroup)
           
           local DesignationReport = REPORT:New( "Marking Targets:" )
       
@@ -81586,10 +82144,10 @@ do -- DESIGNATE
     
     local MissionMenu = nil
     
-    if self.Mission then
+    --if self.Mission then
       --MissionMenu = self.Mission:GetRootMenu( AttackGroup )
-      MissionMenu = self.Mission:GetMenu( AttackGroup )
-    end
+      --MissionMenu = self.Mission:GetMenu( AttackGroup )
+    --end
     
     local MenuTime = timer.getTime()
     
@@ -81977,12 +82535,13 @@ do -- DESIGNATE
   -- @param #DESIGNATE self
   -- @return #DESIGNATE
   function DESIGNATE:onafterLaseOff( From, Event, To, Index )
-  
-    local CC = self.CC:GetPositionable()
+
+    MESSAGE:New("Stopped lasing.",5,self.DesignateName):ToSet(self.AttackSet)
+    --local CC = self.CC:GetPositionable()
     
-    if CC then 
-      CC:MessageToSetGroup( "Stopped lasing.", 5, self.AttackSet, self.DesignateName )
-    end
+    --if CC then 
+      --CC:MessageToSetGroup( "Stopped lasing.", 5, self.AttackSet, self.DesignateName )
+    --end
     
     local DetectedItem = self.Detection:GetDetectedItemByIndex( Index )
     local TargetSetUnit = self.Detection:GetDetectedItemSet( DetectedItem )
@@ -83154,7 +83713,7 @@ end
 
 --- Set the friendly coalitions from which the airports can be used as departure and destination.
 -- @param #RAT self
--- @param #string friendly "same"=own coalition+neutral (default), "sameonly"=own coalition only, "neutral"=all neutral airports.
+-- @param #string friendly (Optional) "same"=own coalition+neutral (default), "sameonly"=own coalition only, "neutral"=all neutral airports.
 -- Default is "same", so aircraft will use airports of the coalition their spawn template has plus all neutral airports.
 -- @return #RAT RAT self object.
 -- @usage yak:SetCoalition("neutral") will spawn aircraft randomly on all neutral airports.
@@ -83236,7 +83795,7 @@ end
 
 --- Set the scan radius around parking spots. Parking spot is considered to be occupied if any obstacle is found with the radius.
 -- @param #RAT self
--- @param #number radius Radius in meters. Default 50 m.
+-- @param #number radius (Optional) Radius in meters. Default 50 m.
 -- @return #RAT RAT self object.
 function RAT:SetParkingScanRadius(radius)
   self:F2(radius)
@@ -83602,7 +84161,7 @@ end
 
 --- Set the delay before first group is spawned.
 -- @param #RAT self
--- @param #number delay Delay in seconds. Default is 5 seconds. Minimum delay is 0.5 seconds.
+-- @param #number delay (Optional) Delay in seconds. Default is 5 seconds. Minimum delay is 0.5 seconds.
 -- @return #RAT RAT self object.
 function RAT:SetSpawnDelay(delay)
   self:F2(delay)
@@ -83613,7 +84172,7 @@ end
 
 --- Set the interval between spawnings of the template group.
 -- @param #RAT self
--- @param #number interval Interval in seconds. Default is 5 seconds. Minimum is 0.5 seconds.
+-- @param #number interval (Optional) Interval in seconds. Default is 5 seconds. Minimum is 0.5 seconds.
 -- @return #RAT RAT self object.
 function RAT:SetSpawnInterval(interval)
   self:F2(interval)
@@ -83624,7 +84183,7 @@ end
 
 --- Set max number of groups that will be spawned. When this limit is reached, no more RAT groups are spawned.
 -- @param #RAT self
--- @param #number Nmax Max number of groups. Default `nil`=unlimited.
+-- @param #number Nmax (Optional) Max number of groups. Default `nil`=unlimited.
 -- @return #RAT RAT self object.
 function RAT:SetSpawnLimit(Nmax)
   self.NspawnMax=Nmax
@@ -83644,7 +84203,7 @@ end
 
 --- Sets the delay between despawning and respawning aircraft.
 -- @param #RAT self
--- @param #number delay Delay in seconds until respawn happens. Default is 1 second. Minimum is 1 second.
+-- @param #number delay (Optional) Delay in seconds until respawn happens. Default is 1 second. Minimum is 1 second.
 -- @return #RAT RAT self object.
 function RAT:SetRespawnDelay(delay)
   self:F2(delay)
@@ -83665,7 +84224,7 @@ end
 
 --- Number of tries to respawn an aircraft in case it has accidentally been spawned on runway.
 -- @param #RAT self
--- @param #number n Number of retries. Default is 3.
+-- @param #number n (Optional) Number of retries. Default is 3.
 -- @return #RAT RAT self object.
 function RAT:SetMaxRespawnTriedWhenSpawnedOnRunway(n)
   self:F2(n)
@@ -83723,7 +84282,7 @@ end
 --- Check if aircraft have accidentally been spawned on the runway. If so they will be removed immediately.
 -- @param #RAT self
 -- @param #boolean switch If true, check is performed. If false, this check is omitted.
--- @param #number radius Distance in meters until a unit is considered to have spawned accidentally on the runway. Default is 75 m.
+-- @param #number radius (Optional) Distance in meters until a unit is considered to have spawned accidentally on the runway. Default is 75 m.
 -- @return #RAT RAT self object.
 function RAT:CheckOnRunway(switch, distance)
   self:F2(switch)
@@ -83738,7 +84297,7 @@ end
 --- Check if aircraft have accidentally been spawned on top of each other. If yes, they will be removed immediately.
 -- @param #RAT self
 -- @param #boolean switch If true, check is performed. If false, this check is omitted.
--- @param #number radius Radius in meters until which a unit is considered to be on top of each other. Default is 2 m.
+-- @param #number radius (Optional) Radius in meters until which a unit is considered to be on top of each other. Default is 2 m.
 -- @return #RAT RAT self object.
 function RAT:CheckOnTop(switch, radius)
   self:F2(switch)
@@ -83854,10 +84413,10 @@ end
 
 --- Define how aircraft that are spawned in uncontrolled state are activate.
 -- @param #RAT self
--- @param #number maxactivated Maximal numnber of activated aircraft. Absolute maximum will be the number of spawned groups. Default is 1.
--- @param #number delay Time delay in seconds before (first) aircraft is activated. Default is 1 second.
--- @param #number delta Time difference in seconds before next aircraft is activated. Default is 1 second.
--- @param #number frand Factor [0,...,1] for randomization of time difference between aircraft activations. Default is 0, i.e. no randomization.
+-- @param #number maxactivated (Optional) Maximal numnber of activated aircraft. Absolute maximum will be the number of spawned groups. Default is 1.
+-- @param #number delay (Optional) Time delay in seconds before (first) aircraft is activated. Default is 1 second.
+-- @param #number delta (Optional) Time difference in seconds before next aircraft is activated. Default is 1 second.
+-- @param #number frand (Optional) Factor [0,...,1] for randomization of time difference between aircraft activations. Default is 0, i.e. no randomization.
 -- @return #RAT RAT self object.
 function RAT:ActivateUncontrolled(maxactivated, delay, delta, frand)
   self:F2({max=maxactivated, delay=delay, delta=delta, rand=frand})
@@ -83883,7 +84442,7 @@ end
 
 --- Set the time after which inactive groups will be destroyed.
 -- @param #RAT self
--- @param #number time Time in seconds. Default is 600 seconds = 10 minutes. Minimum is 60 seconds.
+-- @param #number time (Optional) Time in seconds. Default is 600 seconds = 10 minutes. Minimum is 60 seconds.
 -- @return #RAT RAT self object.
 function RAT:TimeDestroyInactive(time)
   self:F2(time)
@@ -83917,7 +84476,7 @@ end
 
 --- Set the climb rate. This automatically sets the climb angle.
 -- @param #RAT self
--- @param #number rate Climb rate in ft/min. Default is 1500 ft/min. Minimum is 100 ft/min. Maximum is 15,000 ft/min.
+-- @param #number rate (Optional) Climb rate in ft/min. Default is 1500 ft/min. Minimum is 100 ft/min. Maximum is 15,000 ft/min.
 -- @return #RAT RAT self object.
 function RAT:SetClimbRate(rate)
   self:F2(rate)
@@ -84011,7 +84570,7 @@ end
 
 --- Max number of planes that get landing clearance of the RAT ATC. This setting effects all RAT objects and groups!
 -- @param #RAT self
--- @param #number n Number of aircraft that are allowed to land simultaniously. Default is 2.
+-- @param #number n (Optional) Number of aircraft that are allowed to land simultaniously. Default is 2.
 -- @return #RAT RAT self object.
 function RAT:ATC_Clearance(n)
   self:F2(n)
@@ -84021,7 +84580,7 @@ end
 
 --- Delay between granting landing clearance for simultanious landings. This setting effects all RAT objects and groups!
 -- @param #RAT self
--- @param #number time Delay time when the next aircraft will get landing clearance event if the previous one did not land yet. Default is 240 sec.
+-- @param #number time (Optional) Delay time when the next aircraft will get landing clearance event if the previous one did not land yet. Default is 240 sec.
 -- @return #RAT RAT self object.
 function RAT:ATC_Delay(time)
   self:F2(time)
@@ -84866,7 +85425,7 @@ end
 --- Despawn group. The `FLIGHTGROUP` is despawned and stopped. The ratcraft is removed from the self.ratcraft table. Menues are removed.
 -- @param #RAT self
 -- @param Wrapper.Group#GROUP group Group to be despawned.
--- @param #number delay Delay in seconds before the despawn happens. Default is immidiately.
+-- @param #number delay (Optional) Delay in seconds before the despawn happens. Default is immidiately.
 function RAT:_Despawn(group, delay)
 
   if delay and delay>0 then
@@ -86804,7 +87363,7 @@ end
 
 --- Anticipated group name from alias and spawn index.
 -- @param #RAT self
--- @param #number index Spawnindex of group if given or self.SpawnIndex+1 by default.
+-- @param #number index (Optional) Spawnindex of group if given or self.SpawnIndex+1 by default.
 -- @return #string Name the group will get after it is spawned.
 function RAT:_AnticipatedGroupName(index)
   local index=index or self.SpawnIndex+1
@@ -88112,7 +88671,7 @@ end
 --- Adds a RAT object to the RAT manager. Parameter min specifies the limit how many RAT groups are at least alive.
 -- @param #RATMANAGER self
 -- @param #RAT ratobject RAT object to be managed.
--- @param #number min Minimum number of groups for this RAT object. Default is 1.
+-- @param #number min (Optional) Minimum number of groups for this RAT object. Default is 1.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:Add(ratobject,min)
 
@@ -88140,7 +88699,7 @@ end
 
 --- Starts the RAT manager and spawns the initial random number RAT groups for each RAT object.
 -- @param #RATMANAGER self
--- @param #number delay Time delay in seconds after which the RAT manager is started. Default is 5 seconds.
+-- @param #number delay (Optional) Time delay in seconds after which the RAT manager is started. Default is 5 seconds.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:Start(delay)
 
@@ -88213,7 +88772,7 @@ end
 
 --- Stops the RAT manager.
 -- @param #RATMANAGER self
--- @param #number delay Delay in seconds before the manager is stopped. Default is 1 second.
+-- @param #number delay (Optional) Delay in seconds before the manager is stopped. Default is 1 second.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:Stop(delay)
   delay=delay or 1
@@ -88249,7 +88808,7 @@ end
 
 --- Sets the time interval between spawning of groups.
 -- @param #RATMANAGER self
--- @param #number dt Time interval in seconds. Default is 1 second.
+-- @param #number dt (Optional) Time interval in seconds. Default is 1 second.
 -- @return #RATMANAGER RATMANAGER self object.
 function RATMANAGER:SetTspawn(dt)
   self.dTspawn=dt or 1.0
@@ -89379,7 +89938,7 @@ end
 
 --- Set maximal strafing altitude. Player entering a strafe pit above that altitude are not registered for a valid pass.
 -- @param #RANGE self
--- @param #number maxalt Maximum altitude in meters AGL. Default is 914 m = 3000 ft.
+-- @param #number maxalt (Optional) Maximum altitude in meters AGL. Default is 914 m = 3000 ft.
 -- @return #RANGE self
 function RANGE:SetMaxStrafeAlt( maxalt )
   self.strafemaxalt = maxalt or RANGE.Defaults.strafemaxalt
@@ -89388,7 +89947,7 @@ end
 
 --- Set time interval for tracking bombs. A smaller time step increases accuracy but needs more CPU time.
 -- @param #RANGE self
--- @param #number dt Time interval in seconds. Default is 0.005 s.
+-- @param #number dt (Optional) Time interval in seconds. Default is 0.005 s.
 -- @return #RANGE self
 function RANGE:SetBombtrackTimestep( dt )
   self.dtBombtrack = dt or RANGE.Defaults.dtBombtrack
@@ -89397,7 +89956,7 @@ end
 
 --- Set time how long (most) messages are displayed.
 -- @param #RANGE self
--- @param #number time Time in seconds. Default is 30 s.
+-- @param #number time (Optional) Time in seconds. Default is 30 s.
 -- @return #RANGE self
 function RANGE:SetMessageTimeDuration( time )
   self.Tmsg = time or RANGE.Defaults.Tmsg
@@ -89439,8 +89998,8 @@ end
 --- Set FunkMan socket. Bombing and strafing results will be send to your Discord bot.
 -- **Requires running FunkMan program**.
 -- @param #RANGE self
--- @param #number Port Port. Default `10042`.
--- @param #string Host Host. Default "127.0.0.1".
+-- @param #number Port (Optional) Port. Default `10042`.
+-- @param #string Host (Optional) Host. Default "127.0.0.1".
 -- @return #RANGE self
 function RANGE:SetFunkManOn(Port, Host)
 
@@ -89462,7 +90021,7 @@ end
 
 --- Set max number of player results that are displayed.
 -- @param #RANGE self
--- @param #number nmax Number of results. Default is 10.
+-- @param #number nmax (Optional) Number of results. Default is 10.
 -- @return #RANGE self
 function RANGE:SetDisplayedMaxPlayerResults( nmax )
   self.ndisplayresult = nmax or RANGE.Defaults.ndisplayresult
@@ -89471,7 +90030,7 @@ end
 
 --- Set range radius. Defines the area in which e.g. bomb impacts are smoked.
 -- @param #RANGE self
--- @param #number radius Radius in km. Default 5 km.
+-- @param #number radius (Optional) Radius in km. Default 5 km.
 -- @return #RANGE self
 function RANGE:SetRangeRadius( radius )
   self.rangeradius = radius * 1000 or RANGE.Defaults.rangeradius
@@ -89480,7 +90039,7 @@ end
 
 --- Set player setting whether bomb impact points are smoked or not.
 -- @param #RANGE self
--- @param #boolean switch If true nor nil default is to smoke impact points of bombs.
+-- @param #boolean switch (Optional) If true nor nil default is to smoke impact points of bombs.
 -- @return #RANGE self
 function RANGE:SetDefaultPlayerSmokeBomb( switch )
   if switch == true or switch == nil then
@@ -89493,7 +90052,7 @@ end
 
 --- Set bomb track threshold distance. Bombs/rockets/missiles are only tracked if player-range distance is less than this distance. Default 25 km.
 -- @param #RANGE self
--- @param #number distance Threshold distance in km. Default 25 km.
+-- @param #number distance (Optional) Threshold distance in km. Default 25 km.
 -- @return #RANGE self
 function RANGE:SetBombtrackThreshold( distance )
   self.BombtrackThreshold = (distance or 25) * 1000
@@ -89540,7 +90099,7 @@ end
 
 --- Enable range ceiling. Aircraft must be below the ceiling altitude to be considered in the range zone. 
 -- @param #RANGE self
--- @param #boolean enabled True if you would like to enable the ceiling check.  If no value give, will Default to false.
+-- @param #boolean enabled (Optional) True if you would like to enable the ceiling check.  If no value give, will Default to false.
 -- @return #RANGE self
 function RANGE:EnableRangeCeiling( enabled )
   self:T(self.lid.."EnableRangeCeiling")
@@ -89556,7 +90115,7 @@ end
 
 --- Set smoke color for marking bomb targets. By default bomb targets are marked by red smoke.
 -- @param #RANGE self
--- @param Utilities.Utils#SMOKECOLOR colorid Color id. Default `SMOKECOLOR.Red`.
+-- @param Utilities.Utils#SMOKECOLOR colorid (Optional) Color id. Default `SMOKECOLOR.Red`.
 -- @return #RANGE self
 function RANGE:SetBombTargetSmokeColor( colorid )
   self.BombSmokeColor = colorid or SMOKECOLOR.Red
@@ -89565,7 +90124,7 @@ end
 
 --- Set score bomb distance.
 -- @param #RANGE self
--- @param #number distance Distance in meters. Default 1000 m.
+-- @param #number distance (Optional) Distance in meters. Default 1000 m.
 -- @return #RANGE self
 function RANGE:SetScoreBombDistance( distance )
   self.scorebombdistance = distance or 1000
@@ -89574,7 +90133,7 @@ end
 
 --- Set smoke color for marking strafe targets. By default strafe targets are marked by green smoke.
 -- @param #RANGE self
--- @param Utilities.Utils#SMOKECOLOR colorid Color id. Default `SMOKECOLOR.Green`.
+-- @param Utilities.Utils#SMOKECOLOR colorid (Optional) Color id. Default `SMOKECOLOR.Green`.
 -- @return #RANGE self
 function RANGE:SetStrafeTargetSmokeColor( colorid )
   self.StrafeSmokeColor = colorid or SMOKECOLOR.Green
@@ -89583,7 +90142,7 @@ end
 
 --- Set smoke color for marking strafe pit approach boxes. By default strafe pit boxes are marked by white smoke.
 -- @param #RANGE self
--- @param Utilities.Utils#SMOKECOLOR colorid Color id. Default `SMOKECOLOR.White`.
+-- @param Utilities.Utils#SMOKECOLOR colorid (Optional) Color id. Default `SMOKECOLOR.White`.
 -- @return #RANGE self
 function RANGE:SetStrafePitSmokeColor( colorid )
   self.StrafePitSmokeColor = colorid or SMOKECOLOR.White
@@ -89592,7 +90151,7 @@ end
 
 --- Set time delay between bomb impact and starting to smoke the impact point.
 -- @param #RANGE self
--- @param #number delay Time delay in seconds. Default is 3 seconds.
+-- @param #number delay (Optional) Time delay in seconds. Default is 3 seconds.
 -- @return #RANGE self
 function RANGE:SetSmokeTimeDelay( delay )
   self.TdelaySmoke = delay or RANGE.Defaults.TdelaySmoke
@@ -89682,11 +90241,11 @@ end
 --- Use SRS Simple-Text-To-Speech for transmissions. No sound files necessary.
 -- @param #RANGE self
 -- @param #string PathToSRS Path to SRS directory.
--- @param #number Port SRS port. Default 5002.
--- @param #number Coalition Coalition side, e.g. `coalition.side.BLUE` or `coalition.side.RED`. Default `coalition.side.BLUE`.
--- @param #number Frequency Frequency to use. Default is 256 MHz for range control and 305 MHz for instructor. If given, both control and instructor get this frequency.
--- @param #number Modulation Modulation to use, defaults to radio.modulation.AM
--- @param #number Volume Volume, between 0.0 and 1.0. Defaults to 1.0
+-- @param #number Port (Optional) SRS port. Default 5002.
+-- @param #number Coalition (Optional) Coalition side, e.g. `coalition.side.BLUE` or `coalition.side.RED`. Default `coalition.side.BLUE`.
+-- @param #number Frequency (Optional) Frequency to use. Default is 256 MHz for range control and 305 MHz for instructor. If given, both control and instructor get this frequency.
+-- @param #number Modulation (Optional) Modulation to use, defaults to radio.modulation.AM
+-- @param #number Volume (Optional) Volume, between 0.0 and 1.0. Defaults to 1.0
 -- @param #string PathToGoogleKey Path to Google TTS credentials.
 -- @return #RANGE self
 function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey)
@@ -89730,11 +90289,11 @@ end
 
 --- (SRS) Set range control frequency and voice. Use `RANGE:SetSRS()` once first before using this function.
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 256 MHz.
--- @param #number modulation Modulation, defaults to radio.modulation.AM.
+-- @param #number frequency (Optional) Frequency in MHz. Default 256 MHz.
+-- @param #number modulation (Optional) Modulation, defaults to radio.modulation.AM.
 -- @param #string voice Voice.
--- @param #string culture Culture, defaults to "en-US".
--- @param #string gender Gender, defaults to "female".
+-- @param #string culture (Optional) Culture, defaults to "en-US".
+-- @param #string gender (Optional) Gender, defaults to "female".
 -- @param #string relayunitname Name of the unit used for transmission location.
 -- @return #RANGE self
 function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender, relayunitname )
@@ -89764,11 +90323,11 @@ end
 
 --- (SRS) Set range instructor frequency and voice. Use `RANGE:SetSRS()` once first before using this function.
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 305 MHz.
--- @param #number modulation Modulation, defaults to radio.modulation.AM.
+-- @param #number frequency (Optional) Frequency in MHz. Default 305 MHz.
+-- @param #number modulation (Optional) Modulation, defaults to radio.modulation.AM.
 -- @param #string voice Voice.
--- @param #string culture Culture, defaults to "en-US".
--- @param #string gender Gender, defaults to "male".
+-- @param #string culture (Optional) Culture, defaults to "en-US".
+-- @param #string gender (Optional) Gender, defaults to "male".
 -- @param #string relayunitname Name of the unit used for transmission location.
 -- @return #RANGE self
 function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gender, relayunitname )
@@ -89798,7 +90357,7 @@ end
 
 --- Enable range control and set frequency (non-SRS).
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 256 MHz.
+-- @param #number frequency (Optional) Frequency in MHz. Default 256 MHz.
 -- @param #string relayunitname Name of the unit used for transmission.
 -- @return #RANGE self
 function RANGE:SetRangeControl( frequency, relayunitname )
@@ -89809,7 +90368,7 @@ end
 
 --- Enable instructor radio and set frequency (non-SRS).
 -- @param #RANGE self
--- @param #number frequency Frequency in MHz. Default 305 MHz.
+-- @param #number frequency (Optional) Frequency in MHz. Default 305 MHz.
 -- @param #string relayunitname Name of the unit used for transmission.
 -- @return #RANGE self
 function RANGE:SetInstructorRadio( frequency, relayunitname )
@@ -89820,7 +90379,7 @@ end
 
 --- Set sound files folder within miz file.
 -- @param #RANGE self
--- @param #string path Path for sound files. Default "Range Soundfiles/". Mind the slash "/" at the end!
+-- @param #string path (Optional) Path for sound files. Default "Range Soundfiles/". Mind the slash "/" at the end!
 -- @return #RANGE self
 function RANGE:SetSoundfilesPath( path )
   self.soundpath = tostring( path or "Range Soundfiles/" )
@@ -90060,10 +90619,12 @@ end
 -- @param #RANGE self
 -- @param #table targetnames Single or multiple (Table) names of unit or static objects serving as bomb targets.
 -- @param #number goodhitrange (Optional) Max distance from target unit (in meters) which is considered as a good hit. Default is 25 m.
--- @param #boolean randommove If true, unit will move randomly within the range. Default is false.
+-- @param #boolean randommove (Optional) If true, unit will move randomly within the range. Default is false.
 -- @return #RANGE self
 function RANGE:AddBombingTargets( targetnames, goodhitrange, randommove )
   self:F( { targetnames = targetnames, goodhitrange = goodhitrange, randommove = randommove } )
+
+  randommove = randommove or false
 
   -- Create a table if necessary.
   if type( targetnames ) ~= "table" then
@@ -90099,7 +90660,7 @@ end
 -- @param #RANGE self
 -- @param Wrapper.Positionable#POSITIONABLE unit Positionable (unit or static) of the bombing target.
 -- @param #number goodhitrange Max distance from unit which is considered as a good hit.
--- @param #boolean randommove If true, unit will move randomly within the range. Default is false.
+-- @param #boolean randommove (Optional) If true, unit will move randomly within the range. Default is false.
 -- @return #RANGE self
 function RANGE:AddBombingTargetUnit( unit, goodhitrange, randommove )
   self:F( { unit = unit, goodhitrange = goodhitrange, randommove = randommove } )
@@ -90215,7 +90776,7 @@ end
 -- @param #RANGE self
 -- @param Wrapper.Group#GROUP group Group of bombing targets. Can also be given as group name.
 -- @param #number goodhitrange Max distance from unit which is considered as a good hit.
--- @param #boolean randommove If true, unit will move randomly within the range. Default is false.
+-- @param #boolean randommove (Optional) If true, unit will move randomly within the range. Default is false.
 -- @return #RANGE self
 function RANGE:AddBombingTargetGroup( group, goodhitrange, randommove )
   self:F( { group = group, goodhitrange = goodhitrange, randommove = randommove } )
@@ -92914,8 +93475,8 @@ do -- ZoneGoal
   --- ZONE_GOAL_COALITION Constructor.
   -- @param #ZONE_GOAL_COALITION self
   -- @param Core.Zone#ZONE Zone A @{Core.Zone} object with the goal to be achieved.
-  -- @param #number Coalition The initial coalition owning the zone. Default coalition.side.NEUTRAL.
-  -- @param #table UnitCategories Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
+  -- @param #number Coalition (Optional) The initial coalition owning the zone. Default coalition.side.NEUTRAL.
+  -- @param #table UnitCategories (Optional) Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
   -- @return #ZONE_GOAL_COALITION
   function ZONE_GOAL_COALITION:New( Zone, Coalition, UnitCategories )
 
@@ -92950,7 +93511,7 @@ do -- ZoneGoal
 
   --- Set the owning coalition of the zone.
   -- @param #ZONE_GOAL_COALITION self
-  -- @param #table UnitCategories Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
+  -- @param #table UnitCategories (Optional) Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
   -- @return #ZONE_GOAL_COALITION
   function ZONE_GOAL_COALITION:SetUnitCategories( UnitCategories )
 
@@ -92965,7 +93526,7 @@ do -- ZoneGoal
 
   --- Set the owning coalition of the zone.
   -- @param #ZONE_GOAL_COALITION self
-  -- @param #table ObjectCategories Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
+  -- @param #table ObjectCategories (Optional) Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
   -- @return #ZONE_GOAL_COALITION
   function ZONE_GOAL_COALITION:SetObjectCategories( ObjectCategories )
 
@@ -93386,8 +93947,8 @@ do -- ZONE_CAPTURE_COALITION
   -- @param #ZONE_CAPTURE_COALITION self
   -- @param Core.Zone#ZONE Zone A @{Core.Zone} object with the goal to be achieved. Alternatively, can be handed as the name of late activated group describing a @{Core.Zone#ZONE_POLYGON} with its waypoints.
   -- @param #number Coalition The initial coalition owning the zone.
-  -- @param #table UnitCategories Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
-  -- @param #table ObjectCategories Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
+  -- @param #table UnitCategories (Optional) Table of unit categories. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit). Default {Unit.Category.GROUND_UNIT}.
+  -- @param #table ObjectCategories (Optional) Table of unit categories. See [DCS Class Object](https://wiki.hoggitworld.com/view/DCS_Class_Object). Default {Object.Category.UNIT, Object.Category.STATIC}, i.e. all UNITS and STATICS.
   -- @return #ZONE_CAPTURE_COALITION
   -- @usage
   -- 
@@ -95355,7 +95916,7 @@ end
 -- @param #ARTY self
 -- @param Core.Point#COORDINATE coord Coordinates of the new position.
 -- @param #string time (Optional) Day time at which the group should start moving. Passed as a string in format "08:13:45". Default is now.
--- @param #number speed (Optinal) Speed in km/h the group should move at. Default 70% of max posible speed of group.
+-- @param #number speed (Optional) Speed in km/h the group should move at. Default 70% of max posible speed of group.
 -- @param #boolean onroad (Optional) If true, group will mainly use roads. Default off, i.e. go directly towards the specified coordinate.
 -- @param #boolean cancel (Optional) If true, cancel any running attack when move should begin. Default is false.
 -- @param #string name (Optional) Name of the coordinate. Default is LL DMS string of the coordinate. If the name was already given, the numbering "#01", "#02",... is appended automatically.
@@ -95466,7 +96027,7 @@ end
 
 --- Set minimum firing range. Targets closer than this distance are not engaged.
 -- @param #ARTY self
--- @param #number range Min range in kilometers. Default is 0.1 km.
+-- @param #number range (Optional) Min range in kilometers. Default is 0.1 km.
 -- @return self
 function ARTY:SetMinFiringRange(range)
   self:F({range=range})
@@ -95476,7 +96037,7 @@ end
 
 --- Set maximum firing range. Targets further away than this distance are not engaged.
 -- @param #ARTY self
--- @param #number range Max range in kilometers. Default is 1000 km.
+-- @param #number range (Optional) Max range in kilometers. Default is 1000 km.
 -- @return self
 function ARTY:SetMaxFiringRange(range)
   self:F({range=range})
@@ -95486,7 +96047,7 @@ end
 
 --- Set time interval between status updates. During the status check, new events are triggered.
 -- @param #ARTY self
--- @param #number interval Time interval in seconds. Default 10 seconds.
+-- @param #number interval (Optional) Time interval in seconds. Default 10 seconds.
 -- @return self
 function ARTY:SetStatusInterval(interval)
   self:F({interval=interval})
@@ -95496,7 +96057,7 @@ end
 
 --- Set time interval for weapon tracking.
 -- @param #ARTY self
--- @param #number interval Time interval in seconds. Default 0.2 seconds.
+-- @param #number interval (Optional) Time interval in seconds. Default 0.2 seconds.
 -- @return self
 function ARTY:SetTrackInterval(interval)
   self.dtTrack=interval or 0.2
@@ -95505,7 +96066,7 @@ end
 
 --- Set time how it is waited a unit the first shot event happens. If no shot is fired after this time, the task to fire is aborted and the target removed.
 -- @param #ARTY self
--- @param #number waittime Time in seconds. Default 300 seconds.
+-- @param #number waittime (Optional) Time in seconds. Default 300 seconds.
 -- @return self
 function ARTY:SetWaitForShotTime(waittime)
   self:F({waittime=waittime})
@@ -95515,7 +96076,7 @@ end
 
 --- Define the safe distance between ARTY group and rearming unit or rearming place at which rearming process is possible.
 -- @param #ARTY self
--- @param #number distance Safe distance in meters. Default is 100 m.
+-- @param #number distance (Optional) Safe distance in meters. Default is 100 m.
 -- @return self
 function ARTY:SetRearmingDistance(distance)
   self:F({distance=distance})
@@ -95777,7 +96338,7 @@ end
 
 --- Set nuclear warhead explosion strength.
 -- @param #ARTY self
--- @param #number strength Explosion strength in kilo tons TNT. Default is 0.075 kt.
+-- @param #number strength (Optional) Explosion strength in kilo tons TNT. Default is 0.075 kt.
 -- @return self
 function ARTY:SetTacNukeWarhead(strength)
   self.nukewarhead=strength or 0.075
@@ -97867,7 +98428,7 @@ end
 
 --- Get the number of shells a unit or group currently has. For a group the ammo count of all units is summed up.
 -- @param #ARTY self
--- @param #boolean display Display ammo table as message to all. Default false.
+-- @param #boolean display (Optional) Display ammo table as message to all. Default false.
 -- @return #number Total amount of ammo the whole group has left.
 -- @return #number Number of shells the group has left.
 -- @return #number Number of rockets the group has left.
@@ -99947,7 +100508,7 @@ end
 
 --- Set average, minimum and maximum time a unit is suppressed each time it gets hit.
 -- @param #SUPPRESSION self
--- @param #number Tave Average time [seconds] a group will be suppressed. Default is 15 seconds.
+-- @param #number Tave (Optional) Average time [seconds] a group will be suppressed. Default is 15 seconds.
 -- @param #number Tmin (Optional) Minimum time [seconds] a group will be suppressed. Default is 5 seconds.
 -- @param #number Tmax (Optional) Maximum time a group will be suppressed. Default is 25 seconds.
 function SUPPRESSION:SetSuppressionTime(Tave, Tmin, Tmax)
@@ -100002,7 +100563,7 @@ end
 
 --- Set the formation a group uses for fall back, hide or retreat.
 -- @param #SUPPRESSION self
--- @param #string formation Formation of the group. Default "Vee".
+-- @param #string formation (Optional) Formation of the group. Default "Vee".
 function SUPPRESSION:SetFormation(formation)
   self:F(formation)
   self.Formation=formation or "Vee"
@@ -100010,7 +100571,7 @@ end
 
 --- Set speed a group moves at for fall back, hide or retreat.
 -- @param #SUPPRESSION self
--- @param #number speed Speed in km/h of group. Default max speed the group can do.
+-- @param #number speed (Optional) Speed in km/h of group. Default max speed the group can do.
 function SUPPRESSION:SetSpeed(speed)
   self:F(speed)
   self.Speed=speed or self.SpeedMax
@@ -100098,7 +100659,7 @@ end
 -- If the group consists of only a singe unit, this referrs to the life of the unit.
 -- If the group consists of more than one unit, this referrs to the group strength relative to its initial strength.
 -- @param #SUPPRESSION self
--- @param #number damage Damage in percent. If group gets damaged above this value, the group will retreat. Default 50 %.
+-- @param #number damage (Optional) Damage in percent. If group gets damaged above this value, the group will retreat. Default 50 %.
 function SUPPRESSION:SetRetreatDamage(damage)
   self:F(damage)
   self.RetreatDamage=damage or 50
@@ -100106,7 +100667,7 @@ end
 
 --- Set time a group waits in the retreat zone before it resumes its mission. Default is two hours.
 -- @param #SUPPRESSION self
--- @param #number time Time in seconds. Default 7200 seconds = 2 hours.
+-- @param #number time (Optional) Time in seconds. Default 7200 seconds = 2 hours.
 function SUPPRESSION:SetRetreatWait(time)
   self:F(time)
   self.RetreatWait=time or 7200
@@ -100114,7 +100675,7 @@ end
 
 --- Set alarm state a group will get after it returns from a fall back or take cover.
 -- @param #SUPPRESSION self
--- @param #string alarmstate Alarm state. Possible "Auto", "Green", "Red". Default is "Auto".
+-- @param #string alarmstate (Optional) Alarm state. Possible "Auto", "Green", "Red". Default is "Auto".
 function SUPPRESSION:SetDefaultAlarmState(alarmstate)
   self:F(alarmstate)
   if alarmstate:lower()=="auto" then
@@ -100130,7 +100691,7 @@ end
 
 --- Set Rules of Engagement (ROE) a group will get when it recovers from suppression.
 -- @param #SUPPRESSION self
--- @param #string roe ROE after suppression. Possible "Free", "Hold" or "Return". Default "Free".
+-- @param #string roe (Optional) ROE after suppression. Possible "Free", "Hold" or "Return". Default "Free".
 function SUPPRESSION:SetDefaultROE(roe)
   self:F(roe)
   if roe:lower()=="free" then
@@ -100146,7 +100707,7 @@ end
 
 --- Create an F10 menu entry for the suppressed group. The menu is mainly for Debugging purposes.
 -- @param #SUPPRESSION self
--- @param #boolean switch Enable=true or disable=false menu group. Default is true.
+-- @param #boolean switch (Optional) Enable=true or disable=false menu group. Default is true.
 function SUPPRESSION:MenuOn(switch)
   self:F(switch)
   if switch==nil then
@@ -100987,9 +101548,9 @@ end
 --- Make group run/drive to a certain point. We put in several intermediate waypoints because sometimes the group stops before it arrived at the desired point.
 --@param #SUPPRESSION self
 --@param Core.Point#COORDINATE fin Coordinate where we want to go.
---@param #number speed Speed of group. Default is 20.
---@param #string formation Formation of group. Default is "Vee".
---@param #number wait Time the group will wait/hold at final waypoint. Default is 30 seconds.
+--@param #number speed (Optional) Speed of group. Default is 20.
+--@param #string formation (Optional) Formation of group. Default is "Vee".
+--@param #number wait (Optional) Time the group will wait/hold at final waypoint. Default is 30 seconds.
 function SUPPRESSION:_Run(fin, speed, formation, wait)
 
   speed=speed or 20
@@ -101251,7 +101812,7 @@ end
 
 --- Sets the ROE for the group and updates the current ROE variable.
 -- @param #SUPPRESSION self
--- @param #string roe ROE the group will get. Possible "Free", "Hold", "Return". Default is self.DefaultROE.
+-- @param #string roe (Optional) ROE the group will get. Possible "Free", "Hold", "Return". Default is self.DefaultROE.
 function SUPPRESSION:_SetROE(roe)
   local group=self.Controllable --Wrapper.Controllable#CONTROLLABLE
   
@@ -101280,7 +101841,7 @@ end
 
 --- Sets the alarm state of the group and updates the current alarm state variable.
 -- @param #SUPPRESSION self
--- @param #string state Alarm state the group will get. Possible "Auto", "Green", "Red". Default is self.DefaultAlarmState.
+-- @param #string state (Optional) Alarm state the group will get. Possible "Auto", "Green", "Red". Default is self.DefaultAlarmState.
 function SUPPRESSION:_SetAlarmState(state)
   local group=self.Controllable --Wrapper.Controllable#CONTROLLABLE
   
@@ -101494,7 +102055,7 @@ end
 
 --- Set duration how long messages are displayed.
 -- @param #PSEUDOATC self
--- @param #number duration Time in seconds. Default is 30 sec.
+-- @param #number duration (Optional) Time in seconds. Default is 30 sec.
 function PSEUDOATC:SetMessageDuration(duration)
   self.mdur=duration or 30
 end
@@ -101508,21 +102069,21 @@ end
 
 --- Set time interval after which the F10 radio menu is refreshed.
 -- @param #PSEUDOATC self
--- @param #number interval Interval in seconds. Default is every 120 sec.
+-- @param #number interval (Optional) Interval in seconds. Default is every 120 sec.
 function PSEUDOATC:SetMenuRefresh(interval)
   self.mrefresh=interval or 120
 end
 
 --- [Deprecated] Enable/disable event handling by MOOSE or DCS.
 -- @param #PSEUDOATC self
--- @param #boolean switch If true, events are handled by MOOSE (default). If false, events are handled directly by DCS.
+-- @param #boolean switch (Optional) If true, events are handled by MOOSE (default). If false, events are handled directly by DCS.
 function PSEUDOATC:SetEventsMoose(switch)
   self.eventsmoose=switch
 end
 
 --- Set time interval for reporting altitude until touchdown.
 -- @param #PSEUDOATC self
--- @param #number interval Interval in seconds. Default is every 3 sec.
+-- @param #number interval (Optional) Interval in seconds. Default is every 3 sec.
 function PSEUDOATC:SetReportAltInterval(interval)
   self.talt=interval or 3
 end
@@ -104815,14 +105376,14 @@ function WAREHOUSE:New(warehouse, alias)
   --- Triggers the FSM event "Save" when the warehouse assets are saved to file on disk.
   -- @function [parent=#WAREHOUSE] Save
   -- @param #WAREHOUSE self
-  -- @param #string path Path where the file is saved. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is saved. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- Triggers the FSM event "Save" with a delay when the warehouse assets are saved to a file.
   -- @function [parent=#WAREHOUSE] __Save
   -- @param #WAREHOUSE self
   -- @param #number delay Delay in seconds.
-  -- @param #string path Path where the file is saved. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is saved. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- On after "Save" event user function. Called when the warehouse assets are saved to disk.
@@ -104831,21 +105392,21 @@ function WAREHOUSE:New(warehouse, alias)
   -- @param #string From From state.
   -- @param #string Event Event.
   -- @param #string To To state.
-  -- @param #string path Path where the file is saved. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is saved. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
 
   --- Triggers the FSM event "Load" when the warehouse is loaded from a file on disk.
   -- @function [parent=#WAREHOUSE] Load
   -- @param #WAREHOUSE self
-  -- @param #string path Path where the file is located. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is located. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- Triggers the FSM event "Load" with a delay when the warehouse assets are loaded from disk.
   -- @function [parent=#WAREHOUSE] __Load
   -- @param #WAREHOUSE self
   -- @param #number delay Delay in seconds.
-  -- @param #string path Path where the file is located. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is located. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
   --- On after "Load" event user function. Called when the warehouse assets are loaded from disk.
@@ -104854,7 +105415,7 @@ function WAREHOUSE:New(warehouse, alias)
   -- @param #string From From state.
   -- @param #string Event Event.
   -- @param #string To To state.
-  -- @param #string path Path where the file is located. Default is the DCS installation root directory.
+  -- @param #string path (Optional) Path where the file is located. Default is the DCS installation root directory.
   -- @param #string filename (Optional) File name. Default is WAREHOUSE-<UID>_<ALIAS>.txt.
 
 
@@ -104924,7 +105485,7 @@ end
 
 --- Set low fuel threshold. If one unit of an asset has less fuel than this number, the event AssetLowFuel will be fired.
 -- @param #WAREHOUSE self
--- @param #number threshold Relative low fuel threshold, i.e. a number in [0,1]. Default 0.15 (15%).
+-- @param #number threshold (Optional) Relative low fuel threshold, i.e. a number in [0,1]. Default 0.15 (15%).
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetLowFuelThreshold(threshold)
   self.lowfuelthresh=threshold or 0.15
@@ -104942,7 +105503,7 @@ end
 
 --- Set verbosity level.
 -- @param #WAREHOUSE self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetVerbosityLevel(VerbosityLevel)
   self.verbosity=VerbosityLevel or 0
@@ -105053,7 +105614,7 @@ end
 --- Enable auto save of warehouse assets at mission end event.
 -- @param #WAREHOUSE self
 -- @param #string path Path where to save the asset data file.
--- @param #string filename File name. Default is generated automatically from warehouse id.
+-- @param #string filename (Optional) File name. Default is generated automatically from warehouse id.
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetSaveOnMissionEnd(path, filename)
   self.autosave=true
@@ -105697,7 +106258,7 @@ end
 -- Note that this is the time, the DCS engine uses not something we can control on a user level or we could get via scripting.
 -- You need to input the value. On the DCS forum it was stated that this is currently one hour. Hence this is the default value.
 -- @param #WAREHOUSE self
--- @param #number RepairTime Time in seconds until the runway is repaired. Default 3600 sec (one hour).
+-- @param #number RepairTime (Optional) Time in seconds until the runway is repaired. Default 3600 sec (one hour).
 -- @return #WAREHOUSE self
 function WAREHOUSE:SetRunwayRepairtime(RepairTime)
   self.runwayrepairtime=RepairTime or 3600
@@ -106239,7 +106800,7 @@ end
 -- @param #string Event Event.
 -- @param #string To To state.
 -- @param Wrapper.Group#GROUP group Group or template group to be added to the warehouse stock.
--- @param #number ngroups Number of groups to add to the warehouse stock. Default is 1.
+-- @param #number ngroups (Optional) Number of groups to add to the warehouse stock. Default is 1.
 -- @param #WAREHOUSE.Attribute forceattribute (Optional) Explicitly force a generalized attribute for the asset. This has to be an @{#WAREHOUSE.Attribute}.
 -- @param #number forcecargobay (Optional) Explicitly force cargobay weight limit in kg for cargo carriers. This is for each *unit* of the group.
 -- @param #number forceweight (Optional) Explicitly force weight in kg of each unit in the group.
@@ -108574,7 +109135,7 @@ end
 -- @param #WAREHOUSE self
 -- @param Wrapper.Group#GROUP Group The train group.
 -- @param Core.Point#COORDINATE Coordinate of the destination. Tail will be routed to the closest point
--- @param #number Speed Speed in km/h to drive to the destination coordinate. Default is 60% of max possible speed the unit can go.
+-- @param #number Speed (Optional) Speed in km/h to drive to the destination coordinate. Default is 60% of max possible speed the unit can go.
 function WAREHOUSE:_RouteTrain(Group, Coordinate, Speed)
 
   if Group and Group:IsAlive() then
@@ -111131,7 +111692,7 @@ end
 --- Info Message. Message send to coalition if reports or debug mode activated (and duration > 0). Text self:I(text) added to DCS.log file.
 -- @param #WAREHOUSE self
 -- @param #string text The text of the error message.
--- @param #number duration Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
+-- @param #number duration (Optional) Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
 function WAREHOUSE:_InfoMessage(text, duration)
   duration=duration or 20
   if duration>0 and self.Debug or self.Report then
@@ -111144,7 +111705,7 @@ end
 --- Debug message. Message send to all if debug mode is activated (and duration > 0). Text self:T(text) added to DCS.log file.
 -- @param #WAREHOUSE self
 -- @param #string text The text of the error message.
--- @param #number duration Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
+-- @param #number duration (Optional) Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
 function WAREHOUSE:_DebugMessage(text, duration)
   duration=duration or 20
   if self.Debug and duration>0 then
@@ -111156,7 +111717,7 @@ end
 --- Error message. Message send to all (if duration > 0). Text self:E(text) added to DCS.log file.
 -- @param #WAREHOUSE self
 -- @param #string text The text of the error message.
--- @param #number duration Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
+-- @param #number duration (Optional) Message display duration in seconds. Default 20 sec. If duration is zero, no message is displayed.
 function WAREHOUSE:_ErrorMessage(text, duration)
   duration=duration or 20
   if duration>0 then
@@ -111967,7 +112528,7 @@ end
 --- Set explosion power. This is an "artificial" explosion generated when the missile is destroyed. Just for the visual effect.
 -- Don't set the explosion power too big or it will harm the aircraft in the vicinity.
 -- @param #FOX self
--- @param #number power Explosion power in kg TNT. Default 0.1 kg.
+-- @param #number power (Optional) Explosion power in kg TNT. Default 0.1 kg.
 -- @return #FOX self
 function FOX:SetExplosionPower(power)
 
@@ -111978,7 +112539,7 @@ end
 
 --- Set missile-player distance when missile is destroyed.
 -- @param #FOX self
--- @param #number distance Distance in meters. Default 200 m.
+-- @param #number distance (Optional) Distance in meters. Default 200 m.
 -- @return #FOX self
 function FOX:SetExplosionDistance(distance)
 
@@ -111989,8 +112550,8 @@ end
 
 --- Set missile-player distance when BIG missiles are destroyed.
 -- @param #FOX self
--- @param #number distance Distance in meters. Default 500 m.
--- @param #number explosivemass Explosive mass of missile threshold in kg TNT. Default 50 kg.
+-- @param #number distance (Optional) Distance in meters. Default 500 m.
+-- @param #number explosivemass (Optional) Explosive mass of missile threshold in kg TNT. Default 50 kg.
 -- @return #FOX self
 function FOX:SetExplosionDistanceBigMissiles(distance, explosivemass)
 
@@ -112024,7 +112585,7 @@ end
 
 --- Set verbosity level.
 -- @param #FOX self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #FOX self
 function FOX:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -114217,8 +114778,8 @@ do
 
   --- Set to accept accoustic detection. Set this *before* MANTIS starts!
   -- @param #MANTIS self
-  -- @param #number Radius Radius in which we can "hear" units. Defaults to 2000 meters.
-  -- @param #table UnitCategories Set what Unit Categories we can "hear". Defaults to `{Unit.Category.HELICOPTER}`
+  -- @param #number Radius (Optional) Radius in which we can "hear" units. Defaults to 2000 meters.
+  -- @param #table UnitCategories (Optional) Set what Unit Categories we can "hear". Defaults to `{Unit.Category.HELICOPTER}`
   -- @return #MANTIS self
   function MANTIS:SetAccousticDetectionOn(Radius,UnitCategories)
     self.DetectAccoustic = true
@@ -114377,9 +114938,9 @@ do
   --- Add a SET_ZONE of zones for Shoot&Scoot - SHORAD units will move around
   -- @param #MANTIS self
   -- @param Core.Set#SET_ZONE ZoneSet Set of zones to be used. Units will move around to the next (random) zone between 100m and 3000m away.
-  -- @param #number Number Number of closest zones to be considered, defaults to 3.
+  -- @param #number Number (Optional) Number of closest zones to be considered, defaults to 3.
   -- @param #boolean Random If true, use a random coordinate inside the next zone to scoot to.
-  -- @param #string Formation Formation to use, defaults to "Cone". See mission editor dropdown for options.
+  -- @param #string Formation (Optional) Formation to use, defaults to "Cone". See mission editor dropdown for options.
   -- @return #MANTIS self
   function MANTIS:AddScootZones(ZoneSet, Number, Random, Formation)
     self:T(self.lid .. " AddScootZones")
@@ -114560,11 +115121,11 @@ do
   
     --- Function to set number of SAMs going active on a valid, detected thread
     -- @param #MANTIS self
-    -- @param #number Short Number of short-range systems activated, defaults to 1.
-    -- @param #number Mid Number of mid-range systems activated, defaults to 2.
-    -- @param #number Long Number of long-range systems activated, defaults to 2.
-    -- @param #number Classic (non-automode) Number of overall systems activated, defaults to 6.
-    -- @param #number Point Number of point defense and AAA systems activated, defaults to 6.
+    -- @param #number Short (Optional) Number of short-range systems activated, defaults to 2.
+    -- @param #number Mid (Optional) Number of mid-range systems activated, defaults to 2.
+    -- @param #number Long (Optional) Number of long-range systems activated, defaults to 1.
+    -- @param #number Classic (Optional) (non-automode) Number of overall systems activated, defaults to 6.
+    -- @param #number Point (Optional) Number of point defense and AAA systems activated, defaults to 6.
     -- @return #MANTIS self
   function MANTIS:SetMaxActiveSAMs(Short,Mid,Long,Classic,Point)
     self:T(self.lid .. "SetMaxActiveSAMs")
@@ -114686,7 +115247,7 @@ do
   --- Function to set Advanded Mode
   -- @param #MANTIS self
   -- @param #boolean onoff If true, will activate Advanced Mode
-  -- @param #number ratio [optional] Percentage to use for advanced mode, defaults to 100%
+  -- @param #number ratio (Optional)  Percentage to use for advanced mode, defaults to 100%
   -- @usage Advanced mode will *decrease* reactivity of MANTIS, if HQ and/or EWR network dies.  Set SAMs to RED state if both are dead.  Requires usage of an **HQ** object and the **dynamic** option.
   -- E.g. `mymantis:SetAdvancedMode(true, 90)`
   function MANTIS:SetAdvancedMode(onoff, ratio)
@@ -116203,15 +116764,15 @@ do
   
   --- Instantiates a new SHORAD object
   -- @param #SHORAD self
-  -- @param #string Name Name of this SHORAD
-  -- @param #string ShoradPrefix Filter for the Shorad #SET_GROUP
-  -- @param Core.Set#SET_GROUP Samset The #SET_GROUP of SAM sites to defend
-  -- @param #number Radius Defense radius in meters, used to switch on SHORAD groups **within** this radius
-  -- @param #number ActiveTimer Determines how many seconds the systems stay on red alert after wake-up call
+  -- @param #string Name (Optional) Name of this SHORAD. Default "MyShorad"
+  -- @param #string ShoradPrefix (Optional) Filter for the Shorad #SET_GROUP. Default "SAM SHORAD"
+  -- @param Core.Set#SET_GROUP Samset (Optional) The #SET_GROUP of SAM sites to defend. Default is based on default ShoradPrefix and default Coalition.
+  -- @param #number Radius (Optional) Defense radius in meters, used to switch on SHORAD groups **within** this radius. Default is 20000m.
+  -- @param #number ActiveTimer (Optional) Determines how many seconds the systems stay on red alert after wake-up call. Default 600s
   -- @param #string Coalition Coalition, i.e. "blue", "red", or "neutral"
   -- @param #boolean UseEmOnOff Use Emissions On/Off rather than Alarm State Red/Green (default: use Emissions switch)
-  -- @param #boolean SmokeDecoy Throw smoke decoy when getting activated. Defaults to false.
-  -- @param #number SmokeDecoyColor SMOLECOLOR to use. Defaults to SMOLECOLOR.White
+  -- @param #boolean SmokeDecoy (Optional) Throw smoke decoy when getting activated. Defaults to false.
+  -- @param #number SmokeDecoyColor (Optional) SMOLECOLOR to use. Defaults to SMOLECOLOR.White
   -- @return #SHORAD self
   function SHORAD:New(Name, ShoradPrefix, Samset, Radius, ActiveTimer, Coalition, UseEmOnOff, SmokeDecoy, SmokeDecoyColor) 
     local self = BASE:Inherit( self, FSM:New() )
@@ -116285,9 +116846,9 @@ do
   --- Add a SET_ZONE of zones for Shoot&Scoot
   -- @param #SHORAD self
   -- @param Core.Set#SET_ZONE ZoneSet Set of zones to be used. Units will move around to the next (random) zone between 100m and 3000m away.
-  -- @param #number Number Number of closest zones to be considered, defaults to 3.
+  -- @param #number Number (Optional) Number of closest zones to be considered, defaults to 3.
   -- @param #boolean Random If true, use a random coordinate inside the next zone to scoot to.
-  -- @param #string Formation Formation to use, defaults to "Cone". See mission editor dropdown for options.
+  -- @param #string Formation (Optional) Formation to use, defaults to "Cone". See mission editor dropdown for options.
   -- @return #SHORAD self
   function SHORAD:AddScootZones(ZoneSet, Number, Random, Formation)
     self:T(self.lid .. " AddScootZones")
@@ -117198,7 +117759,7 @@ AICSAR.RadioLength = {
 -- @param #string Helotemplate Helicopter template name.
 -- @param Wrapper.Airbase#AIRBASE FARP FARP object or Airbase from where to start.
 -- @param Core.Zone#ZONE MASHZone Zone where to drop pilots after rescue.
--- @param #number Helonumber Max number of alive Ai Helos at the same time. Defaults to three.
+-- @param #number Helonumber (Optional) Max number of alive Ai Helos at the same time. Defaults to 3.
 -- @return #AICSAR self
 function AICSAR:New(Alias,Coalition,Pilottemplate,Helotemplate,FARP,MASHZone,Helonumber)
   -- Inherit everything from FSM class.
@@ -117433,10 +117994,10 @@ end
 -- @param #AICSAR self
 -- @param #boolean OnOff Switch on (true) or off (false).
 -- @param #string Path Path to your SRS Server External Audio Component, e.g. "C:\\\\Program Files\\\\DCS-SimpleRadio-Standalone\\\\ExternalAudio"
--- @param #number Frequency Defaults to 243 (guard)
--- @param #number Modulation Radio modulation. Defaults to radio.modulation.AM
--- @param #string SoundPath Where to find the audio files. Defaults to nil, i.e. add messages via "Sound to..." in the Mission Editor.
--- @param #number Port Port of the SRS, defaults to 5002.
+-- @param #number Frequency (Optional) Defaults to 243 (guard)
+-- @param #number Modulation (Optional) Radio modulation. Defaults to radio.modulation.AM
+-- @param #string SoundPath (Optional) Where to find the audio files. Defaults to nil, i.e. add messages via "Sound to..." in the Mission Editor.
+-- @param #number Port (Optional) Port of the SRS, defaults to 5002.
 -- @return #AICSAR self
 function AICSAR:SetSRSRadio(OnOff,Path,Frequency,Modulation,SoundPath,Port)
   self:T(self.lid .. "SetSRSRadio")
@@ -117547,8 +118108,8 @@ end
 --- [User] Switch sound output on and use normale (DCS) radio
 -- @param #AICSAR self
 -- @param #boolean OnOff Switch on (true) or off (false).
--- @param #number Frequency Defaults to 243 (guard).
--- @param #number Modulation Radio modulation. Defaults to radio.modulation.AM.
+-- @param #number Frequency(Optional)  Defaults to 243 (guard).
+-- @param #number Modulation (Optional) Radio modulation. Defaults to radio.modulation.AM.
 -- @param Wrapper.Group#GROUP Group The group to use as sending station.
 -- @return #AICSAR self
 function AICSAR:SetDCSRadio(OnOff,Frequency,Modulation,Group)
@@ -119500,7 +120061,7 @@ end
 
 --- (User) Set minimum threat level for target selection, can be 0 (lowest) to 10 (highest).
 -- @param #AUTOLASE self
--- @param #number Level Level used for filtering, defaults to 0. SAM systems and manpads have level 7 to 10, AAA level 6, MTBs and armoured vehicles level 3 to 5, APC, Artillery, Infantry and EWR level 1 to 2.
+-- @param #number Level (Optional) Level used for filtering, defaults to 0. SAM systems and manpads have level 7 to 10, AAA level 6, MTBs and armoured vehicles level 3 to 5, APC, Artillery, Infantry and EWR level 1 to 2.
 -- @return #AUTOLASE self
 -- @usage Filter for level 3 and above:
 --            `myautolase:SetMinThreatLevel(3)`
@@ -119666,8 +120227,8 @@ end
 
 --- (User) Function to force laser cooldown and cool down time
 -- @param #AUTOLASE self
--- @param #boolean OnOff Switch cool down on (true) or off (false) - defaults to true
--- @param #number Seconds Number of seconds for cooldown - dafaults to 60 seconds
+-- @param #boolean OnOff (Optional) Switch cool down on (true) or off (false) - defaults to true
+-- @param #number Seconds (Optional) Number of seconds for cooldown - dafaults to 60 seconds
 -- @return #AUTOLASE self 
 function AUTOLASE:SetLaserCoolDown(OnOff, Seconds)
   self.forcecooldown = OnOff and true
@@ -119688,8 +120249,8 @@ end
 
 --- (User) Function to set lasing distance in meters and duration in seconds
 -- @param #AUTOLASE self
--- @param #number Distance (Max) distance for lasing in meters - default 5000 meters
--- @param #number Duration (Max) duration for lasing in seconds - default 300 secs
+-- @param #number Distance (Optional) Max distance for lasing in meters - default 5000 meters
+-- @param #number Duration (Optional) Max duration for lasing in seconds - default 300 secs
 -- @return #AUTOLASE self 
 function AUTOLASE:SetLasingParameters(Distance, Duration)
   self.LaseDistance = Distance or 5000
@@ -119713,7 +120274,7 @@ end
 
 --- (User) Function to set rounding precision for BR distance output.
 -- @param #AUTOLASE self
--- @param #number IDP Rounding precision before/after the decimal sign. Defaults to zero. Positive values round right of the decimal sign, negative ones left of the decimal sign. 
+-- @param #number IDP (Optional) Rounding precision before/after the decimal sign. Defaults to zero. Positive values round right of the decimal sign, negative ones left of the decimal sign. 
 -- @return #AUTOLASE self 
 function AUTOLASE:SetRoundingPrecsion(IDP)
   self.RoundingPrecision = IDP or 0
@@ -120586,8 +121147,8 @@ end
 
 --- [USER] Set activation radius for Helos and Planes in Nautical Miles.
 --  @param #TIRESIAS self
---  @param #number HeloMiles Radius around a Helicopter in which AI ground units will be activated. Defaults to 10NM.
---  @param #number PlaneMiles Radius around an Airplane in which AI ground units will be activated. Defaults to 25NM.
+--  @param #number HeloMiles (Optional) Radius around a Helicopter in which AI ground units will be activated. Defaults to 10NM.
+--  @param #number PlaneMiles (Optional) Radius around an Airplane in which AI ground units will be activated. Defaults to 25NM.
 --  @return #TIRESIAS self
 function TIRESIAS:SetActivationRanges(HeloMiles, PlaneMiles)
   self.HeloSwitchRange = HeloMiles or 10
@@ -120599,8 +121160,8 @@ end
 
 ---[USER] Set AAA Ranges - AAA equals non-SAM systems which qualify as AAA in DCS world.
 --  @param #TIRESIAS self
---  @param #number FiringRange The engagement range that AAA units will be set to. Can be 0 to 100 (percent). Defaults to 60.
---  @param #boolean SwitchAAA Decide if these system will have their AI switched off, too. Defaults to true.
+--  @param #number FiringRange (Optional) The engagement range that AAA units will be set to. Can be 0 to 100 (percent). Defaults to 60.
+--  @param #boolean SwitchAAA (Optional) Decide if these system will have their AI switched off, too. Defaults to true.
 --  @return #TIRESIAS self
 function TIRESIAS:SetAAARanges(FiringRange, SwitchAAA)
   self.AAARange = FiringRange or 60
@@ -121332,7 +121893,7 @@ STRATEGO.Type = {
 -- @param #STRATEGO self
 -- @param #string Name Name of the Adviser.
 -- @param #number Coalition Coalition, e.g. coalition.side.BLUE.
--- @param #number MaxDist Maximum distance of a single route in kilometers, defaults to 150.
+-- @param #number MaxDist (Optional) Maximum distance of a single route in kilometers, defaults to 150.
 -- @return #STRATEGO self 
 function STRATEGO:New(Name,Coalition,MaxDist)
   -- Inherit everything from FSM class.
@@ -121443,7 +122004,7 @@ end
 --- [USER] Set up usage of budget and set an initial budget in points.
 -- @param #STRATEGO self
 -- @param #boolean Usebudget If true, use budget for advisory calculations.
--- @param #number StartBudget Initial budget to be used, defaults to 500.
+-- @param #number StartBudget (Optional) Initial budget to be used, defaults to 500.
 function STRATEGO:SetUsingBudget(Usebudget,StartBudget)
   self:T(self.lid.."SetUsingBudget")
   self.usebudget = Usebudget
@@ -121475,10 +122036,10 @@ end
 
 --- [USER] Set weights for nodes and routes to determine their importance.
 -- @param #STRATEGO self
--- @param #number MaxRunways Set the maximum number of runways the big (equals strategic) airbases on the map have. Defaults to 3. The weight of an airbase node hence equals the number of runways.
--- @param #number PortWeight Set what weight a port node has. Defaults to 3.
--- @param #number POIWeight Set what weight a POI node has. Defaults to 1.
--- @param #number RouteFactor Defines which weight each route between two defined nodes gets: Weight * RouteFactor.
+-- @param #number MaxRunways (Optional) Set the maximum number of runways the big (equals strategic) airbases on the map have. Defaults to 3. The weight of an airbase node hence equals the number of runways.
+-- @param #number PortWeight (Optional) Set what weight a port node has. Defaults to 3.
+-- @param #number POIWeight (Optional) Set what weight a POI node has. Defaults to 1.
+-- @param #number RouteFactor (Optional) Defines which weight each route between two defined nodes gets: Weight * RouteFactor. Defaults to 5.
 -- @return #STRATEGO self
 function STRATEGO:SetWeights(MaxRunways,PortWeight,POIWeight,RouteFactor)
   self:T(self.lid.."SetWeights")
@@ -121491,7 +122052,7 @@ end
 
 --- [USER] Set neutral benefit, i.e. how many points it is cheaper to decide for a neutral vs an enemy node when taking decisions.
 -- @param #STRATEGO self
--- @param #number NeutralBenefit Pointsm defaults to 100.
+-- @param #number NeutralBenefit (Optional) Pointsm defaults to 100.
 -- @return #STRATEGO self
 function STRATEGO:SetNeutralBenefit(NeutralBenefit)
   self:T(self.lid.."SetNeutralBenefit")
@@ -121501,9 +122062,9 @@ end
 
 --- [USER] Set how many units of which minimum threat level are needed to capture one node (i.e. the underlying OpsZone).
 -- @param #STRATEGO self
--- @param #number CaptureUnits Number of units needed, defaults to three.
--- @param #number CaptureThreatlevel Threat level needed, can be 0..10, defaults to one.
--- @param #table CaptureCategories Table of object categories which can capture a node, defaults to `{Object.Category.UNIT}`.
+-- @param #number CaptureUnits (Optional) Number of units needed, defaults to 3.
+-- @param #number CaptureThreatlevel (Optional) Threat level needed, can be 0..10, defaults to 1.
+-- @param #table CaptureCategories (Optional) Table of object categories which can capture a node, defaults to `{Object.Category.UNIT}`.
 -- @return #STRATEGO self
 function STRATEGO:SetCaptureOptions(CaptureUnits,CaptureThreatlevel,CaptureCategories)
   self:T(self.lid.."SetCaptureOptions")
@@ -123928,7 +124489,7 @@ end
 
 --- Set time interval between updates of the formation.
 -- @param #FORMATION self
--- @param #number dt Time step in seconds between formation updates. Default is every 0.5 seconds.
+-- @param #number dt (Optional) Time step in seconds between formation updates. Default is every 0.5 seconds.
 -- @return #FORMATION
 function FORMATION:SetFollowTimeInterval(dt)
   self.dtFollow=dt or 0.5
@@ -126868,7 +127429,7 @@ end
 --- Set carrier controlled area (CCA).
 -- This is a large zone around the carrier, which is constantly updated wrt the carrier position.
 -- @param #AIRBOSS self
--- @param #number Radius Radius of zone in nautical miles (NM). Default 50 NM.
+-- @param #number Radius (Optional) Radius of zone in nautical miles (NM). Default 50 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetCarrierControlledArea( Radius )
 
@@ -126882,7 +127443,7 @@ end
 --- Set carrier controlled zone (CCZ).
 -- This is a small zone (usually 5 NM radius) around the carrier, which is constantly updated wrt the carrier position.
 -- @param #AIRBOSS self
--- @param #number Radius Radius of zone in nautical miles (NM). Default 5 NM.
+-- @param #number Radius (Optional) Radius of zone in nautical miles (NM). Default 5 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetCarrierControlledZone( Radius )
 
@@ -126895,7 +127456,7 @@ end
 
 --- Set distance up to which water ahead is scanned for collisions.
 -- @param #AIRBOSS self
--- @param #number Distance Distance in NM. Default 5 NM.
+-- @param #number Distance (Optional) Distance in NM. Default 5 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetCollisionDistance( Distance )
   self.collisiondist = UTILS.NMToMeters( Distance or 5 )
@@ -126904,7 +127465,7 @@ end
 
 --- Set the default recovery case.
 -- @param #AIRBOSS self
--- @param #number Case Case of recovery. Either 1, 2 or 3. Default 1.
+-- @param #number Case (Optional) Case of recovery. Either 1, 2 or 3. Default 1.
 -- @return #AIRBOSS self
 function AIRBOSS:SetRecoveryCase( Case )
 
@@ -126921,7 +127482,7 @@ end
 -- Usually, this is +-15 or +-30 degrees. You should not use and offset angle >= 90 degrees, because this will cause a devision by zero in some of the equations used to calculate the approach corridor.
 -- So best stick to the defaults up to 30 degrees.
 -- @param #AIRBOSS self
--- @param #number Offset Offset angle in degrees. Default 0.
+-- @param #number Offset (Optional) Offset angle in degrees. Default 0.
 -- @return #AIRBOSS self
 function AIRBOSS:SetHoldingOffsetAngle( Offset )
 
@@ -126936,10 +127497,10 @@ end
 
 --- Enable F10 menu to manually start recoveries.
 -- @param #AIRBOSS self
--- @param #number Duration Default duration of the recovery in minutes. Default 30 min.
--- @param #number WindOnDeck Default wind on deck in knots. Default 25 knots.
--- @param #boolean Uturn U-turn after recovery window closes on=true or off=false/nil. Default off.
--- @param #number Offset Relative Marshal radial in degrees for Case II/III recoveries. Default 30°.
+-- @param #number Duration (Optional) Default duration of the recovery in minutes. Default 30 min.
+-- @param #number WindOnDeck(Optional)  Default wind on deck in knots. Default 25 knots.
+-- @param #boolean Uturn (Optional) U-turn after recovery window closes on=true or off=false/nil. Default off.
+-- @param #number Offset (Optional) Relative Marshal radial in degrees for Case II/III recoveries. Default 30°.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMenuRecovery( Duration, WindOnDeck, Uturn, Offset )
 
@@ -126959,13 +127520,13 @@ end
 
 --- Add aircraft recovery time window and recovery case.
 -- @param #AIRBOSS self
--- @param #string starttime Start time, e.g. "8:00" for eight o'clock. Default now.
--- @param #string stoptime Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
--- @param #number case Recovery case for that time slot. Number between one and three.
--- @param #number holdingoffset Only for CASE II/III: Angle in degrees the holding pattern is offset.
+-- @param #string starttime (Optional) Start time, e.g. "8:00" for eight o'clock. Default now.
+-- @param #string stoptime (Optional) Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
+-- @param #number case (Optional) Recovery case for that time slot. Number between one and three. Defaults to 1.
+-- @param #number holdingoffset (Optional) Only for CASE II/III: Angle in degrees the holding pattern is offset. Defaults to 0.
 -- @param #boolean turnintowind If true, carrier will turn into the wind 5 minutes before the recovery window opens.
--- @param #number speed Speed in knots during turn into wind leg.
--- @param #boolean uturn If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
+-- @param #number speed (Optional) Speed in knots during turn into wind leg. Default is 20.
+-- @param #boolean uturn (Optional) If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
 -- @return #AIRBOSS.Recovery Recovery window.
 function AIRBOSS:AddRecoveryWindow( starttime, stoptime, case, holdingoffset, turnintowind, speed, uturn )
 
@@ -127147,7 +127708,7 @@ end
 
 --- Set time before carrier turns and recovery window opens.
 -- @param #AIRBOSS self
--- @param #number Interval Time interval in seconds. Default 300 sec.
+-- @param #number Interval (Optional) Time interval in seconds. Default 300 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetRecoveryTurnTime( Interval )
   self.dTturn = Interval or 300
@@ -127156,7 +127717,7 @@ end
 
 --- Set multiplayer environment wire correction.
 -- @param #AIRBOSS self
--- @param #number Dcorr Correction distance in meters. Default 12 m.
+-- @param #number Dcorr (Optional) Correction distance in meters. Default 12 m.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMPWireCorrection( Dcorr )
   self.mpWireCorrection = Dcorr or 12
@@ -127165,7 +127726,7 @@ end
 
 --- Set time interval for updating queues and other stuff.
 -- @param #AIRBOSS self
--- @param #number TimeInterval Time interval in seconds. Default 30 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds. Default 30 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetQueueUpdateTime( TimeInterval )
   self.dTqueue = TimeInterval or 30
@@ -127174,7 +127735,7 @@ end
 
 --- Set time interval between LSO calls. Optimal time in the groove is ~16 seconds. So the default of 4 seconds gives around 3-4 correction calls in the groove.
 -- @param #AIRBOSS self
--- @param #number TimeInterval Time interval in seconds between LSO calls. Default 4 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds between LSO calls. Default 4 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetLSOCallInterval( TimeInterval )
   self.LSOdT = TimeInterval or 4
@@ -127247,7 +127808,7 @@ end
 
 --- Give AI aircraft the refueling task if a recovery tanker is present or send them to the nearest divert airfield.
 -- @param #AIRBOSS self
--- @param #number LowFuelThreshold Low fuel threshold in percent. AI will go refueling if their fuel level drops below this value. Default 10 %.
+-- @param #number LowFuelThreshold (Optional) Low fuel threshold in percent. AI will go refueling if their fuel level drops below this value. Default 10 %.
 -- @return #AIRBOSS self
 function AIRBOSS:SetRefuelAI( LowFuelThreshold )
   self.lowfuelAI = LowFuelThreshold or 10
@@ -127256,7 +127817,7 @@ end
 
 --- Set max altitude to register flights in the initial zone. Aircraft above this altitude will not be registerered.
 -- @param #AIRBOSS self
--- @param #number MaxAltitude Max altitude in feet. Default 1300 ft.
+-- @param #number MaxAltitude (Optional) Max altitude in feet. Default 1300 ft.
 -- @return #AIRBOSS self
 function AIRBOSS:SetInitialMaxAlt( MaxAltitude )
   self.initialmaxalt = UTILS.FeetToMeters( MaxAltitude or 1300 )
@@ -127290,7 +127851,7 @@ end
 
 --- Set time interval for updating player status and other things.
 -- @param #AIRBOSS self
--- @param #number TimeInterval Time interval in seconds. Default 0.5 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds. Default 0.5 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetStatusUpdateTime( TimeInterval )
   self.dTstatus = TimeInterval or 0.5
@@ -127299,7 +127860,7 @@ end
 
 --- Set duration how long messages are displayed to players.
 -- @param #AIRBOSS self
--- @param #number Duration Duration in seconds. Default 10 sec.
+-- @param #number Duration (Optional) Duration in seconds. Default 10 sec.
 -- @return #AIRBOSS self
 function AIRBOSS:SetDefaultMessageDuration( Duration )
   self.Tmessage = Duration or 10
@@ -127390,7 +127951,7 @@ end
 --- Set Case I Marshal radius. This is the radius of the valid zone around "the post" aircraft are supposed to be holding in the Case I Marshal stack.
 -- The post is 2.5 NM port of the carrier.
 -- @param #AIRBOSS self
--- @param #number Radius Radius in NM. Default 2.8 NM, which gives a diameter of 5.6 NM.
+-- @param #number Radius (Optional) Radius in NM. Default 2.8 NM, which gives a diameter of 5.6 NM.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMarshalRadius( Radius )
   self.marshalradius = UTILS.NMToMeters( Radius or 2.8 )
@@ -127524,9 +128085,9 @@ end
 --- Set up SRS for usage without sound files
 -- @param #AIRBOSS self
 -- @param #string PathToSRS Path to SRS folder, e.g. "C:\\Program Files\\DCS-SimpleRadio\\ExternalAudio".
--- @param #number Port Port of the SRS server, defaults to 5002.
--- @param #string Culture (Optional, Airboss Culture)  Culture, defaults to "en-US".
--- @param #string Gender (Optional, Airboss Gender)  Gender, e.g. "male" or "female". Defaults to "male".
+-- @param #number Port (Optional) Port of the SRS server, defaults to 5002.
+-- @param #string Culture (Optional) (Optional, Airboss Culture)  Culture, defaults to "en-US".
+-- @param #string Gender (Optional) (Optional, Airboss Gender)  Gender, e.g. "male" or "female". Defaults to "male".
 -- @param #string Voice (Optional, Airboss Voice) Set to use a specific voice. Will **override gender and culture** settings.
 -- @param #string GoogleCreds (Optional) Path to Google credentials, e.g. "C:\\Program Files\\DCS-SimpleRadio-Standalone\\yourgooglekey.json".
 -- @param #number Volume (Optional) E.g. 0.75. Defaults to 1.0 (loudest).
@@ -127777,7 +128338,7 @@ end
 
 --- Set number of aircraft units, which can be in the landing pattern before the pattern is full.
 -- @param #AIRBOSS self
--- @param #number nmax Max number. Default 4. Minimum is 1, maximum is 6.
+-- @param #number nmax (Optional) Max number. Default 4. Minimum is 1, maximum is 6.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxLandingPattern( nmax )
   nmax = nmax or 4
@@ -127790,7 +128351,7 @@ end
 --- Set number available Case I Marshal stacks. If Marshal stacks are full, flights requesting Marshal will be told to hold outside 10 NM zone until a stack becomes available again.
 -- Marshal stacks for Case II/III are unlimited.
 -- @param #AIRBOSS self
--- @param #number nmax Max number of stacks available to players and AI flights. Default 3, i.e. angels 2, 3, 4. Minimum is 1.
+-- @param #number nmax (Optional) Max number of stacks available to players and AI flights. Default 3, i.e. angels 2, 3, 4. Minimum is 1.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxMarshalStacks( nmax )
   self.Nmaxmarshal = nmax or 3
@@ -127812,7 +128373,7 @@ end
 
 --- Set maximum distance up to which section members are allowed (default: 100 meters).
 -- @param #AIRBOSS self
--- @param #number dmax Max distance in meters (default 100 m). Minimum is 10 m, maximum is 5000 m.
+-- @param #number dmax (Optional) Max distance in meters (default 100 m). Minimum is 10 m, maximum is 5000 m.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxSectionDistance( dmax )
     if dmax then
@@ -127828,7 +128389,7 @@ end
 
 --- Set max number of flights per stack. All members of a section count as one "flight".
 -- @param #AIRBOSS self
--- @param #number nmax Number of max allowed flights per stack. Default is two. Minimum is one, maximum is 4.
+-- @param #number nmax (Optional) Number of max allowed flights per stack. Default is two. Minimum is one, maximum is 4.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMaxFlightsPerStack( nmax )
   nmax = nmax or 2
@@ -127848,7 +128409,7 @@ end
 
 --- Will play the inbound calls, commencing, initial, etc. from the player when requesteing marshal
 -- @param #AIRBOSS self
--- @param #AIRBOSS status Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
+-- @param #AIRBOSS status (Optional) Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
 -- @return #AIRBOSS self
 function AIRBOSS:SetExtraVoiceOvers(status)
   self.xtVoiceOvers=status
@@ -127857,7 +128418,7 @@ end
 
 --- Will simulate the inbound call, commencing, initial, etc from the AI when requested by Airboss
 -- @param #AIRBOSS self
--- @param #AIRBOSS status Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
+-- @param #AIRBOSS status (Optional) Boolean to activate (true) / deactivate (false) the radio inbound calls (default is ON)
 -- @return #AIRBOSS self
 function AIRBOSS:SetExtraVoiceOversAI(status)
   self.xtVoiceOversAI=status
@@ -127896,7 +128457,7 @@ end
 -- * "Naval Aviator" = @{#AIRBOSS.Difficulty.Normal}
 -- * "TOPGUN Graduate" = @{#AIRBOSS.Difficulty.Hard}
 -- @param #AIRBOSS self
--- @param #string skill Player skill. Default "Naval Aviator".
+-- @param #string skill (Optional) Player skill. Default "Naval Aviator".
 -- @return #AIRBOSS self
 function AIRBOSS:SetDefaultPlayerSkill( skill )
 
@@ -127922,8 +128483,8 @@ end
 
 --- Enable auto save of player results each time a player is *finally* graded. *Finally* means after the player landed on the carrier! After intermediate passes (bolter or waveoff) the stats are *not* saved.
 -- @param #AIRBOSS self
--- @param #string path Path where to save the asset data file. Default is the DCS root installation directory or your "Saved Games\\DCS" folder if lfs was desanitized.
--- @param #string filename File name. Default is generated automatically from airboss carrier name/alias.
+-- @param #string path (Optional) Path where to save the asset data file. Default is the DCS root installation directory or your "Saved Games\\DCS" folder if lfs was desanitized.
+-- @param #string filename (Optional) File name. Default is generated automatically from airboss carrier name/alias.
 -- @return #AIRBOSS self
 function AIRBOSS:SetAutoSave( path, filename )
   self.autosave = true
@@ -127955,7 +128516,7 @@ end
 
 --- Set the magnetic declination (or variation). By default this is set to the standard declination of the map.
 -- @param #AIRBOSS self
--- @param #number declination Declination in degrees or nil for default declination of the map.
+-- @param #number declination (Optional) Declination in degrees or nil for default declination of the map.
 -- @return #AIRBOSS self
 function AIRBOSS:SetMagneticDeclination( declination )
   self.magvar = declination or UTILS.GetMagneticDeclination()
@@ -127974,8 +128535,8 @@ end
 --- Set FunkMan socket. LSO grades and trap sheets will be send to your Discord bot.
 -- **Requires running FunkMan program**.
 -- @param #AIRBOSS self
--- @param #number Port Port. Default `10042`.
--- @param #string Host Host. Default `"127.0.0.1"`.
+-- @param #number Port (Optional) Port. Default `10042`.
+-- @param #string Host (Optional) Host. Default `"127.0.0.1"`.
 -- @return #AIRBOSS self
 function AIRBOSS:SetFunkManOn(Port, Host)
 
@@ -127986,7 +128547,7 @@ end
 
 --- Get next time the carrier will start recovering aircraft.
 -- @param #AIRBOSS self
--- @param #boolean InSeconds If true, abs. mission time seconds is returned. Default is a clock #string.
+-- @param #boolean InSeconds (Optional) If true, abs. mission time seconds is returned. Default is a clock #string.
 -- @return #string Clock start (or start time in abs. seconds).
 -- @return #string Clock stop (or stop time in abs. seconds).
 function AIRBOSS:GetNextRecoveryTime( InSeconds )
@@ -131149,7 +131710,7 @@ end
 --- Get marshal altitude and two positions of a counter-clockwise race track pattern.
 -- @param #AIRBOSS self
 -- @param #number stack Assigned stack number. Counting starts at one, i.e. stack=1 is the first stack.
--- @param #number case Recovery case. Default is self.case.
+-- @param #number case (Optional) Recovery case. Default is self.case.
 -- @return #number Holding altitude in meters.
 -- @return Core.Point#COORDINATE First race track coordinate.
 -- @return Core.Point#COORDINATE Second race track coordinate.
@@ -131510,8 +132071,8 @@ end
 --- Get next free Marshal stack. Depending on AI/human and recovery case.
 -- @param #AIRBOSS self
 -- @param #boolean ai If true, get a free stack for an AI flight group.
--- @param #number case Recovery case. Default current (self) case in progress.
--- @param #boolean empty Return lowest stack that is completely empty.
+-- @param #number case (Optional) Recovery case. Default current (self) case in progress.
+-- @param #boolean empty (Optional) Return lowest stack that is completely empty.
 -- @return #number Lowest free stack available for the given case or nil if all Case I stacks are taken.
 function AIRBOSS:_GetFreeStack( ai, case, empty )
 
@@ -131600,7 +132161,7 @@ end
 --- Get next free Marshal stack. Depending on AI/human and recovery case.
 -- @param #AIRBOSS self
 -- @param #boolean ai If true, get a free stack for an AI flight group.
--- @param #number case Recovery case. Default current (self) case in progress.
+-- @param #number case (Optional) Recovery case. Default current (self) case in progress.
 -- @param #boolean empty Return lowest stack that is completely empty.
 -- @return #number Lowest free stack available for the given case or nil if all Case I stacks are taken.
 function AIRBOSS:_GetFreeStack_Old( ai, case, empty )
@@ -131668,7 +132229,7 @@ end
 --- Get number of (airborne) units in a flight.
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.FlightGroup flight The flight group.
--- @param #boolean onground If true, include units on the ground. By default only airborne units are counted.
+-- @param #boolean onground (Optional) If true, include units on the ground. By default only airborne units are counted.
 -- @return #number Number of units in flight including section members.
 -- @return #number Number of units in flight excluding section members.
 -- @return #number Number of section members.
@@ -135373,9 +135934,9 @@ end
 
 --- Get groove zone.
 -- @param #AIRBOSS self
--- @param #number l Length of the groove in NM. Default 1.5 NM.
--- @param #number w Width of the groove in NM. Default 0.25 NM.
--- @param #number b Width of the beginning in NM. Default 0.10 NM.
+-- @param #number l (Optional) Length of the groove in NM. Default 1.5 NM.
+-- @param #number w (Optional) Width of the groove in NM. Default 0.25 NM.
+-- @param #number b (Optional) Width of the beginning in NM. Default 0.10 NM.
 -- @return Core.Zone#ZONE_POLYGON_BASE Groove zone.
 function AIRBOSS:_GetZoneGroove( l, w, b )
 
@@ -135546,7 +136107,7 @@ end
 --- Get approach corridor zone. Shape depends on recovery case.
 -- @param #AIRBOSS self
 -- @param #number case Recovery case.
--- @param #number l Length of the zone in NM. Default 31 (=21+10) NM.
+-- @param #number l (Optional) Length of the zone in NM. Default 31 (=21+10) NM.
 -- @return Core.Zone#ZONE_POLYGON_BASE Box zone.
 function AIRBOSS:_GetZoneCorridor( case, l )
 
@@ -136392,7 +136953,7 @@ end
 
 --- Get true (or magnetic) heading of carrier.
 -- @param #AIRBOSS self
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @return #number Carrier heading in degrees.
 function AIRBOSS:GetHeading( magnetic )
   self:F3( { magnetic = magnetic } )
@@ -136425,8 +136986,8 @@ end
 
 --- Get wind direction and speed at carrier position.
 -- @param #AIRBOSS self
--- @param #number alt Altitude ASL in meters. Default 18 m.
--- @param #boolean magnetic Direction including magnetic declination.
+-- @param #number alt (Optional) Altitude ASL in meters. Default 18 m.
+-- @param #boolean magnetic (Optional) Direction including magnetic declination.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate at which to get the wind. Default is current carrier position.
 -- @return #number Direction the wind is blowing **from** in degrees.
 -- @return #number Wind speed in m/s.
@@ -136452,7 +137013,7 @@ end
 
 --- Get wind speed on carrier deck parallel and perpendicular to runway.
 -- @param #AIRBOSS self
--- @param #number alt Altitude in meters. Default 18 m.
+-- @param #number alt (Optional) Altitude in meters. Default 18 m.
 -- @return #number Wind component parallel to runway im m/s.
 -- @return #number Wind component perpendicular to runway in m/s.
 -- @return #number Total wind strength in m/s.
@@ -136498,7 +137059,7 @@ end
 --- Get true (or magnetic) heading of carrier into the wind. This accounts for the angled runway.
 -- @param #AIRBOSS self
 -- @param #number vdeck Desired wind velocity over deck in knots.
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate from which heading is calculated. Default is current carrier position.
 -- @return #number Carrier heading in degrees.
 -- @return #number Carrier speed in knots to reach desired wind speed on deck.
@@ -136518,7 +137079,7 @@ end
 --- Get true (or magnetic) heading of carrier into the wind. This accounts for the angled runway.
 -- @param #AIRBOSS self
 -- @param #number vdeck Desired wind velocity over deck in knots.
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate from which heading is calculated. Default is current carrier position.
 -- @return #number Carrier heading in degrees.
 function AIRBOSS:GetHeadingIntoWind_old( vdeck, magnetic, coord )
@@ -136591,7 +137152,7 @@ end
 -- Implementation based on [Mags & Bambi](https://magwo.github.io/carrier-cruise/).
 -- @param #AIRBOSS self
 -- @param #number vdeck Desired wind velocity over deck in knots.
--- @param #boolean magnetic If true, calculate magnetic heading. By default true heading is returned.
+-- @param #boolean magnetic (Optional) If true, calculate magnetic heading. By default true heading is returned.
 -- @param Core.Point#COORDINATE coord (Optional) Coordinate from which heading is calculated. Default is current carrier position.
 -- @return #number Carrier heading in degrees.
 -- @return #number Carrier speed in knots to reach desired wind speed on deck.
@@ -136722,9 +137283,9 @@ end
 --
 -- @param #AIRBOSS self
 -- @param #number case Recovery case.
--- @param #boolean magnetic If true, magnetic radial is returned. Default is true radial.
--- @param #boolean offset If true, inlcude holding offset.
--- @param #boolean inverse Return inverse, i.e. radial-180 degrees.
+-- @param #boolean magnetic (Optional) If true, magnetic radial is returned. Default is true radial.
+-- @param #boolean offset (Optional) If true, inlcude holding offset.
+-- @param #boolean inverse (Optional) Return inverse, i.e. radial-180 degrees.
 -- @return #number Radial in degrees.
 function AIRBOSS:GetRadial( case, magnetic, offset, inverse )
 
@@ -137670,7 +138231,7 @@ end
 --- Get short name of the grove step.
 -- @param #AIRBOSS self
 -- @param #string step Player step.
--- @param #number n Use -1 for previous or +1 for next. Default 0.
+-- @param #number n (Optional) Use -1 for previous or +1 for next. Default 0.
 -- @return #string Shortcut name "X", "RB", "IM", "AR", "IW".
 function AIRBOSS:_GS( step, n )
   local gp
@@ -137869,7 +138430,7 @@ end
 --- Display hint to player.
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.PlayerData playerData Player data table.
--- @param #number delay Delay before playing sound messages. Default 0 sec.
+-- @param #number delay (Optional) Delay before playing sound messages. Default 0 sec.
 -- @param #boolean soundoff If true, don't play and sound hint.
 function AIRBOSS:_PlayerHint( playerData, delay, soundoff )
 
@@ -138691,7 +139252,7 @@ end
 
 --- Check Collision.
 -- @param #AIRBOSS self
--- @param Core.Point#COORDINATE fromcoord Coordinate from which the path to the next WP is calculated. Default current carrier position.
+-- @param Core.Point#COORDINATE fromcoord (Optional) Coordinate from which the path to the next WP is calculated. Default current carrier position.
 -- @return #boolean If true, surface type ahead is not deep water.
 function AIRBOSS:_CheckFreePathToNextWP( fromcoord )
 
@@ -138769,9 +139330,9 @@ end
 --- Let the carrier make a detour to a given point. When it reaches the point, it will resume its normal route.
 -- @param #AIRBOSS self
 -- @param Core.Point#COORDINATE coord Coordinate of the detour.
--- @param #number speed Speed in knots. Default is current carrier velocity.
+-- @param #number speed (Optional) Speed in knots. Default is current carrier velocity.
 -- @param #boolean uturn (Optional) If true, carrier will go back to where it came from before it resumes its route to the next waypoint.
--- @param #number uspeed Speed in knots after U-turn. Default is same as before.
+-- @param #number uspeed (Optional) Speed in knots after U-turn. Default is same as before.
 -- @param Core.Point#COORDINATE tcoord Additional coordinate to make turn smoother.
 -- @return #AIRBOSS self
 function AIRBOSS:CarrierDetour( coord, speed, uturn, uspeed, tcoord )
@@ -140505,11 +141066,11 @@ end
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.PlayerData playerData Player data.
 -- @param #string message The message to send.
--- @param #string sender The person who sends the message or nil.
--- @param #string receiver The person who receives the message. Default player's onboard number. Set to "" for no receiver.
--- @param #number duration Display message duration. Default 10 seconds.
--- @param #boolean clear If true, clear screen from previous messages.
--- @param #number delay Delay in seconds, before the message is displayed.
+-- @param #string sender (Optional) The person who sends the message or nil. Defaults to nil.
+-- @param #string receiver (Optional) The person who receives the message. Default player's onboard number. Set to "" for no receiver.
+-- @param #number duration (Optional) Display message duration. Default 10 seconds.
+-- @param #boolean clear I(Optional) f true, clear screen from previous messages. Defaults to false.
+-- @param #number delay (Optional) Delay in seconds, before the message is displayed.
 function AIRBOSS:MessageToPlayer( playerData, message, sender, receiver, duration, clear, delay )
   self:T({sender,receiver,message})
   if playerData and message and message ~= "" then
@@ -140633,11 +141194,11 @@ end
 -- Message format will be "SENDER: RECCEIVER, MESSAGE".
 -- @param #AIRBOSS self
 -- @param #string message The message to send.
--- @param #string sender The person who sends the message or nil.
--- @param #string receiver The person who receives the message. Default player's onboard number. Set to "" for no receiver.
--- @param #number duration Display message duration. Default 10 seconds.
--- @param #boolean clear If true, clear screen from previous messages.
--- @param #number delay Delay in seconds, before the message is displayed.
+-- @param #string sender (Optional) The person who sends the message or nil. Defaults to "LSO".
+-- @param #string receiver (Optional) The person who receives the message. Default player's onboard number. Set to "" for no receiver.
+-- @param #number duration (Optional) Display message duration. Default 10 seconds.
+-- @param #boolean clear (Optional) If true, clear screen from previous messages.
+-- @param #number delay (Optional) Delay in seconds, before the message is displayed.
 function AIRBOSS:MessageToPattern( message, sender, receiver, duration, clear, delay )
 
   -- Create new (fake) radio call to show the subtitile.
@@ -140652,11 +141213,11 @@ end
 -- Message format will be "SENDER: RECCEIVER, MESSAGE".
 -- @param #AIRBOSS self
 -- @param #string message The message to send.
--- @param #string sender The person who sends the message or nil.
--- @param #string receiver The person who receives the message. Default player's onboard number. Set to "" for no receiver.
--- @param #number duration Display message duration. Default 10 seconds.
--- @param #boolean clear If true, clear screen from previous messages.
--- @param #number delay Delay in seconds, before the message is displayed.
+-- @param #string sender (Optional) The person who sends the message or nil. Defaults to "Marshal".
+-- @param #string receiver (Optional) The person who receives the message. Default player's onboard number. Set to "" for no receiver.
+-- @param #number duration (Optional) Display message duration. Default 10 seconds.
+-- @param #boolean clear (Optional) If true, clear screen from previous messages.
+-- @param #number delay (Optional) Delay in seconds, before the message is displayed.
 function AIRBOSS:MessageToMarshal( message, sender, receiver, duration, clear, delay )
 
   -- Create new (fake) radio call to show the subtitile.
@@ -140670,11 +141231,11 @@ end
 --- Generate a new radio call (deepcopy) from an existing default call.
 -- @param #AIRBOSS self
 -- @param #AIRBOSS.RadioCall call Radio call to be enhanced.
--- @param #string sender Sender of the message. Default is the radio alias.
--- @param #string subtitle Subtitle of the message. Default from original radio call. Use "" for no subtitle.
--- @param #number subduration Time in seconds the subtitle is displayed. Default 10 seconds.
--- @param #string modexreceiver Onboard number of the receiver or nil.
--- @param #string modexsender Onboard number of the sender or nil.
+-- @param #string sender (Optional) Sender of the message. Default is the radio alias.
+-- @param #string subtitle (Optional) Subtitle of the message. Default from original radio call. Use "" for no subtitle.
+-- @param #number subduration (Optional) Time in seconds the subtitle is displayed. Default 10 seconds.
+-- @param #string modexreceiver (Optional) Onboard number of the receiver or nil.
+-- @param #string modexsender (Optional) Onboard number of the sender or nil.
 function AIRBOSS:_NewRadioCall( call, sender, subtitle, subduration, modexreceiver, modexsender )
 
   -- Create a new call
@@ -143616,7 +144177,7 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #string path Path where the file is loaded from. Default is the DCS root installation folder or your "Saved Games\\DCS" folder if lfs was desanizied.
+-- @param #string path (Optional) Path where the file is loaded from. Default is the DCS root installation folder or your "Saved Games\\DCS" folder if lfs was desanizied.
 -- @param #string filename (Optional) File name for saving the player grades. Default is "AIRBOSS-<ALIAS>_LSOgrades.csv".
 function AIRBOSS:onafterLoad( From, Event, To, path, filename )
 
@@ -144334,7 +144895,7 @@ end
 
 --- Set the speed the tanker flys in its orbit pattern.
 -- @param #RECOVERYTANKER self
--- @param #number speed True air speed (TAS) in knots. Default 274 knots, which results in ~250 KIAS.
+-- @param #number speed (Optional) True air speed (TAS) in knots. Default 274 knots, which results in ~250 KIAS.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetSpeed(speed)
   self.speed=UTILS.KnotsToMps(speed or 274)
@@ -144343,7 +144904,7 @@ end
 
 --- Set orbit pattern altitude of the tanker.
 -- @param #RECOVERYTANKER self
--- @param #number altitude Tanker altitude in feet. Default 6000 ft.
+-- @param #number altitude (Optional) Tanker altitude in feet. Default 6000 ft.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetAltitude(altitude)
   self.altitude=UTILS.FeetToMeters(altitude or 6000)
@@ -144352,8 +144913,8 @@ end
 
 --- Set race-track distances.
 -- @param #RECOVERYTANKER self
--- @param #number distbow Distance [NM] in front of the carrier. Default 10 NM.
--- @param #number diststern Distance [NM] behind the carrier. Default 4 NM.
+-- @param #number distbow (Optional) Distance [NM] in front of the carrier. Default 10 NM.
+-- @param #number diststern (Optional) Distance [NM] behind the carrier. Default 4 NM.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetRacetrackDistances(distbow, diststern)
   self.distBow=UTILS.NMToMeters(distbow or 10)
@@ -144363,7 +144924,7 @@ end
 
 --- Set minimum pattern update interval. After a pattern update this time interval has to pass before the next update is allowed.
 -- @param #RECOVERYTANKER self
--- @param #number interval Min interval in minutes. Default is 10 minutes.
+-- @param #number interval(Optional)  Min interval in minutes. Default is 10 minutes.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetPatternUpdateInterval(interval)
   self.dTupdate=(interval or 10)*60
@@ -144372,7 +144933,7 @@ end
 
 --- Set pattern update distance threshold. Tanker will update its pattern when the carrier changes its position by more than this distance.
 -- @param #RECOVERYTANKER self
--- @param #number distancechange Distance threshold in NM. Default 5 NM (=9.62 km).
+-- @param #number distancechange (Optional) Distance threshold in NM. Default 5 NM (=9.62 km).
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetPatternUpdateDistance(distancechange)
   self.Dupdate=UTILS.NMToMeters(distancechange or 5)
@@ -144381,7 +144942,7 @@ end
 
 --- Set pattern update heading threshold. Tanker will update its pattern when the carrier changes its heading by more than this value.
 -- @param #RECOVERYTANKER self
--- @param #number headingchange Heading threshold in degrees. Default 5 degrees.
+-- @param #number headingchange (Optional) Heading threshold in degrees. Default 5 degrees.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetPatternUpdateHeading(headingchange)
   self.Hupdate=headingchange or 5
@@ -144390,7 +144951,7 @@ end
 
 --- Set low fuel state of tanker. When fuel is below this threshold, the tanker will RTB or be respawned if takeoff type is in air.
 -- @param #RECOVERYTANKER self
--- @param #number fuelthreshold Low fuel threshold in percent. Default 10 % of max fuel.
+-- @param #number fuelthreshold (Optional) Low fuel threshold in percent. Default 10 % of max fuel.
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetLowFuelThreshold(fuelthreshold)
   self.lowfuel=fuelthreshold or 10
@@ -144564,9 +145125,9 @@ end
 
 --- Set TACAN channel of tanker. Note that mode is automatically set to "Y" for AA TACAN since only that works.
 -- @param #RECOVERYTANKER self
--- @param #number channel TACAN channel. Default 1.
--- @param #string morse TACAN morse code identifier. Three letters. Default "TKR".
--- @param #string mode TACAN mode, which can be either "Y" (default) or "X".
+-- @param #number channel (Optional) TACAN channel. Default 1.
+-- @param #string morse (Optional) TACAN morse code identifier. Three letters. Default "TKR".
+-- @param #string mode (Optional) TACAN mode, which can be either "Y" (default) or "X".
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetTACAN(channel, morse, mode)
   self.TACANchannel=channel or 1
@@ -144578,8 +145139,8 @@ end
 
 --- Set radio frequency and optionally modulation of the tanker.
 -- @param #RECOVERYTANKER self
--- @param #number frequency Radio frequency in MHz. Default 251 MHz.
--- @param #string modulation Radio modulation, either "AM" or "FM". Default "AM".
+-- @param #number frequency (Optional) Radio frequency in MHz. Default 251 MHz.
+-- @param #string modulation (Optional) Radio modulation, either "AM" or "FM". Default "AM".
 -- @return #RECOVERYTANKER self
 function RECOVERYTANKER:SetRadio(frequency, modulation)
   self.RadioFreq=frequency or 251
@@ -145307,8 +145868,8 @@ end
 
 --- Init waypoint after spawn. Tanker is first guided to a position astern the carrier and starts its racetrack pattern from there.
 -- @param #RECOVERYTANKER self
--- @param #number dist Distance [NM] of initial waypoint astern carrier. Default 8 NM.
--- @param #number delay Delay before routing in seconds. Default 1 second.
+-- @param #number dist (Optional) Distance [NM] of initial waypoint astern carrier. Default 8 NM.
+-- @param #number delay (Optional) Delay before routing in seconds. Default 1 second.
 function RECOVERYTANKER:_InitRoute(dist, delay)
 
   -- Defaults.
@@ -145973,7 +146534,7 @@ end
 
 --- Set low fuel state of helo. When fuel is below this threshold, the helo will RTB or be respawned if takeoff type is in air.
 -- @param #RESCUEHELO self
--- @param #number threshold Low fuel threshold in percent. Default 5%.
+-- @param #number threshold (Optional) Low fuel threshold in percent. Default 5%.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetLowFuelThreshold(threshold)
   self.lowfuel=threshold or 5
@@ -145998,7 +146559,7 @@ end
 
 --- Set rescue zone radius. Crashed or ejected units inside this radius of the carrier will be rescued if possible.
 -- @param #RESCUEHELO self
--- @param #number radius Radius of rescue zone in nautical miles. Default is 15 NM.
+-- @param #number radius (Optional) Radius of rescue zone in nautical miles. Default is 15 NM.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetRescueZone(radius)
   radius=UTILS.NMToMeters(radius or 15)
@@ -146008,7 +146569,7 @@ end
 
 --- Set rescue hover speed.
 -- @param #RESCUEHELO self
--- @param #number speed Speed in knots. Default 5 kts.
+-- @param #number speed (Optional) Speed in knots. Default 5 kts.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetRescueHoverSpeed(speed)
   self.rescuespeed=UTILS.KnotsToMps(speed or 5)
@@ -146017,7 +146578,7 @@ end
 
 --- Set rescue duration. This is the time it takes to rescue a pilot at the crash site.
 -- @param #RESCUEHELO self
--- @param #number duration Duration in minutes. Default 5 min.
+-- @param #number duration (Optional) Duration in minutes. Default 5 min.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetRescueDuration(duration)
   self.rescueduration=(duration or 5)*60
@@ -146059,7 +146620,7 @@ end
 
 --- Set takeoff type.
 -- @param #RESCUEHELO self
--- @param #number takeofftype Takeoff type. Default SPAWN.Takeoff.Hot.
+-- @param #number takeofftype (Optional) Takeoff type. Default SPAWN.Takeoff.Hot.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetTakeoff(takeofftype)
   self.takeoff=takeofftype or SPAWN.Takeoff.Hot
@@ -146092,7 +146653,7 @@ end
 
 --- Set altitude of helo.
 -- @param #RESCUEHELO self
--- @param #number alt Altitude in meters. Default 70 m.
+-- @param #number alt (Optional) Altitude in meters. Default 70 m.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetAltitude(alt)
   self.altitude=alt or 70
@@ -146101,7 +146662,7 @@ end
 
 --- Set offset parallel to orientation of carrier.
 -- @param #RESCUEHELO self
--- @param #number distance Offset distance in meters. Default 200 m (~660 ft).
+-- @param #number distance (Optional) Offset distance in meters. Default 200 m (~660 ft).
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetOffsetX(distance)
   self.offsetX=distance or 200
@@ -146110,7 +146671,7 @@ end
 
 --- Set offset perpendicular to orientation to carrier.
 -- @param #RESCUEHELO self
--- @param #number distance Offset distance in meters. Default 240 m (~780 ft).
+-- @param #number distance (Optional) Offset distance in meters. Default 240 m (~780 ft).
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetOffsetZ(distance)
   self.offsetZ=distance or 240
@@ -146168,7 +146729,7 @@ end
 
 --- Set follow time update interval.
 -- @param #RESCUEHELO self
--- @param #number dt Time interval in seconds. Default 1.0 sec.
+-- @param #number dt (Optional) Time interval in seconds. Default 1.0 sec.
 -- @return #RESCUEHELO self
 function RESCUEHELO:SetFollowTimeInterval(dt)
   self.dtFollow=dt or 1.0
@@ -147827,8 +148388,8 @@ ATIS.version = "1.0.1"
 --- Create a new ATIS class object for a specific airbase.
 -- @param #ATIS self
 -- @param #string AirbaseName Name of the airbase.
--- @param #number Frequency Radio frequency in MHz. Default 143.00 MHz. When using **SRS** this can be passed as a table of multiple frequencies.
--- @param #number Modulation Radio modulation: 0=AM, 1=FM. Default 0=AM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. When using **SRS** this can be passed as a table of multiple modulations.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 143.00 MHz. When using **SRS** this can be passed as a table of multiple frequencies.
+-- @param #number Modulation (Optional) Radio modulation: 0=AM, 1=FM. Default 0=AM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. When using **SRS** this can be passed as a table of multiple modulations.
 -- @return #ATIS self
 function ATIS:New(AirbaseName, Frequency, Modulation)
 
@@ -147985,9 +148546,9 @@ end
 
 --- Set sound files folder within miz file (not your local hard drive!).
 -- @param #ATIS self
--- @param #string pathMain Path to folder containing main sound files. Default "ATIS Soundfiles/". Mind the slash "/" at the end!
--- @param #string pathAirports Path folder containing the airport names sound files. Default is `"ATIS Soundfiles/<Map Name>"`, *e.g.* `"ATIS Soundfiles/Caucasus/"`.
--- @param #string pathNato Path folder containing the NATO alphabet sound files. Default is "ATIS Soundfiles/NATO Alphabet/".
+-- @param #string pathMain (Optional) Path to folder containing main sound files. Default "ATIS Soundfiles/". Mind the slash "/" at the end!
+-- @param #string pathAirports (Optional) Path folder containing the airport names sound files. Default is `"ATIS Soundfiles/<Map Name>"`, *e.g.* `"ATIS Soundfiles/Caucasus/"`.
+-- @param #string pathNato (Optional) Path folder containing the NATO alphabet sound files. Default is "ATIS Soundfiles/NATO Alphabet/".
 -- @return #ATIS self
 function ATIS:SetSoundfilesPath( pathMain, pathAirports, pathNato )
   self.soundpath = tostring( pathMain or "ATIS Soundfiles/" )
@@ -148107,8 +148668,8 @@ end
 
 --- Set the active runway for landing.
 -- @param #ATIS self
--- @param #string runway : Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean preferleft : If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
+-- @param #string runway (Optional) Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
+-- @param #boolean preferleft (Optional) If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
 -- @return #ATIS self
 function ATIS:SetActiveRunwayLanding(runway, preferleft)
   self.airbase:SetActiveRunwayLanding(runway,preferleft)
@@ -148118,7 +148679,7 @@ end
 --- Set the active runway for take-off.
 -- @param #ATIS self
 -- @param #string runway : Name of the runway, e.g. "31" or "02L" or "90R". If not given, the runway is determined from the wind direction.
--- @param #boolean preferleft : If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
+-- @param #boolean preferleft (Optional) If true, perfer the left runway. If false, prefer the right runway. If nil (default), do not care about left or right.
 -- @return #ATIS self
 function ATIS:SetActiveRunwayTakeoff(runway,preferleft)
   self.airbase:SetActiveRunwayTakeoff(runway,preferleft)
@@ -148152,7 +148713,7 @@ end
 
 --- Set radio power. Note that this only applies if no relay unit is used.
 -- @param #ATIS self
--- @param #number power Radio power in Watts. Default 100 W.
+-- @param #number power (Optional) Radio power in Watts. Default 100 W.
 -- @return #ATIS self
 function ATIS:SetRadioPower( power )
   self.power = power or 100
@@ -148161,7 +148722,7 @@ end
 
 --- Use F10 map mark points.
 -- @param #ATIS self
--- @param #boolean switch If *true* or *nil*, marks are placed on F10 map. If *false* this feature is set to off (default).
+-- @param #boolean switch (Optional) If *true* or *nil*, marks are placed on F10 map. If *false* this feature is set to off (default).
 -- @return #ATIS self
 function ATIS:SetMapMarks( switch )
   if switch == nil or switch == true then
@@ -148230,7 +148791,7 @@ end
 
 --- Set duration how long subtitles are displayed.
 -- @param #ATIS self
--- @param #number duration Duration in seconds. Default 10 seconds.
+-- @param #number duration (Optional) Duration in seconds. Default 10 seconds.
 -- @return #ATIS self
 function ATIS:SetSubtitleDuration( duration )
   self.subduration = tonumber( duration or 10 )
@@ -148273,7 +148834,7 @@ end
 --- Set relative humidity. This is used to approximately calculate the dew point.
 -- Note that the dew point is only an artificial information as DCS does not have an atmospheric model that includes humidity (yet).
 -- @param #ATIS self
--- @param #number Humidity Relative Humidity, i.e. a number between 0 and 100 %. Default is 50 %.
+-- @param #number Humidity (Optional) Relative Humidity, i.e. a number between 0 and 100 %. Default is 50 %.
 -- @return #ATIS self
 function ATIS:SetRelativeHumidity( Humidity )
   self.relHumidity = Humidity or 50
@@ -148348,7 +148909,7 @@ end
 -- Or you make your life simple and just include the sign so you don't have to bother about East/West.
 --
 -- @param #ATIS self
--- @param #number magvar Magnetic variation in degrees. Positive for easterly and negative for westerly variation. Default is magnatic declinaton of the used map, c.f. @{Utilities.Utils#UTILS.GetMagneticDeclination}.
+-- @param #number magvar (Optional) Magnetic variation in degrees. Positive for easterly and negative for westerly variation. Default is magnatic declinaton of the used map, c.f. @{Utilities.Utils#UTILS.GetMagneticDeclination}.
 -- @return #ATIS self
 function ATIS:SetMagneticDeclination( magvar )
   self.magvar = magvar or UTILS.GetMagneticDeclination()
@@ -148478,7 +149039,7 @@ end
 
 --- Place marks with runway data on the F10 map.
 -- @param #ATIS self
--- @param #boolean markall If true, mark all runways of the map. By default only the current ATIS runways are marked.
+-- @param #boolean markall (Optional) If true, mark all runways of the map. By default only the current ATIS runways are marked.
 function ATIS:MarkRunways( markall )
   local airbases = AIRBASE.GetAllAirbases()
   for _, _airbase in pairs( airbases ) do
@@ -148491,11 +149052,11 @@ end
 
 --- Use SRS Simple-Text-To-Speech for transmissions. No sound files necessary.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #ATIS self
--- @param #string PathToSRS Path to SRS directory (only necessary if SRS exe backend is used).
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
--- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Port SRS port. Default 5002.
+-- @param #string PathToSRS (Optional) Path to SRS directory (only necessary if SRS exe backend is used).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
+-- @param #string Voice (Optional) Specific voice. Overrides `Gender` and `Culture`.
+-- @param #number Port (Optional) SRS port. Default 5002.
 -- @param #string GoogleKey Path to Google JSON-Key (SRS exe backend) or Google API key (DCS-gRPC backend).
 -- @return #ATIS self
 function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey)
@@ -148551,7 +149112,7 @@ end
 
 --- Set the time interval between radio queue updates.
 -- @param #ATIS self
--- @param #number TimeInterval Interval in seconds. Default 5 sec.
+-- @param #number TimeInterval (Optional) Interval in seconds. Default 5 sec.
 -- @return #ATIS self
 function ATIS:SetQueueUpdateTime( TimeInterval )
   self.dTQueueCheck = TimeInterval or 5
@@ -150019,7 +150580,7 @@ end
 
 --- Get active runway runway.
 -- @param #ATIS self
--- @param #boolean Takeoff If `true`, get runway for takeoff. Default is for landing.
+-- @param #boolean Takeoff (Optional) If `true`, get runway for takeoff. Default is for landing.
 -- @return #string Active runway, e.g. "31" for 310 deg.
 -- @return #boolean Use Left=true, Right=false, or nil.
 function ATIS:GetActiveRunway(Takeoff)
@@ -150129,7 +150690,7 @@ end
 -- @param #ATIS.Soundfile sound ATIS sound object.
 -- @param #number interval Interval in seconds after the last transmission finished.
 -- @param #string subtitle Subtitle of the transmission.
--- @param #string path Path to sound file. Default `self.soundpath`.
+-- @param #string path (Optional) Path to sound file. Default `self.soundpath`.
 function ATIS:Transmission( sound, interval, subtitle, path )
   self.radioqueue:NewTransmission( sound.filename, sound.duration, path or self.soundpath, nil, interval, subtitle, self.subduration )
 end
@@ -150243,725 +150804,12 @@ end
 -- ### Author: **Applevangelist** (Moose Version), ***Ciribob*** (original), Thanks to: Shadowze, Cammel (testing), bbirchnz (additional code!!)
 -- ### Repack addition for crates: **Raiden**
 -- ### Additional cool features: **Lekaa**
+-- ### Localization: **Applevangelist** and Claude AI
 -- 
 -- @module Ops.CTLD
 -- @image OPS_CTLD.jpg
 
--- Last Update Jan 2026
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- TODO CTLD_CARGO
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-do 
-
-------------------------------------------------------
---- **CTLD_CARGO** class, extends Core.Base#BASE
--- @type CTLD_CARGO
--- @field #string ClassName Class name.
--- @field #number ID ID of this cargo.
--- @field #string Name Name for menu.
--- @field #string DisplayName Display name for menu/messages.
--- @field #table Templates Table of #POSITIONABLE objects.
--- @field #string CargoType Enumerator of Type.
--- @field #boolean HasBeenMoved Flag for moving.
--- @field #boolean LoadDirectly Flag for direct loading.
--- @field #number CratesNeeded Crates needed to build.
--- @field Wrapper.Positionable#POSITIONABLE Positionable Representation of cargo in the mission.
--- @field #boolean HasBeenDropped True if dropped from heli.
--- @field #number PerCrateMass Mass in kg.
--- @field #number Stock Number of builds available, -1 for unlimited.
--- @field #string Subcategory Sub-category name.
--- @field #boolean DontShowInMenu Show this item in menu or not.
--- @field Core.Zone#ZONE Location Location (if set) where to get this cargo item.
--- @field #table ResourceMap Resource Map information table if it has been set for static cargo items.
--- @field #string StaticShape Individual shape if set.
--- @field #string StaticType Individual type if set.
--- @field #string StaticCategory Individual static category if set.
--- @field #list<#string> TypeNames Table of unit types able to pick this cargo up.
--- @field #number Stock0 Initial stock, if any given.
--- @extends Core.Base#BASE
-
----
--- @field #CTLD_CARGO CTLD_CARGO
-CTLD_CARGO = {
-  ClassName = "CTLD_CARGO",
-  ID = 0,
-  Name = "none",
-  DisplayName = "none",
-  Templates = {},
-  CargoType = "none",
-  HasBeenMoved = false,
-  LoadDirectly = false,
-  CratesNeeded = 0,
-  Positionable = nil,
-  HasBeenDropped = false,
-  PerCrateMass = 0,
-  Stock = nil,
-  Stock0 = nil,
-  Mark = nil,
-  DontShowInMenu = false,
-  Location = nil,
-  }
-  
-  --- Define cargo types.
-  -- @type CTLD_CARGO.Enum
-  -- @field #string VEHICLE
-  -- @field #string TROOPS
-  -- @field #string FOB
-  -- @field #string CRATE
-  -- @field #string REPAIR
-  -- @field #string ENGINEERS
-  -- @field #string STATIC
-  -- @field #string GCLOADABLE
-  CTLD_CARGO.Enum = {
-    VEHICLE = "Vehicle", -- #string vehicles
-    TROOPS = "Troops", -- #string troops
-    FOB = "FOB", -- #string FOB
-    CRATE = "Crate", -- #string crate
-    REPAIR = "Repair", -- #string repair
-    ENGINEERS = "Engineers", -- #string engineers
-    STATIC = "Static", -- #string statics
-    GCLOADABLE = "GC_Loadable", -- #string dynamiccargo
-  }
-  
-  --- Function to create new CTLD_CARGO object.
-  -- @param #CTLD_CARGO self
-  -- @param #number ID ID of this #CTLD_CARGO
-  -- @param #string Name Name for menu.
-  -- @param #table Templates Table of #POSITIONABLE objects.
-  -- @param #CTLD_CARGO.Enum Sorte Enumerator of Type.
-  -- @param #boolean HasBeenMoved Flag for moving.
-  -- @param #boolean LoadDirectly Flag for direct loading.
-  -- @param #number CratesNeeded Crates needed to build.
-  -- @param Wrapper.Positionable#POSITIONABLE Positionable Representation of cargo in the mission.
-  -- @param #boolean Dropped Cargo/Troops have been unloaded from a chopper.
-  -- @param #number PerCrateMass Mass in kg
-  -- @param #number Stock Number of builds available, nil for unlimited
-  -- @param #string Subcategory Name of subcategory, handy if using > 10 types to load.
-  -- @param #boolean DontShowInMenu Show this item in menu or not (default: false == show it).
-  -- @param Core.Zone#ZONE Location (optional) Where the cargo is available (one location only).
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:New(ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped, PerCrateMass, Stock, Subcategory, DontShowInMenu, Location)
-    -- Inherit everything from BASE class.
-    local self=BASE:Inherit(self, BASE:New()) -- #CTLD_CARGO
-    self:T({ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped})
-    self.ID = ID or math.random(100000,1000000)
-    self.Name = Name or "none" -- #string
-    self.DisplayName = Name or "none" -- #string
-    self.Templates = Templates or {} -- #table
-    self.CargoType = Sorte or "type" -- #CTLD_CARGO.Enum
-    self.HasBeenMoved = HasBeenMoved or false -- #boolean
-    self.LoadDirectly = LoadDirectly or false -- #boolean
-    self.CratesNeeded = CratesNeeded or 0 -- #number
-    self.Positionable = Positionable or nil -- Wrapper.Positionable#POSITIONABLE
-    self.HasBeenDropped = Dropped or false --#boolean
-    self.PerCrateMass = PerCrateMass or 0 -- #number
-    self.Stock = Stock or nil --#number
-    self.Stock0 = Stock or nil --#number 
-    self.Mark = nil
-    self.Subcategory = Subcategory or "Other"
-    self.DontShowInMenu = DontShowInMenu or false
-    self.ResourceMap = nil
-    self.StaticType = "container_cargo" -- "container_cargo"
-    if self:IsStatic() then
-      self.StaticType = self.Templates
-    end
-    self.StaticShape = nil
-    self.TypeNames = nil
-    self.StaticCategory = "Cargos"
-    if type(Location) == "string" then
-      Location = ZONE:New(Location)
-    end
-    self.Location = Location
-    self.NoMoveToZone = false
-    return self
-  end
-  
-  --- Add specific static type and shape to this CARGO.
-  -- @param #CTLD_CARGO self
-  -- @param #string TypeName
-  -- @param #string ShapeName
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:SetStaticTypeAndShape(Category,TypeName,ShapeName)
-    self.StaticCategory = Category or "Cargos"
-    self.StaticType = TypeName or "container_cargo"
-    self.StaticShape = ShapeName
-    return self
-  end
-  
-  --- Get the specific static type and shape from this CARGO if set.
-  -- @param #CTLD_CARGO self
-  -- @return #string Category
-  -- @return #string TypeName
-  -- @return #string ShapeName
-  function CTLD_CARGO:GetStaticTypeAndShape()
-    return self.StaticCategory, self.StaticType, self.StaticShape
-  end
-  
-  --- Add specific unit types to this CARGO (restrict what types can pick this up).
-  -- @param #CTLD_CARGO self
-  -- @param #string UnitTypes Unit type name, can also be a #list<#string> table of unit type names.
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:AddUnitTypeName(UnitTypes)
-    if not self.TypeNames then self.TypeNames = {} end
-    if type(UnitTypes) ~= "table" then UnitTypes = {UnitTypes} end
-    for _,_singletype in pairs(UnitTypes or {}) do
-      self.TypeNames[_singletype]=_singletype
-    end
-    return self
-  end
-  
-  --- Check if a specific unit can carry this CARGO (restrict what types can pick this up).
-  -- @param #CTLD_CARGO self
-  -- @param Wrapper.Unit#UNIT Unit
-  -- @return #boolean Outcome
-  function CTLD_CARGO:UnitCanCarry(Unit)
-    if not Unit then return false end
-    if self.TypeNames == nil then return true end
-    local typename = Unit:GetTypeName() or "none"
-    if self.TypeNames[typename] then
-      return true
-    else
-      return false
-    end
-  end
-  
-  --- Add Resource Map information table
-  -- @param #CTLD_CARGO self
-  -- @param #table ResourceMap
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:SetStaticResourceMap(ResourceMap)
-    self.ResourceMap = ResourceMap
-    return self
-  end
-  
-  --- Get Resource Map information table
-  -- @param #CTLD_CARGO self
-  -- @return #table ResourceMap
-  function CTLD_CARGO:GetStaticResourceMap()
-    return self.ResourceMap
-  end
-  
-  --- Query Location.
-  -- @param #CTLD_CARGO self
-  -- @return Core.Zone#ZONE location or `nil` if not set
-  function CTLD_CARGO:GetLocation()
-    return self.Location
-  end
-  
-  --- Query ID.
-  -- @param #CTLD_CARGO self
-  -- @return #number ID
-  function CTLD_CARGO:GetID()
-    return self.ID
-  end
-  
-  --- Query Subcategory
-  -- @param #CTLD_CARGO self
-  -- @return #string SubCategory
-  function CTLD_CARGO:GetSubCat()
-    return self.Subcategory
-  end
-  
-  --- Query Mass.
-  -- @param #CTLD_CARGO self
-  -- @return #number Mass in kg
-  function CTLD_CARGO:GetMass()
-    return self.PerCrateMass
-  end  
-  
-  --- Query Name.
-  -- @param #CTLD_CARGO self
-  -- @return #string Name
-  function CTLD_CARGO:GetName()
-    return self.Name
-  end
-
-  --- Set display name.
-  -- @param #CTLD_CARGO self
-  -- @param #string DisplayName Display label used in menus/messages (optional).
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:SetDisplayName(DisplayName)
-    if type(DisplayName) == "string" and DisplayName ~= "" then
-      self.DisplayName = DisplayName
-    else
-      self.DisplayName = self.Name
-    end
-    return self
-  end
-
-  --- Query display name.
-  -- @param #CTLD_CARGO self
-  -- @return #string Display name, or Name if not set
-  function CTLD_CARGO:GetDisplayName()
-    return self.DisplayName or self.Name
-  end
-  
-  --- Query Templates.
-  -- @param #CTLD_CARGO self
-  -- @return #table Templates
-  function CTLD_CARGO:GetTemplates()
-    return self.Templates
-  end
-  
-  --- Query has moved.
-  -- @param #CTLD_CARGO self
-  -- @return #boolean Has moved
-  function CTLD_CARGO:HasMoved()
-    return self.HasBeenMoved
-  end
-  
-  --- Query was dropped.
-  -- @param #CTLD_CARGO self
-  -- @param #boolean hercOnly If true, only treat Herc drops as 'dropped'.
-  -- @return #boolean Has been dropped.
-  function CTLD_CARGO:WasDropped(hercOnly)
-    if hercOnly then
-      return self.HasBeenDropped and self.IsHercDrop==true
-    end
-    return self.HasBeenDropped
-  end
-  
-  --- Query directly loadable.
-  -- @param #CTLD_CARGO self
-  -- @return #boolean loadable
-  function CTLD_CARGO:CanLoadDirectly()
-    return self.LoadDirectly
-  end
-  
-  --- Query number of crates or troopsize.
-  -- @param #CTLD_CARGO self
-  -- @return #number Crates or size of troops.
-  function CTLD_CARGO:GetCratesNeeded()
-    return self.CratesNeeded
-  end
-  
-  --- Query type.
-  -- @param #CTLD_CARGO self
-  -- @return #CTLD_CARGO.Enum Type
-  function CTLD_CARGO:GetType()
-    return self.CargoType
-  end
-  
-  --- Query type.
-  -- @param #CTLD_CARGO self
-  -- @return Wrapper.Positionable#POSITIONABLE Positionable
-  function CTLD_CARGO:GetPositionable()
-    return self.Positionable
-  end
-  
-  --- Set HasMoved.
-  -- @param #CTLD_CARGO self
-  -- @param #boolean moved
-  function CTLD_CARGO:SetHasMoved(moved)
-    self.HasBeenMoved = moved or false
-  end
-  
-   --- Query if cargo has been loaded.
-  -- @param #CTLD_CARGO self
-  -- @param #boolean loaded
-  function CTLD_CARGO:Isloaded()
-    if self.HasBeenMoved and not self:WasDropped() then
-      return true
-    else
-     return false
-    end 
-  end
-  
-  --- Set WasDropped.
-  -- @param #CTLD_CARGO self
-  -- @param #boolean dropped
-  -- @param #boolean isHercDrop set when _GetCrates is used by the herc
-  function CTLD_CARGO:SetWasDropped(dropped, isHercDrop)
-    self.HasBeenDropped = dropped or false
-    self.IsHercDrop = isHercDrop or false
-  end
-  
-  --- Get Stock.
-  -- @param #CTLD_CARGO self
-  -- @return #number Stock or -1 if unlimited.
-  function CTLD_CARGO:GetStock()
-    if self.Stock then
-      return self.Stock
-    else
-      return -1
-    end
-  end
-  
-  --- Get Stock0.
-  -- @param #CTLD_CARGO self
-  -- @return #number Stock0 or -1 if unlimited.
-  function CTLD_CARGO:GetStock0()
-    if self.Stock0 then
-      return self.Stock0
-    else
-      return -1
-    end
-  end
-  
-    --- Get relative Stock.
-  -- @param #CTLD_CARGO self
-  -- @return #number Stock Percentage like 75, or -1 if unlimited.
-  function CTLD_CARGO:GetRelativeStock()
-    if self.Stock and self.Stock0 then
-      return math.floor((self.Stock/self.Stock0)*100)
-    else
-      return -1
-    end
-  end
-  
-  --- Add Stock.
-  -- @param #CTLD_CARGO self
-  -- @param #number Number to add, none if nil.
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:AddStock(Number)
-    if self.Stock then -- Stock nil?
-      local number = Number or 1
-      self.Stock = self.Stock + number
-    end
-    return self
-  end
-  
-  --- Remove Stock.
-  -- @param #CTLD_CARGO self
-  -- @param #number Number to reduce, none if nil.
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:RemoveStock(Number)
-    if self.Stock then -- Stock nil?
-      local number = Number or 1
-      self.Stock = self.Stock - number
-      if self.Stock < 0 then self.Stock = 0 end
-    end
-    return self
-  end
-  
-  --- Set Stock.
-  -- @param #CTLD_CARGO self
-  -- @param #number Number to set, nil means unlimited.
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:SetStock(Number)
-    self.Stock = Number
-    return self
-  end
-  
-  --- Query crate type for REPAIR
-  -- @param #CTLD_CARGO self
-  -- @param #boolean 
-  function CTLD_CARGO:IsRepair()
-   if self.CargoType == "Repair" then
-    return true
-   else
-    return false
-   end
-  end
-  
-  --- Query crate type for STATIC
-  -- @param #CTLD_CARGO self
-  -- @return #boolean 
-  function CTLD_CARGO:IsStatic()
-   if self.CargoType == "Static" then
-    return true
-   else
-    return false
-   end
-  end
-  
-  --- Add mark
-  -- @param #CTLD_CARGO self
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:AddMark(Mark)
-    self.Mark = Mark
-    return self
-  end
-  
-  --- Get mark
-  -- @param #CTLD_CARGO self
-  -- @return #string Mark
-  function CTLD_CARGO:GetMark(Mark)
-    return self.Mark
-  end
-  
-  --- Wipe mark
-  -- @param #CTLD_CARGO self
-  -- @return #CTLD_CARGO self
-  function CTLD_CARGO:WipeMark()
-    self.Mark = nil
-    return self
-  end
-  
-  --- Get overall mass of a cargo object, i.e. crates needed x mass per crate
-  -- @param #CTLD_CARGO self
-  -- @return #number mass
-  function CTLD_CARGO:GetNetMass()
-    return self.CratesNeeded * self.PerCrateMass
-  end
-   
-end
-
-do
-
-------------------------------------------------------
---- **CTLD_ENGINEERING** class, extends Core.Base#BASE
--- @type CTLD_ENGINEERING
--- @field #string ClassName
--- @field #string lid
--- @field #string Name
--- @field Wrapper.Group#GROUP Group
--- @field Wrapper.Unit#UNIT Unit
--- @field Wrapper.Group#GROUP HeliGroup
--- @field Wrapper.Unit#UNIT HeliUnit
--- @field #string State
--- @extends Core.Base#BASE
-
----
--- @field #CTLD_ENGINEERING CTLD_ENGINEERING
-CTLD_ENGINEERING = {
-  ClassName = "CTLD_ENGINEERING",
-  lid = "",
-  Name = "none",
-  Group = nil,
-  Unit = nil,
-  --C_Ops = nil,
-  HeliGroup = nil,
-  HeliUnit = nil,
-  State = "",
-  }
-  
-  --- CTLD_ENGINEERING class version.
-  -- @field #string version
-  CTLD_ENGINEERING.Version = "0.0.3"
-  
-  --- Create a new instance.
-  -- @param #CTLD_ENGINEERING self
-  -- @param #string Name
-  -- @param #string GroupName Name of Engineering #GROUP object
-  -- @param Wrapper.Group#GROUP HeliGroup HeliGroup
-  -- @param Wrapper.Unit#UNIT HeliUnit HeliUnit
-  -- @return #CTLD_ENGINEERING self 
-  function CTLD_ENGINEERING:New(Name, GroupName, HeliGroup, HeliUnit)
-  
-      -- Inherit everything from BASE class.
-    local self=BASE:Inherit(self, BASE:New()) -- #CTLD_ENGINEERING
-    
-   --BASE:I({Name, GroupName})
-    
-    self.Name = Name or "Engineer Squad" -- #string
-    self.Group = GROUP:FindByName(GroupName) -- Wrapper.Group#GROUP
-    self.Unit = self.Group:GetUnit(1) -- Wrapper.Unit#UNIT
-    self.HeliGroup = HeliGroup -- Wrapper.Group#GROUP
-    self.HeliUnit = HeliUnit -- Wrapper.Unit#UNIT
-    self.currwpt = nil -- Core.Point#COORDINATE
-    self.lid = string.format("%s (%s) | ",self.Name, self.Version)
-      -- Start State.
-    self.State = "Stopped"
-    self.marktimer = 300 -- wait this many secs before trying a crate again
-    self:Start()
-    local parent = self:GetParent(self)
-    return self
-  end
-  
-  --- (Internal) Set the status
-  -- @param #CTLD_ENGINEERING self
-  -- @param #string State
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:SetStatus(State)
-    self.State = State
-    return self
-  end
-  
-  --- (Internal) Get the status
-  -- @param #CTLD_ENGINEERING self
-  -- @return #string State
-  function CTLD_ENGINEERING:GetStatus()
-    return self.State
-  end
-  
-  --- (Internal) Check the status
-  -- @param #CTLD_ENGINEERING self
-  -- @param #string State
-  -- @return #boolean Outcome
-  function CTLD_ENGINEERING:IsStatus(State)
-    return self.State == State
-  end
-  
-  --- (Internal) Check the negative status
-  -- @param #CTLD_ENGINEERING self
-  -- @param #string State
-  -- @return #boolean Outcome
-  function CTLD_ENGINEERING:IsNotStatus(State)
-    return self.State ~= State
-  end
-  
-  --- (Internal) Set start status.
-  -- @param #CTLD_ENGINEERING self
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Start()
-    self:T(self.lid.."Start")
-    self:SetStatus("Running")
-    return self
-  end
-  
-  --- (Internal) Set stop status.
-  -- @param #CTLD_ENGINEERING self
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Stop()
-    self:T(self.lid.."Stop")
-    self:SetStatus("Stopped")
-    return self
-  end
-  
-  --- (Internal) Set build status.
-  -- @param #CTLD_ENGINEERING self
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Build()
-    self:T(self.lid.."Build")
-    self:SetStatus("Building")
-    return self
-  end
-  
-  --- (Internal) Set done status.
-  -- @param #CTLD_ENGINEERING self
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Done()
-    self:T(self.lid.."Done")
-    local grp = self.Group -- Wrapper.Group#GROUP
-    grp:RelocateGroundRandomInRadius(7,100,false,false,"Diamond")
-    self:SetStatus("Running")
-    return self
-  end
-  
-  --- (Internal) Search for crates in reach.
-  -- @param #CTLD_ENGINEERING self
-  -- @param #table crates Table of found crate Ops.CTLD#CTLD_CARGO objects.
-  -- @param #number number Number of crates found.
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Search(crates,number)
-    self:T(self.lid.."Search")
-    self:SetStatus("Searching")
-    -- find crates close by
-    --local COps = self.C_Ops -- Ops.CTLD#CTLD
-    local dist = self.distance -- #number
-    local group = self.Group -- Wrapper.Group#GROUP
-    --local crates,number = COps:_FindCratesNearby(group,nil, dist) -- #table
-    local ctable = {}
-    local ind = 0
-    if number > 0 then
-      -- get set of dropped only
-      for _,_cargo in pairs (crates) do
-       local cgotype = _cargo:GetType()
-       if _cargo:WasDropped() and cgotype ~= CTLD_CARGO.Enum.STATIC then
-        local ok = false
-        local chalk = _cargo:GetMark()
-        if chalk == nil then
-          ok = true
-        else
-         -- have we tried this cargo recently?
-         local tag = chalk.tag or "none"
-         local timestamp = chalk.timestamp or 0
-         -- enough time gone?
-         local gone = timer.getAbsTime() - timestamp
-         if gone >= self.marktimer then
-            ok = true
-            _cargo:WipeMark()
-         end -- end time check
-        end -- end chalk
-        if ok then
-          local chalk = {}
-          chalk.tag = "Engineers"
-          chalk.timestamp = timer.getAbsTime()
-          _cargo:AddMark(chalk)
-          ind = ind + 1
-          table.insert(ctable,ind,_cargo)
-        end     
-       end -- end dropped
-      end -- end for
-    end -- end number
-    
-    if ind > 0 then
-      local crate = ctable[1] -- Ops.CTLD#CTLD_CARGO
-      local static = crate:GetPositionable() -- Wrapper.Static#STATIC
-      local crate_pos = static:GetCoordinate() -- Core.Point#COORDINATE
-      local gpos = group:GetCoord() -- Core.Point#COORDINATE
-      -- see how far we are from the crate
-      local distance = self:_GetDistance(gpos,crate_pos)
-      self:T(string.format("%s Distance to crate: %d", self.lid, distance))
-      -- move there
-      if distance > 30 and distance ~= -1 and self:IsStatus("Searching") then
-        group:RouteGroundTo(crate_pos,15,"Line abreast",1)
-        self.currwpt = crate_pos -- Core.Point#COORDINATE
-        self:Move()
-      elseif distance <= 30 and distance ~= -1 then
-        -- arrived
-        self:Arrive()
-      end
-    else
-      self:T(self.lid.."No crates in reach!")
-    end
-    return self
-  end
-  
-  --- (Internal) Move towards crates in reach.
-  -- @param #CTLD_ENGINEERING self
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Move()
-    self:T(self.lid.."Move")
-    self:SetStatus("Moving")
-    -- check if we arrived on target
-    --local COps = self.C_Ops -- Ops.CTLD#CTLD
-    local group = self.Group -- Wrapper.Group#GROUP
-    local tgtpos = self.currwpt -- Core.Point#COORDINATE
-    local gpos = group:GetCoord() -- Core.Point#COORDINATE
-    -- see how far we are from the crate
-    local distance = self:_GetDistance(gpos,tgtpos)
-    self:T(string.format("%s Distance remaining: %d", self.lid, distance))
-    if distance <= 30 and distance ~= -1 then
-        -- arrived
-        self:Arrive()
-    end
-    return self
-  end
-  
-  --- (Internal) Arrived at crates in reach. Stop group.
-  -- @param #CTLD_ENGINEERING self
-  -- @return #CTLD_ENGINEERING self
-  function CTLD_ENGINEERING:Arrive()
-    self:T(self.lid.."Arrive")
-    self:SetStatus("Arrived")
-    self.currwpt = nil
-    local Grp = self.Group -- Wrapper.Group#GROUP
-    Grp:RouteStop()
-    return self
-  end
-  
-  --- (Internal) Return distance in meters between two coordinates.
-  -- @param #CTLD_ENGINEERING self
-  -- @param Core.Point#COORDINATE _point1 Coordinate one
-  -- @param Core.Point#COORDINATE _point2 Coordinate two
-  -- @return #number Distance in meters or -1
-  function CTLD_ENGINEERING:_GetDistance(_point1, _point2)
-    self:T(self.lid .. " _GetDistance")
-    if _point1 and _point2 then
-      local distance1 = _point1:Get2DDistance(_point2)
-      local distance2 = _point1:DistanceFromPointVec2(_point2)
-      if distance1 and type(distance1) == "number" then
-        return distance1
-      elseif distance2 and type(distance2) == "number" then
-        return distance2
-      else
-        self:E("*****Cannot calculate distance!")
-        self:E({_point1,_point2})
-        return -1
-      end
-    else
-      self:E("******Cannot calculate distance!")
-      self:E({_point1,_point2})
-      return -1
-    end
-  end
-
-end
+-- Last Update Feb 2026
 
 do
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -151086,7 +150934,7 @@ do
 -- 
 -- ## 2. Options
 -- 
--- The following options are available (with their defaults). Only set the ones you want changed:
+-- The following options are available (with their defaults). Don't waste your time adding those in your script if your not going to change the value.
 --
 --          my_ctld.useprefix = true -- (DO NOT SWITCH THIS OFF UNLESS YOU KNOW WHAT YOU ARE DOING!) Adjust **before** starting CTLD. If set to false, *all* choppers of the coalition side will be enabled for CTLD.
 --          my_ctld.CrateDistance = 35 -- List and Load crates in this radius only.
@@ -151134,6 +150982,9 @@ do
 --          my_ctld.validateAndRepositionUnits = false -- Uses Disposition and other logic to find better ground positions for ground units avoiding trees, water, roads, runways, map scenery, statics and other units in the area. (Default is false)
 --          my_ctld.loadSavedCrates = true -- Load back crates (STATIC) from the save file. Useful for mission restart cleanup. (Default is true)
 --          my_ctld.UseC130LoadAndUnload = false -- When set to true, forces the C-130 player to use the C-130J built system to load the cargo onboard and to unload. (Default is false)
+--          my_ctld.UseC130DynamicCargoAutoBuild = false -- When true (and UseC130LoadAndUnload is true), C-130 DynamicCargo unload completion is bridged to CTLD engineer-path auto-build.
+--          my_ctld.C130DynamicCargoAutoBuildMergeSeconds = 10 -- Merge window in seconds for C-130 auto-build handoff; ready sets from same C-130 are batched into one engineer build call.
+--          my_ctld.locale = "en" -- Language locale to use, available are "en" (default), "de" and "fr"
 --
 -- ## 2.1 CH-47 Chinook support
 -- 
@@ -151158,7 +151009,7 @@ do
 --      
 -- All other kinds of cargo can be sling-loaded.
 --      
--- ## 2.1.2 Recommended settings
+-- ## 2.1.3 Recommended settings
 --          
 --          my_ctld.onestepmenu = true -- This will enable Get and load, drop and build, etc. All will be done in one step. works for every module except the C-130J-30 with my_ctld.UseC130LoadAndUnload = true
 --          my_ctld.C130basetype = "cds_crate" -- This can be changed to other cargo. This is only for the C-130J-30
@@ -151170,10 +151021,50 @@ do
 --          my_ctld.movecratesbeforebuild = true -- leave as is at the pain of building crate still **inside** of the Hook.
 --          my_ctld.nobuildinloadzones = true -- don't build where you load.
 --          my_ctld.ChinookTroopCircleRadius = 5 -- Radius for troops dropping in a nice circle. Adjust to your planned squad size for the Chinook.
---          
--- ## 2.2 User functions
+--          my_ctld.CrateDistance = 65 -- Distance from the aircraft and the max range where we will detect cargo. Default 35.
+--          my_ctld.PackDistance = 65 -- Distance from the aircraft and the max range where we will detect units to pack. Default 35.
+--
+-- ## 2.2 C-130J-30 support and cargo airdrop auto-build.
+--
+--  **Important:** This auto-build flow only applies to cargo obtained via CTLD **Get Crates**.
+--  Cargo spawned from the C-130 **Loadsheet** is **not** tracked by this feature.
+--
+-- The C-130J-30 can auto-build airdropped CTLD cargo when this feature is enabled.
+-- This allows players to airdrop build cargo without manually deploying engineers.
+--
+-- CTLD tracks supported C-130 cargo from the moment it is spawned via "Get Crates".
+-- After a valid airdrop and landing, CTLD automatically starts the build.
+--
+-- If multiple compatible cargo sets are dropped close together, CTLD waits briefly
+-- (10 seconds by default) and then processes them together.
+--
+-- ### Required settings
+--
+--          my_ctld.UseC130LoadAndUnload = true -- This option forces C-130 cargo loading/unloading through the C-130J-30 load system.
+--          my_ctld.UseC130DynamicCargoAutoBuild = true -- When true (and UseC130LoadAndUnload is true), C-130 DynamicCargo unload completion is bridged to CTLD engineer-path auto-build.
+--          my_ctld.enableFixedWing = true -- This will activate the fixed-wing related functions, including the auto-build for airdropped cargo.
+--
+-- Adding cargo in your config for the C-130 can be deeply customized. For example you can have a cargo shape only used for the C-130 while all other aircraft will get something else.
+--
+--         my_ctld:AddCratesCargoNoMove("IRIS T System", {"CTLD_CARGO_IRISTSLM_System"}, CTLD_CARGO.Enum.FOB, 3, 2800, 10, "SAM/AAA", nil,nil,nil,nil,"cds_crate",nil, "iso_container_small")
+--
+-- In the example above:
+--
+-- * `AddCratesCargoNoMove` means the built unit/group will not receive an auto-move command after spawn.
+-- * `IRIS T System` is the menu/display name.
+-- * `CTLD_CARGO_IRISTSLM_System` is the mission editor template.
+-- * `CTLD_CARGO.Enum.FOB` defines the cargo/build type. FOB builds keep the mission-editor orientation.
+-- * `3` is crates required, `2800` is per-crate mass (kg), and `10` is stock.
+-- * `SAM/AAA` is the submenu label (used when `my_ctld.usesubcats = true`).
+-- * `cds_crate` is the default cargo shape for non-C130 aircraft when provided; if omitted, CTLD falls back to `my_ctld.basetype`.
+-- * `iso_container_small` is the C-130-specific cargo shape override, even if `my_ctld.C130basetype` is set to something else.
+-- * **Important:** If you do not want to set stock (the `10` parameter), pass `nil` in that position.
+--   Keep `nil` placeholders for skipped parameters before later values.
+--
+--
+-- ## 2.3 User functions
 -- 
--- ### 2.2.1 Adjust or add chopper unit-type capabilities
+-- ### 2.3.1 Adjust or add chopper unit-type capabilities
 --  
 -- Use this function to adjust what a heli type can or cannot do:
 -- 
@@ -151203,7 +151094,7 @@ do
 --        ["OH58D"] = {type="OH58D", crates=false, troops=false, cratelimit = 0, trooplimit = 0, length = 14, cargoweightlimit = 400},
 --        ["CH-47Fbl1"] = {type="CH-47Fbl1", crates=true, troops=true, cratelimit = 4, trooplimit = 31, length = 20, cargoweightlimit = 8000},
 --        
--- ### 2.2.2 Activate and deactivate zones
+-- ### 2.3.2 Activate and deactivate zones
 -- 
 -- Activate a zone:
 -- 
@@ -151215,7 +151106,7 @@ do
 --        -- Deactivate zone called Name of type #CTLD.CargoZoneType ZoneType:
 --        my_ctld:DeactivateZone(Name,CTLD.CargoZoneType.DROP)
 -- 
--- ## 2.2.3 Limit and manage available resources
+-- ## 2.3.3 Limit and manage available resources
 --  
 --  When adding generic cargo types, you can effectively limit how many units can be dropped/build by the players, e.g.
 --  
@@ -151239,7 +151130,7 @@ do
 --  Notes:
 --  Troops dropped back into a LOAD zone will effectively be added to the stock. Crates lost in e.g. a heli crash are just that - lost.
 --  
--- ## 2.2.4 Create own SET_GROUP to manage CTLD Pilot groups
+-- ## 2.3.4 Create own SET_GROUP to manage CTLD Pilot groups
 -- 
 --              -- Parameter: Set The SET_GROUP object created by the mission designer/user to represent the CTLD pilot groups.
 --              -- Needs to be set before starting the CTLD instance.
@@ -151472,18 +151363,6 @@ do
 --
 -- So if the Vulcan in the example now needs six crates to complete, you have to bring two Hercs with three Vulcan crates each and drop them very close together...
 --
---  ### 5.4 C-130J-30 support
---
---  The C130-J-30 will work only by setting up
---
---              my_ctld.enableFixedWing = true -- false by default.
---
---              -- The rest below is default values but can be changed to something else.
---
---              my_ctld.C130basetype = "cds_crate" -- this is default.
---              my_ctld.FixedMinAngels = 155 -- for troop/cargo drop via chute in meters, ca 470 ft
---              my_ctld.FixedMaxAngels = 2000 -- for troop/cargo drop via chute in meters, ca 6000 ft
---              my_ctld.FixedMaxSpeed = 77 -- 77mps or 270kph or 150kn
 --
 --
 --  You can also enable my_ctld.UseC130LoadAndUnload and set it to true, false is default, this means you will not be able to get and load items but rather "Get" only.
@@ -151625,6 +151504,8 @@ CTLD = {
   dropOffZones = {},
   pickupZones  = {},
   DynamicCargo = {},
+  UseC130DynamicCargoAutoBuild = false,
+  C130DynamicCargoAutoBuildMergeSeconds = 10,
   ChinookTroopCircleRadius = 5,
   TroopUnloadDistGround = 5,
   TroopUnloadDistGroundHerc = 25,
@@ -151636,6 +151517,8 @@ CTLD = {
   keeploadtable = true,
   allowCATransport = false,
   VehicleMoveFormation = AI.Task.VehicleFormation.VEE,
+  locale = "en",
+  usesrs = false
 }
 
 ------------------------------
@@ -151736,7 +151619,7 @@ CTLD.UnitTypeCapabilities = {
     ["C-130J-30"] = {type="C-130J-30", crates=true, troops=true, cratelimit = 7, trooplimit = 64, length = 35, cargoweightlimit = 21500}, -- 19t cargo, 64 paratroopers. 
     --Actually it's longer, but the center coord is off-center of the model.
     ["UH-60L"] = {type="UH-60L", crates=true, troops=true, cratelimit = 2, trooplimit = 20, length = 16, cargoweightlimit = 3500}, -- 4t cargo, 20 (unsec) seats
-    ["UH-60L_DAP"] = {type="UH-60L_DAP", crates=false, troops=true, cratelimit = 0, trooplimit = 2, length = 16, cargoweightlimit = 500}, -- UH-60L DAP is an attack helo but can do limited CSAR and CTLD
+    ["UH-60L_DAP"] = {type="UH-60L_DAP", crates=false, troops=true, cratelimit = 2, trooplimit = 2, length = 16, cargoweightlimit = 3000}, -- UH-60L DAP is an attack helo but can do limited CSAR and CTLD
     ["MH-60R"] = {type="MH-60R", crates=true, troops=true, cratelimit = 2, trooplimit = 20, length = 16, cargoweightlimit = 3500}, -- 4t cargo, 20 (unsec) seats
     ["SH-60B"] = {type="SH-60B", crates=true, troops=true, cratelimit = 2, trooplimit = 20, length = 16, cargoweightlimit = 3500}, -- 4t cargo, 20 (unsec) seats
     ["AH-64D_BLK_II"] = {type="AH-64D_BLK_II", crates=false, troops=true, cratelimit = 0, trooplimit = 2, length = 17, cargoweightlimit = 200}, -- 2 ppl **outside** the helo
@@ -151761,7 +151644,7 @@ CTLD.FixedWingTypes = {
 
 --- CTLD class version.
 -- @field #string version
-CTLD.version="1.3.43"
+CTLD.version="1.4.45"
 
 --- Instantiate a new CTLD.
 -- @param #CTLD self
@@ -151869,9 +151752,18 @@ function CTLD:New(Coalition, Prefixes, Alias)
   self.Cargo_Crates = {}
   self.Cargo_Troops = {}
   self.Cargo_Statics = {}
+  self._troopsByName = {}
+  self._crateOrStaticByName = {}
+  self._cargoByTemplate = {}
   self.Loaded_Cargo = {}
   self.Spawned_Crates = {}
   self.Spawned_Cargo = {}
+  self._c130DcAutoSets = {}
+  self._c130DcAutoMap = {}
+  self._c130DcAutoBatches = {}
+  self._c130DcAutoSeq = 0
+  self._c130DcAutoTimer = nil
+  self._c130DcAutoActiveSetId = nil
   self.MenusDone = {}
   self.DroppedTroops = {}
   self.DroppedCrates = {}
@@ -151893,6 +151785,7 @@ function CTLD:New(Coalition, Prefixes, Alias)
   self.ExtractFactor = 3.33 -- factor for troops extraction, i.e. CrateDistance * Extractfactor
   self.prefixes = Prefixes or {"Cargoheli"}
   self.useprefix = true
+  self.locale = "en"
   
   self.maximumHoverHeight = 15
   self.minimumHoverHeight = 4
@@ -151981,6 +151874,12 @@ function CTLD:New(Coalition, Prefixes, Alias)
 
   -- use C-130J-30 load and unload method, false by default.
   self.UseC130LoadAndUnload = false
+
+  -- when true, bridge DynamicCargo C-130 transport states to CTLD auto-build via engineer path.
+  self.UseC130DynamicCargoAutoBuild = false
+
+  -- merge ready C-130 auto-build sets from the same aircraft for this many seconds.
+  self.C130DynamicCargoAutoBuildMergeSeconds = 10
   
   -- Smokes and Flares
   self.SmokeColor = SMOKECOLOR.Red
@@ -152359,6 +152258,87 @@ end
 -- Helper and User Functions
 ------------------------------------------------------------------- 
 
+--- [Internal] Init localization
+-- @param #CTLD self
+-- @return #CTLD self
+function CTLD:_InitLocalization()
+  self:T(self.lid.."_InitLocalization")
+  self.gettext = TEXTANDSOUND:New("CTLD","en") -- Core.TextAndSound#TEXTANDSOUND
+  for locale,table in pairs(self.Messages) do
+    local Locale = string.lower(tostring(locale))
+    self:T("**** Adding locale: "..Locale)
+    for ID,Text in pairs(table) do
+      self:T(string.format('Adding ID %s',tostring(ID)))
+      self.gettext:AddEntry(Locale,tostring(ID),Text)
+    end
+  end
+  return self
+end
+
+--- [User] Set SRS TTS details - see @{Sound.SRS} for details.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
+-- @param #CTLD self
+-- @param #number Frequency Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 30 or {30,124.5}. Defaults to {30,124.5}. There needs to be exactly the same number of modulations!
+-- @param #number Modulation Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
+-- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #string Gender (Optional) Defaults to "male"
+-- @param #string Culture (Optional) Defaults to "en-US"
+-- @param #number Port (Optional) Defaults to 5002
+-- @param #string Voice (Optional) Use a specifc voice with the @{Sound.SRS#SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
+-- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS. Or Piper voice types with HOUND backend.
+-- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest)
+-- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
+-- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
+-- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, hand in nil here.
+-- @param #string Provider (Optional) MSRS Provider to be used, can be MSRS.Provider.Google or MSRS.Provider.WINDOWS etc; if you use a config file for MSRS, hand in nil here. 
+-- @return #CTLD self
+function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+  self:T(self.lid.."SetSRS")
+  self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
+  self.Gender = Gender or MSRS.gender or "male" --
+  self.Culture = Culture or MSRS.culture or "en-US" --
+  self.Port = Port or MSRS.port or 5002 --
+  self.Voice = Voice or MSRS.voice
+  self.PathToGoogleKey = PathToGoogleKey --
+  self.AccessKey = AccessKey
+  self.Volume = Volume or 1.0 --
+  self.usesrs = true
+  self.Frequency = Frequency or {30,124.5} --
+  self.BCFrequency = self.Frequency
+  self.Modulation = Modulation or {radio.modulation.FM,radio.modulation.AM} --
+  self.BCModulation = self.Modulation
+  -- set up SRS 
+  self.SRS=MSRS:New(self.PathToSRS,self.Frequency,self.Modulation,Backend)
+  self.SRS:SetCoalition(self.Coalition)
+  self.Label = self.MenuName or self.Name
+  self.SRS:SetLabel(self.Label)
+  self.SRS:SetGender(self.Gender)
+  self.SRS:SetCulture(self.Culture)
+  self.SRS:SetPort(self.Port)
+  self.SRS:SetVolume(self.Volume)
+  self.SRS.Label = "CTLD"
+  if Provider then
+    self.SRS:SetProvider(Provider)
+  end
+  if self.PathToGoogleKey then
+    self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
+    self.SRS:SetProvider(Provider or MSRS.Provider.GOOGLE)
+  end
+   -- Pre-configured Google?
+  if (not PathToGoogleKey) and self.SRS:GetProvider() == MSRS.Provider.GOOGLE then
+    self.PathToGoogleKey = MSRS.poptions.gcloud.credentials
+    self.Voice = Voice or MSRS.poptions.gcloud.voice
+    self.AccessKey = AccessKey or MSRS.poptions.gcloud.key
+  end
+  if Backend then
+    self.SRS:SetBackend(Backend)
+  end
+  self.SRS:SetVoice(self.Voice)
+  self.SRSQueue = MSRSQUEUE:New(self.Label)
+  self.SRSQueue:SetTransmitOnlyWithPlayers(true)
+  self.SRSQueue.Label = "CTLD"
+  return self
+end
+
 --- (Internal) Function to get capabilities of a chopper
 -- @param #CTLD self
 -- @param Wrapper.Unit#UNIT Unit The unit
@@ -152474,6 +152454,846 @@ function CTLD:AddPlayerTask(PlayerTask)
   return self
 end
 
+--- (Internal) Check whether cargo type is eligible for C-130 DynamicCargo auto-build.
+-- @param #CTLD self
+-- @param #CTLD_CARGO Cargo
+-- @return #boolean Outcome
+function CTLD:_C130DcAutoIsBuildableCargo(Cargo)
+  if not Cargo then return false end
+  local ctype = Cargo:GetType()
+  return ctype == CTLD_CARGO.Enum.VEHICLE or ctype == CTLD_CARGO.Enum.FOB
+end
+
+--- (Internal) Ensure C-130 DynamicCargo auto-build runtime state tables exist.
+-- @param #CTLD self
+-- @return #CTLD self
+function CTLD:_C130DcAutoEnsureState()
+  self._c130DcAutoSets = self._c130DcAutoSets or {}
+  self._c130DcAutoMap = self._c130DcAutoMap or {}
+  self._c130DcAutoBatches = self._c130DcAutoBatches or {}
+  self._c130DcAutoSeq = self._c130DcAutoSeq or 0
+  return self
+end
+
+--- (Internal) Filter crate list to the currently active C-130 auto-build set.
+-- @param #CTLD self
+-- @param #table Crates
+-- @param #string|#table SetIdOrScope
+-- @return #table Filtered
+-- @return #number Count
+function CTLD:_C130DcAutoFilterCrates(Crates, SetIdOrScope)
+  if not SetIdOrScope then
+    local t = Crates or {}
+    local n = 0
+    for _,_ in pairs(t) do
+      n = n + 1
+    end
+    return t, n
+  end
+
+  local scopeIds = {}
+  if type(SetIdOrScope) == "table" then
+    for k,v in pairs(SetIdOrScope) do
+      if type(k) == "number" and type(v) == "string" then
+        scopeIds[v] = true
+      elseif type(k) == "string" and v then
+        scopeIds[k] = true
+      end
+    end
+  elseif type(SetIdOrScope) == "string" then
+    scopeIds[SetIdOrScope] = true
+  end
+  if not next(scopeIds) then
+    return {}, 0
+  end
+
+  local allowedIds = {}
+  local allowedNames = {}
+  for setId,_ in pairs(scopeIds) do
+    local setData = self._c130DcAutoSets and self._c130DcAutoSets[setId] or nil
+    if setData then
+      for _,entry in ipairs(setData.entries or {}) do
+        if entry.cargoId then
+          allowedIds[entry.cargoId] = true
+        end
+        if entry.cargoObject and entry.cargoObject.GetID then
+          local id = entry.cargoObject:GetID()
+          if id then
+            allowedIds[id] = true
+          end
+        end
+        if entry.proxyCargo and entry.proxyCargo.GetID then
+          local id = entry.proxyCargo:GetID()
+          if id then
+            allowedIds[id] = true
+          end
+        end
+        if entry.spawnName then
+          allowedNames[entry.spawnName] = true
+        end
+        if entry.dynamicName then
+          allowedNames[entry.dynamicName] = true
+        end
+      end
+    end
+  end
+
+  local filtered = {}
+  for _,_crate in pairs(Crates or {}) do
+    local crate = _crate -- #CTLD_CARGO
+    local include = false
+    if crate then
+      local cid = crate.GetID and crate:GetID() or nil
+      if cid and allowedIds[cid] then
+        include = true
+      else
+        local pos = crate.GetPositionable and crate:GetPositionable() or nil
+        local pname = pos and pos.GetName and pos:GetName() or nil
+        if pname and allowedNames[pname] then
+          include = true
+        end
+      end
+    end
+    if include then
+      filtered[#filtered + 1] = crate
+    end
+  end
+  return filtered, #filtered
+end
+
+--- (Internal) Register one spawned C-130 CTLD crate in DynamicCargo database and emit NewDynamicCargo.
+-- @param #CTLD self
+-- @param Wrapper.Positionable#POSITIONABLE Positionable
+-- @return Wrapper.DynamicCargo#DYNAMICCARGO DynamicCargo
+function CTLD:_C130DcAutoRegisterDynamicCargo(Positionable)
+  if not Positionable or not _DATABASE then return nil end
+  local pname = Positionable.GetName and Positionable:GetName() or nil
+  if not pname or pname == "" then return nil end
+  local dcargo = _DATABASE:FindDynamicCargo(pname)
+  if not dcargo then
+    dcargo = _DATABASE:AddDynamicCargo(pname)
+    if dcargo then
+      self:T(self.lid.." C130DcAuto RegisterDynamicCargo "..pname)
+      _DATABASE:CreateEventNewDynamicCargo(dcargo)
+    end
+  end
+  return dcargo
+end
+
+--- (Internal) Get best-effort unit name from dynamic cargo event.
+-- @param #CTLD self
+-- @param Wrapper.DynamicCargo#DYNAMICCARGO DynamicCargo
+-- @return #string Unit name
+function CTLD:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+  if not DynamicCargo then return nil end
+  if DynamicCargo.GetCarrierUnitName then
+    local uname = DynamicCargo:GetCarrierUnitName()
+    if uname and uname ~= "" then
+      return uname
+    end
+  end
+  local owner = DynamicCargo.Owner
+  if owner and owner ~= "" and owner ~= "None" then
+    local byPlayer = CLIENT:FindByPlayerName(owner)
+    if byPlayer and byPlayer:IsAlive() then
+      return byPlayer:GetName()
+    end
+  end
+  return nil
+end
+
+--- (Internal) Get best-effort group name from dynamic cargo event.
+-- @param #CTLD self
+-- @param Wrapper.DynamicCargo#DYNAMICCARGO DynamicCargo
+-- @return #string Group name
+function CTLD:_C130DcAutoGetCarrierGroupName(DynamicCargo)
+  if not DynamicCargo then return nil end
+  if DynamicCargo.GetCarrierGroupName then
+    local gname = DynamicCargo:GetCarrierGroupName()
+    if gname and gname ~= "" then
+      return gname
+    end
+  end
+  local uname = self:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+  if uname then
+    local unit = UNIT:FindByName(uname)
+    if unit and unit:IsAlive() then
+      local grp = unit:GetGroup()
+      if grp then
+        return grp:GetName()
+      end
+    end
+  end
+  return nil
+end
+
+--- (Internal) Check whether this dynamic cargo event belongs to C-130J transport.
+-- @param #CTLD self
+-- @param Wrapper.DynamicCargo#DYNAMICCARGO DynamicCargo
+-- @return #boolean Outcome
+function CTLD:_C130DcAutoIsC130Event(DynamicCargo)
+  if not DynamicCargo then return false end
+  if DynamicCargo.GetCarrierTypeName then
+    local tname = DynamicCargo:GetCarrierTypeName()
+    if tname and tname ~= "" then
+      return tname == "C-130J-30"
+    end
+  end
+  local uname = self:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+  if uname then
+    local unit = UNIT:FindByName(uname)
+    if unit then
+      local utype = unit:GetTypeName() or "none"
+      if self.C130JTypes and self.C130JTypes[utype] then
+        return true
+      end
+      return utype == "C-130J-30"
+    end
+  end
+  return false
+end
+
+--- (Internal) Register a new C-130 DynamicCargo auto-build set.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group
+-- @param Wrapper.Unit#UNIT Unit
+-- @param #CTLD_CARGO Cargo
+-- @param Core.Zone#ZONE PickupZone
+-- @return #string Set id or nil
+function CTLD:_C130DcAutoRegisterSet(Group, Unit, Cargo, PickupZone)
+  if not Group or not Unit or not Cargo then return nil end
+  if not self.UseC130LoadAndUnload or not self.UseC130DynamicCargoAutoBuild then return nil end
+  if not self:IsC130J(Unit) then return nil end
+  if not self:_C130DcAutoIsBuildableCargo(Cargo) then return nil end
+
+  self:_C130DcAutoEnsureState()
+  self._c130DcAutoSeq = self._c130DcAutoSeq + 1
+  local seq = self._c130DcAutoSeq
+  local setId = string.format("%s|%s|%d", Unit:GetName() or "none", Cargo:GetName() or "cargo", seq)
+  local cc, ct, cs = Cargo:GetStaticTypeAndShape()
+  local recipe = {
+    cargoName = Cargo:GetName(),
+    cargoDisplayName = Cargo:GetDisplayName(),
+    templates = UTILS.DeepCopy(Cargo:GetTemplates()),
+    cargoType = Cargo:GetType(),
+    cratesNeeded = Cargo:GetCratesNeeded(),
+    perCrateMass = Cargo:GetMass(),
+    subcategory = Cargo.Subcategory,
+    staticCategory = cc,
+    staticType = ct,
+    staticShape = cs,
+    resourceMap = UTILS.DeepCopy(Cargo:GetStaticResourceMap()),
+    typeNames = UTILS.DeepCopy(Cargo.TypeNames),
+  }
+  local now = timer.getTime()
+  local setData = {
+    id = setId,
+    created = now,
+    ttl = now + 3600,
+    groupName = Group:GetName(),
+    unitName = Unit:GetName(),
+    pickupZoneName = (PickupZone and PickupZone.GetName and PickupZone:GetName()) or (type(PickupZone) == "string" and PickupZone or nil),
+    recipe = recipe,
+    entries = {},
+    completed = false,
+    failed = false,
+    buildStarted = false,
+    handoffClaimed = false,
+    helperGroupName = nil,
+    helperUnitName = nil,
+    cleanupAt = nil,
+  }
+  self._c130DcAutoSets[setId] = setData
+  self:T(self.lid.." C130DcAuto RegisterSet "..setId)
+  return setId
+end
+
+--- (Internal) Register one spawned crate entry inside a C-130 DynamicCargo auto-build set.
+-- @param #CTLD self
+-- @param #string SetId
+-- @param #CTLD_CARGO Cargo
+-- @return #boolean Outcome
+function CTLD:_C130DcAutoRegisterEntry(SetId, Cargo)
+  if not SetId or not Cargo then return false end
+  self:_C130DcAutoEnsureState()
+  local setData = self._c130DcAutoSets[SetId]
+  if not setData then return false end
+
+  local pos = Cargo:GetPositionable()
+  local pname = pos and pos.GetName and pos:GetName() or nil
+  local pcoord = pos and pos.GetCoordinate and pos:GetCoordinate() or nil
+  local entryId = string.format("%s#%d", SetId, #setData.entries + 1)
+  local entry = {
+    id = entryId,
+    state = "pending",
+    cargoId = Cargo:GetID(),
+    cargoObject = Cargo,
+    cargoName = Cargo:GetName(),
+    spawnName = pname,
+    dynamicName = nil,
+    spawnVec2 = pcoord and pcoord:GetVec2() or nil,
+    spawnVec3 = pcoord and pcoord:GetVec3() or nil,
+    landedVec2 = nil,
+    landedVec3 = nil,
+    proxyCargo = nil,
+    proxyAdded = false,
+  }
+  setData.entries[#setData.entries + 1] = entry
+  if pname then
+    self._c130DcAutoMap[pname] = { setId = SetId, entryId = entryId }
+  end
+  return true
+end
+
+--- (Internal) Get mapped C-130 DynamicCargo auto-build entry.
+-- @param #CTLD self
+-- @param #string DynamicCargoName
+-- @return #table SetData
+-- @return #table EntryData
+function CTLD:_C130DcAutoGetMappedEntry(DynamicCargoName)
+  if not DynamicCargoName or not self._c130DcAutoMap then return nil, nil end
+  local link = self._c130DcAutoMap[DynamicCargoName]
+  if not link then return nil, nil end
+  local setData = self._c130DcAutoSets and self._c130DcAutoSets[link.setId] or nil
+  if not setData then return nil, nil end
+  for _,entry in ipairs(setData.entries or {}) do
+    if entry.id == link.entryId then
+      return setData, entry
+    end
+  end
+  return nil, nil
+end
+
+--- (Internal) Resolve closest pending/loaded set entry for a dynamic cargo event.
+-- @param #CTLD self
+-- @param Wrapper.DynamicCargo#DYNAMICCARGO DynamicCargo
+-- @param #boolean PreferLoaded If true only loaded-state entries are considered.
+-- @return #table SetData
+-- @return #table EntryData
+function CTLD:_C130DcAutoResolveEntry(DynamicCargo, PreferLoaded)
+  local cargoCoord = DynamicCargo and DynamicCargo.GetLastPosition and DynamicCargo:GetLastPosition() or nil
+  local unitName = self:_C130DcAutoGetCarrierUnitName(DynamicCargo)
+  local groupName = self:_C130DcAutoGetCarrierGroupName(DynamicCargo)
+  local bestSet = nil
+  local bestEntry = nil
+  local bestDist = math.huge
+
+  for _,setData in pairs(self._c130DcAutoSets or {}) do
+    if not setData.completed and not setData.failed then
+      local ownerMatch = false
+      if unitName and setData.unitName and setData.unitName == unitName then
+        ownerMatch = true
+      elseif groupName and setData.groupName and setData.groupName == groupName then
+        ownerMatch = true
+      end
+      if ownerMatch then
+        for _,entry in ipairs(setData.entries or {}) do
+          local stateOk = false
+          if PreferLoaded then
+            stateOk = entry.state == "loaded"
+          else
+            stateOk = entry.state == "pending" or entry.state == "loaded"
+          end
+          if stateOk then
+            local dist = 0
+            if cargoCoord and entry.spawnVec2 then
+              local dx = (cargoCoord.x or 0) - (entry.spawnVec2.x or 0)
+              local dz = (cargoCoord.z or 0) - (entry.spawnVec2.y or 0)
+              dist = math.sqrt(dx*dx + dz*dz)
+            elseif cargoCoord and entry.landedVec2 then
+              local dx = (cargoCoord.x or 0) - (entry.landedVec2.x or 0)
+              local dz = (cargoCoord.z or 0) - (entry.landedVec2.y or 0)
+              dist = math.sqrt(dx*dx + dz*dz)
+            else
+              dist = 999999
+            end
+            if dist < bestDist then
+              bestDist = dist
+              bestSet = setData
+              bestEntry = entry
+            end
+          end
+        end
+      end
+    end
+  end
+  if bestSet and bestEntry and bestDist <= 200 then
+    return bestSet, bestEntry
+  end
+  return nil, nil
+end
+
+--- (Internal) Create CTLD cargo proxy from landed DynamicCargo for build handoff.
+-- @param #CTLD self
+-- @param #table SetData
+-- @param #table Entry
+-- @param Wrapper.DynamicCargo#DYNAMICCARGO DynamicCargo
+-- @return #CTLD_CARGO ProxyCargo
+function CTLD:_C130DcAutoCreateProxyCargo(SetData, Entry, DynamicCargo)
+  if not SetData or not Entry or not DynamicCargo then return nil end
+  if Entry.proxyAdded and Entry.proxyCargo then return Entry.proxyCargo end
+
+  -- Primary path: rebind the original CTLD crate object to landed DynamicCargo.
+  -- This avoids duplicate crate entries in self.Spawned_Cargo.
+  local original = Entry.cargoObject
+  if original then
+    original.Positionable = DynamicCargo
+    original:SetWasDropped(true, true)
+    Entry.proxyCargo = original
+    Entry.proxyAdded = true
+    return original
+  end
+
+  -- Fallback path (should be rare): synthesize a proxy cargo object.
+  local recipe = SetData.recipe or {}
+  self.CargoCounter = self.CargoCounter + 1
+  local proxy = CTLD_CARGO:New(
+    self.CargoCounter,
+    recipe.cargoName,
+    UTILS.DeepCopy(recipe.templates),
+    recipe.cargoType,
+    true,
+    false,
+    recipe.cratesNeeded,
+    DynamicCargo,
+    true,
+    recipe.perCrateMass,
+    nil,
+    recipe.subcategory
+  )
+  proxy:SetDisplayName(recipe.cargoDisplayName)
+  proxy:SetStaticTypeAndShape(recipe.staticCategory, recipe.staticType, recipe.staticShape)
+  proxy:SetStaticResourceMap(UTILS.DeepCopy(recipe.resourceMap))
+  if recipe.typeNames then
+    proxy.TypeNames = UTILS.DeepCopy(recipe.typeNames)
+  end
+  proxy:SetWasDropped(true, true)
+  table.insert(self.Spawned_Cargo, proxy)
+  Entry.proxyCargo = proxy
+  Entry.proxyAdded = true
+  return proxy
+end
+
+--- (Internal) Get C-130 auto-build batch owner key.
+-- @param #CTLD self
+-- @param #table SetData
+-- @return #string Owner key
+function CTLD:_C130DcAutoGetOwnerKey(SetData)
+  if not SetData then return nil end
+  return SetData.unitName or SetData.groupName
+end
+
+--- (Internal) Spawn one helper infantry group and handoff build for multiple sets.
+-- @param #CTLD self
+-- @param #string OwnerKey
+-- @param #table SetIds
+-- @return #boolean Outcome
+function CTLD:_C130DcAutoSpawnBuildHelperForSets(OwnerKey, SetIds)
+  if not SetIds or #SetIds < 1 then return false end
+  local sx = 0
+  local sy = 0
+  local count = 0
+  local validSetIds = {}
+  for _,setId in ipairs(SetIds) do
+    local setData = self._c130DcAutoSets and self._c130DcAutoSets[setId] or nil
+    if setData and not setData.failed and not setData.completed and not setData.buildStarted then
+      validSetIds[#validSetIds + 1] = setId
+      for _,entry in ipairs(setData.entries or {}) do
+        local vec2 = entry.landedVec2 or entry.spawnVec2
+        if vec2 then
+          sx = sx + vec2.x
+          sy = sy + vec2.y
+          count = count + 1
+        end
+      end
+    end
+  end
+  if #validSetIds < 1 or count < 1 then
+    return false
+  end
+
+  local center = { x = sx / count, y = sy / count }
+  local helperGroupName = string.format("CTLD_C130_AUTOBUILD_HELPER_%d", math.random(100000, 999999))
+  local helperUnitName = helperGroupName .. "_1"
+  local isRed = self.coalition == coalition.side.RED
+  local helperCountry = isRed and country.id.RUSSIA or country.id.USA
+  local helperType = isRed and "Infantry AK" or "Soldier M4"
+
+  local groupData = {
+    visible = false,
+    task = "Ground Nothing",
+    tasks = {},
+    route = {
+      points = {
+        [1] = {
+          x = center.x,
+          y = center.y,
+          action = "Off Road",
+          speed = 0,
+          task = { id = "ComboTask", params = { tasks = {} } },
+        }
+      }
+    },
+    units = {
+      [1] = {
+        x = center.x,
+        y = center.y,
+        type = helperType,
+        name = helperUnitName,
+        heading = 0,
+        skill = "Excellent",
+      }
+    },
+    name = helperGroupName,
+  }
+
+  coalition.addGroup(helperCountry, Group.Category.GROUND, groupData)
+  local helperGroup = GROUP:FindByName(helperGroupName)
+  local helperUnit = helperGroup and helperGroup:GetUnit(1) or nil
+  if not helperGroup or not helperUnit then
+    self:T(self.lid.." C130DcAuto helper spawn failed for owner "..tostring(OwnerKey))
+    for _,setId in ipairs(validSetIds) do
+      local setData = self._c130DcAutoSets and self._c130DcAutoSets[setId] or nil
+      if setData then
+        setData.handoffClaimed = false
+      end
+    end
+    return false
+  end
+
+  local cleanupAt = timer.getTime() + math.max(5, (self.buildtime or 0) + 5)
+  for _,setId in ipairs(validSetIds) do
+    local setData = self._c130DcAutoSets and self._c130DcAutoSets[setId] or nil
+    if setData then
+      setData.buildStarted = true
+      setData.completed = true
+      setData.helperGroupName = helperGroupName
+      setData.helperUnitName = helperUnitName
+      setData.cleanupAt = cleanupAt
+    end
+  end
+
+  self:T(self.lid.." C130DcAuto build handoff for owner "..tostring(OwnerKey).." sets="..table.concat(validSetIds,","))
+  local prevScope = self._c130DcAutoActiveSetId
+  self._c130DcAutoActiveSetId = validSetIds
+  self:_BuildCrates(helperGroup, helperUnit, true, true)
+  self._c130DcAutoActiveSetId = prevScope
+  return true
+end
+
+--- (Internal) Flush queued ready sets for a specific owner key.
+-- @param #CTLD self
+-- @param #string OwnerKey
+-- @return #CTLD self
+function CTLD:_C130DcAutoFlushOwnerBatch(OwnerKey)
+  local batch = self._c130DcAutoBatches and self._c130DcAutoBatches[OwnerKey] or nil
+  if not batch then return self end
+
+  if batch.timer and batch.timer.IsRunning and batch.timer:IsRunning() then
+    batch.timer:Stop()
+  end
+  batch.timer = nil
+
+  local setIds = {}
+  local failedSetIds = {}
+  for setId,_ in pairs(batch.setIds or {}) do
+    local setData = self._c130DcAutoSets and self._c130DcAutoSets[setId] or nil
+    if setData and not setData.failed and not setData.completed and not setData.buildStarted then
+      local total = 0
+      local landed = 0
+      local failed = false
+      for _,entry in ipairs(setData.entries or {}) do
+        total = total + 1
+        if entry.state == "failed" then
+          failed = true
+          break
+        end
+        if entry.state == "landed" then
+          landed = landed + 1
+        end
+      end
+      if failed then
+        setData.failed = true
+        failedSetIds[#failedSetIds + 1] = setId
+      elseif total > 0 and landed == total and setData.handoffClaimed then
+        setIds[#setIds + 1] = setId
+      else
+        setData.handoffClaimed = false
+      end
+    end
+  end
+
+  self._c130DcAutoBatches[OwnerKey] = nil
+
+  for _,setId in ipairs(failedSetIds) do
+    self:_C130DcAutoCleanupSet(setId, "failed")
+  end
+
+  if #setIds < 1 then
+    return self
+  end
+
+  table.sort(setIds)
+  local ok = self:_C130DcAutoSpawnBuildHelperForSets(OwnerKey, setIds)
+  if not ok then
+    for _,setId in ipairs(setIds) do
+      local setData = self._c130DcAutoSets and self._c130DcAutoSets[setId] or nil
+      if setData and not setData.failed then
+        setData.handoffClaimed = false
+      end
+    end
+  end
+  return self
+end
+
+--- (Internal) Queue a ready set for merge-window handoff.
+-- @param #CTLD self
+-- @param #string SetId
+-- @return #boolean Outcome
+function CTLD:_C130DcAutoQueueReadySet(SetId)
+  local setData = self._c130DcAutoSets and self._c130DcAutoSets[SetId] or nil
+  if not setData or setData.failed then return false end
+  if setData.completed or setData.buildStarted or setData.handoffClaimed then return true end
+
+  local ownerKey = self:_C130DcAutoGetOwnerKey(setData) or SetId
+  local window = tonumber(self.C130DynamicCargoAutoBuildMergeSeconds) or 10
+  if window < 0 then
+    window = 0
+  end
+
+  setData.handoffClaimed = true
+  setData.readyAt = timer.getTime()
+
+  local batch = self._c130DcAutoBatches[ownerKey]
+  if not batch then
+    batch = {
+      ownerKey = ownerKey,
+      setIds = {},
+      created = timer.getTime(),
+      dueAt = timer.getTime() + window,
+      timer = nil
+    }
+    self._c130DcAutoBatches[ownerKey] = batch
+  end
+  batch.setIds[SetId] = true
+
+  if window <= 0 then
+    self:_C130DcAutoFlushOwnerBatch(ownerKey)
+    return true
+  end
+
+  if not batch.timer or (batch.timer.IsRunning and not batch.timer:IsRunning()) then
+    batch.timer = TIMER:New(CTLD._C130DcAutoFlushOwnerBatch, self, ownerKey)
+    batch.timer:Start(window)
+    self:T(self.lid.." C130DcAuto queue set "..SetId.." owner="..tostring(ownerKey).." merge="..tostring(window))
+  else
+    self:T(self.lid.." C130DcAuto merge set "..SetId.." owner="..tostring(ownerKey))
+  end
+  return true
+end
+
+--- (Internal) Cleanup C-130 DynamicCargo auto-build set.
+-- @param #CTLD self
+-- @param #string SetId
+-- @param #string Result
+-- @return #CTLD self
+function CTLD:_C130DcAutoCleanupSet(SetId, Result)
+  self:_C130DcAutoEnsureState()
+  local setData = self._c130DcAutoSets[SetId]
+  if not setData then return self end
+
+  if setData.helperGroupName then
+    local helper = GROUP:FindByName(setData.helperGroupName)
+    if helper and helper:IsAlive() then
+      helper:Destroy(false)
+    end
+  end
+
+  for _,entry in ipairs(setData.entries or {}) do
+    if entry.spawnName then
+      self._c130DcAutoMap[entry.spawnName] = nil
+    end
+    if entry.dynamicName then
+      self._c130DcAutoMap[entry.dynamicName] = nil
+    end
+  end
+
+  local batchRemove = {}
+  for ownerKey,batch in pairs(self._c130DcAutoBatches or {}) do
+    if batch.setIds and batch.setIds[SetId] then
+      batch.setIds[SetId] = nil
+      if not next(batch.setIds) then
+        if batch.timer and batch.timer.IsRunning and batch.timer:IsRunning() then
+          batch.timer:Stop()
+        end
+        batchRemove[#batchRemove + 1] = ownerKey
+      end
+    end
+  end
+  for _,ownerKey in ipairs(batchRemove) do
+    self._c130DcAutoBatches[ownerKey] = nil
+  end
+
+  self._c130DcAutoSets[SetId] = nil
+  self:T(self.lid.." C130DcAuto CleanupSet "..SetId.." result="..tostring(Result))
+  return self
+end
+
+--- (Internal) Try to complete a C-130 DynamicCargo auto-build set.
+-- @param #CTLD self
+-- @param #string SetId
+-- @return #boolean Outcome
+function CTLD:_C130DcAutoTryCompleteSet(SetId)
+  local setData = self._c130DcAutoSets and self._c130DcAutoSets[SetId] or nil
+  if not setData or setData.failed then return false end
+  if setData.completed or setData.buildStarted or setData.handoffClaimed then return true end
+  local total = 0
+  local landed = 0
+  for _,entry in ipairs(setData.entries or {}) do
+    total = total + 1
+    if entry.state == "failed" then
+      setData.failed = true
+      self:_C130DcAutoCleanupSet(SetId, "failed")
+      return false
+    end
+    if entry.state == "landed" then
+      landed = landed + 1
+    end
+  end
+  if total > 0 and landed == total then
+    return self:_C130DcAutoQueueReadySet(SetId)
+  end
+  return false
+end
+
+--- (Internal) Handle DynamicCargoLoaded for mapped C-130 auto-build sets.
+-- @param #CTLD self
+-- @param Core.Event#EVENTDATA EventData
+-- @return #boolean Handled
+function CTLD:_C130DcAutoOnDynamicLoaded(EventData)
+  self:_C130DcAutoEnsureState()
+  local dcargo = EventData.IniDynamicCargo
+  if not dcargo then return false end
+
+  local setData, entry = self:_C130DcAutoGetMappedEntry(EventData.IniDynamicCargoName)
+  if not setData or not entry then
+    setData, entry = self:_C130DcAutoResolveEntry(dcargo, false)
+  end
+  if not setData or not entry then
+    return false
+  end
+
+  if not self:_C130DcAutoIsC130Event(dcargo) then
+    return false
+  end
+
+  entry.state = "loaded"
+  entry.dynamicName = EventData.IniDynamicCargoName
+  self._c130DcAutoMap[EventData.IniDynamicCargoName] = { setId = setData.id, entryId = entry.id }
+  local unitName = self:_C130DcAutoGetCarrierUnitName(dcargo)
+  local groupName = self:_C130DcAutoGetCarrierGroupName(dcargo)
+  if unitName then setData.unitName = unitName end
+  if groupName then setData.groupName = groupName end
+  setData.ttl = timer.getTime() + 3600
+  self:T(self.lid.." C130DcAuto mapped loaded "..EventData.IniDynamicCargoName.." set="..setData.id)
+  return true
+end
+
+--- (Internal) Handle DynamicCargoUnloaded for mapped C-130 auto-build sets.
+-- @param #CTLD self
+-- @param Core.Event#EVENTDATA EventData
+-- @return #boolean Handled
+function CTLD:_C130DcAutoOnDynamicUnloaded(EventData)
+  self:_C130DcAutoEnsureState()
+  local dcargo = EventData.IniDynamicCargo
+  if not dcargo then return false end
+
+  local setData, entry = self:_C130DcAutoGetMappedEntry(EventData.IniDynamicCargoName)
+  if not setData or not entry then
+    setData, entry = self:_C130DcAutoResolveEntry(dcargo, true)
+  end
+  if not setData or not entry then
+    return false
+  end
+
+  if not self:_C130DcAutoIsC130Event(dcargo) then
+    return false
+  end
+
+  if setData.completed or setData.buildStarted or setData.handoffClaimed then
+    return true
+  end
+  if entry.state == "landed" then
+    -- ignore duplicate unload notifications for already landed entry
+    return true
+  end
+
+  if dcargo.IsDetached and not dcargo:IsDetached() then
+    return false
+  end
+  if dcargo.IsLandedStable and not dcargo:IsLandedStable() then
+    return false
+  end
+  if DYNAMICCARGO and DYNAMICCARGO.C130RequireAirborne and dcargo.WasAirborneTransport and not dcargo:WasAirborneTransport() then
+    return false
+  end
+
+  entry.state = "landed"
+  entry.dynamicName = EventData.IniDynamicCargoName
+  self._c130DcAutoMap[EventData.IniDynamicCargoName] = { setId = setData.id, entryId = entry.id }
+  local dpos = dcargo.GetLastPosition and dcargo:GetLastPosition() or nil
+  if dpos then
+    entry.landedVec2 = dpos:GetVec2()
+    entry.landedVec3 = dpos:GetVec3()
+  end
+  self:_C130DcAutoCreateProxyCargo(setData, entry, dcargo)
+  setData.ttl = timer.getTime() + 3600
+  self:T(self.lid.." C130DcAuto mapped unloaded "..EventData.IniDynamicCargoName.." set="..setData.id)
+  self:_C130DcAutoTryCompleteSet(setData.id)
+  return true
+end
+
+--- (Internal) Handle DynamicCargoRemoved for mapped C-130 auto-build sets.
+-- @param #CTLD self
+-- @param Core.Event#EVENTDATA EventData
+-- @return #boolean Handled
+function CTLD:_C130DcAutoOnDynamicRemoved(EventData)
+  self:_C130DcAutoEnsureState()
+  local setData, entry = self:_C130DcAutoGetMappedEntry(EventData.IniDynamicCargoName)
+  if not setData or not entry then return false end
+  if entry.state ~= "landed" then
+    entry.state = "failed"
+    setData.failed = true
+    self:T(self.lid.." C130DcAuto entry failed/removed "..EventData.IniDynamicCargoName.." set="..setData.id)
+    self:_C130DcAutoCleanupSet(setData.id, "removed")
+  end
+  return true
+end
+
+--- (Internal) C-130 DynamicCargo auto-build housekeeping tick.
+-- @param #CTLD self
+-- @return #CTLD self
+function CTLD:_C130DcAutoTick()
+  self:_C130DcAutoEnsureState()
+  local now = timer.getTime()
+  local cleanup = {}
+  for setId,setData in pairs(self._c130DcAutoSets or {}) do
+    if setData.failed then
+      cleanup[#cleanup + 1] = { setId = setId, reason = "failed" }
+    elseif setData.completed then
+      if setData.cleanupAt and now >= setData.cleanupAt then
+        cleanup[#cleanup + 1] = { setId = setId, reason = "completed" }
+      end
+    elseif setData.ttl and now > setData.ttl then
+      cleanup[#cleanup + 1] = { setId = setId, reason = "ttl" }
+    end
+  end
+  for _,entry in ipairs(cleanup) do
+    self:_C130DcAutoCleanupSet(entry.setId, entry.reason)
+  end
+  return self
+end
+
 --- (Internal) Event handler function
 -- @param #CTLD self
 -- @param Core.Event#EVENTDATA EventData
@@ -152550,6 +153370,12 @@ function CTLD:_EventHandler(EventData)
     --------------
   elseif event.id == EVENTS.DynamicCargoLoaded then
     self:T(self.lid.."GC Loaded Event "..event.IniDynamicCargoName)
+    if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+      local handled = self:_C130DcAutoOnDynamicLoaded(event)
+      if handled then
+        return self
+      end
+    end
     ---------------
     -- New dynamic cargo system Handling LOADING
     --------------
@@ -152573,7 +153399,10 @@ function CTLD:_EventHandler(EventData)
       self.Loaded_Cargo[unitname] = nil
       self.Loaded_Cargo[unitname] = loaded
       local Group = client:GetGroup()
-      self:_SendMessage(string.format("Crate %s loaded by ground crew!",event.IniDynamicCargoName), 10, false, Group)
+      local msg = self.gettext:GetEntry("CRATE_LOADED_GROUNDCREW",self.locale)
+      msg = string.format(msg,event.IniDynamicCargoName)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("Crate %s loaded by ground crew!",event.IniDynamicCargoName), 10, false, Group)
       self:__CratesPickedUp(1, Group, client, dcargo)
       self:_RefreshCrateQuantityMenus(Group, client, nil)
     end
@@ -152582,6 +153411,12 @@ function CTLD:_EventHandler(EventData)
     --------------
   elseif event.id == EVENTS.DynamicCargoUnloaded then
     self:T(self.lid.."GC Unload Event "..event.IniDynamicCargoName)
+    if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+      local handled = self:_C130DcAutoOnDynamicUnloaded(event)
+      if handled then
+        return self
+      end
+    end
     ---------------
     -- New dynamic cargo system Handling UNLOADING
     --------------
@@ -152619,7 +153454,10 @@ function CTLD:_EventHandler(EventData)
         self.Loaded_Cargo[unitname] = loaded
       end
       local Group = client:GetGroup()
-      self:_SendMessage(string.format("Crate %s unloaded by ground crew!",event.IniDynamicCargoName), 10, false, Group) 
+      local msg = self.gettext:GetEntry("CRATE_UNLOADED_GROUNDCREW",self.locale)
+      msg = string.format(msg,event.IniDynamicCargoName)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("Crate %s unloaded by ground crew!",event.IniDynamicCargoName), 10, false, Group) 
       self:__CratesDropped(1,Group,client,{dcargo})
       self:_RefreshCrateQuantityMenus(Group, client, nil)
     end
@@ -152628,6 +153466,9 @@ function CTLD:_EventHandler(EventData)
     --------------
   elseif event.id == EVENTS.DynamicCargoRemoved then
     self:T(self.lid.."GC Remove Event "..event.IniDynamicCargoName)
+    if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+      self:_C130DcAutoOnDynamicRemoved(event)
+    end
     ---------------
     -- New dynamic cargo system Handling REMOVE
     --------------
@@ -152641,9 +153482,9 @@ end
 
 --- (Internal) Function to check if a unit is a C-130J
 -- @param #CTLD self
-function CTLD:IsC130J(Unit)
+function CTLD:IsC130J(Unit, IgnoreUseC130Flag)
   if not Unit then return false end
-  if not self.UseC130LoadAndUnload then return false end
+  if not IgnoreUseC130Flag and not self.UseC130LoadAndUnload then return false end
   self.C130JUnits = self.C130JUnits or {}
   local unitname = Unit:GetName() or "none"
   return self.C130JUnits[unitname] == true
@@ -152655,10 +153496,15 @@ end
 -- @param #number Time Number of seconds to display the message.
 -- @param #boolean Clearscreen Clear screen or not.
 -- @param Wrapper.Group#GROUP Group The group receiving the message.
-function CTLD:_SendMessage(Text, Time, Clearscreen, Group)
+-- @param #boolean Silent If true, do not speak out messages via SRS/TTS (if SRS is set up)
+function CTLD:_SendMessage(Text, Time, Clearscreen, Group, Silent)
   self:T(self.lid .. " _SendMessage")
   if not self.suppressmessages then
     local m = MESSAGE:New(Text,Time,"CTLD",Clearscreen):ToGroup(Group)
+    if self.usesrs == true and Silent ~= true then
+      self.SRSQueue:NewTransmission(Text,duration,self.SRS,tstart,1,subgroups,subtitle,subduration,self.Frequency,self.Modulation,self.Gender,
+        self.Culture,self.Voice,self.Volume,self.Label,coordinate,self.Speed) 
+    end
   end 
   return self
 end
@@ -152669,10 +153515,16 @@ end
 -- @return #CTLD_CARGO Cargo object, nil if it cannot be found
 function CTLD:_FindTroopsCargoObject(Name)
   self:T(self.lid .. " _FindTroopsCargoObject")
+  self._troopsByName = self._troopsByName or {}
+  local cached = self._troopsByName[Name]
+  if cached then
+    return cached
+  end
   local cargo = nil
   for _,_cargo in pairs(self.Cargo_Troops)do
     local cargo = _cargo -- #CTLD_CARGO
     if cargo.Name == Name then
+      self._troopsByName[Name] = cargo
       return cargo
     end
   end
@@ -152685,16 +153537,23 @@ end
 -- @return #CTLD_CARGO Cargo object, nil if it cannot be found
 function CTLD:_FindCratesCargoObject(Name)
   self:T(self.lid .. " _FindCratesCargoObject")
+  self._crateOrStaticByName = self._crateOrStaticByName or {}
+  local cached = self._crateOrStaticByName[Name]
+  if cached then
+    return cached
+  end
   local cargo = nil
   for _,_cargo in pairs(self.Cargo_Crates)do
     local cargo = _cargo -- #CTLD_CARGO
     if cargo.Name == Name then
+      self._crateOrStaticByName[Name] = cargo
       return cargo
     end
   end
   for _,_cargo in pairs(self.Cargo_Statics)do
     local cargo = _cargo -- #CTLD_CARGO
     if cargo.Name == Name then
+      self._crateOrStaticByName[Name] = cargo
       return cargo
     end
   end
@@ -152760,7 +153619,9 @@ function CTLD:_PreloadCrates(Group, Unit, Cargo, NumberOfCrates)
   local cancrates = capabilities.crates -- #boolean
   local cratelimit = capabilities.cratelimit -- #number
   if not cancrates then
-    self:_SendMessage("Sorry this chopper cannot carry crates!", 10, false, Group) 
+    local msg = self.gettext:GetEntry("CHOPPER_CANNOT_CARRY",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Sorry this chopper cannot carry crates!", 10, false, Group) 
     return self
   else
     -- have we loaded stuff already?
@@ -152785,7 +153646,10 @@ function CTLD:_PreloadCrates(Group, Unit, Cargo, NumberOfCrates)
       crate:SetWasDropped(false)
       table.insert(loaded.Cargo, crate)
       crate.Positionable = nil
-      self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()), 10, false, Group)
+      local msg = self.gettext:GetEntry("CRATE_LOADED_ID",self.locale)
+      msg = string.format(msg,crate:GetID(),crate:GetName())
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("Crate ID %d for %s loaded!",crate:GetID(),crate:GetName()), 10, false, Group)
       --self:__CratesPickedUp(1, Group, Unit, crate)
       self.Loaded_Cargo[unitname] = loaded
       self:_UpdateUnitCargoMass(Unit)
@@ -152820,6 +153684,20 @@ function CTLD:PreloadCrates(Unit,Cratesname,NumberOfCrates)
   return self
 end
 
+--- (User) Hook to allow mission-specific troop restrictions.
+-- Override this in your mission to perform custom checks (e.g. warehouse stock, role limits) before troops are loaded.
+-- Return true to allow the request, or false to block it. When blocked, _LoadTroops and _LoadTroopsQuantity exit silently.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group Requesting player group.
+-- @param Wrapper.Unit#UNIT Unit Requesting unit.
+-- @param #CTLD_CARGO Cargo Troop cargo type being requested.
+-- @param #number quantity Number of troop sets requested.
+-- @param #boolean Inject If true, this call originates from an inject/preload path.
+-- @return #boolean Allow troop loading.
+function CTLD:CanGetTroops(Group, Unit, Cargo, quantity, Inject)
+  return true
+end
+
 --- (Internal) Function to load troops into a heli.
 -- @param #CTLD self
 -- @param Wrapper.Group#GROUP Group
@@ -152836,7 +153714,10 @@ function CTLD:_LoadTroops(Group, Unit, Cargotype, Inject)
   local maxloadable = self:_GetMaxLoadableMass(Unit)
   if type(instock) == "number" and tonumber(instock) <= 0 and tonumber(instock) ~= -1 and not Inject then
     -- nothing left over
-    self:_SendMessage(string.format("Sorry, all %s are gone!", cgoname), 10, false, Group)
+    local msg = self.gettext:GetEntry("ALL_GONE",self.locale)
+    msg = string.format(msg,cgoname)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("Sorry, all %s are gone!", cgoname), 10, false, Group)
     return self
   end
   -- landed or hovering over load zone?
@@ -152849,13 +153730,19 @@ function CTLD:_LoadTroops(Group, Unit, Cargotype, Inject)
   end
   if not Inject then
     if not inzone then
-      self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_LOGISTICS",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
       if not self.debug then return self end
     elseif not grounded and not hoverload then
-      self:_SendMessage("You need to land or hover in position to load!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NEED_TO_LAND_OR_HOVER_LOAD",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to land or hover in position to load!", 10, false, Group)
       if not self.debug then return self end
     elseif self.pilotmustopendoors and not  UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-      self:_SendMessage("You need to open the door(s) to load troops!", 10, false, Group)
+      local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_TROOPS",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to open the door(s) to load troops!", 10, false, Group)
       if not self.debug then return self end  
     end
   end
@@ -152884,19 +153771,29 @@ function CTLD:_LoadTroops(Group, Unit, Cargotype, Inject)
     loaded.Cargo = {}
   end
   if troopsize + numberonboard > trooplimit then
-    self:_SendMessage("Sorry, we\'re crammed already!", 10, false, Group)
+    local msg = self.gettext:GetEntry("CRAMMED",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Sorry, we\'re crammed already!", 10, false, Group)
     return
   elseif maxloadable < cgonetmass then
-    self:_SendMessage("Sorry, that\'s too heavy to load!", 10, false, Group)
+    local msg = self.gettext:GetEntry("TOO_HEAVY",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Sorry, that\'s too heavy to load!", 10, false, Group)
     return
   else
+    if not self:CanGetTroops(Group, Unit, Cargotype, 1, Inject) then
+      return self
+    end
     self.CargoCounter = self.CargoCounter + 1
     local loadcargotype = CTLD_CARGO:New(self.CargoCounter, Cargotype.Name, Cargotype.Templates, cgotype, true, true, Cargotype.CratesNeeded,nil,nil,Cargotype.PerCrateMass)
     self:T({cargotype=loadcargotype})
     loaded.Troopsloaded = loaded.Troopsloaded + troopsize
     table.insert(loaded.Cargo,loadcargotype)
     self.Loaded_Cargo[unitname] = loaded
-    self:_SendMessage(string.format("%s boarded!", cgoname), 10, false, Group)
+    local msg = self.gettext:GetEntry("BOARDED",self.locale)
+    msg = string.format(msg,cgoname)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("%s boarded!", cgoname), 10, false, Group)
     self:_RefreshDropTroopsMenu(Group,Unit)
     self:__TroopsPickedUp(1,Group, Unit, Cargotype)
     self:_UpdateUnitCargoMass(Unit)
@@ -152930,7 +153827,9 @@ function CTLD:_FindRepairNearby(Group, Unit, Repairtype)
     
     -- found one and matching distance?  
     if nearestGroup == nil or nearestDistance > self.EngineerSearch then
-      self:_SendMessage("No unit close enough to repair!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NO_UNIT_TO_REPAIR",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("No unit close enough to repair!", 10, false, Group)
       return nil, nil
     end
     
@@ -152992,7 +153891,10 @@ function CTLD:_RepairObjectFromCrates(Group,Unit,Crates,Build,Number,Engineering
   if NearestGroup ~= nil then
     if self.repairtime < 2 then self.repairtime = 30 end -- noob catch
     if not Engineering then
-      self:_SendMessage(string.format("Repair started using %s taking %d secs", build.Name, self.repairtime), 10, false, Group)
+      local msg = self.gettext:GetEntry("REPAIR_STARTED",self.locale)
+      msg = string.format(msg,build.Name, self.repairtime)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("Repair started using %s taking %d secs", build.Name, self.repairtime), 10, false, Group)
     end
     -- now we can build ....
     local name = CargoType:GetName()
@@ -153014,7 +153916,10 @@ function CTLD:_RepairObjectFromCrates(Group,Unit,Crates,Build,Number,Engineering
     self:__CratesRepairStarted(1,Group,Unit)
   else
     if not Engineering then
-      self:_SendMessage("Can't repair this unit with " .. build.Name, 10, false, Group)
+      local msg = self.gettext:GetEntry("CANT_REPAIR_WITH",self.locale)
+      msg = string.format(msg,build.Name)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Can't repair this unit with " .. build.Name, 10, false, Group)
     else
       self:T("Can't repair this unit with " .. build.Name)
     end
@@ -153034,11 +153939,15 @@ end
     local hassecondaries = false
     
     if not grounded and not hoverload then
-      self:_SendMessage("You need to land or hover in position to load!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NEED_TO_LAND_OR_HOVER_LOAD",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to land or hover in position to load!", 10, false, Group)
       if not self.debug then return self end
     end
     if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-      self:_SendMessage("You need to open the door(s) to extract troops!", 10, false, Group)
+      local msg = self.gettext:GetEntry("OPEN_DOORS_EXTRACT_TROOPS",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to open the door(s) to extract troops!", 10, false, Group)
       if not self.debug then return self end 
     end
     -- load troops into heli
@@ -153079,7 +153988,9 @@ end
     end
     
     if nearestGroup == nil or nearestDistance > extractdistance then
-      self:_SendMessage("No units close enough to extract!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NO_UNITS_TO_EXTRACT",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("No units close enough to extract!", 10, false, Group)
       return self
     end
     
@@ -153102,7 +154013,10 @@ end
         end
       end
       if Cargotype == nil then
-        self:_SendMessage("Can't onboard " .. groupType, 10, false, Group)
+        local msg = self.gettext:GetEntry("CANT_ONBOARD",self.locale)
+        msg = string.format(msg,groupType)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("Can't onboard " .. groupType, 10, false, Group)
       else
       
         local troopsize = Cargotype:GetCratesNeeded() -- #number
@@ -153119,7 +154033,9 @@ end
           loaded.Cargo = {}
         end
         if troopsize + numberonboard > trooplimit then
-          self:_SendMessage("Sorry, we\'re crammed already!", 10, false, Group)
+          local msg = self.gettext:GetEntry("CRAMMED",self.locale)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage("Sorry, we\'re crammed already!", 10, false, Group)
           nearestGroup.ExtractTime = 0
           --return self
         else
@@ -153131,8 +154047,12 @@ end
           loaded.Troopsloaded = loaded.Troopsloaded + troopsize
           table.insert(loaded.Cargo,loadcargotype)
           self.Loaded_Cargo[unitname] = loaded
-          self:ScheduleOnce(running, self._SendMessage, self, string.format("%s boarded!", Cargotype.Name), 10, false, Group)
-          self:_SendMessage(string.format("%s boarding!", Cargotype.Name), 10, false, Group)
+          local boardedtext = self.gettext:GetEntry("BOARDED",self.locale)
+          self:ScheduleOnce(running, self._SendMessage, self, string.format(boardedtext, Cargotype.Name), 10, false, Group)
+          local msg = self.gettext:GetEntry("BOARDING",self.locale)
+          msg = string.format(msg,Cargotype.Name)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage(string.format("%s boarding!", Cargotype.Name), 10, false, Group)
           self:_RefreshDropTroopsMenu(Group,Unit)
           self:_UpdateUnitCargoMass(Unit)
           local groupname = nearestGroup:GetName()
@@ -153199,15 +154119,23 @@ function CTLD:_LoadTroopsQuantity(Group, Unit, Cargo, quantity)
   end
 
   if not inzone then
-    self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_LOGISTICS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
     if not self.debug then return self end
   elseif not grounded and not hoverload then
-    self:_SendMessage("You need to land or hover in position to load!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NEED_TO_LAND_OR_HOVER_LOAD",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to land or hover in position to load!", 10, false, Group)
     if not self.debug then return self end
   elseif self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to load troops!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_TROOPS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to load troops!", 10, false, Group)
     if not self.debug then return self end  
   end
+
+  if not self:CanGetTroops(Group, Unit, Cargo, n, false) then return self end
 
   local prevSuppress = self.suppressmessages
   self.suppressmessages = true
@@ -153217,7 +154145,10 @@ function CTLD:_LoadTroopsQuantity(Group, Unit, Cargo, quantity)
   timer.scheduleFunction(function()
     self.suppressmessages = prevSuppress
     local dname = Cargo:GetName()
-    self:_SendMessage(string.format("Loaded %d %s.", n, dname), 10, false, Group)
+    local msg = self.gettext:GetEntry("LOADED_FULL",self.locale)
+    msg = string.format(msg,n, dname)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("Loaded %d %s.", n, dname), 10, false, Group)
   end, {}, timer.getTime() + 0.2 * n + 0.05)
   return self
 end
@@ -153244,8 +154175,10 @@ function CTLD:_AddTroopQuantityMenus(Group, Unit, parentMenu, cargoObj)
   if trooplimit > 0 then
     local space = trooplimit - onboard
     if space < troopsize then
-      local msg = "Troop limit reached"
-      if type(stock) == "number" and stock == 0 then msg = "Out of stock" end
+      local msg = self.gettext:GetEntry("MENU_TROOP_LIMIT",self.locale)
+      if type(stock) == "number" and stock == 0 then msg = self.gettext:GetEntry("MENU_OUT_OF_STOCK",self.locale) end
+      --local msg = "Troop limit reached"
+      --if type(stock) == "number" and stock == 0 then msg = "Out of stock" end
       MENU_GROUP_COMMAND:New(Group, msg, parentMenu, function() end)
       return self
     end
@@ -153301,7 +154234,7 @@ function CTLD:_AddCrateQuantityMenus(Group, Unit, parentMenu, cargoObj, stockSum
   if type(stock) == "number" and stock >= 0 then
     availableSets = math.floor(stock)
     if availableSets <= 0 then
-      MENU_GROUP_COMMAND:New(Group, "Out of stock", parentMenu, function() end)
+      MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_OUT_OF_STOCK",self.locale), parentMenu, function() end)
       return self
     end
     if availableSets < maxQuantity then
@@ -153363,43 +154296,62 @@ function CTLD:_AddCrateQuantityMenus(Group, Unit, parentMenu, cargoObj, stockSum
         maxQuantity = maxMassSets
       end
     end
-    if type(maxload)=="number"and maxload>0 and perCrateMass>0 then
-      maxMassCrates=math.floor(maxload/perCrateMass)
+    if type(maxload) == "number" and maxload > 0 and perCrateMass > 0 then
+      maxMassCrates = math.floor(maxload / perCrateMass)
     end
   end
-    self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." allowLoad "..tostring(allowLoad))
+  self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." allowLoad "..tostring(allowLoad))
   if maxQuantity < 1 then
     return self
   end
 
   if maxQuantity == 1 then
     self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." Menu for MaxQ=1 ".."parentMenu.MenuText = "..parentMenu.MenuText)
-    --parentMenu.MenuText
-    MENU_GROUP_COMMAND:New(Group, "Get", parentMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, 1)
     local canLoad = (allowLoad and (not capacitySets or capacitySets >= 1) and (not maxMassSets or maxMassSets >= 1))
     local isHerc = self:IsC130J(Unit)
-    local isHook = self:IsHook(Unit)
     local cgotype = cargoObj:GetType() or nil
-    local suppressGetAndLoad = (self.enableChinookGCLoading == true) and isHook and (cgotype == CTLD_CARGO.Enum.STATIC)
-    local canPartiallyLoad=((not capacityCrates or capacityCrates>=1)and(not maxMassCrates or maxMassCrates>=1))
+    local suppressGetAndLoad = (self.enableChinookGCLoading == true) and (cgotype == CTLD_CARGO.Enum.STATIC)
+    local canPartiallyLoad = ((not capacityCrates or capacityCrates >= 1) and (not maxMassCrates or maxMassCrates >= 1))
+
+    if suppressGetAndLoad or isHerc then
+      if canLoad then
+        MENU_GROUP_COMMAND:New(Group, "1", parentMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, 1)
+      else
+        local msg
+        if maxMassSets and (not capacitySets or capacitySets >= 1) and maxMassSets < 1 then
+          msg = self.gettext:GetEntry("WEIGHT_LIMIT",self.locale)
+          --msg = "Weight limit reached"
+        else
+          msg = self.gettext:GetEntry("CRATE_LIMIT",self.locale)
+          --msg = "Crate limit reached"
+        end
+        MENU_GROUP_COMMAND:New(Group, msg, parentMenu, self._SendMessage, self, msg, 10, false, Group)
+      end
+      return self
+    end
+
     if canLoad and not isHerc and not suppressGetAndLoad then
-      MENU_GROUP_COMMAND:New(Group, "Get and Load", parentMenu, self._GetAndLoad, self, Group, Unit, cargoObj, 1)
+      MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_GET",self.locale), parentMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, 1)
+      MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_GET_AND_LOAD",self.locale), parentMenu, self._GetAndLoad, self, Group, Unit, cargoObj, 1)
     else
       local msg
       if not isHerc and not suppressGetAndLoad then
         if maxMassSets and (not capacitySets or capacitySets >= 1) and maxMassSets < 1 then
-          msg = "Weight limit reached"
+          msg = self.gettext:GetEntry("WEIGHT_LIMIT",self.locale)
+          --msg = "Weight limit reached"
         else
-          msg = "Crate limit reached"
+          msg = self.gettext:GetEntry("CRATE_LIMIT",self.locale)
+          --msg = "Crate limit reached"
         end
         MENU_GROUP_COMMAND:New(Group, msg, parentMenu, self._SendMessage, self, msg, 10, false, Group)
-
         if canPartiallyLoad and (cgotype ~= CTLD_CARGO.Enum.STATIC) and (not suppressGetAndLoad) then
-          MENU_GROUP_COMMAND:New(Group, "Partially load", parentMenu, self._GetAndLoad, self, Group, Unit, cargoObj, 1,true)
+          MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_GET_ANYWAY",self.locale), parentMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, 1)
+
+          MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_PARTIALLY_LOAD",self.locale), parentMenu, self._GetAndLoad, self, Group, Unit, cargoObj, 1, true)
         end
       end
     end
-   
+
     return self
   end
 
@@ -153407,29 +154359,17 @@ function CTLD:_AddCrateQuantityMenus(Group, Unit, parentMenu, cargoObj, stockSum
     self:T("_AddCrateQuantityMenus maxQuantity "..maxQuantity.." Menu for MaxQ>1")
     local label = tostring(quantity)
     self:T("_AddCrateQuantityMenus Label "..label)
-    local qMenu = MENU_GROUP:New(Group, label, parentMenu)
-    MENU_GROUP_COMMAND:New(Group, "Get", qMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, quantity)
     local canLoad = (allowLoad and (not capacitySets or capacitySets >= quantity) and (not maxMassSets or maxMassSets >= quantity))
     local isHerc = self:IsC130J(Unit)
-    local isHook = self:IsHook(Unit)
     local cgotype = cargoObj:GetType() or nil
-    local suppressGetAndLoad = (self.enableChinookGCLoading == true) and isHook and (cgotype == CTLD_CARGO.Enum.STATIC)
-    local canPartiallyLoad=((not capacityCrates or capacityCrates>=1)and(not maxMassCrates or maxMassCrates>=1))
-    if canLoad and not isHerc and not suppressGetAndLoad  then
-      MENU_GROUP_COMMAND:New(Group, "Get and Load", qMenu, self._GetAndLoad, self, Group, Unit, cargoObj, quantity)
+    local suppressGetAndLoad = (self.enableChinookGCLoading == true) and (cgotype == CTLD_CARGO.Enum.STATIC)
+
+    if canLoad and not isHerc and not suppressGetAndLoad then
+      local qMenu = MENU_GROUP:New(Group, label, parentMenu)
+      MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_GET",self.locale), qMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, quantity)
+      MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_GET_AND_LOAD",self.locale), qMenu, self._GetAndLoad, self, Group, Unit, cargoObj, quantity)
     else
-      local msg
-      if not isHerc and not suppressGetAndLoad then
-        if maxMassSets and (not capacitySets or capacitySets >= quantity) and maxMassSets < quantity then
-          msg = "Weight limit reached"
-        else
-          msg = "Crate limit reached"
-        end
-        MENU_GROUP_COMMAND:New(Group, msg, qMenu, self._SendMessage, self, msg, 10, false, Group)
-        if canPartiallyLoad and (cgotype ~= CTLD_CARGO.Enum.STATIC) and (not suppressGetAndLoad) then
-          MENU_GROUP_COMMAND:New(Group, "Partially load", qMenu, self._GetAndLoad, self, Group, Unit, cargoObj, quantity, true)
-        end
-      end
+      MENU_GROUP_COMMAND:New(Group, label, parentMenu, self._GetCrateQuantity, self, Group, Unit, cargoObj, quantity)
     end
   end
   return self
@@ -153463,17 +154403,25 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     end
   end
   if not cfg then
-    self:_SendMessage("No unit configuration found for "..tostring(Name),10,false,Group)
+    local msg = self.gettext:GetEntry("NO_UNIT_CONFIG",self.locale)
+    msg = string.format(msg,Name)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No unit configuration found for "..tostring(Name),10,false,Group)
     return self
   end
   local stock = cfg.Stock
   if type(stock) == "number" and stock ~= -1 and stock <= 0 then
-    self:_SendMessage(string.format("Sorry, all %s are gone!",cfg.Name or "units"),10,false,Group)
+    local msg = self.gettext:GetEntry("ALL_GONE",self.locale)
+    msg = string.format(msg,cfg.Name or "units")
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("Sorry, all %s are gone!",cfg.Name or "units"),10,false,Group)
     return self
   end
   local inzone = self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
   if not inzone then
-    self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
+    local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_LOGISTICS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You are not close enough to a logistics zone!",10,false,Group)
     return self
   end
   if not self:CanGetUnits(Group, Unit, cfg, 1, false) then
@@ -153513,7 +154461,10 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     if nearbyCount >= maxUnitsNearby then break end
   end
   if nearbyCount >= maxUnitsNearby then
-    self:_SendMessage(string.format("You already have %d units nearby!",maxUnitsNearby),10,false,Group)
+    local msg = self.gettext:GetEntry("TOO_MANY_UNITS_NEARBY",self.locale)
+    msg = string.format(msg,maxUnitsNearby)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("You already have %d units nearby!",maxUnitsNearby),10,false,Group)
     return self
   end
 
@@ -153563,7 +154514,10 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
   if type(stock) == "number" and stock ~= -1 then
     cfg.Stock = stock - 1
   end
-  self:_SendMessage(string.format("%s have been deployed near you!",cfg.Name or "selection"),10,false,Group)
+  local msg = self.gettext:GetEntry("DEPLOYED_NEAR_YOU",self.locale)
+  msg = string.format(msg,cfg.Name or "selection")
+  self:_SendMessage(msg, 10, false, Group)
+  --self:_SendMessage(string.format("%s have been deployed near you!",cfg.Name or "selection"),10,false,Group)
   
   return self
 end
@@ -153596,7 +154550,6 @@ end
 function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppressGetEvent)
   self:T(self.lid .. " _GetCrates")
 
-  -- check if we have stock
   local perSet = Cargo:GetCratesNeeded() or 1
   if perSet < 1 then perSet = 1 end
   local requestNumber = tonumber(number)
@@ -153609,41 +154562,44 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   local requestedSets = math.floor((requestNumber + perSet - 1) / perSet)
   if requestedSets < 1 then requestedSets = 1 end
   if not drop and not pack then
-    local cgoname = self:_GetCargoDisplayName(Cargo)
+    local cgoname = Cargo:GetName()
     local instock = Cargo:GetStock()
     if type(instock) == "number" and tonumber(instock) <= 0 and tonumber(instock) ~= -1 then
-      -- nothing left over
-      self:_SendMessage(string.format("Sorry, we ran out of %s", cgoname), 10, false, Group)
+      local msg = self.gettext:GetEntry("RAN_OUT_OF",self.locale)
+      msg = string.format(msg,cgoname)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("Sorry, we ran out of %s", cgoname), 10, false, Group)
       return false
     end
   end
 
   -- check if we are in LOAD zone
-  local inzone = false 
+  local inzone = false
   local drop = drop or false
   local suppressGetEvent = suppressGetEvent or false
   local ship = nil
   local width = 20
   local distance = nil
   local zone = nil
-  if not drop and not pack then 
-    inzone = self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
+  if not drop and not pack then
+    inzone = self:IsUnitInZone(Unit, CTLD.CargoZoneType.LOAD)
     if not inzone then
----@diagnostic disable-next-line: cast-local-type
-      inzone, ship, zone, distance, width  = self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
+      inzone, ship, zone, distance, width = self:IsUnitInZone(Unit, CTLD.CargoZoneType.SHIP)
     end
   elseif drop and not pack then
     if self.dropcratesanywhere then -- #1570
       inzone = true
     else
-      inzone = self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
+      inzone = self:IsUnitInZone(Unit, CTLD.CargoZoneType.DROP)
     end
   elseif pack and not drop then
     inzone = true
   end
-  
+
   if not inzone then
-    self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_LOGISTICS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
     if not self.debug then return self end
   end
   
@@ -153654,7 +154610,9 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     if unitcoord then
       if not location:IsCoordinateInZone(unitcoord) then
         -- no we're not at the right spot
-        self:_SendMessage("The requested cargo is not available in this zone!", 10, false, Group)
+        local msg = self.gettext:GetEntry("CARGO_NOT_AVAILABLE_ZONE",self.locale)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("The requested cargo is not available in this zone!", 10, false, Group)
         if not self.debug then return false end
       end
     end
@@ -153664,9 +154622,11 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   local capabilities = self:_GetUnitCapabilities(Unit) -- #CTLD.UnitTypeCapabilities
   local canloadcratesno = capabilities.cratelimit
   local loaddist = self.CrateDistance or 35
-  local nearcrates, numbernearby = self:_FindCratesNearby(Group,Unit,loaddist,true,true,true) -- to ignore what's inside
-  if numbernearby >= canloadcratesno and not drop then
-    self:_SendMessage("There are enough crates nearby already! Take care of those first!", 10, false, Group)
+  local nearcrates, numbernearby = self:_FindCratesNearby(Group, Unit, loaddist, true, true, true)
+  if numbernearby >= canloadcratesno and (not drop) and (not pack) then
+    local msg = self.gettext:GetEntry("ENOUGH_CRATES_NEARBY",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("There are enough crates nearby already! Take care of those first!", 10, false, Group)
     return false
   end
 
@@ -153676,6 +154636,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   -- spawn crates in front of helicopter
   local IsHerc = self:IsFixedWing(Unit) -- Herc, Bronco and Hook load from behind
   local IsHook = self:IsHook(Unit) -- Herc, Bronco and Hook load from behind
+  local IsHelo = Unit and Unit.IsHelicopter and Unit:IsHelicopter() or false
   local IsTruck = Unit:IsGround()
   local cargotype = Cargo -- Ops.CTLD#CTLD_CARGO
   local number = requestNumber --#number
@@ -153705,89 +154666,208 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     -- spawn behind the Herc
     addon = 180
   end
-  heading = (heading+addon)%360
+  heading = (heading + addon) % 360
   local row = 1
   local column = 1
-  local initialdist = IsHerc and 16 or (capabilities.length+2) -- initial spacing of the first crates
-  local startpos = position:Translate(initialdist,heading)
+  local initialdist = IsHerc and 16 or (capabilities.length + 2)
+  local startpos = position:Translate(initialdist, heading)
   if self.placeCratesAhead == true then
     cratedistance = initialdist
   end
 
-  -- loop crates needed
-  local cratecoord = nil -- Core.Point#COORDINATE
-  for i=1,number do
-    local cratealias = string.format("%s-%s-%d", cratename, cratetemplate, math.random(1,100000))
-    if not self.placeCratesAhead or drop == true then
-      cratedistance = (i-1)*2.5 + capabilities.length
-      if cratedistance > self.CrateDistance then cratedistance = self.CrateDistance end
-      -- altered heading logic
-      -- DONE: right standard deviation?
-      if self:IsUnitInAir(Unit) and self:IsFixedWing(Unit) then
-        rheading = math.random(20,60)
-      else
-        rheading = UTILS.RandomGaussian(0, 30, -90, 90, 100)
-      end
-      rheading=math.fmod((heading+rheading),360)
-      cratecoord = position:Translate(cratedistance,rheading)
-    else
-      cratedistance = (row-1)*6
-      rheading = 90
-      row = row+1
-      cratecoord = startpos:Translate(cratedistance,rheading)
-      if row > 4 then
-        row = 1
-        startpos:Translate(6,heading,nil,true)
-      end
+  local cratecoord = nil
+  local shipdist = nil
+  local shipoffset = nil
+
+  local FW_STEP_BY_TYPE = {
+    cds_crate = 2.0,
+    cds_barrels = 2.0,
+    ammo_cargo = 1.0,
+    iso_container_small = 3.5,
+    iso_container = 3.5,
+    uh1h_cargo = 2.0,
+    container_cargo = 2.5,
+  }
+  local FW_WIDTH_BY_TYPE = { -- spacing between crates in the set.
+    cds_crate = 0.8,
+    cds_barrels = 0.8,
+    ammo_cargo = 0.4,
+    iso_container_small = 2.0,
+    iso_container = 2.0,
+    uh1h_cargo = 0.6,
+    container_cargo = 1.3,
+  }
+  local FW_ROW_GAP = 0.6
+  local FW_BATCH_ANGLE_PATTERN = { 0, -20, 20, -40, 40, -60, 60, -80, 80 }
+  local fwBatchState = nil
+  local fwBatchIndex = 0
+  local fwBatchKey = nil
+  if IsHerc or IsHelo then
+    self._fwBatchState = self._fwBatchState or {}
+    fwBatchKey = (Unit and Unit.GetName and Unit:GetName()) or "FW"
+    fwBatchState = self._fwBatchState[fwBatchKey] or { batch = 0 }
+    if (tonumber(numbernearby) or 0) <= 0 then
+      fwBatchState.batch = 0
     end
-    
-    --local cratevec2 = cratecoord:GetVec2()
-    self.CrateCounter = self.CrateCounter + 1
+    fwBatchIndex = fwBatchState.batch or 0
+  end
+
+  local fwZeroAngleSetHeading = nil
+  local fwNonZeroAngleSetHeading = nil
+  local c130DcAutoSetId = nil
+  if not drop and not pack and self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild and self:IsC130J(Unit) and self:_C130DcAutoIsBuildableCargo(cargotype) then
+    c130DcAutoSetId = self:_C130DcAutoRegisterSet(Group, Unit, cargotype, zone)
+  end
+
+  for i = 1, number do
+    local currentAngleOffset = 0
+    local cratealias = string.format("%s-%d", cratename, math.random(1, 100000))
     local CCat, CType, CShape = Cargo:GetStaticTypeAndShape()
     local basetype = CType or self.basetype or "container_cargo"
     CCat = CCat or "Cargos"
-    if not isstatic and self:IsC130J(Unit) then
+
+    if not isstatic and self:IsC130J(Unit, true) then
       if Cargo.C130TypeName then
         basetype = Cargo.C130TypeName
       elseif self.C130basetype and (not CType or CType == self.basetype) then
         basetype = self.C130basetype
       end
     end
+
+    if not self.placeCratesAhead or drop == true then
+      local step = (IsHerc or IsHelo) and (FW_STEP_BY_TYPE[basetype] or 2.6) or 1.6
+      if (IsHerc or IsHelo) and not drop then
+        local safeDistance = capabilities.length * 0.9
+        local maxDist = self.CrateDistance or 35
+        if safeDistance > maxDist then safeDistance = maxDist end
+
+        local angleIndex = (fwBatchIndex % #FW_BATCH_ANGLE_PATTERN) + 1
+        currentAngleOffset = FW_BATCH_ANGLE_PATTERN[angleIndex] or 0
+        local centerHeading = math.fmod((heading + currentAngleOffset), 360)
+        if math.abs(currentAngleOffset) >= 0.01 and not fwNonZeroAngleSetHeading then
+          fwNonZeroAngleSetHeading = centerHeading
+        end
+
+        local baseDistance = safeDistance
+        local crateWidth = FW_WIDTH_BY_TYPE[basetype] or step
+        local zeroAngle = math.abs(currentAngleOffset) < 0.01
+        local lateral = nil
+        local lateralHeading = nil
+        if zeroAngle then
+          local totalRowWidth = (number * crateWidth) + (math.max(0, number - 1) * FW_ROW_GAP)
+          local leftEdge = -(totalRowWidth / 2)
+          lateral = leftEdge + ((i - 1) * (crateWidth + FW_ROW_GAP)) + (crateWidth / 2)
+          if lateral >= 0 then
+            lateralHeading = math.fmod(centerHeading + 90, 360)
+          else
+            lateral = -lateral
+            lateralHeading = math.fmod(centerHeading + 270, 360)
+          end
+        else
+          lateral = (i - 1) * (crateWidth + FW_ROW_GAP)
+          if currentAngleOffset < 0 then
+            lateralHeading = math.fmod(centerHeading + 270, 360)
+          else
+            lateralHeading = math.fmod(centerHeading + 90, 360)
+          end
+        end
+
+        local maxLateralSq = (maxDist * maxDist) - (baseDistance * baseDistance)
+        if maxLateralSq < 0 then maxLateralSq = 0 end
+        local maxLateral = math.sqrt(maxLateralSq)
+        if lateral > maxLateral then
+          lateral = maxLateral
+        end
+
+        local baseCoord = position:Translate(baseDistance, centerHeading)
+        cratecoord = baseCoord:Translate(lateral, lateralHeading)
+        cratedistance = baseDistance
+        rheading = centerHeading
+      else
+        cratedistance = (i - 1) * step + capabilities.length
+        if cratedistance > self.CrateDistance then cratedistance = self.CrateDistance end
+        rheading = UTILS.RandomGaussian(0, 18, -55, 55, 100)
+        rheading = math.fmod((heading + rheading), 360)
+        cratecoord = position:Translate(cratedistance, rheading)
+      end
+    else
+      cratedistance = (row - 1) * 6
+      rheading = 90
+      row = row + 1
+      cratecoord = startpos:Translate(cratedistance, rheading)
+      if row > 4 then
+        row = 1
+        startpos:Translate(6, heading, nil, true)
+      end
+    end
+
+    self.CrateCounter = self.CrateCounter + 1
+    local crateSpawnHeading = 270
+    if (IsHerc or IsHelo) and not drop and cratecoord and type(ship) ~= "string" then
+      if math.abs(currentAngleOffset) < 0.01 then
+        if not fwZeroAngleSetHeading then
+          fwZeroAngleSetHeading = heading
+        end
+        crateSpawnHeading = fwZeroAngleSetHeading
+      else
+        crateSpawnHeading = fwNonZeroAngleSetHeading
+      end
+    end
+
     if type(ship) == "string" then
       self:T("Spawning on ship "..ship)
       local Ship = UNIT:FindByName(ship)
       local shipcoord = Ship:GetCoordinate()
       local unitcoord = Unit:GetCoordinate()
       local dist = shipcoord:Get2DDistance(unitcoord)
-      dist = dist - (20 + math.random(1,10))
-      local width = width / 2
-      local Offy = math.random(-width,width)
-      local spawnstatic = SPAWNSTATIC:NewFromType(basetype,CCat,self.cratecountry)
-      :InitCargoMass(cgomass)
-      :InitCargo(self.enableslingload)
-      :InitLinkToUnit(Ship,dist,Offy,0)
+      dist = dist - (20 + math.random(1, 10))
+      local halfwidth = (width or 20) / 2
+      local Offy = nil
+      if i == 1 or shipdist == nil or shipoffset == nil then
+        Offy = math.random(-halfwidth, halfwidth)
+        shipoffset = Offy
+        shipdist = dist
+      else
+        dist = shipdist
+        local step = math.max(1, math.min(3, halfwidth * 0.2))
+        local slot = i - 1
+        local ring = math.floor((slot + 1) / 2)
+        local sign = (slot % 2 == 1) and 1 or -1
+        Offy = shipoffset + (sign * ring * step)
+        if Offy > halfwidth then
+          Offy = halfwidth
+        elseif Offy < -halfwidth then
+          Offy = -halfwidth
+        end
+      end
+
+      local spawnstatic = SPAWNSTATIC:NewFromType(basetype, CCat, self.cratecountry)
+        :InitCargoMass(cgomass)
+        :InitCargo(self.enableslingload)
+        :InitLinkToUnit(Ship, dist, Offy, 0)
       if CShape then
         spawnstatic:InitShape(CShape)
-      end 
+      end
       if isstatic then
-        local map=cargotype:GetStaticResourceMap()
+        local map = cargotype:GetStaticResourceMap()
         spawnstatic.TemplateStaticUnit.resourcePayload = map
       end
-      self.Spawned_Crates[self.CrateCounter] = spawnstatic:Spawn(270,cratealias)
-    else   
-      local spawnstatic = SPAWNSTATIC:NewFromType(basetype,CCat,self.cratecountry)
+      self.Spawned_Crates[self.CrateCounter] = spawnstatic:Spawn(crateSpawnHeading, cratealias)
+    else
+      local spawnstatic = SPAWNSTATIC:NewFromType(basetype, CCat, self.cratecountry)
         :InitCoordinate(cratecoord)
         :InitCargoMass(cgomass)
         :InitCargo(self.enableslingload)
       if CShape then
         spawnstatic:InitShape(CShape)
-      end 
+      end
       if isstatic then
-        local map=cargotype:GetStaticResourceMap()
+        local map = cargotype:GetStaticResourceMap()
         spawnstatic.TemplateStaticUnit.resourcePayload = map
       end
-      self.Spawned_Crates[self.CrateCounter] = spawnstatic:Spawn(270,cratealias)
+      self.Spawned_Crates[self.CrateCounter] = spawnstatic:Spawn(crateSpawnHeading, cratealias)
     end
+
     local templ = cargotype:GetTemplates()
     local sorte = cargotype:GetType()
     local subcat = cargotype.Subcategory
@@ -153795,43 +154875,56 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     local realcargo = nil
     if drop then
                 --CTLD_CARGO:New(ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped, PerCrateMass, Stock, Subcategory)
-      realcargo = CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,true,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],true,cargotype.PerCrateMass,nil,subcat) -- #CTLD_CARGO
+      realcargo = CTLD_CARGO:New(self.CargoCounter, cratename, templ, sorte, true, false, cratesneeded, self.Spawned_Crates[self.CrateCounter], true, cargotype.PerCrateMass, nil, subcat)
       realcargo:SetDisplayName(cargotype:GetDisplayName())
-      local map=cargotype:GetStaticResourceMap()
+      local map = cargotype:GetStaticResourceMap()
       realcargo:SetStaticResourceMap(map)
       local CCat3, CType3, CShape3 = cargotype:GetStaticTypeAndShape()
-      realcargo:SetStaticTypeAndShape(CCat3,CType3,CShape3)
+      realcargo:SetStaticTypeAndShape(CCat3, CType3, CShape3)
       if cargotype.TypeNames then
         realcargo.TypeNames = UTILS.DeepCopy(cargotype.TypeNames)
       end
-      table.insert(droppedcargo,realcargo)
+      table.insert(droppedcargo, realcargo)
     else
-      realcargo = CTLD_CARGO:New(self.CargoCounter,cratename,templ,sorte,false,false,cratesneeded,self.Spawned_Crates[self.CrateCounter],false,cargotype.PerCrateMass,nil,subcat)
+      realcargo = CTLD_CARGO:New(self.CargoCounter, cratename, templ, sorte, false, false, cratesneeded, self.Spawned_Crates[self.CrateCounter], false, cargotype.PerCrateMass, nil, subcat)
       realcargo:SetDisplayName(cargotype:GetDisplayName())
-      local map=cargotype:GetStaticResourceMap()
-      realcargo:SetStaticResourceMap(map) 
+      local map = cargotype:GetStaticResourceMap()
+      realcargo:SetStaticResourceMap(map)
       if cargotype.TypeNames then
         realcargo.TypeNames = UTILS.DeepCopy(cargotype.TypeNames)
       end
       if self.UseC130LoadAndUnload and self:IsC130J(Unit) then
-        realcargo:SetWasDropped(true,true) -- we mark here that the crates was dropped even though we just got them because of the herc.
+        realcargo:SetWasDropped(true, true)
       end
     end
+
     if not drop and not pack then
       table.insert(obtainedcargo, realcargo)
     end
     local CCat4, CType4, CShape4 = cargotype:GetStaticTypeAndShape()
-    realcargo:SetStaticTypeAndShape(CCat4,CType4,CShape4)
+    realcargo:SetStaticTypeAndShape(CCat4, CType4, CShape4)
+    if c130DcAutoSetId and realcargo then
+      self:_C130DcAutoRegisterDynamicCargo(realcargo:GetPositionable())
+      self:_C130DcAutoRegisterEntry(c130DcAutoSetId, realcargo)
+    end
     table.insert(self.Spawned_Cargo, realcargo)
+  end
+
+  if (IsHerc or IsHelo) and fwBatchState and fwBatchKey and not drop then
+    local maxBatches = #FW_BATCH_ANGLE_PATTERN
+    fwBatchState.batch = (fwBatchIndex + 1) % maxBatches
+    self._fwBatchState[fwBatchKey] = fwBatchState
   end
 
   if not (drop or pack) then
     Cargo:RemoveStock(requestedSets)
     self:_RefreshCrateQuantityMenus(Group, Unit, Cargo)
   end
-  local text = string.format("%d crates for %s have been positioned near you!",number,cratedisplayname)
+  local text = string.format(self.gettext:GetEntry("CRATES_POSITIONED",self.locale), number, cratedisplayname)
+  --local text = string.format("%d crates for %s have been positioned near you!", number, cratedisplayname)
   if drop then
-    text = string.format("%d crates for %s have been dropped!",number,cratedisplayname)
+    text = string.format(self.gettext:GetEntry("CRATES_DROPPED",self.locale), number, cratedisplayname)
+    --text = string.format("%d crates for %s have been dropped!", number, cratedisplayname)
     self:__CratesDropped(1, Group, Unit, droppedcargo)
   else
     if not quiet then
@@ -153958,9 +155051,12 @@ function CTLD:_ListCratesNearby( _group, _unit)
         end
       end
     end
-    self:_SendMessage(text:Text(), 30, true, _group) 
+    self:_SendMessage(text:Text(), 30, true, _group,true) 
   else
-    self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist), 10, false, _group) 
+    local msg = self.gettext:GetEntry("NO_CRATES_WITHIN",self.locale)
+    msg = string.format(msg,finddist)
+    self:_SendMessage(msg, 10, false, _group,true)
+    --self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist), 10, false, _group) 
   end
   return self
 end
@@ -153998,7 +155094,10 @@ function CTLD:_C130RemoveUnitsNearby(_group,_unit)
               local cname = cfg.Name or "Unit"
               table.insert(removedTable, { groupName = gr:GetName(), name = cname, template = tName, coordinate = gr:GetCoordinate() })
               gr:Destroy(false)
-              self:_SendMessage(cname.." have been removed",10,false,_group)
+              local msg = self.gettext:GetEntry("UNITS_REMOVED",self.locale)
+              msg = string.format(msg,cname)
+              self:_SendMessage(msg, 10, false, _group)
+              --self:_SendMessage(cname.." have been removed",10,false,_group)
               removedAny = true
               didRemoveThis = true
               break
@@ -154010,7 +155109,9 @@ function CTLD:_C130RemoveUnitsNearby(_group,_unit)
     end
   end
   if not removedAny then
-    self:_SendMessage("Nothing to remove at this distance pilot!",10,false,_group)
+    local msg = self.gettext:GetEntry("NOTHING_TO_REMOVE",self.locale)
+    self:_SendMessage(msg, 10, false, _group)
+    --self:_SendMessage("Nothing to remove at this distance pilot!",10,false,_group)
   else
     -- Trigger FSM event for removed units (C-130 managed groups).
     self:__RemoveCratesNearby(1, _group, _unit, removedTable)
@@ -154047,7 +155148,7 @@ function CTLD:_RemoveCratesNearby(_group, _unit)
       text:Add("        N O N E")
     end
     text:Add("------------------------------------------------------------")
-    self:_SendMessage(text:Text(),30,true,_group)
+    self:_SendMessage(text:Text(),30,true,_group,true)
     local done = {}
     for _, e in pairs(crates) do
     local n = e:GetName() or "none"
@@ -154062,7 +155163,10 @@ function CTLD:_RemoveCratesNearby(_group, _unit)
     -- Trigger FSM event for removed crates.
     self:__RemoveCratesNearby(1, _group, _unit, crates)
   else
-    self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist),10,false,_group)
+    local msg = self.gettext:GetEntry("NO_CRATES_WITHIN",self.locale)
+    msg = string.format(msg,finddist)
+    self:_SendMessage(msg, 10, false, _group,true)
+    --self:_SendMessage(string.format("No (loadable) crates within %d meters!",finddist),10,false,_group)
   end
   return self
 end
@@ -154152,11 +155256,11 @@ function CTLD:_FindCratesNearby( _group, _unit, _dist, _ignoreweight, ignoretype
       end
       end
       self:T(self.lid..string.format("Dist %dm/%dm | weight %dkg | maxloadable %dkg",distance,finddist,weight,maxloadable))
-      if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false and cando==true and not hercInnerBlocked then
-        index = index + 1
-        table.insert(found, staticid, cargo)
-        maxloadable = maxloadable - weight
-      end
+        if distance<=finddist and(weight<=maxloadable or _ignoreweight)and restricted==false and cando==true and not hercInnerBlocked then
+          index = index + 1
+          found[#found+1] = cargo
+          maxloadable = maxloadable - weight
+        end
       
     end
   end
@@ -154184,7 +155288,9 @@ function CTLD:_LoadCratesNearby(Group, Unit)
 
   -- Door check
   if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to load cargo!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_CARGO",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to load cargo!", 10, false, Group)
     if not self.debug then return self end
   end
   --- cases -------------------------------
@@ -154194,11 +155300,17 @@ function CTLD:_LoadCratesNearby(Group, Unit)
   -- --> hover or land if not forcedhover
   -----------------------------------------
   if not cancrates then
-    self:_SendMessage("Sorry this chopper cannot carry crates!", 10, false, Group)
+    local msg = self.gettext:GetEntry("CHOPPER_CANNOT_CARRY",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Sorry this chopper cannot carry crates!", 10, false, Group)
   elseif self.forcehoverload and not canhoverload then
-    self:_SendMessage("Hover over the crates to pick them up!", 10, false, Group)
+    local msg = self.gettext:GetEntry("HOVER_OVER_CRATES",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Hover over the crates to pick them up!", 10, false, Group)
   elseif not grounded and not canhoverload then
-    self:_SendMessage("Land or hover over the crates to pick them up!", 10, false, Group)
+    local msg = self.gettext:GetEntry("LAND_OR_HOVER_OVER_CRATES",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Land or hover over the crates to pick them up!", 10, false, Group)
   else
     -- have we loaded stuff already?
     local numberonboard = 0
@@ -154221,10 +155333,14 @@ function CTLD:_LoadCratesNearby(Group, Unit)
     if number == 0 and self.hoverautoloading then
       return self
     elseif number == 0 then
-      self:_SendMessage("Sorry, no loadable crates nearby or max cargo weight reached!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NO_LOADABLE_CRATES",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Sorry, no loadable crates nearby or max cargo weight reached!", 10, false, Group)
       return self
     elseif numberonboard == cratelimit then
-      self:_SendMessage("Sorry, we are fully loaded!", 10, false, Group)
+      local msg = self.gettext:GetEntry("FULLY_LOADED",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Sorry, we are fully loaded!", 10, false, Group)
       return self
     else
       local capacity = cratelimit - numberonboard
@@ -154271,14 +155387,26 @@ function CTLD:_LoadCratesNearby(Group, Unit)
 
           if needed > 1 then
             if fullSets > 0 and leftover == 0 then
-              self:_SendMessage(string.format("Loaded %d %s.", fullSets, cName), 10, false, Group)
+              local msg = self.gettext:GetEntry("LOADED_FULL",self.locale)
+              msg = string.format(msg,fullSets, cName)
+              self:_SendMessage(msg, 10, false, Group)
+              --self:_SendMessage(string.format("Loaded %d %s.", fullSets, cName), 10, false, Group)
             elseif fullSets > 0 and leftover > 0 then
-              self:_SendMessage(string.format("Loaded %d %s(s), with %d leftover crate(s).", fullSets, cName, leftover), 10, false, Group)
+              local msg = self.gettext:GetEntry("LOADED_SETS_LEFTOVER",self.locale)
+              msg = string.format(msg,fullSets, cName, leftover)
+              self:_SendMessage(msg, 10, false, Group)
+              --self:_SendMessage(string.format("Loaded %d %s(s), with %d leftover crate(s).", fullSets, cName, leftover), 10, false, Group)
             else
-              self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s.", loadedHere, needed, cName), 15, false, Group)
+              local msg = self.gettext:GetEntry("LOADED_PARTIAL",self.locale)
+              msg = string.format(msg,loadedHere, needed, cName)
+              self:_SendMessage(msg, 15, false, Group)
+              --self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s.", loadedHere, needed, cName), 15, false, Group)
             end
           else
-            self:_SendMessage(string.format("Loaded %d %s(s).", loadedHere, cName), 10, false, Group)
+            local msg = self.gettext:GetEntry("LOADED_SETS",self.locale)
+            msg = string.format(msg,loadedHere, cName)
+            self:_SendMessage(msg, 10, false, Group)
+            --self:_SendMessage(string.format("Loaded %d %s(s).", loadedHere, cName), 10, false, Group)
           end
         end
       end
@@ -154303,22 +155431,21 @@ end
 function CTLD:_CleanupTrackedCrates(crateIdsToRemove)
   local existingcrates = self.Spawned_Cargo -- #table
   local newexcrates = {}
+  local remove = {}
+  for _,_ID in pairs(crateIdsToRemove or {}) do
+    remove[_ID] = true
+  end
   for _,_crate in pairs(existingcrates) do
     local excrate = _crate -- #CTLD_CARGO
     local ID = excrate:GetID()
-    local keep = true
-    for _,_ID in pairs(crateIdsToRemove) do
-      if ID == _ID then
-        keep = false
-      end
-    end
+    local keep = not remove[ID]
     -- remove destroyed crates here too
     local static = _crate:GetPositionable() -- Wrapper.Static#STATIC -- crates
     if not static or not static:IsAlive() then
       keep = false
     end
     if keep then
-      table.insert(newexcrates,_crate)
+      newexcrates[#newexcrates+1] = _crate
     end
   end
   self.Spawned_Cargo = nil
@@ -154481,9 +155608,12 @@ function CTLD:_ListCargo(Group, Unit)
     report:Add("------------------------------------------------------------")
     report:Add("Total Mass: ".. loadedmass .. " kg. Loadable: "..maxloadable.." kg.")
     local text = report:Text()
-    self:_SendMessage(text, 30, true, Group)
+    self:_SendMessage(text, 30, true, Group,true)
   else
-    self:_SendMessage(string.format("Nothing loaded!\nTroop limit: %d | Crate limit %d | Weight limit %d kgs", trooplimit, cratelimit, maxloadable), 10, false, Group)
+    local msg = self.gettext:GetEntry("NOTHING_LOADED",self.locale)
+    msg = string.format(msg,trooplimit, cratelimit, maxloadable)
+    self:_SendMessage(msg, 10, false, Group,true)
+    --self:_SendMessage(string.format("Nothing loaded!\nTroop limit: %d | Crate limit %d | Weight limit %d kgs", trooplimit, cratelimit, maxloadable), 10, false, Group)
   end
   return self
 end
@@ -154574,9 +155704,11 @@ function CTLD:_ListInventory(Group, Unit)
       report:Add("        N O N E")
     end
     local text = report:Text()
-    self:_SendMessage(text, 30, true, Group) 
+    self:_SendMessage(text, 30, true, Group,true) 
   else
-    self:_SendMessage(string.format("Nothing in stock!"), 10, false, Group) 
+    local msg = self.gettext:GetEntry("NOTHING_IN_STOCK",self.locale)
+    self:_SendMessage(msg, 10, false, Group,true)
+    --self:_SendMessage(string.format("Nothing in stock!"), 10, false, Group) 
   end
   return self
 end
@@ -154649,7 +155781,9 @@ function CTLD:_UnloadTroops(Group, Unit)
   local droppingatbase = false
   local canunload = true
   if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to unload troops!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_UNLOAD_TROOPS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to unload troops!", 10, false, Group)
     if not self.debug then return self end 
   end
   local inzone, zonename, zone, distance = self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
@@ -154748,10 +155882,15 @@ function CTLD:_UnloadTroops(Group, Unit)
         parts[#parts + 1] = tostring(nCount).."x Engineers "..nName
       end
       if #parts > 0 then
-        self:_SendMessage("Dropped "..table.concat(parts, ", ").." into action!", 10, false, Group)
+        local msg = self.gettext:GetEntry("DROPPED_INTO_ACTION",self.locale)
+        msg = string.format(msg,table.concat(parts, ", "))
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("Dropped "..table.concat(parts, ", ").." into action!", 10, false, Group)
       end
     else -- droppingatbase
-        self:_SendMessage("Troops have returned to base!", 10, false, Group) 
+        local msg = self.gettext:GetEntry("TROOPS_RETURNED",self.locale)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("Troops have returned to base!", 10, false, Group) 
         self:__TroopsRTB(1, Group, Unit, zonename, zone)
     end
     -- cleanup load list
@@ -154794,9 +155933,13 @@ function CTLD:_UnloadTroops(Group, Unit)
     self:_RefreshTroopQuantityMenus(Group, Unit, nil)
   else
    if IsHerc then
-    self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group) 
+    local msg = self.gettext:GetEntry("NOTHING_LOADED_AIRDROP",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group) 
    else
-    self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group) 
+    local msg = self.gettext:GetEntry("NOTHING_LOADED_HOVER",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group) 
    end
   end
   return self
@@ -154812,14 +155955,18 @@ function CTLD:_UnloadCrates(Group, Unit)
     if not self.dropcratesanywhere then -- #1570
       local inzone, zonename, zone, distance = self:IsUnitInZone(Unit,CTLD.CargoZoneType.DROP)
       if not inzone then
-        self:_SendMessage("You are not close enough to a drop zone!", 10, false, Group) 
+        local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_DROP",self.locale)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("You are not close enough to a drop zone!", 10, false, Group) 
         if not self.debug then 
           return self 
         end
       end
     end
     if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-      self:_SendMessage("You need to open the door(s) to drop cargo!", 10, false, Group)
+      local msg = self.gettext:GetEntry("OPEN_DOORS_DROP_CARGO",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to open the door(s) to drop cargo!", 10, false, Group)
       if not self.debug then return self end 
     end
     local hoverunload = self:IsCorrectHover(Unit)
@@ -154855,14 +156002,26 @@ function CTLD:_UnloadCrates(Group, Unit)
           local full = math.floor(count/needed)
           local left = count % needed
           if full > 0 and left == 0 then
-            self:_SendMessage(string.format("Dropped %d %s.",full,cname),10,false,Group)
+            local msg = self.gettext:GetEntry("DROPPED_FULL",self.locale)
+            msg = string.format(msg,full,cname)
+            self:_SendMessage(msg, 10, false, Group)
+            --self:_SendMessage(string.format("Dropped %d %s.",full,cname),10,false,Group)
           elseif full > 0 and left > 0 then
-            self:_SendMessage(string.format("Dropped %d %s(s), with %d leftover crate(s).",full,cname,left),10,false,Group)
+            local msg = self.gettext:GetEntry("DROPPED_SETS_LEFTOVER",self.locale)
+            msg = string.format(msg,full,cname,left)
+            self:_SendMessage(msg, 10, false, Group)
+            --self:_SendMessage(string.format("Dropped %d %s(s), with %d leftover crate(s).",full,cname,left),10,false,Group)
           else
-            self:_SendMessage(string.format("Dropped %d/%d crate(s) of %s.",count,needed,cname),15,false,Group)
+            local msg = self.gettext:GetEntry("DROPPED_PARTIAL",self.locale)
+            msg = string.format(msg,count,needed,cname)
+            self:_SendMessage(msg, 15, false, Group)
+            --self:_SendMessage(string.format("Dropped %d/%d crate(s) of %s.",count,needed,cname),15,false,Group)
           end
         else
-          self:_SendMessage(string.format("Dropped %d %s(s).",count,cname),10,false,Group)
+          local msg = self.gettext:GetEntry("DROPPED_SETS",self.locale)
+          msg = string.format(msg,count,cname)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage(string.format("Dropped %d %s(s).",count,cname),10,false,Group)
         end
       end
       local loaded = {}
@@ -154890,9 +156049,13 @@ function CTLD:_UnloadCrates(Group, Unit)
       self:_RefreshCrateQuantityMenus(Group, Unit, nil)
     else
       if IsHerc then
-          self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group) 
+          local msg = self.gettext:GetEntry("NOTHING_LOADED_AIRDROP",self.locale)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group) 
       else
-          self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group) 
+          local msg = self.gettext:GetEntry("NOTHING_LOADED_HOVER",self.locale)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group) 
        end
     end
     return self
@@ -154919,13 +156082,16 @@ end
 -- @param Wrapper.Unit#UNIT Unit
 -- @param #boolean Engineering If true build is by an engineering team.
 -- @param #boolean MultiDrop If true and not engineering or FOB, vary position a bit.
-function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
+-- @param Wrapper.Group#GROUP NotifyGroup Optional group to receive engineer/autobuild messages.
+function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
   self:T(self.lid .. " _BuildCrates")
   -- avoid users trying to build from flying Hercs
   if self:IsFixedWing(Unit) and self.enableFixedWing and not Engineering then
     local speed = Unit:GetVelocityKMH()
     if speed > 1 then
-      self:_SendMessage("You need to land / stop to build something, Pilot!", 10, false, Group) 
+      local msg = self.gettext:GetEntry("NEED_TO_LAND_BUILD",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to land / stop to build something, Pilot!", 10, false, Group) 
       return self
     end
   end
@@ -154933,7 +156099,9 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
     -- are we in a load zone?
     local inloadzone = self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD)
     if inloadzone then
-      self:_SendMessage("You cannot build in a loading area, Pilot!", 10, false, Group) 
+      local msg = self.gettext:GetEntry("CANNOT_BUILD_LOADING_AREA",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You cannot build in a loading area, Pilot!", 10, false, Group) 
       return self
     end
   end
@@ -154941,10 +156109,42 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
   local baseDist = self.CrateDistance or 35
   local finddist=baseDist
   --if Engineering and self.EngineerSearch and self.EngineerSearch>baseDist then 
-    if Engineering and self.EngineerSearch and self.EngineerSearch>baseDist then -- this make also helicopter to be able to crates that are further away due to herc airdrop
+  if Engineering and self.EngineerSearch and self.EngineerSearch>baseDist then -- this make also helicopter to be able to crates that are further away due to herc airdrop
       finddist=self.EngineerSearch
   end
   local crates,number = self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering) -- #table
+  local activeSetId = Engineering and self._c130DcAutoActiveSetId or nil
+  local notifyGroup = (not Engineering) and Group or nil
+  if activeSetId then
+    crates, number = self:_C130DcAutoFilterCrates(crates, activeSetId)
+    local notifySetId = nil
+    if type(activeSetId) == "table" then
+      notifySetId = activeSetId[1] or next(activeSetId)
+    else
+      notifySetId = activeSetId
+    end
+    local setData = notifySetId and self._c130DcAutoSets and self._c130DcAutoSets[notifySetId] or nil
+    if setData and setData.groupName then
+      notifyGroup = GROUP:FindByName(setData.groupName) or notifyGroup
+    end
+    local scopeText = tostring(activeSetId)
+    if type(activeSetId) == "table" then
+      local ids = {}
+      for k,v in pairs(activeSetId) do
+        if type(k) == "number" then
+          ids[#ids + 1] = tostring(v)
+        else
+          ids[#ids + 1] = tostring(k)
+        end
+      end
+      table.sort(ids)
+      scopeText = table.concat(ids, ",")
+    end
+    self:T(self.lid.." C130DcAuto engineer scope set="..scopeText.." crates="..tostring(number))
+  end
+  if NotifyGroup then
+    notifyGroup = NotifyGroup
+  end
   local buildables = {}
   local foundbuilds = false
   local canbuild = false
@@ -155023,7 +156223,9 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
     report:Add("------------------------------------------------------------")
     local text = report:Text()
     if not Engineering then
-      self:_SendMessage(text, 30, true, Group) 
+      self:_SendMessage(text, 30, true, notifyGroup or Group, true)
+    elseif notifyGroup then
+      self:_SendMessage(text, 30, true, notifyGroup,true)
     else
       self:T(text)
     end
@@ -155046,13 +156248,20 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
 
           if full == 1 then
             local cratesNow, numberNow = self:_FindCratesNearby(Group,Unit, finddist,true,true, not Engineering)
+            if activeSetId then
+              cratesNow, numberNow = self:_C130DcAutoFilterCrates(cratesNow, activeSetId)
+            end
             self:_CleanUpCrates(cratesNow,build,numberNow)
             self:_RefreshLoadCratesMenu(Group,Unit)
             if self.buildtime and self.buildtime > 0 then
               local buildtimer = TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
               buildtimer:Start(self.buildtime)
               if not notified then
-                self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
+                local msg = self.gettext:GetEntry("BUILD_STARTED",self.locale)
+                msg = string.format(msg,self.buildtime)
+                local startMsgGroup = (not Engineering and (notifyGroup or Group)) or notifyGroup
+                  self:_SendMessage(msg, 15, false, startMsgGroup)
+                --self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
                 notified=true
               end
               self:__CratesBuildStarted(1,Group,Unit,build.Name)
@@ -155063,6 +156272,9 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
             local start = -((full-1)*sep)/2
             for n=1,full do
               local cratesNow, numberNow = self:_FindCratesNearby(Group,Unit, finddist,true,true, not Engineering)
+              if activeSetId then
+                cratesNow, numberNow = self:_C130DcAutoFilterCrates(cratesNow, activeSetId)
+              end
               self:_CleanUpCrates(cratesNow,build,numberNow)
               self:_RefreshLoadCratesMenu(Group,Unit)
               local off   = start + (n-1)*sep
@@ -155072,7 +156284,13 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
                 local buildtimer = TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,b,false,Group:GetCoordinate(),MultiDrop)
                 buildtimer:Start(self.buildtime)
                 if not notified then
-                  self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
+                  local msg = self.gettext:GetEntry("BUILD_STARTED",self.locale)
+                  msg = string.format(msg,self.buildtime)
+                  local startMsgGroup = (not Engineering and (notifyGroup or Group)) or notifyGroup
+                  if startMsgGroup then
+                    self:_SendMessage(msg, 15, false, startMsgGroup)
+                  end
+                  --self:_SendMessage(string.format("Build started, ready in %d seconds!",self.buildtime),15,false,Group)
                   notified=true
                 end
                 self:__CratesBuildStarted(1,Group,Unit,build.Name)
@@ -155086,7 +156304,12 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop)
     end
 
   else
-    if not Engineering then self:_SendMessage(string.format("No crates within %d meters!",finddist), 10, false, Group) end
+    if not Engineering then
+      local msg = self.gettext:GetEntry("NO_CRATES_WITHIN_PLAIN",self.locale)
+      msg = string.format(msg,finddist)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("No crates within %d meters!",finddist), 10, false, Group)
+    end
   end -- number > 0
   return self
 end
@@ -155132,7 +156355,9 @@ function CTLD:_PackCratesNearby(Group, Unit)
   end
 
   if not packedAny then
-    self:_SendMessage("Nothing to pack at this distance pilot!",10,false,Group)
+    local msg = self.gettext:GetEntry("NOTHING_TO_PACK",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Nothing to pack at this distance pilot!",10,false,Group)
     return false
   end
 
@@ -155202,7 +156427,7 @@ function CTLD:_RepairCrates(Group, Unit, Engineering)
     report:Add("------------------------------------------------------------")
     local text = report:Text()
     if not Engineering then
-      self:_SendMessage(text, 30, true, Group) 
+      self:_SendMessage(text, 30, true, Group,true) 
     else
       self:T(text)
     end
@@ -155217,7 +156442,12 @@ function CTLD:_RepairCrates(Group, Unit, Engineering)
       end
     end
   else
-    if not Engineering then self:_SendMessage(string.format("No crates within %d meters!",finddist), 10, false, Group) end 
+    if not Engineering then
+      local msg = self.gettext:GetEntry("NO_CRATES_WITHIN_PLAIN",self.locale)
+      msg = string.format(msg,finddist)
+      self:_SendMessage(msg, 10, false, Group,true)
+      --self:_SendMessage(string.format("No crates within %d meters!",finddist), 10, false, Group)
+    end 
   end -- number > 0
   return self
 end
@@ -155372,7 +156602,9 @@ end
 function CTLD:_DropAndBuild(Group,Unit)
     if self.nobuildinloadzones then
       if self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD) then
-        self:_SendMessage("You cannot build in a loading area, Pilot!",10,false,Group)
+        local msg = self.gettext:GetEntry("CANNOT_BUILD_LOADING_AREA",self.locale)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("You cannot build in a loading area, Pilot!",10,false,Group)
         return self
       end
     end
@@ -155387,7 +156619,9 @@ function CTLD:_DropAndBuild(Group,Unit)
   function CTLD:_DropSingleAndBuild(Group,Unit,setIndex)
     if self.nobuildinloadzones then
       if self:IsUnitInZone(Unit,CTLD.CargoZoneType.LOAD) then
-        self:_SendMessage("You cannot build in a loading area, Pilot!",10,false,Group)
+        local msg = self.gettext:GetEntry("CANNOT_BUILD_LOADING_AREA",self.locale)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("You cannot build in a loading area, Pilot!",10,false,Group)
         return self
       end
     end
@@ -155400,7 +156634,9 @@ function CTLD:_DropAndBuild(Group,Unit)
 -- @param Wrapper.Unit#UNIT  Unit    The calling unit
 function CTLD:_PackAndLoad(Group,Unit)
     if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-      self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
+      local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_CARGO",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
       return self
     end
     if not self:_PackCratesNearby(Group,Unit) then
@@ -155428,7 +156664,9 @@ end
 -- @param #number quantity
 function CTLD:_GetAndLoad(Group, Unit, cargoObj, quantity, LoadAnyWay)
   if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to load cargo!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_CARGO",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to load cargo!", 10, false, Group)
     return self
   end
   local needed = cargoObj and cargoObj:GetCratesNeeded() or 1
@@ -155444,7 +156682,9 @@ function CTLD:_GetAndLoad(Group, Unit, cargoObj, quantity, LoadAnyWay)
     local perSet = needed > 0 and needed or 1
     capacitySets = math.floor(space / perSet)
     if capacitySets < 1 and not LoadAnyWay then
-      self:_SendMessage("No capacity to load more now!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NO_CAPACITY_NOW",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("No capacity to load more now!", 10, false, Group)
       return self
     end
     if capacitySets < 1 and LoadAnyWay then
@@ -155462,7 +156702,9 @@ function CTLD:_GetAndLoad(Group, Unit, cargoObj, quantity, LoadAnyWay)
     inzone, ship, zone, distance, width  = self:IsUnitInZone(Unit,CTLD.CargoZoneType.SHIP)
   end
   if not inzone then
-    self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_LOGISTICS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You are not close enough to a logistics zone!", 10, false, Group)
     return self
   end
   local total = needed * count
@@ -155483,7 +156725,9 @@ end
 -- @param Wrapper.Unit#UNIT  Unit The unit performing the pack-and-load  
 function CTLD:_GetAllAndLoad(Group,Unit)
     if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-        self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
+        local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_CARGO",self.locale)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
         return self
     end
 
@@ -155844,12 +157088,12 @@ function CTLD:_RefreshF10Menus()
             end
             local toptroops = nil
             local topcrates = nil
-            local topmenu = MENU_GROUP:New(_group, "CTLD", nil)
+            local topmenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_CTLD",self.locale), nil)
             _group.CTLDTopmenu = topmenu
   
             if cantroops then
-              local toptroops  = MENU_GROUP:New(_group, "Manage Troops", topmenu)
-              local troopsmenu = MENU_GROUP:New(_group, "Load troops", toptroops)
+              local toptroops  = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_MANAGE_TROOPS",self.locale), topmenu)
+              local troopsmenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_LOAD_TROOPS",self.locale), toptroops)
               _group.MyTopTroopsMenu = toptroops
               
               _group.CTLD_TroopMenus = {}
@@ -155889,9 +157133,9 @@ function CTLD:_RefreshF10Menus()
                   end
                 end
               end
-              local dropTroopsMenu=MENU_GROUP:New(_group,"Drop Troops",toptroops):Refresh()
-              MENU_GROUP_COMMAND:New(_group,"Drop ALL troops",dropTroopsMenu,self._UnloadTroops,self,_group,_unit):Refresh()
-              MENU_GROUP_COMMAND:New(_group,"Extract troops",toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
+              local dropTroopsMenu=MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_DROP_TROOPS",self.locale),toptroops):Refresh()
+              MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale),dropTroopsMenu,self._UnloadTroops,self,_group,_unit):Refresh()
+              MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_EXTRACT_TROOPS",self.locale),toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
               local uName=_unit:GetName()
               local loadedData=self.Loaded_Cargo[uName]
               if loadedData and loadedData.Cargo then
@@ -155907,11 +157151,11 @@ function CTLD:_RefreshF10Menus()
               end
             end
             if cancrates then
-              local topcrates  = MENU_GROUP:New(_group, "Manage Crates", topmenu)
+              local topcrates  = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_MANAGE_CRATES",self.locale), topmenu)
               _group.MyTopCratesMenu = topcrates
   
               -- Build the “Get Crates” sub-menu items
-              local cratesmenu = MENU_GROUP:New(_group,"Get Crates",topcrates)
+              local cratesmenu = MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_GET_CRATES",self.locale),topcrates)
   
               if self.onestepmenu then
                 _group.CTLD_CrateMenus = {}
@@ -155952,7 +157196,9 @@ function CTLD:_RefreshF10Menus()
                   local txt
                   local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                   if needed > 1 then
-                    txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
+                    local plural = "s"
+                    if self.locale == "de" then plural = "n" end
+                    txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                   else
                     txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                   end
@@ -156001,7 +157247,9 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
+                        local plural = "s"
+                        if self.locale == "de" then plural = "n" end
+                        txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
@@ -156017,7 +157265,9 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
+                        local plural = "s"
+                        if self.locale == "de" then plural = "n" end
+                        txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
@@ -156034,7 +157284,9 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
+                        local plural = "s"
+                        if self.locale == "de" then plural = "n" end
+                        txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
@@ -156050,7 +157302,9 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        txt = string.format("%d crate%s %s (%dkg)",needed,needed==1 and "" or "s",cargoLabel,cargoObj.PerCrateMass or 0)
+                        local plural = "s"
+                        if self.locale == "de" then plural = "n" end
+                        txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
                       end
@@ -156063,31 +157317,31 @@ function CTLD:_RefreshF10Menus()
                 end
               end
   
-              local loadCratesMenu=MENU_GROUP:New(_group,"Load Crates",topcrates)
+              local loadCratesMenu=MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_LOAD_CRATES",self.locale),topcrates)
               _group.MyLoadCratesMenu=loadCratesMenu
-              MENU_GROUP_COMMAND:New(_group,"Load ALL",loadCratesMenu,self._LoadCratesNearby,self,_group,_unit)
-              MENU_GROUP_COMMAND:New(_group,"Show loadable crates",loadCratesMenu,self._RefreshLoadCratesMenu,self,_group,_unit)
+              MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_LOAD_ALL",self.locale),loadCratesMenu,self._LoadCratesNearby,self,_group,_unit)
+              MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_SHOW_LOADABLE_CRATES",self.locale),loadCratesMenu,self._RefreshLoadCratesMenu,self,_group,_unit)
   
-              local dropCratesMenu = MENU_GROUP:New(_group,"Drop Crates",topcrates)
+              local dropCratesMenu = MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_DROP_CRATES",self.locale),topcrates)
               topcrates.DropCratesMenu = dropCratesMenu
   
               if not self.nobuildmenu then
-                MENU_GROUP_COMMAND:New(_group, "Build crates", topcrates, self._BuildCrates, self, _group, _unit)
-                MENU_GROUP_COMMAND:New(_group, "Repair", topcrates, self._RepairCrates, self, _group, _unit):Refresh()
+                MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_BUILD_CRATES",self.locale), topcrates, self._BuildCrates, self, _group, _unit)
+                MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_REPAIR",self.locale), topcrates, self._RepairCrates, self, _group, _unit):Refresh()
               end
   
-              local removecratesmenu = MENU_GROUP:New(_group, "Remove crates", topcrates)
-              MENU_GROUP_COMMAND:New(_group, "Remove crates nearby", removecratesmenu, self._RemoveCratesNearby, self, _group, _unit)
+              local removecratesmenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_REMOVE_CRATES",self.locale), topcrates)
+              MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_REMOVE_CRATES_NEARBY",self.locale), removecratesmenu, self._RemoveCratesNearby, self, _group, _unit)
   
               if self.onestepmenu then
-                local mPack=MENU_GROUP:New(_group,"Pack crates",topcrates)
-                MENU_GROUP_COMMAND:New(_group,"Pack",mPack,self._PackCratesNearby,self,_group,_unit)
-                MENU_GROUP_COMMAND:New(_group,"Pack and Load",mPack,self._PackAndLoad,self,_group,_unit)
-                MENU_GROUP_COMMAND:New(_group,"Pack and Remove",mPack,self._PackAndRemove,self,_group,_unit)
-                MENU_GROUP_COMMAND:New(_group, "List crates nearby", topcrates, self._ListCratesNearby, self, _group, _unit)
+                local mPack=MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_PACK_CRATES",self.locale),topcrates)
+                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_PACK",self.locale),mPack,self._PackCratesNearby,self,_group,_unit)
+                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_PACK_AND_LOAD",self.locale),mPack,self._PackAndLoad,self,_group,_unit)
+                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_PACK_AND_REMOVE",self.locale),mPack,self._PackAndRemove,self,_group,_unit)
+                MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_LIST_CRATES_NEARBY",self.locale), topcrates, self._ListCratesNearby, self, _group, _unit)
               else
-                MENU_GROUP_COMMAND:New(_group, "Pack crates", topcrates, self._PackCratesNearby, self, _group, _unit)
-                MENU_GROUP_COMMAND:New(_group, "List crates nearby", topcrates, self._ListCratesNearby, self, _group, _unit)
+                MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_PACK_CRATES",self.locale), topcrates, self._PackCratesNearby, self, _group, _unit)
+                MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_LIST_CRATES_NEARBY",self.locale), topcrates, self._ListCratesNearby, self, _group, _unit)
               end
   
               local uName = _unit:GetName()
@@ -156110,9 +157364,9 @@ function CTLD:_RefreshF10Menus()
               end
             end
             if self:IsC130J(_unit) then
-              local topunits    = MENU_GROUP:New(_group,"Manage Units",topmenu)
-              local getunits    = MENU_GROUP:New(_group,"Get Units",topunits)
-              MENU_GROUP_COMMAND:New(_group,"Remove units nearby",topunits,self._C130RemoveUnitsNearby,self,_group,_unit)
+              local topunits    = MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_MANAGE_UNITS",self.locale),topmenu)
+              local getunits    = MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_GET_UNITS",self.locale),topunits)
+              MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_REMOVE_UNITS_NEARBY",self.locale),topunits,self._C130RemoveUnitsNearby,self,_group,_unit)
 
               local unitentries = self.C130GetUnits or {}
               local unittype    = _unit:GetTypeName() or "none"
@@ -156152,27 +157406,27 @@ function CTLD:_RefreshF10Menus()
             -----------------------------------------------------
             -- Misc sub‐menus
             -----------------------------------------------------
-            MENU_GROUP_COMMAND:New(_group, "List boarded cargo", topmenu, self._ListCargo, self, _group, _unit)
-            MENU_GROUP_COMMAND:New(_group, "Inventory", topmenu, self._ListInventory, self, _group, _unit)
-            MENU_GROUP_COMMAND:New(_group, "List active zone beacons", topmenu, self._ListRadioBeacons, self, _group, _unit)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_LIST_BOARDED_CARGO",self.locale), topmenu, self._ListCargo, self, _group, _unit)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_INVENTORY",self.locale), topmenu, self._ListInventory, self, _group, _unit)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_LIST_ZONE_BEACONS",self.locale), topmenu, self._ListRadioBeacons, self, _group, _unit)
   
-            local smoketopmenu = MENU_GROUP:New(_group, "Smokes, Flares, Beacons", topmenu)
-            MENU_GROUP_COMMAND:New(_group, "Smoke zones nearby", smoketopmenu, self.SmokeZoneNearBy, self, _unit, false)
-            local smokeself = MENU_GROUP:New(_group, "Drop smoke now", smoketopmenu)
-            MENU_GROUP_COMMAND:New(_group, "Red smoke", smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Red)
-            MENU_GROUP_COMMAND:New(_group, "Blue smoke", smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Blue)
-            MENU_GROUP_COMMAND:New(_group, "Green smoke", smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Green)
-            MENU_GROUP_COMMAND:New(_group, "Orange smoke", smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Orange)
-            MENU_GROUP_COMMAND:New(_group, "White smoke", smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.White)
+            local smoketopmenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_SMOKES_FLARES_BEACONS",self.locale), topmenu)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_SMOKE_ZONES_NEARBY",self.locale), smoketopmenu, self.SmokeZoneNearBy, self, _unit, false)
+            local smokeself = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_DROP_SMOKE_NOW",self.locale), smoketopmenu)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_RED_SMOKE",self.locale), smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Red)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_BLUE_SMOKE",self.locale), smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Blue)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_GREEN_SMOKE",self.locale), smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Green)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_ORANGE_SMOKE",self.locale), smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.Orange)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_WHITE_SMOKE",self.locale), smokeself, self.SmokePositionNow, self, _unit, false, SMOKECOLOR.White)
   
-            MENU_GROUP_COMMAND:New(_group, "Flare zones nearby", smoketopmenu, self.SmokeZoneNearBy, self, _unit, true)
-            MENU_GROUP_COMMAND:New(_group, "Fire flare now", smoketopmenu, self.SmokePositionNow, self, _unit, true)
-            MENU_GROUP_COMMAND:New(_group, "Drop beacon now", smoketopmenu, self.DropBeaconNow, self, _unit):Refresh()
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_FLARE_ZONES_NEARBY",self.locale), smoketopmenu, self.SmokeZoneNearBy, self, _unit, true)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_FIRE_FLARE_NOW",self.locale), smoketopmenu, self.SmokePositionNow, self, _unit, true)
+            MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_DROP_BEACON_NOW",self.locale), smoketopmenu, self.DropBeaconNow, self, _unit):Refresh()
   
             if self:IsFixedWing(_unit) then
-              MENU_GROUP_COMMAND:New(_group, "Show flight parameters", topmenu, self._ShowFlightParams, self, _group, _unit):Refresh()
+              MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_SHOW_FLIGHT_PARAMS",self.locale), topmenu, self._ShowFlightParams, self, _group, _unit):Refresh()
             else
-              MENU_GROUP_COMMAND:New(_group, "Show hover parameters", topmenu, self._ShowHoverParams, self, _group, _unit):Refresh()
+              MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_SHOW_HOVER_PARAMS",self.locale), topmenu, self._ShowHoverParams, self, _group, _unit):Refresh()
             end
   
             -- Mark we built the menu
@@ -156199,16 +157453,16 @@ function CTLD:_RefreshLoadCratesMenu(Group,Unit)
     if not Group.MyLoadCratesMenu then return end
     Group.MyLoadCratesMenu:RemoveSubMenus()
     if self:IsC130J(Unit) then
-      MENU_GROUP_COMMAND:New(Group,"Use C-130 Load system",Group.MyLoadCratesMenu,function() end)
+      MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_USE_C130_LOAD",self.locale),Group.MyLoadCratesMenu,function() end)
       return
     end
     local d=self.CrateDistance or 35
     local nearby,n=self:_FindCratesNearby(Group,Unit,d,true,true)
     if n==0 then
-      MENU_GROUP_COMMAND:New(Group,"No crates found! Rescan?",Group.MyLoadCratesMenu,function() self:_RefreshLoadCratesMenu(Group,Unit) end)
+      MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_NO_CRATES_FOUND_RESCAN",self.locale),Group.MyLoadCratesMenu,function() self:_RefreshLoadCratesMenu(Group,Unit) end)
       return
     end
-    MENU_GROUP_COMMAND:New(Group,"Load ALL",Group.MyLoadCratesMenu,self._LoadCratesNearby,self,Group,Unit)
+    MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_LOAD_ALL",self.locale),Group.MyLoadCratesMenu,self._LoadCratesNearby,self,Group,Unit)
   
     local cargoByName={}
     for _,crate in pairs(nearby) do
@@ -156225,11 +157479,12 @@ function CTLD:_RefreshLoadCratesMenu(Group,Unit)
       while i<=#list do
         local left=#list-i+1
         local label
-        if left>=needed then
-          label=string.format("%d. Load %s",lineIndex,cName)
+        local loadkey = self.gettext:GetEntry("MENU_LOAD_SINGLE",self.locale)
+        if left>=needed then          
+          label=string.format("%d. %s %s",lineIndex,loadkey,cName)
           i=i+needed
         else
-          label=string.format("%d. Load %s (%d/%d)",lineIndex,cName,left,needed)
+          label=string.format("%d. %s %s (%d/%d)",lineIndex,loadkey, cName,left,needed)
           i=#list+1
         end
         MENU_GROUP_COMMAND:New(Group,label,Group.MyLoadCratesMenu,self._LoadSingleCrateSet,self,Group,Unit,cName)
@@ -156253,13 +157508,17 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
   local grounded = not self:IsUnitInAir(Unit)
   local hover    = self:CanHoverLoad(Unit)
   if not grounded and not hover then
-    self:_SendMessage("You must land or hover to load crates!", 10, false, Group)
+    local msg = self.gettext:GetEntry("MUST_LAND_OR_HOVER_CRATES",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You must land or hover to load crates!", 10, false, Group)
     return self
   end
 
   -- 2) Check door if required
   if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to load cargo!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_CARGO",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to load cargo!", 10, false, Group)
     return self
   end
 
@@ -156267,7 +157526,9 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
   local finddist = self.CrateDistance or 35
   local cratesNearby, number = self:_FindCratesNearby(Group, Unit, finddist, false, false)
   if number == 0 then
-    self:_SendMessage("No crates found in range!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_CRATES_IN_RANGE",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No crates found in range!", 10, false, Group)
     return self
   end
 
@@ -156280,7 +157541,10 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
     end
   end
   if not needed then
-    self:_SendMessage(string.format("No \"%s\" crates found in range!", cargoName), 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_NAMED_CRATES_IN_RANGE",self.locale)
+    msg = string.format(msg,cargoName)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("No \"%s\" crates found in range!", cargoName), 10, false, Group)
     return self
   end
 
@@ -156295,7 +157559,9 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
   local capabilities = self:_GetUnitCapabilities(Unit)
   local capacity = capabilities.cratelimit or 0
   if loadedData.Cratesloaded >= capacity then
-    self:_SendMessage("No more capacity to load crates!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_MORE_CAPACITY",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No more capacity to load crates!", 10, false, Group)
     self.suppressmessages = prevSuppress
     return self
   end
@@ -156304,7 +157570,9 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
   local spaceLeft = capacity - loadedData.Cratesloaded
   local toLoad = math.min(found, needed, spaceLeft)
   if toLoad < 1 then
-    self:_SendMessage("Cannot load crates: either none found or no capacity left.", 10, false, Group)
+    local msg = self.gettext:GetEntry("CANNOT_LOAD_NONE_OR_FULL",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("Cannot load crates: either none found or no capacity left.", 10, false, Group)
     self.suppressmessages = prevSuppress
     return self
   end
@@ -156346,20 +157614,35 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
   local loadedHere = toLoad
   if details or (not batch) then
     if loadedHere < needed and loadedData.Cratesloaded >= capacity then
-      self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s. Cargo limit is now reached!", loadedHere, needed, cargoName), 10, false, Group)
+      local msg = self.gettext:GetEntry("LOADED_PARTIAL_LIMIT",self.locale)
+      msg = string.format(msg,loadedHere, needed, cargoName)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s. Cargo limit is now reached!", loadedHere, needed, cargoName), 10, false, Group)
     else
       local fullSets = math.floor(loadedHere / needed)
       local leftover = loadedHere % needed
       if needed > 1 then
         if fullSets > 0 and leftover == 0 then
-          self:_SendMessage(string.format("Loaded %d %s.", fullSets, cargoName), 10, false, Group)
+          local msg = self.gettext:GetEntry("LOADED_FULL",self.locale)
+          msg = string.format(msg,fullSets, cargoName)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage(string.format("Loaded %d %s.", fullSets, cargoName), 10, false, Group)
         elseif fullSets > 0 and leftover > 0 then
-          self:_SendMessage(string.format("Loaded %d %s(s), with %d leftover crate(s).", fullSets, cargoName, leftover), 10, false, Group)
+          local msg = self.gettext:GetEntry("LOADED_SETS_LEFTOVER",self.locale)
+          msg = string.format(msg,fullSets, cargoName, leftover)
+          self:_SendMessage(msg, 10, false, Group)
+          --self:_SendMessage(string.format("Loaded %d %s(s), with %d leftover crate(s).", fullSets, cargoName, leftover), 10, false, Group)
         else
-          self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s.", loadedHere, needed, cargoName), 15, false, Group)
+          local msg = self.gettext:GetEntry("LOADED_PARTIAL",self.locale)
+          msg = string.format(msg,loadedHere, needed, cargoName)
+          self:_SendMessage(msg, 15, false, Group)
+          --self:_SendMessage(string.format("Loaded only %d/%d crate(s) of %s.", loadedHere, needed, cargoName), 15, false, Group)
         end
       else
-        self:_SendMessage(string.format("Loaded %d %s(s).", loadedHere, cargoName), 10, false, Group)
+        local msg = self.gettext:GetEntry("LOADED_SETS",self.locale)
+        msg = string.format(msg,loadedHere, cargoName)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage(string.format("Loaded %d %s(s).", loadedHere, cargoName), 10, false, Group)
       end
     end
   end
@@ -156376,9 +157659,11 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
     if batch.remaining <= 0 then
       self.suppressmessages = prevSuppress
     if not details then
-      local txt = string.format("Loaded %d %s.", batch.loaded, cargoName)
+      local txt = string.format(self.gettext:GetEntry("LOADED_BATCH",self.locale), batch.loaded, cargoName)
+      --local txt = string.format("Loaded %d %s.", batch.loaded, cargoName)
       if batch.partials and batch.partials > 0 then
-        txt = txt .. " Some sets could not be fully loaded."
+        txt = txt .. " " .. self.gettext:GetEntry("LOADED_BATCH_PARTIAL",self.locale)
+        --txt = txt .. " Some sets could not be fully loaded."
       end
       self:_SendMessage(txt, 10, false, batch.group)
     end
@@ -156404,7 +157689,9 @@ function CTLD:_UnloadSingleCrateSet(Group, Unit, setIndex)
   if not self.dropcratesanywhere then
     local inzone, zoneName, zone, distance = self:IsUnitInZone(Unit, CTLD.CargoZoneType.DROP)
     if not inzone then
-      self:_SendMessage("You are not close enough to a drop zone!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_DROP",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("You are not close enough to a drop zone!", 10, false, Group)
       if not self.debug then 
         return self 
       end
@@ -156413,14 +157700,18 @@ function CTLD:_UnloadSingleCrateSet(Group, Unit, setIndex)
 
   -- Check if doors must be open
   if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to drop cargo!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_DROP_CARGO",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to drop cargo!", 10, false, Group)
     if not self.debug then return self end
   end
 
   -- Check if the crate grouping data is available
   local unitName = Unit:GetName()
   if not self.CrateGroupList or not self.CrateGroupList[unitName] then
-    self:_SendMessage("No crate groups found for this unit!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_CRATE_GROUPS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No crate groups found for this unit!", 10, false, Group)
     if not self.debug then return self end
     return self
   end
@@ -156428,14 +157719,18 @@ function CTLD:_UnloadSingleCrateSet(Group, Unit, setIndex)
   -- Find the selected chunk/set by index
   local chunk = self.CrateGroupList[unitName][setIndex]
   if not chunk then
-    self:_SendMessage("No crate set found or index invalid!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_CRATE_SET",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No crate set found or index invalid!", 10, false, Group)
     if not self.debug then return self end
     return self
   end
 
   -- Check if the chunk is empty
   if #chunk == 0 then
-    self:_SendMessage("No crate found in that set!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_CRATE_IN_SET",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No crate found in that set!", 10, false, Group)
     if not self.debug then return self end
     return self
   end
@@ -156450,9 +157745,13 @@ function CTLD:_UnloadSingleCrateSet(Group, Unit, setIndex)
   end
   if not grounded and not hoverunload then
     if isHerc then
-      self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NOTHING_LOADED_AIRDROP",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group)
     else
-      self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NOTHING_LOADED_HOVER",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group)
     end
     if not self.debug then return self end
     return self
@@ -156461,7 +157760,9 @@ function CTLD:_UnloadSingleCrateSet(Group, Unit, setIndex)
   -- Get the first crate from this set
   local crateObj = chunk[1]
   if not crateObj then
-    self:_SendMessage("No crate found in that set!", 10, false, Group)
+    local msg = self.gettext:GetEntry("NO_CRATE_IN_SET",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("No crate found in that set!", 10, false, Group)
     if not self.debug then return self end
     return self
   end
@@ -156479,12 +157780,21 @@ local cname  = crateObj:GetName() or "Unknown"
 local count  = #chunk
 if needed > 1 then
 if count == needed then
-    self:_SendMessage(string.format("Dropped %d %s.", 1, cname), 10, false, Group)
+    local msg = self.gettext:GetEntry("DROPPED_FULL",self.locale)
+    msg = string.format(msg,1, cname)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("Dropped %d %s.", 1, cname), 10, false, Group)
 else
-    self:_SendMessage(string.format("Dropped %d/%d crate(s) of %s.", count, needed, cname), 15, false, Group)
+    local msg = self.gettext:GetEntry("DROPPED_PARTIAL",self.locale)
+    msg = string.format(msg,count, needed, cname)
+    self:_SendMessage(msg, 15, false, Group)
+    --self:_SendMessage(string.format("Dropped %d/%d crate(s) of %s.", count, needed, cname), 15, false, Group)
 end
 else
-self:_SendMessage(string.format("Dropped %d %s(s).", count, cname), 10, false, Group)
+local msg = self.gettext:GetEntry("DROPPED_SETS",self.locale)
+msg = string.format(msg,count, cname)
+self:_SendMessage(msg, 10, false, Group)
+--self:_SendMessage(string.format("Dropped %d %s(s).", count, cname), 10, false, Group)
 end
   -- Rebuild the cargo list to remove the dropped crates
   local loadedData = self.Loaded_Cargo[unitName]
@@ -156526,13 +157836,13 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
     if topCrates.DropCratesMenu then
       topCrates.DropCratesMenu:RemoveSubMenus()
     else
-      topCrates.DropCratesMenu = MENU_GROUP:New(Group, "Drop Crates", topCrates)
+      topCrates.DropCratesMenu = MENU_GROUP:New(Group, self.gettext:GetEntry("MENU_DROP_CRATES",self.locale), topCrates)
     end
   
     local dropCratesMenu = topCrates.DropCratesMenu
     local loadedData = self.Loaded_Cargo[Unit:GetName()]
     if not loadedData or not loadedData.Cargo then
-      MENU_GROUP_COMMAND:New(Group,"No crates to drop!",dropCratesMenu,function() end)
+      MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_NO_CRATES_TO_DROP",self.locale),dropCratesMenu,function() end)
       return
     end
   
@@ -156551,7 +157861,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
     end
   
     if dropableCrates==0 then
-      MENU_GROUP_COMMAND:New(Group,"No crates to drop!",dropCratesMenu,function() end)
+      MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_NO_CRATES_TO_DROP",self.locale),dropCratesMenu,function() end)
       return
     end
   
@@ -156562,7 +157872,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
       --------------------------------------------------------------------
       -- classic menu
       --------------------------------------------------------------------
-      MENU_GROUP_COMMAND:New(Group,"Drop ALL crates",dropCratesMenu,self._UnloadCrates,self,Group,Unit)
+      MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP_ALL_CRATES",self.locale),dropCratesMenu,self._UnloadCrates,self,Group,Unit)
   
       self.CrateGroupList=self.CrateGroupList or{}
       self.CrateGroupList[Unit:GetName()]={}
@@ -156583,7 +157893,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
             i=i+needed
           end
           if sets==1 then
-            MENU_GROUP_COMMAND:New(Group,"Drop",parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+            MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
               local uName=UnitArg:GetName()
               for k=1,qty do
                 local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
@@ -156600,8 +157910,9 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
             end,self,Group,Unit,cName,needed,1)
           else
             for q=1,sets do
-              local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and "s" or ""),parentMenu)
-              MENU_GROUP_COMMAND:New(Group,"Drop",qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+              local qm=MENU_GROUP:New(Group,string.format(self.gettext:GetEntry("MENU_DROP_N_SETS",self.locale),q,q>1 and "s" or ""),parentMenu)
+              --local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and "s" or ""),parentMenu)
+              MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
                 local uName=UnitArg:GetName()
                 for k=1,qty do
                   local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
@@ -156636,10 +157947,10 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
       --------------------------------------------------------------------
       -- one-step (enhanced) menu
       --------------------------------------------------------------------
-      local mAll=MENU_GROUP:New(Group,"Drop ALL crates",dropCratesMenu)
-      MENU_GROUP_COMMAND:New(Group,"Drop",mAll,self._UnloadCrates,self,Group,Unit)
+      local mAll=MENU_GROUP:New(Group,self.gettext:GetEntry("MENU_DROP_ALL_CRATES",self.locale),dropCratesMenu)
+      MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),mAll,self._UnloadCrates,self,Group,Unit)
       if not ( self:IsUnitInAir(Unit) and self:IsFixedWing(Unit) ) then
-        MENU_GROUP_COMMAND:New(Group,"Drop and build",mAll,self._DropAndBuild,self,Group,Unit)
+        MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP_AND_BUILD",self.locale),mAll,self._DropAndBuild,self,Group,Unit)
       end
 
       self.CrateGroupList=self.CrateGroupList or{}
@@ -156661,7 +157972,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
             i=i+needed
           end
           if sets==1 then
-            MENU_GROUP_COMMAND:New(Group,"Drop",parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+            MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
               local uName=UnitArg:GetName()
               for k=1,qty do
                 local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
@@ -156677,7 +157988,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
               end
             end,self,Group,Unit,cName,needed,1)
             if not ( self:IsUnitInAir(Unit) and self:IsFixedWing(Unit) ) then
-              MENU_GROUP_COMMAND:New(Group,"Drop and build",parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+              MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP_AND_BUILD",self.locale),parentMenu,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
                 local uName=UnitArg:GetName()
                 for k=1,qty do
                   local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
@@ -156696,8 +158007,9 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
             end
           else
             for q=1,sets do
-              local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and "s" or ""),parentMenu)
-              MENU_GROUP_COMMAND:New(Group,"Drop",qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+              local qm=MENU_GROUP:New(Group,string.format(self.gettext:GetEntry("MENU_DROP_N_SETS",self.locale),q,q>1 and "s" or ""),parentMenu)
+              --local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and "s" or ""),parentMenu)
+              MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
                 local uName=UnitArg:GetName()
                 for k=1,qty do
                   local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
@@ -156713,7 +158025,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
                 end
               end,self,Group,Unit,cName,needed,q)
               if not ( self:IsUnitInAir(Unit) and self:IsFixedWing(Unit) ) then
-                MENU_GROUP_COMMAND:New(Group,"Drop and build",qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
+                MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP_AND_BUILD",self.locale),qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
                   local uName=UnitArg:GetName()
                   for k=1,qty do
                     local lst=selfArg.CrateGroupList and selfArg.CrateGroupList[uName]
@@ -156770,7 +158082,9 @@ function CTLD:_UnloadSingleTroopByID(Group, Unit, chunkID, qty)
   end
 
   if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
-    self:_SendMessage("You need to open the door(s) to unload troops!", 10, false, Group)
+    local msg = self.gettext:GetEntry("OPEN_DOORS_UNLOAD_TROOPS",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage("You need to open the door(s) to unload troops!", 10, false, Group)
     if not self.debug then return self end 
   end
 
@@ -156786,14 +158100,20 @@ function CTLD:_UnloadSingleTroopByID(Group, Unit, chunkID, qty)
   if self.Loaded_Cargo[unitName] and (grounded or hoverunload) then
     if not droppingatbase or self.debug then
       if not self.TroopsIDToChunk or not self.TroopsIDToChunk[chunkID] then
-        self:_SendMessage(string.format("No troop cargo chunk found for ID %d!", chunkID), 10, false, Group)
+        local msg = self.gettext:GetEntry("NO_TROOP_CHUNK",self.locale)
+        msg = string.format(msg,chunkID)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage(string.format("No troop cargo chunk found for ID %d!", chunkID), 10, false, Group)
         if not self.debug then return self end
         return self
       end
 
       local chunk = self.TroopsIDToChunk[chunkID]
       if not chunk or #chunk == 0 then
-        self:_SendMessage(string.format("Troop chunk is empty for ID %d!", chunkID), 10, false, Group)
+        local msg = self.gettext:GetEntry("TROOP_CHUNK_EMPTY",self.locale)
+        msg = string.format(msg,chunkID)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage(string.format("Troop chunk is empty for ID %d!", chunkID), 10, false, Group)
         if not self.debug then return self end
         return self
       end
@@ -156882,11 +158202,16 @@ function CTLD:_UnloadSingleTroopByID(Group, Unit, chunkID, qty)
         parts[#parts + 1] = tostring(nCount).."x Engineers "..nName
       end
       if #parts > 0 then
-        self:_SendMessage("Dropped "..table.concat(parts, ", ").." into action!", 10, false, Group)
+        local msg = self.gettext:GetEntry("DROPPED_INTO_ACTION",self.locale)
+        msg = string.format(msg,table.concat(parts, ", "))
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage("Dropped "..table.concat(parts, ", ").." into action!", 10, false, Group)
       end
     else
       -- Return to base logic, remove ONLY the first cargo
-      self:_SendMessage("Troops have returned to base!", 10, false, Group)
+      local msg = self.gettext:GetEntry("TROOPS_RETURNED",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Troops have returned to base!", 10, false, Group)
       self:__TroopsRTB(1, Group, Unit, zonename, zone)
 
       if self.TroopsIDToChunk and self.TroopsIDToChunk[chunkID] then
@@ -156937,9 +158262,13 @@ function CTLD:_UnloadSingleTroopByID(Group, Unit, chunkID, qty)
   else
     local isHerc = self:IsFixedWing(Unit)
     if isHerc then
-      self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NOTHING_LOADED_AIRDROP",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Nothing loaded or not within airdrop parameters!", 10, false, Group)
     else
-      self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group)
+      local msg = self.gettext:GetEntry("NOTHING_LOADED_HOVER",self.locale)
+      self:_SendMessage(msg, 10, false, Group)
+      --self:_SendMessage("Nothing loaded or not hovering within parameters!", 10, false, Group)
     end
   end
   return self
@@ -156960,10 +158289,10 @@ function CTLD:_RefreshDropTroopsMenu(Group, Unit)
   if dropTroopsMenu then
     dropTroopsMenu:RemoveSubMenus()
   else
-    dropTroopsMenu = MENU_GROUP:New(theGroup, "Drop Troops", topTroops)
+    dropTroopsMenu = MENU_GROUP:New(theGroup, self.gettext:GetEntry("MENU_DROP_TROOPS",self.locale), topTroops)
     topTroops.DropTroopsMenu = dropTroopsMenu
   end
-  MENU_GROUP_COMMAND:New(theGroup, "Drop ALL troops", dropTroopsMenu, self._UnloadTroops, self, theGroup, theUnit)
+  MENU_GROUP_COMMAND:New(theGroup, self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale), dropTroopsMenu, self._UnloadTroops, self, theGroup, theUnit)
 
   local loadedData = self.Loaded_Cargo[theUnit:GetName()]
   if not loadedData or not loadedData.Cargo then return end
@@ -156990,13 +158319,14 @@ function CTLD:_RefreshDropTroopsMenu(Group, Unit)
       local chunkID = objList[1]:GetID()
       self.TroopsIDToChunk[chunkID] = objList
 
-      local label = string.format("Drop %s (%d)", tName, count)
+      local label = string.format(self.gettext:GetEntry("MENU_DROP_N_TROOPS",self.locale), count, tName)
       if count == 1 then
         MENU_GROUP_COMMAND:New(theGroup, label, dropTroopsMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, 1)
       else
         local parentMenu = MENU_GROUP:New(theGroup, label, dropTroopsMenu)
         for q = 1, count do
-          MENU_GROUP_COMMAND:New(theGroup, string.format("Drop (%d) %s", q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
+          MENU_GROUP_COMMAND:New(theGroup, string.format(self.gettext:GetEntry("MENU_DROP_N_TROOPS",self.locale), q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
+          --MENU_GROUP_COMMAND:New(theGroup, string.format("Drop (%d) %s", q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
         end
       end
     end
@@ -157041,6 +158371,16 @@ function CTLD:AddTroopsCargo(Name,Templates,Type,NoTroops,PerTroopMass,Stock,Sub
   -- Troops are directly loadable
   local cargo = CTLD_CARGO:New(self.CargoCounter,Name,Templates,Type,false,true,NoTroops,nil,nil,PerTroopMass,Stock, SubCategory)
   table.insert(self.Cargo_Troops,cargo)
+  self._troopsByName = self._troopsByName or {}
+  self._troopsByName[cargo.Name] = cargo
+  self._cargoByTemplate = self._cargoByTemplate or {}
+  local _template = cargo.Templates
+  if type(_template) == "table" then
+    _template = _template[1]
+  end
+  if type(_template) == "string" and _template ~= "" then
+    self._cargoByTemplate[_template] = cargo
+  end
   if SubCategory and self.usesubcats ~= true then self.usesubcats=true end
   return self
 end
@@ -157138,6 +158478,16 @@ function CTLD:AddCratesCargo(Name,Templates,Type,NoCrates,PerCrateMass,Stock,Sub
   end
   cargo.C130TypeName = C130TypeName
   table.insert(self.Cargo_Crates,cargo)
+  self._crateOrStaticByName = self._crateOrStaticByName or {}
+  self._crateOrStaticByName[cargo.Name] = cargo
+  self._cargoByTemplate = self._cargoByTemplate or {}
+  local _template = cargo.Templates
+  if type(_template) == "table" then
+    _template = _template[1]
+  end
+  if type(_template) == "string" and _template ~= "" then
+    self._cargoByTemplate[_template] = cargo
+  end
   if SubCategory and self.usesubcats ~= true then self.usesubcats=true end
   return self
 end
@@ -157178,6 +158528,16 @@ function CTLD:AddCratesCargoNoMove(Name,Templates,Type,NoCrates,PerCrateMass,Sto
   end
   cargo.C130TypeName = C130TypeName
   table.insert(self.Cargo_Crates,cargo)
+  self._crateOrStaticByName = self._crateOrStaticByName or {}
+  self._crateOrStaticByName[cargo.Name] = cargo
+  self._cargoByTemplate = self._cargoByTemplate or {}
+  local _template = cargo.Templates
+  if type(_template) == "table" then
+    _template = _template[1]
+  end
+  if type(_template) == "string" and _template ~= "" then
+    self._cargoByTemplate[_template] = cargo
+  end
   self.templateToCargoName = self.templateToCargoName or {}
   if type(Templates)=="table" then
     for _,t in pairs(Templates) do self.templateToCargoName[t] = Name end
@@ -157204,7 +158564,7 @@ end
 function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,DisplayName)
   self:T(self.lid .. " AddStaticsCargo")
   self.CargoCounter = self.CargoCounter + 1
-  local type = CTLD_CARGO.Enum.STATIC
+  local cargotype = CTLD_CARGO.Enum.STATIC
   local template = STATIC:FindByName(Name,true):GetTypeName()
   local unittemplate = _DATABASE:GetStaticUnitTemplate(Name)
   local ResourceMap = nil
@@ -157212,13 +158572,23 @@ function CTLD:AddStaticsCargo(Name,Mass,Stock,SubCategory,DontShowInMenu,Locatio
     ResourceMap = UTILS.DeepCopy(unittemplate.resourcePayload)
   end
   -- Crates are not directly loadable
-  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
+  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,cargotype,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
   if UnitTypes then
     cargo:AddUnitTypeName(UnitTypes)
   end
   cargo:SetDisplayName(DisplayName or Name)
   cargo:SetStaticResourceMap(ResourceMap)
   table.insert(self.Cargo_Statics,cargo)
+  self._crateOrStaticByName = self._crateOrStaticByName or {}
+  self._crateOrStaticByName[cargo.Name] = cargo
+  self._cargoByTemplate = self._cargoByTemplate or {}
+  local _template = cargo.Templates
+  if type(_template) == "table" then
+    _template = _template[1]
+  end
+  if type(_template) == "string" and _template ~= "" then
+    self._cargoByTemplate[_template] = cargo
+  end
   if SubCategory and self.usesubcats ~= true then self.usesubcats=true end
   return cargo
 end
@@ -157242,9 +158612,9 @@ end
 function CTLD:AddStaticsCargoFromType(Name,TypeName,Mass,Stock,SubCategory,DontShowInMenu,Location,UnitTypes,Category,ShapeName,ResourceMap,DisplayName)
   self:T(self.lid .. " AddStaticsCargoFromType")
   self.CargoCounter = self.CargoCounter + 1
-  local type = CTLD_CARGO.Enum.STATIC
+  local cargotype = CTLD_CARGO.Enum.STATIC
   local template = TypeName or self.basetype or "container_cargo"
-  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
+  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,cargotype,false,false,1,nil,nil,Mass,Stock,SubCategory,DontShowInMenu,Location)
   if UnitTypes then
     cargo:AddUnitTypeName(UnitTypes)
   end
@@ -157255,6 +158625,16 @@ function CTLD:AddStaticsCargoFromType(Name,TypeName,Mass,Stock,SubCategory,DontS
   end
   cargo:SetStaticResourceMap(ResourceMap)
   table.insert(self.Cargo_Statics,cargo)
+  self._crateOrStaticByName = self._crateOrStaticByName or {}
+  self._crateOrStaticByName[cargo.Name] = cargo
+  self._cargoByTemplate = self._cargoByTemplate or {}
+  local _template = cargo.Templates
+  if type(_template) == "table" then
+    _template = _template[1]
+  end
+  if type(_template) == "string" and _template ~= "" then
+    self._cargoByTemplate[_template] = cargo
+  end
   if SubCategory and self.usesubcats ~= true then self.usesubcats=true end
   return cargo
 end
@@ -157268,7 +158648,7 @@ end
 function CTLD:GetStaticsCargoFromTemplate(Name,Mass,DisplayName)
   self:T(self.lid .. " GetStaticsCargoFromTemplate")
   self.CargoCounter = self.CargoCounter + 1
-  local type = CTLD_CARGO.Enum.STATIC
+  local cargotype = CTLD_CARGO.Enum.STATIC
   local template = STATIC:FindByName(Name,true):GetTypeName()
   local unittemplate = _DATABASE:GetStaticUnitTemplate(Name)
   local ResourceMap = nil
@@ -157276,7 +158656,7 @@ function CTLD:GetStaticsCargoFromTemplate(Name,Mass,DisplayName)
     ResourceMap = UTILS.DeepCopy(unittemplate.resourcePayload)
   end
   -- Crates are not directly loadable
-  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,cargotype,false,false,1,nil,nil,Mass,1)
   cargo:SetDisplayName(DisplayName or Name)
   cargo:SetStaticResourceMap(ResourceMap)
   --table.insert(self.Cargo_Statics,cargo)
@@ -157296,9 +158676,9 @@ end
 function CTLD:GetStaticsCargoFromType(Name,TypeName,Mass,Category,ShapeName,ResourceMap,DisplayName)
   self:T(self.lid .. " GetStaticsCargoFromType")
   self.CargoCounter = self.CargoCounter + 1
-  local type = CTLD_CARGO.Enum.STATIC
+  local cargotype = CTLD_CARGO.Enum.STATIC
   local template = TypeName or self.basetype or "container_cargo"
-  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,type,false,false,1,nil,nil,Mass,1)
+  local cargo = CTLD_CARGO:New(self.CargoCounter,Name,template,cargotype,false,false,1,nil,nil,Mass,1)
   cargo:SetStaticTypeAndShape(Category or "Cargos", template, ShapeName)
   cargo:SetDisplayName(DisplayName or Name)
   if ResourceMap then
@@ -157341,6 +158721,16 @@ function CTLD:AddCratesRepair(Name,Template,Type,NoCrates, PerCrateMass,Stock,Su
     cargo:SetStaticTypeAndShape(Category,TypeName,ShapeName)
   end
   table.insert(self.Cargo_Crates,cargo)
+  self._crateOrStaticByName = self._crateOrStaticByName or {}
+  self._crateOrStaticByName[cargo.Name] = cargo
+  self._cargoByTemplate = self._cargoByTemplate or {}
+  local _template = cargo.Templates
+  if type(_template) == "table" then
+    _template = _template[1]
+  end
+  if type(_template) == "string" and _template ~= "" then
+    self._cargoByTemplate[_template] = cargo
+  end
   return self
 end
 
@@ -157636,7 +159026,8 @@ function CTLD:DropBeaconNow(Unit)
   local FM = FMbeacon.frequency  -- MHz
   local VHF = VHFbeacon.frequency * 1000 -- KHz
   local UHF = UHFbeacon.frequency  -- MHz
-  local text = string.format("Dropped %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ", Name, FM, VHF, UHF)
+  local text = string.format(self.gettext:GetEntry("DROPPED_BEACON",self.locale), Name, FM, VHF, UHF)
+  --local text = string.format("Dropped %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ", Name, FM, VHF, UHF)
   
   self:_SendMessage(text,15,false,Unit:GetGroup())
   
@@ -157701,7 +159092,7 @@ function CTLD:_ListRadioBeacons(Group, Unit)
     report:Add("        N O N E")
   end
   report:Add("------------------------------------------------------------")
-  self:_SendMessage(report:Text(), 30, true, Group) 
+  self:_SendMessage(report:Text(), 30, true, Group,true) 
   return self
 end
 
@@ -157959,7 +159350,10 @@ function CTLD:SmokeZoneNearBy(Unit, Flare)
         end
         local txt = "smoking"
         if Flare then txt = "flaring" end
-        self:_SendMessage(string.format("Roger, %s zone %s!",txt, zonename), 10, false, Group)
+        local msg = self.gettext:GetEntry("ROGER_ZONE",self.locale)
+        msg = string.format(msg,txt, zonename)
+        self:_SendMessage(msg, 10, false, Group)
+        --self:_SendMessage(string.format("Roger, %s zone %s!",txt, zonename), 10, false, Group)
         smoked = true
       end
      end
@@ -157967,7 +159361,10 @@ function CTLD:SmokeZoneNearBy(Unit, Flare)
   end
   if not smoked then
     local distance = UTILS.MetersToNM(self.smokedistance)
-    self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone!",distance), 10, false, Group)
+    local msg = self.gettext:GetEntry("NOT_CLOSE_ENOUGH_ZONE_NM",self.locale)
+    msg = string.format(msg,distance)
+    self:_SendMessage(msg, 10, false, Group)
+    --self:_SendMessage(string.format("Negative, need to be closer than %dnm to a zone!",distance), 10, false, Group)
   end
     return self 
 end
@@ -158111,11 +159508,13 @@ end
     if not inhover then htxt = "false" end
     local text = ""
     if _SETTINGS:IsMetric() then
-      text = string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s", self.minimumHoverHeight, self.maximumHoverHeight, htxt)
+      text = string.format(self.gettext:GetEntry("HOVER_PARAMS_METRIC",self.locale), self.minimumHoverHeight, self.maximumHoverHeight, htxt)
+      --text = string.format("Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s", self.minimumHoverHeight, self.maximumHoverHeight, htxt)
     else
       local minheight = UTILS.MetersToFeet(self.minimumHoverHeight)
       local maxheight = UTILS.MetersToFeet(self.maximumHoverHeight)
-      text = string.format("Hover parameters (autoload/drop):\n - Min height %dft \n - Max height %dft \n - Max speed 6ftps \n - In parameter: %s", minheight, maxheight, htxt)
+      text = string.format(self.gettext:GetEntry("HOVER_PARAMS_IMPERIAL",self.locale), minheight, maxheight, htxt)
+      --text = string.format("Hover parameters (autoload/drop):\n - Min height %dft \n - Max height %dft \n - Max speed 6ftps \n - In parameter: %s", minheight, maxheight, htxt)
     end
     self:_SendMessage(text, 10, false, Group)
     return self
@@ -158133,11 +159532,13 @@ end
     if _SETTINGS:IsImperial() then
       local minheight = UTILS.MetersToFeet(self.FixedMinAngels)
       local maxheight = UTILS.MetersToFeet(self.FixedMaxAngels)
-      text = string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s", minheight, maxheight, htxt)
+      text = string.format(self.gettext:GetEntry("FLIGHT_PARAMS_IMPERIAL",self.locale), minheight, maxheight, htxt)
+      --text = string.format("Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s", minheight, maxheight, htxt)
     else
       local minheight = self.FixedMinAngels
       local maxheight = self.FixedMaxAngels
-      text = string.format("Flight parameters (airdrop):\n - Min height %dm \n - Max height %dm \n - In parameter: %s", minheight, maxheight, htxt)
+      text = string.format(self.gettext:GetEntry("FLIGHT_PARAMS_METRIC",self.locale), minheight, maxheight, htxt)
+      --text = string.format("Flight parameters (airdrop):\n - Min height %dm \n - Max height %dm \n - In parameter: %s", minheight, maxheight, htxt)
     end
     self:_SendMessage(text, 10, false, Group)
     return self
@@ -158778,11 +160179,17 @@ end
       template = string.gsub(GroupName,"#(%d+)$","")
     end   
     template = string.gsub(template,"-(%d+)$","")
+    self._cargoByTemplate = self._cargoByTemplate or {}
+    local cached = self._cargoByTemplate[template]
+    if cached and cached.CargoType ~= CTLD_CARGO.Enum.REPAIR then
+      return cached
+    end
     for k,v in pairs(self.Cargo_Troops) do
     local comparison = ""
     if type(v.Templates) == "string" then comparison = v.Templates else comparison = v.Templates[1] end
       if comparison == template then
         Cargotype = v
+        self._cargoByTemplate[template] = v
         break
       end
     end
@@ -158792,6 +160199,7 @@ end
       if type(v.Templates) == "string" then comparison = v.Templates else comparison = v.Templates[1] end
         if comparison == template and v.CargoType ~= CTLD_CARGO.Enum.REPAIR then
           Cargotype = v
+          self._cargoByTemplate[template] = v
           break
         end
       end
@@ -159144,6 +160552,7 @@ end
   function CTLD:onafterStart(From, Event, To)
     self:T({From, Event, To})
     self:I(self.lid .. "Started ("..self.version..")")
+    self:_InitLocalization()
     if self.enableHercules then self.enableFixedWing = true end
     if self.UserSetGroup then
       self.PilotGroups  = self.UserSetGroup
@@ -159169,6 +160578,19 @@ end
     self:HandleEvent(EVENTS.DynamicCargoRemoved, self._EventHandler)     
     self:HandleEvent(EVENTS.Land, self._EventHandler)
     self:HandleEvent(EVENTS.Takeoff, self._EventHandler)
+    self:_C130DcAutoEnsureState()
+    self._c130DcAutoSets = {}
+    self._c130DcAutoMap = {}
+    self._c130DcAutoBatches = {}
+    self._c130DcAutoActiveSetId = nil
+    if self._c130DcAutoTimer and self._c130DcAutoTimer:IsRunning() then
+      self._c130DcAutoTimer:Stop()
+    end
+    self._c130DcAutoTimer = nil
+    if self.UseC130LoadAndUnload and self.UseC130DynamicCargoAutoBuild then
+      self._c130DcAutoTimer = TIMER:New(CTLD._C130DcAutoTick, self)
+      self._c130DcAutoTimer:Start(30, 30)
+    end
     self:__Status(-5)
     
     -- AutoSave
@@ -159216,23 +160638,20 @@ end
   -- @return #CTLD self
   function CTLD:onafterStatus(From, Event, To)
     self:T({From, Event, To})
-     -- gather some stats
-    -- pilots
-    local pilots = 0
-    for _,_pilot in pairs (self.CtldUnits) do   
-     pilots = pilots + 1
-    end
-     
-    -- spawned cargo boxes curr in field
-    local boxes = 0
-    for _,_pilot in pairs (self.Spawned_Cargo) do
-     boxes = boxes + 1
-    end
-    
-    local cc =  self.CargoCounter
-    local tc = self.TroopCounter
-    
     if self.debug or self.verbose > 0 then 
+      -- gather stats only when logging is enabled
+      local pilots = 0
+      for _,_pilot in pairs (self.CtldUnits) do   
+       pilots = pilots + 1
+      end
+      
+      local boxes = 0
+      for _,_pilot in pairs (self.Spawned_Cargo) do
+       boxes = boxes + 1
+      end
+      
+      local cc =  self.CargoCounter
+      local tc = self.TroopCounter
       local text = string.format("%s Pilots %d | Live Crates %d |\nCargo Counter %d | Troop Counter %d", self.lid, pilots, boxes, cc, tc)
       local m = MESSAGE:New(text,10,"CTLD"):ToAll()
       if self.verbose > 0 then
@@ -159266,6 +160685,26 @@ end
   -- @return #CTLD self
   function CTLD:onafterStop(From, Event, To)
     self:T({From, Event, To})
+    if self._c130DcAutoTimer and self._c130DcAutoTimer:IsRunning() then
+      self._c130DcAutoTimer:Stop()
+    end
+    self._c130DcAutoTimer = nil
+    local cleanup = {}
+    for setId,_ in pairs(self._c130DcAutoSets or {}) do
+      cleanup[#cleanup + 1] = setId
+    end
+    for _,setId in ipairs(cleanup) do
+      self:_C130DcAutoCleanupSet(setId, "stop")
+    end
+    for _,batch in pairs(self._c130DcAutoBatches or {}) do
+      if batch.timer and batch.timer.IsRunning and batch.timer:IsRunning() then
+        batch.timer:Stop()
+      end
+    end
+    self._c130DcAutoSets = {}
+    self._c130DcAutoMap = {}
+    self._c130DcAutoBatches = {}
+    self._c130DcAutoActiveSetId = nil
     self:UnHandleEvent(EVENTS.PlayerEnterAircraft)
     self:UnHandleEvent(EVENTS.PlayerEnterUnit)
     self:UnHandleEvent(EVENTS.PlayerLeaveUnit)
@@ -159918,8 +161357,1481 @@ end
     return self
   end
 end -- end do
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- TODO CTLD_CARGO
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 do 
+
+------------------------------------------------------
+--- **CTLD_CARGO** class, extends Core.Base#BASE
+-- @type CTLD_CARGO
+-- @field #string ClassName Class name.
+-- @field #number ID ID of this cargo.
+-- @field #string Name Name for menu.
+-- @field #string DisplayName Display name for menu/messages.
+-- @field #table Templates Table of #POSITIONABLE objects.
+-- @field #string CargoType Enumerator of Type.
+-- @field #boolean HasBeenMoved Flag for moving.
+-- @field #boolean LoadDirectly Flag for direct loading.
+-- @field #number CratesNeeded Crates needed to build.
+-- @field Wrapper.Positionable#POSITIONABLE Positionable Representation of cargo in the mission.
+-- @field #boolean HasBeenDropped True if dropped from heli.
+-- @field #number PerCrateMass Mass in kg.
+-- @field #number Stock Number of builds available, -1 for unlimited.
+-- @field #string Subcategory Sub-category name.
+-- @field #boolean DontShowInMenu Show this item in menu or not.
+-- @field Core.Zone#ZONE Location Location (if set) where to get this cargo item.
+-- @field #table ResourceMap Resource Map information table if it has been set for static cargo items.
+-- @field #string StaticShape Individual shape if set.
+-- @field #string StaticType Individual type if set.
+-- @field #string StaticCategory Individual static category if set.
+-- @field #list<#string> TypeNames Table of unit types able to pick this cargo up.
+-- @field #number Stock0 Initial stock, if any given.
+-- @extends Core.Base#BASE
+
+---
+-- @field #CTLD_CARGO CTLD_CARGO
+CTLD_CARGO = {
+  ClassName = "CTLD_CARGO",
+  ID = 0,
+  Name = "none",
+  DisplayName = "none",
+  Templates = {},
+  CargoType = "none",
+  HasBeenMoved = false,
+  LoadDirectly = false,
+  CratesNeeded = 0,
+  Positionable = nil,
+  HasBeenDropped = false,
+  PerCrateMass = 0,
+  Stock = nil,
+  Stock0 = nil,
+  Mark = nil,
+  DontShowInMenu = false,
+  Location = nil,
+  }
+  
+  --- Define cargo types.
+  -- @type CTLD_CARGO.Enum
+  -- @field #string VEHICLE
+  -- @field #string TROOPS
+  -- @field #string FOB
+  -- @field #string CRATE
+  -- @field #string REPAIR
+  -- @field #string ENGINEERS
+  -- @field #string STATIC
+  -- @field #string GCLOADABLE
+  CTLD_CARGO.Enum = {
+    VEHICLE = "Vehicle", -- #string vehicles
+    TROOPS = "Troops", -- #string troops
+    FOB = "FOB", -- #string FOB
+    CRATE = "Crate", -- #string crate
+    REPAIR = "Repair", -- #string repair
+    ENGINEERS = "Engineers", -- #string engineers
+    STATIC = "Static", -- #string statics
+    GCLOADABLE = "GC_Loadable", -- #string dynamiccargo
+  }
+  
+  --- Function to create new CTLD_CARGO object.
+  -- @param #CTLD_CARGO self
+  -- @param #number ID ID of this #CTLD_CARGO
+  -- @param #string Name Name for menu.
+  -- @param #table Templates Table of #POSITIONABLE objects.
+  -- @param #CTLD_CARGO.Enum Sorte Enumerator of Type.
+  -- @param #boolean HasBeenMoved Flag for moving.
+  -- @param #boolean LoadDirectly Flag for direct loading.
+  -- @param #number CratesNeeded Crates needed to build.
+  -- @param Wrapper.Positionable#POSITIONABLE Positionable Representation of cargo in the mission.
+  -- @param #boolean Dropped Cargo/Troops have been unloaded from a chopper.
+  -- @param #number PerCrateMass Mass in kg
+  -- @param #number Stock Number of builds available, nil for unlimited
+  -- @param #string Subcategory Name of subcategory, handy if using > 10 types to load.
+  -- @param #boolean DontShowInMenu (Optional) Show this item in menu or not (default: false == show it).
+  -- @param Core.Zone#ZONE Location (Optional) Where the cargo is available (one location only).
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:New(ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped, PerCrateMass, Stock, Subcategory, DontShowInMenu, Location)
+    -- Inherit everything from BASE class.
+    local self=BASE:Inherit(self, BASE:New()) -- #CTLD_CARGO
+    self:T({ID, Name, Templates, Sorte, HasBeenMoved, LoadDirectly, CratesNeeded, Positionable, Dropped})
+    self.ID = ID or math.random(100000,1000000)
+    self.Name = Name or "none" -- #string
+    self.DisplayName = Name or "none" -- #string
+    self.Templates = Templates or {} -- #table
+    self.CargoType = Sorte or "type" -- #CTLD_CARGO.Enum
+    self.HasBeenMoved = HasBeenMoved or false -- #boolean
+    self.LoadDirectly = LoadDirectly or false -- #boolean
+    self.CratesNeeded = CratesNeeded or 0 -- #number
+    self.Positionable = Positionable or nil -- Wrapper.Positionable#POSITIONABLE
+    self.HasBeenDropped = Dropped or false --#boolean
+    self.PerCrateMass = PerCrateMass or 0 -- #number
+    self.Stock = Stock or nil --#number
+    self.Stock0 = Stock or nil --#number 
+    self.Mark = nil
+    self.Subcategory = Subcategory or "Other"
+    self.DontShowInMenu = DontShowInMenu or false
+    self.ResourceMap = nil
+    self.StaticType = "container_cargo" -- "container_cargo"
+    if self:IsStatic() then
+      self.StaticType = self.Templates
+    end
+    self.StaticShape = nil
+    self.TypeNames = nil
+    self.StaticCategory = "Cargos"
+    if type(Location) == "string" then
+      Location = ZONE:New(Location)
+    end
+    self.Location = Location
+    self.NoMoveToZone = false
+    return self
+  end
+  
+  --- Add specific static type and shape to this CARGO.
+  -- @param #CTLD_CARGO self
+  -- @param #string TypeName
+  -- @param #string ShapeName
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:SetStaticTypeAndShape(Category,TypeName,ShapeName)
+    self.StaticCategory = Category or "Cargos"
+    self.StaticType = TypeName or "container_cargo"
+    self.StaticShape = ShapeName
+    return self
+  end
+  
+  --- Get the specific static type and shape from this CARGO if set.
+  -- @param #CTLD_CARGO self
+  -- @return #string Category
+  -- @return #string TypeName
+  -- @return #string ShapeName
+  function CTLD_CARGO:GetStaticTypeAndShape()
+    return self.StaticCategory, self.StaticType, self.StaticShape
+  end
+  
+  --- Add specific unit types to this CARGO (restrict what types can pick this up).
+  -- @param #CTLD_CARGO self
+  -- @param #string UnitTypes Unit type name, can also be a #list<#string> table of unit type names.
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:AddUnitTypeName(UnitTypes)
+    if not self.TypeNames then self.TypeNames = {} end
+    if type(UnitTypes) ~= "table" then UnitTypes = {UnitTypes} end
+    for _,_singletype in pairs(UnitTypes or {}) do
+      self.TypeNames[_singletype]=_singletype
+    end
+    return self
+  end
+  
+  --- Check if a specific unit can carry this CARGO (restrict what types can pick this up).
+  -- @param #CTLD_CARGO self
+  -- @param Wrapper.Unit#UNIT Unit
+  -- @return #boolean Outcome
+  function CTLD_CARGO:UnitCanCarry(Unit)
+    if not Unit then return false end
+    if self.TypeNames == nil then return true end
+    local typename = Unit:GetTypeName() or "none"
+    if self.TypeNames[typename] then
+      return true
+    else
+      return false
+    end
+  end
+  
+  --- Add Resource Map information table
+  -- @param #CTLD_CARGO self
+  -- @param #table ResourceMap
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:SetStaticResourceMap(ResourceMap)
+    self.ResourceMap = ResourceMap
+    return self
+  end
+  
+  --- Get Resource Map information table
+  -- @param #CTLD_CARGO self
+  -- @return #table ResourceMap
+  function CTLD_CARGO:GetStaticResourceMap()
+    return self.ResourceMap
+  end
+  
+  --- Query Location.
+  -- @param #CTLD_CARGO self
+  -- @return Core.Zone#ZONE location or `nil` if not set
+  function CTLD_CARGO:GetLocation()
+    return self.Location
+  end
+  
+  --- Query ID.
+  -- @param #CTLD_CARGO self
+  -- @return #number ID
+  function CTLD_CARGO:GetID()
+    return self.ID
+  end
+  
+  --- Query Subcategory
+  -- @param #CTLD_CARGO self
+  -- @return #string SubCategory
+  function CTLD_CARGO:GetSubCat()
+    return self.Subcategory
+  end
+  
+  --- Query Mass.
+  -- @param #CTLD_CARGO self
+  -- @return #number Mass in kg
+  function CTLD_CARGO:GetMass()
+    return self.PerCrateMass
+  end  
+  
+  --- Query Name.
+  -- @param #CTLD_CARGO self
+  -- @return #string Name
+  function CTLD_CARGO:GetName()
+    return self.Name
+  end
+
+  --- Set display name.
+  -- @param #CTLD_CARGO self
+  -- @param #string DisplayName Display label used in menus/messages (optional).
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:SetDisplayName(DisplayName)
+    if type(DisplayName) == "string" and DisplayName ~= "" then
+      self.DisplayName = DisplayName
+    else
+      self.DisplayName = self.Name
+    end
+    return self
+  end
+
+  --- Query display name.
+  -- @param #CTLD_CARGO self
+  -- @return #string Display name, or Name if not set
+  function CTLD_CARGO:GetDisplayName()
+    return self.DisplayName or self.Name
+  end
+  
+  --- Query Templates.
+  -- @param #CTLD_CARGO self
+  -- @return #table Templates
+  function CTLD_CARGO:GetTemplates()
+    return self.Templates
+  end
+  
+  --- Query has moved.
+  -- @param #CTLD_CARGO self
+  -- @return #boolean Has moved
+  function CTLD_CARGO:HasMoved()
+    return self.HasBeenMoved
+  end
+  
+  --- Query was dropped.
+  -- @param #CTLD_CARGO self
+  -- @param #boolean hercOnly If true, only treat Herc drops as 'dropped'.
+  -- @return #boolean Has been dropped.
+  function CTLD_CARGO:WasDropped(hercOnly)
+    if hercOnly then
+      return self.HasBeenDropped and self.IsHercDrop==true
+    end
+    return self.HasBeenDropped
+  end
+  
+  --- Query directly loadable.
+  -- @param #CTLD_CARGO self
+  -- @return #boolean loadable
+  function CTLD_CARGO:CanLoadDirectly()
+    return self.LoadDirectly
+  end
+  
+  --- Query number of crates or troopsize.
+  -- @param #CTLD_CARGO self
+  -- @return #number Crates or size of troops.
+  function CTLD_CARGO:GetCratesNeeded()
+    return self.CratesNeeded
+  end
+  
+  --- Query type.
+  -- @param #CTLD_CARGO self
+  -- @return #CTLD_CARGO.Enum Type
+  function CTLD_CARGO:GetType()
+    return self.CargoType
+  end
+  
+  --- Query type.
+  -- @param #CTLD_CARGO self
+  -- @return Wrapper.Positionable#POSITIONABLE Positionable
+  function CTLD_CARGO:GetPositionable()
+    return self.Positionable
+  end
+  
+  --- Set HasMoved.
+  -- @param #CTLD_CARGO self
+  -- @param #boolean moved
+  function CTLD_CARGO:SetHasMoved(moved)
+    self.HasBeenMoved = moved or false
+  end
+  
+   --- Query if cargo has been loaded.
+  -- @param #CTLD_CARGO self
+  -- @param #boolean loaded
+  function CTLD_CARGO:Isloaded()
+    if self.HasBeenMoved and not self:WasDropped() then
+      return true
+    else
+     return false
+    end 
+  end
+  
+  --- Set WasDropped.
+  -- @param #CTLD_CARGO self
+  -- @param #boolean dropped
+  -- @param #boolean isHercDrop set when _GetCrates is used by the herc
+  function CTLD_CARGO:SetWasDropped(dropped, isHercDrop)
+    self.HasBeenDropped = dropped or false
+    self.IsHercDrop = isHercDrop or false
+  end
+  
+  --- Get Stock.
+  -- @param #CTLD_CARGO self
+  -- @return #number Stock or -1 if unlimited.
+  function CTLD_CARGO:GetStock()
+    if self.Stock then
+      return self.Stock
+    else
+      return -1
+    end
+  end
+  
+  --- Get Stock0.
+  -- @param #CTLD_CARGO self
+  -- @return #number Stock0 or -1 if unlimited.
+  function CTLD_CARGO:GetStock0()
+    if self.Stock0 then
+      return self.Stock0
+    else
+      return -1
+    end
+  end
+  
+    --- Get relative Stock.
+  -- @param #CTLD_CARGO self
+  -- @return #number Stock Percentage like 75, or -1 if unlimited.
+  function CTLD_CARGO:GetRelativeStock()
+    if self.Stock and self.Stock0 then
+      return math.floor((self.Stock/self.Stock0)*100)
+    else
+      return -1
+    end
+  end
+  
+  --- Add Stock.
+  -- @param #CTLD_CARGO self
+  -- @param #number Number to add, none if nil.
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:AddStock(Number)
+    if self.Stock then -- Stock nil?
+      local number = Number or 1
+      self.Stock = self.Stock + number
+    end
+    return self
+  end
+  
+  --- Remove Stock.
+  -- @param #CTLD_CARGO self
+  -- @param #number Number to reduce, none if nil.
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:RemoveStock(Number)
+    if self.Stock then -- Stock nil?
+      local number = Number or 1
+      self.Stock = self.Stock - number
+      if self.Stock < 0 then self.Stock = 0 end
+    end
+    return self
+  end
+  
+  --- Set Stock.
+  -- @param #CTLD_CARGO self
+  -- @param #number Number to set, nil means unlimited.
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:SetStock(Number)
+    self.Stock = Number
+    return self
+  end
+  
+  --- Query crate type for REPAIR
+  -- @param #CTLD_CARGO self
+  -- @param #boolean 
+  function CTLD_CARGO:IsRepair()
+   if self.CargoType == "Repair" then
+    return true
+   else
+    return false
+   end
+  end
+  
+  --- Query crate type for STATIC
+  -- @param #CTLD_CARGO self
+  -- @return #boolean 
+  function CTLD_CARGO:IsStatic()
+   if self.CargoType == "Static" then
+    return true
+   else
+    return false
+   end
+  end
+  
+  --- Add mark
+  -- @param #CTLD_CARGO self
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:AddMark(Mark)
+    self.Mark = Mark
+    return self
+  end
+  
+  --- Get mark
+  -- @param #CTLD_CARGO self
+  -- @return #string Mark
+  function CTLD_CARGO:GetMark(Mark)
+    return self.Mark
+  end
+  
+  --- Wipe mark
+  -- @param #CTLD_CARGO self
+  -- @return #CTLD_CARGO self
+  function CTLD_CARGO:WipeMark()
+    self.Mark = nil
+    return self
+  end
+  
+  --- Get overall mass of a cargo object, i.e. crates needed x mass per crate
+  -- @param #CTLD_CARGO self
+  -- @return #number mass
+  function CTLD_CARGO:GetNetMass()
+    return self.CratesNeeded * self.PerCrateMass
+  end
+   
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- END CTLD_CARGO
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+do
+
+------------------------------------------------------
+--- **CTLD_ENGINEERING** class, extends Core.Base#BASE
+-- @type CTLD_ENGINEERING
+-- @field #string ClassName
+-- @field #string lid
+-- @field #string Name
+-- @field Wrapper.Group#GROUP Group
+-- @field Wrapper.Unit#UNIT Unit
+-- @field Wrapper.Group#GROUP HeliGroup
+-- @field Wrapper.Unit#UNIT HeliUnit
+-- @field #string State
+-- @extends Core.Base#BASE
+
+---
+-- @field #CTLD_ENGINEERING CTLD_ENGINEERING
+CTLD_ENGINEERING = {
+  ClassName = "CTLD_ENGINEERING",
+  lid = "",
+  Name = "none",
+  Group = nil,
+  Unit = nil,
+  --C_Ops = nil,
+  HeliGroup = nil,
+  HeliUnit = nil,
+  State = "",
+  }
+  
+  --- CTLD_ENGINEERING class version.
+  -- @field #string version
+  CTLD_ENGINEERING.Version = "0.0.3"
+  
+  --- Create a new instance.
+  -- @param #CTLD_ENGINEERING self
+  -- @param #string Name
+  -- @param #string GroupName Name of Engineering #GROUP object
+  -- @param Wrapper.Group#GROUP HeliGroup HeliGroup
+  -- @param Wrapper.Unit#UNIT HeliUnit HeliUnit
+  -- @return #CTLD_ENGINEERING self 
+  function CTLD_ENGINEERING:New(Name, GroupName, HeliGroup, HeliUnit)
+  
+      -- Inherit everything from BASE class.
+    local self=BASE:Inherit(self, BASE:New()) -- #CTLD_ENGINEERING
+    
+   --BASE:I({Name, GroupName})
+    
+    self.Name = Name or "Engineer Squad" -- #string
+    self.Group = GROUP:FindByName(GroupName) -- Wrapper.Group#GROUP
+    self.Unit = self.Group:GetUnit(1) -- Wrapper.Unit#UNIT
+    self.HeliGroup = HeliGroup -- Wrapper.Group#GROUP
+    self.HeliUnit = HeliUnit -- Wrapper.Unit#UNIT
+    self.currwpt = nil -- Core.Point#COORDINATE
+    self.lid = string.format("%s (%s) | ",self.Name, self.Version)
+      -- Start State.
+    self.State = "Stopped"
+    self.marktimer = 300 -- wait this many secs before trying a crate again
+    self:Start()
+    local parent = self:GetParent(self)
+    return self
+  end
+  
+  --- (Internal) Set the status
+  -- @param #CTLD_ENGINEERING self
+  -- @param #string State
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:SetStatus(State)
+    self.State = State
+    return self
+  end
+  
+  --- (Internal) Get the status
+  -- @param #CTLD_ENGINEERING self
+  -- @return #string State
+  function CTLD_ENGINEERING:GetStatus()
+    return self.State
+  end
+  
+  --- (Internal) Check the status
+  -- @param #CTLD_ENGINEERING self
+  -- @param #string State
+  -- @return #boolean Outcome
+  function CTLD_ENGINEERING:IsStatus(State)
+    return self.State == State
+  end
+  
+  --- (Internal) Check the negative status
+  -- @param #CTLD_ENGINEERING self
+  -- @param #string State
+  -- @return #boolean Outcome
+  function CTLD_ENGINEERING:IsNotStatus(State)
+    return self.State ~= State
+  end
+  
+  --- (Internal) Set start status.
+  -- @param #CTLD_ENGINEERING self
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Start()
+    self:T(self.lid.."Start")
+    self:SetStatus("Running")
+    return self
+  end
+  
+  --- (Internal) Set stop status.
+  -- @param #CTLD_ENGINEERING self
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Stop()
+    self:T(self.lid.."Stop")
+    self:SetStatus("Stopped")
+    return self
+  end
+  
+  --- (Internal) Set build status.
+  -- @param #CTLD_ENGINEERING self
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Build()
+    self:T(self.lid.."Build")
+    self:SetStatus("Building")
+    return self
+  end
+  
+  --- (Internal) Set done status.
+  -- @param #CTLD_ENGINEERING self
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Done()
+    self:T(self.lid.."Done")
+    local grp = self.Group -- Wrapper.Group#GROUP
+    grp:RelocateGroundRandomInRadius(7,100,false,false,"Diamond")
+    self:SetStatus("Running")
+    return self
+  end
+  
+  --- (Internal) Search for crates in reach.
+  -- @param #CTLD_ENGINEERING self
+  -- @param #table crates Table of found crate Ops.CTLD#CTLD_CARGO objects.
+  -- @param #number number Number of crates found.
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Search(crates,number)
+    self:T(self.lid.."Search")
+    self:SetStatus("Searching")
+    -- find crates close by
+    --local COps = self.C_Ops -- Ops.CTLD#CTLD
+    local dist = self.distance -- #number
+    local group = self.Group -- Wrapper.Group#GROUP
+    --local crates,number = COps:_FindCratesNearby(group,nil, dist) -- #table
+    local ctable = {}
+    local ind = 0
+    if number > 0 then
+      -- get set of dropped only
+      for _,_cargo in pairs (crates) do
+       local cgotype = _cargo:GetType()
+       if _cargo:WasDropped() and cgotype ~= CTLD_CARGO.Enum.STATIC then
+        local ok = false
+        local chalk = _cargo:GetMark()
+        if chalk == nil then
+          ok = true
+        else
+         -- have we tried this cargo recently?
+         local tag = chalk.tag or "none"
+         local timestamp = chalk.timestamp or 0
+         -- enough time gone?
+         local gone = timer.getAbsTime() - timestamp
+         if gone >= self.marktimer then
+            ok = true
+            _cargo:WipeMark()
+         end -- end time check
+        end -- end chalk
+        if ok then
+          local chalk = {}
+          chalk.tag = "Engineers"
+          chalk.timestamp = timer.getAbsTime()
+          _cargo:AddMark(chalk)
+          ind = ind + 1
+          table.insert(ctable,ind,_cargo)
+        end     
+       end -- end dropped
+      end -- end for
+    end -- end number
+    
+    if ind > 0 then
+      local crate = ctable[1] -- Ops.CTLD#CTLD_CARGO
+      local static = crate:GetPositionable() -- Wrapper.Static#STATIC
+      local crate_pos = static:GetCoordinate() -- Core.Point#COORDINATE
+      local gpos = group:GetCoord() -- Core.Point#COORDINATE
+      -- see how far we are from the crate
+      local distance = self:_GetDistance(gpos,crate_pos)
+      self:T(string.format("%s Distance to crate: %d", self.lid, distance))
+      -- move there
+      if distance > 30 and distance ~= -1 and self:IsStatus("Searching") then
+        group:RouteGroundTo(crate_pos,15,"Line abreast",1)
+        self.currwpt = crate_pos -- Core.Point#COORDINATE
+        self:Move()
+      elseif distance <= 30 and distance ~= -1 then
+        -- arrived
+        self:Arrive()
+      end
+    else
+      self:T(self.lid.."No crates in reach!")
+    end
+    return self
+  end
+  
+  --- (Internal) Move towards crates in reach.
+  -- @param #CTLD_ENGINEERING self
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Move()
+    self:T(self.lid.."Move")
+    self:SetStatus("Moving")
+    -- check if we arrived on target
+    --local COps = self.C_Ops -- Ops.CTLD#CTLD
+    local group = self.Group -- Wrapper.Group#GROUP
+    local tgtpos = self.currwpt -- Core.Point#COORDINATE
+    local gpos = group:GetCoord() -- Core.Point#COORDINATE
+    -- see how far we are from the crate
+    local distance = self:_GetDistance(gpos,tgtpos)
+    self:T(string.format("%s Distance remaining: %d", self.lid, distance))
+    if distance <= 30 and distance ~= -1 then
+        -- arrived
+        self:Arrive()
+    end
+    return self
+  end
+  
+  --- (Internal) Arrived at crates in reach. Stop group.
+  -- @param #CTLD_ENGINEERING self
+  -- @return #CTLD_ENGINEERING self
+  function CTLD_ENGINEERING:Arrive()
+    self:T(self.lid.."Arrive")
+    self:SetStatus("Arrived")
+    self.currwpt = nil
+    local Grp = self.Group -- Wrapper.Group#GROUP
+    Grp:RouteStop()
+    return self
+  end
+  
+  --- (Internal) Return distance in meters between two coordinates.
+  -- @param #CTLD_ENGINEERING self
+  -- @param Core.Point#COORDINATE _point1 Coordinate one
+  -- @param Core.Point#COORDINATE _point2 Coordinate two
+  -- @return #number Distance in meters or -1
+  function CTLD_ENGINEERING:_GetDistance(_point1, _point2)
+    self:T(self.lid .. " _GetDistance")
+    if _point1 and _point2 then
+      local distance1 = _point1:Get2DDistance(_point2)
+      local distance2 = _point1:DistanceFromPointVec2(_point2)
+      if distance1 and type(distance1) == "number" then
+        return distance1
+      elseif distance2 and type(distance2) == "number" then
+        return distance2
+      else
+        self:E("*****Cannot calculate distance!")
+        self:E({_point1,_point2})
+        return -1
+      end
+    else
+      self:E("******Cannot calculate distance!")
+      self:E({_point1,_point2})
+      return -1
+    end
+  end
+
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- END CTLD_ENGINEERING
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
+-- @field Messages
+CTLD.Messages = {
+    EN = {
+        -- ============================================================
+        -- Crate / Cargo Loading
+        -- ============================================================
+        CRATE_LOADED_GROUNDCREW         = "Crate %s loaded by ground crew!",
+        CRATE_UNLOADED_GROUNDCREW       = "Crate %s unloaded by ground crew!",
+        CRATE_LOADED_ID                 = "Crate ID %d for %s loaded!",
+        LOADED_FULL                     = "Loaded %d %s.",
+        LOADED_SETS_LEFTOVER            = "Loaded %d %s(s), with %d leftover crate(s).",
+        LOADED_SETS                     = "Loaded %d %s(s).",
+        LOADED_PARTIAL                  = "Loaded only %d/%d crate(s) of %s.",
+        LOADED_PARTIAL_LIMIT            = "Loaded only %d/%d crate(s) of %s. Cargo limit is now reached!",
+        LOADED_BATCH                    = "Loaded %d %s.",
+        LOADED_BATCH_PARTIAL            = "Some sets could not be fully loaded.",
+        -- ============================================================
+        -- Dropping / Unloading
+        -- ============================================================
+        DROPPED_FULL                    = "Dropped %d %s.",
+        DROPPED_SETS_LEFTOVER           = "Dropped %d %s(s), with %d leftover crate(s).",
+        DROPPED_SETS                    = "Dropped %d %s(s).",
+        DROPPED_PARTIAL                 = "Dropped %d/%d crate(s) of %s.",
+        DROPPED_INTO_ACTION             = "Dropped %s into action!",
+        DROPPED_BEACON                  = "Dropped %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        CRATES_POSITIONED               = "%d crates for %s have been positioned near you!",
+        CRATES_DROPPED                  = "%d crates for %s have been dropped!",
+        -- ============================================================
+        -- Troops
+        -- ============================================================
+        BOARDED                         = "%s boarded!",
+        BOARDING                        = "%s boarding!",
+        TROOPS_RETURNED                 = "Troops have returned to base!",
+        -- ============================================================
+        -- Deployment
+        -- ============================================================
+        DEPLOYED_NEAR_YOU               = "%s have been deployed near you!",
+        UNITS_REMOVED                   = "%s have been removed",
+        -- ============================================================
+        -- Build / Repair
+        -- ============================================================
+        BUILD_STARTED                   = "Build started, ready in %d seconds!",
+        REPAIR_STARTED                  = "Repair started using %s taking %d secs",
+        NO_UNIT_TO_REPAIR               = "No unit close enough to repair!",
+        CANT_REPAIR_WITH                = "Can't repair this unit with %s",
+        CRATES_MOVE_BEFORE_BUILD        = "*** Crates need to be moved before building!",
+        -- ============================================================
+        -- Errors - Chopper / Weight / Capacity
+        -- ============================================================
+        CHOPPER_CANNOT_CARRY            = "Sorry this chopper cannot carry crates!",
+        TOO_HEAVY                       = "Sorry, that's too heavy to load!",
+        FULLY_LOADED                    = "Sorry, we are fully loaded!",
+        CRAMMED                         = "Sorry, we're crammed already!",
+        NO_CAPACITY_NOW                 = "No capacity to load more now!",
+        NO_MORE_CAPACITY                = "No more capacity to load crates!",
+        CANNOT_LOAD_NONE_OR_FULL        = "Cannot load crates: either none found or no capacity left.",
+        -- ============================================================
+        -- Errors - Position
+        -- ============================================================
+        NEED_TO_LAND_OR_HOVER_LOAD      = "You need to land or hover in position to load!",
+        HOVER_OVER_CRATES               = "Hover over the crates to pick them up!",
+        LAND_OR_HOVER_OVER_CRATES       = "Land or hover over the crates to pick them up!",
+        MUST_LAND_OR_HOVER_CRATES       = "You must land or hover to load crates!",
+        NEED_TO_LAND_BUILD              = "You need to land / stop to build something, Pilot!",
+        NOT_CLOSE_ENOUGH_LOGISTICS      = "You are not close enough to a logistics zone!",
+        NOT_CLOSE_ENOUGH_DROP           = "You are not close enough to a drop zone!",
+        NOT_CLOSE_ENOUGH_ZONE_NM        = "Negative, need to be closer than %dnm to a zone!",
+        CANNOT_BUILD_LOADING_AREA       = "You cannot build in a loading area, Pilot!",
+        -- ============================================================
+        -- Errors - Doors
+        -- ============================================================
+        OPEN_DOORS_LOAD_CARGO           = "You need to open the door(s) to load cargo!",
+        OPEN_DOORS_LOAD_TROOPS          = "You need to open the door(s) to load troops!",
+        OPEN_DOORS_EXTRACT_TROOPS       = "You need to open the door(s) to extract troops!",
+        OPEN_DOORS_UNLOAD_TROOPS        = "You need to open the door(s) to unload troops!",
+        OPEN_DOORS_DROP_CARGO           = "You need to open the door(s) to drop cargo!",
+        -- ============================================================
+        -- Errors - Stock / Availability
+        -- ============================================================
+        ALL_GONE                        = "Sorry, all %s are gone!",
+        RAN_OUT_OF                      = "Sorry, we ran out of %s",
+        CARGO_NOT_AVAILABLE_ZONE        = "The requested cargo is not available in this zone!",
+        ENOUGH_CRATES_NEARBY            = "There are enough crates nearby already! Take care of those first!",
+        NO_CRATES_WITHIN                = "No (loadable) crates within %d meters!",
+        NO_CRATES_WITHIN_PLAIN          = "No crates within %d meters!",
+        NO_CRATES_IN_RANGE              = "No crates found in range!",
+        NO_NAMED_CRATES_IN_RANGE        = "No \"%s\" crates found in range!",
+        NO_LOADABLE_CRATES              = "Sorry, no loadable crates nearby or max cargo weight reached!",
+        NO_UNITS_TO_EXTRACT             = "No units close enough to extract!",
+        NO_UNIT_CONFIG                  = "No unit configuration found for %s",
+        CANT_ONBOARD                    = "Can't onboard %s",
+        TOO_MANY_UNITS_NEARBY           = "You already have %d units nearby!",
+        NO_CRATE_GROUPS                 = "No crate groups found for this unit!",
+        NO_CRATE_SET                    = "No crate set found or index invalid!",
+        NO_CRATE_IN_SET                 = "No crate found in that set!",
+        NO_TROOP_CHUNK                  = "No troop cargo chunk found for ID %d!",
+        TROOP_CHUNK_EMPTY               = "Troop chunk is empty for ID %d!",
+        -- ============================================================
+        -- Nothing loaded / in stock
+        -- ============================================================
+        NOTHING_LOADED                  = "Nothing loaded!\nTroop limit: %d | Crate limit %d | Weight limit %d kgs",
+        NOTHING_LOADED_AIRDROP          = "Nothing loaded or not within airdrop parameters!",
+        NOTHING_LOADED_HOVER            = "Nothing loaded or not hovering within parameters!",
+        NOTHING_IN_STOCK                = "Nothing in stock!",
+        NOTHING_TO_PACK                 = "Nothing to pack at this distance pilot!",
+        NOTHING_TO_REMOVE               = "Nothing to remove at this distance pilot!",
+        -- ============================================================
+        -- Zone / Info
+        -- ============================================================
+        ROGER_ZONE                      = "Roger, %s zone %s!",
+        -- ============================================================
+        -- Report: Hover / Flight Parameters
+        -- ============================================================
+        HOVER_PARAMS_METRIC             = "Hover parameters (autoload/drop):\n - Min height %dm \n - Max height %dm \n - Max speed 2mps \n - In parameter: %s",
+        HOVER_PARAMS_IMPERIAL           = "Hover parameters (autoload/drop):\n - Min height %dft \n - Max height %dft \n - Max speed 6ftps \n - In parameter: %s",
+        FLIGHT_PARAMS_IMPERIAL          = "Flight parameters (airdrop):\n - Min height %dft \n - Max height %dft \n - In parameter: %s",
+        FLIGHT_PARAMS_METRIC            = "Flight parameters (airdrop):\n - Min height %dm \n - Max height %dm \n - In parameter: %s",
+        -- ============================================================
+        -- Report Titles  (REPORT:New())
+        -- ============================================================
+        REPORT_CRATES_FOUND             = "Crates Found Nearby:",
+        REPORT_REMOVING_CRATES          = "Removing Crates Found Nearby:",
+        REPORT_TRANSPORT_CHECKOUT       = "Transport Checkout Sheet",
+        REPORT_INVENTORY                = "Inventory Sheet",
+        REPORT_BUILD_CHECKLIST          = "Checklist Buildable Crates",
+        REPORT_REPAIR_CHECKLIST         = "Checklist Repairs",
+        REPORT_BEACONS                  = "Active Zone Beacons",
+        -- ============================================================
+        -- Report Section Headers  (report:Add())
+        -- ============================================================
+        REPORT_SECTION_TROOPS           = "        -- TROOPS --",
+        REPORT_SECTION_CRATES           = "       -- CRATES --",
+        REPORT_SECTION_CRATES_GC        = "       -- CRATES loaded via Ground Crew --",
+        REPORT_SECTION_NONE             = "        N O N E",
+        REPORT_SECTION_NONE_ALT         = "     --- None found! ---",
+        REPORT_SECTION_NONE_REPAIR      = "     --- None Found ---",
+        REPORT_GC_LOADABLE_HINT         = "Probably ground crew loadable (F8)",
+        REPORT_TOTAL_MASS               = "Total Mass: %s kg. Loadable: %s kg.",
+        REPORT_TROOPS_CRATES_COUNT      = "Troops: %d(%d), Crates: %d(%d)",
+        REPORT_TROOPS_CRATETYPES_COUNT  = "Troops: %d, Cratetypes: %d",
+        -- ============================================================
+        -- Report Row Templates  (per-item lines in reports)
+        -- ============================================================
+        REPORT_ROW_TROOP                = "Troop: %s size %d",
+        REPORT_ROW_CRATE                = "Crate: %s %d/%d",
+        REPORT_ROW_CRATE_SIZE1          = "Crate: %s size 1",
+        REPORT_ROW_GC_CRATE             = "GC loaded Crate: %s size 1",
+        REPORT_ROW_DROPPED_CRATE        = "Dropped crate for %s, %dkg",
+        REPORT_ROW_CRATE_KG             = "Crate for %s, %dkg",
+        REPORT_ROW_CRATE_REMOVED        = "Crate for %s, %dkg removed",
+        REPORT_ROW_UNIT_STOCK           = "Unit: %s | Soldiers: %d | Stock: %s",
+        REPORT_ROW_TYPE_CRATE_STOCK     = "Type: %s | Crates per Set: %d | Stock: %s",
+        REPORT_ROW_TYPE_STOCK           = "Type: %s | Stock: %s",
+        REPORT_ROW_BUILD_CHECK          = "Type: %s | Required %d | Found %d | Can Build %s",
+        REPORT_ROW_REPAIR_CHECK         = "Type: %s | Required %d | Found %d | Can Repair %s",
+        REPORT_ROW_BEACON               = " %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        -- ============================================================
+        -- Weight / Crate limit tokens
+        -- ============================================================
+        WEIGHT_LIMIT                    = "Weight limit reached",
+        CRATE_LIMIT                     = "Crate limit reached",
+        -- ============================================================
+        -- Menu labels - Top level
+        -- ============================================================
+        MENU_CTLD                       = "CTLD",
+        MENU_MANAGE_TROOPS              = "Manage Troops",
+        MENU_MANAGE_CRATES              = "Manage Crates",
+        MENU_MANAGE_UNITS               = "Manage Units",
+        -- ============================================================
+        -- Menu labels - Troops
+        -- ============================================================
+        MENU_LOAD_TROOPS                = "Load troops",
+        MENU_DROP_TROOPS                = "Drop Troops",
+        MENU_DROP_ALL_TROOPS            = "Drop ALL troops",
+        MENU_EXTRACT_TROOPS             = "Extract troops",
+        MENU_DROP_N_TROOPS              = "Drop (%d) %s",
+        -- ============================================================
+        -- Menu labels - Crates: Get
+        -- ============================================================
+        MENU_GET_CRATES                 = "Get Crates",
+        MENU_GET                        = "Get",
+        MENU_GET_AND_LOAD               = "Get and Load",
+        MENU_GET_ANYWAY                 = "Get anyway",
+        MENU_PARTIALLY_LOAD             = "Partially load",
+        MENU_OUT_OF_STOCK               = "Out of stock",
+        MENU_TROOP_LIMIT                = "Troop limit reached",
+        -- ============================================================
+        -- Menu labels - Crates: Load
+        -- ============================================================
+        MENU_LOAD_CRATES                = "Load Crates",
+        MENU_LOAD_ALL                   = "Load ALL",
+        MENU_SHOW_LOADABLE_CRATES       = "Show loadable crates",
+        MENU_NO_CRATES_FOUND_RESCAN     = "No crates found! Rescan?",
+        MENU_USE_C130_LOAD              = "Use C-130 Load system",
+        MENU_LOAD_SINGLE                = "Load",
+        -- ============================================================
+        -- Menu labels - Crates: Drop
+        -- ============================================================
+        MENU_DROP_CRATES                = "Drop Crates",
+        MENU_DROP_ALL_CRATES            = "Drop ALL crates",
+        MENU_DROP                       = "Drop",
+        MENU_DROP_AND_BUILD             = "Drop and build",
+        MENU_DROP_N_SETS                = "Drop %d Set%s",
+        MENU_NO_CRATES_TO_DROP          = "No crates to drop!",
+        -- ============================================================
+        -- Menu labels - Crates: Build / Repair / Pack / Remove
+        -- ============================================================
+        MENU_BUILD_CRATES               = "Build crates",
+        MENU_REPAIR                     = "Repair",
+        MENU_PACK_CRATES                = "Pack crates",
+        MENU_PACK                       = "Pack",
+        MENU_PACK_AND_LOAD              = "Pack and Load",
+        MENU_PACK_AND_REMOVE            = "Pack and Remove",
+        MENU_REMOVE_CRATES              = "Remove crates",
+        MENU_REMOVE_CRATES_NEARBY       = "Remove crates nearby",
+        MENU_LIST_CRATES_NEARBY         = "List crates nearby",
+        MENU_CRATES_NEEDED              = "%d crate%s %s (%dkg)",
+        -- ============================================================
+        -- Menu labels - Units (C-130)
+        -- ============================================================
+        MENU_GET_UNITS                  = "Get Units",
+        MENU_REMOVE_UNITS_NEARBY        = "Remove units nearby",
+        -- ============================================================
+        -- Menu labels - Info / Cargo
+        -- ============================================================
+        MENU_LIST_BOARDED_CARGO         = "List boarded cargo",
+        MENU_INVENTORY                  = "Inventory",
+        MENU_LIST_ZONE_BEACONS          = "List active zone beacons",
+        -- ============================================================
+        -- Menu labels - Smokes / Flares / Beacons
+        -- ============================================================
+        MENU_SMOKES_FLARES_BEACONS      = "Smokes, Flares, Beacons",
+        MENU_SMOKE_ZONES_NEARBY         = "Smoke zones nearby",
+        MENU_DROP_SMOKE_NOW             = "Drop smoke now",
+        MENU_RED_SMOKE                  = "Red smoke",
+        MENU_BLUE_SMOKE                 = "Blue smoke",
+        MENU_GREEN_SMOKE                = "Green smoke",
+        MENU_ORANGE_SMOKE               = "Orange smoke",
+        MENU_WHITE_SMOKE                = "White smoke",
+        MENU_FLARE_ZONES_NEARBY         = "Flare zones nearby",
+        MENU_FIRE_FLARE_NOW             = "Fire flare now",
+        MENU_DROP_BEACON_NOW            = "Drop beacon now",
+        -- ============================================================
+        -- Menu labels - Parameters
+        -- ============================================================
+        MENU_SHOW_FLIGHT_PARAMS         = "Show flight parameters",
+        MENU_SHOW_HOVER_PARAMS          = "Show hover parameters",
+        STOCK_NONE                      = "none",
+        STOCK_UNLIMITED                 = "unlimited",
+        BUILD_YES                       = "YES",
+        BUILD_NO                        = "NO",
+    },
+  DE = {
+        -- ============================================================
+        -- Kiste / Fracht laden
+        -- ============================================================
+        CRATE_LOADED_GROUNDCREW         = "Kiste %s vom Bodenpersonal geladen!",
+        CRATE_UNLOADED_GROUNDCREW       = "Kiste %s vom Bodenpersonal entladen!",
+        CRATE_LOADED_ID                 = "Kiste ID %d für %s geladen!",
+        LOADED_FULL                     = "%d %s geladen.",
+        LOADED_SETS_LEFTOVER            = "%d %s geladen, %d Kiste(n) übrig.",
+        LOADED_SETS                     = "%d %s geladen.",
+        LOADED_PARTIAL                  = "Nur %d/%d Kiste(n) von %s geladen.",
+        LOADED_PARTIAL_LIMIT            = "Nur %d/%d Kiste(n) von %s geladen. Frachtlimit erreicht!",
+        LOADED_BATCH                    = "%d %s geladen.",
+        LOADED_BATCH_PARTIAL            = "Einige Sets konnten nicht vollständig geladen werden.",
+        -- ============================================================
+        -- Abwerfen / Entladen
+        -- ============================================================
+        DROPPED_FULL                    = "%d %s abgeworfen.",
+        DROPPED_SETS_LEFTOVER           = "%d %s abgeworfen, %d Kiste(n) übrig.",
+        DROPPED_SETS                    = "%d %s abgeworfen.",
+        DROPPED_PARTIAL                 = "%d/%d Kiste(n) von %s abgeworfen.",
+        DROPPED_INTO_ACTION             = "%s im Einsatz abgesetzt!",
+        DROPPED_BEACON                  = "%s abgesetzt | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        CRATES_POSITIONED               = "%d Kisten für %s in Ihrer Nähe positioniert!",
+        CRATES_DROPPED                  = "%d Kisten für %s abgeworfen!",
+        -- ============================================================
+        -- Truppen
+        -- ============================================================
+        BOARDED                         = "%s eingestiegen!",
+        BOARDING                        = "%s steigt ein!",
+        TROOPS_RETURNED                 = "Truppen zur Basis zurückgekehrt!",
+        -- ============================================================
+        -- Einsatz
+        -- ============================================================
+        DEPLOYED_NEAR_YOU               = "%s in Ihrer Nähe eingesetzt!",
+        UNITS_REMOVED                   = "%s entfernt",
+        -- ============================================================
+        -- Bauen / Reparieren
+        -- ============================================================
+        BUILD_STARTED                   = "Bau gestartet, fertig in %d Sekunden!",
+        REPAIR_STARTED                  = "Reparatur mit %s gestartet, dauert %d Sek.",
+        NO_UNIT_TO_REPAIR               = "Keine Einheit in Reichweite zum Reparieren!",
+        CANT_REPAIR_WITH                = "Diese Einheit kann nicht mit %s repariert werden",
+        CRATES_MOVE_BEFORE_BUILD        = "*** Kisten müssen vor dem Bau verschoben werden!",
+        -- ============================================================
+        -- Fehler - Hubschrauber / Gewicht / Kapazität
+        -- ============================================================
+        CHOPPER_CANNOT_CARRY            = "Dieser Hubschrauber kann keine Kisten transportieren!",
+        TOO_HEAVY                       = "Entschuldigung, das ist zu schwer zum Laden!",
+        FULLY_LOADED                    = "Entschuldigung, wir sind voll beladen!",
+        CRAMMED                         = "Entschuldigung, wir sind bereits voll besetzt!",
+        NO_CAPACITY_NOW                 = "Aktuell keine Ladekapazität mehr vorhanden!",
+        NO_MORE_CAPACITY                = "Keine Kapazität mehr für weitere Kisten!",
+        CANNOT_LOAD_NONE_OR_FULL        = "Laden nicht möglich: keine Kisten gefunden oder Kapazität erschöpft.",
+        -- ============================================================
+        -- Fehler - Position
+        -- ============================================================
+        NEED_TO_LAND_OR_HOVER_LOAD      = "Bitte landen oder schweben Sie zum Laden!",
+        HOVER_OVER_CRATES               = "Schweben Sie über die Kisten, um sie aufzunehmen!",
+        LAND_OR_HOVER_OVER_CRATES       = "Landen oder schweben Sie über die Kisten, um sie aufzunehmen!",
+        MUST_LAND_OR_HOVER_CRATES       = "Sie müssen landen oder schweben, um Kisten zu laden!",
+        NEED_TO_LAND_BUILD              = "Sie müssen landen / anhalten, um etwas zu bauen, Pilot!",
+        NOT_CLOSE_ENOUGH_LOGISTICS      = "Sie sind nicht nah genug an einer Logistikzone!",
+        NOT_CLOSE_ENOUGH_DROP           = "Sie sind nicht nah genug an einer Abwurfzone!",
+        NOT_CLOSE_ENOUGH_ZONE_NM        = "Negativ, Sie müssen näher als %d Seemeilen an einer Zone sein!",
+        CANNOT_BUILD_LOADING_AREA       = "In einem Ladebereich kann nicht gebaut werden, Pilot!",
+        -- ============================================================
+        -- Fehler - Türen
+        -- ============================================================
+        OPEN_DOORS_LOAD_CARGO           = "Bitte öffnen Sie die Tür(en) zum Laden von Fracht!",
+        OPEN_DOORS_LOAD_TROOPS          = "Bitte öffnen Sie die Tür(en) zum Einladen von Truppen!",
+        OPEN_DOORS_EXTRACT_TROOPS       = "Bitte öffnen Sie die Tür(en) zum Aussteigen der Truppen!",
+        OPEN_DOORS_UNLOAD_TROOPS        = "Bitte öffnen Sie die Tür(en) zum Entladen der Truppen!",
+        OPEN_DOORS_DROP_CARGO           = "Bitte öffnen Sie die Tür(en) zum Abwerfen der Fracht!",
+        -- ============================================================
+        -- Fehler - Bestand / Verfügbarkeit
+        -- ============================================================
+        ALL_GONE                        = "Entschuldigung, alle %s sind vergriffen!",
+        RAN_OUT_OF                      = "Entschuldigung, %s ist nicht mehr vorrätig",
+        CARGO_NOT_AVAILABLE_ZONE        = "Die angeforderte Fracht ist in dieser Zone nicht verfügbar!",
+        ENOUGH_CRATES_NEARBY            = "Es sind bereits genügend Kisten in der Nähe! Bitte zuerst um diese kümmern!",
+        NO_CRATES_WITHIN                = "Keine (ladbaren) Kisten in %d Metern Umkreis!",
+        NO_CRATES_WITHIN_PLAIN          = "Keine Kisten in %d Metern Umkreis!",
+        NO_CRATES_IN_RANGE              = "Keine Kisten in Reichweite gefunden!",
+        NO_NAMED_CRATES_IN_RANGE        = "Keine \"%s\"-Kisten in Reichweite gefunden!",
+        NO_LOADABLE_CRATES              = "Entschuldigung, keine ladbaren Kisten in der Nähe oder maximales Frachtgewicht erreicht!",
+        NO_UNITS_TO_EXTRACT             = "Keine Einheiten nah genug zum Aussteigen!",
+        NO_UNIT_CONFIG                  = "Keine Einheitenkonfiguration für %s gefunden",
+        CANT_ONBOARD                    = "%s kann nicht eingeladen werden",
+        TOO_MANY_UNITS_NEARBY           = "Sie haben bereits %d Einheiten in der Nähe!",
+        NO_CRATE_GROUPS                 = "Keine Kistengruppen für diese Einheit gefunden!",
+        NO_CRATE_SET                    = "Kein Kistenset gefunden oder Index ungültig!",
+        NO_CRATE_IN_SET                 = "Keine Kiste in diesem Set gefunden!",
+        NO_TROOP_CHUNK                  = "Kein Truppenfracht-Block für ID %d gefunden!",
+        TROOP_CHUNK_EMPTY               = "Truppenfracht-Block für ID %d ist leer!",
+        -- ============================================================
+        -- Nichts geladen / kein Bestand
+        -- ============================================================
+        NOTHING_LOADED                  = "Nichts geladen!\nTruppenlimit: %d | Kistenlimit: %d | Gewichtslimit: %d kg",
+        NOTHING_LOADED_AIRDROP          = "Nichts geladen oder nicht innerhalb der Abwurfparameter!",
+        NOTHING_LOADED_HOVER            = "Nichts geladen oder Schwebeparameter nicht erfüllt!",
+        NOTHING_IN_STOCK                = "Nichts vorrätig!",
+        NOTHING_TO_PACK                 = "Nichts in dieser Entfernung zum Verpacken, Pilot!",
+        NOTHING_TO_REMOVE               = "Nichts in dieser Entfernung zum Entfernen, Pilot!",
+        -- ============================================================
+        -- Zone / Info
+        -- ============================================================
+        ROGER_ZONE                      = "Verstanden, %s Zone %s!",
+        -- ============================================================
+        -- Report: Schwebe- / Flugparameter
+        -- ============================================================
+        HOVER_PARAMS_METRIC             = "Schwebeparameter (Autoladen/Abwurf):\n - Min. Höhe %dm \n - Max. Höhe %dm \n - Max. Geschwindigkeit 2m/s \n - Im Parameter: %s",
+        HOVER_PARAMS_IMPERIAL           = "Schwebeparameter (Autoladen/Abwurf):\n - Min. Höhe %dft \n - Max. Höhe %dft \n - Max. Geschwindigkeit 6ft/s \n - Im Parameter: %s",
+        FLIGHT_PARAMS_IMPERIAL          = "Flugparameter (Luftabwurf):\n - Min. Höhe %dft \n - Max. Höhe %dft \n - Im Parameter: %s",
+        FLIGHT_PARAMS_METRIC            = "Flugparameter (Luftabwurf):\n - Min. Höhe %dm \n - Max. Höhe %dm \n - Im Parameter: %s",
+        -- ============================================================
+        -- Report-Titel
+        -- ============================================================
+        REPORT_CRATES_FOUND             = "Kisten in der Nähe:",
+        REPORT_REMOVING_CRATES          = "Entferne Kisten in der Nähe:",
+        REPORT_TRANSPORT_CHECKOUT       = "Transport-Checkliste",
+        REPORT_INVENTORY                = "Inventarliste",
+        REPORT_BUILD_CHECKLIST          = "Checkliste baubare Kisten",
+        REPORT_REPAIR_CHECKLIST         = "Checkliste Reparaturen",
+        REPORT_BEACONS                  = "Aktive Zonenfeuer",
+        -- ============================================================
+        -- Report-Sektionskopfzeilen
+        -- ============================================================
+        REPORT_SECTION_TROOPS           = "        -- TRUPPEN --",
+        REPORT_SECTION_CRATES           = "       -- KISTEN --",
+        REPORT_SECTION_CRATES_GC        = "       -- KISTEN via Bodenpersonal geladen --",
+        REPORT_SECTION_NONE             = "        K E I N E",
+        REPORT_SECTION_NONE_ALT         = "     --- Keine gefunden! ---",
+        REPORT_SECTION_NONE_REPAIR      = "     --- Keine gefunden ---",
+        REPORT_GC_LOADABLE_HINT         = "Wahrscheinlich durch Bodenpersonal ladbar (F8)",
+        REPORT_TOTAL_MASS               = "Gesamtgewicht: %s kg. Ladbar: %s kg.",
+        REPORT_TROOPS_CRATES_COUNT      = "Truppen: %d(%d), Kisten: %d(%d)",
+        REPORT_TROOPS_CRATETYPES_COUNT  = "Truppen: %d, Kistentypen: %d",
+        -- ============================================================
+        -- Report-Zeilenvorlagen
+        -- ============================================================
+        REPORT_ROW_TROOP                = "Truppe: %s Größe %d",
+        REPORT_ROW_CRATE                = "Kiste: %s %d/%d",
+        REPORT_ROW_CRATE_SIZE1          = "Kiste: %s Größe 1",
+        REPORT_ROW_GC_CRATE             = "Bodenpersonal-Kiste: %s Größe 1",
+        REPORT_ROW_DROPPED_CRATE        = "Abgeworfene Kiste für %s, %dkg",
+        REPORT_ROW_CRATE_KG             = "Kiste für %s, %dkg",
+        REPORT_ROW_CRATE_REMOVED        = "Kiste für %s, %dkg entfernt",
+        REPORT_ROW_UNIT_STOCK           = "Einheit: %s | Soldaten: %d | Bestand: %s",
+        REPORT_ROW_TYPE_CRATE_STOCK     = "Typ: %s | Kisten pro Set: %d | Bestand: %s",
+        REPORT_ROW_TYPE_STOCK           = "Typ: %s | Bestand: %s",
+        REPORT_ROW_BUILD_CHECK          = "Typ: %s | Benötigt: %d | Gefunden: %d | Baubar: %s",
+        REPORT_ROW_REPAIR_CHECK         = "Typ: %s | Benötigt: %d | Gefunden: %d | Reparierbar: %s",
+        REPORT_ROW_BEACON               = " %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        -- ============================================================
+        -- Gewichts- / Kistenlimit-Token
+        -- ============================================================
+        WEIGHT_LIMIT                    = "Gewichtslimit erreicht",
+        CRATE_LIMIT                     = "Kistenlimit erreicht",
+        -- ============================================================
+        -- Menübezeichnungen - Obere Ebene
+        -- ============================================================
+        MENU_CTLD                       = "CTLD",
+        MENU_MANAGE_TROOPS              = "Truppen verwalten",
+        MENU_MANAGE_CRATES              = "Kisten verwalten",
+        MENU_MANAGE_UNITS               = "Einheiten verwalten",
+        -- ============================================================
+        -- Menübezeichnungen - Truppen
+        -- ============================================================
+        MENU_LOAD_TROOPS                = "Truppen einladen",
+        MENU_DROP_TROOPS                = "Truppen absetzen",
+        MENU_DROP_ALL_TROOPS            = "ALLE Truppen absetzen",
+        MENU_EXTRACT_TROOPS             = "Truppen aufnehmen",
+        MENU_DROP_N_TROOPS              = "(%d) %s absetzen",
+        -- ============================================================
+        -- Menübezeichnungen - Kisten: Holen
+        -- ============================================================
+        MENU_GET_CRATES                 = "Kisten holen",
+        MENU_GET                        = "Holen",
+        MENU_GET_AND_LOAD               = "Holen und laden",
+        MENU_GET_ANYWAY                 = "Trotzdem holen",
+        MENU_PARTIALLY_LOAD             = "Teilweise laden",
+        MENU_OUT_OF_STOCK               = "Nicht vorrätig",
+        MENU_TROOP_LIMIT                = "Truppenlimit erreicht",
+        -- ============================================================
+        -- Menübezeichnungen - Kisten: Laden
+        -- ============================================================
+        MENU_LOAD_CRATES                = "Kisten laden",
+        MENU_LOAD_ALL                   = "ALLE laden",
+        MENU_SHOW_LOADABLE_CRATES       = "Ladbare Kisten anzeigen",
+        MENU_NO_CRATES_FOUND_RESCAN     = "Keine Kisten gefunden! Neu scannen?",
+        MENU_USE_C130_LOAD              = "C-130-Ladesystem verwenden",
+        MENU_LOAD_SINGLE                = "Lade",
+        -- ============================================================
+        -- Menübezeichnungen - Kisten: Abwerfen
+        -- ============================================================
+        MENU_DROP_CRATES                = "Kisten abwerfen",
+        MENU_DROP_ALL_CRATES            = "ALLE Kisten abwerfen",
+        MENU_DROP                       = "Abwerfen",
+        MENU_DROP_AND_BUILD             = "Abwerfen und bauen",
+        MENU_DROP_N_SETS                = "%d Set%s abwerfen",
+        MENU_NO_CRATES_TO_DROP          = "Keine Kisten zum Abwerfen!",
+        -- ============================================================
+        -- Menübezeichnungen - Kisten: Bauen / Reparieren / Packen / Entfernen
+        -- ============================================================
+        MENU_BUILD_CRATES               = "Kisten bauen",
+        MENU_REPAIR                     = "Reparieren",
+        MENU_PACK_CRATES                = "Kisten packen",
+        MENU_PACK                       = "Packen",
+        MENU_PACK_AND_LOAD              = "Packen und laden",
+        MENU_PACK_AND_REMOVE            = "Packen und entfernen",
+        MENU_REMOVE_CRATES              = "Kisten entfernen",
+        MENU_REMOVE_CRATES_NEARBY       = "Nahe Kisten entfernen",
+        MENU_LIST_CRATES_NEARBY         = "Nahe Kisten auflisten",
+        MENU_CRATES_NEEDED              = "%d Kiste%s %s (%dkg)",
+        -- ============================================================
+        -- Menübezeichnungen - Einheiten (C-130)
+        -- ============================================================
+        MENU_GET_UNITS                  = "Einheiten holen",
+        MENU_REMOVE_UNITS_NEARBY        = "Nahe Einheiten entfernen",
+        -- ============================================================
+        -- Menübezeichnungen - Info / Fracht
+        -- ============================================================
+        MENU_LIST_BOARDED_CARGO         = "Geladene Fracht anzeigen",
+        MENU_INVENTORY                  = "Inventar",
+        MENU_LIST_ZONE_BEACONS          = "Aktive Zonenfeuer anzeigen",
+        -- ============================================================
+        -- Menübezeichnungen - Rauch / Leuchtfeuer / Baken
+        -- ============================================================
+        MENU_SMOKES_FLARES_BEACONS      = "Rauch, Leuchtfeuer, Baken",
+        MENU_SMOKE_ZONES_NEARBY         = "Nahe Zonen einrauchen",
+        MENU_DROP_SMOKE_NOW             = "Rauch jetzt setzen",
+        MENU_RED_SMOKE                  = "Roter Rauch",
+        MENU_BLUE_SMOKE                 = "Blauer Rauch",
+        MENU_GREEN_SMOKE                = "Grüner Rauch",
+        MENU_ORANGE_SMOKE               = "Oranger Rauch",
+        MENU_WHITE_SMOKE                = "Weißer Rauch",
+        MENU_FLARE_ZONES_NEARBY         = "Nahe Zonen befeuern",
+        MENU_FIRE_FLARE_NOW             = "Leuchtfeuer jetzt abfeuern",
+        MENU_DROP_BEACON_NOW            = "Bake jetzt setzen",
+        -- ============================================================
+        -- Menübezeichnungen - Parameter
+        -- ============================================================
+        MENU_SHOW_FLIGHT_PARAMS         = "Flugparameter anzeigen",
+        MENU_SHOW_HOVER_PARAMS          = "Schwebeparameter anzeigen",
+        STOCK_NONE                      = "keiner",
+        STOCK_UNLIMITED                 = "unbegrenzt",
+        BUILD_YES                       = "JA",
+        BUILD_NO                        = "NEIN",
+},
+FR = {
+        --- ============================================================
+        -- Chargement caisse / fret
+        -- ============================================================
+        CRATE_LOADED_GROUNDCREW         = "Caisse(s) %s chargée(s) par l'équipe au sol !",
+        CRATE_UNLOADED_GROUNDCREW       = "Caisse(s) %s déchargée(s) par l'équipe au sol !",
+        CRATE_LOADED_ID                 = "Caisse(s) ID %d pour %s chargée(s) !",
+        LOADED_FULL                     = "%d %s chargé(s).",
+        LOADED_SETS_LEFTOVER            = "%d %s chargé(s), %d caisse(s) restante(s).",
+        LOADED_SETS                     = "%d %s chargé(s).",
+        LOADED_PARTIAL                  = "Seulement %d/%d caisse(s) de %s chargée(s).",
+        LOADED_PARTIAL_LIMIT            = "Seulement %d/%d caisse(s) de %s chargée(s). Limite de fret atteinte !",
+        LOADED_BATCH                    = "%d %s chargé(s).",
+        LOADED_BATCH_PARTIAL            = "Certains ensembles n'ont pas pu être complètement chargés.",
+        -- ============================================================
+        -- Largage / Déchargement
+        -- ============================================================
+        DROPPED_FULL                    = "%d %s largué(s).",
+        DROPPED_SETS_LEFTOVER           = "%d %s largué(s), %d caisse(s) restante(s).",
+        DROPPED_SETS                    = "%d %s largué(s).",
+        DROPPED_PARTIAL                 = "%d/%d caisse(s) de %s larguée(s).",
+        DROPPED_INTO_ACTION             = "%s engagé(s) en action !",
+        DROPPED_BEACON                  = "%s largué | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        CRATES_POSITIONED               = "%d caisses pour %s positionnées près de vous !",
+        CRATES_DROPPED                  = "%d caisses pour %s larguées !",
+        -- ============================================================
+        -- Troupes
+        -- ============================================================
+        BOARDED                         = "%s embarqué(s) !",
+        BOARDING                        = "%s en cours d'embarquement !",
+        TROOPS_RETURNED                 = "Les troupes sont retournées à la base !",
+        -- ============================================================
+        -- Déploiement
+        -- ============================================================
+        DEPLOYED_NEAR_YOU               = "%s déployé(s) près de vous !",
+        UNITS_REMOVED                   = "%s supprimé(s)",
+        -- ============================================================
+        -- Construction / Réparation
+        -- ============================================================
+        BUILD_STARTED                   = "Construction démarrée, prête dans %d secondes !",
+        REPAIR_STARTED                  = "Réparation démarrée avec %s, durée %d sec.",
+        NO_UNIT_TO_REPAIR               = "Aucune unité(s) assez proche pour être réparée(s) !",
+        CANT_REPAIR_WITH                = "Impossible de réparer cette unité avec %s",
+        CRATES_MOVE_BEFORE_BUILD        = "*** Les caisses doivent être déplacées avant la construction !",
+        -- ============================================================
+        -- Erreurs - Hélicoptère / Poids / Capacité
+        -- ============================================================
+        CHOPPER_CANNOT_CARRY            = "Cet hélicoptère ne peut pas transporter de caisses !",
+        TOO_HEAVY                       = "Désolé, c'est trop lourd à charger !",
+        FULLY_LOADED                    = "Désolé, capacité maximale atteinte !",
+        CRAMMED                         = "Désolé, nous sommes déjà au complet !",
+        NO_CAPACITY_NOW                 = "Aucune capacité de chargement disponible pour le moment !",
+        NO_MORE_CAPACITY                = "Plus de capacité pour charger des caisses !",
+        CANNOT_LOAD_NONE_OR_FULL        = "Chargement impossible : aucune caisse trouvée ou capacité épuisée.",
+        -- ============================================================
+        -- Erreurs - Position
+        -- ============================================================
+        NEED_TO_LAND_OR_HOVER_LOAD      = "Vous devez atterrir ou rester en vol stationnaire pour charger !",
+        HOVER_OVER_CRATES               = "Survolez les caisses en stationnaire pour les récupérer !",
+        LAND_OR_HOVER_OVER_CRATES       = "Atterrissez ou survolez les caisses en stationnaire pour les récupérer !",
+        MUST_LAND_OR_HOVER_CRATES       = "Vous devez atterrir ou rester en stationnaire pour charger les caisses !",
+        NEED_TO_LAND_BUILD              = "Vous devez atterrir / vous arrêter pour construire quelque chose, Pilote !",
+        NOT_CLOSE_ENOUGH_LOGISTICS      = "Vous n'êtes pas assez proche d'une zone logistique !",
+        NOT_CLOSE_ENOUGH_DROP           = "Vous n'êtes pas assez proche d'une zone de largage !",
+        NOT_CLOSE_ENOUGH_ZONE_NM        = "Négatif, vous devez être à moins de %d nm d'une zone !",
+        CANNOT_BUILD_LOADING_AREA       = "Vous ne pouvez pas construire dans une zone de chargement, Pilote !",
+        -- ============================================================
+        -- Erreurs - Portes
+        -- ============================================================
+        OPEN_DOORS_LOAD_CARGO           = "Vous devez ouvrir la/les porte(s) pour charger du fret !",
+        OPEN_DOORS_LOAD_TROOPS          = "Vous devez ouvrir la/les porte(s) pour embarquer des troupes !",
+        OPEN_DOORS_EXTRACT_TROOPS       = "Vous devez ouvrir la/les porte(s) pour extraire des troupes !",
+        OPEN_DOORS_UNLOAD_TROOPS        = "Vous devez ouvrir la/les porte(s) pour débarquer des troupes !",
+        OPEN_DOORS_DROP_CARGO           = "Vous devez ouvrir la/les porte(s) pour larguer du fret !",
+        -- ============================================================
+        -- Erreurs - Stock / Disponibilité
+        -- ============================================================
+        ALL_GONE                        = "Désolé, tous les %s sont épuisés !",
+        RAN_OUT_OF                      = "Désolé, nous n'avons plus de %s !",
+        CARGO_NOT_AVAILABLE_ZONE        = "Le fret demandé n'est pas disponible dans cette zone !",
+        ENOUGH_CRATES_NEARBY            = "Il y a déjà suffisamment de caisses à proximité ! Occupez-vous d'abord de celles-ci !",
+        NO_CRATES_WITHIN                = "Aucune caisse (chargeable) dans un rayon de %d mètres !",
+        NO_CRATES_WITHIN_PLAIN          = "Aucune caisse dans un rayon de %d mètres !",
+        NO_CRATES_IN_RANGE              = "Aucune caisse trouvée à portée !",
+        NO_NAMED_CRATES_IN_RANGE        = "Aucune caisse \"%s\" trouvée à portée !",
+        NO_LOADABLE_CRATES              = "Désolé, aucune caisse chargeable à proximité ou poids maximum atteint !",
+        NO_UNITS_TO_EXTRACT             = "Aucune unité assez proche pour être extraite !",
+        NO_UNIT_CONFIG                  = "Aucune configuration d'unité trouvée pour %s",
+        CANT_ONBOARD                    = "Impossible d'embarquer %s",
+        TOO_MANY_UNITS_NEARBY           = "Vous avez déjà %d unités à proximité !",
+        NO_CRATE_GROUPS                 = "Aucun groupe de caisses trouvé pour cette unité !",
+        NO_CRATE_SET                    = "Aucun ensemble de caisses trouvé ou index invalide !",
+        NO_CRATE_IN_SET                 = "Aucune caisse trouvée dans cet ensemble !",
+        NO_TROOP_CHUNK                  = "Aucun bloc de fret de troupes trouvé pour l'ID %d !",
+        TROOP_CHUNK_EMPTY               = "Le bloc de fret de troupes pour l'ID %d est vide !",
+        -- ============================================================
+        -- Rien de chargé / en stock
+        -- ============================================================
+        NOTHING_LOADED                  = "Rien de chargé !\nLimite de troupes : %d | Limite de caisses : %d | Limite en poids : %d kg",
+        NOTHING_LOADED_AIRDROP          = "Rien de chargé ou paramètres de largage non respectés !",
+        NOTHING_LOADED_HOVER            = "Rien de chargé ou paramètres de vol stationnaire non respectés !",
+        NOTHING_IN_STOCK                = "Rien en stock !",
+        NOTHING_TO_PACK                 = "Rien à charger à cette distance, Pilote !",
+        NOTHING_TO_REMOVE               = "Rien à retirer à cette distance, Pilote !",
+        -- ============================================================
+        -- Zone / Info
+        -- ============================================================
+        ROGER_ZONE                      = "Compris, zone %s %s !",
+        -- ============================================================
+        -- Rapport : Paramètres stationnaire / vol
+        -- ============================================================
+        HOVER_PARAMS_METRIC             = "Paramètres stationnaires (autochargement/largage) :\n - Hauteur min. %dm \n - Hauteur max. %dm \n - Vitesse max. 2m/s \n - Dans les paramètres : %s",
+        HOVER_PARAMS_IMPERIAL           = "Paramètres stationnaires (autochargement/largage) :\n - Hauteur min. %dft \n - Hauteur max. %dft \n - Vitesse max. 6ft/s \n - Dans les paramètres : %s",
+        FLIGHT_PARAMS_IMPERIAL          = "Paramètres de vol (largage aérien) :\n - Hauteur min. %dft \n - Hauteur max. %dft \n - Dans les paramètres : %s",
+        FLIGHT_PARAMS_METRIC            = "Paramètres de vol (largage aérien) :\n - Hauteur min. %dm \n - Hauteur max. %dm \n - Dans les paramètres : %s",
+        -- ============================================================
+        -- Titres de rapport
+        -- ============================================================
+        REPORT_CRATES_FOUND             = "Caisses trouvées à proximité :",
+        REPORT_REMOVING_CRATES          = "Suppression des caisses à proximité :",
+        REPORT_TRANSPORT_CHECKOUT       = "Fiche de contrôle transport",
+        REPORT_INVENTORY                = "Fiche d'inventaire",
+        REPORT_BUILD_CHECKLIST          = "Checklist caisses constructibles",
+        REPORT_REPAIR_CHECKLIST         = "Checklist réparations",
+        REPORT_BEACONS                  = "Balises de zone actives",
+        -- ============================================================
+        -- En-têtes de sections de rapport
+        -- ============================================================
+        REPORT_SECTION_TROOPS           = "        -- TROUPES --",
+        REPORT_SECTION_CRATES           = "       -- CAISSES --",
+        REPORT_SECTION_CRATES_GC        = "       -- CAISSES chargées via équipe au sol --",
+        REPORT_SECTION_NONE             = "        A U C U N",
+        REPORT_SECTION_NONE_ALT         = "     --- Aucun trouvé ! ---",
+        REPORT_SECTION_NONE_REPAIR      = "     --- Aucun trouvé ---",
+        REPORT_GC_LOADABLE_HINT         = "Probablement chargeable via l’équipe au sol (F8)",
+        REPORT_TOTAL_MASS               = "Masse totale : %s kg. Chargeable : %s kg.",
+        REPORT_TROOPS_CRATES_COUNT      = "Troupes : %d(%d), Caisses : %d(%d)",
+        REPORT_TROOPS_CRATETYPES_COUNT  = "Troupes : %d, Types de caisses : %d",
+        -- ============================================================
+        -- Modèles de lignes de rapport
+        -- ============================================================
+        REPORT_ROW_TROOP                = "Troupe : %s taille %d",
+        REPORT_ROW_CRATE                = "Caisse : %s %d/%d",
+        REPORT_ROW_CRATE_SIZE1          = "Caisse : %s taille 1",
+        REPORT_ROW_GC_CRATE             = "Caisses chargées par l'équipe au sol : %s taille 1",
+        REPORT_ROW_DROPPED_CRATE        = "Caisses larguées pour %s, %dkg",
+        REPORT_ROW_CRATE_KG             = "Caisses pour %s, %dkg",
+        REPORT_ROW_CRATE_REMOVED        = "Caisses pour %s, %dkg retirées",
+        REPORT_ROW_UNIT_STOCK           = "Unités : %s | Soldats : %d | Stock : %s",
+        REPORT_ROW_TYPE_CRATE_STOCK     = "Type : %s | Caisses par ensemble : %d | Stock : %s",
+        REPORT_ROW_TYPE_STOCK           = "Type : %s | Stock : %s",
+        REPORT_ROW_BUILD_CHECK          = "Type : %s | Requis : %d | Trouvé : %d | Constructible : %s",
+        REPORT_ROW_REPAIR_CHECK         = "Type : %s | Requis : %d | Trouvé : %d | Réparable : %s",
+        REPORT_ROW_BEACON               = " %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        -- ============================================================
+        -- Tokens limite poids / caisses
+        -- ============================================================
+        WEIGHT_LIMIT                    = "Limite de poids atteinte",
+        CRATE_LIMIT                     = "Limite de caisses atteinte",
+        -- ============================================================
+        -- Libellés de menu - Niveau supérieur
+        -- ============================================================
+        MENU_CTLD                       = "CTLD",
+        MENU_MANAGE_TROOPS              = "Gérer les troupes",
+        MENU_MANAGE_CRATES              = "Gérer les caisses",
+        MENU_MANAGE_UNITS               = "Gérer les unités",
+        -- ============================================================
+        -- Libellés de menu - Troupes
+        -- ============================================================
+        MENU_LOAD_TROOPS                = "Embarquer troupes",
+        MENU_DROP_TROOPS                = "Déposer troupes",
+        MENU_DROP_ALL_TROOPS            = "Déposer TOUTES les troupes",
+        MENU_EXTRACT_TROOPS             = "Extraire troupes",
+        MENU_DROP_N_TROOPS              = "Déposer (%d) %s",
+        -- ============================================================
+        -- Libellés de menu - Caisses : Récupérer
+        -- ============================================================
+        MENU_GET_CRATES                 = "Récupérer caisses",
+        MENU_GET                        = "Récupérer",
+        MENU_GET_AND_LOAD               = "Récupérer et charger",
+        MENU_GET_ANYWAY                 = "Récupérer quand même",
+        MENU_PARTIALLY_LOAD             = "Chargement partiel",
+        MENU_OUT_OF_STOCK               = "Rupture de stock",
+        MENU_TROOP_LIMIT                = "Limite de troupes atteinte",
+        -- ============================================================
+        -- Libellés de menu - Caisses : Charger
+        -- ============================================================
+        MENU_LOAD_CRATES                = "Charger caisses",
+        MENU_LOAD_ALL                   = "Tout charger",
+        MENU_SHOW_LOADABLE_CRATES       = "Afficher caisses chargeables",
+        MENU_NO_CRATES_FOUND_RESCAN     = "Aucune caisse trouvée ! Rescanner ?",
+        MENU_USE_C130_LOAD              = "Utiliser le système de chargement C-130",
+        MENU_LOAD_SINGLE                = "Charger",
+        -- ============================================================
+        -- Libellés de menu - Caisses : Larguer
+        -- ============================================================
+        MENU_DROP_CRATES                = "Larguer caisses",
+        MENU_DROP_ALL_CRATES            = "Larguer TOUTES les caisses",
+        MENU_DROP                       = "Larguer",
+        MENU_DROP_AND_BUILD             = "Larguer et construire",
+        MENU_DROP_N_SETS                = "Larguer %d ensemble%s",
+        MENU_NO_CRATES_TO_DROP          = "Aucune caisse à larguer !",
+        -- ============================================================
+        -- Libellés de menu - Caisses : Construire / Réparer / Emballer / Retirer
+        -- ============================================================
+        MENU_BUILD_CRATES               = "Construire caisses",
+        MENU_REPAIR                     = "Réparer",
+        MENU_PACK_CRATES                = "Emballer caisses",
+        MENU_PACK                       = "Emballer",
+        MENU_PACK_AND_LOAD              = "Emballer et charger",
+        MENU_PACK_AND_REMOVE            = "Emballer et retirer",
+        MENU_REMOVE_CRATES              = "Retirer caisses",
+        MENU_REMOVE_CRATES_NEARBY       = "Retirer caisses proches",
+        MENU_LIST_CRATES_NEARBY         = "Lister caisses proches",
+        MENU_CRATES_NEEDED              = "%d caisse%s %s (%dkg)",
+        -- ============================================================
+        -- Libellés de menu - Unités (C-130)
+        -- ============================================================
+        MENU_GET_UNITS                  = "Récupérer unités",
+        MENU_REMOVE_UNITS_NEARBY        = "Retirer les unités proches",
+        -- ============================================================
+        -- Libellés de menu - Info / Fret
+        -- ============================================================
+        MENU_LIST_BOARDED_CARGO         = "Lister le fret embarqué",
+        MENU_INVENTORY                  = "Inventaire",
+        MENU_LIST_ZONE_BEACONS          = "Lister les balises de zones actives",
+        -- ============================================================
+        -- Libellés de menu - Fumigènes / Fusées / Balises
+        -- ============================================================
+        MENU_SMOKES_FLARES_BEACONS      = "Fumigènes, Fusées, Balises",
+        MENU_SMOKE_ZONES_NEARBY         = "Fumigène sur les zones proches",
+        MENU_DROP_SMOKE_NOW             = "Poser fumigène maintenant",
+        MENU_RED_SMOKE                  = "Fumigène rouge",
+        MENU_BLUE_SMOKE                 = "Fumigène bleu",
+        MENU_GREEN_SMOKE                = "Fumigène vert",
+        MENU_ORANGE_SMOKE               = "Fumigène orange",
+        MENU_WHITE_SMOKE                = "Fumigène blanc",
+        MENU_FLARE_ZONES_NEARBY         = "Baliser zones proches",
+        MENU_FIRE_FLARE_NOW             = "Tirer une fusée maintenant",
+        MENU_DROP_BEACON_NOW            = "Poser une balise maintenant",
+        -- ============================================================
+        -- Libellés de menu - Paramètres
+        -- ============================================================
+        MENU_SHOW_FLIGHT_PARAMS         = "Afficher paramètres de vol",
+        MENU_SHOW_HOVER_PARAMS          = "Afficher les paramètres stationnaire",
+        STOCK_NONE                      = "aucun",
+        STOCK_UNLIMITED                 = "illimité",
+        BUILD_YES                       = "OUI",
+        BUILD_NO                        = "NON",
+    },
+  }
+  do 
 --- **Hercules Cargo AIR Drop Events** by Anubis Yinepu
 -- Moose CTLD OO refactoring by Applevangelist
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -160621,7 +163533,7 @@ end
 -- @image OPS_CSAR.jpg
 
 ---
--- Last Update Jan 2026
+-- Last Update Feb 2026
 
 -------------------------------------------------------------------------
 --- **CSAR** class, extends Core.Base#BASE, Core.Fsm#FSM
@@ -160727,7 +163639,10 @@ end
 --       mycsar.SRSport = 5002  -- and SRS Server port
 --       mycsar.SRSCulture = "en-GB" -- SRS voice culture
 --       mycsar.SRSVoice = nil -- SRS voice for downed pilot, relevant for Google TTS
---       mycsar.SRSGPathToCredentials = nil -- Path to your Google credentials json file, set this if you want to use Google TTS
+--       mycsar.SRSGPathToCredentials = nil -- Path to your Google credentials json file, set this if you want to use Google TTS as provider
+--       mycsar.SRSBackend = MSRS.Backend.SRSEXE -- default backend is windows
+--       mycsar.SRSProvider = MSRS.Provider.WINDOWS -- default TTS provider is windows
+--       mycsar.SRSSpeed = 1.0 -- default speech speed - does not work with all providers
 --       mycsar.SRSVolume = 1 -- Volume, between 0 and 1
 --       mycsar.SRSGender = "male" -- male or female voice
 --       mycsar.CSARVoice = MSRS.Voices.Google.Standard.en_US_Standard_A -- SRS voice for CSAR Controller, relevant for Google TTS
@@ -160821,6 +163736,65 @@ end
 --  **Caveat:**
 -- Dropped troop noMessage and forcedesc parameters aren't saved.
 --
+-- ## 6. Message localization
+-- 
+-- Use the following option to use one of the build-in translations,"en" is the default one:
+-- 
+--              mycsar.locale = "fr" -- available are "en", "de" and "fr" (English, German, French)
+-- 
+-- To add your own text, you can do this by adding your locale and translations for these texts before calling `CSAR:New()`:
+-- (NOTE - the lua placeholders like %s, %d must remain the same in type and number!)
+-- 
+--  CSAR.Messages.EN = {
+--      HEARYOULONG = "%s: %s. I hear you! Finally, that is music in my ears!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.",
+--      HEARYOUSHORT = "%s: %s. I hear you! Finally, that is music in my ears!\nRequest a flare or smoke if you need.",
+--      WEARECRAMMED = "%s, %s. We\'re already crammed with %d guys! Sorry!",
+--      IAMINHELO = "%s: %s I\'m in! Get to the MASH ASAP! ",
+--      YOUARECLOSE = "%s: %s. You\'re close now! Land or hover at the smoke.",
+--      YOUARECLOSELONG = "%s: %s. You\'re close now! Land in a safe place, I will go there ",
+--      WAITMORE = "Wait till %s gets in. \nETA %d more seconds.",
+--      OPENTHEDOORIN = "Open the door to let me in!",
+--      HOVERABOVE = "Hovering above %s. \n\nHold hover for %d seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",
+--      TOOHIGHWINCH = "Too high to winch %s \nReduce height and hover for 10 seconds!",
+--      OPENTHEDOOROUT = "Open the door to let me out!",
+--      TAKECLINIC = "%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!",
+--      KILOMETERS = " kilometer",
+--      NAUTMILES = " nautical miles",
+--      FIRINGFLARE = "%s - Firing signal flare at your %s o\'clock. Distance %s",
+--      NOPILOTSINRANGE = "No Pilots within %s",
+--      IRSTROBE = "%s - IR Strobe active at your %s o\'clock. Distance %s",
+--      POPPINGSMOKE = "%s - Popping smoke at your %s o\'clock. Distance %s",
+--      POPPINGSMOKEMASH = "%s - Popping smoke at the closest rescue point: %s",
+--      NORESCUEPOINTWITHIN = "No rescue point within %s",
+--      NOPILOTSONBOARD = "No Rescued Pilots onboard",
+--      MENUTOP = "CSAR",
+--      MENUACTIVE = "List Active CSAR",
+--      MENUCHECK = "Check Onboard",
+--      MENUFLARE = "Request Signal Flare",
+--      MENUSMOKE = "Request Smoke",
+--      MENUSTROBE = "Request IR Strobe",
+--      MENUMASH = "Smoke Closest MASH",
+--      BOARDED = "Onboard - RTB to FARP/Airfield or MASH: ",
+--      MAYDAY = "MAYDAY MAYDAY! %s is down. ",
+--      CONTACT = "Troops In Contact. %s requests CASEVAC. ",
+--      PICKUPZONE = "Pickup Zone at %s.",
+--      REQUESTSAR = "%s requests SAR at %s, beacon at %.2f KHz!",
+--      REQUESTSARBEACON = "%s requests SAR at %s, beacon at %.2f KHz!",
+--      KHZ = "kilo hertz",
+--      FILLAT = "at",
+--      FILLFOR = "for",
+--    },
+--
+-- e.g. for Spanish:
+-- 
+--      CSAR.Messages.ES = {
+--      HEARYOULONG = "%s: %s. ¡Te escucho! ¡Por fin, eso es música para mis oídos!\nLanzaré una señal de humo cuando estés a %s de distancia.\nAterrice o quédese en vuelo estacionario junto al humo.",
+--      HEARYOUSHORT = "%s: %s. ¡Te escucho! ¡Por fin, eso es música para mis oídos!\nSolicite una bengala o humo si lo necesita.",
+--      WEARECRAMMED = "%s, %s. ¡Ya estamos abarrotados con %d personas! ¡Lo siento!",
+--      IAMINHELO = "%s: %s ¡Estoy dentro! ¡Dirígete al MASH lo antes posible!",
+--      ...
+--      }
+--      
 -- @field #CSAR
 CSAR = {
   ClassName       = "CSAR",
@@ -160865,6 +163839,129 @@ CSAR = {
   IRStrobeRuntime = 300,
   FARPRescueDistance = 500,
   EnableMenuSmokeMASH = true,
+  locale = "en",
+}
+
+---
+-- @field Messages 
+CSAR.Messages = {
+  EN = {
+    HEARYOULONG = "%s: %s. I hear you! Finally, that is music in my ears!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.",
+    HEARYOUSHORT = "%s: %s. I hear you! Finally, that is music in my ears!\nRequest a flare or smoke if you need.",
+    WEARECRAMMED = "%s, %s. We\'re already crammed with %d guys! Sorry!",
+    IAMINHELO = "%s: %s I\'m in! Get to the MASH ASAP! ",
+    YOUARECLOSE = "%s: %s. You\'re close now! Land or hover at the smoke.",
+    YOUARECLOSELONG = "%s: %s. You\'re close now! Land in a safe place, I will go there ",
+    WAITMORE = "Wait till %s gets in. \nETA %d more seconds.",
+    OPENTHEDOORIN = "Open the door to let me in!",
+    HOVERABOVE = "Hovering above %s. \n\nHold hover for %d seconds to winch them up. \n\nIf the countdown stops you\'re too far away!",
+    TOOHIGHWINCH = "Too high to winch %s \nReduce height and hover for 10 seconds!",
+    OPENTHEDOOROUT = "Open the door to let me out!",
+    TAKECLINIC = "%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!",
+    KILOMETERS = " kilometer",
+    NAUTMILES = " nautical miles",
+    FIRINGFLARE = "%s - Firing signal flare at your %s o\'clock. Distance %s",
+    NOPILOTSINRANGE = "No Pilots within %s",
+    IRSTROBE = "%s - IR Strobe active at your %s o\'clock. Distance %s",
+    POPPINGSMOKE = "%s - Popping smoke at your %s o\'clock. Distance %s",
+    POPPINGSMOKEMASH = "%s - Popping smoke at the closest rescue point: %s",
+    NORESCUEPOINTWITHIN = "No rescue point within %s",
+    NOPILOTSONBOARD = "No Rescued Pilots onboard",
+    MENUTOP = "CSAR",
+    MENUACTIVE = "List Active CSAR",
+    MENUCHECK = "Check Onboard",
+    MENUFLARE = "Request Signal Flare",
+    MENUSMOKE = "Request Smoke",
+    MENUSTROBE = "Request IR Strobe",
+    MENUMASH = "Smoke Closest MASH",
+    BOARDED = "Onboard - RTB to FARP/Airfield or MASH: ",
+    MAYDAY = "MAYDAY MAYDAY! %s is down. ",
+    CONTACT = "Troops In Contact. %s requests CASEVAC. ",
+    PICKUPZONE = "Pickup Zone at %s.",
+    REQUESTSAR = "%s requests SAR at %s, beacon at %.2f KHz!",
+    REQUESTSARBEACON = "%s requests SAR at %s, beacon at %.2f KHz!",
+    KHZ = "kilo hertz",
+    FILLAT = "at",
+    FILLFOR = "for",
+    },
+  DE = {
+    HEARYOULONG = "%s: %s. Ich höre Sie! Endlich, das ist Musik in meinen Ohren!\nIch zünde eine Rauchgranate, wenn Sie %s entfernt sind.\nLanden Sie oder hovern Sie beim Rauch.",
+    HEARYOUSHORT = "%s: %s. Ich höre Sie! Endlich, das ist Musik in meinen Ohren!\nFordern Sie eine Leuchtrakete oder Rauch an, falls nötig.",
+    IAMINHELO = "%s: %s Ich bin drin! Jetzt sofort zum Lazarett! ",
+    YOUARECLOSE = "%s: %s. Sie sind jetzt nah dran! Landen Sie oder hovern Sie beim Rauch.",
+    YOUARECLOSELONG = "%s: %s. Sie sind jetzt nah dran! Landen Sie an einem sicheren Ort, ich komme dorthin.",
+    WAITMORE = "Warten Sie, bis %s eingestiegen ist. \nNoch %d Sekunden.",
+    OPENTHEDOORIN = "Öffnen Sie die Tür, damit ich einsteigen kann!",
+    HOVERABOVE = "Hovere über %s. \n\nPositon für %d Sekunden halten, um zu winschen. \n\nWenn der Countdown stoppt, sind Sie zu weit entfernt!",
+    TOOHIGHWINCH = "Zu hoch, um %s zu winschen. \nHöhe reduzieren und %d Sekunden halten!",
+    OPENTHEDOOROUT = "Öffnen Sie die Tür, damit ich aussteigen kann!",
+    FIRINGFLARE = "%s - Feuere Signalrakete auf Ihrer %s-Uhr-Position ab. Entfernung %s",
+    NOPILOTSINRANGE = "Keine Piloten in %s Reichweite",
+    IRSTROBE = "%s - IR-Blinklicht aktiv auf Ihrer %s-Uhr-Position. Entfernung %s",
+    POPPINGSMOKE = "%s - Zünde Rauchgranate auf Ihrer %s-Uhr-Position. Entfernung %s",
+    POPPINGSMOKEMASH = "%s - Zünde Rauchgranate am nächsten Rettungspunkt: %s",
+    NORESCUEPOINTWITHIN = "Kein Rettungspunkt innerhalb von %s",
+    NOPILOTSONBOARD = "Keine geretteten Piloten an Bord",
+    MENUTOP = "CSAR",
+    MENUACTIVE = "Aktive CSAR",
+    MENUCHECK = "Ladung prüfen",
+    MENUFLARE = "Signalrakete anfordern",
+    MENUSMOKE = "Rauch anfordern",
+    MENUSTROBE = "IR-Blinklicht anfordern",
+    MENUMASH = "Nächstes MASH markieren",
+    WEARECRAMMED = "%s, %s. Wir sind bereits voll mit %d Mann! Tut mir leid!",
+    TAKECLINIC = "%s: Die %d Pilot(en) wurden ins\nLazarett gebracht. Gute Arbeit!",
+    KILOMETERS = " Kilometer",
+    NAUTMILES = " Meilen",
+    BOARDED = "An Bord - RTB zu FARP/Flugplatz oder Lazarett: ",
+    MAYDAY = "MAYDAY MAYDAY! %s ist abgestürzt. ",
+    CONTACT = "Truppen im Kontakt. %s fordern CASEVAC an. ",
+    PICKUPZONE = "Aufnahmezone bei %s.",
+    REQUESTSAR = "%s fordert SAR bei %s an, ADF %.2f KHz!",
+    REQUESTSARBEACON = "%s fordert SAR bei %s an, ADF %.2f KHz!",
+    KHZ = "Kilohertz",
+    FILLAT = "bei",
+    FILLFOR = "für",
+  },
+  FR = {
+    HEARYOULONG = "%s: %s. Je vous entends! Enfin, c'est de la musique dans mes oreilles!\nJe lancerai une fumée quand vous serez à %s.\nAtterrissez ou survolez la fumée.",
+    HEARYOUSHORT = "%s: %s. Je vous entends! Enfin, c'est de la musique dans mes oreilles!\nDemandez une fusée éclairante ou de la fumée si nécessaire.",
+    IAMINHELO = "%s: %s Je suis à bord! Direction le MASH immédiatement! ",
+    YOUARECLOSE = "%s: %s. Vous êtes proche maintenant! Atterrissez ou survolez la fumée.",
+    YOUARECLOSELONG = "%s: %s. Vous êtes proche maintenant! Atterrissez dans un endroit sûr, j'y vais.",
+    WAITMORE = "Attendez que %s monte à bord. \nEncore %d secondes.",
+    OPENTHEDOORIN = "Ouvrez la porte pour me laisser entrer!",
+    HOVERABOVE = "En vol stationnaire au-dessus de %s. \n\nMaintenir la position pendant %d secondes pour hélitreuiller. \n\nSi le compte à rebours s'arrête, vous êtes trop loin!",
+    TOOHIGHWINCH = "Trop haut pour hélitreuiller %s. \nRéduisez l'altitude et maintenez la position pendant %d secondes!",
+    OPENTHEDOOROUT = "Ouvrez la porte pour me laisser sortir!",
+    FIRINGFLARE = "%s - Tir d'une fusée éclairante à vos %s heures. Distance %s",
+    NOPILOTSINRANGE = "Aucun pilote dans un rayon de %s",
+    IRSTROBE = "%s - Stroboscope IR actif à vos %s heures. Distance %s",
+    POPPINGSMOKE = "%s -  Lancement de fumigène à vos %s heures. Distance %s",
+    POPPINGSMOKEMASH = "%s - Lancement de fumigène au point de sauvetage le plus proche: %s",
+    NORESCUEPOINTWITHIN = "Aucun point de sauvetage dans un rayon de %s",
+    NOPILOTSONBOARD = "Aucun pilote secouru à bord",
+    MENUTOP = "CSAR",
+    MENUACTIVE = "Lister les CSAR actifs",
+    MENUCHECK = "Vérifier qui est à bord",
+    MENUFLARE = "Demander une fusée éclairante",
+    MENUSMOKE = "Demander un fumigène",
+    MENUSTROBE = "Demander un stroboscope IR",
+    MENUMASH = "Fumée au MASH le plus proche",
+    WEARECRAMMED = "%s, %s. Nous sommes déjà pleins avec %d hommes! Désolé!",
+    TAKECLINIC = "%s: Les %d pilote(s) ont été transportés à \n l'hôpital. Bon travail!",
+    KILOMETERS = " kilomètres",
+    NAUTMILES = " milles nautiques",
+    BOARDED = "À bord - RTB vers FARP/Aérodrome ou MASH: ",
+    MAYDAY = "MAYDAY MAYDAY ! %s est à terre. ",
+    CONTACT = "Troupes au contact. %s demande un CASEVAC. ",
+    PICKUPZONE = "Zone de ramassage à %s.",
+    REQUESTSAR = "%s demande un SAR à %s, balise à %.2f KHz!",
+    REQUESTSARBEACON = "%s demande un SAR à %s, balise à %.2f KHz!",
+    KHZ = "kilohertz",
+    FILLAT = "au",
+    FILLFOR = "pour",
+  },
 }
 
 --- Downed pilots info.
@@ -160910,7 +164007,7 @@ CSAR.AircraftType["MH-6J"] = 2
 
 --- CSAR class version.
 -- @field #string version
-CSAR.version="1.0.36"
+CSAR.version="1.1.38"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
@@ -160919,6 +164016,7 @@ CSAR.version="1.0.36"
 -- DONE: SRS Integration (to be tested)
 -- TODO: Maybe - add option to smoke/flare closest MASH
 -- DONE: shagrat Add cargoWeight to helicopter when pilot boarded
+-- DONE: Localization
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Constructor
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -161089,7 +164187,11 @@ function CSAR:New(Coalition, Template, Alias)
   self.SRSGender = "male" -- male or female
   self.CSARVoice = MSRS.Voices.Google.Standard.en_US_Standard_A
   self.CSARVoiceMS = MSRS.Voices.Microsoft.Hedda
+  self.SRSBackend = MSRS.Backend.SRSEXE
+  self.SRSProvider = MSRS.Provider.WINDOWS
+  self.SRSSpeed = 1.0
   self.coordinate = nil -- Core.Point#COORDINATE
+  self.locale = "en"
 
   local AliaS = string.gsub(self.alias," ","_")
   self.filename = string.format("CSAR_%s_Persist.csv",AliaS)
@@ -161238,6 +164340,23 @@ end
 ------------------------
 --- Helper Functions ---
 ------------------------
+
+--- [Internal] Init localization
+-- @param #CSAR self
+-- @return #CSAR self
+function CSAR:_InitLocalization()
+  self:T(self.lid.."_InitLocalization")
+  self.gettext = TEXTANDSOUND:New("CSAR","en") -- Core.TextAndSound#TEXTANDSOUND
+  for locale,table in pairs(self.Messages) do
+    local Locale = string.lower(tostring(locale))
+    self:T("**** Adding locale: "..Locale)
+    for ID,Text in pairs(table) do
+      self:T(string.format('Adding ID %s',tostring(ID)))
+      self.gettext:AddEntry(Locale,tostring(ID),Text)
+    end
+  end
+  return self
+end
 
 --- (Internal) Function to insert downed pilot tracker object.
 -- @param #CSAR self
@@ -161432,9 +164551,13 @@ function CSAR:_AddCsar(_coalition , _country, _point, _typeName, _unitName, _pla
 
   if not noMessage then
     if _freq ~= 0 then --shagrat different CASEVAC msg
-      self:_DisplayToAllSAR("MAYDAY MAYDAY! " .. _typeName .. " is down. ", self.coalition, self.messageTime)
+      local text = self.gettext:GetEntry("MAYDAY",self.locale)
+      text = string.format(text,_typeName)
+      self:_DisplayToAllSAR(text, self.coalition, self.messageTime)
     else
-      self:_DisplayToAllSAR("Troops In Contact. " .. _typeName .. " requests CASEVAC. ", self.coalition, self.messageTime)
+      local text = self.gettext:GetEntry("CONTACT",self.locale)
+      text = string.format(text,_typeName)
+      self:_DisplayToAllSAR(text, self.coalition, self.messageTime)
     end
   end
 
@@ -161894,23 +165017,26 @@ function CSAR:_InitSARForPilot(_downedGroup, _GroupName, _freq, _nomessage, _pla
 
   if not _nomessage then
     if _freq ~= 0 then --shagrat
-      local _text = string.format("%s requests SAR at %s, beacon at %.2f KHz", _groupName, _coordinatesText, _freqk)--shagrat _groupName to prevent 'f15_Pilot_Parachute'
+      local request = self.gettext:GetEntry("REQUESTSAR",self.locale)
+      local _text = string.format(request, _groupName, _coordinatesText, _freqk)--shagrat _groupName to prevent 'f15_Pilot_Parachute'
       if self.coordtype ~= 2 then --not MGRS
         self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
       else
         self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,false,true)
-        local coordtext = UTILS.MGRSStringToSRSFriendly(_coordinatesText,true)
-        local _text = string.format("%s requests SAR at %s, beacon at %.2f kilo hertz", _groupName, coordtext, _freqk)
-        self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false)
+        local coordtext = UTILS.MGRSStringToSRSFriendly(_coordinatesText,true,self.SRSBackend)
+        local request = self.gettext:GetEntry("REQUESTSARBEACON",self.locale)
+        local _text = string.format(request, _groupName, coordtext, _freqk)
+        self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false,self.SRSBackend)
       end
     else --shagrat CASEVAC msg
-      local _text = string.format("Pickup Zone at %s.", _coordinatesText )
+      local request = self.gettext:GetEntry("PICKUPZONE",self.locale)
+      local _text = string.format(request, _coordinatesText )
       if self.coordtype ~= 2 then --not MGRS
         self:_DisplayToAllSAR(_text,self.coalition,self.messageTime)
       else
         self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,false,true)
-        local coordtext = UTILS.MGRSStringToSRSFriendly(_coordinatesText,true)
-        local _text = string.format("Pickup Zone at %s.", coordtext )
+        local coordtext = UTILS.MGRSStringToSRSFriendly(_coordinatesText,true,self.SRSBackend)
+        local _text = string.format(request, coordtext )
         self:_DisplayToAllSAR(_text,self.coalition,self.messageTime,true,false)
       end
     end
@@ -162049,9 +165175,11 @@ function CSAR:_CheckWoundedGroupStatus(heliname,woundedgroupname)
             local dist = UTILS.MetersToNM(self.autosmokedistance)
             disttext = string.format("%.0fnm",dist)
           end
-          self:_DisplayMessageToSAR(_heliUnit, string.format("%s: %s. I hear you! Finally, that is music in my ears!\nI'll pop a smoke when you are %s away.\nLand or hover by the smoke.", self:_GetCustomCallSign(_heliName), _pilotName, disttext), self.messageTime,false,true)
+          local text = self.gettext:GetEntry("HEARYOULONG",self.locale)
+          self:_DisplayMessageToSAR(_heliUnit, string.format(text, self:_GetCustomCallSign(_heliName), _pilotName, disttext), self.messageTime,false,true)
         else
-          self:_DisplayMessageToSAR(_heliUnit, string.format("%s: %s. I hear you! Finally, that is music in my ears!\nRequest a flare or smoke if you need.", self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,false,true)
+          local text = self.gettext:GetEntry("HEARYOUSHORT",self.locale)
+          self:_DisplayMessageToSAR(_heliUnit, string.format(text, self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,false,true)
         end
         --mark as shown for THIS heli and THIS group
         self.heliVisibleMessage[_lookupKeyHeli] = true
@@ -162115,7 +165243,8 @@ function CSAR:_PickupUnit(_heliUnit, _pilotName, _woundedGroup, _woundedGroupNam
     _maxUnits = self.max_units
   end
   if _unitsInHelicopter + 1 > _maxUnits then
-    self:_DisplayMessageToSAR(_heliUnit, string.format("%s, %s. We\'re already crammed with %d guys! Sorry!", _pilotName, self:_GetCustomCallSign(_heliName), _unitsInHelicopter, _unitsInHelicopter), self.messageTime,false,false,true)
+    local text = self.gettext:GetEntry("WEARECRAMMED",self.locale)
+    self:_DisplayMessageToSAR(_heliUnit, string.format(text, _pilotName, self:_GetCustomCallSign(_heliName), _unitsInHelicopter, _unitsInHelicopter), self.messageTime,false,false,true)
     return self
   end
 
@@ -162132,8 +165261,9 @@ function CSAR:_PickupUnit(_heliUnit, _pilotName, _woundedGroup, _woundedGroupNam
 
   _woundedGroup:Destroy(false)
   self:_RemoveNameFromDownedPilots(_woundedGroupName,true)
-
-  self:_DisplayMessageToSAR(_heliUnit, string.format("%s: %s I\'m in! Get to the MASH ASAP! ", self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,true,true)
+  
+  local text = self.gettext:GetEntry("IAMINHELO",self.locale)  
+  self:_DisplayMessageToSAR(_heliUnit, string.format(text, self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,true,true)
 
   self:_UpdateUnitCargoMass(_heliName)
 
@@ -162203,9 +165333,11 @@ function CSAR:_CheckCloseWoundedGroup(_distance, _heliUnit, _heliName, _woundedG
     self:T(self.lid .. "[Pickup Debug] Helo closer than 500m: ".._lookupKeyHeli)
     if self.heliCloseMessage[_lookupKeyHeli] == nil then
       if self.autosmoke == true then
-        self:_DisplayMessageToSAR(_heliUnit, string.format("%s: %s. You\'re close now! Land or hover at the smoke.", self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,false,true)
+        local text = self.gettext:GetEntry("YOUARECLOSE",self.locale)
+        self:_DisplayMessageToSAR(_heliUnit, string.format(text, self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,false,true)
       else
-        self:_DisplayMessageToSAR(_heliUnit, string.format("%s: %s. You\'re close now! Land in a safe place, I will go there ", self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,false,true)
+        local text = self.gettext:GetEntry("YOUARECLOSELONG",self.locale)
+        self:_DisplayMessageToSAR(_heliUnit, string.format(text, self:_GetCustomCallSign(_heliName), _pilotName), self.messageTime,false,true)
       end
       self.heliCloseMessage[_lookupKeyHeli] = true
     end
@@ -162223,7 +165355,9 @@ function CSAR:_CheckCloseWoundedGroup(_distance, _heliUnit, _heliName, _woundedG
             _time = self.landedStatus[_lookupKeyHeli]
             _woundedGroup:OptionAlarmStateGreen()
             self:_OrderGroupToMoveToPoint(_woundedGroup, _heliUnit:GetCoordinate())
-            self:_DisplayMessageToSAR(_heliUnit, "Wait till " .. _pilotName .. " gets in. \nETA " .. _time .. " more seconds.", self.messageTime, false)
+            local text = self.gettext:GetEntry("WAITMORE",self.locale)
+            text = string.format(text,_pilotName, _time)
+            self:_DisplayMessageToSAR(_heliUnit, text, self.messageTime, false)
           else
             _time = self.landedStatus[_lookupKeyHeli] - 10
             self.landedStatus[_lookupKeyHeli] = _time
@@ -162233,7 +165367,8 @@ function CSAR:_CheckCloseWoundedGroup(_distance, _heliUnit, _heliName, _woundedG
           if _distance < self.loadDistance + 5 or _distance <= 13 then
             self:T(self.lid .. "[Pickup Debug] Pilot close enough - YES ".._lookupKeyHeli)
             if self.pilotmustopendoors and (self:_IsLoadingDoorOpen(_heliName) == false) then
-              self:_DisplayMessageToSAR(_heliUnit, "Open the door to let me in!", self.messageTime, true, true)
+              local text = self.gettext:GetEntry("OPENTHEDOORIN",self.locale)
+              self:_DisplayMessageToSAR(_heliUnit, text, self.messageTime, true, true)
               self:T(self.lid .. "[Pickup Debug] Door closed, try again next loop ".._lookupKeyHeli)
               return false
             else
@@ -162250,7 +165385,8 @@ function CSAR:_CheckCloseWoundedGroup(_distance, _heliUnit, _heliName, _woundedG
           self:T(self.lid .. "[Pickup Debug] Helo close enough, door check ".._lookupKeyHeli)
           if self.pilotmustopendoors and (self:_IsLoadingDoorOpen(_heliName) == false) then
             self:T(self.lid .. "[Pickup Debug] Door closed, try again next loop ".._lookupKeyHeli)
-            self:_DisplayMessageToSAR(_heliUnit, "Open the door to let me in!", self.messageTime, true, true)
+            local text = self.gettext:GetEntry("OPENTHEDOORIN",self.locale)
+            self:_DisplayMessageToSAR(_heliUnit, text, self.messageTime, true, true)
             return false
           else
             self:T(self.lid .. "[Pickup Debug] Pick up Pilot ".._lookupKeyHeli)
@@ -162291,11 +165427,14 @@ function CSAR:_CheckCloseWoundedGroup(_distance, _heliUnit, _heliName, _woundedG
             self:T(self.lid .. "[Pickup Debug] Check hover timer ".._lookupKeyHeli)
             if _time > 0 then
               self:T(self.lid .. "[Pickup Debug] Helo hovering not long enough ".._lookupKeyHeli)
-              self:_DisplayMessageToSAR(_heliUnit, "Hovering above " .. _pilotName .. ". \n\nHold hover for " .. _time .. " seconds to winch them up. \n\nIf the countdown stops you\'re too far away!", self.messageTime, true)
+              local text = self.gettext:GetEntry("HOVERABOVE",self.locale)
+              text = string.format(text,_pilotName,_time)
+              self:_DisplayMessageToSAR(_heliUnit, text, self.messageTime, true)
             else
               self:T(self.lid .. "[Pickup Debug] Helo hovering long enough - door check ".._lookupKeyHeli)
               if self.pilotmustopendoors and (self:_IsLoadingDoorOpen(_heliName) == false) then
-                self:_DisplayMessageToSAR(_heliUnit, "Open the door to let me in!", self.messageTime, true, true)
+                local text = self.gettext:GetEntry("OPENTHEDOORIN",self.locale)
+                self:_DisplayMessageToSAR(_heliUnit, text, self.messageTime, true, true)
                 self:T(self.lid .. "[Pickup Debug] Door closed, try again next loop ".._lookupKeyHeli)
                 return false
               else
@@ -162308,7 +165447,8 @@ function CSAR:_CheckCloseWoundedGroup(_distance, _heliUnit, _heliName, _woundedG
             _reset = false
           else
             self:T(self.lid .. "[Pickup Debug] Helo hovering too high ".._lookupKeyHeli)
-            self:_DisplayMessageToSAR(_heliUnit, "Too high to winch " .. _pilotName .. " \nReduce height and hover for 10 seconds!", self.messageTime, true,true)
+            local text = self.gettext:GetEntry("TOOHIGHWINCH",self.locale)        
+            self:_DisplayMessageToSAR(_heliUnit,string.format(text,_pilotName), self.messageTime, true,true)
             self:T(self.lid .. "[Pickup Debug] Hovering too high, try again next loop ".._lookupKeyHeli)
             return false
           end
@@ -162372,7 +165512,8 @@ function CSAR:_ScheduledSARFlight(heliname,groupname, isairport, noreschedule, I
   if ( _dist < self.FARPRescueDistance or isairport ) and ((_heliUnit:InAir() == false) or (IsHeloBase == true)) then
     self:T(self.lid.."[Drop off debug] Distance ok, door check")
     if self.pilotmustopendoors and self:_IsLoadingDoorOpen(heliname) == false then
-      self:_DisplayMessageToSAR(_heliUnit, "Open the door to let me out!", self.messageTime, true, true)
+      local text = self.gettext:GetEntry("OPENTHEDOOROUT",self.locale)
+      self:_DisplayMessageToSAR(_heliUnit, text, self.messageTime, true, true)
       self:T(self.lid.."[Drop off debug] Door closed, try again next loop")
     else
       self:T(self.lid.."[Drop off debug] Rescued!")
@@ -162405,8 +165546,9 @@ function CSAR:_RescuePilots(_heliUnit)
   local PilotsSaved = self:_PilotsOnboard(_heliName)
 
   self.inTransitGroups[_heliName] = nil
-
-  local _txt = string.format("%s: The %d pilot(s) have been taken to the\nmedical clinic. Good job!", self:_GetCustomCallSign(_heliName), PilotsSaved)
+  
+  local text = self.gettext:GetEntry("OPENTHEDOOROUT",self.locale)
+  local _txt = string.format(text, self:_GetCustomCallSign(_heliName), PilotsSaved)
 
   self:_DisplayMessageToSAR(_heliUnit, _txt, self.messageTime)
 
@@ -162453,8 +165595,10 @@ function CSAR:_DisplayMessageToSAR(_unit, _text, _time, _clear, _speak, _overrid
     if coord then
       self.msrs:SetCoordinate(coord)
     end
-    _text = string.gsub(_text,"km"," kilometer")
-    _text = string.gsub(_text,"nm"," nautical miles")
+    local km = self.gettext:GetEntry("KILOMETERS",self.locale)
+    local nm = self.gettext:GetEntry("NAUTMILES",self.locale)
+    _text = string.gsub(_text,"km",km)
+    _text = string.gsub(_text,"nm",nm)
     self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
   end
   return self
@@ -162496,6 +165640,8 @@ function CSAR:_GetPositionOfWounded(_woundedGroup,_Unit)
           -- attention this is the distance from the ASKING unit to target, not from RECCE to target!
           local startcoordinate = _Unit:GetCoordinate()
           _coordinatesText = _coordinate:ToStringBR(startcoordinate,settings)
+          local fillfor = self.gettext:GetEntry("FILLFOR",self.locale)
+          _coordinatesText = string.gsub(_coordinatesText,"for","")
         end
       end
     end
@@ -162540,10 +165686,11 @@ function CSAR:_DisplayActiveSAR(_unitName)
       else
         distancetext = string.format("%.1fkm", _distance/1000.0)
       end
+      local fillat = self.gettext:GetEntry("FILLAT",self.locale)
       if _value.frequency == 0 or self.CreateRadioBeacons == false then--shagrat insert CASEVAC without Frequency
-        table.insert(_csarList, { dist = _distance, msg = string.format("%s at %s - %s ", _value.desc, _coordinatesText, distancetext) })
+        table.insert(_csarList, { dist = _distance, msg = string.format("%s %s %s - %s ", _value.desc, fillat, _coordinatesText, distancetext) })
       else
-        table.insert(_csarList, { dist = _distance, msg = string.format("%s at %s - %.2f KHz ADF - %s ", _value.desc, _coordinatesText, _value.frequency / 1000, distancetext) })
+        table.insert(_csarList, { dist = _distance, msg = string.format("%s %s %s - %.2f KHz ADF - %s ", _value.desc, fillat, _coordinatesText, _value.frequency / 1000, distancetext) })
       end
     end
   end
@@ -162625,7 +165772,8 @@ function CSAR:_SignalFlare(_unitName)
     else
       _distance = string.format("%.1fkm",_closest.distance/1000)
     end
-    local _msg = string.format("%s - Firing signal flare at your %s o\'clock. Distance %s", self:_GetCustomCallSign(_unitName), _clockDir, _distance)
+    local text = self.gettext:GetEntry("FIRINGFLARE",self.locale)
+    local _msg = string.format(text, self:_GetCustomCallSign(_unitName), _clockDir, _distance)
     self:_DisplayMessageToSAR(_heli, _msg, self.messageTime, false, true, true)
 
     local _coord = _closest.pilot:GetCoordinate()
@@ -162638,7 +165786,8 @@ function CSAR:_SignalFlare(_unitName)
     else
       dtext = string.format("%.1fkm",smokedist/1000)
     end
-    self:_DisplayMessageToSAR(_heli, string.format("No Pilots within %s",dtext), self.messageTime, false, false, true)
+    local text = self.gettext:GetEntry("NOPILOTSINRANGE",self.locale)
+    self:_DisplayMessageToSAR(_heli, string.format(text,dtext), self.messageTime, false, false, true)
   end
   return self
 end
@@ -162659,6 +165808,8 @@ function CSAR:_DisplayToAllSAR(_message, _side, _messagetime,ToSRS,ToScreen)
     if self.msrs:GetProvider() == MSRS.Provider.WINDOWS then
       voice = self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
     end
+    local kilohertz = self.gettext:GetEntry("KHZ",self.locale)
+    _message = string.gsub(_message,"KHz",kilohertz)
     --self:F("Voice = "..voice)
     self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
   end
@@ -162693,7 +165844,8 @@ function CSAR:_ReqIRStrobe( _unitName )
     else
       _distance = string.format("%.1fkm",_closest.distance/1000)
     end
-    local _msg = string.format("%s - IR Strobe active at your %s o\'clock. Distance %s", self:_GetCustomCallSign(_unitName), _clockDir, _distance)
+    local text = self.gettext:GetEntry("IRSTROBE",self.locale)
+    local _msg = string.format(text, self:_GetCustomCallSign(_unitName), _clockDir, _distance)
     self:_DisplayMessageToSAR(_heli, _msg, self.messageTime, false, true, true)
     _closest.pilot:NewIRMarker(true,self.IRStrobeRuntime or 300)
   else
@@ -162703,7 +165855,8 @@ function CSAR:_ReqIRStrobe( _unitName )
     else
       _distance = string.format("%.1fkm",smokedist/1000)
     end
-    self:_DisplayMessageToSAR(_heli, string.format("No Pilots within %s",_distance), self.messageTime, false, false, true)
+    local text = self.gettext:GetEntry("NOPILOTSINRANGE",self.locale)
+    self:_DisplayMessageToSAR(_heli, string.format(text,_distance), self.messageTime, false, false, true)
   end
   return self
 end
@@ -162728,7 +165881,8 @@ function CSAR:_Reqsmoke( _unitName )
     else
       _distance = string.format("%.1fkm",_closest.distance/1000)
     end
-    local _msg = string.format("%s - Popping smoke at your %s o\'clock. Distance %s", self:_GetCustomCallSign(_unitName), _clockDir, _distance)
+    local text = self.gettext:GetEntry("POPPINGSMOKE",self.locale)
+    local _msg = string.format(text, self:_GetCustomCallSign(_unitName), _clockDir, _distance)
     self:_DisplayMessageToSAR(_heli, _msg, self.messageTime, false, true, true)
     local _coord = _closest.pilot:GetCoordinate()
     local color = self.smokecolor
@@ -162740,7 +165894,8 @@ function CSAR:_Reqsmoke( _unitName )
     else
       _distance = string.format("%.1fkm",smokedist/1000)
     end
-    self:_DisplayMessageToSAR(_heli, string.format("No Pilots within %s",_distance), self.messageTime, false, false, true)
+    local text = self.gettext:GetEntry("NOPILOTSINRANGE",self.locale)
+    self:_DisplayMessageToSAR(_heli, string.format(text,_distance), self.messageTime, false, false, true)
   end
   return self
 end
@@ -162764,7 +165919,8 @@ function CSAR:_ReqsmokeMash( _unitName )
     else
       disttext = string.format("%.1fkm",distance/1000)
     end
-    local _msg = string.format("%s - Popping smoke at the closest rescue point: %s", self:_GetCustomCallSign(_unitName), disttext)
+    local text = self.gettext:GetEntry("POPPINGSMOKEMASH",self.locale)
+    local _msg = string.format(text, self:_GetCustomCallSign(_unitName), disttext)
     self:_DisplayMessageToSAR(_heli, _msg, self.messageTime, false, true, true)
     local color = self.smokecolor
     coordinate:Smoke(color)    
@@ -162775,7 +165931,8 @@ function CSAR:_ReqsmokeMash( _unitName )
     else
       _distance = string.format("%.1fkm",smokedist/1000)
     end
-    self:_DisplayMessageToSAR(_heli, string.format("No rescue point within %s",_distance), self.messageTime, false, false, true)
+    local text = self.gettext:GetEntry("NORESCUEPOINTWITHIN",self.locale)
+    self:_DisplayMessageToSAR(_heli, string.format(text,_distance), self.messageTime, false, false, true)
   end
   return self
 end
@@ -162853,9 +166010,10 @@ function CSAR:_CheckOnboard(_unitName)
   --list onboard pilots
   local _inTransit = self.inTransitGroups[_unitName]
   if _inTransit == nil then
-    self:_DisplayMessageToSAR(_unit, "No Rescued Pilots onboard", self.messageTime, false, false, true)
+    local text = self.gettext:GetEntry("NOPILOTSONBOARD",self.locale)
+    self:_DisplayMessageToSAR(_unit, text, self.messageTime, false, false, true)
   else
-    local _text = "Onboard - RTB to FARP/Airfield or MASH: "
+    local _text = self.gettext:GetEntry("BOARDED",self.locale)
     for _, _onboard in pairs(self.inTransitGroups[_unitName]) do
       _text = _text .. "\n" .. _onboard.desc
     end
@@ -162895,17 +166053,24 @@ function CSAR:_AddMedevacMenuItem()
         local groupname = _group:GetName()
         if self.addedTo[groupname] == nil then
           self.addedTo[groupname] = true
-          local menuname = self.topmenuname or "CSAR"
+          local menuname = self.gettext:GetEntry("MENUTOP",self.locale)
+          menuname = self.topmenuname or menuname
+          local Menu1T = self.gettext:GetEntry("MENUACTIVE",self.locale)
+          local Menu2T = self.gettext:GetEntry("MENUCHECK",self.locale)
+          local Menu3T = self.gettext:GetEntry("MENUFLARE",self.locale)
+          local Menu4T = self.gettext:GetEntry("MENUSMOKE",self.locale)
+          local Menu5T = self.gettext:GetEntry("MENUSTROBE",self.locale)
+          local Menu6T = self.gettext:GetEntry("MENUMASH",self.locale)
           local _rootPath = MENU_GROUP:New(_group,menuname)
-          local _rootMenu1 = MENU_GROUP_COMMAND:New(_group,"List Active CSAR",_rootPath, self._DisplayActiveSAR,self,_unitName)
-          local _rootMenu2 = MENU_GROUP_COMMAND:New(_group,"Check Onboard",_rootPath, self._CheckOnboard,self,_unitName)
-          local _rootMenu3 = MENU_GROUP_COMMAND:New(_group,"Request Signal Flare",_rootPath, self._SignalFlare,self,_unitName)
-          local _rootMenu4 = MENU_GROUP_COMMAND:New(_group,"Request Smoke",_rootPath, self._Reqsmoke,self,_unitName)
+          local _rootMenu1 = MENU_GROUP_COMMAND:New(_group,Menu1T,_rootPath, self._DisplayActiveSAR,self,_unitName)
+          local _rootMenu2 = MENU_GROUP_COMMAND:New(_group,Menu2T,_rootPath, self._CheckOnboard,self,_unitName)
+          local _rootMenu3 = MENU_GROUP_COMMAND:New(_group,Menu3T,_rootPath, self._SignalFlare,self,_unitName)
+          local _rootMenu4 = MENU_GROUP_COMMAND:New(_group,Menu4T,_rootPath, self._Reqsmoke,self,_unitName)
           if self.AllowIRStrobe then
-            local _rootMenu5 = MENU_GROUP_COMMAND:New(_group,"Request IR Strobe",_rootPath, self._ReqIRStrobe,self,_unitName):Refresh()
+            local _rootMenu5 = MENU_GROUP_COMMAND:New(_group,Menu5T,_rootPath, self._ReqIRStrobe,self,_unitName):Refresh()
           end
           if self.EnableMenuSmokeMASH then
-            local _rootMenu6 = MENU_GROUP_COMMAND:New(_group,"Smoke Closest MASH",_rootPath, self._ReqsmokeMash,self,_unitName)
+            local _rootMenu6 = MENU_GROUP_COMMAND:New(_group,Menu6T,_rootPath, self._ReqsmokeMash,self,_unitName)
           else
             _rootMenu4:Refresh()
           end
@@ -163170,6 +166335,9 @@ function CSAR:onafterStart(From, Event, To)
     self.msrs = MSRS:New(path,channel,modulation) -- Sound.SRS#MSRS
     self.msrs:SetPort(self.SRSport)
     self.msrs:SetLabel("CSAR")
+    self.msrs:SetBackend(self.SRSBackend)
+    self.msrs:SetProvider(self.SRSProvider)
+    self.msrs.speed = self.SRSSpeed
     self.msrs:SetCulture(self.SRSCulture)
     self.msrs:SetCoalition(self.coalition)
     self.msrs:SetVoice(self.SRSVoice)
@@ -163191,7 +166359,9 @@ function CSAR:onafterStart(From, Event, To)
     local filepath = self.filepath
     self:__Save(interval,filepath,filename)
   end
-
+  
+  self:_InitLocalization(self.locale)
+  
   return self
 end
 
@@ -164034,9 +167204,9 @@ end
 --- Add a **new** payload to the airwing resources.
 -- @param #AIRWING self
 -- @param Wrapper.Unit#UNIT Unit The unit, the payload is extracted from. Can also be given as *#string* name of the unit.
--- @param #number Npayloads Number of payloads to add to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
+-- @param #number Npayloads (Optional) Number of payloads to add to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
 -- @param #table MissionTypes Mission types this payload can be used for.
--- @param #number Performance A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
+-- @param #number Performance (Optional) A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
 -- @return #AIRWING.Payload The payload table or nil if the unit does not exist.
 function AIRWING:NewPayload(Unit, Npayloads, MissionTypes,  Performance)
 
@@ -164119,7 +167289,7 @@ end
 --- Set the number of payload available.
 -- @param #AIRWING self
 -- @param #AIRWING.Payload Payload The payload table created by the `:NewPayload` function.
--- @param #number Navailable Number of payloads available to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
+-- @param #number Navailable (Optional) Number of payloads available to the airwing resources. Default 99 (which should be enough for most scenarios). Set to -1 for unlimited.
 -- @return #AIRWING self
 function AIRWING:SetPayloadAmount(Payload, Navailable)
 
@@ -164142,7 +167312,7 @@ end
 --- Increase or decrease the amount of available payloads. Unlimited playloads first need to be set to a limited number with the `SetPayloadAmount` function.
 -- @param #AIRWING self
 -- @param #AIRWING.Payload Payload The payload table created by the `:NewPayload` function.
--- @param #number N Number of payloads to be added. Use negative number to decrease amount. Default 1.
+-- @param #number N (Optional) Number of payloads to be added. Use negative number to decrease amount. Default 1.
 -- @return #AIRWING self
 function AIRWING:IncreasePayloadAmount(Payload, N)
 
@@ -164181,7 +167351,7 @@ end
 -- @param #AIRWING self
 -- @param #AIRWING.Payload Payload The payload table to which the capability should be added.
 -- @param #table MissionTypes Mission types to be added.
--- @param #number Performance A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
+-- @param #number Performance (Optional) A number between 0 (worst) and 100 (best) to describe the performance of the loadout for the given mission types. Default is 50.
 -- @return #AIRWING self
 function AIRWING:AddPayloadCapability(Payload, MissionTypes, Performance)
 
@@ -164404,7 +167574,7 @@ end
 
 --- Set number of CAP flights constantly carried out.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberCAP(n)
   self.nflightsCAP=n or 1
@@ -164422,7 +167592,7 @@ end
 
 --- Set CAP close race track.We'll utilize the AUFTRAG PatrolRaceTrack instead of a standard race track orbit task.
 -- @param #AIRWING self
--- @param #boolean OnOff If true, switch this on, else switch off. Off by default.
+-- @param #boolean OnOff (Optional) If true, switch this on, else switch off. Off by default.
 -- @return #AIRWING self
 function AIRWING:SetCapCloseRaceTrack(OnOff)
   self.capOptionPatrolRaceTrack = OnOff
@@ -164442,7 +167612,7 @@ end
 
 --- Set number of TANKER flights with Boom constantly in the air.
 -- @param #AIRWING self
--- @param #number Nboom Number of flights. Default 1.
+-- @param #number Nboom (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberTankerBoom(Nboom)
   self.nflightsTANKERboom=Nboom or 1
@@ -164464,7 +167634,7 @@ end
 
 --- Set number of TANKER flights with Probe constantly in the air.
 -- @param #AIRWING self
--- @param #number Nprobe Number of flights. Default 1.
+-- @param #number Nprobe (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberTankerProbe(Nprobe)
   self.nflightsTANKERprobe=Nprobe or 1
@@ -164473,7 +167643,7 @@ end
 
 --- Set number of AWACS flights constantly in the air.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberAWACS(n)
   self.nflightsAWACS=n or 1
@@ -164482,7 +167652,7 @@ end
 
 --- Set number of RECON flights constantly in the air.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberRecon(n)
   self.nflightsRecon=n or 1
@@ -164491,7 +167661,7 @@ end
 
 --- Set number of Rescue helo flights constantly in the air.
 -- @param #AIRWING self
--- @param #number n Number of flights. Default 1.
+-- @param #number n (Optional) Number of flights. Default 1.
 -- @return #AIRWING self
 function AIRWING:SetNumberRescuehelo(n)
   self.nflightsRescueHelo=n or 1
@@ -164533,13 +167703,13 @@ end
 
 --- Create a new generic patrol point.
 -- @param #AIRWING self
--- @param #string Type Patrol point type, e.g. "CAP" or "AWACS". Default "Unknown".
--- @param Core.Point#COORDINATE Coordinate Coordinate of the patrol point. Default 10-15 NM away from the location of the airwing. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Orbit altitude in feet. Default random between Angels 10 and 20.
--- @param #number Heading Heading in degrees. Default random (0, 360] degrees.
--- @param #number LegLength Length of race-track orbit in NM. Default 15 NM.
--- @param #number Speed Orbit speed in knots. Default 350 knots.
--- @param #number RefuelSystem Refueling system: 0=Boom, 1=Probe. Default nil=any.
+-- @param #string Type (Optional) Patrol point type, e.g. "CAP" or "AWACS". Default "Unknown".
+-- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate of the patrol point. Default 10-15 NM away from the location of the airwing. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default random between Angels 10 and 20.
+-- @param #number Heading (Optional) Heading in degrees. Default random (0, 360] degrees.
+-- @param #number LegLength (Optional) Length of race-track orbit in NM. Default 15 NM.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 knots.
+-- @param #number RefuelSystem (Optional) Refueling system: 0=Boom, 1=Probe. Default nil=any.
 -- @return #AIRWING.PatrolData Patrol point table.
 function AIRWING:NewPatrolPoint(Type, Coordinate, Altitude, Speed, Heading, LegLength, RefuelSystem)
 
@@ -164609,7 +167779,7 @@ end
 -- @param #number Speed Orbit speed in knots.
 -- @param #number Heading Heading in degrees.
 -- @param #number LegLength Length of race-track orbit in NM.
--- @param #number RefuelSystem Set refueling system of tanker: 0=boom, 1=probe. Default any (=nil).
+-- @param #number RefuelSystem (Optional) Set refueling system of tanker: 0=boom, 1=probe. Default any (=nil).
 -- @return #AIRWING self
 function AIRWING:AddPatrolPointTANKER(Coordinate, Altitude, Speed, Heading, LegLength, RefuelSystem)
 
@@ -164649,7 +167819,7 @@ end
 --- Set takeoff type. All assets of this airwing will be spawned with this takeoff type.
 -- Spawning on runways is not supported.
 -- @param #AIRWING self
--- @param #string TakeoffType Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
+-- @param #string TakeoffType (Optional) Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
 -- @return #AIRWING self
 function AIRWING:SetTakeoffType(TakeoffType)
   TakeoffType=TakeoffType or "Cold"
@@ -164732,7 +167902,7 @@ end
 --- Set despawn after landing. Aircraft will be despawned after the landing event.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #AIRWING self
--- @param #boolean Switch If `true` (default), activate despawn after landing.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after landing.
 -- @return #AIRWING self
 function AIRWING:SetDespawnAfterLanding(Switch)
   if Switch then
@@ -164746,7 +167916,7 @@ end
 --- Set despawn after holding. Aircraft will be despawned when they arrive at their holding position at the airbase.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #AIRWING self
--- @param #boolean Switch If `true` (default), activate despawn after landing.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after landing.
 -- @return #AIRWING self
 function AIRWING:SetDespawnAfterHolding(Switch)
   if Switch then
@@ -165246,9 +168416,9 @@ end
 
 --- Count payloads in stock.
 -- @param #AIRWING self
--- @param #table MissionTypes Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
--- @param #table UnitTypes Types of units.
--- @param #table Payloads Specific payloads to be counted only.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
+-- @param #table UnitTypes (Optional) Types of units.
+-- @param #table Payloads (Optional) Specific payloads to be counted only.
 -- @return #number Count of available payloads in stock.
 function AIRWING:CountPayloadsInStock(MissionTypes, UnitTypes, Payloads)
 
@@ -165827,10 +168997,10 @@ end
 -- @param #ARMYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
 -- @param #string Clock Time when to start the attack.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskFireAtPoint(Coordinate, Clock, Radius, Nshots, WeaponType, Prio)
 
@@ -165849,10 +169019,10 @@ end
 -- @param #number Heading Heading min in Degrees.
 -- @param #number Alpha Shooting angle in Degrees.
 -- @param #number Altitude Altitude in meters.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default nil.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default nil.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskBarrage(Clock, Heading, Alpha, Altitude, Radius, Nshots, WeaponType, Prio)
 
@@ -165880,11 +169050,11 @@ end
 --- Add a *waypoint* task to fire at a given coordinate.
 -- @param #ARMYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
--- @param Ops.OpsGroup#OPSGROUP.Waypoint Waypoint Where the task is executed. Default is next waypoint.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
+-- @param Ops.OpsGroup#OPSGROUP.Waypoint Waypoint (Optional) Where the task is executed. Default is next waypoint.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskWaypointFireAtPoint(Coordinate, Waypoint, Radius, Nshots, WeaponType, Prio)
 
@@ -165902,10 +169072,10 @@ end
 --- Add a *scheduled* task.
 -- @param #ARMYGROUP self
 -- @param Wrapper.Group#GROUP TargetGroup Target group.
--- @param #number WeaponExpend How much weapons does are used.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #string Clock Time when to start the attack.
--- @param #number Prio Priority of the task.
+-- @param #number WeaponExpend (Optional) How much weapons does are used. Defaults to "Auto".
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #string Clock (Optional) Time when to start the attack. Defaults to 5.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function ARMYGROUP:AddTaskAttackGroup(TargetGroup, WeaponExpend, WeaponType, Clock, Prio)
 
@@ -165938,7 +169108,7 @@ end
 
 --- Define a set of possible retreat zones.
 -- @param #ARMYGROUP self
--- @param Core.Set#SET_ZONE RetreatZoneSet The retreat zone set. Default is an empty set.
+-- @param Core.Set#SET_ZONE RetreatZoneSet (Optional) The retreat zone set. Default is an empty set.
 -- @return #ARMYGROUP self
 function ARMYGROUP:SetRetreatZones(RetreatZoneSet)
   self.retreatZones=RetreatZoneSet or SET_ZONE:New()
@@ -165956,7 +169126,7 @@ end
 
 --- Set suppression on. average, minimum and maximum time a unit is suppressed each time it gets hit.
 -- @param #ARMYGROUP self
--- @param #number Tave Average time [seconds] a group will be suppressed. Default is 15 seconds.
+-- @param #number Tave (Optional) Average time [seconds] a group will be suppressed. Default is 15 seconds.
 -- @param #number Tmin (Optional) Minimum time [seconds] a group will be suppressed. Default is 5 seconds.
 -- @param #number Tmax (Optional) Maximum time a group will be suppressed. Default is 25 seconds.
 -- @return #ARMYGROUP self
@@ -166359,10 +169529,10 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
--- @param #number Speed Speed in knots. Default cruise speed.
--- @param #number Formation Formation of the group.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N (Optional) Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number Speed (Optional) Speed in knots. Default cruise speed.
+-- @param #number Formation (Optional) Formation of the group.
 function ARMYGROUP:onbeforeUpdateRoute(From, Event, To, n, N, Speed, Formation)
 
   -- Is transition allowed? We assume yes until proven otherwise.
@@ -166446,10 +169616,10 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
--- @param #number Speed Speed in knots. Default cruise speed.
--- @param #number Formation Formation of the group.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N (Optional) Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number Speed (Optional) Speed in knots. Default cruise speed.
+-- @param #number Formation (Optional) Formation of the group.
 function ARMYGROUP:onafterUpdateRoute(From, Event, To, n, N, Speed, Formation)
 
   -- Update route from this waypoint number onwards.
@@ -166722,7 +169892,7 @@ end
 -- @param #string Event Event.
 -- @param #string To To state.
 -- @param Core.Point#COORDINATE Coordinate Coordinate where to go.
--- @param #number Speed Speed in knots. Default cruise speed.
+-- @param #number Speed (Optional) Speed in knots. Default cruise speed.
 -- @param #number Formation Formation of the group.
 -- @param #number ResumeRoute If true, resume route after detour point was reached. If false, the group will stop at the detour point and wait for futher commands.
 function ARMYGROUP:onafterDetour(From, Event, To, Coordinate, Speed, Formation, ResumeRoute)
@@ -167102,7 +170272,7 @@ end
 -- @param #string To To state.
 -- @param Wrapper.Group#GROUP Group the group to be engaged.
 -- @param #number Speed Speed in knots.
--- @param #string Formation Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
+-- @param #string Formation (Optional) Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
 function ARMYGROUP:onbeforeEngageTarget(From, Event, To, Target, Speed, Formation)
 
   local dt=nil
@@ -167143,7 +170313,7 @@ end
 -- @param #string To To state.
 -- @param Ops.Target#TARGET Target The target to be engaged. Can also be a group or unit.
 -- @param #number Speed Attack speed in knots.
--- @param #string Formation Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
+-- @param #string Formation (Optional) Formation used in the engagement. Default `ENUMS.Formation.Vehicle.Vee`.
 function ARMYGROUP:onafterEngageTarget(From, Event, To, Target, Speed, Formation)
   self:T(self.lid.."Engaging Target")
 
@@ -167347,10 +170517,10 @@ end
 --- Add an a waypoint to the route.
 -- @param #ARMYGROUP self
 -- @param Core.Point#COORDINATE Coordinate The coordinate of the waypoint.
--- @param #number Speed Speed in knots. Default is default cruise speed or 70% of max speed.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #string Formation Formation the group will use.
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default is default cruise speed or 70% of max speed.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #string Formation (Optional) Formation the group will use.
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function ARMYGROUP:AddWaypoint(Coordinate, Speed, AfterWaypointWithID, Formation, Updateroute)
 
@@ -167411,8 +170581,8 @@ end
 
 --- Initialize group parameters. Also initializes waypoints if self.waypoints is nil.
 -- @param #ARMYGROUP self
--- @param #table Template Template used to init the group. Default is `self.template`.
--- @param #number Delay Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
+-- @param #table Template (Optional) Template used to init the group. Default is `self.template`.
+-- @param #number Delay (Optional) Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
 -- @return #ARMYGROUP self
 function ARMYGROUP:_InitGroup(Template, Delay)
 
@@ -167509,9 +170679,9 @@ end
 
 --- Switch to a specific formation.
 -- @param #ARMYGROUP self
--- @param #number Formation New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
--- @param #boolean Permanently If true, formation always used from now on.
--- @param #boolean NoRouteUpdate If true, route is not updated.
+-- @param #number Formation (Optional) New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
+-- @param #boolean Permanently (Optional) If true, formation always used from now on. Defaults to false.
+-- @param #boolean NoRouteUpdate (Optional) If true, route is not updated. Defaults to false.
 -- @return #ARMYGROUP self
 function ARMYGROUP:SwitchFormation(Formation, Permanently, NoRouteUpdate)
 
@@ -167555,7 +170725,7 @@ end
 
 --- Find the neares ammo supply group within a given radius.
 -- @param #ARMYGROUP self
--- @param #number Radius Search radius in NM. Default 30 NM.
+-- @param #number Radius (Optional) Search radius in NM. Default 30 NM.
 -- @return Wrapper.Group#GROUP Closest ammo supplying group or `nil` if no group is in the given radius.
 -- @return #number Distance to closest group in meters.
 function ARMYGROUP:FindNearestAmmoSupply(Radius)
@@ -168377,7 +171547,7 @@ AUFTRAG.Category={
 
 --- AUFTRAG class version.
 -- @field #string version
-AUFTRAG.version="1.3.0"
+AUFTRAG.version="1.4.1"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -168709,7 +171879,7 @@ end
 --- **[AIR]** Create an ANTI-SHIP mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be passed as a @{Wrapper.Group#GROUP} or @{Wrapper.Unit#UNIT} object.
--- @param #number Altitude Engage altitude in feet. Default 2000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 2000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewANTISHIP(Target, Altitude)
 
@@ -168739,10 +171909,10 @@ end
 --- **[AIR ROTARY]** Create an HOVER mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to hover.
--- @param #number Altitude Hover altitude in feet AGL. Default is 50 feet above ground.
--- @param #number Time Time in seconds to hold the hover. Default 300 seconds.
--- @param #number Speed Speed in knots to fly to the target coordinate. Default 150kn.
--- @param #number MissionAlt Altitude to fly towards the mission in feet AGL. Default 1000ft.
+-- @param #number Altitude (Optional) Hover altitude in feet AGL. Default is 50 feet above ground.
+-- @param #number Time (Optional) Time in seconds to hold the hover. Default 300 seconds.
+-- @param #number Speed (Optional) Speed in knots to fly to the target coordinate. Default 150kn.
+-- @param #number MissionAlt (Optional) Altitude to fly towards the mission in feet AGL. Default 1000ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewHOVER(Coordinate, Altitude, Time, Speed, MissionAlt)
 
@@ -168779,9 +171949,9 @@ end
 -- @param Core.Point#COORDINATE Coordinate Where to land.
 -- @param #number OuterRadius (Optional) Vary the coordinate by this many feet, e.g. get a new random coordinate between OuterRadius and (optionally) avoiding InnerRadius of the coordinate.
 -- @param #number InnerRadius (Optional) Vary the coordinate by this many feet, e.g. get a new random coordinate between OuterRadius and (optionally) avoiding InnerRadius of the coordinate.
--- @param #number Time Time in seconds to stay. Default 300 seconds.
--- @param #number Speed Speed in knots to fly to the target coordinate. Default 150kn.
--- @param #number MissionAlt Altitude to fly towards the mission in feet AGL. Default 1000ft.
+-- @param #number Time (Optional) Time in seconds to stay. Default 300 seconds.
+-- @param #number Speed (Optional) Speed in knots to fly to the target coordinate. Default 150kn.
+-- @param #number MissionAlt A(Optional) ltitude to fly towards the mission in feet AGL. Default 1000ft.
 -- @param #boolean CombatLanding (Optional) If true, set the Combat Landing option.
 -- @param #number DirectionAfterLand (Optional) Heading after landing in degrees.
 -- @return #AUFTRAG self
@@ -168869,10 +172039,10 @@ end
 --- **[AIR]** Create an ORBIT mission, which can be either a circular orbit or a race-track pattern.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet above sea level. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. If not specified, a circular orbit is performed.
--- @param #number Leg Length of race-track in NM. If not specified, a circular orbit is performed.
+-- @param #number Altitude (Optional) Orbit altitude in feet above sea level. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. If not specified, a circular orbit is performed.
+-- @param #number Leg (Optional) Length of race-track in NM. If not specified, a circular orbit is performed.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -168923,8 +172093,8 @@ end
 --- **[AIR]** Create an ORBIT mission, where the aircraft will go in a circle around the specified coordinate.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Position where to orbit around.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT_CIRCLE(Coordinate, Altitude, Speed)
 
@@ -168936,10 +172106,10 @@ end
 --- **[AIR]** Create an ORBIT mission, where the aircraft will fly a race-track pattern.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
--- @param #number Leg Length of race-track in NM. Default 10 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT_RACETRACK(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -168954,12 +172124,12 @@ end
 --- **[AIR]** Create an ORBIT mission, where the aircraft will fly a circular or race-track pattern over a given group or unit.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP Group Group where to orbit around. Can also be a UNIT object.
--- @param #number Altitude Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Leg Length of race-track in NM. Default nil.
--- @param #number Heading Heading of race-track pattern in degrees. Default is heading of the group.
--- @param DCS#Vec2 OffsetVec2 Offset 2D-vector {x=0, y=0} in NM with respect to the group. Default directly overhead. Can also be given in polar coordinates `{r=5, phi=45}`.
--- @param #number Distance Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Leg (Optional) Length of race-track in NM. Default nil.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default is heading of the group.
+-- @param DCS#Vec2 OffsetVec2 (Optional) Offset 2D-vector {x=0, y=0} in NM with respect to the group. Default directly overhead. Can also be given in polar coordinates `{r=5, phi=45}`.
+-- @param #number Distance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewORBIT_GROUP(Group, Altitude, Speed, Leg, Heading, OffsetVec2, Distance)
 
@@ -169002,10 +172172,10 @@ end
 -- themselfs. They wait for the CHIEF to tell them whom to engage.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
--- @param #number Leg Length of race-track in NM. Default 10 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default random in [0, 360) degrees.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewGCICAP(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -169029,10 +172199,10 @@ end
 --- **[AIR]** Create a TANKER mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 10 NM. Set to 0 for a simple circular orbit.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit indicated airspeed in knots at the set altitude ASL. Default 350 KIAS.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM. Set to 0 for a simple circular orbit.
 -- @param #number RefuelSystem Refueling system (0=boom, 1=probe). This info is *only* for AIRWINGs so they launch the right tanker type.
 -- @return #AUFTRAG self
 function AUFTRAG:NewTANKER(Coordinate, Altitude, Speed, Heading, Leg, RefuelSystem)
@@ -169068,10 +172238,10 @@ end
 --- **[AIR]** Create a AWACS mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Coordinate Where to orbit. Altitude is also taken from the coordinate.
--- @param #number Altitude Orbit altitude in feet. Default is y component of `Coordinate`.
--- @param #number Speed Orbit speed in knots. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 10 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 10 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewAWACS(Coordinate, Altitude, Speed, Heading, Leg)
 
@@ -169123,12 +172293,12 @@ end
 --- **[AIR]** Create a CAP mission.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE_RADIUS ZoneCAP Circular CAP zone. Detected targets in this zone will be engaged.
--- @param #number Altitude Altitude at which to orbit in feet. Default is 10,000 ft.
--- @param #number Speed Orbit speed in knots. Default 350 kts.
--- @param Core.Point#COORDINATE Coordinate Where to orbit. Default is the center of the CAP zone.
--- @param #number Heading Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
--- @param #number Leg Length of race-track in NM. If not specified, a simple circular orbit is performed.
--- @param #table TargetTypes Table of target types. Default {"Air"}.
+-- @param #number Altitude (Optional) Altitude at which to orbit in feet. Default is 10,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 kts.
+-- @param Core.Point#COORDINATE Coordinate (Optional) Where to orbit. Default is the center of the CAP zone.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
+-- @param #number Leg (Optional) Length of race-track in NM. If not specified, a simple circular orbit is performed.
+-- @param #table TargetTypes (Optional) Table of target types. Default {"Air"}.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAP(ZoneCAP, Altitude, Speed, Coordinate, Heading, Leg, TargetTypes)
 
@@ -169165,15 +172335,15 @@ end
 --- **[AIR]** Create a CAP mission over a (moving) group.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP Grp The grp to perform the CAP over.
--- @param #number Altitude Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed Orbit speed in knots. Default 250 KIAS.
--- @param #number RelHeading Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
--- @param #number Leg Length of race-track in NM. Default 14 NM.
--- @param #number OffsetDist Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
--- @param #number OffsetAngle Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
--- @param #number UpdateDistance Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
+-- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
+-- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
+-- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
+-- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
 -- @param #table TargetTypes (Optional) Table of target types. Default `{"Air"}`.
--- @param #number EngageRange Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
+-- @param #number EngageRange (Optional) Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAPGROUP(Grp, Altitude, Speed, RelHeading, Leg, OffsetDist, OffsetAngle, UpdateDistance, TargetTypes, EngageRange)
 
@@ -169218,11 +172388,11 @@ end
 --- **[AIR]** Create a CAS mission.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE_RADIUS ZoneCAS Circular CAS zone. Detected targets in this zone will be engaged.
--- @param #number Altitude Altitude at which to orbit. Default is 10,000 ft.
--- @param #number Speed Orbit speed in knots. Default 350 KIAS.
--- @param Core.Point#COORDINATE Coordinate Where to orbit. Default is the center of the CAS zone.
--- @param #number Heading Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
--- @param #number Leg Length of race-track in NM. If not specified, a simple circular orbit is performed.
+-- @param #number Altitude (Optional) Altitude at which to orbit. Default is 10,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 350 KIAS.
+-- @param Core.Point#COORDINATE Coordinate (Optional) Where to orbit. Default is the center of the CAS zone.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. If not specified, a simple circular orbit is performed.
+-- @param #number Leg (Optional) Length of race-track in NM. If not specified, a simple circular orbit is performed.
 -- @param #table TargetTypes (Optional) Table of target types. Default `{"Helicopters", "Ground Units", "Light armed ships"}`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAS(ZoneCAS, Altitude, Speed, Coordinate, Heading, Leg, TargetTypes)
@@ -169256,11 +172426,11 @@ end
 --- **[AIR]** Create a CASENHANCED mission. Group(s) will go to the zone and patrol it randomly.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE CasZone The CAS zone.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
--- @param #number Speed Speed in knots.
--- @param #number RangeMax Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
--- @param Core.Set#SET_ZONE NoEngageZoneSet Set of zones in which targets are *not* engaged. Default is nowhere.
--- @param #table TargetTypes Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default `{"Helicopters", "Ground Units", "Light armed ships"}`.
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #number Speed (Optional) Speed in knots.
+-- @param #number RangeMax (Optional) Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
+-- @param Core.Set#SET_ZONE NoEngageZoneSet (Optional) Set of zones in which targets are *not* engaged. Default is nowhere.
+-- @param #table TargetTypes (Optional) Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default `{"Helicopters", "Ground Units", "Light armed ships"}`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCASENHANCED(CasZone, Altitude, Speed, RangeMax, NoEngageZoneSet, TargetTypes)
 
@@ -169298,11 +172468,10 @@ end
 --- **[AIR, GROUND]** Create a FAC mission. Group(s) will go to the zone and patrol it randomly and act as FAC for detected units.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE FacZone The FAC zone (or name of zone) where to patrol.
--- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL. 
--- @param #number Frequency Frequency in MHz.
--- @param #number Modulation Modulation.
--- @return #AUFTRAG self
+-- @param #number Speed (Optional) Speed in knots.
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL. 
+-- @param #number Frequency (Optional) Frequency in MHz. Defaults to 133Mhz.
+-- @param #number Modulation (Optional) Modulation. Defaults to radio.modulation.AM
 function AUFTRAG:NewFAC(FacZone, Speed, Altitude, Frequency, Modulation)
 
   local mission=AUFTRAG:New(AUFTRAG.Type.FAC)
@@ -169339,10 +172508,10 @@ end
 --- **[AIR]** Create a FACA mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP Target Target group. Must be a GROUP object.
--- @param #string Designation Designation of target. See `AI.Task.Designation`. Default `AI.Task.Designation.AUTO`.
--- @param #boolean DataLink Enable data link. Default `true`.
--- @param #number Frequency Radio frequency in MHz the FAC uses for communication. Default is 133 MHz.
--- @param #number Modulation Radio modulation band. Default 0=AM. Use 1 for FM. See radio.modulation.AM or radio.modulaton.FM.
+-- @param #string Designation (Optional) Designation of target. See `AI.Task.Designation`. Default `AI.Task.Designation.AUTO`.
+-- @param #boolean DataLink (Optional) Enable data link. Default `true`.
+-- @param #number Frequency (Optional) Radio frequency in MHz the FAC uses for communication. Default is 133 MHz.
+-- @param #number Modulation (Optional) Radio modulation band. Default 0=AM. Use 1 for FM. See radio.modulation.AM or radio.modulaton.FM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewFACA(Target, Designation, DataLink, Frequency, Modulation)
 
@@ -169376,7 +172545,7 @@ end
 --- **[AIR]** Create a BAI mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP, UNIT or STATIC object.
--- @param #number Altitude Engage altitude in feet. Default 5000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 5000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBAI(Target, Altitude)
 
@@ -169406,7 +172575,7 @@ end
 --- **[AIR]** Create a SEAD mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP or UNIT object.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSEAD(Target, Altitude)
 
@@ -169436,9 +172605,9 @@ end
 --- **[AIR]** Create a SEAD in Zone mission.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE TargetZone The target zone to attack.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
--- @param #table TargetTypes Table of string of DCS known target types, defaults to {"Air Defence"}. See [DCS Target Attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
--- @param #number Duration Engage this much time when the AUFTRAG starts executing.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
+-- @param #table TargetTypes (Optional) Table of string of DCS known target types, defaults to {"Air Defence"}. See [DCS Target Attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes)
+-- @param #number Duration (Optional) Engage this much time when the AUFTRAG starts executing. Default is 1800.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSEADInZone(TargetZone, Altitude, TargetTypes, Duration)
 
@@ -169472,8 +172641,8 @@ end
 --- **[AIR]** Create a STRIKE mission. Flight will attack the closest map object to the specified coordinate.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target The target coordinate. Can also be given as a GROUP, UNIT, STATIC, SET_GROUP, SET_UNIT, SET_STATIC or TARGET object.
--- @param #number Altitude Engage altitude in feet. Default 2000 ft.
--- @param #number EngageWeaponType Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 2000 ft.
+-- @param #number EngageWeaponType (Optional) Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSTRIKE(Target, Altitude, EngageWeaponType)
 
@@ -169504,9 +172673,9 @@ end
 -- See [DCS task bombing](https://wiki.hoggitworld.com/view/DCS_task_bombing).
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Target coordinate. Can also be specified as a GROUP, UNIT, STATIC, SET_GROUP, SET_UNIT, SET_STATIC or TARGET object.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
--- @param #number EngageWeaponType Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
--- @param #boolean Divebomb If true, use a dive bombing attack approach.
+-- @param #number Altitude Engage (Optional) altitude in feet. Default 25000 ft.
+-- @param #number EngageWeaponType (Optional) Which weapon to use. Defaults to auto, ie ENUMS.WeaponFlag.Auto. See ENUMS.WeaponFlag for options.
+-- @param #boolean Divebomb (Optional) If true, use a dive bombing attack approach.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBOMBING(Target, Altitude, EngageWeaponType, Divebomb)
 
@@ -169542,8 +172711,8 @@ end
 -- See [DCS task strafing](https://wiki.hoggitworld.com/view/DCS_task_strafing).
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Target coordinate. Can also be specified as a GROUP, UNIT, STATIC or TARGET object.
--- @param #number Altitude Engage altitude in feet. Default 1000 ft.
--- @param #number Length The total length of the strafing target in meters. Default `nil`.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 1000 ft.
+-- @param #number Length (Optional) The total length of the strafing target in meters. Default `nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewSTRAFING(Target, Altitude, Length)
 
@@ -169579,7 +172748,7 @@ end
 --- **[AIR]** Create a BOMBRUNWAY mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Airbase#AIRBASE Airdrome The airbase to bomb. This must be an airdrome (not a FARP or ship) as these do not have a runway.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBOMBRUNWAY(Airdrome, Altitude)
 
@@ -169617,8 +172786,8 @@ end
 --- **[AIR]** Create a CARPET BOMBING mission.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Target coordinate. Can also be specified as a GROUP, UNIT or STATIC object.
--- @param #number Altitude Engage altitude in feet. Default 25000 ft.
--- @param #number CarpetLength Length of bombing carpet in meters. Default 500 m.
+-- @param #number Altitude (Optional) Engage altitude in feet. Default 25000 ft.
+-- @param #number CarpetLength (Optional) Length of bombing carpet in meters. Default 500 m.
 -- @return #AUFTRAG self
 function AUFTRAG:NewBOMBCARPET(Target, Altitude, CarpetLength)
 
@@ -169655,8 +172824,8 @@ end
 --- **[AIR/HELO]** Create a GROUNDESCORT (or FOLLOW) mission. Helo will escort a **ground** group and automatically engage certain target types.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP EscortGroup The ground group to escort.
--- @param #number OrbitDistance Orbit to/from the lead unit this many NM. Defaults to 1.5 NM.
--- @param #table TargetTypes Types of targets to engage automatically. Default is {"Ground vehicles"}, i.e. all enemy ground units. Use an empty set {} for a simple "FOLLOW" mission.
+-- @param #number OrbitDistance(Optional)  Orbit to/from the lead unit this many NM. Defaults to 1.5 NM.
+-- @param #table TargetTypes (Optional) Types of targets to engage automatically. Default is {"Ground vehicles"}, i.e. all enemy ground units. Use an empty set {} for a simple "FOLLOW" mission.
 -- @return #AUFTRAG self
 function AUFTRAG:NewGROUNDESCORT(EscortGroup, OrbitDistance, TargetTypes)
 
@@ -169693,9 +172862,9 @@ end
 --- **[AIR]** Create an ESCORT (or FOLLOW) mission. Flight will escort another group and automatically engage certain target types.
 -- @param #AUFTRAG self
 -- @param Wrapper.Group#GROUP EscortGroup The group to escort.
--- @param DCS#Vec3 OffsetVector A table with x, y and z components specifying the offset of the flight to the escorted group. Default {x=-100, y=0, z=200} for z=200 meters to the right, same alitude (y=0), x=-100 meters behind.
--- @param #number EngageMaxDistance Max engage distance of targets in nautical miles. Default auto 32 NM.
--- @param #table TargetTypes Types of targets to engage automatically. Default is {"Air"}, i.e. all enemy airborne units. Use an empty set {} for a simple "FOLLOW" mission.
+-- @param DCS#Vec3 OffsetVector (Optional) A table with x, y and z components specifying the offset of the flight to the escorted group. Default {x=-100, y=0, z=200} for z=200 meters to the right, same alitude (y=0), x=-100 meters behind.
+-- @param #number EngageMaxDistance (Optional) Max engage distance of targets in nautical miles. Default auto 32 NM.
+-- @param #table TargetTypes (Optional) Types of targets to engage automatically. Default is {"Air"}, i.e. all enemy airborne units. Use an empty set {} for a simple "FOLLOW" mission.
 -- @return #AUFTRAG self
 function AUFTRAG:NewESCORT(EscortGroup, OffsetVector, EngageMaxDistance, TargetTypes)
 
@@ -169754,13 +172923,13 @@ end
 --- **[AIRPANE]** Create a RECOVERY TANKER mission.
 -- @param #AUFTRAG self
 -- @param Wrapper.Unit#UNIT Carrier The carrier unit.
--- @param #number Altitude Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed Orbit speed in knots. Default 250 KIAS.
--- @param #number Leg Length of race-track in NM. Default 14 NM.
--- @param #number RelHeading Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
--- @param #number OffsetDist Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
--- @param #number OffsetAngle Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
--- @param #number UpdateDistance Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
+-- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
+-- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
+-- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
+-- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:NewRECOVERYTANKER(Carrier, Altitude, Speed, Leg, RelHeading, OffsetDist, OffsetAngle, UpdateDistance)
  
@@ -169802,8 +172971,8 @@ end
 -- @param #AUFTRAG self
 -- @param Core.Set#SET_GROUP TransportGroupSet The set group(s) to be transported.
 -- @param Core.Point#COORDINATE DropoffCoordinate Coordinate where the helo will land drop off the the troops.
--- @param Core.Point#COORDINATE PickupCoordinate Coordinate where the helo will land to pick up the the cargo. Default is the first transport group.
--- @param #number PickupRadius Radius around the pickup coordinate in meters. Default 100 m.
+-- @param Core.Point#COORDINATE PickupCoordinate(Optional)  Coordinate where the helo will land to pick up the the cargo. Default is the first transport group.
+-- @param #number PickupRadius (Optional) Radius around the pickup coordinate in meters. Default 100 m.
 -- @return #AUFTRAG self
 function AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet, DropoffCoordinate, PickupCoordinate, PickupRadius)
 
@@ -169844,6 +173013,7 @@ function AUFTRAG:NewTROOPTRANSPORT(TransportGroupSet, DropoffCoordinate, PickupC
 end
 
 --- **[AIR ROTARY]** Create a CARGO TRANSPORT mission.
+-- This mission is for helicopters only, which transport cargo externally via slingload.
 -- **Important Note:**
 -- The dropoff zone has to be a zone defined in the Mission Editor. This is due to a restriction in the used DCS task, which takes the zone ID as input.
 -- Only ME zones have an ID that can be referenced.
@@ -169878,6 +173048,11 @@ end
 --- **[AIR]** Create a FREIGHT TRANSPORT mission.
 -- This mission type can be used to transport cargo items internally via suitable transport aircraft (planes and helicopters), e.g. C-130 or CH-47.
 -- It supports transporting one or multiple cargos (weight limits are not checked).
+-- 
+-- All cargo must be within a 40 meter radius around the transport aircraft for the mission to start.
+-- The mission is successful if any cargo item is delivered to the destination.
+-- 
+-- This mission type uses the underlying DCS tasks: "Cargo Transportation (internal)", "Cargo Unload"
 -- @param #AUFTRAG self
 -- @param Wrapper.Static#STATIC StaticCargo Static cargo object. Can also be passed as a `SET_STATIC` object.
 -- @param Wrapper.Airbase#AIRBASE Destination Destination airbase, where the cargo is unloaded.
@@ -169886,7 +173061,7 @@ function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
 
   -- Check if Destination is given
   if Destination==nil then
-    self:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
+    BASE:E(self.lid..string.format("ERROR: Destination is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the destination airbase"))
     return nil
   elseif type(Destination)=="string" then
     Destination=AIRBASE:FindByName(Destination)
@@ -169894,7 +173069,7 @@ function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
   
   -- Check if Cargo is given
   if StaticCargo==nil then
-    self:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
+    BASE:E(self.lid..string.format("ERROR: StaticCargo is nil for AUFTRAG:NewFREIGHTTRANSPORT! You must specify the static object that represents the cargo"))
     return nil  
   elseif type(StaticCargo)=="string" then
     StaticCargo=STATIC:FindByName(StaticCargo)
@@ -169908,6 +173083,15 @@ function AUFTRAG:NewFREIGHTTRANSPORT(StaticCargo, Destination)
   end
   
   local mission=AUFTRAG:New(AUFTRAG.Type.FREIGHTTRANSPORT)
+  
+  -- Check that the set is not empty
+  local Ncargo=StaticCargo:Count()
+  if Ncargo==0 then
+    mission:E(mission.lid..string.format("ERROR: No cargo items in set!"))
+    return nil
+  else
+    mission:T(mission.lid..string.format("FREIGHTTRANSPORT with N=%d cargo items in set", Ncargo))
+  end  
 
   mission:_TargetFromObject(StaticCargo)
 
@@ -169973,9 +173157,9 @@ end
 -- **Note** that it is recommended to set the weapon range via the `OPSGROUP:AddWeaponRange()` function as this cannot be retrieved from the DCS API.
 -- @param #AUFTRAG self
 -- @param Core.Point#COORDINATE Target Center of the firing solution.
--- @param #number Nshots Number of shots to be fired. Default `#nil`. If value is in (0,1), it is interpreted as per cent of available ammo.
--- @param #number Radius Radius of the shells in meters. Default 100 meters.
--- @param #number Altitude Altitude in meters. Can be used to setup a Barrage. Default `#nil`.
+-- @param #number Nshots (Optional) Number of shots to be fired. Default `#nil`. If value is in (0,1), it is interpreted as per cent of available ammo.
+-- @param #number Radius (Optional) Radius of the shells in meters. Default 100 meters.
+-- @param #number Altitude (Optional) Altitude in meters. Can be used to setup a Barrage. Default `#nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:NewARTY(Target, Nshots, Radius, Altitude)
 
@@ -170008,11 +173192,11 @@ end
 --- **[GROUND, NAVAL]** Create an BARRAGE mission. Assigned groups will move to a random coordinate within a given zone and start firing into the air.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE Zone The zone where the unit will go.
--- @param #number Heading Heading in degrees. Default random heading [0, 360).
--- @param #number Angle Shooting angle in degrees. Default random [45, 85].
--- @param #number Radius Radius of the shells in meters. Default 100 meters.
--- @param #number Altitude Altitude in meters. Default 500 m.
--- @param #number Nshots Number of shots to be fired. Default is until ammo is empty (`#nil`).
+-- @param #number Heading (Optional) Heading in degrees. Default random heading [0, 360).
+-- @param #number Angle (Optional) Shooting angle in degrees. Default random [45, 85].
+-- @param #number Radius (Optional) Radius of the shells in meters. Default 100 meters.
+-- @param #number Altitude (Optional) Altitude in meters. Default 500 m.
+-- @param #number Nshots (Optional) Number of shots to be fired. Default is until ammo is empty (`#nil`).
 -- @return #AUFTRAG self
 function AUFTRAG:NewBARRAGE(Zone, Heading, Angle, Radius, Altitude, Nshots)
 
@@ -170047,8 +173231,8 @@ end
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE Zone The patrol zone.
 -- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
--- @param #string Formation Formation used by ground units during patrol. Default "Off Road".
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #string Formation (Optional) Formation used by ground units during patrol. Default "Off Road".
 -- @return #AUFTRAG self
 function AUFTRAG:NewPATROLZONE(Zone, Speed, Altitude, Formation)
 
@@ -170085,8 +173269,8 @@ end
 -- @param Ops.OpsZone#OPSZONE OpsZone The OPS zone to capture.
 -- @param #number Coalition The coalition which should capture the zone for the mission to be successful.
 -- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
--- @param #string Formation Formation used by ground units during patrol. Default "Off Road".
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #string Formation (Optional) Formation used by ground units during patrol. Default "Off Road".
 -- @param #number StayInZoneTime Stay this many seconds in the zone when done, only then drive back.
 -- @return #AUFTRAG self
 function AUFTRAG:NewCAPTUREZONE(OpsZone, Coalition, Speed, Altitude, Formation, StayInZoneTime)
@@ -170150,8 +173334,8 @@ end
 -- Therefore, we resort to this workaround, which guides the attacking group to the vicinity of the target. Then they start shooting on their own, once they detect the target.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP, UNIT or STATIC object.
--- @param #number Speed Speed in knots. Default max.
--- @param #string Formation The attack formation, e.g. "Wedge", "Vee" etc. Default `ENUMS.Formation.Vehicle.Vee`. Only working for ground, not naval!
+-- @param #number Speed (Optional) Speed in knots. Default max.
+-- @param #string Formation (Optional) The attack formation, e.g. "Wedge", "Vee" etc. Default `ENUMS.Formation.Vehicle.Vee`. Only working for ground, not naval!
 -- @return #AUFTRAG self
 function AUFTRAG:NewGROUNDATTACK(Target, Speed, Formation)
 
@@ -170183,8 +173367,8 @@ end
 -- Therefore, we resort to this workaround, which guides the attacking group to the vicinity of the target. Then they start shooting on their own, once they detect the target.
 -- @param #AUFTRAG self
 -- @param Wrapper.Positionable#POSITIONABLE Target The target to attack. Can be a GROUP, UNIT or STATIC object.
--- @param #number Speed Speed in knots. Default max.
--- @param #number Depth The attack depth in meters. Only for submarines!
+-- @param #number Speed (Optional) Speed in knots. Default max.
+-- @param #number Depth (Optional) The attack depth in meters. Only for submarines! Defaults to 0.
 -- @return #AUFTRAG self
 function AUFTRAG:NewNAVALENGAGEMENT(Target, Speed, Depth)
 
@@ -170213,8 +173397,8 @@ end
 --- **[AIR, GROUND, NAVAL]** Create a RECON mission.
 -- @param #AUFTRAG self
 -- @param Core.Set#SET_ZONE ZoneSet The recon zones.
--- @param #number Speed Speed in knots.
--- @param #number Altitude Altitude in feet. Only for airborne units. Default 2000 feet ASL.
+-- @param #number Speed (Optional) Speed in knots.
+-- @param #number Altitude (Optional) Altitude in feet. Only for airborne units. Default 2000 feet ASL.
 -- @param #boolean Adinfinitum If `true`, the group will start over again after reaching the final zone.
 -- @param #boolean Randomly If `true`, the group will select a random zone.
 -- @param #string Formation Formation used during recon route.
@@ -170706,7 +173890,7 @@ end
 
 --- Set mission start and stop time.
 -- @param #AUFTRAG self
--- @param #string ClockStart Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
+-- @param #string ClockStart (Optional) Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
 -- @param #string ClockStop (Optional) Time the mission is stopped, e.g. "13:00" for 1 pm. If mission could not be started at that time, it will be removed from the queue. If specified as a #number it will be relative (in seconds) to the current mission time.
 -- @return #AUFTRAG self
 function AUFTRAG:SetTime(ClockStart, ClockStop)
@@ -170792,9 +173976,9 @@ end
 
 --- Set mission priority and (optional) urgency. Urgent missions can cancel other running missions.
 -- @param #AUFTRAG self
--- @param #number Prio Priority 1=high, 100=low. Default 50.
+-- @param #number Prio (Optional) Priority 1=high, 100=low. Default 50.
 -- @param #boolean Urgent If *true*, another running mission might be cancelled if it has a lower priority.
--- @param #number Importance Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
+-- @param #number Importance (Optional) Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetPriority(Prio, Urgent, Importance)
   self.prio=Prio or 50
@@ -170805,7 +173989,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set how many times the mission is repeated. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Number of repeats. Default 0.
+-- @param #number Nrepeat (Optional) Number of repeats. Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeat(Nrepeat)
   self.Nrepeat=Nrepeat or 0
@@ -170815,7 +173999,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set the repeat delay in seconds after a mission is successful/failed. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number RepeatDelay Repeat delay in seconds. Default 1.
+-- @param #number RepeatDelay (Optional) Repeat delay in seconds. Default 1.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatDelay(RepeatDelay)
   self.repeatDelay = RepeatDelay
@@ -170824,7 +174008,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set how many times the mission is repeated if it fails. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Number of repeats. Default 0.
+-- @param #number Nrepeat (Optional) Number of repeats. Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatOnFailure(Nrepeat)
   self.NrepeatFailure=Nrepeat or 0
@@ -170833,7 +174017,7 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set how many times the mission is repeated if it was successful. Only valid if the mission is handled by a LEGION (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number Nrepeat Number of repeats. Default 0.
+-- @param #number Nrepeat (Optional) Number of repeats. Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRepeatOnSuccess(Nrepeat)
   self.NrepeatSuccess=Nrepeat or 0
@@ -170854,8 +174038,8 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Define how many assets are required to do the job. Only used if the mission is handled by a **LEGION** (AIRWING, BRIGADE, ...) or higher level.
 -- @param #AUFTRAG self
--- @param #number NassetsMin Minimum number of asset groups. Default 1.
--- @param #number NassetsMax Maximum Number of asset groups. Default is same as `NassetsMin`.
+-- @param #number NassetsMin (Optional) Minimum number of asset groups. Default 1.
+-- @param #number NassetsMax (Optional) Maximum Number of asset groups. Default is same as `NassetsMin`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRequiredAssets(NassetsMin, NassetsMax)
 
@@ -170922,11 +174106,11 @@ end
 --- **[LEGION, COMMANDER, CHIEF]** Define how many assets are required that escort the mission assets. 
 -- Only used if the mission is handled by a **LEGION** (AIRWING, BRIGADE, FLEET) or higher level.
 -- @param #AUFTRAG self
--- @param #number NescortMin Minimum number of asset groups. Default 1.
--- @param #number NescortMax Maximum Number of asset groups. Default is same as `NassetsMin`.
--- @param #string MissionType Mission type assets will be optimized for and payload selected, *e.g.* `AUFTRAG.Type.SEAD`. Default nil.
--- @param #table TargetTypes Target Types that will be engaged by the escort group(s). Default `{"Air"}` for aircraft and `{"Ground Units"}` for helos. Set, *e.g.*, `{"Air Defence"}` for SEAD.
--- @param #number EngageRange Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
+-- @param #number NescortMin (Optional) Minimum number of asset groups. Default 1.
+-- @param #number NescortMax (Optional) Maximum Number of asset groups. Default is same as `NassetsMin`.
+-- @param #string MissionType (Optional) Mission type assets will be optimized for and payload selected, *e.g.* `AUFTRAG.Type.SEAD`. Default nil.
+-- @param #table TargetTypes (Optional) Target Types that will be engaged by the escort group(s). Default `{"Air"}` for aircraft and `{"Ground Units"}` for helos. Set, *e.g.*, `{"Air Defence"}` for SEAD.
+-- @param #number EngageRange (Optional) Max range in nautical miles that the escort group(s) will engage enemies. Default 32 NM (60 km).
 -- @return #AUFTRAG self
 function AUFTRAG:SetRequiredEscorts(NescortMin, NescortMax, MissionType, TargetTypes, EngageRange)
 
@@ -170952,7 +174136,7 @@ end
 
 --- Set mission name.
 -- @param #AUFTRAG self
--- @param #string Name Name of the mission. Default is "Auftrag Nr. X", where X is a running number, which is automatically increased.
+-- @param #string Name (Optional) Name of the mission. Default is "Auftrag Nr. X", where X is a running number, which is automatically increased.
 -- @return #AUFTRAG self
 function AUFTRAG:SetName(Name)
   self.name=Name or string.format("Auftrag Nr. %d", self.auftragsnummer)
@@ -170961,7 +174145,7 @@ end
 
 --- Enable markers, which dispay the mission status on the F10 map.
 -- @param #AUFTRAG self
--- @param #number Coalition The coaliton side to which the markers are dispayed. Default is to all.
+-- @param #number Coalition (Optional) The coaliton side to which the markers are dispayed. Default is to all.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEnableMarkers(Coalition)
   self.markerOn=true
@@ -170971,7 +174155,7 @@ end
 
 --- Set verbosity level.
 -- @param #AUFTRAG self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #AUFTRAG self
 function AUFTRAG:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -170980,7 +174164,7 @@ end
 
 --- Set weapon type used for the engagement.
 -- @param #AUFTRAG self
--- @param #number WeaponType Weapon type. Default is `ENUMS.WeaponFlag.Auto`.
+-- @param #number WeaponType (Optional) Weapon type. Default is `ENUMS.WeaponFlag.Auto`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetWeaponType(WeaponType)
 
@@ -170994,7 +174178,7 @@ end
 
 --- Set number of weapons to expend.
 -- @param #AUFTRAG self
--- @param #number WeaponExpend How much of the weapon load is expended during the attack, e.g. `AI.Task.WeaponExpend.ALL`. Default "Auto".
+-- @param #number WeaponExpend (Optional) How much of the weapon load is expended during the attack, e.g. `AI.Task.WeaponExpend.ALL`. Default "Auto".
 -- @return #AUFTRAG self
 function AUFTRAG:SetWeaponExpend(WeaponExpend)
 
@@ -171026,7 +174210,7 @@ end
 
 --- Set engage altitude. This is the altitude passed to the DCS task. In the ME it is the tickbox ALTITUDE ABOVE.
 -- @param #AUFTRAG self
--- @param #string Altitude Altitude in feet. Default 6000 ft.
+-- @param #string Altitude (Optional) Altitude in feet. Default 6000 ft.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEngageAltitude(Altitude)
 
@@ -171040,10 +174224,10 @@ end
 
 --- Enable to automatically engage detected targets.
 -- @param #AUFTRAG self
--- @param #number RangeMax Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
--- @param #table TargetTypes Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
--- @param Core.Set#SET_ZONE EngageZoneSet Set of zones in which targets are engaged. Default is anywhere.
--- @param Core.Set#SET_ZONE NoEngageZoneSet Set of zones in which targets are *not* engaged. Default is nowhere.
+-- @param #number RangeMax (Optional) Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
+-- @param #table TargetTypes (Optional) Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
+-- @param Core.Set#SET_ZONE EngageZoneSet (Optional) Set of zones in which targets are engaged. Default is anywhere.
+-- @param Core.Set#SET_ZONE NoEngageZoneSet (Optional) Set of zones in which targets are *not* engaged. Default is nowhere.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEngageDetected(RangeMax, TargetTypes, EngageZoneSet, NoEngageZoneSet)
 
@@ -171096,7 +174280,7 @@ end
 
 --- Set max mission range. Only applies if the AUFTRAG is handled by an AIRWING or CHIEF. This is the max allowed distance from the airbase to the target.
 -- @param #AUFTRAG self
--- @param #number Range Max range in NM. Default 100 NM.
+-- @param #number Range (Optional) Max range in NM. Default 100 NM.
 -- @return #AUFTRAG self
 function AUFTRAG:SetMissionRange(Range)
   self.engageRange=UTILS.NMToMeters(Range or 100)
@@ -171122,8 +174306,8 @@ end
 --- **[LEGION, COMMANDER, CHIEF]** Attach OPS transport to the mission. Mission assets will be transported before the mission is started at the OPSGROUP level.
 -- @param #AUFTRAG self
 -- @param Core.Zone#ZONE DeployZone Zone where assets are deployed.
--- @param #number NcarriersMin Number of carriers *at least* required. Default 1.
--- @param #number NcarriersMax Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
+-- @param #number NcarriersMin (Optional) Number of carriers *at least* required. Default 1.
+-- @param #number NcarriersMax (Optional) Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
 -- @param Core.Zone#ZONE DisembarkZone Zone where assets are disembarked to.
 -- @param #table Categories Group categories.
 -- @param #table Attributes Generalizes group attributes.
@@ -171185,8 +174369,8 @@ end
 
 --- **[LEGION, COMMANDER, CHIEF]** Set number of required carrier groups if an OPSTRANSPORT assignment is required.
 -- @param #AUFTRAG self
--- @param #number NcarriersMin Number of carriers *at least* required. Default 1.
--- @param #number NcarriersMax Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
+-- @param #number NcarriersMin (Optional) Number of carriers *at least* required. Default 1.
+-- @param #number NcarriersMax (Optional) Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
 -- @param #table Categories Group categories.
 -- @param #table Attributes Group attributes. See `GROUP.Attribute.`
 -- @param #table Properties DCS attributes.
@@ -171451,7 +174635,7 @@ end
 --- Set radio frequency and modulation for this mission.
 -- @param #AUFTRAG self
 -- @param #number Frequency Frequency in MHz.
--- @param #number Modulation Radio modulation. Default 0=AM.
+-- @param #number Modulation (Optional) Radio modulation. Default 0=AM.
 -- @return #AUFTRAG self
 function AUFTRAG:SetRadio(Frequency, Modulation)
 
@@ -171465,9 +174649,9 @@ end
 --- Set TACAN beacon channel and Morse code for this mission.
 -- @param #AUFTRAG self
 -- @param #number Channel TACAN channel.
--- @param #string Morse Morse code. Default "XXX".
--- @param #string UnitName Name of the unit in the group for which acts as TACAN beacon. Default is the first unit in the group.
--- @param #string Band Tacan channel mode ("X" or "Y"). Default is "X" for ground/naval and "Y" for aircraft.
+-- @param #string Morse (Optional) Morse code. Default "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group for which acts as TACAN beacon. Default is the first unit in the group.
+-- @param #string Band (Optional) Tacan channel mode ("X" or "Y"). Default is "X" for ground/naval and "Y" for aircraft.
 -- @return #AUFTRAG self
 function AUFTRAG:SetTACAN(Channel, Morse, UnitName, Band)
 
@@ -171483,8 +174667,8 @@ end
 --- Set ICLS beacon channel and Morse code for this mission.
 -- @param #AUFTRAG self
 -- @param #number Channel ICLS channel.
--- @param #string Morse Morse code. Default "XXX".
--- @param #string UnitName Name of the unit in the group for which acts as ICLS beacon. Default is the first unit in the group.
+-- @param #string Morse (Optional) Morse code. Default "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group for which acts as ICLS beacon. Default is the first unit in the group.
 -- @return #AUFTRAG self
 function AUFTRAG:SetICLS(Channel, Morse, UnitName)
 
@@ -171498,7 +174682,7 @@ end
 
 --- Set time interval between mission done and success/failure evaluation.
 -- @param #AUFTRAG self
--- @param #number Teval Time in seconds before the mission result is evaluated. Default depends on mission type.
+-- @param #number Teval (Optional) Time in seconds before the mission result is evaluated. Default depends on mission type.
 -- @return #AUFTRAG self
 function AUFTRAG:SetEvaluationTime(Teval)
 
@@ -171928,6 +175112,28 @@ function AUFTRAG:IsReadyToGo()
   if not startme then
     return false
   end
+  
+  if self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+  
+    local cargoset=self.DCStask.params.cargo --Core.Set#SET_STATIC
+    
+    for _,_opsgroup in pairs(self:GetOpsGroups()) do
+      local opsgroup=_opsgroup --Ops.OpsGroup#OPSGROUP
+      
+      local vec2=opsgroup.group:GetFirstUnitAlive():GetVec2()
+      
+      local zone=ZONE_RADIUS:New("Freighttransport", vec2, 40, true)
+    
+      local inzone=cargoset:IsInZone(zone)
+      
+      if not inzone then
+        self:T(self.lid.."FREIGHTTRANSPORT: cargo is not inside zone ==> mission not ready to start yet!")
+        return false
+      end
+      
+    end
+    
+  end
 
 
   -- We're good to go!
@@ -172270,6 +175476,22 @@ function AUFTRAG:Evaluate()
       if cargo and zone then
         failed=not cargo:IsInZone(zone)
       else
+        failed=true
+      end
+      
+    elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+    
+      local cargoset=self.DCStask.params.cargo --Core.Set#SET_STATIC
+      
+      -- Get the destination airbase zone
+      local dest=self.DCStask.params.destination --Wrapper.Airbase#AIRBASE
+      local zone=dest:GetZone()
+    
+      -- Check if ANY cargo is inside the zone (might want to make it optional that all cargo needs to be)
+      local inzone=cargoset:IsInZone(zone, true)
+      
+      if not inzone then
+        self:I(self.lid.."FF Freight/cargo not delivered to airbase zone")
         failed=true
       end
 
@@ -173368,6 +176590,27 @@ function AUFTRAG:GetTargetLife()
   end
 end
 
+--- Get cargo items as set SET object.
+-- This returns the cargo item(s) as set `SET` object for mission types `CARGOTRANSPORT`, `TROOPTRANSPORT` and `FREIGHTTRANSPORT`.
+-- @param #AUFTRAG self
+-- @return Core.Set#SET_BASE The cargo set.
+function AUFTRAG:GetCargoSet()
+
+  if self.type==AUFTRAG.Type.CARGOTRANSPORT then
+    local set=SET_STATIC:New()
+    set:AddObject(self.DCStask.params.cargo)
+    return set  
+  elseif self.type==AUFTRAG.Type.TROOPTRANSPORT then
+    return self.transportGroupSet  
+  elseif self.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+    return self.DCStask.params.cargo  
+  else
+    self:E(self.lid.."ERROR: GetCargoSet() is only for transport types!")
+    return nil
+  end
+
+end
+
 --- Get target.
 -- @param #AUFTRAG self
 -- @return Ops.Target#TARGET The target object. Could be many things.
@@ -173637,7 +176880,7 @@ end
 
 --- Set randomization of the mission waypoint coordinate. Each assigned group will get a random ingress coordinate, where the mission is executed.
 -- @param #AUFTRAG self
--- @param #number Radius Distance in meters. Default `#nil`.
+-- @param #number Radius (Optional) Distance in meters. Default `#nil`.
 -- @return #AUFTRAG self
 function AUFTRAG:SetMissionWaypointRandomization(Radius)
   self.missionWaypointRadius=Radius
@@ -174828,7 +178071,7 @@ function AUFTRAG:_GetDCSAttackTask(Target, DCStasks)
 
     elseif target.Type==TARGET.ObjectType.UNIT or target.Type==TARGET.ObjectType.STATIC then
 
-      local DCStask=CONTROLLABLE.TaskAttackUnit(nil, target.Object, self.engageAsGroup, self.WeaponExpend, self.engageQuantity, self.engageDirection, self.engageAltitude, self.engageWeaponType)
+      local DCStask=CONTROLLABLE.TaskAttackUnit(nil, target.Object, self.engageAsGroup, self.engageWeaponExpend, self.engageQuantity, self.engageDirection, self.engageAltitude, self.engageWeaponType)
 
       table.insert(DCStasks, DCStask)
 
@@ -175009,7 +178252,7 @@ end
 -- ===
 --
 -- ### Author: **applevangelist**
--- @date Last Update July 2025
+-- @date Last Update Feb 2026
 -- @module Ops.AWACS
 -- @image OPS_AWACS.jpg
 
@@ -176402,9 +179645,9 @@ end
 
 --- [User] Set the tactical information option, create 10 radio channels groups can subscribe and get Bogey Dope on a specific frequency automatically. You **need** to set up SRS first before using this!
 -- @param #AWACS self
--- @param #number BaseFreq Base Frequency to use, defaults to 130.
--- @param #number Increase Increase to use, defaults to 0.5, thus channels created are 130, 130.5, 131 .. etc.
--- @param #number Modulation Modulation to use, defaults to radio.modulation.AM.
+-- @param #number BaseFreq (Optional) Base Frequency to use, defaults to 130.
+-- @param #number Increase (Optional) Increase to use, defaults to 0.5, thus channels created are 130, 130.5, 131 .. etc.
+-- @param #number Modulation (Optional) Modulation to use, defaults to radio.modulation.AM.
 -- @param #number Interval Seconds between each update call.
 -- @param #number Number Number of Frequencies to create, can be 1..10.
 -- @return #AWACS self
@@ -176686,8 +179929,8 @@ end
 
 --- [User] Set TOS Time-on-Station in Hours
 -- @param #AWACS self
--- @param #number AICHours AWACS stays this number of hours on station before shift change, default is 4.
--- @param #number CapHours (optional) CAP stays this number of hours on station before shift change, default is 4.
+-- @param #number AICHours (Optional) AWACS stays this number of hours on station before shift change, default is 4.
+-- @param #number CapHours (Optional) CAP stays this number of hours on station before shift change, default is 4.
 -- @return #AWACS self
 function AWACS:SetTOS(AICHours,CapHours)
   self:T(self.lid.."SetTOS")
@@ -176982,7 +180225,7 @@ end
 
 --- [User] Set AWACS Player Guidance - influences missile callout and the "New" label in group callouts. 
 -- @param #AWACS self
--- @param #boolean Switch If true (default) it is on, if false, it is off.
+-- @param #boolean Switch (Optional) If true (default) it is on, if false, it is off.
 -- @return #AWACS self
 function AWACS:SetPlayerGuidance(Switch)
   if (Switch == nil) or (Switch == true) then
@@ -177002,9 +180245,9 @@ end
 
 --- [User] Set AWACS intercept timeline support distance.
 -- @param #AWACS self
--- @param #number TacDistance Distance for TAC call, default 45nm
--- @param #number MeldDistance Distance for Meld call, default 35nm
--- @param #number ThreatDistance Distance for Threat call, default 25nm
+-- @param #number TacDistance (Optional) Distance for TAC call, default 45nm
+-- @param #number MeldDistance (Optional) Distance for Meld call, default 35nm
+-- @param #number ThreatDistance (Optional) Distance for Threat call, default 25nm
 -- @return #AWACS self
 function AWACS:SetInterceptTimeline(TacDistance, MeldDistance, ThreatDistance)
   self.TacDistance = TacDistance or 45
@@ -177111,12 +180354,12 @@ end
 
 --- [User] Set AWACS flight details
 -- @param #AWACS self
--- @param #number CallSign Defaults to CALLSIGN.AWACS.Magic
--- @param #number CallSignNo Defaults to 1
--- @param #number Angels Defaults to 25 (i.e. 25000 ft)
--- @param #number Speed Defaults to 250kn
--- @param #number Heading Defaults to 0 (North)
--- @param #number Leg Defaults to 25nm
+-- @param #number CallSign (Optional) Defaults to CALLSIGN.AWACS.Magic
+-- @param #number CallSignNo (Optional) Defaults to 1
+-- @param #number Angels (Optional) Defaults to 25 (i.e. 25000 ft)
+-- @param #number Speed (Optional) Defaults to 250kn
+-- @param #number Heading (Optional) Defaults to 0 (North)
+-- @param #number Leg (Optional) Defaults to 25nm
 -- @return #AWACS self
 function AWACS:SetAwacsDetails(CallSign,CallSignNo,Angels,Speed,Heading,Leg)
   self:T(self.lid.."SetAwacsDetails")
@@ -177168,13 +180411,13 @@ end
 
 --- [User] Set AWACS SRS TTS details - see @{Sound.SRS} for details. `SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #AWACS self
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
--- @param #string Gender Defaults to "male"
--- @param #string Culture Defaults to "en-US"
--- @param #number Port Defaults to 5002
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #string Gender (Optional) Defaults to "male"
+-- @param #string Culture (Optional) Defaults to "en-US"
+-- @param #number Port (Optional) Defaults to 5002
 -- @param #string Voice (Optional) Use a specifc voice with the @{Sound.SRS#SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
--- @param #number Volume Volume - between 0.0 (silent) and 1.0 (loudest)
+-- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest) Defaults to 1.0.
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) Your MSRS Backend if different from your config file settings, e.g. MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
@@ -177215,8 +180458,8 @@ end
 
 --- [User] Set AWACS Voice Details for AI CAP Planes  - SRS TTS - see @{Sound.SRS} for details
 -- @param #AWACS self
--- @param #string Gender Defaults to "male"
--- @param #string Culture Defaults to "en-US"
+-- @param #string Gender (Optional) Defaults to "male"
+-- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #string Voice (Optional) Use a specifc voice with the @{#MSRS.SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
 -- @return #AWACS self
@@ -177230,10 +180473,10 @@ end
 
 --- [User] Set AI CAP Plane Details
 -- @param #AWACS self
--- @param #number Callsign Callsign name of AI CAP, e.g. CALLSIGN.Aircraft.Dodge. Defaults to CALLSIGN.Aircraft.Colt. Note that not all available callsigns work for all plane types.
--- @param #number MaxAICap Maximum number of AI CAP planes on station that AWACS will set up automatically. Default to 4.
--- @param #number TOS Time on station, in  hours. AI planes might go back to base earlier if they run out of fuel or missiles.
--- @param #number Speed Airspeed to be used in knots. Will be adjusted to flight height automatically. Defaults to 270.
+-- @param #number Callsign (Optional) Callsign name of AI CAP, e.g. CALLSIGN.Aircraft.Dodge. Defaults to CALLSIGN.Aircraft.Colt. Note that not all available callsigns work for all plane types.
+-- @param #number MaxAICap (Optional) Maximum number of AI CAP planes on station that AWACS will set up automatically. Default to 4.
+-- @param #number TOS (Optional) Time on station, in  hours. AI planes might go back to base earlier if they run out of fuel or missiles. Defaults to 4.
+-- @param #number Speed (Optional) Airspeed to be used in knots. Will be adjusted to flight height automatically. Defaults to 270.
 -- @return #AWACS self
 function AWACS:SetAICAPDetails(Callsign,MaxAICap,TOS,Speed)
   self:T(self.lid.."SetAICAPDetails")
@@ -177249,7 +180492,7 @@ end
 -- @param #number EscortNumber Number of fighther plane GROUPs to accompany this AWACS. 0 or nil means no escorts. If you want >1 plane in an escort group, you can either set the respective squadron grouping to the desired number, or use a template for escorts with >1 unit.
 -- @param #number Formation Formation the escort should take (if more than one plane), e.g. `ENUMS.Formation.FixedWing.FingerFour.Group`. Formation is used on GROUP level, multiple groups of one unit will NOT conform to this formation.
 -- @param #table OffsetVector Offset the escorts should fly behind the AWACS, given as table, distance in meters, e.g. `{x=-500,y=0,z=500}` - 500m behind (negative value) and to the right (negative for left), no vertical separation (positive over, negative under the AWACS flight). For multiple groups, the vectors will be slightly changed to avoid collisions.
--- @param #number EscortEngageMaxDistance Escorts engage air targets max this NM away, defaults to 45NM.
+-- @param #number EscortEngageMaxDistance (Optional) Escorts engage air targets max this NM away, defaults to 45NM.
 -- @return #AWACS self
 function AWACS:SetEscort(EscortNumber,Formation,OffsetVector,EscortEngageMaxDistance)
   self:T(self.lid.."SetEscort")
@@ -181847,7 +185090,7 @@ function AWACS:onafterCheckTacticalQueue(From,Event,To)
     end
     -- AI AWACS Speaking
     local gtext = RadioEntry.TextTTS
-    if self.PathToGoogleKey then
+    if self.PathToGoogleKey and self.Backend ~= MSRS.Backend.HOUND then
       gtext = string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
     end
     self.TacticalSRSQ:NewTransmission(gtext,nil,self.TacticalSRS,nil,0.5,nil,nil,nil,frequency,self.TacticalModulation)
@@ -181906,7 +185149,7 @@ function AWACS:onafterCheckRadioQueue(From,Event,To)
   
   if not RadioEntry.FromAI then
     -- AI AWACS Speaking
-    if self.PathToGoogleKey then
+    if self.PathToGoogleKey and self.Backend ~= MSRS.Backend.HOUND then
       local gtext = RadioEntry.TextTTS
       gtext = string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
       self.AwacsSRS:PlayTextExt(gtext,nil,self.MultiFrequency,self.MultiModulation,self.Gender,self.Culture,self.Voice,self.Volume,"AWACS")
@@ -181919,7 +185162,7 @@ function AWACS:onafterCheckRadioQueue(From,Event,To)
     if RadioEntry.GroupID and RadioEntry.GroupID ~= 0 then
       local managedgroup = self.ManagedGrps[RadioEntry.GroupID] -- #AWACS.ManagedGroup
       if managedgroup and managedgroup.FlightGroup and managedgroup.FlightGroup:IsAlive() then
-        if self.PathToGoogleKey then
+        if self.PathToGoogleKey and self.Backend ~= MSRS.Backend.HOUND then
           local gtext = RadioEntry.TextTTS
           gtext = string.format("<speak><prosody rate='medium'>%s</prosody></speak>",gtext)
           managedgroup.FlightGroup:RadioTransmission(gtext,1,false)
@@ -183235,8 +186478,8 @@ CHIEF.version="0.7.1"
 --- Create a new CHIEF object and start the FSM.
 -- @param #CHIEF self
 -- @param #number Coalition Coalition side, e.g. `coaliton.side.BLUE`. Can also be passed as a string "red", "blue" or "neutral".
--- @param Core.Set#SET_GROUP AgentSet Set of agents (groups) providing intel. Default is an empty set.
--- @param #string Alias An *optional* alias how this object is called in the logs etc.
+-- @param Core.Set#SET_GROUP AgentSet (Optional) Set of agents (groups) providing intel. Default is an empty set.
+-- @param #string Alias (Optional) An *optional* alias how this object is called in the logs etc.
 -- @return #CHIEF self
 function CHIEF:New(Coalition, AgentSet, Alias)
 
@@ -183614,8 +186857,8 @@ end
 --- Set a threat level range that will be engaged. Threat level is a number between 0 and 10, where 10 is a very dangerous threat.
 -- Targets with threat level 0 are usually harmless.
 -- @param #CHIEF self
--- @param #number ThreatLevelMin Min threat level. Default 1.
--- @param #number ThreatLevelMax Max threat level. Default 10.
+-- @param #number ThreatLevelMin (Optional) Min threat level. Default 1.
+-- @param #number ThreatLevelMax (Optional) Max threat level. Default 10.
 -- @return #CHIEF self
 function CHIEF:SetThreatLevelRange(ThreatLevelMin, ThreatLevelMax)
 
@@ -183657,10 +186900,10 @@ end
 --- Create a new resource list of required assets.
 -- @param #CHIEF self
 -- @param #string MissionType The mission type.
--- @param #number Nmin Min number of required assets. Default 1.
--- @param #number Nmax Max number of requried assets. Default 1.
--- @param #table Attributes Generalized attribute(s). Default `nil`.
--- @param #table Properties DCS attribute(s). Default `nil`.
+-- @param #number Nmin (Optional) Min number of required assets. Default 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default 1.
+-- @param #table Attributes (Optional) Generalized attribute(s). Default `nil`.
+-- @param #table Properties (Optional) DCS attribute(s). Default `nil`.
 -- @param #table Categories Group categories.
 -- @return #CHIEF.Resources The newly created resource list table.
 -- @return #CHIEF.Resource The resource object that was added.
@@ -183677,8 +186920,8 @@ end
 -- @param #CHIEF self
 -- @param #CHIEF.Resources Resource List of resources.
 -- @param #string MissionType Mission Type.
--- @param #number Nmin Min number of required assets. Default 1.
--- @param #number Nmax Max number of requried assets. Default equal `Nmin`.
+-- @param #number Nmin (Optional) Min number of required assets. Default 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default equal `Nmin`.
 -- @param #table Attributes Generalized attribute(s).
 -- @param #table Properties DCS attribute(s). Default `nil`.
 -- @param #table Categories Group categories.
@@ -183720,8 +186963,8 @@ end
 --- Define which assets will be transported and define the number and attributes/properties of the cargo carrier assets.
 -- @param #CHIEF self
 -- @param #CHIEF.Resource Resource Resource table.
--- @param #number Nmin Min number of required assets. Default 1.
--- @param #number Nmax Max number of requried assets. Default is equal to `Nmin`.
+-- @param #number Nmin (Optional) Min number of required assets. Default 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default is equal to `Nmin`.
 -- @param #table CarrierAttributes Generalized attribute(s) of the carrier assets.
 -- @param #table CarrierProperties DCS attribute(s) of the carrier assets.
 -- @param #table CarrierCategories Group categories of the carrier assets.
@@ -183759,12 +187002,12 @@ end
 
 --- Set number of assets requested for detected targets.
 -- @param #CHIEF self
--- @param #number NassetsMin Min number of assets. Should be at least 1. Default 1.
--- @param #number NassetsMax Max number of assets. Default is same as `NassetsMin`.
--- @param #number ThreatLevel Only apply this setting if the target threat level is greater or equal this number. Default 0.
+-- @param #number NassetsMin (Optional) Min number of assets. Should be at least 1. Default 1.
+-- @param #number NassetsMax (Optional) Max number of assets. Default is same as `NassetsMin`.
+-- @param #number ThreatLevel (Optional) Only apply this setting if the target threat level is greater or equal this number. Default 0.
 -- @param #string TargetCategory Only apply this setting if the target is of this category, e.g. `TARGET.Category.AIRCRAFT`.
 -- @param #string MissionType Only apply this setting for this mission type, e.g. `AUFTRAG.Type.INTERCEPT`.
--- @param #string Nunits Only apply this setting if the number of enemy units is greater or equal this number.
+-- @param #string Nunits (Optional) Only apply this setting if the number of enemy units is greater or equal this number. Defaults to 1.
 -- @param #string Defcon Only apply this setting if this defense condition is in place.
 -- @param #string Strategy Only apply this setting if this strategy is in currently. place.
 -- @return #CHIEF self
@@ -183913,8 +187156,8 @@ end
 
 --- Set limit for number of total or specific missions to be executed simultaniously.
 -- @param #CHIEF self
--- @param #number Limit Number of max. mission of this type. Default 10.
--- @param #string MissionType Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
+-- @param #number Limit (Optional) Number of max. mission of this type. Default 10.
+-- @param #string MissionType (Optional) Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
 -- @return #CHIEF self
 function CHIEF:SetLimitMission(Limit, MissionType)
   self.commander:SetLimitMission(Limit, MissionType)
@@ -183940,7 +187183,7 @@ end
 
 --- Set strategy.
 -- @param #CHIEF self
--- @param #string Strategy Strategy. See @{#CHIEF.strategy}, e.g. `CHIEF.Strategy.DEFENSIVE` (default).
+-- @param #string Strategy (Optional) Strategy. See @{#CHIEF.strategy}, e.g. `CHIEF.Strategy.DEFENSIVE` (default).
 -- @return #CHIEF self
 function CHIEF:SetStrategy(Strategy)
 
@@ -184170,8 +187413,8 @@ end
 -- 
 -- @param #CHIEF self
 -- @param Ops.OpsZone#OPSZONE OpsZone OPS zone object.
--- @param #number Priority Priority. Default 50.
--- @param #number Importance Importance. Default `#nil`.
+-- @param #number Priority (Optional) Priority. Default 50.
+-- @param #number Importance (Optional) Importance. Default `#nil`.
 -- @param #CHIEF.Resources ResourceOccupied (Optional) Resources used then zone is occupied by the enemy.
 -- @param #CHIEF.Resources ResourceEmpty (Optional) Resources used then zone is empty.
 -- @return #CHIEF.StrategicZone The strategic zone.
@@ -184268,7 +187511,7 @@ end
 --- Remove strategically important zone. All runing missions are cancelled.
 -- @param #CHIEF self
 -- @param Ops.OpsZone#OPSZONE OpsZone OPS zone object.
--- @param #number Delay Delay in seconds before the zone is removed. Default immidiately.
+-- @param #number Delay (Optional) Delay in seconds before the zone is removed. Default immidiately.
 -- @return #CHIEF self
 function CHIEF:RemoveStrategicZone(OpsZone, Delay)
 
@@ -184342,10 +187585,10 @@ end
 --- Add a CAP zone. Flights will engage detected targets inside this zone. 
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone CAP Zone. Has to be a circular zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading(Optional)  Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function CHIEF:AddCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -184358,10 +187601,10 @@ end
 --- Add a GCI CAP.
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone Zone, where the flight orbits.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function CHIEF:AddGciCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -184385,10 +187628,10 @@ end
 --- Add an AWACS zone.
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The AWACS zone data.
 function CHIEF:AddAwacsZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -184412,10 +187655,10 @@ end
 --- Add a refuelling tanker zone.
 -- @param #CHIEF self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @param #number RefuelSystem Refuelling system.
 -- @return Ops.Airwing#AIRWING.TankerZone The tanker zone data.
 function CHIEF:AddTankerZone(Zone, Altitude, Speed, Heading, Leg, RefuelSystem)
@@ -186356,8 +189599,8 @@ _COHORTNAMES={}
 --- Create a new COHORT object and start the FSM.
 -- @param #COHORT self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this Cohort. Default 3.
--- @param #string CohortName Name of the cohort.
+-- @param #number Ngroups (Optional) Number of asset groups of this Cohort. Default 3.
+-- @param #string CohortName (Optional) Name of the cohort. Defaults to TemplateGroupName.
 -- @return #COHORT self
 function COHORT:New(TemplateGroupName, Ngroups, CohortName)
 
@@ -186604,7 +189847,7 @@ end
 
 --- Set verbosity level.
 -- @param #COHORT self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #COHORT self
 function COHORT:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -186613,8 +189856,8 @@ end
 
 --- Set turnover and repair time. If an asset returns from a mission, it will need some time until the asset is available for further missions.
 -- @param #COHORT self
--- @param #number MaintenanceTime Time in minutes it takes until a flight is combat ready again. Default is 0 min.
--- @param #number RepairTime Time in minutes it takes to repair a flight for each life point taken. Default is 0 min.
+-- @param #number MaintenanceTime (Optional) Time in minutes it takes until a flight is combat ready again. Default is 0 min.
+-- @param #number RepairTime (Optional) Time in minutes it takes to repair a flight for each life point taken. Default is 0 min.
 -- @return #COHORT self
 function COHORT:SetTurnoverTime(MaintenanceTime, RepairTime)
   self.maintenancetime=MaintenanceTime and MaintenanceTime*60 or 0
@@ -186624,8 +189867,8 @@ end
 
 --- Set radio frequency and modulation the cohort uses.
 -- @param #COHORT self
--- @param #number Frequency Radio frequency in MHz. Default 251 MHz.
--- @param #number Modulation Radio modulation. Default 0=AM.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 251 MHz.
+-- @param #number Modulation (Optional) Radio modulation. Default 0=AM.
 -- @return #COHORT self
 function COHORT:SetRadio(Frequency, Modulation)
   self.radioFreq=Frequency or 251
@@ -186635,7 +189878,7 @@ end
 
 --- Set number of units in groups.
 -- @param #COHORT self
--- @param #number nunits Number of units. Default 2.
+-- @param #number nunits (Optional) Number of units. Default 2.
 -- @return #COHORT self
 function COHORT:SetGrouping(nunits)
   self.ngrouping=nunits or 2
@@ -186645,7 +189888,7 @@ end
 --- Set mission types this cohort is able to perform.
 -- @param #COHORT self
 -- @param #table MissionTypes Table of mission types. Can also be passed as a #string if only one type.
--- @param #number Performance Performance describing how good this mission can be performed. Higher is better. Default 50. Max 100.
+-- @param #number Performance (Optional) Performance describing how good this mission can be performed. Higher is better. Default 50. Max 100.
 -- @return #COHORT self
 function COHORT:AddMissionCapability(MissionTypes, Performance)
 
@@ -186752,7 +189995,7 @@ end
 
 --- Set max mission range. Only missions in a circle of this radius around the cohort base are executed.
 -- @param #COHORT self
--- @param #number Range Range in NM. Default 150 NM.
+-- @param #number Range (Optional) Range in NM. Default 150 NM.
 -- @return #COHORT self
 function COHORT:SetMissionRange(Range)
   self.engageRange=UTILS.NMToMeters(Range or 150)
@@ -186875,8 +190118,8 @@ end
 
 --- Remove assets from pool. Not that assets must not be spawned or already reserved or requested.
 -- @param #COHORT self
--- @param #number N Number of assets to be removed. Default 1.
--- @param #number Delay Delay in seconds before assets are removed.
+-- @param #number N (Optional) Number of assets to be removed. Default 1.
+-- @param #number Delay (Optional) Delay in seconds before assets are removed. Defaults to 0.
 -- @return #COHORT self
 function COHORT:RemoveAssets(N, Delay)
   self:T2(self.lid..string.format("Remove %d assets of Cohort", N))
@@ -187065,9 +190308,9 @@ end
 
 --- Add a weapon range for ARTY missions (@{Ops.Auftrag#AUFTRAG}).
 -- @param #COHORT self
--- @param #number RangeMin Minimum range in nautical miles. Default 0 NM.
--- @param #number RangeMax Maximum range in nautical miles. Default 10 NM.
--- @param #number BitType Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
+-- @param #number RangeMin (Optional) Minimum range in nautical miles. Default 0 NM.
+-- @param #number RangeMax (Optional) Maximum range in nautical miles. Default 10 NM.
+-- @param #number BitType (Optional) Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
 -- @return #COHORT self
 function COHORT:AddWeaponRange(RangeMin, RangeMax, BitType)
 
@@ -188311,7 +191554,7 @@ end
 
 --- Set verbosity level.
 -- @param #COMMANDER self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #COMMANDER self
 function COMMANDER:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -188320,8 +191563,8 @@ end
 
 --- Set limit for number of total or specific missions to be executed simultaniously.
 -- @param #COMMANDER self
--- @param #number Limit Number of max. mission of this type. Default 10.
--- @param #string MissionType Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
+-- @param #number Limit (Optional) Number of max. mission of this type. Default 10.
+-- @param #string MissionType (Optional) Type of mission, e.g. `AUFTRAG.Type.BAI`. Default `"Total"` for total number of missions.
 -- @return #COMMANDER self
 function COMMANDER:SetLimitMission(Limit, MissionType)
   MissionType=MissionType or "Total"
@@ -188586,10 +191829,10 @@ end
 --- Add a CAP zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone CapZone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function COMMANDER:AddCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -188612,10 +191855,10 @@ end
 --- Add a GCICAP zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone CapZone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The CAP zone data.
 function COMMANDER:AddGciCapZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -188658,10 +191901,10 @@ end
 --- Add an AWACS zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @return Ops.Airwing#AIRWING.PatrolZone The AWACS zone data.
 function COMMANDER:AddAwacsZone(Zone, Altitude, Speed, Heading, Leg)
 
@@ -188705,10 +191948,10 @@ end
 --- Add a refuelling tanker zone.
 -- @param #COMMANDER self
 -- @param Core.Zone#ZONE Zone Zone.
--- @param #number Altitude Orbit altitude in feet. Default is 12,000 feet.
--- @param #number Speed Orbit speed in KIAS. Default 350 kts.
--- @param #number Heading Heading of race-track pattern in degrees. Default 270 (East to West).
--- @param #number Leg Length of race-track in NM. Default 30 NM.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 12,000 feet.
+-- @param #number Speed (Optional) Orbit speed in KIAS. Default 350 kts.
+-- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
+-- @param #number Leg (Optional) Length of race-track in NM. Default 30 NM.
 -- @param #number RefuelSystem Refuelling system.
 -- @return Ops.Airwing#AIRWING.TankerZone The tanker zone data.
 function COMMANDER:AddTankerZone(Zone, Altitude, Speed, Heading, Leg, RefuelSystem)
@@ -188773,10 +192016,10 @@ end
 -- @param #COMMANDER self
 -- @param Ops.Cohort#COHORT Cohort The cohort to be relocated.
 -- @param Ops.Legion#LEGION Legion The legion where the cohort is relocated to.
--- @param #number Delay Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
--- @param #number NcarriersMin Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
+-- @param #number Delay (Optional) Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
+-- @param #number NcarriersMin (Optional) Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
 -- @param #number NcarriersMax Max number of transport carriers.
--- @param #table TransportLegions Legion(s) assigned for transportation. Default is all legions of the commander.
+-- @param #table TransportLegions (Optional) Legion(s) assigned for transportation. Default is all legions of the commander.
 -- @return #COMMANDER self
 function COMMANDER:RelocateCohort(Cohort, Legion, Delay, NcarriersMin, NcarriersMax, TransportLegions)
 
@@ -189542,7 +192785,7 @@ end
 --- Set how many missions can be assigned in a single status iteration. (eg. This is useful for persistent missions where you need to load all AUFTRAGs on mission start and then change it back to default)
 --- Warning: Increasing this value will increase the number of missions started per iteration and thus may lead to performance issues if too many missions are started at once.
 -- @param #COMMANDER self
--- @param #number Number of missions assigned per status iteration. Default is 1.
+-- @param #number MaxMissionsAssignPerCycle (Optional) Number of missions assigned per status iteration. Default is 1.
 -- @return #COMMANDER self.
 function COMMANDER:SetMaxMissionsAssignPerCycle(MaxMissionsAssignPerCycle)
   self.maxMissionsAssignPerCycle = MaxMissionsAssignPerCycle or 1
@@ -190151,7 +193394,7 @@ end
 
 --- Get assets on given mission or missions.
 -- @param #COMMANDER self
--- @param #table MissionTypes Types on mission to be checked. Default all.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
 -- @return #table Assets on pending requests.
 function COMMANDER:GetAssetsOnMission(MissionTypes)
 
@@ -190965,11 +194208,11 @@ FLIGHTCONTROL.version="0.7.7"
 --- Create a new FLIGHTCONTROL class object for an associated airbase.
 -- @param #FLIGHTCONTROL self
 -- @param #string AirbaseName Name of the airbase.
--- @param #number Frequency Radio frequency in MHz. Default 143.00 MHz. Can also be given as a `#table` of multiple frequencies.
--- @param #number Modulation Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a `#table` of multiple modulations.
--- @param #string PathToSRS Path to the directory, where SRS is located.
--- @param #number Port Port of SRS Server, defaults to 5002
--- @param #string GoogleKey Path to the Google JSON-Key.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 143.00 MHz. Can also be given as a `#table` of multiple frequencies.
+-- @param #number Modulation (Optional) Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a `#table` of multiple modulations.
+-- @param #string PathToSRS (Optional) Path to the directory, where SRS is located.
+-- @param #number Port (Optional) Port of SRS Server, defaults to 5002
+-- @param #string GoogleKey (Optional) Path to the Google JSON-Key.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:New(AirbaseName, Frequency, Modulation, PathToSRS, Port, GoogleKey)
 
@@ -191176,7 +194419,7 @@ end
 
 --- Set verbosity level.
 -- @param #FLIGHTCONTROL self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -191226,8 +194469,8 @@ end
 
 --- Set the tower frequency.
 -- @param #FLIGHTCONTROL self
--- @param #number Frequency Frequency in MHz. Default 305 MHz.
--- @param #number Modulation Modulation `radio.modulation.AM`=0, `radio.modulation.FM`=1. Default `radio.modulation.AM`.
+-- @param #number Frequency (Optional) Frequency in MHz. Default 305 MHz.
+-- @param #number Modulation (Optional) Modulation `radio.modulation.AM`=0, `radio.modulation.FM`=1. Default `radio.modulation.AM`.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetFrequency(Frequency, Modulation)
 
@@ -191249,7 +194492,7 @@ end
 
 --- Set the SRS server port.
 -- @param #FLIGHTCONTROL self
--- @param #number Port Port to be used. Defaults to 5002.
+-- @param #number Port (Optional) Port to be used. Defaults to 5002.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetSRSPort(Port)
   self.Port = Port or 5002
@@ -191259,13 +194502,13 @@ end
 --- Set SRS options for a given MSRS object.
 -- @param #FLIGHTCONTROL self
 -- @param Sound.SRS#MSRS msrs Moose SRS object.
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Volume Volume. Default 1.0.
+-- @param #number Volume (Optional) Volume. Default 1.0.
 -- @param #string Label Name under which SRS transmits.
--- @param #string PathToGoogleCredentials Path to google credentials json file.
--- @param #number Port Server port for SRS
+-- @param #string PathToGoogleCredentials (Optional) Path to google credentials json file.
+-- @param #number Port (Optional) Server port for SRS. Defaults to 5002.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Label, PathToGoogleCredentials, Port)
 
@@ -191289,11 +194532,11 @@ end
 
 --- Set SRS options for tower voice.
 -- @param #FLIGHTCONTROL self
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`. See [Google Voices](https://cloud.google.com/text-to-speech/docs/voices).
--- @param #number Volume Volume. Default 1.0.
--- @param #string Label Name under which SRS transmits. Default `self.alias`.
+-- @param #number Volume (Optional) Volume. Default 1.0.
+-- @param #string Label (Optional) Name under which SRS transmits. Default `self.alias`.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetSRSTower(Gender, Culture, Voice, Volume, Label)
 
@@ -191306,11 +194549,11 @@ end
 
 --- Set SRS options for pilot voice.
 -- @param #FLIGHTCONTROL self
--- @param #string Gender Gender: "male" (default) or "female".
--- @param #string Culture Culture, e.g. "en-US" (default).
+-- @param #string Gender (Optional) Gender: "male" (default) or "female".
+-- @param #string Culture (Optional) Culture, e.g. "en-US" (default).
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Volume Volume. Default 1.0.
--- @param #string Label Name under which SRS transmits. Default "Pilot".
+-- @param #number Volume (Optional) Volume. Default 1.0.
+-- @param #string Label (Optional) Name under which SRS transmits. Default "Pilot".
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetSRSPilot(Gender, Culture, Voice, Volume, Label)
 
@@ -191332,8 +194575,8 @@ end
 -- in cases where simultaneous takeoffs and landings are unproblematic. Note that only because there are multiple runways, it does not mean the AI uses them.
 --  
 -- @param #FLIGHTCONTROL self
--- @param #number Nlanding Max number of aircraft landing simultaneously. Default 2.
--- @param #number Ntakeoff Allowed number of aircraft taking off for groups to get landing clearance. Default 0. 
+-- @param #number Nlanding (Optional) Max number of aircraft landing simultaneously. Default 2.
+-- @param #number Ntakeoff (Optional) Allowed number of aircraft taking off for groups to get landing clearance. Default 0. 
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetLimitLanding(Nlanding, Ntakeoff)
 
@@ -191346,7 +194589,7 @@ end
 
 --- Set time interval between landing clearance of groups.
 -- @param #FLIGHTCONTROL self
--- @param #number dt Time interval in seconds. Default 180 sec (3 min).
+-- @param #number dt (Optional) Time interval in seconds. Default 180 sec (3 min).
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetLandingInterval(dt)
 
@@ -191369,9 +194612,9 @@ end
 -- NOTE that human players are *not* restricted as they should behave better (hopefully) than the AI.
 -- 
 -- @param #FLIGHTCONTROL self
--- @param #number Ntaxi Max number of groups allowed to taxi. Default 2.
+-- @param #number Ntaxi (Optional) Max number of groups allowed to taxi. Default 2.
 -- @param #boolean IncludeInbound If `true`, the above
--- @param #number Nlanding Max number of landing flights. Default 0.
+-- @param #number Nlanding (Optional) Max number of landing flights. Default 0.
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetLimitTaxi(Ntaxi, IncludeInbound, Nlanding)
 
@@ -191389,10 +194632,10 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param Core.Zone#ZONE ArrivalZone Zone where planes arrive.
 -- @param #number Heading Heading in degrees.
--- @param #number Length Length in nautical miles. Default 15 NM.
--- @param #number FlightlevelMin Min flight level. Default 5.
--- @param #number FlightlevelMax Max flight level. Default 15.
--- @param #number Prio Priority. Lower is higher. Default 50.
+-- @param #number Length (Optional) Length in nautical miles. Default 15 NM.
+-- @param #number FlightlevelMin (Optional) Min flight level. Default 5.
+-- @param #number FlightlevelMax (Optional) Max flight level. Default 15.
+-- @param #number Prio (Optional) Priority. Lower is higher. Default 50.
 -- @return #FLIGHTCONTROL.HoldingPattern Holding pattern table.
 function FLIGHTCONTROL:AddHoldingPattern(ArrivalZone, Heading, Length, FlightlevelMin, FlightlevelMax, Prio)
 
@@ -191552,7 +194795,7 @@ end
 -- Note that this is the time, the DCS engine uses not something we can control on a user level or we could get via scripting.
 -- You need to input the value. On the DCS forum it was stated that this is currently one hour. Hence this is the default value.
 -- @param #FLIGHTCONTROL self
--- @param #number RepairTime Time in seconds until the runway is repaired. Default 3600sec (one hour).
+-- @param #number RepairTime (Optional) Time in seconds until the runway is repaired. Default 3600sec (one hour).
 -- @return #FLIGHTCONTROL self
 function FLIGHTCONTROL:SetRunwayRepairtime(RepairTime)
   self.runwayrepairtime=RepairTime or 3600
@@ -192626,7 +195869,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Status Return only flights in this flightcontrol status, e.g. `FLIGHTCONTROL.Status.XXX`.
 -- @param #string GroupStatus Return only flights in this FSM status, e.g. `OPSGROUP.GroupStatus.TAXIING`.
--- @param #boolean AI If `true` only AI flights are returned. If `false`, only flights with clients are returned. If `nil` (default), all flights are returned.
+-- @param #boolean AI (Optional) If `true` only AI flights are returned. If `false`, only flights with clients are returned. If `nil` (default), all flights are returned.
 -- @return #table Table of flights.
 function FLIGHTCONTROL:GetFlights(Status, GroupStatus, AI)
 
@@ -192660,7 +195903,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Status Return only flights in this status.
 -- @param #string GroupStatus Count only flights in this FSM status, e.g. `OPSGROUP.GroupStatus.TAXIING`.
--- @param #boolean AI If `true` only AI flights are counted. If `false`, only flights with clients are counted. If `nil` (default), all flights are counted.
+-- @param #boolean AI (Optional) If `true` only AI flights are counted. If `false`, only flights with clients are counted. If `nil` (default), all flights are counted.
 -- @return #number Number of flights.
 function FLIGHTCONTROL:CountFlights(Status, GroupStatus, AI)
   
@@ -192707,7 +195950,7 @@ end
 
 --- Get the name of the active runway.
 -- @param #FLIGHTCONTROL self
--- @param #boolean Takeoff If true, return takeoff runway name. Default is landing.
+-- @param #boolean Takeoff (Optional) If true, return takeoff runway name. Default is landing.
 -- @return #string Runway text, e.g. "31L" or "09".
 function FLIGHTCONTROL:GetActiveRunwayText(Takeoff)
 
@@ -192849,7 +196092,7 @@ end
 --- Set parking spot to RESERVED and update F10 marker.
 -- @param #FLIGHTCONTROL self
 -- @param Wrapper.Airbase#AIRBASE.ParkingSpot spot The parking spot data table.
--- @param #string unitname Name of the unit occupying the spot. Default "unknown". 
+-- @param #string unitname (Optional) Name of the unit occupying the spot. Default "unknown". 
 function FLIGHTCONTROL:SetParkingReserved(spot, unitname)
 
   -- Get spot.
@@ -192869,7 +196112,7 @@ end
 --- Set parking spot to OCCUPIED and update F10 marker.
 -- @param #FLIGHTCONTROL self
 -- @param Wrapper.Airbase#AIRBASE.ParkingSpot spot The parking spot data table.
--- @param #string unitname Name of the unit occupying the spot. Default "unknown".
+-- @param #string unitname (Optional) Name of the unit occupying the spot. Default "unknown".
 function FLIGHTCONTROL:SetParkingOccupied(spot, unitname)
 
   -- Get spot.
@@ -194957,7 +198200,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Text The text to transmit.
 -- @param Ops.FlightGroup#FLIGHTGROUP Flight The flight.
--- @param #number Delay Delay in seconds before the text is transmitted. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before the text is transmitted. Default 0 sec.
 function FLIGHTCONTROL:TransmissionTower(Text, Flight, Delay)
 
   if self.radioOnlyIfPlayers==true and self.Nplayers==0 then
@@ -194993,7 +198236,7 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Text The text to transmit.
 -- @param Ops.FlightGroup#FLIGHTGROUP Flight The flight.
--- @param #number Delay Delay in seconds before the text is transmitted. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before the text is transmitted. Default 0 sec.
 function FLIGHTCONTROL:TransmissionPilot(Text, Flight, Delay)
 
   if self.radioOnlyIfPlayers==true and self.Nplayers==0 then
@@ -195051,9 +198294,9 @@ end
 -- @param #FLIGHTCONTROL self
 -- @param #string Text The text to transmit.
 -- @param Ops.FlightGroup#FLIGHTGROUP Flight The flight.
--- @param #number Duration Duration in seconds. Default 5.
+-- @param #number Duration (Optional) Duration in seconds. Default 5.
 -- @param #boolean Clear Clear screen.
--- @param #number Delay Delay in seconds before the text is transmitted. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before the text is transmitted. Default 0 sec.
 function FLIGHTCONTROL:TextMessageToFlight(Text, Flight, Duration, Clear, Delay)
 
   if Delay and Delay>0 then
@@ -195197,8 +198440,8 @@ end
 
 --- [User] Set callsign options for TTS output. See @{Wrapper.Group#GROUP.GetCustomCallSign}() on how to set customized callsigns.
 -- @param #FLIGHTCONTROL self
--- @param #boolean ShortCallsign If true, only call out the major flight number. Default = `true`.
--- @param #boolean Keepnumber If true, keep the **customized callsign** in the #GROUP name for players as-is, no amendments or numbers. Default = `true`.
+-- @param #boolean ShortCallsign (Optional) If true, only call out the major flight number. Default = `true`.
+-- @param #boolean Keepnumber (Optional) If true, keep the **customized callsign** in the #GROUP name for players as-is, no amendments or numbers. Default = `true`.
 -- @param #table CallsignTranslations (optional) Table to translate between DCS standard callsigns and bespoke ones. Does not apply if using customized
 -- callsigns from playername or group name.
 -- @return #FLIGHTCONTROL self
@@ -196207,7 +199450,7 @@ end
 --- Set if group is ready for taxi/takeoff if controlled by a `FLIGHTCONTROL`.
 -- @param #FLIGHTGROUP self
 -- @param #boolean ReadyTO If `true`, flight is ready for takeoff.
--- @param #number Delay Delay in seconds before value is set. Default 0 sec.
+-- @param #number Delay (Optional) Delay in seconds before value is set. Default 0 sec.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:SetReadyForTakeoff(ReadyTO, Delay)
   if Delay and Delay>0 then
@@ -196292,7 +199535,7 @@ end
 
 --- Set low fuel threshold. Triggers event "FuelLow" and calls event function "OnAfterFuelLow".
 -- @param #FLIGHTGROUP self
--- @param #number threshold Fuel threshold in percent. Default 25 %.
+-- @param #number threshold (Optional) Fuel threshold in percent. Default 25 %.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:SetFuelLowThreshold(threshold)
   self.fuellowthresh=threshold or 25
@@ -196353,7 +199596,7 @@ end
 
 --- Set fuel critical threshold. Triggers event "FuelCritical" and event function "OnAfterFuelCritical".
 -- @param #FLIGHTGROUP self
--- @param #number threshold Fuel threshold in percent. Default 10 %.
+-- @param #number threshold (Optional) Fuel threshold in percent. Default 10 %.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:SetFuelCriticalThreshold(threshold)
   self.fuelcriticalthresh=threshold or 10
@@ -197999,8 +201242,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N(Optional)  Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
 -- @return #boolean Transision allowed?
 function FLIGHTGROUP:onbeforeUpdateRoute(From, Event, To, n, N)
 
@@ -198122,8 +201365,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number n Next waypoint index. Default is the one coming after that one that has been passed last.
--- @param #number N Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
+-- @param #number n (Optional) Next waypoint index. Default is the one coming after that one that has been passed last.
+-- @param #number N (Optional) Waypoint  Max waypoint index to be included in the route. Default is the final waypoint.
 function FLIGHTGROUP:onafterUpdateRoute(From, Event, To, n, N)
 
   -- Update route from this waypoint number onwards.
@@ -198470,9 +201713,9 @@ end
 -- @param #string Event Event.
 -- @param #string To To state.
 -- @param Wrapper.Airbase#AIRBASE airbase The airbase to hold at.
--- @param #number SpeedTo Speed used for traveling from current position to holding point in knots. Default 75% of max speed.
--- @param #number SpeedHold Holding speed in knots. Default 250 kts.
--- @param #number SpeedLand Landing speed in knots. Default 170 kts.
+-- @param #number SpeedTo (Optional) Speed used for traveling from current position to holding point in knots. Default 75% of max speed.
+-- @param #number SpeedHold (Optional) Holding speed in knots. Default 250 kts.
+-- @param #number SpeedLand (Optional) Landing speed in knots. Default 170 kts.
 function FLIGHTGROUP:onafterRTB(From, Event, To, airbase, SpeedTo, SpeedHold, SpeedLand)
 
   -- Debug info.
@@ -198565,9 +201808,9 @@ end
 --- Land at an airbase.
 -- @param #FLIGHTGROUP self
 -- @param Wrapper.Airbase#AIRBASE airbase Airbase where the group shall land.
--- @param #number SpeedTo Speed used for travelling from current position to holding point in knots.
--- @param #number SpeedHold Holding speed in knots.
--- @param #number SpeedLand Landing speed in knots. Default 170 kts.
+-- @param #number (Optional) SpeedTo Speed used for travelling from current position to holding point in knots. Defaults to speedCruise.
+-- @param #number (Optional) SpeedHold Holding speed in knots. Defaults to 250kts.
+-- @param #number (Optional) SpeedLand Landing speed in knots. Default 170 kts.
 function FLIGHTGROUP:_LandAtAirbase(airbase, SpeedTo, SpeedHold, SpeedLand)
 
   -- Set current airbase.
@@ -198751,9 +201994,9 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number Duration Duration how long the group will be waiting in seconds. Default `nil` (=forever).
--- @param #number Altitude Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
--- @param #number Speed Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
+-- @param #number Duration (Optional) Duration how long the group will be waiting in seconds. Default `nil` (=forever).
+-- @param #number Altitude (Optional) Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
+-- @param #number Speed (Optional) Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
 function FLIGHTGROUP:onbeforeWait(From, Event, To, Duration, Altitude, Speed)
 
   local allowed=true
@@ -198787,9 +202030,9 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #number Duration Duration how long the group will be waiting in seconds. Default `nil` (=forever).
--- @param #number Altitude Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
--- @param #number Speed Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
+-- @param #number Duration (Optional) Duration how long the group will be waiting in seconds. Default `nil` (=forever).
+-- @param #number Altitude (Optional) Altitude in feet. Default 10,000 ft for airplanes and 1,000 feet for helos.
+-- @param #number Speed (Optional) Speed in knots. Default 250 kts for airplanes and 20 kts for helos.
 function FLIGHTGROUP:onafterWait(From, Event, To, Duration, Altitude, Speed)
 
   -- Group will orbit at its current position.
@@ -199066,8 +202309,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param Core.Point#COORDINATE Coordinate The coordinate where to land. Default is current position.
--- @param #number Duration The duration in seconds to remain on ground. Default 600 sec (10 min).
+-- @param Core.Point#COORDINATE (Optional) Coordinate The coordinate where to land. Default is current position.
+-- @param #number Duration (Optional) The duration in seconds to remain on ground. Default 600 sec (10 min).
 function FLIGHTGROUP:onbeforeLandAt(From, Event, To, Coordinate, Duration)
   return self.isHelo
 end
@@ -199077,8 +202320,8 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param Core.Point#COORDINATE Coordinate The coordinate where to land. Default is current position.
--- @param #number Duration The duration in seconds to remain on ground. Default `nil` = forever.
+-- @param Core.Point#COORDINATE (Optional) Coordinate The coordinate where to land. Default is current position.
+-- @param #number Duration (Optional) The duration in seconds to remain on ground. Default `nil` = forever.
 function FLIGHTGROUP:onafterLandAt(From, Event, To, Coordinate, Duration)
 
   -- Duration.
@@ -199249,8 +202492,8 @@ end
 
 --- Initialize group parameters. Also initializes waypoints if self.waypoints is nil.
 -- @param #FLIGHTGROUP self
--- @param #table Template Template used to init the group. Default is `self.template`.
--- @param #number Delay Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
+-- @param #table Template (Optional) Template used to init the group. Default is `self.template`.
+-- @param #number Delay (Optional) Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous.
 -- @return #FLIGHTGROUP self
 function FLIGHTGROUP:_InitGroup(Template, Delay)
 
@@ -199410,7 +202653,7 @@ end
 
 --- Find the nearest friendly airbase (same or neutral coalition).
 -- @param #FLIGHTGROUP self
--- @param #number Radius Search radius in NM. Default 50 NM.
+-- @param #number Radius (Optional) Search radius in NM. Default 50 NM.
 -- @return Wrapper.Airbase#AIRBASE Closest tanker group #nil.
 function FLIGHTGROUP:FindNearestAirbase(Radius)
 
@@ -199445,7 +202688,7 @@ end
 
 --- Find the nearest tanker.
 -- @param #FLIGHTGROUP self
--- @param #number Radius Search radius in NM. Default 50 NM.
+-- @param #number Radius (Optional) Search radius in NM. Default 50 NM.
 -- @return Wrapper.Group#GROUP Closest tanker group or `nil` if no tanker is in the given radius.
 function FLIGHTGROUP:FindNearestTanker(Radius)
 
@@ -199596,7 +202839,7 @@ end
 
 --- Check if the final waypoint is in the air.
 -- @param #FLIGHTGROUP self
--- @param #table wp Waypoint. Default final waypoint.
+-- @param #table wp (Optional) Waypoint. Default final waypoint.
 -- @return #boolean If `true` final waypoint is a turning or flyover but not a landing type waypoint.
 function FLIGHTGROUP:IsLandingAir(wp)
 
@@ -199617,7 +202860,7 @@ end
 
 --- Check if the final waypoint is at an airbase.
 -- @param #FLIGHTGROUP self
--- @param #table wp Waypoint. Default final waypoint.
+-- @param #table wp (Optional) Waypoint. Default final waypoint.
 -- @return #boolean If `true`, final waypoint is a landing waypoint at an airbase.
 function FLIGHTGROUP:IsLandingAirbase(wp)
 
@@ -199640,10 +202883,10 @@ end
 --- Add an AIR waypoint to the flight plan.
 -- @param #FLIGHTGROUP self
 -- @param Core.Point#COORDINATE Coordinate The coordinate of the waypoint. Use COORDINATE:SetAltitude(altitude) to define the altitude.
--- @param #number Speed Speed in knots. Default is cruise speed.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #number Altitude Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default is cruise speed.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #number Altitude (Optional) Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function FLIGHTGROUP:AddWaypoint(Coordinate, Speed, AfterWaypointWithID, Altitude, Updateroute)
 
@@ -199693,10 +202936,10 @@ end
 --- Add an LANDING waypoint to the flight plan.
 -- @param #FLIGHTGROUP self
 -- @param Wrapper.Airbase#AIRBASE Airbase The airbase where the group should land.
--- @param #number Speed Speed in knots. Default 350 kts.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #number Altitude Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default 350 kts.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #number Altitude (Optional) Altitude in feet. Default is y-component of Coordinate. Note that these altitudes are wrt to sea level (barometric altitude).
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function FLIGHTGROUP:AddWaypointLanding(Airbase, Speed, AfterWaypointWithID, Altitude, Updateroute)
 
@@ -199911,7 +203154,7 @@ end
 --- Returns the parking spot of the element.
 -- @param #FLIGHTGROUP self
 -- @param Ops.OpsGroup#OPSGROUP.Element element Element of the flight group.
--- @param #number maxdist Distance threshold in meters. Default 5 m.
+-- @param #number maxdist (Optional) Distance threshold in meters. Default 5 m.
 -- @param Wrapper.Airbase#AIRBASE airbase (Optional) The airbase to check for parking. Default is closest airbase to the element.
 -- @return Wrapper.Airbase#AIRBASE.ParkingSpot Parking spot or nil if no spot is within distance threshold.
 function FLIGHTGROUP:GetParkingSpot(element, maxdist, airbase)
@@ -200786,7 +204029,7 @@ FLOTILLA.version="0.1.0"
 --- Create a new FLOTILLA object and start the FSM.
 -- @param #FLOTILLA self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this flotilla. Default 3.
+-- @param #number Ngroups (Optional) Number of asset groups of this flotilla. Default 3.
 -- @param #string FlotillaName Name of the flotilla. Must be **unique**!
 -- @return #FLOTILLA self
 function FLOTILLA:New(TemplateGroupName, Ngroups, FlotillaName)
@@ -201316,8 +204559,8 @@ end
 
 --- Set to accept accoustic detection.
 -- @param #INTEL self
--- @param #number Radius Radius in which we can "hear" units. Defaults to 1000 meters.
--- @param #table UnitCategories Set what Unit Categories we can "hear". Defaults to `{Unit.Category.GROUND_UNIT,Unit.Category.HELICOPTER}`
+-- @param #number Radius (Optional) Radius in which we can "hear" units. Defaults to 1000 meters.
+-- @param #table UnitCategories(Optional)  Set what Unit Categories we can "hear". Defaults to `{Unit.Category.GROUND_UNIT,Unit.Category.HELICOPTER}`
 -- @return #INTEL self
 function INTEL:SetAccousticDetectionOn(Radius,UnitCategories)
   self.DetectAccoustic = true
@@ -201477,7 +204720,7 @@ end
 -- Previously known contacts that are not detected any more, are "lost" after this time.
 -- This avoids fast oscillations between a contact being detected and undetected.
 -- @param #INTEL self
--- @param #number TimeInterval Time interval in seconds. Default is 120 sec.
+-- @param #number TimeInterval (Optional) Time interval in seconds. Default is 120 sec.
 -- @return #INTEL self
 function INTEL:SetForgetTime(TimeInterval)
   return self
@@ -201512,10 +204755,10 @@ end
 
 --- Method to make the radar detection less accurate, e.g. for WWII scenarios.
 -- @param #INTEL self
--- @param #number minheight Minimum flight height to be detected, in meters AGL (above ground)
--- @param #number thresheight Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
--- @param #number thresblur Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
--- @param #number closing Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
+-- @param #number minheight (Optional) Minimum flight height to be detected, in meters AGL (above ground). Defaults to 250m.
+-- @param #number thresheight (Optional) Threshold to escape the radar if flying below minheight, defaults to 90 (90% escape chance)
+-- @param #number thresblur (Optional) Threshold to be detected by the radar overall, defaults to 85 (85% chance to be found)
+-- @param #number closing (Optional) Closing-in in km - the limit of km from which on it becomes increasingly difficult to escape radar detection if flying towards the radar position. Should be about 1/3 of the radar detection radius in kilometers, defaults to 20.
 -- @return #INTEL self
 function INTEL:SetRadarBlur(minheight,thresheight,thresblur,closing)
   self.RadarBlur = true
@@ -201642,7 +204885,7 @@ end
 
 --- Change radius of the Clusters.
 -- @param #INTEL self
--- @param #number radius The radius of the clusters in kilometers. Default 15 km.
+-- @param #number radius (Optional) The radius of the clusters in kilometers. Default 15 km.
 -- @return #INTEL self
 function INTEL:SetClusterRadius(radius)
   self.clusterradius = (radius or 15)*1000
@@ -202350,7 +205593,7 @@ end
 -- @param #INTEL self
 -- @param Wrapper.Positionable#POSITIONABLE Positionable Group or static object.
 -- @param #string RecceName Name of the recce group that detected this object.
--- @param #number Tdetected Abs. mission time in seconds, when the object is detected. Default now.
+-- @param #number Tdetected (Optional) Abs. mission time in seconds, when the object is detected. Default now.
 -- @return #INTEL self
 function INTEL:KnowObject(Positionable, RecceName, Tdetected)
 
@@ -202921,7 +206164,7 @@ end
 --- Calculate cluster future position after given seconds.
 -- @param #INTEL self
 -- @param #INTEL.Cluster cluster The cluster of contacts.
--- @param #number seconds Time interval in seconds. Default is `self.prediction`.
+-- @param #number seconds (Optional) Time interval in seconds. Default is `self.prediction`.
 -- @return Core.Point#COORDINATE Calculated future position of the cluster.
 function INTEL:CalcClusterFuturePosition(cluster, seconds)
 
@@ -203163,7 +206406,7 @@ end
 --- Get the coordinate of a cluster.
 -- @param #INTEL self
 -- @param #INTEL.Cluster Cluster The cluster.
--- @param #boolean Update If `true`, update the coordinate. Default is to just return the last stored position.
+-- @param #boolean Update (Optional) If `true`, update the coordinate. Default is to just return the last stored position.
 -- @return Core.Point#COORDINATE The coordinate of this cluster.
 function INTEL:GetClusterCoordinate(Cluster, Update)
 
@@ -203214,8 +206457,8 @@ end
 --- Check if the coordindate of the cluster changed.
 -- @param #INTEL self
 -- @param #INTEL.Cluster Cluster The cluster.
--- @param #number Threshold in meters. Default 100 m.
--- @param Core.Point#COORDINATE Coordinate Reference coordinate. Default is the last known coordinate of the cluster.
+-- @param #number (Optional) Threshold in meters. Default 100 m.
+-- @param Core.Point#COORDINATE Coordinate (Optional) Reference coordinate. Default is the last known coordinate of the cluster.
 -- @return #boolean If `true`, the coordinate changed by more than the given threshold.
 function INTEL:_CheckClusterCoordinateChanged(Cluster, Coordinate, Threshold)
 
@@ -203546,7 +206789,7 @@ end
 
   --- Function to set how long INTEL DLINK remembers contacts.
   -- @param #INTEL_DLINK self
-  -- @param #number seconds Remember this many seconds. Defaults to 180.
+  -- @param #number seconds (Optional) Remember this many seconds. Defaults to 120.
   -- @return #INTEL_DLINK self
   function INTEL_DLINK:SetDLinkCacheTime(seconds)
     self.cachetime = math.abs(seconds or 120)
@@ -203989,7 +207232,7 @@ end
 
 --- Set verbosity level.
 -- @param #LEGION self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #LEGION self
 function LEGION:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -204141,10 +207384,10 @@ end
 -- @param #LEGION self
 -- @param Ops.Cohort#COHORT Cohort The cohort to be relocated.
 -- @param Ops.Legion#LEGION Legion The legion where the cohort is relocated to.
--- @param #number Delay Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
--- @param #number NcarriersMin Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
+-- @param #number Delay (Optional) Delay in seconds before relocation takes place. Default `nil`, *i.e.* ASAP.
+-- @param #number NcarriersMin (Optional) Min number of transport carriers in case the troops should be transported. Default `nil` for no transport.
 -- @param #number NcarriersMax Max number of transport carriers.
--- @param #table TransportLegions Legion(s) assigned for transportation. Default is that transport assets can only be recruited from this legion.
+-- @param #table TransportLegions (Optional) Legion(s) assigned for transportation. Default is that transport assets can only be recruited from this legion.
 -- @return #LEGION self
 function LEGION:RelocateCohort(Cohort, Legion, Delay, NcarriersMin, NcarriersMax, TransportLegions)
 
@@ -205600,7 +208843,7 @@ end
 --- Check if an asset is currently on a mission (STARTED or EXECUTING).
 -- @param #LEGION self
 -- @param Functional.Warehouse#WAREHOUSE.Assetitem asset The asset.
--- @param #table MissionTypes Types on mission to be checked. Default all.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
 -- @return #boolean If true, asset has at least one mission of that type in the queue.
 function LEGION:IsAssetOnMission(asset, MissionTypes)
 
@@ -205653,7 +208896,7 @@ end
 
 --- Count payloads in stock.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
 -- @param #table UnitTypes Types of units.
 -- @param #table Payloads Specific payloads to be counted only.
 -- @return #number Count of available payloads in stock.
@@ -205729,7 +208972,7 @@ end
 
 --- Count missions in mission queue.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default *all* possible types `AUFTRAG.Type`.
 -- @param #boolean OnlyRunning If `true`, only count running missions.
 -- @return #number Number of missions that are not over yet.
 function LEGION:CountMissionsInQueue(MissionTypes, OnlyRunning)
@@ -205844,8 +209087,8 @@ end
 
 --- Count assets on mission.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default all.
--- @param Ops.Cohort#COHORT Cohort Only count assets of this cohort. Default count assets of all cohorts.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
+-- @param Ops.Cohort#COHORT Cohort (Optional) Only count assets of this cohort. Default count assets of all cohorts.
 -- @return #number Number of pending and queued assets.
 -- @return #number Number of pending assets.
 -- @return #number Number of queued assets.
@@ -205888,7 +209131,7 @@ end
 
 --- Get assets on mission.
 -- @param #LEGION self
--- @param #table MissionTypes Types on mission to be checked. Default all.
+-- @param #table MissionTypes (Optional) Types on mission to be checked. Default all.
 -- @return #table Assets on pending requests.
 function LEGION:GetAssetsOnMission(MissionTypes)
 
@@ -205921,7 +209164,7 @@ end
 --- Get the unit types of this legion. These are the unit types of all assigned cohorts.
 -- @param #LEGION self
 -- @param #boolean onlyactive Count only the active ones.
--- @param #table cohorts Table of cohorts. Default all.
+-- @param #table cohorts (Optional) Table of cohorts. Default all.
 -- @return #table Table of unit types.
 function LEGION:GetAircraftTypes(onlyactive, cohorts)
 
@@ -206462,7 +209705,7 @@ end
 --- Recruit assets from Cohorts for the given parameters. **NOTE** that we set the `asset.isReserved=true` flag so it cannot be recruited by anyone else.
 -- @param #table Cohorts Cohorts included.
 -- @param #string MissionTypeRecruit Mission type for recruiting the cohort assets.
--- @param #string MissionTypeOpt Mission type for which the assets are optimized. Default is the same as `MissionTypeRecruit`.
+-- @param #string MissionTypeOpt (Optional) Mission type for which the assets are optimized. Default is the same as `MissionTypeRecruit`.
 -- @param #number NreqMin Minimum number of required assets.
 -- @param #number NreqMax Maximum number of required assets.
 -- @param DCS#Vec2 TargetVec2 Target position as 2D vector.
@@ -207591,7 +210834,7 @@ end
 --- Enable/disable pathfinding.
 -- @param #NAVYGROUP self
 -- @param #boolean Switch If true, enable pathfinding.
--- @param #number CorridorWidth Corridor with in meters. Default 400 m.
+-- @param #number CorridorWidth (Optional) Corridor with in meters. Default 400 m.
 -- @return #NAVYGROUP self
 function NAVYGROUP:SetPathfinding(Switch, CorridorWidth)
   self.pathfindingOn=Switch
@@ -207601,7 +210844,7 @@ end
 
 --- Enable pathfinding.
 -- @param #NAVYGROUP self
--- @param #number CorridorWidth Corridor with in meters. Default 400 m.
+-- @param #number CorridorWidth (Optional) Corridor with in meters. Default 400 m.
 -- @return #NAVYGROUP self
 function NAVYGROUP:SetPathfindingOn(CorridorWidth)
   self:SetPathfinding(true, CorridorWidth)
@@ -207633,9 +210876,9 @@ end
 -- @param #NAVYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
 -- @param #string Clock Time when to start the attack.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
 -- @param #number Prio Priority of the task.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task data.
 function NAVYGROUP:AddTaskFireAtPoint(Coordinate, Clock, Radius, Nshots, WeaponType, Prio)
@@ -207650,12 +210893,12 @@ end
 --- Add a *waypoint* task.
 -- @param #NAVYGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the target.
--- @param Ops.OpsGroup#OPSGROUP.Waypoint Waypoint Where the task is executed. Default is next waypoint.
--- @param #number Radius Radius in meters. Default 100 m.
--- @param #number Nshots Number of shots to fire. Default 3.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #number Prio Priority of the task.
--- @param #number Duration Duration in seconds after which the task is cancelled. Default *never*.
+-- @param Ops.OpsGroup#OPSGROUP.Waypoint (Optional) Waypoint Where the task is executed. Default is next waypoint.
+-- @param #number Radius (Optional) Radius in meters. Default 100 m.
+-- @param #number Nshots (Optional) Number of shots to fire. Default 3.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
+-- @param #number Duration (Optional) Duration in seconds after which the task is cancelled. Default *never*.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task table.
 function NAVYGROUP:AddTaskWaypointFireAtPoint(Coordinate, Waypoint, Radius, Nshots, WeaponType, Prio, Duration)
 
@@ -207672,10 +210915,10 @@ end
 --- Add a *scheduled* task.
 -- @param #NAVYGROUP self
 -- @param Wrapper.Group#GROUP TargetGroup Target group.
--- @param #number WeaponExpend How much weapons does are used.
--- @param #number WeaponType Type of weapon. Default auto.
--- @param #string Clock Time when to start the attack.
--- @param #number Prio Priority of the task.
+-- @param #number WeaponExpend (Optional) How much weapons does are used.
+-- @param #number WeaponType (Optional) Type of weapon. Default auto.
+-- @param #string Clock (Optional) Time when to start the attack.
+-- @param #number Prio (Optional) Priority of the task. Defaults to 50.
 -- @return Ops.OpsGroup#OPSGROUP.Task The task data.
 function NAVYGROUP:AddTaskAttackGroup(TargetGroup, WeaponExpend, WeaponType, Clock, Prio)
 
@@ -207688,11 +210931,11 @@ end
 
 --- Create a turn into wind window. Note that this is not executed as it not added to the queue.
 -- @param #NAVYGROUP self
--- @param #string starttime Start time, e.g. "8:00" for eight o'clock. Default now.
--- @param #string stoptime Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
--- @param #number speed Speed in knots during turn into wind leg.
--- @param #boolean uturn If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
--- @param #number offset Offset angle in degrees, e.g. to account for an angled runway. Default 0 deg.
+-- @param #string starttime (Optional) Start time, e.g. "8:00" for eight o'clock. Default now.
+-- @param #string stoptime (Optional) Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
+-- @param #number speed (Optional) Speed in knots during turn into wind leg. Defaults to 20.
+-- @param #boolean uturn (Optional) If true (or nil), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
+-- @param #number offset (Optional) Offset angle in degrees, e.g. to account for an angled runway. Default 0 deg.
 -- @return #NAVYGROUP.IntoWind Recovery window.
 function NAVYGROUP:_CreateTurnIntoWind(starttime, stoptime, speed, uturn, offset)
 
@@ -207755,11 +210998,11 @@ end
 
 --- Add a time window, where the groups steams into the wind.
 -- @param #NAVYGROUP self
--- @param #string starttime Start time, e.g. "8:00" for eight o'clock. Default now.
--- @param #string stoptime Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
--- @param #number speed Wind speed on deck in knots during turn into wind leg. Default 20 knots.
--- @param #boolean uturn If `true` (or `nil`), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
--- @param #number offset Offset angle clock-wise in degrees, *e.g.* to account for an angled runway. Default 0 deg. Use around -9.1° for US carriers.
+-- @param #string starttime (Optional) Start time, e.g. "8:00" for eight o'clock. Default now.
+-- @param #string stoptime (Optional) Stop time, e.g. "9:00" for nine o'clock. Default 90 minutes after start time.
+-- @param #number speed (Optional) Wind speed on deck in knots during turn into wind leg. Default 20 knots.
+-- @param #boolean uturn (Optional) If `true` (or `nil`), carrier wil perform a U-turn and go back to where it came from before resuming its route to the next waypoint. If false, it will go directly to the next waypoint.
+-- @param #number offset (Optional) Offset angle clock-wise in degrees, *e.g.* to account for an angled runway. Default 0 deg. Use around -9.1° for US carriers.
 -- @return #NAVYGROUP.IntoWind Turn into window data table.
 function NAVYGROUP:AddTurnIntoWind(starttime, stoptime, speed, uturn, offset)
 
@@ -207801,7 +211044,7 @@ end
 
 --- Extend duration of turn into wind.
 -- @param #NAVYGROUP self
--- @param #number Duration Duration in seconds. Default 300 sec.
+-- @param #number Duration (Optional) Duration in seconds. Default 300 sec.
 -- @param #NAVYGROUP.IntoWind TurnIntoWind (Optional) Turn into window data table. If not given, the currently open one is used (if there is any).
 -- @return #NAVYGROUP self
 function NAVYGROUP:ExtendTurnIntoWind(Duration, TurnIntoWind)
@@ -208989,10 +212232,10 @@ end
 --- Add an a waypoint to the route.
 -- @param #NAVYGROUP self
 -- @param Core.Point#COORDINATE Coordinate The coordinate of the waypoint. Use `COORDINATE:SetAltitude()` to define the altitude.
--- @param #number Speed Speed in knots. Default is default cruise speed or 70% of max speed.
--- @param #number AfterWaypointWithID Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
--- @param #number Depth Depth at waypoint in feet. Only for submarines.
--- @param #boolean Updateroute If true or nil, call UpdateRoute. If false, no call.
+-- @param #number Speed (Optional) Speed in knots. Default is default cruise speed or 70% of max speed.
+-- @param #number AfterWaypointWithID (Optional) Insert waypoint after waypoint given ID. Default is to insert as last waypoint.
+-- @param #number Depth (Optional) Depth at waypoint in feet. Only for submarines.
+-- @param #boolean Updateroute (Optional) If true or nil, call UpdateRoute. If false, no call.
 -- @return Ops.OpsGroup#OPSGROUP.Waypoint Waypoint table.
 function NAVYGROUP:AddWaypoint(Coordinate, Speed, AfterWaypointWithID, Depth, Updateroute)
 
@@ -209032,8 +212275,8 @@ end
 
 --- Initialize group parameters. Also initializes waypoints if self.waypoints is nil.
 -- @param #NAVYGROUP self
--- @param #table Template Template used to init the group. Default is `self.template`.
--- @param #number Delay Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous. 
+-- @param #table Template (Optional) Template used to init the group. Default is `self.template`.
+-- @param #number Delay (Optional) Delay in seconds before group is initialized. Default `nil`, *i.e.* instantaneous. 
 -- @return #NAVYGROUP self
 function NAVYGROUP:_InitGroup(Template, Delay)
 
@@ -209138,7 +212381,7 @@ end
 
 --- Check for possible collisions between two coordinates.
 -- @param #NAVYGROUP self
--- @param #number DistanceMax Max distance in meters ahead to check. Default 5000.
+-- @param #number DistanceMax (Optional) Max distance in meters ahead to check. Default 5000.
 -- @param #number dx
 -- @return #number Free distance in meters.
 function NAVYGROUP:_CheckFreePath(DistanceMax, dx)
@@ -209324,7 +212567,7 @@ end
 
 --- Get wind direction and speed at current position.
 -- @param #NAVYGROUP self
--- @param #number Altitude Altitude in meters above main sea level at which the wind is calculated. Default 18 meters.
+-- @param #number Altitude (Optional) Altitude in meters above main sea level at which the wind is calculated. Default 18 meters.
 -- @return #number Direction the wind is blowing **from** in degrees.
 -- @return #number Wind speed in m/s.
 function NAVYGROUP:GetWind(Altitude)
@@ -209758,7 +213001,7 @@ OPERATION.version="0.2.0"
 
 --- Create a new generic OPERATION object.
 -- @param #OPERATION self
--- @param #string Name Name of the operation. Be creative! Default "Operation-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the operation. Be creative! Default "Operation-01" where the last number is a running number.
 -- @return #OPERATION self
 function OPERATION:New(Name)
 
@@ -209962,7 +213205,7 @@ end
 
 --- Set verbosity level.
 -- @param #OPERATION self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #OPERATION self
 function OPERATION:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -209971,7 +213214,7 @@ end
 
 --- Set start and stop time of the operation.
 -- @param #OPERATION self
--- @param #string ClockStart Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
+-- @param #string ClockStart (Optional) Time the mission is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
 -- @param #string ClockStop (Optional) Time the mission is stopped, e.g. "13:00" for 1 pm. If mission could not be started at that time, it will be removed from the queue. If specified as a #number it will be relative (in seconds) to the current mission time.
 -- @return #OPERATION self
 function OPERATION:SetTime(ClockStart, ClockStop)
@@ -210028,9 +213271,9 @@ end
 
 --- Add a new phase to the operation. This is added add the end of all previously added phases (if any).
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
--- @param #OPERATION.Branch Branch The branch to which this phase is added. Default is the master branch.
--- @param #number Duration Duration in seconds how long the phase will last. Default `nil`=forever.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #OPERATION.Branch Branch (Optional) The branch to which this phase is added. Default is the master branch.
+-- @param #number Duration (Optional) Duration in seconds how long the phase will last. Default `nil`=forever.
 -- @return #OPERATION.Phase Phase table object.
 function OPERATION:AddPhase(Name, Branch, Duration)
 
@@ -210058,7 +213301,7 @@ end
 ---Insert a new phase after an already defined phase of the operation.
 -- @param #OPERATION self
 -- @param #OPERATION.Phase PhaseAfter The phase after which the new phase is inserted.
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Phase Phase table object.
 function OPERATION:InsertPhaseAfter(PhaseAfter, Name)
 
@@ -210085,7 +213328,7 @@ end
 
 --- Get a phase by its name.
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Phase Phase table object or nil if phase could not be found.
 function OPERATION:GetPhaseByName(Name)
 
@@ -210223,7 +213466,7 @@ end
 
 --- Get name of a phase.
 -- @param #OPERATION self
--- @param #OPERATION.Phase Phase The phase of which the name is returned. Default is the currently active phase.
+-- @param #OPERATION.Phase Phase (Optional) The phase of which the name is returned. Default is the currently active phase.
 -- @return #string The name of the phase or "None" if no phase is given or active.
 function OPERATION:GetPhaseName(Phase)
 
@@ -210365,7 +213608,7 @@ end
 
 --- Get name of the branch.
 -- @param #OPERATION self
--- @param #OPERATION.Branch Branch The branch of which the name is requested. Default is the currently active or master branch.
+-- @param #OPERATION.Branch (Optional) Branch The branch of which the name is requested. Default is the currently active or master branch.
 -- @return #string Name Name or "None"
 function OPERATION:GetBranchName(Branch)
   Branch=Branch or self:GetBranchActive()
@@ -210949,7 +214192,7 @@ end
 
 --- Create a new phase object.
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Phase Phase table object.
 function OPERATION:_CreatePhase(Name)
 
@@ -210969,7 +214212,7 @@ end
 
 --- Create a new branch object.
 -- @param #OPERATION self
--- @param #string Name Name of the phase. Default "Phase-01" where the last number is a running number.
+-- @param #string Name (Optional) Name of the phase. Default "Phase-01" where the last number is a running number.
 -- @return #OPERATION.Branch Branch table object.
 function OPERATION:_CreateBranch(Name)
 
@@ -211504,7 +214747,7 @@ OPSGROUP.CargoStatus={
 
 --- OpsGroup version.
 -- @field #string version
-OPSGROUP.version="1.0.5"
+OPSGROUP.version="1.0.6"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -212006,7 +215249,7 @@ end
 
 --- Set verbosity level.
 -- @param #OPSGROUP self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #OPSGROUP self
 function OPSGROUP:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -212058,7 +215301,7 @@ end
 
 --- Set default cruise altitude.
 -- @param #OPSGROUP self
--- @param #number Altitude Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
+-- @param #number Altitude (Optional) Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultAltitude(Altitude)
   if Altitude then
@@ -212087,7 +215330,7 @@ end
 
 --- Set current altitude.
 -- @param #OPSGROUP self
--- @param #number Altitude Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
+-- @param #number Altitude (Optional) Altitude in feet. Default is 10,000 ft for airplanes and 1,500 feet for helicopters.
 -- @param #boolean Keep If `true` the group will maintain that speed on passing waypoints. If `nil` or `false` the group will return to the speed as defined by their route.
 -- @return #OPSGROUP self
 function OPSGROUP:SetAltitude(Altitude, Keep, RadarAlt)
@@ -212137,7 +215380,7 @@ end
 
 --- Set current speed.
 -- @param #OPSGROUP self
--- @param #number Speed Speed in knots. Default is 70% of max speed.
+-- @param #number Speed (Optional) Speed in knots. Default is 70% of max speed.
 -- @param #boolean Keep If `true` the group will maintain that speed on passing waypoints. If `nil` or `false` the group will return to the speed as defined by their route.
 -- @param #boolean AltCorrected If `true`, use altitude corrected indicated air speed.
 -- @return #OPSGROUP self
@@ -212166,7 +215409,7 @@ end
 --- Set detection on or off.
 -- If detection is on, detected targets of the group will be evaluated and FSM events triggered.
 -- @param #OPSGROUP self
--- @param #boolean Switch If `true`, detection is on. If `false` or `nil`, detection is off. Default is off.
+-- @param #boolean Switch (Optional) If `true`, detection is on. If `false` or `nil`, detection is off. Default is off.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDetection(Switch)
   self:T(self.lid..string.format("Detection is %s", tostring(Switch)))
@@ -212325,7 +215568,7 @@ end
 -- @param Core.Point#COORDINATE TargetCoord Coordinate of the target.
 -- @param #number WeaponBitType Weapon type.
 -- @param Core.Point#COORDINATE RefCoord Reference coordinate.
--- @param #table SurfaceTypes Valid surfaces types of the coordinate. Default any (nil).
+-- @param #table SurfaceTypes (Optional) Valid surfaces types of the coordinate. Default any (nil).
 -- @return Core.Point#COORDINATE Coordinate in weapon range
 function OPSGROUP:GetCoordinateInRange(TargetCoord, WeaponBitType, RefCoord, SurfaceTypes)
 
@@ -212401,10 +215644,10 @@ end
 
 --- Set LASER parameters.
 -- @param #OPSGROUP self
--- @param #number Code Laser code. Default 1688.
--- @param #boolean CheckLOS Check if lasing unit has line of sight to target coordinate. Default is `true`.
+-- @param #number Code (Optional) Laser code. Default 1688.
+-- @param #boolean CheckLOS (Optional) Check if lasing unit has line of sight to target coordinate. Default is `true`.
 -- @param #boolean IROff If true, then dont switch on the additional IR pointer.
--- @param #number UpdateTime Time interval in seconds the beam gets up for moving targets. Default every 0.5 sec.
+-- @param #number UpdateTime (Optional) Time interval in seconds the beam gets up for moving targets. Default every 0.5 sec.
 -- @return #OPSGROUP self
 function OPSGROUP:SetLaser(Code, CheckLOS, IROff, UpdateTime)
   self.spot.Code=Code or 1688
@@ -212463,10 +215706,10 @@ end
 
 --- Add a weapon range for ARTY auftrag.
 -- @param #OPSGROUP self
--- @param #number RangeMin Minimum range in nautical miles. Default 0 NM.
--- @param #number RangeMax Maximum range in nautical miles. Default 10 NM.
--- @param #number BitType Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
--- @param #function ConversionToMeters Function that converts input units of ranges to meters. Defaul `UTILS.NMToMeters`.
+-- @param #number RangeMin (Optional) Minimum range in nautical miles. Default 0 NM.
+-- @param #number RangeMax (Optional) Maximum range in nautical miles. Default 10 NM.
+-- @param #number BitType (Optional) Bit mask of weapon type for which the given min/max ranges apply. Default is `ENUMS.WeaponFlag.Auto`, i.e. for all weapon types.
+-- @param #function ConversionToMeters (Optional) Function that converts input units of ranges to meters. Defaul `UTILS.NMToMeters`.
 -- @return #OPSGROUP self
 function OPSGROUP:AddWeaponRange(RangeMin, RangeMax, BitType, ConversionToMeters)
 
@@ -212526,8 +215769,8 @@ end
 
 --- Get highest detected threat. Detection must be turned on. The threat level is a number between 0 and 10, where 0 is the lowest, e.g. unarmed units.
 -- @param #OPSGROUP self
--- @param #number ThreatLevelMin Only consider threats with level greater or equal to this number. Default 1 (so unarmed units wont be considered).
--- @param #number ThreatLevelMax Only consider threats with level smaller or queal to this number. Default 10.
+-- @param #number ThreatLevelMin (Optional) Only consider threats with level greater or equal to this number. Default 1 (so unarmed units wont be considered).
+-- @param #number ThreatLevelMax (Optional) Only consider threats with level smaller or queal to this number. Default 10.
 -- @return Wrapper.Unit#UNIT Highest threat unit detected by the group or `nil` if no threat is currently detected.
 -- @return #number Threat level.
 function OPSGROUP:GetThreat(ThreatLevelMin, ThreatLevelMax)
@@ -212583,10 +215826,10 @@ end
 
 --- Enable to automatically engage detected targets.
 -- @param #OPSGROUP self
--- @param #number RangeMax Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
--- @param #table TargetTypes Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
--- @param Core.Set#SET_ZONE EngageZoneSet Set of zones in which targets are engaged. Default is anywhere.
--- @param Core.Set#SET_ZONE NoEngageZoneSet Set of zones in which targets are *not* engaged. Default is nowhere.
+-- @param #number RangeMax (Optional) Max range in NM. Only detected targets within this radius from the group will be engaged. Default is 25 NM.
+-- @param #table TargetTypes (Optional) Types of target attributes that will be engaged. See [DCS enum attributes](https://wiki.hoggitworld.com/view/DCS_enum_attributes). Default "All".
+-- @param Core.Set#SET_ZONE EngageZoneSet (Optional) Set of zones in which targets are engaged. Default is anywhere.
+-- @param Core.Set#SET_ZONE NoEngageZoneSet (Optional) Set of zones in which targets are *not* engaged. Default is nowhere.
 -- @return #OPSGROUP self
 function OPSGROUP:SetEngageDetectedOn(RangeMax, TargetTypes, EngageZoneSet, NoEngageZoneSet)
 
@@ -212773,7 +216016,7 @@ end
 
 --- Get MOOSE UNIT object.
 -- @param #OPSGROUP self
--- @param #number UnitNumber Number of the unit in the group. Default first unit.
+-- @param #number UnitNumber (Optional) Number of the unit in the group. Default first unit.
 -- @return Wrapper.Unit#UNIT The MOOSE UNIT object.
 function OPSGROUP:GetUnit(UnitNumber)
 
@@ -212789,7 +216032,7 @@ end
 
 --- Get DCS GROUP object.
 -- @param #OPSGROUP self
--- @param #number UnitNumber Number of the unit in the group. Default first unit.
+-- @param #number UnitNumber (Optional) Number of the unit in the group. Default first unit.
 -- @return DCS#Unit DCS group object.
 function OPSGROUP:GetDCSUnit(UnitNumber)
 
@@ -213049,8 +216292,8 @@ end
 --- Despawn a unit of the group. A "Remove Unit" event is generated by default.
 -- @param #OPSGROUP self
 -- @param #string UnitName Name of the unit
--- @param #number Delay Delay in seconds before the group will be despawned. Default immediately.
--- @param #boolean NoEventRemoveUnit If true, no event "Remove Unit" is generated.
+-- @param #number Delay (Optional) Delay in seconds before the group will be despawned. Default immediately.
+-- @param #boolean NoEventRemoveUnit (Optional) If true, no event "Remove Unit" is generated.
 -- @return #OPSGROUP self
 function OPSGROUP:DespawnUnit(UnitName, Delay, NoEventRemoveUnit)
 
@@ -213086,8 +216329,8 @@ end
 --- Despawn an element/unit of the group.
 -- @param #OPSGROUP self
 -- @param #OPSGROUP.Element Element The element that will be despawned.
--- @param #number Delay Delay in seconds before the element will be despawned. Default immediately.
--- @param #boolean NoEventRemoveUnit If true, no event "Remove Unit" is generated.
+-- @param #number Delay (Optional) Delay in seconds before the element will be despawned. Default immediately.
+-- @param #boolean NoEventRemoveUnit (Optional) If true, no event "Remove Unit" is generated.
 -- @return #OPSGROUP self
 function OPSGROUP:DespawnElement(Element, Delay, NoEventRemoveUnit)
 
@@ -213123,7 +216366,7 @@ end
 -- If no `Remove Unit` event should be generated, the second optional parameter needs to be set to `true`.
 -- If this group belongs to an AIRWING, BRIGADE or FLEET, it will be added to the warehouse stock if the `NoEventRemoveUnit` parameter is `false` or `nil`.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the group will be despawned. Default immediately.
+-- @param #number Delay (Optional) Delay in seconds before the group will be despawned. Default immediately.
 -- @param #boolean NoEventRemoveUnit If `true`, **no** event "Remove Unit" is generated.
 -- @return #OPSGROUP self
 function OPSGROUP:Despawn(Delay, NoEventRemoveUnit)
@@ -213166,7 +216409,7 @@ end
 --- Return group back to the legion it belongs to.
 -- Group is despawned and added back to the stock.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the group will be despawned. Default immediately
+-- @param #number Delay (Optional) Delay in seconds before the group will be despawned. Default immediately
 -- @return #OPSGROUP self
 function OPSGROUP:ReturnToLegion(Delay)
 
@@ -213190,7 +216433,7 @@ end
 --- Destroy a unit of the group. A *Unit Lost* for aircraft or *Dead* event for ground/naval units is generated.
 -- @param #OPSGROUP self
 -- @param #string UnitName Name of the unit which should be destroyed.
--- @param #number Delay Delay in seconds before the group will be destroyed. Default immediately.
+-- @param #number Delay (Optional) Delay in seconds before the group will be destroyed. Default immediately.
 -- @return #OPSGROUP self
 function OPSGROUP:DestroyUnit(UnitName, Delay)
 
@@ -213222,7 +216465,7 @@ end
 
 --- Destroy group. The whole group is despawned and a *Unit Lost* for aircraft or *Dead* event for ground/naval units is generated for all current units.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the group will be destroyed. Default immediately.
+-- @param #number Delay (Optional) Delay in seconds before the group will be destroyed. Default immediately.
 -- @return #OPSGROUP self
 function OPSGROUP:Destroy(Delay)
 
@@ -213306,9 +216549,9 @@ end
 
 --- Self destruction of group. An explosion is created at the position of each element.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds. Default now.
+-- @param #number Delay (Optional) Delay in seconds. Default now.
 -- @param #number ExplosionPower (Optional) Explosion power in kg TNT. Default 100 kg.
--- @param #string ElementName Name of the element that should be destroyed. Default is all elements.
+-- @param #string ElementName (Optional) Name of the element that should be destroyed. Default is all elements.
 -- @return #OPSGROUP self
 function OPSGROUP:SelfDestruction(Delay, ExplosionPower, ElementName)
 
@@ -213338,13 +216581,13 @@ end
 --- Use SRS Simple-Text-To-Speech for transmissions.
 -- @param #OPSGROUP self
 -- @param #string PathToSRS Path to SRS directory.
--- @param #string Gender Gender: "male" or "female" (default).
--- @param #string Culture Culture, e.g. "en-GB" (default).
--- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
--- @param #number Port SRS port. Default 5002.
--- @param #string PathToGoogleKey Full path to the google credentials JSON file, e.g. `"C:\Users\myUsername\Downloads\key.json"`.
--- @param #string Label Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
--- @param #number Volume Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
+-- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
+-- @param #string Voice (Optional) Specific voice. Overrides `Gender` and `Culture`.
+-- @param #number Port (Optional) SRS port. Default 5002.
+-- @param #string PathToGoogleKey (Optional) Full path to the google credentials JSON file, e.g. `"C:\Users\myUsername\Downloads\key.json"`.
+-- @param #string Label (Optional) Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
+-- @param #number Volume (Optional) Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
 -- @return #OPSGROUP self
 function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume)
   self.useSRS=true
@@ -213369,8 +216612,8 @@ end
 -- @param #OPSGROUP self
 -- @param #string Text Text of transmission.
 -- @param #number Delay Delay in seconds before the transmission is started.
--- @param #boolean SayCallsign If `true`, the callsign is prepended to the given text. Default `false`.
--- @param #number Frequency Override sender frequency, helpful when you need multiple radios from the same sender. Default is the frequency set for the OpsGroup.
+-- @param #boolean SayCallsign (Optional) If `true`, the callsign is prepended to the given text. Default `false`.
+-- @param #number Frequency (Optional) Override sender frequency, helpful when you need multiple radios from the same sender. Default is the frequency set for the OpsGroup.
 -- @return #OPSGROUP self
 function OPSGROUP:RadioTransmission(Text, Delay, SayCallsign, Frequency)
 
@@ -213411,8 +216654,8 @@ end
 
 --- Set that this carrier is an all aspect loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderAllAspect(Length, Width)
   self.carrierLoader.type="front"
@@ -213423,8 +216666,8 @@ end
 
 --- Set that this carrier is a front loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderFront(Length, Width)
   self.carrierLoader.type="front"
@@ -213435,8 +216678,8 @@ end
 
 --- Set that this carrier is a back loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderBack(Length, Width)
   self.carrierLoader.type="back"
@@ -213447,8 +216690,8 @@ end
 
 --- Set that this carrier is a starboard (right side) loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderStarboard(Length, Width)
   self.carrierLoader.type="right"
@@ -213459,8 +216702,8 @@ end
 
 --- Set that this carrier is a port (left side) loader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierLoaderPort(Length, Width)
   self.carrierLoader.type="left"
@@ -213472,8 +216715,8 @@ end
 
 --- Set that this carrier is an all aspect unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderAllAspect(Length, Width)
   self.carrierUnloader.type="front"
@@ -213484,8 +216727,8 @@ end
 
 --- Set that this carrier is a front unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderFront(Length, Width)
   self.carrierUnloader.type="front"
@@ -213496,8 +216739,8 @@ end
 
 --- Set that this carrier is a back unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderBack(Length, Width)
   self.carrierUnloader.type="back"
@@ -213508,8 +216751,8 @@ end
 
 --- Set that this carrier is a starboard (right side) unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderStarboard(Length, Width)
   self.carrierUnloader.type="right"
@@ -213520,8 +216763,8 @@ end
 
 --- Set that this carrier is a port (left side) unloader.
 -- @param #OPSGROUP self
--- @param #number Length Length of loading zone in meters. Default 50 m.
--- @param #number Width Width of loading zone in meters. Default 20 m.
+-- @param #number Length (Optional) Length of loading zone in meters. Default 50 m.
+-- @param #number Width (Optional) Width of loading zone in meters. Default 20 m.
 -- @return #OPSGROUP self
 function OPSGROUP:SetCarrierUnloaderPort(Length, Width)
   self.carrierUnloader.type="left"
@@ -214066,7 +217309,7 @@ end
 
 --- Mark waypoints on F10 map.
 -- @param #OPSGROUP self
--- @param #number Duration Duration in seconds how long the waypoints are displayed before they are automatically removed. Default is that they are never removed.
+-- @param #number Duration (Optional) Duration in seconds how long the waypoints are displayed before they are automatically removed. Default is that they are never removed.
 -- @return #OPSGROUP self
 function OPSGROUP:MarkWaypoints(Duration)
 
@@ -214096,7 +217339,7 @@ end
 
 --- Remove waypoints markers on the F10 map.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before the markers are removed. Default is immediately.
+-- @param #number Delay (Optional) Delay in seconds before the markers are removed. Default is immediately.
 -- @return #OPSGROUP self
 function OPSGROUP:RemoveWaypointMarkers(Delay)
 
@@ -214186,8 +217429,8 @@ end
 
 --- Get next waypoint index.
 -- @param #OPSGROUP self
--- @param #boolean cyclic If `true`, return first waypoint if last waypoint was reached. Default is patrol ad infinitum value set.
--- @param #number i Waypoint index from which the next index is returned. Default is the last waypoint passed.
+-- @param #boolean cyclic (Optional) If `true`, return first waypoint if last waypoint was reached. Default is patrol ad infinitum value set.
+-- @param #number i (Optional) Waypoint index from which the next index is returned. Default is the last waypoint passed.
 -- @return #number Next waypoint index.
 function OPSGROUP:GetWaypointIndexNext(cyclic, i)
 
@@ -214222,7 +217465,7 @@ end
 
 --- Get waypoint index after waypoint with given ID. So if the waypoint has index 3 it will return 4.
 -- @param #OPSGROUP self
--- @param #number uid Unique ID of the waypoint. Default is new waypoint index after the last current one.
+-- @param #number uid (Optional) Unique ID of the waypoint. Default is new waypoint index after the last current one.
 -- @return #number Index after waypoint with given ID.
 function OPSGROUP:GetWaypointIndexAfterID(uid)
 
@@ -214359,7 +217602,7 @@ end
 
 --- Get distance to waypoint.
 -- @param #OPSGROUP self
--- @param #number indx Waypoint index. Default is the next waypoint.
+-- @param #number indx (Optional) Waypoint index. Default is the next waypoint.
 -- @return #number Distance in meters.
 function OPSGROUP:GetDistanceToWaypoint(indx)
   local dist=0
@@ -214384,7 +217627,7 @@ end
 
 --- Get time to waypoint based on current velocity.
 -- @param #OPSGROUP self
--- @param #number indx Waypoint index. Default is the next waypoint.
+-- @param #number indx (Optional) Waypoint index. Default is the next waypoint.
 -- @return #number Time in seconds. If velocity is 0
 function OPSGROUP:GetTimeToWaypoint(indx)
 
@@ -214837,10 +218080,10 @@ end
 --- Add a *scheduled* task.
 -- @param #OPSGROUP self
 -- @param #table task DCS task table structure.
--- @param #string clock Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
+-- @param #string clock (Optional) Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
 -- @param #string description Brief text describing the task, e.g. "Attack SAM".
--- @param #number prio Priority of the task.
--- @param #number duration Duration before task is cancelled in seconds counted after task started. Default never.
+-- @param #number prio (Optional) Priority of the task. Default is 50.
+-- @param #number duration (Optional) Duration before task is cancelled in seconds counted after task started. Default never.
 -- @return #OPSGROUP.Task The task structure.
 function OPSGROUP:AddTask(task, clock, description, prio, duration)
 
@@ -214859,10 +218102,10 @@ end
 --- Create a *scheduled* task.
 -- @param #OPSGROUP self
 -- @param #table task DCS task table structure.
--- @param #string clock Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
+-- @param #string clock (Optional) Mission time when task is executed. Default in 5 seconds. If argument passed as #number, it defines a relative delay in seconds.
 -- @param #string description Brief text describing the task, e.g. "Attack SAM".
--- @param #number prio Priority of the task.
--- @param #number duration Duration before task is cancelled in seconds counted after task started. Default never.
+-- @param #number prio (Optional) Priority of the task. Default is 50.
+-- @param #number duration (Optional) Duration before task is cancelled in seconds counted after task started. Default never.
 -- @return #OPSGROUP.Task The task structure.
 function OPSGROUP:NewTaskScheduled(task, clock, description, prio, duration)
 
@@ -214899,10 +218142,10 @@ end
 --- Add a *waypoint* task.
 -- @param #OPSGROUP self
 -- @param #table task DCS task table structure.
--- @param #OPSGROUP.Waypoint Waypoint where the task is executed. Default is the at *next* waypoint.
+-- @param #OPSGROUP.Waypoint Waypoint (Optional) where the task is executed. Default is the at *next* waypoint.
 -- @param #string description Brief text describing the task, e.g. "Attack SAM".
--- @param #number prio Priority of the task. Number between 1 and 100. Default is 50.
--- @param #number duration Duration before task is cancelled in seconds counted after task started. Default never.
+-- @param #number prio (Optional) Priority of the task. Number between 1 and 100. Default is 50.
+-- @param #number duration(Optional)  Duration before task is cancelled in seconds counted after task started. Default never.
 -- @return #OPSGROUP.Task The task structure.
 function OPSGROUP:AddTaskWaypoint(task, Waypoint, description, prio, duration)
 
@@ -215757,7 +219000,7 @@ function OPSGROUP:_UpdateTask(Task, Mission)
         local tvec2=UTILS.Vec2Translate(vec2, distance, heading)
         
         -- Debug info.
-        self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%dÂ°, heading=%03dÂ°, distance=%d m", tostring(param.shots), Altitude, Alpha, heading, distance))
+        self:T(self.lid..string.format("Barrage: Shots=%s, Altitude=%d m, Angle=%d°, heading=%03d°, distance=%d m", tostring(param.shots), Altitude, Alpha, heading, distance))
         
         -- Set fire at point task.
         DCSTask=CONTROLLABLE.TaskFireAtPoint(nil, tvec2, param.radius, param.shots, param.weaponType, Altitude)
@@ -215832,8 +219075,8 @@ end
 -- @param #OPSGROUP self
 -- @param DCS#Task DCSTask The DCS task.
 -- @param Ops.OpsGroup#OPSGROUP.Task Task
--- @param #boolean SetTask Set task instead of pushing it.
--- @param #number Delay Delay in seconds. Default nil.
+-- @param #boolean SetTask (Optional) Set task instead of pushing it. Default is to push it.
+-- @param #number Delay (Optional) Delay in seconds. Default nil.
 function OPSGROUP:_SandwitchDCSTask(DCSTask, Task, SetTask, Delay)
 
   if Delay and Delay>0 then
@@ -215886,7 +219129,7 @@ end
 -- @param #string From From state.
 -- @param #string Event Event.
 -- @param #string To To state.
--- @param #OPSGROUP.Task Task The task to cancel. Default is the current task (if any).
+-- @param #OPSGROUP.Task Task (Optional) The task to cancel. Default is the current task (if any).
 function OPSGROUP:onafterTaskCancel(From, Event, To, Task)
 
   -- Get current task.
@@ -217144,63 +220387,63 @@ function OPSGROUP:RouteToMission(mission, delay)
 
       end
 	  
-	elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
+    elseif mission.type==AUFTRAG.Type.FREIGHTTRANSPORT then
 	
-		---
-		-- FREIGHTTRANSPORT
-		---
-	
-		local destination=mission.DCStask.params.destination
-		local cargo=mission.DCStask.params.cargo
-		
-		-- Set the waypoint coordinate directly above the airbase.
-		-- The only way to ensure the cargo is delivered there, because when the task is executed, the cargo is delivered to the closest airbase.
-		-- Hopefully, ED will change the behaviour of this task but at the moment, it is what it is.
-		waypointcoord=destination:GetCoordinate()
-				
-		-- Get additional parameters
-		mission.DCStask.params.destination=destination --Wrapper.Airbase#AIRBASE
-		mission.DCStask.params.cargo=cargo --Core.Set#SET_STATIC
-		
-		-- Get transport unit
-		local unit=self.group:GetFirstUnit()
-		local unitIdTransport=unit:GetID()
-		local vec2=unit:GetVec2()
-		
-		-- Create tasks to load/transport statics cargos
-		local tasks={}		
-		for StaticName, StaticObject in pairs(cargo:GetSet()) do
-      local static=StaticObject --Wrapper.Static#STATIC
+  		---
+  		-- FREIGHTTRANSPORT
+  		---
+  	
+  		local destination=mission.DCStask.params.destination
+  		local cargo=mission.DCStask.params.cargo
   		
-  		-- Task to transport cargo.
-  		local TaskCargoTransportation={
-        id = "CargoTransportationPlane",
-        params = {
-          x=vec2.x,
-          y=vec2.y,
-          unitIdTransport=unitIdTransport,
-          groupId=static:GetID(),
-          unitId=static:GetID(),
+  		-- Set the waypoint coordinate directly above the airbase.
+  		-- The only way to ensure the cargo is delivered there, because when the task is executed, the cargo is delivered to the closest airbase.
+  		-- Hopefully, ED will change the behaviour of this task but at the moment, it is what it is.
+  		waypointcoord=destination:GetCoordinate()
+  				
+  		-- Get additional parameters
+  		mission.DCStask.params.destination=destination --Wrapper.Airbase#AIRBASE
+  		mission.DCStask.params.cargo=cargo --Core.Set#SET_STATIC
+  		
+  		-- Get transport unit
+  		local unit=self.group:GetFirstUnit()
+  		local unitIdTransport=unit:GetID()
+  		local vec2=unit:GetVec2()
+  		
+  		-- Create tasks to load/transport statics cargos
+  		local tasks={}		
+  		for StaticName, StaticObject in pairs(cargo:GetSet()) do
+        local static=StaticObject --Wrapper.Static#STATIC
+    		
+    		-- Task to transport cargo.
+    		local TaskCargoTransportation={
+          id = "CargoTransportationPlane",
+          params = {
+            x=vec2.x,
+            y=vec2.y,
+            unitIdTransport=unitIdTransport,
+            groupId=static:GetID(),
+            unitId=static:GetID(),
+          }
         }
-      }
-      
-      table.insert(tasks, TaskCargoTransportation)
-		end
-		
-		-- If we have multiple tasks, we create a combo task
-		local TaskCargo=nil
-		if #tasks==1 then
-		  TaskCargo=tasks[1]
-		else
-		  TaskCargo=CONTROLLABLE.TaskCombo(nil, tasks)
-		end
-		
-		-- We set the task to load the cargo into the aircraft.
-		-- We must be careful when calling updateroute because there the task is overwritten.
-		-- We also clear present "UpdateRoute" FSM events
-		self:_ClearFSMEvent( "UpdateRoute" )
-		delayGo=-30
-		self.group:SetTask(TaskCargo)
+        
+        table.insert(tasks, TaskCargoTransportation)
+  		end
+  		
+  		-- If we have multiple tasks, we create a combo task
+  		local TaskCargo=nil
+  		if #tasks==1 then
+  		  TaskCargo=tasks[1]
+  		else
+  		  TaskCargo=CONTROLLABLE.TaskCombo(nil, tasks)
+  		end
+  		
+  		-- We set the task to load the cargo into the aircraft.
+  		-- We must be careful when calling updateroute because there the task is overwritten.
+  		-- We also clear present "UpdateRoute" FSM events
+  		self:_ClearFSMEvent( "UpdateRoute" )
+  		delayGo=-50  --30 sec was not enough for CH-47 to load more than one cargo item
+  		self.group:SetTask(TaskCargo)
 				
     elseif mission.type==AUFTRAG.Type.ARTY then
 
@@ -218762,8 +222005,8 @@ end
 --- Teleport the group to a different location.
 -- @param #OPSGROUP self
 -- @param Core.Point#COORDINATE Coordinate Coordinate where the group is teleported to.
--- @param #number Delay Delay in seconds before respawn happens. Default 0.
--- @param #boolean NoPauseMission If `true`, dont pause a running mission.
+-- @param #number Delay (Optional) Delay in seconds before respawn happens. Default 0.
+-- @param #boolean NoPauseMission (Optional) If `true`, dont pause a running mission.
 -- @return #OPSGROUP self
 function OPSGROUP:Teleport(Coordinate, Delay, NoPauseMission)
     
@@ -218851,9 +222094,9 @@ end
 
 --- Respawn the group.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before respawn happens. Default 0.
--- @param DCS#Template Template (optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
--- @param #boolean Reset Reset waypoints and reinit group if `true`.
+-- @param #number Delay (Optional) Delay in seconds before respawn happens. Default 0.
+-- @param DCS#Template Template (Optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
+-- @param #boolean Reset (Optional) Reset waypoints and reinit group if `true`.
 -- @return #OPSGROUP self
 function OPSGROUP:_Respawn(Delay, Template, Reset)
 
@@ -218946,8 +222189,8 @@ end
 
 --- Spawn group from a given template.
 -- @param #OPSGROUP self
--- @param #number Delay Delay in seconds before respawn happens. Default 0.
--- @param DCS#Template Template (optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
+-- @param #number Delay (Optional) Delay in seconds before respawn happens. Default 0.
+-- @param DCS#Template Template (Optional) The template of the Group retrieved with GROUP:GetTemplate(). If the template is not provided, the template will be retrieved of the group itself.
 -- @return #OPSGROUP self
 function OPSGROUP:_Spawn(Delay, Template)
   if Delay and Delay>0 then
@@ -219950,8 +223193,8 @@ end
 
 --- Get total weight of the group including cargo. Optionally, the total weight of a specific unit can be requested.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Total weight in kg.
 function OPSGROUP:GetWeightTotal(UnitName, IncludeReserved)
 
@@ -219986,8 +223229,8 @@ end
 
 --- Get free cargo bay weight.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Free cargo bay in kg.
 function OPSGROUP:GetFreeCargobay(UnitName, IncludeReserved)
 
@@ -220008,8 +223251,8 @@ end
 
 --- Get relative free cargo bay in percent.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Free cargo bay in percent.
 function OPSGROUP:GetFreeCargobayRelative(UnitName, IncludeReserved)
 
@@ -220024,8 +223267,8 @@ end
 
 --- Get relative used (loaded) cargo bay in percent.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Used cargo bay in percent.
 function OPSGROUP:GetUsedCargobayRelative(UnitName, IncludeReserved)
   local free=self:GetFreeCargobayRelative(UnitName, IncludeReserved)
@@ -220065,8 +223308,8 @@ end
 
 --- Get weight of the internal cargo the group is carriing right now.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
--- @param #boolean IncludeReserved If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
+-- @param #boolean IncludeReserved (Optional) If `false`, cargo weight that is only *reserved* is **not** counted. By default (`true` or `nil`), the reserved cargo is included.
 -- @return #number Cargo weight in kg.
 function OPSGROUP:GetWeightCargo(UnitName, IncludeReserved)
 
@@ -220115,7 +223358,7 @@ end
 
 --- Get max weight of the internal cargo the group can carry. Optionally, the max cargo weight of a specific unit can be requested.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
 -- @return #number Max cargo weight in kg. This does **not** include any cargo loaded or reserved currently.
 function OPSGROUP:GetWeightCargoMax(UnitName)
 
@@ -220153,7 +223396,7 @@ end
 
 --- Add weight to the internal cargo of an element of the group.
 -- @param #OPSGROUP self
--- @param #string UnitName Name of the unit. Default is of the whole group.
+-- @param #string UnitName (Optional) Name of the unit. Default is of the whole group.
 -- @param #number Weight Cargo weight to be added in kg.
 function OPSGROUP:AddWeightCargo(UnitName, Weight)
 
@@ -222519,7 +225762,7 @@ end
 --- Initialize Mission Editor waypoints.
 -- @param #OPSGROUP self
 -- @param #OPSGROUP.Waypoint waypoint Waypoint data.
--- @param #number wpnumber Waypoint index/number. Default is as last waypoint.
+-- @param #number wpnumber (Optional) Waypoint index/number. Default is as last waypoint.
 function OPSGROUP:_AddWaypoint(waypoint, wpnumber)
 
   -- Index.
@@ -222989,7 +226232,7 @@ end
 
 --- Set the default ROE for the group. This is the ROE state gets when the group is spawned or to which it defaults back after a mission.
 -- @param #OPSGROUP self
--- @param #number roe ROE of group. Default is `ENUMS.ROE.ReturnFire`.
+-- @param #number roe (Optional) ROE of group. Default is `ENUMS.ROE.ReturnFire`.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultROE(roe)
   self.optionDefault.ROE=roe or ENUMS.ROE.ReturnFire
@@ -222998,7 +226241,7 @@ end
 
 --- Set current ROE for the group.
 -- @param #OPSGROUP self
--- @param #string roe ROE of group. Default is value set in `SetDefaultROE` (usually `ENUMS.ROE.ReturnFire`).
+-- @param #string roe (Optional) ROE of group. Default is value set in `SetDefaultROE` (usually `ENUMS.ROE.ReturnFire`).
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchROE(roe)
 
@@ -223051,7 +226294,7 @@ end
 
 --- Set the default ROT for the group. This is the ROT state gets when the group is spawned or to which it defaults back after a mission.
 -- @param #OPSGROUP self
--- @param #number rot ROT of group. Default is `ENUMS.ROT.PassiveDefense`.
+-- @param #number rot (Optional) ROT of group. Default is `ENUMS.ROT.PassiveDefense`.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultROT(rot)
   self.optionDefault.ROT=rot or ENUMS.ROT.PassiveDefense
@@ -223060,7 +226303,7 @@ end
 
 --- Set ROT for the group.
 -- @param #OPSGROUP self
--- @param #string rot ROT of group. Default is value set in `:SetDefaultROT` (usually `ENUMS.ROT.PassiveDefense`).
+-- @param #string rot (Optional) ROT of group. Default is value set in `:SetDefaultROT` (usually `ENUMS.ROT.PassiveDefense`).
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchROT(rot)
 
@@ -223100,7 +226343,7 @@ end
 
 --- Set the default Alarm State for the group. This is the state gets when the group is spawned or to which it defaults back after a mission.
 -- @param #OPSGROUP self
--- @param #number alarmstate Alarm state of group. Default is `AI.Option.Ground.val.ALARM_STATE.AUTO` (0).
+-- @param #number alarmstate (Optional) Alarm state of group. Default is `AI.Option.Ground.val.ALARM_STATE.AUTO` (0).
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultAlarmstate(alarmstate)
   self.optionDefault.Alarm=alarmstate or 0
@@ -223114,7 +226357,7 @@ end
 -- * 2 = "Red"
 --
 -- @param #OPSGROUP self
--- @param #number alarmstate Alarm state of group. Default is 0="Auto".
+-- @param #number alarmstate (Optional) Alarm state of group. Default is 0="Auto".
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchAlarmstate(alarmstate)
 
@@ -223161,7 +226404,7 @@ end
 
 --- Set the default EPLRS for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
+-- @param #boolean OnOffSwitch (Optional) If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultEPLRS(OnOffSwitch)
 
@@ -223216,7 +226459,7 @@ end
 
 --- Set the default emission state for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
+-- @param #boolean OnOffSwitch (Optional) If `true`, EPLRS is on by default. If `false` default EPLRS setting is off. If `nil`, default is on if group has EPLRS and off if it does not have a datalink.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultEmission(OnOffSwitch)
 
@@ -223271,7 +226514,7 @@ end
 
 --- Set the default invisible for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, group is ivisible by default.
+-- @param #boolean OnOffSwitch (Optional) If `true`, group is ivisible by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultInvisible(OnOffSwitch)
 
@@ -223320,7 +226563,7 @@ end
 
 --- Set the default immortal for the group.
 -- @param #OPSGROUP self
--- @param #boolean OnOffSwitch If `true`, group is immortal by default.
+-- @param #boolean OnOffSwitch (Optional) If `true`, group is immortal by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultImmortal(OnOffSwitch)
 
@@ -223372,11 +226615,11 @@ end
 
 --- Set default TACAN parameters.
 -- @param #OPSGROUP self
--- @param #number Channel TACAN channel. Default is 74.
--- @param #string Morse Morse code. Default "XXX".
+-- @param #number Channel (Optional) TACAN channel. Default is 74.
+-- @param #string Morse(Optional)  Morse code. Default "XXX".
 -- @param #string UnitName Name of the unit acting as beacon.
--- @param #string Band TACAN mode. Default is "X" for ground and "Y" for airborne units.
--- @param #boolean OffSwitch If true, TACAN is off by default.
+-- @param #string Band (Optional) TACAN mode. Default is "X" for ground and "Y" for airborne units.
+-- @param #boolean OffSwitch (Optional) If true, TACAN is off by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultTACAN(Channel, Morse, UnitName, Band, OffSwitch)
 
@@ -223405,7 +226648,7 @@ end
 
 --- Activate/switch TACAN beacon settings.
 -- @param #OPSGROUP self
--- @param #OPSGROUP.Beacon Tacan TACAN data table. Default is the default TACAN settings.
+-- @param #OPSGROUP.Beacon Tacan (Optional) TACAN data table. Default is the default TACAN settings.
 -- @return #OPSGROUP self
 function OPSGROUP:_SwitchTACAN(Tacan)
 
@@ -223428,9 +226671,9 @@ end
 --- Activate/switch TACAN beacon settings.
 -- @param #OPSGROUP self
 -- @param #number Channel TACAN Channel.
--- @param #string Morse TACAN morse code. Default is the value set in @{#OPSGROUP.SetDefaultTACAN} or if not set "XXX".
--- @param #string UnitName Name of the unit in the group which should activate the TACAN beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
--- @param #string Band TACAN channel mode "X" or "Y". Default is "Y" for aircraft and "X" for ground and naval groups.
+-- @param #string Morse (Optional) TACAN morse code. Default is the value set in @{#OPSGROUP.SetDefaultTACAN} or if not set "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group which should activate the TACAN beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
+-- @param #string Band (Optional) TACAN channel mode "X" or "Y". Default is "Y" for aircraft and "X" for ground and naval groups.
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchTACAN(Channel, Morse, UnitName, Band)
 
@@ -223537,10 +226780,10 @@ end
 
 --- Set default ICLS parameters.
 -- @param #OPSGROUP self
--- @param #number Channel ICLS channel. Default is 1.
--- @param #string Morse Morse code. Default "XXX".
+-- @param #number Channel (Optional) ICLS channel. Default is 1.
+-- @param #string Morse (Optional) Morse code. Default "XXX".
 -- @param #string UnitName Name of the unit acting as beacon.
--- @param #boolean OffSwitch If true, TACAN is off by default.
+-- @param #boolean OffSwitch (Optional) If true, TACAN is off by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultICLS(Channel, Morse, UnitName, OffSwitch)
 
@@ -223583,9 +226826,9 @@ end
 
 --- Activate/switch ICLS beacon settings.
 -- @param #OPSGROUP self
--- @param #number Channel ICLS Channel. Default is what is set in `SetDefaultICLS()` so usually channel 1.
--- @param #string Morse ICLS morse code. Default is what is set in `SetDefaultICLS()` so usually "XXX".
--- @param #string UnitName Name of the unit in the group which should activate the ICLS beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
+-- @param #number Channel (Optional) ICLS Channel. Default is what is set in `SetDefaultICLS()` so usually channel 1.
+-- @param #string Morse (Optional) ICLS morse code. Default is what is set in `SetDefaultICLS()` so usually "XXX".
+-- @param #string UnitName (Optional) Name of the unit in the group which should activate the ICLS beacon. Can also be given as #number to specify the unit number. Default is the first unit of the group.
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchICLS(Channel, Morse, UnitName)
 
@@ -223659,9 +226902,9 @@ end
 
 --- Set default Radio frequency and modulation.
 -- @param #OPSGROUP self
--- @param #number Frequency Radio frequency in MHz. Default 251 MHz.
--- @param #number Modulation Radio modulation. Default `radio.modulation.AM`.
--- @param #boolean OffSwitch If true, radio is OFF by default.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 251 MHz.
+-- @param #number Modulation (Optional) Radio modulation. Default `radio.modulation.AM`.
+-- @param #boolean OffSwitch (Optional) If true, radio is OFF by default.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultRadio(Frequency, Modulation, OffSwitch)
 
@@ -223688,8 +226931,8 @@ end
 
 --- Turn radio on or switch frequency/modulation.
 -- @param #OPSGROUP self
--- @param #number Frequency Radio frequency in MHz. Default is value set in `SetDefaultRadio` (usually 251 MHz).
--- @param #number Modulation Radio modulation. Default is value set in `SetDefaultRadio` (usually `radio.modulation.AM`).
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default is value set in `SetDefaultRadio` (usually 251 MHz).
+-- @param #number Modulation (Optional) Radio modulation. Default is value set in `SetDefaultRadio` (usually `radio.modulation.AM`).
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchRadio(Frequency, Modulation)
 
@@ -223768,7 +227011,7 @@ end
 
 --- Switch to a specific formation.
 -- @param #OPSGROUP self
--- @param #number Formation New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
+-- @param #number Formation (Optional) New formation the group will fly in. Default is the setting of `SetDefaultFormation()`.
 -- @return #OPSGROUP self
 function OPSGROUP:SwitchFormation(Formation)
 
@@ -223805,7 +227048,7 @@ end
 --- Set default callsign.
 -- @param #OPSGROUP self
 -- @param #number CallsignName Callsign name.
--- @param #number CallsignNumber Callsign number. Default 1.
+-- @param #number CallsignNumber (Optional) Callsign number. Default 1.
 -- @return #OPSGROUP self
 function OPSGROUP:SetDefaultCallsign(CallsignName, CallsignNumber)
 
@@ -224530,7 +227773,7 @@ end
 --- Get the number of shells a unit or group currently has. For a group the ammo count of all units is summed up.
 -- @param #OPSGROUP self
 -- @param Wrapper.Unit#UNIT unit The unit object.
--- @param #boolean display Display ammo table as message to all. Default false.
+-- @param #boolean display (Optional) Display ammo table as message to all. Default false.
 -- @return #OPSGROUP.Ammo Ammo data.
 function OPSGROUP:GetAmmoUnit(unit, display)
 
@@ -224965,7 +228208,7 @@ end
 
 --- Set the template of the group.
 -- @param #OPSGROUP self
--- @param #table Template Template to set. Default is from the GROUP.
+-- @param #table Template (Optional) Template to set. Default is from the GROUP.
 -- @return #OPSGROUP self
 function OPSGROUP:_SetTemplate(Template)
 
@@ -225002,8 +228245,8 @@ end
 
 --- Clear waypoints.
 -- @param #OPSGROUP self
--- @param #number IndexMin Clear waypoints up to this min WP index. Default 1.
--- @param #number IndexMax Clear waypoints up to this max WP index. Default `#self.waypoints`.
+-- @param #number IndexMin (Optional) Clear waypoints up to this min WP index. Default 1.
+-- @param #number IndexMax (Optional) Clear waypoints up to this max WP index. Default `#self.waypoints`.
 function OPSGROUP:ClearWaypoints(IndexMin, IndexMax)
 
   IndexMin=IndexMin or 1
@@ -225678,7 +228921,7 @@ end
 -- @param #OPSTRANSPORT self
 -- @param Core.Set#SET_GROUP GroupSet Set of groups to be transported. Can also be passed as a single GROUP or OPSGROUP object.
 -- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport zone combo.
--- @param #boolean DisembarkActivation If `true`, cargo group is activated when disembarked. If `false`, cargo groups are late activated when disembarked. Default `nil` (usually activated).
+-- @param #boolean DisembarkActivation (Optional) If `true`, cargo group is activated when disembarked. If `false`, cargo groups are late activated when disembarked. Default `nil` (usually activated).
 -- @param Core.Zone#ZONE DisembarkZone Zone where the groups disembark to.
 -- @param Core.Set#SET_OPSGROUP DisembarkCarriers Carrier groups where the cargo directly disembarks to.
 -- @return #OPSTRANSPORT self
@@ -225756,8 +228999,8 @@ end
 -- @param Wrapper.Storage#STORAGE StorageTo Storage warehouse to which the cargo is delivered.
 -- @param #string CargoType Type of cargo, *e.g.* `"weapons.bombs.Mk_84"` or liquid type as #number.
 -- @param #number CargoAmount Amount of cargo. Liquids in kg.
--- @param #number CargoWeight Weight of a single cargo item in kg. Default 1 kg.
--- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport zone combo if other than default.
+-- @param #number CargoWeight (Optional) Weight of a single cargo item in kg. Default 1 kg.
+-- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo (Optional) Transport zone combo if other than default.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:AddCargoStorage(StorageFrom, StorageTo, CargoType, CargoAmount, CargoWeight, TransportZoneCombo)
 
@@ -226164,8 +229407,8 @@ end
 
 --- Set number of required carrier groups for an OPSTRANSPORT assignment. Only used if transport is assigned at **LEGION** or higher level.
 -- @param #OPSTRANSPORT self
--- @param #number NcarriersMin Number of carriers *at least* required. Default 1.
--- @param #number NcarriersMax Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
+-- @param #number NcarriersMin (Optional) Number of carriers *at least* required. Default 1.
+-- @param #number NcarriersMax (Optional) Number of carriers *at most* used for transportation. Default is same as `NcarriersMin`.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetRequiredCarriers(NcarriersMin, NcarriersMax)
 
@@ -226370,7 +229613,7 @@ end
 
 --- Set transport start and stop time.
 -- @param #OPSTRANSPORT self
--- @param #string ClockStart Time the transport is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
+-- @param #string ClockStart (Optional) Time the transport is started, e.g. "05:00" for 5 am. If specified as a #number, it will be relative (in seconds) to the current mission time. Default is 5 seconds after mission was added.
 -- @param #string ClockStop (Optional) Time the transport is stopped, e.g. "13:00" for 1 pm. If mission could not be started at that time, it will be removed from the queue. If specified as a #number it will be relative (in seconds) to the current mission time.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetTime(ClockStart, ClockStop)
@@ -226406,9 +229649,9 @@ end
 
 --- Set mission priority and (optional) urgency. Urgent missions can cancel other running missions. 
 -- @param #OPSTRANSPORT self
--- @param #number Prio Priority 1=high, 100=low. Default 50.
--- @param #number Importance Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
--- @param #boolean Urgent If *true*, another running mission might be cancelled if it has a lower priority.
+-- @param #number Prio (Optional) Priority 1=high, 100=low. Default 50.
+-- @param #number Importance (Optional) Number 1-10. If missions with lower value are in the queue, these have to be finished first. Default is `nil`.
+-- @param #boolean Urgent (Optional) If *true*, another running mission might be cancelled if it has a lower priority.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetPriority(Prio, Importance, Urgent)
   self.prio=Prio or 50
@@ -226419,7 +229662,7 @@ end
 
 --- Set verbosity. 
 -- @param #OPSTRANSPORT self
--- @param #number Verbosity Be more verbose. Default 0
+-- @param #number Verbosity (Optional) Be more verbose. Default 0
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:SetVerbosity(Verbosity)
   self.verbose=Verbosity or 0
@@ -226457,8 +229700,8 @@ end
 -- path. 
 -- @param #OPSTRANSPORT self
 -- @param Wrapper.Group#GROUP PathGroup A (late activated) GROUP defining a transport path by their waypoints.
--- @param #number Radius Randomization radius in meters. Default 0 m.
--- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport Zone combo.
+-- @param #number Radius (Optional) Randomization radius in meters. Default 0 m.
+-- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo (Optional) Transport Zone combo.
 -- @return #OPSTRANSPORT self
 function OPSTRANSPORT:AddPathTransport(PathGroup, Reversed, Radius, TransportZoneCombo)
 
@@ -226843,7 +230086,7 @@ end
 
 --- Check if all cargo was delivered (or is dead).
 -- @param #OPSTRANSPORT self
--- @param #number Nmin Number of groups that must be actually delivered (and are not dead). Default 0.
+-- @param #number Nmin (Optional) Number of groups that must be actually delivered (and are not dead). Default 0.
 -- @return #boolean If true, all possible cargo was delivered. 
 function OPSTRANSPORT:IsDelivered(Nmin)
   local is=self:is(OPSTRANSPORT.Status.DELIVERED)
@@ -227410,7 +230653,7 @@ end
 -- @param Wrapper.Storage#STORAGE StorageTo Storage to.
 -- @param #string CargoType Type of cargo.
 -- @param #number CargoAmount Total amount of cargo that should be transported. Liquids in kg.
--- @param #number CargoWeight Weight of a single cargo item in kg. Default 1 kg.
+-- @param #number CargoWeight (Optional) Weight of a single cargo item in kg. Default 1 kg.
 -- @param #OPSTRANSPORT.TransportZoneCombo TransportZoneCombo Transport zone combo.
 -- @return Ops.OpsGroup#OPSGROUP.CargoGroup Cargo group data.
 function OPSTRANSPORT:_CreateCargoStorage(StorageFrom, StorageTo, CargoType, CargoAmount, CargoWeight, TransportZoneCombo)
@@ -227781,7 +231024,7 @@ OPSZONE.version="0.6.2"
 --- Create a new OPSZONE class object.
 -- @param #OPSZONE self
 -- @param Core.Zone#ZONE Zone The zone. Can be passed as ZONE\_RADIUS, ZONE_POLYGON, ZONE\_AIRBASE or simply as the name of the airbase.
--- @param #number CoalitionOwner Initial owner of the coaliton. Default `coalition.side.NEUTRAL`.
+-- @param #number CoalitionOwner (Optional) Initial owner of the coaliton. Default `coalition.side.NEUTRAL`.
 -- @return #OPSZONE self
 -- @usage
 -- myopszone = OPSZONE:New(ZONE:FindByName("OpsZoneOne"), coalition.side.RED) -- base zone from the mission editor
@@ -228045,7 +231288,7 @@ end
 
 --- Set verbosity level.
 -- @param #OPSZONE self
--- @param #number VerbosityLevel Level of output (higher=more). Default 0.
+-- @param #number VerbosityLevel (Optional) Level of output (higher=more). Default 0.
 -- @return #OPSZONE self
 function OPSZONE:SetVerbosity(VerbosityLevel)
   self.verbose=VerbosityLevel or 0
@@ -228060,7 +231303,7 @@ end
 -- Which units can capture zones can be further refined by `:SetUnitCategories()`.
 -- 
 -- @param #OPSZONE self
--- @param #table Categories Object categories. Default is `{Object.Category.UNIT, Object.Category.STATIC}`.
+-- @param #table Categories (Optional) Object categories. Default is `{Object.Category.UNIT, Object.Category.STATIC}`.
 -- @return #OPSZONE self
 function OPSZONE:SetObjectCategories(Categories)
 
@@ -228077,7 +231320,7 @@ end
 
 --- Set categories of units that can capture or hold the zone. See [DCS Class Unit](https://wiki.hoggitworld.com/view/DCS_Class_Unit).
 -- @param #OPSZONE self
--- @param #table Categories Table of unit categories. Default `{Unit.Category.GROUND_UNIT}`.
+-- @param #table Categories (Optional) Table of unit categories. Default `{Unit.Category.GROUND_UNIT}`.
 -- @return #OPSZONE self
 function OPSZONE:SetUnitCategories(Categories)
 
@@ -228095,7 +231338,7 @@ end
 --- Set threat level threshold that the offending units must have to capture a zone.
 -- The reason why you might want to set this is that unarmed units (*e.g.* fuel trucks) should not be able to capture a zone as they do not pose a threat.
 -- @param #OPSZONE self
--- @param #number Threatlevel Threat level threshold. Default 0.
+-- @param #number Threatlevel (Optional) Threat level threshold. Default 0.
 -- @return #OPSZONE self
 function OPSZONE:SetCaptureThreatlevel(Threatlevel)
 
@@ -228106,7 +231349,7 @@ end
 
 --- Set how many units must be present in a zone to capture it. By default, one unit is enough.
 -- @param #OPSZONE self
--- @param #number Nunits Number of units. Default 1.
+-- @param #number Nunits (Optional) Number of units. Default 1.
 -- @return #OPSZONE self
 function OPSZONE:SetCaptureNunits(Nunits)
 
@@ -228120,7 +231363,7 @@ end
 
 --- Set time how long an attacking coalition must have troops inside a zone before it captures the zone.
 -- @param #OPSZONE self
--- @param #number Tcapture Time in seconds. Default 0.
+-- @param #number Tcapture (Optional) Time in seconds. Default 0.
 -- @return #OPSZONE self
 function OPSZONE:SetCaptureTime(Tcapture)
 
@@ -229383,7 +232626,7 @@ PLATOON.version="0.1.0"
 --- Create a new PLATOON object and start the FSM.
 -- @param #PLATOON self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this platoon. Default 3.
+-- @param #number Ngroups (Optional) Number of asset groups of this platoon. Default 3.
 -- @param #string PlatoonName Name of the platoon. Must be **unique**!
 -- @return #PLATOON self
 function PLATOON:New(TemplateGroupName, Ngroups, PlatoonName)
@@ -229618,9 +232861,9 @@ PLAYERTASK.version="0.1.31"
 -- @param #PLAYERTASK self
 -- @param Ops.Auftrag#AUFTRAG.Type Type Type of this task
 -- @param Ops.Target#TARGET Target Target for this task
--- @param #boolean Repeat Repeat this task if true (default = false)
--- @param #number Times Repeat on failure this many times if Repeat is true (default = 1)
--- @param #string TTSType TTS friendly task type name
+-- @param #boolean Repeat (Optional) Repeat this task if true (default = false)
+-- @param #number Times (Optional) Repeat on failure this many times if Repeat is true (default = 1)
+-- @param #string TTSType (Optional) TTS friendly task type name. Defaultsto "close air support".
 -- @return #PLAYERTASK self
 function PLAYERTASK:New(Type, Target, Repeat, Times, TTSType)
 
@@ -229775,8 +233018,8 @@ end
 --- Constructor that automatically determines the task type based on the target.
 -- @param #PLAYERTASK self
 -- @param Ops.Target#TARGET Target Target for this task
--- @param #boolean Repeat Repeat this task if true (default = false)
--- @param #number Times Repeat on failure this many times if Repeat is true (default = 1)
+-- @param #boolean Repeat (Optional) Repeat this task if true (default = false)
+-- @param #number Times (Optional) Repeat on failure this many times if Repeat is true (default = 1)
 -- @param #string TTSType TTS friendly task type name
 -- @return #PLAYERTASK self
 function PLAYERTASK:NewFromTarget(Target, Repeat, Times, TTSType)
@@ -229989,7 +233232,7 @@ end
 
 --- [USER] Set if a task can have a smoke marker.
 -- @param #PLAYERTASK self
--- @param #boolean OnOff If true (default) it can be smoke, false if not.
+-- @param #boolean OnOff (Optional) If true (default) it can be smoke, false if not.
 -- @return #PLAYERTASK self
 function PLAYERTASK:SetCanSmoke(OnOff)
   self:T(self.lid.."AddSSetCanSmokeubType")
@@ -229999,7 +233242,7 @@ end
 
 --- [USER] Set if a task can show threat details.
 -- @param #PLAYERTASK self
--- @param #boolean OnOff If true (default) it can be shown, false if not.
+-- @param #boolean OnOff (Optional) If true (default) it can be shown, false if not.
 -- @return #PLAYERTASK self
 function PLAYERTASK:SetShowThreatDetails(OnOff)
   self:T(self.lid.."SetShowThreatDetails")
@@ -230189,7 +233432,7 @@ end
 
 --- [USER] Adds a time limit for the task to be completed.
 -- @param #PLAYERTASK self
--- @param #number TimeLimit Time limit in seconds for the task to be completed. (Default 0 = no time limit)
+-- @param #number TimeLimit (Optional) Time limit in seconds for the task to be completed. (Default 0 = no time limit)
 -- @return #PLAYERTASK self
 -- @usage
 -- local mytask = PLAYERTASK:New(AUFTRAG.Type.RECON, ZONE:New("WF Zone"), true, 50, "Deep Earth")
@@ -230395,7 +233638,7 @@ end
 
 --- [User] Smoke Target
 -- @param #PLAYERTASK self
--- @param #number Color, defaults to SMOKECOLOR.Red
+-- @param #number Color (Optional) Color, defaults to SMOKECOLOR.Red
 -- @return #PLAYERTASK self
 function PLAYERTASK:SmokeTarget(Color)
   self:T(self.lid.."SmokeTarget")
@@ -230414,7 +233657,7 @@ end
 
 --- [User] Flare Target
 -- @param #PLAYERTASK self
--- @param #number Color, defaults to FLARECOLOR.Red
+-- @param #number Color (Optional) Color, defaults to FLARECOLOR.Red
 -- @return #PLAYERTASK self
 function PLAYERTASK:FlareTarget(Color)
   self:T(self.lid.."SmokeTarget")
@@ -230430,8 +233673,8 @@ end
 
 --- [User] Illuminate Target Area
 -- @param #PLAYERTASK self
--- @param #number Power Power of illumination bomb in Candela. Default 1000 cd.
--- @param #number Height Height above target used to release the bomb, default 150m.
+-- @param #number Power (Optional) Power of illumination bomb in Candela. Default 1000 cd.
+-- @param #number Height (Optional) Height above target used to release the bomb, default 150m.
 -- @return #PLAYERTASK self
 function PLAYERTASK:IlluminateTarget(Power,Height)
   self:T(self.lid.."IlluminateTarget")
@@ -231524,9 +234767,9 @@ PLAYERTASKCONTROLLER.version="0.1.73"
 --- Create and run a new TASKCONTROLLER instance.
 -- @param #PLAYERTASKCONTROLLER self
 -- @param #string Name Name of this controller
--- @param #number Coalition of this controller, e.g. coalition.side.BLUE
--- @param #string Type Type of the tasks controlled, defaults to PLAYERTASKCONTROLLER.Type.A2G
--- @param #string ClientFilter (optional) Additional prefix filter for the SET_CLIENT. Can be handed as @{Core.Set#SET_CLIENT} also.
+-- @param #number Coalition (Optional) Coalition of this controller. Defaults to coalition.side.BLUE
+-- @param #string Type (Optional) Type of the tasks controlled, defaults to PLAYERTASKCONTROLLER.Type.A2G
+-- @param #string ClientFilter (Optional) Additional prefix filter for the SET_CLIENT. Can be handed as @{Core.Set#SET_CLIENT} also.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:New(Name, Coalition, Type, ClientFilter)
   
@@ -231820,7 +235063,7 @@ end
 
 --- [User] Set flash directions option for player (player based info)
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff Set to `true` to switch on and `false` to switch off. Default is OFF.
+-- @param #boolean OnOff (Optional) Set to `true` to switch on and `false` to switch off. Default is OFF.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetAllowFlashDirection(OnOff)
   self:T(self.lid.."SetAllowFlashDirection")
@@ -231830,7 +235073,7 @@ end
 
 --- [User] Set to show a menu entry to retrieve the radio frequencies used.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff Set to `true` to switch on and `false` to switch off. Default is OFF.
+-- @param #boolean OnOff (Optional) Set to `true` to switch on and `false` to switch off. Default is OFF.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetShowRadioInfoMenu(OnOff)
   self:T(self.lid.."SetAllowRadioInfoMenu")
@@ -231939,8 +235182,8 @@ end
 
 --- [User] Set repetition options for tasks.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff Set to `true` to switch on and `false` to switch off (defaults to true)
--- @param #number Repeats Number of repeats (defaults to 5)
+-- @param #boolean OnOff (Optional) Set to `true` to switch on and `false` to switch off (defaults to true)
+-- @param #number Repeats (Optional) Number of repeats (defaults to 5)
 -- @return #PLAYERTASKCONTROLLER self
 -- @usage `taskmanager:SetTaskRepetition(true, 5)`
 function PLAYERTASKCONTROLLER:SetTaskRepetition(OnOff, Repeats)
@@ -231957,7 +235200,7 @@ end
 
 --- [User] Set how long the briefing is shown on screen.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Seconds Duration in seconds. Defaults to 30 seconds.
+-- @param #number Seconds (Optional) Duration in seconds. Defaults to 30 seconds.
 -- @return #PLAYERTASKCONTROLLER self 
 function PLAYERTASKCONTROLLER:SetBriefingDuration(Seconds)
   self:T(self.lid.."SetBriefingDuration")
@@ -231987,7 +235230,7 @@ end
 -- @param #PLAYERTASKCONTROLLER self
 -- @param Ops.FlightGroup#FLIGHTGROUP FlightGroup The FlightGroup (e.g. drone) to be used for lasing (one unit in one group only).
 -- Can optionally be handed as Ops.ArmyGroup#ARMYGROUP - **Note** might not find an LOS spot or get lost on the way. Cannot island-hop.
--- @param #number LaserCode The lasercode to be used. Defaults to 1688.
+-- @param #number LaserCode (Optional) The lasercode to be used. Defaults to 1688.
 -- @param Core.Point#COORDINATE HoldingPoint (Optional) Point where the drone should initially circle. If not set, defaults to BullsEye of the coalition.
 -- @param #number Alt (Optional) Altitude in feet. Only applies if using a FLIGHTGROUP object! Defaults to 10000.
 -- @param #number Speed (Optional) Speed in knots. Only applies if using a FLIGHTGROUP object! Defaults to 120.
@@ -232070,7 +235313,7 @@ end
 -- @param #PLAYERTASKCONTROLLER self
 -- @param Ops.FlightGroup#FLIGHTGROUP FlightGroup The FlightGroup (e.g. drone) to be used for lasing (one unit in one group only).
 -- Can optionally be handed as Ops.ArmyGroup#ARMYGROUP - **Note** might not find an LOS spot or get lost on the way. Cannot island-hop.
--- @param #number LaserCode The lasercode to be used. Defaults to 1688.
+-- @param #number LaserCode (Optional) The lasercode to be used. Defaults to 1688.
 -- @param Core.Point#COORDINATE HoldingPoint (Optional) Point where the drone should initially circle. If not set, defaults to BullsEye of the coalition.
 -- @param #number Alt (Optional) Altitude in feet. Only applies if using a FLIGHTGROUP object! Defaults to 10000.
 -- @param #number Speed (Optional) Speed in knots. Only applies if using a FLIGHTGROUP object! Defaults to 120.
@@ -232207,8 +235450,8 @@ end
 -- @param #PLAYERTASKCONTROLLER self
 -- @param #boolean InfoMenu If `true` this option will allow to show the Task Info-Menu also when a player has an active task. 
 -- Since the menu isn't refreshed if a player holds an active task, the info in there might be stale.
--- @param #number ItemLimit Number of items per task type to show, default 5. 
--- @param #number HoldTime Minimum number of seconds between menu refreshes (called every 30 secs) if a player has **no active task**.
+-- @param #number ItemLimit (Optional) Number of items per task type to show, default 5. 
+-- @param #number HoldTime (Optional) Minimum number of seconds between menu refreshes (called every 30 secs) if a player has **no active task**.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetMenuOptions(InfoMenu,ItemLimit,HoldTime)
   self:T(self.lid.."SetMenuOptions")
@@ -232343,7 +235586,7 @@ end
 
 --- [User] Set target radius. Determines the zone radius to distinguish CAS from BAI tasks and to find enemies if the TARGET object is a COORDINATE.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Radius Radius to use in meters. Defaults to 500 meters.
+-- @param #number Radius (Optional) Radius to use in meters. Defaults to 500 meters.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetTargetRadius(Radius)
   self:T(self.lid.."SetTargetRadius")
@@ -232354,7 +235597,7 @@ end
 --- [User] Set the cluster radius if you want to use target clusters rather than single group detection. 
 -- Note that for a controller type A2A target clustering is on by default. Also remember that the diameter of the resulting zone is double the radius.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Radius Target cluster radius in kilometers. Default is 0.5km.
+-- @param #number Radius (Optional) Target cluster radius in kilometers. Default is 0.5km.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetClusterRadius(Radius)
   self:T(self.lid.."SetClusterRadius")
@@ -232376,7 +235619,7 @@ end
 
 --- [User] Switch usage of target names for menu entries on or off
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff If true, set to on (default), if nil or false, set to off
+-- @param #boolean OnOff (Optional) If true, set to on (default), if nil or false, set to off
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SwitchUseGroupNames(OnOff)
   self:T(self.lid.."SwitchUseGroupNames")
@@ -232390,7 +235633,7 @@ end
 
 --- [User] Switch showing additional magnetic angles
 -- @param #PLAYERTASKCONTROLLER self
--- @param #boolean OnOff If true, set to on (default), if nil or false, set to off
+-- @param #boolean OnOff (Optional) If true, set to on (default), if nil or false, set to off
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SwitchMagenticAngles(OnOff)
   self:T(self.lid.."SwitchMagenticAngles")
@@ -233285,7 +236528,7 @@ end
 --- Calculate group future position after given seconds.
 -- @param #PLAYERTASKCONTROLLER self
 -- @param Wrapper.Group#GROUP group The group to calculate for.
--- @param #number seconds Time interval in seconds. Default is `self.prediction`.
+-- @param #number seconds (Optional) Time interval in seconds. Default is `self.prediction`.
 -- @return Core.Point#COORDINATE Calculated future position of the cluster.
 function PLAYERTASKCONTROLLER:_CalcGroupFuturePosition(group, seconds)
 
@@ -234401,9 +237644,9 @@ end
 
 --- [User] Set SRS TTS details - see @{Sound.SRS} for details.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
 -- @param #PLAYERTASKCONTROLLER self
--- @param #number Frequency Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
--- @param #number Modulation Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #number Frequency (Optional) Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
+-- @param #number Modulation (Optional) Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 -- @param #string Gender (Optional) Defaults to "male"
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #number Port (Optional) Defaults to 5002
@@ -234412,7 +237655,7 @@ end
 -- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest)
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
--- @param Core.Point#COORDINATE Coordinate Coordinate from which the controller radio is sending
+-- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate from which the controller radio is sending
 -- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, hand in nil here.
 -- @return #PLAYERTASKCONTROLLER self
 function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
@@ -236411,9 +239654,9 @@ end
 
 --- [User] Set SRS TTS details - see @{Sound.SRS} for details
 -- @param #PLAYERRECCE self
--- @param #number Frequency Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
--- @param #number Modulation Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
--- @param #string PathToSRS Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #number Frequency (Optional) Frequency to be used. Can also be given as a table of multiple frequencies, e.g. 271 or {127,251}. There needs to be exactly the same number of modulations!
+-- @param #number Modulation (Optional) Modulation to be used. Can also be given as a table of multiple modulations, e.g. radio.modulation.AM or {radio.modulation.FM,radio.modulation.AM}. There needs to be exactly the same number of frequencies!
+-- @param #string PathToSRS (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 -- @param #string Gender (Optional) Defaults to "male"
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #number Port (Optional) Defaults to 5002
@@ -237275,7 +240518,7 @@ SQUADRON.version="0.8.1"
 --- Create a new SQUADRON object and start the FSM.
 -- @param #SQUADRON self
 -- @param #string TemplateGroupName Name of the template group.
--- @param #number Ngroups Number of asset groups of this squadron. Default 3.
+-- @param #number Ngroups (Optional) Number of asset groups of this squadron. Default 3.
 -- @param #string SquadronName Name of the squadron, e.g. "VFA-37". Must be **unique**!
 -- @return #SQUADRON self
 function SQUADRON:New(TemplateGroupName, Ngroups, SquadronName)
@@ -237308,7 +240551,7 @@ end
 
 --- Set number of units in groups.
 -- @param #SQUADRON self
--- @param #number nunits Number of units. Must be >=1 and <=4. Default 2.
+-- @param #number nunits (Optional) Number of units. Must be >=1 and <=4. Default 2.
 -- @return #SQUADRON self
 function SQUADRON:SetGrouping(nunits)
   self.ngrouping=nunits or 2
@@ -237333,7 +240576,7 @@ end
 --- Set takeoff type. All assets of this squadron will be spawned with cold (default) or hot engines.
 -- Spawning on runways is not supported.
 -- @param #SQUADRON self
--- @param #string TakeoffType Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
+-- @param #string TakeoffType (Optional) Take off type: "Cold" (default) or "Hot" with engines on or "Air" for spawning in air.
 -- @return #SQUADRON self
 function SQUADRON:SetTakeoffType(TakeoffType)
   TakeoffType=TakeoffType or "Cold"
@@ -237376,7 +240619,7 @@ end
 --- Set despawn after landing. Aircraft will be despawned after the landing event.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #SQUADRON self
--- @param #boolean Switch If `true` (default), activate despawn after landing.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after landing.
 -- @return #SQUADRON self
 function SQUADRON:SetDespawnAfterLanding(Switch)
   if Switch then
@@ -237390,7 +240633,7 @@ end
 --- Set despawn after holding. Aircraft will be despawned when they arrive at their holding position at the airbase.
 -- Can help to avoid DCS AI taxiing issues.
 -- @param #SQUADRON self
--- @param #boolean Switch If `true` (default), activate despawn after holding.
+-- @param #boolean Switch (Optional) If `true` (default), activate despawn after holding.
 -- @return #SQUADRON self
 function SQUADRON:SetDespawnAfterHolding(Switch)
   if Switch then
@@ -237404,7 +240647,7 @@ end
 
 --- Set low fuel threshold.
 -- @param #SQUADRON self
--- @param #number LowFuel Low fuel threshold in percent. Default 25.
+-- @param #number LowFuel (Optional) Low fuel threshold in percent. Default 25.
 -- @return #SQUADRON self
 function SQUADRON:SetFuelLowThreshold(LowFuel)
   self.fuellow=LowFuel or 25
@@ -237907,7 +241150,7 @@ end
 
 --- Set priority of the target.
 -- @param #TARGET self
--- @param #number Priority Priority of the target. Default 50.
+-- @param #number Priority (Optional) Priority of the target. Default 50.
 -- @return #TARGET self
 function TARGET:SetPriority(Priority)
   self.prio=Priority or 50
@@ -237916,7 +241159,7 @@ end
 
 --- Set importance of the target.
 -- @param #TARGET self
--- @param #number Importance Importance of the target. Default `nil`.
+-- @param #number Importance (Optional) Importance of the target. Default `nil`.
 -- @return #TARGET self
 function TARGET:SetImportance(Importance)
   self.importance=Importance
@@ -238015,10 +241258,10 @@ end
 --- Add mission type and number of required assets to resource.
 -- @param #TARGET self
 -- @param #string MissionType Mission Type.
--- @param #number Nmin Min number of required assets.
--- @param #number Nmax Max number of requried assets.
+-- @param #number Nmin (Optional) Min number of required assets. Default is 1.
+-- @param #number Nmax (Optional) Max number of requried assets. Default is 1.
 -- @param #table Attributes Generalized attribute(s).
--- @param #table Properties DCS attribute(s). Default `nil`.
+-- @param #table Properties (Optional) DCS attribute(s). Default `nil`.
 -- @return #TARGET.Resource The resource table.
 function TARGET:AddResource(MissionType, Nmin, Nmax, Attributes, Properties)
   
@@ -240112,7 +243355,7 @@ end
 
 --- Set "fuel low" threshold for CAP and INTERCEPT flights.
 -- @param #EASYGCICAP self
--- @param #number Percent RTB if fuel at this percent. Values: 1..100, defaults to 25.
+-- @param #number Percent (Optional) RTB if fuel at this percent. Values: 1..100, defaults to 25.
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetFuelLow(Percent)
   self:T(self.lid.."SetFuelLow")
@@ -240135,7 +243378,7 @@ end
 
 --- Set "fuel critical" threshold for CAP and INTERCEPT flights.
 -- @param #EASYGCICAP self
--- @param #number Percent RTB if fuel at this percent. Values: 1..100, defaults to 10.
+-- @param #number Percent (Optional) RTB if fuel at this percent. Values: 1..100, defaults to 10.
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetFuelCritical(Percent)
   self:T(self.lid.."SetFuelCritical")
@@ -240145,7 +243388,7 @@ end
 
 --- Set CAP formation.
 -- @param #EASYGCICAP self
--- @param #number Formation Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
+-- @param #number Formation (Optional) Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetCAPFormation(Formation)
   self:T(self.lid.."SetCAPFormation")
@@ -240179,7 +243422,7 @@ end
 
 --- Set Maximum of alive missions created by this instance to stop airplanes spamming the map
 -- @param #EASYGCICAP self
--- @param #number Maxiumum Maxmimum number of parallel missions allowed. Count is Intercept-Missions + Alert5-Missions, default is 8
+-- @param #number Maxiumum (Optional) Maxmimum number of parallel missions allowed. Count is Intercept-Missions + Alert5-Missions, default is 8
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetMaxAliveMissions(Maxiumum)
   self:T(self.lid.."SetMaxAliveMissions")
@@ -240189,7 +243432,7 @@ end
 
 --- Add default time to resurrect Airwing building if destroyed
 -- @param #EASYGCICAP self
--- @param #number Seconds Seconds, defaults to 900
+-- @param #number Seconds (Optional) Seconds, defaults to 900
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetDefaultResurrection(Seconds)
   self:T(self.lid.."SetDefaultResurrection")
@@ -240199,7 +243442,7 @@ end
 
 --- Add default repeat attempts if an Intruder intercepts fails.
 -- @param #EASYGCICAP self
--- @param #number Retries Retries, defaults to 3
+-- @param #number Retries (Optional) Retries, defaults to 3
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetDefaultRepeatOnFailure(Retries)
   self:T(self.lid.."SetDefaultRepeatOnFailure")
@@ -240209,7 +243452,7 @@ end
 
 --- Add default take off type for the airwings.
 -- @param #EASYGCICAP self
--- @param #string Takeoff Can be "hot", "cold", or "air" - default is "hot".
+-- @param #string Takeoff (Optional) Can be "hot", "cold", or "air" - default is "hot".
 -- @return #EASYGCICAP self 
 function EASYGCICAP:SetDefaultTakeOffType(Takeoff)
   self:T(self.lid.."SetDefaultTakeOffType")
@@ -240219,7 +243462,7 @@ end
 
 --- Set default CAP Speed in knots
 -- @param #EASYGCICAP self
--- @param #number Speed Speed defaults to 300
+-- @param #number Speed (Optional) Speed defaults to 300
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPSpeed(Speed)
   self:T(self.lid.."SetDefaultSpeed")
@@ -240229,7 +243472,7 @@ end
 
 --- Set default CAP Altitude in feet
 -- @param #EASYGCICAP self
--- @param #number Altitude Altitude defaults to 25000
+-- @param #number Altitude (Optional) Altitude defaults to 25000
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPAlt(Altitude)
   self:T(self.lid.."SetDefaultAltitude")
@@ -240239,7 +243482,7 @@ end
 
 --- Set default CAP lieg initial direction in degrees
 -- @param #EASYGCICAP self
--- @param #number Direction Direction defaults to 90 (East)
+-- @param #number Direction (Optional) Direction defaults to 90 (East)
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPDirection(Direction)
   self:T(self.lid.."SetDefaultDirection")
@@ -240249,7 +243492,7 @@ end
 
 --- Set default leg length in NM
 -- @param #EASYGCICAP self
--- @param #number Leg Leg defaults to 15
+-- @param #number Leg (Optional) Leg defaults to 15
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPLeg(Leg)
   self:T(self.lid.."SetDefaultLeg")
@@ -240259,7 +243502,7 @@ end
 
 --- Set default grouping, i.e. how many airplanes per CAP point
 -- @param #EASYGCICAP self
--- @param #number Grouping Grouping defaults to 2
+-- @param #number Grouping (Optional) Grouping defaults to 2
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultCAPGrouping(Grouping)
  self:T(self.lid.."SetDefaultCAPGrouping")
@@ -240269,7 +243512,7 @@ end
 
 --- Set default range planes can fly from their homebase in NM
 -- @param #EASYGCICAP self
--- @param #number Range Range defaults to 100 NM
+-- @param #number Range (Optional) Range defaults to 100 NM
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultMissionRange(Range)
   self:T(self.lid.."SetDefaultMissionRange")
@@ -240279,8 +243522,8 @@ end
 
 --- Set default turnover times for squadrons in minutes
 -- @param #EASYGCICAP self
--- @param #number MaintenanceTime Time in minutes it takes until a flight is combat ready again. Default is 5 min.
--- @param #number RepairTime Time in minutes it takes to repair a flight for each life point taken. Default is 10 min.
+-- @param #number MaintenanceTime (Optional) Time in minutes it takes until a flight is combat ready again. Default is 5 min.
+-- @param #number RepairTime (Optional) Time in minutes it takes to repair a flight for each life point taken. Default is 10 min.
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultTurnoverTime(MaintenanceTime,RepairTime)
   self:T(self.lid.."SetDefaultTurnoverTime")
@@ -240291,7 +243534,7 @@ end
 
 --- Set default number of airframes standing by for intercept tasks (visible on the airfield)
 -- @param #EASYGCICAP self
--- @param #number Airframes defaults to 2
+-- @param #number Airframes (Optional) defaults to 2
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultNumberAlert5Standby(Airframes)
   self:T(self.lid.."SetDefaultNumberAlert5Standby")
@@ -240301,7 +243544,7 @@ end
 
 --- Set default engage range for intruders detected by CAP flights in NM.
 -- @param #EASYGCICAP self
--- @param #number Range defaults to 50NM
+-- @param #number Range (Optional) defaults to 50NM
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetDefaultEngageRange(Range)
   self:T(self.lid.."SetDefaultEngageRange")
@@ -240354,7 +243597,7 @@ end
 
 --- Set which target types CAP flights will prefer to engage, defaults to {"Air"}
 -- @param #EASYGCICAP self
--- @param #table types Table of comma separated #string entries, defaults to {"Air"} (everything that flies and is not a weapon). Useful other options are e.g. {"Bombers"}, {"Fighters"}, 
+-- @param #table types (Optional) Table of comma separated #string entries, defaults to {"Air"} (everything that flies and is not a weapon). Useful other options are e.g. {"Bombers"}, {"Fighters"}, 
 -- or {"Helicopters"} or combinations like {"Bombers", "Fighters", "UAVs"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes).
 -- @return #EASYGCICAP self
 function EASYGCICAP:SetCAPEngageTargetTypes(types)
@@ -240525,10 +243768,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet ASL.
--- @param #number Speed  Defaults to 300 knots TAS.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet ASL.
+-- @param #number Speed  (Optional) Defaults to 300 knots TAS.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength(Optional)  Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointCAP(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointCAP")--..Coordinate:ToStringLLDDM())
@@ -240556,10 +243799,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet.
--- @param #number Speed  Defaults to 300 knots.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet.
+-- @param #number Speed  (Optional) Defaults to 300 knots.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointRecon(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointRecon "..Coordinate:ToStringLLDDM())
@@ -240581,10 +243824,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet.
--- @param #number Speed  Defaults to 300 knots.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet.
+-- @param #number Speed  (Optional) Defaults to 300 knots.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointTanker(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointTanker "..Coordinate:ToStringLLDDM())
@@ -240606,10 +243849,10 @@ end
 -- @param #EASYGCICAP self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet.
--- @param #number Speed  Defaults to 300 knots.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet.
+-- @param #number Speed  (Optional) Defaults to 300 knots.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYGCICAP self
 function EASYGCICAP:AddPatrolPointAwacs(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddPatrolPointAwacs "..Coordinate:ToStringLLDDM())
@@ -241877,7 +245120,7 @@ end
 
 --- Set Tanker and Scouts to be invisible to enemy AI eyes
 -- @param #EASYA2G self
--- @param #boolean Switch Set to true or false, by default this is set to true already
+-- @param #boolean Switch (Optional) Set to true or false, by default this is set to true already
 -- @return #EASYA2G self 
 function EASYA2G:SetTankerAndScoutsInvisible(Switch)
   self:T(self.lid.."SetTankerAndScoutsInvisible")
@@ -241887,7 +245130,7 @@ end
 
 --- Set default A2G Speed in knots
 -- @param #EASYA2G self
--- @param #number Speed Speed defaults to 300
+-- @param #number Speed (Optional) Speed defaults to 300
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GSpeed(Speed)
   self:T(self.lid.."SetDefaultSpeed")
@@ -241897,7 +245140,7 @@ end
 
 --- Set A2G Flight formation.
 -- @param #EASYA2G self
--- @param #number Formation Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
+-- @param #number Formation (Optional) Formation to fly, defaults to ENUMS.Formation.FixedWing.FingerFour.Group
 -- @return #EASYA2G self
 function EASYA2G:SetA2GFormation(Formation)
   self:T(self.lid.."SetA2GFormation")
@@ -241907,7 +245150,7 @@ end
 
 --- Set default A2G Altitude in feet
 -- @param #EASYA2G self
--- @param #number Altitude Altitude defaults to 25000
+-- @param #number Altitude (Optional) Altitude defaults to 25000
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GAlt(Altitude)
   self:T(self.lid.."SetDefaultAltitude")
@@ -241917,7 +245160,7 @@ end
 
 --- Set default A2G lieg initial direction in degrees
 -- @param #EASYA2G self
--- @param #number Direction Direction defaults to 90 (East)
+-- @param #number Direction (Optional) Direction defaults to 90 (East)
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GDirection(Direction)
   self:T(self.lid.."SetDefaultDirection")
@@ -241927,7 +245170,7 @@ end
 
 --- Set default leg length in NM
 -- @param #EASYA2G self
--- @param #number Leg Leg defaults to 5
+-- @param #number Leg (Optional) Leg defaults to 5
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GLeg(Leg)
   self:T(self.lid.."SetDefaultLeg")
@@ -241937,7 +245180,7 @@ end
 
 --- Set default grouping, i.e. how many airplanes per A2G point
 -- @param #EASYA2G self
--- @param #number Grouping Grouping defaults to 2
+-- @param #number Grouping (Optional) Grouping defaults to 2
 -- @return #EASYA2G self
 function EASYA2G:SetDefaultA2GGrouping(Grouping)
  self:T(self.lid.."SetDefaultA2GGrouping")
@@ -241958,7 +245201,7 @@ end
 
 --- Set which target types A2G flights will prefer to engage, defaults to {"Ground"}
 -- @param #EASYA2G self
--- @param #table types Table of comma separated #string entries, defaults to {"Ground"} (everything that is ground and is not a weapon). Useful other options are e.g. {"Armored vehicles"}, {"Tanks"}, 
+-- @param #table types (Optional) Table of comma separated #string entries, defaults to {"Ground"} (everything that is ground and is not a weapon). Useful other options are e.g. {"Armored vehicles"}, {"Tanks"}, 
 -- or {"APC"} or combinations like {"APC", "Tanks", "Artillery"}. See [Hoggit Wiki](https://wiki.hoggitworld.com/view/DCS_enum_attributes).
 -- @return #EASYA2G self
 function EASYA2G:SetA2GEngageTargetTypes(types)
@@ -241970,10 +245213,10 @@ end
 -- @param #EASYA2G self
 -- @param #string AirbaseName Name of the Wing's airbase
 -- @param Core.Point#COORDINATE Coordinate. Can be handed as a Core.Zone#ZONE object (e.g. in case you want  the point to align with a moving zone).
--- @param #number Altitude Defaults to 25000 feet ASL.
--- @param #number Speed  Defaults to 300 knots TAS.
--- @param #number Heading Defaults to 90 degrees (East).
--- @param #number LegLength Defaults to 15 NM.
+-- @param #number Altitude (Optional) Defaults to 25000 feet ASL.
+-- @param #number Speed  (Optional) Defaults to 300 knots TAS.
+-- @param #number Heading (Optional) Defaults to 90 degrees (East).
+-- @param #number LegLength (Optional) Defaults to 15 NM.
 -- @return #EASYA2G self
 function EASYA2G:AddHoldingPointA2G(AirbaseName,Coordinate,Altitude,Speed,Heading,LegLength)
   self:T(self.lid.."AddHoldingPointA2G")--..Coordinate:ToStringLLDDM())
@@ -244341,7 +247584,7 @@ do -- Sound Base
   -- * (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
   -- 
   -- @param #string Text The text string to analyze.
-  -- @param #number Speed Speed factor. Default 1.
+  -- @param #number Speed (Optional) Speed factor. Default 1.
   -- @param #boolean isGoogle If true, google text-to-speech is used.
   function SOUNDBASE:GetSpeechTime(length,speed,isGoogle)
   
@@ -244438,9 +247681,9 @@ do -- Sound File
   --- Constructor to create a new SOUNDFILE object.
   -- @param #SOUNDFILE self
   -- @param #string FileName The name of the sound file, e.g. "Hello World.ogg".
-  -- @param #string Path The path of the directory, where the sound file is located. Default is "l10n/DEFAULT/" within the miz file.
-  -- @param #number Duration Duration in seconds, how long it takes to play the sound file. Default is 3 seconds.
-  -- @param #boolean UseSrs Set if SRS should be used to play this file. Default is false.
+  -- @param #string Path (Optional) The path of the directory, where the sound file is located. Default is "l10n/DEFAULT/" within the miz file.
+  -- @param #number Duration (Optional) Duration in seconds, how long it takes to play the sound file. Default is 3 seconds.
+  -- @param #boolean UseSrs (Optional) Set if SRS should be used to play this file. Default is false.
   -- @return #SOUNDFILE self
   function SOUNDFILE:New(FileName, Path, Duration, UseSrs)
 
@@ -244467,7 +247710,7 @@ do -- Sound File
 
   --- Set path, where the sound file is located.
   -- @param #SOUNDFILE self
-  -- @param #string Path Path to the directory, where the sound file is located. In case this is nil, it defaults to the DCS mission temp directory.
+  -- @param #string Path (Optional) Path to the directory, where the sound file is located. In case this is nil, it defaults to the DCS mission temp directory.
   -- @return #SOUNDFILE self
   function SOUNDFILE:SetPath(Path)
     self:F( {Path} )
@@ -244508,7 +247751,7 @@ do -- Sound File
 
   --- Set sound file name. This must be a .ogg or .mp3 file!
   -- @param #SOUNDFILE self
-  -- @param #string FileName Name of the file. Default is "Hello World.mp3".
+  -- @param #string FileName (Optional) Name of the file. Default is "Hello World.mp3".
   -- @return #SOUNDFILE self
   function SOUNDFILE:SetFileName(FileName)
     --TODO: check that sound file is really .ogg or .mp3
@@ -244526,7 +247769,7 @@ do -- Sound File
 
   --- Set duration how long it takes to play the sound file.
   -- @param #SOUNDFILE self
-  -- @param #string Duration Duration in seconds. Default 3 seconds.
+  -- @param #string Duration (Optional) Duration in seconds. Default 3 seconds.
   -- @return #SOUNDFILE self
   function SOUNDFILE:SetDuration(Duration)
     if Duration and type(Duration)=="string" then
@@ -244633,7 +247876,7 @@ do -- Text-To-Speech
   --- Constructor to create a new SOUNDTEXT object.
   -- @param #SOUNDTEXT self
   -- @param #string Text The text to speak.
-  -- @param #number Duration Duration in seconds, how long it takes to play the text. Default is 3 seconds.
+  -- @param #number Duration (Optional) Duration in seconds, how long it takes to play the text. Default is 3 seconds.
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:New(Text, Duration)
   
@@ -244653,7 +247896,7 @@ do -- Text-To-Speech
   
   --- Set text.
   -- @param #SOUNDTEXT self
-  -- @param #string Text Text to speak. Default "Hello World!".
+  -- @param #string Text (Optional) Text to speak. Default "Hello World!".
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetText(Text)
     
@@ -244664,7 +247907,7 @@ do -- Text-To-Speech
   
   --- Set duration, how long it takes to speak the text.
   -- @param #SOUNDTEXT self
-  -- @param #number Duration Duration in seconds. Default 3 seconds.
+  -- @param #number Duration (Optional) Duration in seconds. Default 3 seconds.
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetDuration(Duration)
     
@@ -244675,7 +247918,7 @@ do -- Text-To-Speech
   
   --- Set gender.
   -- @param #SOUNDTEXT self
-  -- @param #string Gender Gender: "male" or "female" (default).
+  -- @param #string Gender (Optional) Gender: "male" or "female" (default).
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetGender(Gender)
     
@@ -244686,7 +247929,7 @@ do -- Text-To-Speech
   
   --- Set TTS culture - local for the voice.
   -- @param #SOUNDTEXT self
-  -- @param #string Culture TTS culture. Default "en-GB".
+  -- @param #string Culture (Optional) TTS culture. Default "en-GB".
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetCulture(Culture)
     
@@ -245294,7 +248537,7 @@ end
 
 --- Set radio power. Note that this only applies if no relay unit is used.
 -- @param #RADIOQUEUE self
--- @param #number power Radio power in Watts. Default 100 W.
+-- @param #number power (Optional) Radio power in Watts. Default 100 W.
 -- @return #RADIOQUEUE self The RADIOQUEUE object.
 function RADIOQUEUE:SetRadioPower(power)
   self.power=power or 100
@@ -245303,8 +248546,8 @@ end
 
 --- Set SRS.
 -- @param #RADIOQUEUE self
--- @param #string PathToSRS Path to SRS.
--- @param #number Port SRS port. Default 5002.
+-- @param #string PathToSRS (Optional) Path to SRS.
+-- @param #number Port (Optional) SRS port. Default 5002.
 -- @return #RADIOQUEUE self The RADIOQUEUE object.
 function RADIOQUEUE:SetSRS(PathToSRS, Port)
   local path = PathToSRS or MSRS.path
@@ -245319,9 +248562,9 @@ end
 -- @param #number digit The digit 0-9.
 -- @param #string filename The name of the sound file.
 -- @param #number duration The duration of the sound file in seconds.
--- @param #string path The directory within the miz file where the sound is located. Default "l10n/DEFAULT/".
+-- @param #string path (Optional) The directory within the miz file where the sound is located. Default "l10n/DEFAULT/".
 -- @param #string subtitle Subtitle of the transmission.
--- @param #number subduration Duration [sec] of the subtitle being displayed. Default 5 sec.
+-- @param #number subduration (Optional) Duration [sec] of the subtitle being displayed. Default 5 sec.
 -- @return #RADIOQUEUE self The RADIOQUEUE object.
 function RADIOQUEUE:SetDigit(digit, filename, duration, path, subtitle, subduration)
 
@@ -245369,11 +248612,11 @@ end
 -- @param #RADIOQUEUE self
 -- @param #string filename Name of the sound file. Usually an ogg or wav file type.
 -- @param #number duration Duration in seconds the file lasts.
--- @param #number path Directory path inside the miz file where the sound file is located. Default "l10n/DEFAULT/".
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number path (Optional) Directory path inside the miz file where the sound file is located. Default "l10n/DEFAULT/".
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished. Defaults to 0.
 -- @param #string subtitle Subtitle of the transmission.
--- @param #number subduration Duration [sec] of the subtitle being displayed. Default 5 sec.
+-- @param #number subduration (Optional) Duration [sec] of the subtitle being displayed. Default 5 sec.
 -- @return #RADIOQUEUE.Transmission Radio transmission table.
 function RADIOQUEUE:NewTransmission(filename, duration, path, tstart, interval, subtitle, subduration)
 
@@ -245419,8 +248662,8 @@ end
 --- Add a SOUNDFILE to the radio queue.
 -- @param #RADIOQUEUE self
 -- @param Sound.SoundOutput#SOUNDFILE soundfile Sound file object to be added.
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished. Defaults to 0.
 -- @return #RADIOQUEUE self
 function RADIOQUEUE:AddSoundFile(soundfile, tstart, interval)
   --env.info(string.format("FF add soundfile: name=%s%s", soundfile:GetPath(), soundfile:GetFileName()))
@@ -245432,8 +248675,8 @@ end
 --- Add a SOUNDTEXT to the radio queue.
 -- @param #RADIOQUEUE self
 -- @param Sound.SoundOutput#SOUNDTEXT soundtext Text-to-speech text.
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished. Defaults to 0.
 -- @return #RADIOQUEUE self
 function RADIOQUEUE:AddSoundText(soundtext, tstart, interval)
 
@@ -246732,14 +249975,14 @@ MSRS.Voices = {
        ["fr_FR_Wavenet_G"] = "fr-FR-Wavenet-G", -- Male
        ["fr_FR_Wavenet_F"] = "fr-FR-Wavenet-F", -- Female
        -- 2025 catalog changes
-        ["de_DE_Wavenet_A"] = 'de-DE-Wavenet-A', -- Female
-        ["de_DE_Wavenet_B"] = 'de-DE-Wavenet-B', -- Male
-        ["de_DE_Wavenet_C"] = 'de-DE-Wavenet-C', -- Female
-        ["de_DE_Wavenet_D"] = 'de-DE-Wavenet-D', -- Male
-        ["de_DE_Wavenet_E"] = 'de-DE-Wavenet-E', -- Male
-        ["de_DE_Wavenet_F"] = 'de-DE-Wavenet-F', -- Female
-        ["de_DE_Wavenet_G"] = 'de-DE-Wavenet-G', -- Female
-        ["de_DE_Wavenet_H"] = 'de-DE-Wavenet-H', -- Male
+       ["de_DE_Wavenet_A"] = 'de-DE-Wavenet-A', -- Female
+       ["de_DE_Wavenet_B"] = 'de-DE-Wavenet-B', -- Male
+       ["de_DE_Wavenet_C"] = 'de-DE-Wavenet-C', -- Female
+       ["de_DE_Wavenet_D"] = 'de-DE-Wavenet-D', -- Male
+       ["de_DE_Wavenet_E"] = 'de-DE-Wavenet-E', -- Male
+       ["de_DE_Wavenet_F"] = 'de-DE-Wavenet-F', -- Female
+       ["de_DE_Wavenet_G"] = 'de-DE-Wavenet-G', -- Female
+       ["de_DE_Wavenet_H"] = 'de-DE-Wavenet-H', -- Male
        -- ES
        ["es_ES_Wavenet_B"] = "es-ES-Wavenet-E", -- Male
        ["es_ES_Wavenet_C"] = "es-ES-Wavenet-F", -- Female
@@ -246966,10 +250209,10 @@ end
 -- set the path to the exe file via @{#MSRS.SetPath}.
 --
 -- @param #MSRS self
--- @param #string Path Path to SRS directory. Default `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
--- @param #number Frequency Radio frequency in MHz. Default 143.00 MHz. Can also be given as a #table of multiple frequencies.
--- @param #number Modulation Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a #table of multiple modulations.
--- @param #string Backend Backend used: `MSRS.Backend.SRSEXE` (default) or `MSRS.Backend.GRPC`.
+-- @param #string Path (Optional) Path to SRS directory. Default `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
+-- @param #number Frequency (Optional) Radio frequency in MHz. Default 143.00 MHz. Can also be given as a #table of multiple frequencies.
+-- @param #number Modulation (Optional) Radio modulation: 0=AM (default), 1=FM. See `radio.modulation.AM` and `radio.modulation.FM` enumerators. Can also be given as a #table of multiple modulations.
+-- @param #string Backend (Optional) Backend used: `MSRS.Backend.SRSEXE` (default) or `MSRS.Backend.GRPC`.
 -- @return #MSRS self
 function MSRS:New(Path, Frequency, Modulation, Backend)
 
@@ -247039,7 +250282,7 @@ end
 -- - `MSRS.Backend.GRPC`: Via DCS-gRPC.
 --
 -- @param #MSRS self
--- @param #string Backend Backend used. Default is `MSRS.Backend.SRSEXE`.
+-- @param #string Backend (Optional) Backend used. Default is `MSRS.Backend.SRSEXE`.
 -- @return #MSRS self
 function MSRS:SetBackend(Backend)
   self:F( {Backend=Backend} )
@@ -247117,7 +250360,7 @@ end
 
 --- Set path to SRS install directory. More precisely, path to where the `DCS-SR-ExternalAudio.exe` is located.
 -- @param #MSRS self
--- @param #string Path Path to the directory, where the sound file is located. Default is `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
+-- @param #string Path (Optional) Path to the directory, where the sound file is located. Default is `C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio`.
 -- @return #MSRS self
 function MSRS:SetPath(Path)
   self:F( {Path=Path} )
@@ -247166,7 +250409,7 @@ end
 
 --- Set label.
 -- @param #MSRS self
--- @param #number Label. Default "ROBOT"
+-- @param #number Label (Optional) Label. Default "ROBOT"
 -- @return #MSRS self
 function MSRS:SetLabel(Label)
   self:F( {Label=Label} )
@@ -247183,7 +250426,7 @@ end
 
 --- Set port.
 -- @param #MSRS self
--- @param #number Port Port. Default 5002.
+-- @param #number Port (Optional) Port. Default 5002.
 -- @return #MSRS self
 function MSRS:SetPort(Port)
   self:F( {Port=Port} )
@@ -247201,7 +250444,7 @@ end
 
 --- Set coalition.
 -- @param #MSRS self
--- @param #number Coalition Coalition. Default 0.
+-- @param #number Coalition (Optional) Coalition. Default 0.
 -- @return #MSRS self
 function MSRS:SetCoalition(Coalition)
   self:F( {Coalition=Coalition} )
@@ -247287,7 +250530,7 @@ end
 
 --- Set gender.
 -- @param #MSRS self
--- @param #string Gender Gender: "male" or "female" (default).
+-- @param #string Gender (Optional) Gender: "male" or "female" (default).
 -- @return #MSRS self
 function MSRS:SetGender(Gender)
   self:F( {Gender=Gender} )
@@ -247326,7 +250569,7 @@ end
 --- Set to use a specific voice for a given provider. Note that this will override any gender and culture settings.
 -- @param #MSRS self
 -- @param #string Voice Voice.
--- @param #string Provider Provider. Default is as set by @{#MSRS.SetProvider}, which itself defaults to `MSRS.Provider.WINDOWS` if not set.
+-- @param #string Provider (Optional) Provider. Default is as set by @{#MSRS.SetProvider}, which itself defaults to `MSRS.Provider.WINDOWS` if not set.
 -- @return #MSRS self
 function MSRS:SetVoiceProvider(Voice, Provider)
   self:F( {Voice=Voice, Provider=Provider} )
@@ -247339,7 +250582,7 @@ end
 
 --- Set to use a specific voice if Microsoft Windows' native TTS is use as provider. Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice Voice. Default `"Microsoft Hazel Desktop"`.
+-- @param #string Voice (Optional) Voice. Default `"Microsoft Hazel Desktop"`.
 -- @return #MSRS self
 function MSRS:SetVoiceWindows(Voice)
   self:F( {Voice=Voice} )
@@ -247350,7 +250593,7 @@ end
 
 --- Set to use a specific voice if Google is use as provider. Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice Voice. Default `MSRS.Voices.Google.Standard.en_GB_Standard_A`.
+-- @param #string Voice (Optional) Voice. Default `MSRS.Voices.Google.Standard.en_GB_Standard_A`.
 -- @return #MSRS self
 function MSRS:SetVoiceGoogle(Voice)
   self:F( {Voice=Voice} )
@@ -247361,7 +250604,7 @@ end
 
 --- Set to use a specific voice if Piper is used as provider (only Hound-TTS backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice [Piper Voices](https://rhasspy.github.io/piper-samples/). Default `"en_US-ryan-low"`.
+-- @param #string Voice (Optional) [Piper Voices](https://rhasspy.github.io/piper-samples/). Default `"en_US-ryan-low"`.
 -- @return #MSRS self
 function MSRS:SetVoicePiper(Voice)
   self:F( {Voice=Voice} )
@@ -247372,7 +250615,7 @@ end
 
 --- Set to use a specific voice if Microsoft Azure is use as provider (only DCS-gRPC backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice [Azure Voice](https://learn.microsoft.com/azure/cognitive-services/speech-service/language-support). Default `"en-US-AriaNeural"`.
+-- @param #string Voice (Optional) [Azure Voice](https://learn.microsoft.com/azure/cognitive-services/speech-service/language-support). Default `"en-US-AriaNeural"`.
 -- @return #MSRS self
 function MSRS:SetVoiceAzure(Voice)
   self:F( {Voice=Voice} )
@@ -247383,7 +250626,7 @@ end
 
 --- Set to use a specific voice if Amazon Web Service is use as provider (only DCS-gRPC backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
--- @param #string Voice [AWS Voice](https://docs.aws.amazon.com/polly/latest/dg/voicelist.html). Default `"Brian"`.
+-- @param #string Voice (Optional) [AWS Voice](https://docs.aws.amazon.com/polly/latest/dg/voicelist.html). Default `"Brian"`.
 -- @return #MSRS self
 function MSRS:SetVoiceAmazon(Voice)
   self:F( {Voice=Voice} )
@@ -247394,7 +250637,7 @@ end
 
 --- Get voice.
 -- @param #MSRS self
--- @param #string Provider Provider. Default is the currently set provider (`self.provider`).
+-- @param #string Provider (Optional) Provider. Default is the currently set provider (`self.provider`).
 -- @return #string Voice.
 function MSRS:GetVoice(Provider)
 
@@ -247569,7 +250812,7 @@ end
 
 --- Get provider options.
 -- @param #MSRS self
--- @param #string Provider Provider. Default is as set via @{#MSRS.SetProvider}.
+-- @param #string Provider (Optional) Provider. Default is as set via @{#MSRS.SetProvider}.
 -- @return #MSRS.ProviderOptions Provider options.
 function MSRS:GetProviderOptions(Provider)
   return self.poptions[Provider or self.provider] or {}
@@ -247891,7 +251134,7 @@ end
 -- @param #number volume Volume.
 -- @param #number speed Speed.
 -- @param #number port Port.
--- @param #string label Label, defaults to "ROBOT" (displayed sender name in the radio overlay of SRS) - No spaces allowed!
+-- @param #string label (Optional) Label, defaults to "ROBOT" (displayed sender name in the radio overlay of SRS) - No spaces allowed!
 -- @param Core.Point#COORDINATE coordinate Coordinate.
 -- @return #string Command.
 function MSRS:_GetCommand(freqs, modus, coal, gender, voice, culture, volume, speed, port, label, coordinate)
@@ -248193,9 +251436,9 @@ end
 -- @param #string Message The text to speak.
 -- @param #table Frequencies The table of frequencies to use.
 -- @param #table Modulations The table of modulations to use.
--- @param #number Volume The volume to use, defaults to 1.0.
--- @param #string Label The label to use, defaults to "MSRS".
--- @param #number Coalition The coalition to use.
+-- @param #number Volume (Optional) The volume to use, defaults to 1.0.
+-- @param #string Label (Optional) The label to use, defaults to "MSRS".
+-- @param #number Coalition (Optional) The coalition to use.
 -- @param Core.Point#COORDINATE Point (Optional) The point from which the voice is sent.
 -- @param #number Speed (Optional) How fast to speak, defaults to 1.0.
 -- @param #string Gender (Optional) Gender to use.
@@ -248206,12 +251449,18 @@ end
 function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle)
   self:I(self.lid.."_HoundTextToSpeech")
   
+  Frequencies = UTILS.EnsureTable(Frequencies)
+  Modulations = UTILS.EnsureTable(Modulations)
+    
   local ffs = {}
   for _,_f in pairs(Frequencies or self.frequencies) do
     table.insert(ffs,string.format("%.1f",_f))
   end
   
   local freqs = table.concat(ffs, ",")
+  
+
+  
   local modus = table.concat(Modulations or self.modulations, ",")
 
   local coal=Coalition or self.coalition
@@ -248308,6 +251557,9 @@ end
 function MSRS:_HoundTestTone(Frequencies, Modulations, Coalition)
  self:I(self.lid.."_HoundTestTone")
  
+ Frequencies = UTILS.EnsureTable(Frequencies)
+ Modulations = UTILS.EnsureTable(Modulations)
+ 
  local ffs = {}
   for _,_f in pairs(Frequencies or self.frequencies) do
     table.insert(ffs,string.format("%.1f",_f))
@@ -248326,8 +251578,8 @@ end
 --- Hound speech time calculator. Use to determine how long it takes to speak something out.
 --  @param MSRS self
 --  @param #string Message The message to measure. Can also be handed as string lenght.
---  @param #number Speed The speed to use, defaults to 1.0.
---  @param #boolean UseGoogle If to use google. Default: no.
+--  @param #number Speed (Optional) The speed to use, defaults to 1.0.
+--  @param #boolean UseGoogle (Optional) If to use google. Default: no.
 function MSRS:_HoundSpeechTime(Message,Speed,UseGoogle)
   local speed = Speed or 1.0
   local speechtime = HoundTTS.getSpeechTime(Message, speed, UseGoogle)
@@ -248340,8 +251592,8 @@ end
 
 --- Get central SRS configuration to be able to play tts over SRS radio using the `DCS-SR-ExternalAudio.exe`.
 -- @param #MSRS self
--- @param #string Path Path to config file, defaults to "C:\Users\<yourname>\Saved Games\DCS\Config"
--- @param #string Filename File to load, defaults to "Moose_MSRS.lua"
+-- @param #string Path (Optional) Path to config file, defaults to "C:\Users\<yourname>\Saved Games\DCS\Config"
+-- @param #string Filename (Optional) File to load, defaults to "Moose_MSRS.lua"
 -- @return #boolean success
 -- @usage
 --  0) Benefits: Centralize configuration of SRS, keep paths and keys out of the mission source code, making it safer and easier to move missions to/between servers,
@@ -248484,7 +251736,7 @@ end
 -- * (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 --
 -- @param #number length can also be passed as #string
--- @param #number speed Defaults to 1.0
+-- @param #number speed (Optional) Defaults to 1.0
 -- @param #boolean isGoogle We're using Google TTS
 function MSRS.getSpeechTime(length,speed,isGoogle)
 
@@ -248641,22 +251893,22 @@ end
 --- Create a new transmission and add it to the radio queue.
 -- @param #MSRSQUEUE self
 -- @param #string text Text to play.
--- @param #number duration Duration in seconds the file lasts. Default is determined by number of characters of the text message.
+-- @param #number duration (Optional) Duration in seconds the file lasts. Default is determined by number of characters of the text message.
 -- @param Sound.SRS#MSRS msrs MOOSE SRS object.
--- @param #number tstart Start time (abs) seconds. Default now.
--- @param #number interval Interval in seconds after the last transmission finished.
+-- @param #number tstart (Optional) Start time (abs) seconds. Default now.
+-- @param #number interval (Optional) Interval in seconds after the last transmission finished.
 -- @param #table subgroups Groups that should receive the subtiltle.
 -- @param #string subtitle Subtitle displayed when the message is played.
--- @param #number subduration Duration [sec] of the subtitle being displayed. Default 5 sec.
--- @param #number frequency Radio frequency if other than MSRS default.
--- @param #number modulation Radio modulation if other then MSRS default.
--- @param #string gender Gender of the voice
--- @param #string culture Culture of the voice
--- @param #string voice Specific voice
--- @param #number volume Volume setting
--- @param #string label Label to be used
--- @param Core.Point#COORDINATE coordinate Coordinate to be used
--- @param #number speed Speed to be used
+-- @param #number subduration (Optional) Duration [sec] of the subtitle being displayed. Default 5 sec.
+-- @param #number frequency (Optional) Radio frequency if other than MSRS default.
+-- @param #number modulation (Optional) Radio modulation if other then MSRS default.
+-- @param #string gender (Optional) Gender of the voice
+-- @param #string culture C(Optional) ulture of the voice
+-- @param #string voice (Optional) Specific voice
+-- @param #number volume (Optional) Volume setting
+-- @param #string label (Optional) Label to be used
+-- @param Core.Point#COORDINATE coordinate (Optional) Coordinate to be used
+-- @param #number speed (Optional) Speed to be used
 -- @return #MSRSQUEUE.Transmission Radio transmission table.
 function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed)
   self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label, S=speed})
@@ -249036,7 +252288,7 @@ NAVFIX.version="0.1.0"
 --- Create a new NAVFIX class instance from a given VECTOR.
 -- @param #NAVFIX self
 -- @param #string Name Name/ident of the point. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param Core.Vector#VECTOR Vector Position vector of the navpoint.
 -- @return #NAVFIX self
 function NAVFIX:NewFromVector(Name, Type, Vector)
@@ -249071,7 +252323,7 @@ end
 --- Create a new NAVFIX class instance from a given COORDINATE.
 -- @param #NAVFIX self
 -- @param #string Name Name of the fix. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param Core.Point#COORDINATE Coordinate Coordinate of the point.
 -- @return #NAVFIX self
 function NAVFIX:NewFromCoordinate(Name, Type, Coordinate)
@@ -249089,7 +252341,7 @@ end
 --- Create a new NAVFIX instance from given latitude and longitude in degrees, minutes and seconds (DMS).
 -- @param #NAVFIX self
 -- @param #string Name Name of the fix. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param #string Latitude Latitude in DMS as string.
 -- @param #string Longitude Longitude in DMS as string.
 -- @return #NAVFIX self
@@ -249107,7 +252359,7 @@ end
 --- Create a new NAVFIX instance from given latitude and longitude in decimal degrees (DD).
 -- @param #NAVFIX self
 -- @param #string Name Name of the fix. Should be unique!
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param #number Latitude Latitude in DD.
 -- @param #number Longitude Longitude in DD.
 -- @return #NAVFIX self
@@ -249444,7 +252696,7 @@ NAVAID.version="0.1.0"
 --- Create a new NAVAID class instance.
 -- @param #NAVAID self
 -- @param #string Name Name/ident of this navaid.
--- @param #string Type Type of the point. Default `NAVFIX.Type.POINT`.
+-- @param #string Type (Optional) Type of the point. Default `NAVFIX.Type.POINT`.
 -- @param #string ZoneName Name of the zone to scan the scenery.
 -- @param #string SceneryName Name of the scenery object.
 -- @return #NAVAID self
@@ -249500,7 +252752,7 @@ end
 --- Set channel of, *e.g.*, TACAN beacons.
 -- @param #NAVAID self
 -- @param #number Channel The channel.
--- @param #string Band The band either `"X"` (default) or `"Y"`. 
+-- @param #string Band (Optional) The band either `"X"` (default) or `"Y"`. 
 -- @return #NAVAID self
 function NAVAID:SetChannel(Channel, Band)
 
@@ -249765,7 +253017,7 @@ end
 --- Find closest beacons to a given coordinate.
 -- @param #BEACONS self
 -- @param Core.Point#COORDINATE Coordinate The reference coordinate.
--- @param #number Nmax Max number of beacons. Default 5.
+-- @param #number Nmax (Optional) Max number of beacons. Default 5.
 -- @param #number TypeID (Optional) Only search for specific beacon types, *e.g.* `BEACON.Type.TACAN`.
 -- @param #number DistMax (Optional) Max search distance in meters.
 -- @return #table Table of #BEACONS.Beacon closest beacons.
@@ -250206,7 +253458,7 @@ end
 --- Find closest radios to a given coordinate.
 -- @param #RADIOS self
 -- @param Core.Point#COORDINATE Coordinate The reference coordinate.
--- @param #number Nmax Max number of radios. Default 5.
+-- @param #number Nmax (Optional) Max number of radios. Default 5.
 -- @param #number DistMax (Optional) Max search distance in meters.
 -- @return #table Table of #RADIOS.Radio closest radios.
 function RADIOS:GetClosestRadios(Coordinate, Nmax, DistMax)
@@ -250620,7 +253872,7 @@ end
 --- Find closest towns to a given coordinate.
 -- @param #TOWNS self
 -- @param Core.Point#COORDINATE Coordinate The reference coordinate.
--- @param #number Nmax Max number of towns. Default 5.
+-- @param #number Nmax (Optional) Max number of towns. Default 5.
 -- @param #number DistMax (Optional) Max search distance in meters.
 -- @return #table Table of #TOWNS.Town closest towns.
 function TOWNS:GetClosestTowns(Coordinate, Nmax, DistMax)
