@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-05T10:17:09+01:00-3514073433e1c68496b72dda6d0ecdef9aa6514a ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-05T16:01:42+01:00-514ac30ad133c830fbe870827ae44c23fb6fd315 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -247854,6 +247854,7 @@ do -- Text-To-Speech
   -- @field #string culture Culture, e.g. "en-GB".
   -- @field #string voice Specific voice to use. Overrules `gender` and `culture` settings.
   -- @field #number speed Specific speed to be used.
+  -- @field #string speaker (PIPER/HOUND only) sub-voice speaker to be used.
   -- @extends Core.Base#BASE
 
 
@@ -247980,13 +247981,24 @@ do -- Text-To-Speech
     return self
   end
   
-    --- Set to use a specific speed.
+  --- Set to use a specific speed.
   -- @param #SOUNDTEXT self
   -- @param #number Speed
   -- @return #SOUNDTEXT self
   function SOUNDTEXT:SetSpeed(Speed)
     
     self.speed = Speed or 1.0
+                  
+    return self
+  end
+  
+      --- Set to use a specific speaker (PIPER sub-voice).
+  -- @param #SOUNDTEXT self
+  -- @param #string Speaker
+  -- @return #SOUNDTEXT self
+  function SOUNDTEXT:SetSpeaker(Speaker)
+    
+    self.speaker = Speaker
                   
     return self
   end
@@ -250980,7 +250992,7 @@ function MSRS:PlaySoundText(SoundText, Delay)
     if self.backend==MSRS.Backend.GRPC then
       self:_DCSgRPCtts(SoundText.text, nil, SoundText.gender, SoundText.culture, SoundText.voice, SoundText.volume, SoundText.label, SoundText.coordinate)
     elseif self.backend == MSRS.Backend.HOUND then
-      self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice)
+      self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice,nil,SoundText.speaker)
     else
 
       -- Get command.
@@ -251005,21 +251017,22 @@ end
 -- @param #number Delay Delay in seconds, before the message is played.
 -- @param Core.Point#COORDINATE Coordinate Coordinate.
 -- @param #number Speed
+-- @param #string Speaker Speaker (Sub-Voice) for PIPER only
 -- @return #MSRS self
-function MSRS:PlayText(Text, Delay, Coordinate, Speed)
+function MSRS:PlayText(Text, Delay, Coordinate, Speed, Speaker)
   self:F( {Text, Delay, Coordinate} )
 
   if Delay and Delay>0 then
-    self:ScheduleOnce(Delay, MSRS.PlayText, self, Text, nil, Coordinate)
+    self:ScheduleOnce(Delay, MSRS.PlayText, self, Text, nil, Coordinate, Speed, Speaker)
   else
 
     if self.backend==MSRS.Backend.GRPC then
       self:T(self.lid.."Transmitting")
       self:_DCSgRPCtts(Text, nil, nil , nil, nil, nil, nil, Coordinate)
     elseif self.backend==MSRS.Backend.HOUND then
-      self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed)
+      self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,Speaker)
     else
-      self:PlayTextExt(Text, Delay, nil, nil, nil, nil, nil, nil, nil, Coordinate, Speed)
+      self:PlayTextExt(Text, Delay, nil, nil, nil, nil, nil, nil, nil, Coordinate, Speed, Speaker)
     end
 
   end
@@ -251040,8 +251053,9 @@ end
 -- @param #string Label Label.
 -- @param Core.Point#COORDINATE Coordinate Coordinate.
 -- @param #number Speed Speed.
+-- @param #string Speaker Speaker (Sub-Voice) for PIPER only
 -- @return #MSRS self
-function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate,Speed)
+function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate,Speed,Speaker)
   self:T({Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed} )
 
   if Delay and Delay>0 then
@@ -251072,7 +251086,7 @@ function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture
       
       local UseGoogle = (self.provider == MSRS.Provider.GOOGLE) and true or nil
       
-      self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle)
+      self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
       
     end
 
@@ -251473,8 +251487,9 @@ end
 -- @param #string Culture (Optional) Culture to use.
 -- @param #string Voice (Optional) Voice to use.
 -- @param #boolean UseGoogle (Optional) If to use Google TTS.
+-- @param #string Speaker Speaker (Sub-Voice) for PIPER only
 -- @return SpeechTime Speech time in seconds.
-function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle)
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
   self:I(self.lid.."_HoundTextToSpeech")
   
   Frequencies = UTILS.EnsureTable(Frequencies)
@@ -251531,6 +251546,7 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
     speed = speed,
     culture = culture,
     gender = gender,
+    speaker = Speaker,
   }
   
   local speechtime = HoundTTS.Transmit(Message, TransmissionP, ProviderP)
@@ -251851,6 +251867,8 @@ MSRSQUEUE = {
 -- @field #number volume Volume
 -- @field #string label Label to be used
 -- @field Core.Point#COORDINATE coordinate Coordinate for this transmission
+-- @field #number speed Speed of speech 1=100%
+-- @field #string speaker PIPER subvoice "speaker" 
 -- @field #number speed Speed to be used
 
 --- Create a new MSRSQUEUE object for a given radio frequency/modulation.
@@ -251937,8 +251955,9 @@ end
 -- @param #string label (Optional) Label to be used
 -- @param Core.Point#COORDINATE coordinate (Optional) Coordinate to be used
 -- @param #number speed (Optional) Speed to be used
+-- @param #string speaker (Optional) PIPER voice can have various speakers, set this here if you use PIPER/HOUND with a fitting voice.
 -- @return #MSRSQUEUE.Transmission Radio transmission table.
-function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed)
+function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed,speaker)
   self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label, S=speed})
   if self.TransmitOnlyWithPlayers then
     if self.PlayerSet and self.PlayerSet:CountAlive() == 0 then
@@ -251980,7 +251999,9 @@ function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgr
   transmission.label = label or msrs.Label
   transmission.coordinate = coordinate or msrs.coordinate
   transmission.speed = speed or 1.0
- 
+  if speaker then
+  transmission.speaker = speaker
+  end
   -- Add transmission to queue.
   self:AddTransmission(transmission)
 
@@ -251994,9 +252015,9 @@ function MSRSQUEUE:Broadcast(transmission)
   self:T(self.lid.."Broadcast")
   
   if transmission.frequency then
-    transmission.msrs:PlayTextExt(transmission.text, nil, transmission.frequency, transmission.modulation, transmission.gender, transmission.culture, transmission.voice, transmission.volume, transmission.label, transmission.coordinate, transmission.speed)
+    transmission.msrs:PlayTextExt(transmission.text, nil, transmission.frequency, transmission.modulation, transmission.gender, transmission.culture, transmission.voice, transmission.volume, transmission.label, transmission.coordinate, transmission.speed, transmission.speaker)
   else
-    transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed)
+    transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed,transmission.speaker)
   end
 
   local function texttogroup(gid)

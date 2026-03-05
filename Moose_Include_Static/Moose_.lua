@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-05T10:17:09+01:00-3514073433e1c68496b72dda6d0ecdef9aa6514a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-05T16:01:42+01:00-514ac30ad133c830fbe870827ae44c23fb6fd315 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -123535,6 +123535,10 @@ function SOUNDTEXT:SetSpeed(Speed)
 self.speed=Speed or 1.0
 return self
 end
+function SOUNDTEXT:SetSpeaker(Speaker)
+self.speaker=Speaker
+return self
+end
 end
 RADIO={
 ClassName="RADIO",
@@ -125070,7 +125074,7 @@ else
 if self.backend==MSRS.Backend.GRPC then
 self:_DCSgRPCtts(SoundText.text,nil,SoundText.gender,SoundText.culture,SoundText.voice,SoundText.volume,SoundText.label,SoundText.coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
-self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice)
+self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice,nil,SoundText.speaker)
 else
 local command=self:_GetCommand(nil,nil,nil,SoundText.gender,SoundText.voice,SoundText.culture,SoundText.volume,SoundText.speed)
 command=command..string.format(" --text=\"%s\"",tostring(SoundText.text))
@@ -125079,23 +125083,23 @@ end
 end
 return self
 end
-function MSRS:PlayText(Text,Delay,Coordinate,Speed)
+function MSRS:PlayText(Text,Delay,Coordinate,Speed,Speaker)
 self:F({Text,Delay,Coordinate})
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate)
+self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate,Speed,Speaker)
 else
 if self.backend==MSRS.Backend.GRPC then
 self:T(self.lid.."Transmitting")
 self:_DCSgRPCtts(Text,nil,nil,nil,nil,nil,nil,Coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
-self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed)
+self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,Speaker)
 else
-self:PlayTextExt(Text,Delay,nil,nil,nil,nil,nil,nil,nil,Coordinate,Speed)
+self:PlayTextExt(Text,Delay,nil,nil,nil,nil,nil,nil,nil,Coordinate,Speed,Speaker)
 end
 end
 return self
 end
-function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed)
+function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker)
 self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed)
@@ -125110,7 +125114,7 @@ elseif self.backend==MSRS.Backend.GRPC then
 self:_DCSgRPCtts(Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
 local UseGoogle=(self.provider==MSRS.Provider.GOOGLE)and true or nil
-self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle)
+self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
 end
 end
 return self
@@ -125287,7 +125291,7 @@ self:T(options.provider[provider])
 GRPC.tts(ssml,freq*1e6,options)
 end
 end
-function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle)
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
 self:I(self.lid.."_HoundTextToSpeech")
 Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
@@ -125331,6 +125335,7 @@ voice=voice,
 speed=speed,
 culture=culture,
 gender=gender,
+speaker=Speaker,
 }
 local speechtime=HoundTTS.Transmit(Message,TransmissionP,ProviderP)
 return speechtime
@@ -125475,7 +125480,7 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed)
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker)
 self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
@@ -125512,15 +125517,18 @@ transmission.volume=volume or msrs.volume
 transmission.label=label or msrs.Label
 transmission.coordinate=coordinate or msrs.coordinate
 transmission.speed=speed or 1.0
+if speaker then
+transmission.speaker=speaker
+end
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
 self:T(self.lid.."Broadcast")
 if transmission.frequency then
-transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate,transmission.speed)
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate,transmission.speed,transmission.speaker)
 else
-transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed)
+transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed,transmission.speaker)
 end
 local function texttogroup(gid)
 trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
