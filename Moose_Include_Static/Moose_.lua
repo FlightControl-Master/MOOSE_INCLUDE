@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-05T16:01:42+01:00-514ac30ad133c830fbe870827ae44c23fb6fd315 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-06T20:25:59+01:00-06acd02dbbcdf5a59063adaeafcbf1dae7e8ac1c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -73895,7 +73895,7 @@ dropOffZones={},
 pickupZones={},
 DynamicCargo={},
 UseC130DynamicCargoAutoBuild=false,
-C130DynamicCargoAutoBuildMergeSeconds=10,
+C130DynamicCargoAutoBuildMergeSeconds=0,
 ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
 TroopUnloadDistGroundHerc=25,
@@ -74118,7 +74118,7 @@ self.basetype="container_cargo"
 self.C130basetype="cds_crate"
 self.UseC130LoadAndUnload=false
 self.UseC130DynamicCargoAutoBuild=false
-self.C130DynamicCargoAutoBuildMergeSeconds=10
+self.C130DynamicCargoAutoBuildMergeSeconds=0
 self.SmokeColor=SMOKECOLOR.Red
 self.FlareColor=FLARECOLOR.Red
 for i=1,100 do
@@ -74758,7 +74758,7 @@ local setData=self._c130DcAutoSets and self._c130DcAutoSets[SetId]or nil
 if not setData or setData.failed then return false end
 if setData.completed or setData.buildStarted or setData.handoffClaimed then return true end
 local ownerKey=self:_C130DcAutoGetOwnerKey(setData)or SetId
-local window=tonumber(self.C130DynamicCargoAutoBuildMergeSeconds)or 10
+local window=self.C130DynamicCargoAutoBuildMergeSeconds or 0
 if window<0 then
 window=0
 end
@@ -75079,9 +75079,11 @@ loaded.Cargo={}
 self.Loaded_Cargo[unitname]=loaded
 end
 local Group=client:GetGroup()
+if not self:IsC130J(client,true)then
 local msg=self.gettext:GetEntry("CRATE_UNLOADED_GROUNDCREW",self.locale)
 msg=string.format(msg,event.IniDynamicCargoName)
 self:_SendMessage(msg,10,false,Group)
+end
 self:__CratesDropped(1,Group,client,{dcargo})
 self:_RefreshCrateQuantityMenus(Group,client,nil)
 end
@@ -77190,6 +77192,7 @@ finddist=self.EngineerSearch
 end
 local crates,number=self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering)
 local activeSetId=Engineering and self._c130DcAutoActiveSetId or nil
+local isC130Auto=Engineering and activeSetId~=nil
 local notifyGroup=(not Engineering)and Group or nil
 if activeSetId then
 crates,number=self:_C130DcAutoFilterCrates(crates,activeSetId)
@@ -77266,6 +77269,7 @@ self:T({buildables=buildables})
 end
 end
 end
+if not isC130Auto then
 local report=REPORT:New("Checklist Buildable Crates")
 report:Add("------------------------------------------------------------")
 for _,_build in pairs(buildables)do
@@ -77295,8 +77299,31 @@ self:_SendMessage(text,30,true,notifyGroup,true)
 else
 self:T(text)
 end
+end
 if canbuild then
 local notified=false
+local function notifyBuildStarted(buildName,etaSeconds)
+if notified then return end
+local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
+if isC130Auto then
+if startMsgGroup then
+local msg
+if etaSeconds and etaSeconds>0 then
+msg=string.format("CTLD: Building %s (ETA %ds).",tostring(buildName),math.floor(etaSeconds))
+else
+msg=string.format("CTLD: Building %s.",tostring(buildName))
+end
+self:_SendMessage(msg,15,false,startMsgGroup)
+end
+else
+local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
+msg=string.format(msg,self.buildtime)
+if startMsgGroup then
+self:_SendMessage(msg,15,false,startMsgGroup)
+end
+end
+notified=true
+end
 for _,_build in pairs(buildables)do
 local build=_build
 if build.CanBuild then
@@ -77318,15 +77345,12 @@ self:_RefreshLoadCratesMenu(Group,Unit)
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
-if not notified then
-local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
-msg=string.format(msg,self.buildtime)
-local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
-self:_SendMessage(msg,15,false,startMsgGroup)
-notified=true
-end
+notifyBuildStarted(build.Name,self.buildtime)
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
 else
+if isC130Auto then
+notifyBuildStarted(build.Name,nil)
+end
 self:_BuildObjectFromCrates(Group,Unit,build,false,nil,MultiDrop)
 end
 else
@@ -77344,17 +77368,12 @@ local b={Name=build.Name,Required=build.Required,Template=build.Template,CanBuil
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,b,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
-if not notified then
-local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
-msg=string.format(msg,self.buildtime)
-local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
-if startMsgGroup then
-self:_SendMessage(msg,15,false,startMsgGroup)
-end
-notified=true
-end
+notifyBuildStarted(build.Name,self.buildtime)
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
 else
+if isC130Auto then
+notifyBuildStarted(build.Name,nil)
+end
 self:_BuildObjectFromCrates(Group,Unit,b,false,nil,MultiDrop)
 end
 end
