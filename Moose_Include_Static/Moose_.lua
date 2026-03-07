@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-05T09:56:12+01:00-9afd5161825a2b71f2b0bc5e7c704324b58ef148 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:08:34+01:00-04accc28c87039e77c585df43a9c2d5d3c8412c2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19858,7 +19858,7 @@ end
 return self
 end
 _MESSAGESRS={}
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider)
 _MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
@@ -19879,6 +19879,9 @@ _MESSAGESRS.MSRS:SetGender(Gender)
 if PathToCredentials then
 _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
 _MESSAGESRS.MSRS:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+_MESSAGESRS.MSRS:SetProvider(Provider)
 end
 _MESSAGESRS.label=Label or MSRS.Label or"MESSAGE"
 _MESSAGESRS.MSRS:SetLabel(_MESSAGESRS.label)
@@ -45282,7 +45285,7 @@ function RANGE:TrackMissilesOFF()
 self.trackmissiles=false
 return self
 end
-function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey)
+function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey,Provider)
 if PathToSRS or MSRS.path then
 self.useSRS=true
 self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM)
@@ -45308,6 +45311,10 @@ self.controlmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
 self.controlmsrs:SetProvider(MSRS.Provider.GOOGLE)
 self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
 self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.controlmsrs:SetProvider(Provider)
+self.instructmsrs:SetProvider(Provider)
 end
 else
 self:E(self.lid..string.format("ERROR: No SRS path specified!"))
@@ -57913,7 +57920,7 @@ self.SRS:SetPort(self.SRSPort)
 end
 return self
 end
-function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials)
+function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider)
 self:T(self.lid.."SetSRSTTSRadio")
 self.SRSTTSRadio=OnOff and true
 self.SRSRadio=false
@@ -57929,10 +57936,13 @@ self.SRS:SetLabel("ACSR")
 self.SRS:SetVoice(Voice)
 self.SRS:SetCulture(Culture)
 self.SRS:SetGender(Gender)
-if GoogleCredentials then
+if GoogleCredentials and not Provider then
 self.SRS:SetProviderOptionsGoogle(GoogleCredentials,GoogleCredentials)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
 self.SRSGoogle=true
+end
+if Provider then
+self.SRS:SetProvider(Provider)
 end
 self.SRSQ=MSRSQUEUE:New(self.alias)
 end
@@ -59145,7 +59155,7 @@ color=self.RecceSmokeColor[RecceName]
 end
 return color
 end
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider)
 if OnOff then
 self.useSRS=true
 self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
@@ -59167,9 +59177,12 @@ self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetVolume(self.Volume)
-if self.PathToGoogleKey then
+if self.PathToGoogleKey and not Provider then
 self.SRS:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.SRS:SetProvider(Provider)
 end
 self.SRSQueue=MSRSQUEUE:New(self.alias)
 else
@@ -72719,7 +72732,7 @@ airbase:GetRunwayData(self.runwaym2t,true)
 end
 end
 end
-function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey)
+function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey,Provider)
 self.useSRS=true
 local path=PathToSRS or MSRS.path
 local gender=Gender or MSRS.gender
@@ -72741,6 +72754,9 @@ voice=Voice or MSRS.poptions.gcloud.voice
 end
 self.msrs:SetVoice(voice)
 self.msrs:SetCoordinate(self.airbase:GetCoordinate())
+if Provider then
+self.msrs:SetProvider(Provider)
+end
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 if self.dTQueueCheck<=10 then
@@ -73898,7 +73914,7 @@ dropOffZones={},
 pickupZones={},
 DynamicCargo={},
 UseC130DynamicCargoAutoBuild=false,
-C130DynamicCargoAutoBuildMergeSeconds=10,
+C130DynamicCargoAutoBuildMergeSeconds=0,
 ChinookTroopCircleRadius=5,
 TroopUnloadDistGround=5,
 TroopUnloadDistGroundHerc=25,
@@ -74121,7 +74137,7 @@ self.basetype="container_cargo"
 self.C130basetype="cds_crate"
 self.UseC130LoadAndUnload=false
 self.UseC130DynamicCargoAutoBuild=false
-self.C130DynamicCargoAutoBuildMergeSeconds=10
+self.C130DynamicCargoAutoBuildMergeSeconds=0
 self.SmokeColor=SMOKECOLOR.Red
 self.FlareColor=FLARECOLOR.Red
 for i=1,100 do
@@ -74761,7 +74777,7 @@ local setData=self._c130DcAutoSets and self._c130DcAutoSets[SetId]or nil
 if not setData or setData.failed then return false end
 if setData.completed or setData.buildStarted or setData.handoffClaimed then return true end
 local ownerKey=self:_C130DcAutoGetOwnerKey(setData)or SetId
-local window=tonumber(self.C130DynamicCargoAutoBuildMergeSeconds)or 10
+local window=self.C130DynamicCargoAutoBuildMergeSeconds or 0
 if window<0 then
 window=0
 end
@@ -75082,9 +75098,11 @@ loaded.Cargo={}
 self.Loaded_Cargo[unitname]=loaded
 end
 local Group=client:GetGroup()
+if not self:IsC130J(client,true)then
 local msg=self.gettext:GetEntry("CRATE_UNLOADED_GROUNDCREW",self.locale)
 msg=string.format(msg,event.IniDynamicCargoName)
 self:_SendMessage(msg,10,false,Group)
+end
 self:__CratesDropped(1,Group,client,{dcargo})
 self:_RefreshCrateQuantityMenus(Group,client,nil)
 end
@@ -77193,6 +77211,7 @@ finddist=self.EngineerSearch
 end
 local crates,number=self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering)
 local activeSetId=Engineering and self._c130DcAutoActiveSetId or nil
+local isC130Auto=Engineering and activeSetId~=nil
 local notifyGroup=(not Engineering)and Group or nil
 if activeSetId then
 crates,number=self:_C130DcAutoFilterCrates(crates,activeSetId)
@@ -77269,6 +77288,7 @@ self:T({buildables=buildables})
 end
 end
 end
+if not isC130Auto then
 local report=REPORT:New("Checklist Buildable Crates")
 report:Add("------------------------------------------------------------")
 for _,_build in pairs(buildables)do
@@ -77298,8 +77318,31 @@ self:_SendMessage(text,30,true,notifyGroup,true)
 else
 self:T(text)
 end
+end
 if canbuild then
 local notified=false
+local function notifyBuildStarted(buildName,etaSeconds)
+if notified then return end
+local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
+if isC130Auto then
+if startMsgGroup then
+local msg
+if etaSeconds and etaSeconds>0 then
+msg=string.format("CTLD: Building %s (ETA %ds).",tostring(buildName),math.floor(etaSeconds))
+else
+msg=string.format("CTLD: Building %s.",tostring(buildName))
+end
+self:_SendMessage(msg,15,false,startMsgGroup)
+end
+else
+local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
+msg=string.format(msg,self.buildtime)
+if startMsgGroup then
+self:_SendMessage(msg,15,false,startMsgGroup)
+end
+end
+notified=true
+end
 for _,_build in pairs(buildables)do
 local build=_build
 if build.CanBuild then
@@ -77321,15 +77364,12 @@ self:_RefreshLoadCratesMenu(Group,Unit)
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
-if not notified then
-local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
-msg=string.format(msg,self.buildtime)
-local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
-self:_SendMessage(msg,15,false,startMsgGroup)
-notified=true
-end
+notifyBuildStarted(build.Name,self.buildtime)
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
 else
+if isC130Auto then
+notifyBuildStarted(build.Name,nil)
+end
 self:_BuildObjectFromCrates(Group,Unit,build,false,nil,MultiDrop)
 end
 else
@@ -77347,17 +77387,12 @@ local b={Name=build.Name,Required=build.Required,Template=build.Template,CanBuil
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,b,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
-if not notified then
-local msg=self.gettext:GetEntry("BUILD_STARTED",self.locale)
-msg=string.format(msg,self.buildtime)
-local startMsgGroup=(not Engineering and(notifyGroup or Group))or notifyGroup
-if startMsgGroup then
-self:_SendMessage(msg,15,false,startMsgGroup)
-end
-notified=true
-end
+notifyBuildStarted(build.Name,self.buildtime)
 self:__CratesBuildStarted(1,Group,Unit,build.Name)
 else
+if isC130Auto then
+notifyBuildStarted(build.Name,nil)
+end
 self:_BuildObjectFromCrates(Group,Unit,b,false,nil,MultiDrop)
 end
 end
@@ -84287,15 +84322,17 @@ self.msrs=MSRS:New(path,channel,modulation)
 self.msrs:SetPort(self.SRSport)
 self.msrs:SetLabel("CSAR")
 self.msrs:SetBackend(self.SRSBackend)
-self.msrs:SetProvider(self.SRSProvider)
 self.msrs.speed=self.SRSSpeed
 self.msrs:SetCulture(self.SRSCulture)
 self.msrs:SetCoalition(self.coalition)
 self.msrs:SetVoice(self.SRSVoice)
 self.msrs:SetGender(self.SRSGender)
-if self.SRSGPathToCredentials then
+if self.SRSGPathToCredentials and(not self.SRSProvider)then
 self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
 self.msrs:SetProvider(MSRS.Provider.GOOGLE)
+end
+if self.SRSProvider then
+self.msrs:SetProvider(self.SRSProvider)
 end
 self.msrs:SetVolume(self.SRSVolume)
 self.msrs:SetLabel("CSAR")
@@ -89992,10 +90029,10 @@ self:HandleEvent(EVENTS.Shot,self._EventHandler)
 self:_InitLocalization()
 return self
 end
-function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number)
+function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider)
 self:T(self.lid.."SetTacticalRadios")
 if not self.AwacsSRS then
-MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tac radios please!",30,"ERROR",true):ToLog():ToAll()
+MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tactical radios please!",30,"ERROR",true):ToLog():ToAll()
 return self
 end
 self.TacticalMenu=true
@@ -90022,6 +90059,9 @@ self.TacticalSRS:SetVolume(self.Volume)
 if self.PathToGoogleKey then
 self.TacticalSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 self.TacticalSRS:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.TacticalSRS:SetProvider(Provider)
 end
 self.TacticalSRSQ=MSRSQUEUE:New("Tactical AWACS")
 end
@@ -90472,7 +90512,7 @@ self.DetectionSet:AddSet(Group)
 end
 return self
 end
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -90494,6 +90534,9 @@ self.AwacsSRS:SetVolume(Volume)
 if self.PathToGoogleKey then
 self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 self.AwacsSRS:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.AwacsSRS:SetProvider(Provider)
 end
 if(not PathToGoogleKey)and self.AwacsSRS:GetProvider()==MSRS.Provider.GOOGLE then
 self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
@@ -97582,7 +97625,7 @@ TAXIINB="Taxi To Parking",
 ARRIVED="Arrived",
 }
 FLIGHTCONTROL.version="0.7.7"
-function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey)
+function FLIGHTCONTROL:New(AirbaseName,Frequency,Modulation,PathToSRS,Port,GoogleKey,Provider)
 local self=BASE:Inherit(self,FSM:New())
 self.airbase=AIRBASE:FindByName(AirbaseName)
 self.airbasename=AirbaseName
@@ -97619,6 +97662,9 @@ if GoogleKey then
 self.msrsTower:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
 self.msrsTower:SetProvider(MSRS.Provider.GOOGLE)
 end
+if Provider then
+self.msrsTower:SetProvider(Provider)
+end
 self.msrsTower:SetCoordinate(self:GetCoordinate())
 self:SetSRSTower()
 self.msrsPilot=MSRS:New(PathToSRS,Frequency,Modulation)
@@ -97626,6 +97672,9 @@ self.msrsPilot:SetPort(self.Port)
 if GoogleKey then
 self.msrsPilot:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
 self.msrsPilot:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.msrsPilot:SetProvider(Provider)
 end
 self.msrsTower:SetCoordinate(self:GetCoordinate())
 self:SetSRSPilot()
@@ -107438,7 +107487,7 @@ end
 end
 return self
 end
-function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume)
+function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume,Provider)
 self.useSRS=true
 local path=PathToSRS or MSRS.path
 local port=Port or MSRS.port
@@ -107451,6 +107500,9 @@ self.msrs:SetLabel(Label)
 if PathToGoogleKey then
 self.msrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
 self.msrs:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.msrs:SetProvider(Provider)
 end
 self.msrs:SetCoalition(self:GetCoalition())
 self.msrs:SetVolume(Volume)
@@ -117933,7 +117985,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -117963,6 +118015,9 @@ if(not PathToGoogleKey)and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
 self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
 self.Voice=Voice or MSRS.poptions.gcloud.voice
 self.AccessKey=AccessKey or MSRS.poptions.gcloud.key
+end
+if Provider then
+self.SRS:SetProvider(Provider)
 end
 if Coordinate then
 self.SRS:SetCoordinate(Coordinate)
@@ -119194,7 +119249,7 @@ self:TargetDetected(targetsbyclock,client,playername)
 end
 return self
 end
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -119221,6 +119276,9 @@ end
 if self.PathToGoogleKey then
 self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.PathToGoogleKey)
 self.SRS:SetProvider(MSRS.Provider.GOOGLE)
+end
+if Provider then
+self.SRS:SetProvider(Provider)
 end
 if(not PathToGoogleKey)and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
 self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
@@ -121530,7 +121588,7 @@ Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
 Squadron_One:SetMissionRange(self.missionrange)
 local wing=self.wings[AirbaseName][1]
 wing:AddSquadron(Squadron_One)
-wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.PATROLRACETRACK,AUFTRAG.Type.ALERT5},75)
+wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.PATROLRACETRACK,AUFTRAG.Type.ALERT5},100)
 return self
 end
 function EASYGCICAP:_AddReconSquadron(TemplateName,SquadName,AirbaseName,AirFrames,Skill,Modex,Livery)
@@ -123540,6 +123598,10 @@ function SOUNDTEXT:SetSpeed(Speed)
 self.speed=Speed or 1.0
 return self
 end
+function SOUNDTEXT:SetSpeaker(Speaker)
+self.speaker=Speaker
+return self
+end
 end
 RADIO={
 ClassName="RADIO",
@@ -124704,6 +124766,7 @@ GOOGLE="gcloud",
 AZURE="azure",
 AMAZON="aws",
 PIPER="piper",
+KITTEN="kitten",
 }
 function MSRS.uuid()
 local random=math.random
@@ -124913,6 +124976,11 @@ self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"en_US-ryan-low",MSRS.Provider.PIPER)
 return self
 end
+function MSRS:SetSpeakerPiper(Speaker)
+self:F({Speaker=Speaker})
+self.Speaker=Speaker
+return self
+end
 function MSRS:SetVoiceAzure(Voice)
 self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"en-US-AriaNeural",MSRS.Provider.AZURE)
@@ -125034,6 +125102,11 @@ self:F()
 self:SetProvider(MSRS.Provider.PIPER)
 return self
 end
+function MSRS:SetTTSProviderKitten()
+self:F()
+self:SetProvider(MSRS.Provider.KITTEN)
+return self
+end
 function MSRS:Help()
 self:F()
 local path=self:GetPath()
@@ -125076,7 +125149,7 @@ else
 if self.backend==MSRS.Backend.GRPC then
 self:_DCSgRPCtts(SoundText.text,nil,SoundText.gender,SoundText.culture,SoundText.voice,SoundText.volume,SoundText.label,SoundText.coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
-self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice)
+self:_HoundTextToSpeech(SoundText.text,nil,nil,SoundText.volume,SoundText.label,self.coalition,SoundText.coordinate,SoundText.Speed,SoundText.gender,SoundText.culture,SoundText.voice,nil,SoundText.speaker)
 else
 local command=self:_GetCommand(nil,nil,nil,SoundText.gender,SoundText.voice,SoundText.culture,SoundText.volume,SoundText.speed)
 command=command..string.format(" --text=\"%s\"",tostring(SoundText.text))
@@ -125085,26 +125158,27 @@ end
 end
 return self
 end
-function MSRS:PlayText(Text,Delay,Coordinate,Speed)
+function MSRS:PlayText(Text,Delay,Coordinate,Speed,Speaker)
 self:F({Text,Delay,Coordinate})
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate)
+self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate,Speed,Speaker)
 else
+local speaker=Speaker or self.Speaker
 if self.backend==MSRS.Backend.GRPC then
 self:T(self.lid.."Transmitting")
 self:_DCSgRPCtts(Text,nil,nil,nil,nil,nil,nil,Coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
-self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed)
+self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,speaker)
 else
-self:PlayTextExt(Text,Delay,nil,nil,nil,nil,nil,nil,nil,Coordinate,Speed)
+self:PlayTextExt(Text,Delay,nil,nil,nil,nil,nil,nil,nil,Coordinate,Speed,speaker)
 end
 end
 return self
 end
-function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed)
-self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed})
+function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker)
+self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker})
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed)
+self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker)
 else
 Frequencies=Frequencies or self:GetFrequencies()
 Modulations=Modulations or self:GetModulations()
@@ -125115,8 +125189,9 @@ self:_ExecCommand(command)
 elseif self.backend==MSRS.Backend.GRPC then
 self:_DCSgRPCtts(Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
+local speaker=Speaker or self.Speaker
 local UseGoogle=(self.provider==MSRS.Provider.GOOGLE)and true or nil
-self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle)
+self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,speaker)
 end
 end
 return self
@@ -125293,8 +125368,8 @@ self:T(options.provider[provider])
 GRPC.tts(ssml,freq*1e6,options)
 end
 end
-function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle)
-self:I(self.lid.."_HoundTextToSpeech")
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
+self:T(self.lid.."_HoundTextToSpeech")
 Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
 local ffs={}
@@ -125315,13 +125390,8 @@ local point=(coordinate~=nil)and coordinate:GetVec3()or nil
 local port=self.port or 5002
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
-self:I({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
-if(UseGoogle~=true)and self.provider==MSRS.Provider.GOOGLE then
-UseGoogle=true
-end
+self:T({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
 local provider=self.provider
-provider=provider:gsub("gcloud","google")
-provider=provider:gsub("win","sapi")
 local TransmissionP={
 freqs=freqs,
 modulations=modus,
@@ -125337,18 +125407,19 @@ voice=voice,
 speed=speed,
 culture=culture,
 gender=gender,
+speaker=Speaker or self.Speaker,
 }
 local speechtime=HoundTTS.Transmit(Message,TransmissionP,ProviderP)
 return speechtime
 end
 function MSRS:_HoundTransmit(Message,Transmission_params,Provider_params)
-self:I(self.lid.."_HoundTransmit")
-self:I({Message,Transmission_params,Provider_params})
+self:T(self.lid.."_HoundTransmit")
+self:T({Message,Transmission_params,Provider_params})
 local speechtime=HoundTTS.Transmit(Message,Transmission_params,Provider_params)
 return speechtime
 end
 function MSRS:_HoundTestTone(Frequencies,Modulations,Coalition)
-self:I(self.lid.."_HoundTestTone")
+self:T(self.lid.."_HoundTestTone")
 Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
 local ffs={}
@@ -125364,6 +125435,7 @@ HoundTTS.TestTone(freqs,modus,coal)
 return self
 end
 function MSRS:_HoundSpeechTime(Message,Speed,UseGoogle)
+self:T(self.lid.."_HoundSpeechTime")
 local speed=Speed or 1.0
 local speechtime=HoundTTS.getSpeechTime(Message,speed,UseGoogle)
 return speechtime
@@ -125481,8 +125553,9 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed)
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker)
 self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed})
+self:I({provider=msrs.provider})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
@@ -125518,15 +125591,20 @@ transmission.volume=volume or msrs.volume
 transmission.label=label or msrs.Label
 transmission.coordinate=coordinate or msrs.coordinate
 transmission.speed=speed or 1.0
+if speaker then
+transmission.speaker=speaker
+elseif msrs.Speaker then
+transmission.speaker=msrs.speaker
+end
 self:AddTransmission(transmission)
 return transmission
 end
 function MSRSQUEUE:Broadcast(transmission)
 self:T(self.lid.."Broadcast")
 if transmission.frequency then
-transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate,transmission.speed)
+transmission.msrs:PlayTextExt(transmission.text,nil,transmission.frequency,transmission.modulation,transmission.gender,transmission.culture,transmission.voice,transmission.volume,transmission.label,transmission.coordinate,transmission.speed,transmission.speaker)
 else
-transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed)
+transmission.msrs:PlayText(transmission.text,nil,transmission.coordinate,transmission.speed,transmission.speaker)
 end
 local function texttogroup(gid)
 trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
