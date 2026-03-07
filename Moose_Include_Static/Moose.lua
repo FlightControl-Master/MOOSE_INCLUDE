@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T09:56:33+01:00-835b7d66a17143e8c064b40661e5dc38ba6dec0e ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T11:35:12+01:00-dc8ebf7faac7208c1e35340225af7cc04f6f8e4c ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -37639,7 +37639,8 @@ _MESSAGESRS = {}
 -- @param #number Volume (optional) Volume, can be between 0.0 and 1.0 (loudest).
 -- @param #string Label (optional) Label, defaults to "MESSAGE" or the Message Category set.
 -- @param Core.Point#COORDINATE Coordinate (optional) Coordinate this messages originates from.
--- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
+-- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC or MSRS.Backend.HOUND etc
+-- @param #string Provider (optional) Privider to be used, can be MSRS.Provider.WINDOWS or MSRS.Backend.GOOGLE or MSRS.Backend.PIPER etc
 -- @usage
 --          -- Mind the dot here, not using the colon this time around!
 --          -- Needed once only
@@ -37647,7 +37648,7 @@ _MESSAGESRS = {}
 --          -- later on in your code
 --          MESSAGE:New("Test message!",15,"SPAWN"):ToSRS()
 --          
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider)
   
   _MESSAGESRS.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
   
@@ -37678,6 +37679,10 @@ function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,G
   if PathToCredentials then
     _MESSAGESRS.MSRS:SetProviderOptionsGoogle(PathToCredentials)
     _MESSAGESRS.MSRS:SetProvider(MSRS.Provider.GOOGLE)
+  end
+  
+  if Provider then
+    _MESSAGESRS.MSRS:SetProvider(Provider)
   end
   
   _MESSAGESRS.label = Label or MSRS.Label or "MESSAGE"
@@ -90304,8 +90309,9 @@ end
 -- @param #number Modulation (Optional) Modulation to use, defaults to radio.modulation.AM
 -- @param #number Volume (Optional) Volume, between 0.0 and 1.0. Defaults to 1.0
 -- @param #string PathToGoogleKey Path to Google TTS credentials.
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #RANGE self
-function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey)
+function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey,Provider)
 
   if PathToSRS or MSRS.path then
 
@@ -90337,7 +90343,10 @@ function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume,
       self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
       self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
     end
-
+    if Provider then
+      self.controlmsrs:SetProvider(Provider)
+      self.instructmsrs:SetProvider(Provider)
+    end
   else
     self:E(self.lid..string.format("ERROR: No SRS path specified!"))
   end
@@ -118065,8 +118074,9 @@ end
 -- @param #string Culture (Optional) The culture to be used, defaults to "en-GB"
 -- @param #string Gender (Optional)  The gender to be used, defaults to "male"
 -- @param #string GoogleCredentials (Optional) Path to google credentials
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #AICSAR self
-function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials)
+function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider)
   self:T(self.lid .. "SetSRSTTSRadio")
   self.SRSTTSRadio = OnOff and true
   self.SRSRadio = false
@@ -118082,10 +118092,13 @@ function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Cultur
     self.SRS:SetVoice(Voice)
     self.SRS:SetCulture(Culture)
     self.SRS:SetGender(Gender)
-    if GoogleCredentials then
+    if GoogleCredentials and not Provider then
       self.SRS:SetProviderOptionsGoogle(GoogleCredentials,GoogleCredentials)
       self.SRS:SetProvider(MSRS.Provider.GOOGLE)
       self.SRSGoogle = true
+    end
+    if Provider then
+      self.SRS:SetProvider(Provider)
     end
     self.SRSQ = MSRSQUEUE:New(self.alias)
   end
@@ -120171,10 +120184,11 @@ end
 -- @param #number Port (Optional) Defaults to 5002
 -- @param #string Voice (Optional) Use a specifc voice with the @{Sound.SRS#SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
--- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest)
--- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS
+-- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest).
+-- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS.
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #AUTOLASE self 
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey)
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider)
   if OnOff then
     self.useSRS = true
     self.SRSPath = Path or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
@@ -120197,9 +120211,12 @@ function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Cultu
     self.SRS:SetVoice(self.Voice)
     self.SRS:SetCoalition(self.coalition)
     self.SRS:SetVolume(self.Volume)
-    if self.PathToGoogleKey then
+    if self.PathToGoogleKey and not Provider then
       self.SRS:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
       self.SRS:SetProvider(MSRS.Provider.GOOGLE)
+    end
+    if Provider then
+      self.SRS:SetProvider(Provider)
     end
     self.SRSQueue = MSRSQUEUE:New(self.alias)
   else
@@ -149089,9 +149106,10 @@ end
 -- @param #string Culture (Optional) Culture, e.g. "en-GB" (default).
 -- @param #string Voice (Optional) Specific voice. Overrides `Gender` and `Culture`.
 -- @param #number Port (Optional) SRS port. Default 5002.
--- @param #string GoogleKey Path to Google JSON-Key (SRS exe backend) or Google API key (DCS-gRPC backend).
+-- @param #string GoogleKey (Optional) Path to Google JSON-Key (SRS exe backend) or Google API key (DCS-gRPC backend).
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #ATIS self
-function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey)
+function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider)
   --if PathToSRS or MSRS.path then
     self.useSRS=true
 
@@ -149117,6 +149135,9 @@ function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey)
     end
     self.msrs:SetVoice(voice)
     self.msrs:SetCoordinate(self.airbase:GetCoordinate())
+    if Provider then
+      self.msrs:SetProvider(Provider)
+    end
     self.msrsQ = MSRSQUEUE:New("ATIS")
     self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
     if self.dTQueueCheck<=10 then
@@ -166392,7 +166413,7 @@ function CSAR:onafterStart(From, Event, To)
     self.msrs:SetCoalition(self.coalition)
     self.msrs:SetVoice(self.SRSVoice)
     self.msrs:SetGender(self.SRSGender)
-    if self.SRSGPathToCredentials and (not self.SRSProvider) then
+    if self.SRSGPathToCredentials then
       self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
       self.msrs:SetProvider(MSRS.Provider.GOOGLE)
     end
@@ -179703,11 +179724,12 @@ end
 -- @param #number Modulation (Optional) Modulation to use, defaults to radio.modulation.AM.
 -- @param #number Interval Seconds between each update call.
 -- @param #number Number Number of Frequencies to create, can be 1..10.
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #AWACS self
-function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number)
+function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider)
   self:T(self.lid.."SetTacticalRadios")
   if not self.AwacsSRS then
-    MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tac radios please!",30,"ERROR",true):ToLog():ToAll()
+    MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tactical radios please!",30,"ERROR",true):ToLog():ToAll()
     return self
   end
   self.TacticalMenu = true
@@ -179735,6 +179757,9 @@ function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number)
       --self.TacticalSRS:SetGoogle(self.PathToGoogleKey)
       self.TacticalSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
       self.TacticalSRS:SetProvider(MSRS.Provider.GOOGLE)
+    end
+    if Provider then
+      self.TacticalSRS:SetProvider(Provider)
     end
     self.TacticalSRSQ = MSRSQUEUE:New("Tactical AWACS")
   end
@@ -180474,8 +180499,9 @@ end
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) Your MSRS Backend if different from your config file settings, e.g. MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #AWACS self
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" 
   self.Gender = Gender or MSRS.gender or "male"
@@ -180498,6 +180524,9 @@ function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey
     --self.AwacsSRS:SetGoogle(self.PathToGoogleKey)
     self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
     self.AwacsSRS:SetProvider(MSRS.Provider.GOOGLE)
+  end
+  if Provider then
+    self.AwacsSRS:SetProvider(Provider)
   end
    -- Pre-configured Google?
   if (not PathToGoogleKey) and self.AwacsSRS:GetProvider() == MSRS.Provider.GOOGLE then
@@ -194264,8 +194293,9 @@ FLIGHTCONTROL.version="0.7.7"
 -- @param #string PathToSRS (Optional) Path to the directory, where SRS is located.
 -- @param #number Port (Optional) Port of SRS Server, defaults to 5002
 -- @param #string GoogleKey (Optional) Path to the Google JSON-Key.
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:New(AirbaseName, Frequency, Modulation, PathToSRS, Port, GoogleKey)
+function FLIGHTCONTROL:New(AirbaseName, Frequency, Modulation, PathToSRS, Port, GoogleKey,Provider)
 
   -- Inherit everything from FSM class.
   local self=BASE:Inherit(self, FSM:New()) -- #FLIGHTCONTROL
@@ -194336,6 +194366,9 @@ function FLIGHTCONTROL:New(AirbaseName, Frequency, Modulation, PathToSRS, Port, 
   if GoogleKey then
     self.msrsTower:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
     self.msrsTower:SetProvider(MSRS.Provider.GOOGLE)
+  end
+  if Provider then
+    self.msrsTower:SetProvider(Provider)
   end  
   self.msrsTower:SetCoordinate(self:GetCoordinate())
   self:SetSRSTower()
@@ -194346,6 +194379,9 @@ function FLIGHTCONTROL:New(AirbaseName, Frequency, Modulation, PathToSRS, Port, 
   if GoogleKey then
     self.msrsPilot:SetProviderOptionsGoogle(GoogleKey,GoogleKey)
     self.msrsPilot:SetProvider(MSRS.Provider.GOOGLE)
+  end
+  if Provider then
+    self.msrsPilot:SetProvider(Provider)
   end  
   self.msrsTower:SetCoordinate(self:GetCoordinate())
   self:SetSRSPilot()
@@ -216639,8 +216675,9 @@ end
 -- @param #string PathToGoogleKey (Optional) Full path to the google credentials JSON file, e.g. `"C:\Users\myUsername\Downloads\key.json"`.
 -- @param #string Label (Optional) Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
 -- @param #number Volume (Optional) Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #OPSGROUP self
-function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume)
+function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume,Provider)
   self.useSRS=true
   local path = PathToSRS or MSRS.path
   local port = Port or MSRS.port
@@ -216653,6 +216690,9 @@ function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKe
   if PathToGoogleKey then
     self.msrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
     self.msrs:SetProvider(MSRS.Provider.GOOGLE)
+  end
+  if Provider then
+    self.msrs:SetProvider(Provider)
   end
   self.msrs:SetCoalition(self:GetCoalition())
   self.msrs:SetVolume(Volume)
@@ -237705,11 +237745,12 @@ end
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
 -- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest)
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
--- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
+-- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, you can hand in nil here.
 -- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate from which the controller radio is sending
--- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, hand in nil here.
+-- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, you can hand in nil here.
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #PLAYERTASKCONTROLLER self
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -237742,6 +237783,9 @@ function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Cultu
     self.PathToGoogleKey = MSRS.poptions.gcloud.credentials
     self.Voice = Voice or MSRS.poptions.gcloud.voice
     self.AccessKey = AccessKey or MSRS.poptions.gcloud.key
+  end
+  if Provider then
+    self.SRS:SetProvider(Provider)
   end
   if Coordinate then
     self.SRS:SetCoordinate(Coordinate)
@@ -239715,9 +239759,10 @@ end
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
 -- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest)
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS
--- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
+-- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC etc
+-- @param #string Provider (Optional) TTS Provider to be used.
 -- @return #PLAYERRECCE self
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -239745,6 +239790,9 @@ function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,V
   if self.PathToGoogleKey then
     self.SRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.PathToGoogleKey)
     self.SRS:SetProvider(MSRS.Provider.GOOGLE)
+  end
+  if Provider then
+    self.SRS:SetProvider(Provider)
   end
      -- Pre-configured Google?
   if (not PathToGoogleKey) and self.SRS:GetProvider() == MSRS.Provider.GOOGLE then
@@ -251511,7 +251559,7 @@ end
 -- @param #string Speaker Speaker (Sub-Voice) for PIPER only
 -- @return SpeechTime Speech time in seconds.
 function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
-  self:I(self.lid.."_HoundTextToSpeech")
+  self:T(self.lid.."_HoundTextToSpeech")
   
   Frequencies = UTILS.EnsureTable(Frequencies)
   Modulations = UTILS.EnsureTable(Modulations)
@@ -251542,7 +251590,7 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
   modus=modus:gsub("0", "AM")
   modus=modus:gsub("1", "FM")
   
-  self:I({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
+  self:T({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
   
   if (UseGoogle ~= true) and self.provider == MSRS.Provider.GOOGLE then
     UseGoogle = true
@@ -251607,8 +251655,8 @@ end
 --   | speed    | number | `1.0`                       | Speech rate (0.5 = half speed, 1.0 = normal, 2.0 = double speed)                   |
 --   
 function MSRS:_HoundTransmit(Message, Transmission_params, Provider_params)
-  self:I(self.lid.."_HoundTransmit")
-  self:I({Message,Transmission_params,Provider_params})
+  self:T(self.lid.."_HoundTransmit")
+  self:T({Message,Transmission_params,Provider_params})
   local speechtime = HoundTTS.Transmit(Message, Transmission_params, Provider_params)
   return speechtime
 end
@@ -251620,7 +251668,7 @@ end
 --  @param #table Modulations The table of modulations to use.
 --  @param #number Coalition The coalition to use.
 function MSRS:_HoundTestTone(Frequencies, Modulations, Coalition)
- self:I(self.lid.."_HoundTestTone")
+ self:T(self.lid.."_HoundTestTone")
  
  Frequencies = UTILS.EnsureTable(Frequencies)
  Modulations = UTILS.EnsureTable(Modulations)
@@ -251646,6 +251694,7 @@ end
 --  @param #number Speed (Optional) The speed to use, defaults to 1.0.
 --  @param #boolean UseGoogle (Optional) If to use google. Default: no.
 function MSRS:_HoundSpeechTime(Message,Speed,UseGoogle)
+  self:T(self.lid.."_HoundSpeechTime")
   local speed = Speed or 1.0
   local speechtime = HoundTTS.getSpeechTime(Message, speed, UseGoogle)
   return speechtime
