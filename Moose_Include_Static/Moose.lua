@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T11:35:12+01:00-dc8ebf7faac7208c1e35340225af7cc04f6f8e4c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:05:27+01:00-94179bbb33278933b9865aa268f2f88cdc55de8c ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -250722,6 +250722,17 @@ function MSRS:SetVoicePiper(Voice)
   return self
 end
 
+--- Set to use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
+-- @param #MSRS self
+-- @param #string Speaker (Optional) [Piper Voices](https://rhasspy.github.io/piper-samples/). Some have speakers as sub-voices.
+-- @return #MSRS self
+function MSRS:SetSpeakerPiper(Speaker)
+  self:F( {Speaker=Speaker} )
+  self.Speaker = Speaker
+
+  return self
+end
+
 --- Set to use a specific voice if Microsoft Azure is use as provider (only DCS-gRPC backend). Note that this will override any gender and culture settings.
 -- @param #MSRS self
 -- @param #string Voice (Optional) [Azure Voice](https://learn.microsoft.com/azure/cognitive-services/speech-service/language-support). Default `"en-US-AriaNeural"`.
@@ -251095,14 +251106,16 @@ function MSRS:PlayText(Text, Delay, Coordinate, Speed, Speaker)
     self:ScheduleOnce(Delay, MSRS.PlayText, self, Text, nil, Coordinate, Speed, Speaker)
   else
 
-    if self.backend==MSRS.Backend.GRPC then
-      self:T(self.lid.."Transmitting")
-      self:_DCSgRPCtts(Text, nil, nil , nil, nil, nil, nil, Coordinate)
-    elseif self.backend==MSRS.Backend.HOUND then
-      self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,Speaker)
-    else
-      self:PlayTextExt(Text, Delay, nil, nil, nil, nil, nil, nil, nil, Coordinate, Speed, Speaker)
-    end
+  local speaker = Speaker or self.Speaker
+
+  if self.backend==MSRS.Backend.GRPC then
+    self:T(self.lid.."Transmitting")
+    self:_DCSgRPCtts(Text, nil, nil , nil, nil, nil, nil, Coordinate)
+  elseif self.backend==MSRS.Backend.HOUND then
+    self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,speaker)
+  else
+    self:PlayTextExt(Text, Delay, nil, nil, nil, nil, nil, nil, nil, Coordinate, Speed, speaker)
+  end
 
   end
 
@@ -251125,10 +251138,10 @@ end
 -- @param #string Speaker Speaker (Sub-Voice) for PIPER only
 -- @return #MSRS self
 function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate,Speed,Speaker)
-  self:T({Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed} )
+  self:T({Text, Delay, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed, Speaker} )
 
   if Delay and Delay>0 then
-    self:ScheduleOnce(Delay, self.PlayTextExt, self, Text, 0, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed)
+    self:ScheduleOnce(Delay, self.PlayTextExt, self, Text, 0, Frequencies, Modulations, Gender, Culture, Voice, Volume, Label, Coordinate, Speed, Speaker)
   else
 
     Frequencies = Frequencies or self:GetFrequencies()
@@ -251153,9 +251166,11 @@ function MSRS:PlayTextExt(Text, Delay, Frequencies, Modulations, Gender, Culture
     elseif self.backend==MSRS.Backend.HOUND then
       -- BASE:I("MSRS.Backend.HOUND")
       
+      local speaker = Speaker or self.Speaker
+      
       local UseGoogle = (self.provider == MSRS.Provider.GOOGLE) and true or nil
       
-      self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
+      self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,speaker)
       
     end
 
@@ -251592,9 +251607,9 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
   
   self:T({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
   
-  if (UseGoogle ~= true) and self.provider == MSRS.Provider.GOOGLE then
-    UseGoogle = true
-  end
+  --if (UseGoogle ~= true) and self.provider == MSRS.Provider.GOOGLE then
+    --UseGoogle = true
+  --end
   
   local provider = self.provider
   provider=provider:gsub("gcloud", "google")
@@ -251615,7 +251630,7 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
     speed = speed,
     culture = culture,
     gender = gender,
-    speaker = Speaker,
+    speaker = Speaker or self.Speaker,
   }
   
   local speechtime = HoundTTS.Transmit(Message, TransmissionP, ProviderP)
@@ -252070,7 +252085,9 @@ function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgr
   transmission.coordinate = coordinate or msrs.coordinate
   transmission.speed = speed or 1.0
   if speaker then
-  transmission.speaker = speaker
+    transmission.speaker = speaker
+  elseif msrs.Speaker then
+   transmission.speaker = msrs.speaker
   end
   -- Add transmission to queue.
   self:AddTransmission(transmission)

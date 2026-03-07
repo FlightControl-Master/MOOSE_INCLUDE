@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T11:35:12+01:00-dc8ebf7faac7208c1e35340225af7cc04f6f8e4c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:05:27+01:00-94179bbb33278933b9865aa268f2f88cdc55de8c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124969,6 +124969,11 @@ self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"en_US-ryan-low",MSRS.Provider.PIPER)
 return self
 end
+function MSRS:SetSpeakerPiper(Speaker)
+self:F({Speaker=Speaker})
+self.Speaker=Speaker
+return self
+end
 function MSRS:SetVoiceAzure(Voice)
 self:F({Voice=Voice})
 self:SetVoiceProvider(Voice or"en-US-AriaNeural",MSRS.Provider.AZURE)
@@ -125146,21 +125151,22 @@ self:F({Text,Delay,Coordinate})
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,MSRS.PlayText,self,Text,nil,Coordinate,Speed,Speaker)
 else
+local speaker=Speaker or self.Speaker
 if self.backend==MSRS.Backend.GRPC then
 self:T(self.lid.."Transmitting")
 self:_DCSgRPCtts(Text,nil,nil,nil,nil,nil,nil,Coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
-self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,Speaker)
+self:_HoundTextToSpeech(Text,nil,nil,nil,nil,nil,Coordinate,Speed,nil,speaker)
 else
-self:PlayTextExt(Text,Delay,nil,nil,nil,nil,nil,nil,nil,Coordinate,Speed,Speaker)
+self:PlayTextExt(Text,Delay,nil,nil,nil,nil,nil,nil,nil,Coordinate,Speed,speaker)
 end
 end
 return self
 end
 function MSRS:PlayTextExt(Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker)
-self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed})
+self:T({Text,Delay,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker})
 if Delay and Delay>0 then
-self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed)
+self:ScheduleOnce(Delay,self.PlayTextExt,self,Text,0,Frequencies,Modulations,Gender,Culture,Voice,Volume,Label,Coordinate,Speed,Speaker)
 else
 Frequencies=Frequencies or self:GetFrequencies()
 Modulations=Modulations or self:GetModulations()
@@ -125171,8 +125177,9 @@ self:_ExecCommand(command)
 elseif self.backend==MSRS.Backend.GRPC then
 self:_DCSgRPCtts(Text,Frequencies,Gender,Culture,Voice,Volume,Label,Coordinate)
 elseif self.backend==MSRS.Backend.HOUND then
+local speaker=Speaker or self.Speaker
 local UseGoogle=(self.provider==MSRS.Provider.GOOGLE)and true or nil
-self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
+self:_HoundTextToSpeech(Text,Frequencies,Modulations,Volume,Label,self.coalition,Coordinate,Speed,Gender,Culture,Voice,UseGoogle,speaker)
 end
 end
 return self
@@ -125372,9 +125379,6 @@ local port=self.port or 5002
 modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
 self:T({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
-if(UseGoogle~=true)and self.provider==MSRS.Provider.GOOGLE then
-UseGoogle=true
-end
 local provider=self.provider
 provider=provider:gsub("gcloud","google")
 provider=provider:gsub("win","sapi")
@@ -125393,7 +125397,7 @@ voice=voice,
 speed=speed,
 culture=culture,
 gender=gender,
-speaker=Speaker,
+speaker=Speaker or self.Speaker,
 }
 local speechtime=HoundTTS.Transmit(Message,TransmissionP,ProviderP)
 return speechtime
@@ -125578,6 +125582,8 @@ transmission.coordinate=coordinate or msrs.coordinate
 transmission.speed=speed or 1.0
 if speaker then
 transmission.speaker=speaker
+elseif msrs.Speaker then
+transmission.speaker=msrs.speaker
 end
 self:AddTransmission(transmission)
 return transmission
