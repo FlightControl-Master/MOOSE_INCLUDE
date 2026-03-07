@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-06T20:25:59+01:00-06acd02dbbcdf5a59063adaeafcbf1dae7e8ac1c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T09:56:33+01:00-835b7d66a17143e8c064b40661e5dc38ba6dec0e ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -166386,16 +166386,18 @@ function CSAR:onafterStart(From, Event, To)
     self.msrs = MSRS:New(path,channel,modulation) -- Sound.SRS#MSRS
     self.msrs:SetPort(self.SRSport)
     self.msrs:SetLabel("CSAR")
-    self.msrs:SetBackend(self.SRSBackend)
-    self.msrs:SetProvider(self.SRSProvider)
+    self.msrs:SetBackend(self.SRSBackend)  
     self.msrs.speed = self.SRSSpeed
     self.msrs:SetCulture(self.SRSCulture)
     self.msrs:SetCoalition(self.coalition)
     self.msrs:SetVoice(self.SRSVoice)
     self.msrs:SetGender(self.SRSGender)
-    if self.SRSGPathToCredentials then
+    if self.SRSGPathToCredentials and (not self.SRSProvider) then
       self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
       self.msrs:SetProvider(MSRS.Provider.GOOGLE)
+    end
+    if self.SRSProvider then
+      self.msrs:SetProvider(self.SRSProvider)
     end
     self.msrs:SetVolume(self.SRSVolume)
     self.msrs:SetLabel("CSAR")
