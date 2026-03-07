@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:05:27+01:00-94179bbb33278933b9865aa268f2f88cdc55de8c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T18:17:23+01:00-4367a91d4b7f9da03b1482a94c090caec8c37519 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19858,7 +19858,7 @@ end
 return self
 end
 _MESSAGESRS={}
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider,Speaker)
 _MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
@@ -19890,6 +19890,7 @@ _MESSAGESRS.MSRS:SetPort(_MESSAGESRS.port)
 _MESSAGESRS.volume=Volume or MSRS.volume or 1
 _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
 if Voice then _MESSAGESRS.MSRS:SetVoice(Voice)end
+if Speaker then _MESSAGESRS.MSRS:SetSpeakerPiper(Speaker)end
 _MESSAGESRS.voice=Voice or MSRS.voice
 _MESSAGESRS.SRSQ=MSRSQUEUE:New(_MESSAGESRS.label)
 end
@@ -45285,7 +45286,7 @@ function RANGE:TrackMissilesOFF()
 self.trackmissiles=false
 return self
 end
-function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey,Provider)
+function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey,Provider,Backend)
 if PathToSRS or MSRS.path then
 self.useSRS=true
 self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM)
@@ -45295,6 +45296,9 @@ self.controlmsrs:SetLabel("RANGEC")
 self.controlmsrs:SetVolume(Volume or 1.0)
 if self.rangezone then
 self.controlmsrs:SetCoordinate(self.rangezone:GetCoordinate())
+end
+if Backend then
+self.controlmsrs:SetBackend(Backend)
 end
 self.controlsrsQ=MSRSQUEUE:New("CONTROL")
 self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM)
@@ -45312,6 +45316,9 @@ self.controlmsrs:SetProvider(MSRS.Provider.GOOGLE)
 self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
 self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
 end
+if Backend then
+self.instructmsrs:SetBackend(Backend)
+end
 if Provider then
 self.controlmsrs:SetProvider(Provider)
 self.instructmsrs:SetProvider(Provider)
@@ -45321,7 +45328,7 @@ self:E(self.lid..string.format("ERROR: No SRS path specified!"))
 end
 return self
 end
-function RANGE:SetSRSRangeControl(frequency,modulation,voice,culture,gender,relayunitname)
+function RANGE:SetSRSRangeControl(frequency,modulation,voice,culture,gender,relayunitname,Speaker)
 if not self.instructmsrs then
 self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeControl!")
 return self
@@ -45330,6 +45337,9 @@ self.rangecontrolfreq=frequency or 256
 self.controlmsrs:SetFrequencies(self.rangecontrolfreq)
 self.controlmsrs:SetModulations(modulation or radio.modulation.AM)
 self.controlmsrs:SetVoice(voice)
+if Speaker then
+self.controlmsrs:SetSpeakerPiper(Speaker)
+end
 self.controlmsrs:SetCulture(culture or"en-US")
 self.controlmsrs:SetGender(gender or"female")
 self.rangecontrol=true
@@ -45345,7 +45355,7 @@ end
 end
 return self
 end
-function RANGE:SetSRSRangeInstructor(frequency,modulation,voice,culture,gender,relayunitname)
+function RANGE:SetSRSRangeInstructor(frequency,modulation,voice,culture,gender,relayunitname,Speaker)
 if not self.instructmsrs then
 self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeInstructor!")
 return self
@@ -45354,6 +45364,9 @@ self.instructorfreq=frequency or 305
 self.instructmsrs:SetFrequencies(self.instructorfreq)
 self.instructmsrs:SetModulations(modulation or radio.modulation.AM)
 self.instructmsrs:SetVoice(voice)
+if Speaker then
+self.instructmsrs:SetSpeakerPiper(Speaker)
+end
 self.instructmsrs:SetCulture(culture or"en-US")
 self.instructmsrs:SetGender(gender or"male")
 self.instructor=true
@@ -57920,7 +57933,7 @@ self.SRS:SetPort(self.SRSPort)
 end
 return self
 end
-function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider)
+function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider,Speaker)
 self:T(self.lid.."SetSRSTTSRadio")
 self.SRSTTSRadio=OnOff and true
 self.SRSRadio=false
@@ -57934,6 +57947,9 @@ self.SRS:SetPort(self.SRSPort)
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetLabel("ACSR")
 self.SRS:SetVoice(Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRS:SetCulture(Culture)
 self.SRS:SetGender(Gender)
 if GoogleCredentials and not Provider then
@@ -57948,12 +57964,15 @@ self.SRSQ=MSRSQUEUE:New(self.alias)
 end
 return self
 end
-function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender,Speaker)
 self:T(self.lid.."SetPilotTTSVoice")
 self.SRSPilotVoice=true
 self.SRSPilot=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
 self.SRSPilot:SetCoalition(self.coalition)
 self.SRSPilot:SetVoice(Voice)
+if Speaker then
+self.SRSPilot:SetSpeakerPiper(Speaker)
+end
 self.SRSPilot:SetCulture(Culture or"en-US")
 self.SRSPilot:SetGender(Gender or"male")
 self.SRSPilot:SetLabel("PILOT")
@@ -57964,12 +57983,15 @@ self.SRSPilot:SetProvider(MSRS.Provider.GOOGLE)
 end
 return self
 end
-function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender,Speaker)
 self:T(self.lid.."SetOperatorTTSVoice")
 self.SRSOperatorVoice=true
 self.SRSOperator=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
 self.SRSOperator:SetCoalition(self.coalition)
 self.SRSOperator:SetVoice(Voice)
+if Speaker then
+self.SRSOperator:SetSpeakerPiper(Speaker)
+end
 self.SRSOperator:SetCulture(Culture or"en-GB")
 self.SRSOperator:SetGender(Gender or"female")
 self.SRSOperator:SetLabel("RESCUE")
@@ -59155,7 +59177,7 @@ color=self.RecceSmokeColor[RecceName]
 end
 return color
 end
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider)
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider,Speaker)
 if OnOff then
 self.useSRS=true
 self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
@@ -59175,6 +59197,9 @@ self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey and not Provider then
@@ -72729,7 +72754,7 @@ airbase:GetRunwayData(self.runwaym2t,true)
 end
 end
 end
-function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey,Provider)
+function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey,Provider,Speaker)
 self.useSRS=true
 local path=PathToSRS or MSRS.path
 local gender=Gender or MSRS.gender
@@ -72753,6 +72778,9 @@ self.msrs:SetVoice(voice)
 self.msrs:SetCoordinate(self.airbase:GetCoordinate())
 if Provider then
 self.msrs:SetProvider(Provider)
+end
+if Speaker then
+self.msrs:SetSpeakerPiper(Speaker)
 end
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
@@ -74160,7 +74188,7 @@ end
 end
 return self
 end
-function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -74200,6 +74228,9 @@ if Backend then
 self.SRS:SetBackend(Backend)
 end
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRSQueue=MSRSQUEUE:New(self.Label)
 self.SRSQueue:SetTransmitOnlyWithPlayers(true)
 self.SRSQueue.Label="CTLD"
@@ -82739,7 +82770,7 @@ CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.AircraftType["AH-6J"]=2
 CSAR.AircraftType["MH-6J"]=2
-CSAR.version="1.1.38"
+CSAR.version="1.1.39"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -83736,7 +83767,7 @@ local km=self.gettext:GetEntry("KILOMETERS",self.locale)
 local nm=self.gettext:GetEntry("NAUTMILES",self.locale)
 _text=string.gsub(_text,"km",km)
 _text=string.gsub(_text,"nm",nm)
-self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
+self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord,nil,self.SRSSpeaker)
 end
 return self
 end
@@ -83897,12 +83928,13 @@ local messagetime=_messagetime or self.messageTime
 self:T({_message,ToSRS=ToSRS,ToScreen=ToScreen})
 if self.msrs and(ToSRS==true or ToSRS==nil)then
 local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
+local speaker=self.CSARSpeaker
 if self.msrs:GetProvider()==MSRS.Provider.WINDOWS then
 voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
 end
 local kilohertz=self.gettext:GetEntry("KHZ",self.locale)
 _message=string.gsub(_message,"KHz",kilohertz)
-self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
+self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate,nil,speaker)
 end
 if ToScreen==true or ToScreen==nil then
 for _,_unitName in pairs(self.csarUnits)do
@@ -84330,6 +84362,9 @@ self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 if self.SRSProvider then
 self.msrs:SetProvider(self.SRSProvider)
+end
+if self.SRSSpeaker then
+self.msrs:SetSpeakerPiper(self.SRSSpeaker)
 end
 self.msrs:SetVolume(self.SRSVolume)
 self.msrs:SetLabel("CSAR")
@@ -90026,7 +90061,7 @@ self:HandleEvent(EVENTS.Shot,self._EventHandler)
 self:_InitLocalization()
 return self
 end
-function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider)
+function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider,Speaker)
 self:T(self.lid.."SetTacticalRadios")
 if not self.AwacsSRS then
 MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tactical radios please!",30,"ERROR",true):ToLog():ToAll()
@@ -90050,6 +90085,9 @@ self.TacticalSRS:SetCoalition(self.coalition)
 self.TacticalSRS:SetGender(self.Gender)
 self.TacticalSRS:SetCulture(self.Culture)
 self.TacticalSRS:SetVoice(self.Voice)
+if Speaker then
+self.TacticalSRS:SetSpeakerPiper(Speaker)
+end
 self.TacticalSRS:SetPort(self.Port)
 self.TacticalSRS:SetLabel("AWACS")
 self.TacticalSRS:SetVolume(self.Volume)
@@ -90509,7 +90547,7 @@ self.DetectionSet:AddSet(Group)
 end
 return self
 end
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -90520,6 +90558,7 @@ self.PathToGoogleKey=PathToGoogleKey
 self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
 self.Backend=Backend or MSRS.backend
+self.Provider=Provider
 BASE:I({backend=self.Backend})
 self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Backend)
 self.AwacsSRS:SetCoalition(self.coalition)
@@ -90528,6 +90567,9 @@ self.AwacsSRS:SetCulture(self.Culture)
 self.AwacsSRS:SetPort(self.Port)
 self.AwacsSRS:SetLabel("AWACS")
 self.AwacsSRS:SetVolume(Volume)
+if Speaker then
+self.AwacsSRS:SetSpeakerPiper(Speaker)
+end
 if self.PathToGoogleKey then
 self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 self.AwacsSRS:SetProvider(MSRS.Provider.GOOGLE)
@@ -90543,11 +90585,12 @@ end
 self.AwacsSRS:SetVoice(self.Voice)
 return self
 end
-function AWACS:SetSRSVoiceCAP(Gender,Culture,Voice)
+function AWACS:SetSRSVoiceCAP(Gender,Culture,Voice,Speaker)
 self:T(self.lid.."SetSRSVoiceCAP")
 self.CAPGender=Gender or"male"
 self.CAPCulture=Culture or"en-US"
 self.CAPVoice=Voice or"en-GB-Standard-B"
+self.CAPSpeaker=Speaker
 return self
 end
 function AWACS:SetAICAPDetails(Callsign,MaxAICap,TOS,Speed)
@@ -91692,7 +91735,13 @@ local CAPVoice=self.CAPVoice
 if self.PathToGoogleKey then
 CAPVoice=self.CapVoices[math.floor(math.random(1,10))]
 end
-FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1)
+FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1,self.Provider)
+if self.Backend then
+FlightGroup.srs:SetBackend(self.Backend)
+end
+if self.CAPSpeaker then
+FlightGroup.srs:SetSpeakerPiper(self.CAPSpeaker)
+end
 local checkai=self.gettext:GetEntry("CHECKINAI",self.locale)
 text=string.format(checkai,self.callsigntxt,managedgroup.CallSign,self.CAPTimeOnStation,self.AOName)
 self:_NewRadioEntry(text,text,managedgroup.GID,Outcome,false,true,true)
@@ -97726,7 +97775,7 @@ function FLIGHTCONTROL:SetSRSPort(Port)
 self.Port=Port or 5002
 return self
 end
-function FLIGHTCONTROL:_SetSRSOptions(msrs,Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials,Port)
+function FLIGHTCONTROL:_SetSRSOptions(msrs,Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials,Port,Speaker)
 Gender=Gender or"female"
 Culture=Culture or"en-GB"
 Volume=Volume or 1.0
@@ -97734,6 +97783,9 @@ if msrs then
 msrs:SetGender(Gender)
 msrs:SetCulture(Culture)
 msrs:SetVoice(Voice)
+if Speaker then
+msrs:SetSpeakerPiper(Speaker)
+end
 msrs:SetVolume(Volume)
 msrs:SetLabel(Label)
 msrs:SetCoalition(self:GetCoalition())
@@ -97741,15 +97793,15 @@ msrs:SetPort(Port or self.Port or 5002)
 end
 return self
 end
-function FLIGHTCONTROL:SetSRSTower(Gender,Culture,Voice,Volume,Label)
+function FLIGHTCONTROL:SetSRSTower(Gender,Culture,Voice,Volume,Label,Speaker)
 if self.msrsTower then
-self:_SetSRSOptions(self.msrsTower,Gender or"female",Culture or"en-GB",Voice,Volume,Label or self.alias)
+self:_SetSRSOptions(self.msrsTower,Gender or"female",Culture or"en-GB",Voice,Volume,Label or self.alias,nil,nil,Speaker)
 end
 return self
 end
-function FLIGHTCONTROL:SetSRSPilot(Gender,Culture,Voice,Volume,Label)
+function FLIGHTCONTROL:SetSRSPilot(Gender,Culture,Voice,Volume,Label,Speaker)
 if self.msrsPilot then
-self:_SetSRSOptions(self.msrsPilot,Gender or"male",Culture or"en-US",Voice,Volume,Label or"Pilot")
+self:_SetSRSOptions(self.msrsPilot,Gender or"male",Culture or"en-US",Voice,Volume,Label or"Pilot",nil,nil,Speaker)
 end
 return self
 end
@@ -107482,7 +107534,7 @@ end
 end
 return self
 end
-function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume,Provider)
+function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume,Provider,Speaker)
 self.useSRS=true
 local path=PathToSRS or MSRS.path
 local port=Port or MSRS.port
@@ -107490,6 +107542,9 @@ self.msrs=MSRS:New(path,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
 self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
+if Speaker then
+self.msrs:SetSpeakerPiper(Speaker)
+end
 self.msrs:SetPort(port)
 self.msrs:SetLabel(Label)
 if PathToGoogleKey then
@@ -117980,7 +118035,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -118018,6 +118073,9 @@ if Coordinate then
 self.SRS:SetCoordinate(Coordinate)
 end
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self
@@ -119244,7 +119302,7 @@ self:TargetDetected(targetsbyclock,client,playername)
 end
 return self
 end
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -119280,6 +119338,9 @@ self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
 self.Voice=Voice or MSRS.poptions.gcloud.voice
 end
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self

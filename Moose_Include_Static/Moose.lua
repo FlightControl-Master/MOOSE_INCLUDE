@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:05:27+01:00-94179bbb33278933b9865aa268f2f88cdc55de8c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T18:17:23+01:00-4367a91d4b7f9da03b1482a94c090caec8c37519 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -37640,7 +37640,8 @@ _MESSAGESRS = {}
 -- @param #string Label (optional) Label, defaults to "MESSAGE" or the Message Category set.
 -- @param Core.Point#COORDINATE Coordinate (optional) Coordinate this messages originates from.
 -- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC or MSRS.Backend.HOUND etc
--- @param #string Provider (optional) Privider to be used, can be MSRS.Provider.WINDOWS or MSRS.Backend.GOOGLE or MSRS.Backend.PIPER etc
+-- @param #string Provider (optional) Provider to be used, can be MSRS.Provider.WINDOWS or MSRS.Provider.GOOGLE or MSRS.Provider.PIPER etc
+-- @param #string Speaker (optional) Speaker to be used. Only for select provider PIPER TTS Voices, requires HOUND backend.
 -- @usage
 --          -- Mind the dot here, not using the colon this time around!
 --          -- Needed once only
@@ -37648,7 +37649,7 @@ _MESSAGESRS = {}
 --          -- later on in your code
 --          MESSAGE:New("Test message!",15,"SPAWN"):ToSRS()
 --          
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider,Speaker)
   
   _MESSAGESRS.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
   
@@ -37695,6 +37696,7 @@ function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,G
   _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
   
   if Voice then _MESSAGESRS.MSRS:SetVoice(Voice) end
+  if Speaker then _MESSAGESRS.MSRS:SetSpeakerPiper(Speaker) end
   
   _MESSAGESRS.voice = Voice or MSRS.voice --or MSRS.Voices.Microsoft.Hedda
   
@@ -90310,8 +90312,9 @@ end
 -- @param #number Volume (Optional) Volume, between 0.0 and 1.0. Defaults to 1.0
 -- @param #string PathToGoogleKey Path to Google TTS credentials.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Backend (Optional) TTS Backend to be used.
 -- @return #RANGE self
-function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey,Provider)
+function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey,Provider,Backend)
 
   if PathToSRS or MSRS.path then
 
@@ -90324,6 +90327,9 @@ function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume,
     self.controlmsrs:SetVolume(Volume or 1.0)
     if self.rangezone then
       self.controlmsrs:SetCoordinate(self.rangezone:GetCoordinate())
+    end
+    if Backend then
+      self.controlmsrs:SetBackend(Backend)
     end
     self.controlsrsQ = MSRSQUEUE:New("CONTROL")
 
@@ -90343,6 +90349,9 @@ function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume,
       self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
       self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
     end
+    if Backend then
+      self.instructmsrs:SetBackend(Backend)
+    end
     if Provider then
       self.controlmsrs:SetProvider(Provider)
       self.instructmsrs:SetProvider(Provider)
@@ -90361,8 +90370,9 @@ end
 -- @param #string culture (Optional) Culture, defaults to "en-US".
 -- @param #string gender (Optional) Gender, defaults to "female".
 -- @param #string relayunitname Name of the unit used for transmission location.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #RANGE self
-function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender, relayunitname )
+function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender, relayunitname, Speaker )
   if not self.instructmsrs then
     self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeControl!")
     return self
@@ -90371,6 +90381,9 @@ function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender
   self.controlmsrs:SetFrequencies(self.rangecontrolfreq)
   self.controlmsrs:SetModulations(modulation or radio.modulation.AM)
   self.controlmsrs:SetVoice(voice)
+  if Speaker then
+    self.controlmsrs:SetSpeakerPiper(Speaker)
+  end
   self.controlmsrs:SetCulture(culture or "en-US")
   self.controlmsrs:SetGender(gender or "female")
   self.rangecontrol = true
@@ -90395,8 +90408,9 @@ end
 -- @param #string culture (Optional) Culture, defaults to "en-US".
 -- @param #string gender (Optional) Gender, defaults to "male".
 -- @param #string relayunitname Name of the unit used for transmission location.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #RANGE self
-function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gender, relayunitname )
+function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gender, relayunitname, Speaker )
   if not self.instructmsrs then
     self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeInstructor!")
     return self
@@ -90405,6 +90419,9 @@ function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gen
   self.instructmsrs:SetFrequencies(self.instructorfreq)
   self.instructmsrs:SetModulations(modulation or radio.modulation.AM)
   self.instructmsrs:SetVoice(voice)
+  if Speaker then
+    self.instructmsrs:SetSpeakerPiper(Speaker)
+  end
   self.instructmsrs:SetCulture(culture or "en-US")
   self.instructmsrs:SetGender(gender or "male")
   self.instructor = true
@@ -118075,8 +118092,9 @@ end
 -- @param #string Gender (Optional)  The gender to be used, defaults to "male"
 -- @param #string GoogleCredentials (Optional) Path to google credentials
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AICSAR self
-function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider)
+function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider,Speaker)
   self:T(self.lid .. "SetSRSTTSRadio")
   self.SRSTTSRadio = OnOff and true
   self.SRSRadio = false
@@ -118090,6 +118108,9 @@ function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Cultur
     self.SRS:SetCoalition(self.coalition)
     self.SRS:SetLabel("ACSR")
     self.SRS:SetVoice(Voice)
+    if Speaker then
+      self.SRS:SetSpeakerPiper(Speaker)
+    end
     self.SRS:SetCulture(Culture)
     self.SRS:SetGender(Gender)
     if GoogleCredentials and not Provider then
@@ -118111,13 +118132,17 @@ end
 -- Specific voices override culture and gender!
 -- @param #string Culture (Optional) The culture to be used, defaults to "en-US"
 -- @param #string Gender (Optional)  The gender to be used, defaults to "male"
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AICSAR self
-function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender,Speaker)
  self:T(self.lid .. "SetPilotTTSVoice")
  self.SRSPilotVoice = true
  self.SRSPilot = MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
  self.SRSPilot:SetCoalition(self.coalition)
  self.SRSPilot:SetVoice(Voice)
+ if Speaker then
+  self.SRSPilot:SetSpeakerPiper(Speaker)
+ end
  self.SRSPilot:SetCulture(Culture or "en-US")
  self.SRSPilot:SetGender(Gender or "male")
  self.SRSPilot:SetLabel("PILOT")
@@ -118135,13 +118160,17 @@ end
 -- Specific voices override culture and gender!
 -- @param #string Culture (Optional) The culture to be used, defaults to "en-GB"
 -- @param #string Gender (Optional)  The gender to be used, defaults to "female"
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AICSAR self
-function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender,Speaker)
  self:T(self.lid .. "SetOperatorTTSVoice")
  self.SRSOperatorVoice = true
  self.SRSOperator = MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
  self.SRSOperator:SetCoalition(self.coalition)
  self.SRSOperator:SetVoice(Voice)
+if Speaker then
+  self.SRSOperator:SetSpeakerPiper(Speaker)
+ end
  self.SRSOperator:SetCulture(Culture or "en-GB")
  self.SRSOperator:SetGender(Gender or "female")
  self.SRSOperator:SetLabel("RESCUE")
@@ -120187,8 +120216,9 @@ end
 -- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest).
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AUTOLASE self 
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider)
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider,Speaker)
   if OnOff then
     self.useSRS = true
     self.SRSPath = Path or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
@@ -120209,6 +120239,9 @@ function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Cultu
     self.SRS:SetCulture(self.Culture)
     self.SRS:SetPort(self.Port)
     self.SRS:SetVoice(self.Voice)
+    if Speaker then
+      self.SRS:SetSpeakerPiper(Speaker)
+    end
     self.SRS:SetCoalition(self.coalition)
     self.SRS:SetVolume(self.Volume)
     if self.PathToGoogleKey and not Provider then
@@ -149108,8 +149141,9 @@ end
 -- @param #number Port (Optional) SRS port. Default 5002.
 -- @param #string GoogleKey (Optional) Path to Google JSON-Key (SRS exe backend) or Google API key (DCS-gRPC backend).
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #ATIS self
-function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider)
+function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider,Speaker)
   --if PathToSRS or MSRS.path then
     self.useSRS=true
 
@@ -149137,6 +149171,9 @@ function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider
     self.msrs:SetCoordinate(self.airbase:GetCoordinate())
     if Provider then
       self.msrs:SetProvider(Provider)
+    end
+    if Speaker then
+      self.msrs:SetSpeakerPiper(Speaker)
     end
     self.msrsQ = MSRSQUEUE:New("ATIS")
     self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
@@ -152342,9 +152379,10 @@ end
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, hand in nil here.
--- @param #string Provider (Optional) MSRS Provider to be used, can be MSRS.Provider.Google or MSRS.Provider.WINDOWS etc; if you use a config file for MSRS, hand in nil here. 
+-- @param #string Provider (Optional) MSRS Provider to be used, can be MSRS.Provider.Google or MSRS.Provider.WINDOWS etc; if you use a config file for MSRS, hand in nil here.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend). 
 -- @return #CTLD self
-function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -152386,6 +152424,9 @@ function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Vo
     self.SRS:SetBackend(Backend)
   end
   self.SRS:SetVoice(self.Voice)
+  if Speaker then
+    self.SRS:SetSpeakerPiper(Speaker)
+  end
   self.SRSQueue = MSRSQUEUE:New(self.Label)
   self.SRSQueue:SetTransmitOnlyWithPlayers(true)
   self.SRSQueue.Label = "CTLD"
@@ -163710,14 +163751,16 @@ end
 --       mycsar.SRSModulation = radio.modulation.AM -- modulation
 --       mycsar.SRSport = 5002  -- and SRS Server port
 --       mycsar.SRSCulture = "en-GB" -- SRS voice culture
---       mycsar.SRSVoice = nil -- SRS voice for downed pilot, relevant for Google TTS
+--       mycsar.SRSVoice = nil -- TTS voice for downed pilot, relevant for Google TTS
+--       mycsar.SRSSpeaker = nil -- TTS sub-voice, only relevant for Piper TTS with Hound backend
 --       mycsar.SRSGPathToCredentials = nil -- Path to your Google credentials json file, set this if you want to use Google TTS as provider
 --       mycsar.SRSBackend = MSRS.Backend.SRSEXE -- default backend is windows
 --       mycsar.SRSProvider = MSRS.Provider.WINDOWS -- default TTS provider is windows
 --       mycsar.SRSSpeed = 1.0 -- default speech speed - does not work with all providers
 --       mycsar.SRSVolume = 1 -- Volume, between 0 and 1
 --       mycsar.SRSGender = "male" -- male or female voice
---       mycsar.CSARVoice = MSRS.Voices.Google.Standard.en_US_Standard_A -- SRS voice for CSAR Controller, relevant for Google TTS
+--       mycsar.CSARVoice = MSRS.Voices.Google.Standard.en_US_Standard_A -- TTS voice for CSAR Controller, relevant for Google TTS
+--       mycsar.CSARSpeaker = nil -- TTS sub-voice, only relevant for Piper TTS with Hound backend
 --       mycsar.CSARVoiceMS = MSRS.Voices.Microsoft.Hedda -- SRS voice for CSAR Controller, relevant for MS Desktop TTS
 --       mycsar.coordinate -- Coordinate from which CSAR TTS is sending. Defaults to a random MASH object position
 --       --
@@ -164079,7 +164122,7 @@ CSAR.AircraftType["MH-6J"] = 2
 
 --- CSAR class version.
 -- @field #string version
-CSAR.version="1.1.38"
+CSAR.version="1.1.39"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
@@ -165671,7 +165714,7 @@ function CSAR:_DisplayMessageToSAR(_unit, _text, _time, _clear, _speak, _overrid
     local nm = self.gettext:GetEntry("NAUTMILES",self.locale)
     _text = string.gsub(_text,"km",km)
     _text = string.gsub(_text,"nm",nm)
-    self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
+    self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord,nil,self.SRSSpeaker)
   end
   return self
 end
@@ -165877,13 +165920,14 @@ function CSAR:_DisplayToAllSAR(_message, _side, _messagetime,ToSRS,ToScreen)
   self:T({_message,ToSRS=ToSRS,ToScreen=ToScreen})
   if self.msrs and (ToSRS == true or ToSRS == nil) then
     local voice = self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
+    local speaker = self.CSARSpeaker
     if self.msrs:GetProvider() == MSRS.Provider.WINDOWS then
       voice = self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
     end
     local kilohertz = self.gettext:GetEntry("KHZ",self.locale)
     _message = string.gsub(_message,"KHz",kilohertz)
     --self:F("Voice = "..voice)
-    self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
+    self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate,nil,speaker)
   end
   if ToScreen == true or ToScreen == nil then
     for _, _unitName in pairs(self.csarUnits) do
@@ -166419,6 +166463,9 @@ function CSAR:onafterStart(From, Event, To)
     end
     if self.SRSProvider then
       self.msrs:SetProvider(self.SRSProvider)
+    end
+    if self.SRSSpeaker then
+      self.msrs:SetSpeakerPiper(self.SRSSpeaker)
     end
     self.msrs:SetVolume(self.SRSVolume)
     self.msrs:SetLabel("CSAR")
@@ -179725,8 +179772,9 @@ end
 -- @param #number Interval Seconds between each update call.
 -- @param #number Number Number of Frequencies to create, can be 1..10.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AWACS self
-function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider)
+function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider,Speaker)
   self:T(self.lid.."SetTacticalRadios")
   if not self.AwacsSRS then
     MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tactical radios please!",30,"ERROR",true):ToLog():ToAll()
@@ -179750,6 +179798,9 @@ function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Pr
     self.TacticalSRS:SetGender(self.Gender)
     self.TacticalSRS:SetCulture(self.Culture)
     self.TacticalSRS:SetVoice(self.Voice)
+    if Speaker then
+      self.TacticalSRS:SetSpeakerPiper(Speaker)
+    end
     self.TacticalSRS:SetPort(self.Port)
     self.TacticalSRS:SetLabel("AWACS")
     self.TacticalSRS:SetVolume(self.Volume)
@@ -180500,8 +180551,9 @@ end
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) Your MSRS Backend if different from your config file settings, e.g. MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AWACS self
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" 
   self.Gender = Gender or MSRS.gender or "male"
@@ -180512,6 +180564,7 @@ function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey
   self.AccessKey = AccessKey
   self.Volume = Volume or 1.0
   self.Backend = Backend or MSRS.backend
+  self.Provider = Provider
   BASE:I({backend = self.Backend})
   self.AwacsSRS = MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Backend)
   self.AwacsSRS:SetCoalition(self.coalition)
@@ -180520,6 +180573,9 @@ function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey
   self.AwacsSRS:SetPort(self.Port)
   self.AwacsSRS:SetLabel("AWACS")
   self.AwacsSRS:SetVolume(Volume)
+  if Speaker then
+    self.AwacsSRS:SetSpeakerPiper(Speaker)
+  end
   if self.PathToGoogleKey then
     --self.AwacsSRS:SetGoogle(self.PathToGoogleKey)
     self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
@@ -180544,12 +180600,14 @@ end
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #string Voice (Optional) Use a specifc voice with the @{#MSRS.SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AWACS self
-function AWACS:SetSRSVoiceCAP(Gender, Culture, Voice)
+function AWACS:SetSRSVoiceCAP(Gender, Culture, Voice, Speaker)
   self:T(self.lid.."SetSRSVoiceCAP")
   self.CAPGender = Gender or "male"
   self.CAPCulture = Culture or "en-US"
   self.CAPVoice = Voice or "en-GB-Standard-B"
+  self.CAPSpeaker = Speaker
   return self
 end
 
@@ -182140,7 +182198,13 @@ function AWACS:_CheckInAI(FlightGroup,Group,AuftragsNr)
       CAPVoice = self.CapVoices[math.floor(math.random(1,10))]
     end
     
-    FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1)
+    FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1,self.Provider)
+    if self.Backend then
+      FlightGroup.srs:SetBackend(self.Backend)
+    end
+    if self.CAPSpeaker then
+      FlightGroup.srs:SetSpeakerPiper(self.CAPSpeaker)
+    end
     
     local checkai = self.gettext:GetEntry("CHECKINAI",self.locale)
     text = string.format(checkai,self.callsigntxt, managedgroup.CallSign, self.CAPTimeOnStation, self.AOName)
@@ -194596,8 +194660,9 @@ end
 -- @param #string Label Name under which SRS transmits.
 -- @param #string PathToGoogleCredentials (Optional) Path to google credentials json file.
 -- @param #number Port (Optional) Server port for SRS. Defaults to 5002.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Label, PathToGoogleCredentials, Port)
+function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Label, PathToGoogleCredentials, Port, Speaker)
 
   -- Defaults:
   Gender=Gender or "female"
@@ -194608,6 +194673,9 @@ function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Labe
     msrs:SetGender(Gender)
     msrs:SetCulture(Culture)
     msrs:SetVoice(Voice)
+    if Speaker then
+      msrs:SetSpeakerPiper(Speaker)
+    end
     msrs:SetVolume(Volume)
     msrs:SetLabel(Label)
     msrs:SetCoalition(self:GetCoalition())
@@ -194624,11 +194692,12 @@ end
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`. See [Google Voices](https://cloud.google.com/text-to-speech/docs/voices).
 -- @param #number Volume (Optional) Volume. Default 1.0.
 -- @param #string Label (Optional) Name under which SRS transmits. Default `self.alias`.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:SetSRSTower(Gender, Culture, Voice, Volume, Label)
+function FLIGHTCONTROL:SetSRSTower(Gender, Culture, Voice, Volume, Label, Speaker)
 
   if self.msrsTower then
-    self:_SetSRSOptions(self.msrsTower, Gender or "female", Culture or "en-GB", Voice, Volume, Label or self.alias)
+    self:_SetSRSOptions(self.msrsTower, Gender or "female", Culture or "en-GB", Voice, Volume, Label or self.alias,nil,nil,Speaker)
   end
 
   return self
@@ -194641,11 +194710,12 @@ end
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
 -- @param #number Volume (Optional) Volume. Default 1.0.
 -- @param #string Label (Optional) Name under which SRS transmits. Default "Pilot".
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:SetSRSPilot(Gender, Culture, Voice, Volume, Label)
+function FLIGHTCONTROL:SetSRSPilot(Gender, Culture, Voice, Volume, Label, Speaker)
 
   if self.msrsPilot then
-    self:_SetSRSOptions(self.msrsPilot, Gender or "male", Culture or "en-US", Voice, Volume, Label or "Pilot")
+    self:_SetSRSOptions(self.msrsPilot, Gender or "male", Culture or "en-US", Voice, Volume, Label or "Pilot",nil,nil,Speaker)
   end
 
   return self
@@ -216676,8 +216746,9 @@ end
 -- @param #string Label (Optional) Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
 -- @param #number Volume (Optional) Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #OPSGROUP self
-function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume,Provider)
+function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume,Provider,Speaker)
   self.useSRS=true
   local path = PathToSRS or MSRS.path
   local port = Port or MSRS.port
@@ -216685,6 +216756,9 @@ function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKe
   self.msrs:SetGender(Gender)
   self.msrs:SetCulture(Culture)
   self.msrs:SetVoice(Voice)
+  if Speaker then
+    self.msrs:SetSpeakerPiper(Speaker)
+  end
   self.msrs:SetPort(port)
   self.msrs:SetLabel(Label)
   if PathToGoogleKey then
@@ -237749,8 +237823,9 @@ end
 -- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate from which the controller radio is sending
 -- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, you can hand in nil here.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #PLAYERTASKCONTROLLER self
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -237791,6 +237866,9 @@ function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Cultu
     self.SRS:SetCoordinate(Coordinate)
   end
   self.SRS:SetVoice(self.Voice)
+  if Speaker then
+    self.SRS:SetSpeakerPiper(Speaker)
+  end
   self.SRSQueue = MSRSQUEUE:New(self.MenuName or self.Name)
   self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
   return self
@@ -239761,8 +239839,9 @@ end
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS
 -- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC etc
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #PLAYERRECCE self
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -239800,6 +239879,9 @@ function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,V
     self.Voice = Voice or MSRS.poptions.gcloud.voice
   end
   self.SRS:SetVoice(self.Voice)
+  if Speaker then
+    self.SRS:SetSpeakerPiper(Speaker)
+  end
   self.SRSQueue = MSRSQUEUE:New(self.MenuName or self.Name)
   self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
   return self
