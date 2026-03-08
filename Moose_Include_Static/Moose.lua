@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T13:14:01+01:00-970f567edfe6295a6e741722f78c675b1637e1d7 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T14:14:22+01:00-b6c82316c7c68af6b00f001a32347e72654f2a9c ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -171668,7 +171668,7 @@ AUFTRAG.Category={
 
 --- AUFTRAG class version.
 -- @field #string version
-AUFTRAG.version="1.4.1"
+AUFTRAG.version="1.4.2"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -172358,7 +172358,7 @@ end
 
 --- **[AIR]** Create a AWACS mission.
 -- @param #AUFTRAG self
--- @param Core.Point#COORDINATE Coordinate Where to orbit. Altitude is also taken from the coordinate.
+-- @param Core.Point#COORDINATE Coordinate Where to orbit. Altitude is also taken from the coordinate. Can also be a UNIT object, *e.g.* a carrier.
 -- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
 -- @param #number Speed (Optional) Orbit speed in knots. Default 350 kts.
 -- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
@@ -172367,7 +172367,20 @@ end
 function AUFTRAG:NewAWACS(Coordinate, Altitude, Speed, Heading, Leg)
 
   -- Create ORBIT first.
-  local mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate, Altitude, Speed, Heading, Leg)
+  local mission=nil --Ops.Auftrag#AUFTRAG
+  
+  if BASE:IsInstanceOf("COORDINATE") then
+    -- Racetrack at a given coordinate
+    mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate, Altitude, Speed, Heading, Leg)
+  elseif BASE:IsInstanceOf("UNIT") then
+    -- Racetrack wrt a given (moving) unit (e.g. a carrier)
+    local OffsetVec2={r=6, phi=180}
+    mission=AUFTRAG:NewORBIT_GROUP(Coordinate, Altitude, Speed, Leg, Heading, OffsetVec2)
+  else
+    -- Error!
+    BASE:E("ERROR in AUFTRAG:NewAWACS: You must pass a COORDINATE or UNIT object!")
+    return nil
+  end
 
   -- Mission type AWACS.
   mission.type=AUFTRAG.Type.AWACS
@@ -172386,7 +172399,51 @@ function AUFTRAG:NewAWACS(Coordinate, Altitude, Speed, Heading, Leg)
   return mission
 end
 
+--- **[AIRPANE]** Create a RECOVERY TANKER mission.
+-- @param #AUFTRAG self
+-- @param Wrapper.Unit#UNIT Carrier The carrier unit.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
+-- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
+-- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
+-- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
+-- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @return #AUFTRAG self
+function AUFTRAG:NewRECOVERYTANKER(Carrier, Altitude, Speed, Leg, RelHeading, OffsetDist, OffsetAngle, UpdateDistance)
+ 
+   -- Six NM astern.
+  local OffsetVec2={r=OffsetDist or 6, phi=OffsetAngle or 180}
+  
+  -- Default leg.
+  Leg=Leg or 14
+  
+  -- Default Speed.
+  Speed=Speed or 250
+  
+  local Heading=nil
+  if RelHeading then  
+    Heading=-math.abs(RelHeading)
+  end  
+ 
+  -- Create orbit mission. 
+  local mission=AUFTRAG:NewORBIT_GROUP(Carrier, Altitude, Speed, Leg, Heading, OffsetVec2, UpdateDistance)
 
+  -- Set the type.  
+  mission.type=AUFTRAG.Type.RECOVERYTANKER
+
+  -- Mission options:
+  mission.missionTask=ENUMS.MissionTask.REFUELING
+  mission.missionFraction=0.9
+  mission.optionROE=ENUMS.ROE.WeaponHold
+  mission.optionROT=ENUMS.ROT.NoReaction
+
+  mission.categories={AUFTRAG.Category.AIRPLANE}
+
+  mission.DCStask=mission:GetDCSMissionTask()
+
+  return mission
+end
 
 --- **[AIR]** Create an INTERCEPT mission.
 -- @param #AUFTRAG self
@@ -173040,53 +173097,6 @@ function AUFTRAG:NewRESCUEHELO(Carrier)
 
   return mission
 end
-
---- **[AIRPANE]** Create a RECOVERY TANKER mission.
--- @param #AUFTRAG self
--- @param Wrapper.Unit#UNIT Carrier The carrier unit.
--- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
--- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
--- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
--- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
--- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
--- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
--- @return #AUFTRAG self
-function AUFTRAG:NewRECOVERYTANKER(Carrier, Altitude, Speed, Leg, RelHeading, OffsetDist, OffsetAngle, UpdateDistance)
- 
-   -- Six NM astern.
-  local OffsetVec2={r=OffsetDist or 6, phi=OffsetAngle or 180}
-  
-  -- Default leg.
-  Leg=Leg or 14
-  
-  -- Default Speed.
-  Speed=Speed or 250
-  
-  local Heading=nil
-  if RelHeading then  
-    Heading=-math.abs(RelHeading)
-  end  
- 
-  -- Create orbit mission. 
-  local mission=AUFTRAG:NewORBIT_GROUP(Carrier, Altitude, Speed, Leg, Heading, OffsetVec2, UpdateDistance)
-
-  -- Set the type.  
-  mission.type=AUFTRAG.Type.RECOVERYTANKER
-
-  -- Mission options:
-  mission.missionTask=ENUMS.MissionTask.REFUELING
-  mission.missionFraction=0.9
-  mission.optionROE=ENUMS.ROE.WeaponHold
-  mission.optionROT=ENUMS.ROT.NoReaction
-
-  mission.categories={AUFTRAG.Category.AIRPLANE}
-
-  mission.DCStask=mission:GetDCSMissionTask()
-
-  return mission
-end
-
 
 --- **[AIR ROTARY, GROUND]** Create a TROOP TRANSPORT mission.
 -- @param #AUFTRAG self
@@ -199001,7 +199011,7 @@ FLIGHTGROUP.Players={}
 
 --- FLIGHTGROUP class version.
 -- @field #string version
-FLIGHTGROUP.version="1.0.3"
+FLIGHTGROUP.version="1.0.4"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -200138,8 +200148,10 @@ function FLIGHTGROUP:Status()
     -- If mission, check if DCS task needs to be updated.
     if mission and mission.updateDCSTask then
     
+      local mtype=mission:GetType()
+    
       -- Orbit missions might need updates.
-      if (mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP) and mission.orbitVec2 then
+      if (mtype==AUFTRAG.Type.ORBIT or mtype==AUFTRAG.Type.RECOVERYTANKER or mtype==AUFTRAG.Type.CAP or mtype==AUFTRAG.Type.AWACS) and mission.orbitVec2 then
           
         -- Get 2D vector of orbit target.
         local vec2=mission:GetTargetVec2()
