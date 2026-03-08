@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T15:11:57+01:00-85a4e4bd3533595b44a4ad13d194a92eefbfb3cc ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T15:38:03+01:00-f93bf6f0e7cd05b0f9bc95a245924a650cc51dae ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -85444,7 +85444,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="1.0.3"
+ARMYGROUP.version="1.0.4"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -86344,6 +86344,94 @@ self:SwitchROE(self.suppressionROE)
 if true then
 self.group:FlareGreen()
 end
+end
+ARMYGROUP.HuntingPatrol={}
+function ARMYGROUP:EnableHuntingPatrol(Zone,Speed,Formation,Interval)
+self.hp_zone=Zone
+self.hp_speed=tonumber(Speed)or 20
+self.hp_formation=Formation or nil
+local intervalNum=tonumber(Interval)
+if not intervalNum or intervalNum<=0 then
+intervalNum=5
+end
+self.hp_interval=intervalNum
+self.hp_target=nil
+if self.hp_timer then
+self.hp_timer:Stop()
+self.hp_timer=nil
+end
+self.hp_timer=TIMER:New(self._HuntingPatrolUpdate,self):Start(1,self.hp_interval)
+self:T(self.lid.."HuntingPatrol: enabled. Interval="..tostring(self.hp_interval))
+return self
+end
+function ARMYGROUP:DisableHuntingPatrol()
+if self.hp_timer then
+self.hp_timer:Stop()
+self.hp_timer=nil
+end
+if self.HuntingEnemySet then
+self.HuntingEnemySet:FilterStop()
+self.HuntingEnemySet=nil
+end
+self.hp_target=nil
+self:T(self.lid.."HuntingPatrol: disabled.")
+return self
+end
+function ARMYGROUP:_HuntingPatrolUpdate()
+if not self:IsAlive()then
+self:DisableHuntingPatrol()
+return
+end
+local mission=self:GetMissionCurrent()
+if not mission or mission.type~=AUFTRAG.Type.PATROLZONE then
+return
+end
+if not self:IsCombatReady()then
+return
+end
+if self.hp_target then
+if not self.hp_target:IsAlive()then
+self.hp_target=nil
+self:Disengage()
+end
+return
+end
+local enemy=self:_HuntingPatrolFindEnemyInZone(self.hp_zone)
+if enemy then
+self.hp_target=enemy
+self:EngageTarget(enemy,self.hp_speed,self.hp_formation)
+end
+end
+function ARMYGROUP:_HuntingPatrolFindEnemyInZone(Zone)
+if not Zone then return nil end
+local myCoalition=self:GetCoalition()
+if not self.HuntingEnemySet then
+self.HuntingEnemySet=SET_UNIT:New()
+:FilterActive(true)
+:FilterCategories("ground")
+:FilterStart()
+end
+local enemies={}
+self.HuntingEnemySet:ForEachUnitCompletelyInZone(Zone,function(unit)
+if unit:GetCoalition()~=myCoalition and unit:IsAlive()then
+table.insert(enemies,unit)
+end
+end)
+if#enemies==0 then
+return nil
+end
+local myCoord=self:GetCoordinate()
+table.sort(enemies,function(a,b)
+return myCoord:Get2DDistance(a:GetCoordinate())<
+myCoord:Get2DDistance(b:GetCoordinate())
+end)
+return enemies[1]
+end
+function ARMYGROUP.EnableHuntingPatrolForGroup(group,zone,speed,formation,interval)
+local army=ARMYGROUP:New(group)
+army:SetPatrolAdInfinitum(true)
+army:EnableHuntingPatrol(zone,speed,formation,interval)
+return army
 end
 AUFTRAG={
 ClassName="AUFTRAG",

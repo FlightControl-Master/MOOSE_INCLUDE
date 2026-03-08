@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T15:11:57+01:00-85a4e4bd3533595b44a4ad13d194a92eefbfb3cc ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T15:38:03+01:00-f93bf6f0e7cd05b0f9bc95a245924a650cc51dae ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -168723,7 +168723,7 @@ ARMYGROUP = {
 
 --- Army Group version.
 -- @field #string version
-ARMYGROUP.version="1.0.3"
+ARMYGROUP.version="1.0.4"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -170986,6 +170986,213 @@ function ARMYGROUP:onafterUnsuppressed(From, Event, To)
   end
 
 end
+
+----------------------------------------------------------------
+-- HuntingPatrol.lua
+--
+-- Adds simple "hunting patrol" behavior on top of ARMYGROUP:
+--
+--  * Group patrols normally using its existing waypoints
+--  * While combat-ready, periodically scans a zone for enemies
+--  * When an enemy is found, lock it and call EngageTarget()
+--  * Stay on that target until it dies
+--  * When target is dead, Disengage() and let ARMYGROUP resume patrol
+----------------------------------------------------------------
+
+--- Module table
+ARMYGROUP.HuntingPatrol = {}
+
+----------------------------------------------------------------
+-- ARMYGROUP extension state
+----------------------------------------------------------------
+-- We store a few extra fields on ARMYGROUP:
+--   hp_zone       : ZONE object to hunt inside
+--   hp_speed      : speed in knots when engaging
+--   hp_formation  : formation string when engaging
+--   hp_target     : currently locked UNIT (or nil)
+--   hp_timer      : TIMER object for periodic updates
+--   hp_interval   : scan interval in seconds
+----------------------------------------------------------------
+
+--- Enable hunting patrol behavior for this ARMYGROUP.
+-- @param #ARMYGROUP self
+-- @param Core.Zone#ZONE_BASE Zone The zone to hunt inside.
+-- @param #number Speed Speed in knots when engaging.
+-- @param #string Formation Formation used during engagement (optional).
+-- @param #number Interval Scan interval in seconds (optional, default 5).
+-- @return #ARMYGROUP self
+function ARMYGROUP:EnableHuntingPatrol(Zone, Speed, Formation, Interval)
+
+  self.hp_zone      = Zone
+  self.hp_speed     = tonumber(Speed) or 20
+  self.hp_formation = Formation or nil
+
+  -- Force numeric, safe interval
+  local intervalNum = tonumber(Interval)
+  if not intervalNum or intervalNum <= 0 then
+    intervalNum = 5
+  end
+  self.hp_interval  = intervalNum
+
+  self.hp_target    = nil
+
+  if self.hp_timer then
+    self.hp_timer:Stop()
+    self.hp_timer = nil
+  end
+
+  self.hp_timer = TIMER:New(self._HuntingPatrolUpdate, self):Start(1, self.hp_interval)
+
+  self:T(self.lid .. "HuntingPatrol: enabled. Interval=" .. tostring(self.hp_interval))
+  return self
+end
+
+--- Disable hunting patrol behavior.
+-- @param #ARMYGROUP self
+-- @return #ARMYGROUP self
+function ARMYGROUP:DisableHuntingPatrol()
+  if self.hp_timer then
+    self.hp_timer:Stop()
+    self.hp_timer = nil
+  end
+  if self.HuntingEnemySet then
+    self.HuntingEnemySet:FilterStop()
+    self.HuntingEnemySet = nil
+  end
+  self.hp_target = nil
+  self:T(self.lid .. "HuntingPatrol: disabled.")
+  return self
+end
+
+----------------------------------------------------------------
+-- Internal: periodic update
+----------------------------------------------------------------
+-- This is called by the TIMER created in EnableHuntingPatrol().
+-- It:
+--   
+--   - checks if group is alive & combat-ready  
+--   - if a target is locked, checks if it is still alive    
+--   - if no target, scans the zone for enemies and locks one
+--   - uses ARMYGROUP:EngageTarget() / Disengage()   
+--   
+----------------------------------------------------------------
+-- @param #ARMYGROUP self
+-- @return #ARMYGROUP self
+function ARMYGROUP:_HuntingPatrolUpdate()
+
+  -- If group is dead, stop.
+  if not self:IsAlive() then
+    self:DisableHuntingPatrol()
+    return
+  end
+
+  -- Only run during PATROLZONE missions
+  local mission = self:GetMissionCurrent()
+  if not mission or mission.type ~= AUFTRAG.Type.PATROLZONE then
+    return
+  end
+
+  -- Only act when combat-ready
+  if not self:IsCombatReady() then
+    return
+  end
+
+  -- If we have a locked target, keep or drop it
+  if self.hp_target then
+    if not self.hp_target:IsAlive() then
+      self.hp_target = nil
+      self:Disengage()
+    end
+    return
+  end
+
+  -- No target → scan for new enemies
+  local enemy = self:_HuntingPatrolFindEnemyInZone(self.hp_zone)
+  if enemy then
+    self.hp_target = enemy
+    self:EngageTarget(enemy, self.hp_speed, self.hp_formation)
+  end
+end
+
+----------------------------------------------------------------
+-- Internal: find one enemy ground unit inside a zone
+----------------------------------------------------------------
+-- Very simple: build a SET_UNIT, filter by coalition and zone,
+-- and pick the closest unit to this ARMYGROUP.
+----------------------------------------------------------------
+-- @param #ARMYGROUP self
+-- @param Core.Zone#ZONE Zone The zont to look at
+-- @return Wrapper.Unit#UNIT Enemy The nearest enemy UNIT in zone
+function ARMYGROUP:_HuntingPatrolFindEnemyInZone(Zone)
+
+  if not Zone then return nil end
+
+  -- Determine our coalition.
+  local myCoalition = self:GetCoalition()
+  
+  if not self.HuntingEnemySet then
+  
+    self.HuntingEnemySet = SET_UNIT:New()
+      :FilterActive(true)
+      :FilterCategories("ground")
+      :FilterStart()
+    
+  end
+
+  local enemies = {}
+
+  self.HuntingEnemySet:ForEachUnitCompletelyInZone(Zone, function(unit)
+    if unit:GetCoalition() ~= myCoalition and unit:IsAlive() then
+      table.insert(enemies, unit)
+    end
+  end)
+
+  if #enemies == 0 then
+    return nil
+  end
+
+  -- Pick the closest enemy.
+  local myCoord = self:GetCoordinate()
+
+  table.sort(enemies, function(a, b)
+    return myCoord:Get2DDistance(a:GetCoordinate()) <
+           myCoord:Get2DDistance(b:GetCoordinate())
+  end)
+
+  return enemies[1]
+end
+
+----------------------------------------------------------------
+-- Optional helper: convenience wrapper for your campaign code
+----------------------------------------------------------------
+-- Example usage in your ArmyManagement:
+--
+--   local group = GROUP:FindByName("MyDefenseGroup")
+--   local army  = ARMYGROUP:New(group)
+--   army:SetPatrolAdInfinitum(true)
+--   army:EnableHuntingPatrol(myZone, 20, "Off Road", 5)
+--
+-- ARMYGROUP will:
+-- 
+--   * patrol its waypoints forever
+--   * periodically scan myZone
+--   * when an enemy appears, EngageTarget()
+--   * when target dies, Disengage() and resume patrol
+--   
+----------------------------------------------------------------
+-- @param Wrapper.Group#GROUP group The GROUP object to be made into an ARMYGROUP and send hunting.
+-- @param Core.Zone#ZONE zone The zone object where to search for enemies.
+-- @param #number speed Speed in knots when engaging.
+-- @param #string formation Formation used during engagement (optional).
+-- @param #number interval Scan interval in seconds (optional, default 5).
+-- @return #ARMYGROUP ArmyGroup The new ArmyGroup.
+function ARMYGROUP.EnableHuntingPatrolForGroup(group, zone, speed, formation, interval)
+  local army = ARMYGROUP:New(group)
+  army:SetPatrolAdInfinitum(true)
+  army:EnableHuntingPatrol(zone, speed, formation, interval)
+  return army
+end
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
