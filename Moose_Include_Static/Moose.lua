@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T14:14:22+01:00-b6c82316c7c68af6b00f001a32347e72654f2a9c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T15:11:57+01:00-85a4e4bd3533595b44a4ad13d194a92eefbfb3cc ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -243136,7 +243136,7 @@ end
 -- 
 -------------------------------------------------------------------------
 -- Date: September 2023
--- Last Update: Jan 2026
+-- Last Update: Mar 2026
 -------------------------------------------------------------------------
 --
 --- **Ops** - Easy GCI & CAP Manager
@@ -243401,7 +243401,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.34"
+EASYGCICAP.version="0.1.35"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -243470,6 +243470,7 @@ function EASYGCICAP:New(Alias, AirbaseName, Coalition, EWRName)
   --               From State  -->   Event      -->      To State
   self:SetStartState("Stopped")
   self:AddTransition("Stopped", "Start",  "Running")
+  self:AddTransition("Stopped", "Restart",  "Running")
   self:AddTransition("Running", "Stop",   "Stopped")
   self:AddTransition("*",       "Status", "*")  
   
@@ -243502,6 +243503,20 @@ function EASYGCICAP:New(Alias, AirbaseName, Coalition, EWRName)
   
   --- On After "Status" event.
   -- @function [parent=#EASYGCICAP] OnAfterStatus
+  -- @param #EASYGCICAP self
+  -- @param #string From From state.
+  -- @param #string Event Event.
+  -- @param #string To To state.
+  
+  --- On Before "Restart" event. Use `myinstance:Restart()` in case you Stopped the instance before and want to restart it now.
+  -- @function [parent=#EASYGCICAP] OnBeforeRestart
+  -- @param #EASYGCICAP self
+  -- @param #string From From state.
+  -- @param #string Event Event.
+  -- @param #string To To state.
+  
+  --- On After "Restart" event. Use `myinstance:Restart()` in case you Stopped the instance before and want to restart it now.
+  -- @function [parent=#EASYGCICAP] OnAfterRestart
   -- @param #EASYGCICAP self
   -- @param #string From From state.
   -- @param #string Event Event.
@@ -244354,10 +244369,11 @@ function EASYGCICAP:_AddSquadron(TemplateName, SquadName, AirbaseName, AirFrames
   Squadron_One:SetSkill(Skill or AI.Skill.AVERAGE)
   Squadron_One:SetMissionRange(self.missionrange)
   
-  local wing = self.wings[AirbaseName][1] -- Ops.Airwing#AIRWING
+  local wing = self.wings[AirbaseName][1] -- Ops.AirWing#AIRWING
   
   wing:AddSquadron(Squadron_One)
-  wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP, AUFTRAG.Type.GCICAP, AUFTRAG.Type.INTERCEPT, AUFTRAG.Type.PATROLRACETRACK, AUFTRAG.Type.ALERT5},75)
+  --local countsquads = UTILS.TableLength(wing.cohorts)
+  wing:NewPayload(TemplateName,-1,{AUFTRAG.Type.CAP, AUFTRAG.Type.GCICAP, AUFTRAG.Type.INTERCEPT, AUFTRAG.Type.PATROLRACETRACK, AUFTRAG.Type.ALERT5},100)
   
   return self
 end
@@ -244912,8 +244928,31 @@ end
 function EASYGCICAP:onafterStop(From,Event,To)
   self:T({From,Event,To})
   self.Intel:Stop()
+  -- self.wings[Airbasename] = { CAP_Wing, AIRBASE:FindByName(Airbasename):GetZone(), Airbasename }
   for _,_wing in pairs(self.wings or {}) do
-    _wing:Stop()
+    for _,_aw in pairs(_wing) do
+      _wing[1]:Stop()
+    end
+  end
+  return self
+end
+
+--- (Internal) FSM Function onafterRestart
+-- @param #EASYGCICAP self
+-- @param #string From
+-- @param #string Event
+-- @param #string To
+-- @return #EASYGCICAP self
+function EASYGCICAP:onafterRestart(From,Event,To)
+  self:T({From,Event,To})
+  if self:Is("Stopped") then
+  self.Intel:Start()
+  -- self.wings[Airbasename] = { CAP_Wing, AIRBASE:FindByName(Airbasename):GetZone(), Airbasename }
+    for _,_wing in pairs(self.wings or {}) do
+      for _,_aw in pairs(_wing) do
+        _wing[1]:Start()
+      end
+    end
   end
   return self
 end
