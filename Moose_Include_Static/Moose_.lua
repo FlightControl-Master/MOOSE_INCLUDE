@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T18:17:23+01:00-4367a91d4b7f9da03b1482a94c090caec8c37519 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T12:49:18+01:00-bea05a5b547459fa777908e065999dd2512de975 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26079,7 +26079,7 @@ groupId=self:GetID(),
 }
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
-function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
+function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,GroupAttack)
 local DCSTask={id='AttackGroup',
 params={
 groupId=AttackGroup:GetID(),
