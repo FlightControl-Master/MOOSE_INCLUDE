@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T15:38:03+01:00-f93bf6f0e7cd05b0f9bc95a245924a650cc51dae ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T23:06:12+01:00-33246565165216a50c878cb40ac8b11698dd66db ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -86777,9 +86777,9 @@ return mission
 end
 function AUFTRAG:NewAWACS(Coordinate,Altitude,Speed,Heading,Leg)
 local mission=nil
-if BASE:IsInstanceOf("COORDINATE")then
+if Coordinate:IsInstanceOf("COORDINATE")then
 mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
-elseif BASE:IsInstanceOf("UNIT")then
+elseif Coordinate:IsInstanceOf("UNIT")then
 local OffsetVec2={r=6,phi=180}
 mission=AUFTRAG:NewORBIT_GROUP(Coordinate,Altitude,Speed,Leg,Heading,OffsetVec2)
 else
