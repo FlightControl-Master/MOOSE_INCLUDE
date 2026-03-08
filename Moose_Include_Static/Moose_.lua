@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T12:49:18+01:00-bea05a5b547459fa777908e065999dd2512de975 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-08T13:14:01+01:00-970f567edfe6295a6e741722f78c675b1637e1d7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -87619,6 +87619,11 @@ return self
 end
 function AUFTRAG:SetEngageAltitude(Altitude)
 self.engageAltitude=UTILS.FeetToMeters(Altitude or 6000)
+self.DCStask=self:GetDCSMissionTask()
+return self
+end
+function AUFTRAG:SetEngageQuantity(Quantity)
+self.engageQuantity=Quantity
 self.DCStask=self:GetDCSMissionTask()
 return self
 end

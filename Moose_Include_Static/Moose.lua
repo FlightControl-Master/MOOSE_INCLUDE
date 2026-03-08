@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T12:49:18+01:00-bea05a5b547459fa777908e065999dd2512de975 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-08T13:14:01+01:00-970f567edfe6295a6e741722f78c675b1637e1d7 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -174336,6 +174336,20 @@ end
 function AUFTRAG:SetEngageAltitude(Altitude)
 
   self.engageAltitude=UTILS.FeetToMeters(Altitude or 6000)
+
+   -- Update the DCS task parameter.
+  self.DCStask=self:GetDCSMissionTask()
+
+  return self
+end
+
+--- Set engage quantity. This is the number of times the attack group/unit DCS task is carried out.
+-- @param #AUFTRAG self
+-- @param #number Quantity (Optional) Number of times the group will engage the target.
+-- @return #AUFTRAG self
+function AUFTRAG:SetEngageQuantity(Quantity)
+
+  self.engageQuantity=Quantity
 
    -- Update the DCS task parameter.
   self.DCStask=self:GetDCSMissionTask()
