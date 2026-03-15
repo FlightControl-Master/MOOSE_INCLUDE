@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-10T10:25:08+01:00-f5bda1e8d13b010df4811182a5bc575250c3fdad ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-15T15:07:42+01:00-4ca843a14e9cb2fd968798925d1bcf9d5b607d48 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -54487,6 +54487,26 @@ function CONTROLLABLE:OptionAIRunwayLineUp()
 
     if self:IsAir() then
       Controller:setOption( 37, true )
+    end
+
+    return self
+  end
+
+  return nil
+end
+
+--- Air - Allow to fly home after loss of formation
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:OptionDisengageAndRTBAfterFormationLoss()
+  self:F2( { self.ControllableName } )
+
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = self:_GetController()
+
+    if self:IsAir() then
+      Controller:setOption( 38, 1 )
     end
 
     return self
