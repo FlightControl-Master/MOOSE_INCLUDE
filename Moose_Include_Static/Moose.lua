@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-18T10:55:38+01:00-28b7c431e039c1358d6850bd8df9b0c0b0818841 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-18T20:33:52+01:00-f8c0886fe5584e97949ad9742bab89b22d243470 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -101284,7 +101284,7 @@ function SUPPRESSION:onafterOutOfAmmo(Controllable, From, Event, To)
   self:_EventFromTo("onafterOutOfAmmo", Event, From, To)
 
   -- Info to log.
-  sefl:T(self.lid..string.format("Out of ammo!"))
+  self:T(self.lid..string.format("Out of ammo!"))
     
   -- Order retreat if retreat zone was specified.
   if self.RetreatZone then

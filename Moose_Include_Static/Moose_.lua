@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-18T10:55:38+01:00-28b7c431e039c1358d6850bd8df9b0c0b0818841 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-18T20:33:52+01:00-f8c0886fe5584e97949ad9742bab89b22d243470 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -50404,7 +50404,7 @@ self:_Run(Hideout,self.Speed,self.Formation,self.TakecoverWait)
 end
 function SUPPRESSION:onafterOutOfAmmo(Controllable,From,Event,To)
 self:_EventFromTo("onafterOutOfAmmo",Event,From,To)
-sefl:T(self.lid..string.format("Out of ammo!"))
+self:T(self.lid..string.format("Out of ammo!"))
 if self.RetreatZone then
 self:Retreat()
 end
