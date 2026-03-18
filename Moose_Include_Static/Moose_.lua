@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-15T15:07:42+01:00-4ca843a14e9cb2fd968798925d1bcf9d5b607d48 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-18T10:55:38+01:00-28b7c431e039c1358d6850bd8df9b0c0b0818841 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -50200,7 +50200,7 @@ local detectedU=group:GetDetectedUnitSet():Count()
 local text=string.format("State %s, Units=%d/%d, ROE=%s, AlarmState=%s, Hits=%d, Life(min/max/ave/ave0)=%d/%d/%d/%d, Total Ammo=%d, Detected=%d/%d",
 self:GetState(),nunits,self.IniGroupStrength,self.CurrentROE,self.CurrentAlarmState,self.Nhit,life_min,life_max,life_ave,life_ave0,ammotot,detectedG,detectedU)
 MESSAGE:New(text,10):ToAllIf(message or self.Debug)
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 function SUPPRESSION:onafterStart(Controllable,From,Event,To)
 self:_EventFromTo("onafterStart",Event,From,To)
@@ -50348,6 +50348,7 @@ self:_SetROE()
 self:_SetAlarmState()
 local group=Controllable
 local Waypoints=group:GetTemplateRoutePoints()
+self:T2({Waypoints})
 group:Route(Waypoints,5)
 end
 function SUPPRESSION:onbeforeFallBack(Controllable,From,Event,To,AttackUnit)
@@ -50403,7 +50404,7 @@ self:_Run(Hideout,self.Speed,self.Formation,self.TakecoverWait)
 end
 function SUPPRESSION:onafterOutOfAmmo(Controllable,From,Event,To)
 self:_EventFromTo("onafterOutOfAmmo",Event,From,To)
-self:I(self.lid..string.format("Out of ammo!"))
+sefl:T(self.lid..string.format("Out of ammo!"))
 if self.RetreatZone then
 self:Retreat()
 end
@@ -50464,7 +50465,7 @@ function SUPPRESSION:onafterStop(Controllable,From,Event,To)
 self:_EventFromTo("onafterStop",Event,From,To)
 local text=string.format("Stopping SUPPRESSION for group %s",self.Controllable:GetName())
 MESSAGE:New(text,10):ToAllIf(self.Debug)
-self:I(self.lid..text)
+sefl:T(self.lid..text)
 self.CallScheduler:Clear()
 if self.mooseevents then
 self:UnHandleEvent(EVENTS.Dead)
