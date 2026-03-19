@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-18T20:33:52+01:00-f8c0886fe5584e97949ad9742bab89b22d243470 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-19T12:27:17+01:00-42b4bd62d90ac70d9824d643e1ca4c47689c47c9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -27820,6 +27820,14 @@ end
 return self
 end
 return nil
+end
+function CONTROLLABLE:SetOptionJettisonEmptyTanks(Switch)
+self:F2({self.ControllableName})
+Switch=Switch or true
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.JETT_TANKS_IF_EMPTY,Switch)
+end
+return self
 end
 function CONTROLLABLE:SetOptionLandingStraightIn()
 self:F2({self.ControllableName})
