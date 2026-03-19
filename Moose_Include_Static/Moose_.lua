@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:08:34+01:00-04accc28c87039e77c585df43a9c2d5d3c8412c2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-19T12:28:41+01:00-65eaecd005b15c8a63e7ee825244395e237d63d4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -19858,7 +19858,7 @@ end
 return self
 end
 _MESSAGESRS={}
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider,Speaker)
 _MESSAGESRS.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 _MESSAGESRS.frequency=Frequency or MSRS.frequencies or 243
 _MESSAGESRS.modulation=Modulation or MSRS.modulations or radio.modulation.AM
@@ -19890,6 +19890,7 @@ _MESSAGESRS.MSRS:SetPort(_MESSAGESRS.port)
 _MESSAGESRS.volume=Volume or MSRS.volume or 1
 _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
 if Voice then _MESSAGESRS.MSRS:SetVoice(Voice)end
+if Speaker then _MESSAGESRS.MSRS:SetSpeakerPiper(Speaker)end
 _MESSAGESRS.voice=Voice or MSRS.voice
 _MESSAGESRS.SRSQ=MSRSQUEUE:New(_MESSAGESRS.label)
 end
@@ -26078,7 +26079,7 @@ groupId=self:GetID(),
 }
 return self:TaskWrappedAction(CommandEPLRS,idx or 1)
 end
-function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit,GroupAttack)
+function CONTROLLABLE:TaskAttackGroup(AttackGroup,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,GroupAttack)
 local DCSTask={id='AttackGroup',
 params={
 groupId=AttackGroup:GetID(),
@@ -27455,6 +27456,18 @@ return self
 end
 return nil
 end
+function CONTROLLABLE:OptionDisengageAndRTBAfterFormationLoss()
+self:F2({self.ControllableName})
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=self:_GetController()
+if self:IsAir()then
+Controller:setOption(38,1)
+end
+return self
+end
+return nil
+end
 function CONTROLLABLE:OptionROTEvadeFirePossible()
 self:F2({self.ControllableName})
 local DCSControllable=self:GetDCSObject()
@@ -27807,6 +27820,14 @@ end
 return self
 end
 return nil
+end
+function CONTROLLABLE:SetOptionJettisonEmptyTanks(Switch)
+self:F2({self.ControllableName})
+Switch=Switch or true
+if self:IsAir()then
+self:SetOption(AI.Option.Air.id.JETT_TANKS_IF_EMPTY,Switch)
+end
+return self
 end
 function CONTROLLABLE:SetOptionLandingStraightIn()
 self:F2({self.ControllableName})
@@ -45285,7 +45306,7 @@ function RANGE:TrackMissilesOFF()
 self.trackmissiles=false
 return self
 end
-function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey,Provider)
+function RANGE:SetSRS(PathToSRS,Port,Coalition,Frequency,Modulation,Volume,PathToGoogleKey,Provider,Backend)
 if PathToSRS or MSRS.path then
 self.useSRS=true
 self.controlmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 256,Modulation or radio.modulation.AM)
@@ -45295,6 +45316,9 @@ self.controlmsrs:SetLabel("RANGEC")
 self.controlmsrs:SetVolume(Volume or 1.0)
 if self.rangezone then
 self.controlmsrs:SetCoordinate(self.rangezone:GetCoordinate())
+end
+if Backend then
+self.controlmsrs:SetBackend(Backend)
 end
 self.controlsrsQ=MSRSQUEUE:New("CONTROL")
 self.instructmsrs=MSRS:New(PathToSRS or MSRS.path,Frequency or 305,Modulation or radio.modulation.AM)
@@ -45312,6 +45336,9 @@ self.controlmsrs:SetProvider(MSRS.Provider.GOOGLE)
 self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
 self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
 end
+if Backend then
+self.instructmsrs:SetBackend(Backend)
+end
 if Provider then
 self.controlmsrs:SetProvider(Provider)
 self.instructmsrs:SetProvider(Provider)
@@ -45321,7 +45348,7 @@ self:E(self.lid..string.format("ERROR: No SRS path specified!"))
 end
 return self
 end
-function RANGE:SetSRSRangeControl(frequency,modulation,voice,culture,gender,relayunitname)
+function RANGE:SetSRSRangeControl(frequency,modulation,voice,culture,gender,relayunitname,Speaker)
 if not self.instructmsrs then
 self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeControl!")
 return self
@@ -45330,6 +45357,9 @@ self.rangecontrolfreq=frequency or 256
 self.controlmsrs:SetFrequencies(self.rangecontrolfreq)
 self.controlmsrs:SetModulations(modulation or radio.modulation.AM)
 self.controlmsrs:SetVoice(voice)
+if Speaker then
+self.controlmsrs:SetSpeakerPiper(Speaker)
+end
 self.controlmsrs:SetCulture(culture or"en-US")
 self.controlmsrs:SetGender(gender or"female")
 self.rangecontrol=true
@@ -45345,7 +45375,7 @@ end
 end
 return self
 end
-function RANGE:SetSRSRangeInstructor(frequency,modulation,voice,culture,gender,relayunitname)
+function RANGE:SetSRSRangeInstructor(frequency,modulation,voice,culture,gender,relayunitname,Speaker)
 if not self.instructmsrs then
 self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeInstructor!")
 return self
@@ -45354,6 +45384,9 @@ self.instructorfreq=frequency or 305
 self.instructmsrs:SetFrequencies(self.instructorfreq)
 self.instructmsrs:SetModulations(modulation or radio.modulation.AM)
 self.instructmsrs:SetVoice(voice)
+if Speaker then
+self.instructmsrs:SetSpeakerPiper(Speaker)
+end
 self.instructmsrs:SetCulture(culture or"en-US")
 self.instructmsrs:SetGender(gender or"male")
 self.instructor=true
@@ -50175,7 +50208,7 @@ local detectedU=group:GetDetectedUnitSet():Count()
 local text=string.format("State %s, Units=%d/%d, ROE=%s, AlarmState=%s, Hits=%d, Life(min/max/ave/ave0)=%d/%d/%d/%d, Total Ammo=%d, Detected=%d/%d",
 self:GetState(),nunits,self.IniGroupStrength,self.CurrentROE,self.CurrentAlarmState,self.Nhit,life_min,life_max,life_ave,life_ave0,ammotot,detectedG,detectedU)
 MESSAGE:New(text,10):ToAllIf(message or self.Debug)
-self:I(self.lid..text)
+self:T(self.lid..text)
 end
 function SUPPRESSION:onafterStart(Controllable,From,Event,To)
 self:_EventFromTo("onafterStart",Event,From,To)
@@ -50323,6 +50356,7 @@ self:_SetROE()
 self:_SetAlarmState()
 local group=Controllable
 local Waypoints=group:GetTemplateRoutePoints()
+self:T2({Waypoints})
 group:Route(Waypoints,5)
 end
 function SUPPRESSION:onbeforeFallBack(Controllable,From,Event,To,AttackUnit)
@@ -50378,7 +50412,7 @@ self:_Run(Hideout,self.Speed,self.Formation,self.TakecoverWait)
 end
 function SUPPRESSION:onafterOutOfAmmo(Controllable,From,Event,To)
 self:_EventFromTo("onafterOutOfAmmo",Event,From,To)
-self:I(self.lid..string.format("Out of ammo!"))
+self:T(self.lid..string.format("Out of ammo!"))
 if self.RetreatZone then
 self:Retreat()
 end
@@ -50439,7 +50473,7 @@ function SUPPRESSION:onafterStop(Controllable,From,Event,To)
 self:_EventFromTo("onafterStop",Event,From,To)
 local text=string.format("Stopping SUPPRESSION for group %s",self.Controllable:GetName())
 MESSAGE:New(text,10):ToAllIf(self.Debug)
-self:I(self.lid..text)
+sefl:T(self.lid..text)
 self.CallScheduler:Clear()
 if self.mooseevents then
 self:UnHandleEvent(EVENTS.Dead)
@@ -57920,7 +57954,7 @@ self.SRS:SetPort(self.SRSPort)
 end
 return self
 end
-function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider)
+function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider,Speaker)
 self:T(self.lid.."SetSRSTTSRadio")
 self.SRSTTSRadio=OnOff and true
 self.SRSRadio=false
@@ -57934,6 +57968,9 @@ self.SRS:SetPort(self.SRSPort)
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetLabel("ACSR")
 self.SRS:SetVoice(Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRS:SetCulture(Culture)
 self.SRS:SetGender(Gender)
 if GoogleCredentials and not Provider then
@@ -57948,12 +57985,15 @@ self.SRSQ=MSRSQUEUE:New(self.alias)
 end
 return self
 end
-function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender,Speaker)
 self:T(self.lid.."SetPilotTTSVoice")
 self.SRSPilotVoice=true
 self.SRSPilot=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
 self.SRSPilot:SetCoalition(self.coalition)
 self.SRSPilot:SetVoice(Voice)
+if Speaker then
+self.SRSPilot:SetSpeakerPiper(Speaker)
+end
 self.SRSPilot:SetCulture(Culture or"en-US")
 self.SRSPilot:SetGender(Gender or"male")
 self.SRSPilot:SetLabel("PILOT")
@@ -57964,12 +58004,15 @@ self.SRSPilot:SetProvider(MSRS.Provider.GOOGLE)
 end
 return self
 end
-function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender,Speaker)
 self:T(self.lid.."SetOperatorTTSVoice")
 self.SRSOperatorVoice=true
 self.SRSOperator=MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
 self.SRSOperator:SetCoalition(self.coalition)
 self.SRSOperator:SetVoice(Voice)
+if Speaker then
+self.SRSOperator:SetSpeakerPiper(Speaker)
+end
 self.SRSOperator:SetCulture(Culture or"en-GB")
 self.SRSOperator:SetGender(Gender or"female")
 self.SRSOperator:SetLabel("RESCUE")
@@ -59155,7 +59198,7 @@ color=self.RecceSmokeColor[RecceName]
 end
 return color
 end
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider)
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider,Speaker)
 if OnOff then
 self.useSRS=true
 self.SRSPath=Path or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
@@ -59175,6 +59218,9 @@ self.SRS:SetGender(self.Gender)
 self.SRS:SetCulture(self.Culture)
 self.SRS:SetPort(self.Port)
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRS:SetCoalition(self.coalition)
 self.SRS:SetVolume(self.Volume)
 if self.PathToGoogleKey and not Provider then
@@ -72732,7 +72778,7 @@ airbase:GetRunwayData(self.runwaym2t,true)
 end
 end
 end
-function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey,Provider)
+function ATIS:SetSRS(PathToSRS,Gender,Culture,Voice,Port,GoogleKey,Provider,Speaker)
 self.useSRS=true
 local path=PathToSRS or MSRS.path
 local gender=Gender or MSRS.gender
@@ -72756,6 +72802,9 @@ self.msrs:SetVoice(voice)
 self.msrs:SetCoordinate(self.airbase:GetCoordinate())
 if Provider then
 self.msrs:SetProvider(Provider)
+end
+if Speaker then
+self.msrs:SetSpeakerPiper(Speaker)
 end
 self.msrsQ=MSRSQUEUE:New("ATIS")
 self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
@@ -74163,7 +74212,7 @@ end
 end
 return self
 end
-function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -74203,6 +74252,9 @@ if Backend then
 self.SRS:SetBackend(Backend)
 end
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRSQueue=MSRSQUEUE:New(self.Label)
 self.SRSQueue:SetTransmitOnlyWithPlayers(true)
 self.SRSQueue.Label="CTLD"
@@ -82141,6 +82193,178 @@ STOCK_UNLIMITED="illimité",
 BUILD_YES="OUI",
 BUILD_NO="NON",
 },
+ES={
+CRATE_LOADED_GROUNDCREW="Contenedor %s cargado por el quipo de tierra.",
+CRATE_UNLOADED_GROUNDCREW="Contenedor %s descargado por el quipo de tierra.",
+CRATE_LOADED_ID="Contenedor ID %d para %s cargado.",
+LOADED_FULL="Cargado %d %s.",
+LOADED_SETS_LEFTOVER="Cargado %d %s(s), de %d contenedor(es) restante(s).",
+LOADED_SETS="Cargado %d %s(s).",
+LOADED_PARTIAL="Cargado sólo %d/%d contenedor(es) de %s.",
+LOADED_PARTIAL_LIMIT="Cargado sólo %d/%d contenedor(es) de %s. Límite de carga alcanzado.",
+LOADED_BATCH="Cargado %d %s.",
+LOADED_BATCH_PARTIAL="Some sets could not be fully loaded.",
+DROPPED_FULL="Entregado %d %s.",
+DROPPED_SETS_LEFTOVER="Entregado %d %s(s), de %d conenedor(es) restante(s).",
+DROPPED_SETS="Entregado %d %s(s).",
+DROPPED_PARTIAL="Entregado %d/%d contenedor(es) de %s.",
+DROPPED_INTO_ACTION="¡Soltados %s en acción!",
+DROPPED_BEACON="Entregado %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+CRATES_POSITIONED="%d contenedores para %s servidos cerca de ti.",
+CRATES_DROPPED="%d contenedores para %s han sido entregados.",
+BOARDED="¡%s a bordo!",
+BOARDING="¡%s entrando!",
+TROOPS_RETURNED="¡Las tropas han vuelto a la base!",
+DEPLOYED_NEAR_YOU="%s han sido servidas cerca de tí.",
+UNITS_REMOVED="%s ha sido eliminado",
+BUILD_STARTED="Construcción comenzada, listo en %d segundos.",
+REPAIR_STARTED="Reparación comenzaza usando %s, tardará %d segundos.",
+NO_UNIT_TO_REPAIR="No hay unidades cercanas que necesiten reparación.",
+CANT_REPAIR_WITH="No se puede reparar esta unidad con %s",
+CRATES_MOVE_BEFORE_BUILD="*** Los contenedores deben ser movidos antes de construirse.",
+CHOPPER_CANNOT_CARRY="Lo siento, este helicóptero no puede transportar contenedores.",
+TOO_HEAVY="Lo siento, esta carga es muy pesada.",
+FULLY_LOADED="Lo siento, vamos hasta arriba.",
+CRAMMED="Lo siento, vamos a tope.",
+NO_CAPACITY_NOW="No queda capacidad para cargar más.",
+NO_MORE_CAPACITY="No queda capacidad para cargar más contenedores.",
+CANNOT_LOAD_NONE_OR_FULL="No se pueden cargar contenedores: n hay o no queda capacidad.",
+NEED_TO_LAND_OR_HOVER_LOAD="Necesitas aterrizar o mantenerte en estacionario para cargar.",
+HOVER_OVER_CRATES="Mantente en estacionario sobre el contenedor para recogerlo.",
+LAND_OR_HOVER_OVER_CRATES="Aterriza o mantente en estacionario para recoger el contenedor.",
+MUST_LAND_OR_HOVER_CRATES="Necesitas aterrizar o mantenerte en eestacionario para cargar contenedores.",
+NEED_TO_LAND_BUILD="Necesitas aterrizar/parar para construir algo.",
+NOT_CLOSE_ENOUGH_LOGISTICS="No estás cerca de una zona de logística.",
+NOT_CLOSE_ENOUGH_DROP="No estás en una zona de entrega.",
+NOT_CLOSE_ENOUGH_ZONE_NM="Negativo, tienes que estar a menos de %dnm de la zona.",
+CANNOT_BUILD_LOADING_AREA="No puedes construir en la zona de carga.",
+OPEN_DOORS_LOAD_CARGO="Necesitas abrir las puertas para cargar.",
+OPEN_DOORS_LOAD_TROOPS="Necesitas abrir las puertas para que embarquen las tropas.",
+OPEN_DOORS_EXTRACT_TROOPS="Necesitas abrir las puertas para poder sacar a las tropas de aquí.",
+OPEN_DOORS_UNLOAD_TROOPS="Necesitas abrir las puertas para que desembarquen las tropas.",
+OPEN_DOORS_DROP_CARGO="Necesitas abrir las puertas para descargar la carga.",
+ALL_GONE="Lo siento, todos %s se han servido.",
+RAN_OUT_OF="Lo siento, nos hemos quedad sin %s",
+CARGO_NOT_AVAILABLE_ZONE="La carga solicitada no está disponible en esta zona.",
+ENOUGH_CRATES_NEARBY="Hay contenedores cerca de ti listas. Encárgate primero de ellos.",
+NO_CRATES_WITHIN="No ha contenedores (cargables) en %d metros.",
+NO_CRATES_WITHIN_PLAIN="No hay contenedores en %d metros.",
+NO_CRATES_IN_RANGE="No se han encontrado contenedores en rango.",
+NO_NAMED_CRATES_IN_RANGE="No se han encontrado \"%s\" conenedores en rango.",
+NO_LOADABLE_CRATES="Lo siento, no hay contenedores cercanos o se ha alcanzado el peso máximo.",
+NO_UNITS_TO_EXTRACT="No hay unidades cercanas para extracción.",
+NO_UNIT_CONFIG="No se ha encontrado configuración de unidad para %s",
+CANT_ONBOARD="No puede subir %s",
+TOO_MANY_UNITS_NEARBY="Ya tienes %d unidades próximas.",
+NO_CRATE_GROUPS="No se han encontrado grupos de contendeores para esta unidad.",
+NO_CRATE_SET="No se ha encontrado contenedor o su index es inválido.",
+NO_CRATE_IN_SET="No se ha encontrado contenedor para este set.",
+NO_TROOP_CHUNK="No se han encontrado tropas para el id %d!",
+TROOP_CHUNK_EMPTY="Troop chunk is empty for ID %d!",
+NOTHING_LOADED="Nada cargado.\nLímite tropas: %d | Límite contenedores: %d | Peso límite: %d kg.",
+NOTHING_LOADED_AIRDROP="Nada cargado o no estás en parámetros de lanzamiento aéreo.",
+NOTHING_LOADED_HOVER="Nada cargado o no estás en parámetros de estacionario.",
+NOTHING_IN_STOCK="¡Nada en stock!",
+NOTHING_TO_PACK="Nada para empaquetar a esta distancia.",
+NOTHING_TO_REMOVE="Nada para eliminar a esta distancia.",
+ROGER_ZONE="Recibido, %s cona %s!",
+HOVER_PARAMS_METRIC="Parámetros en estacionario (autocarga/suelta):\n - Altura mínima %dm \n - Altura máxima %dm \n - Velocidad máxima 2mps \n - En parámetros: %s",
+HOVER_PARAMS_IMPERIAL="Parámetros en estacionario (autocarga/suelta):\n - Altura mínima  %dft \n - Altura máxima %dft \n - Velocidad máxima 6ftps \n - En parámetros: %s",
+FLIGHT_PARAMS_IMPERIAL="Parámetros vuelo (lanzamiento aéreo):\n - Altura mínima  %dft \n - Altura máxima %dft \n - En parámetros: %s",
+FLIGHT_PARAMS_METRIC="Parámetros vuelo (lanzamiento aéreo):\n - Altura mínima  %dm \n - Altura máxima %dm \n - En parámetros: %s",
+REPORT_CRATES_FOUND="Contenedores encontrados cerca:",
+REPORT_REMOVING_CRATES="Contenedores eliminados cerca:",
+REPORT_TRANSPORT_CHECKOUT="Informe de transporte",
+REPORT_INVENTORY="Inventario",
+REPORT_BUILD_CHECKLIST="Contenedores construibles",
+REPORT_REPAIR_CHECKLIST="Reparaciones",
+REPORT_BEACONS="Active Zone Beacons",
+REPORT_SECTION_TROOPS="        -- TROPAS --",
+REPORT_SECTION_CRATES="    -- CONTENEDORES --",
+REPORT_SECTION_CRATES_GC="       -- Contenedores cargados por equipo de tierra --",
+REPORT_SECTION_NONE="        N A D A",
+REPORT_SECTION_NONE_ALT="     --- Nada encontrado ---",
+REPORT_SECTION_NONE_REPAIR="     --- Nada encontrado ---",
+REPORT_GC_LOADABLE_HINT="Probablemente cargable por el equipo de tierra (F8)",
+REPORT_TOTAL_MASS="Peso total: %s kg. Cargable: %s kg.",
+REPORT_TROOPS_CRATES_COUNT="Tropas: %d(%d), Contenedores: %d(%d)",
+REPORT_TROOPS_CRATETYPES_COUNT="Tropas: %d, Tipos contenedores: %d",
+REPORT_ROW_TROOP="Tropas: %s tamaño %d",
+REPORT_ROW_CRATE="Contenedores: %s %d/%d",
+REPORT_ROW_CRATE_SIZE1="Contenedores: %s tamaño 1",
+REPORT_ROW_GC_CRATE="Contenedores cargados: %s tamaño 1",
+REPORT_ROW_DROPPED_CRATE="Entregado contenedor para %s, %dkg",
+REPORT_ROW_CRATE_KG="Contenedor para %s, %dkg",
+REPORT_ROW_CRATE_REMOVED="Contenedor para %s, %dkg eliminado",
+REPORT_ROW_UNIT_STOCK="Unidad: %s | Soldados: %d | Stock: %s",
+REPORT_ROW_TYPE_CRATE_STOCK="Tipo: %s | Contenedores por set: %d | Stock: %s",
+REPORT_ROW_TYPE_STOCK="Tipo: %s | Stock: %s",
+REPORT_ROW_BUILD_CHECK="Tipo: %s | Rquiere %d | Encontrados %d | Construible %s",
+REPORT_ROW_REPAIR_CHECK="Tipo: %s | Requiere %d | Encontrados %d | Reparable %s",
+REPORT_ROW_BEACON=" %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+WEIGHT_LIMIT="Alcanzado límite de pesoWeight limit reached",
+CRATE_LIMIT="Alcanzado límite contenedores",
+MENU_CTLD="CTLD",
+MENU_MANAGE_TROOPS="Gestionar tropas",
+MENU_MANAGE_CRATES="Gestionar contenedores",
+MENU_MANAGE_UNITS="Gestionar unidades",
+MENU_LOAD_TROOPS="Cargar tropas",
+MENU_DROP_TROOPS="Entregar tropas",
+MENU_DROP_ALL_TROOPS="Entregar TODAS tropas",
+MENU_EXTRACT_TROOPS="Extraer tropas",
+MENU_DROP_N_TROOPS="Soltar (%d) %s",
+MENU_GET_CRATES="Solicitar contenedores",
+MENU_GET="Solicitar",
+MENU_GET_AND_LOAD="Solicitar y cargar",
+MENU_GET_ANYWAY="Solicitar de todas formas",
+MENU_PARTIALLY_LOAD="Carga parcial",
+MENU_OUT_OF_STOCK="Sin stock",
+MENU_TROOP_LIMIT="Limite de tropas alcanzado",
+MENU_LOAD_CRATES="Cargar contenedores",
+MENU_LOAD_ALL="Cargar TODO",
+MENU_SHOW_LOADABLE_CRATES="Mostrar contenedores carbables",
+MENU_NO_CRATES_FOUND_RESCAN="Contenedores no encontrados, ¿buscar?",
+MENU_USE_C130_LOAD="Usar sistmea de carga del C-130",
+MENU_LOAD_SINGLE="Cargar",
+MENU_DROP_CRATES="Soltar cargas",
+MENU_DROP_ALL_CRATES="Soltar TODAS cargas",
+MENU_DROP="Soltar",
+MENU_DROP_AND_BUILD="Soltar y constuir",
+MENU_DROP_N_SETS="Soltar %d Set %s",
+MENU_NO_CRATES_TO_DROP="No hay cargas para soltar",
+MENU_BUILD_CRATES="Construir contenedores",
+MENU_REPAIR="Reparar",
+MENU_PACK_CRATES="Empaquetar cargas",
+MENU_PACK="Empaquetar",
+MENU_PACK_AND_LOAD="Empaquetar y cargar",
+MENU_PACK_AND_REMOVE="Empaquetar y eliminar",
+MENU_REMOVE_CRATES="Eliminar cargas",
+MENU_REMOVE_CRATES_NEARBY="Eliminar cargas cercanas",
+MENU_LIST_CRATES_NEARBY="Listar cargas cercanas",
+MENU_CRATES_NEEDED="%d contenedor%s %s (%dkg)",
+MENU_GET_UNITS="Obtener unidades",
+MENU_REMOVE_UNITS_NEARBY="Eliminar unidades cercanas",
+MENU_LIST_BOARDED_CARGO="Lista de cargas a bordo",
+MENU_INVENTORY="Inventario",
+MENU_LIST_ZONE_BEACONS="Lista de balizas activas",
+MENU_SMOKES_FLARES_BEACONS="Humos, Bengalas, Balizas",
+MENU_SMOKE_ZONES_NEARBY="Humo en zonas cercanas",
+MENU_DROP_SMOKE_NOW="Lanzar humo ahora",
+MENU_RED_SMOKE="Humo rojo",
+MENU_BLUE_SMOKE="Humo azul",
+MENU_GREEN_SMOKE="Humo verde",
+MENU_ORANGE_SMOKE="Humo naranja",
+MENU_WHITE_SMOKE="Humo blanco",
+MENU_FLARE_ZONES_NEARBY="Bengalas en zonas cercanas",
+MENU_FIRE_FLARE_NOW="Disparar bengala ahora",
+MENU_DROP_BEACON_NOW="Soltar baliza ahora",
+MENU_SHOW_FLIGHT_PARAMS="Mostrar parámetros de vuelo",
+MENU_SHOW_HOVER_PARAMS="Mostrar parámetros estacionario",
+STOCK_NONE="Nada",
+STOCK_UNLIMITED="ilimitado",
+BUILD_YES="SI",
+BUILD_NO="NO",
+},
 }
 do
 CTLD_HERCULES={
@@ -82742,7 +82966,7 @@ CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.AircraftType["AH-6J"]=2
 CSAR.AircraftType["MH-6J"]=2
-CSAR.version="1.1.38"
+CSAR.version="1.1.39"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Template,Alias})
@@ -83739,7 +83963,7 @@ local km=self.gettext:GetEntry("KILOMETERS",self.locale)
 local nm=self.gettext:GetEntry("NAUTMILES",self.locale)
 _text=string.gsub(_text,"km",km)
 _text=string.gsub(_text,"nm",nm)
-self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
+self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord,nil,self.SRSSpeaker)
 end
 return self
 end
@@ -83900,12 +84124,13 @@ local messagetime=_messagetime or self.messageTime
 self:T({_message,ToSRS=ToSRS,ToScreen=ToScreen})
 if self.msrs and(ToSRS==true or ToSRS==nil)then
 local voice=self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
+local speaker=self.CSARSpeaker
 if self.msrs:GetProvider()==MSRS.Provider.WINDOWS then
 voice=self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
 end
 local kilohertz=self.gettext:GetEntry("KHZ",self.locale)
 _message=string.gsub(_message,"KHz",kilohertz)
-self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
+self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate,nil,speaker)
 end
 if ToScreen==true or ToScreen==nil then
 for _,_unitName in pairs(self.csarUnits)do
@@ -84333,6 +84558,9 @@ self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
 if self.SRSProvider then
 self.msrs:SetProvider(self.SRSProvider)
+end
+if self.SRSSpeaker then
+self.msrs:SetSpeakerPiper(self.SRSSpeaker)
 end
 self.msrs:SetVolume(self.SRSVolume)
 self.msrs:SetLabel("CSAR")
@@ -85412,7 +85640,7 @@ ClassName="ARMYGROUP",
 formationPerma=nil,
 engage={},
 }
-ARMYGROUP.version="1.0.3"
+ARMYGROUP.version="1.0.4"
 function ARMYGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -86313,6 +86541,94 @@ if true then
 self.group:FlareGreen()
 end
 end
+ARMYGROUP.HuntingPatrol={}
+function ARMYGROUP:EnableHuntingPatrol(Zone,Speed,Formation,Interval)
+self.hp_zone=Zone
+self.hp_speed=tonumber(Speed)or 20
+self.hp_formation=Formation or nil
+local intervalNum=tonumber(Interval)
+if not intervalNum or intervalNum<=0 then
+intervalNum=5
+end
+self.hp_interval=intervalNum
+self.hp_target=nil
+if self.hp_timer then
+self.hp_timer:Stop()
+self.hp_timer=nil
+end
+self.hp_timer=TIMER:New(self._HuntingPatrolUpdate,self):Start(1,self.hp_interval)
+self:T(self.lid.."HuntingPatrol: enabled. Interval="..tostring(self.hp_interval))
+return self
+end
+function ARMYGROUP:DisableHuntingPatrol()
+if self.hp_timer then
+self.hp_timer:Stop()
+self.hp_timer=nil
+end
+if self.HuntingEnemySet then
+self.HuntingEnemySet:FilterStop()
+self.HuntingEnemySet=nil
+end
+self.hp_target=nil
+self:T(self.lid.."HuntingPatrol: disabled.")
+return self
+end
+function ARMYGROUP:_HuntingPatrolUpdate()
+if not self:IsAlive()then
+self:DisableHuntingPatrol()
+return
+end
+local mission=self:GetMissionCurrent()
+if not mission or mission.type~=AUFTRAG.Type.PATROLZONE then
+return
+end
+if not self:IsCombatReady()then
+return
+end
+if self.hp_target then
+if not self.hp_target:IsAlive()then
+self.hp_target=nil
+self:Disengage()
+end
+return
+end
+local enemy=self:_HuntingPatrolFindEnemyInZone(self.hp_zone)
+if enemy then
+self.hp_target=enemy
+self:EngageTarget(enemy,self.hp_speed,self.hp_formation)
+end
+end
+function ARMYGROUP:_HuntingPatrolFindEnemyInZone(Zone)
+if not Zone then return nil end
+local myCoalition=self:GetCoalition()
+if not self.HuntingEnemySet then
+self.HuntingEnemySet=SET_UNIT:New()
+:FilterActive(true)
+:FilterCategories("ground")
+:FilterStart()
+end
+local enemies={}
+self.HuntingEnemySet:ForEachUnitCompletelyInZone(Zone,function(unit)
+if unit:GetCoalition()~=myCoalition and unit:IsAlive()then
+table.insert(enemies,unit)
+end
+end)
+if#enemies==0 then
+return nil
+end
+local myCoord=self:GetCoordinate()
+table.sort(enemies,function(a,b)
+return myCoord:Get2DDistance(a:GetCoordinate())<
+myCoord:Get2DDistance(b:GetCoordinate())
+end)
+return enemies[1]
+end
+function ARMYGROUP.EnableHuntingPatrolForGroup(group,zone,speed,formation,interval)
+local army=ARMYGROUP:New(group)
+army:SetPatrolAdInfinitum(true)
+army:EnableHuntingPatrol(zone,speed,formation,interval)
+return army
+end
 AUFTRAG={
 ClassName="AUFTRAG",
 verbose=0,
@@ -86450,7 +86766,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="1.4.1"
+AUFTRAG.version="1.4.2"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -86656,13 +86972,40 @@ mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
 function AUFTRAG:NewAWACS(Coordinate,Altitude,Speed,Heading,Leg)
-local mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
+local mission=nil
+if Coordinate:IsInstanceOf("COORDINATE")then
+mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate,Altitude,Speed,Heading,Leg)
+elseif Coordinate:IsInstanceOf("UNIT")then
+local OffsetVec2={r=6,phi=180}
+mission=AUFTRAG:NewORBIT_GROUP(Coordinate,Altitude,Speed,Leg,Heading,OffsetVec2)
+else
+BASE:E("ERROR in AUFTRAG:NewAWACS: You must pass a COORDINATE or UNIT object!")
+return nil
+end
 mission.type=AUFTRAG.Type.AWACS
 mission:_SetLogID()
 mission.missionTask=ENUMS.MissionTask.AWACS
 mission.optionROE=ENUMS.ROE.WeaponHold
 mission.optionROT=ENUMS.ROT.PassiveDefense
 mission.categories={AUFTRAG.Category.AIRCRAFT}
+mission.DCStask=mission:GetDCSMissionTask()
+return mission
+end
+function AUFTRAG:NewRECOVERYTANKER(Carrier,Altitude,Speed,Leg,RelHeading,OffsetDist,OffsetAngle,UpdateDistance)
+local OffsetVec2={r=OffsetDist or 6,phi=OffsetAngle or 180}
+Leg=Leg or 14
+Speed=Speed or 250
+local Heading=nil
+if RelHeading then
+Heading=-math.abs(RelHeading)
+end
+local mission=AUFTRAG:NewORBIT_GROUP(Carrier,Altitude,Speed,Leg,Heading,OffsetVec2,UpdateDistance)
+mission.type=AUFTRAG.Type.RECOVERYTANKER
+mission.missionTask=ENUMS.MissionTask.REFUELING
+mission.missionFraction=0.9
+mission.optionROE=ENUMS.ROE.WeaponHold
+mission.optionROT=ENUMS.ROT.NoReaction
+mission.categories={AUFTRAG.Category.AIRPLANE}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
@@ -86963,24 +87306,6 @@ mission.missionFraction=0.9
 mission.optionROE=ENUMS.ROE.WeaponHold
 mission.optionROT=ENUMS.ROT.NoReaction
 mission.categories={AUFTRAG.Category.HELICOPTER}
-mission.DCStask=mission:GetDCSMissionTask()
-return mission
-end
-function AUFTRAG:NewRECOVERYTANKER(Carrier,Altitude,Speed,Leg,RelHeading,OffsetDist,OffsetAngle,UpdateDistance)
-local OffsetVec2={r=OffsetDist or 6,phi=OffsetAngle or 180}
-Leg=Leg or 14
-Speed=Speed or 250
-local Heading=nil
-if RelHeading then
-Heading=-math.abs(RelHeading)
-end
-local mission=AUFTRAG:NewORBIT_GROUP(Carrier,Altitude,Speed,Leg,Heading,OffsetVec2,UpdateDistance)
-mission.type=AUFTRAG.Type.RECOVERYTANKER
-mission.missionTask=ENUMS.MissionTask.REFUELING
-mission.missionFraction=0.9
-mission.optionROE=ENUMS.ROE.WeaponHold
-mission.optionROT=ENUMS.ROT.NoReaction
-mission.categories={AUFTRAG.Category.AIRPLANE}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
 end
@@ -87587,6 +87912,11 @@ return self
 end
 function AUFTRAG:SetEngageAltitude(Altitude)
 self.engageAltitude=UTILS.FeetToMeters(Altitude or 6000)
+self.DCStask=self:GetDCSMissionTask()
+return self
+end
+function AUFTRAG:SetEngageQuantity(Quantity)
+self.engageQuantity=Quantity
 self.DCStask=self:GetDCSMissionTask()
 return self
 end
@@ -90029,7 +90359,7 @@ self:HandleEvent(EVENTS.Shot,self._EventHandler)
 self:_InitLocalization()
 return self
 end
-function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider)
+function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider,Speaker)
 self:T(self.lid.."SetTacticalRadios")
 if not self.AwacsSRS then
 MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tactical radios please!",30,"ERROR",true):ToLog():ToAll()
@@ -90053,6 +90383,9 @@ self.TacticalSRS:SetCoalition(self.coalition)
 self.TacticalSRS:SetGender(self.Gender)
 self.TacticalSRS:SetCulture(self.Culture)
 self.TacticalSRS:SetVoice(self.Voice)
+if Speaker then
+self.TacticalSRS:SetSpeakerPiper(Speaker)
+end
 self.TacticalSRS:SetPort(self.Port)
 self.TacticalSRS:SetLabel("AWACS")
 self.TacticalSRS:SetVolume(self.Volume)
@@ -90512,7 +90845,7 @@ self.DetectionSet:AddSet(Group)
 end
 return self
 end
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -90523,6 +90856,7 @@ self.PathToGoogleKey=PathToGoogleKey
 self.AccessKey=AccessKey
 self.Volume=Volume or 1.0
 self.Backend=Backend or MSRS.backend
+self.Provider=Provider
 BASE:I({backend=self.Backend})
 self.AwacsSRS=MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Backend)
 self.AwacsSRS:SetCoalition(self.coalition)
@@ -90531,6 +90865,9 @@ self.AwacsSRS:SetCulture(self.Culture)
 self.AwacsSRS:SetPort(self.Port)
 self.AwacsSRS:SetLabel("AWACS")
 self.AwacsSRS:SetVolume(Volume)
+if Speaker then
+self.AwacsSRS:SetSpeakerPiper(Speaker)
+end
 if self.PathToGoogleKey then
 self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
 self.AwacsSRS:SetProvider(MSRS.Provider.GOOGLE)
@@ -90546,11 +90883,12 @@ end
 self.AwacsSRS:SetVoice(self.Voice)
 return self
 end
-function AWACS:SetSRSVoiceCAP(Gender,Culture,Voice)
+function AWACS:SetSRSVoiceCAP(Gender,Culture,Voice,Speaker)
 self:T(self.lid.."SetSRSVoiceCAP")
 self.CAPGender=Gender or"male"
 self.CAPCulture=Culture or"en-US"
 self.CAPVoice=Voice or"en-GB-Standard-B"
+self.CAPSpeaker=Speaker
 return self
 end
 function AWACS:SetAICAPDetails(Callsign,MaxAICap,TOS,Speed)
@@ -91695,7 +92033,13 @@ local CAPVoice=self.CAPVoice
 if self.PathToGoogleKey then
 CAPVoice=self.CapVoices[math.floor(math.random(1,10))]
 end
-FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1)
+FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1,self.Provider)
+if self.Backend then
+FlightGroup.srs:SetBackend(self.Backend)
+end
+if self.CAPSpeaker then
+FlightGroup.srs:SetSpeakerPiper(self.CAPSpeaker)
+end
 local checkai=self.gettext:GetEntry("CHECKINAI",self.locale)
 text=string.format(checkai,self.callsigntxt,managedgroup.CallSign,self.CAPTimeOnStation,self.AOName)
 self:_NewRadioEntry(text,text,managedgroup.GID,Outcome,false,true,true)
@@ -97731,7 +98075,7 @@ function FLIGHTCONTROL:SetSRSPort(Port)
 self.Port=Port or 5002
 return self
 end
-function FLIGHTCONTROL:_SetSRSOptions(msrs,Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials,Port)
+function FLIGHTCONTROL:_SetSRSOptions(msrs,Gender,Culture,Voice,Volume,Label,PathToGoogleCredentials,Port,Speaker)
 Gender=Gender or"female"
 Culture=Culture or"en-GB"
 Volume=Volume or 1.0
@@ -97739,6 +98083,9 @@ if msrs then
 msrs:SetGender(Gender)
 msrs:SetCulture(Culture)
 msrs:SetVoice(Voice)
+if Speaker then
+msrs:SetSpeakerPiper(Speaker)
+end
 msrs:SetVolume(Volume)
 msrs:SetLabel(Label)
 msrs:SetCoalition(self:GetCoalition())
@@ -97746,15 +98093,15 @@ msrs:SetPort(Port or self.Port or 5002)
 end
 return self
 end
-function FLIGHTCONTROL:SetSRSTower(Gender,Culture,Voice,Volume,Label)
+function FLIGHTCONTROL:SetSRSTower(Gender,Culture,Voice,Volume,Label,Speaker)
 if self.msrsTower then
-self:_SetSRSOptions(self.msrsTower,Gender or"female",Culture or"en-GB",Voice,Volume,Label or self.alias)
+self:_SetSRSOptions(self.msrsTower,Gender or"female",Culture or"en-GB",Voice,Volume,Label or self.alias,nil,nil,Speaker)
 end
 return self
 end
-function FLIGHTCONTROL:SetSRSPilot(Gender,Culture,Voice,Volume,Label)
+function FLIGHTCONTROL:SetSRSPilot(Gender,Culture,Voice,Volume,Label,Speaker)
 if self.msrsPilot then
-self:_SetSRSOptions(self.msrsPilot,Gender or"male",Culture or"en-US",Voice,Volume,Label or"Pilot")
+self:_SetSRSOptions(self.msrsPilot,Gender or"male",Culture or"en-US",Voice,Volume,Label or"Pilot",nil,nil,Speaker)
 end
 return self
 end
@@ -99711,7 +100058,7 @@ GRADUATE="Graduate",
 INSTRUCTOR="Instructor",
 }
 FLIGHTGROUP.Players={}
-FLIGHTGROUP.version="1.0.3"
+FLIGHTGROUP.version="1.0.4"
 function FLIGHTGROUP:New(group)
 local og=_DATABASE:GetOpsGroup(group)
 if og then
@@ -100138,7 +100485,8 @@ self.isHoldingAtHoldingPoint=false
 end
 end
 if mission and mission.updateDCSTask then
-if(mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP)and mission.orbitVec2 then
+local mtype=mission:GetType()
+if(mtype==AUFTRAG.Type.ORBIT or mtype==AUFTRAG.Type.RECOVERYTANKER or mtype==AUFTRAG.Type.CAP or mtype==AUFTRAG.Type.AWACS)and mission.orbitVec2 then
 local vec2=mission:GetTargetVec2()
 local hdg=mission:GetTargetHeading()
 local hdgchange=false
@@ -102151,6 +102499,12 @@ detectStatics=false,
 DetectAccoustic=false,
 DetectAccousticRadius=1000,
 DetectAccousticUnitTypes={Unit.Category.HELICOPTER},
+DopplerRadar=true,
+DopplerMinAltAGL=500,
+DopplerNotchSin=math.sin(math.rad(15)),
+DopplerMinSpeedMps=50,
+DopplerRCS=true,
+DopplerRadarRangeM=200*1000,
 }
 INTEL.Ctype={
 GROUND="Ground",
@@ -102159,6 +102513,101 @@ AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
 INTEL.version="0.3.10"
+INTEL.RCS_Table={
+["A-10C"]=8.0,
+["A-10C_2"]=8.0,
+["F-14A-135-GR"]=6.0,
+["F-14B"]=6.0,
+["F-15C"]=5.0,
+["F-15E"]=5.0,
+["F-15ESE"]=5.0,
+["F-16A"]=1.2,
+["F-16C bl.50"]=1.2,
+["F-16C bl.52d"]=1.2,
+["F/A-18C"]=1.5,
+["FA-18C_hornet"]=1.5,
+["F/A-18C_hornet"]=1.5,
+["F/A-18F"]=2.0,
+["F-117A"]=0.003,
+["F-22A"]=0.0001,
+["F-35A"]=0.001,
+["B-52H"]=100.0,
+["B-1B"]=0.75,
+["B-2A"]=0.001,
+["AV8BNA"]=2.0,
+["Harrier"]=2.0,
+["A-4E-C"]=3.0,
+["Tornado_IDS"]=5.0,
+["Tornado_GR4"]=5.0,
+["F-111F"]=5.0,
+["F-4E"]=6.0,
+["F-5E"]=1.0,
+["F-5E-3"]=1.0,
+["Mirage-F1CE"]=2.5,
+["Mirage-F1EE"]=2.5,
+["M-2000C"]=2.0,
+["M-2000-5"]=2.0,
+["C-17A"]=50.0,
+["C-130"]=40.0,
+["KC-130"]=40.0,
+["KC-135"]=50.0,
+["IL-76MD"]=45.0,
+["E-3A"]=50.0,
+["MiG-15bis"]=4.0,
+["MiG-19P"]=3.5,
+["MiG-21Bis"]=2.5,
+["MiG-23MLD"]=7.0,
+["MiG-25PD"]=14.0,
+["MiG-25RBT"]=14.0,
+["MiG-29A"]=5.0,
+["MiG-29S"]=5.0,
+["MiG-29G"]=5.0,
+["MiG-29K"]=4.0,
+["MiG-31"]=14.0,
+["Su-7B"]=6.0,
+["Su-17M4"]=7.0,
+["Su-24M"]=6.0,
+["Su-24MR"]=6.0,
+["Su-25"]=10.0,
+["Su-25T"]=10.0,
+["Su-25TM"]=10.0,
+["Su-27"]=15.0,
+["Su-30"]=15.0,
+["Su-33"]=15.0,
+["Su-34"]=10.0,
+["Su-57"]=0.01,
+["Tu-22M3"]=20.0,
+["Tu-95MS"]=80.0,
+["Tu-142"]=80.0,
+["Tu-160"]=12.0,
+["An-26B"]=30.0,
+["An-30M"]=30.0,
+["IL-78M"]=45.0,
+["A-50"]=50.0,
+["Mi-8MT"]=5.0,
+["Mi-8MSB"]=5.0,
+["Mi-8MSB-V"]=5.0,
+["Mi-8AMTSh"]=5.0,
+["Mi-24V"]=3.5,
+["Mi-24P"]=3.5,
+["Mi-28N"]=2.5,
+["Ka-50"]=2.0,
+["Ka-52"]=2.0,
+["AH-64D"]=3.5,
+["AH-64D_BLK_II"]=3.5,
+["UH-1H"]=3.0,
+["UH-60L"]=3.0,
+["CH-47D"]=8.0,
+["OH-58D"]=0.8,
+["SA342M"]=0.8,
+["SA342L"]=0.8,
+}
+INTEL.RCS_CategoryDefault={
+[Group.Category.AIRPLANE]=5.0,
+[Group.Category.HELICOPTER]=2.5,
+}
+INTEL.RCS_Reference=5.0
+INTEL.RCS_NoseOnFraction=0.15
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -102449,7 +102898,11 @@ local group=_group
 if group and group:IsAlive()then
 for _,_recce in pairs(group:GetUnits())do
 local recce=_recce
+if self.DopplerRadar then
+self:GetDetectedUnitsDoppler(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
+else
 self:GetDetectedUnits(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
+end
 end
 if self.DetectAccoustic then
 local recce=group:GetFirstUnitAlive()
@@ -103295,6 +103748,111 @@ rcontact=contact
 end
 end
 return rcontact
+end
+function INTEL:SetDopplerRadar(MinAltAGL,NotchHalfDeg,MinSpeedMps,RadarRangeKm,RCS)
+self.DopplerRadar=true
+self.DopplerMinAltAGL=MinAltAGL or 500
+self.DopplerNotchSin=math.sin(math.rad(NotchHalfDeg or 15))
+self.DopplerMinSpeedMps=MinSpeedMps or 50
+self.DopplerRCS=(RCS~=false)
+self.DopplerRadarRangeM=(RadarRangeKm or 200)*1000
+return self
+end
+function INTEL:SetDopplerRadarOff()
+self.DopplerRadar=false
+return self
+end
+function INTEL:SetTypeRCS(TypeName,RCS_m2)
+INTEL.RCS_Table[TypeName]=RCS_m2
+return self
+end
+function INTEL:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
+local typename=TargetUnit:GetTypeName()
+local base_rcs=INTEL.RCS_Table[typename]
+if not base_rcs then
+local cat=TargetUnit:GetGroup()and TargetUnit:GetGroup():GetCategory()
+base_rcs=(cat and INTEL.RCS_CategoryDefault[cat])or INTEL.RCS_Reference
+end
+if spd<1 then return base_rcs end
+local tpos=TargetUnit:GetVec3()
+local dx=rpos.x-tpos.x
+local dz=rpos.z-tpos.z
+local d=math.sqrt(dx*dx+dz*dz)
+if d<1 then return base_rcs end
+local cos_a=(tvel.x*dx+tvel.z*dz)/(spd*d)
+local sin2_a=1.0-cos_a*cos_a
+local f=INTEL.RCS_NoseOnFraction
+return base_rcs*(f+(1.0-f)*sin2_a)
+end
+function INTEL:_CheckDopplerDetection(TargetUnit,RadarUnit)
+local spd=TargetUnit:GetVelocityMPS()
+local rpos=RadarUnit:GetVec3()
+local tpos=TargetUnit:GetVec3()
+local tvel=TargetUnit:GetVelocity()
+local dx=tpos.x-rpos.x
+local dz=tpos.z-rpos.z
+local slant=math.sqrt(dx*dx+dz*dz)
+if spd<self.DopplerMinSpeedMps then
+return false,"speed"
+end
+local agl=TargetUnit:GetAltitude(true)
+if agl<self.DopplerMinAltAGL then
+if math.random()>(agl/self.DopplerMinAltAGL)then
+return false,"clutter"
+end
+end
+if slant>1 then
+local nx=dx/slant
+local nz=dz/slant
+local vr=tvel.x*nx+tvel.z*nz
+local vr_frac=math.abs(vr)/math.max(spd,1)
+if vr_frac<self.DopplerNotchSin then
+return false,"notch"
+end
+end
+if self.DopplerRCS and slant>1 then
+local sigma=self:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
+local scale=(sigma/INTEL.RCS_Reference)^0.25
+local R_max=self.DopplerRadarRangeM*scale
+if slant>R_max then
+return false,"rcs"
+end
+local fade_start=R_max*0.80
+if slant>fade_start then
+local p=(R_max-slant)/(R_max-fade_start)
+if math.random()>p then
+return false,"rcs"
+end
+end
+end
+return true
+end
+function INTEL:GetDetectedUnitsDoppler(Unit,DetectedUnits,RecceDetecting,
+DetectVisual,DetectOptical,DetectRadar,
+DetectIRST,DetectRWR,DetectDLINK)
+self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)(self,Unit,DetectedUnits,RecceDetecting,
+DetectVisual,DetectOptical,DetectRadar,
+DetectIRST,DetectRWR,DetectDLINK)
+if not self.DopplerRadar then return end
+if DetectRadar==false then return end
+local remove={}
+for name,unit in pairs(DetectedUnits)do
+if unit:IsInstanceOf("UNIT")and unit:IsAir()then
+local ok,reason=self:_CheckDopplerDetection(unit,Unit)
+if not ok then
+table.insert(remove,name)
+if self.verbose and self.verbose>=2 then
+self:T(string.format(
+"%sDoppler: suppressed %s [%s] by %s",
+self.lid,name,reason,Unit:GetName()))
+end
+end
+end
+end
+for _,name in ipairs(remove)do
+DetectedUnits[name]=nil
+RecceDetecting[name]=nil
+end
 end
 INTEL_DLINK={
 ClassName="INTEL_DLINK",
@@ -107487,7 +108045,7 @@ end
 end
 return self
 end
-function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume,Provider)
+function OPSGROUP:SetSRS(PathToSRS,Gender,Culture,Voice,Port,PathToGoogleKey,Label,Volume,Provider,Speaker)
 self.useSRS=true
 local path=PathToSRS or MSRS.path
 local port=Port or MSRS.port
@@ -107495,6 +108053,9 @@ self.msrs=MSRS:New(path,self.frequency,self.modulation)
 self.msrs:SetGender(Gender)
 self.msrs:SetCulture(Culture)
 self.msrs:SetVoice(Voice)
+if Speaker then
+self.msrs:SetSpeakerPiper(Speaker)
+end
 self.msrs:SetPort(port)
 self.msrs:SetLabel(Label)
 if PathToGoogleKey then
@@ -117985,7 +118546,7 @@ NewContact(Contact)
 end
 return self
 end
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -118023,6 +118584,9 @@ if Coordinate then
 self.SRS:SetCoordinate(Coordinate)
 end
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self
@@ -119249,7 +119813,7 @@ self:TargetDetected(targetsbyclock,client,playername)
 end
 return self
 end
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider,Speaker)
 self:T(self.lid.."SetSRS")
 self.PathToSRS=PathToSRS or MSRS.path or"C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 self.Gender=Gender or MSRS.gender or"male"
@@ -119285,6 +119849,9 @@ self.PathToGoogleKey=MSRS.poptions.gcloud.credentials
 self.Voice=Voice or MSRS.poptions.gcloud.voice
 end
 self.SRS:SetVoice(self.Voice)
+if Speaker then
+self.SRS:SetSpeakerPiper(Speaker)
+end
 self.SRSQueue=MSRSQUEUE:New(self.MenuName or self.Name)
 self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
 return self
@@ -121014,7 +121581,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Air"},
 }
-EASYGCICAP.version="0.1.34"
+EASYGCICAP.version="0.1.35"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -121054,6 +121621,7 @@ self.EngageTargetTypes={"Air"}
 self:SetDefaultTurnoverTime()
 self:SetStartState("Stopped")
 self:AddTransition("Stopped","Start","Running")
+self:AddTransition("Stopped","Restart","Running")
 self:AddTransition("Running","Stop","Stopped")
 self:AddTransition("*","Status","*")
 self:AddAirwing(self.airbasename,self.alias,self.CapZoneName)
@@ -121968,7 +122536,21 @@ function EASYGCICAP:onafterStop(From,Event,To)
 self:T({From,Event,To})
 self.Intel:Stop()
 for _,_wing in pairs(self.wings or{})do
-_wing:Stop()
+for _,_aw in pairs(_wing)do
+_wing[1]:Stop()
+end
+end
+return self
+end
+function EASYGCICAP:onafterRestart(From,Event,To)
+self:T({From,Event,To})
+if self:Is("Stopped")then
+self.Intel:Start()
+for _,_wing in pairs(self.wings or{})do
+for _,_aw in pairs(_wing)do
+_wing[1]:Start()
+end
+end
 end
 return self
 end
@@ -125609,7 +126191,7 @@ end
 local function texttogroup(gid)
 trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
 end
-if transmission.subgroups and#transmission.subgroups>0 then
+if transmission.subgroups and#transmission.subgroups>0 and transmission.subtitle then
 for _,_group in pairs(transmission.subgroups)do
 local group=_group
 if group and group:IsAlive()then

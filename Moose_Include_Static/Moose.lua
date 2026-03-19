@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-07T12:08:34+01:00-04accc28c87039e77c585df43a9c2d5d3c8412c2 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-19T12:28:41+01:00-65eaecd005b15c8a63e7ee825244395e237d63d4 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -37595,7 +37595,8 @@ _MESSAGESRS = {}
 -- @param #string Label (optional) Label, defaults to "MESSAGE" or the Message Category set.
 -- @param Core.Point#COORDINATE Coordinate (optional) Coordinate this messages originates from.
 -- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC or MSRS.Backend.HOUND etc
--- @param #string Provider (optional) Privider to be used, can be MSRS.Provider.WINDOWS or MSRS.Backend.GOOGLE or MSRS.Backend.PIPER etc
+-- @param #string Provider (optional) Provider to be used, can be MSRS.Provider.WINDOWS or MSRS.Provider.GOOGLE or MSRS.Provider.PIPER etc
+-- @param #string Speaker (optional) Speaker to be used. Only for select provider PIPER TTS Voices, requires HOUND backend.
 -- @usage
 --          -- Mind the dot here, not using the colon this time around!
 --          -- Needed once only
@@ -37603,7 +37604,7 @@ _MESSAGESRS = {}
 --          -- later on in your code
 --          MESSAGE:New("Test message!",15,"SPAWN"):ToSRS()
 --          
-function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider)
+function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,Gender,Culture,Voice,Coalition,Volume,Label,Coordinate,Backend,Provider,Speaker)
   
   _MESSAGESRS.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
   
@@ -37650,6 +37651,7 @@ function MESSAGE.SetMSRS(PathToSRS,Port,PathToCredentials,Frequency,Modulation,G
   _MESSAGESRS.MSRS:SetVolume(_MESSAGESRS.volume)
   
   if Voice then _MESSAGESRS.MSRS:SetVoice(Voice) end
+  if Speaker then _MESSAGESRS.MSRS:SetSpeakerPiper(Speaker) end
   
   _MESSAGESRS.voice = Voice or MSRS.voice --or MSRS.Voices.Microsoft.Hedda
   
@@ -51857,8 +51859,8 @@ end
 -- @param DCS#Distance Altitude (optional) Desired attack start altitude. Controllable/aircraft will make its attacks from the altitude. If the altitude is too low or too high to use weapon aircraft/controllable will choose closest altitude to the desired attack start altitude. If the desired altitude is defined controllable/aircraft will not attack from safe altitude.
 -- @param #boolean GroupAttack (Optional) If true, attack as group.
 -- @return DCS#Task The DCS task structure.
-function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit, GroupAttack )
-  -- self:F2( { self.ControllableName, AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit } )
+function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, GroupAttack )
+  -- self:F2( { self.ControllableName, AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, GroupAttack } )
   local DCSTask = { id = 'AttackGroup',
     params = {
       groupId          = AttackGroup:GetID(),
@@ -54436,6 +54438,26 @@ function CONTROLLABLE:OptionAIRunwayLineUp()
   return nil
 end
 
+--- Air - Allow to fly home after loss of formation
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:OptionDisengageAndRTBAfterFormationLoss()
+  self:F2( { self.ControllableName } )
+
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = self:_GetController()
+
+    if self:IsAir() then
+      Controller:setOption( 38, 1 )
+    end
+
+    return self
+  end
+
+  return nil
+end
+
 --- Can the CONTROLLABLE evade on enemy fire?
 -- @param #CONTROLLABLE self
 -- @return #boolean
@@ -55048,6 +55070,19 @@ function CONTROLLABLE:OptionEngageRange( EngageRange )
     return self
   end
   return nil
+end
+
+--- [AIR] Set if aircraft is allowed to drop empty fuel tanks - set to true to allow, and false to forbid it.
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:SetOptionJettisonEmptyTanks(Switch)
+  self:F2( { self.ControllableName } )
+  -- Set default if not specified.
+  Switch = Switch or true
+  if self:IsAir() then
+    self:SetOption( AI.Option.Air.id.JETT_TANKS_IF_EMPTY, Switch )
+  end
+  return self
 end
 
 --- [AIR] Set how the AI lands on an airfield. Here: Straight in.
@@ -90253,8 +90288,9 @@ end
 -- @param #number Volume (Optional) Volume, between 0.0 and 1.0. Defaults to 1.0
 -- @param #string PathToGoogleKey Path to Google TTS credentials.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Backend (Optional) TTS Backend to be used.
 -- @return #RANGE self
-function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey,Provider)
+function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume, PathToGoogleKey,Provider,Backend)
 
   if PathToSRS or MSRS.path then
 
@@ -90267,6 +90303,9 @@ function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume,
     self.controlmsrs:SetVolume(Volume or 1.0)
     if self.rangezone then
       self.controlmsrs:SetCoordinate(self.rangezone:GetCoordinate())
+    end
+    if Backend then
+      self.controlmsrs:SetBackend(Backend)
     end
     self.controlsrsQ = MSRSQUEUE:New("CONTROL")
 
@@ -90286,6 +90325,9 @@ function RANGE:SetSRS(PathToSRS, Port, Coalition, Frequency, Modulation, Volume,
       self.instructmsrs:SetProviderOptionsGoogle(PathToGoogleKey,PathToGoogleKey)
       self.instructmsrs:SetProvider(MSRS.Provider.GOOGLE)
     end
+    if Backend then
+      self.instructmsrs:SetBackend(Backend)
+    end
     if Provider then
       self.controlmsrs:SetProvider(Provider)
       self.instructmsrs:SetProvider(Provider)
@@ -90304,8 +90346,9 @@ end
 -- @param #string culture (Optional) Culture, defaults to "en-US".
 -- @param #string gender (Optional) Gender, defaults to "female".
 -- @param #string relayunitname Name of the unit used for transmission location.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #RANGE self
-function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender, relayunitname )
+function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender, relayunitname, Speaker )
   if not self.instructmsrs then
     self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeControl!")
     return self
@@ -90314,6 +90357,9 @@ function RANGE:SetSRSRangeControl( frequency, modulation, voice, culture, gender
   self.controlmsrs:SetFrequencies(self.rangecontrolfreq)
   self.controlmsrs:SetModulations(modulation or radio.modulation.AM)
   self.controlmsrs:SetVoice(voice)
+  if Speaker then
+    self.controlmsrs:SetSpeakerPiper(Speaker)
+  end
   self.controlmsrs:SetCulture(culture or "en-US")
   self.controlmsrs:SetGender(gender or "female")
   self.rangecontrol = true
@@ -90338,8 +90384,9 @@ end
 -- @param #string culture (Optional) Culture, defaults to "en-US".
 -- @param #string gender (Optional) Gender, defaults to "male".
 -- @param #string relayunitname Name of the unit used for transmission location.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #RANGE self
-function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gender, relayunitname )
+function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gender, relayunitname, Speaker )
   if not self.instructmsrs then
     self:E(self.lid.."Use myrange:SetSRS() once first before using myrange:SetSRSRangeInstructor!")
     return self
@@ -90348,6 +90395,9 @@ function RANGE:SetSRSRangeInstructor( frequency, modulation, voice, culture, gen
   self.instructmsrs:SetFrequencies(self.instructorfreq)
   self.instructmsrs:SetModulations(modulation or radio.modulation.AM)
   self.instructmsrs:SetVoice(voice)
+  if Speaker then
+    self.instructmsrs:SetSpeakerPiper(Speaker)
+  end
   self.instructmsrs:SetCulture(culture or "en-US")
   self.instructmsrs:SetGender(gender or "male")
   self.instructor = true
@@ -100754,7 +100804,7 @@ function SUPPRESSION:StatusReport(message)
   self:GetState(), nunits, self.IniGroupStrength, self.CurrentROE, self.CurrentAlarmState, self.Nhit, life_min, life_max, life_ave, life_ave0, ammotot, detectedG, detectedU)
   
   MESSAGE:New(text, 10):ToAllIf(message or self.Debug)
-  self:I(self.lid..text)
+  self:T(self.lid..text)
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -101039,7 +101089,7 @@ function SUPPRESSION:onafterFightBack(Controllable, From, Event, To)
   local Waypoints = group:GetTemplateRoutePoints()
   
 --  env.info("FF waypoints",showMessageBox)
---  self:I(Waypoints)
+    self:T2({Waypoints})
   
   group:Route(Waypoints, 5)
   
@@ -101182,7 +101232,7 @@ function SUPPRESSION:onafterOutOfAmmo(Controllable, From, Event, To)
   self:_EventFromTo("onafterOutOfAmmo", Event, From, To)
 
   -- Info to log.
-  self:I(self.lid..string.format("Out of ammo!"))
+  self:T(self.lid..string.format("Out of ammo!"))
     
   -- Order retreat if retreat zone was specified.
   if self.RetreatZone then
@@ -101330,7 +101380,7 @@ function SUPPRESSION:onafterStop(Controllable, From, Event, To)
       
   local text=string.format("Stopping SUPPRESSION for group %s", self.Controllable:GetName())
   MESSAGE:New(text, 10):ToAllIf(self.Debug)
-  self:I(self.lid..text)
+  sefl:T(self.lid..text)
       
   -- Clear all pending schedules
   self.CallScheduler:Clear()
@@ -118010,8 +118060,9 @@ end
 -- @param #string Gender (Optional)  The gender to be used, defaults to "male"
 -- @param #string GoogleCredentials (Optional) Path to google credentials
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AICSAR self
-function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider)
+function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Culture,Gender,GoogleCredentials,Provider,Speaker)
   self:T(self.lid .. "SetSRSTTSRadio")
   self.SRSTTSRadio = OnOff and true
   self.SRSRadio = false
@@ -118025,6 +118076,9 @@ function AICSAR:SetSRSTTSRadio(OnOff,Path,Frequency,Modulation,Port,Voice,Cultur
     self.SRS:SetCoalition(self.coalition)
     self.SRS:SetLabel("ACSR")
     self.SRS:SetVoice(Voice)
+    if Speaker then
+      self.SRS:SetSpeakerPiper(Speaker)
+    end
     self.SRS:SetCulture(Culture)
     self.SRS:SetGender(Gender)
     if GoogleCredentials and not Provider then
@@ -118046,13 +118100,17 @@ end
 -- Specific voices override culture and gender!
 -- @param #string Culture (Optional) The culture to be used, defaults to "en-US"
 -- @param #string Gender (Optional)  The gender to be used, defaults to "male"
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AICSAR self
-function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetPilotTTSVoice(Voice,Culture,Gender,Speaker)
  self:T(self.lid .. "SetPilotTTSVoice")
  self.SRSPilotVoice = true
  self.SRSPilot = MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
  self.SRSPilot:SetCoalition(self.coalition)
  self.SRSPilot:SetVoice(Voice)
+ if Speaker then
+  self.SRSPilot:SetSpeakerPiper(Speaker)
+ end
  self.SRSPilot:SetCulture(Culture or "en-US")
  self.SRSPilot:SetGender(Gender or "male")
  self.SRSPilot:SetLabel("PILOT")
@@ -118070,13 +118128,17 @@ end
 -- Specific voices override culture and gender!
 -- @param #string Culture (Optional) The culture to be used, defaults to "en-GB"
 -- @param #string Gender (Optional)  The gender to be used, defaults to "female"
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AICSAR self
-function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender)
+function AICSAR:SetOperatorTTSVoice(Voice,Culture,Gender,Speaker)
  self:T(self.lid .. "SetOperatorTTSVoice")
  self.SRSOperatorVoice = true
  self.SRSOperator = MSRS:New(self.SRSPath,self.SRSFrequency,self.SRSModulation)
  self.SRSOperator:SetCoalition(self.coalition)
  self.SRSOperator:SetVoice(Voice)
+if Speaker then
+  self.SRSOperator:SetSpeakerPiper(Speaker)
+ end
  self.SRSOperator:SetCulture(Culture or "en-GB")
  self.SRSOperator:SetGender(Gender or "female")
  self.SRSOperator:SetLabel("RESCUE")
@@ -120122,8 +120184,9 @@ end
 -- @param #number Volume (Optional) Volume - between 0.0 (silent) and 1.0 (loudest).
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AUTOLASE self 
-function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider)
+function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Provider,Speaker)
   if OnOff then
     self.useSRS = true
     self.SRSPath = Path or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
@@ -120144,6 +120207,9 @@ function AUTOLASE:SetUsingSRS(OnOff,Path,Frequency,Modulation,Label,Gender,Cultu
     self.SRS:SetCulture(self.Culture)
     self.SRS:SetPort(self.Port)
     self.SRS:SetVoice(self.Voice)
+    if Speaker then
+      self.SRS:SetSpeakerPiper(Speaker)
+    end
     self.SRS:SetCoalition(self.coalition)
     self.SRS:SetVolume(self.Volume)
     if self.PathToGoogleKey and not Provider then
@@ -149046,8 +149112,9 @@ end
 -- @param #number Port (Optional) SRS port. Default 5002.
 -- @param #string GoogleKey (Optional) Path to Google JSON-Key (SRS exe backend) or Google API key (DCS-gRPC backend).
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #ATIS self
-function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider)
+function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider,Speaker)
   --if PathToSRS or MSRS.path then
     self.useSRS=true
 
@@ -149075,6 +149142,9 @@ function ATIS:SetSRS(PathToSRS, Gender, Culture, Voice, Port, GoogleKey,Provider
     self.msrs:SetCoordinate(self.airbase:GetCoordinate())
     if Provider then
       self.msrs:SetProvider(Provider)
+    end
+    if Speaker then
+      self.msrs:SetSpeakerPiper(Speaker)
     end
     self.msrsQ = MSRSQUEUE:New("ATIS")
     self.msrsQ:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
@@ -152280,9 +152350,10 @@ end
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS; if you use a config file for MSRS, hand in nil here.
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, hand in nil here.
--- @param #string Provider (Optional) MSRS Provider to be used, can be MSRS.Provider.Google or MSRS.Provider.WINDOWS etc; if you use a config file for MSRS, hand in nil here. 
+-- @param #string Provider (Optional) MSRS Provider to be used, can be MSRS.Provider.Google or MSRS.Provider.WINDOWS etc; if you use a config file for MSRS, hand in nil here.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend). 
 -- @return #CTLD self
-function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -152324,6 +152395,9 @@ function CTLD:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Vo
     self.SRS:SetBackend(Backend)
   end
   self.SRS:SetVoice(self.Voice)
+  if Speaker then
+    self.SRS:SetSpeakerPiper(Speaker)
+  end
   self.SRSQueue = MSRSQUEUE:New(self.Label)
   self.SRSQueue:SetTransmitOnlyWithPlayers(true)
   self.SRSQueue.Label = "CTLD"
@@ -162840,6 +162914,178 @@ FR = {
         BUILD_YES                       = "OUI",
         BUILD_NO                        = "NON",
     },
+    ES={
+      CRATE_LOADED_GROUNDCREW="Contenedor %s cargado por el quipo de tierra.",
+      CRATE_UNLOADED_GROUNDCREW="Contenedor %s descargado por el quipo de tierra.",
+      CRATE_LOADED_ID="Contenedor ID %d para %s cargado.",
+      LOADED_FULL="Cargado %d %s.",
+      LOADED_SETS_LEFTOVER="Cargado %d %s(s), de %d contenedor(es) restante(s).",
+      LOADED_SETS="Cargado %d %s(s).",
+      LOADED_PARTIAL="Cargado sólo %d/%d contenedor(es) de %s.",
+      LOADED_PARTIAL_LIMIT="Cargado sólo %d/%d contenedor(es) de %s. Límite de carga alcanzado.",
+      LOADED_BATCH="Cargado %d %s.",
+      LOADED_BATCH_PARTIAL="Some sets could not be fully loaded.",
+      DROPPED_FULL="Entregado %d %s.",
+      DROPPED_SETS_LEFTOVER="Entregado %d %s(s), de %d conenedor(es) restante(s).",
+      DROPPED_SETS="Entregado %d %s(s).",
+      DROPPED_PARTIAL="Entregado %d/%d contenedor(es) de %s.",
+      DROPPED_INTO_ACTION="¡Soltados %s en acción!",
+      DROPPED_BEACON="Entregado %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+      CRATES_POSITIONED="%d contenedores para %s servidos cerca de ti.",
+      CRATES_DROPPED="%d contenedores para %s han sido entregados.",
+      BOARDED="¡%s a bordo!",
+      BOARDING="¡%s entrando!",
+      TROOPS_RETURNED="¡Las tropas han vuelto a la base!",
+      DEPLOYED_NEAR_YOU="%s han sido servidas cerca de tí.",
+      UNITS_REMOVED="%s ha sido eliminado",
+      BUILD_STARTED="Construcción comenzada, listo en %d segundos.",
+      REPAIR_STARTED="Reparación comenzaza usando %s, tardará %d segundos.",
+      NO_UNIT_TO_REPAIR="No hay unidades cercanas que necesiten reparación.",
+      CANT_REPAIR_WITH="No se puede reparar esta unidad con %s",
+      CRATES_MOVE_BEFORE_BUILD="*** Los contenedores deben ser movidos antes de construirse.",
+      CHOPPER_CANNOT_CARRY="Lo siento, este helicóptero no puede transportar contenedores.",
+      TOO_HEAVY="Lo siento, esta carga es muy pesada.",
+      FULLY_LOADED="Lo siento, vamos hasta arriba.",
+      CRAMMED="Lo siento, vamos a tope.",
+      NO_CAPACITY_NOW="No queda capacidad para cargar más.",
+      NO_MORE_CAPACITY="No queda capacidad para cargar más contenedores.",
+      CANNOT_LOAD_NONE_OR_FULL="No se pueden cargar contenedores: n hay o no queda capacidad.",
+      NEED_TO_LAND_OR_HOVER_LOAD="Necesitas aterrizar o mantenerte en estacionario para cargar.",
+      HOVER_OVER_CRATES="Mantente en estacionario sobre el contenedor para recogerlo.",
+      LAND_OR_HOVER_OVER_CRATES="Aterriza o mantente en estacionario para recoger el contenedor.",
+      MUST_LAND_OR_HOVER_CRATES="Necesitas aterrizar o mantenerte en eestacionario para cargar contenedores.",
+      NEED_TO_LAND_BUILD="Necesitas aterrizar/parar para construir algo.",
+      NOT_CLOSE_ENOUGH_LOGISTICS="No estás cerca de una zona de logística.",
+      NOT_CLOSE_ENOUGH_DROP="No estás en una zona de entrega.",
+      NOT_CLOSE_ENOUGH_ZONE_NM="Negativo, tienes que estar a menos de %dnm de la zona.",
+      CANNOT_BUILD_LOADING_AREA="No puedes construir en la zona de carga.",
+      OPEN_DOORS_LOAD_CARGO="Necesitas abrir las puertas para cargar.",
+      OPEN_DOORS_LOAD_TROOPS="Necesitas abrir las puertas para que embarquen las tropas.",
+      OPEN_DOORS_EXTRACT_TROOPS="Necesitas abrir las puertas para poder sacar a las tropas de aquí.",
+      OPEN_DOORS_UNLOAD_TROOPS="Necesitas abrir las puertas para que desembarquen las tropas.",
+      OPEN_DOORS_DROP_CARGO="Necesitas abrir las puertas para descargar la carga.",
+      ALL_GONE="Lo siento, todos %s se han servido.",
+      RAN_OUT_OF="Lo siento, nos hemos quedad sin %s",
+      CARGO_NOT_AVAILABLE_ZONE="La carga solicitada no está disponible en esta zona.",
+      ENOUGH_CRATES_NEARBY="Hay contenedores cerca de ti listas. Encárgate primero de ellos.",
+      NO_CRATES_WITHIN="No ha contenedores (cargables) en %d metros.",
+      NO_CRATES_WITHIN_PLAIN="No hay contenedores en %d metros.",
+      NO_CRATES_IN_RANGE="No se han encontrado contenedores en rango.",
+      NO_NAMED_CRATES_IN_RANGE="No se han encontrado \"%s\" conenedores en rango.",
+      NO_LOADABLE_CRATES="Lo siento, no hay contenedores cercanos o se ha alcanzado el peso máximo.",
+      NO_UNITS_TO_EXTRACT="No hay unidades cercanas para extracción.",
+      NO_UNIT_CONFIG="No se ha encontrado configuración de unidad para %s",
+      CANT_ONBOARD="No puede subir %s",
+      TOO_MANY_UNITS_NEARBY="Ya tienes %d unidades próximas.",
+      NO_CRATE_GROUPS="No se han encontrado grupos de contendeores para esta unidad.",
+      NO_CRATE_SET="No se ha encontrado contenedor o su index es inválido.",
+      NO_CRATE_IN_SET="No se ha encontrado contenedor para este set.",
+      NO_TROOP_CHUNK="No se han encontrado tropas para el id %d!",
+      TROOP_CHUNK_EMPTY="Troop chunk is empty for ID %d!",
+      NOTHING_LOADED="Nada cargado.\nLímite tropas: %d | Límite contenedores: %d | Peso límite: %d kg.",
+      NOTHING_LOADED_AIRDROP="Nada cargado o no estás en parámetros de lanzamiento aéreo.",
+      NOTHING_LOADED_HOVER="Nada cargado o no estás en parámetros de estacionario.",
+      NOTHING_IN_STOCK="¡Nada en stock!",
+      NOTHING_TO_PACK="Nada para empaquetar a esta distancia.",
+      NOTHING_TO_REMOVE="Nada para eliminar a esta distancia.",
+      ROGER_ZONE="Recibido, %s cona %s!",
+      HOVER_PARAMS_METRIC="Parámetros en estacionario (autocarga/suelta):\n - Altura mínima %dm \n - Altura máxima %dm \n - Velocidad máxima 2mps \n - En parámetros: %s",
+      HOVER_PARAMS_IMPERIAL="Parámetros en estacionario (autocarga/suelta):\n - Altura mínima  %dft \n - Altura máxima %dft \n - Velocidad máxima 6ftps \n - En parámetros: %s",
+      FLIGHT_PARAMS_IMPERIAL="Parámetros vuelo (lanzamiento aéreo):\n - Altura mínima  %dft \n - Altura máxima %dft \n - En parámetros: %s",
+      FLIGHT_PARAMS_METRIC="Parámetros vuelo (lanzamiento aéreo):\n - Altura mínima  %dm \n - Altura máxima %dm \n - En parámetros: %s",
+      REPORT_CRATES_FOUND="Contenedores encontrados cerca:",
+      REPORT_REMOVING_CRATES="Contenedores eliminados cerca:",
+      REPORT_TRANSPORT_CHECKOUT="Informe de transporte",
+      REPORT_INVENTORY="Inventario",
+      REPORT_BUILD_CHECKLIST="Contenedores construibles",
+      REPORT_REPAIR_CHECKLIST="Reparaciones",
+      REPORT_BEACONS="Active Zone Beacons",
+      REPORT_SECTION_TROOPS="        -- TROPAS --",
+      REPORT_SECTION_CRATES="    -- CONTENEDORES --",
+      REPORT_SECTION_CRATES_GC="       -- Contenedores cargados por equipo de tierra --",
+      REPORT_SECTION_NONE="        N A D A",
+      REPORT_SECTION_NONE_ALT="     --- Nada encontrado ---",
+      REPORT_SECTION_NONE_REPAIR="     --- Nada encontrado ---",
+      REPORT_GC_LOADABLE_HINT="Probablemente cargable por el equipo de tierra (F8)",
+      REPORT_TOTAL_MASS="Peso total: %s kg. Cargable: %s kg.",
+      REPORT_TROOPS_CRATES_COUNT="Tropas: %d(%d), Contenedores: %d(%d)",
+      REPORT_TROOPS_CRATETYPES_COUNT="Tropas: %d, Tipos contenedores: %d",
+      REPORT_ROW_TROOP="Tropas: %s tamaño %d",
+      REPORT_ROW_CRATE="Contenedores: %s %d/%d",
+      REPORT_ROW_CRATE_SIZE1="Contenedores: %s tamaño 1",
+      REPORT_ROW_GC_CRATE="Contenedores cargados: %s tamaño 1",
+      REPORT_ROW_DROPPED_CRATE="Entregado contenedor para %s, %dkg",
+      REPORT_ROW_CRATE_KG="Contenedor para %s, %dkg",
+      REPORT_ROW_CRATE_REMOVED="Contenedor para %s, %dkg eliminado",
+      REPORT_ROW_UNIT_STOCK="Unidad: %s | Soldados: %d | Stock: %s",
+      REPORT_ROW_TYPE_CRATE_STOCK="Tipo: %s | Contenedores por set: %d | Stock: %s",
+      REPORT_ROW_TYPE_STOCK="Tipo: %s | Stock: %s",
+      REPORT_ROW_BUILD_CHECK="Tipo: %s | Rquiere %d | Encontrados %d | Construible %s",
+      REPORT_ROW_REPAIR_CHECK="Tipo: %s | Requiere %d | Encontrados %d | Reparable %s",
+      REPORT_ROW_BEACON=" %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+      WEIGHT_LIMIT="Alcanzado límite de pesoWeight limit reached",
+      CRATE_LIMIT="Alcanzado límite contenedores",
+      MENU_CTLD="CTLD",
+      MENU_MANAGE_TROOPS="Gestionar tropas",
+      MENU_MANAGE_CRATES="Gestionar contenedores",
+      MENU_MANAGE_UNITS="Gestionar unidades",
+      MENU_LOAD_TROOPS="Cargar tropas",
+      MENU_DROP_TROOPS="Entregar tropas",
+      MENU_DROP_ALL_TROOPS="Entregar TODAS tropas",
+      MENU_EXTRACT_TROOPS="Extraer tropas",
+      MENU_DROP_N_TROOPS="Soltar (%d) %s",
+      MENU_GET_CRATES="Solicitar contenedores",
+      MENU_GET="Solicitar",
+      MENU_GET_AND_LOAD="Solicitar y cargar",
+      MENU_GET_ANYWAY="Solicitar de todas formas",
+      MENU_PARTIALLY_LOAD="Carga parcial",
+      MENU_OUT_OF_STOCK="Sin stock",
+      MENU_TROOP_LIMIT="Limite de tropas alcanzado",
+      MENU_LOAD_CRATES="Cargar contenedores",
+      MENU_LOAD_ALL="Cargar TODO",
+      MENU_SHOW_LOADABLE_CRATES="Mostrar contenedores carbables",
+      MENU_NO_CRATES_FOUND_RESCAN="Contenedores no encontrados, ¿buscar?",
+      MENU_USE_C130_LOAD="Usar sistmea de carga del C-130",
+      MENU_LOAD_SINGLE="Cargar",
+      MENU_DROP_CRATES="Soltar cargas",
+      MENU_DROP_ALL_CRATES="Soltar TODAS cargas",
+      MENU_DROP="Soltar",
+      MENU_DROP_AND_BUILD="Soltar y constuir",
+      MENU_DROP_N_SETS="Soltar %d Set %s",
+      MENU_NO_CRATES_TO_DROP="No hay cargas para soltar",
+      MENU_BUILD_CRATES="Construir contenedores",
+      MENU_REPAIR="Reparar",
+      MENU_PACK_CRATES="Empaquetar cargas",
+      MENU_PACK="Empaquetar",
+      MENU_PACK_AND_LOAD="Empaquetar y cargar",
+      MENU_PACK_AND_REMOVE="Empaquetar y eliminar",
+      MENU_REMOVE_CRATES="Eliminar cargas",
+      MENU_REMOVE_CRATES_NEARBY="Eliminar cargas cercanas",
+      MENU_LIST_CRATES_NEARBY="Listar cargas cercanas",
+      MENU_CRATES_NEEDED="%d contenedor%s %s (%dkg)",
+      MENU_GET_UNITS="Obtener unidades",
+      MENU_REMOVE_UNITS_NEARBY="Eliminar unidades cercanas",
+      MENU_LIST_BOARDED_CARGO="Lista de cargas a bordo",
+      MENU_INVENTORY="Inventario",
+      MENU_LIST_ZONE_BEACONS="Lista de balizas activas",
+      MENU_SMOKES_FLARES_BEACONS="Humos, Bengalas, Balizas",
+      MENU_SMOKE_ZONES_NEARBY="Humo en zonas cercanas",
+      MENU_DROP_SMOKE_NOW="Lanzar humo ahora",
+      MENU_RED_SMOKE="Humo rojo",
+      MENU_BLUE_SMOKE="Humo azul",
+      MENU_GREEN_SMOKE="Humo verde",
+      MENU_ORANGE_SMOKE="Humo naranja",
+      MENU_WHITE_SMOKE="Humo blanco",
+      MENU_FLARE_ZONES_NEARBY="Bengalas en zonas cercanas",
+      MENU_FIRE_FLARE_NOW="Disparar bengala ahora",
+      MENU_DROP_BEACON_NOW="Soltar baliza ahora",
+      MENU_SHOW_FLIGHT_PARAMS="Mostrar parámetros de vuelo",
+      MENU_SHOW_HOVER_PARAMS="Mostrar parámetros estacionario",
+      STOCK_NONE="Nada",
+      STOCK_UNLIMITED="ilimitado",
+      BUILD_YES="SI",
+      BUILD_NO="NO",
+      },
   }
   do 
 --- **Hercules Cargo AIR Drop Events** by Anubis Yinepu
@@ -163648,14 +163894,16 @@ end
 --       mycsar.SRSModulation = radio.modulation.AM -- modulation
 --       mycsar.SRSport = 5002  -- and SRS Server port
 --       mycsar.SRSCulture = "en-GB" -- SRS voice culture
---       mycsar.SRSVoice = nil -- SRS voice for downed pilot, relevant for Google TTS
+--       mycsar.SRSVoice = nil -- TTS voice for downed pilot, relevant for Google TTS
+--       mycsar.SRSSpeaker = nil -- TTS sub-voice, only relevant for Piper TTS with Hound backend
 --       mycsar.SRSGPathToCredentials = nil -- Path to your Google credentials json file, set this if you want to use Google TTS as provider
 --       mycsar.SRSBackend = MSRS.Backend.SRSEXE -- default backend is windows
 --       mycsar.SRSProvider = MSRS.Provider.WINDOWS -- default TTS provider is windows
 --       mycsar.SRSSpeed = 1.0 -- default speech speed - does not work with all providers
 --       mycsar.SRSVolume = 1 -- Volume, between 0 and 1
 --       mycsar.SRSGender = "male" -- male or female voice
---       mycsar.CSARVoice = MSRS.Voices.Google.Standard.en_US_Standard_A -- SRS voice for CSAR Controller, relevant for Google TTS
+--       mycsar.CSARVoice = MSRS.Voices.Google.Standard.en_US_Standard_A -- TTS voice for CSAR Controller, relevant for Google TTS
+--       mycsar.CSARSpeaker = nil -- TTS sub-voice, only relevant for Piper TTS with Hound backend
 --       mycsar.CSARVoiceMS = MSRS.Voices.Microsoft.Hedda -- SRS voice for CSAR Controller, relevant for MS Desktop TTS
 --       mycsar.coordinate -- Coordinate from which CSAR TTS is sending. Defaults to a random MASH object position
 --       --
@@ -164017,7 +164265,7 @@ CSAR.AircraftType["MH-6J"] = 2
 
 --- CSAR class version.
 -- @field #string version
-CSAR.version="1.1.38"
+CSAR.version="1.1.39"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
@@ -165609,7 +165857,7 @@ function CSAR:_DisplayMessageToSAR(_unit, _text, _time, _clear, _speak, _overrid
     local nm = self.gettext:GetEntry("NAUTMILES",self.locale)
     _text = string.gsub(_text,"km",km)
     _text = string.gsub(_text,"nm",nm)
-    self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord)
+    self.SRSQueue:NewTransmission(_text,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,self.SRSVoice,volume,label,coord,nil,self.SRSSpeaker)
   end
   return self
 end
@@ -165815,13 +166063,14 @@ function CSAR:_DisplayToAllSAR(_message, _side, _messagetime,ToSRS,ToScreen)
   self:T({_message,ToSRS=ToSRS,ToScreen=ToScreen})
   if self.msrs and (ToSRS == true or ToSRS == nil) then
     local voice = self.CSARVoice or MSRS.Voices.Google.Standard.en_GB_Standard_F
+    local speaker = self.CSARSpeaker
     if self.msrs:GetProvider() == MSRS.Provider.WINDOWS then
       voice = self.CSARVoiceMS or MSRS.Voices.Microsoft.Hedda
     end
     local kilohertz = self.gettext:GetEntry("KHZ",self.locale)
     _message = string.gsub(_message,"KHz",kilohertz)
     --self:F("Voice = "..voice)
-    self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate)
+    self.SRSQueue:NewTransmission(_message,duration,self.msrs,tstart,2,subgroups,subtitle,subduration,self.SRSchannel,self.SRSModulation,gender,culture,voice,volume,label,self.coordinate,nil,speaker)
   end
   if ToScreen == true or ToScreen == nil then
     for _, _unitName in pairs(self.csarUnits) do
@@ -166357,6 +166606,9 @@ function CSAR:onafterStart(From, Event, To)
     end
     if self.SRSProvider then
       self.msrs:SetProvider(self.SRSProvider)
+    end
+    if self.SRSSpeaker then
+      self.msrs:SetSpeakerPiper(self.SRSSpeaker)
     end
     self.msrs:SetVolume(self.SRSVolume)
     self.msrs:SetLabel("CSAR")
@@ -168614,7 +168866,7 @@ ARMYGROUP = {
 
 --- Army Group version.
 -- @field #string version
-ARMYGROUP.version="1.0.3"
+ARMYGROUP.version="1.0.4"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -170878,6 +171130,213 @@ function ARMYGROUP:onafterUnsuppressed(From, Event, To)
 
 end
 
+----------------------------------------------------------------
+-- HuntingPatrol.lua
+--
+-- Adds simple "hunting patrol" behavior on top of ARMYGROUP:
+--
+--  * Group patrols normally using its existing waypoints
+--  * While combat-ready, periodically scans a zone for enemies
+--  * When an enemy is found, lock it and call EngageTarget()
+--  * Stay on that target until it dies
+--  * When target is dead, Disengage() and let ARMYGROUP resume patrol
+----------------------------------------------------------------
+
+--- Module table
+ARMYGROUP.HuntingPatrol = {}
+
+----------------------------------------------------------------
+-- ARMYGROUP extension state
+----------------------------------------------------------------
+-- We store a few extra fields on ARMYGROUP:
+--   hp_zone       : ZONE object to hunt inside
+--   hp_speed      : speed in knots when engaging
+--   hp_formation  : formation string when engaging
+--   hp_target     : currently locked UNIT (or nil)
+--   hp_timer      : TIMER object for periodic updates
+--   hp_interval   : scan interval in seconds
+----------------------------------------------------------------
+
+--- Enable hunting patrol behavior for this ARMYGROUP.
+-- @param #ARMYGROUP self
+-- @param Core.Zone#ZONE_BASE Zone The zone to hunt inside.
+-- @param #number Speed Speed in knots when engaging.
+-- @param #string Formation Formation used during engagement (optional).
+-- @param #number Interval Scan interval in seconds (optional, default 5).
+-- @return #ARMYGROUP self
+function ARMYGROUP:EnableHuntingPatrol(Zone, Speed, Formation, Interval)
+
+  self.hp_zone      = Zone
+  self.hp_speed     = tonumber(Speed) or 20
+  self.hp_formation = Formation or nil
+
+  -- Force numeric, safe interval
+  local intervalNum = tonumber(Interval)
+  if not intervalNum or intervalNum <= 0 then
+    intervalNum = 5
+  end
+  self.hp_interval  = intervalNum
+
+  self.hp_target    = nil
+
+  if self.hp_timer then
+    self.hp_timer:Stop()
+    self.hp_timer = nil
+  end
+
+  self.hp_timer = TIMER:New(self._HuntingPatrolUpdate, self):Start(1, self.hp_interval)
+
+  self:T(self.lid .. "HuntingPatrol: enabled. Interval=" .. tostring(self.hp_interval))
+  return self
+end
+
+--- Disable hunting patrol behavior.
+-- @param #ARMYGROUP self
+-- @return #ARMYGROUP self
+function ARMYGROUP:DisableHuntingPatrol()
+  if self.hp_timer then
+    self.hp_timer:Stop()
+    self.hp_timer = nil
+  end
+  if self.HuntingEnemySet then
+    self.HuntingEnemySet:FilterStop()
+    self.HuntingEnemySet = nil
+  end
+  self.hp_target = nil
+  self:T(self.lid .. "HuntingPatrol: disabled.")
+  return self
+end
+
+----------------------------------------------------------------
+-- Internal: periodic update
+----------------------------------------------------------------
+-- This is called by the TIMER created in EnableHuntingPatrol().
+-- It:
+--   
+--   - checks if group is alive & combat-ready  
+--   - if a target is locked, checks if it is still alive    
+--   - if no target, scans the zone for enemies and locks one
+--   - uses ARMYGROUP:EngageTarget() / Disengage()   
+--   
+----------------------------------------------------------------
+-- @param #ARMYGROUP self
+-- @return #ARMYGROUP self
+function ARMYGROUP:_HuntingPatrolUpdate()
+
+  -- If group is dead, stop.
+  if not self:IsAlive() then
+    self:DisableHuntingPatrol()
+    return
+  end
+
+  -- Only run during PATROLZONE missions
+  local mission = self:GetMissionCurrent()
+  if not mission or mission.type ~= AUFTRAG.Type.PATROLZONE then
+    return
+  end
+
+  -- Only act when combat-ready
+  if not self:IsCombatReady() then
+    return
+  end
+
+  -- If we have a locked target, keep or drop it
+  if self.hp_target then
+    if not self.hp_target:IsAlive() then
+      self.hp_target = nil
+      self:Disengage()
+    end
+    return
+  end
+
+  -- No target → scan for new enemies
+  local enemy = self:_HuntingPatrolFindEnemyInZone(self.hp_zone)
+  if enemy then
+    self.hp_target = enemy
+    self:EngageTarget(enemy, self.hp_speed, self.hp_formation)
+  end
+end
+
+----------------------------------------------------------------
+-- Internal: find one enemy ground unit inside a zone
+----------------------------------------------------------------
+-- Very simple: build a SET_UNIT, filter by coalition and zone,
+-- and pick the closest unit to this ARMYGROUP.
+----------------------------------------------------------------
+-- @param #ARMYGROUP self
+-- @param Core.Zone#ZONE Zone The zont to look at
+-- @return Wrapper.Unit#UNIT Enemy The nearest enemy UNIT in zone
+function ARMYGROUP:_HuntingPatrolFindEnemyInZone(Zone)
+
+  if not Zone then return nil end
+
+  -- Determine our coalition.
+  local myCoalition = self:GetCoalition()
+  
+  if not self.HuntingEnemySet then
+  
+    self.HuntingEnemySet = SET_UNIT:New()
+      :FilterActive(true)
+      :FilterCategories("ground")
+      :FilterStart()
+    
+  end
+
+  local enemies = {}
+
+  self.HuntingEnemySet:ForEachUnitCompletelyInZone(Zone, function(unit)
+    if unit:GetCoalition() ~= myCoalition and unit:IsAlive() then
+      table.insert(enemies, unit)
+    end
+  end)
+
+  if #enemies == 0 then
+    return nil
+  end
+
+  -- Pick the closest enemy.
+  local myCoord = self:GetCoordinate()
+
+  table.sort(enemies, function(a, b)
+    return myCoord:Get2DDistance(a:GetCoordinate()) <
+           myCoord:Get2DDistance(b:GetCoordinate())
+  end)
+
+  return enemies[1]
+end
+
+----------------------------------------------------------------
+-- Optional helper: convenience wrapper for your campaign code
+----------------------------------------------------------------
+-- Example usage in your ArmyManagement:
+--
+--   local group = GROUP:FindByName("MyDefenseGroup")
+--   local army  = ARMYGROUP:New(group)
+--   army:SetPatrolAdInfinitum(true)
+--   army:EnableHuntingPatrol(myZone, 20, "Off Road", 5)
+--
+-- ARMYGROUP will:
+-- 
+--   * patrol its waypoints forever
+--   * periodically scan myZone
+--   * when an enemy appears, EngageTarget()
+--   * when target dies, Disengage() and resume patrol
+--   
+----------------------------------------------------------------
+-- @param Wrapper.Group#GROUP group The GROUP object to be made into an ARMYGROUP and send hunting.
+-- @param Core.Zone#ZONE zone The zone object where to search for enemies.
+-- @param #number speed Speed in knots when engaging.
+-- @param #string formation Formation used during engagement (optional).
+-- @param #number interval Scan interval in seconds (optional, default 5).
+-- @return #ARMYGROUP ArmyGroup The new ArmyGroup.
+function ARMYGROUP.EnableHuntingPatrolForGroup(group, zone, speed, formation, interval)
+  local army = ARMYGROUP:New(group)
+  army:SetPatrolAdInfinitum(true)
+  army:EnableHuntingPatrol(zone, speed, formation, interval)
+  return army
+end
+
+
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -171559,7 +172018,7 @@ AUFTRAG.Category={
 
 --- AUFTRAG class version.
 -- @field #string version
-AUFTRAG.version="1.4.1"
+AUFTRAG.version="1.4.2"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -172249,7 +172708,7 @@ end
 
 --- **[AIR]** Create a AWACS mission.
 -- @param #AUFTRAG self
--- @param Core.Point#COORDINATE Coordinate Where to orbit. Altitude is also taken from the coordinate.
+-- @param Core.Point#COORDINATE Coordinate Where to orbit. Altitude is also taken from the coordinate. Can also be a UNIT object, *e.g.* a carrier.
 -- @param #number Altitude (Optional) Orbit altitude in feet. Default is y component of `Coordinate`.
 -- @param #number Speed (Optional) Orbit speed in knots. Default 350 kts.
 -- @param #number Heading (Optional) Heading of race-track pattern in degrees. Default 270 (East to West).
@@ -172258,7 +172717,20 @@ end
 function AUFTRAG:NewAWACS(Coordinate, Altitude, Speed, Heading, Leg)
 
   -- Create ORBIT first.
-  local mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate, Altitude, Speed, Heading, Leg)
+  local mission=nil --Ops.Auftrag#AUFTRAG
+  
+  if Coordinate:IsInstanceOf("COORDINATE") then
+    -- Racetrack at a given coordinate
+    mission=AUFTRAG:NewORBIT_RACETRACK(Coordinate, Altitude, Speed, Heading, Leg)
+  elseif Coordinate:IsInstanceOf("UNIT") then
+    -- Racetrack wrt a given (moving) unit (e.g. a carrier)
+    local OffsetVec2={r=6, phi=180}
+    mission=AUFTRAG:NewORBIT_GROUP(Coordinate, Altitude, Speed, Leg, Heading, OffsetVec2)
+  else
+    -- Error!
+    BASE:E("ERROR in AUFTRAG:NewAWACS: You must pass a COORDINATE or UNIT object!")
+    return nil
+  end
 
   -- Mission type AWACS.
   mission.type=AUFTRAG.Type.AWACS
@@ -172277,7 +172749,51 @@ function AUFTRAG:NewAWACS(Coordinate, Altitude, Speed, Heading, Leg)
   return mission
 end
 
+--- **[AIRPANE]** Create a RECOVERY TANKER mission.
+-- @param #AUFTRAG self
+-- @param Wrapper.Unit#UNIT Carrier The carrier unit.
+-- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
+-- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
+-- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
+-- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
+-- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
+-- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
+-- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
+-- @return #AUFTRAG self
+function AUFTRAG:NewRECOVERYTANKER(Carrier, Altitude, Speed, Leg, RelHeading, OffsetDist, OffsetAngle, UpdateDistance)
+ 
+   -- Six NM astern.
+  local OffsetVec2={r=OffsetDist or 6, phi=OffsetAngle or 180}
+  
+  -- Default leg.
+  Leg=Leg or 14
+  
+  -- Default Speed.
+  Speed=Speed or 250
+  
+  local Heading=nil
+  if RelHeading then  
+    Heading=-math.abs(RelHeading)
+  end  
+ 
+  -- Create orbit mission. 
+  local mission=AUFTRAG:NewORBIT_GROUP(Carrier, Altitude, Speed, Leg, Heading, OffsetVec2, UpdateDistance)
 
+  -- Set the type.  
+  mission.type=AUFTRAG.Type.RECOVERYTANKER
+
+  -- Mission options:
+  mission.missionTask=ENUMS.MissionTask.REFUELING
+  mission.missionFraction=0.9
+  mission.optionROE=ENUMS.ROE.WeaponHold
+  mission.optionROT=ENUMS.ROT.NoReaction
+
+  mission.categories={AUFTRAG.Category.AIRPLANE}
+
+  mission.DCStask=mission:GetDCSMissionTask()
+
+  return mission
+end
 
 --- **[AIR]** Create an INTERCEPT mission.
 -- @param #AUFTRAG self
@@ -172931,53 +173447,6 @@ function AUFTRAG:NewRESCUEHELO(Carrier)
 
   return mission
 end
-
---- **[AIRPANE]** Create a RECOVERY TANKER mission.
--- @param #AUFTRAG self
--- @param Wrapper.Unit#UNIT Carrier The carrier unit.
--- @param #number Altitude (Optional) Orbit altitude in feet. Default is 6,000 ft.
--- @param #number Speed (Optional) Orbit speed in knots. Default 250 KIAS.
--- @param #number Leg (Optional) Length of race-track in NM. Default 14 NM.
--- @param #number RelHeading (Optional) Relative heading [0, 360) of race-track pattern in degrees wrt heading of the carrier. Default is heading of the carrier.
--- @param #number OffsetDist (Optional) Relative distance of the first race-track point wrt to the carrier. Default 6 NM.
--- @param #number OffsetAngle (Optional) Relative angle of the first race-track point wrt. to the carrier. Default 180 (behind the boat).
--- @param #number UpdateDistance (Optional) Threshold distance in NM before orbit pattern is updated. Default 5 NM.
--- @return #AUFTRAG self
-function AUFTRAG:NewRECOVERYTANKER(Carrier, Altitude, Speed, Leg, RelHeading, OffsetDist, OffsetAngle, UpdateDistance)
- 
-   -- Six NM astern.
-  local OffsetVec2={r=OffsetDist or 6, phi=OffsetAngle or 180}
-  
-  -- Default leg.
-  Leg=Leg or 14
-  
-  -- Default Speed.
-  Speed=Speed or 250
-  
-  local Heading=nil
-  if RelHeading then  
-    Heading=-math.abs(RelHeading)
-  end  
- 
-  -- Create orbit mission. 
-  local mission=AUFTRAG:NewORBIT_GROUP(Carrier, Altitude, Speed, Leg, Heading, OffsetVec2, UpdateDistance)
-
-  -- Set the type.  
-  mission.type=AUFTRAG.Type.RECOVERYTANKER
-
-  -- Mission options:
-  mission.missionTask=ENUMS.MissionTask.REFUELING
-  mission.missionFraction=0.9
-  mission.optionROE=ENUMS.ROE.WeaponHold
-  mission.optionROT=ENUMS.ROT.NoReaction
-
-  mission.categories={AUFTRAG.Category.AIRPLANE}
-
-  mission.DCStask=mission:GetDCSMissionTask()
-
-  return mission
-end
-
 
 --- **[AIR ROTARY, GROUND]** Create a TROOP TRANSPORT mission.
 -- @param #AUFTRAG self
@@ -174227,6 +174696,20 @@ end
 function AUFTRAG:SetEngageAltitude(Altitude)
 
   self.engageAltitude=UTILS.FeetToMeters(Altitude or 6000)
+
+   -- Update the DCS task parameter.
+  self.DCStask=self:GetDCSMissionTask()
+
+  return self
+end
+
+--- Set engage quantity. This is the number of times the attack group/unit DCS task is carried out.
+-- @param #AUFTRAG self
+-- @param #number Quantity (Optional) Number of times the group will engage the target.
+-- @return #AUFTRAG self
+function AUFTRAG:SetEngageQuantity(Quantity)
+
+  self.engageQuantity=Quantity
 
    -- Update the DCS task parameter.
   self.DCStask=self:GetDCSMissionTask()
@@ -179663,8 +180146,9 @@ end
 -- @param #number Interval Seconds between each update call.
 -- @param #number Number Number of Frequencies to create, can be 1..10.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AWACS self
-function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider)
+function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Provider,Speaker)
   self:T(self.lid.."SetTacticalRadios")
   if not self.AwacsSRS then
     MESSAGE:New("AWACS: Setup SRS in your code BEFORE trying to add tactical radios please!",30,"ERROR",true):ToLog():ToAll()
@@ -179688,6 +180172,9 @@ function AWACS:SetTacticalRadios(BaseFreq,Increase,Modulation,Interval,Number,Pr
     self.TacticalSRS:SetGender(self.Gender)
     self.TacticalSRS:SetCulture(self.Culture)
     self.TacticalSRS:SetVoice(self.Voice)
+    if Speaker then
+      self.TacticalSRS:SetSpeakerPiper(Speaker)
+    end
     self.TacticalSRS:SetPort(self.Port)
     self.TacticalSRS:SetLabel("AWACS")
     self.TacticalSRS:SetVolume(self.Volume)
@@ -180438,8 +180925,9 @@ end
 -- @param #string AccessKey (Optional) Your Google API access key. This is necessary if DCS-gRPC is used as backend; if you use a config file for MSRS, hand in nil here.
 -- @param #string Backend (Optional) Your MSRS Backend if different from your config file settings, e.g. MSRS.Backend.SRSEXE or MSRS.Backend.GRPC
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AWACS self
-function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider)
+function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" 
   self.Gender = Gender or MSRS.gender or "male"
@@ -180450,6 +180938,7 @@ function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey
   self.AccessKey = AccessKey
   self.Volume = Volume or 1.0
   self.Backend = Backend or MSRS.backend
+  self.Provider = Provider
   BASE:I({backend = self.Backend})
   self.AwacsSRS = MSRS:New(self.PathToSRS,self.MultiFrequency,self.MultiModulation,self.Backend)
   self.AwacsSRS:SetCoalition(self.coalition)
@@ -180458,6 +180947,9 @@ function AWACS:SetSRS(PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey
   self.AwacsSRS:SetPort(self.Port)
   self.AwacsSRS:SetLabel("AWACS")
   self.AwacsSRS:SetVolume(Volume)
+  if Speaker then
+    self.AwacsSRS:SetSpeakerPiper(Speaker)
+  end
   if self.PathToGoogleKey then
     --self.AwacsSRS:SetGoogle(self.PathToGoogleKey)
     self.AwacsSRS:SetProviderOptionsGoogle(self.PathToGoogleKey,self.AccessKey)
@@ -180482,12 +180974,14 @@ end
 -- @param #string Culture (Optional) Defaults to "en-US"
 -- @param #string Voice (Optional) Use a specifc voice with the @{#MSRS.SetVoice} function, e.g, `:SetVoice("Microsoft Hedda Desktop")`.
 -- Note that this must be installed on your windows system. Can also be Google voice types, if you are using Google TTS.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #AWACS self
-function AWACS:SetSRSVoiceCAP(Gender, Culture, Voice)
+function AWACS:SetSRSVoiceCAP(Gender, Culture, Voice, Speaker)
   self:T(self.lid.."SetSRSVoiceCAP")
   self.CAPGender = Gender or "male"
   self.CAPCulture = Culture or "en-US"
   self.CAPVoice = Voice or "en-GB-Standard-B"
+  self.CAPSpeaker = Speaker
   return self
 end
 
@@ -182078,7 +182572,13 @@ function AWACS:_CheckInAI(FlightGroup,Group,AuftragsNr)
       CAPVoice = self.CapVoices[math.floor(math.random(1,10))]
     end
     
-    FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1)
+    FlightGroup:SetSRS(self.PathToSRS,self.CAPGender,self.CAPCulture,CAPVoice,self.Port,self.PathToGoogleKey,"FLIGHT",1,self.Provider)
+    if self.Backend then
+      FlightGroup.srs:SetBackend(self.Backend)
+    end
+    if self.CAPSpeaker then
+      FlightGroup.srs:SetSpeakerPiper(self.CAPSpeaker)
+    end
     
     local checkai = self.gettext:GetEntry("CHECKINAI",self.locale)
     text = string.format(checkai,self.callsigntxt, managedgroup.CallSign, self.CAPTimeOnStation, self.AOName)
@@ -194536,8 +195036,9 @@ end
 -- @param #string Label Name under which SRS transmits.
 -- @param #string PathToGoogleCredentials (Optional) Path to google credentials json file.
 -- @param #number Port (Optional) Server port for SRS. Defaults to 5002.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Label, PathToGoogleCredentials, Port)
+function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Label, PathToGoogleCredentials, Port, Speaker)
 
   -- Defaults:
   Gender=Gender or "female"
@@ -194548,6 +195049,9 @@ function FLIGHTCONTROL:_SetSRSOptions(msrs, Gender, Culture, Voice, Volume, Labe
     msrs:SetGender(Gender)
     msrs:SetCulture(Culture)
     msrs:SetVoice(Voice)
+    if Speaker then
+      msrs:SetSpeakerPiper(Speaker)
+    end
     msrs:SetVolume(Volume)
     msrs:SetLabel(Label)
     msrs:SetCoalition(self:GetCoalition())
@@ -194564,11 +195068,12 @@ end
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`. See [Google Voices](https://cloud.google.com/text-to-speech/docs/voices).
 -- @param #number Volume (Optional) Volume. Default 1.0.
 -- @param #string Label (Optional) Name under which SRS transmits. Default `self.alias`.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:SetSRSTower(Gender, Culture, Voice, Volume, Label)
+function FLIGHTCONTROL:SetSRSTower(Gender, Culture, Voice, Volume, Label, Speaker)
 
   if self.msrsTower then
-    self:_SetSRSOptions(self.msrsTower, Gender or "female", Culture or "en-GB", Voice, Volume, Label or self.alias)
+    self:_SetSRSOptions(self.msrsTower, Gender or "female", Culture or "en-GB", Voice, Volume, Label or self.alias,nil,nil,Speaker)
   end
 
   return self
@@ -194581,11 +195086,12 @@ end
 -- @param #string Voice Specific voice. Overrides `Gender` and `Culture`.
 -- @param #number Volume (Optional) Volume. Default 1.0.
 -- @param #string Label (Optional) Name under which SRS transmits. Default "Pilot".
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #FLIGHTCONTROL self
-function FLIGHTCONTROL:SetSRSPilot(Gender, Culture, Voice, Volume, Label)
+function FLIGHTCONTROL:SetSRSPilot(Gender, Culture, Voice, Volume, Label, Speaker)
 
   if self.msrsPilot then
-    self:_SetSRSOptions(self.msrsPilot, Gender or "male", Culture or "en-US", Voice, Volume, Label or "Pilot")
+    self:_SetSRSOptions(self.msrsPilot, Gender or "male", Culture or "en-US", Voice, Volume, Label or "Pilot",nil,nil,Speaker)
   end
 
   return self
@@ -198857,7 +199363,7 @@ FLIGHTGROUP.Players={}
 
 --- FLIGHTGROUP class version.
 -- @field #string version
-FLIGHTGROUP.version="1.0.3"
+FLIGHTGROUP.version="1.0.4"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -199994,8 +200500,10 @@ function FLIGHTGROUP:Status()
     -- If mission, check if DCS task needs to be updated.
     if mission and mission.updateDCSTask then
     
+      local mtype=mission:GetType()
+    
       -- Orbit missions might need updates.
-      if (mission:GetType()==AUFTRAG.Type.ORBIT or mission:GetType()==AUFTRAG.Type.RECOVERYTANKER or mission:GetType()==AUFTRAG.Type.CAP) and mission.orbitVec2 then
+      if (mtype==AUFTRAG.Type.ORBIT or mtype==AUFTRAG.Type.RECOVERYTANKER or mtype==AUFTRAG.Type.CAP or mtype==AUFTRAG.Type.AWACS) and mission.orbitVec2 then
           
         -- Get 2D vector of orbit target.
         local vec2=mission:GetTargetVec2()
@@ -204286,6 +204794,12 @@ INTEL = {
   DetectAccoustic = false,
   DetectAccousticRadius = 1000,
   DetectAccousticUnitTypes =  {Unit.Category.HELICOPTER},
+  DopplerRadar        = true,
+  DopplerMinAltAGL    = 500,
+  DopplerNotchSin     = math.sin(math.rad(15)),
+  DopplerMinSpeedMps  = 50,
+  DopplerRCS          = true,
+  DopplerRadarRangeM  = 200 * 1000,
 }
 
 --- Detected item info.
@@ -204345,6 +204859,161 @@ INTEL.Ctype={
 --- INTEL class version.
 -- @field #string version
 INTEL.version="0.3.10"
+
+---
+-- ══════════════════════════════════════════════════════════════════
+--  INTEL Doppler radar extension
+--
+--  Models four phenomena of a 1970/80s pulse-Doppler ground radar
+--  (representative types: Soviet P-18 Spoon Rest, P-37 Bar Lock,
+--   P-80 Back Net / NATO AN/TPS-43 / Hughes AN/TPS-70):
+--
+--   A) GROUND CLUTTER (AGL threshold)
+--      Low-flying targets blend into terrain returns. Below DopplerMinAltAGL
+--      detection probability drops linearly to 0 at 0 m AGL.
+--
+--   B) VELOCITY NOTCH (beam aspect)
+--      The MTI (Moving Target Indicator) filter suppresses returns with
+--      near-zero Doppler shift. Targets flying perpendicular to the radar
+--      beam (radial-velocity fraction < sin(NotchHalfDeg)) are rejected.
+--      Classic P-18/P-37 notch was ≈ ±12–18° around 90° aspect.
+--
+--   C) MINIMUM SPEED GATE
+--      Very slow targets (taxiing aircraft, hovering) cannot be separated
+--      from ground clutter by their Doppler shift alone.
+--
+--   D) RADAR CROSS SECTION (RCS)
+--      Larger targets are detectable at longer ranges. The radar range
+--      equation gives R_max ∝ σ^0.25, so detection range is scaled by
+--      (σ / σ_ref)^0.25 relative to a reference aircraft (default: 5 m²).
+--      RCS also varies with aspect: nose-on ≈ 15% of side-on value.
+--      Known DCS aircraft values are stored in INTEL.RCS_Table; unknowns
+--      fall back to a category default (fighter/bomber/helicopter).
+--      Values are approximate averages from public IISS/Jane's data.
+-- ══════════════════════════════════════════════════════════════════
+--
+-- ── RCS lookup table (nominal side-on RCS in m²) ─────────────────
+-- Frontal (nose-on / tail-on) RCS is modelled as 15% of these values
+-- via aspect interpolation in _GetAspectRCS().
+-- Sources: public declassified estimates, Jane's, IISS assessments.
+--- @field INTEL.RCS_Table
+INTEL.RCS_Table = {
+    -- ── US / NATO fixed-wing ──────────────────────────────────────
+    ["A-10C"]              =  8.0,   -- large, flat surfaces, no LO shaping
+    ["A-10C_2"]            =  8.0,
+    ["F-14A-135-GR"]       =  6.0,   -- variable-sweep; larger than F-16
+    ["F-14B"]              =  6.0,
+    ["F-15C"]              =  5.0,
+    ["F-15E"]              =  5.0,   -- CFTs add modest signature
+    ["F-15ESE"]            =  5.0,
+    ["F-16A"]              =  1.2,
+    ["F-16C bl.50"]        =  1.2,
+    ["F-16C bl.52d"]       =  1.2,
+    ["F/A-18C"]            =  1.5,
+    ["FA-18C_hornet"]      =  1.5,
+    ["F/A-18C_hornet"]     =  1.5,
+    ["F/A-18F"]            =  2.0,   -- slightly larger two-seater
+    ["F-117A"]             =  0.003, -- faceted LO design
+    ["F-22A"]              =  0.0001,-- VLO
+    ["F-35A"]              =  0.001, -- VLO, approx
+    ["B-52H"]              = 100.0,  -- very large, many flat reflectors
+    ["B-1B"]               =  0.75,  -- blended-wing LO shaping
+    ["B-2A"]               =  0.001, -- VLO flying wing
+    ["AV8BNA"]             =  2.0,
+    ["Harrier"]            =  2.0,
+    ["A-4E-C"]             =  3.0,
+    ["Tornado_IDS"]        =  5.0,
+    ["Tornado_GR4"]        =  5.0,
+    ["F-111F"]             =  5.0,
+    ["F-4E"]               =  6.0,   -- large, blunt nose
+    ["F-5E"]               =  1.0,   -- small fighter
+    ["F-5E-3"]             =  1.0,
+    ["Mirage-F1CE"]        =  2.5,
+    ["Mirage-F1EE"]        =  2.5,
+    ["M-2000C"]            =  2.0,
+    ["M-2000-5"]           =  2.0,
+    ["C-17A"]              = 50.0,
+    ["C-130"]              = 40.0,
+    ["KC-130"]             = 40.0,
+    ["KC-135"]             = 50.0,
+    ["IL-76MD"]            = 45.0,
+    ["E-3A"]               = 50.0,   -- plus large rotodome
+    -- ── Soviet / Russian fixed-wing ──────────────────────────────
+    ["MiG-15bis"]          =  4.0,
+    ["MiG-19P"]            =  3.5,
+    ["MiG-21Bis"]          =  2.5,   -- small delta
+    ["MiG-23MLD"]          =  7.0,   -- variable-sweep, large intakes
+    ["MiG-25PD"]           = 14.0,   -- very large, all-metal, Mach-3 design
+    ["MiG-25RBT"]          = 14.0,
+    ["MiG-29A"]            =  5.0,
+    ["MiG-29S"]            =  5.0,
+    ["MiG-29G"]            =  5.0,
+    ["MiG-29K"]            =  4.0,
+    ["MiG-31"]             = 14.0,   -- similar to MiG-25
+    ["Su-7B"]              =  6.0,
+    ["Su-17M4"]            =  7.0,   -- variable-sweep
+    ["Su-24M"]             =  6.0,
+    ["Su-24MR"]            =  6.0,
+    ["Su-25"]              = 10.0,
+    ["Su-25T"]             = 10.0,
+    ["Su-25TM"]            = 10.0,
+    ["Su-27"]              = 15.0,
+    ["Su-30"]              = 15.0,
+    ["Su-33"]              = 15.0,   -- wing fold + canards
+    ["Su-34"]              = 10.0,   -- some reduction vs Su-27
+    ["Su-57"]              =  0.01,  -- PAK-FA LO shaping
+    ["Tu-22M3"]            = 20.0,
+    ["Tu-95MS"]            = 80.0,
+    ["Tu-142"]             = 80.0,
+    ["Tu-160"]             = 12.0,   -- blended wing reduces vs Tu-95
+    ["An-26B"]             = 30.0,
+    ["An-30M"]             = 30.0,
+    ["IL-78M"]             = 45.0,
+    ["A-50"]               = 50.0,   -- plus rotodome
+    -- ── Helicopters ──────────────────────────────────────────────
+    ["Mi-8MT"]             =  5.0,
+    ["Mi-8MSB"]            =  5.0,
+    ["Mi-8MSB-V"]          =  5.0,
+    ["Mi-8AMTSh"]          =  5.0,
+    ["Mi-24V"]             =  3.5,
+    ["Mi-24P"]             =  3.5,
+    ["Mi-28N"]             =  2.5,
+    ["Ka-50"]              =  2.0,
+    ["Ka-52"]              =  2.0,
+    ["AH-64D"]             =  3.5,
+    ["AH-64D_BLK_II"]      =  3.5,
+    ["UH-1H"]              =  3.0,
+    ["UH-60L"]             =  3.0,
+    ["CH-47D"]             =  8.0,   -- large tandem-rotor
+    ["OH-58D"]             =  0.8,   -- small scout
+    ["SA342M"]             =  0.8,
+    ["SA342L"]             =  0.8,
+}
+
+---
+-- Category-based defaults for aircraft types not in the table.
+-- Keyed by DCS Group.Category integer.
+--- @type INTEL.RCS_CategoryDefault
+-- @field #number Group.Category.AIRPLANE RCS Airplane (fightrt) fallback == 5
+-- @field #number Group.Category.HELICOPTER RCS Helo fallback == 2.5
+INTEL.RCS_CategoryDefault = {
+    [Group.Category.AIRPLANE]   = 5.0,  -- generic fighter-sized
+    [Group.Category.HELICOPTER] = 2.5,  -- generic helicopter
+}
+
+---
+-- Reference RCS (m²) for range scaling.  Detection range in SetDopplerRadar
+-- is the range at which this reference aircraft is reliably detected.
+-- @field INTEL.RCS_Reference
+INTEL.RCS_Reference = 5.0   -- m²
+
+---
+-- Nose-on/tail-on RCS as a fraction of the side-on value.
+-- Public estimates for conventional (non-LO) aircraft: ~0.10–0.20.
+-- @field INTEL.RCS_NoseOnFraction
+INTEL.RCS_NoseOnFraction = 0.15
+
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
@@ -205096,8 +205765,11 @@ function INTEL:UpdateIntel()
         local recce=_recce --Wrapper.Unit#UNIT
 
         -- Get detected units.
-        self:GetDetectedUnits(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
-
+        if self.DopplerRadar then
+          self:GetDetectedUnitsDoppler(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
+        else
+          self:GetDetectedUnits(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
+        end
       end
       
       if self.DetectAccoustic then
@@ -206620,12 +207292,232 @@ function INTEL:GetHighestThreatContact(Cluster)
   return rcontact
 end
 
+--- Enable 70/80s era pulse-Doppler ground-clutter simulation.
+-- Only affects contacts detected via radar (DetectRadar=true paths).
+-- Has no effect on visual, optical, IRST, RWR or datalink detections.
+-- @param #INTEL self
+-- @param #number MinAltAGL     Min AGL altitude in metres for reliable detection.
+--                              Below this the detection probability drops linearly.
+--                              Default 500 m (≈ clutter floor for P-18 / P-37).
+-- @param #number NotchHalfDeg  Half-width of the velocity notch in degrees.
+--                              Targets with radial-velocity fraction < sin(NotchHalf)
+--                              are suppressed.  Default 15° (≈ P-18 / Bar Lock spec).
+-- @param #number MinSpeedMps   Minimum speed in m/s that the MTI filter can track.
+--                              Default 50 m/s (≈ 100 kt).
+-- @param #number RadarRangeKm  Nominal detection range in km for the reference aircraft
+--                              (RCS_Reference, default 5 m²). Used only for RCS range
+--                              scaling; has no effect when DopplerRCS is false.
+--                              Default 200 km (≈ P-37 instrumented range vs fighter).
+-- @param #boolean RCS          If false, disable RCS range scaling (keep A–C only).
+--                              Default true.
+-- @return #INTEL self
+function INTEL:SetDopplerRadar(MinAltAGL, NotchHalfDeg, MinSpeedMps, RadarRangeKm, RCS)
+    self.DopplerRadar        = true
+    self.DopplerMinAltAGL    = MinAltAGL    or 500
+    self.DopplerNotchSin     = math.sin(math.rad(NotchHalfDeg or 15))
+    self.DopplerMinSpeedMps  = MinSpeedMps  or 50
+    self.DopplerRCS          = (RCS ~= false)   -- default true
+    self.DopplerRadarRangeM  = (RadarRangeKm or 200) * 1000
+    return self
+end
+
+--- Disable Doppler radar simulation.
+-- @param #INTEL self
+-- @return #INTEL self
+function INTEL:SetDopplerRadarOff()
+    self.DopplerRadar = false
+    return self
+end
+
+--- Override the per-type RCS value for a DCS unit type name.
+-- Useful for modded aircraft or mission-specific tweaks.
+-- @param #INTEL self
+-- @param #string TypeName  DCS unit type name (e.g. "MiG-29A")
+-- @param #number RCS_m2    Side-on RCS in m²
+-- @return #INTEL self
+function INTEL:SetTypeRCS(TypeName, RCS_m2)
+    INTEL.RCS_Table[TypeName] = RCS_m2
+    return self
+end
+
+--- (Internal) Compute the aspect-weighted RCS for a target unit as seen
+-- from a given radar position.
+--
+-- The model blends the side-on (maximum) and nose/tail-on (minimum) RCS
+-- using the geometry of the target's velocity relative to the radar line:
+--
+--   σ_eff = σ_base × ( f_nose + (1 − f_nose) × sin²(aspect_from_radial) )
+--
+-- where aspect_from_radial is 0° when the target flies toward/away from
+-- the radar (nose-on) and 90° when the target crosses the beam (side-on).
+--
+-- @param #INTEL self
+-- @param Wrapper.Unit#UNIT TargetUnit
+-- @param #table  rpos  Radar position as Vec3 {x,y,z}
+-- @param #number spd   Target speed in m/s (pre-computed for efficiency)
+-- @param DCS#Vec3 tvel  Target velocity vector (pre-computed)
+-- @return #number Effective RCS in m²
+function INTEL:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
+    -- Look up base (side-on) RCS
+    local typename = TargetUnit:GetTypeName()
+    local base_rcs = INTEL.RCS_Table[typename]
+
+    if not base_rcs then
+        -- Fallback: category default
+        local cat = TargetUnit:GetGroup() and TargetUnit:GetGroup():GetCategory()
+        base_rcs = (cat and INTEL.RCS_CategoryDefault[cat]) or INTEL.RCS_Reference
+    end
+
+    -- Aspect-dependent factor
+    if spd < 1 then return base_rcs end
+
+    local tpos = TargetUnit:GetVec3()
+    local dx   = rpos.x - tpos.x   -- vector target → radar (horizontal)
+    local dz   = rpos.z - tpos.z
+    local d    = math.sqrt(dx * dx + dz * dz)
+    if d < 1 then return base_rcs end
+
+    -- cos of angle between target velocity and target→radar line
+    -- = 1: nose/tail directly toward radar; = 0: pure crossing (beam)
+    local cos_a = (tvel.x * dx + tvel.z * dz) / (spd * d)
+    -- sin²(aspect_from_radial) = 1 − cos² ; gives 0 nose-on, 1 beam-on
+    local sin2_a = 1.0 - cos_a * cos_a
+
+    local f = INTEL.RCS_NoseOnFraction
+    return base_rcs * (f + (1.0 - f) * sin2_a)
+end
+
+--- (Internal) Check whether a target unit would be detected by a 70/80s
+-- pulse-Doppler radar located at the given radar unit position.
+-- @param #INTEL self
+-- @param Wrapper.Unit#UNIT TargetUnit
+-- @param Wrapper.Unit#UNIT RadarUnit
+-- @return #boolean  true = detected
+-- @return #string   rejection reason: "speed" | "clutter" | "notch" | "rcs"
+function INTEL:_CheckDopplerDetection(TargetUnit, RadarUnit)
+
+    -- Pre-compute common geometry (shared by notch + RCS checks)
+    local spd  = TargetUnit:GetVelocityMPS()
+    local rpos = RadarUnit:GetVec3()
+    local tpos = TargetUnit:GetVec3()
+    local tvel = TargetUnit:GetVelocity()
+
+    local dx    = tpos.x - rpos.x
+    local dz    = tpos.z - rpos.z
+    local slant = math.sqrt(dx * dx + dz * dz)  -- 2-D slant range in metres
+
+    -- ── A. Minimum speed gate ──────────────────────────────────
+    if spd < self.DopplerMinSpeedMps then
+        return false, "speed"
+    end
+
+    -- ── B. AGL ground-clutter rejection ───────────────────────
+    local agl = TargetUnit:GetAltitude(true)   -- metres AGL
+    if agl < self.DopplerMinAltAGL then
+        -- P(detect) rises linearly from 0 at deck to 1 at DopplerMinAltAGL
+        if math.random() > (agl / self.DopplerMinAltAGL) then
+            return false, "clutter"
+        end
+    end
+
+    -- ── C. Velocity notch ─────────────────────────────────────
+    if slant > 1 then
+        local nx     = dx / slant
+        local nz     = dz / slant
+        local vr     = tvel.x * nx + tvel.z * nz   -- radial velocity (m/s)
+        local vr_frac = math.abs(vr) / math.max(spd, 1)
+
+        if vr_frac < self.DopplerNotchSin then
+            return false, "notch"
+        end
+    end
+
+    -- ── D. RCS-based range scaling ─────────────────────────────
+    -- R_max ∝ σ^0.25  (from the radar range equation).
+    -- Effective detection range = DopplerRadarRangeM × (σ_eff / σ_ref)^0.25
+    -- Beyond that range: target not detected (hard cutoff at 100%; soft fade
+    -- starts at 80% of R_max to smooth the transition).
+    if self.DopplerRCS and slant > 1 then
+        local sigma = self:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
+        -- (σ/σ_ref)^0.25 — clamp to avoid log of 0 for VLO aircraft
+        local scale  = (sigma / INTEL.RCS_Reference) ^ 0.25
+        local R_max  = self.DopplerRadarRangeM * scale
+
+        if slant > R_max then
+            return false, "rcs"
+        end
+
+        -- Soft fade zone: linear probability drop from 1 at 80% R_max to 0 at R_max
+        local fade_start = R_max * 0.80
+        if slant > fade_start then
+            local p = (R_max - slant) / (R_max - fade_start)  -- 1→0
+            if math.random() > p then
+                return false, "rcs"
+            end
+        end
+    end
+
+    return true
+end
+
+
+---(Internal) Return the detected target groups of the controllable as a table.
+-- We wrap the original function so the Doppler post-filter is transparent:
+-- the existing RadarBlur / RadarAcceptRange logic is unchanged, and the
+-- Doppler check runs once after all units have been collected.
+-- The optional parameters specify the detection methods that can be applied.
+-- If no detection method is given, the detection will use all the available methods by default.
+-- @param #INTEL self
+-- @param Wrapper.Unit#UNIT Unit The unit detecting.
+-- @param #table DetectedUnits Table of detected units to be filled.
+-- @param #table RecceDetecting Table of recce per unit to be filled.
+-- @param #boolean DetectVisual (Optional) If *false*, do not include visually detected targets.
+-- @param #boolean DetectOptical (Optional) If *false*, do not include optically detected targets.
+-- @param #boolean DetectRadar (Optional) If *false*, do not include targets detected by radar.
+-- @param #boolean DetectIRST (Optional) If *false*, do not include targets detected by IRST.
+-- @param #boolean DetectRWR (Optional) If *false*, do not include targets detected by RWR.
+-- @param #boolean DetectDLINK (Optional) If *false*, do not include targets detected by data link.
+function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,
+                                  DetectVisual, DetectOptical, DetectRadar,
+                                  DetectIRST, DetectRWR, DetectDLINK)
+
+    -- Run the original detection
+    self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)(self, Unit, DetectedUnits, RecceDetecting,
+                                   DetectVisual, DetectOptical, DetectRadar,
+                                   DetectIRST, DetectRWR, DetectDLINK)
+
+    -- Apply Doppler post-filter only when radar channel is active
+    if not self.DopplerRadar then return end
+    if DetectRadar == false   then return end
+
+    local remove = {}
+    for name, unit in pairs(DetectedUnits) do
+        -- Only filter live UNIT objects (not STATICs) that are airborne
+        if unit:IsInstanceOf("UNIT") and unit:IsAir() then
+            local ok, reason = self:_CheckDopplerDetection(unit, Unit)
+            if not ok then
+                table.insert(remove, name)
+                if self.verbose and self.verbose >= 2 then
+                    self:T(string.format(
+                        "%sDoppler: suppressed %s [%s] by %s",
+                        self.lid, name, reason, Unit:GetName()))
+                end
+            end
+        end
+    end
+
+    for _, name in ipairs(remove) do
+        DetectedUnits[name]  = nil
+        RecceDetecting[name] = nil
+    end
+end
+
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------
--- Start INTEL_DLINK
+-- TODO Start INTEL_DLINK
 ----------------------------------------------------------------------------------------------
 
 --- **Ops_DLink** - Support for Office of Military Intelligence.
@@ -216616,8 +217508,9 @@ end
 -- @param #string Label (Optional) Label of the SRS comms for the SRS Radio overlay. Defaults to "ROBOT". No spaces allowed!
 -- @param #number Volume (Optional) Volume to be set, 0.0 = silent, 1.0 = loudest. Defaults to 1.0
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #OPSGROUP self
-function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume,Provider)
+function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKey, Label, Volume,Provider,Speaker)
   self.useSRS=true
   local path = PathToSRS or MSRS.path
   local port = Port or MSRS.port
@@ -216625,6 +217518,9 @@ function OPSGROUP:SetSRS(PathToSRS, Gender, Culture, Voice, Port, PathToGoogleKe
   self.msrs:SetGender(Gender)
   self.msrs:SetCulture(Culture)
   self.msrs:SetVoice(Voice)
+  if Speaker then
+    self.msrs:SetSpeakerPiper(Speaker)
+  end
   self.msrs:SetPort(port)
   self.msrs:SetLabel(Label)
   if PathToGoogleKey then
@@ -237689,8 +238585,9 @@ end
 -- @param Core.Point#COORDINATE Coordinate (Optional) Coordinate from which the controller radio is sending
 -- @param #string Backend (Optional) MSRS Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC; if you use a config file for MSRS, you can hand in nil here.
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #PLAYERTASKCONTROLLER self
-function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider)
+function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,AccessKey,Coordinate,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -237731,6 +238628,9 @@ function PLAYERTASKCONTROLLER:SetSRS(Frequency,Modulation,PathToSRS,Gender,Cultu
     self.SRS:SetCoordinate(Coordinate)
   end
   self.SRS:SetVoice(self.Voice)
+  if Speaker then
+    self.SRS:SetSpeakerPiper(Speaker)
+  end
   self.SRSQueue = MSRSQUEUE:New(self.MenuName or self.Name)
   self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
   return self
@@ -239701,8 +240601,9 @@ end
 -- @param #string PathToGoogleKey (Optional) Path to your google key if you want to use google TTS
 -- @param #string Backend (optional) Backend to be used, can be MSRS.Backend.SRSEXE or MSRS.Backend.GRPC etc
 -- @param #string Provider (Optional) TTS Provider to be used.
+-- @param #string Speaker (Optional) Use a specific speaker for a voice if Piper is used as provider (only Hound-TTS backend).
 -- @return #PLAYERRECCE self
-function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider)
+function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,Voice,Volume,PathToGoogleKey,Backend,Provider,Speaker)
   self:T(self.lid.."SetSRS")
   self.PathToSRS = PathToSRS or MSRS.path or "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio" --
   self.Gender = Gender or MSRS.gender or "male" --
@@ -239740,6 +240641,9 @@ function PLAYERRECCE:SetSRS(Frequency,Modulation,PathToSRS,Gender,Culture,Port,V
     self.Voice = Voice or MSRS.poptions.gcloud.voice
   end
   self.SRS:SetVoice(self.Voice)
+  if Speaker then
+    self.SRS:SetSpeakerPiper(Speaker)
+  end
   self.SRSQueue = MSRSQUEUE:New(self.MenuName or self.Name)
   self.SRSQueue:SetTransmitOnlyWithPlayers(self.TransmitOnlyWithPlayers)
   return self
@@ -242968,7 +243872,7 @@ end
 -- 
 -------------------------------------------------------------------------
 -- Date: September 2023
--- Last Update: Jan 2026
+-- Last Update: Mar 2026
 -------------------------------------------------------------------------
 --
 --- **Ops** - Easy GCI & CAP Manager
@@ -243233,7 +244137,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.34"
+EASYGCICAP.version="0.1.35"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -243302,6 +244206,7 @@ function EASYGCICAP:New(Alias, AirbaseName, Coalition, EWRName)
   --               From State  -->   Event      -->      To State
   self:SetStartState("Stopped")
   self:AddTransition("Stopped", "Start",  "Running")
+  self:AddTransition("Stopped", "Restart",  "Running")
   self:AddTransition("Running", "Stop",   "Stopped")
   self:AddTransition("*",       "Status", "*")  
   
@@ -243334,6 +244239,20 @@ function EASYGCICAP:New(Alias, AirbaseName, Coalition, EWRName)
   
   --- On After "Status" event.
   -- @function [parent=#EASYGCICAP] OnAfterStatus
+  -- @param #EASYGCICAP self
+  -- @param #string From From state.
+  -- @param #string Event Event.
+  -- @param #string To To state.
+  
+  --- On Before "Restart" event. Use `myinstance:Restart()` in case you Stopped the instance before and want to restart it now.
+  -- @function [parent=#EASYGCICAP] OnBeforeRestart
+  -- @param #EASYGCICAP self
+  -- @param #string From From state.
+  -- @param #string Event Event.
+  -- @param #string To To state.
+  
+  --- On After "Restart" event. Use `myinstance:Restart()` in case you Stopped the instance before and want to restart it now.
+  -- @function [parent=#EASYGCICAP] OnAfterRestart
   -- @param #EASYGCICAP self
   -- @param #string From From state.
   -- @param #string Event Event.
@@ -244745,8 +245664,31 @@ end
 function EASYGCICAP:onafterStop(From,Event,To)
   self:T({From,Event,To})
   self.Intel:Stop()
+  -- self.wings[Airbasename] = { CAP_Wing, AIRBASE:FindByName(Airbasename):GetZone(), Airbasename }
   for _,_wing in pairs(self.wings or {}) do
-    _wing:Stop()
+    for _,_aw in pairs(_wing) do
+      _wing[1]:Stop()
+    end
+  end
+  return self
+end
+
+--- (Internal) FSM Function onafterRestart
+-- @param #EASYGCICAP self
+-- @param #string From
+-- @param #string Event
+-- @param #string To
+-- @return #EASYGCICAP self
+function EASYGCICAP:onafterRestart(From,Event,To)
+  self:T({From,Event,To})
+  if self:Is("Stopped") then
+  self.Intel:Start()
+  -- self.wings[Airbasename] = { CAP_Wing, AIRBASE:FindByName(Airbasename):GetZone(), Airbasename }
+    for _,_wing in pairs(self.wings or {}) do
+      for _,_aw in pairs(_wing) do
+        _wing[1]:Start()
+      end
+    end
   end
   return self
 end
@@ -252066,7 +253008,7 @@ function MSRSQUEUE:Broadcast(transmission)
     trigger.action.outTextForGroup(gid, transmission.subtitle, transmission.subduration, true)
   end
 
-  if transmission.subgroups and #transmission.subgroups>0 then
+  if transmission.subgroups and #transmission.subgroups>0 and transmission.subtitle then
 
     for _,_group in pairs(transmission.subgroups) do
       local group=_group --Wrapper.Group#GROUP
