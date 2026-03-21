@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-19T12:27:17+01:00-42b4bd62d90ac70d9824d643e1ca4c47689c47c9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-21T12:22:05+01:00-ab6d4cb9b9ec243b6dc539bf6fa5ba24cd6b3293 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17882,6 +17882,76 @@ self:F({self=self:GetVec2()})
 local x=Coordinate.x
 local z=Coordinate.z
 return x-Precision<=self.x and x+Precision>=self.x and z-Precision<=self.z and z+Precision>=self.z
+end
+function COORDINATE:ScanObjectsSquare(sideLength,scanunits,scanstatics,scanscenery)
+self:F(string.format("Scanning cube volume (lower-left corner) with side length %.1f m.",sideLength))
+local CornerVec3=self:GetVec3()
+local CenterY=CornerVec3.y
+local MinVec3={
+x=CornerVec3.x,
+y=CenterY-(sideLength/2),
+z=CornerVec3.z
+}
+local MaxVec3={
+x=CornerVec3.x+sideLength,
+y=CenterY+(sideLength/2),
+z=CornerVec3.z+sideLength
+}
+local BoxSearch={
+id=world.VolumeType.BOX,
+params={
+min=MinVec3,
+max=MaxVec3,
+}
+}
+if scanunits==nil then
+scanunits=true
+end
+if scanstatics==nil then
+scanstatics=true
+end
+if scanscenery==nil then
+scanscenery=false
+end
+local scanobjects={}
+if scanunits then
+table.insert(scanobjects,Object.Category.UNIT)
+end
+if scanstatics then
+table.insert(scanobjects,Object.Category.STATIC)
+end
+if scanscenery then
+table.insert(scanobjects,Object.Category.SCENERY)
+end
+local Units={}
+local Statics={}
+local Scenery={}
+local gotstatics=false
+local gotunits=false
+local gotscenery=false
+local function EvaluateZone(ZoneObject)
+if ZoneObject then
+local ObjectCategory=ZoneObject:getCategory()
+if(ObjectCategory==Object.Category.UNIT and ZoneObject:isExist())then
+table.insert(Units,ZoneObject)
+gotunits=true
+elseif(ObjectCategory==Object.Category.STATIC and ZoneObject:isExist())then
+table.insert(Statics,ZoneObject)
+gotstatics=true
+elseif ObjectCategory==Object.Category.SCENERY then
+table.insert(Scenery,ZoneObject)
+gotscenery=true
+end
+end
+return true
+end
+world.searchObjects(scanobjects,BoxSearch,EvaluateZone)
+for _,unit in pairs(Units)do
+if not unit:isExist()then
+gotunits=false
+end
+end
+return gotunits,gotstatics,gotscenery,Units,Statics,Scenery
 end
 function COORDINATE:ScanObjects(radius,scanunits,scanstatics,scanscenery)
 self:F(string.format("Scanning in radius %.1f m.",radius or 100))
@@ -79473,7 +79543,7 @@ beacon.frequency=VHF/1000000
 beacon.modulation=CTLD.RadioModulation.FM
 return beacon
 end
-function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth)
+function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth,BeaconFrequencies)
 self:T(self.lid.." AddCTLDZone")
 local zone=ZONE:FindByName(Name)
 if not zone and Type~=CTLD.CargoZoneType.SHIP then
@@ -79506,6 +79576,11 @@ if HasBeacon then
 ctldzone.fmbeacon=self:_GetFMBeacon(Name)
 ctldzone.uhfbeacon=self:_GetUHFBeacon(Name)
 ctldzone.vhfbeacon=self:_GetVHFBeacon(Name)
+if BeaconFrequencies then
+ctldzone.fmbeacon.frequency=BeaconFrequencies.FM or ctldzone.fmbeacon.frequency
+ctldzone.vhfbeacon.frequency=BeaconFrequencies.VHF or ctldzone.vhfbeacon.frequency
+ctldzone.uhfbeacon.frequency=BeaconFrequencies.UHF or ctldzone.uhfbeacon.frequency
+end
 else
 ctldzone.fmbeacon=nil
 ctldzone.uhfbeacon=nil
