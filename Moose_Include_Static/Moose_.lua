@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-19T12:28:41+01:00-65eaecd005b15c8a63e7ee825244395e237d63d4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-21T12:35:47+01:00-5e2e8d1faecce3afea295e8cb8fc6fcd0c6f0b55 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -17882,6 +17882,76 @@ self:F({self=self:GetVec2()})
 local x=Coordinate.x
 local z=Coordinate.z
 return x-Precision<=self.x and x+Precision>=self.x and z-Precision<=self.z and z+Precision>=self.z
+end
+function COORDINATE:ScanObjectsSquare(sideLength,scanunits,scanstatics,scanscenery)
+self:F(string.format("Scanning cube volume (lower-left corner) with side length %.1f m.",sideLength))
+local CornerVec3=self:GetVec3()
+local CenterY=CornerVec3.y
+local MinVec3={
+x=CornerVec3.x,
+y=CenterY-(sideLength/2),
+z=CornerVec3.z
+}
+local MaxVec3={
+x=CornerVec3.x+sideLength,
+y=CenterY+(sideLength/2),
+z=CornerVec3.z+sideLength
+}
+local BoxSearch={
+id=world.VolumeType.BOX,
+params={
+min=MinVec3,
+max=MaxVec3,
+}
+}
+if scanunits==nil then
+scanunits=true
+end
+if scanstatics==nil then
+scanstatics=true
+end
+if scanscenery==nil then
+scanscenery=false
+end
+local scanobjects={}
+if scanunits then
+table.insert(scanobjects,Object.Category.UNIT)
+end
+if scanstatics then
+table.insert(scanobjects,Object.Category.STATIC)
+end
+if scanscenery then
+table.insert(scanobjects,Object.Category.SCENERY)
+end
+local Units={}
+local Statics={}
+local Scenery={}
+local gotstatics=false
+local gotunits=false
+local gotscenery=false
+local function EvaluateZone(ZoneObject)
+if ZoneObject then
+local ObjectCategory=ZoneObject:getCategory()
+if(ObjectCategory==Object.Category.UNIT and ZoneObject:isExist())then
+table.insert(Units,ZoneObject)
+gotunits=true
+elseif(ObjectCategory==Object.Category.STATIC and ZoneObject:isExist())then
+table.insert(Statics,ZoneObject)
+gotstatics=true
+elseif ObjectCategory==Object.Category.SCENERY then
+table.insert(Scenery,ZoneObject)
+gotscenery=true
+end
+end
+return true
+end
+world.searchObjects(scanobjects,BoxSearch,EvaluateZone)
+for _,unit in pairs(Units)do
+if not unit:isExist()then
+gotunits=false
+end
+end
+return gotunits,gotstatics,gotscenery,Units,Statics,Scenery
 end
 function COORDINATE:ScanObjects(radius,scanunits,scanstatics,scanscenery)
 self:F(string.format("Scanning in radius %.1f m.",radius or 100))
@@ -79476,7 +79546,7 @@ beacon.frequency=VHF/1000000
 beacon.modulation=CTLD.RadioModulation.FM
 return beacon
 end
-function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth)
+function CTLD:AddCTLDZone(Name,Type,Color,Active,HasBeacon,Shiplength,Shipwidth,BeaconFrequencies)
 self:T(self.lid.." AddCTLDZone")
 local zone=ZONE:FindByName(Name)
 if not zone and Type~=CTLD.CargoZoneType.SHIP then
@@ -79509,6 +79579,11 @@ if HasBeacon then
 ctldzone.fmbeacon=self:_GetFMBeacon(Name)
 ctldzone.uhfbeacon=self:_GetUHFBeacon(Name)
 ctldzone.vhfbeacon=self:_GetVHFBeacon(Name)
+if BeaconFrequencies then
+ctldzone.fmbeacon.frequency=BeaconFrequencies.FM or ctldzone.fmbeacon.frequency
+ctldzone.vhfbeacon.frequency=BeaconFrequencies.VHF or ctldzone.vhfbeacon.frequency
+ctldzone.uhfbeacon.frequency=BeaconFrequencies.UHF or ctldzone.uhfbeacon.frequency
+end
 else
 ctldzone.fmbeacon=nil
 ctldzone.uhfbeacon=nil
@@ -102898,7 +102973,7 @@ local group=_group
 if group and group:IsAlive()then
 for _,_recce in pairs(group:GetUnits())do
 local recce=_recce
-if self.DopplerRadar then
+if self.DopplerRadar==true then
 self:GetDetectedUnitsDoppler(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
 else
 self:GetDetectedUnits(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
@@ -103750,6 +103825,7 @@ end
 return rcontact
 end
 function INTEL:SetDopplerRadar(MinAltAGL,NotchHalfDeg,MinSpeedMps,RadarRangeKm,RCS)
+self:I(self.lid.."SetDopplerRadar")
 self.DopplerRadar=true
 self.DopplerMinAltAGL=MinAltAGL or 500
 self.DopplerNotchSin=math.sin(math.rad(NotchHalfDeg or 15))
@@ -103759,14 +103835,17 @@ self.DopplerRadarRangeM=(RadarRangeKm or 200)*1000
 return self
 end
 function INTEL:SetDopplerRadarOff()
+self:I(self.lid.."SetDopplerRadarOff")
 self.DopplerRadar=false
 return self
 end
 function INTEL:SetTypeRCS(TypeName,RCS_m2)
+self:I(self.lid.."SetTypeRCS")
 INTEL.RCS_Table[TypeName]=RCS_m2
 return self
 end
 function INTEL:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
+self:I(self.lid.."_GetAspectRCS")
 local typename=TargetUnit:GetTypeName()
 local base_rcs=INTEL.RCS_Table[typename]
 if not base_rcs then
@@ -103785,10 +103864,11 @@ local f=INTEL.RCS_NoseOnFraction
 return base_rcs*(f+(1.0-f)*sin2_a)
 end
 function INTEL:_CheckDopplerDetection(TargetUnit,RadarUnit)
+self:I(self.lid.."_CheckDopplerDetection")
 local spd=TargetUnit:GetVelocityMPS()
 local rpos=RadarUnit:GetVec3()
 local tpos=TargetUnit:GetVec3()
-local tvel=TargetUnit:GetVelocity()
+local tvel=TargetUnit:GetVelocityVec3()
 local dx=tpos.x-rpos.x
 local dz=tpos.z-rpos.z
 local slant=math.sqrt(dx*dx+dz*dz)
@@ -103827,13 +103907,10 @@ end
 end
 return true
 end
-function INTEL:GetDetectedUnitsDoppler(Unit,DetectedUnits,RecceDetecting,
-DetectVisual,DetectOptical,DetectRadar,
-DetectIRST,DetectRWR,DetectDLINK)
-self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)(self,Unit,DetectedUnits,RecceDetecting,
-DetectVisual,DetectOptical,DetectRadar,
-DetectIRST,DetectRWR,DetectDLINK)
-if not self.DopplerRadar then return end
+function INTEL:GetDetectedUnitsDoppler(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
+self:I(self.lid.."GetDetectedUnitsDoppler")
+self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
+if self.DopplerRadar==false then return end
 if DetectRadar==false then return end
 local remove={}
 for name,unit in pairs(DetectedUnits)do
@@ -103841,11 +103918,7 @@ if unit:IsInstanceOf("UNIT")and unit:IsAir()then
 local ok,reason=self:_CheckDopplerDetection(unit,Unit)
 if not ok then
 table.insert(remove,name)
-if self.verbose and self.verbose>=2 then
-self:T(string.format(
-"%sDoppler: suppressed %s [%s] by %s",
-self.lid,name,reason,Unit:GetName()))
-end
+self:I(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid,name,reason,Unit:GetName()))
 end
 end
 end

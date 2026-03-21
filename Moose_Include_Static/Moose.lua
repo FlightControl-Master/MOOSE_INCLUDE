@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-19T12:28:41+01:00-65eaecd005b15c8a63e7ee825244395e237d63d4 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-21T12:35:47+01:00-5e2e8d1faecce3afea295e8cb8fc6fcd0c6f0b55 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -33511,6 +33511,121 @@ do -- COORDINATE
 
     return x - Precision <= self.x and x + Precision >= self.x and z - Precision <= self.z and z + Precision >= self.z
   end
+
+  ---
+  --Box volume scanning function matching MOOSE COORDINATE:ScanObjects() structure
+  --For use as COORDINATE:ScanObjectsSquare(sideLength, scanunits, scanstatics, scanscenery)
+  --Creates a cubic search volume with the COORDINATE as the lower-left (southwest) corner.
+  --Perfect for grid-based map scanning: increment X and Z by sideLength for next grid cell.
+  -- @param #COORDINATE self
+  -- @param #number radius (Optional) Scan radius in meters. Default 100 m.
+  -- @param #boolean scanunits (Optional) If true scan for units. Default true.
+  -- @param #boolean scanstatics (Optional) If true scan for static objects. Default true.
+  -- @param #boolean scanscenery (Optional) If true scan for scenery objects. Default false.
+  -- @return #boolean True if units were found.
+  -- @return #boolean True if statics were found.
+  -- @return #boolean True if scenery objects were found.
+  -- @return #table Table of MOOSE @{Wrapper.Unit#UNIT} objects found.
+  -- @return #table Table of DCS static objects found.
+  -- @return #table Table of DCS scenery objects found.
+  function COORDINATE:ScanObjectsSquare(sideLength, scanunits, scanstatics, scanscenery)
+    self:F(string.format("Scanning cube volume (lower-left corner) with side length %.1f m.", sideLength))
+  
+    local CornerVec3 = self:GetVec3()
+    local CenterY = CornerVec3.y
+    
+    local MinVec3 = {
+      x = CornerVec3.x,
+      y = CenterY - (sideLength / 2),
+      z = CornerVec3.z
+    }
+    local MaxVec3 = {
+      x = CornerVec3.x + sideLength,
+      y = CenterY + (sideLength / 2),
+      z = CornerVec3.z + sideLength
+    }
+  
+    local BoxSearch = {
+      id = world.VolumeType.BOX,
+      params = {
+        min = MinVec3,
+        max = MaxVec3,
+      }
+    }
+  
+    -- Defaults
+    if scanunits==nil then
+      scanunits=true
+    end
+    if scanstatics==nil then
+      scanstatics=true
+    end
+    if scanscenery==nil then
+      scanscenery=false
+    end
+    
+    -- {Object.Category.UNIT, Object.Category.STATIC, Object.Category.SCENERY}
+    local scanobjects={}
+    if scanunits then
+      table.insert(scanobjects, Object.Category.UNIT)
+    end
+    if scanstatics then
+      table.insert(scanobjects, Object.Category.STATIC)
+    end
+    if scanscenery then
+      table.insert(scanobjects, Object.Category.SCENERY)
+    end
+    
+    -- Found stuff.
+    local Units = {}
+    local Statics = {}
+    local Scenery = {}
+    local gotstatics=false
+    local gotunits=false
+    local gotscenery=false
+    
+    local function EvaluateZone( ZoneObject )
+    
+      if ZoneObject then
+      
+        -- Get category of scanned object.
+        local ObjectCategory = ZoneObject:getCategory()
+        
+        -- Check for unit or static objects
+        if (ObjectCategory == Object.Category.UNIT and ZoneObject:isExist()) then
+        
+          table.insert(Units, ZoneObject)
+          gotunits=true
+          
+        elseif (ObjectCategory == Object.Category.STATIC and ZoneObject:isExist()) then
+        
+          table.insert(Statics, ZoneObject)
+          gotstatics=true
+          
+        elseif ObjectCategory == Object.Category.SCENERY then
+        
+          table.insert(Scenery, ZoneObject)
+          gotscenery=true
+          
+        end
+        
+      end
+      
+      return true
+    end
+  
+    -- Search the world.
+    world.searchObjects(scanobjects, BoxSearch, EvaluateZone)
+  
+    for _,unit in pairs(Units) do
+      if not unit:isExist() then
+        gotunits=false
+      end
+    end
+  
+    return gotunits, gotstatics, gotscenery, Units, Statics, Scenery
+  end
+
 
   --- Scan/find objects (units, statics, scenery) within a certain radius around the coordinate using the world.searchObjects() DCS API function.
   -- @param #COORDINATE self
@@ -158957,11 +159072,12 @@ end
 -- @param #string Type Type of this zone, #CTLD.CargoZoneType
 -- @param #number Color Smoke/Flare color e.g. #SMOKECOLOR.Red
 -- @param #string Active Is this zone currently active?
--- @param #string HasBeacon Does this zone have a beacon if it is active?
--- @param #number Shiplength Length of Ship for shipzones
--- @param #number Shipwidth Width of Ship for shipzones
+-- @param #string (Optional) HasBeacon Does this zone have a beacon if it is active?
+-- @param #number (Optional) Shiplength Length of Ship for shipzones
+-- @param #number (Optional) Shipwidth Width of Ship for shipzones
+-- @param #table (Optional) BeaconFrequencies PreSet Frequencies in MHz (Million(!) Hertz), table of values , e.g. `{FM=0.124,UHF=215,VHF=110}`
 -- @return #CTLD self
-function CTLD:AddCTLDZone(Name, Type, Color, Active, HasBeacon, Shiplength, Shipwidth)
+function CTLD:AddCTLDZone(Name, Type, Color, Active, HasBeacon, Shiplength, Shipwidth, BeaconFrequencies)
   self:T(self.lid .. " AddCTLDZone")
   
   local zone = ZONE:FindByName(Name)
@@ -159000,6 +159116,11 @@ function CTLD:AddCTLDZone(Name, Type, Color, Active, HasBeacon, Shiplength, Ship
     ctldzone.fmbeacon = self:_GetFMBeacon(Name)
     ctldzone.uhfbeacon = self:_GetUHFBeacon(Name)
     ctldzone.vhfbeacon = self:_GetVHFBeacon(Name)
+    if BeaconFrequencies then
+      ctldzone.fmbeacon.frequency = BeaconFrequencies.FM or ctldzone.fmbeacon.frequency
+      ctldzone.vhfbeacon.frequency = BeaconFrequencies.VHF or ctldzone.vhfbeacon.frequency
+      ctldzone.uhfbeacon.frequency = BeaconFrequencies.UHF or ctldzone.uhfbeacon.frequency
+    end
   else
     ctldzone.fmbeacon = nil
     ctldzone.uhfbeacon = nil
@@ -159213,7 +159334,7 @@ function CTLD:_AddRadioBeacon(Name, Sound, Mhz, Modulation, IsShip, IsDropped)
   else
     local ZoneCoord = Zone:GetCoordinate()
     local ZoneVec3 = ZoneCoord:GetVec3() or {x=0,y=0,z=0}
-    local Frequency = Mhz * 1000000 -- Freq in Hert
+    local Frequency = Mhz * 1000000 -- Freq in Hertz
     local Sound =  self.RadioPath..Sound
     trigger.action.radioTransmission(Sound, ZoneVec3, Modulation, false, Frequency, 1000, Name..math.random(1,10000)) -- Beacon in MP only runs for 30secs straightt
     self:T2(string.format("Beacon added | Name = %s | Sound = %s | Vec3 = {x=%d, y=%d, z=%d} | Freq = %f | Modulation = %d (0=AM/1=FM)",Name,Sound,ZoneVec3.x,ZoneVec3.y,ZoneVec3.z,Mhz,Modulation))
@@ -205765,7 +205886,7 @@ function INTEL:UpdateIntel()
         local recce=_recce --Wrapper.Unit#UNIT
 
         -- Get detected units.
-        if self.DopplerRadar then
+        if self.DopplerRadar == true then
           self:GetDetectedUnitsDoppler(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
         else
           self:GetDetectedUnits(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
@@ -207312,6 +207433,7 @@ end
 --                              Default true.
 -- @return #INTEL self
 function INTEL:SetDopplerRadar(MinAltAGL, NotchHalfDeg, MinSpeedMps, RadarRangeKm, RCS)
+  self:I(self.lid .. "SetDopplerRadar")
     self.DopplerRadar        = true
     self.DopplerMinAltAGL    = MinAltAGL    or 500
     self.DopplerNotchSin     = math.sin(math.rad(NotchHalfDeg or 15))
@@ -207325,6 +207447,7 @@ end
 -- @param #INTEL self
 -- @return #INTEL self
 function INTEL:SetDopplerRadarOff()
+  self:I(self.lid .. "SetDopplerRadarOff")
     self.DopplerRadar = false
     return self
 end
@@ -207336,6 +207459,7 @@ end
 -- @param #number RCS_m2    Side-on RCS in m²
 -- @return #INTEL self
 function INTEL:SetTypeRCS(TypeName, RCS_m2)
+  self:I(self.lid .. "SetTypeRCS")
     INTEL.RCS_Table[TypeName] = RCS_m2
     return self
 end
@@ -207358,6 +207482,7 @@ end
 -- @param DCS#Vec3 tvel  Target velocity vector (pre-computed)
 -- @return #number Effective RCS in m²
 function INTEL:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
+  self:I(self.lid .. "_GetAspectRCS")
     -- Look up base (side-on) RCS
     local typename = TargetUnit:GetTypeName()
     local base_rcs = INTEL.RCS_Table[typename]
@@ -207395,12 +207520,12 @@ end
 -- @return #boolean  true = detected
 -- @return #string   rejection reason: "speed" | "clutter" | "notch" | "rcs"
 function INTEL:_CheckDopplerDetection(TargetUnit, RadarUnit)
-
+  self:I(self.lid .. "_CheckDopplerDetection")
     -- Pre-compute common geometry (shared by notch + RCS checks)
     local spd  = TargetUnit:GetVelocityMPS()
     local rpos = RadarUnit:GetVec3()
     local tpos = TargetUnit:GetVec3()
-    local tvel = TargetUnit:GetVelocity()
+    local tvel = TargetUnit:GetVelocityVec3()
 
     local dx    = tpos.x - rpos.x
     local dz    = tpos.z - rpos.z
@@ -207477,18 +207602,14 @@ end
 -- @param #boolean DetectIRST (Optional) If *false*, do not include targets detected by IRST.
 -- @param #boolean DetectRWR (Optional) If *false*, do not include targets detected by RWR.
 -- @param #boolean DetectDLINK (Optional) If *false*, do not include targets detected by data link.
-function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,
-                                  DetectVisual, DetectOptical, DetectRadar,
-                                  DetectIRST, DetectRWR, DetectDLINK)
-
+function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,DetectVisual, DetectOptical, DetectRadar,DetectIRST, DetectRWR, DetectDLINK)
+  self:I(self.lid .. "GetDetectedUnitsDoppler")
     -- Run the original detection
-    self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)(self, Unit, DetectedUnits, RecceDetecting,
-                                   DetectVisual, DetectOptical, DetectRadar,
-                                   DetectIRST, DetectRWR, DetectDLINK)
+    self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
 
     -- Apply Doppler post-filter only when radar channel is active
-    if not self.DopplerRadar then return end
-    if DetectRadar == false   then return end
+    if self.DopplerRadar == false then return end
+    if DetectRadar == false then return end
 
     local remove = {}
     for name, unit in pairs(DetectedUnits) do
@@ -207497,11 +207618,9 @@ function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,
             local ok, reason = self:_CheckDopplerDetection(unit, Unit)
             if not ok then
                 table.insert(remove, name)
-                if self.verbose and self.verbose >= 2 then
-                    self:T(string.format(
-                        "%sDoppler: suppressed %s [%s] by %s",
-                        self.lid, name, reason, Unit:GetName()))
-                end
+                --if self.verbose and self.verbose >= 2 then
+                    self:I(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid, name, reason, Unit:GetName()))
+                --end
             end
         end
     end
