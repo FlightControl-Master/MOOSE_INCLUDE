@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-22T09:17:08+01:00-ed17a4273779afc726bb99ebe020db4692c4d0d0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-22T16:32:07+01:00-a570136a9f6132bca6fb36b1f2c1ed338983d257 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124801,7 +124801,7 @@ ConfigLoaded=false,
 poptions={},
 UsePowerShell=false,
 }
-MSRS.version="0.3.4"
+MSRS.version="0.3.5"
 MSRS.Voices={
 Amazon={
 Generative={
@@ -125208,6 +125208,7 @@ GOOGLE="gcloud",
 AZURE="azure",
 AMAZON="aws",
 PIPER="piper",
+KITTEN="kitten",
 }
 function MSRS.uuid()
 local random=math.random
@@ -125543,6 +125544,11 @@ self:F()
 self:SetProvider(MSRS.Provider.PIPER)
 return self
 end
+function MSRS:SetTTSProviderKitten()
+self:F()
+self:SetProvider(MSRS.Provider.KITTEN)
+return self
+end
 function MSRS:Help()
 self:F()
 local path=self:GetPath()
@@ -125557,6 +125563,13 @@ env.info("SRS help output:")
 env.info("======================================================================")
 env.info(data)
 env.info("======================================================================")
+return self
+end
+function MSRS:SetAutoTranslate(Provider,Language)
+self:T(self.lid.."SetAutoTranslate")
+self.SRSTranslate=true
+self.SRSTranslateProvider=Provider or MSRS.Provider.GOOGLE
+self.SRSTranslateLanguage=Language or"de"
 return self
 end
 function MSRS:PlaySoundFile(Soundfile,Delay)
@@ -125804,8 +125817,20 @@ self:T(options.provider[provider])
 GRPC.tts(ssml,freq*1e6,options)
 end
 end
-function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker,Translated)
 self:T(self.lid.."_HoundTextToSpeech")
+if self.SRSTranslate==true and Translated~=true then
+MSRS._HoundTranslate(Message,{provider=self.SRSTranslateProvider,language=self.SRSTranslateLanguage},
+function(translated,err)
+if translated then
+return MSRS._HoundTextToSpeech(self,translated,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker,true)
+else
+env.error("Translation failed: "..tostring(err))
+end
+end
+)
+return
+end
 Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
 local ffs={}
@@ -125877,6 +125902,20 @@ self:T(self.lid.."_HoundSpeechTime")
 local speed=Speed or 1.0
 local speechtime=HoundTTS.getSpeechTime(Message,speed,UseGoogle)
 return speechtime
+end
+function MSRS._HoundTranslate(Message,Parameters,CallbackFunction)
+local text=Message
+local parameters=Parameters or{}
+local callback=CallbackFunction
+if not callback then
+env.error("_HoundTranslate - not callback function provided!",true)
+return
+end
+if not parameters.provider then parameters.provider=MSRS.Provider.GOOGLE end
+parameters.provider=string.gsub(parameters.provider,"gcloud","google")
+if not parameters.language then parameters.language="de"end
+HoundTTS.Translate(text,parameters,callback)
+return
 end
 function MSRS:LoadConfigFile(Path,Filename)
 if lfs==nil then
@@ -125993,6 +126032,7 @@ return self
 end
 function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker)
 self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed})
+self:T({provider=msrs.provider})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
@@ -126046,7 +126086,7 @@ end
 local function texttogroup(gid)
 trigger.action.outTextForGroup(gid,transmission.subtitle,transmission.subduration,true)
 end
-if transmission.subgroups and#transmission.subgroups>0 then
+if transmission.subgroups and#transmission.subgroups>0 and transmission.subtitle then
 for _,_group in pairs(transmission.subgroups)do
 local group=_group
 if group and group:IsAlive()then
