@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-22T16:49:41+01:00-105c30868bd29b11a791daaa94908c4a29af3dc4 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-22T17:58:38+01:00-a7127f07cb4c1c261d2797bb284fbe915b9827af ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -42598,6 +42598,8 @@ local DCSunit=DCSgroup:getUnit(1)
 local DCSdesc=DCSunit:getDesc()
 local DCScategory=DCSgroup:getCategory()
 local DCStype=DCSunit:getTypeName()
+self:I({typename=DCStype})
+UTILS.PrintTableToLog(DCSdesc.box,1,noprint,3,seen)
 if DCScategory==Group.Category.AIRPLANE then
 self.category=RAT.cat.plane
 elseif DCScategory==Group.Category.HELICOPTER then
@@ -42613,6 +42615,9 @@ self.aircraft.Reff=self.aircraft.Rmax*self.aircraft.fuel*0.95
 self.aircraft.Vmax=DCSdesc.speedMax
 self.aircraft.Vymax=DCSdesc.VyMax
 self.aircraft.ceiling=DCSdesc.Hmax
+self.aircraft.length=12
+self.aircraft.height=4
+self.aircraft.width=10.3
 if DCSdesc.box then
 self.aircraft.length=DCSdesc.box.max.x
 self.aircraft.height=DCSdesc.box.max.y
@@ -42633,11 +42638,10 @@ elseif DCStype=="uh2b"then
 self.aircraft.length=11.48
 self.aircraft.height=4.11
 self.aircraft.width=13.41
-end
-if not DCSdesc.box then
-self.aircraft.length=19.13
-self.aircraft.height=4.9
-self.aircraft.width=11.65
+elseif DCStype=="F-14A-135-GR"then
+self.aircraft.length=12
+self.aircraft.height=4
+self.aircraft.width=10.3
 end
 self.aircraft.box=math.max(self.aircraft.length,self.aircraft.width)
 local text=string.format("\n******************************************************\n")
