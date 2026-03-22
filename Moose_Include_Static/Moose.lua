@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-21T12:22:05+01:00-ab6d4cb9b9ec243b6dc539bf6fa5ba24cd6b3293 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-22T09:17:08+01:00-ed17a4273779afc726bb99ebe020db4692c4d0d0 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -41654,6 +41654,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
             end
 
             Takeoff = GROUP.Takeoff.Air
+            spawnonground = false
           else
             self:E( string.format( "WARNING: Group %s has no parking spots at %s ==> No emergency air start or uncontrolled spawning ==> No spawn!", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
             return nil
