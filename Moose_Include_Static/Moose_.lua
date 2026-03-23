@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-22T17:58:38+01:00-a7127f07cb4c1c261d2797bb284fbe915b9827af ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-23T06:18:06+01:00-69784226eabbe4ffc2106dd2905e1d6e0f5fb10b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -77390,9 +77390,9 @@ local ccoord=Crate:GetPositionable():GetCoordinate()
 local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoordinate())or 0
 local isHercDrop=Crate:WasDropped(true)
 if not isHercDrop and distToUnit>baseDist then
-elseif self.UseC130LoadAndUnload and self:IsC130J(Unit)and distToUnit<15 then
-elseif self.UseC130LoadAndUnload and self:IsHook(Unit)and distToUnit<5 then
-elseif self.UseC130LoadAndUnload and(Unit:GetTypeName()=="Mi-8MTV2"or Unit:GetTypeName()=="Mi-8MT")and distToUnit<8 then
+elseif self:IsC130J(Unit)and distToUnit<15 then
+elseif self:IsHook(Unit)and distToUnit<5 then
+elseif(Unit:GetTypeName()=="Mi-8MTV2"or Unit:GetTypeName()=="Mi-8MT")and distToUnit<8 then
 else
 if not buildables[name]then
 local object={}
@@ -79795,6 +79795,13 @@ end
 return self
 end
 function CTLD:IsUnitInZone(Unit,Zonetype)
+if not Unit then
+if Zonetype==CTLD.CargoZoneType.SHIP then
+return false,nil,nil,1000000,nil
+else
+return false,nil,nil,1000000
+end
+end
 self:T(self.lid.." IsUnitInZone")
 self:T(Zonetype)
 local unitname=Unit:GetName()
@@ -79816,6 +79823,13 @@ local zoneret=nil
 local zonewret=nil
 local zonenameret=nil
 local unitcoord=Unit:GetCoordinate()
+if not unitcoord then
+if Zonetype==CTLD.CargoZoneType.SHIP then
+return false,nil,nil,1000000,nil
+else
+return false,nil,nil,1000000
+end
+end
 local unitVec2=unitcoord:GetVec2()
 for _,_cargozone in pairs(zonetable)do
 local czone=_cargozone
