@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-21T12:35:47+01:00-5e2e8d1faecce3afea295e8cb8fc6fcd0c6f0b55 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:13:47+01:00-a66290ab6361c2561ca08f23c3ce1a6ba2e58970 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21411,6 +21411,7 @@ else
 PointVec3.y=PointVec3:GetLandHeight()+math.random(500,2500)
 end
 Takeoff=GROUP.Takeoff.Air
+spawnonground=false
 else
 self:E(string.format("WARNING: Group %s has no parking spots at %s ==> No emergency air start or uncontrolled spawning ==> No spawn!",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 return nil
@@ -42597,6 +42598,8 @@ local DCSunit=DCSgroup:getUnit(1)
 local DCSdesc=DCSunit:getDesc()
 local DCScategory=DCSgroup:getCategory()
 local DCStype=DCSunit:getTypeName()
+self:I({typename=DCStype})
+UTILS.PrintTableToLog(DCSdesc.box,1,noprint,3,seen)
 if DCScategory==Group.Category.AIRPLANE then
 self.category=RAT.cat.plane
 elseif DCScategory==Group.Category.HELICOPTER then
@@ -42612,6 +42615,9 @@ self.aircraft.Reff=self.aircraft.Rmax*self.aircraft.fuel*0.95
 self.aircraft.Vmax=DCSdesc.speedMax
 self.aircraft.Vymax=DCSdesc.VyMax
 self.aircraft.ceiling=DCSdesc.Hmax
+self.aircraft.length=12
+self.aircraft.height=4
+self.aircraft.width=10.3
 if DCSdesc.box then
 self.aircraft.length=DCSdesc.box.max.x
 self.aircraft.height=DCSdesc.box.max.y
@@ -42632,6 +42638,10 @@ elseif DCStype=="uh2b"then
 self.aircraft.length=11.48
 self.aircraft.height=4.11
 self.aircraft.width=13.41
+elseif DCStype=="F-14A-135-GR"then
+self.aircraft.length=12
+self.aircraft.height=4
+self.aircraft.width=10.3
 end
 self.aircraft.box=math.max(self.aircraft.length,self.aircraft.width)
 local text=string.format("\n******************************************************\n")
@@ -77383,9 +77393,9 @@ local ccoord=Crate:GetPositionable():GetCoordinate()
 local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoordinate())or 0
 local isHercDrop=Crate:WasDropped(true)
 if not isHercDrop and distToUnit>baseDist then
-elseif self.UseC130LoadAndUnload and self:IsC130J(Unit)and distToUnit<15 then
-elseif self.UseC130LoadAndUnload and self:IsHook(Unit)and distToUnit<5 then
-elseif self.UseC130LoadAndUnload and(Unit:GetTypeName()=="Mi-8MTV2"or Unit:GetTypeName()=="Mi-8MT")and distToUnit<8 then
+elseif self:IsC130J(Unit)and distToUnit<15 then
+elseif self:IsHook(Unit)and distToUnit<5 then
+elseif(Unit:GetTypeName()=="Mi-8MTV2"or Unit:GetTypeName()=="Mi-8MT")and distToUnit<8 then
 else
 if not buildables[name]then
 local object={}
@@ -79788,6 +79798,13 @@ end
 return self
 end
 function CTLD:IsUnitInZone(Unit,Zonetype)
+if not Unit then
+if Zonetype==CTLD.CargoZoneType.SHIP then
+return false,nil,nil,1000000,nil
+else
+return false,nil,nil,1000000
+end
+end
 self:T(self.lid.." IsUnitInZone")
 self:T(Zonetype)
 local unitname=Unit:GetName()
@@ -79809,6 +79826,13 @@ local zoneret=nil
 local zonewret=nil
 local zonenameret=nil
 local unitcoord=Unit:GetCoordinate()
+if not unitcoord then
+if Zonetype==CTLD.CargoZoneType.SHIP then
+return false,nil,nil,1000000,nil
+else
+return false,nil,nil,1000000
+end
+end
 local unitVec2=unitcoord:GetVec2()
 for _,_cargozone in pairs(zonetable)do
 local czone=_cargozone
@@ -125014,7 +125038,7 @@ ConfigLoaded=false,
 poptions={},
 UsePowerShell=false,
 }
-MSRS.version="0.3.4"
+MSRS.version="0.3.5"
 MSRS.Voices={
 Amazon={
 Generative={
@@ -125778,6 +125802,13 @@ env.info(data)
 env.info("======================================================================")
 return self
 end
+function MSRS:SetAutoTranslate(Provider,Language)
+self:T(self.lid.."SetAutoTranslate")
+self.SRSTranslate=true
+self.SRSTranslateProvider=Provider or MSRS.Provider.GOOGLE
+self.SRSTranslateLanguage=Language or"de"
+return self
+end
 function MSRS:PlaySoundFile(Soundfile,Delay)
 self:F({Soundfile,Delay})
 local soundfile=Soundfile:GetName()
@@ -126023,8 +126054,20 @@ self:T(options.provider[provider])
 GRPC.tts(ssml,freq*1e6,options)
 end
 end
-function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker,Translated)
 self:T(self.lid.."_HoundTextToSpeech")
+if self.SRSTranslate==true and Translated~=true then
+MSRS._HoundTranslate(Message,{provider=self.SRSTranslateProvider,language=self.SRSTranslateLanguage},
+function(translated,err)
+if translated then
+return MSRS._HoundTextToSpeech(self,translated,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker,true)
+else
+env.error("Translation failed: "..tostring(err))
+end
+end
+)
+return
+end
 Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
 local ffs={}
@@ -126094,6 +126137,20 @@ self:T(self.lid.."_HoundSpeechTime")
 local speed=Speed or 1.0
 local speechtime=HoundTTS.getSpeechTime(Message,speed,UseGoogle)
 return speechtime
+end
+function MSRS._HoundTranslate(Message,Parameters,CallbackFunction)
+local text=Message
+local parameters=Parameters or{}
+local callback=CallbackFunction
+if not callback then
+env.error("_HoundTranslate - not callback function provided!",true)
+return
+end
+if not parameters.provider then parameters.provider=MSRS.Provider.GOOGLE end
+parameters.provider=string.gsub(parameters.provider,"gcloud","google")
+if not parameters.language then parameters.language="de"end
+HoundTTS.Translate(text,parameters,callback)
+return
 end
 function MSRS:LoadConfigFile(Path,Filename)
 if lfs==nil then

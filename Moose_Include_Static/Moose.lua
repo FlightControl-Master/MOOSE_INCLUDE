@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-21T12:35:47+01:00-5e2e8d1faecce3afea295e8cb8fc6fcd0c6f0b55 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:13:47+01:00-a66290ab6361c2561ca08f23c3ce1a6ba2e58970 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -41597,6 +41597,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
             end
 
             Takeoff = GROUP.Takeoff.Air
+            spawnonground = false
           else
             self:E( string.format( "WARNING: Group %s has no parking spots at %s ==> No emergency air start or uncontrolled spawning ==> No spawn!", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
             return nil
@@ -84915,6 +84916,8 @@ function RAT:_InitAircraft(DCSgroup)
   local DCSdesc=DCSunit:getDesc()
   local DCScategory=DCSgroup:getCategory()
   local DCStype=DCSunit:getTypeName()
+  self:I({typename=DCStype})
+  UTILS.PrintTableToLog(DCSdesc.box,1,noprint,3,seen)
 
   -- set category
   if DCScategory==Group.Category.AIRPLANE then
@@ -84949,7 +84952,12 @@ function RAT:_InitAircraft(DCSgroup)
 
   -- Store all descriptors.
   --self.aircraft.descriptors=DCSdesc
-
+  
+    -- Tomcat sizing as default
+  self.aircraft.length=12          
+  self.aircraft.height=4
+  self.aircraft.width=10.3
+  
   -- aircraft dimensions
   if DCSdesc.box then
     self.aircraft.length=DCSdesc.box.max.x
@@ -84971,6 +84979,10 @@ function RAT:_InitAircraft(DCSgroup)
     self.aircraft.length=11.48          
     self.aircraft.height=4.11
     self.aircraft.width=13.41
+  elseif DCStype == "F-14A-135-GR" then
+    self.aircraft.length=12          
+    self.aircraft.height=4
+    self.aircraft.width=10.3
   end
 
   self.aircraft.box=math.max(self.aircraft.length,self.aircraft.width)
@@ -156350,13 +156362,13 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
         local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoordinate())or 0
         local isHercDrop=Crate:WasDropped(true)
         if not isHercDrop and distToUnit>baseDist then
-      elseif self.UseC130LoadAndUnload and self:IsC130J(Unit) and distToUnit<15 then
+      elseif  self:IsC130J(Unit) and distToUnit<15 then
         -- self:_SendMessage("Please unload crates from the C-130 before building!",10,false,Group)
         -- return self
-      elseif self.UseC130LoadAndUnload and self:IsHook(Unit) and distToUnit<5 then
+      elseif self:IsHook(Unit) and distToUnit<5 then
         -- self:_SendMessage("Please unload crates from the CH-47 before building!",10,false,Group)
         -- return self
-      elseif self.UseC130LoadAndUnload and (Unit:GetTypeName()=="Mi-8MTV2" or Unit:GetTypeName()=="Mi-8MT") and distToUnit<8 then
+      elseif (Unit:GetTypeName()=="Mi-8MTV2" or Unit:GetTypeName()=="Mi-8MT") and distToUnit<8 then
       else
         --local testmarker = ccoord:MarkToAll("Crate found",true,"Build Position")
         if not buildables[name] then
@@ -159413,6 +159425,13 @@ end
 -- @return #number distance Distance to closest zone
 -- @return #number width Radius of zone or width of ship
 function CTLD:IsUnitInZone(Unit,Zonetype)
+  if not Unit then
+    if Zonetype == CTLD.CargoZoneType.SHIP then
+      return false, nil, nil, 1000000, nil
+    else
+      return false, nil, nil, 1000000
+    end
+  end
   self:T(self.lid .. " IsUnitInZone")
   self:T(Zonetype)
   local unitname = Unit:GetName()
@@ -159435,6 +159454,13 @@ function CTLD:IsUnitInZone(Unit,Zonetype)
   local zonewret = nil
   local zonenameret = nil
   local unitcoord = Unit:GetCoordinate()
+  if not unitcoord then
+    if Zonetype == CTLD.CargoZoneType.SHIP then
+      return false, nil, nil, 1000000, nil
+    else
+      return false, nil, nil, 1000000
+    end
+  end
   local unitVec2 = unitcoord:GetVec2()
   for _,_cargozone in pairs(zonetable) do
     local czone = _cargozone -- #CTLD.CargoZone
@@ -250809,7 +250835,7 @@ MSRS = {
 
 --- MSRS class version.
 -- @field #string version
-MSRS.version="0.3.4"
+MSRS.version="0.3.5"
 
 --- Voices
 -- @type MSRS.Voices
@@ -252029,6 +252055,19 @@ function MSRS:Help()
   return self
 end
 
+--- Auto-translate messages on-the-fly with Hound Translate services. Tested with google cloud.
+-- @param #MSRS self
+-- @param #string Provider Provider to be used. Defaults to MSRS.Provider.GOOGLE. Options see [Hound Github](https://github.com/uriba107/HoundTTS?tab=readme-ov-file)
+-- @param #string Language Language to translate to, defaults to "de" (German). Takes [ISO 639-1](https://en.wikipedia.org/wiki/ISO_639-1) language codes.
+-- @return #MSRS self
+function MSRS:SetAutoTranslate(Provider, Language)
+  self:T(self.lid.."SetAutoTranslate")
+  self.SRSTranslate = true
+  self.SRSTranslateProvider = Provider or MSRS.Provider.GOOGLE
+  self.SRSTranslateLanguage = Language or "de"
+  return self
+end
+
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Transmission Functions
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -252585,10 +252624,24 @@ end
 -- @param #string Culture (Optional) Culture to use.
 -- @param #string Voice (Optional) Voice to use.
 -- @param #boolean UseGoogle (Optional) If to use Google TTS.
--- @param #string Speaker Speaker (Sub-Voice) for PIPER only
+-- @param #string Speaker Speaker (Sub-Voice) for PIPER only.
+-- @param #boolean Translated (INTERNAL, do not use!) Setting for the callback post translation.
 -- @return SpeechTime Speech time in seconds.
-function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker)
+function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker,Translated)
   self:T(self.lid.."_HoundTextToSpeech")
+  
+  if self.SRSTranslate == true and Translated ~= true then
+    MSRS._HoundTranslate(Message,{provider=self.SRSTranslateProvider, language=self.SRSTranslateLanguage},
+      function(translated,err)
+         if translated then
+            return MSRS._HoundTextToSpeech(self,translated,Frequencies,Modulations,Volume,Label,Coalition,Point,Speed,Gender,Culture,Voice,UseGoogle,Speaker,true)
+         else
+             env.error("Translation failed: " .. tostring(err))
+         end
+      end      
+      )
+    return
+  end
   
   Frequencies = UTILS.EnsureTable(Frequencies)
   Modulations = UTILS.EnsureTable(Modulations)
@@ -252692,7 +252745,7 @@ end
 
 --- Hound Test Tone function, sends a 2-second 440 Hz sine wave tone directly over SRS, bypassing the TTS engine entirely. 
 -- Use this to verify the SRS connection is working before debugging TTS issues.
---  @param MSRS self
+--  @param #MSRS self
 --  @param #table Frequencies The table of frequencies to use.
 --  @param #table Modulations The table of modulations to use.
 --  @param #number Coalition The coalition to use.
@@ -252718,7 +252771,7 @@ function MSRS:_HoundTestTone(Frequencies, Modulations, Coalition)
 end
 
 --- Hound speech time calculator. Use to determine how long it takes to speak something out.
---  @param MSRS self
+--  @param #MSRS self
 --  @param #string Message The message to measure. Can also be handed as string lenght.
 --  @param #number Speed (Optional) The speed to use, defaults to 1.0.
 --  @param #boolean UseGoogle (Optional) If to use google. Default: no.
@@ -252727,6 +252780,37 @@ function MSRS:_HoundSpeechTime(Message,Speed,UseGoogle)
   local speed = Speed or 1.0
   local speechtime = HoundTTS.getSpeechTime(Message, speed, UseGoogle)
   return speechtime
+end
+
+--- Hound text translator. Use to translate a message into another language and hand the translation to a function.
+-- @param #string Message The Message to be translated.
+-- @param #table Parameters Parameter table. Optional. Defaults to provider google and language "de". Takes ISO 639-1 language codes.
+-- @param #function CallbackFunction The function we hand the translated text to.
+-- @usage
+-- 
+--          MSRS._HoundTranslate("Two contacts, BULLSEYE 270 for 40",
+--            { provider = MSRS.Provider.GOOGLE, language = "de" },
+--              function(translated, err)
+--                  if translated then
+--                      MESSAGE:New(translated,10):ToAll()
+--                  else
+--                      env.error("Translation failed: " .. tostring(err))
+--                  end
+--              end)
+--
+function MSRS._HoundTranslate(Message,Parameters,CallbackFunction)
+  local text = Message
+  local parameters = Parameters or {}
+  local callback = CallbackFunction
+  if not callback then
+    env.error("_HoundTranslate - not callback function provided!",true)
+    return
+  end
+  if not parameters.provider then parameters.provider = MSRS.Provider.GOOGLE end
+  parameters.provider = string.gsub(parameters.provider,"gcloud","google")
+  if not parameters.language then parameters.language = "de" end
+  HoundTTS.Translate(text,parameters,callback)
+  return
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
