@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:13:28+01:00-75d4b7062398d35dd27ef249036d92eff9b9d8a8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:45:34+01:00-09849c7a44c9f5ffcecf9f11febe2692674919a4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -102598,12 +102598,12 @@ detectStatics=false,
 DetectAccoustic=false,
 DetectAccousticRadius=1000,
 DetectAccousticUnitTypes={Unit.Category.HELICOPTER},
-DopplerRadar=true,
+DopplerRadar=false,
 DopplerMinAltAGL=500,
 DopplerNotchSin=math.sin(math.rad(15)),
 DopplerMinSpeedMps=50,
 DopplerRCS=true,
-DopplerRadarRangeM=200*1000,
+RangeM=200*1000,
 }
 INTEL.Ctype={
 GROUND="Ground",
@@ -103849,7 +103849,7 @@ end
 return rcontact
 end
 function INTEL:SetDopplerRadar(MinAltAGL,NotchHalfDeg,MinSpeedMps,RadarRangeKm,RCS)
-self:I(self.lid.."SetDopplerRadar")
+self:T(self.lid.."SetDopplerRadar")
 self.DopplerRadar=true
 self.DopplerMinAltAGL=MinAltAGL or 500
 self.DopplerNotchSin=math.sin(math.rad(NotchHalfDeg or 15))
@@ -103859,17 +103859,17 @@ self.DopplerRadarRangeM=(RadarRangeKm or 200)*1000
 return self
 end
 function INTEL:SetDopplerRadarOff()
-self:I(self.lid.."SetDopplerRadarOff")
+self:T(self.lid.."SetDopplerRadarOff")
 self.DopplerRadar=false
 return self
 end
 function INTEL:SetTypeRCS(TypeName,RCS_m2)
-self:I(self.lid.."SetTypeRCS")
+self:T(self.lid.."SetTypeRCS")
 INTEL.RCS_Table[TypeName]=RCS_m2
 return self
 end
 function INTEL:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
-self:I(self.lid.."_GetAspectRCS")
+self:T(self.lid.."_GetAspectRCS")
 local typename=TargetUnit:GetTypeName()
 local base_rcs=INTEL.RCS_Table[typename]
 if not base_rcs then
@@ -103888,7 +103888,7 @@ local f=INTEL.RCS_NoseOnFraction
 return base_rcs*(f+(1.0-f)*sin2_a)
 end
 function INTEL:_CheckDopplerDetection(TargetUnit,RadarUnit)
-self:I(self.lid.."_CheckDopplerDetection")
+self:T(self.lid.."_CheckDopplerDetection")
 local spd=TargetUnit:GetVelocityMPS()
 local rpos=RadarUnit:GetVec3()
 local tpos=TargetUnit:GetVec3()
@@ -103932,7 +103932,7 @@ end
 return true
 end
 function INTEL:GetDetectedUnitsDoppler(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
-self:I(self.lid.."GetDetectedUnitsDoppler")
+self:T(self.lid.."GetDetectedUnitsDoppler")
 self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
 if self.DopplerRadar==false then return end
 if DetectRadar==false then return end
@@ -103942,7 +103942,7 @@ if unit:IsInstanceOf("UNIT")and unit:IsAir()then
 local ok,reason=self:_CheckDopplerDetection(unit,Unit)
 if not ok then
 table.insert(remove,name)
-self:I(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid,name,reason,Unit:GetName()))
+self:T(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid,name,reason,Unit:GetName()))
 end
 end
 end
@@ -104000,7 +104000,7 @@ return self
 end
 function INTEL_DLINK:SetDLinkCacheTime(seconds)
 self.cachetime=math.abs(seconds or 120)
-self:I(self.lid.."Caching for "..self.cachetime.." seconds.")
+self:T(self.lid.."Caching for "..self.cachetime.." seconds.")
 return self
 end
 function INTEL_DLINK:onbeforeCollect(From,Event,To)
@@ -104062,7 +104062,7 @@ end
 function INTEL_DLINK:onafterStop(From,Event,To)
 self:T({From,Event,To})
 local text=string.format("Version %s stopped.",self.version)
-self:I(self.lid..text)
+self:T(self.lid..text)
 return self
 end
 function INTEL_DLINK:GetContactTable()
