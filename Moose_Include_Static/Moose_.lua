@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T11:39:39+01:00-c6ee556c2b402ca3e614062694a10760439cc1ab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T12:38:14+01:00-f1c70f571397df011c608c64d6d13934ca9c3c09 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -102761,6 +102761,7 @@ self:SetAcceptZones()
 self:SetRejectZones()
 self:SetCorridorZones()
 self:SetConflictZones()
+self.DopplerRadar=false
 return self
 end
 function INTEL:SetAcceptZones(AcceptZoneSet)

@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-24T11:39:39+01:00-c6ee556c2b402ca3e614062694a10760439cc1ab ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-24T12:38:14+01:00-f1c70f571397df011c608c64d6d13934ca9c3c09 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -205149,7 +205149,7 @@ INTEL.RCS_CategoryDefault = {
 }
 
 ---
--- Reference RCS (m²) for range scaling.  Detection range in SetDopplerRadar
+-- Reference RCS (m²) for range scaling.  Detection range in Set
 -- is the range at which this reference aircraft is reliably detected.
 -- @field INTEL.RCS_Reference
 INTEL.RCS_Reference = 5.0   -- m²
@@ -205269,6 +205269,7 @@ function INTEL:New(DetectionSet, Coalition, Alias)
   self:SetRejectZones()
   self:SetCorridorZones()
   self:SetConflictZones()
+  self.DopplerRadar = false
 
   ------------------------
   --- Pseudo Functions ---
