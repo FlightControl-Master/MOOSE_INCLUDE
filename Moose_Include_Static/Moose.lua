@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-23T06:18:06+01:00-69784226eabbe4ffc2106dd2905e1d6e0f5fb10b ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:13:28+01:00-75d4b7062398d35dd27ef249036d92eff9b9d8a8 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -25486,30 +25486,6 @@ do
   --          --self:F({ GroupObject = GroupObject:GetName() })
   --        end
   --
-  -- While this is a good example, there is a catch.
-  -- Imagine you want to execute the code above, the the self would need to be from the object declared outside (above) the OnAfterDead method.
-  -- So, the self would need to contain another object. Fortunately, this can be done, but you must use then the **`.`** notation for the method.
-  -- See the modified example:
-  --
-  --        -- Now we have a constructor of the class AI_CARGO_DISPATCHER, that receives the SetHelicopter as a parameter.
-  --        -- Within that constructor, we want to set an enclosed event handler OnAfterDead for SetHelicopter.
-  --        -- But within the OnAfterDead method, we want to refer to the self variable of the AI_CARGO_DISPATCHER.
-  --
-  --        function AI_CARGO_DISPATCHER:New(SetCarrier, SetCargo, SetDeployZones)
-  --
-  --          local self = BASE:Inherit(self, FSM:New()) -- #AI_CARGO_DISPATCHER
-  --
-  --          -- Put a Dead event handler on SetCarrier, to ensure that when a carrier is destroyed, that all internal parameters are reset.
-  --          -- Note the "." notation, and the explicit declaration of SetHelicopter, which would be using the ":" notation the implicit self variable declaration.
-  --
-  --          function SetHelicopter.OnAfterDead(SetHelicopter, From, Event, To, GroupObject)
-  --            SetHelicopter:F({ GroupObject = GroupObject:GetName() })
-  --            self.PickupCargo[GroupObject] = nil  -- So here I clear the PickupCargo table entry of the self object AI_CARGO_DISPATCHER.
-  --            self.CarrierHome[GroupObject] = nil
-  --          end
-  --
-  --        end
-  --
   -- ===
   -- @field #SET_GROUP SET_GROUP
   SET_GROUP = {
@@ -26645,28 +26621,6 @@ do -- SET_UNIT
   --          --self:F({ UnitObject = UnitObject:GetName() })
   --        end
   --
-  -- While this is a good example, there is a catch.
-  -- Imagine you want to execute the code above, the the self would need to be from the object declared outside (above) the OnAfterDead method.
-  -- So, the self would need to contain another object. Fortunately, this can be done, but you must use then the **`.`** notation for the method.
-  -- See the modified example:
-  --
-  --        -- Now we have a constructor of the class AI_CARGO_DISPATCHER, that receives the SetHelicopter as a parameter.
-  --        -- Within that constructor, we want to set an enclosed event handler OnAfterDead for SetHelicopter.
-  --        -- But within the OnAfterDead method, we want to refer to the self variable of the AI_CARGO_DISPATCHER.
-  --
-  --        function ACLASS:New(SetCarrier, SetCargo, SetDeployZones)
-  --
-  --          local self = BASE:Inherit(self, FSM:New()) -- #AI_CARGO_DISPATCHER
-  --
-  --          -- Put a Dead event handler on SetCarrier, to ensure that when a carrier is destroyed, that all internal parameters are reset.
-  --          -- Note the "." notation, and the explicit declaration of SetHelicopter, which would be using the ":" notation the implicit self variable declaration.
-  --
-  --          function SetHelicopter.OnAfterDead(SetHelicopter, From, Event, To, UnitObject)
-  --            SetHelicopter:F({ UnitObject = UnitObject:GetName() })
-  --            self.array[UnitObject] = nil  -- So here I clear the array table entry of the self object ACLASS.
-  --          end
-  --
-  --        end
   -- ===
   -- @field #SET_UNIT SET_UNIT
   SET_UNIT = {
@@ -30151,6 +30105,7 @@ do -- SET_AIRBASE
 
 end
 
+
 do -- SET_ZONE
   
   ---
@@ -32242,7 +32197,7 @@ do -- SET_SCENERY
 
     local AddSceneryNamesArray = (type(AddSceneryNames) == "table") and AddSceneryNames or { AddSceneryNames }
 
-    --self:T((AddSceneryNamesArray)
+    --UTILS.PrintTableToLog(AddSceneryNamesArray)
     for AddSceneryID, AddSceneryName in pairs(AddSceneryNamesArray) do
       self:Add(AddSceneryName, SCENERY:FindByZoneName(AddSceneryName))
     end
@@ -37963,12 +37918,6 @@ end
 -- By efficiently utilizing the FSM class and derived classes, MOOSE allows mission designers to quickly build processes.
 -- **Ready made FSM-based implementations classes** exist within the MOOSE framework that **can easily be re-used,
 -- and tailored** by mission designers through **the implementation of Transition Handlers**.
--- Each of these FSM implementation classes start either with:
---
---   * an acronym **AI\_**, which indicates a FSM implementation directing **AI controlled** @{Wrapper.Group#GROUP} and/or @{Wrapper.Unit#UNIT}. These AI\_ classes derive the @{#FSM_CONTROLLABLE} class.
---   * an acronym **TASK\_**, which indicates a FSM implementation executing a @{Tasking.Task#TASK} executed by Groups of players. These TASK\_ classes derive the @{#FSM_TASK} class.
---   * an acronym **ACT\_**, which indicates an Sub-FSM implementation, directing **Humans actions** that need to be done in a @{Tasking.Task#TASK}, seated in a @{Wrapper.Client#CLIENT} (slot) or a @{Wrapper.Unit#UNIT} (CA join). These ACT\_ classes derive the @{#FSM_PROCESS} class.
---
 -- Detailed explanations and API specifics are further below clarified and FSM derived class specifics are described in those class documentation sections.
 --
 -- ##__Disclaimer:__
@@ -37979,7 +37928,6 @@ end
 --
 -- The following derived classes are available in the MOOSE framework, that implement a specialized form of a FSM:
 --
---   * @{#FSM_TASK}: Models Finite State Machines for @{Tasking.Task}s.
 --   * @{#FSM_PROCESS}: Models Finite State Machines for @{Tasking.Task} actions, which control @{Wrapper.Client}s.
 --   * @{#FSM_CONTROLLABLE}: Models Finite State Machines for @{Wrapper.Controllable}s, which are @{Wrapper.Group}s, @{Wrapper.Unit}s, @{Wrapper.Client}s.
 --   * @{#FSM_SET}: Models Finite State Machines for @{Core.Set}s. Note that these FSMs control multiple objects!!! So State concerns here
@@ -38036,11 +37984,6 @@ do -- FSM
   -- By efficiently utilizing the FSM class and derived classes, MOOSE allows mission designers to quickly build processes.
   -- **Ready made FSM-based implementations classes** exist within the MOOSE framework that **can easily be re-used,
   -- and tailored** by mission designers through **the implementation of Transition Handlers**.
-  -- Each of these FSM implementation classes start either with:
-  --
-  --   * an acronym **AI\_**, which indicates an FSM implementation directing **AI controlled** @{Wrapper.Group#GROUP} and/or @{Wrapper.Unit#UNIT}. These AI\_ classes derive the @{#FSM_CONTROLLABLE} class.
-  --   * an acronym **TASK\_**, which indicates an FSM implementation executing a @{Tasking.Task#TASK} executed by Groups of players. These TASK\_ classes derive the @{#FSM_TASK} class.
-  --   * an acronym **ACT\_**, which indicates an Sub-FSM implementation, directing **Humans actions** that need to be done in a @{Tasking.Task#TASK}, seated in a @{Wrapper.Client#CLIENT} (slot) or a @{Wrapper.Unit#UNIT} (CA join). These ACT\_ classes derive the @{#FSM_PROCESS} class.
   --
   -- ![Transition Rules and Transition Handlers and Event Triggers](..\Presentations\FSM\Dia3.JPG)
   --
@@ -95157,14 +95100,6 @@ end
 --      arty set, battery "Mortar Bravo", rearming group "Ammo Truck M939"
 -- Note that the name of the rearming group has to be given in quotation marks and spelt exactly as the group name defined in the mission editor.
 --
--- ## Transporting
---
--- ARTY groups can be transported to another location as @{Cargo.Cargo} by means of classes such as @{AI.AI_Cargo_APC}, @{AI.AI_Cargo_Dispatcher_APC},
--- @{AI.AI_Cargo_Helicopter}, @{AI.AI_Cargo_Dispatcher_Helicopter} or @{AI.AI_Cargo_Airplane}.
---
--- In order to do this, one needs to define an ARTY object via the @{#ARTY.NewFromCargoGroup}(*cargogroup*, *alias*) function.
--- The first argument *cargogroup* has to be a @{Cargo.CargoGroup#CARGO_GROUP} object. The second argument *alias* is a string which can be freely chosen by the user.
---
 -- ## Fine Tuning
 --
 -- The mission designer has a few options to tailor the ARTY object according to his needs.
@@ -100395,7 +100330,7 @@ SUPPRESSION.version="0.9.4"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
---- Creates a new AI_suppression object.
+--- Creates a new suppression object.
 -- @param #SUPPRESSION self
 -- @param Wrapper.Group#GROUP group The GROUP object for which suppression should be applied.
 -- @return #SUPPRESSION self
@@ -128361,7 +128296,10 @@ function AIRBOSS:EnableSRS(PathToSRS,Port,Culture,Gender,Voice,GoogleCreds,Volum
     self.SRS:SetVoice(Voice)
   end
   if (not Voice) and self.SRS and self.SRS:GetProvider() == MSRS.Provider.GOOGLE then
-    self.SRS.voice = MSRS.poptions["gcloud"].voice or MSRS.Voices.Google.Standard.en_US_Standard_B
+    self.SRS.voice = MSRS.Voices.Google.Standard.en_US_Standard_B
+    if MSRS.poptions and MSRS.poptions["gcloud"] and MSRS.poptions["gcloud"].voice then
+      self.SRS.voice = MSRS.poptions["gcloud"].voice
+    end
   end
   --self.SRS:SetVolume(Volume or 1.0)
   -- SRSQUEUE
@@ -166809,7 +166747,7 @@ function CSAR:onafterStart(From, Event, To)
     self.msrs:SetCoalition(self.coalition)
     self.msrs:SetVoice(self.SRSVoice)
     self.msrs:SetGender(self.SRSGender)
-    if self.SRSGPathToCredentials then
+    if self.SRSGPathToCredentials and (not self.SRSProvider) then
       self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
       self.msrs:SetProvider(MSRS.Provider.GOOGLE)
     end
@@ -187177,7 +187115,7 @@ CHIEF.Strategy = {
 
 --- CHIEF class version.
 -- @field #string version
-CHIEF.version="0.7.0"
+CHIEF.version="0.7.1"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TODO list
@@ -187233,6 +187171,8 @@ function CHIEF:New(Coalition, AgentSet, Alias)
   self:SetBorderZones()
   self:SetConflictZones()
   self:SetAttackZones()
+  self:SetCorridorZones()
+  self:SetRejectZones()
   self:SetThreatLevelRange()
   
   -- Init stuff.
@@ -191691,7 +191631,7 @@ function COHORT:_CheckAmmo()
         
         -- Descriptors.
         local Desc=weapon["desc"]
-        
+
         -- Warhead.
         local Warhead=Desc["warhead"]
   
@@ -205001,6 +204941,12 @@ INTEL = {
   DetectAccoustic = false,
   DetectAccousticRadius = 1000,
   DetectAccousticUnitTypes =  {Unit.Category.HELICOPTER},
+  DopplerRadar        = true,
+  DopplerMinAltAGL    = 500,
+  DopplerNotchSin     = math.sin(math.rad(15)),
+  DopplerMinSpeedMps  = 50,
+  DopplerRCS          = true,
+  DopplerRadarRangeM  = 200 * 1000,
 }
 
 --- Detected item info.
@@ -205060,6 +205006,161 @@ INTEL.Ctype={
 --- INTEL class version.
 -- @field #string version
 INTEL.version="0.3.10"
+
+---
+-- ══════════════════════════════════════════════════════════════════
+--  INTEL Doppler radar extension
+--
+--  Models four phenomena of a 1970/80s pulse-Doppler ground radar
+--  (representative types: Soviet P-18 Spoon Rest, P-37 Bar Lock,
+--   P-80 Back Net / NATO AN/TPS-43 / Hughes AN/TPS-70):
+--
+--   A) GROUND CLUTTER (AGL threshold)
+--      Low-flying targets blend into terrain returns. Below DopplerMinAltAGL
+--      detection probability drops linearly to 0 at 0 m AGL.
+--
+--   B) VELOCITY NOTCH (beam aspect)
+--      The MTI (Moving Target Indicator) filter suppresses returns with
+--      near-zero Doppler shift. Targets flying perpendicular to the radar
+--      beam (radial-velocity fraction < sin(NotchHalfDeg)) are rejected.
+--      Classic P-18/P-37 notch was ≈ ±12–18° around 90° aspect.
+--
+--   C) MINIMUM SPEED GATE
+--      Very slow targets (taxiing aircraft, hovering) cannot be separated
+--      from ground clutter by their Doppler shift alone.
+--
+--   D) RADAR CROSS SECTION (RCS)
+--      Larger targets are detectable at longer ranges. The radar range
+--      equation gives R_max ∝ σ^0.25, so detection range is scaled by
+--      (σ / σ_ref)^0.25 relative to a reference aircraft (default: 5 m²).
+--      RCS also varies with aspect: nose-on ≈ 15% of side-on value.
+--      Known DCS aircraft values are stored in INTEL.RCS_Table; unknowns
+--      fall back to a category default (fighter/bomber/helicopter).
+--      Values are approximate averages from public IISS/Jane's data.
+-- ══════════════════════════════════════════════════════════════════
+--
+-- ── RCS lookup table (nominal side-on RCS in m²) ─────────────────
+-- Frontal (nose-on / tail-on) RCS is modelled as 15% of these values
+-- via aspect interpolation in _GetAspectRCS().
+-- Sources: public declassified estimates, Jane's, IISS assessments.
+--- @field INTEL.RCS_Table
+INTEL.RCS_Table = {
+    -- ── US / NATO fixed-wing ──────────────────────────────────────
+    ["A-10C"]              =  8.0,   -- large, flat surfaces, no LO shaping
+    ["A-10C_2"]            =  8.0,
+    ["F-14A-135-GR"]       =  6.0,   -- variable-sweep; larger than F-16
+    ["F-14B"]              =  6.0,
+    ["F-15C"]              =  5.0,
+    ["F-15E"]              =  5.0,   -- CFTs add modest signature
+    ["F-15ESE"]            =  5.0,
+    ["F-16A"]              =  1.2,
+    ["F-16C bl.50"]        =  1.2,
+    ["F-16C bl.52d"]       =  1.2,
+    ["F/A-18C"]            =  1.5,
+    ["FA-18C_hornet"]      =  1.5,
+    ["F/A-18C_hornet"]     =  1.5,
+    ["F/A-18F"]            =  2.0,   -- slightly larger two-seater
+    ["F-117A"]             =  0.003, -- faceted LO design
+    ["F-22A"]              =  0.0001,-- VLO
+    ["F-35A"]              =  0.001, -- VLO, approx
+    ["B-52H"]              = 100.0,  -- very large, many flat reflectors
+    ["B-1B"]               =  0.75,  -- blended-wing LO shaping
+    ["B-2A"]               =  0.001, -- VLO flying wing
+    ["AV8BNA"]             =  2.0,
+    ["Harrier"]            =  2.0,
+    ["A-4E-C"]             =  3.0,
+    ["Tornado_IDS"]        =  5.0,
+    ["Tornado_GR4"]        =  5.0,
+    ["F-111F"]             =  5.0,
+    ["F-4E"]               =  6.0,   -- large, blunt nose
+    ["F-5E"]               =  1.0,   -- small fighter
+    ["F-5E-3"]             =  1.0,
+    ["Mirage-F1CE"]        =  2.5,
+    ["Mirage-F1EE"]        =  2.5,
+    ["M-2000C"]            =  2.0,
+    ["M-2000-5"]           =  2.0,
+    ["C-17A"]              = 50.0,
+    ["C-130"]              = 40.0,
+    ["KC-130"]             = 40.0,
+    ["KC-135"]             = 50.0,
+    ["IL-76MD"]            = 45.0,
+    ["E-3A"]               = 50.0,   -- plus large rotodome
+    -- ── Soviet / Russian fixed-wing ──────────────────────────────
+    ["MiG-15bis"]          =  4.0,
+    ["MiG-19P"]            =  3.5,
+    ["MiG-21Bis"]          =  2.5,   -- small delta
+    ["MiG-23MLD"]          =  7.0,   -- variable-sweep, large intakes
+    ["MiG-25PD"]           = 14.0,   -- very large, all-metal, Mach-3 design
+    ["MiG-25RBT"]          = 14.0,
+    ["MiG-29A"]            =  5.0,
+    ["MiG-29S"]            =  5.0,
+    ["MiG-29G"]            =  5.0,
+    ["MiG-29K"]            =  4.0,
+    ["MiG-31"]             = 14.0,   -- similar to MiG-25
+    ["Su-7B"]              =  6.0,
+    ["Su-17M4"]            =  7.0,   -- variable-sweep
+    ["Su-24M"]             =  6.0,
+    ["Su-24MR"]            =  6.0,
+    ["Su-25"]              = 10.0,
+    ["Su-25T"]             = 10.0,
+    ["Su-25TM"]            = 10.0,
+    ["Su-27"]              = 15.0,
+    ["Su-30"]              = 15.0,
+    ["Su-33"]              = 15.0,   -- wing fold + canards
+    ["Su-34"]              = 10.0,   -- some reduction vs Su-27
+    ["Su-57"]              =  0.01,  -- PAK-FA LO shaping
+    ["Tu-22M3"]            = 20.0,
+    ["Tu-95MS"]            = 80.0,
+    ["Tu-142"]             = 80.0,
+    ["Tu-160"]             = 12.0,   -- blended wing reduces vs Tu-95
+    ["An-26B"]             = 30.0,
+    ["An-30M"]             = 30.0,
+    ["IL-78M"]             = 45.0,
+    ["A-50"]               = 50.0,   -- plus rotodome
+    -- ── Helicopters ──────────────────────────────────────────────
+    ["Mi-8MT"]             =  5.0,
+    ["Mi-8MSB"]            =  5.0,
+    ["Mi-8MSB-V"]          =  5.0,
+    ["Mi-8AMTSh"]          =  5.0,
+    ["Mi-24V"]             =  3.5,
+    ["Mi-24P"]             =  3.5,
+    ["Mi-28N"]             =  2.5,
+    ["Ka-50"]              =  2.0,
+    ["Ka-52"]              =  2.0,
+    ["AH-64D"]             =  3.5,
+    ["AH-64D_BLK_II"]      =  3.5,
+    ["UH-1H"]              =  3.0,
+    ["UH-60L"]             =  3.0,
+    ["CH-47D"]             =  8.0,   -- large tandem-rotor
+    ["OH-58D"]             =  0.8,   -- small scout
+    ["SA342M"]             =  0.8,
+    ["SA342L"]             =  0.8,
+}
+
+---
+-- Category-based defaults for aircraft types not in the table.
+-- Keyed by DCS Group.Category integer.
+--- @type INTEL.RCS_CategoryDefault
+-- @field #number Group.Category.AIRPLANE RCS Airplane (fightrt) fallback == 5
+-- @field #number Group.Category.HELICOPTER RCS Helo fallback == 2.5
+INTEL.RCS_CategoryDefault = {
+    [Group.Category.AIRPLANE]   = 5.0,  -- generic fighter-sized
+    [Group.Category.HELICOPTER] = 2.5,  -- generic helicopter
+}
+
+---
+-- Reference RCS (m²) for range scaling.  Detection range in SetDopplerRadar
+-- is the range at which this reference aircraft is reliably detected.
+-- @field INTEL.RCS_Reference
+INTEL.RCS_Reference = 5.0   -- m²
+
+---
+-- Nose-on/tail-on RCS as a fraction of the side-on value.
+-- Public estimates for conventional (non-LO) aircraft: ~0.10–0.20.
+-- @field INTEL.RCS_NoseOnFraction
+INTEL.RCS_NoseOnFraction = 0.15
+
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
@@ -205811,8 +205912,11 @@ function INTEL:UpdateIntel()
         local recce=_recce --Wrapper.Unit#UNIT
 
         -- Get detected units.
-        self:GetDetectedUnits(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
-
+        if self.DopplerRadar == true then
+          self:GetDetectedUnitsDoppler(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
+        else
+          self:GetDetectedUnits(recce, DetectedUnits, RecceDetecting, self.DetectVisual, self.DetectOptical, self.DetectRadar, self.DetectIRST, self.DetectRWR, self.DetectDLINK)
+        end
       end
       
       if self.DetectAccoustic then
@@ -207335,12 +207439,230 @@ function INTEL:GetHighestThreatContact(Cluster)
   return rcontact
 end
 
+--- Enable 70/80s era pulse-Doppler ground-clutter simulation.
+-- Only affects contacts detected via radar (DetectRadar=true paths).
+-- Has no effect on visual, optical, IRST, RWR or datalink detections.
+-- @param #INTEL self
+-- @param #number MinAltAGL     Min AGL altitude in metres for reliable detection.
+--                              Below this the detection probability drops linearly.
+--                              Default 500 m (≈ clutter floor for P-18 / P-37).
+-- @param #number NotchHalfDeg  Half-width of the velocity notch in degrees.
+--                              Targets with radial-velocity fraction < sin(NotchHalf)
+--                              are suppressed.  Default 15° (≈ P-18 / Bar Lock spec).
+-- @param #number MinSpeedMps   Minimum speed in m/s that the MTI filter can track.
+--                              Default 50 m/s (≈ 100 kt).
+-- @param #number RadarRangeKm  Nominal detection range in km for the reference aircraft
+--                              (RCS_Reference, default 5 m²). Used only for RCS range
+--                              scaling; has no effect when DopplerRCS is false.
+--                              Default 200 km (≈ P-37 instrumented range vs fighter).
+-- @param #boolean RCS          If false, disable RCS range scaling (keep A–C only).
+--                              Default true.
+-- @return #INTEL self
+function INTEL:SetDopplerRadar(MinAltAGL, NotchHalfDeg, MinSpeedMps, RadarRangeKm, RCS)
+  self:I(self.lid .. "SetDopplerRadar")
+    self.DopplerRadar        = true
+    self.DopplerMinAltAGL    = MinAltAGL    or 500
+    self.DopplerNotchSin     = math.sin(math.rad(NotchHalfDeg or 15))
+    self.DopplerMinSpeedMps  = MinSpeedMps  or 50
+    self.DopplerRCS          = (RCS ~= false)   -- default true
+    self.DopplerRadarRangeM  = (RadarRangeKm or 200) * 1000
+    return self
+end
+
+--- Disable Doppler radar simulation.
+-- @param #INTEL self
+-- @return #INTEL self
+function INTEL:SetDopplerRadarOff()
+  self:I(self.lid .. "SetDopplerRadarOff")
+    self.DopplerRadar = false
+    return self
+end
+
+--- Override the per-type RCS value for a DCS unit type name.
+-- Useful for modded aircraft or mission-specific tweaks.
+-- @param #INTEL self
+-- @param #string TypeName  DCS unit type name (e.g. "MiG-29A")
+-- @param #number RCS_m2    Side-on RCS in m²
+-- @return #INTEL self
+function INTEL:SetTypeRCS(TypeName, RCS_m2)
+  self:I(self.lid .. "SetTypeRCS")
+    INTEL.RCS_Table[TypeName] = RCS_m2
+    return self
+end
+
+--- (Internal) Compute the aspect-weighted RCS for a target unit as seen
+-- from a given radar position.
+--
+-- The model blends the side-on (maximum) and nose/tail-on (minimum) RCS
+-- using the geometry of the target's velocity relative to the radar line:
+--
+--   σ_eff = σ_base × ( f_nose + (1 − f_nose) × sin²(aspect_from_radial) )
+--
+-- where aspect_from_radial is 0° when the target flies toward/away from
+-- the radar (nose-on) and 90° when the target crosses the beam (side-on).
+--
+-- @param #INTEL self
+-- @param Wrapper.Unit#UNIT TargetUnit
+-- @param #table  rpos  Radar position as Vec3 {x,y,z}
+-- @param #number spd   Target speed in m/s (pre-computed for efficiency)
+-- @param DCS#Vec3 tvel  Target velocity vector (pre-computed)
+-- @return #number Effective RCS in m²
+function INTEL:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
+  self:I(self.lid .. "_GetAspectRCS")
+    -- Look up base (side-on) RCS
+    local typename = TargetUnit:GetTypeName()
+    local base_rcs = INTEL.RCS_Table[typename]
+
+    if not base_rcs then
+        -- Fallback: category default
+        local cat = TargetUnit:GetGroup() and TargetUnit:GetGroup():GetCategory()
+        base_rcs = (cat and INTEL.RCS_CategoryDefault[cat]) or INTEL.RCS_Reference
+    end
+
+    -- Aspect-dependent factor
+    if spd < 1 then return base_rcs end
+
+    local tpos = TargetUnit:GetVec3()
+    local dx   = rpos.x - tpos.x   -- vector target → radar (horizontal)
+    local dz   = rpos.z - tpos.z
+    local d    = math.sqrt(dx * dx + dz * dz)
+    if d < 1 then return base_rcs end
+
+    -- cos of angle between target velocity and target→radar line
+    -- = 1: nose/tail directly toward radar; = 0: pure crossing (beam)
+    local cos_a = (tvel.x * dx + tvel.z * dz) / (spd * d)
+    -- sin²(aspect_from_radial) = 1 − cos² ; gives 0 nose-on, 1 beam-on
+    local sin2_a = 1.0 - cos_a * cos_a
+
+    local f = INTEL.RCS_NoseOnFraction
+    return base_rcs * (f + (1.0 - f) * sin2_a)
+end
+
+--- (Internal) Check whether a target unit would be detected by a 70/80s
+-- pulse-Doppler radar located at the given radar unit position.
+-- @param #INTEL self
+-- @param Wrapper.Unit#UNIT TargetUnit
+-- @param Wrapper.Unit#UNIT RadarUnit
+-- @return #boolean  true = detected
+-- @return #string   rejection reason: "speed" | "clutter" | "notch" | "rcs"
+function INTEL:_CheckDopplerDetection(TargetUnit, RadarUnit)
+  self:I(self.lid .. "_CheckDopplerDetection")
+    -- Pre-compute common geometry (shared by notch + RCS checks)
+    local spd  = TargetUnit:GetVelocityMPS()
+    local rpos = RadarUnit:GetVec3()
+    local tpos = TargetUnit:GetVec3()
+    local tvel = TargetUnit:GetVelocityVec3()
+
+    local dx    = tpos.x - rpos.x
+    local dz    = tpos.z - rpos.z
+    local slant = math.sqrt(dx * dx + dz * dz)  -- 2-D slant range in metres
+
+    -- ── A. Minimum speed gate ──────────────────────────────────
+    if spd < self.DopplerMinSpeedMps then
+        return false, "speed"
+    end
+
+    -- ── B. AGL ground-clutter rejection ───────────────────────
+    local agl = TargetUnit:GetAltitude(true)   -- metres AGL
+    if agl < self.DopplerMinAltAGL then
+        -- P(detect) rises linearly from 0 at deck to 1 at DopplerMinAltAGL
+        if math.random() > (agl / self.DopplerMinAltAGL) then
+            return false, "clutter"
+        end
+    end
+
+    -- ── C. Velocity notch ─────────────────────────────────────
+    if slant > 1 then
+        local nx     = dx / slant
+        local nz     = dz / slant
+        local vr     = tvel.x * nx + tvel.z * nz   -- radial velocity (m/s)
+        local vr_frac = math.abs(vr) / math.max(spd, 1)
+
+        if vr_frac < self.DopplerNotchSin then
+            return false, "notch"
+        end
+    end
+
+    -- ── D. RCS-based range scaling ─────────────────────────────
+    -- R_max ∝ σ^0.25  (from the radar range equation).
+    -- Effective detection range = DopplerRadarRangeM × (σ_eff / σ_ref)^0.25
+    -- Beyond that range: target not detected (hard cutoff at 100%; soft fade
+    -- starts at 80% of R_max to smooth the transition).
+    if self.DopplerRCS and slant > 1 then
+        local sigma = self:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
+        -- (σ/σ_ref)^0.25 — clamp to avoid log of 0 for VLO aircraft
+        local scale  = (sigma / INTEL.RCS_Reference) ^ 0.25
+        local R_max  = self.DopplerRadarRangeM * scale
+
+        if slant > R_max then
+            return false, "rcs"
+        end
+
+        -- Soft fade zone: linear probability drop from 1 at 80% R_max to 0 at R_max
+        local fade_start = R_max * 0.80
+        if slant > fade_start then
+            local p = (R_max - slant) / (R_max - fade_start)  -- 1→0
+            if math.random() > p then
+                return false, "rcs"
+            end
+        end
+    end
+
+    return true
+end
+
+
+---(Internal) Return the detected target groups of the controllable as a table.
+-- We wrap the original function so the Doppler post-filter is transparent:
+-- the existing RadarBlur / RadarAcceptRange logic is unchanged, and the
+-- Doppler check runs once after all units have been collected.
+-- The optional parameters specify the detection methods that can be applied.
+-- If no detection method is given, the detection will use all the available methods by default.
+-- @param #INTEL self
+-- @param Wrapper.Unit#UNIT Unit The unit detecting.
+-- @param #table DetectedUnits Table of detected units to be filled.
+-- @param #table RecceDetecting Table of recce per unit to be filled.
+-- @param #boolean DetectVisual (Optional) If *false*, do not include visually detected targets.
+-- @param #boolean DetectOptical (Optional) If *false*, do not include optically detected targets.
+-- @param #boolean DetectRadar (Optional) If *false*, do not include targets detected by radar.
+-- @param #boolean DetectIRST (Optional) If *false*, do not include targets detected by IRST.
+-- @param #boolean DetectRWR (Optional) If *false*, do not include targets detected by RWR.
+-- @param #boolean DetectDLINK (Optional) If *false*, do not include targets detected by data link.
+function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,DetectVisual, DetectOptical, DetectRadar,DetectIRST, DetectRWR, DetectDLINK)
+  self:I(self.lid .. "GetDetectedUnitsDoppler")
+    -- Run the original detection
+    self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
+
+    -- Apply Doppler post-filter only when radar channel is active
+    if self.DopplerRadar == false then return end
+    if DetectRadar == false then return end
+
+    local remove = {}
+    for name, unit in pairs(DetectedUnits) do
+        -- Only filter live UNIT objects (not STATICs) that are airborne
+        if unit:IsInstanceOf("UNIT") and unit:IsAir() then
+            local ok, reason = self:_CheckDopplerDetection(unit, Unit)
+            if not ok then
+                table.insert(remove, name)
+                --if self.verbose and self.verbose >= 2 then
+                    self:I(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid, name, reason, Unit:GetName()))
+                --end
+            end
+        end
+    end
+
+    for _, name in ipairs(remove) do
+        DetectedUnits[name]  = nil
+        RecceDetecting[name] = nil
+    end
+end
+
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------
--- Start INTEL_DLINK
+-- TODO Start INTEL_DLINK
 ----------------------------------------------------------------------------------------------
 
 --- **Ops_DLink** - Support for Office of Military Intelligence.
@@ -249545,7 +249867,6 @@ end
 -- @param #RADIOQUEUE self
 -- @param #RADIOQUEUE.Transmission transmission The transmission.
 function RADIOQUEUE:Broadcast(transmission)
-  self:T("Broadcast")
 
   if ((transmission.soundfile and transmission.soundfile.useSRS) or transmission.soundtext) and self.msrs then
     self:_BroadcastSRS(transmission)
@@ -249561,6 +249882,9 @@ function RADIOQUEUE:Broadcast(transmission)
   if sender then
     
     -- Broadcasting from aircraft. Only players tuned in to the right frequency will see the message.
+    self:T(self.lid..string.format("Broadcasting from aircraft %s | sender init: %s", sender:GetName(),tostring(self.senderinit)))
+    
+    
     self:T(self.lid..string.format("Broadcasting from aircraft %s", sender:GetName()))
     
     
@@ -249605,7 +249929,7 @@ function RADIOQUEUE:Broadcast(transmission)
     -- Debug message.
     if self.Debugmode then
       local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s", filename, self.frequency/1000000, transmission.duration, transmission.subtitle or "")
-      MESSAGE:New(text, 2, "RADIOQUEUE "..self.alias):ToAll()
+      MESSAGE:New(text, 2, "RADIOQUEUE "..self.alias):ToAll():ToLog()
     end
       
   else
@@ -249637,7 +249961,7 @@ function RADIOQUEUE:Broadcast(transmission)
       -- Debug message.
       if self.Debugmode then
         local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s", filename, self.frequency/1000000, transmission.duration, transmission.subtitle or "")
-        MESSAGE:New(string.format(text, filename, transmission.duration, transmission.subtitle or ""), 5, "RADIOQUEUE "..self.alias):ToAll()
+        MESSAGE:New(string.format(text, filename, transmission.duration, transmission.subtitle or ""), 5, "RADIOQUEUE "..self.alias):ToAll():ToLog()
       end
     else
       self:E("ERROR: Could not get vec3 to determine transmission origin! Did you specify a sender and is it still alive?")
@@ -249670,7 +249994,7 @@ end
 --- Check radio queue for transmissions to be broadcasted.
 -- @param #RADIOQUEUE self
 function RADIOQUEUE:_CheckRadioQueue()
-
+  self:T("_CheckRadioQueue")
   -- Check if queue is empty.
   if #self.queue==0 then
     -- Queue is now empty. Nothing to else to do.
@@ -252355,8 +252679,8 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
   --end
   
   local provider = self.provider
-  provider=provider:gsub("gcloud", "google")
-  provider=provider:gsub("win", "sapi")
+  --provider=provider:gsub("gcloud", "google")
+  --provider=provider:gsub("win", "sapi")
   
   local TransmissionP = {
     freqs = freqs,
@@ -252818,7 +253142,7 @@ end
 -- @return #MSRSQUEUE.Transmission Radio transmission table.
 function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed,speaker)
   self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label, S=speed})
-  self:T({provider=msrs.provider})
+  self:I({provider=msrs.provider})
   if self.TransmitOnlyWithPlayers then
     if self.PlayerSet and self.PlayerSet:CountAlive() == 0 then
       return self

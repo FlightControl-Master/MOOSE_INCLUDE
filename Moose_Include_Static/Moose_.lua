@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-23T06:18:06+01:00-69784226eabbe4ffc2106dd2905e1d6e0f5fb10b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:13:28+01:00-75d4b7062398d35dd27ef249036d92eff9b9d8a8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -62709,7 +62709,10 @@ if Voice then
 self.SRS:SetVoice(Voice)
 end
 if(not Voice)and self.SRS and self.SRS:GetProvider()==MSRS.Provider.GOOGLE then
-self.SRS.voice=MSRS.poptions["gcloud"].voice or MSRS.Voices.Google.Standard.en_US_Standard_B
+self.SRS.voice=MSRS.Voices.Google.Standard.en_US_Standard_B
+if MSRS.poptions and MSRS.poptions["gcloud"]and MSRS.poptions["gcloud"].voice then
+self.SRS.voice=MSRS.poptions["gcloud"].voice
+end
 end
 self.SRSQ=MSRSQUEUE:New("AIRBOSS")
 self.SRSQ:SetTransmitOnlyWithPlayers(true)
@@ -84648,7 +84651,7 @@ self.msrs:SetCulture(self.SRSCulture)
 self.msrs:SetCoalition(self.coalition)
 self.msrs:SetVoice(self.SRSVoice)
 self.msrs:SetGender(self.SRSGender)
-if self.SRSGPathToCredentials then
+if self.SRSGPathToCredentials and(not self.SRSProvider)then
 self.msrs:SetProviderOptionsGoogle(self.SRSGPathToCredentials,self.SRSGPathToCredentials)
 self.msrs:SetProvider(MSRS.Provider.GOOGLE)
 end
@@ -94889,7 +94892,7 @@ OFFENSIVE="Offensive",
 AGGRESSIVE="Aggressive",
 TOTALWAR="Total War"
 }
-CHIEF.version="0.7.0"
+CHIEF.version="0.7.1"
 function CHIEF:New(Coalition,AgentSet,Alias)
 Alias=Alias or"CHIEF"
 if type(Coalition)=="string"then
@@ -94905,6 +94908,8 @@ local self=BASE:Inherit(self,INTEL:New(AgentSet,Coalition,Alias))
 self:SetBorderZones()
 self:SetConflictZones()
 self:SetAttackZones()
+self:SetCorridorZones()
+self:SetRejectZones()
 self:SetThreatLevelRange()
 self.Defcon=CHIEF.DEFCON.GREEN
 self.strategy=CHIEF.Strategy.DEFENSIVE
@@ -102593,6 +102598,12 @@ detectStatics=false,
 DetectAccoustic=false,
 DetectAccousticRadius=1000,
 DetectAccousticUnitTypes={Unit.Category.HELICOPTER},
+DopplerRadar=true,
+DopplerMinAltAGL=500,
+DopplerNotchSin=math.sin(math.rad(15)),
+DopplerMinSpeedMps=50,
+DopplerRCS=true,
+DopplerRadarRangeM=200*1000,
 }
 INTEL.Ctype={
 GROUND="Ground",
@@ -102601,6 +102612,101 @@ AIRCRAFT="Aircraft",
 STRUCTURE="Structure"
 }
 INTEL.version="0.3.10"
+INTEL.RCS_Table={
+["A-10C"]=8.0,
+["A-10C_2"]=8.0,
+["F-14A-135-GR"]=6.0,
+["F-14B"]=6.0,
+["F-15C"]=5.0,
+["F-15E"]=5.0,
+["F-15ESE"]=5.0,
+["F-16A"]=1.2,
+["F-16C bl.50"]=1.2,
+["F-16C bl.52d"]=1.2,
+["F/A-18C"]=1.5,
+["FA-18C_hornet"]=1.5,
+["F/A-18C_hornet"]=1.5,
+["F/A-18F"]=2.0,
+["F-117A"]=0.003,
+["F-22A"]=0.0001,
+["F-35A"]=0.001,
+["B-52H"]=100.0,
+["B-1B"]=0.75,
+["B-2A"]=0.001,
+["AV8BNA"]=2.0,
+["Harrier"]=2.0,
+["A-4E-C"]=3.0,
+["Tornado_IDS"]=5.0,
+["Tornado_GR4"]=5.0,
+["F-111F"]=5.0,
+["F-4E"]=6.0,
+["F-5E"]=1.0,
+["F-5E-3"]=1.0,
+["Mirage-F1CE"]=2.5,
+["Mirage-F1EE"]=2.5,
+["M-2000C"]=2.0,
+["M-2000-5"]=2.0,
+["C-17A"]=50.0,
+["C-130"]=40.0,
+["KC-130"]=40.0,
+["KC-135"]=50.0,
+["IL-76MD"]=45.0,
+["E-3A"]=50.0,
+["MiG-15bis"]=4.0,
+["MiG-19P"]=3.5,
+["MiG-21Bis"]=2.5,
+["MiG-23MLD"]=7.0,
+["MiG-25PD"]=14.0,
+["MiG-25RBT"]=14.0,
+["MiG-29A"]=5.0,
+["MiG-29S"]=5.0,
+["MiG-29G"]=5.0,
+["MiG-29K"]=4.0,
+["MiG-31"]=14.0,
+["Su-7B"]=6.0,
+["Su-17M4"]=7.0,
+["Su-24M"]=6.0,
+["Su-24MR"]=6.0,
+["Su-25"]=10.0,
+["Su-25T"]=10.0,
+["Su-25TM"]=10.0,
+["Su-27"]=15.0,
+["Su-30"]=15.0,
+["Su-33"]=15.0,
+["Su-34"]=10.0,
+["Su-57"]=0.01,
+["Tu-22M3"]=20.0,
+["Tu-95MS"]=80.0,
+["Tu-142"]=80.0,
+["Tu-160"]=12.0,
+["An-26B"]=30.0,
+["An-30M"]=30.0,
+["IL-78M"]=45.0,
+["A-50"]=50.0,
+["Mi-8MT"]=5.0,
+["Mi-8MSB"]=5.0,
+["Mi-8MSB-V"]=5.0,
+["Mi-8AMTSh"]=5.0,
+["Mi-24V"]=3.5,
+["Mi-24P"]=3.5,
+["Mi-28N"]=2.5,
+["Ka-50"]=2.0,
+["Ka-52"]=2.0,
+["AH-64D"]=3.5,
+["AH-64D_BLK_II"]=3.5,
+["UH-1H"]=3.0,
+["UH-60L"]=3.0,
+["CH-47D"]=8.0,
+["OH-58D"]=0.8,
+["SA342M"]=0.8,
+["SA342L"]=0.8,
+}
+INTEL.RCS_CategoryDefault={
+[Group.Category.AIRPLANE]=5.0,
+[Group.Category.HELICOPTER]=2.5,
+}
+INTEL.RCS_Reference=5.0
+INTEL.RCS_NoseOnFraction=0.15
 function INTEL:New(DetectionSet,Coalition,Alias)
 local self=BASE:Inherit(self,FSM:New())
 self.detectionset=DetectionSet or SET_GROUP:New()
@@ -102891,7 +102997,11 @@ local group=_group
 if group and group:IsAlive()then
 for _,_recce in pairs(group:GetUnits())do
 local recce=_recce
+if self.DopplerRadar==true then
+self:GetDetectedUnitsDoppler(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
+else
 self:GetDetectedUnits(recce,DetectedUnits,RecceDetecting,self.DetectVisual,self.DetectOptical,self.DetectRadar,self.DetectIRST,self.DetectRWR,self.DetectDLINK)
+end
 end
 if self.DetectAccoustic then
 local recce=group:GetFirstUnitAlive()
@@ -103737,6 +103847,109 @@ rcontact=contact
 end
 end
 return rcontact
+end
+function INTEL:SetDopplerRadar(MinAltAGL,NotchHalfDeg,MinSpeedMps,RadarRangeKm,RCS)
+self:I(self.lid.."SetDopplerRadar")
+self.DopplerRadar=true
+self.DopplerMinAltAGL=MinAltAGL or 500
+self.DopplerNotchSin=math.sin(math.rad(NotchHalfDeg or 15))
+self.DopplerMinSpeedMps=MinSpeedMps or 50
+self.DopplerRCS=(RCS~=false)
+self.DopplerRadarRangeM=(RadarRangeKm or 200)*1000
+return self
+end
+function INTEL:SetDopplerRadarOff()
+self:I(self.lid.."SetDopplerRadarOff")
+self.DopplerRadar=false
+return self
+end
+function INTEL:SetTypeRCS(TypeName,RCS_m2)
+self:I(self.lid.."SetTypeRCS")
+INTEL.RCS_Table[TypeName]=RCS_m2
+return self
+end
+function INTEL:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
+self:I(self.lid.."_GetAspectRCS")
+local typename=TargetUnit:GetTypeName()
+local base_rcs=INTEL.RCS_Table[typename]
+if not base_rcs then
+local cat=TargetUnit:GetGroup()and TargetUnit:GetGroup():GetCategory()
+base_rcs=(cat and INTEL.RCS_CategoryDefault[cat])or INTEL.RCS_Reference
+end
+if spd<1 then return base_rcs end
+local tpos=TargetUnit:GetVec3()
+local dx=rpos.x-tpos.x
+local dz=rpos.z-tpos.z
+local d=math.sqrt(dx*dx+dz*dz)
+if d<1 then return base_rcs end
+local cos_a=(tvel.x*dx+tvel.z*dz)/(spd*d)
+local sin2_a=1.0-cos_a*cos_a
+local f=INTEL.RCS_NoseOnFraction
+return base_rcs*(f+(1.0-f)*sin2_a)
+end
+function INTEL:_CheckDopplerDetection(TargetUnit,RadarUnit)
+self:I(self.lid.."_CheckDopplerDetection")
+local spd=TargetUnit:GetVelocityMPS()
+local rpos=RadarUnit:GetVec3()
+local tpos=TargetUnit:GetVec3()
+local tvel=TargetUnit:GetVelocityVec3()
+local dx=tpos.x-rpos.x
+local dz=tpos.z-rpos.z
+local slant=math.sqrt(dx*dx+dz*dz)
+if spd<self.DopplerMinSpeedMps then
+return false,"speed"
+end
+local agl=TargetUnit:GetAltitude(true)
+if agl<self.DopplerMinAltAGL then
+if math.random()>(agl/self.DopplerMinAltAGL)then
+return false,"clutter"
+end
+end
+if slant>1 then
+local nx=dx/slant
+local nz=dz/slant
+local vr=tvel.x*nx+tvel.z*nz
+local vr_frac=math.abs(vr)/math.max(spd,1)
+if vr_frac<self.DopplerNotchSin then
+return false,"notch"
+end
+end
+if self.DopplerRCS and slant>1 then
+local sigma=self:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
+local scale=(sigma/INTEL.RCS_Reference)^0.25
+local R_max=self.DopplerRadarRangeM*scale
+if slant>R_max then
+return false,"rcs"
+end
+local fade_start=R_max*0.80
+if slant>fade_start then
+local p=(R_max-slant)/(R_max-fade_start)
+if math.random()>p then
+return false,"rcs"
+end
+end
+end
+return true
+end
+function INTEL:GetDetectedUnitsDoppler(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
+self:I(self.lid.."GetDetectedUnitsDoppler")
+self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
+if self.DopplerRadar==false then return end
+if DetectRadar==false then return end
+local remove={}
+for name,unit in pairs(DetectedUnits)do
+if unit:IsInstanceOf("UNIT")and unit:IsAir()then
+local ok,reason=self:_CheckDopplerDetection(unit,Unit)
+if not ok then
+table.insert(remove,name)
+self:I(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid,name,reason,Unit:GetName()))
+end
+end
+end
+for _,name in ipairs(remove)do
+DetectedUnits[name]=nil
+RecceDetecting[name]=nil
+end
 end
 INTEL_DLINK={
 ClassName="INTEL_DLINK",
@@ -124391,7 +124604,6 @@ end
 return wait
 end
 function RADIOQUEUE:Broadcast(transmission)
-self:T("Broadcast")
 if((transmission.soundfile and transmission.soundfile.useSRS)or transmission.soundtext)and self.msrs then
 self:_BroadcastSRS(transmission)
 return
@@ -124399,6 +124611,7 @@ end
 local sender=self:_GetRadioSender()
 local filename=string.format("%s%s",transmission.path,transmission.filename)
 if sender then
+self:T(self.lid..string.format("Broadcasting from aircraft %s | sender init: %s",sender:GetName(),tostring(self.senderinit)))
 self:T(self.lid..string.format("Broadcasting from aircraft %s",sender:GetName()))
 local commandFrequency={
 id="SetFrequency",
@@ -124425,7 +124638,7 @@ loop=false,
 sender:SetCommand(commandTransmit)
 if self.Debugmode then
 local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s",filename,self.frequency/1000000,transmission.duration,transmission.subtitle or"")
-MESSAGE:New(text,2,"RADIOQUEUE "..self.alias):ToAll()
+MESSAGE:New(text,2,"RADIOQUEUE "..self.alias):ToAll():ToLog()
 end
 else
 self:T(self.lid..string.format("Broadcasting via trigger.action.radioTransmission()"))
@@ -124442,7 +124655,7 @@ self:T({filename=filename,vec3=vec3,modulation=self.modulation,frequency=self.fr
 trigger.action.radioTransmission(filename,vec3,self.modulation,false,self.frequency,self.power)
 if self.Debugmode then
 local text=string.format("file=%s, freq=%.2f MHz, duration=%.2f sec, subtitle=%s",filename,self.frequency/1000000,transmission.duration,transmission.subtitle or"")
-MESSAGE:New(string.format(text,filename,transmission.duration,transmission.subtitle or""),5,"RADIOQUEUE "..self.alias):ToAll()
+MESSAGE:New(string.format(text,filename,transmission.duration,transmission.subtitle or""),5,"RADIOQUEUE "..self.alias):ToAll():ToLog()
 end
 else
 self:E("ERROR: Could not get vec3 to determine transmission origin! Did you specify a sender and is it still alive?")
@@ -124461,6 +124674,7 @@ self.checking=true
 self:ScheduleOnce(delay or self.dt,RADIOQUEUE._CheckRadioQueue,self)
 end
 function RADIOQUEUE:_CheckRadioQueue()
+self:T("_CheckRadioQueue")
 if#self.queue==0 then
 self.checking=false
 return
@@ -125876,8 +126090,6 @@ modus=modus:gsub("0","AM")
 modus=modus:gsub("1","FM")
 self:T({T=Message,F=freqs,M=modus,V=voice,Vx=volume,L=label,C=coal,GGL=tostring(UseGoogle)})
 local provider=self.provider
-provider=provider:gsub("gcloud","google")
-provider=provider:gsub("win","sapi")
 local TransmissionP={
 freqs=freqs,
 modulations=modus,
@@ -126055,7 +126267,7 @@ return self
 end
 function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker)
 self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed})
-self:T({provider=msrs.provider})
+self:I({provider=msrs.provider})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
