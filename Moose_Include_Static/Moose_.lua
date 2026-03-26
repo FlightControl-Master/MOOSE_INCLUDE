@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T12:38:14+01:00-f1c70f571397df011c608c64d6d13934ca9c3c09 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-26T06:44:23+01:00-435ea42761162a1631e12debe1c3736709ea5ffa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -74231,6 +74231,7 @@ self.FixedMinAngels=165
 self.FixedMaxAngels=2000
 self.FixedMaxSpeed=77
 self.validateAndRepositionUnits=false
+self.maxUnloadTroopsAllowed=-1
 self.suppressmessages=false
 self.repairtime=300
 self.buildtime=300
@@ -77064,6 +77065,9 @@ table.insert(Positions,p1t)
 end
 return Positions
 end
+function CTLD:CanUnloadAllTroops(Group,Unit,LoadedCargo,IsGrounded,IsHoverUnload)
+return true
+end
 function CTLD:_UnloadTroops(Group,Unit)
 self:T(self.lid.." _UnloadTroops")
 local droppingatbase=false
@@ -77089,8 +77093,11 @@ end
 local grounded=not self:IsUnitInAir(Unit)
 local unitname=Unit:GetName()
 if self.Loaded_Cargo[unitname]and(grounded or hoverunload)then
-if not droppingatbase or self.debug then
 local loadedcargo=self.Loaded_Cargo[unitname]or{}
+if not self:CanUnloadAllTroops(Group,Unit,loadedcargo,grounded,hoverunload)then
+return self
+end
+if not droppingatbase or self.debug then
 local cargotable=loadedcargo.Cargo
 local deployedTroopsByName={}
 local deployedEngineersByName={}
@@ -78205,7 +78212,9 @@ end
 end
 end
 local dropTroopsMenu=MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_DROP_TROOPS",self.locale),toptroops):Refresh()
+if self.maxUnloadTroopsAllowed==-1 then
 MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale),dropTroopsMenu,self._UnloadTroops,self,_group,_unit):Refresh()
+end
 MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_EXTRACT_TROOPS",self.locale),toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
 local uName=_unit:GetName()
 local loadedData=self.Loaded_Cargo[uName]
@@ -78979,6 +78988,9 @@ end
 end
 end
 end
+function CTLD:CanUnloadSingleTroopByID(Group,Unit,ChunkID,Quantity,LoadedCargo,IsGrounded,IsHoverUnload)
+return true
+end
 function CTLD:_UnloadSingleTroopByID(Group,Unit,chunkID,qty)
 self:T(self.lid.." _UnloadSingleTroopByID chunkID="..tostring(chunkID))
 qty=qty or 1
@@ -79004,6 +79016,10 @@ end
 local grounded=not self:IsUnitInAir(Unit)
 local unitName=Unit:GetName()
 if self.Loaded_Cargo[unitName]and(grounded or hoverunload)then
+local loadedcargo=self.Loaded_Cargo[unitName]or{}
+if not self:CanUnloadSingleTroopByID(Group,Unit,chunkID,qty,loadedcargo,grounded,hoverunload)then
+return self
+end
 if not droppingatbase or self.debug then
 if not self.TroopsIDToChunk or not self.TroopsIDToChunk[chunkID]then
 local msg=self.gettext:GetEntry("NO_TROOP_CHUNK",self.locale)
@@ -79173,7 +79189,9 @@ else
 dropTroopsMenu=MENU_GROUP:New(theGroup,self.gettext:GetEntry("MENU_DROP_TROOPS",self.locale),topTroops)
 topTroops.DropTroopsMenu=dropTroopsMenu
 end
+if self.maxUnloadTroopsAllowed==-1 then
 MENU_GROUP_COMMAND:New(theGroup,self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale),dropTroopsMenu,self._UnloadTroops,self,theGroup,theUnit)
+end
 local loadedData=self.Loaded_Cargo[theUnit:GetName()]
 if not loadedData or not loadedData.Cargo then return end
 local troopsByName={}
@@ -79200,6 +79218,7 @@ MENU_GROUP_COMMAND:New(theGroup,label,dropTroopsMenu,self._UnloadSingleTroopByID
 else
 local parentMenu=MENU_GROUP:New(theGroup,label,dropTroopsMenu)
 for q=1,count do
+if q>self.maxUnloadTroopsAllowed then break end
 MENU_GROUP_COMMAND:New(theGroup,string.format(self.gettext:GetEntry("MENU_DROP_N_TROOPS",self.locale),q,tName),parentMenu,self._UnloadSingleTroopByID,self,theGroup,theUnit,chunkID,q)
 end
 end
@@ -94879,6 +94898,7 @@ engagezoneset=nil,
 tacview=false,
 Nsuccess=0,
 Nfailure=0,
+LegionRecruitMinRange={}
 }
 CHIEF.DEFCON={
 GREEN="Green",
@@ -95707,7 +95727,8 @@ local notlimited=self:_CheckMissionLimit(mp.MissionType)
 if notlimited then
 local NassetsMin,NassetsMax=self:_GetAssetsForTarget(target,mp.MissionType)
 self:T2(self.lid..string.format("Recruiting assets for mission type %s [performance=%d] of target %s",mp.MissionType,mp.Performance,target:GetName()))
-local recruited,assets,legions=self.commander:RecruitAssetsForTarget(target,mp.MissionType,NassetsMin,NassetsMax)
+local minRange=self.LegionRecruitMinRange[target.category]
+local recruited,assets,legions=self.commander:RecruitAssetsForTarget(target,mp.MissionType,NassetsMin,NassetsMax,minRange)
 if recruited then
 self:T(self.lid..string.format("Recruited %d assets for mission type %s [performance=%d] of target %s",#assets,mp.MissionType,mp.Performance,target:GetName()))
 mission=AUFTRAG:NewFromTarget(target,mp.MissionType)
@@ -96130,6 +96151,9 @@ return false
 end
 function CHIEF:CanMission(Mission)
 return self.commander and self.commander:CanMission(Mission)
+end
+function CHIEF:AddLegionRecruitMinRange(TargetCategory,MinRange)
+self.LegionRecruitMinRange[TargetCategory]=MinRange
 end
 COHORT={
 ClassName="COHORT",
@@ -97749,10 +97773,10 @@ return assigned
 end
 return true
 end
-function COMMANDER:RecruitAssetsForTarget(Target,MissionType,NassetsMin,NassetsMax)
+function COMMANDER:RecruitAssetsForTarget(Target,MissionType,NassetsMin,NassetsMax,RangeMin)
 local Cohorts=self:_GetCohorts()
 local TargetVec2=Target:GetVec2()
-local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2)
+local recruited,assets,legions=LEGION.RecruitCohortAssets(Cohorts,MissionType,nil,NassetsMin,NassetsMax,TargetVec2,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,RangeMin)
 return recruited,assets,legions
 end
 function COMMANDER:CheckTransportQueue()
@@ -105167,7 +105191,8 @@ end
 end
 return cohorts
 end
-function LEGION._CohortCan(Cohort,MissionType,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight)
+function LEGION._CohortCan(Cohort,MissionType,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight,RangeMin)
+RangeMin=RangeMin or 0
 local function CheckCategory(_cohort)
 local cohort=_cohort
 if Categories and#Categories>0 then
@@ -105231,7 +105256,7 @@ local cohort=_cohort
 local TargetDistance=TargetVec2 and UTILS.VecDist2D(TargetVec2,cohort.legion:GetVec2())or 0
 local Rmax=cohort:GetMissionRange(WeaponTypes)
 local RangeMax=RangeMax or 0
-local InRange=(RangeMax and math.max(RangeMax,Rmax)or Rmax)>=TargetDistance
+local InRange=(RangeMax and math.max(RangeMax,Rmax)or Rmax)>=TargetDistance and TargetDistance>RangeMin
 return InRange
 end
 local function CheckRefueling(_cohort)
@@ -105330,7 +105355,7 @@ return false
 end
 return nil
 end
-function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,MaxWeight,Categories,Attributes,Properties,WeaponTypes)
+function LEGION.RecruitCohortAssets(Cohorts,MissionTypeRecruit,MissionTypeOpt,NreqMin,NreqMax,TargetVec2,Payloads,RangeMax,RefuelSystem,CargoWeight,TotalWeight,MaxWeight,Categories,Attributes,Properties,WeaponTypes,RangeMin)
 local Assets={}
 local Legions={}
 if MissionTypeOpt==nil then
@@ -105338,7 +105363,7 @@ MissionTypeOpt=MissionTypeRecruit
 end
 for _,_cohort in pairs(Cohorts)do
 local cohort=_cohort
-local can=LEGION._CohortCan(cohort,MissionTypeRecruit,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight)
+local can=LEGION._CohortCan(cohort,MissionTypeRecruit,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight,RangeMin)
 if can then
 local assets,npayloads=cohort:RecruitAssets(MissionTypeRecruit,999)
 for _,asset in pairs(assets)do
