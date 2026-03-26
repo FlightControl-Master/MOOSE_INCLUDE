@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-24T10:13:47+01:00-a66290ab6361c2561ca08f23c3ce1a6ba2e58970 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-26T09:11:15+01:00-64433394f52de8c19b9a6b87a2a6c3222005c06a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13035,11 +13035,11 @@ self:I(string.format("Register Group: %s",tostring(DCSGroupName)))
 self:AddGroup(DCSGroupName,true)
 for DCSUnitId,DCSUnit in pairs(DCSGroup:getUnits())do
 local DCSUnitName=DCSUnit:getName()
-self:I(string.format("Register Unit: %s",tostring(DCSUnitName)))
+self:T(string.format("Register Unit: %s",tostring(DCSUnitName)))
 self:AddUnit(tostring(DCSUnitName),true)
 end
 else
-self:E({"Group does not exist: ",DCSGroup})
+self:T({"Group does not exist: ",DCSGroup})
 end
 return self
 end
@@ -126265,8 +126265,8 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker)
-self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed})
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker,priority)
+self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed,P=priority})
 self:I({provider=msrs.provider})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
@@ -126308,6 +126308,7 @@ transmission.speaker=speaker
 elseif msrs.Speaker then
 transmission.speaker=msrs.speaker
 end
+transmission.priority=priority or 50
 self:AddTransmission(transmission)
 return transmission
 end
@@ -126347,11 +126348,15 @@ return T
 end
 function MSRSQUEUE:_CheckRadioQueue(delay)
 local N=#self.queue
-self:T2(self.lid..string.format("Check radio queue %s: delay=%.3f sec, N=%d, checking=%s",self.alias,delay or 0,N,tostring(self.checking)))
+self:T2(self.lid..string.format(
+"Check radio queue %s: delay=%.3f sec, N=%d, checking=%s",
+self.alias,delay or 0,N,tostring(self.checking)
+))
 if delay and delay>0 then
 self:ScheduleOnce(delay,MSRSQUEUE._CheckRadioQueue,self)
 self.checking=true
-else
+return
+end
 if N==0 then
 self:T(self.lid..string.format("Check radio queue %s empty ==> disable checking",self.alias))
 self.checking=false
@@ -126361,8 +126366,16 @@ local time=timer.getAbsTime()
 self.checking=true
 local dt=self.dt
 local playing=false
-local next=nil
+local nextTx=nil
 local remove=nil
+local function getPriority(tx)
+local p=tx.priority
+if p==nil then return 50 end
+if p<1 then return 1 end
+if p>100 then return 100 end
+return p
+end
+local bestPrio=nil
 for i,_transmission in ipairs(self.queue)do
 local transmission=_transmission
 if time>=transmission.Tplay then
@@ -126377,29 +126390,31 @@ dt=transmission.duration-(time-transmission.Tstarted)
 end
 else
 local Tlast=self.Tlast
+local eligible=false
 if transmission.interval==nil then
-if next==nil then
-next=transmission
+eligible=true
+else
+if(Tlast==nil)or(time-Tlast>=transmission.interval)then
+eligible=true
+end
+end
+if eligible and not playing then
+local prio=getPriority(transmission)
+if bestPrio==nil or prio>bestPrio then
+bestPrio=prio
+nextTx=transmission
+end
+end
 end
 else
-if Tlast==nil or time-Tlast>=transmission.interval then
-next=transmission
-else
 end
 end
-if next or Tlast then
-break
-end
-end
-else
-end
-end
-if next~=nil and not playing then
-self:T(self.lid..string.format("Broadcasting text=\"%s\" at T=%.3f",next.text,time))
-self:Broadcast(next)
-next.isplaying=true
-next.Tstarted=time
-dt=next.duration
+if nextTx~=nil and not playing then
+self:T(self.lid..string.format('Broadcasting text="%s" at T=%.3f (prio=%d)',nextTx.text,time,(nextTx.priority or 50)))
+self:Broadcast(nextTx)
+nextTx.isplaying=true
+nextTx.Tstarted=time
+dt=nextTx.duration
 end
 if remove then
 table.remove(self.queue,remove)
@@ -126411,7 +126426,6 @@ return
 end
 end
 self:_CheckRadioQueue(dt)
-end
 end
 MSRS.LoadConfigFile()
 NAVFIX={
