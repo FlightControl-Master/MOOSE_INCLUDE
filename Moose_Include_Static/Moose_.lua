@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-27T15:17:25+01:00-3f902d8886ab04be3492db2c6e0cc7f9218909be ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-03-27T17:41:20+01:00-c7c07c70754b0d0b5d37ee2f90f4f91d9f59e64b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -4739,7 +4739,7 @@ m=2^32
 end
 function UTILS.LCGRandom()
 if UTILS.lcg==nil then
-UTILS.LCGRandomSeed()
+UTILS.LCGRandomSeed(timer.getTime())
 end
 UTILS.lcg.seed=(UTILS.lcg.a*UTILS.lcg.seed+UTILS.lcg.c)%UTILS.lcg.m
 return UTILS.lcg.seed/UTILS.lcg.m
@@ -20900,6 +20900,11 @@ self.SpawnInitCallSignMajor=Major or 1
 self.SpawnInitCallSignName=string.lower(Name):gsub("^%l",string.upper)
 return self
 end
+function SPAWN:InitCallSignRed(ID)
+self.SpawnInitCallSign=true
+self.SpawnInitCallSignID=ID or 100
+self.SpawnInitCallSignRED=true
+end
 function SPAWN:InitPositionCoordinate(Coordinate)
 self:InitPositionVec2(Coordinate:GetVec2())
 return self
@@ -22038,6 +22043,12 @@ end
 end
 end
 if self.SpawnInitCallSign then
+if self.SpawnInitCallSignRED==true then
+for UnitID=1,#SpawnTemplate.units do
+SpawnTemplate.units[UnitID].callsign=self.SpawnInitCallSignID
+self.SpawnInitCallSignID=self.SpawnInitCallSignID+1
+end
+else
 for UnitID=1,#SpawnTemplate.units do
 local Callsign=SpawnTemplate.units[UnitID].callsign
 if Callsign and type(Callsign)~="number"then
@@ -22045,6 +22056,7 @@ SpawnTemplate.units[UnitID].callsign[1]=self.SpawnInitCallSignID
 SpawnTemplate.units[UnitID].callsign[2]=self.SpawnInitCallSignMinor
 SpawnTemplate.units[UnitID].callsign[3]=self.SpawnInitCallSignMajor
 SpawnTemplate.units[UnitID].callsign["name"]=string.format("%s%d%d",self.SpawnInitCallSignName,self.SpawnInitCallSignMinor,self.SpawnInitCallSignMajor)
+end
 end
 end
 end
@@ -22058,7 +22070,7 @@ CallsignName=string.match(CallsignName,"^(%a+)")
 local CallsignLen=CallsignName:len()
 SpawnTemplate.units[UnitID].callsign[2]=UnitID
 SpawnTemplate.units[UnitID].callsign["name"]=CallsignName:sub(1,CallsignLen)..SpawnTemplate.units[UnitID].callsign[2]..SpawnTemplate.units[UnitID].callsign[3]
-elseif type(Callsign)=="number"then
+elseif type(Callsign)=="number"and self.SpawnInitCallSignRED~=true then
 SpawnTemplate.units[UnitID].callsign=Callsign+SpawnIndex
 end
 end
@@ -102647,7 +102659,7 @@ DopplerMinAltAGL=500,
 DopplerNotchSin=math.sin(math.rad(15)),
 DopplerMinSpeedMps=50,
 DopplerRCS=true,
-RangeM=200*1000,
+DopplerRadarRangeM=200*1000,
 }
 INTEL.Ctype={
 GROUND="Ground",
@@ -103959,7 +103971,7 @@ if vr_frac<self.DopplerNotchSin then
 return false,"notch"
 end
 end
-if self.DopplerRCS and slant>1 then
+if self.DopplerRCS==true and slant>1 then
 local sigma=self:_GetAspectRCS(TargetUnit,rpos,spd,tvel)
 local scale=(sigma/INTEL.RCS_Reference)^0.25
 local R_max=self.DopplerRadarRangeM*scale
@@ -126311,9 +126323,9 @@ self.PlayerSet=SET_CLIENT:New():FilterStart()
 end
 return self
 end
-function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker)
-self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed})
-self:I({provider=msrs.provider})
+function MSRSQUEUE:NewTransmission(text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker,priority)
+self:T({Text=text,Dur=duration,start=tstart,int=interval,sub=subgroups,subt=subtitle,sudb=subduration,F=frequency,M=modulation,G=gender,C=culture,V=voice,Vol=volume,L=label,S=speed,P=priority})
+self:T({TEXT=text,PRIO=tostring(priority)})
 if self.TransmitOnlyWithPlayers then
 if self.PlayerSet and self.PlayerSet:CountAlive()==0 then
 return self
@@ -126354,6 +126366,7 @@ transmission.speaker=speaker
 elseif msrs.Speaker then
 transmission.speaker=msrs.speaker
 end
+transmission.priority=priority or 50
 self:AddTransmission(transmission)
 return transmission
 end
@@ -126393,11 +126406,15 @@ return T
 end
 function MSRSQUEUE:_CheckRadioQueue(delay)
 local N=#self.queue
-self:T2(self.lid..string.format("Check radio queue %s: delay=%.3f sec, N=%d, checking=%s",self.alias,delay or 0,N,tostring(self.checking)))
+self:T2(self.lid..string.format(
+"Check radio queue %s: delay=%.3f sec, N=%d, checking=%s",
+self.alias,delay or 0,N,tostring(self.checking)
+))
 if delay and delay>0 then
 self:ScheduleOnce(delay,MSRSQUEUE._CheckRadioQueue,self)
 self.checking=true
-else
+return
+end
 if N==0 then
 self:T(self.lid..string.format("Check radio queue %s empty ==> disable checking",self.alias))
 self.checking=false
@@ -126407,8 +126424,16 @@ local time=timer.getAbsTime()
 self.checking=true
 local dt=self.dt
 local playing=false
-local next=nil
+local nextTx=nil
 local remove=nil
+local function getPriority(tx)
+local p=tx.priority
+if p==nil then return 50 end
+if p<1 then return 1 end
+if p>100 then return 100 end
+return p
+end
+local bestPrio=nil
 for i,_transmission in ipairs(self.queue)do
 local transmission=_transmission
 if time>=transmission.Tplay then
@@ -126423,29 +126448,31 @@ dt=transmission.duration-(time-transmission.Tstarted)
 end
 else
 local Tlast=self.Tlast
+local eligible=false
 if transmission.interval==nil then
-if next==nil then
-next=transmission
+eligible=true
+else
+if(Tlast==nil)or(time-Tlast>=transmission.interval)then
+eligible=true
+end
+end
+if eligible and not playing then
+local prio=getPriority(transmission)
+if bestPrio==nil or prio>bestPrio then
+bestPrio=prio
+nextTx=transmission
+end
+end
 end
 else
-if Tlast==nil or time-Tlast>=transmission.interval then
-next=transmission
-else
 end
 end
-if next or Tlast then
-break
-end
-end
-else
-end
-end
-if next~=nil and not playing then
-self:T(self.lid..string.format("Broadcasting text=\"%s\" at T=%.3f",next.text,time))
-self:Broadcast(next)
-next.isplaying=true
-next.Tstarted=time
-dt=next.duration
+if nextTx~=nil and not playing then
+self:T(self.lid..string.format('Broadcasting text="%s" at T=%.3f (prio=%d)',nextTx.text,time,(nextTx.priority or 50)))
+self:Broadcast(nextTx)
+nextTx.isplaying=true
+nextTx.Tstarted=time
+dt=nextTx.duration
 end
 if remove then
 table.remove(self.queue,remove)
@@ -126457,7 +126484,6 @@ return
 end
 end
 self:_CheckRadioQueue(dt)
-end
 end
 MSRS.LoadConfigFile()
 NAVFIX={
