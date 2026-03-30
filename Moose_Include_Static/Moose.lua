@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-27T17:41:20+01:00-c7c07c70754b0d0b5d37ee2f90f4f91d9f59e64b ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-30T08:37:43+02:00-3d0061fd83e16a96580eb367520b0a072622215a ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -154722,7 +154722,7 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     if canmove then
       SPAWN:NewWithAlias(_template,alias)
         :InitRandomizeUnits(true,10,2)
-        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
+        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits, 70)
         :InitDelayOff()
         :OnSpawnGroup(function(grp,TimeStamp)
           grp.spawntime = TimeStamp or timer.getTime()
@@ -154735,7 +154735,7 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
       SPAWN:NewWithAlias(_template,alias)
         :InitRandomizeUnits(true,10,2)
         :InitDelayOff()
-        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
+        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits, 70)
         :OnSpawnGroup(function(grp,TimeStamp)
           grp.spawntime = TimeStamp or timer.getTime()
           self.DroppedTroops[tc] = grp
