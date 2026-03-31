@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-30T08:37:43+02:00-3d0061fd83e16a96580eb367520b0a072622215a ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-31T19:34:28+02:00-d52ce9af727d48786c70b2c66b51f9d424b53c48 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -158617,7 +158617,7 @@ function CTLD:_RefreshDropTroopsMenu(Group, Unit)
       else
         local parentMenu = MENU_GROUP:New(theGroup, label, dropTroopsMenu)
         for q = 1, count do
-          if q > self.maxUnloadTroopsAllowed then break end
+          if q > self.maxUnloadTroopsAllowed and self.maxUnloadTroopsAllowed > -1 then break end
           MENU_GROUP_COMMAND:New(theGroup, string.format(self.gettext:GetEntry("MENU_DROP_N_TROOPS",self.locale), q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
           --MENU_GROUP_COMMAND:New(theGroup, string.format("Drop (%d) %s", q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
         end
