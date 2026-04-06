@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-06T19:05:27+02:00-5facdd936356fdc35e06036cbd5741830fd2660f ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-06T19:55:58+02:00-04befd1b61d0cc195c1092e3dced088587638467 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -127259,7 +127259,8 @@ function REDGCI:_SetupF10Menu()
             self:Reset()
             self:_Log("GCI Reset via F10 menu")
         end)
-
+    
+    --[[
     missionCommands.addCommandForCoalition(self.Coalition, "Toggle AI Mode", root,
         function()
             self.IsAIPlane = not self.IsAIPlane
@@ -127268,6 +127269,7 @@ function REDGCI:_SetupF10Menu()
                 self.Coalition, "[GCI] AI mode " .. status, 3)
             self:_Log("AI mode: " .. status)
         end)
+   --]]
 end
 
 ---
@@ -128551,17 +128553,17 @@ function REDGCI2v2:onafterStart(From, Event, To)
 
     -- Create and start the two REDGCI sub-instances.
     -- They manage their own FSM ticks; we drive formation/tactic logic here.
-    self._gci1 = self:_MakeGCI(self.Fighter1Group, self._assignment[1], self.Callsign1) -- #REDGCI
+    self._gci1 = self:_MakeGCI(self.Fighter1Group, self._assignment[1], self.Callsign1) -- Functional.RedGCI#RedGCI
     local FreqOffset = self.FreqOffset or 0.5
     --if self.IsAIPlane == true then FreqOffset = 0.5 end
     self._gci2 = self:_MakeGCI(self.Fighter2Group, self._assignment[2], self.Callsign2, FreqOffset)
     
     if self.PilotOneCallsign then
-      self._gci1:SetPilotSRS(self.PilotOneCallsign, self.PilotOneSRSCulture, self.PilotOneSRSVoice, self.PilotOneSRSSpeaker)
+      self._gci1:SetPilotSRS(self.Callsign1, self.PilotOneSRSCulture, self.PilotOneSRSVoice, self.PilotOneSRSSpeaker)-- Functional.RedGCI#RedGCI
     end
     
     if self.PilotTwoCallsign then
-      self._gci2:SetPilotSRS(self.PilotTwoCallsign, self.PilotTwoSRSCulture, self.PilotTwoSRSVoice, self.PilotTwoSRSSpeaker)
+      self._gci2:SetPilotSRS(self.Callsign2, self.PilotTwoSRSCulture, self.PilotTwoSRSVoice, self.PilotTwoSRSSpeaker)
     end
     
     self._gci1:Start()
@@ -129137,7 +129139,7 @@ function REDGCIDISPATCHER:SetLocale(Locale)
     return self
 end
 
---- Configure Dispatcher SRS.
+--- Configure Dispatcher SRS - Radio voice for radar callouts and assignment instructions.
 -- @param #REDGCIDISPATCHER self
 -- @param #string Path (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
 -- @param #number Frequency Single Frequency, e.g. 124
@@ -129195,14 +129197,14 @@ function REDGCIDISPATCHER:SetRadioChannelList(RadioTable)
   return self
 end
 
---- Configure GCI SRS (the one that guides the pilots).
+--- Configure GCI SRS (the one that guides the pilots during the engagement).
 -- @param #REDGCIDISPATCHER self
--- @param #number Frequency Single Frequency, e.g. 125
+-- @param #number StartFrequency Single Frequency, e.g. 125 - this is the start frequency for channel 1 of the radio channel list. 
 -- @param #string Voice The SRS Voice to be used.
 -- @return #REDGCIDISPATCHER self 
 function REDGCIDISPATCHER:SetSRSGCIDetails(StartFrequency,Voice)
   self:I({F=StartFrequency,V=Voice})
-  self.SRSGCIFrequency = StartFrequency or 124
+  self.SRSGCIFrequency = StartFrequency or 125
   self.SRSGCIVoice = Voice or self.SRSVoice or MSRS.Voices.Google.Wavenet.de_DE_Wavenet_B
   return self
 end
@@ -129212,6 +129214,42 @@ end
 -- @return #REDGCIDISPATCHER self
 function REDGCIDISPATCHER:SetSRSProvider(Provider)
     self.SRSProvider = Provider
+    return self
+end
+
+--- Configure the pilot one voice for radio acknowledgements.
+-- The pilot uses the same frequency/modulation as the GCI controller but
+-- a distinct voice so the two can be told apart on the radio.
+-- Set PilotCallsign to nil (default) to disable pilot ACKs entirely.
+-- @param #REDGCIDISPATCHER self
+-- @param #string  PilotCallsign  Pilot's callsign (e.g. "Сокол-1"), or nil to disable ACKs.
+-- @param #string  Culture        BCP-47 culture string (default same as GCI)
+-- @param #string  Voice          MSRS voice constant (default ru_RU_Standard_B)
+-- @param #number  Speaker        (Optional) MSRS Speaker for Hound/Piper Voices, e.g. 11 for "318 (11)"
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetPilotOneSRS(PilotCallsign, Culture, Voice, Speaker)
+    self.PilotOneCallsign   = PilotCallsign
+    self.PilotOneSRSCulture = Culture or self.SRSCulture
+    self.PilotOneSRSVoice   = Voice   or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+    self.PilotOneSRSSpeaker = Speaker
+    return self
+end
+
+--- Configure the pilot two voice for radio acknowledgements.
+-- The pilot uses the same frequency/modulation as the GCI controller but
+-- a distinct voice so the two can be told apart on the radio.
+-- Set PilotCallsign to nil (default) to disable pilot ACKs entirely.
+-- @param #REDGCIDISPATCHER self
+-- @param #string  PilotCallsign  Pilot's callsign (e.g. "Сокол-1"), or nil to disable ACKs.
+-- @param #string  Culture        BCP-47 culture string (default same as GCI)
+-- @param #string  Voice          MSRS voice constant (default ru_RU_Standard_B)
+-- @param #number  Speaker        (Optional) MSRS Speaker for Hound/Piper Voices, e.g. 11 for "318 (11)"
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetPilotTwoSRS(PilotCallsign, Culture, Voice, Speaker)
+    self.PilotTwoCallsign   = PilotCallsign
+    self.PilotTwoSRSCulture = Culture or self.SRSCulture
+    self.PilotTwoSRSVoice   = Voice   or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+    self.PilotTwoSRSSpeaker = Speaker
     return self
 end
 
@@ -129446,6 +129484,7 @@ function REDGCIDISPATCHER:_SpawnAI(Zone)
 
     local spawner = SPAWN:NewWithAlias(self.TemplateName, alias)
     spawner:InitCallSignRed(cs)
+    spawner:InitModex(cs)
 
     spawner:OnSpawnGroup(function(grp)
         self:I(self.lid .. "Gespawnt: " .. grp:GetName() ..
@@ -129606,7 +129645,7 @@ function REDGCIDISPATCHER:_RefreshHumanPool()
                 local in_zone = false
                 if self.ZoneSet then
                     self.ZoneSet:ForEachZone(function(zone)
-                        if grp:IsPartlyOrFullyInZone(zone) then
+                        if grp:IsPartlyOrCompletelyInZone(zone) then
                             in_zone = true
                             self._pool[name].zone = zone
                         end

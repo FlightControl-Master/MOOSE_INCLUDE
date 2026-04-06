@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-06T19:05:27+02:00-5facdd936356fdc35e06036cbd5741830fd2660f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-06T19:55:58+02:00-04befd1b61d0cc195c1092e3dced088587638467 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -63137,14 +63137,6 @@ function()
 self:Reset()
 self:_Log("GCI Reset via F10 menu")
 end)
-missionCommands.addCommandForCoalition(self.Coalition,"Toggle AI Mode",root,
-function()
-self.IsAIPlane=not self.IsAIPlane
-local status=self.IsAIPlane and"ON"or"OFF"
-trigger.action.outTextForCoalition(
-self.Coalition,"[GCI] AI mode "..status,3)
-self:_Log("AI mode: "..status)
-end)
 end
 function REDGCI:SetIntelSource(Intel,Filter)
 self.Intel=Intel
@@ -63822,10 +63814,10 @@ self._gci1=self:_MakeGCI(self.Fighter1Group,self._assignment[1],self.Callsign1)
 local FreqOffset=self.FreqOffset or 0.5
 self._gci2=self:_MakeGCI(self.Fighter2Group,self._assignment[2],self.Callsign2,FreqOffset)
 if self.PilotOneCallsign then
-self._gci1:SetPilotSRS(self.PilotOneCallsign,self.PilotOneSRSCulture,self.PilotOneSRSVoice,self.PilotOneSRSSpeaker)
+self._gci1:SetPilotSRS(self.Callsign1,self.PilotOneSRSCulture,self.PilotOneSRSVoice,self.PilotOneSRSSpeaker)
 end
 if self.PilotTwoCallsign then
-self._gci2:SetPilotSRS(self.PilotTwoCallsign,self.PilotTwoSRSCulture,self.PilotTwoSRSVoice,self.PilotTwoSRSSpeaker)
+self._gci2:SetPilotSRS(self.Callsign2,self.PilotTwoSRSCulture,self.PilotTwoSRSVoice,self.PilotTwoSRSSpeaker)
 end
 self._gci1:Start()
 self._gci2:Start()
@@ -64097,12 +64089,26 @@ return self
 end
 function REDGCIDISPATCHER:SetSRSGCIDetails(StartFrequency,Voice)
 self:I({F=StartFrequency,V=Voice})
-self.SRSGCIFrequency=StartFrequency or 124
+self.SRSGCIFrequency=StartFrequency or 125
 self.SRSGCIVoice=Voice or self.SRSVoice or MSRS.Voices.Google.Wavenet.de_DE_Wavenet_B
 return self
 end
 function REDGCIDISPATCHER:SetSRSProvider(Provider)
 self.SRSProvider=Provider
+return self
+end
+function REDGCIDISPATCHER:SetPilotOneSRS(PilotCallsign,Culture,Voice,Speaker)
+self.PilotOneCallsign=PilotCallsign
+self.PilotOneSRSCulture=Culture or self.SRSCulture
+self.PilotOneSRSVoice=Voice or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+self.PilotOneSRSSpeaker=Speaker
+return self
+end
+function REDGCIDISPATCHER:SetPilotTwoSRS(PilotCallsign,Culture,Voice,Speaker)
+self.PilotTwoCallsign=PilotCallsign
+self.PilotTwoSRSCulture=Culture or self.SRSCulture
+self.PilotTwoSRSVoice=Voice or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+self.PilotTwoSRSSpeaker=Speaker
 return self
 end
 function REDGCIDISPATCHER:SetAltOffset(Meters)
@@ -64245,6 +64251,7 @@ local cs=self:_NextCallsign()
 local alias=self.TemplateName.."#"..cs
 local spawner=SPAWN:NewWithAlias(self.TemplateName,alias)
 spawner:InitCallSignRed(cs)
+spawner:InitModex(cs)
 spawner:OnSpawnGroup(function(grp)
 self:I(self.lid.."Gespawnt: "..grp:GetName()..
 " CS="..cs.." -> orbit in "..Zone:GetName())
@@ -64357,7 +64364,7 @@ self._pool[name].state~=REDGCIDISPATCHER.STATE_RTB then
 local in_zone=false
 if self.ZoneSet then
 self.ZoneSet:ForEachZone(function(zone)
-if grp:IsPartlyOrFullyInZone(zone)then
+if grp:IsPartlyOrCompletelyInZone(zone)then
 in_zone=true
 self._pool[name].zone=zone
 end
