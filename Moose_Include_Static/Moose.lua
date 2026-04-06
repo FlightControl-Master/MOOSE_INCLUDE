@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-26T09:11:15+01:00-64433394f52de8c19b9a6b87a2a6c3222005c06a ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-06T19:05:27+02:00-5facdd936356fdc35e06036cbd5741830fd2660f ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -1866,11 +1866,15 @@ ENUMS.Storage.weapons.droptanks.fuel_tank_300gal  = "weapons.droptanks.fuel_tank
 -- NEW
 ENUMS.Storage.weapons.adapters.HB_F_4E_ORD_LAU_77 = 'weapons.adapters.HB_F-4E_ORD_LAU_77'
 ENUMS.Storage.weapons.adapters.hb_a_6e_lau7_adu299 = 'weapons.adapters.hb_a-6e_lau7_adu299'
+ENUMS.Storage.weapons.adapters.CHAP_AIM92LN = 'weapons.adapters.CHAP_AIM92LN'
+ENUMS.Storage.weapons.adapters.CHAP_HOT3LN = 'weapons.adapters.CHAP_HOT3LN'
+ENUMS.Storage.weapons.adapters.CHAP_FZ225 = 'weapons.adapters.CHAP_FZ225'
 
 ENUMS.Storage.weapons.bombs.AH6_SMOKE_BLUE = 'weapons.bombs.AH6_SMOKE_BLUE'
 ENUMS.Storage.weapons.bombs.AH6_SMOKE_GREEN = 'weapons.bombs.AH6_SMOKE_GREEN'
 ENUMS.Storage.weapons.bombs.AH6_SMOKE_RED = 'weapons.bombs.AH6_SMOKE_RED'
 ENUMS.Storage.weapons.bombs.AH6_SMOKE_YELLOW = 'weapons.bombs.AH6_SMOKE_YELLOW'
+ENUMS.Storage.weapons.bombs.AO_25SL = 'weapons.bombs.AO_25SL'
 
 ENUMS.Storage.weapons.missiles.HB_AGM_78 = 'weapons.missiles.HB_AGM_78'
 ENUMS.Storage.weapons.missiles.V_1 = 'weapons.missiles.V-1'
@@ -1917,6 +1921,10 @@ ENUMS.Storage.weapons.shells.M42A1_HE = 'weapons.shells.M42A1_HE'
 ENUMS.Storage.weapons.shells.HE_20x138B = 'weapons.shells.20x138B_HE'
 ENUMS.Storage.weapons.shells.HE_37x263 = 'weapons.shells.37x263_HE'
 ENUMS.Storage.weapons.shells.HE_2A20_115mm = 'weapons.shells.2A20_115mm_HE'
+ENUMS.Storage.weapons.shells.AP_20x99R = 'weapons.shells.20x99R_AP'
+ENUMS.Storage.weapons.shells.IranFAC_DShK_API_T = 'weapons.shells.IranFAC_DShK_API_T'
+ENUMS.Storage.weapons.shells.IranFAC_DShK_API = 'weapons.shells.IranFAC_DShK_API'
+ENUMS.Storage.weapons.shells.HE_T_20x99R = 'weapons.shells.20x99R_HE_T'
 
 ENUMS.Storage.weapons.gunmounts.B17_TailTurret_M2_L = 'weapons.gunmounts.B17_TailTurret_M2_L'
 ENUMS.Storage.weapons.gunmounts.AH6_M134L = 'weapons.gunmounts.{AH6_M134L}'
@@ -1947,6 +1955,11 @@ ENUMS.Storage.weapons.gunmounts.AH_6_FN_HMP400 = 'weapons.gunmounts.{AH-6_FN_HMP
 ENUMS.Storage.weapons.gunmounts.AH_6_M134L = 'weapons.gunmounts.AH-6_M134L'
 ENUMS.Storage.weapons.gunmounts.AH_6_M134R = 'weapons.gunmounts.AH-6_M134R'
 ENUMS.Storage.weapons.gunmounts.AH_6_HMP400 = 'weapons.gunmounts.AH-6_HMP400'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.{AKAN}'
+ENUMS.Storage.weapons.gunmounts.CHAP_HMP400LC = 'weapons.gunmounts.{CHAP_HMP400LC}'
+ENUMS.Storage.weapons.gunmounts.HMP400LC = 'weapons.gunmounts.HMP400LC'
+ENUMS.Storage.weapons.gunmounts.SHVAK_GUN = 'weapons.gunmounts.SHVAK_GUN'
 
 ENUMS.Storage.weapons.droptanks.PTB_800 = 'weapons.droptanks.PTB-800'
 ENUMS.Storage.weapons.droptanks.PTB_275 = 'weapons.droptanks.PTB-275'
@@ -1997,6 +2010,7 @@ ENUMS.Storage.weapons.droptanks.S_3_PTB = 'weapons.droptanks.S-3-PTB'
 ENUMS.Storage.weapons.droptanks.fuel_tank_370gal = 'weapons.droptanks.fuel_tank_370gal'
 ENUMS.Storage.weapons.droptanks.MIG_23_PTB = 'weapons.droptanks.MIG-23-PTB'
 ENUMS.Storage.weapons.droptanks.f_18c_ptb = 'weapons.droptanks.f-18c-ptb'
+ENUMS.Storage.weapons.droptanks.CHAP_TigerUHT_fueltank = 'weapons.droptanks.CHAP_TigerUHT_fueltank'
 
 ENUMS.Storage.weapons.containers.FN_HMP400_100 = 'weapons.containers.{FN_HMP400_100}'
 ENUMS.Storage.weapons.containers.AN_M3 = 'weapons.containers.{AN-M3}'
@@ -2128,8 +2142,16 @@ ENUMS.Storage.weapons.containers.GIAT_M621_AP = 'weapons.containers.{GIAT_M621_A
 ENUMS.Storage.weapons.containers.M134_R = 'weapons.containers.M134_R'
 ENUMS.Storage.weapons.containers.OH58D_M3P_L300 = 'weapons.containers.OH58D_M3P_L300'
 ENUMS.Storage.weapons.containers.AH6_M134R = 'weapons.containers.{AH6_M134R}'
+ENUMS.Storage.weapons.containers.CHAP_HMP400LC = 'weapons.containers.{CHAP_HMP400LC}'
+
+ENUMS.Storage.weapons.missiles.C701_AShM = 'weapons.missiles.C701 AShM'
+ENUMS.Storage.weapons.missiles.IGLA_9M39 = 'weapons.missiles.9M39_IGLA'
+ENUMS.Storage.weapons.missiles.CHAP_AIM92 = 'weapons.missiles.CHAP_AIM92'
+ENUMS.Storage.weapons.missiles.AM39 = 'weapons.missiles.AM39'
+ENUMS.Storage.weapons.missiles.Shahed136_LM = 'weapons.missiles.Shahed136_LM'
 
 ENUMS.Storage.weapons.torpedoes.G7A_T1 = 'weapons.torpedoes.G7A_T1'
+
 
 -- UH-60L Mod
 ENUMS.Storage.weapons.gunmounts.UH60LGAU19 = 'weapons.gunmounts.UH-60L GAU-19'
@@ -6472,7 +6494,7 @@ end
 -- @return #number Random number between 0 and 1.
 function UTILS.LCGRandom()
   if UTILS.lcg == nil then
-    UTILS.LCGRandomSeed()
+    UTILS.LCGRandomSeed(timer.getTime())
   end
   UTILS.lcg.seed = (UTILS.lcg.a * UTILS.lcg.seed + UTILS.lcg.c) % UTILS.lcg.m
   return UTILS.lcg.seed / UTILS.lcg.m
@@ -40553,6 +40575,16 @@ function SPAWN:InitCallSign(ID,Name,Minor,Major)
   return self
 end
 
+--- [RED AIR only!] This method sets a specific callsign for a spawned group. 
+-- @param #SPAWN self
+-- @param #number ID The number with which to start for the first unit, e.g. 100, further units would then be 101, 102 .. etc.
+-- @return #SPAWN self
+function SPAWN:InitCallSignRed(ID)
+  self.SpawnInitCallSign = true
+  self.SpawnInitCallSignID = ID or 100
+  self.SpawnInitCallSignRED = true 
+end
+
 --- This method sets a spawn position for the group that is different from the location of the template.
 -- @param #SPAWN self
 -- @param Core.Point#COORDINATE Coordinate The position to spawn from
@@ -42862,14 +42894,21 @@ function SPAWN:_Prepare( SpawnTemplatePrefix, SpawnIndex ) -- R2.2
   end
   
   if self.SpawnInitCallSign then
-    for UnitID = 1, #SpawnTemplate.units do
-      local Callsign = SpawnTemplate.units[UnitID].callsign
-      if Callsign and type( Callsign ) ~= "number" then
-        SpawnTemplate.units[UnitID].callsign[1] = self.SpawnInitCallSignID 
-        SpawnTemplate.units[UnitID].callsign[2] = self.SpawnInitCallSignMinor
-        SpawnTemplate.units[UnitID].callsign[3] = self.SpawnInitCallSignMajor
-        SpawnTemplate.units[UnitID].callsign["name"] = string.format("%s%d%d",self.SpawnInitCallSignName,self.SpawnInitCallSignMinor,self.SpawnInitCallSignMajor)
-        --UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].callsign,1)
+    if self.SpawnInitCallSignRED == true then
+      for UnitID = 1, #SpawnTemplate.units do
+        SpawnTemplate.units[UnitID].callsign = self.SpawnInitCallSignID
+        self.SpawnInitCallSignID = self.SpawnInitCallSignID + 1
+      end
+    else
+      for UnitID = 1, #SpawnTemplate.units do
+        local Callsign = SpawnTemplate.units[UnitID].callsign
+        if Callsign and type( Callsign ) ~= "number" then
+          SpawnTemplate.units[UnitID].callsign[1] = self.SpawnInitCallSignID 
+          SpawnTemplate.units[UnitID].callsign[2] = self.SpawnInitCallSignMinor
+          SpawnTemplate.units[UnitID].callsign[3] = self.SpawnInitCallSignMajor
+          SpawnTemplate.units[UnitID].callsign["name"] = string.format("%s%d%d",self.SpawnInitCallSignName,self.SpawnInitCallSignMinor,self.SpawnInitCallSignMajor)
+          --UTILS.PrintTableToLog(SpawnTemplate.units[UnitID].callsign,1)
+        end
       end
     end
   end
@@ -42885,7 +42924,7 @@ function SPAWN:_Prepare( SpawnTemplatePrefix, SpawnIndex ) -- R2.2
         local CallsignLen = CallsignName:len()
         SpawnTemplate.units[UnitID].callsign[2] = UnitID
         SpawnTemplate.units[UnitID].callsign["name"] = CallsignName:sub( 1, CallsignLen ) .. SpawnTemplate.units[UnitID].callsign[2] .. SpawnTemplate.units[UnitID].callsign[3]
-      elseif type( Callsign ) == "number" then
+      elseif type( Callsign ) == "number" and self.SpawnInitCallSignRED ~= true then
         SpawnTemplate.units[UnitID].callsign = Callsign + SpawnIndex
       end
     end
@@ -125151,7 +125190,4901 @@ function FORMATION:FollowMe(FollowGroup, ClientUnit, CT1, CV1, CT2, CV2)
     end
   end
 end
---- **Ops** - Manages aircraft CASE X recoveries for carrier operations (X=I, II, III).
+--- **Functional** - Enhanced Warsaw Pact GCI Controller.
+--
+-- ## Main Features:
+--
+--    * Guide AI and human pilots in Warsaw Pact Style. GCI Kernel Functions.
+--    * Advanced Tactics for Groups.
+--    * Many additional events that the mission designer can hook into.
+--
+-- ===
+--
+-- ### Author: **Applevangelist**
+--
+-- ===
+-- @module Functional.REDGCI_KERNEL
+-- @image Func_RedGCI.png
+-- @version 1.0.0
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- REDGCI_KERNEL class
+-- @type REDGCI_KERNEL
+
+
+---
+-- # RedGCI — Soviet GCI Doctrine & Player Guide
+--
+-- ## Philosophy: Централизованное управление (Centralized Control)
+-- 
+-- The fundamental difference between Soviet and NATO GCI is **who makes the tactical decision**.
+-- 
+-- In NATO doctrine, the GCI controller provides situational awareness — bearing, range, altitude, aspect — and the pilot decides how to prosecute the intercept. The pilot is an autonomous tactician. GCI is an advisor.
+-- 
+-- In Soviet doctrine, the GCI controller **directs**. The pilot executes. The controller selects the intercept geometry, assigns the heading, manages the radar, calls weapons free, and coordinates multi-ship tactics. The pilot's job is to fly the numbers and shoot when told. This is not a flaw — it is the system working as designed. Soviet fighter pilots were trained to be precise executors of GCI instructions, not independent tacticians. The ground radar network (PVO) was the brain; the aircraft was the weapon.
+-- 
+-- RedGCI models this philosophy faithfully.
+-- 
+-- ---
+-- 
+-- ## What to Expect as a Player
+-- 
+-- ### You will not be asked what you want to do.
+-- 
+-- There are no "recommend a vector" calls, no "at your discretion" callouts. The controller tells you your heading, your altitude, and your task. Your acknowledgement is assumed.
+-- 
+-- ### The controller manages your radar.
+-- 
+-- You do not decide when to turn your radar on. The GCI will tell you when to switch on (`локатор` / `Radar on`). Before that call, you fly cold and silent. This preserves your emissions discipline and prevents the target from getting an early RWR spike.
+-- 
+-- ### Weapons free is a controlled event.
+-- 
+-- You do not engage until the controller clears you (`цель разрешена` / `WEAPONS FREE`). The controller determines when geometry, range, and aspect are favorable. Shooting early breaks the coordinated intercept and may compromise your wingman's attack.
+-- 
+-- ### Radio calls are short and military.
+-- 
+-- Soviet GCI brevity is terse by design. Expect calls like:
+-- 
+-- - `"Сокол, курс 170, высота 4500."` — vector, altitude
+-- - `"Сокол, цель, пара, истребитель. Локатор."` — picture call on commit: count, type, radar on
+-- - `"Сокол, захват. Дальность 20. Цель разрешена."` — lock confirmed, range, weapons free
+-- - `"Сокол, молодец. Домой."` — good kill, RTB
+-- 
+-- There are no "BOGEY DOPE" requests, no "BRAA" calls, no "DECLARE" queries. The controller has already done that work. You fly the vector.
+-- 
+-- ---
+-- 
+-- ## State Flow — What the GCI is Doing Behind the Scenes
+-- 
+-- RedGCI manages a state machine that progresses through six phases. Understanding these phases helps you anticipate what call is coming next.
+-- 
+-- ```
+-- VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → (SPLASH / ABORT / RTB)
+-- ```
+-- 
+-- ### VECTOR
+-- The controller has a track. You are being vectored onto an intercept geometry. Your radar is off. The controller is solving a collision course and updating your heading every tick. Altitude calls reflect the intercept geometry — you may be sent below the target (classic Soviet shoot-up doctrine for radar-limited types) or level/above (MiG-29/Su-27 lookdown geometry). Expect heading updates every 10–15 seconds.
+-- 
+-- **What you should do:** Fly the heading. Don't deviate. Don't turn your radar on yet. Speed is expected at 900kph TAS (depending on airframe)
+-- 
+-- ### COMMIT
+-- Range has closed to approximately 30km. The controller calls the picture: count and type. Your radar comes on. You are now committed to the intercept — turning away is no longer the default option. The controller is building your radar geometry toward a lock.
+-- 
+-- **What you should do:** Activate your radar. Acquire the target. Do not fire yet.
+-- 
+-- ### RADAR_CONTACT
+-- You have radar lock (or the AI has achieved it). The controller confirms lock and calls range. If geometry and range are favorable, weapons free follows immediately. If not — for example if aspect angle is unfavorable for a stern conversion — the controller holds fire and waits for better geometry.
+-- 
+-- **What you should do:** Maintain lock. Track the target. Wait for the weapons free call.
+-- 
+-- ### VISUAL
+-- Range has closed to approximately 5km — visual conditions. Weapons free is automatic at this point. You are now in the merge envelope.
+-- 
+-- **What you should do:** Engage.
+-- 
+-- ### MERGE
+-- Inside 2km. The GCI transitions to merge control: bearing to target, overshoot calls, separation instructions, reattack vectors. At this range the controller cannot see fine-grained geometry — merge calls are based on relative bearing and closure.
+-- 
+-- **What you should do:** Fight. Listen for overshoot, separation, and reattack calls.
+-- 
+-- ### SPLASH / ABORT / RTB
+-- - `SPLASH` — kill confirmed, RTB
+-- - `ABORT (THREAT)` — your RWR is spiked or a threat geometry has developed; break off immediately on the given heading
+-- - `ABORT (BINGO)` — fuel state critical; break off and return
+-- 
+-- ---
+-- 
+-- ## Multi-Ship (2v2) Tactics (REDGCI2v2)
+-- 
+-- When two fighters are dispatched against a threat, the GCI selects a tactic automatically based on the tactical situation. The tactic is applied at COMMIT — until then, both fighters are vectored together toward the intercept midpoint.
+-- 
+--           | Tactic       | Description                                                                                                                                                    |   
+--           |--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|   
+--           | **PINCER**   | Classic bracket. F1 and F2 split left and right, attacking from opposite angles simultaneously. Forces the target to choose which threat to react to.          |   
+--           | **HIGH-LOW** | Vertical split. One fighter attacks from below (radar up, clean sky background), one from above. Degrades the target's ability to acquire both simultaneously. |  
+--           | **STAGGER**  | BVR timing offset. F1 fires first at long range, F2 follows 8–13km behind to engage a maneuvering or defending target.                                         |  
+--           | **TRAIL**    | Close trail. F1 is the shooter, F2 is support — ready to engage if F1 overshoots or is defeated.                                                               |   
+--           | **GIRAFFE**  | *(Historical — Iraq/Iran War, Mirage F1 vs F-14A)* F1 attacks at normal altitude, binding the AWG-9 radar. F2 flies nap-of-earth                               |    
+--           |              |                         (300–600m AGL) using ground clutter to degrade radar detection, then pulls up and fires from close range.                              | 
+-- 
+-- During a tactic split, you may receive a heading that seems unusual — a large lateral offset or an unexpected altitude change. **Trust the vector.** The controller is positioning you for the tactic geometry. The merge point will bring you back onto the target.
+-- 
+-- ---
+-- 
+-- ## Dispatcher & CAP Flow (REDGCI_DISPATCHER)
+-- 
+-- When using the dispatcher layer, the full operational flow is:
+-- 
+-- ```
+-- Spawn at homeplate
+--     → Taxi and takeoff (template-controlled)   
+--     → Transit to CAP zone   
+--     → Orbit in assigned zone (radar cold, weapons safe)   
+--         ↓ INTEL detects threat cluster   
+--     → "Attention, radar contact. Pair, fighter, 45 kilometers." (all CAP fighters)   
+--         ↓ Dispatcher assigns pair   
+--     → "101 102, intercept. Pair, fighter." (dispatched pair)   
+--     → VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → SPLASH   
+--         ↓ Engagement complete   
+--     → AI: RTB waypoint → land → despawn → respawn after delay   
+--     → Human: "101, mission complete. RTB, refuel and rearm."   
+--         ↓ After RespawnDelay   
+--     → New AI pair spawns into same CAP zone   
+-- ```
+-- 
+-- Human players are dispatched first when available. If a human and AI are both in the CAP pool, the human is always assigned to the next intercept. AI fills gaps. The dispatcher does not send a single fighter if a pair is available — pairing is always preferred.
+-- 
+-- ---
+-- 
+-- ## Key Differences from NATO GCI at a Glance
+-- 
+--           |                    | Soviet (RedGCI)                      |  NATO                              |   
+--           |--------------------|--------------------------------------|------------------------------------|   
+--           | Tactical decision  | Controller                           | Pilot                              |   
+--           | Radar management   | Controller-commanded                 | Pilot-initiated                    |  
+--           | Weapons free       | Controller-called                    | Pilot-discretion (after WF)        |   
+--           | Heading calls      | Prescriptive                         | Advisory                           |   
+--           | Brevity style      | Terse, military, positional          | Standardized (BRAA, DECLARE, etc.) |   
+--           | Multi-ship tactics | Centrally planned, applied at COMMIT | Mutually briefed, pilot-executed   |   
+--           | Pilot autonomy     | Low (by design)                      | High                               |   
+-- 
+-- **The Soviet system is not inferior** — it is optimized for a different kind of pilot and a different operational context. Mass interception of large NATO strike packages over defended Soviet airspace demanded centralized, efficient, high-throughput GCI control. RedGCI brings that experience to DCS.
+-- 
+-- @field #REDGCI_KERNEL
+REDGCI_KERNEL = {}
+REDGCI_KERNEL.version = "1.0.0"
+
+-- ─────────────────────────────────────────────────────────────
+--  Konstanten (aus gci_types.h)
+-- ─────────────────────────────────────────────────────────────
+
+REDGCI_KERNEL.C = {
+    RANGE_VECTOR_START  = 60000.0,
+    RANGE_COMMIT        = 30000.0,
+    RANGE_RADAR_FLOOR   = 20000.0,
+    RANGE_VISUAL        =  5000.0,
+    RANGE_MERGE         =  2000.0,
+    WF_RANGE_MAX        = 25000.0,
+    ALT_OFFSET_LOOKDOWN =    0.0,
+    ASPECT_NOTCH_MIN    =   80.0,
+    ASPECT_NOTCH_MAX    =  100.0,
+    ASPECT_REAR_ATTACK  =  120.0,
+    MAX_TTI             =  600.0,
+    TICK_INTERVAL       =   15.0,
+    FUEL_BINGO          =    0.25,
+    DELAY_MIN           =    3.0,
+    DELAY_MAX           =    8.0,
+    DELAY_MERGE_MIN     =    2.0,
+    DELAY_MERGE_MAX     =    4.0,
+    TACTIC_PINCER       = 0,
+    TACTIC_HIGH_LOW     = 1,
+    TACTIC_STAGGER      = 2,
+    TACTIC_TRAIL        = 3,
+    TACTIC_GIRAFFE      = 4,  -- Irak/Iran-Doktrin: F1=Decoy normal, F2=Nap-of-Earth im Groundclutter
+    PURSUIT_COLLISION   = 0,
+    PURSUIT_LEAD        = 1,
+    PURSUIT_PURE        = 2,
+    PURSUIT_NO_SOLUTION = 3,
+}
+
+-- ─────────────────────────────────────────────────────────────
+--  Hilfsfunktionen
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.clamp(v, lo, hi)
+    if v < lo then return lo end
+    if v > hi then return hi end
+    return v
+end
+
+function REDGCI_KERNEL.vec2len(x, z)
+    return math.sqrt(x*x + z*z)
+end
+
+function REDGCI_KERNEL.bearing(dx, dz)
+    local b = math.deg(math.atan2(dx, dz))
+    return b < 0.0 and b + 360.0 or b
+end
+
+function REDGCI_KERNEL.randDelay(lo, hi)
+    return lo + UTILS.LCGRandom() * (hi - lo)
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  Aspect Angle  (0=Nose-on, 90=Beam, 180=Tail)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.aspectAngle(target, observer)
+    local dx    = observer.x - target.x
+    local dz    = observer.z - target.z
+    local range = REDGCI_KERNEL.vec2len(dx, dz)
+    if range < 1.0 then return 0.0 end
+    local nx  = dx / range
+    local nz  = dz / range
+    local spd = (target.speed or 1.0) + 1e-6
+    local tvx = (target.vx or 0.0) / spd
+    local tvz = (target.vz or 0.0) / spd
+    local dot = REDGCI_KERNEL.clamp(tvx*nx + tvz*nz, -1.0, 1.0)
+    return math.deg(math.acos(dot))
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  Closure Rate  (positiv = Annäherung)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.closureRate(f, t)
+    local dx    = t.x - f.x
+    local dz    = t.z - f.z
+    local range = REDGCI_KERNEL.vec2len(dx, dz)
+    if range < 1.0 then return 0.0 end
+    local nx  = dx / range
+    local nz  = dz / range
+    local dvx = (t.vx or 0.0) - (f.vx or 0.0)
+    local dvz = (t.vz or 0.0) - (f.vz or 0.0)
+    return -(dvx*nx + dvz*nz)
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  _solveCollision (intern, GCI-Koordinaten)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL._solveCollision(f, t)
+    local C   = REDGCI_KERNEL.C
+    local dx  = t.x - f.x
+    local dz  = t.z - f.z
+    local vtx = t.vx or 0.0
+    local vtz = t.vz or 0.0
+    local vf  = f.speed or 1.0
+    local a   = vtx*vtx + vtz*vtz - vf*vf
+    local b   = 2.0 * (dx*vtx + dz*vtz)
+    local c   = dx*dx + dz*dz
+    local sol_t = -1.0
+    if math.abs(a) < 1.0 then
+        if math.abs(b) > 0.01 then
+            sol_t = -c / b
+        else
+            return false
+        end
+    else
+        local disc = b*b - 4.0*a*c
+        if disc < 0.0 then return false end
+        local sq = math.sqrt(disc)
+        local t1 = (-b - sq) / (2.0 * a)
+        local t2 = (-b + sq) / (2.0 * a)
+        if     t1 > 0.0 and t2 > 0.0 then sol_t = math.min(t1, t2)
+        elseif t1 > 0.0               then sol_t = t1
+        elseif t2 > 0.0               then sol_t = t2
+        else return false
+        end
+    end
+    if sol_t < 0.0 or sol_t > C.MAX_TTI then return false end
+    local ip = {
+        x = t.x + vtx * sol_t,
+        z = t.z + vtz * sol_t,
+        y = math.max(t.y + C.ALT_OFFSET_LOOKDOWN, 300.0),
+    }
+    local hdg = REDGCI_KERNEL.bearing(ip.x - f.x, ip.z - f.z)
+    return true, hdg, sol_t, ip
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  _solveLead (intern, GCI-Koordinaten)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL._solveLead(f, t)
+    local C     = REDGCI_KERNEL.C
+    local dx    = t.x - f.x
+    local dz    = t.z - f.z
+    local range = REDGCI_KERNEL.vec2len(dx, dz)
+    if range < 1.0 then return 0.0, 0.0 end
+    local base_bearing = REDGCI_KERNEL.bearing(dx, dz)
+    local aspect_rad   = math.rad(REDGCI_KERNEL.aspectAngle(t, f))
+    local speed_ratio  = (t.speed or 1.0) / ((f.speed or 1.0) + 1e-6)
+    local sin_lead     = REDGCI_KERNEL.clamp(speed_ratio * math.sin(aspect_rad), -1.0, 1.0)
+    local lead_deg     = math.deg(math.asin(sin_lead))
+    local hdg
+    if math.abs(lead_deg) < 45.0 then
+        hdg = (base_bearing + lead_deg + 360.0) % 360.0
+    else
+        hdg = base_bearing
+    end
+    local closing = REDGCI_KERNEL.closureRate(f, t)
+    if closing < 50.0 then closing = 50.0 end
+    local tti = math.min(range / closing, C.MAX_TTI)
+    return hdg, tti
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  computeIntercept (GCI-Koordinaten intern)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.computeIntercept(fighter, target)
+    local C  = REDGCI_KERNEL.C
+    local dx = target.x - fighter.x
+    local dz = target.z - fighter.z
+    local sol = {
+        heading_deg        = 0.0,
+        time_to_intercept  = C.MAX_TTI,
+        intercept_point    = { x=target.x, z=target.z, y=target.y },
+        target_alt         = target.y,
+        solution_found     = false,
+        aspect_angle       = REDGCI_KERNEL.aspectAngle(target, fighter),
+        range              = REDGCI_KERNEL.vec2len(dx, dz),
+        mode               = C.PURSUIT_NO_SOLUTION,
+        weapons_free       = false,
+    }
+    local closure         = REDGCI_KERNEL.closureRate(fighter, target)
+    local projected_range = sol.range - closure * C.TICK_INTERVAL
+    sol.weapons_free = (sol.range < C.WF_RANGE_MAX) or
+                       (closure > 0.0 and projected_range < C.WF_RANGE_MAX)
+    local ok, hdg, tti, ip = REDGCI_KERNEL._solveCollision(fighter, target)
+    if ok then
+        sol.heading_deg       = hdg
+        sol.time_to_intercept = tti
+        sol.intercept_point   = ip
+        sol.solution_found    = true
+        sol.mode              = C.PURSUIT_COLLISION
+        return sol
+    end
+    local lhdg, ltti = REDGCI_KERNEL._solveLead(fighter, target)
+    sol.heading_deg       = lhdg
+    sol.time_to_intercept = ltti
+    sol.solution_found    = true
+    sol.mode              = C.PURSUIT_LEAD
+    sol.intercept_point   = {
+        x = target.x + (target.vx or 0.0) * ltti,
+        z = target.z + (target.vz or 0.0) * ltti,
+        y = math.max(target.y + C.ALT_OFFSET_LOOKDOWN, 300.0),
+    }
+    return sol
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  computeInterceptDCS  (DCS-Koordinaten Ein/Aus)
+--  Flat-Rückgabe kompatibel mit alter C-API
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.computeInterceptDCS(f, t)
+    local f_gci = { x=f.z, z=f.x, y=f.y, vx=f.vz, vz=f.vx, vy=f.vy, speed=f.spd }
+    local t_gci = { x=t.z, z=t.x, y=t.y, vx=t.vz, vz=t.vx, vy=t.vy, speed=t.spd }
+    local sol   = REDGCI_KERNEL.computeIntercept(f_gci, t_gci)
+    -- GCI→DCS: ip.z(Nord)→DCS.x, ip.x(Ost)→DCS.z
+    return sol.heading_deg,
+           sol.time_to_intercept,
+           sol.mode,
+           sol.weapons_free,
+           sol.range,
+           sol.aspect_angle,
+           sol.intercept_point.z,
+           sol.intercept_point.x,
+           sol.intercept_point.y,
+           sol.target_alt
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  computeSplit (GCI-Koordinaten intern)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.computeSplit(f1, f2, tgt, tactic, variation)
+    local C   = REDGCI_KERNEL.C
+    variation = REDGCI_KERNEL.clamp(variation or 0.5, 0.0, 1.0)
+    tactic    = tactic or C.TACTIC_PINCER
+    local mid_x = (f1.x + f2.x) * 0.5
+    local mid_z = (f1.z + f2.z) * 0.5
+    local dx  = tgt.x - mid_x
+    local dz  = tgt.z - mid_z
+    local rng = REDGCI_KERNEL.vec2len(dx, dz)
+    if rng < 1.0 then rng = 1.0 end
+    local ax = dx / rng
+    local az = dz / rng
+    local px = -az
+    local pz =  ax
+
+    local plan = {
+        tactic   = tactic,
+        wp_f1    = { x=0, z=0, y=0 },
+        wp_f2    = { x=0, z=0, y=0 },
+        merge_f1 = { x=0, z=0, y=0 },
+        merge_f2 = { x=0, z=0, y=0 },
+    }
+
+    local function clamp_alt(pt)
+        if pt.y < 300.0 then pt.y = 300.0 end
+    end
+    
+    local function clamp_alt_noe(pt)
+      if pt.y < 150.0 then pt.y = 150.0 end
+    end
+    
+    -- GIRAFFE F2 fliegt NOE — separater clamp mit niedrigerer Mindesthöhe
+    local function clamp_alt_noe(pt)
+        if pt.y < 150.0 then pt.y = 150.0 end
+    end
+
+    if tactic == C.TACTIC_PINCER then
+        local spread    = 12000.0 + variation * 5000.0
+        local approach  = rng * 0.45
+        local merge_off = spread * 0.30
+        plan.wp_f1    = { x=mid_x+ax*approach+px*spread,  z=mid_z+az*approach+pz*spread,  y=tgt.y }
+        plan.wp_f2    = { x=mid_x+ax*approach-px*spread,  z=mid_z+az*approach-pz*spread,  y=tgt.y }
+        plan.merge_f1 = { x=tgt.x-ax*3000+px*merge_off,   z=tgt.z-az*3000+pz*merge_off,   y=tgt.y }
+        plan.merge_f2 = { x=tgt.x-ax*3000-px*merge_off,   z=tgt.z-az*3000-pz*merge_off,   y=tgt.y }
+
+    elseif tactic == C.TACTIC_HIGH_LOW then
+        local vert     = 3000.0 + variation * 1500.0
+        local approach = rng * 0.50
+        local side_off = 2000.0
+        plan.wp_f1    = { x=mid_x+ax*approach+px*side_off, z=mid_z+az*approach+pz*side_off, y=tgt.y-500.0 }
+        plan.wp_f2    = { x=mid_x+ax*approach-px*side_off, z=mid_z+az*approach-pz*side_off, y=tgt.y+vert  }
+        plan.merge_f1 = { x=tgt.x-ax*3000+px*side_off,     z=tgt.z-az*3000+pz*side_off,     y=plan.wp_f1.y }
+        plan.merge_f2 = { x=tgt.x-ax*3000-px*side_off,     z=tgt.z-az*3000-pz*side_off,     y=plan.wp_f2.y }
+
+    elseif tactic == C.TACTIC_STAGGER then
+        local lag       = 8000.0 + variation * 3000.0
+        local lead_dist = rng * 0.85
+        plan.wp_f1    = { x=mid_x+ax*lead_dist,            z=mid_z+az*lead_dist,            y=tgt.y }
+        plan.wp_f2    = { x=mid_x+ax*(lead_dist-lag),      z=mid_z+az*(lead_dist-lag),      y=tgt.y }
+        plan.merge_f1 = { x=plan.wp_f1.x, z=plan.wp_f1.z, y=plan.wp_f1.y }
+        plan.merge_f2 = { x=plan.wp_f2.x, z=plan.wp_f2.z, y=plan.wp_f2.y }
+
+    elseif tactic == C.TACTIC_TRAIL then
+        local lag       = 3000.0 + variation * 2000.0
+        local lead_dist = rng * 0.85
+        local side_off  = 500.0
+        plan.wp_f1    = { x=mid_x+ax*lead_dist,                    z=mid_z+az*lead_dist,                    y=tgt.y }
+        plan.wp_f2    = { x=mid_x+ax*(lead_dist-lag)+px*side_off,  z=mid_z+az*(lead_dist-lag)+pz*side_off,  y=tgt.y }
+        plan.merge_f1 = { x=plan.wp_f1.x, z=plan.wp_f1.z, y=plan.wp_f1.y }
+        plan.merge_f2 = { x=plan.wp_f2.x, z=plan.wp_f2.z, y=plan.wp_f2.y }
+    
+        elseif tactic == C.TACTIC_GIRAFFE then
+        -- ── GIRAFFE: Irak/Iran-Doktrin (Mirage F1 vs F-14A) ──────────────
+        --
+        --  F1 = Decoy:  normale Höhe, direkter Anflug, bindet AWG-9 Radar.
+        --               Zieht Phoenixe auf sich — gibt F2 Zeit für Pull-up.
+        --
+        --  F2 = Killer: Nap-of-Earth (~300-600m AGL/MSL) weit seitlich versetzt.
+        --               Nutzt Groundclutter um AWG-9 Look-Down zu degradieren.
+        --               Nähert sich bis 10km vor Ziel, dann Pull-up und Schuss.
+        --               Seitlicher Versatz ~8-12km damit F2 nicht im Radarsektor
+        --               des AWG-9 liegt während F1 den Lock hält.
+        --
+        --  Historisch: Iran-Irak Krieg 1982-88. Irakische Mirage F1EQ nutzten
+        --  dieses Profil gegen F-14A/AIM-54 Phoenix — der AWG-9 hatte trotz
+        --  Look-Down-Fähigkeit bei sehr tiefen Zielen über unebenen Terrain
+        --  (Zagros-Berge, Khuzestan-Ebene) erhöhte Clutter-Probleme.
+        --
+        --  Höhen: neutral (0.0) — Lua addiert AltOffset + terrain-awareness.
+        --  Mindesthöhe 300m MSL wird am Ende geclampt.
+ 
+        local noe_alt   = 300.0 + variation * 300.0    -- 300-600m MSL (Nap-of-Earth)
+        local side_off  = 8000.0 + variation * 4000.0  -- 8-12km seitlich (aus AWG-9 Sektor)
+        local approach  = rng * 0.60                    -- F1 direkter Anflug, 60% des Weges
+        local noe_dist  = rng * 0.75                    -- F2 nähert sich weiter ran vor Pull-up
+     
+        plan.wp_f1    = { x=mid_x+ax*approach+px*2000, z=mid_z+az*approach+pz*2000, y=tgt.y }
+        plan.merge_f1 = { x=tgt.x-ax*5000+px*2000,     z=tgt.z-az*5000+pz*2000,     y=tgt.y }
+        plan.wp_f2    = { x=mid_x+ax*noe_dist-px*side_off, z=mid_z+az*noe_dist-pz*side_off, y=noe_alt, absolute_alt=true }
+        plan.merge_f2 = { x=tgt.x-ax*10000-px*side_off*0.3, z=tgt.z-az*10000-pz*side_off*0.3, y=tgt.y }
+    
+    else
+        plan.wp_f1    = { x=tgt.x, z=tgt.z, y=tgt.y }
+        plan.wp_f2    = { x=tgt.x, z=tgt.z, y=tgt.y }
+        plan.merge_f1 = { x=tgt.x, z=tgt.z, y=tgt.y }
+        plan.merge_f2 = { x=tgt.x, z=tgt.z, y=tgt.y }
+    end
+
+    clamp_alt(plan.wp_f1)
+    if tactic == C.TACTIC_GIRAFFE then
+        clamp_alt_noe(plan.wp_f2)
+    else
+        clamp_alt(plan.wp_f2)
+    end
+    clamp_alt(plan.merge_f1)
+    clamp_alt(plan.merge_f2)
+    return plan
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  computeSplitDCS  (DCS-Koordinaten Ein/Aus)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.computeSplitDCS(f1, f2, tgt, tactic, variation)
+    local function dcs2gci(u)
+        return { x=u.z, z=u.x, y=u.y, vx=u.vz or 0, vz=u.vx or 0, speed=u.spd or 0 }
+    end
+    local function gci2dcs(pt)
+        return { x=pt.z, z=pt.x, y=pt.y, absolute_alt=pt.absolute_alt }
+    end
+    local tgt_gci = { x=tgt.z, z=tgt.x, y=tgt.y }
+    local plan    = REDGCI_KERNEL.computeSplit(
+        dcs2gci(f1), dcs2gci(f2), tgt_gci, tactic, variation)
+    plan.wp_f1    = gci2dcs(plan.wp_f1)
+    plan.wp_f2    = gci2dcs(plan.wp_f2)
+    plan.merge_f1 = gci2dcs(plan.merge_f1)
+    plan.merge_f2 = gci2dcs(plan.merge_f2)
+    return plan
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  buildTransmission  (Port von gci_build_transmission)
+--
+--  ctx/prev Felder: state, prev_state, ticks_in_state, range,
+--    aspect_angle, closure_rate, altitude_delta, fuel_fraction
+--  sol Felder: heading_deg, time_to_intercept, target_alt,
+--    range, aspect_angle, weapons_free
+--  Rückgabe: { token_str, delay_sec, weapons_free, silence }
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.buildTransmission(ctx, prev, sol)
+    local C  = REDGCI_KERNEL.C
+    local tx = {
+        token_str    = "",
+        delay_sec    = REDGCI_KERNEL.clamp(
+            REDGCI_KERNEL.randDelay(C.DELAY_MIN, C.DELAY_MAX), 3.0, 8.0),
+        weapons_free = sol.weapons_free,
+        silence      = false,
+        priority     = 50,
+    }
+
+    local hdg_i    = math.floor((sol.heading_deg   or 0) + 0.5)
+    local alt_i    = math.floor((sol.target_alt    or 0) / 100.0 + 0.5) * 100
+    local rng_km   = math.floor((ctx.range         or 0) / 1000.0 + 0.5)
+    local aspect_i = math.floor((ctx.aspect_angle  or 0) + 0.5)
+    local delay    = tx.delay_sec
+    local state      = ctx.state          or "VECTOR"
+    local prev_state = prev.state         or "VECTOR"
+    local ticks      = ctx.ticks_in_state or 0
+
+    local function emit(fmt, ...)
+        tx.token_str = string.format(fmt, ...)
+    end
+
+    if state == "VECTOR" then
+        if prev_state ~= "VECTOR" then
+            local tti_m = math.floor((sol.time_to_intercept or 0) / 60.0)
+            local tti_s = math.floor(sol.time_to_intercept or 0) % 60
+            if tti_m > 0 then
+                emit("VECTOR_WITH_TTI|hdg=%d|alt=%d|rng=%d|tti_m=%d|tti_s=%d|delay=%.1f",
+                    hdg_i, alt_i, rng_km, tti_m, tti_s, delay)
+            else
+                emit("VECTOR|hdg=%d|alt=%d|rng=%d|delay=%.1f",
+                    hdg_i, alt_i, rng_km, delay)
+            end
+        else
+            local hdg_delta = math.abs((sol.heading_deg or 0) - (ctx.aspect_angle or 0))
+            if hdg_delta < 5.0 and ticks > 3 then
+                tx.silence = true
+            else
+                emit("VECTOR|hdg=%d|alt=%d|rng=%d|delay=%.1f",
+                    hdg_i, alt_i, rng_km, delay)
+            end
+        end
+
+    elseif state == "COMMIT" then
+        if prev_state ~= "COMMIT" then
+            tx.priority = 100
+            emit("COMMIT_FIRST|hdg=%d|alt=%d|rng=%d|aspect=%d|delay=%.1f",
+                hdg_i, alt_i, rng_km, aspect_i, delay)
+        elseif ticks == 6 then
+            emit("COMMIT_NO_LOCK|hdg=%d|rng=%d|aspect=%d|delay=%.1f",
+                hdg_i, rng_km, aspect_i, delay)
+        elseif ticks > 8 then
+            emit("COMMIT_NUDGE|hdg=%d|aspect=%d|delay=%.1f",
+                hdg_i, aspect_i, delay)
+        else
+            tx.silence = true
+        end
+
+    elseif state == "RADAR_CONTACT" then
+        if prev_state ~= "RADAR_CONTACT" then
+            if sol.weapons_free then
+                tx.priority = 100
+                emit("RADAR_LOCK_WF|rng=%d|delay=%.1f", rng_km, delay)
+                tx.weapons_free = true
+            else
+                emit("RADAR_LOCK_HOLD|rng=%d|delay=%.1f", rng_km, delay)
+            end
+        elseif not sol.weapons_free
+            and (ctx.range or 0)        < C.WF_RANGE_MAX
+            and (ctx.aspect_angle or 0) > C.ASPECT_REAR_ATTACK
+            and prev_state              == "RADAR_CONTACT" then
+            emit("RADAR_WF_NOW|rng=%d|delay=%.1f", rng_km, delay)
+            tx.priority = 100
+            tx.weapons_free = true
+        else
+            tx.silence = true
+        end
+
+    elseif state == "VISUAL" then
+        if prev_state ~= "VISUAL" then
+            emit("VISUAL_CONFIRM|rng=%d|delay=%.1f", rng_km, delay)
+            tx.weapons_free = true
+        else
+            tx.silence = true
+        end
+
+    elseif state == "NOTCH" then
+        if prev_state ~= "NOTCH" then
+            emit("NOTCH_ENTRY|delay=1.5")
+        elseif ticks % 8 == 0 then
+            emit("NOTCH_UPDATE|rng=%d|aspect=%d|delay=%.1f",
+                rng_km, aspect_i, delay)
+        else
+            tx.silence = true
+        end
+
+    elseif state == "ABORT" then
+        tx.delay_sec = 1.5
+        if (ctx.fuel_fraction or 1.0) < C.FUEL_BINGO then
+            emit("ABORT_BINGO|hdg=%d|delay=1.5", hdg_i)
+        else
+            emit("ABORT_THREAT|hdg=%d|delay=1.5", hdg_i)
+        end
+
+    else
+        tx.silence = true
+    end
+
+    return tx
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  mergeTransition  (Port von gci_merge_transition)
+--
+--  ctx Felder: phase, ticks_in_phase, range, bearing_to_target,
+--    closure_rate, altitude_delta, pass_count, radar_lost
+--  Rückgabe: phase string
+--    "ENTRY"|"OVERSHOOT"|"SEPARATION"|"REATTACK"|"LOST"|"SPLASH"
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.mergeTransition(ctx, prev)
+    if ctx.radar_lost then return "LOST" end
+    if (ctx.closure_rate or 0) < -30.0 and (ctx.range or 0) > 3000.0 then
+        return "SEPARATION"
+    end
+    local brg = ctx.bearing_to_target or 0
+    if brg > 100.0 and brg < 260.0 and (ctx.range or 0) < 5000.0 then
+        return "OVERSHOOT"
+    end
+    if ctx.phase == "SEPARATION" and (ctx.pass_count or 0) < 3 then
+        return "REATTACK"
+    end
+    return ctx.phase
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  buildMergeTransmission  (Port von gci_build_merge_transmission)
+-- ─────────────────────────────────────────────────────────────
+
+function REDGCI_KERNEL.buildMergeTransmission(ctx, prev)
+    local C  = REDGCI_KERNEL.C
+    local tx = {
+        token_str    = "",
+        delay_sec    = REDGCI_KERNEL.clamp(
+            REDGCI_KERNEL.randDelay(C.DELAY_MERGE_MIN, C.DELAY_MERGE_MAX), 2.0, 5.0),
+        weapons_free = false,
+        silence      = false,
+        priority     = 50,
+    }
+
+    local brg        = math.floor((ctx.bearing_to_target or 0) + 0.5)
+    local rng_km     = math.floor((ctx.range or 0) / 1000.0 + 0.5)
+    local delay      = tx.delay_sec
+    local phase      = ctx.phase          or "ENTRY"
+    local prev_phase = prev.phase         or "ENTRY"
+    local ticks      = ctx.ticks_in_phase or 0
+
+    local dir_rl  = ((ctx.bearing_to_target or 0) < 180.0) and "right" or "left"
+    local alt_d   = ctx.altitude_delta or 0
+    local alt_rel = ""
+    if     alt_d >  400.0 then alt_rel = "low"
+    elseif alt_d < -400.0 then alt_rel = "high"
+    end
+
+    local function emit(fmt, ...)
+        tx.token_str = string.format(fmt, ...)
+    end
+
+    if phase == "ENTRY" then
+        tx.priority = 100
+        emit("MERGE_ENTRY|brg=%d|dir_rl=%s|delay=%.1f", brg, dir_rl, delay)
+
+    elseif phase == "OVERSHOOT" then
+        emit("MERGE_OVERSHOOT|brg=%d|dir_rl=%s|alt_rel=%s|delay=%.1f",
+            brg, dir_rl, alt_rel, delay)
+
+    elseif phase == "SEPARATION" then
+        if (ctx.pass_count or 0) < 3 then
+            emit("MERGE_REATTACK|brg=%d|rng=%d|delay=%.1f", brg, rng_km, delay)
+        else
+            emit("ABORT_THREAT|hdg=%d|delay=%.1f", brg, delay)
+        end
+
+    elseif phase == "REATTACK" then
+        if prev_phase ~= "REATTACK" or ticks % 3 == 0 then
+            emit("MERGE_REATTACK|brg=%d|rng=%d|delay=%.1f", brg, rng_km, delay)
+        else
+            tx.silence = true
+        end
+
+    elseif phase == "LOST" then
+        if prev_phase ~= "LOST" or ticks == 4 then
+            emit("MERGE_LOST|brg=%d|rng=%d|delay=%.1f", brg, rng_km, delay)
+        else
+            tx.silence = true
+        end
+
+    elseif phase == "SPLASH" then
+        tx.delay_sec = 1.5
+        tx.priority = 100
+        emit("MERGE_SPLASH|delay=1.5")
+
+    else
+        tx.silence = true
+    end
+
+    return tx
+end
+
+-------------------------------------------------------------------------------
+-- END of Class
+-------------------------------------------------------------------------------
+--- **Functional** - Enhanced Warsaw Pact GCI.
+--
+-- ## Main Features:
+--
+--    * Guide AI and human pilots in Warsaw Pact Style. Single flight engagements.
+--    * Advanced Tactics for Groups.
+--    * Many additional events that the mission designer can hook into.
+--
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [GitHub](https://github.com/FlightControl-Master/MOOSE_MISSIONS/).
+--
+-- ===
+--
+-- ### Author: **Applevangelist**
+--
+-- ===
+-- @module Functional.RedGCI
+-- @image Func_RedGCI.png
+
+---
+-- # RedGCI — Soviet GCI Doctrine & Player Guide
+--
+-- ## Philosophy: Централизованное управление (Centralized Control)
+-- 
+-- The fundamental difference between Soviet and NATO GCI is **who makes the tactical decision**.
+-- 
+-- In NATO doctrine, the GCI controller provides situational awareness — bearing, range, altitude, aspect — and the pilot decides how to prosecute the intercept. The pilot is an autonomous tactician. 
+-- GCI is an advisor.
+-- 
+-- In Soviet doctrine, the GCI controller **directs**. The pilot executes. The controller selects the intercept geometry, assigns the heading, manages the radar, calls weapons free, and coordinates 
+-- multi-ship tactics. The pilot's job is to fly the numbers and shoot when told. This is not a flaw — it is the system working as designed. Soviet fighter pilots were trained to be precise executors 
+-- of GCI instructions, not independent tacticians. The ground radar network (PVO) was the brain; the aircraft was the weapon.
+-- 
+-- RedGCI models this philosophy faithfully.
+-- 
+-- ---
+-- 
+-- ## What to Expect as a Player
+-- 
+-- ### You will not be asked what you want to do.
+-- 
+-- There are no "recommend a vector" calls, no "at your discretion" callouts. The controller tells you your heading, your altitude, and your task. Your acknowledgement is assumed.
+-- 
+-- ### The controller manages your radar.
+-- 
+-- You do not decide when to turn your radar on. The GCI will tell you when to switch on (`локатор` / `Radar on`). Before that call, you fly cold and silent. This preserves your emissions 
+-- discipline and prevents the target from getting an early RWR spike.
+-- 
+-- ### Weapons free is a controlled event.
+-- 
+-- You do not engage until the controller clears you (`цель разрешена` / `WEAPONS FREE`). The controller determines when geometry, range, and aspect are favorable. Shooting early breaks the 
+-- coordinated intercept and may compromise your wingman's attack.
+-- 
+-- ### Radio calls are short and military.
+-- 
+-- Soviet GCI brevity is terse by design. Expect calls like:
+-- 
+-- - `"Сокол, курс 170, высота 4500."` — vector, altitude
+-- - `"Сокол, цель, пара, истребитель. Локатор."` — picture call on commit: count, type, radar on
+-- - `"Сокол, захват. Дальность 20. Цель разрешена."` — lock confirmed, range, weapons free
+-- - `"Сокол, молодец. Домой."` — good kill, RTB
+-- 
+-- There are no "BOGEY DOPE" requests, no "BRAA" calls, no "DECLARE" queries. The controller has already done that work. You fly the vector.
+-- 
+-- ---
+-- 
+-- ## State Flow — What the GCI is Doing Behind the Scenes
+-- 
+-- RedGCI manages a state machine that progresses through six phases. Understanding these phases helps you anticipate what call is coming next.
+-- 
+-- ```
+-- VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → (SPLASH / ABORT / RTB)
+-- ```
+-- 
+-- ### VECTOR
+-- The controller has a track. You are being vectored onto an intercept geometry. **Your radar is off**. The controller is solving a collision course and updating your heading every tick. 
+-- Altitude calls reflect the intercept geometry — you may be sent below the target (classic Soviet shoot-up doctrine for radar-limited types) or level/above (MiG-29/Su-27 lookdown geometry). 
+-- Expect heading updates every 10–15 seconds.
+-- 
+-- **What you should do:** Fly the heading. Don't deviate. **Don't turn your radar on yet**. Speed is expected at 900kph TAS (depending on airframe)
+-- 
+-- ### COMMIT
+-- Range has closed to approximately 30km. The controller calls the picture: count and type. Your radar comes on. You are now committed to the intercept — turning away is no longer the 
+-- default option. The controller is building your radar geometry toward a lock.
+-- 
+-- **What you should do:** Activate your radar. Acquire the target. Do not fire yet.
+-- 
+-- ### RADAR_CONTACT
+-- You have radar lock (or the AI has achieved it). The controller confirms lock and calls range. If geometry and range are favorable, weapons free follows immediately. If not — for example 
+-- if aspect angle is unfavorable for a stern conversion — the controller holds fire and waits for better geometry.
+-- 
+-- **What you should do:** Maintain lock. Track the target. Wait for the weapons free call.
+-- 
+-- ### VISUAL
+-- Range has closed to approximately 5km — visual conditions. Weapons free is automatic at this point. You are now in the merge envelope.
+-- 
+-- **What you should do:** Engage.
+-- 
+-- ### MERGE
+-- Inside 2km. The GCI transitions to merge control: bearing to target, overshoot calls, separation instructions, reattack vectors. At this range the controller cannot see fine-grained 
+-- geometry — merge calls are based on relative bearing and closure.
+-- 
+-- **What you should do:** Fight. Listen for overshoot, separation, and reattack calls.
+-- 
+-- ### SPLASH / ABORT / RTB
+-- - `SPLASH` — kill confirmed, RTB
+-- - `ABORT (THREAT)` — your RWR is spiked or a threat geometry has developed; break off immediately on the given heading
+-- - `ABORT (BINGO)` — fuel state critical; break off and return
+-- 
+-- ---
+-- 
+-- ## Multi-Ship (2v2) Tactics (REDGCI2v2)
+-- 
+-- When two fighters are dispatched against a threat, the GCI selects a tactic automatically based on the tactical situation. The tactic is applied at COMMIT — until then, both 
+-- fighters are vectored together toward the intercept midpoint.
+-- 
+--           | Tactic       | Description                                                                                                                                                    |   
+--           |--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|   
+--           | **PINCER**   | Classic bracket. F1 and F2 split left and right, attacking from opposite angles simultaneously. Forces the target to choose which threat to react to.          |   
+--           | **HIGH-LOW** | Vertical split. One fighter attacks from below (radar up, clean sky background), one from above. Degrades the target's ability to acquire both simultaneously. |  
+--           | **STAGGER**  | BVR timing offset. F1 fires first at long range, F2 follows 8–13km behind to engage a maneuvering or defending target.                                         |  
+--           | **TRAIL**    | Close trail. F1 is the shooter, F2 is support — ready to engage if F1 overshoots or is defeated.                                                               |   
+--           | **GIRAFFE**  | *(Historical — Iraq/Iran War, Mirage F1 vs F-14A)* F1 attacks at normal altitude, binding the AWG-9 radar. F2 flies nap-of-earth                               |    
+--           |              |                         (300–600m AGL) using ground clutter to degrade radar detection, then pulls up and fires from close range.                              | 
+-- 
+-- During a tactic split, you may receive a heading that seems unusual — a large lateral offset or an unexpected altitude change. **Trust the vector.** The controller is positioning you for 
+-- the tactic geometry. The merge point will bring you back onto the target.
+-- 
+-- ---
+-- 
+-- ## Dispatcher & CAP Flow (REDGCI_DISPATCHER)
+-- 
+-- When using the dispatcher layer, the full operational flow is:
+-- 
+-- ```
+-- Spawn at homeplate
+--     → Taxi and takeoff (template-controlled)   
+--     → Transit to CAP zone   
+--     → Orbit in assigned zone (radar cold, weapons safe)   
+--         ↓ INTEL detects threat cluster   
+--     → "Attention, radar contact. Two, fighter, 45 kilometers." (all CAP fighters)   
+--         ↓ Dispatcher assigns pair   
+--     → "101 102, intercept. Pair, fighter." (dispatched pair)   
+--     → VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → SPLASH   
+--         ↓ Engagement complete   
+--     → AI: RTB waypoint → land → despawn → respawn after delay   
+--     → Human: "101, mission complete. RTB, refuel and rearm."   
+--         ↓ After RespawnDelay   
+--     → New AI pair spawns into same CAP zone   
+-- ```
+-- 
+-- Human players are dispatched first when available. If a human and AI are both in the CAP pool, the human is always assigned to the next intercept. AI fills gaps. The dispatcher does not 
+-- send a single fighter if a pair is available — pairing is always preferred.
+-- 
+-- ---
+-- 
+-- ## Key Differences from NATO GCI at a Glance
+-- 
+--           |                    | Soviet (RedGCI)                      |  NATO                              |   
+--           |--------------------|--------------------------------------|------------------------------------|   
+--           | Tactical decision  | Controller                           | Pilot                              |   
+--           | Radar management   | Controller-commanded                 | Pilot-initiated                    |  
+--           | Weapons free       | Controller-called                    | Pilot-discretion (after WF)        |   
+--           | Heading calls      | Prescriptive                         | Advisory                           |   
+--           | Brevity style      | Terse, military, positional          | Standardized (BRAA, DECLARE, etc.) |   
+--           | Multi-ship tactics | Centrally planned, applied at COMMIT | Mutually briefed, pilot-executed   |   
+--           | Pilot autonomy     | Low (by design)                      | High                               |   
+-- 
+-- **The Soviet system is not inferior** — it is optimized for a different kind of pilot and a different operational context. Mass interception of large NATO strike packages over defended 
+-- Soviet airspace demanded centralized, efficient, high-throughput GCI control. RedGCI brings that experience to DCS.
+-- 
+-- @field #REDGCI
+REDGCI = {}
+
+--- Class name
+REDGCI.ClassName = "REDGCI"
+
+--- Version
+REDGCI.version = "2.0.0"
+
+--- Waypoint lookahead: WP is clamped to this factor × speed × tick_interval (minimum 15 km)
+-- @field #number WP_DISTANCE_FACTOR
+REDGCI.WP_DISTANCE_FACTOR = 5.0
+
+---
+--@field #table RadioChannels
+REDGCI.RadioChannels = {
+  [1] = 125,
+  [2] = 125.5,
+  [3] = 126,
+  [4] = 126.5,
+  [5] = 127,
+  [6] = 127.5,
+  [7] = 128,
+  [8] = 128.5,
+  [9] = 129,
+  [10] = 129.5,
+}
+
+-- ─────────────────────────────────────────────────────────────
+--  Localized messages — embedded (gci_messages.lua no longer needed)
+-- ─────────────────────────────────────────────────────────────
+
+--- @type REDGCI.Messages
+-- @field #string en
+-- @field #string de
+-- @field #string ru
+REDGCI.Messages = {
+
+    -- ── ENGLISH ──────────────────────────────────────────────
+    en = {
+        -- GCI → Pilot
+        VECTOR              = "{CALLSIGN}, vector {HDG}, {ALT}.",
+        VECTOR_WITH_TTI     = "{CALLSIGN}, vector {HDG}, {ALT}. Target in {TTI_M}.",
+        COMMIT_FIRST        = "{CALLSIGN}, target, {COUNT}, {TYPE}. Radar on.",
+        COMMIT_NO_LOCK      = "{CALLSIGN}, correction: bearing {ASPECT}, {RNG} kilometers. No lock?",
+        COMMIT_NUDGE        = "{CALLSIGN}, {DIR_LR} ten degrees.",
+        RADAR_LOCK_WF       = "{CALLSIGN}, lock confirmed. {RNG} kilometers. WEAPONS FREE.",
+        RADAR_LOCK_HOLD     = "{CALLSIGN}, lock confirmed. {RNG} kilometers. Hold fire.",
+        RADAR_WF_NOW        = "{CALLSIGN}, WEAPONS FREE.",
+        VISUAL_CONFIRM      = "{CALLSIGN}, visual confirmed. WEAPONS FREE.",
+        NOTCH_ENTRY         = "{CALLSIGN}, target maneuvering. Standby.",
+        NOTCH_UPDATE        = "{CALLSIGN}, target {DIR_RL}, {RNG} kilometers.",
+        ABORT_BINGO         = "{CALLSIGN}, BINGO. Break off. Course {HDG}.",
+        ABORT_THREAT        = "{CALLSIGN}, THREAT. Break off. Course {HDG}.",
+        MERGE_ENTRY         = "{CALLSIGN}, contact {DIR_RL}, {ASPECT} degrees. FIGHT.",
+        MERGE_OVERSHOOT     = "{CALLSIGN}, overshoot. Break {DIR_LR}.",
+        MERGE_SEPARATION    = "{CALLSIGN}, separate. Climb and reset.",
+        MERGE_REATTACK      = "{CALLSIGN}, reattack. Target {DIR_RL}.",
+        MERGE_LOST          = "{CALLSIGN}, blind. Heading {HDG}.",
+        MERGE_SPLASH        = "{CALLSIGN}, good kill. RTB.",
+        RADAR_ON            = "{CALLSIGN}, radar on.",
+        WEAPONS_FREE        = "{CALLSIGN}, WEAPONS FREE.",
+        RADIO_SWITCH_CHANNEL = "{CALLSIGN}, switch to channel {CHNL} for GCI.",
+        -- Pilot → GCI acknowledgements
+        ACK_VECTOR          = "Copy, {HDG}.",
+        ACK_COMMIT          = "Copy.",
+        ACK_WEAPONS_FREE    = "Copy. Engaging.",
+        ACK_ABORT           = "Copy. Breaking off.",
+        ACK_SPLASH          = "Splash. RTB.",
+    },
+
+    -- ── GERMAN ───────────────────────────────────────────────
+    de = {
+        -- GCI → Pilot
+        VECTOR              = "{CALLSIGN}, Kurs {HDG}, {ALT}.",
+        VECTOR_WITH_TTI     = "{CALLSIGN}, Kurs {HDG}, {ALT}. Ziel in {TTI_M}.",
+        COMMIT_FIRST        = "{CALLSIGN}, Ziel, {COUNT}, {TYPE}. Radar an.",
+        COMMIT_NO_LOCK      = "{CALLSIGN}, Korrektur: Peilung {ASPECT}, {RNG} Kilometer. Kein Lock?",
+        COMMIT_NUDGE        = "{CALLSIGN}, {DIR_LR} zehn Grad.",
+        RADAR_LOCK_WF       = "{CALLSIGN}, Lock bestätigt. {RNG} Kilometer. Feuer frei.",
+        RADAR_LOCK_HOLD     = "{CALLSIGN}, Lock bestätigt. {RNG} Kilometer. Warten.",
+        RADAR_WF_NOW        = "{CALLSIGN}, Feuer frei.",
+        VISUAL_CONFIRM      = "{CALLSIGN}, Sichtkontakt. Feuer frei.",
+        NOTCH_ENTRY         = "{CALLSIGN}, Ziel manövriert. Warten.",
+        NOTCH_UPDATE        = "{CALLSIGN}, Ziel {DIR_RL}, {RNG} Kilometer.",
+        ABORT_BINGO         = "{CALLSIGN}, BINGO. Abbruch. Kurs {HDG}.",
+        ABORT_THREAT        = "{CALLSIGN}, GEFAHR. Abbruch. Kurs {HDG}.",
+        MERGE_ENTRY         = "{CALLSIGN}, Kontakt {DIR_RL}, {ASPECT} Grad. Angriff.",
+        MERGE_OVERSHOOT     = "{CALLSIGN}, Überschuss. {DIR_LR} ausbrechen.",
+        MERGE_SEPARATION    = "{CALLSIGN}, trennen. Steigen und neu ansetzen.",
+        MERGE_REATTACK      = "{CALLSIGN}, neu angreifen. Ziel {DIR_RL}.",
+        MERGE_LOST          = "{CALLSIGN}, BLIND. Kurs {HDG}.",
+        MERGE_SPLASH        = "{CALLSIGN}, Treffer. Heimkurs.",
+        RADAR_ON            = "{CALLSIGN}, Radar an.",
+        WEAPONS_FREE        = "{CALLSIGN}, Feuer frei.",
+        RADIO_SWITCH_CHANNEL = "{CALLSIGN}, umschalten auf Kanal {CHNL} für Anweisungen.",
+        -- Pilot → GCI acknowledgements
+        ACK_VECTOR          = "Verstanden, Kurs {HDG}.",
+        ACK_COMMIT          = "Verstanden.",
+        ACK_WEAPONS_FREE    = "Verstanden. Greife an.",
+        ACK_ABORT           = "Verstanden. Abbruch.",
+        ACK_SPLASH          = "Treffer. Heimkurs.",
+    },
+
+    -- ── RUSSIAN ───────────────────────────────────────────────
+    ru = {
+        -- GCI → Pilot
+        VECTOR              = "{CALLSIGN}, курс {HDG}, высота {ALT}.",
+        VECTOR_WITH_TTI     = "{CALLSIGN}, курс {HDG}, высота {ALT}. До цели {TTI_M} минут.",
+        COMMIT_FIRST        = "{CALLSIGN}, цель, {COUNT}, {TYPE}. Локатор.",
+        COMMIT_NO_LOCK      = "{CALLSIGN}, поправка: азимут {ASPECT}, дальность {RNG}. Захват?",
+        COMMIT_NUDGE        = "{CALLSIGN}, довернись {DIR_LR}.",
+        RADAR_LOCK_WF       = "{CALLSIGN}, захват. Дальность {RNG}. Цель разрешена.",
+        RADAR_LOCK_HOLD     = "{CALLSIGN}, захват. Дальность {RNG}. Жди.",
+        RADAR_WF_NOW        = "{CALLSIGN}, цель разрешена.",
+        VISUAL_CONFIRM      = "{CALLSIGN}, визуальный. Цель разрешена.",
+        NOTCH_ENTRY         = "{CALLSIGN}, цель маневрирует. Жди.",
+        NOTCH_UPDATE        = "{CALLSIGN}, цель {DIR_RL}, дальность {RNG}.",
+        ABORT_BINGO         = "{CALLSIGN}, топливо. Прекрати. Курс {HDG}.",
+        ABORT_THREAT        = "{CALLSIGN}, угроза. Прекрати. Курс {HDG}.",
+        MERGE_ENTRY         = "{CALLSIGN}, контакт {DIR_RL}, {ASPECT} градусов. Бой.",
+        MERGE_OVERSHOOT     = "{CALLSIGN}, перелёт. Разворот {DIR_LR}.",
+        MERGE_SEPARATION    = "{CALLSIGN}, выход. Высота, повтори.",
+        MERGE_REATTACK      = "{CALLSIGN}, повтори. Цель {DIR_RL}.",
+        MERGE_LOST          = "{CALLSIGN}, потеря. Курс {HDG}.",
+        MERGE_SPLASH        = "{CALLSIGN}, молодец. Домой.",
+        RADAR_ON            = "{CALLSIGN}, локатор.",
+        WEAPONS_FREE        = "{CALLSIGN}, цель разрешена.",
+        RADIO_SWITCH_CHANNEL = "{CALLSIGN}, переключись на канал {CHNL} для указаний.",
+        -- Pilot → GCI acknowledgements (kurz und militärisch)
+        ACK_VECTOR          = "Понял, курс {HDG}.",
+        ACK_COMMIT          = "Понял.",
+        ACK_WEAPONS_FREE    = "Понял. Атакую.",
+        ACK_ABORT           = "Понял. Прекращаю.",
+        ACK_SPLASH          = "Цель поражена. Домой.",
+    },
+}
+
+--- @type REDGCI.DirTokens
+-- @field #string en
+-- @field #string de
+-- @field #string ru
+REDGCI.DirTokens = {
+    en = { left="left",   right="right",  ahead="ahead",   behind="behind", low="low",   high="high"  },
+    de = { left="links",  right="rechts", ahead="voraus",  behind="hinten", low="tief",  high="hoch"  },
+    ru = { left="влево",  right="вправо", ahead="впереди", behind="сзади",  low="ниже",  high="выше"  },
+}
+
+--- ─────────────────────────────────────────────────────────────
+--  Picture tokens — COUNT and TYPE
+--  COUNT: 1=single, 2=pair, 3-4=group, 5+=big group
+--  TYPE:  RCS-based fighter/bomber/machines (machines = unknown/medium)
+-- ─────────────────────────────────────────────────────────────
+
+--- @type REDGCI.CountTokens
+-- @field #string en
+-- @field #string de
+-- @field #string ru
+REDGCI.CountTokens = {
+    en = { single="single",       pair="two",    group="group",       biggroup="big group"     },
+    de = { single="einzel",       pair="zwei",   group="Gruppe",      biggroup="große Gruppe"  },
+    ru = { single="одиночная",    pair="пара",   group="группа",      biggroup="большая группа"},
+}
+
+--- @type REDGCI.TypeTokens
+-- @field #string en
+-- @field #string de
+-- @field #string ru
+REDGCI.TypeTokens = {
+    en = { fighter="fighter",     bomber="bomber",              machines="machines"          },
+    de = { fighter="Jäger",       bomber="Bomber",              machines="Maschinen"         },
+    ru = { fighter="истребитель", bomber="бомбардировщик",      machines="машины"            },
+}
+
+---
+-- @field #number RCS_FIGHTER_MAX
+-- @field #number RCS_BOMBER_MIN
+-- RCS thresholds für automatische Typ-Erkennung aus INTEL
+REDGCI.RCS_FIGHTER_MAX = 6.0    -- < 6 m² → Jäger
+REDGCI.RCS_BOMBER_MIN  = 20.0   -- > 20 m² → Bomber
+                                 -- dazwischen → Maschinen (unbekannt)
+
+-- ─────────────────────────────────────────────────────────────
+--  Constructor
+-- ─────────────────────────────────────────────────────────────
+
+--- Create a new REDGCI instance.
+-- @param #REDGCI self
+-- @param #string FighterGroupName  DCS group name of the interceptor(s)
+-- @param #string TargetGroupName   DCS group name of the target(s)
+-- @param #string Callsign          Radio callsign string (e.g. "Сокол-1")
+-- @param #number Coalition         coalition.side.RED or coalition.side.BLUE
+-- @return #REDGCI self
+function REDGCI:New(FighterGroupName, TargetGroupName, Callsign, Coalition)
+    local self = BASE:Inherit(self, FSM:New())  --#REDGCI
+
+    -- Log prefix
+    self.lid = string.format("REDGCI (%s) | ", Callsign or "GCI")
+
+    -- ── Core identity ─────────────────────────────────────────
+    self.FighterGroupName = FighterGroupName or "Mig-29A"
+    self.TargetGroupName  = TargetGroupName  or "Target"
+    self.Callsign         = Callsign         or "Сокол 1"
+    self.Coalition        = Coalition        or coalition.side.RED
+
+    -- ── Defaults ─────────────────────────────────────────────
+    self.Locale           = "ru"
+    self.TickInterval     = 10.0
+    self.TxRepeatInterval = 30.0
+    self.SubtitleTime     = 8
+    self.IsAIPlane        = true
+    self.HomeBaseName     = nil
+    self.HomeBase         = nil    -- Vec2 {x,y}
+    self.Debug                = false
+    self.WFRange              = 20000  -- metres: AI weapons-free range (C kernel wf=false workaround)
+    self.AltOffset            = -700   -- metres relative to target altitude for intercept waypoint.
+    self.ContactLostTimeout   = 3      -- ticks without contact before declaring target gone
+    self._contact_lost_ticks  = 0     -- internal counter
+                                   -- Negative = below target (Shootup geometry, classic Soviet doctrine
+                                   -- for radar-limited types like MiG-21/early MiG-23).
+                                   -- Zero or positive = Lookdown/Shoot-Down geometry (MiG-29, Su-27).
+                                   -- Use SetAltOffset() to override.
+    self._target_count        = 1
+    self._target_type         = "FIGHTER"
+
+    -- ── SRS defaults (GCI controller voice) ──────────────────
+    self.SRSPath          = nil
+    self.SRSFreq          = 251
+    self.SRSMod           = radio.modulation.AM
+    self.SRSCulture       = "ru-RU"
+    self.SRSVoice         = MSRS.Voices.Google.Standard.ru_RU_Standard_D
+    self.SRSPort          = 5002
+
+    -- ── Pilot SRS defaults (separate voice for acknowledgements) ──
+    self.PilotCallsign    = nil   -- if nil, no pilot ACKs are transmitted
+    self.PilotSRSCulture  = "ru-RU"
+    self.PilotSRSVoice    = MSRS.Voices.Google.Standard.ru_RU_Standard_B
+    self._pilot_msrs      = nil
+    self._pilot_queue     = nil
+
+    -- ── Internal state (per instance) ─────────────────────────
+    self._pilot_flags = { radar=false, visual=false, threat=false }
+    self._prev_state  = nil
+    self._prev_wf     = false
+    self._prev_radar  = false
+    self._last_tx     = { text="", time=0 }
+    self._msrs        = nil
+    self._srs_queue   = nil
+    self._gettext     = nil
+    self._wp_override = nil   -- { x, z, y, ticks } set by REDGCI2v2 for tactic geometry
+    self._missilerangeflag = 2  -- 1, HALF_WAY_RMAX_NEZ = 2, TARGET_THREAT_EST = 3, RANDOM_RANGE = 4. Defaults to 2.
+    
+    -- FSM state tracking for REDGCI_KERNEL (no C DLL needed)
+    self._ticks_in_state    = 0
+    self._merge_phase       = "ENTRY"
+    self._merge_phase_prev  = "ENTRY"
+    self._merge_ticks       = 0
+    self._merge_pass_count  = 0
+
+    -- ── FSM transitions ───────────────────────────────────────
+    self:SetStartState("Stopped")
+    self:AddTransition("Stopped", "Start",  "Running")
+    self:AddTransition("Running", "Status", "Running")
+    self:AddTransition("Running", "Stop",   "Stopped")
+
+    self:I(self.lid .. "v" .. REDGCI.version .. " created. Fighter=" ..
+           self.FighterGroupName .. " Target=" .. self.TargetGroupName)
+
+    return self
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  User API — configuration (all return self for chaining)
+-- ─────────────────────────────────────────────────────────────
+
+--- Set the locale for radio messages.
+-- @param #REDGCI self
+-- @param #string Locale  "en", "de", or "ru" (default "ru")
+-- @return #REDGCI self
+function REDGCI:SetLocale(Locale)
+    self.Locale = Locale or "ru"
+    return self
+end
+
+--- Enable or disable AI waypoint and radar management.
+-- @param #REDGCI self
+-- @param #boolean IsAI           true = push waypoints + control radar
+-- @param #string  HomeBaseName   AIRBASE name for RTB (e.g. AIRBASE.Caucasus.Nalchik)
+-- @return #REDGCI self
+function REDGCI:SetAIMode(IsAI, HomeBaseName)
+    self.IsAIPlane = IsAI ~= false
+    if HomeBaseName then
+        self.HomeBaseName = HomeBaseName
+        local ab = AIRBASE:FindByName(HomeBaseName)
+        if ab then
+            self.HomeBase = ab:GetVec2()
+        else
+            self:E(self.lid .. "SetAIMode: AIRBASE '" .. tostring(HomeBaseName) .. "' not found!")
+        end
+    end
+    return self
+end
+
+--- Configure SRS radio output.
+-- @param #REDGCI self
+-- @param #string  Path       Path to SRS (or nil to use MSRS default)
+-- @param #number  Frequency  MHz, e.g. 251
+-- @param #number  Modulation radio.modulation.AM or FM (default AM)
+-- @param #string  Culture    BCP-47 culture string, e.g. "ru-RU"
+-- @param #string  Voice      MSRS voice constant
+-- @param #number  Port       SRS port (default 5002)
+-- @param #number  Speed      Speach speed, default 1.
+-- @return #REDGCI self
+function REDGCI:SetSRS(Path, Frequency, Modulation, Culture, Voice, Port, Speed)
+    self.SRSPath    = Path
+    self.SRSFreq    = Frequency  or self.SRSFreq
+    self.SRSMod     = Modulation or self.SRSMod
+    self.SRSCulture = Culture    or self.SRSCulture
+    self.SRSVoice   = Voice      or self.SRSVoice
+    self.SRSPort    = Port       or self.SRSPort
+    self.SRSSpeed   = Speed      or 1
+    self:I({F=Frequency,V=Voice})
+    return self
+end
+
+--- Enable SRS autotranslation, do not forget to set voices according to language! Requires HOUND as SRS backend!
+-- @param #REDGCI self
+-- @param #string languagecode Language to translate to, defaults to "fr". Takes [ISO 639-1](https://en.wikipedia.org/wiki/ISO_639-1) language codes.
+-- @param #string provider (optional) Translation provider, defaults to `MSRS.Provider.GOOGLE`
+-- @return #REDGCI2v2 self
+function REDGCI:EnableSRSAutoTranslate(languagecode,provider)
+  self.translateEnabled = true
+  self.translateLanguage = languagecode or "fr"
+  self.translateProvider = provider or MSRS.Provider.GOOGLE
+  return self
+end
+
+--- Configure available channel numbers and frequencies for pilots.
+-- @param #REDGCI self
+-- @param #table RadioTable Table of available channel numbers and their frequencies, indexed by channel number
+-- @return #REDGCI self
+-- @usage
+--  Use as follows, e.g.
+--          local RadioTable = {  
+--            [1] = 125,
+--            [2] = 125.5,
+--            [3] = 126,
+--            [4] = 126.5,
+--            [5] = 127,
+--            [6] = 127.5,
+--            [7] = 128,
+--            [8] = 128.5,
+--            [9] = 129,
+--            [10] = 129.5,
+--               }
+--            dispatch:SetRadioChannelList(RadioTable)
+function REDGCI:SetRadioChannelList(RadioTable)
+  self.RadioChannels = RadioTable
+  return self
+end
+
+--- Set SRS Provider
+--@param #REDGCI self
+--@param #string Provider
+function REDGCI:SetSRSProvider(Provider)
+  self:T(self.lid.."SetSRSProvider "..tostring(Provider))
+  self.SRSProvider = Provider or MSRS.Provider.GOOGLE
+  return self
+end
+
+--- Set SRS Voice Speaker for Hound/Piper
+--@param #REDGCI self
+--@param #number Speaker Speaker number, e.g. 11 for Speaker "318 (11)"
+function REDGCI:SetSRSPiperSpeaker(Speaker)
+  self:T(self.lid.."SetSRSPiperSpeaker "..tostring(Speaker))
+  self.SRSSpeaker = Speaker
+  return self
+end
+
+--- Configure the pilot voice for radio acknowledgements.
+-- The pilot uses the same frequency/modulation as the GCI controller but
+-- a distinct voice so the two can be told apart on the radio.
+-- Set PilotCallsign to nil (default) to disable pilot ACKs entirely.
+-- @param #REDGCI self
+-- @param #string  PilotCallsign  Pilot's callsign (e.g. "Сокол-1"), or nil to disable ACKs.
+-- @param #string  Culture        BCP-47 culture string (default same as GCI)
+-- @param #string  Voice          MSRS voice constant (default ru_RU_Standard_B)
+-- @param #number  Speaker        (Optional) MSRS Speaker for Hound/Piper Voices, e.g. 11 for "318 (11)"
+-- @return #REDGCI self
+function REDGCI:SetPilotSRS(PilotCallsign, Culture, Voice, Speaker)
+  self:T({CS=PilotCallsign,CU=Culture,VO=Voice,SP=Speaker})
+  self.PilotCallsign   = PilotCallsign
+  self.PilotSRSCulture = Culture or self.SRSCulture
+  self.PilotSRSVoice   = Voice   or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+  self.PilotSRSSpeaker = Speaker
+  return self
+end
+
+
+
+--- Set the target count manually (used when no INTEL source is attached).
+-- Overridden automatically when INTEL is active.
+-- @param #REDGCI self
+-- @param #number Count  Number of targets (1=single, 2=pair, 3-4=group, 5+=big group)
+-- @return #REDGCI self
+function REDGCI:SetTargetCount(Count)
+    self._target_count = Count or 1
+    return self
+end
+
+--- Set the target type manually (used when no INTEL source is attached).
+-- @param #REDGCI self
+-- @param #string Type  "FIGHTER", "BOMBER", or "MACHINES" (default)
+-- @return #REDGCI self
+function REDGCI:SetTargetType(Type)
+    self._target_type = Type or "MACHINES"
+    return self
+end
+
+--- Set the GCI tick interval in seconds.
+-- @param #REDGCI self
+-- @param #number Seconds  Default 10.0
+-- @return #REDGCI self
+function REDGCI:SetTickInterval(Seconds)
+    self.TickInterval = Seconds or 10.0
+    return self
+end
+
+--- Set minimum seconds between identical transmissions.
+-- @param #REDGCI self
+-- @param #number Seconds  Default 30.0
+-- @return #REDGCI self
+function REDGCI:SetTxRepeatInterval(Seconds)
+    self.TxRepeatInterval = Seconds or 30.0
+    return self
+end
+
+--- Set the AI weapons-free range threshold in metres.
+-- Weapons free is declared when the C kernel wf flag is true OR (AI mode AND
+-- state is RADAR_CONTACT AND range <= WFRange). Set to 0 to disable the
+-- Lua-side override and rely solely on the C kernel.
+-- @param #REDGCI self
+-- @param #number Meters  Default 20000
+-- @return #REDGCI self
+function REDGCI:SetWFRange(Meters)
+    self.WFRange = Meters or 20000
+    return self
+end
+
+--- Enable or disable debug logging.
+-- @param #REDGCI self
+-- @param #boolean OnOff  true = verbose logging
+-- @return #REDGCI self
+function REDGCI:SetDebug(OnOff)
+    self.Debug = OnOff ~= false
+    return self
+end
+
+--- Set the altitude offset applied to intercept waypoints relative to the target altitude.
+-- Models the preferred attack geometry of the fighter type:
+--
+--   Negative offset (below target) = classic Soviet Shootup doctrine.
+--     The fighter is vectored below the target so its radar looks up
+--     against a clean sky background, avoiding ground clutter.
+--     Appropriate for MiG-21, early MiG-23 (limited or no LDSD capability).
+--     Typical value: -700 m (default).
+--
+--   Zero or positive offset (at or above target) = Lookdown/Shoot-Down.
+--     The fighter has a modern pulse-Doppler radar capable of suppressing
+--     ground clutter and shooting downward.
+--     Appropriate for MiG-29 (N019), Su-27 (N001), MiG-31 (Zaslon).
+--     Typical value: 0 (level) to +300 m (slight high perch).
+--
+-- The offset is only applied during VECTOR and COMMIT states.
+-- In RADAR_CONTACT and beyond, exact geometry is driven by the C kernel.
+-- @param #REDGCI self
+-- @param #number Meters  Altitude offset in metres (default -700).
+-- @return #REDGCI self
+function REDGCI:SetAltOffset(Meters)
+    self.AltOffset = Meters or -700
+    return self
+end
+
+--- Set how many consecutive ticks without a target contact are tolerated
+-- before the GCI declares the intercept over.
+--
+-- During a contact gap the GCI transmits NOTCH_ENTRY on the first missing
+-- tick and then stays silent, holding the last known vector, until either
+-- the contact is re-acquired (counter resets) or the timeout is reached
+-- (MERGE_SPLASH + Stop).
+--
+-- One tick = TickInterval seconds (default 10 s), so the default of 3 ticks
+-- means ~30 s of tolerance — enough to cover a typical notch manoeuvre or
+-- brief Doppler blind spot without falsely declaring a kill.
+-- @param #REDGCI self
+-- @param #number Ticks  Number of ticks (default 3).
+-- @return #REDGCI self
+function REDGCI:SetContactLostTimeout(Ticks)
+    self.ContactLostTimeout = Ticks or 3
+    return self
+end
+
+--- Signal that the pilot has achieved radar lock.
+-- Equivalent to pressing "Radar Lock" in the F10 menu.
+-- @param #REDGCI self
+-- @param #boolean OnOff
+-- @return #REDGCI self
+function REDGCI:SetPilotRadarLock(OnOff)
+    self._pilot_flags.radar = OnOff ~= false
+    return self
+end
+
+--- Signal that the pilot has visual contact.
+-- @param #REDGCI self
+-- @param #boolean OnOff
+-- @return #REDGCI self
+function REDGCI:SetPilotVisual(OnOff)
+    self._pilot_flags.visual = OnOff ~= false
+    return self
+end
+
+--- Set range on which AI will prefer to fire missiles.
+-- MAX_RANGE = 0, NEZ_RANGE = 1, HALF_WAY_RMAX_NEZ = 2, TARGET_THREAT_EST = 3, RANDOM_RANGE = 4. Defaults to 2.
+-- @param #REDGCI self
+-- @param #number Flag The behavior to set. 
+-- @return #REDGCI self
+function REDGCI:SetMissileFiringFlag(Flag)
+  self._missilerangeflag = Flag or 2
+  return self
+end
+
+--- Signal that the pilot's RWR is active (threat warning).
+-- @param #REDGCI self
+-- @param #boolean OnOff
+-- @return #REDGCI self
+function REDGCI:SetPilotThreat(OnOff)
+    self._pilot_flags.threat = OnOff ~= false
+    return self
+end
+
+--- Reset FSM state and pilot flags (e.g. after a splash or new intercept).
+-- @param #REDGCI self
+-- @return #REDGCI self
+function REDGCI:Reset()
+    self._pilot_flags        = { radar=false, visual=false, threat=false }
+    self._prev_state         = nil
+    self._prev_wf            = false
+    self._prev_radar         = false
+    self._last_tx            = { text="", time=0 }
+    self._contact_lost_ticks = 0
+    self._wp_override = nil   -- { x, z, y, ticks } set by REDGCI2v2 for tactic geometry
+    RedGCI.reset(self.Callsign)
+    self:_SetRadar(false)
+    self:_SetWeaponsFree(false)
+    self:T(self.lid .. "Reset.")
+    return self
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  Internal helpers
+-- ─────────────────────────────────────────────────────────────
+
+--- [INTERNAL]
+--- @param #REDGCI self
+function REDGCI:_Log(msg)
+    if self.Debug then
+        env.info(self.lid .. msg)
+    end
+end
+
+--- [INTERNAL] Initialize TEXTANDSOUND localization from embedded Messages table.
+-- @param #REDGCI self
+function REDGCI:_InitLocalization()
+    self._gettext = TEXTANDSOUND:New("REDGCI_" .. self.Callsign, "en")
+    for locale, entries in pairs(REDGCI.Messages) do
+        local loc = string.lower(tostring(locale))
+        for id, text in pairs(entries) do
+            self._gettext:AddEntry(loc, tostring(id), text)
+        end
+    end
+end
+
+--- [INTERNAL] Initialize MSRS + queue.
+-- @param #REDGCI self
+function REDGCI:_InitSRS()
+    -- GCI controller voice
+    self._msrs = MSRS:New(self.SRSPath, self.SRSFreq, self.SRSMod)
+    self._msrs:SetPort(self.SRSPort)
+    self._msrs:SetLabel("GCI")
+    self._msrs:SetCulture(self.SRSCulture)
+    self._msrs:SetVoice(self.SRSVoice)
+    self._msrs:SetCoalition(self.Coalition)
+    if self.SRSProvider then
+      self._msrs:SetProvider(self.SRSProvider)
+    end
+    if self.SRSSpeaker then
+      self._msrs:SetSpeakerPiper(self.SRSSpeaker)
+    end
+    if self.translateEnabled == true then 
+      self._msrs:SetAutoTranslate(self.translateProvider,self.translateLanguage)
+    end
+    self._srs_queue = MSRSQUEUE:New("REDGCI_" .. self.Callsign) -- Sound.MSRS#MSRSQUEUE
+
+    -- Pilot voice (only when a pilot callsign has been configured)
+    if self.PilotCallsign then
+        self._pilot_msrs = MSRS:New(self.SRSPath, self.SRSFreq, self.SRSMod)
+        self._pilot_msrs:SetPort(self.SRSPort)
+        self._pilot_msrs:SetLabel("PILOT")
+        self._pilot_msrs:SetCulture(self.PilotSRSCulture)
+        self._pilot_msrs:SetVoice(self.PilotSRSVoice)
+        self._pilot_msrs:SetCoalition(self.Coalition)
+        if self.SRSProvider then
+            self._pilot_msrs:SetProvider(self.SRSProvider)
+        end
+        if self.SRSSpeaker then
+            self._pilot_msrs:SetSpeakerPiper(self.PilotSRSSpeaker)
+        end
+        if self.translateEnabled == true then 
+            self._pilot_msrs:SetAutoTranslate(self.translateProvider,self.translateLanguage)
+        end
+        self._pilot_queue = self._srs_queue
+        self:_Log("Pilot SRS ready: " .. self.PilotCallsign)
+    end
+end
+
+--- [INTERNAL] Get live unit data from a DCS group (returns first alive unit).
+-- @param #REDGCI self
+-- @param #string GroupName
+-- @return #table  { x, y, z, spd, vx, vy, vz, hdg, fuel } or nil
+function REDGCI:_GetUnitData(GroupName)
+  if not GroupName then return end
+    local grp = Group.getByName(GroupName)
+    if not grp then return nil end
+    for _, u in ipairs(grp:getUnits()) do
+        if u and u:isExist() and u:isActive() then
+            local pos3 = u:getPosition()
+            local p    = pos3.p
+            local fwd  = pos3.x
+            local v    = u:getVelocity()
+            return {
+                x    = p.x,
+                y    = p.y,
+                z    = p.z,
+                spd  = math.sqrt(v.x*v.x + v.z*v.z),
+                vx   = v.x,
+                vy   = v.y,
+                vz   = v.z,
+                hdg  = math.deg(math.atan2(fwd.z, fwd.x)) % 360,
+                fuel = u:getFuel(),
+            }
+        end
+    end
+    return nil
+end
+
+--- [INTERNAL] Parse a pipe-separated token string from the C kernel.
+-- Input:  "VECTOR|hdg=165|alt=4500|tti_m=8|wf=false"
+-- Output: { key="VECTOR", hdg=165, alt=4500, tti_m=8, wf=false }
+-- @param #REDGCI self
+function REDGCI:_ParseTokens(TokenStr)
+  self:T("_ParseTokens "..TokenStr)
+    if not TokenStr or TokenStr == "" then return nil end
+    local parts = {}
+    for part in string.gmatch(TokenStr, "[^|]+") do
+        parts[#parts + 1] = part
+    end
+    local result = { key = parts[1] }
+    for i = 2, #parts do
+        local k, v = string.match(parts[i], "^([%w_]+)=(.+)$")
+        if k and v then
+            if     v == "true"  then result[k] = true
+            elseif v == "false" then result[k] = false
+            elseif tonumber(v)  then result[k] = tonumber(v)
+            else                     result[k] = v
+            end
+        end
+    end
+    UTILS.PrintTableToLog(result)
+    return result
+end
+
+--- [INTERNAL] Fill {PLACEHOLDER} tokens in a template string.
+-- @param #REDGCI self
+function REDGCI:_FillTemplate(Template, Vars)
+    return (string.gsub(Template, "{([%w_]+)}", function(key)
+        return tostring(Vars[key] or "")
+    end))
+end
+
+--- [INTERNAL] Resolve COUNT token to localized word.
+-- @param #REDGCI self
+-- @param #number Count
+-- @return #string
+function REDGCI:_CountToken(Count)
+    local t   = REDGCI.CountTokens[self.Locale] or REDGCI.CountTokens["en"]
+    local n   = Count or 1
+    if     n == 1 then return t.single
+    elseif n == 2 then return t.pair
+    elseif n <= 4 then return t.group
+    else               return t.biggroup
+    end
+end
+
+--- [INTERNAL] Resolve TYPE token to localized word.
+-- @param #REDGCI self
+-- @param #string TypeKey  "FIGHTER", "BOMBER", "MACHINES"
+-- @return #string
+function REDGCI:_TypeToken(TypeKey)
+    local t = REDGCI.TypeTokens[self.Locale] or REDGCI.TypeTokens["en"]
+    local k = string.lower(TypeKey or "machines")
+    return t[k] or t.machines
+end
+
+--- [INTERNAL] Derive count and type from INTEL contact.
+-- Updates self._target_count and self._target_type.
+-- @param #REDGCI self
+function REDGCI:_UpdatePictureFromIntel()
+    if not self.Intel or not self.Intel:Is("Running") then return end
+    local contacts = self.Intel:GetContactTable()
+    if not contacts then return end
+
+    local count   = 0
+    local rcs_sum = 0.0
+    local rcs_n   = 0
+
+    for _, contact in pairs(contacts) do
+        if contact.ctype == INTEL.Ctype.AIRCRAFT then
+            if not (self.IntelTargetFilter and
+                    not string.find(contact.groupname or "", self.IntelTargetFilter, 1, true)) then
+                -- Anzahl Units in der Kontaktgruppe
+                local grp = GROUP:FindByName(contact.groupname)
+                if grp then
+                    count = count + grp:CountAliveUnits()
+                else
+                    count = count + 1
+                end
+                -- RCS aus contact wenn verfügbar
+                if contact.rcs then
+                    rcs_sum = rcs_sum + contact.rcs
+                    rcs_n   = rcs_n + 1
+                end
+            end
+        end
+    end
+
+    if count > 0 then
+        self._target_count = count
+    end
+
+    -- Type aus durchschnittlichem RCS
+    if rcs_n > 0 then
+        local avg_rcs = rcs_sum / rcs_n
+        if     avg_rcs < REDGCI.RCS_FIGHTER_MAX then self._target_type = "FIGHTER"
+        elseif avg_rcs > REDGCI.RCS_BOMBER_MIN  then self._target_type = "BOMBER"
+        else                                          self._target_type = "MACHINES"
+        end
+    end
+end
+
+--- [INTERNAL] Resolve a direction key to a localized word.
+-- @param #REDGCI self
+-- @param #string Key   "left", "right", "ahead", "behind", "low", "high"
+-- @return #string
+function REDGCI:_DirToken(Key)
+    local t = REDGCI.DirTokens[self.Locale] or REDGCI.DirTokens["en"]
+    return t[Key] or Key
+end
+
+--- [INTERNAL] Derive "left"/"right" turn instruction from aspect angle.
+-- @param #REDGCI self
+function REDGCI:_DeriveDirLR(AspectAngle)
+    return (AspectAngle > 5.0) and "right" or "left"
+end
+
+--- [INTERNAL] Derive target position relative to fighter ("ahead"/"behind"/"left"/"right").
+-- @param #REDGCI self
+-- @param #table Fighter  unit data
+-- @param #table Target   unit data
+-- @return #string
+function REDGCI:_DeriveDirRL(Fighter, Target)
+    local dx     = Target.x - Fighter.x
+    local dz     = Target.z - Fighter.z
+    local f_hdg  = math.atan2(Fighter.vx, Fighter.vz)
+    local to_tgt = math.atan2(dx, dz)
+    local rel    = math.deg(to_tgt - f_hdg) % 360
+    if     rel < 45  or rel > 315 then return "ahead"
+    elseif rel < 135              then return "right"
+    elseif rel < 225              then return "behind"
+    else                               return "left"
+    end
+end
+
+--- [INTERNAL] Build and dispatch a radio transmission.
+-- @param #REDGCI self
+-- @param #string TokenStr   Pipe-separated token string from C kernel
+-- @param #string DirLR      "left"/"right" for manoeuvre cues
+-- @param #string DirRL      "ahead"/"behind"/"left"/"right" for target position
+-- @param #number Priority
+function REDGCI:_Transmit(TokenStr, DirLR, DirRL, Priority)
+    local tok = self:_ParseTokens(TokenStr)
+    if not tok then
+        self:_Log("_Transmit: empty token string")
+        return
+    end
+
+    -- Look up template
+    local template = self._gettext:GetEntry(tok.key, self.Locale)
+    if not template then
+        self:_Log("_Transmit: no template for key=" .. tostring(tok.key) ..
+                  " locale=" .. self.Locale)
+        return
+    end
+    
+    tok.aspect = tok.aspect or tok.brg  -- Merge nutzt brg statt aspect
+    
+    -- Build variable table
+    local vars = {
+        CALLSIGN = string.gsub(self.Callsign, "-", " "),
+        HDG      = tok.hdg    and string.format("%03d", tok.hdg)          or "",
+        ALT      = tok.alt    and tostring(math.floor(tok.alt))           or "",
+        RNG      = tok.rng    and tostring(math.floor(tok.rng))           or "",
+        TTI_M    = tok.tti_m  and tostring(tok.tti_m)                     or "",
+        TTI_S    = tok.tti_s  and tostring(tok.tti_s)                     or "",
+        ASPECT   = tok.aspect and string.format("%03d", tok.aspect)       or "",
+        DIR_LR   = self:_DirToken(DirLR or "right"),
+        DIR_RL   = self:_DirToken(DirRL or "ahead"),
+        BRG    = tok.brg    and string.format("%03d", tok.brg)    or "",
+        COUNT    = self:_CountToken(self._target_count),
+        TYPE     = self:_TypeToken(self._target_type),
+        CHNL     = tok.channel or 1,
+    }
+
+    local text = self:_FillTemplate(template, vars)
+
+    -- Throttle: same text repeated within TxRepeatInterval → suppress
+    local now = timer.getTime()
+    if text == self._last_tx.text and
+       (now - self._last_tx.time) < self.TxRepeatInterval then
+        self:_Log("[SRS/THROTTLED/" .. tok.key .. "] " .. text)
+        return
+    end
+    self._last_tx.text = text
+    self._last_tx.time = now
+
+    self:_Log(string.format("[SRS/%s/%s] %s", self.Locale, tok.key, text))
+    
+    local srstext = string.gsub(text,"%.",";")
+      
+    if self._srs_queue and self._msrs then
+        local delay = tok.delay or 3.0
+        --MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed,speaker,priority)
+        self._srs_queue:NewTransmission(
+            srstext,          -- message text
+            nil,              -- duration (auto)
+            self._msrs,       -- MSRS instance
+            delay,            -- start delay
+            2,                -- interval
+            {GROUP:FindByName(RedGCI.FIGHTER_GROUP)},            -- Subgroups (Subtitle)
+            text,             -- subtitle
+            self.SubtitleTime,-- subtitle duration
+            nil, nil,         -- channel/mod (from msrs)
+            nil, nil, nil,    -- gender/culture/voice (from msrs)
+            nil,              -- volume
+            "GCI",            -- label
+            nil,              -- coordinate
+            self.SRSSpeed,    -- speed
+            nil,               -- speaker
+            Priority          -- priority
+        )
+    else
+        -- Fallback: on-screen text
+        trigger.action.outText(text, self.SubtitleTime, false)
+    end
+    
+    if self.Debug then
+      trigger.action.outText(text, self.SubtitleTime, false)
+    end
+end
+
+--- [INTERNAL] Dispatch a pilot acknowledgement transmission.
+-- Uses the pilot's MSRS voice on the same frequency as GCI.
+-- The ACK key is looked up in the Messages table under the pilot locale;
+-- vars are filled identically to _Transmit so {HDG} etc. work.
+-- The ACK fires after a short realistic reaction delay (GCI_delay + ~2s).
+-- No-op when PilotCallsign is nil or pilot SRS is not initialised.
+-- @param #REDGCI self
+-- @param #string AckKey   Message key, e.g. "ACK_VECTOR"
+-- @param #table  Vars     Variable table (same format as _Transmit vars)
+-- @param #number GciDelay Delay of the preceding GCI transmission (seconds)
+function REDGCI:_TransmitPilot(AckKey, Vars, GciDelay)
+    if not self.IsAIPlane then return end
+    if not self.PilotCallsign then return end
+    if not self._pilot_queue or not self._pilot_msrs then return end
+
+    local template = self._gettext:GetEntry(AckKey, self.Locale)
+    if not template then
+        self:_Log("_TransmitPilot: no template for key=" .. AckKey)
+        return
+    end
+
+    -- Inject pilot callsign into vars
+    --local v = Vars or {}
+    --v.CALLSIGN = self.PilotCallsign
+
+    --local text = self:_FillTemplate(template, v)
+    local text = self.PilotCallsign
+    -- Pilot speaks ~2-3 s after GCI finishes (GCI delay + estimated GCI speech + reaction)
+    local pilot_delay = (GciDelay or 3.0)
+
+    self:_Log(string.format("[PILOT/%s/%s] %s", self.Locale, AckKey, text))
+    --(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed,speaker)
+    self._pilot_queue:NewTransmission(
+        text,
+        nil, -- duration
+        self._pilot_msrs, --msrs
+        pilot_delay, --tstrat
+        1, --interval
+        nil, --{GROUP:FindByName(self.FighterGroupName)}, --subgroups
+        nil, --text, subtitle
+        nil, --self.SubtitleTime, subduration
+        nil, nil, --frequency, modulation, 
+        nil, nil, self.PilotSRSVoice, --gender, culture, voice
+        nil, --volume
+        text -- label
+    )
+
+    if self.Debug then
+        trigger.action.outText("[PILOT] " .. text, self.SubtitleTime, false)
+    end
+end
+
+--- [INTERNAL] Push a waypoint
+-- @param #REDGCI self
+-- @param #number wx       DCS x coord (North)
+-- @param #number wz       DCS z coord (East)
+-- @param #number wy       altitude MSL metres
+-- @param #number SpeedMps airspeed in m/s
+-- @param #boolean LandHome  true = set waypoint type to LAND at HomeBase
+function REDGCI:_PushWaypoint(wx, wz, wy, SpeedMps, LandHome)
+    if not self.IsAIPlane then return end
+
+    local grp = GROUP:FindByName(self.FighterGroupName)
+    if not grp then return end
+
+    -- Terrain floor + 300 m minimum clearance
+    local terrain_floor = land.getHeight({ x=wx, y=wz }) + 300
+    local safe_alt      = math.max(wy, terrain_floor)
+    local kmph          = UTILS.MpsToKmph(SpeedMps)
+    local speed_tas = UTILS.IasToTas(kmph,math.max(wy, safe_alt))
+    
+    local tsk = grp:TaskAerobatics()
+    tsk = grp:TaskAerobaticsStraightFlight(tsk,1,math.max(wy, safe_alt),speed_tas,UseSmoke,StartImmediately,10)
+    
+    local startpoint = grp:GetCoordinate()
+    local wp0 = startpoint:WaypointAir(
+        COORDINATE.WaypointAltType.BARO,
+        COORDINATE.WaypointType.TurningPoint,
+        COORDINATE.WaypointAction.FlyoverPoint,
+        speed_tas, true, nil, {}, "VECTOR")
+
+    local endpoint = COORDINATE:New(wx, safe_alt, wz)
+    local wp1
+    if LandHome then
+      grp:SetOptionLandingOverheadBreak()
+      grp:SetOptionLandingForcePair()
+        local ab = self.HomeBaseName and AIRBASE:FindByName(self.HomeBaseName) or nil
+        wp1 = endpoint:WaypointAir(
+            COORDINATE.WaypointAltType.BARO,
+            COORDINATE.WaypointType.Land,
+            COORDINATE.WaypointAction.Landing,
+            speed_tas, true, ab, {}, "HOME")
+    else
+        wp1 = endpoint:WaypointAir(
+            COORDINATE.WaypointAltType.BARO,
+            COORDINATE.WaypointType.TurningPoint,
+            COORDINATE.WaypointAction.FlyoverPoint,
+            speed_tas, true, nil, tsk, "VECTOR")
+    end
+
+    grp:Route({ wp0, wp1 }, 2)
+    self:_Log(string.format("WP → x=%.0f z=%.0f alt=%.0fm spd=%.0f kph TAS=%.0f kph",
+                            wx, wz, safe_alt, kmph, speed_tas))
+end
+
+--- [INTERNAL] Resolve intercept target point, honouring any active tactic override.
+-- When REDGCI2v2 has set _wp_override, that point is used instead of the
+-- C-kernel intercept point for N ticks, then reverts to normal guidance.
+-- @param #REDGCI self
+-- @param #number ip_x  Normal intercept x (DCS North, AltOffset already applied)
+-- @param #number ip_z  Normal intercept z (DCS East)
+-- @param #number ip_y  Normal intercept altitude
+-- @return #number tx, tz, ty
+function REDGCI:_ResolveTarget(ip_x, ip_z, ip_y)
+    local ov = self._wp_override
+    if ov and ov.ticks > 0 then
+        ov.ticks = ov.ticks - 1
+        self:_Log(string.format(
+            "Override active (%d ticks left) → x=%.0f z=%.0f y=%.0f",
+            ov.ticks + 1, ov.x, ov.z, ov.y))
+        if ov.ticks == 0 then
+            self._wp_override = nil
+            self:_Log("Override expired — resuming normal intercept")
+        end
+        return ov.x, ov.z, ov.y, ov.absolute_alt
+    end
+    return ip_x, ip_z, ip_y, false
+end
+
+--- [INTERNAL] Clamp an intercept point to max_dist from the fighter.
+-- Prevents the AI from overshooting on a distant waypoint.
+-- @param #REDGCI self
+-- @param #table  Fighter  unit data
+-- @param #number ip_x     intercept x (DCS North)
+-- @param #number ip_z     intercept z (DCS East)
+-- @param #number ip_y     intercept altitude
+-- @return #number, #number, #number  clamped wx, wz, wy
+function REDGCI:_ComputeRollingWaypoint(Fighter, ip_x, ip_z, ip_y)
+    local dx   = ip_x - Fighter.x
+    local dz   = ip_z - Fighter.z
+    local dist = math.sqrt(dx*dx + dz*dz)
+
+    local max_dist = math.max(
+        Fighter.spd * self.TickInterval * REDGCI.WP_DISTANCE_FACTOR,
+        15000)  -- minimum 15 km lookahead
+
+    if dist <= max_dist or dist < 1 then
+        return ip_x, ip_z, ip_y
+    end
+
+    local nx = dx / dist
+    local nz = dz / dist
+    return Fighter.x + nx * max_dist,
+           Fighter.z + nz * max_dist,
+           ip_y
+end
+
+--- [INTERNAL] Toggle radar emission on the fighter group.
+-- @param #REDGCI self
+-- @param #boolean On
+-- @param #number Delay
+function REDGCI:_SetRadar(On,Delay)
+    if not self.IsAIPlane then return end
+    if Delay then
+      self:ScheduleOnce(Delay,REDGCI._SetRadar,self,On)
+      return
+    end
+    local grp = GROUP:FindByName(self.FighterGroupName)
+    if not grp then return end
+    if On == true then
+      grp:SetOptionRadarUsingForContinousSearch()
+      --grp:OptionROEWeaponFree()
+      --grp:OptionAlarmStateRed()
+      --grp:OptionAAAttackRange(1)
+      grp:OptionECM_DetectedLockByRadar()
+      grp:SetOptionJettisonEmptyTanks(true)
+    else
+      grp:SetOptionRadarUsingNever()
+      --grp:OptionROEHoldFire()
+      --grp:OptionAlarmStateAuto()
+      --grp:OptionAAAttackRange(3)
+      grp:OptionECM_Never()
+    end
+    self:_Log("Radar " .. (On and "ON" or "OFF"))
+end
+
+--- [INTERNAL] Toggle weapons free on the fighter group.
+-- @param #REDGCI self
+-- @param #boolean On
+-- @param #number Delay Delay in seconds
+function REDGCI:_SetWeaponsFree(On,Delay)
+    if not self.IsAIPlane then return end
+    if Delay then
+      self:ScheduleOnce(Delay,REDGCI._SetWeaponsFree,self,On)
+      return
+    end
+    -- Externer Gate-Check — REDGCI2v2 kann das überschreiben
+    if On and self._wf_gate and not self._wf_gate(self) then
+        self:_Log("WF geblockt — Gate nicht offen")
+        return
+    end
+    local grp = GROUP:FindByName(self.FighterGroupName)
+    if not grp then return end
+    if On == true then
+      --grp:SetOptionRadarUsingForContinousSearch()
+      grp:OptionROEWeaponFree()
+      grp:OptionAlarmStateRed()
+      grp:OptionAAAttackRange(self._missilerangeflag)
+      grp:OptionECM_DetectedLockByRadar()
+      grp:SetOptionJettisonEmptyTanks(true)
+    else
+      --grp:SetOptionRadarUsingNever()
+      grp:OptionROEHoldFire()
+      grp:OptionAlarmStateAuto()
+      grp:OptionAAAttackRange(3)
+      grp:OptionECM_Never()
+    end
+    self:_Log("Weapons " .. (On and "ON" or "OFF"))
+end
+
+--- [INTERNAL] Register F10 coalition menu entries.
+-- @param #REDGCI self
+function REDGCI:_SetupF10Menu()
+    local root = missionCommands.addSubMenuForCoalition(self.Coalition, "GCI")
+
+    missionCommands.addCommandForCoalition(self.Coalition, "Radar Lock", root,
+        function()
+            self._pilot_flags.radar  = true
+            self._pilot_flags.visual = false
+            self:_Log("Pilot: Radar Lock")
+        end)
+
+    missionCommands.addCommandForCoalition(self.Coalition, "Visual Contact", root,
+        function()
+            self._pilot_flags.visual = true
+            self:_Log("Pilot: Visual Contact")
+        end)
+
+    missionCommands.addCommandForCoalition(self.Coalition, "Threat (RWR)", root,
+        function()
+            self._pilot_flags.threat = true
+            self:_Log("Pilot: Threat")
+        end)
+
+    missionCommands.addCommandForCoalition(self.Coalition, "Splash / Kill", root,
+        function()
+            self:_Transmit("MERGE_SPLASH|delay=1.5", nil, nil)
+            self:Reset()
+            self:_Log("Splash — Reset")
+        end)
+
+    missionCommands.addCommandForCoalition(self.Coalition, "Reset GCI", root,
+        function()
+            self:Reset()
+            self:_Log("GCI Reset via F10 menu")
+        end)
+
+    missionCommands.addCommandForCoalition(self.Coalition, "Toggle AI Mode", root,
+        function()
+            self.IsAIPlane = not self.IsAIPlane
+            local status = self.IsAIPlane and "ON" or "OFF"
+            trigger.action.outTextForCoalition(
+                self.Coalition, "[GCI] AI mode " .. status, 3)
+            self:_Log("AI mode: " .. status)
+        end)
+end
+
+---
+-- ══════════════════════════════════════════════════════════════════
+--  Part 2 — REDGCI Intel source integration
+--
+--  When an INTEL source is attached, REDGCI derives the intercept target
+--  from the INTEL contact table instead of polling a fixed group name.
+--  Selection criterion: highest threat-level aircraft contact.
+--  Tie-break: closest to the fighter.
+--
+--  The INTEL contact's position/velocity are used directly, so the GCI
+--  works even after the real unit is lost from DCS sensor view (INTEL
+--  keeps a prediction window of up to 10 min for aircraft).
+-- ══════════════════════════════════════════════════════════════════
+
+--- Attach an INTEL object as the target source for this GCI instance.
+-- When set, REDGCI picks the highest-threat aircraft contact from INTEL
+-- on every tick instead of polling a fixed target group name.
+-- The GCI continues to work with INTEL's predicted positions during
+-- contact gaps (up to INTEL's configured forget window).
+-- @param #REDGCI self
+-- @param Ops.Intel#INTEL Intel INTEL instance (must be Started/Running).
+-- @param #string Filter (optional) Only consider contacts whose group name
+--                contains this substring (case-sensitive).
+-- @return #REDGCI self
+function REDGCI:SetIntelSource(Intel, Filter)
+    self.Intel             = Intel
+    self.IntelTargetFilter = Filter
+    self:T(self.lid .. "Intel source set: " ..
+           (Intel and Intel.alias or "nil") ..
+           (Filter and (" filter='" .. Filter .. "'") or ""))
+    return self
+end
+
+--- [INTERNAL] Derive intercept target data from the attached INTEL.
+-- Returns a unit-data table identical in structure to _GetUnitData(),
+-- or nil when no suitable contact is available.
+-- @param #REDGCI self
+-- @param #table FighterData  Fighter unit data (for proximity tie-break).
+-- @return #table or nil
+function REDGCI:_GetTargetFromIntel(FighterData)
+    if not self.Intel or not self.Intel:Is("Running") then return nil end
+
+    local contacts = self.Intel:GetContactTable()
+    if not contacts then return nil end
+
+    local best      = nil
+    local bestScore = -math.huge
+
+    for _, contact in pairs(contacts) do --#INTEL.Contact
+
+        -- Aircraft contacts only
+        if contact.ctype == INTEL.Ctype.AIRCRAFT then
+
+        -- Optional name filter
+        if self.IntelTargetFilter and
+           not string.find(contact.groupname, self.IntelTargetFilter, 1, true) then
+           -- goto continue
+        end
+
+        if not contact.position then end --goto continue end
+
+        local pos = contact.position
+        local dx  = pos.x - FighterData.x
+        local dz  = pos.z - FighterData.z
+        local rng = math.sqrt(dx * dx + dz * dz)
+
+        -- Score: threat level primary; range as tie-break (closer = higher)
+        local score = (contact.threatlevel or 0) * 100000 - rng
+
+        if score > bestScore then
+            bestScore = score
+            best = contact
+        end
+      end
+    end
+
+    if not best then return nil end
+
+    local pos = best.position
+    local vel = best.velocity or { x = 0, y = 0, z = 0 }
+    local alt = best.altitude or (pos and pos.y) or 0
+
+    return {
+        x    = pos.x,
+        y    = alt,
+        z    = pos.z,
+        spd  = best.speed or 0,
+        vx   = vel.x or 0,
+        vy   = vel.y or 0,
+        vz   = vel.z or 0,
+        hdg  = best.heading or 0,
+        fuel = 1.0,  -- not available from INTEL
+    }
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  FSM handlers
+-- ─────────────────────────────────────────────────────────────
+
+ 
+-- ─────────────────────────────────────────────────────────────
+--  FSM state machine (pure Lua, replaces RedGCI.fsmUpdate)
+-- ─────────────────────────────────────────────────────────────
+ 
+--- [INTERNAL] Compute next FSM state from range/aspect/pilot flags.
+-- Mirrors gci_fsm_transition() from intercept_fsm.c.
+-- @param #REDGCI self
+-- @param #string  current   Current state string
+-- @param #number  range     Distance to target (m)
+-- @param #number  aspect    Aspect angle (deg)
+-- @param #boolean has_radar Pilot has radar lock
+-- @param #boolean has_visual Pilot has visual
+-- @param #boolean threat    RWR threat
+-- @param #number  fuel      Fuel fraction 0-1
+-- @return #string  next state
+function REDGCI:_FsmTransition(current, range, aspect, has_radar, has_visual, threat, fuel)
+    local C = REDGCI_KERNEL.C
+ 
+    -- Abort always wins
+    if (fuel or 1.0) < C.FUEL_BINGO then return "ABORT" end
+    if threat and range > C.RANGE_VISUAL  then return "ABORT" end
+ 
+    if current == "VECTOR" then
+        if range <= C.RANGE_COMMIT                              then return "COMMIT" end
+        if aspect > C.ASPECT_NOTCH_MIN and
+           aspect < C.ASPECT_NOTCH_MAX                         then return "NOTCH"  end
+        return "VECTOR"
+ 
+    elseif current == "COMMIT" then
+        if has_radar                                            then return "RADAR_CONTACT" end
+        if range <= C.RANGE_VISUAL and not has_radar           then return "VISUAL" end
+        return "COMMIT"
+ 
+    elseif current == "RADAR_CONTACT" then
+        if not has_radar                                        then return "COMMIT" end
+        if has_visual or range <= C.RANGE_VISUAL               then return "VISUAL" end
+        return "RADAR_CONTACT"
+ 
+    elseif current == "VISUAL" then
+        if range <= C.RANGE_MERGE                              then return "MERGE"  end
+        return "VISUAL"
+ 
+    elseif current == "NOTCH" then
+        if aspect < C.ASPECT_NOTCH_MIN or
+           aspect > C.ASPECT_NOTCH_MAX                         then return "VECTOR" end
+        return "NOTCH"
+ 
+    else
+        -- MERGE / ABORT / RTB are terminal — handled elsewhere
+        return current
+    end
+end
+
+--- [INTERNAL] Called when Start event fires (Stopped → Running).
+-- Initializes localization, SRS, context, F10 menu, and schedules first tick.
+-- @param #REDGCI self
+function REDGCI:onafterStart(From, Event, To)
+    self:T(self.lid .. "Starting...")
+
+    self:_InitLocalization()
+    self:_InitSRS()
+    self:_SetRadar(false)
+    self:_SetWeaponsFree(false)
+    
+    RedGCI.getCtxId(self.Callsign)
+    if self.Debug == true and self.Callsign == "101" then
+      self:_SetupF10Menu()
+    end
+
+    local mode_str = self.IsAIPlane and " [AI]" or " [Human]"
+    trigger.action.outTextForCoalition(
+        self.Coalition,
+        "[GCI] Системы готовы. Жду цель." .. mode_str, 5)
+
+    self:T(self.lid .. "Ready. Fighter='" .. self.FighterGroupName ..
+           "' Target='" .. self.TargetGroupName ..
+           "' Mode=" .. (self.IsAIPlane and "AI" or "Human"))
+    
+    local function GetChannel(Freq)
+      for key,val in pairs(self.RadioChannels) do
+        if tonumber(val)==tonumber(Freq) then
+          return key
+        end
+      end
+      return 1
+    end
+    
+    local channel = 1
+    if self.RadioChannels then channel = GetChannel(self.SRSFreq) end
+    
+    self:_Transmit("RADIO_SWITCH_CHANNEL|channel="..channel,nil,nil,100)
+    
+    -- Schedule first tick after short delay
+    self:__Status(-2)
+end
+
+--- [INTERNAL] Main tick — called every TickInterval seconds while Running.
+-- @param #REDGCI self
+function REDGCI:onafterStatus(From, Event, To)
+    local f = self:_GetUnitData(self.FighterGroupName)
+    local t = self.Intel and self:_GetTargetFromIntel(f)
+           or self:_GetUnitData(self.TargetGroupName)
+
+    if not f then
+        self:T(self.lid .. "Fighter '" .. self.FighterGroupName .. "' not found — stopping.")
+        self:Stop()
+        return
+    end
+
+    if not t then
+        self._contact_lost_ticks = self._contact_lost_ticks + 1
+        self:T(self.lid .. "Contact lost — tick " .. self._contact_lost_ticks ..
+               "/" .. self.ContactLostTimeout)
+
+        if self._contact_lost_ticks == 1 then
+            -- First missing tick: tell pilot to stand by, keep last heading
+            self:_Transmit("NOTCH_ENTRY|delay=1.5", nil, nil)
+        elseif self._contact_lost_ticks >= self.ContactLostTimeout then
+            -- Timeout expired: target is genuinely gone (destroyed or escaped)
+            self:T(self.lid .. "Contact timeout — declaring target gone.")
+            if self._prev_radar then
+                self:_SetRadar(false)
+            end
+            self:_Transmit("MERGE_SPLASH|delay=1.5", nil, nil)
+            if self.IsAIPlane and self.HomeBase then
+                self:_PushWaypoint(
+                    self.HomeBase.x, self.HomeBase.y,
+                    1000, f.spd * 0.8, true)
+            end
+            self:Stop()
+            return
+        end
+        -- Ticks 2…(timeout-1): stay silent, hold course
+        self:__Status(-self.TickInterval)
+        return
+    end
+
+    -- Contact (re-)acquired — reset counter
+    self._contact_lost_ticks = 0
+    
+    -- Picture call aktualisieren (INTEL → count/type, sonst manuell gesetzt)
+    self:_UpdatePictureFromIntel()
+    
+    -- ── 1. Intercept geometry (C kernel) ──────────────────────
+    local hdg, tti, mode, wf, range, aspect, ip_x, ip_z, ip_y = REDGCI_KERNEL.computeInterceptDCS(f, t)
+        --RedGCI.computeIntercept(f, t)
+    --UTILS.PrintTableToLog({hdg, tti, mode, wf, range, aspect, ip_x, ip_z, ip_y},indent,noprint,maxDepth,seen)    
+
+    if self.Debug then
+        env.info(string.format(
+            self.lid .. "hdg=%d tti=%d mode=%s wf=%s range=%d aspect=%d ip_x=%d ip_z=%d ip_y=%d",
+            hdg, tti, mode, tostring(wf), range, aspect, ip_x, ip_z, ip_y))
+    end
+
+    if mode == "NONE" then
+        self:_Log("No intercept solution (fighter too slow?)")
+        self:__Status(-self.TickInterval)
+        return
+    end
+
+    -- ── 2. Closure rate ───────────────────────────────────────
+    local dx   = t.x - f.x
+    local dz   = t.z - f.z
+    local dist = math.sqrt(dx*dx + dz*dz)
+    local closure = 0
+    if dist > 1 then
+        closure = -((t.vx - f.vx) * dx/dist + (t.vz - f.vz) * dz/dist)
+    end
+
+    -- ── 3. AI radar lock at COMMIT range ─────────────────────
+    local ai_radar_lock = self.IsAIPlane and (range < 30000)
+
+    -- ── 4. FSM update (C kernel) ──────────────────────────────
+    local current_state = self._prev_state or "VECTOR"
+    local state = self:_FsmTransition(
+        current_state, range, aspect,
+        self._pilot_flags.radar or ai_radar_lock,
+        self._pilot_flags.visual,
+        self._pilot_flags.threat,
+        f.fuel)
+ 
+    -- Track ticks_in_state
+    if state ~= current_state then
+        self._ticks_in_state = 0
+    else
+        self._ticks_in_state = self._ticks_in_state + 1
+    end
+
+    -- ── 5. State-transition side effects ─────────────────────
+    if state ~= self._prev_state then
+        self:T(self.lid .. "State: " .. (self._prev_state or "START") .. " → " .. state)
+
+        if state == "COMMIT" then
+            self:_Transmit("RADAR_ON|delay=1.5", nil, nil,75)
+            self:_TransmitPilot("ACK_COMMIT", {}, 1.5)
+        elseif state == "ABORT" or state == "RTB" then
+            self:_SetRadar(false)
+            self._prev_radar = false
+            if self.HomeBase then
+                self:_PushWaypoint(
+                    self.HomeBase.x, self.HomeBase.y,
+                    1000, f.spd * 0.8, true)
+            end
+            -- Pilot ACK for abort includes RTB heading
+            local rtb_hdg = ""
+            if self.HomeBase then
+                local dx_h = self.HomeBase.x - f.x
+                local dz_h = self.HomeBase.y - f.z
+                rtb_hdg = string.format("%03d", math.floor(math.deg(math.atan2(dz_h, dx_h)) % 360))
+            end
+            self:_TransmitPilot("ACK_ABORT", { HDG = rtb_hdg }, 3.0)
+        end
+    end
+
+    -- ── 6. Waypoint + radar per state (every tick) ────────────
+    if state == "VECTOR" then
+        self:_SetRadar(false)
+        local cruise_spd    = math.max(f.spd, 200)
+        local tx, tz, ty, abs_alt = self:_ResolveTarget(ip_x, ip_z, ip_y + self.AltOffset)
+        local final_ty = abs_alt and ty or (ty + self.AltOffset)
+        local wx, wz, wy    = self:_ComputeRollingWaypoint(f, tx, tz, final_ty)
+        self:_PushWaypoint(wx, wz, wy, cruise_spd)
+
+    elseif state == "COMMIT" or state == "RADAR_CONTACT" then
+        if self._prev_radar == false then
+           self:_SetRadar(true,2)
+           self:_SetWeaponsFree(true,2)
+           self._prev_radar = true        
+        end
+        local tx, tz, ty, abs_alt = self:_ResolveTarget(ip_x, ip_z, ip_y + self.AltOffset)
+        local final_ty = abs_alt and ty or (ty + self.AltOffset)
+        local wx, wz, wy = self:_ComputeRollingWaypoint(f, tx, tz, final_ty)
+        self:_PushWaypoint(wx, wz, wy, f.spd)
+
+    elseif state == "NOTCH" then
+        if self._prev_radar == true then
+           self:_SetRadar(false)
+           self._prev_radar = false       
+        end
+    end
+ 
+    -- ── 7. Merge phase (Lua kernel) ───────────────────────────
+    if state == "MERGE" then
+        local f_hdg   = math.atan2(f.vx, f.vz)
+        local to_tgt  = math.atan2(t.x - f.x, t.z - f.z)
+        local rel_brg = math.deg(to_tgt - f_hdg) % 360
+ 
+        -- Build merge context
+        local merge_ctx = {
+            phase             = self._merge_phase,
+            ticks_in_phase    = self._merge_ticks,
+            range             = range,
+            bearing_to_target = rel_brg,
+            closure_rate      = closure,
+            altitude_delta    = t.y - f.y,
+            pass_count        = self._merge_pass_count,
+            radar_lost        = false,
+        }
+        local merge_prev = { phase = self._merge_phase_prev }
+ 
+        -- Transition
+        local new_phase = REDGCI_KERNEL.mergeTransition(merge_ctx, merge_prev)
+        if new_phase ~= merge_ctx.phase then
+            self._merge_phase_prev = merge_ctx.phase
+            self._merge_phase      = new_phase
+            self._merge_ticks      = 0
+            if new_phase == "SEPARATION" then
+                self._merge_pass_count = self._merge_pass_count + 1
+            end
+        else
+            self._merge_ticks = self._merge_ticks + 1
+        end
+        merge_ctx.phase          = self._merge_phase
+        merge_ctx.ticks_in_phase = self._merge_ticks
+ 
+        local tx_merge = REDGCI_KERNEL.buildMergeTransmission(merge_ctx, merge_prev)
+ 
+        if not tx_merge.silence then
+            local dir_lr = self:_DeriveDirLR(aspect)
+            local dir_rl = self:_DeriveDirRL(f, t)
+            self:_Transmit(tx_merge.token_str, dir_lr, dir_rl,tx_merge.priority)
+        end
+ 
+        self:_Log(string.format("[MERGE] range=%.0fm → %s",
+            range, tx_merge.silence and "SILENCE" or tx_merge.token_str))
+ 
+        self._prev_state = state
+ 
+        if not self._prev_radar or not self._prev_wf then
+            self:_SetRadar(true, 2)
+            self:_SetWeaponsFree(true, 2)
+            self._prev_radar = true
+            self._prev_wf    = true
+        end
+ 
+        self:__Status(-self.TickInterval)
+        return
+    end
+
+    -- ── 8. Build and send transmission ────────────────────────
+    -- Effective WF: C kernel flag OR Lua-side override when AI has lock inside WEZ.
+    -- (C kernel currently always returns wf=false; remove override once fixed.)
+    local effective_wf = wf or (
+        self.IsAIPlane           and
+        self.WFRange > 0         and
+        state == "RADAR_CONTACT" and
+        range <= self.WFRange)
+ 
+    -- ctx/prev for buildTransmission
+    local ctx = {
+        state          = state,
+        range          = range,
+        aspect_angle   = aspect,
+        closure_rate   = closure,
+        ticks_in_state = self._ticks_in_state,
+        fuel_fraction  = f.fuel,
+    }
+    local prev_ctx = { state = self._prev_state or "VECTOR" }
+ 
+    -- sol: VECTOR reports ip_y (intercept geometry), others report t.y (real target alt)
+    local report_alt
+    if state == "VECTOR" then
+        local ov = self._wp_override
+        if ov and ov.ticks > 0 then
+            report_alt = ov.y   -- taktische Override-Höhe direkt
+        else
+            report_alt = ip_y + self.AltOffset
+        end
+    else
+        report_alt = t.y
+    end
+    local sol = {
+        heading_deg       = hdg,
+        time_to_intercept = tti,
+        target_alt        = report_alt,
+        range             = range,
+        aspect_angle      = aspect,
+        weapons_free      = effective_wf,
+    }
+ 
+    local tx = REDGCI_KERNEL.buildTransmission(ctx, prev_ctx, sol)
+ 
+    if not tx.silence then
+        local dir_lr = self:_DeriveDirLR(aspect)
+        local dir_rl = self:_DeriveDirRL(f, t)
+        self:_Transmit(tx.token_str, dir_lr, dir_rl,tx.priority)
+    end
+ 
+    -- Weapons free edge: fire once on first transition
+    if tx.weapons_free and not self._prev_wf then
+        if not self._prev_radar == true then
+            self:_Transmit("RADAR_ON|delay=1.5", nil, nil)
+        end
+        self:_Transmit("WEAPONS_FREE|delay=1.5", nil, nil,75)
+        self:_TransmitPilot("ACK_WEAPONS_FREE", {}, 1.0,100)
+        self:_SetRadar(true, 2)
+        self:_SetWeaponsFree(true, 2)
+        self._prev_radar = true
+        self._prev_wf    = true
+    end
+    self._prev_wf = tx.weapons_free or false
+ 
+    self:_Log(string.format(
+        "[%s] HDG:%d TTI:%ds MODE:%d WF:%s RANGE:%.0fm ASPECT:%.1f° → %s",
+        state, math.floor(hdg), math.floor(tti or 0), mode,
+        tostring(tx.weapons_free), range, aspect,
+        tx.silence and "SILENCE" or tostring(tx.token_str)))
+ 
+    self._prev_state = state
+    self:__Status(-self.TickInterval)
+end
+
+--- [INTERNAL] Called when Stop event fires.
+-- @param #REDGCI self
+function REDGCI:onafterStop(From, Event, To)
+    self:T(self.lid .. "Stopped.")
+end
+
+-------------------------------------------------------------------------------
+-- END of Class
+-------------------------------------------------------------------------------
+--- **Functional** - Enhanced Warsaw Pact GCI 2v2 Controller.
+--
+-- ## Main Features:
+--
+--    * Guide AI and human pilots in Warsaw Pact Style in 2v2 tactics.
+--    * Advanced Tactics for Groups.
+--    * Many additional events that the mission designer can hook into.
+--
+-- ===
+--
+-- ## Example Missions:
+--
+-- Demo missions can be found on [GitHub](https://github.com/FlightControl-Master/MOOSE_MISSIONS/).
+--
+-- ===
+--
+-- ### Author: **Applevangelist**
+--
+-- ===
+-- @module Functional.RedGCI2v2
+-- @image Func_RedGCI.png
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- REDGCI2v2 class
+-- @type REDGCI2v2
+-- @field #string ClassName
+-- @field #string version
+-- @extends Core.Fsm#FSM
+
+---
+-- # RedGCI — Soviet GCI Doctrine & Player Guide
+--
+-- ## Philosophy: Централизованное управление (Centralized Control)
+-- 
+-- The fundamental difference between Soviet and NATO GCI is **who makes the tactical decision**.
+-- 
+-- In NATO doctrine, the GCI controller provides situational awareness — bearing, range, altitude, aspect — and the pilot decides how to prosecute the intercept. The pilot is an autonomous tactician. GCI is an advisor.
+-- 
+-- In Soviet doctrine, the GCI controller **directs**. The pilot executes. The controller selects the intercept geometry, assigns the heading, manages the radar, calls weapons free, and coordinates multi-ship tactics. The pilot's job is to fly the numbers and shoot when told. This is not a flaw — it is the system working as designed. Soviet fighter pilots were trained to be precise executors of GCI instructions, not independent tacticians. The ground radar network (PVO) was the brain; the aircraft was the weapon.
+-- 
+-- RedGCI models this philosophy faithfully.
+-- 
+-- ---
+-- 
+-- ## What to Expect as a Player
+-- 
+-- ### You will not be asked what you want to do.
+-- 
+-- There are no "recommend a vector" calls, no "at your discretion" callouts. The controller tells you your heading, your altitude, and your task. Your acknowledgement is assumed.
+-- 
+-- ### The controller manages your radar.
+-- 
+-- You do not decide when to turn your radar on. The GCI will tell you when to switch on (`локатор` / `Radar on`). Before that call, you fly cold and silent. This preserves your emissions discipline and prevents the target from getting an early RWR spike.
+-- 
+-- ### Weapons free is a controlled event.
+-- 
+-- You do not engage until the controller clears you (`цель разрешена` / `WEAPONS FREE`). The controller determines when geometry, range, and aspect are favorable. Shooting early breaks the coordinated intercept and may compromise your wingman's attack.
+-- 
+-- ### Radio calls are short and military.
+-- 
+-- Soviet GCI brevity is terse by design. Expect calls like:
+-- 
+-- - `"Сокол, курс 170, высота 4500."` — vector, altitude
+-- - `"Сокол, цель, пара, истребитель. Локатор."` — picture call on commit: count, type, radar on
+-- - `"Сокол, захват. Дальность 20. Цель разрешена."` — lock confirmed, range, weapons free
+-- - `"Сокол, молодец. Домой."` — good kill, RTB
+-- 
+-- There are no "BOGEY DOPE" requests, no "BRAA" calls, no "DECLARE" queries. The controller has already done that work. You fly the vector.
+-- 
+-- ---
+-- 
+-- ## State Flow — What the GCI is Doing Behind the Scenes
+-- 
+-- RedGCI manages a state machine that progresses through six phases. Understanding these phases helps you anticipate what call is coming next.
+-- 
+-- ```
+-- VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → (SPLASH / ABORT / RTB)
+-- ```
+-- 
+-- ### VECTOR
+-- The controller has a track. You are being vectored onto an intercept geometry. Your radar is off. The controller is solving a collision course and updating your heading every tick. Altitude calls reflect the intercept geometry — you may be sent below the target (classic Soviet shoot-up doctrine for radar-limited types) or level/above (MiG-29/Su-27 lookdown geometry). Expect heading updates every 10–15 seconds.
+-- 
+-- **What you should do:** Fly the heading. Don't deviate. Don't turn your radar on yet. Speed is expected at 900kph TAS (depending on airframe)
+-- 
+-- ### COMMIT
+-- Range has closed to approximately 30km. The controller calls the picture: count and type. Your radar comes on. You are now committed to the intercept — turning away is no longer the default option. The controller is building your radar geometry toward a lock.
+-- 
+-- **What you should do:** Activate your radar. Acquire the target. Do not fire yet.
+-- 
+-- ### RADAR_CONTACT
+-- You have radar lock (or the AI has achieved it). The controller confirms lock and calls range. If geometry and range are favorable, weapons free follows immediately. If not — for example if aspect angle is unfavorable for a stern conversion — the controller holds fire and waits for better geometry.
+-- 
+-- **What you should do:** Maintain lock. Track the target. Wait for the weapons free call.
+-- 
+-- ### VISUAL
+-- Range has closed to approximately 5km — visual conditions. Weapons free is automatic at this point. You are now in the merge envelope.
+-- 
+-- **What you should do:** Engage.
+-- 
+-- ### MERGE
+-- Inside 2km. The GCI transitions to merge control: bearing to target, overshoot calls, separation instructions, reattack vectors. At this range the controller cannot see fine-grained geometry — merge calls are based on relative bearing and closure.
+-- 
+-- **What you should do:** Fight. Listen for overshoot, separation, and reattack calls.
+-- 
+-- ### SPLASH / ABORT / RTB
+-- - `SPLASH` — kill confirmed, RTB
+-- - `ABORT (THREAT)` — your RWR is spiked or a threat geometry has developed; break off immediately on the given heading
+-- - `ABORT (BINGO)` — fuel state critical; break off and return
+-- 
+-- ---
+-- 
+-- ## Multi-Ship (2v2) Tactics (REDGCI2v2)
+-- 
+-- When two fighters are dispatched against a threat, the GCI selects a tactic automatically based on the tactical situation. The tactic is applied at COMMIT — until then, both fighters are vectored together toward the intercept midpoint.
+-- 
+--           | Tactic       | Description                                                                                                                                                    |   
+--           |--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|   
+--           | **PINCER**   | Classic bracket. F1 and F2 split left and right, attacking from opposite angles simultaneously. Forces the target to choose which threat to react to.          |   
+--           | **HIGH-LOW** | Vertical split. One fighter attacks from below (radar up, clean sky background), one from above. Degrades the target's ability to acquire both simultaneously. |  
+--           | **STAGGER**  | BVR timing offset. F1 fires first at long range, F2 follows 8–13km behind to engage a maneuvering or defending target.                                         |  
+--           | **TRAIL**    | Close trail. F1 is the shooter, F2 is support — ready to engage if F1 overshoots or is defeated.                                                               |   
+--           | **GIRAFFE**  | *(Historical — Iraq/Iran War, Mirage F1 vs F-14A)* F1 attacks at normal altitude, binding the AWG-9 radar. F2 flies nap-of-earth                               |    
+--           |              |                         (300–600m AGL) using ground clutter to degrade radar detection, then pulls up and fires from close range.                              | 
+-- 
+-- During a tactic split, you may receive a heading that seems unusual — a large lateral offset or an unexpected altitude change. **Trust the vector.** The controller is positioning you for the tactic geometry. The merge point will bring you back onto the target.
+-- 
+-- ---
+-- 
+-- ## Dispatcher & CAP Flow (REDGCI_DISPATCHER)
+-- 
+-- When using the dispatcher layer, the full operational flow is:
+-- 
+-- ```
+-- Spawn at homeplate
+--     → Taxi and takeoff (template-controlled)   
+--     → Transit to CAP zone   
+--     → Orbit in assigned zone (radar cold, weapons safe)   
+--         ↓ INTEL detects threat cluster   
+--     → "Attention, radar contact. Pair, fighter, 45 kilometers." (all CAP fighters)   
+--         ↓ Dispatcher assigns pair   
+--     → "101 102, intercept. Pair, fighter." (dispatched pair)   
+--     → VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → SPLASH   
+--         ↓ Engagement complete   
+--     → AI: RTB waypoint → land → despawn → respawn after delay   
+--     → Human: "101, mission complete. RTB, refuel and rearm."   
+--         ↓ After RespawnDelay   
+--     → New AI pair spawns into same CAP zone   
+-- ```
+-- 
+-- Human players are dispatched first when available. If a human and AI are both in the CAP pool, the human is always assigned to the next intercept. AI fills gaps. The dispatcher does not send a single fighter if a pair is available — pairing is always preferred.
+-- 
+-- ---
+-- 
+-- ## Key Differences from NATO GCI at a Glance
+-- 
+--           |                    | Soviet (RedGCI)                      |  NATO                              |   
+--           |--------------------|--------------------------------------|------------------------------------|   
+--           | Tactical decision  | Controller                           | Pilot                              |   
+--           | Radar management   | Controller-commanded                 | Pilot-initiated                    |  
+--           | Weapons free       | Controller-called                    | Pilot-discretion (after WF)        |   
+--           | Heading calls      | Prescriptive                         | Advisory                           |   
+--           | Brevity style      | Terse, military, positional          | Standardized (BRAA, DECLARE, etc.) |   
+--           | Multi-ship tactics | Centrally planned, applied at COMMIT | Mutually briefed, pilot-executed   |   
+--           | Pilot autonomy     | Low (by design)                      | High                               |   
+-- 
+-- **The Soviet system is not inferior** — it is optimized for a different kind of pilot and a different operational context. Mass interception of large NATO strike packages over defended Soviet airspace demanded centralized, efficient, high-throughput GCI control. RedGCI brings that experience to DCS.
+-- 
+-- @field #REDGCI2v2
+REDGCI2v2 = {}
+REDGCI2v2.ClassName = "REDGCI2v2"
+REDGCI2v2.version   = "1.0.0"
+
+-- ─────────────────────────────────────────────────────────────
+--  Tactic weights (sum must equal 100)
+-- ─────────────────────────────────────────────────────────────
+
+--- @type REDGCI2v2.TacticWeights
+-- @field #string PINCER
+-- @field #string HIGH_LOW
+-- @field #string STAGGER
+-- @field #string TRAIL
+REDGCI2v2.TacticWeights = {
+    ["PINCER"]  = 35,   -- split left/right, classic bracket
+    ["HIGH_LOW"] = 25,  -- one high, one low
+    ["STAGGER"]  = 20,  -- trail with BVR timing offset
+    ["TRAIL"]    = 10,  -- tight trail, one shooter one support
+    ["GIRAFFE"]  = 10,  -- Irak/Iran-Doktrin: F1 Decoy hoch, F2 NOE im Groundclutter
+}
+
+--- Tactic commit range — split geometry applied at this range
+-- @field #number COMMIT_RANGE
+REDGCI2v2.COMMIT_RANGE  = 30000   -- metres (mirrors GCI_RANGE_COMMIT)
+
+--- Split lateral offset for PINCER (metres, randomised ±variation)
+-- @field #number PINCER_OFFSET
+REDGCI2v2.PINCER_OFFSET = 10000   -- 10 km
+
+--- Altitude offsets for HIGH_LOW (metres relative to target)
+-- @field #number HIGH_ALT_OFFSET
+-- @field #number LOW_ALT_OFFSET
+REDGCI2v2.HIGH_ALT_OFFSET =  3500
+REDGCI2v2.LOW_ALT_OFFSET  =  -200
+
+--- Trail/Stagger separation distances (metres)
+-- @field #number TRAIL_SEP
+-- @field #number STAGGER_SEP
+REDGCI2v2.TRAIL_SEP   = 4000
+REDGCI2v2.STAGGER_SEP = 13000
+
+--- Formation lateral offset during VECTOR phase (metres)
+-- @field #number FORMATION_OFFSET
+REDGCI2v2.FORMATION_OFFSET = 2000
+
+--- Split range for tactics VECTOR phase (metres)
+-- @field #number SPLIT_RANGE
+REDGCI2v2.SPLIT_RANGE = 60000  -- 60km pre-COMMIT split
+
+--- How many ticks the tactic override point is held before reverting
+-- to normal intercept guidance (default 7 ticks = 70s at 10s interval)
+-- @field #number OVERRIDE_TICKS
+REDGCI2v2.OVERRIDE_TICKS = 7
+
+---
+--@field #table RadioChannels
+REDGCI2v2.RadioChannels = {
+  [1] = 125,
+  [2] = 125.5,
+  [3] = 126,
+  [4] = 126.5,
+  [5] = 127,
+  [6] = 127.5,
+  [7] = 128,
+  [8] = 128.5,
+  [9] = 129,
+  [10] = 129.5,
+}
+
+-- ─────────────────────────────────────────────────────────────
+--  Constructor
+-- ─────────────────────────────────────────────────────────────
+
+--- Create a new REDGCI2v2 two-ship flight.
+-- @param #REDGCI2v2 self
+-- @param #string Fighter1Group  DCS group name — lead aircraft
+-- @param #string Fighter2Group  DCS group name — wingman
+-- @param #string Target1Group   DCS group name — primary target
+-- @param #string Target2Group   DCS group name — secondary target (or nil for 2v1)
+-- @param #string FlightCallsign Radio callsign prefix (e.g. "Сокол-1")
+-- @param #number Coalition      coalition.side.RED or BLUE
+-- @return #REDGCI2v2 self
+function REDGCI2v2:New(Fighter1Group, Fighter2Group,
+                        Target1Group,  Target2Group,
+                        FlightCallsign, Coalition)
+    local self = BASE:Inherit(self, FSM:New())  --#REDGCI2v2
+
+    self.lid = string.format("REDGCI2v2 (%s) | ", FlightCallsign or "GCI2v2")
+
+    -- ── Identity ──────────────────────────────────────────────
+    self.Fighter1Group  = Fighter1Group  or "Fighter-1"
+    self.Fighter2Group  = Fighter2Group  or "Fighter-2"
+    self.Target1Group   = Target1Group   or "Target-1"
+    self.Target2Group   = Target2Group   -- nil = 2v1 mode
+    self.FlightCallsign = FlightCallsign or "Сокол-1"
+    self.Coalition      = Coalition      or coalition.side.RED
+
+    -- Callsigns for each aircraft (appended -1 / -2)
+    
+    local Unit1 = GROUP:FindByName(self.Fighter1Group):GetUnit(1)
+    local Unit2 = GROUP:FindByName(self.Fighter2Group):GetUnit(1)
+    
+    local Callsign1 = (Unit1 and Unit1:IsAlive()) and Unit1:GetCallsign() or FlightCallsign .. "-1"
+    local Callsign2 = (Unit2 and Unit2:IsAlive()) and Unit2:GetCallsign() or FlightCallsign .. "-2"
+    
+    self.Callsign1 = Callsign1
+    self.Callsign2 = Callsign2
+
+    -- ── Shared configuration defaults (mirrored to sub-instances) ──
+    self.Locale           = "ru"
+    self.TickInterval     = 10.0
+    self.TxRepeatInterval = 30.0
+    self.IsAIPlane        = true
+    self.HomeBaseName     = nil
+    self.AltOffset        = -700
+    self.Debug            = false
+    self._missilerangeflag = 2
+
+    self.SRSPath    = nil
+    self.SRSFreq    = 251
+    self.SRSMod     = radio.modulation.AM
+    self.SRSCulture = "ru-RU"
+    self.SRSVoice   = MSRS.Voices.Google.Standard.ru_RU_Standard_D
+    self.SRSPort    = 5002
+    self.FreqOffset = 0.5
+    self.PilotRadios = {}
+
+    -- ── Tactic state ──────────────────────────────────────────
+    self._tactic          = nil    -- chosen at COMMIT
+    self._variation       = 0.0   -- 0.0–1.0 random variation seed
+    self._tactic_applied  = false  -- split WPs already pushed?
+    self._assignment      = nil    -- { [1]=targetGroupName, [2]=targetGroupName }
+
+    -- ── Sub-instances (created in onafterStart) ───────────────
+    self._gci1 = nil  --#REDGCI
+    self._gci2 = nil  --#REDGCI
+
+    -- ── FSM ───────────────────────────────────────────────────
+    self:SetStartState("Stopped")
+    self:AddTransition("Stopped", "Start",  "Running")
+    self:AddTransition("Running", "Status", "Running")
+    self:AddTransition("Running", "Stop",   "Stopped")
+
+    self:I(self.lid .. "v" .. REDGCI2v2.version .. " created.")
+    return self
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  User API (mirrors REDGCI for convenience)
+-- ─────────────────────────────────────────────────────────────
+
+--- Set Locale
+--@param #REDGCI2v2 self
+--@param #string Locale Locale to be set. Known ones are "ru", "en" and "de".
+function REDGCI2v2:SetLocale(Locale)
+    self.Locale = Locale or "ru"
+    return self
+end
+
+--- Set AI Mode
+--@param #REDGCI2v2 self
+--@param #boolean IsAI True for AI.
+--@param #string HomeBaseName Name of the home plate.
+function REDGCI2v2:SetAIMode(IsAI, HomeBaseName)
+    self.IsAIPlane    = IsAI ~= false
+    self.HomeBaseName = HomeBaseName
+    return self
+end
+
+--- Set SRS
+--@param #REDGCI2v2 self
+--@param #string Path
+--@param #number Frequency
+--@param #number Modulation
+--@param #string Culture
+--@param #string Voice
+--@param #string Port
+--@param #string Speed
+function REDGCI2v2:SetSRS(Path, Frequency, Modulation, Culture, Voice, Port, Speed)
+    self.SRSPath    = Path
+    self.SRSFreq    = Frequency  or self.SRSFreq
+    self.SRSMod     = Modulation or self.SRSMod
+    self.SRSCulture = Culture    or self.SRSCulture
+    self.SRSVoice   = Voice      or self.SRSVoice
+    self.SRSPort    = Port       or self.SRSPort
+    self.SRSSpeed   = Speed      or 1
+    self:I({F=self.SRSFreq,V=self.SRSVoice})
+    return self
+end
+
+--- Enable SRS autotranslation, do not forget to set voices according to language! Requires HOUND as SRS backend!
+-- @param #REDGCI2v2 self
+-- @param #string languagecode Language to translate to, defaults to "fr". Takes [ISO 639-1](https://en.wikipedia.org/wiki/ISO_639-1) language codes.
+-- @param #string provider (optional) Translation provider, defaults to `MSRS.Provider.GOOGLE`
+-- @return #REDGCI2v2 self
+function REDGCI2v2:EnableSRSAutoTranslate(languagecode,provider)
+  self.translateEnabled = true
+  self.translateLanguage = languagecode or "fr"
+  self.translateProvider = provider or MSRS.Provider.GOOGLE
+  return self
+end
+
+--- Configure available channel numbers and frequencies for pilots.
+-- @param #REDGCI2v2 self
+-- @param #table RadioTable Table of available channel numbers and their frequencies, indexed by channel number
+-- @return #REDGCI2v2 self
+-- @usage
+--  Use as follows, e.g.
+--          local RadioTable = {  
+--            [1] = 125,
+--            [2] = 125.5,
+--            [3] = 126,
+--            [4] = 126.5,
+--            [5] = 127,
+--            [6] = 127.5,
+--            [7] = 128,
+--            [8] = 128.5,
+--            [9] = 129,
+--            [10] = 129.5,
+--               }
+--            dispatch:SetRadioChannelList(RadioTable)
+function REDGCI2v2:SetRadioChannelList(RadioTable)
+  self.RadioChannels = RadioTable
+  return self
+end
+
+--- Set SRS Provider
+--@param #REDGCI2v2 self
+--@param #string Provider
+function REDGCI2v2:SetSRSProvider(Provider)
+    self.SRSProvider = Provider or MSRS.Provider.GOOGLE
+    return self
+end
+
+--- Set SRS Voice Speaker for Hound/Piper
+--@param #REDGCI2v2 self
+--@param #number Speaker Speaker number, e.g. 11 for Speaker "318 (11)"
+function REDGCI2v2:SetSRSPiperSpeaker(Speaker)
+    self.SRSSpeaker = Speaker or 0
+    return self
+end
+
+--- Configure the pilot one voice for radio acknowledgements.
+-- The pilot uses the same frequency/modulation as the GCI controller but
+-- a distinct voice so the two can be told apart on the radio.
+-- Set PilotCallsign to nil (default) to disable pilot ACKs entirely.
+-- @param #REDGCI2v2 self
+-- @param #string  PilotCallsign  Pilot's callsign (e.g. "Сокол-1"), or nil to disable ACKs.
+-- @param #string  Culture        BCP-47 culture string (default same as GCI)
+-- @param #string  Voice          MSRS voice constant (default ru_RU_Standard_B)
+-- @param #number  Speaker        (Optional) MSRS Speaker for Hound/Piper Voices, e.g. 11 for "318 (11)"
+-- @return #REDGCI2v2 self
+function REDGCI2v2:SetPilotOneSRS(PilotCallsign, Culture, Voice, Speaker)
+    self.PilotOneCallsign   = PilotCallsign
+    self.PilotOneSRSCulture = Culture or self.SRSCulture
+    self.PilotOneSRSVoice   = Voice   or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+    self.PilotOneSRSSpeaker = Speaker
+    return self
+end
+
+--- Configure the pilot two voice for radio acknowledgements.
+-- The pilot uses the same frequency/modulation as the GCI controller but
+-- a distinct voice so the two can be told apart on the radio.
+-- Set PilotCallsign to nil (default) to disable pilot ACKs entirely.
+-- @param #REDGCI2v2 self
+-- @param #string  PilotCallsign  Pilot's callsign (e.g. "Сокол-1"), or nil to disable ACKs.
+-- @param #string  Culture        BCP-47 culture string (default same as GCI)
+-- @param #string  Voice          MSRS voice constant (default ru_RU_Standard_B)
+-- @param #number  Speaker        (Optional) MSRS Speaker for Hound/Piper Voices, e.g. 11 for "318 (11)"
+-- @return #REDGCI2v2 self
+function REDGCI2v2:SetPilotTwoSRS(PilotCallsign, Culture, Voice, Speaker)
+    self.PilotTwoCallsign   = PilotCallsign
+    self.PilotTwoSRSCulture = Culture or self.SRSCulture
+    self.PilotTwoSRSVoice   = Voice   or MSRS.Voices.Google.Standard.ru_RU_Standard_B
+    self.PilotTwoSRSSpeaker = Speaker
+    return self
+end
+
+--- Set Tick Interval
+--@param #REDGCI2v2 self
+--@param #number Seconds Default 10.0
+function REDGCI2v2:SetTickInterval(Seconds)
+    self.TickInterval = Seconds or 10.0
+    return self
+end
+
+--- Set the AI weapons-free range threshold in metres.
+-- Weapons free is declared when the C kernel wf flag is true OR (AI mode AND
+-- state is RADAR_CONTACT AND range <= WFRange). Set to 0 to disable the
+-- Lua-side override and rely solely on the C kernel.
+-- @param #REDGCI2v2 self
+-- @param #number Meters  Default 20000
+-- @return #REDGCI2v2 self
+function REDGCI2v2:SetWFRange(Meters)
+    self.WFRange = Meters or 20000
+    return self
+end
+
+--- Set minimum seconds between identical transmissions.
+-- @param #REDGCI2v2 self
+-- @param #number Seconds  Default 30.0
+-- @return #REDGCI2v2 self
+function REDGCI2v2:SetTxRepeatInterval(Seconds)
+    self.TxRepeatInterval = Seconds or 30.0
+    return self
+end
+
+--- Set Debug
+--@param #REDGCI2v2 self
+--@param #boolean 
+function REDGCI2v2:SetDebug(OnOff)
+    self.Debug = OnOff ~= false
+    return self
+end
+
+--- Set AltOffset in meters. Negative for shoot-up, positive for shoot-down
+--@param #REDGCI2v2 self
+--@param #number Meters
+function REDGCI2v2:SetAltOffset(Meters)
+    self.AltOffset = Meters or -700
+    return self
+end
+
+--- Override tactic selection weights.
+-- @param #REDGCI2v2 self
+-- @param #table Weights  { PINCER=N, HIGH_LOW=N, STAGGER=N, TRAIL=N } (sum = 100)
+-- @return #REDGCI2v2 self
+function REDGCI2v2:SetTacticWeights(Weights)
+    self.TacticWeights = Weights
+    return self
+end
+
+--- Set range on which AI will prefer to fire missiles.
+-- MAX_RANGE = 0, NEZ_RANGE = 1, HALF_WAY_RMAX_NEZ = 2, TARGET_THREAT_EST = 3, RANDOM_RANGE = 4. Defaults to 2.
+-- @param #REDGCI2v2 self
+-- @param #number Flag The behavior to set. 
+-- @return #REDGCI2v2 self
+function REDGCI2v2:SetMissileFiringFlag(Flag)
+  self._missilerangeflag = Flag or 2
+  return self
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  Internal helpers
+-- ─────────────────────────────────────────────────────────────
+
+--- [Internal]
+--@param #REDGCI2v2 self
+--@param #string msg
+function REDGCI2v2:_Log(msg)
+    if self.Debug then
+        env.info(self.lid .. msg)
+    end
+end
+
+--- [Internal] Build a configured REDGCI sub-instance.
+-- @param #REDGCI2v2 self
+-- @param #string FighterGroup
+-- @param #string TargetGroup
+-- @param #string Callsign
+-- @param #number FreqOffSet (Optional) Frequency offset for multiple groups.
+-- @return #REDGCI instance (not started)
+function REDGCI2v2:_MakeGCI(FighterGroup, TargetGroup, Callsign, FreqOffSet)
+    local grp = GROUP:FindByName(FighterGroup)
+    local IsAiPlane = true
+    if grp and grp:GetPlayerName() ~= nil then IsAiPlane = false end
+    FreqOffSet = FreqOffSet or 0
+    local Frequency = self.SRSFreq + FreqOffSet
+    local gci = REDGCI:New(FighterGroup, TargetGroup, Callsign, self.Coalition)
+    gci:SetLocale(self.Locale)
+    gci:SetAIMode(IsAiPlane, self.HomeBaseName)
+    gci:SetSRS(self.SRSPath, Frequency, self.SRSMod, self.SRSCulture, self.SRSVoice, self.SRSPort, self.SRSSpeed)
+    if self.SRSSpeaker then
+      gci:SetSRSPiperSpeaker(self.SRSSpeaker)
+    end
+    if self.SRSProvider then
+      gci:SetSRSProvider(self.SRSProvider)
+    end
+    if self.translateEnabled == true then 
+      self._msrs:SetAutoTranslate(self.translateProvider,self.translateLanguage)
+    end
+    if self.WFRange then
+      gci:SetWFRange(self.WFRange)
+    end
+    gci:SetTickInterval(self.TickInterval)
+    gci:SetTxRepeatInterval(self.TxRepeatInterval) 
+    gci:SetAltOffset(self.AltOffset)
+    gci:SetDebug(self.Debug)
+    gci:SetMissileFiringFlag(self._missilerangeflag)
+    gci:SetRadioChannelList(self.RadioChannels)
+    return gci
+end
+
+--- [Internal] Range between two unit-data tables (horizontal).
+-- @param #REDGCI2v2 self
+-- @param #table A
+-- @param #table B
+-- @return #number metres
+function REDGCI2v2:_Range(A, B)
+    local dx = B.x - A.x
+    local dz = B.z - A.z
+    return math.sqrt(dx*dx + dz*dz)
+end
+
+--- [Internal] Weighted-random tactic selection.
+-- @param #REDGCI2v2 self
+-- @return #string tactic key
+function REDGCI2v2:_PickTactic()
+    local order  = { "PINCER", "HIGH_LOW", "STAGGER", "TRAIL", "GIRAFFE" }
+    if self._Fixed_Tactic then return self._Fixed_Tactic end
+    if UTILS.lcg == nil then
+      UTILS.LCGRandomSeed(timer.getTime()*math.random())
+    end
+    --local roll  = UTILS.LCGRandomSeed(timer.getTime())
+    local roll = math.floor(UTILS.LCGRandom()*100)
+    local accum = 0
+    for _,tactic in ipairs(order) do
+      local weight = REDGCI2v2.TacticWeights[tactic] or 0
+      accum = accum + weight
+      self:T(self.lid.."_PickTactic "..string.format("Roll %d | Tactic %s | Weight %s | Chosen %s",roll,tactic,weight,tostring(roll <= accum)))
+      if roll <= accum then
+          return tactic
+      end
+    end
+    return "PINCER"  -- fallback
+end
+
+--- [Internal] Target assignment — greedy minimum range 2×2.
+-- Sets self._assignment = { [1]=groupName, [2]=groupName }
+-- @param #REDGCI2v2 self
+-- @param #table F1  fighter-1 unit data
+-- @param #table F2  fighter-2 unit data
+-- @param #table T1  target-1 unit data (or nil)
+-- @param #table T2  target-2 unit data (or nil)
+function REDGCI2v2:_AssignTargets(F1, F2, T1, T2)
+    if not T2 then
+        -- 2v1: both fighters on single target
+        self._assignment = {
+            [1] = self.Target1Group,
+            [2] = self.Target1Group,
+        }
+        self:_Log("Assignment: 2v1 — both on " .. self.Target1Group)
+        return
+    end
+
+    local d11 = self:_Range(F1, T1)
+    local d22 = self:_Range(F2, T2)
+    local d12 = self:_Range(F1, T2)
+    local d21 = self:_Range(F2, T1)
+
+    if d11 + d22 <= d12 + d21 then
+        self._assignment = { [1] = self.Target1Group, [2] = self.Target2Group }
+        self:_Log(string.format("Assignment: F1→T1 (%.0fm) F2→T2 (%.0fm)", d11, d22))
+    else
+        self._assignment = { [1] = self.Target2Group, [2] = self.Target1Group }
+        self:_Log(string.format("Assignment: F1→T2 (%.0fm) F2→T1 (%.0fm)", d12, d21))
+    end
+end
+
+--- [Internal] Target assignment — greedy minimum range 2×2.
+-- Sets self._assignment = { [1]=groupName, [2]=groupName }
+-- @param #REDGCI2v2 self
+function REDGCI2v2:_SetDebugMenuTactics()
+    --  { "PINCER", "HIGH_LOW", "STAGGER", "TRAIL", "GIRAFFE" }
+   --local root = missionCommands.addSubMenuForCoalition(self.Coalition, "GCI")
+   local root2 = missionCommands.addSubMenuForCoalition(self.Coalition, "GCI Tactic")
+   missionCommands.addCommandForCoalition(self.Coalition, "PINCER", root2,
+        function()
+            self._Fixed_Tactic = "PINCER"
+            self:_Log("Debug: PINCER Tactic")
+        end)
+      missionCommands.addCommandForCoalition(self.Coalition, "HIGH_LOW", root2,
+        function()
+            self._Fixed_Tactic = "HIGH_LOW"
+            self:_Log("Debug: HIGH_LOW Tactic")
+        end)
+      missionCommands.addCommandForCoalition(self.Coalition, "TRAIL", root2,
+        function()
+            self._Fixed_Tactic = "TRAIL"
+            self:_Log("Debug: TRAIL Tactic")
+        end)
+      missionCommands.addCommandForCoalition(self.Coalition, "STAGGER", root2,
+        function()
+            self._Fixed_Tactic = "STAGGER"
+            self:_Log("Debug: STAGGER Tactic")
+        end)
+     missionCommands.addCommandForCoalition(self.Coalition, "GIRAFFE", root2,
+        function()
+            self._Fixed_Tactic = "GIRAFFE"
+            self:_Log("Debug: GIRAFFE Tactic")
+        end)
+end
+
+--- [Internal]Compute perpendicular vector (90° left of heading dx,dz), normalised.
+-- @param #REDGCI2v2 self
+-- @return #number px, #number pz
+function REDGCI2v2._perp_left(dx, dz)
+    local len = math.sqrt(dx*dx + dz*dz)
+    if len < 1 then return 0, 0 end
+    return -dz/len, dx/len
+end
+
+--- [Internal]Apply split tactic geometry and push waypoints to both fighters.
+-- Called once at COMMIT transition.
+-- @param #REDGCI2v2 self
+-- @param #table  F1   fighter-1 unit data
+-- @param #table  F2   fighter-2 unit data
+-- @param #table  TgtMid  geometric midpoint of active targets
+function REDGCI2v2:_ApplyTactic(F1, F2, TgtMid)
+ 
+    -- Map Lua tactic name → C-kern TacticType int
+    -- (must match TacticType enum in pursuit_solver.h)
+    local TACTIC_INT = {
+        PINCER   = 0,
+        HIGH_LOW = 1,
+        STAGGER  = 2,
+        TRAIL    = 3,
+        GIRAFFE  = 4,
+    }
+    local tactic_int = TACTIC_INT[self._tactic] or 0
+ 
+    -- Call C-kernel geometry solver
+    -- Returns 12 DCS-coordinate values (x=Nord, z=Ost, y=Höhe)
+    local plan = REDGCI_KERNEL.computeSplitDCS(F1, F2, TgtMid, tactic_int, self._variation)
+    local wp1x, wp1z, wp1y = plan.wp_f1.x, plan.wp_f1.z, plan.wp_f1.y
+    local wp2x, wp2z, wp2y = plan.wp_f2.x, plan.wp_f2.z, plan.wp_f2.y
+    local mp1x, mp1z, mp1y = plan.merge_f1.x, plan.merge_f1.z, plan.merge_f1.y
+    local mp2x, mp2z, mp2y = plan.merge_f2.x, plan.merge_f2.z, plan.merge_f2.y
+    local wp2_absolute = plan.wp_f2.absolute_alt or false
+    -- altitudes
+    local alt1 = self._gci1.AltOffset or 0
+    local alt2 = wp2_absolute and 0 or (self._gci2.AltOffset or 0)
+ 
+    self:T(self.lid .. string.format(
+        "_ApplyTactic: %s var=%.2f | F1→(%.0f,%.0f,%.0fm) F2→(%.0f,%.0f,%.0fm)",
+        self._tactic, self._variation,
+        wp1x, wp1z, wp1y + alt1,
+        wp2x, wp2z, wp2y + alt2))
+ 
+    -- Set _wp_override on sub-instances.
+    -- REDGCI:_ResolveTarget() checks this each tick and uses it instead
+    -- of ip_x/ip_z/ip_y for OVERRIDE_TICKS ticks, then reverts.
+    self._gci1._wp_override = {
+        x     = wp1x,
+        z     = wp1z,
+        y     = wp1y + alt1,
+        ticks = REDGCI2v2.OVERRIDE_TICKS,
+        absolute_alt=false,
+    }
+    self._gci2._wp_override = {
+        x     = wp2x,
+        z     = wp2z,
+        y     = wp2y + alt2,
+        ticks = REDGCI2v2.OVERRIDE_TICKS,
+        absolute_alt=wp2_absolute,
+    }
+ 
+    self._tactic_applied = true
+ 
+    if self.Debug then
+        trigger.action.outTextForCoalition(
+            self.Coalition,
+            string.format("[GCI2v2] %s | F1→(%.0f,%.0f,%.0fm) F2→(%.0f,%.0f,%.0fm)",
+                self._tactic,
+                wp1x, wp1z, wp1y + alt1,
+                wp2x, wp2z, wp2y + alt2), 10)
+    end
+end
+
+--- [Internal] Compute geometric midpoint of active targets.
+-- @param #table T1  unit data or nil
+-- @param #table T2  unit data or nil
+-- @return #table { x, y, z }
+function REDGCI2v2._tgt_midpoint(T1, T2)
+    if T1 and T2 then
+        return {
+            x = (T1.x + T2.x) * 0.5,
+            y = (T1.y + T2.y) * 0.5,
+            z = (T1.z + T2.z) * 0.5,
+        }
+    elseif T1 then
+        return { x=T1.x, y=T1.y, z=T1.z }
+    elseif T2 then
+        return { x=T2.x, y=T2.y, z=T2.z }
+    end
+end
+
+--- [Internal] Formation VECTOR waypoint: both fighters get a shared intercept vector
+-- with a lateral offset to maintain 2 km spacing.
+-- @param #REDGCI2v2 self
+-- @param #table F1  fighter-1 unit data
+-- @param #table F2  fighter-2 unit data
+-- @param #table TgtMid  target midpoint
+function REDGCI2v2:_PushFormationVector(F1, F2, TgtMid)
+    local dx = TgtMid.x - F1.x
+    local dz = TgtMid.z - F1.z
+    local px, pz = REDGCI2v2._perp_left(dx, dz)
+
+    -- Apply formation offset to fighter-2 only (lead stays on centreline)
+    local wp_y = TgtMid.y + self.AltOffset
+
+    local cruise1 = math.max(F1.spd, 200)
+    local cruise2 = math.max(F2.spd, 200)
+
+    -- Rolling WP clamped to lookahead distance
+    local wp1x, wp1z, wp1y = self._gci1:_ComputeRollingWaypoint(F1, TgtMid.x, TgtMid.z, wp_y)
+    local wp2x, wp2z, wp2y = self._gci2:_ComputeRollingWaypoint(F2,
+        TgtMid.x + px * REDGCI2v2.FORMATION_OFFSET,
+        TgtMid.z + pz * REDGCI2v2.FORMATION_OFFSET,
+        wp_y)
+
+    self._gci1:_PushWaypoint(wp1x, wp1z, wp1y, cruise1)
+    self._gci2:_PushWaypoint(wp2x, wp2z, wp2y, cruise2)
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  FSM handlers
+-- ─────────────────────────────────────────────────────────────
+
+--- [Internal] Start — build sub-instances and start them.
+-- @param #REDGCI2v2 self
+function REDGCI2v2:onafterStart(From, Event, To)
+    self:T(self.lid .. "Starting...")
+
+    -- Initial target assignment (may be reassigned later)
+    self._assignment = {
+        [1] = self.Target1Group,
+        [2] = self.Target2Group or self.Target1Group,
+    }
+
+    -- Create and start the two REDGCI sub-instances.
+    -- They manage their own FSM ticks; we drive formation/tactic logic here.
+    self._gci1 = self:_MakeGCI(self.Fighter1Group, self._assignment[1], self.Callsign1) -- #REDGCI
+    local FreqOffset = self.FreqOffset or 0.5
+    --if self.IsAIPlane == true then FreqOffset = 0.5 end
+    self._gci2 = self:_MakeGCI(self.Fighter2Group, self._assignment[2], self.Callsign2, FreqOffset)
+    
+    if self.PilotOneCallsign then
+      self._gci1:SetPilotSRS(self.PilotOneCallsign, self.PilotOneSRSCulture, self.PilotOneSRSVoice, self.PilotOneSRSSpeaker)
+    end
+    
+    if self.PilotTwoCallsign then
+      self._gci2:SetPilotSRS(self.PilotTwoCallsign, self.PilotTwoSRSCulture, self.PilotTwoSRSVoice, self.PilotTwoSRSSpeaker)
+    end
+    
+    self._gci1:Start()
+    self._gci2:Start()
+
+    self:T(self.lid .. "Sub-GCI started: " .. self.Callsign1 .. " / " .. self.Callsign2)
+    
+    -- Gemeinsame SRS Queue — verhindert dass beide Instanzen sich übersprechen
+    --local shared_queue = MSRSQUEUE:New("REDGCI2v2_" .. self.FlightCallsign)
+    --self._gci1._srs_queue = shared_queue
+    --self._gci2._srs_queue = shared_queue
+    --self:T(self.lid .. "Shared SRS queue injected.")
+    
+    -- WF Deconfliction Gate — Option C: Winkel-basiert
+    local gci1 = self._gci1
+    local gci2 = self._gci2
+    local flight = self
+    
+    -- Lead: immer frei
+    gci1._wf_gate = nil
+    
+    -- Wingman: WF nur wenn Winkel Lead-Schussvektor → Wingman > 30°
+    gci2._wf_gate = function(gci)
+        local F1 = gci1:_GetUnitData(gci1.FighterGroupName)
+        local F2 = gci:_GetUnitData(gci.FighterGroupName)
+        local T1 = gci1:_GetUnitData(gci1.TargetGroupName)
+        if not F1 or not F2 or not T1 then return true end -- kein Daten = nicht blocken
+    
+        -- Vektor Lead → Ziel
+        local ax = T1.x - F1.x
+        local az = T1.z - F1.z
+        local len_a = math.sqrt(ax*ax + az*az)
+    
+        -- Vektor Lead → Wingman
+        local bx = F2.x - F1.x
+        local bz = F2.z - F1.z
+        local len_b = math.sqrt(bx*bx + bz*bz)
+    
+        if len_a < 1 or len_b < 1 then return true end
+    
+        -- Winkel zwischen beiden Vektoren
+        local dot = (ax*bx + az*bz) / (len_a * len_b)
+        dot = math.max(-1.0, math.min(1.0, dot))  -- clamp für acos
+        local angle_deg = math.deg(math.acos(dot))
+    
+        local safe = angle_deg > 30.0
+        if not safe then
+            flight:I(flight.lid .. string.format(
+                "WF Gate: Wingman zu nah am Schussvektor (%.1f°) — blocke WF", angle_deg))
+        end
+        return safe
+    end
+    
+    if self.Debug then
+      self:_SetDebugMenuTactics()
+    end
+    
+    trigger.action.outTextForCoalition(
+        self.Coalition,
+        string.format("[GCI] Двухзвенный перехват. %s и %s готовы.",
+            self.Callsign1, self.Callsign2), 5)
+
+    self:__Status(-2)
+end
+
+--- [Internal] Main 2v2 coordination tick.
+-- Runs in parallel with the two sub-instance ticks.
+-- Handles: target reassignment, tactic selection, formation VECTOR, split at COMMIT.
+-- @param #REDGCI2v2 self
+--- Main 2v2 coordination tick.
+-- Handles: target reassignment, tactic selection and split at COMMIT.
+-- Does NOT push waypoints during VECTOR — sub-instances handle their own WPs.
+-- @param #REDGCI2v2 self
+--- Main 2v2 coordination tick.
+-- Handles: target reassignment, tactic selection and pre-COMMIT split at SPLIT_RANGE.
+-- Does NOT push waypoints during VECTOR — sub-instances handle their own WPs.
+-- @param #REDGCI2v2 self
+function REDGCI2v2:onafterStatus(From, Event, To)
+
+    -- ── Get unit data ─────────────────────────────────────────
+    local F1 = self._gci1:_GetUnitData(self.Fighter1Group)
+    local F2 = self._gci2:_GetUnitData(self.Fighter2Group)
+
+    -- Stop if both fighters gone
+    if not F1 and not F2 then
+        self:T(self.lid .. "Both fighters lost — stopping.")
+        self:Stop()
+        return
+    end
+
+    -- ── Target data ───────────────────────────────────────────
+    local T1 = self._gci1:_GetUnitData(self._assignment[1])
+    local T2 = self.Target2Group
+               and self._gci2:_GetUnitData(self._assignment[2])
+               or nil
+
+    -- ── Target reassignment (only in true 2v2) ────────────────
+    if self.Target2Group then
+        local alive1 = T1 ~= nil
+        local alive2 = T2 ~= nil
+
+        if not alive1 and alive2 then
+          if self._assignment[1] ~= self.Target2Group then
+              self:T(self.lid .. "Target-1 destroyed — F1 → Target-2")
+              self._assignment[1]        = self.Target2Group
+              self._gci1.TargetGroupName = self.Target2Group
+              -- Nur zurücksetzen wenn noch genug Range für sinnvollen Split
+              local F1 = self._gci1:_GetUnitData(self.Fighter1Group)
+              local T2 = self._gci2:_GetUnitData(self._assignment[2])
+              if F1 and T2 and self:_Range(F1, T2) > REDGCI2v2.SPLIT_RANGE then
+                  self._tactic_applied = false
+              end
+          end
+        elseif alive1 and not alive2 then
+          if self._assignment[2] ~= self.Target1Group then
+              self:T(self.lid .. "Target-2 destroyed — F2 → Target-1")
+              self._assignment[2]        = self.Target1Group
+              self._gci2.TargetGroupName = self.Target1Group
+              local F2 = self._gci2:_GetUnitData(self.Fighter2Group)
+              local T1 = self._gci1:_GetUnitData(self._assignment[1])
+              if F2 and T1 and self:_Range(F2, T1) > REDGCI2v2.SPLIT_RANGE then
+                  self._tactic_applied = false
+              end
+          end
+        elseif not alive1 and not alive2 then
+            self:T(self.lid .. "All targets destroyed.")
+            self:Stop()
+            return
+        end
+
+        -- Re-fetch after possible reassignment
+        T1 = self._gci1:_GetUnitData(self._assignment[1])
+        T2 = self._gci2:_GetUnitData(self._assignment[2])
+    end
+    
+    -- ── Picture call: count = alle lebenden Ziele ─────────────
+    -- Jede REDGCI-Instanz hat keinen INTEL-Zugriff, also setzen wir
+    -- den Count hier zentral: Summe aller lebenden Units in T1+T2.
+    local total_count = 0
+    for _, grpname in ipairs({ self.Target1Group, self.Target2Group }) do
+        if grpname then
+            local grp = GROUP:FindByName(grpname)
+            if grp then total_count = total_count + grp:CountAliveUnits() end
+        end
+    end
+    if total_count > 0 then
+        self._gci1._target_count = total_count
+        self._gci2._target_count = total_count
+    end
+
+    -- ── Target midpoint ───────────────────────────────────────
+    local tgt_mid = REDGCI2v2._tgt_midpoint(T1, T2)
+
+    -- ── Current states ────────────────────────────────────────
+    local state1 = self._gci1._prev_state
+    local state2 = self._gci2._prev_state
+
+    -- ── Optimal assignment re-evaluation during VECTOR ────────
+    if self.Target2Group and
+       (state1 == "VECTOR" or state1 == nil) and
+       (state2 == "VECTOR" or state2 == nil) then
+        if F1 and F2 and T1 and T2 then
+            self:_AssignTargets(F1, F2, T1, T2)
+            self._gci1.TargetGroupName = self._assignment[1]
+            self._gci2.TargetGroupName = self._assignment[2]
+        end
+    end
+
+    -- ── Pre-COMMIT Split ──────────────────────────────────────
+    -- Fires during VECTOR at SPLIT_RANGE (default 50km), giving fighters
+    -- enough room to fly the split geometry before entering COMMIT.
+    -- PINCER needs ~10km spread, STAGGER ~13km lag — 50km gives plenty of time.
+    if (not self._tactic_applied) and F1 and F2 and tgt_mid then
+
+        -- Use minimum range across both fighters to their targets
+        local r1 = T1 and self:_Range(F1, T1) or math.huge
+        local r2 = (T2 and self:_Range(F2, T2))
+                   or (T1 and self:_Range(F2, T1))
+                   or math.huge
+        local min_range = math.min(r1, r2)
+
+        if min_range <= REDGCI2v2.SPLIT_RANGE then
+            self._tactic    = self:_PickTactic()
+            --local roll  = UTILS.LCGRandomSeed(timer.getTime())
+            self._variation = math.ceil(UTILS.LCGRandom()*100)
+
+            self:T(self.lid .. string.format(
+                "Split at %.0fm — tactic=%s variation=%.2f",
+                min_range, self._tactic, self._variation))
+
+            if self.Debug then
+                trigger.action.outTextForCoalition(
+                    self.Coalition,
+                    string.format("[GCI2v2] Taktik: %s (%.0f km)",
+                        self._tactic, min_range / 1000), 8)
+            end
+
+            self:_ApplyTactic(F1, F2, tgt_mid)
+            -- _tactic_applied is set inside _ApplyTactic
+        end
+    end
+
+    self:__Status(-self.TickInterval)
+end
+
+--- [Internal] Stop handler.
+-- @param #REDGCI2v2 self
+function REDGCI2v2:onafterStop(From, Event, To)
+    self:T(self.lid .. "Stopped.")
+end
+
+-------------------------------------------------------------------------------
+-- END of Class
+---------------------------------------------------------------------------------- **Functional** - Enhanced Warsaw Pact GCI Controller.
+--
+-- ## Main Features:
+--
+--    * Guide AI and human pilots in Warsaw Pact Style. GCI Dispatcher.
+--    * Advanced Tactics for Groups.
+--    * Many additional events that the mission designer can hook into.
+--
+-- ===
+--
+-- ### Author: **Applevangelist**
+--
+-- ===
+-- @module Functional.REDGCIDISPATCHER
+-- @image Func_RedGCI.png
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- **REDGCIDISPATCHER** class, extends Core.Fsm#FSM  class
+-- @type REDGCIDISPATCHER
+-- @field #string ClassName
+-- @field #string version
+-- @extends Core.Fsm#FSM
+
+
+---
+-- # RedGCI — Soviet GCI Doctrine & Player Guide
+--
+-- ## Philosophy: Централизованное управление (Centralized Control)
+-- 
+-- The fundamental difference between Soviet and NATO GCI is **who makes the tactical decision**.
+-- 
+-- In NATO doctrine, the GCI controller provides situational awareness — bearing, range, altitude, aspect — and the pilot decides how to prosecute the intercept. The pilot is an autonomous tactician. GCI is an advisor.
+-- 
+-- In Soviet doctrine, the GCI controller **directs**. The pilot executes. The controller selects the intercept geometry, assigns the heading, manages the radar, calls weapons free, and coordinates multi-ship tactics. The pilot's job is to fly the numbers and shoot when told. This is not a flaw — it is the system working as designed. Soviet fighter pilots were trained to be precise executors of GCI instructions, not independent tacticians. The ground radar network (PVO) was the brain; the aircraft was the weapon.
+-- 
+-- RedGCI models this philosophy faithfully.
+-- 
+-- ---
+-- 
+-- ## What to Expect as a Player
+-- 
+-- ### You will not be asked what you want to do.
+-- 
+-- There are no "recommend a vector" calls, no "at your discretion" callouts. The controller tells you your heading, your altitude, and your task. Your acknowledgement is assumed.
+-- 
+-- ### The controller manages your radar.
+-- 
+-- You do not decide when to turn your radar on. The GCI will tell you when to switch on (`локатор` / `Radar on`). Before that call, you fly cold and silent. This preserves your emissions discipline and prevents the target from getting an early RWR spike.
+-- 
+-- ### Weapons free is a controlled event.
+-- 
+-- You do not engage until the controller clears you (`цель разрешена` / `WEAPONS FREE`). The controller determines when geometry, range, and aspect are favorable. Shooting early breaks the coordinated intercept and may compromise your wingman's attack.
+-- 
+-- ### Radio calls are short and military.
+-- 
+-- Soviet GCI brevity is terse by design. Expect calls like:
+-- 
+-- - `"Сокол, курс 170, высота 4500."` — vector, altitude
+-- - `"Сокол, цель, пара, истребитель. Локатор."` — picture call on commit: count, type, radar on
+-- - `"Сокол, захват. Дальность 20. Цель разрешена."` — lock confirmed, range, weapons free
+-- - `"Сокол, молодец. Домой."` — good kill, RTB
+-- 
+-- There are no "BOGEY DOPE" requests, no "BRAA" calls, no "DECLARE" queries. The controller has already done that work. You fly the vector.
+-- 
+-- ---
+-- 
+-- ## State Flow — What the GCI is Doing Behind the Scenes
+-- 
+-- RedGCI manages a state machine that progresses through six phases. Understanding these phases helps you anticipate what call is coming next.
+-- 
+-- ```
+-- VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → (SPLASH / ABORT / RTB)
+-- ```
+-- 
+-- ### VECTOR
+-- The controller has a track. You are being vectored onto an intercept geometry. Your radar is off. The controller is solving a collision course and updating your heading every tick. Altitude calls reflect the intercept geometry — you may be sent below the target (classic Soviet shoot-up doctrine for radar-limited types) or level/above (MiG-29/Su-27 lookdown geometry). Expect heading updates every 10–15 seconds.
+-- 
+-- **What you should do:** Fly the heading. Don't deviate. Don't turn your radar on yet. Speed is expected at 900kph TAS (depending on airframe)
+-- 
+-- ### COMMIT
+-- Range has closed to approximately 30km. The controller calls the picture: count and type. Your radar comes on. You are now committed to the intercept — turning away is no longer the default option. The controller is building your radar geometry toward a lock.
+-- 
+-- **What you should do:** Activate your radar. Acquire the target. Do not fire yet.
+-- 
+-- ### RADAR_CONTACT
+-- You have radar lock (or the AI has achieved it). The controller confirms lock and calls range. If geometry and range are favorable, weapons free follows immediately. If not — for example if aspect angle is unfavorable for a stern conversion — the controller holds fire and waits for better geometry.
+-- 
+-- **What you should do:** Maintain lock. Track the target. Wait for the weapons free call.
+-- 
+-- ### VISUAL
+-- Range has closed to approximately 5km — visual conditions. Weapons free is automatic at this point. You are now in the merge envelope.
+-- 
+-- **What you should do:** Engage.
+-- 
+-- ### MERGE
+-- Inside 2km. The GCI transitions to merge control: bearing to target, overshoot calls, separation instructions, reattack vectors. At this range the controller cannot see fine-grained geometry — merge calls are based on relative bearing and closure.
+-- 
+-- **What you should do:** Fight. Listen for overshoot, separation, and reattack calls.
+-- 
+-- ### SPLASH / ABORT / RTB
+-- - `SPLASH` — kill confirmed, RTB
+-- - `ABORT (THREAT)` — your RWR is spiked or a threat geometry has developed; break off immediately on the given heading
+-- - `ABORT (BINGO)` — fuel state critical; break off and return
+-- 
+-- ---
+-- 
+-- ## Multi-Ship (2v2) Tactics (REDGCI2v2)
+-- 
+-- When two fighters are dispatched against a threat, the GCI selects a tactic automatically based on the tactical situation. The tactic is applied at COMMIT — until then, both fighters are vectored together toward the intercept midpoint.
+-- 
+--           | Tactic       | Description                                                                                                                                                    |   
+--           |--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|   
+--           | **PINCER**   | Classic bracket. F1 and F2 split left and right, attacking from opposite angles simultaneously. Forces the target to choose which threat to react to.          |   
+--           | **HIGH-LOW** | Vertical split. One fighter attacks from below (radar up, clean sky background), one from above. Degrades the target's ability to acquire both simultaneously. |  
+--           | **STAGGER**  | BVR timing offset. F1 fires first at long range, F2 follows 8–13km behind to engage a maneuvering or defending target.                                         |  
+--           | **TRAIL**    | Close trail. F1 is the shooter, F2 is support — ready to engage if F1 overshoots or is defeated.                                                               |   
+--           | **GIRAFFE**  | *(Historical — Iraq/Iran War, Mirage F1 vs F-14A)* F1 attacks at normal altitude, binding the AWG-9 radar. F2 flies nap-of-earth                               |    
+--           |              |                         (300–600m AGL) using ground clutter to degrade radar detection, then pulls up and fires from close range.                              | 
+-- 
+-- During a tactic split, you may receive a heading that seems unusual — a large lateral offset or an unexpected altitude change. **Trust the vector.** The controller is positioning you for the tactic geometry. The merge point will bring you back onto the target.
+-- 
+-- ---
+-- 
+-- ## Dispatcher & CAP Flow (REDGCIDISPATCHER)
+-- 
+-- When using the dispatcher layer, the full operational flow is:
+-- 
+-- ```
+-- Spawn at homeplate
+--     → Taxi and takeoff (template-controlled)   
+--     → Transit to CAP zone   
+--     → Orbit in assigned zone (radar cold, weapons safe)   
+--         ↓ INTEL detects threat cluster   
+--     → "Attention, radar contact. Pair, fighter, 45 kilometers." (all CAP fighters)   
+--         ↓ Dispatcher assigns pair   
+--     → "101 102, intercept. Pair, fighter." (dispatched pair)   
+--     → VECTOR → COMMIT → RADAR_CONTACT → VISUAL → MERGE → SPLASH   
+--         ↓ Engagement complete   
+--     → AI: RTB waypoint → land → despawn → respawn after delay   
+--     → Human: "101, mission complete. RTB, refuel and rearm."   
+--         ↓ After RespawnDelay   
+--     → New AI pair spawns into same CAP zone   
+-- ```
+-- 
+-- Human players are dispatched first when available. If a human and AI are both in the CAP pool, the human is always assigned to the next intercept. AI fills gaps. The dispatcher does not send a single fighter if a pair is available — pairing is always preferred.
+-- 
+-- ---
+-- 
+-- ## Key Differences from NATO GCI at a Glance
+-- 
+--           |                    | Soviet (RedGCI)                      |  NATO                              |   
+--           |--------------------|--------------------------------------|------------------------------------|   
+--           | Tactical decision  | Controller                           | Pilot                              |   
+--           | Radar management   | Controller-commanded                 | Pilot-initiated                    |  
+--           | Weapons free       | Controller-called                    | Pilot-discretion (after WF)        |   
+--           | Heading calls      | Prescriptive                         | Advisory                           |   
+--           | Brevity style      | Terse, military, positional          | Standardized (BRAA, DECLARE, etc.) |   
+--           | Multi-ship tactics | Centrally planned, applied at COMMIT | Mutually briefed, pilot-executed   |   
+--           | Pilot autonomy     | Low (by design)                      | High                               |   
+-- 
+-- **The Soviet system is not inferior** — it is optimized for a different kind of pilot and a different operational context. Mass interception of large NATO strike packages over defended Soviet airspace demanded centralized, efficient, high-throughput GCI control. RedGCI brings that experience to DCS.
+-- 
+-- @field #REDGCIDISPATCHER 
+REDGCIDISPATCHER = {
+  ClassName = "REDGCIDISPATCHER",
+  version   = "2.0.0",
+}
+
+-- ─────────────────────────────────────────────────────────────
+--  Constants
+-- ─────────────────────────────────────────────────────────────
+
+---
+-- @field #number TICK_INTERVAL
+-- @field #number UNITS_PER_PAIR
+-- @field #number ORBIT_SPEED_KMPH
+-- @field #number ORBIT_ALT_M
+-- @field #number AI_PER_ZONE
+-- @field #string STATE_CAP
+-- @field #string STATE_ENGAGED
+-- @field #string STATE_RTB
+-- @field #string STATE_UNKNOWN
+REDGCIDISPATCHER.TICK_INTERVAL    = 30.0
+REDGCIDISPATCHER.UNITS_PER_PAIR   = 2
+REDGCIDISPATCHER.ORBIT_SPEED_KMPH = 600
+REDGCIDISPATCHER.ORBIT_ALT_M      = 4500
+REDGCIDISPATCHER.AI_PER_ZONE      = 2
+
+REDGCIDISPATCHER.STATE_CAP      = "CAP"
+REDGCIDISPATCHER.STATE_ENGAGED  = "ENGAGED"
+REDGCIDISPATCHER.STATE_RTB      = "RTB"
+REDGCIDISPATCHER.STATE_UNKNOWN  = "UNKNOWN"
+
+-- ─────────────────────────────────────────────────────────────
+--  Localized messages (token system, analogous to REDGCI)
+-- ─────────────────────────────────────────────────────────────
+
+---
+-- @type Messages
+REDGCIDISPATCHER.Messages = {
+    en = {
+        RTB_CALL      = "{CALLSIGN}, mission complete. RTB, refuel and rearm.",
+        INTEL_CONTACT = "Attention, radar contact. {COUNT}, {TYPE}, {RNG} kilometers.",
+        DISPATCH_CALL = "{CALLSIGN}, intercept. {COUNT}, {TYPE}.",
+    },
+    de = {
+        RTB_CALL      = "{CALLSIGN}, Einsatz beendet. Heimkurs, tanken, bewaffnen.",
+        INTEL_CONTACT = "Achtung, Radar Kontakt. {COUNT}, {TYPE}, {RNG} Kilometer.",
+        DISPATCH_CALL = "{CALLSIGN}, abfangen. {COUNT}, {TYPE}.",
+    },
+    ru = {
+        RTB_CALL      = "{CALLSIGN}, задание выполнено. Домой, дозаправка, перевооружение.",
+        INTEL_CONTACT = "Внимание, локатор обнаружил цель. {COUNT}, {TYPE}, дальность {RNG}.",
+        DISPATCH_CALL = "{CALLSIGN}, на перехват. {COUNT}, {TYPE}.",
+    },
+}
+
+---
+--@field #table RadioChannels
+REDGCIDISPATCHER.RadioChannels = {
+  [1] = 125,
+  [2] = 125.5,
+  [3] = 126,
+  [4] = 126.5,
+  [5] = 127,
+  [6] = 127.5,
+  [7] = 128,
+  [8] = 128.5,
+  [9] = 129,
+  [10] = 129.5,
+}
+
+-- ─────────────────────────────────────────────────────────────
+--  Constructor
+-- ─────────────────────────────────────────────────────────────
+
+--- Create a new REDGCIDISPATCHER instance.
+-- @param #REDGCIDISPATCHER self
+-- @param #string TemplateName     Name of the late-activated template group (1 unit)
+-- @param Core.Set#SET_ZONE ZoneSet SET_ZONE mit CAP-Holding-Zonen
+-- @param Ops.Intel#INTEL Intel     Laufende INTEL-Instanz
+-- @param #number Coalition         coalition.side.RED / BLUE
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:New(TemplateName, ZoneSet, Intel, Coalition)
+    local self = BASE:Inherit(self, FSM:New())
+
+    self.lid          = "REDGCIDISPATCHER | "
+    self.TemplateName = TemplateName
+    self.ZoneSet      = ZoneSet
+    self.Intel        = Intel
+    self.Coalition    = Coalition or coalition.side.RED
+
+    self.HomeBaseName  = nil
+    self.HomeBase      = nil
+    self.Locale        = "ru"
+    self.Debug         = true
+    self.AltOffset     = -700
+    self.WFRange       = 20000
+    self.OrbitAlt      = REDGCIDISPATCHER.ORBIT_ALT_M
+    self.OrbitSpeed    = REDGCIDISPATCHER.ORBIT_SPEED_KMPH
+    self.AiPerZone     = REDGCIDISPATCHER.AI_PER_ZONE
+    self.StartCallsign = 100
+
+    self.SRSPath     = nil
+    self.SRSFreq     = 251
+    self.SRSMod      = radio.modulation.AM
+    self.SRSCulture  = "ru-RU"
+    self.SRSVoice    = MSRS.Voices.Google.Standard.ru_RU_Standard_D
+    self.SRSPort     = 5002
+    self.SRSSpeed    = 1
+    self.SRSProvider = nil
+    self.SRSFreqPilotsStart = self.SRSFreq + 1
+
+    self.ClientSet    = nil
+
+    -- Respawn after engagement
+    self.RespawnEnabled = true
+    self.RespawnDelay   = 300   -- Seconds after RTB before new AI are spawned (default 5 min)
+    self.RespawnCount   = 2     -- Number of new AI per respawn
+
+    self._pool        = {}
+    self._engagements = {}
+    self._known_clusters = {}   -- clusterKey -> true, tracks known vs. new clusters
+    self._callsign_counter = self.StartCallsign
+    self._msrs        = nil
+    self._srs_queue   = nil
+    self._gettext     = nil
+
+    self:SetStartState("Stopped")
+    self:AddTransition("Stopped", "Start",  "Running")
+    self:AddTransition("Running", "Status", "Running")
+    self:AddTransition("Running", "Stop",   "Stopped")
+
+    self:I(self.lid .. "v" .. REDGCIDISPATCHER.version .. " created.")
+    return self
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  User API
+-- ─────────────────────────────────────────────────────────────
+
+--- Set the home plate.
+-- @param #REDGCIDISPATCHER self
+-- @param #string BaseName
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetHomeBase(BaseName)
+    self.HomeBaseName = BaseName
+    local ab = AIRBASE:FindByName(BaseName)
+    if ab then self.HomeBase = ab
+    else self:E(self.lid .. "SetHomeBase: '" .. tostring(BaseName) .. "' not found!") end
+    return self
+end
+
+--- Set the client SET.
+-- @param #REDGCIDISPATCHER self
+-- @param Core.Set#SET_CLIENT ClientSet
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetClientSet(ClientSet)
+    self.ClientSet = ClientSet
+    return self
+end
+
+--- Set orbit altitude and speed.
+-- @param #REDGCIDISPATCHER self
+-- @param #number AltMSL    Altitude MSL in meters (default 4500)
+-- @param #number SpeedKmph Speed in kph (km/h) (default 600)
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetOrbitParameters(AltMSL, SpeedKmph)
+    self.OrbitAlt   = AltMSL    or REDGCIDISPATCHER.ORBIT_ALT_M
+    self.OrbitSpeed = SpeedKmph or REDGCIDISPATCHER.ORBIT_SPEED_KMPH
+    return self
+end
+
+--- Set number of AI spawned per CAP zone.
+-- @param #REDGCIDISPATCHER self
+-- @param #number N  Default 2
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetAiPerZone(N)
+    self.AiPerZone = N or 2
+    return self
+end
+
+--- Set starting callsign number.
+-- @param #REDGCIDISPATCHER self
+-- @param #number N  Default 100
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetStartCallsign(N)
+    self.StartCallsign     = N or 100
+    self._callsign_counter = self.StartCallsign
+    return self
+end
+
+--- Set locale for radio messages.
+-- @param #REDGCIDISPATCHER self
+-- @param #string Locale  "ru", "de", "en"
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetLocale(Locale)
+    self.Locale = Locale or "ru"
+    return self
+end
+
+--- Configure Dispatcher SRS.
+-- @param #REDGCIDISPATCHER self
+-- @param #string Path (Optional) Defaults to "C:\\Program Files\\DCS-SimpleRadio-Standalone\\ExternalAudio"
+-- @param #number Frequency Single Frequency, e.g. 124
+-- @param #number Modulation Modluation e.g. radio.modulation.AM
+-- @param #string Culture (Optional) The cultrue string e.g. "en-EN"
+-- @param #string Voice The voice name e.g. MSRS.Voices.Google.Wavenet.de_DE_Wavenet_G
+-- @param #number Port (Optional) The SRS Server port, defaults to 5002.
+-- @param #number Speed (Optional) Voice speed, defaults to 1.0 (100%)
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetSRS(Path, Frequency, Modulation, Culture, Voice, Port, Speed)
+    self.SRSPath    = Path
+    self.SRSFreq    = Frequency  or self.SRSFreq
+    self.SRSMod     = Modulation or self.SRSMod
+    self.SRSCulture = Culture    or self.SRSCulture
+    self.SRSVoice   = Voice      or self.SRSVoice
+    self.SRSPort    = Port       or self.SRSPort
+    self.SRSSpeed   = Speed      or 1
+    self.SRSFreqPilotsStart = self.SRSFreq + 1
+    return self
+end
+
+--- Enable SRS autotranslation, do not forget to set voices according to language! Requires HOUND as SRS backend!
+-- @param #REDGCIDISPATCHER self
+-- @param #string languagecode Language to translate to, defaults to "fr". Takes [ISO 639-1](https://en.wikipedia.org/wiki/ISO_639-1) language codes.
+-- @param #string provider (optional) Translation provider, defaults to `MSRS.Provider.GOOGLE`
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:EnableSRSAutoTranslate(languagecode,provider)
+  self.translateEnabled = true
+  self.translateLanguage = languagecode or "fr"
+  self.translateProvider = provider or MSRS.Provider.GOOGLE
+  return self
+end
+
+--- Configure available channel numbers and frequencies for pilots.
+-- @param #REDGCIDISPATCHER self
+-- @param #table RadioTable Table of available channel numbers and their frequencies, indexed by channel number
+-- @return #REDGCIDISPATCHER self
+-- @usage
+--  Use as follows, e.g.
+--          local RadioTable = {  
+--            [1] = 125,
+--            [2] = 125.5,
+--            [3] = 126,
+--            [4] = 126.5,
+--            [5] = 127,
+--            [6] = 127.5,
+--            [7] = 128,
+--            [8] = 128.5,
+--            [9] = 129,
+--            [10] = 129.5,
+--               }
+--            dispatch:SetRadioChannelList(RadioTable)
+function REDGCIDISPATCHER:SetRadioChannelList(RadioTable)
+  self.RadioChannels = RadioTable
+  return self
+end
+
+--- Configure GCI SRS (the one that guides the pilots).
+-- @param #REDGCIDISPATCHER self
+-- @param #number Frequency Single Frequency, e.g. 125
+-- @param #string Voice The SRS Voice to be used.
+-- @return #REDGCIDISPATCHER self 
+function REDGCIDISPATCHER:SetSRSGCIDetails(StartFrequency,Voice)
+  self:I({F=StartFrequency,V=Voice})
+  self.SRSGCIFrequency = StartFrequency or 124
+  self.SRSGCIVoice = Voice or self.SRSVoice or MSRS.Voices.Google.Wavenet.de_DE_Wavenet_B
+  return self
+end
+
+--- Set SRS provider.
+-- @param #REDGCIDISPATCHER self
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetSRSProvider(Provider)
+    self.SRSProvider = Provider
+    return self
+end
+
+--- Set altitude offset for intercept geometry.
+-- @param #REDGCIDISPATCHER self
+-- @param #number Meters  Default -700 (shoot up)
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetAltOffset(Meters)
+    self.AltOffset = Meters or -700
+    return self
+end
+
+--- Set weapons-free range.
+-- @param #REDGCIDISPATCHER self
+-- @param #number Meters  Default 20000 (20 km)
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetWFRange(Meters)
+    self.WFRange = Meters or 20000
+    return self
+end
+
+--- Enable or disable automatic respawn after engagement.
+-- New AI will be spawned into the same CAP zone after RespawnDelay seconds.
+-- @param #REDGCIDISPATCHER self
+-- @param #boolean Enabled  Default true
+-- @param #number  Delay    Seconds after RTB before respawn (default 300)
+-- @param #number  Count    Number of AI to spawn (default 2)
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetRespawn(Enabled, Delay, Count)
+    self.RespawnEnabled = Enabled ~= false
+    self.RespawnDelay   = Delay or 300
+    self.RespawnCount   = Count or 2
+    return self
+end
+
+--- Enable debug logging.
+-- @param #REDGCIDISPATCHER self
+-- @param #boolean OnOff
+-- @return #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:SetDebug(OnOff)
+    self.Debug = OnOff ~= false
+    return self
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  Internal helpers
+-- ─────────────────────────────────────────────────────────────
+
+--- [INTERNAL]
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:_Log(msg)
+    if self.Debug then env.info(self.lid .. msg) end
+end
+
+--- [INTERNAL] Initialize TEXTANDSOUND localization.
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:_InitLocalization()
+    self._gettext = TEXTANDSOUND:New("REDGCIDISPATCHER", "en")
+    for locale, entries in pairs(REDGCIDISPATCHER.Messages) do
+        local loc = string.lower(tostring(locale))
+        for id, text in pairs(entries) do
+            self._gettext:AddEntry(loc, tostring(id), text)
+        end
+    end
+end
+
+--- [INTERNAL] Fill {PLACEHOLDER} tokens in a template string.
+-- @param #REDGCIDISPATCHER self
+-- @param #string Template
+-- @param #table Vars
+-- @return #string
+function REDGCIDISPATCHER:_FillTemplate(Template, Vars)
+  self:I({T=Template,V=Vars})
+    return (string.gsub(Template, "{([%w_]+)}", function(key)
+        return tostring(Vars[key] or "")
+    end))
+end
+
+--- [INTERNAL] Dispatch a radio transmission via SRS queue.
+-- @param #REDGCIDISPATCHER self
+-- @param #string Key      Message key from Messages table
+-- @param #table  Vars     Token variables
+-- @param #string GroupName For subtitle targeting (optional)
+function REDGCIDISPATCHER:_Transmit(Key, Vars, GroupName)
+    if not self._gettext or not self._msrs or not self._srs_queue then return end
+
+    local template = self._gettext:GetEntry(Key, self.Locale)
+    if not template then
+        self:_Log("_Transmit: no template for key=" .. tostring(Key))
+        return
+    end
+
+    local text    = self:_FillTemplate(template, Vars or {})
+    local srstext = string.gsub(text, "%.", ";")
+    local grp     = GroupName and GROUP:FindByName(GroupName) or nil
+
+    self._srs_queue:NewTransmission( --text,duration,msrs,tstart,interval,subgroups,subtitle,subduration,frequency,modulation,gender,culture,voice,volume,label,coordinate,speed,speaker,priority)
+        srstext, nil, self._msrs, 3.0, 2,
+        grp and { grp } or nil,
+        text, 8,
+        nil, nil, nil, nil, nil, nil, "DISPATCH",
+        nil, nil, nil,75)
+
+    self:_Log("[TX/" .. Key .. "] " .. text)
+end
+
+--- [INTERNAL] Next callsign number.
+-- @param #REDGCIDISPATCHER self
+-- @return #number
+function REDGCIDISPATCHER:_NextCallsign()
+    local cs = self._callsign_counter
+    self._callsign_counter = self._callsign_counter + 1
+    return cs
+end
+
+--- [INTERNAL] Localized tactic name for radio.
+-- @param #REDGCIDISPATCHER self
+-- @param #string Tactic  "PINCER","HIGH_LOW","STAGGER","TRAIL","GIRAFFE"
+-- @return #string
+function REDGCIDISPATCHER:_TacticToken(Tactic)
+    local tokens = {
+        en = { PINCER="pincer", HIGH_LOW="high-low", STAGGER="stagger",
+               TRAIL="trail",   GIRAFFE="giraffe" },
+        de = { PINCER="Zange",  HIGH_LOW="hoch-tief", STAGGER="gestaffelt",
+               TRAIL="Kette",   GIRAFFE="Giraffe" },
+        ru = { PINCER="клещи",  HIGH_LOW="верх-низ",  STAGGER="уступ",
+               TRAIL="цепочка", GIRAFFE="жираф" },
+    }
+    local t = tokens[self.Locale] or tokens["en"]
+    return t[Tactic] or string.lower(Tactic or "?")
+end
+
+--- [INTERNAL] Send transmission to all CAP fighters in pool.
+-- @param #REDGCIDISPATCHER self
+-- @param #string Key    Message key
+-- @param #table  Vars   Token variables
+function REDGCIDISPATCHER:_TransmitToAllCAP(Key, Vars)
+    if not self._gettext or not self._msrs or not self._srs_queue then return end
+
+    local template = self._gettext:GetEntry(Key, self.Locale)
+    if not template then
+        self:_Log("_TransmitToAllCAP: no template for key=" .. tostring(Key))
+        return
+    end
+
+    local text    = self:_FillTemplate(template, Vars or {})
+    local srstext = string.gsub(text, "%.", ";")
+    self:I("[TX_ALL/ SRS Text: "..srstext)
+    -- Collect all CAP groups for subtitle
+    local subgroups = {}
+    for _, entry in pairs(self._pool) do
+        local grp = GROUP:FindByName(entry.groupName)
+        if grp and grp:IsAlive() then
+            subgroups[#subgroups + 1] = grp
+        end
+    end
+
+    self._srs_queue:NewTransmission(
+        srstext, nil, self._msrs, 2.0, 2,
+        #subgroups > 0 and subgroups or nil,
+        text, 8,
+        nil, nil, nil, nil, nil, nil, "DISPATCH",
+        nil, nil, nil,100)
+
+    self:_Log("[TX_ALL/" .. Key .. "] " .. text)
+end
+
+--- [INTERNAL] Get callsign string from group.
+-- Reads part after '#' in group name, e.g. "TEMPLATE#101" → "101".
+-- Falls back to GetCustomCallSign(), then last part of group name.
+-- @param #REDGCIDISPATCHER self
+-- @param Wrapper.Group#GROUP Grp
+-- @return #string
+function REDGCIDISPATCHER:_GetCallsign(Grp)
+    if not Grp then return "GCI" end
+    local name = Grp:GetName() or "GCI"
+    local after_hash = string.match(name, "#(%d+)")
+    if after_hash then return after_hash end
+    local cs = Grp:GetCustomCallSign(true, true)
+    if cs and cs ~= "" then return cs end
+    return string.match(name, "([^%-]+)$") or name
+end
+
+--- [INTERNAL] Check if group has a human pilot.
+-- @param #REDGCIDISPATCHER self
+-- @param Wrapper.Group#GROUP Grp
+-- @return #boolean
+function REDGCIDISPATCHER:_IsHuman(Grp)
+    if not Grp then return false end
+    if self.ClientSet then
+        local found = false
+        self.ClientSet:ForEachClient(function(client)
+            if client and client:GetGroup() and
+               client:GetGroup():GetName() == Grp:GetName() then
+                found = true
+            end
+        end)
+        if found then return true end
+    end
+    for _, unit in pairs(Grp:GetUnits() or {}) do
+        if unit and unit:IsAlive() and unit:GetPlayerName() then return true end
+    end
+    return false
+end
+
+--- [INTERNAL] Initialize SRS.
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:_InitSRS()
+    self._msrs = MSRS:New(self.SRSPath, self.SRSFreq, self.SRSMod)
+    self._msrs:SetPort(self.SRSPort)
+    self._msrs:SetLabel("DISPATCH")
+    self._msrs:SetCulture(self.SRSCulture)
+    self._msrs:SetVoice(self.SRSVoice)
+    self._msrs:SetCoalition(self.Coalition)
+    if self.translateEnabled == true then
+      self._msrs:SetAutoTranslate(self.translateProvider,self.translateLanguage)
+    end
+    if self.SRSProvider then self._msrs:SetProvider(self.SRSProvider) end
+    self._srs_queue = MSRSQUEUE:New("REDGCIDISPATCHER")
+end
+
+--- [INTERNAL] Spawn AI group and assign orbit.
+-- Uses SPAWN:NewWithAlias() so group name contains callsign.
+-- Template controls parking, hot/cold, heading.
+-- OnSpawnGroup callback ensures group is alive before orbit assignment.
+-- @param #REDGCIDISPATCHER self
+-- @param Core.Zone#ZONE Zone
+-- @return Wrapper.Group#GROUP or nil
+function REDGCIDISPATCHER:_SpawnAI(Zone)
+    local cs    = self:_NextCallsign()
+    local alias = self.TemplateName .. "#" .. cs
+
+    local spawner = SPAWN:NewWithAlias(self.TemplateName, alias)
+    spawner:InitCallSignRed(cs)
+
+    spawner:OnSpawnGroup(function(grp)
+        self:I(self.lid .. "Gespawnt: " .. grp:GetName() ..
+               " CS=" .. cs .. " -> orbit in " .. Zone:GetName())
+        self:_RegisterFighter(grp, Zone, false)
+        self:_AssignOrbit(grp, Zone)
+    end)
+
+    local grp = spawner:Spawn()
+    return grp
+end
+
+--- [INTERNAL] Toggle radar emission on the fighter group.
+-- @param #REDGCIDISPATCHER self
+-- @param #boolean On
+-- @param #number Delay
+function REDGCIDISPATCHER:_SetRadar(Grp,On,Delay)
+    --if not self.IsAIPlane then return end
+    if Delay then
+      self:ScheduleOnce(Delay,REDGCIDISPATCHER._SetRadar,self,Grp,On)
+      return
+    end
+    local grp = Grp
+    if not grp then return end
+    if On == true then
+      grp:SetOptionRadarUsingForContinousSearch()
+      grp:OptionECM_DetectedLockByRadar()
+      grp:SetOptionJettisonEmptyTanks(true)
+    else
+      grp:SetOptionRadarUsingNever()
+      grp:OptionECM_Never()
+    end
+    self:_Log("Radar " .. (On and "ON" or "OFF"))
+end
+
+--- [INTERNAL] Toggle weapons free on the fighter group.
+-- @param #REDGCIDISPATCHER self
+-- @param #boolean On
+-- @param #number Delay Delay in seconds
+function REDGCIDISPATCHER:_SetWeaponsFree(Grp,On,Delay)
+    --if not self.IsAIPlane then return end
+    if Delay then
+      self:ScheduleOnce(Delay,REDGCIDISPATCHER._SetWeaponsFree,self,Grp,On)
+      return
+    end
+    local grp = Grp
+    if not grp then return end
+    if On == true then
+      grp:OptionROEWeaponFree()
+      grp:OptionAlarmStateRed()
+      grp:OptionAAAttackRange(self._missilerangeflag)
+      grp:OptionECM_DetectedLockByRadar()
+      grp:SetOptionJettisonEmptyTanks(true)
+    else
+      grp:OptionROEHoldFire()
+      grp:OptionAlarmStateAuto()
+      grp:OptionAAAttackRange(3)
+      grp:OptionECM_Never()
+    end
+    self:_Log("Weapons " .. (On and "ON" or "OFF"))
+end
+
+--- [INTERNAL] Assign orbit task in CAP zone.
+-- WaypointAir expects speed in kph or km/h; TaskOrbit expects mps or m/s.
+-- Altitude variation prevents all groups flying at exact same level.
+-- @param #REDGCIDISPATCHER self
+-- @param Wrapper.Group#GROUP Grp
+-- @param Core.Zone#ZONE Zone
+function REDGCIDISPATCHER:_AssignOrbit(Grp, Zone)
+    if not Grp or not Grp:IsAlive() then return end
+    
+    
+    if Grp:GetPlayerName() == nil then
+      -- Ensure radar and weapons are cold in CAP
+      self:_SetRadar(Grp, false, 1)
+      self:_SetWeaponsFree(Grp, false, 1)
+    end
+
+    local center    = Zone:GetCoordinate()
+    local variation = UTILS.Round((UTILS.LCGRandom() * 1000),-2)
+    local alt       = self.OrbitAlt + variation
+    local spd_mps   = UTILS.KmphToMps(self.OrbitSpeed)
+    local spd_tas   = UTILS.IasToTas(self.OrbitSpeed, alt)
+
+    self:I(self.lid .. "Orbit variation: " .. variation)
+
+    -- TaskOrbit requires speed in m/s
+    local task = Grp:TaskOrbit(center, alt, spd_mps)
+
+    -- WaypointAir requires speed in km/h
+    local wp0 = Grp:GetCoordinate():WaypointAir(
+        COORDINATE.WaypointAltType.BARO,
+        COORDINATE.WaypointType.TurningPoint,
+        COORDINATE.WaypointAction.FlyoverPoint,
+        self.OrbitSpeed, false, nil, {}, "TRANSIT")
+
+    local wp2c = COORDINATE:New(center.x, alt, center.z)
+
+    -- Intermediate waypoint for clean climb profile (km/h)
+    local wp1 = Grp:GetCoordinate():GetIntermediateCoordinate(wp2c, 0.5)
+        :SetAltitude(1000)
+        :WaypointAir(
+            COORDINATE.WaypointAltType.BARO,
+            COORDINATE.WaypointType.TurningPoint,
+            COORDINATE.WaypointAction.FlyoverPoint,
+            spd_tas, true, nil, {}, "TRANSIT")
+
+    -- Orbit waypoint (km/h TAS)
+    local wp2 = wp2c:WaypointAir(
+        COORDINATE.WaypointAltType.BARO,
+        COORDINATE.WaypointType.TurningPoint,
+        COORDINATE.WaypointAction.FlyoverPoint,
+        spd_tas, true, nil, { task }, "CAP_ORBIT")
+
+    Grp:Route({ wp0, wp1, wp2 }, 2)
+
+    self:_Log(Grp:GetName() .. " -> orbit " .. Zone:GetName() ..
+              string.format(" %.0fm %.0fkph TAS", alt, spd_tas))
+end
+
+--- [INTERNAL] Register fighter in pool.
+-- @param #REDGCIDISPATCHER self
+-- @param Wrapper.Group#GROUP Grp
+-- @param Core.Zone#ZONE Zone
+-- @param #boolean IsHuman
+function REDGCIDISPATCHER:_RegisterFighter(Grp, Zone, IsHuman)
+    local name = Grp:GetName()
+    self._pool[name] = {
+        groupName  = name,
+        group      = Grp,
+        zone       = Zone,
+        isHuman    = IsHuman or false,
+        state      = REDGCIDISPATCHER.STATE_CAP,
+        pairedWith = nil,
+        engagement = nil,
+        callsign   = self:_GetCallsign(Grp),
+    }
+    self:I(self.lid .. "Pool+: " .. name ..
+           " CS=" .. self._pool[name].callsign ..
+           (IsHuman and " [HUMAN]" or " [AI]"))
+end
+
+--- [INTERNAL] Refresh human pool from ClientSet.
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:_RefreshHumanPool()
+    if not self.ClientSet then return end
+
+    self.ClientSet:ForEachClient(function(client)
+        if not client then return end
+        local grp = client:GetGroup()
+        if not grp or not grp:IsAlive() then return end
+        local name = grp:GetName()
+
+        if self._pool[name] then
+            self._pool[name].isHuman = true
+            if self._pool[name].state ~= REDGCIDISPATCHER.STATE_ENGAGED and
+               self._pool[name].state ~= REDGCIDISPATCHER.STATE_RTB then
+                local in_zone = false
+                if self.ZoneSet then
+                    self.ZoneSet:ForEachZone(function(zone)
+                        if grp:IsPartlyOrFullyInZone(zone) then
+                            in_zone = true
+                            self._pool[name].zone = zone
+                        end
+                    end)
+                end
+                self._pool[name].state = in_zone and
+                    REDGCIDISPATCHER.STATE_CAP or REDGCIDISPATCHER.STATE_UNKNOWN
+            end
+            return
+        end
+
+        -- New human — find closest CAP zone within 50km
+        local closest_zone, closest_dist = nil, math.huge
+        if self.ZoneSet then
+            self.ZoneSet:ForEachZone(function(zone)
+                local d = grp:GetCoordinate():Get2DDistance(zone:GetCoordinate())
+                if d < closest_dist then
+                    closest_dist = d
+                    closest_zone = zone
+                end
+            end)
+        end
+
+        if closest_zone and closest_dist < 50000 then
+            self:_RegisterFighter(grp, closest_zone, true)
+        end
+    end)
+end
+
+--- [INTERNAL] Return available fighters sorted by priority.
+-- Humans first, then by distance to cluster centroid.
+-- Safe iteration — collects dead groups separately before removing.
+-- @param #REDGCIDISPATCHER self
+-- @param #table Centroid  DCS coordinates {x, z}
+-- @return #table
+function REDGCIDISPATCHER:_AvailableFighters(Centroid)
+    local available = {}
+    local to_remove = {}
+
+    for _, entry in pairs(self._pool) do
+        if entry.state == REDGCIDISPATCHER.STATE_CAP then
+            local grp = GROUP:FindByName(entry.groupName)
+            if grp and grp:IsAlive() then
+                if Centroid then
+                    local c = grp:GetCoordinate()
+                    entry._dist = c and c:Get2DDistance(Centroid) or math.huge
+                else
+                    entry._dist = math.huge
+                end
+                available[#available + 1] = entry
+            else
+                to_remove[#to_remove + 1] = entry.groupName
+            end
+        end
+    end
+
+    -- Safe removal after iteration
+    for _, name in ipairs(to_remove) do
+        self:_Log("Pool-: " .. name .. " dead (AvailableFighters)")
+        self._pool[name] = nil
+    end
+
+    table.sort(available, function(a, b)
+        if a.isHuman ~= b.isHuman then return a.isHuman end
+        return (a._dist or math.huge) < (b._dist or math.huge)
+    end)
+
+    return available
+end
+
+--- [INTERNAL] Stable cluster key.
+-- @param #REDGCIDISPATCHER self
+-- @param #table Cluster
+-- @return #string
+function REDGCIDISPATCHER:_ClusterKey(Cluster)
+    local c  = Cluster.coordinate or {}
+    local cz = c.z or c.y or 0
+    return string.format("C_%.0f_%.0f", (c.x or 0)/1000, cz/1000)
+end
+
+--- [INTERNAL] Count alive units in cluster.
+-- @param #REDGCIDISPATCHER self
+-- @param #table Cluster
+-- @return #number
+function REDGCIDISPATCHER:_ClusterSize(Cluster)
+    local n = 0
+    for _, contact in pairs(Cluster.Contacts or {}) do
+        local grp = GROUP:FindByName(contact.groupname)
+        if grp and grp:IsAlive() then n = n + grp:CountAliveUnits() end
+    end
+    return n
+end
+
+--- [INTERNAL] Derive localized count and type tokens for a cluster.
+-- Reuses REDGCI CountTokens/TypeTokens tables.
+-- @param #REDGCIDISPATCHER self
+-- @param #table Cluster
+-- @return #string count_str, #string type_str, #number rng_km
+function REDGCIDISPATCHER:_ClusterPicture(Cluster)
+    local size = self:_ClusterSize(Cluster)
+
+    -- Count token (reuse REDGCI table if available)
+    local count_str
+    if REDGCI and REDGCI.CountTokens then
+        local t = REDGCI.CountTokens[self.Locale] or REDGCI.CountTokens["en"]
+        if     size == 1 then count_str = t.single
+        elseif size == 2 then count_str = t.pair
+        elseif size <= 4 then count_str = t.group
+        else                  count_str = t.biggroup
+        end
+    else
+        count_str = tostring(size)
+    end
+
+    -- Type token from RCS (reuse REDGCI table if available)
+    local type_str = "fighter"
+    local rcs_sum, rcs_n = 0.0, 0
+    for _, contact in pairs(Cluster.Contacts or {}) do
+        if contact.rcs then
+            rcs_sum = rcs_sum + contact.rcs
+            rcs_n   = rcs_n + 1
+        end
+    end
+
+    if REDGCI and REDGCI.TypeTokens and rcs_n > 0 then
+        local t   = REDGCI.TypeTokens[self.Locale] or REDGCI.TypeTokens["en"]
+        local avg = rcs_sum / rcs_n
+        if     avg < (REDGCI.RCS_FIGHTER_MAX or 6.0)  then type_str = t.fighter
+        elseif avg > (REDGCI.RCS_BOMBER_MIN  or 20.0) then type_str = t.bomber
+        else                                                type_str = t.machines
+        end
+    elseif REDGCI and REDGCI.TypeTokens then
+      local t   = REDGCI.TypeTokens[self.Locale] or REDGCI.TypeTokens["en"]
+      type_str = t[type_str]
+    end
+
+    -- Range to centroid from nearest CAP fighter
+    local rng_km = 0
+    local centroid = Cluster.coordinate
+    if centroid then
+        local min_dist = math.huge
+        for _, entry in pairs(self._pool) do
+            local grp = GROUP:FindByName(entry.groupName)
+            if grp and grp:IsAlive() then
+                local c = grp:GetCoordinate()
+                if c then
+                    local d = c:Get2DDistance(centroid)
+                    if d < min_dist then min_dist = d end
+                end
+            end
+        end
+        if min_dist < math.huge then
+            rng_km = math.floor(min_dist / 1000 + 0.5)
+        end
+    end
+
+    return count_str, type_str, rng_km
+end
+
+--- [INTERNAL] Get up to 2 target group names from cluster (closest to centroid).
+-- @param #REDGCIDISPATCHER self
+-- @param #table Cluster
+-- @return #string T1name, #string T2name
+function REDGCIDISPATCHER:_ClusterTargets(Cluster)
+    local c  = Cluster.coordinate or { x=0, z=0, y=0 }
+    local cz = c.z or c.y or 0
+    local groups = {}
+    for _, contact in pairs(Cluster.Contacts or {}) do
+        local grp = GROUP:FindByName(contact.groupname)
+        if grp and grp:IsAlive() then
+            local coord = grp:GetCoordinate()
+            local dx = (coord and coord.x or 0) - c.x
+            local dz = (coord and coord.z or 0) - cz
+            groups[#groups + 1] = { name=contact.groupname, dist=math.sqrt(dx*dx+dz*dz) }
+        end
+    end
+    table.sort(groups, function(a, b) return a.dist < b.dist end)
+    return groups[1] and groups[1].name or nil,
+           groups[2] and groups[2].name or nil
+end
+
+--- [INTERNAL] Dispatch one pair against a cluster.
+-- @param #REDGCIDISPATCHER self
+-- @param #table F1entry
+-- @param #table F2entry  (may be nil for solo)
+-- @param #table Cluster
+-- @param #string ClusterKey
+function REDGCIDISPATCHER:_DispatchPair(F1entry, F2entry, Cluster, ClusterKey)
+    local t1, t2 = self:_ClusterTargets(Cluster)
+    if not t1 then
+        self:_Log("Dispatch: keine Ziele in " .. ClusterKey)
+        return
+    end
+    if not self.dispatchcount then self.dispatchcount = 0 end
+
+    local f1  = F1entry.groupName
+    local f2  = F2entry and F2entry.groupName or nil
+    local cs1 = F1entry.callsign
+    local cs2 = F2entry and F2entry.callsign or cs1
+
+    self:I(self.lid .. string.format(
+        "DISPATCH %s(%s)+%s(%s) -> %s/%s [%s]",
+        f1, cs1, f2 or "-", cs2, t1, t2 or "-", ClusterKey))
+
+    F1entry.state      = REDGCIDISPATCHER.STATE_ENGAGED
+    F1entry.pairedWith = f2
+    F1entry.engagement = ClusterKey
+    if F2entry then
+        F2entry.state      = REDGCIDISPATCHER.STATE_ENGAGED
+        F2entry.pairedWith = f1
+        F2entry.engagement = ClusterKey
+    end
+
+    local gci2v2 = REDGCI2v2:New(-- Functional.RedGCI2v2#REDGCI2v2
+        f1, f2 or f1, t1, t2 or t1, cs1, cs2, self.Coalition)
+
+    gci2v2:SetLocale(self.Locale)
+    gci2v2:SetAIMode(true, self.HomeBaseName)
+    gci2v2:SetSRS(self.SRSPath, self.SRSGCIFrequency+self.dispatchcount, self.SRSMod,
+                  self.SRSCulture, self.SRSGCIVoice, self.SRSPort, self.SRSSpeed)
+    if self.SRSProvider then gci2v2:SetSRSProvider(self.SRSProvider) end
+    gci2v2:SetAltOffset(self.AltOffset)
+    gci2v2:SetWFRange(self.WFRange)
+    gci2v2:SetDebug(self.Debug)
+    gci2v2.Coalition = self.Coalition
+    gci2v2:SetRadioChannelList(self.RadioChannels)
+
+    -- Stop-Hook: release fighters back to pool
+    local dr   = self
+    local orig = gci2v2.onafterStop
+    gci2v2.onafterStop = function(s, F, E, T)
+        if orig then orig(s, F, E, T) end
+        dr:_OnEngagementEnd(ClusterKey, F1entry, F2entry)
+    end
+
+    gci2v2:Start()
+
+    -- Dispatch-Meldung: Picture an Piloten.
+    -- Tactic is not known yet at dispatch time (REDGCI2v2 picks it at COMMIT).
+    -- We send Count/Type now; the tactic call comes from the GCI itself.
+    local count_str, type_str, _ = self:_ClusterPicture(Cluster)
+    local cs_text = cs1 .. (f2 and (", " .. cs2) or "")
+    self:_Transmit("DISPATCH_CALL", {
+        CALLSIGN = cs_text,
+        COUNT    = count_str,
+        TYPE     = type_str,
+    }, f1)
+
+    -- Picture call: cluster size
+    local sz = self:_ClusterSize(Cluster)
+    if gci2v2._gci1 then gci2v2._gci1._target_count = sz end
+    if gci2v2._gci2 then gci2v2._gci2._target_count = sz end
+
+    self._engagements[ClusterKey] = {
+        gci2v2     = gci2v2,
+        f1Name     = f1,
+        f2Name     = f2,
+        clusterKey = ClusterKey,
+        startTime  = timer.getTime(),
+    }
+    
+    self.dispatchcount = (self.dispatchcount+1)%11
+    return self
+end
+
+--- [INTERNAL] Called when engagement ends (REDGCI2v2 Stop fires).
+-- AI → RTB waypoint then removed from pool.
+-- Human → RTB radio call, re-enters pool after 5 min.
+-- @param #REDGCIDISPATCHER self
+-- @param #string ClusterKey
+-- @param #table F1entry
+-- @param #table F2entry
+function REDGCIDISPATCHER:_OnEngagementEnd(ClusterKey, F1entry, F2entry)
+    self:I(self.lid .. "Engagement end: " .. ClusterKey)
+    self._engagements[ClusterKey] = nil
+
+    local entries = F2entry and { F1entry, F2entry } or { F1entry }
+    for _, entry in ipairs(entries) do
+        entry.pairedWith = nil
+        entry.engagement = nil
+
+        if entry.isHuman then
+            entry.state = REDGCIDISPATCHER.STATE_RTB
+            self:_Transmit("RTB_CALL",
+                { CALLSIGN = entry.callsign or entry.groupName },
+                entry.groupName)
+            local name = entry.groupName
+            self:ScheduleOnce(300, function()
+                if self._pool[name] then
+                    self._pool[name].state = REDGCIDISPATCHER.STATE_UNKNOWN
+                    self:I(self.lid .. name .. " [HUMAN] released")
+                end
+            end)
+        else
+            entry.state = REDGCIDISPATCHER.STATE_RTB
+            self:_RTBAircraft(entry.groupName)
+            local name = entry.groupName
+            self:ScheduleOnce(600, function()
+                self._pool[name] = nil
+                self:I(self.lid .. name .. " [AI] removed from pool")
+            end)
+            -- Respawn: spawn new AI into same zone after delay
+            if self.RespawnEnabled and entry.zone then
+                local zone = entry.zone
+                self:ScheduleOnce(self.RespawnDelay, function()
+                    self:I(self.lid .. "Respawn: " .. self.RespawnCount ..
+                           "× AI → " .. zone:GetName())
+                    for i = 1, self.RespawnCount do
+                        self:_SpawnAI(zone)
+                    end
+                end)
+            end
+        end
+    end
+end
+
+--- [INTERNAL] Push RTB waypoint for AI group.
+-- WaypointAir expects speed in km/h.
+-- @param #REDGCIDISPATCHER self
+-- @param #string GroupName
+function REDGCIDISPATCHER:_RTBAircraft(GroupName)
+    if not self.HomeBase then return end
+    local grp = GROUP:FindByName(GroupName)
+    if not grp or not grp:IsAlive() then return end
+
+    local spd_kmh = math.max(self.OrbitSpeed, 400)  -- km/h for WaypointAir
+    local c0      = grp:GetCoordinate()
+    local c1      = self.HomeBase:GetCoordinate()
+
+    grp:Route({
+        c0:WaypointAir(COORDINATE.WaypointAltType.BARO,
+            COORDINATE.WaypointType.TurningPoint,
+            COORDINATE.WaypointAction.FlyoverPoint,
+            spd_kmh, true, nil, {}, "RTB"),
+        c1:WaypointAir(COORDINATE.WaypointAltType.BARO,
+            COORDINATE.WaypointType.Land,
+            COORDINATE.WaypointAction.Landing,
+            spd_kmh, true, self.HomeBase, {}, "LAND"),
+    }, 3)
+
+    self:I(self.lid .. GroupName .. " [AI] RTB -> " .. self.HomeBaseName)
+end
+
+-- ─────────────────────────────────────────────────────────────
+--  FSM handlers
+-- ─────────────────────────────────────────────────────────────
+
+--- [INTERNAL] Start handler.
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:onafterStart(From, Event, To)
+    self:I(self.lid .. "Start v" .. REDGCIDISPATCHER.version)
+
+    if not self.Intel    then self:E(self.lid .. "ERROR: no INTEL set!")    return end
+    if not self.ZoneSet  then self:E(self.lid .. "ERROR: no ZoneSet!")  return end
+    if not self.HomeBase then self:E(self.lid .. "ERROR: no HomeBase set!") return end
+
+    self:_InitSRS()
+    self:_InitLocalization()
+
+    self.ZoneSet:ForEachZone(function(zone)
+        self:I(self.lid .. "Zone: " .. zone:GetName() ..
+               " -> spawning " .. self.AiPerZone .. "x AI")
+        for i = 1, self.AiPerZone do
+            self:_SpawnAI(zone)
+        end
+    end)
+
+    self:__Status(-REDGCIDISPATCHER.TICK_INTERVAL)
+end
+
+--- [INTERNAL] Main dispatch tick.
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:onafterStatus(From, Event, To)
+
+    self:_RefreshHumanPool()
+
+    -- Safe removal of dead AI: collect first, then delete
+    local to_remove = {}
+    for name, entry in pairs(self._pool) do
+        if not entry.isHuman then
+            local grp = GROUP:FindByName(name)
+            if (not grp or not grp:IsAlive()) and
+               entry.state ~= REDGCIDISPATCHER.STATE_RTB then
+                to_remove[#to_remove + 1] = name
+            end
+        end
+    end
+    for _, name in ipairs(to_remove) do
+        self:_Log("Pool-: " .. name .. " dead")
+        self._pool[name] = nil
+    end
+
+    local clusters = self.Intel:GetClusterTable()
+    if not clusters then
+        self:__Status(-REDGCIDISPATCHER.TICK_INTERVAL)
+        return
+    end
+
+    -- Clean up known clusters that have disappeared
+    for key in pairs(self._known_clusters) do
+        local still_alive = false
+        for _, cluster in pairs(clusters) do
+            if self:_ClusterKey(cluster) == key and
+               self:_ClusterSize(cluster) > 0 then
+                still_alive = true
+                break
+            end
+        end
+        if not still_alive then
+            self._known_clusters[key] = nil
+            self:_Log("Cluster " .. key .. " gone - removed from known_clusters")
+        end
+    end
+
+    for _, cluster in pairs(clusters) do
+        local key  = self:_ClusterKey(cluster)
+        local size = self:_ClusterSize(cluster)
+
+        if size > 0 then
+            -- New cluster? -> send INTEL contact to all CAP fighters
+            if not self._known_clusters[key] then
+                self._known_clusters[key] = true
+                local count_str, type_str, rng_km = self:_ClusterPicture(cluster)
+                self:_TransmitToAllCAP("INTEL_CONTACT", {
+                    COUNT = count_str,
+                    TYPE  = type_str,
+                    RNG   = rng_km,
+                })
+                self:I(self.lid .. "Neuer Cluster " .. key ..
+                       " → INTEL_CONTACT gesendet")
+            end
+            local active = 0
+            for ek in pairs(self._engagements) do
+                if string.find(ek, key, 1, true) then active = active + 1 end
+            end
+
+            local needed  = math.ceil(size / REDGCIDISPATCHER.UNITS_PER_PAIR)
+            local to_send = math.max(0, needed - active)
+
+            if to_send > 0 then
+                local centroid  = cluster.coordinate
+                local available = self:_AvailableFighters(centroid)
+
+                self:I(self.lid .. string.format(
+                    "Cluster %s size=%d need=%d pairs avail=%d fighter",
+                    key, size, needed, #available))
+
+                if #available > 0 then
+                    local idx, dispatched = 1, 0
+                    while dispatched < to_send and idx + 1 <= #available do
+                        self:_DispatchPair(
+                            available[idx], available[idx+1],
+                            cluster, key .. "_P" .. (active + dispatched + 1))
+                        idx        = idx + 2
+                        dispatched = dispatched + 1
+                    end
+
+                    if dispatched == 0 and #available >= 1 and size <= 1 then
+                        self:_DispatchPair(available[1], nil, cluster,
+                            key .. "_P" .. (active + 1))
+                    end
+                end
+            end
+        end
+    end
+
+    self:__Status(-REDGCIDISPATCHER.TICK_INTERVAL)
+end
+
+--- [INTERNAL] Stop handler.
+-- @param #REDGCIDISPATCHER self
+function REDGCIDISPATCHER:onafterStop(From, Event, To)
+    self:I(self.lid .. "Stopped.")
+end
+
+-------------------------------------------------------------------------------
+-- END of Class
+---------------------------------------------------------------------------------- **Ops** - Manages aircraft CASE X recoveries for carrier operations (X=I, II, III).
 --
 -- The AIRBOSS class manages recoveries of human pilots and AI aircraft on aircraft carriers.
 --
@@ -151168,6 +156101,7 @@ do
 --          my_ctld.onestepmenu = false -- When set to true, the menu will create Drop and build, Get and load, Pack and remove, Pack and load, Pack. it will be a 1 step solution.
 --          my_ctld.VehicleMoveFormation = AI.Task.VehicleFormation.VEE -- When a group moves to a MOVE zone, then it takes this formation. Can be a table of formations, which are then randomly chosen. Defaults to "Vee".
 --          my_ctld.validateAndRepositionUnits = false -- Uses Disposition and other logic to find better ground positions for ground units avoiding trees, water, roads, runways, map scenery, statics and other units in the area. (Default is false)
+--          my_ctld.maxUnloadTroopsAllowed = -1 -- Max troops allowed to be unloaded at once. Set to -1 for unlimited (Default). This is a soft limit, that is, if you have more troops in the heli, it will still unload them. Ex. prevent players from spamming troops on the ground and causing performance issues.
 --          my_ctld.loadSavedCrates = true -- Load back crates (STATIC) from the save file. Useful for mission restart cleanup. (Default is true)
 --          my_ctld.UseC130LoadAndUnload = false -- When set to true, forces the C-130 player to use the C-130J built system to load the cargo onboard and to unload. (Default is false)
 --          my_ctld.UseC130DynamicCargoAutoBuild = false -- When true (and UseC130LoadAndUnload is true), C-130 DynamicCargo unload completion is bridged to CTLD engineer-path auto-build.
@@ -151999,6 +156933,7 @@ function CTLD:New(Coalition, Prefixes, Alias)
   self.FixedMaxSpeed = 77 -- 280 kph or 150kn eq 77 mps
 
   self.validateAndRepositionUnits = false -- 280 kph or 150kn eq 77 mps
+  self.maxUnloadTroopsAllowed = -1
 
   -- message suppression
   self.suppressmessages = false
@@ -154681,7 +159616,7 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     if canmove then
       SPAWN:NewWithAlias(_template,alias)
         :InitRandomizeUnits(true,10,2)
-        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
+        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits, 70)
         :InitDelayOff()
         :OnSpawnGroup(function(grp,TimeStamp)
           grp.spawntime = TimeStamp or timer.getTime()
@@ -154694,7 +159629,7 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
       SPAWN:NewWithAlias(_template,alias)
         :InitRandomizeUnits(true,10,2)
         :InitDelayOff()
-        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
+        :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits, 70)
         :OnSpawnGroup(function(grp,TimeStamp)
           grp.spawntime = TimeStamp or timer.getTime()
           self.DroppedTroops[tc] = grp
@@ -155965,6 +160900,18 @@ function CTLD:_GetUnitPositions(Coordinate,Radius,Heading,Template)
   return Positions
 end
 
+--- Override this function to check if troops can be unloaded. This does not prevent returning troops to base.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP The group trying to unload
+-- @param Wrapper.Unit#UNIT The unit trying to unload
+-- @param #table LoadedCargo Table of loaded cargo, see #CTLD.LoadedCargo
+-- @param #boolean IsGrounded Is the unit on the ground
+-- @param #boolean IsHoverUnload Is the unit hovering in parameters for hover unload
+-- @return #boolean True if troops can be unloaded, false to prevent unloading
+function CTLD:CanUnloadAllTroops(Group, Unit, LoadedCargo, IsGrounded, IsHoverUnload)
+    return true
+end
+
 --- (Internal) Function to unload troops from heli.
 -- @param #CTLD self
 -- @param Wrapper.Group#GROUP Group
@@ -156000,8 +160947,13 @@ function CTLD:_UnloadTroops(Group, Unit)
   -- Get what we have loaded
   local unitname = Unit:GetName()
   if self.Loaded_Cargo[unitname] and (grounded or hoverunload) then
+    local loadedcargo = self.Loaded_Cargo[unitname] or {} -- #CTLD.LoadedCargo
+    if not self:CanUnloadAllTroops(Group, Unit, loadedcargo, grounded, hoverunload) then
+      -- User can post their own message in the function
+        return self
+    end
     if not droppingatbase or self.debug then
-      local loadedcargo = self.Loaded_Cargo[unitname] or {} -- #CTLD.LoadedCargo
+
       -- looking for troops
       local cargotable = loadedcargo.Cargo
       local deployedTroopsByName = {}
@@ -157345,8 +162297,11 @@ function CTLD:_RefreshF10Menus()
                 end
               end
               local dropTroopsMenu=MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_DROP_TROOPS",self.locale),toptroops):Refresh()
-              MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale),dropTroopsMenu,self._UnloadTroops,self,_group,_unit):Refresh()
+              if self.maxUnloadTroopsAllowed == -1 then
+                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale),dropTroopsMenu,self._UnloadTroops,self,_group,_unit):Refresh()
+              end
               MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_EXTRACT_TROOPS",self.locale),toptroops,self._ExtractTroops,self,_group,_unit):Refresh()
+
               local uName=_unit:GetName()
               local loadedData=self.Loaded_Cargo[uName]
               if loadedData and loadedData.Cargo then
@@ -158271,6 +163226,19 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
     end
   end
 
+--- Override this function to check if we can unload a single Troop group by ID.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group The aircraft group.
+-- @param Wrapper.Unit#UNIT Unit The aircraft unit.
+-- @param #number ChunkID the Cargo ID
+-- @param #number Quantity the quantity to unload
+-- @param #table LoadedCargo the current loaded cargo table for this unit
+-- @param #boolean IsGrounded whether the unit is currently grounded
+-- @param #boolean IsHoverUnload whether the unit is currently in hover-unload state
+-- @return #boolean true if we can unload, false if not
+function CTLD:CanUnloadSingleTroopByID(Group, Unit, ChunkID, Quantity, LoadedCargo, IsGrounded, IsHoverUnload)
+    return true
+end
 
 --- (Internal) Function to unload a single Troop group by ID.
 -- @param #CTLD self
@@ -158309,6 +163277,11 @@ function CTLD:_UnloadSingleTroopByID(Group, Unit, chunkID, qty)
   local unitName = Unit:GetName()
 
   if self.Loaded_Cargo[unitName] and (grounded or hoverunload) then
+    local loadedcargo = self.Loaded_Cargo[unitName] or {} -- #CTLD.LoadedCargo
+    if not self:CanUnloadSingleTroopByID(Group, Unit, chunkID, qty, loadedcargo, grounded, hoverunload) then
+        -- User can post their own message in the function
+        return self
+    end
     if not droppingatbase or self.debug then
       if not self.TroopsIDToChunk or not self.TroopsIDToChunk[chunkID] then
         local msg = self.gettext:GetEntry("NO_TROOP_CHUNK",self.locale)
@@ -158503,7 +163476,9 @@ function CTLD:_RefreshDropTroopsMenu(Group, Unit)
     dropTroopsMenu = MENU_GROUP:New(theGroup, self.gettext:GetEntry("MENU_DROP_TROOPS",self.locale), topTroops)
     topTroops.DropTroopsMenu = dropTroopsMenu
   end
-  MENU_GROUP_COMMAND:New(theGroup, self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale), dropTroopsMenu, self._UnloadTroops, self, theGroup, theUnit)
+  if self.maxUnloadTroopsAllowed == -1 then
+    MENU_GROUP_COMMAND:New(theGroup, self.gettext:GetEntry("MENU_DROP_ALL_TROOPS",self.locale), dropTroopsMenu, self._UnloadTroops, self, theGroup, theUnit)
+  end
 
   local loadedData = self.Loaded_Cargo[theUnit:GetName()]
   if not loadedData or not loadedData.Cargo then return end
@@ -158536,6 +163511,7 @@ function CTLD:_RefreshDropTroopsMenu(Group, Unit)
       else
         local parentMenu = MENU_GROUP:New(theGroup, label, dropTroopsMenu)
         for q = 1, count do
+          if q > self.maxUnloadTroopsAllowed and self.maxUnloadTroopsAllowed > -1 then break end
           MENU_GROUP_COMMAND:New(theGroup, string.format(self.gettext:GetEntry("MENU_DROP_N_TROOPS",self.locale), q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
           --MENU_GROUP_COMMAND:New(theGroup, string.format("Drop (%d) %s", q, tName), parentMenu, self._UnloadSingleTroopByID, self, theGroup, theUnit, chunkID, q)
         end
@@ -187040,6 +192016,7 @@ CHIEF = {
   tacview        = false,
   Nsuccess       =     0,
   Nfailure       =     0,
+  LegionRecruitMinRange = {}
 }
 
 --- Defence condition.
@@ -189248,9 +194225,9 @@ function CHIEF:CheckTargetQueue()
 
               -- Debug info.
               self:T2(self.lid..string.format("Recruiting assets for mission type %s [performance=%d] of target %s", mp.MissionType, mp.Performance, target:GetName()))
-              
+              local minRange = self.LegionRecruitMinRange[target.category]
               -- Recruit assets.
-              local recruited, assets, legions=self.commander:RecruitAssetsForTarget(target, mp.MissionType, NassetsMin, NassetsMax)
+              local recruited, assets, legions=self.commander:RecruitAssetsForTarget(target, mp.MissionType, NassetsMin, NassetsMax, minRange)
               
               if recruited then
               
@@ -190150,6 +195127,15 @@ end
 -- @return #boolean If `true`, one of the cohorts can run the mission.
 function CHIEF:CanMission(Mission)
     return self.commander and self.commander:CanMission(Mission)
+end
+
+--- Exclude legion recruitment that are below a minimum range to target based on the target category.
+--- Ex. Prevent intercepts from spawning too close to the target.
+-- @param #CHIEF self
+-- @param #string TargetCategory The target category.
+-- @param #number MinRange Minimum range in meters.
+function CHIEF:AddLegionRecruitMinRange(TargetCategory, MinRange)
+  self.LegionRecruitMinRange[TargetCategory] = MinRange
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -193746,10 +198732,11 @@ end
 -- @param #string MissionType Mission Type.
 -- @param #number NassetsMin Min number of required assets.
 -- @param #number NassetsMax Max number of required assets.
+-- @param #number (optional) RangeMin Minimum range to target. (Default is 0, which means no minimum range)
 -- @return #boolean If `true` enough assets could be recruited.
 -- @return #table Assets that have been recruited from all legions.
 -- @return #table Legions that have recruited assets.
-function COMMANDER:RecruitAssetsForTarget(Target, MissionType, NassetsMin, NassetsMax)
+function COMMANDER:RecruitAssetsForTarget(Target, MissionType, NassetsMin, NassetsMax, RangeMin)
 
   -- Cohorts.
   local Cohorts=self:_GetCohorts()
@@ -193758,7 +198745,7 @@ function COMMANDER:RecruitAssetsForTarget(Target, MissionType, NassetsMin, Nasse
   local TargetVec2=Target:GetVec2()
   
   -- Recruite assets.
-  local recruited, assets, legions=LEGION.RecruitCohortAssets(Cohorts, MissionType, nil, NassetsMin, NassetsMax, TargetVec2)
+  local recruited, assets, legions=LEGION.RecruitCohortAssets(Cohorts, MissionType, nil, NassetsMin, NassetsMax, TargetVec2, nil, nil, nil , nil, nil, nil, nil, nil, nil, nil, RangeMin)
 
 
   return recruited, assets, legions
@@ -204941,7 +209928,7 @@ INTEL = {
   DetectAccoustic = false,
   DetectAccousticRadius = 1000,
   DetectAccousticUnitTypes =  {Unit.Category.HELICOPTER},
-  DopplerRadar        = true,
+  DopplerRadar        = false,
   DopplerMinAltAGL    = 500,
   DopplerNotchSin     = math.sin(math.rad(15)),
   DopplerMinSpeedMps  = 50,
@@ -205149,7 +210136,7 @@ INTEL.RCS_CategoryDefault = {
 }
 
 ---
--- Reference RCS (m²) for range scaling.  Detection range in SetDopplerRadar
+-- Reference RCS (m²) for range scaling.  Detection range in Set
 -- is the range at which this reference aircraft is reliably detected.
 -- @field INTEL.RCS_Reference
 INTEL.RCS_Reference = 5.0   -- m²
@@ -205269,6 +210256,7 @@ function INTEL:New(DetectionSet, Coalition, Alias)
   self:SetRejectZones()
   self:SetCorridorZones()
   self:SetConflictZones()
+  self.DopplerRadar = false
 
   ------------------------
   --- Pseudo Functions ---
@@ -206099,6 +211087,15 @@ function INTEL:_UpdateContact(Contact)
         else
           Contact.maneuvering = false
         end
+        local typename = Contact.group:GetTypeName()
+        local base_rcs = INTEL.RCS_Table[typename]
+    
+        if not base_rcs then
+            -- Fallback: category default
+            local cat = Contact.group:GetCategory()
+            base_rcs = (cat and INTEL.RCS_CategoryDefault[cat]) or INTEL.RCS_Reference
+        end
+        Contact.rcs = base_rcs
       end
     end
 
@@ -207459,7 +212456,7 @@ end
 --                              Default true.
 -- @return #INTEL self
 function INTEL:SetDopplerRadar(MinAltAGL, NotchHalfDeg, MinSpeedMps, RadarRangeKm, RCS)
-  self:I(self.lid .. "SetDopplerRadar")
+  self:T(self.lid .. "SetDopplerRadar")
     self.DopplerRadar        = true
     self.DopplerMinAltAGL    = MinAltAGL    or 500
     self.DopplerNotchSin     = math.sin(math.rad(NotchHalfDeg or 15))
@@ -207473,7 +212470,7 @@ end
 -- @param #INTEL self
 -- @return #INTEL self
 function INTEL:SetDopplerRadarOff()
-  self:I(self.lid .. "SetDopplerRadarOff")
+  self:T(self.lid .. "SetDopplerRadarOff")
     self.DopplerRadar = false
     return self
 end
@@ -207485,7 +212482,7 @@ end
 -- @param #number RCS_m2    Side-on RCS in m²
 -- @return #INTEL self
 function INTEL:SetTypeRCS(TypeName, RCS_m2)
-  self:I(self.lid .. "SetTypeRCS")
+  self:T(self.lid .. "SetTypeRCS")
     INTEL.RCS_Table[TypeName] = RCS_m2
     return self
 end
@@ -207508,7 +212505,7 @@ end
 -- @param DCS#Vec3 tvel  Target velocity vector (pre-computed)
 -- @return #number Effective RCS in m²
 function INTEL:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
-  self:I(self.lid .. "_GetAspectRCS")
+  self:T(self.lid .. "_GetAspectRCS")
     -- Look up base (side-on) RCS
     local typename = TargetUnit:GetTypeName()
     local base_rcs = INTEL.RCS_Table[typename]
@@ -207546,7 +212543,7 @@ end
 -- @return #boolean  true = detected
 -- @return #string   rejection reason: "speed" | "clutter" | "notch" | "rcs"
 function INTEL:_CheckDopplerDetection(TargetUnit, RadarUnit)
-  self:I(self.lid .. "_CheckDopplerDetection")
+  self:T(self.lid .. "_CheckDopplerDetection")
     -- Pre-compute common geometry (shared by notch + RCS checks)
     local spd  = TargetUnit:GetVelocityMPS()
     local rpos = RadarUnit:GetVec3()
@@ -207588,7 +212585,7 @@ function INTEL:_CheckDopplerDetection(TargetUnit, RadarUnit)
     -- Effective detection range = DopplerRadarRangeM × (σ_eff / σ_ref)^0.25
     -- Beyond that range: target not detected (hard cutoff at 100%; soft fade
     -- starts at 80% of R_max to smooth the transition).
-    if self.DopplerRCS and slant > 1 then
+    if self.DopplerRCS == true and slant > 1 then
         local sigma = self:_GetAspectRCS(TargetUnit, rpos, spd, tvel)
         -- (σ/σ_ref)^0.25 — clamp to avoid log of 0 for VLO aircraft
         local scale  = (sigma / INTEL.RCS_Reference) ^ 0.25
@@ -207629,7 +212626,7 @@ end
 -- @param #boolean DetectRWR (Optional) If *false*, do not include targets detected by RWR.
 -- @param #boolean DetectDLINK (Optional) If *false*, do not include targets detected by data link.
 function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,DetectVisual, DetectOptical, DetectRadar,DetectIRST, DetectRWR, DetectDLINK)
-  self:I(self.lid .. "GetDetectedUnitsDoppler")
+  self:T(self.lid .. "GetDetectedUnitsDoppler")
     -- Run the original detection
     self:GetDetectedUnits(Unit,DetectedUnits,RecceDetecting,DetectVisual,DetectOptical,DetectRadar,DetectIRST,DetectRWR,DetectDLINK)
 
@@ -207645,7 +212642,7 @@ function INTEL:GetDetectedUnitsDoppler(Unit, DetectedUnits, RecceDetecting,Detec
             if not ok then
                 table.insert(remove, name)
                 --if self.verbose and self.verbose >= 2 then
-                    self:I(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid, name, reason, Unit:GetName()))
+                    self:T(string.format("%sDoppler: suppressed %s [%s] by %s",self.lid, name, reason, Unit:GetName()))
                 --end
             end
         end
@@ -207857,7 +212854,7 @@ end
   -- @return #INTEL_DLINK self
   function INTEL_DLINK:SetDLinkCacheTime(seconds)
     self.cachetime = math.abs(seconds or 120)
-    self:I(self.lid.."Caching for "..self.cachetime.." seconds.")
+    self:T(self.lid.."Caching for "..self.cachetime.." seconds.")
     return self
   end
 
@@ -207947,7 +212944,7 @@ end
 function INTEL_DLINK:onafterStop(From, Event, To)
   self:T({From, Event, To})
   local text = string.format("Version %s stopped.", self.version)
-  self:I(self.lid .. text)
+  self:T(self.lid .. text)
   return self
 end
 
@@ -210557,8 +215554,11 @@ end
 -- @param #number RefuelSystem Refueling system (boom or probe).
 -- @param #number CargoWeight Cargo weight [kg]. This checks the cargo bay of the cohort assets and ensures that it is large enough to carry the given cargo weight.
 -- @param #number MaxWeight Max weight [kg]. This checks whether the cohort asset group is not too heavy.
+-- @param RangeMin Min range in meters. (Default is 0, i.e. no minimum range.)
 -- @return #boolean Returns `true` if given cohort can meet all requirements.
-function LEGION._CohortCan(Cohort, MissionType, Categories, Attributes, Properties, WeaponTypes, TargetVec2, RangeMax, RefuelSystem, CargoWeight, MaxWeight)
+function LEGION._CohortCan(Cohort, MissionType, Categories, Attributes, Properties, WeaponTypes, TargetVec2, RangeMax, RefuelSystem, CargoWeight, MaxWeight, RangeMin)
+
+  RangeMin = RangeMin or 0
 
   --- Function to check category.
   local function CheckCategory(_cohort)
@@ -210636,8 +215636,8 @@ function LEGION._CohortCan(Cohort, MissionType, Categories, Attributes, Properti
     -- Is in range?
     local Rmax=cohort:GetMissionRange(WeaponTypes)
     local RangeMax = RangeMax or 0    
-    local InRange=(RangeMax and math.max(RangeMax, Rmax) or Rmax) >= TargetDistance
-    
+    local InRange=(RangeMax and math.max(RangeMax, Rmax) or Rmax) >= TargetDistance and TargetDistance > RangeMin
+
     --env.info(string.format("Range TargetDist=%.1f Rmax=%.1f RangeMax=%.1f InRange=%s", TargetDistance, Rmax, RangeMax, tostring(InRange)))
     
     return InRange    
@@ -210783,10 +215783,11 @@ end
 -- @param #table Attributes Group attributes. See `GROUP.Attribute.`
 -- @param #table Properties DCS attributes.
 -- @param #table WeaponTypes Bit of weapon types.
+-- @param #number RangeMin Min range in meters. (Default is 0, i.e. no minimum range.)
 -- @return #boolean If `true` enough assets could be recruited.
 -- @return #table Recruited assets. **NOTE** that we set the `asset.isReserved=true` flag so it cant be recruited by anyone else.
 -- @return #table Legions of recruited assets.
-function LEGION.RecruitCohortAssets(Cohorts, MissionTypeRecruit, MissionTypeOpt, NreqMin, NreqMax, TargetVec2, Payloads, RangeMax, RefuelSystem, CargoWeight, TotalWeight, MaxWeight, Categories, Attributes, Properties, WeaponTypes)
+function LEGION.RecruitCohortAssets(Cohorts, MissionTypeRecruit, MissionTypeOpt, NreqMin, NreqMax, TargetVec2, Payloads, RangeMax, RefuelSystem, CargoWeight, TotalWeight, MaxWeight, Categories, Attributes, Properties, WeaponTypes, RangeMin)
 
   -- The recruited assets.
   local Assets={}
@@ -210804,7 +215805,7 @@ function LEGION.RecruitCohortAssets(Cohorts, MissionTypeRecruit, MissionTypeOpt,
     local cohort=_cohort --Ops.Cohort#COHORT
     
     -- Check if cohort can do the mission.
-    local can=LEGION._CohortCan(cohort, MissionTypeRecruit, Categories, Attributes, Properties, WeaponTypes, TargetVec2, RangeMax, RefuelSystem, CargoWeight, MaxWeight)
+    local can=LEGION._CohortCan(cohort, MissionTypeRecruit, Categories, Attributes, Properties, WeaponTypes, TargetVec2, RangeMax, RefuelSystem, CargoWeight, MaxWeight, RangeMin)
 
     --env.info(string.format("RecruitCohortAssets %s Cohort=%s can=%s", MissionTypeRecruit, cohort:GetName(), tostring(can)))
     
@@ -253143,7 +258144,7 @@ end
 -- @return #MSRSQUEUE.Transmission Radio transmission table.
 function MSRSQUEUE:NewTransmission(text, duration, msrs, tstart, interval, subgroups, subtitle, subduration, frequency, modulation, gender, culture, voice, volume, label,coordinate,speed,speaker,priority)
   self:T({Text=text, Dur=duration, start=tstart, int=interval, sub=subgroups, subt=subtitle, sudb=subduration, F=frequency, M=modulation, G=gender, C=culture, V=voice, Vol=volume, L=label, S=speed, P=priority})
-  self:I({provider=msrs.provider})
+  self:T({TEXT=text, PRIO=tostring(priority)})
   if self.TransmitOnlyWithPlayers then
     if self.PlayerSet and self.PlayerSet:CountAlive() == 0 then
       return self
