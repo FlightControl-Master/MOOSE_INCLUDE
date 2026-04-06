@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-03-31T19:34:28+02:00-d52ce9af727d48786c70b2c66b51f9d424b53c48 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-06T18:49:53+02:00-b78b76e5790dde805830c38ad83edd344d344491 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -206193,6 +206193,15 @@ function INTEL:_UpdateContact(Contact)
         else
           Contact.maneuvering = false
         end
+        local typename = Contact.group:GetTypeName()
+        local base_rcs = INTEL.RCS_Table[typename]
+    
+        if not base_rcs then
+            -- Fallback: category default
+            local cat = Contact.group:GetCategory()
+            base_rcs = (cat and INTEL.RCS_CategoryDefault[cat]) or INTEL.RCS_Reference
+        end
+        Contact.rcs = base_rcs
       end
     end
 
