@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-06T18:49:53+02:00-b78b76e5790dde805830c38ad83edd344d344491 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-07T12:19:37+02:00-1071300a7fa427a0d84ce75669fb39c598f45cd7 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -250723,24 +250723,21 @@ end
 --
 -- # The MSRS Concept
 --
--- This class allows to broadcast sound files or text via Simple Radio Standalone (SRS).
+-- This class allows to broadcast sound files or text to speech via Simple Radio Standalone (SRS).
 --
 -- ## Prerequisites
 --
--- * This script needs SRS version >= 1.9.6
 -- * You need to de-sanitize os, io and lfs in the missionscripting.lua
--- * Optional: DCS-gRPC as backend to communicate with SRS (via infra)
--- * Optional: HOUNDTTS as backend to communicate with SRS (via infra)
+-- * Optional but recommended: HOUND TTS as backend to communicate with SRS (via plugin)
+-- * Optional: DCS-gRPC as backend to communicate with SRS (via plugin)
+-- 
+-- ## Known Issues
 --
--- ## Knwon Issues
---
--- ### Pop-up Window
+-- ### Pop-up Window (with backend windows)
 --
 -- The text-to-speech conversion of SRS is done via an external exe file. When this file is called, a windows `cmd` window is briefly opended. That puts DCS out of focus, which is annoying,
--- expecially in VR but unavoidable (if you have a solution, please feel free to share!).
+-- expecially in VR, but unavoidable unless you use HOUD or gRPC as backends.
 --
--- NOTE that this is not an issue if the mission is running on a server.
--- Also NOTE that using DCS-gRPC and Hound-TTS as backend create no pop-up window.
 --
 -- # Play Sound Files
 --
@@ -250799,16 +250796,17 @@ end
 --
 -- See @{#MSRS.LoadConfigFile} for details on how to set this up.
 --
--- ## TTS Providers
---
--- The default provider for generating speech from text is the native Windows TTS service. Note that you need to install the voices you want to use.
+-- ## TTS (text-to-speech) Providers
+-- 
+-- The **currently recommended** backend is HOUND TTS (no pop-ups), which has a wide variety of TTS providers.
+-- The *default* provider for generating speech from text is the native Windows TTS service. Note that you need to install the voices you want to use.
 -- 
 -- **Pro-Tip** - use the command line with power shell to call `DCS-SR-ExternalAudio.exe` - it will tell you what is missing
 -- and also the Google Console error, in case you have missed a step in setting up your Google TTS.
 -- For example, `.\DCS-SR-ExternalAudio.exe -t "Text Message" -f 255 -m AM -c 2 -s 2 -z -G "Path_To_You_Google.Json"`
 -- plays a message on 255 MHz AM for the blue coalition in-game.
 --
--- ### Google
+-- ### Google (best speech synthesis)
 -- 
 -- In order to use Google Cloud for TTS you need to use @{#MSRS.SetProvider} and @{#MSRS.SetProviderOptionsGoogle} functions:
 -- 
@@ -250846,6 +250844,12 @@ end
 --
 -- You can set the voice to use with Azure via @{#MSRS.SetVoiceAzure}.
 --
+-- ### Piper, OpenAI and further provider options [Only HOUND backend]
+-- 
+-- You can use further providers with HOUND TTS as a backend, see [Hound-TTS](https://github.com/uriba107/HoundTTS/releases) for setup.
+-- 
+--     msrs:SetProvider(MSRS.Provider.PIPER) -- e.g. for piper
+--
 -- ## Backend
 --
 -- The default interface to SRS is via calling the 'DCS-SR-ExternalAudio.exe'. As noted above, this has the unavoidable drawback that a pop-up briefly appears
@@ -250853,13 +250857,13 @@ end
 --
 -- ## Hound TTS as an alternative to 'DCS-SR-ExternalAudio.exe' for TTS
 -- 
--- An alternative interface to SRS is [Hound-TTS](https://github.com/uriba107/HoundTTS/releases). This does not call an exe file and therefore avoids the annoying pop-up window.
+-- the recommended alternative interface to SRS is [Hound-TTS](https://github.com/uriba107/HoundTTS/releases). This does not call an exe file and therefore avoids the annoying pop-up window.
 -- In addition to Windows and Google cloud, it also offers Piper local voice creation and others as providers for TTS.
 --
 -- Use @{#MSRS.SetDefaultBackendHound} to enable [Hound-TTS](https://github.com/uriba107/HoundTTS/releases) as an alternate backend.
 -- This can be useful if the popup should be avoided or to use Piper or others for TTS. Please note, only text-to-speech is supported and it it cannot be used to transmit audio files.
 --
--- Hound TTS must be installed and configured per the [Hound TTS](https://github.com/uriba107/HoundTTS#installation) prior to use. 
+-- Hound TTS must be installed and configured per the [Hound TTS](https://github.com/uriba107/HoundTTS#installation) GitHub prior to use. 
 -- If a cloud TTS provider is being used, the API key(s) must be set as per the documentation.
 -- Hound TTS can be used both with DCS dedicated server and regular DCS installations.
 --
@@ -250942,7 +250946,7 @@ MSRS = {
 
 --- MSRS class version.
 -- @field #string version
-MSRS.version="0.3.5"
+MSRS.version="0.3.6"
 
 --- Voices
 -- @type MSRS.Voices
@@ -251393,14 +251397,16 @@ MSRS.Backend = {
 -- @field #string AZURE Microsoft Azure (`azure`). Only possible with DCS-gRPC backend.
 -- @field #string AMAZON Amazon Web Service (`aws`). Only possible with DCS-gRPC backend.
 -- @field #string PIPER Piper local voice service. Only possible with Hound-TTS backend.
--- @field #string KITTEN Kitten voice server. Only possible with Hound-TTS backend.
+-- @field #string KITTEN Kitten voice server. Only possible with Hound-TTS backend. Superseded by OpenAI
+-- @field #string OPENAI OpenAI voice server. Only possible with Hound-TTS backend.
 MSRS.Provider = {
   WINDOWS = "win",
   GOOGLE  = "gcloud",
   AZURE   = "azure",
   AMAZON  = "aws",
   PIPER   = "piper",
-  KITTEN  = "kitten",
+  KITTEN  = "openai",
+  OPENAI  = "openai",
 }
 
 --- Function for UUID.
@@ -252130,6 +252136,15 @@ end
 function MSRS:SetTTSProviderKitten()
   self:F()
   self:SetProvider(MSRS.Provider.KITTEN)
+  return self
+end
+
+--- Use OpenAI to provide text-to-speech. Only supported if used in combination with Hound-TTS as backend.
+-- @param #MSRS self
+-- @return #MSRS self
+function MSRS:SetTTSProviderOpenAI()
+  self:F()
+  self:SetProvider(MSRS.Provider.OPENAI)
   return self
 end
 

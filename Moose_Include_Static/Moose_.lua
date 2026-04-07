@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-06T18:49:53+02:00-b78b76e5790dde805830c38ad83edd344d344491 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-07T12:19:37+02:00-1071300a7fa427a0d84ce75669fb39c598f45cd7 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -125103,7 +125103,7 @@ ConfigLoaded=false,
 poptions={},
 UsePowerShell=false,
 }
-MSRS.version="0.3.5"
+MSRS.version="0.3.6"
 MSRS.Voices={
 Amazon={
 Generative={
@@ -125510,7 +125510,8 @@ GOOGLE="gcloud",
 AZURE="azure",
 AMAZON="aws",
 PIPER="piper",
-KITTEN="kitten",
+KITTEN="openai",
+OPENAI="openai",
 }
 function MSRS.uuid()
 local random=math.random
@@ -125849,6 +125850,11 @@ end
 function MSRS:SetTTSProviderKitten()
 self:F()
 self:SetProvider(MSRS.Provider.KITTEN)
+return self
+end
+function MSRS:SetTTSProviderOpenAI()
+self:F()
+self:SetProvider(MSRS.Provider.OPENAI)
 return self
 end
 function MSRS:Help()
