@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-07T12:19:37+02:00-1071300a7fa427a0d84ce75669fb39c598f45cd7 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-08T14:43:53+02:00-51e5f539650079586469c2fe553f9e516189749c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -105231,7 +105231,7 @@ end
 return cohorts
 end
 function LEGION._CohortCan(Cohort,MissionType,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight,RangeMin)
-RangeMin=RangeMin or 0
+RangeMin=RangeMin or-1
 local function CheckCategory(_cohort)
 local cohort=_cohort
 if Categories and#Categories>0 then

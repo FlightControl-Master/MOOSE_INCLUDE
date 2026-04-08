@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-07T12:19:37+02:00-1071300a7fa427a0d84ce75669fb39c598f45cd7 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-08T14:43:53+02:00-51e5f539650079586469c2fe553f9e516189749c ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -210664,7 +210664,7 @@ end
 -- @return #boolean Returns `true` if given cohort can meet all requirements.
 function LEGION._CohortCan(Cohort, MissionType, Categories, Attributes, Properties, WeaponTypes, TargetVec2, RangeMax, RefuelSystem, CargoWeight, MaxWeight, RangeMin)
 
-  RangeMin = RangeMin or 0
+  RangeMin = RangeMin or -1
 
   --- Function to check category.
   local function CheckCategory(_cohort)
@@ -250822,7 +250822,7 @@ end
 -- For more information on setting up a cloud account, visit: https://cloud.google.com/text-to-speech
 -- Google's supported SSML reference: https://cloud.google.com/text-to-speech/docs/ssml
 --
--- ### Amazon Web Service [Only DCS-gRPC backend]
+-- ### Amazon Web Service [Only HOUDN and DCS-gRPC backend]
 -- 
 -- In order to use Amazon Web Service (AWS) for TTS you need to use @{#MSRS.SetProvider} and @{#MSRS.SetProviderOptionsAmazon} functions:
 -- 
@@ -250833,7 +250833,7 @@ end
 -- 
 -- You can set the voice to use with AWS via @{#MSRS.SetVoiceAmazon}.
 -- 
--- ### Microsoft Azure [Only DCS-gRPC backend]
+-- ### Microsoft Azure [Only HOUND and DCS-gRPC backend]
 -- 
 -- In order to use Microsoft Azure for TTS you need to use @{#MSRS.SetProvider} and @{#MSRS.SetProviderOptionsAzure} functions:
 -- 
