@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-08T14:43:53+02:00-51e5f539650079586469c2fe553f9e516189749c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-08T15:17:54+02:00-56520092c3b8dba3df490edf37570499c37b2c56 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -122710,10 +122710,11 @@ if self:Is("Stopped")then
 self.Intel:Start()
 for _,_wing in pairs(self.wings or{})do
 for _,_aw in pairs(_wing)do
-_wing[1]:Start()
+_wing[1]:Restart()
 end
 end
 end
+self:__Status(5)
 return self
 end
 EASYA2G={

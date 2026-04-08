@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-08T14:43:53+02:00-51e5f539650079586469c2fe553f9e516189749c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-08T15:17:54+02:00-56520092c3b8dba3df490edf37570499c37b2c56 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -79749,7 +79749,7 @@ do -- DETECTION_BASE
     return self
   end
 
-  --- Validate if the detected item is locked.
+  --- Validate if the detected item is locked (not in the radar sense, though!).
   -- @param #DETECTION_BASE self
   -- @param #DETECTION_BASE.DetectedItem DetectedItem The DetectedItem.
   -- @return #boolean
@@ -79759,7 +79759,7 @@ do -- DETECTION_BASE
 
   end
 
-  --- Lock a detected item.
+  --- Lock a detected item (not in the radar sense, though!).
   -- @param #DETECTION_BASE self
   -- @param #DETECTION_BASE.DetectedItem DetectedItem The DetectedItem.
   -- @return #DETECTION_BASE
@@ -79770,7 +79770,7 @@ do -- DETECTION_BASE
     return self
   end
 
-  --- Unlock a detected item.
+  --- Unlock a detected item (not in the radar sense, though!).
   -- @param #DETECTION_BASE self
   -- @param #DETECTION_BASE.DetectedItem DetectedItem The DetectedItem.
   -- @return #DETECTION_BASE
@@ -245938,10 +245938,11 @@ function EASYGCICAP:onafterRestart(From,Event,To)
   -- self.wings[Airbasename] = { CAP_Wing, AIRBASE:FindByName(Airbasename):GetZone(), Airbasename }
     for _,_wing in pairs(self.wings or {}) do
       for _,_aw in pairs(_wing) do
-        _wing[1]:Start()
+        _wing[1]:Restart()
       end
     end
   end
+  self:__Status(5)
   return self
 end
 --- **Ops** - Create your A2G Defenses.
