@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-06T19:55:58+02:00-04befd1b61d0cc195c1092e3dced088587638467 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-08T14:44:56+02:00-85ee0ae38ed71b4676806fe0e187dca4378be0c4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -107978,7 +107978,7 @@ end
 return cohorts
 end
 function LEGION._CohortCan(Cohort,MissionType,Categories,Attributes,Properties,WeaponTypes,TargetVec2,RangeMax,RefuelSystem,CargoWeight,MaxWeight,RangeMin)
-RangeMin=RangeMin or 0
+RangeMin=RangeMin or-1
 local function CheckCategory(_cohort)
 local cohort=_cohort
 if Categories and#Categories>0 then
@@ -127850,7 +127850,7 @@ ConfigLoaded=false,
 poptions={},
 UsePowerShell=false,
 }
-MSRS.version="0.3.5"
+MSRS.version="0.3.6"
 MSRS.Voices={
 Amazon={
 Generative={
@@ -128257,7 +128257,8 @@ GOOGLE="gcloud",
 AZURE="azure",
 AMAZON="aws",
 PIPER="piper",
-KITTEN="kitten",
+KITTEN="openai",
+OPENAI="openai",
 }
 function MSRS.uuid()
 local random=math.random
@@ -128596,6 +128597,11 @@ end
 function MSRS:SetTTSProviderKitten()
 self:F()
 self:SetProvider(MSRS.Provider.KITTEN)
+return self
+end
+function MSRS:SetTTSProviderOpenAI()
+self:F()
+self:SetProvider(MSRS.Provider.OPENAI)
 return self
 end
 function MSRS:Help()
