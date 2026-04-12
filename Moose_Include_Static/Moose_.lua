@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-08T15:17:54+02:00-56520092c3b8dba3df490edf37570499c37b2c56 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-12T12:56:15+02:00-dbc752253b4e91e4c75cb87bedcbfb131837ec83 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -10042,10 +10042,20 @@ missionCommands.addSubMenuForGroup(self.GroupID,self.MenuText,self.MenuParentPat
 local MenuTable={}
 for MenuText,Menu in pairs(self.Menus or{})do
 local tag=Menu.MenuTag or math.random(1,10000)
-MenuTable[#MenuTable+1]={Tag=tag,Enty=Menu}
+MenuTable[#MenuTable+1]={Tag=tag,Entry=Menu}
 end
-table.sort(MenuTable,function(k1,k2)return k1.tag<k2.tag end)
-for _,Menu in pairs(MenuTable)do
+local function SortTable(k1,k2)
+if not k1 then
+if not k2 then return true else return false end
+elseif not k2 then
+if not k1 then return true else return false end
+else
+return(k1.Tag or 15)<=(k2.Tag or 15)
+end
+return false
+end
+table.sort(MenuTable,SortTable)
+for _,Menu in ipairs(MenuTable)do
 Menu.Entry:Refresh()
 end
 end
@@ -123187,6 +123197,1100 @@ text=text.."\nMission Limit: "..self.MaxAliveMissions
 MESSAGE:New(text,15,"A2G"):ToAll():ToLogIf(self.debug)
 end
 self:__Status(30)
+return self
+end
+TARS_SESSION={}
+TARS_SESSION.debug=false
+TARS={}
+TARS.version="v2.2.1"
+TARS.locale=TARS.locale or"en"
+TARS.debug=false
+TARS.mooseScoring=true
+TARS.valueScoring=100
+TARS.landingDelay=30
+TARS.debriefDelay=60
+TARS.landingDistance=2500
+TARS._vAltMin=10
+TARS._vRangeMin=TARS._vAltMin*20
+TARS._vAltOpti=500
+TARS._vRangeOpti=TARS._vAltOpti*5
+TARS._vAltMax=1500
+TARS._vRangeMax=TARS._vAltMax*3
+TARS.filmLimitEnabled=true
+TARS.filmLimitMax=25
+TARS.detectUnits=true
+TARS.detectStatics=false
+TARS.units={air=false,ground=true,ship=true}
+TARS.statics={
+farps=true,
+captureExceptions=false,captureExceptionsList={},
+captureUnique=false,captureUniqueList={},
+}
+TARS.recoNameFilter={enabled=false,keyword="Reco"}
+TARS.targetNameFilter={
+enabled=true,
+keywords={
+[coalition.side.BLUE]={"USA"},
+[coalition.side.RED]={"USSR"},
+},
+}
+TARS.reconTypes={
+["MiG-21Bis"]=true,["AJS37"]=true,["Mirage-F1EE"]=true,
+["F-5E-3"]=true,["F-14A-135-GR"]=true,["F-14B"]=true,
+["F-4E-45MC"]=true,["P-51D"]=true,["P-51D-30-NA"]=true,
+["SpitfireLFMkIX"]=true,["FW-190A8"]=true,["FW-190D9"]=true,
+["SA342M"]=true,["SA342L"]=true,["UH-1H"]=true,["OH58D"]=true,
+["Mi-8MT"]=true,["MH-6J"]=true,
+["OH-6A"]=true,
+}
+TARS.parameters={}
+TARS.parameters["F-4E-45MC"]={minAlt=100,maxAlt=6096,maxRoll=10,maxPitch=15,fov=23,duration=120,offset=math.rad(60),name="RF-4E with KS-87 Forward Oblique Camera"}
+TARS.parameters["MiG-21Bis"]={minAlt=500,maxAlt=5000,maxRoll=10,maxPitch=15,fov=52,duration=140,offset=math.rad(10),name="MiG-21R with Day recce pod"}
+TARS.parameters["AJS37"]={minAlt=15,maxAlt=1524,maxRoll=10,maxPitch=15,fov=25,duration=120,offset=math.rad(10),name="SF 37"}
+TARS.parameters["Mirage-F1EE"]={minAlt=1524,maxAlt=4572,maxRoll=10,maxPitch=15,fov=20,duration=588,offset=math.rad(10),name="Mirage-F1CR with Omera 33"}
+TARS.parameters["F-5E-3"]={minAlt=762,maxAlt=7620,maxRoll=15,maxPitch=15,fov=70,duration=300,offset=math.rad(40),name="F-5E Tigereye"}
+TARS.parameters["F-14A-135-GR"]={minAlt=750,maxAlt=5000,maxRoll=10,maxPitch=20,fov=14,duration=400,offset=math.rad(45),name="F-14A TARPS KS-87D"}
+TARS.parameters["F-14B"]={minAlt=228,maxAlt=1524,maxRoll=10,maxPitch=20,fov=85,duration=80,offset=math.rad(10),name="F-14B TARPS KA-99A"}
+TARS.parameters["TF-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),name="TF-51D Mustang RF-51D Photo Recon"}
+TARS.parameters["P-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),name="P-51D Mustang F-6D Photo Recon"}
+TARS.parameters["P-51D-30-NA"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),name="P-51D-30 Mustang F-6D Photo Recon"}
+TARS.parameters["SpitfireLFMkIX"]={minAlt=150,maxAlt=5000,maxRoll=15,maxPitch=15,fov=55,duration=350,offset=math.rad(10),name="Spitfire LF Mk IX PR Recon"}
+TARS.parameters["FW-190A8"]={minAlt=200,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),name="FW-190 A-8 Tactical Recon"}
+TARS.parameters["FW-190D9"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),name="FW-190 D-9 Tactical Recon"}
+TARS.parameters["SA342M"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),name="SA342M EO/IR LIGHT RECO"}
+TARS.parameters["SA342L"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),name="SA342L EO/IR LIGHT RECO"}
+TARS.parameters["OH58D"]={minAlt=30,maxAlt=1200,maxRoll=35,maxPitch=25,fov=12,duration=350,offset=math.rad(12),name="OH-58D MMS EO/IR RECO"}
+TARS.parameters["UH-1H"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="UH-1H VISUAL/CREW RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
+TARS.parameters["Mi-8MT"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="Mi-8MT VISUAL/CREW RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
+TARS.parameters["MH-6J"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="MH-6J VISUAL CLOSE RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
+TARS.parameters["OH-6A"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="OH-6A Cayuse VISUAL CLOSE RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
+TARS.allowedAmmo={
+["AIM-9B"]=true,["AIM-9D"]=true,["AIM-9E"]=true,["AIM-9G"]=true,
+["AIM-9H"]=true,["AIM-9J"]=true,["AIM-9L"]=true,["AIM-9M"]=true,
+["AIM-9N"]=true,["AIM-9P"]=true,["AIM-9P3"]=true,["AIM-9P5"]=true,
+["AIM-9JULI"]=true,
+["R-3S"]=true,["R-13M"]=true,["R-13M1"]=true,["R-60"]=true,["R-60M"]=true,
+["R550 Magic II"]=true,
+["7_62x51"]=true,
+}
+TARS.instances={}
+TARS.groundMenus={}
+TARS.detectedTargets={}
+TARS.marks={blue={},red={}}
+TARS.redMarkCount=150000
+TARS.blueMarkCount=160000
+TARS.scoring=nil
+TARS.locale=TARS.locale or"en"
+TARS.locale="en"
+TARS.Messages={
+en={
+TARS_FILM_START="[TARS] Session capture activated. Film remaining: %d seconds.",
+TARS_FILM_EXHAUSTED="[TARS] Film exhausted. Return to base for debrief.",
+TARS_FILM_STOP="[TARS] Session capture ended. Return to base for debrief.",
+TARS_FILM_TIME_UP="[TARS] Film time exhausted. Return to base.",
+TARS_FILM_CAP_REACHED="[TARS] Maximum captures reached (%d). Return to base for debrief.",
+TARS_FILM_STB_MANUAL="[TARS] <>Manual<> Film manual STB.",
+TARS_FILM_RESUME_MANUAL="[TARS] <>Manual<> Film manual resume.",
+TARS_FILM_STB_LAND="[TARS] <>Landing<> Film auto STB.",
+TARS_FILM_RESUME_TO="[TARS] <>TakeOff<> Film auto resume. %d seconds",
+TARS_FILM_STB_LOCKED="[TARS] Film is STB — takeoff to resume.",
+TARS_FILM_ALREADY_ACTIVE="[TARS] Film already active.",
+TARS_FILM_NO_CAPTURE="[TARS] No active film.",
+TARS_FILM_NO_CAPTURE_STOP="[TARS] No active film to stop.",
+TARS_CAPTURE_TICK="FILM DURATION: %d seconds",
+TARS_CAPTURE_HIT="[TARS] +1 Captured target (%d total)",
+TARS_CAPTURE_HIT_MAX="[TARS] +1 Captured target (%d total) / %d max",
+TARS_SESSION_ENDED="[TARS] Session ended. Return to base for debrief.",
+TARS_LAND_VALIDATED="[TARS] Landing validated, await your debriefing!",
+TARS_LAND_VALIDATED_TIME="[TARS] Targets shown in %d seconds.",
+TARS_NOT_AT_BASE="[TARS] Not on allied base or FARP. Return for debrief.",
+TARS_DEBRIEF_TARGETS="[TARS] %d targets captured. +%d points.",
+TARS_DEBRIEF_CREDITS="You received %d credits for reconnaissance.",
+TARS_DEBRIEF_COALITION="%s gathered intel on %d targets.",
+TARS_READY="[TARS] Ready for recon.",
+TARS_VALID_OK_HDR="[TARS] Configuration is valid - Ready for takeoff",
+TARS_VALID_REFUSED_WPN="[TARS] Your configuration loadout is not ready. Check your weapons.",
+TARS_VALID_REFUSED_AMMO="Refused : ammo %s",
+TARS_VALID_AIRBORNE="[TARS] Validation only on ground.",
+TARS_VALID_RUNNING="[TARS] Validation already done — film is running.",
+TARS_VALID_GROUP_FILTER="[TARS] Task available for group name >%s< only.",
+TARS_VALIDATE_FIRST="[TARS] Validate first on ground.",
+TARS_NO_SESSION="[TARS] No session actived.",
+TARS_CONFIG_CHANGED="[TARS] Config changed — session ended.",
+TARS_LOADOUT_BAD="[TARS] Loadout not ready. Check your weapons.",
+TARS_PLATFORM_INFO="[TARS] Platform information",
+TARS_PLATFORM_LABEL="Platform",
+TARS_PLATFORM_ALT="Altitude",
+TARS_PLATFORM_FOV="FOV",
+TARS_PLATFORM_FILM="Film",
+TARS_MENU_ROOT="Task TARS",
+TARS_MENU_VALIDATE="TARS validation",
+TARS_MENU_INFO="TARS my capture config",
+TARS_MENU_START="TARS mode : Start filming",
+TARS_MENU_STB="TARS mode : Standby & Resume",
+TARS_MENU_STOP="TARS mode : Stop filming",
+},
+de={
+TARS_FILM_START="[TARS] Aufnahme aktiviert. Verbleibender Film: %d Sekunden.",
+TARS_FILM_EXHAUSTED="[TARS] Film aufgebraucht. Kehren Sie zur Basis für das Briefing zurück.",
+TARS_FILM_STOP="[TARS] Aufnahmesitzung beendet. Kehren Sie zur Basis zurück.",
+TARS_FILM_TIME_UP="[TARS] Filmzeit abgelaufen. Kehren Sie zur Basis zurück.",
+TARS_FILM_CAP_REACHED="[TARS] Maximale Aufnahmen erreicht (%d). Kehren Sie zur Basis zurück.",
+TARS_FILM_STB_MANUAL="[TARS] <>Manuell<> Film manuell auf Standby.",
+TARS_FILM_RESUME_MANUAL="[TARS] <>Manuell<> Film manuell fortgesetzt.",
+TARS_FILM_STB_LAND="[TARS] <>Landung<> Film automatisch auf Standby.",
+TARS_FILM_RESUME_TO="[TARS] <>Start<> Film automatisch fortgesetzt. %d Sekunden.",
+TARS_FILM_STB_LOCKED="[TARS] Film ist auf Standby — starten Sie, um fortzufahren.",
+TARS_FILM_ALREADY_ACTIVE="[TARS] Aufnahme bereits aktiv.",
+TARS_FILM_NO_CAPTURE="[TARS] Keine aktive Aufnahme.",
+TARS_FILM_NO_CAPTURE_STOP="[TARS] Keine aktive Aufnahme zum Stoppen.",
+TARS_CAPTURE_TICK="AUFNAHMEDAUER: %d Sekunden",
+TARS_CAPTURE_HIT="[TARS] +1 Ziel erfasst (%d gesamt)",
+TARS_CAPTURE_HIT_MAX="[TARS] +1 Ziel erfasst (%d gesamt) / %d max",
+TARS_SESSION_ENDED="[TARS] Sitzung beendet. Kehren Sie zur Basis für das Briefing zurück.",
+TARS_LAND_VALIDATED="[TARS] Landung erfolgreich, bitte warten Sie auf Ihr Debriefing!",
+TARS_LAND_VALIDATED_TIME="[TARS] Ziele werden in %d Sekunden angezeigt.",
+TARS_NOT_AT_BASE="[TARS] Nicht auf verbündeter Basis oder FARP. Kehren Sie zurück.",
+TARS_DEBRIEF_TARGETS="[TARS] %d Ziele erfasst. +%d Punkte.",
+TARS_DEBRIEF_CREDITS="Sie erhalten %d Credits für die Aufklärung.",
+TARS_DEBRIEF_COALITION="%s hat Informationen über %d Ziele gesammelt.",
+TARS_READY="[TARS] Bereit zur Aufklärung.",
+TARS_VALID_OK_HDR="[TARS] Konfiguration gültig - Bereit zum Start",
+TARS_VALID_REFUSED_WPN="[TARS] Ihre Konfiguration ist nicht bereit. Überprüfen Sie Ihre Waffen.",
+TARS_VALID_REFUSED_AMMO="Abgelehnt : Munition %s",
+TARS_VALID_AIRBORNE="[TARS] Validierung nur am Boden möglich.",
+TARS_VALID_RUNNING="[TARS] Validierung bereits erfolgt — Film läuft.",
+TARS_VALID_GROUP_FILTER="[TARS] Aufgabe nur für Gruppenname >%s< verfügbar.",
+TARS_VALIDATE_FIRST="[TARS] Zuerst am Boden validieren.",
+TARS_NO_SESSION="[TARS] Keine aktive Sitzung.",
+TARS_CONFIG_CHANGED="[TARS] Konfiguration geändert — Aufnahme beendet.",
+TARS_LOADOUT_BAD="[TARS] Ausrüstung nicht bereit. Überprüfen Sie Ihre Waffen.",
+TARS_PLATFORM_INFO="[TARS] Plattforminformationen",
+TARS_PLATFORM_LABEL="Plattform",
+TARS_PLATFORM_ALT="Höhe",
+TARS_PLATFORM_FOV="Sichtfeld",
+TARS_PLATFORM_FILM="Film",
+TARS_MENU_ROOT="Aufgabe TARS",
+TARS_MENU_VALIDATE="TARS Validierung",
+TARS_MENU_INFO="TARS meine Aufnahmekonfiguration",
+TARS_MENU_START="TARS Modus : Aufnahme starten",
+TARS_MENU_STB="TARS Modus : Standby & Fortsetzen",
+TARS_MENU_STOP="TARS Modus : Aufnahme stoppen",
+},
+fr={
+TARS_FILM_START="[TARS] Session de capture activée. Film restant : %d seconds",
+TARS_FILM_EXHAUSTED="[TARS] Film épuisé. Retournez à la base pour le compte-rendu.",
+TARS_FILM_STOP="[TARS] Session de capture terminée. Retournez à la base.",
+TARS_FILM_TIME_UP="[TARS] Temps de film épuisé. Retournez à la base.",
+TARS_FILM_CAP_REACHED="[TARS] Nombre maximum de captures atteint (%d). Retournez à la base.",
+TARS_FILM_STB_MANUAL="[TARS] <>Manuel<> Film en STB manuel.",
+TARS_FILM_RESUME_MANUAL="[TARS] <>Manuel<> Reprise manuel du film.",
+TARS_FILM_STB_LAND="[TARS] <>Atterrissage<> Film en STB automatique.",
+TARS_FILM_RESUME_TO="[TARS] <>Décollage<> Reprise automatique du film. %d seconds",
+TARS_FILM_STB_LOCKED="[TARS] Film en STB — décollez pour reprendre.",
+TARS_FILM_ALREADY_ACTIVE="[TARS] Film déjà activé.",
+TARS_FILM_NO_CAPTURE="[TARS] Aucun film activé.",
+TARS_FILM_NO_CAPTURE_STOP="[TARS] Aucun film actif à stopper.",
+TARS_CAPTURE_TICK="DURÉE DU FILM : %d seconds",
+TARS_CAPTURE_HIT="[TARS] +1 Cible capturée (%d au total)",
+TARS_CAPTURE_HIT_MAX="[TARS] +1 Cible capturée (%d au total) / %d max",
+TARS_SESSION_ENDED="[TARS] Session terminée. Retournez à la base pour le debriefing.",
+TARS_LAND_VALIDATED="[TARS] Atterrissage validé, attendez votre debriefing !",
+TARS_LAND_VALIDATED_TIME="[TARS] Cibles affichées dans %d seconds.",
+TARS_NOT_AT_BASE="[TARS] Vous n'êtes pas sur une base ou FARP alliée. Retourné pour le debriefing.",
+TARS_DEBRIEF_TARGETS="[TARS] %d cibles capturées. +%d points.",
+TARS_DEBRIEF_CREDITS="Vous avez reçu %d crédits pour la reconnaissance.",
+TARS_DEBRIEF_COALITION="%s a recueilli des renseignements sur %d cibles.",
+TARS_READY="[TARS] Prêt pour la reconnaissance.",
+TARS_VALID_OK_HDR="[TARS] Configuration valide - Prêt au décollage",
+TARS_VALID_REFUSED_WPN="[TARS] Votre configuration n'est pas prête. Vérifiez vos armes.",
+TARS_VALID_REFUSED_AMMO="Refusé : munition %s",
+TARS_VALID_AIRBORNE="[TARS] Validation uniquement au sol.",
+TARS_VALID_RUNNING="[TARS] Validation déjà effectuée — le film tourne.",
+TARS_VALID_GROUP_FILTER="[TARS] Tâche disponible pour le groupe >%s< uniquement.",
+TARS_VALIDATE_FIRST="[TARS] Validez d'abord au sol.",
+TARS_NO_SESSION="[TARS] Aucune session active.",
+TARS_CONFIG_CHANGED="[TARS] Configuration modifiée — session terminée.",
+TARS_LOADOUT_BAD="[TARS] Chargement pas prêt. Vérifiez vos armes.",
+TARS_PLATFORM_INFO="[TARS] Informations sur la plateforme",
+TARS_PLATFORM_LABEL="Plateforme",
+TARS_PLATFORM_ALT="Altitude",
+TARS_PLATFORM_FOV="Champ de vision",
+TARS_PLATFORM_FILM="Film",
+TARS_MENU_ROOT="Mission TARS",
+TARS_MENU_VALIDATE="TARS validation",
+TARS_MENU_INFO="TARS ma config de capture",
+TARS_MENU_START="TARS mode : Démarrer le film",
+TARS_MENU_STB="TARS mode : Standby & Reprise",
+TARS_MENU_STOP="TARS mode : Arrêter le film",
+},
+}
+function TARS.getRoll(mooseUnit)
+return mooseUnit:GetRoll()or 0
+end
+function TARS.getPitch(mooseUnit)
+return mooseUnit:GetPitch()or 0
+end
+function TARS.life2text(life)
+if life==nil then return"Undefined"
+elseif life>90 then return"No damage"
+elseif life>70 then return"Slightly damage"
+elseif life>40 then return"Damaged"
+elseif life>20 then return"Major damage"
+elseif life>0 then return"Destroyed"
+else return"Undefined"
+end
+end
+function TARS_SESSION:_SetSharedParams(unit)
+self:T(self.lid.."_SetSharedParams")
+self.unit=unit
+self.vec3=unit:GetVec3()
+self.coa=unit:GetCoalition()
+self.type=unit:GetTypeName()
+self.group=unit:GetGroup()
+self.groupID=unit:GetGroup():GetID()
+self.objectName=unit:GetName()
+self.playerName=unit:GetPlayerName()
+self.playerID=unit:GetID()
+self.ammo=unit:GetAmmo()
+self.time=timer.getTime()
+end
+function TARS_SESSION:SetObjectParamsLight(unit)
+self:T2(self.lid.."SetObjectParamsLight")
+self:_SetSharedParams(unit)
+end
+function TARS_SESSION:SetObjectParams(unit)
+self:T(self.lid.."SetObjectParams")
+self:_SetSharedParams(unit)
+self.category=unit:GetGroup():GetCategory()
+self.capturing=false
+self.duration=TARS.parameters[self.type].duration
+self.targetList={}
+self.captureCount=0
+self.loop=false
+self.standby=false
+self.filmExhausted=false
+self.sessionEnded=false
+self.wasCapturing=false
+self.landingScheduled=false
+if self.playerName and TARS.groundMenus[self.playerName]and self.Callback then
+self.Callback:_MenuAddValidation(self.playerName)
+end
+return self
+end
+function TARS_SESSION:New(unit,Callback)
+local self=BASE:Inherit(self,BASE:New())
+self.lid=string.format("TARS_SESSION %s | ",TARS.version)
+self.Callback=Callback
+self:SetObjectParams(unit)
+self:I("TARS_SESSION created — unit="..tostring(self.objectName)
+.." type="..tostring(self.type))
+return self
+end
+function TARS_SESSION:AddToTargetList(list)
+self:T(self.lid.."AddToTargetList")
+for k,v in pairs(list)do
+if self.targetList[k]==nil then
+self.targetList[k]=self:_FreezeUnit(v)
+self.captureCount=(self.captureCount or 0)+1
+local msg
+if TARS.filmLimitEnabled then
+msg=self.Callback:_Txt("TARS_CAPTURE_HIT_MAX",
+self.captureCount,TARS.filmLimitMax)
+else
+msg=self.Callback:_Txt("TARS_CAPTURE_HIT",self.captureCount)
+end
+self.Callback:_MsgUnit(msg,4,self.playerName)
+end
+end
+end
+function TARS_SESSION:ReturnReconTargets()
+self:T(self.lid.."ReturnReconTargets")
+local count=0
+for k,v in next,self.targetList do
+if v.unit and v.unit:IsAlive()then
+local existing=self.Callback.detectedTargets[v.name]
+if not existing then
+count=count+1
+self.Callback:OutMark(v,self.coa)
+self.Callback.detectedTargets[v.name]=v
+self:T("New target: "..v.type.."/"..v.name)
+elseif existing.life~=v.life then
+local markID=TARS.marks.blue[v.name]or TARS.marks.red[v.name]
+if markID then trigger.action.removeMark(markID)end
+count=count+1
+self.Callback:OutMark(v,self.coa)
+self.Callback.detectedTargets[v.name]=v
+self:T("Updated "..v.name.." life "
+..tostring(existing.life).."→"..tostring(v.life))
+end
+end
+self.targetList[k]=nil
+end
+return count
+end
+function TARS_SESSION:CaptureData()
+self:T(self.lid.."CaptureData")
+if self.duration<=0 then
+self.Callback:_MsgUnit(
+self.Callback:_Txt("TARS_FILM_EXHAUSTED"),2,self.playerName)
+return
+end
+self.capturing=true
+self.loop=true
+self.standby=false
+self:I("FILM START — film="..self.duration.."s")
+self.Callback:_MsgUnit(
+self.Callback:_Txt("TARS_FILM_START",self.duration),5,self.playerName)
+timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+2)
+end
+function TARS_SESSION:Delete()
+self:T(self.lid.."Delete")
+TARS.instances[self.objectName]=nil
+end
+function TARS_SESSION:_NormalizeLife(unit)
+if not unit or not unit:IsAlive()then return nil end
+local rlife=unit:GetLifeRelative()*100
+if rlife==-1 then return nil end
+return rlife
+end
+function TARS_SESSION:_FreezeUnit(_Object)
+self:T(self.lid.."_FreezeUnit")
+local snap={}
+snap.unit=_Object
+snap.dcsObj=_Object:GetDCSObject()
+snap.category=_Object:GetCategory()
+snap.type=_Object:GetTypeName()
+snap.name=_Object:GetName()
+snap.point=_Object:GetVec3()
+snap.time=timer.getTime()
+if snap.category==Object.Category.UNIT and _Object then
+snap.groupID=_Object:GetGroup():GetID()
+snap.groupCat=_Object:GetGroup():GetCategory()
+snap.coa=_Object:GetCoalition()
+snap.ammo=_Object:GetAmmo()
+snap.life=self:_NormalizeLife(_Object)
+end
+snap.playername=self.playerName
+return snap
+end
+function TARS_SESSION:_OffsetCalc(unit,params)
+local pos=unit:GetPositionVec3()
+local vec3=unit:GetVec3()
+local rad=math.atan2(pos.z,pos.x)+2*math.pi
+local MSL=land.getHeight({x=vec3.x,y=vec3.z})
+local alt=vec3.y-MSL
+local dist=math.tan(params.offset)*alt
+return{x=vec3.x+math.cos(rad)*dist,z=vec3.z+math.sin(rad)*dist}
+end
+function TARS_SESSION:_ValidateObjectFound(_Object)
+self:I(self.lid.."_ValidateObjectFound "..tostring(_Object:GetName()))
+if not(_Object and _Object:IsAlive())then return false end
+if _Object:GetCoalition()==self.coa then return false end
+if self.Callback.targetNameFilter.enabled then
+local keywords=self.Callback.targetNameFilter.keywords[_Object:GetCoalition()]
+local targetName=string.lower(_Object:GetName()or"")
+if type(keywords)=="string"then keywords={keywords}end
+local matched=false
+for _,kw in pairs(keywords or{})do
+if string.find(targetName,string.lower(kw))then matched=true;break end
+end
+if not matched then return false end
+end
+local typeName=_Object:GetTypeName()
+local typeNameLower=string.lower(typeName)
+local objCat=_Object:GetCategory()
+self:I(self.lid.."_ValidateObjectFound Name Filter Passed!")
+if objCat==Object.Category.UNIT then
+local desc=_Object:GetDesc()
+local unitCat=desc and desc.category
+self:I(self.lid.."_ValidateObjectFound Name Category Check "..tostring(unitCat))
+if unitCat==Unit.Category.AIRPLANE or unitCat==Unit.Category.HELICOPTER then
+return self.Callback.units.air
+elseif unitCat==Unit.Category.GROUND_UNIT then
+return self.Callback.units.ground
+elseif unitCat==Unit.Category.SHIP then
+return self.Callback.units.ship
+end
+elseif objCat==Object.Category.STATIC or objCat==Object.Category.BASE then
+if self.Callback.statics.farps and string.find(typeNameLower,"farp")then
+return true
+end
+if self.Callback.statics.captureUnique then
+return self.Callback.statics.captureUniqueList[typeName]==true
+elseif self.Callback.statics.captureExceptions then
+for _,exName in pairs(self.Callback.statics.captureExceptionsList)do
+if string.find(typeNameLower,string.lower(exName))then return true end
+end
+end
+end
+return false
+end
+function TARS_SESSION:CaptureLoop()
+if not self or not self.loop then return end
+if self.capturing and self.standby then
+timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+10)
+return
+end
+if self.capturing and self.duration>0 then
+self.duration=self.duration-10
+self.Callback:_MsgUnit(
+self.Callback:_Txt("TARS_CAPTURE_TICK",math.max(0,self.duration)),
+9,self.playerName)
+self:AddToTargetList(self:FindTargets())
+if self.Callback.filmLimitEnabled
+and self.captureCount>=self.Callback.filmLimitMax then
+self.Callback:_MsgUnit(
+self.Callback:_Txt("TARS_FILM_CAP_REACHED",self.Callback.filmLimitMax),
+8,self.playerName)
+self.Callback:StopCapture(self)
+return
+end
+timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+10)
+end
+if self.duration<=0 and self.loop then
+self.loop=false
+self.Callback:_MsgUnit(
+self.Callback:_Txt("TARS_FILM_TIME_UP"),8,self.playerName)
+self.Callback:StopCapture(self)
+end
+end
+function TARS_SESSION:_CalcVisualRange(params,altitude)
+if altitude<=params.minAlt then
+return params.minRange
+elseif altitude<=params.optimalAlt then
+local t=(altitude-params.minAlt)/(params.optimalAlt-params.minAlt)
+return params.minRange+t*(params.optimalRange-params.minRange)
+elseif altitude<=params.maxAlt then
+local t=(altitude-params.optimalAlt)/(params.maxAlt-params.optimalAlt)
+return params.optimalRange+t*(params.maxRange-params.optimalRange)
+else
+return params.maxRange
+end
+end
+function TARS_SESSION:FindTargets()
+local unit=self.unit
+local vec3=unit:GetVec3()
+local MSL=land.getHeight({x=vec3.x,y=vec3.z})
+local alt=vec3.y-MSL
+local params=self.Callback.parameters[self.type]
+local roll=math.abs(math.deg(TARS.getRoll(unit)))
+local pitch=math.abs(math.deg(TARS.getPitch(unit)))
+local isFlat=roll<params.maxRoll and pitch<params.maxPitch
+local radius=params.optimalAlt
+and self:_CalcVisualRange(params,alt)
+or alt*math.tan(math.rad(params.fov/2))
+local offset=self:_OffsetCalc(unit,params)
+local coordinate=self.coordinate or COORDINATE:New(offset.x,MSL,offset.z)
+coordinate=coordinate:UpdateFromVec3({x=offset.x,y=MSL,z=offset.z})
+self.coordinate=coordinate
+local debugunitset
+if self.debug==true then
+self:I(self.lid.."FindTargets Debug SET_UNIT created")
+debugunitset=SET_UNIT:New():FilterCategories("ground"):FilterCoalitions("red"):FilterOnce()
+end
+local ScannedUnits=self.Callback.detectUnits and coordinate:ScanUnits(radius)or nil
+local ScannedStatics=self.Callback.detectStatics and coordinate:ScanStatics(radius)or nil
+local targetList={}
+if alt>params.minAlt and alt<params.maxAlt and isFlat then
+for _,u in pairs(ScannedUnits and ScannedUnits.Set or{})do
+if self:_ValidateObjectFound(u)then targetList[u:GetName()]=u end
+end
+for _,s in pairs(ScannedStatics and ScannedStatics.Set or{})do
+if self:_ValidateObjectFound(s)then targetList[s:GetName()]=s end
+end
+end
+if debugunitset then
+for _,u in pairs(debugunitset and debugunitset.Set or{})do
+if self:_ValidateObjectFound(u)then targetList[u:GetName()]=u end
+end
+end
+return targetList
+end
+function TARS:GetInstance(unitName)
+local inst=self.instances[unitName]
+if inst and inst.unit and inst.unit:IsAlive()then return inst end
+self.instances[unitName]=nil
+return nil
+end
+function TARS:_Txt(id,...)
+local locale=self.locale or"en"
+local text=(TARS.Messages[locale]and TARS.Messages[locale][id])
+or(TARS.Messages["en"]and TARS.Messages["en"][id])
+if not text then
+BASE:E("TARS:_T — unknown locale key '"..tostring(id).."'")
+return tostring(id)
+end
+if select("#",...)>0 then
+local ok,result=pcall(string.format,text,...)
+return ok and result or text
+end
+return text
+end
+function TARS:_MsgUnit(text,seconds,playerName,Silent)
+local unit=CLIENT:FindByPlayerName(playerName)
+if unit then
+MESSAGE:New(text,seconds,"TARS"):ToUnit(unit)
+end
+if unit and self.SRS and(not Silent)then
+local srsText=string.gsub(text,"^%[TARS%] ?",playerName..", ")
+srsText=string.gsub(srsText,"[<>]","")
+MESSAGE:New(srsText,seconds,"TARS"):ToSRS()
+end
+end
+function TARS:_MsgCoalition(text,seconds,coa)
+MESSAGE:New(text,seconds,"TARS"):ToCoalition(coa)
+end
+function TARS:_AddUserPoints(name,points)
+if dcsbot and dcsbot.addUserPoints then
+dcsbot.addUserPoints(name,points)
+self:T(self.lid.."AddUserPoints +"..tostring(points).." for "..tostring(name))
+return true
+end
+return false
+end
+function TARS:_GetUnitFromPlayerName(playerName)
+local data=TARS.groundMenus[playerName]
+if not data or not data.unitName then return nil end
+return UNIT:FindByName(data.unitName)
+end
+function TARS:_CbValidate(playerName)
+local u=self:_GetUnitFromPlayerName(playerName)
+if u then self:CheckTask(u)end
+end
+function TARS:_CbInfo(playerName)
+local u=self:_GetUnitFromPlayerName(playerName)
+if not u then return end
+local inst=self:GetInstance(u:GetName())
+if inst then self:ShowPlatformInfo(inst)
+else self:_MsgUnit(self:_Txt("TARS_NO_SESSION"),4,playerName)end
+end
+function TARS:_CbStart(playerName)
+local u=self:_GetUnitFromPlayerName(playerName)
+if not u then return end
+local inst=self:GetInstance(u:GetName())
+if inst then self:Control(inst)
+else self:_MsgUnit(self:_Txt("TARS_VALIDATE_FIRST"),5,playerName)end
+end
+function TARS:_CbStb(playerName)
+local u=self:_GetUnitFromPlayerName(playerName)
+if not u then return end
+local inst=self:GetInstance(u:GetName())
+if inst then self:StandbyCapture(inst)
+else self:_MsgUnit(self:_Txt("TARS_FILM_NO_CAPTURE"),4,playerName)end
+end
+function TARS:_CbStop(playerName)
+local u=self:_GetUnitFromPlayerName(playerName)
+if not u then return end
+local inst=self:GetInstance(u:GetName())
+if inst then self:StopCapture(inst)
+else self:_MsgUnit(self:_Txt("TARS_FILM_NO_CAPTURE"),4,playerName)end
+end
+function TARS:CreateInstance(unit)
+self:T(self.lid.."CreateInstance")
+local inst=TARS_SESSION:New(unit,self)
+self.instances[inst.objectName]=inst
+return inst
+end
+function TARS:CheckIfRecon(unit)
+if not unit then return false end
+local typeName=unit:GetTypeName()
+if not TARS.reconTypes[typeName]then return false end
+if TARS.recoNameFilter.enabled then
+local grp=unit:GetGroup()
+local name=(grp and grp:GetName())or unit:GetName()or""
+if not string.find(string.lower(name),string.lower(TARS.recoNameFilter.keyword))then
+return false
+end
+end
+if not TARS.parameters[typeName]then return false end
+local ammo=unit:GetAmmo()
+if type(ammo)~="table"then return true end
+for _,w in ipairs(ammo)do
+if w and w.desc then
+local name=w.desc.displayName or w.desc.typeName or w.desc.name
+if name and not TARS.allowedAmmo[name]then
+return false,name
+end
+end
+end
+return true
+end
+function TARS:CheckTask(unit)
+if not unit or not unit:IsAlive()then return end
+local typeName=unit:GetTypeName()
+local params=self.parameters[typeName]
+if unit:InAir(false)then
+local inst=self:GetInstance(unit:GetName())
+local msg=(inst and inst.capturing)
+and self:_Txt("TARS_VALID_RUNNING")
+or self:_Txt("TARS_VALID_AIRBORNE")
+self:_MsgUnit(msg,5,unit:GetPlayerName()or unit:GetName())
+return
+end
+if self.recoNameFilter.enabled then
+local grp=unit:GetGroup()
+local groupName=grp and grp:GetName()or""
+if not string.find(string.lower(groupName),string.lower(self.recoNameFilter.keyword))then
+self:_MsgUnit(
+self:_Txt("TARS_VALID_GROUP_FILTER",self.recoNameFilter.keyword),
+10,unit:GetPlayerName()or unit:GetName(),true)
+return
+end
+end
+local playerName=unit:GetPlayerName()or unit:GetName()
+local reconOk,refusedWeapon=self:CheckIfRecon(unit)
+TARS.groundMenus[playerName]=TARS.groundMenus[playerName]or{}
+TARS.groundMenus[playerName].approved=reconOk
+TARS.groundMenus[playerName].playerName=playerName
+if reconOk then
+self:I("VALIDATE OK — "..unit:GetName().." / "..tostring(playerName))
+self:_MenuRemoveValidation(playerName)
+local msg=self:_Txt("TARS_VALID_OK_HDR")
+self:_MsgUnit(msg,15,playerName)
+local msg=""
+..self:_Txt("TARS_PLATFORM_LABEL").." : "..params.name.."\n"
+..self:_Txt("TARS_PLATFORM_ALT").." : "..params.minAlt.."m - "..params.maxAlt.."m AGL\n"
+..self:_Txt("TARS_PLATFORM_FOV").." : "..tostring(params.fov or"-").."\xc2\xb0\n"
+..self:_Txt("TARS_PLATFORM_FILM").." : "..params.duration.." expositions"
+self:_MsgUnit(msg,15,playerName,true)
+else
+self:I("VALIDATE REFUSED — "..unit:GetName().." ammo="..tostring(refusedWeapon))
+local msg=self:_Txt("TARS_VALID_REFUSED_WPN")
+if refusedWeapon then
+msg=msg.."\n"..self:_Txt("TARS_VALID_REFUSED_AMMO",refusedWeapon)
+end
+self:_MsgUnit(msg,10,playerName,true)
+end
+end
+function TARS:Control(instance)
+if not instance then return end
+if instance.sessionEnded then
+self:_MsgUnit(self:_Txt("TARS_SESSION_ENDED"),5,instance.playerName)
+return
+end
+if instance.capturing then
+self:_MsgUnit(self:_Txt("TARS_FILM_ALREADY_ACTIVE"),4,instance.playerName)
+return
+end
+instance:CaptureData()
+end
+function TARS:StopCapture(instance)
+if not instance then return end
+if not instance.capturing then
+self:_MsgUnit(self:_Txt("TARS_FILM_NO_CAPTURE_STOP"),4,instance.playerName)
+return
+end
+instance.capturing=false
+instance.standby=false
+instance.loop=false
+instance.sessionEnded=true
+instance.filmExhausted=(instance.duration<=0)
+instance:I("FILM STOP — captures="..instance.captureCount
+.." filmLeft="..instance.duration.."s")
+self:_MsgUnit(
+instance.filmExhausted
+and self:_Txt("TARS_FILM_EXHAUSTED")
+or self:_Txt("TARS_FILM_STOP"),
+8,instance.playerName)
+end
+function TARS:StandbyCapture(instance)
+if not instance then return end
+if not instance.capturing then
+self:_MsgUnit(self:_Txt("TARS_FILM_NO_CAPTURE"),4,instance.playerName)
+return
+end
+if instance.standby and instance.wasCapturing then
+self:_MsgUnit(self:_Txt("TARS_FILM_STB_LOCKED"),4,instance.playerName)
+return
+end
+instance.standby=not instance.standby
+instance:I("FILM "..(instance.standby and"STB"or"RESUME"))
+self:_MsgUnit(
+instance.standby
+and self:_Txt("TARS_FILM_STB_MANUAL")
+or self:_Txt("TARS_FILM_RESUME_MANUAL"),
+5,instance.playerName)
+end
+function TARS:ShowPlatformInfo(instance)
+if not instance or not instance.unit or not instance.unit:IsAlive()then return end
+local params=TARS.parameters[instance.type]
+if not params then return end
+local msg=self:_Txt("TARS_PLATFORM_INFO").."\n"
+..self:_Txt("TARS_PLATFORM_LABEL").." : "..params.name.."\n"
+..self:_Txt("TARS_PLATFORM_ALT").." : "..params.minAlt.."m - "..params.maxAlt.."m AGL\n"
+..self:_Txt("TARS_PLATFORM_FOV").." : "..tostring(params.fov or"-").."\xc2\xb0\n"
+..self:_Txt("TARS_PLATFORM_FILM").." : "..instance.duration.." / "..params.duration.." expositions"
+self:_MsgUnit(msg,15,instance.playerName,true)
+end
+function TARS:OutMark(snap,coa)
+if not snap then return end
+local c=COORDINATE:NewFromVec3(snap.point)
+local lat,lon=c:GetLLDDM()
+local hPa=UTILS.Round(c:GetPressure(),2)
+local inHg=UTILS.Round(hPa*0.02953,2)
+local text=string.format(
+"%.4f, %.4f | %.2f hPa / %.2f inHg\nTYPE: %s  STATUS: %s",
+lat,lon,hPa,inHg,snap.type,TARS.life2text(snap.life))
+local markTable=(coa==1)and self.marks.red or self.marks.blue
+local counter=(coa==1)and self.redMarkCount or self.blueMarkCount
+trigger.action.markToCoalition(counter,text,snap.point,coa,true)
+markTable[snap.name]=counter
+if coa==1 then self.redMarkCount=self.redMarkCount+1
+else self.blueMarkCount=self.blueMarkCount+1 end
+local out=true
+if self.OnBeforeDataProcessing then out=self:OnBeforeDataProcessing(snap)end
+if out==true and self.OnAfterDataProcessing then self:OnAfterDataProcessing(snap)end
+return counter
+end
+function TARS:ProcessLanding(instance)
+if not instance or not instance.unit or not instance.unit:IsAlive()then return end
+local unit=instance.unit
+if unit:InAir(false)or not instance.sessionEnded then return end
+instance.wasCapturing=false
+instance.landingScheduled=false
+if not self:IsNearAlliedBase(unit)then
+self:_MsgUnit(self:_Txt("TARS_NOT_AT_BASE"),10,instance.playerName)
+return
+end
+local count=instance:ReturnReconTargets()
+instance:I("DEBRIEF — targets="..count.." player="..tostring(instance.playerName))
+if TARS.mooseScoring and count>0 and TARS.scoring then
+local pts=count*TARS.valueScoring
+local mooseUnit=UNIT:FindByName(instance.objectName)
+if mooseUnit and mooseUnit:IsAlive()then
+TARS.scoring:_AddPlayerFromUnit(mooseUnit)
+TARS.scoring:AddGoalScore(mooseUnit,
+string.format("RECCE_%s_T%d",instance.objectName,math.floor(timer.getTime())),
+string.format("[TARS] %d target(s) captured +%d pts",count,pts),pts)
+self:_MsgUnit(self:_Txt("TARS_DEBRIEF_TARGETS",count,pts),8,instance.playerName,true)
+end
+else
+local pts=math.ceil(count/4)
+self:_AddUserPoints(instance.playerName,pts)
+self:_MsgUnit(self:_Txt("TARS_DEBRIEF_CREDITS",pts),8,instance.playerName)
+end
+self:_MsgCoalition(
+self:_Txt("TARS_DEBRIEF_COALITION",unit:GetPlayerName(),count),
+8,instance.coa)
+instance:I("SESSION RESET")
+instance:SetObjectParams(unit)
+end
+function TARS:RemoveUnusedMarks(_,time)
+local function sweep(markTable)
+for unitName,markID in next,markTable do
+local u=UNIT:FindByName(unitName)
+if not u or not u:IsAlive()then
+trigger.action.removeMark(markID)
+markTable[unitName]=nil
+self.detectedTargets[unitName]=nil
+end
+end
+end
+sweep(self.marks.blue)
+sweep(self.marks.red)
+return time+120
+end
+function TARS:IsNearAlliedBase(unit)
+if self.debug then return true end
+local pos=unit:GetCoordinate()
+local _,distance=pos:GetClosestAirbase(nil,unit:GetCoalition())
+return distance<TARS.landingDistance
+end
+function TARS:_MenuAddValidation(playerName)
+local d=TARS.groundMenus[playerName]
+if not d or not d.menuHandle or d.itemValidate then return end
+local grp=d.group
+local label=self:_Txt("TARS_MENU_VALIDATE")
+d.itemValidate=MENU_GROUP_COMMAND:New(grp,label,d.menuHandle,
+TARS._CbValidate,self,playerName)
+d.itemValidate.MenuTag=1
+d.menuHandle:RefreshAndOrderByTag()
+self:T(self.lid.."MENU +validate — "..tostring(playerName))
+end
+function TARS:_MenuRemoveValidation(playerName)
+local d=TARS.groundMenus[playerName]
+if not d or not d.itemValidate then return end
+d.itemValidate:Remove()
+d.itemValidate=nil
+d.menuHandle:RefreshAndOrderByTag()
+self:T(self.lid.."MENU -validate — "..tostring(playerName))
+end
+function TARS:_MenuAddFilmControls(playerName)
+local d=TARS.groundMenus[playerName]
+if not d or not d.menuHandle or d.itemStart then return end
+local grp=d.group
+d.itemStart=MENU_GROUP_COMMAND:New(grp,self:_Txt("TARS_MENU_START"),
+d.menuHandle,TARS._CbStart,self,playerName)
+d.itemStart.MenuTag=2
+d.itemStb=MENU_GROUP_COMMAND:New(grp,self:_Txt("TARS_MENU_STB"),
+d.menuHandle,TARS._CbStb,self,playerName)
+d.itemStb.MenuTag=3
+d.itemStop=MENU_GROUP_COMMAND:New(grp,self:_Txt("TARS_MENU_STOP"),
+d.menuHandle,TARS._CbStop,self,playerName)
+d.itemStop.MenuTag=4
+d.menuHandle:RefreshAndOrderByTag()
+self:T(self.lid.."MENU +film controls — "..tostring(playerName))
+end
+function TARS:_MenuRemoveFilmControls(playerName)
+local d=TARS.groundMenus[playerName]
+if not d then return end
+if d.itemStart then d.itemStart:Remove();d.itemStart=nil end
+if d.itemStb then d.itemStb:Remove();d.itemStb=nil end
+if d.itemStop then d.itemStop:Remove();d.itemStop=nil end
+if d.menuHandle then d.menuHandle:RefreshAndOrderByTag()end
+self:T(self.lid.."MENU -film controls — "..tostring(playerName))
+end
+function TARS:AddBaseMenu(unit,playerName)
+self:I(self.lid.."AddBaseMenu — "..unit:GetName()
+.." / "..tostring(playerName))
+local typeName=unit:GetTypeName()
+if not TARS.reconTypes[typeName]then return end
+local grp=unit:GetGroup()
+if not grp then return end
+if TARS.recoNameFilter.enabled then
+local groupName=grp:GetName()or""
+if not string.find(string.lower(groupName),
+string.lower(TARS.recoNameFilter.keyword))then
+return
+end
+end
+local groupID=grp:GetID()
+local unitName=unit:GetName()
+local existing=TARS.groundMenus[playerName]
+if existing and existing.menuHandle then
+if existing.groupID~=groupID then
+self:T(self.lid.."AddBaseMenu — group changed, rebuilding")
+existing.menuHandle:Remove()
+TARS.groundMenus[playerName]=nil
+else
+if existing.unitName~=unitName then
+existing.unitName=unitName
+existing.approved=false
+self:_MenuAddValidation(playerName)
+self:_MenuRemoveFilmControls(playerName)
+end
+return
+end
+end
+local displayName=unit:GetPlayerName()or tostring(playerName)
+local subMenu=MENU_GROUP:New(grp,self:_Txt("TARS_MENU_ROOT").." - "..displayName)
+subMenu.MenuTag=-1
+local itemInfo=MENU_GROUP_COMMAND:New(grp,self:_Txt("TARS_MENU_INFO"),
+subMenu,TARS._CbInfo,self,playerName)
+itemInfo.MenuTag=0
+TARS.groundMenus[playerName]={
+menuHandle=subMenu,
+itemValidate=nil,
+itemInfo=itemInfo,
+itemStart=nil,
+itemStb=nil,
+itemStop=nil,
+approved=false,
+unitName=unitName,
+groupID=groupID,
+playerName=displayName,
+group=grp,
+}
+self:_MenuAddValidation(playerName)
+self:I(self.lid.."MENU created — "..tostring(playerName)
+.." group="..grp:GetName())
+end
+function TARS:RemoveGroundMenu(playerName)
+local data=TARS.groundMenus[playerName]
+if not data or not data.menuHandle then return end
+data.menuHandle:Remove()
+self:T(self.lid.."MENU removed — "..tostring(playerName))
+TARS.groundMenus[playerName]=nil
+end
+function TARS:_OnEventBirth(EventData)
+self:T(self.lid.."OnEventBirth")
+local unit=EventData.IniUnit
+if not unit then return end
+local instance=self:GetInstance(unit:GetName())
+if instance then instance:Delete()end
+local playerName=unit:GetPlayerName()
+if not playerName then return end
+local pName=playerName
+timer.scheduleFunction(function()
+if unit:IsAlive()then
+pcall(function()self:AddBaseMenu(unit,pName)end)
+end
+end,nil,timer.getTime()+1)
+end
+function TARS:_OnEventEngineStartup(EventData)
+local unit=EventData.IniUnit
+if not unit or not unit:GetPlayerName()then return end
+local pName=unit:GetPlayerName()
+timer.scheduleFunction(function()
+if unit:IsAlive()then
+pcall(function()self:AddBaseMenu(unit,pName)end)
+end
+end,nil,timer.getTime()+1)
+end
+function TARS:_OnEventDead(EventData)
+local unit=EventData.IniUnit
+if not unit then return end
+local name=unit:GetName()
+local playerName=unit:GetPlayerName()or unit:GetName()
+if TARS.groundMenus[playerName]then self:RemoveGroundMenu(playerName)end
+if self.detectedTargets[name]then
+local markID=self.marks.blue[name]or self.marks.red[name]
+if markID then trigger.action.removeMark(markID)end
+self.marks.blue[name]=nil
+self.marks.red[name]=nil
+self.detectedTargets[name]=nil
+end
+end
+function TARS:_OnEventPlayerLeaveUnit(EventData)
+local unit=EventData.IniUnit
+if not unit then return end
+local playerName=unit:GetPlayerName()or unit:GetName()
+if TARS.groundMenus[playerName]then self:RemoveGroundMenu(playerName)end
+end
+function TARS:_OnEventTakeOff(EventData)
+self:T(self.lid.."_OnEventTakeOff")
+local unit=EventData.IniUnit
+if not unit then return end
+local instance=self:GetInstance(unit:GetName())
+local now=timer.getTime()
+if instance and instance.capturing then
+if instance.lastTakeoffTime and(now-instance.lastTakeoffTime)<5 then return end
+if not instance.wasCapturing then return end
+instance.lastTakeoffTime=now
+local reconOk,refused=self:CheckIfRecon(unit)
+if not reconOk then
+self:StopCapture(instance)
+instance.wasCapturing=false
+local msg=self:_Txt("TARS_CONFIG_CHANGED")
+if refused then
+msg=msg.."\n"..self:_Txt("TARS_VALID_REFUSED_AMMO",refused)
+end
+self:_MsgUnit(msg,10,instance.playerName)
+return
+end
+instance:SetObjectParamsLight(unit)
+instance.wasCapturing=false
+instance.standby=false
+instance:I("FILM AUTO-RESUME — filmLeft="..instance.duration.."s")
+local inst=instance
+timer.scheduleFunction(function()
+if inst.unit:IsAlive()then
+self:_MsgUnit(
+self:_Txt("TARS_FILM_RESUME_TO",inst.duration),5,inst.playerName)
+end
+end,nil,now+2)
+return
+end
+if instance and instance.lastTakeoffTime and(now-instance.lastTakeoffTime)<5 then
+return
+end
+local playerName=unit:GetPlayerName()or unit:GetName()
+local groundData=TARS.groundMenus[playerName]
+if not(groundData and groundData.approved)then return end
+local reconOk,refused=self:CheckIfRecon(unit)
+if not reconOk then
+local msg=self:_Txt("TARS_LOADOUT_BAD")
+if refused then
+msg=msg.."\n"..self:_Txt("TARS_VALID_REFUSED_AMMO",refused)
+end
+if TARS.groundMenus[playerName]then
+TARS.groundMenus[playerName].approved=false
+end
+self:_MsgUnit(msg,10,playerName)
+return
+end
+if not instance then
+instance=self:CreateInstance(unit)
+else
+instance:SetObjectParams(unit)
+end
+instance.lastTakeoffTime=now
+self:_MenuAddFilmControls(playerName)
+local inst=instance
+timer.scheduleFunction(function()
+if inst.unit:IsAlive()then
+self:_MsgUnit(self:_Txt("TARS_READY"),8,inst.playerName)
+end
+end,nil,now+5)
+end
+function TARS:_OnEventLand(EventData)
+self:T(self.lid.."_OnEventLand")
+local unit=EventData.IniUnit
+if not unit then return end
+local instance=self:GetInstance(unit:GetName())
+if instance and instance.capturing then
+if instance.wasCapturing then return end
+instance.standby=true
+instance.wasCapturing=true
+instance:I("FILM AUTO-STB — landing")
+self:_MsgUnit(self:_Txt("TARS_FILM_STB_LAND"),5,instance.playerName)
+return
+end
+if not(instance and instance.sessionEnded)then return end
+if instance.landingScheduled then return end
+if not TARS.reconTypes[unit:GetTypeName()]then return end
+if not self:IsNearAlliedBase(unit)then
+self:_MsgUnit(self:_Txt("TARS_NOT_AT_BASE"),10,instance.playerName)
+return
+end
+instance.landingScheduled=true
+local landTime=timer.getTime()
+local inst=instance
+local msgTime=TARS.debriefDelay*0.98
+self:_MenuRemoveFilmControls(instance.playerName)
+timer.scheduleFunction(function()
+if inst.unit:IsAlive()and not inst.unit:InAir(false)then
+self:_MsgUnit(self:_Txt("TARS_LAND_VALIDATED"),10,instance.playerName)
+self:_MsgUnit(
+self:_Txt("TARS_LAND_VALIDATED_TIME",TARS.debriefDelay),
+msgTime,inst.playerName)
+inst:I("Landing validated — debrief in "..TARS.debriefDelay.."s")
+end
+end,nil,landTime+TARS.landingDelay)
+timer.scheduleFunction(function()
+self:ProcessLanding(inst)
+end,nil,landTime+TARS.landingDelay+TARS.debriefDelay)
+end
+function TARS:New(locale)
+local self=BASE:Inherit(self,BASE:New())
+self.lid="TARS "..TARS.version.." | "
+if TARS.mooseScoring then
+TARS.scoring=SCORING:New("TARS Scoring")
+end
+self:HandleEvent(EVENTS.Birth,self._OnEventBirth)
+self:HandleEvent(EVENTS.EngineStartup,self._OnEventEngineStartup)
+self:HandleEvent(EVENTS.Dead,self._OnEventDead)
+self:HandleEvent(EVENTS.PlayerLeaveUnit,self._OnEventPlayerLeaveUnit)
+self:HandleEvent(EVENTS.Takeoff,self._OnEventTakeOff)
+self:HandleEvent(EVENTS.RunwayTakeoff,self._OnEventTakeOff)
+self:HandleEvent(EVENTS.Land,self._OnEventLand)
+self:HandleEvent(EVENTS.RunwayTouch,self._OnEventLand)
+timer.scheduleFunction(
+function(_,t)return self:RemoveUnusedMarks(nil,t)end,
+nil,timer.getTime()+20)
+self.locale=locale or self.locale
+self:I(self.lid.."initialised. Locale: "..tostring(self.locale))
+return self
+end
+function TARS:SetSRS(Path,Frequency,Modulation,Culture,Gender,Voice,Coalition,Port,Speed,Provider,Backend,Speaker)
+self:T(self.lid.."SetSRS")
+MESSAGE.SetMSRS(Path,Port,nil,Frequency,Modulation,Gender,Culture,Voice,Coalition,nil,"TARS",nil,Backend,Provider,Speaker)
+if Speed then
+_MESSAGESRS.MSRS.speed=Speed
+end
+self.SRS=true
+return self
+end
+function TARS:SetSRSPiperSpeaker(Speaker)
+self:T(self.lid.."SetSRSPiperSpeaker "..tostring(Speaker))
+self.SRSSpeaker=Speaker
+return self
+end
+function TARS:OnBeforeDataProcessing(TargetSnap)
+return true
+end
+function TARS:OnAfterDataProcessing(TargetSnap)
 return self
 end
 SHAPE_BASE={
