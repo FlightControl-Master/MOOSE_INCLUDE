@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-12T12:56:15+02:00-dbc752253b4e91e4c75cb87bedcbfb131837ec83 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-12T13:12:58+02:00-6223b8e1a73fac84e3b4874a060fc98beb124e1b ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -123280,7 +123280,6 @@ TARS.marks={blue={},red={}}
 TARS.redMarkCount=150000
 TARS.blueMarkCount=160000
 TARS.scoring=nil
-TARS.locale=TARS.locale or"en"
 TARS.locale="en"
 TARS.Messages={
 en={
@@ -123575,9 +123574,9 @@ snap.playername=self.playerName
 return snap
 end
 function TARS_SESSION:_OffsetCalc(unit,params)
-local pos=unit:GetPositionVec3()
+local pos=unit:GetPosition()
 local vec3=unit:GetVec3()
-local rad=math.atan2(pos.z,pos.x)+2*math.pi
+local rad=math.atan2(pos.x.z,pos.x.x)+2*math.pi
 local MSL=land.getHeight({x=vec3.x,y=vec3.z})
 local alt=vec3.y-MSL
 local dist=math.tan(params.offset)*alt
