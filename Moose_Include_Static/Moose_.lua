@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-12T13:12:58+02:00-6223b8e1a73fac84e3b4874a060fc98beb124e1b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-14T06:28:13+02:00-79130d4fe2213e4bb487a15560d288d7b298992c ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -67718,6 +67718,13 @@ end
 end
 if playerData.wire==1 and points>=3 and N>4 then
 points=points-1
+if points==4 then
+grade="OK"
+elseif points==3 then
+grade="(OK)"
+elseif points==2 then
+grade="--"
+end
 end
 env.info("Returning: "..grade.."  "..points.."  "..G)
 return grade,points,G
