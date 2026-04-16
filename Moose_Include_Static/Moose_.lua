@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-16T06:59:46+02:00-b82b882e02ab3fa3a6a9c4a32782f22a9e1cd12f ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-16T12:38:15+02:00-87d0c4e9d4680eb50a634bdf15ed3f748bd2e2f8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -123549,8 +123549,9 @@ return self
 end
 TARS_SESSION={}
 TARS_SESSION.debug=false
+TARS_SESSION.debugunitsearch=false
 TARS={}
-TARS.version="v2.2.1"
+TARS.version="v2.2.2"
 TARS.locale=TARS.locale or"en"
 TARS.debug=false
 TARS.mooseScoring=true
@@ -124018,11 +124019,10 @@ end
 function TARS_SESSION:FindTargets()
 local unit=self.unit
 local vec3=unit:GetVec3()
-local MSL=land.getHeight({x=vec3.x,y=vec3.z})
-local alt=vec3.y-MSL
+local alt=unit:GetAltitude(true)
 local params=self.Callback.parameters[self.type]
-local roll=math.abs(math.deg(TARS.getRoll(unit)))
-local pitch=math.abs(math.deg(TARS.getPitch(unit)))
+local roll=math.abs(TARS.getRoll(unit))
+local pitch=math.abs(TARS.getPitch(unit))
 local isFlat=roll<params.maxRoll and pitch<params.maxPitch
 local radius=params.optimalAlt
 and self:_CalcVisualRange(params,alt)
@@ -124031,6 +124031,27 @@ local offset=self:_OffsetCalc(unit,params)
 local coordinate=self.coordinate or COORDINATE:New(offset.x,MSL,offset.z)
 coordinate=coordinate:UpdateFromVec3({x=offset.x,y=MSL,z=offset.z})
 self.coordinate=coordinate
+if self.debugunitsearch then
+local searchzone=self.searchzone or ZONE_RADIUS:New("TARS Debug",coordinate:GetVec2(),radius,true)
+if searchzone then
+searchzone:UndrawZone()
+searchzone:UpdateFromVec2(coordinate:GetVec2(),radius)
+self.searchzone=searchzone
+searchzone:DrawZone(-1,{0,0,1},1,{0,1,0},.2,2,true)
+end
+if params and unit and unit:IsAlive()then
+self:I({Roll=roll,Pitch=pitch,AGL=alt})
+if roll>params.maxRoll then
+MESSAGE:New(string.format("Roll - NOK out of parameters (%d°)!",roll or 0),9,"PARAM"):ToUnit(unit)
+elseif pitch>params.maxPitch then
+MESSAGE:New(string.format("Pitch - NOK out of parameters (%d°)!",pitch or 0),9,"PARAM"):ToUnit(unit)
+elseif alt<params.minAlt or alt>params.maxAlt then
+MESSAGE:New(string.format("AGL - NOK too high or too low (%dm)!",alt or 0),9,"PARAM"):ToUnit(unit)
+else
+MESSAGE:New("Params - OK!",9,"PARAM"):ToUnit(unit)
+end
+end
+end
 local debugunitset
 if self.debug==true then
 self:I(self.lid.."FindTargets Debug SET_UNIT created")

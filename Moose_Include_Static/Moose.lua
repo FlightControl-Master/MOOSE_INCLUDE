@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-16T06:59:46+02:00-b82b882e02ab3fa3a6a9c4a32782f22a9e1cd12f ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-16T12:38:15+02:00-87d0c4e9d4680eb50a634bdf15ed3f748bd2e2f8 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -247346,6 +247346,7 @@ end
 -- @type TARS_SESSION
 -- @extends Core.Base#BASE
 -- @field #boolean debug Enable debugging in TARS_SESSION.
+-- @field #boolean debugunitsearch Enable Target Search Debug.
 -- @field Wrapper.Unit#UNIT unit The MOOSE UNIT object for the recon aircraft.
 -- @field #string lid Log-line prefix shown in Moose.log entries.
 -- @field DCS#Vec3 vec3 World position snapshot taken at session creation.
@@ -247386,6 +247387,7 @@ end
 -- @field #TARS_SESSION
 TARS_SESSION = {}
 TARS_SESSION.debug = false
+TARS_SESSION.debugunitsearch = false
 
 --- @type TARS
 -- @extends Core.Base#BASE
@@ -247475,7 +247477,7 @@ TARS_SESSION.debug = false
 --
 --        TARS_Instance.reconTypes["F-16C_50"] = true
 --        TARS_Instance.parameters["F-16C_50"] = {
---            minAlt=300, maxAlt=8000, maxRoll=10, maxPitch=15,
+--            minAlt=300, maxAlt=8000, maxRoll=10, maxPitch=15, -- Note altitude is AGL!
 --            fov=35, duration=300, offset=math.rad(20),
 --            name="F-16C with RECCE pod"
 --        }
@@ -247609,7 +247611,7 @@ TARS = {}
 -------------------------------------------------
 
 --- @field #string version
-TARS.version = "v2.2.1"
+TARS.version = "v2.2.2"
 
 --- Active locale.
 -- @field #string locale
@@ -247685,7 +247687,8 @@ TARS.reconTypes = {
 -- TODO PER-PLATFORM PARAMETERS
 -------------------------------------------------
 
---- @field #table parameters
+--- @type #TARS.parameters
+-- @field #table parameters
 TARS.parameters = {}
 
 TARS.parameters["F-4E-45MC"]     = { minAlt=100,  maxAlt=6096, maxRoll=10, maxPitch=15, fov=23,  duration=120, offset=math.rad(60), name="RF-4E with KS-87 Forward Oblique Camera" }
@@ -248279,12 +248282,13 @@ end
 function TARS_SESSION:FindTargets()
     local unit   = self.unit
     local vec3   = unit:GetVec3()
-    local MSL    = land.getHeight({ x = vec3.x, y = vec3.z })
-    local alt    = vec3.y - MSL
-    local params = self.Callback.parameters[self.type]
+    --local MSL    = land.getHeight({ x = vec3.x, y = vec3.z })
+    --local alt    = vec3.y - MSL
+    local alt    = unit:GetAltitude(true)
+    local params = self.Callback.parameters[self.type] -- #TARS.parameters
 
-    local roll   = math.abs(math.deg(TARS.getRoll(unit)))
-    local pitch  = math.abs(math.deg(TARS.getPitch(unit)))
+    local roll   = math.abs(TARS.getRoll(unit))
+    local pitch  = math.abs(TARS.getPitch(unit))
     local isFlat = roll < params.maxRoll and pitch < params.maxPitch
 
     local radius = params.optimalAlt
@@ -248295,6 +248299,34 @@ function TARS_SESSION:FindTargets()
     local coordinate = self.coordinate or COORDINATE:New(offset.x, MSL, offset.z)
     coordinate       = coordinate:UpdateFromVec3({ x=offset.x, y=MSL, z=offset.z })
     self.coordinate  = coordinate
+    
+    if self.debugunitsearch then
+      -- TODO Search Zone Debug
+      -- Draw the searczone on the F10 map
+      local searchzone = self.searchzone or ZONE_RADIUS:New("TARS Debug",coordinate:GetVec2(),radius,true)
+      
+      if searchzone then 
+        searchzone:UndrawZone()
+        searchzone:UpdateFromVec2(coordinate:GetVec2(),radius)
+        self.searchzone = searchzone
+        searchzone:DrawZone(-1,{0,0,1},1,{0,1,0},.2,2,true) 
+      end
+      
+      --- TODO Params check and output
+      if params and unit and unit:IsAlive() then
+        self:I({Roll=roll,Pitch=pitch,AGL=alt})
+        if roll > params.maxRoll then
+          MESSAGE:New(string.format("Roll - NOK out of parameters (%d°)!",roll or 0),9,"PARAM"):ToUnit(unit)
+        elseif pitch > params.maxPitch then
+          MESSAGE:New(string.format("Pitch - NOK out of parameters (%d°)!", pitch or 0),9,"PARAM"):ToUnit(unit)
+        elseif alt < params.minAlt or alt > params.maxAlt then
+          MESSAGE:New(string.format("AGL - NOK too high or too low (%dm)!", alt or 0),9,"PARAM"):ToUnit(unit)
+        else
+          MESSAGE:New("Params - OK!",9,"PARAM"):ToUnit(unit)
+        end
+      end
+      
+    end
     
     local debugunitset
     if self.debug == true then
