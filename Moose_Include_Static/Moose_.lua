@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-16T12:38:15+02:00-87d0c4e9d4680eb50a634bdf15ed3f748bd2e2f8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-19T15:29:40+02:00-c59b668eec00de04e06077daca61847619fea9fa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -123551,7 +123551,7 @@ TARS_SESSION={}
 TARS_SESSION.debug=false
 TARS_SESSION.debugunitsearch=false
 TARS={}
-TARS.version="v2.2.2"
+TARS.version="v2.3.0"
 TARS.locale=TARS.locale or"en"
 TARS.debug=false
 TARS.mooseScoring=true
@@ -123593,22 +123593,22 @@ TARS.reconTypes={
 ["OH-6A"]=true,
 }
 TARS.parameters={}
-TARS.parameters["F-4E-45MC"]={minAlt=100,maxAlt=6096,maxRoll=10,maxPitch=15,fov=23,duration=120,offset=math.rad(60),name="RF-4E with KS-87 Forward Oblique Camera"}
-TARS.parameters["MiG-21Bis"]={minAlt=500,maxAlt=5000,maxRoll=10,maxPitch=15,fov=52,duration=140,offset=math.rad(10),name="MiG-21R with Day recce pod"}
-TARS.parameters["AJS37"]={minAlt=15,maxAlt=1524,maxRoll=10,maxPitch=15,fov=25,duration=120,offset=math.rad(10),name="SF 37"}
-TARS.parameters["Mirage-F1EE"]={minAlt=1524,maxAlt=4572,maxRoll=10,maxPitch=15,fov=20,duration=588,offset=math.rad(10),name="Mirage-F1CR with Omera 33"}
-TARS.parameters["F-5E-3"]={minAlt=762,maxAlt=7620,maxRoll=15,maxPitch=15,fov=70,duration=300,offset=math.rad(40),name="F-5E Tigereye"}
-TARS.parameters["F-14A-135-GR"]={minAlt=750,maxAlt=5000,maxRoll=10,maxPitch=20,fov=14,duration=400,offset=math.rad(45),name="F-14A TARPS KS-87D"}
-TARS.parameters["F-14B"]={minAlt=228,maxAlt=1524,maxRoll=10,maxPitch=20,fov=85,duration=80,offset=math.rad(10),name="F-14B TARPS KA-99A"}
-TARS.parameters["TF-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),name="TF-51D Mustang RF-51D Photo Recon"}
-TARS.parameters["P-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),name="P-51D Mustang F-6D Photo Recon"}
-TARS.parameters["P-51D-30-NA"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),name="P-51D-30 Mustang F-6D Photo Recon"}
-TARS.parameters["SpitfireLFMkIX"]={minAlt=150,maxAlt=5000,maxRoll=15,maxPitch=15,fov=55,duration=350,offset=math.rad(10),name="Spitfire LF Mk IX PR Recon"}
-TARS.parameters["FW-190A8"]={minAlt=200,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),name="FW-190 A-8 Tactical Recon"}
-TARS.parameters["FW-190D9"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),name="FW-190 D-9 Tactical Recon"}
-TARS.parameters["SA342M"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),name="SA342M EO/IR LIGHT RECO"}
-TARS.parameters["SA342L"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),name="SA342L EO/IR LIGHT RECO"}
-TARS.parameters["OH58D"]={minAlt=30,maxAlt=1200,maxRoll=35,maxPitch=25,fov=12,duration=350,offset=math.rad(12),name="OH-58D MMS EO/IR RECO"}
+TARS.parameters["F-4E-45MC"]={minAlt=100,maxAlt=6096,maxRoll=10,maxPitch=15,fov=23,duration=120,offset=math.rad(60),overlap=0.25,min_interval=3,name="RF-4E with KS-87 Forward Oblique Camera"}
+TARS.parameters["MiG-21Bis"]={minAlt=500,maxAlt=5000,maxRoll=10,maxPitch=15,fov=52,duration=140,offset=math.rad(10),overlap=0.25,min_interval=3,name="MiG-21R with Day recce pod"}
+TARS.parameters["AJS37"]={minAlt=15,maxAlt=1524,maxRoll=10,maxPitch=15,fov=25,duration=120,offset=math.rad(10),overlap=0.25,min_interval=3,name="SF 37"}
+TARS.parameters["Mirage-F1EE"]={minAlt=1524,maxAlt=4572,maxRoll=10,maxPitch=15,fov=20,duration=588,offset=math.rad(10),overlap=0.25,min_interval=3,name="Mirage-F1CR with Omera 33"}
+TARS.parameters["F-5E-3"]={minAlt=762,maxAlt=7620,maxRoll=15,maxPitch=15,fov=70,duration=300,offset=math.rad(40),overlap=0.25,min_interval=3,name="F-5E Tigereye"}
+TARS.parameters["F-14A-135-GR"]={minAlt=750,maxAlt=5000,maxRoll=10,maxPitch=20,fov=14,duration=400,offset=math.rad(45),overlap=0.25,min_interval=3,name="F-14A TARPS KS-87D"}
+TARS.parameters["F-14B"]={minAlt=228,maxAlt=1524,maxRoll=10,maxPitch=20,fov=85,duration=80,offset=math.rad(10),overlap=0.25,min_interval=3,name="F-14B TARPS KA-99A"}
+TARS.parameters["TF-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="TF-51D Mustang RF-51D Photo Recon"}
+TARS.parameters["P-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="P-51D Mustang F-6D Photo Recon"}
+TARS.parameters["P-51D-30-NA"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="P-51D-30 Mustang F-6D Photo Recon"}
+TARS.parameters["SpitfireLFMkIX"]={minAlt=150,maxAlt=5000,maxRoll=15,maxPitch=15,fov=55,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="Spitfire LF Mk IX PR Recon"}
+TARS.parameters["FW-190A8"]={minAlt=200,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="FW-190 A-8 Tactical Recon"}
+TARS.parameters["FW-190D9"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="FW-190 D-9 Tactical Recon"}
+TARS.parameters["SA342M"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="SA342M EO/IR LIGHT RECO"}
+TARS.parameters["SA342L"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="SA342L EO/IR LIGHT RECO"}
+TARS.parameters["OH58D"]={minAlt=30,maxAlt=1200,maxRoll=35,maxPitch=25,fov=12,duration=350,offset=math.rad(12),overlap=0.5,min_interval=5,name="OH-58D MMS EO/IR RECO"}
 TARS.parameters["UH-1H"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="UH-1H VISUAL/CREW RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
 TARS.parameters["Mi-8MT"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="Mi-8MT VISUAL/CREW RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
 TARS.parameters["MH-6J"]={maxRoll=50,maxPitch=45,duration=900,offset=math.rad(6),name="MH-6J VISUAL CLOSE RECO",minAlt=TARS._vAltMin,minRange=TARS._vRangeMin,optimalAlt=TARS._vAltOpti,optimalRange=TARS._vRangeOpti,maxAlt=TARS._vAltMax,maxRange=TARS._vRangeMax}
@@ -123632,7 +123632,7 @@ TARS.scoring=nil
 TARS.locale="en"
 TARS.Messages={
 en={
-TARS_FILM_START="[TARS] Session capture activated. Film remaining: %d seconds.",
+TARS_FILM_START="[TARS] Capture activated. Expositions remaining: %d",
 TARS_FILM_EXHAUSTED="[TARS] Film exhausted. Return to base for debrief.",
 TARS_FILM_STOP="[TARS] Session capture ended. Return to base for debrief.",
 TARS_FILM_TIME_UP="[TARS] Film time exhausted. Return to base.",
@@ -123640,12 +123640,12 @@ TARS_FILM_CAP_REACHED="[TARS] Maximum captures reached (%d). Return to base for 
 TARS_FILM_STB_MANUAL="[TARS] <>Manual<> Film manual STB.",
 TARS_FILM_RESUME_MANUAL="[TARS] <>Manual<> Film manual resume.",
 TARS_FILM_STB_LAND="[TARS] <>Landing<> Film auto STB.",
-TARS_FILM_RESUME_TO="[TARS] <>TakeOff<> Film auto resume. %d seconds",
+TARS_FILM_RESUME_TO="[TARS] <>TakeOff<> Film auto resume. %d expositions",
 TARS_FILM_STB_LOCKED="[TARS] Film is STB — takeoff to resume.",
 TARS_FILM_ALREADY_ACTIVE="[TARS] Film already active.",
 TARS_FILM_NO_CAPTURE="[TARS] No active film.",
 TARS_FILM_NO_CAPTURE_STOP="[TARS] No active film to stop.",
-TARS_CAPTURE_TICK="FILM DURATION: %d seconds",
+TARS_CAPTURE_TICK="EXPOSITIONS REMAINING: %d",
 TARS_CAPTURE_HIT="[TARS] +1 Captured target (%d total)",
 TARS_CAPTURE_HIT_MAX="[TARS] +1 Captured target (%d total) / %d max",
 TARS_SESSION_ENDED="[TARS] Session ended. Return to base for debrief.",
@@ -123679,7 +123679,7 @@ TARS_MENU_STB="TARS mode : Standby & Resume",
 TARS_MENU_STOP="TARS mode : Stop filming",
 },
 de={
-TARS_FILM_START="[TARS] Aufnahme aktiviert. Verbleibender Film: %d Sekunden.",
+TARS_FILM_START="[TARS] Aufnahme aktiviert. Verbleibende Aufnahmen: %d.",
 TARS_FILM_EXHAUSTED="[TARS] Film aufgebraucht. Kehren Sie zur Basis für das Briefing zurück.",
 TARS_FILM_STOP="[TARS] Aufnahmesitzung beendet. Kehren Sie zur Basis zurück.",
 TARS_FILM_TIME_UP="[TARS] Filmzeit abgelaufen. Kehren Sie zur Basis zurück.",
@@ -123687,12 +123687,12 @@ TARS_FILM_CAP_REACHED="[TARS] Maximale Aufnahmen erreicht (%d). Kehren Sie zur B
 TARS_FILM_STB_MANUAL="[TARS] <>Manuell<> Film manuell auf Standby.",
 TARS_FILM_RESUME_MANUAL="[TARS] <>Manuell<> Film manuell fortgesetzt.",
 TARS_FILM_STB_LAND="[TARS] <>Landung<> Film automatisch auf Standby.",
-TARS_FILM_RESUME_TO="[TARS] <>Start<> Film automatisch fortgesetzt. %d Sekunden.",
+TARS_FILM_RESUME_TO="[TARS] <>Takeoff<> Film fortgesetzt. %d Aufnahmen.",
 TARS_FILM_STB_LOCKED="[TARS] Film ist auf Standby — starten Sie, um fortzufahren.",
 TARS_FILM_ALREADY_ACTIVE="[TARS] Aufnahme bereits aktiv.",
 TARS_FILM_NO_CAPTURE="[TARS] Keine aktive Aufnahme.",
 TARS_FILM_NO_CAPTURE_STOP="[TARS] Keine aktive Aufnahme zum Stoppen.",
-TARS_CAPTURE_TICK="AUFNAHMEDAUER: %d Sekunden",
+TARS_CAPTURE_TICK="Verbleibende Aufnahmen: %d.",
 TARS_CAPTURE_HIT="[TARS] +1 Ziel erfasst (%d gesamt)",
 TARS_CAPTURE_HIT_MAX="[TARS] +1 Ziel erfasst (%d gesamt) / %d max",
 TARS_SESSION_ENDED="[TARS] Sitzung beendet. Kehren Sie zur Basis für das Briefing zurück.",
@@ -123726,7 +123726,7 @@ TARS_MENU_STB="TARS Modus : Standby & Fortsetzen",
 TARS_MENU_STOP="TARS Modus : Aufnahme stoppen",
 },
 fr={
-TARS_FILM_START="[TARS] Session de capture activée. Film restant : %d seconds",
+TARS_FILM_START="[TARS] Capture activée. Expositions restantes : %d",
 TARS_FILM_EXHAUSTED="[TARS] Film épuisé. Retournez à la base pour le compte-rendu.",
 TARS_FILM_STOP="[TARS] Session de capture terminée. Retournez à la base.",
 TARS_FILM_TIME_UP="[TARS] Temps de film épuisé. Retournez à la base.",
@@ -123734,12 +123734,12 @@ TARS_FILM_CAP_REACHED="[TARS] Nombre maximum de captures atteint (%d). Retournez
 TARS_FILM_STB_MANUAL="[TARS] <>Manuel<> Film en STB manuel.",
 TARS_FILM_RESUME_MANUAL="[TARS] <>Manuel<> Reprise manuel du film.",
 TARS_FILM_STB_LAND="[TARS] <>Atterrissage<> Film en STB automatique.",
-TARS_FILM_RESUME_TO="[TARS] <>Décollage<> Reprise automatique du film. %d seconds",
+TARS_FILM_RESUME_TO="[TARS] <>Décollage<> Film repris. %d expositions",
 TARS_FILM_STB_LOCKED="[TARS] Film en STB — décollez pour reprendre.",
 TARS_FILM_ALREADY_ACTIVE="[TARS] Film déjà activé.",
 TARS_FILM_NO_CAPTURE="[TARS] Aucun film activé.",
 TARS_FILM_NO_CAPTURE_STOP="[TARS] Aucun film actif à stopper.",
-TARS_CAPTURE_TICK="DURÉE DU FILM : %d seconds",
+TARS_CAPTURE_TICK="[TARS] EXPOSITIONS RESTANTES : %d",
 TARS_CAPTURE_HIT="[TARS] +1 Cible capturée (%d au total)",
 TARS_CAPTURE_HIT_MAX="[TARS] +1 Cible capturée (%d au total) / %d max",
 TARS_SESSION_ENDED="[TARS] Session terminée. Retournez à la base pour le debriefing.",
@@ -123922,14 +123922,21 @@ end
 snap.playername=self.playerName
 return snap
 end
-function TARS_SESSION:_OffsetCalc(unit,params)
+function TARS_SESSION:_OffsetCalc(unit,params,center_shift)
+center_shift=center_shift or 0
 local pos=unit:GetPosition()
 local vec3=unit:GetVec3()
-local rad=math.atan2(pos.x.z,pos.x.x)+2*math.pi
 local MSL=land.getHeight({x=vec3.x,y=vec3.z})
 local alt=vec3.y-MSL
-local dist=math.tan(params.offset)*alt
-return{x=vec3.x+math.cos(rad)*dist,z=vec3.z+math.sin(rad)*dist}
+local rad=math.atan2(pos.x.x,pos.x.z)
+local dist=(alt/math.tan(params.offset))+center_shift
+return{
+x=vec3.x+math.sin(rad)*dist,
+z=vec3.z+math.cos(rad)*dist,
+MSL=MSL,
+alt=alt,
+rad=rad,
+}
 end
 function TARS_SESSION:_ValidateObjectFound(_Object)
 self:I(self.lid.."_ValidateObjectFound "..tostring(_Object:GetName()))
@@ -123981,10 +123988,12 @@ timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+10)
 return
 end
 if self.capturing and self.duration>0 then
-self.duration=self.duration-10
+local params=self.Callback.parameters[self.type]
+local interval=self:_CalcInterval(self.unit,params)
+self.duration=self.duration-1
 self.Callback:_MsgUnit(
-self.Callback:_Txt("TARS_CAPTURE_TICK",math.max(0,self.duration)),
-9,self.playerName)
+self.Callback:_Txt("TARS_CAPTURE_TICK",math.max(0,math.floor(self.duration))),
+math.min(interval,9),self.playerName,true)
 self:AddToTargetList(self:FindTargets())
 if self.Callback.filmLimitEnabled
 and self.captureCount>=self.Callback.filmLimitMax then
@@ -123994,7 +124003,11 @@ self.Callback:_Txt("TARS_FILM_CAP_REACHED",self.Callback.filmLimitMax),
 self.Callback:StopCapture(self)
 return
 end
-timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+10)
+if self.debugunitsearch then
+self:I(self.lid..string.format(
+"CaptureLoop interval=%.1fs duration=%.0fs",interval,self.duration))
+end
+timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+interval)
 end
 if self.duration<=0 and self.loop then
 self.loop=false
@@ -124016,61 +124029,130 @@ else
 return params.maxRange
 end
 end
+function TARS_SESSION:_CalcInterval(unit,params)
+local vec3=unit:GetVec3()
+local alt=vec3.y-land.getHeight({x=vec3.x,y=vec3.z})
+alt=math.max(alt,1)
+local elev=params.offset
+local half_fov=math.rad(params.fov/2)
+local d_ground=alt/math.tan(elev)
+local b=d_ground*math.tan(half_fov)
+local diameter=2*b
+local vel=unit:GetVelocityVec3()
+local speed=math.sqrt(vel.x*vel.x+vel.y*vel.y+vel.z*vel.z)
+speed=math.max(speed,10)
+local overlap=params.overlap or 0.5
+local interval=(diameter*(1-overlap))/speed
+local min_interval=params.min_interval or 2
+return math.max(min_interval,math.min(120,interval))
+end
+function TARS_SESSION.isInEllipse(ox,oz,cx,cz,a,b,heading_rad)
+local dx=ox-cx
+local dz=oz-cz
+local cos_h=math.cos(heading_rad)
+local sin_h=math.sin(heading_rad)
+local lx=dx*sin_h+dz*cos_h
+local ly=-dx*cos_h+dz*sin_h
+return(lx/a)^2+(ly/b)^2<=1
+end
 function TARS_SESSION:FindTargets()
 local unit=self.unit
-local vec3=unit:GetVec3()
-local alt=unit:GetAltitude(true)
 local params=self.Callback.parameters[self.type]
 local roll=math.abs(TARS.getRoll(unit))
 local pitch=math.abs(TARS.getPitch(unit))
 local isFlat=roll<params.maxRoll and pitch<params.maxPitch
-local radius=params.optimalAlt
-and self:_CalcVisualRange(params,alt)
-or alt*math.tan(math.rad(params.fov/2))
-local offset=self:_OffsetCalc(unit,params)
-local coordinate=self.coordinate or COORDINATE:New(offset.x,MSL,offset.z)
-coordinate=coordinate:UpdateFromVec3({x=offset.x,y=MSL,z=offset.z})
-self.coordinate=coordinate
-if self.debugunitsearch then
-local searchzone=self.searchzone or ZONE_RADIUS:New("TARS Debug",coordinate:GetVec2(),radius,true)
-if searchzone then
-searchzone:UndrawZone()
-searchzone:UpdateFromVec2(coordinate:GetVec2(),radius)
-self.searchzone=searchzone
-searchzone:DrawZone(-1,{0,0,1},1,{0,1,0},.2,2,true)
-end
-if params and unit and unit:IsAlive()then
-self:I({Roll=roll,Pitch=pitch,AGL=alt})
-if roll>params.maxRoll then
-MESSAGE:New(string.format("Roll - NOK out of parameters (%d°)!",roll or 0),9,"PARAM"):ToUnit(unit)
-elseif pitch>params.maxPitch then
-MESSAGE:New(string.format("Pitch - NOK out of parameters (%d°)!",pitch or 0),9,"PARAM"):ToUnit(unit)
-elseif alt<params.minAlt or alt>params.maxAlt then
-MESSAGE:New(string.format("AGL - NOK too high or too low (%dm)!",alt or 0),9,"PARAM"):ToUnit(unit)
+local elev=params.offset
+local half_fov=math.rad(params.fov/2)
+local center_shift=0
+local a,b
+local offset_data=self:_OffsetCalc(unit,params,0)
+local alt=offset_data.alt
+local MSL=offset_data.MSL
+local d_ground=alt/math.tan(elev)
+b=d_ground*math.tan(half_fov)
+if(elev-half_fov)>math.rad(2)then
+local d_near=alt/math.tan(elev+half_fov)
+local d_far=alt/math.tan(elev-half_fov)
+a=(d_far-d_near)/2
+center_shift=(d_far+d_near)/2-d_ground
 else
-MESSAGE:New("Params - OK!",9,"PARAM"):ToUnit(unit)
+a=b
+center_shift=0
+self:I(self.lid.."FindTargets: elev-fov margin too small, fallback to circle")
+end
+local offset=self:_OffsetCalc(unit,params,center_shift)
+local unit_pos=unit:GetVec3()
+local hdg=unit:GetHeading()
+local expected_x=unit_pos.x+math.sin(math.rad(hdg))*(d_ground+center_shift)
+local expected_z=unit_pos.z+math.cos(math.rad(hdg))*(d_ground+center_shift)
+self:I(string.format(
+"OFFSET DRIFT: _OffsetCalc=(%.0f,%.0f)  expected=(%.0f,%.0f)  drift=(Δx=%.0f,Δz=%.0f)",
+offset.x,offset.z,
+expected_x,expected_z,
+offset.x-expected_x,
+offset.z-expected_z))
+local coordinate=self.coordinate
+or COORDINATE:New(offset.x,offset.MSL,offset.z)
+coordinate=coordinate:UpdateFromVec3({x=offset.x,y=offset.MSL,z=offset.z})
+self.coordinate=coordinate
+local scan_radius=math.max(a,b)
+local heading=unit:GetHeading()
+if self.debugunitsearch then
+local searchzone=self.searchzone
+or ZONE_RADIUS:New("TARS Debug",coordinate:GetVec2(),scan_radius)
+searchzone:UpdateFromVec2(coordinate:GetVec2(),scan_radius)
+searchzone:DrawZone(-1,{0,0,1},1,{0,1,0},.2,2,true)
+self.searchzone=searchzone
+self:I({Roll=roll,Pitch=pitch,AGL=alt,a=a,b=b,shift=center_shift})
+if roll>params.maxRoll then
+MESSAGE:New(string.format("Roll - NOK out of parameters (%d°)!",roll),9,"PARAM"):ToUnit(unit)
+elseif pitch>params.maxPitch then
+MESSAGE:New(string.format("Pitch - NOK out of parameters (%d°)!",pitch),9,"PARAM"):ToUnit(unit)
+elseif alt<params.minAlt or alt>params.maxAlt then
+MESSAGE:New(string.format("AGL - NOK too high or too low (%dm)!",alt),9,"PARAM"):ToUnit(unit)
+else
+MESSAGE:New(string.format("Params OK | a=%.0fm b=%.0fm shift=%.0fm",a,b,center_shift),9,"PARAM"):ToUnit(unit)
 end
 end
-end
-local debugunitset
-if self.debug==true then
-self:I(self.lid.."FindTargets Debug SET_UNIT created")
-debugunitset=SET_UNIT:New():FilterCategories("ground"):FilterCoalitions("red"):FilterOnce()
-end
-local ScannedUnits=self.Callback.detectUnits and coordinate:ScanUnits(radius)or nil
-local ScannedStatics=self.Callback.detectStatics and coordinate:ScanStatics(radius)or nil
+local ScannedUnits=self.Callback.detectUnits and coordinate:ScanUnits(scan_radius)or nil
+local ScannedStatics=self.Callback.detectStatics and coordinate:ScanStatics(scan_radius)or nil
 local targetList={}
 if alt>params.minAlt and alt<params.maxAlt and isFlat then
 for _,u in pairs(ScannedUnits and ScannedUnits.Set or{})do
-if self:_ValidateObjectFound(u)then targetList[u:GetName()]=u end
+if self:_ValidateObjectFound(u)then
+local uv=u:GetVec3()
+local dx=uv.x-offset.x
+local dz=uv.z-offset.z
+local cos_h=math.cos(offset.rad)
+local sin_h=math.sin(offset.rad)
+local lx=dx*sin_h+dz*cos_h
+local ly=-dx*cos_h+dz*sin_h
+local ellipse_val=(lx/a)^2+(ly/b)^2
+self:I(string.format(
+"ELLIPSE CHECK '%s': dx=%.0f dz=%.0f lx=%.0f ly=%.0f val=%.2f %s",
+u:GetName(),dx,dz,lx,ly,ellipse_val,
+ellipse_val<=1 and"HIT ✓"or"MISS (außerhalb)"))
+if ellipse_val<=1 then
+targetList[u:GetName()]=u
+end
+end
 end
 for _,s in pairs(ScannedStatics and ScannedStatics.Set or{})do
-if self:_ValidateObjectFound(s)then targetList[s:GetName()]=s end
+if self:_ValidateObjectFound(s)then
+local sv=s:GetVec3()
+if TARS_SESSION.isInEllipse(sv.x,sv.z,offset.x,offset.z,a,b,offset.rad)then
+targetList[s:GetName()]=s
 end
 end
-if debugunitset then
+end
+end
+if self.debug==true then
+self:I(self.lid.."FindTargets Debug SET_UNIT created")
+local debugunitset=SET_UNIT:New():FilterCategories("ground"):FilterCoalitions("red"):FilterOnce()
 for _,u in pairs(debugunitset and debugunitset.Set or{})do
-if self:_ValidateObjectFound(u)then targetList[u:GetName()]=u end
+if self:_ValidateObjectFound(u)then
+targetList[u:GetName()]=u
+end
 end
 end
 return targetList
@@ -124099,6 +124181,9 @@ function TARS:_MsgUnit(text,seconds,playerName,Silent)
 local unit=CLIENT:FindByPlayerName(playerName)
 if unit then
 MESSAGE:New(text,seconds,"TARS"):ToUnit(unit)
+end
+if self.debug==true then
+MESSAGE:New(text,seconds,"TARS"):ToAll()
 end
 if unit and self.SRS and(not Silent)then
 local srsText=string.gsub(text,"^%[TARS%] ?",playerName..", ")
