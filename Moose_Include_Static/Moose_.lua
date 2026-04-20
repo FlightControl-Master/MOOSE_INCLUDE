@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-19T15:29:40+02:00-c59b668eec00de04e06077daca61847619fea9fa ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-20T06:35:31+02:00-e76fd23396f9a7ac4ca51beeeeb0de164a5fec76 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21373,12 +21373,32 @@ local scanunits=true
 local scanstatics=true
 local scanscenery=false
 local verysafe=false
-if autoparking then
-nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
-spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
-elseif Parkingdata~=nil then
+local useexplicitspots=false
+if Parkingdata~=nil then
 nfree=#Parkingdata
 spots=Parkingdata
+useexplicitspots=true
+elseif autoparking and AirbaseCategory==Airbase.Category.HELIPAD and ishelo then
+if termtype==nil then
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,nil)
+nfree=#spots
+if nfree<nunits then
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,nil)
+nfree=#spots
+end
+else
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(group,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,nil)
+nfree=#spots
+end
+if nfree>=nunits then
+useexplicitspots=true
+else
+nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
+spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
+end
+elseif autoparking then
+nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
+spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
 if ishelo then
 if termtype==nil then
@@ -21412,7 +21432,7 @@ end
 end
 end
 local _notenough=false
-if autoparking then
+if autoparking and not useexplicitspots then
 if nfree>=1 then
 for i=1,nunits do
 table.insert(parkingspots,spots[1].Coordinate)
@@ -21600,7 +21620,30 @@ local scanunits=true
 local scanstatics=true
 local scanscenery=false
 local verysafe=false
-if spawnonship or spawnonfarp or spawnonrunway then
+local useexplicitspots=false
+if Parkingdata~=nil then
+nfree=#Parkingdata
+spots=Parkingdata
+useexplicitspots=true
+elseif spawnonfarp and ishelo then
+if termtype==nil then
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterOnly,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,nil)
+nfree=#spots
+if nfree<nunits then
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,AIRBASE.TerminalType.HelicopterUsable,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,nil)
+nfree=#spots
+end
+else
+spots=SpawnAirbase:FindFreeParkingSpotForAircraft(TemplateGroup,termtype,scanradius,scanunits,scanstatics,scanscenery,verysafe,nunits,nil)
+nfree=#spots
+end
+if nfree>=nunits then
+useexplicitspots=true
+else
+nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
+spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
+end
+elseif spawnonship or spawnonfarp or spawnonrunway then
 nfree=SpawnAirbase:GetFreeParkingSpotsNumber(termtype,true)
 spots=SpawnAirbase:GetFreeParkingSpotsTable(termtype,true)
 else
@@ -21636,7 +21679,7 @@ end
 end
 end
 local _notenough=false
-if spawnonship or spawnonfarp or spawnonrunway then
+if(spawnonship or spawnonfarp or spawnonrunway)and not useexplicitspots then
 if nfree>=1 then
 for i=1,nunits do
 table.insert(parkingspots,spots[1].Coordinate)
@@ -83474,6 +83517,9 @@ CSAR.AircraftType["OH58D"]=2
 CSAR.AircraftType["CH-47Fbl1"]=31
 CSAR.AircraftType["AH-6J"]=2
 CSAR.AircraftType["MH-6J"]=2
+CSAR.AircraftType["Ka-50_3"]=0
+CSAR.AircraftType["Ka-50"]=0
+CSAR.AircraftType["AV8BNA"]=0
 CSAR.version="1.1.39"
 function CSAR:New(Coalition,Template,Alias)
 local self=BASE:Inherit(self,FSM:New())
@@ -84828,8 +84874,11 @@ for _key,_group in pairs(_allHeliGroups)do
 local _unit=_group:GetFirstUnitAlive()
 if _unit then
 if _unit:IsAlive()and _unit:IsPlayer()then
+local _maxUnits=self.AircraftType[_unit:GetTypeName()]
+if _maxUnits==nil or _maxUnits>0 then
 local unitName=_unit:GetName()
 _UnitList[unitName]=unitName
+end
 end
 end
 end

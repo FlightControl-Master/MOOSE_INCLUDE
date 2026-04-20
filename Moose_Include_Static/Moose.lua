@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-19T15:29:40+02:00-c59b668eec00de04e06077daca61847619fea9fa ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-20T06:35:31+02:00-e76fd23396f9a7ac4ca51beeeeb0de164a5fec76 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -41523,15 +41523,43 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
         local scanscenery = false
         local verysafe = false
 
+        -- Use exact parking data when provided, otherwise let helicopters on ships/FARPs
+        -- use the smarter parking search before falling back to the procedural queue path.
+        local useexplicitspots = false
+
         -- Number of free parking spots at the airbase.
-        if autoparking then
+        if Parkingdata~=nil then
+          -- Parking data explicitly set by user as input parameter.
+          nfree = #Parkingdata
+          spots = Parkingdata
+          useexplicitspots = true
+        elseif autoparking and AirbaseCategory == Airbase.Category.HELIPAD and ishelo then
+          if termtype == nil then
+            -- Helo is spawned. Try exclusive helo spots first.
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( group, AIRBASE.TerminalType.HelicopterOnly, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+            if nfree < nunits then
+              -- Not enough helo ports. Let's try also other terminal types.
+              spots = SpawnAirbase:FindFreeParkingSpotForAircraft( group, AIRBASE.TerminalType.HelicopterUsable, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+              nfree = #spots
+            end
+          else
+            -- Terminal type explicitly given.
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( group, termtype, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+          end
+
+          if nfree >= nunits then
+            useexplicitspots = true
+          else
+            -- These places work procedural and have some kind of build in queue ==> Less effort.
+            nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
+            spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
+          end
+        elseif autoparking then
           -- These places work procedural and have some kind of build in queue ==> Less effort.
           nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
           spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
-        elseif Parkingdata~=nil then
-          -- Parking data explicitly set by user as input parameter. (This was commented out for some unknown reason. But I need it this way.)
-          nfree=#Parkingdata
-          spots=Parkingdata
         else
           if ishelo then
             if termtype == nil then
@@ -41583,7 +41611,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
         local _notenough = false
 
         -- Need to differentiate some cases again.
-        if autoparking then
+        if autoparking and not useexplicitspots then
 
           -- On free spot required in these cases.
           if nfree >= 1 then
@@ -41927,21 +41955,51 @@ function SPAWN:ParkAircraft( SpawnAirbase, TerminalType, Parkingdata, SpawnIndex
       local scanscenery = false
       local verysafe = false
 
-      -- Number of free parking spots at the airbase.
-      if spawnonship or spawnonfarp or spawnonrunway then
-        -- These places work procedural and have some kind of build in queue ==> Less effort.
-        --self:T2( string.format( "Group %s is spawned on farp/ship/runway %s.", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
-        nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
-        spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
-        --[[
-      elseif Parkingdata~=nil then
-        -- Parking data explicitly set by user as input parameter.
-        nfree=#Parkingdata
-        spots=Parkingdata
-      ]]
-      else
-        if ishelo then
+        -- Use exact parking data when provided, otherwise let helicopters on FARPs
+        -- use the smarter parking search before falling back to the procedural queue path.
+        local useexplicitspots = false
+
+        -- Number of free parking spots at the airbase.
+        if Parkingdata~=nil then
+          -- Parking data explicitly set by user as input parameter.
+          nfree = #Parkingdata
+          spots = Parkingdata
+          useexplicitspots = true
+        elseif spawnonfarp and ishelo then
           if termtype == nil then
+            -- Helo is spawned. Try exclusive helo spots first.
+            --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), AIRBASE.TerminalType.HelicopterOnly ) )
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, AIRBASE.TerminalType.HelicopterOnly, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+            if nfree < nunits then
+              -- Not enough helo ports. Let's try also other terminal types.
+              --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), AIRBASE.TerminalType.HelicopterUsable ) )
+              spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, AIRBASE.TerminalType.HelicopterUsable, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+              nfree = #spots
+            end
+          else
+            -- Terminal type explicitly given.
+            --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), termtype ) )
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, termtype, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+          end
+
+          if nfree >= nunits then
+            useexplicitspots = true
+          else
+            -- These places work procedural and have some kind of build in queue ==> Less effort.
+            --self:T2( string.format( "Group %s is spawned on farp %s using procedural spots.", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
+            nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
+            spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
+          end
+        elseif spawnonship or spawnonfarp or spawnonrunway then
+          -- These places work procedural and have some kind of build in queue ==> Less effort.
+          --self:T2( string.format( "Group %s is spawned on farp/ship/runway %s.", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
+          nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
+          spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
+        else
+          if ishelo then
+            if termtype == nil then
             -- Helo is spawned. Try exclusive helo spots first.
             --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), AIRBASE.TerminalType.HelicopterOnly ) )
             spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, AIRBASE.TerminalType.HelicopterOnly, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, Parkingdata )
@@ -42004,7 +42062,7 @@ function SPAWN:ParkAircraft( SpawnAirbase, TerminalType, Parkingdata, SpawnIndex
       local _notenough = false
 
       -- Need to differentiate some cases again.
-      if spawnonship or spawnonfarp or spawnonrunway then
+      if (spawnonship or spawnonfarp or spawnonrunway) and not useexplicitspots then
 
         -- On free spot required in these cases. 
         if nfree >= 1 then
@@ -164923,6 +164981,9 @@ CSAR.AircraftType["OH58D"] = 2
 CSAR.AircraftType["CH-47Fbl1"] = 31
 CSAR.AircraftType["AH-6J"] = 2
 CSAR.AircraftType["MH-6J"] = 2
+CSAR.AircraftType["Ka-50_3"] = 0
+CSAR.AircraftType["Ka-50"] = 0
+CSAR.AircraftType["AV8BNA"] = 0
 
 --- CSAR class version.
 -- @field #string version
@@ -166957,8 +167018,11 @@ function CSAR:_AddMedevacMenuItem()
     if _unit then
       --self:T("Unitname ".._unit:GetName().." IsAlive "..tostring(_unit:IsAlive()).." IsPlayer "..tostring(_unit:IsPlayer()))
       if _unit:IsAlive() and _unit:IsPlayer() then
-        local unitName = _unit:GetName()
-        _UnitList[unitName] = unitName
+        local _maxUnits = self.AircraftType[_unit:GetTypeName()]
+        if _maxUnits == nil or _maxUnits > 0 then
+          local unitName = _unit:GetName()
+          _UnitList[unitName] = unitName
+        end
       end -- end isAlive
     end -- end if _unit
   end -- end for
