@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-20T06:35:31+02:00-e76fd23396f9a7ac4ca51beeeeb0de164a5fec76 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-20T21:47:38+02:00-5df1fb88f17fa9fb85695247d00089f1e5952e99 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -127746,14 +127746,14 @@ end
 )
 return
 end
-Frequencies=UTILS.EnsureTable(Frequencies)
-Modulations=UTILS.EnsureTable(Modulations)
+Frequencies=UTILS.EnsureTable(Frequencies or self.frequencies)
+Modulations=UTILS.EnsureTable(Modulations or self.modulations)
 local ffs={}
-for _,_f in pairs(Frequencies or self.frequencies)do
+for _,_f in pairs(Frequencies)do
 table.insert(ffs,string.format("%.1f",_f))
 end
 local freqs=table.concat(ffs,",")
-local modus=table.concat(Modulations or self.modulations,",")
+local modus=table.concat(Modulations,",")
 local coal=Coalition or self.coalition
 local gender=Gender or self.gender
 local voice=Voice or self:GetVoice(self.provider)or self.voice
