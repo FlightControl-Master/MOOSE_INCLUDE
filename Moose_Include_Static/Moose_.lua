@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-20T21:47:38+02:00-5df1fb88f17fa9fb85695247d00089f1e5952e99 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-21T18:29:25+02:00-6d5fb64fdeb8ddad706757a045a7a731b5795aba ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -123600,7 +123600,7 @@ TARS_SESSION={}
 TARS_SESSION.debug=false
 TARS_SESSION.debugunitsearch=false
 TARS={}
-TARS.version="v2.3.0"
+TARS.version="v2.3.1"
 TARS.locale=TARS.locale or"en"
 TARS.debug=false
 TARS.mooseScoring=true
@@ -123608,7 +123608,8 @@ TARS.valueScoring=100
 TARS.landingDelay=30
 TARS.debriefDelay=60
 TARS.landingDistance=2500
-TARS._vAltMin=10
+TARS.PilotParameterHelper=false
+TARS._vAltMin=100
 TARS._vRangeMin=TARS._vAltMin*20
 TARS._vAltOpti=500
 TARS._vRangeOpti=TARS._vAltOpti*5
@@ -123642,19 +123643,19 @@ TARS.reconTypes={
 ["OH-6A"]=true,
 }
 TARS.parameters={}
-TARS.parameters["F-4E-45MC"]={minAlt=100,maxAlt=6096,maxRoll=10,maxPitch=15,fov=23,duration=120,offset=math.rad(60),overlap=0.25,min_interval=3,name="RF-4E with KS-87 Forward Oblique Camera"}
-TARS.parameters["MiG-21Bis"]={minAlt=500,maxAlt=5000,maxRoll=10,maxPitch=15,fov=52,duration=140,offset=math.rad(10),overlap=0.25,min_interval=3,name="MiG-21R with Day recce pod"}
-TARS.parameters["AJS37"]={minAlt=15,maxAlt=1524,maxRoll=10,maxPitch=15,fov=25,duration=120,offset=math.rad(10),overlap=0.25,min_interval=3,name="SF 37"}
-TARS.parameters["Mirage-F1EE"]={minAlt=1524,maxAlt=4572,maxRoll=10,maxPitch=15,fov=20,duration=588,offset=math.rad(10),overlap=0.25,min_interval=3,name="Mirage-F1CR with Omera 33"}
-TARS.parameters["F-5E-3"]={minAlt=762,maxAlt=7620,maxRoll=15,maxPitch=15,fov=70,duration=300,offset=math.rad(40),overlap=0.25,min_interval=3,name="F-5E Tigereye"}
-TARS.parameters["F-14A-135-GR"]={minAlt=750,maxAlt=5000,maxRoll=10,maxPitch=20,fov=14,duration=400,offset=math.rad(45),overlap=0.25,min_interval=3,name="F-14A TARPS KS-87D"}
-TARS.parameters["F-14B"]={minAlt=228,maxAlt=1524,maxRoll=10,maxPitch=20,fov=85,duration=80,offset=math.rad(10),overlap=0.25,min_interval=3,name="F-14B TARPS KA-99A"}
-TARS.parameters["TF-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="TF-51D Mustang RF-51D Photo Recon"}
-TARS.parameters["P-51D"]={minAlt=250,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="P-51D Mustang F-6D Photo Recon"}
-TARS.parameters["P-51D-30-NA"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="P-51D-30 Mustang F-6D Photo Recon"}
-TARS.parameters["SpitfireLFMkIX"]={minAlt=150,maxAlt=5000,maxRoll=15,maxPitch=15,fov=55,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="Spitfire LF Mk IX PR Recon"}
-TARS.parameters["FW-190A8"]={minAlt=200,maxAlt=5500,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="FW-190 A-8 Tactical Recon"}
-TARS.parameters["FW-190D9"]={minAlt=250,maxAlt=6000,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="FW-190 D-9 Tactical Recon"}
+TARS.parameters["F-4E-45MC"]={minAlt=100,maxAlt=8000,maxRoll=10,maxPitch=15,fov=23,duration=120,offset=math.rad(40),overlap=0.25,min_interval=3,name="RF-4E with KS-87 Forward Oblique Camera"}
+TARS.parameters["MiG-21Bis"]={minAlt=500,maxAlt=8000,maxRoll=10,maxPitch=15,fov=52,duration=140,offset=math.rad(40),overlap=0.25,min_interval=3,name="MiG-21R with Day recce pod"}
+TARS.parameters["AJS37"]={minAlt=15,maxAlt=8000,maxRoll=10,maxPitch=15,fov=25,duration=120,offset=math.rad(40),overlap=0.25,min_interval=3,name="SF 37"}
+TARS.parameters["Mirage-F1EE"]={minAlt=1524,maxAlt=8000,maxRoll=10,maxPitch=15,fov=20,duration=400,offset=math.rad(40),overlap=0.25,min_interval=3,name="Mirage-F1CR with Omera 33"}
+TARS.parameters["F-5E-3"]={minAlt=762,maxAlt=8000,maxRoll=15,maxPitch=15,fov=70,duration=300,offset=math.rad(40),overlap=0.25,min_interval=3,name="F-5E Tigereye"}
+TARS.parameters["F-14A-135-GR"]={minAlt=750,maxAlt=8000,maxRoll=10,maxPitch=20,fov=14,duration=400,offset=math.rad(45),overlap=0.25,min_interval=3,name="F-14A TARPS KS-87D"}
+TARS.parameters["F-14B"]={minAlt=228,maxAlt=8000,maxRoll=10,maxPitch=20,fov=85,duration=400,offset=math.rad(40),overlap=0.25,min_interval=3,name="F-14B TARPS KA-99A"}
+TARS.parameters["TF-51D"]={minAlt=250,maxAlt=2500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="TF-51D Mustang RF-51D Photo Recon"}
+TARS.parameters["P-51D"]={minAlt=250,maxAlt=2500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="P-51D Mustang F-6D Photo Recon"}
+TARS.parameters["P-51D-30-NA"]={minAlt=250,maxAlt=2500,maxRoll=15,maxPitch=15,fov=60,duration=400,offset=math.rad(10),overlap=0.5,min_interval=5,name="P-51D-30 Mustang F-6D Photo Recon"}
+TARS.parameters["SpitfireLFMkIX"]={minAlt=150,maxAlt=2500,maxRoll=15,maxPitch=15,fov=55,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="Spitfire LF Mk IX PR Recon"}
+TARS.parameters["FW-190A8"]={minAlt=200,maxAlt=2500,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="FW-190 A-8 Tactical Recon"}
+TARS.parameters["FW-190D9"]={minAlt=250,maxAlt=2500,maxRoll=15,maxPitch=15,fov=60,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="FW-190 D-9 Tactical Recon"}
 TARS.parameters["SA342M"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="SA342M EO/IR LIGHT RECO"}
 TARS.parameters["SA342L"]={minAlt=20,maxAlt=1000,maxRoll=35,maxPitch=25,fov=18,duration=350,offset=math.rad(10),overlap=0.5,min_interval=5,name="SA342L EO/IR LIGHT RECO"}
 TARS.parameters["OH58D"]={minAlt=30,maxAlt=1200,maxRoll=35,maxPitch=25,fov=12,duration=350,offset=math.rad(12),overlap=0.5,min_interval=5,name="OH-58D MMS EO/IR RECO"}
@@ -123879,8 +123880,9 @@ function TARS_SESSION:New(unit,Callback)
 local self=BASE:Inherit(self,BASE:New())
 self.lid=string.format("TARS_SESSION %s | ",TARS.version)
 self.Callback=Callback
+self.PilotParameterHelper=Callback.PilotParameterHelper
 self:SetObjectParams(unit)
-self:I("TARS_SESSION created — unit="..tostring(self.objectName)
+self:T("TARS_SESSION created — unit="..tostring(self.objectName)
 .." type="..tostring(self.type))
 return self
 end
@@ -123936,7 +123938,7 @@ end
 self.capturing=true
 self.loop=true
 self.standby=false
-self:I("FILM START — film="..self.duration.."s")
+self:T("FILM START — film="..self.duration.."s")
 self.Callback:_MsgUnit(
 self.Callback:_Txt("TARS_FILM_START",self.duration),5,self.playerName)
 timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+2)
@@ -123988,27 +123990,34 @@ rad=rad,
 }
 end
 function TARS_SESSION:_ValidateObjectFound(_Object)
-self:I(self.lid.."_ValidateObjectFound "..tostring(_Object:GetName()))
+self:T(self.lid.."_ValidateObjectFound "..tostring(_Object:GetName()))
 if not(_Object and _Object:IsAlive())then return false end
 if _Object:GetCoalition()==self.coa then return false end
 if self.Callback.targetNameFilter.enabled then
 local keywords=self.Callback.targetNameFilter.keywords[_Object:GetCoalition()]
 local targetName=string.lower(_Object:GetName()or"")
+local targetGroup
+local targetGroupName
+if _Object:IsInstanceOf("UNIT")then
+targetGroup=_Object:GetGroup()
+if targetGroup then targetGroupName=string.lower(targetGroup:GetName())end
+end
 if type(keywords)=="string"then keywords={keywords}end
 local matched=false
 for _,kw in pairs(keywords or{})do
 if string.find(targetName,string.lower(kw))then matched=true;break end
+if targetGroupName and string.find(targetName,string.lower(kw))then matched=true;break end
 end
 if not matched then return false end
 end
 local typeName=_Object:GetTypeName()
 local typeNameLower=string.lower(typeName)
 local objCat=_Object:GetCategory()
-self:I(self.lid.."_ValidateObjectFound Name Filter Passed!")
+self:T(self.lid.."_ValidateObjectFound Name Filter Passed!")
 if objCat==Object.Category.UNIT then
 local desc=_Object:GetDesc()
 local unitCat=desc and desc.category
-self:I(self.lid.."_ValidateObjectFound Name Category Check "..tostring(unitCat))
+self:T(self.lid.."_ValidateObjectFound Name Category Check "..tostring(unitCat))
 if unitCat==Unit.Category.AIRPLANE or unitCat==Unit.Category.HELICOPTER then
 return self.Callback.units.air
 elseif unitCat==Unit.Category.GROUND_UNIT then
@@ -124053,7 +124062,7 @@ self.Callback:StopCapture(self)
 return
 end
 if self.debugunitsearch then
-self:I(self.lid..string.format(
+self:T(self.lid..string.format(
 "CaptureLoop interval=%.1fs duration=%.0fs",interval,self.duration))
 end
 timer.scheduleFunction(TARS_SESSION.CaptureLoop,self,timer.getTime()+interval)
@@ -124127,14 +124136,14 @@ center_shift=(d_far+d_near)/2-d_ground
 else
 a=b
 center_shift=0
-self:I(self.lid.."FindTargets: elev-fov margin too small, fallback to circle")
+self:T(self.lid.."FindTargets: elev-fov margin too small, fallback to circle")
 end
 local offset=self:_OffsetCalc(unit,params,center_shift)
 local unit_pos=unit:GetVec3()
 local hdg=unit:GetHeading()
 local expected_x=unit_pos.x+math.sin(math.rad(hdg))*(d_ground+center_shift)
 local expected_z=unit_pos.z+math.cos(math.rad(hdg))*(d_ground+center_shift)
-self:I(string.format(
+self:T(string.format(
 "OFFSET DRIFT: _OffsetCalc=(%.0f,%.0f)  expected=(%.0f,%.0f)  drift=(Δx=%.0f,Δz=%.0f)",
 offset.x,offset.z,
 expected_x,expected_z,
@@ -124149,10 +124158,13 @@ local heading=unit:GetHeading()
 if self.debugunitsearch then
 local searchzone=self.searchzone
 or ZONE_RADIUS:New("TARS Debug",coordinate:GetVec2(),scan_radius)
+if searchzone.DrawID then searchzone:UndrawZone()end
 searchzone:UpdateFromVec2(coordinate:GetVec2(),scan_radius)
 searchzone:DrawZone(-1,{0,0,1},1,{0,1,0},.2,2,true)
 self.searchzone=searchzone
-self:I({Roll=roll,Pitch=pitch,AGL=alt,a=a,b=b,shift=center_shift})
+end
+if self.PilotParameterHelper==true then
+self:T({Roll=roll,Pitch=pitch,AGL=alt,a=a,b=b,shift=center_shift})
 if roll>params.maxRoll then
 MESSAGE:New(string.format("Roll - NOK out of parameters (%d°)!",roll),9,"PARAM"):ToUnit(unit)
 elseif pitch>params.maxPitch then
@@ -124177,7 +124189,7 @@ local sin_h=math.sin(offset.rad)
 local lx=dx*sin_h+dz*cos_h
 local ly=-dx*cos_h+dz*sin_h
 local ellipse_val=(lx/a)^2+(ly/b)^2
-self:I(string.format(
+self:T(string.format(
 "ELLIPSE CHECK '%s': dx=%.0f dz=%.0f lx=%.0f ly=%.0f val=%.2f %s",
 u:GetName(),dx,dz,lx,ly,ellipse_val,
 ellipse_val<=1 and"HIT ✓"or"MISS (außerhalb)"))
@@ -124196,7 +124208,7 @@ end
 end
 end
 if self.debug==true then
-self:I(self.lid.."FindTargets Debug SET_UNIT created")
+self:T(self.lid.."FindTargets Debug SET_UNIT created")
 local debugunitset=SET_UNIT:New():FilterCategories("ground"):FilterCoalitions("red"):FilterOnce()
 for _,u in pairs(debugunitset and debugunitset.Set or{})do
 if self:_ValidateObjectFound(u)then
@@ -124346,7 +124358,7 @@ TARS.groundMenus[playerName]=TARS.groundMenus[playerName]or{}
 TARS.groundMenus[playerName].approved=reconOk
 TARS.groundMenus[playerName].playerName=playerName
 if reconOk then
-self:I("VALIDATE OK — "..unit:GetName().." / "..tostring(playerName))
+self:T("VALIDATE OK — "..unit:GetName().." / "..tostring(playerName))
 self:_MenuRemoveValidation(playerName)
 local msg=self:_Txt("TARS_VALID_OK_HDR")
 self:_MsgUnit(msg,15,playerName)
@@ -124357,7 +124369,7 @@ local msg=""
 ..self:_Txt("TARS_PLATFORM_FILM").." : "..params.duration.." expositions"
 self:_MsgUnit(msg,15,playerName,true)
 else
-self:I("VALIDATE REFUSED — "..unit:GetName().." ammo="..tostring(refusedWeapon))
+self:T("VALIDATE REFUSED — "..unit:GetName().." ammo="..tostring(refusedWeapon))
 local msg=self:_Txt("TARS_VALID_REFUSED_WPN")
 if refusedWeapon then
 msg=msg.."\n"..self:_Txt("TARS_VALID_REFUSED_AMMO",refusedWeapon)
@@ -124544,7 +124556,7 @@ if d.menuHandle then d.menuHandle:RefreshAndOrderByTag()end
 self:T(self.lid.."MENU -film controls — "..tostring(playerName))
 end
 function TARS:AddBaseMenu(unit,playerName)
-self:I(self.lid.."AddBaseMenu — "..unit:GetName()
+self:T(self.lid.."AddBaseMenu — "..unit:GetName()
 .." / "..tostring(playerName))
 local typeName=unit:GetTypeName()
 if not TARS.reconTypes[typeName]then return end
@@ -124595,7 +124607,7 @@ playerName=displayName,
 group=grp,
 }
 self:_MenuAddValidation(playerName)
-self:I(self.lid.."MENU created — "..tostring(playerName)
+self:T(self.lid.."MENU created — "..tostring(playerName)
 .." group="..grp:GetName())
 end
 function TARS:RemoveGroundMenu(playerName)
