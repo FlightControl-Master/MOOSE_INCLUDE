@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-21T18:29:25+02:00-6d5fb64fdeb8ddad706757a045a7a731b5795aba ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-23T12:41:01+02:00-ba1575d6740095aa28bea43b169e5d505b53ebad ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -114546,7 +114546,7 @@ MANTIS.radiusscale[MANTIS.SamType.POINT] = 3
 -- @field #string Point Point defense capable
 -- @field ARMCapacit ARMCapacity ie how many (H)ARMs the system can defend at the same time
 MANTIS.SamData = {
-  ["Hawk"] = { Range=35, Blindspot=0, Height=12, Type="Medium", Radar="Hawk" }, -- measures in km
+  ["Hawk"] = { Range=45, Blindspot=0, Height=12, Type="Medium", Radar="Hawk" }, -- measures in km
   ["NASAMS"] = { Range=14, Blindspot=0, Height=7, Type="Short", Radar="NSAMS", ARMCapacity=1 }, -- AIM 120B
   ["Patriot"] = { Range=99, Blindspot=0, Height=25, Type="Long", Radar="Patriot str" },
   ["Rapier"] = { Range=10, Blindspot=0, Height=3, Type="Short", Radar="rapier" },
@@ -253523,7 +253523,7 @@ MSRS = {
 
 --- MSRS class version.
 -- @field #string version
-MSRS.version="0.3.6"
+MSRS.version="0.3.7"
 
 --- Voices
 -- @type MSRS.Voices
@@ -255507,6 +255507,71 @@ function MSRS._HoundTranslate(Message,Parameters,CallbackFunction)
   if not parameters.language then parameters.language = "de" end
   HoundTTS.Translate(text,parameters,callback)
   return
+end
+
+--- Create and run a radio jammer for a number of seconds on given frequencies. Requires HOUND backend v0.2.0-beta5 or better.
+-- @param #MSRS self
+-- @param #table Frequencies The table of frequencies to use.
+-- @param #table Modulations The table of modulations to use.
+-- @param #number Coalition (Optional) The coalition to use. Defaults to previously set coalition on this instance.
+-- @param #string Noisetype (Optional)  One of "white" (default) | "chirp" | "harsh" | "jam".
+-- @param #number Volume (Optional) Volume 0.0–1.0  (default 1.0).
+-- @param #number Seconds (Optional) How long in seconds this jammer runs. Defaults to 30 seconds.
+-- @param #string Label (Optional) The label to use, defaults to "MSRS".
+-- @param DCS#Vec3 Vec3 (Optional) Vec3 of the sender's position.
+-- @param #boolean Encrypt (Optional) If true, use the SRS encrypt option.
+-- @param #number EncKey (Optional) If encrypt is true, use this encrypt key.
+-- @return #number ID The Jammer ID to switch the jamming off again with `MSRS.RadioJammerOff()`
+function MSRS:RadioJammerOn(Frequencies, Modulations, Coalition, Noisetype, Volume, Seconds, Label, Vec3, Encrypt, EncKey)
+ self:T(self.lid.."RadioJammerOn")
+  
+ Frequencies = UTILS.EnsureTable(Frequencies)
+ Modulations = UTILS.EnsureTable(Modulations)
+ 
+ local ffs = {}
+  for _,_f in pairs(Frequencies or self.frequencies) do
+    table.insert(ffs,string.format("%.1f",_f))
+  end
+  
+ local freqs = table.concat(ffs, ",")
+ local modus = table.concat(Modulations or self.modulations, ",")
+ -- Replace modulation
+ modus=modus:gsub("0", "AM")
+ modus=modus:gsub("1", "FM")
+ 
+ local coal=Coalition or self.coalition or coalition.side.RED
+ local secs = Seconds or 30
+ 
+ local TransmissionP = {}
+ local ProviderP = {}
+ 
+ TransmissionP.transmitter = "srs"
+ TransmissionP.freqs = freqs
+ TransmissionP.modulations = modus
+ TransmissionP.coalition = coal or self.coalition   -- number  0=spectator, 1=red, 2=blue
+ TransmissionP.name = Label or self.Label         -- string  client name shown in SRS
+ TransmissionP.point = Vec3       -- DCS Vec3 (optional) — initial transmitter position
+ TransmissionP.encrypt = Encrypt      -- bool
+ TransmissionP.encKey = EncKey       -- number  0–255
+ 
+ ProviderP.noiseType = Noisetype or "white"
+ ProviderP.volume = Volume or 1
+ 
+ local ID = HoundTTS.TransmitNoise(TransmissionP, ProviderP) 
+ 
+ self.NoiseID = ID
+ 
+ self:ScheduleOnce(secs,MSRS.RadioJammerOff,self,ID)
+ 
+ return ID
+  
+end
+
+--- Switch off a running Jammer using its ID.
+-- @param #MSRS self
+-- @param #number ID
+function MSRS:RadioJammerOff(ID)
+  return HoundTTS.KillSession(ID or self.NoiseID)
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

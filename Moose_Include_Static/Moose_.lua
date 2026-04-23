@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-21T18:29:25+02:00-6d5fb64fdeb8ddad706757a045a7a731b5795aba ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-23T12:41:01+02:00-ba1575d6740095aa28bea43b169e5d505b53ebad ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55890,7 +55890,7 @@ MANTIS.radiusscale[MANTIS.SamType.MEDIUM]=1.2
 MANTIS.radiusscale[MANTIS.SamType.SHORT]=1.75
 MANTIS.radiusscale[MANTIS.SamType.POINT]=3
 MANTIS.SamData={
-["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
+["Hawk"]={Range=45,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
 ["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS",ARMCapacity=1},
 ["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot str"},
 ["Rapier"]={Range=10,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
@@ -126722,7 +126722,7 @@ ConfigLoaded=false,
 poptions={},
 UsePowerShell=false,
 }
-MSRS.version="0.3.6"
+MSRS.version="0.3.7"
 MSRS.Voices={
 Amazon={
 Generative={
@@ -127841,6 +127841,40 @@ parameters.provider=string.gsub(parameters.provider,"gcloud","google")
 if not parameters.language then parameters.language="de"end
 HoundTTS.Translate(text,parameters,callback)
 return
+end
+function MSRS:RadioJammerOn(Frequencies,Modulations,Coalition,Noisetype,Volume,Seconds,Label,Vec3,Encrypt,EncKey)
+self:T(self.lid.."RadioJammerOn")
+Frequencies=UTILS.EnsureTable(Frequencies)
+Modulations=UTILS.EnsureTable(Modulations)
+local ffs={}
+for _,_f in pairs(Frequencies or self.frequencies)do
+table.insert(ffs,string.format("%.1f",_f))
+end
+local freqs=table.concat(ffs,",")
+local modus=table.concat(Modulations or self.modulations,",")
+modus=modus:gsub("0","AM")
+modus=modus:gsub("1","FM")
+local coal=Coalition or self.coalition or coalition.side.RED
+local secs=Seconds or 30
+local TransmissionP={}
+local ProviderP={}
+TransmissionP.transmitter="srs"
+TransmissionP.freqs=freqs
+TransmissionP.modulations=modus
+TransmissionP.coalition=coal or self.coalition
+TransmissionP.name=Label or self.Label
+TransmissionP.point=Vec3
+TransmissionP.encrypt=Encrypt
+TransmissionP.encKey=EncKey
+ProviderP.noiseType=Noisetype or"white"
+ProviderP.volume=Volume or 1
+local ID=HoundTTS.TransmitNoise(TransmissionP,ProviderP)
+self.NoiseID=ID
+self:ScheduleOnce(secs,MSRS.RadioJammerOff,self,ID)
+return ID
+end
+function MSRS:RadioJammerOff(ID)
+return HoundTTS.KillSession(ID or self.NoiseID)
 end
 function MSRS:LoadConfigFile(Path,Filename)
 if lfs==nil then
