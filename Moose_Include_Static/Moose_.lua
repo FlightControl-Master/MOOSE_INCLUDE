@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-25T16:45:26+02:00-79f13fa6aea6963af69e51f8a4061a17b9143545 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-25T16:49:10+02:00-f186b4bd58d71ea6038d7f2ba045315818793201 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124162,6 +124162,7 @@ if searchzone.DrawID then searchzone:UndrawZone()end
 searchzone:UpdateFromVec2(coordinate:GetVec2(),scan_radius)
 searchzone:DrawZone(-1,{0,0,1},1,{0,1,0},.2,2,true)
 self.searchzone=searchzone
+self:ScheduleOnce(30,ZONE_BASE.UndrawZone,searchzone)
 end
 if self.PilotParameterHelper==true then
 self:T({Roll=roll,Pitch=pitch,AGL=alt,a=a,b=b,shift=center_shift})
