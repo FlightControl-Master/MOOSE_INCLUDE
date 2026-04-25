@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-23T12:41:01+02:00-ba1575d6740095aa28bea43b169e5d505b53ebad ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-25T16:45:26+02:00-79f13fa6aea6963af69e51f8a4061a17b9143545 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -107270,7 +107270,7 @@ function WAREHOUSE:_RegisterAsset(group, ngroups, forceattribute, forcecargobay,
   -- Get name of template group.
   local templategroupname=group:GetName()
   local unit = group:GetUnit(1)
-  local Descriptors= (unit and unit:IsAlive()) and unit:GetDesc() or {}
+  local Descriptors= (unit and unit:IsAlive()~=nil) and unit:GetDesc() or {}
   local Category=group:GetCategory()
   local TypeName=group:GetTypeName() or "none"
   local SpeedMax=group:GetSpeedMax()
@@ -107288,7 +107288,7 @@ function WAREHOUSE:_RegisterAsset(group, ngroups, forceattribute, forcecargobay,
   for _i,_unit in pairs(group:GetUnits()) do
     local unit=_unit --Wrapper.Unit#UNIT
     local Desc=unit:GetDesc()
-
+    
     -- Weight. We sum up all units in the group.
     local unitweight=forceweight or Desc.massEmpty
     if unitweight then

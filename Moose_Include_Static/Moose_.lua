@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-23T12:41:01+02:00-ba1575d6740095aa28bea43b169e5d505b53ebad ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-25T16:45:26+02:00-79f13fa6aea6963af69e51f8a4061a17b9143545 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -52380,7 +52380,7 @@ return 0,0,0,0
 end
 local templategroupname=group:GetName()
 local unit=group:GetUnit(1)
-local Descriptors=(unit and unit:IsAlive())and unit:GetDesc()or{}
+local Descriptors=(unit and unit:IsAlive()~=nil)and unit:GetDesc()or{}
 local Category=group:GetCategory()
 local TypeName=group:GetTypeName()or"none"
 local SpeedMax=group:GetSpeedMax()
