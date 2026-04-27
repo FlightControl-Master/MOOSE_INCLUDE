@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-25T16:49:10+02:00-f186b4bd58d71ea6038d7f2ba045315818793201 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-27T17:33:27+02:00-0347f185a50e3f7a42fdda11cfa208d019a0c077 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -41494,6 +41494,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
       local parkingspots = {}
       local parkingindex = {}
       local spots
+      local useexplicitspots = false
 
       -- Spawn happens on ground, i.e. at an airbase, a FARP or a ship.
       if spawnonground and not SpawnTemplate.parked then
@@ -41525,8 +41526,6 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
 
         -- Use exact parking data when provided, otherwise let helicopters on ships/FARPs
         -- use the smarter parking search before falling back to the procedural queue path.
-        local useexplicitspots = false
-
         -- Number of free parking spots at the airbase.
         if Parkingdata~=nil then
           -- Parking data explicitly set by user as input parameter.
@@ -41644,6 +41643,10 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
           end
         end
 
+        if useexplicitspots and parkingspots[1] then
+          PointVec3 = parkingspots[1]
+        end
+
         -- Not enough spots ==> Prepare airstart.
         if _notenough then
 
@@ -41712,7 +41715,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
           if spawnonground then
 
             -- Ships and FARPS seem to have a build in queue.
-            if autoparking then
+            if autoparking and not useexplicitspots then
 
               -- Spawn on ship. We take only the position of the ship.
               SpawnTemplate.units[UnitID].x = PointVec3.x -- TX
@@ -151289,7 +151292,7 @@ do
 --          my_ctld.UseC130LoadAndUnload = false -- When set to true, forces the C-130 player to use the C-130J built system to load the cargo onboard and to unload. (Default is false)
 --          my_ctld.UseC130DynamicCargoAutoBuild = false -- When true (and UseC130LoadAndUnload is true), C-130 DynamicCargo unload completion is bridged to CTLD engineer-path auto-build.
 --          my_ctld.C130DynamicCargoAutoBuildMergeSeconds = 0 -- Merge window in seconds for C-130 auto-build handoff; set to 0 to disable batching (default).
---          my_ctld.locale = "en" -- Language locale to use, available are "en" (default), "de" and "fr"
+--          my_ctld.locale = "en" -- Language locale to use, available are "en" (default), "de", "fr", "es" and "ru"
 --
 -- ## 2.1 CH-47 Chinook support
 -- 
@@ -152570,6 +152573,7 @@ end
 -- @return #CTLD self
 function CTLD:_InitLocalization()
   self:T(self.lid.."_InitLocalization")
+  self.locale = string.lower(tostring(self.locale or "en"))
   self.gettext = TEXTANDSOUND:New("CTLD","en") -- Core.TextAndSound#TEXTANDSOUND
   for locale,table in pairs(self.Messages) do
     local Locale = string.lower(tostring(locale))
@@ -152580,6 +152584,20 @@ function CTLD:_InitLocalization()
     end
   end
   return self
+end
+
+function CTLD:_GetMenuPluralSuffix(Count, Kind)
+  local count = tonumber(Count) or 0
+  if self.locale == "ru" then
+    local n = math.abs(count) % 100
+    local d = n % 10
+    if n >= 11 and n <= 14 then return "ов" end
+    if d == 1 then return "" end
+    if d >= 2 and d <= 4 then return "а" end
+    return "ов"
+  end
+  if self.locale == "de" and Kind == "crate" then return count > 1 and "n" or "" end
+  return count > 1 and "s" or ""
 end
 
 --- [User] Set SRS TTS details - see @{Sound.SRS} for details.`SetSRS()` will try to use as many attributes configured with @{Sound.SRS#MSRS.LoadConfigFile}() as possible.
@@ -157895,8 +157913,7 @@ function CTLD:_RefreshF10Menus()
                   local txt
                   local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                   if needed > 1 then
-                    local plural = "s"
-                    if self.locale == "de" then plural = "n" end
+                    local plural = self:_GetMenuPluralSuffix(needed, "crate")
                     txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                   else
                     txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
@@ -157946,8 +157963,7 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        local plural = "s"
-                        if self.locale == "de" then plural = "n" end
+                        local plural = self:_GetMenuPluralSuffix(needed, "crate")
                         txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
@@ -157964,8 +157980,7 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        local plural = "s"
-                        if self.locale == "de" then plural = "n" end
+                        local plural = self:_GetMenuPluralSuffix(needed, "crate")
                         txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
@@ -157983,8 +157998,7 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        local plural = "s"
-                        if self.locale == "de" then plural = "n" end
+                        local plural = self:_GetMenuPluralSuffix(needed, "crate")
                         txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
@@ -158001,8 +158015,7 @@ function CTLD:_RefreshF10Menus()
                       local txt
                       local cargoLabel = self:_GetCargoDisplayName(cargoObj)
                       if needed > 1 then
-                        local plural = "s"
-                        if self.locale == "de" then plural = "n" end
+                        local plural = self:_GetMenuPluralSuffix(needed, "crate")
                         txt = string.format(self.gettext:GetEntry("MENU_CRATES_NEEDED",self.locale),needed,plural,cargoLabel,cargoObj.PerCrateMass or 0)
                       else
                         txt = string.format("%s (%dkg)",cargoLabel,cargoObj.PerCrateMass or 0)
@@ -158651,7 +158664,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
             end,self,Group,Unit,cName,needed,1)
           else
             for q=1,sets do
-              local qm=MENU_GROUP:New(Group,string.format(self.gettext:GetEntry("MENU_DROP_N_SETS",self.locale),q,q>1 and "s" or ""),parentMenu)
+              local qm=MENU_GROUP:New(Group,string.format(self.gettext:GetEntry("MENU_DROP_N_SETS",self.locale),q,self:_GetMenuPluralSuffix(q, "set")),parentMenu)
               --local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and "s" or ""),parentMenu)
               MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
                 local uName=UnitArg:GetName()
@@ -158748,7 +158761,7 @@ function CTLD:_RefreshDropCratesMenu(Group, Unit)
             end
           else
             for q=1,sets do
-              local qm=MENU_GROUP:New(Group,string.format(self.gettext:GetEntry("MENU_DROP_N_SETS",self.locale),q,q>1 and "s" or ""),parentMenu)
+              local qm=MENU_GROUP:New(Group,string.format(self.gettext:GetEntry("MENU_DROP_N_SETS",self.locale),q,self:_GetMenuPluralSuffix(q, "set")),parentMenu)
               --local qm=MENU_GROUP:New(Group,string.format("Drop %d Set%s",q,q>1 and "s" or ""),parentMenu)
               MENU_GROUP_COMMAND:New(Group,self.gettext:GetEntry("MENU_DROP",self.locale),qm,function(selfArg,GroupArg,UnitArg,cNameArg,neededArg,qty)
                 local uName=UnitArg:GetName()
@@ -163804,8 +163817,262 @@ FR = {
       BUILD_YES="SI",
       BUILD_NO="NO",
       },
+    RU = {
+        -- ============================================================
+        -- Crate / Cargo Loading
+        -- ============================================================
+        CRATE_LOADED_GROUNDCREW         = "Ящик %s загружен наземной службой!",
+        CRATE_UNLOADED_GROUNDCREW       = "Ящик %s выгружен наземной службой!",
+        CRATE_LOADED_ID                 = "Ящик ID %d для %s загружен!",
+        LOADED_FULL                     = "Загружено %d %s.",
+        LOADED_SETS_LEFTOVER            = "Загружено %d %s, осталось %d ящик(ов).",
+        LOADED_SETS                     = "Загружено %d %s.",
+        LOADED_PARTIAL                  = "Загружено только %d/%d ящик(ов) для %s.",
+        LOADED_PARTIAL_LIMIT            = "Загружено только %d/%d ящик(ов) для %s. Достигнут лимит груза!",
+        LOADED_BATCH                    = "Загружено %d %s.",
+        LOADED_BATCH_PARTIAL            = "Некоторые комплекты не удалось загрузить полностью.",
+        -- ============================================================
+        -- Dropping / Unloading
+        -- ============================================================
+        DROPPED_FULL                    = "Сброшено %d %s.",
+        DROPPED_SETS_LEFTOVER           = "Сброшено %d %s, осталось %d ящик(ов).",
+        DROPPED_SETS                    = "Сброшено %d %s.",
+        DROPPED_PARTIAL                 = "Сброшено %d/%d ящик(ов) для %s.",
+        DROPPED_INTO_ACTION             = "%s сброшено в бой!",
+        DROPPED_BEACON                  = "Сброшен %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        CRATES_POSITIONED               = "%d ящик(ов) для %s размещены рядом с вами!",
+        CRATES_DROPPED                  = "%d ящик(ов) для %s сброшены!",
+        -- ============================================================
+        -- Troops
+        -- ============================================================
+        BOARDED                         = "%s на борту!",
+        BOARDING                        = "%s грузится!",
+        TROOPS_RETURNED                 = "Войска вернулись на базу!",
+        -- ============================================================
+        -- Deployment
+        -- ============================================================
+        DEPLOYED_NEAR_YOU               = "%s развернуты рядом с вами!",
+        UNITS_REMOVED                   = "%s удалены",
+        -- ============================================================
+        -- Build / Repair
+        -- ============================================================
+        BUILD_STARTED                   = "Строительство начато, готово через %d секунд!",
+        REPAIR_STARTED                  = "Ремонт начат с использованием %s, займет %d сек",
+        NO_UNIT_TO_REPAIR               = "Нет достаточно близкого юнита для ремонта!",
+        CANT_REPAIR_WITH                = "Нельзя отремонтировать этот юнит с помощью %s",
+        CRATES_MOVE_BEFORE_BUILD        = "*** Ящики нужно переместить перед строительством!",
+        -- ============================================================
+        -- Errors - Chopper / Weight / Capacity
+        -- ============================================================
+        CHOPPER_CANNOT_CARRY            = "Извините, этот вертолет не может перевозить ящики!",
+        TOO_HEAVY                       = "Извините, это слишком тяжело для загрузки!",
+        FULLY_LOADED                    = "Извините, мы полностью загружены!",
+        CRAMMED                         = "Извините, у нас уже нет места!",
+        NO_CAPACITY_NOW                 = "Сейчас нет места для дополнительной загрузки!",
+        NO_MORE_CAPACITY                = "Больше нет места для загрузки ящиков!",
+        CANNOT_LOAD_NONE_OR_FULL        = "Нельзя загрузить ящики: ничего не найдено или нет свободной вместимости.",
+        -- ============================================================
+        -- Errors - Position
+        -- ============================================================
+        NEED_TO_LAND_OR_HOVER_LOAD      = "Нужно приземлиться или зависнуть на месте для загрузки!",
+        HOVER_OVER_CRATES               = "Зависните над ящиками, чтобы подобрать их!",
+        LAND_OR_HOVER_OVER_CRATES       = "Приземлитесь или зависните над ящиками, чтобы подобрать их!",
+        MUST_LAND_OR_HOVER_CRATES       = "Нужно приземлиться или зависнуть, чтобы загрузить ящики!",
+        NEED_TO_LAND_BUILD              = "Нужно приземлиться / остановиться, чтобы что-то построить, пилот!",
+        NOT_CLOSE_ENOUGH_LOGISTICS      = "Вы недостаточно близко к логистической зоне!",
+        NOT_CLOSE_ENOUGH_DROP           = "Вы недостаточно близко к зоне сброса!",
+        NOT_CLOSE_ENOUGH_ZONE_NM        = "Отказ, нужно быть ближе чем %d nm к зоне!",
+        CANNOT_BUILD_LOADING_AREA       = "Нельзя строить в зоне погрузки, пилот!",
+        -- ============================================================
+        -- Errors - Doors
+        -- ============================================================
+        OPEN_DOORS_LOAD_CARGO           = "Нужно открыть дверь(и), чтобы загрузить груз!",
+        OPEN_DOORS_LOAD_TROOPS          = "Нужно открыть дверь(и), чтобы загрузить войска!",
+        OPEN_DOORS_EXTRACT_TROOPS       = "Нужно открыть дверь(и), чтобы эвакуировать войска!",
+        OPEN_DOORS_UNLOAD_TROOPS        = "Нужно открыть дверь(и), чтобы выгрузить войска!",
+        OPEN_DOORS_DROP_CARGO           = "Нужно открыть дверь(и), чтобы сбросить груз!",
+        -- ============================================================
+        -- Errors - Stock / Availability
+        -- ============================================================
+        ALL_GONE                        = "Извините, все %s закончились!",
+        RAN_OUT_OF                      = "Извините, у нас закончились %s",
+        CARGO_NOT_AVAILABLE_ZONE        = "Запрошенный груз недоступен в этой зоне!",
+        ENOUGH_CRATES_NEARBY            = "Рядом уже достаточно ящиков! Сначала разберитесь с ними!",
+        NO_CRATES_WITHIN                = "Нет загружаемых ящиков в пределах %d метров!",
+        NO_CRATES_WITHIN_PLAIN          = "Нет ящиков в пределах %d метров!",
+        NO_CRATES_IN_RANGE              = "Ящики в радиусе не найдены!",
+        NO_NAMED_CRATES_IN_RANGE        = "Ящики «%s» в радиусе не найдены!",
+        NO_LOADABLE_CRATES              = "Извините, рядом нет загружаемых ящиков или достигнут максимальный вес груза!",
+        NO_UNITS_TO_EXTRACT             = "Нет достаточно близких юнитов для эвакуации!",
+        NO_UNIT_CONFIG                  = "Конфигурация юнита для %s не найдена",
+        CANT_ONBOARD                    = "Нельзя взять на борт %s",
+        TOO_MANY_UNITS_NEARBY           = "У вас уже есть %d юнитов поблизости!",
+        NO_CRATE_GROUPS                 = "Группы ящиков для этого юнита не найдены!",
+        NO_CRATE_SET                    = "Набор ящиков не найден или индекс недействителен!",
+        NO_CRATE_IN_SET                 = "Ящик в этом наборе не найден!",
+        NO_TROOP_CHUNK                  = "Часть войскового груза с ID %d не найдена!",
+        TROOP_CHUNK_EMPTY               = "Часть войскового груза с ID %d пуста!",
+        -- ============================================================
+        -- Nothing loaded / in stock
+        -- ============================================================
+        NOTHING_LOADED                  = "Ничего не загружено!\nЛимит войск: %d | Лимит ящиков %d | Лимит веса %d кг",
+        NOTHING_LOADED_AIRDROP          = "Ничего не загружено или параметры воздушного сброса не соблюдены!",
+        NOTHING_LOADED_HOVER            = "Ничего не загружено или висение вне допустимых параметров!",
+        NOTHING_IN_STOCK                = "На складе ничего нет!",
+        NOTHING_TO_PACK                 = "На этой дистанции нечего упаковывать, пилот!",
+        NOTHING_TO_REMOVE               = "На этой дистанции нечего удалять, пилот!",
+        -- ============================================================
+        -- Zone / Info
+        -- ============================================================
+        ROGER_ZONE                      = "Принято, зона %s %s!",
+        -- ============================================================
+        -- Report: Hover / Flight Parameters
+        -- ============================================================
+        HOVER_PARAMS_METRIC             = "Параметры висения (автозагрузка/сброс):\n - Мин. высота %dм \n - Макс. высота %dм \n - Макс. скорость 2м/с \n - В параметрах: %s",
+        HOVER_PARAMS_IMPERIAL           = "Параметры висения (автозагрузка/сброс):\n - Мин. высота %dфт \n - Макс. высота %dфт \n - Макс. скорость 6фт/с \n - В параметрах: %s",
+        FLIGHT_PARAMS_IMPERIAL          = "Параметры полета (воздушный сброс):\n - Мин. высота %dфт \n - Макс. высота %dфт \n - В параметрах: %s",
+        FLIGHT_PARAMS_METRIC            = "Параметры полета (воздушный сброс):\n - Мин. высота %dм \n - Макс. высота %dм \n - В параметрах: %s",
+        -- ============================================================
+        -- Report Titles  (REPORT:New())
+        -- ============================================================
+        REPORT_CRATES_FOUND             = "Ящики поблизости:",
+        REPORT_REMOVING_CRATES          = "Удаление найденных поблизости ящиков:",
+        REPORT_TRANSPORT_CHECKOUT       = "Транспортная ведомость",
+        REPORT_INVENTORY                = "Инвентарная ведомость",
+        REPORT_BUILD_CHECKLIST          = "Чек-лист строящихся ящиков",
+        REPORT_REPAIR_CHECKLIST         = "Чек-лист ремонта",
+        REPORT_BEACONS                  = "Активные маяки зон",
+        -- ============================================================
+        -- Report Section Headers  (report:Add())
+        -- ============================================================
+        REPORT_SECTION_TROOPS           = "        -- ВОЙСКА --",
+        REPORT_SECTION_CRATES           = "       -- ЯЩИКИ --",
+        REPORT_SECTION_CRATES_GC        = "       -- ЯЩИКИ загружены наземной службой --",
+        REPORT_SECTION_NONE             = "        Н Е Т",
+        REPORT_SECTION_NONE_ALT         = "     --- Ничего не найдено! ---",
+        REPORT_SECTION_NONE_REPAIR      = "     --- Ничего не найдено ---",
+        REPORT_GC_LOADABLE_HINT         = "Вероятно, можно загрузить наземной службой (F8)",
+        REPORT_TOTAL_MASS               = "Общая масса: %s кг. Можно загрузить: %s кг.",
+        REPORT_TROOPS_CRATES_COUNT      = "Войска: %d(%d), Ящики: %d(%d)",
+        REPORT_TROOPS_CRATETYPES_COUNT  = "Войска: %d, Типы ящиков: %d",
+        -- ============================================================
+        -- Report Row Templates  (per-item lines in reports)
+        -- ============================================================
+        REPORT_ROW_TROOP                = "Войска: %s размер %d",
+        REPORT_ROW_CRATE                = "Ящик: %s %d/%d",
+        REPORT_ROW_CRATE_SIZE1          = "Ящик: %s размер 1",
+        REPORT_ROW_GC_CRATE             = "Ящик загружен НС: %s размер 1",
+        REPORT_ROW_DROPPED_CRATE        = "Сброшен ящик для %s, %dкг",
+        REPORT_ROW_CRATE_KG             = "Ящик для %s, %dкг",
+        REPORT_ROW_CRATE_REMOVED        = "Ящик для %s, %dкг удален",
+        REPORT_ROW_UNIT_STOCK           = "Юнит: %s | Солдаты: %d | Запас: %s",
+        REPORT_ROW_TYPE_CRATE_STOCK     = "Тип: %s | Ящиков на комплект: %d | Запас: %s",
+        REPORT_ROW_TYPE_STOCK           = "Тип: %s | Запас: %s",
+        REPORT_ROW_BUILD_CHECK          = "Тип: %s | Требуется %d | Найдено %d | Можно строить %s",
+        REPORT_ROW_REPAIR_CHECK         = "Тип: %s | Требуется %d | Найдено %d | Можно ремонтировать %s",
+        REPORT_ROW_BEACON               = " %s | FM %s Mhz | VHF %s KHz | UHF %s Mhz ",
+        -- ============================================================
+        -- Weight / Crate limit tokens
+        -- ============================================================
+        WEIGHT_LIMIT                    = "Достигнут лимит веса",
+        CRATE_LIMIT                     = "Достигнут лимит ящиков",
+        -- ============================================================
+        -- Menu labels - Top level
+        -- ============================================================
+        MENU_CTLD                       = "CTLD",
+        MENU_MANAGE_TROOPS              = "Управление войсками",
+        MENU_MANAGE_CRATES              = "Управление ящиками",
+        MENU_MANAGE_UNITS               = "Управление юнитами",
+        -- ============================================================
+        -- Menu labels - Troops
+        -- ============================================================
+        MENU_LOAD_TROOPS                = "Загрузить войска",
+        MENU_DROP_TROOPS                = "Высадить войска",
+        MENU_DROP_ALL_TROOPS            = "Высадить ВСЕ войска",
+        MENU_EXTRACT_TROOPS             = "Эвакуировать войска",
+        MENU_DROP_N_TROOPS              = "Высадить (%d) %s",
+        -- ============================================================
+        -- Menu labels - Crates: Get
+        -- ============================================================
+        MENU_GET_CRATES                 = "Получить ящики",
+        MENU_GET                        = "Получить",
+        MENU_GET_AND_LOAD               = "Получить и загрузить",
+        MENU_GET_ANYWAY                 = "Все равно получить",
+        MENU_PARTIALLY_LOAD             = "Частично загрузить",
+        MENU_OUT_OF_STOCK               = "Нет в наличии",
+        MENU_TROOP_LIMIT                = "Достигнут лимит войск",
+        -- ============================================================
+        -- Menu labels - Crates: Load
+        -- ============================================================
+        MENU_LOAD_CRATES                = "Загрузить ящики",
+        MENU_LOAD_ALL                   = "Загрузить ВСЕ",
+        MENU_SHOW_LOADABLE_CRATES       = "Показать загружаемые ящики",
+        MENU_NO_CRATES_FOUND_RESCAN     = "Ящики не найдены! Сканировать снова?",
+        MENU_USE_C130_LOAD              = "Использовать систему загрузки C-130",
+        MENU_LOAD_SINGLE                = "Загрузить",
+        -- ============================================================
+        -- Menu labels - Crates: Drop
+        -- ============================================================
+        MENU_DROP_CRATES                = "Сбросить ящики",
+        MENU_DROP_ALL_CRATES            = "Сбросить ВСЕ ящики",
+        MENU_DROP                       = "Сбросить",
+        MENU_DROP_AND_BUILD             = "Сбросить и построить",
+        MENU_DROP_N_SETS                = "Сбросить %d комплект%s",
+        MENU_NO_CRATES_TO_DROP          = "Нет ящиков для сброса!",
+        -- ============================================================
+        -- Menu labels - Crates: Build / Repair / Pack / Remove
+        -- ============================================================
+        MENU_BUILD_CRATES               = "Построить из ящиков",
+        MENU_REPAIR                     = "Ремонт",
+        MENU_PACK_CRATES                = "Упаковать ящики",
+        MENU_PACK                       = "Упаковать",
+        MENU_SCAN_PACKABLE_UNITS        = "Сканировать упаковываемые юниты поблизости",
+        MENU_NO_PACKABLE_UNITS_FOUND_RESCAN = "Упаковываемые юниты не найдены! Сканировать снова?",
+        MENU_PACK_ALL                   = "Упаковать поблизости",
+        MENU_PACK_AND_LOAD              = "Упаковать и загрузить",
+        MENU_PACK_AND_LOAD_ALL          = "Упаковать и загрузить поблизости",
+        MENU_PACK_AND_REMOVE            = "Упаковать и удалить",
+        MENU_PACK_AND_REMOVE_ALL        = "Упаковать и удалить поблизости",
+        MENU_REMOVE_CRATES              = "Удалить ящики",
+        MENU_REMOVE_CRATES_NEARBY       = "Удалить ящики поблизости",
+        MENU_LIST_CRATES_NEARBY         = "Список ящиков поблизости",
+        MENU_CRATES_NEEDED              = "%d ящик%s %s (%dкг)",
+        -- ============================================================
+        -- Menu labels - Units (C-130)
+        -- ============================================================
+        MENU_GET_UNITS                  = "Получить юниты",
+        MENU_REMOVE_UNITS_NEARBY        = "Удалить юниты поблизости",
+        -- ============================================================
+        -- Menu labels - Info / Cargo
+        -- ============================================================
+        MENU_LIST_BOARDED_CARGO         = "Список груза на борту",
+        MENU_INVENTORY                  = "Инвентарь",
+        MENU_LIST_ZONE_BEACONS          = "Список активных маяков зон",
+        -- ============================================================
+        -- Menu labels - Smokes / Flares / Beacons
+        -- ============================================================
+        MENU_SMOKES_FLARES_BEACONS      = "Дымы, ракеты, маяки",
+        MENU_SMOKE_ZONES_NEARBY         = "Дым в ближайших зонах",
+        MENU_DROP_SMOKE_NOW             = "Сбросить дым сейчас",
+        MENU_RED_SMOKE                  = "Красный дым",
+        MENU_BLUE_SMOKE                 = "Синий дым",
+        MENU_GREEN_SMOKE                = "Зеленый дым",
+        MENU_ORANGE_SMOKE               = "Оранжевый дым",
+        MENU_WHITE_SMOKE                = "Белый дым",
+        MENU_FLARE_ZONES_NEARBY         = "Ракеты в ближайших зонах",
+        MENU_FIRE_FLARE_NOW             = "Выпустить ракету сейчас",
+        MENU_DROP_BEACON_NOW            = "Сбросить маяк сейчас",
+        -- ============================================================
+        -- Menu labels - Parameters
+        -- ============================================================
+        MENU_SHOW_FLIGHT_PARAMS         = "Показать параметры полета",
+        MENU_SHOW_HOVER_PARAMS          = "Показать параметры висения",
+        STOCK_NONE                      = "нет",
+        STOCK_UNLIMITED                 = "без ограничений",
+        BUILD_YES                       = "ДА",
+        BUILD_NO                        = "НЕТ",
+    },
   }
-  
 do 
 --- **Hercules Cargo AIR Drop Events** by Anubis Yinepu
 -- Moose CTLD OO refactoring by Applevangelist
