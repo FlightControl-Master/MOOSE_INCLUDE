@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-27T17:33:27+02:00-0347f185a50e3f7a42fdda11cfa208d019a0c077 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-04-30T17:37:30+02:00-f34bf1e0524b118278d716b1121e446bbde2aac1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20886,6 +20886,9 @@ self.SpawnGrouping=Grouping
 return self
 end
 function SPAWN:InitRandomizeZones(SpawnZoneTable,RandomizePositionInZone)
+if not SpawnZoneTable then
+return self
+end
 local temptable={}
 for _,_temp in pairs(SpawnZoneTable)do
 temptable[#temptable+1]=_temp
