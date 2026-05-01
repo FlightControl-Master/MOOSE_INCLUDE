@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-04-12T12:52:07+02:00-de71c1d9035b34f9d640cc7d0a20d95a755afafd ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-01T12:45:59+02:00-2ab3d7150d76096414294157280b5624e054fe1a ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -2985,8 +2985,8 @@ UTILS.KnotsToKmph = function(knots)
   return knots * 1.852
 end
 
-UTILS.KmphToKnots = function(knots)
-  return knots / 1.852
+UTILS.KmphToKnots = function(kmph)
+  return kmph / 1.852
 end
 
 UTILS.KmphToMps = function( kmph )
@@ -24432,7 +24432,8 @@ do -- SET_BASE
   -- @field #table List Unused table.
   -- @field Core.Scheduler#SCHEDULER CallScheduler
   -- @field #SET_BASE.Filters Filter Filters
-  -- @field #booleaen filterNoRegex If true, FilterPrefix ignores special characters and evaluates plain string.
+  -- @field #boolean filterNoRegex If true, FilterPrefix ignores special characters and evaluates plain string. Defaults to false.
+  -- @field #boolean filterReplaceDash If true then if filterNoRegex is false, replace dashes with regex pattern friendly pattern. Defaults to true
   -- @extends Core.Base#BASE
 
   --- The @{Core.Set#SET_BASE} class defines the core functions that define a collection of objects.
@@ -24472,6 +24473,7 @@ do -- SET_BASE
         },
       },
     filterNoRegex=false,
+    filterReplaceDash=true,
   }
 
   --- Filters
@@ -24626,7 +24628,8 @@ do -- SET_BASE
   -- @return #boolean Returns `true`, if the pattern is contained in the name and false otherwise.
   function SET_BASE:_SearchPattern(Name, Pattern, NoRegex, ReplaceDash)
     NoRegex=NoRegex or self.filterNoRegex
-    if ReplaceDash==true then
+    ReplaceDash=ReplaceDash or self.filterReplaceDash
+    if ReplaceDash==true and NoRegex ~= true then
       -- Not sure why "-" is replaced by "%-" ?! - So we can still match group names with a dash in them
       -- reason is that the string is interpreted as a pattern and "-" is a special character then. For interpreting it as a string, fourth parameter needs to be set to true.
       Pattern=Pattern:gsub("-", "%%-")
@@ -24635,6 +24638,16 @@ do -- SET_BASE
     return contain
   end  
   
+  ---Set Regex Options for FilterPrefix function.
+  -- @param #SET_BASE self
+  -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+  -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+  -- @return #SET_BASE self
+  function SET_BASE:FilterSetRegex(NoRegex,ReplaceDash)
+    if NoRegex ~= nil then self.filterNoRegex = NoRegex end
+    self.filterReplaceDash = ReplaceDash or true
+    return self
+  end
 
   --- Gets the Set.
   -- @param #SET_BASE self
@@ -25568,7 +25581,21 @@ do
     -- @param #SET_GROUP self
     -- @return #SET_GROUP self
     
-    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_GROUP] FilterSetRegex
+    -- @param #SET_GROUP self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_GROUP self
+  
+    --- Builds a set of objects of same coalitions.
+    -- Possible current coalitions are red, blue and neutral.
+    -- @function [parent=#SET_GROUP] FilterCoalitions
+    -- @param #SET_GROUP self
+    -- @param #string Coalitions Can take the following values: "red", "blue", "neutral" and coalition.side.RED, coalition.side.BLUE,coalition.side.NEUTRAL
+    -- @param #boolean Clear If `true`, clear any previously defined filters.
+    -- @return #SET_GROUP self
+  
   end
   
   --- Get a *new* set table that only contains alive groups.
@@ -26486,7 +26513,7 @@ do
     if self.Filter.GroupPrefixes and MGroupInclude then
       local MGroupPrefix = false
       for GroupPrefixId, GroupPrefix in pairs(self.Filter.GroupPrefixes) do
-        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, false, true) then
+        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, self.filterNoRegex, self.filterReplaceDash) then
           MGroupPrefix = true
         end
       end
@@ -26705,6 +26732,26 @@ do -- SET_UNIT
     --- Count Alive Units
     -- @function [parent=#SET_UNIT] CountAlive
     -- @param #SET_UNIT self
+    -- @return #SET_UNIT self
+    
+    --- Filter the set once
+    -- @function [parent=#SET_UNIT] FilterOnce
+    -- @param #SET_UNIT self
+    -- @return #SET_UNIT self
+    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_UNIT] FilterSetRegex
+    -- @param #SET_UNIT self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_UNIT self
+    
+    --- Builds a set of objects of same coalitions.
+    -- Possible current coalitions are red, blue and neutral.
+    -- @function [parent=#SET_UNIT] FilterCoalitions
+    -- @param #SET_UNIT self
+    -- @param #string Coalitions Can take the following values: "red", "blue", "neutral" and coalition.side.RED, coalition.side.BLUE,coalition.side.NEUTRAL
+    -- @param #boolean Clear If `true`, clear any previously defined filters.
     -- @return #SET_UNIT self
     
     return self
@@ -27718,7 +27765,7 @@ do -- SET_UNIT
       if self.Filter.UnitPrefixes and MUnitInclude then
         local MUnitPrefix = false
         for UnitPrefixId, UnitPrefix in pairs(self.Filter.UnitPrefixes) do          
-          if self:_SearchPattern(MUnit:GetName(), UnitPrefix, false, true) then
+          if self:_SearchPattern(MUnit:GetName(), UnitPrefix, self.filterNoRegex, self.filterReplaceDash) then
             MUnitPrefix = true
           end
         end
@@ -27914,7 +27961,27 @@ do -- SET_STATIC
 
     -- Inherits from BASE
     local self = BASE:Inherit(self, SET_BASE:New(_DATABASE.STATICS)) -- Core.Set#SET_STATIC
-
+    
+    --- Filter the set once
+    -- @function [parent=#SET_STATIC] FilterOnce
+    -- @param #SET_STATIC self
+    -- @return #SET_STATIC self
+    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_STATIC] FilterSetRegex
+    -- @param #SET_STATIC self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_STATIC self
+    
+    --- Builds a set of objects of same coalitions.
+    -- Possible current coalitions are red, blue and neutral.
+    -- @function [parent=#SET_STATIC] FilterCoalitions
+    -- @param #SET_STATIC self
+    -- @param #string Coalitions Can take the following values: "red", "blue", "neutral" and coalition.side.RED, coalition.side.BLUE,coalition.side.NEUTRAL
+    -- @param #boolean Clear If `true`, clear any previously defined filters.
+    -- @return #SET_STATIC self
+    
     return self
   end
 
@@ -28489,7 +28556,7 @@ do -- SET_STATIC
     if self.Filter.StaticPrefixes then
       local MStaticPrefix = false
       for StaticPrefixId, StaticPrefix in pairs(self.Filter.StaticPrefixes) do
-        if self:_SearchPattern(MStatic:GetName(), StaticPrefix, false, true) then
+        if self:_SearchPattern(MStatic:GetName(), StaticPrefix, self.filterNoRegex, self.filterReplaceDash) then
           MStaticPrefix = true
         end
       end
@@ -28673,7 +28740,27 @@ do -- SET_CLIENT
     local self = BASE:Inherit(self, SET_BASE:New(_DATABASE.CLIENTS)) -- #SET_CLIENT
 
     self:FilterActive(false)
-
+    
+    --- Filter the set once
+    -- @function [parent=#SET_CLIENT] FilterOnce
+    -- @param #SET_CLIENT self
+    -- @return #SET_CLIENT self
+    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_CLIENT] FilterSetRegex
+    -- @param #SET_CLIENT self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_CLIENT self
+    
+    --- Builds a set of objects of same coalitions.
+    -- Possible current coalitions are red, blue and neutral.
+    -- @function [parent=#SET_CLIENT] FilterCoalitions
+    -- @param #SET_CLIENT self
+    -- @param #string Coalitions Can take the following values: "red", "blue", "neutral" and coalition.side.RED, coalition.side.BLUE,coalition.side.NEUTRAL
+    -- @param #boolean Clear If `true`, clear any previously defined filters.
+    -- @return #SET_CLIENT self
+    
     return self
   end
 
@@ -29272,7 +29359,7 @@ do -- SET_CLIENT
       if self.Filter.ClientPrefixes and MClientInclude then
         local MClientPrefix = false
         for ClientPrefixId, ClientPrefix in pairs(self.Filter.ClientPrefixes) do
-          if self:_SearchPattern(MClient.UnitName, ClientPrefix) then          
+          if self:_SearchPattern(MClient.UnitName, ClientPrefix, self.filterNoRegex, self.filterReplaceDash) then          
             MClientPrefix = true
           end
         end
@@ -29296,7 +29383,7 @@ do -- SET_CLIENT
       local playername = MClient:GetPlayerName() or "Unknown"
       --self:T(playername)
       for _,_Playername in pairs(self.Filter.Playernames) do
-        if playername and self:_SearchPattern(playername,_Playername) then
+        if playername and self:_SearchPattern(playername,_Playername,self.filterNoRegex, self.filterReplaceDash) then
           MClientPlayername = true
         end
       end
@@ -29309,7 +29396,7 @@ do -- SET_CLIENT
       local callsign = MClient:GetCallsign()
       --self:I(callsign)
       for _,_Callsign in pairs(self.Filter.Callsigns) do
-        if callsign and self:_SearchPattern(callsign,_Callsign, true) then
+        if callsign and self:_SearchPattern(callsign,_Callsign, self.filterNoRegex, self.filterReplaceDash) then
           MClientCallsigns = true
         end
       end
@@ -29730,7 +29817,7 @@ do -- SET_PLAYER
       if self.Filter.ClientPrefixes then
         local MClientPrefix = false
         for ClientPrefixId, ClientPrefix in pairs(self.Filter.ClientPrefixes) do
-          if self:_SearchPattern(MClient.UnitName,ClientPrefix) then
+          if self:_SearchPattern(MClient.UnitName,ClientPrefix,self.filterNoRegex, self.filterReplaceDash) then
             MClientPrefix = true
           end
         end
@@ -30200,7 +30287,19 @@ do -- SET_ZONE
   function SET_ZONE:New()
     -- Inherits from BASE
     local self = BASE:Inherit(self, SET_BASE:New(_DATABASE.ZONES))
-
+    
+    --- Filter the set once
+    -- @function [parent=#SET_ZONE] FilterOnce
+    -- @param #SET_ZONE self
+    -- @return #SET_ZONE self
+    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_ZONE] FilterSetRegex
+    -- @param #SET_ZONE self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_ZONE self
+    
     return self
   end
 
@@ -30438,7 +30537,7 @@ do -- SET_ZONE
       if self.Filter.Prefixes then
         local MZonePrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then
+          if self:_SearchPattern(MZoneName, ZonePrefix, self.filterNoRegex, self.filterReplaceDash) then
             MZonePrefix = true
           end
         end
@@ -30947,7 +31046,7 @@ do -- SET_ZONE_GOAL
       if self.Filter.Prefixes then
         local MZonePrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then          
+          if self:_SearchPattern(MZoneName, ZonePrefix, self.filterNoRegex, self.filterReplaceDash) then          
             MZonePrefix = true
           end
         end
@@ -31083,7 +31182,19 @@ do -- SET_OPSZONE
   
     -- Inherits from BASE
     local self = BASE:Inherit(self, SET_BASE:New(_DATABASE.OPSZONES))
-
+    
+    --- Filter the set once
+    -- @function [parent=#SET_OPSZONE] FilterOnce
+    -- @param #SET_OPSZONE self
+    -- @return #SET_OPSZONE self
+    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_OPSZONE] FilterSetRegex
+    -- @param #SET_OPSZONE self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_OPSZONE self
+    
     return self
   end
 
@@ -31308,7 +31419,7 @@ do -- SET_OPSZONE
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
         
           -- Prefix
-          if self:_SearchPattern(MZoneName, ZonePrefix, false, true) then
+          if self:_SearchPattern(MZoneName, ZonePrefix, self.filterNoRegex, self.filterReplaceDash) then
             MZonePrefix = true
             break --Break the loop as we found the prefix.
           end
@@ -32102,7 +32213,7 @@ function SET_OPSGROUP:_EventOnBirth(Event)
       local MGroupPrefix = false
       
       for GroupPrefixId, GroupPrefix in pairs(self.Filter.GroupPrefixes) do
-        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, false, true) then
+        if self:_SearchPattern(MGroup:GetName(), GroupPrefix, self.filterNoRegex, self.filterReplaceDash) then
           MGroupPrefix = true
         end
       end
@@ -32436,7 +32547,7 @@ do -- SET_SCENERY
       if self.Filter.Prefixes then
         local MSceneryPrefix = false
         for ZonePrefixId, ZonePrefix in pairs(self.Filter.Prefixes) do
-          if self:_SearchPattern(MSceneryName, ZonePrefix, false, true) then
+          if self:_SearchPattern(MSceneryName, ZonePrefix, self.filterNoRegex, self.filterReplaceDash) then
             MSceneryPrefix = true
           end
         end
@@ -32659,7 +32770,19 @@ do -- SET_DYNAMICCARGO
 
     --- Inherits from BASE
     local self = BASE:Inherit(self, SET_BASE:New(_DATABASE.DYNAMICCARGO)) -- Core.Set#SET_DYNAMICCARGO
-
+      
+    --- Filter the set once
+    -- @function [parent=#SET_DYNAMICCARGO] FilterOnce
+    -- @param #SET_DYNAMICCARGO self
+    -- @return #SET_DYNAMICCARGO self
+    
+    ---Set Regex Options for FilterPrefix function.
+    -- @function [parent=#SET_DYNAMICCARGO] FilterSetRegex
+    -- @param #SET_DYNAMICCARGO self
+    -- @param #boolean NoRegex If true, switch off Regex pattern matching for FilterPrefixes.
+    -- @param #boolean ReplaceDash If false, switch off dash "-" replacement in strings for FilterPrefixes.
+    -- @return #SET_DYNAMICCARGO self
+    
     return self
   end
   
@@ -32707,7 +32830,7 @@ do -- SET_DYNAMICCARGO
     if self.Filter.StaticPrefixes then
       local DCargoPrefix = false
       for StaticPrefixId, StaticPrefix in pairs(self.Filter.StaticPrefixes) do
-        if self:_SearchPattern(DCargo:GetName(), StaticPrefix, false, true) then
+        if self:_SearchPattern(DCargo:GetName(), StaticPrefix, self.filterNoRegex, self.filterReplaceDash) then
           DCargoPrefix = true
         end
       end
@@ -32875,7 +32998,7 @@ do -- SET_DYNAMICCARGO
   function SET_DYNAMICCARGO:FilterCurrentOwner(PlayerName)
     self:FilterFunction(
       function(cargo)
-        if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner, PlayerName, true) then
+        if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner, PlayerName, self.filterNoRegex, self.filterReplaceDash) then
           return true
         else
           return false
@@ -41523,15 +41646,43 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
         local scanscenery = false
         local verysafe = false
 
+        -- Use exact parking data when provided, otherwise let helicopters on ships/FARPs
+        -- use the smarter parking search before falling back to the procedural queue path.
+        local useexplicitspots = false
+
         -- Number of free parking spots at the airbase.
-        if autoparking then
+        if Parkingdata~=nil then
+          -- Parking data explicitly set by user as input parameter.
+          nfree = #Parkingdata
+          spots = Parkingdata
+          useexplicitspots = true
+        elseif autoparking and AirbaseCategory == Airbase.Category.HELIPAD and ishelo then
+          if termtype == nil then
+            -- Helo is spawned. Try exclusive helo spots first.
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( group, AIRBASE.TerminalType.HelicopterOnly, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+            if nfree < nunits then
+              -- Not enough helo ports. Let's try also other terminal types.
+              spots = SpawnAirbase:FindFreeParkingSpotForAircraft( group, AIRBASE.TerminalType.HelicopterUsable, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+              nfree = #spots
+            end
+          else
+            -- Terminal type explicitly given.
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( group, termtype, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+          end
+
+          if nfree >= nunits then
+            useexplicitspots = true
+          else
+            -- These places work procedural and have some kind of build in queue ==> Less effort.
+            nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
+            spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
+          end
+        elseif autoparking then
           -- These places work procedural and have some kind of build in queue ==> Less effort.
           nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
           spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
-        elseif Parkingdata~=nil then
-          -- Parking data explicitly set by user as input parameter. (This was commented out for some unknown reason. But I need it this way.)
-          nfree=#Parkingdata
-          spots=Parkingdata
         else
           if ishelo then
             if termtype == nil then
@@ -41583,7 +41734,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
         local _notenough = false
 
         -- Need to differentiate some cases again.
-        if autoparking then
+        if autoparking and not useexplicitspots then
 
           -- On free spot required in these cases.
           if nfree >= 1 then
@@ -41927,21 +42078,51 @@ function SPAWN:ParkAircraft( SpawnAirbase, TerminalType, Parkingdata, SpawnIndex
       local scanscenery = false
       local verysafe = false
 
-      -- Number of free parking spots at the airbase.
-      if spawnonship or spawnonfarp or spawnonrunway then
-        -- These places work procedural and have some kind of build in queue ==> Less effort.
-        --self:T2( string.format( "Group %s is spawned on farp/ship/runway %s.", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
-        nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
-        spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
-        --[[
-      elseif Parkingdata~=nil then
-        -- Parking data explicitly set by user as input parameter.
-        nfree=#Parkingdata
-        spots=Parkingdata
-      ]]
-      else
-        if ishelo then
+        -- Use exact parking data when provided, otherwise let helicopters on FARPs
+        -- use the smarter parking search before falling back to the procedural queue path.
+        local useexplicitspots = false
+
+        -- Number of free parking spots at the airbase.
+        if Parkingdata~=nil then
+          -- Parking data explicitly set by user as input parameter.
+          nfree = #Parkingdata
+          spots = Parkingdata
+          useexplicitspots = true
+        elseif spawnonfarp and ishelo then
           if termtype == nil then
+            -- Helo is spawned. Try exclusive helo spots first.
+            --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), AIRBASE.TerminalType.HelicopterOnly ) )
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, AIRBASE.TerminalType.HelicopterOnly, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+            if nfree < nunits then
+              -- Not enough helo ports. Let's try also other terminal types.
+              --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), AIRBASE.TerminalType.HelicopterUsable ) )
+              spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, AIRBASE.TerminalType.HelicopterUsable, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+              nfree = #spots
+            end
+          else
+            -- Terminal type explicitly given.
+            --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), termtype ) )
+            spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, termtype, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, nil )
+            nfree = #spots
+          end
+
+          if nfree >= nunits then
+            useexplicitspots = true
+          else
+            -- These places work procedural and have some kind of build in queue ==> Less effort.
+            --self:T2( string.format( "Group %s is spawned on farp %s using procedural spots.", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
+            nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
+            spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
+          end
+        elseif spawnonship or spawnonfarp or spawnonrunway then
+          -- These places work procedural and have some kind of build in queue ==> Less effort.
+          --self:T2( string.format( "Group %s is spawned on farp/ship/runway %s.", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
+          nfree = SpawnAirbase:GetFreeParkingSpotsNumber( termtype, true )
+          spots = SpawnAirbase:GetFreeParkingSpotsTable( termtype, true )
+        else
+          if ishelo then
+            if termtype == nil then
             -- Helo is spawned. Try exclusive helo spots first.
             --self:T2( string.format( "Helo group %s is at %s using terminal type %d.", self.SpawnTemplatePrefix, SpawnAirbase:GetName(), AIRBASE.TerminalType.HelicopterOnly ) )
             spots = SpawnAirbase:FindFreeParkingSpotForAircraft( TemplateGroup, AIRBASE.TerminalType.HelicopterOnly, scanradius, scanunits, scanstatics, scanscenery, verysafe, nunits, Parkingdata )
@@ -42004,7 +42185,7 @@ function SPAWN:ParkAircraft( SpawnAirbase, TerminalType, Parkingdata, SpawnIndex
       local _notenough = false
 
       -- Need to differentiate some cases again.
-      if spawnonship or spawnonfarp or spawnonrunway then
+      if (spawnonship or spawnonfarp or spawnonrunway) and not useexplicitspots then
 
         -- On free spot required in these cases. 
         if nfree >= 1 then
@@ -107212,7 +107393,7 @@ function WAREHOUSE:_RegisterAsset(group, ngroups, forceattribute, forcecargobay,
   -- Get name of template group.
   local templategroupname=group:GetName()
   local unit = group:GetUnit(1)
-  local Descriptors= (unit and unit:IsAlive()) and unit:GetDesc() or {}
+  local Descriptors= (unit and unit:IsAlive()~=nil) and unit:GetDesc() or {}
   local Category=group:GetCategory()
   local TypeName=group:GetTypeName() or "none"
   local SpeedMax=group:GetSpeedMax()
@@ -107230,7 +107411,7 @@ function WAREHOUSE:_RegisterAsset(group, ngroups, forceattribute, forcecargobay,
   for _i,_unit in pairs(group:GetUnits()) do
     local unit=_unit --Wrapper.Unit#UNIT
     local Desc=unit:GetDesc()
-
+    
     -- Weight. We sum up all units in the group.
     local unitweight=forceweight or Desc.massEmpty
     if unitweight then
@@ -114488,7 +114669,7 @@ MANTIS.radiusscale[MANTIS.SamType.POINT] = 3
 -- @field #string Point Point defense capable
 -- @field ARMCapacit ARMCapacity ie how many (H)ARMs the system can defend at the same time
 MANTIS.SamData = {
-  ["Hawk"] = { Range=35, Blindspot=0, Height=12, Type="Medium", Radar="Hawk" }, -- measures in km
+  ["Hawk"] = { Range=45, Blindspot=0, Height=12, Type="Medium", Radar="Hawk" }, -- measures in km
   ["NASAMS"] = { Range=14, Blindspot=0, Height=7, Type="Short", Radar="NSAMS", ARMCapacity=1 }, -- AIM 120B
   ["Patriot"] = { Range=99, Blindspot=0, Height=25, Type="Long", Radar="Patriot str" },
   ["Rapier"] = { Range=10, Blindspot=0, Height=3, Type="Short", Radar="rapier" },
@@ -114674,7 +114855,6 @@ do
   --        mybluemantis:Start()
   --
   function MANTIS:New(name,samprefix,ewrprefix,hq,Coalition,dynamic,awacs, EmOnOff, Padding, Zones)
-    
     
     -- Inherit everything from BASE class.
     local self = BASE:Inherit(self, FSM:New()) -- #MANTIS
@@ -126456,7 +126636,7 @@ function REDGCI:SetSRS(Path, Frequency, Modulation, Culture, Voice, Port, Speed)
     self.SRSVoice   = Voice      or self.SRSVoice
     self.SRSPort    = Port       or self.SRSPort
     self.SRSSpeed   = Speed      or 1
-    self:I({F=Frequency,V=Voice})
+    self:T({F=Frequency,V=Voice})
     return self
 end
 
@@ -128075,7 +128255,7 @@ function REDGCI2v2:New(Fighter1Group, Fighter2Group,
     self:AddTransition("Running", "Status", "Running")
     self:AddTransition("Running", "Stop",   "Stopped")
 
-    self:I(self.lid .. "v" .. REDGCI2v2.version .. " created.")
+    self:T(self.lid .. "v" .. REDGCI2v2.version .. " created.")
     return self
 end
 
@@ -128118,7 +128298,7 @@ function REDGCI2v2:SetSRS(Path, Frequency, Modulation, Culture, Voice, Port, Spe
     self.SRSVoice   = Voice      or self.SRSVoice
     self.SRSPort    = Port       or self.SRSPort
     self.SRSSpeed   = Speed      or 1
-    self:I({F=self.SRSFreq,V=self.SRSVoice})
+    self:T({F=self.SRSFreq,V=self.SRSVoice})
     return self
 end
 
@@ -128622,7 +128802,7 @@ function REDGCI2v2:onafterStart(From, Event, To)
     
         local safe = angle_deg > 30.0
         if not safe then
-            flight:I(flight.lid .. string.format(
+            flight:T(flight.lid .. string.format(
                 "WF Gate: Wingman zu nah am Schussvektor (%.1f°) — blocke WF", angle_deg))
         end
         return safe
@@ -129214,7 +129394,7 @@ end
 -- @param #string Voice The SRS Voice to be used.
 -- @return #REDGCIDISPATCHER self 
 function REDGCIDISPATCHER:SetSRSGCIDetails(StartFrequency,Voice)
-  self:I({F=StartFrequency,V=Voice})
+  self:T({F=StartFrequency,V=Voice})
   self.SRSGCIFrequency = StartFrequency or 125
   self.SRSGCIVoice = Voice or self.SRSVoice or MSRS.Voices.Google.Wavenet.de_DE_Wavenet_B
   return self
@@ -129333,7 +129513,7 @@ end
 -- @param #table Vars
 -- @return #string
 function REDGCIDISPATCHER:_FillTemplate(Template, Vars)
-  self:I({T=Template,V=Vars})
+  self:T({T=Template,V=Vars})
     return (string.gsub(Template, "{([%w_]+)}", function(key)
         return tostring(Vars[key] or "")
     end))
@@ -129408,7 +129588,7 @@ function REDGCIDISPATCHER:_TransmitToAllCAP(Key, Vars)
 
     local text    = self:_FillTemplate(template, Vars or {})
     local srstext = string.gsub(text, "%.", ";")
-    self:I("[TX_ALL/ SRS Text: "..srstext)
+    self:T("[TX_ALL/ SRS Text: "..srstext)
     -- Collect all CAP groups for subtitle
     local subgroups = {}
     for _, entry in pairs(self._pool) do
@@ -129498,7 +129678,7 @@ function REDGCIDISPATCHER:_SpawnAI(Zone)
     spawner:InitModex(cs)
 
     spawner:OnSpawnGroup(function(grp)
-        self:I(self.lid .. "Gespawnt: " .. grp:GetName() ..
+        self:T(self.lid .. "Gespawnt: " .. grp:GetName() ..
                " CS=" .. cs .. " -> orbit in " .. Zone:GetName())
         self:_RegisterFighter(grp, Zone, false)
         self:_AssignOrbit(grp, Zone)
@@ -129580,7 +129760,7 @@ function REDGCIDISPATCHER:_AssignOrbit(Grp, Zone)
     local spd_mps   = UTILS.KmphToMps(self.OrbitSpeed)
     local spd_tas   = UTILS.IasToTas(self.OrbitSpeed, alt)
 
-    self:I(self.lid .. "Orbit variation: " .. variation)
+    self:T(self.lid .. "Orbit variation: " .. variation)
 
     -- TaskOrbit requires speed in m/s
     local task = Grp:TaskOrbit(center, alt, spd_mps)
@@ -129633,7 +129813,7 @@ function REDGCIDISPATCHER:_RegisterFighter(Grp, Zone, IsHuman)
         engagement = nil,
         callsign   = self:_GetCallsign(Grp),
     }
-    self:I(self.lid .. "Pool+: " .. name ..
+    self:T(self.lid .. "Pool+: " .. name ..
            " CS=" .. self._pool[name].callsign ..
            (IsHuman and " [HUMAN]" or " [AI]"))
 end
@@ -129857,7 +130037,7 @@ function REDGCIDISPATCHER:_DispatchPair(F1entry, F2entry, Cluster, ClusterKey)
     local cs1 = F1entry.callsign
     local cs2 = F2entry and F2entry.callsign or cs1
 
-    self:I(self.lid .. string.format(
+    self:T(self.lid .. string.format(
         "DISPATCH %s(%s)+%s(%s) -> %s/%s [%s]",
         f1, cs1, f2 or "-", cs2, t1, t2 or "-", ClusterKey))
 
@@ -129930,7 +130110,7 @@ end
 -- @param #table F1entry
 -- @param #table F2entry
 function REDGCIDISPATCHER:_OnEngagementEnd(ClusterKey, F1entry, F2entry)
-    self:I(self.lid .. "Engagement end: " .. ClusterKey)
+    self:T(self.lid .. "Engagement end: " .. ClusterKey)
     self._engagements[ClusterKey] = nil
 
     local entries = F2entry and { F1entry, F2entry } or { F1entry }
@@ -129947,7 +130127,7 @@ function REDGCIDISPATCHER:_OnEngagementEnd(ClusterKey, F1entry, F2entry)
             self:ScheduleOnce(300, function()
                 if self._pool[name] then
                     self._pool[name].state = REDGCIDISPATCHER.STATE_UNKNOWN
-                    self:I(self.lid .. name .. " [HUMAN] released")
+                    self:T(self.lid .. name .. " [HUMAN] released")
                 end
             end)
         else
@@ -129956,13 +130136,13 @@ function REDGCIDISPATCHER:_OnEngagementEnd(ClusterKey, F1entry, F2entry)
             local name = entry.groupName
             self:ScheduleOnce(600, function()
                 self._pool[name] = nil
-                self:I(self.lid .. name .. " [AI] removed from pool")
+                self:T(self.lid .. name .. " [AI] removed from pool")
             end)
             -- Respawn: spawn new AI into same zone after delay
             if self.RespawnEnabled and entry.zone then
                 local zone = entry.zone
                 self:ScheduleOnce(self.RespawnDelay, function()
-                    self:I(self.lid .. "Respawn: " .. self.RespawnCount ..
+                    self:T(self.lid .. "Respawn: " .. self.RespawnCount ..
                            "× AI → " .. zone:GetName())
                     for i = 1, self.RespawnCount do
                         self:_SpawnAI(zone)
@@ -129997,7 +130177,7 @@ function REDGCIDISPATCHER:_RTBAircraft(GroupName)
             spd_kmh, true, self.HomeBase, {}, "LAND"),
     }, 3)
 
-    self:I(self.lid .. GroupName .. " [AI] RTB -> " .. self.HomeBaseName)
+    self:T(self.lid .. GroupName .. " [AI] RTB -> " .. self.HomeBaseName)
 end
 
 -- ─────────────────────────────────────────────────────────────
@@ -130007,7 +130187,7 @@ end
 --- [INTERNAL] Start handler.
 -- @param #REDGCIDISPATCHER self
 function REDGCIDISPATCHER:onafterStart(From, Event, To)
-    self:I(self.lid .. "Start v" .. REDGCIDISPATCHER.version)
+    self:T(self.lid .. "Start v" .. REDGCIDISPATCHER.version)
 
     if not self.Intel    then self:E(self.lid .. "ERROR: no INTEL set!")    return end
     if not self.ZoneSet  then self:E(self.lid .. "ERROR: no ZoneSet!")  return end
@@ -130017,7 +130197,7 @@ function REDGCIDISPATCHER:onafterStart(From, Event, To)
     self:_InitLocalization()
 
     self.ZoneSet:ForEachZone(function(zone)
-        self:I(self.lid .. "Zone: " .. zone:GetName() ..
+        self:T(self.lid .. "Zone: " .. zone:GetName() ..
                " -> spawning " .. self.AiPerZone .. "x AI")
         for i = 1, self.AiPerZone do
             self:_SpawnAI(zone)
@@ -130085,7 +130265,7 @@ function REDGCIDISPATCHER:onafterStatus(From, Event, To)
                     TYPE  = type_str,
                     RNG   = rng_km,
                 })
-                self:I(self.lid .. "Neuer Cluster " .. key ..
+                self:T(self.lid .. "Neuer Cluster " .. key ..
                        " → INTEL_CONTACT gesendet")
             end
             local active = 0
@@ -130100,7 +130280,7 @@ function REDGCIDISPATCHER:onafterStatus(From, Event, To)
                 local centroid  = cluster.coordinate
                 local available = self:_AvailableFighters(centroid)
 
-                self:I(self.lid .. string.format(
+                self:T(self.lid .. string.format(
                     "Cluster %s size=%d need=%d pairs avail=%d fighter",
                     key, size, needed, #available))
 
@@ -130129,7 +130309,7 @@ end
 --- [INTERNAL] Stop handler.
 -- @param #REDGCIDISPATCHER self
 function REDGCIDISPATCHER:onafterStop(From, Event, To)
-    self:I(self.lid .. "Stopped.")
+    self:T(self.lid .. "Stopped.")
 end
 
 -------------------------------------------------------------------------------
@@ -143039,6 +143219,14 @@ function AIRBOSS:_LSOgrade( playerData )
     -- Circuit edit only take points awary from a 1 wire if there are more than 4 other deviations
   if playerData.wire == 1 and points >= 3 and N > 4 then
     points = points -1
+    -- We also need to change the grade based on the new points.
+    if points == 4 then
+      grade = "OK"
+    elseif points == 3 then
+      grade = "(OK)"
+    elseif points == 2 then 
+      grade = "--"
+    end
   end
 
   env.info("Returning: " .. grade .. "  " .. points .. "  " .. G)
@@ -157206,6 +157394,7 @@ function CTLD:New(Coalition, Prefixes, Alias)
   -- @param Wrapper.Group#GROUP Group Group Object.
   -- @param Wrapper.Unit#UNIT Unit Unit Object.
   -- @param #CTLD_CARGO Cargo Cargo crate that was repacked.
+  -- @param Wrapper.Group#GROUP PackedGroup Group object that is about to be packed.
   -- @return #CTLD self
     
   --- FSM Function OnBeforeTroopsRTB.
@@ -157368,7 +157557,7 @@ function CTLD:New(Coalition, Prefixes, Alias)
   -- @param #string To State.
   -- @param Wrapper.Group#GROUP Group Group Object.
   -- @param Wrapper.Unit#UNIT Unit Unit Object.
-  -- @param #CTLD_CARGO Cargo Cargo crate that was repacked.
+  -- @param #CTLD_CARGO Cargo Cargo crate that was repacked. For direct C-130 packing this can also be a table of spawned packed cargo objects.
   -- @return #CTLD self
     
   --- FSM Function OnAfterTroopsRTB.
@@ -158520,6 +158709,7 @@ function CTLD:_EventHandler(EventData)
       local _group = event.IniGroup
       local _unit = event.IniUnit
       self:_RefreshLoadCratesMenu(_group, _unit)
+      self:_RefreshPackMenus(_group, _unit)
     if self:IsFixedWing(_unit) and self.enableFixedWing then
       self:_RefreshDropCratesMenu(_group, _unit)
     end
@@ -160114,6 +160304,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     end
   end
   self:_RefreshLoadCratesMenu(Group, Unit)
+  self:_RefreshPackMenus(Group, Unit)
   return true
 end
 
@@ -160337,7 +160528,9 @@ function CTLD:_RemoveCratesNearby(_group, _unit)
         done[n] = true
     end
     end
+    self:_CleanupTrackedCrates(removedIDs)
     self:_RefreshLoadCratesMenu(_group,_unit)
+    self:_RefreshPackMenus(_group,_unit)
 
     -- Trigger FSM event for removed crates.
     self:__RemoveCratesNearby(1, _group, _unit, crates)
@@ -160593,6 +160786,7 @@ function CTLD:_LoadCratesNearby(Group, Unit)
       self:_UpdateUnitCargoMass(Unit)
       self:_RefreshDropCratesMenu(Group, Unit)
       self:_RefreshLoadCratesMenu(Group, Unit)
+      self:_RefreshPackMenus(Group, Unit)
       -- clean up real world crates
       self:_CleanupTrackedCrates(crateidsloaded)
       self:__CratesPickedUp(1, Group, Unit, loaded.Cargo)
@@ -161474,6 +161668,7 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
             end
             self:_CleanUpCrates(cratesNow,build,numberNow)
             self:_RefreshLoadCratesMenu(Group,Unit)
+            self:_RefreshPackMenus(Group,Unit)
             if self.buildtime and self.buildtime > 0 then
               local buildtimer = TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,build,false,Group:GetCoordinate(),MultiDrop)
               buildtimer:Start(self.buildtime)
@@ -161495,6 +161690,7 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
               end
               self:_CleanUpCrates(cratesNow,build,numberNow)
               self:_RefreshLoadCratesMenu(Group,Unit)
+              self:_RefreshPackMenus(Group,Unit)
               local off   = start + (n-1)*sep
               local coord = base:Translate(off,lat):GetVec2()
               local b = { Name=build.Name, Required=build.Required, Template=build.Template, CanBuild=true, Type=build.Type, Coord=coord }
@@ -161527,53 +161723,393 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
   return self
 end
 
---- (Internal) Function to repair nearby vehicles / FOBs
+--- (Internal) Function to find nearby packable groups.
 -- @param #CTLD self
 -- @param Wrapper.Group#GROUP Group
 -- @param Wrapper.Unit#UNIT Unit
+-- @return #table PackableGroups
+-- @return #number Number
+function CTLD:_FindPackableGroupsNearby(Group, Unit)
+  self:T(self.lid .. " _FindPackableGroupsNearby")
+  local location = Group:GetCoordinate()
+  if not location then return {}, 0 end
+  local capabilities = self:_GetUnitCapabilities(Unit)
+  local innerDist = (capabilities.length and capabilities.length/2) or 15
+  local finddist = self.PackDistance or (self.CrateDistance or 35)
+  local zone = ZONE_RADIUS:New("CTLD_PackableZone", location:GetVec2(), finddist, false)
+  local nearestGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({zone}):FilterOnce()
+  local packable = {}
 
-function CTLD:_PackCratesNearby(Group, Unit)
-  self:T(self.lid .. " _PackCratesNearby")
-  -----------------------------------------
-  -- search for nearest group to player
-  -- determine if group is packable
-  -- generate crates and destroy group
-  -----------------------------------------
-
-  -- get nearby vehicles
-  local location = Group:GetCoordinate() -- get coordinate of group using function
-  local nearestGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({ZONE_RADIUS:New("TempZone", location:GetVec2(), self.PackDistance, false)}):FilterOnce()
-
-  local packedAny = false
-
-  -- determine if group is packable
-  for _, _Group in pairs(nearestGroups.Set) do -- convert #SET_GROUP to a list of Wrapper.Group#GROUP
-    local didPackThisGroup = false
-    for _, _Template in pairs(_DATABASE.Templates.Groups) do -- iterate through the database of templates
-      if string.match(_Group:GetName(), _Template.GroupName) then -- check if the Wrapper.Group#GROUP near the player is in the list of templates by name
-        for _, _entry in pairs(self.Cargo_Crates) do -- iterate through #CTLD_CARGO
-          if _entry.Templates[1] == _Template.GroupName then -- check if the #CTLD_CARGO matches the template name
-            _Group:Destroy()
-            self:_GetCrates(Group, Unit, _entry, nil, false, true) -- spawn the appropriate crates near the player
-            self:_RefreshLoadCratesMenu(Group,Unit) -- call the refresher to show the crates in the menu
-            self:__CratesPacked(1,Group,Unit,_entry)
-            packedAny = true
-            didPackThisGroup = true
-            break
+  for _, gr in pairs(nearestGroups.Set) do
+    if gr and gr:GetName() ~= Group:GetName() then
+      local gc = gr:GetCoordinate()
+      if gc then
+        local dist = location:Get2DDistance(gc)
+        if dist > innerDist and dist <= finddist then
+          local generic = self:GetGenericCargoObjectFromGroupName(gr:GetName())
+          local cargo = generic and self:_FindCratesCargoObject(generic:GetName() or generic.Name) or nil
+          if cargo then
+            local display = self:_GetCargoDisplayName(cargo)
+            packable[#packable + 1] = {
+              group = gr,
+              groupName = gr:GetName(),
+              cargo = cargo,
+              distance = dist,
+              display = display,
+            }
           end
         end
       end
-      if didPackThisGroup then break end
+    end
+  end
+
+  table.sort(packable, function(a, b)
+    if a.distance ~= b.distance then
+      return a.distance < b.distance
+    end
+    return a.groupName < b.groupName
+  end)
+
+  return packable, #packable
+end
+
+--- (Internal) Function to pack a selected nearby group into crates.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group
+-- @param Wrapper.Unit#UNIT Unit
+-- @param Wrapper.Group#GROUP TargetGroup
+-- @param #boolean EmitPackedEvent
+-- @param #boolean SkipMenuRefresh
+-- @return #table PackedCargo
+-- @return #CTLD_CARGO CargoEntry
+-- @return #boolean Success
+function CTLD:_PackSingleGroupToCrates(Group, Unit, TargetGroup, EmitPackedEvent, SkipMenuRefresh)
+  self:T(self.lid .. " _PackSingleGroupToCrates")
+  local generic = self:GetGenericCargoObjectFromGroupName(TargetGroup:GetName())
+  local cargoEntry = generic and self:_FindCratesCargoObject(generic:GetName() or generic.Name) or nil
+  if not cargoEntry then
+    return nil, nil, false
+  end
+
+  local from = self.current
+  local to = self.current
+  local emitPackedEvent = EmitPackedEvent ~= false
+
+  if emitPackedEvent then
+    local packParams = { from, "CratesPacked", to, Group, Unit, cargoEntry, TargetGroup }
+    if self:_call_handler("onbefore", "CratesPacked", packParams, "CratesPacked") == false then
+      return nil, cargoEntry, false
+    end
+    if self:_call_handler("OnBefore", "CratesPacked", packParams, "CratesPacked") == false then
+      return nil, cargoEntry, false
+    end
+  end
+
+  TargetGroup:Destroy()
+  self.Spawned_Cargo = self.Spawned_Cargo or {}
+  local spawnedCountBefore = #self.Spawned_Cargo
+  local ok = self:_GetCrates(Group, Unit, cargoEntry, nil, false, true)
+  if not ok then
+    if not SkipMenuRefresh then
+      self:_RefreshLoadCratesMenu(Group, Unit)
+      self:_RefreshPackMenus(Group, Unit)
+    end
+    return nil, cargoEntry, false
+  end
+
+  local packedCargo = {}
+  for idx = spawnedCountBefore + 1, #self.Spawned_Cargo do
+    local cargo = self.Spawned_Cargo[idx]
+    if cargo then
+      if self.UseC130LoadAndUnload and self:IsC130J(Unit) then
+        cargo:SetWasDropped(true, true)
+      end
+      packedCargo[#packedCargo + 1] = cargo
+    end
+  end
+
+  if not SkipMenuRefresh then
+    self:_RefreshLoadCratesMenu(Group, Unit)
+    self:_RefreshPackMenus(Group, Unit)
+  end
+
+  if emitPackedEvent then
+    local eventCargo = cargoEntry
+    if self.UseC130LoadAndUnload and self:IsC130J(Unit) and #packedCargo > 0 then
+      eventCargo = packedCargo
+    end
+    local packParams = { from, "CratesPacked", to, Group, Unit, eventCargo }
+    self:_call_handler("onafter", "CratesPacked", packParams, "CratesPacked")
+    self:_call_handler("OnAfter", "CratesPacked", packParams, "CratesPacked")
+  end
+
+  return packedCargo, cargoEntry, true
+end
+
+--- (Internal) Function to load the exact crates created by a selected pack action.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group
+-- @param Wrapper.Unit#UNIT Unit
+-- @param #table crateIds
+-- @param #string cargoName
+-- @return #CTLD self
+function CTLD:_LoadPackedCratesByIds(Group, Unit, crateIds, cargoName)
+  self:T(self.lid .. " _LoadPackedCratesByIds cargoName=" .. (cargoName or "nil"))
+  local grounded = not self:IsUnitInAir(Unit)
+  local hover = self:CanHoverLoad(Unit)
+  if not grounded and not hover then
+    local msg = self.gettext:GetEntry("MUST_LAND_OR_HOVER_CRATES",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    return self
+  end
+  if self.pilotmustopendoors and not UTILS.IsLoadingDoorOpen(Unit:GetName()) then
+    local msg = self.gettext:GetEntry("OPEN_DOORS_LOAD_CARGO",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    return self
+  end
+
+  local idLookup = {}
+  for _, id in pairs(crateIds or {}) do
+    idLookup[id] = true
+  end
+
+  local matchingCrates = {}
+  local finddist = self.CrateDistance or 35
+  local location = Group:GetCoordinate()
+  for _, crateObj in pairs(self.Spawned_Cargo or {}) do
+    if crateObj and idLookup[crateObj:GetID()] then
+      local pos = crateObj:GetPositionable()
+      if pos and pos:IsAlive() then
+        local dist = location:Get2DDistance(pos:GetCoordinate())
+        if dist <= finddist then
+          matchingCrates[#matchingCrates + 1] = crateObj
+        end
+      end
+    end
+  end
+
+  if #matchingCrates == 0 then
+    local msg = self.gettext:GetEntry("NO_NAMED_CRATES_IN_RANGE",self.locale)
+    msg = string.format(msg, cargoName or "selection")
+    self:_SendMessage(msg, 10, false, Group)
+    self:_RefreshPackMenus(Group, Unit)
+    return self
+  end
+
+  table.sort(matchingCrates, function(a, b) return a:GetID() < b:GetID() end)
+  local needed = matchingCrates[1]:GetCratesNeeded() or 1
+  local unitName = Unit:GetName()
+  local loadedData = self.Loaded_Cargo[unitName] or { Troopsloaded = 0, Cratesloaded = 0, Cargo = {} }
+  local capabilities = self:_GetUnitCapabilities(Unit)
+  local capacity = capabilities.cratelimit or 0
+  if loadedData.Cratesloaded >= capacity then
+    local msg = self.gettext:GetEntry("NO_MORE_CAPACITY",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    self:_RefreshPackMenus(Group, Unit)
+    return self
+  end
+
+  local spaceLeft = capacity - loadedData.Cratesloaded
+  local toLoad = math.min(#matchingCrates, needed, spaceLeft)
+  if toLoad < 1 then
+    local msg = self.gettext:GetEntry("CANNOT_LOAD_NONE_OR_FULL",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    self:_RefreshPackMenus(Group, Unit)
+    return self
+  end
+
+  local crateIDsLoaded = {}
+  for i = 1, toLoad do
+    local crate = matchingCrates[i]
+    crate:SetHasMoved(true)
+    crate:SetWasDropped(false)
+    table.insert(loadedData.Cargo, crate)
+    loadedData.Cratesloaded = loadedData.Cratesloaded + 1
+    local stObj = crate:GetPositionable()
+    if stObj and stObj:IsAlive() then
+      stObj:Destroy(false)
+    end
+    crateIDsLoaded[#crateIDsLoaded + 1] = crate:GetID()
+  end
+
+  self.Loaded_Cargo[unitName] = loadedData
+  self:_UpdateUnitCargoMass(Unit)
+  self:_CleanupTrackedCrates(crateIDsLoaded)
+
+  local loadedHere = toLoad
+  local displayName = cargoName or (matchingCrates[1]:GetName() or "selection")
+  if loadedHere < needed and loadedData.Cratesloaded >= capacity then
+    local msg = self.gettext:GetEntry("LOADED_PARTIAL_LIMIT",self.locale)
+    msg = string.format(msg, loadedHere, needed, displayName)
+    self:_SendMessage(msg, 10, false, Group)
+  else
+    local fullSets = math.floor(loadedHere / needed)
+    local leftover = loadedHere % needed
+    if needed > 1 then
+      if fullSets > 0 and leftover == 0 then
+        local msg = self.gettext:GetEntry("LOADED_FULL",self.locale)
+        msg = string.format(msg, fullSets, displayName)
+        self:_SendMessage(msg, 10, false, Group)
+      elseif fullSets > 0 and leftover > 0 then
+        local msg = self.gettext:GetEntry("LOADED_SETS_LEFTOVER",self.locale)
+        msg = string.format(msg, fullSets, displayName, leftover)
+        self:_SendMessage(msg, 10, false, Group)
+      else
+        local msg = self.gettext:GetEntry("LOADED_PARTIAL",self.locale)
+        msg = string.format(msg, loadedHere, needed, displayName)
+        self:_SendMessage(msg, 15, false, Group)
+      end
+    else
+      local msg = self.gettext:GetEntry("LOADED_SETS",self.locale)
+      msg = string.format(msg, loadedHere, displayName)
+      self:_SendMessage(msg, 10, false, Group)
+    end
+  end
+
+  self:_RefreshLoadCratesMenu(Group, Unit)
+  self:_RefreshDropCratesMenu(Group, Unit)
+  self:_RefreshPackMenus(Group, Unit)
+  if cargoName then
+    self:_RefreshCrateQuantityMenus(Group, Unit, self:_FindCratesCargoObject(cargoName))
+  end
+  return self
+end
+
+--- (Internal) Function to remove the exact crates created by a selected pack action.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group
+-- @param Wrapper.Unit#UNIT Unit
+-- @param #table crateIds
+-- @return #CTLD self
+function CTLD:_RemovePackedCratesByIds(Group, Unit, crateIds)
+  self:T(self.lid .. " _RemovePackedCratesByIds")
+  local idLookup = {}
+  for _, id in pairs(crateIds or {}) do
+    idLookup[id] = true
+  end
+
+  local crates = {}
+  local finddist = self.CrateDistance or 35
+  local location = Group:GetCoordinate()
+  for _, entry in pairs(self.Spawned_Cargo or {}) do
+    if entry and idLookup[entry:GetID()] then
+      local pos = entry:GetPositionable()
+      if pos and pos:IsAlive() then
+        local dist = location:Get2DDistance(pos:GetCoordinate())
+        if dist <= finddist then
+          crates[#crates + 1] = entry
+        end
+      end
+    end
+  end
+
+  if #crates == 0 then
+    local msg = self.gettext:GetEntry("NOTHING_TO_REMOVE",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    self:_RefreshPackMenus(Group, Unit)
+    return self
+  end
+
+  local text = REPORT:New(self.gettext:GetEntry("REPORT_REMOVING_CRATES",self.locale))
+  text:Add("------------------------------------------------------------")
+  local removedIDs = {}
+  for _, entry in pairs(crates) do
+    local name = entry:GetName() or "none"
+    text:Add(string.format(self.gettext:GetEntry("REPORT_ROW_CRATE_REMOVED",self.locale), name, entry.PerCrateMass))
+    local pos = entry:GetPositionable()
+    if pos then
+      entry.coordinate = pos:GetCoordinate()
+      pos:Destroy(false)
+    end
+    removedIDs[#removedIDs + 1] = entry:GetID()
+  end
+  text:Add("------------------------------------------------------------")
+  self:_SendMessage(text:Text(), 30, true, Group, true)
+
+  local done = {}
+  for _, e in pairs(crates) do
+    local n = e:GetName() or "none"
+    if not done[n] then
+      local object = self:_FindCratesCargoObject(n)
+      if object then self:_RefreshCrateQuantityMenus(Group, Unit, object) end
+      done[n] = true
+    end
+  end
+
+  self:_CleanupTrackedCrates(removedIDs)
+  self:_RefreshLoadCratesMenu(Group, Unit)
+  self:_RefreshPackMenus(Group, Unit)
+  self:__RemoveCratesNearby(1, Group, Unit, crates)
+  return self
+end
+
+--- (Internal) Function to pack a selected nearby group.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group
+-- @param Wrapper.Unit#UNIT Unit
+-- @param #string TargetGroupName
+-- @param #string Mode
+-- @return #boolean Success
+function CTLD:_PackSelectedGroupAction(Group, Unit, TargetGroupName, Mode)
+  self:T(self.lid .. " _PackSelectedGroupAction")
+  local targetGroup = GROUP:FindByName(TargetGroupName)
+  if not targetGroup or not targetGroup:IsAlive() then
+    local msg = self.gettext:GetEntry("NOTHING_TO_PACK",self.locale)
+    self:_SendMessage(msg, 10, false, Group)
+    self:_RefreshPackMenus(Group, Unit)
+    return false
+  end
+
+  local emitPackedEvent = Mode == "pack"
+  local packedCargo, cargoEntry, ok = self:_PackSingleGroupToCrates(Group, Unit, targetGroup, emitPackedEvent)
+  if not ok then
+    self:_RefreshPackMenus(Group, Unit)
+    return false
+  end
+
+  if Mode == "load" or Mode == "remove" then
+    local crateIds = {}
+    for _, cargo in ipairs(packedCargo or {}) do
+      crateIds[#crateIds + 1] = cargo:GetID()
+    end
+    local cargoName = cargoEntry and (cargoEntry:GetName() or cargoEntry.Name) or nil
+    if Mode == "load" then
+      timer.scheduleFunction(function() self:_LoadPackedCratesByIds(Group, Unit, crateIds, cargoName) end, {}, timer.getTime() + 1)
+    else
+      timer.scheduleFunction(function() self:_RemovePackedCratesByIds(Group, Unit, crateIds) end, {}, timer.getTime() + 1)
+    end
+  end
+
+  return true
+end
+
+--- (Internal) Function to pack nearby vehicles / FOBs.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group
+-- @param Wrapper.Unit#UNIT Unit
+-- @param #boolean EmitPackedEvent If false, suppress CratesPacked callbacks.
+-- @return #boolean Success
+function CTLD:_PackCratesNearby(Group, Unit, EmitPackedEvent)
+  self:T(self.lid .. " _PackCratesNearby")
+  local packableGroups = self:_FindPackableGroupsNearby(Group, Unit)
+  local packedAny = false
+  local emitPackedEvent = EmitPackedEvent ~= false
+
+  for _, entry in ipairs(packableGroups) do
+    local _, _, ok = self:_PackSingleGroupToCrates(Group, Unit, entry.group, emitPackedEvent, true)
+    if ok then
+      packedAny = true
     end
   end
 
   if not packedAny then
     local msg = self.gettext:GetEntry("NOTHING_TO_PACK",self.locale)
     self:_SendMessage(msg, 10, false, Group)
-    --self:_SendMessage("Nothing to pack at this distance pilot!",10,false,Group)
     return false
   end
 
+  self:_RefreshLoadCratesMenu(Group, Unit)
+  self:_RefreshPackMenus(Group, Unit)
   return true
 end
 
@@ -161729,6 +162265,8 @@ function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair,RepairLocation,Mult
         self:__CratesBuild(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
       end
     end -- template loop
+    self:_RefreshLoadCratesMenu(Group, Unit)
+    self:_RefreshPackMenus(Group, Unit)
   else
     self:T(self.lid.."Group KIA while building!")
   end
@@ -161852,7 +162390,7 @@ function CTLD:_PackAndLoad(Group,Unit)
       --self:_SendMessage("You need to open the door(s) to load cargo!",10,false,Group)
       return self
     end
-    if not self:_PackCratesNearby(Group,Unit) then
+    if not self:_PackCratesNearby(Group,Unit,false) then
         return self
       end
     timer.scheduleFunction(function() self:_LoadCratesNearby(Group,Unit) end,{},timer.getTime()+1)
@@ -162550,10 +163088,13 @@ function CTLD:_RefreshF10Menus()
               MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_REMOVE_CRATES_NEARBY",self.locale), removecratesmenu, self._RemoveCratesNearby, self, _group, _unit)
   
               if self.onestepmenu then
-                local mPack=MENU_GROUP:New(_group,self.gettext:GetEntry("MENU_PACK_CRATES",self.locale),topcrates)
-                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_PACK",self.locale),mPack,self._PackCratesNearby,self,_group,_unit)
-                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_PACK_AND_LOAD",self.locale),mPack,self._PackAndLoad,self,_group,_unit)
-                MENU_GROUP_COMMAND:New(_group,self.gettext:GetEntry("MENU_PACK_AND_REMOVE",self.locale),mPack,self._PackAndRemove,self,_group,_unit)
+                topcrates.PackRootMenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_PACK",self.locale), topcrates)
+                topcrates.PackMenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_PACK",self.locale), topcrates.PackRootMenu)
+                local showPackAndLoad = not (self.UseC130LoadAndUnload and self:IsC130J(_unit))
+                if showPackAndLoad then
+                  topcrates.PackAndLoadMenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_PACK_AND_LOAD",self.locale), topcrates.PackRootMenu)
+                end
+                topcrates.PackAndRemoveMenu = MENU_GROUP:New(_group, self.gettext:GetEntry("MENU_PACK_AND_REMOVE",self.locale), topcrates.PackRootMenu)
                 MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_LIST_CRATES_NEARBY",self.locale), topcrates, self._ListCratesNearby, self, _group, _unit)
               else
                 MENU_GROUP_COMMAND:New(_group, self.gettext:GetEntry("MENU_PACK_CRATES",self.locale), topcrates, self._PackCratesNearby, self, _group, _unit)
@@ -162648,6 +163189,7 @@ function CTLD:_RefreshF10Menus()
             -- Mark we built the menu
             self.MenusDone[_unitName] = true
             self:_RefreshLoadCratesMenu(_group,_unit)
+            self:_RefreshPackMenus(_group,_unit)
             self:_RefreshDropCratesMenu(_group,_unit)
             if firstBuild then menucount=menucount+1 end
             if firstBuild and not self.showstockinmenuitems then self:_RefreshQuantityMenusForGroup(_group,_unit) end
@@ -162708,7 +163250,43 @@ function CTLD:_RefreshLoadCratesMenu(Group,Unit)
       end
     end
   end
-  
+
+--- (Internal) Function to refresh the menu for pack actions. Triggered from land/build/pack and more.
+-- @param #CTLD self
+-- @param Wrapper.Group#GROUP Group The calling group.
+-- @param Wrapper.Unit#UNIT Unit The calling unit.
+-- @return #CTLD self
+function CTLD:_RefreshPackMenus(Group,Unit)
+  if not self.onestepmenu then return end
+  if not Group.CTLDTopmenu then return end
+  local topCrates = Group.MyTopCratesMenu
+  if not topCrates then return end
+  if not topCrates.PackRootMenu and not topCrates.PackMenu and not topCrates.PackAndLoadMenu and not topCrates.PackAndRemoveMenu then return end
+
+  local packableGroups, n = self:_FindPackableGroupsNearby(Group,Unit)
+
+  local function refreshPackMenu(menu, mode, allKey, bulkFunc)
+    if not menu then return end
+    menu:RemoveSubMenus()
+
+    if n > 0 then
+      for idx, entry in ipairs(packableGroups) do
+        local label = string.format("%d. %s (%dm)", idx, entry.display or entry.groupName, math.floor((entry.distance or 0) + 0.5))
+        MENU_GROUP_COMMAND:New(Group, label, menu, self._PackSelectedGroupAction, self, Group, Unit, entry.groupName, mode)
+      end
+    end
+
+    MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry(allKey,self.locale), menu, bulkFunc, self, Group, Unit)
+    MENU_GROUP_COMMAND:New(Group, self.gettext:GetEntry("MENU_SCAN_PACKABLE_UNITS",self.locale), menu, self._RefreshPackMenus, self, Group, Unit)
+  end
+
+  refreshPackMenu(topCrates.PackMenu, "pack", "MENU_PACK_ALL", self._PackCratesNearby)
+  if topCrates.PackAndLoadMenu then
+    refreshPackMenu(topCrates.PackAndLoadMenu, "load", "MENU_PACK_AND_LOAD_ALL", self._PackAndLoad)
+  end
+  refreshPackMenu(topCrates.PackAndRemoveMenu, "remove", "MENU_PACK_AND_REMOVE_ALL", self._PackAndRemove)
+end
+
 
 ---
 -- Loads exactly `CratesNeeded` crates for one cargoName in range.
@@ -162865,6 +163443,7 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
 
   self:_RefreshLoadCratesMenu(Group, Unit)
   self:_RefreshDropCratesMenu(Group, Unit)
+  self:_RefreshPackMenus(Group, Unit)
   self:_RefreshCrateQuantityMenus(Group, Unit, self:_FindCratesCargoObject(cargoName))
 
   if batch and batch.cname == cargoName then
@@ -163035,6 +163614,7 @@ end
   self:_UpdateUnitCargoMass(Unit)
   self:_RefreshDropCratesMenu(Group, Unit)
   self:_RefreshLoadCratesMenu(Group, Unit)
+  self:_RefreshPackMenus(Group, Unit)
   self:_RefreshCrateQuantityMenus(Group, Unit, nil)
   return self
 end
@@ -167546,8 +168126,13 @@ CTLD.Messages = {
         MENU_REPAIR                     = "Repair",
         MENU_PACK_CRATES                = "Pack crates",
         MENU_PACK                       = "Pack",
+        MENU_SCAN_PACKABLE_UNITS        = "Scan packable units nearby",
+        MENU_NO_PACKABLE_UNITS_FOUND_RESCAN = "No packable units found! Rescan?",
+        MENU_PACK_ALL                   = "Pack nearby",
         MENU_PACK_AND_LOAD              = "Pack and Load",
+        MENU_PACK_AND_LOAD_ALL          = "Pack and Load nearby",
         MENU_PACK_AND_REMOVE            = "Pack and Remove",
+        MENU_PACK_AND_REMOVE_ALL        = "Pack and Remove nearby",
         MENU_REMOVE_CRATES              = "Remove crates",
         MENU_REMOVE_CRATES_NEARBY       = "Remove crates nearby",
         MENU_LIST_CRATES_NEARBY         = "List crates nearby",
@@ -167796,8 +168381,13 @@ CTLD.Messages = {
         MENU_REPAIR                     = "Reparieren",
         MENU_PACK_CRATES                = "Kisten packen",
         MENU_PACK                       = "Packen",
+        MENU_SCAN_PACKABLE_UNITS        = "Packbare Einheiten in der Nähe scannen",
+        MENU_NO_PACKABLE_UNITS_FOUND_RESCAN = "Keine packbaren Einheiten gefunden! Neu scannen?",
+        MENU_PACK_ALL                   = "In der Nähe packen",
         MENU_PACK_AND_LOAD              = "Packen und laden",
+        MENU_PACK_AND_LOAD_ALL          = "In der Nähe packen und laden",
         MENU_PACK_AND_REMOVE            = "Packen und entfernen",
+        MENU_PACK_AND_REMOVE_ALL        = "In der Nähe packen und entfernen",
         MENU_REMOVE_CRATES              = "Kisten entfernen",
         MENU_REMOVE_CRATES_NEARBY       = "Nahe Kisten entfernen",
         MENU_LIST_CRATES_NEARBY         = "Nahe Kisten auflisten",
@@ -168046,8 +168636,13 @@ FR = {
         MENU_REPAIR                     = "Réparer",
         MENU_PACK_CRATES                = "Emballer caisses",
         MENU_PACK                       = "Emballer",
+        MENU_SCAN_PACKABLE_UNITS        = "Scanner unités emballables à proximité",
+        MENU_NO_PACKABLE_UNITS_FOUND_RESCAN = "Aucune unité emballable trouvée ! Rescanner ?",
+        MENU_PACK_ALL                   = "Emballer à proximité",
         MENU_PACK_AND_LOAD              = "Emballer et charger",
+        MENU_PACK_AND_LOAD_ALL          = "Emballer et charger à proximité",
         MENU_PACK_AND_REMOVE            = "Emballer et retirer",
+        MENU_PACK_AND_REMOVE_ALL        = "Emballer et retirer à proximité",
         MENU_REMOVE_CRATES              = "Retirer caisses",
         MENU_REMOVE_CRATES_NEARBY       = "Retirer caisses proches",
         MENU_LIST_CRATES_NEARBY         = "Lister caisses proches",
@@ -168230,8 +168825,13 @@ FR = {
       MENU_REPAIR="Reparar",
       MENU_PACK_CRATES="Empaquetar cargas",
       MENU_PACK="Empaquetar",
+      MENU_SCAN_PACKABLE_UNITS="Buscar unidades empaquetables cercanas",
+      MENU_NO_PACKABLE_UNITS_FOUND_RESCAN="No se encontraron unidades empaquetables. ¿Buscar de nuevo?",
+      MENU_PACK_ALL="Empaquetar cercanas",
       MENU_PACK_AND_LOAD="Empaquetar y cargar",
+      MENU_PACK_AND_LOAD_ALL="Empaquetar y cargar cercanas",
       MENU_PACK_AND_REMOVE="Empaquetar y eliminar",
+      MENU_PACK_AND_REMOVE_ALL="Empaquetar y eliminar cercanas",
       MENU_REMOVE_CRATES="Eliminar cargas",
       MENU_REMOVE_CRATES_NEARBY="Eliminar cargas cercanas",
       MENU_LIST_CRATES_NEARBY="Listar cargas cercanas",
@@ -168260,7 +168860,8 @@ FR = {
       BUILD_NO="NO",
       },
   }
-  do 
+  
+do 
 --- **Hercules Cargo AIR Drop Events** by Anubis Yinepu
 -- Moose CTLD OO refactoring by Applevangelist
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -169435,6 +170036,9 @@ CSAR.AircraftType["OH58D"] = 2
 CSAR.AircraftType["CH-47Fbl1"] = 31
 CSAR.AircraftType["AH-6J"] = 2
 CSAR.AircraftType["MH-6J"] = 2
+CSAR.AircraftType["Ka-50_3"] = 0
+CSAR.AircraftType["Ka-50"] = 0
+CSAR.AircraftType["AV8BNA"] = 0
 
 --- CSAR class version.
 -- @field #string version
@@ -171469,8 +172073,11 @@ function CSAR:_AddMedevacMenuItem()
     if _unit then
       --self:T("Unitname ".._unit:GetName().." IsAlive "..tostring(_unit:IsAlive()).." IsPlayer "..tostring(_unit:IsPlayer()))
       if _unit:IsAlive() and _unit:IsPlayer() then
-        local unitName = _unit:GetName()
-        _UnitList[unitName] = unitName
+        local _maxUnits = self.AircraftType[_unit:GetTypeName()]
+        if _maxUnits == nil or _maxUnits > 0 then
+          local unitName = _unit:GetName()
+          _UnitList[unitName] = unitName
+        end
       end -- end isAlive
     end -- end if _unit
   end -- end for
@@ -251858,6 +252465,7 @@ end
 -- @type TARS_SESSION
 -- @extends Core.Base#BASE
 -- @field #boolean debug Enable debugging in TARS_SESSION.
+-- @field #boolean debugunitsearch Enable Target Search Debug.
 -- @field Wrapper.Unit#UNIT unit The MOOSE UNIT object for the recon aircraft.
 -- @field #string lid Log-line prefix shown in Moose.log entries.
 -- @field DCS#Vec3 vec3 World position snapshot taken at session creation.
@@ -251872,7 +252480,7 @@ end
 -- @field #number time Mission time (seconds) when the session was last refreshed.
 -- @field #number category Group category at session creation.
 -- @field #boolean capturing `true` while the capture loop is actively running.
--- @field #number duration Remaining film in seconds.
+-- @field #number duration Total expositions (shots) available per sortie.
 -- @field #table targetList Targets detected this pass, not yet reported. `[unitName] = snap`.
 -- @field #number captureCount Total unique targets captured this sortie.
 -- @field #boolean loop `true` while the `TARS.CaptureLoop` timer is scheduled.
@@ -251883,6 +252491,7 @@ end
 -- @field #boolean landingScheduled `true` once the debrief timer has been registered.
 -- @field #number lastTakeoffTime Mission time of the last takeoff, used for debouncing.
 -- @field #TARS Callback The TARS Callback object for menu functions etc.
+-- @field #boolean PilotParameterHelper If true, there will be messages about the correct parameters to the UNIT.
 
 ---
 -- ## Tracks all states for a single recon sortie.
@@ -251898,6 +252507,7 @@ end
 -- @field #TARS_SESSION
 TARS_SESSION = {}
 TARS_SESSION.debug = false
+TARS_SESSION.debugunitsearch = false
 
 --- @type TARS
 -- @extends Core.Base#BASE
@@ -251927,7 +252537,6 @@ TARS_SESSION.debug = false
 -- @field #table reconTypes Map of `[typeName] = true` for all recon-capable DCS type names.
 -- @field #table parameters Map of `[typeName] = #TARS.PlatformParams` with per-platform sensor profiles.
 -- @field #table allowedAmmo Map of `[weaponDisplayName] = true` for permitted loadout items.
--- @field #table Locale Map of `[messageID] = TEXTANDSOUND` — populated by `TARS_Locale.lua`.
 -- @field #table instances Runtime map `[unitName] = #TARS_SESSION` of active sorties.
 -- @field #table groundMenus Runtime map `[playerName] = #TARS.MenuData` of open F10 menus.
 -- @field #table detectedTargets Lifetime map `[unitName] = #TARS.Snapshot` of all reported targets.
@@ -251935,6 +252544,7 @@ TARS_SESSION.debug = false
 -- @field #number redMarkCount Next available mark ID for Red coalition marks.
 -- @field #number blueMarkCount Next available mark ID for Blue coalition marks.
 -- @field Functional.Scoring#SCORING scoring MOOSE SCORING instance (nil if mooseScoring is false).
+-- @field #boolean PilotParameterHelper If true, there will be messages about the correct parameters to the UNIT.
 
 ---
 -- ## Simulates photo-reconnaissance and visual-observation missions in DCS World.
@@ -251973,8 +252583,8 @@ TARS_SESSION.debug = false
 --    After the debrief the **TARS validation** item reappears for the next sortie.
 --
 -- ## Localization
--- All player-facing strings are defined in `TARS.Messages` using a table.
 -- 
+-- All player-facing strings are defined in `TARS.Messages` using a table.
 -- 
 -- ## Platforms and Settings
 -- 
@@ -251988,10 +252598,15 @@ TARS_SESSION.debug = false
 --
 --        TARS_Instance.reconTypes["F-16C_50"] = true
 --        TARS_Instance.parameters["F-16C_50"] = {
---            minAlt=300, maxAlt=8000, maxRoll=10, maxPitch=15,
---            fov=35, duration=300, offset=math.rad(20),
+--            minAlt=300, maxAlt=8000, maxRoll=10, maxPitch=15, -- Note altitude is AGL!
+--            fov=35, duration=300, offset=math.rad(20), -- fov = field of view, duration = # max of photos, offset = camera angle in Radians
 --            name="F-16C with RECCE pod"
 --        }
+--        
+-- ### Optical System Parameters Demonstrator
+-- 
+-- The optical system is like a torchlight, the further away from the ground you are, the larger is the area covered. One underestimated effect is however, that on flat land,
+-- because at angle, you actually cover an elliptic area. [You can checkout the effects of various parameters on this demonstrator](https://applevangelist.github.io/TARS_Optical/tars_optics.html).
 -- 
 -- ### Available Platforms are
 -- 
@@ -252018,15 +252633,22 @@ TARS_SESSION.debug = false
 -- ### Film and detection settings
 -- 
 --        TARS.filmLimitEnabled = true
---          TARS.filmLimitMax     = 25        -- max 25 captured objects
---          TARS.detectUnits      = true      -- capture UNIT objects
---          TARS.detectStatics    = false     -- capture STATIC objects incl. of FARPs
+--        TARS.filmLimitMax     = 25        -- max 25 captured objects
+--        TARS.detectUnits      = true      -- capture UNIT objects
+--        TARS.detectStatics    = false     -- capture STATIC objects incl. of FARPs
 -- 
--- ### UNIT Filters
+-- ### Target UNIT Filters
 --  
 --        TARS.units = { air=false, ground=true, ship=true }
+--
+-- ### Target UNIT Name Filters
+-- 
+-- You always only detect UNITs of the other coalition. E.g. below - a RED unit would only detect BLUE units which have "Hawk" somewhere in the UNIT name.
+-- Name keywords are tested independent of capitalization, it doesn't matter if it is Hawk, HAWK, or hAwK.
+-- 
+--        TARS.targetNameFilter = { enabled = true, keywords = { [coalition.side.BLUE] = { "Hawk" }, [coalition.side.RED]  = { "Scud" },},}    
 --        
--- ### STATIC Filters
+-- ### Target STATIC Filters
 -- 
 --        TARS.statics = {
 --          farps=true,
@@ -252042,6 +252664,7 @@ TARS_SESSION.debug = false
 --        TARS.landingDelay    = 30         -- check valid landing after this many seconds
 --        TARS.debriefDelay    = 60         -- show debriefing after this many seconds
 --        TARS.landingDistance = 2500       -- land closer than this many meters to a friendly base for debrief
+--        TARS.PilotParameterHelper = false -- show helper checks on pitch/roll/AGL parameters
 -- 
 -- ## SRS integration
 -- All player messages route through `TARS:_MsgUnit()` and `TARS:_MsgCoalition()`.
@@ -252075,13 +252698,14 @@ TARS = {}
 -- @field #number maxRoll Maximum bank angle (degrees) — camera must be level.
 -- @field #number maxPitch Maximum pitch angle (degrees) — camera must be level.
 -- @field #number fov Camera half-angle FOV (degrees). Not used for visual-recon helis.
--- @field #number duration Total film per sortie (seconds).
+-- @field #number duration Remaining expositions (shots) for this sortie.
 -- @field #number offset Forward look-ahead (radians).
 -- @field #string name Human-readable label in player messages.
 -- @field #number minRange Detection radius (m) at `minAlt` — visual-recon helis only.
 -- @field #number optimalAlt Optimal AGL (m) — triggers the dual-cone model.
 -- @field #number optimalRange Detection radius (m) at `optimalAlt`.
 -- @field #number maxRange Detection radius (m) at `maxAlt`.
+-- @field #number overlap  Optional frame overlap 0–1 (default 0.5). Used by `_CalcInterval`.
 
 --- F10 menu registration data.
 -- Stored in `TARS.groundMenus[playerName]`.
@@ -252118,9 +252742,9 @@ TARS = {}
 -------------------------------------------------
 
 --- @field #string version
-TARS.version = "v2.2.1"
+TARS.version = "v2.3.1"
 
---- Active locale. Set before `TARS:New()`. Populated by `TARS_Locale.lua`.
+--- Active locale.
 -- @field #string locale
 TARS.locale = TARS.locale or "en"
 
@@ -252134,9 +252758,10 @@ TARS.valueScoring    = 100
 TARS.landingDelay    = 30
 TARS.debriefDelay    = 60
 TARS.landingDistance = 2500
+TARS.PilotParameterHelper = false -- If true, there will be messages about the correct parameters to the UNIT.
 
 --- @field #number _vAltMin
-TARS._vAltMin    = 10
+TARS._vAltMin    = 100
 --- @field #number _vRangeMin
 TARS._vRangeMin  = TARS._vAltMin  * 20   -- 200 m
 --- @field #number _vAltOpti
@@ -252194,25 +252819,26 @@ TARS.reconTypes = {
 -- TODO PER-PLATFORM PARAMETERS
 -------------------------------------------------
 
---- @field #table parameters
+--- @type #TARS.parameters
+-- @field #table parameters
 TARS.parameters = {}
 
-TARS.parameters["F-4E-45MC"]     = { minAlt=100,  maxAlt=6096, maxRoll=10, maxPitch=15, fov=23,  duration=120, offset=math.rad(60), name="RF-4E with KS-87 Forward Oblique Camera" }
-TARS.parameters["MiG-21Bis"]     = { minAlt=500,  maxAlt=5000, maxRoll=10, maxPitch=15, fov=52,  duration=140, offset=math.rad(10), name="MiG-21R with Day recce pod" }
-TARS.parameters["AJS37"]         = { minAlt=15,   maxAlt=1524, maxRoll=10, maxPitch=15, fov=25,  duration=120, offset=math.rad(10), name="SF 37" }
-TARS.parameters["Mirage-F1EE"]   = { minAlt=1524, maxAlt=4572, maxRoll=10, maxPitch=15, fov=20,  duration=588, offset=math.rad(10), name="Mirage-F1CR with Omera 33" }
-TARS.parameters["F-5E-3"]        = { minAlt=762,  maxAlt=7620, maxRoll=15, maxPitch=15, fov=70,  duration=300, offset=math.rad(40), name="F-5E Tigereye" }
-TARS.parameters["F-14A-135-GR"]  = { minAlt=750,  maxAlt=5000, maxRoll=10, maxPitch=20, fov=14,  duration=400, offset=math.rad(45), name="F-14A TARPS KS-87D" }
-TARS.parameters["F-14B"]         = { minAlt=228,  maxAlt=1524, maxRoll=10, maxPitch=20, fov=85,  duration=80,  offset=math.rad(10), name="F-14B TARPS KA-99A" }
-TARS.parameters["TF-51D"]        = { minAlt=250,  maxAlt=5500, maxRoll=15, maxPitch=15, fov=60,  duration=400, offset=math.rad(10), name="TF-51D Mustang RF-51D Photo Recon" }
-TARS.parameters["P-51D"]         = { minAlt=250,  maxAlt=5500, maxRoll=15, maxPitch=15, fov=60,  duration=400, offset=math.rad(10), name="P-51D Mustang F-6D Photo Recon" }
-TARS.parameters["P-51D-30-NA"]   = { minAlt=250,  maxAlt=6000, maxRoll=15, maxPitch=15, fov=60,  duration=400, offset=math.rad(10), name="P-51D-30 Mustang F-6D Photo Recon" }
-TARS.parameters["SpitfireLFMkIX"]= { minAlt=150,  maxAlt=5000, maxRoll=15, maxPitch=15, fov=55,  duration=350, offset=math.rad(10), name="Spitfire LF Mk IX PR Recon" }
-TARS.parameters["FW-190A8"]      = { minAlt=200,  maxAlt=5500, maxRoll=15, maxPitch=15, fov=60,  duration=350, offset=math.rad(10), name="FW-190 A-8 Tactical Recon" }
-TARS.parameters["FW-190D9"]      = { minAlt=250,  maxAlt=6000, maxRoll=15, maxPitch=15, fov=60,  duration=350, offset=math.rad(10), name="FW-190 D-9 Tactical Recon" }
-TARS.parameters["SA342M"]        = { minAlt=20,   maxAlt=1000, maxRoll=35, maxPitch=25, fov=18,  duration=350, offset=math.rad(10), name="SA342M EO/IR LIGHT RECO" }
-TARS.parameters["SA342L"]        = { minAlt=20,   maxAlt=1000, maxRoll=35, maxPitch=25, fov=18,  duration=350, offset=math.rad(10), name="SA342L EO/IR LIGHT RECO" }
-TARS.parameters["OH58D"]         = { minAlt=30,   maxAlt=1200, maxRoll=35, maxPitch=25, fov=12,  duration=350, offset=math.rad(12), name="OH-58D MMS EO/IR RECO" }
+TARS.parameters["F-4E-45MC"]     = { minAlt=100,  maxAlt=8000, maxRoll=10, maxPitch=15, fov=23,  duration=120, offset=math.rad(40), overlap=0.25, min_interval=3, name="RF-4E with KS-87 Forward Oblique Camera" }
+TARS.parameters["MiG-21Bis"]     = { minAlt=500,  maxAlt=8000, maxRoll=10, maxPitch=15, fov=52,  duration=140, offset=math.rad(40), overlap=0.25, min_interval=3, name="MiG-21R with Day recce pod" }
+TARS.parameters["AJS37"]         = { minAlt=15,   maxAlt=8000, maxRoll=10, maxPitch=15, fov=25,  duration=120, offset=math.rad(40), overlap=0.25, min_interval=3, name="SF 37" }
+TARS.parameters["Mirage-F1EE"]   = { minAlt=1524, maxAlt=8000, maxRoll=10, maxPitch=15, fov=20,  duration=400, offset=math.rad(40), overlap=0.25, min_interval=3, name="Mirage-F1CR with Omera 33" }
+TARS.parameters["F-5E-3"]        = { minAlt=762,  maxAlt=8000, maxRoll=15, maxPitch=15, fov=70,  duration=300, offset=math.rad(40), overlap=0.25, min_interval=3, name="F-5E Tigereye" }
+TARS.parameters["F-14A-135-GR"]  = { minAlt=750,  maxAlt=8000, maxRoll=10, maxPitch=20, fov=14,  duration=400, offset=math.rad(45), overlap=0.25, min_interval=3, name="F-14A TARPS KS-87D" }
+TARS.parameters["F-14B"]         = { minAlt=228,  maxAlt=8000, maxRoll=10, maxPitch=20, fov=85,  duration=400,  offset=math.rad(40), overlap=0.25, min_interval=3, name="F-14B TARPS KA-99A" }
+TARS.parameters["TF-51D"]        = { minAlt=250,  maxAlt=2500, maxRoll=15, maxPitch=15, fov=60,  duration=400, offset=math.rad(10), overlap=0.5, min_interval=5, name="TF-51D Mustang RF-51D Photo Recon" }
+TARS.parameters["P-51D"]         = { minAlt=250,  maxAlt=2500, maxRoll=15, maxPitch=15, fov=60,  duration=400, offset=math.rad(10), overlap=0.5, min_interval=5,name="P-51D Mustang F-6D Photo Recon" }
+TARS.parameters["P-51D-30-NA"]   = { minAlt=250,  maxAlt=2500, maxRoll=15, maxPitch=15, fov=60,  duration=400, offset=math.rad(10), overlap=0.5, min_interval=5,name="P-51D-30 Mustang F-6D Photo Recon" }
+TARS.parameters["SpitfireLFMkIX"]= { minAlt=150,  maxAlt=2500, maxRoll=15, maxPitch=15, fov=55,  duration=350, offset=math.rad(10), overlap=0.5, min_interval=5,name="Spitfire LF Mk IX PR Recon" }
+TARS.parameters["FW-190A8"]      = { minAlt=200,  maxAlt=2500, maxRoll=15, maxPitch=15, fov=60,  duration=350, offset=math.rad(10), overlap=0.5, min_interval=5,name="FW-190 A-8 Tactical Recon" }
+TARS.parameters["FW-190D9"]      = { minAlt=250,  maxAlt=2500, maxRoll=15, maxPitch=15, fov=60,  duration=350, offset=math.rad(10), overlap=0.5, min_interval=5,name="FW-190 D-9 Tactical Recon" }
+TARS.parameters["SA342M"]        = { minAlt=20,   maxAlt=1000, maxRoll=35, maxPitch=25, fov=18,  duration=350, offset=math.rad(10), overlap=0.5, min_interval=5,name="SA342M EO/IR LIGHT RECO" }
+TARS.parameters["SA342L"]        = { minAlt=20,   maxAlt=1000, maxRoll=35, maxPitch=25, fov=18,  duration=350, offset=math.rad(10), overlap=0.5, min_interval=5,name="SA342L EO/IR LIGHT RECO" }
+TARS.parameters["OH58D"]         = { minAlt=30,   maxAlt=1200, maxRoll=35, maxPitch=25, fov=12,  duration=350, offset=math.rad(12), overlap=0.5, min_interval=5,name="OH-58D MMS EO/IR RECO" }
 TARS.parameters["UH-1H"]  = { maxRoll=50, maxPitch=45, duration=900, offset=math.rad(6), name="UH-1H VISUAL/CREW RECO",          minAlt=TARS._vAltMin, minRange=TARS._vRangeMin, optimalAlt=TARS._vAltOpti, optimalRange=TARS._vRangeOpti, maxAlt=TARS._vAltMax, maxRange=TARS._vRangeMax }
 TARS.parameters["Mi-8MT"] = { maxRoll=50, maxPitch=45, duration=900, offset=math.rad(6), name="Mi-8MT VISUAL/CREW RECO",         minAlt=TARS._vAltMin, minRange=TARS._vRangeMin, optimalAlt=TARS._vAltOpti, optimalRange=TARS._vRangeOpti, maxAlt=TARS._vAltMax, maxRange=TARS._vRangeMax }
 TARS.parameters["MH-6J"]  = { maxRoll=50, maxPitch=45, duration=900, offset=math.rad(6), name="MH-6J VISUAL CLOSE RECO",         minAlt=TARS._vAltMin, minRange=TARS._vRangeMin, optimalAlt=TARS._vAltOpti, optimalRange=TARS._vRangeOpti, maxAlt=TARS._vAltMax, maxRange=TARS._vRangeMax }
@@ -252245,78 +252871,6 @@ TARS.redMarkCount    = 150000
 TARS.blueMarkCount   = 160000
 TARS.scoring         = nil
 
---- **TARS_Locale — Localization for the Tactical Air Recon System**
---
--- This file defines all player-facing strings for TARS in English (en),
--- German (de), and French (fr) using the MOOSE `TEXTANDSOUND` class.
---
--- ## How to use
--- Load this file **after** TARS.lua:
---
---     dofile(basedir .. "Moose_.lua")
---     dofile(basedir .. "TARS.lua")
---     dofile(basedir .. "TARS_Locale.lua")   -- ← this file
---
--- Then set the desired locale before (or after) calling `TARS:New()`:
---
---     TARS.locale = "de"       -- "en" (default), "de", "fr"
---     TARS_Instance = TARS:New()
---
--- ## Adding a new language
--- Any key without a translation for the chosen locale automatically falls
--- back to English.
---
--- ## Strings with format placeholders
--- Entries that contain `%d` or `%s` are passed through `string.format()`
--- inside `TARS:_T()`. Pass the values as extra arguments:
---
---     self:_MsgUnit( self:_Txt("TARS_FILM_START", self.duration), 5, playerName )
---
--- @module TARS_Locale
--- @author FMD — Fredy
--- @author Applevangelist - Moose migration, Claude.AI
-
--------------------------------------------------
--- LOCALE CONFIGURATION
--------------------------------------------------
-
---- Active locale used by `TARS:_T()`.
--- Set this before `TARS:New()` is called.
--- Supported values: `"en"` (default), `"de"`, `"fr"`.
--- @field #string locale
-TARS.locale = TARS.locale or "en"
-
--------------------------------------------------
--- TODO LOCALE TABLE
--- Each entry is a TEXTANDSOUND object keyed by a message ID string.
--------------------------------------------------
-
---- Map of `[messageID] = TEXTANDSOUND` objects for all player-facing strings.
--- @field #table Locale
---- **TARS.Messages — Localization strings for the Tactical Air Recon System**
---
--- All player-facing strings are stored in a single `TARS.Messages` table,
--- keyed first by locale (`"en"`, `"de"`, `"fr"`) and then by message ID.
---
--- ## Resolving a string
--- Use `TARS:_T(id, ...)` anywhere inside TARS methods.
--- The helper looks up `TARS.Messages[TARS.locale][id]`, falls back to `"en"`,
--- and optionally passes extra arguments through `string.format`:
---
---     self:_MsgUnit( self:_Txt("TARS_FILM_START", self.duration), 5, playerName )
---
--- ## Adding a new language
--- Add a new locale block (e.g. `es = { ... }`) following the same keys as `en`.
--- Any missing key automatically falls back to English at runtime.
---
--- ## Strings with format placeholders
--- `%d` = number, `%s` = string.  The number and order of placeholders must
--- match between all languages for a given key.
---
--- @module TARS_Locale
--- @author FMD — Fredy
--- @author Applevangelist
- 
 -------------------------------------------------
 -- LOCALE CONFIGURATION
 -------------------------------------------------
@@ -252338,7 +252892,7 @@ TARS.Messages = {
     -- ==========================================================
     en = {
         -- Capture state
-        TARS_FILM_START           = "[TARS] Session capture activated. Film remaining: %d seconds.",
+        TARS_FILM_START           = "[TARS] Capture activated. Expositions remaining: %d",
         TARS_FILM_EXHAUSTED       = "[TARS] Film exhausted. Return to base for debrief.",
         TARS_FILM_STOP            = "[TARS] Session capture ended. Return to base for debrief.",
         TARS_FILM_TIME_UP         = "[TARS] Film time exhausted. Return to base.",
@@ -252346,12 +252900,12 @@ TARS.Messages = {
         TARS_FILM_STB_MANUAL      = "[TARS] <>Manual<> Film manual STB.",
         TARS_FILM_RESUME_MANUAL   = "[TARS] <>Manual<> Film manual resume.",
         TARS_FILM_STB_LAND        = "[TARS] <>Landing<> Film auto STB.",
-        TARS_FILM_RESUME_TO       = "[TARS] <>TakeOff<> Film auto resume. %d seconds",
+        TARS_FILM_RESUME_TO       = "[TARS] <>TakeOff<> Film auto resume. %d expositions",
         TARS_FILM_STB_LOCKED      = "[TARS] Film is STB — takeoff to resume.",
         TARS_FILM_ALREADY_ACTIVE  = "[TARS] Film already active.",
         TARS_FILM_NO_CAPTURE      = "[TARS] No active film.",
         TARS_FILM_NO_CAPTURE_STOP = "[TARS] No active film to stop.",
-        TARS_CAPTURE_TICK         = "FILM DURATION: %d seconds",
+        TARS_CAPTURE_TICK         = "EXPOSITIONS REMAINING: %d",
         TARS_CAPTURE_HIT          = "[TARS] +1 Captured target (%d total)",
         TARS_CAPTURE_HIT_MAX      = "[TARS] +1 Captured target (%d total) / %d max",
  
@@ -252398,7 +252952,7 @@ TARS.Messages = {
     -- ==========================================================
     de = {
         -- Aufnahmestatus
-        TARS_FILM_START           = "[TARS] Aufnahme aktiviert. Verbleibender Film: %d Sekunden.",
+        TARS_FILM_START           = "[TARS] Aufnahme aktiviert. Verbleibende Aufnahmen: %d.",
         TARS_FILM_EXHAUSTED       = "[TARS] Film aufgebraucht. Kehren Sie zur Basis für das Briefing zurück.",
         TARS_FILM_STOP            = "[TARS] Aufnahmesitzung beendet. Kehren Sie zur Basis zurück.",
         TARS_FILM_TIME_UP         = "[TARS] Filmzeit abgelaufen. Kehren Sie zur Basis zurück.",
@@ -252406,12 +252960,12 @@ TARS.Messages = {
         TARS_FILM_STB_MANUAL      = "[TARS] <>Manuell<> Film manuell auf Standby.",
         TARS_FILM_RESUME_MANUAL   = "[TARS] <>Manuell<> Film manuell fortgesetzt.",
         TARS_FILM_STB_LAND        = "[TARS] <>Landung<> Film automatisch auf Standby.",
-        TARS_FILM_RESUME_TO       = "[TARS] <>Start<> Film automatisch fortgesetzt. %d Sekunden.",
+        TARS_FILM_RESUME_TO       = "[TARS] <>Takeoff<> Film fortgesetzt. %d Aufnahmen.",
         TARS_FILM_STB_LOCKED      = "[TARS] Film ist auf Standby — starten Sie, um fortzufahren.",
         TARS_FILM_ALREADY_ACTIVE  = "[TARS] Aufnahme bereits aktiv.",
         TARS_FILM_NO_CAPTURE      = "[TARS] Keine aktive Aufnahme.",
         TARS_FILM_NO_CAPTURE_STOP = "[TARS] Keine aktive Aufnahme zum Stoppen.",
-        TARS_CAPTURE_TICK         = "AUFNAHMEDAUER: %d Sekunden",
+        TARS_CAPTURE_TICK         = "Verbleibende Aufnahmen: %d.",
         TARS_CAPTURE_HIT          = "[TARS] +1 Ziel erfasst (%d gesamt)",
         TARS_CAPTURE_HIT_MAX      = "[TARS] +1 Ziel erfasst (%d gesamt) / %d max",
  
@@ -252458,7 +253012,7 @@ TARS.Messages = {
     -- ==========================================================
     fr = {
         -- État de capture
-        TARS_FILM_START           = "[TARS] Session de capture activée. Film restant : %d seconds",
+        TARS_FILM_START           = "[TARS] Capture activée. Expositions restantes : %d",
         TARS_FILM_EXHAUSTED       = "[TARS] Film épuisé. Retournez à la base pour le compte-rendu.",
         TARS_FILM_STOP            = "[TARS] Session de capture terminée. Retournez à la base.",
         TARS_FILM_TIME_UP         = "[TARS] Temps de film épuisé. Retournez à la base.",
@@ -252466,12 +253020,12 @@ TARS.Messages = {
         TARS_FILM_STB_MANUAL      = "[TARS] <>Manuel<> Film en STB manuel.",
         TARS_FILM_RESUME_MANUAL   = "[TARS] <>Manuel<> Reprise manuel du film.",
         TARS_FILM_STB_LAND        = "[TARS] <>Atterrissage<> Film en STB automatique.",
-        TARS_FILM_RESUME_TO       = "[TARS] <>Décollage<> Reprise automatique du film. %d seconds",
+        TARS_FILM_RESUME_TO       = "[TARS] <>Décollage<> Film repris. %d expositions",
         TARS_FILM_STB_LOCKED      = "[TARS] Film en STB — décollez pour reprendre.",
         TARS_FILM_ALREADY_ACTIVE  = "[TARS] Film déjà activé.",
         TARS_FILM_NO_CAPTURE      = "[TARS] Aucun film activé.",
         TARS_FILM_NO_CAPTURE_STOP = "[TARS] Aucun film actif à stopper.",
-        TARS_CAPTURE_TICK         = "DURÉE DU FILM : %d seconds",
+        TARS_CAPTURE_TICK         = "[TARS] EXPOSITIONS RESTANTES : %d",
         TARS_CAPTURE_HIT          = "[TARS] +1 Cible capturée (%d au total)",
         TARS_CAPTURE_HIT_MAX      = "[TARS] +1 Cible capturée (%d au total) / %d max",
  
@@ -252611,8 +253165,9 @@ function TARS_SESSION:New(unit, Callback)
     local self = BASE:Inherit(self, BASE:New())
     self.lid      = string.format("TARS_SESSION %s | ", TARS.version)
     self.Callback = Callback
+    self.PilotParameterHelper = Callback.PilotParameterHelper
     self:SetObjectParams(unit)
-    self:I("TARS_SESSION created — unit=" .. tostring(self.objectName)
+    self:T("TARS_SESSION created — unit=" .. tostring(self.objectName)
         .. " type=" .. tostring(self.type))
     return self
 end
@@ -252668,7 +253223,9 @@ function TARS_SESSION:ReturnReconTargets()
     return count
 end
 
---- [INTERNAL] Starts the 10-second capture loop.
+--- [INTERNAL] Starts the dynamic-interval capture loop.
+-- The first tick fires after 2 seconds; subsequent ticks are spaced by
+-- `_CalcInterval()` which adapts to the aircraft's current speed and altitude.
 -- @param #TARS_SESSION self
 function TARS_SESSION:CaptureData()
     self:T(self.lid.."CaptureData")
@@ -252680,7 +253237,7 @@ function TARS_SESSION:CaptureData()
     self.capturing = true
     self.loop      = true
     self.standby   = false
-    self:I("FILM START — film=" .. self.duration .. "s")
+    self:T("FILM START — film=" .. self.duration .. "s")
     self.Callback:_MsgUnit(
         self.Callback:_Txt("TARS_FILM_START", self.duration), 5, self.playerName)
     timer.scheduleFunction(TARS_SESSION.CaptureLoop, self, timer.getTime() + 2)
@@ -252733,15 +253290,23 @@ end
 -- @param #TARS_SESSION self
 -- @param Wrapper.Unit#UNIT unit
 -- @param #TARS.PlatformParams params
--- @return DCS#Vec2 `{ x, z }` ahead of the aircraft.
-function TARS_SESSION:_OffsetCalc(unit, params)
-    local pos  = unit:GetPositionVec3()
+-- @param #number center_shift shift value
+-- @return #table `{ x, z, MSL, alt }` ahead of the aircraft.
+function TARS_SESSION:_OffsetCalc(unit, params, center_shift)
+    center_shift = center_shift or 0
+    local pos  = unit:GetPosition()
     local vec3 = unit:GetVec3()
-    local rad  = math.atan2(pos.z, pos.x) + 2 * math.pi   -- pos.x = Vorwärts-Vektor
     local MSL  = land.getHeight({ x = vec3.x, y = vec3.z })
     local alt  = vec3.y - MSL
-    local dist = math.tan(params.offset) * alt
-    return { x = vec3.x + math.cos(rad) * dist, z = vec3.z + math.sin(rad) * dist }
+    local rad  = math.atan2(pos.x.x, pos.x.z)   -- ← unverändert
+    local dist = (alt / math.tan(params.offset)) + center_shift
+    return {
+        x   = vec3.x + math.sin(rad) * dist,
+        z   = vec3.z + math.cos(rad) * dist,
+        MSL = MSL,
+        alt = alt,
+        rad = rad,   -- ← NEU: mitgeben für isInEllipse
+    }
 end
 
 --- [INTERNAL] Validates a single DCS/MOOSE object against all active filters.
@@ -252750,7 +253315,7 @@ end
 -- @param Wrapper.Unit#UNIT _Object MOOSE UNIT or STATIC.
 -- @return #boolean
 function TARS_SESSION:_ValidateObjectFound(_Object)
-    self:I(self.lid.."_ValidateObjectFound " .. tostring(_Object:GetName()))
+    self:T(self.lid.."_ValidateObjectFound " .. tostring(_Object:GetName()))
 
     if not (_Object and _Object:IsAlive()) then return false end
     if _Object:GetCoalition() == self.coa   then return false end
@@ -252758,10 +253323,18 @@ function TARS_SESSION:_ValidateObjectFound(_Object)
     if self.Callback.targetNameFilter.enabled then
         local keywords   = self.Callback.targetNameFilter.keywords[_Object:GetCoalition()]
         local targetName = string.lower(_Object:GetName() or "")
+        local targetGroup
+        local targetGroupName
+        if _Object:IsInstanceOf("UNIT") then
+          targetGroup = _Object:GetGroup()
+          if targetGroup then targetGroupName = string.lower(targetGroup:GetName()) end
+        end
         if type(keywords) == "string" then keywords = { keywords } end
         local matched = false
         for _, kw in pairs(keywords or {}) do
             if string.find(targetName, string.lower(kw)) then matched = true; break end
+            -- noob catch
+            if targetGroupName and string.find(targetName, string.lower(kw)) then matched = true; break end
         end
         if not matched then return false end
     end
@@ -252770,17 +253343,17 @@ function TARS_SESSION:_ValidateObjectFound(_Object)
     local typeNameLower = string.lower(typeName)
     local objCat        = _Object:GetCategory()
     
-    self:I(self.lid.."_ValidateObjectFound Name Filter Passed!")
+    self:T(self.lid.."_ValidateObjectFound Name Filter Passed!")
      
     if objCat == Object.Category.UNIT then
         local desc    = _Object:GetDesc()
         local unitCat = desc and desc.category
-        self:I(self.lid.."_ValidateObjectFound Name Category Check "..tostring(unitCat))
+        self:T(self.lid.."_ValidateObjectFound Name Category Check "..tostring(unitCat))
         if     unitCat == Unit.Category.AIRPLANE or unitCat == Unit.Category.HELICOPTER then
             return self.Callback.units.air
         elseif unitCat == Unit.Category.GROUND_UNIT then
             return self.Callback.units.ground
-        elseif unitCat == Unit.Category.SHIP then
+        elseif unitCat == Unit.Category.SHIP then 
             return self.Callback.units.ship
         end
     elseif objCat == Object.Category.STATIC or objCat == Object.Category.BASE then
@@ -252798,22 +253371,32 @@ function TARS_SESSION:_ValidateObjectFound(_Object)
     return false
 end
 
---- [INTERNAL] Main capture tick. Scheduled via `timer.scheduleFunction`.
+--- [INTERNAL] Main capture tick. Scheduled dynamically via `timer.scheduleFunction`.
+-- The interval between ticks is calculated from the aircraft's current speed
+-- and camera footprint via `_CalcInterval()`, ensuring adequate frame overlap
+-- regardless of whether the platform is a slow helicopter or a fast jet.
+-- `duration` is decremented by the actual interval each tick.
 -- @param #TARS_SESSION self The active session (timer data argument).
 -- @return nil
 function TARS_SESSION:CaptureLoop()
     if not self or not self.loop then return end
 
+    -- Standby: keep the timer alive but don't capture or decrement film
     if self.capturing and self.standby then
         timer.scheduleFunction(TARS_SESSION.CaptureLoop, self, timer.getTime() + 10)
         return
     end
 
     if self.capturing and self.duration > 0 then
-        self.duration = self.duration - 10
+        -- Dynamic interval based on current speed and altitude
+        local params   = self.Callback.parameters[self.type]
+        local interval = self:_CalcInterval(self.unit, params)
+
+        self.duration = self.duration - 1
         self.Callback:_MsgUnit(
-            self.Callback:_Txt("TARS_CAPTURE_TICK", math.max(0, self.duration)),
-            9, self.playerName)
+            self.Callback:_Txt("TARS_CAPTURE_TICK", math.max(0, math.floor(self.duration))),
+            math.min(interval, 9), self.playerName,true)
+
         self:AddToTargetList(self:FindTargets())
 
         if self.Callback.filmLimitEnabled
@@ -252824,7 +253407,14 @@ function TARS_SESSION:CaptureLoop()
             self.Callback:StopCapture(self)
             return
         end
-        timer.scheduleFunction(TARS_SESSION.CaptureLoop, self, timer.getTime() + 10)
+
+        -- Debug: show interval when debugunitsearch is active
+        if self.debugunitsearch then
+            self:T(self.lid .. string.format(
+                "CaptureLoop interval=%.1fs duration=%.0fs", interval, self.duration))
+        end
+
+        timer.scheduleFunction(TARS_SESSION.CaptureLoop, self, timer.getTime() + interval)
     end
 
     if self.duration <= 0 and self.loop then
@@ -252854,53 +253444,200 @@ function TARS_SESSION:_CalcVisualRange(params, altitude)
     end
 end
 
+--- [INTERNAL] Calculates the capture interval in seconds based on current speed and altitude.
+-- Uses the camera footprint width and the configured overlap to determine how long
+-- the aircraft needs to travel before the next frame is needed.
+-- Clamped between 5 and 120 seconds to prevent extreme values.
+-- @param #TARS_SESSION self
+-- @param Wrapper.Unit#UNIT unit The recon aircraft.
+-- @param #TARS.PlatformParams params Platform parameter table.
+-- @return #number interval Capture interval in seconds.
+function TARS_SESSION:_CalcInterval(unit, params)
+    -- Current AGL from last offset calculation (reuse if available, else recalc)
+    local vec3 = unit:GetVec3()
+    local alt  = vec3.y - land.getHeight({ x = vec3.x, y = vec3.z })
+    alt = math.max(alt, 1)  -- guard against on-ground edge case
+
+    -- Footprint half-width b (cross-track) at current altitude
+    local elev     = params.offset
+    local half_fov = math.rad(params.fov / 2)
+    local d_ground = alt / math.tan(elev)
+    local b        = d_ground * math.tan(half_fov)
+    local diameter = 2 * b
+
+    -- Current ground speed in m/s
+    local vel   = unit:GetVelocityVec3()
+    local speed = math.sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z)
+    speed = math.max(speed, 10)  -- minimum 10 m/s to avoid division near zero
+
+    -- Interval = footprint diameter × (1 - overlap) / speed
+    local overlap  = params.overlap or 0.5
+    local interval = (diameter * (1 - overlap)) / speed
+  
+    local min_interval = params.min_interval or 2
+    return math.max(min_interval, math.min(120, interval))
+end
+
+--- [INTERNAL] Checks a point is inside of an elipse
+-- @return #boolean IsInElipse
+function TARS_SESSION.isInEllipse(ox, oz, cx, cz, a, b, heading_rad)
+    -- heading_rad ist jetzt direkt in Radians (aus offset.rad)
+    local dx    = ox - cx
+    local dz    = oz - cz
+    local cos_h = math.cos(heading_rad)   -- ← kein math.rad() mehr
+    local sin_h = math.sin(heading_rad)
+    local lx    =  dx * sin_h + dz * cos_h
+    local ly    = -dx * cos_h + dz * sin_h
+    return (lx/a)^2 + (ly/b)^2 <= 1
+end
+
 --- [INTERNAL] earches for targets in a sphere ahead of the aircraft.
+-- @param #TARS_SESSION self
+-- @return #table `[unitName] = Wrapper.Unit#UNIT`
+--- [INTERNAL] Searches for targets in an elliptical footprint ahead of the aircraft.
 -- @param #TARS_SESSION self
 -- @return #table `[unitName] = Wrapper.Unit#UNIT`
 function TARS_SESSION:FindTargets()
     local unit   = self.unit
-    local vec3   = unit:GetVec3()
-    local MSL    = land.getHeight({ x = vec3.x, y = vec3.z })
-    local alt    = vec3.y - MSL
     local params = self.Callback.parameters[self.type]
 
-    local roll   = math.abs(math.deg(TARS.getRoll(unit)))
-    local pitch  = math.abs(math.deg(TARS.getPitch(unit)))
+    -- Attitude check
+    local roll   = math.abs(TARS.getRoll(unit))
+    local pitch  = math.abs(TARS.getPitch(unit))
     local isFlat = roll < params.maxRoll and pitch < params.maxPitch
 
-    local radius = params.optimalAlt
-        and self:_CalcVisualRange(params, alt)
-        or  alt * math.tan(math.rad(params.fov / 2))
+    -- Ellipsen-Geometrie berechnen
+    local elev     = params.offset                  -- Radians, Blickwinkel nach vorne
+    local half_fov = math.rad(params.fov / 2)
 
-    local offset     = self:_OffsetCalc(unit, params)
-    local coordinate = self.coordinate or COORDINATE:New(offset.x, MSL, offset.z)
-    coordinate       = coordinate:UpdateFromVec3({ x=offset.x, y=MSL, z=offset.z })
-    self.coordinate  = coordinate
+    local center_shift = 0
+    local a, b
+
+    -- Offset berechnen (gibt jetzt MSL und alt mit zurück)
+    local offset_data = self:_OffsetCalc(unit, params, 0)  -- erst ohne shift
+    local alt         = offset_data.alt
+    local MSL         = offset_data.MSL
+
+    -- Querachse b
+    local d_ground = alt / math.tan(elev)
+    b = d_ground * math.tan(half_fov)
+
+    -- Längsachse a + center_shift, nur wenn geometrisch gültig
+    if (elev - half_fov) > math.rad(2) then
+        local d_near   = alt / math.tan(elev + half_fov)
+        local d_far    = alt / math.tan(elev - half_fov)
+        a              = (d_far - d_near) / 2
+        center_shift   = (d_far + d_near) / 2 - d_ground
+    else
+        a            = b   -- Fallback: Kreis
+        center_shift = 0
+        self:T(self.lid .. "FindTargets: elev-fov margin too small, fallback to circle")
+    end
+
+    -- Offset-Punkt mit korrektem center_shift
+    local offset = self:_OffsetCalc(unit, params, center_shift)
+
+    -- Nach: local offset = self:_OffsetCalc(unit, params, center_shift)
+    local unit_pos = unit:GetVec3()
+    local hdg = unit:GetHeading()
+    -- Erwarteter Offset-Punkt: Flugzeug + (d_ground+shift) in Flugrichtung
+    local expected_x = unit_pos.x + math.sin(math.rad(hdg)) * (d_ground + center_shift)
+    local expected_z = unit_pos.z + math.cos(math.rad(hdg)) * (d_ground + center_shift)
+    self:T(string.format(
+        "OFFSET DRIFT: _OffsetCalc=(%.0f,%.0f)  expected=(%.0f,%.0f)  drift=(Δx=%.0f,Δz=%.0f)",
+        offset.x, offset.z,
+        expected_x, expected_z,
+        offset.x - expected_x,
+        offset.z - expected_z))
     
-    local debugunitset
-    if self.debug == true then
-      self:I(self.lid.."FindTargets Debug SET_UNIT created")
-      debugunitset = SET_UNIT:New():FilterCategories("ground"):FilterCoalitions("red"):FilterOnce()
+    -- Koordinate aktualisieren
+    local coordinate = self.coordinate
+        or COORDINATE:New(offset.x, offset.MSL, offset.z)
+    coordinate = coordinate:UpdateFromVec3({ x = offset.x, y = offset.MSL, z = offset.z })
+    self.coordinate = coordinate
+
+    -- Scan-Radius = längere Halbachse, deckt die Ellipse vollständig ab
+    local scan_radius = math.max(a, b)
+
+    -- Heading für Ellipsen-Rotation
+    local heading = unit:GetHeading()
+
+    -- Debug-Visualisierung
+    if self.debugunitsearch then
+        local searchzone = self.searchzone  -- Core.Zone#ZONE_BASE
+            or ZONE_RADIUS:New("TARS Debug", coordinate:GetVec2(), scan_radius)
+
+        if searchzone.DrawID then searchzone:UndrawZone() end
+        searchzone:UpdateFromVec2(coordinate:GetVec2(), scan_radius)           
+        searchzone:DrawZone(-1, {0, 0, 1}, 1, {0, 1, 0}, .2, 2, true)
+        self.searchzone = searchzone
+        self:ScheduleOnce(30, ZONE_BASE.UndrawZone, searchzone)
     end
     
-    local ScannedUnits   = self.Callback.detectUnits   and coordinate:ScanUnits(radius)   or nil
-    local ScannedStatics = self.Callback.detectStatics and coordinate:ScanStatics(radius) or nil
+    if self.PilotParameterHelper == true then
+        self:T({ Roll = roll, Pitch = pitch, AGL = alt, a = a, b = b, shift = center_shift })
 
+        if roll > params.maxRoll then
+            MESSAGE:New(string.format("Roll - NOK out of parameters (%d°)!", roll), 9, "PARAM"):ToUnit(unit)
+        elseif pitch > params.maxPitch then
+            MESSAGE:New(string.format("Pitch - NOK out of parameters (%d°)!", pitch), 9, "PARAM"):ToUnit(unit)
+        elseif alt < params.minAlt or alt > params.maxAlt then
+            MESSAGE:New(string.format("AGL - NOK too high or too low (%dm)!", alt), 9, "PARAM"):ToUnit(unit)
+        else
+            MESSAGE:New(string.format("Params OK | a=%.0fm b=%.0fm shift=%.0fm", a, b, center_shift), 9, "PARAM"):ToUnit(unit)
+        end
+    end
+
+    -- Scan
+    local ScannedUnits   = self.Callback.detectUnits   and coordinate:ScanUnits(scan_radius)   or nil
+    local ScannedStatics = self.Callback.detectStatics and coordinate:ScanStatics(scan_radius) or nil
+
+    -- Ziele filtern
     local targetList = {}
     if alt > params.minAlt and alt < params.maxAlt and isFlat then
-        for _, u in pairs(ScannedUnits   and ScannedUnits.Set   or {}) do
-            if self:_ValidateObjectFound(u) then targetList[u:GetName()] = u end
+    
+        for _, u in pairs(ScannedUnits and ScannedUnits.Set or {}) do
+            if self:_ValidateObjectFound(u) then
+                local uv = u:GetVec3()
+                local dx = uv.x - offset.x
+                local dz = uv.z - offset.z
+                local cos_h = math.cos(offset.rad)   -- ← offset.rad statt math.rad(heading)
+                local sin_h = math.sin(offset.rad)
+                local lx =  dx * sin_h + dz * cos_h
+                local ly = -dx * cos_h + dz * sin_h
+                local ellipse_val = (lx/a)^2 + (ly/b)^2
+                self:T(string.format(
+                    "ELLIPSE CHECK '%s': dx=%.0f dz=%.0f lx=%.0f ly=%.0f val=%.2f %s",
+                    u:GetName(), dx, dz, lx, ly, ellipse_val,
+                    ellipse_val <= 1 and "HIT ✓" or "MISS (außerhalb)"))
+                if ellipse_val <= 1 then   -- ← direkt val nutzen, kein zweiter isInEllipse-Call
+                    targetList[u:GetName()] = u
+                end
+            end
         end
+    
         for _, s in pairs(ScannedStatics and ScannedStatics.Set or {}) do
-            if self:_ValidateObjectFound(s) then targetList[s:GetName()] = s end
+            if self:_ValidateObjectFound(s) then
+                local sv = s:GetVec3()
+                if TARS_SESSION.isInEllipse(sv.x, sv.z, offset.x, offset.z, a, b, offset.rad) then
+                    targetList[s:GetName()] = s
+                end
+            end
+        end
+    
+    end
+
+    -- Debug SET_UNIT (nur wenn debug flag gesetzt)
+    if self.debug == true then
+        self:T(self.lid .. "FindTargets Debug SET_UNIT created")
+        local debugunitset = SET_UNIT:New():FilterCategories("ground"):FilterCoalitions("red"):FilterOnce()
+        for _, u in pairs(debugunitset and debugunitset.Set or {}) do
+            if self:_ValidateObjectFound(u) then
+                targetList[u:GetName()] = u
+            end
         end
     end
-    -- TODO Debug
-    if debugunitset then
-      for _, u in pairs(debugunitset   and debugunitset.Set   or {}) do
-          if self:_ValidateObjectFound(u) then targetList[u:GetName()] = u end
-      end
-    end
+
     return targetList
 end
 
@@ -252951,6 +253688,9 @@ function TARS:_MsgUnit(text, seconds, playerName, Silent)
     local unit = CLIENT:FindByPlayerName(playerName)
     if unit then
         MESSAGE:New(text, seconds, "TARS"):ToUnit(unit)
+    end
+    if self.debug == true then
+      MESSAGE:New(text, seconds, "TARS"):ToAll()
     end
     if unit and self.SRS and (not Silent) then
         local srsText = string.gsub(text, "^%[TARS%] ?", playerName .. ", ")
@@ -253134,7 +253874,7 @@ function TARS:CheckTask(unit)
     TARS.groundMenus[playerName].playerName = playerName
 
     if reconOk then
-        self:I("VALIDATE OK — " .. unit:GetName() .. " / " .. tostring(playerName))
+        self:T("VALIDATE OK — " .. unit:GetName() .. " / " .. tostring(playerName))
         self:_MenuRemoveValidation(playerName)
         -- Build the platform info block using localized labels
         local msg = self:_Txt("TARS_VALID_OK_HDR")
@@ -253146,7 +253886,7 @@ function TARS:CheckTask(unit)
             .. self:_Txt("TARS_PLATFORM_FILM")  .. " : " .. params.duration .. " expositions"
         self:_MsgUnit(msg, 15, playerName,true)
     else
-        self:I("VALIDATE REFUSED — " .. unit:GetName() .. " ammo=" .. tostring(refusedWeapon))
+        self:T("VALIDATE REFUSED — " .. unit:GetName() .. " ammo=" .. tostring(refusedWeapon))
         local msg = self:_Txt("TARS_VALID_REFUSED_WPN")
         if refusedWeapon then
             msg = msg .. "\n" .. self:_Txt("TARS_VALID_REFUSED_AMMO", refusedWeapon)
@@ -253423,7 +254163,7 @@ end
 -- @param Wrapper.Unit#UNIT unit
 -- @param #string playerName
 function TARS:AddBaseMenu(unit, playerName)
-    self:I(self.lid .. "AddBaseMenu — " .. unit:GetName()
+    self:T(self.lid .. "AddBaseMenu — " .. unit:GetName()
         .. " / " .. tostring(playerName))
 
     local typeName = unit:GetTypeName()
@@ -253484,7 +254224,7 @@ function TARS:AddBaseMenu(unit, playerName)
 
     self:_MenuAddValidation(playerName)
 
-    self:I(self.lid .. "MENU created — " .. tostring(playerName)
+    self:T(self.lid .. "MENU created — " .. tostring(playerName)
         .. " group=" .. grp:GetName())
 end
 
@@ -253785,7 +254525,6 @@ end
 function TARS:OnAfterDataProcessing(TargetSnap)
   return self
 end
-
 --- **Shapes** - Class that serves as the base shapes drawn in the Mission Editor
 --
 --
@@ -257838,7 +258577,7 @@ MSRS = {
 
 --- MSRS class version.
 -- @field #string version
-MSRS.version="0.3.6"
+MSRS.version="0.3.7"
 
 --- Voices
 -- @type MSRS.Voices
@@ -259174,7 +259913,7 @@ function MSRS:PlayText(Text, Delay, Coordinate, Speed, Speaker)
   else
 
   local speaker = Speaker or self.Speaker
-
+  
   if self.backend==MSRS.Backend.GRPC then
     self:T(self.lid.."Transmitting")
     self:_DCSgRPCtts(Text, nil, nil , nil, nil, nil, nil, Coordinate)
@@ -259657,19 +260396,16 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
     return
   end
   
-  Frequencies = UTILS.EnsureTable(Frequencies)
-  Modulations = UTILS.EnsureTable(Modulations)
+  Frequencies = UTILS.EnsureTable(Frequencies or self.frequencies)
+  Modulations = UTILS.EnsureTable(Modulations or self.modulations)
     
   local ffs = {}
-  for _,_f in pairs(Frequencies or self.frequencies) do
+  for _,_f in pairs(Frequencies) do
     table.insert(ffs,string.format("%.1f",_f))
   end
   
   local freqs = table.concat(ffs, ",")
-  
-
-  
-  local modus = table.concat(Modulations or self.modulations, ",")
+  local modus = table.concat(Modulations, ",")
 
   local coal=Coalition or self.coalition
   local gender=Gender or self.gender
@@ -259713,7 +260449,7 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
     gender = gender,
     speaker = Speaker or self.Speaker,
   }
-  
+
   local speechtime = HoundTTS.Transmit(Message, TransmissionP, ProviderP)
   
   return speechtime
@@ -259825,6 +260561,71 @@ function MSRS._HoundTranslate(Message,Parameters,CallbackFunction)
   if not parameters.language then parameters.language = "de" end
   HoundTTS.Translate(text,parameters,callback)
   return
+end
+
+--- Create and run a radio jammer for a number of seconds on given frequencies. Requires HOUND backend v0.2.0-beta5 or better.
+-- @param #MSRS self
+-- @param #table Frequencies The table of frequencies to use.
+-- @param #table Modulations The table of modulations to use.
+-- @param #number Coalition (Optional) The coalition to use. Defaults to previously set coalition on this instance.
+-- @param #string Noisetype (Optional)  One of "white" (default) | "chirp" | "harsh" | "jam".
+-- @param #number Volume (Optional) Volume 0.0–1.0  (default 1.0).
+-- @param #number Seconds (Optional) How long in seconds this jammer runs. Defaults to 30 seconds.
+-- @param #string Label (Optional) The label to use, defaults to "MSRS".
+-- @param DCS#Vec3 Vec3 (Optional) Vec3 of the sender's position.
+-- @param #boolean Encrypt (Optional) If true, use the SRS encrypt option.
+-- @param #number EncKey (Optional) If encrypt is true, use this encrypt key.
+-- @return #number ID The Jammer ID to switch the jamming off again with `MSRS.RadioJammerOff()`
+function MSRS:RadioJammerOn(Frequencies, Modulations, Coalition, Noisetype, Volume, Seconds, Label, Vec3, Encrypt, EncKey)
+ self:T(self.lid.."RadioJammerOn")
+  
+ Frequencies = UTILS.EnsureTable(Frequencies)
+ Modulations = UTILS.EnsureTable(Modulations)
+ 
+ local ffs = {}
+  for _,_f in pairs(Frequencies or self.frequencies) do
+    table.insert(ffs,string.format("%.1f",_f))
+  end
+  
+ local freqs = table.concat(ffs, ",")
+ local modus = table.concat(Modulations or self.modulations, ",")
+ -- Replace modulation
+ modus=modus:gsub("0", "AM")
+ modus=modus:gsub("1", "FM")
+ 
+ local coal=Coalition or self.coalition or coalition.side.RED
+ local secs = Seconds or 30
+ 
+ local TransmissionP = {}
+ local ProviderP = {}
+ 
+ TransmissionP.transmitter = "srs"
+ TransmissionP.freqs = freqs
+ TransmissionP.modulations = modus
+ TransmissionP.coalition = coal or self.coalition   -- number  0=spectator, 1=red, 2=blue
+ TransmissionP.name = Label or self.Label         -- string  client name shown in SRS
+ TransmissionP.point = Vec3       -- DCS Vec3 (optional) — initial transmitter position
+ TransmissionP.encrypt = Encrypt      -- bool
+ TransmissionP.encKey = EncKey       -- number  0–255
+ 
+ ProviderP.noiseType = Noisetype or "white"
+ ProviderP.volume = Volume or 1
+ 
+ local ID = HoundTTS.TransmitNoise(TransmissionP, ProviderP) 
+ 
+ self.NoiseID = ID
+ 
+ self:ScheduleOnce(secs,MSRS.RadioJammerOff,self,ID)
+ 
+ return ID
+  
+end
+
+--- Switch off a running Jammer using its ID.
+-- @param #MSRS self
+-- @param #number ID
+function MSRS:RadioJammerOff(ID)
+  return HoundTTS.KillSession(ID or self.NoiseID)
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
