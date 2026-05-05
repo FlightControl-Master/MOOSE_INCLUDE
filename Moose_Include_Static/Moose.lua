@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-05T10:33:36+02:00-b69ac2f86fa55830fe22f146cc21ad1a8b36ce1c ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-05T11:46:16+02:00-af1e9546e50dbbe68653d5342bd3b69b40f09aab ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -180081,7 +180081,7 @@ function AUFTRAG:GetDCSMissionTask(MissionGroup)
       local SeadUnitSet = SET_UNIT:New()
       for _,_unit in pairs (ScanUnitSet.Set) do
         local unit = _unit -- Wrapper.Unit#UNTI
-        if unit and unit:IsAlive() and unit:HasSEAD() then
+        if unit and unit:IsAlive() and unit.HasSEAD and unit:HasSEAD() then
           self:T("Adding UNIT for SEAD: "..unit:GetName())
           local task = CONTROLLABLE.TaskAttackUnit(nil,unit,GroupAttack,AI.Task.WeaponExpend.ALL,1,Direction,self.engageAltitude,2956984318)
           table.insert(DCStasks, task)
