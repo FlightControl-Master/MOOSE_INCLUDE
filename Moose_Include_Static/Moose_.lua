@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-05-05T11:46:16+02:00-af1e9546e50dbbe68653d5342bd3b69b40f09aab ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-05-10T13:04:29+02:00-79f03c164ce4324ca343a19b4f456c5426d4f47e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13555,6 +13555,7 @@ Coalitions={
 },
 },
 filterNoRegex=false,
+filterReplaceDash=true,
 }
 function SET_BASE:New(Database)
 local self=BASE:Inherit(self,FSM:New())
@@ -13616,11 +13617,17 @@ return ObjectFound
 end
 function SET_BASE:_SearchPattern(Name,Pattern,NoRegex,ReplaceDash)
 NoRegex=NoRegex or self.filterNoRegex
-if ReplaceDash==true then
+ReplaceDash=ReplaceDash or self.filterReplaceDash
+if ReplaceDash==true and NoRegex~=true then
 Pattern=Pattern:gsub("-","%%-")
 end
 local contain=string.find(Name,Pattern,1,NoRegex)
 return contain
+end
+function SET_BASE:FilterSetRegex(NoRegex,ReplaceDash)
+if NoRegex~=nil then self.filterNoRegex=NoRegex end
+self.filterReplaceDash=ReplaceDash or true
+return self
 end
 function SET_BASE:GetSet()
 return self.Set or{}
@@ -14459,7 +14466,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if self:_SearchPattern(MGroup:GetName(),GroupPrefix,false,true)then
+if self:_SearchPattern(MGroup:GetName(),GroupPrefix,self.filterNoRegex,self.filterReplaceDash)then
 MGroupPrefix=true
 end
 end
@@ -15098,7 +15105,7 @@ end
 if self.Filter.UnitPrefixes and MUnitInclude then
 local MUnitPrefix=false
 for UnitPrefixId,UnitPrefix in pairs(self.Filter.UnitPrefixes)do
-if self:_SearchPattern(MUnit:GetName(),UnitPrefix,false,true)then
+if self:_SearchPattern(MUnit:GetName(),UnitPrefix,self.filterNoRegex,self.filterReplaceDash)then
 MUnitPrefix=true
 end
 end
@@ -15509,7 +15516,7 @@ end
 if self.Filter.StaticPrefixes then
 local MStaticPrefix=false
 for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
-if self:_SearchPattern(MStatic:GetName(),StaticPrefix,false,true)then
+if self:_SearchPattern(MStatic:GetName(),StaticPrefix,self.filterNoRegex,self.filterReplaceDash)then
 MStaticPrefix=true
 end
 end
@@ -15933,7 +15940,7 @@ end
 if self.Filter.ClientPrefixes and MClientInclude then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
-if self:_SearchPattern(MClient.UnitName,ClientPrefix)then
+if self:_SearchPattern(MClient.UnitName,ClientPrefix,self.filterNoRegex,self.filterReplaceDash)then
 MClientPrefix=true
 end
 end
@@ -15953,7 +15960,7 @@ if self.Filter.Playernames and MClientInclude then
 local MClientPlayername=false
 local playername=MClient:GetPlayerName()or"Unknown"
 for _,_Playername in pairs(self.Filter.Playernames)do
-if playername and self:_SearchPattern(playername,_Playername)then
+if playername and self:_SearchPattern(playername,_Playername,self.filterNoRegex,self.filterReplaceDash)then
 MClientPlayername=true
 end
 end
@@ -15963,7 +15970,7 @@ if self.Filter.Callsigns and MClientInclude then
 local MClientCallsigns=false
 local callsign=MClient:GetCallsign()
 for _,_Callsign in pairs(self.Filter.Callsigns)do
-if callsign and self:_SearchPattern(callsign,_Callsign,true)then
+if callsign and self:_SearchPattern(callsign,_Callsign,self.filterNoRegex,self.filterReplaceDash)then
 MClientCallsigns=true
 end
 end
@@ -16192,7 +16199,7 @@ end
 if self.Filter.ClientPrefixes then
 local MClientPrefix=false
 for ClientPrefixId,ClientPrefix in pairs(self.Filter.ClientPrefixes)do
-if self:_SearchPattern(MClient.UnitName,ClientPrefix)then
+if self:_SearchPattern(MClient.UnitName,ClientPrefix,self.filterNoRegex,self.filterReplaceDash)then
 MClientPrefix=true
 end
 end
@@ -16525,7 +16532,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if self:_SearchPattern(MZoneName,ZonePrefix,false,true)then
+if self:_SearchPattern(MZoneName,ZonePrefix,self.filterNoRegex,self.filterReplaceDash)then
 MZonePrefix=true
 end
 end
@@ -16754,7 +16761,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if self:_SearchPattern(MZoneName,ZonePrefix,false,true)then
+if self:_SearchPattern(MZoneName,ZonePrefix,self.filterNoRegex,self.filterReplaceDash)then
 MZonePrefix=true
 end
 end
@@ -16907,7 +16914,7 @@ local MZoneName=MZone:GetName()
 if self.Filter.Prefixes then
 local MZonePrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if self:_SearchPattern(MZoneName,ZonePrefix,false,true)then
+if self:_SearchPattern(MZoneName,ZonePrefix,self.filterNoRegex,self.filterReplaceDash)then
 MZonePrefix=true
 break
 end
@@ -17266,7 +17273,7 @@ end
 if self.Filter.GroupPrefixes and MGroupInclude then
 local MGroupPrefix=false
 for GroupPrefixId,GroupPrefix in pairs(self.Filter.GroupPrefixes)do
-if self:_SearchPattern(MGroup:GetName(),GroupPrefix,false,true)then
+if self:_SearchPattern(MGroup:GetName(),GroupPrefix,self.filterNoRegex,self.filterReplaceDash)then
 MGroupPrefix=true
 end
 end
@@ -17430,7 +17437,7 @@ local MSceneryName=MScenery:GetName()
 if self.Filter.Prefixes then
 local MSceneryPrefix=false
 for ZonePrefixId,ZonePrefix in pairs(self.Filter.Prefixes)do
-if self:_SearchPattern(MSceneryName,ZonePrefix,false,true)then
+if self:_SearchPattern(MSceneryName,ZonePrefix,self.filterNoRegex,self.filterReplaceDash)then
 MSceneryPrefix=true
 end
 end
@@ -17561,7 +17568,7 @@ end
 if self.Filter.StaticPrefixes then
 local DCargoPrefix=false
 for StaticPrefixId,StaticPrefix in pairs(self.Filter.StaticPrefixes)do
-if self:_SearchPattern(DCargo:GetName(),StaticPrefix,false,true)then
+if self:_SearchPattern(DCargo:GetName(),StaticPrefix,self.filterNoRegex,self.filterReplaceDash)then
 DCargoPrefix=true
 end
 end
@@ -17660,7 +17667,7 @@ end
 function SET_DYNAMICCARGO:FilterCurrentOwner(PlayerName)
 self:FilterFunction(
 function(cargo)
-if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner,PlayerName,true)then
+if cargo and cargo.Owner and self:_SearchPattern(cargo.Owner,PlayerName,self.filterNoRegex,self.filterReplaceDash)then
 return true
 else
 return false
