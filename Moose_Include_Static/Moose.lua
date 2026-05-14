@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-10T13:04:29+02:00-79f03c164ce4324ca343a19b4f456c5426d4f47e ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-14T10:46:22+02:00-696630fe4d7c53e25c3599abea51a147a4363f1a ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -101745,7 +101745,7 @@ function SUPPRESSION:onafterStop(Controllable, From, Event, To)
       
   local text=string.format("Stopping SUPPRESSION for group %s", self.Controllable:GetName())
   MESSAGE:New(text, 10):ToAllIf(self.Debug)
-  sefl:T(self.lid..text)
+  self:T(self.lid..text)
       
   -- Clear all pending schedules
   self.CallScheduler:Clear()
