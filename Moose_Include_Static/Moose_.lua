@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-05-18T06:23:59+02:00-ebd105f80d8e25361ddb2bf938b177d3f3de5af9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-05-21T20:03:54+02:00-9cda1b88ea4182dc04564eea9c834d10c2d2581e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -55903,7 +55903,7 @@ MANTIS.radiusscale[MANTIS.SamType.MEDIUM]=1.2
 MANTIS.radiusscale[MANTIS.SamType.SHORT]=1.75
 MANTIS.radiusscale[MANTIS.SamType.POINT]=3
 MANTIS.SamData={
-["Hawk"]={Range=45,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
+["Hawk"]={Range=35,Blindspot=0,Height=12,Type="Medium",Radar="Hawk"},
 ["NASAMS"]={Range=14,Blindspot=0,Height=7,Type="Short",Radar="NSAMS",ARMCapacity=1},
 ["Patriot"]={Range=99,Blindspot=0,Height=25,Type="Long",Radar="Patriot str"},
 ["Rapier"]={Range=10,Blindspot=0,Height=3,Type="Short",Radar="rapier"},
@@ -55930,10 +55930,9 @@ MANTIS.SamData={
 ["SA-17"]={Range=50,Blindspot=3,Height=50,Type="Medium",Radar="SA-17",ARMCapacity=4},
 ["SA-20A"]={Range=150,Blindspot=5,Height=27,Type="Long",Radar="S-300PMU1",ARMCapacity=16},
 ["SA-20B"]={Range=200,Blindspot=4,Height=27,Type="Long",Radar="S-300PMU2",ARMCapacity=18},
-["SA-21"]={Range=380,Blindspot=5,Height=30,Type="Long",Radar="92N6E"},
-["S-300VM"]={Range=200,Blindspot=5,Height=30,Type="Long",Radar="9S32M",ARMCapacity=4},
-["S-300V4"]={Range=380,Blindspot=5,Height=30,Type="Long",Radar="9S32M",ARMCapacity=4},
-["S-400"]={Range=250,Blindspot=5,Height=27,Type="Long",Radar="92N6E",ARMCapacity=4},
+["S-300VM"]={Range=200,Blindspot=5,Height=30,Type="Long",Radar="9S32ME",ARMCapacity=4},
+["S-300V4"]={Range=380,Blindspot=5,Height=30,Type="Long",Radar="9S32M-1E",ARMCapacity=4},
+["S-400"]={Range=380,Blindspot=5,Height=30,Type="Long",Radar="92N6E",ARMCapacity=4},
 ["HQ-2"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
 ["TAMIR IDFA"]={Range=20,Blindspot=0.6,Height=12.3,Type="Short",Radar="IRON_DOME_LN"},
 ["STUNNER IDFA"]={Range=250,Blindspot=1,Height=45,Type="Long",Radar="DAVID_SLING_LN"},
@@ -55942,6 +55941,7 @@ MANTIS.SamData={
 ["Pantsir S1"]={Range=20,Blindspot=1.2,Height=15,Type="Point",Radar="PantsirS1",Point="true",ARMCapacity=3},
 ["Tor M2"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2",Point="true",ARMCapacity=4},
 ["IRIS-T SLM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM",ARMCapacity=12},
+["SON-9"]={Range=20,Blindspot=0,Height=14,Type="Point",Radar="SON_9",Point="true"},
 }
 MANTIS.SamDataHDS={
 ["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
@@ -55949,10 +55949,8 @@ MANTIS.SamDataHDS={
 ["SA-10B HDS"]={Range=90,Blindspot=5,Height=25,Type="Long",Radar="5P85CE ln",ARMCapacity=8},
 ["SA-10C HDS"]={Range=75,Blindspot=5,Height=25,Type="Long",Radar="5P85SE ln",ARMCapacity=3},
 ["SA-17 HDS"]={Range=50,Blindspot=3,Height=50,Type="Medium",Radar="SA-17",ARMCapacity=4},
-["SA-12 HDS 2"]={Range=100,Blindspot=13,Height=30,Type="Long",Radar="S-300V 9A82 l",ARMCapacity=12},
-["SA-12 HDS 1"]={Range=75,Blindspot=6,Height=25,Type="Long",Radar="S-300V 9A83 l",ARMCapacity=12},
-["SA-23 HDS 2"]={Range=200,Blindspot=5,Height=37,Type="Long",Radar="S-300VM 9A82ME",ARMCapacity=14},
-["SA-23 HDS 1"]={Range=100,Blindspot=1,Height=50,Type="Long",Radar="S-300VM 9A83ME",ARMCapacity=14},
+["SA-12 HDS"]={Range=100,Blindspot=6,Height=30,Type="Long",Radar="S-300V 9A82 l",ARMCapacity=12},
+["SA-23 HDS"]={Range=200,Blindspot=1,Height=50,Type="Long",Radar="S-300VM 9A82ME",ARMCapacity=14},
 ["HQ-2 HDS"]={Range=50,Blindspot=6,Height=35,Type="Medium",Radar="HQ_2_Guideline_LN"},
 ["SAMPT Block 1 HDS"]={Range=120,Blindspot=1,Height=20,Type="long",Radar="SAMPT_MLT_Blk1"},
 ["SAMPT Block 1INT HDS"]={Range=150,Blindspot=1,Height=25,Type="long",Radar="SAMPT_MLT_Blk1NT"},
@@ -56014,6 +56012,134 @@ MANTIS.SamDataCH={
 ["RBS103AM CHM"]={Range=160,Blindspot=1,Height=36,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103A"},
 ["RBS103BM CHM"]={Range=120,Blindspot=3,Height=24.5,Type="Long",Radar="LvS-103_Lavett103_HX_Rb103B"},
 ["Lvkv9040M CHM"]={Range=2,Blindspot=0.1,Height=1.2,Type="Point",Radar="LvKv9040",Point="true"},
+}
+MANTIS.JammerLoadouts={
+["1xALQ99"]={name="1x AN/ALQ-99",description="Baseline single pod. Full 64MHz-20GHz spectrum.",mult_LOW=1.12,mult_S=1.10,mult_IJ=1.12,mult_OPT=1.00,bt_mod=1.00,range_mod=1.00,tier="ALQ99"},
+["2xALQ99"]={name="2x AN/ALQ-99",description="Two pods. Improved ERP with log stacking.",mult_LOW=1.40,mult_S=1.36,mult_IJ=1.40,mult_OPT=1.02,bt_mod=1.00,range_mod=1.03,tier="ALQ99"},
+["3xALQ99"]={name="3x AN/ALQ-99 (Maximum Legacy)",description="Max legacy barrage. Highest broadband ERP.",mult_LOW=1.58,mult_S=1.52,mult_IJ=1.58,mult_OPT=1.04,bt_mod=1.00,range_mod=1.06,tier="ALQ99"},
+["1xALQ249"]={name="1x AN/ALQ-249 (AESA)",description="AESA 2-18GHz. High peak+wider window. Blind <2GHz.",mult_LOW=0.15,mult_S=1.82,mult_IJ=1.70,mult_OPT=1.00,bt_mod=1.28,range_mod=1.16,tier="ALQ249"},
+["2xALQ249"]={name="2x AN/ALQ-249",description="Two AESA pods. Strong S/IJ dominance.",mult_LOW=0.15,mult_S=2.30,mult_IJ=2.15,mult_OPT=1.00,bt_mod=1.38,range_mod=1.26,tier="ALQ249"},
+["3xALQ249"]={name="3x AN/ALQ-249 (Maximum AESA)",description="Max AESA ERP. Extreme S/IJ. No LOW coverage.",mult_LOW=0.15,mult_S=2.75,mult_IJ=2.58,mult_OPT=1.00,bt_mod=1.48,range_mod=1.35,tier="ALQ249"},
+["1xALQ99_1xALQ249"]={name="1x ALQ-99 + 1x ALQ-249",description="Balanced coverage. AESA S/IJ + ALQ-99 LOW-band.",mult_LOW=1.14,mult_S=1.90,mult_IJ=1.80,mult_OPT=1.01,bt_mod=1.22,range_mod=1.12,tier="Mixed"},
+["1xALQ99_2xALQ249"]={name="1x ALQ-99 + 2x ALQ-249 [Recommended]",description="Best all-around. High AESA ERP + LOW coverage.",mult_LOW=1.10,mult_S=2.38,mult_IJ=2.22,mult_OPT=1.01,bt_mod=1.35,range_mod=1.24,tier="Mixed"},
+["2xALQ99_1xALQ249"]={name="2x ALQ-99 + 1x ALQ-249",description="Strong LOW-band + AESA S/IJ boost.",mult_LOW=1.42,mult_S=2.10,mult_IJ=2.04,mult_OPT=1.03,bt_mod=1.25,range_mod=1.15,tier="Mixed"},
+}
+MANTIS.JammerLoadoutTiers={
+ALQ99={"1xALQ99","2xALQ99","3xALQ99"},
+ALQ249={"1xALQ249","2xALQ249","3xALQ249"},
+Mixed={"1xALQ99_1xALQ249","1xALQ99_2xALQ249","2xALQ99_1xALQ249"},
+}
+MANTIS.JammerJitterPercent=0.10
+MANTIS.JammerSAMParams={
+["Nike"]={peak=78,mu=35,sigma_L=14,tail_dist=80,band="S",floor=5},
+["Hawk"]={peak=30,mu=15,sigma_L=6,tail_dist=28,band="IJ",floor=3},
+["SA-2"]={peak=75,mu=40,sigma_L=16,tail_dist=85,band="S",floor=5},
+["SA-3"]={peak=45,mu=22,sigma_L=10,tail_dist=50,band="IJ",floor=5},
+["SA-5"]={peak=52,mu=60,sigma_L=22,tail_dist=110,band="S",floor=5},
+["SA-6"]={peak=33,mu=18,sigma_L=8,tail_dist=42,band="IJ",floor=3},
+["SA-8"]={peak=38,mu=10,sigma_L=4,tail_dist=22,band="IJ",floor=3},
+["SA-9"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["SA-10"]={peak=32,mu=50,sigma_L=20,tail_dist=90,band="S",floor=3},
+["SA-11"]={peak=52,mu=28,sigma_L=12,tail_dist=55,band="IJ",floor=3},
+["SA-13"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["SA-15"]={peak=30,mu=14,sigma_L=6,tail_dist=30,band="IJ",floor=3},
+["SA-19"]={peak=25,mu=18,sigma_L=7,tail_dist=38,band="IJ",floor=2},
+["SA-10B"]={peak=30,mu=52,sigma_L=20,tail_dist=95,band="S",floor=3},
+["SA-17"]={peak=24,mu=32,sigma_L=14,tail_dist=65,band="IJ",floor=2},
+["SA-20A"]={peak=22,mu=58,sigma_L=22,tail_dist=95,band="S",floor=2},
+["SA-20B"]={peak=20,mu=60,sigma_L=22,tail_dist=100,band="S",floor=2},
+["S-300VM"]={peak=16,mu=70,sigma_L=28,tail_dist=110,band="S",floor=2},
+["S-300V4"]={peak=14,mu=75,sigma_L=28,tail_dist=115,band="S",floor=2},
+["S-400"]={peak=18,mu=65,sigma_L=25,tail_dist=105,band="S",floor=2},
+["SA-21"]={peak=18,mu=65,sigma_L=25,tail_dist=105,band="S",floor=2},
+["SA-22"]={peak=10,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=0},
+["SA-23"]={peak=16,mu=70,sigma_L=28,tail_dist=110,band="S",floor=2},
+["SA-23B"]={peak=14,mu=75,sigma_L=28,tail_dist=115,band="S",floor=2},
+["SA-27"]={peak=22,mu=38,sigma_L=16,tail_dist=72,band="IJ",floor=2},
+["SA-28"]={peak=18,mu=35,sigma_L=15,tail_dist=75,band="IJ",floor=2},
+["NASAMS"]={peak=25,mu=28,sigma_L=12,tail_dist=55,band="IJ",floor=2},
+["Patriot"]={peak=32,mu=50,sigma_L=20,tail_dist=90,band="S",floor=3},
+["Rapier"]={peak=12,mu=8,sigma_L=3,tail_dist=18,band="IJ",floor=0},
+["Gepard"]={peak=18,mu=6,sigma_L=2,tail_dist=15,band="IJ",floor=0},
+["Roland"]={peak=35,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=3},
+["HQ-7"]={peak=38,mu=10,sigma_L=4,tail_dist=22,band="IJ",floor=3},
+["HQ-2"]={peak=70,mu=38,sigma_L=15,tail_dist=80,band="S",floor=5},
+["C-RAM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["Avenger"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["Chaparral"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["Linebacker"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["Silkworm"]={peak=35,mu=20,sigma_L=8,tail_dist=40,band="IJ",floor=3},
+["Dog Ear"]={peak=40,mu=10,sigma_L=4,tail_dist=20,band="IJ",floor=5},
+["Pantsir S1"]={peak=10,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=0},
+["Tor M2"]={peak=28,mu=14,sigma_L=6,tail_dist=30,band="IJ",floor=3},
+["IRIS-T SLM"]={peak=18,mu=18,sigma_L=8,tail_dist=40,band="IJ",floor=2},
+["SON-9"]={peak=48,mu=20,sigma_L=9,tail_dist=42,band="IJ",floor=5},
+["TAMIR IDFA"]={peak=19,mu=25,sigma_L=12,tail_dist=55,band="S",floor=2},
+["STUNNER IDFA"]={peak=16,mu=45,sigma_L=18,tail_dist=80,band="S",floor=2},
+["SA-2 HDS"]={peak=75,mu=40,sigma_L=16,tail_dist=85,band="S",floor=5},
+["SA-3 HDS"]={peak=45,mu=22,sigma_L=10,tail_dist=50,band="IJ",floor=5},
+["SA-10B HDS"]={peak=30,mu=52,sigma_L=20,tail_dist=95,band="S",floor=3},
+["SA-10C HDS"]={peak=30,mu=50,sigma_L=20,tail_dist=92,band="S",floor=3},
+["SA-17 HDS"]={peak=24,mu=32,sigma_L=14,tail_dist=65,band="IJ",floor=2},
+["SA-12 HDS"]={peak=35,mu=42,sigma_L=16,tail_dist=75,band="S",floor=3},
+["SA-23 HDS"]={peak=16,mu=70,sigma_L=28,tail_dist=110,band="S",floor=2},
+["HQ-2 HDS"]={peak=70,mu=38,sigma_L=15,tail_dist=80,band="S",floor=5},
+["SAMPT Block 1 HDS"]={peak=28,mu=45,sigma_L=18,tail_dist=85,band="S",floor=3},
+["SAMPT Block 1INT HDS"]={peak=26,mu=48,sigma_L=18,tail_dist=88,band="S",floor=3},
+["SAMPT Block 2 HDS"]={peak=22,mu=52,sigma_L=20,tail_dist=92,band="S",floor=2},
+["RBS98M SMA"]={peak=25,mu=12,sigma_L=5,tail_dist=25,band="IJ",floor=3},
+["RBS70 SMA"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS70M SMA"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS90 SMA"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS90M SMA"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS103A SMA"]={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",floor=2},
+["RBS103B SMA"]={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",floor=2},
+["RBS103AM SMA"]={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",floor=2},
+["RBS103BM SMA"]={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",floor=2},
+["Lvkv9040M SMA"]={peak=15,mu=3,sigma_L=1,tail_dist=8,band="OPT",floor=0},
+["2S38 CHM"]={peak=8,mu=3,sigma_L=1,tail_dist=8,band="OPT",floor=0},
+["PantsirS1 CHM"]={peak=10,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=0},
+["PantsirS2 CHM"]={peak=10,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=0},
+["PGL-625 CHM"]={peak=12,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["HQ-17A CHM"]={peak=30,mu=14,sigma_L=6,tail_dist=30,band="IJ",floor=3},
+["M903PAC2 CHM"]={peak=32,mu=50,sigma_L=20,tail_dist=90,band="S",floor=3},
+["M903PAC3 CHM"]={peak=15,mu=55,sigma_L=22,tail_dist=95,band="S",floor=2},
+["M903PAC2KAT1 CHM"]={peak=32,mu=50,sigma_L=20,tail_dist=90,band="S",floor=3},
+["TorM2 CHM"]={peak=28,mu=14,sigma_L=6,tail_dist=30,band="IJ",floor=3},
+["TorM2K CHM"]={peak=28,mu=14,sigma_L=6,tail_dist=30,band="IJ",floor=3},
+["TorM2M CHM"]={peak=26,mu=16,sigma_L=6,tail_dist=32,band="IJ",floor=3},
+["NASAMS3-AMRAAMER CHM"]={peak=20,mu=35,sigma_L=14,tail_dist=65,band="IJ",floor=2},
+["NASAMS3-AIM9X2 CHM"]={peak=10,mu=15,sigma_L=6,tail_dist=30,band="IJ",floor=0},
+["C-RAM CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["PGZ-09 CHM"]={peak=22,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=0},
+["PGZ-95 CHM"]={peak=15,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["S350-9M100 CHM"]={peak=18,mu=35,sigma_L=15,tail_dist=75,band="IJ",floor=2},
+["S350-9M96D CHM"]={peak=18,mu=35,sigma_L=15,tail_dist=75,band="IJ",floor=2},
+["HQ-22 CHM"]={peak=20,mu=58,sigma_L=22,tail_dist=100,band="S",floor=2},
+["LD-3000 CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["LD-3000M CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["FlaRakRad CHM"]={peak=35,mu=5,sigma_L=2,tail_dist=12,band="IJ",floor=3},
+["IRIS-T SLM CHM"]={peak=18,mu=18,sigma_L=8,tail_dist=40,band="IJ",floor=2},
+["Skynex CHM"]={peak=12,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["Skyshield CHM"]={peak=12,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["BukM3-9M317M CHM"]={peak=22,mu=38,sigma_L=16,tail_dist=72,band="IJ",floor=2},
+["BukM3-9M317MA CHM"]={peak=22,mu=38,sigma_L=16,tail_dist=72,band="IJ",floor=2},
+["SkySabre CHM"]={peak=18,mu=18,sigma_L=7,tail_dist=40,band="IJ",floor=2},
+["Stormer CHM"]={peak=10,mu=5,sigma_L=2,tail_dist=12,band="OPT",floor=0},
+["THAAD CHM"]={peak=10,mu=80,sigma_L=35,tail_dist=120,band="IJ",floor=0},
+["LAV-AD CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["WieselOzelot CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["USInfantryFIM92K CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["RBS98M CHM"]={peak=25,mu=12,sigma_L=5,tail_dist=25,band="IJ",floor=3},
+["RBS70 CHM"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS70M CHM"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS90 CHM"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS90M CHM"]={peak=5,mu=4,sigma_L=2,tail_dist=10,band="OPT",floor=0},
+["RBS103A CHM"]={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",floor=2},
+["RBS103B CHM"]={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",floor=2},
+["RBS103AM CHM"]={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",floor=2},
+["RBS103BM CHM"]={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",floor=2},
+["Lvkv9040M CHM"]={peak=15,mu=3,sigma_L=1,tail_dist=8,band="OPT",floor=0},
 }
 do
 function MANTIS:New(name,samprefix,ewrprefix,hq,Coalition,dynamic,awacs,EmOnOff,Padding,Zones)
@@ -56164,7 +56290,8 @@ return false
 end
 local function SwitchSAMOn(Name,Group)
 local suppressed=self.SuppressedGroups[Name]or false
-if not suppressed and self.SamStateTracker[Name]=="GREEN"then
+local jammed=self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[Name]or false
+if not suppressed and not jammed and self.SamStateTracker[Name]=="GREEN"then
 self.SamStateTracker[Name]="RED"
 if self.UseEmOnOff then
 Group:EnableEmission(true)
@@ -57035,6 +57162,11 @@ function MANTIS:SeadAllowSuppression(targetGroup,targetName,attackerGroup,weapon
 self:T(self.lid.."SeadAllowSuppression")
 self:T(string.format("MANTIS:SeadAllowSuppression REQUEST | target=%s | weapon=%s | tti=%s | delay=%s",tostring(targetName),
 tostring(weaponName),tostring(tti),tostring(delay)))
+if self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[targetName]then
+self:T(string.format("MANTIS:SeadAllowSuppression DECISION -> DENIED (JAMMED %.0f%%) | target=%s",
+self._jammedSAMs[targetName]*100,tostring(targetName)))
+return false
+end
 local armcap=targetGroup:GetProperty("ARMCapacity")
 if not armcap then
 for _,sam in pairs(self.SAM_Table or{})do
@@ -57383,6 +57515,508 @@ end
 function MANTIS:onafterSeadSuppressionPlanned(From,Event,To,Group,Name,SuppressionStartTime,SuppressionEndTime,Attacker)
 self:T({From,Event,To,Name})
 return self
+end
+function MANTIS:AddJammer(clientSet,defaultLoadout)
+self:T(self.lid.."AddJammer")
+self._jammerEnabled=true
+if type(clientSet)=="string"then
+clientSet=SET_GROUP:New():FilterPrefixes(clientSet):FilterActive(true):FilterStart()
+end
+self._jammerClientSet=clientSet
+self._jammerDefaultLoadout=defaultLoadout or"1xALQ99_2xALQ249"
+self._jammerAircraft=self._jammerAircraft or{}
+self._jammerAISets=self._jammerAISets or{}
+self._jammerSnapshot=self._jammerSnapshot or{}
+self._jammedSAMs=self._jammedSAMs or{}
+self._jammerMenusBuilt=self._jammerMenusBuilt or{}
+if not self._jammerHasTransitions then
+self:AddTransition("*","JammerSuppression","*")
+self:AddTransition("*","JammerActivated","*")
+self:AddTransition("*","JammerDeactivated","*")
+self._jammerHasTransitions=true
+end
+if not self._jammerMenuScheduler then
+self._jammerMenuScheduler=SCHEDULER:New(nil,function()
+if not self._jammerEnabled then return end
+if self._jammerClientSet then
+self:_IterateJammerSet(self._jammerClientSet,function(unit,group)
+local unitName=unit:GetName()
+if not self._jammerAircraft[unitName]then
+self._jammerAircraft[unitName]={
+loadout=self._jammerDefaultLoadout,
+active=false,
+isClient=unit:IsPlayer(),
+hasLoadout=false,
+}
+elseif not self._jammerAircraft[unitName].isClient and unit:IsPlayer()then
+self._jammerAircraft[unitName].isClient=true
+end
+if self._jammerAircraft[unitName].isClient and not self._jammerMenusBuilt[unitName]then
+self:_SetupJammerMenu(unit,group)
+end
+end)
+end
+end,{},2,5)
+end
+self:I(string.format("%sJammer configured | default=%s",self.lid,self._jammerDefaultLoadout))
+return self
+end
+function MANTIS:AddJammerAI(aiSet,loadout)
+self:T(self.lid.."AddJammerAI")
+self._jammerEnabled=true
+self._jammerAircraft=self._jammerAircraft or{}
+self._jammerAISets=self._jammerAISets or{}
+self._jammerSnapshot=self._jammerSnapshot or{}
+self._jammedSAMs=self._jammedSAMs or{}
+self._jammerMenusBuilt=self._jammerMenusBuilt or{}
+local actualSet=aiSet
+if type(aiSet)=="string"then
+actualSet=SET_GROUP:New():FilterPrefixes(aiSet):FilterActive(true):FilterStart()
+end
+table.insert(self._jammerAISets,{set=actualSet,loadout=loadout or"1xALQ99_2xALQ249"})
+if not self._jammerHasTransitions then
+self:AddTransition("*","JammerSuppression","*")
+self:AddTransition("*","JammerActivated","*")
+self:AddTransition("*","JammerDeactivated","*")
+self._jammerHasTransitions=true
+end
+self:I(string.format("%sJammer AI configured | loadout=%s",self.lid,loadout or"1xALQ99_2xALQ249"))
+return self
+end
+function MANTIS:_JamGaussianExp(d,params,loadoutKey)
+if d<0 or d>200 then return 0 end
+if not params then return 0 end
+local cfg=self.JammerLoadouts[loadoutKey]
+if not cfg then return 0 end
+local peak,mu,sigma_L,tail_dist,band=params.peak,params.mu,params.sigma_L,params.tail_dist,params.band
+local floor=params.floor or 0
+local bm
+if band=="LOW"then bm=cfg.mult_LOW
+elseif band=="S"then bm=cfg.mult_S
+elseif band=="IJ"then bm=cfg.mult_IJ
+else bm=cfg.mult_OPT end
+local eff_sigma_L=sigma_L/cfg.bt_mod
+local eff_tail_dist=tail_dist*cfg.range_mod
+local eff_peak=math.min(95,peak*bm)
+local raw
+if d<mu then
+raw=eff_peak*math.exp(-0.5*((d-mu)/eff_sigma_L)^2)
+else
+local lambda=math.log(100.0)/eff_tail_dist
+raw=eff_peak*math.exp(-lambda*(d-mu))
+end
+local jitter=1.0+(math.random()*2-1)*(self.JammerJitterPercent or 0.10)
+raw=raw*jitter
+local eff_floor=(floor or 0)*bm
+raw=math.max(eff_floor,raw)
+return math.max(0,math.min(95,raw))/100.0
+end
+function MANTIS:_BuildJammerKeyCache()
+self._jammerSortedHDS={}
+self._jammerSortedSMA={}
+self._jammerSortedCHM={}
+self._jammerSortedBase={}
+for key,_ in pairs(self.JammerSAMParams)do
+if string.find(key,"HDS",1,true)then table.insert(self._jammerSortedHDS,key)
+elseif string.find(key,"SMA",1,true)then table.insert(self._jammerSortedSMA,key)
+elseif string.find(key,"CHM",1,true)then table.insert(self._jammerSortedCHM,key)
+else table.insert(self._jammerSortedBase,key)end
+end
+local byLenDesc=function(a,b)return#a>#b end
+table.sort(self._jammerSortedHDS,byLenDesc)
+table.sort(self._jammerSortedSMA,byLenDesc)
+table.sort(self._jammerSortedCHM,byLenDesc)
+table.sort(self._jammerSortedBase,byLenDesc)
+self._jammerResolverCache={}
+return self
+end
+function MANTIS:_ResolveJammerParams(grpname)
+if not grpname then return nil end
+if not self._jammerSortedBase then self:_BuildJammerKeyCache()end
+local cached=self._jammerResolverCache[grpname]
+if cached~=nil then
+if cached==false then return nil end
+return cached
+end
+local function safeMatch(name,key)
+local startPos,endPos=string.find(name,key,1,true)
+if not startPos then return false end
+local nextChar=string.sub(name,endPos+1,endPos+1)
+if nextChar==""then return true end
+if string.match(nextChar,"%d")then return false end
+return true
+end
+local keyList
+if string.find(grpname,"HDS",1,true)then keyList=self._jammerSortedHDS
+elseif string.find(grpname,"SMA",1,true)then keyList=self._jammerSortedSMA
+elseif string.find(grpname,"CHM",1,true)then keyList=self._jammerSortedCHM end
+if keyList then
+for i=1,#keyList do
+if safeMatch(grpname,keyList[i])then
+local params=self.JammerSAMParams[keyList[i]]
+self._jammerResolverCache[grpname]=params
+return params
+end
+end
+end
+local baseKeys=self._jammerSortedBase
+for i=1,#baseKeys do
+if safeMatch(grpname,baseKeys[i])then
+local params=self.JammerSAMParams[baseKeys[i]]
+self._jammerResolverCache[grpname]=params
+return params
+end
+end
+self._jammerResolverCache[grpname]=false
+return nil
+end
+function MANTIS:_CountTable(t)
+local c=0
+for _ in pairs(t)do c=c+1 end
+return c
+end
+function MANTIS:_IterateJammerSet(set,fn)
+if not set then return self end
+if type(set.ForEachClient)=="function"then
+set:ForEachClient(function(client)
+if not client then return end
+local unit=client:GetClientGroupUnit()
+if not unit or not unit:IsAlive()then return end
+local group=unit:GetGroup()
+if not group then return end
+fn(unit,group)
+end)
+elseif type(set.ForEachGroupAlive)=="function"then
+set:ForEachGroupAlive(function(group)
+if not group then return end
+local units=group:GetUnits()
+if not units then return end
+for _,unit in pairs(units)do
+if unit and unit:IsAlive()then
+fn(unit,group)
+end
+end
+end)
+else
+self:E(self.lid.."ERROR: jammer set is not SET_GROUP, SET_CLIENT, or SET_PLAYER (no ForEachGroupAlive or ForEachClient method).")
+end
+return self
+end
+function MANTIS:_UpdateJammers()
+if not self._jammerEnabled then return self end
+self._jammerSnapshot={}
+if self._jammerClientSet then
+self:_IterateJammerSet(self._jammerClientSet,function(unit,group)
+local unitName=unit:GetName()
+if not self._jammerAircraft[unitName]then
+self._jammerAircraft[unitName]={
+loadout=self._jammerDefaultLoadout,
+active=false,
+isClient=unit:IsPlayer(),
+hasLoadout=false,
+}
+else
+if not self._jammerAircraft[unitName].isClient and unit:IsPlayer()then
+self._jammerAircraft[unitName].isClient=true
+end
+end
+if self._jammerAircraft[unitName].isClient and not self._jammerMenusBuilt[unitName]then
+self:_SetupJammerMenu(unit,group)
+end
+local state=self._jammerAircraft[unitName]
+if state.active and unit:InAir()then
+local coord=unit:GetCoordinate()
+if coord then
+table.insert(self._jammerSnapshot,{coord=coord,loadout=state.loadout,name=unitName})
+end
+end
+end)
+end
+for _,aiEntry in ipairs(self._jammerAISets or{})do
+self:_IterateJammerSet(aiEntry.set,function(unit,group)
+local unitName=unit:GetName()
+if not self._jammerAircraft[unitName]then
+self._jammerAircraft[unitName]={
+loadout=aiEntry.loadout,
+active=false,
+isClient=false,
+hasLoadout=true,
+}
+end
+local state=self._jammerAircraft[unitName]
+if state.active and unit:InAir()then
+local coord=unit:GetCoordinate()
+if coord then
+table.insert(self._jammerSnapshot,{coord=coord,loadout=state.loadout,name=unitName})
+end
+end
+end)
+end
+local toRemove={}
+for unitName,state in pairs(self._jammerAircraft)do
+local unit=UNIT:FindByName(unitName)
+if not unit or not unit:IsAlive()then
+table.insert(toRemove,unitName)
+end
+end
+for _,unitName in ipairs(toRemove)do
+if self._jammerAircraft[unitName]and self._jammerAircraft[unitName].active then
+self:__JammerDeactivated(1,unitName)
+end
+self._jammerAircraft[unitName]=nil
+self._jammerMenusBuilt[unitName]=nil
+end
+return self
+end
+function MANTIS:_ComputeJammedSAMs()
+self._jammedSAMs={}
+if not self._jammerEnabled then return self end
+if#self._jammerSnapshot==0 then return self end
+local M_TO_NM=1.0/1852.0
+local allSAMs={}
+local tables=self.automode
+and{self.SAM_Table_Long,self.SAM_Table_Medium,self.SAM_Table_Short,self.SAM_Table_PointDef}
+or{self.SAM_Table}
+for _,samTable in ipairs(tables)do
+for _,_data in pairs(samTable)do
+if not allSAMs[_data[1]]then allSAMs[_data[1]]=_data[2]end
+end
+end
+for samName,samCoord in pairs(allSAMs)do
+local params=self:_ResolveJammerParams(samName)
+if params then
+local survival=1.0
+for _,jammer in ipairs(self._jammerSnapshot)do
+local distNM=samCoord:Get2DDistance(jammer.coord)*M_TO_NM
+local pJam=self:_JamGaussianExp(distNM,params,jammer.loadout)
+if pJam>0 then survival=survival*(1.0-pJam)end
+end
+local combinedProb=1.0-survival
+if combinedProb>0 and math.random()<combinedProb then
+self._jammedSAMs[samName]=combinedProb
+end
+end
+end
+if self.debug or self.verbose then
+local activeCount=#(self._jammerSnapshot or{})
+local jamCount=self:_CountTable(self._jammedSAMs)
+if activeCount>0 or jamCount>0 then
+local lines={}
+table.insert(lines,string.format("%sJammer cycle: %d active aircraft, %d SAMs jammed",
+self.lid,activeCount,jamCount))
+for _,jammer in ipairs(self._jammerSnapshot)do
+local cfg=self.JammerLoadouts[jammer.loadout]
+table.insert(lines,string.format("  ACTIVE: %s | loadout=%s",
+jammer.name,cfg and cfg.name or jammer.loadout))
+end
+for samName,prob in pairs(self._jammedSAMs)do
+table.insert(lines,string.format("  JAMMED: %s @ %.0f%%",samName,prob*100))
+end
+local text=table.concat(lines,"\n")
+self:I(text)
+if self.debug then
+MESSAGE:New(text,10,"MANTIS"):ToAll()
+end
+end
+end
+return self
+end
+function MANTIS:_SetupJammerMenu(unit,group)
+local unitName=unit:GetName()
+local groupName=group:GetName()
+if self._jammerMenusBuilt[unitName]then return self end
+self._jammerMenusBuilt[unitName]=true
+if self._jammerGroupMenus and self._jammerGroupMenus[groupName]then
+self._jammerGroupMenus[groupName]:Remove()
+self._jammerGroupMenus[groupName]=nil
+end
+self._jammerGroupMenus=self._jammerGroupMenus or{}
+local rootMenu=MENU_GROUP:New(group,"Jammer Controls")
+self._jammerGroupMenus[groupName]=rootMenu
+local alq99Menu=MENU_GROUP:New(group,"ALQ-99 Loadouts",rootMenu)
+local alq249Menu=MENU_GROUP:New(group,"ALQ-249 Loadouts",rootMenu)
+local mixedMenu=MENU_GROUP:New(group,"Mixed Loadouts",rootMenu)
+local tierMenus={ALQ99=alq99Menu,ALQ249=alq249Menu,Mixed=mixedMenu}
+for tierName,keys in pairs(self.JammerLoadoutTiers)do
+local parentMenu=tierMenus[tierName]
+for _,loadoutKey in ipairs(keys)do
+local cfg=self.JammerLoadouts[loadoutKey]
+if cfg then
+MENU_GROUP_COMMAND:New(group,cfg.name,parentMenu,
+self._JammerMenuSetLoadout,self,unitName,loadoutKey,group,rootMenu)
+end
+end
+end
+MESSAGE:New("JAMMER ONLINE\nSelect a loadout from the Jammer Controls menu.",15,"JAMMER"):ToGroup(group)
+return self
+end
+function MANTIS:_JammerMenuSetLoadout(unitName,loadoutKey,group,rootMenu)
+local state=self._jammerAircraft[unitName]
+if not state then return end
+state.loadout=loadoutKey
+state.hasLoadout=true
+local cfg=self.JammerLoadouts[loadoutKey]
+MESSAGE:New(string.format("LOADOUT SELECTED: %s\n%s",cfg and cfg.name or loadoutKey,cfg and cfg.description or""),12,"JAMMER"):ToGroup(group)
+if not state._musicMenuAdded then
+state._musicMenuAdded=true
+state._musicOnMenu=nil
+state._musicOffMenu=nil
+self:_ShowMusicOn(unitName,group,rootMenu)
+end
+end
+function MANTIS:_ShowMusicOn(unitName,group,rootMenu)
+local state=self._jammerAircraft[unitName]
+if not state then return end
+if state._musicOffMenu then state._musicOffMenu:Remove()state._musicOffMenu=nil end
+state._musicOnMenu=MENU_GROUP_COMMAND:New(group,"Music On",rootMenu,
+function()
+local s=self._jammerAircraft[unitName]
+if not s then return end
+s.active=true
+MESSAGE:New(string.format("JAMMER ACTIVE\n%s",self.JammerLoadouts[s.loadout]and self.JammerLoadouts[s.loadout].name or s.loadout),10,"JAMMER"):ToGroup(group)
+self:__JammerActivated(1,unitName,s.loadout)
+self:_ShowMusicOff(unitName,group,rootMenu)
+end)
+end
+function MANTIS:_ShowMusicOff(unitName,group,rootMenu)
+local state=self._jammerAircraft[unitName]
+if not state then return end
+if state._musicOnMenu then state._musicOnMenu:Remove()state._musicOnMenu=nil end
+state._musicOffMenu=MENU_GROUP_COMMAND:New(group,"Music Off",rootMenu,
+function()
+local s=self._jammerAircraft[unitName]
+if not s then return end
+s.active=false
+MESSAGE:New("JAMMER SAFE",10,"JAMMER"):ToGroup(group)
+self:__JammerDeactivated(1,unitName)
+self:_ShowMusicOn(unitName,group,rootMenu)
+end)
+end
+function MANTIS:onafterJammerSuppression(From,Event,To,Group,Name,Probability)
+self:T({From,Event,To,Name,Probability})
+return self
+end
+function MANTIS:onafterJammerActivated(From,Event,To,UnitName,Loadout)
+self:T({From,Event,To,UnitName,Loadout})
+return self
+end
+function MANTIS:onafterJammerDeactivated(From,Event,To,UnitName)
+self:T({From,Event,To,UnitName})
+return self
+end
+function MANTIS:GetJammedSAMs()
+return self._jammedSAMs or{}
+end
+function MANTIS:GetActiveJammerCount()
+return self._jammerSnapshot and#self._jammerSnapshot or 0
+end
+function MANTIS:JammerDebug(toScreen)
+local lines={}
+table.insert(lines,"=== MANTIS JAMMER DEBUG REPORT ===")
+table.insert(lines,string.format("Enabled: %s | Default loadout: %s",
+tostring(self._jammerEnabled),tostring(self._jammerDefaultLoadout)))
+table.insert(lines,string.format("Has client set: %s | AI sets: %d",
+tostring(self._jammerClientSet~=nil),#(self._jammerAISets or{})))
+local count=0
+for unitName,state in pairs(self._jammerAircraft or{})do
+count=count+1
+table.insert(lines,string.format("  [%s] active=%s isClient=%s loadout=%s hasLoadout=%s",
+unitName,tostring(state.active),tostring(state.isClient),
+tostring(state.loadout),tostring(state.hasLoadout)))
+end
+table.insert(lines,string.format("Total tracked aircraft: %d",count))
+table.insert(lines,string.format("Active jammer snapshot: %d aircraft airborne+armed",#(self._jammerSnapshot or{})))
+local jcount=0
+for samName,prob in pairs(self._jammedSAMs or{})do
+jcount=jcount+1
+table.insert(lines,string.format("  JAMMED: %s @ %.0f%%",samName,prob*100))
+end
+table.insert(lines,string.format("Currently jammed SAMs: %d",jcount))
+table.insert(lines,"=== END REPORT ===")
+local report=table.concat(lines,"\n")
+self:I(report)
+if toScreen then
+MESSAGE:New(report,30,"JAMMER DEBUG"):ToAll()
+end
+return self
+end
+function MANTIS:JammerTestResolver(testName)
+local params=self:_ResolveJammerParams(testName)
+if not params then
+self:I(string.format("[JammerTestResolver] '%s' -> NO MATCH",testName))
+return"NO MATCH"
+end
+for key,p in pairs(self.JammerSAMParams)do
+if p==params then
+self:I(string.format("[JammerTestResolver] '%s' -> '%s' {peak=%d, mu=%d, band=%s, floor=%d}",
+testName,key,params.peak,params.mu,params.band,params.floor or 0))
+return key
+end
+end
+return"MATCHED (key unknown)"
+end
+function MANTIS:SetJammerLoadout(unitName,loadoutKey)
+if self._jammerAircraft and self._jammerAircraft[unitName]then
+self._jammerAircraft[unitName].loadout=loadoutKey
+self._jammerAircraft[unitName].hasLoadout=true
+end
+return self
+end
+function MANTIS:SetJammerActive(unitName,active)
+if self._jammerAircraft and self._jammerAircraft[unitName]then
+local wasActive=self._jammerAircraft[unitName].active
+self._jammerAircraft[unitName].active=active
+if active and not wasActive then
+self:__JammerActivated(1,unitName,self._jammerAircraft[unitName].loadout)
+elseif not active and wasActive then
+self:__JammerDeactivated(1,unitName)
+end
+end
+return self
+end
+if not MANTIS._CheckLoopOriginal then
+MANTIS._CheckLoopOriginal=MANTIS._CheckLoop
+end
+if not MANTIS._onbeforeStatusOriginal then
+MANTIS._onbeforeStatusOriginal=MANTIS.onbeforeStatus
+end
+function MANTIS:_CheckLoop(samset,detset,dlink,limit)
+local r,g,s=self:_CheckLoopOriginal(samset,detset,dlink,limit)
+if self._jammerEnabled and self._jammedSAMs then
+for _,_data in pairs(samset)do
+local name=_data[1]
+if self._jammedSAMs[name]and self.SamStateTracker[name]=="RED"then
+local samgroup=GROUP:FindByName(name)
+if samgroup and samgroup:IsAlive()then
+if self.UseEmOnOff then
+samgroup:EnableEmission(false)
+else
+samgroup:OptionAlarmStateGreen()
+end
+self.SamStateTracker[name]="GREEN"
+self:__JammerSuppression(1,samgroup,name,self._jammedSAMs[name])
+if self.ShoradLink then
+local Shorad=self.Shorad
+local shoradradius=self.checkradius
+local ontime=self.ShoradTime
+Shorad:WakeUpShorad(name,shoradradius,ontime,nil,true)
+self:__ShoradActivated(1,name,shoradradius,ontime)
+end
+if self.debug or self.verbose then
+self:T(string.format("%sJAMMED: %s forced GREEN (%.1f%%)",self.lid,name,self._jammedSAMs[name]*100))
+end
+end
+end
+end
+end
+return r,g,s
+end
+function MANTIS:onbeforeStatus(From,Event,To)
+if self._jammerEnabled then
+self:_UpdateJammers()
+self:_ComputeJammedSAMs()
+end
+return self:_onbeforeStatusOriginal(From,Event,To)
 end
 end
 SHORAD={
