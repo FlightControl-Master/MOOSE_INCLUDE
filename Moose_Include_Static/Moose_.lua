@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-05-21T20:03:54+02:00-9cda1b88ea4182dc04564eea9c834d10c2d2581e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-05-24T13:00:57+02:00-3d1dcd78a3ff6cec030faa0844f6a30e1bee1933 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -6595,7 +6595,6 @@ initiator=Initiator,
 world.onEvent(Event)
 end
 function BASE:CreateEventTakeoff(EventTime,Initiator)
-self:F({EventTime,Initiator})
 local Event={
 id=world.event.S_EVENT_TAKEOFF,
 time=EventTime,
@@ -21481,8 +21480,14 @@ end
 Takeoff=GROUP.Takeoff.Air
 spawnonground=false
 else
+if not Takeoff==GROUP.Takeoff.Runway then
 self:E(string.format("WARNING: Group %s has no parking spots at %s ==> No emergency air start or uncontrolled spawning ==> No spawn!",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
 return nil
+else
+Takeoff=GROUP.Takeoff.Runway
+spawnonground=false
+self:E(string.format("WARNING: Group %s set to runway spawning at %s, this only works in Single Player!",self.SpawnTemplatePrefix,SpawnAirbase:GetName()))
+end
 end
 end
 else
@@ -125394,7 +125399,7 @@ TARS_SESSION={}
 TARS_SESSION.debug=false
 TARS_SESSION.debugunitsearch=false
 TARS={}
-TARS.version="v2.3.1"
+TARS.version="v2.3.2"
 TARS.locale=TARS.locale or"en"
 TARS.debug=false
 TARS.mooseScoring=true
@@ -126418,7 +126423,7 @@ local unit=EventData.IniUnit
 if not unit then return end
 local instance=self:GetInstance(unit:GetName())
 if instance then instance:Delete()end
-local playerName=unit:GetPlayerName()
+local playerName=EventData.IniPlayerName
 if not playerName then return end
 local pName=playerName
 timer.scheduleFunction(function()
@@ -126428,6 +126433,7 @@ end
 end,nil,timer.getTime()+1)
 end
 function TARS:_OnEventEngineStartup(EventData)
+if EventData.IniPlayerName==nil then return end
 local unit=EventData.IniUnit
 if not unit or not unit:GetPlayerName()then return end
 local pName=unit:GetPlayerName()
@@ -126441,7 +126447,7 @@ function TARS:_OnEventDead(EventData)
 local unit=EventData.IniUnit
 if not unit then return end
 local name=unit:GetName()
-local playerName=unit:GetPlayerName()or unit:GetName()
+local playerName=EventData.IniPlayerName
 if TARS.groundMenus[playerName]then self:RemoveGroundMenu(playerName)end
 if self.detectedTargets[name]then
 local markID=self.marks.blue[name]or self.marks.red[name]
@@ -126454,11 +126460,12 @@ end
 function TARS:_OnEventPlayerLeaveUnit(EventData)
 local unit=EventData.IniUnit
 if not unit then return end
-local playerName=unit:GetPlayerName()or unit:GetName()
+local playerName=EventData.IniPlayerName
 if TARS.groundMenus[playerName]then self:RemoveGroundMenu(playerName)end
 end
 function TARS:_OnEventTakeOff(EventData)
 self:T(self.lid.."_OnEventTakeOff")
+if EventData.IniPlayerName==nil then return end
 local unit=EventData.IniUnit
 if not unit then return end
 local instance=self:GetInstance(unit:GetName())
@@ -126494,7 +126501,8 @@ end
 if instance and instance.lastTakeoffTime and(now-instance.lastTakeoffTime)<5 then
 return
 end
-local playerName=unit:GetPlayerName()or unit:GetName()
+local playerName=EventData.IniPlayerName
+if playerName==nil then return end
 local groundData=TARS.groundMenus[playerName]
 if not(groundData and groundData.approved)then return end
 local reconOk,refused=self:CheckIfRecon(unit)

@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-21T20:03:54+02:00-9cda1b88ea4182dc04564eea9c834d10c2d2581e ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-24T13:00:57+02:00-3d1dcd78a3ff6cec030faa0844f6a30e1bee1933 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -10244,7 +10244,7 @@ end
 -- @param DCS#Time EventTime The time stamp of the event.
 -- @param DCS#Object Initiator The initiating object of the event.
 function BASE:CreateEventTakeoff( EventTime, Initiator )
-  self:F( { EventTime, Initiator } )
+  --self:F( { EventTime, Initiator } )
 
   local Event = {
     id = world.event.S_EVENT_TAKEOFF,
@@ -41799,9 +41799,15 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
 
             Takeoff = GROUP.Takeoff.Air
             spawnonground = false
-          else
+          else       
+           if not Takeoff == GROUP.Takeoff.Runway then
             self:E( string.format( "WARNING: Group %s has no parking spots at %s ==> No emergency air start or uncontrolled spawning ==> No spawn!", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
             return nil
+            else
+            Takeoff = GROUP.Takeoff.Runway
+            spawnonground = false
+            self:E( string.format( "WARNING: Group %s set to runway spawning at %s, this only works in Single Player!", self.SpawnTemplatePrefix, SpawnAirbase:GetName() ) )
+            end
           end
         end
 
@@ -41860,7 +41866,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
 
           else
 
-            -- Spawn in air as requested initially. Original template orientation is perserved, altitude is already correctly set.
+            -- Spawn in air as requested initially. Original template orientation is preserved, altitude is already correctly set.
             SpawnTemplate.units[UnitID].x = TX
             SpawnTemplate.units[UnitID].y = TY
             SpawnTemplate.units[UnitID].alt = PointVec3.y
@@ -250120,21 +250126,21 @@ TARS_SESSION.debugunitsearch = false
 -- your mission before loading.
 --
 -- ## Player workflow
--- 1. Spawn into a recon-capable slot and open the **F10 › Task TARS** radio menu.
+-- 1. Spawn into a recon-capable slot and open the **F10 › Task TARS** radio menu.   
 -- 2. Select **TARS validation** on the ground. The system checks your loadout and
---    reports the platform's altitude band, FOV, and available film.
---    The validation item then disappears once approved.
--- 3. Take off. **Start filming / STB & Resume / Stop filming** appear in the menu.
--- 4. Select **TARS mode : Start filming** to begin recording.
--- 5. Fly over enemy units within the sensor's altitude/attitude envelope.
---    Each detected unit is confirmed in the HUD (`+1 Captured target`).
--- 6. Use **TARS mode : STB & Resume** to pause (e.g. to refuel).
---    Film resumes automatically on the next takeoff if the loadout is still valid.
--- 7. Select **TARS mode : Stop filming** or let the film timer expire.
--- 8. Land at an allied airbase or FARP within `TARS.landingDistance` metres.
+--    reports the platform's altitude band, FOV, and available film. 
+--    The validation item then disappears once approved. 
+-- 3. Take off. **Start filming / STB & Resume / Stop filming** appear in the menu.   
+-- 4. Select **TARS mode : Start filming** to begin recording.   
+-- 5. Fly over enemy units within the sensor's altitude/attitude envelope.   
+--    Each detected unit is confirmed in the HUD (`+1 Captured target`).   
+-- 6. Use **TARS mode : STB & Resume** to pause (e.g. to refuel).   
+--    Film resumes automatically on the next takeoff if the loadout is still valid.   
+-- 7. Select **TARS mode : Stop filming** or let the film timer expire.   
+-- 8. Land at an allied airbase or FARP within `TARS.landingDistance` metres.   
 --    The film controls disappear. After `landingDelay + debriefDelay` seconds the
---    intel marks appear on the F10 map and scoring credits are awarded.
---    After the debrief the **TARS validation** item reappears for the next sortie.
+--    intel marks appear on the F10 map and scoring credits are awarded. 
+--    After the debrief the **TARS validation** item reappears for the next sortie.   
 --
 -- ## Localization
 -- 
@@ -250276,7 +250282,7 @@ TARS = {}
 -- @field #string playerName Player display name.
 
 --- Frozen target snapshot.
--- @type TARS.Snapshot
+-- @type TARS.Snapshot #TARS.Snapshot
 -- @field Wrapper.Unit#UNIT unit MOOSE UNIT wrapper or STATIC wrapper.
 -- @field DCS#Object dcsObj Raw DCS object reference.
 -- @field #number category `Object.Category.*` of the detected object.
@@ -250296,7 +250302,7 @@ TARS = {}
 -------------------------------------------------
 
 --- @field #string version
-TARS.version = "v2.3.1"
+TARS.version = "v2.3.2"
 
 --- Active locale.
 -- @field #string locale
@@ -251806,7 +251812,7 @@ function TARS:_OnEventBirth(EventData)
     if not unit then return end
     local instance = self:GetInstance(unit:GetName())
     if instance then instance:Delete() end
-    local playerName = unit:GetPlayerName()
+    local playerName = EventData.IniPlayerName --unit:GetPlayerName()
     if not playerName then return end
     local pName = playerName
     timer.scheduleFunction(function()
@@ -251820,6 +251826,7 @@ end
 -- @param #TARS self
 -- @param Core.Event#EVENTDATA EventData
 function TARS:_OnEventEngineStartup(EventData)
+    if EventData.IniPlayerName == nil then return end
     local unit = EventData.IniUnit
     if not unit or not unit:GetPlayerName() then return end
     local pName = unit:GetPlayerName()
@@ -251837,7 +251844,7 @@ function TARS:_OnEventDead(EventData)
     local unit = EventData.IniUnit
     if not unit then return end
     local name       = unit:GetName()
-    local playerName = unit:GetPlayerName() or unit:GetName()
+    local playerName = EventData.IniPlayerName --unit:GetPlayerName() or unit:GetName()
     if TARS.groundMenus[playerName] then self:RemoveGroundMenu(playerName) end
     if self.detectedTargets[name] then
         local markID = self.marks.blue[name] or self.marks.red[name]
@@ -251854,7 +251861,7 @@ end
 function TARS:_OnEventPlayerLeaveUnit(EventData)
     local unit = EventData.IniUnit
     if not unit then return end
-    local playerName = unit:GetPlayerName() or unit:GetName()
+    local playerName = EventData.IniPlayerName --unit:GetPlayerName() or unit:GetName()
     if TARS.groundMenus[playerName] then self:RemoveGroundMenu(playerName) end
 end
 
@@ -251865,11 +251872,12 @@ end
 -- @param Core.Event#EVENTDATA EventData
 function TARS:_OnEventTakeOff(EventData)
     self:T(self.lid.."_OnEventTakeOff")
+    if EventData.IniPlayerName == nil then return end
     local unit     = EventData.IniUnit
     if not unit then return end
     local instance = self:GetInstance(unit:GetName())
     local now      = timer.getTime()
-
+    
     -- Branch 1: auto-resume after ground STB
     if instance and instance.capturing then
         if instance.lastTakeoffTime and (now - instance.lastTakeoffTime) < 5 then return end
@@ -251905,7 +251913,8 @@ function TARS:_OnEventTakeOff(EventData)
     if instance and instance.lastTakeoffTime and (now - instance.lastTakeoffTime) < 5 then
         return
     end
-    local playerName = unit:GetPlayerName() or unit:GetName()
+    local playerName = EventData.IniPlayerName --unit:GetPlayerName() or unit:GetName()
+    if playerName == nil then return end
     local groundData = TARS.groundMenus[playerName]
     if not (groundData and groundData.approved) then return end
 
