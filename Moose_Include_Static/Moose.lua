@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-05-24T13:00:57+02:00-3d1dcd78a3ff6cec030faa0844f6a30e1bee1933 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-05T14:25:02+02:00-27bd27a2e52e08d9b62a57f04d313a1d2afe066b ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -247235,7 +247235,7 @@ end
 -- 
 -------------------------------------------------------------------------
 -- Date: September 2023
--- Last Update: Mar 2026
+-- Last Update: June 2026
 -------------------------------------------------------------------------
 --
 --- **Ops** - Easy GCI & CAP Manager
@@ -247500,7 +247500,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.35"
+EASYGCICAP.version="0.1.36"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -248068,16 +248068,18 @@ function EASYGCICAP:_AddAirwing(Airbasename, Alias)
   end
   
   if self.noalert5 > 0 then
-    local alert
-    if self.ClassName == "EASYGCICAP" then  
-      alert = AUFTRAG:NewALERT5(AUFTRAG.Type.INTERCEPT) 
-    elseif self.ClassName == "EASYA2G" then
-      alert = AUFTRAG:NewALERT5(AUFTRAG.Type.BAI) 
+    for i=1,self.noalert5 do
+      local alert
+      if self.ClassName == "EASYGCICAP" then  
+        alert = AUFTRAG:NewALERT5(AUFTRAG.Type.INTERCEPT) 
+      elseif self.ClassName == "EASYA2G" then
+        alert = AUFTRAG:NewALERT5(AUFTRAG.Type.BAI) 
+      end
+      alert:SetRequiredAssets(self.capgrouping)
+      alert:SetRepeat(99) 
+      CAP_Wing:AddMission(alert)
+      table.insert(self.ListOfAuftrag,alert)
     end
-    alert:SetRequiredAssets(self.noalert5)
-    alert:SetRepeat(99) 
-    CAP_Wing:AddMission(alert)
-    table.insert(self.ListOfAuftrag,alert)
   end
     
   self.wings[Airbasename] = { CAP_Wing, AIRBASE:FindByName(Airbasename):GetZone(), Airbasename }
