@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T13:44:44+02:00-9326cfad1c4c0ec855136d8c10e31d7d09529f36 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T16:10:34+02:00-d1e4dd3fe93369c425b84d49f2d8b1cf67ec6ec0 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -15109,7 +15109,11 @@ function EVENT:onEvent( Event )
       -- Weapon.
       if Event.weapon and type(Event.weapon) == "table" and Event.weapon.isExist and Event.weapon:isExist() then
         Event.Weapon = Event.weapon
-        Event.WeaponName = Event.weapon:isExist() and Event.weapon.getTypeName and Event.weapon:getTypeName() or "Unknown Weapon"
+        if Event.weapon_name == "ZELL Booster" then 
+          Event.WeaponName = "ZELL Booster"
+        else
+          Event.WeaponName = Event.weapon:isExist() and Event.weapon.getTypeName and Event.weapon:getTypeName() or "Unknown Weapon"
+        end
         if Event.weapon_name == "ZELL Booster" then Event.WeaponName = "ZELL Booster" end
         Event.WeaponUNIT = CLIENT:Find( Event.Weapon, '', true ) -- Sometimes, the weapon is a player unit!
         Event.WeaponPlayerName = Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
