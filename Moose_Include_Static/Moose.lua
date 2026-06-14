@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-05T14:26:43+02:00-2146e92154a64652cc93b4399863cac79f0af221 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T13:43:42+02:00-7d4432fa47f4c5cc5a8c7f1596492544a2f639c6 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -15074,7 +15074,8 @@ function EVENT:onEvent( Event )
       -- Weapon.
       if Event.weapon and type(Event.weapon) == "table" and Event.weapon.isExist and Event.weapon:isExist() then
         Event.Weapon = Event.weapon
-        Event.WeaponName = Event.weapon:isExist() and Event.weapon:getTypeName() or "Unknown Weapon"
+        Event.WeaponName = Event.weapon:isExist() and Event.weapon.getTypeName and Event.weapon:getTypeName() or "Unknown Weapon"
+        if Event.weapon_name == "ZELL Booster" then Event.WeaponName = "ZELL Booster" end
         Event.WeaponUNIT = CLIENT:Find( Event.Weapon, '', true ) -- Sometimes, the weapon is a player unit!
         Event.WeaponPlayerName = Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
         --Event.WeaponPlayerName = Event.WeaponUNIT and Event.Weapon:getPlayerName()
@@ -23546,27 +23547,28 @@ end
 -- @return #DATABASE self
 function DATABASE:_RegisterAirbase(airbase)
   
-  local IsSyria = UTILS.GetDCSMap() == "Syria" and true or false
-  local countHSyria = 0
+  --local IsSyria = UTILS.GetDCSMap() == "Syria" and true or false
+  --local countHSyria = 0
   
   if airbase then
 
     -- Get the airbase name.
     local DCSAirbaseName = airbase:getName()
     
-    -- DCS 2.9.8.1107 added 143 helipads all named H with the same object ID ..
+    --[[ DCS 2.9.8.1107 added 143 helipads all named H with the same object ID ..
     if IsSyria and DCSAirbaseName == "H" and countHSyria > 0 then
-      --[[
+      --
       local p = airbase:getPosition().p
       local mgrs = COORDINATE:New(p.x,p.z,p.y):ToStringMGRS()
       self:I("Airbase on Syria map named H @ "..mgrs)
       countHSyria = countHSyria + 1
       if countHSyria > 1 then return self end
-      --]]
+      --
       return self
     elseif IsSyria and DCSAirbaseName == "H" and countHSyria == 0 then
       countHSyria = countHSyria + 1
     end
+    --]]
     
     -- This gave the incorrect value to be inserted into the airdromeID for DCS 2.5.6. Is fixed now.
     local airbaseID=airbase:getID()
@@ -41864,7 +41866,7 @@ function SPAWN:SpawnAtAirbase( SpawnAirbase, Takeoff, TakeoffAltitude, TerminalT
       if Takeoff == GROUP.Takeoff.Air then
         for UnitID, UnitSpawned in pairs( GroupSpawned:GetUnits() ) do
           --SCHEDULER:New( nil, BASE.CreateEventTakeoff, { GroupSpawned, timer.getTime(), UnitSpawned:GetDCSObject() }, 5 )  --No need to create a new SCHEDULER instance every time!
-          self:ScheduleOnce(5, BASE.CreateEventTakeoff, {GroupSpawned, timer.getTime(), UnitSpawned:GetDCSObject()})
+          self:ScheduleOnce(5, BASE.CreateEventTakeoff, GroupSpawned, timer.getTime(), UnitSpawned:GetDCSObject())
         end
       end
 
@@ -63400,6 +63402,7 @@ end
 -- @field #boolean isAirdrome Airbase is an airdrome.
 -- @field #boolean isHelipad Airbase is a helipad.
 -- @field #boolean isShip Airbase is a ship.
+-- @field #boolean isZell Airbase is a ZELL Booster.
 -- @field #table parking Parking spot data.
 -- @field #table parkingByID Parking spot data table with ID as key.
 -- @field #table parkingWhitelist List of parking spot terminal IDs considered for spawning.
@@ -63835,115 +63838,420 @@ AIRBASE.TheChannel = {
 
 --- Airbases of the Syria map
 --
--- * `AIRBASE.Syria.Abu_al_Duhur` Abu al-Duhur
--- * `AIRBASE.Syria.Adana_Sakirpasa` Adana Sakirpasa
--- * `AIRBASE.Syria.Akrotiri` Akrotiri
--- * `AIRBASE.Syria.Al_Qusayr` Al Qusayr
--- * `AIRBASE.Syria.Al_Dumayr` Al-Dumayr
--- * `AIRBASE.Syria.Aleppo` Aleppo
--- * `AIRBASE.Syria.An_Nasiriyah` An Nasiriyah
--- * `AIRBASE.Syria.At_Tanf` At Tanf
--- * `AIRBASE.Syria.Bassel_Al_Assad` Bassel Al-Assad
--- * `AIRBASE.Syria.Beirut_Rafic_Hariri` Beirut-Rafic Hariri
--- * `AIRBASE.Syria.Ben_Gurion` Ben Gurion
--- * `AIRBASE.Syria.Damascus` Damascus
--- * `AIRBASE.Syria.Deir_ez_Zor` Deir ez-Zor
--- * `AIRBASE.Syria.Ercan` Ercan
--- * `AIRBASE.Syria.Eyn_Shemer` Eyn Shemer
--- * `AIRBASE.Syria.Gaziantep` Gaziantep
--- * `AIRBASE.Syria.Gazipasa` Gazipasa
--- * `AIRBASE.Syria.Gecitkale` Gecitkale
--- * `AIRBASE.Syria.H` H
--- * `AIRBASE.Syria.H3` H3
--- * `AIRBASE.Syria.H3_Northwest` H3 Northwest
--- * `AIRBASE.Syria.H3_Southwest` H3 Southwest
--- * `AIRBASE.Syria.H4` H4
--- * `AIRBASE.Syria.Haifa` Haifa
--- * `AIRBASE.Syria.Hama` Hama
--- * `AIRBASE.Syria.Hatay` Hatay
--- * `AIRBASE.Syria.Hatzor` Hatzor
--- * `AIRBASE.Syria.Herzliya` Herzliya
--- * `AIRBASE.Syria.Incirlik` Incirlik
--- * `AIRBASE.Syria.Jirah` Jirah
--- * `AIRBASE.Syria.Khalkhalah` Khalkhalah
--- * `AIRBASE.Syria.Kharab_Ishk` Kharab Ishk
--- * `AIRBASE.Syria.King_Abdullah_II` King Abdullah II
--- * `AIRBASE.Syria.King_Hussein_Air_College` King Hussein Air College
--- * `AIRBASE.Syria.Kingsfield` Kingsfield
--- * `AIRBASE.Syria.Kiryat_Shmona` Kiryat Shmona
--- * `AIRBASE.Syria.Kuweires` Kuweires
--- * `AIRBASE.Syria.Lakatamia` Lakatamia
--- * `AIRBASE.Syria.Larnaca` Larnaca
--- * `AIRBASE.Syria.Marj_Ruhayyil` Marj Ruhayyil
--- * `AIRBASE.Syria.Marj_as_Sultan_North` Marj as Sultan North
--- * `AIRBASE.Syria.Marj_as_Sultan_South` Marj as Sultan South
--- * `AIRBASE.Syria.Marka` Marka
--- * `AIRBASE.Syria.Megiddo` Megiddo
--- * `AIRBASE.Syria.Mezzeh` Mezzeh
--- * `AIRBASE.Syria.Minakh` Minakh
--- * `AIRBASE.Syria.Muwaffaq_Salti` Muwaffaq Salti
--- * `AIRBASE.Syria.Naqoura` Naqoura
--- * `AIRBASE.Syria.Nicosia` Nicosia
--- * `AIRBASE.Syria.Palmachim` Palmachim
--- * `AIRBASE.Syria.Palmyra` Palmyra
--- * `AIRBASE.Syria.Paphos` Paphos
--- * `AIRBASE.Syria.Pinarbashi` Pinarbashi
--- * `AIRBASE.Syria.Prince_Hassan` Prince Hassan
--- * `AIRBASE.Syria.Qabr_as_Sitt` Qabr as Sitt
--- * `AIRBASE.Syria.Ramat_David` Ramat David
--- * `AIRBASE.Syria.Rayak` Rayak
--- * `AIRBASE.Syria.Rene_Mouawad` Rene Mouawad
--- * `AIRBASE.Syria.Rosh_Pina` Rosh Pina
--- * `AIRBASE.Syria.Ruwayshid` Ruwayshid
--- * `AIRBASE.Syria.Sanliurfa` Sanliurfa
--- * `AIRBASE.Syria.Sayqal` Sayqal
--- * `AIRBASE.Syria.Shayrat` Shayrat
--- * `AIRBASE.Syria.Tabqa` Tabqa
--- * `AIRBASE.Syria.Taftanaz` Taftanaz
--- * `AIRBASE.Syria.Tal_Siman` Tal Siman
--- * `AIRBASE.Syria.Tel_Nof` Tel Nof
--- * `AIRBASE.Syria.Tha_lah` Tha'lah
--- * `AIRBASE.Syria.Tiyas` Tiyas
--- * `AIRBASE.Syria.Wujah_Al_Hajar` Wujah Al Hajar
+-- * AIRBASE.Syria.Abu_al_Duhur
+-- * AIRBASE.Syria.Adana_Sakirpasa
+-- * AIRBASE.Syria.Adiyaman
+-- * AIRBASE.Syria.Akrotiri
+-- * AIRBASE.Syria.Al_Dumayr
+-- * AIRBASE.Syria.Al_Qusayr
+-- * AIRBASE.Syria.Aleppo
+-- * AIRBASE.Syria.An_Nasiriyah
+-- * AIRBASE.Syria.At_Tanf
+-- * AIRBASE.Syria.Bassel_Al_Assad
+-- * AIRBASE.Syria.Beirut_Rafic_Hariri
+-- * AIRBASE.Syria.Ben_Gurion
+-- * AIRBASE.Syria.Chukurova
+-- * AIRBASE.Syria.Damascus
+-- * AIRBASE.Syria.Deir_ez_Zor
+-- * AIRBASE.Syria.Diyarbakir
+-- * AIRBASE.Syria.Ercan
+-- * AIRBASE.Syria.Eyn_Shemer
+-- * AIRBASE.Syria.Gaziantep
+-- * AIRBASE.Syria.Gazipasa
+-- * AIRBASE.Syria.Gecitkale
+-- * AIRBASE.Syria.Gulechoba
+-- * AIRBASE.Syria.H3
+-- * AIRBASE.Syria.H3_Northwest
+-- * AIRBASE.Syria.H3_Southwest
+-- * AIRBASE.Syria.H4
+-- * AIRBASE.Syria.H4_Emergency
+-- * AIRBASE.Syria.HC01
+-- * AIRBASE.Syria.HC02
+-- * AIRBASE.Syria.HC03
+-- * AIRBASE.Syria.HC04
+-- * AIRBASE.Syria.HC05
+-- * AIRBASE.Syria.HC06
+-- * AIRBASE.Syria.HI01
+-- * AIRBASE.Syria.HI02
+-- * AIRBASE.Syria.HI03
+-- * AIRBASE.Syria.HI05
+-- * AIRBASE.Syria.HI06
+-- * AIRBASE.Syria.HI07
+-- * AIRBASE.Syria.HI08
+-- * AIRBASE.Syria.HI09
+-- * AIRBASE.Syria.HI11
+-- * AIRBASE.Syria.HI12
+-- * AIRBASE.Syria.HI13
+-- * AIRBASE.Syria.HI14
+-- * AIRBASE.Syria.HI15
+-- * AIRBASE.Syria.HI16
+-- * AIRBASE.Syria.HI17
+-- * AIRBASE.Syria.HI18
+-- * AIRBASE.Syria.HI20
+-- * AIRBASE.Syria.HI21
+-- * AIRBASE.Syria.HI22
+-- * AIRBASE.Syria.HI23
+-- * AIRBASE.Syria.HI24
+-- * AIRBASE.Syria.HI25
+-- * AIRBASE.Syria.HI26
+-- * AIRBASE.Syria.HJ01
+-- * AIRBASE.Syria.HJ02
+-- * AIRBASE.Syria.HJ03
+-- * AIRBASE.Syria.HJ04
+-- * AIRBASE.Syria.HL01
+-- * AIRBASE.Syria.HL02
+-- * AIRBASE.Syria.HL03
+-- * AIRBASE.Syria.HL04
+-- * AIRBASE.Syria.HL05
+-- * AIRBASE.Syria.HL06
+-- * AIRBASE.Syria.HL07
+-- * AIRBASE.Syria.HL08
+-- * AIRBASE.Syria.HL09
+-- * AIRBASE.Syria.HL10
+-- * AIRBASE.Syria.HL11
+-- * AIRBASE.Syria.HL12
+-- * AIRBASE.Syria.HL13
+-- * AIRBASE.Syria.HMed00
+-- * AIRBASE.Syria.HMed01
+-- * AIRBASE.Syria.HMed02
+-- * AIRBASE.Syria.HMed03
+-- * AIRBASE.Syria.HMed04
+-- * AIRBASE.Syria.HMed05
+-- * AIRBASE.Syria.HMed06
+-- * AIRBASE.Syria.HMed07
+-- * AIRBASE.Syria.HMed08
+-- * AIRBASE.Syria.HMed09
+-- * AIRBASE.Syria.HMed10
+-- * AIRBASE.Syria.HMed11
+-- * AIRBASE.Syria.HMed12
+-- * AIRBASE.Syria.HMed13
+-- * AIRBASE.Syria.HMed14
+-- * AIRBASE.Syria.HMed15
+-- * AIRBASE.Syria.HMed16
+-- * AIRBASE.Syria.HMed17
+-- * AIRBASE.Syria.HMed18
+-- * AIRBASE.Syria.HMed19
+-- * AIRBASE.Syria.HMed20
+-- * AIRBASE.Syria.HMed21
+-- * AIRBASE.Syria.HMed22
+-- * AIRBASE.Syria.HMed23
+-- * AIRBASE.Syria.HMed24
+-- * AIRBASE.Syria.HMed25
+-- * AIRBASE.Syria.HMed26
+-- * AIRBASE.Syria.HMed27
+-- * AIRBASE.Syria.HMed28
+-- * AIRBASE.Syria.HMed29
+-- * AIRBASE.Syria.HMed30
+-- * AIRBASE.Syria.HOil01
+-- * AIRBASE.Syria.HOil02
+-- * AIRBASE.Syria.HOil03
+-- * AIRBASE.Syria.HOil04
+-- * AIRBASE.Syria.HOil05
+-- * AIRBASE.Syria.HOil06
+-- * AIRBASE.Syria.HS02
+-- * AIRBASE.Syria.HS03
+-- * AIRBASE.Syria.HS04
+-- * AIRBASE.Syria.HS05
+-- * AIRBASE.Syria.HS06
+-- * AIRBASE.Syria.HS07
+-- * AIRBASE.Syria.HS08
+-- * AIRBASE.Syria.HS09
+-- * AIRBASE.Syria.HS10
+-- * AIRBASE.Syria.HS11
+-- * AIRBASE.Syria.HS12
+-- * AIRBASE.Syria.HS13
+-- * AIRBASE.Syria.HS14
+-- * AIRBASE.Syria.HS15
+-- * AIRBASE.Syria.HS16
+-- * AIRBASE.Syria.HS17
+-- * AIRBASE.Syria.HS18
+-- * AIRBASE.Syria.HS19
+-- * AIRBASE.Syria.HS20
+-- * AIRBASE.Syria.HS21
+-- * AIRBASE.Syria.HS22
+-- * AIRBASE.Syria.HS23
+-- * AIRBASE.Syria.HS24
+-- * AIRBASE.Syria.HS25
+-- * AIRBASE.Syria.HS26
+-- * AIRBASE.Syria.HS27
+-- * AIRBASE.Syria.HS28
+-- * AIRBASE.Syria.HS29
+-- * AIRBASE.Syria.HS30
+-- * AIRBASE.Syria.HS31
+-- * AIRBASE.Syria.HS32
+-- * AIRBASE.Syria.HS33
+-- * AIRBASE.Syria.HS34
+-- * AIRBASE.Syria.HS35
+-- * AIRBASE.Syria.HS36
+-- * AIRBASE.Syria.HS37
+-- * AIRBASE.Syria.HS38
+-- * AIRBASE.Syria.HS39
+-- * AIRBASE.Syria.HS40
+-- * AIRBASE.Syria.HS41
+-- * AIRBASE.Syria.HS42
+-- * AIRBASE.Syria.HStad01
+-- * AIRBASE.Syria.HStad02
+-- * AIRBASE.Syria.HStad03
+-- * AIRBASE.Syria.HStad04
+-- * AIRBASE.Syria.HStad05
+-- * AIRBASE.Syria.HStad06
+-- * AIRBASE.Syria.HT01
+-- * AIRBASE.Syria.HT02
+-- * AIRBASE.Syria.H_med_orig_01
+-- * AIRBASE.Syria.H_med_orig_02
+-- * AIRBASE.Syria.H_med_orig_03
+-- * AIRBASE.Syria.H_med_orig_04
+-- * AIRBASE.Syria.H_med_orig_05
+-- * AIRBASE.Syria.H_med_orig_06
+-- * AIRBASE.Syria.H_med_orig_07
+-- * AIRBASE.Syria.H_med_orig_08
+-- * AIRBASE.Syria.H_med_orig_09
+-- * AIRBASE.Syria.Haifa
+-- * AIRBASE.Syria.Hama
+-- * AIRBASE.Syria.Hatay
+-- * AIRBASE.Syria.Hatzerim
+-- * AIRBASE.Syria.Hatzor
+-- * AIRBASE.Syria.Herzliya
+-- * AIRBASE.Syria.Incirlik
+-- * AIRBASE.Syria.Jirah
+-- * AIRBASE.Syria.Kahramanmaras
+-- * AIRBASE.Syria.Kedem
+-- * AIRBASE.Syria.Khalkhalah
+-- * AIRBASE.Syria.Kharab_Ishk
+-- * AIRBASE.Syria.King_Abdullah_II
+-- * AIRBASE.Syria.King_Hussein_Air_College
+-- * AIRBASE.Syria.Kingsfield
+-- * AIRBASE.Syria.Kiryat_Shmona
+-- * AIRBASE.Syria.Konya
+-- * AIRBASE.Syria.Kuweires
+-- * AIRBASE.Syria.Lakatamia
+-- * AIRBASE.Syria.Larnaca
+-- * AIRBASE.Syria.Marj_Ruhayyil
+-- * AIRBASE.Syria.Marj_as_Sultan_North
+-- * AIRBASE.Syria.Marj_as_Sultan_South
+-- * AIRBASE.Syria.Marka
+-- * AIRBASE.Syria.Megiddo
+-- * AIRBASE.Syria.Mezzeh
+-- * AIRBASE.Syria.Minakh
+-- * AIRBASE.Syria.Muwaffaq_Salti
+-- * AIRBASE.Syria.Naqoura
+-- * AIRBASE.Syria.Nevatim
+-- * AIRBASE.Syria.Nicosia
+-- * AIRBASE.Syria.Palmachim
+-- * AIRBASE.Syria.Palmyra
+-- * AIRBASE.Syria.Paphos
+-- * AIRBASE.Syria.Pinarbashi
+-- * AIRBASE.Syria.Prince_Hassan
+-- * AIRBASE.Syria.Qabr_as_Sitt
+-- * AIRBASE.Syria.Ramat_David
+-- * AIRBASE.Syria.Rayak
+-- * AIRBASE.Syria.Rene_Mouawad
+-- * AIRBASE.Syria.Rosh_Pina
+-- * AIRBASE.Syria.Ruwayshid
+-- * AIRBASE.Syria.Sanliurfa
+-- * AIRBASE.Syria.Sanliurfa_Heliport
+-- * AIRBASE.Syria.Sayqal
+-- * AIRBASE.Syria.Shayrat
+-- * AIRBASE.Syria.T2
+-- * AIRBASE.Syria.T3
+-- * AIRBASE.Syria.Tabqa
+-- * AIRBASE.Syria.Taftanaz
+-- * AIRBASE.Syria.Tal_Siman
+-- * AIRBASE.Syria.Tel_Nof
+-- * AIRBASE.Syria.Teyman
+-- * AIRBASE.Syria.Tha_lah
+-- * AIRBASE.Syria.Tiyas
+-- * AIRBASE.Syria.Wujah_Al_Hajar
+-- * AIRBASE.Syria.Zarqa
+
 --
 -- @field Syria
 AIRBASE.Syria = {
   ["Abu_al_Duhur"] = "Abu al-Duhur",
   ["Adana_Sakirpasa"] = "Adana Sakirpasa",
+  ["Adiyaman"] = "Adiyaman",
   ["Akrotiri"] = "Akrotiri",
-  ["Al_Qusayr"] = "Al Qusayr",
   ["Al_Dumayr"] = "Al-Dumayr",
+  ["Al_Qusayr"] = "Al Qusayr",
   ["Aleppo"] = "Aleppo",
   ["An_Nasiriyah"] = "An Nasiriyah",
   ["At_Tanf"] = "At Tanf",
   ["Bassel_Al_Assad"] = "Bassel Al-Assad",
   ["Beirut_Rafic_Hariri"] = "Beirut-Rafic Hariri",
   ["Ben_Gurion"] = "Ben Gurion",
+  ["Chukurova"] = "Chukurova",
   ["Damascus"] = "Damascus",
   ["Deir_ez_Zor"] = "Deir ez-Zor",
+  ["Diyarbakir"] = "Diyarbakir",
   ["Ercan"] = "Ercan",
   ["Eyn_Shemer"] = "Eyn Shemer",
   ["Gaziantep"] = "Gaziantep",
   ["Gazipasa"] = "Gazipasa",
   ["Gecitkale"] = "Gecitkale",
-  ["H"] = "H",
+  ["Gulechoba"] = "Gulechoba",
   ["H3"] = "H3",
   ["H3_Northwest"] = "H3 Northwest",
   ["H3_Southwest"] = "H3 Southwest",
   ["H4"] = "H4",
+  ["H4_Emergency"] = "H4 Emergency",
+  ["HC01"] = "HC01",
+  ["HC02"] = "HC02",
+  ["HC03"] = "HC03",
+  ["HC04"] = "HC04",
+  ["HC05"] = "HC05",
+  ["HC06"] = "HC06",
+  ["HI01"] = "HI01",
+  ["HI02"] = "HI02",
+  ["HI03"] = "HI03",
+  ["HI05"] = "HI05",
+  ["HI06"] = "HI06",
+  ["HI07"] = "HI07",
+  ["HI08"] = "HI08",
+  ["HI09"] = "HI09",
+  ["HI11"] = "HI11",
+  ["HI12"] = "HI12",
+  ["HI13"] = "HI13",
+  ["HI14"] = "HI14",
+  ["HI15"] = "HI15",
+  ["HI16"] = "HI16",
+  ["HI17"] = "HI17",
+  ["HI18"] = "HI18",
+  ["HI20"] = "HI20",
+  ["HI21"] = "HI21",
+  ["HI22"] = "HI22",
+  ["HI23"] = "HI23",
+  ["HI24"] = "HI24",
+  ["HI25"] = "HI25",
+  ["HI26"] = "HI26",
+  ["HJ01"] = "HJ01",
+  ["HJ02"] = "HJ02",
+  ["HJ03"] = "HJ03",
+  ["HJ04"] = "HJ04",
+  ["HL01"] = "HL01",
+  ["HL02"] = "HL02",
+  ["HL03"] = "HL03",
+  ["HL04"] = "HL04",
+  ["HL05"] = "HL05",
+  ["HL06"] = "HL06",
+  ["HL07"] = "HL07",
+  ["HL08"] = "HL08",
+  ["HL09"] = "HL09",
+  ["HL10"] = "HL10",
+  ["HL11"] = "HL11",
+  ["HL12"] = "HL12",
+  ["HL13"] = "HL13",
+  ["HMed00"] = "HMed00",
+  ["HMed01"] = "HMed01",
+  ["HMed02"] = "HMed02",
+  ["HMed03"] = "HMed03",
+  ["HMed04"] = "HMed04",
+  ["HMed05"] = "HMed05",
+  ["HMed06"] = "HMed06",
+  ["HMed07"] = "HMed07",
+  ["HMed08"] = "HMed08",
+  ["HMed09"] = "HMed09",
+  ["HMed10"] = "HMed10",
+  ["HMed11"] = "HMed11",
+  ["HMed12"] = "HMed12",
+  ["HMed13"] = "HMed13",
+  ["HMed14"] = "HMed14",
+  ["HMed15"] = "HMed15",
+  ["HMed16"] = "HMed16",
+  ["HMed17"] = "HMed17",
+  ["HMed18"] = "HMed18",
+  ["HMed19"] = "HMed19",
+  ["HMed20"] = "HMed20",
+  ["HMed21"] = "HMed21",
+  ["HMed22"] = "HMed22",
+  ["HMed23"] = "HMed23",
+  ["HMed24"] = "HMed24",
+  ["HMed25"] = "HMed25",
+  ["HMed26"] = "HMed26",
+  ["HMed27"] = "HMed27",
+  ["HMed28"] = "HMed28",
+  ["HMed29"] = "HMed29",
+  ["HMed30"] = "HMed30",
+  ["HOil01"] = "HOil01",
+  ["HOil02"] = "HOil02",
+  ["HOil03"] = "HOil03",
+  ["HOil04"] = "HOil04",
+  ["HOil05"] = "HOil05",
+  ["HOil06"] = "HOil06",
+  ["HS02"] = "HS02",
+  ["HS03"] = "HS03",
+  ["HS04"] = "HS04",
+  ["HS05"] = "HS05",
+  ["HS06"] = "HS06",
+  ["HS07"] = "HS07",
+  ["HS08"] = "HS08",
+  ["HS09"] = "HS09",
+  ["HS10"] = "HS10",
+  ["HS11"] = "HS11",
+  ["HS12"] = "HS12",
+  ["HS13"] = "HS13",
+  ["HS14"] = "HS14",
+  ["HS15"] = "HS15",
+  ["HS16"] = "HS16",
+  ["HS17"] = "HS17",
+  ["HS18"] = "HS18",
+  ["HS19"] = "HS19",
+  ["HS20"] = "HS20",
+  ["HS21"] = "HS21",
+  ["HS22"] = "HS22",
+  ["HS23"] = "HS23",
+  ["HS24"] = "HS24",
+  ["HS25"] = "HS25",
+  ["HS26"] = "HS26",
+  ["HS27"] = "HS27",
+  ["HS28"] = "HS28",
+  ["HS29"] = "HS29",
+  ["HS30"] = "HS30",
+  ["HS31"] = "HS31",
+  ["HS32"] = "HS32",
+  ["HS33"] = "HS33",
+  ["HS34"] = "HS34",
+  ["HS35"] = "HS35",
+  ["HS36"] = "HS36",
+  ["HS37"] = "HS37",
+  ["HS38"] = "HS38",
+  ["HS39"] = "HS39",
+  ["HS40"] = "HS40",
+  ["HS41"] = "HS41",
+  ["HS42"] = "HS42",
+  ["HStad01"] = "HStad01",
+  ["HStad02"] = "HStad02",
+  ["HStad03"] = "HStad03",
+  ["HStad04"] = "HStad04",
+  ["HStad05"] = "HStad05",
+  ["HStad06"] = "HStad06",
+  ["HT01"] = "HT01",
+  ["HT02"] = "HT02",
+  ["H_med_orig_01"] = "H_med_orig_01",
+  ["H_med_orig_02"] = "H_med_orig_02",
+  ["H_med_orig_03"] = "H_med_orig_03",
+  ["H_med_orig_04"] = "H_med_orig_04",
+  ["H_med_orig_05"] = "H_med_orig_05",
+  ["H_med_orig_06"] = "H_med_orig_06",
+  ["H_med_orig_07"] = "H_med_orig_07",
+  ["H_med_orig_08"] = "H_med_orig_08",
+  ["H_med_orig_09"] = "H_med_orig_09",
   ["Haifa"] = "Haifa",
   ["Hama"] = "Hama",
   ["Hatay"] = "Hatay",
+  ["Hatzerim"] = "Hatzerim",
   ["Hatzor"] = "Hatzor",
   ["Herzliya"] = "Herzliya",
   ["Incirlik"] = "Incirlik",
   ["Jirah"] = "Jirah",
+  ["Kahramanmaras"] = "Kahramanmaras",
+  ["Kedem"] = "Kedem",
   ["Khalkhalah"] = "Khalkhalah",
   ["Kharab_Ishk"] = "Kharab Ishk",
   ["King_Abdullah_II"] = "King Abdullah II",
   ["King_Hussein_Air_College"] = "King Hussein Air College",
   ["Kingsfield"] = "Kingsfield",
   ["Kiryat_Shmona"] = "Kiryat Shmona",
+  ["Konya"] = "Konya",
   ["Kuweires"] = "Kuweires",
   ["Lakatamia"] = "Lakatamia",
   ["Larnaca"] = "Larnaca",
@@ -63956,6 +64264,7 @@ AIRBASE.Syria = {
   ["Minakh"] = "Minakh",
   ["Muwaffaq_Salti"] = "Muwaffaq Salti",
   ["Naqoura"] = "Naqoura",
+  ["Nevatim"] = "Nevatim",
   ["Nicosia"] = "Nicosia",
   ["Palmachim"] = "Palmachim",
   ["Palmyra"] = "Palmyra",
@@ -63969,15 +64278,20 @@ AIRBASE.Syria = {
   ["Rosh_Pina"] = "Rosh Pina",
   ["Ruwayshid"] = "Ruwayshid",
   ["Sanliurfa"] = "Sanliurfa",
+  ["Sanliurfa_Heliport"] = "Sanliurfa Heliport",
   ["Sayqal"] = "Sayqal",
   ["Shayrat"] = "Shayrat",
+  ["T2"] = "T2",
+  ["T3"] = "T3",
   ["Tabqa"] = "Tabqa",
   ["Taftanaz"] = "Taftanaz",
   ["Tal_Siman"] = "Tal Siman",
   ["Tel_Nof"] = "Tel Nof",
+  ["Teyman"] = "Teyman",
   ["Tha_lah"] = "Tha'lah",
   ["Tiyas"] = "Tiyas",
   ["Wujah_Al_Hajar"] = "Wujah Al Hajar",
+  ["Zarqa"] = "Zarqa",
 }
 
 --- Airbases of the Mariana Islands map
@@ -65050,6 +65364,7 @@ elseif self.category==Airbase.Category.SHIP then
     self.category=Airbase.Category.HELIPAD
     _DATABASE:AddStatic(AirbaseName)
   end
+  if self:GetTypeName() == "Zell" then self.isZell = true end
 else
   self:E("ERROR: Unknown airbase category!")
 end
@@ -65497,6 +65812,13 @@ end
 -- @return #boolean If true, airbase is a ship.
 function AIRBASE:IsShip()
   return self.isShip
+end
+
+--- Check if airbase is a ZELL booster.
+-- @param #AIRBASE self
+-- @return #boolean If true, airbase is a ZELL booster.
+function AIRBASE:IsZell()
+  return self.isZell
 end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -114828,44 +115150,43 @@ MANTIS.JammerLoadoutTiers = {
 -- @type MANTIS.JammerJitterPercent
 MANTIS.JammerJitterPercent = 0.10
 
---- Jammer SAM Parameters — v8 curves {peak%, mu_nm, sigma_L, tail_dist, band, floor%}
--- floor: residual effectiveness inside burnthrough (noise injection)
+--- Jammer SAM Parameters — v9 curves (v8.1) {peak%, mu_nm, sigma_L, tail_dist, band, floor%}
+-- v9 changes from v8:
+--   * Width rework: curves now track radar detection/track envelope (not just missile range)
+--   * Long-range systems widened (SA-5, SA-21, SA-23, Nike, PAC-2, S-300/400 family)
+--   * Short-range systems tightened (SA-19, SON-9, HQ-7, Rapier)
+--   * HAWK widened to match CW illuminator envelope (~90nm)
+-- floor: residual effectiveness inside burnthrough (now tapers past mu with R^2 falloff)
 --   5 = legacy radar, no ECCM | 3 = moderate ECCM | 2 = advanced ECCM/AESA | 0 = optical/IR
 -- @type MANTIS.JammerSAMParams
 MANTIS.JammerSAMParams = {
-  ["Nike"]       ={peak=78,mu=35,sigma_L=14,tail_dist=80, band="S",  floor=5},
-  ["Hawk"]       ={peak=30,mu=15,sigma_L=6, tail_dist=28, band="IJ", floor=3},
-  ["SA-2"]       ={peak=75,mu=40,sigma_L=16,tail_dist=85, band="S",  floor=5},
-  ["SA-3"]       ={peak=45,mu=22,sigma_L=10,tail_dist=50, band="IJ", floor=5},
-  ["SA-5"]       ={peak=52,mu=60,sigma_L=22,tail_dist=110,band="S",  floor=5},
-  ["SA-6"]       ={peak=33,mu=18,sigma_L=8, tail_dist=42, band="IJ", floor=3},
-  ["SA-8"]       ={peak=38,mu=10,sigma_L=4, tail_dist=22, band="IJ", floor=3},
+  -- Standard SamData (canonical entries — aliases below point to these)
+  ["Nike"]       ={peak=78,mu=55,sigma_L=22,tail_dist=110,band="S",  floor=5},
+  ["Hawk"]       ={peak=30,mu=22,sigma_L=9, tail_dist=55, band="IJ", floor=3},
+  ["SA-2"]       ={peak=75,mu=40,sigma_L=16,tail_dist=90, band="S",  floor=5},
+  ["SA-3"]       ={peak=45,mu=22,sigma_L=10,tail_dist=52, band="IJ", floor=5},
+  ["SA-5"]       ={peak=52,mu=75,sigma_L=26,tail_dist=145,band="S",  floor=5},
+  ["SA-6"]       ={peak=33,mu=18,sigma_L=8, tail_dist=48, band="IJ", floor=3},
+  ["SA-8"]       ={peak=38,mu=10,sigma_L=4, tail_dist=24, band="IJ", floor=3},
   ["SA-9"]       ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
-  ["SA-10"]      ={peak=32,mu=50,sigma_L=20,tail_dist=90, band="S",  floor=3},
-  ["SA-11"]      ={peak=52,mu=28,sigma_L=12,tail_dist=55, band="IJ", floor=3},
+  ["SA-10"]      ={peak=32,mu=50,sigma_L=20,tail_dist=95, band="S",  floor=3},
+  ["SA-10B"]     ={peak=30,mu=52,sigma_L=20,tail_dist=100,band="S",  floor=3},
+  ["SA-11"]      ={peak=52,mu=28,sigma_L=12,tail_dist=58, band="IJ", floor=3},
   ["SA-13"]      ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
-  ["SA-15"]      ={peak=30,mu=14,sigma_L=6, tail_dist=30, band="IJ", floor=3},
-  ["SA-19"]      ={peak=25,mu=18,sigma_L=7, tail_dist=38, band="IJ", floor=2},
-  ["SA-10B"]     ={peak=30,mu=52,sigma_L=20,tail_dist=95, band="S",  floor=3},
-  ["SA-17"]      ={peak=24,mu=32,sigma_L=14,tail_dist=65, band="IJ", floor=2},
-  ["SA-20A"]     ={peak=22,mu=58,sigma_L=22,tail_dist=95, band="S",  floor=2},
-  ["SA-20B"]     ={peak=20,mu=60,sigma_L=22,tail_dist=100,band="S",  floor=2},
-  ["S-300VM"]    ={peak=16,mu=70,sigma_L=28,tail_dist=110,band="S",  floor=2},
-  ["S-300V4"]    ={peak=14,mu=75,sigma_L=28,tail_dist=115,band="S",  floor=2},
-  ["S-400"]      ={peak=18,mu=65,sigma_L=25,tail_dist=105,band="S",  floor=2},
-  ["SA-21"]      ={peak=18,mu=65,sigma_L=25,tail_dist=105,band="S",  floor=2},
-  -- NATO designation aliases (allow mission designers to use SA-NN naming)
-  ["SA-22"]      ={peak=10,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=0},  -- alias for Pantsir S1
-  ["SA-23"]      ={peak=16,mu=70,sigma_L=28,tail_dist=110,band="S",  floor=2},  -- alias for S-300VM
-  ["SA-23B"]     ={peak=14,mu=75,sigma_L=28,tail_dist=115,band="S",  floor=2},  -- alias for S-300V4
-  ["SA-27"]      ={peak=22,mu=38,sigma_L=16,tail_dist=72, band="IJ", floor=2},  -- alias for Buk-M3
-  ["SA-28"]      ={peak=18,mu=35,sigma_L=15,tail_dist=75, band="IJ", floor=2},  -- alias for S-350
-  ["NASAMS"]     ={peak=25,mu=28,sigma_L=12,tail_dist=55, band="IJ", floor=2},
-  ["Patriot"]    ={peak=32,mu=50,sigma_L=20,tail_dist=90, band="S",  floor=3},
-  ["Rapier"]     ={peak=12,mu=8, sigma_L=3, tail_dist=18, band="IJ", floor=0},
-  ["Gepard"]     ={peak=18,mu=6, sigma_L=2, tail_dist=15, band="IJ", floor=0},
+  ["SA-15"]      ={peak=30,mu=11,sigma_L=5, tail_dist=22, band="IJ", floor=3},
+  ["SA-17"]      ={peak=24,mu=32,sigma_L=14,tail_dist=68, band="IJ", floor=2},
+  ["SA-19"]      ={peak=25,mu=8, sigma_L=3.5,tail_dist=16,band="IJ", floor=2},
+  ["SA-20A"]     ={peak=22,mu=65,sigma_L=24,tail_dist=115,band="S",  floor=2},
+  ["SA-20B"]     ={peak=20,mu=68,sigma_L=24,tail_dist=120,band="S",  floor=2},
+  ["S-300VM"]    ={peak=16,mu=80,sigma_L=30,tail_dist=135,band="S",  floor=2}, -- SA-23 canonical
+  ["S-300V4"]    ={peak=14,mu=85,sigma_L=30,tail_dist=145,band="S",  floor=2}, -- SA-23B canonical
+  ["S-400"]      ={peak=18,mu=80,sigma_L=30,tail_dist=150,band="S",  floor=2}, -- SA-21 canonical
+  ["NASAMS"]     ={peak=25,mu=28,sigma_L=12,tail_dist=52, band="IJ", floor=2},
+  ["Patriot"]    ={peak=32,mu=62,sigma_L=24,tail_dist=110,band="S",  floor=3},
+  ["Rapier"]     ={peak=12,mu=6, sigma_L=2.5,tail_dist=14,band="IJ", floor=0},
+  ["Gepard"]     ={peak=18,mu=6, sigma_L=2, tail_dist=18, band="IJ", floor=0},
   ["Roland"]     ={peak=35,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=3},
-  ["HQ-7"]       ={peak=38,mu=10,sigma_L=4, tail_dist=22, band="IJ", floor=3},
+  ["HQ-7"]       ={peak=38,mu=8, sigma_L=3.5,tail_dist=18,band="IJ", floor=3},
   ["HQ-2"]       ={peak=70,mu=38,sigma_L=15,tail_dist=80, band="S",  floor=5},
   ["C-RAM"]      ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
   ["Avenger"]    ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
@@ -114873,77 +115194,108 @@ MANTIS.JammerSAMParams = {
   ["Linebacker"] ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
   ["Silkworm"]   ={peak=35,mu=20,sigma_L=8, tail_dist=40, band="IJ", floor=3},
   ["Dog Ear"]    ={peak=40,mu=10,sigma_L=4, tail_dist=20, band="IJ", floor=5},
-  ["Pantsir S1"] ={peak=10,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=0},
+  ["Pantsir S1"] ={peak=10,mu=9, sigma_L=4, tail_dist=20, band="IJ", floor=0}, -- SA-22 canonical
   ["Tor M2"]     ={peak=28,mu=14,sigma_L=6, tail_dist=30, band="IJ", floor=3},
-  ["IRIS-T SLM"] ={peak=18,mu=18,sigma_L=8, tail_dist=40, band="IJ", floor=2},
-  ["SON-9"]      ={peak=48,mu=20,sigma_L=9, tail_dist=42, band="IJ", floor=5},
-  ["TAMIR IDFA"]  ={peak=19,mu=25,sigma_L=12,tail_dist=55,band="S",  floor=2},
+  ["IRIS-T SLM"] ={peak=18,mu=22,sigma_L=10,tail_dist=50, band="IJ", floor=2},
+  ["SON-9"]      ={peak=48,mu=14,sigma_L=6, tail_dist=30, band="IJ", floor=5},
+  -- IDF Mod
+  ["TAMIR IDFA"]  ={peak=19,mu=25,sigma_L=12,tail_dist=52,band="S",  floor=2},
   ["STUNNER IDFA"]={peak=16,mu=45,sigma_L=18,tail_dist=80,band="S",  floor=2},
-  ["SA-2 HDS"]           ={peak=75,mu=40,sigma_L=16,tail_dist=85, band="S",  floor=5},
-  ["SA-3 HDS"]           ={peak=45,mu=22,sigma_L=10,tail_dist=50, band="IJ", floor=5},
-  ["SA-10B HDS"]         ={peak=30,mu=52,sigma_L=20,tail_dist=95, band="S",  floor=3},
+  -- HDS Mod (canonical for keys with no base equivalent)
   ["SA-10C HDS"]         ={peak=30,mu=50,sigma_L=20,tail_dist=92, band="S",  floor=3},
-  ["SA-17 HDS"]          ={peak=24,mu=32,sigma_L=14,tail_dist=65, band="IJ", floor=2},
-  ["SA-12 HDS"]          ={peak=35,mu=42,sigma_L=16,tail_dist=75, band="S",  floor=3},
-  ["SA-23 HDS"]          ={peak=16,mu=70,sigma_L=28,tail_dist=110,band="S",  floor=2},
-  ["HQ-2 HDS"]           ={peak=70,mu=38,sigma_L=15,tail_dist=80, band="S",  floor=5},
+  ["SA-12 HDS"]          ={peak=35,mu=50,sigma_L=18,tail_dist=90, band="S",  floor=3},
   ["SAMPT Block 1 HDS"]  ={peak=28,mu=45,sigma_L=18,tail_dist=85, band="S",  floor=3},
   ["SAMPT Block 1INT HDS"]={peak=26,mu=48,sigma_L=18,tail_dist=88,band="S",  floor=3},
   ["SAMPT Block 2 HDS"]  ={peak=22,mu=52,sigma_L=20,tail_dist=92, band="S",  floor=2},
-  ["RBS98M SMA"]   ={peak=25,mu=12,sigma_L=5, tail_dist=25,band="IJ", floor=3},
-  ["RBS70 SMA"]    ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS70M SMA"]   ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS90 SMA"]    ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS90M SMA"]   ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS103A SMA"]  ={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",  floor=2},
-  ["RBS103B SMA"]  ={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",  floor=2},
-  ["RBS103AM SMA"] ={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",  floor=2},
-  ["RBS103BM SMA"] ={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",  floor=2},
-  ["Lvkv9040M SMA"]={peak=15,mu=3, sigma_L=1, tail_dist=8, band="OPT",floor=0},
+  -- SMA Mod (canonical for SMA-only keys)
+  ["RBS70 SMA"]    ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},  -- canonical for RBS70 family
+  ["RBS90 SMA"]    ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},  -- canonical for RBS90 family
+  ["RBS98M SMA"]   ={peak=25,mu=12,sigma_L=5, tail_dist=25,band="IJ", floor=3},  -- canonical
+  ["RBS103A SMA"]  ={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",  floor=2},  -- canonical
+  ["RBS103B SMA"]  ={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",  floor=2},  -- canonical
+  ["Lvkv9040M SMA"]={peak=15,mu=3, sigma_L=1, tail_dist=8, band="OPT",floor=0},  -- canonical
+  -- CH Mod (canonical for CHM-only keys)
   ["2S38 CHM"]             ={peak=8, mu=3, sigma_L=1, tail_dist=8,  band="OPT",floor=0},
-  ["PantsirS1 CHM"]        ={peak=10,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=0},
-  ["PantsirS2 CHM"]        ={peak=10,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=0},
-  ["PGL-625 CHM"]          ={peak=12,mu=4, sigma_L=2, tail_dist=10, band="OPT",floor=0},
-  ["HQ-17A CHM"]           ={peak=30,mu=14,sigma_L=6, tail_dist=30, band="IJ", floor=3},
-  ["M903PAC2 CHM"]         ={peak=32,mu=50,sigma_L=20,tail_dist=90, band="S",  floor=3},
-  ["M903PAC3 CHM"]         ={peak=15,mu=55,sigma_L=22,tail_dist=95, band="S",  floor=2},
-  ["M903PAC2KAT1 CHM"]     ={peak=32,mu=50,sigma_L=20,tail_dist=90, band="S",  floor=3},
-  ["TorM2 CHM"]            ={peak=28,mu=14,sigma_L=6, tail_dist=30, band="IJ", floor=3},
-  ["TorM2K CHM"]           ={peak=28,mu=14,sigma_L=6, tail_dist=30, band="IJ", floor=3},
-  ["TorM2M CHM"]           ={peak=26,mu=16,sigma_L=6, tail_dist=32, band="IJ", floor=3},
+  ["PGL-625 CHM"]          ={peak=12,mu=6, sigma_L=2.5,tail_dist=14,band="OPT",floor=0}, -- Type-08
+  ["HQ-17A CHM"]           ={peak=30,mu=11,sigma_L=5, tail_dist=24, band="IJ", floor=3},
+  ["M903PAC3 CHM"]         ={peak=15,mu=58,sigma_L=22,tail_dist=105,band="S",  floor=2},
+  ["TorM2M CHM"]           ={peak=26,mu=16,sigma_L=6, tail_dist=32, band="IJ", floor=3}, -- variant
   ["NASAMS3-AMRAAMER CHM"] ={peak=20,mu=35,sigma_L=14,tail_dist=65, band="IJ", floor=2},
   ["NASAMS3-AIM9X2 CHM"]   ={peak=10,mu=15,sigma_L=6, tail_dist=30, band="IJ", floor=0},
-  ["C-RAM CHM"]            ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
-  ["PGZ-09 CHM"]           ={peak=22,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=0},
+  ["PGZ-09 CHM"]           ={peak=22,mu=5, sigma_L=2, tail_dist=14, band="IJ", floor=0}, -- Type-09
   ["PGZ-95 CHM"]           ={peak=15,mu=4, sigma_L=2, tail_dist=10, band="OPT",floor=0},
-  ["S350-9M100 CHM"]       ={peak=18,mu=35,sigma_L=15,tail_dist=75, band="IJ", floor=2},
-  ["S350-9M96D CHM"]       ={peak=18,mu=35,sigma_L=15,tail_dist=75, band="IJ", floor=2},
-  ["HQ-22 CHM"]            ={peak=20,mu=58,sigma_L=22,tail_dist=100,band="S",  floor=2},
-  ["LD-3000 CHM"]          ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
-  ["LD-3000M CHM"]         ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
-  ["FlaRakRad CHM"]        ={peak=35,mu=5, sigma_L=2, tail_dist=12, band="IJ", floor=3},
-  ["IRIS-T SLM CHM"]       ={peak=18,mu=18,sigma_L=8, tail_dist=40, band="IJ", floor=2},
+  ["S350-9M100 CHM"]       ={peak=18,mu=35,sigma_L=15,tail_dist=78, band="IJ", floor=2}, -- SA-28 canonical
+  ["HQ-22 CHM"]            ={peak=20,mu=70,sigma_L=26,tail_dist=120,band="S",  floor=2},
+  ["IRIS-T SLM CHM"]       ={peak=18,mu=22,sigma_L=10,tail_dist=50, band="IJ", floor=2}, -- will be aliased
   ["Skynex CHM"]           ={peak=12,mu=4, sigma_L=2, tail_dist=10, band="OPT",floor=0},
   ["Skyshield CHM"]        ={peak=12,mu=4, sigma_L=2, tail_dist=10, band="OPT",floor=0},
-  ["BukM3-9M317M CHM"]     ={peak=22,mu=38,sigma_L=16,tail_dist=72, band="IJ", floor=2},
-  ["BukM3-9M317MA CHM"]    ={peak=22,mu=38,sigma_L=16,tail_dist=72, band="IJ", floor=2},
+  ["BukM3-9M317M CHM"]     ={peak=22,mu=38,sigma_L=16,tail_dist=75, band="IJ", floor=2}, -- SA-27 canonical
   ["SkySabre CHM"]         ={peak=18,mu=18,sigma_L=7, tail_dist=40, band="IJ", floor=2},
   ["Stormer CHM"]          ={peak=10,mu=5, sigma_L=2, tail_dist=12, band="OPT",floor=0},
-  ["THAAD CHM"]            ={peak=10,mu=80,sigma_L=35,tail_dist=120,band="IJ", floor=0},
-  ["LAV-AD CHM"]           ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
+  ["THAAD CHM"]            ={peak=10,mu=90,sigma_L=38,tail_dist=140,band="IJ", floor=0},
   ["WieselOzelot CHM"]     ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
   ["USInfantryFIM92K CHM"] ={peak=3, mu=3, sigma_L=1, tail_dist=5,  band="OPT",floor=0},
-  ["RBS98M CHM"]   ={peak=25,mu=12,sigma_L=5, tail_dist=25,band="IJ", floor=3},
-  ["RBS70 CHM"]    ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS70M CHM"]   ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS90 CHM"]    ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS90M CHM"]   ={peak=5, mu=4, sigma_L=2, tail_dist=10,band="OPT",floor=0},
-  ["RBS103A CHM"]  ={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",  floor=2},
-  ["RBS103B CHM"]  ={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",  floor=2},
-  ["RBS103AM CHM"] ={peak=20,mu=55,sigma_L=20,tail_dist=90,band="S",  floor=2},
-  ["RBS103BM CHM"] ={peak=22,mu=45,sigma_L=18,tail_dist=80,band="S",  floor=2},
-  ["Lvkv9040M CHM"]={peak=15,mu=3, sigma_L=1, tail_dist=8, band="OPT",floor=0},
 }
+
+-- Alias entries: point alias keys to the canonical entry's table.
+-- Modifying any canonical entry above automatically updates all its aliases.
+-- This prevents parameter drift when updating values.
+do
+  local p = MANTIS.JammerSAMParams
+  -- NATO designation aliases
+  p["SA-21"]  = p["S-400"]      -- SA-21 Growler
+  p["SA-22"]  = p["Pantsir S1"] -- SA-22 Greyhound
+  p["SA-23"]  = p["S-300VM"]    -- SA-23 Gladiator
+  p["SA-23B"] = p["S-300V4"]    -- SA-23B Antey-2500 (improved)
+  p["SA-27"]  = p["BukM3-9M317M CHM"]  -- SA-27 Gollum (Buk-M3)
+  p["SA-28"]  = p["S350-9M100 CHM"]    -- SA-28 Vityaz (S-350)
+  -- Buk-M3 variants (same radar)
+  p["BukM3-9M317MA CHM"] = p["BukM3-9M317M CHM"]
+  -- S-350 variants (same radar)
+  p["S350-9M96D CHM"] = p["S350-9M100 CHM"]
+  -- Pantsir variants
+  p["PantsirS1 CHM"] = p["Pantsir S1"]
+  p["PantsirS2 CHM"] = p["Pantsir S1"]
+  -- Tor-M2 variants
+  p["TorM2 CHM"]  = p["Tor M2"]
+  p["TorM2K CHM"] = p["Tor M2"]
+  -- Patriot PAC-2 (same MPQ-65 radar)
+  p["M903PAC2 CHM"]     = p["Patriot"]
+  p["M903PAC2KAT1 CHM"] = p["Patriot"]
+  -- IRIS-T (base and CHM are same system)
+  p["IRIS-T SLM CHM"] = p["IRIS-T SLM"]
+  -- HDS variants (same radar as base entry)
+  p["SA-2 HDS"]    = p["SA-2"]
+  p["SA-3 HDS"]    = p["SA-3"]
+  p["SA-10B HDS"]  = p["SA-10B"]
+  p["SA-17 HDS"]   = p["SA-17"]
+  p["SA-23 HDS"]   = p["S-300VM"]
+  p["HQ-2 HDS"]    = p["HQ-2"]
+  -- Roland / FlaRakRad (same system)
+  p["FlaRakRad CHM"] = p["Roland"]
+  -- Phalanx-class CIWS (Ka-band, essentially unjammable)
+  p["C-RAM CHM"]    = p["C-RAM"]
+  p["LD-3000 CHM"]  = p["C-RAM"]
+  p["LD-3000M CHM"] = p["C-RAM"]
+  -- SMA / CHM Swedish duplicates (CH mod re-implements SMA assets)
+  p["RBS70 CHM"]    = p["RBS70 SMA"]
+  p["RBS70M SMA"]   = p["RBS70 SMA"]
+  p["RBS70M CHM"]   = p["RBS70 SMA"]
+  p["RBS90 CHM"]    = p["RBS90 SMA"]
+  p["RBS90M SMA"]   = p["RBS90 SMA"]
+  p["RBS90M CHM"]   = p["RBS90 SMA"]
+  p["RBS98M CHM"]   = p["RBS98M SMA"]
+  p["RBS103A CHM"]  = p["RBS103A SMA"]
+  p["RBS103AM SMA"] = p["RBS103A SMA"]
+  p["RBS103AM CHM"] = p["RBS103A SMA"]
+  p["RBS103B CHM"]  = p["RBS103B SMA"]
+  p["RBS103BM SMA"] = p["RBS103B SMA"]
+  p["RBS103BM CHM"] = p["RBS103B SMA"]
+  p["Lvkv9040M CHM"]= p["Lvkv9040M SMA"]
+  -- IR MANPADS (all near-zero, different systems but share params)
+  p["LAV-AD CHM"]           = p["SA-9"]
+  -- NOTE: SA-13, Avenger, Chaparral, Linebacker kept separate (different real systems)
+end
 
 
 -----------------------------------------------------------------------
@@ -117213,8 +117565,8 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
     return self
   end
 
-  --- [Internal] Core jamming probability curve (v8 engine).
-  -- Includes decoupled bt_mod/range_mod, ±10% jitter, and floor.
+  --- [Internal] Core jamming probability curve (v9 / v8.1 engine).
+  -- Features: decoupled bt_mod/range_mod, tapering residual floor, ±10% jitter.
   -- @param #MANTIS self
   -- @param #number d Distance in nautical miles
   -- @param #table params {peak, mu, sigma_L, tail_dist, band, floor}
@@ -117232,7 +117584,7 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
     elseif band == "S"   then bm = cfg.mult_S
     elseif band == "IJ"  then bm = cfg.mult_IJ
     else                      bm = cfg.mult_OPT end
-    -- Decoupled window modifiers (v8)
+    -- Decoupled window modifiers
     local eff_sigma_L   = sigma_L   / cfg.bt_mod
     local eff_tail_dist = tail_dist * cfg.range_mod
     local eff_peak = math.min(95, peak * bm)
@@ -117243,12 +117595,19 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       local lambda = math.log(100.0) / eff_tail_dist
       raw = eff_peak * math.exp(-lambda * (d - mu))
     end
-    -- Stochastic jitter ±10% (v8)
+    -- Tapering residual floor (v9): floor full inside engagement band (d <= mu),
+    -- attenuates with R^2-like falloff past mu over 2.5x the main decay distance.
+    -- Prevents artificial hard cliff at 200nm cap; matches real radar/jammer physics.
+    local eff_floor = floor * bm
+    if eff_floor > 0 and d > mu then
+      local floorLambda = math.log(100.0) / (eff_tail_dist * 2.5)
+      eff_floor = eff_floor * math.exp(-floorLambda * (d - mu))
+    end
+    raw = math.max(eff_floor, raw)
+    -- Stochastic jitter ±10% applied AFTER floor (v9), so residual also varies.
+    -- Prevents gameable flat long-range value. Reflects S/N, RCS, atmospheric fluctuation.
     local jitter = 1.0 + (math.random() * 2 - 1) * (self.JammerJitterPercent or 0.10)
     raw = raw * jitter
-    -- Minimum effectiveness floor (residual noise injection, v8)
-    local eff_floor = (floor or 0) * bm
-    raw = math.max(eff_floor, raw)
     return math.max(0, math.min(95, raw)) / 100.0
   end
 
@@ -133829,17 +134188,27 @@ function AIRBOSS:DeleteRecoveryWindow( Window, Delay )
     self:ScheduleOnce( Delay, self.DeleteRecoveryWindow, self, Window )
   else
 
-    for i, _recovery in pairs( self.recoverytimes ) do
-      local recovery = _recovery -- #AIRBOSS.Recovery
+    if not Window then
+      return
+    end
 
-      if Window and Window.ID == recovery.ID then
-        if Window.OPEN then
-          -- Window is currently open.
-          self:RecoveryStop()
-        else
-          table.remove( self.recoverytimes, i )
-        end
+    -- If this window is currently open, stop recovery first. Mark it OVER so the
+    -- recovery time check cannot re-open it before/while we remove it.
+    if Window.OPEN then
+      Window.OPEN = false
+      Window.OVER = true
+      if self:IsRecovering() then
+        self:RecoveryStop()
+      end
+    end
 
+    -- Remove the window from the queue by its unique ID. Iterate over a numerically
+    -- indexed copy of the keys and remove via ipairs-safe reverse loop so that the
+    -- removal does not corrupt traversal (the window may appear once).
+    for i = #self.recoverytimes, 1, -1 do
+      local recovery = self.recoverytimes[i] -- #AIRBOSS.Recovery
+      if recovery and recovery.ID == Window.ID then
+        table.remove( self.recoverytimes, i )
       end
     end
   end
@@ -135190,15 +135559,23 @@ function AIRBOSS:_CheckRecoveryTimes()
         if self:IsRecovering() then
           -- Carrier is already recovering.
           state = "in progress"
-        else
-          -- Start recovery.
+        elseif not recovery.OVER then
+          -- Start recovery. Only if the window has not already been closed/cancelled.
+          -- The OVER guard prevents a window that was stopped manually (e.g. via the
+          -- Skipper "Stop Recovery" menu) from being immediately re-opened on the next
+          -- status tick while its [START,STOP) range is still active.
           self:RecoveryStart( recovery.CASE, recovery.OFFSET )
           state = "starting now"
           recovery.OPEN = true
+        else
+          -- Window was already closed/cancelled within its active time range.
+          state = "cancelled"
         end
 
-        -- Set current recovery window.
-        currwindow = recovery
+        -- Set current recovery window (unless this window has been cancelled).
+        if not recovery.OVER then
+          currwindow = recovery
+        end
 
       else -- Stop time HAS passed.
 
@@ -135473,11 +135850,20 @@ function AIRBOSS:onafterRecoveryStop( From, Event, To )
     self:CarrierResumeRoute( coord )
   end
 
-  -- Delete current recovery window if open.
-  if self.recoverywindow and self.recoverywindow.OPEN == true then
+  -- Mark the current recovery window closed and cancelled, then remove it from the
+  -- queue. We do NOT gate this on Window.OPEN: that flag is only set by
+  -- _CheckRecoveryTimes (not by RecoveryStart), and the recovery time check nils and
+  -- rebuilds self.recoverywindow every status tick, so OPEN is not a reliable signal
+  -- here. Setting OVER=true is what actually prevents the window from being re-opened
+  -- on the next tick while its [START,STOP) range is still active.
+  --
+  -- The removal is deferred by one tick (Delay>0) so it does not mutate the
+  -- recoverytimes table while _CheckRecoveryTimes may be iterating over it (the natural
+  -- close path calls RecoveryStop() from inside that loop).
+  if self.recoverywindow then
     self.recoverywindow.OPEN = false
     self.recoverywindow.OVER = true
-    self:DeleteRecoveryWindow( self.recoverywindow )
+    self:DeleteRecoveryWindow( self.recoverywindow, 1 )
   end
 
   -- Check recovery windows. This sets self.recoverywindow to the next window.
