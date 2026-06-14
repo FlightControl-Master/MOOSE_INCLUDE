@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T16:10:34+02:00-d1e4dd3fe93369c425b84d49f2d8b1cf67ec6ec0 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T17:52:13+02:00-500520320694f9b5c17f419fc00ed82514a3237e ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -130779,13 +130779,16 @@ function AIRBOSS:_CheckRecoveryTimes()
         -- Time into the wind 1 day or if longer recovery time + the 5 min early.
         local t = math.max( nextwindow.STOP - nextwindow.START + self.dTturn, 60 * 60 * 24 )
 
-        -- Recovery wind on deck in knots.
+         -- Recovery wind on deck in knots.
+        -- NOTE: Do NOT clamp the desired wind-over-deck (WOD) to the carrier's max hull
+        -- speed here. WOD = carrier speed + headwind, so a WOD target above the hull's
+        -- top speed is achievable whenever there is wind. CarrierTurnIntoWind ->
+        -- GetHeadingIntoWind already converts the WOD target into the required hull
+        -- speed and caps THAT at the carrier's max speed (Vmax) internally. Clamping the
+        -- WOD target itself capped achievable WOD at ~30 kts (the supercarrier's max
+        -- hull speed) even in strong wind, which made high-WOD recovery windows fall
+        -- short of their requested value.
         local v = UTILS.KnotsToMps( nextwindow.SPEED )
-
-        -- Check that we do not go above max possible speed.
-        local vmax = self.carrier:GetSpeedMax() / 3.6 -- convert to m/s
-        v = math.min( v, vmax )
-
         -- Route carrier into the wind. Sets self.turnintowind=true
         self:CarrierTurnIntoWind( t, v, uturn )
 

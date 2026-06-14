@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T16:10:34+02:00-d1e4dd3fe93369c425b84d49f2d8b1cf67ec6ec0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T17:52:13+02:00-500520320694f9b5c17f419fc00ed82514a3237e ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -64139,8 +64139,6 @@ end
 self:T(self.lid..string.format("Heading=%03d°, Wind=%03d° %.1f kts, Delta=%03d° ==> U-turn=%s",hdg,wind,UTILS.MpsToKnots(vwind),delta,tostring(uturn)))
 local t=math.max(nextwindow.STOP-nextwindow.START+self.dTturn,60*60*24)
 local v=UTILS.KnotsToMps(nextwindow.SPEED)
-local vmax=self.carrier:GetSpeedMax()/3.6
-v=math.min(v,vmax)
 self:CarrierTurnIntoWind(t,v,uturn)
 end
 self.recoverywindow=nextwindow
