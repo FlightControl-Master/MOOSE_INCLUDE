@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T09:56:13+02:00-f083b77390324ea436c21f81114fa7ee4bd53189 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T12:06:54+02:00-b8e114101bd0ef717c4efe0d080fc0d620ca0b56 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8893,7 +8893,8 @@ end
 end
 if Event.weapon and type(Event.weapon)=="table"and Event.weapon.isExist and Event.weapon:isExist()then
 Event.Weapon=Event.weapon
-Event.WeaponName=Event.weapon:isExist()and Event.weapon:getTypeName()or"Unknown Weapon"
+Event.WeaponName=Event.weapon:isExist()and Event.weapon.getTypeName and Event.weapon:getTypeName()or"Unknown Weapon"
+if Event.weapon_name=="ZELL Booster"then Event.WeaponName="ZELL Booster"end
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
 Event.WeaponPlayerName=Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
 Event.WeaponCoalition=Event.WeaponUNIT and Event.Weapon.getCoalition and Event.Weapon:getCoalition()
