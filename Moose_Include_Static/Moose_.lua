@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T12:06:54+02:00-b8e114101bd0ef717c4efe0d080fc0d620ca0b56 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T13:44:44+02:00-9326cfad1c4c0ec855136d8c10e31d7d09529f36 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -13065,11 +13065,11 @@ self:I(string.format("Register Group: %s",tostring(DCSGroupName)))
 self:AddGroup(DCSGroupName,true)
 for DCSUnitId,DCSUnit in pairs(DCSGroup:getUnits())do
 local DCSUnitName=DCSUnit:getName()
-self:I(string.format("Register Unit: %s",tostring(DCSUnitName)))
+self:T(string.format("Register Unit: %s",tostring(DCSUnitName)))
 self:AddUnit(tostring(DCSUnitName),true)
 end
 else
-self:E({"Group does not exist: ",DCSGroup})
+self:T({"Group does not exist: ",DCSGroup})
 end
 return self
 end
@@ -13123,15 +13123,8 @@ end
 return self
 end
 function DATABASE:_RegisterAirbase(airbase)
-local IsSyria=UTILS.GetDCSMap()=="Syria"and true or false
-local countHSyria=0
 if airbase then
 local DCSAirbaseName=airbase:getName()
-if IsSyria and DCSAirbaseName=="H"and countHSyria>0 then
-return self
-elseif IsSyria and DCSAirbaseName=="H"and countHSyria==0 then
-countHSyria=countHSyria+1
-end
 local airbaseID=airbase:getID()
 local airbase=self:AddAirbase(DCSAirbaseName)
 local airbaseUID=airbase:GetID(true)
@@ -32413,40 +32406,189 @@ AIRBASE.TheChannel={
 AIRBASE.Syria={
 ["Abu_al_Duhur"]="Abu al-Duhur",
 ["Adana_Sakirpasa"]="Adana Sakirpasa",
+["Adiyaman"]="Adiyaman",
 ["Akrotiri"]="Akrotiri",
-["Al_Qusayr"]="Al Qusayr",
 ["Al_Dumayr"]="Al-Dumayr",
+["Al_Qusayr"]="Al Qusayr",
 ["Aleppo"]="Aleppo",
 ["An_Nasiriyah"]="An Nasiriyah",
 ["At_Tanf"]="At Tanf",
 ["Bassel_Al_Assad"]="Bassel Al-Assad",
 ["Beirut_Rafic_Hariri"]="Beirut-Rafic Hariri",
 ["Ben_Gurion"]="Ben Gurion",
+["Chukurova"]="Chukurova",
 ["Damascus"]="Damascus",
 ["Deir_ez_Zor"]="Deir ez-Zor",
+["Diyarbakir"]="Diyarbakir",
 ["Ercan"]="Ercan",
 ["Eyn_Shemer"]="Eyn Shemer",
 ["Gaziantep"]="Gaziantep",
 ["Gazipasa"]="Gazipasa",
 ["Gecitkale"]="Gecitkale",
-["H"]="H",
+["Gulechoba"]="Gulechoba",
 ["H3"]="H3",
 ["H3_Northwest"]="H3 Northwest",
 ["H3_Southwest"]="H3 Southwest",
 ["H4"]="H4",
+["H4_Emergency"]="H4 Emergency",
+["HC01"]="HC01",
+["HC02"]="HC02",
+["HC03"]="HC03",
+["HC04"]="HC04",
+["HC05"]="HC05",
+["HC06"]="HC06",
+["HI01"]="HI01",
+["HI02"]="HI02",
+["HI03"]="HI03",
+["HI05"]="HI05",
+["HI06"]="HI06",
+["HI07"]="HI07",
+["HI08"]="HI08",
+["HI09"]="HI09",
+["HI11"]="HI11",
+["HI12"]="HI12",
+["HI13"]="HI13",
+["HI14"]="HI14",
+["HI15"]="HI15",
+["HI16"]="HI16",
+["HI17"]="HI17",
+["HI18"]="HI18",
+["HI20"]="HI20",
+["HI21"]="HI21",
+["HI22"]="HI22",
+["HI23"]="HI23",
+["HI24"]="HI24",
+["HI25"]="HI25",
+["HI26"]="HI26",
+["HJ01"]="HJ01",
+["HJ02"]="HJ02",
+["HJ03"]="HJ03",
+["HJ04"]="HJ04",
+["HL01"]="HL01",
+["HL02"]="HL02",
+["HL03"]="HL03",
+["HL04"]="HL04",
+["HL05"]="HL05",
+["HL06"]="HL06",
+["HL07"]="HL07",
+["HL08"]="HL08",
+["HL09"]="HL09",
+["HL10"]="HL10",
+["HL11"]="HL11",
+["HL12"]="HL12",
+["HL13"]="HL13",
+["HMed00"]="HMed00",
+["HMed01"]="HMed01",
+["HMed02"]="HMed02",
+["HMed03"]="HMed03",
+["HMed04"]="HMed04",
+["HMed05"]="HMed05",
+["HMed06"]="HMed06",
+["HMed07"]="HMed07",
+["HMed08"]="HMed08",
+["HMed09"]="HMed09",
+["HMed10"]="HMed10",
+["HMed11"]="HMed11",
+["HMed12"]="HMed12",
+["HMed13"]="HMed13",
+["HMed14"]="HMed14",
+["HMed15"]="HMed15",
+["HMed16"]="HMed16",
+["HMed17"]="HMed17",
+["HMed18"]="HMed18",
+["HMed19"]="HMed19",
+["HMed20"]="HMed20",
+["HMed21"]="HMed21",
+["HMed22"]="HMed22",
+["HMed23"]="HMed23",
+["HMed24"]="HMed24",
+["HMed25"]="HMed25",
+["HMed26"]="HMed26",
+["HMed27"]="HMed27",
+["HMed28"]="HMed28",
+["HMed29"]="HMed29",
+["HMed30"]="HMed30",
+["HOil01"]="HOil01",
+["HOil02"]="HOil02",
+["HOil03"]="HOil03",
+["HOil04"]="HOil04",
+["HOil05"]="HOil05",
+["HOil06"]="HOil06",
+["HS02"]="HS02",
+["HS03"]="HS03",
+["HS04"]="HS04",
+["HS05"]="HS05",
+["HS06"]="HS06",
+["HS07"]="HS07",
+["HS08"]="HS08",
+["HS09"]="HS09",
+["HS10"]="HS10",
+["HS11"]="HS11",
+["HS12"]="HS12",
+["HS13"]="HS13",
+["HS14"]="HS14",
+["HS15"]="HS15",
+["HS16"]="HS16",
+["HS17"]="HS17",
+["HS18"]="HS18",
+["HS19"]="HS19",
+["HS20"]="HS20",
+["HS21"]="HS21",
+["HS22"]="HS22",
+["HS23"]="HS23",
+["HS24"]="HS24",
+["HS25"]="HS25",
+["HS26"]="HS26",
+["HS27"]="HS27",
+["HS28"]="HS28",
+["HS29"]="HS29",
+["HS30"]="HS30",
+["HS31"]="HS31",
+["HS32"]="HS32",
+["HS33"]="HS33",
+["HS34"]="HS34",
+["HS35"]="HS35",
+["HS36"]="HS36",
+["HS37"]="HS37",
+["HS38"]="HS38",
+["HS39"]="HS39",
+["HS40"]="HS40",
+["HS41"]="HS41",
+["HS42"]="HS42",
+["HStad01"]="HStad01",
+["HStad02"]="HStad02",
+["HStad03"]="HStad03",
+["HStad04"]="HStad04",
+["HStad05"]="HStad05",
+["HStad06"]="HStad06",
+["HT01"]="HT01",
+["HT02"]="HT02",
+["H_med_orig_01"]="H_med_orig_01",
+["H_med_orig_02"]="H_med_orig_02",
+["H_med_orig_03"]="H_med_orig_03",
+["H_med_orig_04"]="H_med_orig_04",
+["H_med_orig_05"]="H_med_orig_05",
+["H_med_orig_06"]="H_med_orig_06",
+["H_med_orig_07"]="H_med_orig_07",
+["H_med_orig_08"]="H_med_orig_08",
+["H_med_orig_09"]="H_med_orig_09",
 ["Haifa"]="Haifa",
 ["Hama"]="Hama",
 ["Hatay"]="Hatay",
+["Hatzerim"]="Hatzerim",
 ["Hatzor"]="Hatzor",
 ["Herzliya"]="Herzliya",
 ["Incirlik"]="Incirlik",
 ["Jirah"]="Jirah",
+["Kahramanmaras"]="Kahramanmaras",
+["Kedem"]="Kedem",
 ["Khalkhalah"]="Khalkhalah",
 ["Kharab_Ishk"]="Kharab Ishk",
 ["King_Abdullah_II"]="King Abdullah II",
 ["King_Hussein_Air_College"]="King Hussein Air College",
 ["Kingsfield"]="Kingsfield",
 ["Kiryat_Shmona"]="Kiryat Shmona",
+["Konya"]="Konya",
 ["Kuweires"]="Kuweires",
 ["Lakatamia"]="Lakatamia",
 ["Larnaca"]="Larnaca",
@@ -32459,6 +32601,7 @@ AIRBASE.Syria={
 ["Minakh"]="Minakh",
 ["Muwaffaq_Salti"]="Muwaffaq Salti",
 ["Naqoura"]="Naqoura",
+["Nevatim"]="Nevatim",
 ["Nicosia"]="Nicosia",
 ["Palmachim"]="Palmachim",
 ["Palmyra"]="Palmyra",
@@ -32472,15 +32615,20 @@ AIRBASE.Syria={
 ["Rosh_Pina"]="Rosh Pina",
 ["Ruwayshid"]="Ruwayshid",
 ["Sanliurfa"]="Sanliurfa",
+["Sanliurfa_Heliport"]="Sanliurfa Heliport",
 ["Sayqal"]="Sayqal",
 ["Shayrat"]="Shayrat",
+["T2"]="T2",
+["T3"]="T3",
 ["Tabqa"]="Tabqa",
 ["Taftanaz"]="Taftanaz",
 ["Tal_Siman"]="Tal Siman",
 ["Tel_Nof"]="Tel Nof",
+["Teyman"]="Teyman",
 ["Tha_lah"]="Tha'lah",
 ["Tiyas"]="Tiyas",
 ["Wujah_Al_Hajar"]="Wujah Al Hajar",
+["Zarqa"]="Zarqa",
 }
 AIRBASE.MarianaIslands={
 ["Andersen_AFB"]="Andersen AFB",
@@ -33004,6 +33152,7 @@ self.isShip=false
 self.category=Airbase.Category.HELIPAD
 _DATABASE:AddStatic(AirbaseName)
 end
+if self:GetTypeName()=="Zell"then self.isZell=true end
 else
 self:E("ERROR: Unknown airbase category!")
 end
@@ -33236,6 +33385,9 @@ return self.isHelipad
 end
 function AIRBASE:IsShip()
 return self.isShip
+end
+function AIRBASE:IsZell()
+return self.isZell
 end
 function AIRBASE:GetParkingData(available)
 self:F2(available)
