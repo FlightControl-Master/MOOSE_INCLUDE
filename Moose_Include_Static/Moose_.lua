@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-11T17:34:19+02:00-bf10196662ce52b7082bc9d334ff643e7e5902ca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T09:56:13+02:00-f083b77390324ea436c21f81114fa7ee4bd53189 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -63230,14 +63230,20 @@ function AIRBOSS:DeleteRecoveryWindow(Window,Delay)
 if Delay and Delay>0 then
 self:ScheduleOnce(Delay,self.DeleteRecoveryWindow,self,Window)
 else
-for i,_recovery in pairs(self.recoverytimes)do
-local recovery=_recovery
-if Window and Window.ID==recovery.ID then
-if Window.OPEN then
-self:RecoveryStop()
-else
-table.remove(self.recoverytimes,i)
+if not Window then
+return
 end
+if Window.OPEN then
+Window.OPEN=false
+Window.OVER=true
+if self:IsRecovering()then
+self:RecoveryStop()
+end
+end
+for i=#self.recoverytimes,1,-1 do
+local recovery=self.recoverytimes[i]
+if recovery and recovery.ID==Window.ID then
+table.remove(self.recoverytimes,i)
 end
 end
 end
@@ -63919,12 +63925,16 @@ if time>=recovery.START then
 if time<recovery.STOP then
 if self:IsRecovering()then
 state="in progress"
-else
+elseif not recovery.OVER then
 self:RecoveryStart(recovery.CASE,recovery.OFFSET)
 state="starting now"
 recovery.OPEN=true
+else
+state="cancelled"
 end
+if not recovery.OVER then
 currwindow=recovery
+end
 else
 if self:IsRecovering()and not recovery.OVER then
 local _,npattern=self:_GetQueueInfo(self.Qpattern)
@@ -64046,10 +64056,10 @@ coord=nil
 end
 self:CarrierResumeRoute(coord)
 end
-if self.recoverywindow and self.recoverywindow.OPEN==true then
+if self.recoverywindow then
 self.recoverywindow.OPEN=false
 self.recoverywindow.OVER=true
-self:DeleteRecoveryWindow(self.recoverywindow)
+self:DeleteRecoveryWindow(self.recoverywindow,1)
 end
 self:_CheckRecoveryTimes()
 end
