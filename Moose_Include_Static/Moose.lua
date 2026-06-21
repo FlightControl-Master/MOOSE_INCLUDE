@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T17:52:13+02:00-500520320694f9b5c17f419fc00ed82514a3237e ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-21T12:51:50+02:00-b6ea6606fc8976a93b9a2345611bb708ebd70e33 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -13525,11 +13525,11 @@ function SCHEDULEDISPATCHER:AddSchedule( Scheduler, ScheduleFunction, ScheduleAr
           -- self:T3( { Repeat = CallID, CurrentTime, ScheduleTime, ScheduleArguments } )
           return ScheduleTime -- returns the next time the function needs to be called.
         else
-          self:Stop( Scheduler, CallID )
+          self:_Reclaim( Scheduler, CallID )
         end
 
       else
-        self:Stop( Scheduler, CallID )
+        self:_Reclaim( Scheduler, CallID )
       end
     else
       self:I( "<<<>" .. Name .. ":" .. Line .. " (" .. Source .. ")" )
@@ -13654,6 +13654,16 @@ function SCHEDULEDISPATCHER:NoTrace( Scheduler )
   Scheduler.ShowTrace = false
 end
 
+--- Helper for memory cleanup for self stopping schedulers
+-- @param #SCHEDULEDISPATCHER self
+-- @param Core.Scheduler#SCHEDULER Scheduler Scheduler object.
+-- @param #string CallID (Optional) Scheduler Call ID.
+function SCHEDULEDISPATCHER:_Reclaim( Scheduler, CallID )
+  self:Stop( Scheduler, CallID )                          -- remove DCS timer, nil ScheduleID
+  if self.Schedule[Scheduler] then self.Schedule[Scheduler][CallID] = nil end
+  self.ObjectSchedulers[CallID]     = nil
+  self.PersistentSchedulers[CallID] = nil
+end
 --- **Core** - Models DCS event dispatching using a publish-subscribe model.
 --
 -- ===

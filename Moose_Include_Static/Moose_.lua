@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T17:52:13+02:00-500520320694f9b5c17f419fc00ed82514a3237e ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-21T12:51:50+02:00-b6ea6606fc8976a93b9a2345611bb708ebd70e33 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7953,10 +7953,10 @@ if Repeat~=0 and((Stop==0)or(Stop~=0 and CurrentTime<=StartTime+Stop))then
 local ScheduleTime=CurrentTime+Repeat+math.random(-(Randomize*Repeat/2),(Randomize*Repeat/2))+0.0001
 return ScheduleTime
 else
-self:Stop(Scheduler,CallID)
+self:_Reclaim(Scheduler,CallID)
 end
 else
-self:Stop(Scheduler,CallID)
+self:_Reclaim(Scheduler,CallID)
 end
 else
 self:I("<<<>"..Name..":"..Line.." ("..Source..")")
@@ -8019,6 +8019,12 @@ end
 function SCHEDULEDISPATCHER:NoTrace(Scheduler)
 self:F2({Scheduler=Scheduler})
 Scheduler.ShowTrace=false
+end
+function SCHEDULEDISPATCHER:_Reclaim(Scheduler,CallID)
+self:Stop(Scheduler,CallID)
+if self.Schedule[Scheduler]then self.Schedule[Scheduler][CallID]=nil end
+self.ObjectSchedulers[CallID]=nil
+self.PersistentSchedulers[CallID]=nil
 end
 EVENT={
 ClassName="EVENT",
