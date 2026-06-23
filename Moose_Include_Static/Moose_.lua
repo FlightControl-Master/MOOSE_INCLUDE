@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-21T12:51:50+02:00-b6ea6606fc8976a93b9a2345611bb708ebd70e33 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-23T12:29:45+02:00-7e9dd9deff401d5badd0a1cc9fc605951dd107f5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124128,7 +124128,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Air"},
 }
-EASYGCICAP.version="0.1.36"
+EASYGCICAP.version="0.1.37"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -124357,6 +124357,13 @@ return self
 end
 function EASYGCICAP:_AddAirwing(Airbasename,Alias)
 self:T(self.lid.."_AddAirwing "..Airbasename)
+local function counttable(tbl)
+local count=0
+for _,_data in pairs(tbl)do
+count=count+1
+end
+return count
+end
 local CapFormation=self.CapFormation
 local DespawnAfterLanding=self.DespawnAfterLanding
 local DespawnAfterHolding=self.DespawnAfterHolding
@@ -124371,7 +124378,9 @@ CAP_Wing:SetReportOff()
 CAP_Wing:SetMarker(false)
 CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
+if counttable(self.ManagedCP)>0 then
 CAP_Wing:SetNumberCAP(self.capgrouping)
+end
 CAP_Wing:SetCapCloseRaceTrack(true)
 if self.showpatrolpointmarks then
 CAP_Wing:ShowPatrolPointMarkers(true)
