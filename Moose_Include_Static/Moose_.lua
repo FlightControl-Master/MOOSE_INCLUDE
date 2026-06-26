@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-24T06:29:28+02:00-867f919d5f203a7f865509dadd76e05646ecc8b5 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-26T12:31:54+02:00-8c60a8c678954592cb4f780acdfeec6e031e33a2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -7957,10 +7957,10 @@ if Repeat~=0 and((Stop==0)or(Stop~=0 and CurrentTime<=StartTime+Stop))then
 local ScheduleTime=CurrentTime+Repeat+math.random(-(Randomize*Repeat/2),(Randomize*Repeat/2))+0.0001
 return ScheduleTime
 else
-self:_Reclaim(Scheduler,CallID)
+self:Stop(Scheduler,CallID)
 end
 else
-self:_Reclaim(Scheduler,CallID)
+self:Stop(Scheduler,CallID)
 end
 else
 self:I("<<<>"..Name..":"..Line.." ("..Source..")")
