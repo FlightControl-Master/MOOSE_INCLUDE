@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-14T13:43:42+02:00-7d4432fa47f4c5cc5a8c7f1596492544a2f639c6 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-27T10:51:01+02:00-0f9921f16beacf9c43eb61eab764ae4e42dc34fb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3445,6 +3445,10 @@ return true
 end
 if string.find(type_name,"SA342")and(unit:getDrawArgumentValue(34)==1)then
 BASE:T(unit_name.." front door(s) are open or doors removed")
+return true
+end
+if type_name=="Ka-50_3"and unit:getDrawArgumentValue(38)==1 then
+BASE:T(unit_name.." cockpit door is open")
 return true
 end
 if type_name=="C-130J-30"and(unit:getDrawArgumentValue(86)==1)then
@@ -7990,6 +7994,12 @@ function SCHEDULEDISPATCHER:NoTrace(Scheduler)
 self:F2({Scheduler=Scheduler})
 Scheduler.ShowTrace=false
 end
+function SCHEDULEDISPATCHER:_Reclaim(Scheduler,CallID)
+self:Stop(Scheduler,CallID)
+if self.Schedule[Scheduler]then self.Schedule[Scheduler][CallID]=nil end
+self.ObjectSchedulers[CallID]=nil
+self.PersistentSchedulers[CallID]=nil
+end
 EVENT={
 ClassName="EVENT",
 ClassID=0,
@@ -8863,7 +8873,11 @@ end
 end
 if Event.weapon and type(Event.weapon)=="table"and Event.weapon.isExist and Event.weapon:isExist()then
 Event.Weapon=Event.weapon
+if Event.weapon_name=="ZELL Booster"then
+Event.WeaponName="ZELL Booster"
+else
 Event.WeaponName=Event.weapon:isExist()and Event.weapon.getTypeName and Event.weapon:getTypeName()or"Unknown Weapon"
+end
 if Event.weapon_name=="ZELL Booster"then Event.WeaponName="ZELL Booster"end
 Event.WeaponUNIT=CLIENT:Find(Event.Weapon,'',true)
 Event.WeaponPlayerName=Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
@@ -66852,8 +66866,6 @@ end
 self:T(self.lid..string.format("Heading=%03d°, Wind=%03d° %.1f kts, Delta=%03d° ==> U-turn=%s",hdg,wind,UTILS.MpsToKnots(vwind),delta,tostring(uturn)))
 local t=math.max(nextwindow.STOP-nextwindow.START+self.dTturn,60*60*24)
 local v=UTILS.KnotsToMps(nextwindow.SPEED)
-local vmax=self.carrier:GetSpeedMax()/3.6
-v=math.min(v,vmax)
 self:CarrierTurnIntoWind(t,v,uturn)
 end
 self.recoverywindow=nextwindow
@@ -126837,7 +126849,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Air"},
 }
-EASYGCICAP.version="0.1.36"
+EASYGCICAP.version="0.1.37"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -127066,6 +127078,13 @@ return self
 end
 function EASYGCICAP:_AddAirwing(Airbasename,Alias)
 self:T(self.lid.."_AddAirwing "..Airbasename)
+local function counttable(tbl)
+local count=0
+for _,_data in pairs(tbl)do
+count=count+1
+end
+return count
+end
 local CapFormation=self.CapFormation
 local DespawnAfterLanding=self.DespawnAfterLanding
 local DespawnAfterHolding=self.DespawnAfterHolding
@@ -127080,7 +127099,9 @@ CAP_Wing:SetReportOff()
 CAP_Wing:SetMarker(false)
 CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
+if counttable(self.ManagedCP)>0 then
 CAP_Wing:SetNumberCAP(self.capgrouping)
+end
 CAP_Wing:SetCapCloseRaceTrack(true)
 if self.showpatrolpointmarks then
 CAP_Wing:ShowPatrolPointMarkers(true)
@@ -132455,7 +132476,7 @@ Frequencies=UTILS.EnsureTable(Frequencies or self.frequencies)
 Modulations=UTILS.EnsureTable(Modulations or self.modulations)
 local ffs={}
 for _,_f in pairs(Frequencies)do
-table.insert(ffs,string.format("%.1f",_f))
+table.insert(ffs,string.format("%.3f",_f))
 end
 local freqs=table.concat(ffs,",")
 local modus=table.concat(Modulations,",")
@@ -132505,7 +132526,7 @@ Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
 local ffs={}
 for _,_f in pairs(Frequencies or self.frequencies)do
-table.insert(ffs,string.format("%.1f",_f))
+table.insert(ffs,string.format("%.3f",_f))
 end
 local freqs=table.concat(ffs,",")
 local modus=table.concat(Modulations or self.modulations,",")
@@ -132541,7 +132562,7 @@ Frequencies=UTILS.EnsureTable(Frequencies)
 Modulations=UTILS.EnsureTable(Modulations)
 local ffs={}
 for _,_f in pairs(Frequencies or self.frequencies)do
-table.insert(ffs,string.format("%.1f",_f))
+table.insert(ffs,string.format("%.3f",_f))
 end
 local freqs=table.concat(ffs,",")
 local modus=table.concat(Modulations or self.modulations,",")

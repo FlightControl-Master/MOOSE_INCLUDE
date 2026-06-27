@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-14T13:43:42+02:00-7d4432fa47f4c5cc5a8c7f1596492544a2f639c6 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-27T10:51:01+02:00-0f9921f16beacf9c43eb61eab764ae4e42dc34fb ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -4573,6 +4573,11 @@ function UTILS.IsLoadingDoorOpen( unit_name )
 
       if string.find(type_name, "SA342" ) and (unit:getDrawArgumentValue(34) == 1) then
           BASE:T(unit_name .. " front door(s) are open or doors removed")
+          return true
+      end
+        
+      if type_name == "Ka-50_3" and unit:getDrawArgumentValue(38) == 1 then
+          BASE:T(unit_name .. " cockpit door is open")
           return true
       end
 
@@ -13619,6 +13624,16 @@ function SCHEDULEDISPATCHER:NoTrace( Scheduler )
   Scheduler.ShowTrace = false
 end
 
+--- Helper for memory cleanup for self stopping schedulers
+-- @param #SCHEDULEDISPATCHER self
+-- @param Core.Scheduler#SCHEDULER Scheduler Scheduler object.
+-- @param #string CallID (Optional) Scheduler Call ID.
+function SCHEDULEDISPATCHER:_Reclaim( Scheduler, CallID )
+  self:Stop( Scheduler, CallID )                          -- remove DCS timer, nil ScheduleID
+  if self.Schedule[Scheduler] then self.Schedule[Scheduler][CallID] = nil end
+  self.ObjectSchedulers[CallID]     = nil
+  self.PersistentSchedulers[CallID] = nil
+end
 --- **Core** - Models DCS event dispatching using a publish-subscribe model.
 --
 -- ===
@@ -15074,7 +15089,11 @@ function EVENT:onEvent( Event )
       -- Weapon.
       if Event.weapon and type(Event.weapon) == "table" and Event.weapon.isExist and Event.weapon:isExist() then
         Event.Weapon = Event.weapon
-        Event.WeaponName = Event.weapon:isExist() and Event.weapon.getTypeName and Event.weapon:getTypeName() or "Unknown Weapon"
+        if Event.weapon_name == "ZELL Booster" then 
+          Event.WeaponName = "ZELL Booster"
+        else
+          Event.WeaponName = Event.weapon:isExist() and Event.weapon.getTypeName and Event.weapon:getTypeName() or "Unknown Weapon"
+        end
         if Event.weapon_name == "ZELL Booster" then Event.WeaponName = "ZELL Booster" end
         Event.WeaponUNIT = CLIENT:Find( Event.Weapon, '', true ) -- Sometimes, the weapon is a player unit!
         Event.WeaponPlayerName = Event.WeaponUNIT and Event.Weapon.getPlayerName and Event.Weapon:getPlayerName()
@@ -135672,13 +135691,16 @@ function AIRBOSS:_CheckRecoveryTimes()
         -- Time into the wind 1 day or if longer recovery time + the 5 min early.
         local t = math.max( nextwindow.STOP - nextwindow.START + self.dTturn, 60 * 60 * 24 )
 
-        -- Recovery wind on deck in knots.
+         -- Recovery wind on deck in knots.
+        -- NOTE: Do NOT clamp the desired wind-over-deck (WOD) to the carrier's max hull
+        -- speed here. WOD = carrier speed + headwind, so a WOD target above the hull's
+        -- top speed is achievable whenever there is wind. CarrierTurnIntoWind ->
+        -- GetHeadingIntoWind already converts the WOD target into the required hull
+        -- speed and caps THAT at the carrier's max speed (Vmax) internally. Clamping the
+        -- WOD target itself capped achievable WOD at ~30 kts (the supercarrier's max
+        -- hull speed) even in strong wind, which made high-WOD recovery windows fall
+        -- short of their requested value.
         local v = UTILS.KnotsToMps( nextwindow.SPEED )
-
-        -- Check that we do not go above max possible speed.
-        local vmax = self.carrier:GetSpeedMax() / 3.6 -- convert to m/s
-        v = math.min( v, vmax )
-
         -- Route carrier into the wind. Sets self.turnintowind=true
         self:CarrierTurnIntoWind( t, v, uturn )
 
@@ -252632,6 +252654,7 @@ end
 --          local mywing = EASYGCICAP:New("Blue CAP Operations",AIRBASE.Caucasus.Kutaisi,"blue","Blue EWR")
 --          
 --          -- Add a CAP patrol point belonging to our airbase, we'll be at 30k ft doing 400 kn, initial direction 90 degrees (East), leg 20NM
+--          -- NOTE - Skip this function and do not create CAP Points if you want GCI behaviour only.
 --          mywing:AddPatrolPointCAP(AIRBASE.Caucasus.Kutaisi,ZONE:FindByName("Blue Zone 1"):GetCoordinate(),30000,400,90,20)
 --          
 --          -- Add a Squadron with template "Blue Sq1 M2000c", 20 airframes, skill good, Modex starting with 102 and skin "Vendee Jeanne"
@@ -252783,7 +252806,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.36"
+EASYGCICAP.version="0.1.37"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -253251,6 +253274,15 @@ end
 function EASYGCICAP:_AddAirwing(Airbasename, Alias)
   self:T(self.lid.."_AddAirwing "..Airbasename)
   
+    -- Gather Some Stats
+  local function counttable(tbl)
+    local count = 0
+    for _,_data in pairs(tbl) do
+      count = count + 1
+    end
+    return count
+  end
+  
   local CapFormation = self.CapFormation
   local DespawnAfterLanding = self.DespawnAfterLanding
   local DespawnAfterHolding = self.DespawnAfterHolding
@@ -253269,7 +253301,11 @@ function EASYGCICAP:_AddAirwing(Airbasename, Alias)
   CAP_Wing:SetMarker(false)
   CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
   CAP_Wing:SetRespawnAfterDestroyed()
-  CAP_Wing:SetNumberCAP(self.capgrouping)
+  
+  --- #DONE avoid wings with no CAP points starting CAP anyhow; AirWing uses this to start CAP and creates points when there are none.
+  if counttable(self.ManagedCP) >0 then
+    CAP_Wing:SetNumberCAP(self.capgrouping)
+  end
   CAP_Wing:SetCapCloseRaceTrack(true)
     
   if self.showpatrolpointmarks then
@@ -253536,7 +253572,7 @@ function EASYGCICAP:_SetCAPPatrolPoints()
       MESSAGE:New(self.lid.."You are trying to create a CAP point for which there is no wing! "..tostring(data.AirbaseName),30,"CHECK"):ToAllIf(self.debug):ToLog()
       return
     end
-    local Wing = self.wings[data.AirbaseName][1] -- Ops.Airwing#AIRWING
+    local Wing = self.wings[data.AirbaseName][1] -- Ops.AirWing#AIRWING
     local Coordinate = data.Coordinate
     local Altitude = data.Altitude
     local Speed = data.Speed 
@@ -263249,7 +263285,7 @@ function MSRS:_HoundTextToSpeech(Message,Frequencies,Modulations,Volume,Label,Co
     
   local ffs = {}
   for _,_f in pairs(Frequencies) do
-    table.insert(ffs,string.format("%.1f",_f))
+    table.insert(ffs,string.format("%.3f",_f))
   end
   
   local freqs = table.concat(ffs, ",")
@@ -263355,7 +263391,7 @@ function MSRS:_HoundTestTone(Frequencies, Modulations, Coalition)
  
  local ffs = {}
   for _,_f in pairs(Frequencies or self.frequencies) do
-    table.insert(ffs,string.format("%.1f",_f))
+    table.insert(ffs,string.format("%.3f",_f))
   end
   
  local freqs = table.concat(ffs, ",")
@@ -263432,7 +263468,7 @@ function MSRS:RadioJammerOn(Frequencies, Modulations, Coalition, Noisetype, Volu
  
  local ffs = {}
   for _,_f in pairs(Frequencies or self.frequencies) do
-    table.insert(ffs,string.format("%.1f",_f))
+    table.insert(ffs,string.format("%.3f",_f))
   end
   
  local freqs = table.concat(ffs, ",")
