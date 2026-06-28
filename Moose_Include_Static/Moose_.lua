@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-27T10:57:27+02:00-626b12f486db981dadd71721044cb9f530c2eb9a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-28T09:30:45+02:00-98ed7d50c19343a2409304a44de55d2b3ff63ca2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -124132,7 +124132,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Air"},
 }
-EASYGCICAP.version="0.1.37"
+EASYGCICAP.version="0.1.38"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -124277,6 +124277,11 @@ end
 function EASYGCICAP:SetDefaultCAPAlt(Altitude)
 self:T(self.lid.."SetDefaultAltitude")
 self.capalt=Altitude or 25000
+return self
+end
+function EASYGCICAP:SetDefaultINTERCEPTAlt(Altitude)
+self:T(self.lid.."SetDefaultINTERCEPTAlt")
+self.interceptalt=Altitude or 25000
 return self
 end
 function EASYGCICAP:SetDefaultCAPDirection(Direction)
@@ -124854,6 +124859,7 @@ function EASYGCICAP:_AssignIntercept(Cluster)
 local overhead=self.overhead
 local capspeed=self.capspeed+100
 local capalt=self.capalt
+local interalt=self.interceptalt or self.capalt
 local maxsize=self.maxinterceptsize
 local repeatsonfailure=self.repeatsonfailure
 local wings=self.wings
@@ -124926,6 +124932,7 @@ local InterceptAuftrag=AUFTRAG:NewINTERCEPT(contact.group)
 :SetRepeatOnFailure(repeats)
 :SetMissionSpeed(UTILS.KnotsToAltKIAS(capspeed,capalt))
 :SetMissionAltitude(capalt)
+:SetEngageAltitude(interalt)
 if nogozoneset:Count()>0 then
 InterceptAuftrag:AddConditionSuccess(
 function(group,zoneset,conflictset)

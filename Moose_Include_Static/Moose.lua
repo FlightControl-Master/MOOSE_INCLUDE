@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-27T10:57:27+02:00-626b12f486db981dadd71721044cb9f530c2eb9a ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-28T09:30:45+02:00-98ed7d50c19343a2409304a44de55d2b3ff63ca2 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -247813,9 +247813,10 @@ end
 -- * @{#EASYGCICAP.SetDefaultResurrection}: Set how many seconds the AirWing stays inoperable after the AirWing STATIC HQ ist destroyed, default 900 secs. 
 -- * @{#EASYGCICAP.SetDefaultCAPSpeed}: Set how many knots the CAP flights should do (will be altitude corrected), default 300 kn.
 -- * @{#EASYGCICAP.SetDefaultCAPAlt}: Set at which altitude (ASL) the CAP planes will fly, default 25,000 ft.
+-- * @{#EASYGCICAP.SetDefaultINTERCEPTAlt}: Set at which altitude (ASL) the Intercept planes will fly, default 25,000 ft.
 -- * @{#EASYGCICAP.SetDefaultCAPDirection}: Set the initial direction from the CAP point the planes will fly in degrees, default is 90°.
 -- * @{#EASYGCICAP.SetDefaultCAPLeg}: Set the length of the CAP leg, default is 15 NM.
--- * @{#EASYGCICAP.SetDefaultCAPGrouping}: Set how many planes will be spawned per mission (CVAP/GCI), defaults to 2.
+-- * @{#EASYGCICAP.SetDefaultCAPGrouping}: Set how many planes will be spawned per mission (CAP/GCI), defaults to 2.
 -- * @{#EASYGCICAP.SetDefaultMissionRange}: Set how many NM the planes can go from the home base, defaults to 100.
 -- * @{#EASYGCICAP.SetDefaultNumberAlert5Standby}: Set how many planes will be spawned on cold standby (Alert5), default 2.
 -- * @{#EASYGCICAP.SetDefaultEngageRange}: Set max engage range for CAP flights if they detect intruders, defaults to 50.
@@ -247909,7 +247910,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.37"
+EASYGCICAP.version="0.1.38"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -248209,6 +248210,17 @@ function EASYGCICAP:SetDefaultCAPAlt(Altitude)
   self.capalt = Altitude or 25000
   return self
 end
+
+--- Set default INTERCEPT Altitude in feet
+-- @param #EASYGCICAP self
+-- @param #number Altitude (Optional) Altitude defaults to 25000
+-- @return #EASYGCICAP self
+function EASYGCICAP:SetDefaultINTERCEPTAlt(Altitude)
+  self:T(self.lid.."SetDefaultINTERCEPTAlt")
+  self.interceptalt = Altitude or 25000
+  return self
+end
+--
 
 --- Set default CAP lieg initial direction in degrees
 -- @param #EASYGCICAP self
@@ -249141,6 +249153,7 @@ function EASYGCICAP:_AssignIntercept(Cluster)
   local overhead = self.overhead
   local capspeed = self.capspeed + 100
   local capalt = self.capalt
+  local interalt = self.interceptalt or self.capalt
   local maxsize = self.maxinterceptsize
   local repeatsonfailure = self.repeatsonfailure
   
@@ -249228,6 +249241,7 @@ function EASYGCICAP:_AssignIntercept(Cluster)
           :SetRepeatOnFailure(repeats)
           :SetMissionSpeed(UTILS.KnotsToAltKIAS(capspeed,capalt))
           :SetMissionAltitude(capalt)
+          :SetEngageAltitude(interalt)
           
           if nogozoneset:Count() > 0 then
             InterceptAuftrag:AddConditionSuccess(
