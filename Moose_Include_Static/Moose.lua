@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-28T09:30:45+02:00-98ed7d50c19343a2409304a44de55d2b3ff63ca2 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-12T17:57:29+02:00-589e65963fc4dfdba3ebf33279fbfd1d3cfde642 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -575,7 +575,7 @@ ENUMS.ReportingName =
     Tornado = "Tornado",
     -- Transport / Bomber / Others
     Atlas = "A400",
-    Lancer = "B1-B",
+    Lancer = "B-1B",
     Stratofortress = "B-52H",
     Herc = "C-130",
     Hercules = "C-130J-30",
@@ -620,7 +620,7 @@ ENUMS.ReportingName =
     Apache = "AH-64",
     Chinook = "CH-47",
     Sea_Stallion = "CH-53",
-    Kiowa = "OH-58",
+    Kiowa = "OH58D",
     Seahawk = "SH-60",
     Blackhawk = "UH-60",
     Sea_King = "S-61",

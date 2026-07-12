@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-06-28T09:30:45+02:00-98ed7d50c19343a2409304a44de55d2b3ff63ca2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-12T17:57:29+02:00-589e65963fc4dfdba3ebf33279fbfd1d3cfde642 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -409,7 +409,7 @@ Goshawk="T-45",
 Starfighter="F-104",
 Tornado="Tornado",
 Atlas="A400",
-Lancer="B1-B",
+Lancer="B-1B",
 Stratofortress="B-52H",
 Herc="C-130",
 Hercules="C-130J-30",
@@ -450,7 +450,7 @@ Cobra="AH-1",
 Apache="AH-64",
 Chinook="CH-47",
 Sea_Stallion="CH-53",
-Kiowa="OH-58",
+Kiowa="OH58D",
 Seahawk="SH-60",
 Blackhawk="UH-60",
 Sea_King="S-61",
