@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-15T18:34:53+02:00-149e3421d926425c367422946250377bd8d5cfff ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-15T19:51:38+02:00-74c16bd4f03175e3235c541f674b80a84b2d7fee ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -10129,6 +10129,12 @@ do -- Event Handling
   -- @function [parent=#BASE] OnEventPlayerEnterAircraft
   -- @param #BASE self
   -- @param Core.Event#EVENTDATA EventData The EventData structure.
+
+  --- Occurs when an option is changed for an AI group.
+  -- The event identifies the initiating group, but does not provide the option ID or value.
+  -- @function [parent=#BASE] OnEventGroupChangeOption
+  -- @param #BASE self
+  -- @param Core.Event#EVENTDATA EventData The EventData structure.
   
   --- Occurs when a player creates a dynamic cargo object from the F8 ground crew menu.
   -- *** NOTE *** this is a workarounf for DCS not creating these events as of Aug 2024.
@@ -10274,6 +10280,22 @@ end
   
     world.onEvent(Event)
   end  
+
+  --- Creation of a `S_EVENT_GROUP_CHANGE_OPTION` event.
+  -- @param #BASE self
+  -- @param DCS#Time EventTime The time stamp of the event.
+  -- @param DCS#Group Initiator The initiating group of the event.
+  function BASE:CreateEventGroupChangeOption( EventTime, Initiator )
+    self:F( { EventTime, Initiator } )
+
+    local Event = {
+      id = EVENTS.GroupChangeOption,
+      time = EventTime,
+      initiator = Initiator,
+    }
+
+    world.onEvent( Event )
+  end
   
     --- Creation of a S_EVENT_NEW_DYNAMIC_CARGO event.
   -- @param #BASE self
@@ -13949,6 +13971,7 @@ EVENTS = {
   SimulationUnfreeze        = world.event.S_EVENT_SIMULATION_UNFREEZE or -1, 
   HumanAircraftRepairStart  = world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_START or -1, 
   HumanAircraftRepairFinish = world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH or -1,
+  GroupChangeOption         = world.event.S_EVENT_GROUP_CHANGE_OPTION or -1,
   -- dynamic cargo
   NewDynamicCargo           = world.event.S_EVENT_NEW_DYNAMIC_CARGO or -1,
   DynamicCargoLoaded        = world.event.S_EVENT_DYNAMIC_CARGO_LOADED or -1,
@@ -13962,23 +13985,25 @@ EVENTS = {
 --
 --   * A (Object.Category.)UNIT : A UNIT object type is involved in the Event.
 --   * A (Object.Category.)STATIC : A STATIC object type is involved in the Event.
+--   * A GROUP : A DCS Group object is involved in the Event.
 --
 -- @type EVENTDATA
 -- @field #number id The identifier of the event.
 --
--- @field DCS#Unit initiator (UNIT/STATIC/SCENERY) The initiating @{DCS#Unit} or @{DCS#StaticObject}.
+-- @field DCS#Unit initiator (UNIT/STATIC/SCENERY/GROUP) The initiating @{DCS#Unit} or @{DCS#StaticObject}. For `S_EVENT_GROUP_CHANGE_OPTION`, this is a DCS Group.
 -- @field DCS#Object.Category IniObjectCategory (UNIT/STATIC/SCENERY) The initiator object category ( Object.Category.UNIT or Object.Category.STATIC ).
 -- @field DCS#Unit IniDCSUnit (UNIT/STATIC) The initiating @{DCS#Unit} or @{DCS#StaticObject}.
 -- @field #string IniDCSUnitName (UNIT/STATIC) The initiating Unit name.
 -- @field Wrapper.Unit#UNIT IniUnit (UNIT/STATIC) The initiating MOOSE wrapper @{Wrapper.Unit#UNIT} of the initiator Unit object.
 -- @field #string IniUnitName (UNIT/STATIC) The initiating UNIT name (same as IniDCSUnitName).
--- @field DCS#Group IniDCSGroup (UNIT) The initiating {DCSGroup#Group}.
--- @field #string IniDCSGroupName (UNIT) The initiating Group name.
--- @field Wrapper.Group#GROUP IniGroup (UNIT) The initiating MOOSE wrapper @{Wrapper.Group#GROUP} of the initiator Group object.
--- @field #string IniGroupName UNIT) The initiating GROUP name (same as IniDCSGroupName).
+-- @field DCS#Group IniDCSGroup (UNIT/GROUP) The initiating @{DCS#Group}.
+-- @field #string IniDCSGroupName (UNIT/GROUP) The initiating Group name.
+-- @field Wrapper.Group#GROUP IniGroup (UNIT/GROUP) The initiating MOOSE wrapper @{Wrapper.Group#GROUP} of the initiator Group object.
+-- @field #string IniGroupName (UNIT/GROUP) The initiating GROUP name (same as IniDCSGroupName).
+-- @field DCS#Group.Category IniGroupCategory (GROUP) The category of the initiating group.
 -- @field #string IniPlayerName (UNIT) The name of the initiating player in case the Unit is a client or player slot.
 -- @field #string IniPlayerUCID (UNIT) The UCID of the initiating player in case the Unit is a client or player slot and on a multi-player server.
--- @field DCS#coalition.side IniCoalition (UNIT) The coalition of the initiator.
+-- @field DCS#coalition.side IniCoalition (UNIT/GROUP) The coalition of the initiator.
 -- @field DCS#Unit.Category IniCategory (UNIT) The category of the initiator.
 -- @field #string IniTypeName (UNIT) The type name of the initiator.
 --
@@ -14405,6 +14430,12 @@ local _EVENTMETA = {
      Side = "I",
      Event = "OnEventHumanAircraftRepairFinish",
      Text = "S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH"
+   },
+     [EVENTS.GroupChangeOption] = {
+     Order = 1,
+     Side = "I",
+     Event = "OnEventGroupChangeOption",
+     Text = "S_EVENT_GROUP_CHANGE_OPTION"
    },
    -- dynamic cargo
      [EVENTS.NewDynamicCargo] = {
@@ -14905,7 +14936,16 @@ function EVENT:onEvent( Event )
 
       if Event.initiator then
 
-        Event.IniObjectCategory = Object.getCategory(Event.initiator)
+        if Event.id == EVENTS.GroupChangeOption then
+          Event.IniDCSGroup = Event.initiator
+          Event.IniDCSGroupName = Group.getName(Event.initiator)
+          Event.IniGroupName = Event.IniDCSGroupName
+          Event.IniGroup = GROUP:FindByName(Event.IniDCSGroupName)
+          Event.IniCoalition = Group.getCoalition(Event.initiator)
+          Event.IniGroupCategory = Group.getCategory(Event.initiator)
+        else
+          Event.IniObjectCategory = Object.getCategory(Event.initiator)
+        end
         
         if Event.IniObjectCategory == Object.Category.STATIC then
           ---
