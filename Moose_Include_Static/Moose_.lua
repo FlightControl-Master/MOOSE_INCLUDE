@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-15T19:51:38+02:00-74c16bd4f03175e3235c541f674b80a84b2d7fee ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-15T19:53:58+02:00-cdfaac527c4abdc14a34f1a850cc8c0a136bc495 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79552,8 +79552,10 @@ else
 self:__CratesBuild(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
 end
 end
+if Group and Group:IsAlive()and Group:GetID()then
 self:_RefreshLoadCratesMenu(Group,Unit)
 self:_RefreshPackMenus(Group,Unit)
+end
 else
 self:T(self.lid.."Group KIA while building!")
 end
