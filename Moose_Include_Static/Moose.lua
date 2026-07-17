@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-15T19:53:58+02:00-cdfaac527c4abdc14a34f1a850cc8c0a136bc495 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-17T07:19:31+02:00-1be2c92a5cedda77ed1492f76426e49c1bc182db ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -2177,6 +2177,47 @@ ENUMS.Storage.weapons.containers.UH60L_M60_GUNNER = 'weapons.containers.{UH60L_M
 ENUMS.Storage.weapons.containers.UH60_GAU19_RIGHT = 'weapons.containers.{UH60_GAU19_RIGHT}'
 ENUMS.Storage.weapons.containers.UH60_M230_RIGHT = 'weapons.containers.{UH60_M230_RIGHT}'
 ENUMS.Storage.weapons.containers.UH60L_M2_GUNNER = 'weapons.containers.{UH60L_M2_GUNNER}'
+
+
+ENUMS.Storage.weapons.adapters.GD_F100_SUU_13 = 'weapons.adapters.GD_F100_SUU-13'
+ENUMS.Storage.weapons.containers.GPU_5_POD = 'weapons.containers.{GPU_5_POD}'
+ENUMS.Storage.weapons.bombs.BOLT_117 = 'weapons.bombs.BOLT-117'
+ENUMS.Storage.weapons.shells.F100_M39_20_TP_T = 'weapons.shells.F100_M39_20_TP_T'
+ENUMS.Storage.weapons.gunmounts.M_39_F_100 = 'weapons.gunmounts.M-39 F-100'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_275_L = 'weapons.droptanks.GD_F100_TANK_275_L'
+ENUMS.Storage.weapons.bombs.BLU_4B_R_GROUP_R = 'weapons.bombs.BLU-4B_R_GROUP_R'
+ENUMS.Storage.weapons.containers.F100_CAMERA_P2 = 'weapons.containers.F100_CAMERA_P2'
+ENUMS.Storage.weapons.containers.HB_ORD_SUU_7 = 'weapons.containers.HB_ORD_SUU_7'
+ENUMS.Storage.weapons.adapters.SidewinderPylon = 'weapons.adapters.SidewinderPylon'
+ENUMS.Storage.weapons.adapters.apu_470 = 'weapons.adapters.apu_470'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_335_R = 'weapons.droptanks.GD_F100_TANK_335_R'
+ENUMS.Storage.weapons.bombs.BLU_3B_R_GROUP_R = 'weapons.bombs.BLU-3B_R_GROUP_R'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_335_L = 'weapons.droptanks.GD_F100_TANK_335_L'
+ENUMS.Storage.weapons.adapters.mbdz_u2t = 'weapons.adapters.mbdz_u2t'
+ENUMS.Storage.weapons.containers.ZellRocket = 'weapons.containers.ZellRocket'
+ENUMS.Storage.weapons.containers.apu_73 = 'weapons.containers.apu-73'
+ENUMS.Storage.weapons.gunmounts.GAU_13 = 'weapons.gunmounts.GAU-13'
+ENUMS.Storage.weapons.shells.F100_M39_20_TP = 'weapons.shells.F100_M39_20_TP'
+ENUMS.Storage.weapons.shells.F100_M39_20_API = 'weapons.shells.F100_M39_20_API'
+ENUMS.Storage.weapons.adapters.bdz_umk2b = 'weapons.adapters.bdz_umk2b'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_450 = 'weapons.droptanks.GD_F100_TANK_450'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_275_R = 'weapons.droptanks.GD_F100_TANK_275_R'
+ENUMS.Storage.weapons.bombs.BLU_18_B_GROUP = 'weapons.bombs.BLU-18/B_GROUP'
+ENUMS.Storage.weapons.containers.ZELL_Booster = 'weapons.containers.ZELL Booster'
+ENUMS.Storage.weapons.adapters.apu_60 = 'weapons.adapters.apu_60'
+ENUMS.Storage.weapons.gunmounts.GPU_5_POD = 'weapons.gunmounts.{GPU_5_POD}'
+ENUMS.Storage.weapons.containers.F100_CAMERA_KA71A = 'weapons.containers.F100_CAMERA_KA71A'
+ENUMS.Storage.weapons.bombs.BLU_3_R_GROUP_R = 'weapons.bombs.BLU-3_R_GROUP_R'
+ENUMS.Storage.weapons.shells.F100_M39_20_HEI = 'weapons.shells.F100_M39_20_HEI'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_200 = 'weapons.droptanks.GD_F100_TANK_200'
+ENUMS.Storage.weapons.adapters.apu_73 = 'weapons.adapters.apu-73'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.AKAN_NO_TRC'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.AKAN'
+ENUMS.Storage.weapons.shells.F100_M39_20_HEI_T = 'weapons.shells.F100_M39_20_HEI_T'
+ENUMS.Storage.weapons.shells.F100_M39_20_API_T = 'weapons.shells.F100_M39_20_API_T'
+ENUMS.Storage.weapons.containers.GD_F100_STRIKE_CAMERA = 'weapons.containers.GD_F100_STRIKE_CAMERA'
+ENUMS.Storage.weapons.bombs.BLU_49_B = 'weapons.bombs.BLU-49/B'
+ENUMS.Storage.weapons.containers.GD_F100_SUU_13 = 'weapons.containers.GD_F100_SUU-13'
 
 ---
 -- @type ENUMS.FARPType
@@ -157043,16 +157084,16 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     return self
   end
 
-  local coord = Unit:GetCoordinate() or Group:GetCoordinate()
+  local coord = Unit:GetCoord() or Group:GetCoord()
   local capabilities = self:_GetUnitCapabilities(Unit)
   local innerDist = (capabilities.length and capabilities.length/2) or 15
   local maxUnitsNearby = self.maxUnitsNearby or 3
   local searchRadius = self.UnitDistance or 90
   local checkZone = ZONE_RADIUS:New("CTLD_C130UnitsZone",coord:GetVec2(),searchRadius,false)
-  local nearGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({checkZone}):FilterOnce()
+  local nearGroups = SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterZones({checkZone}):FilterOnce()
   local nearbyCount = 0
   for _,gr in pairs(nearGroups.Set) do
-    local gc = gr:GetCoordinate()
+    local gc = gr:GetCoord()
     if gc then
       local dist = coord:Get2DDistance(gc)
       if dist > innerDist then
@@ -157221,7 +157262,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   -- Check cargo location if available
   local location = Cargo:GetLocation()
   if location then
-    local unitcoord = Unit:GetCoordinate() or Group:GetCoordinate()
+    local unitcoord = Unit:GetCoord() or Group:GetCoord()
     if unitcoord then
       if not location:IsCoordinateInZone(unitcoord) then
         -- no we're not at the right spot
@@ -157432,8 +157473,8 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     if type(ship) == "string" then
       self:T("Spawning on ship "..ship)
       local Ship = UNIT:FindByName(ship)
-      local shipcoord = Ship:GetCoordinate()
-      local unitcoord = Unit:GetCoordinate()
+      local shipcoord = Ship:GetCoord()
+      local unitcoord = Unit:GetCoord()
       local dist = shipcoord:Get2DDistance(unitcoord)
       dist = dist - (20 + math.random(1, 10))
       local halfwidth = (width or 20) / 2
@@ -157691,11 +157732,11 @@ function CTLD:_C130RemoveUnitsNearby(_group,_unit)
   local innerDist = (capabilities.length and capabilities.length/2) or 15
   local finddist = self.PackDistance or (self.CrateDistance or 35)
   local zone = ZONE_RADIUS:New("CTLD_C130RemoveZone",location:GetVec2(),finddist,false)
-  local nearestGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({zone}):FilterOnce()
+  local nearestGroups = SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterZones({zone}):FilterOnce()
   local removedAny = false
   local removedTable = {}
   for _, gr in pairs(nearestGroups.Set) do
-    local gc = gr:GetCoordinate()
+    local gc = gr:GetCoord()
     if gc then
       local dist = location:Get2DDistance(gc)
       if dist > innerDist then
@@ -158979,18 +159020,18 @@ end
 -- @return #number Number
 function CTLD:_FindPackableGroupsNearby(Group, Unit)
   self:T(self.lid .. " _FindPackableGroupsNearby")
-  local location = Group:GetCoordinate()
+  local location = Group:GetCoord()
   if not location then return {}, 0 end
   local capabilities = self:_GetUnitCapabilities(Unit)
   local innerDist = (capabilities.length and capabilities.length/2) or 15
   local finddist = self.PackDistance or (self.CrateDistance or 35)
   local zone = ZONE_RADIUS:New("CTLD_PackableZone", location:GetVec2(), finddist, false)
-  local nearestGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({zone}):FilterOnce()
+  local nearestGroups = SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterZones({zone}):FilterOnce()
   local packable = {}
 
   for _, gr in pairs(nearestGroups.Set) do
     if gr and gr:GetName() ~= Group:GetName() then
-      local gc = gr:GetCoordinate()
+      local gc = gr:GetCoord()
       if gc then
         local dist = location:Get2DDistance(gc)
         if dist > innerDist and dist <= finddist then
@@ -162307,7 +162348,7 @@ function CTLD:IsUnitInZone(Unit,Zonetype)
   local zoneret = nil
   local zonewret = nil
   local zonenameret = nil
-  local unitcoord = Unit:GetCoordinate()
+  local unitcoord = Unit:GetCoord()
   if not unitcoord then
     if Zonetype == CTLD.CargoZoneType.SHIP then
       return false, nil, nil, 1000000, nil
@@ -162328,7 +162369,7 @@ function CTLD:IsUnitInZone(Unit,Zonetype)
       self:T("Checking Type Ship: "..zonename)
       local ZoneUNIT = UNIT:FindByName(zonename)
       if not ZoneUNIT then return false end
-      zonecoord = ZoneUNIT:GetCoordinate()
+      zonecoord = ZoneUNIT:GetCoord()
       zoneradius = czone.shiplength
       zonewidth = czone.shipwidth
       zone = ZONE_UNIT:New( ZoneUNIT:GetName(), ZoneUNIT, zoneradius/2)
