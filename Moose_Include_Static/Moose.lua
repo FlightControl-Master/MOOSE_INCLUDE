@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-22T08:05:10+02:00-75871198436a6591cb024a1de4192fd3888fd0a8 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-23T15:03:47+02:00-6e09ea7089124842f011d7d082238ce456488a1b ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -127545,7 +127545,7 @@ end
 -- **Supported Aircraft:**
 --
 --    * [F/A-18C Hornet Lot 20](https://forums.eagle.ru/forumdisplay.php?f=557) (Player & AI)
---    * [F-14A/B/A Early Tomcat](https://forums.eagle.ru/forumdisplay.php?f=395) (Player & AI)
+--    * [F-14A/B/BU/A Early Tomcat](https://forums.eagle.ru/forumdisplay.php?f=395) (Player & AI)
 --    * [A-4E Skyhawk Community Mod](https://forums.eagle.ru/showthread.php?t=224989) (Player & AI)
 --    * [AV-8B N/A Harrier](https://forums.eagle.ru/forumdisplay.php?f=555) (Player & AI)
 --    * [T-45C Goshawk](https://forum.dcs.world/topic/203816-vnao-t-45-goshawk/) (VNAO mod) (Player & AI)
@@ -128776,6 +128776,7 @@ AIRBOSS = {
 -- @field #string A4EC A-4E Community mod.
 -- @field #string HORNET F/A-18C Lot 20 Hornet by Eagle Dynamics.
 -- @field #string F14A F-14A by Heatblur.
+-- @field #string F14BU F-14BU by Heatblur. 
 -- @field #string F14A_Early F-14A-135-GR-Early by Heatblur.
 -- @field #string F14B F-14B by Heatblur.
 -- @field #string F14A_AI F-14A Tomcat (AI).
@@ -128797,6 +128798,7 @@ AIRBOSS.AircraftCarrier={
   F14A="F-14A-135-GR",
   F14A_Early="F-14A-135-GR-Early",
   F14B="F-14B",
+  F14BU="F-14BU",
   F14A_AI="F-14A",
   FA18C="F/A-18C",
   T45C="T-45",
@@ -146894,7 +146896,8 @@ function AIRBOSS:onafterLSOGrade(From, Event, To, playerData, grade)
     self.funkmanSocket:SendTable(result)
   end
 
-end--- **Ops** - Recovery tanker for carrier operations.
+end
+--- **Ops** - Recovery tanker for carrier operations.
 -- 
 -- Tanker aircraft flying a racetrack pattern overhead an aircraft carrier.
 --
