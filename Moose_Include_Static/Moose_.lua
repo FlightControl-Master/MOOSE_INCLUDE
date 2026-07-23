@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-23T15:03:47+02:00-6e09ea7089124842f011d7d082238ce456488a1b ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-23T17:37:00+02:00-7e07f2b4ea5176b5739cbc6f27b9efb3a23560b3 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -76248,7 +76248,7 @@ local setData=self._c130DcAutoSets[SetId]
 if not setData then return false end
 local pos=Cargo:GetPositionable()
 local pname=pos and pos.GetName and pos:GetName()or nil
-local pcoord=pos and pos.GetCoordinate and pos:GetCoordinate()or nil
+local pcoord=pos and pos.GetCoord and pos:GetCoord()or nil
 local entryId=string.format("%s#%d",SetId,#setData.entries+1)
 local entry={
 id=entryId,
@@ -77092,12 +77092,12 @@ return self
 end
 function CTLD:_FindRepairNearby(Group,Unit,Repairtype)
 self:T(self.lid.." _FindRepairNearby")
-local unitcoord=Unit:GetCoordinate()
+local unitcoord=Unit:GetCoord()
 local nearestGroup=nil
 local nearestGroupIndex=-1
 local nearestDistance=10000
 for k,v in pairs(self.DroppedTroops)do
-local distance=self:_GetDistance(v:GetCoordinate(),unitcoord)
+local distance=self:_GetDistance(v:GetCoord(),unitcoord)
 local unit=v:GetUnit(1)
 local desc=unit:GetDesc()or nil
 if distance<nearestDistance and distance~=-1 and not desc.attributes.Infantry then
@@ -77205,7 +77205,7 @@ local unittype=unit:GetTypeName()
 local capabilities=self:_GetUnitCapabilities(Unit)
 local cantroops=capabilities.troops
 local trooplimit=capabilities.trooplimit
-local unitcoord=unit:GetCoordinate()
+local unitcoord=unit:GetCoord()
 local nearestGroup=nil
 local nearestGroupIndex=-1
 local nearestDistance=10000000
@@ -77214,7 +77214,7 @@ local nearestList={}
 local distancekeys={}
 local extractdistance=self.CrateDistance*self.ExtractFactor
 for k,v in pairs(self.DroppedTroops)do
-local distance=self:_GetDistance(v:GetCoordinate(),unitcoord)
+local distance=self:_GetDistance(v:GetCoord(),unitcoord)
 local TNow=timer.getTime()
 local vtime=v.ExtractTime or TNow-310
 if distance<=extractdistance and distance~=-1 and(TNow-vtime>300)then
@@ -77288,7 +77288,7 @@ self:_RefreshDropTroopsMenu(Group,Unit)
 self:_UpdateUnitCargoMass(Unit)
 local groupname=nearestGroup:GetName()
 self:__TroopsExtracted(running,Group,Unit,nearestGroup,groupname)
-local coord=Unit:GetCoordinate()or Group:GetCoordinate()
+local coord=Unit:GetCoord()or Group:GetCoord()
 local Point
 if coord then
 local heading=unit:GetHeading()or 0
@@ -77637,6 +77637,7 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,10,2)
+:InitCoalition(self.coalition)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits,70)
 :InitDelayOff()
 :OnSpawnGroup(function(grp,TimeStamp)
@@ -77650,6 +77651,7 @@ else
 SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,10,2)
 :InitDelayOff()
+:InitCoalition(self.coalition)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits,70)
 :OnSpawnGroup(function(grp,TimeStamp)
 grp.spawntime=TimeStamp or timer.getTime()
@@ -77761,7 +77763,7 @@ if cgotype==CTLD_CARGO.Enum.STATIC then
 cratetemplate=cargotype:GetTemplates()
 isstatic=true
 end
-local position=Unit:GetCoordinate()
+local position=Unit:GetCoord()
 local heading=Unit:GetHeading()+1
 local height=Unit:GetHeight()
 local droppedcargo={}
@@ -78127,7 +78129,7 @@ end
 function CTLD:_C130RemoveUnitsNearby(_group,_unit)
 self:T(self.lid.." _C130RemoveUnitsNearby")
 if not _group or not _unit then return self end
-local location=_group:GetCoordinate()
+local location=_group:GetCoord()
 if not location then return self end
 local capabilities=self:_GetUnitCapabilities(_unit)
 local innerDist=(capabilities.length and capabilities.length/2)or 15
@@ -78240,7 +78242,7 @@ end
 function CTLD:_FindCratesNearby(_group,_unit,_dist,_ignoreweight,ignoretype,ignoreHercInner)
 self:T(self.lid.." _FindCratesNearby")
 local finddist=_dist
-local location=_group:GetCoordinate()
+local location=_group:GetCoord()
 local existingcrates=self.Spawned_Cargo
 local index=0
 local indexg=0
@@ -78725,7 +78727,6 @@ local type=cargo:GetType()
 if(type==CTLD_CARGO.Enum.TROOPS or type==CTLD_CARGO.Enum.ENGINEERS)and not cargo:WasDropped()then
 local name=cargo:GetName()or"none"
 local temptable=cargo:GetTemplates()or{}
-local position=Group:GetCoordinate()
 local zoneradius=self.troopdropzoneradius or 100
 local factor=1
 if IsHerc then
@@ -78760,6 +78761,7 @@ local rad=2.5+(tempcount*2)
 local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:InitCoalition(self.coalition)
 :InitSetUnitAbsolutePositions(Positions)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
@@ -79016,8 +79018,8 @@ local name=Crate:GetName()
 local required=Crate:GetCratesNeeded()
 local template=Crate:GetTemplates()
 local ctype=Crate:GetType()
-local ccoord=Crate:GetPositionable():GetCoordinate()
-local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoordinate())or 0
+local ccoord=Crate:GetPositionable():GetCoord()
+local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoord())or 0
 local isHercDrop=Crate:WasDropped(true)
 if not isHercDrop and distToUnit>baseDist then
 elseif self:IsC130J(Unit)and distToUnit<15 then
@@ -79031,6 +79033,7 @@ object.Required=required
 object.Found=1
 object.Template=template
 object.CanBuild=false
+object.Heading=Unit:GetHeading()
 object.Type=ctype
 object.Coord=ccoord:GetVec2()
 buildables[name]=object
@@ -79112,7 +79115,7 @@ if full<1 then full=1 end
 local sep=self.buildPairSeparation or 25
 local hdg=(Unit:GetHeading()+180)%360
 local lat=(hdg+90)%360
-local base=Unit:GetCoordinate():Translate(20,hdg)
+local base=Unit:GetCoord():Translate(20,hdg)
 if full==1 then
 local cratesNow,numberNow=self:_FindCratesNearby(Group,Unit,finddist,true,true,not Engineering)
 if activeSetId then
@@ -79144,7 +79147,7 @@ self:_RefreshLoadCratesMenu(Group,Unit)
 self:_RefreshPackMenus(Group,Unit)
 local off=start+(n-1)*sep
 local coord=base:Translate(off,lat):GetVec2()
-local b={Name=build.Name,Required=build.Required,Template=build.Template,CanBuild=true,Type=build.Type,Coord=coord}
+local b={Name=build.Name,Required=build.Required,Template=build.Template,CanBuild=true,Type=build.Type,Coord=coord,Heading=build.Heading}
 if self.buildtime and self.buildtime>0 then
 local buildtimer=TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,b,false,Group:GetCoordinate(),MultiDrop)
 buildtimer:Start(self.buildtime)
@@ -79285,12 +79288,12 @@ idLookup[id]=true
 end
 local matchingCrates={}
 local finddist=self.CrateDistance or 35
-local location=Group:GetCoordinate()
+local location=Group:GetCoord()
 for _,crateObj in pairs(self.Spawned_Cargo or{})do
 if crateObj and idLookup[crateObj:GetID()]then
 local pos=crateObj:GetPositionable()
 if pos and pos:IsAlive()then
-local dist=location:Get2DDistance(pos:GetCoordinate())
+local dist=location:Get2DDistance(pos:GetCoord())
 if dist<=finddist then
 matchingCrates[#matchingCrates+1]=crateObj
 end
@@ -79385,12 +79388,12 @@ idLookup[id]=true
 end
 local crates={}
 local finddist=self.CrateDistance or 35
-local location=Group:GetCoordinate()
+local location=Group:GetCoord()
 for _,entry in pairs(self.Spawned_Cargo or{})do
 if entry and idLookup[entry:GetID()]then
 local pos=entry:GetPositionable()
 if pos and pos:IsAlive()then
-local dist=location:Get2DDistance(pos:GetCoordinate())
+local dist=location:Get2DDistance(pos:GetCoord())
 if dist<=finddist then
 crates[#crates+1]=entry
 end
@@ -79587,23 +79590,22 @@ end
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
+local spawn=SPAWN:NewWithAlias(_template,alias)
+:InitDelayOff()
+:InitCoalition(self.coalition)
+:InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
+:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 if canmove then
-self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitDelayOff()
-:InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
-:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
-:SpawnFromVec2(randomcoord)
-else
-self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
-:InitDelayOff()
-:InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
-:OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
-:SpawnFromVec2(randomcoord)
 end
+if Build.Heading and self.buildcrateswithaircraftheading then
+spawn:InitGroupHeading(Build.Heading)
+end
+local spawnedGroup=spawn:SpawnFromVec2(randomcoord)
+self.DroppedTroops[self.TroopCounter]=spawnedGroup
 if Repair then
-self:__CratesRepaired(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+self:__CratesRepaired(1,Group,Unit,spawnedGroup)
 else
-self:__CratesBuild(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+self:__CratesBuild(1,Group,Unit,spawnedGroup)
 end
 end
 if Group and Group:IsAlive()and Group:GetID()then
@@ -79624,12 +79626,9 @@ return VehicleMoveFormation
 end
 function CTLD:_MoveGroupToZone(Group)
 self:T(self.lid.." _MoveGroupToZone")
-local groupname=Group:GetName()or"none"
-local groupcoord=Group:GetCoordinate()
 local outcome,name,zone,distance=self:IsUnitInZone(Group,CTLD.CargoZoneType.MOVE)
 self:T({canmove=outcome,name=name,zone=zone,dist=distance,max=self.movetroopsdistance})
 if(distance<=self.movetroopsdistance)and outcome==true and zone~=nil then
-local groupname=Group:GetName()
 local zonecoord=zone:GetRandomCoordinate(20,125)
 local formation=self:_GetVehicleFormation()
 Group:SetAIOn()
@@ -81016,6 +81015,7 @@ local rad=2.5+(tempcount*2)
 local Positions=self:_GetUnitPositions(randomcoord,rad,heading,_template)
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:InitCoalition(self.coalition)
 :InitSetUnitAbsolutePositions(Positions)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
@@ -81841,7 +81841,7 @@ if SmokeColor then
 Smokecolor=SmokeColor
 end
 local FlareColor=self.FlareColor or FLARECOLOR.Red
-local unitcoord=Unit:GetCoordinate()
+local unitcoord=Unit:GetCoord()
 local Group=Unit:GetGroup()
 if Flare then
 unitcoord:Flare(FlareColor,90)
@@ -81854,7 +81854,7 @@ return self
 end
 function CTLD:SmokeZoneNearBy(Unit,Flare)
 self:T(self.lid.." SmokeZoneNearBy")
-local unitcoord=Unit:GetCoordinate()
+local unitcoord=Unit:GetCoord()
 local Group=Unit:GetGroup()
 local smokedistance=self.smokedistance
 local smoked=false
@@ -81952,7 +81952,7 @@ local outcome=false
 if self:IsUnitInAir(Unit)then
 local uspeed=Unit:GetVelocityMPS()
 local uheight=Unit:GetHeight()
-local ucoord=Unit:GetCoordinate()
+local ucoord=Unit:GetCoord()
 if not ucoord then
 return false
 end
@@ -81973,7 +81973,7 @@ local outcome=false
 if self:IsUnitInAir(Unit)then
 local uspeed=Unit:GetVelocityMPS()
 local uheight=Unit:GetHeight()
-local ucoord=Unit:GetCoordinate()
+local ucoord=Unit:GetCoord()
 if not ucoord then
 return false
 end
@@ -82038,7 +82038,7 @@ if self.enableFixedWing and self:IsFixedWing(Unit)then
 minheight=5.1
 end
 local uheight=Unit:GetHeight()
-local ucoord=Unit:GetCoordinate()
+local ucoord=Unit:GetCoord()
 if not ucoord then
 return false
 end
@@ -82638,6 +82638,7 @@ self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(randompositions,20,2)
+:InitCoalition(self.coalition)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :InitDelayOff()
 :OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
@@ -82756,6 +82757,7 @@ local alias=string.format("%s-%d",_template,math.random(1,100000))
 if canmove then
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitRandomizeUnits(true,20,2)
+:InitCoalition(self.coalition)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :InitDelayOff()
 :OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
@@ -82763,6 +82765,7 @@ self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 else
 self.DroppedTroops[self.TroopCounter]=SPAWN:NewWithAlias(_template,alias)
 :InitDelayOff()
+:InitCoalition(self.coalition)
 :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
 :OnSpawnGroup(function(grp,TimeStamp)grp.spawntime=TimeStamp or timer.getTime()end,TimeStamp)
 :SpawnFromVec2(randomcoord)
@@ -82954,7 +82957,7 @@ function CTLD:onbeforeTroopsDeployed(From,Event,To,Group,Unit,Troops)
 self:T({From,Event,To})
 if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
 local playername=Unit:GetPlayerName()
-local dropcoord=Troops:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropcoord=Troops:GetCoord()or COORDINATE:New(0,0,0)
 local dropvec2=dropcoord:GetVec2()
 self.PlayerTaskQueue:ForEach(
 function(Task)
@@ -82988,7 +82991,7 @@ local playername=Unit:GetPlayerName()
 for _,_cargo in pairs(Cargotable)do
 local Vehicle=_cargo.Positionable
 if Vehicle then
-local dropcoord=Vehicle:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropcoord=Vehicle:GetCoord()or COORDINATE:New(0,0,0)
 local dropvec2=dropcoord:GetVec2()
 self.PlayerTaskQueue:ForEach(
 function(Task)
@@ -83021,7 +83024,7 @@ function CTLD:onbeforeCratesBuild(From,Event,To,Group,Unit,Vehicle)
 self:T({From,Event,To})
 if Unit and Unit:IsPlayer()and self.PlayerTaskQueue then
 local playername=Unit:GetPlayerName()
-local dropcoord=Vehicle:GetCoordinate()or COORDINATE:New(0,0,0)
+local dropcoord=Vehicle:GetCoord()or COORDINATE:New(0,0,0)
 local dropvec2=dropcoord:GetVec2()
 self.PlayerTaskQueue:ForEach(
 function(Task)
