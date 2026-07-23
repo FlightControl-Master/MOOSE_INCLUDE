@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-23T17:37:00+02:00-7e07f2b4ea5176b5739cbc6f27b9efb3a23560b3 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-23T21:11:29+02:00-27fa920a8fd49c589565f819ede31914254b9e9e ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -2217,7 +2217,16 @@ ENUMS.Storage.weapons.shells.F100_M39_20_HEI_T = 'weapons.shells.F100_M39_20_HEI
 ENUMS.Storage.weapons.shells.F100_M39_20_API_T = 'weapons.shells.F100_M39_20_API_T'
 ENUMS.Storage.weapons.containers.GD_F100_STRIKE_CAMERA = 'weapons.containers.GD_F100_STRIKE_CAMERA'
 ENUMS.Storage.weapons.bombs.BLU_49_B = 'weapons.bombs.BLU-49/B'
+
+ENUMS.Storage.weapons.bombs.GBU_24E = 'weapons.bombs.GBU_24E'
 ENUMS.Storage.weapons.containers.GD_F100_SUU_13 = 'weapons.containers.GD_F100_SUU-13'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.{AKAN}'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.gunmounts.SUU_23_POD_Wing = 'weapons.gunmounts.{SUU_23_POD_Wing}'
+ENUMS.Storage.weapons.containers.SUU_23_POD_Wing = 'weapons.containers.{SUU_23_POD_Wing}'
+ENUMS.Storage.weapons.containers.SUU_23_POD_Centerline = 'weapons.containers.{SUU_23_POD_Centerline}'
+ENUMS.Storage.weapons.gunmounts.SUU_23_POD_Centerline = 'weapons.gunmounts.{SUU_23_POD_Centerline}'
+ENUMS.Storage.weapons.containers.HB_F_4E_BRU_42 = 'weapons.containers.HB_F-4E_BRU-42'
 
 ---
 -- @type ENUMS.FARPType
