@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-26T09:50:00+02:00-de3dc95c92c6b8f28d1037a3e7bd2d4c2b4d8655 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-28T11:39:10+02:00-dfe4db25ae05c2b40e3bfbb287d377c8775da217 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -79623,7 +79623,7 @@ local spawn=SPAWN:NewWithAlias(_template,alias)
 :OnSpawnGroup(function(grp)grp.spawntime=timer.getTime()end)
 if canmove then
 end
-if Build.Heading and self.buildcrateswithaircraftheading then
+if Build.Heading and self.useaircraftheadingforbuilds then
 spawn:InitGroupHeading(Build.Heading)
 end
 local spawnedGroup=spawn:SpawnFromVec2(randomcoord)
