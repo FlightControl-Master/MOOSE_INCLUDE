@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-07-28T11:39:10+02:00-dfe4db25ae05c2b40e3bfbb287d377c8775da217 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-02T12:38:15+02:00-e64e4ae2ae4586c5bb409a8686ad82421e32de37 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -14021,7 +14021,6 @@ EVENTS = {
   SimulationUnfreeze        = world.event.S_EVENT_SIMULATION_UNFREEZE or -1, 
   HumanAircraftRepairStart  = world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_START or -1, 
   HumanAircraftRepairFinish = world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH or -1,
-  GroupChangeOption         = world.event.S_EVENT_GROUP_CHANGE_OPTION or -1,
   -- dynamic cargo
   NewDynamicCargo           = world.event.S_EVENT_NEW_DYNAMIC_CARGO or -1,
   DynamicCargoLoaded        = world.event.S_EVENT_DYNAMIC_CARGO_LOADED or -1,
@@ -14035,25 +14034,23 @@ EVENTS = {
 --
 --   * A (Object.Category.)UNIT : A UNIT object type is involved in the Event.
 --   * A (Object.Category.)STATIC : A STATIC object type is involved in the Event.
---   * A GROUP : A DCS Group object is involved in the Event.
 --
 -- @type EVENTDATA
 -- @field #number id The identifier of the event.
 --
--- @field DCS#Unit initiator (UNIT/STATIC/SCENERY/GROUP) The initiating @{DCS#Unit} or @{DCS#StaticObject}. For `S_EVENT_GROUP_CHANGE_OPTION`, this is a DCS Group.
+-- @field DCS#Unit initiator (UNIT/STATIC/SCENERY) The initiating @{DCS#Unit} or @{DCS#StaticObject}.
 -- @field DCS#Object.Category IniObjectCategory (UNIT/STATIC/SCENERY) The initiator object category ( Object.Category.UNIT or Object.Category.STATIC ).
 -- @field DCS#Unit IniDCSUnit (UNIT/STATIC) The initiating @{DCS#Unit} or @{DCS#StaticObject}.
 -- @field #string IniDCSUnitName (UNIT/STATIC) The initiating Unit name.
 -- @field Wrapper.Unit#UNIT IniUnit (UNIT/STATIC) The initiating MOOSE wrapper @{Wrapper.Unit#UNIT} of the initiator Unit object.
 -- @field #string IniUnitName (UNIT/STATIC) The initiating UNIT name (same as IniDCSUnitName).
--- @field DCS#Group IniDCSGroup (UNIT/GROUP) The initiating @{DCS#Group}.
--- @field #string IniDCSGroupName (UNIT/GROUP) The initiating Group name.
--- @field Wrapper.Group#GROUP IniGroup (UNIT/GROUP) The initiating MOOSE wrapper @{Wrapper.Group#GROUP} of the initiator Group object.
--- @field #string IniGroupName (UNIT/GROUP) The initiating GROUP name (same as IniDCSGroupName).
--- @field DCS#Group.Category IniGroupCategory (GROUP) The category of the initiating group.
+-- @field DCS#Group IniDCSGroup (UNIT) The initiating {DCSGroup#Group}.
+-- @field #string IniDCSGroupName (UNIT) The initiating Group name.
+-- @field Wrapper.Group#GROUP IniGroup (UNIT) The initiating MOOSE wrapper @{Wrapper.Group#GROUP} of the initiator Group object.
+-- @field #string IniGroupName UNIT) The initiating GROUP name (same as IniDCSGroupName).
 -- @field #string IniPlayerName (UNIT) The name of the initiating player in case the Unit is a client or player slot.
 -- @field #string IniPlayerUCID (UNIT) The UCID of the initiating player in case the Unit is a client or player slot and on a multi-player server.
--- @field DCS#coalition.side IniCoalition (UNIT/GROUP) The coalition of the initiator.
+-- @field DCS#coalition.side IniCoalition (UNIT) The coalition of the initiator.
 -- @field DCS#Unit.Category IniCategory (UNIT) The category of the initiator.
 -- @field #string IniTypeName (UNIT) The type name of the initiator.
 --
@@ -14480,12 +14477,6 @@ local _EVENTMETA = {
      Side = "I",
      Event = "OnEventHumanAircraftRepairFinish",
      Text = "S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH"
-   },
-     [EVENTS.GroupChangeOption] = {
-     Order = 1,
-     Side = "I",
-     Event = "OnEventGroupChangeOption",
-     Text = "S_EVENT_GROUP_CHANGE_OPTION"
    },
    -- dynamic cargo
      [EVENTS.NewDynamicCargo] = {
@@ -14986,16 +14977,7 @@ function EVENT:onEvent( Event )
 
       if Event.initiator then
 
-        if Event.id == EVENTS.GroupChangeOption then
-          Event.IniDCSGroup = Event.initiator
-          Event.IniDCSGroupName = Group.getName(Event.initiator)
-          Event.IniGroupName = Event.IniDCSGroupName
-          Event.IniGroup = GROUP:FindByName(Event.IniDCSGroupName)
-          Event.IniCoalition = Group.getCoalition(Event.initiator)
-          Event.IniGroupCategory = Group.getCategory(Event.initiator)
-        else
-          Event.IniObjectCategory = Object.getCategory(Event.initiator)
-        end
+        Event.IniObjectCategory = Object.getCategory(Event.initiator)
         
         if Event.IniObjectCategory == Object.Category.STATIC then
           ---
@@ -15424,7 +15406,9 @@ function EVENT:onEvent( Event )
       self:T( { EventMeta.Text, Event } )
     end
   else
-    self:E(string.format("WARNING: Could not get EVENTMETA data for event ID=%d! Is this an unknown/new DCS event?", tostring(Event.id)))
+    if Event.id ~= 61 then --- TODO Event 61 is new, but seems to have no real data to be useable, something like option changed.
+      self:E(string.format("WARNING: Could not get EVENTMETA data for event ID=%d! Is this an unknown/new DCS event?", tostring(Event.id)))
+    end
   end
 
   Event = nil
@@ -171993,13 +171977,14 @@ AIRWING = {
 
 --- AIRWING class version.
 -- @field #string version
-AIRWING.version="0.9.7"
+AIRWING.version="0.9.8"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- TODO: Check that airbase has enough parking spots if a request is BIG.
+-- DONE: Allow groupping parameter for CAP flights
 -- DONE: Allow (moving) zones as base for patrol points.
 -- DONE: Spawn in air ==> Needs WAREHOUSE update.
 -- DONE: Spawn hot.
@@ -172037,6 +172022,7 @@ function AIRWING:New(warehousename, airwingname)
   
   -- Defaults:
   self.nflightsCAP=0
+  self.nCAPgrouping=1
   self.nflightsAWACS=0
   self.nflightsRecon=0
   self.nflightsTANKERboom=0
@@ -172544,9 +172530,11 @@ end
 --- Set number of CAP flights constantly carried out.
 -- @param #AIRWING self
 -- @param #number n (Optional) Number of flights. Default 1.
+-- @param #number grouping (optional) Number of assets per flight. Default 1.
 -- @return #AIRWING self
-function AIRWING:SetNumberCAP(n)
+function AIRWING:SetNumberCAP(n,grouping)
   self.nflightsCAP=n or 1
+  self.nCAPgrouping = grouping or 1
   return self
 end
 
@@ -173074,11 +173062,13 @@ function AIRWING:CheckCAP()
     if self.capOptionPatrolRaceTrack then
       
       missionCAP=AUFTRAG:NewPATROL_RACETRACK(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg, self.capFormation)
+      missionCAP:SetRequiredAssets(self.nCAPgrouping,self.nCAPgrouping)
       
     else
         
       missionCAP=AUFTRAG:NewGCICAP(patrol.coord, altitude, patrol.speed, patrol.heading, patrol.leg)
-    
+      missionCAP:SetRequiredAssets(self.nCAPgrouping,self.nCAPgrouping)
+      
     end
     
     if self.capOptionVaryStartTime then
@@ -248873,7 +248863,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.38"
+EASYGCICAP.version="0.1.39"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -249381,8 +249371,9 @@ function EASYGCICAP:_AddAirwing(Airbasename, Alias)
   CAP_Wing:SetRespawnAfterDestroyed()
   
   --- #DONE avoid wings with no CAP points starting CAP anyhow; AirWing uses this to start CAP and creates points when there are none.
-  if counttable(self.ManagedCP) >0 then
-    CAP_Wing:SetNumberCAP(self.capgrouping)
+  local nCapPoints = counttable(self.ManagedCP)
+  if nCapPoints >0 then
+    CAP_Wing:SetNumberCAP(nCapPoints,self.capgrouping)
   end
   CAP_Wing:SetCapCloseRaceTrack(true)
     

@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-07-28T11:39:10+02:00-dfe4db25ae05c2b40e3bfbb287d377c8775da217 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-02T12:38:15+02:00-e64e4ae2ae4586c5bb409a8686ad82421e32de37 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -8169,7 +8169,6 @@ SimulationFreeze=world.event.S_EVENT_SIMULATION_FREEZE or-1,
 SimulationUnfreeze=world.event.S_EVENT_SIMULATION_UNFREEZE or-1,
 HumanAircraftRepairStart=world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_START or-1,
 HumanAircraftRepairFinish=world.event.S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH or-1,
-GroupChangeOption=world.event.S_EVENT_GROUP_CHANGE_OPTION or-1,
 NewDynamicCargo=world.event.S_EVENT_NEW_DYNAMIC_CARGO or-1,
 DynamicCargoLoaded=world.event.S_EVENT_DYNAMIC_CARGO_LOADED or-1,
 DynamicCargoUnloaded=world.event.S_EVENT_DYNAMIC_CARGO_UNLOADED or-1,
@@ -8543,12 +8542,6 @@ Side="I",
 Event="OnEventHumanAircraftRepairFinish",
 Text="S_EVENT_HUMAN_AIRCRAFT_REPAIR_FINISH"
 },
-[EVENTS.GroupChangeOption]={
-Order=1,
-Side="I",
-Event="OnEventGroupChangeOption",
-Text="S_EVENT_GROUP_CHANGE_OPTION"
-},
 [EVENTS.NewDynamicCargo]={
 Order=1,
 Side="I",
@@ -8805,16 +8798,7 @@ if Event.id and Event.id==EVENTS.MissionEnd then
 self.MissionEnd=true
 end
 if Event.initiator then
-if Event.id==EVENTS.GroupChangeOption then
-Event.IniDCSGroup=Event.initiator
-Event.IniDCSGroupName=Group.getName(Event.initiator)
-Event.IniGroupName=Event.IniDCSGroupName
-Event.IniGroup=GROUP:FindByName(Event.IniDCSGroupName)
-Event.IniCoalition=Group.getCoalition(Event.initiator)
-Event.IniGroupCategory=Group.getCategory(Event.initiator)
-else
 Event.IniObjectCategory=Object.getCategory(Event.initiator)
-end
 if Event.IniObjectCategory==Object.Category.STATIC then
 if Event.id==31 then
 Event.IniDCSUnit=Event.initiator
@@ -9111,7 +9095,9 @@ else
 self:T({EventMeta.Text,Event})
 end
 else
+if Event.id~=61 then
 self:E(string.format("WARNING: Could not get EVENTMETA data for event ID=%d! Is this an unknown/new DCS event?",tostring(Event.id)))
+end
 end
 Event=nil
 end
@@ -88081,7 +88067,7 @@ capFormation=nil,
 capOptionVaryStartTime=nil,
 capOptionVaryEndTime=nil,
 }
-AIRWING.version="0.9.7"
+AIRWING.version="0.9.8"
 function AIRWING:New(warehousename,airwingname)
 local self=BASE:Inherit(self,LEGION:New(warehousename,airwingname))
 if not self then
@@ -88090,6 +88076,7 @@ return nil
 end
 self.lid=string.format("AIRWING %s | ",self.alias)
 self.nflightsCAP=0
+self.nCAPgrouping=1
 self.nflightsAWACS=0
 self.nflightsRecon=0
 self.nflightsTANKERboom=0
@@ -88354,8 +88341,9 @@ if squad then
 squad:DelAsset(Asset)
 end
 end
-function AIRWING:SetNumberCAP(n)
+function AIRWING:SetNumberCAP(n,grouping)
 self.nflightsCAP=n or 1
+self.nCAPgrouping=grouping or 1
 return self
 end
 function AIRWING:SetCAPFormation(Formation)
@@ -88604,8 +88592,10 @@ local altitude=patrol.altitude+1000*patrol.noccupied
 local missionCAP=nil
 if self.capOptionPatrolRaceTrack then
 missionCAP=AUFTRAG:NewPATROL_RACETRACK(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg,self.capFormation)
+missionCAP:SetRequiredAssets(self.nCAPgrouping,self.nCAPgrouping)
 else
 missionCAP=AUFTRAG:NewGCICAP(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg)
+missionCAP:SetRequiredAssets(self.nCAPgrouping,self.nCAPgrouping)
 end
 if self.capOptionVaryStartTime then
 local ClockStart=math.random(self.capOptionVaryStartTime,self.capOptionVaryEndTime)
@@ -124799,7 +124789,7 @@ FuelCriticalThreshold=10,
 showpatrolpointmarks=false,
 EngageTargetTypes={"Air"},
 }
-EASYGCICAP.version="0.1.38"
+EASYGCICAP.version="0.1.39"
 function EASYGCICAP:New(Alias,AirbaseName,Coalition,EWRName)
 local self=BASE:Inherit(self,FSM:New())
 self.alias=Alias or AirbaseName.." CAP Wing"
@@ -125054,8 +125044,9 @@ CAP_Wing:SetReportOff()
 CAP_Wing:SetMarker(false)
 CAP_Wing:SetAirbase(AIRBASE:FindByName(Airbasename))
 CAP_Wing:SetRespawnAfterDestroyed()
-if counttable(self.ManagedCP)>0 then
-CAP_Wing:SetNumberCAP(self.capgrouping)
+local nCapPoints=counttable(self.ManagedCP)
+if nCapPoints>0 then
+CAP_Wing:SetNumberCAP(nCapPoints,self.capgrouping)
 end
 CAP_Wing:SetCapCloseRaceTrack(true)
 if self.showpatrolpointmarks then
