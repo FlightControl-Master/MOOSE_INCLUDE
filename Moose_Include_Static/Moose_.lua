@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-11T18:33:38+02:00-295e4500c9c82acbc4bf7df543c15e84e9ba7865 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-12T21:17:56+02:00-8aa5e38ba2e7e43afa76d903ca4df7760e854f99 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -44101,8 +44101,8 @@ end
 return"nonexistant"
 end
 function RAT:_OnBirth(EventData)
-self:F3(EventData)
-self:T3(self.lid.."Captured event birth!")
+self:F2(EventData)
+self:T2(self.lid.."Captured event birth!")
 local SpawnGroup=EventData.IniGroup
 if SpawnGroup then
 local EventPrefix=self:_GetPrefixFromGroup(SpawnGroup)
