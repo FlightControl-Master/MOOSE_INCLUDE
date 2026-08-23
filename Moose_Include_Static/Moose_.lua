@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-12T21:17:56+02:00-8aa5e38ba2e7e43afa76d903ca4df7760e854f99 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-23T14:34:41+02:00-42d1cdfcd7e15d84d4619760dd2a43358e1ce6c2 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -25828,6 +25828,7 @@ WayPointFunctions={},
 function CONTROLLABLE:New(ControllableName)
 local self=BASE:Inherit(self,POSITIONABLE:New(ControllableName))
 self.ControllableName=ControllableName
+self.ControllableOptions={}
 self.TaskScheduler=SCHEDULER:New(self)
 return self
 end
@@ -27452,11 +27453,28 @@ end
 return groupset
 end
 function CONTROLLABLE:SetOption(OptionID,OptionValue)
+local setnewoption=false
+local ID=tostring(OptionID)
+if self.ControllableOptions then
+if(self.ControllableOptions[ID]~=OptionValue)or(self.ControllableOptions[ID]==nil)then
+setnewoption=true
+self.ControllableOptions[ID]=OptionValue
+end
+end
+if setnewoption==true then
 local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 Controller:setOption(OptionID,OptionValue)
 return self
+end
+end
+return nil
+end
+function CONTROLLABLE:QueryCachedOption(OptionID)
+local ID=tostring(OptionID)
+if self.ControllableOptions then
+return self.ControllableOptions[ID]
 end
 return nil
 end
@@ -27465,11 +27483,11 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ROE,ROEvalue)
+self:SetOption(AI.Option.Air.id.ROE,ROEvalue)
 elseif self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ROE,ROEvalue)
+self:SetOption(AI.Option.Ground.id.ROE,ROEvalue)
 elseif self:IsShip()then
-Controller:setOption(AI.Option.Naval.id.ROE,ROEvalue)
+self:SetOption(AI.Option.Naval.id.ROE,ROEvalue)
 end
 return self
 end
@@ -27492,11 +27510,11 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.WEAPON_HOLD)
+self:SetOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.WEAPON_HOLD)
 elseif self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ROE,AI.Option.Ground.val.ROE.WEAPON_HOLD)
+self:SetOption(AI.Option.Ground.id.ROE,AI.Option.Ground.val.ROE.WEAPON_HOLD)
 elseif self:IsShip()then
-Controller:setOption(AI.Option.Naval.id.ROE,AI.Option.Naval.val.ROE.WEAPON_HOLD)
+self:SetOption(AI.Option.Naval.id.ROE,AI.Option.Naval.val.ROE.WEAPON_HOLD)
 end
 return self
 end
@@ -27519,11 +27537,11 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.RETURN_FIRE)
+self:SetOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.RETURN_FIRE)
 elseif self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ROE,AI.Option.Ground.val.ROE.RETURN_FIRE)
+self:SetOption(AI.Option.Ground.id.ROE,AI.Option.Ground.val.ROE.RETURN_FIRE)
 elseif self:IsShip()then
-Controller:setOption(AI.Option.Naval.id.ROE,AI.Option.Naval.val.ROE.RETURN_FIRE)
+self:SetOption(AI.Option.Naval.id.ROE,AI.Option.Naval.val.ROE.RETURN_FIRE)
 end
 return self
 end
@@ -27546,11 +27564,11 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.OPEN_FIRE)
+self:SetOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.OPEN_FIRE)
 elseif self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ROE,AI.Option.Ground.val.ROE.OPEN_FIRE)
+self:SetOption(AI.Option.Ground.id.ROE,AI.Option.Ground.val.ROE.OPEN_FIRE)
 elseif self:IsShip()then
-Controller:setOption(AI.Option.Naval.id.ROE,AI.Option.Naval.val.ROE.OPEN_FIRE)
+self:SetOption(AI.Option.Naval.id.ROE,AI.Option.Naval.val.ROE.OPEN_FIRE)
 end
 return self
 end
@@ -27573,7 +27591,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.OPEN_FIRE_WEAPON_FREE)
+self:SetOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.OPEN_FIRE_WEAPON_FREE)
 end
 return self
 end
@@ -27596,7 +27614,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.WEAPON_FREE)
+self:SetOption(AI.Option.Air.id.ROE,AI.Option.Air.val.ROE.WEAPON_FREE)
 end
 return self
 end
@@ -27619,7 +27637,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.NO_REACTION)
+self:SetOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.NO_REACTION)
 end
 return self
 end
@@ -27631,7 +27649,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,ROTvalue)
+self:SetOption(AI.Option.Air.id.REACTION_ON_THREAT,ROTvalue)
 end
 return self
 end
@@ -27654,7 +27672,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.PASSIVE_DEFENCE)
+self:SetOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.PASSIVE_DEFENCE)
 end
 return self
 end
@@ -27666,7 +27684,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.PREFER_VERTICAL,true)
+self:SetOption(AI.Option.Air.id.PREFER_VERTICAL,true)
 end
 return self
 end
@@ -27678,7 +27696,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ALLOW_FORMATION_SIDE_SWAP,true)
+self:SetOption(AI.Option.Air.id.ALLOW_FORMATION_SIDE_SWAP,true)
 end
 return self
 end
@@ -27690,7 +27708,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(37,true)
+self:SetOption(37,true)
 end
 return self
 end
@@ -27702,7 +27720,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(38,1)
+self:SetOption(38,1)
 end
 return self
 end
@@ -27725,7 +27743,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.EVADE_FIRE)
+self:SetOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.EVADE_FIRE)
 end
 return self
 end
@@ -27748,7 +27766,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.BYPASS_AND_ESCAPE)
+self:SetOption(AI.Option.Air.id.REACTION_ON_THREAT,AI.Option.Air.val.REACTION_ON_THREAT.BYPASS_AND_ESCAPE)
 end
 return self
 end
@@ -27760,9 +27778,9 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.AUTO)
+self:SetOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.AUTO)
 elseif self:IsShip()then
-Controller:setOption(9,0)
+self:SetOption(9,0)
 end
 return self
 end
@@ -27774,9 +27792,9 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
+self:SetOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
 elseif self:IsShip()then
-Controller:setOption(9,1)
+self:SetOption(9,1)
 end
 return self
 end
@@ -27788,9 +27806,9 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsGround()then
-Controller:setOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.RED)
+self:SetOption(AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.RED)
 elseif self:IsShip()then
-Controller:setOption(9,2)
+self:SetOption(9,2)
 end
 return self
 end
@@ -27805,7 +27823,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.RTB_ON_BINGO,RTB)
+self:SetOption(AI.Option.Air.id.RTB_ON_BINGO,RTB)
 end
 return self
 end
@@ -27817,7 +27835,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.RTB_ON_OUT_OF_AMMO,WeaponsFlag)
+self:SetOption(AI.Option.Air.id.RTB_ON_OUT_OF_AMMO,WeaponsFlag)
 end
 return self
 end
@@ -27829,7 +27847,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.PROHIBIT_JETT,false)
+self:SetOption(AI.Option.Air.id.PROHIBIT_JETT,false)
 end
 return self
 end
@@ -27841,7 +27859,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.PROHIBIT_JETT,true)
+self:SetOption(AI.Option.Air.id.PROHIBIT_JETT,true)
 end
 return self
 end
@@ -27864,7 +27882,7 @@ if DCSControllable then
 local Controller=self:_GetController()
 if self:IsGround()then
 if Seconds==nil then Seconds=false end
-Controller:setOption(AI.Option.Ground.id.EVASION_OF_ARM,Seconds)
+self:SetOption(AI.Option.Ground.id.EVASION_OF_ARM,Seconds)
 end
 end
 return self
@@ -27876,7 +27894,7 @@ if DCSControllable then
 local Controller=self:_GetController()
 if self:IsGround()then
 if meters==nil or meters>100 or meters<0 then meters=50 end
-Controller:setOption(30,meters)
+self:SetOption(30,meters)
 end
 end
 return self
@@ -27887,7 +27905,7 @@ local DCSControllable=self:GetDCSObject()
 if DCSControllable then
 local Controller=self:_GetController()
 if self:IsAir()then
-Controller:setOption(AI.Option.Air.id.ECM_USING,ECMvalue or 1)
+self:SetOption(AI.Option.Air.id.ECM_USING,ECMvalue or 1)
 end
 end
 return self
@@ -27975,11 +27993,11 @@ local Controller=self:_GetController()
 if Controller then
 if RestrictBurner==true then
 if self:IsAir()then
-Controller:setOption(16,true)
+self:SetOption(16,true)
 end
 else
 if self:IsAir()then
-Controller:setOption(16,false)
+self:SetOption(16,false)
 end
 end
 end
