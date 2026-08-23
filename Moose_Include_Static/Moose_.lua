@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-23T14:34:41+02:00-42d1cdfcd7e15d84d4619760dd2a43358e1ce6c2 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-23T17:38:02+02:00-4849acbb327471bf4277ae5524c2d96ea89d4b93 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -30369,6 +30369,8 @@ UTILS.ValidateAndRepositionGroundUnits(Template.units)
 end
 self:ScheduleOnce(0.1,_DATABASE.Spawn,_DATABASE,Template)
 self:ResetEvents()
+self.ControllableOptions=nil
+self.ControllableOptions={}
 return self
 end
 function GROUP:Teleport(Coordinate)
