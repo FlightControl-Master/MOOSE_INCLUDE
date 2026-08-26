@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-23T17:38:02+02:00-4849acbb327471bf4277ae5524c2d96ea89d4b93 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-26T18:40:36+02:00-4c56a46ad4eb67ef476bf2781cde1a11bc03313a ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -22373,6 +22373,8 @@ function DATABASE:AddUnit( DCSUnitName, force )
 
     -- Register unit
     self.UNITS[DCSunitName]=UNIT:Register(DCSunitName)
+  else
+    self.UNITS[DCSunitName]:ResetOptionCacheIfDCSObjectChanged()
   end
 
   return self.UNITS[DCSunitName]
@@ -22989,6 +22991,8 @@ function DATABASE:AddGroup( GroupName, force )
   if not self.GROUPS[GroupName] or force == true then
     self:T( { "Add GROUP:", GroupName } )
     self.GROUPS[GroupName] = GROUP:Register( GroupName )
+  else
+    self.GROUPS[GroupName]:ResetOptionCacheIfDCSObjectChanged()
   end
 
   return self.GROUPS[GroupName]
@@ -54496,34 +54500,22 @@ end
 -- @param #number OptionValue Value of the option
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOption( OptionID, OptionValue )
-  
-  local setnewoption = false
-
-  -- Check if option has changed against cached option
   local ID = tostring(OptionID)
-  if self.ControllableOptions then
-    if (self.ControllableOptions[ID] ~= OptionValue) or (self.ControllableOptions[ID]==nil) then
-      setnewoption = true
-      self.ControllableOptions[ID] = OptionValue
-      --self:I(string.format("CONTROLLABLE %s: Option CHANGE for option %d: New value: %s!",self.ControllableName, OptionID, tostring(OptionValue)))
-    end
+  if OptionValue ~= nil and self.ControllableOptions and self.ControllableOptions[ID] == OptionValue then
+    return self
   end
-  
-  -- change option if changed
-  if setnewoption == true then    
-    local DCSControllable = self:GetDCSObject()
-    if DCSControllable then
-      local Controller = self:_GetController()
-      --self:I(string.format("CONTROLLABLE %s: Setting OPTION  %d: to value: %s!",self.ControllableName, OptionID, tostring(OptionValue)))
-      Controller:setOption( OptionID, OptionValue )
-      return self
-    end
-  --else
-    --self:I(string.format("CONTROLLABLE %s: Option NO CHANGE for option %d: Same value: %s!",self.ControllableName, OptionID, tostring(OptionValue)))     
-  end
-  
-  return nil
 
+  local DCSControllable = self:GetDCSObject()
+  if DCSControllable then
+    local Controller = DCSControllable:getController()
+    Controller:setOption( OptionID, OptionValue )
+    self.ControllableOptions = self.ControllableOptions or {}
+    self.ControllableOptions[ID] = OptionValue
+    self.ControllableOptionDCSObject = DCSControllable
+    return self
+  end
+
+  return nil
 end
 
 --- Query a (cached) option. Requires the option has been set with Moose(!) before.
@@ -54536,6 +54528,27 @@ function CONTROLLABLE:QueryCachedOption(OptionID)
     return self.ControllableOptions[ID]
   end
   return nil
+end
+
+--- Reset cached options for this controllable.
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:ResetOptionCache()
+  self.ControllableOptions = {}
+  self.ControllableOptionDCSObject = self:GetDCSObject()
+  return self
+end
+
+--- Reset cached options when the underlying DCS object has changed.
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:ResetOptionCacheIfDCSObjectChanged()
+  local DCSControllable = self:GetDCSObject()
+  if self.ControllableOptionDCSObject ~= DCSControllable then
+    self.ControllableOptions = {}
+    self.ControllableOptionDCSObject = DCSControllable
+  end
+  return self
 end
 
 --- Set option for Rules of Engagement (ROE).
@@ -59561,9 +59574,8 @@ function GROUP:Respawn( Template, Reset )
   -- Reset events.
   self:ResetEvents()
   
-    -- Reset options
-  self.ControllableOptions = nil
-  self.ControllableOptions = {}
+  -- Reset options.
+  self:ResetOptionCache()
 
   return self
 end

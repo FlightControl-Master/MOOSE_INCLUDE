@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-23T17:38:02+02:00-4849acbb327471bf4277ae5524c2d96ea89d4b93 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-26T18:40:36+02:00-4c56a46ad4eb67ef476bf2781cde1a11bc03313a ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -12513,6 +12513,8 @@ if type(DCSunitName)=="number"then DCSunitName=string.format("%d",DCSUnitName)en
 if not self.UNITS[DCSunitName]or force==true then
 self:T({"Add UNIT:",DCSunitName})
 self.UNITS[DCSunitName]=UNIT:Register(DCSunitName)
+else
+self.UNITS[DCSunitName]:ResetOptionCacheIfDCSObjectChanged()
 end
 return self.UNITS[DCSunitName]
 end
@@ -12783,6 +12785,8 @@ function DATABASE:AddGroup(GroupName,force)
 if not self.GROUPS[GroupName]or force==true then
 self:T({"Add GROUP:",GroupName})
 self.GROUPS[GroupName]=GROUP:Register(GroupName)
+else
+self.GROUPS[GroupName]:ResetOptionCacheIfDCSObjectChanged()
 end
 return self.GROUPS[GroupName]
 end
@@ -27453,21 +27457,18 @@ end
 return groupset
 end
 function CONTROLLABLE:SetOption(OptionID,OptionValue)
-local setnewoption=false
 local ID=tostring(OptionID)
-if self.ControllableOptions then
-if(self.ControllableOptions[ID]~=OptionValue)or(self.ControllableOptions[ID]==nil)then
-setnewoption=true
-self.ControllableOptions[ID]=OptionValue
-end
-end
-if setnewoption==true then
-local DCSControllable=self:GetDCSObject()
-if DCSControllable then
-local Controller=self:_GetController()
-Controller:setOption(OptionID,OptionValue)
+if OptionValue~=nil and self.ControllableOptions and self.ControllableOptions[ID]==OptionValue then
 return self
 end
+local DCSControllable=self:GetDCSObject()
+if DCSControllable then
+local Controller=DCSControllable:getController()
+Controller:setOption(OptionID,OptionValue)
+self.ControllableOptions=self.ControllableOptions or{}
+self.ControllableOptions[ID]=OptionValue
+self.ControllableOptionDCSObject=DCSControllable
+return self
 end
 return nil
 end
@@ -27477,6 +27478,19 @@ if self.ControllableOptions then
 return self.ControllableOptions[ID]
 end
 return nil
+end
+function CONTROLLABLE:ResetOptionCache()
+self.ControllableOptions={}
+self.ControllableOptionDCSObject=self:GetDCSObject()
+return self
+end
+function CONTROLLABLE:ResetOptionCacheIfDCSObjectChanged()
+local DCSControllable=self:GetDCSObject()
+if self.ControllableOptionDCSObject~=DCSControllable then
+self.ControllableOptions={}
+self.ControllableOptionDCSObject=DCSControllable
+end
+return self
 end
 function CONTROLLABLE:OptionROE(ROEvalue)
 local DCSControllable=self:GetDCSObject()
@@ -30369,8 +30383,7 @@ UTILS.ValidateAndRepositionGroundUnits(Template.units)
 end
 self:ScheduleOnce(0.1,_DATABASE.Spawn,_DATABASE,Template)
 self:ResetEvents()
-self.ControllableOptions=nil
-self.ControllableOptions={}
+self:ResetOptionCache()
 return self
 end
 function GROUP:Teleport(Coordinate)
