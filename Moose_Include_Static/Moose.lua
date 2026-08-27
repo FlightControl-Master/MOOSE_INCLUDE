@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-06-28T09:30:14+02:00-d13ceb847e7a5229700e95715d4b06e627cd8067 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-27T12:22:49+02:00-505d50358093b74d01df78d492fe78ea178d5f18 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -565,7 +565,7 @@ ENUMS.ReportingName =
     Tornado = "Tornado",
     -- Transport / Bomber / Others
     Atlas = "A400",
-    Lancer = "B1-B",
+    Lancer = "B-1B",
     Stratofortress = "B-52H",
     Herc = "C-130",
     Hercules = "C-130J-30",
@@ -610,7 +610,7 @@ ENUMS.ReportingName =
     Apache = "AH-64",
     Chinook = "CH-47",
     Sea_Stallion = "CH-53",
-    Kiowa = "OH-58",
+    Kiowa = "OH58D",
     Seahawk = "SH-60",
     Blackhawk = "UH-60",
     Sea_King = "S-61",
@@ -2142,6 +2142,56 @@ ENUMS.Storage.weapons.containers.UH60L_M60_GUNNER = 'weapons.containers.{UH60L_M
 ENUMS.Storage.weapons.containers.UH60_GAU19_RIGHT = 'weapons.containers.{UH60_GAU19_RIGHT}'
 ENUMS.Storage.weapons.containers.UH60_M230_RIGHT = 'weapons.containers.{UH60_M230_RIGHT}'
 ENUMS.Storage.weapons.containers.UH60L_M2_GUNNER = 'weapons.containers.{UH60L_M2_GUNNER}'
+
+
+ENUMS.Storage.weapons.adapters.GD_F100_SUU_13 = 'weapons.adapters.GD_F100_SUU-13'
+ENUMS.Storage.weapons.containers.GPU_5_POD = 'weapons.containers.{GPU_5_POD}'
+ENUMS.Storage.weapons.bombs.BOLT_117 = 'weapons.bombs.BOLT-117'
+ENUMS.Storage.weapons.shells.F100_M39_20_TP_T = 'weapons.shells.F100_M39_20_TP_T'
+ENUMS.Storage.weapons.gunmounts.M_39_F_100 = 'weapons.gunmounts.M-39 F-100'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_275_L = 'weapons.droptanks.GD_F100_TANK_275_L'
+ENUMS.Storage.weapons.bombs.BLU_4B_R_GROUP_R = 'weapons.bombs.BLU-4B_R_GROUP_R'
+ENUMS.Storage.weapons.containers.F100_CAMERA_P2 = 'weapons.containers.F100_CAMERA_P2'
+ENUMS.Storage.weapons.containers.HB_ORD_SUU_7 = 'weapons.containers.HB_ORD_SUU_7'
+ENUMS.Storage.weapons.adapters.SidewinderPylon = 'weapons.adapters.SidewinderPylon'
+ENUMS.Storage.weapons.adapters.apu_470 = 'weapons.adapters.apu_470'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_335_R = 'weapons.droptanks.GD_F100_TANK_335_R'
+ENUMS.Storage.weapons.bombs.BLU_3B_R_GROUP_R = 'weapons.bombs.BLU-3B_R_GROUP_R'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_335_L = 'weapons.droptanks.GD_F100_TANK_335_L'
+ENUMS.Storage.weapons.adapters.mbdz_u2t = 'weapons.adapters.mbdz_u2t'
+ENUMS.Storage.weapons.containers.ZellRocket = 'weapons.containers.ZellRocket'
+ENUMS.Storage.weapons.containers.apu_73 = 'weapons.containers.apu-73'
+ENUMS.Storage.weapons.gunmounts.GAU_13 = 'weapons.gunmounts.GAU-13'
+ENUMS.Storage.weapons.shells.F100_M39_20_TP = 'weapons.shells.F100_M39_20_TP'
+ENUMS.Storage.weapons.shells.F100_M39_20_API = 'weapons.shells.F100_M39_20_API'
+ENUMS.Storage.weapons.adapters.bdz_umk2b = 'weapons.adapters.bdz_umk2b'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_450 = 'weapons.droptanks.GD_F100_TANK_450'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_275_R = 'weapons.droptanks.GD_F100_TANK_275_R'
+ENUMS.Storage.weapons.bombs.BLU_18_B_GROUP = 'weapons.bombs.BLU-18/B_GROUP'
+ENUMS.Storage.weapons.containers.ZELL_Booster = 'weapons.containers.ZELL Booster'
+ENUMS.Storage.weapons.adapters.apu_60 = 'weapons.adapters.apu_60'
+ENUMS.Storage.weapons.gunmounts.GPU_5_POD = 'weapons.gunmounts.{GPU_5_POD}'
+ENUMS.Storage.weapons.containers.F100_CAMERA_KA71A = 'weapons.containers.F100_CAMERA_KA71A'
+ENUMS.Storage.weapons.bombs.BLU_3_R_GROUP_R = 'weapons.bombs.BLU-3_R_GROUP_R'
+ENUMS.Storage.weapons.shells.F100_M39_20_HEI = 'weapons.shells.F100_M39_20_HEI'
+ENUMS.Storage.weapons.droptanks.GD_F100_TANK_200 = 'weapons.droptanks.GD_F100_TANK_200'
+ENUMS.Storage.weapons.adapters.apu_73 = 'weapons.adapters.apu-73'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.AKAN_NO_TRC'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.AKAN'
+ENUMS.Storage.weapons.shells.F100_M39_20_HEI_T = 'weapons.shells.F100_M39_20_HEI_T'
+ENUMS.Storage.weapons.shells.F100_M39_20_API_T = 'weapons.shells.F100_M39_20_API_T'
+ENUMS.Storage.weapons.containers.GD_F100_STRIKE_CAMERA = 'weapons.containers.GD_F100_STRIKE_CAMERA'
+ENUMS.Storage.weapons.bombs.BLU_49_B = 'weapons.bombs.BLU-49/B'
+
+ENUMS.Storage.weapons.bombs.GBU_24E = 'weapons.bombs.GBU_24E'
+ENUMS.Storage.weapons.containers.GD_F100_SUU_13 = 'weapons.containers.GD_F100_SUU-13'
+ENUMS.Storage.weapons.gunmounts.AKAN = 'weapons.gunmounts.{AKAN}'
+ENUMS.Storage.weapons.gunmounts.AKAN_NO_TRC = 'weapons.gunmounts.{AKAN_NO_TRC}'
+ENUMS.Storage.weapons.gunmounts.SUU_23_POD_Wing = 'weapons.gunmounts.{SUU_23_POD_Wing}'
+ENUMS.Storage.weapons.containers.SUU_23_POD_Wing = 'weapons.containers.{SUU_23_POD_Wing}'
+ENUMS.Storage.weapons.containers.SUU_23_POD_Centerline = 'weapons.containers.{SUU_23_POD_Centerline}'
+ENUMS.Storage.weapons.gunmounts.SUU_23_POD_Centerline = 'weapons.gunmounts.{SUU_23_POD_Centerline}'
+ENUMS.Storage.weapons.containers.HB_F_4E_BRU_42 = 'weapons.containers.HB_F-4E_BRU-42'
 
 ---
 -- @type ENUMS.FARPType
@@ -10094,6 +10144,12 @@ do -- Event Handling
   -- @function [parent=#BASE] OnEventPlayerEnterAircraft
   -- @param #BASE self
   -- @param Core.Event#EVENTDATA EventData The EventData structure.
+
+  --- Occurs when an option is changed for an AI group.
+  -- The event identifies the initiating group, but does not provide the option ID or value.
+  -- @function [parent=#BASE] OnEventGroupChangeOption
+  -- @param #BASE self
+  -- @param Core.Event#EVENTDATA EventData The EventData structure.
   
   --- Occurs when a player creates a dynamic cargo object from the F8 ground crew menu.
   -- *** NOTE *** this is a workarounf for DCS not creating these events as of Aug 2024.
@@ -10239,6 +10295,22 @@ end
   
     world.onEvent(Event)
   end  
+
+  --- Creation of a `S_EVENT_GROUP_CHANGE_OPTION` event.
+  -- @param #BASE self
+  -- @param DCS#Time EventTime The time stamp of the event.
+  -- @param DCS#Group Initiator The initiating group of the event.
+  function BASE:CreateEventGroupChangeOption( EventTime, Initiator )
+    self:F( { EventTime, Initiator } )
+
+    local Event = {
+      id = EVENTS.GroupChangeOption,
+      time = EventTime,
+      initiator = Initiator,
+    }
+
+    world.onEvent( Event )
+  end
   
     --- Creation of a S_EVENT_NEW_DYNAMIC_CARGO event.
   -- @param #BASE self
@@ -15299,7 +15371,9 @@ function EVENT:onEvent( Event )
       self:T( { EventMeta.Text, Event } )
     end
   else
-    self:E(string.format("WARNING: Could not get EVENTMETA data for event ID=%d! Is this an unknown/new DCS event?", tostring(Event.id)))
+    if Event.id ~= 61 then --- TODO Event 61 is new, but seems to have no real data to be useable, something like option changed.
+      self:E(string.format("WARNING: Could not get EVENTMETA data for event ID=%d! Is this an unknown/new DCS event?", tostring(Event.id)))
+    end
   end
 
   Event = nil
@@ -22264,6 +22338,8 @@ function DATABASE:AddUnit( DCSUnitName, force )
 
     -- Register unit
     self.UNITS[DCSunitName]=UNIT:Register(DCSunitName)
+  else
+    self.UNITS[DCSunitName]:ResetOptionCacheIfDCSObjectChanged()
   end
 
   return self.UNITS[DCSunitName]
@@ -22880,6 +22956,8 @@ function DATABASE:AddGroup( GroupName, force )
   if not self.GROUPS[GroupName] or force == true then
     self:T( { "Add GROUP:", GroupName } )
     self.GROUPS[GroupName] = GROUP:Register( GroupName )
+  else
+    self.GROUPS[GroupName]:ResetOptionCacheIfDCSObjectChanged()
   end
 
   return self.GROUPS[GroupName]
@@ -51118,6 +51196,7 @@ end
 --- @type CONTROLLABLE
 -- @field DCS#Controllable DCSControllable The DCS controllable class.
 -- @field #string ControllableName The name of the controllable.
+-- @field #table ControllableOptions The Cache of controllable options.
 -- @extends Wrapper.Positionable#POSITIONABLE
 
 --- Wrapper class to handle the "DCS Controllable objects", which are Groups and Units:
@@ -51307,7 +51386,8 @@ function CONTROLLABLE:New( ControllableName )
   local self = BASE:Inherit( self, POSITIONABLE:New( ControllableName ) ) -- #CONTROLLABLE
   -- self:F( ControllableName )
   self.ControllableName = ControllableName
-
+  -- Options Cache for Event ID 61 (ED DCS Release Aug 2026)
+  self.ControllableOptions = {}
   self.TaskScheduler = SCHEDULER:New( self )
   return self
 end
@@ -54385,17 +54465,55 @@ end
 -- @param #number OptionValue Value of the option
 -- @return #CONTROLLABLE self
 function CONTROLLABLE:SetOption( OptionID, OptionValue )
+  local ID = tostring(OptionID)
+  if OptionValue ~= nil and self.ControllableOptions and self.ControllableOptions[ID] == OptionValue then
+    return self
+  end
 
   local DCSControllable = self:GetDCSObject()
   if DCSControllable then
-    local Controller = self:_GetController()
-
+    local Controller = DCSControllable:getController()
     Controller:setOption( OptionID, OptionValue )
-
+    self.ControllableOptions = self.ControllableOptions or {}
+    self.ControllableOptions[ID] = OptionValue
+    self.ControllableOptionDCSObject = DCSControllable
     return self
   end
 
   return nil
+end
+
+--- Query a (cached) option. Requires the option has been set with Moose(!) before.
+-- @param #CONTROLLABLE self
+-- @param #number OptionID ID/Type of the option.
+-- @return #number OptionValue or nil if not chached (yet)
+function CONTROLLABLE:QueryCachedOption(OptionID)
+  local ID = tostring(OptionID)
+  if self.ControllableOptions then
+    return self.ControllableOptions[ID]
+  end
+  return nil
+end
+
+--- Reset cached options for this controllable.
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:ResetOptionCache()
+  self.ControllableOptions = {}
+  self.ControllableOptionDCSObject = self:GetDCSObject()
+  return self
+end
+
+--- Reset cached options when the underlying DCS object has changed.
+-- @param #CONTROLLABLE self
+-- @return #CONTROLLABLE self
+function CONTROLLABLE:ResetOptionCacheIfDCSObjectChanged()
+  local DCSControllable = self:GetDCSObject()
+  if self.ControllableOptionDCSObject ~= DCSControllable then
+    self.ControllableOptions = {}
+    self.ControllableOptionDCSObject = DCSControllable
+  end
+  return self
 end
 
 --- Set option for Rules of Engagement (ROE).
@@ -54411,11 +54529,11 @@ function CONTROLLABLE:OptionROE( ROEvalue )
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ROE, ROEvalue )
+      self:SetOption( AI.Option.Air.id.ROE, ROEvalue )
     elseif self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ROE, ROEvalue )
+      self:SetOption( AI.Option.Ground.id.ROE, ROEvalue )
     elseif self:IsShip() then
-      Controller:setOption( AI.Option.Naval.id.ROE, ROEvalue )
+      self:SetOption( AI.Option.Naval.id.ROE, ROEvalue )
     end
 
     return self
@@ -54453,11 +54571,11 @@ function CONTROLLABLE:OptionROEHoldFire()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.WEAPON_HOLD )
+      self:SetOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.WEAPON_HOLD )
     elseif self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ROE, AI.Option.Ground.val.ROE.WEAPON_HOLD )
+      self:SetOption( AI.Option.Ground.id.ROE, AI.Option.Ground.val.ROE.WEAPON_HOLD )
     elseif self:IsShip() then
-      Controller:setOption( AI.Option.Naval.id.ROE, AI.Option.Naval.val.ROE.WEAPON_HOLD )
+      self:SetOption( AI.Option.Naval.id.ROE, AI.Option.Naval.val.ROE.WEAPON_HOLD )
     end
 
     return self
@@ -54495,11 +54613,11 @@ function CONTROLLABLE:OptionROEReturnFire()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.RETURN_FIRE )
+      self:SetOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.RETURN_FIRE )
     elseif self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ROE, AI.Option.Ground.val.ROE.RETURN_FIRE )
+      self:SetOption( AI.Option.Ground.id.ROE, AI.Option.Ground.val.ROE.RETURN_FIRE )
     elseif self:IsShip() then
-      Controller:setOption( AI.Option.Naval.id.ROE, AI.Option.Naval.val.ROE.RETURN_FIRE )
+      self:SetOption( AI.Option.Naval.id.ROE, AI.Option.Naval.val.ROE.RETURN_FIRE )
     end
 
     return self
@@ -54537,11 +54655,11 @@ function CONTROLLABLE:OptionROEOpenFire()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.OPEN_FIRE )
+      self:SetOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.OPEN_FIRE )
     elseif self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ROE, AI.Option.Ground.val.ROE.OPEN_FIRE )
+      self:SetOption( AI.Option.Ground.id.ROE, AI.Option.Ground.val.ROE.OPEN_FIRE )
     elseif self:IsShip() then
-      Controller:setOption( AI.Option.Naval.id.ROE, AI.Option.Naval.val.ROE.OPEN_FIRE )
+      self:SetOption( AI.Option.Naval.id.ROE, AI.Option.Naval.val.ROE.OPEN_FIRE )
     end
 
     return self
@@ -54580,7 +54698,7 @@ function CONTROLLABLE:OptionROEOpenFireWeaponFree()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.OPEN_FIRE_WEAPON_FREE )
+      self:SetOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.OPEN_FIRE_WEAPON_FREE )
     end
 
     return self
@@ -54618,7 +54736,7 @@ function CONTROLLABLE:OptionROEWeaponFree()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.WEAPON_FREE )
+      self:SetOption( AI.Option.Air.id.ROE, AI.Option.Air.val.ROE.WEAPON_FREE )
     end
 
     return self
@@ -54656,7 +54774,7 @@ function CONTROLLABLE:OptionROTNoReaction()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.NO_REACTION )
+      self:SetOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.NO_REACTION )
     end
 
     return self
@@ -54677,7 +54795,7 @@ function CONTROLLABLE:OptionROT( ROTvalue )
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.REACTION_ON_THREAT, ROTvalue )
+      self:SetOption( AI.Option.Air.id.REACTION_ON_THREAT, ROTvalue )
     end
 
     return self
@@ -54715,7 +54833,7 @@ function CONTROLLABLE:OptionROTPassiveDefense()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.PASSIVE_DEFENCE )
+      self:SetOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.PASSIVE_DEFENCE )
     end
 
     return self
@@ -54735,7 +54853,7 @@ function CONTROLLABLE:OptionPreferVerticalLanding()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.PREFER_VERTICAL, true )
+      self:SetOption( AI.Option.Air.id.PREFER_VERTICAL, true )
     end
 
     return self
@@ -54755,7 +54873,7 @@ function CONTROLLABLE:OptionAllowFormationSideSwap()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ALLOW_FORMATION_SIDE_SWAP, true )
+      self:SetOption( AI.Option.Air.id.ALLOW_FORMATION_SIDE_SWAP, true )
     end
 
     return self
@@ -54775,7 +54893,7 @@ function CONTROLLABLE:OptionAIRunwayLineUp()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( 37, true )
+      self:SetOption( 37, true )
     end
 
     return self
@@ -54795,7 +54913,7 @@ function CONTROLLABLE:OptionDisengageAndRTBAfterFormationLoss()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( 38, 1 )
+      self:SetOption( 38, 1 )
     end
 
     return self
@@ -54833,7 +54951,7 @@ function CONTROLLABLE:OptionROTEvadeFire()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.EVADE_FIRE )
+      self:SetOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.EVADE_FIRE )
     end
 
     return self
@@ -54871,7 +54989,7 @@ function CONTROLLABLE:OptionROTVertical()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.BYPASS_AND_ESCAPE )
+      self:SetOption( AI.Option.Air.id.REACTION_ON_THREAT, AI.Option.Air.val.REACTION_ON_THREAT.BYPASS_AND_ESCAPE )
     end
 
     return self
@@ -54891,10 +55009,10 @@ function CONTROLLABLE:OptionAlarmStateAuto()
     local Controller = self:_GetController()
 
     if self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.AUTO )
+      self:SetOption( AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.AUTO )
     elseif self:IsShip() then
-      -- Controller:setOption(AI.Option.Naval.id.ALARM_STATE, AI.Option.Naval.val.ALARM_STATE.AUTO)
-      Controller:setOption( 9, 0 )
+      -- self:SetOption(AI.Option.Naval.id.ALARM_STATE, AI.Option.Naval.val.ALARM_STATE.AUTO)
+      self:SetOption( 9, 0 )
     end
 
     return self
@@ -54914,11 +55032,11 @@ function CONTROLLABLE:OptionAlarmStateGreen()
     local Controller = self:_GetController()
 
     if self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.GREEN )
+      self:SetOption( AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.GREEN )
     elseif self:IsShip() then
       -- AI.Option.Naval.id.ALARM_STATE does not seem to exist!
-      -- Controller:setOption( AI.Option.Naval.id.ALARM_STATE, AI.Option.Naval.val.ALARM_STATE.GREEN )
-      Controller:setOption( 9, 1 )
+      -- self:SetOption( AI.Option.Naval.id.ALARM_STATE, AI.Option.Naval.val.ALARM_STATE.GREEN )
+      self:SetOption( 9, 1 )
     end
 
     return self
@@ -54938,10 +55056,10 @@ function CONTROLLABLE:OptionAlarmStateRed()
     local Controller = self:_GetController()
 
     if self:IsGround() then
-      Controller:setOption( AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.RED )
+      self:SetOption( AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.RED )
     elseif self:IsShip() then
-      -- Controller:setOption(AI.Option.Naval.id.ALARM_STATE, AI.Option.Naval.val.ALARM_STATE.RED)
-      Controller:setOption( 9, 2 )
+      -- self:SetOption(AI.Option.Naval.id.ALARM_STATE, AI.Option.Naval.val.ALARM_STATE.RED)
+      self:SetOption( 9, 2 )
     end
 
     return self
@@ -54968,7 +55086,7 @@ function CONTROLLABLE:OptionRTBBingoFuel( RTB ) -- R2.2
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.RTB_ON_BINGO, RTB )
+      self:SetOption( AI.Option.Air.id.RTB_ON_BINGO, RTB )
     end
 
     return self
@@ -54989,7 +55107,7 @@ function CONTROLLABLE:OptionRTBAmmo( WeaponsFlag )
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.RTB_ON_OUT_OF_AMMO, WeaponsFlag )
+      self:SetOption( AI.Option.Air.id.RTB_ON_OUT_OF_AMMO, WeaponsFlag )
     end
 
     return self
@@ -55009,7 +55127,7 @@ function CONTROLLABLE:OptionAllowJettisonWeaponsOnThreat()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.PROHIBIT_JETT, false )
+      self:SetOption( AI.Option.Air.id.PROHIBIT_JETT, false )
     end
 
     return self
@@ -55029,7 +55147,7 @@ function CONTROLLABLE:OptionKeepWeaponsOnThreat()
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.PROHIBIT_JETT, true )
+      self:SetOption( AI.Option.Air.id.PROHIBIT_JETT, true )
     end
 
     return self
@@ -55069,7 +55187,7 @@ function CONTROLLABLE:OptionEvasionOfARM(Seconds)
 
     if self:IsGround() then
       if Seconds == nil then Seconds = false end
-      Controller:setOption( AI.Option.Ground.id.EVASION_OF_ARM, Seconds)
+      self:SetOption( AI.Option.Ground.id.EVASION_OF_ARM, Seconds)
     end
 
   end
@@ -55090,7 +55208,7 @@ function CONTROLLABLE:OptionFormationInterval(meters)
 
     if self:IsGround() then
       if meters == nil or meters > 100 or meters < 0 then meters = 50 end
-      Controller:setOption( 30, meters)
+      self:SetOption( 30, meters)
     end
 
   end
@@ -55110,7 +55228,7 @@ function CONTROLLABLE:OptionECM( ECMvalue )
     local Controller = self:_GetController()
 
     if self:IsAir() then
-      Controller:setOption( AI.Option.Air.id.ECM_USING, ECMvalue or 1 )
+      self:SetOption( AI.Option.Air.id.ECM_USING, ECMvalue or 1 )
     end
 
   end
@@ -55296,11 +55414,11 @@ function CONTROLLABLE:OptionRestrictBurner( RestrictBurner )
       -- Issue https://github.com/FlightControl-Master/MOOSE/issues/1216
       if RestrictBurner == true then
         if self:IsAir() then
-          Controller:setOption( 16, true )
+          self:SetOption( 16, true )
         end
       else
         if self:IsAir() then
-          Controller:setOption( 16, false )
+          self:SetOption( 16, false )
         end
       end
 
@@ -59420,6 +59538,9 @@ function GROUP:Respawn( Template, Reset )
 
   -- Reset events.
   self:ResetEvents()
+  
+  -- Reset options.
+  self:ResetOptionCache()
 
   return self
 end
@@ -67525,7 +67646,7 @@ function SCENERY:FindByName(Name, Coordinate, Radius, Role, Zone)
   --BASE:I("Coordinate x = "..Coordinate.x .. " y = "..Coordinate.y.." z = "..Coordinate.z)
   
   local findme = self:_FindByName(Name)
-  if findme then return findme end
+  if findme and findme:GetDCSObject() then return findme end
   
   local radius = Radius or 100
   local name = Name or "unknown"
@@ -67559,8 +67680,6 @@ function SCENERY:FindByName(Name, Coordinate, Radius, Role, Zone)
   if Coordinate then
     scenery = SceneryScan(Coordinate, radius, name)
   end
-  
-  if not scenery then scenery = SCENERY:Register(Name,nil,Zone) end
     
   return scenery  
 end
@@ -87432,8 +87551,8 @@ end
 -- @param #RAT self
 -- @param Core.Event#EVENTDATA EventData
 function RAT:_OnBirth(EventData)
-  self:F3(EventData)
-  self:T3(self.lid.."Captured event birth!")
+  self:F2(EventData)
+  self:T2(self.lid.."Captured event birth!")
 
   local SpawnGroup = EventData.IniGroup --Wrapper.Group#GROUP
 
@@ -115136,6 +115255,137 @@ MANTIS.SamDataCH = {
    ["Lvkv9040M CHM"] = { Range=2, Blindspot=0.1, Height=1.2, Type="Point", Radar="LvKv9040",Point="true" },   
 }
 
+
+--- @type MANTIS.SamDataNaval
+MANTIS.SamDataNaval = {
+  ---------------------------------------------------------------------
+  -- CurrentHill (CH) surface combatants
+  ---------------------------------------------------------------------
+  -- USA -- AEGIS / SM-family, S-band (SPY-1) or S-band AESA (SPY-6)
+  ["Ticonderoga"]        = { Range=150, Blindspot=4, Height=33, Type="Long",   Radar="CH_Ticonderoga" },
+  ["Ticonderoga CMP"]    = { Range=150, Blindspot=4, Height=33, Type="Long",   Radar="CH_Ticonderoga_CMP" },
+  ["Arleigh Burke IIA"]  = { Range=150, Blindspot=4, Height=33, Type="Long",   Radar="CH_Arleigh_Burke_IIA" },
+  ["Arleigh Burke III"]  = { Range=180, Blindspot=3, Height=33, Type="Long",   Radar="CH_Arleigh_Burke_III" },
+  ["Constellation"]      = { Range=120, Blindspot=3, Height=27, Type="Long",   Radar="CH_Constellation" },
+
+  -- UK
+  ["Type 45"]            = { Range=120, Blindspot=3, Height=30, Type="Long",   Radar="Type45" },            -- Aster 15/30, SAMPSON
+  ["Type 26"]            = { Range=25,  Blindspot=1, Height=10, Type="Medium", Radar="CH_Type26" },          -- Sea Ceptor / CAMM
+
+  -- Germany
+  ["F124 Sachsen"]       = { Range=120, Blindspot=3, Height=24, Type="Long",   Radar="CH_F124" },            -- SM-2/ESSM, APAR (X-band)
+
+  -- China
+  ["Type 052D"]          = { Range=100, Blindspot=5, Height=27, Type="Long",   Radar="Type052D" },           -- HHQ-9
+  ["Type 055"]           = { Range=150, Blindspot=5, Height=30, Type="Long",   Radar="Type055" },            -- HHQ-9B
+  ["Type 054B"]          = { Range=70,  Blindspot=2, Height=20, Type="Medium", Radar="CH_Type054B" },         -- HHQ-16
+  ["Type 056A"]          = { Range=9,   Blindspot=0.3, Height=6, Type="Point", Radar="CH_Type056A", Point="true" }, -- HHQ-10 (IR)
+
+  -- Russia
+  ["Admiral Gorshkov"]   = { Range=150, Blindspot=3, Height=30, Type="Long",   Radar="CH_Admiral_Gorshkov" }, -- Poliment-Redut 9M96D
+  ["Grigorovich AShM"]   = { Range=50,  Blindspot=2, Height=15, Type="Medium", Radar="CH_Grigorovich_AShM" }, -- Shtil-1
+  ["Grigorovich LACM"]   = { Range=50,  Blindspot=2, Height=15, Type="Medium", Radar="CH_Grigorovich_LACM" },
+  ["Steregushchiy"]      = { Range=50,  Blindspot=1.5, Height=20, Type="Medium", Radar="CH_Steregushchiy" },  -- Redut 9M96
+  ["Gremyashchiy AShM"]  = { Range=50,  Blindspot=1.5, Height=20, Type="Medium", Radar="CH_Gremyashchiy_AShM" },
+  ["Gremyashchiy LACM"]  = { Range=50,  Blindspot=1.5, Height=20, Type="Medium", Radar="CH_Gremyashchiy_LACM" },
+  ["Karakurt AShM"]      = { Range=20,  Blindspot=1, Height=15, Type="Point",  Radar="CH_Karakurt_AShM", Point="true" }, -- Pantsir-M
+  ["Karakurt LACM"]      = { Range=20,  Blindspot=1, Height=15, Type="Point",  Radar="CH_Karakurt_LACM", Point="true" },
+
+  -- Point-defense / MANPADS-only hulls (treated as close-in; also usable as EWR pickets)
+  ["Type 022 FAC"]       = { Range=5,   Blindspot=0.2, Height=4, Type="Point", Radar="CH_Type022", Point="true" },
+  ["IRGCN FAC AShM"]     = { Range=5,   Blindspot=0.2, Height=4, Type="Point", Radar="CH_IranFAC_MG", Point="true" },       -- MANPADS
+  ["IRGCN FAC Igla"]     = { Range=5,   Blindspot=0.2, Height=4, Type="Point", Radar="CH_IranFAC_MG_AShM", Point="true" },  -- Igla
+  ["Strb 90 FAC"]        = { Range=4,   Blindspot=0.2, Height=3, Type="Point", Radar="Strb90", Point="true" },
+  ["Visby"]              = { Range=4,   Blindspot=0.2, Height=3, Type="Point", Radar="HSwMS_Visby", Point="true" },         -- gun/CIWS
+
+  ---------------------------------------------------------------------
+  -- Base-game DCS surface combatants  (type ids from pydcs / DCS export)
+  -- Only air-defence-capable hulls are listed. Pure-gun / no-AD hulls
+  -- (Leander gun refits, La Combattante, cargo, subs, WWII) are omitted
+  -- on purpose; add them as POINT if you want them to appear at all.
+  ---------------------------------------------------------------------
+  -- USA
+  ["CG Ticonderoga"]        = { Range=120, Blindspot=3, Height=30, Type="Long",   Radar="TICONDEROG" },  -- SM-2/SPY-1  NOTE: id has NO trailing 'E'
+  ["DDG Arleigh Burke IIa"] = { Range=120, Blindspot=3, Height=30, Type="Long",   Radar="USS_Arleigh_Burke_IIa" }, -- SM-2/SPY-1D
+  ["FFG Perry"]             = { Range=38,  Blindspot=2, Height=15, Type="Medium", Radar="PERRY" },        -- SM-1MR (est. real range)
+  ["CVN Roosevelt"]         = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="CVN_71", Point="true" }, -- NSSM/RAM
+  ["CVN Lincoln"]           = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="CVN_72", Point="true" },
+  ["CVN Washington"]        = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="CVN_73", Point="true" },
+  ["CVN Stennis"]           = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="Stennis", Point="true" },
+  ["CVN Truman"]            = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="CVN_75", Point="true" },
+  ["CVN Vinson"]            = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="VINSON", Point="true" },
+  ["LHA Tarawa"]            = { Range=15,  Blindspot=1, Height=8,  Type="Point",  Radar="LHA_Tarawa", Point="true" }, -- RAM/Sea Sparrow
+  -- Russia
+  ["Cruiser Moskva"]        = { Range=75,  Blindspot=5, Height=25, Type="Long",   Radar="MOSCOW" },       -- S-300F (SA-N-6)
+  ["BC Pyotr Velikiy"]      = { Range=150, Blindspot=5, Height=27, Type="Long",   Radar="PIOTR" },        -- S-300F/FM
+  ["Frigate Neustrashimy"]  = { Range=12,  Blindspot=1, Height=6,  Type="Short",  Radar="NEUSTRASH" },    -- Kinzhal (SA-N-9)
+  ["Frigate Rezky"]         = { Range=15,  Blindspot=1, Height=5,  Type="Short",  Radar="REZKY" },        -- OSA-M (SA-N-4)
+  ["Corvette Grisha"]       = { Range=15,  Blindspot=1, Height=5,  Type="Short",  Radar="ALBATROS" },     -- OSA-M (SA-N-4)
+  ["Corvette Molniya"]      = { Range=5,   Blindspot=0.3, Height=3, Type="Point", Radar="MOLNIYA", Point="true" }, -- Strela
+  ["CV Kuznetsov"]          = { Range=12,  Blindspot=1, Height=6,  Type="Short",  Radar="KUZNECOW" },     -- Kinzhal/Kashtan
+  ["CV Kuznetsov 2017"]     = { Range=12,  Blindspot=1, Height=6,  Type="Short",  Radar="CV_1143_5" },
+  ["Patrol Bykov TorM2KM"]  = { Range=15,  Blindspot=1, Height=6,  Type="Short",  Radar="CHAP_Project22160_TorM2KM" }, -- Tor
+  ["Patrol Bykov"]          = { Range=7,   Blindspot=0.3, Height=4, Type="Point", Radar="CHAP_Project22160", Point="true" },
+  -- China
+  ["Type 052C"]             = { Range=100, Blindspot=5, Height=27, Type="Long",   Radar="Type_052C" },    -- HHQ-9
+  ["Type 052B"]             = { Range=30,  Blindspot=2, Height=15, Type="Medium", Radar="Type_052B" },    -- HHQ-16/Shtil
+  ["Type 054A"]             = { Range=45,  Blindspot=2, Height=18, Type="Medium", Radar="Type_054A" },    -- HHQ-16
+  ["Type 071 LPD"]          = { Range=9,   Blindspot=0.5, Height=6, Type="Point", Radar="Type_071", Point="true" }, -- HHQ-10
+  -- UK
+  ["HMS Invincible"]        = { Range=40,  Blindspot=2, Height=18, Type="Medium", Radar="hms_invincible" }, -- Sea Dart
+
+  ---------------------------------------------------------------------
+  -- desdemicabina-simulation 3.2 (Spanish/Australian navies)
+  -- AEGIS hulls: two ship_MK41_SM2 launchers (SM-2, 64 cells) + AEGIS-class
+  -- trackers (150km/30km alt, ECM_K 0.5). NOTE: this pack's airWeaponDist=45km
+  -- UNDERSTATES the fit -- Range below follows the SM-2 launcher (~100km), the
+  -- inverse of the Admiral pack's inflated values.
+  ---------------------------------------------------------------------
+  ["HMAS Hobart DDG-39"]       = { Range=100, Blindspot=3, Height=30, Type="Long",  Radar="DDG39" }, -- AEGIS SPY-1D(V), SM-2
+  ["F100 Alvaro de Bazan"]     = { Range=100, Blindspot=3, Height=30, Type="Long",  Radar="F100" },  -- AEGIS SPY-1D, SM-2
+  ["F105 Cristobal Colon"]     = { Range=100, Blindspot=3, Height=30, Type="Long",  Radar="F105" },  -- AEGIS SPY-1D, SM-2
+  ["LHD Canberra L02"]         = { Range=3,   Blindspot=0.1, Height=2, Type="Point", Radar="L02", Point="true" }, -- 3x Phalanx only
+  ["LPD Castilla L52"]         = { Range=3,   Blindspot=0.1, Height=2, Type="Point", Radar="L52", Point="true" }, -- 2x Phalanx (NO_SAM attr)
+  ["LHD Juan Carlos I L61"]    = { Range=1.5, Blindspot=0.1, Height=0.8, Type="Point", Radar="L61", Point="true" }, -- .50cal mounts only
+
+  ---------------------------------------------------------------------
+  -- Admiral mod surface combatants
+  -- Worked example (USS America LHA-6). Read each field from the ship's
+  -- GT def file:
+  --   Radar     <- GT.Name  (the typeName; the essential, non-guessable key)
+  --   Range     <- GT.airWeaponDist / 1000            (20000 -> 20)
+  --   Height    <- launcher max_trg_alt / 1000        (15000 -> 15)
+  --   Blindspot <- launcher distanceMin / 1000        (400   -> 0.4)
+  --   Type      <- from armament fit (Sea Sparrow => SHORT)
+  ---------------------------------------------------------------------
+  ["USS America LHA-6"] = { Range=20, Blindspot=0.4, Height=15, Type="Short", Radar="USS America LHA-6" }, -- Sea Sparrow + RAM + Phalanx
+
+  -- IMPORTANT: these Range values come from the actual weapon launcher's distanceMax
+  -- / the real system, NOT GT.airWeaponDist (which is unreliable here -- e.g. Blue
+  -- Ridge and Henry Kaiser both claim 100-150km with only CIWS/MGs).
+  -- LONG -- area SAM
+  ["HMS Duncan (Type 45)"]     = { Range=100, Blindspot=3, Height=30, Type="Long",   Radar="HMS Duncan" },             -- Aster/Sea Viper (mod: MK41_SM2)
+  ["Aquitaine D650 (FREMM)"]   = { Range=120, Blindspot=3, Height=27, Type="Long",   Radar="Aquitaine D650" },          -- SYLVER Aster 30 (distanceMax 120km)
+  ["Normandie D651 (FREMM)"]   = { Range=120, Blindspot=3, Height=27, Type="Long",   Radar="D651_Normandie" },          -- SYLVER Aster 30
+  -- MEDIUM
+  ["MEKO-200HN Hydra"]         = { Range=50,  Blindspot=2, Height=20, Type="Medium", Radar="MEKO_HN" },                 -- MK41 (mod SM-2 / real ESSM)
+  ["MEKO-200TN Barbaros"]      = { Range=50,  Blindspot=2, Height=20, Type="Medium", Radar="MEKO_TN" },                 -- MK41 + SeaZenith CIWS
+  ["Sovremenny Adm. Ushakov"]  = { Range=46,  Blindspot=2, Height=15, Type="Medium", Radar="Admiral Ushakov" },         -- SA-N-7 Gadfly
+  -- SHORT
+  ["Udaloy II Chabanenko"]     = { Range=12,  Blindspot=1, Height=6,  Type="Short",  Radar="Udaloy II DDG Admiral Chabanenko" }, -- SA-N-9 Klinok
+  ["USS San Antonio LPD-17"]   = { Range=15,  Blindspot=1, Height=8,  Type="Short",  Radar="USS San Antonio LPD-17" },  -- Sea Sparrow
+  -- POINT -- CIWS / RAM / gun / IR only (no area SAM); unjammable in the jammer table
+  ["USS Oak Hill LSD-51"]      = { Range=9,   Blindspot=0.5, Height=6, Type="Point", Radar="USS_Oak_Hill LSD-51", Point="true" }, -- RAM + Phalanx
+  ["USS Blue Ridge LCC-19"]    = { Range=3,   Blindspot=0.1, Height=2, Type="Point", Radar="USS_Blue_Ridge", Point="true" },      -- Phalanx only
+  ["Sacramento AOE-1"]         = { Range=9,   Blindspot=0.5, Height=6, Type="Point", Radar="USS_Support_Ship_Sacramento_AOE-1", Point="true" }, -- RAM + Phalanx
+  ["Henry Kaiser T-AO-187"]    = { Range=1.5, Blindspot=0.1, Height=0.8,Type="Point", Radar="USNS_Henry_Kaiser", Point="true" },  -- .50cal only (negligible)
+  ["HMS Albion L14"]           = { Range=3,   Blindspot=0.1, Height=2, Type="Point", Radar="HMS_Albion L14", Point="true" },      -- Phalanx only
+  ["LPD Foudre"]               = { Range=6,   Blindspot=0.3, Height=4, Type="Point", Radar="LPD_Foundre", Point="true" },         -- Mistral (IR)
+  ["Osa-I Missile Boat"]       = { Range=4,   Blindspot=0.2, Height=3, Type="Point", Radar="OSA_One", Point="true" },             -- AK-230 (NO_SAM)
+  ["Osa-II Missile Boat"]      = { Range=4,   Blindspot=0.2, Height=3, Type="Point", Radar="OSA_Two", Point="true" },             -- AK-230
+  ["IRIS Alvand"]              = { Range=4,   Blindspot=0.2, Height=3, Type="Point", Radar="IRIS_Alvand", Point="true" },         -- OtoBreda 40mm / 20mm
+}
+
 -----------------------------------------------------------------------
 -- MANTIS Jammer Extension v2.0.0
 -- Standoff Jamming (SOJ) aircraft support for MANTIS IADS networks
@@ -115317,6 +115567,119 @@ do
 end
 
 
+--- @type MANTIS.JammerSAMParamsNaval
+MANTIS.JammerSAMParamsNaval = {
+  -- Calibration note (research pass): high power-aperture warship radars
+  -- (SPY-1/SPY-6/SAMPSON/Poliment/HHQ-9B) are modeled HARDER to jam than their
+  -- ground peers -- lower peak/floor, mu pushed outward -- reflecting shipboard
+  -- prime power, large multi-face arrays, low sidelobes and sensor redundancy.
+  -- Documented ECM-weak legacy sets (SPG-51 CW illum, Type 909) slightly easier.
+  -- Navalized twins remain anchored to ground counterparts (Shtil=SA-11,
+  -- Klinok=Tor, OSA-M=SA-8, S-300F=SA-10). Open sources support ordering, not
+  -- exact percentages -- tune in-mission as needed.
+  -- USA AEGIS
+  ["CH_Ticonderoga"]        = { peak=17, mu=70, sigma_L=24, tail_dist=115, band="S",  floor=2 },
+  ["CH_Ticonderoga_CMP"]    = { peak=17, mu=70, sigma_L=24, tail_dist=115, band="S",  floor=2 },
+  ["CH_Arleigh_Burke_IIA"]  = { peak=17, mu=70, sigma_L=24, tail_dist=115, band="S",  floor=2 },
+  ["CH_Arleigh_Burke_III"]  = { peak=14, mu=83, sigma_L=28, tail_dist=130, band="S",  floor=2 }, -- SPY-6 AESA
+  ["CH_Constellation"]      = { peak=14, mu=63, sigma_L=22, tail_dist=100, band="S",  floor=2 }, -- SPY-6(V)3
+  -- UK
+  ["Type45"]                = { peak=16, mu=62, sigma_L=24, tail_dist=110, band="S",  floor=2 }, -- SAMPSON
+  ["CH_Type26"]             = { peak=18, mu=18, sigma_L=7,  tail_dist=40,  band="IJ", floor=2 }, -- CAMM active RH
+  -- Germany
+  ["CH_F124"]               = { peak=18, mu=62, sigma_L=24, tail_dist=110, band="IJ", floor=2 }, -- APAR X-band
+  -- China
+  ["Type052D"]              = { peak=20, mu=55, sigma_L=22, tail_dist=110, band="S",  floor=2 },
+  ["Type055"]               = { peak=16, mu=65, sigma_L=24, tail_dist=120, band="S",  floor=2 },
+  ["CH_Type054B"]           = { peak=22, mu=38, sigma_L=16, tail_dist=75,  band="S",  floor=3 },
+  ["CH_Type056A"]           = { peak=8,  mu=5,  sigma_L=2,  tail_dist=12,  band="OPT",floor=0 }, -- HHQ-10 IR
+  -- Russia
+  ["CH_Admiral_Gorshkov"]   = { peak=16, mu=80, sigma_L=30, tail_dist=145, band="S",  floor=2 }, -- Poliment AESA
+  ["CH_Grigorovich_AShM"]   = { peak=50, mu=28, sigma_L=12, tail_dist=58,  band="IJ", floor=3 }, -- Shtil-1
+  ["CH_Grigorovich_LACM"]   = { peak=50, mu=28, sigma_L=12, tail_dist=58,  band="IJ", floor=3 },
+  ["CH_Steregushchiy"]      = { peak=22, mu=35, sigma_L=15, tail_dist=70,  band="S",  floor=2 }, -- Redut
+  ["CH_Gremyashchiy_AShM"]  = { peak=22, mu=35, sigma_L=15, tail_dist=70,  band="S",  floor=2 },
+  ["CH_Gremyashchiy_LACM"]  = { peak=22, mu=35, sigma_L=15, tail_dist=70,  band="S",  floor=2 },
+  ["CH_Karakurt_AShM"]      = { peak=10, mu=9,  sigma_L=4,  tail_dist=20,  band="IJ", floor=0 }, -- Pantsir-M
+  ["CH_Karakurt_LACM"]      = { peak=10, mu=9,  sigma_L=4,  tail_dist=20,  band="IJ", floor=0 },
+  -- CIWS / MANPADS-only hulls -> optical, essentially unjammable (floor 0)
+  ["CH_Type022"]            = { peak=3,  mu=3,  sigma_L=1,  tail_dist=5,   band="OPT",floor=0 },
+  ["CH_IranFAC_MG"]         = { peak=3,  mu=3,  sigma_L=1,  tail_dist=5,   band="OPT",floor=0 },
+  ["CH_IranFAC_MG_AShM"]    = { peak=3,  mu=3,  sigma_L=1,  tail_dist=5,   band="OPT",floor=0 },
+  ["Strb90"]                = { peak=3,  mu=3,  sigma_L=1,  tail_dist=5,   band="OPT",floor=0 },
+  ["HSwMS_Visby"]           = { peak=3,  mu=3,  sigma_L=1,  tail_dist=5,   band="OPT",floor=0 }, -- gun/CIWS: unjammable
+
+  -- Base-game DCS hulls (canonical entries; aliases set in the do-block below)
+  ["TICONDEROG"]            = { peak=17, mu=60, sigma_L=22, tail_dist=110, band="S",  floor=2 }, -- SPY-1  (NO trailing E)
+  ["USS_Arleigh_Burke_IIa"] = { peak=17, mu=60, sigma_L=22, tail_dist=110, band="S",  floor=2 }, -- SPY-1D
+  ["PERRY"]                 = { peak=33, mu=20, sigma_L=9,  tail_dist=48,  band="IJ", floor=3 }, -- SM-1 / SPG-51 (X-band illum)
+  ["MOSCOW"]                = { peak=32, mu=42, sigma_L=18, tail_dist=90,  band="S",  floor=3 }, -- S-300F
+  ["PIOTR"]                 = { peak=28, mu=70, sigma_L=26, tail_dist=130, band="S",  floor=3 }, -- S-300F/FM
+  ["NEUSTRASH"]             = { peak=28, mu=8,  sigma_L=3.5,tail_dist=18,  band="IJ", floor=2 }, -- Kinzhal
+  ["REZKY"]                 = { peak=35, mu=8,  sigma_L=3.5,tail_dist=18,  band="IJ", floor=3 }, -- OSA-M
+  ["MOLNIYA"]               = { peak=3,  mu=3,  sigma_L=1,  tail_dist=5,   band="OPT",floor=0 }, -- Strela
+  ["KUZNECOW"]              = { peak=24, mu=8,  sigma_L=3.5,tail_dist=18,  band="IJ", floor=2 }, -- Kinzhal/Kashtan
+  ["CHAP_Project22160_TorM2KM"] = { peak=28, mu=12, sigma_L=5, tail_dist=28, band="IJ", floor=3 }, -- Tor M2KM
+  ["Type_052C"]             = { peak=20, mu=55, sigma_L=22, tail_dist=110, band="S",  floor=2 }, -- HHQ-9
+  ["Type_052B"]             = { peak=30, mu=20, sigma_L=10, tail_dist=48,  band="S",  floor=3 }, -- HHQ-16/Shtil
+  ["Type_054A"]             = { peak=26, mu=28, sigma_L=12, tail_dist=58,  band="S",  floor=3 }, -- HHQ-16
+  ["hms_invincible"]        = { peak=36, mu=25, sigma_L=11, tail_dist=52,  band="IJ", floor=3 }, -- Sea Dart / Type 909
+  ["CVN_71"]                = { peak=8,  mu=5,  sigma_L=2,  tail_dist=12,  band="OPT",floor=0 }, -- NSSM/RAM (carrier point)
+
+  -- Admiral mod -- worked example (USS America LHA-6):
+  --   band  <- radar band (Sea Sparrow Mk 95 illuminator = X-band => IJ)
+  --   floor <- inverse of GT ECM_K hint (ECM_K 0.65 = moderate => floor ~2-3)
+  --   mu    <- engagement range in nm (20 km ~= 11 nm)
+  --   peak/sigma_L/tail_dist <- copy nearest short-IJ analog (Sea Sparrow ~ NASAMS/SA-11 class)
+  ["USS America LHA-6"] = { peak=22, mu=11, sigma_L=5, tail_dist=25, band="IJ", floor=3 },
+  -- desdemicabina AEGIS hulls: SPY-1 family fingerprint (peak 17 / floor 2 / S),
+  -- mu scaled to the ~100km SM-2 envelope of these units.
+  ["DDG39"]                             = { peak=17, mu=55, sigma_L=22, tail_dist=110, band="S", floor=2 }, -- SPY-1D(V)
+  ["F100"]                              = { peak=17, mu=55, sigma_L=22, tail_dist=110, band="S", floor=2 }, -- SPY-1D
+  ["F105"]                              = { peak=17, mu=55, sigma_L=22, tail_dist=110, band="S", floor=2 }, -- SPY-1D
+  -- Admiral SAM shooters (POINT hulls are aliased to the CIWS OPT entry in the do-block below)
+  ["HMS Duncan"]                        = { peak=16, mu=54, sigma_L=22, tail_dist=110, band="S",  floor=2 }, -- Aster (ECM_K 0.65)
+  ["Aquitaine D650"]                    = { peak=16, mu=65, sigma_L=24, tail_dist=120, band="S",  floor=2 }, -- Aster 30 (mod ECM_K 5.0 - see note)
+  ["D651_Normandie"]                    = { peak=16, mu=65, sigma_L=24, tail_dist=120, band="S",  floor=2 }, -- Aster 30
+  ["MEKO_HN"]                           = { peak=22, mu=27, sigma_L=12, tail_dist=55,  band="IJ", floor=2 }, -- ESSM/SM-2
+  ["MEKO_TN"]                           = { peak=22, mu=27, sigma_L=12, tail_dist=55,  band="IJ", floor=2 },
+  ["Admiral Ushakov"]                   = { peak=48, mu=25, sigma_L=11, tail_dist=55,  band="IJ", floor=3 }, -- SA-N-7 Gadfly
+  ["Udaloy II DDG Admiral Chabanenko"]  = { peak=28, mu=7,  sigma_L=3,  tail_dist=18,  band="IJ", floor=3 }, -- SA-N-9 Klinok
+  ["USS San Antonio LPD-17"]            = { peak=22, mu=8,  sigma_L=4,  tail_dist=20,  band="IJ", floor=3 }, -- Sea Sparrow
+  ["LPD_Foundre"]                       = { peak=10, mu=3,  sigma_L=2,  tail_dist=10,  band="OPT",floor=0 }, -- Mistral (IR, near-unjammable)
+}
+
+-- Naval jammer aliases: variants that share a hull/radar point to one curve,
+-- so tuning the canonical entry updates all of them (mirrors JammerSAMParams).
+do
+  local n = MANTIS.JammerSAMParamsNaval
+  -- US carriers + LHA + Type 071: point self-defence (NSSM/RAM/HHQ-10), optical-grade
+  n["CVN_72"]   = n["CVN_71"]; n["CVN_73"] = n["CVN_71"]; n["CVN_75"] = n["CVN_71"]
+  n["Stennis"]  = n["CVN_71"]; n["VINSON"] = n["CVN_71"]; n["LHA_Tarawa"] = n["CVN_71"]
+  n["Type_071"] = n["CVN_71"]
+  -- Grisha shares the SA-N-4 (OSA-M) curve with Rezky
+  n["ALBATROS"] = n["REZKY"]
+  -- Kuznetsov 2017 variant
+  n["CV_1143_5"] = n["KUZNECOW"]
+  -- Vasily Bykov base (gun) ~ Strela-grade optical
+  n["CHAP_Project22160"] = n["MOLNIYA"]
+  -- Admiral mod CIWS / RAM / gun-only hulls: all optical-grade, essentially unjammable.
+  -- Aliased to the base OPT curve so they resolve without cluttering the table.
+  n["USS_Oak_Hill LSD-51"]                    = n["MOLNIYA"]  -- RAM + Phalanx
+  n["USS_Blue_Ridge"]                         = n["MOLNIYA"]  -- Phalanx
+  n["USS_Support_Ship_Sacramento_AOE-1"]      = n["MOLNIYA"]  -- RAM + Phalanx
+  n["USNS_Henry_Kaiser"]                      = n["MOLNIYA"]  -- .50cal
+  n["HMS_Albion L14"]                         = n["MOLNIYA"]  -- Phalanx
+  n["OSA_One"]                                = n["MOLNIYA"]  -- AK-230 (NO_SAM)
+  n["OSA_Two"]                                = n["MOLNIYA"]  -- AK-230
+  n["IRIS_Alvand"]                            = n["MOLNIYA"]  -- OtoBreda 40mm / 20mm
+  -- desdemicabina amphibs: CIWS / gun-only, optical-grade unjammable
+  n["L02"]                                    = n["MOLNIYA"]  -- 3x Phalanx
+  n["L52"]                                    = n["MOLNIYA"]  -- 2x Phalanx (NO_SAM)
+  n["L61"]                                    = n["MOLNIYA"]  -- .50cal only
+end
+
+
 -----------------------------------------------------------------------
 -- MANTIS System
 -----------------------------------------------------------------------
@@ -115353,6 +115716,8 @@ do
   --        mybluemantis:Start()
   --
   function MANTIS:New(name,samprefix,ewrprefix,hq,Coalition,dynamic,awacs, EmOnOff, Padding, Zones)
+    -- Inject NAVYGROUP:SetMANTIS convenience API (safe if NAVYGROUP not loaded/already done)
+    MANTIS._InjectNavyGroupAPI()
     
     -- Inherit everything from BASE class.
     local self = BASE:Inherit(self, FSM:New()) -- #MANTIS
@@ -115382,6 +115747,12 @@ do
     self.grouping = 5000
     self.acceptrange = 80000
     self.detectinterval = 30
+    self.SEADNaval = false -- ships hard-kill inbound missiles; they do not go EMCON under SEAD (see SetNavalSEAD)
+    self.NavalSurfaceWakeup = true -- quiet ships go active when enemy surface combatants close (see SetNavalSurfaceWakeup)
+    self.NavalSurfaceWakeupRadius = nil -- meters; nil = each ship uses its own engagement radius
+    self.NavalPerUnit = true -- classify & switch every ship unit individually (see SetNavalPerUnit)
+    self.NavalAutonomy = true -- ship groups outside EWR radar coverage go alarm RED and search autonomously (see SetNavalAutonomy)
+    self.NavalAutonomyRadius = 150000 -- meters; a ship group within this distance of an alive EWR group counts as covered
     self.engagerange = 95
     self.autorelocate = false
     self.autorelocateunits = { HQ = false, EWR = false}
@@ -115697,6 +116068,21 @@ do
    end
    
    local function SwitchSAMOn(Name,Group)
+    if self.NavalPerUnit and Group and Group:IsShip() and self._navalSAMs then
+      -- Per-unit naval: a hit wakes this group's managed radars individually
+      if not self.SuppressedGroups[Name] then
+        for _,_unit in pairs(Group:GetUnits() or {}) do
+          local uname = _unit:GetName()
+          if self._navalSAMs[uname] and self.SamStateTracker[uname] == "GREEN"
+            and not (self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[uname]) then
+            self.SamStateTracker[uname] = "RED"
+          end
+        end
+        self:_ApplyNavalAlarmState() -- apply group alarm state immediately on hit
+        self:__RedState(1,Group)
+      end
+      return
+    end
     local suppressed = self.SuppressedGroups[Name] or false
     local jammed = self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[Name] or false
     if not suppressed and not jammed and self.SamStateTracker[Name] == "GREEN" then
@@ -116387,34 +116773,31 @@ do
   -- @param #MANTIS self
   -- @param #number height
   -- @param Core.Point#COORDINATE SamCoordinate
+  -- @param #table contactSnapshot Contact facts captured once for the current check.
   -- @return #table set
-  function MANTIS:_PreFilterHeight(height,SamCoordinate)
+  function MANTIS:_PreFilterHeight(height,SamCoordinate,contactSnapshot)
     self:T(self.lid.."_PreFilterHeight")   
     local set = {}
-    local dlink = self.Detection -- Ops.Intel#INTEL_DLINK
-    local detectedgroups = dlink:GetContactTable()
-    for _,_contact in pairs(detectedgroups) do
-      local contact = _contact -- Ops.Intel#INTEL.Contact
+    for _,contact in pairs(contactSnapshot) do
       local grp = contact.group -- Wrapper.Group#GROUP
-      if grp:IsAlive() then
-        local coord = grp:GetCoordinate()
-        local dist = 0
-        local include = true
-        if grp:IsGround() then include = false end
-        if grp:GetCoalition() == self.coalition then include = false end
-        if coord and SamCoordinate and grp:IsHelicopter() then
-          dist = coord:Get2DDistance(SamCoordinate) or 0
-          if dist > self.ShoradActDistance then include = false end -- we do not want long range shooting at helos
-        end
-        if self.debug then
-          local text = "Looking at Group: "..grp:GetName() or "N/A"
-          text = text .. " Include = "..tostring(include)
-          MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.verbose):ToLog()
-        end
-        local grpalt = grp:GetHeight(true)
-        if grpalt < height and grpalt > 10 and include == true then          
-          table.insert(set,coord)
-        end
+      local coord = contact.coordinate
+      local dist = 0
+      local include = true
+      if contact.isGround then include = false end
+      if contact.isShip then include = false end -- MANTIS is anti-air: surface contacts are not engageable targets
+      if contact.coalition == self.coalition then include = false end
+      if coord and SamCoordinate and contact.isHelicopter then
+        dist = coord:Get2DDistance(SamCoordinate) or 0
+        if dist > self.ShoradActDistance then include = false end -- we do not want long range shooting at helos
+      end
+      if self.debug then
+        local text = "Looking at Group: "..grp:GetName() or "N/A"
+        text = text .. " Include = "..tostring(include)
+        MESSAGE:New(text,10,"MANTIS"):ToAllIf(self.verbose):ToLog()
+      end
+      local grpalt = contact.height
+      if grpalt < height and grpalt > 10 and include == true then
+        table.insert(set,coord)
       end
     end
     return set
@@ -116427,16 +116810,17 @@ do
   -- @param #number radius Radius to check.
   -- @param #number height Height to check.
   -- @param #boolean dlink Data from DLINK.
+  -- @param #table contactSnapshot Contact facts captured once for the current check.
   -- @return #boolean True if in any zone, else false
   -- @return #number Distance Target distance in meters or zero when no object is in zone
-  function MANTIS:_CheckObjectInZone(dectset, samcoordinate, radius, height, dlink)
+  function MANTIS:_CheckObjectInZone(dectset, samcoordinate, radius, height, dlink, contactSnapshot)
     self:T(self.lid.."_CheckObjectInZone")
     -- check if non of the coordinate is in the given defense zone
     local rad = radius or self.checkradius
     local set = dectset
     if dlink then
       -- DEBUG
-      set = self:_PreFilterHeight(height,samcoordinate)
+      set = self:_PreFilterHeight(height,samcoordinate,contactSnapshot)
     end
     --self.friendlyset -- Core.Set#SET_GROUP
     if self.checkforfriendlies == true and self.friendlyset == nil then
@@ -116464,7 +116848,29 @@ do
         if targetdistance <= rad then
           inrange = "true"
         end
-        local text = string.format("Checking SAM at %s | Tgtdist %.1fkm | Rad %.1fkm | Inrange %s", samstring, targetdistance/1000, rad/1000, inrange)
+        local text = string.format("Checking SAM at %s | Tgtdist %.1fkm | Rad %.1fkm | Inrange %s | Zonecheck %s", samstring, targetdistance/1000, rad/1000, inrange, tostring(zonecheck))
+        -- Naval per-unit state summary
+        if self._navalSAMs and next(self._navalSAMs) ~= nil then
+          local ntot, nred, njam = 0, 0, 0
+          local detail = ""
+          for uname,_ in pairs(self._navalSAMs) do
+            local u = UNIT:FindByName(uname)
+            if u and u:IsAlive() then
+              ntot = ntot + 1
+              local st = self.SamStateTracker[uname] or "GREEN"
+              if st == "RED" then nred = nred + 1 end
+              local jm = ""
+              if self._jammedSAMs and self._jammedSAMs[uname] then njam = njam + 1 jm = " (JAMMED)" end
+              local pk = ""
+              local parent = self._navalUnitParent and self._navalUnitParent[uname]
+              if parent and self._navalAutonomous and self._navalAutonomous[parent] then pk = " [AUTONOMOUS]" end
+              if self.verbose then detail = detail..string.format("\n  %s: %s%s%s",uname,st,jm,pk) end
+            end
+          end
+          if ntot > 0 then
+            text = text..string.format("\nNaval units: %d | RED %d | GREEN %d | jammed %d",ntot,nred,ntot-nred,njam)..detail
+          end
+        end
         local m = MESSAGE:New(text,10,"Check"):ToAllIf(self.debug)
         self:T(self.lid..text)
       end
@@ -116599,37 +117005,66 @@ do
     local blind = 0
     local group = GROUP:FindByName(grpname) -- Wrapper.Group#GROUP
     local units = group:GetUnits()
-    local SAMData = self.SamData
     local ARMCapacity
+    -- Ordered multi-table search: the mod-tagged table (if any) first, then all
+    -- others. This lets groups classify by radar TYPE NAME alone, so ground SAM
+    -- groups no longer need the designation (or even the mod tag) in their name.
+    local SearchTables
     if mod then
-      SAMData = self.SamDataHDS
+      SearchTables = { {self.SamDataHDS,"HDS"}, {self.SamData,nil}, {self.SamDataSMA,"SMA"}, {self.SamDataCH,"CHM"} }
     elseif sma then
-      SAMData = self.SamDataSMA
+      SearchTables = { {self.SamDataSMA,"SMA"}, {self.SamData,nil}, {self.SamDataHDS,"HDS"}, {self.SamDataCH,"CHM"} }
     elseif chm then
-      SAMData = self.SamDataCH
+      SearchTables = { {self.SamDataCH,"CHM"}, {self.SamData,nil}, {self.SamDataHDS,"HDS"}, {self.SamDataSMA,"SMA"} }
+    else
+      SearchTables = { {self.SamData,nil}, {self.SamDataHDS,"HDS"}, {self.SamDataSMA,"SMA"}, {self.SamDataCH,"CHM"} }
     end
     self:T("Looking to auto-match for "..grpname)
     for _,_unit in pairs(units) do
       local unit = _unit -- Wrapper.Unit#UNIT
       local typename = string.lower(unit:GetTypeName())
       self:T(string.format("Matching typename: %s",typename))
-      for idx,entry in pairs(SAMData) do
-        local _entry = entry -- #MANTIS.SamData
-        local _radar = string.lower(_entry.Radar)
-        self:T(string.format("Trying typename: %s",_radar))
-        if string.find(typename,_radar,1,true) then
-          type = _entry.Type
-          radiusscale = self.radiusscale[type]
-          range = _entry.Range * 1000 * radiusscale -- max firing range used as switch-on
-          height = _entry.Height * 1000 -- max firing height
-          blind = _entry.Blindspot * 100 -- blind spot range
-          ARMCapacity = _entry.ARMCapacity 
-          self:T(string.format("Match: %s - %s",_radar,type))
-          found = true
-          break
+      -- Longest-match wins across ALL tables. This prevents a short Radar key in
+      -- one table (e.g. base "TorM2") from shadowing a more specific key in
+      -- another (e.g. CH "TorM2K"), and makes the typename path deterministic
+      -- (plain pairs() order no longer decides between overlapping keys).
+      -- Table order (mod-tagged table first) breaks exact-length ties.
+      local bestentry, bestidx, besttag, bestlen = nil, nil, nil, 0
+      for _,searchentry in ipairs(SearchTables) do
+        local SAMData, modtag = searchentry[1], searchentry[2]
+        if SAMData then
+          for idx,entry in pairs(SAMData) do
+            local _radar = string.lower(entry.Radar)
+            if #_radar > bestlen and string.find(typename,_radar,1,true) then
+              bestentry, bestidx, besttag, bestlen = entry, idx, modtag, #_radar
+            end
+          end
         end
       end
-      if found then break end
+      if bestentry then
+        local _entry = bestentry -- #MANTIS.SamData
+        type = _entry.Type
+        radiusscale = self.radiusscale[type]
+        range = _entry.Range * 1000 * radiusscale -- max firing range used as switch-on
+        height = _entry.Height * 1000 -- max firing height
+        blind = _entry.Blindspot * 100 -- blind spot range
+        ARMCapacity = _entry.ARMCapacity
+        self:T(string.format("Match: %s - %s",string.lower(_entry.Radar),type))
+        -- Stash the jammer curve by DESIGNATION (table key), so groups named
+        -- without a designation remain jammable. Reuses _ResolveJammerParams
+        -- (aliases, digit-boundary matching, mod bucketing) via a synthetic name.
+        self._samJammerParams = self._samJammerParams or {}
+        if self._samJammerParams[grpname] == nil then
+          local synth = bestidx
+          if besttag and not string.find(bestidx, besttag, 1, true) then
+            synth = bestidx .. " " .. besttag
+          end
+          local jp = self:_ResolveJammerParams(synth)
+          if jp then self._samJammerParams[grpname] = jp end
+        end
+        found = true
+        break
+      end
     end
     --- AAA or Point Defense
     if not found then
@@ -116648,6 +117083,188 @@ do
     return range, height, type, blind, ARMCapacity
   end
   
+  --- [Internal] Function to get SAM firing data for naval (ship) groups.
+  -- Matches the unit type name exactly against #MANTIS.SamDataNaval and, as a side
+  -- effect, stashes the hull's jammer curve in self._samJammerParams[grpname] so the
+  -- SOJ jammer extension can suppress it by type name (not group name).
+  -- @param #MANTIS self
+  -- @param #string grpname Name of the ship group
+  -- @return #number range Max firing range (m)
+  -- @return #number height Max firing height (m)
+  -- @return #string type #MANTIS.SamType
+  -- @return #number blind Blind spot
+  -- @return #number ARMCapacity
+  function MANTIS:_GetNavalSAMData(grpname)
+    self:T(self.lid.."_GetNavalSAMData for "..tostring(grpname))
+    self._navalSAMs = self._navalSAMs or {}
+    self._navalSAMs[grpname] = true
+    self._samJammerParams = self._samJammerParams or {}
+    local range = self.checkradius
+    local height = 3000
+    local type = MANTIS.SamType.POINT
+    local blind = 0
+    local ARMCapacity = 0
+    local group = GROUP:FindByName(grpname)
+    if not group then
+      self._samJammerParams[grpname] = nil
+      return range, height, type, blind, ARMCapacity
+    end
+    local units = group:GetUnits() or {}
+    for _,_unit in pairs(units) do
+      local typename = string.lower(_unit:GetTypeName())
+      for _,entry in pairs(self.SamDataNaval) do
+        if typename == string.lower(entry.Radar) then
+          type = entry.Type
+          local radiusscale = self.radiusscale[type] or 1
+          range = entry.Range * 1000 * radiusscale
+          height = entry.Height * 1000
+          blind = entry.Blindspot
+          ARMCapacity = entry.ARMCapacity or 0
+          self._samJammerParams[grpname] = self.JammerSAMParamsNaval[entry.Radar]
+          self:T(string.format("Naval match: %s -> %s (range %sm)", typename, tostring(type), tostring(range)))
+          return range, height, type, blind, ARMCapacity
+        end
+      end
+    end
+    -- Unmatched ship: conservative point-defence default (mirrors AAA fallback), no jammer curve.
+    self._samJammerParams[grpname] = nil
+    self:E(self.lid..string.format("*****Could not match naval radar data for %s! Defaulting to POINT.",grpname))
+    return 2000, 2000, MANTIS.SamType.POINT, 50, 0
+  end
+
+  --- [Internal] Classify a naval group PER UNIT. Each hull matching #MANTIS.SamDataNaval
+  -- becomes its own SAM-table record keyed by UNIT name, record[8] = parent group name.
+  -- @param #MANTIS self
+  -- @return #boolean handled True if at least one unit was classified.
+  function MANTIS:_BuildNavalUnitEntries(group, grpname, SAM_Tbl, SAM_Tbl_lg, SAM_Tbl_md, SAM_Tbl_sh, SAM_Tbl_pt, SEAD_Grps)
+    self:T(self.lid.."_BuildNavalUnitEntries for "..tostring(grpname))
+    self._navalSAMs = self._navalSAMs or {}
+    self._samJammerParams = self._samJammerParams or {}
+    local entries = 0
+    local seadadded = false
+    local units = group:GetUnits() or {}
+    for _,_unit in pairs(units) do
+      if _unit and _unit:IsAlive() then
+        local typename = string.lower(_unit:GetTypeName())
+        for _,entry in pairs(self.SamDataNaval) do
+          if typename == string.lower(entry.Radar) then
+            local unitname = _unit:GetName()
+            local type = entry.Type
+            local radiusscale = self.radiusscale[type] or 1
+            local range = entry.Range * 1000 * radiusscale
+            local height = entry.Height * 1000
+            local blind = entry.Blindspot
+            local coord = _unit:GetCoordinate()
+            local record = {unitname, coord, range, height, blind, type, nil, grpname}
+            table.insert( SAM_Tbl, record )
+            if type == MANTIS.SamType.LONG then table.insert( SAM_Tbl_lg, record )
+            elseif type == MANTIS.SamType.MEDIUM then table.insert( SAM_Tbl_md, record )
+            elseif type == MANTIS.SamType.SHORT then table.insert( SAM_Tbl_sh, record )
+            elseif type == MANTIS.SamType.POINT then table.insert( SAM_Tbl_pt, record ) end
+            self._navalSAMs[unitname] = true
+            self._navalUnitParent = self._navalUnitParent or {}
+            self._navalUnitParent[unitname] = grpname
+            self._samJammerParams[unitname] = self.JammerSAMParamsNaval[entry.Radar]
+            if self.SamStateTracker[unitname] == nil then self.SamStateTracker[unitname] = "GREEN" end
+            if self.SEADNaval and not seadadded then
+              table.insert( SEAD_Grps, grpname ) -- SEAD keys on GROUP names; add once
+              seadadded = true
+            end
+            entries = entries + 1
+            self:T(string.format("Naval per-unit match: %s (%s) -> %s",unitname,typename,tostring(type)))
+            break
+          end
+        end
+      end
+    end
+    return entries > 0
+  end
+
+  --- [Internal] Group ALARM-STATE arbiter for per-unit naval control.
+  -- DCS reliably honors only GROUP-level alarm state on ships, so per-unit
+  -- tracking decides intent and this function applies ONE alarm state per ship
+  -- group as the final word of each cycle:
+  --   RED   if any managed unit is RED and not jammed (threat / hit / surface
+  --         wake), or the group is outside EWR radar coverage (autonomous
+  --         search, see SetNavalAutonomy) with at least one unjammed unit;
+  --   GREEN otherwise -- including full jamming suppression, which overrides
+  --         autonomy (a fully jammed group cannot search).
+  -- @param #MANTIS self
+  -- @return #MANTIS self
+  function MANTIS:_ApplyNavalAlarmState()
+    if not (self.NavalPerUnit and self._navalUnitParent) then return self end
+    local wants, seen, unjammed = {}, {}, {}
+    for uname, grpname in pairs(self._navalUnitParent) do
+      local u = UNIT:FindByName(uname)
+      if u and u:IsAlive() then
+        seen[grpname] = true
+        local jammed = self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[uname]
+        if not jammed then unjammed[grpname] = true end
+        if self.SamStateTracker[uname] == "RED" and not jammed then
+          wants[grpname] = true
+        end
+      end
+    end
+    -- coverage sources: every alive EWR group (incl. EWR-role ships and AWACS ships in the EWR set)
+    local sources = {}
+    if self.NavalAutonomy then
+      -- Managed naval SAM groups cannot be their own coverage: when GREEN their
+      -- radars are dark, so a "BOTH"-role group must not self-license through
+      -- its EWR-set membership. Only UNMANAGED emitters count as sources:
+      -- land EWR, AWACS, and EWR-only ships (never state-switched, always
+      -- radiating).
+      local managed = {}
+      for _, gname in pairs(self._navalUnitParent) do managed[gname] = true end
+      self.EWR_Group:ForEachGroupAlive(
+        function(grp)
+          if not managed[grp:GetName()] then
+            local c = grp:GetCoordinate()
+            if c then table.insert(sources, c) end
+          end
+        end)
+    end
+    self._navalAutonomous = self._navalAutonomous or {}
+    self._navalGroupState = self._navalGroupState or {}
+    for grpname,_ in pairs(seen) do
+      local grp = GROUP:FindByName(grpname)
+      if grp and grp:IsAlive() then
+        local red = wants[grpname] or false
+        local autonomous = false
+        if self.NavalAutonomy and unjammed[grpname] and not red then
+          local covered = false
+          local gc = grp:GetCoordinate()
+          if gc then
+            for _,c in ipairs(sources) do
+              if c:Get2DDistance(gc) <= self.NavalAutonomyRadius then
+                covered = true
+                break
+              end
+            end
+          end
+          self:T(self.lid..string.format("%s EWR coverage: %s (%d unmanaged source(s), radius %dkm)",grpname,tostring(covered),#sources,self.NavalAutonomyRadius/1000))
+          if not covered then
+            red = true
+            autonomous = true
+          end
+        end
+        self._navalAutonomous[grpname] = autonomous or nil
+        local newstate = red and "RED" or "GREEN"
+        if self._navalGroupState[grpname] ~= newstate then
+          self._navalGroupState[grpname] = newstate
+          if red then
+            grp:OptionAlarmStateRed()
+            self:T(self.lid..grpname.." naval group -> alarm RED"..(autonomous and " (autonomous: no EWR coverage)" or ""))
+          else
+            grp:OptionAlarmStateGreen()
+            self:T(self.lid..grpname.." naval group -> alarm GREEN")
+          end
+        end
+      end
+    end
+    return self
+  end
+
+
   --- [Internal] Function to get SAM firing data
   -- @param #MANTIS self
   -- @param #string grpname Name of the group
@@ -116657,6 +117274,14 @@ do
   -- @return #number blind "blind" spot
   function MANTIS:_GetSAMRange(grpname)
     self:T(self.lid.."_GetSAMRange for "..tostring(grpname))
+    -- Naval hulls: match by exact unit type name against SamDataNaval and stash the
+    -- jammer curve; bypass the ground name-matching below.
+    do
+      local grp = GROUP:FindByName(grpname)
+      if grp and grp:IsShip() then
+        return self:_GetNavalSAMData(grpname)
+      end
+    end
     local range = self.checkradius
     local height = 3000
     local type = MANTIS.SamType.MEDIUM
@@ -116733,10 +117358,16 @@ do
      local engagerange = self.engagerange -- firing range in % of max
      --cycle through groups and set alarm state etc
      for _i,_group in pairs (SAM_Grps) do
-      if _group:IsGround() and _group:IsAlive() then
+      if (_group:IsGround() or _group:IsShip()) and _group:IsAlive() then
         local group = _group -- Wrapper.Group#GROUP
         -- DONE: add emissions on/off
-        if self.UseEmOnOff then
+        if group:IsShip() and self.NavalPerUnit then
+          -- Per-unit naval control: ships are switched by GROUP ALARM STATE only,
+          -- the one mechanism DCS reliably honors on naval groups. Baseline is
+          -- GREEN; the alarm arbiter (_ApplyNavalAlarmState) raises the group RED
+          -- on threat, hit, surface contact, or loss of EWR coverage.
+          group:OptionAlarmStateGreen()
+        elseif self.UseEmOnOff then
           group:OptionAlarmStateRed()
           group:EnableEmission(false)
           --group:SetAIOff()
@@ -116746,30 +117377,47 @@ do
         group:OptionEngageRange(engagerange)  --default engagement will be 95% of firing range
         local grpname = group:GetName()
         local grpcoord = group:GetCoordinate()
+        if group:IsShip() and self.NavalPerUnit
+          and self:_BuildNavalUnitEntries(group, grpname, SAM_Tbl, SAM_Tbl_lg, SAM_Tbl_md, SAM_Tbl_sh, SAM_Tbl_pt, SEAD_Grps) then
+          self:T(grpname.." handled as per-unit naval group")
+        else
         local grprange,grpheight,type,blind,ARMCapacity  = self:_GetSAMRange(grpname)
         if ARMCapacity and ARMCapacity>0 then _group:SetProperty("ARMCapacity",ARMCapacity) end
         table.insert( SAM_Tbl, {grpname, grpcoord, grprange, grpheight, blind, type, ARMCapacity})
         --table.insert( SEAD_Grps, grpname )
         if type == MANTIS.SamType.LONG then
           table.insert( SAM_Tbl_lg, {grpname, grpcoord, grprange, grpheight, blind, type})
-          table.insert( SEAD_Grps, grpname )
+          if (not group:IsShip()) or self.SEADNaval then
+            table.insert( SEAD_Grps, grpname )
+          end
           self:T("SAM "..grpname.." is type LONG")
         elseif type == MANTIS.SamType.MEDIUM then
          table.insert( SAM_Tbl_md, {grpname, grpcoord, grprange, grpheight, blind, type})
-         table.insert( SEAD_Grps, grpname )
+         if (not group:IsShip()) or self.SEADNaval then
+           table.insert( SEAD_Grps, grpname )
+         end
          self:T("SAM "..grpname.." is type MEDIUM")
         elseif type == MANTIS.SamType.SHORT then
           table.insert( SAM_Tbl_sh, {grpname, grpcoord, grprange, grpheight, blind, type})
-          table.insert( SEAD_Grps, grpname )
+          if (not group:IsShip()) or self.SEADNaval then
+            table.insert( SEAD_Grps, grpname )
+          end
           self:T("SAM "..grpname.." is type SHORT")
         elseif type == MANTIS.SamType.POINT then
           table.insert( SAM_Tbl_pt, {grpname, grpcoord, grprange, grpheight, blind, type})
           self:T("SAM "..grpname.." is type POINT")
-          self.ShoradGroupSet:Add(grpname,group)
-          if not self.autoshorad then
-            table.insert( SEAD_Grps, grpname )
-          end  
+          if group:IsShip() then
+            if self.SEADNaval then
+              table.insert( SEAD_Grps, grpname ) -- naval point-defence -> SEAD only when opted in; never SHORAD scoot
+            end
+          else
+            self.ShoradGroupSet:Add(grpname,group)
+            if not self.autoshorad then
+              table.insert( SEAD_Grps, grpname )
+            end
+          end
         end
+        end -- else: per-unit naval group handled above
         self.SamStateTracker[grpname] = "GREEN"
         end
      end
@@ -116809,16 +117457,21 @@ do
      for _i,_group in pairs (SAM_Grps) do
         local group = _group -- Wrapper.Group#GROUP
         group:OptionEngageRange(engagerange)  --engagement will be 95% of firing range
-        if group:IsGround() and group:IsAlive() then
+        if (group:IsGround() or group:IsShip()) and group:IsAlive() then
           local grpname = group:GetName()
-          local grpcoord = group:GetCoordinate()
+          local grpcoord = group:GetCoord()
+          if grpcoord then grpcoord.Heading = group:GetHeading() or 0 end
+          if group:IsShip() and self.NavalPerUnit
+            and self:_BuildNavalUnitEntries(group, grpname, SAM_Tbl, SAM_Tbl_lg, SAM_Tbl_md, SAM_Tbl_sh, SAM_Tbl_pt, SEAD_Grps) then
+            self:T(grpname.." handled as per-unit naval group")
+          else
           local grprange, grpheight,type,blind, ARMCapacity  = self:_GetSAMRange(grpname)
           -- TODO the below might stop working at some point after some hours, needs testing
           --local radaralive = group:IsSAM()
           if ARMCapacity and ARMCapacity>0 then _group:SetProperty("ARMCapacity",ARMCapacity) end
           local radaralive = true
           table.insert( SAM_Tbl, {grpname, grpcoord, grprange, grpheight, blind, type, ARMCapacity}) -- make the table lighter, as I don't really use the zone here
-          if type ~= MANTIS.SamType.POINT then
+          if type ~= MANTIS.SamType.POINT and ((not group:IsShip()) or self.SEADNaval) then
             table.insert( SEAD_Grps, grpname )
           end
           if type == MANTIS.SamType.LONG and radaralive then
@@ -116833,11 +117486,18 @@ do
           elseif type == MANTIS.SamType.POINT or (not radaralive) then
             table.insert( SAM_Tbl_pt, {grpname, grpcoord, grprange, grpheight, blind, type})
             self:T({grpname,grprange, grpheight})
-            self.ShoradGroupSet:Add(grpname,group)
-            if self.autoshorad then
-              self.Shorad.Groupset = self.ShoradGroupSet
+            if group:IsShip() then
+              if self.SEADNaval then
+                table.insert( SEAD_Grps, grpname ) -- naval point-defence -> SEAD only when opted in; never SHORAD scoot
+              end
+            else
+              self.ShoradGroupSet:Add(grpname,group)
+              if self.autoshorad then
+                self.Shorad.Groupset = self.ShoradGroupSet
+              end
             end
           end
+          end -- else: per-unit naval group handled above
         end
      end
      self.SAM_Table = SAM_Tbl
@@ -117012,10 +117672,11 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
   -- @param #table detset Table of COORDINATES
   -- @param #boolean dlink Using DLINK
   -- @param #number limit of SAM sites to go active on a contact
+  -- @param #table contactSnapshot Contact facts captured once for the current check.
   -- @return #number instatusred
   -- @return #number instatusgreen
   -- @return #number activeshorads
-  function MANTIS:_CheckLoop(samset,detset,dlink,limit)
+  function MANTIS:_CheckLoop(samset,detset,dlink,limit,contactSnapshot)
     self:T(self.lid .. "CheckLoop " .. #detset .. " Coordinates")
     local switchedon = 0
     local instatusred = 0
@@ -117025,6 +117686,7 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
     for _,_data in pairs (samset) do
       local samcoordinate = _data[2]
       local name = _data[1]
+      local navalparent = _data[8] -- per-unit naval entry: name is a UNIT name
       local radius = _data[3]
       local height = _data[4]
       local blind = _data[5] * 1.25 + 1
@@ -117032,19 +117694,44 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       if not shortsam then
         shortsam = (_data[6] == MANTIS.SamType.POINT) and true or false
       end
-      local samgroup = GROUP:FindByName(name)
-      local IsInZone, Distance = self:_CheckObjectInZone(detset, samcoordinate, radius, height, dlink)
-      local suppressed = self.SuppressedGroups[name] or false
+      local samunit = nil
+      local samgroup = nil
+      if navalparent then
+        samunit = UNIT:FindByName(name)
+        samgroup = (samunit and samunit:GetGroup()) or GROUP:FindByName(navalparent)
+      else
+        samgroup = GROUP:FindByName(name)
+      end
+      local samalive = false
+      if navalparent then samalive = (samunit ~= nil) and samunit:IsAlive() or false
+      elseif samgroup then samalive = samgroup:IsAlive() or false end
+      local IsInZone, Distance = self:_CheckObjectInZone(detset, samcoordinate, radius, height, dlink, contactSnapshot)
+      -- Naval surface wake-up: quiet ships activate when enemy surface combatants
+      -- close within the trigger radius. Jamming has precedence and holds them down.
+      if (not IsInZone) and self.NavalSurfaceWakeup and self._navalSAMs and self._navalSAMs[name]
+        and not (self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[name]) then
+        local wakeradius = self.NavalSurfaceWakeupRadius or radius
+        if self:_EnemySurfaceInRange(samcoordinate, wakeradius) then
+          IsInZone = true
+          Distance = wakeradius -- keep distance-based proximity behaviors (smoke, SHORAD link) inert
+        end
+      end
+      local suppressed = self.SuppressedGroups[name] or (navalparent and self.SuppressedGroups[navalparent]) or false
       local activeshorad = false
       if self.Shorad and self.Shorad.ActiveGroups and self.Shorad.ActiveGroups[name] then
        activeshorad = true
       end
       if samgroup:GetProperty("SHORAD_ACTIVE") == true and activeshorad == false then activeshorad = true end
       if IsInZone and (not suppressed) and (not activeshorad) then --check any target in zone and not currently managed by SEAD
-        if samgroup:IsAlive() then
+        if samalive then
           -- switch on SAM
           local switch = false
-          if self.UseEmOnOff and switchedon < limit then
+          if navalparent and switchedon < limit then
+            -- per-unit naval: mark THIS unit RED; the group alarm arbiter
+            -- (_ApplyNavalAlarmState) applies the group switch at cycle end
+            switchedon = switchedon + 1
+            switch = true
+          elseif self.UseEmOnOff and switchedon < limit then
             -- DONE: add emissions on/off
             samgroup:EnableEmission(true)
             switchedon = switchedon + 1
@@ -117059,13 +117746,13 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
             self:__RedState(1,samgroup)
           end
           -- DONE Restrict on Distance
-          if shortsam == true and self.SmokeDecoy == true and Distance < self.DetectAccousticRadius*1.5 then 
+          if shortsam == true and (not navalparent) and self.SmokeDecoy == true and Distance < self.DetectAccousticRadius*1.5 then 
             self:T("Smoking")
             self:_SmokeUnits(samgroup)
           end
           -- link in to SHORAD if available
           -- DONE: Test integration fully
-          if self.ShoradLink and (Distance < self.ShoradActDistance or Distance < blind ) then -- don't give SHORAD position away too early
+          if self.ShoradLink and (not navalparent) and (Distance < self.ShoradActDistance or Distance < blind ) then -- don't give SHORAD position away too early; ships never SHORAD-link
             local Shorad = self.Shorad  --Functional.Shorad#SHORAD
             local radius = self.checkradius
             local ontime = self.ShoradTime
@@ -117080,9 +117767,11 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
           end
         end --end alive
       else
-        if samgroup:IsAlive() and not suppressed and not activeshorad then
+        if samalive and not suppressed and not activeshorad then
           -- switch off SAM
-          if self.UseEmOnOff  then
+          if navalparent then
+            -- per-unit naval: tracker-only; group alarm state applied by the arbiter
+          elseif self.UseEmOnOff  then
             samgroup:EnableEmission(false)
           else
             samgroup:OptionAlarmStateGreen()
@@ -117135,22 +117824,41 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       self:_RefreshSAMTable()
     end
     self.checkcounter = self.checkcounter + 1
+    local contactSnapshot = nil
+    if dlink then
+      contactSnapshot = {}
+      for _,contact in pairs(detection:GetContactTable()) do
+        local grp = contact.group -- Wrapper.Group#GROUP
+        if grp:IsAlive() then
+          local coord = grp:GetCoord()
+          contactSnapshot[#contactSnapshot + 1] = {
+            group = grp,
+            coordinate = coord,
+            height = grp:GetHeight(true),
+            coalition = grp:GetCoalition(),
+            isGround = grp:IsGround(),
+            isShip = grp:IsShip(),
+            isHelicopter = grp:IsHelicopter(),
+          }
+        end
+      end
+    end
     local instatusred = 0
     local instatusgreen = 0
     local activeshorads = 0
     -- switch SAMs on/off if (n)one of the detected groups is inside their reach
     if self.automode then
       local samset = self.SAM_Table_Long -- table of i.1=names, i.2=coordinates, i.3=firing range, i.4=firing height
-      local instatusredl, instatusgreenl, activeshoradsl = self:_CheckLoop(samset,detset,dlink,self.maxlongrange)
+      local instatusredl, instatusgreenl, activeshoradsl = self:_CheckLoop(samset,detset,dlink,self.maxlongrange,contactSnapshot)
       local samset = self.SAM_Table_Medium -- table of i.1=names, i.2=coordinates, i.3=firing range, i.4=firing height
-      local instatusredm, instatusgreenm, activeshoradsm = self:_CheckLoop(samset,detset,dlink,self.maxmidrange)
+      local instatusredm, instatusgreenm, activeshoradsm = self:_CheckLoop(samset,detset,dlink,self.maxmidrange,contactSnapshot)
       local samset = self.SAM_Table_Short -- table of i.1=names, i.2=coordinates, i.3=firing range, i.4=firing height
-      local instatusreds, instatusgreens, activeshoradss = self:_CheckLoop(samset,detset,dlink,self.maxshortrange)
+      local instatusreds, instatusgreens, activeshoradss = self:_CheckLoop(samset,detset,dlink,self.maxshortrange,contactSnapshot)
       local samset = self.SAM_Table_PointDef -- table of i.1=names, i.2=coordinates, i.3=firing range, i.4=firing height
-      local instatusred, instatusgreen, activeshorads = self:_CheckLoop(samset,detset,dlink,self.maxpointdefrange)
+      local instatusred, instatusgreen, activeshorads = self:_CheckLoop(samset,detset,dlink,self.maxpointdefrange,contactSnapshot)
     else
       local samset = self:_GetSAMTable() -- table of i.1=names, i.2=coordinates, i.3=firing range, i.4=firing height
-      local instatusred, instatusgreen, activeshorads = self:_CheckLoop(samset,detset,dlink,self.maxclassic)
+      local instatusred, instatusgreen, activeshorads = self:_CheckLoop(samset,detset,dlink,self.maxclassic,contactSnapshot)
     end
     
     local function GetReport()
@@ -117181,6 +117889,9 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       return statusreport
     end
     
+    -- apply naval group alarm states as the final word of this cycle
+    self:_ApplyNavalAlarmState()
+
     if self.debug or self.verbose then
       local statusreport = GetReport()
       MESSAGE:New(statusreport:Text(),10):ToAll():ToLog()
@@ -117216,9 +117927,22 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
         local samset = self:_GetSAMTable() -- table of i.1=names, i.2=coordinates
         for _,_data in pairs (samset) do
           local name = _data[1]
-          local samgroup = GROUP:FindByName(name)
-          if samgroup:IsAlive() then
-            if self.UseEmOnOff then
+          local navalparent = _data[8] -- per-unit naval entry: name is a UNIT name
+          local samunit = nil
+          local samgroup = nil
+          if navalparent then
+            samunit = UNIT:FindByName(name)
+            samgroup = (samunit and samunit:GetGroup()) or GROUP:FindByName(navalparent)
+          else
+            samgroup = GROUP:FindByName(name)
+          end
+          local samalive = false
+          if navalparent then samalive = (samunit ~= nil) and samunit:IsAlive() or false
+          elseif samgroup then samalive = samgroup:IsAlive() or false end
+          if samalive then
+            if navalparent then
+              self.SamStateTracker[name] = "RED" -- arbiter raises the group
+            elseif self.UseEmOnOff then
               -- DONE: add emissions on/off
               --samgroup:SetAIOn()
               samgroup:EnableEmission(true)
@@ -117847,7 +118571,7 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
       end
     end
     for samName, samCoord in pairs(allSAMs) do
-      local params = self:_ResolveJammerParams(samName)
+      local params = (self._samJammerParams and self._samJammerParams[samName]) or self:_ResolveJammerParams(samName)
       if params then
         local survival = 1.0
         for _, jammer in ipairs(self._jammerSnapshot) do
@@ -118114,15 +118838,28 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
   end
 
   --- [Internal] Override: _CheckLoop with jammer suppression.
-  function MANTIS:_CheckLoop(samset, detset, dlink, limit)
-    local r, g, s = self:_CheckLoopOriginal(samset, detset, dlink, limit)
+  function MANTIS:_CheckLoop(samset, detset, dlink, limit, contactSnapshot)
+    local r, g, s = self:_CheckLoopOriginal(samset, detset, dlink, limit, contactSnapshot)
     if self._jammerEnabled and self._jammedSAMs then
       for _, _data in pairs(samset) do
         local name = _data[1]
+        local navalparent = _data[8] -- per-unit naval entry: name is a UNIT name
         if self._jammedSAMs[name] and self.SamStateTracker[name] == "RED" then
-          local samgroup = GROUP:FindByName(name)
-          if samgroup and samgroup:IsAlive() then
-            if self.UseEmOnOff then
+          local samunit = nil
+          local samgroup = nil
+          if navalparent then
+            samunit = UNIT:FindByName(name)
+            samgroup = (samunit and samunit:GetGroup()) or GROUP:FindByName(navalparent)
+          else
+            samgroup = GROUP:FindByName(name)
+          end
+          local samalive = false
+          if navalparent then samalive = (samunit ~= nil) and samunit:IsAlive() or false
+          elseif samgroup then samalive = samgroup:IsAlive() or false end
+          if samalive then
+            if navalparent then
+              -- per-unit naval: tracker set GREEN below; arbiter darkens the group if no unit remains RED
+            elseif self.UseEmOnOff then
               samgroup:EnableEmission(false)
             else
               samgroup:OptionAlarmStateGreen()
@@ -118156,6 +118893,214 @@ function MANTIS:SeadAllowSuppression(targetGroup, targetName, attackerGroup, wea
   end
 
 end
+
+-- ===================================================================================================
+-- MANTIS Naval Extension: NAVYGROUP integration
+-- Lets Ops.NavyGroup#NAVYGROUP objects (cruise control, missions, carrier ops) serve as
+-- MANTIS-managed SAM shooters and/or EWR pickets:
+--   mymantis:AddNavyGroup(navygroup, "SAM")     -- managed shooter (or "EWR" = radiating picket)
+--   navygroup:SetMANTIS(mymantis, "SAM")        -- convenience, same effect
+-- The ship group is added to the running set(s) regardless of name prefix; classification
+-- and jamming resolve by hull type name as usual. MANTIS takes over emission/alarm
+-- switching: the NAVYGROUP's default Emission/Alarmstate are neutralized so its
+-- spawn-time option reset does not fight MANTIS.
+-- ===================================================================================================
+do
+  -- Guard MOOSE's ground relocation against ships. SEAD suppression (and any other
+  -- caller) invokes RelocateGroundRandomInRadius on suppressed SAM groups without a
+  -- category check; on a ship this clobbers the sailing route with a ground-formation
+  -- hop (and with onland=true can target a LAND point near a coast). Radar-off
+  -- evasion still applies to ships; only the ground move becomes a no-op.
+  if CONTROLLABLE and CONTROLLABLE.RelocateGroundRandomInRadius and not CONTROLLABLE._MANTISNavalRelocateGuard then
+    CONTROLLABLE._MANTISNavalRelocateGuard = true
+    local _origRelocate = CONTROLLABLE.RelocateGroundRandomInRadius
+    function CONTROLLABLE:RelocateGroundRandomInRadius( speed, radius, onroad, shortcut, formation, onland )
+      if self.IsShip and self:IsShip() then
+        return self
+      end
+      return _origRelocate( self, speed, radius, onroad, shortcut, formation, onland )
+    end
+  end
+
+  --- [Internal] Check if any enemy surface combatant is within radius of a coordinate.
+  -- Builds a live enemy-ship SET_GROUP lazily on first use.
+  -- @param #MANTIS self
+  -- @param Core.Point#COORDINATE coord Ship position.
+  -- @param #number radius Trigger radius in meters.
+  -- @return #boolean found
+  function MANTIS:_EnemySurfaceInRange(coord, radius)
+    if self.NavalThreatSet == nil then
+      local own = string.lower(self.Coalition or "")
+      local enemy = (own == "red" and "blue") or (own == "blue" and "red") or nil
+      if not enemy then
+        self:E(self.lid.."NavalSurfaceWakeup: cannot derive enemy coalition from "..tostring(self.Coalition).." - disabling.")
+        self.NavalSurfaceWakeup = false
+        self.NavalThreatSet = false
+        return false
+      end
+      self.NavalThreatSet = SET_GROUP:New():FilterCoalitions(enemy):FilterCategoryShip():FilterStart()
+    end
+    if self.NavalThreatSet == false or not coord then return false end
+    local found = false
+    self.NavalThreatSet:ForEachGroupAlive(
+      function(grp)
+        if not found then
+          local gc = grp:GetCoordinate()
+          if gc and gc:Get2DDistance(coord) <= radius then found = true end
+        end
+      end)
+    return found
+  end
+
+  --- Configure naval AUTONOMY outside EWR coverage. Default: ENABLED, 150km.
+  -- Ships mirror the ground-SAM umbrella concept: a ship group within CoverageKM
+  -- of any alive EWR group (including EWR-role ships or AWACS ships in the EWR
+  -- set) is managed normally -- alarm GREEN until MANTIS detects a threat inside
+  -- one of its units' envelopes. A group OUTSIDE coverage goes alarm RED and
+  -- searches/engages autonomously on its own radars until coverage is restored.
+  -- Full jamming suppression overrides autonomy and forces the group GREEN.
+  -- @param #MANTIS self
+  -- @param #boolean onoff Enable (true) or disable (false).
+  -- @param #number coveragekm (Optional) Coverage radius in KILOMETERS around each alive EWR (default 150).
+  -- @return #MANTIS self
+  function MANTIS:SetNavalAutonomy(onoff, coveragekm)
+    self.NavalAutonomy = onoff and true or false
+    if coveragekm then self.NavalAutonomyRadius = coveragekm * 1000 end
+    return self
+  end
+
+  --- Enable/disable PER-UNIT classification and switching for naval groups. Default: ENABLED.
+  -- Mixed-hull ship groups (e.g. a carrier escorted by destroyers) get one SAM entry PER
+  -- SHIP -- each hull with its own type, range, state and jamming curve, switched via
+  -- UNIT:EnableEmission while the group stays alarm RED (weapons hot). Disable to revert
+  -- to legacy group-level naval handling (first matched hull defines the whole group).
+  -- @param #MANTIS self
+  -- @param #boolean onoff Enable (true) or disable (false).
+  -- @return #MANTIS self
+  function MANTIS:SetNavalPerUnit(onoff)
+    self.NavalPerUnit = onoff and true or false
+    return self
+  end
+
+  --- Enable/disable the naval surface wake-up and optionally set a fixed trigger radius.
+  -- Default: ENABLED, radius = each ship's own engagement radius from SamDataNaval.
+  -- When enabled, a MANTIS-quiet ship goes active (RED / emissions on) whenever an
+  -- enemy surface combatant closes within the trigger radius, so anti-ship
+  -- engagements are not blocked by EMCON. Jamming still wins: a jammed ship stays
+  -- suppressed. Ships only -- ground SAM behavior is unchanged.
+  -- @param #MANTIS self
+  -- @param #boolean onoff Enable (true) or disable (false).
+  -- @param #number radiuskm (Optional) Fixed trigger radius in KILOMETERS for all ships.
+  -- @return #MANTIS self
+  function MANTIS:SetNavalSurfaceWakeup(onoff, radiuskm)
+    self.NavalSurfaceWakeup = onoff and true or false
+    self.NavalSurfaceWakeupRadius = radiuskm and radiuskm * 1000 or nil
+    return self
+  end
+
+  --- Include or exclude naval SAMs from SEAD emission-shutdown evasion. Default: EXCLUDED.
+  -- Surface combatants engage inbound ARMs/ASMs with hard-kill defenses (SAMs, CIWS);
+  -- going emissions-dark would disable exactly those defenses. Ground SAM behavior is
+  -- unchanged. Takes effect at the next SAM table refresh (every 3rd detection cycle).
+  -- @param #MANTIS self
+  -- @param #boolean onoff If true, ships use SEAD EMCON evasion like ground SAMs.
+  -- @return #MANTIS self
+  function MANTIS:SetNavalSEAD(onoff)
+    self.SEADNaval = onoff and true or false
+    -- SEAD:UpdateSet() only ever ADDS names. When switching OFF mid-mission we
+    -- must actively remove ship groups already registered with the SEAD
+    -- instance, or they would keep evading until mission end.
+    if (not self.SEADNaval) and self.mysead and self.mysead.SEADGroupPrefixes then
+      for name,_ in pairs(self.mysead.SEADGroupPrefixes) do
+        local grp = GROUP:FindByName(name)
+        if grp and grp:IsShip() then
+          self.mysead.SEADGroupPrefixes[name] = nil
+        end
+      end
+    end
+    return self
+  end
+
+  --- Add a NAVYGROUP to this MANTIS as SAM shooter and/or EWR picket.
+  -- IMPORTANT: MANTIS does not change ROE. NAVYGROUP defaults to Return Fire --
+  -- set NavyGroup:SwitchROE(ENUMS.ROE.WeaponFree) in your mission if the ship
+  -- should engage detected targets rather than only return fire.
+  -- @param #MANTIS self
+  -- @param Ops.NavyGroup#NAVYGROUP NavyGroup The navy group to add.
+  -- @param #string Role "SAM" (default) = managed shooter, or "EWR" = unmanaged, always-radiating sensor/picket (coverage source). "BOTH" is deprecated and treated as SAM.
+  -- @return #MANTIS self
+  function MANTIS:AddNavyGroup(NavyGroup, Role)
+    local role = string.upper(Role or "SAM")
+    if role == "BOTH" then
+      -- Deprecated: a MANAGED shooter cannot double as a sensor -- its radars
+      -- are dark whenever MANTIS holds it GREEN, so EWR membership senses
+      -- nothing and only pollutes EWR-alive counting and the advanced-mode
+      -- network ratio. Use a SEPARATE ship group with Role="EWR" as a
+      -- radiating picket instead.
+      self:E(self.lid.."AddNavyGroup: Role BOTH is deprecated -- treating as SAM. Use a separate EWR-role group as a radiating picket.")
+      role = "SAM"
+    end
+    if not (NavyGroup and NavyGroup.ClassName and string.find(NavyGroup.ClassName,"NAVYGROUP",1,true)) then
+      self:E(self.lid.."AddNavyGroup: object passed is not a NAVYGROUP!")
+      return self
+    end
+    local grp = NavyGroup:GetGroup()
+    if not (grp and grp:IsAlive()) then
+      self:E(self.lid.."AddNavyGroup: NAVYGROUP has no alive GROUP (late-activated? Call after activation).")
+      return self
+    end
+    -- Hand emission/alarm control to MANTIS. NAVYGROUP re-applies its default
+    -- Alarmstate/Emission at (re)spawn, which would fight MANTIS switching:
+    -- set defaults to Emission ON / Alarmstate AUTO so the reset is neutral.
+    if NavyGroup.SetDefaultEmission   then NavyGroup:SetDefaultEmission(true) end
+    if NavyGroup.SetDefaultAlarmstate then NavyGroup:SetDefaultAlarmstate(0)  end -- 0 = Auto
+    -- NOTE: MANTIS deliberately does NOT touch ROE -- that is the mission
+    -- designer's call. Be aware OPSGROUP's default ROE is Return Fire: a
+    -- MANTIS-managed NAVYGROUP will radiate when RED but hold its weapons
+    -- unless the mission sets e.g. NavyGroup:SwitchROE(ENUMS.ROE.WeaponFree).
+    self._navyGroups = self._navyGroups or {}
+    self._navyGroups[grp:GetName()] = NavyGroup
+    if role == "SAM" then
+      self.SAM_Group:AddGroup(grp)
+      -- If MANTIS is already up, classify the new ship immediately; otherwise
+      -- SetSAMStartState will pick it up at Start.
+      if self.SAM_Table then
+        self:_RefreshSAMTable()
+      end
+    elseif role == "EWR" then
+      self.EWR_Group:AddGroup(grp)
+      if self.Adv_EWR_Group then
+        self.Adv_EWR_Group:AddGroup(grp)
+      end
+    else
+      self:E(self.lid.."AddNavyGroup: unknown Role "..tostring(Role).." - use SAM or EWR.")
+    end
+    self:I(self.lid..string.format("Added NAVYGROUP %s as %s",grp:GetName(),role))
+    return self
+  end
+
+  --- [Internal, static] Inject NAVYGROUP:SetMANTIS. Idempotent; safe if NAVYGROUP absent.
+  function MANTIS._InjectNavyGroupAPI()
+    if NAVYGROUP and not NAVYGROUP.SetMANTIS then
+      --- Register this NAVYGROUP with a MANTIS instance as SAM shooter and/or EWR picket.
+      -- @param Ops.NavyGroup#NAVYGROUP self
+      -- @param Functional.Mantis#MANTIS Mantis The MANTIS instance.
+      -- @param #string Role "SAM" (default) = managed shooter, or "EWR" = unmanaged, always-radiating sensor/picket (coverage source). "BOTH" is deprecated and treated as SAM.
+      -- @return Ops.NavyGroup#NAVYGROUP self
+      function NAVYGROUP:SetMANTIS(Mantis, Role)
+        if Mantis and Mantis.AddNavyGroup then
+          Mantis:AddNavyGroup(self, Role)
+        else
+          self:E(self.lid.."SetMANTIS: no valid MANTIS instance passed!")
+        end
+        return self
+      end
+    end
+  end
+  -- Try immediately in case NAVYGROUP is already loaded (also runs from MANTIS:New).
+  MANTIS._InjectNavyGroupAPI()
+end
+
 -----------------------------------------------------------------------
 -- MANTIS end
 -----------------------------------------------------------------------
@@ -131535,7 +132480,7 @@ end
 -- **Supported Aircraft:**
 --
 --    * [F/A-18C Hornet Lot 20](https://forums.eagle.ru/forumdisplay.php?f=557) (Player & AI)
---    * [F-14A/B/A Early Tomcat](https://forums.eagle.ru/forumdisplay.php?f=395) (Player & AI)
+--    * [F-14A/B/B(U)/A Early Tomcat](https://forums.eagle.ru/forumdisplay.php?f=395) (Player & AI)
 --    * [A-4E Skyhawk Community Mod](https://forums.eagle.ru/showthread.php?t=224989) (Player & AI)
 --    * [AV-8B N/A Harrier](https://forums.eagle.ru/forumdisplay.php?f=555) (Player & AI)
 --    * [T-45C Goshawk](https://forum.dcs.world/topic/203816-vnao-t-45-goshawk/) (VNAO mod) (Player & AI)
@@ -132766,6 +133711,7 @@ AIRBOSS = {
 -- @field #string A4EC A-4E Community mod.
 -- @field #string HORNET F/A-18C Lot 20 Hornet by Eagle Dynamics.
 -- @field #string F14A F-14A by Heatblur.
+-- @field #string F14BU F-14BU by Heatblur. 
 -- @field #string F14A_Early F-14A-135-GR-Early by Heatblur.
 -- @field #string F14B F-14B by Heatblur.
 -- @field #string F14A_AI F-14A Tomcat (AI).
@@ -132787,6 +133733,7 @@ AIRBOSS.AircraftCarrier={
   F14A="F-14A-135-GR",
   F14A_Early="F-14A-135-GR-Early",
   F14B="F-14B",
+  F14BU="F-14BU",
   F14A_AI="F-14A",
   FA18C="F/A-18C",
   T45C="T-45",
@@ -136998,7 +137945,7 @@ function AIRBOSS:_GetAircraftAoA( playerData )
   local goshawk = playerData.actype == AIRBOSS.AircraftCarrier.T45C
   local skyhawk = playerData.actype == AIRBOSS.AircraftCarrier.A4EC
   local harrier = playerData.actype == AIRBOSS.AircraftCarrier.AV8B
-  local tomcat  = playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B or playerData.actype == AIRBOSS.AircraftCarrier.F14A_Early
+  local tomcat  = self:_IsTomcat( playerData.actype )
   local corsair = playerData.actype == AIRBOSS.AircraftCarrier.CORSAIR or playerData.actype == AIRBOSS.AircraftCarrier.CORSAIR_CW
 
   -- Table with AoA values.
@@ -137061,6 +138008,18 @@ function AIRBOSS:_GetAircraftAoA( playerData )
     aoa.OnSpeedMin =  9.5
     aoa.Fast       =  8.0
     aoa.FAST       =  7.5
+  else
+    -- Unknown carrier-capable type: _IsCarrierAircraft() is enum-driven, so a type can
+    -- reach here with no AoA branch. Returning an empty table nil-propagates into
+    -- _GetAircraftParameters() and the AoA waveoff check. Fall back to Hornet values.
+    self:E( self.lid .. string.format( "ERROR: No AoA parameters defined for aircraft type %s! Falling back to F/A-18C values.", tostring( playerData.actype ) ) )
+    aoa.SLOW       = 9.8
+    aoa.Slow       = 9.3
+    aoa.OnSpeedMax = 8.8
+    aoa.OnSpeed    = 8.1
+    aoa.OnSpeedMin = 7.4
+    aoa.Fast       = 6.9
+    aoa.FAST       = 6.3
   end
 
   return aoa
@@ -137077,7 +138036,7 @@ function AIRBOSS:_AoAUnit2Deg( playerData, aoaunits )
   local degrees = aoaunits
 
   -- Check aircraft type of player.
-  if playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B or playerData.actype == AIRBOSS.AircraftCarrier.F14A_Early then
+  if self:_IsTomcat( playerData.actype ) then
 
     -------------
     -- F-14A/B --
@@ -137120,7 +138079,7 @@ function AIRBOSS:_AoADeg2Units( playerData, degrees )
   local aoaunits = degrees
 
   -- Check aircraft type of player.
-  if playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B or playerData.actype == AIRBOSS.AircraftCarrier.F14A_Early then
+  if self:_IsTomcat( playerData.actype ) then
 
     -------------
     -- F-14A/B --
@@ -137170,7 +138129,7 @@ function AIRBOSS:_GetAircraftParameters( playerData, step )
                  or playerData.actype == AIRBOSS.AircraftCarrier.RHINOF
                  or playerData.actype == AIRBOSS.AircraftCarrier.GROWLER
   local skyhawk = playerData.actype == AIRBOSS.AircraftCarrier.A4EC
-  local tomcat = playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B
+  local tomcat = self:_IsTomcat( playerData.actype )
   local harrier = playerData.actype == AIRBOSS.AircraftCarrier.AV8B
   local goshawk = playerData.actype == AIRBOSS.AircraftCarrier.T45C
   local corsair = playerData.actype == AIRBOSS.AircraftCarrier.CORSAIR or playerData.actype == AIRBOSS.AircraftCarrier.CORSAIR_CW
@@ -138103,9 +139062,7 @@ function AIRBOSS:_RefuelAI( flight )
   local refuelac=false
   local actype=flight.group:GetTypeName()
   if actype==AIRBOSS.AircraftCarrier.AV8B      or
-     actype==AIRBOSS.AircraftCarrier.F14A      or
-     actype==AIRBOSS.AircraftCarrier.F14B      or
-     actype==AIRBOSS.AircraftCarrier.F14A_AI   or
+     self:_IsTomcat( actype, true )            or
      actype==AIRBOSS.AircraftCarrier.HORNET    or
      actype==AIRBOSS.AircraftCarrier.RHINOE    or
      actype==AIRBOSS.AircraftCarrier.RHINOF    or
@@ -138215,7 +139172,7 @@ function AIRBOSS:_LandAI( flight )
     Speed = UTILS.KnotsToKmph( 200 )
   elseif flight.actype == AIRBOSS.AircraftCarrier.E2D or flight.actype == AIRBOSS.AircraftCarrier.C2A then
     Speed = UTILS.KnotsToKmph( 150 )
-  elseif flight.actype == AIRBOSS.AircraftCarrier.F14A_AI or flight.actype == AIRBOSS.AircraftCarrier.F14A or flight.actype == AIRBOSS.AircraftCarrier.F14B then
+  elseif self:_IsTomcat( flight.actype, true ) then
     Speed = UTILS.KnotsToKmph( 175 )
   elseif flight.actype == AIRBOSS.AircraftCarrier.S3B or flight.actype == AIRBOSS.AircraftCarrier.S3BTANKER then
     Speed = UTILS.KnotsToKmph( 140 )
@@ -139690,7 +140647,7 @@ function AIRBOSS:_CheckPlayerStatus()
                     or playerData.actype == AIRBOSS.AircraftCarrier.RHINOE
                     or playerData.actype == AIRBOSS.AircraftCarrier.RHINOF
                     or playerData.actype == AIRBOSS.AircraftCarrier.GROWLER
-          local tomcat  = playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B
+          local tomcat  = self:_IsTomcat( playerData.actype )
 
           -- VNAO Edit - Added wrapped up call to LSO grading Hornet
           if playerData.step==AIRBOSS.PatternStep.WAKE and hornet then-- VNAO Edit - Added
@@ -140945,7 +141902,7 @@ function AIRBOSS:_Initial( playerData )
 
       -- Hook down for students.
       if playerData.difficulty == AIRBOSS.Difficulty.EASY and playerData.actype ~= AIRBOSS.AircraftCarrier.AV8B then
-        if playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B then
+        if self:_IsTomcat( playerData.actype ) then
           hint = hint .. " - Hook down, SAS on, Wing Sweep 68°!"
         else
           hint = hint .. " - Hook down!"
@@ -141110,8 +142067,7 @@ function AIRBOSS:_DirtyUp( playerData )
 
     -- Radio call "Say/Fly needles". Delayed by 10/15 seconds.
     if   playerData.actype == AIRBOSS.AircraftCarrier.HORNET
-      or playerData.actype == AIRBOSS.AircraftCarrier.F14A
-      or playerData.actype == AIRBOSS.AircraftCarrier.F14B
+      or self:_IsTomcat( playerData.actype )
       or playerData.actype == AIRBOSS.AircraftCarrier.RHINOE
       or playerData.actype == AIRBOSS.AircraftCarrier.RHINOF
       or playerData.actype == AIRBOSS.AircraftCarrier.GROWLER
@@ -141889,7 +142845,7 @@ function AIRBOSS:_Groove( playerData )
 
     -- Wait until player passed the 0.75 NM distance.
     local _advice = true
-    if playerData.TIG0 == nil and playerData.difficulty ~= AIRBOSS.Difficulty.EASY then -- rho>RXX
+    if (playerData.TIG0 == nil or playerData.TIG0 == 0) and playerData.difficulty ~= AIRBOSS.Difficulty.EASY then -- rho>RXX
       _advice = false
     end
 
@@ -142305,7 +143261,7 @@ function AIRBOSS:_Trapped( playerData )
       or playerData.actype == AIRBOSS.AircraftCarrier.RHINOF
       or playerData.actype == AIRBOSS.AircraftCarrier.GROWLER then
       dcorr = 100
-    elseif playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B then
+    elseif self:_IsTomcat( playerData.actype ) then
       -- TODO: Check Tomcat.
       dcorr = 100
     elseif playerData.actype == AIRBOSS.AircraftCarrier.A4EC then
@@ -143118,7 +144074,7 @@ function AIRBOSS:_AttitudeMonitor( playerData )
 
   local unitClient = Unit.getByName(unit:GetName()) -- VNAO Edit - Added
   local hornet = playerData.actype == AIRBOSS.AircraftCarrier.HORNET -- VNAO Edit - Added
-  local tomcat = playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B or playerData.actype == AIRBOSS.AircraftCarrier.F14A_Early -- VNAO Edit - Added
+  local tomcat = self:_IsTomcat( playerData.actype ) -- VNAO Edit - Added
 
   if hornet then -- VNAO Edit - Added
     local nozzlePosL = 0  -- VNAO Edit - Added
@@ -143351,7 +144307,7 @@ function AIRBOSS:_NozzleArgumentLeft( unit ) -- VNAO Edit - Added
     else -- VNAO Edit - Added
       nozzlePosL = 0 -- VNAO Edit - Added
     end -- VNAO Edit - Added
-  elseif typeName == "F-14A-135-GR" or typeName == "F-14B" or typeName == "F-14A-135-GR-Early" then -- VNAO Edit - Added
+  elseif self:_IsTomcat( typeName ) then -- VNAO Edit - Added
     nozzlePosL = unitClient:getDrawArgumentValue(434) -- VNAO Edit - Added
   end -- VNAO Edit - Added
   
@@ -143376,7 +144332,7 @@ function AIRBOSS:_NozzleArgumentRight( unit ) -- VNAO Edit - Added
     else -- VNAO Edit - Added
       nozzlePosR = 0 -- VNAO Edit - Added
     end -- VNAO Edit - Added
-  elseif typeName == "F-14A-135-GR" or typeName == "F-14B" or typeName == "F-14A-135-GR-Early" then -- VNAO Edit - Added
+  elseif self:_IsTomcat( typeName ) then -- VNAO Edit - Added
     nozzlePosR = unitClient:getDrawArgumentValue(433) -- VNAO Edit - Added
   end -- VNAO Edit - Added
   return nozzlePosR -- VNAO Edit - Added
@@ -144639,7 +145595,7 @@ function AIRBOSS:_Flightdata2Text( playerData, groovestep )
 
 
     local hornet =   playerData.actype == AIRBOSS.AircraftCarrier.HORNET-- VNAO Edit - Added 
-    local tomcat = playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B-- VNAO Edit - Added 
+    local tomcat = self:_IsTomcat( playerData.actype )-- VNAO Edit - Added 
 
     if hornet then-- VNAO Edit - Added 
       if Lnoz > 0.6 and Rnoz > 0.6 then -- VNAO Edit - Added check them both, it's possilbe there could be a single engine landing and one is in idle perhaps?
@@ -145155,7 +146111,7 @@ function AIRBOSS:_StepHint( playerData, step )
 
     -- Late break.
     if step == AIRBOSS.PatternStep.LATEBREAK then
-      if playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B then
+      if self:_IsTomcat( playerData.actype ) then
         hint = hint .. "\nWing Sweep 20°, Gear DOWN < 280 KIAS."
       end
     end
@@ -145164,7 +146120,7 @@ function AIRBOSS:_StepHint( playerData, step )
     if step == AIRBOSS.PatternStep.ABEAM then
       if playerData.actype == AIRBOSS.AircraftCarrier.AV8B then
         hint = hint .. "\nNozzles 50°-60°. Antiskid OFF. Lights OFF."
-      elseif playerData.actype == AIRBOSS.AircraftCarrier.F14A or playerData.actype == AIRBOSS.AircraftCarrier.F14B then
+      elseif self:_IsTomcat( playerData.actype ) then
         hint = hint .. "\nSlats/Flaps EXTENDED < 225 KIAS. DLC SELECTED. Auto Throttle IF DESIRED."
       else
         hint = hint .. "\nDirty up! Gear DOWN, flaps DOWN. Check hook down."
@@ -146599,7 +147555,7 @@ function AIRBOSS:_GetACNickname( actype )
     nickname = "Hawkeye"
   elseif actype == AIRBOSS.AircraftCarrier.C2A then
     nickname = "Greyhound"
-  elseif actype == AIRBOSS.AircraftCarrier.F14A_AI or actype == AIRBOSS.AircraftCarrier.F14A or actype == AIRBOSS.AircraftCarrier.F14B or actype == AIRBOSS.AircraftCarrier.F14A_Early then
+  elseif self:_IsTomcat( actype, true ) then
     nickname = "Tomcat"
   elseif actype == AIRBOSS.AircraftCarrier.FA18C or actype == AIRBOSS.AircraftCarrier.HORNET then
     nickname = "Hornet"
@@ -146734,6 +147690,29 @@ function AIRBOSS:_GetGoodBadScore( playerData )
   end
 
   return lowscore, badscore
+end
+
+--- Check whether an aircraft type name is any F-14 Tomcat variant.
+-- Central predicate so that adding a new Tomcat variant only requires editing
+-- this function and the AIRBOSS.AircraftCarrier enum.
+-- @param #AIRBOSS self
+-- @param #string actype Aircraft type name, e.g. from `unit:GetTypeName()` or `playerData.actype`.
+-- @param #boolean IncludeAI If true, also match the AI-only F-14A (AIRBOSS.AircraftCarrier.F14A_AI).
+-- @return #boolean If true, actype is an F-14 variant.
+function AIRBOSS:_IsTomcat( actype, IncludeAI )
+
+  if actype == AIRBOSS.AircraftCarrier.F14A
+    or actype == AIRBOSS.AircraftCarrier.F14B
+    or actype == AIRBOSS.AircraftCarrier.F14BU
+    or actype == AIRBOSS.AircraftCarrier.F14A_Early then
+    return true
+  end
+
+  if IncludeAI and actype == AIRBOSS.AircraftCarrier.F14A_AI then
+    return true
+  end
+
+  return false
 end
 
 --- Check if aircraft is capable of landing on this aircraft carrier.
@@ -150884,7 +151863,8 @@ function AIRBOSS:onafterLSOGrade(From, Event, To, playerData, grade)
     self.funkmanSocket:SendTable(result)
   end
 
-end--- **Ops** - Recovery tanker for carrier operations.
+end
+--- **Ops** - Recovery tanker for carrier operations.
 -- 
 -- Tanker aircraft flying a racetrack pattern overhead an aircraft carrier.
 --
@@ -157529,6 +158509,7 @@ do
 --          my_ctld.placeCratesAhead = false -- place crates straight ahead of the helicopter, in a random way. If true, crates are more neatly sorted.
 --          my_ctld.nobuildinloadzones = true -- forbid players to build stuff in LOAD zones if set to `true`
 --          my_ctld.movecratesbeforebuild = true -- crates must be moved once before they can be build. Set to false for direct builds.
+--          my_ctld.useaircraftheadingforbuilds = false -- Matches the heading of the spawned groups from a crate build to the aircraft heading when starting the build. Default is false for template heading.
 --          my_ctld.surfacetypes = {land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER} -- surfaces for loading back objects.
 --          my_ctld.nobuildmenu = false -- if set to true effectively enforces to have engineers build/repair stuff for you.
 --          my_ctld.RadioSound = "beacon.ogg" -- -- this sound will be hearable if you tune in the beacon frequency. Add the sound file to your miz.
@@ -159383,7 +160364,7 @@ function CTLD:_C130DcAutoRegisterEntry(SetId, Cargo)
 
   local pos = Cargo:GetPositionable()
   local pname = pos and pos.GetName and pos:GetName() or nil
-  local pcoord = pos and pos.GetCoordinate and pos:GetCoordinate() or nil
+  local pcoord = pos and pos.GetCoord and pos:GetCoord() or nil
   local entryId = string.format("%s#%d", SetId, #setData.entries + 1)
   local entry = {
     id = entryId,
@@ -160094,16 +161075,14 @@ function CTLD:_EventHandler(EventData)
         loaded = self.Loaded_Cargo[unitname] -- #CTLD.LoadedCargo
         loaded.Cratesloaded = loaded.Cratesloaded - 1
         if loaded.Cratesloaded < 0  then loaded.Cratesloaded = 0 end
-        -- TODO zap cargo from list
         local Loaded = {}
         for _,_item in pairs (loaded.Cargo or {}) do
           self:T(self.lid.."UNLOAD checking: ".._item:GetName())
           self:T(self.lid.."UNLOAD state: ".. tostring(_item:WasDropped()))
-          if _item and _item:GetType() == CTLD_CARGO.Enum.GCLOADABLE and event.IniDynamicCargoName and event.IniDynamicCargoName ~= _item:GetName() and not _item:WasDropped() then
+          local unloadedItem = _item and _item:GetType() == CTLD_CARGO.Enum.GCLOADABLE and event.IniDynamicCargoName and event.IniDynamicCargoName == _item:GetName()
+          if not unloadedItem then
             table.insert(Loaded,_item)
-          else
-            table.insert(Loaded,_item)
-          end 
+          end
         end
         loaded.Cargo = nil
         loaded.Cargo = Loaded
@@ -160471,14 +161450,14 @@ end
 function CTLD:_FindRepairNearby(Group, Unit, Repairtype)
     self:T(self.lid .. " _FindRepairNearby")
     --self:T({Group:GetName(),Unit:GetName(),Repairtype})
-    local unitcoord = Unit:GetCoordinate()
+    local unitcoord = Unit:GetCoord()
     
     -- find nearest group of deployed groups
     local nearestGroup = nil
     local nearestGroupIndex = -1
     local nearestDistance = 10000
     for k,v in pairs(self.DroppedTroops) do
-      local distance = self:_GetDistance(v:GetCoordinate(),unitcoord)
+      local distance = self:_GetDistance(v:GetCoord(),unitcoord)
       local unit = v:GetUnit(1) -- Wrapper.Unit#UNIT
       local desc = unit:GetDesc() or nil
       if distance < nearestDistance and distance ~= -1 and not desc.attributes.Infantry then
@@ -160623,7 +161602,7 @@ end
     local capabilities = self:_GetUnitCapabilities(Unit)
     local cantroops = capabilities.troops -- #boolean
     local trooplimit = capabilities.trooplimit -- #number
-    local unitcoord = unit:GetCoordinate()
+    local unitcoord = unit:GetCoord()
     
     -- find nearest group of deployed troops
     local nearestGroup = nil
@@ -160634,7 +161613,7 @@ end
     local distancekeys = {}
     local extractdistance = self.CrateDistance * self.ExtractFactor
     for k,v in pairs(self.DroppedTroops) do
-      local distance = self:_GetDistance(v:GetCoordinate(),unitcoord)
+      local distance = self:_GetDistance(v:GetCoord(),unitcoord)
       local TNow = timer.getTime()
       local vtime = v.ExtractTime or TNow-310
       if distance <= extractdistance and distance ~= -1 and (TNow - vtime > 300) then
@@ -160722,7 +161701,7 @@ end
           self:_UpdateUnitCargoMass(Unit)
           local groupname = nearestGroup:GetName()
           self:__TroopsExtracted(running,Group, Unit, nearestGroup, groupname)
-          local coord = Unit:GetCoordinate() or Group:GetCoordinate() -- Core.Point#COORDINATE
+          local coord = Unit:GetCoord() or Group:GetCoord() -- Core.Point#COORDINATE
           local Point
           if coord then
             local heading = unit:GetHeading() or 0
@@ -161093,16 +162072,16 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     return self
   end
 
-  local coord = Unit:GetCoordinate() or Group:GetCoordinate()
+  local coord = Unit:GetCoord() or Group:GetCoord()
   local capabilities = self:_GetUnitCapabilities(Unit)
   local innerDist = (capabilities.length and capabilities.length/2) or 15
   local maxUnitsNearby = self.maxUnitsNearby or 3
   local searchRadius = self.UnitDistance or 90
   local checkZone = ZONE_RADIUS:New("CTLD_C130UnitsZone",coord:GetVec2(),searchRadius,false)
-  local nearGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({checkZone}):FilterOnce()
+  local nearGroups = SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterZones({checkZone}):FilterOnce()
   local nearbyCount = 0
   for _,gr in pairs(nearGroups.Set) do
-    local gc = gr:GetCoordinate()
+    local gc = gr:GetCoord()
     if gc then
       local dist = coord:Get2DDistance(gc)
       if dist > innerDist then
@@ -161152,6 +162131,7 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
     if canmove then
       SPAWN:NewWithAlias(_template,alias)
         :InitRandomizeUnits(true,10,2)
+        :InitCoalition(self.coalition)
         :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits, 70)
         :InitDelayOff()
         :OnSpawnGroup(function(grp,TimeStamp)
@@ -161165,6 +162145,7 @@ function CTLD:_C130GetUnits(Group, Unit, Name)
       SPAWN:NewWithAlias(_template,alias)
         :InitRandomizeUnits(true,10,2)
         :InitDelayOff()
+        :InitCoalition(self.coalition)
         :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits, 70)
         :OnSpawnGroup(function(grp,TimeStamp)
           grp.spawntime = TimeStamp or timer.getTime()
@@ -161271,7 +162252,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   -- Check cargo location if available
   local location = Cargo:GetLocation()
   if location then
-    local unitcoord = Unit:GetCoordinate() or Group:GetCoordinate()
+    local unitcoord = Unit:GetCoord() or Group:GetCoord()
     if unitcoord then
       if not location:IsCoordinateInZone(unitcoord) then
         -- no we're not at the right spot
@@ -161318,7 +162299,7 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
   end
 
   -- get position and heading of heli
-  local position = Unit:GetCoordinate()
+  local position = Unit:GetCoord()
   local heading = Unit:GetHeading() + 1
   local height = Unit:GetHeight()
   local droppedcargo = {}
@@ -161482,8 +162463,8 @@ function CTLD:_GetCrates(Group, Unit, Cargo, number, drop, pack, quiet, suppress
     if type(ship) == "string" then
       self:T("Spawning on ship "..ship)
       local Ship = UNIT:FindByName(ship)
-      local shipcoord = Ship:GetCoordinate()
-      local unitcoord = Unit:GetCoordinate()
+      local shipcoord = Ship:GetCoord()
+      local unitcoord = Unit:GetCoord()
       local dist = shipcoord:Get2DDistance(unitcoord)
       dist = dist - (20 + math.random(1, 10))
       local halfwidth = (width or 20) / 2
@@ -161735,17 +162716,17 @@ end
 function CTLD:_C130RemoveUnitsNearby(_group,_unit)
   self:T(self.lid .. " _C130RemoveUnitsNearby")
   if not _group or not _unit then return self end
-  local location = _group:GetCoordinate()
+  local location = _group:GetCoord()
   if not location then return self end
   local capabilities = self:_GetUnitCapabilities(_unit)
   local innerDist = (capabilities.length and capabilities.length/2) or 15
   local finddist = self.PackDistance or (self.CrateDistance or 35)
   local zone = ZONE_RADIUS:New("CTLD_C130RemoveZone",location:GetVec2(),finddist,false)
-  local nearestGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({zone}):FilterOnce()
+  local nearestGroups = SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterZones({zone}):FilterOnce()
   local removedAny = false
   local removedTable = {}
   for _, gr in pairs(nearestGroups.Set) do
-    local gc = gr:GetCoordinate()
+    local gc = gr:GetCoord()
     if gc then
       local dist = location:Get2DDistance(gc)
       if dist > innerDist then
@@ -161879,7 +162860,7 @@ end
 function CTLD:_FindCratesNearby( _group, _unit, _dist, _ignoreweight, ignoretype, ignoreHercInner)
   self:T(self.lid .. " _FindCratesNearby")
   local finddist = _dist
-  local location = _group:GetCoordinate()
+  local location = _group:GetCoord()
   local existingcrates = self.Spawned_Cargo -- #table
   -- cycle
   local index = 0
@@ -162505,7 +163486,6 @@ function CTLD:_UnloadTroops(Group, Unit)
           -- unload troops
           local name = cargo:GetName() or "none"
           local temptable = cargo:GetTemplates() or {}
-          local position = Group:GetCoordinate()
           local zoneradius = self.troopdropzoneradius or 100 -- drop zone radius
           local factor = 1
           if IsHerc then
@@ -162542,6 +163522,7 @@ function CTLD:_UnloadTroops(Group, Unit)
             local Positions = self:_GetUnitPositions(randomcoord,rad,heading,_template)
             self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template,alias)
               :InitDelayOff()
+              :InitCoalition(self.coalition)
               :InitSetUnitAbsolutePositions(Positions)
               :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
               :OnSpawnGroup(function(grp) grp.spawntime = timer.getTime() end)
@@ -162852,8 +163833,8 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
         local required = Crate:GetCratesNeeded()
         local template = Crate:GetTemplates()
         local ctype = Crate:GetType()
-        local ccoord = Crate:GetPositionable():GetCoordinate() -- Core.Point#COORDINATE
-        local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoordinate())or 0
+        local ccoord = Crate:GetPositionable():GetCoord() -- Core.Point#COORDINATE
+        local distToUnit=Unit and ccoord:Get2DDistance(Unit:GetCoord())or 0
         local isHercDrop=Crate:WasDropped(true)
         if not isHercDrop and distToUnit>baseDist then
       elseif  self:IsC130J(Unit) and distToUnit<15 then
@@ -162872,6 +163853,7 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
           object.Found = 1
           object.Template = template
           object.CanBuild = false
+          object.Heading = Unit:GetHeading()
           object.Type = ctype -- #CTLD_CARGO.Enum
           object.Coord = ccoord:GetVec2()
           buildables[name] = object
@@ -162957,7 +163939,7 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
           local sep  = self.buildPairSeparation or 25
           local hdg  = (Unit:GetHeading()+180)%360
           local lat  = (hdg+90)%360
-          local base = Unit:GetCoordinate():Translate(20,hdg)
+          local base = Unit:GetCoord():Translate(20,hdg)
 
           if full == 1 then
             local cratesNow, numberNow = self:_FindCratesNearby(Group,Unit, finddist,true,true, not Engineering)
@@ -162991,7 +163973,7 @@ function CTLD:_BuildCrates(Group, Unit,Engineering,MultiDrop,NotifyGroup)
               self:_RefreshPackMenus(Group,Unit)
               local off   = start + (n-1)*sep
               local coord = base:Translate(off,lat):GetVec2()
-              local b = { Name=build.Name, Required=build.Required, Template=build.Template, CanBuild=true, Type=build.Type, Coord=coord }
+              local b = { Name=build.Name, Required=build.Required, Template=build.Template, CanBuild=true, Type=build.Type, Coord=coord, Heading=build.Heading }
               if self.buildtime and self.buildtime > 0 then
                 local buildtimer = TIMER:New(self._BuildObjectFromCrates,self,Group,Unit,b,false,Group:GetCoordinate(),MultiDrop)
                 buildtimer:Start(self.buildtime)
@@ -163029,18 +164011,18 @@ end
 -- @return #number Number
 function CTLD:_FindPackableGroupsNearby(Group, Unit)
   self:T(self.lid .. " _FindPackableGroupsNearby")
-  local location = Group:GetCoordinate()
+  local location = Group:GetCoord()
   if not location then return {}, 0 end
   local capabilities = self:_GetUnitCapabilities(Unit)
   local innerDist = (capabilities.length and capabilities.length/2) or 15
   local finddist = self.PackDistance or (self.CrateDistance or 35)
   local zone = ZONE_RADIUS:New("CTLD_PackableZone", location:GetVec2(), finddist, false)
-  local nearestGroups = SET_GROUP:New():FilterCoalitions("blue"):FilterZones({zone}):FilterOnce()
+  local nearestGroups = SET_GROUP:New():FilterCoalitions(self.coalitiontxt):FilterZones({zone}):FilterOnce()
   local packable = {}
 
   for _, gr in pairs(nearestGroups.Set) do
     if gr and gr:GetName() ~= Group:GetName() then
-      local gc = gr:GetCoordinate()
+      local gc = gr:GetCoord()
       if gc then
         local dist = location:Get2DDistance(gc)
         if dist > innerDist and dist <= finddist then
@@ -163173,12 +164155,12 @@ function CTLD:_LoadPackedCratesByIds(Group, Unit, crateIds, cargoName)
 
   local matchingCrates = {}
   local finddist = self.CrateDistance or 35
-  local location = Group:GetCoordinate()
+  local location = Group:GetCoord()
   for _, crateObj in pairs(self.Spawned_Cargo or {}) do
     if crateObj and idLookup[crateObj:GetID()] then
       local pos = crateObj:GetPositionable()
       if pos and pos:IsAlive() then
-        local dist = location:Get2DDistance(pos:GetCoordinate())
+        local dist = location:Get2DDistance(pos:GetCoord())
         if dist <= finddist then
           matchingCrates[#matchingCrates + 1] = crateObj
         end
@@ -163288,12 +164270,12 @@ function CTLD:_RemovePackedCratesByIds(Group, Unit, crateIds)
 
   local crates = {}
   local finddist = self.CrateDistance or 35
-  local location = Group:GetCoordinate()
+  local location = Group:GetCoord()
   for _, entry in pairs(self.Spawned_Cargo or {}) do
     if entry and idLookup[entry:GetID()] then
       local pos = entry:GetPositionable()
       if pos and pos:IsAlive() then
-        local dist = location:Get2DDistance(pos:GetCoordinate())
+        local dist = location:Get2DDistance(pos:GetCoord())
         if dist <= finddist then
           crates[#crates + 1] = entry
         end
@@ -163517,11 +164499,11 @@ function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair,RepairLocation,Mult
     local ctype = Build.Type -- #CTLD_CARGO.Enum
     local canmove = false
     if ctype == CTLD_CARGO.Enum.VEHICLE then canmove = true end
-    if ctype == CTLD_CARGO.Enum.STATIC then 
-      return self 
+    if ctype == CTLD_CARGO.Enum.STATIC then
+      return self
     end
     local temptable = Build.Template or {}
-    if type(temptable) == "string" then 
+    if type(temptable) == "string" then
       temptable = {temptable}
     end
     local zone = nil -- Core.Zone#ZONE_RADIUS
@@ -163543,28 +164525,31 @@ function CTLD:_BuildObjectFromCrates(Group,Unit,Build,Repair,RepairLocation,Mult
     for _,_template in pairs(temptable) do
       self.TroopCounter = self.TroopCounter + 1
       local alias = string.format("%s-%d", _template, math.random(1,100000))
+      local spawn = SPAWN:NewWithAlias(_template,alias)
+          :InitDelayOff()
+          :InitCoalition(self.coalition)
+          :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
+          :OnSpawnGroup(function(grp) grp.spawntime = timer.getTime() end)
       if canmove then
-        self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template,alias)
-          --:InitRandomizeUnits(true,20,2)
-          :InitDelayOff()
-          :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
-          :OnSpawnGroup(function(grp) grp.spawntime = timer.getTime() end)
-          :SpawnFromVec2(randomcoord)
-      else -- don't random position of e.g. SAM units build as FOB
-        self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template,alias)
-          :InitDelayOff()
-          :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
-          :OnSpawnGroup(function(grp) grp.spawntime = timer.getTime() end)
-          :SpawnFromVec2(randomcoord)
+        --spawn:InitRandomizeUnits(true,20,2)
       end
+      if Build.Heading and self.useaircraftheadingforbuilds then
+        spawn:InitGroupHeading(Build.Heading)
+      end
+      local spawnedGroup = spawn:SpawnFromVec2(randomcoord)
+      self.DroppedTroops[self.TroopCounter] = spawnedGroup
+
       if Repair then
-        self:__CratesRepaired(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+        self:__CratesRepaired(1,Group,Unit,spawnedGroup)
       else
-        self:__CratesBuild(1,Group,Unit,self.DroppedTroops[self.TroopCounter])
+        self:__CratesBuild(1,Group,Unit,spawnedGroup)
       end
     end -- template loop
-    self:_RefreshLoadCratesMenu(Group, Unit)
-    self:_RefreshPackMenus(Group, Unit)
+
+      if Group and Group:IsAlive() and Group:GetID() then
+          self:_RefreshLoadCratesMenu(Group, Unit)
+          self:_RefreshPackMenus(Group, Unit)
+      end
   else
     self:T(self.lid.."Group KIA while building!")
   end
@@ -163587,14 +164572,11 @@ end
 -- @param Wrapper.Group#GROUP Group The Group to move.
 function CTLD:_MoveGroupToZone(Group)
   self:T(self.lid .. " _MoveGroupToZone")
-  local groupname = Group:GetName() or "none"
-  local groupcoord = Group:GetCoordinate()
   -- Get closest zone of type
   local outcome, name, zone, distance  = self:IsUnitInZone(Group,CTLD.CargoZoneType.MOVE)
   self:T({canmove=outcome, name=name, zone=zone, dist=distance,max=self.movetroopsdistance})
   if (distance <= self.movetroopsdistance) and outcome == true and zone~= nil then
     -- yes, we can ;)
-    local groupname = Group:GetName()
     local zonecoord = zone:GetRandomCoordinate(20,125) -- Core.Point#COORDINATE
     local formation = self:_GetVehicleFormation()
     --local coordinate = zonecoord:GetVec2()
@@ -165277,6 +166259,7 @@ function CTLD:_UnloadSingleTroopByID(Group, Unit, chunkID, qty)
           local Positions = self:_GetUnitPositions(randomcoord, rad, heading, _template)
           self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template, alias)
             :InitDelayOff()
+            :InitCoalition(self.coalition)
             :InitSetUnitAbsolutePositions(Positions)
             :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
             :OnSpawnGroup(function(grp) grp.spawntime = timer.getTime() end)
@@ -166354,7 +167337,7 @@ function CTLD:IsUnitInZone(Unit,Zonetype)
   local zoneret = nil
   local zonewret = nil
   local zonenameret = nil
-  local unitcoord = Unit:GetCoordinate()
+  local unitcoord = Unit:GetCoord()
   if not unitcoord then
     if Zonetype == CTLD.CargoZoneType.SHIP then
       return false, nil, nil, 1000000, nil
@@ -166375,7 +167358,7 @@ function CTLD:IsUnitInZone(Unit,Zonetype)
       self:T("Checking Type Ship: "..zonename)
       local ZoneUNIT = UNIT:FindByName(zonename)
       if not ZoneUNIT then return false end
-      zonecoord = ZoneUNIT:GetCoordinate()
+      zonecoord = ZoneUNIT:GetCoord()
       zoneradius = czone.shiplength
       zonewidth = czone.shipwidth
       zone = ZONE_UNIT:New( ZoneUNIT:GetName(), ZoneUNIT, zoneradius/2)
@@ -166424,7 +167407,7 @@ function CTLD:SmokePositionNow(Unit, Flare, SmokeColor)
   end
   local FlareColor = self.FlareColor or FLARECOLOR.Red
   -- table of #CTLD.CargoZone table
-  local unitcoord = Unit:GetCoordinate() -- Core.Point#COORDINATE
+  local unitcoord = Unit:GetCoord() -- Core.Point#COORDINATE
   local Group = Unit:GetGroup()
   if Flare then
     unitcoord:Flare(FlareColor, 90)
@@ -166443,7 +167426,7 @@ end
 function CTLD:SmokeZoneNearBy(Unit, Flare)
   self:T(self.lid .. " SmokeZoneNearBy")
   -- table of #CTLD.CargoZone table
-  local unitcoord = Unit:GetCoordinate()
+  local unitcoord = Unit:GetCoord()
   local Group = Unit:GetGroup()
   local smokedistance = self.smokedistance
   local smoked = false
@@ -166580,7 +167563,7 @@ end
       -- get speed and height
       local uspeed = Unit:GetVelocityMPS()
       local uheight = Unit:GetHeight()
-      local ucoord = Unit:GetCoordinate()
+      local ucoord = Unit:GetCoord()
       if not ucoord then
         return false
       end
@@ -166609,7 +167592,7 @@ end
       -- get speed and height
       local uspeed = Unit:GetVelocityMPS()
       local uheight = Unit:GetHeight()
-      local ucoord = Unit:GetCoordinate()
+      local ucoord = Unit:GetCoord()
       if not ucoord then
         return false
       end
@@ -166701,7 +167684,7 @@ end
       minheight = 5.1 -- herc is 5m AGL on the ground
     end
     local uheight = Unit:GetHeight()
-    local ucoord = Unit:GetCoordinate()
+    local ucoord = Unit:GetCoord()
     if not ucoord then
       return false
     end
@@ -167487,6 +168470,7 @@ end
         local alias = string.format("%s-%d", _template, math.random(1,100000))
         self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template,alias)
           :InitRandomizeUnits(randompositions,20,2)
+          :InitCoalition(self.coalition)
           :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
           :InitDelayOff()
           :OnSpawnGroup(function(grp,TimeStamp) grp.spawntime = TimeStamp or timer.getTime() end,TimeStamp)
@@ -167641,6 +168625,7 @@ end
         if canmove then
           self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template,alias)
             :InitRandomizeUnits(true,20,2)
+            :InitCoalition(self.coalition)
             :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
             :InitDelayOff()
             :OnSpawnGroup(function(grp,TimeStamp) grp.spawntime = TimeStamp or timer.getTime() end,TimeStamp)
@@ -167648,6 +168633,7 @@ end
         else -- don't random position of e.g. SAM units build as FOB
           self.DroppedTroops[self.TroopCounter] = SPAWN:NewWithAlias(_template,alias)
             :InitDelayOff()
+            :InitCoalition(self.coalition)
             :InitValidateAndRepositionGroundUnits(self.validateAndRepositionUnits)
             :OnSpawnGroup(function(grp,TimeStamp) grp.spawntime = TimeStamp or timer.getTime() end,TimeStamp)
             :SpawnFromVec2(randomcoord)
@@ -167929,7 +168915,7 @@ end
     self:T({From, Event, To})
     if Unit and Unit:IsPlayer() and self.PlayerTaskQueue then
       local playername = Unit:GetPlayerName()
-      local dropcoord = Troops:GetCoordinate() or COORDINATE:New(0,0,0)
+      local dropcoord = Troops:GetCoord() or COORDINATE:New(0,0,0)
       local dropvec2 = dropcoord:GetVec2()
       self.PlayerTaskQueue:ForEach(
         function (Task)
@@ -167986,7 +168972,7 @@ end
       for _,_cargo in pairs(Cargotable) do
         local Vehicle = _cargo.Positionable
         if Vehicle then
-          local dropcoord = Vehicle:GetCoordinate() or COORDINATE:New(0,0,0)
+          local dropcoord = Vehicle:GetCoord() or COORDINATE:New(0,0,0)
           local dropvec2 = dropcoord:GetVec2()
           self.PlayerTaskQueue:ForEach(
             function (Task)
@@ -168051,7 +169037,7 @@ end
     self:T({From, Event, To})
     if Unit and Unit:IsPlayer() and self.PlayerTaskQueue then
       local playername = Unit:GetPlayerName()
-      local dropcoord = Vehicle:GetCoordinate() or COORDINATE:New(0,0,0)
+      local dropcoord = Vehicle:GetCoord() or COORDINATE:New(0,0,0)
       local dropvec2 = dropcoord:GetVec2()
       self.PlayerTaskQueue:ForEach(
         function (Task)
@@ -175933,13 +176919,14 @@ AIRWING = {
 
 --- AIRWING class version.
 -- @field #string version
-AIRWING.version="0.9.7"
+AIRWING.version="0.9.8"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ToDo list
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- TODO: Check that airbase has enough parking spots if a request is BIG.
+-- DONE: Allow groupping parameter for CAP flights
 -- DONE: Allow (moving) zones as base for patrol points.
 -- DONE: Spawn in air ==> Needs WAREHOUSE update.
 -- DONE: Spawn hot.
@@ -175977,6 +176964,7 @@ function AIRWING:New(warehousename, airwingname)
   
   -- Defaults:
   self.nflightsCAP=0
+  self.nCAPgrouping=1
   self.nflightsAWACS=0
   self.nflightsRecon=0
   self.nflightsTANKERboom=0
@@ -176484,9 +177472,11 @@ end
 --- Set number of CAP flights constantly carried out.
 -- @param #AIRWING self
 -- @param #number n (Optional) Number of flights. Default 1.
+-- @param #number grouping (optional) Number of assets per flight. Default 1.
 -- @return #AIRWING self
-function AIRWING:SetNumberCAP(n)
+function AIRWING:SetNumberCAP(n,grouping)
   self.nflightsCAP=n or 1
+  self.nCAPgrouping = grouping or 1
   return self
 end
 
@@ -177014,11 +178004,13 @@ function AIRWING:CheckCAP()
     if self.capOptionPatrolRaceTrack then
       
       missionCAP=AUFTRAG:NewPATROL_RACETRACK(patrol.coord,altitude,patrol.speed,patrol.heading,patrol.leg, self.capFormation)
+      missionCAP:SetRequiredAssets(self.nCAPgrouping,self.nCAPgrouping)
       
     else
         
       missionCAP=AUFTRAG:NewGCICAP(patrol.coord, altitude, patrol.speed, patrol.heading, patrol.leg)
-    
+      missionCAP:SetRequiredAssets(self.nCAPgrouping,self.nCAPgrouping)
+      
     end
     
     if self.capOptionVaryStartTime then
@@ -186453,7 +187445,13 @@ function AUFTRAG:GetDCSMissionTask(MissionGroup)
     -- ESCORT Mission --
     --------------------
 
-    local DCStask=CONTROLLABLE.TaskEscort(nil, self.engageTarget:GetObject(), self.escortVec3, nil, self.engageMaxDistance, self.engageTargetTypes)
+    local FollowGroup=self.engageTarget:GetObject()
+    local DCStask=nil
+    if next(self.engageTargetTypes)==nil then
+      DCStask=FollowGroup:TaskFollow(FollowGroup, self.escortVec3)
+    else
+      DCStask=CONTROLLABLE.TaskEscort(nil, FollowGroup, self.escortVec3, nil, self.engageMaxDistance, self.engageTargetTypes)
+    end
 
     table.insert(DCStasks, DCStask)
     
@@ -252807,7 +253805,7 @@ EASYGCICAP = {
 
 --- EASYGCICAP class version.
 -- @field #string version
-EASYGCICAP.version="0.1.38"
+EASYGCICAP.version="0.1.39"
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 
@@ -253315,8 +254313,9 @@ function EASYGCICAP:_AddAirwing(Airbasename, Alias)
   CAP_Wing:SetRespawnAfterDestroyed()
   
   --- #DONE avoid wings with no CAP points starting CAP anyhow; AirWing uses this to start CAP and creates points when there are none.
-  if counttable(self.ManagedCP) >0 then
-    CAP_Wing:SetNumberCAP(self.capgrouping)
+  local nCapPoints = counttable(self.ManagedCP)
+  if nCapPoints >0 then
+    CAP_Wing:SetNumberCAP(nCapPoints,self.capgrouping)
   end
   CAP_Wing:SetCapCloseRaceTrack(true)
     
