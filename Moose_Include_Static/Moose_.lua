@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-26T18:40:36+02:00-4c56a46ad4eb67ef476bf2781cde1a11bc03313a ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-08-27T14:10:50+02:00-e4cdefcb48b326dfdfbbd00c54fde7c0ba8917a4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -21323,6 +21323,9 @@ end
 SpawnTemplate.CategoryID=self.SpawnInitCategory or SpawnTemplate.CategoryID
 SpawnTemplate.CountryID=self.SpawnInitCountry or SpawnTemplate.CountryID
 SpawnTemplate.CoalitionID=self.SpawnInitCoalition or SpawnTemplate.CoalitionID
+if self.BeforeTemplateSpawnFunc then
+self:BeforeTemplateSpawnFunc(SpawnTemplate,SpawnIndex)
+end
 end
 if not NoBirth then
 self:HandleEvent(EVENTS.Birth,self._OnBirth)
@@ -21377,6 +21380,10 @@ return self
 end
 function SPAWN:SpawnScheduleStop()
 self.SpawnScheduler:Stop()
+return self
+end
+function SPAWN:OnBeforeTemplateSpawnGroup(BeforeTemplateSpawnFunc)
+self.BeforeTemplateSpawnFunc=BeforeTemplateSpawnFunc
 return self
 end
 function SPAWN:OnSpawnGroup(SpawnCallBackFunction,...)

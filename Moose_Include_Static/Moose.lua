@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-26T18:40:36+02:00-4c56a46ad4eb67ef476bf2781cde1a11bc03313a ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-27T14:10:50+02:00-e4cdefcb48b326dfdfbbd00c54fde7c0ba8917a4 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -41447,6 +41447,11 @@ function SPAWN:SpawnWithIndex( SpawnIndex, NoBirth )
         --            SpawnTemplate.uncontrolled = self.SpawnUnControlled
         --          end
         --        end
+
+
+        if self.BeforeTemplateSpawnFunc then
+            self:BeforeTemplateSpawnFunc(SpawnTemplate, SpawnIndex)
+        end
       end
 
       if not NoBirth then
@@ -41559,6 +41564,31 @@ function SPAWN:SpawnScheduleStop()
   --self:F( { self.SpawnTemplatePrefix } )
 
   self.SpawnScheduler:Stop()
+  return self
+end
+
+--- Allows to place a CallFunction hook just before spawning the group to tweak the template.
+-- The provided method will be called just before a new group is spawned, including its given parameters.
+-- The first parameter of the BeforeTemplateSpawnFunc is the raw Template used to spawn the group, the second is the SpawnIndex.
+-- @param #SPAWN self
+-- @param #function BeforeTemplateSpawnFunc The function to be called before the group spawns.
+-- @return #SPAWN
+-- @usage
+--
+--    -- Declare SpawnObject and call a function when a new Group is spawned.
+--    local SpawnObject = SPAWN:New( "SpawnObject" )
+--                             :InitLimit( 2, 10 )
+--                             :OnBeforeSpawnGroup( function( SpawnTemplate )
+                                        -- Tweaking the template units
+--                                 end
+--                               )
+--                             :SpawnScheduled( 300, 0.3 )
+--
+function SPAWN:OnBeforeTemplateSpawnGroup( BeforeTemplateSpawnFunc )
+  --self:F( "OnBeforeSpawnGroup" )
+
+  self.BeforeTemplateSpawnFunc = BeforeTemplateSpawnFunc
+
   return self
 end
 
