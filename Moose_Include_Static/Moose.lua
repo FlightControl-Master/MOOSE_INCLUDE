@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-29T12:57:07+02:00-134f172a237c786cb68d23ebf9e1782d56b3b769 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-08-29T12:58:57+02:00-d8f3e364ec8baf756a2e18ddc0ae77f2de448a16 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -41578,14 +41578,14 @@ end
 --    -- Declare SpawnObject and call a function when a new Group is spawned.
 --    local SpawnObject = SPAWN:New( "SpawnObject" )
 --                             :InitLimit( 2, 10 )
---                             :OnBeforeSpawnGroup( function( SpawnTemplate )
+--                             :OnBeforeTemplateSpawnGroup( function( Spawn, SpawnTemplate, SpawnIndex )
                                         -- Tweaking the template units
 --                                 end
 --                               )
 --                             :SpawnScheduled( 300, 0.3 )
 --
 function SPAWN:OnBeforeTemplateSpawnGroup( BeforeTemplateSpawnFunc )
-  --self:F( "OnBeforeSpawnGroup" )
+  --self:F( "OnBeforeTemplateSpawnGroup" )
 
   self.BeforeTemplateSpawnFunc = BeforeTemplateSpawnFunc
 
@@ -199177,7 +199177,7 @@ end
 -- ### Author: **funkyfranky**
 --
 -- ===
--- @module OPS.FlightControl
+-- @module Ops.FlightControl
 -- @image OPS_FlightControl.png
 
 
