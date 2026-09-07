@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-06T12:27:26+02:00-3e882fd4796fc4eac70c219a28f1dcb4dcaa895c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-07T21:49:32+02:00-fb7ca893de0436cd213f9f988ee3a5fefc9b85ad ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3458,6 +3458,23 @@ end
 function UTILS.GetSunset(Day,Month,Year,Latitude,Longitude,Tlocal)
 local DayOfYear=UTILS.GetDayOfYear(Year,Month,Day)
 return UTILS.GetSunRiseAndSet(DayOfYear,Latitude,Longitude,false,Tlocal)
+end
+function UTILS.GetRecoveryCase(Coordinate,Clock)
+if Coordinate:IsNight(Clock)then
+return 3
+end
+local visibility=UTILS.Weather.GetFogVisibilityDistanceMax()
+local cloudbase=env.mission.weather.clouds.base
+env.info(string.format("FF visibility=%.1f  cloudbase=%.1f",visibility,cloudbase))
+if visibility>0 and visibility<=UTILS.NMToMeters(5)then
+return 3
+end
+if cloudbase<=UTILS.FeetToMeters(1000)then
+return 3
+elseif cloudbase<=UTILS.FeetToMeters(3000)then
+return 2
+end
+return 1
 end
 function UTILS.GetOSTime()
 if os then
@@ -63737,7 +63754,7 @@ HARD="TOPGUN Graduate",
 }
 AIRBOSS.MenuF10={}
 AIRBOSS.MenuF10Root=nil
-AIRBOSS.version="1.4.2"
+AIRBOSS.version="1.5.0"
 function AIRBOSS:New(carriername,alias)
 local self=BASE:Inherit(self,FSM:New())
 self:F2({carriername=carriername,alias=alias})
@@ -63951,9 +63968,16 @@ self.collisiondist=UTILS.NMToMeters(Distance or 5)
 return self
 end
 function AIRBOSS:SetRecoveryCase(Case)
-self.defaultcase=Case or 1
-self.case=self.defaultcase
+self.defaultcase=Case or 0
+self.case=self:_ResolveRecoveryCase(self.defaultcase)
 return self
+end
+function AIRBOSS:_ResolveRecoveryCase(Case)
+Case=Case or self.defaultcase or 0
+if Case==0 then
+return UTILS.GetRecoveryCase(self:GetCoordinate())
+end
+return Case
 end
 function AIRBOSS:SetHoldingOffsetAngle(Offset)
 self.defaultoffset=Offset or 0
@@ -63992,6 +64016,17 @@ string.format("WARNING: Recovery stop time %s already over. Tnow=%s! Recovery wi
 return self
 end
 case=case or self.defaultcase
+if case==0 then
+local coordinate=self:GetCoordinate()
+case=UTILS.GetRecoveryCase(coordinate,UTILS.SecondsToClock(Tstart))
+local time=Tstart
+while case<3 and time<Tstop do
+time=math.min(time+60,Tstop)
+if coordinate:IsNight(UTILS.SecondsToClock(time))then
+case=3
+end
+end
+end
 holdingoffset=holdingoffset or self.defaultoffset
 if case==1 then
 holdingoffset=0
@@ -64033,15 +64068,21 @@ if Delay and Delay>0 then
 self:ScheduleOnce(Delay,self.CloseCurrentRecoveryWindow,self)
 else
 if self:IsRecovering()and self.recoverywindow and self.recoverywindow.OPEN then
+local window=self.recoverywindow
 self:RecoveryStop()
-self.recoverywindow.OPEN=false
-self.recoverywindow.OVER=true
-self:DeleteRecoveryWindow(self.recoverywindow)
+window.OPEN=false
+window.OVER=true
+self:DeleteRecoveryWindow(window)
 end
 end
 end
 function AIRBOSS:DeleteAllRecoveryWindows(Delay)
+local windows={}
 for _,recovery in pairs(self.recoverytimes)do
+table.insert(windows,recovery)
+end
+for i=#windows,1,-1 do
+local recovery=windows[i]
 self:I(self.lid..string.format("Deleting recovery window ID %s",tostring(recovery.ID)))
 self:DeleteRecoveryWindow(recovery,Delay)
 end
@@ -64838,7 +64879,7 @@ return flight,true
 end
 end
 function AIRBOSS:onbeforeRecoveryCase(From,Event,To,Case,Offset)
-Case=Case or self.defaultcase
+Case=self:_ResolveRecoveryCase(Case)
 Offset=Offset or self.defaultoffset
 if Case==self.case and Offset==self.holdingoffset then
 return false
@@ -64846,7 +64887,7 @@ end
 return true
 end
 function AIRBOSS:onafterRecoveryCase(From,Event,To,Case,Offset)
-Case=Case or self.defaultcase
+Case=self:_ResolveRecoveryCase(Case)
 Offset=Offset or self.defaultoffset
 local text=string.format("Switching recovery case %d ==> %d",self.case,Case)
 if Case>1 then
@@ -64871,10 +64912,10 @@ end
 end
 end
 function AIRBOSS:onafterRecoveryStart(From,Event,To,Case,Offset)
-Case=Case or self.defaultcase
+Case=self:_ResolveRecoveryCase(Case)
 Offset=Offset or self.defaultoffset
-self:_MarshalCallRecoveryStart(Case)
 self:RecoveryCase(Case,Offset)
+self:_MarshalCallRecoveryStart(Case)
 end
 function AIRBOSS:onafterRecoveryStop(From,Event,To)
 self:T(self.lid..string.format("Stopping aircraft recovery."))
@@ -64901,7 +64942,7 @@ local clock=UTILS.SecondsToClock(timer.getAbsTime()+duration)
 self:_MarshalCallRecoveryPausedResumedAt(clock)
 else
 local text=string.format("aircraft recovery is paused until further notice.")
-self:_MarshalCallRecoveryPausedNotice()
+self:_MarshalCallRecoveryPausedUntilFurtherNotice()
 end
 end
 function AIRBOSS:onafterRecoveryUnpause(From,Event,To)
@@ -69172,8 +69213,7 @@ if N==0 and TgrooveVstolUnicorn then
 grade="_OK_"
 points=5.0
 G="Unicorn"
-end
-if N==0 and TgrooveUnicorn then
+elseif N==0 and TgrooveUnicorn then
 if playerData.wire==3 then
 grade="_OK_"
 points=5.0
@@ -71248,14 +71288,15 @@ local call=self:_NewRadioCall(self.MarshalCall.STACKFULL,"AIRBOSS",text,self.Tme
 self:RadioTransmission(self.MarshalRadio,call,nil,nil,nil,true)
 end
 function AIRBOSS:_MarshalCallRecoveryStart(case)
-local radial=self:GetRadial(case,true,true,false)
+local radial=math.floor(self:GetRadial(case,true,true,false)+0.5)%360
+local finalbearing=math.floor(self:GetFinalBearing(true)+0.5)%360
 local text=string.format("Starting aircraft recovery Case %d ops.",case)
 if case==1 then
 text=text..string.format(" BRC %03d°.",self:GetBRC())
 elseif case==2 then
 text=text..string.format(" Marshal radial %03d°. BRC %03d°.",radial,self:GetBRC())
 elseif case==3 then
-text=text..string.format(" Marshal radial %03d°. Final heading %03d°.",radial,self:GetFinalBearing(false))
+text=text..string.format(" Marshal radial %03d°. New final bearing %03d°.",radial,finalbearing)
 end
 self:T(self.lid..text)
 local call=self:_NewRadioCall(self.MarshalCall.STARTINGRECOVERY,"AIRBOSS",text,self.Tmessage,"99")
@@ -71265,6 +71306,11 @@ self:RadioTransmission(self.MarshalRadio,self.MarshalCall.OPS)
 if case>1 then
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.MARSHALRADIAL)
 self:_Number2Radio(self.MarshalRadio,string.format("%03d",radial),nil,0.2)
+self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES,nil,nil,nil,case~=3)
+end
+if case==3 then
+self:RadioTransmission(self.MarshalRadio,self.MarshalCall.NEWFB,nil,nil,0.5)
+self:_Number2Radio(self.MarshalRadio,string.format("%03d",finalbearing),nil,0.2)
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES,nil,nil,nil,true)
 end
 end
@@ -71274,15 +71320,42 @@ local angels=self:_GetAngels(altitude)
 local QFE=UTILS.Split(string.format("%.2f",qfe),".")
 local clock=UTILS.Split(charlie,"+")
 local CT=UTILS.Split(clock[1],":")
-local text=string.format("Case %d, expected BRC %03d°, hold at angels %d. Expected Charlie Time %s. Altimeter %.2f. Report see me.",case,brc,angels,charlie,qfe)
+local radial
+local finalbearing
+if case>1 then
+radial=math.floor(self:GetRadial(case,true,true,false)+0.5)%360
+end
+if case==3 then
+finalbearing=math.floor(self:GetFinalBearing(true)+0.5)%360
+end
+local text=string.format("Case %d.",case)
+if case==3 then
+text=text..string.format(" New final bearing %03d°.",finalbearing)
+else
+text=text..string.format(" Expected BRC %03d°.",brc)
+end
+if radial then
+text=text..string.format(" Marshal radial %03d°.",radial)
+end
+text=text..string.format(" Hold at angels %d. Expected Charlie Time %s. Altimeter %.2f. Report see me.",angels,charlie,qfe)
 self:T(self.lid..text)
 local casecall=self:_NewRadioCall(self.MarshalCall.CASE,"MARSHAL",text,self.Tmessage,modex)
 self:RadioTransmission(self.MarshalRadio,casecall)
 self:_Number2Radio(self.MarshalRadio,tostring(case))
+if case==3 then
+self:RadioTransmission(self.MarshalRadio,self.MarshalCall.NEWFB,nil,nil,0.5)
+self:_Number2Radio(self.MarshalRadio,string.format("%03d",finalbearing))
+else
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.EXPECTED,nil,nil,0.5)
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.BRC)
 self:_Number2Radio(self.MarshalRadio,string.format("%03d",brc))
+end
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES)
+if radial then
+self:RadioTransmission(self.MarshalRadio,self.MarshalCall.MARSHALRADIAL,nil,nil,0.5)
+self:_Number2Radio(self.MarshalRadio,string.format("%03d",radial))
+self:RadioTransmission(self.MarshalRadio,self.MarshalCall.DEGREES)
+end
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.HOLDATANGELS,nil,nil,0.5)
 self:_Number2Radio(self.MarshalRadio,tostring(angels))
 self:RadioTransmission(self.MarshalRadio,self.MarshalCall.EXPECTED,nil,nil,0.5)
