@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-08T20:46:52+02:00-c9e86cbf9185854ab3ef38d85a7f7e6bb90a2e10 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-11T16:49:27+02:00-8eaf1be5754713bbca98c266c99d17efb5dd6fd5 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3465,7 +3465,6 @@ return 3
 end
 local visibility=UTILS.Weather.GetFogVisibilityDistanceMax()
 local cloudbase=env.mission.weather.clouds.base
-env.info(string.format("FF visibility=%.1f  cloudbase=%.1f",visibility,cloudbase))
 if visibility>0 and visibility<=UTILS.NMToMeters(5)then
 return 3
 end
@@ -12983,7 +12982,7 @@ if 4095-first<10 then
 first=0
 end
 for i=first+1,4095 do
-if self.STNS[i]==nil then
+if self.SADL[i]==nil then
 found=true
 nextoctal=UTILS.DecimalToOctal(i)
 self.SADL[i]=unitname
@@ -13493,7 +13492,10 @@ else
 unit=unitname
 end
 if unit then
-groupname=unit:GetGroup():GetName()
+local group=unit:GetGroup()
+if group then
+groupname=group:GetName()
+end
 end
 if groupname then
 return self.FLIGHTGROUPS[groupname]
@@ -13548,10 +13550,21 @@ if obj_type_name=="helicopter"or obj_type_name=="ship"or obj_type_name=="plane"o
 local CategoryName=obj_type_name
 if((type(obj_type_data)=='table')and obj_type_data.group and(type(obj_type_data.group)=='table')and(#obj_type_data.group>0))then
 for group_num,Template in pairs(obj_type_data.group)do
+local CategoryID=_DATABASECategory[string.lower(CategoryName)]
+if string.lower(CategoryName)=="vehicle"then
+if Template.units and#Template.units>0 then
+local unit=Template.units[1]
+if unit and unit.type then
+if unit.type=="Train"then
+CategoryID=Group.Category.TRAIN
+end
+end
+end
+end
 if obj_type_name~="static"and Template and Template.units and type(Template.units)=='table'then
-self:_RegisterGroupTemplate(Template,CoalitionSide,_DATABASECategory[string.lower(CategoryName)],CountryID)
+self:_RegisterGroupTemplate(Template,CoalitionSide,CategoryID,CountryID)
 else
-self:_RegisterStaticTemplate(Template,CoalitionSide,_DATABASECategory[string.lower(CategoryName)],CountryID)
+self:_RegisterStaticTemplate(Template,CoalitionSide,CategoryID,CountryID)
 end
 end
 end
