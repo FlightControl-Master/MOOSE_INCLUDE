@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-09-08T20:45:58+02:00-117f2404c40ee012f947ef95f1f3a670adc796fd ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-09-12T11:06:19+02:00-cf16ae9b49c0c1031aac75bd49e434f3614e6da1 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -4581,7 +4581,7 @@ function UTILS.GetRecoveryCase(Coordinate, Clock)
   local visibility = UTILS.Weather.GetFogVisibilityDistanceMax()
   local cloudbase = env.mission.weather.clouds.base
   
-  env.info(string.format("FF visibility=%.1f  cloudbase=%.1f", visibility, cloudbase))
+  --env.info(string.format("FF visibility=%.1f  cloudbase=%.1f", visibility, cloudbase))
 
   -- Zero means no fog, not zero visibility.
   -- Boundary values use the more restrictive recovery case.
@@ -23317,7 +23317,7 @@ function DATABASE:GetNextSADL(octal,unitname)
     first = 0
   end
   for i=first+1,4095 do
-    if self.STNS[i] == nil then
+    if self.SADL[i] == nil then
       found = true
       nextoctal = UTILS.DecimalToOctal(i)
       self.SADL[i] = unitname
@@ -24298,7 +24298,10 @@ function DATABASE:FindOpsGroupFromUnit(unitname)
   end
 
   if unit then
-    groupname=unit:GetGroup():GetName()
+    local group=unit:GetGroup()
+    if group then
+      groupname=group:GetName()
+    end
   end
 
   if groupname then
@@ -24386,17 +24389,29 @@ function DATABASE:_RegisterTemplates()
 
                 if ((type(obj_type_data) == 'table') and obj_type_data.group and (type(obj_type_data.group) == 'table') and (#obj_type_data.group > 0)) then  --there's a group!
 
-                  --self.Units[coa_name][countryName][category] = {}
-
                   for group_num, Template in pairs(obj_type_data.group) do
+                  
+                    local CategoryID=_DATABASECategory[string.lower(CategoryName)]
+                  
+                    -- Try to identify if we have a train. They are also under "vehicle" category but have Group.Category.TRAIN=4, which is important for spawning!
+                    if string.lower(CategoryName)=="vehicle" then
+                      if Template.units and #Template.units>0 then
+                        local unit=Template.units[1]
+                        if unit and unit.type then
+                          if unit.type=="Train" then --This is the only usable info to determine, if it is a train or a ground group.
+                            CategoryID=Group.Category.TRAIN
+                          end
+                        end
+                      end                                          
+                    end
 
                     if obj_type_name ~= "static" and Template and Template.units and type(Template.units) == 'table' then  --making sure again- this is a valid group
                       
-                      self:_RegisterGroupTemplate(Template, CoalitionSide, _DATABASECategory[string.lower(CategoryName)], CountryID)
+                      self:_RegisterGroupTemplate(Template, CoalitionSide, CategoryID, CountryID)
 
                     else
 
-                      self:_RegisterStaticTemplate(Template, CoalitionSide, _DATABASECategory[string.lower(CategoryName)], CountryID)
+                      self:_RegisterStaticTemplate(Template, CoalitionSide, CategoryID, CountryID)
 
                     end --if GroupTemplate and GroupTemplate.units then
                   end --for group_num, GroupTemplate in pairs(obj_type_data.group) do
@@ -119957,6 +119972,7 @@ do
   -- @param #number ActiveTimer Number of seconds to stay active
   -- @param #number TargetCat (optional) Category, i.e. Object.Category.UNIT or Object.Category.STATIC
   -- @param #boolean ShotAt If true, function is called after a shot
+  -- @param #boolean TargetedShot (Optional) If true, the detected weapon directly targeted a SHORAD group
   -- @return #SHORAD self 
   -- @usage Use this function to integrate with other systems, example   
   -- 
@@ -119966,7 +119982,7 @@ do
   -- mymantis = MANTIS:New("BlueMantis","Blue SAM","Blue EWR",nil,"blue",false,"Blue Awacs")
   -- mymantis:AddShorad(myshorad,720)
   -- mymantis:Start()
-  function SHORAD:onafterWakeUpShorad(From, Event, To, TargetGroup, Radius, ActiveTimer, TargetCat, ShotAt)
+  function SHORAD:onafterWakeUpShorad(From, Event, To, TargetGroup, Radius, ActiveTimer, TargetCat, ShotAt, TargetedShot)
     self:T(self.lid .. " WakeUpShorad")
     --self:T({TargetGroup, Radius, ActiveTimer, TargetCat})
     
@@ -120020,6 +120036,29 @@ do
       end
     end   
     
+    local function EvadeShorad(_group)
+      if _group and _group:IsAlive() then
+        local ammo = _group:GetProperty("MANTIS_AMMO") -- #table
+        if TargetedShot and ammo and (not ammo.trUnits or next(ammo.trUnits) == nil or ammo.trLost) then return end
+        local groupname = _group:GetName()
+        if self.UseEmOnOff then
+          _group:EnableEmission(false)
+        end
+        _group:OptionAlarmStateGreen()
+        self.ActiveGroups[groupname] = nil
+        local text = string.format("Shot at SHORAD %s! Evading!", groupname)
+        self:T(text)
+        local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+        self:_SmokeUnits(_group)
+        --Shoot and Scoot
+        if self.shootandscoot then
+          self:__ShootAndScoot(1,_group)
+        else
+          _group:RelocateGroundRandomInRadius(30,500,false,true,"Diamond",true)
+        end
+      end
+    end
+
     local targetcat = TargetCat or Object.Category.UNIT
     local targetgroup = TargetGroup
     local targetvec2 = nil
@@ -120044,28 +120083,30 @@ do
       
       if groupname == TargetGroup and ShotAt==true then
         -- Shot at a SHORAD group
-        local allow = false
-        if self.CallBack and self.UseCallBack == true then
-          allow = self.CallBack:SeadAllowSuppression(_group,groupname)
-        end
-        if allow == true then
-          if self.UseEmOnOff then
-            _group:EnableEmission(false)
-          end
-          _group:OptionAlarmStateGreen()
-          self.ActiveGroups[groupname] = nil
-          local text = string.format("Shot at SHORAD %s! Evading!", _group:GetName())
-          self:T(text)
-          local m = MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
-          self:_SmokeUnits(_group)
-          --Shoot and Scoot
-          if self.shootandscoot then
-            self:__ShootAndScoot(1,_group)
-          else
-            _group:RelocateGroundRandomInRadius(30,500,false,true,"Diamond",true)
-          end
-        else
+        local ammo = _group:GetProperty("MANTIS_AMMO") -- #table
+        local radarless = TargetedShot and ammo and (not ammo.trUnits or next(ammo.trUnits) == nil or ammo.trLost)
+        if radarless then
           WakeUp(_group,groupname)
+        else
+          local allow = false
+          if self.CallBack and self.UseCallBack == true then
+            allow = self.CallBack:SeadAllowSuppression(_group,groupname)
+          end
+          if allow == true then
+            if TargetedShot and ammo then
+              local targetskill = _group:GetUnit(1):GetSkill()
+              if targetskill == "Random" then
+                local skills = { "Average", "Good", "High", "Excellent" }
+                targetskill = skills[math.random(1,4)]
+              end
+              local delay = math.random(SEAD.TargetSkill[targetskill].DelayOn[1], SEAD.TargetSkill[targetskill].DelayOn[2]) / 10
+              timer.scheduleFunction(EvadeShorad,_group,timer.getTime() + delay)
+            else
+              EvadeShorad(_group)
+            end
+          else
+            WakeUp(_group,groupname)
+          end
         end
       elseif _group:IsAnyInZone(targetzone) or groupname == TargetGroup then
         WakeUp(_group,groupname)
@@ -120271,7 +120312,7 @@ do
           -- if being shot at, find closest SHORADs to activate
           if shotatsams or shotatus then
             self:T({shotatsams=shotatsams,shotatus=shotatus})
-            self:WakeUpShorad(targetgroupname, self.Radius, self.ActiveTimer, targetcat, true)
+            self:WakeUpShorad(targetgroupname, self.Radius, self.ActiveTimer, targetcat, true, shotatus)
           end
         end  
       end

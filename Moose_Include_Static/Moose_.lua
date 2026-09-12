@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-08T20:45:58+02:00-117f2404c40ee012f947ef95f1f3a670adc796fd ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-12T11:06:19+02:00-cf16ae9b49c0c1031aac75bd49e434f3614e6da1 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -3465,7 +3465,6 @@ return 3
 end
 local visibility=UTILS.Weather.GetFogVisibilityDistanceMax()
 local cloudbase=env.mission.weather.clouds.base
-env.info(string.format("FF visibility=%.1f  cloudbase=%.1f",visibility,cloudbase))
 if visibility>0 and visibility<=UTILS.NMToMeters(5)then
 return 3
 end
@@ -12983,7 +12982,7 @@ if 4095-first<10 then
 first=0
 end
 for i=first+1,4095 do
-if self.STNS[i]==nil then
+if self.SADL[i]==nil then
 found=true
 nextoctal=UTILS.DecimalToOctal(i)
 self.SADL[i]=unitname
@@ -13493,7 +13492,10 @@ else
 unit=unitname
 end
 if unit then
-groupname=unit:GetGroup():GetName()
+local group=unit:GetGroup()
+if group then
+groupname=group:GetName()
+end
 end
 if groupname then
 return self.FLIGHTGROUPS[groupname]
@@ -13548,10 +13550,21 @@ if obj_type_name=="helicopter"or obj_type_name=="ship"or obj_type_name=="plane"o
 local CategoryName=obj_type_name
 if((type(obj_type_data)=='table')and obj_type_data.group and(type(obj_type_data.group)=='table')and(#obj_type_data.group>0))then
 for group_num,Template in pairs(obj_type_data.group)do
+local CategoryID=_DATABASECategory[string.lower(CategoryName)]
+if string.lower(CategoryName)=="vehicle"then
+if Template.units and#Template.units>0 then
+local unit=Template.units[1]
+if unit and unit.type then
+if unit.type=="Train"then
+CategoryID=Group.Category.TRAIN
+end
+end
+end
+end
 if obj_type_name~="static"and Template and Template.units and type(Template.units)=='table'then
-self:_RegisterGroupTemplate(Template,CoalitionSide,_DATABASECategory[string.lower(CategoryName)],CountryID)
+self:_RegisterGroupTemplate(Template,CoalitionSide,CategoryID,CountryID)
 else
-self:_RegisterStaticTemplate(Template,CoalitionSide,_DATABASECategory[string.lower(CategoryName)],CountryID)
+self:_RegisterStaticTemplate(Template,CoalitionSide,CategoryID,CountryID)
 end
 end
 end
@@ -59339,7 +59352,7 @@ IsDetected=true
 end
 return IsDetected
 end
-function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat,ShotAt)
+function SHORAD:onafterWakeUpShorad(From,Event,To,TargetGroup,Radius,ActiveTimer,TargetCat,ShotAt,TargetedShot)
 self:T(self.lid.." WakeUpShorad")
 local TDiff=4
 local function SleepShorad(group)
@@ -59383,6 +59396,27 @@ TDiff=TDiff+1
 end
 end
 end
+local function EvadeShorad(_group)
+if _group and _group:IsAlive()then
+local ammo=_group:GetProperty("MANTIS_AMMO")
+if TargetedShot and ammo and(not ammo.trUnits or next(ammo.trUnits)==nil or ammo.trLost)then return end
+local groupname=_group:GetName()
+if self.UseEmOnOff then
+_group:EnableEmission(false)
+end
+_group:OptionAlarmStateGreen()
+self.ActiveGroups[groupname]=nil
+local text=string.format("Shot at SHORAD %s! Evading!",groupname)
+self:T(text)
+local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
+self:_SmokeUnits(_group)
+if self.shootandscoot then
+self:__ShootAndScoot(1,_group)
+else
+_group:RelocateGroundRandomInRadius(30,500,false,true,"Diamond",true)
+end
+end
+end
 local targetcat=TargetCat or Object.Category.UNIT
 local targetgroup=TargetGroup
 local targetvec2=nil
@@ -59401,27 +59435,30 @@ local shoradset=groupset:GetAliveSet()
 for _,_group in pairs(shoradset)do
 local groupname=_group:GetName()
 if groupname==TargetGroup and ShotAt==true then
+local ammo=_group:GetProperty("MANTIS_AMMO")
+local radarless=TargetedShot and ammo and(not ammo.trUnits or next(ammo.trUnits)==nil or ammo.trLost)
+if radarless then
+WakeUp(_group,groupname)
+else
 local allow=false
 if self.CallBack and self.UseCallBack==true then
 allow=self.CallBack:SeadAllowSuppression(_group,groupname)
 end
 if allow==true then
-if self.UseEmOnOff then
-_group:EnableEmission(false)
+if TargetedShot and ammo then
+local targetskill=_group:GetUnit(1):GetSkill()
+if targetskill=="Random"then
+local skills={"Average","Good","High","Excellent"}
+targetskill=skills[math.random(1,4)]
 end
-_group:OptionAlarmStateGreen()
-self.ActiveGroups[groupname]=nil
-local text=string.format("Shot at SHORAD %s! Evading!",_group:GetName())
-self:T(text)
-local m=MESSAGE:New(text,10,"SHORAD"):ToAllIf(self.debug)
-self:_SmokeUnits(_group)
-if self.shootandscoot then
-self:__ShootAndScoot(1,_group)
+local delay=math.random(SEAD.TargetSkill[targetskill].DelayOn[1],SEAD.TargetSkill[targetskill].DelayOn[2])/10
+timer.scheduleFunction(EvadeShorad,_group,timer.getTime()+delay)
 else
-_group:RelocateGroundRandomInRadius(30,500,false,true,"Diamond",true)
+EvadeShorad(_group)
 end
 else
 WakeUp(_group,groupname)
+end
 end
 elseif _group:IsAnyInZone(targetzone)or groupname==TargetGroup then
 WakeUp(_group,groupname)
@@ -59584,7 +59621,7 @@ local shotatus=self:_CheckShotAtShorad(targetgroupname)
 local shotatsams=self:_CheckShotAtSams(targetgroupname)
 if shotatsams or shotatus then
 self:T({shotatsams=shotatsams,shotatus=shotatus})
-self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat,true)
+self:WakeUpShorad(targetgroupname,self.Radius,self.ActiveTimer,targetcat,true,shotatus)
 end
 end
 end
