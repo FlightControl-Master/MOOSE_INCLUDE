@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-09-12T11:05:25+02:00-78abe8451ea8a1c1f40b0b1d7076c2ce581c78db ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-09-21T15:46:29+02:00-6fe07918dac0c74599238399017ad0f8482df555 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -161256,6 +161256,7 @@ function CTLD:_LoadSingleCrateSet(Group, Unit, cargoName, details)
   self:_RefreshLoadCratesMenu(Group, Unit)
   self:_RefreshDropCratesMenu(Group, Unit)
   self:_RefreshPackMenus(Group, Unit)
+  self:__CratesPickedUp(1, Group, Unit, loadedData.Cargo)
   self:_RefreshCrateQuantityMenus(Group, Unit, self:_FindCratesCargoObject(cargoName))
 
   if batch and batch.cname == cargoName then
