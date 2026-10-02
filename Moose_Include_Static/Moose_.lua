@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-21T15:46:29+02:00-6fe07918dac0c74599238399017ad0f8482df555 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-02T11:02:10+02:00-802d532a0736fe008858f98985b51e8d366f2de9 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -63701,12 +63701,12 @@ GroupUnit:SetState(self,"GT1",GT2)
 GroupUnit:SetState(self,"GV1",GV2)
 local GD=((GV2.x-GV1.x)^2+(GV2.y-GV1.y)^2+(GV2.z-GV1.z)^2)^0.5
 local GT=GT2-GT1
-local GDv={x=GV2.x-CV1.x,y=GV2.y-CV1.y,z=GV2.z-CV1.z}
+local GDv={x=GV2.x-CV2.x,y=GV2.y-CV2.y,z=GV2.z-CV2.z}
 local Alpha_T=math.atan2(GDv.x,GDv.z)-math.atan2(CDv.x,CDv.z)
 local Alpha_R=(Alpha_T<0)and Alpha_T+2*math.pi or Alpha_T
 local Position=math.cos(Alpha_R)
 local GD=((GDv.x)^2+(GDv.z)^2)^0.5
-local Distance=GD*Position+-CS*0.5
+local Distance=GD*Position
 local GV={x=GV2.x-CV2.x,y=GV2.y-CV2.y,z=GV2.z-CV2.z}
 local GH2={x=GV2.x,y=CV2.y+FollowFormation.y,z=GV2.z}
 local alpha=math.atan2(GV.x,GV.z)
@@ -63716,10 +63716,12 @@ local Inclination=(Distance+FollowFormation.x)/10
 if Inclination<-30 then
 Inclination=-30
 end
+local LookAheadSeconds=math.max(10,2*(self.dtFollow+1))
+local LookAheadDistance=math.max(300,CS*LookAheadSeconds)
 local CVI={
-x=CV2.x+CS*10*math.sin(Ca),
+x=CV2.x+LookAheadDistance*math.sin(Ca),
 y=GH2.y+Inclination,
-z=CV2.z+CS*10*math.cos(Ca),
+z=CV2.z+LookAheadDistance*math.cos(Ca),
 }
 local DV={x=CV2.x-CVI.x,y=CV2.y-CVI.y,z=CV2.z-CVI.z}
 local DVu={x=DV.x/FollowDistance,y=DV.y,z=DV.z/FollowDistance}
