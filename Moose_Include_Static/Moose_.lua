@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-09-21T15:47:50+02:00-068160cbdd9016ae691fe7570bec40fe126ea6b8 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-05T07:10:35+02:00-665e2ea15da8c288a1bc2d868d95b059ef2499fb ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56131,7 +56131,7 @@ end
 MANTIS={
 ClassName="MANTIS",
 name="mymantis",
-version="0.9.44",
+version="0.9.45",
 SAM_Templates_Prefix="",
 SAM_Group=nil,
 EWR_Templates_Prefix="",
@@ -56244,6 +56244,8 @@ MANTIS.SamData={
 ["Tor M2"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2",Point="true",ARMCapacity=4},
 ["IRIS-T SLM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM",ARMCapacity=12},
 ["SON-9"]={Range=20,Blindspot=0,Height=14,Type="Point",Radar="SON_9",Point="true"},
+["HQ-11"]={Range=30,Blindspot=2,Height=15,Type="Medium",Radar="HQ11_USLANTCOM",ARMCapacity=4},
+["Mistral Unimog"]={Range=5,Blindspot=0.6,Height=3,Type="Point",Radar="USLANTCOM_UNIMOG_MISTRAL_CL",Point="true"},
 }
 MANTIS.SamDataHDS={
 ["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
@@ -56479,6 +56481,8 @@ MANTIS.JammerSAMParams={
 ["THAAD CHM"]={peak=10,mu=90,sigma_L=38,tail_dist=140,band="IJ",floor=0},
 ["WieselOzelot CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
 ["USInfantryFIM92K CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["HQ-11"]={peak=16,mu=23,sigma_L=10,tail_dist=50,band="IJ",floor=2},
+["Mistral Unimog"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
 }
 do
 local p=MANTIS.JammerSAMParams
@@ -63701,12 +63705,12 @@ GroupUnit:SetState(self,"GT1",GT2)
 GroupUnit:SetState(self,"GV1",GV2)
 local GD=((GV2.x-GV1.x)^2+(GV2.y-GV1.y)^2+(GV2.z-GV1.z)^2)^0.5
 local GT=GT2-GT1
-local GDv={x=GV2.x-CV1.x,y=GV2.y-CV1.y,z=GV2.z-CV1.z}
+local GDv={x=GV2.x-CV2.x,y=GV2.y-CV2.y,z=GV2.z-CV2.z}
 local Alpha_T=math.atan2(GDv.x,GDv.z)-math.atan2(CDv.x,CDv.z)
 local Alpha_R=(Alpha_T<0)and Alpha_T+2*math.pi or Alpha_T
 local Position=math.cos(Alpha_R)
 local GD=((GDv.x)^2+(GDv.z)^2)^0.5
-local Distance=GD*Position+-CS*0.5
+local Distance=GD*Position
 local GV={x=GV2.x-CV2.x,y=GV2.y-CV2.y,z=GV2.z-CV2.z}
 local GH2={x=GV2.x,y=CV2.y+FollowFormation.y,z=GV2.z}
 local alpha=math.atan2(GV.x,GV.z)
@@ -63716,10 +63720,12 @@ local Inclination=(Distance+FollowFormation.x)/10
 if Inclination<-30 then
 Inclination=-30
 end
+local LookAheadSeconds=math.max(10,2*(self.dtFollow+1))
+local LookAheadDistance=math.max(300,CS*LookAheadSeconds)
 local CVI={
-x=CV2.x+CS*10*math.sin(Ca),
+x=CV2.x+LookAheadDistance*math.sin(Ca),
 y=GH2.y+Inclination,
-z=CV2.z+CS*10*math.cos(Ca),
+z=CV2.z+LookAheadDistance*math.cos(Ca),
 }
 local DV={x=CV2.x-CVI.x,y=CV2.y-CVI.y,z=CV2.z-CVI.z}
 local DVu={x=DV.x/FollowDistance,y=DV.y,z=DV.z/FollowDistance}
