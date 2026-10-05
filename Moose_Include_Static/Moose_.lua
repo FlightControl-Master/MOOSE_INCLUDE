@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-02T11:02:10+02:00-802d532a0736fe008858f98985b51e8d366f2de9 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-05T07:09:54+02:00-bd289fa9244961899a7ed57f8be69950e805b357 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56131,7 +56131,7 @@ end
 MANTIS={
 ClassName="MANTIS",
 name="mymantis",
-version="0.9.44",
+version="0.9.45",
 SAM_Templates_Prefix="",
 SAM_Group=nil,
 EWR_Templates_Prefix="",
@@ -56244,6 +56244,8 @@ MANTIS.SamData={
 ["Tor M2"]={Range=12,Blindspot=1,Height=10,Type="Point",Radar="TorM2",Point="true",ARMCapacity=4},
 ["IRIS-T SLM"]={Range=40,Blindspot=0.5,Height=20,Type="Medium",Radar="CH_IRIST_SLM",ARMCapacity=12},
 ["SON-9"]={Range=20,Blindspot=0,Height=14,Type="Point",Radar="SON_9",Point="true"},
+["HQ-11"]={Range=30,Blindspot=2,Height=15,Type="Medium",Radar="HQ11_USLANTCOM",ARMCapacity=4},
+["Mistral Unimog"]={Range=5,Blindspot=0.6,Height=3,Type="Point",Radar="USLANTCOM_UNIMOG_MISTRAL_CL",Point="true"},
 }
 MANTIS.SamDataHDS={
 ["SA-2 HDS"]={Range=56,Blindspot=7,Height=30,Type="Medium",Radar="V759"},
@@ -56479,6 +56481,8 @@ MANTIS.JammerSAMParams={
 ["THAAD CHM"]={peak=10,mu=90,sigma_L=38,tail_dist=140,band="IJ",floor=0},
 ["WieselOzelot CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
 ["USInfantryFIM92K CHM"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
+["HQ-11"]={peak=16,mu=23,sigma_L=10,tail_dist=50,band="IJ",floor=2},
+["Mistral Unimog"]={peak=3,mu=3,sigma_L=1,tail_dist=5,band="OPT",floor=0},
 }
 do
 local p=MANTIS.JammerSAMParams
