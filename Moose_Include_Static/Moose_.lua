@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-11T09:01:50+02:00-80f97b7f2b452d920b18e67d984f1eb6cffc0f52 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-11T11:20:15+02:00-ba6091d028a7b9589e051bc59df0ced5739378b4 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -63928,6 +63928,7 @@ RHINOF="FA-18F",
 GROWLER="EA-18G",
 CORSAIR="F4U-1D",
 CORSAIR_CW="F4U-1D CW",
+RAFALE="Rafale-M",
 }
 AIRBOSS.CarrierType={
 ROOSEVELT="CVN_71",
@@ -64149,7 +64150,7 @@ local r2=stern:Translate(self.carrierparam.rwywidth*0.5,FB-90,true)
 rwy:FlareRed()
 local cR=stern:Translate(self.carrierparam.totwidthstarboard,hdg+90,true)
 local cL=stern:Translate(self.carrierparam.totwidthport,hdg-90,true)
-if self.carrier:GetTypeName()~=AIRBOSS.CarrierType.INVINCIBLE or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.HERMES or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.TARAWA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.AMERICA or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.JCARLOS or self.carrier:GetTypeName()~=AIRBOSS.CarrierType.CANBERRA then
+if self.carrier:GetTypeName()~=AIRBOSS.CarrierType.INVINCIBLE and self.carrier:GetTypeName()~=AIRBOSS.CarrierType.HERMES and self.carrier:GetTypeName()~=AIRBOSS.CarrierType.TARAWA and self.carrier:GetTypeName()~=AIRBOSS.CarrierType.AMERICA and self.carrier:GetTypeName()~=AIRBOSS.CarrierType.JCARLOS and self.carrier:GetTypeName()~=AIRBOSS.CarrierType.CANBERRA then
 local w1=stern:Translate(self.carrierparam.wire1,FB,true)
 local w2=stern:Translate(self.carrierparam.wire2,FB,true)
 local w3=stern:Translate(self.carrierparam.wire3,FB,true)
@@ -67534,7 +67535,7 @@ self:E(self.lid..string.format("Player %s did not land in carrier box zone. Mayb
 end
 end
 else
-if self.carriertype~=AIRBOSS.CarrierType.INVINCIBLE or self.carriertype~=AIRBOSS.CarrierType.HERMES or self.carriertype~=AIRBOSS.CarrierType.TARAWA or self.carriertype~=AIRBOSS.CarrierType.AMERICA or self.carriertype~=AIRBOSS.CarrierType.JCARLOS or self.carriertype~=AIRBOSS.CarrierType.CANBERRA then
+if self.carriertype~=AIRBOSS.CarrierType.INVINCIBLE and self.carriertype~=AIRBOSS.CarrierType.HERMES and self.carriertype~=AIRBOSS.CarrierType.TARAWA and self.carriertype~=AIRBOSS.CarrierType.AMERICA and self.carriertype~=AIRBOSS.CarrierType.JCARLOS and self.carriertype~=AIRBOSS.CarrierType.CANBERRA then
 local coord=EventData.IniUnit:GetCoordinate()
 local dist=coord:Get2DDistance(self:GetCoordinate())
 local wire=self:_GetWire(coord,0)
