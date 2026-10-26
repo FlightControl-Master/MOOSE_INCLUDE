@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-26T12:26:25+01:00-eb3e7c60f476370298c625aeaee1ff75e44cbdca ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-26T12:49:56+01:00-35ff255d89ed95fff3728e88e0b937435c1aed44 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -20858,6 +20858,8 @@ elseif Skill:lower()=="excellent"then
 self.SpawnInitSkill="Excellent"
 elseif Skill:lower()=="random"then
 self.SpawnInitSkill="Random"
+elseif Skill:lower()=="cadet"then
+self.SpawnInitSkill="Cadet"
 else
 self.SpawnInitSkill="High"
 end
