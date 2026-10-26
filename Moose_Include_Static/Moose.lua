@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-10-11T11:20:15+02:00-ba6091d028a7b9589e051bc59df0ced5739378b4 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-10-26T12:25:41+01:00-07e67d579c5249678853daa9ab72484ced1fdc32 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -54390,8 +54390,10 @@ function CONTROLLABLE:GetDetectedTargets( DetectVisual, DetectOptical, DetectRad
     end
 
     self:T2( { DetectionVisual, DetectionOptical, DetectionRadar, DetectionIRST, DetectionRWR, DetectionDLINK } )
-
-    return self:_GetController():getDetectedTargets( Params[1], Params[2], Params[3], Params[4], Params[5], Params[6] )
+    local contrlr = self:_GetController()
+    if contrlr ~= nil then
+      return contrlr:getDetectedTargets( Params[1], Params[2], Params[3], Params[4], Params[5], Params[6] )
+    end
   end
 
   return nil
