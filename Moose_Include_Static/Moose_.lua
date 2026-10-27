@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-26T12:49:56+01:00-35ff255d89ed95fff3728e88e0b937435c1aed44 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-10-27T06:35:35+01:00-a2332f56d1fb2f25441905ac0e838d1bfa213a89 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -78373,8 +78373,7 @@ end
 if not drop and not pack then
 table.insert(obtainedcargo,realcargo)
 end
-local CCat4,CType4,CShape4=cargotype:GetStaticTypeAndShape()
-realcargo:SetStaticTypeAndShape(CCat4,CType4,CShape4)
+realcargo:SetStaticTypeAndShape(CCat,basetype,CShape)
 if c130DcAutoSetId and realcargo then
 self:_C130DcAutoRegisterDynamicCargo(realcargo:GetPositionable())
 self:_C130DcAutoRegisterEntry(c130DcAutoSetId,realcargo)
