@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-11-02T18:58:20+01:00-8e881fee59027c5f3c2a4025e65f6487b3d727fe ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-11-03T15:11:54+01:00-de3464a6933a6961c774690d7f557d172555b7bf ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -103220,8 +103220,8 @@ local callsign=self:_GetCallsignName(flight)
 local player=flight:GetPlayerElement()
 if player.parking then
 self:SetParkingFree(player.parking)
-player.parking=nil
 self:TextMessageToFlight(string.format("%s, your parking spot reservation at terminal ID %d was cancelled.",callsign,player.parking.TerminalID),flight)
+player.parking=nil
 else
 self:TextMessageToFlight("You did not have a valid parking spot reservation.",flight)
 end
