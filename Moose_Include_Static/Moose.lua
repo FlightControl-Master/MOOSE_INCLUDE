@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-11-02T18:57:34+01:00-8db12376d38487de3db7a6a4f0af7dcac1977fdb ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-11-03T15:10:45+01:00-25e24db27283b1385c8b65206fdbee9c37900f80 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -203580,8 +203580,8 @@ function FLIGHTCONTROL:_PlayerCancelParking(groupname)
     -- If player already has a spot.
     if player.parking then
       self:SetParkingFree(player.parking)
-      player.parking=nil
       self:TextMessageToFlight(string.format("%s, your parking spot reservation at terminal ID %d was cancelled.", callsign, player.parking.TerminalID), flight)
+      player.parking=nil
     else
       self:TextMessageToFlight("You did not have a valid parking spot reservation.", flight)
     end
