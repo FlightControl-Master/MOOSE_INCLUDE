@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-11-03T15:10:45+01:00-25e24db27283b1385c8b65206fdbee9c37900f80 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-11-04T19:13:08+01:00-9a710223473351463fd7fd8710e83e8f238768c6 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -13798,7 +13798,7 @@ function SCHEDULEDISPATCHER:_Reclaim( Scheduler, CallID )
     self.PersistentSchedulers[CallID] = nil
   end
 end
---- **Core** - Models DCS event dispatching using a publish-subscribe model.
+-- **Core** - Models DCS event dispatching using a publish-subscribe model.
 --
 -- ===
 --
@@ -15253,8 +15253,8 @@ function EVENT:onEvent( Event )
       -- Weapon.
       if Event.weapon and type(Event.weapon) == "table" and Event.weapon.isExist and Event.weapon:isExist() then
         Event.Weapon = Event.weapon
-        if Event.weapon_name == "ZELL Booster" then 
-          Event.WeaponName = "ZELL Booster"
+        if Event.weapon_name == "ZELL Booster" or Event.weapon_name == "SPRD-99" then
+          Event.WeaponName = Event.weapon_name
         else
           Event.WeaponName = Event.weapon:isExist() and Event.weapon.getTypeName and Event.weapon:getTypeName() or "Unknown Weapon"
         end
@@ -210037,7 +210037,7 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---- **Ops** - Office of Military Intelligence.
+-- **Ops** - Office of Military Intelligence.
 --
 -- **Main Features:**
 --
@@ -211600,6 +211600,7 @@ function INTEL:GetDetectedUnits(Unit, DetectedUnits, RecceDetecting, DetectVisua
 
   -- Get detected DCS units.
   local reccename = Unit:GetName()
+  local reccecoord
 
   local detectedtargets=Unit:GetDetectedTargets(DetectVisual, DetectOptical, DetectRadar, DetectIRST, DetectRWR, DetectDLINK)
 
@@ -211622,26 +211623,30 @@ function INTEL:GetDetectedUnits(Unit, DetectedUnits, RecceDetecting, DetectVisua
  
         if unit and unit:IsAlive() then
           local DetectionAccepted = true
+          local coord, dist
           
           if self.RadarAcceptRange then
-            local reccecoord = Unit:GetCoord()
-            local coord = unit:GetCoord()
-            local dist = math.floor(coord:Get2DDistance(reccecoord)/1000) -- km
+            reccecoord = reccecoord or Unit:GetCoord()
+            coord = unit:GetCoord()
+            dist = math.floor(coord:Get2DDistance(reccecoord)/1000) -- km
             if dist > self.RadarAcceptRangeKilometers then DetectionAccepted = false end
           end
           
           if self.RadarBlur then
-            local reccecoord = Unit:GetCoord()
-            local coord = unit:GetCoord()
-            local dist = math.floor(coord:Get2DDistance(reccecoord)/1000) -- km
-            local AGL = unit:GetAltitude(true)
+            reccecoord = reccecoord or Unit:GetCoord()
+            coord = coord or unit:GetCoord()
+            if not dist then
+              local dx, dz = coord.x - reccecoord.x, coord.z - reccecoord.z
+              dist = math.floor(math.sqrt(dx*dx + dz*dz)/1000) -- km
+            end
+            local AGL = coord.y - coord:GetLandHeight()
             local minheight = self.RadarBlurMinHeight or 250 -- meters
             local thresheight = self.RadarBlurThresHeight or 90 -- 10% chance to find a low flying group
             local thresblur = self.RadarBlurThresBlur or 85 -- 25% chance to escape the radar overall
             --local dist = math.floor(Distance)
             if dist <= self.RadarBlurClosing  then
               thresheight = (((dist*dist)/self.RadarBlurClosingSquare)*thresheight)
-              thresblur = (((dist*dist)/self.RadarBlurClosingSquare)*thresblur)
+              thresblur = 100 - (((dist*dist)/self.RadarBlurClosingSquare)*(100 - thresblur))
             end
             local fheight = math.floor(math.random(1,10000)/100)
             local fblur = math.floor(math.random(1,10000)/100)
