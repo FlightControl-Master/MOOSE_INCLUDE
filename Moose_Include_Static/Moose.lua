@@ -1,4 +1,4 @@
-env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-11-04T19:14:00+01:00-0182e24762f7000e7b71365f6fdf3d7e0e124b11 ***' )
+env.info( '*** MOOSE GITHUB Commit Hash ID: 2026-11-08T13:03:43+01:00-69bb1ad834fa4f3ae5937967aacd1744311070f8 ***' )
 
 -- Automatic dynamic loading of development files, if they exists.
 -- Try to load Moose as individual script files from <DcsInstallDir\Script\Moose
@@ -52997,6 +52997,54 @@ function CONTROLLABLE:TaskFollow( FollowControllable, Vec3, LastWaypointIndex )
 
   self:T3( { DCSTask } )
   return DCSTask
+end
+
+
+--- (GROUND) Attach a trailer to a tractor vehicle
+-- @param #CONTROLLABLE self
+-- @param Wrapper.Unit#UNIT TractorUnit The Tractor UNIT.
+-- @param Wrapper.Unit#UNIT TrailerUnit The Trailer UNIT.
+-- @param #boolean OnStartMission If true, attach on mission start. Default - false.
+-- @return DCS#Task The DCS task structure.
+function CONTROLLABLE:TaskAttachTrailer(TractorUnit,TrailerUnit,OnStartMission)
+  
+  local task = {
+        ["enabled"] = true,
+        ["auto"] = false,
+        ["id"] = "AttachTrailer",
+        ["params"] = 
+        {
+          ["unitIdTrailer"] = TrailerUnit:GetID(),
+          ["unitIdTractor"] = TractorUnit:GetID(),
+          ["onStartMission"] = OnStartMission or false,
+        }
+    }
+  
+  return task
+  
+end
+
+--- (GROUND) Detach a trailer to a tractor vehicle
+-- @param #CONTROLLABLE self
+-- @param Wrapper.Unit#UNIT TractorUnit The Tractor UNIT.
+-- @param DCS#Vec2 PositionVec2 where to put the trailer - same as Waypoint position.
+-- @return DCS#Task The DCS task structure.
+function CONTROLLABLE:TaskDetachTrailer(TractorUnit,PositionVec2)
+  
+  local task = {
+        ["enabled"] = true,
+        ["auto"] = false,
+        ["id"] = "DetachTrailer",
+        ["params"] = 
+        {
+          ["y"] = PositionVec2.y or 0,
+          ["unitIdTractor"] = TractorUnit:GetID(),
+          ["x"] = PositionVec2.x or 0,
+        }
+    }
+  
+  return task
+  
 end
 
 --- (AIR/HELO) Escort a ground controllable.

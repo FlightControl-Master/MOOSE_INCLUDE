@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-11-04T19:14:00+01:00-0182e24762f7000e7b71365f6fdf3d7e0e124b11 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-11-08T13:03:43+01:00-69bb1ad834fa4f3ae5937967aacd1744311070f8 ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -26709,6 +26709,34 @@ lastWptIndexFlagChangedManually=lastWptIndexFlagChangedManually,
 }
 self:T3({DCSTask})
 return DCSTask
+end
+function CONTROLLABLE:TaskAttachTrailer(TractorUnit,TrailerUnit,OnStartMission)
+local task={
+["enabled"]=true,
+["auto"]=false,
+["id"]="AttachTrailer",
+["params"]=
+{
+["unitIdTrailer"]=TrailerUnit:GetID(),
+["unitIdTractor"]=TractorUnit:GetID(),
+["onStartMission"]=OnStartMission or false,
+}
+}
+return task
+end
+function CONTROLLABLE:TaskDetachTrailer(TractorUnit,PositionVec2)
+local task={
+["enabled"]=true,
+["auto"]=false,
+["id"]="DetachTrailer",
+["params"]=
+{
+["y"]=PositionVec2.y or 0,
+["unitIdTractor"]=TractorUnit:GetID(),
+["x"]=PositionVec2.x or 0,
+}
+}
+return task
 end
 function CONTROLLABLE:TaskGroundEscort(FollowControllable,LastWaypointIndex,OrbitDistance,TargetTypes)
 local DCSTask={
