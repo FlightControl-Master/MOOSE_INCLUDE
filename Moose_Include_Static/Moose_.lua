@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2026-11-08T13:03:13+01:00-87de674a9aca7f41b6734e39fd441917ce46f3e0 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2026-11-13T06:16:40+01:00-ad91c774182b8b4cfa2dddf23fcd1775d3eb29aa ***')
 if not MOOSE_DEVELOPMENT_FOLDER then
 MOOSE_DEVELOPMENT_FOLDER='Scripts'
 end
@@ -56204,7 +56204,7 @@ end
 MANTIS={
 ClassName="MANTIS",
 name="mymantis",
-version="0.9.45",
+version="0.9.46",
 SAM_Templates_Prefix="",
 SAM_Group=nil,
 EWR_Templates_Prefix="",
@@ -56701,6 +56701,18 @@ self.NavalSurfaceWakeupRadius=nil
 self.NavalPerUnit=true
 self.NavalAutonomy=true
 self.NavalAutonomyRadius=150000
+self.NavalMissileDefense=true
+self.NavalMissileLead=60
+self.NavalMissileHold=60
+self.NavalMissileStep=1
+self.NavalMissileMode="SENSOR"
+self.NavalAntennaHeight=25
+self.EWRAntennaHeight=15
+self._navalMissiles={}
+self._navalAlertUntil={}
+self._navalOwnShots={}
+self.NavalRedHold=60
+self.NavalROE=2
 self.engagerange=95
 self.autorelocate=false
 self.autorelocateunits={HQ=false,EWR=false}
@@ -56828,6 +56840,7 @@ end
 function MANTIS:_EventHandler(EventData)
 self:T(self.lid.."_EventHandler")
 local function IsOneOfOurs(name)
+if self._navyGroups and self._navyGroups[name]then return true end
 for _,_name in pairs(self.ewr_templates)do
 if string.find(name,_name,1,true)then
 return true
@@ -56844,11 +56857,15 @@ if self._navalSAMs[uname]and self.SamStateTracker[uname]=="GREEN"
 and not(self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[uname])then
 self.SamStateTracker[uname]="RED"
 end
+if self._navalSAMs[uname]then self:_NavalHold(uname,self.NavalRedHold)end
 end
 self:_ApplyNavalAlarmState()
 self:__RedState(1,Group)
 end
 return
+end
+if self._navalSAMs and self._navalSAMs[Name]then
+self:_NavalHold(Name,self.NavalRedHold)
 end
 local suppressed=self.SuppressedGroups[Name]or false
 local jammed=self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[Name]or false
@@ -56858,11 +56875,7 @@ self:_RefreshSAMTracking(Group,Name,ammo,lostUnitName)
 end
 if not suppressed and not jammed and not(ammo and(ammo.trLost or ammo.canSleep and ammo.empty))and self.SamStateTracker[Name]=="GREEN"then
 self.SamStateTracker[Name]="RED"
-if self.UseEmOnOff then
-Group:EnableEmission(true)
-elseif(not self.UseEmOnOff)then
-Group:OptionAlarmStateRed()
-end
+self:_SwitchSAMGroup(Group,true)
 self:__RedState(1,Group)
 if self.SmokeDecoy==true then
 self:_SmokeUnits(Group)
@@ -57661,7 +57674,28 @@ end
 end
 return entries>0
 end
-function MANTIS:_ApplyNavalAlarmState()
+function MANTIS:_SwitchSAMGroup(group,on,alarmonly,DCSGroup)
+if not group then return self end
+local navy=self._navyGroups and self._navyGroups[group:GetName()]
+if navy and navy:IsAlive()then
+if self.UseEmOnOff and not alarmonly then
+navy:SwitchEmission(on and true or false)
+else
+navy:SwitchAlarmstate(on and ENUMS.AlarmState.Red or ENUMS.AlarmState.Green)
+if on and navy:GetEmission()==false then navy:SwitchEmission(true)end
+end
+return self
+end
+if self.UseEmOnOff and not alarmonly then
+group:EnableEmission(on and true or false,DCSGroup)
+elseif on then
+group:OptionAlarmStateRed()
+else
+group:OptionAlarmStateGreen()
+end
+return self
+end
+function MANTIS:_ApplyNavalAlarmState(Force)
 if not(self.NavalPerUnit and self._navalUnitParent)then return self end
 local wants,seen,unjammed={},{},{}
 for uname,grpname in pairs(self._navalUnitParent)do
@@ -57693,6 +57727,10 @@ for grpname,_ in pairs(seen)do
 local grp=GROUP:FindByName(grpname)
 if grp and grp:IsAlive()then
 local red=wants[grpname]or false
+local navy=self._navyGroups and self._navyGroups[grpname]
+if navy and(not red)and navy.IsEngaging and navy:IsEngaging()then
+red=true
+end
 local autonomous=false
 if self.NavalAutonomy and unjammed[grpname]and not red then
 local covered=false
@@ -57713,14 +57751,30 @@ end
 end
 self._navalAutonomous[grpname]=autonomous or nil
 local newstate=red and"RED"or"GREEN"
-if self._navalGroupState[grpname]~=newstate then
+local changed=self._navalGroupState[grpname]~=newstate
+local apply=changed
+if navy then
+local want=red and ENUMS.AlarmState.Red or ENUMS.AlarmState.Green
+if navy:GetAlarmstate()~=want or(red and navy:GetEmission()==false)then apply=true end
+if red and self.NavalROE then
+local roe=navy:GetROE()
+if roe~=self.NavalROE and roe~=ENUMS.ROE.WeaponHold then
+navy:SwitchROE(self.NavalROE)
+self:T(self.lid..grpname.." naval ROE re-asserted")
+end
+end
+elseif Force then
+apply=true
+end
+if apply then
 self._navalGroupState[grpname]=newstate
+self:_SwitchSAMGroup(grp,red,true)
+if changed then
 if red then
-grp:OptionAlarmStateRed()
 self:T(self.lid..grpname.." naval group -> alarm RED"..(autonomous and" (autonomous: no EWR coverage)"or""))
 else
-grp:OptionAlarmStateGreen()
 self:T(self.lid..grpname.." naval group -> alarm GREEN")
+end
 end
 end
 end
@@ -57880,7 +57934,7 @@ local isground=_group:IsGround()
 if(isground or _group:IsShip())and _group:IsAlive()then
 local group=_group
 if(not isground)and self.NavalPerUnit then
-group:OptionAlarmStateGreen()
+self:_SwitchSAMGroup(group,false,true)
 elseif self.UseEmOnOff then
 group:OptionAlarmStateRed()
 group:EnableEmission(false)
@@ -57951,6 +58005,7 @@ return self
 end
 function MANTIS:_RefreshSAMTable()
 self:T(self.lid.."RefreshSAMTable")
+self:_ReattachNavyGroups()
 local SAM_SET=self.SAM_Group
 local SAM_Grps=SAM_SET.Set
 local SAM_Tbl={}
@@ -58152,12 +58207,20 @@ IsInZone=true
 Distance=wakeradius
 end
 end
+local triggered=IsInZone
+if samalive and(not IsInZone)and self._navalAlertUntil and self._navalSAMs and self._navalSAMs[name]
+and not(self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[name])
+and self:_NavalAlertActive(name)then
+IsInZone=true
+Distance=radius
+CloseThreat=true
+end
 local suppressed=self.SuppressedGroups[name]or(navalparent and self.SuppressedGroups[navalparent])or false
 local activeshorad=false
 if self.Shorad and self.Shorad.ActiveGroups and self.Shorad.ActiveGroups[name]then
 activeshorad=true
 end
-if samgroup:GetProperty("SHORAD_ACTIVE")==true and activeshorad==false then activeshorad=true end
+if samgroup and samgroup:GetProperty("SHORAD_ACTIVE")==true and activeshorad==false then activeshorad=true end
 local canSwitch=switchedon<limit or CloseThreat
 if IsInZone and(shortsam or canSwitch)and(not suppressed)and(not activeshorad)then
 if samalive then
@@ -58165,18 +58228,17 @@ local switch=false
 if navalparent and canSwitch then
 switchedon=switchedon+1
 switch=true
-elseif self.UseEmOnOff and canSwitch then
-samgroup:EnableEmission(true,DCSGroup)
-switchedon=switchedon+1
-switch=true
-elseif(not self.UseEmOnOff)and canSwitch then
-samgroup:OptionAlarmStateRed()
+elseif canSwitch then
+self:_SwitchSAMGroup(samgroup,true,nil,DCSGroup)
 switchedon=switchedon+1
 switch=true
 end
 if self.SamStateTracker[name]~="RED"and switch then
 self.SamStateTracker[name]="RED"
 self:__RedState(1,samgroup)
+end
+if triggered and self._navalSAMs and self._navalSAMs[name]and self.SamStateTracker[name]=="RED"then
+self:_NavalHold(name,self.NavalRedHold)
 end
 if shortsam==true and(not navalparent)and self.SmokeDecoy==true and Distance<self.DetectAccousticRadius*1.5 then
 self:T("Smoking")
@@ -58196,11 +58258,8 @@ end
 end
 else
 if samalive and not suppressed and not activeshorad then
-if navalparent then
-elseif self.UseEmOnOff then
-samgroup:EnableEmission(false,DCSGroup)
-else
-samgroup:OptionAlarmStateGreen()
+if not navalparent then
+self:_SwitchSAMGroup(samgroup,false,nil,DCSGroup)
 end
 if self.SamStateTracker[name]~="GREEN"then
 self.SamStateTracker[name]="GREEN"
@@ -58246,17 +58305,19 @@ local instatusred=0
 local instatusgreen=0
 local activeshorads=0
 if self.automode then
-local samset=self.SAM_Table_Long
-local instatusredl,instatusgreenl,activeshoradsl=self:_CheckLoop(samset,detset,dlink,self.maxlongrange,contactSnapshot,zoneResults)
-local samset=self.SAM_Table_Medium
-local instatusredm,instatusgreenm,activeshoradsm=self:_CheckLoop(samset,detset,dlink,self.maxmidrange,contactSnapshot,zoneResults)
-local samset=self.SAM_Table_Short
-local instatusreds,instatusgreens,activeshoradss=self:_CheckLoop(samset,detset,dlink,self.maxshortrange,contactSnapshot,zoneResults)
-local samset=self.SAM_Table_PointDef
-local instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxpointdefrange,contactSnapshot,zoneResults)
+local loops={
+{self.SAM_Table_Long,self.maxlongrange},
+{self.SAM_Table_Medium,self.maxmidrange},
+{self.SAM_Table_Short,self.maxshortrange},
+{self.SAM_Table_PointDef,self.maxpointdefrange},
+}
+for _,l in ipairs(loops)do
+local r,g,s=self:_CheckLoop(l[1],detset,dlink,l[2],contactSnapshot,zoneResults)
+instatusred,instatusgreen,activeshorads=instatusred+(r or 0),instatusgreen+(g or 0),activeshorads+(s or 0)
+end
 else
 local samset=self:_GetSAMTable()
-local instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxclassic,contactSnapshot,zoneResults)
+instatusred,instatusgreen,activeshorads=self:_CheckLoop(samset,detset,dlink,self.maxclassic,contactSnapshot,zoneResults)
 end
 local function GetReport()
 if self.debug or self.verbose or self.logsamstatus then
@@ -58283,7 +58344,7 @@ end
 statusreport:Add("+-----------------------------+")
 return statusreport
 end
-self:_ApplyNavalAlarmState()
+self:_ApplyNavalAlarmState(true)
 if self.debug or self.verbose then
 local statusreport=GetReport()
 MESSAGE:New(statusreport:Text(),10):ToAll():ToLog()
@@ -58331,10 +58392,8 @@ if not(ammo and ammo.advancedSleeping and(self.SuppressedGroups[name]
 or(self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[name])))then
 if navalparent then
 self.SamStateTracker[name]="RED"
-elseif self.UseEmOnOff then
-samgroup:EnableEmission(true)
 else
-samgroup:OptionAlarmStateRed()
+self:_SwitchSAMGroup(samgroup,true)
 end
 if ammo and ammo.advancedSleeping then
 ammo.advancedSleeping=nil
@@ -58355,6 +58414,7 @@ end
 end
 end
 end
+self:_ApplyNavalAlarmState(true)
 elseif newstate<=1 then
 self.detectinterval=interval
 self.state2flag=false
@@ -58394,6 +58454,8 @@ self.Shorad:AddScootZones(self.SkateZones,self.SkateNumber or 3,self.ScootRandom
 end
 self:HandleEvent(EVENTS.Hit,self._EventHandler)
 self:HandleEvent(EVENTS.UnitLost,self._EventHandler)
+self:HandleEvent(EVENTS.Shot,self._NavalMissileShot)
+self._navalMissileSched=SCHEDULER:New(self,self._NavalMissileTick,{},2,self.NavalMissileStep or 1)
 self:__Status(-math.random(1,10))
 return self
 end
@@ -58411,7 +58473,7 @@ local function FindSAMSRTR()
 local selected=nil
 local eligible=0
 for _,randomsam in pairs(self.SAM_Group:GetSet())do
-if randomsam and randomsam:IsAlive()then
+if randomsam and randomsam:IsAlive()and not randomsam:IsShip()then
 local ammo=randomsam:GetProperty("MANTIS_AMMO")
 if not(ammo and(ammo.trLost or ammo.canSleep and ammo.empty))and(ammo and ammo.isSAM or not ammo and randomsam:IsSAM())then
 eligible=eligible+1
@@ -58424,11 +58486,7 @@ end
 if not EWRAlive then
 local randomsam=FindSAMSRTR()
 if randomsam and randomsam:IsAlive()then
-if self.UseEmOnOff then
-randomsam:EnableEmission(true)
-else
-randomsam:OptionAlarmStateRed()
-end
+self:_SwitchSAMGroup(randomsam,true)
 local name=randomsam:GetName()
 if self.SamStateTracker[name]~="RED"then
 self:__RedState(1,randomsam)
@@ -58474,6 +58532,15 @@ for _,_intel in pairs(self.intelset)do
 _intel:Stop()
 end
 end
+if self._navalMissileSched then
+self._navalMissileSched:Stop()
+self._navalMissileSched=nil
+end
+self._navalMissiles={}
+self._navalOwnShots={}
+self:UnHandleEvent(EVENTS.Hit)
+self:UnHandleEvent(EVENTS.UnitLost)
+self:UnHandleEvent(EVENTS.Shot)
 return self
 end
 function MANTIS:onafterRelocating(From,Event,To)
@@ -59017,11 +59084,8 @@ DCSGroup=samgroup:GetDCSObject()
 samalive=DCSGroup and samgroup:IsAlive(DCSGroup)or false
 end
 if samalive then
-if navalparent then
-elseif self.UseEmOnOff then
-samgroup:EnableEmission(false,DCSGroup)
-else
-samgroup:OptionAlarmStateGreen()
+if not navalparent then
+self:_SwitchSAMGroup(samgroup,false,nil,DCSGroup)
 end
 self.SamStateTracker[name]="GREEN"
 self:__JammerSuppression(1,samgroup,name,self._jammedSAMs[name])
@@ -59109,6 +59173,256 @@ end
 end
 return self
 end
+function MANTIS:SetNavalMissileDefense(onoff,leadseconds,holdseconds)
+self.NavalMissileDefense=onoff and true or false
+if leadseconds then self.NavalMissileLead=leadseconds end
+if holdseconds then self.NavalMissileHold=holdseconds end
+return self
+end
+function MANTIS:SetNavalMissileSensorMode(mode,shipantenna,ewrantenna)
+mode=string.upper(mode or"SENSOR")
+if mode~="SENSOR"and mode~="CUED"then
+self:E(self.lid.."SetNavalMissileSensorMode: unknown mode "..tostring(mode).." - use SENSOR or CUED.")
+return self
+end
+self.NavalMissileMode=mode
+if shipantenna then self.NavalAntennaHeight=shipantenna end
+if ewrantenna then self.EWRAntennaHeight=ewrantenna end
+return self
+end
+function MANTIS._RadarHorizon(h1,h2)
+return 4120*(math.sqrt(math.max(h1 or 0,0))+math.sqrt(math.max(h2 or 0,0)))
+end
+function MANTIS._SensorSees(s,ha,range,p)
+local dx,dz=p.x-s.x,p.z-s.z
+local d=math.sqrt(dx*dx+dz*dz)
+if range and d>range then return false end
+if d>MANTIS._RadarHorizon(ha,p.y)then return false end
+if land and land.isVisible then
+return land.isVisible({x=s.x,y=ha,z=s.z},{x=p.x,y=p.y,z=p.z})and true or false
+end
+return true
+end
+function MANTIS:_NavalSensorSources()
+local out,done,managed={},{},{}
+for _,gname in pairs(self._navalUnitParent or{})do managed[gname]=true end
+for name,_ in pairs(self._navalSAMs or{})do managed[name]=true end
+local function add(grp)
+local gname=grp:GetName()
+if managed[gname]or done[gname]then return end
+done[gname]=true
+local v=grp:GetVec3()
+if not v then return end
+if grp:IsAir()then
+table.insert(out,{vec=v,h=v.y,range=self.awacsrange})
+elseif grp:IsShip()then
+table.insert(out,{vec=v,h=v.y+self.NavalAntennaHeight,range=self.acceptrange})
+else
+table.insert(out,{vec=v,h=v.y+self.EWRAntennaHeight,range=self.acceptrange})
+end
+end
+if self.EWR_Group then self.EWR_Group:ForEachGroupAlive(add)end
+if self.AWACS_Prefix and self.AWACS_Prefix~=""then
+local awacs=GROUP:FindByName(self.AWACS_Prefix)
+if awacs and awacs:IsAlive()then add(awacs)end
+end
+return out
+end
+function MANTIS._NavalApproach(p,v,q)
+local rx,ry,rz=q.x-p.x,q.y-p.y,q.z-p.z
+local d=math.sqrt(rx*rx+ry*ry+rz*rz)
+local s=math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)
+if d<1 or s<1 then return d,0,0 end
+local closing=(rx*v.x+ry*v.y+rz*v.z)/d
+return d,closing,closing/s
+end
+function MANTIS:_NavalAlertActive(name)
+local untiltime=self._navalAlertUntil and self._navalAlertUntil[name]
+if not untiltime then return false end
+if untiltime>timer.getTime()then return true end
+self._navalAlertUntil[name]=nil
+return false
+end
+function MANTIS:_NavalHold(name,seconds)
+if not(name and seconds and seconds>0)then return self end
+self._navalAlertUntil=self._navalAlertUntil or{}
+local untiltime=timer.getTime()+seconds
+if(self._navalAlertUntil[name]or 0)<untiltime then self._navalAlertUntil[name]=untiltime end
+return self
+end
+function MANTIS:_NavalEntries()
+local out={}
+if not(self._navalSAMs and self.SAM_Table)then return out end
+for _,rec in ipairs(self.SAM_Table)do
+local name=rec[1]
+if self._navalSAMs[name]then
+local vec,grpname
+if rec[8]then
+local u=UNIT:FindByName(name)
+if u and u:IsAlive()then vec=u:GetVec3()grpname=rec[8]end
+else
+local g=GROUP:FindByName(name)
+if g and g:IsAlive()then vec=g:GetVec3()grpname=name end
+end
+if vec then table.insert(out,{name=name,group=grpname,vec=vec,radius=rec[3]})end
+end
+end
+return out
+end
+function MANTIS:_NavalAlert(entry,hold)
+local name=entry.name
+self:_NavalHold(name,hold)
+if self.SamStateTracker[name]=="RED"then return false end
+if self._jammerEnabled and self._jammedSAMs and self._jammedSAMs[name]then return false end
+if self.SuppressedGroups[name]or self.SuppressedGroups[entry.group]then return false end
+local group=GROUP:FindByName(entry.group)
+if not(group and group:IsAlive())then return false end
+if entry.group==name then
+self:_SwitchSAMGroup(group,true)
+end
+self.SamStateTracker[name]="RED"
+self:__RedState(1,group)
+self:T(self.lid..string.format("Naval missile alert: %s -> RED",name))
+return true
+end
+function MANTIS:_NavalMissileShot(EventData)
+if not(self._navalSAMs and next(self._navalSAMs))then return self end
+local weapon=EventData.Weapon
+if not weapon then return self end
+local wcoal=EventData.IniCoalition
+if wcoal==nil and weapon.getCoalition then wcoal=weapon:getCoalition()end
+if wcoal==nil then return self end
+if wcoal==self.coalition then
+local holdname=nil
+if self._navalSAMs[EventData.IniUnitName or""]then
+holdname=EventData.IniUnitName
+elseif self._navalSAMs[EventData.IniGroupName or""]then
+holdname=EventData.IniGroupName
+end
+if holdname and(self.NavalRedHold or 0)>0 then
+local odesc=weapon:getDesc()
+if odesc and odesc.category==Weapon.Category.MISSILE then
+table.insert(self._navalOwnShots,{weapon=weapon,name=holdname,t0=timer.getTime()})
+self:_NavalHold(holdname,self.NavalRedHold)
+self:T(self.lid..string.format("Naval own shot: %s fired %s, holding RED",holdname,tostring(EventData.WeaponName)))
+end
+end
+return self
+end
+if not self.NavalMissileDefense then return self end
+local desc=weapon:getDesc()
+if not(desc and desc.category==Weapon.Category.MISSILE)then return self end
+if desc.guidance==Weapon.GuidanceType.RADAR_PASSIVE then return self end
+local targetname=nil
+local target=weapon:getTarget()
+if target then
+if Object.getCategory(target)~=Object.Category.UNIT then return self end
+local tu=UNIT:Find(target)
+if not(tu and tu:IsShip()and tu:GetCoalition()==self.coalition)then return self end
+targetname=tu:GetName()
+end
+table.insert(self._navalMissiles,{weapon=weapon,target=targetname,name=EventData.WeaponName,t0=timer.getTime()})
+self:T(self.lid..string.format("Naval missile defense: tracking %s (target %s)",tostring(EventData.WeaponName),tostring(targetname)))
+return self
+end
+function MANTIS:_NavalMissileTick()
+local own=self._navalOwnShots
+if own and#own>0 then
+local tnow=timer.getTime()
+for i=#own,1,-1 do
+local o=own[i]
+if(not o.weapon)or(not o.weapon:isExist())or(tnow-o.t0>600)then
+table.remove(own,i)
+else
+self:_NavalHold(o.name,self.NavalRedHold)
+end
+end
+end
+local missiles=self._navalMissiles
+if not missiles or#missiles==0 then return self end
+local entries=self:_NavalEntries()
+local now=timer.getTime()
+local lead=self.NavalMissileLead or 60
+local hold=self.NavalMissileHold or 60
+local gated=(self.NavalMissileMode~="CUED")
+local shipantenna=self.NavalAntennaHeight or 25
+local sources=nil
+local woke=false
+local function seen(p,shipvec,cache)
+if not gated then return true end
+if MANTIS._SensorSees(shipvec,shipvec.y+shipantenna,nil,p)then return true end
+if cache.net==nil then
+cache.net=false
+sources=sources or self:_NavalSensorSources()
+for _,s in ipairs(sources)do
+if MANTIS._SensorSees(s.vec,s.h,s.range,p)then cache.net=true break end
+end
+end
+return cache.net
+end
+for i=#missiles,1,-1 do
+local m=missiles[i]
+local w=m.weapon
+if(not w)or(not w:isExist())or(now-m.t0>1200)then
+table.remove(missiles,i)
+elseif#entries>0 then
+local p,v=w:getPoint(),w:getVelocity()
+local cache={}
+local targetvec,tunit=nil,nil
+if m.target then
+tunit=UNIT:FindByName(m.target)
+if tunit and tunit:IsAlive()then targetvec=tunit:GetVec3()else m.target=nil end
+end
+if targetvec then
+local d,closing=MANTIS._NavalApproach(p,v,targetvec)
+if closing>20 and d/closing<=lead and seen(p,targetvec,cache)then
+if not m.tgroupname then
+local tgroup=tunit:GetGroup()
+m.tgroupname=tgroup and tgroup:GetName()or""
+end
+local tgroupname=m.tgroupname
+for _,e in ipairs(entries)do
+local covers=(e.group==tgroupname)
+if not covers then
+local ex,ez=e.vec.x-targetvec.x,e.vec.z-targetvec.z
+covers=math.sqrt(ex*ex+ez*ez)<=e.radius
+end
+if covers and self:_NavalAlert(e,hold)then woke=true end
+end
+end
+else
+for _,e in ipairs(entries)do
+local d,closing,cosine=MANTIS._NavalApproach(p,v,e.vec)
+if closing>20 and cosine>=0.9 and d/closing<=lead and seen(p,e.vec,cache)then
+if self:_NavalAlert(e,hold)then woke=true end
+end
+end
+end
+end
+end
+if woke and self.NavalPerUnit then self:_ApplyNavalAlarmState()end
+return self
+end
+function MANTIS:SetNavalROE(roe)
+if roe==false then
+self.NavalROE=false
+return self
+end
+roe=roe or ENUMS.ROE.OpenFire
+if roe~=ENUMS.ROE.OpenFire and roe~=ENUMS.ROE.ReturnFire and roe~=ENUMS.ROE.WeaponHold then
+self:E(self.lid.."SetNavalROE: "..tostring(roe).." is not a valid ship ROE (use OpenFire, ReturnFire or WeaponHold) - using OpenFire.")
+roe=ENUMS.ROE.OpenFire
+end
+self.NavalROE=roe
+for _,navy in pairs(self._navyGroups or{})do
+if navy.SetDefaultROE then navy:SetDefaultROE(roe)end
+end
+return self
+end
+function MANTIS:SetNavalRedHold(seconds)
+self.NavalRedHold=math.max(0,seconds or 60)
+return self
+end
 function MANTIS:AddNavyGroup(NavyGroup,Role)
 local role=string.upper(Role or"SAM")
 if role=="BOTH"then
@@ -59126,8 +59440,16 @@ return self
 end
 if NavyGroup.SetDefaultEmission then NavyGroup:SetDefaultEmission(true)end
 if NavyGroup.SetDefaultAlarmstate then NavyGroup:SetDefaultAlarmstate(0)end
+if self.NavalROE and NavyGroup.SetDefaultROE then
+NavyGroup:SetDefaultROE(self.NavalROE)
+if NavyGroup:GetROE()~=ENUMS.ROE.WeaponHold then
+NavyGroup:SwitchROE(self.NavalROE)
+end
+end
 self._navyGroups=self._navyGroups or{}
 self._navyGroups[grp:GetName()]=NavyGroup
+self._navyRoles=self._navyRoles or{}
+self._navyRoles[grp:GetName()]=role
 if role=="SAM"then
 self.SAM_Group:AddGroup(grp)
 if self.SAM_Table then
@@ -59142,6 +59464,23 @@ else
 self:E(self.lid.."AddNavyGroup: unknown Role "..tostring(Role).." - use SAM or EWR.")
 end
 self:I(self.lid..string.format("Added NAVYGROUP %s as %s",grp:GetName(),role))
+return self
+end
+function MANTIS:_ReattachNavyGroups()
+if not self._navyGroups then return self end
+for gname,navy in pairs(self._navyGroups)do
+local role=self._navyRoles and self._navyRoles[gname]or"SAM"
+local grp=navy:GetGroup()
+if grp and grp:IsAlive()then
+if role=="SAM"and not self.SAM_Group.Set[gname]then
+self.SAM_Group:AddGroup(grp)
+self:T(self.lid.."Re-attached NAVYGROUP "..gname.." to SAM set")
+elseif role=="EWR"then
+if not self.EWR_Group.Set[gname]then self.EWR_Group:AddGroup(grp)end
+if self.Adv_EWR_Group and not self.Adv_EWR_Group.Set[gname]then self.Adv_EWR_Group:AddGroup(grp)end
+end
+end
+end
 return self
 end
 function MANTIS._InjectNavyGroupAPI()
